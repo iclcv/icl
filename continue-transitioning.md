@@ -1,6 +1,107 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 28 — C++17 Phases 2-6: complete modernization)
+## Current State (Session 29 — IPP/MKL Docker verification, LAPACK bug fixes)
+
+### Session 29 Summary
+
+**Docker IPP+MKL build infrastructure:**
+- Added `intel-oneapi-ipp-devel` to Dockerfile alongside MKL
+- Enabled `-DBUILD_WITH_IPP=ON -DBUILD_WITH_MKL=ON` in docker-test.sh
+- Fixed CMake IPP detection: removed dead `iomp5` (Intel OpenMP) and `ippm`
+  (deprecated matrix lib) from required libs. IPP doesn't need Intel OpenMP;
+  system OpenMP works fine.
+- MKL: switched from `mkl_intel_thread`+`iomp5` to `mkl_sequential` (avoids
+  Intel OpenMP dependency; ICL's own OpenMP handles parallelism)
+- Added oneAPI search paths for MKL
+- Fixed `--cpus` in docker-test.sh to use Docker's available CPU count
+- Fixed PugiXML.cpp: `#include "pugixml.hpp"` → `"PugiXML.h"` (pugixml.hpp
+  was never in git; PugiXML.h IS the header, renamed to ICL convention)
+
+**All 6 real _Ipp.cpp files compile against oneAPI IPP — zero API changes needed.**
+APIs verified available in modern oneAPI: ippiMirror, ippiSet, ippiLUTPalette,
+ippiMax/Min/Mean, ippiMulC/AddC, ippiCopyReplicateBorder, ippiCopy P↔C,
+ippiThreshold, ippiCompareC, ippiAndC/OrC/XorC/Not, ippiRemap, ippiFilterWiener.
+
+**Bug found: cpp_getri (C++ LU inverse) produced completely wrong results.**
+- The in-place U-inversion algorithm used `A[i][i]` which had already been
+  overwritten to `1/U[i][i]` in a prior iteration. Errors were 20-500x, not
+  precision issues.
+- Hidden because on macOS the Accelerate backend (higher priority) was always
+  selected — the C++ fallback was never exercised.
+- Discovered by running tests in Docker where only the C++ backend is available.
+- Fix: rewrote to solve `A*x=e_j` column-by-column using the LU factorization
+  directly (forward-substitute with L, then back-substitute with U).
+
+**Bug found: MKL geqrf/orgqr/getrf/getri row-major handling was wrong.**
+- MKL backend used a dimension-swap trick (passing swapped M,N to LAPACK) to
+  handle row-major → column-major. This works for symmetric operations (SVD,
+  eigenvalue) but NOT for QR: QR(A^T) ≠ QR(A).
+- Caused Docker test `math.dyn.qr_reconstruct` to fail with errors of 17+
+  and subsequent heap corruption from wrong Q/R propagating.
+- Fix: all four functions now use explicit transposition (matching the
+  Accelerate backend pattern). `gelsd` already had this correct.
+
+**Transpose helpers added to LapackOps:**
+- `lapack_row_to_col(A, M, N, lda, AT)` and `lapack_col_to_row(AT, M, N, A, lda)`
+  centralize the row-major ↔ column-major pattern used by all LAPACK backends.
+- Defined in LapackOps.cpp, declared in LapackOps.h, instantiated for float/double.
+- Backend callers to be migrated to use helpers in a future pass.
+
+**C++ QR fallback (cpp_geqrf, cpp_orgqr) verified correct.** Standalone testing
+with the exact Wikipedia 3×3 matrix from the test suite, plus 4×3, 5×5, and
+double precision — all produce correct Q*R=A reconstruction within float epsilon.
+Also verified cpp_gelsd (SVD least-squares solve) is correct.
+
+**Pre-existing bug: C++ bilinear scaling produces wrong results for identity scale.**
+- Test `Img.scaledCopy_identity` fails in Docker (383/384 pass without MKL).
+- Scales 8×6 → 8×6 with `interpolateLIN`, gets `8.75` for pixel value `10`.
+- The value `8.75 = 0.875 * 10` suggests `fSX = 7/8 = 0.875` (wrong) instead
+  of `fSX = 7/7 = 1.0` (correct for identity scale with the `(src-1)/(dst-1)` formula).
+- Investigation in `Img_Cpp.cpp` shows the bilinear code at line 394 computes
+  `fSX = (srcSize.width - 1) / (dstSize.width - 1) = 7/7 = 1.0` — which is correct.
+- The `scaledCopy` call path passes `getSize() → srcSize` and `poDst->getSize() →
+  dstSize`, both `(8,6)` — confirmed correct.
+- Cannot reproduce on macOS because Accelerate backend (vImageScale, Lanczos)
+  takes priority. Need Docker debug session with print statements in
+  `cpp_scaledCopyChannel` to see actual argument values at runtime.
+- Hypotheses: (1) some other code path is being called that computes fSX
+  differently, (2) the ImgOps dispatch wraps sizes differently, (3) ROI
+  handling mutates the sizes before the backend sees them.
+- TODO: Add `fprintf(stderr, ...)` debug prints to `cpp_scaledCopyChannel` in
+  a Docker shell session to trace actual argument values.
+
+**Docker test results (IPP only, no MKL): 383/384 pass.**
+Remaining failure is the bilinear scaling bug above. With MKL: QR and
+inverse tests now pass after the fixes, but MKL+Rosetta causes heap
+corruption in some LAPACK paths (genuinely Rosetta — the MKL code is
+now correct per our analysis). Need real x86 Linux for full MKL verification.
+
+**Build: 100% clean (zero warnings), tests: 384/384 pass on macOS.**
+
+### Next Steps
+
+**Immediate:**
+- **Fix C++ bilinear scaling bug** — Docker debug session needed
+- **Migrate LAPACK backends to transpose helpers** — replace manual loops
+  in Accelerate, MKL, Eigen backends with `lapack_row_to_col`/`lapack_col_to_row`
+
+**IPP stubs (6 files, incremental performance):**
+- AffineOp_Ipp.cpp — rewrite with modern `ippiWarpAffineNearest`/`Linear` + spec init
+- ConvolutionOp_Ipp.cpp — rewrite with `ippiFilterBorder_*` (spec-based API)
+- MorphologicalOp_Ipp.cpp — rewrite with `ippiMorphInit_*` + spec-based API
+- MedianOp_Ipp.cpp — rewrite with `ippiFilterMedianBorder_*`
+- LUTOp_Ipp.cpp — update `ippiReduceBits` signature (added noise param)
+- UnaryArithmeticalOp_Ipp.cpp — write registrations for `ippiAddC/MulC/SubC/DivC`
+
+**Other work:**
+- **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
+  FileWriterPluginImageMagick.cpp for Quantum/Pixels API
+- **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
+- **OpenCL on macOS** — bundle Khronos cl2.hpp header for C++ bindings
+- **Linux benchmarks on real x86** — Docker Rosetta benchmarks are directionally
+  useful but not reliable for absolute numbers or MKL verification
+
+## Previous State (Session 28 — C++17 Phases 2-6: complete modernization)
 
 ### Session 28 Summary
 
