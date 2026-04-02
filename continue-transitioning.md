@@ -86,10 +86,38 @@
 - BinaryArithmeticalOp_Simd.cpp: unused lambda capture
 - DynVector.cpp: struct/class mismatch in explicit instantiation
 
-**Tests: 367/367 pass.** Build clean, zero warnings in Debug mode on macOS.
+**Accelerate vDSP arithmetic backends (UnaryArithmeticalOp + BinaryArithmeticalOp):**
+- `UnaryArithmeticalOp_Accelerate.cpp`: vDSP_vsadd/vsmul (add/sub/mul/div),
+  vDSP_vsq (sqr), vvsqrtf/vvlogf/vvexpf (sqrt/ln/exp), vDSP_vabs — for icl32f
+- `BinaryArithmeticalOp_Accelerate.cpp`: vDSP_vadd/vsub/vmul/vdiv + vabs — for icl32f
+- Scalar multiply benchmark: **5.7x speedup** over C++
+
+**Full BLAS Layer (Level 1/2/3) in BlasOps:**
+- Extended BlasOps with complete BLAS coverage via backend dispatch:
+  - Level 3: gemm (existing)
+  - Level 2: gemv (matrix-vector multiply) — new
+  - Level 1: vadd/vsub/vmul/vdiv/vsadd/vsmul (existing), dot/nrm2/asum/axpy/scal (new)
+- C++ fallbacks in BlasOps_Cpp.cpp, Accelerate backends (cblas + vDSP) in
+  BlasOps_Accelerate.cpp — both float and double
+- Cached inline dispatch: `BlasOps<T>::dot(a, b, n)` — function-local static
+  resolves backend on first call, ~1-2ns overhead thereafter
+- DynMatrix element-wise ops (operator+/-/*, elementwise_mult/div) wired through
+  BlasOps dispatch instead of std::transform
+
+**Accelerate-IPP mapping updated:**
+- Deep-dive of all Accelerate APIs (vImage, vDSP, vForce, BNNS, simd)
+- Tier 1-3 opportunities ranked by impact
+- See `claude.insights/accelerate-ipp-mapping.md`
+
+**Tests: 367/367 pass.** Build clean, zero warnings on macOS.
 
 ### Next Steps
 
+- **Wire BlasOps through codebase** — grep for hand-written dot products, norm
+  calculations, axpy-style accumulations, and matrix-vector multiplies across
+  ICLMath, ICLGeom, ICLCV, ICLFilter; replace with `BlasOps<T>::dot/nrm2/axpy/gemv`
+- **Image scaling Accelerate backend** — `vImageScale_Planar8/PlanarF` for
+  `scaledCopyChannelROI()` in Img.cpp (needs backend dispatch added first)
 - **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
   FileWriterPluginImageMagick.cpp for Quantum/Pixels API
 - **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
