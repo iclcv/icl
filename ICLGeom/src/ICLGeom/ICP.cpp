@@ -28,8 +28,6 @@ namespace icl{
       FixedMatrix<icl32f,4,4> mat;
       DynMatrix<icl64f> mat3(4,4);
       DynMatrix<icl32f> XsD(pointlist.size(),3),YsD(pointlist.size(),3);
-      DynMatrix<icl64f> *mm2 = 0;
-      DynMatrix<icl64f> *mm = 0;
       double eye[] = {1.0, 0.0, 0.0, 0.0,
                       0.0, 1.0, 0.0, 0.0,
                       0.0, 0.0, 1.0, 0.0,
@@ -67,13 +65,14 @@ namespace icl{
         //SHOW(translation);
         //SHOW(*(np[0]));
         //SHOW(*(lpointlist[0]));
-        for(unsigned int i=0;i<lpointlist.size();++i){
-          mm2 = lpointlist[i];
-          mm = new DynMatrix<icl64f>(1,3);
-          m_result.rotation.mult(*mm2,*mm);
-          (*mm) = (*mm)+m_result.translation;
-          lpointlist[i] = mm;
-          delete mm2;
+        // Transform each point: p' = R*p + t (in-place, no heap allocations)
+        {
+          DynMatrix<icl64f> tmp(1,3);
+          for(unsigned int i=0;i<lpointlist.size();++i){
+            m_result.rotation.mult(*lpointlist[i], tmp);
+            tmp += m_result.translation;
+            std::copy(tmp.begin(), tmp.end(), lpointlist[i]->begin());
+          }
         }
         //SHOW(*(lpointlist[0]));
         mat3.mult(mat2,temp);
@@ -115,24 +114,18 @@ namespace icl{
     }
 
     double ICP::error(const std::vector<DynMatrix<icl64f>* > &dat, const std::vector<DynMatrix<icl64f>* > &mod){
+      if(dat.empty() || mod.empty() || dat.size() != mod.size()) return -1.0;
       double error = 0.0;
-      double sumsq = 0.0;
-      DynMatrix<icl64f> d(1,3);
-      if(dat.size() == mod.size() && dat.size()>0 && mod.size()>0){
-        for(unsigned int j=0;j<dat.size();++j){
-          d = (*(dat.at(j)))-(*(mod.at(j)));
-          sumsq = 0.0;
-          for(unsigned k=0;k<d.rows();++k){
-            sumsq += d[k]*d[k];
-          }
-          error += std::sqrt(sumsq);
+      for(unsigned int j=0;j<dat.size();++j){
+        double sumsq = 0.0;
+        const auto &a = *dat[j], &b = *mod[j];
+        for(unsigned k=0;k<a.rows();++k){
+          double dk = a[k] - b[k];
+          sumsq += dk*dk;
         }
-        error = error/dat.size();
-      } else {
-        error = -1.0;
+        error += std::sqrt(sumsq);
       }
-      //std::cout << "error: " << error << std::endl;
-      return error;
+      return error / dat.size();
     }
   } // namespace geom
 }
