@@ -82,21 +82,37 @@ dispatch overhead (~2ns) exceeds the computation itself. The compiler auto-vecto
 these short loops at -O3. BlasOps is already wired where it matters (DynMatrix),
 and SimdCompat/Apple SIMD is already wired where it matters (FixedMatrix 4x4/2x2).
 
-**Tests: 379/379 pass (12 new).** Build clean on macOS.
+**Image scaling dispatched via ImgOps with Accelerate backend:**
+- `scaledCopyChannelROI` (the single worker for all image scaling) added to ImgOps
+  as `Op::scaledCopy` with C++ and Accelerate backends.
+- C++ implementation moved from Img.cpp to Img_Cpp.cpp (NN, bilinear, region-average).
+  Also replaced 8x `new[]`/`delete[]` in RA mode with `std::vector`.
+- New `Img_Accelerate.cpp`: vImageScale for icl8u (Planar8), icl16s (Planar16S),
+  icl32f (PlanarF). Uses Lanczos resampling (superior to bilinear/RA).
+  NN mode uses inline integer indexing. icl32s/icl64f fall back to C++.
+- CMakeLists.txt: `_Accelerate.cpp` exclusion added for ICLCore.
+- Benchmark results (640x480 single channel, -O3):
+
+  | Operation | Accelerate | C++ | Speedup |
+  |---|---|---|---|
+  | NN downscale 8u | 46 us | 134 us | **2.9x** |
+  | LIN downscale 8u | 47 us | 146 us | **3.1x** |
+  | RA downscale 8u | 49 us | 180 us | **3.7x** |
+  | LIN downscale 32f | 140 us | 167 us | **1.2x** |
+  | LIN upscale 8u | 52 us | 583 us | **11.2x** |
+
+**Tests: 384/384 pass (5 new scaling tests).** Build clean on macOS.
 
 ### Next Steps
 
-- **Image scaling Accelerate backend** — `vImageScale_Planar8/PlanarF` for
-  `scaledCopyChannelROI()` in Img.cpp (needs backend dispatch added first)
 - **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
   FileWriterPluginImageMagick.cpp for Quantum/Pixels API
 - **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
 - **OpenCL on macOS** — bundle Khronos cl2.hpp header for C++ bindings
 - **C++17 source pass** — std::filesystem, std::string_view, structured bindings
 - **Re-enable IPP backends** on Linux — update to modern oneAPI APIs
-- **Linux FixedMatrix benchmarks on real x86** — Docker Rosetta benchmarks are
-  directionally useful but not reliable for absolute numbers. Run on CI or
-  cloud x86 VM for definitive comparison.
+- **Linux benchmarks on real x86** — Docker Rosetta benchmarks are directionally
+  useful but not reliable for absolute numbers. Run on CI or cloud x86 VM.
 
 ## Previous State (Session 25 — NeighborhoodOp fix, dead IPP cleanup, Accelerate mapping)
 
