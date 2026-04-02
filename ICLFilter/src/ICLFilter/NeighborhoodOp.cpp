@@ -13,87 +13,87 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::filter {
-    bool NeighborhoodOp::prepare(Image &dst, const Image &src) {
-      return prepare(dst, src, src.getDepth());
+  bool NeighborhoodOp::prepare(Image &dst, const Image &src) {
+    return prepare(dst, src, src.getDepth());
+  }
+
+  bool NeighborhoodOp::prepare(Image &dst, const Image &src, depth d) {
+    Size oROIsize;
+    if (!computeROI(src.ptr(), m_oROIOffset, oROIsize)) return false;
+    return UnaryOp::prepare(dst, d,
+                            getClipToROI() ? oROIsize : src.getSize(),
+                            src.getFormat(), src.getChannels(),
+                            Rect(getClipToROI() ? Point::null : m_oROIOffset, oROIsize),
+                            src.getTime());
+  }
+
+  bool NeighborhoodOp::prepare (ImgBase **ppoDst, const ImgBase *poSrc) {
+    return prepare(ppoDst,poSrc,poSrc->getDepth());
+  }
+  bool NeighborhoodOp::prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepth) {
+    Size oROIsize;   //< to-be-used ROI size
+    if (!computeROI (poSrc, m_oROIOffset, oROIsize)) return false;
+
+    return UnaryOp::prepare (ppoDst, eDepth,
+                    getClipToROI() ? oROIsize : poSrc->getSize(),
+                    poSrc->getFormat(), poSrc->getChannels (),
+                    Rect (getClipToROI() ? Point::null : m_oROIOffset, oROIsize),
+                    poSrc->getTime());
+  }
+
+  bool NeighborhoodOp::computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize) {
+    Rect imageRect(Point::null,poSrc->getSize());
+    Rect imageROI = poSrc->getROI();
+
+    Rect newROI = imageROI & (imageRect+m_oAnchor-m_oMaskSize+Size(1,1));
+    oROIoffset = newROI.ul();
+    oROIsize = newROI.getSize();
+
+    return !!oROIsize.getDim();
+  }
+
+  void NeighborhoodOp::applyMT(const ImgBase *poSrc, ImgBase **ppoDst, unsigned int nThreads){
+    ICLASSERT_RETURN( nThreads > 0 );
+    ICLASSERT_RETURN( poSrc );
+    if(nThreads == 1){
+      apply(poSrc,ppoDst);
+      return;
     }
+    if(!prepare (ppoDst, poSrc)) return;
 
-    bool NeighborhoodOp::prepare(Image &dst, const Image &src, depth d) {
-      Size oROIsize;
-      if (!computeROI(src.ptr(), m_oROIOffset, oROIsize)) return false;
-      return UnaryOp::prepare(dst, d,
-                              getClipToROI() ? oROIsize : src.getSize(),
-                              src.getFormat(), src.getChannels(),
-                              Rect(getClipToROI() ? Point::null : m_oROIOffset, oROIsize),
-                              src.getTime());
+    bool ctr = getClipToROI();
+    bool co = getCheckOnly();
+
+    setClipToROI(false);
+    setCheckOnly(true);
+
+    const ImgBase *srcROIAdapted = poSrc->shallowCopy(Rect(getROIOffset(),(*ppoDst)->getROISize()));
+    const std::vector<ImgBase*> srcs = ImageSplitter::split(srcROIAdapted,nThreads);
+    std::vector<ImgBase*> dsts = ImageSplitter::split(*ppoDst,nThreads);
+    delete srcROIAdapted;
+
+    /*
+        DEBUG_LOG("src image:" << *poSrc);
+        for(int i=0;i<srcs.size();++i){
+        DEBUG_LOG("part " << i << " roi:" << srcs[i]->getROI());
+        }
+    */
+
+
+
+    std::vector<std::future<void>> futures;
+    for(unsigned int i=0;i<nThreads;i++){
+      ImgBase *s = srcs[i];
+      ImgBase *d = const_cast<ImgBase*>(dsts[i]);
+      futures.push_back(std::async(std::launch::async, [this,s,&d]{ apply(s, &d); }));
     }
+    for(auto &f : futures) f.get();
 
-    bool NeighborhoodOp::prepare (ImgBase **ppoDst, const ImgBase *poSrc) {
-      return prepare(ppoDst,poSrc,poSrc->getDepth());
-    }
-    bool NeighborhoodOp::prepare (ImgBase **ppoDst, const ImgBase *poSrc, depth eDepth) {
-      Size oROIsize;   //< to-be-used ROI size
-      if (!computeROI (poSrc, m_oROIOffset, oROIsize)) return false;
+    setClipToROI(ctr);
+    setCheckOnly(co);
 
-      return UnaryOp::prepare (ppoDst, eDepth,
-                      getClipToROI() ? oROIsize : poSrc->getSize(),
-                      poSrc->getFormat(), poSrc->getChannels (),
-                      Rect (getClipToROI() ? Point::null : m_oROIOffset, oROIsize),
-                      poSrc->getTime());
-    }
+    ImageSplitter::release(srcs);
+    ImageSplitter::release(dsts);
 
-    bool NeighborhoodOp::computeROI(const ImgBase *poSrc, Point& oROIoffset, Size& oROIsize) {
-      Rect imageRect(Point::null,poSrc->getSize());
-      Rect imageROI = poSrc->getROI();
-
-      Rect newROI = imageROI & (imageRect+m_oAnchor-m_oMaskSize+Size(1,1));
-      oROIoffset = newROI.ul();
-      oROIsize = newROI.getSize();
-
-      return !!oROIsize.getDim();
-    }
-
-    void NeighborhoodOp::applyMT(const ImgBase *poSrc, ImgBase **ppoDst, unsigned int nThreads){
-      ICLASSERT_RETURN( nThreads > 0 );
-      ICLASSERT_RETURN( poSrc );
-      if(nThreads == 1){
-        apply(poSrc,ppoDst);
-        return;
-      }
-      if(!prepare (ppoDst, poSrc)) return;
-
-      bool ctr = getClipToROI();
-      bool co = getCheckOnly();
-
-      setClipToROI(false);
-      setCheckOnly(true);
-
-      const ImgBase *srcROIAdapted = poSrc->shallowCopy(Rect(getROIOffset(),(*ppoDst)->getROISize()));
-      const std::vector<ImgBase*> srcs = ImageSplitter::split(srcROIAdapted,nThreads);
-      std::vector<ImgBase*> dsts = ImageSplitter::split(*ppoDst,nThreads);
-      delete srcROIAdapted;
-
-      /*
-          DEBUG_LOG("src image:" << *poSrc);
-          for(int i=0;i<srcs.size();++i){
-          DEBUG_LOG("part " << i << " roi:" << srcs[i]->getROI());
-          }
-      */
-
-
-
-      std::vector<std::future<void>> futures;
-      for(unsigned int i=0;i<nThreads;i++){
-        ImgBase *s = srcs[i];
-        ImgBase *d = const_cast<ImgBase*>(dsts[i]);
-        futures.push_back(std::async(std::launch::async, [this,s,&d]{ apply(s, &d); }));
-      }
-      for(auto &f : futures) f.get();
-
-      setClipToROI(ctr);
-      setCheckOnly(co);
-
-      ImageSplitter::release(srcs);
-      ImageSplitter::release(dsts);
-
-    }
+  }
   } // namespace icl::filter

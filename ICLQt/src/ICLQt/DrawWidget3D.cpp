@@ -17,62 +17,62 @@
 using namespace icl::utils;
 
 namespace icl::qt {
-    ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):
-      ICLDrawWidget(parent),m_linkedCallback(0){
+  ICLDrawWidget3D::ICLDrawWidget3D(QWidget *parent):
+    ICLDrawWidget(parent),m_linkedCallback(0){
+  }
+
+  void ICLDrawWidget3D::customPaintEvent(PaintEngine *e){
+    std::lock_guard<std::recursive_mutex> lock(m_linkMutex);
+    //m_oCommandMutex.lock();
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_DEPTH_TEST);
+
+    glMatrixMode(GL_PROJECTION);
+    gluPerspective( 45,  float(width())/height(), 0.1, 100);
+    glMatrixMode(GL_MODELVIEW);
+    gluLookAt(0, 0, -1,   // pos
+              0, 0,  0,   // view center point
+              1, 0,  0 );// up vector
+
+    if(m_linkedCallback){
+      m_linkedCallback->draw(this);
     }
 
-    void ICLDrawWidget3D::customPaintEvent(PaintEngine *e){
-      std::lock_guard<std::recursive_mutex> lock(m_linkMutex);
-      //m_oCommandMutex.lock();
+    glPopAttrib();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    //m_oCommandMutex.unlock();
 
-      glClear(GL_DEPTH_BUFFER_BIT);
-      glPushAttrib(GL_ALL_ATTRIB_BITS);
-      glMatrixMode(GL_PROJECTION);
-      glPushMatrix();
-      glLoadIdentity();
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-      glLoadIdentity();
+    ICLDrawWidget::customPaintEvent(e);
+  }
 
-      glEnable(GL_LIGHTING);
-      glEnable(GL_COLOR_MATERIAL);
-      glEnable(GL_DEPTH_TEST);
+  void ICLDrawWidget3D::link(ICLDrawWidget3D::GLCallback *cb){
+    std::lock_guard<std::recursive_mutex> lock(m_linkMutex);
 
-      glMatrixMode(GL_PROJECTION);
-      gluPerspective( 45,  float(width())/height(), 0.1, 100);
-      glMatrixMode(GL_MODELVIEW);
-      gluLookAt(0, 0, -1,   // pos
-                0, 0,  0,   // view center point
-                1, 0,  0 );// up vector
+    if(cb == m_linkedCallback) return;
 
-      if(m_linkedCallback){
-        m_linkedCallback->draw(this);
-      }
-
-      glPopAttrib();
-      glMatrixMode(GL_PROJECTION);
-      glPopMatrix();
-      glMatrixMode(GL_MODELVIEW);
-      glPopMatrix();
-      //m_oCommandMutex.unlock();
-
-      ICLDrawWidget::customPaintEvent(e);
+    if(m_linkedCallback){
+      m_linkedCallback->unlink(this);
     }
 
-    void ICLDrawWidget3D::link(ICLDrawWidget3D::GLCallback *cb){
-      std::lock_guard<std::recursive_mutex> lock(m_linkMutex);
+    m_linkedCallback = cb;
 
-      if(cb == m_linkedCallback) return;
-
-      if(m_linkedCallback){
-        m_linkedCallback->unlink(this);
-      }
-
-      m_linkedCallback = cb;
-
-      if(m_linkedCallback){
-        m_linkedCallback->link(this);
-      }
+    if(m_linkedCallback){
+      m_linkedCallback->link(this);
     }
+  }
 
   } // namespace icl::qt

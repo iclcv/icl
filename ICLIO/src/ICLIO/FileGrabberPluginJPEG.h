@@ -8,10 +8,10 @@
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl::io {
-    /// Plugin class to read "jpeg" and "jpg" images \ingroup FILEIO_G
-    class ICLIO_API FileGrabberPluginJPEG : public FileGrabberPlugin {
-      public:
-      /// grab implementation
-      virtual void grab(utils::File &file, core::ImgBase **dest);
-    };
+  /// Plugin class to read "jpeg" and "jpg" images \ingroup FILEIO_G
+  class ICLIO_API FileGrabberPluginJPEG : public FileGrabberPlugin {
+    public:
+    /// grab implementation
+    virtual void grab(utils::File &file, core::ImgBase **dest);
+  };
   } // namespace icl::io

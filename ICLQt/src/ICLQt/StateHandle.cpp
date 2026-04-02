@@ -6,25 +6,25 @@
 #include <ICLQt/ThreadedUpdatableTextView.h>
 
 namespace icl::qt {
-    void StateHandle::append(const std::string &text){
-      this->text()->appendTextFromOtherThread(text);
-    }
+  void StateHandle::append(const std::string &text){
+    this->text()->appendTextFromOtherThread(text);
+  }
 
-    void StateHandle::clear(){
-      text()->clearTextFromOtherThread();
-    }
+  void StateHandle::clear(){
+    text()->clearTextFromOtherThread();
+  }
 
-    void StateHandle::setMaxLen(int maxLen){
-      this->maxLen = maxLen;
-      removeOldLines();
-    }
+  void StateHandle::setMaxLen(int maxLen){
+    this->maxLen = maxLen;
+    removeOldLines();
+  }
 
-    int StateHandle::getMaxLen() const{
-      return maxLen;
-    }
+  int StateHandle::getMaxLen() const{
+    return maxLen;
+  }
 
-    void StateHandle::removeOldLines(){
-      // todo!
-    }
+  void StateHandle::removeOldLines(){
+    // todo!
+  }
 
   } // namespace icl::qt

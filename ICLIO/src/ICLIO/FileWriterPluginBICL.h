@@ -10,19 +10,19 @@
 #include <mutex>
 
 namespace icl::io {
-    /// Writer plugin to write binary icl image (extension bicl / bicl.gz)
-    /** The bicl-core::format does also support saving image meta data */
-    class ICLIO_API FileWriterPluginBICL : public FileWriterPlugin{
-      public:
+  /// Writer plugin to write binary icl image (extension bicl / bicl.gz)
+  /** The bicl-core::format does also support saving image meta data */
+  class ICLIO_API FileWriterPluginBICL : public FileWriterPlugin{
+    public:
 
-      FileWriterPluginBICL(const std::string &compressionType="none",
-                           const std::string &quality="none");
+    FileWriterPluginBICL(const std::string &compressionType="none",
+                         const std::string &quality="none");
 
-      /// write implementation
-      virtual void write(utils::File &file, const core::ImgBase *image);
+    /// write implementation
+    virtual void write(utils::File &file, const core::ImgBase *image);
 
-      private:
-      ImageCompressor compressor;
-      std::recursive_mutex mutex;
-    };
+    private:
+    ImageCompressor compressor;
+    std::recursive_mutex mutex;
+  };
   } // namespace icl::io

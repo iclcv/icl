@@ -16,27 +16,27 @@
 #include <ICLUtils/File.h>
 #include <mutex>
 namespace icl::io {
-    /// opencv base grabber implementation for movie files \ingroup MOVIE_FILE_G
-    class ICLIO_API OpenCVVideoGrabber : public Grabber{
-        struct Data; //!< pimpl type
-        Data *data; //!< pimpl pointer
-        std::recursive_mutex mutex; //! locking
-        bool updating; //! used while updating configurable
+  /// opencv base grabber implementation for movie files \ingroup MOVIE_FILE_G
+  class ICLIO_API OpenCVVideoGrabber : public Grabber{
+      struct Data; //!< pimpl type
+      Data *data; //!< pimpl pointer
+      std::recursive_mutex mutex; //! locking
+      bool updating; //! used while updating configurable
 
-        /// callback for changed configurable properties
-        void processPropertyChange(const utils::Configurable::Property &prop);
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
 
-      public:
-        /// grab function grabs an image (destination image is adapted on demand)
-        /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
-        virtual const core::ImgBase *acquireDisplay();
+    public:
+      /// grab function grabs an image (destination image is adapted on demand)
+      /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
+      virtual const core::ImgBase *acquireDisplay();
 
-        /// Constructor creates a new OpenCVVideoGrabber instance
-        /** @param fileName name of file to use */
-        OpenCVVideoGrabber(const std::string &fileName);
+      /// Constructor creates a new OpenCVVideoGrabber instance
+      /** @param fileName name of file to use */
+      OpenCVVideoGrabber(const std::string &fileName);
 
-        /// Destructor
-        ~OpenCVVideoGrabber();
-    };
+      /// Destructor
+      ~OpenCVVideoGrabber();
+  };
 
   } // namespace icl::io

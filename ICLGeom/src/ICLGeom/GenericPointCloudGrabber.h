@@ -9,67 +9,67 @@
 #include <ICLUtils/Configurable.h>
 
 namespace icl::geom {
-    /// Generic interface for PointCloud sources
-    class ICLGeom_API GenericPointCloudGrabber : public PointCloudGrabber {
-      struct Data;
-      Data *m_data;
+  /// Generic interface for PointCloud sources
+  class ICLGeom_API GenericPointCloudGrabber : public PointCloudGrabber {
+    struct Data;
+    Data *m_data;
 
-      public:
+    public:
 
-      /// Empty constructor (creates a null instance)
-      GenericPointCloudGrabber();
+    /// Empty constructor (creates a null instance)
+    GenericPointCloudGrabber();
 
-      /// Constructor with initialization
-      /** Possible plugins:
-          * <b>dcam</b> device description is then: "depth-cam-type,depth-cam-id,depth-cam-file"
-            * optionally ",color-cam-type,color-cam-id,color-cam-file"
-            * an additional comma-seperated token "raw" can be passed to make the grabber
-              compatible to Kinect11BitRaw depth input images
-          * <b>file</b> filename pattern (not yet implemented)
-          * <b>rsb</b> [rsb-transport-list:]rsb-scope-list[,depth-cam-filename[,color-cam-filename]]
-      */
-      GenericPointCloudGrabber(const std::string &sourceType, const std::string &srcDescription);
+    /// Constructor with initialization
+    /** Possible plugins:
+        * <b>dcam</b> device description is then: "depth-cam-type,depth-cam-id,depth-cam-file"
+          * optionally ",color-cam-type,color-cam-id,color-cam-file"
+          * an additional comma-seperated token "raw" can be passed to make the grabber
+            compatible to Kinect11BitRaw depth input images
+        * <b>file</b> filename pattern (not yet implemented)
+        * <b>rsb</b> [rsb-transport-list:]rsb-scope-list[,depth-cam-filename[,color-cam-filename]]
+    */
+    GenericPointCloudGrabber(const std::string &sourceType, const std::string &srcDescription);
 
-      /// direct initialization from program argument
-      /** Prog-arg is assumed to have 2 sub-args */
-      GenericPointCloudGrabber(const utils::ProgArg &pa);
+    /// direct initialization from program argument
+    /** Prog-arg is assumed to have 2 sub-args */
+    GenericPointCloudGrabber(const utils::ProgArg &pa);
 
-      /// destructor
-      ~GenericPointCloudGrabber();
+    /// destructor
+    ~GenericPointCloudGrabber();
 
-      /// deferred intialization
-      void init(const std::string &sourceType, const std::string &srcDescription);
+    /// deferred intialization
+    void init(const std::string &sourceType, const std::string &srcDescription);
 
-      /// re-initializes the current device
-      /** The backend can choose to throw an exception. The syntax
-          for reinitialization is defined by each backend individually */
-      void reinit(const std::string &description);
+    /// re-initializes the current device
+    /** The backend can choose to throw an exception. The syntax
+        for reinitialization is defined by each backend individually */
+    void reinit(const std::string &description);
 
-      /// forwards call to current backend
-      Camera getDepthCamera() const;
+    /// forwards call to current backend
+    Camera getDepthCamera() const;
 
-      /// forwards call to current backend
-      Camera getColorCamera() const;
+    /// forwards call to current backend
+    Camera getColorCamera() const;
 
-      /// forwards call to current backend
-      void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T);
+    /// forwards call to current backend
+    void setCameraWorldFrame(const math::FixedMatrix<float,4,4> &T);
 
 
-      /// deferred initialization from ProgArg (most common perhaps)
-      /** Prog-arg is assumed to have 2 sub-args */
-      void init(const utils::ProgArg &pa);
+    /// deferred initialization from ProgArg (most common perhaps)
+    /** Prog-arg is assumed to have 2 sub-args */
+    void init(const utils::ProgArg &pa);
 
-      /// not initialized yet?
-      bool isNull() const;
+    /// not initialized yet?
+    bool isNull() const;
 
-      /// fills the given point cloud with grabbed information
-      virtual void grab(PointCloudObjectBase &dst);
+    /// fills the given point cloud with grabbed information
+    virtual void grab(PointCloudObjectBase &dst);
 
-      /// returns the last grabbed point cloud's underlying depth image (if available)
-      virtual const core::Img32f *getDepthDisplay() const;
+    /// returns the last grabbed point cloud's underlying depth image (if available)
+    virtual const core::Img32f *getDepthDisplay() const;
 
-      /// returns the last grabbed point cloud's underlying depth image (if available)
-      virtual const core::Img8u *getColorDisplay() const;
+    /// returns the last grabbed point cloud's underlying depth image (if available)
+    virtual const core::Img8u *getColorDisplay() const;
 
-    };
+  };
   } // namespace icl::geom

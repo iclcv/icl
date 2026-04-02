@@ -13,7 +13,7 @@
 
 namespace icl::utils {
 	    /// Base class for an OpenCL Exception
-    class CLException: public ICLException {
+  class CLException: public ICLException {
 		public:
 			static std::string getMessage(const int errorCode, const std::string& message){
 				std::stringstream sstr;
@@ -23,23 +23,23 @@ namespace icl::utils {
 			CLException(const std::string &msg) noexcept : ICLException(msg) {}
 		};
 		/// Class for an OpenCL Exception during initialization
-    class CLInitException: public CLException {
+  class CLInitException: public CLException {
 		public:
 			CLInitException(const std::string &msg) noexcept : CLException(msg) {}
 		};
 		/// Class for an OpenCL Exception during kernel compiling
-    class CLBuildException: public CLException {
+  class CLBuildException: public CLException {
 		public:
 			CLBuildException(const std::string &msg) noexcept : CLException(msg) {}
 		};
 		/// Class for an OpenCL Exception associated with buffers
-    class CLBufferException: public CLException {
+  class CLBufferException: public CLException {
 		public:
 			CLBufferException(const std::string &msg) noexcept : CLException(msg) {}
 		};
 
 		/// Class for an OpenCL Exception associated with kernels
-    class CLKernelException: public CLException {
+  class CLKernelException: public CLException {
 		public:
 			CLKernelException(const std::string &msg) noexcept : CLException(msg) {}
 		};

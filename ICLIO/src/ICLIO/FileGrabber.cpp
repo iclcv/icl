@@ -41,138 +41,138 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-    namespace{
-      struct FileListEndedException : public ICLException{
-        inline FileListEndedException(const std::string &what):ICLException(what){}
-      };
-    }
-
-    struct FileGrabber::Data{
-        /// internal file list
-        FileList oFileList;
-
-        /// current file list index
-        int iCurrIdx;
-
-        /// buffer for buffered mode
-        std::vector<ImgBase*> vecImageBuffer;
-
-        /// flag whether to pre-buffer images or not
-        bool bBufferImages;
-
-        /// indicates whether to jump to next frame automatically
-        bool bAutoNext;
-
-        /// if true, the grabber grabs all given images in a loop, otherwise it ends with an execption
-        bool loop;
-
-        /// A special buffer image
-        ImgBase *poBufferImage;
-
-        /// forced plugin name
-        std::string forcedPluginType;
-
-        /// for time stamp based image acquisition
-        bool useTimeStamps;
-
-        /// also for time stamp based image acquisition
-        Time referenceTime;
-
-        /// also for time stamp based image acquisition
-        Time referenceTimeReal;
-
+  namespace{
+    struct FileListEndedException : public ICLException{
+      inline FileListEndedException(const std::string &what):ICLException(what){}
     };
+  }
 
-    static FileGrabberPlugin *find_plugin(const std::string &type){
-      static std::map<std::string,std::shared_ptr<FileGrabberPlugin> > plugins;
-      if(!plugins.size()){
-        plugins[".ppm"].reset(new FileGrabberPluginPNM);
-        plugins[".pgm"].reset(new FileGrabberPluginPNM);
-        plugins[".pnm"].reset(new FileGrabberPluginPNM);
-        plugins[".icl"].reset(new FileGrabberPluginPNM);
-        plugins[".csv"].reset(new FileGrabberPluginCSV);
-        plugins[".bicl"].reset(new FileGrabberPluginBICL);
-        plugins[".rle1"].reset(new FileGrabberPluginBICL);
-        plugins[".rle4"].reset(new FileGrabberPluginBICL);
-        plugins[".rle6"].reset(new FileGrabberPluginBICL);
-        plugins[".rle8"].reset(new FileGrabberPluginBICL);
+  struct FileGrabber::Data{
+      /// internal file list
+      FileList oFileList;
+
+      /// current file list index
+      int iCurrIdx;
+
+      /// buffer for buffered mode
+      std::vector<ImgBase*> vecImageBuffer;
+
+      /// flag whether to pre-buffer images or not
+      bool bBufferImages;
+
+      /// indicates whether to jump to next frame automatically
+      bool bAutoNext;
+
+      /// if true, the grabber grabs all given images in a loop, otherwise it ends with an execption
+      bool loop;
+
+      /// A special buffer image
+      ImgBase *poBufferImage;
+
+      /// forced plugin name
+      std::string forcedPluginType;
+
+      /// for time stamp based image acquisition
+      bool useTimeStamps;
+
+      /// also for time stamp based image acquisition
+      Time referenceTime;
+
+      /// also for time stamp based image acquisition
+      Time referenceTimeReal;
+
+  };
+
+  static FileGrabberPlugin *find_plugin(const std::string &type){
+    static std::map<std::string,std::shared_ptr<FileGrabberPlugin> > plugins;
+    if(!plugins.size()){
+      plugins[".ppm"].reset(new FileGrabberPluginPNM);
+      plugins[".pgm"].reset(new FileGrabberPluginPNM);
+      plugins[".pnm"].reset(new FileGrabberPluginPNM);
+      plugins[".icl"].reset(new FileGrabberPluginPNM);
+      plugins[".csv"].reset(new FileGrabberPluginCSV);
+      plugins[".bicl"].reset(new FileGrabberPluginBICL);
+      plugins[".rle1"].reset(new FileGrabberPluginBICL);
+      plugins[".rle4"].reset(new FileGrabberPluginBICL);
+      plugins[".rle6"].reset(new FileGrabberPluginBICL);
+      plugins[".rle8"].reset(new FileGrabberPluginBICL);
 
 #ifdef ICL_HAVE_LIBJPEG
-        plugins[".jpg"].reset(new FileGrabberPluginJPEG);
-        plugins[".jpeg"].reset(new FileGrabberPluginJPEG);
-        plugins[".jicl"].reset(new FileGrabberPluginBICL);
+      plugins[".jpg"].reset(new FileGrabberPluginJPEG);
+      plugins[".jpeg"].reset(new FileGrabberPluginJPEG);
+      plugins[".jicl"].reset(new FileGrabberPluginBICL);
 #elif ICL_HAVE_IMAGEMAGICK
-        plugins[".jpg"].reset(new FileGrabberPluginImageMagick);
-        plugins[".jpeg"].reset(new FileGrabberPluginImageMagick);
+      plugins[".jpg"].reset(new FileGrabberPluginImageMagick);
+      plugins[".jpeg"].reset(new FileGrabberPluginImageMagick);
 #endif
 
 #ifdef ICL_HAVE_LIBZ
-        plugins[".ppm.gz"].reset(new FileGrabberPluginPNM);
-        plugins[".pgm.gz"].reset(new FileGrabberPluginPNM);
-        plugins[".pnm.gz"].reset(new FileGrabberPluginPNM);
-        plugins[".icl.gz"].reset(new FileGrabberPluginPNM);
-        plugins[".csv.gz"].reset(new FileGrabberPluginCSV);
-        plugins[".bicl.gz"].reset(new FileGrabberPluginBICL);
-        plugins[".rle1.gz"].reset(new FileGrabberPluginBICL);
-        plugins[".rle4.gz"].reset(new FileGrabberPluginBICL);
-        plugins[".rle6.gz"].reset(new FileGrabberPluginBICL);
-        plugins[".rle8.gz"].reset(new FileGrabberPluginBICL);
+      plugins[".ppm.gz"].reset(new FileGrabberPluginPNM);
+      plugins[".pgm.gz"].reset(new FileGrabberPluginPNM);
+      plugins[".pnm.gz"].reset(new FileGrabberPluginPNM);
+      plugins[".icl.gz"].reset(new FileGrabberPluginPNM);
+      plugins[".csv.gz"].reset(new FileGrabberPluginCSV);
+      plugins[".bicl.gz"].reset(new FileGrabberPluginBICL);
+      plugins[".rle1.gz"].reset(new FileGrabberPluginBICL);
+      plugins[".rle4.gz"].reset(new FileGrabberPluginBICL);
+      plugins[".rle6.gz"].reset(new FileGrabberPluginBICL);
+      plugins[".rle8.gz"].reset(new FileGrabberPluginBICL);
 #endif
 
 #ifdef ICL_HAVE_LIBPNG
-        plugins[".png"].reset(new FileGrabberPluginPNG);
+      plugins[".png"].reset(new FileGrabberPluginPNG);
 #endif
 
 #ifdef ICL_HAVE_IMAGEMAGICK
-        const char *imageMagickFormats[] = {
-  #ifndef ICL_HAVE_LIBPNG
-          "png",
-  #endif
-          "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
-          "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
-          "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
-          "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",
-          "mpc","msl","mtv","mvg","palm","pbm","pcd","pcds","pcl","pcx","pdb",
-          "pfa","pfb","picon","pict","pix","ps","ps2","ps3","psd","ptif","pwp",
-          "rad","rgb","pgba","rla","rle","sct","sfw","sgi","shtml","sun","svg",
-          "tga","tiff","tim","ttf","txt","uil","uyuv","vicar","viff","wbmp",
-          "wmf","wpg","xbm","xcf","xpm","xwd","ydbcr","ycbcra","yuv",0
-        };
-
-        for(const char **pc=imageMagickFormats;*pc;++pc){
-          plugins[std::string(".")+*pc].reset(new FileGrabberPluginImageMagick);
-        }
+      const char *imageMagickFormats[] = {
+#ifndef ICL_HAVE_LIBPNG
+        "png",
 #endif
-        // add additional plugins to the map
+        "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
+        "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
+        "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
+        "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",
+        "mpc","msl","mtv","mvg","palm","pbm","pcd","pcds","pcl","pcx","pdb",
+        "pfa","pfb","picon","pict","pix","ps","ps2","ps3","psd","ptif","pwp",
+        "rad","rgb","pgba","rla","rle","sct","sfw","sgi","shtml","sun","svg",
+        "tga","tiff","tim","ttf","txt","uil","uyuv","vicar","viff","wbmp",
+        "wmf","wpg","xbm","xcf","xpm","xwd","ydbcr","ycbcra","yuv",0
+      };
+
+      for(const char **pc=imageMagickFormats;*pc;++pc){
+        plugins[std::string(".")+*pc].reset(new FileGrabberPluginImageMagick);
       }
-      std::string lowerType = type;
-      for(unsigned int i=0;i<lowerType.length();++i){
-        lowerType[i] = tolower(lowerType[i]);
-      }
-      std::map<std::string,std::shared_ptr<FileGrabberPlugin> >::iterator it = plugins.find(lowerType);
-      if(it == plugins.end()) return 0;
-      else return it->second.get();
+#endif
+      // add additional plugins to the map
     }
-
-    FileGrabber::FileGrabber()
-      :  m_data(new Data), m_propertyMutex(), m_updatingProperties(false)
-    {
-      m_data->iCurrIdx  = 0;
-      m_data->bBufferImages = false;
-      m_data->bAutoNext = true;
-      m_data->loop = true;
-      m_data->poBufferImage = 0;
-      m_data->useTimeStamps = false;
-      addProperties();
+    std::string lowerType = type;
+    for(unsigned int i=0;i<lowerType.length();++i){
+      lowerType[i] = tolower(lowerType[i]);
     }
+    std::map<std::string,std::shared_ptr<FileGrabberPlugin> >::iterator it = plugins.find(lowerType);
+    if(it == plugins.end()) return 0;
+    else return it->second.get();
+  }
 
-    FileGrabber::FileGrabber(const std::string &pattern,
-                                     bool buffer,
-                                     bool ignoreDesired)
-      : m_data(new Data), m_propertyMutex(), m_updatingProperties(false)
-    {
+  FileGrabber::FileGrabber()
+    :  m_data(new Data), m_propertyMutex(), m_updatingProperties(false)
+  {
+    m_data->iCurrIdx  = 0;
+    m_data->bBufferImages = false;
+    m_data->bAutoNext = true;
+    m_data->loop = true;
+    m_data->poBufferImage = 0;
+    m_data->useTimeStamps = false;
+    addProperties();
+  }
 
-      if(File(pattern).isDirectory()){
+  FileGrabber::FileGrabber(const std::string &pattern,
+                                   bool buffer,
+                                   bool ignoreDesired)
+    : m_data(new Data), m_propertyMutex(), m_updatingProperties(false)
+  {
+
+    if(File(pattern).isDirectory()){
 #if defined(ICL_SYSTEM_WINDOWS) && defined(ICL_HAVE_QT)
 		  std::vector<std::string> files;
 		 QDir dir(pattern.c_str());
@@ -185,24 +185,24 @@ namespace icl::io {
 		 }
 		 m_data->oFileList = FileList(files);
 #else
-        m_data->oFileList = pattern+"/*";
+      m_data->oFileList = pattern+"/*";
 #endif
-        if(!m_data->oFileList.size()){
-          throw FileNotFoundException(pattern);
+      if(!m_data->oFileList.size()){
+        throw FileNotFoundException(pattern);
+      }
+      std::vector<std::string> readable;
+      for(int i=0;i<m_data->oFileList.size();++i){
+        File f(m_data->oFileList[i]);
+        if(find_plugin(f.getSuffix())){
+          readable.push_back(m_data->oFileList[i]);
         }
-        std::vector<std::string> readable;
-        for(int i=0;i<m_data->oFileList.size();++i){
-          File f(m_data->oFileList[i]);
-          if(find_plugin(f.getSuffix())){
-            readable.push_back(m_data->oFileList[i]);
-          }
-        }
-        if(readable.size()){
-          m_data->oFileList = FileList(readable);
-        }else{
-          throw FileNotFoundException("didn't find any file whose format is supported");
-        }
+      }
+      if(readable.size()){
+        m_data->oFileList = FileList(readable);
       }else{
+        throw FileNotFoundException("didn't find any file whose format is supported");
+      }
+    }else{
 #ifdef ICL_SYSTEM_WINDOWS
 		  if (!File(pattern).exists()) {
 			  throw ICLException("Error: file globbing is thus far not supported under windows. You can, however use a directory-name if possible");

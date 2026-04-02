@@ -5,5 +5,5 @@
 #include <ICLCV/RegionPCAInfo.h>
 
 namespace icl::cv {
-    const RegionPCAInfo RegionPCAInfo::null;
+  const RegionPCAInfo RegionPCAInfo::null;
   } // namespace icl::cv

@@ -5,9 +5,9 @@
 #include <ICLQt/PlotHandle.h>
 
 namespace icl::qt {
-    void PlotHandle::render(){
-      (**this)->updateFromOtherThread();
-    }
+  void PlotHandle::render(){
+    (**this)->updateFromOtherThread();
+  }
 
-    /// todo: more convecience methods
+  /// todo: more convecience methods
   } // namespace icl::qt

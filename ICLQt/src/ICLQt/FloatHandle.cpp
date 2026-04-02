@@ -8,10 +8,10 @@
 
 
 namespace icl::qt {
-    void FloatHandle::operator=(float f){
-      (**this)->setText(QString::number(f));
-    }
-    float FloatHandle::getValue() const{
-      return static_cast<float>(atof((**this)->text().toLatin1().data()));
-    }
+  void FloatHandle::operator=(float f){
+    (**this)->setText(QString::number(f));
+  }
+  float FloatHandle::getValue() const{
+    return static_cast<float>(atof((**this)->text().toLatin1().data()));
+  }
   } // namespace icl::qt

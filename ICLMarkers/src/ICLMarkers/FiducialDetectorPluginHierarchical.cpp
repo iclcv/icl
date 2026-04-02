@@ -11,26 +11,26 @@ using namespace icl::core;
 using namespace icl::cv;
 
 namespace icl::markers {
-    struct FiducialDetectorPluginHierarchical::Data{
-      RegionDetector rd;
-      std::vector<ImageRegion> results;
-    };
+  struct FiducialDetectorPluginHierarchical::Data{
+    RegionDetector rd;
+    std::vector<ImageRegion> results;
+  };
 
 
-    FiducialDetectorPluginHierarchical::FiducialDetectorPluginHierarchical():data(new Data){
-      data->rd.setCreateGraph(true);
-      data->rd.setConstraints(10,1000000,0,255);
-      data->rd.deactivateProperty("create region graph");
-      addChildConfigurable(&data->rd,"regions");
-    }
+  FiducialDetectorPluginHierarchical::FiducialDetectorPluginHierarchical():data(new Data){
+    data->rd.setCreateGraph(true);
+    data->rd.setConstraints(10,1000000,0,255);
+    data->rd.deactivateProperty("create region graph");
+    addChildConfigurable(&data->rd,"regions");
+  }
 
-    FiducialDetectorPluginHierarchical::~FiducialDetectorPluginHierarchical(){
-      delete data;
-    }
+  FiducialDetectorPluginHierarchical::~FiducialDetectorPluginHierarchical(){
+    delete data;
+  }
 
-    void FiducialDetectorPluginHierarchical::detect(std::vector<FiducialImpl*> &dst, const Img8u &image){
-      detect(dst,data->rd.detect(&image));
-    }
+  void FiducialDetectorPluginHierarchical::detect(std::vector<FiducialImpl*> &dst, const Img8u &image){
+    detect(dst,data->rd.detect(&image));
+  }
 
 
   } // namespace icl::markers

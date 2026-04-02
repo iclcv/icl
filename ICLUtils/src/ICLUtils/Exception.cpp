@@ -15,10 +15,10 @@
 
 
 namespace icl::utils {
-    void ICLException::report() {
-       FUNCTION_LOG("");
+  void ICLException::report() {
+     FUNCTION_LOG("");
 
-       std::cout << "ICL Exception: " << what() << std::endl;
-    }
+     std::cout << "ICL Exception: " << what() << std::endl;
+  }
 
   } // namespace icl::utils

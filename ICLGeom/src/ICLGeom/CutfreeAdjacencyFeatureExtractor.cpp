@@ -32,88 +32,88 @@
 #include <ICLGeom/PlanarRansacEstimator.h>
 
 namespace icl::geom {
-    struct CutfreeAdjacencyFeatureExtractor::Data {
+  struct CutfreeAdjacencyFeatureExtractor::Data {
 	    Data(Mode mode) {
-        if(mode==BEST || mode==GPU){
-          ransac=new PlanarRansacEstimator(PlanarRansacEstimator::GPU);
-        }else{
-          ransac=new PlanarRansacEstimator(PlanarRansacEstimator::CPU);
-        }
+      if(mode==BEST || mode==GPU){
+        ransac=new PlanarRansacEstimator(PlanarRansacEstimator::GPU);
+      }else{
+        ransac=new PlanarRansacEstimator(PlanarRansacEstimator::CPU);
+      }
 	    }
 
 	    ~Data() {
 	    }
 
-      PlanarRansacEstimator* ransac;
-    };
+    PlanarRansacEstimator* ransac;
+  };
 
 
-    CutfreeAdjacencyFeatureExtractor::CutfreeAdjacencyFeatureExtractor(Mode mode) :
+  CutfreeAdjacencyFeatureExtractor::CutfreeAdjacencyFeatureExtractor(Mode mode) :
 	    m_data(new Data(mode)) {
-    }
+  }
 
 
-    CutfreeAdjacencyFeatureExtractor::~CutfreeAdjacencyFeatureExtractor() {
+  CutfreeAdjacencyFeatureExtractor::~CutfreeAdjacencyFeatureExtractor() {
 	    delete m_data;
+  }
+
+
+  math::DynMatrixBase<bool> CutfreeAdjacencyFeatureExtractor::apply(core::DataSegment<float,4> &xyzh,
+              std::vector<std::vector<int> > &surfaces, math::DynMatrixBase<bool> &testMatrix, float euclideanDistance,
+              int passes, int tolerance, core::Img32s labelImage){
+    math::DynMatrixBase<bool> cutfreeMatrix(testMatrix);
+    for(unsigned int x=0; x<cutfreeMatrix.rows(); x++){
+      cutfreeMatrix(x,x)=false;
     }
+    math::DynMatrix<PlanarRansacEstimator::Result> result = m_data->ransac->apply(xyzh, surfaces,
+                  cutfreeMatrix, euclideanDistance, passes, tolerance,
+                  PlanarRansacEstimator::ON_ONE_SIDE, labelImage);
 
-
-    math::DynMatrixBase<bool> CutfreeAdjacencyFeatureExtractor::apply(core::DataSegment<float,4> &xyzh,
-                std::vector<std::vector<int> > &surfaces, math::DynMatrixBase<bool> &testMatrix, float euclideanDistance,
-                int passes, int tolerance, core::Img32s labelImage){
-      math::DynMatrixBase<bool> cutfreeMatrix(testMatrix);
-      for(unsigned int x=0; x<cutfreeMatrix.rows(); x++){
-        cutfreeMatrix(x,x)=false;
-      }
-      math::DynMatrix<PlanarRansacEstimator::Result> result = m_data->ransac->apply(xyzh, surfaces,
-                    cutfreeMatrix, euclideanDistance, passes, tolerance,
-                    PlanarRansacEstimator::ON_ONE_SIDE, labelImage);
-
-      for(unsigned int x=0; x<result.rows(); x++){
-        for(unsigned int y=0; y<result.cols(); y++){
-          if(result(x,y).nacc>=result(x,y).acc){
-            cutfreeMatrix(x,y)=false;
-            cutfreeMatrix(y,x)=false;
-          }
+    for(unsigned int x=0; x<result.rows(); x++){
+      for(unsigned int y=0; y<result.cols(); y++){
+        if(result(x,y).nacc>=result(x,y).acc){
+          cutfreeMatrix(x,y)=false;
+          cutfreeMatrix(y,x)=false;
         }
       }
-      return cutfreeMatrix;
     }
+    return cutfreeMatrix;
+  }
 
 
-    math::DynMatrixBase<bool> CutfreeAdjacencyFeatureExtractor::apply(core::DataSegment<float,4> &xyzh,
-                std::vector<std::vector<int> > &surfaces, math::DynMatrixBase<bool> &testMatrix, float euclideanDistance,
-                int passes, int tolerance, core::Img32s labelImage,
-                std::vector<SurfaceFeatureExtractor::SurfaceFeature> feature, float minAngle){
-      math::DynMatrixBase<bool> cutfreeMatrix(testMatrix);
-      for(unsigned int x=0; x<cutfreeMatrix.rows(); x++){
-        cutfreeMatrix(x,x)=false;
-        for(unsigned int y=0; y<cutfreeMatrix.cols(); y++){
-          if(cutfreeMatrix(x,y)==true || cutfreeMatrix(y,x)==true){
-            Vec n1=feature[x].meanNormal;
-            Vec n2=feature[y].meanNormal;
-            float a1 = (n1[0] * n2[0]+ n1[1] * n2[1]+ n1[2] * n2[2]);
+  math::DynMatrixBase<bool> CutfreeAdjacencyFeatureExtractor::apply(core::DataSegment<float,4> &xyzh,
+              std::vector<std::vector<int> > &surfaces, math::DynMatrixBase<bool> &testMatrix, float euclideanDistance,
+              int passes, int tolerance, core::Img32s labelImage,
+              std::vector<SurfaceFeatureExtractor::SurfaceFeature> feature, float minAngle){
+    math::DynMatrixBase<bool> cutfreeMatrix(testMatrix);
+    for(unsigned int x=0; x<cutfreeMatrix.rows(); x++){
+      cutfreeMatrix(x,x)=false;
+      for(unsigned int y=0; y<cutfreeMatrix.cols(); y++){
+        if(cutfreeMatrix(x,y)==true || cutfreeMatrix(y,x)==true){
+          Vec n1=feature[x].meanNormal;
+          Vec n2=feature[y].meanNormal;
+          float a1 = (n1[0] * n2[0]+ n1[1] * n2[1]+ n1[2] * n2[2]);
 	          float ang=acos(a1)*180./M_PI;
 	          if(ang<minAngle){
-              cutfreeMatrix(x,y)=false;
-              cutfreeMatrix(y,x)=false;
-            }
-          }
-        }
-      }
-      math::DynMatrix<PlanarRansacEstimator::Result> result = m_data->ransac->apply(xyzh, surfaces,
-                    cutfreeMatrix, euclideanDistance, passes, tolerance,
-                    PlanarRansacEstimator::ON_ONE_SIDE, labelImage);
-
-      for(unsigned int x=0; x<result.rows(); x++){
-        for(unsigned int y=0; y<result.cols(); y++){
-          if(result(x,y).nacc>=result(x,y).acc){
             cutfreeMatrix(x,y)=false;
             cutfreeMatrix(y,x)=false;
           }
         }
       }
-      return cutfreeMatrix;
     }
+    math::DynMatrix<PlanarRansacEstimator::Result> result = m_data->ransac->apply(xyzh, surfaces,
+                  cutfreeMatrix, euclideanDistance, passes, tolerance,
+                  PlanarRansacEstimator::ON_ONE_SIDE, labelImage);
+
+    for(unsigned int x=0; x<result.rows(); x++){
+      for(unsigned int y=0; y<result.cols(); y++){
+        if(result(x,y).nacc>=result(x,y).acc){
+          cutfreeMatrix(x,y)=false;
+          cutfreeMatrix(y,x)=false;
+        }
+      }
+    }
+    return cutfreeMatrix;
+  }
 
   } // namespace icl::geom

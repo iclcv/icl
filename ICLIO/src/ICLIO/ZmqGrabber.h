@@ -7,28 +7,28 @@
 #include <ICLIO/Grabber.h>
 
 namespace icl::io {
-    /// Grabber class that grabs images from ZeroMQ-based network interfaces
-    class ZmqGrabber : public Grabber {
-      /// Internal Data storage class
-      struct Data;
+  /// Grabber class that grabs images from ZeroMQ-based network interfaces
+  class ZmqGrabber : public Grabber {
+    /// Internal Data storage class
+    struct Data;
 
-      /// Hidden Data container
-      Data *m_data;
+    /// Hidden Data container
+    Data *m_data;
 
-      public:
+    public:
 
-      /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
-      ICLIO_API ZmqGrabber(const std::string &host, int port=44444);
+    /// Creates a new SharedMemoryGrabber instance (please use the GenericGrabber instead)
+    ICLIO_API ZmqGrabber(const std::string &host, int port=44444);
 
-      /// Destructor
-      ICLIO_API ~ZmqGrabber();
+    /// Destructor
+    ICLIO_API ~ZmqGrabber();
 
-      /// returns a list of all available shared-memory image-streams
-      ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+    /// returns a list of all available shared-memory image-streams
+    ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
 
-      /// grabbing function
-      /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
-      ICLIO_API virtual const core::ImgBase* acquireDisplay();
-    };
+    /// grabbing function
+    /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
+    ICLIO_API virtual const core::ImgBase* acquireDisplay();
+  };
 
   } // namespace icl::io

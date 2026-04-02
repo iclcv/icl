@@ -2859,8 +2859,8 @@ ICL_REGISTER_TEST("Filter.MSTS.averaging_32f", "averages stable float frames") {
   Img32f src2(Size(2, 2), 1); src2.clear(-1, 12.f);
   Img32f src3(Size(2, 2), 1); src3.clear(-1, 14.f);
 
-  op.apply(Image(src1));
-  op.apply(Image(src2));
+  (void)op.apply(Image(src1));
+  (void)op.apply(Image(src2));
   Image dst = op.apply(Image(src3));
 
   float expected = (10.f + 12.f + 14.f) / 3.f;
@@ -2879,7 +2879,7 @@ ICL_REGISTER_TEST("Filter.MSTS.averaging_8u", "averages stable 8u frames") {
   Img8u src1(Size(4, 4), 1); src1.clear(-1, 100);
   Img8u src2(Size(4, 4), 1); src2.clear(-1, 104);
 
-  op.apply(Image(src1));
+  (void)op.apply(Image(src1));
   Image dst = op.apply(Image(src2));
 
   bool ok = true;
@@ -2898,8 +2898,8 @@ ICL_REGISTER_TEST("Filter.MSTS.motion_detection", "motion bypasses averaging") {
   Img32f src2(Size(2, 2), 1); src2.clear(-1, 10.f);
   Img32f src3(Size(2, 2), 1); src3.clear(-1, 100.f);
 
-  op.apply(Image(src1));
-  op.apply(Image(src2));
+  (void)op.apply(Image(src1));
+  (void)op.apply(Image(src2));
   Image dst = op.apply(Image(src3));
 
   // max-min = 90 > 5 -> motion -> output current frame
@@ -2915,8 +2915,8 @@ ICL_REGISTER_TEST("Filter.MSTS.null_value_exclusion", "null values excluded from
   Img32f src2(Size(2, 2), 1); src2.clear(-1, 10.f);
   Img32f src3(Size(2, 2), 1); src3.clear(-1, 14.f);
 
-  op.apply(Image(src1));
-  op.apply(Image(src2));
+  (void)op.apply(Image(src1));
+  (void)op.apply(Image(src2));
   Image dst = op.apply(Image(src3));
 
   // average of 10, 14 (null excluded) = 12
@@ -2936,8 +2936,8 @@ ICL_REGISTER_TEST("Filter.MSTS.all_null", "all null values produce null output")
   Img32f src(Size(2, 2), 1);
   src.clear(-1, 0.f);
 
-  op.apply(Image(src));
-  op.apply(Image(src));
+  (void)op.apply(Image(src));
+  (void)op.apply(Image(src));
   Image dst = op.apply(Image(src));
 
   ICL_TEST_TRUE(dst.as32f() == src);
@@ -2952,7 +2952,7 @@ ICL_REGISTER_TEST("Filter.MSTS.null_minus_one_no_effect_8u", "nullValue=-1 means
   Img8u src1(Size(2, 2), 1); src1.clear(-1, 250);
   Img8u src2(Size(2, 2), 1); src2.clear(-1, 254);
 
-  op.apply(Image(src1));
+  (void)op.apply(Image(src1));
   Image dst = op.apply(Image(src2));
 
   bool ok = true;
@@ -2975,7 +2975,7 @@ ICL_REGISTER_TEST("Filter.MSTS.multichannel", "processes each channel independen
   src2.clear(0, 14.f);
   src2.clear(1, 24.f);
 
-  op.apply(Image(src1));
+  (void)op.apply(Image(src1));
   Image dst = op.apply(Image(src2));
 
   bool ok = true;
@@ -2996,9 +2996,9 @@ ICL_REGISTER_TEST("Filter.MSTS.ring_buffer_wrap", "ring buffer wraps correctly")
   Img32f src3(Size(2, 2), 1); src3.clear(-1, 30.f);
   Img32f src4(Size(2, 2), 1); src4.clear(-1, 24.f);
 
-  op.apply(Image(src1));
-  op.apply(Image(src2));
-  op.apply(Image(src3));
+  (void)op.apply(Image(src1));
+  (void)op.apply(Image(src2));
+  (void)op.apply(Image(src3));
   Image dst = op.apply(Image(src4));
 
   // Ring buffer after 4 frames with size 3: slots contain src4(24), src2(20), src3(30)
@@ -3021,8 +3021,8 @@ ICL_REGISTER_TEST("Filter.MSTS.filter_size_change_resets", "changing filter size
   Img32f src2(Size(2, 2), 1); src2.clear(-1, 20.f);
   Img32f src3(Size(2, 2), 1); src3.clear(-1, 100.f);
 
-  op.apply(Image(src1));
-  op.apply(Image(src2));
+  (void)op.apply(Image(src1));
+  (void)op.apply(Image(src2));
 
   // Change filter size — resets history
   op.setFilterSize(5);
@@ -3041,9 +3041,9 @@ ICL_REGISTER_TEST("Filter.MSTS.motion_image", "motion image marks motion pixels"
   Img32f src2(Size(2, 2), 1); src2.clear(-1, 10.f);
   Img32f src3(Size(2, 2), 1); src3.clear(-1, 100.f);
 
-  op.apply(Image(src1));
-  op.apply(Image(src2));
-  op.apply(Image(src3));
+  (void)op.apply(Image(src1));
+  (void)op.apply(Image(src2));
+  (void)op.apply(Image(src3));
 
   Img32f motion = op.getMotionImage();
   ICL_TEST_TRUE(motion.getWidth() == 2);
@@ -3063,7 +3063,7 @@ ICL_REGISTER_TEST("Filter.MSTS.motion_image_static", "static scene has zero moti
 
   Img32f src(Size(4, 4), 1); src.clear(-1, 42.f);
 
-  for(int i = 0; i < 3; i++) op.apply(Image(src));
+  for(int i = 0; i < 3; i++) (void)op.apply(Image(src));
 
   Img32f motion = op.getMotionImage();
   bool ok = true;
@@ -3081,7 +3081,7 @@ ICL_REGISTER_TEST("Filter.MSTS.depth_exception", "rejects unsupported depths") {
 
   bool threw = false;
   try {
-    op.apply(Image(src));
+    (void)op.apply(Image(src));
   } catch(const ICLException&) {
     threw = true;
   }

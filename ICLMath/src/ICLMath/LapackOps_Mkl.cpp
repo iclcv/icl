@@ -13,260 +13,260 @@
 using namespace icl::utils;
 
 namespace icl::math {
-    namespace {
+  namespace {
 
-      // ---- GESDD (SVD) ----
+    // ---- GESDD (SVD) ----
 
-      int mkl_gesdd_f(char jobz, int M, int N, float* A, int lda,
-                      float* S, float* U, int ldu, float* Vt, int ldvt) {
-        int info;
-        int mn = std::min(M, N);
-        std::vector<int> iwork(std::max(1, 8 * mn));
+    int mkl_gesdd_f(char jobz, int M, int N, float* A, int lda,
+                    float* S, float* U, int ldu, float* Vt, int ldvt) {
+      int info;
+      int mn = std::min(M, N);
+      std::vector<int> iwork(std::max(1, 8 * mn));
 
-        float work_query;
-        int lwork = -1;
-        sgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
-               &work_query, &lwork, iwork.data(), &info);
-        if(info != 0) return info;
+      float work_query;
+      int lwork = -1;
+      sgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
+             &work_query, &lwork, iwork.data(), &info);
+      if(info != 0) return info;
 
-        lwork = static_cast<int>(work_query);
-        std::vector<float> work(lwork);
+      lwork = static_cast<int>(work_query);
+      std::vector<float> work(lwork);
 
-        sgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
-               work.data(), &lwork, iwork.data(), &info);
-        return info;
-      }
+      sgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
+             work.data(), &lwork, iwork.data(), &info);
+      return info;
+    }
 
-      int mkl_gesdd_d(char jobz, int M, int N, double* A, int lda,
-                      double* S, double* U, int ldu, double* Vt, int ldvt) {
-        int info;
-        int mn = std::min(M, N);
-        std::vector<int> iwork(std::max(1, 8 * mn));
+    int mkl_gesdd_d(char jobz, int M, int N, double* A, int lda,
+                    double* S, double* U, int ldu, double* Vt, int ldvt) {
+      int info;
+      int mn = std::min(M, N);
+      std::vector<int> iwork(std::max(1, 8 * mn));
 
-        double work_query;
-        int lwork = -1;
-        dgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
-               &work_query, &lwork, iwork.data(), &info);
-        if(info != 0) return info;
+      double work_query;
+      int lwork = -1;
+      dgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
+             &work_query, &lwork, iwork.data(), &info);
+      if(info != 0) return info;
 
-        lwork = static_cast<int>(work_query);
-        std::vector<double> work(lwork);
+      lwork = static_cast<int>(work_query);
+      std::vector<double> work(lwork);
 
-        dgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
-               work.data(), &lwork, iwork.data(), &info);
-        return info;
-      }
+      dgesdd(&jobz, &N, &M, A, &lda, S, Vt, &ldvt, U, &ldu,
+             work.data(), &lwork, iwork.data(), &info);
+      return info;
+    }
 
-      // ---- SYEV (symmetric eigenvalue) ----
+    // ---- SYEV (symmetric eigenvalue) ----
 
-      int mkl_syev_f(char jobz, int N, float* A, int lda, float* W) {
-        int info;
-        char uplo = 'U';
+    int mkl_syev_f(char jobz, int N, float* A, int lda, float* W) {
+      int info;
+      char uplo = 'U';
 
-        float work_query;
-        int lwork = -1;
-        ssyev(&jobz, &uplo, &N, A, &lda, W, &work_query, &lwork, &info);
-        if(info != 0) return info;
+      float work_query;
+      int lwork = -1;
+      ssyev(&jobz, &uplo, &N, A, &lda, W, &work_query, &lwork, &info);
+      if(info != 0) return info;
 
-        lwork = static_cast<int>(work_query);
-        std::vector<float> work(lwork);
+      lwork = static_cast<int>(work_query);
+      std::vector<float> work(lwork);
 
-        ssyev(&jobz, &uplo, &N, A, &lda, W, work.data(), &lwork, &info);
-        return info;
-      }
+      ssyev(&jobz, &uplo, &N, A, &lda, W, work.data(), &lwork, &info);
+      return info;
+    }
 
-      int mkl_syev_d(char jobz, int N, double* A, int lda, double* W) {
-        int info;
-        char uplo = 'U';
+    int mkl_syev_d(char jobz, int N, double* A, int lda, double* W) {
+      int info;
+      char uplo = 'U';
 
-        double work_query;
-        int lwork = -1;
-        dsyev(&jobz, &uplo, &N, A, &lda, W, &work_query, &lwork, &info);
-        if(info != 0) return info;
+      double work_query;
+      int lwork = -1;
+      dsyev(&jobz, &uplo, &N, A, &lda, W, &work_query, &lwork, &info);
+      if(info != 0) return info;
 
-        lwork = static_cast<int>(work_query);
-        std::vector<double> work(lwork);
+      lwork = static_cast<int>(work_query);
+      std::vector<double> work(lwork);
 
-        dsyev(&jobz, &uplo, &N, A, &lda, W, work.data(), &lwork, &info);
-        return info;
-      }
+      dsyev(&jobz, &uplo, &N, A, &lda, W, work.data(), &lwork, &info);
+      return info;
+    }
 
-      // ---- GETRF (LU factorization) ----
+    // ---- GETRF (LU factorization) ----
 
-      int mkl_getrf_f(int M, int N, float* A, int lda, int* ipiv) {
-        int info;
-        sgetrf(&N, &M, A, &lda, ipiv, &info);
-        return info;
-      }
+    int mkl_getrf_f(int M, int N, float* A, int lda, int* ipiv) {
+      int info;
+      sgetrf(&N, &M, A, &lda, ipiv, &info);
+      return info;
+    }
 
-      int mkl_getrf_d(int M, int N, double* A, int lda, int* ipiv) {
-        int info;
-        dgetrf(&N, &M, A, &lda, ipiv, &info);
-        return info;
-      }
+    int mkl_getrf_d(int M, int N, double* A, int lda, int* ipiv) {
+      int info;
+      dgetrf(&N, &M, A, &lda, ipiv, &info);
+      return info;
+    }
 
-      // ---- GETRI (inverse from LU) ----
+    // ---- GETRI (inverse from LU) ----
 
-      int mkl_getri_f(int N, float* A, int lda, const int* ipiv) {
-        int info;
-        std::vector<int> ipiv_copy(ipiv, ipiv + N);
-        float work_query;
-        int lwork = -1;
-        sgetri(&N, A, &lda, ipiv_copy.data(), &work_query, &lwork, &info);
-        if(info != 0) return info;
-        lwork = static_cast<int>(work_query);
-        std::vector<float> work(lwork);
-        sgetri(&N, A, &lda, ipiv_copy.data(), work.data(), &lwork, &info);
-        return info;
-      }
+    int mkl_getri_f(int N, float* A, int lda, const int* ipiv) {
+      int info;
+      std::vector<int> ipiv_copy(ipiv, ipiv + N);
+      float work_query;
+      int lwork = -1;
+      sgetri(&N, A, &lda, ipiv_copy.data(), &work_query, &lwork, &info);
+      if(info != 0) return info;
+      lwork = static_cast<int>(work_query);
+      std::vector<float> work(lwork);
+      sgetri(&N, A, &lda, ipiv_copy.data(), work.data(), &lwork, &info);
+      return info;
+    }
 
-      int mkl_getri_d(int N, double* A, int lda, const int* ipiv) {
-        int info;
-        std::vector<int> ipiv_copy(ipiv, ipiv + N);
-        double work_query;
-        int lwork = -1;
-        dgetri(&N, A, &lda, ipiv_copy.data(), &work_query, &lwork, &info);
-        if(info != 0) return info;
-        lwork = static_cast<int>(work_query);
-        std::vector<double> work(lwork);
-        dgetri(&N, A, &lda, ipiv_copy.data(), work.data(), &lwork, &info);
-        return info;
-      }
+    int mkl_getri_d(int N, double* A, int lda, const int* ipiv) {
+      int info;
+      std::vector<int> ipiv_copy(ipiv, ipiv + N);
+      double work_query;
+      int lwork = -1;
+      dgetri(&N, A, &lda, ipiv_copy.data(), &work_query, &lwork, &info);
+      if(info != 0) return info;
+      lwork = static_cast<int>(work_query);
+      std::vector<double> work(lwork);
+      dgetri(&N, A, &lda, ipiv_copy.data(), work.data(), &lwork, &info);
+      return info;
+    }
 
-      // ---- GEQRF (QR factorization) ----
+    // ---- GEQRF (QR factorization) ----
 
-      int mkl_geqrf_f(int M, int N, float* A, int lda, float* tau) {
-        int info;
-        float work_query;
-        int lwork = -1;
-        sgeqrf(&N, &M, A, &lda, tau, &work_query, &lwork, &info);
-        if(info != 0) return info;
-        lwork = static_cast<int>(work_query);
-        std::vector<float> work(lwork);
-        sgeqrf(&N, &M, A, &lda, tau, work.data(), &lwork, &info);
-        return info;
-      }
+    int mkl_geqrf_f(int M, int N, float* A, int lda, float* tau) {
+      int info;
+      float work_query;
+      int lwork = -1;
+      sgeqrf(&N, &M, A, &lda, tau, &work_query, &lwork, &info);
+      if(info != 0) return info;
+      lwork = static_cast<int>(work_query);
+      std::vector<float> work(lwork);
+      sgeqrf(&N, &M, A, &lda, tau, work.data(), &lwork, &info);
+      return info;
+    }
 
-      int mkl_geqrf_d(int M, int N, double* A, int lda, double* tau) {
-        int info;
-        double work_query;
-        int lwork = -1;
-        dgeqrf(&N, &M, A, &lda, tau, &work_query, &lwork, &info);
-        if(info != 0) return info;
-        lwork = static_cast<int>(work_query);
-        std::vector<double> work(lwork);
-        dgeqrf(&N, &M, A, &lda, tau, work.data(), &lwork, &info);
-        return info;
-      }
+    int mkl_geqrf_d(int M, int N, double* A, int lda, double* tau) {
+      int info;
+      double work_query;
+      int lwork = -1;
+      dgeqrf(&N, &M, A, &lda, tau, &work_query, &lwork, &info);
+      if(info != 0) return info;
+      lwork = static_cast<int>(work_query);
+      std::vector<double> work(lwork);
+      dgeqrf(&N, &M, A, &lda, tau, work.data(), &lwork, &info);
+      return info;
+    }
 
-      // ---- ORGQR (form Q from Householder reflectors) ----
+    // ---- ORGQR (form Q from Householder reflectors) ----
 
-      int mkl_orgqr_f(int M, int N, int K, float* A, int lda, const float* tau) {
-        int info, m = M, n = N, k = K;
-        std::vector<float> tau_copy(tau, tau + K);
-        float work_query;
-        int lwork = -1;
-        sorgqr(&n, &m, &k, A, &lda, tau_copy.data(), &work_query, &lwork, &info);
-        if(info != 0) return info;
-        lwork = static_cast<int>(work_query);
-        std::vector<float> work(lwork);
-        sorgqr(&n, &m, &k, A, &lda, tau_copy.data(), work.data(), &lwork, &info);
-        return info;
-      }
+    int mkl_orgqr_f(int M, int N, int K, float* A, int lda, const float* tau) {
+      int info, m = M, n = N, k = K;
+      std::vector<float> tau_copy(tau, tau + K);
+      float work_query;
+      int lwork = -1;
+      sorgqr(&n, &m, &k, A, &lda, tau_copy.data(), &work_query, &lwork, &info);
+      if(info != 0) return info;
+      lwork = static_cast<int>(work_query);
+      std::vector<float> work(lwork);
+      sorgqr(&n, &m, &k, A, &lda, tau_copy.data(), work.data(), &lwork, &info);
+      return info;
+    }
 
-      int mkl_orgqr_d(int M, int N, int K, double* A, int lda, const double* tau) {
-        int info, m = M, n = N, k = K;
-        std::vector<double> tau_copy(tau, tau + K);
-        double work_query;
-        int lwork = -1;
-        dorgqr(&n, &m, &k, A, &lda, tau_copy.data(), &work_query, &lwork, &info);
-        if(info != 0) return info;
-        lwork = static_cast<int>(work_query);
-        std::vector<double> work(lwork);
-        dorgqr(&n, &m, &k, A, &lda, tau_copy.data(), work.data(), &lwork, &info);
-        return info;
-      }
+    int mkl_orgqr_d(int M, int N, int K, double* A, int lda, const double* tau) {
+      int info, m = M, n = N, k = K;
+      std::vector<double> tau_copy(tau, tau + K);
+      double work_query;
+      int lwork = -1;
+      dorgqr(&n, &m, &k, A, &lda, tau_copy.data(), &work_query, &lwork, &info);
+      if(info != 0) return info;
+      lwork = static_cast<int>(work_query);
+      std::vector<double> work(lwork);
+      dorgqr(&n, &m, &k, A, &lda, tau_copy.data(), work.data(), &lwork, &info);
+      return info;
+    }
 
-      // ---- GELSD (least-squares solve via SVD) ----
+    // ---- GELSD (least-squares solve via SVD) ----
 
-      int mkl_gelsd_f(int M, int N, int NRHS, float* A, int lda,
-                      float* B, int ldb, float* S, float rcond, int* rank) {
-        int mx = std::max(M, N);
-        std::vector<float> AT(M * N);
-        for(int i = 0; i < M; i++)
-          for(int j = 0; j < N; j++)
-            AT[j * M + i] = A[i * lda + j];
-        std::vector<float> BT(mx * NRHS);
-        for(int i = 0; i < mx; i++)
-          for(int j = 0; j < NRHS; j++)
-            BT[j * mx + i] = B[i * ldb + j];
-        int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
-        float work_query;
-        int lwork = -1, iwork_query;
-        sgelsd(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
-               S, &rcond, rank, &work_query, &lwork, &iwork_query, &info);
-        if(info != 0) return info;
-        lwork = static_cast<int>(work_query);
-        std::vector<float> work(lwork);
-        std::vector<int> iwork(iwork_query);
-        sgelsd(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
-               S, &rcond, rank, work.data(), &lwork, iwork.data(), &info);
-        for(int i = 0; i < N; i++)
-          for(int j = 0; j < NRHS; j++)
-            B[i * ldb + j] = BT[j * mx + i];
-        return info;
-      }
+    int mkl_gelsd_f(int M, int N, int NRHS, float* A, int lda,
+                    float* B, int ldb, float* S, float rcond, int* rank) {
+      int mx = std::max(M, N);
+      std::vector<float> AT(M * N);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * M + i] = A[i * lda + j];
+      std::vector<float> BT(mx * NRHS);
+      for(int i = 0; i < mx; i++)
+        for(int j = 0; j < NRHS; j++)
+          BT[j * mx + i] = B[i * ldb + j];
+      int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
+      float work_query;
+      int lwork = -1, iwork_query;
+      sgelsd(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
+             S, &rcond, rank, &work_query, &lwork, &iwork_query, &info);
+      if(info != 0) return info;
+      lwork = static_cast<int>(work_query);
+      std::vector<float> work(lwork);
+      std::vector<int> iwork(iwork_query);
+      sgelsd(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
+             S, &rcond, rank, work.data(), &lwork, iwork.data(), &info);
+      for(int i = 0; i < N; i++)
+        for(int j = 0; j < NRHS; j++)
+          B[i * ldb + j] = BT[j * mx + i];
+      return info;
+    }
 
-      int mkl_gelsd_d(int M, int N, int NRHS, double* A, int lda,
-                      double* B, int ldb, double* S, double rcond, int* rank) {
-        int mx = std::max(M, N);
-        std::vector<double> AT(M * N);
-        for(int i = 0; i < M; i++)
-          for(int j = 0; j < N; j++)
-            AT[j * M + i] = A[i * lda + j];
-        std::vector<double> BT(mx * NRHS);
-        for(int i = 0; i < mx; i++)
-          for(int j = 0; j < NRHS; j++)
-            BT[j * mx + i] = B[i * ldb + j];
-        int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
-        double work_query;
-        int lwork = -1, iwork_query;
-        dgelsd(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
-               S, &rcond, rank, &work_query, &lwork, &iwork_query, &info);
-        if(info != 0) return info;
-        lwork = static_cast<int>(work_query);
-        std::vector<double> work(lwork);
-        std::vector<int> iwork(iwork_query);
-        dgelsd(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
-               S, &rcond, rank, work.data(), &lwork, iwork.data(), &info);
-        for(int i = 0; i < N; i++)
-          for(int j = 0; j < NRHS; j++)
-            B[i * ldb + j] = BT[j * mx + i];
-        return info;
-      }
+    int mkl_gelsd_d(int M, int N, int NRHS, double* A, int lda,
+                    double* B, int ldb, double* S, double rcond, int* rank) {
+      int mx = std::max(M, N);
+      std::vector<double> AT(M * N);
+      for(int i = 0; i < M; i++)
+        for(int j = 0; j < N; j++)
+          AT[j * M + i] = A[i * lda + j];
+      std::vector<double> BT(mx * NRHS);
+      for(int i = 0; i < mx; i++)
+        for(int j = 0; j < NRHS; j++)
+          BT[j * mx + i] = B[i * ldb + j];
+      int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
+      double work_query;
+      int lwork = -1, iwork_query;
+      dgelsd(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
+             S, &rcond, rank, &work_query, &lwork, &iwork_query, &info);
+      if(info != 0) return info;
+      lwork = static_cast<int>(work_query);
+      std::vector<double> work(lwork);
+      std::vector<int> iwork(iwork_query);
+      dgelsd(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
+             S, &rcond, rank, work.data(), &lwork, iwork.data(), &info);
+      for(int i = 0; i < N; i++)
+        for(int j = 0; j < NRHS; j++)
+          B[i * ldb + j] = BT[j * mx + i];
+      return info;
+    }
 
-    } // anonymous namespace
+  } // anonymous namespace
 
-    static const int _mkl_lapack_reg = []() {
-      auto mkl_f = LapackOps<float>::instance().backends(Backend::Mkl);
-      mkl_f.add<LapackOps<float>::GesddSig>(LapackOp::gesdd, mkl_gesdd_f, "MKL sgesdd");
-      mkl_f.add<LapackOps<float>::SyevSig>(LapackOp::syev, mkl_syev_f, "MKL ssyev");
-      mkl_f.add<LapackOps<float>::GetrfSig>(LapackOp::getrf, mkl_getrf_f, "MKL sgetrf");
-      mkl_f.add<LapackOps<float>::GetriSig>(LapackOp::getri, mkl_getri_f, "MKL sgetri");
-      mkl_f.add<LapackOps<float>::GeqrfSig>(LapackOp::geqrf, mkl_geqrf_f, "MKL sgeqrf");
-      mkl_f.add<LapackOps<float>::OrgqrSig>(LapackOp::orgqr, mkl_orgqr_f, "MKL sorgqr");
-      mkl_f.add<LapackOps<float>::GelsdSig>(LapackOp::gelsd, mkl_gelsd_f, "MKL sgelsd");
+  static const int _mkl_lapack_reg = []() {
+    auto mkl_f = LapackOps<float>::instance().backends(Backend::Mkl);
+    mkl_f.add<LapackOps<float>::GesddSig>(LapackOp::gesdd, mkl_gesdd_f, "MKL sgesdd");
+    mkl_f.add<LapackOps<float>::SyevSig>(LapackOp::syev, mkl_syev_f, "MKL ssyev");
+    mkl_f.add<LapackOps<float>::GetrfSig>(LapackOp::getrf, mkl_getrf_f, "MKL sgetrf");
+    mkl_f.add<LapackOps<float>::GetriSig>(LapackOp::getri, mkl_getri_f, "MKL sgetri");
+    mkl_f.add<LapackOps<float>::GeqrfSig>(LapackOp::geqrf, mkl_geqrf_f, "MKL sgeqrf");
+    mkl_f.add<LapackOps<float>::OrgqrSig>(LapackOp::orgqr, mkl_orgqr_f, "MKL sorgqr");
+    mkl_f.add<LapackOps<float>::GelsdSig>(LapackOp::gelsd, mkl_gelsd_f, "MKL sgelsd");
 
-      auto mkl_d = LapackOps<double>::instance().backends(Backend::Mkl);
-      mkl_d.add<LapackOps<double>::GesddSig>(LapackOp::gesdd, mkl_gesdd_d, "MKL dgesdd");
-      mkl_d.add<LapackOps<double>::SyevSig>(LapackOp::syev, mkl_syev_d, "MKL dsyev");
-      mkl_d.add<LapackOps<double>::GetrfSig>(LapackOp::getrf, mkl_getrf_d, "MKL dgetrf");
-      mkl_d.add<LapackOps<double>::GetriSig>(LapackOp::getri, mkl_getri_d, "MKL dgetri");
-      mkl_d.add<LapackOps<double>::GeqrfSig>(LapackOp::geqrf, mkl_geqrf_d, "MKL dgeqrf");
-      mkl_d.add<LapackOps<double>::OrgqrSig>(LapackOp::orgqr, mkl_orgqr_d, "MKL dorgqr");
-      mkl_d.add<LapackOps<double>::GelsdSig>(LapackOp::gelsd, mkl_gelsd_d, "MKL dgelsd");
+    auto mkl_d = LapackOps<double>::instance().backends(Backend::Mkl);
+    mkl_d.add<LapackOps<double>::GesddSig>(LapackOp::gesdd, mkl_gesdd_d, "MKL dgesdd");
+    mkl_d.add<LapackOps<double>::SyevSig>(LapackOp::syev, mkl_syev_d, "MKL dsyev");
+    mkl_d.add<LapackOps<double>::GetrfSig>(LapackOp::getrf, mkl_getrf_d, "MKL dgetrf");
+    mkl_d.add<LapackOps<double>::GetriSig>(LapackOp::getri, mkl_getri_d, "MKL dgetri");
+    mkl_d.add<LapackOps<double>::GeqrfSig>(LapackOp::geqrf, mkl_geqrf_d, "MKL dgeqrf");
+    mkl_d.add<LapackOps<double>::OrgqrSig>(LapackOp::orgqr, mkl_orgqr_d, "MKL dorgqr");
+    mkl_d.add<LapackOps<double>::GelsdSig>(LapackOp::gelsd, mkl_gelsd_d, "MKL dgelsd");
 
-      return 0;
-    }();
+    return 0;
+  }();
 
   } // namespace icl::math

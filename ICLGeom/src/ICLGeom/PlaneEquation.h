@@ -9,19 +9,19 @@
 #include <iostream>
 
 namespace icl::geom {
-    /// Utility structure for calculation of view-ray / plane intersections
-    struct ICLGeom_API PlaneEquation{
+  /// Utility structure for calculation of view-ray / plane intersections
+  struct ICLGeom_API PlaneEquation{
 
-      /// Constructor with given offset and direction vector
-      explicit PlaneEquation(const Vec &offset=Vec(), const Vec &normal=Vec());
+    /// Constructor with given offset and direction vector
+    explicit PlaneEquation(const Vec &offset=Vec(), const Vec &normal=Vec());
 
-        /// line offset
-      Vec offset;
+      /// line offset
+    Vec offset;
 
-      /// line direction
-      Vec normal;
-    };
+    /// line direction
+    Vec normal;
+  };
 
-    /// ostream operator
-    ICLGeom_API std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
+  /// ostream operator
+  ICLGeom_API std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
   } // namespace icl::geom

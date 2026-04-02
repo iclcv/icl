@@ -12,13 +12,13 @@
 #include <vector>
 
 namespace icl::qt {
-    struct ImageStatistics{
-      core::ImgParams params;
-      core::depth d;
-      std::vector<utils::Range64f> ranges;
-      utils::Range64f globalRange;
-      std::vector<std::vector<int> > histos;
-      bool isNull;
-      utils::Time time;
-    };
+  struct ImageStatistics{
+    core::ImgParams params;
+    core::depth d;
+    std::vector<utils::Range64f> ranges;
+    utils::Range64f globalRange;
+    std::vector<std::vector<int> > histos;
+    bool isNull;
+    utils::Time time;
+  };
   } // namespace icl::qt

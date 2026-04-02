@@ -5,15 +5,15 @@
 #include <ICLQt/StringSignalButton.h>
 
 namespace icl::qt {
-    StringSignalButton::StringSignalButton(const QString &text,QWidget *parent):
-      QPushButton(text,parent)
-    {
-      connect(this,SIGNAL(clicked(bool)), this, SLOT(receiveClick(bool)));
-    }
+  StringSignalButton::StringSignalButton(const QString &text,QWidget *parent):
+    QPushButton(text,parent)
+  {
+    connect(this,SIGNAL(clicked(bool)), this, SLOT(receiveClick(bool)));
+  }
 
-    void StringSignalButton::receiveClick(bool enabled){
-      static_cast<void>(enabled);
-      emit clicked(text());
-    }
+  void StringSignalButton::receiveClick(bool enabled){
+    static_cast<void>(enabled);
+    emit clicked(text());
+  }
 
   } // namespace icl::qt

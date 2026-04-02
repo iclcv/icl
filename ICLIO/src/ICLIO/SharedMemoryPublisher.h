@@ -11,30 +11,30 @@
 #include <ICLIO/ImageOutput.h>
 
 namespace icl::io {
-    /// Publisher, that can be used to publish images via SharedMemorySegment
-    class ICLIO_API SharedMemoryPublisher : public ImageOutput{
-      struct Data;  //!< intenal data
-      Data *m_data; //!< intenal data
+  /// Publisher, that can be used to publish images via SharedMemorySegment
+  class ICLIO_API SharedMemoryPublisher : public ImageOutput{
+    struct Data;  //!< intenal data
+    Data *m_data; //!< intenal data
 
-      public:
+    public:
 
-      /// Creates a new publisher instance
-      /** If memorySegmentName is "", no connection is performed */
-      SharedMemoryPublisher(const std::string &memorySegmentName="");
+    /// Creates a new publisher instance
+    /** If memorySegmentName is "", no connection is performed */
+    SharedMemoryPublisher(const std::string &memorySegmentName="");
 
-      /// Destructor
-      ~SharedMemoryPublisher();
+    /// Destructor
+    ~SharedMemoryPublisher();
 
-      /// sets the publisher to use a new segment
-      void createPublisher(const std::string &memorySegmentName="");
+    /// sets the publisher to use a new segment
+    void createPublisher(const std::string &memorySegmentName="");
 
-      /// publishs given image
-      void publish(const core::ImgBase *image);
+    /// publishs given image
+    void publish(const core::ImgBase *image);
 
-      /// wraps publish to implement ImageOutput interface
-      virtual void send(const core::Image &image) { publish(image.ptr()); }
+    /// wraps publish to implement ImageOutput interface
+    virtual void send(const core::Image &image) { publish(image.ptr()); }
 
-      /// returns current memory segment name
-      std::string getMemorySegmentName() const;
-    };
+    /// returns current memory segment name
+    std::string getMemorySegmentName() const;
+  };
   } // namespace icl::io

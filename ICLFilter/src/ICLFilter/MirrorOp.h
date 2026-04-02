@@ -10,30 +10,30 @@
 #include <ICLCore/Image.h>
 
 namespace icl::filter {
-    /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
-    class ICLFilter_API MirrorOp : public BaseAffineOp {
-      public:
-      MirrorOp(const MirrorOp&) = delete;
-      MirrorOp& operator=(const MirrorOp&) = delete;
+  /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
+  class ICLFilter_API MirrorOp : public BaseAffineOp {
+    public:
+    MirrorOp(const MirrorOp&) = delete;
+    MirrorOp& operator=(const MirrorOp&) = delete;
 
-      /// Constructor
-      /**
-        @param eAxis the axis on which the mirroring is performed
-      */
-      MirrorOp (core::axis eAxis);
+    /// Constructor
+    /**
+      @param eAxis the axis on which the mirroring is performed
+    */
+    MirrorOp (core::axis eAxis);
 
-      /// Destructor
-      virtual ~MirrorOp(){}
+    /// Destructor
+    virtual ~MirrorOp(){}
 
-      /// Applies the mirror transform to the images
-      void apply(const core::Image &src, core::Image &dst) override;
+    /// Applies the mirror transform to the images
+    void apply(const core::Image &src, core::Image &dst) override;
 
-      /// Import single-arg apply from UnaryOp
-      using UnaryOp::apply;
+    /// Import single-arg apply from UnaryOp
+    using UnaryOp::apply;
 
-      private:
-      core::axis  m_eAxis;
-      utils::Size  m_oSize;
-      utils::Point m_oSrcOffset, m_oDstOffset;
-    };
+    private:
+    core::axis  m_eAxis;
+    utils::Size  m_oSize;
+    utils::Point m_oSrcOffset, m_oDstOffset;
+  };
   } // namespace icl::filter

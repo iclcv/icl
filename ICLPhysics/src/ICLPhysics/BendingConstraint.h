@@ -12,24 +12,24 @@
 #include <map>
 
 namespace icl::physics {
-  struct ICLPhysics_API BendingConstraint{
-    using LinkArray = btSoftBody::tLinkArray;
-    using Material = btSoftBody::Material;
-    using Link = btSoftBody::Link;
+struct ICLPhysics_API BendingConstraint{
+  using LinkArray = btSoftBody::tLinkArray;
+  using Material = btSoftBody::Material;
+  using Link = btSoftBody::Link;
 
-    Link *link;
-    Material *material;
-    utils::Point a,b;
+  Link *link;
+  Material *material;
+  utils::Point a,b;
 
-    BendingConstraint(Link *link, utils::Point a=utils::Point::null,
-                      utils::Point b=utils::Point::null);
+  BendingConstraint(Link *link, utils::Point a=utils::Point::null,
+                    utils::Point b=utils::Point::null);
 
-    void setStiffness(float val);
+  void setStiffness(float val);
 
-    void updateLinkPointer(std::map<Material*,Link*> &lookup);
+  void updateLinkPointer(std::map<Material*,Link*> &lookup);
 
-    float getStiffness() const;
+  float getStiffness() const;
 
-    std::pair<geom::Vec,geom::Vec> getLine() const;
-  };
+  std::pair<geom::Vec,geom::Vec> getLine() const;
+};
 }

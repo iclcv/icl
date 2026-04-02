@@ -9,20 +9,20 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::qt {
-    void ImageHandle::setImage(const ImgBase *image){
-      (**this)->setImage(image);
-    }
-    void ImageHandle::render(){
-      (**this)->render();
-    }
+  void ImageHandle::setImage(const ImgBase *image){
+    (**this)->setImage(image);
+  }
+  void ImageHandle::render(){
+    (**this)->render();
+  }
 
-    void ImageHandle::registerCallback(const GUI::Callback &cb, const std::string &events){
-      (**this)->registerCallback(cb,events);
-    }
+  void ImageHandle::registerCallback(const GUI::Callback &cb, const std::string &events){
+    (**this)->registerCallback(cb,events);
+  }
 
-    void ImageHandle::removeCallbacks(){
-      (**this)->removeCallbacks();
-    }
+  void ImageHandle::removeCallbacks(){
+    (**this)->removeCallbacks();
+  }
 
 
   } // namespace icl::qt

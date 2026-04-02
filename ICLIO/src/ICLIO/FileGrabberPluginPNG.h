@@ -10,16 +10,16 @@
 #include <mutex>
 
 namespace icl::io {
-    /// Plugin class to read "png" images \ingroup FILEIO_G
-    class ICLIO_API FileGrabberPluginPNG : public FileGrabberPlugin {
-      std::vector<unsigned char> data;
-      std::vector<unsigned char*> rows;
+  /// Plugin class to read "png" images \ingroup FILEIO_G
+  class ICLIO_API FileGrabberPluginPNG : public FileGrabberPlugin {
+    std::vector<unsigned char> data;
+    std::vector<unsigned char*> rows;
 
-      /// ensures, that data and rows is not used from several threads
-      std::recursive_mutex mutex;
+    /// ensures, that data and rows is not used from several threads
+    std::recursive_mutex mutex;
 
-      public:
-      /// grab implementation
-      virtual void grab(utils::File &file, core::ImgBase **dest);
-    };
+    public:
+    /// grab implementation
+    virtual void grab(utils::File &file, core::ImgBase **dest);
+  };
   } // namespace icl::io

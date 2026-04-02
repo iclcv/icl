@@ -23,54 +23,54 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  #ifdef ICL_HAVE_IMAGEMAGICK
-    struct FileGrabberPluginImageMagick::InternalData{
-      std::vector<icl8u> buffer;
+#ifdef ICL_HAVE_IMAGEMAGICK
+  struct FileGrabberPluginImageMagick::InternalData{
+    std::vector<icl8u> buffer;
 
 
-    };
+  };
 
-    FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
-      m_data(new FileGrabberPluginImageMagick::InternalData){
-      // from FileWriterPluginImageMagick.h
+  FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
+    m_data(new FileGrabberPluginImageMagick::InternalData){
+    // from FileWriterPluginImageMagick.h
+  }
+
+  FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){
+    delete m_data;
+  }
+
+  void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
+    icl_initialize_image_magick_context();
+
+    Magick::Image image;
+    try{
+      image.read(file.getName());
+    }catch(Magick::Error &err){
+      throw ICLException(std::string("ImageMagick::")+err.what());
     }
 
-    FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){
-      delete m_data;
-    }
+    Size size(static_cast<int>(image.columns()), static_cast<int>(image.rows()));
+    const int dim = size.getDim();
 
-    void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
-      icl_initialize_image_magick_context();
+    // Export pixel data as interleaved RGB unsigned chars
+    m_data->buffer.resize(dim * 3);
+    image.write(0, 0, size.width, size.height, "RGB", Magick::CharPixel, m_data->buffer.data());
 
-      Magick::Image image;
-      try{
-        image.read(file.getName());
-      }catch(Magick::Error &err){
-        throw ICLException(std::string("ImageMagick::")+err.what());
-      }
+    core::ensureCompatible(dest, depth8u, size, formatRGB);
+    interleavedToPlanar(m_data->buffer.data(), (*dest)->asImg<icl8u>());
+  }
 
-      Size size(static_cast<int>(image.columns()), static_cast<int>(image.rows()));
-      const int dim = size.getDim();
+#else
+  struct FileGrabberPluginImageMagick::InternalData{};
 
-      // Export pixel data as interleaved RGB unsigned chars
-      m_data->buffer.resize(dim * 3);
-      image.write(0, 0, size.width, size.height, "RGB", Magick::CharPixel, m_data->buffer.data());
+  FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
+    m_data(0){}
 
-      core::ensureCompatible(dest, depth8u, size, formatRGB);
-      interleavedToPlanar(m_data->buffer.data(), (*dest)->asImg<icl8u>());
-    }
+  FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){}
 
-  #else
-    struct FileGrabberPluginImageMagick::InternalData{};
-
-    FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
-      m_data(0){}
-
-    FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){}
-
-    void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
-      ERROR_LOG("grabbing images of this format is not supported without libImageMagic++");
-      throw InvalidFileException(file.getName());
-    }
-  #endif
+  void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
+    ERROR_LOG("grabbing images of this format is not supported without libImageMagic++");
+    throw InvalidFileException(file.getName());
+  }
+#endif
   } // namespace icl::io

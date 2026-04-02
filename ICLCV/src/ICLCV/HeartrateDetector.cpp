@@ -7,199 +7,199 @@
 #include <climits>
 
 namespace icl::cv {
-    static const int SECONDS_IN_MINUTE = 60;
-    static const int MINIMUM_HEARTRATE = 40;
-    static const int MAXIMUM_HEARTRATE = 200;
-    static const float DATA_SCALE_FACTOR = 200;
-    static const float MIN_WINDOW_RADIUS = 5;
-    static const float WINDOW_RADIUS_WIDEN = 3;
-    static const float WINDOW_RADIUS_TIGHTEN = 0.5;
+  static const int SECONDS_IN_MINUTE = 60;
+  static const int MINIMUM_HEARTRATE = 40;
+  static const int MAXIMUM_HEARTRATE = 200;
+  static const float DATA_SCALE_FACTOR = 200;
+  static const float MIN_WINDOW_RADIUS = 5;
+  static const float WINDOW_RADIUS_WIDEN = 3;
+  static const float WINDOW_RADIUS_TIGHTEN = 0.5;
 
-    struct HeartrateDetector::Data{
-      template<typename T>
-      class CircularBuffer {
-        const std::size_t bufferSize;
-        int index;
-        std::size_t currentSize;
-        std::vector<T> buffer;
-      public:
-        CircularBuffer(std::size_t size): bufferSize(size), index(-1), currentSize(0), buffer(bufferSize) {}
+  struct HeartrateDetector::Data{
+    template<typename T>
+    class CircularBuffer {
+      const std::size_t bufferSize;
+      int index;
+      std::size_t currentSize;
+      std::vector<T> buffer;
+    public:
+      CircularBuffer(std::size_t size): bufferSize(size), index(-1), currentSize(0), buffer(bufferSize) {}
 
-        void push(T t) {
-          index = (index+1)%bufferSize;
-          buffer[index] = t;
-          currentSize = std::min(currentSize+1,bufferSize);
-        }
-
-        CircularBuffer &operator<<(T t){
-          push(t);
-          return *this;
-        }
-
-        T& operator[](std::size_t idx) {
-          return buffer[idx];
-        }
-
-        const T& operator[](std::size_t idx) const {
-          return buffer[idx];
-        }
-
-        T& back() {
-          return buffer[index];
-        }
-
-        const T& back() const {
-          return buffer[index];
-        }
-
-        std::size_t size() {
-          return currentSize;
-        }
-
-        T* data() {
-          return buffer.data();
-        }
-
-        ~CircularBuffer(){}
-      };
-
-
-      const int framerate, historyDepth, minIndex, maxIndex, heartrateRange;
-      int imageCounter, windowLeft, windowRight;
-      float windowRadius, previousHeartrate, currentHeartrate;
-      CircularBuffer<std::vector<float> > frequencyHistory;
-      std::vector<float> averagedFrequencies;
-      CircularBuffer<float> averageDataBuffer;
-
-      Data(int framerate, int historyDepth):framerate(framerate), historyDepth(historyDepth),
-                                            minIndex(heartrateToIndex(MINIMUM_HEARTRATE)),
-                                            maxIndex(heartrateToIndex(MAXIMUM_HEARTRATE)),
-                                            heartrateRange(maxIndex-minIndex), imageCounter(0),
-                                            windowLeft(minIndex), windowRight(maxIndex),
-                                            windowRadius(heartrateRange), previousHeartrate(0), currentHeartrate(0),
-                                            frequencyHistory(framerate), averagedFrequencies(heartrateRange),
-                                            averageDataBuffer(historyDepth){}
-
-      float indexToHeartrate(int i) {
-        if(imageCounter != 0)
-          return float(i)/historyDepth*framerate*SECONDS_IN_MINUTE;
-        return 0;
+      void push(T t) {
+        index = (index+1)%bufferSize;
+        buffer[index] = t;
+        currentSize = std::min(currentSize+1,bufferSize);
       }
 
-      int heartrateToIndex(float h) {
-        return h*historyDepth/float(framerate)/float(SECONDS_IN_MINUTE);
+      CircularBuffer &operator<<(T t){
+        push(t);
+        return *this;
       }
 
-      void addImage(const core::Img8u &image) {
-        float averageValue=0;
-        for(core::ImgIterator<icl8u> it = image.beginROI(1); it != image.endROI(1); ++it) {
-          averageValue += *it;
-          *it >>= 1;
-        }
-        averageValue /= image.getROI().getDim()*UCHAR_MAX;
-        averageDataBuffer<<averageValue;
-        ++imageCounter;
+      T& operator[](std::size_t idx) {
+        return buffer[idx];
       }
 
-      void calculateHeartrate() {
-        std::complex<float> *frequencies =math::fft::fft<float,float>(averageDataBuffer.size(),averageDataBuffer.data());
-        frequencyHistory<<std::vector<float>(heartrateRange);
-        for(int i = minIndex; i < maxIndex; ++i) {
-            float magnitude = sqrt(frequencies[i].real()*frequencies[i].real()+frequencies[i].imag()*frequencies[i].imag());
-            magnitude *= sqrt(i); //flatten the curve for more useful values
-            frequencyHistory.back()[i-minIndex] = magnitude;
-        }
-        delete frequencies;
-
-        float max = 0;
-        int maxId = 0;
-        for(unsigned int i = 0; i < averagedFrequencies.size(); ++i) {
-          averagedFrequencies[i] = 0;
-          for(unsigned int j = 0; j < frequencyHistory.size(); ++j) {
-            averagedFrequencies[i] += frequencyHistory[j][i];
-          }
-          averagedFrequencies[i] /= frequencyHistory.size();
-
-          int gi = i+minIndex;
-          if(averagedFrequencies[i] > max && gi >= windowLeft && gi <= windowRight) {
-              max = averagedFrequencies[i];
-              maxId = gi;
-          }
-        }
-        previousHeartrate = currentHeartrate;
-        currentHeartrate = indexToHeartrate(maxId);
+      const T& operator[](std::size_t idx) const {
+        return buffer[idx];
       }
 
-      void updateWindow() {
-        if((currentHeartrate-previousHeartrate)>0.01*currentHeartrate) {
-          windowRadius=std::min(windowRadius+WINDOW_RADIUS_WIDEN, float(heartrateRange));
-        } else {
-          windowRadius=std::max(windowRadius-WINDOW_RADIUS_TIGHTEN, MIN_WINDOW_RADIUS);
-        }
-        int heartrateIndex = heartrateToIndex(currentHeartrate);
-        windowLeft = std::max(int(heartrateIndex-windowRadius), minIndex);
-        windowRight = std::min(int(heartrateIndex+windowRadius), maxIndex);
+      T& back() {
+        return buffer[index];
       }
 
-      ~Data(){}
+      const T& back() const {
+        return buffer[index];
+      }
+
+      std::size_t size() {
+        return currentSize;
+      }
+
+      T* data() {
+        return buffer.data();
+      }
+
+      ~CircularBuffer(){}
     };
 
-    HeartrateDetector::HeartrateDetector(int framerate, int historyDepth) {
-      m_data = new Data(framerate,historyDepth);
+
+    const int framerate, historyDepth, minIndex, maxIndex, heartrateRange;
+    int imageCounter, windowLeft, windowRight;
+    float windowRadius, previousHeartrate, currentHeartrate;
+    CircularBuffer<std::vector<float> > frequencyHistory;
+    std::vector<float> averagedFrequencies;
+    CircularBuffer<float> averageDataBuffer;
+
+    Data(int framerate, int historyDepth):framerate(framerate), historyDepth(historyDepth),
+                                          minIndex(heartrateToIndex(MINIMUM_HEARTRATE)),
+                                          maxIndex(heartrateToIndex(MAXIMUM_HEARTRATE)),
+                                          heartrateRange(maxIndex-minIndex), imageCounter(0),
+                                          windowLeft(minIndex), windowRight(maxIndex),
+                                          windowRadius(heartrateRange), previousHeartrate(0), currentHeartrate(0),
+                                          frequencyHistory(framerate), averagedFrequencies(heartrateRange),
+                                          averageDataBuffer(historyDepth){}
+
+    float indexToHeartrate(int i) {
+      if(imageCounter != 0)
+        return float(i)/historyDepth*framerate*SECONDS_IN_MINUTE;
+      return 0;
     }
 
-    HeartrateDetector::~HeartrateDetector() {
-      delete m_data;
+    int heartrateToIndex(float h) {
+      return h*historyDepth/float(framerate)/float(SECONDS_IN_MINUTE);
     }
 
-    void HeartrateDetector::addImage(const core::Img8u &image) {
-      m_data->addImage(image);
-      m_data->calculateHeartrate();
-      if(m_data->imageCounter >= m_data->historyDepth) {
-          m_data->updateWindow();
+    void addImage(const core::Img8u &image) {
+      float averageValue=0;
+      for(core::ImgIterator<icl8u> it = image.beginROI(1); it != image.endROI(1); ++it) {
+        averageValue += *it;
+        *it >>= 1;
       }
+      averageValue /= image.getROI().getDim()*UCHAR_MAX;
+      averageDataBuffer<<averageValue;
+      ++imageCounter;
     }
 
-    float HeartrateDetector::getHeartrate() const {
-      if(m_data->imageCounter >= m_data->historyDepth) {
-        return m_data->currentHeartrate;
+    void calculateHeartrate() {
+      std::complex<float> *frequencies =math::fft::fft<float,float>(averageDataBuffer.size(),averageDataBuffer.data());
+      frequencyHistory<<std::vector<float>(heartrateRange);
+      for(int i = minIndex; i < maxIndex; ++i) {
+          float magnitude = sqrt(frequencies[i].real()*frequencies[i].real()+frequencies[i].imag()*frequencies[i].imag());
+          magnitude *= sqrt(i); //flatten the curve for more useful values
+          frequencyHistory.back()[i-minIndex] = magnitude;
+      }
+      delete frequencies;
+
+      float max = 0;
+      int maxId = 0;
+      for(unsigned int i = 0; i < averagedFrequencies.size(); ++i) {
+        averagedFrequencies[i] = 0;
+        for(unsigned int j = 0; j < frequencyHistory.size(); ++j) {
+          averagedFrequencies[i] += frequencyHistory[j][i];
+        }
+        averagedFrequencies[i] /= frequencyHistory.size();
+
+        int gi = i+minIndex;
+        if(averagedFrequencies[i] > max && gi >= windowLeft && gi <= windowRight) {
+            max = averagedFrequencies[i];
+            maxId = gi;
+        }
+      }
+      previousHeartrate = currentHeartrate;
+      currentHeartrate = indexToHeartrate(maxId);
+    }
+
+    void updateWindow() {
+      if((currentHeartrate-previousHeartrate)>0.01*currentHeartrate) {
+        windowRadius=std::min(windowRadius+WINDOW_RADIUS_WIDEN, float(heartrateRange));
       } else {
-        return 0;
+        windowRadius=std::max(windowRadius-WINDOW_RADIUS_TIGHTEN, MIN_WINDOW_RADIUS);
       }
+      int heartrateIndex = heartrateToIndex(currentHeartrate);
+      windowLeft = std::max(int(heartrateIndex-windowRadius), minIndex);
+      windowRight = std::min(int(heartrateIndex+windowRadius), maxIndex);
     }
 
+    ~Data(){}
+  };
 
-    qt::PlotWidget::SeriesBuffer HeartrateDetector::getFrequencies() const {
-      qt::PlotWidget::SeriesBuffer frequencies(m_data->heartrateRange);
-      for(unsigned int i = 0; i < m_data->averagedFrequencies.size(); ++i) {
-        frequencies[i] = m_data->frequencyHistory.back()[i]*DATA_SCALE_FACTOR/float(m_data->historyDepth);
-      }
-      return frequencies;
-    }
+  HeartrateDetector::HeartrateDetector(int framerate, int historyDepth) {
+    m_data = new Data(framerate,historyDepth);
+  }
 
-    qt::PlotWidget::SeriesBuffer HeartrateDetector::getAveragedFrequencies() const {
-      qt::PlotWidget::SeriesBuffer frequencies(m_data->heartrateRange);
-      for(unsigned int i = 0; i < m_data->averagedFrequencies.size(); ++i) {
-        frequencies[i] = m_data->averagedFrequencies[i]*DATA_SCALE_FACTOR/float(m_data->historyDepth);
-      }
-      return frequencies;
-    }
+  HeartrateDetector::~HeartrateDetector() {
+    delete m_data;
+  }
 
-    qt::PlotWidget::SeriesBuffer HeartrateDetector::getWindowBuffer() const {
-      qt::PlotWidget::SeriesBuffer window(m_data->heartrateRange);
-      for(unsigned int i = 0; i < window.size(); i++) {
-        int gi = i+m_data->minIndex;
-        window[i] = gi>=m_data->windowLeft&&gi<=m_data->windowRight?1000000:0;
-      }
-      return window;
+  void HeartrateDetector::addImage(const core::Img8u &image) {
+    m_data->addImage(image);
+    m_data->calculateHeartrate();
+    if(m_data->imageCounter >= m_data->historyDepth) {
+        m_data->updateWindow();
     }
+  }
 
-    int HeartrateDetector::getFramerate() const {
-      return m_data->framerate;
+  float HeartrateDetector::getHeartrate() const {
+    if(m_data->imageCounter >= m_data->historyDepth) {
+      return m_data->currentHeartrate;
+    } else {
+      return 0;
     }
+  }
 
-    int HeartrateDetector::getHistoryDepth() const {
-      return m_data->historyDepth;
+
+  qt::PlotWidget::SeriesBuffer HeartrateDetector::getFrequencies() const {
+    qt::PlotWidget::SeriesBuffer frequencies(m_data->heartrateRange);
+    for(unsigned int i = 0; i < m_data->averagedFrequencies.size(); ++i) {
+      frequencies[i] = m_data->frequencyHistory.back()[i]*DATA_SCALE_FACTOR/float(m_data->historyDepth);
     }
+    return frequencies;
+  }
+
+  qt::PlotWidget::SeriesBuffer HeartrateDetector::getAveragedFrequencies() const {
+    qt::PlotWidget::SeriesBuffer frequencies(m_data->heartrateRange);
+    for(unsigned int i = 0; i < m_data->averagedFrequencies.size(); ++i) {
+      frequencies[i] = m_data->averagedFrequencies[i]*DATA_SCALE_FACTOR/float(m_data->historyDepth);
+    }
+    return frequencies;
+  }
+
+  qt::PlotWidget::SeriesBuffer HeartrateDetector::getWindowBuffer() const {
+    qt::PlotWidget::SeriesBuffer window(m_data->heartrateRange);
+    for(unsigned int i = 0; i < window.size(); i++) {
+      int gi = i+m_data->minIndex;
+      window[i] = gi>=m_data->windowLeft&&gi<=m_data->windowRight?1000000:0;
+    }
+    return window;
+  }
+
+  int HeartrateDetector::getFramerate() const {
+    return m_data->framerate;
+  }
+
+  int HeartrateDetector::getHistoryDepth() const {
+    return m_data->historyDepth;
+  }
 
   } // namespace icl::cv

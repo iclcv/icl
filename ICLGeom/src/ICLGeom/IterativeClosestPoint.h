@@ -6,26 +6,26 @@
 #include <ICLGeom/Geom.h>
 #include <ICLMath/HomogeneousMath.h>
 namespace icl::geom {
-    struct Vec8{
-      math::Vec4 pos;
-      math::Vec4 col;
+  struct Vec8{
+    math::Vec4 pos;
+    math::Vec4 col;
+  };
+  template<typename T>
+  class IterativeClosestPoint{
+  public:
+
+    struct Data;
+    Data *m_data;
+
+    struct DistanceID {
+      float distance;
+      int id;
     };
-    template<typename T>
-    class IterativeClosestPoint{
-    public:
 
-      struct Data;
-      Data *m_data;
-
-      struct DistanceID {
-        float distance;
-        int id;
-      };
-
-      IterativeClosestPoint(const std::string &clCode, int localSize2Dx, int localSize2Dy, int localSize1D, void (*subFunc)(const char * a, const char *b, char *c), math::Vec4 (*toVectorFunc)(const char* point));
-      void icp(const T* pointsA, const T* pointsB, int sizeA, int sizeB, float errorThreshold, float errorDeltaThreshold, int maxIterations, float* initialTransform, float* transformMatrix);
-      static IterativeClosestPoint<math::Vec4> icpVec4();
-      static IterativeClosestPoint<Vec8> icpVec8();
+    IterativeClosestPoint(const std::string &clCode, int localSize2Dx, int localSize2Dy, int localSize1D, void (*subFunc)(const char * a, const char *b, char *c), math::Vec4 (*toVectorFunc)(const char* point));
+    void icp(const T* pointsA, const T* pointsB, int sizeA, int sizeB, float errorThreshold, float errorDeltaThreshold, int maxIterations, float* initialTransform, float* transformMatrix);
+    static IterativeClosestPoint<math::Vec4> icpVec4();
+    static IterativeClosestPoint<Vec8> icpVec8();
 
 //      static void sub(const char * a, const char *b, char *c);
 //      static void add(const char * a, const char *b, char *c);
@@ -69,5 +69,5 @@ namespace icl::geom {
 //      void buildRepDB(const char* points, const int* closestreps, int* counters, int* repDataBase, int repWidth, size_t typeSize, int sizePoints, int sizeReps, int localSizeX);
 
 //      void getClosestPointsInDB(const char* pointsA, const int* closestRep, const char* pointsB, const int* pointsDB, const int* counters, int* closestPoints, DistanceID* distanceAcc, float(*distanceFunc)(const char*, const char*), size_t typeSize, int sizeA, int widthDB, int localSizeX, int localSizeY);
-    };
+  };
   } // namespace icl::geom

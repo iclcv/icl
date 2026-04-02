@@ -7,18 +7,18 @@
 #include <QGroupBox>
 
 namespace icl::qt {
-    std::string BorderHandle::getTitle() const{
-      const BorderHandle &bh = *this;//const_cast<BorderHandle*>(this);
-      const QGroupBox *gb = *bh;
-      if(gb){
-        return gb->title().toLatin1().data();
-      }
-      return "undefined!";
+  std::string BorderHandle::getTitle() const{
+    const BorderHandle &bh = *this;//const_cast<BorderHandle*>(this);
+    const QGroupBox *gb = *bh;
+    if(gb){
+      return gb->title().toLatin1().data();
     }
-    void BorderHandle::operator=(const std::string &title){
-      if(**this) (**this)->setTitle(title.c_str());
-      (**this)->update();
-    }
+    return "undefined!";
+  }
+  void BorderHandle::operator=(const std::string &title){
+    if(**this) (**this)->setTitle(title.c_str());
+    (**this)->update();
+  }
 
 
   } // namespace icl::qt

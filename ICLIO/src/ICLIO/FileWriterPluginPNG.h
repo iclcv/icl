@@ -9,14 +9,14 @@
 #include <mutex>
 
 namespace icl::io {
-    /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
-    class FileWriterPluginPNG : public FileWriterPlugin{
-      std::recursive_mutex mutex;
-      std::vector<unsigned char> data;
-      std::vector<unsigned char*> rows;
+  /// A Writer Plugin for writing ".png" images \ingroup FILEIO_G
+  class FileWriterPluginPNG : public FileWriterPlugin{
+    std::recursive_mutex mutex;
+    std::vector<unsigned char> data;
+    std::vector<unsigned char*> rows;
 
-      public:
-      /// write implementation
-      ICLIO_API virtual void write(utils::File &file, const core::ImgBase *image);
-    };
+    public:
+    /// write implementation
+    ICLIO_API virtual void write(utils::File &file, const core::ImgBase *image);
+  };
   } // namespace icl::io

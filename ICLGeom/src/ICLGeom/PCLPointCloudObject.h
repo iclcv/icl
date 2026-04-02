@@ -18,129 +18,129 @@ namespace pcl{
 /** \endcond */
 
 namespace icl::geom {
-    ///PointCloudObject implementation for the PCLPointCloud types
-    /** Right now, the following pcl-point types are supported. Due to the non-inline
-        implementation of the class, all other point-types are not available. For other
-        point types, one can specialize the offset()-template in the source file.
+  ///PointCloudObject implementation for the PCLPointCloud types
+  /** Right now, the following pcl-point types are supported. Due to the non-inline
+      implementation of the class, all other point-types are not available. For other
+      point types, one can specialize the offset()-template in the source file.
 				- pcl::PointXYZ
-        - pcl::PointXYZI
-        - pcl::PointXYZL
-        - pcl::PointXYZRGB
-        - pcl::PointXYZRGBA
-        - pcl::InterestPoint
-        - pcl::PointXYZRGBNormal
-        - pcl::PointXYZINormal
-    **/
-    template<class PCLPointType>
-    class PCLPointCloudObject : public PointCloudObjectBase{
-      pcl::PointCloud<PCLPointType> *m_pcl; //!< internal pcl::PointCloud data pointer
-      bool m_ownPCL;                        //!< ownership flag
+      - pcl::PointXYZI
+      - pcl::PointXYZL
+      - pcl::PointXYZRGB
+      - pcl::PointXYZRGBA
+      - pcl::InterestPoint
+      - pcl::PointXYZRGBNormal
+      - pcl::PointXYZINormal
+  **/
+  template<class PCLPointType>
+  class PCLPointCloudObject : public PointCloudObjectBase{
+    pcl::PointCloud<PCLPointType> *m_pcl; //!< internal pcl::PointCloud data pointer
+    bool m_ownPCL;                        //!< ownership flag
 
-      /// internally used typedef
-      using Entry = PCLPointType;
+    /// internally used typedef
+    using Entry = PCLPointType;
 
-      /// this is actually specialized for the different types
-      /** Please note, offset needs to return -1 for non-supported feature types */
-      int offset(FeatureType) const;
+    /// this is actually specialized for the different types
+    /** Please note, offset needs to return -1 for non-supported feature types */
+    int offset(FeatureType) const;
 
-      /// returns the data orignin pointer
-      inline icl8u* data();
+    /// returns the data orignin pointer
+    inline icl8u* data();
 
-      /// returns the data orignin pointer (const)
-      inline const icl8u* data() const;
+    /// returns the data orignin pointer (const)
+    inline const icl8u* data() const;
 
-      /// creates a data segment for a given feature type
-      template<class T, int N, FeatureType t>
-      inline core::DataSegment<T,N> createSegment();
+    /// creates a data segment for a given feature type
+    template<class T, int N, FeatureType t>
+    inline core::DataSegment<T,N> createSegment();
 
-      /// savely delets the pcl_image
-      void deletePCL();
+    /// savely delets the pcl_image
+    void deletePCL();
 
-      public:
+    public:
 
 #if 0
-      // this is right now deactivated due to an extra dependency to libpcl_io
-      // which always depends on openni
+    // this is right now deactivated due to an extra dependency to libpcl_io
+    // which always depends on openni
 
-      /// creates a PCLPointCloudObject from given filename
-      /** This is basically just a convenience function to circumvent using
-          a PointCloudGrabber instance */
-      PCLPointCloudObject(const std::string &filename="");
+    /// creates a PCLPointCloudObject from given filename
+    /** This is basically just a convenience function to circumvent using
+        a PointCloudGrabber instance */
+    PCLPointCloudObject(const std::string &filename="");
 #endif
-      /// creates a PCLPointCloudObject with given width height and intial value
-      /** If the height value is -1, the PointCloud instance is assumed to be not ordered,
-          e.g. only a 1D set of points instead of a 2D array */
-      PCLPointCloudObject(int width, int height = -1, const PCLPointType &init=PCLPointType());
+    /// creates a PCLPointCloudObject with given width height and intial value
+    /** If the height value is -1, the PointCloud instance is assumed to be not ordered,
+        e.g. only a 1D set of points instead of a 2D array */
+    PCLPointCloudObject(int width, int height = -1, const PCLPointType &init=PCLPointType());
 
-      /// deeply copying copy constructor
-      PCLPointCloudObject(const PCLPointCloudObject<PCLPointType> &other);
+    /// deeply copying copy constructor
+    PCLPointCloudObject(const PCLPointCloudObject<PCLPointType> &other);
 
-      /// deeply copying assignment operator
-      /** for shallow copies, use
+    /// deeply copying assignment operator
+    /** for shallow copies, use
 
-      */
-      PCLPointCloudObject<PCLPointType> &operator=(const PCLPointCloudObject<PCLPointType> &other);
+    */
+    PCLPointCloudObject<PCLPointType> &operator=(const PCLPointCloudObject<PCLPointType> &other);
 
-      /// const wrapper for given pcl-pointcloud (deep copy only)
-      PCLPointCloudObject(const pcl::PointCloud<PCLPointType> &cloud);
+    /// const wrapper for given pcl-pointcloud (deep copy only)
+    PCLPointCloudObject(const pcl::PointCloud<PCLPointType> &cloud);
 
-      /// wrapps given pcl-point-cloud (optionally shallowly copied)
-      PCLPointCloudObject(pcl::PointCloud<PCLPointType> &cloud, bool deepCopy=true);
+    /// wrapps given pcl-point-cloud (optionally shallowly copied)
+    PCLPointCloudObject(pcl::PointCloud<PCLPointType> &cloud, bool deepCopy=true);
 
-      /// Destructor
-      ~PCLPointCloudObject();
+    /// Destructor
+    ~PCLPointCloudObject();
 
-      /// grants access to the underlying pcl-point-cloud
-      pcl::PointCloud<PCLPointType> &pcl();
+    /// grants access to the underlying pcl-point-cloud
+    pcl::PointCloud<PCLPointType> &pcl();
 
-      /// grants access to the underlying pcl-point-cloud (const)
-      const pcl::PointCloud<PCLPointType> &pcl() const;
+    /// grants access to the underlying pcl-point-cloud (const)
+    const pcl::PointCloud<PCLPointType> &pcl() const;
 
-      /// sets wrapped PCL point cloud (const, always deeply copied)
-      void setPCL(const pcl::PointCloud<PCLPointType> &pcl);
+    /// sets wrapped PCL point cloud (const, always deeply copied)
+    void setPCL(const pcl::PointCloud<PCLPointType> &pcl);
 
-      /// sets wrapped PCL point cloud (const, always deeply copied)
-      void setPCL(pcl::PointCloud<PCLPointType> &pcl, bool deepCopy = true);
+    /// sets wrapped PCL point cloud (const, always deeply copied)
+    void setPCL(pcl::PointCloud<PCLPointType> &pcl, bool deepCopy = true);
 
-      /// generic version, that trys to get an offset (can be optimized with specialization)
-      virtual bool supports(FeatureType t) const;
+    /// generic version, that trys to get an offset (can be optimized with specialization)
+    virtual bool supports(FeatureType t) const;
 
-      /// returns whether pointcloud is 2D organized
-      virtual bool isOrganized() const;
+    /// returns whether pointcloud is 2D organized
+    virtual bool isOrganized() const;
 
-      /// returns the 2D size of the pointcloud (throws exception if not ordered)
-      virtual utils::Size getSize() const;
+    /// returns the 2D size of the pointcloud (throws exception if not ordered)
+    virtual utils::Size getSize() const;
 
-      /// return the linearily ordered number of point in the point cloud
-      virtual int getDim() const;
+    /// return the linearily ordered number of point in the point cloud
+    virtual int getDim() const;
 
-      /// adapts the point cloud size
-      /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
-      virtual void setSize(const utils::Size &size);
+    /// adapts the point cloud size
+    /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
+    virtual void setSize(const utils::Size &size);
 
-      bool isNull() const;
+    bool isNull() const;
 
-      // well known fields
-      virtual core::DataSegment<float,1> selectIntensity();
-      virtual core::DataSegment<icl32s,1> selectLabel();
-      virtual core::DataSegment<icl8u,3> selectBGR();
-      virtual core::DataSegment<icl8u,4> selectBGRA();
-      virtual core::DataSegment<icl32s,1> selectBGRA32s();
+    // well known fields
+    virtual core::DataSegment<float,1> selectIntensity();
+    virtual core::DataSegment<icl32s,1> selectLabel();
+    virtual core::DataSegment<icl8u,3> selectBGR();
+    virtual core::DataSegment<icl8u,4> selectBGRA();
+    virtual core::DataSegment<icl32s,1> selectBGRA32s();
 
-      virtual core::DataSegment<float,3> selectXYZ();
-      virtual core::DataSegment<float,4> selectXYZH();
-      virtual core::DataSegment<float,4> selectNormal();
-      virtual core::DataSegment<float,4> selectRGBA32f();
+    virtual core::DataSegment<float,3> selectXYZ();
+    virtual core::DataSegment<float,4> selectXYZH();
+    virtual core::DataSegment<float,4> selectNormal();
+    virtual core::DataSegment<float,4> selectRGBA32f();
 
-      /// selects a dynamic feature
-      /** some pcl types support special features that can be selected by a string ID.
-          By default, the featureName 'all' can be used to create a DataSegment that
-          give access to all data entries as floats */
-      virtual core::DataSegmentBase select(const std::string &featureName);
+    /// selects a dynamic feature
+    /** some pcl types support special features that can be selected by a string ID.
+        By default, the featureName 'all' can be used to create a DataSegment that
+        give access to all data entries as floats */
+    virtual core::DataSegmentBase select(const std::string &featureName);
 
-      /// deep copy interface
-      virtual PCLPointCloudObject<PCLPointType> *copy() const;
+    /// deep copy interface
+    virtual PCLPointCloudObject<PCLPointType> *copy() const;
 
-    };
+  };
 
   } // namespace icl::geom

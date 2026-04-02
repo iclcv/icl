@@ -8,20 +8,20 @@
 #include <QPushButton>
 
 namespace icl::qt {
-    /// internally used button that emits a signal with its text \ingroup UNCOMMON
-    class ICLQt_API StringSignalButton : public QPushButton{
-      Q_OBJECT
-      public:
-      /// Create a new StringSignalButton with given text and parent widget
-      StringSignalButton(const QString &text,QWidget *parent);
+  /// internally used button that emits a signal with its text \ingroup UNCOMMON
+  class ICLQt_API StringSignalButton : public QPushButton{
+    Q_OBJECT
+    public:
+    /// Create a new StringSignalButton with given text and parent widget
+    StringSignalButton(const QString &text,QWidget *parent);
 
-      Q_SIGNALS:
-      /// the clicked signal (with the buttons text)
-      void clicked(const QString &text);
+    Q_SIGNALS:
+    /// the clicked signal (with the buttons text)
+    void clicked(const QString &text);
 
-      private Q_SLOTS:
-      /// internally used slot (connected to the parent buttons clicked() signal)
-      void receiveClick(bool checked);
+    private Q_SLOTS:
+    /// internally used slot (connected to the parent buttons clicked() signal)
+    void receiveClick(bool checked);
 
-    };
+  };
   } // namespace icl::qt

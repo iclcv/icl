@@ -23,352 +23,352 @@ namespace icl::io { class ImageUndistortion; }
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
 namespace icl::io {
-    /** \cond */
-    namespace{
-      template <class T> inline T grabber_get_null(){ return 0; }
-      template <> inline core::format grabber_get_null<core::format>(){ return (core::format)-1; }
-      template <> inline core::depth grabber_get_null<core::depth>(){ return (core::depth)-1; }
-      template <> inline icl::utils::Size grabber_get_null<icl::utils::Size>(){ return icl::utils::Size::null; }
-
-      struct grabber_get_xxx_dummy{
-          grabber_get_xxx_dummy(){
-            grabber_get_null<core::format>();
-            grabber_get_null<core::depth>();
-            grabber_get_null<icl::utils::Size>();
-          }
-      };
-    }
-    template <class T> class GrabberHandle;
-    class GenericGrabber;
-    /** \endcond */
-
-    /// Common interface class for all grabbers \ingroup GRABBER_G
-    /** The Grabber is ICL's common interface for image acquisition
-        tools. A large set of Grabbers is available and wrapped
-        by the GenericGrabber class. We strongly recommend to
-        use the GenericGrabber class for image acquisition within
-        applications.
-
-        The Grabber itself has a very short interface for the user:
-        usually, a grabber is instantiated and its grab() method is
-        called to aquire the next available image.
-
-
-        \section DES Desired parameters
-
-        In addition, the Grabber supports a set of so called
-        'desired-parameters'. These can be set to overwrite the
-        image parameters that are used by the underlying implementation.
-        A FileGrabber e.g. will by default return images that have
-        the same parameter that the grabbed image file provides. However,
-        in some situations, the user might want to adapt these parameters
-        E.g. if the image parameters that are provided by the grabber
-        are not suitable for an algorithm. If this is the case, the
-        Grabber's desired parameters can be set using the
-        Grabber::setDesired-template.\n
-        Currently, the image parameters 'core::depth', 'size' and 'core::format'
-        can be adapted seperately by setting desired parameters. Once
-        desired parameters are set, the can be reset to the grabber's
-        default by calling grabber::ignoreDesired<T> where one of the
-        types core::depth, core::format or icl::utils::Size is used as type T.
-
-
-        \section UND Image Undistortion
-
-        The Grabber does also provide an interface to set up
-        image undistortion parameters. The can be estimated
-        with ICL's distortion calibration tool. The undistortion
-        operation is accelerated using an internal warp-table.
-        By these means, image undistion is directly applied on the
-        grabbed images, which lets the user then work with
-        undistored images.
-
-
-        \section IM Implementing Grabbers
-
-        In order to implement a new Grabber class, some steps are necessary.
-        First, the new Grabber needs to be implemented. This must
-        implement the Grabber::acquireImage method, that uses an underlying
-        image source to acquire a single new image. This can have any
-        parameters and core::depth (usually, the image parameters are somehow
-        related to the output of the underlying image source).
-        If the grabber is available, one should think about adapting
-        the grabber to inherit the icl::GrabberHandle class that adds
-        the ability of instantiating one Grabber several times without
-        having to handle double device accesses explicitly.
-
-
-        \section PROP Properties
-
-        The Grabber implements the Configurable interface that is used
-        to implement dynamically settable properties. Each Grabber
-        must have at least the two properties 'core::format' and 'size'. These
-        are handled in a special way by the automatically created Grabber-
-        property-GUIs available in the ICLQt package.
-
-
-        \section CB Callback Based Image Akquisition
-
-        As a very new experimental features, ICL's Grabber interface provides
-        methods to register callback functions to the grabber that are
-        then called automatically whenever a new image is available. This
-        feature needs to be implemented explicitly for each grabber backend and
-        does sometimes not even make sense. Furthermore, it' could lead to
-        some strange behaviour of the whole application, because the internal
-        image akquisition process is suddenly linked to the further image
-        processing steps directly. This feature should not be used for
-        writing applications that are scheduled by the speed of the internal
-        image aquisition loop. Therefore, images should never be processed
-        in the callback functions that are registred.
-
-        So far only a few grabbers provide this feature at all. If it
-        is not provided, the registered callbacks will never be called.
-    */
-    class ICLIO_API Grabber : public utils::Configurable{
-        /// internal data class
-        struct Data;
+/** \cond */
+namespace{
+template <class T> inline T grabber_get_null(){ return 0; }
+template <> inline core::format grabber_get_null<core::format>(){ return (core::format)-1; }
+template <> inline core::depth grabber_get_null<core::depth>(){ return (core::depth)-1; }
+template <> inline icl::utils::Size grabber_get_null<icl::utils::Size>(){ return icl::utils::Size::null; }
+
+struct grabber_get_xxx_dummy{
+  grabber_get_xxx_dummy(){
+    grabber_get_null<core::format>();
+    grabber_get_null<core::depth>();
+    grabber_get_null<icl::utils::Size>();
+  }
+};
+}
+template <class T> class GrabberHandle;
+class GenericGrabber;
+/** \endcond */
+
+/// Common interface class for all grabbers \ingroup GRABBER_G
+/** The Grabber is ICL's common interface for image acquisition
+tools. A large set of Grabbers is available and wrapped
+by the GenericGrabber class. We strongly recommend to
+use the GenericGrabber class for image acquisition within
+applications.
+
+The Grabber itself has a very short interface for the user:
+usually, a grabber is instantiated and its grab() method is
+called to aquire the next available image.
+
+
+\section DES Desired parameters
+
+In addition, the Grabber supports a set of so called
+'desired-parameters'. These can be set to overwrite the
+image parameters that are used by the underlying implementation.
+A FileGrabber e.g. will by default return images that have
+the same parameter that the grabbed image file provides. However,
+in some situations, the user might want to adapt these parameters
+E.g. if the image parameters that are provided by the grabber
+are not suitable for an algorithm. If this is the case, the
+Grabber's desired parameters can be set using the
+Grabber::setDesired-template.\n
+Currently, the image parameters 'core::depth', 'size' and 'core::format'
+can be adapted seperately by setting desired parameters. Once
+desired parameters are set, the can be reset to the grabber's
+default by calling grabber::ignoreDesired<T> where one of the
+types core::depth, core::format or icl::utils::Size is used as type T.
+
+
+\section UND Image Undistortion
+
+The Grabber does also provide an interface to set up
+image undistortion parameters. The can be estimated
+with ICL's distortion calibration tool. The undistortion
+operation is accelerated using an internal warp-table.
+By these means, image undistion is directly applied on the
+grabbed images, which lets the user then work with
+undistored images.
+
+
+\section IM Implementing Grabbers
+
+In order to implement a new Grabber class, some steps are necessary.
+First, the new Grabber needs to be implemented. This must
+implement the Grabber::acquireImage method, that uses an underlying
+image source to acquire a single new image. This can have any
+parameters and core::depth (usually, the image parameters are somehow
+related to the output of the underlying image source).
+If the grabber is available, one should think about adapting
+the grabber to inherit the icl::GrabberHandle class that adds
+the ability of instantiating one Grabber several times without
+having to handle double device accesses explicitly.
+
+
+\section PROP Properties
+
+The Grabber implements the Configurable interface that is used
+to implement dynamically settable properties. Each Grabber
+must have at least the two properties 'core::format' and 'size'. These
+are handled in a special way by the automatically created Grabber-
+property-GUIs available in the ICLQt package.
+
+
+\section CB Callback Based Image Akquisition
+
+As a very new experimental features, ICL's Grabber interface provides
+methods to register callback functions to the grabber that are
+then called automatically whenever a new image is available. This
+feature needs to be implemented explicitly for each grabber backend and
+does sometimes not even make sense. Furthermore, it' could lead to
+some strange behaviour of the whole application, because the internal
+image akquisition process is suddenly linked to the further image
+processing steps directly. This feature should not be used for
+writing applications that are scheduled by the speed of the internal
+image aquisition loop. Therefore, images should never be processed
+in the callback functions that are registred.
+
+So far only a few grabbers provide this feature at all. If it
+is not provided, the registered callbacks will never be called.
+*/
+class ICLIO_API Grabber : public utils::Configurable{
+/// internal data class
+struct Data;
 
-        /// hidden data
-        Data *data;
+/// hidden data
+Data *data;
 
-      public:
-        Grabber(const Grabber&) = delete;
-        Grabber& operator=(const Grabber&) = delete;
+public:
+Grabber(const Grabber&) = delete;
+Grabber& operator=(const Grabber&) = delete;
 
-      protected:
-        /// internally set a desired format
-        virtual void setDesiredFormatInternal(core::format fmt);
+protected:
+/// internally set a desired format
+virtual void setDesiredFormatInternal(core::format fmt);
 
-        /// internally set a desired format
-        virtual void setDesiredSizeInternal(const utils::Size &size);
+/// internally set a desired format
+virtual void setDesiredSizeInternal(const utils::Size &size);
 
-        /// internally set a desired format
-        virtual void setDesiredDepthInternal(core::depth d);
+/// internally set a desired format
+virtual void setDesiredDepthInternal(core::depth d);
 
-        /// returns the desired format
-        virtual core::format getDesiredFormatInternal() const;
+/// returns the desired format
+virtual core::format getDesiredFormatInternal() const;
 
-        /// returns the desired format
-        virtual core::depth getDesiredDepthInternal() const;
+/// returns the desired format
+virtual core::depth getDesiredDepthInternal() const;
 
-        /// returns the desired format
-        virtual utils::Size getDesiredSizeInternal() const;
+/// returns the desired format
+virtual utils::Size getDesiredSizeInternal() const;
 
-      public:
+public:
 
-        /// grant private method access to the grabber handle template
-        template<class X> friend class GrabberHandle;
+/// grant private method access to the grabber handle template
+template<class X> friend class GrabberHandle;
 
-        /// grant private method access to the GenericGrabber class
-        friend class GenericGrabber;
+/// grant private method access to the GenericGrabber class
+friend class GenericGrabber;
 
-        ///
-        Grabber();
+///
+Grabber();
 
-        /// Destructor
-        virtual ~Grabber();
+/// Destructor
+virtual ~Grabber();
 
-        /// Grabs the next image and returns it as an Image value
-        core::Image grabImage();
+/// Grabs the next image and returns it as an Image value
+core::Image grabImage();
 
-        /// returns whether the desired parameter for the given type is used
-        /** This method is only available for the type core::depth,icl::utils::Size and core::format*/
-        template<class T>
-        bool desiredUsed() const{ return false; }
+/// returns whether the desired parameter for the given type is used
+/** This method is only available for the type core::depth,icl::utils::Size and core::format*/
+template<class T>
+bool desiredUsed() const{ return false; }
 
-        /// sets desired parameters (only available for core::depth,utils::Size and core::format)
-        template<class T>
-        void useDesired(const T &t){ (void)t;}
+/// sets desired parameters (only available for core::depth,utils::Size and core::format)
+template<class T>
+void useDesired(const T &t){ (void)t;}
 
-        /// sets up the grabber to use all given desired parameters
-        void useDesired(core::depth d, const utils::Size &size, core::format fmt);
+/// sets up the grabber to use all given desired parameters
+void useDesired(core::depth d, const utils::Size &size, core::format fmt);
 
-        /// set the grabber to ignore the desired param of type T
-        /** This method is only available for core::depth,utils::Size and core::format */
-        template<class T>
-        void ignoreDesired() {
-          useDesired<T>(grabber_get_null<T>());
-        }
+/// set the grabber to ignore the desired param of type T
+/** This method is only available for core::depth,utils::Size and core::format */
+template<class T>
+void ignoreDesired() {
+  useDesired<T>(grabber_get_null<T>());
+}
 
-        /// sets up the grabber to ignore all desired parameters
-        void ignoreDesired();
+/// sets up the grabber to ignore all desired parameters
+void ignoreDesired();
 
-        /// returns the desired value for the given type T
-        /** This method is only available for core::depth,utils::Size and core::format */
-        template<class T>
-        T getDesired() const { return T(); }
+/// returns the desired value for the given type T
+/** This method is only available for core::depth,utils::Size and core::format */
+template<class T>
+T getDesired() const { return T(); }
 
-        /// @}
-        /// @{ @name static string conversion functions
+/// @}
+/// @{ @name static string conversion functions
 
-        /// translates a SteppingRange into a string representation
-        static std::string translateSteppingRange(const utils::SteppingRange<double>& range);
+/// translates a SteppingRange into a string representation
+static std::string translateSteppingRange(const utils::SteppingRange<double>& range);
 
-        /// creates a SteppingRange out of a string representation
-        static utils::SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
+/// creates a SteppingRange out of a string representation
+static utils::SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
 
-        /// translates a vector of doubles into a string representation
-        static std::string translateDoubleVec(const std::vector<double> &doubleVec);
+/// translates a vector of doubles into a string representation
+static std::string translateDoubleVec(const std::vector<double> &doubleVec);
 
-        /// creates a vector of doubles out of a string representation
-        static std::vector<double> translateDoubleVec(const std::string &doubleVecStr);
+/// creates a vector of doubles out of a string representation
+static std::vector<double> translateDoubleVec(const std::string &doubleVecStr);
 
-        /// translates a vector of strings into a single string representation
-        static std::string translateStringVec(const std::vector<std::string> &stringVec);
+/// translates a vector of strings into a single string representation
+static std::string translateStringVec(const std::vector<std::string> &stringVec);
 
-        /// creates a vector of strins out of a single string representation
-        static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
+/// creates a vector of strins out of a single string representation
+static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
 
-        /// @}
+/// @}
 
-        /// @{ @name distortion functions
+/// @{ @name distortion functions
 
-        /// enables the undistorion
-        void enableUndistortion(const std::string &filename);
+/// enables the undistorion
+void enableUndistortion(const std::string &filename);
 
-        /// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
-        void enableUndistortion(const ImageUndistortion &udist);
+/// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
+void enableUndistortion(const ImageUndistortion &udist);
 
-        /// enables undistortion from given programm argument.
-        /** where first argument is the filename of the xml file and second is the size of picture*/
-        void enableUndistortion(const utils::ProgArg &pa);
+/// enables undistortion from given programm argument.
+/** where first argument is the filename of the xml file and second is the size of picture*/
+void enableUndistortion(const utils::ProgArg &pa);
 
-        /// enables undistortion for given warp map
-        void enableUndistortion(const core::Img32f &warpMap);
+/// enables undistortion for given warp map
+void enableUndistortion(const core::Img32f &warpMap);
 
-        /// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
-        /** Please note, that this method has no effect if the undistortion was not enabled before
-           using one of the Grabber::enableUndistortion methods. Furthermore, the setting is lost
-           if the undistortion is deactivated using Grabber::disableUndistortion */
-        void setUndistortionInterpolationMode(core::scalemode mode);
+/// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
+/** Please note, that this method has no effect if the undistortion was not enabled before
+   using one of the Grabber::enableUndistortion methods. Furthermore, the setting is lost
+   if the undistortion is deactivated using Grabber::disableUndistortion */
+void setUndistortionInterpolationMode(core::scalemode mode);
 
-        /// disables distortion
-        void disableUndistortion();
+/// disables distortion
+void disableUndistortion();
 
-        /// returns whether distortion is currently enabled
-        bool isUndistortionEnabled() const;
+/// returns whether distortion is currently enabled
+bool isUndistortionEnabled() const;
 
-        /// returns the internal warp map or NULL if undistortion is not enabled
-        const core::Img32f *getUndistortionWarpMap() const;
-        /// @}
+/// returns the internal warp map or NULL if undistortion is not enabled
+const core::Img32f *getUndistortionWarpMap() const;
+/// @}
 
-        /// new image callback type
-        using callback = std::function<void(const core::ImgBase*)>;
+/// new image callback type
+using callback = std::function<void(const core::ImgBase*)>;
 
-        /// registers a callback that is called each time, a new image is available
-        /** This feature must not be implemented by specific grabber implementations. And
-           it is up to the implementation whether the image that is passed to the
-           callback has the "desired parameters" or not. Most likely, an internal
-           image buffer is passed, which does not have the desired paremters. The output image
-           is also usually not undistorted. */
-        virtual void registerCallback(callback cb);
+/// registers a callback that is called each time, a new image is available
+/** This feature must not be implemented by specific grabber implementations. And
+   it is up to the implementation whether the image that is passed to the
+   callback has the "desired parameters" or not. Most likely, an internal
+   image buffer is passed, which does not have the desired paremters. The output image
+   is also usually not undistorted. */
+virtual void registerCallback(callback cb);
 
-        /// removes all registered image callbacks
-        virtual void removeAllCallbacks();
+/// removes all registered image callbacks
+virtual void removeAllCallbacks();
 
-        /// this function can be implemented by subclasses in order to notify, that a new image is available
-        /** When this function is called, it will automatically call all callbacks with the given image. */
-        virtual void notifyNewImageAvailable(const core::ImgBase *image);
+/// this function can be implemented by subclasses in order to notify, that a new image is available
+/** When this function is called, it will automatically call all callbacks with the given image. */
+virtual void notifyNewImageAvailable(const core::ImgBase *image);
 
-      protected:
+protected:
 
 
-        /// main interface method, that is implemented by the actual grabber instances
-        /** This method is defined in the grabber implementation. It acquires a new image
-           using the grabbers specific image acquisition back-end */
-        virtual const core::ImgBase *acquireImage(){ return nullptr; }
+/// main interface method, that is implemented by the actual grabber instances
+/** This method is defined in the grabber implementation. It acquires a new image
+   using the grabbers specific image acquisition back-end */
+virtual const core::ImgBase *acquireImage(){ return nullptr; }
 
-        /// Utility function that allows for much easier implementation of grabUD
-        /** called by the grabbers grab() method **/
-        const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **dst);
+/// Utility function that allows for much easier implementation of grabUD
+/** called by the grabbers grab() method **/
+const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **dst);
 
-      protected:
-        /// Internal grab using legacy ImgBase** mechanism (not public — use grabImage())
-        const core::ImgBase *grab(core::ImgBase **dst=0);
+protected:
+/// Internal grab using legacy ImgBase** mechanism (not public — use grabImage())
+const core::ImgBase *grab(core::ImgBase **dst=0);
 
-      private:
-        /// callback for changed configurable properties
-        void processPropertyChange(const utils::Configurable::Property &prop);
+private:
+/// callback for changed configurable properties
+void processPropertyChange(const utils::Configurable::Property &prop);
 
-    };
+};
 
-    /** \cond */
-    template<> inline void Grabber::useDesired<core::format>(const core::format &t) { setDesiredFormatInternal(t); }
-    template<> inline void Grabber::useDesired<core::depth>(const core::depth &t) { setDesiredDepthInternal(t); }
-    template<> inline void Grabber::useDesired<utils::Size>(const utils::Size &t) { setDesiredSizeInternal(t); }
+/** \cond */
+template<> inline void Grabber::useDesired<core::format>(const core::format &t) { setDesiredFormatInternal(t); }
+template<> inline void Grabber::useDesired<core::depth>(const core::depth &t) { setDesiredDepthInternal(t); }
+template<> inline void Grabber::useDesired<utils::Size>(const utils::Size &t) { setDesiredSizeInternal(t); }
 
-    template<> inline core::depth Grabber::getDesired<core::depth>() const { return getDesiredDepthInternal(); }
-    template<> inline utils::Size Grabber::getDesired<utils::Size>() const { return getDesiredSizeInternal(); }
-    template<> inline core::format Grabber::getDesired<core::format>() const { return getDesiredFormatInternal(); }
+template<> inline core::depth Grabber::getDesired<core::depth>() const { return getDesiredDepthInternal(); }
+template<> inline utils::Size Grabber::getDesired<utils::Size>() const { return getDesiredSizeInternal(); }
+template<> inline core::format Grabber::getDesired<core::format>() const { return getDesiredFormatInternal(); }
 
-    template<> inline bool Grabber::desiredUsed<core::format>() const{ return static_cast<int>(getDesired<core::format>()) != -1; }
-    template<> inline bool Grabber::desiredUsed<core::depth>() const{ return static_cast<int>(getDesired<core::depth>()) != -1; }
-    template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
+template<> inline bool Grabber::desiredUsed<core::format>() const{ return static_cast<int>(getDesired<core::format>()) != -1; }
+template<> inline bool Grabber::desiredUsed<core::depth>() const{ return static_cast<int>(getDesired<core::depth>()) != -1; }
+template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
 
-    class ICLIO_API GrabberRegister : utils::Uncopyable {
-      private:
-        std::recursive_mutex mutex;
+class ICLIO_API GrabberRegister : utils::Uncopyable {
+private:
+std::recursive_mutex mutex;
 
-        struct GrabberFunctions{
-          std::function<Grabber*(const std::string&)> init;
-          std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> list;
-        };
+struct GrabberFunctions{
+  std::function<Grabber*(const std::string&)> init;
+  std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> list;
+};
 
-        // grabber functions map
-        using GFM = std::map<std::string, GrabberFunctions>;
-        GFM gfm;
+// grabber functions map
+using GFM = std::map<std::string, GrabberFunctions>;
+GFM gfm;
 
-        // grabber bus reset functions map
-        using GBRM = std::map<std::string, std::function<void(bool)> >;
-        GBRM gbrm;
+// grabber bus reset functions map
+using GBRM = std::map<std::string, std::function<void(bool)> >;
+GBRM gbrm;
 
-        // grabber device descriptions map
-        using GDS = std::set<std::string>;
-        GDS gds;
+// grabber device descriptions map
+using GDS = std::set<std::string>;
+GDS gds;
 
-        // private constructor
-        GrabberRegister(){}
+// private constructor
+GrabberRegister(){}
 
-      public:
-        static GrabberRegister* getInstance();
+public:
+static GrabberRegister* getInstance();
 
-        void registerGrabberType(const std::string &grabberid,
-                                   std::function<Grabber *(const std::string &)> creator,
-                                   std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> device_list);
+void registerGrabberType(const std::string &grabberid,
+                           std::function<Grabber *(const std::string &)> creator,
+                           std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> device_list);
 
-        void registerGrabberBusReset(const std::string &grabberid,
-                                   std::function<void(bool)> reset_function);
+void registerGrabberBusReset(const std::string &grabberid,
+                           std::function<void(bool)> reset_function);
 
-        void addGrabberDescription(const std::string &grabber_description);
+void addGrabberDescription(const std::string &grabber_description);
 
-        Grabber* createGrabber(const std::string &grabberid, const std::string &param);
+Grabber* createGrabber(const std::string &grabberid, const std::string &param);
 
-        std::vector<std::string> getRegisteredGrabbers();
+std::vector<std::string> getRegisteredGrabbers();
 
-        std::vector<std::string> getGrabberInfos();
+std::vector<std::string> getGrabberInfos();
 
-        const std::vector<GrabberDeviceDescription>& getDeviceList(std::string id, std::string hint="", bool rescan=true);
+const std::vector<GrabberDeviceDescription>& getDeviceList(std::string id, std::string hint="", bool rescan=true);
 
-        void resetGrabberBus(const std::string &id, bool verbose);
-    };
+void resetGrabberBus(const std::string &id, bool verbose);
+};
 
-    /** \endcond */
+/** \endcond */
 
-    /// registration macro for grabbers
-    /** @see \ref REG */
-    #define REGISTER_GRABBER(NAME,CREATE_FUNC,DEVICE_LIST_FUNC,DESCRIPTION)                                        \
-    struct StaticGrabberRegistrationFor_##NAME{                                                                    \
-      StaticGrabberRegistrationFor_##NAME(){                                                                       \
-        icl::io::GrabberRegister::getInstance() -> registerGrabberType(#NAME, CREATE_FUNC, DEVICE_LIST_FUNC);      \
-        icl::io::GrabberRegister::getInstance() -> addGrabberDescription(DESCRIPTION);                             \
-      }                                                                                                            \
-    } staticGrabberRegistrationFor_##NAME;
+/// registration macro for grabbers
+/** @see \ref REG */
+#define REGISTER_GRABBER(NAME,CREATE_FUNC,DEVICE_LIST_FUNC,DESCRIPTION)                                        \
+struct StaticGrabberRegistrationFor_##NAME{                                                                    \
+StaticGrabberRegistrationFor_##NAME(){                                                                       \
+icl::io::GrabberRegister::getInstance() -> registerGrabberType(#NAME, CREATE_FUNC, DEVICE_LIST_FUNC);      \
+icl::io::GrabberRegister::getInstance() -> addGrabberDescription(DESCRIPTION);                             \
+}                                                                                                            \
+} staticGrabberRegistrationFor_##NAME;
 
-    #define REGISTER_GRABBER_BUS_RESET_FUNCTION(NAME,BUS_RESET_FUNC)                                               \
-    struct StaticGrabberBusResetRegistrationFor_##NAME{                                                            \
-      StaticGrabberBusResetRegistrationFor_##NAME(){                                                               \
-        icl::io::GrabberRegister::getInstance() -> registerGrabberBusReset(#NAME, BUS_RESET_FUNC);                 \
-      }                                                                                                            \
-    } staticGrabberBusResetRegistrationFor_##NAME;
+#define REGISTER_GRABBER_BUS_RESET_FUNCTION(NAME,BUS_RESET_FUNC)                                               \
+struct StaticGrabberBusResetRegistrationFor_##NAME{                                                            \
+StaticGrabberBusResetRegistrationFor_##NAME(){                                                               \
+icl::io::GrabberRegister::getInstance() -> registerGrabberBusReset(#NAME, BUS_RESET_FUNC);                 \
+}                                                                                                            \
+} staticGrabberBusResetRegistrationFor_##NAME;
 
   } // namespace icl::io

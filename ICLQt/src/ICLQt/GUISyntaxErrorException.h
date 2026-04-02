@@ -10,11 +10,11 @@
 #include <string>
 
 namespace icl::qt {
-    /// Internally used and caught exception class for the GUI API \ingroup UNCOMMON
-    class GUISyntaxErrorException : public utils::ICLException {
-      public:
-      GUISyntaxErrorException(const std::string &guidef, const std::string &problem) noexcept:
-      utils::ICLException(std::string("Syntax Error while parsing:\n\"")+guidef+"\"\n("+problem+")\n") {}
-      virtual ~GUISyntaxErrorException() noexcept {}
-    };
+  /// Internally used and caught exception class for the GUI API \ingroup UNCOMMON
+  class GUISyntaxErrorException : public utils::ICLException {
+    public:
+    GUISyntaxErrorException(const std::string &guidef, const std::string &problem) noexcept:
+    utils::ICLException(std::string("Syntax Error while parsing:\n\"")+guidef+"\"\n("+problem+")\n") {}
+    virtual ~GUISyntaxErrorException() noexcept {}
+  };
   } // namespace icl::qt

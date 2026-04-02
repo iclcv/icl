@@ -8,29 +8,29 @@
 #include <ICLCore/Image.h>
 
 namespace icl::core {
-    // Re-export general types into core namespace
-    using utils::Backend;
-    using utils::backendName;
+  // Re-export general types into core namespace
+  using utils::Backend;
+  using utils::backendName;
 
-    /// Image backend dispatching — typedef to BackendDispatching<Image>.
-    /// Used by filter operations (UnaryOp, BinaryOp) that work with Image values.
-    using ImageBackendDispatching = utils::BackendDispatching<Image>;
+  /// Image backend dispatching — typedef to BackendDispatching<Image>.
+  /// Used by filter operations (UnaryOp, BinaryOp) that work with Image values.
+  using ImageBackendDispatching = utils::BackendDispatching<Image>;
 
-    /// ImgBase* backend dispatching — for Img<T> member functions that
-    /// dispatch on `this`. Avoids the overhead of constructing an Image wrapper.
-    using ImgBaseBackendDispatching = utils::BackendDispatching<ImgBase*>;
+  /// ImgBase* backend dispatching — for Img<T> member functions that
+  /// dispatch on `this`. Avoids the overhead of constructing an Image wrapper.
+  using ImgBaseBackendDispatching = utils::BackendDispatching<ImgBase*>;
 
-    /// Predefined applicability for Image context.
-    template<class... Ts>
-    bool applicableTo(const Image& src) {
-      depth d = src.getDepth();
-      return ((d == getDepth<Ts>()) || ...);
-    }
+  /// Predefined applicability for Image context.
+  template<class... Ts>
+  bool applicableTo(const Image& src) {
+    depth d = src.getDepth();
+    return ((d == getDepth<Ts>()) || ...);
+  }
 
-    /// Predefined applicability for ImgBase* context.
-    template<class... Ts>
-    bool applicableToBase(ImgBase* const& p) {
-      depth d = p->getDepth();
-      return ((d == getDepth<Ts>()) || ...);
-    }
+  /// Predefined applicability for ImgBase* context.
+  template<class... Ts>
+  bool applicableToBase(ImgBase* const& p) {
+    depth d = p->getDepth();
+    return ((d == getDepth<Ts>()) || ...);
+  }
   } // namespace icl::core

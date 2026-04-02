@@ -6,16 +6,16 @@
 
 
 namespace icl::utils {
-    const Size32f Size32f::null(0,0);
+  const Size32f Size32f::null(0,0);
 
 
-    std::ostream &operator<<(std::ostream &s, const Size32f &size){
-      return s << size.width << 'x' << size.height;
-    }
+  std::ostream &operator<<(std::ostream &s, const Size32f &size){
+    return s << size.width << 'x' << size.height;
+  }
 
-    std::istream &operator>>(std::istream &s, Size32f &size){
-      char c;
-      return s >> size.width >> c >> size.height;
-    }
+  std::istream &operator>>(std::istream &s, Size32f &size){
+    char c;
+    return s >> size.width >> c >> size.height;
+  }
 
   } // namespace icl::utils

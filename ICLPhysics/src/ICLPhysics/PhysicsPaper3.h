@@ -22,197 +22,197 @@ class btSoftBody;
 /** \endcond */
 
 namespace icl::physics {
-    /** \cond */
-    class PhysicsWorld;
-    /** \endcond */
+  /** \cond */
+  class PhysicsWorld;
+  /** \endcond */
 
-    class ICLPhysics_API PhysicsPaper3 : public SoftObject{
-      protected:
-      struct Data;
-      Data *m_data;
+  class ICLPhysics_API PhysicsPaper3 : public SoftObject{
+    protected:
+    struct Data;
+    Data *m_data;
 
-      struct ICLPhysics_API LinkState{
-        LinkState(bool isFirstOrder=true, bool isFold=false,
-                  bool hasMemorizedRestDist=false, bool isOriginal=false):
-          isFirstOrder(isFirstOrder),isFold(isFold),
-          hasMemorizedRestDist(hasMemorizedRestDist),
-          isOriginal(isOriginal){}
+    struct ICLPhysics_API LinkState{
+      LinkState(bool isFirstOrder=true, bool isFold=false,
+                bool hasMemorizedRestDist=false, bool isOriginal=false):
+        isFirstOrder(isFirstOrder),isFold(isFold),
+        hasMemorizedRestDist(hasMemorizedRestDist),
+        isOriginal(isOriginal){}
 
-        bool isFirstOrder;
-        bool isFold;
-        bool hasMemorizedRestDist;
-        bool isOriginal;
+      bool isFirstOrder;
+      bool isFold;
+      bool hasMemorizedRestDist;
+      bool isOriginal;
 
-        LinkState *p() const { return new LinkState(*this); }
+      LinkState *p() const { return new LinkState(*this); }
 
-        static bool is_first_order(void *tag){
-          return static_cast<LinkState*>(tag)->isFirstOrder;
-        }
-        static bool is_fold(void *tag){
-          return static_cast<LinkState*>(tag)->isFold;
-        }
-        static bool has_memorized_rest_dist(void *tag){
-          return static_cast<LinkState*>(tag)->hasMemorizedRestDist;
-        }
-        static bool is_original(void *tag){
-          return static_cast<LinkState*>(tag)->isOriginal;
-        }
-      };
+      static bool is_first_order(void *tag){
+        return static_cast<LinkState*>(tag)->isFirstOrder;
+      }
+      static bool is_fold(void *tag){
+        return static_cast<LinkState*>(tag)->isFold;
+      }
+      static bool has_memorized_rest_dist(void *tag){
+        return static_cast<LinkState*>(tag)->hasMemorizedRestDist;
+      }
+      static bool is_original(void *tag){
+        return static_cast<LinkState*>(tag)->isOriginal;
+      }
+    };
 
-      public:
+    public:
 
-      using LinkCoords = std::pair<utils::Point32f,utils::Point32f>;
+    using LinkCoords = std::pair<utils::Point32f,utils::Point32f>;
 
-      using PhysicsObject::updateSceneObject;
-      void updateSceneObject(btSoftBody *soft);
+    using PhysicsObject::updateSceneObject;
+    void updateSceneObject(btSoftBody *soft);
 
-      PhysicsPaper3(PhysicsWorld *world,
-                    bool enableSelfCollision,
-                    const utils::Size &cellsInit,
-                    const geom::Vec corners[4]=0,
-                    const core::Img8u *front_texture=0,
-                    const core::Img8u *back_texture=0,
-                    float initialStiffness=-1,
-                    float initialMaxLinkDistnace=0.5);
+    PhysicsPaper3(PhysicsWorld *world,
+                  bool enableSelfCollision,
+                  const utils::Size &cellsInit,
+                  const geom::Vec corners[4]=0,
+                  const core::Img8u *front_texture=0,
+                  const core::Img8u *back_texture=0,
+                  float initialStiffness=-1,
+                  float initialMaxLinkDistnace=0.5);
 
-      PhysicsPaper3(PhysicsWorld *world, const PhysicsPaper3 &other);
+    PhysicsPaper3(PhysicsWorld *world, const PhysicsPaper3 &other);
 
-      virtual ~PhysicsPaper3();
+    virtual ~PhysicsPaper3();
 
-      PhysicsPaper3 *clone(PhysicsWorld *world) const;
+    PhysicsPaper3 *clone(PhysicsWorld *world) const;
 
-      /// takes the softbody from the given other physics paper
-      /** The current own soft-body is deleted, the current other
-          softbody is moved (by pointer) into this class. Most additional
-          state variables (e.g. texture coords) are copied over aswell
-          (right now the physics world and the corresponding config from
-          other is not copied over)*/
-      void takeSoftBodyFrom(PhysicsPaper3 *other);
+    /// takes the softbody from the given other physics paper
+    /** The current own soft-body is deleted, the current other
+        softbody is moved (by pointer) into this class. Most additional
+        state variables (e.g. texture coords) are copied over aswell
+        (right now the physics world and the corresponding config from
+        other is not copied over)*/
+    void takeSoftBodyFrom(PhysicsPaper3 *other);
 
-      void saveState(const std::string &filename);
+    void saveState(const std::string &filename);
 
-      void restoreState(const std::string &filename);
+    void restoreState(const std::string &filename);
 
-      void setFaceAlpha(float alpha01);
+    void setFaceAlpha(float alpha01);
 
-      float getFaceAlpha() const;
+    float getFaceAlpha() const;
 
-      int getNumNodes() const;
+    int getNumNodes() const;
 
-      void splitAlongLine(const utils::Point32f &a, const utils::Point32f &b, const geom::Camera &currCam);
+    void splitAlongLine(const utils::Point32f &a, const utils::Point32f &b, const geom::Camera &currCam);
 
-      void splitAlongLineInPaperCoords(const utils::Point32f &a, const utils::Point32f &b, bool autoExtendLineToEdges=true);
+    void splitAlongLineInPaperCoords(const utils::Point32f &a, const utils::Point32f &b, bool autoExtendLineToEdges=true);
 
 
+    geom::Vec interpolatePosition(const utils::Point32f &p) const;
+
+    /// returns paper coordinates of given (or Point(-1,-1) in case of no hit)
+    utils::Point32f hit(const geom::ViewRay &ray) const;
+
+
+    struct ICLPhysics_API NodeMovement{
+      geom::Vec curr;
+      geom::Vec target;
+      float alpha;
+    };
+
+    void movePosition(const utils::Point32f &coords, const geom::Vec &target, float streangth=1, float radius=0.1,
+                      std::vector<NodeMovement> *dst=0);
+
+
+
+    virtual void complexCustomRender(icl::geom::ShaderUtil* util) override;
+
+
+    SceneObject *approximateSurface(int nx=100, int ny=150) const;
+
+    core::Img32f paperCoordinateTest(const geom::Camera &cam) const;
+
+    /// if fixedStiffness is in ]0,1], it is use for all links
+    void createBendingConstraints(float maxDistance, float fixedStiffness=-1);
+
+    void setLinksVisible(bool visible);
+
+    void simulateSelfCollision();
+
+    static inline void free_link_state(void *p) { delete static_cast<LinkState*>(p); }
+
+    const core::Img32f &getFoldMap() const;
+
+    void setFoldMapChangedCallback(std::function<void(const core::Img32f &)> cb);
+
+    void setFacesVisible(bool visible);
+
+    virtual void lock() const override;
+
+    virtual void unlock() const override;
+
+    const std::vector<utils::Point32f> getTexCoords() const;
+
+    /// returns the possible paper coords of link at given camera pixel
+    std::shared_ptr<LinkCoords> getLinkCoords(const utils::Point32f &pix, const geom::Camera &cam) const;
+
+    /// adapts the stiffness of a given fold (optionally memorizes deformation)
+    void adaptFoldStiffness(const LinkCoords &coords, float stiffness, bool memorize=false);
+
+    /// highlights all folds colliniear with line ab in paper space
+    utils::VisualizationDescription getFoldLineHighlight(const LinkCoords &coords,
+                                                         const geom::Camera &currCam) const;
+
+    /// sets whether folds are always straightened
+    void setStraightenFolds(bool enabled);
+
+    /// sets whether folds are automatically inserted doubled
+    void setDoubleFolds(bool enabled);
+
+
+    struct ICLPhysics_API Structure{
+      struct Face { int a,b,c; };
+      std::vector<utils::Point32f> texCoords;
+      std::vector<geom::Vec> vertices;
+      std::vector<Face> faces;
       geom::Vec interpolatePosition(const utils::Point32f &p) const;
 
-      /// returns paper coordinates of given (or Point(-1,-1) in case of no hit)
+      void deserializeFrom(std::istream &str);
+      void updateToSceneObject(SceneObject *obj);
       utils::Point32f hit(const geom::ViewRay &ray) const;
-
-
-      struct ICLPhysics_API NodeMovement{
-        geom::Vec curr;
-        geom::Vec target;
-        float alpha;
-      };
-
-      void movePosition(const utils::Point32f &coords, const geom::Vec &target, float streangth=1, float radius=0.1,
-                        std::vector<NodeMovement> *dst=0);
-
-
-
-      virtual void complexCustomRender(icl::geom::ShaderUtil* util) override;
-
-
-      SceneObject *approximateSurface(int nx=100, int ny=150) const;
-
-      core::Img32f paperCoordinateTest(const geom::Camera &cam) const;
-
-      /// if fixedStiffness is in ]0,1], it is use for all links
-      void createBendingConstraints(float maxDistance, float fixedStiffness=-1);
-
-      void setLinksVisible(bool visible);
-
-      void simulateSelfCollision();
-
-      static inline void free_link_state(void *p) { delete static_cast<LinkState*>(p); }
-
-      const core::Img32f &getFoldMap() const;
-
-      void setFoldMapChangedCallback(std::function<void(const core::Img32f &)> cb);
-
-      void setFacesVisible(bool visible);
-
-      virtual void lock() const override;
-
-      virtual void unlock() const override;
-
-      const std::vector<utils::Point32f> getTexCoords() const;
-
-      /// returns the possible paper coords of link at given camera pixel
-      std::shared_ptr<LinkCoords> getLinkCoords(const utils::Point32f &pix, const geom::Camera &cam) const;
-
-      /// adapts the stiffness of a given fold (optionally memorizes deformation)
-      void adaptFoldStiffness(const LinkCoords &coords, float stiffness, bool memorize=false);
-
-      /// highlights all folds colliniear with line ab in paper space
-      utils::VisualizationDescription getFoldLineHighlight(const LinkCoords &coords,
-                                                           const geom::Camera &currCam) const;
-
-      /// sets whether folds are always straightened
-      void setStraightenFolds(bool enabled);
-
-      /// sets whether folds are automatically inserted doubled
-      void setDoubleFolds(bool enabled);
-
-
-      struct ICLPhysics_API Structure{
-        struct Face { int a,b,c; };
-        std::vector<utils::Point32f> texCoords;
-        std::vector<geom::Vec> vertices;
-        std::vector<Face> faces;
-        geom::Vec interpolatePosition(const utils::Point32f &p) const;
-
-        void deserializeFrom(std::istream &str);
-        void updateToSceneObject(SceneObject *obj);
-        utils::Point32f hit(const geom::ViewRay &ray) const;
-      };
-
-      void serializeStructureTo(std::ostream &str);
-
-      void setLinkColors(const geom::GeomColor &originalLinks,
-                         const geom::GeomColor &insertedLinks,
-                         const geom::GeomColor &creaseLines,
-                         const geom::GeomColor &bendingConstraints);
-
-      protected:
-
-
-
-
-      void updateCollisionClusters();
-
-      void updateNodeAreas();
-      //void updateConstants();
-
-      bool hitLink(btSoftBody::Link *l, const utils::Point32f &a, const utils::Point32f &b);
-
-      bool hitTriangle(btSoftBody::Face *f, const utils::Point32f &a, const utils::Point32f &b);
-
-      void addTriangle(int a, int b, int c);
-
-      void addLink(int a, int b, float stiffness=1.0f, const LinkState &state=LinkState());
-
-      void addVertexOrReuseOldOne(utils::Point32f &t, btVector3 &v, int &idx);
-
-      bool replaceTriangle(btSoftBody::Face *f, const utils::Point32f &a, const utils::Point32f &b);
-
-      void lockWorld();
-
-      void unlockWorld();
-
-      void updateSmoothNormalGraph();
-
-      void computeSmoothNormals();
     };
+
+    void serializeStructureTo(std::ostream &str);
+
+    void setLinkColors(const geom::GeomColor &originalLinks,
+                       const geom::GeomColor &insertedLinks,
+                       const geom::GeomColor &creaseLines,
+                       const geom::GeomColor &bendingConstraints);
+
+    protected:
+
+
+
+
+    void updateCollisionClusters();
+
+    void updateNodeAreas();
+    //void updateConstants();
+
+    bool hitLink(btSoftBody::Link *l, const utils::Point32f &a, const utils::Point32f &b);
+
+    bool hitTriangle(btSoftBody::Face *f, const utils::Point32f &a, const utils::Point32f &b);
+
+    void addTriangle(int a, int b, int c);
+
+    void addLink(int a, int b, float stiffness=1.0f, const LinkState &state=LinkState());
+
+    void addVertexOrReuseOldOne(utils::Point32f &t, btVector3 &v, int &idx);
+
+    bool replaceTriangle(btSoftBody::Face *f, const utils::Point32f &a, const utils::Point32f &b);
+
+    void lockWorld();
+
+    void unlockWorld();
+
+    void updateSmoothNormalGraph();
+
+    void computeSmoothNormals();
+  };
   } // namespace icl::physics

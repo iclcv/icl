@@ -9,18 +9,18 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::qt {
-    void DrawHandle3D::setImage(const ImgBase *image){
-      (**this)->setImage(image);
-    }
-    void DrawHandle3D::render(){
-      (**this)->render();
-    }
-    void DrawHandle3D::registerCallback(const GUI::Callback &cb, const std::string &events){
-      (**this)->registerCallback(cb,events);
-    }
+  void DrawHandle3D::setImage(const ImgBase *image){
+    (**this)->setImage(image);
+  }
+  void DrawHandle3D::render(){
+    (**this)->render();
+  }
+  void DrawHandle3D::registerCallback(const GUI::Callback &cb, const std::string &events){
+    (**this)->registerCallback(cb,events);
+  }
 
-    void DrawHandle3D::removeCallbacks(){
-      (**this)->removeCallbacks();
-    }
+  void DrawHandle3D::removeCallbacks(){
+    (**this)->removeCallbacks();
+  }
 
   } // namespace icl::qt

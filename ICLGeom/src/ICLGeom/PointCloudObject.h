@@ -8,134 +8,134 @@
 #include <ICLGeom/PointCloudObjectBase.h>
 
 namespace icl::geom {
-    /// Base implementation of the SceneObjectBase interface for compability with common icl::SceneObjects
-    /** This class replaces the former implementations
-        - PointcloudSceneObject
-        - RGBDImageSceneObject
+  /// Base implementation of the SceneObjectBase interface for compability with common icl::SceneObjects
+  /** This class replaces the former implementations
+      - PointcloudSceneObject
+      - RGBDImageSceneObject
 
-        \section NORMALS Normals
+      \section NORMALS Normals
 
-        The PointCloudObject can be set up to have also normals in the constructor.
+      The PointCloudObject can be set up to have also normals in the constructor.
 
-        \section TODO
-        - add optional color (perhaps not possible)
+      \section TODO
+      - add optional color (perhaps not possible)
 
-     */
-    class ICLGeom_API PointCloudObject : public PointCloudObjectBase{
-      protected:
-      bool m_organized;           //!< internal 2D organized flag
-      utils::Size m_dim2D;        //!< 2D dimension
-      bool m_hasNormals;          //!< flag whether normals are given
-      bool m_hasColors;           //!< flag whether the point cloud has colors
-      bool m_hasLabels;           //!< flag indicating whether labels are supported
-      bool m_hasDepth;            //!< flag indicating whether a depth-feature is supported
-      std::vector<int> m_labels;  //!< label mask (activated in constructor)
-      std::vector<float> m_depth; //!< optional feature for the depth mask (Depth-feature)
-      public:
-
-
-      /// creates an empty point cloud with with optionally initialized featuers
-      PointCloudObject(bool withNormals=false, bool withColors=false, bool withLabels=false, bool withDepth=false);
-
-      /// create an un-organizied point cloud with N points
-      PointCloudObject(int numPoints, bool withNormals=false, bool withColors=true, bool withLabels=false, bool withDepth=false);
-
-      /// creates a new organized or un-organized SimplePointCloudObject instance
-      /** @param width number of points per line (if unordered, number of points)
-          @param height number of points per row (if unordered, height is not used)
-          @param organized specifies whether there is a 2D data order or not
-          @params withNormals if true, also normals will be created for each point
-          */
-      PointCloudObject(int width, int height, bool organized=true, bool withNormals=false,
-                       bool withColors=true, bool withLabels=false, bool withDepth=false);
-
-      /// returns which features are supported (only XYZ and RGBA32f)
-      virtual bool supports(FeatureType t) const;
-
-      /// returns whether the points are 2D-ordered
-      virtual bool isOrganized() const;
-
-      /// returns the 2D size of the pointcloud (throws exception if not ordered)
-      virtual utils::Size getSize() const;
-
-      /// return the linearily ordered number of point in the point cloud
-      virtual int getDim() const;
-
-      /// adapts the point cloud size
-      /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
-      virtual void setSize(const utils::Size &size);
-
-      /// returns XYZ data segment
-      virtual core::DataSegment<float,3> selectXYZ();
-
-      /// returns XYZH data segment
-      virtual core::DataSegment<float,4> selectXYZH();
-
-      /// returns the RGBA data segment (4-floats)
-      virtual core::DataSegment<float,4> selectRGBA32f();
-
-      /// returns the Normals data segment (4-floats)
-      /** Only available if the constructor was called with "withNormals" set to true */
-      virtual core::DataSegment<float,4> selectNormal();
-
-      /// returns the label data segment (32-bit signed integer)
-      /** Only available if the the Label feature was explicitly enabled */
-      virtual core::DataSegment<icl32s,1> selectLabel();
+   */
+  class ICLGeom_API PointCloudObject : public PointCloudObjectBase{
+    protected:
+    bool m_organized;           //!< internal 2D organized flag
+    utils::Size m_dim2D;        //!< 2D dimension
+    bool m_hasNormals;          //!< flag whether normals are given
+    bool m_hasColors;           //!< flag whether the point cloud has colors
+    bool m_hasLabels;           //!< flag indicating whether labels are supported
+    bool m_hasDepth;            //!< flag indicating whether a depth-feature is supported
+    std::vector<int> m_labels;  //!< label mask (activated in constructor)
+    std::vector<float> m_depth; //!< optional feature for the depth mask (Depth-feature)
+    public:
 
 
-      /// returns the depth data segment (single channel float, packed)
-      /** Only available if the the Depth feature was explicitly enabled */
-      virtual core::DataSegment<float,1> selectDepth();
+    /// creates an empty point cloud with with optionally initialized featuers
+    PointCloudObject(bool withNormals=false, bool withColors=false, bool withLabels=false, bool withDepth=false);
 
-      /// important, this is again, reimplemented in order to NOT draw the stuff manually here
-      virtual void customRender();
+    /// create an un-organizied point cloud with N points
+    PointCloudObject(int numPoints, bool withNormals=false, bool withColors=true, bool withLabels=false, bool withDepth=false);
 
-      /// only normals and color can be added in hindsight
-      virtual bool canAddFeature(FeatureType t) const;
+    /// creates a new organized or un-organized SimplePointCloudObject instance
+    /** @param width number of points per line (if unordered, number of points)
+        @param height number of points per row (if unordered, height is not used)
+        @param organized specifies whether there is a 2D data order or not
+        @params withNormals if true, also normals will be created for each point
+        */
+    PointCloudObject(int width, int height, bool organized=true, bool withNormals=false,
+                     bool withColors=true, bool withLabels=false, bool withDepth=false);
 
-      /// adds normals or colors in hindsight
-      /** If the given feature is already contained, calling this function has no effect.
-          The function calls lock() and unlock() internally */
-      virtual void addFeature(FeatureType t);
+    /// returns which features are supported (only XYZ and RGBA32f)
+    virtual bool supports(FeatureType t) const;
 
-      /// deep copy function
-      virtual PointCloudObject *copy() const {
-        return new PointCloudObject(*this);
-      }
+    /// returns whether the points are 2D-ordered
+    virtual bool isOrganized() const;
 
-      /// just a simple wrapper for top-top level classe's addVertex method
-      /** This method does not work for organized point cloud objects. The
-          organized flag is not checked for performance reason. The behaviour
-          of calling push_back on ordered point clouds is undefined */
-      void push_back(const Vec &point){
-        addVertex(point,GeomColor(0,100,255,255));
-        if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
-        if(m_hasDepth) m_depth.push_back(0);
-      }
+    /// returns the 2D size of the pointcloud (throws exception if not ordered)
+    virtual utils::Size getSize() const;
 
-      /// adds xyz point with given color
-      /** @see push_back(const Vec&) */
-      void push_back(const Vec &point, const GeomColor &color){
-        addVertex(point,color);
-        if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
-        if(m_hasDepth) m_depth.push_back(0);
-      }
+    /// return the linearily ordered number of point in the point cloud
+    virtual int getDim() const;
 
-      /// adds xyz point with given normal and color and optional depth value
-      /** @see push_back(const Vec&) */
-      void push_back(const Vec &point, const Vec &normal, const GeomColor &color, float depth=0){
-        addVertex(point,color);
-        if(m_hasNormals) m_normals.push_back(normal);
-        if(m_hasDepth) m_depth.push_back(depth);
-      }
+    /// adapts the point cloud size
+    /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
+    virtual void setSize(const utils::Size &size);
 
-      private:
+    /// returns XYZ data segment
+    virtual core::DataSegment<float,3> selectXYZ();
 
-      /// hidden in this interface to avoid
-      using SceneObject::addVertex;
-      using SceneObject::addNormal;
+    /// returns XYZH data segment
+    virtual core::DataSegment<float,4> selectXYZH();
 
-    };
+    /// returns the RGBA data segment (4-floats)
+    virtual core::DataSegment<float,4> selectRGBA32f();
+
+    /// returns the Normals data segment (4-floats)
+    /** Only available if the constructor was called with "withNormals" set to true */
+    virtual core::DataSegment<float,4> selectNormal();
+
+    /// returns the label data segment (32-bit signed integer)
+    /** Only available if the the Label feature was explicitly enabled */
+    virtual core::DataSegment<icl32s,1> selectLabel();
+
+
+    /// returns the depth data segment (single channel float, packed)
+    /** Only available if the the Depth feature was explicitly enabled */
+    virtual core::DataSegment<float,1> selectDepth();
+
+    /// important, this is again, reimplemented in order to NOT draw the stuff manually here
+    virtual void customRender();
+
+    /// only normals and color can be added in hindsight
+    virtual bool canAddFeature(FeatureType t) const;
+
+    /// adds normals or colors in hindsight
+    /** If the given feature is already contained, calling this function has no effect.
+        The function calls lock() and unlock() internally */
+    virtual void addFeature(FeatureType t);
+
+    /// deep copy function
+    virtual PointCloudObject *copy() const {
+      return new PointCloudObject(*this);
+    }
+
+    /// just a simple wrapper for top-top level classe's addVertex method
+    /** This method does not work for organized point cloud objects. The
+        organized flag is not checked for performance reason. The behaviour
+        of calling push_back on ordered point clouds is undefined */
+    void push_back(const Vec &point){
+      addVertex(point,GeomColor(0,100,255,255));
+      if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
+      if(m_hasDepth) m_depth.push_back(0);
+    }
+
+    /// adds xyz point with given color
+    /** @see push_back(const Vec&) */
+    void push_back(const Vec &point, const GeomColor &color){
+      addVertex(point,color);
+      if(m_hasNormals) m_normals.push_back(Vec(0,0,0,1));
+      if(m_hasDepth) m_depth.push_back(0);
+    }
+
+    /// adds xyz point with given normal and color and optional depth value
+    /** @see push_back(const Vec&) */
+    void push_back(const Vec &point, const Vec &normal, const GeomColor &color, float depth=0){
+      addVertex(point,color);
+      if(m_hasNormals) m_normals.push_back(normal);
+      if(m_hasDepth) m_depth.push_back(depth);
+    }
+
+    private:
+
+    /// hidden in this interface to avoid
+    using SceneObject::addVertex;
+    using SceneObject::addNormal;
+
+  };
 
 
 

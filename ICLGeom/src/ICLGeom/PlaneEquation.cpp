@@ -5,12 +5,12 @@
 #include <ICLGeom/PlaneEquation.h>
 
 namespace icl::geom {
-    PlaneEquation::PlaneEquation(const Vec &offset, const Vec &normal):
-      offset(offset),normal(normal){
-    }
+  PlaneEquation::PlaneEquation(const Vec &offset, const Vec &normal):
+    offset(offset),normal(normal){
+  }
 
-    std::ostream &operator<<(std::ostream &s, const PlaneEquation &p){
-      return s << "PlaneEquation( <X- " << p.offset.transp() << "," << p.normal.transp() << "> = 0)";
-    }
+  std::ostream &operator<<(std::ostream &s, const PlaneEquation &p){
+    return s << "PlaneEquation( <X- " << p.offset.transp() << "," << p.normal.transp() << "> = 0)";
+  }
 
   } // namespace icl::geom

@@ -17,124 +17,124 @@
 #endif
 
 namespace icl::geom {
-    #ifdef ICL_HAVE_OPENCL
-    //OpenCL kernel code
-    static char utilsKernel[] =
-      "  #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable                                                           \n"
-      "__kernel void                                                                                                                  \n"
-      "segmentColoring(__global int const * assignment, __global uchar * colorR, __global uchar * colorG, __global uchar * colorB)    \n"
-      "{                                                                                                                              \n"
-      "  size_t id =  get_global_id(0);                                                                                               \n"
-      "  if(assignment[id]==0)                                                                                                        \n"
-      "  {                                                                                                                            \n"
-      "    colorR[id]=128;                                                                                                            \n"
-      "    colorG[id]=128;                                                                                                            \n"
-      "    colorB[id]=128;                                                                                                            \n"
-      "  }                                                                                                                            \n"
-      "  else                                                                                                                         \n"
-      "  {                                                                                                                            \n"
-      "    int H=(int)(assignment[id]*35.)%360;                                                                                       \n"
-      "    float S=1.0-assignment[id]*0.01;                                                                                           \n"
-      "    float hi=floor((float)H/60.);                                                                                              \n"
-      "	   float f=((float)H/60.)-hi;                                                                                                 \n"
-      "	   float pp=1.0-S;                                                                                                            \n"
-      "	   float qq=1.0-S*f;                                                                                                          \n"
-      "	   float tt=1.0-S*(1.-f);                                                                                                     \n"
-      "	   float newR=0;                                                                                                              \n"
-      "	   float newG=0;                                                                                                              \n"
-      "	   float newB=0;                                                                                                              \n"
-      "	   if((int)hi==0 || (int)hi==6){                                                                                              \n"
-      "	  	 newR=1.0;                                                                                                                \n"
-      "	     newG=tt;                                                                                                                 \n"
-      "		   newB=pp;                                                                                                                 \n"
-      "	   }else if((int)hi==1){                                                                                                      \n"
-      "		   newR=qq;                                                                                                                 \n"
-      "		   newG=1.0;                                                                                                                \n"
-      "		   newB=pp;                                                                                                                 \n"
-      "	   }else if((int)hi==2){                                                                                                      \n"
-      "		   newR=pp;                                                                                                                 \n"
-      "		   newG=1.0;                                                                                                                \n"
-      "	     newB=tt;                                                                                                                 \n"
-      "	   }else if((int)hi==3){                                                                                                      \n"
-      "		   newR=pp;                                                                                                                 \n"
-      "	     newG=qq;                                                                                                                 \n"
-      "	     newB=1.0;                                                                                                                \n"
-      "	   }else if((int)hi==4){                                                                                                      \n"
-      "		   newR=tt;                                                                                                                 \n"
-      "		   newG=pp;                                                                                                                 \n"
-      "		   newB=1.0;                                                                                                                \n"
-      "	   }else if((int)hi==5){                                                                                                      \n"
-      "	     newR=1.0;                                                                                                                \n"
-      "		   newG=pp;                                                                                                                 \n"
-      "		   newB=qq;                                                                                                                 \n"
-      "	   }                                                                                                                          \n"
-      "    colorR[id]=(unsigned char)(newR*255.);                                                                                     \n"
-      "    colorG[id]=(unsigned char)(newG*255.);                                                                                     \n"
-      "    colorB[id]=(unsigned char)(newB*255.);                                                                                     \n"
-      "  }                                                                                                                            \n"
-      "}                                                                                                                              \n"
-      "__kernel void                                                                                                                  \n"
-      "calculatePointAssignment(__global float4 const * xyz, __global uchar * mask, __global int const * assignment,                  \n"
-      "                         int const radius, int const numFaces, __global uchar * neighbours, __global int * assignmentOut,       \n"
-      "                         int const w, int const h, float const maxDist)                                                        \n"
-      "{                                                                                                                              \n"
-      "  int x = get_global_id(0);                                                                                                    \n"
-      "  int y = get_global_id(1);                                                                                                    \n"
-      "  size_t id = x+y*w;                                                                                                           \n"
-      "  float dist=100000;                                                                                                           \n"
-      "  int ass=0;                                                                                                                   \n"
-      "  bool assigned=false;                                                                                                         \n"
-      "  if(mask[id]==0 && assignment[id]==0){                                                                                        \n"
-      "    bool adj[100];                                                                                                             \n"
-      "    for(int a=0; a<numFaces; a++){                                                                                             \n"
-      "      adj[a]=false;                                                                                                            \n"
-      "    }                                                                                                                          \n"
-      "    for(int xx=-radius; xx<=radius; xx++){                                                                                     \n"
-      "      for(int yy=-radius; yy<=radius; yy++){                                                                                   \n"
-      "        if(x+xx>=0 && x+xx<w && y+yy>=0 && y+yy<h && assignment[(x+xx)+w*(y+yy)]!=0){                                          \n"
-      "          float4 pointa=xyz[id];                                                                                               \n"
-      "          pointa.w=1.0;                                                                                                        \n"
-      "          float4 pointb=xyz[(x+xx)+w*(y+yy)];                                                                                  \n"
-      "          pointb.w=1.0;                                                                                                        \n"
-      "          float dist3 = distance(pointa,pointb);                                                                               \n"
-      "          if(dist3<maxDist){                                                                                                   \n"
-      "            adj[assignment[(x+xx)+w*(y+yy)]-1]=true;                                                                           \n"
-      "          }                                                                                                                    \n"
-      "          if(dist3<dist && dist3<maxDist){                                                                                     \n"
-      "            dist=dist3;                                                                                                        \n"
-      "            ass=assignment[(x+xx)+w*(y+yy)];                                                                                   \n"
-      "            assigned=true;                                                                                                     \n"
-      "          }                                                                                                                    \n"
-      "        }                                                                                                                      \n"
-      "      }                                                                                                                        \n"
-      "    }                                                                                                                          \n"
-      "    for(int a=0; a<numFaces-1; a++){                                                                                           \n"
-      "      for (int b=a+1; b<numFaces; b++){                                                                                        \n"
-      "        if(adj[a]==true && adj[b]==true){                                                                                      \n"
-      "          neighbours[a*numFaces+b]=1;                                                                                          \n"
-      "          neighbours[b*numFaces+a]=1;                                                                                          \n"
-      "        }                                                                                                                      \n"
-      "      }                                                                                                                        \n"
-      "    }                                                                                                                          \n"
-      "    if(assigned==true){                                                                                                        \n"
-      "      assignmentOut[id]=ass;                                                                                                   \n"
-      "      mask[id]=1;                                                                                                              \n"
-      "    }                                                                                                                          \n"
-      "    else                                                                                                                       \n"
-      "    {                                                                                                                          \n"
-      "      assignmentOut[id]=assignment[id];                                                                                        \n"
-      "    }                                                                                                                          \n"
-      "  }                                                                                                                            \n"
-      "  else                                                                                                                         \n"
-      "  {                                                                                                                            \n"
-      "    assignmentOut[id]=assignment[id];                                                                                          \n"
-      "  }                                                                                                                            \n"
-      "}                                                                                                                              \n"
-    ;
-    #endif
+  #ifdef ICL_HAVE_OPENCL
+  //OpenCL kernel code
+  static char utilsKernel[] =
+    "  #pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable                                                           \n"
+    "__kernel void                                                                                                                  \n"
+    "segmentColoring(__global int const * assignment, __global uchar * colorR, __global uchar * colorG, __global uchar * colorB)    \n"
+    "{                                                                                                                              \n"
+    "  size_t id =  get_global_id(0);                                                                                               \n"
+    "  if(assignment[id]==0)                                                                                                        \n"
+    "  {                                                                                                                            \n"
+    "    colorR[id]=128;                                                                                                            \n"
+    "    colorG[id]=128;                                                                                                            \n"
+    "    colorB[id]=128;                                                                                                            \n"
+    "  }                                                                                                                            \n"
+    "  else                                                                                                                         \n"
+    "  {                                                                                                                            \n"
+    "    int H=(int)(assignment[id]*35.)%360;                                                                                       \n"
+    "    float S=1.0-assignment[id]*0.01;                                                                                           \n"
+    "    float hi=floor((float)H/60.);                                                                                              \n"
+    "	   float f=((float)H/60.)-hi;                                                                                                 \n"
+    "	   float pp=1.0-S;                                                                                                            \n"
+    "	   float qq=1.0-S*f;                                                                                                          \n"
+    "	   float tt=1.0-S*(1.-f);                                                                                                     \n"
+    "	   float newR=0;                                                                                                              \n"
+    "	   float newG=0;                                                                                                              \n"
+    "	   float newB=0;                                                                                                              \n"
+    "	   if((int)hi==0 || (int)hi==6){                                                                                              \n"
+    "	  	 newR=1.0;                                                                                                                \n"
+    "	     newG=tt;                                                                                                                 \n"
+    "		   newB=pp;                                                                                                                 \n"
+    "	   }else if((int)hi==1){                                                                                                      \n"
+    "		   newR=qq;                                                                                                                 \n"
+    "		   newG=1.0;                                                                                                                \n"
+    "		   newB=pp;                                                                                                                 \n"
+    "	   }else if((int)hi==2){                                                                                                      \n"
+    "		   newR=pp;                                                                                                                 \n"
+    "		   newG=1.0;                                                                                                                \n"
+    "	     newB=tt;                                                                                                                 \n"
+    "	   }else if((int)hi==3){                                                                                                      \n"
+    "		   newR=pp;                                                                                                                 \n"
+    "	     newG=qq;                                                                                                                 \n"
+    "	     newB=1.0;                                                                                                                \n"
+    "	   }else if((int)hi==4){                                                                                                      \n"
+    "		   newR=tt;                                                                                                                 \n"
+    "		   newG=pp;                                                                                                                 \n"
+    "		   newB=1.0;                                                                                                                \n"
+    "	   }else if((int)hi==5){                                                                                                      \n"
+    "	     newR=1.0;                                                                                                                \n"
+    "		   newG=pp;                                                                                                                 \n"
+    "		   newB=qq;                                                                                                                 \n"
+    "	   }                                                                                                                          \n"
+    "    colorR[id]=(unsigned char)(newR*255.);                                                                                     \n"
+    "    colorG[id]=(unsigned char)(newG*255.);                                                                                     \n"
+    "    colorB[id]=(unsigned char)(newB*255.);                                                                                     \n"
+    "  }                                                                                                                            \n"
+    "}                                                                                                                              \n"
+    "__kernel void                                                                                                                  \n"
+    "calculatePointAssignment(__global float4 const * xyz, __global uchar * mask, __global int const * assignment,                  \n"
+    "                         int const radius, int const numFaces, __global uchar * neighbours, __global int * assignmentOut,       \n"
+    "                         int const w, int const h, float const maxDist)                                                        \n"
+    "{                                                                                                                              \n"
+    "  int x = get_global_id(0);                                                                                                    \n"
+    "  int y = get_global_id(1);                                                                                                    \n"
+    "  size_t id = x+y*w;                                                                                                           \n"
+    "  float dist=100000;                                                                                                           \n"
+    "  int ass=0;                                                                                                                   \n"
+    "  bool assigned=false;                                                                                                         \n"
+    "  if(mask[id]==0 && assignment[id]==0){                                                                                        \n"
+    "    bool adj[100];                                                                                                             \n"
+    "    for(int a=0; a<numFaces; a++){                                                                                             \n"
+    "      adj[a]=false;                                                                                                            \n"
+    "    }                                                                                                                          \n"
+    "    for(int xx=-radius; xx<=radius; xx++){                                                                                     \n"
+    "      for(int yy=-radius; yy<=radius; yy++){                                                                                   \n"
+    "        if(x+xx>=0 && x+xx<w && y+yy>=0 && y+yy<h && assignment[(x+xx)+w*(y+yy)]!=0){                                          \n"
+    "          float4 pointa=xyz[id];                                                                                               \n"
+    "          pointa.w=1.0;                                                                                                        \n"
+    "          float4 pointb=xyz[(x+xx)+w*(y+yy)];                                                                                  \n"
+    "          pointb.w=1.0;                                                                                                        \n"
+    "          float dist3 = distance(pointa,pointb);                                                                               \n"
+    "          if(dist3<maxDist){                                                                                                   \n"
+    "            adj[assignment[(x+xx)+w*(y+yy)]-1]=true;                                                                           \n"
+    "          }                                                                                                                    \n"
+    "          if(dist3<dist && dist3<maxDist){                                                                                     \n"
+    "            dist=dist3;                                                                                                        \n"
+    "            ass=assignment[(x+xx)+w*(y+yy)];                                                                                   \n"
+    "            assigned=true;                                                                                                     \n"
+    "          }                                                                                                                    \n"
+    "        }                                                                                                                      \n"
+    "      }                                                                                                                        \n"
+    "    }                                                                                                                          \n"
+    "    for(int a=0; a<numFaces-1; a++){                                                                                           \n"
+    "      for (int b=a+1; b<numFaces; b++){                                                                                        \n"
+    "        if(adj[a]==true && adj[b]==true){                                                                                      \n"
+    "          neighbours[a*numFaces+b]=1;                                                                                          \n"
+    "          neighbours[b*numFaces+a]=1;                                                                                          \n"
+    "        }                                                                                                                      \n"
+    "      }                                                                                                                        \n"
+    "    }                                                                                                                          \n"
+    "    if(assigned==true){                                                                                                        \n"
+    "      assignmentOut[id]=ass;                                                                                                   \n"
+    "      mask[id]=1;                                                                                                              \n"
+    "    }                                                                                                                          \n"
+    "    else                                                                                                                       \n"
+    "    {                                                                                                                          \n"
+    "      assignmentOut[id]=assignment[id];                                                                                        \n"
+    "    }                                                                                                                          \n"
+    "  }                                                                                                                            \n"
+    "  else                                                                                                                         \n"
+    "  {                                                                                                                            \n"
+    "    assignmentOut[id]=assignment[id];                                                                                          \n"
+    "  }                                                                                                                            \n"
+    "}                                                                                                                              \n"
+  ;
+  #endif
 
 
-    struct SegmenterUtils::Data {
+  struct SegmenterUtils::Data {
 	    Data(Mode mode) {
 		    clReady = false;
 		    kernelSegmentColoringInitialized=false;
@@ -142,11 +142,11 @@ namespace icl::geom {
 	      size = utils::Size(0,0);
 	      stabelizeCounter=0;
 
-        if(mode==BEST || mode==GPU){
-          useCL=true;
-        }else{
-          useCL=false;
-        }
+      if(mode==BEST || mode==GPU){
+        useCL=true;
+      }else{
+        useCL=false;
+      }
 	    }
 
 	    ~Data() {
@@ -163,34 +163,34 @@ namespace icl::geom {
 	    core::Img32s lastLabelImage;
 
 	    #ifdef ICL_HAVE_OPENCL
-        //OpenCL data
-        std::vector<unsigned char> segmentColorImageRArray;
-        std::vector<unsigned char> segmentColorImageGArray;
-        std::vector<unsigned char> segmentColorImageBArray;
+      //OpenCL data
+      std::vector<unsigned char> segmentColorImageRArray;
+      std::vector<unsigned char> segmentColorImageGArray;
+      std::vector<unsigned char> segmentColorImageBArray;
 
-        std::vector<unsigned char> maskArray;
-        std::vector<int> assignmentArray;
+      std::vector<unsigned char> maskArray;
+      std::vector<int> assignmentArray;
 
-        //OpenCL
-        utils::CLProgram program;
-        utils::CLKernel kernelSegmentColoring;
-        utils::CLKernel kernelPointAssignment;
+      //OpenCL
+      utils::CLProgram program;
+      utils::CLKernel kernelSegmentColoring;
+      utils::CLKernel kernelPointAssignment;
 
-        //OpenCL buffer
-        utils::CLBuffer segmentColorImageRBuffer;
-        utils::CLBuffer segmentColorImageGBuffer;
-        utils::CLBuffer segmentColorImageBBuffer;
-        utils::CLBuffer assignmentBuffer;
+      //OpenCL buffer
+      utils::CLBuffer segmentColorImageRBuffer;
+      utils::CLBuffer segmentColorImageGBuffer;
+      utils::CLBuffer segmentColorImageBBuffer;
+      utils::CLBuffer assignmentBuffer;
 
-        utils::CLBuffer neighboursBuffer;
+      utils::CLBuffer neighboursBuffer;
 	      utils::CLBuffer xyzBuffer;
 	      utils::CLBuffer maskBuffer;
 	      utils::CLBuffer assignmentOutBuffer;
-      #endif
-    };
+    #endif
+  };
 
 
-    SegmenterUtils::SegmenterUtils(Mode mode) :
+  SegmenterUtils::SegmenterUtils(Mode mode) :
 	    m_data(new Data(mode)) {
 
 	    if(m_data->useCL==true){

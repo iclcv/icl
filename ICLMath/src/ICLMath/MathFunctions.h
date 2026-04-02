@@ -11,119 +11,119 @@
 #include <algorithm>
 #include <cmath>
 namespace icl::math {
-    /// Calculate the euclidian distance of two vectors v1 and v2 \ingroup MATH
-    /** @param v1Begin first element of v1
-        @param v1End   end of v1 (points the first element behind v1)
-        @param v2Begin first element of v2
-        @return The euclidian distance |v1-v2|
-    */
-    template <class ForwardIterator>
-    inline float euclidian(ForwardIterator v1Begin, ForwardIterator v1End,
-                           ForwardIterator v2Begin) {
-      float fSum = 0.0, fDiff;
-      for (; v1Begin != v1End; ++v1Begin, ++v2Begin) {
-        fDiff = (*v1Begin-*v2Begin);
-        fSum += fDiff*fDiff;
-      }
-      return ::sqrt(fSum);
+  /// Calculate the euclidian distance of two vectors v1 and v2 \ingroup MATH
+  /** @param v1Begin first element of v1
+      @param v1End   end of v1 (points the first element behind v1)
+      @param v2Begin first element of v2
+      @return The euclidian distance |v1-v2|
+  */
+  template <class ForwardIterator>
+  inline float euclidian(ForwardIterator v1Begin, ForwardIterator v1End,
+                         ForwardIterator v2Begin) {
+    float fSum = 0.0, fDiff;
+    for (; v1Begin != v1End; ++v1Begin, ++v2Begin) {
+      fDiff = (*v1Begin-*v2Begin);
+      fSum += fDiff*fDiff;
     }
+    return ::sqrt(fSum);
+  }
 
-    /// Calculate the euclidian distance of points a and b \ingroup MATH
-    /** @param a The first point
-        @param b The second point
-        @return The distance of point a and b
-    */
-    template <class T>
-    inline float euclidian(const std::vector<T> &a, const std::vector<T> &b) {
-      ICLASSERT_RETURN_VAL(a.size() == b.size(), float(0));
-      return euclidian (a.begin(), a.end(), b.begin());
+  /// Calculate the euclidian distance of points a and b \ingroup MATH
+  /** @param a The first point
+      @param b The second point
+      @return The distance of point a and b
+  */
+  template <class T>
+  inline float euclidian(const std::vector<T> &a, const std::vector<T> &b) {
+    ICLASSERT_RETURN_VAL(a.size() == b.size(), float(0));
+    return euclidian (a.begin(), a.end(), b.begin());
+  }
+
+  /// computes the mean value of a data range \ingroup MATH
+  /** @param begin start iterator
+      @param end end iterator
+      IPP-optimized for float and double */
+  template <class ForwardIterator>
+  inline double mean(ForwardIterator begin, ForwardIterator end){
+    if(begin == end) return 0;
+    double sum = 0;
+    int num = 0;
+    while(begin != end){
+      sum += *begin++;
+      num++;
     }
+    return sum / num;
+  }
 
-    /// computes the mean value of a data range \ingroup MATH
-    /** @param begin start iterator
-        @param end end iterator
-        IPP-optimized for float and double */
-    template <class ForwardIterator>
-    inline double mean(ForwardIterator begin, ForwardIterator end){
-      if(begin == end) return 0;
-      double sum = 0;
-      int num = 0;
-      while(begin != end){
-        sum += *begin++;
-        num++;
-      }
-      return sum / num;
+  // TODO: add IPP backend for mean<const icl32f*> (ippsMean_32f) and
+  //       mean<const icl64f*> (ippsMean_64f) via MathOps dispatch
+
+
+
+  /// Compute the variance of a given data range with given mean value \ingroup MATH
+  /** @param begin start iterator
+      @param end end iterator
+      @param mean mean value of the range
+      @param empiricMean if true, sum of square distances is devidec by n-1 else by n
+      */
+  template <class ForwardIterator>
+  inline double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean = true){
+    if(begin == end) return 0;
+    double sum = 0;
+    double d = 0;
+    int num = 0;
+    while(begin != end){
+      d = *begin - mean;
+      sum += d*d;
+      ++begin;
+      num++;
     }
+    return sum/(empiricMean&&num>1 ? num - 1 : num);
+  }
 
-    // TODO: add IPP backend for mean<const icl32f*> (ippsMean_32f) and
-    //       mean<const icl64f*> (ippsMean_64f) via MathOps dispatch
-
-
-
-    /// Compute the variance of a given data range with given mean value \ingroup MATH
-    /** @param begin start iterator
-        @param end end iterator
-        @param mean mean value of the range
-        @param empiricMean if true, sum of square distances is devidec by n-1 else by n
-        */
-    template <class ForwardIterator>
-    inline double variance(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean = true){
-      if(begin == end) return 0;
-      double sum = 0;
-      double d = 0;
-      int num = 0;
-      while(begin != end){
-        d = *begin - mean;
-        sum += d*d;
-        ++begin;
-        num++;
-      }
-      return sum/(empiricMean&&num>1 ? num - 1 : num);
-    }
-
-    /// Compute the variance of a given data range \ingroup MATH
-    /** @param begin start ForwardIterator
-        @param end end ForwardIterator
-        */
-    template <class ForwardIterator>
-    inline double variance(ForwardIterator begin, ForwardIterator end){
-      return variance(begin,end,mean(begin,end),true);
-    }
+  /// Compute the variance of a given data range \ingroup MATH
+  /** @param begin start ForwardIterator
+      @param end end ForwardIterator
+      */
+  template <class ForwardIterator>
+  inline double variance(ForwardIterator begin, ForwardIterator end){
+    return variance(begin,end,mean(begin,end),true);
+  }
 
 
-    /// Compute std-deviation of a data set with given mean (calls sqrt(variance(..))
-    /** @param begin start iterator
-        @param end end iterator
-        @param mean given mean value
-        @param empiricMean if true, sum of square distances is devidec by n-1 else by n
-    */
-    template <class ForwardIterator>
-    inline double stdDeviation(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
-      return ::sqrt(variance(begin,end,mean,empiricMean));
-    }
+  /// Compute std-deviation of a data set with given mean (calls sqrt(variance(..))
+  /** @param begin start iterator
+      @param end end iterator
+      @param mean given mean value
+      @param empiricMean if true, sum of square distances is devidec by n-1 else by n
+  */
+  template <class ForwardIterator>
+  inline double stdDeviation(ForwardIterator begin, ForwardIterator end, double mean, bool empiricMean=true){
+    return ::sqrt(variance(begin,end,mean,empiricMean));
+  }
 
-    /// Compute std-deviation of a data set
-    /** @param begin start iterator
-        @param end end iterator
-        */
-    template <class ForwardIterator>
-    inline double stdDeviation(ForwardIterator begin, ForwardIterator end){
-      return ::sqrt(variance(begin,end));
-    }
+  /// Compute std-deviation of a data set
+  /** @param begin start iterator
+      @param end end iterator
+      */
+  template <class ForwardIterator>
+  inline double stdDeviation(ForwardIterator begin, ForwardIterator end){
+    return ::sqrt(variance(begin,end));
+  }
 
 
-    /// Calculates mean and standard deviation of given data range simultanously
-    /** @param begin start iterator
-        @param end end iterator
-        @return pair p with p.first = mean and p.second = stdDev
-    */
-    template<class ForwardIterator>
-    inline std::pair<double,double> meanAndStdDev(ForwardIterator begin,ForwardIterator end){
-      std::pair<double,double> md;
-      md.first = mean(begin,end);
-      md.second = stdDeviation(begin,end,md.first,true);
-      return md;
-    }
+  /// Calculates mean and standard deviation of given data range simultanously
+  /** @param begin start iterator
+      @param end end iterator
+      @return pair p with p.first = mean and p.second = stdDev
+  */
+  template<class ForwardIterator>
+  inline std::pair<double,double> meanAndStdDev(ForwardIterator begin,ForwardIterator end){
+    std::pair<double,double> md;
+    md.first = mean(begin,end);
+    md.second = stdDeviation(begin,end,md.first,true);
+    return md;
+  }
 
 
   } // namespace icl::math

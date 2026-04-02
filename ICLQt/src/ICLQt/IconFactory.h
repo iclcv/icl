@@ -10,14 +10,14 @@
 #include <QIcon>
 
 namespace icl::qt {
-    /// Simple utility class providing static functions to create some icons
-    class ICLQt_API IconFactory{
-      public:
-      static const QPixmap &create_icl_window_icon_as_qpixmap();
-      static const QIcon &create_icl_window_icon_as_qicon();
+  /// Simple utility class providing static functions to create some icons
+  class ICLQt_API IconFactory{
+    public:
+    static const QPixmap &create_icl_window_icon_as_qpixmap();
+    static const QIcon &create_icl_window_icon_as_qicon();
 
-      static const QIcon &create_icon(const std::string &id);
-      static const core::Img8u &create_image(const std::string &id);
-    };
+    static const QIcon &create_icon(const std::string &id);
+    static const core::Img8u &create_image(const std::string &id);
+  };
 
   } // namespace icl::qt

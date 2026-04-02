@@ -27,237 +27,237 @@
 using namespace icl::utils;
 
 namespace icl::io {
-    namespace{
-      inline void replace_newline (std::string::value_type& c) {
+  namespace{
+    inline void replace_newline (std::string::value_type& c) {
 
-        if (c == '\n') c = ' ';
-      }
-
+      if (c == '\n') c = ' ';
     }
 
-    class FileListImpl{
-    public:
-      FileListImpl(const std::string &pattern, bool omitDoubledFiles):
-        m_bNoDoubledFiles(omitDoubledFiles){
+  }
 
-        if(pattern == "") return;
-        std::string sPattern = pattern;
-        std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
+  class FileListImpl{
+  public:
+    FileListImpl(const std::string &pattern, bool omitDoubledFiles):
+      m_bNoDoubledFiles(omitDoubledFiles){
 
-  #ifndef ICL_SYSTEM_WINDOWS
-  #ifndef ICL_SYSTEM_APPLE
-        wordexp_t match;
+      if(pattern == "") return;
+      std::string sPattern = pattern;
+      std::for_each (sPattern.begin(), sPattern.end(), replace_newline);
 
-        // search for file matching the pattern(s)
-        switch (wordexp (sPattern.c_str(), &match, WRDE_UNDEF)) {
-          case 0: break;
-          case WRDE_BADCHAR:
-            throw ICLException ("illegal chars in pattern (|, &, ;, <, >, (, ), {, }");
-            break;
-          case WRDE_BADVAL:
-            throw ICLException ("encountered undefined shell variable");
-            break;
-          case WRDE_NOSPACE:
-            throw ICLException ("out of memory");
-            break;
-          case WRDE_SYNTAX:
-            throw ICLException ("syntax error, e.g. unbalanced parentheses or quotes");
-            break;
-        }
+#ifndef ICL_SYSTEM_WINDOWS
+#ifndef ICL_SYSTEM_APPLE
+      wordexp_t match;
 
-        char **ppcFiles = match.we_wordv;
-        for (unsigned int i=0; i < match.we_wordc; ++i) {
-          if(!strchr(ppcFiles[i],'*')){
-            add(ppcFiles[i]);
-          }
-        }
-
-        wordfree(&match);
-  #else /*__APPLE__*/
-        glob_t pglob;
-
-        int gflags = GLOB_MARK | GLOB_TILDE;
-  //#ifdef __APPLE__ // only supported on __APPLE__
-        gflags |= GLOB_QUOTE;
-  //#endif
-
-        int gerr = glob(sPattern.c_str(), gflags, nullptr, &pglob);
-        if (gerr) {
-            // refine if necessary
-            throw ICLException ("wrong use of glob");
-            //  pglob.gl_pathc = 0;
-        }
-
-        for (unsigned int i=0; i<pglob.gl_pathc; ++i) {
-          /// only add those patterns without remaining wildchards
-          if(!strchr(pglob.gl_pathv[i],'*')){
-            add(pglob.gl_pathv[i]);
-          }
-        }
-
-        globfree(&pglob);
-  #endif
-  #else /* WIN32 */
-    WIN32_FIND_DATA FindFileData;
-    HANDLE hFind;
-    TCHAR filePath[MAX_PATH];
-
-    std::replace(sPattern.begin(), sPattern.end(), '/', '\\');
-
-    hFind = FindFirstFile(sPattern.c_str(), &FindFileData);
-    if (hFind == INVALID_HANDLE_VALUE) {
-      throw ICLException("Invalid glob value. Error code: " + std::to_string(GetLastError()));
-    } else {
-      if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
-        GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
-        add(filePath);
+      // search for file matching the pattern(s)
+      switch (wordexp (sPattern.c_str(), &match, WRDE_UNDEF)) {
+        case 0: break;
+        case WRDE_BADCHAR:
+          throw ICLException ("illegal chars in pattern (|, &, ;, <, >, (, ), {, }");
+          break;
+        case WRDE_BADVAL:
+          throw ICLException ("encountered undefined shell variable");
+          break;
+        case WRDE_NOSPACE:
+          throw ICLException ("out of memory");
+          break;
+        case WRDE_SYNTAX:
+          throw ICLException ("syntax error, e.g. unbalanced parentheses or quotes");
+          break;
       }
+
+      char **ppcFiles = match.we_wordv;
+      for (unsigned int i=0; i < match.we_wordc; ++i) {
+        if(!strchr(ppcFiles[i],'*')){
+          add(ppcFiles[i]);
+        }
+      }
+
+      wordfree(&match);
+#else /*__APPLE__*/
+      glob_t pglob;
+
+      int gflags = GLOB_MARK | GLOB_TILDE;
+//#ifdef __APPLE__ // only supported on __APPLE__
+      gflags |= GLOB_QUOTE;
+//#endif
+
+      int gerr = glob(sPattern.c_str(), gflags, nullptr, &pglob);
+      if (gerr) {
+          // refine if necessary
+          throw ICLException ("wrong use of glob");
+          //  pglob.gl_pathc = 0;
+      }
+
+      for (unsigned int i=0; i<pglob.gl_pathc; ++i) {
+        /// only add those patterns without remaining wildchards
+        if(!strchr(pglob.gl_pathv[i],'*')){
+          add(pglob.gl_pathv[i]);
+        }
+      }
+
+      globfree(&pglob);
+#endif
+#else /* WIN32 */
+  WIN32_FIND_DATA FindFileData;
+  HANDLE hFind;
+  TCHAR filePath[MAX_PATH];
+
+  std::replace(sPattern.begin(), sPattern.end(), '/', '\\');
+
+  hFind = FindFirstFile(sPattern.c_str(), &FindFileData);
+  if (hFind == INVALID_HANDLE_VALUE) {
+    throw ICLException("Invalid glob value. Error code: " + std::to_string(GetLastError()));
+  } else {
+    if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
+      GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
+      add(filePath);
+    }
+  }
+
+  while (FindNextFile(hFind, &FindFileData) != 0) {
+    if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
+      GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
+      add(filePath);
+    }
+  }
+#endif /* WIN32 */
     }
 
-    while (FindNextFile(hFind, &FindFileData) != 0) {
-      if (strcmp(FindFileData.cFileName, ".") && strcmp(FindFileData.cFileName, "..")) {
-        GetFullPathName(FindFileData.cFileName, MAX_PATH, filePath, nullptr);
-        add(filePath);
-      }
+    FileListImpl(const std::vector<std::string> &filenames)
+
+      :m_vecFiles(filenames),m_bNoDoubledFiles(false){
     }
-  #endif /* WIN32 */
-      }
 
-      FileListImpl(const std::vector<std::string> &filenames)
+    const std::string &at(int i) const {
 
-        :m_vecFiles(filenames),m_bNoDoubledFiles(false){
-      }
+      return m_vecFiles[i];
+    }
 
-      const std::string &at(int i) const {
+    int size() const {
 
-        return m_vecFiles[i];
-      }
+      return static_cast<int>(m_vecFiles.size());
+    }
 
-      int size() const {
-
-        return static_cast<int>(m_vecFiles.size());
-      }
-
-      void add(const std::string &filename){
-        if(endsWith(filename,".seq")){
-          addSequence(filename);
-        }else{
-          if(m_bNoDoubledFiles){
-            if(m_setFiles.find(filename) == m_setFiles.end()){
-              m_setFiles.insert(filename);
-              m_vecFiles.push_back(filename);
-            }
-          }else{
+    void add(const std::string &filename){
+      if(endsWith(filename,".seq")){
+        addSequence(filename);
+      }else{
+        if(m_bNoDoubledFiles){
+          if(m_setFiles.find(filename) == m_setFiles.end()){
+            m_setFiles.insert(filename);
             m_vecFiles.push_back(filename);
           }
+        }else{
+          m_vecFiles.push_back(filename);
         }
       }
+    }
 
-    private:
-      void addSequence(const std::string &filename){
-        if(m_setSequenceFiles.find(filename) != m_setSequenceFiles.end()){
-          return; // this sequnce was already added (abort to avoid infinite loops)
-        }
-        utils::File seqFile(filename);
-        ICLASSERT_RETURN(seqFile.exists());
-        m_setSequenceFiles.insert(filename);
-
-        seqFile.open(File::readText);
-        while(seqFile.hasMoreLines()){
-          add(seqFile.readLine());
-        }
+  private:
+    void addSequence(const std::string &filename){
+      if(m_setSequenceFiles.find(filename) != m_setSequenceFiles.end()){
+        return; // this sequnce was already added (abort to avoid infinite loops)
       }
+      utils::File seqFile(filename);
+      ICLASSERT_RETURN(seqFile.exists());
+      m_setSequenceFiles.insert(filename);
 
-      std::vector<std::string> m_vecFiles;
-      std::set<std::string> m_setFiles;
-      std::set<std::string> m_setSequenceFiles;
-      bool m_bNoDoubledFiles;
-    };
-
-    FileList::FileList() = default;
-
-    FileList::FileList(const std::string &pattern, bool omitDoubledFiles):
-      impl(std::make_shared<FileListImpl>(pattern,omitDoubledFiles)){
-    }
-
-    FileList::FileList(const std::vector<std::string> &filenames):
-      impl(std::make_shared<FileListImpl>(filenames)){
-    }
-
-
-    FileList::~FileList(){
-
-    }
-
-
-    int FileList::size() const{
-
-      ICLASSERT_RETURN_VAL(!isNull(),0);
-      return impl->size();
-    }
-
-
-    const std::string &FileList::operator[](int i) const{
-
-      static std::string _null;
-      ICLASSERT_RETURN_VAL( !isNull() ,_null);
-      ICLASSERT_RETURN_VAL( i < size(),_null);
-      return impl->at(i);
-    }
-
-
-    void FileList::join(const FileList &other){
-
-      ICLASSERT_RETURN(!isNull());
-      for(int i=0;i<other.size();i++){
-        impl->add(other[i]);
+      seqFile.open(File::readText);
+      while(seqFile.hasMoreLines()){
+        add(seqFile.readLine());
       }
     }
 
+    std::vector<std::string> m_vecFiles;
+    std::set<std::string> m_setFiles;
+    std::set<std::string> m_setSequenceFiles;
+    bool m_bNoDoubledFiles;
+  };
 
-    void FileList::toSequenceFile(const std::string &seqFileName) const{
+  FileList::FileList() = default;
 
-      ICLASSERT_RETURN(endsWith(seqFileName,".seq"));
-      File seqFile(seqFileName);
-      ICLASSERT_RETURN(!seqFile.exists());
-      seqFile.open(File::writeText);
-      for(int i=0;i<size();i++){
-        seqFile.write((*this)[i]);
-      }
+  FileList::FileList(const std::string &pattern, bool omitDoubledFiles):
+    impl(std::make_shared<FileListImpl>(pattern,omitDoubledFiles)){
+  }
+
+  FileList::FileList(const std::vector<std::string> &filenames):
+    impl(std::make_shared<FileListImpl>(filenames)){
+  }
+
+
+  FileList::~FileList(){
+
+  }
+
+
+  int FileList::size() const{
+
+    ICLASSERT_RETURN_VAL(!isNull(),0);
+    return impl->size();
+  }
+
+
+  const std::string &FileList::operator[](int i) const{
+
+    static std::string _null;
+    ICLASSERT_RETURN_VAL( !isNull() ,_null);
+    ICLASSERT_RETURN_VAL( i < size(),_null);
+    return impl->at(i);
+  }
+
+
+  void FileList::join(const FileList &other){
+
+    ICLASSERT_RETURN(!isNull());
+    for(int i=0;i<other.size();i++){
+      impl->add(other[i]);
     }
+  }
 
 
-    void FileList::show() const {
+  void FileList::toSequenceFile(const std::string &seqFileName) const{
 
-      if(isNull()){
-        std::cout << "FileList: NULL" << std::endl;
-        return;
-      }
-      std::cout << "FileList: " << size() << " files" << std::endl;
-      for(int i=0;i<size();i++){
-        std::cout << i << ": " << (*this)[i] << std::endl;
-      }
+    ICLASSERT_RETURN(endsWith(seqFileName,".seq"));
+    File seqFile(seqFileName);
+    ICLASSERT_RETURN(!seqFile.exists());
+    seqFile.open(File::writeText);
+    for(int i=0;i<size();i++){
+      seqFile.write((*this)[i]);
     }
+  }
 
 
-    std::string FileList::translateHashPattern(const std::string& sFileName) {
+  void FileList::show() const {
 
-      std::string::size_type iSuffixPos=std::string::npos;
-      unsigned int nHashes=0;
-
-      // count number of hashes directly before file suffix
-      analyseHashes (sFileName, nHashes, iSuffixPos);
-      if (nHashes) {
-        // and replace them by [0-9] regular expressions
-        std::ostringstream oss;
-        for (unsigned int i=1; i <= nHashes; ++i) {
-    oss << sFileName.substr(0, iSuffixPos-nHashes);
-    for (unsigned int j=1; j <= i; ++j) oss << "[0-9]";
-    oss << sFileName.substr(iSuffixPos) << " ";
-        }
-        return oss.str();
-      }
-      return sFileName;
+    if(isNull()){
+      std::cout << "FileList: NULL" << std::endl;
+      return;
     }
+    std::cout << "FileList: " << size() << " files" << std::endl;
+    for(int i=0;i<size();i++){
+      std::cout << i << ": " << (*this)[i] << std::endl;
+    }
+  }
+
+
+  std::string FileList::translateHashPattern(const std::string& sFileName) {
+
+    std::string::size_type iSuffixPos=std::string::npos;
+    unsigned int nHashes=0;
+
+    // count number of hashes directly before file suffix
+    analyseHashes (sFileName, nHashes, iSuffixPos);
+    if (nHashes) {
+      // and replace them by [0-9] regular expressions
+      std::ostringstream oss;
+      for (unsigned int i=1; i <= nHashes; ++i) {
+  oss << sFileName.substr(0, iSuffixPos-nHashes);
+  for (unsigned int j=1; j <= i; ++j) oss << "[0-9]";
+  oss << sFileName.substr(iSuffixPos) << " ";
+      }
+      return oss.str();
+    }
+    return sFileName;
+  }
 
   } // namespace icl::io

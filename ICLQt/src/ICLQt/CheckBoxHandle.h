@@ -11,35 +11,35 @@
 #include <QtWidgets/QCheckBox>
 
 namespace icl::qt {
-    /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
-    class ICLQt_API CheckBoxHandle : public GUIHandle<QCheckBox>{
-      public:
+  /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
+  class ICLQt_API CheckBoxHandle : public GUIHandle<QCheckBox>{
+    public:
 
-      /// creates a n empty button handle
-      CheckBoxHandle();
+    /// creates a n empty button handle
+    CheckBoxHandle();
 
-      /// create a new event with a given button id
-      CheckBoxHandle(QCheckBox *cb, GUIWidget *w, bool *stateRef);
+    /// create a new event with a given button id
+    CheckBoxHandle(QCheckBox *cb, GUIWidget *w, bool *stateRef);
 
-      /// checks this checkbox
-      void check(bool execCallbacks=true);
+    /// checks this checkbox
+    void check(bool execCallbacks=true);
 
-      // unchecks this checkbox
-      void uncheck(bool execCallbacks=true);
+    // unchecks this checkbox
+    void uncheck(bool execCallbacks=true);
 
-      /// defines the check-state
-      inline void doCheck(bool on, bool execCallbacks=true){
-        if(on) check(execCallbacks);
-        else uncheck(execCallbacks);
-      }
+    /// defines the check-state
+    inline void doCheck(bool on, bool execCallbacks=true){
+      if(on) check(execCallbacks);
+      else uncheck(execCallbacks);
+    }
 
-      // returns whether this the checkbox is currently checked
-      bool isChecked() const;
+    // returns whether this the checkbox is currently checked
+    bool isChecked() const;
 
-      private:
+    private:
 
-      /// internal state reference variable
-      bool *m_stateRef;
+    /// internal state reference variable
+    bool *m_stateRef;
 
-    };
+  };
   } // namespace icl::qt

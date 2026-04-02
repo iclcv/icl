@@ -8,10 +8,10 @@
 #include <ICLIO/FileGrabberPlugin.h>
 
 namespace icl::io {
-    /// Plugin to grab ".ppm", ".pgm", ".pgm" and ".icl" images \ingroup FILEIO_G
-    class ICLIO_API FileGrabberPluginPNM : public FileGrabberPlugin{
-      public:
-      /// grab implementation
-      virtual void grab(utils::File &file, core::ImgBase **dest);
-    };
+  /// Plugin to grab ".ppm", ".pgm", ".pgm" and ".icl" images \ingroup FILEIO_G
+  class ICLIO_API FileGrabberPluginPNM : public FileGrabberPlugin{
+    public:
+    /// grab implementation
+    virtual void grab(utils::File &file, core::ImgBase **dest);
+  };
   } // namespace icl::io

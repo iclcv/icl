@@ -11,40 +11,40 @@
 #include <vector>
 
 namespace icl::qt {
-    /// Simple wrapper class for OpenGL 2.0 Fragment Shader Programs
-    /** The GLFragmentShader class can be used to create simple fragment shader programs.
+  /// Simple wrapper class for OpenGL 2.0 Fragment Shader Programs
+  /** The GLFragmentShader class can be used to create simple fragment shader programs.
 
-    */
-    class ICLQt_API GLFragmentShader {
-      struct Data;
-      Data *m_data;
+  */
+  class ICLQt_API GLFragmentShader {
+    struct Data;
+    Data *m_data;
 
-      void create();
+    void create();
 
-      public:
-      GLFragmentShader(const GLFragmentShader&) = delete;
-      GLFragmentShader& operator=(const GLFragmentShader&) = delete;
+    public:
+    GLFragmentShader(const GLFragmentShader&) = delete;
+    GLFragmentShader& operator=(const GLFragmentShader&) = delete;
 
-      GLFragmentShader(const std::string &vertexProgram,
-                       const std::string &fragmentProgram,
-                       bool createOnFirstActivate=true);
-      ~GLFragmentShader();
+    GLFragmentShader(const std::string &vertexProgram,
+                     const std::string &fragmentProgram,
+                     bool createOnFirstActivate=true);
+    ~GLFragmentShader();
 
-      void setUniform(const std::string var, const float &val);
-      void setUniform(const std::string var, const int &val);
-      void setUniform(const std::string var, const math::FixedMatrix<float,4,4> &val);
-      void setUniform(const std::string var, const std::vector<math::FixedMatrix<float,4,4> > &val);
-      void setUniform(const std::string var, const math::FixedColVector<float,4> &val);
+    void setUniform(const std::string var, const float &val);
+    void setUniform(const std::string var, const int &val);
+    void setUniform(const std::string var, const math::FixedMatrix<float,4,4> &val);
+    void setUniform(const std::string var, const std::vector<math::FixedMatrix<float,4,4> > &val);
+    void setUniform(const std::string var, const math::FixedColVector<float,4> &val);
 
-      void activate();
+    void activate();
 
-      /// deactivates the shader
-      /** This function does not do anything, if the shader was not enabled before! */
-      void deactivate();
+    /// deactivates the shader
+    /** This function does not do anything, if the shader was not enabled before! */
+    void deactivate();
 
-      /// creates a deep copy of this shader
-      /** The resulting copy does only use this instance's program string and is other than this
-          independent. The copy is created in createOnFirstActivate mode */
-      GLFragmentShader *copy() const;
-    };
+    /// creates a deep copy of this shader
+    /** The resulting copy does only use this instance's program string and is other than this
+        independent. The copy is created in createOnFirstActivate mode */
+    GLFragmentShader *copy() const;
+  };
   } // namespace icl::qt

@@ -6,53 +6,53 @@
 #include <ICLUtils/Macros.h>
 #include <cstdio>
 namespace icl::utils {
-    FPSEstimator::FPSEstimator(int n){
-      reset(n);
-    }
+  FPSEstimator::FPSEstimator(int n){
+    reset(n);
+  }
 
-    void FPSEstimator::reset(int n){
-      if(n<2){
-        n = 2;
+  void FPSEstimator::reset(int n){
+    if(n<2){
+      n = 2;
+    }
+    m_iN = n;
+    m_qTimes.clear();
+    for(int i=0;i<n;i++){
+      m_qTimes.push_back(Time());
+    }
+  }
+
+  void FPSEstimator::tic() const{
+    m_qTimes.push_back(Time::now());
+    m_qTimes.pop_front();
+  }
+
+  float FPSEstimator::getFPSVal() const{
+    tic();
+    if(m_qTimes.front()==Time::null){
+      return -1;
+    }else{
+      double avgDt = 0;
+
+      Time t = m_qTimes.front();
+      for(std::deque<Time>::iterator it=++m_qTimes.begin();it!=m_qTimes.end();++it){
+        avgDt += ((*it)-t).toMicroSecondsDouble();
+        t = *it;
       }
-      m_iN = n;
-      m_qTimes.clear();
-      for(int i=0;i<n;i++){
-        m_qTimes.push_back(Time());
-      }
+      return 1.0/(avgDt/(1000000.0*(m_iN-1)));
     }
+  }
 
-    void FPSEstimator::tic() const{
-      m_qTimes.push_back(Time::now());
-      m_qTimes.pop_front();
-    }
+  std::string FPSEstimator::getFPSString(const std::string &fmt, int bufferSize) const{
+    char *buf = new char[bufferSize];
+    snprintf(buf,bufferSize,fmt.c_str(),getFPSVal());
+    std::string s(buf);
+    delete [] buf;
+    return s;
 
-    float FPSEstimator::getFPSVal() const{
-      tic();
-      if(m_qTimes.front()==Time::null){
-        return -1;
-      }else{
-        double avgDt = 0;
+  }
 
-        Time t = m_qTimes.front();
-        for(std::deque<Time>::iterator it=++m_qTimes.begin();it!=m_qTimes.end();++it){
-          avgDt += ((*it)-t).toMicroSecondsDouble();
-          t = *it;
-        }
-        return 1.0/(avgDt/(1000000.0*(m_iN-1)));
-      }
-    }
-
-    std::string FPSEstimator::getFPSString(const std::string &fmt, int bufferSize) const{
-      char *buf = new char[bufferSize];
-      snprintf(buf,bufferSize,fmt.c_str(),getFPSVal());
-      std::string s(buf);
-      delete [] buf;
-      return s;
-
-    }
-
-    void FPSEstimator::showFPS(const std::string &text) const{
-      printf("%s:%s\n",text.c_str(),getFPSString().c_str());
-    }
+  void FPSEstimator::showFPS(const std::string &text) const{
+    printf("%s:%s\n",text.c_str(),getFPSString().c_str());
+  }
 
   } // namespace icl::utils

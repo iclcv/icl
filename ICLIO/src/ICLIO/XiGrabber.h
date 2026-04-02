@@ -8,39 +8,39 @@
 #include <ICLIO/Grabber.h>
 
 namespace icl::io {
-    /// Grabber class that grabs images using the XiAPI (extension of the M3API)
-    /** The XiGrabber can be used e.g. for cameras from Ximea. Use device type 'xi'
-        with the generic grabber for this.
-    */
-    class ICLIO_API XiGrabber : public Grabber {
-        /// Internal Data storage class
-        struct Data;
+  /// Grabber class that grabs images using the XiAPI (extension of the M3API)
+  /** The XiGrabber can be used e.g. for cameras from Ximea. Use device type 'xi'
+      with the generic grabber for this.
+  */
+  class ICLIO_API XiGrabber : public Grabber {
+      /// Internal Data storage class
+      struct Data;
 
-        /// Hidden Data container
-        Data *m_data;
+      /// Hidden Data container
+      Data *m_data;
 
-        /// internal initialization function
-        void init(int deviceID);
+      /// internal initialization function
+      void init(int deviceID);
 
-        /// provide protected access for the data class
-        friend class Data;
-      public:
+      /// provide protected access for the data class
+      friend class Data;
+    public:
 
-        /// Creates a new XiGrabber instance (please use the GenericGrabber instead)
-        XiGrabber(int deviceID);
+      /// Creates a new XiGrabber instance (please use the GenericGrabber instead)
+      XiGrabber(int deviceID);
 
-        /// Destructor
-        ~XiGrabber();
+      /// Destructor
+      ~XiGrabber();
 
-        /// returns a list of all connected devices
-        static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
+      /// returns a list of all connected devices
+      static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
 
-        /// grabbing function
-        /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
-        virtual const core::ImgBase* acquireDisplay();
+      /// grabbing function
+      /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
+      virtual const core::ImgBase* acquireDisplay();
 
-        /// callback for changed configurable properties
-        void processPropertyChange(const utils::Configurable::Property &prop);
-    };
+      /// callback for changed configurable properties
+      void processPropertyChange(const utils::Configurable::Property &prop);
+  };
 
   } // namespace icl::io

@@ -16,30 +16,30 @@ namespace icl::qt { class GLFragmentShader; }
 
 namespace icl::geom {
 
-    /** The ShaderUtil is an easy to use wrapper for activating the
-        correct shader for the primitive that is to be rendered.*/
-    class ICLGeom_API ShaderUtil {
-      const Camera *m_camera;
-      icl::qt::GLFragmentShader** m_shaders;
-      icl::qt::GLFragmentShader* activeShader;
-      const std::vector<Mat> *project2shadow;
-      float m_shadowBias;
-      bool renderingShadow;
-      public:
-      ShaderUtil(const ShaderUtil&) = delete;
-      ShaderUtil& operator=(const ShaderUtil&) = delete;
+/** The ShaderUtil is an easy to use wrapper for activating the
+    correct shader for the primitive that is to be rendered.*/
+class ICLGeom_API ShaderUtil {
+  const Camera *m_camera;
+  icl::qt::GLFragmentShader** m_shaders;
+  icl::qt::GLFragmentShader* activeShader;
+  const std::vector<Mat> *project2shadow;
+  float m_shadowBias;
+  bool renderingShadow;
+  public:
+  ShaderUtil(const ShaderUtil&) = delete;
+  ShaderUtil& operator=(const ShaderUtil&) = delete;
 
-      ///Enum representing the different shader types
-      enum ShaderType{SHADOW, SHADOW_TEXTURE, NO_SHADOW, NO_SHADOW_TEXTURE, COUNT};
-      ShaderUtil(const Camera *camera, icl::qt::GLFragmentShader** shaders, const std::vector<Mat> *project2shadow, float shadowBias);
-      /** This constructor can be used, when the ShaderUtil is not supposed to activate any shaders.
-          The main use for this is to make it transparent to the render function of an object if it is to be
-          rendered into the shadowbuffer or not.*/
-      ShaderUtil();
+  ///Enum representing the different shader types
+  enum ShaderType{SHADOW, SHADOW_TEXTURE, NO_SHADOW, NO_SHADOW_TEXTURE, COUNT};
+  ShaderUtil(const Camera *camera, icl::qt::GLFragmentShader** shaders, const std::vector<Mat> *project2shadow, float shadowBias);
+  /** This constructor can be used, when the ShaderUtil is not supposed to activate any shaders.
+      The main use for this is to make it transparent to the render function of an object if it is to be
+      rendered into the shadowbuffer or not.*/
+  ShaderUtil();
 
-      void activateShader(Primitive::Type type, bool withShadow);
-      void deactivateShaders();
-      const Camera &getCurrentCamera() const;
-      static void recompilePerPixelShader(icl::qt::GLFragmentShader** shaders, const std::shared_ptr<SceneLight>* lights, int numShadowLights);
-    };
+  void activateShader(Primitive::Type type, bool withShadow);
+  void deactivateShaders();
+  const Camera &getCurrentCamera() const;
+  static void recompilePerPixelShader(icl::qt::GLFragmentShader** shaders, const std::shared_ptr<SceneLight>* lights, int numShadowLights);
+};
 } // namespace icl::geom
