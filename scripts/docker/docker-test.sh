@@ -36,8 +36,8 @@ docker run --rm \
 
 echo "Building and testing..."
 docker run --rm \
-  --cpus=$(sysctl -n hw.ncpu 2>/dev/null || nproc) \
-  -v icl-src:/src:ro \
+  --cpus=$(docker info --format '{{.NCPU}}' 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || nproc) \
+  -v icl-src:/src \
   -v icl-build:/build \
   icl-dev bash -c '
 set -e
@@ -45,6 +45,10 @@ cd /build
 cmake /src \
   -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_TESTS=ON \
+  -DBUILD_WITH_IPP=ON \
+  -DBUILD_WITH_MKL=ON \
+  -DBUILD_WITH_IMAGEMAGICK=OFF \
+  -DBUILD_WITH_LIBAV=OFF \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++
 cmake --build . -j$(nproc)

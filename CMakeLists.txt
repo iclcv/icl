@@ -280,21 +280,12 @@ if(BUILD_WITH_IPP)
   else()
     set(_IPP_LIB_SUF "ipp/lib/ia32")
   endif()
-  set(IPP_REQUESTED_LIBS "ippcore;ippi;ipps;ippcv;ippcc;iomp5")
+  set(IPP_REQUESTED_LIBS "ippcore;ippi;ipps;ippcv;ippcc")
   ICL_FIND_PACKAGE(NAME IPP HEADERS "ipp.h"
-    LIBS "${IPP_REQUESTED_LIBS};ippm"
+    LIBS ${IPP_REQUESTED_LIBS}
     PATHS "/opt/intel;/opt/IPP;/opt/intel/oneapi/ipp/latest"
     HEADER_PATH_SUFFIXES "ipp/include" "include"
-    LIB_PATH_SUFFIXES ${_IPP_LIB_SUF} "lib"
-    OPTIONAL)
-  if(NOT IPP_FOUND)
-    message(STATUS "IPP Legacy not found. Checking for recent releases.")
-    ICL_FIND_PACKAGE(NAME IPP HEADERS "ipp.h"
-      LIBS ${IPP_REQUESTED_LIBS}
-      PATHS "/opt/intel;/opt/IPP;/opt/intel/oneapi/ipp/latest"
-      HEADER_PATH_SUFFIXES "ipp/include" "include"
-      LIB_PATH_SUFFIXES ${_IPP_LIB_SUF} "lib")
-  endif()
+    LIB_PATH_SUFFIXES ${_IPP_LIB_SUF} "lib")
   if(IPP_FOUND)
     if(EXISTS "${IPP_INCLUDE_DIRS}/ippversion.h")
       get_ipp_version(${IPP_INCLUDE_DIRS})
@@ -316,10 +307,10 @@ if(BUILD_WITH_MKL)
     set(_MKL_LIB_SUF "mkl/lib/ia32")
   endif()
   ICL_FIND_PACKAGE(NAME MKL HEADERS "mkl_types.h"
-    LIBS "${_MKL_LIB};mkl_intel_thread;mkl_core;iomp5"
-    PATHS "/opt/intel;/opt/MKL;/opt/MKL/mkl"
-    HEADER_PATH_SUFFIXES "mkl/include"
-    LIB_PATH_SUFFIXES "${_MKL_LIB_SUF}")
+    LIBS "${_MKL_LIB};mkl_sequential;mkl_core"
+    PATHS "/opt/intel;/opt/MKL;/opt/MKL/mkl;/opt/intel/oneapi/mkl/latest"
+    HEADER_PATH_SUFFIXES "mkl/include" "include"
+    LIB_PATH_SUFFIXES "${_MKL_LIB_SUF}" "lib/intel64" "lib")
 endif()
 
 if(BUILD_WITH_OPENCL)

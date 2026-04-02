@@ -200,7 +200,9 @@ namespace {
     icl32f fScale = static_cast<icl32f>(dstMax - dstMin) / srcLen;
     icl32f fShift = static_cast<icl32f>(srcMax * dstMin - srcMin * dstMax) / srcLen;
 
-    for(int c = im.getStartIndex(iChannel); c < im.getEndIndex(iChannel); ++c) {
+    int cStart = iChannel < 0 ? 0 : iChannel;
+    int cEnd = iChannel < 0 ? im.getChannels() : iChannel + 1;
+    for(int c = cStart; c < cEnd; ++c) {
       ippiMulC_32f_C1IR(fScale, im.getROIData(c), im.getLineStep(), im.getROISize());
       if(fShift != 0) {
         ippiAddC_32f_C1IR(fShift, im.getROIData(c), im.getLineStep(), im.getROISize());
@@ -240,20 +242,29 @@ namespace {
 
   // ---- channelMean ----
   icl64f ipp_channelMean(ImgBase& img, int channel, bool roiOnly) {
-    const auto* data = roiOnly ? img.getROIData(channel) : img.getData(channel);
     int lineStep = img.getLineStep();
     Size size = roiOnly ? img.getROISize() : img.getSize();
+    Point offs = roiOnly ? img.getROIOffset() : Point::null;
     icl64f m = 0;
     switch(img.getDepth()) {
-      case depth8u:
-        ippiMean_8u_C1R(static_cast<const Ipp8u*>(data), lineStep, size, &m);
+      case depth8u: {
+        auto& im = *img.asImg<icl8u>();
+        const auto* data = roiOnly ? im.getROIData(channel) : im.getData(channel);
+        ippiMean_8u_C1R(data, lineStep, size, &m);
         break;
-      case depth16s:
-        ippiMean_16s_C1R(static_cast<const Ipp16s*>(data), lineStep, size, &m);
+      }
+      case depth16s: {
+        auto& im = *img.asImg<icl16s>();
+        const auto* data = roiOnly ? im.getROIData(channel) : im.getData(channel);
+        ippiMean_16s_C1R(data, lineStep, size, &m);
         break;
-      case depth32f:
-        ippiMean_32f_C1R(static_cast<const Ipp32f*>(data), lineStep, size, &m, ippAlgHintAccurate);
+      }
+      case depth32f: {
+        auto& im = *img.asImg<icl32f>();
+        const auto* data = roiOnly ? im.getROIData(channel) : im.getData(channel);
+        ippiMean_32f_C1R(data, lineStep, size, &m, ippAlgHintAccurate);
         break;
+      }
       default: break;
     }
     return m;
@@ -357,5 +368,8 @@ namespace {
     ipp.add<ImgOps::InterleavedToPlanarSig>(Op::interleavedToPlanar, ipp_interleavedToPlanar,
       [](ImgBase* const& img) { return img && (img->getChannels() == 3 || img->getChannels() == 4); },
       "IPP ippiCopy C3P3/C4P4 (8u/16s/32s/32f)");
+
+    return 0;
+  }();
 
 } // anonymous namespace
