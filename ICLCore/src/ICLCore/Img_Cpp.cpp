@@ -391,25 +391,28 @@ namespace {
         return;
       }
       case interpolateLIN: {
-        fSX = (float(srcSize.width)-1) / float(dstSize.width);
-        fSY = (float(srcSize.height)-1) / float(dstSize.height);
+        fSX = dstSize.width  > 1 ? (float(srcSize.width)  - 1) / float(dstSize.width  - 1) : 0.0f;
+        fSY = dstSize.height > 1 ? (float(srcSize.height) - 1) / float(dstSize.height - 1) : 0.0f;
         const T *d = src->getData(srcC);
         const unsigned int w = src->getWidth();
+        const int maxX = srcOffs.x + srcSize.width  - 1;
+        const int maxY = srcOffs.y + srcSize.height - 1;
         ImgIterator<T> itDst(dst->getData(dstC),dst->getSize().width,Rect(dstOffs,dstSize));
         const ImgIterator<T> itDstEnd = ImgIterator<T>::create_end_roi_iterator(dst->getData(dstC),dst->getWidth(),Rect(dstOffs,dstSize));
         int xD = 0, yD = 0;
         float yS = srcOffs.y + fSY * yD;
         for(; itDst != itDstEnd; ++itDst) {
           float xS = srcOffs.x + fSX * xD;
-          float fX0 = xS - floor(xS), fX1 = 1.0f - fX0;
-          float fY0 = yS - floor(yS), fY1 = 1.0f - fY0;
-          int xll = int(xS), yll = int(yS);
-          const T *pLL = d + xll + yll * w;
-          float a = *pLL;
-          float b = *(++pLL);
-          pLL += w;
-          float dd = *pLL;
-          float c = *(--pLL);
+          int x0 = int(xS);
+          int y0 = int(yS);
+          int x1 = std::min(x0 + 1, maxX);
+          int y1 = std::min(y0 + 1, maxY);
+          float fX0 = xS - x0, fX1 = 1.0f - fX0;
+          float fY0 = yS - y0, fY1 = 1.0f - fY0;
+          float a = d[x0 + y0 * w];
+          float b = d[x1 + y0 * w];
+          float c = d[x0 + y1 * w];
+          float dd = d[x1 + y1 * w];
           *itDst = clipped_cast<float, T>(fX1 * (fY1*a + fY0*c) + fX0 * (fY1*b + fY0*dd));
           if(++xD == dstSize.width) { yS = srcOffs.y + fSY * ++yD; xD = 0; }
         }

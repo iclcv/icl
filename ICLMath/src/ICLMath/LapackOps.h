@@ -6,6 +6,7 @@
 
 #include <ICLUtils/BackendDispatching.h>
 #include <ICLUtils/CompatMacros.h>
+#include <vector>
 
 namespace icl::math {
   /// Selector keys for LAPACK backend dispatch.
@@ -71,6 +72,9 @@ namespace icl::math {
 
   /// Transpose M×N row-major matrix A (stride lda) into column-major AT (stride M).
   template<class T> ICLMath_API void lapack_row_to_col(const T* A, int M, int N, int lda, T* AT);
+
+  /// Transpose M×N row-major matrix A (stride lda) into a new column-major vector (stride M).
+  template<class T> ICLMath_API std::vector<T> lapack_row_to_col(const T* A, int M, int N, int lda);
 
   /// Transpose M×N column-major matrix AT (stride M) back to row-major A (stride lda).
   template<class T> ICLMath_API void lapack_col_to_row(const T* AT, int M, int N, T* A, int lda);

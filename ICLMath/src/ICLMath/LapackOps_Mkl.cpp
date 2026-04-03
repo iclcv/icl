@@ -91,44 +91,38 @@ namespace icl::math {
       return info;
     }
 
+    // ================================================================
+    // Row-major ↔ column-major:
+    // LAPACK expects column-major; our raw pointer interface is row-major.
+    // For gesdd/syev the transposition is handled via dimension/argument
+    // swaps. For getrf/getri/geqrf/orgqr/gelsd we transpose explicitly
+    // using the lapack_row_to_col / lapack_col_to_row helpers so that
+    // the packed output (L/U, Householder reflectors) matches the C++
+    // backend convention.
+    // ================================================================
+
     // ---- GETRF (LU factorization) ----
-    // Explicit transposition for row-major → column-major.
 
     int mkl_getrf_f(int M, int N, float* A, int lda, int* ipiv) {
-      int mn = std::min(M, N);
-      std::vector<float> AT(M * N);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * M + i] = A[i * lda + j];
+      auto AT = lapack_row_to_col(A, M, N, lda);
       int info, m = M, n = N, _lda = M;
       sgetrf(&m, &n, AT.data(), &_lda, ipiv, &info);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          A[i * lda + j] = AT[j * M + i];
+      lapack_col_to_row(AT.data(), M, N, A, lda);
       return info;
     }
 
     int mkl_getrf_d(int M, int N, double* A, int lda, int* ipiv) {
-      int mn = std::min(M, N);
-      std::vector<double> AT(M * N);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * M + i] = A[i * lda + j];
+      auto AT = lapack_row_to_col(A, M, N, lda);
       int info, m = M, n = N, _lda = M;
       dgetrf(&m, &n, AT.data(), &_lda, ipiv, &info);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          A[i * lda + j] = AT[j * M + i];
+      lapack_col_to_row(AT.data(), M, N, A, lda);
       return info;
     }
 
     // ---- GETRI (inverse from LU) ----
 
     int mkl_getri_f(int N, float* A, int lda, const int* ipiv) {
-      std::vector<float> AT(N * N);
-      for(int i = 0; i < N; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * N + i] = A[i * lda + j];
+      auto AT = lapack_row_to_col(A, N, N, lda);
       int info, n = N, _lda = N;
       std::vector<int> ipiv_copy(ipiv, ipiv + N);
       float work_query;
@@ -138,17 +132,12 @@ namespace icl::math {
       lwork = static_cast<int>(work_query);
       std::vector<float> work(lwork);
       sgetri(&n, AT.data(), &_lda, ipiv_copy.data(), work.data(), &lwork, &info);
-      for(int i = 0; i < N; i++)
-        for(int j = 0; j < N; j++)
-          A[i * lda + j] = AT[j * N + i];
+      lapack_col_to_row(AT.data(), N, N, A, lda);
       return info;
     }
 
     int mkl_getri_d(int N, double* A, int lda, const int* ipiv) {
-      std::vector<double> AT(N * N);
-      for(int i = 0; i < N; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * N + i] = A[i * lda + j];
+      auto AT = lapack_row_to_col(A, N, N, lda);
       int info, n = N, _lda = N;
       std::vector<int> ipiv_copy(ipiv, ipiv + N);
       double work_query;
@@ -158,9 +147,7 @@ namespace icl::math {
       lwork = static_cast<int>(work_query);
       std::vector<double> work(lwork);
       dgetri(&n, AT.data(), &_lda, ipiv_copy.data(), work.data(), &lwork, &info);
-      for(int i = 0; i < N; i++)
-        for(int j = 0; j < N; j++)
-          A[i * lda + j] = AT[j * N + i];
+      lapack_col_to_row(AT.data(), N, N, A, lda);
       return info;
     }
 
@@ -170,10 +157,7 @@ namespace icl::math {
     // (QR(A^T) ≠ QR(A)), so we transpose explicitly.
 
     int mkl_geqrf_f(int M, int N, float* A, int lda, float* tau) {
-      std::vector<float> AT(M * N);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * M + i] = A[i * lda + j];
+      auto AT = lapack_row_to_col(A, M, N, lda);
       int info, m = M, n = N, _lda = M;
       float work_query;
       int lwork = -1;
@@ -182,17 +166,12 @@ namespace icl::math {
       lwork = static_cast<int>(work_query);
       std::vector<float> work(lwork);
       sgeqrf(&m, &n, AT.data(), &_lda, tau, work.data(), &lwork, &info);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          A[i * lda + j] = AT[j * M + i];
+      lapack_col_to_row(AT.data(), M, N, A, lda);
       return info;
     }
 
     int mkl_geqrf_d(int M, int N, double* A, int lda, double* tau) {
-      std::vector<double> AT(M * N);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * M + i] = A[i * lda + j];
+      auto AT = lapack_row_to_col(A, M, N, lda);
       int info, m = M, n = N, _lda = M;
       double work_query;
       int lwork = -1;
@@ -201,19 +180,14 @@ namespace icl::math {
       lwork = static_cast<int>(work_query);
       std::vector<double> work(lwork);
       dgeqrf(&m, &n, AT.data(), &_lda, tau, work.data(), &lwork, &info);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          A[i * lda + j] = AT[j * M + i];
+      lapack_col_to_row(AT.data(), M, N, A, lda);
       return info;
     }
 
     // ---- ORGQR (form Q from Householder reflectors) ----
 
     int mkl_orgqr_f(int M, int N, int K, float* A, int lda, const float* tau) {
-      std::vector<float> AT(M * N);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * M + i] = A[i * lda + j];
+      auto AT = lapack_row_to_col(A, M, N, lda);
       int info, m = M, n = N, k = K, _lda = M;
       std::vector<float> tau_copy(tau, tau + K);
       float work_query;
@@ -223,17 +197,12 @@ namespace icl::math {
       lwork = static_cast<int>(work_query);
       std::vector<float> work(lwork);
       sorgqr(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), work.data(), &lwork, &info);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          A[i * lda + j] = AT[j * M + i];
+      lapack_col_to_row(AT.data(), M, N, A, lda);
       return info;
     }
 
     int mkl_orgqr_d(int M, int N, int K, double* A, int lda, const double* tau) {
-      std::vector<double> AT(M * N);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * M + i] = A[i * lda + j];
+      auto AT = lapack_row_to_col(A, M, N, lda);
       int info, m = M, n = N, k = K, _lda = M;
       std::vector<double> tau_copy(tau, tau + K);
       double work_query;
@@ -243,9 +212,7 @@ namespace icl::math {
       lwork = static_cast<int>(work_query);
       std::vector<double> work(lwork);
       dorgqr(&m, &n, &k, AT.data(), &_lda, tau_copy.data(), work.data(), &lwork, &info);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          A[i * lda + j] = AT[j * M + i];
+      lapack_col_to_row(AT.data(), M, N, A, lda);
       return info;
     }
 
@@ -254,14 +221,8 @@ namespace icl::math {
     int mkl_gelsd_f(int M, int N, int NRHS, float* A, int lda,
                     float* B, int ldb, float* S, float rcond, int* rank) {
       int mx = std::max(M, N);
-      std::vector<float> AT(M * N);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * M + i] = A[i * lda + j];
-      std::vector<float> BT(mx * NRHS);
-      for(int i = 0; i < mx; i++)
-        for(int j = 0; j < NRHS; j++)
-          BT[j * mx + i] = B[i * ldb + j];
+      auto AT = lapack_row_to_col(A, M, N, lda);
+      auto BT = lapack_row_to_col(B, mx, NRHS, ldb);
       int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
       float work_query;
       int lwork = -1, iwork_query;
@@ -273,6 +234,8 @@ namespace icl::math {
       std::vector<int> iwork(iwork_query);
       sgelsd(&m, &n, &nrhs, AT.data(), &_lda, BT.data(), &_ldb,
              S, &rcond, rank, work.data(), &lwork, iwork.data(), &info);
+      // Copy first N rows from column-major BT (stride mx) back to row-major B.
+      // Can't use lapack_col_to_row here: BT stride is mx, not N.
       for(int i = 0; i < N; i++)
         for(int j = 0; j < NRHS; j++)
           B[i * ldb + j] = BT[j * mx + i];
@@ -282,14 +245,8 @@ namespace icl::math {
     int mkl_gelsd_d(int M, int N, int NRHS, double* A, int lda,
                     double* B, int ldb, double* S, double rcond, int* rank) {
       int mx = std::max(M, N);
-      std::vector<double> AT(M * N);
-      for(int i = 0; i < M; i++)
-        for(int j = 0; j < N; j++)
-          AT[j * M + i] = A[i * lda + j];
-      std::vector<double> BT(mx * NRHS);
-      for(int i = 0; i < mx; i++)
-        for(int j = 0; j < NRHS; j++)
-          BT[j * mx + i] = B[i * ldb + j];
+      auto AT = lapack_row_to_col(A, M, N, lda);
+      auto BT = lapack_row_to_col(B, mx, NRHS, ldb);
       int info, m = M, n = N, nrhs = NRHS, _lda = M, _ldb = mx;
       double work_query;
       int lwork = -1, iwork_query;

@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y gnupg wget && \
       | gpg --dearmor -o /usr/share/keyrings/intel-oneapi-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/intel-oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
       > /etc/apt/sources.list.d/intel-oneapi.list && \
-    apt-get update && apt-get install -y intel-oneapi-mkl-devel intel-oneapi-ipp-devel && \
+    apt-get update && apt-get install -y intel-oneapi-mkl-devel-2022.2.1 intel-oneapi-ipp-devel && \
     rm -rf /var/lib/apt/lists/*
 
 # MKL + IPP environment (needed for cmake to find them)

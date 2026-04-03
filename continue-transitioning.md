@@ -1,6 +1,71 @@
 # Image Migration — Continuation Guide
 
-## Current State (Session 29 — IPP/MKL Docker verification, LAPACK bug fixes)
+## Current State (Session 30 — Bilinear fix, LAPACK helpers, IPP backend implementations)
+
+### Session 30 Summary
+
+**C++ bilinear scaling bug fixed (`Img_Cpp.cpp`):**
+- Root cause: formula used `(src-1)/dst` instead of `(src-1)/(dst-1)` for the
+  bilinear mapping. For identity scale (8→8), this gave `fSX = 7/8 = 0.875`
+  instead of `1.0`, producing wrong pixel values (e.g., 8.75 instead of 10).
+- Also fixed edge clamping: the old code clamped the base index `xll`, which
+  gave the wrong pixel at the last row/column. Now clamps the +1 neighbor
+  index (`x1 = min(x0+1, maxX)`) while keeping fractional weights correct.
+- Test `Img.scaledCopy_identity` now passes on all platforms.
+
+**LAPACK transpose helpers migrated to Accelerate and MKL backends:**
+- Replaced 28 manual transpose loops in `LapackOps_Accelerate.cpp` and
+  `LapackOps_Mkl.cpp` with `lapack_row_to_col` / `lapack_col_to_row` calls.
+- Added vector-returning overload `auto AT = lapack_row_to_col(A, M, N, lda)`
+  that allocates and returns the transposed buffer. Eliminates manual sizing.
+- GELSD backward transpose kept manual (BT stride `mx` ≠ row count `N`).
+- Net -78 lines across both backend files.
+
+**5 IPP backends implemented (Docker-verified, 384/384 tests pass with IPP+MKL):**
+
+| File | IPP Functions | Depths | Notes |
+|------|--------------|--------|-------|
+| UnaryArithmeticalOp_Ipp.cpp | ippiAddC/SubC/MulC/DivC + ippiSqr/Sqrt/Ln/Exp/Abs | 8u/16s/32f | withVal + noVal ops |
+| LUTOp_Ipp.cpp | ippiReduceBits (modern signature with buffer param) | 8u | noise=0, ippDitherNone |
+| MedianOp_Ipp.cpp | ippiFilterMedianBorder | 8u/16s | Fixed + generic sizes |
+| ConvolutionOp_Ipp.cpp | ippiFilterBorder (spec-based) | 8u/32f | Odd kernels only; mixed-depth/even delegates to C++ |
+| AffineOp_Ipp.cpp | ippiWarpAffineNearest/Linear (spec-based) | 8u/32f | NN + bilinear interpolation |
+
+**MorphologicalOp_Ipp.cpp remains a stub:** IPP 2022.3 removed the general
+morphology border API (ippiMorphologyBorderGetSize/Init, ippiDilateBorder,
+ippiErodeBorder). Only `ippiDilate3x3_64f_C1R` / `ippiErode3x3_64f_C1R`
+remain. The C++ backend handles all morphology; Accelerate provides
+vImageDilate/Erode for 8u/32f on macOS.
+
+**ConvolutionOp IPP limitations:** IPP's `ippiFilterBorder` uses center-anchored
+convolution, which doesn't match ICL's configurable anchor for even-sized kernels.
+Also, mixed-depth cases (8u→16s for Sobel) require `ippiFilterBorder_8u16s_C1R`
+which isn't implemented yet. The IPP backend checks for odd kernel + same depth
+and delegates all other cases to the C++ backend via explicit `get(Backend::Cpp)`.
+
+**Docker Dockerfile updated:** pinned `intel-oneapi-mkl-devel-2022.2.1` to match
+IPP 2022.3 era (avoids potential symbol conflicts between MKL 2025 and IPP 2022).
+Confirmed: IPP+MKL work correctly together — earlier "MKL crash" was stale build
+artifacts from bisection testing, not a real incompatibility.
+
+**Build: 384/384 tests pass on macOS and Docker Linux (IPP+MKL).**
+
+### Next Steps
+
+**Immediate:**
+- **ConvolutionOp IPP: mixed-depth support** — implement `ippiFilterBorder_8u16s_C1R`
+  for 8u→16s (Sobel, Laplace) and even-kernel anchor alignment
+- **Benchmark IPP backends** — measure speedup vs C++ for the 5 new IPP ops
+
+**Other work:**
+- **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
+  FileWriterPluginImageMagick.cpp for Quantum/Pixels API
+- **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
+- **OpenCL on macOS** — bundle Khronos cl2.hpp header for C++ bindings
+- **Linux benchmarks on real x86** — Docker Rosetta benchmarks are directionally
+  useful but not reliable for absolute numbers
+
+## Previous State (Session 29 — IPP/MKL Docker verification, LAPACK bug fixes)
 
 ### Session 29 Summary
 

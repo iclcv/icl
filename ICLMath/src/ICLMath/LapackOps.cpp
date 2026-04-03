@@ -18,6 +18,13 @@ namespace icl::math {
   }
 
   template<class T>
+  std::vector<T> lapack_row_to_col(const T* A, int M, int N, int lda) {
+    std::vector<T> AT(M * N);
+    lapack_row_to_col(A, M, N, lda, AT.data());
+    return AT;
+  }
+
+  template<class T>
   void lapack_col_to_row(const T* AT, int M, int N, T* A, int lda) {
     for(int i = 0; i < M; i++)
       for(int j = 0; j < N; j++)
@@ -26,6 +33,8 @@ namespace icl::math {
 
   template void lapack_row_to_col(const float*, int, int, int, float*);
   template void lapack_row_to_col(const double*, int, int, int, double*);
+  template std::vector<float> lapack_row_to_col(const float*, int, int, int);
+  template std::vector<double> lapack_row_to_col(const double*, int, int, int);
   template void lapack_col_to_row(const float*, int, int, float*, int);
   template void lapack_col_to_row(const double*, int, int, double*, int);
   const char* toString(LapackOp op) {
