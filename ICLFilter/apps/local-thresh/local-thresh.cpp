@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/apps/local-thresh/local-thresh.cpp           **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter, Robert Haschke                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
 #include <ICLIO/FileGrabber.h>
 #include <ICLCore/CoreFunctions.h>
@@ -85,7 +59,7 @@ void save(){
 }
 
 void step(){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   static DrawHandle orig = gui["orig"];
   static ImageHandle prev = gui["prev"];
   static ButtonHandle next = gui["next"];
@@ -102,27 +76,29 @@ void step(){
   ltop.setClipToROI(clipToROI);
   ltop.setup(masksize, threshold, (LocalThresholdOp::algorithm)(int)algorithm, gamma);
 
-  static const ImgBase *image = 0;
+  static Image image;
   if(!image || loop || next.wasTriggered()){
     bool init = !image;
-    image = grabber.grab();
+    image = grabber.grabImage();
     if(init){
-      selroi[0]=selroi[2]=image->getImageRect();
+      selroi[0]=selroi[2]=image.ptr()->getImageRect();
     }
   }
 
-  const ImgBase *useImage = image;
-  if(selroi[1] != image->getImageRect()){
+  const ImgBase *useImage = image.ptr();
+  if(selroi[1] != image.ptr()->getImageRect()){
     useImage = useImage->shallowCopy(selroi[1]);
   }
   Time last = Time::now();
-  const ImgBase *result = ltop.apply(useImage);
+  static ImgBase *resultBuf = 0;
+  ltop.apply(useImage, &resultBuf);
+  const ImgBase *result = resultBuf;
   time = str((Time::now()-last).toMilliSeconds())+"ms";
 
 
   orig = image;
 
-  if(image != useImage){
+  if(image.ptr() != useImage){
     delete useImage;
   }
 
@@ -153,8 +129,8 @@ void init(){
     gamma = f["config.gammaslope"];
   }
 
-  gui << Draw().minSize(16,12).handle("orig").label("original image")
-      << Image().minSize(16,12).handle("prev").label("preview image")
+  gui << Canvas().minSize(16,12).handle("orig").label("original image")
+      << Display().minSize(16,12).handle("prev").label("preview image")
       << ( VBox().label("controls")
            << Slider(2,200,masksize).label("mask size").out("masksize").minSize(15,2).handle("a")
            << FSlider(-30,40,thresh).label("threshold").out("threshold").minSize(15,2).handle("b")
@@ -219,7 +195,8 @@ void batch_mode(){
       if(maxSteps > 0){
         printf("processing image %30s ......",fl[i++].c_str());
       }
-      const ImgBase *image = grabber.grab();
+      Image grabImg = grabber.grabImage();
+      const ImgBase *image = grabImg.ptr();
       if(image->getFormat() != formatGray){
         printf("...");
         static ImgBase *grayImage = 0;

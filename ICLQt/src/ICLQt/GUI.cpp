@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/GUI.cpp                                **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter, Viktor Richter                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <ICLUtils/StrTok.h>
 #include <ICLUtils/SteppingRange.h>
@@ -279,7 +253,7 @@ namespace icl{
       bool deactivateExec;
       std::string processingProperty;
       std::recursive_mutex execMutex;
-      std::map<std::string,std::string> deferredAssignList;
+      std::map<std::string,std::string, std::less<>> deferredAssignList;
 
       struct StSt{
         std::string full,half;
@@ -428,11 +402,11 @@ namespace icl{
         return false;
       }
 
-      StSt getStSt(std::map<std::string,std::vector<StSt> > &map, std::string name){
-        for(std::map<std::string,std::vector<StSt> >::iterator it=map.begin();it != map.end();++it){
-          for(unsigned int i=0;i<it->second.size();++i){
-            if((it->second[i]).full == name){
-              return it->second[i];
+      StSt getStSt(std::map<std::string,std::vector<StSt>, std::less<>> &map, std::string name){
+        for(const auto& [section, entries] : map){
+          for(unsigned int i=0;i<entries.size();++i){
+            if(entries[i].full == name){
+              return entries[i];
             }
           }
         }
@@ -457,7 +431,7 @@ namespace icl{
         if(!conf) throw GUISyntaxErrorException(def.defString(),"No Configurable with ID "+def.param(0)+" registered");
 
         std::vector<std::string> props = conf->getPropertyListWithoutDeactivated();
-        std::map<std::string,std::vector<StSt> > sections;
+        std::map<std::string,std::vector<StSt>, std::less<>> sections;
         std::map<int,std::string> sections_ordering;
 
         if(def.hasToolTip()){
@@ -487,20 +461,19 @@ namespace icl{
         int generalIdx = 0;
         int i=0;
         if(!conf->isOrderedFlagSet()) {
-          for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
-            if(it->first == "general") {
+          for(const auto& [section, entries] : sections){
+            if(section == "general") {
               generalIdx = i;
             }
-            tablist += (tablist.length()?",":"")+it->first;
+            tablist += (tablist.length()?",":"")+section;
             ++i;
           }
         } else {
-          for(std::map<int,std::string>::iterator it_ordered=sections_ordering.begin();it_ordered != sections_ordering.end();++it_ordered){
-            std::string first = it_ordered->second;
-            if(first == "general") {
+          for(const auto& [order, section] : sections_ordering){
+            if(section == "general") {
               generalIdx = i;
             }
-            tablist += (tablist.length()?",":"")+first;
+            tablist += (tablist.length()?",":"")+section;
             ++i;
           }
         }
@@ -531,14 +504,14 @@ namespace icl{
 
         bool haveGeneral = false;
         if(!conf->isOrderedFlagSet()) {
-          for(std::map<std::string,std::vector<StSt> >::iterator it=sections.begin();it != sections.end();++it){
+          for(const auto& [section, entries] : sections){
             GUI tab = VScroll();
-            for(unsigned int i=0;i<it->second.size();++i){
-              if(!isSpecialGrabberGrabberProperty(conf,(it->second[i]).full)){
-                add_component(tab,it->second[i],ostr,gui);
+            for(unsigned int i=0;i<entries.size();++i){
+              if(!isSpecialGrabberGrabberProperty(conf,entries[i].full)){
+                add_component(tab,entries[i],ostr,gui);
               }
             }
-            if(it->first == "general"){
+            if(section == "general"){
               haveGeneral = true;
               tab << ( HBox()
                        << Button("load").handle("#X#load")
@@ -551,16 +524,15 @@ namespace icl{
             sub_gui << tab;
           }
         } else {
-            for(std::map<int,std::string>::iterator it_ordered=sections_ordering.begin();it_ordered != sections_ordering.end();++it_ordered){
-              std::string first = it_ordered->second;
-              std::vector<StSt>& second = sections[it_ordered->second];
+            for(const auto& [order, section] : sections_ordering){
+              std::vector<StSt>& entries = sections[section];
               GUI tab = VScroll();
-              for(unsigned int i=0;i<second.size();++i){
-                if(!isSpecialGrabberGrabberProperty(conf,(second[i]).full)){
-                  add_component(tab,second[i],ostr,gui);
+              for(unsigned int i=0;i<entries.size();++i){
+                if(!isSpecialGrabberGrabberProperty(conf,entries[i].full)){
+                  add_component(tab,entries[i],ostr,gui);
                 }
               }
-              if(first == "general"){
+              if(section == "general"){
                 haveGeneral = true;
                 tab << ( HBox()
                          << Button("load").handle("#X#load")
@@ -589,9 +561,8 @@ namespace icl{
         gui << sub_gui;
         gui.create();
 
-        for(std::map<std::string,std::string>::const_iterator it = deferredAssignList.begin();
-            it != deferredAssignList.end(); ++it){
-          gui[it->first] = it->second;
+        for(const auto& [handle, value] : deferredAssignList){
+          gui[handle] = value;
         }
 
         if(use_tabs){
@@ -611,7 +582,7 @@ namespace icl{
 
       /// Called if a property is changed from somewhere else
       void propertyChanged(const Configurable::Property &p){
-        std::lock_guard<std::recursive_mutex> l(execMutex);
+        std::scoped_lock<std::recursive_mutex> l(execMutex);
         const std::string &name = p.name;
         const std::string &type = p.type;
         deactivateExec = true;
@@ -652,7 +623,7 @@ namespace icl{
       }
 
       void exec(const std::string &handle){
-        std::lock_guard<std::recursive_mutex> l(execMutex);
+        std::scoped_lock<std::recursive_mutex> l(execMutex);
         if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
         std::string prop = handle.substr(3);
         if(deactivateExec || processingProperty == prop){
@@ -2067,8 +2038,8 @@ namespace icl{
     }
 
 
-    static std::map<std::string,GUI::CreatorFunction> &get_registered_widget_types(){
-      static std::map<std::string,GUI::CreatorFunction> m;
+    static std::map<std::string,GUI::CreatorFunction, std::less<>> &get_registered_widget_types(){
+      static std::map<std::string,GUI::CreatorFunction, std::less<>> m;
       return m;
     }
 
@@ -2123,14 +2094,13 @@ namespace icl{
         it build a CreatorFuncMap which uses the GUIDefinitinos type-string as
         identifier to estimate which creation function must be called.         */
     GUIWidget *create_widget(const GUIDefinition &def){
-      typedef std::map<std::string,GUI::CreatorFunction> tmap;
+      typedef std::map<std::string,GUI::CreatorFunction, std::less<>> tmap;
       tmap &m = get_registered_widget_types();
-      tmap::iterator it = m.find(def.type());
-
-      if(it == m.end()){
+      if(auto it = m.find(def.type()); it == m.end()){
         throw ICLException("unable to create GUI component with type '" + def.type() + "' (unknown type)");
+      } else {
+        return it->second(def);
       }
-      return it->second(def);
     }
 
 

@@ -1,50 +1,21 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLUtils/src/ICLUtils/File.cpp                         **
-** Module : ICLUtils                                               **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLUtils/File.h>
 #include <ICLUtils/Macros.h>
 #include <ICLUtils/StringUtils.h>
-#include <sys/stat.h>
+#include <cstdio>
 #include <cstring>
-#include <stdio.h>
+#include <filesystem>
 
 #ifdef ICL_HAVE_LIBZ
 #include <zlib.h>
 #endif
 
 
-namespace icl{
-  namespace utils{
-
+namespace icl::utils {
     namespace{
-      static const char DIR_SEPERATOR = '/';
       static const char NEW_LINE = '\n';
 
       std::string toString(File::OpenMode om){
@@ -57,32 +28,23 @@ namespace icl{
         }
       }
 
-      void break_apart(std::string s, std::string &dir, std::string &basename, std::string &suffix, std::string &filename){
-        size_t p = s.rfind(DIR_SEPERATOR);
+      void break_apart(const std::string &s, std::string &dir, std::string &basename, std::string &suffix, std::string &filename){
+        namespace fs = std::filesystem;
+        fs::path p(s);
 
-        /// split directory xxx/filename.suffix
-        if(p==std::string::npos){
-          dir = "";
-          filename = s;
-        }else{
-          dir = s.substr(0,p);
-          filename = s.substr(p+1);
-        }
+        dir = p.parent_path().string();
+        filename = p.filename().string();
 
-        // split suffix
-        p = filename.rfind('.');
-        if(p == std::string::npos){
-          suffix = "";
-          basename = filename;
-        }else{
-          suffix = filename.substr(p);
-          basename = filename.substr(0,p);
-          if(suffix == ".gz"){
-            p = basename.rfind('.');                   ;
-            if(p != std::string::npos){
-              suffix = basename.substr(p)+suffix;
-              basename = basename.substr(0,p-1);
-            }
+        suffix = p.extension().string();
+        basename = p.stem().string();
+
+        // Handle double extensions like .ppm.gz
+        if (suffix == ".gz") {
+          fs::path stem(basename);
+          std::string inner_ext = stem.extension().string();
+          if (!inner_ext.empty()) {
+            suffix = inner_ext + suffix;  // e.g. ".ppm.gz"
+            basename = stem.stem().string();  // e.g. "data"
           }
         }
       }
@@ -134,14 +96,11 @@ namespace icl{
       static const char *s_apcOpenModes[4] = { "rb","r","wb","w" };
 
       bool file_exists(const std::string &filename){
-        struct stat stFileInfo;
-        return stat(filename.c_str(),&stFileInfo)==0;
+        return std::filesystem::exists(filename);
       }
 
       bool file_is_dir(const std::string &filename){
-        struct stat s;
-        if( stat(filename.c_str(),&s) != 0 ) return false; // dos not exist
-        else return s.st_mode & S_IFDIR;
+        return std::filesystem::is_directory(filename);
       }
     }
 
@@ -613,7 +572,7 @@ namespace icl{
     void File::erase(){
 
       ICLASSERT_RETURN(!isNull() && exists());
-      remove(getName().c_str());
+      std::filesystem::remove(getName());
     }
 
 
@@ -664,4 +623,3 @@ namespace icl{
     }
 
   } // namespace io
-}

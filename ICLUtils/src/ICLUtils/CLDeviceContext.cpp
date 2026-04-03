@@ -42,9 +42,7 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace icl {
-  namespace utils {
-
+namespace icl::utils {
     // ///////////////////////////////////////////////////////////////////////////
     // Helper: query a string-valued info from a platform
     static std::string getPlatformInfoString(cl_platform_id platform, cl_platform_info param) {
@@ -508,6 +506,4 @@ namespace icl {
     }
 
   }
-}
-
 #endif

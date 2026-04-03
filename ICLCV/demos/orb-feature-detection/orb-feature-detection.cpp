@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/demos/orb-feature-detection/orb-feature-detection.cpp **
-** Module : ICLCV                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #define ICL_NO_USING_NAMESPACES
 
@@ -37,6 +11,7 @@
 using namespace icl::qt;
 using icl::utils::pa;
 using icl::core::Img8u;
+using icl::core::Image;
 using icl::io::GenericGrabber;
 using icl::cv::ORBFeatureDetector;
 
@@ -48,7 +23,7 @@ void init(){
    orb.setConfigurableID("orb");
 
    grabber.init(pa("-i"));
-   gui << Draw().handle("image")
+   gui << Canvas().handle("image")
        << ( VBox().minSize(16,1).maxSize(16,99)
             << Combo("input,gray,contrast enhanced").handle("vis")
             << Prop("orb").label("orb properties")
@@ -58,7 +33,8 @@ void init(){
 
 }
 void run(){
-  const Img8u &image = *grabber.grab()->as8u();
+  Image grabImg = grabber.grabImage();
+  const Img8u &image = grabImg.as8u();
 
   ORBFeatureDetector::FeatureSet fs = orb.detect(image);
 

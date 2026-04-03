@@ -208,6 +208,7 @@ endif()
 
 # ---- Dependency handling ----
 include(ICLFindPackage)
+include(CheckFunctionExists)
 
 if(WIN32)
   set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
@@ -259,9 +260,15 @@ else()
 endif()
 
 if(NOT WIN32 AND NOT APPLE AND BUILD_WITH_DL)
-  ICL_FIND_PACKAGE(NAME DL HEADERS "dlfcn.h" LIBS "dl")
+  ICL_FIND_PACKAGE(NAME DL HEADERS "dlfcn.h" LIBS "dl" OPTIONAL)
   if(DL_FOUND)
     list(APPEND REQUIRED_LIBRARIES_LIST ${DL_LIBRARIES})
+  else()
+    # glibc 2.34+ integrates dl functions into libc — no separate libdl needed
+    check_function_exists(dlopen HAVE_DLOPEN_IN_LIBC)
+    if(HAVE_DLOPEN_IN_LIBC)
+      set(DL_FOUND TRUE)
+    endif()
   endif()
 endif()
 
@@ -273,24 +280,19 @@ if(BUILD_WITH_IPP)
   else()
     set(_IPP_LIB_SUF "ipp/lib/ia32")
   endif()
-  set(IPP_REQUESTED_LIBS "ippcore;ippi;ipps;ippcv;ippcc;iomp5")
+  set(IPP_REQUESTED_LIBS "ippcore;ippi;ipps;ippcv;ippcc")
   ICL_FIND_PACKAGE(NAME IPP HEADERS "ipp.h"
-    LIBS "${IPP_REQUESTED_LIBS};ippm"
-    PATHS "/opt/intel;/opt/IPP"
-    HEADER_PATH_SUFFIXES "ipp/include"
-    LIB_PATH_SUFFIXES ${_IPP_LIB_SUF}
-    OPTIONAL)
-  if(NOT IPP_FOUND)
-    message(STATUS "IPP Legacy not found. Checking for recent releases.")
-    ICL_FIND_PACKAGE(NAME IPP HEADERS "ipp.h"
-      LIBS ${IPP_REQUESTED_LIBS}
-      PATHS "/opt/intel;/opt/IPP"
-      HEADER_PATH_SUFFIXES "ipp/include"
-      LIB_PATH_SUFFIXES ${_IPP_LIB_SUF})
-  endif()
+    LIBS ${IPP_REQUESTED_LIBS}
+    PATHS "/opt/intel;/opt/IPP;/opt/intel/oneapi/ipp/latest"
+    HEADER_PATH_SUFFIXES "ipp/include" "include"
+    LIB_PATH_SUFFIXES ${_IPP_LIB_SUF} "lib")
   if(IPP_FOUND)
     if(EXISTS "${IPP_INCLUDE_DIRS}/ippversion.h")
       get_ipp_version(${IPP_INCLUDE_DIRS})
+    endif()
+    # oneAPI IPP puts individual headers (ipps.h, ippi.h, ...) in an ipp/ subdirectory
+    if(IS_DIRECTORY "${IPP_INCLUDE_DIRS}/ipp")
+      list(APPEND IPP_INCLUDE_DIRS "${IPP_INCLUDE_DIRS}/ipp")
     endif()
     ADD_ICL_DEFINITIONS(-DICL_HAVE_IPP)
   endif()
@@ -305,10 +307,10 @@ if(BUILD_WITH_MKL)
     set(_MKL_LIB_SUF "mkl/lib/ia32")
   endif()
   ICL_FIND_PACKAGE(NAME MKL HEADERS "mkl_types.h"
-    LIBS "${_MKL_LIB};mkl_intel_thread;mkl_core;iomp5"
-    PATHS "/opt/intel;/opt/MKL;/opt/MKL/mkl"
-    HEADER_PATH_SUFFIXES "mkl/include"
-    LIB_PATH_SUFFIXES "${_MKL_LIB_SUF}")
+    LIBS "${_MKL_LIB};mkl_sequential;mkl_core"
+    PATHS "/opt/intel;/opt/MKL;/opt/MKL/mkl;/opt/intel/oneapi/mkl/latest"
+    HEADER_PATH_SUFFIXES "mkl/include" "include"
+    LIB_PATH_SUFFIXES "${_MKL_LIB_SUF}" "lib/intel64" "lib")
 endif()
 
 if(BUILD_WITH_OPENCL)
@@ -328,6 +330,16 @@ endif()
 if(BUILD_WITH_EIGEN3)
   ICL_FIND_PACKAGE(NAME Eigen3 HEADERS "Eigen/Eigen"
     HEADER_PATH_SUFFIXES "include/eigen3")
+endif()
+
+# Apple Accelerate framework (BLAS/LAPACK/vDSP — always available on macOS)
+if(APPLE)
+  find_library(ACCELERATE_LIBRARY Accelerate)
+  if(ACCELERATE_LIBRARY)
+    set(ACCELERATE_FOUND TRUE)
+    ADD_ICL_DEFINITIONS(-DICL_HAVE_ACCELERATE -DACCELERATE_NEW_LAPACK)
+    message(STATUS "Found: Apple Accelerate framework")
+  endif()
 endif()
 
 if(BUILD_WITH_OPENCV)
@@ -550,7 +562,8 @@ set(ICL_MODULE_INCLUDE_DIRS "" CACHE INTERNAL "Accumulated ICL module include di
 list(REMOVE_DUPLICATES REQUIRED_LIBRARIES_LIST)
 
 list(APPEND ICLUtils_3RDPARTY_LIBRARIES ${REQUIRED_LIBRARIES_LIST} ${IPP_LIBRARIES} ${OpenCL_LIBRARIES} ${DL_LIBRARIES})
-list(APPEND ICLMath_3RDPARTY_LIBRARIES ${MKL_LIBRARIES})
+list(APPEND ICLMath_3RDPARTY_LIBRARIES ${MKL_LIBRARIES} ${ACCELERATE_LIBRARY})
+list(APPEND ICLFilter_3RDPARTY_LIBRARIES ${ACCELERATE_LIBRARY})
 list(APPEND ICLCore_3RDPARTY_LIBRARIES ${OpenCV_LIBRARIES})
 
 list(APPEND ICLIO_3RDPARTY_LIBRARIES

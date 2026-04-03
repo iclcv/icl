@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLUtils/src/ICLUtils/Rect32f.h                        **
-** Module : ICLUtils                                               **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
@@ -37,21 +11,18 @@
 #include <stdio.h>
 #include <algorithm>
 
-namespace icl {
-  namespace utils{
+namespace icl::utils {
+  /// Floating point precision implementation of the Rect class \ingroup TYPES
+  class ICLUtils_API Rect32f{
+    public:
 
+    float x;      ///!< x pos (upper left)
+    float y;      ///!< y pos (upper left)
+    float width;  ///!< width of the rect
+    float height; ///!< height of the rect
 
-    /// Floating point precision implementation of the Rect class \ingroup TYPES
-    class ICLUtils_API Rect32f{
-      public:
-
-      float x;      ///!< x pos (upper left)
-      float y;      ///!< y pos (upper left)
-      float width;  ///!< width of the rect
-      float height; ///!< height of the rect
-
-      /// static null instance (0,0,0,0)
-      static const Rect32f null;
+    /// static null instance (0,0,0,0)
+    static const Rect32f null;
 
 	    /// default constructor
 	    Rect32f(){
@@ -61,183 +32,182 @@ namespace icl {
 		    this->height = 0.0f;
 	    }
 
-      /// creates a defined Rect32f
-      Rect32f(float x, float y, float width, float height):
-      x(x),y(y),width(width),height(height){
-        this->x = x;
-        this->y = y;
-        this->width = width;
-        this->height = height;
-      }
+    /// creates a defined Rect32f
+    Rect32f(float x, float y, float width, float height):
+    x(x),y(y),width(width),height(height){
+      this->x = x;
+      this->y = y;
+      this->width = width;
+      this->height = height;
+    }
 
-      /// creates a new Rect32f with specified offset and size
-      Rect32f(const Point32f &p, const Size32f &s){
-        this->x = p.x;
-        this->y = p.y;
-        this->width = s.width;
-        this->height = s.height;
-      }
+    /// creates a new Rect32f with specified offset and size
+    Rect32f(const Point32f &p, const Size32f &s){
+      this->x = p.x;
+      this->y = p.y;
+      this->width = s.width;
+      this->height = s.height;
+    }
 
-      /// create a deep copy of a rect
-      Rect32f(const Rect32f &r){
-        this->x = r.x;
-        this->y = r.y;
-        this->width = r.width;
-        this->height = r.height;
-      }
+    /// create a deep copy of a rect
+    Rect32f(const Rect32f &r){
+      this->x = r.x;
+      this->y = r.y;
+      this->width = r.width;
+      this->height = r.height;
+    }
 
-      /// create a floating point rect from given int-valued rect
-      Rect32f(const Rect &rect):
-        x(static_cast<float>(rect.x)),
-        y(static_cast<float>(rect.y)),
-        width(static_cast<float>(rect.width)),
-        height(static_cast<float>(rect.height)){
-      }
+    /// create a floating point rect from given int-valued rect
+    Rect32f(const Rect &rect):
+      x(static_cast<float>(rect.x)),
+      y(static_cast<float>(rect.y)),
+      width(static_cast<float>(rect.width)),
+      height(static_cast<float>(rect.height)){
+    }
 
-      /// checks wether the object instance is null, i.e. all elements are zero
-      bool isNull() const { return (*this)==null; }
+    /// checks wether the object instance is null, i.e. all elements are zero
+    bool isNull() const { return (*this)==null; }
 
-      /// checks if two rects are equal
-      bool operator==(const Rect32f &s) const {
-        return x==s.x && y==s.y && width==s.width && height==s.height;
-      }
+    /// checks if two rects are equal
+    bool operator==(const Rect32f &s) const {
+      return x==s.x && y==s.y && width==s.width && height==s.height;
+    }
 
-      /// checks if two rects are not equal
-      bool operator!=(const Rect32f &s) const {
-        return x!=s.x || y!= s.y || width!=s.width || height!=s.height;
-      }
+    /// checks if two rects are not equal
+    bool operator!=(const Rect32f &s) const {
+      return x!=s.x || y!= s.y || width!=s.width || height!=s.height;
+    }
 
-      /// scales all parameters of the rect by a double value
-      Rect32f operator*(double d) const {
-        return Rect32f(d*x,d*y,d*width,d*height);
-      }
+    /// scales all parameters of the rect by a double value
+    Rect32f operator*(double d) const {
+      return Rect32f(d*x,d*y,d*width,d*height);
+    }
 
-      /// scales all parameters of the rect by a double value
-      Rect32f operator/(double d) const {
-        return Rect32f(d/x,d/y,d/width,d/height);
-      }
+    /// scales all parameters of the rect by a double value
+    Rect32f operator/(double d) const {
+      return Rect32f(d/x,d/y,d/width,d/height);
+    }
 
-      /// adds a size to the rects size
-      Rect32f& operator+=(const Size32f &s){
-        width+=s.width; height+=s.height; return *this;
-      }
+    /// adds a size to the rects size
+    Rect32f& operator+=(const Size32f &s){
+      width+=s.width; height+=s.height; return *this;
+    }
 
-      /// substracs a size to the rects size
-      Rect32f& operator-=(const Size32f &s){
-        width-=s.width; height-=s.height; return *this;
-      }
+    /// substracs a size to the rects size
+    Rect32f& operator-=(const Size32f &s){
+      width-=s.width; height-=s.height; return *this;
+    }
 
-      /// adds a Point to the rects offset
-      Rect32f& operator+=(const Point32f &p){
-        x+=p.x; y+=p.y; return *this;
-      }
+    /// adds a Point to the rects offset
+    Rect32f& operator+=(const Point32f &p){
+      x+=p.x; y+=p.y; return *this;
+    }
 
-      /// substracts a Point to the rects offset
-      Rect32f& operator-=(const Point32f &p){
-        x-=p.x; y-=p.y; return *this;
-      }
+    /// substracts a Point to the rects offset
+    Rect32f& operator-=(const Point32f &p){
+      x-=p.x; y-=p.y; return *this;
+    }
 
-      /// scales all rect params inplace
-      Rect32f& operator*=(double d){
-        x*=d;
-        y*=d;
-        width*=d;
-        height*=d;
-        return *this;
-      }
-      /// scales all rect params inplace
-      Rect32f& operator/=(double d){
-        x/=d;
-        y/=d;
-        width/=d;
-        height/=d;
-        return *this;
-      }
-      /// returns width*height
-      float getDim() const {return width*height;}
+    /// scales all rect params inplace
+    Rect32f& operator*=(double d){
+      x*=d;
+      y*=d;
+      width*=d;
+      height*=d;
+      return *this;
+    }
+    /// scales all rect params inplace
+    Rect32f& operator/=(double d){
+      x/=d;
+      y/=d;
+      width/=d;
+      height/=d;
+      return *this;
+    }
+    /// returns width*height
+    float getDim() const {return width*height;}
 
-      /// intersection of two Rect32fs
-      Rect32f operator&(const Rect32f &r) const;
+    /// intersection of two Rect32fs
+    Rect32f operator&(const Rect32f &r) const;
 
-      /// inplace intersection of two rects
-      Rect32f &operator&=(const Rect32f &r);
+    /// inplace intersection of two rects
+    Rect32f &operator&=(const Rect32f &r);
 
-      /// union of two Rect32fs
-      Rect32f operator|(const Rect32f &r) const;
+    /// union of two Rect32fs
+    Rect32f operator|(const Rect32f &r) const;
 
-      /// inplace union of two rects
-      Rect32f &operator|=(const Rect32f &r);
+    /// inplace union of two rects
+    Rect32f &operator|=(const Rect32f &r);
 
-      /// rects with negative sizes are normalized to Positive sizes
-      /** e.g. the rect (5,5,-5,-5) is normalized to (0,0,5,5) */
-      Rect32f normalized() const;
+    /// rects with negative sizes are normalized to Positive sizes
+    /** e.g. the rect (5,5,-5,-5) is normalized to (0,0,5,5) */
+    Rect32f normalized() const;
 
-      /// returns if a Rect32f containes another rect
-      bool contains(const Rect32f &r) const;
+    /// returns if a Rect32f containes another rect
+    bool contains(const Rect32f &r) const;
 
-      /// returns if the Rect32f contains a given point
-      bool contains(float x, float y) const;
+    /// returns if the Rect32f contains a given point
+    bool contains(float x, float y) const;
 
-      /// let the rect grow by k pixles into each direction
-      /** if k<0 the rect becomes smaller
-          E.g. Rect32f(10,10,90,90).enlarge(10) creates a Rect32f (0,0,100,100)
-          @param k amount of pixel the rectangle is enlarged by
-          @return *this
-          */
-      Rect32f &enlarge(float k);
+    /// let the rect grow by k pixles into each direction
+    /** if k<0 the rect becomes smaller
+        E.g. Rect32f(10,10,90,90).enlarge(10) creates a Rect32f (0,0,100,100)
+        @param k amount of pixel the rectangle is enlarged by
+        @return *this
+        */
+    Rect32f &enlarge(float k);
 
-      /// returns an enlarged instance of this rect
-      /** @see enlarge(float)*/
-      Rect32f enlarged(float k) const;
-
-
-      /// returns upper left point of the rect
-      Point32f ul() const {
-        return Point32f(x,y);
-      }
-      /// returns lower left point of the rect
-      Point32f ll() const {
-        return Point32f(x,y+height);
-      }
-      /// returns upper right point of the rect
-      Point32f ur() const {
-        return Point32f(x+width,y);
-      }
-      /// returns lower right point of the rect
-      Point32f lr() const {
-        return Point32f(x+width,y+height);
-      }
-
-      /// returns the left border position
-      float left() const { return x; }
-
-      /// returns the right border position
-      float right() const { return x+width; }
-
-      /// returns the position of the bottom border
-      float bottom() const { return y+height; }
-
-      /// returns the position of the upper border
-      float top() const { return y; }
-
-      /// returns the size of the rect
-      Size32f getSize() const { return Size32f(width,height); }
-
-      /// returns the center point of the rect
-      Point32f center() const {
-        return Point32f(x+width/2,y+height/2);
-      }
-
-      /// multiplies the rect's x and width by xfac and y and height by yfac
-      Rect32f transform(double xfac, double yfac) const;
-    };
-
-    /// ostream operator (x,y)wxy
-    ICLUtils_API std::ostream &operator<<(std::ostream &s, const Rect32f &r);
-
-    /// istream operator
-    ICLUtils_API std::istream &operator>>(std::istream &s, Rect32f &r);
+    /// returns an enlarged instance of this rect
+    /** @see enlarge(float)*/
+    Rect32f enlarged(float k) const;
 
 
-  } // namespace utils
-} // namespace icl
+    /// returns upper left point of the rect
+    Point32f ul() const {
+      return Point32f(x,y);
+    }
+    /// returns lower left point of the rect
+    Point32f ll() const {
+      return Point32f(x,y+height);
+    }
+    /// returns upper right point of the rect
+    Point32f ur() const {
+      return Point32f(x+width,y);
+    }
+    /// returns lower right point of the rect
+    Point32f lr() const {
+      return Point32f(x+width,y+height);
+    }
+
+    /// returns the left border position
+    float left() const { return x; }
+
+    /// returns the right border position
+    float right() const { return x+width; }
+
+    /// returns the position of the bottom border
+    float bottom() const { return y+height; }
+
+    /// returns the position of the upper border
+    float top() const { return y; }
+
+    /// returns the size of the rect
+    Size32f getSize() const { return Size32f(width,height); }
+
+    /// returns the center point of the rect
+    Point32f center() const {
+      return Point32f(x+width/2,y+height/2);
+    }
+
+    /// multiplies the rect's x and width by xfac and y and height by yfac
+    Rect32f transform(double xfac, double yfac) const;
+  };
+
+  /// ostream operator (x,y)wxy
+  ICLUtils_API std::ostream &operator<<(std::ostream &s, const Rect32f &r);
+
+  /// istream operator
+  ICLUtils_API std::istream &operator>>(std::istream &s, Rect32f &r);
+
+
+  } // namespace icl::utils

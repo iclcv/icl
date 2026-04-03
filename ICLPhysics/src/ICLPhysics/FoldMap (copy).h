@@ -43,6 +43,6 @@ namespace icl{
     float getFoldValue(const utils::Point32f &a, const utils::Point32f &b);
 
     /// current fold map
-    const core::Img32f &getImage() const { return m; }
+    const core::Img32f &getDisplay() const { return m; }
   };
 }

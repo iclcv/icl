@@ -6,7 +6,7 @@ Scene scene;
 
 void init(){
   // create graphical user interface
-  gui << Draw3D().handle("draw") << Show();
+  gui << Canvas3D().handle("draw") << Show();
 
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position

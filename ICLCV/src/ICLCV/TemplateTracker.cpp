@@ -1,32 +1,7 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/src/ICLCV/TemplateTracker.cpp                    **
-** Module : ICLCV                                                  **
-** Authors: Eckard Riedenklau, Christof Elbrechter                 **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Eckard Riedenklau, Christof Elbrechter
+
 #include <ICLCV/TemplateTracker.h>
 
 #include <ICLFilter/ProximityOp.h>
@@ -104,7 +79,9 @@ namespace icl{
 
       for(float a=0;a<=360;a+=rotationStepSizeDegree){
         rot.setAngle(a);
-        const Img8u *r = rot.apply(&templateImage)->as8u();
+        static ImgBase *rotBuf = 0;
+        rot.apply(&templateImage, &rotBuf);
+        const Img8u *r = rotBuf->as8u();
         const int rw = r->getWidth();
         const int rh = r->getHeight();
         Rect center((rw-w)/2, (rh-h)/2, w,h);

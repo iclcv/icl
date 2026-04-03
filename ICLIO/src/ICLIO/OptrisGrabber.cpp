@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/OptrisGrabber.cpp                      **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
-
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLIO/OptrisGrabber.h>
 #include <libirimager/IRImager.h>
@@ -75,7 +48,7 @@ namespace icl{
         Img8u visibleOutBuf;
         OptrisGrabber::Mode mode;
 
-        ImgBase &getImage() { return mode == OptrisGrabber::IR_IMAGE ? (ImgBase&)image :  (ImgBase&)visibleFrame; }
+        ImgBase &getDisplay() { return mode == OptrisGrabber::IR_IMAGE ? (ImgBase&)image :  (ImgBase&)visibleFrame; }
         ImgBase &getOutBuf() { return mode == OptrisGrabber::IR_IMAGE ?  (ImgBase&)outBuf : (ImgBase&)visibleOutBuf; }
         void deepCopy(){
           if(mode == OptrisGrabber::IR_IMAGE){
@@ -264,7 +237,7 @@ namespace icl{
       virtual void run(){
         while(true){
           {
-            std::lock_guard<std::recursive_mutex> lock(buffer.mutex);
+            std::scoped_lock<std::recursive_mutex> lock(buffer.mutex);
             if(imager->getFrame(buffer.buf.data()) == IRIMAGER_SUCCESS){
               imager->process(buffer.buf.data(), &buffer);
               imager->releaseFrame();
@@ -334,18 +307,18 @@ namespace icl{
       return all;
     }
 
-    const core::ImgBase* OptrisGrabber::acquireImage(){
+    const core::ImgBase* OptrisGrabber::acquireDisplay(){
       bool omitDoubledFrames = getPropertyValue("omit doubled frames");
 
-      std::lock_guard<std::recursive_mutex> lock(m_data->buffer.mutex);
+      std::scoped_lock<std::recursive_mutex> lock(m_data->buffer.mutex);
       if(omitDoubledFrames){
-        while(m_data->buffer.getImage().getTime() == m_data->buffer.lastTimeAcquired){
+        while(m_data->buffer.getDisplay().getTime() == m_data->buffer.lastTimeAcquired){
           m_data->buffer.mutex.unlock();
           Thread::msleep(1);
           m_data->buffer.mutex.lock();
         }
       }
-      m_data->buffer.lastTimeAcquired = m_data->buffer.getImage().getTime();
+      m_data->buffer.lastTimeAcquired = m_data->buffer.getDisplay().getTime();
       m_data->buffer.deepCopy();
 
       const ImgBase *cvt = 0;
@@ -357,7 +330,9 @@ namespace icl{
       }
 
       if(getPropertyValue("threshold output")){
-        cvt = m_data->lt.apply(cvt);
+        static ImgBase *ltBuf = 0;
+        m_data->lt.apply(cvt, &ltBuf);
+        cvt = ltBuf;
       }
 
       return cvt;

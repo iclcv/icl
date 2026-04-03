@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMath/src/ICLMath/PolynomialRegression.cpp           **
-** Module : ICLMath                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
-
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLMath/PolynomialRegression.h>
 #include <ICLUtils/StringUtils.h>
@@ -35,9 +8,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     namespace{
       template<class T>
       struct ConstAttrib : public PolynomialRegressionAttrib<T>{
@@ -202,7 +173,7 @@ namespace icl{
     template<class T>
     const typename PolynomialRegression<T>::Result &
     PolynomialRegression<T>::apply(const typename PolynomialRegression<T>::Matrix &xs,
-                                   const typename PolynomialRegression<T>::Matrix &ys,bool useSVD){
+                                   const typename PolynomialRegression<T>::Matrix &ys){
       ICLASSERT_THROW(xs.rows() == ys.rows(),ICLException("PolynomialRegression::apply: xs.rows() must be equal to ys.rows()"));
       const int &M  = m_result.m_attribMaxIndex;
       ICLASSERT_THROW(static_cast<int>(xs.cols()) > M,ICLException("PolynomialRegression::apply: maximum attribute index found is " + str(M) + " but the given data matrix (xs) has only " + str(xs.cols()) + " columns"));
@@ -212,7 +183,7 @@ namespace icl{
         apply_params(m_result.m_attribs, xs.row_begin(i), m_buf.row_begin(i));
       }
 
-      m_buf.pinv(useSVD).mult(ys, m_result.m_params);
+      m_buf.pinv().mult(ys, m_result.m_params);
       //m_result.m_params.reshape(m_result.m_params.rows(), m_result.m_params.cols());
 
       return m_result;
@@ -358,4 +329,3 @@ namespace icl{
     template class ICLMath_API PolynomialRegression<float>;
     template class ICLMath_API PolynomialRegression<double>;
   }
-}

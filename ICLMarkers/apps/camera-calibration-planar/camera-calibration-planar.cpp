@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMarkers/apps/camera-calibration-planar/             **
-**          camera-calibration-planar.cpp                          **
-** Module : ICLMarkers                                             **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
@@ -70,7 +43,7 @@ Mat compute_relative_transform_n(const std::vector<Camera> &s, const std::vector
     }
   }
   dT *= 1./n;
-  DynMatrix<float> Rrel = Rs.pinv(true) * Rd;
+  DynMatrix<float> Rrel = Rs.pinv() * Rd;
   Mat D(Rrel(0,0), Rrel(1,0), Rrel(2,0), dT[0],
         Rrel(0,1), Rrel(1,1), Rrel(2,1), dT[1],
         Rrel(0,2), Rrel(1,2), Rrel(2,2), dT[2],
@@ -114,7 +87,7 @@ struct View{
   CoplanarPointPoseEstimator cbPoseEst;
   Camera camera;
   Camera calibratedCamera;
-  const ImgBase *lastImage;
+  Image lastImage;
   ComplexCoordinateFrameSceneObject *cs;
   std::vector<Camera> capturedFrames;
   View():cbPoseEst(CoplanarPointPoseEstimator::worldFrame,
@@ -187,10 +160,11 @@ void init(){
     int id = i/3;
     views[id].reset(new View);
     View &v = *views[id];
-    v.lastImage = 0;
+    v.lastImage = Image();
     v.grabber.init(pai[i], pai[i] + "=" + pai[i+1]);
     inputIDs += "input-" + str(id) + ",";
-    const ImgBase  *image = v.grabber.grab();
+    Image grabImg = v.grabber.grabImage();
+    const ImgBase  *image = grabImg.ptr();
     if(!i) imageSize0 = image->getSize();
     v.camera = extract_camera_from_udist_file(pai[i+2]);
     v.camera.setName("Input: " + pai[i] + " " + pai[i+1]);
@@ -243,14 +217,14 @@ void init(){
 
   gui << (HSplit()
           << (Tab("input view,3D scene view")
-              << Draw3D(imageSize0).handle("draw").minSize(32,24)
+              << Canvas3D(imageSize0).handle("draw").minSize(32,24)
               << (VBox()
                   << (HBox().maxSize(99,2)
                       << Button("sync cam").handle("sync")
                       << CheckBox("visualize cameras",false).handle("vis cams")
                       << CheckBox("show 10mm camera coordinate frames",false).handle("show ccs")
                       )
-                  << Draw3D(imageSize0).handle("3D").minSize(32,24)
+                  << Canvas3D(imageSize0).handle("3D").minSize(32,24)
                   )
              )
           << controls
@@ -363,8 +337,8 @@ void run(){
 
   for(size_t i=0;i<views.size();++i){
     View &v = *views[i];
-    const ImgBase *image = !acquisition ? v.lastImage : v.grabber.grab();
-    v.lastImage = image;
+    if(acquisition) v.lastImage = v.grabber.grabImage();
+    const ImgBase *image = v.lastImage.ptr();
 
     Camera cam = v.camera;
     Mat T;

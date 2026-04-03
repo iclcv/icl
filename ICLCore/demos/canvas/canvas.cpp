@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCore/demos/canvas/canvas.cpp                        **
-** Module : ICLCore                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLCore/AbstractCanvas.h>
@@ -34,7 +8,7 @@
 #include <ICLUtils/Random.h>
 #include <ICLMath/LeastSquareModelFitting2D.h>
 
-struct Canvas : public AbstractCanvas{
+struct CanvasDemo : public AbstractCanvas{
   typedef void (*point_func)(const Point32f&, void **, int, const AbstractCanvas::Color&);
   typedef void (*line_func)(LineSampler &ls, const Point32f&, const Point32f&,
                             void **, int, const AbstractCanvas::Color&);
@@ -417,11 +391,11 @@ struct Canvas : public AbstractCanvas{
 
   }
 
-  Canvas(ImgBase *image){
-    ICLASSERT_THROW(image,ICLException("Canvas::Canvas: image was null"));
-    ICLASSERT_THROW(image->getDim(), ICLException("Canvas::Canvas: image size was 0x0"));
+  CanvasDemo(ImgBase *image){
+    ICLASSERT_THROW(image,ICLException("CanvasDemo::CanvasDemo: image was null"));
+    ICLASSERT_THROW(image->getDim(), ICLException("CanvasDemo::CanvasDemo: image size was 0x0"));
     ICLASSERT_THROW(image->getChannels()>0 && image->getChannels()<=4,
-                    ICLException("Canvas::Canvas: image must have 1,2,3 or 4 channels"));
+                    ICLException("CanvasDemo::CanvasDemo: image must have 1,2,3 or 4 channels"));
     std::fill(data,data+4,(void*)0);
     for(int i=0;i<image->getChannels() && i<4;++i){
       data[i] = image->getDataPtr(i);
@@ -491,7 +465,7 @@ struct Canvas : public AbstractCanvas{
 
 };
 
-const float Canvas::ALPHA_SCALE = 0.00392156862745098039;
+const float CanvasDemo::ALPHA_SCALE = 0.00392156862745098039;
 
 
 
@@ -553,7 +527,7 @@ void fill_ellipse_test(Channel32f C, AbstractCanvas::Transform Tglobal, Rect32f 
 
 HBox gui;
 void init(){
-  gui << Image().handle("image").minSize(32,24)
+  gui << Display().handle("image").minSize(32,24)
       << ( VBox().minSize(16,0).maxSize(16,99)
            << FSlider(0,1000,500).handle("x").label("x")
            << FSlider(0,1000,500).handle("y").label("y")
@@ -566,7 +540,7 @@ void init(){
 
 void run(){
   ImgQ image(Size(1000,1000),formatRGB);
-  Canvas c(&image);
+  CanvasDemo c(&image);
 
   float x = gui["x"], y=gui["y"], a=gui["a"], w=gui["w"], h=gui["h"];
 
@@ -591,7 +565,7 @@ int main(int n, char **ppc){
   URand rc(0,255);
   URandI r(999);
   ImgQ image(Size(1000,1000),3);
-  Canvas c(&image);
+  CanvasDemo c(&image);
   c.translate(-500,-500);
   c.rotate(M_PI/10);
   c.translate(500,500);

@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/src/ICLFilter/UnaryOpPipe.h                  **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
@@ -65,6 +39,7 @@ namespace icl{
         #include <ICLFilter/WeightedSumOp.h>
         #include <ICLFilter/UnaryCompareOp.h>
         #include <ICLFilter/MorphologicalOp.h>
+#include <ICLCore/Image.h>
 
         int main(){
            // create an input image (the nice parrot here!)
@@ -107,10 +82,8 @@ namespace icl{
         add(op); return *this;
       }
       /// applies all ops sequentially
-      virtual void apply(const core::ImgBase *src, core::ImgBase **dst);
-
-      /// This function is reimplemented here; it uses getLastImage() as destination image
-      virtual const core::ImgBase *apply(const core::ImgBase *src);
+      void apply(const core::Image &src, core::Image &dst) override;
+      using UnaryOp::apply;
 
       /// returns the number of contained ops
       int getLength() const;
@@ -125,11 +98,12 @@ namespace icl{
       /** This image is only used, if it is given a 2nd parameter to
           the apply function
           \code
-          MyPipe.apply(mySourceImagePtr,&(MyPipe.getLastImage());
+          MyPipe.apply(mySourceImagePtr,&(MyPipe.getLastDisplay());
           \endcode
       **/
-      core::ImgBase *&getLastImage();
+      core::ImgBase *&getLastDisplay();
 
+      void applyImgBase(const core::ImgBase *, core::ImgBase **);
       private:
       /// Internal buffer of ops
       std::vector<UnaryOp*> ops;

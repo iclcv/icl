@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/Quick.h                                **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
@@ -34,19 +8,18 @@
 #include <ICLUtils/StringUtils.h>
 #include <ICLUtils/Exception.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
-namespace icl{
-  namespace utils{}
-  namespace math{}
-  namespace core{}
-  namespace filter{}
-  namespace io{}
-  namespace qt{}
-  namespace geom{}
-  namespace cv{}
-  namespace markers{}
-  namespace physics{}
-}
+namespace icl::utils{}
+namespace icl::math{}
+namespace icl::core{}
+namespace icl::filter{}
+namespace icl::io{}
+namespace icl::qt{}
+namespace icl::geom{}
+namespace icl::cv{}
+namespace icl::markers{}
+namespace icl::physics{}
 
 #ifndef ICL_NO_USING_NAMESPACES
 using namespace icl;
@@ -63,8 +36,7 @@ using namespace icl::physics;
 #endif
 
 /// all ICLQuick functions are placed here
-namespace icl{
-  namespace qt{
+namespace icl::qt{
 
   #ifdef ICL_HAVE_QT
     /// uses Qt to spawn an open-file dialog with given filter
@@ -101,6 +73,10 @@ namespace icl{
   #define ICL_QUICK_DEPTH depth32f
   #define ICL_QUICK_TYPE icl32f
 
+
+    // TODO: consider reworking Quick to use Image directly instead of ImgQ.
+    // ImgQ (Img<icl32f>) forces all quick operations to float depth.
+    // With Image, the depth could be preserved from the source.
 
     /// typedef for the quick images type (this time core::Img<icl32f>)
     using ImgQ = core::Img<ICL_QUICK_TYPE>;
@@ -269,6 +245,9 @@ namespace icl{
         @return conveted image
     **/
     ICLQt_API ImgQ cvt(const core::ImgBase &image);
+
+    /// converts a core::Image to ImgQ
+    inline ImgQ cvt(const core::Image &image){ return cvt(*image.ptr()); }
     /** @} **/
     /* }}} */
 
@@ -851,5 +830,4 @@ namespace icl{
     /** @} **/
     /* }}} */
 
-  } // namespace qt
-}
+} // namespace icl::qt

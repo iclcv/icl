@@ -30,7 +30,7 @@ void init(){
    // can conveniently streamed into each other to create
    // complex GUIs, but also for simple GUI as necessary
    // in this example, it is convenient to use.
-   gui << Image().handle("image") << Show();
+   gui << Display().handle("image") << Show();
 }
 
 // the run function contains our processing loop which is
@@ -40,7 +40,7 @@ void init(){
 void run(){
    // pass the next grabbed image from the grabber instance
    // directly to the visualization component
-   gui["image"] = grabber.grab();
+   gui["image"] = grabber.grabImage();
 }
 
 // the main function creates an ICLApp instance and

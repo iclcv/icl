@@ -1,32 +1,7 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2014 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLPhysics/src/ICLPhysics/PhysicsWorld.cpp             **
-** Module : ICLPhysics                                             **
-** Author : Christof Elbrechter, Matthias Esau                     **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
 #include <ICLPhysics/PhysicsWorld.h>
 #include <ICLUtils/ConfigFile.h>
 
@@ -57,9 +32,7 @@
 #include <ICLPhysics/Constraint.h>
 #include <mutex>
 
-namespace icl{
-  namespace physics{
-
+namespace icl::physics {
     struct PhysicsWorld::Data{
       btAlignedObjectArray<btCollisionShape*> m_collisionShapes;
       btBroadphaseInterface* m_broadphase;
@@ -70,7 +43,7 @@ namespace icl{
 			btMLCPSolverInterface *m_mlcp_solver;
       btSoftRigidDynamicsWorld *m_dynamicsWorld;
       btOverlapFilterCallback* m_filterCallback;
-      math::DynMatrix<bool>* m_collisionMatrix;
+      math::DynMatrixBase<bool>* m_collisionMatrix;
 
       std::vector<PhysicsObject*> m_objects;
 
@@ -129,13 +102,13 @@ namespace icl{
       data->m_worldInfo->m_dispatcher = data->m_dispatcher;
       data->m_worldInfo->m_sparsesdf.Initialize();
       //create collisionmatrix
-      data->m_collisionMatrix = new math::DynMatrix<bool>(100,100,true);
+      data->m_collisionMatrix = new math::DynMatrixBase<bool>(100,100,true);
 
       //define collision callback using the collisionmatrix and check constraints
       struct customFilterCallback : public btOverlapFilterCallback
       {
-        math::DynMatrix<bool> *collisionMatrix;
-        customFilterCallback(math::DynMatrix<bool>* mat):collisionMatrix(mat){}
+        math::DynMatrixBase<bool> *collisionMatrix;
+        customFilterCallback(math::DynMatrixBase<bool>* mat):collisionMatrix(mat){}
 	      // return true when pairs need collision
 	      virtual bool	needBroadphaseCollision(btBroadphaseProxy* proxy0,btBroadphaseProxy* proxy1) const
 	      {
@@ -230,7 +203,7 @@ namespace icl{
 		}
 
     void PhysicsWorld::addObject(PhysicsObject *obj){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       //check for the type of physics object and remove it in the right way
       RigidObject* rigid_obj = dynamic_cast<RigidObject*>(obj);
       if(rigid_obj) {
@@ -256,7 +229,7 @@ namespace icl{
 
 
     void PhysicsWorld::removeObject(PhysicsObject *obj){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       //check for the type of physics object and remove it in the right way
       RigidObject* rigid_obj = dynamic_cast<RigidObject*>(obj);
       if(rigid_obj) {
@@ -302,7 +275,7 @@ namespace icl{
     }
 
     void PhysicsWorld::step(float dtSecs, int maxSubSteps, float fixedTimeStep){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
 
       //step simulation
       if(dtSecs < 0){
@@ -421,4 +394,3 @@ namespace icl{
     }
 
   }
-}

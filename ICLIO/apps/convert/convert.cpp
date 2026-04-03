@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/apps/convert/convert.cpp                         **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLIO/FileGrabber.h>
 #include <ICLIO/FileWriter.h>
@@ -82,9 +56,9 @@ int main(int n, char **ppc){
 
   FileGrabber fg(inFileName);
 
-  const ImgBase *image = 0;
+  Image image;
   try{
-    image = fg.grab();
+    image = fg.grabImage();
   }catch(ICLException &ex){
     ERROR_LOG("unable to grab file:" << ex.what());
     exit(-1);
@@ -94,7 +68,7 @@ int main(int n, char **ppc){
     exit(-1);
   }
 
-	std::string time_string = image->getTime().toStringFormated("%H%M%S%#",32,true);
+	std::string time_string = image.getTime().toStringFormated("%H%M%S%#",32,true);
 	std::string::size_type pos = outFileName.find("%D");
 	if (pos != std::string::npos) {
 		outFileName.replace(pos,2,time_string);
@@ -102,9 +76,9 @@ int main(int n, char **ppc){
 
   //ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null)
 
-  format fmt = pa("-format") ? parse<format>(pa("-format")) : image->getFormat();
-  int channels = pa("-format") ? getChannelsOfFormat(fmt) : image->getChannels();
-  Size size = pa("-size") ? parse<Size>(pa("-size")) : image->getSize();
+  format fmt = pa("-format") ? parse<format>(pa("-format")) : image.getFormat();
+  int channels = pa("-format") ? getChannelsOfFormat(fmt) : image.getChannels();
+  Size size = pa("-size") ? parse<Size>(pa("-size")) : image.getSize();
   if(pa("-scale")){
     Size32f s32(size.width,size.height);
     s32 = s32 * parse<float>(pa("-scale"));
@@ -115,7 +89,7 @@ int main(int n, char **ppc){
   ImgParams p(size,
               channels,
               fmt);
-  depth d = pa("-depth") ? parse<depth>(pa("-depth")) : image->getDepth();
+  depth d = pa("-depth") ? parse<depth>(pa("-depth")) : image.getDepth();
 
   FixedConverter conv(p,d);
   scalemode sm = interpolateLIN;
@@ -136,7 +110,7 @@ int main(int n, char **ppc){
   conv.setScaleMode(sm);
 
   ImgBase *dst = 0;
-  conv.apply(image,&dst);
+  conv.apply(image.ptr(),&dst);
 
   if(pa("-flip")){
     std::string axis = pa("-flip").as<std::string>();

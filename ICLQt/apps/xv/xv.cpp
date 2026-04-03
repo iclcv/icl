@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/apps/xv/xv.cpp                                   **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <iostream>
 #include <iterator>
@@ -64,13 +38,15 @@ int main (int n, char **ppc){
    "The -fs flag only works when explicitly defining the input using the -input|-i arg!");
   pa_init(n,ppc,"-input|-i(filename) -delete|-d -roi|-r -fullscreen|-fs(screen)",true);
 
+  static Image imageHolder;
   const ImgBase *image = 0;
   if(pa("-input")){
     std::string imageName = pa("-input").as<std::string>();
 
     try{
       static FileGrabber w(imageName);
-      image = w.grab();
+      imageHolder = w.grabImage();
+      image = imageHolder.ptr();
       if(pa("-delete")){
         if(imageName.length()){
           int errorCode = system((std::string(ICL_SYSTEMCALL_RM) + imageName).c_str());
@@ -89,7 +65,7 @@ int main (int n, char **ppc){
     }
 
     Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::primaryScreen());
-    gui << Draw().handle("draw").size(size/20);
+    gui << Canvas().handle("draw").size(size/20);
     gui.show();
 
     DrawHandle draw = gui["draw"];
@@ -113,11 +89,11 @@ int main (int n, char **ppc){
       std::string s = pa(i).as<std::string>();
       try{
         FileGrabber grabber(s,false,true);
-        const ImgBase *image = grabber.grab();
+        Image image = grabber.grabImage();
         if(!image) throw ICLException("");
-        maxSize.width = iclMax(image->getWidth(),maxSize.width);
-        maxSize.height = iclMax(image->getHeight(),maxSize.height);
-        imageVec.push_back(image->deepCopy());
+        maxSize.width = iclMax(image.getWidth(),maxSize.width);
+        maxSize.height = iclMax(image.getHeight(),maxSize.height);
+        imageVec.push_back(image.ptr()->deepCopy());
 
         std::replace(s.begin(),s.end(),',','-');
         imageList += (imageList.length() ? ",": "") +s;
@@ -131,7 +107,7 @@ int main (int n, char **ppc){
     Tab t(imageList);
 
     for(size_t i=0;i<imageVecStrs.size();++i){
-      t << Image().handle("image-"+str(i)).size(size/20);
+      t << Display().handle("image-"+str(i)).size(size/20);
     }
 
     gui << t << Show();

@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/demos/offscreen-rendering/offscreen-rendering. **
-**          cpp                                                    **
-** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
@@ -60,13 +33,13 @@ struct OSRCube : public SceneObject{
     setVisible(Primitive::quad,false);
   }
 
-  int updateImage(){
+  int updateDisplay(){
     Time t = Time::now();
     const Img8u &screen = scene.render(0);
     gui["image"] = screen;
 
 
-    std::lock_guard<std::recursive_mutex> lock(mutex);
+    std::scoped_lock<std::recursive_mutex> lock(mutex);
     screen.deepCopy(&image);
     image.setROI(Rect(10,10,280,280));
     URand r(-50,50);
@@ -86,8 +59,8 @@ struct OSRCube : public SceneObject{
 void init(){
   // create graphical user interface
 
-  gui << Draw3D(Size(300,300)).label("3D scene").minSize(16,16).handle("draw")
-      << Draw().minSize(16,16).handle("image").label("offscreen rendered image")
+  gui << Canvas3D(Size(300,300)).label("3D scene").minSize(16,16).handle("draw")
+      << Canvas().minSize(16,16).handle("image").label("offscreen rendered image")
       << Show();
 
   // create camera and add to scene instance
@@ -109,7 +82,7 @@ void run(){
   DrawHandle3D draw = gui["draw"];
   DrawHandle image = gui["image"];
 
-  int ms = cube.updateImage();
+  int ms = cube.updateDisplay();
   image->color(255,255,255,255);
   image->text("offscreen rendering time: " + str(ms)+" ms",10,10,9);
   image.render();

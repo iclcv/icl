@@ -40,8 +40,7 @@
 #include <ICLUtils/FixedArray.h>
 #include <string>
 
-namespace icl {
-  namespace utils {
+namespace icl::utils {
     /// Wrapper for an OpenCL Kernel
     /** A Kernel is a callable OpenCL function. CLKernel instances can
         only be created by CLProgram instances. Please refer to the CLProgram
@@ -334,6 +333,4 @@ namespace icl {
 
     };
   }
-}
-
 #endif

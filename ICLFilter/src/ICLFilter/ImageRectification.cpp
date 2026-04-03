@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/src/ICLFilter/ImageRectification.cpp         **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter, Sergius Gaulik                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Sergius Gaulik
 
 #include <ICLFilter/ImageRectification.h>
 #include <ICLMath/Homography2D.h>
@@ -38,9 +12,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl{
-  namespace filter{
-
+namespace icl::filter {
     template<class T>
     const Img<T> &ImageRectification<T>::apply(const FixedMatrix<float,3,3> &transform, const Img<T> &src, const Size &resultSize){
       throw ICLException("ImageRectification<T>::apply(const FixedMatrix<float,3,3> &transform,...): this method is not yet implemented!");
@@ -376,7 +348,9 @@ namespace icl{
       return buffer;
     }
 
-  #ifdef ICL_HAVE_IPP
+  // ippiWarpPerspectiveBack removed from modern IPP (oneAPI 2022+).
+  // TODO: update to modern ippiWarpPerspective API.
+  #if 0 // was: ICL_HAVE_IPP — ippiWarpPerspectiveBack_*_C1R removed
 
 
     template<class T, class IppFunc>
@@ -425,4 +399,3 @@ namespace icl{
     ICL_INSTANTIATE_ALL_DEPTHS;
   #undef ICL_INSTANTIATE_DEPTH
   } // namespace markers
-}

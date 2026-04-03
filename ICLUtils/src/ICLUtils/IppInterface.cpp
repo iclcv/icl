@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLUtils/src/ICLUtils/IppInterface.cpp                 **
-** Module : ICLUtils                                               **
-** Authors: Viktor Richter                                         **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
 
 #include <dlfcn.h>
 
@@ -47,7 +21,7 @@ std::recursive_mutex current_path_lock;
 std::string current_ipp_search_path = "";
 std::string current_iomp_search_path = "";
 
-void loadLib(const char* path, const char* name, std::map<std::string, void*>& map){
+void loadLib(const char* path, const char* name, std::map<std::string, void*, std::less<>>& map){
   DEBUG_LOG("Try to load lib" << name << ".so ... ");
   void* lib = dlopen(name, RTLD_LAZY);
   if(!lib){
@@ -86,7 +60,7 @@ void* loadFunction(void* lib, const char* name){
 }
 
 IppInterface::IppInterface(){
-  std::lock_guard<std::recursive_mutex> l(current_path_lock);
+  std::scoped_lock<std::recursive_mutex> l(current_path_lock);
 
   DEBUG_LOG("Getting paths from environment.")
       // update ipp search path from environment
@@ -126,7 +100,7 @@ IppInterface::IppInterface(){
 }
 
 IppInterface::~IppInterface(){
-  std::map<std::string,void*>::iterator it;
+  std::map<std::string,void*, std::less<>>::iterator it;
   for(it = m_LibHandles.begin(); it != m_LibHandles.end(); ++it){
     dlclose(it->second);
   }
@@ -212,14 +186,14 @@ icl32s IppInterface::ippmDet_m_64f(
 
 void* IppInterface::ippSymbolPointer(std::string symbol_name, std::string lib_name)
 {
-  std::lock_guard<std::recursive_mutex> l(m_FunctionHandleMutex);
+  std::scoped_lock<std::recursive_mutex> l(m_FunctionHandleMutex);
   // check if function is already loaded
   if(m_FunctionHandles.contains(symbol_name)){
     return m_FunctionHandles[symbol_name];
   } else {
     if(lib_name.empty()){
       // check all loaded libs
-      std::map<std::string,void*>::iterator it;
+      std::map<std::string,void*, std::less<>>::iterator it;
       for(it = m_LibHandles.begin(); it != m_LibHandles.end(); ++it){
         try{
           void* fn = loadFunction(it->second, symbol_name.c_str());

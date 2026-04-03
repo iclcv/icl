@@ -10,7 +10,7 @@ FiducialDetector fid("bch","[0-100]","size=30x30");
 
 void init(){
   fid.setConfigurableID("fid");
-  gui << Draw().handle("draw")
+  gui << Canvas().handle("draw")
       << Prop("fid").maxSize(18,99)
       << Show();
   grabber.init(pa("-input"));
@@ -18,7 +18,7 @@ void init(){
 
 void run(){
   static DrawHandle draw = gui["draw"];
-  const core::ImgBase *image = grabber.grab();
+  const core::ImgBase *image = grabber.grabImage();
 
   const std::vector<Fiducial> &fids = fid.detect(image);
 

@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/demos/flood-filler/flood-filler.cpp              **
-** Module : ICLCV                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLCV/FloodFiller.h>
@@ -58,7 +32,7 @@ struct Mouse : public MouseHandler{
 } mouse;
 
 void run(){
-  static Img8u image = *grabber.grab()->as8u();
+  static Img8u image = grabber.grabImage().as8u();
   mouse.lastImageRect = image.getImageRect();
 
   if(mouse.wasPressed()){
@@ -99,7 +73,7 @@ void init(){
     selector = ColorSelect(255,0,0).handle("fill").label("fill");
   }
 
-  gui << Image().handle("image").minSize(16,12)
+  gui << Display().handle("image").minSize(16,12)
       << ( HBox().maxSize(100,3)
            << Slider(0,255,10).out("thresh").label("threshold")
            << selector

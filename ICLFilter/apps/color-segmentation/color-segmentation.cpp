@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/apps/color-segmentation/color-segmentation.c **
-**          pp                                                     **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLFilter/ColorSegmentationOp.h>
@@ -187,7 +160,7 @@ void highlight_regions(int classID){
 }
 
 void mouse(const MouseEvent &e){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   if(!currLUT.getDim()) return;
 
   static const ICLWidget *wIM = *gui.get<DrawHandle>("image");
@@ -246,7 +219,7 @@ void save_dialog(){
 }
 
 void clear_lut(){
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
   segmenter->clearLUT(0);
 }
 
@@ -278,20 +251,20 @@ void init(){
   }
 
   gui << ( HSplit()
-           << Draw().handle("image").minSize(16,12).label("camera image")
-           << Draw().handle("seg").minSize(16,12).label("segmentation result")
+           << Canvas().handle("image").minSize(16,12).label("camera image")
+           << Canvas().handle("seg").minSize(16,12).label("segmentation result")
            )
       << ( HSplit()
            << (Tab("2D,3D").handle("tab")
                << ( HBox()
-                    << Draw().handle("lut").minSize(16,12).label("lut")
+                    << Canvas().handle("lut").minSize(16,12).label("lut")
                     << ( VBox().maxSize(3,100).minSize(4,1)
                          << Combo("x,y,z").handle("zAxis")
                          << Slider(0,255,0,true).out("z").label("vis. plane")
                          )
                     )
                << ( HBox()
-                    << Draw3D(Size::VGA).handle("lut3D")
+                    << Canvas3D(Size::VGA).handle("lut3D")
                     << Slider(0,255,200,true).maxSize(2,100).out("alpha").label("alpha")
                   )
                )
@@ -414,38 +387,50 @@ void run(){
   int zAxis = gui["zAxis"];
   int &z = gui.get<int>("z");
 
-  static const ImgBase *inputImage = 0;
+  static Image inputImage;
   if(!inputImage || !gui["paused"].as<bool>()){
-    inputImage = grabber.grab();
+    inputImage = grabber.grabImage();
   }else{
     Thread::msleep(50); // somehow, otherwise the whole UI went to sleep ;-)
   }
 
-  const Img8u *grabbedImage = inputImage->asImg<icl8u>();
+  const Img8u *grabbedImage = &inputImage.as8u();
 
-  std::lock_guard<std::recursive_mutex> lock(mtex);
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
 
   if(preMedian){
     static MedianOp m(Size(3,3));
-    grabbedImage = m.apply(grabbedImage)->asImg<icl8u>();
+    static ImgBase *preMedianBuf = 0;
+    m.apply(grabbedImage, &preMedianBuf);
+    grabbedImage = preMedianBuf->asImg<icl8u>();
   }
 
   image = grabbedImage;
   Time t = Time::now();
-  segImage = *segmenter->apply(grabbedImage)->asImg<icl8u>();
+  {
+    static ImgBase *segBuf = 0;
+    segmenter->apply(grabbedImage, &segBuf);
+    segImage = *segBuf->asImg<icl8u>();
+  }
 
   if(postMedian){
     static MedianOp m(Size(3,3));
-    segImage = *m.apply(&segImage)->asImg<icl8u>();
+    static ImgBase *postMedianBuf = 0;
+    m.apply(&segImage, &postMedianBuf);
+    segImage = *postMedianBuf->asImg<icl8u>();
   }
 
   if(postErosion){
     static MorphologicalOp m(MorphologicalOp::erode3x3);
-    segImage = *m.apply(&segImage)->asImg<icl8u>();
+    static ImgBase *erosionBuf = 0;
+    m.apply(&segImage, &erosionBuf);
+    segImage = *erosionBuf->asImg<icl8u>();
   }
   if(postDilatation){
     static MorphologicalOp m(MorphologicalOp::dilate3x3);
-    segImage = *m.apply(&segImage)->asImg<icl8u>();
+    static ImgBase *dilateBuf = 0;
+    m.apply(&segImage, &dilateBuf);
+    segImage = *dilateBuf->asImg<icl8u>();
   }
 
   seg = &segImage;

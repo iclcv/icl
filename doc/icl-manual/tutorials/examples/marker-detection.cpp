@@ -15,7 +15,7 @@ void init(){
   fid.setConfigurableID("fid");
 
   // create the GUI
-  gui << Draw().handle("draw")          // create drawing component
+  gui << Canvas().handle("draw")          // create drawing component
       << Prop("fid").maxSize(18,100)    // create the property widged for 'fid'
       << Show();                        // show the main widget
 
@@ -30,10 +30,10 @@ void run(){
   static DrawHandle draw = gui["draw"];
 
   // grab the next image
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
 
   // detect markers
-  const std::vector<Fiducial> &fids = fid.detect(image);
+  const std::vector<Fiducial> &fids = fid.detect(image.ptr());
 
   // visualize the image
   draw = image;

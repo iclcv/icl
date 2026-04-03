@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/JPEGDecoder.cpp                        **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLIO/JPEGDecoder.h>
 #include <ICLCore/CoreFunctions.h>
@@ -34,230 +8,235 @@
 #include <ICLUtils/Macros.h>
 #include <ICLIO/FileGrabberPlugin.h>
 #include <ICLUtils/StrTok.h>
+#include <charconv>
 
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
+namespace icl::io {
+  struct DataSourceManager : public jpeg_source_mgr {
+    JOCTET *given_data;
+    //const JOCTET * next_input_byte; /* => next byte to read from buffer */
+    //size_t bytes_in_buffer;	/* # of bytes remaining in buffer */
 
-    struct DataSourceManager : public jpeg_source_mgr {
-      JOCTET *given_data;
-      //const JOCTET * next_input_byte; /* => next byte to read from buffer */
-      //size_t bytes_in_buffer;	/* # of bytes remaining in buffer */
+    DataSourceManager(j_decompress_ptr cinfo, JOCTET *data, int maxDataLen):given_data(data){
+      cinfo->client_data = data;                    // save client data [???]
 
-      DataSourceManager(j_decompress_ptr cinfo, JOCTET *data, int maxDataLen):given_data(data){
-        cinfo->client_data = data;                    // save client data [???]
+      // initialize parent jpeg_source_mgr function pointers
+      init_source = s_init_source;
+      fill_input_buffer = s_fill_input_buffer;
+      skip_input_data = s_skip_input_data;
+      resync_to_restart = jpeg_resync_to_restart; // jpeg default
+      term_source = s_term_source;
 
-        // initialize parent jpeg_source_mgr function pointers
-        init_source = s_init_source;
-        fill_input_buffer = s_fill_input_buffer;
-        skip_input_data = s_skip_input_data;
-        resync_to_restart = jpeg_resync_to_restart; // jpeg default
-        term_source = s_term_source;
+      // initialize parant jpeg_source_mgr members
+      bytes_in_buffer = maxDataLen;
+      next_input_byte = data;
+    }
+    static void s_init_source(j_decompress_ptr){}
+    static void s_term_source(j_decompress_ptr){}
 
-        // initialize parant jpeg_source_mgr members
-        bytes_in_buffer = maxDataLen;
-        next_input_byte = data;
-      }
-      static void s_init_source(j_decompress_ptr){}
-      static void s_term_source(j_decompress_ptr){}
+    static boolean s_fill_input_buffer(j_decompress_ptr cinfo){
+      // for secure abort!
+      DataSourceManager *dsm = reinterpret_cast<DataSourceManager*>(cinfo->src);
 
-      static boolean s_fill_input_buffer(j_decompress_ptr cinfo){
-        // for secure abort!
-        DataSourceManager *dsm = reinterpret_cast<DataSourceManager*>(cinfo->src);
+      static JOCTET EOI[] = { 0xFF, JPEG_EOI };
 
-        static JOCTET EOI[] = { 0xFF, JPEG_EOI };
+      // warning
+      WARNMS(cinfo, JWRN_JPEG_EOF);
 
-        // warning
-        WARNMS(cinfo, JWRN_JPEG_EOF);
+      // set data pointer to artificial eoi-marker
+      dsm->next_input_byte = EOI;
+      dsm->bytes_in_buffer = 2;
 
-        // set data pointer to artificial eoi-marker
-        dsm->next_input_byte = EOI;
-        dsm->bytes_in_buffer = 2;
+      return TRUE;
+    }
+    static void s_skip_input_data(j_decompress_ptr cinfo, long num_bytes){
+      DataSourceManager *dsm = reinterpret_cast<DataSourceManager*>(cinfo->src);
 
-        return TRUE;
-      }
-      static void s_skip_input_data(j_decompress_ptr cinfo, long num_bytes){
-        DataSourceManager *dsm = reinterpret_cast<DataSourceManager*>(cinfo->src);
+      if(num_bytes >= static_cast<long>(dsm->bytes_in_buffer))
+        {
+          s_fill_input_buffer(cinfo);
+          return;
+        }
 
-        if(num_bytes >= static_cast<long>(dsm->bytes_in_buffer))
-          {
-            s_fill_input_buffer(cinfo);
-            return;
-          }
-
-        dsm->bytes_in_buffer -= num_bytes;
-        dsm->next_input_byte += num_bytes;
-      }
-    };
+      dsm->bytes_in_buffer -= num_bytes;
+      dsm->next_input_byte += num_bytes;
+    }
+  };
 
 
-    void JPEGDecoder::decode(const unsigned char *data, unsigned int maxDataLen, ImgBase **dest){
-      decode_internal(0,data,maxDataLen,dest);
+  void JPEGDecoder::decode(const unsigned char *data, unsigned int maxDataLen, ImgBase **dest){
+    decode_internal(0,data,maxDataLen,dest);
+  }
+
+  void JPEGDecoder::decode(File &file, ImgBase **dest){
+    decode_internal(&file,0,0,dest);
+    return;
+  }
+
+  void JPEGDecoder::decode_internal(File *file, const unsigned char *data, unsigned int maxDataLen, ImgBase **dest){
+    ICLASSERT_RETURN(!(file&&data));
+    ICLASSERT_RETURN(!(!file&&!data));
+    ICLASSERT_RETURN(dest);
+
+    if (file && !file->isOpen()){
+      file->open(File::readBinary);
+      ICLASSERT_RETURN(file->isOpen());
     }
 
-    void JPEGDecoder::decode(File &file, ImgBase **dest){
-      decode_internal(&file,0,0,dest);
-      return;
+    JPEGDataHandle jpegHandle;
+
+    // setup the jpeg error routine once
+    if (setjmp(jpegHandle.em.setjmp_buffer)) {
+      /* If we get here, the JPEG code has signaled an error.
+          * We need to clean up the JPEG object and signal the error to the caller */
+      jpeg_destroy_decompress(&jpegHandle.info);
+      throw InvalidFileFormatException();
     }
 
-    void JPEGDecoder::decode_internal(File *file, const unsigned char *data, unsigned int maxDataLen, ImgBase **dest){
-      ICLASSERT_RETURN(!(file&&data));
-      ICLASSERT_RETURN(!(!file&&!data));
-      ICLASSERT_RETURN(dest);
+    /* Step 1: Initialize the JPEG decompression object. */
+    jpeg_create_decompress(&jpegHandle.info);
 
-      if (file && !file->isOpen()){
-        file->open(File::readBinary);
-        ICLASSERT_RETURN(file->isOpen());
+    /* Step 2: specify data source (eg, a file) */
+    if(file){
+      jpeg_stdio_src(&jpegHandle.info, (FILE*)file->getHandle());
+    }else{
+      jpegHandle.info.src = new DataSourceManager(&jpegHandle.info,const_cast<JOCTET*>(data),maxDataLen);
+    }
+
+    struct DataSourceManagerDeleter{
+      DataSourceManager *p;
+      DataSourceManagerDeleter(DataSourceManager *p):p(p){}
+      ~DataSourceManagerDeleter(){
+        if(p) delete p;
       }
+    } ensure_data_source_manager_deletion(file ? 0 : (DataSourceManager*)jpegHandle.info.src);
 
-      JPEGDataHandle jpegHandle;
+    /* request to save comments */
+    //jpeg_save_markers (&jpegHandle.info, JPEG_COM, 1024);
 
-      // setup the jpeg error routine once
-      if (setjmp(jpegHandle.em.setjmp_buffer)) {
-        /* If we get here, the JPEG code has signaled an error.
-            * We need to clean up the JPEG object and signal the error to the caller */
-        jpeg_destroy_decompress(&jpegHandle.info);
-        throw InvalidFileFormatException();
-      }
+    /* Step 3: read file parameters with jpeg_read_header() */
+    jpeg_read_header(&jpegHandle.info, TRUE);
 
-      /* Step 1: Initialize the JPEG decompression object. */
-      jpeg_create_decompress(&jpegHandle.info);
+    FileGrabberPlugin::HeaderInfo oInfo;
 
-      /* Step 2: specify data source (eg, a file) */
-      if(file){
-        jpeg_stdio_src(&jpegHandle.info, (FILE*)file->getHandle());
-      }else{
-        jpegHandle.info.src = new DataSourceManager(&jpegHandle.info,const_cast<JOCTET*>(data),maxDataLen);
-      }
+    /* evaluate markers, i.e. comments */
+    for (jpeg_saved_marker_ptr m = jpegHandle.info.marker_list; m; m = m->next){
 
-      struct DataSourceManagerDeleter{
-        DataSourceManager *p;
-        DataSourceManagerDeleter(DataSourceManager *p):p(p){}
-        ~DataSourceManagerDeleter(){
-          if(p) delete p;
-        }
-      } ensure_data_source_manager_deletion(file ? 0 : (DataSourceManager*)jpegHandle.info.src);
+      if (m->marker != JPEG_COM) continue;
+      std::vector<std::string> ts = StrTok(std::string(reinterpret_cast<char*>(m->data),reinterpret_cast<char*>(m->data)+m->data_length)," ").allTokens();
+      if(ts.size() < 2) continue;
+      //      char acBuf[1025] = "";
+      //memcpy (acBuf, m->data, m->data_length);
+      //acBuf[m->data_length] = '\0'; // terminating null
 
-      /* request to save comments */
-      //jpeg_save_markers (&jpegHandle.info, JPEG_COM, 1024);
+      //  istringstream iss (acBuf);
+      // string sKey, sValue;
+      // iss >> sKey;
 
-      /* Step 3: read file parameters with jpeg_read_header() */
-      jpeg_read_header(&jpegHandle.info, TRUE);
+       if (ts[0] == "TimeStamp") {
+         int tsVal = 0;
+         std::from_chars(ts[1].data(), ts[1].data() + ts[1].size(), tsVal);
+         oInfo.time = Time::microSeconds(tsVal);
+       } else if (ts[0] == "ROI") {
+         int r0 = 0, r1 = 0, r2 = 0, r3 = 0;
+         std::from_chars(ts[1].data(), ts[1].data() + ts[1].size(), r0);
+         std::from_chars(ts[2].data(), ts[2].data() + ts[2].size(), r1);
+         std::from_chars(ts[3].data(), ts[3].data() + ts[3].size(), r2);
+         std::from_chars(ts[4].data(), ts[4].data() + ts[4].size(), r3);
+         oInfo.roi = Rect(r0, r1, r2, r3);
+       }
+    }
 
-      FileGrabberPlugin::HeaderInfo oInfo;
+    /* Step 4: set parameters for decompression */
 
-      /* evaluate markers, i.e. comments */
-      for (jpeg_saved_marker_ptr m = jpegHandle.info.marker_list; m; m = m->next){
-
-        if (m->marker != JPEG_COM) continue;
-        std::vector<std::string> ts = StrTok(std::string(reinterpret_cast<char*>(m->data),reinterpret_cast<char*>(m->data)+m->data_length)," ").allTokens();
-        if(ts.size() < 2) continue;
-        //      char acBuf[1025] = "";
-        //memcpy (acBuf, m->data, m->data_length);
-        //acBuf[m->data_length] = '\0'; // terminating null
-
-        //  istringstream iss (acBuf);
-        // string sKey, sValue;
-        // iss >> sKey;
-
-         if (ts[0] == "TimeStamp") {
-           oInfo.time = Time::microSeconds(atoi(ts[1].c_str()));
-         } else if (ts[0] == "ROI") {
-           oInfo.roi = Rect(atoi(ts[1].c_str()),atoi(ts[2].c_str()),atoi(ts[3].c_str()),atoi(ts[4].c_str()));
-         }
-      }
-
-      /* Step 4: set parameters for decompression */
-
-      /* Step 5: Start decompressor */
-      jpeg_start_decompress(&jpegHandle.info);
+    /* Step 5: Start decompressor */
+    jpeg_start_decompress(&jpegHandle.info);
 
 
-      /* After jpeg_start_decompress() we have the correct scaled
-       * output image dimensions available, as well as the output colormap
-       * if we asked for color quantization.
-       */
+    /* After jpeg_start_decompress() we have the correct scaled
+     * output image dimensions available, as well as the output colormap
+     * if we asked for color quantization.
+     */
 
-      oInfo.imageDepth = depth8u; // can only read depth8u
-      oInfo.size.width  = jpegHandle.info.output_width;
-      oInfo.size.height = jpegHandle.info.output_height;
-      switch (jpegHandle.info.out_color_space) {
-        case JCS_GRAYSCALE: oInfo.imageFormat = formatGray; break;
-        case JCS_RGB: oInfo.imageFormat = formatRGB; break;
-        case JCS_YCbCr: oInfo.imageFormat = formatYUV; break;
-        default: throw ICLException("unknown color space");
-      }
-      oInfo.channelCount = getChannelsOfFormat (oInfo.imageFormat);
+    oInfo.imageDepth = depth8u; // can only read depth8u
+    oInfo.size.width  = jpegHandle.info.output_width;
+    oInfo.size.height = jpegHandle.info.output_height;
+    switch (jpegHandle.info.out_color_space) {
+      case JCS_GRAYSCALE: oInfo.imageFormat = formatGray; break;
+      case JCS_RGB: oInfo.imageFormat = formatRGB; break;
+      case JCS_YCbCr: oInfo.imageFormat = formatYUV; break;
+      default: throw ICLException("unknown color space");
+    }
+    oInfo.channelCount = getChannelsOfFormat (oInfo.imageFormat);
 
-      icl8u *pcBuf = 0;
-      //////////////////////////////////////////////////////////////////////
-      /// ADAPT THE DESTINATION IMAGE //////////////////////////////////////
-      //////////////////////////////////////////////////////////////////////
-      ensureCompatible (dest, oInfo.imageDepth, oInfo.size,
-                        oInfo.channelCount,oInfo.imageFormat, oInfo.roi);
+    icl8u *pcBuf = 0;
+    //////////////////////////////////////////////////////////////////////
+    /// ADAPT THE DESTINATION IMAGE //////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
+    ensureCompatible (dest, oInfo.imageDepth, oInfo.size,
+                      oInfo.channelCount,oInfo.imageFormat, oInfo.roi);
 
-      ImgBase *poImg = *dest;
-      poImg->setTime(oInfo.time);
+    ImgBase *poImg = *dest;
+    poImg->setTime(oInfo.time);
 
-      ////////////////////////////////////////////////////////////////////////////
-      ///// READ IMAGE DATA //////////////////////////////////////////////////////
-      ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ///// READ IMAGE DATA //////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
 
-      // update jump context to allow proper throw
-      if (setjmp(jpegHandle.em.setjmp_buffer)) {
-        /* If we get here, the JPEG code has signaled an error.
-         * We need to clean up the JPEG object and signal the error to the caller */
-        jpeg_destroy_decompress(&jpegHandle.info);
-        if (oInfo.channelCount == 3) ICL_DELETE_ARRAY( pcBuf );
-        throw InvalidFileFormatException();
-      }
-
-      ICLASSERT_THROW ( jpegHandle.info.output_components == oInfo.channelCount ,InvalidFileFormatException());
-      int iRowDim = jpegHandle.info.output_width * jpegHandle.info.output_components;
-      icl8u *pcR=0, *pcG=0, *pcB=0;
-
-      if (oInfo.channelCount == 1) pcBuf = poImg->asImg<icl8u>()->getData (0);
-      else if (oInfo.channelCount == 3) {
-        pcBuf = new icl8u[iRowDim];
-        pcR = poImg->asImg<icl8u>()->getData (0);
-        pcG = poImg->asImg<icl8u>()->getData (1);
-        pcB = poImg->asImg<icl8u>()->getData (2);
-      }
-      else {ERROR_LOG ("This should not happen."); return;}
-
-      /* Step 6: while (scan lines remain to be read) */
-      /*           jpeg_read_scanlines(...); */
-      while (jpegHandle.info.output_scanline < jpegHandle.info.output_height) {
-        /* jpeg_read_scanlines expects an array of pointers to scanlines.
-         * Here the array is only one element long, but you could ask for
-         * more than one scanline at a time if that's more convenient.
-         */
-        (void) jpeg_read_scanlines(&jpegHandle.info, &pcBuf, 1);
-
-        if (oInfo.channelCount == 1) pcBuf += iRowDim;
-        else { // deinterleave three channel data
-          icl8u *pc = pcBuf;
-          for (int c=0; c<oInfo.size.width; ++c, ++pcR, ++pcG, ++pcB) {
-            *pcR = *pc++;
-            *pcG = *pc++;
-            *pcB = *pc++;
-          }
-        }
-      }
-
-      /* Step 7: Finish decompression */
-      (void) jpeg_finish_decompress(&jpegHandle.info);
-
-      /* At this point you may want to check to see whether any corrupt-data
-       * warnings occurred (test whether jpgErr.pub.num_warnings is nonzero).
-       */
-
-      /* Step 8: Release JPEG decompression object */
+    // update jump context to allow proper throw
+    if (setjmp(jpegHandle.em.setjmp_buffer)) {
+      /* If we get here, the JPEG code has signaled an error.
+       * We need to clean up the JPEG object and signal the error to the caller */
       jpeg_destroy_decompress(&jpegHandle.info);
       if (oInfo.channelCount == 3) ICL_DELETE_ARRAY( pcBuf );
-
+      throw InvalidFileFormatException();
     }
-  } // namespace io
-}
+
+    ICLASSERT_THROW ( jpegHandle.info.output_components == oInfo.channelCount ,InvalidFileFormatException());
+    int iRowDim = jpegHandle.info.output_width * jpegHandle.info.output_components;
+    icl8u *pcR=0, *pcG=0, *pcB=0;
+
+    if (oInfo.channelCount == 1) pcBuf = poImg->asImg<icl8u>()->getData (0);
+    else if (oInfo.channelCount == 3) {
+      pcBuf = new icl8u[iRowDim];
+      pcR = poImg->asImg<icl8u>()->getData (0);
+      pcG = poImg->asImg<icl8u>()->getData (1);
+      pcB = poImg->asImg<icl8u>()->getData (2);
+    }
+    else {ERROR_LOG ("This should not happen."); return;}
+
+    /* Step 6: while (scan lines remain to be read) */
+    /*           jpeg_read_scanlines(...); */
+    while (jpegHandle.info.output_scanline < jpegHandle.info.output_height) {
+      /* jpeg_read_scanlines expects an array of pointers to scanlines.
+       * Here the array is only one element long, but you could ask for
+       * more than one scanline at a time if that's more convenient.
+       */
+      (void) jpeg_read_scanlines(&jpegHandle.info, &pcBuf, 1);
+
+      if (oInfo.channelCount == 1) pcBuf += iRowDim;
+      else { // deinterleave three channel data
+        icl8u *pc = pcBuf;
+        for (int c=0; c<oInfo.size.width; ++c, ++pcR, ++pcG, ++pcB) {
+          *pcR = *pc++;
+          *pcG = *pc++;
+          *pcB = *pc++;
+        }
+      }
+    }
+
+    /* Step 7: Finish decompression */
+    (void) jpeg_finish_decompress(&jpegHandle.info);
+
+    /* At this point you may want to check to see whether any corrupt-data
+     * warnings occurred (test whether jpgErr.pub.num_warnings is nonzero).
+     */
+
+    /* Step 8: Release JPEG decompression object */
+    jpeg_destroy_decompress(&jpegHandle.info);
+    if (oInfo.channelCount == 3) ICL_DELETE_ARRAY( pcBuf );
+
+  }
+  } // namespace icl::io

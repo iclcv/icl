@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMath/src/ICLMath/RansacFitter.h                     **
-** Module : ICLMath                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
@@ -37,182 +11,178 @@
 #include <ICLMath/FixedVector.h>
 #include <functional>
 
-namespace icl{
-  namespace math{
+namespace icl::math {
+  /// Generic RANSAC (RAndom SAmpling Consensus) Implementation
+  /** The RansacFitter provides a generic framework, for RANSAC based model fitting.
 
+      \section ALG RANSAC Algorithm
+      The RANSAC Algorithm is well described on Wikipedia
+      @see http://de.wikipedia.org/wiki/RANSAC-Algorithmus
 
-    /// Generic RANSAC (RAndom SAmpling Consensus) Implementation
-    /** The RansacFitter provides a generic framework, for RANSAC based model fitting.
+      \section EX Example
 
-        \section ALG RANSAC Algorithm
-        The RANSAC Algorithm is well described on Wikipedia
-        @see http://de.wikipedia.org/wiki/RANSAC-Algorithmus
+      An example is given in the ICL Manual
 
-        \section EX Example
+      \section TEM Template Parameters
+      The two tempalte parameters are kept very general. Therefore, there
+      are just a few restrictions for the DataPoint and Model classes.
+      - default constructable
+      - copyable
+  */
+  template<class DataPoint=std::vector<float>,
+           class Model=std::vector<float> >
+  class RansacFitter{
+    public:
+    /// DataSet type (just a set of DataPoint instances)
+    using DataSet = std::vector<DataPoint>;
 
-        An example is given in the ICL Manual
+    /// Function for the fitting module (gets a dataset and returns the fitted model)
+    using ModelFitting = std::function<Model(const DataSet&)>;
 
-        \section TEM Template Parameters
-        The two tempalte parameters are kept very general. Therefore, there
-        are just a few restrictions for the DataPoint and Model classes.
-        - default constructable
-        - copyable
-    */
-    template<class DataPoint=std::vector<float>,
-             class Model=std::vector<float> >
-    class RansacFitter{
-      public:
-      /// DataSet type (just a set of DataPoint instances)
-      using DataSet = std::vector<DataPoint>;
+    /// Error function for single points
+    using PointError = std::function<icl64f(const Model&, const DataPoint&)>;
 
-      /// Function for the fitting module (gets a dataset and returns the fitted model)
-      using ModelFitting = std::function<Model(const DataSet&)>;
+    private:
+    /// minimum points that are used to create a coarse model
+    int m_minPointsForModel;
 
-      /// Error function for single points
-      using PointError = std::function<icl64f(const Model&, const DataPoint&)>;
+    /// number of iterations
+    int m_iterations;
 
-      private:
-      /// minimum points that are used to create a coarse model
-      int m_minPointsForModel;
+    /// maximum distance of a point to the model to become an inlier
+    icl64f m_maxModelDistance;
 
-      /// number of iterations
-      int m_iterations;
+    /// minimum amount of inliers for a 'good' model
+    int m_minClosePointsForGoodModel;
 
-      /// maximum distance of a point to the model to become an inlier
-      icl64f m_maxModelDistance;
+    /// fitting function
+    ModelFitting m_fitting;
 
-      /// minimum amount of inliers for a 'good' model
-      int m_minClosePointsForGoodModel;
+    /// point-model error function
+    PointError m_err;
 
-      /// fitting function
-      ModelFitting m_fitting;
+    /// min error criterion for early exit
+    icl64f m_minErrorExit;
 
-      /// point-model error function
-      PointError m_err;
+    public:
+    /// result structure
+    struct Result{
+      /// reached error
+      icl64f error;
 
-      /// min error criterion for early exit
-      icl64f m_minErrorExit;
+      /// model (zero sized if no model was found)
+      Model model;
 
-      public:
-      /// result structure
-      struct Result{
-        /// reached error
-        icl64f error;
+      /// consensus set of best match (i.e. inliers)
+      /** empty if no model was found */
+      DataSet consensusSet;
 
-        /// model (zero sized if no model was found)
-        Model model;
+      /// number of iterations needed
+      int iterationCount;
 
-        /// consensus set of best match (i.e. inliers)
-        /** empty if no model was found */
-        DataSet consensusSet;
+      /// returns whether any model was found
+      bool found() const { return consensusSet.size(); }
+    };
 
-        /// number of iterations needed
-        int iterationCount;
+    private:
+    /// internal result buffer
+    Result m_result;
 
-        /// returns whether any model was found
-        bool found() const { return consensusSet.size(); }
-      };
+    /// internal utility method
+    static inline bool find_in(const std::vector<int> &v, int i, int n){
+      return std::find(v.data(), v.data()+n, i) != v.data()+n;
+    }
 
-      private:
-      /// internal result buffer
-      Result m_result;
+    /// internal utility method
+    void find_random_consensus_set(DataSet &currConsensusSet,
+                                   const DataSet &allPoints,
+                                   std::vector<int> &usedIndices){
+      utils::get_random_subset(allPoints, static_cast<int>(currConsensusSet.size()),
+                               currConsensusSet, usedIndices);
+      /*const std::vector<T> &s, int subsetSize,
+                        std::vector<T> &subset, std::vector<int> &indices)
 
-      /// internal utility method
-      static inline bool find_in(const std::vector<int> &v, int i, int n){
-        return std::find(v.data(), v.data()+n, i) != v.data()+n;
-      }
+      const int n = currConsensusSet.size();
+      utils::URandI r(allPoints.size()-1);
 
-      /// internal utility method
-      void find_random_consensus_set(DataSet &currConsensusSet,
-                                     const DataSet &allPoints,
-                                     std::vector<int> &usedIndices){
-        utils::get_random_subset(allPoints, static_cast<int>(currConsensusSet.size()),
-                                 currConsensusSet, usedIndices);
-        /*const std::vector<T> &s, int subsetSize,
-                          std::vector<T> &subset, std::vector<int> &indices)
+      for(int i=0;i<n;++i){
+        do { usedIndices[i] = r; } while ( find_in(usedIndices, usedIndices[i], i-1) );
+        currConsensusSet[i] = allPoints[ usedIndices[i] ];
+          }*/
+    }
 
-        const int n = currConsensusSet.size();
-        utils::URandI r(allPoints.size()-1);
+    public:
+    /// empty constructor (creates a dummy instance)
+    RansacFitter(){}
 
-        for(int i=0;i<n;++i){
-          do { usedIndices[i] = r; } while ( find_in(usedIndices, usedIndices[i], i-1) );
-          currConsensusSet[i] = allPoints[ usedIndices[i] ];
-            }*/
-      }
+    /// constructor with given parameters
+    /** The parameters functionality is documented with the
+        analogously named member variables */
+    RansacFitter(int minPointsForModel,
+                 int iterations,
+                 ModelFitting fitting,
+                 PointError err,
+                 icl64f maxModelDistance,
+                 int minClosePointsForGoodModel,
+                 icl64f minErrorExit=0):
+      m_minPointsForModel(minPointsForModel),
+      m_iterations(iterations),
+      m_maxModelDistance(maxModelDistance),
+      m_minClosePointsForGoodModel(minClosePointsForGoodModel),
+      m_fitting(fitting),m_err(err),
+      m_minErrorExit(minErrorExit){
+    }
 
-      public:
-      /// empty constructor (creates a dummy instance)
-      RansacFitter(){}
+    /// fitting function (actual RANSAC algorithm)
+    const Result &fit(const DataSet &allPoints){
+      m_result.model = Model();
+      m_result.consensusSet.clear();
+      m_result.error = utils::Range64f::limits().maxVal;
+      m_result.iterationCount = 0;
+      std::vector<DataPoint> consensusSet(m_minPointsForModel);
+      std::vector<int> usedIndices(m_minPointsForModel);
 
-      /// constructor with given parameters
-      /** The parameters functionality is documented with the
-          analogously named member variables */
-      RansacFitter(int minPointsForModel,
-                   int iterations,
-                   ModelFitting fitting,
-                   PointError err,
-                   icl64f maxModelDistance,
-                   int minClosePointsForGoodModel,
-                   icl64f minErrorExit=0):
-        m_minPointsForModel(minPointsForModel),
-        m_iterations(iterations),
-        m_maxModelDistance(maxModelDistance),
-        m_minClosePointsForGoodModel(minClosePointsForGoodModel),
-        m_fitting(fitting),m_err(err),
-        m_minErrorExit(minErrorExit){
-      }
+      int i = 0;
+      for(i=0;i<m_iterations;++i){
+        consensusSet.resize(m_minPointsForModel);
+        find_random_consensus_set(consensusSet, allPoints, usedIndices);
 
-      /// fitting function (actual RANSAC algorithm)
-      const Result &fit(const DataSet &allPoints){
-        m_result.model = Model();
-        m_result.consensusSet.clear();
-        m_result.error = utils::Range64f::limits().maxVal;
-        m_result.iterationCount = 0;
-        std::vector<DataPoint> consensusSet(m_minPointsForModel);
-        std::vector<int> usedIndices(m_minPointsForModel);
-
-        int i = 0;
-        for(i=0;i<m_iterations;++i){
-          consensusSet.resize(m_minPointsForModel);
-          find_random_consensus_set(consensusSet, allPoints, usedIndices);
-
-          /*          std::cout << "   selected indices: [ "
-                    << usedIndices[0] << ", "
-                    << usedIndices[1] << ", "
-                    << usedIndices[2] << ", "
-                    << usedIndices[3] << "]" << std::endl;
-              */
-          Model model = m_fitting(consensusSet);
-          for(int j=0;j<static_cast<int>(allPoints.size());++j){
-            if(find_in(usedIndices, j, usedIndices.size())) continue;
-            if(m_err(model, allPoints[j]) < m_maxModelDistance){
-              consensusSet.push_back(allPoints[j]);
-            }
+        /*          std::cout << "   selected indices: [ "
+                  << usedIndices[0] << ", "
+                  << usedIndices[1] << ", "
+                  << usedIndices[2] << ", "
+                  << usedIndices[3] << "]" << std::endl;
+            */
+        Model model = m_fitting(consensusSet);
+        for(int j=0;j<static_cast<int>(allPoints.size());++j){
+          if(find_in(usedIndices, j, usedIndices.size())) continue;
+          if(m_err(model, allPoints[j]) < m_maxModelDistance){
+            consensusSet.push_back(allPoints[j]);
           }
+        }
 
 
-          if(static_cast<int>(consensusSet.size()) >= m_minClosePointsForGoodModel){
-            model = m_fitting(consensusSet);
-            double error = 0;
-            for(unsigned int j=0;j<consensusSet.size();++j){
-              error += m_err(model, consensusSet[j]);
-            }
-            error /= consensusSet.size();
+        if(static_cast<int>(consensusSet.size()) >= m_minClosePointsForGoodModel){
+          model = m_fitting(consensusSet);
+          double error = 0;
+          for(unsigned int j=0;j<consensusSet.size();++j){
+            error += m_err(model, consensusSet[j]);
+          }
+          error /= consensusSet.size();
 
-            if(error < m_result.error){
-              m_result.error = error;
-              m_result.model = model;
-              m_result.consensusSet = consensusSet;
-              if(m_result.error < m_minErrorExit){
-                m_result.iterationCount = i;
-                return m_result;
-              }
+          if(error < m_result.error){
+            m_result.error = error;
+            m_result.model = model;
+            m_result.consensusSet = consensusSet;
+            if(m_result.error < m_minErrorExit){
+              m_result.iterationCount = i;
+              return m_result;
             }
           }
         }
-        m_result.iterationCount = i;
-        return m_result;
       }
-    };
-  } // namespace math
-}
+      m_result.iterationCount = i;
+      return m_result;
+    }
+  };
+  } // namespace icl::math

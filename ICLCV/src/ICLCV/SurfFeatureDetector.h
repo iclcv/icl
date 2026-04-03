@@ -1,43 +1,17 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/src/ICLCV/SurfFeatureDetector.h                  **
-** Module : ICLCV                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
-
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/ImgBase.h>
 #include <ICLCV/SurfFeature.h>
 #include <string>
 #include <vector>
+#include <ICLCore/Image.h>
 
 namespace icl{
+  namespace core{ class Image; }
   namespace cv{
 
       /// ICL's *New* Generic Surf Feature detection class
@@ -64,6 +38,11 @@ namespace icl{
         /// detects SURF features in given image
         const std::vector<SurfFeature> &detect(const core::ImgBase *image);
 
+        /// Image-based overload
+        inline const std::vector<SurfFeature> &detect(const core::Image &image) {
+          return detect(image.ptr());
+        }
+
         /// detects SURF features in given image and stores them as internal reference features
         /** Please note, that the reference image is internally stored (by deep copy)
             When parameters are changed and the back-end must be re-initialized, the
@@ -71,11 +50,21 @@ namespace icl{
             based on the new parameters. */
         void setReferenceImage(const core::ImgBase *image);
 
+        /// Image-based overload
+        inline void setReferenceImage(const core::Image &image) {
+          setReferenceImage(image.ptr());
+        }
+
         /// returns the featuers internally stored as reference
         const std::vector<SurfFeature> &getReferenceFeatures() const ;
 
         /// detections SURF features and matches them against the given reference features
         const std::vector<SurfMatch> &match(const core::ImgBase *image, float significance=0.65);
+
+        /// Image-based overload
+        inline const std::vector<SurfMatch> &match(const core::Image &image, float significance=0.65) {
+          return match(image.ptr(), significance);
+        }
 
         void setOctaves(int octaves);
 

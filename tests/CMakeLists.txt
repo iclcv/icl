@@ -23,7 +23,7 @@ if(TARGET ICLPhysics)
 endif()
 
 # Test source files per module (add as modules get tests)
-list(APPEND _TEST_SOURCES test-utils.cpp test-math.cpp)
+list(APPEND _TEST_SOURCES test-utils.cpp test-math.cpp test-core.cpp test-filter.cpp)
 
 add_executable(icl-tests ${_TEST_SOURCES})
 target_include_directories(icl-tests PRIVATE ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src)

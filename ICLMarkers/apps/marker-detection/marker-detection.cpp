@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMarkers/apps/marker-detection/marker-detection.cpp  **
-** Module : ICLMarkers                                             **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Scene.h>
@@ -62,7 +36,7 @@ void init(){
   if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
   grabber.useDesired(formatGray);
 
-  gui << Draw3D(pa("-size").as<Size>()).handle("draw").minSize(16,12)
+  gui << Canvas3D(pa("-size").as<Size>()).handle("draw").minSize(16,12)
       << (VBox().maxSize(16,100)
           << FSlider(1,10,2).handle("label-size-factor").label("label size factor")
           << Combo(fid->getIntermediateImageNames()).maxSize(100,2).handle("vis").label("visualization")
@@ -126,10 +100,10 @@ inline float round2(float f){
 void run(){
   static bool enable3D = pa("-3D").as<bool>() || pa("-c").as<bool>();
   while(gui["pause"]) Thread::msleep(100);
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
 
   Time t = Time::now();
-  const std::vector<Fiducial> &fids = fid->detect(image);
+  const std::vector<Fiducial> &fids = fid->detect(image.ptr());
   gui["ms"] = round2(t.age().toMilliSecondsDouble());
 
   DrawHandle3D draw = gui["draw"];

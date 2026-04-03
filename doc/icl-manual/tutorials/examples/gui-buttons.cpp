@@ -9,7 +9,7 @@ int currFilter = 0;
 
 void init(){
   grabber.init(pa("-i"));
-  gui << Image().handle("result")
+  gui << Display().handle("result")
       << ( VBox()
            << Button("next filter").handle("next")
            << Button("save").handle("save")
@@ -17,7 +17,7 @@ void init(){
            )
       << Show();
 
-  input << Image().handle("image") << Create();
+  input << Display().handle("image") << Create();
 
   gui["show"].registerCallback(function(input,
                       &GUI::switchVisibility));
@@ -27,23 +27,24 @@ void run(){
   static ButtonHandle next = gui["next"];
   static ButtonHandle save = gui["save"];
 
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
 
   if(next.wasTriggered()){
     currFilter = (currFilter+1)%10;
     op.setOptype((MorphologicalOp::optype)currFilter);
   }
 
-  const ImgBase *result = op.apply(image);
+  static ImgBase *resultBuf = 0;
+  op.apply(image.ptr(), &resultBuf);
 
-  gui["result"] = result;
+  gui["result"] = resultBuf;
 
   if(input.isVisible()){
     input["image"] = image;
   }
 
   if(save.wasTriggered()){
-    qt::save(*result,"current-image.png");
+    qt::save(*resultBuf,"current-image.png");
   }
 }
 int main(int n, char **args){

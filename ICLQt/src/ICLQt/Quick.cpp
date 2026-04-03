@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/Quick.cpp                              **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter, Michael Goetting                  **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting
 
 #include <ICLQt/Quick.h>
 #include <ICLIO/FileGrabber.h>
@@ -89,9 +63,7 @@ using namespace icl::filter;
 using namespace icl::io;
 using namespace icl::cv;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     std::string execute_process(const std::string &command){
       char buf[128];
 #ifdef ICL_SYSTEM_WINDOWS
@@ -120,7 +92,7 @@ namespace icl{
           QGraphicsScene* scene = new QGraphicsScene(this);
           setScene(scene);
           QImageConverter cvt(image);
-          QGraphicsPixmapItem *item = new QGraphicsPixmapItem(QPixmap::fromImage(*cvt.getQImage()));
+          QGraphicsPixmapItem *item = new QGraphicsPixmapItem(QPixmap::fromImage(*cvt.getQDisplay()));
           scene->addItem(item);
           setSceneRect(0,0,image->getWidth(), image->getHeight());
           setDragMode(ScrollHandDrag);
@@ -549,17 +521,17 @@ namespace icl{
     template<class T>
     Img<T> load(const std::string &filename){
       FileGrabber g(filename);
-      const ImgBase *grabbedImage = 0;
+      Image grabbedImage;
       try{
-        grabbedImage = g.grab();
+        grabbedImage = g.grabImage();
       }catch(const ICLException &ex){
         ERROR_LOG("exception: "  << ex.what());
       }
       if(!grabbedImage){
         return Img<T>();
       }
-      Img<T> buf = *ImgBuffer::instance()->get<T>(grabbedImage->getParams());
-      grabbedImage->convert(&buf);
+      Img<T> buf = *ImgBuffer::instance()->get<T>(grabbedImage.ptr()->getParams());
+      grabbedImage.ptr()->convert(&buf);
       return buf;
     }
 
@@ -569,18 +541,18 @@ namespace icl{
     Img<T> load(const std::string &filename, format fmt){
 
       FileGrabber g(filename);
-      const ImgBase *gi  = 0;
+      Image gi;
       try{
-        gi = g.grab();
+        gi = g.grabImage();
       }catch(const ICLException &ex){
         ERROR_LOG("exception: "  << ex.what());
       }
       if(!gi){
         return Img<T>();
       }
-      Img<T> buf = *ImgBuffer::instance()->get<T>(gi->getSize(),getChannelsOfFormat(fmt));
+      Img<T> buf = *ImgBuffer::instance()->get<T>(gi.getSize(),getChannelsOfFormat(fmt));
       buf.setFormat(fmt);
-      cc(gi,&buf);
+      cc(gi.ptr(),&buf);
 
       return buf;
     }
@@ -709,7 +681,7 @@ namespace icl{
     template<class T>
     Img<T> grab(const std::string &dev, const std::string &devSpec,
               const Size &size, format fmt, bool releaseGrabber){
-      static std::map<std::string,std::shared_ptr<GenericGrabber> > grabbers;
+      static std::map<std::string,std::shared_ptr<GenericGrabber>, std::less<>> grabbers;
 
       std::shared_ptr<GenericGrabber> g;
       std::string id;
@@ -718,8 +690,7 @@ namespace icl{
       }else{
         id = dev+devSpec;
       }
-      std::map<std::string,std::shared_ptr<GenericGrabber> >::iterator it = grabbers.find(id);
-      if(it != grabbers.end()){
+      if(auto it = grabbers.find(id); it != grabbers.end()){
         g = it->second;
       }else{
         g.reset(new GenericGrabber());
@@ -733,12 +704,12 @@ namespace icl{
         g->useDesired(size);
         g->useDesired(fmt);
         g->useDesired(getDepth<T>());
-        back = *g->grab()->asImg<T>();
+        back = g->grabImage().as<T>();
       }else{
-        const ImgBase *image = g->grab();
-        back.setSize(image->getSize());
+        Image image = g->grabImage();
+        back.setSize(image.getSize());
         back.setFormat(fmt);
-        cc(image,&back);
+        cc(image.ptr(),&back);
       }
       return back;
     }
@@ -750,7 +721,7 @@ namespace icl{
     template<class T>
     Img<T> filter(const Img<T> &image,const std::string &filter){
 
-      static std::map<std::string,UnaryOp*> M;
+      static std::map<std::string,UnaryOp*, std::less<>> M;
       if(!M.size()){
         static Size s3x3(3,3);
         M["sobely"] = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::sobelX3x3),true);
@@ -794,7 +765,10 @@ namespace icl{
       ConvolutionOp c_horz(ConvolutionKernel(k.data(),Size(k.size(),1),iclMax(1,sum),false));
       ConvolutionOp c_vert(ConvolutionKernel(k.data(),Size(1,k.size()),iclMax(1,sum),false));
 
-      const ImgBase *result = c_horz.apply(c_vert.apply(&image));
+      static ImgBase *tmp1 = nullptr, *tmp2 = nullptr;
+      c_vert.apply(&image, &tmp1);
+      c_horz.apply(tmp1, &tmp2);
+      const ImgBase *result = tmp2;
       if(result->getDepth() == getDepth<T>()){
         switch(getDepth<T>()){
   #define ICL_INSTANTIATE_DEPTH(D) case depth##D: return *result->asImg<T>();
@@ -1113,18 +1087,13 @@ namespace icl{
     }
 
     ImgQ flipx(const ImgQ& image){
-      ImgQ r(image.getParams());
-      ImgBase *rr = &r;
-      flippedCopy(axisVert,&image,&rr);
-      return r;
+      Image result = Image(image).mirrored(axisVert);
+      return result.as32f();
     }
 
     ImgQ flipy(const ImgQ& image){
-
-      ImgQ r(image.getParams());
-      ImgBase *rr = &r;
-      flippedCopy(axisHorz,&image,&rr);
-      return r;
+      Image result = Image(image).mirrored(axisHorz);
+      return result.as32f();
     }
 
 
@@ -1894,4 +1863,3 @@ namespace icl{
 
 
   } // namespace cv
-}

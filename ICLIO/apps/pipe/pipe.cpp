@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/apps/pipe/pipe.cpp                               **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
-
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLIO/GenericImageOutput.h>
 #include <ICLCore/CoreFunctions.h>
@@ -87,14 +60,16 @@ void init_grabber(){
   }
 }
 
+static Image grabImageHolder;
 const ImgBase *grab_image(){
   const ImgBase *img = 0;
-  //  const ImgBase *image = grabber.grab();
+  //  const ImgBase *image = grabber.grabImage();
 
+  grabImageHolder = grabber.grabImage();
   if (!(bool)pa("-flip")){
-    img = grabber.grab();
+    img = grabImageHolder.ptr();
   }else{
-    ImgBase *hack = const_cast<ImgBase*>(grabber.grab());
+    ImgBase *hack = grabImageHolder.ptr();
     std::string axis = pa("-flip").as<std::string>();
     if(axis  ==   "x"){
       hack->mirror(axisVert);
@@ -251,7 +226,9 @@ void send_app(){
         }
       }
       pp->setClipToROI(false);
-      ppImage  = pp->apply(grabbedImage);
+      static ImgBase *ppBuf = 0;
+      pp->apply(grabbedImage, &ppBuf);
+      ppImage = ppBuf;
       static const bool ppp = pa("-ppp");
       if(!ppp){
         const_cast<ImgBase*>(ppImage)->setFullROI();
@@ -269,7 +246,7 @@ void send_app(){
     }else{
       normImage = ppImage;
     }
-    output.send(normImage);
+    output.send(*normImage);
 #ifdef ICL_HAVE_QT
     if(!(bool)pa("-no-gui")){
       bool &updateImages = gui.get<bool>("updateImages");
@@ -323,7 +300,7 @@ void init_gui(){
   bool idu = pa("-idu");
 
   if(pa("-pp")){
-    gui << Image().handle("image").minSize(12,8)
+    gui << Display().handle("image").minSize(12,8)
         << ( VBox().maxSize(100,8)
              <<  ( HBox()
                    << CamCfg().maxSize(5,2)
@@ -339,7 +316,7 @@ void init_gui(){
 
     ppEnabled = &gui.get<bool>("pp-on");
   }else{
-    gui << Image().handle("image").minSize(12,8)
+    gui << Display().handle("image").minSize(12,8)
         << ( VBox().maxSize(100,8)
              <<  ( HBox()
                    << CamCfg().maxSize(5,2)

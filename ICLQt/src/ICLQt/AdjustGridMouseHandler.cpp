@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/DefineRectanglesMouseHandler.cpp       **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/AdjustGridMouseHandler.h>
 #include <ICLCore/ConvexHull.h>
@@ -38,9 +12,7 @@
 
 
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     using namespace utils;
     using namespace core;
 
@@ -279,7 +251,7 @@ namespace icl{
     }
 
     void AdjustGridMouseHandler::init(const Rect &bounds, bool convexOnly){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       ICL_DELETE(m_data);
       m_data = new Data;
 
@@ -297,14 +269,14 @@ namespace icl{
     }
 
     void AdjustGridMouseHandler::clear(){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       ICL_DELETE(m_data);
     }
 
     void AdjustGridMouseHandler::init(const utils::Rect &bounds,
                                       const std::vector<std::vector<Point> > &grids,
                                       bool convexOnly){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       ICL_DELETE(m_data);
       m_data = new Data;
 
@@ -352,7 +324,7 @@ namespace icl{
         throw ICLException("AdjustGridMouseHandler::setQuadrangle: given quadrangle is not convex "
                            "or twisted");
       }
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       Data::Grid &g = m_data->grids[idx];
       for(int i=0;i<4;++i){
         g.handles[i].pos = ps[i];
@@ -360,7 +332,7 @@ namespace icl{
     }
 
     std::vector<Point> AdjustGridMouseHandler::getGrid(size_t idx) const{
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::getGrid() was called before it was initialized!");
       }
@@ -376,7 +348,7 @@ namespace icl{
     }
 
     void AdjustGridMouseHandler::process(const MouseEvent &e){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::process(MouseEvent) was called before it was initialized!");
       }
@@ -478,7 +450,7 @@ namespace icl{
     }
 
     VisualizationDescription AdjustGridMouseHandler::vis() const{
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::vis() was called before it was initialized!");
       }
@@ -513,7 +485,7 @@ namespace icl{
 
     void AdjustGridMouseHandler::defineGridTexture(size_t idx, const Size32f &dim,
                                                    const std::vector<Line32f> &lines){
-      std::lock_guard<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock<std::recursive_mutex> lock(getMutex());
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::defineGridTexture() was called before it was initialized!");
       }
@@ -523,4 +495,3 @@ namespace icl{
       m_data->grids[idx].texture.reset(new Data::Texture(dim,lines));
     }
   }
-}

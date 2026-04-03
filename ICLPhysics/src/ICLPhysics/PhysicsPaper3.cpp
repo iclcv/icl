@@ -1,32 +1,7 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2014 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLPhysics/src/ICLPhysics/PhysicsPaper3.cpp            **
-** Module : ICLPhysics                                             **
-** Author : Christof Elbrechter, Matthias Esau                     **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
 #include <ICLPhysics/PhysicsPaper3.h>
 #include <ICLQt/Quick.h>
 #include <ICLPhysics/GeometricTools.h>
@@ -45,8 +20,7 @@
 #include <ICLPhysics/FoldMap.h>
 #include <mutex>
 
-namespace icl{
-  namespace physics{
+namespace icl::physics {
     using namespace utils;
     using namespace math;
     using namespace core;
@@ -188,8 +162,8 @@ namespace icl{
       setLockingEnabled(true);
       if(other.m_data->haveTexture){
         m_data->haveTexture = true;
-        m_data->tex[0].update(other.m_data->tex[0].extractImage());
-        m_data->tex[1].update(other.m_data->tex[1].extractImage());
+        m_data->tex[0].update(other.m_data->tex[0].extractDisplay());
+        m_data->tex[1].update(other.m_data->tex[1].extractDisplay());
       }
       const btSoftBody *sOrig = other.getSoftBody();
       std::vector<btVector3> ns(sOrig->m_nodes.size());
@@ -767,7 +741,7 @@ namespace icl{
     }
 
     const Img32f &PhysicsPaper3::getFoldMap() const{
-      return m_data->fm.getImage();
+      return m_data->fm.getDisplay();
     }
 
     void PhysicsPaper3::setFoldMapChangedCallback(std::function<void(const Img32f &)> cb){
@@ -1171,7 +1145,7 @@ namespace icl{
       createBendingConstraints(m_data->initialStiffness);
 
       if(m_data->fmCallback){
-        m_data->fmCallback(m_data->fm.getImage());
+        m_data->fmCallback(m_data->fm.getDisplay());
       }
 
       m_data->physicsWorld->unlock();
@@ -1239,7 +1213,7 @@ namespace icl{
       createBendingConstraints(m_data->initialStiffness);
 
       if(m_data->fmCallback){
-        m_data->fmCallback(m_data->fm.getImage());
+        m_data->fmCallback(m_data->fm.getDisplay());
       }
 
       m_data->physicsWorld->unlock();
@@ -1924,4 +1898,3 @@ namespace icl{
       return s->m_nodes.size();
     }
   }
-}

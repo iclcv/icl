@@ -1,43 +1,14 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/V4L2LoopBackOutput.h                   **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
-#include <ICLCore/ImgBase.h>
 #include <ICLIO/SharedMemorySegment.h>
 #include <ICLIO/ImageOutput.h>
 
-namespace icl{
-  namespace io{
-
+namespace icl::io {
     /// ImageOutput implementation for V4L2-Looback devices
     /** The V4L2LoopBackOutput allows you to send images through a V4L2 loopback device.
         Please don't mix these up with common web-cam devices.
@@ -83,7 +54,6 @@ namespace icl{
       void init(const std::string &deviceString);
 
       /// actual publishing function
-      virtual void send(const core::ImgBase *image);
+      virtual void send(const core::Image &image);
     };
   }
-}

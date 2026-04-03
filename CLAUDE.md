@@ -73,24 +73,49 @@ ICLQt and ICLPhysics are conditionally built based on dependency availability.
 
 ## Key Architectural Concepts
 
-### Image Class Hierarchy
+### Image (Primary Image Type)
 
-`core::ImgBase` (abstract) manages all non-pixel image parameters: size, channel count, ROI, format, and a runtime *depth* parameter indicating the actual pixel type. The template class `core::Img<T>` derives from it for concrete pixel types: `icl8u`, `icl16s`, `icl32s`, `icl32f`, `icl64f`. This design allows generic, template-free code via `ImgBase` pointers — downcasting to `Img<T>` is only needed for direct pixel access. Channels are stored in **planar** layout (each channel is a single contiguous data segment, not interleaved). Images support shallow *wrapping* around existing data segments to avoid copies.
+`core::Image` is the primary image type for application code. It wraps `shared_ptr<ImgBase>` providing value semantics, automatic memory management, and type-safe depth dispatch via the visitor pattern. Included automatically via `Common.h`.
+
+```cpp
+// Typical usage:
+Image img = grabber.grabImage();
+Image result = filter.apply(img);
+gui["display"] = result;
+
+// Or as a one-liner:
+gui["display"] = filter.apply(grabber.grabImage());
+
+// Type-safe pixel access via visit():
+img.visit([](auto &typed) { typed(0, 0, 0) = 42; });
+
+// Channel-level visitors:
+img.visitChannels([](auto *data, int ch, int dim) { ... });
+src.visitChannelsWith(dst, [](auto *s, auto *d, int ch, int dim) { ... });
+```
+
+Copy semantics are shallow (shared_ptr). Use `deepCopy()` for independence, `detach()` to make channel data independent. Use `as<T>()` for direct `Img<T>&` access, `ptr()` for legacy `ImgBase*` interop.
+
+### Image Class Hierarchy (Internal)
+
+`core::ImgBase` (abstract) manages all non-pixel image parameters: size, channel count, ROI, format, and a runtime *depth* parameter indicating the actual pixel type. The template class `core::Img<T>` derives from it for concrete pixel types: `icl8u`, `icl16s`, `icl32s`, `icl32f`, `icl64f`. Channels are stored in **planar** layout (each channel is a single contiguous data segment, not interleaved). New code should use `Image` instead of `ImgBase*` directly.
 
 ### Filter Architecture
 
-Filters are split into `UnaryOp` (one input image) and `BinaryOp` (two input images) base classes. `UnaryOp` has a deep inheritance hierarchy (see `ICLFilter/src/ICLFilter/`): `BaseAffineOp`, `NeighborhoodOp`, etc. All share generic `apply()` methods, enabling uniform stacking and chaining of operators.
+Filters are split into `UnaryOp` (one input image) and `BinaryOp` (two input images) base classes. `UnaryOp` has a deep inheritance hierarchy (see `ICLFilter/src/ICLFilter/`): `BaseAffineOp`, `NeighborhoodOp`, etc. The `apply()` method returns `Image` for convenience, or takes `Image &dst` for buffer reuse. The virtual dispatch mechanism uses the 2-arg `apply(const ImgBase*, ImgBase**)` internally.
 
 ### Grabber Framework (ICLIO)
 
-`GenericGrabber` provides a plugin-based backend system for image acquisition. Backend and device are selected at runtime via string-based `-input` / `-i` program argument (e.g., `-i file image.png`, `-i dc 0`, `-i create lena`). Use `-i list all` to enumerate available backends. Properties are set inline: `-i dc 0@gain=500`. The same plugin architecture exists for image output.
+`GenericGrabber` provides a plugin-based backend system for image acquisition. Backend and device are selected at runtime via string-based `-input` / `-i` program argument (e.g., `-i file image.png`, `-i dc 0`, `-i create lena`). Use `grabImage()` to get an `Image` value. Properties are set inline: `-i dc 0@gain=500`. The same plugin architecture exists for image output.
 
 ### Application Pattern (ICLQt)
 
 `ICLApp` ties together program argument parsing, an `init()` callback, and a `run()` callback that loops automatically. GUI is built declaratively with stream operators:
 ```cpp
-gui << Image().handle("img") << CamCfg() << Show();
+gui << Display().handle("img") << CamCfg() << Show();
 ```
+
+GUI components: `Display` (image view), `Canvas` (2D drawing), `Canvas3D` (3D drawing), `Slider`, `Button`, `Combo`, `CheckBox`, `Label`, etc.
 
 ### Visualization Stack (ICLQt + ICLGeom)
 

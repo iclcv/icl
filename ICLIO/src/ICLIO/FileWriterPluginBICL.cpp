@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/FileWriterPluginBICL.cpp               **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLIO/FileWriterPluginBICL.h>
 #include <mutex>
@@ -34,18 +8,16 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
-    FileWriterPluginBICL::FileWriterPluginBICL(const std::string &compressionType,
-                                               const std::string &quality):
-      compressor(ImageCompressor::CompressionSpec(compressionType,quality)){}
+namespace icl::io {
+  FileWriterPluginBICL::FileWriterPluginBICL(const std::string &compressionType,
+                                             const std::string &quality):
+    compressor(ImageCompressor::CompressionSpec(compressionType,quality)){}
 
-    void FileWriterPluginBICL::write(File &file, const ImgBase *image){
-      std::lock_guard<std::recursive_mutex> lock(mutex);
-      const ImageCompressor::CompressedData data = compressor.compress(image);
-      file.open(File::writeBinary);
-      file.write(data.bytes,data.len);
-    }
+  void FileWriterPluginBICL::write(File &file, const ImgBase *image){
+    std::scoped_lock<std::recursive_mutex> lock(mutex);
+    const ImageCompressor::CompressedData data = compressor.compress(image);
+    file.open(File::writeBinary);
+    file.write(data.bytes,data.len);
+  }
 
-  } // namespace io
-}
+  } // namespace icl::io

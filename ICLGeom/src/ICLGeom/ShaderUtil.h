@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/src/ICLGeom/ShaderUtil.h                       **
-** Module : ICLGeom                                                **
-** Authors: Matthias Esau                                          **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #pragma once
 #include <ICLUtils/CompatMacros.h>
@@ -36,37 +10,36 @@
 
 #include <ICLUtils/Uncopyable.h>
 
-namespace icl{
-    /** \cond */
-  namespace qt {class GLFragmentShader;}
-    /** \endcond */
-  namespace geom{
+/** \cond */
+namespace icl::qt { class GLFragmentShader; }
+/** \endcond */
 
-    /** The ShaderUtil is an easy to use wrapper for activating the
-        correct shader for the primitive that is to be rendered.*/
-    class ICLGeom_API ShaderUtil {
-      const Camera *m_camera;
-      icl::qt::GLFragmentShader** m_shaders;
-      icl::qt::GLFragmentShader* activeShader;
-      const std::vector<Mat> *project2shadow;
-      float m_shadowBias;
-      bool renderingShadow;
-      public:
-      ShaderUtil(const ShaderUtil&) = delete;
-      ShaderUtil& operator=(const ShaderUtil&) = delete;
+namespace icl::geom {
 
-      ///Enum representing the different shader types
-      enum ShaderType{SHADOW, SHADOW_TEXTURE, NO_SHADOW, NO_SHADOW_TEXTURE, COUNT};
-      ShaderUtil(const Camera *camera, icl::qt::GLFragmentShader** shaders, const std::vector<Mat> *project2shadow, float shadowBias);
-      /** This constructor can be used, when the ShaderUtil is not supposed to activate any shaders.
-          The main use for this is to make it transparent to the render function of an object if it is to be
-          rendered into the shadowbuffer or not.*/
-      ShaderUtil();
+/** The ShaderUtil is an easy to use wrapper for activating the
+    correct shader for the primitive that is to be rendered.*/
+class ICLGeom_API ShaderUtil {
+  const Camera *m_camera;
+  icl::qt::GLFragmentShader** m_shaders;
+  icl::qt::GLFragmentShader* activeShader;
+  const std::vector<Mat> *project2shadow;
+  float m_shadowBias;
+  bool renderingShadow;
+  public:
+  ShaderUtil(const ShaderUtil&) = delete;
+  ShaderUtil& operator=(const ShaderUtil&) = delete;
 
-      void activateShader(Primitive::Type type, bool withShadow);
-      void deactivateShaders();
-      const Camera &getCurrentCamera() const;
-      static void recompilePerPixelShader(icl::qt::GLFragmentShader** shaders, const std::shared_ptr<SceneLight>* lights, int numShadowLights);
-    };
-  }
-}
+  ///Enum representing the different shader types
+  enum ShaderType{SHADOW, SHADOW_TEXTURE, NO_SHADOW, NO_SHADOW_TEXTURE, COUNT};
+  ShaderUtil(const Camera *camera, icl::qt::GLFragmentShader** shaders, const std::vector<Mat> *project2shadow, float shadowBias);
+  /** This constructor can be used, when the ShaderUtil is not supposed to activate any shaders.
+      The main use for this is to make it transparent to the render function of an object if it is to be
+      rendered into the shadowbuffer or not.*/
+  ShaderUtil();
+
+  void activateShader(Primitive::Type type, bool withShadow);
+  void deactivateShaders();
+  const Camera &getCurrentCamera() const;
+  static void recompilePerPixelShader(icl::qt::GLFragmentShader** shaders, const std::shared_ptr<SceneLight>* lights, int numShadowLights);
+};
+} // namespace icl::geom

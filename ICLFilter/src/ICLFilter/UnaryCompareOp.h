@@ -1,150 +1,66 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/src/ICLFilter/UnaryCompareOp.h               **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/UnaryOp.h>
+#include <ICLCore/ImageBackendDispatching.h>
+#include <ICLCore/Image.h>
 
-namespace icl {
-  namespace filter{
+namespace icl::filter {
+  /// UnaryCompareOp using the BackendDispatch architecture.
+  class ICLFilter_API UnaryCompareOp : public UnaryOp, public core::ImageBackendDispatching {
+    public:
 
-     /// Class for comparing operations  \ingroup UNARY
-     /** This class Compares each pixelvalue of an image with a constant value
-         using a specified compare operation. The result is written to a
-         binarized image of type Img8u. If the result of the comparison is true,
-         the corresponding output pixel is set to 255; otherwise, it is set to 0.
-     */
-    class ICLFilter_API UnaryCompareOp : public UnaryOp {
-      public:
+    enum optype { lt, lteq, eq, gteq, gt, eqt };
 
-  #ifdef ICL_HAVE_IPP
-      /// this enum specifiy all possible compare operations
-      enum optype{
-        lt   = ippCmpLess,      /**< "<"- relation */
-        lteq = ippCmpLessEq,    /**< "<="-relation */
-        eq   = ippCmpEq,        /**< "=="-relation */
-        gteq = ippCmpGreaterEq, /**< ">="-relation */
-        gt   = ippCmpGreater,   /**< ">" -relation */
-        eqt                     /**< "=="-relation using a given tolerance level */
-      };
-  #else
-      /// this enum specifiy all possible compare operations
-      enum optype{
-        lt,   /**< "<"- relation */
-        lteq, /**< "<="-relation */
-        eq,   /**< "=="-relation */
-        gteq, /**< ">="-relation */
-        gt,   /**< ">" -relation */
-        eqt   /**< "=="-relation using a given tolerance level */
-      };
-  #endif
+    /// Backend selector keys (2 distinct operations). Values must match addSelector() order.
+    enum class Op : int { compare, compareEqTol };
 
-      /// translate a given relation into an optype
-      /** - UnaryCompareOp::lt -> "<"
-          - UnaryCompareOp::gt -> ">"
-          - UnaryCompareOp::lteq -> "<="
-          - UnaryCompareOp::gteq -> ">="
-          - UnaryCompareOp::eq -> "=="
-          - UnaryCompareOp::eqt -> "~="
-      */
-      static optype translate_op_type(const std::string &stringVersion){
-        if(stringVersion == "<") return UnaryCompareOp::lt;
-        if(stringVersion == ">") return UnaryCompareOp::gt;
-        if(stringVersion == "<=") return UnaryCompareOp::lteq;
-        if(stringVersion == ">=") return UnaryCompareOp::gteq;
-        if(stringVersion == "==") return UnaryCompareOp::eq;
-        if(stringVersion == " ~=") return UnaryCompareOp::eqt;
-        throw utils::ICLException("UnaryCompareOp::translate_op_type(" + stringVersion + "): invalid optype string!");
-        /// satisfy the compiler :-)
-        return UnaryCompareOp::lt;
-      }
+    /// Translate a string relation to an optype
+    static optype translate_op_type(const std::string &s) {
+      if(s == "<") return lt;
+      if(s == ">") return gt;
+      if(s == "<=") return lteq;
+      if(s == ">=") return gteq;
+      if(s == "==") return eq;
+      if(s == "~=") return eqt;
+      throw utils::ICLException("UnaryCompareOp::translate_op_type(" + s + "): invalid optype string!");
+      return lt;
+    }
 
-      /// Creates a new UnaryCompareOp object with given optype, value and tolerance level
-      /** @param ot operation type ("<","<=",...)
-          @param value value to compare each pixel with
-          @param tolerance tolerance level (only of optype==eqt)
-      **/
-      UnaryCompareOp(optype ot=gt, icl64f value=128, icl64f tolerance=0):
-      m_eOpType(ot), m_dValue(value), m_dTolerance(tolerance){ }
+    UnaryCompareOp(optype ot = gt, icl64f value = 128, icl64f tolerance = 0);
 
-      /// creates a new UnaryCompareOp instance with given parameters
-      /** The optype parameters is here given as a string
-          @see translate_op_type(const std::string&)*/
-      UnaryCompareOp(const std::string &op, icl64f value=128, icl64f tolerance=0):
-      m_eOpType(translate_op_type(op)), m_dValue(value), m_dTolerance(tolerance){ }
+    /// String-based constructor (e.g. ">", "<=", "==", "~=")
+    UnaryCompareOp(const std::string &op, icl64f value = 128, icl64f tolerance = 0);
 
-      /// Destructor
-      virtual ~UnaryCompareOp(){}
+    void apply(const core::Image &src, core::Image &dst) override;
+    using UnaryOp::apply;
 
-      /// sets the current optype
-      /** @param ot new optype value */
-      void setOpType(optype ot){ m_eOpType = ot; }
+    void setOpType(optype ot) { m_eOpType = ot; }
+    optype getOpType() const { return m_eOpType; }
+    void setValue(icl64f value) { m_dValue = value; }
+    icl64f getValue() const { return m_dValue; }
+    void setTolerance(icl64f tolerance) { m_dTolerance = tolerance; }
+    void setTollerance(icl64f tolerance) { m_dTolerance = tolerance; }
+    icl64f getTolerance() const { return m_dTolerance; }
 
-      /// sets the current compare value
-      /** @param value new compare value */
-      void setValue(icl64f value){ m_dValue = value; }
+    // Sub-op signatures for backend dispatch
+    using CmpSig    = void(const core::Image&, core::Image&, double, int);
+    using CmpEqtSig = void(const core::Image&, core::Image&, double, double);
 
-      /// sets the current tolerance level
-      /** @param tolerance new tolerance level */
-      void setTollerance(icl64f tolerance){ m_dTolerance = tolerance; }
+    /// Class-level prototype — owns selectors, populated during static init
+    static core::ImageBackendDispatching& prototype();
 
-      /// returns the current optype
-      optype getOpType() const { return m_eOpType; }
+    private:
+    optype m_eOpType;
+    icl64f m_dValue;
+    icl64f m_dTolerance;
+  };
 
-      /// returns the current compare-value
-      /** @return current value */
-      icl64f getValue() const { return m_dValue; }
+  /// ADL-visible toString for UnaryCompareOp::Op → registry name (defined in UnaryCompareOp.cpp)
+  ICLFilter_API const char* toString(UnaryCompareOp::Op op);
 
-      /// returns the current tolerance level
-      /** @return current tolerance level */
-      icl64f getTolerance() const { return m_dTolerance; }
-
-      /// applies the operation to a source image
-      /** @param poSrc source image
-          @param ppoDst destination image
-      **/
-      virtual void apply(const core::ImgBase *poSrc, core::ImgBase **ppoDst);
-
-      /// Import unaryOps apply function without destination image
-      using UnaryOp::apply;
-      private:
-
-      /// internal storage of the current optype
-      optype m_eOpType;
-
-      /// internal storage of the current value
-      icl64f m_dValue;
-
-      /// internal storage of the current tolerance level
-      icl64f m_dTolerance;
-    };
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

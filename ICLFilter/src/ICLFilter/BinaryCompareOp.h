@@ -1,115 +1,45 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/src/ICLFilter/BinaryCompareOp.h              **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLFilter/BinaryOp.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-  namespace filter{
+namespace icl::filter {
+  /// Class for comparing two images pixel-wise \ingroup BINARY
+  class ICLFilter_API BinaryCompareOp : public BinaryOp, public core::ImageBackendDispatching {
+    public:
 
-    /// Class for comparing two images pixel-wise \ingroup BINARY
-    /** Compares pixel values of two images using a specified compare
-        operation. The result is written to a binarized image of type Img8u.
-        If the result of the comparison is true, the corresponding output
-        pixel is set to 255; otherwise, it is set to 0.
-        */
-    class ICLFilter_API BinaryCompareOp : public BinaryOp {
-      public:
-  #ifdef ICL_HAVE_IPP
-      /// this enum specifiy all possible compare operations
-      enum optype{
-        lt   = ippCmpLess,      /**< "<"- relation */
-        lteq = ippCmpLessEq,    /**< "<="-relation */
-        eq   = ippCmpEq,        /**< "=="-relation */
-        gteq = ippCmpGreaterEq, /**< ">="-relation */
-        gt   = ippCmpGreater,   /**< ">" -relation */
-        eqt                     /**< "=="-relation using a given tolerance level */
-      };
-  #else
-      /// this enum specifiy all possible compare operations
-      enum optype{
-        lt,   /**< "<"- relation */
-        lteq, /**< "<="-relation */
-        eq,   /**< "=="-relation */
-        gteq, /**< ">="-relation */
-        gt,   /**< ">" -relation */
-        eqt   /**< "=="-relation using a given tolerance level */
-      };
-  #endif
+    enum optype { lt, lteq, eq, gteq, gt, eqt };
 
-      /// creates a new BinaryCompareOp object with given optype and tolerance level
-      /** @param ot optype to use
-          @param tolerance tolerance level to use
-      **/
-      BinaryCompareOp(optype ot, icl64f tolerance=0):
-      m_eOpType(ot), m_dTolerance(tolerance){}
+    /// Backend selector keys. Values must match addSelector() order.
+    enum class Op : int { compare, compareEqTol };
 
-      /// Destructor
-      virtual ~BinaryCompareOp(){}
+    BinaryCompareOp(optype ot, icl64f tolerance = 0);
 
-      /// applies this compare operation to two source images into the given destination image
-      /** @param poSrc1 first source image
-          @param poSrc2 second source image
-          @param ppoDst destination image
-      **/
-      virtual void apply(const core::ImgBase *poSrc1, const core::ImgBase *poSrc2, core::ImgBase **ppoDst);
+    void apply(const core::Image &src1, const core::Image &src2, core::Image &dst) override;
+    using BinaryOp::apply;
 
-      /// import apply symbol from parent class
-      using BinaryOp::apply;
+    optype getOpType() const { return m_eOpType; }
+    void setOpType(optype ot) { m_eOpType = ot; }
+    icl64f getTolerance() const { return m_dTolerance; }
+    void setTolerance(icl64f tolerance) { m_dTolerance = tolerance; }
 
-      /// returns the current optype
-      /** @return current optype */
-      optype getOpType() const { return m_eOpType; }
+    using CmpSig    = void(const core::Image&, const core::Image&, core::Image&, int);
+    using CmpEqtSig = void(const core::Image&, const core::Image&, core::Image&, double);
 
-      /// returns the current tolerance level
-      /** @return current tolerance level */
-      icl64f getTolerance() const { return m_dTolerance; }
+    /// Class-level prototype — owns selectors, populated during static init
+    static core::ImageBackendDispatching& prototype();
 
-      /// sets the current opttype
-      /** @param ot new optype */
-      void setOpType(optype ot) { m_eOpType = ot; }
+    private:
+    optype m_eOpType;
+    icl64f m_dTolerance;
+  };
 
-      /// sets the current tolerance level
-      /** @param tolerance new tolerance level*/
-      void setTolerance(icl64f tolerance){ m_dTolerance = tolerance; }
+  /// ADL-visible toString for BinaryCompareOp::Op → registry name (defined in BinaryCompareOp.cpp)
+  ICLFilter_API const char* toString(BinaryCompareOp::Op op);
 
-      private:
-
-      /// internal storage for the current optype
-      optype m_eOpType;
-
-      // internal storage for the current tolerance level
-      icl64f m_dTolerance;
-    };
-
-  } // namespace filter
-} // namespace icl
+  } // namespace icl::filter

@@ -1,6 +1,6 @@
-/********************************************************************
-**  ICL Core Benchmarks — type conversion, color conversion        **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLUtils/Benchmark.h>
 #include <ICLCore/Img.h>
@@ -62,6 +62,58 @@ namespace {
       static Img32f src(Size(w,h), formatRGB);
       static Img32f dst(Size(w,h), formatGray);
       cc(&src, &dst);
+    }
+  });
+
+  // --- Image scaling benchmarks ---
+
+  static BenchmarkRegistrar bench_scale_nn_8u({"core.scale.nn_8u",
+    "NN scale 640x480 -> 320x240 (icl8u, 1ch)",
+    {},
+    [](const BenchParams &p){
+      static Img8u src(Size(640,480), 1);
+      static Img8u dst(Size(320,240), 1);
+      src.scaledCopy(&dst, interpolateNN);
+    }
+  });
+
+  static BenchmarkRegistrar bench_scale_lin_8u({"core.scale.lin_8u",
+    "LIN scale 640x480 -> 320x240 (icl8u, 1ch)",
+    {},
+    [](const BenchParams &p){
+      static Img8u src(Size(640,480), 1);
+      static Img8u dst(Size(320,240), 1);
+      src.scaledCopy(&dst, interpolateLIN);
+    }
+  });
+
+  static BenchmarkRegistrar bench_scale_ra_8u({"core.scale.ra_8u",
+    "RA scale 640x480 -> 320x240 (icl8u, 1ch)",
+    {},
+    [](const BenchParams &p){
+      static Img8u src(Size(640,480), 1);
+      static Img8u dst(Size(320,240), 1);
+      src.scaledCopy(&dst, interpolateRA);
+    }
+  });
+
+  static BenchmarkRegistrar bench_scale_lin_32f({"core.scale.lin_32f",
+    "LIN scale 640x480 -> 320x240 (icl32f, 1ch)",
+    {},
+    [](const BenchParams &p){
+      static Img32f src(Size(640,480), 1);
+      static Img32f dst(Size(320,240), 1);
+      src.scaledCopy(&dst, interpolateLIN);
+    }
+  });
+
+  static BenchmarkRegistrar bench_scale_lin_8u_up({"core.scale.lin_8u_up",
+    "LIN scale 320x240 -> 640x480 (icl8u, 1ch, upscale)",
+    {},
+    [](const BenchParams &p){
+      static Img8u src(Size(320,240), 1);
+      static Img8u dst(Size(640,480), 1);
+      src.scaledCopy(&dst, interpolateLIN);
     }
   });
 

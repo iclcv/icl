@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/FileGrabberPluginImageMagick.cpp       **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLIO/FileGrabberPluginImageMagick.h>
 #include <ICLCore/CoreFunctions.h>
@@ -48,59 +22,55 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace io{
+namespace icl::io {
+#ifdef ICL_HAVE_IMAGEMAGICK
+  struct FileGrabberPluginImageMagick::InternalData{
+    std::vector<icl8u> buffer;
 
 
-  #ifdef ICL_HAVE_IMAGEMAGICK
-    struct FileGrabberPluginImageMagick::InternalData{
-      std::vector<icl8u> buffer;
+  };
 
+  FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
+    m_data(new FileGrabberPluginImageMagick::InternalData){
+    // from FileWriterPluginImageMagick.h
+  }
 
-    };
+  FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){
+    delete m_data;
+  }
 
-    FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
-      m_data(new FileGrabberPluginImageMagick::InternalData){
-      // from FileWriterPluginImageMagick.h
+  void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
+    icl_initialize_image_magick_context();
+
+    Magick::Image image;
+    try{
+      image.read(file.getName());
+    }catch(Magick::Error &err){
+      throw ICLException(std::string("ImageMagick::")+err.what());
     }
 
-    FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){
-      delete m_data;
-    }
+    Size size(static_cast<int>(image.columns()), static_cast<int>(image.rows()));
+    const int dim = size.getDim();
 
-    void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
-      icl_initialize_image_magick_context();
+    // Export pixel data as interleaved RGB unsigned chars
+    m_data->buffer.resize(dim * 3);
+    image.write(0, 0, size.width, size.height, "RGB", Magick::CharPixel, m_data->buffer.data());
 
-      Magick::Image image;
-      try{
-        image.read(file.getName());
-      }catch(Magick::Error &err){
-        throw ICLException(std::string("ImageMagick::")+err.what());
-      }
+    core::ensureCompatible(dest, depth8u, size, formatRGB);
+    interleavedToPlanar(m_data->buffer.data(), (*dest)->asImg<icl8u>());
+  }
 
-      Size size(static_cast<int>(image.columns()), static_cast<int>(image.rows()));
-      const int dim = size.getDim();
+#else
+  struct FileGrabberPluginImageMagick::InternalData{};
 
-      // Export pixel data as interleaved RGB unsigned chars
-      m_data->buffer.resize(dim * 3);
-      image.write(0, 0, size.width, size.height, "RGB", Magick::CharPixel, m_data->buffer.data());
+  FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
+    m_data(0){}
 
-      core::ensureCompatible(dest, depth8u, size, formatRGB);
-      interleavedToPlanar(m_data->buffer.data(), (*dest)->asImg<icl8u>());
-    }
+  FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){}
 
-  #else
-    struct FileGrabberPluginImageMagick::InternalData{};
-
-    FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
-      m_data(0){}
-
-    FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){}
-
-    void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
-      ERROR_LOG("grabbing images of this format is not supported without libImageMagic++");
-      throw InvalidFileException(file.getName());
-    }
-  #endif
-  } // namespace io
-}
+  void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
+    ERROR_LOG("grabbing images of this format is not supported without libImageMagic++");
+    throw InvalidFileException(file.getName());
+  }
+#endif
+  } // namespace icl::io

@@ -1,6 +1,26 @@
 file(GLOB SOURCES src/ICLMath/*.cpp)
 file(GLOB HEADERS src/ICLMath/*.h)
 
+# Convention: *_<Backend>.cpp files are excluded when their library is not found
+if(NOT IPP_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Ipp\\.cpp$")
+endif()
+if(NOT MKL_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Mkl\\.cpp$")
+endif()
+if(NOT FFTW_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_FFTW\\.cpp$")
+endif()
+if(NOT ACCELERATE_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Accelerate\\.cpp$")
+endif()
+if(NOT OPENBLAS_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_OpenBlas\\.cpp$")
+endif()
+if(NOT EIGEN3_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Eigen\\.cpp$")
+endif()
+
 icl_add_module(ICLMath
   SOURCES ${SOURCES}
   HEADERS ${HEADERS}

@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/apps/lens-undistortion-calibration/            **
-**          lens-undistortion-calibration.cpp                      **
-** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLMarkers/FiducialDetector.h>
@@ -69,7 +43,7 @@ void init(){
   detector.setPropertyValue("thresh.global threshold", 21);
   detector.setPropertyValue("thresh.mask size", 30);
 
-  const Size &imageSize = grabber.grab()->getSize();
+  const Size imageSize = grabber.grabImage().getSize();
   udist.reset(new UndistortionUtil(imageSize));
   udist->setConfigurableID("udist");
 
@@ -79,10 +53,10 @@ void init(){
 
   gui << ( Tab("distorted input,undistorted image,"
                "difference image,undistortion map").handle("tab").minSize(32,24)
-           << Draw().handle("image")
-           << Draw().handle("uimage")
-           << Image().handle("diff")
-           << Draw(imageSize).handle("map")
+           << Canvas().handle("image")
+           << Canvas().handle("uimage")
+           << Display().handle("diff")
+           << Canvas(imageSize).handle("map")
          )
       << ( VBox().maxSize(14,99).minSize(14,1)
            << Fps(10).handle("fps").maxSize(99,2).minSize(1,2)
@@ -125,9 +99,9 @@ void run(){
   DrawHandle udraw = gui["uimage"];
 
   FiducialDetector *fd = detector.getFiducialDetector();
-  const ImgBase * image = grabber.grab();
+  Image image = grabber.grabImage();
 
-  const MarkerGrid &grid = detector.detect(image);
+  const MarkerGrid &grid = detector.detect(image.ptr());
 
   static  FiducialDetector abc ("bch","[0-23]",ParamList("size","40x40"));
 

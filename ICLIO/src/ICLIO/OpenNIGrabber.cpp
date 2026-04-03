@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/OpenNIGrabber.cpp                      **
-** Module : ICLIO                                                  **
-** Authors: Viktor Richter                                         **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
 
 #include <ICLUtils/Exception.h>
 #include <ICLCore/ImgBase.h>
@@ -85,7 +59,7 @@ void OpenNIGrabberThread::run(){
       DEBUG_LOG("Read failed: " << xnGetStatusString(rc));
     } else {
       for(std::set<OpenNIGrabber*>::iterator it = m_Grabber.begin(); it != m_Grabber.end(); ++it){
-        (*it) -> grabNextImage();
+        (*it) -> grabNextDisplay();
       }
     }
     // allow thread-stop.
@@ -101,7 +75,7 @@ void OpenNIGrabberThread::run(){
 OpenNIGrabber::OpenNIGrabber(std::string args)
   : m_Id(args), m_OmitDoubleFrames(true)
 {
-  std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> lock(m_Mutex);
   oniGrabberThread.stop();
 
   DEBUG_LOG("init " << m_Id);
@@ -132,13 +106,13 @@ OpenNIGrabber::~OpenNIGrabber(){
   oniGrabberThread.removeGrabber(this);
   oniGrabberThread.start();
 
-  std::lock_guard<std::recursive_mutex> lock(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> lock(m_Mutex);
   // free all
   ICL_DELETE(m_Generator);
   ICL_DELETE(m_Buffer);
 }
 
-const ImgBase* OpenNIGrabber::acquireImage(){
+const ImgBase* OpenNIGrabber::acquireDisplay(){
   Time t = Time::now();
   // get image from buffer
   ImgBase* img = nullptr;
@@ -158,8 +132,8 @@ void* OpenNIGrabber::getHandle(){
 }
 
 // grabs an image from ImageGenerator
-void OpenNIGrabber::grabNextImage(){
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+void OpenNIGrabber::grabNextDisplay(){
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   // check whether a new frame is available
   if(m_Generator->newFrameAvailable()){
     // make ImageGenerator grab an image.

@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/apps/rotate-image-3D/rotate-image-3D.cpp       **
-** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
@@ -60,7 +34,7 @@ struct ImgObj : public SceneObject{
 void mouse(const MouseEvent &e){
   if(e.isLeft() || e.isRight() || e.isMiddle() || e.isWheelEvent()){
     if(pa("-o")){
-      output.send(&scene.render(0));
+      output.send(scene.render(0));
     }
   }
 }
@@ -70,15 +44,15 @@ void run(){
   if(pa("-s")){
     Thread::msleep(1000);
   }else{
-    grabber.grab()->convert(&image);
+    grabber.grabImage().ptr()->convert(&image);
     if(pa("-o")){
       const Img8u &image = scene.render(0);
       if(pa("-d")){
         static Img8u buf(pa("-d").as<Size>(),formatRGB);
         image.scaledCopyROI(&buf,interpolateRA);
-        output.send(&buf);
+        output.send(buf);
       }else{
-        output.send(&image);
+        output.send(image);
       }
     }
     gui["draw"].render();
@@ -93,7 +67,7 @@ void init(){
   }
 
 
-  grabber.grab()->convert(&image);
+  grabber.grabImage().ptr()->convert(&image);
   obj = new ImgObj;
 
   scene.addObject(obj);
@@ -111,7 +85,7 @@ void init(){
     scene.getCamera(0).setResolution(pa("-r"));
   }
 
-  gui << Draw3D(scene.getCamera(0).getResolution()).handle("draw").minSize(20,15) << Show();
+  gui << Canvas3D(scene.getCamera(0).getResolution()).handle("draw").minSize(20,15) << Show();
 
   scene.getLight(0).setAmbientEnabled(true);
   scene.getLight(0).setAmbient(GeomColor(255,255,255,150));

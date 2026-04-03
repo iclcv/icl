@@ -1,238 +1,208 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCore/src/ICLCore/Converter.cpp                      **
-** Module : ICLCore                                                **
-** Authors: Christof Elbrechter, Robert Haschke                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
 #include <ICLCore/CCFunctions.h>
 #include <ICLCore/CoreFunctions.h>
 #include <ICLCore/Converter.h>
 
 
-namespace icl{
-  namespace core{
+namespace icl::core {
+  Converter::Converter(bool bROIOnly) :
+
+    m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
+    m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(orderScaleConvertCC),
+    m_scaleMode(interpolateNN){
+    FUNCTION_LOG("");
+  }
 
 
-    Converter::Converter(bool bROIOnly) :
+  Converter::Converter(Converter::oporder o, bool bROIOnly):
+    m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
+    m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(o),m_scaleMode(interpolateNN){
+    FUNCTION_LOG("");
 
-      m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
-      m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(orderScaleConvertCC),
-      m_scaleMode(interpolateNN){
-      FUNCTION_LOG("");
+  }
+
+  Converter::Converter(const ImgBase *srcImage, ImgBase *dstImage, bool applyToROIOnly):
+    m_poSizeBuffer(0), m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
+    m_poColorBuffer(0), m_bROIOnly(applyToROIOnly),m_eOpOrder(orderScaleConvertCC),
+    m_scaleMode(interpolateNN){
+    apply(srcImage,dstImage);
+  }
+
+
+  Converter::~Converter(){
+
+    FUNCTION_LOG("");
+    if(m_poSizeBuffer)delete m_poSizeBuffer;
+    if(m_poCCBuffer)delete m_poCCBuffer;
+    if(m_poDepthBuffer)delete m_poDepthBuffer;
+    if(m_poROIBuffer)delete m_poROIBuffer;
+    if(m_poColorBuffer)delete m_poColorBuffer;
+  }
+
+
+  void Converter::dynamicConvert(const ImgBase *src, ImgBase *dst){
+    //case depth##D: src->convert<icl##D>(dst->asImg<icl##D>());
+    switch(dst->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) case depth##D: src->convert<icl##D>(dst->asImg<icl##D>()); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+    }
+  }
+
+
+  void Converter::apply(const ImgBase *poSrc, ImgBase *poDst){
+
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( poSrc );
+    ICLASSERT_RETURN( poDst );
+
+    poDst->setFullROI();
+
+
+    int iScalePos = m_eOpOrder/100;
+    int iConvertPos = (m_eOpOrder-100*iScalePos)/10;
+    int iCCPos = m_eOpOrder-100*iScalePos-10*iConvertPos;
+
+    int iNeedDepthConversion = poSrc->getDepth() != poDst->getDepth();
+
+    int iNeedColorConversion =  poSrc->getFormat() != poDst->getFormat();
+                                //poSrc->getFormat() != formatMatrix &&
+                                //poDst->getFormat() != formatMatrix &&
+
+
+    int iNeedSizeConversion;
+    if(m_bROIOnly){
+      iNeedSizeConversion = poSrc->getROISize() != poDst->getSize();
+    }else{
+      iNeedSizeConversion = poSrc->getSize() != poDst->getSize();
     }
 
-
-    Converter::Converter(Converter::oporder o, bool bROIOnly):
-      m_poSizeBuffer(0),m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
-      m_poColorBuffer(0),m_bROIOnly(bROIOnly),m_eOpOrder(o),m_scaleMode(interpolateNN){
-      FUNCTION_LOG("");
-
-    }
-
-    Converter::Converter(const ImgBase *srcImage, ImgBase *dstImage, bool applyToROIOnly):
-      m_poSizeBuffer(0), m_poCCBuffer(0),m_poDepthBuffer(0),m_poROIBuffer(0),
-      m_poColorBuffer(0), m_bROIOnly(applyToROIOnly),m_eOpOrder(orderScaleConvertCC),
-      m_scaleMode(interpolateNN){
-      apply(srcImage,dstImage);
-    }
-
-
-    Converter::~Converter(){
-
-      FUNCTION_LOG("");
-      if(m_poSizeBuffer)delete m_poSizeBuffer;
-      if(m_poCCBuffer)delete m_poCCBuffer;
-      if(m_poDepthBuffer)delete m_poDepthBuffer;
-      if(m_poROIBuffer)delete m_poROIBuffer;
-      if(m_poColorBuffer)delete m_poColorBuffer;
-    }
-
-
-    void Converter::dynamicConvert(const ImgBase *src, ImgBase *dst){
-      //case depth##D: src->convert<icl##D>(dst->asImg<icl##D>());
-      switch(dst->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(D) case depth##D: src->convert<icl##D>(dst->asImg<icl##D>()); break;
-        ICL_INSTANTIATE_ALL_DEPTHS
-  #undef ICL_INSTANTIATE_DEPTH
-      }
-    }
-
-
-    void Converter::apply(const ImgBase *poSrc, ImgBase *poDst){
-
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN( poSrc );
-      ICLASSERT_RETURN( poDst );
-
-      poDst->setFullROI();
-
-
-      int iScalePos = m_eOpOrder/100;
-      int iConvertPos = (m_eOpOrder-100*iScalePos)/10;
-      int iCCPos = m_eOpOrder-100*iScalePos-10*iConvertPos;
-
-      int iNeedDepthConversion = poSrc->getDepth() != poDst->getDepth();
-
-      int iNeedColorConversion =  poSrc->getFormat() != poDst->getFormat();
-                                  //poSrc->getFormat() != formatMatrix &&
-                                  //poDst->getFormat() != formatMatrix &&
-
-
-      int iNeedSizeConversion;
-      if(m_bROIOnly){
-        iNeedSizeConversion = poSrc->getROISize() != poDst->getSize();
-      }else{
-        iNeedSizeConversion = poSrc->getSize() != poDst->getSize();
-      }
-
-      static const int NOTHING = 0;
-      static const int SIZE_ONLY = 1;
-      static const int COLOR_ONLY = 2;
-      static const int SIZE_AND_COLOR = 3;
-      static const int DEPTH_ONLY = 4;
-      static const int DEPTH_AND_SIZE = 5;
-      static const int DEPTH_AND_COLOR = 6;
-      static const int DEPTH_SIZE_AND_COLOR = 7;
-      switch(iNeedSizeConversion + (iNeedColorConversion << 1) + (iNeedDepthConversion << 2) ){
-        case NOTHING:
-          SECTION_LOG("deep copy only");
+    static const int NOTHING = 0;
+    static const int SIZE_ONLY = 1;
+    static const int COLOR_ONLY = 2;
+    static const int SIZE_AND_COLOR = 3;
+    static const int DEPTH_ONLY = 4;
+    static const int DEPTH_AND_SIZE = 5;
+    static const int DEPTH_AND_COLOR = 6;
+    static const int DEPTH_SIZE_AND_COLOR = 7;
+    switch(iNeedSizeConversion + (iNeedColorConversion << 1) + (iNeedDepthConversion << 2) ){
+      case NOTHING:
+        SECTION_LOG("deep copy only");
+        if(m_bROIOnly){
+          poSrc->deepCopyROI(&poDst);
+        }else{
+          poSrc->deepCopy(&poDst);
+        }
+        break;
+      case SIZE_ONLY:
+        SECTION_LOG("size conversion only");
+        if(m_bROIOnly){
+          poSrc->scaledCopyROI(&poDst,m_scaleMode);
+        }else{
+          poSrc->scaledCopy(&poDst,m_scaleMode);
+        }
+        break;
+      case COLOR_ONLY:
+        SECTION_LOG("color conversion only");
+      case DEPTH_AND_COLOR:
+        SECTION_LOG("depth and color conversion only");
+        if(m_bROIOnly){
+          poSrc->deepCopyROI(&m_poROIBuffer);
+          this->cc(m_poROIBuffer,poDst);
+        }else{
+          this->cc(poSrc,poDst);
+        }
+        break;
+      case SIZE_AND_COLOR:
+        SECTION_LOG("size and color conversion");
+      case DEPTH_SIZE_AND_COLOR:
+        SECTION_LOG("depth size and color conversion");
+        if(iScalePos < iCCPos){
+          ensureCompatible(&m_poSizeBuffer,poSrc->getDepth(), poDst->getSize(), poSrc->getChannels(), poSrc->getFormat());
           if(m_bROIOnly){
-            poSrc->deepCopyROI(&poDst);
+            poSrc->scaledCopyROI(&m_poSizeBuffer,m_scaleMode);
           }else{
-            poSrc->deepCopy(&poDst);
+            poSrc->scaledCopy(&m_poSizeBuffer,m_scaleMode);
           }
-          break;
-        case SIZE_ONLY:
-          SECTION_LOG("size conversion only");
-          if(m_bROIOnly){
-            poSrc->scaledCopyROI(&poDst,m_scaleMode);
-          }else{
-            poSrc->scaledCopy(&poDst,m_scaleMode);
-          }
-          break;
-        case COLOR_ONLY:
-          SECTION_LOG("color conversion only");
-        case DEPTH_AND_COLOR:
-          SECTION_LOG("depth and color conversion only");
+          this->cc(m_poSizeBuffer,poDst);
+        }else{
           if(m_bROIOnly){
             poSrc->deepCopyROI(&m_poROIBuffer);
-            this->cc(m_poROIBuffer,poDst);
+            ensureCompatible(&m_poColorBuffer,poDst->getDepth(),m_poROIBuffer->getSize(),poDst->getChannels(), poDst->getFormat());
+            cc(m_poROIBuffer,m_poColorBuffer);
+            m_poColorBuffer->scaledCopy(&poDst,m_scaleMode);
           }else{
-            this->cc(poSrc,poDst);
+            ensureCompatible(&m_poColorBuffer,poDst->getDepth(),poSrc->getSize(),poDst->getChannels(), poDst->getFormat());
+            cc(poSrc,m_poColorBuffer);
+            m_poColorBuffer->scaledCopy(&poDst,m_scaleMode);
           }
-          break;
-        case SIZE_AND_COLOR:
-          SECTION_LOG("size and color conversion");
-        case DEPTH_SIZE_AND_COLOR:
-          SECTION_LOG("depth size and color conversion");
-          if(iScalePos < iCCPos){
-            ensureCompatible(&m_poSizeBuffer,poSrc->getDepth(), poDst->getSize(), poSrc->getChannels(), poSrc->getFormat());
-            if(m_bROIOnly){
-              poSrc->scaledCopyROI(&m_poSizeBuffer,m_scaleMode);
-            }else{
-              poSrc->scaledCopy(&m_poSizeBuffer,m_scaleMode);
-            }
-            this->cc(m_poSizeBuffer,poDst);
+        }
+        break;
+      case DEPTH_ONLY:
+        SECTION_LOG("depth conversion");
+        dynamicConvert(poSrc,poDst);
+        break;
+      case DEPTH_AND_SIZE:
+        if(iConvertPos < iScalePos){
+          ensureCompatible(&m_poDepthBuffer,poDst->getDepth(), poSrc->getSize(), poSrc->getChannels(), poSrc->getFormat());
+          dynamicConvert(poSrc,m_poDepthBuffer);
+          if(m_bROIOnly){
+            m_poDepthBuffer->setROI(poSrc->getROI());
+            m_poDepthBuffer->scaledCopyROI(&poDst,m_scaleMode);
           }else{
-            if(m_bROIOnly){
-              poSrc->deepCopyROI(&m_poROIBuffer);
-              ensureCompatible(&m_poColorBuffer,poDst->getDepth(),m_poROIBuffer->getSize(),poDst->getChannels(), poDst->getFormat());
-              cc(m_poROIBuffer,m_poColorBuffer);
-              m_poColorBuffer->scaledCopy(&poDst,m_scaleMode);
-            }else{
-              ensureCompatible(&m_poColorBuffer,poDst->getDepth(),poSrc->getSize(),poDst->getChannels(), poDst->getFormat());
-              cc(poSrc,m_poColorBuffer);
-              m_poColorBuffer->scaledCopy(&poDst,m_scaleMode);
-            }
+            m_poDepthBuffer->scaledCopy(&poDst,m_scaleMode);
           }
-          break;
-        case DEPTH_ONLY:
-          SECTION_LOG("depth conversion");
-          dynamicConvert(poSrc,poDst);
-          break;
-        case DEPTH_AND_SIZE:
-          if(iConvertPos < iScalePos){
-            ensureCompatible(&m_poDepthBuffer,poDst->getDepth(), poSrc->getSize(), poSrc->getChannels(), poSrc->getFormat());
-            dynamicConvert(poSrc,m_poDepthBuffer);
-            if(m_bROIOnly){
-              m_poDepthBuffer->setROI(poSrc->getROI());
-              m_poDepthBuffer->scaledCopyROI(&poDst,m_scaleMode);
-            }else{
-              m_poDepthBuffer->scaledCopy(&poDst,m_scaleMode);
-            }
+        }else{
+          ensureCompatible(&m_poSizeBuffer,poSrc->getDepth(),poDst->getSize(),poSrc->getChannels(), poSrc->getFormat());
+          if(m_bROIOnly){
+            poSrc->scaledCopyROI(&m_poSizeBuffer,m_scaleMode);
           }else{
-            ensureCompatible(&m_poSizeBuffer,poSrc->getDepth(),poDst->getSize(),poSrc->getChannels(), poSrc->getFormat());
-            if(m_bROIOnly){
-              poSrc->scaledCopyROI(&m_poSizeBuffer,m_scaleMode);
-            }else{
-              poSrc->scaledCopy(&m_poSizeBuffer,m_scaleMode);
-            }
-            dynamicConvert(m_poSizeBuffer,poDst);
+            poSrc->scaledCopy(&m_poSizeBuffer,m_scaleMode);
           }
-          break;
-      }
-      poDst->setMetaData(poSrc->getMetaData());
+          dynamicConvert(m_poSizeBuffer,poDst);
+        }
+        break;
+    }
+    poDst->setMetaData(poSrc->getMetaData());
+  }
+
+
+  void Converter::cc(const ImgBase *srcIn, ImgBase *dst){
+
+    FUNCTION_LOG("");
+    ICLASSERT_RETURN( srcIn );
+    ICLASSERT_RETURN( dst );
+
+    const ImgBase *src = srcIn;
+    if(!srcIn->hasFullROI()){
+      src = srcIn->shallowCopy(srcIn->getImageRect());
     }
 
+    if(cc_available(src->getFormat(), dst->getFormat()) == ccEmulated){
+      SECTION_LOG("optimized emulated cross color conversion using Converter objects buffer");
+      ensureCompatible(&m_poCCBuffer,src->getDepth(), src->getSize(), formatRGB);
+      cc(src,m_poCCBuffer);
+      cc(m_poCCBuffer,dst);
+    }else{
+      SECTION_LOG("passing directly icl::cc");
 
-    void Converter::cc(const ImgBase *srcIn, ImgBase *dst){
-
-      FUNCTION_LOG("");
-      ICLASSERT_RETURN( srcIn );
-      ICLASSERT_RETURN( dst );
-
-      const ImgBase *src = srcIn;
-      if(!srcIn->hasFullROI()){
-        src = srcIn->shallowCopy(srcIn->getImageRect());
-      }
-
-      if(cc_available(src->getFormat(), dst->getFormat()) == ccEmulated){
-        SECTION_LOG("optimized emulated cross color conversion using Converter objects buffer");
-        ensureCompatible(&m_poCCBuffer,src->getDepth(), src->getSize(), formatRGB);
-        cc(src,m_poCCBuffer);
-        cc(m_poCCBuffer,dst);
-      }else{
-        SECTION_LOG("passing directly icl::cc");
-
-        icl::core::cc(src,dst);
-      }
-
-      if(srcIn != src){
-        ICL_DELETE(src);
-      }
-      dst->setMetaData(src->getMetaData());
+      icl::core::cc(src,dst);
     }
 
-
-
-    void Converter::setScaleMode(scalemode scaleMode){
-      m_scaleMode = scaleMode;
+    if(srcIn != src){
+      ICL_DELETE(src);
     }
+    dst->setMetaData(src->getMetaData());
+  }
 
 
-  } // namespace core
-}
+
+  void Converter::setScaleMode(scalemode scaleMode){
+    m_scaleMode = scaleMode;
+  }
+
+
+  } // namespace icl::core

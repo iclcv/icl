@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/apps/multi-viewer/multi-viewer.cpp               **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLIO/GenericImageOutput.h>
@@ -37,10 +11,10 @@ struct Input{
   std::string a,b;
   GenericGrabber grabber;
   ImageHandle handle;
-  const ImgBase *lastImage;
+  Image lastImage;
   std::string id;
   void operator()(){
-    lastImage = grabber.grab();
+    lastImage = grabber.grabImage();
     handle = lastImage;
   }
   void save(){
@@ -87,7 +61,7 @@ void save_all(){
           if(c == '/') c = '-';
         }
         std::string fn = pref+"-"+part+suff;
-        save(*in.lastImage, fn);
+        save(*in.lastImage.ptr(), fn);
         std::cout << "saved file " << fn << std::endl;
       }
       std::cout << std::endl;
@@ -129,7 +103,7 @@ void init(){
     if(pa("-f")) in.grabber.useDesired(pa("-f").as<format>());
     if(pa("-d")) in.grabber.useDesired(pa("-d").as<depth>());
 
-    rows[i/layout.width] << Image().label(in.id + ": "+in.a+" "+fix_at_stuff(in.b)).handle(in.id);
+    rows[i/layout.width] << Display().label(in.id + ": "+in.a+" "+fix_at_stuff(in.b)).handle(in.id);
 
     if(pa("-o")){
       ProgArg o = pa("-o");

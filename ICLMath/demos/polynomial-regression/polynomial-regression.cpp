@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMath/demos/polynomial-regression/polynomial-regress **
-**          ion.cpp                                                **
-** Module : ICLMath                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLMath/PolynomialRegression.h>
@@ -83,7 +56,7 @@ ImgQ approx(const ImgQ &image){
       }
     }
 
-    const Reg::Result &result = reg->apply(xs,ys,gui["use svd"]);
+    const Reg::Result &result = reg->apply(xs,ys);
 
     const Matrix &z = result(xs);
 
@@ -104,8 +77,8 @@ void init_2D_demo(){
   grabber.useDesired(depth32f);
   grabber.useDesired(Size::QVGA);
 
-  gui << Image().handle("input")
-      << Image().handle("result")
+  gui << Display().handle("input")
+      << Display().handle("result")
       << ( VBox().minSize(14,1)
            << Slider(2,100,16).handle("cellsize").label("cell size")
            << CheckBox("use svd").handle("use svd")
@@ -183,7 +156,7 @@ void init_3D_demo(){
                                                  0,1)));
 
 
-  gui << Draw3D().handle("draw").minSize(32,24) << Show();
+  gui << Canvas3D().handle("draw").minSize(32,24) << Show();
 
   gui["draw"].install(scene.getMouseHandler(0));
   gui["draw"].link(scene.getGLCallback(0));
@@ -202,7 +175,7 @@ void init(){
 }
 
 void run_2D(){
-  ImgQ image = *grabber.grab()->as32f();
+  ImgQ image = grabber.grabImage().as32f();
   int cellsize = gui["cellsize"];
   while( (image.getWidth() % cellsize) || (image.getHeight() % cellsize)) --cellsize;
 

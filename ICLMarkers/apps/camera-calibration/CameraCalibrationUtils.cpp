@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMarkers/apps/camera-calibration/CameraCalibration   **
-**          Utils.cpp                                              **
-** Module : ICLMarkers                                             **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "CameraCalibrationUtils.h"
 #include <ICLCore/CoreFunctions.h>
@@ -45,9 +18,7 @@
 #include <mutex>
 
 
-namespace icl{
-  namespace markers{
-
+namespace icl::markers {
     static inline Vec set_3_to_1(Vec a){
       a[2] += 1;
       a[3] = 1;
@@ -187,7 +158,7 @@ namespace icl{
 
     void CameraCalibrationUtils::BestOfNSaver::init(){
       num_end = nFramesSource();
-      std::lock_guard<std::recursive_mutex> l(getMutex());
+      std::scoped_lock<std::recursive_mutex> l(getMutex());
       if(inited) return;
       filename = CameraCalibrationUtils::get_save_filename("-o");
       if(filename != ""){
@@ -200,14 +171,14 @@ namespace icl{
     }
 
     void CameraCalibrationUtils::BestOfNSaver::stop(){
-      std::lock_guard<std::recursive_mutex> l(getMutex());
+      std::scoped_lock<std::recursive_mutex> l(getMutex());
       if(inited){
         n = num_end;
       }
     }
 
     std::pair<int,float> CameraCalibrationUtils::BestOfNSaver::next_hook(const Camera &cam, float error){
-      std::lock_guard<std::recursive_mutex> l(getMutex());
+      std::scoped_lock<std::recursive_mutex> l(getMutex());
       if(!inited) return std::pair<int,float>(0,0);
 
 
@@ -314,8 +285,7 @@ namespace icl{
         SHOW(e.what());
       }catch(int){}
 
-      int systemResult = system((std::string(ICL_SYSTEMCALL_RM) + tmpFilename).c_str());
-      (void)systemResult;
+      [[maybe_unused]] int systemResult = system((std::string(ICL_SYSTEMCALL_RM) + tmpFilename).c_str());
 
       enum Mode{
         ExtractGrids,
@@ -755,7 +725,7 @@ namespace icl{
           scene.lock();
           Camera cam = scene.getCamera(0);
           {
-            std::lock_guard<std::recursive_mutex> lock(saver->getMutex());
+            std::scoped_lock<std::recursive_mutex> lock(saver->getMutex());
             try{
               if(givenIntrinsicParams){
                 cam = Camera::calibrate_extrinsic(*W[idx], *I[idx], *givenIntrinsicParams,
@@ -967,4 +937,3 @@ namespace icl{
       }
     }
   }
-}

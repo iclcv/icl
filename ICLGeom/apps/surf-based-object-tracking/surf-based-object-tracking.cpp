@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/apps/[...]/surf-based-object-tracking/.cpp     **
-** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLCV/SurfFeatureDetector.h>
 #include <ICLQt/Common.h>
@@ -63,7 +37,7 @@ void init(){
 
   ts = Size32f(t.width/templ.getWidth(), t.height/templ.getHeight());
 
-  gui << Draw3D().handle("draw").minSize(32,24)
+  gui << Canvas3D().handle("draw").minSize(32,24)
       << (HBox()
           << FSlider(-7,-1,-3).handle("t").maxSize(99,3).label("threshold exponent")
           << Button("ransac ...").handle("ransac options").maxSize(6,3)
@@ -96,14 +70,14 @@ void init(){
 
 void run(){
   DrawHandle3D draw = gui["draw"];
-  const ImgBase *image = grabber.grab();
-  draw = image;
+  Image image = grabber.grabImage();
+  draw = image.ptr();
 
   float tExp = gui["t"];
   float t = ::pow(10,tExp);
 
   surf->setThreshold(t);
-  const std::vector<SurfMatch> &ms = surf->match(image);
+  const std::vector<SurfMatch> &ms = surf->match(image.ptr());
   if(ms.size() >= 4){
     std::vector<Point32f> curr(ms.size()),templ(ms.size());
     for(size_t i=0;i<ms.size();++i){

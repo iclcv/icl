@@ -1,6 +1,14 @@
 file(GLOB SOURCES src/ICLCore/*.cpp)
 file(GLOB HEADERS src/ICLCore/*.h)
 
+# Convention: *_<Backend>.cpp excluded when the backend library is not found.
+if(NOT IPP_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Ipp\\.cpp$")
+endif()
+if(NOT ACCELERATE_FOUND)
+  list(FILTER SOURCES EXCLUDE REGEX "_Accelerate\\.cpp$")
+endif()
+
 if(NOT OpenCV_FOUND)
   list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLCore/OpenCV.cpp)
   list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLCore/OpenCV.h)

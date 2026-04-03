@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/apps/kinect-recorder/kinect-recorder.cpp       **
-** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLIO/GenericImageOutput.h>
@@ -54,18 +28,18 @@ void init(){
     c_out.init("file",*pa("-s")+"/color-######.bicl");
     d_out.init("file",*pa("-s")+"/depth-######.bicl");
 
-    gui << Image().handle("depth").minSize(16,12).label("depth image")
-        << Image().handle("color").minSize(16,12).label("color image");
+    gui << Display().handle("depth").minSize(16,12).label("depth image")
+        << Display().handle("color").minSize(16,12).label("color image");
   }else{
     if(!pa("-d") && !pa("-c")) throw ICLException("no input given");
     if(pa("-d")){
       d_in.init(pa("-d"));
 
-      gui << Image().handle("depth").minSize(16,12).label("depth image");
+      gui << Display().handle("depth").minSize(16,12).label("depth image");
     }else if(pa("-do")) throw ICLException("depth output given, but no input!");
     if(pa("-c")){
       c_in.init(pa("-c"));
-      gui << Image().handle("color").minSize(16,12).label("color image");
+      gui << Display().handle("color").minSize(16,12).label("color image");
     }else if(pa("-co")) throw ICLException("color output given, but no input!");
 
     if(pa("-do")) d_out.init(pa("-do"));
@@ -115,9 +89,9 @@ void run(){
     throw std::logic_error("num drop '-drop' frames must be >= 0");
   }
 
-  const ImgBase *c=0,*d=0;
-  if(!c_in.isNull()) c = c_in.grab();
-  if(!d_in.isNull()) d = d_in.grab();
+  Image c, d;
+  if(!c_in.isNull()) c = c_in.grabImage();
+  if(!d_in.isNull()) d = d_in.grabImage();
 
   if(nDrop){
     --nDrop;

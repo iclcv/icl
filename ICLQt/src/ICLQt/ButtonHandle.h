@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/ButtonHandle.h                         **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
@@ -44,50 +18,47 @@ class QPushButton;
 /**\endcond */
 
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
+  /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
+  class ButtonHandle : public GUIHandle<QPushButton>{
+    public:
 
-    /// Special Utiltiy class for handling Button clicks in the ICL GUI API \ingroup HANDLES
-    class ButtonHandle : public GUIHandle<QPushButton>{
-      public:
+    friend class ButtonGUIWidget;
+    friend class ToggleButtonGUIWidget;
 
-      friend class ButtonGUIWidget;
-      friend class ToggleButtonGUIWidget;
+    /// creates a n empty button handle
+    ICLQt_API ButtonHandle();
 
-      /// creates a n empty button handle
-      ICLQt_API ButtonHandle();
+    /// create a new event with a given button id
+    ICLQt_API ButtonHandle(QPushButton *b, GUIWidget *w);
 
-      /// create a new event with a given button id
-      ICLQt_API ButtonHandle(QPushButton *b, GUIWidget *w);
+    /// check if this event/button was triggered
+    /** @param reset if set to true the internal boolen variable
+                     is set to false, so wasTriggered returns true
+                     only if the button was triggered again */
+    ICLQt_API bool wasTriggered(bool reset = true);
 
-      /// check if this event/button was triggered
-      /** @param reset if set to true the internal boolen variable
-                       is set to false, so wasTriggered returns true
-                       only if the button was triggered again */
-      ICLQt_API bool wasTriggered(bool reset = true);
-
-      /// trigger this event (sets the internal boolean variable to true)
-      void trigger(bool execCallbacks = true){
-        *m_triggered = true;
-        if(execCallbacks){
-          cb();
-        }
+    /// trigger this event (sets the internal boolean variable to true)
+    void trigger(bool execCallbacks = true){
+      *m_triggered = true;
+      if(execCallbacks){
+        cb();
       }
+    }
 
 	  ICLQt_API void setButtonText(std::string const &text) {
 		  (**this)->setText(text.c_str());
 	  }
 
-      /// sets the internal boolean variable to false
-      ICLQt_API void reset();
+    /// sets the internal boolean variable to false
+    ICLQt_API void reset();
 
-      /// returns this buttons id (uncommon)
-      ICLQt_API const std::string &getID() const;
+    /// returns this buttons id (uncommon)
+    ICLQt_API const std::string &getID() const;
 
-      private:
+    private:
 
-      std::shared_ptr<bool> m_triggered; //!< internal boolean variable
-      std::string m_sID; //!< corresponding id
-    };
-  } // namespace qt
-}
+    std::shared_ptr<bool> m_triggered; //!< internal boolean variable
+    std::string m_sID; //!< corresponding id
+  };
+  } // namespace icl::qt

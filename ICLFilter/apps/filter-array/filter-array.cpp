@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/apps/filter-array/filter-array.cpp           **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 
@@ -48,7 +22,7 @@ std::string get_filters(){
 GUI gui_col(int i){
   std::string si = str(i);
   return ( VBox()
-           << Image().handle("im"+si).minSize(8,6)
+           << Display().handle("im"+si).minSize(8,6)
            << ( HBox().maxSize(100,3)
                 << Combo(get_filters()).handle("cb"+si).maxSize(100,2).minSize(3,2).label("filter")
                 << String("").label("params").handle("ps"+si).maxSize(100,2).minSize(4,2)
@@ -74,7 +48,7 @@ void init(){
 #endif
 
   gui << ( VBox()
-           << Image().handle("input").minSize(8,6)
+           << Display().handle("input").minSize(8,6)
            << (HBox().label("desired params").maxSize(100,4)
                << Combo("1:1,QVGA,VGA,SVGA,XGA,WXGA,UXGA").handle("dsize").label("size")
                << Combo("!depth8u,depth16s,depth32s,depth32f,depth64f").handle("ddepth").label("size")
@@ -99,7 +73,7 @@ void run(){
   }
   g.useDesired(parse<format>(gui["dformat"]));
 
-  const ImgBase *image = g.grab();
+  Image image = g.grabImage();
   gui["input"] = image;
   std::vector<UnaryOp*> ops;
   for(int i=0;i<N;++i){
@@ -120,7 +94,9 @@ void run(){
     }
     if(op && image && gui["vis"+si].as<bool>()){
       try{
-        image = op->apply(image);
+        static ImgBase *buf = 0;
+        op->apply(image.ptr(), &buf);
+        image = Image(*buf);
       }catch(const ICLException &ex){
         gui["err"+si] = str(ex.what());
       }

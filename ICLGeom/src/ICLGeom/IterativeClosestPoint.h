@@ -1,58 +1,31 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2015 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/src/ICLGeom/IterativeClosestPoint.h            **
-** Module : ICLGeom                                                **
-** Authors: Matthias Esau                                          **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #pragma once
 #include <ICLGeom/Geom.h>
 #include <ICLMath/HomogeneousMath.h>
-namespace icl{
-  namespace geom{
-    struct Vec8{
-      math::Vec4 pos;
-      math::Vec4 col;
+namespace icl::geom {
+  struct Vec8{
+    math::Vec4 pos;
+    math::Vec4 col;
+  };
+  template<typename T>
+  class IterativeClosestPoint{
+  public:
+
+    struct Data;
+    Data *m_data;
+
+    struct DistanceID {
+      float distance;
+      int id;
     };
-    template<typename T>
-    class IterativeClosestPoint{
-    public:
 
-      struct Data;
-      Data *m_data;
-
-      struct DistanceID {
-        float distance;
-        int id;
-      };
-
-      IterativeClosestPoint(const std::string &clCode, int localSize2Dx, int localSize2Dy, int localSize1D, void (*subFunc)(const char * a, const char *b, char *c), math::Vec4 (*toVectorFunc)(const char* point));
-      void icp(const T* pointsA, const T* pointsB, int sizeA, int sizeB, float errorThreshold, float errorDeltaThreshold, int maxIterations, float* initialTransform, float* transformMatrix);
-      static IterativeClosestPoint<math::Vec4> icpVec4();
-      static IterativeClosestPoint<Vec8> icpVec8();
+    IterativeClosestPoint(const std::string &clCode, int localSize2Dx, int localSize2Dy, int localSize1D, void (*subFunc)(const char * a, const char *b, char *c), math::Vec4 (*toVectorFunc)(const char* point));
+    void icp(const T* pointsA, const T* pointsB, int sizeA, int sizeB, float errorThreshold, float errorDeltaThreshold, int maxIterations, float* initialTransform, float* transformMatrix);
+    static IterativeClosestPoint<math::Vec4> icpVec4();
+    static IterativeClosestPoint<Vec8> icpVec8();
 
 //      static void sub(const char * a, const char *b, char *c);
 //      static void add(const char * a, const char *b, char *c);
@@ -96,6 +69,5 @@ namespace icl{
 //      void buildRepDB(const char* points, const int* closestreps, int* counters, int* repDataBase, int repWidth, size_t typeSize, int sizePoints, int sizeReps, int localSizeX);
 
 //      void getClosestPointsInDB(const char* pointsA, const int* closestRep, const char* pointsB, const int* pointsDB, const int* counters, int* closestPoints, DistanceID* distanceAcc, float(*distanceFunc)(const char*, const char*), size_t typeSize, int sizeA, int widthDB, int localSizeX, int localSizeY);
-    };
-  } // namespace geom
-}
+  };
+  } // namespace icl::geom

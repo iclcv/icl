@@ -1,7 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**  Test runner — discovers and runs registered tests              **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLUtils/Test.h>
 #include <ICLUtils/ProgArg.h>

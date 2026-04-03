@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/src/ICLCV/CornerDetectorCSS.cpp                  **
-** Module : ICLCV                                                  **
-** Authors: Erik Weitnauer                                         **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Erik Weitnauer, Christof Elbrechter
 
 #include <ICLCV/CornerDetectorCSS.h>
 #include <ICLUtils/StringUtils.h>
@@ -40,8 +14,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl{
-  namespace cv{
+namespace icl::cv {
 #ifdef ICL_HAVE_OPENCL
     struct CornerDetectorCSS::CLCurvature{
       CLProgram deriveProgram;
@@ -139,18 +112,7 @@ namespace icl{
     }
 
     void CornerDetectorCSS::convolute(const float *data, int data_length, const float *mask , int mask_length, float *convoluted) {
-#ifdef ICL_HAVE_IPP
-      int radius = mask_length / 2;
-      float *val = new float[data_length + 2 * radius];
-      memcpy(val, data + data_length - radius, sizeof(float) * radius);
-      memcpy(val + radius, data, sizeof(float) * data_length);
-      memcpy(val + radius + data_length, data, sizeof(float) * radius);
-      float *con = new float[data_length + 2 * radius + mask_length - 1];
-      ippsConv_32f(val, data_length + 2 * radius, mask, mask_length, con);
-      memcpy(convoluted,con+radius * 2,data_length * sizeof(float));
-      delete[] val;
-      delete[] con;
-#else
+      // ippsConv_32f was removed in modern oneAPI IPP — use C++ fallback
       int radius = mask_length / 2;
       for(int i = 0; i < data_length; i++) {
         float val = 0;
@@ -160,7 +122,6 @@ namespace icl{
         }
         convoluted[i] = val;
       }
-#endif
     }
 
     //this functions expects a minimum length of 3
@@ -701,4 +662,3 @@ namespace icl{
 
     REGISTER_CONFIGURABLE_DEFAULT(CornerDetectorCSS);
   }
-}

@@ -570,7 +570,7 @@ void PointCloudNormalEstimator::applyMedianFilter() {
 	}
 }
 
-const Img32f &PointCloudNormalEstimator::getFilteredDepthImage() {
+const Img32f &PointCloudNormalEstimator::getFilteredDepthDisplay() {
 #ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		try {
@@ -712,10 +712,8 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 	float norm = 1;
 	DynMatrix<float> kernel = DynMatrix<float>(1, 1, 0.0);
 	int l = 0;
-	int kSize = 1;
-	int rowSize = 1;
-        (void)kSize;
-        (void)rowSize;
+	[[maybe_unused]] int kSize = 1;
+	[[maybe_unused]] int rowSize = 1;
 
 	if (m_data->normalAveragingRange <= 1) {
 		// nothing!
@@ -913,7 +911,7 @@ const Vec* PointCloudNormalEstimator::getWorldNormals() {
 	}
 }
 
-const core::Img8u &PointCloudNormalEstimator::getRGBNormalImage() {
+const core::Img8u &PointCloudNormalEstimator::getRGBNormalDisplay() {
 	if (m_data->useCL == true && m_data->clReady == true) {
 #ifdef ICL_HAVE_OPENCL
 		try {
@@ -1106,7 +1104,7 @@ void PointCloudNormalEstimator::applyAngleImageCalculation() {
 	}
 }
 
-const Img32f &PointCloudNormalEstimator::getAngleImage() {
+const Img32f &PointCloudNormalEstimator::getAngleDisplay() {
 #ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		try {
@@ -1164,7 +1162,7 @@ void PointCloudNormalEstimator::applyImageBinarization() {
 	}
 }
 
-const Img8u &PointCloudNormalEstimator::getBinarizedAngleImage() {
+const Img8u &PointCloudNormalEstimator::getBinarizedAngleDisplay() {
 #ifdef ICL_HAVE_OPENCL
 	if(m_data->useCL==true && m_data->clReady==true) {
 		try {
@@ -1236,7 +1234,7 @@ const Img8u &PointCloudNormalEstimator::calculate(const Img32f &depthImage,
 	applyNormalCalculation();
 	applyAngleImageCalculation();
 	applyImageBinarization();
-	return getBinarizedAngleImage();
+	return getBinarizedAngleDisplay();
 }
 } // namespace geom
 }

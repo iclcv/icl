@@ -1,17 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2015 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/QtCameraGrabber.cpp                    **
-** Module : ICLQt                                                  **
-** Authors: Matthias Esau                                          **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #include <ICLQt/QtCameraGrabber.h>
 #include <QtMultimedia/QMediaDevices>
@@ -23,8 +12,7 @@
 using namespace icl::utils;
 using namespace icl::io;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     QtCameraGrabber::QtCameraGrabber(const std::string &deviceIn)
       : cam(0), captureSession(0), surface(0)
     {
@@ -103,8 +91,8 @@ namespace icl{
       delete surface;
     }
 
-    const core::ImgBase *QtCameraGrabber::acquireImage() {
-      return surface->getImage();
+    const core::ImgBase *QtCameraGrabber::acquireDisplay() {
+      return surface->getDisplay();
     }
 
     Grabber* createQtCameraGrabber(const std::string &param){
@@ -127,4 +115,3 @@ namespace icl{
 
     REGISTER_GRABBER(qtcam,createQtCameraGrabber, getQtCameraDeviceList,"qtcam:device index or name:Qt based Camera source");
   }
-}

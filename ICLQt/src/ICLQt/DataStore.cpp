@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/DataStore.cpp                          **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/DataStore.h>
 
@@ -475,388 +449,385 @@ INST_OTHER_TYPES
 
 typedef std::map<const std::string, std::map< const std::string, DataStore::Assign*> > AssignMap;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
+  AssignMap *create_assign_map(){
+    AssignMap &m = *new AssignMap;
 
-    AssignMap *create_assign_map(){
-      AssignMap &m = *new AssignMap;
+#define TYPE(T) (DataStore::get_type_name<T>())
+#define ADD(X,Y) m[TYPE(X)][TYPE(Y)] = new AssignSpecial<X,Y>(str(#X),str(#Y));
 
-  #define TYPE(T) (DataStore::get_type_name<T>())
-  #define ADD(X,Y) m[TYPE(X)][TYPE(Y)] = new AssignSpecial<X,Y>(str(#X),str(#Y));
+    // X = X
+#define INST_TYPE(T) ADD(T,T)
+    INST_OTHER_TYPES
+#undef INST_TYPE
 
-      // X = X
-  #define INST_TYPE(T) ADD(T,T)
-      INST_OTHER_TYPES
-  #undef INST_TYPE
+    // X = Y for numerical types
+#define INST_TYPE(T) ADD(bool,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-      // X = Y for numerical types
-  #define INST_TYPE(T) ADD(bool,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(char,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(char,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(unsigned char,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(unsigned char,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(short,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(short,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(unsigned short,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(unsigned short,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(int,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(int,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(unsigned int,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(unsigned int,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(long,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(long,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(unsigned long,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(unsigned long,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(float,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(float,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+#define INST_TYPE(T) ADD(double,T)
+    INST_NUM_TYPES
+#undef INST_TYPE
 
-  #define INST_TYPE(T) ADD(double,T)
-      INST_NUM_TYPES
-  #undef INST_TYPE
+    /// Other supported types ...
+#define ADD_T_TO_T(D) ADD(D,D)
 
-      /// Other supported types ...
-  #define ADD_T_TO_T(D) ADD(D,D)
+#define FROM_NUM_ADD(D)  \
+    ADD(bool,D)          \
+    ADD(char,D)          \
+    ADD(unsigned char,D) \
+    ADD(short,D)         \
+    ADD(unsigned short,D)\
+    ADD(int,D)           \
+    ADD(unsigned int,D)  \
+    ADD(long,D)          \
+    ADD(unsigned long,D) \
+    ADD(float,D)         \
+    ADD(double,D)
 
-  #define FROM_NUM_ADD(D)  \
-      ADD(bool,D)          \
-      ADD(char,D)          \
-      ADD(unsigned char,D) \
-      ADD(short,D)         \
-      ADD(unsigned short,D)\
-      ADD(int,D)           \
-      ADD(unsigned int,D)  \
-      ADD(long,D)          \
-      ADD(unsigned long,D) \
-      ADD(float,D)         \
-      ADD(double,D)
+#define TO_NUM_ADD(S)    \
+    ADD(S,bool)          \
+    ADD(S,char)          \
+    ADD(S,unsigned char) \
+    ADD(S,short)         \
+    ADD(S,unsigned short)\
+    ADD(S,int)           \
+    ADD(S,unsigned int)  \
+    ADD(S,long)          \
+    ADD(S,unsigned long) \
+    ADD(S,float)         \
+    ADD(S,double)
 
-  #define TO_NUM_ADD(S)    \
-      ADD(S,bool)          \
-      ADD(S,char)          \
-      ADD(S,unsigned char) \
-      ADD(S,short)         \
-      ADD(S,unsigned short)\
-      ADD(S,int)           \
-      ADD(S,unsigned int)  \
-      ADD(S,long)          \
-      ADD(S,unsigned long) \
-      ADD(S,float)         \
-      ADD(S,double)
+#define FROM_TO_NUM_ADD(X) \
+    FROM_NUM_ADD(X)        \
+    TO_NUM_ADD(X)
 
-  #define FROM_TO_NUM_ADD(X) \
-      FROM_NUM_ADD(X)        \
-      TO_NUM_ADD(X)
-
-  #define FROM_TO_STR_ADD(X)  \
-      ADD(X,std::string)      \
-      ADD(std::string,X)      \
-      ADD(X,Any)              \
-      ADD(Any,X)
+#define FROM_TO_STR_ADD(X)  \
+    ADD(X,std::string)      \
+    ADD(std::string,X)      \
+    ADD(X,Any)              \
+    ADD(Any,X)
 
 
-  #define FROM_IMG_ADD(X) \
-      ADD(Img8u,X)        \
-      ADD(Img16s,X)       \
-      ADD(Img32s,X)       \
-      ADD(Img32f,X)       \
-      ADD(Img64f,X)       \
-      ADD(ImgBase,X)
+#define FROM_IMG_ADD(X) \
+    ADD(Img8u,X)        \
+    ADD(Img16s,X)       \
+    ADD(Img32s,X)       \
+    ADD(Img32f,X)       \
+    ADD(Img64f,X)       \
+    ADD(ImgBase,X)
 
-  #define FROM_IMG_PTR_ADD(X)    \
-      ADD(Img8u*,X)              \
-      ADD(Img16s*,X)             \
-      ADD(Img32s*,X)             \
-      ADD(Img32f*,X)             \
-      ADD(Img64f*,X)             \
-      ADD(ImgBase*,X)            \
-      ADD(const Img8u*,X)        \
-      ADD(const Img16s*,X)       \
-      ADD(const Img32s*,X)       \
-      ADD(const Img32f*,X)       \
-      ADD(const Img64f*,X)       \
-      ADD(const ImgBase*,X)
-
-
-      // ComboHandle
-      FROM_TO_NUM_ADD(ComboHandle);
-      FROM_TO_STR_ADD(ComboHandle);
-      ADD(DataStore::Data::Event,ComboHandle);
-      ADD_T_TO_T(ComboHandle);
-
-      // CheckBox
-      FROM_TO_STR_ADD(CheckBoxHandle);
-      FROM_TO_NUM_ADD(CheckBoxHandle);
-      ADD(DataStore::Data::Event,CheckBoxHandle);
-      ADD_T_TO_T(CheckBoxHandle);
+#define FROM_IMG_PTR_ADD(X)    \
+    ADD(Img8u*,X)              \
+    ADD(Img16s*,X)             \
+    ADD(Img32s*,X)             \
+    ADD(Img32f*,X)             \
+    ADD(Img64f*,X)             \
+    ADD(ImgBase*,X)            \
+    ADD(const Img8u*,X)        \
+    ADD(const Img16s*,X)       \
+    ADD(const Img32s*,X)       \
+    ADD(const Img32f*,X)       \
+    ADD(const Img64f*,X)       \
+    ADD(const ImgBase*,X)
 
 
-      // FloatHandle
-      ADD(DataStore::Data::Event,FloatHandle);
-      FROM_TO_NUM_ADD(FloatHandle);
-      FROM_TO_STR_ADD(FloatHandle);
-      ADD_T_TO_T(FloatHandle);
+    // ComboHandle
+    FROM_TO_NUM_ADD(ComboHandle);
+    FROM_TO_STR_ADD(ComboHandle);
+    ADD(DataStore::Data::Event,ComboHandle);
+    ADD_T_TO_T(ComboHandle);
 
-      // ImageHandle
-      FROM_IMG_ADD(ImageHandle);
-      FROM_IMG_PTR_ADD(ImageHandle);
-      ADD(DataStore::Data::Event,ImageHandle);
-      ADD_T_TO_T(ImageHandle);
-      ADD(ImageHandle,ICLWidget*);
-
-      // PlotHandle
-      ADD(DataStore::Data::Event,PlotHandle);
-      ADD_T_TO_T(PlotHandle);
-      ADD(PlotHandle,PlotWidget*);
-
-      // DrawHandle
-      FROM_IMG_ADD(DrawHandle);
-      FROM_IMG_PTR_ADD(DrawHandle);
-      ADD(DataStore::Data::Event,DrawHandle);
-      ADD_T_TO_T(DrawHandle);
-      ADD(DrawHandle,ICLDrawWidget*);
-      ADD(DrawHandle,ICLWidget*);
+    // CheckBox
+    FROM_TO_STR_ADD(CheckBoxHandle);
+    FROM_TO_NUM_ADD(CheckBoxHandle);
+    ADD(DataStore::Data::Event,CheckBoxHandle);
+    ADD_T_TO_T(CheckBoxHandle);
 
 
-  #ifdef ICL_HAVE_OPENGL
-      // DrawHandle3D
-      FROM_IMG_ADD(DrawHandle3D);
-      FROM_IMG_PTR_ADD(DrawHandle3D);
-      ADD(DataStore::Data::Event,DrawHandle3D);
-      ADD_T_TO_T(DrawHandle3D);
-      ADD(DrawHandle3D,ICLDrawWidget3D*);
-      ADD(DrawHandle3D,ICLDrawWidget*);
-      ADD(DrawHandle3D,ICLWidget*);
-  #endif
+    // FloatHandle
+    ADD(DataStore::Data::Event,FloatHandle);
+    FROM_TO_NUM_ADD(FloatHandle);
+    FROM_TO_STR_ADD(FloatHandle);
+    ADD_T_TO_T(FloatHandle);
 
-      // FPSHandle
-      ADD(DataStore::Data::Event,FPSHandle);
-      ADD_T_TO_T(FPSHandle);
+    // ImageHandle
+    FROM_IMG_ADD(ImageHandle);
+    FROM_IMG_PTR_ADD(ImageHandle);
+    ADD(DataStore::Data::Event,ImageHandle);
+    ADD_T_TO_T(ImageHandle);
+    ADD(ImageHandle,ICLWidget*);
 
+    // PlotHandle
+    ADD(DataStore::Data::Event,PlotHandle);
+    ADD_T_TO_T(PlotHandle);
+    ADD(PlotHandle,PlotWidget*);
 
-      // SliderHandle
-      FROM_TO_NUM_ADD(SliderHandle);
-      FROM_TO_STR_ADD(SliderHandle);
-      ADD(Range8u,SliderHandle);
-      ADD(Range32s,SliderHandle);
-      ADD(Range32f,SliderHandle);
-      ADD(DataStore::Data::Event,SliderHandle);
-      ADD_T_TO_T(SliderHandle);
-
-
-      // IntHandle
-      ADD(DataStore::Data::Event,IntHandle);
-      FROM_TO_NUM_ADD(IntHandle);
-      FROM_TO_STR_ADD(IntHandle);
-      ADD_T_TO_T(IntHandle);
+    // DrawHandle
+    FROM_IMG_ADD(DrawHandle);
+    FROM_IMG_PTR_ADD(DrawHandle);
+    ADD(DataStore::Data::Event,DrawHandle);
+    ADD_T_TO_T(DrawHandle);
+    ADD(DrawHandle,ICLDrawWidget*);
+    ADD(DrawHandle,ICLWidget*);
 
 
-      // SpinnerHandle
-      FROM_TO_NUM_ADD(SpinnerHandle);
-      FROM_TO_STR_ADD(SpinnerHandle);
-      ADD(Range8u,SpinnerHandle);
-      ADD(Range32s,SpinnerHandle);
-      ADD(Range32f,SpinnerHandle);
-      ADD(DataStore::Data::Event,SpinnerHandle);
-      ADD_T_TO_T(SpinnerHandle);
+#ifdef ICL_HAVE_OPENGL
+    // DrawHandle3D
+    FROM_IMG_ADD(DrawHandle3D);
+    FROM_IMG_PTR_ADD(DrawHandle3D);
+    ADD(DataStore::Data::Event,DrawHandle3D);
+    ADD_T_TO_T(DrawHandle3D);
+    ADD(DrawHandle3D,ICLDrawWidget3D*);
+    ADD(DrawHandle3D,ICLDrawWidget*);
+    ADD(DrawHandle3D,ICLWidget*);
+#endif
+
+    // FPSHandle
+    ADD(DataStore::Data::Event,FPSHandle);
+    ADD_T_TO_T(FPSHandle);
 
 
-      // ButtonGroup
-      TO_NUM_ADD(ButtonGroupHandle);
-      ADD(ButtonGroupHandle,std::string);
-      ADD(DataStore::Data::Event,ButtonGroupHandle);
-      ADD_T_TO_T(ButtonGroupHandle);
-
-      // FSliderHandle
-      FROM_TO_NUM_ADD(FSliderHandle);
-      FROM_TO_STR_ADD(FSliderHandle);
-      ADD(Range8u,FSliderHandle);
-      ADD(Range32s,FSliderHandle);
-      ADD(Range32f,FSliderHandle);
-      ADD(DataStore::Data::Event,FSliderHandle);
-      ADD_T_TO_T(FSliderHandle);
-
-      // LabelHandle
-      FROM_NUM_ADD(LabelHandle);
-      //    ADD(std::string,LabelHandle);
-      FROM_TO_STR_ADD(LabelHandle);
-      FROM_IMG_ADD(LabelHandle);
-      FROM_IMG_PTR_ADD(LabelHandle);
-      ADD_T_TO_T(LabelHandle);
+    // SliderHandle
+    FROM_TO_NUM_ADD(SliderHandle);
+    FROM_TO_STR_ADD(SliderHandle);
+    ADD(Range8u,SliderHandle);
+    ADD(Range32s,SliderHandle);
+    ADD(Range32f,SliderHandle);
+    ADD(DataStore::Data::Event,SliderHandle);
+    ADD_T_TO_T(SliderHandle);
 
 
-      // ButtonHandle
-      TO_NUM_ADD(ButtonHandle);
-      ADD(DataStore::Data::Event,ButtonHandle);
-      ADD_T_TO_T(ButtonHandle);
+    // IntHandle
+    ADD(DataStore::Data::Event,IntHandle);
+    FROM_TO_NUM_ADD(IntHandle);
+    FROM_TO_STR_ADD(IntHandle);
+    ADD_T_TO_T(IntHandle);
 
 
-      // StringHandle
-      FROM_TO_NUM_ADD(StringHandle);
-      FROM_TO_STR_ADD(StringHandle);
-      ADD_T_TO_T(StringHandle);
-      ADD(DataStore::Data::Event,StringHandle);
-      ADD(Point32f,StringHandle);
+    // SpinnerHandle
+    FROM_TO_NUM_ADD(SpinnerHandle);
+    FROM_TO_STR_ADD(SpinnerHandle);
+    ADD(Range8u,SpinnerHandle);
+    ADD(Range32s,SpinnerHandle);
+    ADD(Range32f,SpinnerHandle);
+    ADD(DataStore::Data::Event,SpinnerHandle);
+    ADD_T_TO_T(SpinnerHandle);
 
-      // BoxHandle
-      ADD_T_TO_T(BoxHandle);
 
-      // ColorHandle
-      ADD(ColorHandle,Color);
-      ADD(ColorHandle,Color4D);
+    // ButtonGroup
+    TO_NUM_ADD(ButtonGroupHandle);
+    ADD(ButtonGroupHandle,std::string);
+    ADD(DataStore::Data::Event,ButtonGroupHandle);
+    ADD_T_TO_T(ButtonGroupHandle);
 
-      ADD(Color,ColorHandle);
-      ADD(Color4D,ColorHandle);
+    // FSliderHandle
+    FROM_TO_NUM_ADD(FSliderHandle);
+    FROM_TO_STR_ADD(FSliderHandle);
+    ADD(Range8u,FSliderHandle);
+    ADD(Range32s,FSliderHandle);
+    ADD(Range32f,FSliderHandle);
+    ADD(DataStore::Data::Event,FSliderHandle);
+    ADD_T_TO_T(FSliderHandle);
 
-      ADD(ColorHandle,std::string);
-      ADD(std::string,ColorHandle);
+    // LabelHandle
+    FROM_NUM_ADD(LabelHandle);
+    //    ADD(std::string,LabelHandle);
+    FROM_TO_STR_ADD(LabelHandle);
+    FROM_IMG_ADD(LabelHandle);
+    FROM_IMG_PTR_ADD(LabelHandle);
+    ADD_T_TO_T(LabelHandle);
 
-      ADD(Color,Color4D);
-      ADD(Color4D,Color);
-      ADD_T_TO_T(ColorHandle);
-      ADD(DataStore::Data::Event,ColorHandle);
 
-      ADD_T_TO_T(TabHandle);
-      TO_NUM_ADD(TabHandle);
+    // ButtonHandle
+    TO_NUM_ADD(ButtonHandle);
+    ADD(DataStore::Data::Event,ButtonHandle);
+    ADD_T_TO_T(ButtonHandle);
 
-      return &m;
-    }
 
-    AssignMap *create_singelton_assign_map(){
-      static AssignMap *am = create_assign_map();
-      return am;
-    }
+    // StringHandle
+    FROM_TO_NUM_ADD(StringHandle);
+    FROM_TO_STR_ADD(StringHandle);
+    ADD_T_TO_T(StringHandle);
+    ADD(DataStore::Data::Event,StringHandle);
+    ADD(Point32f,StringHandle);
 
-    void DataStore::register_assignment_rule(Assign *assign){
-      AssignMap &m = *create_singelton_assign_map();
-      m[assign->srcRTTI][assign->dstRTTI] = assign;
-    }
+    // BoxHandle
+    ADD_T_TO_T(BoxHandle);
 
-    void DataStore::Data::assign(void *src, const std::string &srcType,
-                                 void *dst, const std::string &dstType){
-      AssignMap *am = create_singelton_assign_map();
-      AssignMap::iterator it1 = am->find(srcType);
-      if(it1 == am->end()){
-        throw DataStore::UnassignableTypesException(srcType,dstType);
-      }
-      std::map< const std::string, Assign*>::iterator it2 = it1->second.find(dstType);
-      if(it2 == it1->second.end()){
-        throw DataStore::UnassignableTypesException(srcType,dstType);
-      }
+    // ColorHandle
+    ADD(ColorHandle,Color);
+    ADD(ColorHandle,Color4D);
+
+    ADD(Color,ColorHandle);
+    ADD(Color4D,ColorHandle);
+
+    ADD(ColorHandle,std::string);
+    ADD(std::string,ColorHandle);
+
+    ADD(Color,Color4D);
+    ADD(Color4D,Color);
+    ADD_T_TO_T(ColorHandle);
+    ADD(DataStore::Data::Event,ColorHandle);
+
+    ADD_T_TO_T(TabHandle);
+    TO_NUM_ADD(TabHandle);
+
+    return &m;
+  }
+
+  AssignMap *create_singelton_assign_map(){
+    static AssignMap *am = create_assign_map();
+    return am;
+  }
+
+  void DataStore::register_assignment_rule(Assign *assign){
+    AssignMap &m = *create_singelton_assign_map();
+    m[assign->srcRTTI][assign->dstRTTI] = assign;
+  }
+
+  void DataStore::Data::assign(void *src, const std::string &srcType,
+                               void *dst, const std::string &dstType){
+    AssignMap *am = create_singelton_assign_map();
+    if(auto it1 = am->find(srcType); it1 == am->end()){
+      throw DataStore::UnassignableTypesException(srcType,dstType);
+    } else if(auto it2 = it1->second.find(dstType); it2 == it1->second.end()){
+      throw DataStore::UnassignableTypesException(srcType,dstType);
+    } else {
       bool success = (*it2->second)(src, dst);
       if(!success){
         throw DataStore::UnassignableTypesException(srcType,dstType);
       }
     }
+  }
 
 
-    DataStore::Data DataStore::operator[](const std::string &key){
-      DataMap::iterator it = m_oDataMapPtr->find(key);
-      if(it == m_oDataMapPtr->end()) throw KeyNotFoundException(key);
+  DataStore::Data DataStore::operator[](const std::string &key){
+    if(auto it = m_oDataMapPtr->find(key); it == m_oDataMapPtr->end()){
+      throw KeyNotFoundException(key);
+    } else {
       return Data(&it->second);
     }
+  }
 
 
-    void DataStore::Data::install(std::function<void(const MouseEvent&)> f){
-      /// crazy local class here!
-      struct FunctionMouseHandler : public MouseHandler{
-        std::function<void(const MouseEvent&)> f;
-        FunctionMouseHandler(std::function<void(const MouseEvent&)> f):f(f){}
-        void process(const MouseEvent &e){ f(e); }
-      };
+  void DataStore::Data::install(std::function<void(const MouseEvent&)> f){
+    /// crazy local class here!
+    struct FunctionMouseHandler : public MouseHandler{
+      std::function<void(const MouseEvent&)> f;
+      FunctionMouseHandler(std::function<void(const MouseEvent&)> f):f(f){}
+      void process(const MouseEvent &e){ f(e); }
+    };
 
-      install(new FunctionMouseHandler(f));
+    install(new FunctionMouseHandler(f));
+  }
+
+  typedef AssignMap::const_iterator It;
+  typedef std::map<const std::string, DataStore::Assign*>::const_iterator Jt;
+
+  AssignMap translate_assign_map(const AssignMap *m){
+    AssignMap d;
+    for(It it = m->begin(); it != m->end(); ++it){
+      for(Jt jt = it->second.begin(); jt != it->second.end();++jt){
+        DataStore::Assign *a = jt->second;
+        if(a) d[a->srcType][a->dstType] = a;
+      }
     }
+    return d;
+  }
 
+
+  void DataStore::list_possible_assignments(const std::string &srcType, const std::string &dstType){
     typedef AssignMap::const_iterator It;
-    typedef std::map<const std::string, DataStore::Assign*>::const_iterator Jt;
+    typedef std::map<const std::string, Assign*>::const_iterator Jt;
+    AssignMap am = translate_assign_map(create_singelton_assign_map());
 
-    AssignMap translate_assign_map(const AssignMap *m){
-      AssignMap d;
-      for(It it = m->begin(); it != m->end(); ++it){
-        for(Jt jt = it->second.begin(); jt != it->second.end();++jt){
-          DataStore::Assign *a = jt->second;
-          if(a) d[a->srcType][a->dstType] = a;
+    if(srcType.length()){
+      It it = am.find(srcType);
+      if(it == am.end()){
+        std::cout << "no assignment rules for source type '" << srcType << "' found" << std::endl;
+      }
+      if(dstType.length()){
+        Jt jt = it->second.find(dstType);
+        if(jt == it->second.end()){
+          std::cout << "no assignment rule for " << dstType << " <- " << srcType << " found" << std::endl;
+        }else{
+          const Assign *as = jt->second;
+          std::cout << as->dstType << " <- " << as->srcType <<
+          "  (rtti: " << as->dstRTTI << " <- " << as->srcRTTI << std::endl;
+        }
+      }else{
+        std::cout << "the following assignemt rules for source type " << srcType << " are available:" << std::endl;
+        for(Jt jt=it->second.begin(); jt != it->second.end(); ++jt){
+          const Assign *as = jt->second;
+          std::cout << as->dstType << " <- " << as->srcType <<
+          "  (rtti: " << as->dstRTTI << " <- " << as->srcRTTI << std::endl;
         }
       }
-      return d;
-    }
-
-
-    void DataStore::list_possible_assignments(const std::string &srcType, const std::string &dstType){
-      typedef AssignMap::const_iterator It;
-      typedef std::map<const std::string, Assign*>::const_iterator Jt;
-      AssignMap am = translate_assign_map(create_singelton_assign_map());
-
-      if(srcType.length()){
-        It it = am.find(srcType);
-        if(it == am.end()){
-          std::cout << "no assignment rules for source type '" << srcType << "' found" << std::endl;
-        }
-        if(dstType.length()){
+    }else{
+      if(dstType.length()){
+        std::cout << "the following assignemt rules for destination type " << dstType << " are available:" << std::endl;
+        for(It it = am.begin(); it != am.end(); ++it){
           Jt jt = it->second.find(dstType);
-          if(jt == it->second.end()){
-            std::cout << "no assignment rule for " << dstType << " <- " << srcType << " found" << std::endl;
-          }else{
-            const Assign *as = jt->second;
-            std::cout << as->dstType << " <- " << as->srcType <<
-            "  (rtti: " << as->dstRTTI << " <- " << as->srcRTTI << std::endl;
-          }
-        }else{
-          std::cout << "the following assignemt rules for source type " << srcType << " are available:" << std::endl;
-          for(Jt jt=it->second.begin(); jt != it->second.end(); ++jt){
-            const Assign *as = jt->second;
-            std::cout << as->dstType << " <- " << as->srcType <<
-            "  (rtti: " << as->dstRTTI << " <- " << as->srcRTTI << std::endl;
+          if(jt != it->second.end()){
+            Assign *a = jt->second;
+            std::cout << "   " << a->dstType << " <- " << a->srcType <<
+            "  (rtti: " << a->dstRTTI << " <- " << a->srcRTTI << std::endl;
           }
         }
       }else{
-        if(dstType.length()){
-          std::cout << "the following assignemt rules for destination type " << dstType << " are available:" << std::endl;
-          for(It it = am.begin(); it != am.end(); ++it){
-            Jt jt = it->second.find(dstType);
-            if(jt != it->second.end()){
-              Assign *a = jt->second;
-              std::cout << "   " << a->dstType << " <- " << a->srcType <<
-              "  (rtti: " << a->dstRTTI << " <- " << a->srcRTTI << std::endl;
-            }
-          }
-        }else{
-          int num = 0;
-          for(It it = am.begin(); it != am.end(); ++it){
-            num += it->second.size();
-          }
-          std::cout << "listing all " << num << " assignment rules " << std::endl;
-          for(It it = am.begin(); it != am.end(); ++it){
-            std::cout << "source type: " << it->first << std::endl;
-            for(Jt jt = it->second.begin(); jt != it->second.end();++jt){
-              Assign *a = jt->second;
-              std::cout << "   " << a->dstType << " <- " << a->srcType <<
-              "  (rtti: " << a->dstRTTI << " <- " << a->srcRTTI << std::endl;
-            }
+        int num = 0;
+        for(It it = am.begin(); it != am.end(); ++it){
+          num += it->second.size();
+        }
+        std::cout << "listing all " << num << " assignment rules " << std::endl;
+        for(It it = am.begin(); it != am.end(); ++it){
+          std::cout << "source type: " << it->first << std::endl;
+          for(Jt jt = it->second.begin(); jt != it->second.end();++jt){
+            Assign *a = jt->second;
+            std::cout << "   " << a->dstType << " <- " << a->srcType <<
+            "  (rtti: " << a->dstRTTI << " <- " << a->srcRTTI << std::endl;
           }
         }
       }
     }
+  }
 
-  } // namespace qt
-}
+  } // namespace icl::qt

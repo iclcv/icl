@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/IconFactory.cpp                        **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/IconFactory.h>
 #include <ICLCore/Img.h>
@@ -38,9 +12,7 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::qt;
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     static const char *ICL_WINDOW_ICON[] = {
 
       "32 32 596 2","er c #4b6f7b","#z c #4f7f99","#Z c #4f8fb4","#Y c #4fa2ca",".o c #504a49","a0 c #5199b6",
@@ -1208,7 +1180,7 @@ namespace icl{
 
   static QIcon image_to_qicon(const Img8u &image){
     QImageConverter c(&image);
-    QPixmap pm = QPixmap::fromImage(*c.getQImage());
+    QPixmap pm = QPixmap::fromImage(*c.getQDisplay());
     return QIcon(pm);
   }
 
@@ -1222,8 +1194,8 @@ namespace icl{
   }
 
   const Img8u &IconFactory::create_image(const std::string &id){
-    static std::map<std::string,Img8u> data;
-    std::map<std::string,Img8u>::iterator it = data.find(id);
+    static std::map<std::string,Img8u, std::less<>> data;
+    std::map<std::string,Img8u, std::less<>>::iterator it = data.find(id);
     if(it == data.end()){
 #define ICON(S,D) if(id == #S) return data[id] = load_image_data(D);
 #define ICON_NEW(S,D) if(id == #S) return data[id] = load_image_data_new(D);
@@ -1256,8 +1228,8 @@ namespace icl{
     return it->second;
   }
   const QIcon &IconFactory::create_icon(const std::string &id){
-    static std::map<std::string,QIcon> data;
-    std::map<std::string,QIcon>::iterator it = data.find(id);
+    static std::map<std::string,QIcon, std::less<>> data;
+    std::map<std::string,QIcon, std::less<>>::iterator it = data.find(id);
     if(it == data.end()){
       const Img8u &image = create_image(id);
       if(image.getSize() == Size::null){
@@ -1269,6 +1241,3 @@ namespace icl{
       return it->second;
     }
   }
-
-
-}

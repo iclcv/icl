@@ -2,9 +2,7 @@
 #include <ICLIO/Kinect11BitCompressor.h>
 #include <bitset>
 
-namespace icl {
-	namespace io {
-
+namespace icl::io {
 		const int Kinect11BitCompressor::Z0 = 400;
 		const int Kinect11BitCompressor::Zmin = 750;
 		const int Kinect11BitCompressor::Zmax = 10000;
@@ -84,5 +82,4 @@ namespace icl {
 			}
 		}
 
-	}// namespace io
-}//namespace icl
+	} // namespace icl::io

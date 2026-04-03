@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMarkers/apps/camera-calibration/camera-calibration. **
-**          cpp                                                    **
-** Module : ICLMarkers                                             **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "CameraCalibrationUtils.h"
 
@@ -179,7 +152,7 @@ void init(){
   grabber.init(pa("-i"));
   if(pa("-s")) grabber.useDesired(pa("-s").as<Size>());
 
-  gui << Draw3D().handle("draw").minSize(32,24);
+  gui << Canvas3D().handle("draw").minSize(32,24);
 
   markerDetectionOptionGUI = Tab(cat(calibFileData.configurables,","));
 
@@ -300,7 +273,7 @@ void init(){
   gui["showRelTransGUI"].registerCallback([]{ relTransGUI.switchVisibility(); });
 
   scene.addCamera(Camera());
-  scene.getCamera(0).setResolution(grabber.grab()->getSize());
+  scene.getCamera(0).setResolution(grabber.grabImage().getSize());
 
   planeOptionGUI["planeOffset"].disable();
   planeOptionGUI["planeRadius"].disable();
@@ -367,7 +340,8 @@ void run(){
     }
   }
 
-  const ImgBase *image = CCU::preprocess(grabber.grab());
+  Image grabImg = grabber.grabImage();
+  const ImgBase *image = CCU::preprocess(grabImg.ptr());
 
   std::vector<FoundMarker> markers;
 

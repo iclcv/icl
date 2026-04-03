@@ -1,38 +1,10 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMath/src/ICLMath/GraphCutter.cpp                    **
-** Module : ICLMath                                                **
-** Authors: Andre Ueckermann                                       **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
 #include <ICLMath/GraphCutter.h>
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     float GraphCutter::minCut(DynMatrix<float> &adjacencyMatrix, std::vector<int> &subset1, std::vector<int> &subset2){
       //Please note: it is possible to add an additional adjacency matrix for faster lookup with values pointing to the edgeList IDs.
 
@@ -123,7 +95,7 @@ namespace icl{
     }
 
 
-    std::vector<std::vector<int> > GraphCutter::thresholdCut(DynMatrix<bool> &adjacencyMatrix, float threshold){
+    std::vector<std::vector<int> > GraphCutter::thresholdCut(DynMatrixBase<bool> &adjacencyMatrix, float threshold){
       math::DynMatrix<float> probabilities = calculateProbabilityMatrix(adjacencyMatrix, true);
       return thresholdCut(probabilities, threshold);
     }
@@ -169,7 +141,7 @@ namespace icl{
     }
 
 
-    std::vector<GraphCutter::CutNode> GraphCutter::hierarchicalCut(DynMatrix<bool> &adjacencyMatrix){
+    std::vector<GraphCutter::CutNode> GraphCutter::hierarchicalCut(DynMatrixBase<bool> &adjacencyMatrix){
       math::DynMatrix<float> probabilities = calculateProbabilityMatrix(adjacencyMatrix, true);
       return hierarchicalCut(probabilities);
     }
@@ -388,7 +360,7 @@ namespace icl{
     }
 
 
-    math::DynMatrix<float> GraphCutter::calculateProbabilityMatrix(math::DynMatrix<bool> &initialMatrix, bool symmetry){
+    math::DynMatrix<float> GraphCutter::calculateProbabilityMatrix(math::DynMatrixBase<bool> &initialMatrix, bool symmetry){
       math::DynMatrix<float> probabilities=math::DynMatrix<float>(initialMatrix.rows(),initialMatrix.cols(),0.0);
       for(unsigned int a=0; a<initialMatrix.cols(); a++){
         int count = 0;
@@ -416,7 +388,7 @@ namespace icl{
     }
 
 
-    void GraphCutter::mergeMatrix(DynMatrix<bool> &dst, DynMatrix<bool> &src){
+    void GraphCutter::mergeMatrix(DynMatrixBase<bool> &dst, DynMatrixBase<bool> &src){
       if(src.rows()!=dst.rows()){
         throw utils::ICLException("unequal sizes");
       }
@@ -428,7 +400,7 @@ namespace icl{
     }
 
 
-    void GraphCutter::weightMatrix(DynMatrix<float> &dst, DynMatrix<bool> &featureMatrix, float weight){
+    void GraphCutter::weightMatrix(DynMatrix<float> &dst, DynMatrixBase<bool> &featureMatrix, float weight){
       if(featureMatrix.rows()!=dst.rows()){
         throw utils::ICLException("unequal sizes");
       }
@@ -440,4 +412,3 @@ namespace icl{
     }
 
   }
-}

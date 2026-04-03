@@ -1,70 +1,39 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/src/ICLFilter/MirrorOp.h                     **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter, Andre Justus                      **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Andre Justus
 
 #pragma once
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Uncopyable.h>
 #include <ICLFilter/BaseAffineOp.h>
+#include <ICLCore/Image.h>
 
-namespace icl{
-  namespace filter{
+namespace icl::filter {
+  /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
+  class ICLFilter_API MirrorOp : public BaseAffineOp {
+    public:
+    MirrorOp(const MirrorOp&) = delete;
+    MirrorOp& operator=(const MirrorOp&) = delete;
 
-    /// Class to mirror images vertically or horizontally \ingroup UNARY \ingroup AFFINE
-    class ICLFilter_API MirrorOp : public BaseAffineOp {
-      public:
-      MirrorOp(const MirrorOp&) = delete;
-      MirrorOp& operator=(const MirrorOp&) = delete;
+    /// Constructor
+    /**
+      @param eAxis the axis on which the mirroring is performed
+    */
+    MirrorOp (core::axis eAxis);
 
-      /// Constructor
-      /**
-        @param eAxis the axis on which the mirroring is performed
-      */
-      MirrorOp (core::axis eAxis);
+    /// Destructor
+    virtual ~MirrorOp(){}
 
-      /// Destructor
-      virtual ~MirrorOp(){}
+    /// Applies the mirror transform to the images
+    void apply(const core::Image &src, core::Image &dst) override;
 
-      /// Applies the mirror transform to the images
-      void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+    /// Import single-arg apply from UnaryOp
+    using UnaryOp::apply;
 
-      private:
-      /// array of class methods used to transform depth8u and depth32f images
-      void (MirrorOp::*m_aMethods[core::depthLast+1])(const core::ImgBase *poSrc, core::ImgBase *poDst);
-
-      template<typename T>
-      void mirror (const core::ImgBase *poSrc, core::ImgBase *poDst);
-
-      core::axis  m_eAxis;
-      utils::Size  m_oSize;
-      utils::Point m_oSrcOffset, m_oDstOffset;
-    };
-  } // namespace filter
-}
+    private:
+    core::axis  m_eAxis;
+    utils::Size  m_oSize;
+    utils::Point m_oSrcOffset, m_oDstOffset;
+  };
+  } // namespace icl::filter

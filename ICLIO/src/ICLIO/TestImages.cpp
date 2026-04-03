@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/TestImages.cpp                         **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter, Robert Haschke                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
 #include <ICLIO/TestImages.h>
 #include <ICLCore/CoreFunctions.h>
@@ -38,6 +12,7 @@
 #include <ICLUtils/Size.h>
 #include <ICLIO/FileWriter.h>
 #include <stdlib.h>
+#include <charconv>
 #include <ICLUtils/Time.h>
 #include <ICLUtils/Thread.h>
 
@@ -57,7 +32,7 @@ namespace {
 };
 
 
-  typedef std::map<std::string,XPMColor> colormap;
+  typedef std::map<std::string,XPMColor, std::less<>> colormap;
   typedef std::map<char,int> charmap;
   typedef std::vector<std::string> strvec;
 
@@ -153,7 +128,8 @@ namespace {
     if(s.starts_with("gray")){
       std::string n = &(s[4]);
       if(n.length() > 0){
-        int g = atoi(n.c_str());
+        int g = 0;
+        std::from_chars(n.data(), n.data() + n.size(), g);
         ok = 1;
         return XPMColor(g,g,g);
       }
@@ -447,10 +423,14 @@ namespace {
 
   // header
   strvec headA = tokenize(*p++," ");
-  int w = atoi(headA[0].c_str());
-  int h = atoi(headA[1].c_str());
-  int colors = atoi(headA[2].c_str());
-  int one = atoi(headA[3].c_str()); (void)one;
+  int w = 0;
+  std::from_chars(headA[0].data(), headA[0].data() + headA[0].size(), w);
+  int h = 0;
+  std::from_chars(headA[1].data(), headA[1].data() + headA[1].size(), h);
+  int colors = 0;
+  std::from_chars(headA[2].data(), headA[2].data() + headA[2].size(), colors);
+  [[maybe_unused]] int one = 0;
+  std::from_chars(headA[3].data(), headA[3].data() + headA[3].size(), one);
 
   // parsing colors:
   XPMColor lut[256];
@@ -483,156 +463,153 @@ namespace {
 
 }
 
-namespace icl{
-  namespace io{
-
-    Img8u *TestImages::internalCreate(const std::string &name){
-      try{
-        if(name == "women"){
-          return read_xpm(ppc_woman_xpm);
-        }else if(name == "tree"){
-          return read_xpm(ppc_tree_xpm);
-        }else if(name == "house"){
-          return read_xpm(ppc_house_xpm);
-        }else if(name == "parrot"){
-          return createImage_macaw()->asImg<icl8u>();
-        }else if(name == "flowers"){
-          return createImage_flowers()->asImg<icl8u>();
-        }else if(name == "windows"){
-          return createImage_windows()->asImg<icl8u>();
-        }else if(name == "lena"){
-          return createImage_lena()->asImg<icl8u>();
-        }else if(name == "cameraman"){
-          return createImage_cameraman()->asImg<icl8u>();
-        }else if(name == "mandril"){
-          return createImage_mandril()->asImg<icl8u>();
-        }else{
-          ERROR_LOG("TestImage "<< name << "not found!");
-          return 0;
-        }
-      }catch(ICLException &ex){
-        ERROR_LOG("an exception occured while creating image: \""<< ex.what() << "\"");
+namespace icl::io {
+  Img8u *TestImages::internalCreate(const std::string &name){
+    try{
+      if(name == "women"){
+        return read_xpm(ppc_woman_xpm);
+      }else if(name == "tree"){
+        return read_xpm(ppc_tree_xpm);
+      }else if(name == "house"){
+        return read_xpm(ppc_house_xpm);
+      }else if(name == "parrot"){
+        return createImage_macaw()->asImg<icl8u>();
+      }else if(name == "flowers"){
+        return createImage_flowers()->asImg<icl8u>();
+      }else if(name == "windows"){
+        return createImage_windows()->asImg<icl8u>();
+      }else if(name == "lena"){
+        return createImage_lena()->asImg<icl8u>();
+      }else if(name == "cameraman"){
+        return createImage_cameraman()->asImg<icl8u>();
+      }else if(name == "mandril"){
+        return createImage_mandril()->asImg<icl8u>();
+      }else{
+        ERROR_LOG("TestImage "<< name << "not found!");
         return 0;
       }
+    }catch(ICLException &ex){
+      ERROR_LOG("an exception occured while creating image: \""<< ex.what() << "\"");
+      return 0;
+    }
+  }
+
+  ImgBase* TestImages::create(const std::string& name, format f, depth d){
+
+    Img8u *src = internalCreate(name);
+    if(!src) return 0;
+
+    src -> setTime();
+
+    if(src->getDepth() != d || src->getFormat() != f){
+      ImgBase *dst = imgNew(d,src->getSize(),f);
+      Converter(src,dst);
+      delete src;
+      return dst;
+    }else{
+      return src;
+    }
+  }
+
+
+
+  ImgBase* TestImages::create(const std::string& name, const Size& size,format f, depth d){
+
+    Img8u *src = internalCreate(name);
+    src->setFullROI();
+    if(!src) return 0;
+
+    if(src->getDepth() != d || src->getFormat() != f || src->getSize() != size ){
+      ImgBase *dst = imgNew(d,size,f);
+      Converter(src,dst);
+      delete src;
+      return dst;
+    }else{
+      return src;
+    }
+  }
+
+
+
+  void TestImages::show(const ImgBase *image,
+                        const std::string &showCommand,
+                        long msec_to_rm_call,
+                        const std::string &rmCommand){
+
+    ICLASSERT_RETURN(image);
+
+    std::string timeStr = Time::now().toString();
+    for(unsigned int i=0;i<timeStr.length();i++){
+      if(timeStr[i]=='/') timeStr[i]='_';
+      if(timeStr[i]==' ') timeStr[i]='_';
+      if(timeStr[i]==':') timeStr[i]='_';
     }
 
-    ImgBase* TestImages::create(const std::string& name, format f, depth d){
-
-      Img8u *src = internalCreate(name);
-      if(!src) return 0;
-
-      src -> setTime();
-
-      if(src->getDepth() != d || src->getFormat() != f){
-        ImgBase *dst = imgNew(d,src->getSize(),f);
-        Converter(src,dst);
-        delete src;
-        return dst;
-      }else{
-        return src;
-      }
+    std::string postfix = ".bicl"; // NO-NO-NO! ppm is 8Bit only image->getChannels() == 3 ? ".ppm" : ".pgm";
+    std::string name = std::string(".tmpImage.")+timeStr+postfix;
+    try{
+      FileWriter(name).write(image);
+    }catch(FileOpenException &){
+      ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
+      ERROR_LOG("                      image file in the current working directory)");
+      return;
+    }catch(ICLException &){
+      ERROR_LOG("unable to show image (image could not be written to a temporary file)");
+      return;
     }
 
+    char showCommandStr[500];
+    snprintf(showCommandStr,sizeof(showCommandStr),showCommand.c_str(),name.c_str());
 
+    char rmCommandStr[500];
+    snprintf(rmCommandStr,sizeof(rmCommandStr),rmCommand.c_str(),name.c_str());
 
-    ImgBase* TestImages::create(const std::string& name, const Size& size,format f, depth d){
+    int errorCode = system((std::string(showCommandStr)+" &").c_str());
+    if ( errorCode != 0 )
+      WARNING_LOG( "Error code of system call unequal 0!" );
 
-      Img8u *src = internalCreate(name);
-      src->setFullROI();
-      if(!src) return 0;
-
-      if(src->getDepth() != d || src->getFormat() != f || src->getSize() != size ){
-        ImgBase *dst = imgNew(d,size,f);
-        Converter(src,dst);
-        delete src;
-        return dst;
-      }else{
-        return src;
-      }
-    }
-
-
-
-    void TestImages::show(const ImgBase *image,
-                          const std::string &showCommand,
-                          long msec_to_rm_call,
-                          const std::string &rmCommand){
-
-      ICLASSERT_RETURN(image);
-
-      std::string timeStr = Time::now().toString();
-      for(unsigned int i=0;i<timeStr.length();i++){
-        if(timeStr[i]=='/') timeStr[i]='_';
-        if(timeStr[i]==' ') timeStr[i]='_';
-        if(timeStr[i]==':') timeStr[i]='_';
-      }
-
-      std::string postfix = ".bicl"; // NO-NO-NO! ppm is 8Bit only image->getChannels() == 3 ? ".ppm" : ".pgm";
-      std::string name = std::string(".tmpImage.")+timeStr+postfix;
-      try{
-        FileWriter(name).write(image);
-      }catch(FileOpenException &){
-        ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
-        ERROR_LOG("                      image file in the current working directory)");
-        return;
-      }catch(ICLException &){
-        ERROR_LOG("unable to show image (image could not be written to a temporary file)");
-        return;
-      }
-
-      char showCommandStr[500];
-      snprintf(showCommandStr,sizeof(showCommandStr),showCommand.c_str(),name.c_str());
-
-      char rmCommandStr[500];
-      snprintf(rmCommandStr,sizeof(rmCommandStr),rmCommand.c_str(),name.c_str());
-
-      int errorCode = system((std::string(showCommandStr)+" &").c_str());
-      if ( errorCode != 0 )
-        WARNING_LOG( "Error code of system call unequal 0!" );
-
-      if(std::string(rmCommand).length()){
-        #ifndef ICL_SYSTEM_WINDOWS
-        usleep(1000*msec_to_rm_call);
-        #else
-        //TODO where is this function located
-        //sleep(1000*msec_to_rm_call);
-        #endif
-        errorCode = system((std::string(rmCommandStr)+" &").c_str());
-        if ( errorCode != 0 )
-          WARNING_LOG( "Error code of system call unequal 0!" );
-      }
-    }
-
-  void TestImages::xv(const ImgBase *image, const std::string& nameIn, long msec){
-      std::string name = nameIn;
-      if(image->getChannels() != 3){
-        name+=".pgm";
-      }
-      try{
-        FileWriter(name).write(image);
-      }catch(FileOpenException &){
-        ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
-        ERROR_LOG("                      image file in the current working directory)");
-        return;
-      }catch(ICLException &){
-        ERROR_LOG("unable to show image (image could not be written to a temporary file)");
-        return;
-      }
-
-      int errorCode = system(std::string("xv ").append(name).append(" &").c_str());
-      if ( errorCode != 0 )
-        WARNING_LOG( "Error code of system call unequal 0!" );
-      //#ifndef ICL_SYSTEM_WINDOWS
-      Thread::msleep(msec);
-      //#else
+    if(std::string(rmCommand).length()){
+      #ifndef ICL_SYSTEM_WINDOWS
+      usleep(1000*msec_to_rm_call);
+      #else
       //TODO where is this function located
-      //sleep(msec*10000);
-      //#endif
-      errorCode = system(std::string(ICL_SYSTEMCALL_RM).append(name).c_str());
+      //sleep(1000*msec_to_rm_call);
+      #endif
+      errorCode = system((std::string(rmCommandStr)+" &").c_str());
       if ( errorCode != 0 )
         WARNING_LOG( "Error code of system call unequal 0!" );
     }
+  }
+
+void TestImages::xv(const ImgBase *image, const std::string& nameIn, long msec){
+    std::string name = nameIn;
+    if(image->getChannels() != 3){
+      name+=".pgm";
+    }
+    try{
+      FileWriter(name).write(image);
+    }catch(FileOpenException &){
+      ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
+      ERROR_LOG("                      image file in the current working directory)");
+      return;
+    }catch(ICLException &){
+      ERROR_LOG("unable to show image (image could not be written to a temporary file)");
+      return;
+    }
+
+    int errorCode = system(std::string("xv ").append(name).append(" &").c_str());
+    if ( errorCode != 0 )
+      WARNING_LOG( "Error code of system call unequal 0!" );
+    //#ifndef ICL_SYSTEM_WINDOWS
+    Thread::msleep(msec);
+    //#else
+    //TODO where is this function located
+    //sleep(msec*10000);
+    //#endif
+    errorCode = system(std::string(ICL_SYSTEMCALL_RM).append(name).c_str());
+    if ( errorCode != 0 )
+      WARNING_LOG( "Error code of system call unequal 0!" );
+  }
 
 
-  } // namespace io
-}
+  } // namespace icl::io

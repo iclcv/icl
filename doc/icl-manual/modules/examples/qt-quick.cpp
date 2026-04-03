@@ -7,14 +7,14 @@ ImgQ last;  // last image
 void init(){
   grabber.init(pa("-i"));
 
-  gui << Image().handle("image")
+  gui << Display().handle("image")
       << Slider(0,255,127).out("thresh")
       << Show();
 }
 
 void run(){
   // use cvt to create an Img32 (aka ImgQ)
-  ImgQ curr = cvt(grabber.grab());
+  ImgQ curr = cvt(grabber.grabImage());
 
   // nested use of operators
   gui["image"] = thresh(abs(last-curr),gui["thresh"]);

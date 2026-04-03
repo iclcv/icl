@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/demos/corner-detection-css/corner-detection-css. **
-**          cpp                                                    **
-** Module : ICLCV                                                  **
-** Authors: Erik Weitnauer                                         **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Erik Weitnauer, Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLCore/Color.h>
@@ -46,7 +19,7 @@ GenericGrabber *grabber = 0;
 void mouse(const MouseEvent &event){
   if(event.isPressEvent()){
     if(event.getColor().size() == 3) {
-      std::lock_guard<std::recursive_mutex> l(mutex);
+      std::scoped_lock<std::recursive_mutex> l(mutex);
       for(int i=0;i<3;++i) refColor[i] = event.getColor()[i];
       std::cout << "new Ref-Color:"  << refColor.transp() << std::endl;
     }
@@ -70,11 +43,11 @@ void init(){
          )
       << ( VSplit()
            << ( HBox()
-                << Draw().handle("img_in").minSize(16,12)
-                << Draw().handle("img1").minSize(16,12)
-                << Draw().handle("img2").minSize(16,12)
+                << Canvas().handle("img_in").minSize(16,12)
+                << Canvas().handle("img1").minSize(16,12)
+                << Canvas().handle("img2").minSize(16,12)
                 )
-           << Draw().handle("img3").minSize(16,12)
+           << Canvas().handle("img3").minSize(16,12)
           )
       << Prop("css").label("CSS Params").minSize(14,12)
       << Show();
@@ -91,7 +64,7 @@ void init(){
 
 template<class T>
     void thresh(const Img<T> &input, Img8u &result, float t,const Color &ref){
-  std::lock_guard<std::recursive_mutex> l(mutex);
+  std::scoped_lock<std::recursive_mutex> l(mutex);
   result.setChannels(1);
   result.setSize(input.getSize());
   const Channel<T> cs[3] = {input[0], input[1], input[2]};

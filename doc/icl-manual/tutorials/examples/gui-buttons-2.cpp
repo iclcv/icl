@@ -10,7 +10,7 @@ int currFilter = 0;
 Mutex resultMutex;
 ImgBase *result = 0;
 
-void saveImage(){
+void saveDisplay(){
   try{
     const std::string &filename = saveFileDialog();
     Mutex::Locker lock(resultMutex);
@@ -20,7 +20,7 @@ void saveImage(){
 
 void init(){
   grabber.init(pa("-i"));
-  gui << Image().handle("result")
+  gui << Display().handle("result")
       << ( VBox()
            << Button("next filter").handle("next")
            << Button("save").handle("save")
@@ -28,7 +28,7 @@ void init(){
            )
       << Show();
 
-  input << Image().handle("image") << Create();
+  input << Display().handle("image") << Create();
 
   gui["show"].registerCallback(function(input,
                       &GUI::switchVisibility));
@@ -38,7 +38,7 @@ void init(){
 
 void run(){
   static ButtonHandle next = gui["next"];
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
 
   if(next.wasTriggered()){
     currFilter = (currFilter+1)%10;
@@ -46,7 +46,7 @@ void run(){
   }
 
   resultMutex.lock();
-  op.apply(image,&result);
+  op.apply(image.ptr(),&result);
   resultMutex.unlock();
 
   gui["result"] = result;

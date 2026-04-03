@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/demos/affine-op/affine-op.cpp                **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <iostream>
 #include <fstream>
@@ -172,14 +146,14 @@ void init() {
     // create the GUI
 	gui << ( VBox()
 			 << ( HBox()
-				  << Draw().label("Original").handle("view1").minSize(16, 12)
-				  << Draw().label("Median").handle("view2").minSize(16, 12)
-				  << Draw().label("Bilateral Filtered").handle("view3").minSize(16, 12)
+				  << Canvas().label("Original").handle("view1").minSize(16, 12)
+				  << Canvas().label("Median").handle("view2").minSize(16, 12)
+				  << Canvas().label("Bilateral Filtered").handle("view3").minSize(16, 12)
 				  )
 			 << ( HBox()
-				  << Draw().label("Original").handle("viewedge1").minSize(16, 12)
-				  << Draw().label("Median").handle("viewedge2").minSize(16, 12)
-				  << Draw().label("Bilateral Filtered").handle("viewedge3").minSize(16, 12)
+				  << Canvas().label("Original").handle("viewedge1").minSize(16, 12)
+				  << Canvas().label("Median").handle("viewedge2").minSize(16, 12)
+				  << Canvas().label("Bilateral Filtered").handle("viewedge3").minSize(16, 12)
 				  )
 			 << CheckBox("Use LAB",true).handle("use_lab")
 			 << CheckBox("Use gray image",false).handle("to_gray")
@@ -202,15 +176,15 @@ void init() {
 
 void run() {
 
-	const ImgBase* img = grabber.grab();
+	Image img = grabber.grabImage();
 
-	switch(img->getDepth()) {
+	switch(img.getDepth()) {
 		case(core::depth8u): {
-			grab_cb<icl8u>(img);
+			grab_cb<icl8u>(img.ptr());
 			break;
 		}
 		case(core::depth32f): {
-			grab_cb<icl32f>(img);
+			grab_cb<icl32f>(img.ptr());
 			break;
 		}
 		default: break;

@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/apps/point-cloud-primitive-filter/             **
-**          point-cloud-primitive-filter.cpp                       **
-** Module : ICLGeom                                                **
-** Authors: Lukas Twardon, Tobias Roehlig, Christof Elbrechter     **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Lukas Twardon, Tobias Roehlig, Christof Elbrechter
 
 #define BOOST_SIGNALS_NO_DEPRECATION_WARNING
 #include <rsb/Handler.h>
@@ -101,7 +74,7 @@ void init(){
     cam = Camera(*pa("-c"));
   }
 
-  gui << Draw3D().minSize(32,24).handle("scene")
+  gui << Canvas3D().minSize(32,24).handle("scene")
       << ( VBox() << Fps(10).handle("fps").label("FPS")
                   << CheckBox("Filter with primitives from RSB").handle("filterRSBHandle")
                   << CheckBox("Filter with primitive from GUI").handle("filterGUIHandle")

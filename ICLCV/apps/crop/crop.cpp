@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/apps/crop/crop.cpp                               **
-** Module : ICLCV                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLFilter/ImageRectification.h>
@@ -137,7 +111,7 @@ void rectangular_changed(){
 }
 
 void save_as(){
-  std::lock_guard<std::recursive_mutex> lock(currMutex);
+  std::scoped_lock<std::recursive_mutex> lock(currMutex);
   try{
     std::string filename = saveFileDialog();
     save(curr,filename);
@@ -145,7 +119,7 @@ void save_as(){
 }
 
 void overwrite(){
-  std::lock_guard<std::recursive_mutex> lock(currMutex);
+  std::scoped_lock<std::recursive_mutex> lock(currMutex);
   std::string filename = pa("-i", 1).as<std::string>();
   save(curr,filename);
 }
@@ -179,9 +153,9 @@ void batch_pattern_changed(){
         ImgBase *dst = 0;
         if(performCrop){
           GenericGrabber g("file","file="+f[i]);
-          const ImgBase *image = g.grab()->shallowCopy(r);
+          const ImgBase *image = g.grabImage().ptr()->shallowCopy(r);
           image->deepCopyROI(&dst);
-          out.send(dst);
+          out.send(*dst);
           std::cout << "converted file " << f[i] << " successfully" << std::endl;
           delete image;
         }
@@ -214,8 +188,8 @@ void init(){
 
   bool c_arg = pa("-c");
 
-  gui << Draw().handle("draw").label("input image")
-      << Image().handle("cropped").label("cropped")
+  gui << Canvas().handle("draw").label("input image")
+      << Display().handle("cropped").label("cropped")
       << ( VBox().maxSize(c_arg ? 0 : 12,99).minSize(c_arg ? 0 : 12,1)
            << Button("save as ..").handle("saveAs")
            << Button("overwrite input").handle("overwrite")
@@ -238,12 +212,12 @@ void init(){
   if(!c_arg){
     gui["batch"].registerCallback(batch_crop);
   }
-  const ImgBase *image = grabber.grab();
+  Image image = grabber.grabImage();
   if(!c_arg){
-    mouse_1 = new Mouse1(image->getSize());
+    mouse_1 = new Mouse1(image.getSize());
     gui["draw"].install(mouse_1);
   }
-  mouse_2 = new Mouse2(image->getSize());
+  mouse_2 = new Mouse2(image.getSize());
   gui["draw"].install(mouse_2);
 
   DrawHandle draw = gui["draw"];
@@ -268,7 +242,8 @@ void run(){
   static FPSLimiter fpsLimit(30);
   fpsLimit.wait();
 
-  const ImgBase *image = grabber.grab();
+  Image imageHolder = grabber.grabImage();
+  const ImgBase *image = imageHolder.ptr();
   DrawHandle draw = gui["draw"];
   ImageHandle cropped = gui["cropped"];
 
@@ -281,7 +256,8 @@ void run(){
     rot.setAngle(parse<int>(gui["rot"]));
   }
 
-  const ImgBase *cro = 0;
+  static ImgBase *croBuf = 0;
+  bool croValid = false;
   if(c_arg || gui["rect"].as<bool>()){
     static Img8u roi;
     std::vector<utils::Rect> rs = mouse_2->getRects();
@@ -293,7 +269,8 @@ void run(){
     roi.setFormat(tmp->getFormat());
     roi.setSize(tmp->getROISize());
     tmp->convertROI(&roi);
-    cro = rot.apply(&roi);
+    rot.apply(&roi, &croBuf);
+    croValid = true;
 
     draw->color(0,255,0,255);
     draw->text(str(rs[0]), rs[0].x, rs[0].y);
@@ -307,7 +284,8 @@ void run(){
       case depth##D:{                                           \
         static ImageRectification<icl##D> ir;                   \
         try{                                                    \
-          cro = rot.apply(&ir.apply(ps,*image->as##D(),s));     \
+          rot.apply(&ir.apply(ps,*image->as##D(),s), &croBuf);  \
+          croValid = true;                                      \
         }catch(...){}                                           \
         break;                                                  \
       }
@@ -315,10 +293,10 @@ void run(){
 #undef ICL_INSTANTIATE_DEPTH
     }
   }
-  if(cro){
-    cropped = cro;
+  if(croValid && croBuf){
+    cropped = croBuf;
     currMutex.lock();
-    cro->convert(&curr);
+    croBuf->convert(&curr);
     currMutex.unlock();
   }
 
@@ -333,7 +311,7 @@ int main(int n, char **args){
           "-compute-optimal-scaling-size(target-width) -compute-optimal-scaling-size-input-size(Size=0x0)");
   if(pa("-estimate-image-size-only").as<bool>() || pa("-estimate-image-ar-only").as<bool>() || pa("-compute-optimal-scaling-size").as<bool>()){
     GenericGrabber g(pa("-input"));
-    Size s = g.grab()->getSize();
+    Size s = g.grabImage().getSize();
     if(pa("-estimate-image-size-only")){
       std::cout << s << std::endl;
     }

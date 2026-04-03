@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/DCDeviceFeatures.cpp                   **
-** Module : ICLIO                                                  **
-** Authors: Christof Elbrechter, Viktor Richter                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <ICLIO/DCDeviceFeatures.h>
 #include <map>
@@ -35,8 +9,7 @@
 
 using namespace icl::utils;
 
-namespace icl{
-  namespace io{
+namespace icl::io{
 
     namespace{
       bool is_trigger_name(const std::string &n, bool withPolarity=false){
@@ -158,8 +131,9 @@ namespace icl{
         }
       }
     }
-  }
-  namespace utils{
+} // namespace icl::io
+
+namespace icl::utils{
     std::string str(dc1394feature_t t){
 
   #define X(x) if(t==DC1394_FEATURE_##x) return #x;
@@ -186,8 +160,9 @@ namespace icl{
   #undef X
 
     //}}}
-  }
-  namespace io{
+} // namespace icl::utils
+
+namespace icl::io{
 
     std::string getSpecialInfoString(std::string name){
       const std::string f = name.substr(8);
@@ -226,7 +201,7 @@ namespace icl{
 
       // Configurtable
       addProperty("all manual", "command", "", Any(), 0, "Sets all auto adjustment-supporting options to manual adjustment.");
-      for(std::map<std::string,dc1394feature_info_t*>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
+      for(std::map<std::string,dc1394feature_info_t*, std::less<>>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
         std::string name = it->first;
         dc1394feature_info_t* info = it->second;
         if(isSpecialInfo(info)){
@@ -325,8 +300,7 @@ namespace icl{
       }else if(l > 3 && ((name.substr(l-3) == "_RV")||(name.substr(l-3)=="_BU"))){
         return getInfoPtr(name.substr(0,l-3));
       }else{
-        std::map<std::string,dc1394feature_info_t*>::const_iterator it = featureMap.find(name);
-        if(it != featureMap.end()){
+        if(auto it = featureMap.find(name); it != featureMap.end()){
           return it->second;
         }
       }
@@ -343,5 +317,4 @@ namespace icl{
       DEBUG_LOG("called this. configurable of this will not work")
     }
 
-  } // namespace io
-}
+} // namespace icl::io

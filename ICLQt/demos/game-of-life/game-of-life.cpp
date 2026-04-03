@@ -1,14 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** File   : ICLQt/demos/game-of-life/game-of-life.cpp             **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-** Interactive Conway's Game of Life with OpenCL GPU acceleration   **
-** and CPU fallback. Left-click to draw/place patterns, right-     **
-** click to erase. Cell age is visualized as a color gradient.     **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLCore/Img.h>
@@ -299,7 +291,7 @@ static void mouseHandler(const MouseEvent &event){
   if(!event.isLeft() && !event.isRight()) return;
   if(!event.isPressEvent() && !event.isDragEvent()) return;
 
-  std::lock_guard<std::mutex> lock(gridMutex);
+  std::scoped_lock<std::mutex> lock(gridMutex);
   int x = static_cast<int>(event.getPos32f().x);
   int y = static_cast<int>(event.getPos32f().y);
   if(x < 0 || x >= gridW || y < 0 || y >= gridH) return;
@@ -337,7 +329,7 @@ void init(){
   gridBuf.assign(gridW * gridH, 0);
   randomizeGrid(0.2f);
 
-  gui << Draw().handle("draw").minSize(40,30)
+  gui << Canvas().handle("draw").minSize(40,30)
       << ( VBox().maxSize(15,99)
            << CheckBox("Running", true).handle("running").maxSize(15,2)
            << Button("Step").handle("step").maxSize(15,2)
@@ -380,7 +372,7 @@ void run(){
   int newSizeIdx = gui["size"].as<ComboHandle>().getSelectedIndex();
   if(newSizeIdx != curSizeIdx){
     curSizeIdx = newSizeIdx;
-    std::lock_guard<std::mutex> lock(gridMutex);
+    std::scoped_lock<std::mutex> lock(gridMutex);
     gridW = SIZES[curSizeIdx][0];
     gridH = SIZES[curSizeIdx][1];
     resetGrid();
@@ -388,7 +380,7 @@ void run(){
   }
 
   {
-    std::lock_guard<std::mutex> lock(gridMutex);
+    std::scoped_lock<std::mutex> lock(gridMutex);
     if(doClear) resetGrid();
     if(doRandom) randomizeGrid(0.25f);
   }
@@ -401,7 +393,7 @@ void run(){
   if(doStep || (running && elapsed >= interval)){
     Time t = Time::now();
     {
-      std::lock_guard<std::mutex> lock(gridMutex);
+      std::scoped_lock<std::mutex> lock(gridMutex);
 #ifdef ICL_HAVE_OPENCL
       if(useGPU && clProg){
         stepGPU();
@@ -419,7 +411,7 @@ void run(){
 
   // Only re-render and recount when grid changed
   {
-    std::lock_guard<std::mutex> lock(gridMutex);
+    std::scoped_lock<std::mutex> lock(gridMutex);
     if(gridDirty){
 #ifdef ICL_HAVE_OPENCL
       if(useGPU && clProg){

@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMath/src/ICLMath/HomogeneousMath.cpp                **
-** Module : ICLMath                                                **
-** Authors: Christof Elbrechter, Matthias Schroeder                **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Matthias Schroeder
 
 #include <ICLMath/HomogeneousMath.h>
 
@@ -37,9 +11,7 @@
 #endif
 #endif
 
-namespace icl{
-  namespace math{
-
+namespace icl::math {
     float dist_point_linesegment(const Vec4 &p,const Vec4 &lineStart,const Vec4 &lineEnd,Vec4 *nearestPoint){
       Vec4  d1(p-lineStart);
       Vec4  d2(lineEnd-lineStart);
@@ -171,4 +143,3 @@ namespace icl{
     }
 
   }
-}

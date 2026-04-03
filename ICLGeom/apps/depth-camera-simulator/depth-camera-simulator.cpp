@@ -1,33 +1,7 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/apps/depth-camera-simulator/depth-camera-simul **
-**          ator.cpp                                               **
-** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLUtils/FPSLimiter.h>
@@ -53,12 +27,12 @@ void init(){
   }
 
   if(cOut || dOut){
-    prevGUI << (cOut ? Image().handle("color") : Dummy())
-            << (dOut ? Image().handle("depth") : Dummy())
+    prevGUI << (cOut ? Display().handle("color") : Dummy())
+            << (dOut ? Display().handle("depth") : Dummy())
             << Create();
   }
 
-  gui << Draw3D().handle("draw")
+  gui << Canvas3D().handle("draw")
       << ( VBox().minSize(10,2)
            << FSlider(-10,10,0).out("x").label("translate x")
            << FSlider(-10,10,0).out("y").label("translate y")
@@ -146,19 +120,19 @@ void run() {
       c.setTransformation( *relTM * d.getCSTransformationMatrix() );
 
       const Img8u colorImage2 = scene.render(1);
-      if(cOut) colorOut.send(&colorImage2);
+      if(cOut) colorOut.send(colorImage2);
       if(prevGUI.isVisible()){
         if(cOut) prevGUI["color"] = colorImage2;
         if(dOut) prevGUI["depth"] = depthImage;
       }
     }else{
-      if(cOut) colorOut.send(&colorImage);
+      if(cOut) colorOut.send(colorImage);
       if(prevGUI.isVisible()){
         if(cOut) prevGUI["color"] = colorImage;
         if(dOut) prevGUI["depth"] = depthImage;
       }
     }
-    if(dOut) depthOut.send(&depthImage);
+    if(dOut) depthOut.send(depthImage);
 
   }
   gui["draw"].render();

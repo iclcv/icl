@@ -1,177 +1,45 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/src/ICLFilter/BinaryCompareOp.cpp            **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLFilter/BinaryCompareOp.h>
-#include <ICLCore/Img.h>
 
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl {
-  namespace filter{
-
-  #define ICL_COMP_ZERO 0
-  #define ICL_COMP_NONZERO 255
-
-    namespace{
-
-  #define CREATE_COMPARE_OP(NAME,OPERATOR)                              \
-    template <typename T> struct CompareOp_##NAME {                     \
-      static inline icl8u cmp(T val1, T val2){                          \
-        return val1 OPERATOR val2 ? ICL_COMP_NONZERO : ICL_COMP_ZERO;   \
-      }                                                                 \
+namespace icl::filter {
+  const char* toString(BinaryCompareOp::Op op) {
+    switch(op) {
+      case BinaryCompareOp::Op::compare: return "compare";
+      case BinaryCompareOp::Op::compareEqTol: return "compareEqTol";
     }
+    return "?";
+  }
 
-    CREATE_COMPARE_OP(eq,==);
-    CREATE_COMPARE_OP(lt,<);
-    CREATE_COMPARE_OP(lteq,<=);
-    CREATE_COMPARE_OP(gteq,>=);
-    CREATE_COMPARE_OP(gt,>);
+  core::ImageBackendDispatching& BinaryCompareOp::prototype() {
+    static core::ImageBackendDispatching proto;
+    [[maybe_unused]] static bool init = [&] {
+      proto.addSelector<CmpSig>(Op::compare);
+      proto.addSelector<CmpEqtSig>(Op::compareEqTol);
+      return true;
+    }();
+    return proto;
+  }
 
-  #undef CREATE_COMPARE_OP
+  // Constructor — clones selectors from the class prototype
+  BinaryCompareOp::BinaryCompareOp(optype ot, icl64f tolerance)
+    : ImageBackendDispatching(prototype()),
+      m_eOpType(ot), m_dTolerance(tolerance)
+  {}
 
-    template <typename T> struct CompareOp_eqt {
-
-      static inline icl8u cmp(T val1, T val2, T tolerance){
-        return std::abs(val1-val2)<=tolerance ? ICL_COMP_NONZERO : ICL_COMP_ZERO;
-      }
-    };
-
-
-    template <class T, template<typename X> class C>
-    inline void fallbackCompare(const Img<T> *src1,const Img<T> *src2,Img<icl8u> *dst){
-      for(int c=src1->getChannels()-1; c >= 0; --c) {
-        const ImgIterator<T> itSrc1 = src1->beginROI(c);
-         const ImgIterator<T> itEnd = src1->endROI(c);
-        const ImgIterator<T> itSrc2 = src2->beginROI(c);
-        ImgIterator<icl8u>  itDst = dst->beginROI(c);
-        for(;itSrc1 != itEnd ; ++itSrc1,++itSrc2, ++itDst){
-          *itDst = C<T>::cmp(*itSrc1,*itSrc2);
-        }
-      }
+  void BinaryCompareOp::apply(const Image &src1, const Image &src2, Image &dst) {
+    if(!check(src1, src2)) return;
+    if(!prepare(dst, src1, depth8u)) return;
+    if(m_eOpType == eqt) {
+      getSelector<CmpEqtSig>(Op::compareEqTol).resolve(src1)->apply(src1, src2, dst, m_dTolerance);
+    } else {
+      getSelector<CmpSig>(Op::compare).resolve(src1)->apply(src1, src2, dst, static_cast<int>(m_eOpType));
     }
+  }
 
-
-    template <typename T>
-    inline void fallbackCompareWithTolerance(const Img<T> *src1,const Img<T> *src2, Img8u *dst,T tolerance) {
-       for(int c=src1->getChannels()-1; c >= 0; --c) {
-         const ImgIterator<T> itSrc1 = src1->beginROI(c);
-         const ImgIterator<T> itEnd = src1->endROI(c);
-         const ImgIterator<T> itSrc2 = src2->beginROI(c);
-         ImgIterator<icl8u>  itDst = dst->beginROI(c);
-         for(;itSrc1 != itEnd; ++itSrc1,++itSrc2, ++itDst){
-           *itDst = CompareOp_eqt<T>::cmp(*itSrc1,*itSrc2,tolerance);
-         }
-       }
-     }
-
-    template<class T>
-    void cmp(const Img<T> *src1,const  Img<T> *src2, Img8u *dst, T tolerance, BinaryCompareOp::optype ot){
-
-       switch(ot){
-         case BinaryCompareOp::lt: fallbackCompare<T,CompareOp_lt>(src1,src2,dst); break;
-         case BinaryCompareOp::gt: fallbackCompare<T,CompareOp_gt>(src1,src2,dst); break;
-         case BinaryCompareOp::lteq: fallbackCompare<T, CompareOp_lteq>(src1,src2,dst); break;
-         case BinaryCompareOp::gteq: fallbackCompare<T, CompareOp_gteq>(src1,src2,dst); break;
-         case BinaryCompareOp::eq: fallbackCompare<T, CompareOp_eq>(src1,src2,dst); break;
-         case BinaryCompareOp::eqt: fallbackCompareWithTolerance<T>(src1,src2,dst,tolerance); break;
-       }
-     }
-
-
-
-  #ifdef ICL_HAVE_IPP
-    template <typename T, IppStatus (IPP_DECL *ippiFunc) (const T*,int,const T*,int, icl8u*,int,IppiSize,IppCmpOp)>
-    inline void ippCall(const Img<T> *src1,const Img<T>*src2, Img8u *dst, BinaryCompareOp::optype cmpOp){
-      for (int c=src1->getChannels()-1; c >= 0; --c) {
-        ippiFunc (src1->getROIData (c), src1->getLineStep(),
-                  src2->getROIData(c), src2->getLineStep(),
-                  dst->getROIData (c), dst->getLineStep(),
-                  dst->getROISize(),(IppCmpOp) cmpOp);
-      }
-    }
-
-    template<> void cmp<icl8u>(const Img8u *src1, const Img8u *src2, Img8u *dst, icl8u tolerance, BinaryCompareOp::optype ot){
-      if(ot == BinaryCompareOp::eqt){
-        fallbackCompareWithTolerance<icl8u>(src1,src2,dst,tolerance);
-      }else{
-        ippCall<icl8u,ippiCompare_8u_C1R>(src1,src2,dst,ot);
-      }
-    }
-    template<> void cmp<icl16s>(const Img16s *src1,const Img16s *src2, Img8u *dst, icl16s tolerance, BinaryCompareOp::optype ot){
-      if(ot == BinaryCompareOp::eqt){
-        fallbackCompareWithTolerance<icl16s>(src1,src2,dst,tolerance);
-      }else{
-        ippCall<icl16s,ippiCompare_16s_C1R>(src1,src2,dst,ot);
-      }
-    }
-    template<> void cmp<icl32f>(const Img32f *src1,const Img32f *src2, Img8u *dst, icl32f tolerance, BinaryCompareOp::optype ot){
-      if(ot == BinaryCompareOp::eqt){
-        for (int c=src1->getChannels()-1; c >= 0; --c) {
-          ippiCompareEqualEps_32f_C1R (src1->getROIData (c), src1->getLineStep(),
-                                       src2->getROIData (c), src2->getLineStep(),
-                                       dst->getROIData (c), dst->getLineStep(),
-                                       dst->getROISize(), tolerance);
-        }
-      }else{
-        ippCall<icl32f,ippiCompare_32f_C1R>(src1,src2,dst,ot);
-      }
-    }
-  #endif
-    } // end of anonymous namespace
-
-    void BinaryCompareOp::apply(const ImgBase *poSrc1, const ImgBase *poSrc2, ImgBase **ppoDst){
-      ICLASSERT_RETURN( poSrc1 );
-      ICLASSERT_RETURN( poSrc2 );
-      ICLASSERT_RETURN( ppoDst );
-
-      if(!BinaryOp::check(poSrc1,poSrc2)){
-        ERROR_LOG("source images are not compatible: src 1:" << *poSrc1 << " src 2:" << *poSrc2);
-      }
-      if(!BinaryOp::prepare(ppoDst,poSrc1,depth8u)){
-        ERROR_LOG("unable to prepare the destintaion imaage to source image params and depth8u, src 1/2: " << *poSrc1);
-      }
-
-      switch (poSrc1->getDepth()){
-  #define ICL_INSTANTIATE_DEPTH(T) case depth##T:                             \
-                                   cmp(poSrc1->asImg<icl##T>(),               \
-                                   poSrc2->asImg<icl##T>(),                   \
-                                    (*ppoDst)->asImg<icl8u>(),                \
-                                   clipped_cast<icl64f,icl##T>(m_dTolerance), \
-                                   m_eOpType); break;
-         ICL_INSTANTIATE_ALL_DEPTHS;
-         default: ICL_INVALID_FORMAT; break;
-  #undef ICL_INSTANTIATE_DEPTH
-       }
-     }
-
-
-  } // namespace filter
-}// end of namespace icl
+  } // namespace icl::filter

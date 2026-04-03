@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/demos/kinect-normals/kinect-normals.cpp        **
-** Module : ICLGeom                                                **
-** Authors: Andre Ueckermann                                       **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
-
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/ObjectEdgeDetector.h>
@@ -81,11 +54,11 @@ void init(){
            << ButtonGroup("max,mean").handle("usedAngle")
            << Slider(1,15,3).out("neighbrange").label("neighborhood range").handle("neighbrangeHandle");
 
-  gui << Image().handle("depth").minSize(16,12)
-      << Image().handle("color").minSize(16,12)
-      << Image().handle("angle").minSize(16,12)
-      << Image().handle("edge").minSize(16,12)
-      << Image().handle("normal").minSize(16,12)
+  gui << Display().handle("depth").minSize(16,12)
+      << Display().handle("color").minSize(16,12)
+      << Display().handle("angle").minSize(16,12)
+      << Display().handle("edge").minSize(16,12)
+      << Display().handle("normal").minSize(16,12)
       << controls
       << Show();
 
@@ -112,8 +85,10 @@ void run(){
 
   Size size = pa("-size");
 
-  const Img8u &colorImage = *grabColor.grab()->asImg<icl8u>();
-  const Img32f &depthImage = *grabDepth.grab()->asImg<icl32f>();
+  Image colorImg = grabColor.grabImage();
+  Image depthImg = grabDepth.grabImage();
+  const Img8u &colorImage = colorImg.as8u();
+  const Img32f &depthImage = depthImg.as32f();
 
   WARNING_LOG("Hello");
 
@@ -157,11 +132,11 @@ void run(){
   WARNING_LOG("Hello");
 
   //access interim result
-  angleImage=objectEdgeDetector->getAngleImage();
+  angleImage=objectEdgeDetector->getAngleDisplay();
 
   if(pa("-cam")){
     objectEdgeDetector->applyWorldNormalCalculation(cam);
-    normalImage=objectEdgeDetector->getRGBNormalImage();
+    normalImage=objectEdgeDetector->getRGBNormalDisplay();
   }
   end = Time::now();
   std::cout<<"Size: "<<size<<" ,Runtime: ";

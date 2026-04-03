@@ -205,7 +205,7 @@ const Img8u &scale_fix(const Img8u &src, const Size &size){
 
 
 void init(){
-  gui << Image().minSize(32,24).handle("image")
+  gui << Display().minSize(32,24).handle("image")
       << ( HBox().maxSize(99,2)
            << Combo("QVGA,VGA,!1280x960,1920x1080").handle("size")
            << Label("").handle("time")

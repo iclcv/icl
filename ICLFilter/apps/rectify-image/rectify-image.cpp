@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/apps/rectify-image/rectify-image.cpp         **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
-
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLQt/DefineQuadrangleMouseHandler.h>
@@ -43,9 +16,9 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
 
-  gui << Draw().handle("draw")
+  gui << Canvas().handle("draw")
       << (VBox()
-          << Image().handle("rectified")
+          << Display().handle("rectified")
           << (HBox().label("target size").maxSize(99,3)
               << Spinner(2,2000,512).handle("width")
               << Label("x")
@@ -58,7 +31,7 @@ void init(){
          )
       << Show();
 
-  mouse.init(grabber.grab()->getSize());
+  mouse.init(grabber.grabImage().getSize());
 
   gui["draw"].install(&mouse);
 }
@@ -68,7 +41,7 @@ void run(){
   ButtonHandle now = gui["now"];
   bool automatic = gui["auto"];
 
-  const Img8u image = *grabber.grab()->as8u();
+  const Img8u image = grabber.grabImage().as8u();
   draw = image;
 
   if(now.wasTriggered() || automatic){

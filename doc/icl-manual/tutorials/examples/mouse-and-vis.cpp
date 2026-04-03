@@ -23,7 +23,7 @@ void mouse(const MouseEvent &e){
 // initializiation function
 void init(){
   grabber.init(pa("-i"));
-  gui << Draw().handle("image")
+  gui << Canvas().handle("image")
       << Slider(0,200,30).out("t").maxSize(90,2)
       << Show();
 
@@ -39,7 +39,7 @@ void run(){
   DrawHandle draw = gui["image"];
 
   // grab image
-  const ImgBase *I = grabber.grab();
+  Image I = grabber.grabImage();
 
   // set the background image
   draw = I;

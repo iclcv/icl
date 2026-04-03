@@ -40,9 +40,7 @@
 #include <set>
 #include <map>
 
-namespace icl {
-  namespace utils {
-
+namespace icl::utils {
     struct CLImage2D::Impl {
       size_t width;
       size_t height;
@@ -278,5 +276,4 @@ namespace icl {
       return impl->image2D;
     }
   }
-}
 #endif

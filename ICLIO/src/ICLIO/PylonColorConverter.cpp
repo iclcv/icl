@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/PylonColorConverter.cpp                **
-** Module : ICLIO                                                  **
-** Authors: Viktor Richter                                         **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
 
 #include <ICLIO/PylonColorConverter.h>
 #include <ICLCore/CCFunctions.h>
@@ -52,13 +26,13 @@ using namespace Pylon;
 
 // Constructor
 PylonColorConverter::PylonColorConverter() : m_Mutex() {
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   m_Converter = nullptr;
 }
 
 // Destructor
 PylonColorConverter::~PylonColorConverter(){
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   ICL_DELETE(m_Converter)
 }
 
@@ -68,7 +42,7 @@ void PylonColorConverter::resetConversion(
     Pylon::PixelType pixel_type, std::string pixel_type_name){
 
   //locking mutex
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   DEBUG_LOG("w=" << width << " h=" << height << " t=" << pixel_type
                     << " sb=" << pixel_size_bits << " bs=" << buffer_size)
   #ifdef SPEED_TEST
@@ -146,21 +120,15 @@ void PylonColorConverter::resetConversion(
 
 
     case PixelType_YUV422packed:
-    #ifdef ICL_HAVE_IPP
-      m_Converter = new Yuv422ToRgb8Icl(width, height);
-    #else
+      // TODO: add IPP-accelerated Yuv422ToRgb8 converter
       m_Converter = new PylonColorToRgb(width, height, pixel_type,
                                           pixel_size_bits, buffer_size);
-    #endif
       break;
 
     case PixelType_YUV422_YUYV_Packed:
-    #ifdef ICL_HAVE_IPP
-      m_Converter = new Yuv422YUYVToRgb8Icl(width, height);
-    #else
+      // TODO: add IPP-accelerated Yuv422YUYVToRgb8 converter
       m_Converter = new PylonColorToRgb(width, height, pixel_type,
                                           pixel_size_bits, buffer_size);
-    #endif
       break;
 
     case PixelType_RGB8packed:
@@ -195,7 +163,7 @@ ImgBase* PylonColorConverter::convert(const void *pImageBuffer, ConvBuffers* b){
 #ifdef SPEED_TEST
   Time t = Time::now();
 #endif
-  std::lock_guard<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
   if(m_Converter == nullptr){
     DEBUG_LOG(m_ErrorMessage)
     return nullptr;
@@ -463,66 +431,3 @@ void BayerToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
   m_Conv.apply(&tmp, &(b -> m_Image));
 }
 
-#ifdef ICL_HAVE_IPP
-// Constructor initializes conversion
-Yuv422ToRgb8Icl::Yuv422ToRgb8Icl(int width, int height)
-  : m_Size(width, height)
-{
-  m_ConvBuffer = new icl8u[m_Size.getDim() * 3];
-}
-
-// frees allocated ressources
-Yuv422ToRgb8Icl::~Yuv422ToRgb8Icl(){
-  ICL_DELETE_ARRAY(m_ConvBuffer);
-}
-
-// initializes buffers in b as needed for color conversion.
-void Yuv422ToRgb8Icl::initBuffers(ConvBuffers* b){
-  // just an rgb image
-  b -> m_Image = new Img8u(m_Size, core::formatRGB);
-}
-
-// writes image from imgBuffer to b using appropriate conversion.
-void Yuv422ToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
-  // IPP-colorconversion from yuv to rgb (interleaved)
-  ippiCbYCr422ToRGB_8u_C2C3R(static_cast<const icl8u*>(imgBuffer),
-                           m_Size.width*2,
-                           m_ConvBuffer,
-                           m_Size.width*3,
-                           m_Size
-  );
-  // conversion writes interleaved image into m_ConvBuffer.
-  interleavedToPlanar(m_ConvBuffer, dynamic_cast<Img8u*>(b -> m_Image));
-}
-
-// Constructor initializes conversion
-Yuv422YUYVToRgb8Icl::Yuv422YUYVToRgb8Icl(int width, int height)
-  : m_Size(width, height)
-{
-  m_ConvBuffer = new icl8u[m_Size.getDim() * 3];
-}
-
-// frees allocated ressources
-Yuv422YUYVToRgb8Icl::~Yuv422YUYVToRgb8Icl(){
-  ICL_DELETE_ARRAY(m_ConvBuffer);
-}
-
-// initializes buffers in b as needed for color conversion.
-void Yuv422YUYVToRgb8Icl::initBuffers(ConvBuffers* b){
-  // just an rgb image
-  b -> m_Image = new Img8u(m_Size, core::formatRGB);
-}
-
-// writes image from imgBuffer to b using appropriate conversion.
-void Yuv422YUYVToRgb8Icl::convert(const void *imgBuffer, ConvBuffers* b){
-  // IPP-colorconversion from yuv to rgb (interleaved)
-  ippiYCbCr422ToRGB_8u_C2C3R(static_cast<const icl8u*>(imgBuffer),
-                           m_Size.width*2,
-                           m_ConvBuffer,
-                           m_Size.width*3,
-                           m_Size
-  );
-  // conversion writes interleaved image into m_ConvBuffer.
-  interleavedToPlanar(m_ConvBuffer, dynamic_cast<Img8u*>(b -> m_Image));
-}
-#endif

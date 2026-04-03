@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLUtils/src/ICLUtils/PluginRegister.h                 **
-** Module : ICLUtils                                               **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
@@ -46,7 +20,7 @@ namespace icl{
       public:
 
       /// data used for instance creation
-      using Data = std::map<std::string,std::string>;
+      using Data = std::map<std::string,std::string, std::less<>>;
 
       /// creator function for instances
       using CreateFunction = std::function<T*(const Data&)>;
@@ -74,10 +48,10 @@ namespace icl{
 
       /// creates an instance (or throws)
       inline T *createInstance(const std::string &name, const Data &data){
-        typename std::map<std::string,Plugin>::iterator it = plugins.find(name);
+        typename std::map<std::string,Plugin, std::less<>>::iterator it = plugins.find(name);
         if(it == plugins.end()){
           std::ostringstream all;
-          for(typename std::map<std::string,Plugin>::iterator jt = plugins.begin(); jt != plugins.end();){
+          for(typename std::map<std::string,Plugin, std::less<>>::iterator jt = plugins.begin(); jt != plugins.end();){
             all << jt->first;
             if(++jt != plugins.end()) all << ",";
           }
@@ -94,7 +68,7 @@ namespace icl{
         t(1,0) = "Description";
         t(2,0) = "Creation Syntax";
         int i=1;
-        for(typename std::map<std::string,Plugin>::iterator it = plugins.begin();
+        for(typename std::map<std::string,Plugin, std::less<>>::iterator it = plugins.begin();
             it != plugins.end(); ++it, ++i){
           t(0,i) = it->second.name;
           t(1,i) = it->second.description;
@@ -104,7 +78,7 @@ namespace icl{
       }
 
       /// returns a all registered plugins
-      const std::map<std::string,Plugin> &getRegisteredPlugins() const{
+      const std::map<std::string,Plugin, std::less<>> &getRegisteredPlugins() const{
         return plugins;
       }
 
@@ -113,7 +87,7 @@ namespace icl{
       PluginRegister(){}
 
       /// internal plugin list
-      std::map<std::string,Plugin> plugins;
+      std::map<std::string,Plugin, std::less<>> plugins;
 
     };
   }

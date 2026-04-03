@@ -1,17 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2015 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/QtVideoGrabber.h                       **
-** Module : ICLQt                                                  **
-** Authors: Matthias Esau                                          **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #pragma once
 
@@ -20,8 +9,7 @@
 #include <ICLQt/Common.h>
 #include <ICLQt/ICLVideoSurface.h>
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     class ICLQt_API QtVideoGrabber: public icl::io::Grabber{
       public:
 
@@ -32,7 +20,7 @@ namespace icl{
         ~QtVideoGrabber();
 
         /// grab function
-        virtual const core::ImgBase *acquireImage();
+        virtual const core::ImgBase *acquireDisplay();
 
         /// direct access to pause video playback (grab will block then)
         void pause();
@@ -48,4 +36,3 @@ namespace icl{
         ICLVideoSurface* surface;
     };
   }
-}

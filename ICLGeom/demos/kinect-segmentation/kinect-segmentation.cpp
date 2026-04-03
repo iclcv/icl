@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/demos/kinect-segmentation/kinect-segmentation. **
-**          cpp                                                    **
-** Module : ICLGeom                                                **
-** Authors: Andre Ueckermann                                       **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
@@ -76,7 +49,7 @@ struct AdaptedSceneMouseHandler : public MouseHandler{
   }
 
   void process(const MouseEvent &e){
-    std::lock_guard<std::recursive_mutex> l(mutex);
+    std::scoped_lock<std::recursive_mutex> l(mutex);
       h->process(e);
   }
 
@@ -173,16 +146,16 @@ void init(){
           );
 
   gui << ( VBox()
-           << Draw3D().handle("hdepth").minSize(10,8)
+           << Canvas3D().handle("hdepth").minSize(10,8)
            << Button("heatmap","gray").out("heatmap")
-           << Draw3D().handle("hcolor").minSize(10,8)
+           << Canvas3D().handle("hcolor").minSize(10,8)
          )
       << ( VBox()
-           << Draw3D().handle("hedge").minSize(10,8)
-           << Draw3D().handle("hnormal").minSize(10,8)
+           << Canvas3D().handle("hedge").minSize(10,8)
+           << Canvas3D().handle("hnormal").minSize(10,8)
          )
       << ( HSplit()
-           << Draw3D().handle("draw3D").minSize(40,30)
+           << Canvas3D().handle("draw3D").minSize(40,30)
            << controlsTabs
            )
       << Show();
@@ -272,15 +245,12 @@ void run(){
   }
 
   //grab images
-  const ImgBase *colorImagePtr = grabColor.grab();
-  const ImgBase *depthImagePtr = grabDepth.grab();
-  if(colorImagePtr == NULL || depthImagePtr == NULL){
+  Image colorImage = grabColor.grabImage();
+  Image depthImage = grabDepth.grabImage();
+  if(!colorImage || !depthImage){
     obj->unlock();
     return;
   }
-  const ImgBase &colorImage = *colorImagePtr;
-  const ImgBase &depthImage = *depthImagePtr;
-
   static ImgBase *heatmapImage = 0;
 
   int filterSize = gui["filterSize"];
@@ -290,7 +260,7 @@ void run(){
 
   static ImgBase *filteredImage = 0;
   if(gui["enableSmoothing"]){//temporal smoothing
-    temporalSmoothing->apply(&depthImage,&filteredImage);
+    temporalSmoothing->apply(depthImage.ptr(),&filteredImage);
     if(gui["heatmap"]){//heatmap image
       pseudoColorConverter->apply(filteredImage,&heatmapImage);
       hdepth = heatmapImage;//->as8u();
@@ -299,10 +269,10 @@ void run(){
     }
 	}else{
     if(gui["heatmap"]){//heatmap image
-      pseudoColorConverter->apply(&depthImage,&heatmapImage);
+      pseudoColorConverter->apply(depthImage.ptr(),&heatmapImage);
       hdepth = heatmapImage;//->as8u();
     }else{//depth image
-      hdepth = &depthImage;
+      hdepth = depthImage;
     }
   }
 
@@ -365,25 +335,25 @@ void run(){
   }else{
     if(usedFilterHandle.getSelected()==0){//unfiltered
       if(gui["disableAveraging"]){
-        edgeImage=normalEstimator->calculate(*depthImage.as32f(), false, false, false);
+        edgeImage=normalEstimator->calculate(depthImage.as32f(), false, false, false);
       }
       else{//normal averaging
         if(usedSmoothingHandle.getSelected()==0){//linear
-          edgeImage=normalEstimator->calculate(*depthImage.as32f(), false, true, false);
+          edgeImage=normalEstimator->calculate(depthImage.as32f(), false, true, false);
         }
         else if(usedSmoothingHandle.getSelected()==1){//gauss
-          edgeImage=normalEstimator->calculate(*depthImage.as32f(), false, true, true);
+          edgeImage=normalEstimator->calculate(depthImage.as32f(), false, true, true);
         }
       }
     }else{
       if(gui["disableAveraging"]){//filtered
-        edgeImage=normalEstimator->calculate(*depthImage.as32f(), true, false, false);
+        edgeImage=normalEstimator->calculate(depthImage.as32f(), true, false, false);
       }else{//normal averaging
         if(usedSmoothingHandle.getSelected()==0){//linear
-          edgeImage=normalEstimator->calculate(*depthImage.as32f(), true, true, false);
+          edgeImage=normalEstimator->calculate(depthImage.as32f(), true, true, false);
         }
         else if(usedSmoothingHandle.getSelected()==1){//gauss
-          edgeImage=normalEstimator->calculate(*depthImage.as32f(), true, true, true);
+          edgeImage=normalEstimator->calculate(depthImage.as32f(), true, true, true);
         }
       }
     }
@@ -391,7 +361,7 @@ void run(){
 
   if(pa("-d")){
     normalEstimator->applyWorldNormalCalculation(depthCam);
-    normalImage=normalEstimator->getRGBNormalImage();
+    normalImage=normalEstimator->getRGBNormalDisplay();
   }
 
 	usedModeHandle = gui.get<ButtonGroupHandle>("usedMode");
@@ -401,9 +371,9 @@ void run(){
 
 	if(pa("-c") && mode==0){//RGB
 	  if(gui["enableSmoothing"]){
-      creator->create(*filteredImage->as32f(), *obj, colorImage.as8u(), depthScaling);
+      creator->create(*filteredImage->as32f(), *obj, &colorImage.as8u(), depthScaling);
     }else{
-      creator->create(*depthImage.as32f(), *obj, colorImage.as8u(), depthScaling);
+      creator->create(depthImage.as32f(), *obj, &colorImage.as8u(), depthScaling);
 	  }
   }else if(mode==0){//UniColor
 	  GeomColor c(1.,0.,0.,1.);
@@ -411,14 +381,14 @@ void run(){
 	  if(gui["enableSmoothing"]){
 	    creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }else{
-	    creator->create(*depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
+	    creator->create(depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }
   }
   else{//all other modes
     if(gui["enableSmoothing"]){
 	    creator->create(*filteredImage->as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }else{
-	    creator->create(*depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
+	    creator->create(depthImage.as32f(), *obj, 0, depthScaling);//, colorImage.as8u());
 	  }
 	}
 
@@ -463,7 +433,7 @@ void run(){
 	  segmentation->clearData();
 	  segmentation->regionGrow();
 	  segmentation->colorPointcloud();
-    obj->setColorsFromImage(segmentation->getSegmentColorImage());
+    obj->setColorsFromImage(segmentation->getSegmentColorDisplay());
   }
 
   else if(mode==2){//Surfaces
@@ -473,13 +443,13 @@ void run(){
 	  segmentation->regionGrow();
 	  segmentation->calculatePointAssignmentAndAdjacency();
 	  segmentation->colorPointcloud();
-    obj->setColorsFromImage(segmentation->getSegmentColorImage());
+    obj->setColorsFromImage(segmentation->getSegmentColorDisplay());
   }
   else if(mode==3){//Blobs
     if(gui["enableSmoothing"]){
 	    obj->setColorsFromImage(segmentation->segmentationBlobs(obj->selectXYZH(),edgeImage,*filteredImage->as32f()));
 	  }else{
-	    obj->setColorsFromImage(segmentation->segmentationBlobs(obj->selectXYZH(),edgeImage,*depthImage.as32f()));
+	    obj->setColorsFromImage(segmentation->segmentationBlobs(obj->selectXYZH(),edgeImage,depthImage.as32f()));
 	  }
   }
 
@@ -487,17 +457,17 @@ void run(){
 	  if(gui["enableSmoothing"]){
 	    obj->setColorsFromImage(segmentation->segmentation(obj->selectXYZH(),edgeImage,*filteredImage->as32f()));
 	  }else{
-	    obj->setColorsFromImage(segmentation->segmentation(obj->selectXYZH(),edgeImage,*depthImage.as32f()));
+	    obj->setColorsFromImage(segmentation->segmentation(obj->selectXYZH(),edgeImage,depthImage.as32f()));
 	  }
   }
 
 
   obj->unlock();
 
-  hcolor = &colorImage;
-  hedge = &edgeImage;
+  hcolor = colorImage;
+  hedge = edgeImage;
   if(pa("-d")){
-    hnormal = &normalImage;
+    hnormal = normalImage;
   }
 
   gui["fps"].render();

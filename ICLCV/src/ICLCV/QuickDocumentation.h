@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/src/ICLCV/QuickDocumentation.h                   **
-** Module : ICLCV                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
@@ -152,7 +126,7 @@ GenericGrabber grabber;
 ImgQ last;  // last image
 
 void init(){
-  gui << Image().handle("image")
+  gui << Display().handle("image")
       << Slider(0,255,127).out("thresh")
       << Show();
   grabber.init(pa("-i"));
@@ -160,7 +134,7 @@ void init(){
 
 void run(){
   // use cvt to create an Img32 (aka ImgQ)
-  ImgQ curr = cvt(grabber.grab());
+  ImgQ curr = cvt(grabber.grabImage());
   // nested use of operators
   gui["image"] = thresh(abs(last-curr),gui["thresh"]);
   last = curr;

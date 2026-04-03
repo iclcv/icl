@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/src/ICLGeom/PointCloudSerializer.cpp           **
-** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLGeom/PointCloudSerializer.h>
 
@@ -80,8 +54,8 @@ namespace icl{
 #undef CPY
 #undef CPY_IF
 
-      const std::map<std::string,std::string> &m = o.getMetaData();
-      for(std::map<std::string,std::string>::const_iterator it = m.begin(); it != m.end(); ++it){
+      const auto &m = o.getMetaData();
+      for(auto it = m.begin(); it != m.end(); ++it){
         const std::string &key = it->first;
         const std::string &value = it->second;
         icl8u *d = dev.targetFor("meta:"+key, value.length());
@@ -167,7 +141,7 @@ namespace icl{
          note: each strig is stored without explicit \0 delimiter
      */
       int n = sizeof(MandatoryInfo) + 4;
-      for(std::map<std::string, std::vector<icl8u> >::const_iterator it = data.begin();
+      for(std::map<std::string, std::vector<icl8u>, std::less<>>::const_iterator it = data.begin();
           it != data.end(); ++it){
         n += 4 +  4 + it->first.length() + it->second.size();
       }
@@ -193,7 +167,7 @@ namespace icl{
       icl32s n = data.size();
       copy_next_bytes(dst, &n, sizeof(n));
 
-      for(std::map<std::string, std::vector<icl8u> >::const_iterator it = data.begin();
+      for(std::map<std::string, std::vector<icl8u>, std::less<>>::const_iterator it = data.begin();
           it != data.end(); ++it){
         icl32s nameLen = it->first.length();
         icl32s dataLen = it->second.size();
@@ -237,12 +211,12 @@ namespace icl{
     }
 
     const icl8u *PointCloudSerializer::DefaultDeserializationDevice::sourceFor(const std::string &featureName, int &bytes){
-      std::map<std::string,std::vector<icl8u> >::const_iterator it = data.find(featureName);
-      if(it == data.end()){
+      if(auto it = data.find(featureName); it == data.end()){
         bytes = 0;
         throw ICLException("DefaultDeserializationDevice::sourceFor: no source for feature name '" + featureName + "' found");
+      } else {
+        return it->second.data();
       }
-      return it->second.data();
     }
 
   }

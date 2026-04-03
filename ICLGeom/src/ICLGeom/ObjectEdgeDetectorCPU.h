@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/src/ICLGeom/ObjectEdgeDetectorCPU.h            **
-** Module : ICLGeom                                                **
-** Authors: Andre Ueckermann                                       **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
 /** \cond */
 //Please use the ObjectEdgeDetector Class.
@@ -36,9 +10,7 @@
 
 #include <ICLGeom/ObjectEdgeDetectorPlugin.h>
 
-namespace icl{
-  namespace geom{
-
+namespace icl::geom {
     struct Vec4 {
 	    inline Vec4() {
 	    }
@@ -82,7 +54,7 @@ namespace icl{
 
       /// Returns the filtered depth image
       /** @return the filtered depth image */
-      const core::Img32f &getFilteredDepthImage();
+      const core::Img32f &getFilteredDepthDisplay();
 
       /// Sets the (filtered) depth image (input for normal calculation)
       /** This call is not necessary if medianFilter() is executed before
@@ -124,7 +96,7 @@ namespace icl{
 
       /// Returns the RGB normal image.
       /** @return the RGB normal image */
-      const core::Img8u &getRGBNormalImage();
+      const core::Img8u &getRGBNormalDisplay();
 
       /// Sets the point normals (input for angle image calculation).
       /** This call is not necessary if normalCalculation() is executed before.
@@ -138,7 +110,7 @@ namespace icl{
 
       /// Returns the angle image.
       /** @return the angle image */
-      const core::Img32f &getAngleImage();
+      const core::Img32f &getAngleDisplay();
 
       /// Sets the angle image (input for image binarization).
       /** This call is not necessary if angleImageCalculation() is executed before.
@@ -151,7 +123,7 @@ namespace icl{
 
       /// Returns the binarized angle image (final output).
       /** @return the (final) binarized angle image */
-      const core::Img8u &getBinarizedAngleImage();
+      const core::Img8u &getBinarizedAngleDisplay();
 
       /// Sets the mask size for applyMedianFilter()
       /** size n corresponds to mask size n x n. (default 3, min 3, max 9, odd only)
@@ -211,6 +183,5 @@ namespace icl{
 
     };
   }
-}
 
 /** \endcond */

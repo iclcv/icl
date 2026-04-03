@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/apps/surf-detector/surf-detector.cpp             **
-** Module : ICLCV                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLCV/SurfFeatureDetector.h>
 #include <ICLQt/Common.h>
@@ -129,7 +103,7 @@ void init(){
   grabber.init(pa("-i"));
   if(pa("-r")) grabber.resetBus();
 
-  gui << Draw().handle("draw").minSize(48,18)
+  gui << Canvas().handle("draw").minSize(48,18)
       << ( VBox().maxSize(14,99).minSize(14,1)
            << ( HBox().label("template ...")
                 << Button("extract from image").handle("extract")
@@ -156,7 +130,7 @@ void init(){
               )
          )
       << Show();
-  grabber.grab()->convert(&templ);
+  grabber.grabImage().ptr()->convert(&templ);
   surf.reset(new SurfFeatureDetector(5,4,2,0.00005,*pa("-p")));
   surf->setReferenceImage(&templ);
 
@@ -191,7 +165,9 @@ void extract_template(const Img8u &image){
 
 void rotate_template(){
   RotateOp r(90);
-  r.apply(&templ)->deepCopy(bpp(templ));
+  static ImgBase *rotBuf = 0;
+  r.apply(&templ, &rotBuf);
+  rotBuf->deepCopy(bpp(templ));
   surf->setReferenceImage(&templ);
   //  vdtempl = vis_surf(surf->getReferenceFeatures(),0,(iH-tH)/2);
 }
@@ -225,7 +201,8 @@ void run(){
   ButtonHandle rotate = gui["rotate"];
   ButtonHandle load = gui["load"];
 
-  const Img8u &image = *grabber.grab()->as8u();
+  core::Image grabImg = grabber.grabImage();
+  const Img8u &image = grabImg.as8u();
   iW = image.getWidth();
   iH = image.getHeight();
   tW = templ.getWidth();

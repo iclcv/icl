@@ -1,25 +1,13 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2015 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/QtVideoGrabber.cpp                     **
-** Module : ICLQt                                                  **
-** Authors: Matthias Esau                                          **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #include <ICLQt/QtVideoGrabber.h>
 
 using namespace icl::utils;
 using namespace icl::io;
 
-namespace icl{
-  namespace qt{
+namespace icl::qt {
     QtVideoGrabber::QtVideoGrabber(const std::string &filename) {
 
       if(!File(filename).exists()){
@@ -38,8 +26,8 @@ namespace icl{
       delete surface;
     }
 
-    const core::ImgBase *QtVideoGrabber::acquireImage() {
-      return surface->getImage();
+    const core::ImgBase *QtVideoGrabber::acquireDisplay() {
+      return surface->getDisplay();
     }
 
     void QtVideoGrabber::pause() {
@@ -71,4 +59,3 @@ namespace icl{
 
     REGISTER_GRABBER(qtvideo,createQtVideoGrabber, getQtVideoDeviceList,"qtvideo:video filename:Qt based video file source");
   }
-}

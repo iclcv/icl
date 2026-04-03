@@ -1,5 +1,6 @@
 #include <ICLGeom/Geom.h>
 #include <ICLQt/Common.h>
+#include <algorithm>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLPhysics/PhysicsScene.h>
 #include <ICLPhysics/RigidBoxObject.h>
@@ -22,14 +23,14 @@ void init(){
   scene.addCamera(cam);
   maze = new MazeObject();
   maze->addToWorld(&scene);
-  gui << Draw3D().handle("draw") << Show();
+  gui << Canvas3D().handle("draw") << Show();
   gui["draw"].install(&handler);
   gui["draw"].link(scene.getGLCallback(0));
   scene.setGravity(Vec(0,0,-10000));
 }
 
 double fun(double val) {
-  return std::max(std::min(1.,val*5),-1.);
+  return std::clamp(val*5, -1., 1.);
 }
 
 utils::Time start = utils::Time::now();

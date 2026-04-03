@@ -1,14 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** File   : ICLQt/demos/mandelbrot/mandelbrot.cpp                  **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-** Interactive fractal explorer with OpenCL GPU acceleration and    **
-** CPU fallback. Supports Mandelbrot, Julia, Burning Ship, and     **
-** Tricorn fractals. Drag rectangles to zoom, right-click to undo. **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLCore/Img.h>
@@ -305,15 +297,15 @@ static int lastFractalType = -1;
 static void mouseHandler(const MouseEvent &event){
   if(event.isLeft()){
     if(event.isPressEvent()){
-      std::lock_guard<std::mutex> lock(dragMutex);
+      std::scoped_lock<std::mutex> lock(dragMutex);
       dragging = true;
       dragStart = event.getPos32f();
       dragEnd = dragStart;
     } else if(event.isDragEvent()){
-      std::lock_guard<std::mutex> lock(dragMutex);
+      std::scoped_lock<std::mutex> lock(dragMutex);
       dragEnd = event.getPos32f();
     } else if(event.isReleaseEvent()){
-      std::lock_guard<std::mutex> lock(dragMutex);
+      std::scoped_lock<std::mutex> lock(dragMutex);
       dragging = false;
       dragEnd = event.getPos32f();
 
@@ -323,7 +315,7 @@ static void mouseHandler(const MouseEvent &event){
       float y2 = std::max(dragStart.y, dragEnd.y);
 
       if(x2 - x1 > 5 && y2 - y1 > 5){
-        std::lock_guard<std::mutex> slock(stateMutex);
+        std::scoped_lock<std::mutex> slock(stateMutex);
         tickAnimation();
         int w = image.getWidth();
         int h = image.getHeight();
@@ -338,7 +330,7 @@ static void mouseHandler(const MouseEvent &event){
       }
     }
   } else if(event.isRight() && event.isPressEvent()){
-    std::lock_guard<std::mutex> lock(stateMutex);
+    std::scoped_lock<std::mutex> lock(stateMutex);
     tickAnimation();
     if(!zoomHistory.empty()){
       auto [ocx, ocy, ospan] = zoomHistory.back();
@@ -351,7 +343,7 @@ static void mouseHandler(const MouseEvent &event){
 void init(){
   initPalette();
 
-  gui << Draw().handle("draw").minSize(40, 30)
+  gui << Canvas().handle("draw").minSize(40, 30)
       << ( VBox()
            << Combo("!Mandelbrot,Julia,Burning Ship,Tricorn")
               .handle("fractal").label("fractal type")
@@ -388,7 +380,7 @@ void run(){
   // Fractal type changed → reset view to that fractal's default
   if(fractalType != lastFractalType){
     if(lastFractalType >= 0){
-      std::lock_guard<std::mutex> lock(stateMutex);
+      std::scoped_lock<std::mutex> lock(stateMutex);
       tickAnimation();
       zoomHistory.clear();
       double dcx, dcy, dspan;
@@ -402,7 +394,7 @@ void run(){
   }
 
   if(reset){
-    std::lock_guard<std::mutex> lock(stateMutex);
+    std::scoped_lock<std::mutex> lock(stateMutex);
     tickAnimation();
     zoomHistory.clear();
     double dcx, dcy, dspan;
@@ -422,7 +414,7 @@ void run(){
 
   double lcx, lcy, lspan;
   {
-    std::lock_guard<std::mutex> lock(stateMutex);
+    std::scoped_lock<std::mutex> lock(stateMutex);
     tickAnimation();
     lcx = cx; lcy = cy; lspan = span;
   }
@@ -446,7 +438,7 @@ void run(){
 
   // Draw selection rectangle
   {
-    std::lock_guard<std::mutex> lock(dragMutex);
+    std::scoped_lock<std::mutex> lock(dragMutex);
     if(dragging){
       draw->color(255, 255, 255, 200);
       draw->nofill();

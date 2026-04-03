@@ -1,89 +1,47 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/src/ICLFilter/WienerOp.h                     **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter, Robert Haschke, Andre Justus      **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke, Andre Justus
 
 #pragma once
 
 #include <ICLFilter/NeighborhoodOp.h>
-#include <vector>
+#include <ICLCore/Image.h>
+#include <ICLCore/ImageBackendDispatching.h>
 
-namespace icl {
-  namespace filter{
-    /// Class for Wiener Filter \ingroup UNARY \ingroup NBH
-     /** Wiener filters are commonly used in image processing applications to
-         remove additive noise from degraded images, to restore a blurred image.
+namespace icl::filter {
+  /// Class for Wiener Filter (IPP only) \ingroup UNARY \ingroup NBH
+  /** @see WienerOp.h for full Wiener filter documentation */
+  class WienerOp : public NeighborhoodOp, public core::ImageBackendDispatching {
+   public:
 
-         The following operation is performed on each pixel:
-         \f[
-         R(x,y,c) = \mu_m(x,y,c) + \frac{\sigma_m^2(x,y,c)-\nu^2}{\sigma^2} * (S(x,y,c) - \mu_m(x,y,c))
-         \f]
+    /// Backend selector keys
+    enum class Op : int { apply };
 
-         where:
-         - \f$R(x,y,c)\f$ is the result image at position (x,y) and channel c
-         - \f$\mu_m(x,y,c)\f$ is the mean of the image in region m (mask) centered at (x,y), channel c
-         - \f$\sigma^2_m(x,y,c)\f$ is the variance of the image in region m (mask) centered at (x,y), channel c
-         - \f$\sigma^2 \f$ is the image variance
-         - \f$S(x,y,c)\f$ is the source image at position (x,y) and channel c
-     */
-    class WienerOp : public NeighborhoodOp {
-     public:
+    /// Dispatch signature: src, dst, maskSize, anchor, roiOffset, noise
+    using WienerSig = void(const core::Image&, core::Image&,
+                            const utils::Size&, const utils::Point&,
+                            const utils::Point&, icl32f);
 
-      /// Constructor that creates a wiener filter object, with specified mask size
-      /** @param maskSize of odd width and height
-          Even width or height is increased to next higher odd value.
-          @param noise nois factor
-      **/
-      WienerOp (const utils::Size &maskSize, icl32f noise=0): NeighborhoodOp(maskSize),m_fNoise(noise){}
+    /// Class-level prototype — owns selectors, populated during static init
+    static core::ImageBackendDispatching& prototype();
 
-      /// Filters an image using the Wiener algorithm.
-      /** @param poSrc Source image
-          @param ppoDst Destination image
-      **/
-      ICLFilter_API void apply (const core::ImgBase *poSrc, core::ImgBase **ppoDst);
+    /// Constructor
+    WienerOp (const utils::Size &maskSize, icl32f noise=0);
 
-      /// Import unaryOps apply function without destination image
-      using NeighborhoodOp::apply;
+    /// Filters an image using the Wiener algorithm.
+    void apply(const core::Image &src, core::Image &dst) override;
 
-      /// returns the current noise factor
-      /** @return current noise factor **/
-      icl32f getNoise() const { return m_fNoise; }
+    /// Import unaryOps apply function without destination image
+    using NeighborhoodOp::apply;
 
-      /// sets up a new noise factor
-      /** @ param noise new noise factor **/
-      void setNoise(icl32f noise) { m_fNoise = noise; }
+    icl32f getNoise() const { return m_fNoise; }
+    void setNoise(icl32f noise) { m_fNoise = noise; }
 
-      private:
-      /// internal buffer for applying the wiener operation
-      std::vector<icl8u> m_vecBuffer;
+    private:
+    icl32f m_fNoise;
+  };
 
-      /// internal storage for the current noise factor
-      icl32f m_fNoise;
-    };
-  } // namespace filter
-} // namespace icl
+  /// ADL-visible toString for WienerOp::Op (defined in WienerOp.cpp)
+  ICLFilter_API const char* toString(WienerOp::Op op);
+
+  } // namespace icl::filter

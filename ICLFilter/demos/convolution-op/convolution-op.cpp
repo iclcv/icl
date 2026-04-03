@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLFilter/demos/convolution-op/convolution-op.cpp      **
-** Module : ICLFilter                                              **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLFilter/ConvolutionOp.h>
@@ -48,8 +22,8 @@ void init(){
            << Label("--").handle("apply-time").label("apply time")
            )
       << ( VSplit()
-           << Draw().minSize(16,12).handle("src").label("source image")
-           << Draw().minSize(16,12).handle("dst").label("result image")
+           << Canvas().minSize(16,12).handle("src").label("source image")
+           << Canvas().minSize(16,12).handle("dst").label("result image")
            )
       << Show();
 
@@ -99,9 +73,9 @@ void run(){
   grabber.useDesired(parse<Size>(srcSize.getSelectedItem()));
   grabber.useDesired(parse<depth>(srcDepth.getSelectedItem()));
 
-  const ImgBase *grabbedImage = grabber.grab();
-  Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage->getImageRect());
-  const ImgBase *roiedImage = grabbedImage->shallowCopy(roi);
+  Image grabbedImage = grabber.grabImage();
+  Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage.ptr()->getImageRect());
+  const ImgBase *roiedImage = grabbedImage.ptr()->shallowCopy(roi);
 
   ConvolutionOp conv(ConvolutionKernel(get_kernel(kernel.getSelectedItem())),forceUnsigned);
   conv.setClipToROI(clipToROI);

@@ -37,9 +37,7 @@
 #include <ICLUtils/BasicTypes.h>
 #include <vector>
 
-namespace icl {
-	namespace utils {
-
+namespace icl::utils {
 		class CLBuffer;
 		class CLImage2D;
 
@@ -145,6 +143,4 @@ namespace icl {
 		};
 
 	}
-}
-
 #endif

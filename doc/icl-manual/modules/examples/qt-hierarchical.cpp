@@ -8,7 +8,7 @@ void init(){
 
   grabber.init(pa("-i"));
 
-  gui << Image().handle("image")
+  gui << Display().handle("image")
       << ( VBox().minSize(10,26).maxSize(14,100)
            << ( VBox().label("thresholds")
                 << Slider(0,255,0).label("red").handle("r")
@@ -33,7 +33,7 @@ void init(){
 }
 
 void run(){
-  gui["image"] = grabber.grab();
+  gui["image"] = grabber.grabImage();
 
   // image processing stuff ...
 

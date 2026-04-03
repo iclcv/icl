@@ -1,17 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2015 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/ICLVideoSurface.h                      **
-** Module : ICLQt                                                  **
-** Authors: Matthias Esau                                          **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #pragma once
 
@@ -25,9 +14,7 @@
 #include <QtCore/QAtomicInt>
 #include <mutex>
 
-namespace icl{
-  namespace qt{
-
+namespace icl::qt {
     /// Receives video frames from Qt6 multimedia and converts to ICL images
     class ICLQt_API ICLVideoSurface : public QObject
     {
@@ -54,7 +41,7 @@ namespace icl{
       QVideoSink *videoSink() { return m_sink; }
 
       /// Blocking call: returns the most recent frame as an ICL image
-      const core::Img8u* getImage();
+      const core::Img8u* getDisplay();
 
       /// Stops receiving frames and wakes any blocked consumer
       void stop();
@@ -66,4 +53,3 @@ namespace icl{
       void init();
     };
   }
-}

@@ -16,8 +16,8 @@ void init()  {
 
 	grabber.init(pa("-i"));
 
-	gui << Draw().label("View Original").handle("view_original")
-				 << Draw().label("View received").handle("view_received");
+	gui << Canvas().label("View Original").handle("view_original")
+				 << Canvas().label("View received").handle("view_received");
 
 	gui << Show();
 
@@ -25,7 +25,7 @@ void init()  {
 
 void run() {
 
-	depth_f = *grabber.grab()->as32f();
+	depth_f = grabber.grabImage().as32f();
 	Img16s *img16s = depth_f.convert(icl::core::depth16s)->as16s();
 
 	ImageCompressor compressor(ImageCompressor::CompressionSpec("1611","0"));

@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLMarkers/demos/multi-cam-marker-demo/multi-cam-marke **
-**          r-demo.cpp                                             **
-** Module : ICLMarkers                                             **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLMarkers/MultiCamFiducialDetector.h>
@@ -52,7 +25,7 @@ void updateCube(int id, const Mat &T){
     cube = new SceneObject("cuboid",p);
     cube->setVisible(Primitive::quad,false);
     cube->addChild(new ComplexCoordinateFrameSceneObject);
-    std::lock_guard<std::recursive_mutex> lock(scene.getMutex());
+    std::scoped_lock<std::recursive_mutex> lock(scene.getMutex());
     scene.addObject(cube);
   }
   cube->setTransformation(T);
@@ -76,7 +49,7 @@ void init(){
   if(!pa("-nosync").as<bool>()){
     fd.setPropertyValue("thresh.global threshold",4.8);
   }
-  gui << Draw3D().handle("draw").minSize(16,12)
+  gui << Canvas3D().handle("draw").minSize(16,12)
       << (VBox().maxSize(15,99).minSize(15,1)
           << Combo(fd.getIntermediateImageNames()).handle("vis").label("visualized image")
           << Prop("fd")
@@ -89,9 +62,11 @@ void run(){
   DrawHandle3D draw = gui["draw"];
   draw = fd.getIntermediateImage(gui["vis"]);
 
+  std::vector<Image> grabbedImages(grabbers.size());
   std::vector<const ImgBase*> images(grabbers.size());
   for(unsigned int i=0;i<grabbers.size();++i){
-    images[i] = grabbers[i]->grab();
+    grabbedImages[i] = grabbers[i]->grabImage();
+    images[i] = grabbedImages[i].ptr();
   }
 
   const std::vector<MultiCamFiducial> &fs = fd.detect(images,1);

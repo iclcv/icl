@@ -108,8 +108,8 @@ void ObjectEdgeDetector::applyMedianFilter() {
     objectEdgeDetector->applyMedianFilter();
 }
 
-const Img32f &ObjectEdgeDetector::getFilteredDepthImage() {
-    return objectEdgeDetector->getFilteredDepthImage();
+const Img32f &ObjectEdgeDetector::getFilteredDepthDisplay() {
+    return objectEdgeDetector->getFilteredDepthDisplay();
 }
 
 void ObjectEdgeDetector::setFilteredDepthImage(const Img32f &filteredImg) {
@@ -141,8 +141,8 @@ const DataSegment<float,4> ObjectEdgeDetector::getWorldNormals() {
     return objectEdgeDetector->getWorldNormals();
 }
 
-const core::Img8u &ObjectEdgeDetector::getRGBNormalImage() {
-    return objectEdgeDetector->getRGBNormalImage();
+const core::Img8u &ObjectEdgeDetector::getRGBNormalDisplay() {
+    return objectEdgeDetector->getRGBNormalDisplay();
 }
 
 void ObjectEdgeDetector::setNormals(DataSegment<float,4> pNormals) {
@@ -154,8 +154,8 @@ void ObjectEdgeDetector::applyAngleImageCalculation() {
     objectEdgeDetector->applyAngleImageCalculation();
 }
 
-const Img32f &ObjectEdgeDetector::getAngleImage() {
-    return objectEdgeDetector->getAngleImage();
+const Img32f &ObjectEdgeDetector::getAngleDisplay() {
+    return objectEdgeDetector->getAngleDisplay();
 }
 
 void ObjectEdgeDetector::setAngleImage(const Img32f &angleImg) {
@@ -167,8 +167,8 @@ void ObjectEdgeDetector::applyImageBinarization() {
     objectEdgeDetector->applyImageBinarization();
 }
 
-const Img8u &ObjectEdgeDetector::getBinarizedAngleImage() {
-    return objectEdgeDetector->getBinarizedAngleImage();
+const Img8u &ObjectEdgeDetector::getBinarizedAngleDisplay() {
+    return objectEdgeDetector->getBinarizedAngleDisplay();
 }
 
 void ObjectEdgeDetector::setMedianFilterSize(int size) {

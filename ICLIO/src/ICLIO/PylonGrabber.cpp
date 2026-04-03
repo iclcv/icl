@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLIO/src/ICLIO/PylonGrabber.cpp                       **
-** Module : ICLIO                                                  **
-** Authors: Viktor Richter                                         **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
 
 #include <ICLUtils/Exception.h>
 #include <ICLCore/ImgBase.h>
@@ -44,7 +18,7 @@ PylonGrabber::PylonGrabber(
   : m_ImgMutex(), m_PylonEnv(), m_LastBuffer(nullptr)
 {
   FUNCTION_LOG("args: " << args);
-  std::lock_guard<std::recursive_mutex> l(m_ImgMutex);
+  std::scoped_lock<std::recursive_mutex> l(m_ImgMutex);
   // Initialization of the pylon Runtime Library
   m_Camera = Pylon::CTlFactory::GetInstance().CreateDevice(dev);
 
@@ -182,14 +156,14 @@ void PylonGrabber::cameraDefaultSettings(){
   //(m_Camera, "GevSCPSPacketSize", 8192);
 }
 
-const core::ImgBase* PylonGrabber::acquireImage(){
+const core::ImgBase* PylonGrabber::acquireDisplay(){
   core::ImgBase* ret = nullptr;
   int counter = 0;
   while(1){
     // lock image lock so buffers are safe till release.
     m_ImgMutex.lock();
     // Get the image from the grabber thread
-    ret = m_GrabberThread -> getCurrentImage();
+    ret = m_GrabberThread -> getCurrentDisplay();
     if(m_CameraOptions-> omitDoubleFrames() && ret == m_LastBuffer
        && counter <= 1000)
     {

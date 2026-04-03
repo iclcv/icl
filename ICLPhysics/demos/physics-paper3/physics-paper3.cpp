@@ -1,32 +1,7 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2014 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLPhysics/demos/physics-paper3/physics-paper3.cpp     **
-** Module : ICLPhysics                                             **
-** Author : Christof Elbrechter, Matthias Esau                     **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
 #include <ICLQt/GLFragmentShader.h>
@@ -81,7 +56,7 @@ void init(){
                                                  0,1)));
   scene.setBounds(1000);
 
-  gui << Draw3D().handle("draw3D").minSize(32,24)
+  gui << Canvas3D().handle("draw3D").minSize(32,24)
       << (VBox().minSize(12,1).maxSize(12,99)
           << CheckBox("physics on",true).handle("physics on")
           << CheckBox("gravity on",true).handle("gravity on")
@@ -95,7 +70,7 @@ void init(){
           << Button("reset model").handle("reset")
           << FSlider(1,20,10).handle("f").label("move force")
           << FSlider(0.01,1,0.25).handle("r").label("move radius")
-          << Image().label("fold map").handle("fm").minSize(8,8)
+          << Display().label("fold map").handle("fm").minSize(8,8)
          )
       << Show();
 

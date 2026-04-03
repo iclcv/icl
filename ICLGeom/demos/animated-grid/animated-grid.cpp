@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/demos/animated-grid/animated-grid.cpp          **
-** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Geom.h>
@@ -108,9 +82,9 @@ struct Grid : public SceneObject{
 
 
 void run(){
-  grabber.grab()->convert(&image);
+  grabber.grabImage().ptr()->convert(&image);
   if(pa("-b")){
-    backFaceGrabber.grab()->convert(&backImage);
+    backFaceGrabber.grabImage().ptr()->convert(&backImage);
   }
   gui["draw"].render();
 #if 0
@@ -127,15 +101,15 @@ void init(){
   if(pa("-b")){
     backFaceGrabber.init(pa("-b"));
   }
-  gui << Draw3D().handle("draw").minSize(20,15).label("interaction area")
-      << Image().handle("offscreen0").label("offscreen rendered cam 0")
-      << Image().handle("offscreen1").label("offscreen rendered cam 1")
+  gui << Canvas3D().handle("draw").minSize(20,15).label("interaction area")
+      << Display().handle("offscreen0").label("offscreen rendered cam 0")
+      << Display().handle("offscreen1").label("offscreen rendered cam 1")
       << FSlider(0,1,0.2,true).out("freq").label("frequence")
       << Show();
 
-  grabber.grab();
-  grabber.grab();
-  grabber.grab()->convert(&image);
+  grabber.grabImage();
+  grabber.grabImage();
+  grabber.grabImage().ptr()->convert(&image);
   obj = new Grid(&image);
 
   scene.addObject(obj);

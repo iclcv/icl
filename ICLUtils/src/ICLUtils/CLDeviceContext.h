@@ -40,9 +40,7 @@
 #include <ICLUtils/CLIncludes.h>
 #include <string>
 
-namespace icl {
-	namespace utils {
-
+namespace icl::utils {
 		/**
 		 * @brief The CLDeviceContext class allows preparation of the device used for CLPrograms.
 		 *
@@ -214,6 +212,4 @@ namespace icl {
 		};
 
 	}
-}
-
 #endif

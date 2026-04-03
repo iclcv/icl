@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLQt/src/ICLQt/GUIComponents.h                        **
-** Module : ICLQt                                                  **
-** Authors: Christof Elbrechter                                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
@@ -146,30 +120,29 @@ namespace icl{
 
     /// Image visualization component
     /** Creates an ImageHandle for image visualization */
-    struct Image : public GUIComponent{
-      /// constructor
-      Image():GUIComponent("image"){}
+    struct Display : public GUIComponent{
+      Display():GUIComponent("image"){}
     };
 
     /// Image visualization component that allows for overlayed 2D image annotation
-    /** Creates an DrawHandle for image visualization and annotation */
-    struct Draw : public GUIComponent{
-      /// create draw component with given default view port size
-      /** The defaultViewPortsize is uses as annotation coordinate frame as long as not image
+    /** Creates a DrawHandle for image visualization and annotation */
+    struct Canvas : public GUIComponent{
+      /// create Canvas component with given default view port size
+      /** The defaultViewPortsize is used as annotation coordinate frame as long as no image
           is provided */
-      Draw(const utils::Size &defaultViewPortsize=utils::Size::VGA):
+      Canvas(const utils::Size &defaultViewPortsize=utils::Size::VGA):
       GUIComponent("draw",str(defaultViewPortsize)){}
     };
 
-    /// Image visualization compoent that allows for 2D and 3D image annotation
-    /** Creates a DrawHandle3D for image visualization and annotation. The Draw3D component
+    /// Image visualization component that allows for 2D and 3D image annotation
+    /** Creates a DrawHandle3D for image visualization and annotation. The Canvas3D component
         is closely integrated with the icl::geom::Scene class. Together these classes can
         be used to render a 3D scene on top of a camera image */
-    struct Draw3D : public GUIComponent{
-      /// create Draw3D component with given defaultViewPortsize
+    struct Canvas3D : public GUIComponent{
+      /// create Canvas3D component with given defaultViewPortsize
       /** The given defaultViewPortsize is to create an OpenGL viewport as long as no
-          backgrond image is given. */
-      Draw3D(const utils::Size &defaultViewPortsize=utils::Size::VGA):
+          background image is given. */
+      Canvas3D(const utils::Size &defaultViewPortsize=utils::Size::VGA):
       GUIComponent("draw3D",str(defaultViewPortsize)){}
     };
 

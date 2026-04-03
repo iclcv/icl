@@ -1,33 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLGeom/apps/lens-undistortion-calibration-opencv/     **
-**          lens-undistortion-calibration-opencv.cpp               **
-** Module : ICLGeom                                                **
-** Authors: Christof Elbrechter, Christian Groszewski              **
-**          Andre Ueckermann, Sergius Gaulik                       **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Christian Groszewski
 
 #define ICL_NO_USING_NAMESPACES
 
@@ -446,7 +419,8 @@ void init(){
   if(pa("-s")){
     grabber.useDesired(pa("-s").as<Size>());
   }
-  const ImgBase *image = grabber.grab();
+  Image grabImg = grabber.grabImage();
+  const ImgBase *image = grabImg.ptr();
   udist.init(image->getSize());
 
   if(pa("-cb")){
@@ -481,12 +455,12 @@ void init(){
   }
 
   gui << ( VSplit().label("image")
-           << Draw().label("input image").handle("image")
-           << Image().label("undistorted image").handle("uimage")
+           << Canvas().label("input image").handle("image")
+           << Display().label("undistorted image").handle("uimage")
          )
       << ( VSplit().label("data")
-           << Draw3D(image->getSize()).label("recorded planes").handle("plot")
-           << Draw().label("displacement map").handle("vecImage")
+           << Canvas3D(image->getSize()).label("recorded planes").handle("plot")
+           << Canvas().label("displacement map").handle("vecImage")
          )
       << ( VBox().label("controls").minSize(15,1)
            << CheckBox("detection", true).out("detection")
@@ -573,7 +547,8 @@ void run(){
   }
 
 
-  const ImgBase *img = grabber.grab();
+  Image grabImg2 = grabber.grabImage();
+  const ImgBase *img = grabImg2.ptr();
   draw = img;
 
   if(warp.getWarpMap().getSize().getDim()){

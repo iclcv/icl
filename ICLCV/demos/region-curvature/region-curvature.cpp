@@ -1,32 +1,6 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLCV/demos/region-curvature/region-curvature.cpp      **
-** Module : ICLCV                                                  **
-** Authors: Tobias Röhlig                                          **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Tobias Röhlig, Christof Elbrechter
 
 #include <ICLQt/Common.h>
 #include <ICLQt/FPSHandle.h>
@@ -55,7 +29,7 @@ void init(){
 
     grabber.init(pa("-i"));
 
-    gui << Draw3D().label("3d view").handle("3d")
+    gui << Canvas3D().label("3d view").handle("3d")
            << ( VBox()
                 << Slider(1,20,3).handle("steps_handle").label("steps")
                 << Slider(10,100,20).handle("radius_handle").label("radius")
@@ -78,7 +52,7 @@ void run(){
 
     static DrawHandle3D draw = gui["3d"];
 
-    image = *grabber.grab()->as32f();
+    image = grabber.grabImage().as32f();
 
     static Img8u newImage(image.getSize(),1);
     //newImage.setFormat(formatGray);

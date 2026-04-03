@@ -10,9 +10,9 @@ using namespace icl::utils;
 
 // custom filter
 struct NormRangeOp : public UnaryOp{
-  virtual void apply(const ImgBase *src, ImgBase **dst){
-    src->deepCopy(dst);
-    (*dst)->normalizeAllChannels(Range64f(0,255));
+  void apply(const core::Image &src, core::Image &dst) override {
+    dst = src.deepCopy();
+    dst.ptr()->normalizeAllChannels(Range64f(0,255));
   }
 };
 

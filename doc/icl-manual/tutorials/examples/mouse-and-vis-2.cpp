@@ -13,7 +13,7 @@ void mouse(const MouseEvent &e){
 
 void init(){
   grabber.init(pa("-i"));
-  gui << Draw().handle("image")
+  gui << Canvas().handle("image")
       << Slider(0,200,30).handle("t").maxSize(90,2)
       << Show();
 
@@ -23,7 +23,7 @@ void init(){
 void run(){
   cd.setThreshold(gui["t"]);
   DrawHandle draw = gui["image"];
-  const ImgBase *I = grabber.grab();
+  Image I = grabber.grabImage();
 
   draw = I;
   draw->color(255,0,0);

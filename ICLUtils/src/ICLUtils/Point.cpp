@@ -1,65 +1,37 @@
-/********************************************************************
-**                Image Component Library (ICL)                    **
-**                                                                 **
-** Copyright (C) 2006-2013 CITEC, University of Bielefeld          **
-**                         Neuroinformatics Group                  **
-** Website: www.iclcv.org and                                      **
-**          http://opensource.cit-ec.de/projects/icl               **
-**                                                                 **
-** File   : ICLUtils/src/ICLUtils/Point.cpp                        **
-** Module : ICLUtils                                               **
-** Authors: Christof Elbrechter, Robert Haschke                    **
-**                                                                 **
-**                                                                 **
-** GNU LESSER GENERAL PUBLIC LICENSE                               **
-** This file may be used under the terms of the GNU Lesser General **
-** Public License version 3.0 as published by the                  **
-**                                                                 **
-** Free Software Foundation and appearing in the file LICENSE.LGPL **
-** included in the packaging of this file.  Please review the      **
-** following information to ensure the license requirements will   **
-** be met: http://www.gnu.org/licenses/lgpl-3.0.txt                **
-**                                                                 **
-** The development of this software was supported by the           **
-** Excellence Cluster EXC 277 Cognitive Interaction Technology.    **
-** The Excellence Cluster EXC 277 is a grant of the Deutsche       **
-** Forschungsgemeinschaft (DFG) in the context of the German       **
-** Excellence Initiative.                                          **
-**                                                                 **
-********************************************************************/
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
 #include <ICLUtils/Point.h>
 #include <ICLUtils/Point32f.h>
 #include <cmath>
 
-namespace icl{
-  namespace utils{
-    const Point Point::null(0,0);
+namespace icl::utils {
+  const Point Point::null(0,0);
 
-    float Point::distanceTo(const Point &p) const{
-      return sqrt(pow(static_cast<float>(p.x-x), 2) + pow(static_cast<float>(p.y-y), 2));
-    }
+  float Point::distanceTo(const Point &p) const{
+    return sqrt(pow(static_cast<float>(p.x-x), 2) + pow(static_cast<float>(p.y-y), 2));
+  }
 
-    Point::Point(const Point32f &p){
-      x = static_cast<int>(::round(p.x));
-      y = static_cast<int>(::round(p.y));
-    }
+  Point::Point(const Point32f &p){
+    x = static_cast<int>(::round(p.x));
+    y = static_cast<int>(::round(p.y));
+  }
 
-    Point Point::transform(double xfac, double yfac) const {
-      return Point(static_cast<int>(xfac * x), static_cast<int>(yfac * y));
-    }
+  Point Point::transform(double xfac, double yfac) const {
+    return Point(static_cast<int>(xfac * x), static_cast<int>(yfac * y));
+  }
 
-    std::ostream &operator<<(std::ostream &s, const Point &p){
-      return s << "(" << p.x << ',' << p.y << ")";
-    }
+  std::ostream &operator<<(std::ostream &s, const Point &p){
+    return s << "(" << p.x << ',' << p.y << ")";
+  }
 
-    std::istream &operator>>(std::istream &s, Point &p){
-      Point32f p32;
-      s >> p32;
-      p = Point(p32);
-      return s;
-    }
+  std::istream &operator>>(std::istream &s, Point &p){
+    Point32f p32;
+    s >> p32;
+    p = Point(p32);
+    return s;
+  }
 
 
-  } // namespace utils
-}
+  } // namespace icl::utils
