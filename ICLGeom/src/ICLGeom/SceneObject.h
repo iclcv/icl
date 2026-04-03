@@ -732,16 +732,28 @@ namespace icl::geom {
 
     inline bool getReceiveShadowsEnabled() { return m_receiveShadows; }
 
+    /// returns the material shininess
+    inline icl8u getShininess() const { return m_shininess; }
+
     /// sets the material shininess (default is 128)
     inline void setShininess(icl8u value){
       m_shininess = value;
     }
+
+    /// returns the materials specular reflectance (in [0,1] range)
+    inline const GeomColor &getSpecularReflectance() const { return m_specularReflectance; }
 
     /// sets the materials specular reflectance
     /** given color ranges are expected in range [0,255] */
     inline void setSpecularReflectance(const GeomColor &values){
       m_specularReflectance = values*(1.0/255);
     }
+
+    /// returns the reflectivity for raytracing (0=none, 1=mirror)
+    inline float getReflectivity() const { return m_reflectivity; }
+
+    /// sets the reflectivity for raytracing (0=none, 1=mirror)
+    inline void setReflectivity(float value) { m_reflectivity = std::max(0.0f, std::min(1.0f, value)); }
 
     /// returns whether depth test is enabled for this object
     inline bool getDepthTestEnabled() const{ return m_depthTestEnabled;  }
@@ -815,6 +827,7 @@ namespace icl::geom {
 
     icl8u m_shininess;
     GeomColor m_specularReflectance;
+    float m_reflectivity = 0; //!< raytracing reflectivity (0=none, 1=mirror)
 
     private:
 

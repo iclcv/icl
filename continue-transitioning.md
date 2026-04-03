@@ -57,6 +57,12 @@ artifacts from bisection testing, not a real incompatibility.
   for 8u→16s (Sobel, Laplace) and even-kernel anchor alignment
 - **Benchmark IPP backends** — measure speedup vs C++ for the 5 new IPP ops
 
+**Experimental — Raytracing:**
+- Real-time raytracer in `ICLExperimental/Raytracing/` — see
+  [continue-raytracing.md](ICLExperimental/Raytracing/continue-raytracing.md)
+  for full details. CPU backend working (BVH + OpenMP + reflections). Next: Metal RT
+  backend for hardware-accelerated raytracing on Apple Silicon.
+
 **Other work:**
 - **ImageMagick 7** — rewrite FileGrabberPluginImageMagick.cpp and
   FileWriterPluginImageMagick.cpp for Quantum/Pixels API

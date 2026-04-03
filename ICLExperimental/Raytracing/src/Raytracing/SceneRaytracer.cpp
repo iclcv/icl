@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#include "SceneRaytracer.h"
+#include "RaytracerBackend_Cpu.h"
+#include <ICLGeom/Scene.h>
+#include <ICLUtils/Macros.h>
+
+namespace icl::rt {
+
+SceneRaytracer::SceneRaytracer(geom::Scene &scene)
+  : m_scene(scene)
+  , m_backend(std::make_unique<CpuRTBackend>())
+{
+  // TODO: try Metal backend first when available
+  DEBUG_LOG("SceneRaytracer using backend: " << m_backend->name());
+}
+
+void SceneRaytracer::render(int camIndex) {
+  // Extract geometry (only dirty objects are re-extracted)
+  ExtractedScene extracted = m_extractor.extract(m_scene, camIndex);
+
+  // Update BLAS for objects with changed geometry
+  for (size_t i = 0; i < extracted.objects.size(); i++) {
+    const auto &geo = extracted.objects[i];
+    if (geo.geometryChanged && !geo.vertices.empty()) {
+      m_backend->buildBLAS((int)i,
+                           geo.vertices.data(), (int)geo.vertices.size(),
+                           geo.triangles.data(), (int)geo.triangles.size());
+    }
+  }
+
+  // Rebuild TLAS if any transforms changed (or objects added/removed)
+  if (extracted.anyTransformChanged || extracted.anyGeometryChanged) {
+    m_backend->buildTLAS(extracted.instances.data(), (int)extracted.instances.size());
+  }
+
+  // Update scene data if lights/materials changed
+  if (extracted.lightsChanged || extracted.anyGeometryChanged) {
+    m_backend->setSceneData(extracted.lights.data(), (int)extracted.lights.size(),
+                            extracted.materials.data(), (int)extracted.materials.size(),
+                            extracted.backgroundColor);
+  }
+
+  // Render
+  m_backend->render(extracted.camera);
+}
+
+const core::Img8u &SceneRaytracer::getImage() const {
+  return m_backend->readback();
+}
+
+void SceneRaytracer::invalidateAll() {
+  m_extractor.invalidateAll();
+}
+
+void SceneRaytracer::invalidateObject(geom::SceneObject *obj) {
+  m_extractor.invalidateObject(obj);
+}
+
+const char *SceneRaytracer::backendName() const {
+  return m_backend->name();
+}
+
+} // namespace icl::rt
