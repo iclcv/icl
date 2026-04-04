@@ -60,8 +60,11 @@ public:
   /// Only re-extracts objects whose geometry or transform has changed.
   ExtractedScene extract(const geom::Scene &scene, int camIndex);
 
-  /// Force full re-extraction next frame.
+  /// Force full re-extraction next frame (geometry + transforms).
   void invalidateAll();
+
+  /// Force only transform re-extraction (no retessellation / BLAS rebuild).
+  void invalidateTransforms();
 
   /// Force re-extraction for a specific object.
   void invalidateObject(const geom::SceneObject *obj);

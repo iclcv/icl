@@ -23,11 +23,36 @@ if(OPENCL_FOUND)
   list(APPEND RT_HEADERS src/Raytracing/RaytracerBackend_OpenCL.h)
 endif()
 
+# Metal RT backend (Apple only — hardware-accelerated BVH on Apple Silicon)
+if(APPLE)
+  enable_language(OBJCXX)
+  find_library(METAL_FRAMEWORK Metal)
+  find_library(FOUNDATION_FRAMEWORK Foundation)
+  if(METAL_FRAMEWORK)
+    list(APPEND RT_SOURCES
+      src/Raytracing/MetalRT.mm
+      src/Raytracing/RaytracerBackend_Metal.mm)
+    list(APPEND RT_HEADERS
+      src/Raytracing/MetalRT.h
+      src/Raytracing/RaytracerBackend_Metal.h)
+    set_source_files_properties(
+      src/Raytracing/MetalRT.mm
+      src/Raytracing/RaytracerBackend_Metal.mm
+      PROPERTIES COMPILE_FLAGS "-fobjc-arc")
+  endif()
+endif()
+
 add_library(ICLRaytracing SHARED ${RT_SOURCES} ${RT_HEADERS})
 target_include_directories(ICLRaytracing PUBLIC src/)
 target_include_directories(ICLRaytracing PRIVATE ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src)
 target_link_libraries(ICLRaytracing ICLGeom)
 target_compile_definitions(ICLRaytracing PRIVATE ICL_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
+# Metal RT linkage
+if(APPLE AND METAL_FRAMEWORK)
+  target_link_libraries(ICLRaytracing ${METAL_FRAMEWORK} ${FOUNDATION_FRAMEWORK})
+  target_compile_definitions(ICLRaytracing PUBLIC ICL_HAVE_METAL=1)
+endif()
 
 # OpenMP for parallel ray tracing
 find_package(OpenMP QUIET)
@@ -68,6 +93,14 @@ if(BULLET_FOUND)
   set_target_properties(raytracing-physics-demo PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
+
+# ---- Benchmark ----
+add_executable(benchmark-raytracer demos/benchmark_rt.cpp)
+target_include_directories(benchmark-raytracer PRIVATE
+  ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src src/)
+target_link_libraries(benchmark-raytracer ICLRaytracing ICLQt)
+set_target_properties(benchmark-raytracer PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # ---- Headless test ----
 add_executable(test-raytracer demos/test_rt.cpp)

@@ -1,0 +1,461 @@
+// ICL Raytracer — Metal Shading Language kernels
+// Hardware-accelerated BVH traversal via intersect<triangle_data, instancing>()
+
+#include <metal_stdlib>
+#include <metal_raytracing>
+
+using namespace metal;
+using namespace raytracing;
+
+// ---- Struct layouts (must match C++ RaytracerTypes.h byte-for-byte) ----
+
+struct RTFloat3 { float x, y, z, _pad; };
+struct RTFloat4 { float x, y, z, w; };
+struct RTMat4   { float cols[4][4]; };
+
+struct RTVertex {
+  RTFloat3 position;
+  RTFloat3 normal;
+  RTFloat4 color;
+};
+
+struct RTTriangle {
+  uint v0, v1, v2;
+  uint materialIndex;
+};
+
+struct RTMaterial {
+  RTFloat4 diffuseColor;
+  RTFloat4 specularColor;
+  RTFloat4 emission;
+  float shininess;
+  float reflectivity;
+  float _pad[2];
+};
+
+struct RTLight {
+  RTFloat3 position;
+  RTFloat4 ambient;
+  RTFloat4 diffuse;
+  RTFloat4 specular;
+  RTFloat3 spotDirection;
+  RTFloat3 attenuation;
+  float spotCutoff;
+  float spotExponent;
+  int on;
+  float _pad;
+};
+
+struct RTRayGenParams {
+  RTFloat3 cameraPos;
+  RTMat4 invViewProj;
+  int imageWidth;
+  int imageHeight;
+  float nearClip;
+  float farClip;
+};
+
+// ---- Per-instance shading data (match MetalInstanceData in backend .mm) ----
+
+struct InstanceData {
+  RTMat4 transform;
+  RTMat4 transformInverse;
+  int vertexOffset;
+  int triangleOffset;
+  int materialIndex;
+  int _pad;
+};
+
+// ---- Scene-wide constant parameters ----
+
+struct SceneParams {
+  int numLights;
+  int numInstances;
+  int frameNumber;
+  int _pad;
+  RTFloat4 bgColor;
+};
+
+// ---- Vector helpers ----
+
+inline float3 f3(RTFloat3 v)  { return float3(v.x, v.y, v.z); }
+inline float3 f3v(RTFloat4 v) { return float3(v.x, v.y, v.z); }
+
+inline float3 transformPoint(device const RTMat4 &m, float3 p) {
+  return float3(
+    m.cols[0][0]*p.x + m.cols[1][0]*p.y + m.cols[2][0]*p.z + m.cols[3][0],
+    m.cols[0][1]*p.x + m.cols[1][1]*p.y + m.cols[2][1]*p.z + m.cols[3][1],
+    m.cols[0][2]*p.x + m.cols[1][2]*p.y + m.cols[2][2]*p.z + m.cols[3][2]);
+}
+
+inline float3 transformNormal(device const RTMat4 &invT, float3 n) {
+  return float3(
+    invT.cols[0][0]*n.x + invT.cols[0][1]*n.y + invT.cols[0][2]*n.z,
+    invT.cols[1][0]*n.x + invT.cols[1][1]*n.y + invT.cols[1][2]*n.z,
+    invT.cols[2][0]*n.x + invT.cols[2][1]*n.y + invT.cols[2][2]*n.z);
+}
+
+inline float3 generateRayDir(constant RTRayGenParams &cam, float px, float py) {
+  constant RTMat4 &Qi = cam.invViewProj;
+  return normalize(float3(
+    Qi.cols[0][0]*px + Qi.cols[1][0]*py + Qi.cols[2][0],
+    Qi.cols[0][1]*px + Qi.cols[1][1]*py + Qi.cols[2][1],
+    Qi.cols[0][2]*px + Qi.cols[1][2]*py + Qi.cols[2][2]));
+}
+
+// ---- Interpolate surface hit ----
+
+struct SurfaceHit {
+  float3 position;
+  float3 normal;
+  float3 color;
+  int materialIndex;
+};
+
+inline SurfaceHit interpolate(device const InstanceData &inst,
+                               device const RTVertex *vertices,
+                               device const RTTriangle *triangles,
+                               uint primId, float2 bary) {
+  device const RTTriangle &tri = triangles[inst.triangleOffset + primId];
+  device const RTVertex &v0 = vertices[inst.vertexOffset + tri.v0];
+  device const RTVertex &v1 = vertices[inst.vertexOffset + tri.v1];
+  device const RTVertex &v2 = vertices[inst.vertexOffset + tri.v2];
+
+  float w0 = 1.0f - bary.x - bary.y;
+  float w1 = bary.x;
+  float w2 = bary.y;
+
+  SurfaceHit s;
+  float3 localNormal = float3(
+    v0.normal.x*w0 + v1.normal.x*w1 + v2.normal.x*w2,
+    v0.normal.y*w0 + v1.normal.y*w1 + v2.normal.y*w2,
+    v0.normal.z*w0 + v1.normal.z*w1 + v2.normal.z*w2);
+  s.normal = normalize(transformNormal(inst.transformInverse, localNormal));
+
+  s.color = float3(
+    v0.color.x*w0 + v1.color.x*w1 + v2.color.x*w2,
+    v0.color.y*w0 + v1.color.y*w1 + v2.color.y*w2,
+    v0.color.z*w0 + v1.color.z*w1 + v2.color.z*w2);
+
+  float3 localPos = float3(
+    v0.position.x*w0 + v1.position.x*w1 + v2.position.x*w2,
+    v0.position.y*w0 + v1.position.y*w1 + v2.position.y*w2,
+    v0.position.z*w0 + v1.position.z*w1 + v2.position.z*w2);
+  s.position = transformPoint(inst.transform, localPos);
+  s.materialIndex = inst.materialIndex;
+  return s;
+}
+
+// ---- Fast RNG (xorshift) ----
+
+inline uint rngNext(thread uint &state) {
+  state ^= state << 13;
+  state ^= state >> 17;
+  state ^= state << 5;
+  return state;
+}
+
+inline float rngFloat(thread uint &state) {
+  return float(rngNext(state) & 0xFFFFFF) / float(0x1000000);
+}
+
+// ---- Cosine-weighted hemisphere sample ----
+
+inline float3 randomHemisphere(float3 N, thread uint &rng) {
+  float u1 = rngFloat(rng);
+  float u2 = rngFloat(rng);
+  float r = sqrt(u1);
+  float theta = 2.0f * M_PI_F * u2;
+  float x = r * cos(theta);
+  float y = r * sin(theta);
+  float z = sqrt(max(0.0f, 1.0f - u1));
+
+  float3 up = abs(N.y) < 0.999f ? float3(0,1,0) : float3(1,0,0);
+  float3 tangent = normalize(cross(up, N));
+  float3 bitangent = cross(N, tangent);
+  return normalize(tangent * x + bitangent * y + N * z);
+}
+
+// ---- Direct lighting (Blinn-Phong) with hardware shadow rays ----
+
+inline float3 directLight(float3 hitPos, float3 N, float3 viewDir,
+                           float3 baseColor,
+                           device const RTMaterial &mat,
+                           device const RTLight *lights, int numLights,
+                           instance_acceleration_structure accelStruct) {
+  float3 color = float3(0);
+
+  intersector<instancing> shadowInter;
+  shadowInter.accept_any_intersection(true);
+
+  for (int li = 0; li < numLights; li++) {
+    if (!lights[li].on) continue;
+    float3 lightPos = f3(lights[li].position);
+    float3 L = lightPos - hitPos;
+    float dist = length(L);
+    if (dist < 1e-6f) continue;
+    L /= dist;
+
+    float NdotL = max(0.0f, dot(N, L));
+    if (NdotL <= 0) continue;
+
+    // Hardware shadow ray
+    ray shadowRay;
+    shadowRay.origin = hitPos + N * 1.0f;
+    shadowRay.direction = L;
+    shadowRay.min_distance = 0.5f;
+    shadowRay.max_distance = dist;
+
+    auto sr = shadowInter.intersect(shadowRay, accelStruct);
+    if (sr.type != intersection_type::none) continue;
+
+    float atten = 1.0f / (lights[li].attenuation.x +
+                           lights[li].attenuation.y * dist +
+                           lights[li].attenuation.z * dist * dist);
+
+    float3 diffuse = f3v(lights[li].diffuse) * baseColor * NdotL * atten;
+
+    float3 V = normalize(-viewDir);
+    float3 H = normalize(L + V);
+    float spec = pow(max(0.0f, dot(N, H)), mat.shininess);
+    float3 specular =
+        f3v(lights[li].specular) * f3v(mat.specularColor) * spec * atten;
+
+    float3 ambient = f3v(lights[li].ambient) * baseColor;
+
+    color += diffuse + specular + ambient;
+  }
+  return color;
+}
+
+// ==========================================================================
+// Direct lighting kernel (Blinn-Phong + reflections)
+// ==========================================================================
+
+[[kernel]]
+void raytrace(
+    instance_acceleration_structure accelStruct [[buffer(0)]],
+    device const InstanceData *instances       [[buffer(1)]],
+    device const RTVertex     *vertices        [[buffer(2)]],
+    device const RTTriangle   *triangles       [[buffer(3)]],
+    device const RTLight      *lights          [[buffer(4)]],
+    device const RTMaterial   *materials       [[buffer(5)]],
+    device uchar              *outR            [[buffer(6)]],
+    device uchar              *outG            [[buffer(7)]],
+    device uchar              *outB            [[buffer(8)]],
+    device int                *objectIds       [[buffer(9)]],
+    constant RTRayGenParams   &camera          [[buffer(10)]],
+    constant SceneParams      &params          [[buffer(11)]],
+    uint2 tid [[thread_position_in_grid]])
+{
+  int px = tid.x;
+  int py = tid.y;
+  int w = camera.imageWidth;
+  int h = camera.imageHeight;
+  if (px >= w || py >= h) return;
+
+  float3 camPos = f3(camera.cameraPos);
+  float3 dir = generateRayDir(camera, float(px) + 0.5f, float(py) + 0.5f);
+  float3 origin = camPos;
+  float3 color = float3(0);
+  float3 throughput = float3(1);
+  int primaryInstance = -1;
+
+  intersector<triangle_data, instancing> inter;
+  inter.accept_any_intersection(false);
+
+  for (int bounce = 0; bounce < 4; bounce++) {
+    ray r;
+    r.origin = origin;
+    r.direction = dir;
+    r.min_distance = 0.5f;
+    r.max_distance = 1e30f;
+
+    auto result = inter.intersect(r, accelStruct);
+
+    if (bounce == 0)
+      primaryInstance = (result.type != intersection_type::none)
+                            ? int(result.instance_id)
+                            : -1;
+
+    if (result.type == intersection_type::none) {
+      color += throughput * f3v(params.bgColor);
+      break;
+    }
+
+    SurfaceHit s = interpolate(instances[result.instance_id], vertices,
+                                triangles, result.primitive_id,
+                                result.triangle_barycentric_coord);
+
+    if (dot(s.normal, dir) > 0) s.normal = -s.normal;
+
+    device const RTMaterial &mat = materials[s.materialIndex];
+
+    // Emission
+    color += throughput * f3v(mat.emission);
+
+    // Direct lighting
+    float3 direct = directLight(s.position, s.normal, dir, s.color, mat,
+                                 lights, params.numLights, accelStruct);
+
+    float refl = mat.reflectivity;
+    color += throughput * direct * (1.0f - refl);
+
+    if (refl < 0.01f) break;
+
+    // Reflect
+    throughput *= refl;
+    dir = dir - s.normal * (2.0f * dot(dir, s.normal));
+    dir = normalize(dir);
+    origin = s.position + s.normal * 1.0f;
+  }
+
+  int idx = px + py * w;
+  objectIds[idx] = primaryInstance;
+  color = clamp(color, 0.0f, 1.0f);
+  outR[idx] = uchar(color.x * 255);
+  outG[idx] = uchar(color.y * 255);
+  outB[idx] = uchar(color.z * 255);
+}
+
+// ==========================================================================
+// Path tracing kernel (GI with temporal accumulation)
+// ==========================================================================
+
+[[kernel]]
+void pathTrace(
+    instance_acceleration_structure accelStruct [[buffer(0)]],
+    device const InstanceData *instances       [[buffer(1)]],
+    device const RTVertex     *vertices        [[buffer(2)]],
+    device const RTTriangle   *triangles       [[buffer(3)]],
+    device const RTLight      *lights          [[buffer(4)]],
+    device const RTMaterial   *materials       [[buffer(5)]],
+    device float              *accumR          [[buffer(6)]],
+    device float              *accumG          [[buffer(7)]],
+    device float              *accumB          [[buffer(8)]],
+    device uchar              *outR            [[buffer(9)]],
+    device uchar              *outG            [[buffer(10)]],
+    device uchar              *outB            [[buffer(11)]],
+    device int                *objectIds       [[buffer(12)]],
+    constant RTRayGenParams   &camera          [[buffer(13)]],
+    constant SceneParams      &params          [[buffer(14)]],
+    uint2 tid [[thread_position_in_grid]])
+{
+  int px = tid.x;
+  int py = tid.y;
+  int w = camera.imageWidth;
+  int h = camera.imageHeight;
+  if (px >= w || py >= h) return;
+
+  int idx = px + py * w;
+  uint rng = uint(px * 1973 + py * 9277 + params.frameNumber * 26699) | 1u;
+
+  float3 camPos = f3(camera.cameraPos);
+
+  // Jittered pixel position
+  float fpx = float(px) + rngFloat(rng);
+  float fpy = float(py) + rngFloat(rng);
+  float3 dir = generateRayDir(camera, fpx, fpy);
+  float3 origin = camPos;
+  float3 color = float3(0);
+  float3 throughput = float3(1);
+  int primaryInstance = -1;
+
+  intersector<triangle_data, instancing> inter;
+  inter.accept_any_intersection(false);
+
+  for (int bounce = 0; bounce < 5; bounce++) {
+    ray r;
+    r.origin = origin;
+    r.direction = dir;
+    r.min_distance = 0.5f;
+    r.max_distance = 1e30f;
+
+    auto result = inter.intersect(r, accelStruct);
+
+    if (bounce == 0)
+      primaryInstance = (result.type != intersection_type::none)
+                            ? int(result.instance_id)
+                            : -1;
+
+    if (result.type == intersection_type::none) {
+      // Sky gradient
+      float t = 0.5f * (dir.y + 1.0f);
+      float3 sky = float3(0.05f, 0.05f, 0.08f) * (1-t) +
+                   float3(0.1f, 0.12f, 0.2f) * t;
+      color += throughput * sky;
+      break;
+    }
+
+    SurfaceHit s = interpolate(instances[result.instance_id], vertices,
+                                triangles, result.primitive_id,
+                                result.triangle_barycentric_coord);
+
+    if (dot(s.normal, dir) > 0) s.normal = -s.normal;
+
+    device const RTMaterial &mat = materials[s.materialIndex];
+
+    // Emission
+    color += throughput * f3v(mat.emission);
+
+    // Direct lighting (next event estimation) with hardware shadow rays
+    intersector<instancing> shadowInter;
+    shadowInter.accept_any_intersection(true);
+
+    for (int li = 0; li < params.numLights; li++) {
+      if (!lights[li].on) continue;
+      float3 lightPos = f3(lights[li].position);
+      float3 L = lightPos - s.position;
+      float dist = length(L);
+      if (dist < 1e-6f) continue;
+      L /= dist;
+      float NdotL = max(0.0f, dot(s.normal, L));
+      if (NdotL <= 0) continue;
+
+      ray sr;
+      sr.origin = s.position + s.normal * 1.0f;
+      sr.direction = L;
+      sr.min_distance = 0.0f;
+      sr.max_distance = dist;
+
+      auto shadowResult = shadowInter.intersect(sr, accelStruct);
+      if (shadowResult.type != intersection_type::none) continue;
+
+      float atten = 1.0f / (lights[li].attenuation.x +
+                             lights[li].attenuation.y * dist +
+                             lights[li].attenuation.z * dist * dist);
+      color += throughput * f3v(lights[li].diffuse) * s.color * NdotL * atten;
+    }
+
+    // Mirror reflection or diffuse bounce
+    float refl = mat.reflectivity;
+    if (refl > 0.01f && rngFloat(rng) < refl) {
+      dir = dir - s.normal * (2.0f * dot(dir, s.normal));
+      dir = normalize(dir);
+    } else {
+      dir = randomHemisphere(s.normal, rng);
+      throughput *= s.color;
+    }
+    origin = s.position + s.normal * 1.0f;
+
+    // Russian roulette after bounce 2
+    if (bounce > 1) {
+      float p = max(throughput.x, max(throughput.y, throughput.z));
+      if (rngFloat(rng) > p) break;
+      throughput /= p;
+    }
+  }
+
+  // Running average accumulation
+  float weight = 1.0f / float(params.frameNumber);
+  accumR[idx] += (color.x - accumR[idx]) * weight;
+  accumG[idx] += (color.y - accumG[idx]) * weight;
+  accumB[idx] += (color.z - accumB[idx]) * weight;
+
+  // Object ID on first frame only
+  if (params.frameNumber == 1) objectIds[idx] = primaryInstance;
+
+  outR[idx] = uchar(clamp(accumR[idx], 0.0f, 1.0f) * 255);
+  outG[idx] = uchar(clamp(accumG[idx], 0.0f, 1.0f) * 255);
+  outB[idx] = uchar(clamp(accumB[idx], 0.0f, 1.0f) * 255);
+}

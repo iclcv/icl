@@ -396,6 +396,12 @@ void GeometryExtractor::invalidateAll() {
   m_lastLightHash = 0;
 }
 
+void GeometryExtractor::invalidateTransforms() {
+  for (auto &[ptr, state] : m_objectStates) {
+    state.transformDirty = true;
+  }
+}
+
 void GeometryExtractor::invalidateObject(const geom::SceneObject *obj) {
   auto it = m_objectStates.find(obj);
   if (it != m_objectStates.end()) {

@@ -24,7 +24,7 @@ using namespace icl::physics;
 
 static PhysicsScene scene;
 static std::unique_ptr<icl::rt::SceneRaytracer> raytracer;
-GUI gui;
+HSplit gui;
 
 // Interaction state
 static int hoveredObject = -1;
@@ -150,7 +150,8 @@ static void spawnObject() {
   }
 }
 
-static void removeObjectsBelowThreshold() {
+static bool removeObjectsBelowThreshold() {
+  bool removed = false;
   auto it = dynamicObjects.begin();
   while (it != dynamicObjects.end()) {
     PhysicsObject *obj = *it;
@@ -159,10 +160,12 @@ static void removeObjectsBelowThreshold() {
     if (z < REMOVAL_Z) {
       scene.removeObject(obj);
       it = dynamicObjects.erase(it);
+      removed = true;
     } else {
       ++it;
     }
   }
+  return removed;
 }
 
 void init() {
@@ -170,7 +173,7 @@ void init() {
   Camera cam(Vec(800, -600, 500, 1),    // position
              Vec(-0.7, 0.5, -0.4, 1),   // view direction (toward origin)
              Vec(0, 0, -1, 1));          // up = -Z (ICL convention for Z-up scenes)
-  cam.setResolution(Size(800, 600));
+  cam.setResolution(pa("-size"));
   scene.addCamera(cam);
 
   // Default gravity is already (0, 0, -9810) — no need to set
@@ -205,20 +208,17 @@ void init() {
   if (backend == "auto") backend = "";
   raytracer = std::make_unique<icl::rt::SceneRaytracer>(scene, backend);
 
-  gui << (HSplit()
-          << Canvas().handle("draw").minSize(32, 24)
-          << (VBox().minSize(20, 24)
-              << CheckBox("pause physics", "unchecked").handle("pause")
-              << Slider(10, 120, 30).handle("spawnRate").label("spawn interval")
-              << Button("spawn 10").handle("burst")
-              << CheckBox("Path tracing GI", "unchecked").handle("pathTracing")
-              << Combo("!1x off,4x 2x2,9x 3x3,16x 4x4").handle("aa").label("MSAA")
-              << CheckBox("FXAA", "checked").handle("fxaa")
-              << CheckBox("Adaptive AA", "unchecked").handle("adaptiveAA")
-              << Label("--").handle("info")
-             )
-         )
-      << Show();
+  gui  << Canvas().handle("draw").minSize(64, 48)
+       << (VBox().minSize(20, 24)
+          << CheckBox("pause physics", "unchecked").handle("pause")
+          << Slider(10, 120, 30).handle("spawnRate").label("spawn interval")
+          << Button("spawn 10").handle("burst")
+          << CheckBox("Path tracing GI", "unchecked").handle("pathTracing")
+          << Combo("!1x off,4x 2x2,9x 3x3,16x 4x4").handle("aa").label("MSAA")
+          << CheckBox("FXAA", "checked").handle("fxaa")
+          << CheckBox("Adaptive AA", "unchecked").handle("adaptiveAA")
+          << Label("--").handle("info")
+        )<< Show();
 
   static RaytracerMouseHandler mouseHandler;
   mouseHandler.sceneHandler = scene.getMouseHandler(0);
@@ -234,26 +234,37 @@ void run() {
   raytracer->setPathTracing(gui["pathTracing"].as<bool>());
   raytracer->setFXAA(gui["fxaa"].as<bool>());
   raytracer->setAdaptiveAA(gui["adaptiveAA"].as<bool>(), 4);
-  float targetFps = pa("-fps");
-  if (targetFps > 0) raytracer->setTargetFrameTime(1000.0f / targetFps);
+  static float targetFps = pa("-fps");
+  static float targetFrameMs = targetFps > 0 ? 1000.0f / targetFps : 0;
+  static bool firstFrame = true;
+  if (firstFrame) {
+    if (targetFps > 0) raytracer->setTargetFrameTime(targetFrameMs);
+    firstFrame = false;
+  }
+
+  Time frameStart = Time::now();
 
   int spawnRate = gui["spawnRate"].as<int>();
   bool paused = gui["pause"].as<bool>();
 
-  bool sceneChanged = false;
+  bool physicsStepOccurred = false;
+  bool geometryChanged = false; // only true when actual mesh/material changes
 
   if (!paused) {
-    scene.step();
-    sceneChanged = true;
+    scene.step(); // wall-clock dt, Bullet accumulator handles variable frame rate
+    physicsStepOccurred = true;
 
     frameCount++;
     if (frameCount % spawnRate == 0) {
       spawnObject();
+      geometryChanged = true; // new object = new geometry
     }
     if (gui["burst"].as<ButtonHandle>().wasTriggered()) {
       for (int i = 0; i < 10; i++) spawnObject();
+      geometryChanged = true;
     }
-    removeObjectsBelowThreshold();
+    if (removeObjectsBelowThreshold())
+      geometryChanged = true;
   }
 
   for (int i = 0; i < scene.getObjectCount(); i++) {
@@ -285,17 +296,19 @@ void run() {
         }
         obj->setEmission(glowColor, 2.0f);
       }
-      sceneChanged = true;
+      geometryChanged = true; // emission change = material change
     }
   }
 
-  if (sceneChanged) {
+  if (geometryChanged) {
     raytracer->invalidateAll();
+  } else if (physicsStepOccurred) {
+    raytracer->invalidateTransforms();
   }
 
-  Time t = Time::now();
+  Time renderStart = Time::now();
   raytracer->render(0);
-  float ms = (float)(Time::now() - t).toMilliSeconds();
+  float ms = (float)(Time::now() - renderStart).toMilliSeconds();
 
   // Get hovered object for border highlighting
   hoveredObject = raytracer->getObjectAtPixel(mouseX, mouseY);
@@ -344,6 +357,17 @@ void run() {
              raytracer->backendName(), ms, 1000.0f / ms,
              (int)dynamicObjects.size(), aaValues[aaIdx]);
   }
+  // Cap frame rate — sleep for remaining frame budget.
+  if (targetFrameMs > 0) {
+    float preDrawElapsed = (float)(Time::now() - frameStart).toMilliSeconds();
+    if (preDrawElapsed < targetFrameMs) {
+      Thread::msleep((unsigned int)(targetFrameMs - preDrawElapsed));
+    }
+  }
+  float totalMs = (float)(Time::now() - frameStart).toMilliSeconds();
+  snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
+           " | total %.0f ms", totalMs);
+
   draw->text(buf, 10, 20, 10);
   draw->render();
 
@@ -351,5 +375,5 @@ void run() {
 }
 
 int main(int argc, char **argv) {
-  return ICLApp(argc, argv, "-backend(string=auto) -fps(float=30)", init, run).exec();
+  return ICLApp(argc, argv, "-backend(string=auto) -fps(float=30) -size(Size=800x600)", init, run).exec();
 }

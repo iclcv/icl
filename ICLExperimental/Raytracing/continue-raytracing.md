@@ -1,11 +1,12 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 2 — OpenCL backend, path tracing, physics, interaction)
+## Current State (Session 3 — Metal RT backend with hardware BVH)
 
 ### What Was Built
 
-Three rendering backends, path tracing with global illumination, Bullet physics
-integration, and interactive object picking — all running in real-time.
+Four rendering backends including Metal RT with hardware-accelerated BVH on Apple
+Silicon, path tracing with global illumination, Bullet physics integration, and
+interactive object picking — all running in real-time.
 
 **Architecture:**
 ```
@@ -17,9 +18,9 @@ GeometryExtractor ── tessellate → triangles, per-vertex normals, dirty tra
   ▼
 SceneRaytracer ── orchestration, backend auto-selection, camera change detection
   │
-  ├──▶ CpuRTBackend    ── SAH BVH, OpenMP, path tracing, FXAA, adaptive AA
-  └──▶ OpenCLRTBackend  ── same BVH on GPU, multi-pass PT within fps budget
-       (future: MetalRTBackend — hardware BVH on Apple Silicon)
+  ├──▶ CpuRTBackend     ── SAH BVH, OpenMP, path tracing, FXAA, adaptive AA
+  ├──▶ OpenCLRTBackend   ── same BVH on GPU, multi-pass PT within fps budget
+  └──▶ MetalRTBackend    ── hardware BVH via Metal RT (intersect<>), Apple Silicon
 ```
 
 **Backend interface** (`RaytracerBackend.h`):
@@ -37,6 +38,9 @@ SceneRaytracer delegates directly — no dynamic_cast anywhere.
 | `src/Raytracing/RaytracerBackend_Cpu.h/.cpp` | CPU: BVH, OpenMP, Blinn-Phong, path tracing with accumulation, FXAA, adaptive AA, object ID buffer |
 | `src/Raytracing/RaytracerBackend_OpenCL.h/.cpp` | OpenCL GPU: flattened scene upload, direct + PT kernels, multi-pass, GPU accumulation |
 | `src/Raytracing/RaytracerKernel.cl` | OpenCL kernels: `raytrace` (direct + reflections) and `pathTraceKernel` (GI + accumulation) |
+| `src/Raytracing/MetalRT.h/.mm` | Lightweight C++ RAII wrappers for Metal: Device, Buffer, ComputePipeline, AccelStruct |
+| `src/Raytracing/RaytracerBackend_Metal.h/.mm` | Metal RT backend: hardware BVH (BLAS/TLAS), compute dispatch, Obj-C++ with ARC |
+| `src/Raytracing/RaytracerKernel.metal` | MSL kernels: `raytrace` and `pathTrace` using intersect<triangle_data, instancing> |
 | `src/Raytracing/SceneRaytracer.h/.cpp` | Orchestrator, backend selection via string arg, camera change detection |
 | `demos/raytracing-physics-demo.cpp` | Physics demo: Bullet objects, click-to-glow, hover highlight, GUI controls |
 | `demos/raytracing-scene-demo.cpp` | Static desk scene demo |
@@ -45,20 +49,21 @@ SceneRaytracer delegates directly — no dynamic_cast anywhere.
 
 ### Features by Backend
 
-| Feature | CPU | OpenCL |
-|---------|-----|--------|
-| BVH traversal | SAH, iterative stack | Same, on GPU |
-| Direct lighting (Blinn-Phong) | ✓ | ✓ |
-| Shadows | ✓ | ✓ |
-| Reflections (iterative) | 4 bounces | 4 bounces |
-| Emission | ✓ | ✓ |
-| Path tracing (GI) | ✓ (temporal accum) | ✓ (GPU accum, multi-pass) |
-| FXAA | ✓ | — |
-| Adaptive AA | ✓ | — |
-| MSAA (multi-sample) | ✓ | — |
-| Object ID picking | ✓ | ✓ |
-| Multi-pass per frame | — | ✓ (fps-budgeted) |
-| OpenMP parallelism | ✓ | N/A (GPU parallel) |
+| Feature | CPU | OpenCL | Metal RT |
+|---------|-----|--------|----------|
+| BVH traversal | SAH, iterative stack | Same, on GPU | Hardware (intersect<>) |
+| Direct lighting (Blinn-Phong) | ✓ | ✓ | ✓ |
+| Shadows | ✓ | ✓ | ✓ (hardware any-hit) |
+| Reflections (iterative) | 4 bounces | 4 bounces | 4 bounces |
+| Emission | ✓ | ✓ | ✓ |
+| Path tracing (GI) | ✓ (temporal accum) | ✓ (GPU accum, multi-pass) | ✓ (GPU accum, multi-pass) |
+| FXAA | ✓ | — | — |
+| Adaptive AA | ✓ | — | — |
+| MSAA (multi-sample) | ✓ | — | — |
+| Object ID picking | ✓ | ✓ | ✓ |
+| Multi-pass per frame | — | ✓ (fps-budgeted) | ✓ (fps-budgeted) |
+| OpenMP parallelism | ✓ | N/A (GPU parallel) | N/A (GPU parallel) |
+| Unified memory readback | N/A | explicit copy | zero-copy (shared mem) |
 
 ### ICLGeom Additions
 
@@ -74,9 +79,10 @@ cmake .. -DBUILD_EXPERIMENTAL=ON -DBUILD_DEMOS=ON
 cmake --build . --target raytracing-physics-demo -j16
 
 # Run with different backends
+./bin/raytracing-physics-demo -backend metal -fps 30   # hardware BVH (Apple Silicon)
 ./bin/raytracing-physics-demo -backend opencl -fps 30
 ./bin/raytracing-physics-demo -backend cpu
-./bin/raytracing-physics-demo                         # auto (OpenCL > CPU)
+./bin/raytracing-physics-demo                          # auto (Metal > OpenCL > CPU)
 
 # Controls: right-drag rotate, wheel zoom, left-click pick/glow
 # GUI: pause physics, spawn rate, path tracing toggle, AA options
@@ -104,92 +110,39 @@ cmake --build . --target raytracing-physics-demo -j16
 8. **Mouse handler** — left-click reserved for picking, not forwarded to SceneMouseHandler
 9. **Accum ghosting** — explicit buffer clear on `m_accumFrame == 0`
 
+### Metal RT Backend Design (Session 3)
+
+Instead of vendoring metal-cpp (Apple's C++ wrappers), we wrote our own thin
+C++ RAII wrapper layer (`MetalRT.h/.mm`) using native Obj-C Metal API directly
+in `.mm` files, with ARC handling all object lifetime. This avoids an external
+dependency and eliminates the retain/release footgun that metal-cpp has.
+
+**Wrapper types** (`icl::rt::mtl` namespace, in MetalRT.h):
+- `Device` — wraps id<MTLDevice> + id<MTLCommandQueue>, factory for all other types
+- `Buffer` — wraps id<MTLBuffer>, shared (unified) memory, zero-copy on Apple Silicon
+- `ComputePipeline` — wraps id<MTLComputePipelineState>, compiled from MSL source
+- `AccelStruct` — wraps id<MTLAccelerationStructure>, used for both BLAS and TLAS
+- `InstanceDescriptor` — POD struct binary-compatible with MTLAccelerationStructureInstanceDescriptor
+
+All types use PIMPL (shared_ptr<Impl>). The Impl structs hold Obj-C ivars and
+are defined only in the .mm file. The header is pure C++ — no Obj-C visible.
+
+**Key design decisions:**
+- Native Obj-C API instead of metal-cpp: ARC eliminates lifetime bugs, no vendor dep
+- Wrapper handles RAII + factories; command encoding stays in backend .mm as direct Obj-C
+- Hardware BVH: `intersect<triangle_data, instancing>()` replaces manual traversal
+- Shadow rays: `accept_any_intersection(true)` for early-out hardware shadow test
+- Unified memory: `MTLResourceStorageModeShared` — buffer contents() gives CPU pointer
+- Scene flattening: same pattern as OpenCL (flat vertex/triangle buffers + per-instance offsets)
+- Shader loaded from file at runtime (same search path pattern as OpenCL kernel)
+- Packed indices: RTTriangle has materialIndex field, so we extract uint32_t[3] per tri for Metal
+
+**Bugs avoided from continuation guide:**
+- Matrix convention already handled by matToRTMat4() (column-major RTMat4)
+- ARC in .mm handles lifetime (no manual retain/release)
+- Shadow bias: 1mm offset same as CPU/OpenCL backends
+
 ## Next Steps
-
-### Metal RT Backend (Phase 4)
-
-Hardware-accelerated raytracing on Apple Silicon. Expected 2-5x faster than OpenCL
-for direct lighting, more for path tracing (hardware BVH traversal).
-
-**Prerequisites:**
-- Vendor `metal-cpp` (Apple's C++ Metal headers) in `3rdparty/metal-cpp/`
-  - Header-only, ~200KB, download from https://developer.apple.com/metal/cpp/
-  - Provides `MTL::Device`, `MTL::CommandQueue`, `MTL::AccelerationStructure`, etc.
-
-**Files to create:**
-```
-src/Raytracing/RaytracerBackend_Metal.h      — header (C++)
-src/Raytracing/RaytracerBackend_Metal.mm     — implementation (Obj-C++ for Metal API)
-shaders/Raytracing.metal                     — Metal Shading Language kernels
-```
-
-**Implementation plan:**
-
-1. **Device setup** (`RaytracerBackend_Metal` constructor):
-   - `MTL::Device::createSystemDefaultDevice()`
-   - `device->newCommandQueue()`
-   - Check `device->supportsRaytracing()` → fall back if false
-   - Compile `.metal` shader from `.metallib` or source
-
-2. **buildBLAS** — per-object acceleration structure:
-   - Create `MTL::AccelerationStructureTriangleGeometryDescriptor`
-   - Set vertex buffer (positions), index buffer (triangle indices)
-   - `device->newAccelerationStructure(descriptor)` → builds BVH in hardware
-   - Store per-object: vertex/normal/color buffers + accel structure
-
-3. **buildTLAS** — scene-level instance acceleration structure:
-   - Create `MTL::InstanceAccelerationStructureDescriptor`
-   - Per instance: transform matrix (column-major) + BLAS reference
-   - Rebuild when any transform changes (Metal supports refit for small changes)
-
-4. **render** — compute shader dispatch:
-   - Encode compute command with ray generation kernel
-   - Bind TLAS, per-instance buffers, light/material buffers, camera params
-   - Use `intersect<triangle_data, instancing>()` for hardware BVH traversal
-   - Closest-hit: interpolate surface, shade (Blinn-Phong or path trace)
-   - Shadow: `intersect(..., accept_any_intersection)` for each light
-   - Output to `MTL::Texture` (RGBA8Unorm)
-   - Read back to `Img8u` via `getBytes()`
-
-5. **Path tracing kernel** (`pathTraceKernel` in Metal):
-   - Same algorithm as OpenCL: cosine hemisphere, NEE, Russian roulette
-   - GPU-side accumulation in float buffers
-   - Multi-pass within fps budget (same timing approach)
-   - Per-thread RNG via xorshift (same as OpenCL kernel)
-
-6. **CMake integration**:
-   ```cmake
-   if(APPLE)
-     find_library(METAL_FRAMEWORK Metal)
-     if(METAL_FRAMEWORK)
-       list(APPEND RT_SOURCES src/Raytracing/RaytracerBackend_Metal.mm)
-       target_link_libraries(ICLRaytracing ${METAL_FRAMEWORK})
-       target_include_directories(ICLRaytracing PRIVATE ${ICL_SOURCE_DIR}/3rdparty/metal-cpp)
-       # Compile .metal → .metallib
-       add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Raytracing.metallib
-         COMMAND xcrun -sdk macosx metal -c ${CMAKE_CURRENT_SOURCE_DIR}/shaders/Raytracing.metal
-                 -o ${CMAKE_CURRENT_BINARY_DIR}/Raytracing.air
-         COMMAND xcrun -sdk macosx metallib ${CMAKE_CURRENT_BINARY_DIR}/Raytracing.air
-                 -o ${CMAKE_CURRENT_BINARY_DIR}/Raytracing.metallib
-         DEPENDS shaders/Raytracing.metal)
-     endif()
-   endif()
-   ```
-
-**Key differences from OpenCL backend:**
-- Hardware BVH: `intersect<>()` replaces the manual traversal loop — major speedup
-- Native Metal: no cl2Metal translation layer overhead
-- Shared memory: Apple Silicon unified memory avoids explicit CPU↔GPU copies
-- Instance acceleration structure: native support for two-level BVH with transforms
-
-**Matrix convention:** ICL uses row-major `Mat4D32f`, Metal uses column-major `float4x4`.
-The existing `matToRTMat4()` in GeometryExtractor already handles this conversion.
-
-**Risks:**
-- Metal RT requires macOS 13+ and Apple Silicon (M1+)
-- `.mm` files need Objective-C++ compilation (`-ObjC++` flag)
-- metal-cpp wraps Obj-C retain/release — need careful lifetime management
-- Shader compilation errors are runtime, not compile-time
 
 ### Material System (Phase 5)
 
@@ -211,5 +164,6 @@ shared via `shared_ptr<Material>`. Old `setColor`/`setShininess` deprecated.
 - No line / text / billboard rendering
 - `invalidateAll()` called every frame when physics runs (no per-property dirty tracking)
 - Shadow bias (1mm) may cause light leaking on very thin geometry
-- OpenCL path on macOS goes through cl2Metal translation (deprecated, may break in future macOS)
+- OpenCL path on macOS goes through cl2Metal translation (deprecated, may break in future macOS) — Metal RT backend is the preferred alternative
+- Metal RT requires macOS 13+ and Apple Silicon (runtime check via supportsRaytracing())
 - Mouse hover coordinate mapping may be off when widget is scaled (Retina)

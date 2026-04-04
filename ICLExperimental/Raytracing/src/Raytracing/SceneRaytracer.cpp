@@ -7,6 +7,9 @@
 #ifdef ICL_HAVE_OPENCL
 #include "RaytracerBackend_OpenCL.h"
 #endif
+#ifdef ICL_HAVE_METAL
+#include "RaytracerBackend_Metal.h"
+#endif
 #include <ICLGeom/Scene.h>
 #include <ICLUtils/Macros.h>
 #include <cstring>
@@ -19,8 +22,16 @@ SceneRaytracer::SceneRaytracer(geom::Scene &scene, const std::string &backend)
   if (backend == "cpu") {
     m_backend = std::make_unique<CpuRTBackend>();
   }
+#ifdef ICL_HAVE_METAL
+  else if (backend == "metal" || backend.empty()) {
+    auto mtl = std::make_unique<MetalRTBackend>();
+    if (mtl->isAvailable()) {
+      m_backend = std::move(mtl);
+    }
+  }
+#endif
 #ifdef ICL_HAVE_OPENCL
-  else if (backend == "opencl" || backend.empty()) {
+  if (!m_backend && (backend == "opencl" || backend.empty())) {
     auto cl = std::make_unique<OpenCLRTBackend>();
     if (cl->isAvailable()) {
       m_backend = std::move(cl);
@@ -68,6 +79,7 @@ void SceneRaytracer::render(int camIndex) {
 
 const core::Img8u &SceneRaytracer::getImage() const { return m_backend->readback(); }
 void SceneRaytracer::invalidateAll() { m_extractor.invalidateAll(); }
+void SceneRaytracer::invalidateTransforms() { m_extractor.invalidateTransforms(); }
 void SceneRaytracer::invalidateObject(geom::SceneObject *obj) { m_extractor.invalidateObject(obj); }
 void SceneRaytracer::setAASamples(int spp) { m_backend->setAASamples(spp); }
 void SceneRaytracer::setFXAA(bool enabled) { m_backend->setFXAA(enabled); }
