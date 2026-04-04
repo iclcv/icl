@@ -43,17 +43,17 @@ struct RaytracerMouseHandler : public MouseHandler {
     mouseX = e.getX();
     mouseY = e.getY();
 
-    if (e.isPressEvent() && !e.isRight() && !e.isMiddle()) {
-      // Left press without drag: mark for click
+    bool isLeft = !e.isRight() && !e.isMiddle();
+
+    if (e.isPressEvent() && isLeft) {
       mouseClicked = true;
-      dragging = false;
-    } else if (e.isDragEvent()) {
-      dragging = true;
-      mouseClicked = false; // drag cancels click
     }
 
-    // Forward to scene handler for camera control (right+middle drag)
-    if (sceneHandler) sceneHandler->process(e);
+    // Forward non-left-button events and wheel events to scene handler
+    // Left button is reserved for object picking
+    if (sceneHandler && (!isLeft || e.isWheelEvent())) {
+      sceneHandler->process(e);
+    }
   }
 };
 
@@ -201,18 +201,20 @@ void init() {
 
   for (int i = 0; i < 5; i++) spawnObject();
 
-  raytracer = std::make_unique<icl::rt::SceneRaytracer>(scene);
+  std::string backend = pa("-backend");
+  if (backend == "auto") backend = "";
+  raytracer = std::make_unique<icl::rt::SceneRaytracer>(scene, backend);
 
   gui << (HSplit()
-          << Canvas().handle("draw").minSize(40, 30)
-          << (VBox().maxSize(20, 99)
+          << Canvas().handle("draw").minSize(32, 24)
+          << (VBox().minSize(20, 24)
+              << CheckBox("pause physics", "unchecked").handle("pause")
+              << Slider(10, 120, 30).handle("spawnRate").label("spawn interval")
+              << Button("spawn 10").handle("burst")
               << CheckBox("Path tracing GI", "unchecked").handle("pathTracing")
               << Combo("!1x off,4x 2x2,9x 3x3,16x 4x4").handle("aa").label("MSAA")
               << CheckBox("FXAA", "checked").handle("fxaa")
               << CheckBox("Adaptive AA", "unchecked").handle("adaptiveAA")
-              << Slider(10, 120, 30).handle("spawnRate").label("spawn interval")
-              << CheckBox("pause physics", "unchecked").handle("pause")
-              << Button("spawn 10").handle("burst")
               << Label("--").handle("info")
              )
          )
@@ -232,6 +234,8 @@ void run() {
   raytracer->setPathTracing(gui["pathTracing"].as<bool>());
   raytracer->setFXAA(gui["fxaa"].as<bool>());
   raytracer->setAdaptiveAA(gui["adaptiveAA"].as<bool>(), 4);
+  float targetFps = pa("-fps");
+  if (targetFps > 0) raytracer->setTargetFrameTime(1000.0f / targetFps);
 
   int spawnRate = gui["spawnRate"].as<int>();
   bool paused = gui["pause"].as<bool>();
@@ -327,11 +331,14 @@ void run() {
   draw = img;
 
   static char buf[128];
+  static int lastAccum = 0;
   int accumFrames = raytracer->getAccumulatedFrames();
+  int passesThisFrame = accumFrames - lastAccum;
+  lastAccum = accumFrames;
   if (accumFrames > 0) {
-    snprintf(buf, sizeof(buf), "%s | %.1f ms | %d obj | PT %d spp",
+    snprintf(buf, sizeof(buf), "%s | %.1f ms | %d obj | PT %d spp (+%d)",
              raytracer->backendName(), ms,
-             (int)dynamicObjects.size(), accumFrames);
+             (int)dynamicObjects.size(), accumFrames, passesThisFrame);
   } else {
     snprintf(buf, sizeof(buf), "%s | %.1f ms (%.0f fps) | %d obj | %dx AA",
              raytracer->backendName(), ms, 1000.0f / ms,
@@ -344,5 +351,5 @@ void run() {
 }
 
 int main(int argc, char **argv) {
-  return ICLApp(argc, argv, "", init, run).exec();
+  return ICLApp(argc, argv, "-backend(string=auto) -fps(float=30)", init, run).exec();
 }

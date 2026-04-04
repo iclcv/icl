@@ -24,7 +24,8 @@ namespace icl::rt {
 /// on Apple Silicon, CPU fallback otherwise).
 class SceneRaytracer {
 public:
-  explicit SceneRaytracer(geom::Scene &scene);
+  /// backend: "" = auto (OpenCL > CPU), "cpu", "opencl"
+  explicit SceneRaytracer(geom::Scene &scene, const std::string &backend = "");
 
   /// Render the scene from the given camera index.
   void render(int camIndex = 0);
@@ -56,6 +57,9 @@ public:
   /// Get the object instance index at a pixel (-1 = background).
   /// The returned index corresponds to the order objects were extracted from the scene.
   int getObjectAtPixel(int x, int y) const;
+
+  /// Set target frame time for multi-pass path tracing (0 = single pass).
+  void setTargetFrameTime(float ms);
 
   /// Get the active backend name.
   const char *backendName() const;

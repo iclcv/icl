@@ -55,6 +55,33 @@ public:
 
   /// Human-readable backend name for logging.
   virtual const char *name() const = 0;
+
+  // ---- Rendering mode control (default no-ops, overridden by backends that support them) ----
+
+  /// Enable/disable path tracing with temporal accumulation.
+  virtual void setPathTracing(bool) {}
+
+  /// Set target frame time in ms. Backends that support multi-pass
+  /// will run as many passes as fit within this budget.
+  virtual void setTargetFrameTime(float) {}
+
+  /// Reset the accumulation buffer (call when camera/scene changes).
+  virtual void resetAccumulation() {}
+
+  /// Get the current accumulation frame count (0 = not path tracing).
+  virtual int getAccumulatedFrames() const { return 0; }
+
+  /// Set antialiasing samples per pixel.
+  virtual void setAASamples(int) {}
+
+  /// Enable/disable FXAA post-process.
+  virtual void setFXAA(bool) {}
+
+  /// Enable/disable adaptive supersampling.
+  virtual void setAdaptiveAA(bool, int = 4) {}
+
+  /// Get the object instance index at a given pixel (-1 = background).
+  virtual int getObjectAtPixel(int, int) const { return -1; }
 };
 
 /// Factory: create the best available backend for this platform.

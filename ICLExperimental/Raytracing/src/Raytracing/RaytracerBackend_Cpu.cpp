@@ -23,17 +23,20 @@ int CpuRTBackend::buildBLAS(int objectIndex,
   entry.bvh.build(entry.vertices.data(), numVertices,
                   entry.triangles.data(), numTriangles);
   entry.valid = true;
+  m_accumFrame = 0;
   return objectIndex;
 }
 
 void CpuRTBackend::removeBLAS(int blasHandle) {
   if (blasHandle >= 0 && blasHandle < (int)m_blas.size()) {
     m_blas[blasHandle].valid = false;
+    m_accumFrame = 0;
   }
 }
 
 void CpuRTBackend::buildTLAS(const RTInstance *instances, int numInstances) {
   m_instances.assign(instances, instances + numInstances);
+  m_accumFrame = 0;
 }
 
 void CpuRTBackend::setSceneData(const RTLight *lights, int numLights,
@@ -42,6 +45,7 @@ void CpuRTBackend::setSceneData(const RTLight *lights, int numLights,
   m_lights.assign(lights, lights + numLights);
   m_materials.assign(materials, materials + numMaterials);
   m_bgColor = backgroundColor;
+  m_accumFrame = 0;
 }
 
 // ---- Transform helpers ----
@@ -439,9 +443,8 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
   // Path tracing: accumulate across frames
   if (m_pathTracing) {
     int n = w * h;
-    if ((int)m_accumR.size() != n) {
+    if ((int)m_accumR.size() != n || m_accumFrame == 0) {
       m_accumR.assign(n, 0); m_accumG.assign(n, 0); m_accumB.assign(n, 0);
-      m_accumFrame = 0;
     }
 
     m_accumFrame++;

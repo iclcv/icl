@@ -17,10 +17,17 @@ set(RT_HEADERS
   src/Raytracing/SceneRaytracer.h
 )
 
+# OpenCL backend (conditional)
+if(OPENCL_FOUND)
+  list(APPEND RT_SOURCES src/Raytracing/RaytracerBackend_OpenCL.cpp)
+  list(APPEND RT_HEADERS src/Raytracing/RaytracerBackend_OpenCL.h)
+endif()
+
 add_library(ICLRaytracing SHARED ${RT_SOURCES} ${RT_HEADERS})
 target_include_directories(ICLRaytracing PUBLIC src/)
 target_include_directories(ICLRaytracing PRIVATE ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src)
 target_link_libraries(ICLRaytracing ICLGeom)
+target_compile_definitions(ICLRaytracing PRIVATE ICL_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
 # OpenMP for parallel ray tracing
 find_package(OpenMP QUIET)
