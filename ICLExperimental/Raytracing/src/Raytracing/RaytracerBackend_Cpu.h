@@ -41,7 +41,29 @@ public:
   /// Enable/disable FXAA post-process (fast, image-based AA).
   void setFXAA(bool enabled) { m_fxaa = enabled; }
 
-private:
+  /// Enable/disable adaptive supersampling (re-raytrace edge pixels at higher spp).
+  void setAdaptiveAA(bool enabled, int edgeSpp = 8) {
+    m_adaptiveAA = enabled;
+    m_adaptiveEdgeSpp = std::max(2, edgeSpp);
+  }
+
+  /// Enable/disable path tracing with temporal accumulation.
+  void setPathTracing(bool enabled) { m_pathTracing = enabled; }
+
+  /// Reset the accumulation buffer (call when camera/scene changes).
+  void resetAccumulation() { m_accumFrame = 0; }
+
+  /// Get the current accumulation frame count.
+  int getAccumulatedFrames() const { return m_accumFrame; }
+
+  /// Get the object instance index at a given pixel (-1 = background).
+  int getObjectAtPixel(int x, int y) const {
+    int w = m_output.getWidth();
+    int h = m_output.getHeight();
+    if (x < 0 || x >= w || y < 0 || y >= h || m_objectIdBuffer.empty()) return -1;
+    return m_objectIdBuffer[x + y * w];
+  }
+
   /// Per-object BLAS data.
   struct BLASEntry {
     BVH bvh;
@@ -50,17 +72,25 @@ private:
     bool valid = false;
   };
 
-  /// Trace a ray and return its color (recursive for reflections).
+private:
+  /// Trace a ray and return its color (Blinn-Phong direct + reflections).
   RTFloat3 traceColor(const RTFloat3 &origin, const RTFloat3 &dir, int depth) const;
+
+  /// Path trace: trace a ray with random hemisphere bounces for GI.
+  RTFloat3 pathTrace(const RTFloat3 &origin, const RTFloat3 &dir, int depth, uint32_t &rng) const;
 
   /// Shade a hit point with Blinn-Phong.
   RTFloat3 shade(const RTFloat3 &hitPos, const RTFloat3 &normal, const RTFloat3 &viewDir,
                  const RTFloat4 &vertexColor, const RTMaterial &material, int depth) const;
 
+  /// Find closest intersection across all objects. Returns instance index or -1.
+  int traceScene(const RTFloat3 &origin, const RTFloat3 &dir, BVHHit &outHit) const;
+
   /// Test shadow ray against all objects.
   bool traceShadow(const RTFloat3 &from, const RTFloat3 &toLight, float maxDist) const;
 
   static constexpr int MAX_BOUNCES = 4;
+  static constexpr int PT_MAX_BOUNCES = 5;
 
   std::vector<BLASEntry> m_blas;
   std::vector<RTInstance> m_instances;
@@ -69,9 +99,21 @@ private:
   /// FXAA post-process on the output image.
   void applyFXAA();
 
+  /// Adaptive supersampling pass: detect edges, re-raytrace at higher spp.
+  void applyAdaptiveAA(const RTRayGenParams &camera);
+
+  /// Generate a ray direction from pixel coordinates.
+  RTFloat3 generateRayDir(const RTMat4 &Qi, float px, float py) const;
+
   RTFloat4 m_bgColor;
   int m_aaSamples = 1;
   bool m_fxaa = false;
+  bool m_adaptiveAA = false;
+  int m_adaptiveEdgeSpp = 8;
+  bool m_pathTracing = false;
+  int m_accumFrame = 0;
+  std::vector<float> m_accumR, m_accumG, m_accumB; // running sum per pixel
+  std::vector<int32_t> m_objectIdBuffer; // per-pixel: instance index (-1 = background)
   core::Img8u m_output;
 };
 

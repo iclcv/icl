@@ -523,6 +523,18 @@ namespace icl::geom {
       int steps = *params;
 
       float da = (2*M_PI)/steps;
+
+      // Per-vertex radial normals for smooth cylinder sides
+      // Normal index layout: 0..steps-1 = radial normals (one per angle)
+      //                      steps = bottom cap normal (0,0,-1)
+      //                      steps+1 = top cap normal (0,0,1)
+      for(int i=0;i<steps;++i){
+        float a = i*da;
+        addNormal(Vec(cos(a), sin(a), 0, 1));
+      }
+      int bottomNormalIdx = (int)m_normals.size();
+      addNormal(Vec(0,0,-1,1));
+      int topNormalIdx = (int)m_normals.size();
       addNormal(Vec(0,0,1,1));
 
       std::vector<int> bottom,top;
@@ -533,23 +545,24 @@ namespace icl::geom {
         addVertex(Vec(cx,cy,z+h,1));
 
         addLine(2*i, 2*i+1);
+        int prev = (i > 0) ? i-1 : steps-1;
         if(i){
-          addLine(2*i, 2*(i-1));
-          addLine(2*i+1, 2*(i-1)+1);
-          addQuad(2*(i-1), 2*i, 2*i+1, 2*(i-1)+1);
+          addLine(2*i, 2*prev);
+          addLine(2*i+1, 2*prev+1);
         }else{
           addLine(0, 2*(steps-1));
           addLine(1, 2*(steps-1)+1);
-          //            addQuad(0, 2*(steps-1), 2*(steps-1)+1, 1);
-          addQuad(1, 2*(steps-1)+1, 2*(steps-1), 0);
         }
+        // Side quad with smooth radial normals
+        // Quad vertices: prev_bottom, curr_bottom, curr_top, prev_top
+        // Normal indices: radial normal at prev, curr, curr, prev
+        addQuad(2*prev, 2*i, 2*i+1, 2*prev+1,
+                prev, i, i, prev);
         bottom.push_back(2*i);
         top.push_back(2*i+1);
       }
-      addNormal(Vec(0,0,-1,1));
-      addNormal(Vec(0,0,1,1));
-      addPolygon(steps,top.data(),geom_blue(),std::vector<int>(top.size(),m_normals.size()-1).data());
-      addPolygon(steps,bottom.data(),geom_blue(),std::vector<int>(top.size(),m_normals.size()-2).data());
+      addPolygon(steps,top.data(),geom_blue(),std::vector<int>(top.size(),topNormalIdx).data());
+      addPolygon(steps,bottom.data(),geom_blue(),std::vector<int>(top.size(),bottomNormalIdx).data());
     }else{
       ERROR_LOG("unknown type:" << type);
     }

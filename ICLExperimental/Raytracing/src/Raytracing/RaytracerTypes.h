@@ -70,8 +70,9 @@ struct RTTriangle {
 struct alignas(16) RTMaterial {
   RTFloat4 diffuseColor;    // base color (RGBA)
   RTFloat4 specularColor;   // specular reflectance color
+  RTFloat4 emission;        // emissive color + intensity (RGB * intensity)
   float shininess;          // Phong exponent (0-255 from ICL)
-  float reflectivity;       // for future reflection support
+  float reflectivity;       // mirror reflection (0=matte, 1=mirror)
   float _pad[2] = {};
 };
 
