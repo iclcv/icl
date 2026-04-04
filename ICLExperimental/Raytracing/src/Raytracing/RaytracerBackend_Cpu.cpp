@@ -300,26 +300,139 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
   const auto &Qi = camera.invViewProj;
   RTFloat3 camPos = camera.cameraPos;
 
-  #pragma omp parallel for schedule(dynamic, 8)
-  for (int y = 0; y < h; y++) {
-    for (int x = 0; x < w; x++) {
-      // Generate view ray
-      float px = (float)x;
-      float py = (float)y;
-      RTFloat3 dir{
-        Qi.cols[0][0]*px + Qi.cols[1][0]*py + Qi.cols[2][0],
-        Qi.cols[0][1]*px + Qi.cols[1][1]*py + Qi.cols[2][1],
-        Qi.cols[0][2]*px + Qi.cols[1][2]*py + Qi.cols[2][2]
-      };
-      dir = normalize(dir);
+  int spp = m_aaSamples;
+  float invSpp = 1.0f / spp;
 
-      RTFloat3 finalColor = traceColor(camPos, dir, 0);
+  // Precompute jitter offsets for stratified sampling
+  // For N samples, use a sqrt(N) x sqrt(N) grid with jitter
+  int gridSize = (int)std::ceil(std::sqrt((float)spp));
+  float cellSize = 1.0f / gridSize;
+
+  #pragma omp parallel for schedule(dynamic, 4)
+  for (int y = 0; y < h; y++) {
+    // Per-thread RNG for jitter (seeded from row index for reproducibility)
+    uint32_t rngState = (uint32_t)(y * 1237 + 5381);
+    auto fastRand = [&]() -> float {
+      rngState = rngState * 1103515245u + 12345u;
+      return (rngState >> 8 & 0xFFFF) / 65536.0f;
+    };
+
+    for (int x = 0; x < w; x++) {
+      RTFloat3 accum{0, 0, 0};
+
+      if (spp == 1) {
+        // No AA: single ray through pixel center
+        float px = x + 0.5f;
+        float py = y + 0.5f;
+        RTFloat3 dir{
+          Qi.cols[0][0]*px + Qi.cols[1][0]*py + Qi.cols[2][0],
+          Qi.cols[0][1]*px + Qi.cols[1][1]*py + Qi.cols[2][1],
+          Qi.cols[0][2]*px + Qi.cols[1][2]*py + Qi.cols[2][2]
+        };
+        accum = traceColor(camPos, normalize(dir), 0);
+      } else {
+        // Stratified jittered multi-sampling
+        int sample = 0;
+        for (int sy = 0; sy < gridSize && sample < spp; sy++) {
+          for (int sx = 0; sx < gridSize && sample < spp; sx++, sample++) {
+            float jx = (sx + fastRand()) * cellSize;
+            float jy = (sy + fastRand()) * cellSize;
+            float px = x + jx;
+            float py = y + jy;
+            RTFloat3 dir{
+              Qi.cols[0][0]*px + Qi.cols[1][0]*py + Qi.cols[2][0],
+              Qi.cols[0][1]*px + Qi.cols[1][1]*py + Qi.cols[2][1],
+              Qi.cols[0][2]*px + Qi.cols[1][2]*py + Qi.cols[2][2]
+            };
+            RTFloat3 c = traceColor(camPos, normalize(dir), 0);
+            accum = accum + c;
+          }
+        }
+        accum = accum * invSpp;
+      }
 
       // ICL camera pixel y=0 is bottom of view; Img8u row 0 is top → flip Y
       int idx = x + (h - 1 - y) * w;
-      R[idx] = (icl8u)(finalColor.x * 255);
-      G[idx] = (icl8u)(finalColor.y * 255);
-      B[idx] = (icl8u)(finalColor.z * 255);
+      R[idx] = (icl8u)(std::min(255.0f, accum.x * 255));
+      G[idx] = (icl8u)(std::min(255.0f, accum.y * 255));
+      B[idx] = (icl8u)(std::min(255.0f, accum.z * 255));
+    }
+  }
+
+  if (m_fxaa) applyFXAA();
+}
+
+// ---- FXAA post-process ----
+// Simplified FXAA: detect edges by luminance contrast, blend along edge direction.
+
+void CpuRTBackend::applyFXAA() {
+  int w = m_output.getWidth();
+  int h = m_output.getHeight();
+  if (w < 3 || h < 3) return;
+
+  // Work on a copy so we read original values while writing blended ones
+  core::Img8u src(*m_output.deepCopy());
+  const icl8u *sR = src.getData(0);
+  const icl8u *sG = src.getData(1);
+  const icl8u *sB = src.getData(2);
+  icl8u *dR = m_output.getData(0);
+  icl8u *dG = m_output.getData(1);
+  icl8u *dB = m_output.getData(2);
+
+  auto luma = [](int r, int g, int b) -> float {
+    return 0.299f * r + 0.587f * g + 0.114f * b;
+  };
+
+  auto sample = [&](int x, int y) -> float {
+    int i = std::max(0, std::min(w-1, x)) + std::max(0, std::min(h-1, y)) * w;
+    return luma(sR[i], sG[i], sB[i]);
+  };
+
+  auto sampleRGB = [&](int x, int y, float &r, float &g, float &b) {
+    int i = std::max(0, std::min(w-1, x)) + std::max(0, std::min(h-1, y)) * w;
+    r = sR[i]; g = sG[i]; b = sB[i];
+  };
+
+  constexpr float EDGE_THRESHOLD = 16.0f;  // minimum luminance contrast to trigger AA
+  constexpr float BLEND_FACTOR = 0.5f;
+
+  #pragma omp parallel for schedule(dynamic, 8)
+  for (int y = 1; y < h - 1; y++) {
+    for (int x = 1; x < w - 1; x++) {
+      float lumaC  = sample(x, y);
+      float lumaN  = sample(x, y-1);
+      float lumaS  = sample(x, y+1);
+      float lumaW  = sample(x-1, y);
+      float lumaE  = sample(x+1, y);
+
+      float rangeMax = std::max({lumaC, lumaN, lumaS, lumaW, lumaE});
+      float rangeMin = std::min({lumaC, lumaN, lumaS, lumaW, lumaE});
+      float range = rangeMax - rangeMin;
+
+      if (range < EDGE_THRESHOLD) continue; // not an edge
+
+      // Determine edge direction
+      float gradH = std::abs(lumaW - lumaC) + std::abs(lumaE - lumaC);
+      float gradV = std::abs(lumaN - lumaC) + std::abs(lumaS - lumaC);
+      bool horizontal = gradH < gradV;
+
+      // Blend with neighbors along the edge direction
+      float r0, g0, b0, r1, g1, b1, r2, g2, b2;
+      sampleRGB(x, y, r0, g0, b0);
+
+      if (horizontal) {
+        sampleRGB(x-1, y, r1, g1, b1);
+        sampleRGB(x+1, y, r2, g2, b2);
+      } else {
+        sampleRGB(x, y-1, r1, g1, b1);
+        sampleRGB(x, y+1, r2, g2, b2);
+      }
+
+      float f = BLEND_FACTOR;
+      int idx = x + y * w;
+      dR[idx] = (icl8u)std::min(255.0f, r0 * (1-f) + (r1 + r2) * 0.5f * f);
+      dG[idx] = (icl8u)std::min(255.0f, g0 * (1-f) + (g1 + g2) * 0.5f * f);
+      dB[idx] = (icl8u)std::min(255.0f, b0 * (1-f) + (b1 + b2) * 0.5f * f);
     }
   }
 }

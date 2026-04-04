@@ -116,7 +116,30 @@ void GeometryExtractor::tessellateObject(
 
   uint32_t materialIdx = 0; // one material per object for now
 
-  // Tessellate primitives
+  // Helper: emit a vertex with specific normal and color, duplicating if needed.
+  // For smooth shading, reuse original vertex indices. For flat shading or when
+  // normals differ from the stored vertex normal, duplicate the vertex.
+  auto emitVertex = [&](uint32_t srcIdx, const RTFloat3 &normal, const RTFloat4 &color) -> uint32_t {
+    RTVertex v = vertices[srcIdx]; // copy position from original
+    v.normal = normal;
+    v.color = color;
+    uint32_t newIdx = (uint32_t)vertices.size();
+    vertices.push_back(v);
+    return newIdx;
+  };
+
+  // Helper: get normal for a vertex, using explicit normal index if valid
+  auto getNormal = [&](uint32_t vertIdx, int normalIdx, const RTFloat3 &faceNormal) -> RTFloat3 {
+    if (normalIdx >= 0 && normalIdx < (int)srcNormals.size()) {
+      return vecToFloat3(srcNormals[normalIdx]);
+    }
+    if (hasPerVertexNormals) {
+      return vertices[vertIdx].normal; // already filled above
+    }
+    return faceNormal;
+  };
+
+  // Tessellate primitives — always emit new vertices to avoid shared-vertex normal conflicts
   for (const auto *prim : prims) {
     switch (prim->type) {
 
@@ -124,28 +147,18 @@ void GeometryExtractor::tessellateObject(
       const auto *tp = dynamic_cast<const geom::TrianglePrimitive*>(prim);
       if (!tp) break;
       uint32_t i0 = tp->i(0), i1 = tp->i(1), i2 = tp->i(2);
-
-      // Apply primitive color to vertices (overrides default vertex colors)
       RTFloat4 primColor = colorToFloat4(prim->color);
-      vertices[i0].color = primColor;
-      vertices[i1].color = primColor;
-      vertices[i2].color = primColor;
+      RTFloat3 fn = computeTriangleNormal(
+        vertices[i0].position, vertices[i1].position, vertices[i2].position);
 
-      // Set face normal if we don't have per-vertex normals
-      if (!hasPerVertexNormals) {
-        RTFloat3 fn = computeTriangleNormal(
-          vertices[i0].position, vertices[i1].position, vertices[i2].position);
-        vertices[i0].normal = fn;
-        vertices[i1].normal = fn;
-        vertices[i2].normal = fn;
-      } else {
-        int n0 = tp->i(3), n1 = tp->i(4), n2 = tp->i(5);
-        if (n0 >= 0 && n0 < (int)srcNormals.size()) vertices[i0].normal = vecToFloat3(srcNormals[n0]);
-        if (n1 >= 0 && n1 < (int)srcNormals.size()) vertices[i1].normal = vecToFloat3(srcNormals[n1]);
-        if (n2 >= 0 && n2 < (int)srcNormals.size()) vertices[i2].normal = vecToFloat3(srcNormals[n2]);
-      }
+      RTFloat3 n0 = getNormal(i0, tp->i(3), fn);
+      RTFloat3 n1 = getNormal(i1, tp->i(4), fn);
+      RTFloat3 n2 = getNormal(i2, tp->i(5), fn);
 
-      triangles.push_back({i0, i1, i2, materialIdx});
+      uint32_t a = emitVertex(i0, n0, primColor);
+      uint32_t b = emitVertex(i1, n1, primColor);
+      uint32_t c = emitVertex(i2, n2, primColor);
+      triangles.push_back({a, b, c, materialIdx});
       break;
     }
 
@@ -153,33 +166,21 @@ void GeometryExtractor::tessellateObject(
       const auto *qp = dynamic_cast<const geom::QuadPrimitive*>(prim);
       if (!qp) break;
       uint32_t i0 = qp->i(0), i1 = qp->i(1), i2 = qp->i(2), i3 = qp->i(3);
-
-      // Apply primitive color to vertices
       RTFloat4 primColor = colorToFloat4(prim->color);
-      vertices[i0].color = primColor;
-      vertices[i1].color = primColor;
-      vertices[i2].color = primColor;
-      vertices[i3].color = primColor;
+      RTFloat3 fn = computeTriangleNormal(
+        vertices[i0].position, vertices[i1].position, vertices[i2].position);
 
-      // Set normals
-      if (!hasPerVertexNormals) {
-        RTFloat3 fn = computeTriangleNormal(
-          vertices[i0].position, vertices[i1].position, vertices[i2].position);
-        vertices[i0].normal = fn;
-        vertices[i1].normal = fn;
-        vertices[i2].normal = fn;
-        vertices[i3].normal = fn;
-      } else {
-        int n0 = qp->i(4), n1 = qp->i(5), n2 = qp->i(6), n3 = qp->i(7);
-        if (n0 >= 0 && n0 < (int)srcNormals.size()) vertices[i0].normal = vecToFloat3(srcNormals[n0]);
-        if (n1 >= 0 && n1 < (int)srcNormals.size()) vertices[i1].normal = vecToFloat3(srcNormals[n1]);
-        if (n2 >= 0 && n2 < (int)srcNormals.size()) vertices[i2].normal = vecToFloat3(srcNormals[n2]);
-        if (n3 >= 0 && n3 < (int)srcNormals.size()) vertices[i3].normal = vecToFloat3(srcNormals[n3]);
-      }
+      RTFloat3 n0 = getNormal(i0, qp->i(4), fn);
+      RTFloat3 n1 = getNormal(i1, qp->i(5), fn);
+      RTFloat3 n2 = getNormal(i2, qp->i(6), fn);
+      RTFloat3 n3 = getNormal(i3, qp->i(7), fn);
 
-      // Split quad into 2 triangles: (0,1,2) and (0,2,3)
-      triangles.push_back({i0, i1, i2, materialIdx});
-      triangles.push_back({i0, i2, i3, materialIdx});
+      uint32_t a = emitVertex(i0, n0, primColor);
+      uint32_t b = emitVertex(i1, n1, primColor);
+      uint32_t c = emitVertex(i2, n2, primColor);
+      uint32_t d = emitVertex(i3, n3, primColor);
+      triangles.push_back({a, b, c, materialIdx});
+      triangles.push_back({a, c, d, materialIdx});
       break;
     }
 
@@ -187,26 +188,24 @@ void GeometryExtractor::tessellateObject(
       const auto *pp = dynamic_cast<const geom::PolygonPrimitive*>(prim);
       if (!pp || pp->getNumPoints() < 3) break;
       int n = pp->getNumPoints();
-
-      // Apply primitive color
       RTFloat4 primColor = colorToFloat4(prim->color);
 
-      // Fan triangulation from vertex 0
-      uint32_t v0 = pp->getVertexIndex(0);
-      vertices[v0].color = primColor;
+      // Emit all polygon vertices with face normal
+      uint32_t vi0 = pp->getVertexIndex(0);
+      RTFloat3 fn = computeTriangleNormal(
+        vertices[vi0].position,
+        vertices[pp->getVertexIndex(1)].position,
+        vertices[pp->getVertexIndex(2)].position);
+
+      std::vector<uint32_t> emitted(n);
+      for (int j = 0; j < n; j++) {
+        uint32_t srcIdx = pp->getVertexIndex(j);
+        int nIdx = pp->hasNormals() ? pp->getNormalIndex(j) : -1;
+        emitted[j] = emitVertex(srcIdx, getNormal(srcIdx, nIdx, fn), primColor);
+      }
+      // Fan triangulation
       for (int j = 1; j < n - 1; j++) {
-        uint32_t v1 = pp->getVertexIndex(j);
-        uint32_t v2 = pp->getVertexIndex(j + 1);
-        vertices[v1].color = primColor;
-        vertices[v2].color = primColor;
-        if (!hasPerVertexNormals) {
-          RTFloat3 fn = computeTriangleNormal(
-            vertices[v0].position, vertices[v1].position, vertices[v2].position);
-          vertices[v0].normal = fn;
-          vertices[v1].normal = fn;
-          vertices[v2].normal = fn;
-        }
-        triangles.push_back({v0, v1, v2, materialIdx});
+        triangles.push_back({emitted[0], emitted[j], emitted[j+1], materialIdx});
       }
       break;
     }
