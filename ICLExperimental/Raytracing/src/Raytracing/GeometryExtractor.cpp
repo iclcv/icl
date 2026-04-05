@@ -390,6 +390,48 @@ ExtractedScene GeometryExtractor::extract(const geom::Scene &scene, int camIndex
     globalTriangleOffset += (int)geo.triangles.size();
   }
 
+  // Build emissive triangle list for area light sampling
+  result.emissiveTriangles.clear();
+  for (size_t i = 0; i < result.objects.size(); i++) {
+    const auto &geo = result.objects[i];
+    const auto &mat = result.materials[i];
+    float emPower = mat.emission.x + mat.emission.y + mat.emission.z;
+    if (emPower < 1e-6f) continue;
+
+    RTFloat3 em{mat.emission.x, mat.emission.y, mat.emission.z};
+    const auto &T = geo.transform;
+
+    for (const auto &tri : geo.triangles) {
+      if (tri.v0 >= geo.vertices.size() || tri.v1 >= geo.vertices.size() ||
+          tri.v2 >= geo.vertices.size()) continue;
+
+      // Transform vertices to world space
+      auto xform = [&](const RTFloat3 &lp) -> RTFloat3 {
+        return {T.cols[0][0]*lp.x + T.cols[1][0]*lp.y + T.cols[2][0]*lp.z + T.cols[3][0],
+                T.cols[0][1]*lp.x + T.cols[1][1]*lp.y + T.cols[2][1]*lp.z + T.cols[3][1],
+                T.cols[0][2]*lp.x + T.cols[1][2]*lp.y + T.cols[2][2]*lp.z + T.cols[3][2]};
+      };
+      RTFloat3 w0 = xform(geo.vertices[tri.v0].position);
+      RTFloat3 w1 = xform(geo.vertices[tri.v1].position);
+      RTFloat3 w2 = xform(geo.vertices[tri.v2].position);
+
+      RTFloat3 edge1 = w1 - w0;
+      RTFloat3 edge2 = w2 - w0;
+      RTFloat3 cross = edge1.cross(edge2);
+      float area = 0.5f * std::sqrt(cross.dot(cross));
+      if (area < 1e-8f) continue;
+
+      RTFloat3 normal = cross * (1.0f / (2.0f * area));
+
+      RTEmissiveTriangle et;
+      et.v0 = w0; et.v1 = w1; et.v2 = w2;
+      et.normal = normal;
+      et.emission = em;
+      et.area = area;
+      result.emissiveTriangles.push_back(et);
+    }
+  }
+
   // Extract lights and camera
   extractLights(scene, result);
   extractCamera(scene.getCamera(camIndex), result.camera);

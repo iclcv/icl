@@ -43,6 +43,7 @@ struct ExtractedScene {
   std::vector<RTInstance> instances;
   std::vector<RTMaterial> materials;
   std::vector<RTLight> lights;
+  std::vector<RTEmissiveTriangle> emissiveTriangles;
   RTRayGenParams camera;
   RTFloat4 backgroundColor;
   bool anyGeometryChanged = false;

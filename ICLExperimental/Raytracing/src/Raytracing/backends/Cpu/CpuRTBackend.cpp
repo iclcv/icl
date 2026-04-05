@@ -48,6 +48,13 @@ void CpuRTBackend::setSceneData(const RTLight *lights, int numLights,
   m_accumFrame = 0;
 }
 
+void CpuRTBackend::setEmissiveTriangles(const RTEmissiveTriangle *tris, int count) {
+  m_emissives.assign(tris, tris + count);
+  m_totalEmissiveArea = 0;
+  for (const auto &et : m_emissives)
+    m_totalEmissiveArea += et.area;
+}
+
 // ---- Transform helpers ----
 
 static RTFloat3 transformPoint(const RTMat4 &m, const RTFloat3 &p) {
@@ -386,6 +393,47 @@ RTFloat3 CpuRTBackend::pathTrace(const RTFloat3 &origin, const RTFloat3 &dir,
       lightColor.y * baseColor.y * NdotL * atten * spotFactor,
       lightColor.z * baseColor.z * NdotL * atten * spotFactor
     };
+  }
+
+  // Area light sampling: pick one random emissive triangle
+  if (!m_emissives.empty() && m_totalEmissiveArea > 0) {
+    // Select a triangle weighted by area
+    float r = fastRandFloat(rng) * m_totalEmissiveArea;
+    float cumArea = 0;
+    int ei = 0;
+    for (int j = 0; j < (int)m_emissives.size(); j++) {
+      cumArea += m_emissives[j].area;
+      if (cumArea >= r) { ei = j; break; }
+    }
+    const auto &et = m_emissives[ei];
+
+    // Random point on triangle (uniform barycentric)
+    float u1 = fastRandFloat(rng), u2 = fastRandFloat(rng);
+    if (u1 + u2 > 1.0f) { u1 = 1.0f - u1; u2 = 1.0f - u2; }
+    RTFloat3 lightPt{
+      et.v0.x * (1-u1-u2) + et.v1.x * u1 + et.v2.x * u2,
+      et.v0.y * (1-u1-u2) + et.v1.y * u1 + et.v2.y * u2,
+      et.v0.z * (1-u1-u2) + et.v1.z * u1 + et.v2.z * u2
+    };
+
+    RTFloat3 toLight = lightPt - s.position;
+    float dist = length(toLight);
+    if (dist > 1e-4f) {
+      RTFloat3 L = toLight * (1.0f / dist);
+      float NdotL = N.dot(L);
+      float lightNdotL = -(et.normal.dot(L)); // light faces toward us?
+      if (NdotL > 0 && lightNdotL > 0) {
+        if (!traceShadow(s.position + N * 1.0f, L, dist - 1.0f)) {
+          // PDF = 1 / totalArea, solid angle = area * cos(lightAngle) / dist^2
+          float geomTerm = NdotL * lightNdotL * m_totalEmissiveArea / (dist * dist);
+          emitted = emitted + RTFloat3{
+            et.emission.x * baseColor.x * geomTerm,
+            et.emission.y * baseColor.y * geomTerm,
+            et.emission.z * baseColor.z * geomTerm
+          };
+        }
+      }
+    }
   }
 
   // Indirect lighting: one random bounce (cosine-weighted hemisphere)
