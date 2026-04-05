@@ -191,6 +191,7 @@ struct MetalRTBackend::Impl {
   mtl::Buffer svgfPrevDepth, svgfPrevNX, svgfPrevNY, svgfPrevNZ;
   mtl::Buffer svgfMom1, svgfMom2;
   mtl::Buffer svgfHistory; // int per pixel
+  mtl::Buffer svgfPrevMeshId; // int per pixel
   mtl::Buffer svgfVariance;
   mtl::Buffer svgfVarB; // ping-pong for variance filtering
   RTMat4 svgfPrevViewProj{};
@@ -1307,8 +1308,9 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
           {{srcR, 0}, {srcG, 1}, {srcB, 2},
            {dstR, 3}, {dstG, 4}, {dstB, 5},
            {&m_impl->depthBuf, 6},
-           {&m_impl->normalXBuf, 7}, {&m_impl->normalYBuf, 8}, {&m_impl->normalZBuf, 9}},
-          {}, &params, sizeof(params), 10);
+           {&m_impl->normalXBuf, 7}, {&m_impl->normalYBuf, 8}, {&m_impl->normalZBuf, 9},
+           {&m_impl->objectIdBuf, 10}},
+          {}, &params, sizeof(params), 11);
 
       std::swap(srcR, dstR);
       std::swap(srcG, dstG);
@@ -1349,6 +1351,7 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
       m_impl->svgfMom1 = m_impl->device.newBuffer(fb);
       m_impl->svgfMom2 = m_impl->device.newBuffer(fb);
       m_impl->svgfHistory = m_impl->device.newBuffer(ib);
+      m_impl->svgfPrevMeshId = m_impl->device.newBuffer(ib);
       m_impl->svgfVariance = m_impl->device.newBuffer(fb);
       m_impl->svgfVarB = m_impl->device.newBuffer(fb);
       m_impl->svgfW = w;
@@ -1407,15 +1410,18 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
       setBuf(m_impl->svgfPrevNX, 11); setBuf(m_impl->svgfPrevNY, 12); setBuf(m_impl->svgfPrevNZ, 13);
       setBuf(m_impl->svgfMom1, 14); setBuf(m_impl->svgfMom2, 15);
       setBuf(m_impl->svgfHistory, 16);
-      // Output (17-23)
-      setBuf(m_impl->denoiseB_R, 17); setBuf(m_impl->denoiseB_G, 18); setBuf(m_impl->denoiseB_B, 19);
-      setBuf(m_impl->svgfMom1, 20); setBuf(m_impl->svgfMom2, 21);
-      setBuf(m_impl->svgfHistory, 22);
-      setBuf(m_impl->svgfVariance, 23);
-      // Camera + prevVP + params (24-26)
-      [enc setBytes:&m_lastRenderCamera length:sizeof(m_lastRenderCamera) atIndex:24];
-      [enc setBytes:&m_impl->svgfPrevViewProj length:sizeof(RTMat4) atIndex:25];
-      [enc setBytes:&tparams length:sizeof(tparams) atIndex:26];
+      // Mesh IDs (17-18)
+      setBuf(m_impl->objectIdBuf, 17);
+      setBuf(m_impl->svgfPrevMeshId, 18);
+      // Output (19-25)
+      setBuf(m_impl->denoiseB_R, 19); setBuf(m_impl->denoiseB_G, 20); setBuf(m_impl->denoiseB_B, 21);
+      setBuf(m_impl->svgfMom1, 22); setBuf(m_impl->svgfMom2, 23);
+      setBuf(m_impl->svgfHistory, 24);
+      setBuf(m_impl->svgfVariance, 25);
+      // Camera + prevVP + params (26-28)
+      [enc setBytes:&m_lastRenderCamera length:sizeof(m_lastRenderCamera) atIndex:26];
+      [enc setBytes:&m_impl->svgfPrevViewProj length:sizeof(RTMat4) atIndex:27];
+      [enc setBytes:&tparams length:sizeof(tparams) atIndex:28];
 
       NSUInteger execWidth = [pso threadExecutionWidth];
       NSUInteger groupH = [pso maxTotalThreadsPerThreadgroup] / execWidth;
@@ -1450,8 +1456,9 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
            {&m_impl->depthBuf, 6},
            {&m_impl->normalXBuf, 7}, {&m_impl->normalYBuf, 8}, {&m_impl->normalZBuf, 9},
            {srcVar, 10}, {dstVar, 11},
-           {&m_impl->reflectBuf, 12}},
-          {}, &ap, sizeof(ap), 13);
+           {&m_impl->reflectBuf, 12},
+           {&m_impl->objectIdBuf, 13}},
+          {}, &ap, sizeof(ap), 14);
 
       std::swap(srcR, dstR); std::swap(srcG, dstG); std::swap(srcB, dstB);
       std::swap(srcVar, dstVar);
@@ -1472,6 +1479,7 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
     memcpy(m_impl->svgfPrevNX.contents(), m_impl->normalXBuf.contents(), n * sizeof(float));
     memcpy(m_impl->svgfPrevNY.contents(), m_impl->normalYBuf.contents(), n * sizeof(float));
     memcpy(m_impl->svgfPrevNZ.contents(), m_impl->normalZBuf.contents(), n * sizeof(float));
+    memcpy(m_impl->svgfPrevMeshId.contents(), m_impl->objectIdBuf.contents(), n * sizeof(int32_t));
     m_impl->svgfPrevViewProj = m_lastRenderCamera.viewProj;
     m_impl->svgfHasPrevFrame = true;
 

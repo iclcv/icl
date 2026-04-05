@@ -379,18 +379,20 @@ struct SVGFTemporalParams {
     device const float *prevMom1  [[buffer(14)]],
     device const float *prevMom2  [[buffer(15)]],
     device const int   *prevHist  [[buffer(16)]],
+    device const int   *curMeshId [[buffer(17)]],
+    device const int   *prevMeshId [[buffer(18)]],
     // Output (write)
-    device float       *outR      [[buffer(17)]],
-    device float       *outG      [[buffer(18)]],
-    device float       *outB      [[buffer(19)]],
-    device float       *outMom1   [[buffer(20)]],
-    device float       *outMom2   [[buffer(21)]],
-    device int         *outHist   [[buffer(22)]],
-    device float       *outVar    [[buffer(23)]],
+    device float       *outR      [[buffer(19)]],
+    device float       *outG      [[buffer(20)]],
+    device float       *outB      [[buffer(21)]],
+    device float       *outMom1   [[buffer(22)]],
+    device float       *outMom2   [[buffer(23)]],
+    device int         *outHist   [[buffer(24)]],
+    device float       *outVar    [[buffer(25)]],
     // Camera params
-    constant RTRayGenParams &camera    [[buffer(24)]],
-    constant RTMat4         &prevVP    [[buffer(25)]],
-    constant SVGFTemporalParams &params [[buffer(26)]],
+    constant RTRayGenParams &camera    [[buffer(26)]],
+    constant RTMat4         &prevVP    [[buffer(27)]],
+    constant SVGFTemporalParams &params [[buffer(28)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int w = params.width, h = params.height;
@@ -428,7 +430,8 @@ struct SVGFTemporalParams {
         float ndot = normalX[idx]*prevNX[prevIdx] +
                      normalY[idx]*prevNY[prevIdx] +
                      normalZ[idx]*prevNZ[prevIdx];
-        valid = (depthRatio < 0.1f && ndot > 0.9f);
+        bool meshMatch = (curMeshId[idx] == prevMeshId[prevIdx]);
+        valid = (depthRatio < 0.1f && ndot > 0.9f && meshMatch);
       }
     }
   }
@@ -486,7 +489,8 @@ struct SVGFTemporalParams {
     device const float *variance   [[buffer(10)]],
     device float       *outVar     [[buffer(11)]],
     device const float *reflectivity [[buffer(12)]],
-    constant ATrousParams &params  [[buffer(13)]],
+    device const int   *meshIds    [[buffer(13)]],
+    constant ATrousParams &params  [[buffer(14)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int w = params.width, h = params.height;
@@ -496,6 +500,7 @@ struct SVGFTemporalParams {
   int ci = px + py * w;
   float cR = inR[ci], cG = inG[ci], cB = inB[ci];
   float cD = depth[ci];
+  int cMeshId = meshIds[ci];
   float cNx = normalX[ci], cNy = normalY[ci], cNz = normalZ[ci];
   float cLum = 0.2126f*cR + 0.7152f*cG + 0.0722f*cB;
   float cVar = variance[ci];
@@ -515,6 +520,9 @@ struct SVGFTemporalParams {
     for (int kx = -2; kx <= 2; kx++) {
       int nx = clamp(px + kx*step, 0, w-1);
       int ni = nx + ny * w;
+
+      // Skip neighbors from different objects (prevents silhouette halo)
+      if (meshIds[ni] != cMeshId) continue;
 
       float ws = bspline[ky+2] * bspline[kx+2];
       float dd = abs(depth[ni] - cD);
@@ -563,7 +571,8 @@ struct SVGFTemporalParams {
     device const float *normalX  [[buffer(7)]],
     device const float *normalY  [[buffer(8)]],
     device const float *normalZ  [[buffer(9)]],
-    constant ATrousParams &params [[buffer(10)]],
+    device const int   *meshIds  [[buffer(10)]],
+    constant ATrousParams &params [[buffer(11)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int w = params.width;
@@ -577,6 +586,7 @@ struct SVGFTemporalParams {
   float cD = depth[ci];
   float cNx = normalX[ci], cNy = normalY[ci], cNz = normalZ[ci];
   float cLum = 0.2126f * cR + 0.7152f * cG + 0.0722f * cB;
+  int cMeshId = meshIds[ci];
 
   // B3-spline 1D weights: [1/16, 4/16, 6/16, 4/16, 1/16]
   const float bspline[5] = {0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f};
@@ -589,6 +599,9 @@ struct SVGFTemporalParams {
     for (int kx = -2; kx <= 2; kx++) {
       int nx = clamp(px + kx * step, 0, w - 1);
       int ni = nx + ny * w;
+
+      // Skip neighbors from different objects (prevents silhouette halo)
+      if (meshIds[ni] != cMeshId) continue;
 
       // Spatial weight (separable B3-spline)
       float ws = bspline[ky + 2] * bspline[kx + 2];
