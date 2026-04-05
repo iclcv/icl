@@ -1,0 +1,16 @@
+<scene>
+  <!-- Top-down view looking straight at ground to see shadow shape -->
+  <camera pos="0 -200 400" dir="0 0.4 -0.9" up="0 0 -1" res="640x480"/>
+  <light pos="200 -200 500" diffuse="255 245 220" ambient="5 5 5" scale="0.0"/>
+
+  <!-- Ground -->
+  <object type="cube" pos="0 0 -5" size="600" sx="1" sy="1" sz="0.02"
+          color="220 210 200"/>
+
+  <!-- Light source: sphere offset to upper-right -->
+  <object type="sphere" pos="80 60 150" radius="20"
+          color="255 240 200" emission="255 240 200" emissionIntensity="3.0"/>
+
+  <!-- Cube casting shadow (larger for clear silhouette) -->
+  <object type="cube" pos="0 0 40" size="70" color="180 50 50"/>
+</scene>
