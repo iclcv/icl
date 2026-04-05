@@ -124,6 +124,7 @@ struct MetalRTBackend::Impl {
   mtl::Buffer outR, outG, outB;
   mtl::Buffer objectIdBuf;
   mtl::Buffer accumR, accumG, accumB;
+  mtl::Buffer normalXBuf, normalYBuf, normalZBuf;
   int lastW = 0, lastH = 0;
 
   // State
@@ -131,6 +132,8 @@ struct MetalRTBackend::Impl {
   int accumFrame = 0;
   float targetFrameMs = 0;
   std::vector<int32_t> cpuObjectIds;
+  std::vector<float> cpuDepth;
+  std::vector<float> cpuNormalX, cpuNormalY, cpuNormalZ;
   core::Img8u output;
 
   // MetalFX upsampling state
@@ -697,6 +700,9 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
     m_impl->accumR = m_impl->device.newBuffer(n * sizeof(float));
     m_impl->accumG = m_impl->device.newBuffer(n * sizeof(float));
     m_impl->accumB = m_impl->device.newBuffer(n * sizeof(float));
+    m_impl->normalXBuf = m_impl->device.newBuffer(n * sizeof(float));
+    m_impl->normalYBuf = m_impl->device.newBuffer(n * sizeof(float));
+    m_impl->normalZBuf = m_impl->device.newBuffer(n * sizeof(float));
     m_impl->lastW = w;
     m_impl->lastH = h;
     m_impl->accumFrame = 0;
@@ -757,7 +763,7 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
       m_impl->accumFrame++;
       params.frameNumber = m_impl->accumFrame;
 
-      // Buffer bindings: 0=TLAS, 1..15 as per kernel
+      // Buffer bindings: 0=TLAS, 1..18 as per kernel
       std::vector<std::pair<mtl::Buffer *, int>> bufs = {
         {&m_impl->instanceDataBuf, 1},
         {&m_impl->flatVertexBuf, 2},
@@ -772,11 +778,14 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
         {&m_impl->outB, 11},
         {&m_impl->objectIdBuf, 12},
         {&m_impl->depthBuf, 13},
+        {&m_impl->normalXBuf, 14},
+        {&m_impl->normalYBuf, 15},
+        {&m_impl->normalZBuf, 16},
       };
 
       m_impl->dispatch(m_impl->ptPipeline, w, h, bufs,
                        &jitteredCamera, sizeof(jitteredCamera),
-                       &params, sizeof(params), 14, 15);
+                       &params, sizeof(params), 17, 18);
 
       auto now = std::chrono::steady_clock::now();
       float elapsedMs =
@@ -800,11 +809,14 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
       {&m_impl->outB, 8},
       {&m_impl->objectIdBuf, 9},
       {&m_impl->depthBuf, 10},
+      {&m_impl->normalXBuf, 11},
+      {&m_impl->normalYBuf, 12},
+      {&m_impl->normalZBuf, 13},
     };
 
     m_impl->dispatch(m_impl->directPipeline, w, h, bufs,
                      &jitteredCamera, sizeof(jitteredCamera),
-                     &params, sizeof(params), 11, 12);
+                     &params, sizeof(params), 14, 15);
   }
 
   // Read back from unified memory (just memcpy from buffer contents)
@@ -815,10 +827,19 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
   memcpy(m_impl->output.getData(1), oG, n);
   memcpy(m_impl->output.getData(2), oB, n);
 
-  // Read back object IDs
+  // Read back object IDs and G-buffers
   m_impl->cpuObjectIds.resize(n);
   memcpy(m_impl->cpuObjectIds.data(), m_impl->objectIdBuf.contents(),
          n * sizeof(int32_t));
+  m_impl->cpuDepth.resize(n);
+  memcpy(m_impl->cpuDepth.data(), m_impl->depthBuf.contents(), n * sizeof(float));
+  m_impl->cpuNormalX.resize(n);
+  m_impl->cpuNormalY.resize(n);
+  m_impl->cpuNormalZ.resize(n);
+  memcpy(m_impl->cpuNormalX.data(), m_impl->normalXBuf.contents(), n * sizeof(float));
+  memcpy(m_impl->cpuNormalY.data(), m_impl->normalYBuf.contents(), n * sizeof(float));
+  memcpy(m_impl->cpuNormalZ.data(), m_impl->normalZBuf.contents(), n * sizeof(float));
+  m_lastRenderCamera = camera;
 
   // Denoising (before upsampling, at internal resolution)
   bool useMetalFX = (m_upsamplingMethod == UpsamplingMethod::MetalFXSpatial ||
@@ -1083,6 +1104,19 @@ int MetalRTBackend::getObjectAtPixel(int x, int y) const {
   if (x < 0 || x >= w || y < 0 || y >= h || m_impl->cpuObjectIds.empty())
     return -1;
   return m_impl->cpuObjectIds[x + y * w];
+}
+
+const float *MetalRTBackend::getDepthBuffer() const {
+  return m_impl->cpuDepth.empty() ? nullptr : m_impl->cpuDepth.data();
+}
+const float *MetalRTBackend::getNormalXBuffer() const {
+  return m_impl->cpuNormalX.empty() ? nullptr : m_impl->cpuNormalX.data();
+}
+const float *MetalRTBackend::getNormalYBuffer() const {
+  return m_impl->cpuNormalY.empty() ? nullptr : m_impl->cpuNormalY.data();
+}
+const float *MetalRTBackend::getNormalZBuffer() const {
+  return m_impl->cpuNormalZ.empty() ? nullptr : m_impl->cpuNormalZ.data();
 }
 
 bool MetalRTBackend::supportsUpsampling(UpsamplingMethod m) const {

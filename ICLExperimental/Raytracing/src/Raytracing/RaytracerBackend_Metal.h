@@ -50,6 +50,11 @@ public:
   bool supportsUpsampling(UpsamplingMethod method) const override;
   bool setUpsampling(UpsamplingMethod method) override;
 
+  const float *getDepthBuffer() const override;
+  const float *getNormalXBuffer() const override;
+  const float *getNormalYBuffer() const override;
+  const float *getNormalZBuffer() const override;
+
 private:
   void applyMetalFXSpatial(int renderW, int renderH);
   void applyMetalFXTemporal(const RTRayGenParams &camera,
