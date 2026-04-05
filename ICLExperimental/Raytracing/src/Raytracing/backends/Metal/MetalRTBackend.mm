@@ -185,6 +185,7 @@ struct MetalRTBackend::Impl {
   mtl::Buffer svgfVarB; // ping-pong for variance filtering
   RTMat4 svgfPrevViewProj{};
   bool svgfHasPrevFrame = false;
+  int svgfW = 0, svgfH = 0; // separate from denoiseW/H to avoid cross-allocation bugs
   int denoiseW = 0, denoiseH = 0;
 
   // MetalFX upsampling state
@@ -1309,16 +1310,10 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
     int n = w * h;
     if (n <= 0) return;
 
-    // Allocate all buffers on resize
-    if (w != m_impl->denoiseW || h != m_impl->denoiseH) {
+    // Allocate SVGF-specific temporal buffers (separate size tracking from denoiseW/H)
+    if (w != m_impl->svgfW || h != m_impl->svgfH) {
       size_t fb = n * sizeof(float);
       size_t ib = n * sizeof(int);
-      m_impl->denoiseA_R = m_impl->device.newBuffer(fb);
-      m_impl->denoiseA_G = m_impl->device.newBuffer(fb);
-      m_impl->denoiseA_B = m_impl->device.newBuffer(fb);
-      m_impl->denoiseB_R = m_impl->device.newBuffer(fb);
-      m_impl->denoiseB_G = m_impl->device.newBuffer(fb);
-      m_impl->denoiseB_B = m_impl->device.newBuffer(fb);
       m_impl->svgfPrevR = m_impl->device.newBuffer(fb);
       m_impl->svgfPrevG = m_impl->device.newBuffer(fb);
       m_impl->svgfPrevB = m_impl->device.newBuffer(fb);
@@ -1331,6 +1326,19 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
       m_impl->svgfHistory = m_impl->device.newBuffer(ib);
       m_impl->svgfVariance = m_impl->device.newBuffer(fb);
       m_impl->svgfVarB = m_impl->device.newBuffer(fb);
+      m_impl->svgfW = w;
+      m_impl->svgfH = h;
+      m_impl->svgfHasPrevFrame = false;
+    }
+    // Allocate ping-pong float buffers (shared with À-Trous / tone mapping)
+    if (w != m_impl->denoiseW || h != m_impl->denoiseH) {
+      size_t fb = n * sizeof(float);
+      m_impl->denoiseA_R = m_impl->device.newBuffer(fb);
+      m_impl->denoiseA_G = m_impl->device.newBuffer(fb);
+      m_impl->denoiseA_B = m_impl->device.newBuffer(fb);
+      m_impl->denoiseB_R = m_impl->device.newBuffer(fb);
+      m_impl->denoiseB_G = m_impl->device.newBuffer(fb);
+      m_impl->denoiseB_B = m_impl->device.newBuffer(fb);
       m_impl->denoiseW = w;
       m_impl->denoiseH = h;
       m_impl->svgfHasPrevFrame = false;

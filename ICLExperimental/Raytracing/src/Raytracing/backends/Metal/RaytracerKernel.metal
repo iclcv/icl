@@ -697,10 +697,9 @@ inline float hableFunc(float x) {
     b = hableFunc(b) * ws;
   }
 
-  // Gamma correction (linear → sRGB approx)
-  R[tid] = pow(max(r, 0.0f), 1.0f / 2.2f);
-  G[tid] = pow(max(g, 0.0f), 1.0f / 2.2f);
-  B[tid] = pow(max(b, 0.0f), 1.0f / 2.2f);
+  R[tid] = clamp(r, 0.0f, 1.0f);
+  G[tid] = clamp(g, 0.0f, 1.0f);
+  B[tid] = clamp(b, 0.0f, 1.0f);
 }
 
 // ==========================================================================

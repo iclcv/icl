@@ -250,11 +250,6 @@ protected:
         b = hable(b) * whiteScale;
       }
 
-      // Gamma correction (linear → sRGB)
-      r = std::pow(r, 1.0f / 2.2f);
-      g = std::pow(g, 1.0f / 2.2f);
-      b = std::pow(b, 1.0f / 2.2f);
-
       R[i] = (icl8u)(r < 0 ? 0 : (r > 1 ? 255 : r * 255));
       G[i] = (icl8u)(g < 0 ? 0 : (g > 1 ? 255 : g * 255));
       B[i] = (icl8u)(b < 0 ? 0 : (b > 1 ? 255 : b * 255));
