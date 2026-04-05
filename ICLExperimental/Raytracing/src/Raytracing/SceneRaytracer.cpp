@@ -74,7 +74,18 @@ void SceneRaytracer::render(int camIndex) {
     m_backend->resetAccumulation();
   }
 
-  m_backend->render(extracted.camera);
+  // Apply render scale: render at lower resolution, backend upsamples to display res
+  RTRayGenParams renderCamera = extracted.camera;
+  float scale = m_backend->getRenderScale();
+  if (scale < 1.0f && m_backend->getUpsamplingMethod() != UpsamplingMethod::None) {
+    m_backend->setDisplaySize(renderCamera.imageWidth, renderCamera.imageHeight);
+    renderCamera.imageWidth  = std::max(1, (int)(renderCamera.imageWidth * scale));
+    renderCamera.imageHeight = std::max(1, (int)(renderCamera.imageHeight * scale));
+  } else {
+    m_backend->setDisplaySize(0, 0); // no upsampling
+  }
+
+  m_backend->render(renderCamera);
 }
 
 const core::Img8u &SceneRaytracer::getImage() const { return m_backend->readback(); }
@@ -89,5 +100,15 @@ int SceneRaytracer::getAccumulatedFrames() const { return m_backend->getAccumula
 int SceneRaytracer::getObjectAtPixel(int x, int y) const { return m_backend->getObjectAtPixel(x, y); }
 void SceneRaytracer::setTargetFrameTime(float ms) { m_backend->setTargetFrameTime(ms); }
 const char *SceneRaytracer::backendName() const { return m_backend->name(); }
+bool SceneRaytracer::setUpsampling(UpsamplingMethod method) { return m_backend->setUpsampling(method); }
+void SceneRaytracer::setRenderScale(float scale) {
+  if (scale != m_backend->getRenderScale()) {
+    m_backend->setRenderScale(scale);
+    m_backend->resetAccumulation();
+  }
+}
+bool SceneRaytracer::supportsUpsampling(UpsamplingMethod method) const { return m_backend->supportsUpsampling(method); }
+UpsamplingMethod SceneRaytracer::getUpsamplingMethod() const { return m_backend->getUpsamplingMethod(); }
+float SceneRaytracer::getRenderScale() const { return m_backend->getRenderScale(); }
 
 } // namespace icl::rt

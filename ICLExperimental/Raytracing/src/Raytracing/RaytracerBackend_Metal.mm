@@ -586,6 +586,9 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
   m_impl->cpuObjectIds.resize(n);
   memcpy(m_impl->cpuObjectIds.data(), m_impl->objectIdBuf.contents(),
          n * sizeof(int32_t));
+
+  // Upsampling (render scale < 1.0)
+  applyUpsampling(m_impl->output, m_impl->cpuObjectIds);
 }
 
 // ---- Readback + mode control ----------------------------------------------

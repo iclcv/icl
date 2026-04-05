@@ -208,6 +208,12 @@ void init() {
   if (backend == "auto") backend = "";
   raytracer = std::make_unique<icl::rt::SceneRaytracer>(scene, backend);
 
+  float initialScale = pa("-scale");
+  if (initialScale < 1.0f) {
+    raytracer->setRenderScale(initialScale);
+    raytracer->setUpsampling(icl::rt::UpsamplingMethod::Bilinear);
+  }
+
   gui  << Canvas().handle("draw").minSize(64, 48)
        << (VBox().minSize(20, 24)
           << CheckBox("pause physics", "unchecked").handle("pause")
@@ -217,6 +223,8 @@ void init() {
           << Combo("!1x off,4x 2x2,9x 3x3,16x 4x4").handle("aa").label("MSAA")
           << CheckBox("FXAA", "checked").handle("fxaa")
           << CheckBox("Adaptive AA", "unchecked").handle("adaptiveAA")
+          << Combo("!None,Bilinear,Edge-Aware").handle("upsampling").label("Upsampling")
+          << Slider(25, 100, 50).handle("renderScale").label("Render Scale %")
           << Label("--").handle("info")
         )<< Show();
 
@@ -234,6 +242,17 @@ void run() {
   raytracer->setPathTracing(gui["pathTracing"].as<bool>());
   raytracer->setFXAA(gui["fxaa"].as<bool>());
   raytracer->setAdaptiveAA(gui["adaptiveAA"].as<bool>(), 4);
+
+  // Upsampling
+  static const icl::rt::UpsamplingMethod upMethods[] = {
+    icl::rt::UpsamplingMethod::None,
+    icl::rt::UpsamplingMethod::Bilinear,
+    icl::rt::UpsamplingMethod::EdgeAware,
+  };
+  int upIdx = gui["upsampling"].as<ComboHandle>().getSelectedIndex();
+  raytracer->setUpsampling(upMethods[upIdx]);
+  raytracer->setRenderScale(gui["renderScale"].as<int>() / 100.0f);
+
   static float targetFps = pa("-fps");
   static float targetFrameMs = targetFps > 0 ? 1000.0f / targetFps : 0;
   static bool firstFrame = true;
@@ -343,11 +362,16 @@ void run() {
   DrawHandle draw = gui["draw"];
   draw = img;
 
-  static char buf[128];
+  static char buf[256];
   static int lastAccum = 0;
   int accumFrames = raytracer->getAccumulatedFrames();
   int passesThisFrame = accumFrames - lastAccum;
   lastAccum = accumFrames;
+  float scale = raytracer->getRenderScale();
+  int rw = (int)(img.getWidth() * scale), rh = (int)(img.getHeight() * scale);
+  const char *upNames[] = {"", " bilinear", " edge-aware", " MFX-spatial", " MFX-temporal"};
+  const char *upLabel = (scale < 1.0f) ? upNames[(int)raytracer->getUpsamplingMethod()] : "";
+
   if (accumFrames > 0) {
     snprintf(buf, sizeof(buf), "%s | %.1f ms | %d obj | PT %d spp (+%d)",
              raytracer->backendName(), ms,
@@ -356,6 +380,10 @@ void run() {
     snprintf(buf, sizeof(buf), "%s | %.1f ms (%.0f fps) | %d obj | %dx AA",
              raytracer->backendName(), ms, 1000.0f / ms,
              (int)dynamicObjects.size(), aaValues[aaIdx]);
+  }
+  if (scale < 1.0f) {
+    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
+             " | %dx%d->%dx%d%s", rw, rh, img.getWidth(), img.getHeight(), upLabel);
   }
   // Cap frame rate — sleep for remaining frame budget.
   if (targetFrameMs > 0) {
@@ -375,5 +403,5 @@ void run() {
 }
 
 int main(int argc, char **argv) {
-  return ICLApp(argc, argv, "-backend(string=auto) -fps(float=30) -size(Size=800x600)", init, run).exec();
+  return ICLApp(argc, argv, "-backend(string=auto) -fps(float=30) -size(Size=800x600) -scale(float=1.0)", init, run).exec();
 }

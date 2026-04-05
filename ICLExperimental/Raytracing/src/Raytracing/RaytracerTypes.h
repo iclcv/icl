@@ -113,4 +113,13 @@ struct alignas(16) RTRayGenParams {
   float farClip;
 };
 
+/// Upsampling method used when renderScale < 1.0.
+enum class UpsamplingMethod {
+  None = 0,       ///< No upsampling — render at full resolution
+  Bilinear,       ///< Bilinear interpolation (all backends)
+  EdgeAware,      ///< Bilateral edge-preserving upscale (all backends)
+  MetalFXSpatial, ///< Apple MetalFX spatial upscaler (Metal only)
+  MetalFXTemporal ///< Apple MetalFX temporal upscaler (Metal only)
+};
+
 } // namespace icl::rt

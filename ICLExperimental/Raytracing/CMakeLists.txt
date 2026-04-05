@@ -6,6 +6,7 @@ set(RT_SOURCES
   src/Raytracing/BVH.cpp
   src/Raytracing/RaytracerBackend_Cpu.cpp
   src/Raytracing/SceneRaytracer.cpp
+  src/Raytracing/Upsampling.cpp
 )
 
 set(RT_HEADERS
@@ -15,6 +16,7 @@ set(RT_HEADERS
   src/Raytracing/BVH.h
   src/Raytracing/RaytracerBackend_Cpu.h
   src/Raytracing/SceneRaytracer.h
+  src/Raytracing/Upsampling.h
 )
 
 # OpenCL backend (conditional)
