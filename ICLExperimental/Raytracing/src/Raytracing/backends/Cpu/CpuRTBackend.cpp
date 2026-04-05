@@ -437,11 +437,13 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
   m_normalX.resize(n);
   m_normalY.resize(n);
   m_normalZ.resize(n);
+  m_reflectivity.resize(n);
   std::fill(m_objectIdBuffer.begin(), m_objectIdBuffer.end(), -1);
   std::fill(m_depthBuffer.begin(), m_depthBuffer.end(), camera.farClip);
   std::fill(m_normalX.begin(), m_normalX.end(), 0.0f);
   std::fill(m_normalY.begin(), m_normalY.end(), 0.0f);
   std::fill(m_normalZ.begin(), m_normalZ.end(), 0.0f);
+  std::fill(m_reflectivity.begin(), m_reflectivity.end(), 0.0f);
   m_lastRenderCamera = camera;
 
   // Ray generation uses inverse Q-matrix stored in camera.invViewProj.
@@ -486,6 +488,7 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
             m_normalX[idx] = N.x;
             m_normalY[idx] = N.y;
             m_normalZ[idx] = N.z;
+            m_reflectivity[idx] = s.material.reflectivity;
           }
         }
         // Running average: new = old * (1 - 1/N) + sample * (1/N)
@@ -530,6 +533,7 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
         m_normalX[idx_gb] = N.x;
         m_normalY[idx_gb] = N.y;
         m_normalZ[idx_gb] = N.z;
+        m_reflectivity[idx_gb] = s.material.reflectivity;
       }
 
       if (spp == 1) {

@@ -171,6 +171,7 @@ static inline float svgfDot3(float ax, float ay, float az,
 void denoiseSVGF(const core::Img8u &src, core::Img8u &dst,
                  const float *depth,
                  const float *normalX, const float *normalY, const float *normalZ,
+                 const float *reflectivity,
                  const RTRayGenParams &camera,
                  SVGFState &state,
                  float strength) {
@@ -332,6 +333,10 @@ void denoiseSVGF(const core::Img8u &src, core::Img8u &dst,
         float cVar = variance[ci];
         float lumSigma = sigmaLum * std::sqrt(std::max(1e-6f, cVar)) + 1e-6f;
 
+        // Reduce spatial filtering for reflective surfaces
+        float refl = reflectivity ? reflectivity[ci] : 0.0f;
+        float reflScale = std::max(0.05f, 1.0f - refl);
+
         float sumR = 0, sumG = 0, sumB = 0, sumW = 0, sumVar = 0;
 
         for (int ky = -2; ky <= 2; ky++) {
@@ -357,6 +362,8 @@ void denoiseSVGF(const core::Img8u &src, core::Img8u &dst,
             float wl = std::exp(-dl / lumSigma);
 
             float wt = ws * wd * wn * wl;
+            // Scale down neighbor contribution for reflective pixels
+            if (kx != 0 || ky != 0) wt *= reflScale;
             sumR += wt * filtR[ni];
             sumG += wt * filtG[ni];
             sumB += wt * filtB[ni];

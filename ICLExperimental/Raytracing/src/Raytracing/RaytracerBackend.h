@@ -158,6 +158,7 @@ public:
   virtual const float *getNormalXBuffer() const { return nullptr; }
   virtual const float *getNormalYBuffer() const { return nullptr; }
   virtual const float *getNormalZBuffer() const { return nullptr; }
+  virtual const float *getReflectivityBuffer() const { return nullptr; }
 
 protected:
   UpsamplingMethod m_upsamplingMethod = UpsamplingMethod::None;
@@ -185,7 +186,8 @@ protected:
       auto *nx = getNormalXBuffer();
       if (!d || !nx) return;
       denoiseSVGF(output, denoised, d, nx, getNormalYBuffer(), getNormalZBuffer(),
-                  m_lastRenderCamera, m_svgfState, m_denoisingStrength);
+                  getReflectivityBuffer(), m_lastRenderCamera, m_svgfState,
+                  m_denoisingStrength);
     } else {
       return;
     }
