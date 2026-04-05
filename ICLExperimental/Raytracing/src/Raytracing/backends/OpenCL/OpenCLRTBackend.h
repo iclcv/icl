@@ -6,8 +6,8 @@
 
 #ifdef ICL_HAVE_OPENCL
 
-#include "RaytracerBackend.h"
-#include "BVH.h"
+#include "../../RaytracerBackend.h"
+#include "../../BVH.h"
 #include <ICLUtils/CLProgram.h>
 #include <ICLUtils/CLBuffer.h>
 #include <ICLUtils/CLKernel.h>

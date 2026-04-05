@@ -6,7 +6,7 @@
 
 #ifdef ICL_HAVE_METAL
 
-#include "RaytracerBackend.h"
+#include "../../RaytracerBackend.h"
 #include <memory>
 
 namespace icl::rt {

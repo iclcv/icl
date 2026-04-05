@@ -4,7 +4,7 @@
 
 #ifdef ICL_HAVE_OPENCL
 
-#include "RaytracerBackend_OpenCL.h"
+#include "OpenCLRTBackend.h"
 #include <ICLUtils/Macros.h>
 #include <fstream>
 #include <sstream>
@@ -16,9 +16,9 @@ namespace icl::rt {
 static std::string loadKernelSource() {
   const char *searchPaths[] = {
     "RaytracerKernel.cl",
-    "../ICLExperimental/Raytracing/src/Raytracing/RaytracerKernel.cl",
+    "../ICLExperimental/Raytracing/src/Raytracing/backends/OpenCL/RaytracerKernel.cl",
 #ifdef ICL_SOURCE_DIR
-    ICL_SOURCE_DIR "/ICLExperimental/Raytracing/src/Raytracing/RaytracerKernel.cl",
+    ICL_SOURCE_DIR "/ICLExperimental/Raytracing/src/Raytracing/backends/OpenCL/RaytracerKernel.cl",
 #endif
     nullptr
   };

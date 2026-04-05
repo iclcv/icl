@@ -4,7 +4,7 @@ INCLUDE(ICLHelperMacros)
 set(RT_SOURCES
   src/Raytracing/GeometryExtractor.cpp
   src/Raytracing/BVH.cpp
-  src/Raytracing/RaytracerBackend_Cpu.cpp
+  src/Raytracing/backends/Cpu/CpuRTBackend.cpp
   src/Raytracing/SceneRaytracer.cpp
   src/Raytracing/Upsampling.cpp
   src/Raytracing/Denoising.cpp
@@ -15,7 +15,7 @@ set(RT_HEADERS
   src/Raytracing/RaytracerBackend.h
   src/Raytracing/GeometryExtractor.h
   src/Raytracing/BVH.h
-  src/Raytracing/RaytracerBackend_Cpu.h
+  src/Raytracing/backends/Cpu/CpuRTBackend.h
   src/Raytracing/SceneRaytracer.h
   src/Raytracing/Upsampling.h
   src/Raytracing/Denoising.h
@@ -23,8 +23,8 @@ set(RT_HEADERS
 
 # OpenCL backend (conditional)
 if(OPENCL_FOUND)
-  list(APPEND RT_SOURCES src/Raytracing/RaytracerBackend_OpenCL.cpp)
-  list(APPEND RT_HEADERS src/Raytracing/RaytracerBackend_OpenCL.h)
+  list(APPEND RT_SOURCES src/Raytracing/backends/OpenCL/OpenCLRTBackend.cpp)
+  list(APPEND RT_HEADERS src/Raytracing/backends/OpenCL/OpenCLRTBackend.h)
 endif()
 
 # Metal RT backend (Apple only — hardware-accelerated BVH on Apple Silicon)
@@ -34,14 +34,14 @@ if(APPLE)
   find_library(FOUNDATION_FRAMEWORK Foundation)
   if(METAL_FRAMEWORK)
     list(APPEND RT_SOURCES
-      src/Raytracing/MetalRT.mm
-      src/Raytracing/RaytracerBackend_Metal.mm)
+      src/Raytracing/backends/Metal/MetalRT.mm
+      src/Raytracing/backends/Metal/MetalRTBackend.mm)
     list(APPEND RT_HEADERS
-      src/Raytracing/MetalRT.h
-      src/Raytracing/RaytracerBackend_Metal.h)
+      src/Raytracing/backends/Metal/MetalRT.h
+      src/Raytracing/backends/Metal/MetalRTBackend.h)
     set_source_files_properties(
-      src/Raytracing/MetalRT.mm
-      src/Raytracing/RaytracerBackend_Metal.mm
+      src/Raytracing/backends/Metal/MetalRT.mm
+      src/Raytracing/backends/Metal/MetalRTBackend.mm
       PROPERTIES COMPILE_FLAGS "-fobjc-arc")
   endif()
 endif()
