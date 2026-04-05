@@ -35,6 +35,17 @@ struct MetalInstanceData {
   int32_t _pad;
 };
 
+// ---- À-Trous denoiser params (matches ATrousParams in .metal) -------------
+
+struct ATrousParams {
+  int32_t width;
+  int32_t height;
+  int32_t stepSize;
+  float sigmaColor;
+  float sigmaDepth;
+  float sigmaNormal;
+};
+
 // ---- Scene-wide constant parameters (matches SceneParams in .metal) -------
 
 struct SceneParams {
@@ -135,6 +146,14 @@ struct MetalRTBackend::Impl {
   std::vector<float> cpuDepth;
   std::vector<float> cpuNormalX, cpuNormalY, cpuNormalZ;
   core::Img8u output;
+
+  // GPU denoising state
+  mtl::ComputePipeline atrousPipeline;
+  mtl::ComputePipeline u8ToFloatPipeline;
+  mtl::ComputePipeline floatToU8Pipeline;
+  mtl::Buffer denoiseA_R, denoiseA_G, denoiseA_B; // ping-pong pair A
+  mtl::Buffer denoiseB_R, denoiseB_G, denoiseB_B; // ping-pong pair B
+  int denoiseW = 0, denoiseH = 0;
 
   // MetalFX upsampling state
   mtl::ComputePipeline planarToRGBAPipeline;
@@ -602,6 +621,9 @@ MetalRTBackend::MetalRTBackend() : m_impl(std::make_unique<Impl>()) {
   m_impl->rgbaToPlanarPipeline = m_impl->device.newPipeline(src, "rgbaToPlanar");
   m_impl->depthToTexturePipeline = m_impl->device.newPipeline(src, "depthToTexture");
   m_impl->motionVectorPipeline = m_impl->device.newPipeline(src, "computeMotionVectors");
+  m_impl->atrousPipeline = m_impl->device.newPipeline(src, "atrousFilter");
+  m_impl->u8ToFloatPipeline = m_impl->device.newPipeline(src, "u8ToFloat");
+  m_impl->floatToU8Pipeline = m_impl->device.newPipeline(src, "floatToU8");
   m_impl->valid = (bool)m_impl->directPipeline && (bool)m_impl->ptPipeline;
 
   if (m_impl->valid)
@@ -1098,6 +1120,88 @@ const float *MetalRTBackend::getNormalYBuffer() const {
 }
 const float *MetalRTBackend::getNormalZBuffer() const {
   return m_impl->cpuNormalZ.empty() ? nullptr : m_impl->cpuNormalZ.data();
+}
+
+bool MetalRTBackend::supportsNativeDenoising(DenoisingMethod m) const {
+  if (m == DenoisingMethod::ATrousWavelet)
+    return m_impl && m_impl->valid && (bool)m_impl->atrousPipeline;
+  return false;
+}
+
+void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
+  if (m_denoisingMethod == DenoisingMethod::None) return;
+
+  // Native GPU path: À-Trous wavelet on Metal
+  if (m_denoisingMethod == DenoisingMethod::ATrousWavelet &&
+      supportsNativeDenoising(DenoisingMethod::ATrousWavelet)) {
+    int w = output.getWidth(), h = output.getHeight();
+    int n = w * h;
+    if (n <= 0) return;
+
+    // Allocate ping-pong float buffers on resize
+    if (w != m_impl->denoiseW || h != m_impl->denoiseH) {
+      size_t bytes = n * sizeof(float);
+      m_impl->denoiseA_R = m_impl->device.newBuffer(bytes);
+      m_impl->denoiseA_G = m_impl->device.newBuffer(bytes);
+      m_impl->denoiseA_B = m_impl->device.newBuffer(bytes);
+      m_impl->denoiseB_R = m_impl->device.newBuffer(bytes);
+      m_impl->denoiseB_G = m_impl->device.newBuffer(bytes);
+      m_impl->denoiseB_B = m_impl->device.newBuffer(bytes);
+      m_impl->denoiseW = w;
+      m_impl->denoiseH = h;
+    }
+
+    // Convert uint8 → float (outR/G/B → denoiseA)
+    m_impl->dispatchCompute(m_impl->u8ToFloatPipeline, n, 1,
+        {{&m_impl->outR, 0}, {&m_impl->outG, 1}, {&m_impl->outB, 2},
+         {&m_impl->denoiseA_R, 3}, {&m_impl->denoiseA_G, 4}, {&m_impl->denoiseA_B, 5}},
+        {}, &n, sizeof(n), 6);
+
+    // 5 À-Trous passes with increasing step size
+    // Edge-stopping sigmas scale with user strength (0.0–1.0)
+    float sigmaC = 0.02f + m_denoisingStrength * 0.13f;
+    float sigmaD = 1.0f;
+    float sigmaN = 128.0f;
+
+    mtl::Buffer *srcR = &m_impl->denoiseA_R, *srcG = &m_impl->denoiseA_G, *srcB = &m_impl->denoiseA_B;
+    mtl::Buffer *dstR = &m_impl->denoiseB_R, *dstG = &m_impl->denoiseB_G, *dstB = &m_impl->denoiseB_B;
+
+    for (int pass = 0; pass < 5; pass++) {
+      ATrousParams params;
+      params.width = w;
+      params.height = h;
+      params.stepSize = 1 << pass;
+      params.sigmaColor = sigmaC;
+      params.sigmaDepth = sigmaD;
+      params.sigmaNormal = sigmaN;
+
+      m_impl->dispatchCompute(m_impl->atrousPipeline, w, h,
+          {{srcR, 0}, {srcG, 1}, {srcB, 2},
+           {dstR, 3}, {dstG, 4}, {dstB, 5},
+           {&m_impl->depthBuf, 6},
+           {&m_impl->normalXBuf, 7}, {&m_impl->normalYBuf, 8}, {&m_impl->normalZBuf, 9}},
+          {}, &params, sizeof(params), 10);
+
+      std::swap(srcR, dstR);
+      std::swap(srcG, dstG);
+      std::swap(srcB, dstB);
+    }
+
+    // Convert float → uint8 (result in src* after last swap → outR/G/B)
+    m_impl->dispatchCompute(m_impl->floatToU8Pipeline, n, 1,
+        {{srcR, 0}, {srcG, 1}, {srcB, 2},
+         {&m_impl->outR, 3}, {&m_impl->outG, 4}, {&m_impl->outB, 5}},
+        {}, &n, sizeof(n), 6);
+
+    // Update CPU output image from GPU buffers
+    memcpy(output.getData(0), m_impl->outR.contents(), n);
+    memcpy(output.getData(1), m_impl->outG.contents(), n);
+    memcpy(output.getData(2), m_impl->outB.contents(), n);
+    return;
+  }
+
+  // CPU fallback for all other methods
+  RaytracerBackend::applyDenoisingStage(output);
 }
 
 bool MetalRTBackend::supportsNativeUpscaling(UpsamplingMethod m) const {

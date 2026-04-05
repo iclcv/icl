@@ -324,6 +324,130 @@ inline float3 directLight(float3 hitPos, float3 N, float3 viewDir,
 }
 
 // ==========================================================================
+// À-Trous wavelet denoiser (guided by depth + normals)
+// ==========================================================================
+//
+// One pass of the 5×5 B3-spline wavelet filter with edge-stopping weights
+// driven by depth discontinuity and normal divergence.
+// Run 5 times with step sizes 1, 2, 4, 8, 16 (passed as 'stepSize').
+
+struct ATrousParams {
+  int width;
+  int height;
+  int stepSize;
+  float sigmaColor;   // luminance edge-stopping (higher = more blur)
+  float sigmaDepth;   // depth edge-stopping scale
+  float sigmaNormal;  // normal edge-stopping exponent
+};
+
+[[kernel]] void atrousFilter(
+    device const float *inR      [[buffer(0)]],
+    device const float *inG      [[buffer(1)]],
+    device const float *inB      [[buffer(2)]],
+    device float       *outR     [[buffer(3)]],
+    device float       *outG     [[buffer(4)]],
+    device float       *outB     [[buffer(5)]],
+    device const float *depth    [[buffer(6)]],
+    device const float *normalX  [[buffer(7)]],
+    device const float *normalY  [[buffer(8)]],
+    device const float *normalZ  [[buffer(9)]],
+    constant ATrousParams &params [[buffer(10)]],
+    uint2 tid [[thread_position_in_grid]])
+{
+  int w = params.width;
+  int h = params.height;
+  int px = int(tid.x);
+  int py = int(tid.y);
+  if (px >= w || py >= h) return;
+
+  int ci = px + py * w;
+  float cR = inR[ci], cG = inG[ci], cB = inB[ci];
+  float cD = depth[ci];
+  float cNx = normalX[ci], cNy = normalY[ci], cNz = normalZ[ci];
+  float cLum = 0.2126f * cR + 0.7152f * cG + 0.0722f * cB;
+
+  // B3-spline 1D weights: [1/16, 4/16, 6/16, 4/16, 1/16]
+  const float bspline[5] = {0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f};
+
+  int step = params.stepSize;
+  float sumR = 0, sumG = 0, sumB = 0, sumW = 0;
+
+  for (int ky = -2; ky <= 2; ky++) {
+    int ny = clamp(py + ky * step, 0, h - 1);
+    for (int kx = -2; kx <= 2; kx++) {
+      int nx = clamp(px + kx * step, 0, w - 1);
+      int ni = nx + ny * w;
+
+      // Spatial weight (separable B3-spline)
+      float ws = bspline[ky + 2] * bspline[kx + 2];
+
+      // Depth weight
+      float dd = abs(depth[ni] - cD);
+      float wd = exp(-dd / (params.sigmaDepth * abs(cD) + 1e-6f));
+
+      // Normal weight
+      float ndot = normalX[ni]*cNx + normalY[ni]*cNy + normalZ[ni]*cNz;
+      float wn = pow(max(0.0f, ndot), params.sigmaNormal);
+
+      // Luminance weight
+      float nLum = 0.2126f * inR[ni] + 0.7152f * inG[ni] + 0.0722f * inB[ni];
+      float dl = abs(nLum - cLum);
+      float wl = exp(-dl / (params.sigmaColor + 1e-6f));
+
+      float wt = ws * wd * wn * wl;
+      sumR += wt * inR[ni];
+      sumG += wt * inG[ni];
+      sumB += wt * inB[ni];
+      sumW += wt;
+    }
+  }
+
+  if (sumW > 1e-10f) {
+    outR[ci] = sumR / sumW;
+    outG[ci] = sumG / sumW;
+    outB[ci] = sumB / sumW;
+  } else {
+    outR[ci] = cR;
+    outG[ci] = cG;
+    outB[ci] = cB;
+  }
+}
+
+/// Convert uint8 planar R/G/B → float [0,1] planar R/G/B.
+[[kernel]] void u8ToFloat(
+    device const uchar *inR   [[buffer(0)]],
+    device const uchar *inG   [[buffer(1)]],
+    device const uchar *inB   [[buffer(2)]],
+    device float       *outR  [[buffer(3)]],
+    device float       *outG  [[buffer(4)]],
+    device float       *outB  [[buffer(5)]],
+    constant int       &count [[buffer(6)]],
+    uint tid [[thread_position_in_grid]])
+{
+  if (int(tid) >= count) return;
+  outR[tid] = float(inR[tid]) / 255.0f;
+  outG[tid] = float(inG[tid]) / 255.0f;
+  outB[tid] = float(inB[tid]) / 255.0f;
+}
+
+/// Convert float [0,1] planar R/G/B → uint8 planar R/G/B.
+[[kernel]] void floatToU8(
+    device const float *inR   [[buffer(0)]],
+    device const float *inG   [[buffer(1)]],
+    device const float *inB   [[buffer(2)]],
+    device uchar       *outR  [[buffer(3)]],
+    device uchar       *outG  [[buffer(4)]],
+    device uchar       *outB  [[buffer(5)]],
+    constant int       &count [[buffer(6)]],
+    uint tid [[thread_position_in_grid]])
+{
+  if (int(tid) >= count) return;
+  outR[tid] = uchar(clamp(inR[tid], 0.0f, 1.0f) * 255.0f);
+  outG[tid] = uchar(clamp(inG[tid], 0.0f, 1.0f) * 255.0f);
+  outB[tid] = uchar(clamp(inB[tid], 0.0f, 1.0f) * 255.0f);
+}
+
+// ==========================================================================
 // Direct lighting kernel (Blinn-Phong + reflections)
 // ==========================================================================
 
