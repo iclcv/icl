@@ -223,7 +223,7 @@ void init() {
           << Combo("!1x off,4x 2x2,9x 3x3,16x 4x4").handle("aa").label("MSAA")
           << CheckBox("FXAA", "checked").handle("fxaa")
           << CheckBox("Adaptive AA", "unchecked").handle("adaptiveAA")
-          << Combo("!Bilinear,Edge-Aware").handle("upsampling").label("Upsampling")
+          << Combo("!Bilinear,Edge-Aware,MetalFX Spatial,MetalFX Temporal").handle("upsampling").label("Upsampling")
           << Slider(25, 100, 100).handle("renderScale").label("Render Resolution %")
           << Combo("!None,Bilateral,A-Trous Wavelet").handle("denoising").label("Denoising")
           << Slider(0, 100, 50).handle("denoiseStrength").label("Denoise Strength %")
@@ -249,9 +249,13 @@ void run() {
   static const icl::rt::UpsamplingMethod upMethods[] = {
     icl::rt::UpsamplingMethod::Bilinear,
     icl::rt::UpsamplingMethod::EdgeAware,
+    icl::rt::UpsamplingMethod::MetalFXSpatial,
+    icl::rt::UpsamplingMethod::MetalFXTemporal,
   };
   int upIdx = gui["upsampling"].as<ComboHandle>().getSelectedIndex();
-  raytracer->setUpsampling(upMethods[upIdx]);
+  if (raytracer->supportsUpsampling(upMethods[upIdx])) {
+    raytracer->setUpsampling(upMethods[upIdx]);
+  }
   raytracer->setRenderScale(gui["renderScale"].as<int>() / 100.0f);
 
   // Denoising

@@ -335,12 +335,21 @@ void GeometryExtractor::extractCamera(const geom::Camera &cam, RTRayGenParams &p
 
   // The inverse Q-matrix maps (pixel_x, pixel_y, 1) → direction in world space.
   // We store it as-is; the render loop uses the camera's native pixel coordinates.
-  // The final image is flipped vertically after rendering to match Img8u convention.
   auto Qi = cam.getInvQMatrix();
   params.invViewProj = RTMat4();
   for (int c = 0; c < 3; c++)
     for (int r = 0; r < 4; r++)
       params.invViewProj.cols[c][r] = Qi(c, r);
+
+  // The forward Q-matrix maps world (x,y,z,1) → screen (qx,qy,qz).
+  // Used for motion vector reprojection: screenXY = Q*worldPos, then /= qz.
+  // Q is 3×4 (3 rows, 4 cols). Store as 4×4 with 4th row = (0,0,0,1).
+  auto Q = cam.getQMatrix();
+  params.viewProj = RTMat4();
+  for (int c = 0; c < 4; c++)
+    for (int r = 0; r < 3; r++)
+      params.viewProj.cols[c][r] = Q(c, r);
+  params.viewProj.cols[3][3] = 1.0f;
 
   const auto &rp = cam.getRenderParams();
   params.imageWidth = rp.chipSize.width;

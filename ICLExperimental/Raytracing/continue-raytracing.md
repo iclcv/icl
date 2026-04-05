@@ -1,12 +1,13 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 3 — Metal RT, optimizations, upsampling, denoising)
+## Current State (Session 4 — MetalFX Spatial + Temporal upscaling)
 
 ### What Was Built
 
 Four rendering backends including Metal RT with hardware-accelerated BVH on Apple
 Silicon, path tracing with global illumination, Bullet physics integration,
-interactive object picking, upsampling framework, and denoising filters — all
+interactive object picking, upsampling framework (including MetalFX Spatial and
+Temporal upscalers), denoising filters, and depth/motion vector output — all
 running in real-time.
 
 **Architecture:**
@@ -45,6 +46,7 @@ SceneRaytracer delegates directly — no dynamic_cast anywhere.
 | `src/Raytracing/SceneRaytracer.h/.cpp` | Orchestrator, backend selection via string arg, camera change detection |
 | `src/Raytracing/Upsampling.h/.cpp` | CPU upsampling: bilinear, edge-aware bilateral, nearest-int for object IDs |
 | `src/Raytracing/Denoising.h/.cpp` | CPU denoising: bilateral filter, À-Trous wavelet (5-pass hierarchical) |
+| `src/Raytracing/MetalRT.h/.mm` also has | `Texture` PIMPL class, pixel format/usage constants, `Device::newTexture()` |
 | `demos/raytracing-physics-demo.cpp` | Physics demo: Bullet objects, click-to-glow, hover highlight, GUI controls |
 | `demos/raytracing-scene-demo.cpp` | Static desk scene demo |
 | `demos/benchmark_rt.cpp` | Backend benchmark: static, dynamic, upsampled modes |
@@ -68,6 +70,9 @@ SceneRaytracer delegates directly — no dynamic_cast anywhere.
 | Multi-pass per frame | — | ✓ (fps-budgeted) | ✓ (fps-budgeted) |
 | OpenMP parallelism | ✓ | N/A (GPU parallel) | N/A (GPU parallel) |
 | Unified memory readback | N/A | explicit copy | zero-copy (shared mem) |
+| MetalFX Spatial upscale | — | — | ✓ (perceptual) |
+| MetalFX Temporal upscale | — | — | ✓ (depth + motion vectors + jitter) |
+| Depth buffer output | — | — | ✓ (for MetalFX/SVGF) |
 
 ### ICLGeom Additions
 
@@ -146,6 +151,53 @@ are defined only in the .mm file. The header is pure C++ — no Obj-C visible.
 - ARC in .mm handles lifetime (no manual retain/release)
 - Shadow bias: 1mm offset same as CPU/OpenCL backends
 
+### MetalFX Upscaling Design (Session 4)
+
+**Texture wrapper** (`MetalRT.h/.mm`):
+- New `Texture` PIMPL class with `width()`, `height()`, `nativeHandle()`.
+- Pixel format constants: `PixelFormatRGBA8Unorm` (70), `R32Float` (55), `RG16Float` (102).
+- Texture usage flags: `ShaderRead` (0x01), `ShaderWrite` (0x02), `RenderTarget` (0x04).
+- All textures use `MTLStorageModePrivate` (GPU-only, required by MetalFX).
+- `Device::newTexture()` factory method.
+
+**Buffer ↔ Texture kernels** (`RaytracerKernel.metal`):
+- `planarToRGBA`: converts ICL's planar R/G/B uint8 buffers → RGBA8 texture.
+- `rgbaToPlanar`: converts RGBA8 texture → planar R/G/B uint8 buffers.
+- `depthToTexture`: copies float depth buffer ��� R32Float texture.
+- `computeMotionVectors`: reprojects current world positions through previous
+  camera's Q-matrix, writes screen-space motion to RG16Float texture.
+
+**MetalFX Spatial** (`RaytracerBackend_Metal.mm`):
+- `MTLFXSpatialScaler` with `PerceptualColorProcessingMode`.
+- Per-frame flow: raytrace → planarToRGBA → spatial scale → rgbaToPlanar → readback.
+- Scaler is lazily created/recreated when resolution changes.
+- Fallback: CPU bilinear/edge-aware if MetalFX not available.
+
+**MetalFX Temporal** (`RaytracerBackend_Metal.mm`):
+- `MTLFXTemporalScaler` with depth, motion, color, and output textures.
+- Requires `viewProj` matrix in `RTRayGenParams` (forward Q-matrix from ICL Camera).
+- Halton(2,3) sub-pixel jitter offsets passed via `jitterOffsetX/Y`.
+- History reset on camera jump, scene change, or first frame.
+- Per-frame flow: raytrace → planarToRGBA → depthToTexture → computeMotionVectors
+  → temporal scale → rgbaToPlanar → readback.
+- Previous camera stored in `prevCamera` for motion vector reprojection.
+
+**Depth buffer output**:
+- Added `depthOut` parameter to both `raytrace` and `pathTrace` Metal kernels.
+- Writes `result.distance` on primary ray hit, `camera.farClip` on miss.
+- Buffer indices shifted: direct kernel camera/params at 11/12, PT at 14/15.
+- Depth buffer always allocated (shared by MetalFX temporal and future SVGF).
+
+**Key decisions:**
+- `viewProj` added to `RTRayGenParams` struct (computed from ICL Camera Q-matrix).
+  Q is 3×4, stored as 4×4 RTMat4 with 4th row = (0,0,0,1). Reprojection:
+  `screen = Q * worldPos`, then `px = screen.x / screen.z`.
+- Motion vectors in normalized [0,1] screen space (MetalFX convention).
+- Camera-only reprojection (assumes static geometry positions within frame).
+  Per-instance motion would need per-instance previous transforms.
+- MetalFX detected at compile time via `__has_include(<MetalFX/MetalFX.h>)`,
+  linked via `find_library(METALFX_FRAMEWORK MetalFX)`.
+
 ## Next Steps
 
 ### Material System (Phase 5)
@@ -153,17 +205,17 @@ are defined only in the .mm file. The header is pure C++ — no Obj-C visible.
 Approved plan in `material-plan.md`. PBR metallic-roughness model in ICLGeom,
 shared via `shared_ptr<Material>`. Old `setColor`/`setShininess` deprecated.
 
-### Upsampling (Phase 6)
+### Upsampling (Phase 6) — Sessions A-C done
 
-Detailed plan in `upsampling-plan.md`. Session A (Bilinear + Edge-Aware) is done.
+Detailed plan in `upsampling-plan.md`. All three sessions are implemented:
+- **Session A** (done): Bilinear + Edge-Aware CPU upsampling (all backends)
+- **Session B** (done): MetalFX Spatial — Texture wrapper, buffer↔texture kernels, spatial scaler
+- **Session C** (done): MetalFX Temporal — depth output, motion vectors, jitter, temporal scaler
+
 Remaining:
-- **Session B**: MetalFX Spatial — Texture wrapper, buffer↔texture kernels, spatial scaler
-- **Session C**: MetalFX Temporal — depth output, motion vectors, jitter, temporal scaler
-- **UpsamplingOp in ICLFilter** — implement bilinear/edge-aware upsampling as a proper
-  `UnaryOp` filter so it's available outside the raytracing framework. Currently the
-  upsampling code lives in `Raytracing/Upsampling.h/.cpp` — the algorithm should be
-  promoted to `ICLFilter/src/ICLFilter/UpsamplingOp.h/.cpp` as a general-purpose
-  image upscaling filter (bilinear, bicubic, edge-aware bilateral modes).
+- **UpsamplingOp in ICLFilter** — promote bilinear/edge-aware upsampling to a proper
+  `UnaryOp` filter at `ICLFilter/src/ICLFilter/UpsamplingOp.h/.cpp` so it's available
+  outside the raytracing framework as a general-purpose image upscaling filter.
 
 ### Denoising (Phase 7)
 
@@ -203,8 +255,9 @@ each building on infrastructure from the previous:
 - **Non-local means (NLM)** — patch-based denoiser, better than bilateral,
   simpler than SVGF. Could be a middle ground if SVGF is too complex.
 
-**Recommended order:** À-Trous first (quick win, no prerequisites), then SVGF
-after MetalFX Temporal lands the depth/motion vector infrastructure.
+**Recommended order:** À-Trous (Tier 1) is done. SVGF is next — the depth
+buffer and motion vector infrastructure from MetalFX Temporal (Phase 6C)
+is now in place. A normals buffer output would also be needed.
 
 ### Future Improvements
 
