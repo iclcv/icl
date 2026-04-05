@@ -1,12 +1,13 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 3 — Metal RT backend with hardware BVH)
+## Current State (Session 3 — Metal RT, optimizations, upsampling, denoising)
 
 ### What Was Built
 
 Four rendering backends including Metal RT with hardware-accelerated BVH on Apple
-Silicon, path tracing with global illumination, Bullet physics integration, and
-interactive object picking — all running in real-time.
+Silicon, path tracing with global illumination, Bullet physics integration,
+interactive object picking, upsampling framework, and denoising filters — all
+running in real-time.
 
 **Architecture:**
 ```
@@ -42,8 +43,11 @@ SceneRaytracer delegates directly — no dynamic_cast anywhere.
 | `src/Raytracing/RaytracerBackend_Metal.h/.mm` | Metal RT backend: hardware BVH (BLAS/TLAS), compute dispatch, Obj-C++ with ARC |
 | `src/Raytracing/RaytracerKernel.metal` | MSL kernels: `raytrace` and `pathTrace` using intersect<triangle_data, instancing> |
 | `src/Raytracing/SceneRaytracer.h/.cpp` | Orchestrator, backend selection via string arg, camera change detection |
+| `src/Raytracing/Upsampling.h/.cpp` | CPU upsampling: bilinear, edge-aware bilateral, nearest-int for object IDs |
+| `src/Raytracing/Denoising.h/.cpp` | CPU denoising: bilateral filter, À-Trous wavelet (5-pass hierarchical) |
 | `demos/raytracing-physics-demo.cpp` | Physics demo: Bullet objects, click-to-glow, hover highlight, GUI controls |
 | `demos/raytracing-scene-demo.cpp` | Static desk scene demo |
+| `demos/benchmark_rt.cpp` | Backend benchmark: static, dynamic, upsampled modes |
 | `demos/test_rt.cpp` | Headless verification test |
 | `material-plan.md` | Approved plan for PBR Material class in ICLGeom |
 
