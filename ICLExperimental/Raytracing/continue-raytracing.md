@@ -161,12 +161,52 @@ Remaining:
   promoted to `ICLFilter/src/ICLFilter/UpsamplingOp.h/.cpp` as a general-purpose
   image upscaling filter (bilinear, bicubic, edge-aware bilateral modes).
 
+### Denoising (Phase 7)
+
+Path tracing at low sample counts produces noisy images. Three tiers of denoising,
+each building on infrastructure from the previous:
+
+**Tier 1 — À-Trous wavelet filter** (no dependencies, all backends)
+- Hierarchical edge-preserving filter: 5×5 kernel applied 4-5 times with
+  increasing step size (1, 2, 4, 8, 16). Each pass is cheap (~0.1ms on GPU).
+- Weights guided by color difference (edge-stopping function).
+- No auxiliary buffers needed — works on the color image alone.
+- ~200 lines as a Metal compute kernel + CPU fallback.
+- Good quality for mild noise (8-32 spp), blurs at very low spp.
+
+**Tier 2 — SVGF** (Spatiotemporal Variance-Guided Filtering)
+- Industry standard for real-time PT denoising (used in Quake II RTX, etc.).
+- Combines: temporal reprojection (reuse previous frame), per-pixel variance
+  estimation (how noisy is this pixel?), and À-Trous spatial filter guided by
+  depth + normals + variance.
+- 4-5 spatial filter passes per frame, very fast on GPU.
+- **Requires: depth buffer, normals buffer, motion vectors** — same prerequisites
+  as MetalFX Temporal (Phase 6 Session C). Implement after that.
+- Quality: very good at 1-4 spp, enables real-time PT at interactive rates.
+
+**Tier 3 — Intel OIDN** (Open Image Denoise)
+- ML-trained neural network denoiser, best single-frame quality.
+- Accepts RGB + optional albedo + normal auxiliary inputs.
+- CPU backend (SSE/AVX) + GPU backends (SYCL, CUDA, HIP — no Metal yet).
+- Apache 2.0, ~50MB library dependency.
+- Integration: link `libOpenImageDenoise`, pass Img8u data as float buffers.
+- Best for offline/preview quality; CPU cost (~20ms for 1080p) may be too high
+  for real-time on CPU, but acceptable as a toggle for final-quality renders.
+
+**Also relevant:**
+- **Apple MPS denoisers** — Metal Performance Shaders has temporal/spatial
+  denoisers, worth investigating as a Metal-native alternative to OIDN.
+- **Non-local means (NLM)** — patch-based denoiser, better than bilateral,
+  simpler than SVGF. Could be a middle ground if SVGF is too complex.
+
+**Recommended order:** À-Trous first (quick win, no prerequisites), then SVGF
+after MetalFX Temporal lands the depth/motion vector infrastructure.
+
 ### Future Improvements
 
 - **MetalWidget** — QWidget wrapping CAMetalLayer for zero-copy display in ICLQt
 - **Texture support** — UV mapping and texture sampling in materials
 - **Analytic shapes** — sphere/cylinder as native primitives (Metal custom intersection)
-- **Denoising** — bilateral filter or OIDN on noisy path traced output
 - **Tone mapping** — HDR → LDR with exposure control (currently just clamp to [0,1])
 - **Environment maps** — HDR sky/environment instead of flat background color
 
