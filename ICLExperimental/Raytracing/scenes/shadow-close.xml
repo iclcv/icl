@@ -1,0 +1,18 @@
+<scene>
+  <!-- Close-up view of shadow casting from area light -->
+  <camera pos="250 -200 200" dir="-0.55 0.45 -0.5" up="0 0 -1" res="640x480"/>
+
+  <!-- No scene lights — area light only -->
+  <light pos="200 -200 500" diffuse="255 245 220" ambient="5 5 5" scale="0.0"/>
+
+  <!-- Large ground plane -->
+  <object type="cube" pos="0 0 -35" size="600" sx="1" sy="1" sz="0.02"
+          color="200 190 170"/>
+
+  <!-- Glowing sphere directly above the cube (close, strong) -->
+  <object type="sphere" pos="0 0 120" radius="30"
+          color="255 240 200" emission="255 240 200" emissionIntensity="2.0"/>
+
+  <!-- Cube that should cast a visible shadow on the ground -->
+  <object type="cube" pos="0 0 15" size="60" color="180 50 50"/>
+</scene>

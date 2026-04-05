@@ -1,0 +1,9 @@
+<scene>
+  <!-- Mixed objects: cubes, spheres, reflective, emissive -->
+  <object type="sphere" pos="0 0 50" radius="35"
+          color="255 220 150" emission="255 230 180" emissionIntensity="1.5"/>
+  <object type="cube" pos="-120 -40 0" size="50" color="200 60 60"/>
+  <object type="cube" pos="130 30 -5" size="40" color="60 80 200" reflectivity="0.3"/>
+  <object type="sphere" pos="30 100 5" radius="30" color="60 180 80"/>
+  <object type="sphere" pos="-40 -90 5" radius="25" color="220 220 230" reflectivity="0.8"/>
+</scene>
