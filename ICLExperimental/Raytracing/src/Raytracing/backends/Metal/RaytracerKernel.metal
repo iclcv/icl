@@ -521,8 +521,8 @@ struct SVGFTemporalParams {
       int nx = clamp(px + kx*step, 0, w-1);
       int ni = nx + ny * w;
 
-      // Soft mesh ID edge-stopping (prevents silhouette halo without hard seams)
-      float meshW = (meshIds[ni] == cMeshId) ? 1.0f : 0.02f;
+      // Skip neighbors from different objects (prevents silhouette halo)
+      if (meshIds[ni] != cMeshId) continue;
 
       float ws = bspline[ky+2] * bspline[kx+2];
       float dd = abs(depth[ni] - cD);
@@ -532,7 +532,7 @@ struct SVGFTemporalParams {
       float nLum = 0.2126f*inR[ni] + 0.7152f*inG[ni] + 0.0722f*inB[ni];
       float wl = exp(-abs(nLum - cLum) / lumSigma);
 
-      float wt = ws * wd * wn * wl * meshW;
+      float wt = ws * wd * wn * wl;
       // Scale down neighbor contribution for reflective pixels
       if (kx != 0 || ky != 0) wt *= reflScale;
       sumR += wt * inR[ni];
@@ -600,8 +600,8 @@ struct SVGFTemporalParams {
       int nx = clamp(px + kx * step, 0, w - 1);
       int ni = nx + ny * w;
 
-      // Soft mesh ID edge-stopping (prevents silhouette halo without hard seams)
-      float meshW = (meshIds[ni] == cMeshId) ? 1.0f : 0.02f;
+      // Skip neighbors from different objects (prevents silhouette halo)
+      if (meshIds[ni] != cMeshId) continue;
 
       // Spatial weight (separable B3-spline)
       float ws = bspline[ky + 2] * bspline[kx + 2];
@@ -619,7 +619,7 @@ struct SVGFTemporalParams {
       float dl = abs(nLum - cLum);
       float wl = exp(-dl / (params.sigmaColor + 1e-6f));
 
-      float wt = ws * wd * wn * wl * meshW;
+      float wt = ws * wd * wn * wl;
       sumR += wt * inR[ni];
       sumG += wt * inG[ni];
       sumB += wt * inB[ni];
