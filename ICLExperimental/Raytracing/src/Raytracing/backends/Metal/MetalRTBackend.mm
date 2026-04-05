@@ -46,6 +46,15 @@ struct ATrousParams {
   float sigmaNormal;
 };
 
+// ---- SVGF temporal params (matches SVGFTemporalParams in .metal) ----------
+
+struct SVGFTemporalParams {
+  int32_t width;
+  int32_t height;
+  int32_t hasPrevFrame;
+  int32_t _pad;
+};
+
 // ---- Scene-wide constant parameters (matches SceneParams in .metal) -------
 
 struct SceneParams {
@@ -149,10 +158,21 @@ struct MetalRTBackend::Impl {
 
   // GPU denoising state
   mtl::ComputePipeline atrousPipeline;
+  mtl::ComputePipeline svgfTemporalPipeline;
+  mtl::ComputePipeline svgfAtrousPipeline;
   mtl::ComputePipeline u8ToFloatPipeline;
   mtl::ComputePipeline floatToU8Pipeline;
   mtl::Buffer denoiseA_R, denoiseA_G, denoiseA_B; // ping-pong pair A
   mtl::Buffer denoiseB_R, denoiseB_G, denoiseB_B; // ping-pong pair B
+  // SVGF temporal state (persists across frames)
+  mtl::Buffer svgfPrevR, svgfPrevG, svgfPrevB;
+  mtl::Buffer svgfPrevDepth, svgfPrevNX, svgfPrevNY, svgfPrevNZ;
+  mtl::Buffer svgfMom1, svgfMom2;
+  mtl::Buffer svgfHistory; // int per pixel
+  mtl::Buffer svgfVariance;
+  mtl::Buffer svgfVarB; // ping-pong for variance filtering
+  RTMat4 svgfPrevViewProj{};
+  bool svgfHasPrevFrame = false;
   int denoiseW = 0, denoiseH = 0;
 
   // MetalFX upsampling state
@@ -622,6 +642,8 @@ MetalRTBackend::MetalRTBackend() : m_impl(std::make_unique<Impl>()) {
   m_impl->depthToTexturePipeline = m_impl->device.newPipeline(src, "depthToTexture");
   m_impl->motionVectorPipeline = m_impl->device.newPipeline(src, "computeMotionVectors");
   m_impl->atrousPipeline = m_impl->device.newPipeline(src, "atrousFilter");
+  m_impl->svgfTemporalPipeline = m_impl->device.newPipeline(src, "svgfTemporalAccum");
+  m_impl->svgfAtrousPipeline = m_impl->device.newPipeline(src, "svgfATrousPass");
   m_impl->u8ToFloatPipeline = m_impl->device.newPipeline(src, "u8ToFloat");
   m_impl->floatToU8Pipeline = m_impl->device.newPipeline(src, "floatToU8");
   m_impl->valid = (bool)m_impl->directPipeline && (bool)m_impl->ptPipeline;
@@ -1091,6 +1113,7 @@ void MetalRTBackend::resetAccumulation() {
   m_impl->accumFrame = 0;
   m_impl->hasPrevCamera = false;
   m_impl->temporalFrameIndex = 0;
+  m_impl->svgfHasPrevFrame = false;
 }
 
 int MetalRTBackend::getAccumulatedFrames() const {
@@ -1125,6 +1148,9 @@ const float *MetalRTBackend::getNormalZBuffer() const {
 bool MetalRTBackend::supportsNativeDenoising(DenoisingMethod m) const {
   if (m == DenoisingMethod::ATrousWavelet)
     return m_impl && m_impl->valid && (bool)m_impl->atrousPipeline;
+  if (m == DenoisingMethod::SVGF)
+    return m_impl && m_impl->valid && (bool)m_impl->svgfTemporalPipeline
+           && (bool)m_impl->svgfAtrousPipeline;
   return false;
 }
 
@@ -1194,6 +1220,151 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
         {}, &n, sizeof(n), 6);
 
     // Update CPU output image from GPU buffers
+    memcpy(output.getData(0), m_impl->outR.contents(), n);
+    memcpy(output.getData(1), m_impl->outG.contents(), n);
+    memcpy(output.getData(2), m_impl->outB.contents(), n);
+    return;
+  }
+
+  // Native GPU path: SVGF on Metal
+  if (m_denoisingMethod == DenoisingMethod::SVGF &&
+      supportsNativeDenoising(DenoisingMethod::SVGF)) {
+    int w = output.getWidth(), h = output.getHeight();
+    int n = w * h;
+    if (n <= 0) return;
+
+    // Allocate all buffers on resize
+    if (w != m_impl->denoiseW || h != m_impl->denoiseH) {
+      size_t fb = n * sizeof(float);
+      size_t ib = n * sizeof(int);
+      m_impl->denoiseA_R = m_impl->device.newBuffer(fb);
+      m_impl->denoiseA_G = m_impl->device.newBuffer(fb);
+      m_impl->denoiseA_B = m_impl->device.newBuffer(fb);
+      m_impl->denoiseB_R = m_impl->device.newBuffer(fb);
+      m_impl->denoiseB_G = m_impl->device.newBuffer(fb);
+      m_impl->denoiseB_B = m_impl->device.newBuffer(fb);
+      m_impl->svgfPrevR = m_impl->device.newBuffer(fb);
+      m_impl->svgfPrevG = m_impl->device.newBuffer(fb);
+      m_impl->svgfPrevB = m_impl->device.newBuffer(fb);
+      m_impl->svgfPrevDepth = m_impl->device.newBuffer(fb);
+      m_impl->svgfPrevNX = m_impl->device.newBuffer(fb);
+      m_impl->svgfPrevNY = m_impl->device.newBuffer(fb);
+      m_impl->svgfPrevNZ = m_impl->device.newBuffer(fb);
+      m_impl->svgfMom1 = m_impl->device.newBuffer(fb);
+      m_impl->svgfMom2 = m_impl->device.newBuffer(fb);
+      m_impl->svgfHistory = m_impl->device.newBuffer(ib);
+      m_impl->svgfVariance = m_impl->device.newBuffer(fb);
+      m_impl->svgfVarB = m_impl->device.newBuffer(fb);
+      m_impl->denoiseW = w;
+      m_impl->denoiseH = h;
+      m_impl->svgfHasPrevFrame = false;
+    }
+
+    // Step 1: u8→float
+    m_impl->dispatchCompute(m_impl->u8ToFloatPipeline, n, 1,
+        {{&m_impl->outR, 0}, {&m_impl->outG, 1}, {&m_impl->outB, 2},
+         {&m_impl->denoiseA_R, 3}, {&m_impl->denoiseA_G, 4}, {&m_impl->denoiseA_B, 5}},
+        {}, &n, sizeof(n), 6);
+
+    // Step 2: Temporal accumulation
+    // Output goes to denoiseB (filtered color) + moments/variance/history
+    SVGFTemporalParams tparams;
+    tparams.width = w;
+    tparams.height = h;
+    tparams.hasPrevFrame = m_impl->svgfHasPrevFrame ? 1 : 0;
+    tparams._pad = 0;
+
+    // dispatchCompute only supports one setBytes. For temporal we need camera + prevVP + params.
+    // Use a direct Obj-C dispatch for this kernel.
+    @autoreleasepool {
+      id<MTLCommandQueue> queue = (__bridge id<MTLCommandQueue>)m_impl->device.nativeQueue();
+      id<MTLComputePipelineState> pso = (__bridge id<MTLComputePipelineState>)
+          m_impl->svgfTemporalPipeline.nativeHandle();
+      id<MTLCommandBuffer> cmdBuf = [queue commandBuffer];
+      id<MTLComputeCommandEncoder> enc = [cmdBuf computeCommandEncoder];
+      [enc setComputePipelineState:pso];
+
+      // Current frame (0-6)
+      auto setBuf = [&](mtl::Buffer &b, int idx) {
+        [enc setBuffer:(__bridge id<MTLBuffer>)b.nativeHandle() offset:0 atIndex:idx];
+      };
+      setBuf(m_impl->denoiseA_R, 0); setBuf(m_impl->denoiseA_G, 1); setBuf(m_impl->denoiseA_B, 2);
+      setBuf(m_impl->depthBuf, 3);
+      setBuf(m_impl->normalXBuf, 4); setBuf(m_impl->normalYBuf, 5); setBuf(m_impl->normalZBuf, 6);
+      // Previous frame (7-16)
+      setBuf(m_impl->svgfPrevR, 7); setBuf(m_impl->svgfPrevG, 8); setBuf(m_impl->svgfPrevB, 9);
+      setBuf(m_impl->svgfPrevDepth, 10);
+      setBuf(m_impl->svgfPrevNX, 11); setBuf(m_impl->svgfPrevNY, 12); setBuf(m_impl->svgfPrevNZ, 13);
+      setBuf(m_impl->svgfMom1, 14); setBuf(m_impl->svgfMom2, 15);
+      setBuf(m_impl->svgfHistory, 16);
+      // Output (17-23)
+      setBuf(m_impl->denoiseB_R, 17); setBuf(m_impl->denoiseB_G, 18); setBuf(m_impl->denoiseB_B, 19);
+      setBuf(m_impl->svgfMom1, 20); setBuf(m_impl->svgfMom2, 21);
+      setBuf(m_impl->svgfHistory, 22);
+      setBuf(m_impl->svgfVariance, 23);
+      // Camera + prevVP + params (24-26)
+      [enc setBytes:&m_lastRenderCamera length:sizeof(m_lastRenderCamera) atIndex:24];
+      [enc setBytes:&m_impl->svgfPrevViewProj length:sizeof(RTMat4) atIndex:25];
+      [enc setBytes:&tparams length:sizeof(tparams) atIndex:26];
+
+      NSUInteger execWidth = [pso threadExecutionWidth];
+      NSUInteger groupH = [pso maxTotalThreadsPerThreadgroup] / execWidth;
+      if (groupH == 0) groupH = 1;
+      [enc dispatchThreads:MTLSizeMake(w, h, 1) threadsPerThreadgroup:MTLSizeMake(execWidth, groupH, 1)];
+      [enc endEncoding];
+      [cmdBuf commit];
+      [cmdBuf waitUntilCompleted];
+    }
+
+    // Step 3: 5× SVGF À-Trous spatial filter (variance-guided)
+    float sigmaC = 4.0f * (0.3f + m_denoisingStrength * 0.7f);
+    float sigmaD = 1.0f;
+    float sigmaN = 128.0f;
+
+    // Start from denoiseB (temporal output), ping-pong with denoiseA
+    mtl::Buffer *srcR = &m_impl->denoiseB_R, *srcG = &m_impl->denoiseB_G, *srcB = &m_impl->denoiseB_B;
+    mtl::Buffer *dstR = &m_impl->denoiseA_R, *dstG = &m_impl->denoiseA_G, *dstB = &m_impl->denoiseA_B;
+    mtl::Buffer *srcVar = &m_impl->svgfVariance, *dstVar = &m_impl->svgfVarB;
+
+    for (int pass = 0; pass < 5; pass++) {
+      ATrousParams ap;
+      ap.width = w; ap.height = h;
+      ap.stepSize = 1 << pass;
+      ap.sigmaColor = sigmaC;
+      ap.sigmaDepth = sigmaD;
+      ap.sigmaNormal = sigmaN;
+
+      m_impl->dispatchCompute(m_impl->svgfAtrousPipeline, w, h,
+          {{srcR, 0}, {srcG, 1}, {srcB, 2},
+           {dstR, 3}, {dstG, 4}, {dstB, 5},
+           {&m_impl->depthBuf, 6},
+           {&m_impl->normalXBuf, 7}, {&m_impl->normalYBuf, 8}, {&m_impl->normalZBuf, 9},
+           {srcVar, 10}, {dstVar, 11}},
+          {}, &ap, sizeof(ap), 12);
+
+      std::swap(srcR, dstR); std::swap(srcG, dstG); std::swap(srcB, dstB);
+      std::swap(srcVar, dstVar);
+    }
+
+    // Step 4: float→u8
+    m_impl->dispatchCompute(m_impl->floatToU8Pipeline, n, 1,
+        {{srcR, 0}, {srcG, 1}, {srcB, 2},
+         {&m_impl->outR, 3}, {&m_impl->outG, 4}, {&m_impl->outB, 5}},
+        {}, &n, sizeof(n), 6);
+
+    // Step 5: Store temporal state for next frame
+    // Copy filtered result + current G-buffers to prev buffers
+    memcpy(m_impl->svgfPrevR.contents(), ((mtl::Buffer *)srcR)->contents(), n * sizeof(float));
+    memcpy(m_impl->svgfPrevG.contents(), ((mtl::Buffer *)srcG)->contents(), n * sizeof(float));
+    memcpy(m_impl->svgfPrevB.contents(), ((mtl::Buffer *)srcB)->contents(), n * sizeof(float));
+    memcpy(m_impl->svgfPrevDepth.contents(), m_impl->depthBuf.contents(), n * sizeof(float));
+    memcpy(m_impl->svgfPrevNX.contents(), m_impl->normalXBuf.contents(), n * sizeof(float));
+    memcpy(m_impl->svgfPrevNY.contents(), m_impl->normalYBuf.contents(), n * sizeof(float));
+    memcpy(m_impl->svgfPrevNZ.contents(), m_impl->normalZBuf.contents(), n * sizeof(float));
+    m_impl->svgfPrevViewProj = m_lastRenderCamera.viewProj;
+    m_impl->svgfHasPrevFrame = true;
+
+    // Update CPU output
     memcpy(output.getData(0), m_impl->outR.contents(), n);
     memcpy(output.getData(1), m_impl->outG.contents(), n);
     memcpy(output.getData(2), m_impl->outB.contents(), n);

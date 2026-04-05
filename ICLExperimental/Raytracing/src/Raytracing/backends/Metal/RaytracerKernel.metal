@@ -324,21 +324,214 @@ inline float3 directLight(float3 hitPos, float3 N, float3 viewDir,
 }
 
 // ==========================================================================
+// Denoiser parameter structs (shared by À-Trous and SVGF)
+// ==========================================================================
+
+struct ATrousParams {
+  int width;
+  int height;
+  int stepSize;
+  float sigmaColor;
+  float sigmaDepth;
+  float sigmaNormal;
+};
+
+// ==========================================================================
+// SVGF — Spatiotemporal Variance-Guided Filtering
+// ==========================================================================
+
+struct SVGFTemporalParams {
+  int width;
+  int height;
+  int hasPrevFrame;   // boolean
+  int _pad;
+};
+
+/// Temporal accumulation: reproject current frame through previous camera,
+/// blend with previous filtered result, update luminance moments and history.
+[[kernel]] void svgfTemporalAccum(
+    // Current frame
+    device const float *curR      [[buffer(0)]],
+    device const float *curG      [[buffer(1)]],
+    device const float *curB      [[buffer(2)]],
+    device const float *depth     [[buffer(3)]],
+    device const float *normalX   [[buffer(4)]],
+    device const float *normalY   [[buffer(5)]],
+    device const float *normalZ   [[buffer(6)]],
+    // Previous frame state (read)
+    device const float *prevR     [[buffer(7)]],
+    device const float *prevG     [[buffer(8)]],
+    device const float *prevB     [[buffer(9)]],
+    device const float *prevDepth [[buffer(10)]],
+    device const float *prevNX    [[buffer(11)]],
+    device const float *prevNY    [[buffer(12)]],
+    device const float *prevNZ    [[buffer(13)]],
+    device const float *prevMom1  [[buffer(14)]],
+    device const float *prevMom2  [[buffer(15)]],
+    device const int   *prevHist  [[buffer(16)]],
+    // Output (write)
+    device float       *outR      [[buffer(17)]],
+    device float       *outG      [[buffer(18)]],
+    device float       *outB      [[buffer(19)]],
+    device float       *outMom1   [[buffer(20)]],
+    device float       *outMom2   [[buffer(21)]],
+    device int         *outHist   [[buffer(22)]],
+    device float       *outVar    [[buffer(23)]],
+    // Camera params
+    constant RTRayGenParams &camera    [[buffer(24)]],
+    constant RTMat4         &prevVP    [[buffer(25)]],
+    constant SVGFTemporalParams &params [[buffer(26)]],
+    uint2 tid [[thread_position_in_grid]])
+{
+  int w = params.width, h = params.height;
+  int px = int(tid.x), py = int(tid.y);
+  if (px >= w || py >= h) return;
+
+  int idx = px + py * w;
+  float cr = curR[idx], cg = curG[idx], cb = curB[idx];
+  float lum = 0.2126f * cr + 0.7152f * cg + 0.0722f * cb;
+
+  bool valid = false;
+  int prevIdx = 0;
+
+  if (params.hasPrevFrame) {
+    // Reconstruct world position
+    float fpx = float(px) + 0.5f, fpy = float(py) + 0.5f;
+    float3 rayDir = generateRayDir(camera, fpx, fpy);
+    float3 worldPos = f3(camera.cameraPos) + rayDir * depth[idx];
+
+    // Reproject through previous viewProj
+    float qx = prevVP.cols[0][0]*worldPos.x + prevVP.cols[1][0]*worldPos.y +
+               prevVP.cols[2][0]*worldPos.z + prevVP.cols[3][0];
+    float qy = prevVP.cols[0][1]*worldPos.x + prevVP.cols[1][1]*worldPos.y +
+               prevVP.cols[2][1]*worldPos.z + prevVP.cols[3][1];
+    float qz = prevVP.cols[0][2]*worldPos.x + prevVP.cols[1][2]*worldPos.y +
+               prevVP.cols[2][2]*worldPos.z + prevVP.cols[3][2];
+
+    if (abs(qz) > 1e-6f) {
+      int ppx = int(qx / qz);
+      int ppy = int(qy / qz);
+      if (ppx >= 0 && ppx < w && ppy >= 0 && ppy < h) {
+        prevIdx = ppx + ppy * w;
+        float depthRatio = (prevDepth[prevIdx] > 1e-6f)
+            ? abs(depth[idx] - prevDepth[prevIdx]) / prevDepth[prevIdx] : 1.0f;
+        float ndot = normalX[idx]*prevNX[prevIdx] +
+                     normalY[idx]*prevNY[prevIdx] +
+                     normalZ[idx]*prevNZ[prevIdx];
+        valid = (depthRatio < 0.1f && ndot > 0.9f);
+      }
+    }
+  }
+
+  if (valid) {
+    int hist = min(255, prevHist[prevIdx] + 1);
+    float alpha = max(1.0f / float(hist), 0.05f);
+    outR[idx] = prevR[prevIdx] * (1-alpha) + cr * alpha;
+    outG[idx] = prevG[prevIdx] * (1-alpha) + cg * alpha;
+    outB[idx] = prevB[prevIdx] * (1-alpha) + cb * alpha;
+    float m1 = prevMom1[prevIdx] * (1-alpha) + lum * alpha;
+    float m2 = prevMom2[prevIdx] * (1-alpha) + lum*lum * alpha;
+    outMom1[idx] = m1;
+    outMom2[idx] = m2;
+    outVar[idx] = max(0.0f, m2 - m1*m1);
+    outHist[idx] = hist;
+  } else {
+    // Disoccluded: use current frame, estimate spatial variance
+    outR[idx] = cr;
+    outG[idx] = cg;
+    outB[idx] = cb;
+    outMom1[idx] = lum;
+    outMom2[idx] = lum * lum;
+    outHist[idx] = 1;
+
+    // 3×3 spatial variance
+    float sumL = 0, sumL2 = 0;
+    int cnt = 0;
+    for (int ky = -1; ky <= 1; ky++) {
+      int ny = clamp(py+ky, 0, h-1);
+      for (int kx = -1; kx <= 1; kx++) {
+        int nx = clamp(px+kx, 0, w-1);
+        int ni = nx + ny * w;
+        float l = 0.2126f*curR[ni] + 0.7152f*curG[ni] + 0.0722f*curB[ni];
+        sumL += l; sumL2 += l*l; cnt++;
+      }
+    }
+    outVar[idx] = max(0.0f, sumL2/float(cnt) - (sumL/float(cnt))*(sumL/float(cnt)));
+  }
+}
+
+/// SVGF variant of À-Trous: uses per-pixel variance for luminance weight.
+[[kernel]] void svgfATrousPass(
+    device const float *inR      [[buffer(0)]],
+    device const float *inG      [[buffer(1)]],
+    device const float *inB      [[buffer(2)]],
+    device float       *outR     [[buffer(3)]],
+    device float       *outG     [[buffer(4)]],
+    device float       *outB     [[buffer(5)]],
+    device const float *depth    [[buffer(6)]],
+    device const float *normalX  [[buffer(7)]],
+    device const float *normalY  [[buffer(8)]],
+    device const float *normalZ  [[buffer(9)]],
+    device const float *variance [[buffer(10)]],
+    device float       *outVar   [[buffer(11)]],
+    constant ATrousParams &params [[buffer(12)]],
+    uint2 tid [[thread_position_in_grid]])
+{
+  int w = params.width, h = params.height;
+  int px = int(tid.x), py = int(tid.y);
+  if (px >= w || py >= h) return;
+
+  int ci = px + py * w;
+  float cR = inR[ci], cG = inG[ci], cB = inB[ci];
+  float cD = depth[ci];
+  float cNx = normalX[ci], cNy = normalY[ci], cNz = normalZ[ci];
+  float cLum = 0.2126f*cR + 0.7152f*cG + 0.0722f*cB;
+  float cVar = variance[ci];
+  float lumSigma = params.sigmaColor * sqrt(max(1e-6f, cVar)) + 1e-6f;
+
+  const float bspline[5] = {0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f};
+  int step = params.stepSize;
+
+  float sumR = 0, sumG = 0, sumB = 0, sumW = 0, sumVar = 0;
+  for (int ky = -2; ky <= 2; ky++) {
+    int ny = clamp(py + ky*step, 0, h-1);
+    for (int kx = -2; kx <= 2; kx++) {
+      int nx = clamp(px + kx*step, 0, w-1);
+      int ni = nx + ny * w;
+
+      float ws = bspline[ky+2] * bspline[kx+2];
+      float dd = abs(depth[ni] - cD);
+      float wd = exp(-dd / (params.sigmaDepth * abs(cD) + 1e-6f));
+      float ndot = normalX[ni]*cNx + normalY[ni]*cNy + normalZ[ni]*cNz;
+      float wn = pow(max(0.0f, ndot), params.sigmaNormal);
+      float nLum = 0.2126f*inR[ni] + 0.7152f*inG[ni] + 0.0722f*inB[ni];
+      float wl = exp(-abs(nLum - cLum) / lumSigma);
+
+      float wt = ws * wd * wn * wl;
+      sumR += wt * inR[ni];
+      sumG += wt * inG[ni];
+      sumB += wt * inB[ni];
+      sumVar += wt * variance[ni];
+      sumW += wt;
+    }
+  }
+
+  if (sumW > 1e-10f) {
+    outR[ci] = sumR/sumW; outG[ci] = sumG/sumW; outB[ci] = sumB/sumW;
+    outVar[ci] = sumVar/sumW;
+  } else {
+    outR[ci] = cR; outG[ci] = cG; outB[ci] = cB;
+    outVar[ci] = cVar;
+  }
+}
+
+// ==========================================================================
 // À-Trous wavelet denoiser (guided by depth + normals)
 // ==========================================================================
 //
 // One pass of the 5×5 B3-spline wavelet filter with edge-stopping weights
 // driven by depth discontinuity and normal divergence.
 // Run 5 times with step sizes 1, 2, 4, 8, 16 (passed as 'stepSize').
-
-struct ATrousParams {
-  int width;
-  int height;
-  int stepSize;
-  float sigmaColor;   // luminance edge-stopping (higher = more blur)
-  float sigmaDepth;   // depth edge-stopping scale
-  float sigmaNormal;  // normal edge-stopping exponent
-};
 
 [[kernel]] void atrousFilter(
     device const float *inR      [[buffer(0)]],
