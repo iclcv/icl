@@ -333,9 +333,9 @@ void denoiseSVGF(const core::Img8u &src, core::Img8u &dst,
         float cVar = variance[ci];
         float lumSigma = sigmaLum * std::sqrt(std::max(1e-6f, cVar)) + 1e-6f;
 
-        // Reduce spatial filtering for reflective surfaces
+        // Reduce spatial filtering for reflective surfaces (quadratic falloff)
         float refl = reflectivity ? reflectivity[ci] : 0.0f;
-        float reflScale = std::max(0.05f, 1.0f - refl);
+        float reflScale = std::max(0.01f, (1.0f - refl) * (1.0f - refl));
 
         float sumR = 0, sumG = 0, sumB = 0, sumW = 0, sumVar = 0;
 

@@ -421,7 +421,7 @@ RTFloat3 CpuRTBackend::pathTrace(const RTFloat3 &origin, const RTFloat3 &dir,
     if (dist > 1e-4f) {
       RTFloat3 L = toLight * (1.0f / dist);
       float NdotL = N.dot(L);
-      float lightNdotL = -(et.normal.dot(L)); // light faces toward us?
+      float lightNdotL = std::abs(et.normal.dot(L)); // abs: both sides emit (avoids tessellation artifacts)
       if (NdotL > 0 && lightNdotL > 0) {
         if (!traceShadow(s.position + N * 1.0f, L, dist - 1.0f)) {
           // PDF = 1 / totalArea, solid angle = area * cos(lightAngle) / dist^2
