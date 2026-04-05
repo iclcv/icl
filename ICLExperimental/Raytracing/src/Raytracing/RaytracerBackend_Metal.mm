@@ -587,6 +587,9 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
   memcpy(m_impl->cpuObjectIds.data(), m_impl->objectIdBuf.contents(),
          n * sizeof(int32_t));
 
+  // Denoising (before upsampling, at internal resolution)
+  applyDenoising(m_impl->output);
+
   // Upsampling (render scale < 1.0)
   applyUpsampling(m_impl->output, m_impl->cpuObjectIds);
 }

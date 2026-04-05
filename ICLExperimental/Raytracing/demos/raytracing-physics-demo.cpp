@@ -223,8 +223,10 @@ void init() {
           << Combo("!1x off,4x 2x2,9x 3x3,16x 4x4").handle("aa").label("MSAA")
           << CheckBox("FXAA", "checked").handle("fxaa")
           << CheckBox("Adaptive AA", "unchecked").handle("adaptiveAA")
-          << Combo("!None,Bilinear,Edge-Aware").handle("upsampling").label("Upsampling")
-          << Slider(25, 100, 50).handle("renderScale").label("Render Scale %")
+          << Combo("!Bilinear,Edge-Aware").handle("upsampling").label("Upsampling")
+          << Slider(25, 100, 100).handle("renderScale").label("Render Resolution %")
+          << Combo("!None,Bilateral,A-Trous Wavelet").handle("denoising").label("Denoising")
+          << Slider(0, 100, 50).handle("denoiseStrength").label("Denoise Strength %")
           << Label("--").handle("info")
         )<< Show();
 
@@ -243,15 +245,24 @@ void run() {
   raytracer->setFXAA(gui["fxaa"].as<bool>());
   raytracer->setAdaptiveAA(gui["adaptiveAA"].as<bool>(), 4);
 
-  // Upsampling
+  // Render resolution + upsampling
   static const icl::rt::UpsamplingMethod upMethods[] = {
-    icl::rt::UpsamplingMethod::None,
     icl::rt::UpsamplingMethod::Bilinear,
     icl::rt::UpsamplingMethod::EdgeAware,
   };
   int upIdx = gui["upsampling"].as<ComboHandle>().getSelectedIndex();
   raytracer->setUpsampling(upMethods[upIdx]);
   raytracer->setRenderScale(gui["renderScale"].as<int>() / 100.0f);
+
+  // Denoising
+  static const icl::rt::DenoisingMethod dnMethods[] = {
+    icl::rt::DenoisingMethod::None,
+    icl::rt::DenoisingMethod::Bilateral,
+    icl::rt::DenoisingMethod::ATrousWavelet,
+  };
+  int dnIdx = gui["denoising"].as<ComboHandle>().getSelectedIndex();
+  raytracer->setDenoising(dnMethods[dnIdx]);
+  raytracer->setDenoisingStrength(gui["denoiseStrength"].as<int>() / 100.0f);
 
   static float targetFps = pa("-fps");
   static float targetFrameMs = targetFps > 0 ? 1000.0f / targetFps : 0;
@@ -384,6 +395,12 @@ void run() {
   if (scale < 1.0f) {
     snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
              " | %dx%d->%dx%d%s", rw, rh, img.getWidth(), img.getHeight(), upLabel);
+  }
+  const char *dnNames[] = {"", " bilateral", " a-trous"};
+  auto dnMethod = raytracer->getDenoisingMethod();
+  if (dnMethod != icl::rt::DenoisingMethod::None) {
+    snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
+             " | denoise:%s", dnNames[(int)dnMethod]);
   }
   // Cap frame rate — sleep for remaining frame budget.
   if (targetFrameMs > 0) {

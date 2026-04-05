@@ -520,6 +520,9 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
   if (m_adaptiveAA) applyAdaptiveAA(camera);
   if (m_fxaa) applyFXAA();
 
+  // Denoising (before upsampling, at internal resolution)
+  applyDenoising(m_output);
+
   // Upsampling (render scale < 1.0)
   applyUpsampling(m_output, m_objectIdBuffer);
 }

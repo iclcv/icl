@@ -283,6 +283,9 @@ void OpenCLRTBackend::render(const RTRayGenParams &camera) {
   m_cpuObjectIds.resize(n);
   gpuIds.read(m_cpuObjectIds.data(), n * sizeof(int));
 
+  // Denoising (before upsampling, at internal resolution)
+  applyDenoising(m_output);
+
   // Upsampling (render scale < 1.0)
   applyUpsampling(m_output, m_cpuObjectIds);
 }
