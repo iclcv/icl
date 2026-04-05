@@ -650,6 +650,60 @@ struct SVGFTemporalParams {
 }
 
 // ==========================================================================
+// Tone mapping (applied in-place on float RGB buffers)
+// ==========================================================================
+
+struct ToneMapParams {
+  int count;
+  int method;     // 0=none, 1=reinhard, 2=aces, 3=hable
+  float exposure;
+  float _pad;
+};
+
+inline float hableFunc(float x) {
+  float A=0.15f, B=0.50f, C=0.10f, D=0.20f, E=0.02f, F=0.30f;
+  return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+}
+
+[[kernel]] void toneMap(
+    device float *R [[buffer(0)]],
+    device float *G [[buffer(1)]],
+    device float *B [[buffer(2)]],
+    constant ToneMapParams &params [[buffer(3)]],
+    uint tid [[thread_position_in_grid]])
+{
+  if (int(tid) >= params.count) return;
+
+  float r = R[tid] * params.exposure;
+  float g = G[tid] * params.exposure;
+  float b = B[tid] * params.exposure;
+
+  if (params.method == 1) {
+    // Reinhard
+    r = r / (1.0f + r);
+    g = g / (1.0f + g);
+    b = b / (1.0f + b);
+  } else if (params.method == 2) {
+    // ACES filmic (Narkowicz 2015)
+    float a = 2.51f, ba = 0.03f, c = 2.43f, d = 0.59f, e = 0.14f;
+    r = clamp((r*(a*r+ba))/(r*(c*r+d)+e), 0.0f, 1.0f);
+    g = clamp((g*(a*g+ba))/(g*(c*g+d)+e), 0.0f, 1.0f);
+    b = clamp((b*(a*b+ba))/(b*(c*b+d)+e), 0.0f, 1.0f);
+  } else if (params.method == 3) {
+    // Hable / Uncharted 2
+    float ws = 1.0f / hableFunc(11.2f);
+    r = hableFunc(r) * ws;
+    g = hableFunc(g) * ws;
+    b = hableFunc(b) * ws;
+  }
+
+  // Gamma correction (linear → sRGB approx)
+  R[tid] = pow(max(r, 0.0f), 1.0f / 2.2f);
+  G[tid] = pow(max(g, 0.0f), 1.0f / 2.2f);
+  B[tid] = pow(max(b, 0.0f), 1.0f / 2.2f);
+}
+
+// ==========================================================================
 // Direct lighting kernel (Blinn-Phong + reflections)
 // ==========================================================================
 

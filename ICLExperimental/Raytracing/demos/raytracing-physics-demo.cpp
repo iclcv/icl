@@ -227,6 +227,8 @@ void init() {
           << Slider(25, 100, 100).handle("renderScale").label("Render Resolution %")
           << Combo("!None,Bilateral,A-Trous Wavelet,SVGF").handle("denoising").label("Denoising")
           << Slider(0, 100, 50).handle("denoiseStrength").label("Denoise Strength %")
+          << Combo("!None,Reinhard,ACES Filmic,Hable").handle("toneMap").label("Tone Mapping")
+          << Slider(10, 500, 100).handle("exposure").label("Exposure %")
           << Label("--").handle("info")
         )<< Show();
 
@@ -268,6 +270,17 @@ void run() {
   int dnIdx = gui["denoising"].as<ComboHandle>().getSelectedIndex();
   raytracer->setDenoising(dnMethods[dnIdx]);
   raytracer->setDenoisingStrength(gui["denoiseStrength"].as<int>() / 100.0f);
+
+  // Tone mapping
+  static const icl::rt::ToneMapMethod tmMethods[] = {
+    icl::rt::ToneMapMethod::None,
+    icl::rt::ToneMapMethod::Reinhard,
+    icl::rt::ToneMapMethod::ACES,
+    icl::rt::ToneMapMethod::Hable,
+  };
+  int tmIdx = gui["toneMap"].as<ComboHandle>().getSelectedIndex();
+  raytracer->setToneMapping(tmMethods[tmIdx]);
+  raytracer->setExposure(gui["exposure"].as<int>() / 100.0f);
 
   static float targetFps = pa("-fps");
   static float targetFrameMs = targetFps > 0 ? 1000.0f / targetFps : 0;

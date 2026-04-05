@@ -55,6 +55,15 @@ struct SVGFTemporalParams {
   int32_t _pad;
 };
 
+// ---- Tone map params (matches ToneMapParams in .metal) --------------------
+
+struct ToneMapParams {
+  int32_t count;
+  int32_t method;     // 0=none, 1=reinhard, 2=aces, 3=hable
+  float exposure;
+  float _pad;
+};
+
 // ---- Scene-wide constant parameters (matches SceneParams in .metal) -------
 
 struct SceneParams {
@@ -164,6 +173,7 @@ struct MetalRTBackend::Impl {
   mtl::ComputePipeline svgfAtrousPipeline;
   mtl::ComputePipeline u8ToFloatPipeline;
   mtl::ComputePipeline floatToU8Pipeline;
+  mtl::ComputePipeline toneMapPipeline;
   mtl::Buffer denoiseA_R, denoiseA_G, denoiseA_B; // ping-pong pair A
   mtl::Buffer denoiseB_R, denoiseB_G, denoiseB_B; // ping-pong pair B
   // SVGF temporal state (persists across frames)
@@ -648,6 +658,7 @@ MetalRTBackend::MetalRTBackend() : m_impl(std::make_unique<Impl>()) {
   m_impl->svgfAtrousPipeline = m_impl->device.newPipeline(src, "svgfATrousPass");
   m_impl->u8ToFloatPipeline = m_impl->device.newPipeline(src, "u8ToFloat");
   m_impl->floatToU8Pipeline = m_impl->device.newPipeline(src, "floatToU8");
+  m_impl->toneMapPipeline = m_impl->device.newPipeline(src, "toneMap");
   m_impl->valid = (bool)m_impl->directPipeline && (bool)m_impl->ptPipeline;
 
   if (m_impl->valid)
@@ -892,8 +903,9 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
   memcpy(m_impl->cpuReflectivity.data(), m_impl->reflectBuf.contents(), n * sizeof(float));
   m_lastRenderCamera = camera;
 
-  // Post-processing stages (virtual — base class runs CPU, we override upsampling for MetalFX)
+  // Post-processing stages (virtual — base class runs CPU, we override for GPU-native)
   applyDenoisingStage(m_impl->output);
+  applyToneMappingStage(m_impl->output);
   applyUpsamplingStage(m_impl->output, m_impl->cpuObjectIds);
 }
 
@@ -1153,6 +1165,60 @@ const float *MetalRTBackend::getNormalZBuffer() const {
 }
 const float *MetalRTBackend::getReflectivityBuffer() const {
   return m_impl->cpuReflectivity.empty() ? nullptr : m_impl->cpuReflectivity.data();
+}
+
+bool MetalRTBackend::supportsNativeToneMapping(ToneMapMethod m) const {
+  return m != ToneMapMethod::None && m_impl && m_impl->valid &&
+         (bool)m_impl->toneMapPipeline;
+}
+
+void MetalRTBackend::applyToneMappingStage(core::Img8u &output) {
+  if (m_toneMapMethod == ToneMapMethod::None) return;
+  if (!supportsNativeToneMapping(m_toneMapMethod)) {
+    RaytracerBackend::applyToneMappingStage(output);
+    return;
+  }
+
+  int w = output.getWidth(), h = output.getHeight();
+  int n = w * h;
+  if (n <= 0) return;
+
+  // Ensure float buffers exist
+  if (w != m_impl->denoiseW || h != m_impl->denoiseH) {
+    size_t fb = n * sizeof(float);
+    m_impl->denoiseA_R = m_impl->device.newBuffer(fb);
+    m_impl->denoiseA_G = m_impl->device.newBuffer(fb);
+    m_impl->denoiseA_B = m_impl->device.newBuffer(fb);
+    m_impl->denoiseW = w;
+    m_impl->denoiseH = h;
+  }
+
+  // u8 → float
+  m_impl->dispatchCompute(m_impl->u8ToFloatPipeline, n, 1,
+      {{&m_impl->outR, 0}, {&m_impl->outG, 1}, {&m_impl->outB, 2},
+       {&m_impl->denoiseA_R, 3}, {&m_impl->denoiseA_G, 4}, {&m_impl->denoiseA_B, 5}},
+      {}, &n, sizeof(n), 6);
+
+  // Tone map in-place on float buffers
+  ToneMapParams tp;
+  tp.count = n;
+  tp.method = (int)m_toneMapMethod;
+  tp.exposure = m_exposure;
+  tp._pad = 0;
+  m_impl->dispatchCompute(m_impl->toneMapPipeline, n, 1,
+      {{&m_impl->denoiseA_R, 0}, {&m_impl->denoiseA_G, 1}, {&m_impl->denoiseA_B, 2}},
+      {}, &tp, sizeof(tp), 3);
+
+  // float → u8
+  m_impl->dispatchCompute(m_impl->floatToU8Pipeline, n, 1,
+      {{&m_impl->denoiseA_R, 0}, {&m_impl->denoiseA_G, 1}, {&m_impl->denoiseA_B, 2},
+       {&m_impl->outR, 3}, {&m_impl->outG, 4}, {&m_impl->outB, 5}},
+      {}, &n, sizeof(n), 6);
+
+  // Update CPU output
+  memcpy(output.getData(0), m_impl->outR.contents(), n);
+  memcpy(output.getData(1), m_impl->outG.contents(), n);
+  memcpy(output.getData(2), m_impl->outB.contents(), n);
 }
 
 bool MetalRTBackend::supportsNativeDenoising(DenoisingMethod m) const {

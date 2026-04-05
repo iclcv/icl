@@ -128,5 +128,9 @@ bool SceneRaytracer::setDenoising(DenoisingMethod method) { return m_backend->se
 void SceneRaytracer::setDenoisingStrength(float s) { m_backend->setDenoisingStrength(s); }
 bool SceneRaytracer::supportsDenoising(DenoisingMethod method) const { return m_backend->supportsDenoising(method); }
 DenoisingMethod SceneRaytracer::getDenoisingMethod() const { return m_backend->getDenoisingMethod(); }
+void SceneRaytracer::setToneMapping(ToneMapMethod method) { m_backend->setToneMapping(method); }
+void SceneRaytracer::setExposure(float e) { m_backend->setExposure(e); }
+ToneMapMethod SceneRaytracer::getToneMapMethod() const { return m_backend->getToneMapMethod(); }
+float SceneRaytracer::getExposure() const { return m_backend->getExposure(); }
 
 } // namespace icl::rt
