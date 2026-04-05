@@ -85,29 +85,38 @@ public:
   /// Get the object instance index at a given pixel (-1 = background).
   virtual int getObjectAtPixel(int, int) const { return -1; }
 
+  // ---- Native capability queries (backends override for GPU-native paths) ----
+
+  /// Does this backend handle the given upsampling method natively on GPU?
+  virtual bool supportsNativeUpscaling(UpsamplingMethod) const { return false; }
+
+  /// Does this backend handle the given denoising method natively on GPU?
+  virtual bool supportsNativeDenoising(DenoisingMethod) const { return false; }
+
   // ---- Upsampling support ----
 
-  /// Query whether this backend supports a given upsampling method.
-  virtual bool supportsUpsampling(UpsamplingMethod method) const {
+  /// Check if a method is available (native GPU OR CPU fallback).
+  bool supportsUpsampling(UpsamplingMethod method) const {
+    if (supportsNativeUpscaling(method)) return true;
     return method == UpsamplingMethod::None ||
            method == UpsamplingMethod::Bilinear ||
            method == UpsamplingMethod::EdgeAware;
   }
 
   /// Set the upsampling method. Returns false if not supported.
-  virtual bool setUpsampling(UpsamplingMethod method) {
+  bool setUpsampling(UpsamplingMethod method) {
     if (!supportsUpsampling(method)) return false;
     m_upsamplingMethod = method;
     return true;
   }
 
   /// Set the render scale factor (0.25–1.0). 1.0 = full resolution.
-  virtual void setRenderScale(float scale) {
+  void setRenderScale(float scale) {
     m_renderScale = scale < 0.25f ? 0.25f : (scale > 1.0f ? 1.0f : scale);
   }
 
   /// Set the display (output) resolution target.
-  virtual void setDisplaySize(int w, int h) {
+  void setDisplaySize(int w, int h) {
     m_displayWidth = w;
     m_displayHeight = h;
   }
@@ -119,8 +128,9 @@ public:
 
   // ---- Denoising support ----
 
-  /// Query whether this backend supports a given denoising method.
-  virtual bool supportsDenoising(DenoisingMethod method) const {
+  /// Check if a method is available (native GPU OR CPU fallback).
+  bool supportsDenoising(DenoisingMethod method) const {
+    if (supportsNativeDenoising(method)) return true;
     return method == DenoisingMethod::None ||
            method == DenoisingMethod::Bilateral ||
            method == DenoisingMethod::ATrousWavelet ||
@@ -128,21 +138,21 @@ public:
   }
 
   /// Set the denoising method. Returns false if not supported.
-  virtual bool setDenoising(DenoisingMethod method) {
+  bool setDenoising(DenoisingMethod method) {
     if (!supportsDenoising(method)) return false;
     m_denoisingMethod = method;
     return true;
   }
 
   /// Set denoising strength (0.0–1.0). Interpretation depends on method.
-  virtual void setDenoisingStrength(float strength) {
+  void setDenoisingStrength(float strength) {
     m_denoisingStrength = strength < 0.0f ? 0.0f : (strength > 1.0f ? 1.0f : strength);
   }
 
   DenoisingMethod getDenoisingMethod() const { return m_denoisingMethod; }
   float getDenoisingStrength() const { return m_denoisingStrength; }
 
-  // ---- G-buffer access for SVGF (backends override to provide data) ----
+  // ---- G-buffer access (backends override to provide data) ----
 
   virtual const float *getDepthBuffer() const { return nullptr; }
   virtual const float *getNormalXBuffer() const { return nullptr; }
@@ -159,9 +169,11 @@ protected:
   SVGFState m_svgfState;
   RTRayGenParams m_lastRenderCamera{};
 
-  /// Apply CPU denoising to the output image.
-  /// Call after render, before upsampling. Only applies if a method is set.
-  void applyDenoising(core::Img8u &output) {
+  // ---- Post-processing stages (virtual — backends override for native GPU) ----
+
+  /// Denoising stage. Default: CPU bilateral / À-Trous / SVGF.
+  /// Backends override to run denoising on GPU when supportsNativeDenoising().
+  virtual void applyDenoisingStage(core::Img8u &output) {
     if (m_denoisingMethod == DenoisingMethod::None) return;
     core::Img8u denoised;
     if (m_denoisingMethod == DenoisingMethod::Bilateral) {
@@ -180,9 +192,10 @@ protected:
     output = denoised;
   }
 
-  /// Apply CPU upsampling to the output image + object ID buffer.
-  /// Call at the end of render() if display size is set and method is Bilinear/EdgeAware.
-  void applyUpsampling(core::Img8u &output, std::vector<int32_t> &objectIds) {
+  /// Upsampling stage. Default: CPU bilinear / edge-aware + nearest-int for IDs.
+  /// Backends override to run upscaling on GPU when supportsNativeUpscaling().
+  virtual void applyUpsamplingStage(core::Img8u &output,
+                                    std::vector<int32_t> &objectIds) {
     if (m_displayWidth <= 0 || m_displayHeight <= 0) return;
     int srcW = output.getWidth(), srcH = output.getHeight();
     if (srcW == m_displayWidth && srcH == m_displayHeight) return;

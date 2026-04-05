@@ -47,13 +47,16 @@ public:
   void setTargetFrameTime(float ms) override;
   int getObjectAtPixel(int x, int y) const override;
 
-  bool supportsUpsampling(UpsamplingMethod method) const override;
-  bool setUpsampling(UpsamplingMethod method) override;
+  bool supportsNativeUpscaling(UpsamplingMethod method) const override;
 
   const float *getDepthBuffer() const override;
   const float *getNormalXBuffer() const override;
   const float *getNormalYBuffer() const override;
   const float *getNormalZBuffer() const override;
+
+protected:
+  void applyUpsamplingStage(core::Img8u &output,
+                            std::vector<int32_t> &objectIds) override;
 
 private:
   void applyMetalFXSpatial(int renderW, int renderH);

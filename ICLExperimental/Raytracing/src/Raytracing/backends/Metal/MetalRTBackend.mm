@@ -841,28 +841,9 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
   memcpy(m_impl->cpuNormalZ.data(), m_impl->normalZBuf.contents(), n * sizeof(float));
   m_lastRenderCamera = camera;
 
-  // Denoising (before upsampling, at internal resolution)
-  bool useMetalFX = (m_upsamplingMethod == UpsamplingMethod::MetalFXSpatial ||
-                     m_upsamplingMethod == UpsamplingMethod::MetalFXTemporal);
-  applyDenoising(m_impl->output);
-
-  // If denoising ran and we're using MetalFX, copy denoised image back to
-  // GPU buffers so the planarToRGBA kernel picks up the denoised result.
-  if (useMetalFX && m_denoisingMethod != DenoisingMethod::None) {
-    memcpy(m_impl->outR.contents(), m_impl->output.getData(0), n);
-    memcpy(m_impl->outG.contents(), m_impl->output.getData(1), n);
-    memcpy(m_impl->outB.contents(), m_impl->output.getData(2), n);
-  }
-
-  // Upsampling
-  if (m_upsamplingMethod == UpsamplingMethod::MetalFXSpatial) {
-    applyMetalFXSpatial(w, h);
-  } else if (m_upsamplingMethod == UpsamplingMethod::MetalFXTemporal) {
-    applyMetalFXTemporal(camera, w, h);
-  } else {
-    // CPU upsampling (Bilinear / EdgeAware)
-    applyUpsampling(m_impl->output, m_impl->cpuObjectIds);
-  }
+  // Post-processing stages (virtual — base class runs CPU, we override upsampling for MetalFX)
+  applyDenoisingStage(m_impl->output);
+  applyUpsamplingStage(m_impl->output, m_impl->cpuObjectIds);
 }
 
 // ---- MetalFX upsampling ---------------------------------------------------
@@ -1119,25 +1100,40 @@ const float *MetalRTBackend::getNormalZBuffer() const {
   return m_impl->cpuNormalZ.empty() ? nullptr : m_impl->cpuNormalZ.data();
 }
 
-bool MetalRTBackend::supportsUpsampling(UpsamplingMethod m) const {
+bool MetalRTBackend::supportsNativeUpscaling(UpsamplingMethod m) const {
 #if ICL_HAVE_METALFX
   if (m == UpsamplingMethod::MetalFXSpatial ||
       m == UpsamplingMethod::MetalFXTemporal)
     return m_impl && m_impl->valid;
 #endif
-  return RaytracerBackend::supportsUpsampling(m);
+  return false;
 }
 
-bool MetalRTBackend::setUpsampling(UpsamplingMethod method) {
-  if (!supportsUpsampling(method)) return false;
+void MetalRTBackend::applyUpsamplingStage(core::Img8u &output,
+                                          std::vector<int32_t> &objectIds) {
+  int w = output.getWidth(), h = output.getHeight();
 
-  // Invalidate scalers when changing method
-  if (method != m_upsamplingMethod) {
-    m_impl->invalidateMetalFXScalers();
+  if (m_upsamplingMethod == UpsamplingMethod::MetalFXSpatial ||
+      m_upsamplingMethod == UpsamplingMethod::MetalFXTemporal) {
+    // Native GPU upscaling — copy denoised CPU image back to GPU buffers
+    // if denoising was applied (so MetalFX picks up the denoised result).
+    int n = w * h;
+    if (m_denoisingMethod != DenoisingMethod::None) {
+      memcpy(m_impl->outR.contents(), output.getData(0), n);
+      memcpy(m_impl->outG.contents(), output.getData(1), n);
+      memcpy(m_impl->outB.contents(), output.getData(2), n);
+    }
+
+    if (m_upsamplingMethod == UpsamplingMethod::MetalFXSpatial) {
+      applyMetalFXSpatial(w, h);
+    } else {
+      applyMetalFXTemporal(m_lastRenderCamera, w, h);
+    }
+    return;
   }
 
-  m_upsamplingMethod = method;
-  return true;
+  // CPU fallback (Bilinear / EdgeAware)
+  RaytracerBackend::applyUpsamplingStage(output, objectIds);
 }
 
 } // namespace icl::rt
