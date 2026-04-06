@@ -10,6 +10,8 @@ typedef struct {
   RTFloat3 position;
   RTFloat3 normal;
   RTFloat4 color;
+  float u, v;
+  float _vtxPad[2];
 } RTVertex;
 
 typedef struct {
@@ -18,12 +20,12 @@ typedef struct {
 } RTTriangle;
 
 typedef struct {
-  RTFloat4 diffuseColor;
-  RTFloat4 specularColor;
-  RTFloat4 emission;
-  float shininess;
+  RTFloat4 baseColor;
+  RTFloat4 emissive;
+  float metallic;
+  float roughness;
   float reflectivity;
-  float _pad[2];
+  float _pad;
 } RTMaterial;
 
 typedef struct {
@@ -308,9 +310,35 @@ inline float3 randomHemisphere(float3 N, uint *rng) {
   return normalize(tangent * x + bitangent * y + N * z);
 }
 
-// ---- Direct lighting (Blinn-Phong) ----
+// ---- PBR Cook-Torrance helpers ----
 
-inline float3 directLight(float3 hitPos, float3 N, float3 dir, float3 baseColor,
+#define PI_CT 3.14159265358979323846f
+
+inline float distributionGGX(float NdotH, float roughness) {
+  float a = roughness * roughness;
+  float a2 = a * a;
+  float denom = NdotH * NdotH * (a2 - 1.0f) + 1.0f;
+  return a2 / (PI_CT * denom * denom + 1e-7f);
+}
+
+inline float geometrySmith(float NdotV, float NdotL, float roughness) {
+  float r = roughness + 1.0f;
+  float k = (r * r) / 8.0f;
+  float ggx1 = NdotV / (NdotV * (1.0f - k) + k + 1e-7f);
+  float ggx2 = NdotL / (NdotL * (1.0f - k) + k + 1e-7f);
+  return ggx1 * ggx2;
+}
+
+inline float3 fresnelSchlick(float cosTheta, float3 F0) {
+  float t = 1.0f - cosTheta;
+  float t2 = t * t;
+  float t5 = t2 * t2 * t;
+  return F0 + (1.0f - F0) * t5;
+}
+
+// ---- Direct lighting (PBR Cook-Torrance) ----
+
+inline float3 directLight(float3 hitPos, float3 N, float3 dir, float3 albedo,
                            __global const RTMaterial *mat,
                            __global const RTLight *lights, int numLights,
                            __global const BVHNode *bvhNodes,
@@ -319,6 +347,10 @@ inline float3 directLight(float3 hitPos, float3 N, float3 dir, float3 baseColor,
                            __global const RTTriangle *triangles,
                            __global const FlatInstance *instances, int numInstances) {
   float3 color = (float3)(0, 0, 0);
+  float3 V = normalize(-dir);
+  float NdotV = fmax(0.001f, dot(N, V));
+  float3 F0 = mix((float3)(0.04f), albedo, mat->metallic);
+
   for (int li = 0; li < numLights; li++) {
     if (!lights[li].on) continue;
     float3 lightPos = f3(lights[li].position);
@@ -337,16 +369,23 @@ inline float3 directLight(float3 hitPos, float3 N, float3 dir, float3 baseColor,
     float atten = 1.0f / (lights[li].attenuation.x + lights[li].attenuation.y * dist +
                           lights[li].attenuation.z * dist * dist);
 
-    float3 diffuse = f3v(lights[li].diffuse) * baseColor * NdotL * atten;
-
-    float3 V = normalize(-dir);
     float3 H = normalize(L + V);
-    float spec = pow(fmax(0.0f, dot(N, H)), mat->shininess);
-    float3 specular = f3v(lights[li].specular) * f3v(mat->specularColor) * spec * atten;
+    float NdotH = fmax(0.0f, dot(N, H));
+    float HdotV = fmax(0.0f, dot(H, V));
 
-    float3 ambient = f3v(lights[li].ambient) * baseColor;
+    float D = distributionGGX(NdotH, mat->roughness);
+    float G = geometrySmith(NdotV, NdotL, mat->roughness);
+    float3 F = fresnelSchlick(HdotV, F0);
 
-    color += diffuse + specular + ambient;
+    float3 specular = D * G * F / (4.0f * NdotV * NdotL + 1e-4f);
+
+    float3 kD = (1.0f - F) * (1.0f - mat->metallic);
+    float3 diffuse = kD * albedo / PI_CT;
+
+    float3 lightColor = f3v(lights[li].diffuse);
+    color += (diffuse + specular) * lightColor * NdotL * atten;
+
+    color += f3v(lights[li].ambient) * albedo * 0.3f;
   }
   return color;
 }
@@ -415,7 +454,7 @@ __kernel void raytrace(
     if (dot(N, dir) > 0) N = -N;
 
     // Emission
-    color += throughput * f3v(mat->emission);
+    color += throughput * f3v(mat->emissive);
 
     // Direct lighting
     float3 direct = directLight(hitPos, N, dir, baseColor, mat,
@@ -517,7 +556,7 @@ __kernel void pathTraceKernel(
     if (dot(N, dir) > 0) N = -N;
 
     // Emission
-    color += throughput * f3v(mat->emission);
+    color += throughput * f3v(mat->emissive);
 
     // Direct lighting (next event estimation)
     for (int li = 0; li < numLights; li++) {

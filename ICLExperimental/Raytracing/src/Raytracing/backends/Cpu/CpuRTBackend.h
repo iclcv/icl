@@ -6,6 +6,7 @@
 
 #include "../../RaytracerBackend.h"
 #include "../../BVH.h"
+#include <ICLGeom/Material.h>
 #include <vector>
 
 namespace icl::rt {
@@ -29,6 +30,8 @@ public:
                     const RTFloat4 &backgroundColor) override;
 
   void setEmissiveTriangles(const RTEmissiveTriangle *tris, int count) override;
+
+  void setMaterialTextures(const std::vector<std::shared_ptr<geom::Material>> &materials) override;
 
   void render(const RTRayGenParams &camera) override;
 
@@ -81,9 +84,10 @@ private:
   /// Path trace: trace a ray with random hemisphere bounces for GI.
   RTFloat3 pathTrace(const RTFloat3 &origin, const RTFloat3 &dir, int depth, uint32_t &rng) const;
 
-  /// Shade a hit point with Blinn-Phong.
+  /// Shade a hit point with PBR Cook-Torrance BRDF.
   RTFloat3 shade(const RTFloat3 &hitPos, const RTFloat3 &normal, const RTFloat3 &viewDir,
-                 const RTFloat4 &vertexColor, const RTMaterial &material, int depth) const;
+                 const RTFloat4 &vertexColor, const RTMaterial &material,
+                 int depth, float texU = 0, float texV = 0, int matIdx = -1) const;
 
   /// Find closest intersection across all objects. Returns instance index or -1.
   int traceScene(const RTFloat3 &origin, const RTFloat3 &dir, BVHHit &outHit) const;
@@ -98,6 +102,7 @@ private:
   std::vector<RTInstance> m_instances;
   std::vector<RTLight> m_lights;
   std::vector<RTMaterial> m_materials;
+  std::vector<std::shared_ptr<geom::Material>> m_materialPtrs;
   std::vector<RTEmissiveTriangle> m_emissives;
   float m_totalEmissiveArea = 0;
   /// FXAA post-process on the output image.
@@ -124,6 +129,9 @@ private:
   const float *getReflectivityBuffer() const override {
     return m_reflectivity.empty() ? nullptr : m_reflectivity.data();
   }
+  const float *getRoughnessBuffer() const override {
+    return m_roughnessBuffer.empty() ? nullptr : m_roughnessBuffer.data();
+  }
 
   RTFloat4 m_bgColor;
   int m_aaSamples = 1;
@@ -137,6 +145,7 @@ private:
   std::vector<float> m_depthBuffer;
   std::vector<float> m_normalX, m_normalY, m_normalZ;
   std::vector<float> m_reflectivity;
+  std::vector<float> m_roughnessBuffer;
   core::Img8u m_output;
 };
 

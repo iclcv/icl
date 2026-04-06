@@ -3,9 +3,11 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <ICLGeom/SceneObject.h>
+#include <ICLGeom/Material.h>
 #include <ICLGeom/ViewRay.h>
 #include <ICLQt/GLFragmentShader.h>
 #include <fstream>
+#include <cmath>
 #include <ICLUtils/File.h>
 #include <ICLUtils/StringUtils.h>
 #include <ICLGeom/PlaneEquation.h>
@@ -247,6 +249,53 @@ namespace icl::geom {
     return new SceneObject(*this);
   }
 
+  // --- Material API ---
+
+  void SceneObject::setMaterial(std::shared_ptr<Material> mat, bool recursive) {
+    m_defaultMaterial = mat;
+    if (mat) {
+      // sync legacy fields from material
+      auto phong = mat->toPhongParams();
+      m_shininess = static_cast<icl8u>(std::min(255.0f, std::max(0.0f, phong.shininess)));
+      m_specularReflectance = phong.specular;
+      m_reflectivity = mat->reflectivity;
+      m_emission = mat->emissive;
+    }
+    if (recursive) {
+      for (int i = 0; i < getChildCount(); i++) {
+        getChild(i)->setMaterial(mat, true);
+      }
+    }
+  }
+
+  void SceneObject::setMaterial(int primIdx, std::shared_ptr<Material> mat) {
+    if (primIdx >= 0 && primIdx < (int)m_primitives.size()) {
+      m_primitives[primIdx]->material = mat;
+    }
+  }
+
+  std::shared_ptr<Material> SceneObject::getMaterial(int primIdx) const {
+    if (primIdx >= 0 && primIdx < (int)m_primitives.size()) {
+      if (m_primitives[primIdx]->material) return m_primitives[primIdx]->material;
+    }
+    return m_defaultMaterial;
+  }
+
+  std::shared_ptr<Material> SceneObject::getOrCreateMaterial() {
+    if (!m_defaultMaterial) {
+      m_defaultMaterial = std::make_shared<Material>();
+      // initialize from current legacy state
+      m_defaultMaterial->roughness = std::sqrt(2.0f / (m_shininess + 2.0f));
+      float specLum = (m_specularReflectance[0] + m_specularReflectance[1] + m_specularReflectance[2]) / 3.0f;
+      m_defaultMaterial->metallic = specLum > 0.5f ? 1.0f : 0.0f;
+      m_defaultMaterial->reflectivity = m_reflectivity;
+      m_defaultMaterial->emissive = m_emission;
+    }
+    return m_defaultMaterial;
+  }
+
+  // --- Legacy setColor (deprecated) ---
+
   void SceneObject::setColor(Primitive::Type t,const GeomColor &color, bool recursive){
 
     GeomColor colorScaled = color * COLOR_FACTOR;
@@ -260,6 +309,10 @@ namespace icl::geom {
           m_primitives[i]->color = colorScaled;
         }
       }
+    }
+    // sync to material
+    if (t == Primitive::all || t == Primitive::quad || t == Primitive::triangle) {
+      getOrCreateMaterial()->baseColor = colorScaled;
     }
     if(recursive){
       for(unsigned int i=0;i<m_children.size();++i){

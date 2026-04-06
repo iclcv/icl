@@ -9,6 +9,7 @@
 #include <ICLGeom/SceneLight.h>
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/Primitive.h>
+#include <ICLGeom/Material.h>
 
 #include <cmath>
 #include <cstring>
@@ -71,6 +72,30 @@ static RTFloat3 computeTriangleNormal(const RTFloat3 &a, const RTFloat3 &b, cons
   return {0, 1, 0};
 }
 
+// ---- Material extraction (lightweight, no tessellation) ----
+
+void GeometryExtractor::tessellateExtractMaterial(
+    const geom::SceneObject *obj, RTMaterial &material)
+{
+  auto mat = obj->getMaterial();
+  if (mat) {
+    material.baseColor = {mat->baseColor[0], mat->baseColor[1], mat->baseColor[2], mat->baseColor[3]};
+    material.emissive = {mat->emissive[0], mat->emissive[1], mat->emissive[2], mat->emissive[3]};
+    material.metallic = mat->metallic;
+    material.roughness = mat->roughness;
+    material.reflectivity = mat->reflectivity;
+  } else {
+    material.baseColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    material.roughness = std::sqrt(2.0f / (obj->getShininess() + 2.0f));
+    const auto &spec = obj->getSpecularReflectance();
+    float specLum = (spec[0] + spec[1] + spec[2]) / 3.0f;
+    material.metallic = specLum > 0.5f ? 1.0f : 0.0f;
+    material.reflectivity = obj->getReflectivity();
+    const auto &em = obj->getEmission();
+    material.emissive = {em[0], em[1], em[2], em[3]};
+  }
+}
+
 // ---- Tessellation ----
 
 void GeometryExtractor::tessellateObject(
@@ -82,9 +107,12 @@ void GeometryExtractor::tessellateObject(
   const auto &srcVerts = obj->getVertices();
   const auto &srcNormals = obj->getNormals();
   const auto &srcColors = obj->getVertexColors();
+  const auto &srcTexCoords = obj->getTexCoords();
   const auto &prims = obj->getPrimitives();
 
   if (srcVerts.empty()) return;
+
+  bool hasPerVertexUVs = (srcTexCoords.size() == srcVerts.size());
 
   // Build vertex array with positions and colors.
   // Normals are set per-triangle below (may override for smooth shading).
@@ -97,6 +125,10 @@ void GeometryExtractor::tessellateObject(
     } else {
       vertices[i].color = {0.8f, 0.8f, 0.8f, 1.0f};
     }
+    if (hasPerVertexUVs) {
+      vertices[i].u = srcTexCoords[i].x;
+      vertices[i].v = srcTexCoords[i].y;
+    }
   }
 
   // Fill normals from source if available
@@ -107,24 +139,27 @@ void GeometryExtractor::tessellateObject(
     }
   }
 
-  // Material from SceneObject properties
-  // Primitive colors could override, but we use vertex colors as primary.
-  material.diffuseColor = {0.8f, 0.8f, 0.8f, 1.0f};
-  material.specularColor = colorToFloat4(obj->getSpecularReflectance());
-  material.shininess = obj->getShininess();
-  material.reflectivity = obj->getReflectivity();
-  const auto &em = obj->getEmission();
-  material.emission = {em[0], em[1], em[2], em[3]};
+  // Material from PBR Material class if available, else from legacy properties
+  tessellateExtractMaterial(obj, material);
+  auto mat = obj->getMaterial();
+  bool hasMaterial = (mat != nullptr);
+
+  // When a Material provides the color, use it as the primitive color for emitted
+  // vertices. This way the shading's vertexColor * baseColor gives the right result.
+  RTFloat4 materialColor = hasMaterial
+    ? RTFloat4{mat->baseColor[0], mat->baseColor[1], mat->baseColor[2], mat->baseColor[3]}
+    : RTFloat4{-1, -1, -1, -1}; // sentinel: use per-primitive color
 
   uint32_t materialIdx = 0; // one material per object for now
 
-  // Helper: emit a vertex with specific normal and color, duplicating if needed.
-  // For smooth shading, reuse original vertex indices. For flat shading or when
-  // normals differ from the stored vertex normal, duplicate the vertex.
-  auto emitVertex = [&](uint32_t srcIdx, const RTFloat3 &normal, const RTFloat4 &color) -> uint32_t {
-    RTVertex v = vertices[srcIdx]; // copy position from original
+  // Helper: emit a vertex with specific normal, color, and UV.
+  // Always duplicates to avoid shared-vertex normal/UV conflicts.
+  auto emitVertex = [&](uint32_t srcIdx, const RTFloat3 &normal, const RTFloat4 &color,
+                         float texU = -1.0f, float texV = -1.0f) -> uint32_t {
+    RTVertex v = vertices[srcIdx]; // copy position + existing UVs from original
     v.normal = normal;
     v.color = color;
+    if (texU >= 0.0f) { v.u = texU; v.v = texV; } // override UV if provided
     uint32_t newIdx = (uint32_t)vertices.size();
     vertices.push_back(v);
     return newIdx;
@@ -149,7 +184,7 @@ void GeometryExtractor::tessellateObject(
       const auto *tp = dynamic_cast<const geom::TrianglePrimitive*>(prim);
       if (!tp) break;
       uint32_t i0 = tp->i(0), i1 = tp->i(1), i2 = tp->i(2);
-      RTFloat4 primColor = colorToFloat4(prim->color);
+      RTFloat4 primColor = (materialColor.x >= 0) ? materialColor : colorToFloat4(prim->color);
       RTFloat3 fn = computeTriangleNormal(
         vertices[i0].position, vertices[i1].position, vertices[i2].position);
 
@@ -168,7 +203,7 @@ void GeometryExtractor::tessellateObject(
       const auto *qp = dynamic_cast<const geom::QuadPrimitive*>(prim);
       if (!qp) break;
       uint32_t i0 = qp->i(0), i1 = qp->i(1), i2 = qp->i(2), i3 = qp->i(3);
-      RTFloat4 primColor = colorToFloat4(prim->color);
+      RTFloat4 primColor = (materialColor.x >= 0) ? materialColor : colorToFloat4(prim->color);
       RTFloat3 fn = computeTriangleNormal(
         vertices[i0].position, vertices[i1].position, vertices[i2].position);
 
@@ -190,7 +225,7 @@ void GeometryExtractor::tessellateObject(
       const auto *pp = dynamic_cast<const geom::PolygonPrimitive*>(prim);
       if (!pp || pp->getNumPoints() < 3) break;
       int n = pp->getNumPoints();
-      RTFloat4 primColor = colorToFloat4(prim->color);
+      RTFloat4 primColor = (materialColor.x >= 0) ? materialColor : colorToFloat4(prim->color);
 
       // Emit all polygon vertices with face normal
       uint32_t vi0 = pp->getVertexIndex(0);
@@ -212,8 +247,31 @@ void GeometryExtractor::tessellateObject(
       break;
     }
 
+    case geom::Primitive::texture: {
+      // TexturePrimitive: render as a quad with UV coords (0,0)→(1,0)→(1,1)→(0,1)
+      const auto *qp = dynamic_cast<const geom::QuadPrimitive*>(prim);
+      if (!qp) break;
+      uint32_t i0 = qp->i(0), i1 = qp->i(1), i2 = qp->i(2), i3 = qp->i(3);
+      RTFloat4 primColor = {1.0f, 1.0f, 1.0f, 1.0f}; // white — texture provides color
+      RTFloat3 fn = computeTriangleNormal(
+        vertices[i0].position, vertices[i1].position, vertices[i2].position);
+
+      RTFloat3 n0 = getNormal(i0, qp->i(4), fn);
+      RTFloat3 n1 = getNormal(i1, qp->i(5), fn);
+      RTFloat3 n2 = getNormal(i2, qp->i(6), fn);
+      RTFloat3 n3 = getNormal(i3, qp->i(7), fn);
+
+      uint32_t a = emitVertex(i0, n0, primColor, 0.0f, 0.0f);
+      uint32_t b = emitVertex(i1, n1, primColor, 1.0f, 0.0f);
+      uint32_t c = emitVertex(i2, n2, primColor, 1.0f, 1.0f);
+      uint32_t d = emitVertex(i3, n3, primColor, 0.0f, 1.0f);
+      triangles.push_back({a, b, c, materialIdx});
+      triangles.push_back({a, c, d, materialIdx});
+      break;
+    }
+
     default:
-      // Skip lines, textures, text, etc. for now
+      // Skip lines, text, etc.
       break;
     }
   }
@@ -264,8 +322,14 @@ void GeometryExtractor::extractObject(
       (std::memcmp(&worldTransform, &state.lastTransform, sizeof(RTMat4)) != 0);
 
     ObjectGeometry geo;
+    geo.materialPtr = obj->getMaterial();
     if (geomDirty) {
       tessellateObject(obj, geo.vertices, geo.triangles, geo.material);
+    } else {
+      // Always extract material — it's cheap and may have changed (e.g. emission toggle)
+      // even when geometry hasn't. Without this, geo.material has uninitialized fields
+      // that corrupt all materials when setSceneData re-uploads on geometry change.
+      tessellateExtractMaterial(obj, geo.material);
     }
     geo.geometryChanged = geomDirty;
     geo.transformChanged = transformDirty;
@@ -373,6 +437,7 @@ ExtractedScene GeometryExtractor::extract(const geom::Scene &scene, int camIndex
   int globalTriangleOffset = 0;
   result.instances.resize(result.objects.size());
   result.materials.resize(result.objects.size());
+  result.materialPtrs.resize(result.objects.size());
 
   for (size_t i = 0; i < result.objects.size(); i++) {
     auto &geo = result.objects[i];
@@ -385,6 +450,7 @@ ExtractedScene GeometryExtractor::extract(const geom::Scene &scene, int camIndex
     inst.triangleOffset = globalTriangleOffset;
 
     result.materials[i] = geo.material;
+    result.materialPtrs[i] = geo.materialPtr;
 
     globalVertexOffset += (int)geo.vertices.size();
     globalTriangleOffset += (int)geo.triangles.size();
@@ -395,10 +461,10 @@ ExtractedScene GeometryExtractor::extract(const geom::Scene &scene, int camIndex
   for (size_t i = 0; i < result.objects.size(); i++) {
     const auto &geo = result.objects[i];
     const auto &mat = result.materials[i];
-    float emPower = mat.emission.x + mat.emission.y + mat.emission.z;
+    float emPower = mat.emissive.x + mat.emissive.y + mat.emissive.z;
     if (emPower < 1e-6f) continue;
 
-    RTFloat3 em{mat.emission.x, mat.emission.y, mat.emission.z};
+    RTFloat3 em{mat.emissive.x, mat.emissive.y, mat.emissive.z};
     const auto &T = geo.transform;
 
     for (const auto &tri : geo.triangles) {

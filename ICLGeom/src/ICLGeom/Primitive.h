@@ -10,10 +10,12 @@
 #include <ICLMath/FixedVector.h>
 #include <ICLUtils/Array2D.h>
 #include <ICLQt/GLImg.h>
+#include <memory>
 
 namespace icl::geom {
   /** \cond */
   class SceneObject;
+  class Material;
   /** \endcond */
 
   /// Abastract base type for geoemtric primitives
@@ -48,7 +50,8 @@ namespace icl::geom {
     };
 
     Type type;        //!< the primitive type
-    GeomColor color;  //!< the color of this primitive
+    GeomColor color;  //!< the color of this primitive (legacy, prefer material)
+    std::shared_ptr<Material> material;  //!< PBR material (if set, overrides color + object material)
 
     /// accumulated context information for rendering primitives
     /** the RenderContext contains all render information from the parent SceneObject instance.

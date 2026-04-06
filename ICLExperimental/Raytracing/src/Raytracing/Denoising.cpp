@@ -172,6 +172,7 @@ void denoiseSVGF(const core::Img8u &src, core::Img8u &dst,
                  const float *depth,
                  const float *normalX, const float *normalY, const float *normalZ,
                  const float *reflectivity,
+                 const float *roughness,
                  const RTRayGenParams &camera,
                  SVGFState &state,
                  float strength) {
@@ -333,9 +334,15 @@ void denoiseSVGF(const core::Img8u &src, core::Img8u &dst,
         float cVar = variance[ci];
         float lumSigma = sigmaLum * std::sqrt(std::max(1e-6f, cVar)) + 1e-6f;
 
-        // Reduce spatial filtering for reflective surfaces (quadratic falloff)
+        // Reduce spatial filtering for reflective and smooth surfaces.
+        // Reflective: mirrors need sharp reflections preserved.
+        // Smooth (low roughness): sharp specular highlights are signal, not noise.
         float refl = reflectivity ? reflectivity[ci] : 0.0f;
+        float rough = roughness ? roughness[ci] : 0.5f;
         float reflScale = std::max(0.01f, (1.0f - refl) * (1.0f - refl));
+        float roughScale = rough * rough; // smooth(0)→0.0, rough(1)→1.0
+        roughScale = std::max(0.02f, roughScale); // never fully zero
+        float surfaceScale = std::min(reflScale, roughScale);
 
         float sumR = 0, sumG = 0, sumB = 0, sumW = 0, sumVar = 0;
 
@@ -362,8 +369,8 @@ void denoiseSVGF(const core::Img8u &src, core::Img8u &dst,
             float wl = std::exp(-dl / lumSigma);
 
             float wt = ws * wd * wn * wl;
-            // Scale down neighbor contribution for reflective pixels
-            if (kx != 0 || ky != 0) wt *= reflScale;
+            // Scale down neighbor contribution for reflective / smooth pixels
+            if (kx != 0 || ky != 0) wt *= surfaceScale;
             sumR += wt * filtR[ni];
             sumG += wt * filtG[ni];
             sumB += wt * filtB[ni];
