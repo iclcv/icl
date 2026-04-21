@@ -1,6 +1,6 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 8 — Interactive Cycles + glTF)
+## Current State (Session 11 — GL/Cycles Parity + Screen-Space Reflections)
 
 ### What Was Built (Session 8)
 
@@ -457,7 +457,7 @@ Profile renderer. Switched the widget GL context via `QSurfaceFormat::setDefault
 before `ICLApp` construction. Legacy fixed-function GL calls in `ICLWidget` and
 `DrawWidget3D` are guarded with `GL_CONTEXT_PROFILE_MASK` checks.
 
-**Completed:**
+**Completed (Sessions 9-10):**
 - ✅ GL 4.1 Core Profile: `#version 410 core`, VAOs, `layout(location=N)`, `in`/`out`
 - ✅ Multi-light (8 lights, individually queried uniform locations — NOT `loc+i`)
 - ✅ PBR materials: metallic, roughness, emissive, Blinn-Phong specular
@@ -466,81 +466,90 @@ before `ICLApp` construction. Legacy fixed-function GL calls in `ICLWidget` and
 - ✅ Multi-light shadow mapping: up to 4 shadow maps, per-light shadow cameras,
   `sampler2DShadow` with hardware PCF, `glPolygonOffset` bias
 - ✅ Sky gradient background: procedural from inverse VP matrix, shared Sky struct
-- ✅ Environment reflections: `reflect(-V, N)` samples sky gradient, Schlick Fresnel,
-  roughness-blurred via diffuse/specular env blend
-- ✅ Per-pixel multi-bounce approximation: `boost = 1/(1 - albedoLum)` analytically
-  models infinite light bounces, replacing hardcoded env multiplier
 - ✅ GLImageRenderer: fullscreen textured quad for 2D image display in Core Profile
-- ✅ Debug modes: Normals, Albedo, UVs, Lighting Only, NdotL
 - ✅ Sky struct (`Sky.h`): Solid/Gradient/Physical/Texture modes, shared between
   GL and Cycles via `Scene::setSky()`/`getSky()`
 - ✅ Compare mode (`-compare prefix`): offscreen FBO rendering, 4×4 regional
-  brightness grid, per-pixel stats. Uses standalone `QOpenGLContext` +
-  `QOffscreenSurface` for worker-thread GL rendering
+  brightness grid, per-pixel stats
 - ✅ `-background white|black|gradient|physical` CLI flag
 - ✅ `-bg` / `-exp` CLI overrides for compare mode
 - ✅ `scripts/compare-grid.sh`: validates brightness match across BG%×Exposure% grid
 - ✅ Cycles camera FOV fix: pass vertical FOV (not horizontal) to `set_fov()`
 - ✅ GL Env % / GL Direct % tuning sliders for real-time calibration
 
-**Brightness calibration results (DamagedHelmet, -background white):**
-```
-Overall: Cycles=0.909  GL=0.886  ratio=1.03  (3% match)
-```
-Regional 4×4 grid shows most areas within 0.90–1.15 ratio. Visor area remains
-1.33× darker in GL (no glass transmission in rasterizer).
+**Completed (Session 11 — GL/Cycles parity + SSR):**
+- ✅ **Fixed exposure² bug in GL** — env uniforms no longer include exposure; it's
+  applied once at the end to all contributions uniformly
+- ✅ **Fixed bgPct² bug in Cycles** — sync formula uses only `sky.intensity`, not
+  `m_backgroundStrength` (setBrightness only triggers dirty detection)
+- ✅ **Light color normalization** — GL lights normalized from legacy 0-255 to [0,1]
+- ✅ **Energy-conserving Fresnel** — roughness-aware Schlick (Lagarde 2014),
+  `kD = (1-F)*(1-metallic)` attenuates diffuse where specular is strong
+- ✅ **Removed infinite-bounce boost** — the `1/(1-albedoLum)` factor diverged from
+  Cycles at low bounce counts and amplified sky color bias. Removed; envMul covers it.
+- ✅ **Normal-map self-occlusion** — `dot(N, geomN)` darkens ambient where normals
+  are bent away from geometric surface (crevices, borders, chamfered edges)
+- ✅ **glTF occlusion map** — added `Material::occlusionMap`, loaded from glTF
+  `occlusionTexture`, applied to ambient/env lighting in GL shader
+- ✅ **Cycles directional sky gradient** — shader node graph (GeometryNode →
+  SeparateXYZ → flipY → pow/mix) replicates GL's `sampleSky()` gradient. Y negated
+  for Cycles background convention. bgStrength reduced from 2.0× to 1.0× to match GL.
+- ✅ **Screen-space reflections (SSR)** — previous-frame ping-pong FBOs (no extra
+  render pass). Fragment shader traces 48 linear + 4 binary refinement steps along
+  `reflect(-V, N)` in previous frame's screen space. Confidence fades at screen edges,
+  long distances, rough surfaces, and depth thickness. Falls back to sky smoothly.
+- ✅ **SSR controls** — checkbox toggle + debug mode 6 (SSR Confidence: green=hit,
+  red=fallback) in viewer GUI
 
-**Key design decisions:**
-- **World-space lighting** — avoids view-space light transform bugs from Session 9b
-- **Per-pixel bounce correction** — analytically derived from geometric series
-  `E/(1-a)`, scene-independent, works across all BG%/Exposure% combinations
-- **Separate sky display vs env brightness** — sky background renders at 1× intensity,
-  env reflections use 2× to match Cycles' `bgStrength = 2.0 * intensity`
-- **No transmission** — dielectric surfaces (visor) stay opaque. Tried a transmission
-  approximation `(1-metallic)*(1-roughness)²` but it over-brightened all smooth
-  dielectrics. Proper fix needs per-material IOR/transmission parameter in Material.
+**Key design decisions (Session 11):**
+- **Linear response everywhere** — both renderers respond linearly to BG% and
+  Exposure% changes. A single set of calibration factors works across all settings.
+- **sky.intensity as single env knob** — shared between GL and Cycles. Cycles'
+  setBrightness() only triggers dirty detection, not used in the formula.
+- **SSR inline in geometry shader** — no extra render pass or G-buffer MRT. Fragment
+  shader samples read-only previous frame textures. FBO blit to screen after rendering.
+- **Depth texture with GL_NONE compare mode** — SSR depth uses `sampler2D` for raw
+  depth values (not `sampler2DShadow` like shadow maps).
+- **Previous-frame reprojection** — stores `prevViewMatrix`/`prevProjectionMatrix`
+  for correct SSR when camera moves. One-frame lag is imperceptible.
 
 **Source layout:**
 ```
 ICLGeom/src/ICLGeom/
-  SceneRendererGL.h/.cpp    ── GL 4.1 Core renderer (shaders, VAOs, shadows, env)
+  SceneRendererGL.h/.cpp    ── GL 4.1 Core renderer (shaders, VAOs, shadows, SSR, env)
+  Material.h                ── PBR material with occlusionMap field
   Sky.h                     ── Sky/environment struct (shared by GL + Cycles)
-  gl-pipeline-rework-plan.md ── Detailed plan document (steps, future work)
 ICLExperimental/Raytracing/
-  opengl-4x-plan.md         ── Incremental build plan with calibration notes
-  demos/cycles-scene-viewer.cpp ── Side-by-side GL + Cycles viewer with compare mode
-scripts/
-  compare-grid.sh            ── Brightness validation across BG%×Exposure% grid
+  src/Raytracing/SceneSynchronizer.cpp ── Cycles scene sync with gradient sky graph
+  src/Raytracing/GltfLoader.cpp        ── glTF loader with occlusion texture support
+  demos/cycles-scene-viewer.cpp        ── Side-by-side viewer with SSR toggle
 ```
 
 ### Next Steps
 
 #### GL Renderer — Immediate
 
-1. **Validate multi-bounce across settings** — run `scripts/compare-grid.sh`, check
-   that ratios stay near 1.0 across the full BG%×Exposure% grid
-2. **Glass/transmission** — add `Material::transmission` / `Material::ior` fields,
+1. **Glass/transmission** — add `Material::transmission` / `Material::ior` fields,
    use in GL shader for transparent dielectrics (visor, glass). This is the biggest
    remaining visual gap vs Cycles.
-3. **Cycles gradient background** — the node graph approach (TextureCoordinate →
-   SeparateXYZ → MixColor) crashed on wrong socket names. Needs investigation of
-   Cycles' exact node API. Currently falls back to weighted-average flat color.
+2. **SSR tuning** — adjust ray length, step count, thickness threshold based on
+   scene scale. Consider adaptive step size for better quality/performance.
 
 #### Widget Overlay — Core Profile Port
 
-4. **OSD button bar** — blue buttons at top-left, currently skipped in Core Profile
-5. **2D draw commands** — `draw->text()`, `draw->line()`, etc. in screen coords
-6. **Zoom rectangle** — left-mouse-drag zoom, needs rect overlay + zoom logic
-7. **Image info indicator** — bottom-right pixel info display
-8. **GLImg::draw2D** — 2D image display for Canvas widgets
+3. **OSD button bar** — blue buttons at top-left, currently skipped in Core Profile
+4. **2D draw commands** — `draw->text()`, `draw->line()`, etc. in screen coords
+5. **Zoom rectangle** — left-mouse-drag zoom, needs rect overlay + zoom logic
+6. **Image info indicator** — bottom-right pixel info display
+7. **GLImg::draw2D** — 2D image display for Canvas widgets
 
 Approach options: QPainter overlay, or port GLPaintEngine to GL 4.1 shaders.
 
 #### Legacy Cleanup
 
-9. **Delete legacy renderer** — `Scene::renderSceneObjectRecursive()`, `ShaderUtil`,
+8. **Delete legacy renderer** — `Scene::renderSceneObjectRecursive()`, `ShaderUtil`,
    display lists, all `glBegin/glEnd` code
-10. **Wire `Scene::getGLCallback()`** to SceneRendererGL for all ICL apps
+9. **Wire `Scene::getGLCallback()`** to SceneRendererGL for all ICL apps
 
 #### Cycles — Deferred
 
@@ -551,8 +560,9 @@ Approach options: QPainter overlay, or port GLPaintEngine to GL 4.1 shaders.
 
 ### Known Limitations
 
-- No glass/transmission — smooth dielectrics (visor) appear too dark vs Cycles
-- Cycles background is flat color (gradient node graph TODO)
+- No glass/transmission — smooth dielectrics (visor) appear opaque vs Cycles
+- SSR only reflects visible geometry (not behind camera or occluded)
+- SSR has one-frame latency on reflections (imperceptible for slow camera motion)
 - Lights created once per session in Cycles (no dynamic updates)
 - Only point lights (no spot/area/sun)
 - OBJ loader: no MTL material parsing
