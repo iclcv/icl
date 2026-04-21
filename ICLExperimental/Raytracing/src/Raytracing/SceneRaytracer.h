@@ -38,6 +38,12 @@ public:
   /// Force rebuild for a specific object.
   void invalidateObject(geom::SceneObject *obj);
 
+  /// Set antialiasing samples per pixel (1=off, 4=good, 16=high quality).
+  void setAASamples(int spp);
+
+  /// Enable/disable FXAA post-process (fast image-based AA, nearly free).
+  void setFXAA(bool enabled);
+
   /// Get the active backend name.
   const char *backendName() const;
 

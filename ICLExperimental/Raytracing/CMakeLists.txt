@@ -52,6 +52,16 @@ target_link_libraries(raytracing-scene-demo ICLRaytracing ICLQt)
 set_target_properties(raytracing-scene-demo PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# ---- Physics raytracing demo (requires Bullet) ----
+if(BULLET_FOUND)
+  add_executable(raytracing-physics-demo demos/raytracing-physics-demo.cpp)
+  target_include_directories(raytracing-physics-demo PRIVATE
+    ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src src/)
+  target_link_libraries(raytracing-physics-demo ICLRaytracing ICLPhysics ICLQt)
+  set_target_properties(raytracing-physics-demo PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
 # ---- Headless test ----
 add_executable(test-raytracer demos/test_rt.cpp)
 target_include_directories(test-raytracer PRIVATE

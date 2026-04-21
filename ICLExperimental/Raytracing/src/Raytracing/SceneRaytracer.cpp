@@ -59,6 +59,16 @@ void SceneRaytracer::invalidateObject(geom::SceneObject *obj) {
   m_extractor.invalidateObject(obj);
 }
 
+void SceneRaytracer::setAASamples(int spp) {
+  auto *cpu = dynamic_cast<CpuRTBackend *>(m_backend.get());
+  if (cpu) cpu->setAASamples(spp);
+}
+
+void SceneRaytracer::setFXAA(bool enabled) {
+  auto *cpu = dynamic_cast<CpuRTBackend *>(m_backend.get());
+  if (cpu) cpu->setFXAA(enabled);
+}
+
 const char *SceneRaytracer::backendName() const {
   return m_backend->name();
 }

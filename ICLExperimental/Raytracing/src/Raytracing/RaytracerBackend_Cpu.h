@@ -35,6 +35,12 @@ public:
   bool isAvailable() const override { return true; }
   const char *name() const override { return "CPU (BVH + OpenMP)"; }
 
+  /// Set antialiasing samples per pixel (1 = off, 4 = good, 16 = high quality).
+  void setAASamples(int spp) { m_aaSamples = std::max(1, spp); }
+
+  /// Enable/disable FXAA post-process (fast, image-based AA).
+  void setFXAA(bool enabled) { m_fxaa = enabled; }
+
 private:
   /// Per-object BLAS data.
   struct BLASEntry {
@@ -60,7 +66,12 @@ private:
   std::vector<RTInstance> m_instances;
   std::vector<RTLight> m_lights;
   std::vector<RTMaterial> m_materials;
+  /// FXAA post-process on the output image.
+  void applyFXAA();
+
   RTFloat4 m_bgColor;
+  int m_aaSamples = 1;
+  bool m_fxaa = false;
   core::Img8u m_output;
 };
 
