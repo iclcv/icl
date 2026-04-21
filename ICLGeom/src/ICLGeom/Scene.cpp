@@ -621,8 +621,9 @@ namespace icl::geom {
 
       o->complexCustomRender(util);
       if(o->m_primitives.size()){
+
         const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors,
-                                               o->m_sharedTextures,
+                                               o->m_sharedTextures, o->m_texCoords,
                                                o->m_lineColorsFromVertices,
                                                o->m_triangleColorsFromVertices,
                                                o->m_quadColorsFromVertices,
@@ -660,6 +661,7 @@ namespace icl::geom {
             }
           }
         }
+
       }
 
 
@@ -762,7 +764,7 @@ namespace icl::geom {
          o->complexCustomRender(util);
          if(o->m_primitives.size()){
            const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors,
-                                                  o->m_sharedTextures,
+                                                  o->m_sharedTextures, o->m_texCoords,
                                                   o->m_lineColorsFromVertices,
                                                   o->m_triangleColorsFromVertices,
                                                   o->m_quadColorsFromVertices,

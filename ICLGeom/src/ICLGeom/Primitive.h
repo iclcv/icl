@@ -63,6 +63,7 @@ namespace icl::geom {
       const std::vector<Vec> &normals;             //!< list of shared normals
       const std::vector<GeomColor> &vertexColors;  //!< list of vertex colors
       const std::vector<std::shared_ptr<qt::GLImg> > &sharedTextures; //!< list of shared textures
+      const std::vector<utils::Point32f> &texCoords; //!< list of texture coordinates (UVs)
       bool lineColorsFromVertices;                 //!< line coloring
       bool triangleColorsFromVertices;             //!< triangle coloring
       bool quadColorsFromVertices;                 //!< quad coloring

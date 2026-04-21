@@ -82,6 +82,8 @@ namespace icl::geom {
   static void gl_normal(const Primitive::RenderContext &ctx, int normalIndex){
     if(normalIndex >= 0) glNormal3fv(ctx.normals[normalIndex].data());
   }
+  // TODO: gl_texcoord() for Material baseColorMap support — to be added
+  // as part of the GL pipeline rework (see continue-raytracing.md)
 
   static inline Vec compute_normal(const Vec &va, const Vec &vb, const Vec &vc, bool *ok=0){
     Vec ac = va - vc;

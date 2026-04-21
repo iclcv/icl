@@ -331,38 +331,51 @@ static void setupScene() {
     extent = targetSize;
   }
 
-  // Add checkerboard ground plane at the bottom of the scene
+  // Add checkerboard ground plane as a single textured quad
   {
     float groundY = minY;
-    float gs = extent * 1.5f;  // ground extends beyond scene
-    int tiles = 8;             // 8x8 checkerboard
-    float tileSize = (2.0f * gs) / tiles;
+    float gs = extent * 1.5f;
 
-    auto matLight = Material::fromColor(GeomColor(220, 215, 210, 255));
-    matLight->roughness = 0.6f;
-    auto matDark = Material::fromColor(GeomColor(80, 75, 70, 255));
-    matDark->roughness = 0.6f;
-
-    for (int tx = 0; tx < tiles; tx++) {
-      for (int tz = 0; tz < tiles; tz++) {
-        float x0 = cx - gs + tx * tileSize;
-        float z0 = cz - gs + tz * tileSize;
-        float x1 = x0 + tileSize;
-        float z1 = z0 + tileSize;
-
-        auto tile = std::make_shared<SceneObject>();
-        tile->addVertex(Vec(x0, groundY, z0, 1));
-        tile->addVertex(Vec(x1, groundY, z0, 1));
-        tile->addVertex(Vec(x1, groundY, z1, 1));
-        tile->addVertex(Vec(x0, groundY, z1, 1));
-        tile->addTriangle(0, 1, 2);
-        tile->addTriangle(0, 2, 3);
-        tile->setMaterial((tx + tz) % 2 == 0 ? matLight : matDark);
-        tile->getMaterial()->smoothShading = true;
-        scene.addObject(tile.get());
-        loadedObjects.push_back(tile);
+    // Generate checkerboard texture (large enough for sharp tile edges)
+    int tiles = 8;
+    int texSize = 1024;
+    int pixelsPerTile = texSize / tiles;
+    Img8u checkerTex(Size(texSize, texSize), 4);
+    for (int ty = 0; ty < texSize; ty++) {
+      for (int tx = 0; tx < texSize; tx++) {
+        bool light = ((tx / pixelsPerTile) + (ty / pixelsPerTile)) % 2 == 0;
+        icl8u r = light ? 220 : 80, g = light ? 215 : 75, b = light ? 210 : 70;
+        checkerTex(tx, ty, 0) = r;
+        checkerTex(tx, ty, 1) = g;
+        checkerTex(tx, ty, 2) = b;
+        checkerTex(tx, ty, 3) = 255;
       }
     }
+
+    auto groundMat = std::make_shared<Material>();
+    groundMat->baseColor = GeomColor(0.8f, 0.8f, 0.8f, 1);
+    groundMat->roughness = 0.6f;
+    groundMat->smoothShading = true;
+    groundMat->baseColorMap = Image(checkerTex);
+
+    auto ground = std::make_shared<SceneObject>();
+    ground->addVertex(Vec(cx - gs, groundY, cz - gs, 1));
+    ground->addVertex(Vec(cx + gs, groundY, cz - gs, 1));
+    ground->addVertex(Vec(cx + gs, groundY, cz + gs, 1));
+    ground->addVertex(Vec(cx - gs, groundY, cz + gs, 1));
+    ground->addNormal(Vec(0, 1, 0, 1));
+    ground->addNormal(Vec(0, 1, 0, 1));
+    ground->addNormal(Vec(0, 1, 0, 1));
+    ground->addNormal(Vec(0, 1, 0, 1));
+    ground->addTexCoord(0, 0);
+    ground->addTexCoord(1, 0);
+    ground->addTexCoord(1, 1);
+    ground->addTexCoord(0, 1);
+    ground->addTriangle(0, 2, 1, 0, 2, 1, GeomColor(200, 200, 200, 255), 0, 2, 1);
+    ground->addTriangle(0, 3, 2, 0, 3, 2, GeomColor(200, 200, 200, 255), 0, 3, 2);
+    ground->setMaterial(groundMat);
+    scene.addObject(ground.get());
+    loadedObjects.push_back(ground);
   }
 
   float dist = extent * 1.5f;
@@ -381,6 +394,7 @@ static void setupScene() {
   scene.getLight(0).setOn(true);
   scene.getLight(0).setPosition(Vec(cx + r * 0.8f, cy + r * 0.6f, cz - r * 0.3f, 1));
   scene.getLight(0).setDiffuse(GeomColor(255, 248, 235, 255));
+  scene.getLight(0).setShadowEnabled(true);
 
   // Fill light: left-front, much dimmer — softens shadows without flattening
   scene.getLight(1).setOn(true);
@@ -397,8 +411,20 @@ static void setupScene() {
   scene.getLight(3).setPosition(Vec(cx, cy + r * 1.5f, cz, 1));
   scene.getLight(3).setDiffuse(GeomColor(220, 215, 210, 255));
 
-  for (int i = 0; i < scene.getObjectCount(); i++)
+  // Ambient light to approximate Cycles sky/environment lighting
+  scene.setGlobalAmbientLight(GeomColor(60, 65, 80, 255));
+
+  // TODO: improved shading + shadow mapping needs to be updated to support
+  // Material-based textures on regular triangles/quads (currently only works
+  // for TexturePrimitive). The shader selects SHADOW_TEXTURE only for
+  // Primitive::texture type, and the shadow camera setup has issues.
+  // For now, use fixed-function GL which handles material textures correctly.
+
+  for (int i = 0; i < scene.getObjectCount(); i++) {
+    scene.getObject(i)->setCastShadowsEnabled(true);
+    scene.getObject(i)->setReceiveShadowsEnabled(true);
     scene.getObject(i)->prepareForRendering();
+  }
 }
 
 void init() {
