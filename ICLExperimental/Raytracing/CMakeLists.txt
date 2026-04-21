@@ -174,12 +174,16 @@ set(RT_HEADERS
 # cgltf.h location (single-header glTF parser from Cycles' MaterialX dependency)
 set(CGLTF_INCLUDE_DIR "${CYCLES_INSTALL}/../lib/macos_arm64/materialx/include/MaterialXRender/External/Cgltf")
 
+# stb_image.h for texture decoding (PNG/JPEG from memory)
+set(STB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/3rdparty")
+
 add_library(ICLRaytracing SHARED ${RT_SOURCES} ${RT_HEADERS})
 target_include_directories(ICLRaytracing PUBLIC src/)
 target_include_directories(ICLRaytracing PRIVATE
   ${ICL_MODULE_INCLUDE_DIRS}
   ${CMAKE_BINARY_DIR}/src
   ${CGLTF_INCLUDE_DIR}
+  ${STB_INCLUDE_DIR}
 )
 target_link_libraries(ICLRaytracing ICLGeom)
 cycles_target_setup(ICLRaytracing)

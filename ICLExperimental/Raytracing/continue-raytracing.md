@@ -418,53 +418,37 @@ and Z-up scenes. That code is in git history at commit 47ee811d0.
 - ✅ Vertex clustering mesh decimation (-decimate N)
 - ✅ renderBlocking() for offscreen rendering
 
-### Next Steps — File Format Support & Textures
+### Completed (Session 9 — Full Texture Pipeline)
 
-#### Phase 1: glTF/GLB Loader (Priority)
+- ✅ **Primitive UV indices** — TrianglePrimitive expanded (6→9 ints), QuadPrimitive (8→12),
+  adding per-corner texcoord indices i(6..8) / i(8..11) alongside existing normal indices.
+  Mirrors the existing separate-pool pattern for normals. Default -1 = no UV.
+- ✅ **Material texture slots → Image** — changed from `shared_ptr<ImgBase>` to `core::Image`
+  (value semantics, null by default, check via `operator bool()`)
+- ✅ **stb_image texture decoding** — `decodeImage()` in GltfLoader decodes PNG/JPEG from
+  embedded GLB buffers or external file references into 4-channel Img8u via `stb_image.h`
+- ✅ **UV attributes on Cycles meshes** — `tessellateToMesh()` reads UV indices from
+  primitives, writes `ATTR_STD_UV` per-corner float2 data on Cycles mesh
+- ✅ **ICLImageLoader** — custom `ccl::ImageLoader` subclass in SceneSynchronizer that
+  bridges ICL `Image` to Cycles `ImageManager`. Uses `planarToInterleaved()` for fast
+  channel conversion (4-ch path), registered via `add_image(unique_ptr<ImageLoader>)`
+- ✅ **Texture nodes in shader graph** — `createPrincipledShader()` creates full node graph:
+  - baseColorMap → ImageTextureNode → PrincipledBsdf::Base Color (+ Alpha for cutout)
+  - metallicRoughnessMap → ImageTextureNode → SeparateColorNode → Blue→Metallic, Green→Roughness
+  - normalMap → ImageTextureNode → NormalMapNode (tangent space) → PrincipledBsdf::Normal
+  - emissiveMap → ImageTextureNode → PrincipledBsdf::Emission Color
+  - Shared TextureCoordinateNode provides UVs to all texture lookups
+- ✅ **Emissive fix** — emissiveFactor always stored (was skipped when texture present),
+  emissiveMap decoded and forwarded. Per glTF spec: final = factor * texture.
+- ✅ **Emission via PrincipledBsdf** — switched from AddClosure(BSDF+Emission) pattern
+  to PrincipledBsdf's built-in emission_color/emission_strength (simpler, correct)
+- ✅ **GltfLoader passes UV indices** — when UVs present, vertex index = UV index
+  (glTF pre-splits at seams), passed through addTriangle(..., ta, tb, tc)
+- ✅ **Verified: DamagedHelmet.glb renders with full PBR textures**
 
-**Goal:** Load complex textured models (cars, characters, architectural scenes).
-glTF is the modern standard — single GLB file bundles meshes + PBR materials + textures.
+### Next Steps
 
-**Available:** `cgltf.h` single-header C parser already in `3rdparty/cycles/lib/macos_arm64/materialx/include/MaterialXRender/External/Cgltf/cgltf.h`
-
-**Implementation plan:**
-1. Create `ICLExperimental/Raytracing/src/Raytracing/GltfLoader.h/.cpp`
-2. Parse GLB/glTF using cgltf: meshes → SceneObject, materials → Material, textures → ImgBase
-3. Handle: vertex positions, normals, UVs, indices, PBR metallic-roughness materials
-4. Handle: embedded textures (base64 or binary chunk), external texture references
-5. Create camera from glTF camera nodes (if present)
-6. Wire into cycles-scene-viewer: `-scene model.glb`
-
-**Key mapping:** glTF PBR → ICL Material (already compatible):
-- baseColorFactor → Material::baseColor
-- metallicFactor → Material::metallic
-- roughnessFactor → Material::roughness
-- emissiveFactor → Material::emissive
-- baseColorTexture → Material::baseColorMap (as ImgBase)
-- normalTexture → Material::normalMap
-- metallicRoughnessTexture → Material::metallicRoughnessMap
-
-#### Phase 2: Texture Support in Cycles Sync
-
-**Goal:** Forward ICL Material texture maps to Cycles ImageTextureNode.
-
-**Implementation plan:**
-1. Create `ICLImageLoader` subclass of `ccl::ImageLoader` in SceneSynchronizer
-2. Override `load_pixels()` to copy from ICL's `ImgBase` to Cycles' image buffer
-3. In `createPrincipledShader()`: if material has baseColorMap, create ImageTextureNode
-   connected to PrincipledBsdf's BaseColor input
-4. Same for normalMap → Normal input, metallicRoughnessMap → Metallic/Roughness
-5. Need UV coordinates: extend GeometryExtractor to pass `ATTR_STD_UV` from SceneObject's texCoords
-
-**Cycles API for textures:**
-```cpp
-ImageTextureNode *tex = graph->create_node<ImageTextureNode>();
-tex->set_filename(ustring("inline_image"));  // triggers ImageLoader
-// Register the ICLImageLoader with the ImageManager
-scene->image_manager->add_image(loader, ...);
-```
-
-#### Phase 3: Cycles XML Scene Loader (Low Priority)
+#### Cycles XML Scene Loader (Low Priority)
 
 **Goal:** Load Cycles' native XML format for testing against reference scenes.
 The standalone `cycles` executable already renders these — useful for validation.
@@ -472,33 +456,35 @@ The standalone `cycles` executable already renders these — useful for validati
 **Available:** `3rdparty/cycles/src/app/cycles_xml.cpp` contains the full XML parser.
 Could either: (a) call it directly from our code, or (b) port scenes to glTF.
 
-#### Phase 4: Advanced Features (Deferred)
+#### Advanced Features (Deferred)
 
 - **QEM mesh decimation** — Quadric Error Metrics for quality-preserving simplification
 - **HDR environment maps** — `setBackground(filename)` API loading .hdr/.exr
 - **Area/spot/sun lights** — extend syncLights beyond point lights
 - **LOD system** — pre-compute 3-4 levels, switch by camera distance
 - **Glass/transmission** — add `transmissionWeight` to Material for glass BSDF
+- **OpenGL texture rendering** — forward Material texture maps to GL via GLImg
+  (currently only Cycles path uses them)
 
 ### Test Models
 
-**OBJ (working now):**
+**OBJ (working):**
 - Stanford bunny: `scenes/bunny.obj` (35K verts)
 - More at: github.com/alecjacobson/common-3d-test-models (dragon, buddha, teapot)
 
-**glTF/GLB (Phase 1 target):**
-- Sketchfab: thousands of free downloadable GLB models (cars, characters, scenes)
+**glTF/GLB (working with textures):**
+- DamagedHelmet.glb — verified, 5 PBR textures render correctly
+- Sketchfab: thousands of free downloadable GLB models
 - glTF sample models: github.com/KhronosGroup/glTF-Sample-Assets
-  - DamagedHelmet.glb — textured PBR, good first test
   - FlightHelmet.glb — complex multi-material
   - Sponza.glb — architectural interior, stress test
 
 ### Known Limitations
 
-- No texture mapping yet (Material textures not forwarded to Cycles)
 - Lights created once per session (no dynamic light position updates in Cycles)
 - Only point lights (no spot/area/sun)
 - OIDN denoising too slow for interactive use
 - Vertex clustering decimation is crude (QEM would preserve features better)
 - OBJ loader: no MTL material parsing (uses default material)
 - No glass/transmission material support
+- PolygonPrimitive doesn't carry UV indices yet (only triangle/quad)

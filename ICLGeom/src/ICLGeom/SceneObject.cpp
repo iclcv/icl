@@ -166,12 +166,14 @@ namespace icl::geom {
     m_primitives.push_back(new LinePrimitive(a,b,color*COLOR_FACTOR));
   }
 
-  void SceneObject::addTriangle(int a, int b, int c, int na, int nb, int nc, const GeomColor &color){
-    m_primitives.push_back(new TrianglePrimitive(a,b,c,color*COLOR_FACTOR,na,nb,nc));
+  void SceneObject::addTriangle(int a, int b, int c, int na, int nb, int nc,
+                                const GeomColor &color, int ta, int tb, int tc){
+    m_primitives.push_back(new TrianglePrimitive(a,b,c,color*COLOR_FACTOR,na,nb,nc,ta,tb,tc));
   }
 
-  void SceneObject::addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd, const GeomColor &color){
-    m_primitives.push_back(new QuadPrimitive(a,b,c,d,color*COLOR_FACTOR,na,nb,nc,nd));
+  void SceneObject::addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd,
+                            const GeomColor &color, int ta, int tb, int tc, int td){
+    m_primitives.push_back(new QuadPrimitive(a,b,c,d,color*COLOR_FACTOR,na,nb,nc,nd,false,1,ta,tb,tc,td));
   }
 
   void SceneObject::addPolygon(int nPoints,const int *vertexIndices, const GeomColor &color,

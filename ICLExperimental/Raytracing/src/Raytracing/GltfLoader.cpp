@@ -5,14 +5,22 @@
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_JPEG
+#define STBI_ONLY_PNG
+#include "stb_image.h"
+
 #include "GltfLoader.h"
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Material.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
+#include <ICLUtils/Size.h>
 
 #include <cstdio>
 #include <cstring>
+#include <fstream>
 #include <unordered_map>
 
 using namespace icl::geom;
@@ -36,14 +44,59 @@ static std::vector<uint32_t> readAccessorIndices(const cgltf_accessor *acc) {
   return out;
 }
 
-/// Decode an image from glTF (embedded or file reference) into Img8u
-static std::shared_ptr<ImgBase> decodeImage(const cgltf_image *img,
-                                             const cgltf_data *data,
-                                             const std::string &basePath) {
-  // TODO: decode PNG/JPEG from buffer_view or URI
-  // For now, return null — textures will be added in Phase 2
-  (void)img; (void)data; (void)basePath;
-  return nullptr;
+/// Decode an image from glTF (embedded buffer or file reference) into Image
+static Image decodeImage(const cgltf_image *img,
+                         const cgltf_data *data,
+                         const std::string &basePath) {
+  (void)data;
+  const unsigned char *rawData = nullptr;
+  int rawSize = 0;
+  std::vector<unsigned char> fileBuffer;
+
+  if (img->buffer_view) {
+    // Embedded image (GLB binary chunk or buffer reference)
+    const cgltf_buffer_view *bv = img->buffer_view;
+    if (!bv->buffer || !bv->buffer->data) return Image();
+    rawData = (const unsigned char *)bv->buffer->data + bv->offset;
+    rawSize = (int)bv->size;
+  } else if (img->uri) {
+    // External file reference
+    std::string path = basePath + img->uri;
+    std::ifstream f(path, std::ios::binary | std::ios::ate);
+    if (!f) {
+      fprintf(stderr, "  [texture] cannot open: %s\n", path.c_str());
+      return Image();
+    }
+    fileBuffer.resize(f.tellg());
+    f.seekg(0);
+    f.read((char *)fileBuffer.data(), fileBuffer.size());
+    rawData = fileBuffer.data();
+    rawSize = (int)fileBuffer.size();
+  }
+
+  if (!rawData || rawSize <= 0) return Image();
+
+  // Decode PNG/JPEG to RGBA using stb_image
+  int w, h, channels;
+  unsigned char *pixels = stbi_load_from_memory(rawData, rawSize, &w, &h, &channels, 4);
+  if (!pixels) {
+    fprintf(stderr, "  [texture] decode failed: %s\n", img->name ? img->name : "(unnamed)");
+    return Image();
+  }
+
+  // Convert interleaved RGBA to ICL planar Img8u (4 channels)
+  Img8u result(utils::Size(w, h), 4);
+  for (int c = 0; c < 4; c++) {
+    icl8u *dst = result.getData(c);
+    for (int i = 0; i < w * h; i++) {
+      dst[i] = pixels[i * 4 + c];
+    }
+  }
+  stbi_image_free(pixels);
+
+  fprintf(stderr, "  [texture] decoded %dx%d (%d ch): %s\n",
+          w, h, channels, img->name ? img->name : "(unnamed)");
+  return Image(result);
 }
 
 /// Convert a glTF material to ICL Material
@@ -76,16 +129,16 @@ static std::shared_ptr<Material> convertMaterial(const cgltf_material *gmat,
     mat->normalMap = decodeImage(gmat->normal_texture.texture->image, data, basePath);
   }
 
-  // Emissive — only apply if there's no emissive texture (which we can't decode yet).
-  // With a texture, the factor is a multiplier for the texture; without the texture,
-  // applying the factor uniformly makes the entire mesh glow.
-  if (!gmat->emissive_texture.texture) {
-    float em = gmat->emissive_factor[0] + gmat->emissive_factor[1] + gmat->emissive_factor[2];
-    if (em > 0.001f) {
-      mat->emissive = GeomColor(gmat->emissive_factor[0],
-                                 gmat->emissive_factor[1],
-                                 gmat->emissive_factor[2], 1.0f);
-    }
+  // Emissive — always store the factor. Per glTF spec: final emission = factor * texture.
+  // When there's no texture, the factor alone controls uniform emission.
+  float em = gmat->emissive_factor[0] + gmat->emissive_factor[1] + gmat->emissive_factor[2];
+  if (em > 0.001f) {
+    mat->emissive = GeomColor(gmat->emissive_factor[0],
+                               gmat->emissive_factor[1],
+                               gmat->emissive_factor[2], 1.0f);
+  }
+  if (gmat->emissive_texture.texture && gmat->emissive_texture.texture->image) {
+    mat->emissiveMap = decodeImage(gmat->emissive_texture.texture->image, data, basePath);
   }
 
   if (gmat->name && gmat->name[0]) {
@@ -135,8 +188,9 @@ static std::shared_ptr<SceneObject> processPrimitive(
     }
   }
 
-  // UVs (stored for future texture support)
-  if (uvAcc && uvAcc->count == posAcc->count) {
+  // UVs
+  bool hasUVs = uvAcc && uvAcc->count == posAcc->count;
+  if (hasUVs) {
     auto uvs = readAccessorFloats(uvAcc);
     for (size_t i = 0; i < uvAcc->count; i++) {
       obj->addTexCoord(uvs[i*2+0], uvs[i*2+1]);
@@ -144,24 +198,24 @@ static std::shared_ptr<SceneObject> processPrimitive(
   }
 
   // Indices → triangles
+  // In glTF, vertices are pre-split at UV seams, so vertex index = texcoord index.
+  bool hasNormals = normAcc && normAcc->count == posAcc->count;
+  const GeomColor defaultColor(0, 100, 250, 255);
+
   if (prim.indices) {
     auto indices = readAccessorIndices(prim.indices);
     for (size_t i = 0; i + 2 < indices.size(); i += 3) {
       int a = indices[i], b = indices[i+1], c = indices[i+2];
-      if (normAcc && normAcc->count == posAcc->count) {
-        obj->addTriangle(a, b, c, a, b, c);  // with normal indices
-      } else {
-        obj->addTriangle(a, b, c);
-      }
+      int na = hasNormals ? a : -1, nb = hasNormals ? b : -1, nc = hasNormals ? c : -1;
+      int ta = hasUVs ? a : -1, tb = hasUVs ? b : -1, tc = hasUVs ? c : -1;
+      obj->addTriangle(a, b, c, na, nb, nc, defaultColor, ta, tb, tc);
     }
   } else {
     // Non-indexed: every 3 vertices form a triangle
     for (size_t i = 0; i + 2 < posAcc->count; i += 3) {
-      if (normAcc) {
-        obj->addTriangle(i, i+1, i+2, i, i+1, i+2);
-      } else {
-        obj->addTriangle(i, i+1, i+2);
-      }
+      int na = hasNormals ? (int)i : -1, nb = hasNormals ? (int)(i+1) : -1, nc = hasNormals ? (int)(i+2) : -1;
+      int ta = hasUVs ? (int)i : -1, tb = hasUVs ? (int)(i+1) : -1, tc = hasUVs ? (int)(i+2) : -1;
+      obj->addTriangle(i, i+1, i+2, na, nb, nc, defaultColor, ta, tb, tc);
     }
   }
 

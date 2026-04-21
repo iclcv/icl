@@ -103,18 +103,23 @@ namespace icl::geom {
   };
 
   /// triangle primitive
-  struct TrianglePrimitive : public math::FixedColVector<int,6>, public Primitive{
+  /** Indices layout: i(0..2) = vertex indices, i(3..5) = normal indices,
+      i(6..8) = texture coordinate indices (into parent's texCoord list).
+      Normal and texcoord indices default to -1 (unused). */
+  struct TrianglePrimitive : public math::FixedColVector<int,9>, public Primitive{
     /// super type
-    using super = math::FixedColVector<int,6>;
+    using super = math::FixedColVector<int,9>;
 
     /// constructor
-    TrianglePrimitive(int a, int b, int c, const GeomColor &color, int na=-1, int nb=-1, int nc=-1):
-    super(a,b,c,na,nb,nc),Primitive(Primitive::triangle,color){}
+    TrianglePrimitive(int a, int b, int c, const GeomColor &color,
+                      int na=-1, int nb=-1, int nc=-1,
+                      int ta=-1, int tb=-1, int tc=-1):
+    super(a,b,c,na,nb,nc,ta,tb,tc),Primitive(Primitive::triangle,color){}
 
     /// render method
     ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
 
-    /// direct access to the i-th vertex/normal index
+    /// direct access to the i-th vertex/normal/texcoord index
     inline int i(int idx) const { return super::operator[](idx); }
 
     /// deep copy implementation (trivial)
@@ -127,9 +132,12 @@ namespace icl::geom {
   };
 
   /// quad primitive
-  struct QuadPrimitive : public math::FixedColVector<int,8>, public Primitive{
+  /** Indices layout: i(0..3) = vertex indices, i(4..7) = normal indices,
+      i(8..11) = texture coordinate indices (into parent's texCoord list).
+      Normal and texcoord indices default to -1 (unused). */
+  struct QuadPrimitive : public math::FixedColVector<int,12>, public Primitive{
     /// super type
-    using super = math::FixedColVector<int,8>;
+    using super = math::FixedColVector<int,12>;
 
     /// visualization optimization flag
     bool trySurfaceOptimization;
@@ -140,15 +148,18 @@ namespace icl::geom {
     int tesselationResolution;
 
     /// constructor
-    QuadPrimitive(int a, int b, int c, int d, const GeomColor &color, int na=-1, int nb=-1, int nc=-1, int nd=-1,
-                  bool trySurfaceOptimization=false,int tesselationResolution=1):
-    super(a,b,c,d,na,nb,nc,nd),Primitive(Primitive::quad,color),trySurfaceOptimization(trySurfaceOptimization),
+    QuadPrimitive(int a, int b, int c, int d, const GeomColor &color,
+                  int na=-1, int nb=-1, int nc=-1, int nd=-1,
+                  bool trySurfaceOptimization=false, int tesselationResolution=1,
+                  int ta=-1, int tb=-1, int tc=-1, int td=-1):
+    super(a,b,c,d,na,nb,nc,nd,ta,tb,tc,td),Primitive(Primitive::quad,color),
+    trySurfaceOptimization(trySurfaceOptimization),
     tesselationResolution(tesselationResolution){}
 
     /// render method
     ICLGeom_API virtual void render(const Primitive::RenderContext &ctx);
 
-    /// direct access to the i-th vertex/normal index
+    /// direct access to the i-th vertex/normal/texcoord index
     inline int i(int idx) const { return super::operator[](idx); }
 
     /// deep copy implementation (trivial)

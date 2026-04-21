@@ -6,11 +6,9 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/GeomDefs.h>
-#include <ICLCore/Types.h>
+#include <ICLCore/Image.h>
 #include <memory>
 #include <string>
-
-namespace icl::core { class ImgBase; }
 
 namespace icl::geom {
 
@@ -43,12 +41,12 @@ namespace icl::geom {
     float reflectivity = 0.0f;      ///< explicit mirror reflections (raytracing)
     GeomColor emissive{0,0,0,1};    ///< self-illumination in [0,1]
 
-    // -- Optional texture maps (stored as ImgBase for portability) --
+    // -- Optional texture maps (as Image for portability and value semantics) --
 
-    std::shared_ptr<core::ImgBase> baseColorMap;          ///< albedo texture (RGB/RGBA)
-    std::shared_ptr<core::ImgBase> normalMap;             ///< tangent-space normal map (RGB)
-    std::shared_ptr<core::ImgBase> metallicRoughnessMap;  ///< R=metallic, G=roughness
-    std::shared_ptr<core::ImgBase> emissiveMap;           ///< emission texture (RGB)
+    core::Image baseColorMap;          ///< albedo texture (RGB/RGBA)
+    core::Image normalMap;             ///< tangent-space normal map (RGB)
+    core::Image metallicRoughnessMap;  ///< R=metallic, G=roughness
+    core::Image emissiveMap;           ///< emission texture (RGB)
 
     // -- Alpha handling --
 

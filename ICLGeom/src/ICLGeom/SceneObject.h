@@ -298,10 +298,12 @@ namespace icl::geom {
     /** If the given normal indices (na and nb) are -1, no normals are used for this primitives */
     ICLGeom_API void addLine(int x, int y, const GeomColor &color = GeomColor(100, 100, 100, 255));
 
-    /// adds a new triangle to this onject
-    /** If the given normal indices (na,nb and nc) are -1, auto-normal are computed using cross-product */
+    /// adds a new triangle to this object
+    /** If the given normal indices (na,nb and nc) are -1, auto-normals are computed using cross-product.
+        If the texcoord indices (ta,tb,tc) are -1, no texture coordinates are assigned to this triangle. */
     ICLGeom_API void addTriangle(int a, int b, int c, int na, int nb, int nc,
-                     const GeomColor &color=GeomColor(0,100,250,255));
+                     const GeomColor &color=GeomColor(0,100,250,255),
+                     int ta=-1, int tb=-1, int tc=-1);
 
     /// convenience method for creation of a triangle with auto-normals
     inline void addTriangle(int a, int b, int c, const GeomColor &color=GeomColor(0,100,250,255)){
@@ -309,10 +311,12 @@ namespace icl::geom {
     }
 
 
-    /// adds a new triangle to this onject
-    /** If the given normal indices (na,nb,nc and nd) are -1, auto-normal are computed using cross-product */
+    /// adds a new quad to this object
+    /** If the given normal indices (na,nb,nc and nd) are -1, auto-normals are computed using cross-product.
+        If the texcoord indices (ta,tb,tc,td) are -1, no texture coordinates are assigned to this quad. */
     ICLGeom_API void addQuad(int a, int b, int c, int d, int na, int nb, int nc, int nd,
-                 const GeomColor &color=GeomColor(0,100,250,255));
+                 const GeomColor &color=GeomColor(0,100,250,255),
+                 int ta=-1, int tb=-1, int tc=-1, int td=-1);
 
     /// convenience method for creation of a quad with auto-normals
     inline void addQuad(int a, int b, int c, int d, const GeomColor &color=GeomColor(0,100,250,255)){
