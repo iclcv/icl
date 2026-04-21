@@ -16,6 +16,7 @@
 #include <ICLGeom/Hit.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <Raytracing/CyclesRenderer.h>
+#include <Raytracing/GltfLoader.h>
 
 #include <memory>
 #include <vector>
@@ -170,35 +171,39 @@ static void setupScene() {
   for (int i = 0; i < nScenes; i++) {
     std::string file = pa("-scene", i).as<std::string>();
     fprintf(stderr, "Loading %s...\n", file.c_str());
-    try {
-      fprintf(stderr, "  Parsing...\n");
-      auto obj = std::make_shared<SceneObject>(file);
-      fprintf(stderr, "  %zu vertices, %zu primitives\n",
-              obj->getVertices().size(), obj->getPrimitives().size());
 
-      obj->setVisible(Primitive::line, false);
-      obj->setVisible(Primitive::vertex, false);
+    // Dispatch by extension
+    bool isGltf = (file.size() > 4 &&
+                   (file.substr(file.size()-4) == ".glb" ||
+                    file.substr(file.size()-5) == ".gltf"));
 
-      // Decimate if requested
-      if (pa("-decimate")) {
-        decimateMesh(*obj, pa("-decimate").as<int>());
+    if (isGltf) {
+      auto objs = icl::rt::loadGltf(file, scene);
+      for (auto &obj : objs) loadedObjects.push_back(obj);
+      fprintf(stderr, "  glTF: %zu objects loaded\n", objs.size());
+    } else {
+      // OBJ loader
+      try {
+        auto obj = std::make_shared<SceneObject>(file);
+        fprintf(stderr, "  %zu vertices, %zu primitives\n",
+                obj->getVertices().size(), obj->getPrimitives().size());
+        obj->setVisible(Primitive::line, false);
+        obj->setVisible(Primitive::vertex, false);
+
+        if (pa("-decimate")) {
+          decimateMesh(*obj, pa("-decimate").as<int>());
+        }
+        if (!obj->getMaterial()) {
+          auto mat = Material::fromColor(GeomColor(180, 120, 100, 255));
+          mat->roughness = 0.4f;
+          mat->smoothShading = true;
+          obj->setMaterial(mat);
+        }
+        scene.addObject(obj.get());
+        loadedObjects.push_back(obj);
+      } catch (const std::exception &e) {
+        fprintf(stderr, "  ERROR: %s\n", e.what());
       }
-
-      // Default PBR material with smooth shading
-      if (!obj->getMaterial()) {
-        auto mat = Material::fromColor(GeomColor(180, 120, 100, 255));
-        mat->roughness = 0.4f;
-        mat->smoothShading = true;
-        obj->setMaterial(mat);
-      }
-
-      scene.addObject(obj.get());
-      loadedObjects.push_back(obj);
-      fprintf(stderr, "  OK\n");
-    } catch (const std::exception &e) {
-      fprintf(stderr, "  ERROR: %s\n", e.what());
-    } catch (...) {
-      fprintf(stderr, "  UNKNOWN ERROR\n");
     }
   }
 
