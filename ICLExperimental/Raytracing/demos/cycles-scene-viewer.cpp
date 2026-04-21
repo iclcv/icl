@@ -449,20 +449,12 @@ void init() {
             << Slider(1, 16, 4).handle("bounces").label("Bounces").minSize(10,2)
             << Slider(10, 500, 100).handle("exposure").label("Exposure %").minSize(10,2)
             << Slider(0, 100, 100).handle("brightness").label("BG %").minSize(10,2)
+            << Combo("!Shaded,Normals,Albedo,UVs,Lighting Only,NdotL").handle("glDebug").label("GL Debug").minSize(10,2)
             << Label("--").handle("info").minSize(15,2))
        ) << Show();
 
   gui["draw"].install(new MouseHandler(handleMouse));
   gui["gl"].install(new MouseHandler(handleMouse));
-
-  // Link GL canvas to modern renderer (once, not every frame)
-  struct ModernGLCallback : public ICLDrawWidget3D::GLCallback {
-    void draw(ICLDrawWidget3D *) override {
-      if (glRenderer) glRenderer->render(scene, 0);
-    }
-  };
-  DrawHandle3D gl = gui["gl"];
-  gl->link(new ModernGLCallback());
 }
 
 void run() {
@@ -478,6 +470,12 @@ void run() {
   renderer->setDenoising(false);
   renderer->setExposure(exposure);
   renderer->setBrightness(brightness);
+  if (glRenderer) {
+    // GL exposure: slider 100% → 1.0 (reasonable default with intensity=5 lights)
+    glRenderer->setExposure(exposure);
+    glRenderer->setAmbient(brightness);
+    glRenderer->setDebugMode(gui["glDebug"].as<ComboHandle>().getSelectedIndex());
+  }
 
   // Material preset switching — applies to loaded meshes only (not checker tiles)
   static int lastMaterial = -1;
@@ -556,7 +554,14 @@ void run() {
   draw->text(buf, 10, 20, 10);
   draw->render();
 
+  // Render GL using modern pipeline (link callback + trigger repaint each frame)
+  static struct ModernGLCallback : public ICLDrawWidget3D::GLCallback {
+    void draw(ICLDrawWidget3D *) override {
+      if (glRenderer) glRenderer->render(scene, 0);
+    }
+  } modernCB;
   DrawHandle3D gl = gui["gl"];
+  gl->link(&modernCB);
   gl.render();
 
   gui["info"] = std::string(buf);

@@ -13,7 +13,6 @@
 #include <ICLCore/CCFunctions.h>
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>
-#include <OpenGL/gl3.h>
 #else
 #include <GL/glew.h>
 #endif
@@ -71,6 +70,7 @@ uniform int  uNumLights;
 uniform vec4 uLightPos[8];
 uniform vec4 uLightColor[8];
 uniform vec4 uAmbientLight;
+uniform float uExposure;
 uniform int uDebugMode;
 
 varying vec3 vViewPos;
@@ -93,16 +93,13 @@ void main() {
     vec3 result = uAmbientLight.rgb * albedo.rgb;
 
     for (int i = 0; i < uNumLights && i < 8; i++) {
-        vec3 lightDir = uLightPos[i].xyz - vViewPos;
-        float dist = length(lightDir);
-        vec3 L = lightDir / dist;
+        vec3 L = normalize(uLightPos[i].xyz - vViewPos);
         vec3 H = normalize(L + V);
 
         float NdotL = max(dot(N, L), 0.0);
         float NdotH = max(dot(N, H), 0.0);
 
-        float atten = 1.0 / (1.0 + 0.0001 * dist * dist);
-        vec3 lightCol = uLightColor[i].rgb * uLightColor[i].w * atten;
+        vec3 lightCol = uLightColor[i].rgb;
 
         vec3 diffuse = albedo.rgb * NdotL;
         float specPow = pow(NdotH, shininess);
@@ -113,11 +110,30 @@ void main() {
     }
 
     result += uEmissive.rgb;
+    result *= uExposure;
+    result = clamp(result, 0.0, 1.0);
 
-    // Debug: visualize normals when uDebugMode=1
-    if (uDebugMode == 1) {
-      gl_FragColor = vec4(N * 0.5 + 0.5, 1.0);
-      return;
+    // Debug modes
+    if (uDebugMode == 1) { gl_FragColor = vec4(N * 0.5 + 0.5, 1.0); return; }  // normals
+    if (uDebugMode == 2) { gl_FragColor = albedo; return; }                      // albedo/texture
+    if (uDebugMode == 3) { gl_FragColor = vec4(vTexCoord, 0.0, 1.0); return; }  // UVs
+    if (uDebugMode == 5) {                                                       // max NdotL grayscale
+      float maxNdL = 0.0;
+      for (int i = 0; i < uNumLights && i < 8; i++) {
+        vec3 L2 = normalize(uLightPos[i].xyz - vViewPos);
+        maxNdL = max(maxNdL, dot(N, L2));
+      }
+      gl_FragColor = vec4(vec3(maxNdL), 1.0); return;
+    }
+    if (uDebugMode == 4) {                                                       // lighting only (white albedo)
+      vec3 whiteResult = uAmbientLight.rgb;
+      for (int i = 0; i < uNumLights && i < 8; i++) {
+        vec3 L2 = normalize(uLightPos[i].xyz - vViewPos);
+        float NdL = max(dot(N, L2), 0.0);
+        whiteResult += uLightColor[i].rgb * NdL;
+      }
+      whiteResult *= uExposure;
+      gl_FragColor = vec4(clamp(whiteResult, 0.0, 1.0), 1.0); return;
     }
     gl_FragColor = vec4(result, albedo.a);
 }
@@ -274,9 +290,14 @@ struct GLGeometryCache {
 
     const auto &img8u = img.as<icl8u>();
     int w = img8u.getWidth(), h = img8u.getHeight(), ch = img8u.getChannels();
-    std::vector<icl8u> rgba(w * h * 4, 255);
-    if (ch >= 3) {
-      planarToInterleaved(&img8u, rgba.data());
+
+    // Always upload as RGBA for simplicity
+    std::vector<icl8u> rgba(w * h * 4);
+    for (int i = 0; i < w * h; i++) {
+      rgba[i*4+0] = (ch > 0) ? img8u.getData(0)[i] : 0;
+      rgba[i*4+1] = (ch > 1) ? img8u.getData(1)[i] : 0;
+      rgba[i*4+2] = (ch > 2) ? img8u.getData(2)[i] : 0;
+      rgba[i*4+3] = (ch > 3) ? img8u.getData(3)[i] : 255;
     }
 
     glGenTextures(1, &baseColorTex);
@@ -285,8 +306,7 @@ struct GLGeometryCache {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, ch >= 4 ? GL_RGBA : GL_RGB,
-                 w, h, 0, ch >= 4 ? GL_RGBA : GL_RGB,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, rgba.data());
     glBindTexture(GL_TEXTURE_2D, 0);
   }
@@ -336,6 +356,9 @@ static GLuint linkProgram(GLuint vs, GLuint fs) {
 struct SceneRendererGL::Data {
   GLuint program = 0;
   bool shaderReady = false;
+  float exposure = 1.0f;
+  float ambient = 0.1f;
+  int debugMode = 0;
   std::unordered_map<const SceneObject*, std::unique_ptr<GLGeometryCache>> geometryCache;
 
   void setUniformMat4(const char *name, const Mat &m) {
@@ -367,6 +390,10 @@ SceneRendererGL::~SceneRendererGL() {
   delete m_data;
 }
 
+void SceneRendererGL::setExposure(float e) { m_data->exposure = e; }
+void SceneRendererGL::setAmbient(float a) { m_data->ambient = a; }
+void SceneRendererGL::setDebugMode(int mode) { m_data->debugMode = mode; }
+
 void SceneRendererGL::ensureShaderCompiled() {
   if (m_data->shaderReady) return;
   m_data->shaderReady = true;
@@ -392,6 +419,23 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   Mat projGL = cam.getProjectionMatrixGL();
   Mat viewGL = cam.getCSTransformationMatrixGL();
 
+  // Set viewport to match camera aspect ratio (centered in widget)
+  GLint widgetVP[4];
+  glGetIntegerv(GL_VIEWPORT, widgetVP);
+  int ww = widgetVP[2], wh = widgetVP[3];
+  const Size &chip = cam.getRenderParams().chipSize;
+  float camAR = (float)chip.width / chip.height;
+  float widgetAR = (float)ww / wh;
+  int vpX = 0, vpY = 0, vpW = ww, vpH = wh;
+  if (widgetAR > camAR) {
+    vpW = (int)(wh * camAR);
+    vpX = (ww - vpW) / 2;
+  } else {
+    vpH = (int)(ww / camAR);
+    vpY = (wh - vpH) / 2;
+  }
+  glViewport(vpX, vpY, vpW, vpH);
+
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
   glDisable(GL_CULL_FACE);
@@ -407,28 +451,46 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   m_data->setUniformMat4("uProjectionMatrix", projGL);
   m_data->setUniformMat4("uViewMatrix", viewGL);
 
-  // Lights: transform to view space using row-vector convention
+  // Lights: transform to view space
+  // Use base uniform location + offset (more reliable than "name[i]" on some drivers)
+  GLint locLightPos = glGetUniformLocation(m_data->program, "uLightPos");
+  GLint locLightColor = glGetUniformLocation(m_data->program, "uLightColor");
   int numLights = 0;
+  static bool lightsPrinted = false;
+  float intensity = 0.7f;
   for (int i = 0; i < 8; i++) {
     const auto &light = scene.getLight(i);
     if (!light.isOn()) continue;
 
     Vec wp = light.getPosition();
-    // Column-vector: viewPos = V * worldPos (same as shader does)
     Vec vp = viewGL * wp;
-
     auto d = light.getDiffuse();
-    char buf[64];
-    snprintf(buf, sizeof(buf), "uLightPos[%d]", numLights);
-    m_data->setUniformVec4(buf, vp[0], vp[1], vp[2], 1);
-    snprintf(buf, sizeof(buf), "uLightColor[%d]", numLights);
-    m_data->setUniformVec4(buf, d[0]/255.f, d[1]/255.f, d[2]/255.f, 1.f);
+
+    if (!lightsPrinted) {
+      fprintf(stderr, "[ModernGL] Light %d: world=(%.1f,%.1f,%.1f) view=(%.1f,%.1f,%.1f) color=(%.2f,%.2f,%.2f)*%.1f\n",
+              i, wp[0], wp[1], wp[2], vp[0], vp[1], vp[2],
+              d[0]/255.f, d[1]/255.f, d[2]/255.f, intensity);
+    }
+
+    if (locLightPos >= 0)
+      glUniform4f(locLightPos + numLights, vp[0], vp[1], vp[2], 1);
+    if (locLightColor >= 0)
+      glUniform4f(locLightColor + numLights, d[0]/255.f * intensity, d[1]/255.f * intensity,
+                  d[2]/255.f * intensity, 1.0f);
     numLights++;
   }
+  if (!lightsPrinted) {
+    fprintf(stderr, "[ModernGL] %d lights, locPos=%d locColor=%d exposure=%.2f\n",
+            numLights, locLightPos, locLightColor, m_data->exposure);
+    fflush(stderr);
+  }
+  lightsPrinted = true;
   m_data->setUniformInt("uNumLights", numLights);
-  m_data->setUniformVec4("uAmbientLight", 0.15f, 0.17f, 0.2f, 1);
+  float a = m_data->ambient;
+  m_data->setUniformVec4("uAmbientLight", a, a * 1.05f, a * 1.15f, 1);
   m_data->setUniformInt("uBaseColorMap", 0);
-  m_data->setUniformInt("uDebugMode", 0);  // 0=normal shading, 1=show normals
+  m_data->setUniformFloat("uExposure", m_data->exposure);
+  m_data->setUniformInt("uDebugMode", m_data->debugMode);
 
   for (int i = 0; i < scene.getObjectCount(); i++) {
     const SceneObject *obj = scene.getObject(i);
@@ -448,7 +510,15 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
     auto mat = obj->getMaterial();
     if (mat && !mat->baseColorMap.isNull()) {
       cache->uploadBaseColorMap(mat->baseColorMap);
+      fprintf(stderr, "[ModernGL] Object %p: uploaded baseColorMap tex=%u (%dx%d)\n",
+              (void*)obj, cache->baseColorTex,
+              mat->baseColorMap.getWidth(), mat->baseColorMap.getHeight());
     }
+    fprintf(stderr, "[ModernGL] Object %p: %d indices, tex=%u, mat=%s baseColor=(%.2f,%.2f,%.2f)\n",
+            (void*)obj, cache->numIndices, cache->baseColorTex,
+            mat ? mat->name.c_str() : "none",
+            mat ? mat->baseColor[0] : 0, mat ? mat->baseColor[1] : 0, mat ? mat->baseColor[2] : 0);
+    fflush(stderr);
   }
 
   if (cache->numIndices == 0) return;
@@ -462,8 +532,13 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
                             mat->baseColor[2], mat->baseColor[3]);
     m_data->setUniformFloat("uMetallic", mat->metallic);
     m_data->setUniformFloat("uRoughness", mat->roughness);
-    m_data->setUniformVec4("uEmissive", mat->emissive[0], mat->emissive[1],
-                            mat->emissive[2], 0);
+    // Only apply emissive factor when there's no emissive texture map
+    // (with a map, the factor is a multiplier for the texture, not standalone)
+    bool hasEmissiveMap = !mat->emissiveMap.isNull();
+    float em0 = hasEmissiveMap ? 0 : mat->emissive[0];
+    float em1 = hasEmissiveMap ? 0 : mat->emissive[1];
+    float em2 = hasEmissiveMap ? 0 : mat->emissive[2];
+    m_data->setUniformVec4("uEmissive", em0, em1, em2, 0);
   } else {
     m_data->setUniformVec4("uBaseColor", 0.8f, 0.8f, 0.8f, 1.0f);
     m_data->setUniformFloat("uMetallic", 0.0f);

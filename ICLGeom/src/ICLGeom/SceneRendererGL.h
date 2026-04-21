@@ -38,6 +38,15 @@ namespace icl::geom {
     /// Render the scene using the modern pipeline
     void render(const Scene &scene, int camIndex);
 
+    /// Set exposure multiplier (default 1.0)
+    void setExposure(float e);
+
+    /// Set ambient light level (0-1, default 0.1)
+    void setAmbient(float a);
+
+    /// Set debug mode: 0=shaded, 1=normals, 2=albedo, 3=UVs, 4=lighting only
+    void setDebugMode(int mode);
+
   private:
     void ensureShaderCompiled();
     void renderObject(const SceneObject *obj, const math::FixedMatrix<float,4,4> &viewMatrix);

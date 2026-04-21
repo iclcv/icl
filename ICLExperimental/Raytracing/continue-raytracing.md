@@ -446,45 +446,89 @@ and Z-up scenes. That code is in git history at commit 47ee811d0.
   (glTF pre-splits at seams), passed through addTriangle(..., ta, tb, tc)
 - ✅ **Verified: DamagedHelmet.glb renders with full PBR textures**
 
+### Session 9b — Modern GL Renderer (SceneRendererGL)
+
+**Status: Working but lighting intensity needs tuning**
+
+Built a new VBO/shader-based GL renderer (`ICLGeom/src/ICLGeom/SceneRendererGL.h/.cpp`)
+alongside the legacy fixed-function pipeline. See `ICLGeom/gl-pipeline-rework-plan.md` for
+the full rework plan.
+
+**What works:**
+- ✅ GLSL 1.20 vertex/fragment shaders (compatibility profile for macOS)
+- ✅ VBO/EBO per SceneObject via GLGeometryCache (no glBegin/glEnd)
+- ✅ Camera matrices from `getProjectionMatrixGL()`/`getCSTransformationMatrixGL()`
+  — geometry silhouette matches legacy pipeline pixel-perfectly
+- ✅ baseColorMap textures render correctly (DamagedHelmet shows full texture)
+- ✅ Per-pixel Blinn-Phong lighting with up to 8 lights
+- ✅ Normals correct (verified via debug normal visualization)
+- ✅ NdotL correct (verified via debug grayscale visualization)
+- ✅ Interactive debug mode selector (Shaded/Normals/Albedo/UVs/Lighting Only/NdotL)
+- ✅ Exposure + ambient sliders wired to GL renderer
+- ✅ Viewport aspect ratio correction (letterboxing)
+- ✅ Emissive suppressed when emissiveMap exists (prevents white blowout)
+- ✅ gl-renderer-test demo (coordinate axes, legacy vs modern side-by-side)
+
+**Current issue — light uniform array:**
+The `uLightColor[i]` uniform array values are not reaching the shader. Hardcoded
+`vec3(5.0)` in the shader works, but setting via `glGetUniformLocation("uLightColor[0]")`
++ `glUniform4f` does not. Switched to base-location approach
+(`glGetUniformLocation("uLightColor")` + offset `loc + i`). Need to verify by checking
+the `locColor=` debug output on next run. The `.w` component of vec4 uniforms also
+had issues — switched to baking intensity into RGB.
+
+**Key ICL matrix convention discovery:**
+- `FixedMatrix::operator()(col, row)` — column-first indexing!
+- Data layout: `data[col + COLS*row]` — row-major in math terms
+- `glLoadMatrixf(M.transp().data())` loads the math matrix M into GL
+- `glUniformMatrix4fv(loc, 1, GL_TRUE, M.data())` gives the shader the same M
+- Standard `mat * vec` in GLSL then works as column-vector multiply
+- Camera::getProjectionMatrixGL() and getCSTransformationMatrixGL() produce
+  standard GL matrices (translation in column 3) — no convention mismatch
+
+**Source layout:**
+```
+ICLGeom/src/ICLGeom/
+  SceneRendererGL.h/.cpp    ── Modern GL renderer (GLSL + VBO)
+  gl-pipeline-rework-plan.md ── Full rework plan document
+ICLExperimental/Raytracing/demos/
+  gl-renderer-test.cpp      ── Side-by-side legacy vs modern test
+  cycles-scene-viewer.cpp   ── Wired to use SceneRendererGL for GL pane
+```
+
 ### Next Steps
 
-#### Cycles XML Scene Loader (Low Priority)
+#### GL Renderer — Immediate
 
-**Goal:** Load Cycles' native XML format for testing against reference scenes.
-The standalone `cycles` executable already renders these — useful for validation.
+1. **Fix light uniform array** — verify `locColor` is not -1, debug why array uniforms
+   don't work. May need to set each element individually via `glGetUniformLocation("uLightColor[0]")`
+   with the brackets, or use a UBO.
+2. **Shadow mapping** — depth FBO from light, `sampler2DShadow` with hardware PCF
+3. **Normal map support** — sample normalMap in fragment shader, TBN matrix
+4. **Metallic-roughness map** — sample metallicRoughnessMap for per-pixel PBR params
 
-**Available:** `3rdparty/cycles/src/app/cycles_xml.cpp` contains the full XML parser.
-Could either: (a) call it directly from our code, or (b) port scenes to glTF.
+#### Cycles — Deferred
 
-#### Advanced Features (Deferred)
-
-- **QEM mesh decimation** — Quadric Error Metrics for quality-preserving simplification
-- **HDR environment maps** — `setBackground(filename)` API loading .hdr/.exr
-- **Area/spot/sun lights** — extend syncLights beyond point lights
-- **LOD system** — pre-compute 3-4 levels, switch by camera distance
-- **Glass/transmission** — add `transmissionWeight` to Material for glass BSDF
-- **OpenGL texture rendering** — forward Material texture maps to GL via GLImg
-  (currently only Cycles path uses them)
+- Cycles XML scene loader (low priority)
+- QEM mesh decimation
+- HDR environment maps, area/spot/sun lights, LOD, glass/transmission
 
 ### Test Models
 
 **OBJ (working):**
 - Stanford bunny: `scenes/bunny.obj` (35K verts)
-- More at: github.com/alecjacobson/common-3d-test-models (dragon, buddha, teapot)
 
-**glTF/GLB (working with textures):**
-- DamagedHelmet.glb — verified, 5 PBR textures render correctly
-- Sketchfab: thousands of free downloadable GLB models
+**glTF/GLB (working with textures in Cycles + GL):**
+- DamagedHelmet.glb — verified in both renderers
 - glTF sample models: github.com/KhronosGroup/glTF-Sample-Assets
-  - FlightHelmet.glb — complex multi-material
-  - Sponza.glb — architectural interior, stress test
 
 ### Known Limitations
 
-- Lights created once per session (no dynamic light position updates in Cycles)
+- GL light uniform array not reaching shader (workaround: base location + offset, untested)
+- Lights created once per session in Cycles (no dynamic updates)
 - Only point lights (no spot/area/sun)
 - OIDN denoising too slow for interactive use
-- Vertex clustering decimation is crude (QEM would preserve features better)
-- OBJ loader: no MTL material parsing (uses default material)
+- OBJ loader: no MTL material parsing
 - No glass/transmission material support
-- PolygonPrimitive doesn't carry UV indices yet (only triangle/quad)
+- PolygonPrimitive doesn't carry UV indices yet
+- Legacy "improved shading" system incompatible with Material textures (to be replaced)
