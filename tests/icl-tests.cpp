@@ -9,9 +9,21 @@
 #include <thread>
 #include <algorithm>
 
+#ifdef ICL_HAVE_QT
+#include <QtCore/QCoreApplication>
+#endif
+
 using namespace icl::utils;
 
 int main(int argc, char **argv){
+#ifdef ICL_HAVE_QT
+  // QCoreApplication needed by tests that spin QThreads with event loops
+  // (e.g. the WS loopback tests in test-quick-io.cpp). We don't enter
+  // exec() — each test owns its own QThread+exec — but QObject machinery
+  // requires a QCoreApplication to exist somewhere in the process.
+  QCoreApplication qcoreApp(argc, argv);
+  (void)qcoreApp;
+#endif
   pa_init(argc, argv,
     "-list|-l "
     "-filter|-f(pattern=*) "
