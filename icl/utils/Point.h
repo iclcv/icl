@@ -49,6 +49,9 @@ namespace icl::utils {
       constexpr const Derived &self() const { return static_cast<const Derived&>(*this); }
 
       public:
+      /// zero-initialized value (element-wise T(0))
+      inline static const Derived null{};
+
       /// true iff both elements are zero
       constexpr bool isNull() const {
         return self()[0] == T(0) && self()[1] == T(0);
@@ -153,8 +156,7 @@ namespace icl::utils {
     /// required by BiTuple's cross-type conversion helpers
     template<typename U> using rebind = PointT<U>;
 
-    /// null point (x=0, y=0)
-    inline static const PointT null{};
+    // `null` is inherited from BiTuple (= PointT{}).
 
     /// default constructor
     constexpr PointT() = default;

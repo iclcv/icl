@@ -44,8 +44,7 @@ namespace icl::utils {
     /// required by BiTuple's cross-type conversion helpers
     template<typename U> using rebind = SizeT<U>;
 
-    /// null size (0, 0)
-    inline static const SizeT null{};
+    // `null` is inherited from BiTuple (= SizeT{}).
 
     // ---------- Named screen / video resolutions ----------
     // Defined for every instantiation — SizeT<float>::VGA is
