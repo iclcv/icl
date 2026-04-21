@@ -70,6 +70,10 @@ uniform int   uNumLights;
 uniform vec4  uLightPos[8];
 uniform vec3  uLightColor[8];
 
+uniform int uHasBaseColorMap;
+uniform sampler2D uBaseColorMap;
+uniform int uDebugMode;
+
 in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
@@ -80,7 +84,11 @@ void main() {
     vec3 N = normalize(vNormal);
     if (!gl_FrontFacing) N = -N;
 
-    vec3 albedo = uBaseColor.rgb;
+    vec4 baseColor = uBaseColor;
+    if (uHasBaseColorMap != 0) {
+        baseColor *= texture(uBaseColorMap, vTexCoord);
+    }
+    vec3 albedo = baseColor.rgb;
     vec3 V = normalize(uCameraPos - vWorldPos);
 
     // Shininess from roughness (clamped to avoid invisible pinpoint highlights)
@@ -112,7 +120,29 @@ void main() {
     result += uEmissive.rgb;
     result *= uExposure;
     result = clamp(result, 0.0, 1.0);
-    FragColor = vec4(result, uBaseColor.a);
+
+    // Debug modes: 0=shaded, 1=normals, 2=albedo, 3=UVs, 4=lighting only, 5=NdotL
+    if (uDebugMode == 1) { FragColor = vec4(N * 0.5 + 0.5, 1.0); return; }
+    if (uDebugMode == 2) { FragColor = baseColor; return; }
+    if (uDebugMode == 3) { FragColor = vec4(vTexCoord, 0.0, 1.0); return; }
+    if (uDebugMode == 4) {
+        vec3 whiteResult = vec3(uAmbient);
+        for (int i = 0; i < uNumLights; i++) {
+            vec3 L2 = normalize(uLightPos[i].xyz - vWorldPos);
+            whiteResult += uLightColor[i] * max(dot(N, L2), 0.0);
+        }
+        FragColor = vec4(clamp(whiteResult * uExposure, 0.0, 1.0), 1.0); return;
+    }
+    if (uDebugMode == 5) {
+        float maxNdL = 0.0;
+        for (int i = 0; i < uNumLights; i++) {
+            vec3 L2 = normalize(uLightPos[i].xyz - vWorldPos);
+            maxNdL = max(maxNdL, dot(N, L2));
+        }
+        FragColor = vec4(vec3(maxNdL), 1.0); return;
+    }
+
+    FragColor = vec4(result, baseColor.a);
 }
 )";
 
@@ -330,6 +360,9 @@ struct SceneRendererGL::Data {
   GLint locAmbient = -1;
   GLint locExposure = -1;
   GLint locCameraPos = -1;
+  GLint locHasBaseColorMap = -1;
+  GLint locBaseColorMap = -1;
+  GLint locDebugMode = -1;
   GLint locNumLights = -1;
   GLint locLightPos[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
   GLint locLightColor[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
@@ -345,6 +378,9 @@ struct SceneRendererGL::Data {
     locAmbient = glGetUniformLocation(program, "uAmbient");
     locExposure = glGetUniformLocation(program, "uExposure");
     locCameraPos = glGetUniformLocation(program, "uCameraPos");
+    locHasBaseColorMap = glGetUniformLocation(program, "uHasBaseColorMap");
+    locBaseColorMap = glGetUniformLocation(program, "uBaseColorMap");
+    locDebugMode = glGetUniformLocation(program, "uDebugMode");
     locNumLights = glGetUniformLocation(program, "uNumLights");
     for (int i = 0; i < 8; i++) {
       char name[32];
@@ -433,6 +469,7 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   m_data->setUniformMat4(m_data->locViewMatrix, viewGL);
   glUniform1f(m_data->locAmbient, m_data->ambient);
   glUniform1f(m_data->locExposure, m_data->exposure);
+  glUniform1i(m_data->locDebugMode, m_data->debugMode);
 
   // Camera position in world space (for specular)
   Vec camPos = cam.getPosition();
@@ -478,10 +515,9 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
   if (!cache) {
     cache = std::make_unique<GLGeometryCache>();
     cache->build(obj);
-    static bool firstObj = true;
-    if (firstObj) {
-      fprintf(stderr, "[SceneRendererGL] First object: %d indices\n", cache->numIndices);
-      firstObj = false;
+    auto mat = obj->getMaterial();
+    if (mat && !mat->baseColorMap.isNull()) {
+      cache->uploadBaseColorMap(mat->baseColorMap);
     }
   }
 
@@ -508,9 +544,20 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
     glUniform4f(m_data->locEmissive, 0, 0, 0, 0);
   }
 
+  // Texture binding
+  bool hasTexture = cache->baseColorTex != 0;
+  glUniform1i(m_data->locHasBaseColorMap, hasTexture ? 1 : 0);
+  glUniform1i(m_data->locBaseColorMap, 0);
+  if (hasTexture) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, cache->baseColorTex);
+  }
+
   glBindVertexArray(cache->vao);
   glDrawElements(GL_TRIANGLES, cache->numIndices, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
+
+  if (hasTexture) glBindTexture(GL_TEXTURE_2D, 0);
 
   for (int c = 0; c < obj->getChildCount(); c++) {
     renderObject(obj->getChild(c), viewMatrix);
