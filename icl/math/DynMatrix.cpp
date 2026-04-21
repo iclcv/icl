@@ -191,7 +191,7 @@ namespace icl::math {
     DynMatrix d(rows(),cols());
     for(unsigned int x=0;x<cols();++x)
       for(unsigned int y=0;y<rows();++y)
-        d(y,x) = (*this)(x,y);
+        d.index_yx(x, y) = (*this).index_yx(y, x);
     return d;
   }
 
@@ -209,7 +209,7 @@ namespace icl::math {
   DynMatrix<T> DynMatrix<T>::diag() const{
     ICLASSERT_RETURN_VAL(cols()==rows(),DynMatrix<T>());
     DynMatrix<T> d(1,rows());
-    for(unsigned int i=0;i<rows();++i) d[i] = (*this)(i,i);
+    for(unsigned int i=0;i<rows();++i) d[i] = (*this).index_yx(i, i);
     return d;
   }
 
@@ -225,9 +225,9 @@ namespace icl::math {
   DynMatrix<T> DynMatrix<T>::cross(const DynMatrix<T> &x, const DynMatrix<T> &y){
     if(x.cols()==1 && y.cols()==1 && x.rows()==3 && y.rows()==3){
       DynMatrix<T> r(1,x.rows());
-      r(0,0) = x(0,1)*y(0,2)-x(0,2)*y(0,1);
-      r(0,1) = x(0,2)*y(0,0)-x(0,0)*y(0,2);
-      r(0,2) = x(0,0)*y(0,1)-x(0,1)*y(0,0);
+      r.index_yx(0, 0) = x.index_yx(1, 0)*y.index_yx(2, 0)-x.index_yx(2, 0)*y.index_yx(1, 0);
+      r.index_yx(1, 0) = x.index_yx(2, 0)*y.index_yx(0, 0)-x.index_yx(0, 0)*y.index_yx(2, 0);
+      r.index_yx(2, 0) = x.index_yx(0, 0)*y.index_yx(1, 0)-x.index_yx(1, 0)*y.index_yx(0, 0);
       return r;
     }else{
       ICLASSERT_RETURN_VAL(x.rows() == 3 && y.rows() == 3,DynMatrix<T>());
@@ -327,7 +327,7 @@ namespace icl::math {
 
         T d = T(1);
         for(unsigned int i = 0; i < order; i++) {
-          d *= A(i, i); // diagonal of U
+          d *= A.index_yx(i, i); // diagonal of U
           if(ipiv[i] != (int)(i + 1)) d = -d; // permutation sign
         }
         return d;
@@ -360,7 +360,7 @@ namespace icl::math {
     std::fill(R.begin(), R.end(), T(0));
     for(int i = 0; i < mn; i++)
       for(int j = i; j < n; j++)
-        R(j, i) = A(j, i);
+        R.index_yx(i, j) = A.index_yx(i, j);
 
     // Form Q from Householder reflectors (m×n)
     info = orgqrImpl->apply(m, n, mn, A.data(), n, tau.data());
@@ -376,7 +376,7 @@ namespace icl::math {
     DynMatrix<T> A_(rows(),cols());
     for (unsigned int i = 0; i<rows(); i++){
       for (unsigned int j = 0; j<rows(); j++){
-        A_(i,j) = (*this)(j,rows()-i-1);
+        A_.index_yx(j, i) = (*this).index_yx(rows()-i-1, j);
       }
     }
 
@@ -392,14 +392,14 @@ namespace icl::math {
     // get R by reflecting all entries on the second diagonal
     for (unsigned int i = 0; i<rows(); i++){
       for (unsigned int j = 0; j<rows(); j++){
-        R(i,j) = R_(rows()-1-j,rows()-1-i);
+        R.index_yx(j, i) = R_.index_yx(rows()-1-i, rows()-1-j);
       }
     }
 
     // get Q by transposing Q_ and reversing all rows
     for (unsigned int i = 0; i<rows(); i++){
       for (unsigned int j = 0; j<rows(); j++){
-        Q(i,j) = Q_(rows()-1-j,i);
+        Q.index_yx(j, i) = Q_.index_yx(i, rows()-1-j);
       }
     }
   }
@@ -447,9 +447,9 @@ namespace icl::math {
     L.setBounds(m, m);
     std::fill(L.begin(), L.end(), T(0));
     for(int i = 0; i < m; i++) {
-      L(i, i) = T(1);
+      L.index_yx(i, i) = T(1);
       for(int j = 0; j < std::min(i, mn); j++)
-        L(j, i) = A(j, i);
+        L.index_yx(i, j) = A.index_yx(i, j);
     }
 
     // Extract U (upper triangular, m×n)
@@ -457,7 +457,7 @@ namespace icl::math {
     std::fill(U.begin(), U.end(), T(0));
     for(int i = 0; i < mn; i++)
       for(int j = i; j < n; j++)
-        U(j, i) = A(j, i);
+        U.index_yx(i, j) = A.index_yx(i, j);
   }
 
   template<class T>
@@ -478,7 +478,7 @@ namespace icl::math {
     DynMatrix<T> B(nrhs, mx, T(0));
     for(int i = 0; i < m; i++)
       for(int j = 0; j < nrhs; j++)
-        B(j, i) = b(j, i);
+        B.index_yx(i, j) = b.index_yx(i, j);
 
     std::vector<T> S(std::min(m, n));
     int rank;
@@ -492,7 +492,7 @@ namespace icl::math {
     DynMatrix<T> x(nrhs, n);
     for(int i = 0; i < n; i++)
       for(int j = 0; j < nrhs; j++)
-        x(j, i) = B(j, i);
+        x.index_yx(i, j) = B.index_yx(i, j);
 
     return x;
   }
@@ -525,7 +525,7 @@ namespace icl::math {
 
     DynMatrix<T> Sinv(mn, mn, T(0));
     for(int i = 0; i < mn; ++i)
-      Sinv(i, i) = (std::fabs(S[i]) > zeroThreshold) ? T(1) / S[i] : T(0);
+      Sinv.index_yx(i, i) = (std::fabs(S[i]) > zeroThreshold) ? T(1) / S[i] : T(0);
 
     // pseudoInverse = Vt^T * Sinv * U^T
     DynMatrix<T> temp(mn, c);
@@ -568,7 +568,7 @@ namespace icl::math {
     // (C++ backend stores them as pv[i][j] → A[i*lda+j], matching DynMatrix layout)
     for(int i = 0; i < n; ++i)
       for(int j = 0; j < n; ++j)
-        eigenvectors(j, i) = A(i, j);
+        eigenvectors.index_yx(i, j) = A.index_yx(j, i);
   }
 
   template<class T>
@@ -580,7 +580,7 @@ namespace icl::math {
   template<class T>
   DynMatrix<T> DynMatrix<T>::id(unsigned int dim) {
     DynMatrix M(dim, dim, T(0));
-    for(unsigned int i = 0; i < dim; ++i) M(i, i) = 1;
+    for(unsigned int i = 0; i < dim; ++i) M.index_yx(i, i) = 1;
     return M;
   }
 
@@ -703,7 +703,7 @@ namespace icl::math {
     for(unsigned int i=0;i<m.rows();++i){
       s << "| ";
       for(unsigned int j=0;j<m.cols();++j){
-        icl_to_stream<T>(s,m(j,i)) << " ";
+        icl_to_stream<T>(s,m.index_yx(i, j)) << " ";
       }
       s << "|";
       if(i<m.rows()-1){
@@ -722,7 +722,7 @@ namespace icl::math {
         s.unget();
       }
       for(unsigned int j=0;j<m.cols();++j){
-        icl_from_stream<T>(s,m(j,i));
+        icl_from_stream<T>(s,m.index_yx(i, j));
         s >> c;
         if( c != ',') s.unget();
       }
@@ -784,7 +784,7 @@ namespace icl::math {
     if(!s.good()) throw ICLException("DynMatrix::saveCSV:");
     for(unsigned int y=0;y<rows();++y){
       for(unsigned int x=0;x<cols();++x){
-        icl_to_stream(s, (*this)(x,y)) << ',';
+        icl_to_stream(s, (*this).index_yx(y, x)) << ',';
       }
       s << std::endl;
     }

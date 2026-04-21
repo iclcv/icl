@@ -12,15 +12,15 @@ namespace icl{
      static Mat3 create_mapping_matrix(const Point32f &a, const Point32f &b,
                                               const Point32f &c, const Point32f &d){
         DynMatrix<float> M(3,3), B(1,3);
-        M(0,0) = a.x;
-        M(1,0) = b.x;
-        M(2,0) = c.x;
+        M.index_yx(0, 0) = a.x;
+        M.index_yx(0, 1) = b.x;
+        M.index_yx(0, 2) = c.x;
 
-        M(0,1) = a.y;
-        M(1,1) = b.y;
-        M(2,1) = c.y;
+        M.index_yx(1, 0) = a.y;
+        M.index_yx(1, 1) = b.y;
+        M.index_yx(1, 2) = c.y;
 
-        M(0,2) = M(1,2) = M(2,2) = 1;
+        M.index_yx(2, 0) = M.index_yx(2, 1) = M.index_yx(2, 2) = 1;
 
         B[0] = d.x;
         B[1] = d.y;

@@ -390,15 +390,7 @@ namespace icl::math {
       return begin()[col+cols()*row];
     }
 
-    /// Element access operator (legacy col,row — being migrated to index_yx)
-    T &operator()(unsigned int col,unsigned int row){
-      return begin()[col+cols()*row];
-    }
-
-    /// Element access operator (const, legacy col,row)
-    const T &operator() (unsigned int col,unsigned int row) const{
-      return begin()[col+cols()*row];
-    }
+    // operator()(col,row) REMOVED — use index_yx(row,col) instead
 
     /// Element access index save (with exception if index is invalid)
     T &at(unsigned int col,unsigned int row){
@@ -815,7 +807,7 @@ namespace icl::math {
       FixedMatrix<T,NEW_WIDTH,NEW_HEIGHT> M(init);
       for(unsigned int x=0;x<COLS && x < NEW_WIDTH; ++x){
         for(unsigned int y=0;y<ROWS && y < NEW_HEIGHT; ++y){
-          M(x,y) = (*this)(x,y);
+          M.index_yx(y, x) = (*this).index_yx(y, x);
         }
       }
       return M;
@@ -1038,9 +1030,9 @@ namespace icl::math {
   template<class T>
   inline FixedMatrix<T, 4, 4> create_hom_4x4_trans(T dx, T dy, T dz){
     FixedMatrix<T,4,4> m = FixedMatrix<T,4,4>::id();
-    m(3,0)=dx;
-    m(3,1)=dy;
-    m(3,2)=dz;
+    m.index_yx(0, 3)=dx;
+    m.index_yx(1, 3)=dy;
+    m.index_yx(2, 3)=dz;
     return m;
   }
 

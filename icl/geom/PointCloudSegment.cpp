@@ -122,7 +122,7 @@ namespace icl::geom {
           const math::Vec3& mc = child->mean;
           for(int y=0;y<3;++y){
             for(int x=0;x<3;++x){
-              xx(x,y) += mc[x] * mc[y];
+              xx.index_yx(y, x) += mc[x] * mc[y];
             }
           }
           // update moments + mean
@@ -146,7 +146,7 @@ namespace icl::geom {
           // compute moments
           for(int y=0;y<3;++y){
             for(int x=0;x<3;++x){
-              C(x,y) += v[x] * v[y];
+              C.index_yx(y, x) += v[x] * v[y];
             }
           }
           // compute mean
@@ -164,7 +164,7 @@ namespace icl::geom {
       // covariance = <xx^t> - mm^t
       for(int y=0;y<3;++y){
         for(int x=0;x<3;++x){
-          C(x,y) -= m[x] * m[y];
+          C.index_yx(y, x) -= m[x] * m[y];
         }
       }
       this->covariance = C;

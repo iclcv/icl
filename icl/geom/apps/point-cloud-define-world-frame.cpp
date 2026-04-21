@@ -106,9 +106,9 @@ void mouse(const MouseEvent &e){
 
       // ensure right handness
       if(evecs.det() < 0){
-        evecs(2,0) *= -1;
-        evecs(2,1) *= -1;
-        evecs(2,2) *= -1;
+        evecs.index_yx(0, 2) *= -1;
+        evecs.index_yx(1, 2) *= -1;
+        evecs.index_yx(2, 2) *= -1;
       }
       Vec3 n = scene.getCamera(0).getNorm().part<0,0,1,3>();
       Vec3 z = evecs.transp().col(2);

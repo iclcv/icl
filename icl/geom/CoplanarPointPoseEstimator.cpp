@@ -229,7 +229,7 @@ namespace icl::geom {
                                  const Point32f *_M,
                                  const Point32f *_I,
                                  int n){
-    const float &A = P(0,0), &B = P(1,0), &C = P(2,0), &D = P(1,1), &E = P(2,1);
+    const float &A = P.index_yx(0, 0), &B = P.index_yx(0, 1), &C = P.index_yx(0, 2), &D = P.index_yx(1, 1), &E = P.index_yx(1, 2);
     const float &rx = r[0], &ry = r[1], &rz = r[2], &tx = t[0], &ty=t[1], &tz = t[2];
     const float cx = cos(rx), cy = cos(ry), cz = cos(rz), sx = sin(rx), sy = sin(ry), sz = sin(rz);
     const float Rx0 = cy*cz,  Rx1 = sx*sy*cz+cx*sz, Rx2 = sx*sz-cx*sy*cz;
@@ -352,67 +352,67 @@ namespace icl::geom {
       icl32f cosAsinC = cosA * sinC;
       icl32f cosAcosC = cosA * cosC;
 
-      R(0,0) = cosB * cosC;
-      R(0,1) = cosB * sinC;
-      R(0,2) = -sinB;
-      R(1,0) = sinAcosC * sinB - cosAsinC;
-      R(1,1) = sinAsinC * sinB + cosAcosC;
-      R(1,2) = sinA * cosB;
-      R(2,0) = cosAcosC * sinB + sinAsinC;
-      R(2,1) = cosAsinC * sinB - sinAcosC;
-      R(2,2) = cosA * cosB;
+      R.index_yx(0, 0) = cosB * cosC;
+      R.index_yx(1, 0) = cosB * sinC;
+      R.index_yx(2, 0) = -sinB;
+      R.index_yx(0, 1) = sinAcosC * sinB - cosAsinC;
+      R.index_yx(1, 1) = sinAsinC * sinB + cosAcosC;
+      R.index_yx(2, 1) = sinA * cosB;
+      R.index_yx(0, 2) = cosAcosC * sinB + sinAsinC;
+      R.index_yx(1, 2) = cosAsinC * sinB - sinAcosC;
+      R.index_yx(2, 2) = cosA * cosB;
 
       return R;
     }
 
     void RzyxToAngles(FixedMatrix<icl32f, 3, 3> &R, FixedMatrix<icl32f, 1, 3> &res0, FixedMatrix<icl32f, 1, 3> &res1) {
-      if (R(0,2) > -0.999999 && R(0,2) < 0.999999) {
-        res0(0,1) = -asin(R(0,2));
-        res1(0,1) = M_PI - res0(0,1);
+      if (R.index_yx(2, 0) > -0.999999 && R.index_yx(2, 0) < 0.999999) {
+        res0.index_yx(1, 0) = -asin(R.index_yx(2, 0));
+        res1.index_yx(1, 0) = M_PI - res0.index_yx(1, 0);
 
-        double cosB0 = cos(res0(0,1));
-        double cosB1 = cos(res1(0,1));
+        double cosB0 = cos(res0.index_yx(1, 0));
+        double cosB1 = cos(res1.index_yx(1, 0));
 
-        res0(0,0) = atan2(R(1,2) / cosB0, R(2,2) / cosB0);
-        res1(0,0) = atan2(R(1,2) / cosB1, R(2,2) / cosB1);
+        res0.index_yx(0, 0) = atan2(R.index_yx(2, 1) / cosB0, R.index_yx(2, 2) / cosB0);
+        res1.index_yx(0, 0) = atan2(R.index_yx(2, 1) / cosB1, R.index_yx(2, 2) / cosB1);
 
-        res0(0,2) = atan2(R(0,1) / cosB0, R(0,0) / cosB0);
-        res1(0,2) = atan2(R(0,1) / cosB1, R(0,0) / cosB1);
+        res0.index_yx(2, 0) = atan2(R.index_yx(1, 0) / cosB0, R.index_yx(0, 0) / cosB0);
+        res1.index_yx(2, 0) = atan2(R.index_yx(1, 0) / cosB1, R.index_yx(0, 0) / cosB1);
 
       } else {
-        res0(0,0) = res1(0,0) = 0.0;
-        if (R(0,2) < 0.0) {
-          res0(0,1) = res1(0,1) = M_PI / 2.0;
-          res0(0,2) = res1(0,2) = atan2(R(1,0), R(2,0));
+        res0.index_yx(0, 0) = res1.index_yx(0, 0) = 0.0;
+        if (R.index_yx(2, 0) < 0.0) {
+          res0.index_yx(1, 0) = res1.index_yx(1, 0) = M_PI / 2.0;
+          res0.index_yx(2, 0) = res1.index_yx(2, 0) = atan2(R.index_yx(0, 1), R.index_yx(0, 2));
         } else {
-          res0(0,1) = res1(0,1) = M_PI / -2.0;
-          res0(0,2) = res1(0,2) = atan2(-R(1,0), -R(2,0));
+          res0.index_yx(1, 0) = res1.index_yx(1, 0) = M_PI / -2.0;
+          res0.index_yx(2, 0) = res1.index_yx(2, 0) = atan2(-R.index_yx(0, 1), -R.index_yx(0, 2));
         }
       }
     }
 
     inline void splitMat(FixedMatrix<icl32f, 4, 4> &m, FixedMatrix<icl32f, 3, 3> &R, FixedMatrix<icl32f, 1, 3> &t) {
       R = m.part<0,0,3,3>();
-      t(0,0) = m(3,0);
-      t(0,1) = m(3,1);
-      t(0,2) = m(3,2);
+      t.index_yx(0, 0) = m.index_yx(0, 3);
+      t.index_yx(1, 0) = m.index_yx(1, 3);
+      t.index_yx(2, 0) = m.index_yx(2, 3);
     }
 
     inline FixedMatrix<icl32f, 4, 4> fuseMat(FixedMatrix<icl32f, 3, 3> &R, FixedMatrix<icl32f, 1, 3> &t) {
       FixedMatrix<icl32f, 4, 4> m = FixedMatrix<icl32f, 4, 4>::id();
 
-      m(0,0) = R(0,0);
-      m(1,0) = R(1,0);
-      m(2,0) = R(2,0);
-      m(0,1) = R(0,1);
-      m(1,1) = R(1,1);
-      m(2,1) = R(2,1);
-      m(0,2) = R(0,2);
-      m(1,2) = R(1,2);
-      m(2,2) = R(2,2);
-      m(3,0) = t(0,0);
-      m(3,1) = t(0,1);
-      m(3,2) = t(0,2);
+      m.index_yx(0, 0) = R.index_yx(0, 0);
+      m.index_yx(0, 1) = R.index_yx(0, 1);
+      m.index_yx(0, 2) = R.index_yx(0, 2);
+      m.index_yx(1, 0) = R.index_yx(1, 0);
+      m.index_yx(1, 1) = R.index_yx(1, 1);
+      m.index_yx(1, 2) = R.index_yx(1, 2);
+      m.index_yx(2, 0) = R.index_yx(2, 0);
+      m.index_yx(2, 1) = R.index_yx(2, 1);
+      m.index_yx(2, 2) = R.index_yx(2, 2);
+      m.index_yx(0, 3) = t.index_yx(0, 0);
+      m.index_yx(1, 3) = t.index_yx(1, 0);
+      m.index_yx(2, 3) = t.index_yx(2, 0);
 
       return m;
     }
@@ -427,26 +427,26 @@ namespace icl::geom {
       double x = 0.0, y = 0.0, z = 0.0;
 
       for (int i = 0; i < n; ++i) {
-        double len = 1 / sqrt(pow(v[i](0,0), 2) + pow(v[i](0,1), 2) + 1);
-        x += v[i](0,0) * len;
-        y += v[i](0,1) * len;
+        double len = 1 / sqrt(pow(v[i].index_yx(0, 0), 2) + pow(v[i].index_yx(1, 0), 2) + 1);
+        x += v[i].index_yx(0, 0) * len;
+        y += v[i].index_yx(1, 0) * len;
         z += len;
       }
 
-      center(0,0) = x / n;
-      center(0,1) = y / n;
-      center(0,2) = z / n;
+      center.index_yx(0, 0) = x / n;
+      center.index_yx(1, 0) = y / n;
+      center.index_yx(2, 0) = z / n;
       center.normalize();
 
       // 6. rotation from (0,0,1) to previous solution
       FixedMatrix<icl32f, 1, 3> v_z(0.0f, 0.0f, 1.0f);
       FixedMatrix<icl32f, 1, 3> axis;
-      axis(0,0) = center(0,1);
-      axis(0,1) = -center(0,0);
-      axis(0,2) = 0;
+      axis.index_yx(0, 0) = center.index_yx(1, 0);
+      axis.index_yx(1, 0) = -center.index_yx(0, 0);
+      axis.index_yx(2, 0) = 0;
       axis.normalize();
 
-      Rt = create_rot_3D(axis(0,0), axis(0,1), axis(0,2), static_cast<float>(acos((v_z.dot(center))(0,0))));
+      Rt = create_rot_3D(axis.index_yx(0, 0), axis.index_yx(1, 0), axis.index_yx(2, 0), static_cast<float>(acos((v_z.dot(center)).index_yx(0, 0))));
     }
 
     void calculateError(const int n, std::vector< FixedMatrix<icl32f, 1, 3> > &P,
@@ -459,13 +459,13 @@ namespace icl::geom {
 
       FixedMatrix<icl32f, 3, 3> *VV = new FixedMatrix<icl32f, 3, 3>[n];
       for (int i = 0; i < n; ++i) {
-        VV[i] = (V[i] * V[i].transp()) / (V[i].transp() * V[i])(0,0);
+        VV[i] = (V[i] * V[i].transp()) / (V[i].transp() * V[i]).index_yx(0, 0);
       }
 
       // calculate the error
       for (int i = 0; i < n; ++i) {
           FixedMatrix<icl32f, 1, 3> tmp = (I - VV[i])*(R*P[i] + t);
-          error += pow(tmp(0, 0), 2) + pow(tmp(0, 1), 2) + pow(tmp(0, 2), 2);
+          error += pow(tmp.index_yx(0, 0), 2) + pow(tmp.index_yx(1, 0), 2) + pow(tmp.index_yx(2, 0), 2);
       }
 
       delete[] VV;
@@ -491,32 +491,32 @@ namespace icl::geom {
       double coef[5];
 
       for (int i = 0; i < n; ++i) {
-        VV[i] = (V[i] * V[i].transp()) / (V[i].transp() * V[i])(0,0);
+        VV[i] = (V[i] * V[i].transp()) / (V[i].transp() * V[i]).index_yx(0, 0);
         Vsum += VV[i];
       }
 
       G = (I - (Vsum * (1.0f/n))).inv() * (1.0f/n);
 
       for (int i = 0; i < n; ++i) {
-        FixedMatrix<icl32f, 3, 3> Rp(-P[i](0,0), P[i](0,2)*2.0f, P[i](0,0), P[i](0,1), 0.0f, P[i](0,1), -P[i](0,2), P[i](0,0)*-2.0f, P[i](0,2));
+        FixedMatrix<icl32f, 3, 3> Rp(-P[i].index_yx(0, 0), P[i].index_yx(2, 0)*2.0f, P[i].index_yx(0, 0), P[i].index_yx(1, 0), 0.0f, P[i].index_yx(1, 0), -P[i].index_yx(2, 0), P[i].index_yx(0, 0)*-2.0f, P[i].index_yx(2, 0));
         t_opt += (VV[i] - I) * Rz * Rp;
       }
 
       t_opt = G * t_opt;
 
       for (int i = 0; i < n; ++i) {
-        Rp = FixedMatrix<icl32f, 3, 3>(-P[i](0,0), P[i](0,2)*2.0f, P[i](0,0), P[i](0,1), 0.0f, P[i](0,1), -P[i](0,2), P[i](0,0)*-2.0f, P[i](0,2));
+        Rp = FixedMatrix<icl32f, 3, 3>(-P[i].index_yx(0, 0), P[i].index_yx(2, 0)*2.0f, P[i].index_yx(0, 0), P[i].index_yx(1, 0), 0.0f, P[i].index_yx(1, 0), -P[i].index_yx(2, 0), P[i].index_yx(0, 0)*-2.0f, P[i].index_yx(2, 0));
 
         E = (I - VV[i]) * (Rz * Rp + t_opt);
 
         FixedMatrix<icl32f, 1, 3> col0(E.col(0));
         FixedMatrix<icl32f, 1, 3> col1(E.col(1));
         FixedMatrix<icl32f, 1, 3> col2(E.col(2));
-        e[0] += (col2.transp() * col2)(0,0);
-        e[1] += (col2.transp() * col1)(0,0) * 2.0f;
-        e[2] += (col0.transp() * col2)(0,0) * 2.0f + (col1.transp() * col1)(0,0);
-        e[3] += (col0.transp() * col1)(0,0) * 2.0f;
-        e[4] += (col0.transp() * col0)(0,0);
+        e[0] += (col2.transp() * col2).index_yx(0, 0);
+        e[1] += (col2.transp() * col1).index_yx(0, 0) * 2.0f;
+        e[2] += (col0.transp() * col2).index_yx(0, 0) * 2.0f + (col1.transp() * col1).index_yx(0, 0);
+        e[3] += (col0.transp() * col1).index_yx(0, 0) * 2.0f;
+        e[4] += (col0.transp() * col0).index_yx(0, 0);
       }
 
       coef[0] = -e[3];
@@ -618,7 +618,7 @@ namespace icl::geom {
 
     // find all local minima in the new coordinate system
 
-    Rdz = getRzyx(0.0f, 0.0f, atan2(R_(1,2), R_(0,2)));
+    Rdz = getRzyx(0.0f, 0.0f, atan2(R_.index_yx(2, 1), R_.index_yx(2, 0)));
     R2 = R_ * Rdz;
 
     for (int i = 0; i < n; ++i) {
@@ -628,11 +628,11 @@ namespace icl::geom {
     RzyxToAngles(R2, angles0, angles1);
 
     if (fabs(angles0[0]) <= M_PI / 2) {
-      Ry = getRzyx(0.0f, angles0(0,1), 0.0f);
-      Rz = getRzyx(0.0f, 0.0f, angles0(0,2));
+      Ry = getRzyx(0.0f, angles0.index_yx(1, 0), 0.0f);
+      Rz = getRzyx(0.0f, 0.0f, angles0.index_yx(2, 0));
     } else {
-      Ry = getRzyx(0.0f, angles1(0,1), 0.0f);
-      Rz = getRzyx(0.0f, 0.0f, angles1(0,2));
+      Ry = getRzyx(0.0f, angles1.index_yx(1, 0), 0.0f);
+      Rz = getRzyx(0.0f, 0.0f, angles1.index_yx(2, 0));
     }
 
     calculateMinima(n, P_, V_, Rz, t_, sol);
@@ -857,8 +857,8 @@ namespace icl::geom {
     T.col(3) = c2 * (1/tnorm);
 
     data->T.part<0,0,4,3>() = T;
-    data->T(0,3) = data->T(1,3) = data->T(2,3) = 0;
-    data->T(3,3) = 1;
+    data->T.index_yx(3, 0) = data->T.index_yx(3, 1) = data->T.index_yx(3, 2) = 0;
+    data->T.index_yx(3, 3) = 1;
 
 
 #endif

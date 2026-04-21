@@ -224,13 +224,13 @@ void ObjectEdgeDetectorCPU::applyGaussianNormalSmoothing() {
 				    for (int sy = -l; sy <= l; sy++) {
 					    avg.x += m_data->normals[(x + sx)
 							    + m_data->w * (y + sy)].x
-							    * kernel(sx + l, sy + l);
+							    * kernel.index_yx(sy + l, sx + l);
 					    avg.y += m_data->normals[(x + sx)
 							    + m_data->w * (y + sy)].y
-							    * kernel(sx + l, sy + l);
+							    * kernel.index_yx(sy + l, sx + l);
 					    avg.z += m_data->normals[(x + sx)
 							    + m_data->w * (y + sy)].z
-							    * kernel(sx + l, sy + l);
+							    * kernel.index_yx(sy + l, sx + l);
 				    }
 			    }
 			    avg.x /= norm;
@@ -255,7 +255,7 @@ void ObjectEdgeDetectorCPU::applyWorldNormalCalculation(const Camera &cam) {
 	Mat T = cam.getCSTransformationMatrix();
 	FixedMatrix<float, 3, 3> R = T.part<0, 0, 3, 3>();
 	Mat T2 = R.transp().resize<4, 4>(0);
-	T2(3, 3) = 1;
+	T2.index_yx(3, 3) = 1;
 	const core::Channel32f d = m_data->rawImage[0];
 	for (int y = 0; y < m_data->h; ++y) {
 		for (int x = 0; x < m_data->w; ++x) {

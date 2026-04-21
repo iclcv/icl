@@ -569,7 +569,7 @@ void ObjectEdgeDetectorGPU::applyWorldNormalCalculation(const Camera &cam) {
 	Mat T = cam.getCSTransformationMatrix();
 	FixedMatrix<float, 3, 3> R = T.part<0, 0, 3, 3>();
 	Mat T2 = R.transp().resize<4, 4>(0);
-	T2(3, 3) = 1;
+	T2.index_yx(3, 3) = 1;
 	try {
 		m_data->camBuffer = m_data->program.createBuffer("rw", 16 * sizeof(float), static_cast<void *>(&T2[0]));
 

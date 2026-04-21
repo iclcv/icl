@@ -129,7 +129,7 @@ namespace icl::math {
         unsigned int min_rows = iclMin(rows,static_cast<unsigned int>(m_rows));
         for(unsigned int i=0;i<min_cols;++i){
           for(unsigned int j=0;j<min_rows;++j){
-            M(i,j) = (*this)(i,j);
+            M.index_yx(j, i) = (*this).index_yx(j, i);
           }
         }
       }
@@ -169,21 +169,23 @@ namespace icl::math {
       return false;
     }
 
-    /// element access operator (x,y)-access index begin 0!
-    inline T &operator()(unsigned int col,unsigned int row){
+    /// Element access with (row, col) convention — standard math indexing
+    inline T &index_yx(unsigned int row, unsigned int col){
 #ifdef DYN_MATRIX_INDEX_CHECK
       if(static_cast<int>(col) >= m_cols || static_cast<int>(row) >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
 #endif
       return m_data[col+cols()*row];
     }
 
-    /// element access operator (x,y)-access index begin 0! (const)
-    inline const T &operator() (unsigned int col,unsigned int row) const{
+    /// Element access with (row, col) convention — standard math indexing (const)
+    inline const T &index_yx(unsigned int row, unsigned int col) const{
 #ifdef DYN_MATRIX_INDEX_CHECK
       if(static_cast<int>(col) >= m_cols || static_cast<int>(row) >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
 #endif
       return m_data[col+cols()*row];
     }
+
+    // operator()(col,row) REMOVED — use index_yx(row,col) instead
 
     /// element access with index check
     inline T &at(unsigned int col,unsigned int row){

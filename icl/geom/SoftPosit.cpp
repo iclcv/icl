@@ -112,8 +112,8 @@ namespace icl::geom {
 #endif
     //First two rows of the camera matrices (for both perspective and SOP).  Note:
     //the scale factor is s = f/Tz = 1/Tz since f = 1.  These are column 4-vectors.
-    double t1[] = {ROT(0,0)/T.at(0,2),ROT(1,0)/T.at(0,2),ROT(2,0)/T.at(0,2), T.at(0,0)/T.at(0,2)};
-    double t2[] = {ROT(0,1)/T.at(0,2),ROT(1,1)/T.at(0,2),ROT(2,1)/T.at(0,2), T.at(0,1)/T.at(0,2)};
+    double t1[] = {ROT.index_yx(0, 0)/T.at(0,2),ROT.index_yx(0, 1)/T.at(0,2),ROT.index_yx(0, 2)/T.at(0,2), T.at(0,0)/T.at(0,2)};
+    double t2[] = {ROT.index_yx(1, 0)/T.at(0,2),ROT.index_yx(1, 1)/T.at(0,2),ROT.index_yx(1, 2)/T.at(0,2), T.at(0,1)/T.at(0,2)};
     r1T = DynMatrix<icl64f>(1,4,t1);
     r2T = DynMatrix<icl64f>(1,4,t2);
     r3T.setBounds(1,4);
@@ -140,12 +140,12 @@ namespace icl::geom {
       DynMatrix<icl64f> temp2 = replicatedProjectedV - wkyj;
       for(unsigned int i=0;i<nbWorldPts;++i){
         for(unsigned j=0;j<nbImagePts;++j){
-          distMat.at(i,j) = focalLength*focalLength*(temp1(i,j)*temp1(i,j)+temp2(i,j)*temp2(i,j));
+          distMat.at(i,j) = focalLength*focalLength*(temp1.index_yx(j, i)*temp1.index_yx(j, i)+temp2.index_yx(j, i)*temp2.index_yx(j, i));
         }
       }
       for(unsigned int i=0;i<nbWorldPts;++i){
         for(unsigned int j=0;j<nbImagePts;++j){
-          assignMat.at(i,j) = scale * ( std::exp( -beta*( distMat(i,j) - alpha ) ) );
+          assignMat.at(i,j) = scale * ( std::exp( -beta*( distMat.index_yx(j, i) - alpha ) ) );
         }
       }
       //assignMat(1:nbImagePts+1,nbWorldPts+1) = scale;
@@ -164,14 +164,14 @@ namespace icl::geom {
       sumNonslack=0.0;
       for(unsigned int i=0;i<nbWorldPts;++i){
         for(unsigned int j=0;j<nbImagePts;++j){
-          sumNonslack += assignMat(i,j);
+          sumNonslack += assignMat.index_yx(j, i);
         }
       }
       //summedByColAssign = sum(assignMat(1:nbImagePts, 1:nbWorldPts), 1);
       summedByColAssign = DynMatrix<icl64f>(nbWorldPts,1);
       for(unsigned int i=0;i<nbWorldPts;++i){
         for(unsigned int j=0;j<nbImagePts;++j){
-          summedByColAssign.at(i,0) += assignMat(i,j);
+          summedByColAssign.at(i,0) += assignMat.index_yx(j, i);
         }
       }
 
@@ -209,9 +209,9 @@ namespace icl::geom {
           for(int i=0;i<4;++i){
             temp55.at(0,i) = homogeneousWorldPts.at(i,k);
           }
-          temp55.mult(assignMat(k,j) * wk(k,0) * centeredImage(0,j), temp66);
+          temp55.mult(assignMat.index_yx(j, k) * wk.index_yx(0, k) * centeredImage.index_yx(j, 0), temp66);
           weightedUi = weightedUi + temp66;
-          temp55.mult(assignMat(k,j) * wk(k,0) * centeredImage(1,j), temp66);
+          temp55.mult(assignMat.index_yx(j, k) * wk.index_yx(0, k) * centeredImage.index_yx(j, 1), temp66);
           weightedVi = weightedVi + temp66;
         }
       }
@@ -484,7 +484,7 @@ namespace icl::geom {
         }
       }
       for(unsigned int i=0;i<posmax.rows();++i){
-        M.at(nbCols-1,posmax(0,i)) = ratios(0,i)*M(posmax(0,i),posmax(1,i));
+        M.at(nbCols-1,posmax.index_yx(i, 0)) = ratios.index_yx(i, 0)*M.index_yx(posmax.index_yx(i, 1), posmax.index_yx(i, 0));
       }
       for(unsigned int j=0;j<M.rows();++j)
         for(unsigned int i=0;i<M.cols();++i){
@@ -499,7 +499,7 @@ namespace icl::geom {
         }
       }
       for(unsigned int i=0;i<posmax.rows();++i){
-        M(nbRows,posmax(1,i)) = ratios(2,i)*M(posmax(1,i),posmax(2,i));
+        M.index_yx(posmax.index_yx(i, 1), nbRows) = ratios.index_yx(i, 2)*M.index_yx(posmax.index_yx(i, 2), posmax.index_yx(i, 1));
       }
       iNumSinkIter=iNumSinkIter+1;
       fMdiffSum = 0.0;

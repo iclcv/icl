@@ -297,10 +297,10 @@ static void applyNodeTransform(const cgltf_node *node, SceneObject *obj) {
 
   // glTF uses column-major, ICL uses row-major
   Mat T;
-  T(0,0) = m[0]; T(1,0) = m[1]; T(2,0) = m[2];  T(3,0) = m[12];
-  T(0,1) = m[4]; T(1,1) = m[5]; T(2,1) = m[6];  T(3,1) = m[13];
-  T(0,2) = m[8]; T(1,2) = m[9]; T(2,2) = m[10]; T(3,2) = m[14];
-  T(0,3) = 0;    T(1,3) = 0;    T(2,3) = 0;      T(3,3) = 1;
+  T.index_yx(0, 0) = m[0]; T.index_yx(0, 1) = m[1]; T.index_yx(0, 2) = m[2];  T.index_yx(0, 3) = m[12];
+  T.index_yx(1, 0) = m[4]; T.index_yx(1, 1) = m[5]; T.index_yx(1, 2) = m[6];  T.index_yx(1, 3) = m[13];
+  T.index_yx(2, 0) = m[8]; T.index_yx(2, 1) = m[9]; T.index_yx(2, 2) = m[10]; T.index_yx(2, 3) = m[14];
+  T.index_yx(3, 0) = 0;    T.index_yx(3, 1) = 0;    T.index_yx(3, 2) = 0;      T.index_yx(3, 3) = 1;
   obj->setTransformation(T);
 }
 

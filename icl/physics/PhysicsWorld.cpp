@@ -125,7 +125,7 @@ namespace icl::physics {
 		      {
 		        int col = std::min(obj0->getCollisionGroup(), obj1->getCollisionGroup());
 		        int row = std::max(obj0->getCollisionGroup(), obj1->getCollisionGroup());
-		        collides = collides && (*collisionMatrix)(col,row);
+		        collides = collides && (*collisionMatrix).index_yx(row, col);
 		      }
 		      //stop here if collision masks already determined that no collision is needed
 		      if(!collides)
@@ -342,14 +342,14 @@ namespace icl::physics {
     {
       int col = std::min(group0, group1);
       int row = std::max(group0, group1);
-      (*data->m_collisionMatrix)(col,row) = collides;
+      (*data->m_collisionMatrix).index_yx(row, col) = collides;
     }
 
     bool PhysicsWorld::getGroupCollision(int group0, int group1)
     {
       int col = std::min(group0, group1);
       int row = std::max(group0, group1);
-      return (*data->m_collisionMatrix)(col,row);
+      return (*data->m_collisionMatrix).index_yx(row, col);
     }
 
     bool PhysicsWorld::rayCast(const geom::ViewRay& ray, float rayLength, PhysicsObject*& obj, geom::Vec &normal, geom::Vec &hitPoint) {

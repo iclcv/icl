@@ -194,7 +194,7 @@ namespace icl::math {
       for(unsigned int j=0; j<adjacencyMatrix.rows(); j++){
         float score=0;
         for(unsigned int k=0; k<adjacencyMatrix.cols(); k++){
-          score+=adjacencyMatrix(j,k);
+          score+=adjacencyMatrix.index_yx(k, j);
         }
         if(score<lambda_score){
           lambda_score=score;
@@ -208,10 +208,10 @@ namespace icl::math {
 	  void GraphCutter::createEdgeList(DynMatrix<float> &adjacencyMatrix, std::vector<utils::Point> &edgeList, std::vector<float> &edgeCosts){
       for(unsigned int j=0; j<adjacencyMatrix.rows(); j++){
         for(unsigned int k=j+1; k<adjacencyMatrix.rows(); k++){
-          if(adjacencyMatrix(j,k)>0){
+          if(adjacencyMatrix.index_yx(k, j)>0){
             utils::Point p(j,k);
             edgeList.push_back(p);
-            edgeCosts.push_back(adjacencyMatrix(j,k));
+            edgeCosts.push_back(adjacencyMatrix.index_yx(k, j));
           }
         }
       }
@@ -336,7 +336,7 @@ namespace icl::math {
 
         for(unsigned int i=0; i<subgraph.size(); i++){//breadth first search
           for(unsigned int j=0; j<adjacencyMatrix.cols(); j++){
-            if(adjacencyMatrix(subgraph[i],j)>0 && visited[j]==false){//add node if not assigned and edge exists
+            if(adjacencyMatrix.index_yx(j, subgraph[i])>0 && visited[j]==false){//add node if not assigned and edge exists
               visited[j]=true;
               visitCount++;
               subgraph.push_back(j);
@@ -353,7 +353,7 @@ namespace icl::math {
       math::DynMatrix<float> subMatrix(subgraph.size(),subgraph.size());
       for(unsigned int j=0; j<subMatrix.rows(); j++){
         for(unsigned int k=0; k<subMatrix.cols(); k++){
-          subMatrix(j,k)=adjacencyMatrix(subgraph[j],subgraph[k]);
+          subMatrix.index_yx(k, j)=adjacencyMatrix.index_yx(subgraph[k], subgraph[j]);
         }
       }
       return subMatrix;
@@ -365,22 +365,22 @@ namespace icl::math {
       for(unsigned int a=0; a<initialMatrix.cols(); a++){
         int count = 0;
         for(unsigned int b=0; b<initialMatrix.cols(); b++){//count number of edges for each node
-          if(initialMatrix(a,b)==1 && initialMatrix(b,a)==1 && a!=b){
+          if(initialMatrix.index_yx(b, a)==1 && initialMatrix.index_yx(a, b)==1 && a!=b){
             count++;
           }
         }
         for(unsigned int b=0; b<initialMatrix.cols(); b++){//cost of each edge: 1. / num edges
-          if(initialMatrix(a,b)==1 && initialMatrix(b,a)==1 && a!=b){
-            probabilities(b,a)=1./static_cast<float>(count);
+          if(initialMatrix.index_yx(b, a)==1 && initialMatrix.index_yx(a, b)==1 && a!=b){
+            probabilities.index_yx(a, b)=1./static_cast<float>(count);
           }
         }
       }
       if(symmetry==true){
         for(unsigned int i=0; i<probabilities.cols(); i++){//symmetry
           for(unsigned int j=i+1; j<probabilities.cols(); j++){
-            float v = (probabilities(i,j)+probabilities(j,i))/2.;
-            probabilities(i,j)=v;
-            probabilities(j,i)=v;
+            float v = (probabilities.index_yx(j, i)+probabilities.index_yx(i, j))/2.;
+            probabilities.index_yx(j, i)=v;
+            probabilities.index_yx(i, j)=v;
           }
         }
       }
@@ -394,7 +394,7 @@ namespace icl::math {
       }
       for(unsigned int i=0; i<src.rows(); i++){
         for(unsigned int j=0; j<src.cols(); j++){
-          if(src(i,j)==true) dst(i,j)=true;
+          if(src.index_yx(j, i)==true) dst.index_yx(j, i)=true;
         }
       }
     }
@@ -406,7 +406,7 @@ namespace icl::math {
       }
       for(unsigned int i=0; i<featureMatrix.rows(); i++){
         for(unsigned int j=0; j<featureMatrix.cols(); j++){
-          if(featureMatrix(i,j)==true) dst(i,j)*=weight;
+          if(featureMatrix.index_yx(j, i)==true) dst.index_yx(j, i)*=weight;
         }
       }
     }

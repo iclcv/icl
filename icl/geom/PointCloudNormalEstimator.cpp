@@ -723,9 +723,9 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 		kSize = 3 * 3;
 		rowSize = 3;
 		DynMatrix<float> k1 = DynMatrix<float>(1, 3, 0.0);
-		k1(0, 0) = 1.;
-		k1(0, 1) = 2.;
-		k1(0, 2) = 1.;
+		k1.index_yx(0, 0) = 1.;
+		k1.index_yx(1, 0) = 2.;
+		k1.index_yx(2, 0) = 1.;
 		kernel = k1 * k1.transp();
 	} else if (m_data->normalAveragingRange <= 5) {
 		norm = 256.;
@@ -733,11 +733,11 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 		kSize = 5 * 5;
 		rowSize = 5;
 		DynMatrix<float> k1 = DynMatrix<float>(1, 5, 0.0);
-		k1(0, 0) = 1.;
-		k1(0, 1) = 4.;
-		k1(0, 2) = 6.;
-		k1(0, 3) = 4.;
-		k1(0, 4) = 1.;
+		k1.index_yx(0, 0) = 1.;
+		k1.index_yx(1, 0) = 4.;
+		k1.index_yx(2, 0) = 6.;
+		k1.index_yx(3, 0) = 4.;
+		k1.index_yx(4, 0) = 1.;
 		kernel = k1 * k1.transp();
 	} else {
 		norm = 4096.;
@@ -745,13 +745,13 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 		kSize = 7 * 7;
 		rowSize = 7;
 		DynMatrix<float> k1 = DynMatrix<float>(1, 7, 0.0);
-		k1(0, 0) = 1.;
-		k1(0, 1) = 6.;
-		k1(0, 2) = 15.;
-		k1(0, 3) = 20.;
-		k1(0, 4) = 15.;
-		k1(0, 5) = 6.;
-		k1(0, 6) = 1.;
+		k1.index_yx(0, 0) = 1.;
+		k1.index_yx(1, 0) = 6.;
+		k1.index_yx(2, 0) = 15.;
+		k1.index_yx(3, 0) = 20.;
+		k1.index_yx(4, 0) = 15.;
+		k1.index_yx(5, 0) = 6.;
+		k1.index_yx(6, 0) = 1.;
 		kernel = k1 * k1.transp();
 	}
 	if (m_data->useCL == true && m_data->clReady == true) {
@@ -788,13 +788,13 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 						for (int sy = -l; sy <= l; sy++) {
 							avg.x += m_data->normals[(x + sx)
 									+ m_data->w * (y + sy)].x
-									* kernel(sx + l, sy + l);
+									* kernel.index_yx(sy + l, sx + l);
 							avg.y += m_data->normals[(x + sx)
 									+ m_data->w * (y + sy)].y
-									* kernel(sx + l, sy + l);
+									* kernel.index_yx(sy + l, sx + l);
 							avg.z += m_data->normals[(x + sx)
 									+ m_data->w * (y + sy)].z
-									* kernel(sx + l, sy + l);
+									* kernel.index_yx(sy + l, sx + l);
 						}
 					}
 					avg.x /= norm;
@@ -841,7 +841,7 @@ void PointCloudNormalEstimator::applyWorldNormalCalculation(const Camera &cam) {
 	Mat T = cam.getCSTransformationMatrix();
 	FixedMatrix<float, 3, 3> R = T.part<0, 0, 3, 3>();
 	Mat T2 = R.transp().resize<4, 4>(0);
-	T2(3, 3) = 1;
+	T2.index_yx(3, 3) = 1;
 	if (m_data->useCL == true && m_data->clReady == true) {
 #ifdef ICL_HAVE_OPENCL
 		try {

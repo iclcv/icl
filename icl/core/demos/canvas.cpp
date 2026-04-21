@@ -299,8 +299,8 @@ struct CanvasDemo : public AbstractCanvas{
 
 #if 1
     { // a scope 1
-      const float a = R(0,0), b=R(1,0), c=R(0,1), d=R(1,1);
-      const float Sx = S(0,0), Sy=S(1,1);
+      const float a = R.index_yx(0, 0), b=R.index_yx(0, 1), c=R.index_yx(1, 0), d=R.index_yx(1, 1);
+      const float Sx = S.index_yx(0, 0), Sy=S.index_yx(1, 1);
       const float A = Sx, D = Sy;
       const float S = a*cc.x + b*cc.y;
       const float Q = c*cc.x + d*cc.y;

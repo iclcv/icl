@@ -581,9 +581,9 @@ namespace icl::geom {
                                                          icl::geom::GeomColor const &color) {
 
           math::Mat4 mat = orientation.getTransformationMatrix();
-          mat(3,0) = position[0];
-          mat(3,1) = position[1];
-          mat(3,2) = position[2];
+          mat.index_yx(0, 3) = position[0];
+          mat.index_yx(1, 3) = position[1];
+          mat.index_yx(2, 3) = position[2];
           SceneObject *added_obj = 0;
           if (object) {
               switch (type) {

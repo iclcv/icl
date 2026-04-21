@@ -29,7 +29,7 @@ namespace icl::physics {
       std::scoped_lock<std::recursive_mutex> lock(scene->getMutex());
       for(int i=scene->getObjectCount()-1;i>=0;--i){
         RigidObject *pobj = dynamic_cast<RigidObject*>(scene->getObject(i));
-        if(pobj && pobj->getTransformation()(3,2) < minZ){
+        if(pobj && pobj->getTransformation().index_yx(2, 3) < minZ){
           scene->removeObject(i);
           world->removeObject(pobj);
         }

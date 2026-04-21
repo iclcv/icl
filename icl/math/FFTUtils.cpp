@@ -63,7 +63,7 @@ namespace icl::math {
 	if(cols >1 && rows > 1){
         for(unsigned int y=0;y<rows;++y){
           for(unsigned int x=0;x<cols;++x){
-            dst.operator ()( ((x+cols2))%cols,((y+rows2))%rows) = src.operator ()(x,y);
+            dst.index_yx(((y+rows2))%rows, ((x+cols2))%cols) = src.index_yx(y, x);
           }
         }
 	} else {
@@ -110,7 +110,7 @@ namespace icl::math {
 	if(cols >1 && rows > 1){
         for(unsigned int y=0;y<rows;++y){
           for(unsigned int x=0;x<cols;++x){
-            dst.operator ()( ((x+cols2))%cols,((y+rows2))%rows) = src.operator ()(x,y);
+            dst.index_yx(((y+rows2))%rows, ((x+cols2))%cols) = src.index_yx(y, x);
           }
         }
         if(cols%2==0 && rows%2==0){
@@ -118,24 +118,24 @@ namespace icl::math {
         } else  if(cols%2==1 && rows%2==0){
           for(unsigned int y=0;y<rows;++y){
             for(unsigned int x=cols-1;x>0;--x){
-              std::swap(dst.operator ()(x,y),dst.operator ()(x-1,y));
+              std::swap(dst.index_yx(y, x),dst.index_yx(y, x-1));
             }
           }
         } else if(cols%2==0 && rows%2==1){
           for(unsigned int x=0;x<cols;++x){
             for(unsigned int y=rows-1;y>0;--y){
-              std::swap(dst.operator ()(x,y),dst.operator ()(x,y-1));
+              std::swap(dst.index_yx(y, x),dst.index_yx(y-1, x));
             }
           }
         } else {
           for(unsigned int y=0;y<rows;++y){
             for(unsigned int x=cols-1;x>0;--x){
-              std::swap(dst.operator ()(x,y),dst.operator ()(x-1,y));
+              std::swap(dst.index_yx(y, x),dst.index_yx(y, x-1));
             }
           }
           for(unsigned int x=0;x<cols;++x){
             for(unsigned int y=rows-1;y>0;--y){
-              std::swap(dst.operator ()(x,y),dst.operator ()(x,y-1));
+              std::swap(dst.index_yx(y, x),dst.index_yx(y-1, x));
             }
           }
         }
@@ -245,7 +245,7 @@ namespace icl::math {
 	unsigned int nr = src.rows();
 	for(unsigned int i=0;i<newRows;++i){
         for(unsigned int j=0;j<newCols;++j){
-          dst.operator()(j,i) = src.operator()(j%nc,i%nr);
+          dst.index_yx(i, j) = src.index_yx(i%nr, j%nc);
         }
 	}
 	return dst;
@@ -299,12 +299,12 @@ namespace icl::math {
 	unsigned int nr = (newRows-srcRows)/2;
 	for(unsigned int i=0;i<srcRows;++i){
         for(unsigned int j=0;j<srcCols;++j){
-          dst.operator ()(j+nc,i+nr) = src.operator()(j,i);
+          dst.index_yx(i+nr, j+nc) = src.index_yx(i, j);
         }
 	}
 	for(unsigned int i=0;i<newRows;++i){
         for(unsigned int j=0;j<newCols;++j){
-          dst.operator ()(j,i) = src.operator()((srcCols-(nc%srcCols)+j)%srcCols,(srcRows-(nr%srcRows)+i)%srcRows);
+          dst.index_yx(i, j) = src.index_yx((srcRows-(nr%srcRows)+i)%srcRows, (srcCols-(nc%srcCols)+j)%srcCols);
         }
 	}
 	return dst;
@@ -354,7 +354,7 @@ namespace icl::math {
 	std::fill(dst.begin(),dst.end(),borderFill);
 	for(unsigned int i=0;i<srcRows;++i){
         for(unsigned int j=0;j<srcCols;++j){
-          dst.operator()(j+nc,i+nr) = src.operator()(j,i);
+          dst.index_yx(i+nr, j+nc) = src.index_yx(i, j);
         }
 	}
 	return dst;
@@ -835,8 +835,7 @@ namespace icl::math {
 	for(unsigned int i=0;i<rows;++i){
         temp = fft<T1,T2>(cols,src.row_begin(i));
         for(unsigned int j=0;j<cols;++j){
-          //buf.operator()(i,j)=temp[j];
-          buf(i,j)=temp[j];
+          buf.index_yx(j, i)=temp[j];
         }
         delete[] temp;
 	}
@@ -844,8 +843,7 @@ namespace icl::math {
 	for(unsigned int i=0;i<cols;++i){
         temp = fft<std::complex<T2>,T2 >(rows,buf.row_begin(i));
         for(unsigned int j=0;j<rows;++j){
-          //dst.operator()(i,j)=temp[j];
-          dst(i,j)=temp[j];
+          dst.index_yx(j, i)=temp[j];
         }
         delete[] temp;
 	}
@@ -1051,14 +1049,14 @@ namespace icl::math {
         temp = dft<T1,T2>(src.cols(),(src.row(i)).data());
         //already transposed
         for(unsigned int j=0;j<src.cols();++j){
-          buf(i,j)=temp[j];
+          buf.index_yx(j, i)=temp[j];
         }
         delete[] temp;
 	}
 	for(unsigned int i=0;i<buf.rows();++i){
         temp = dft<std::complex<T2>,T2>(buf.cols(),(buf.row(i)).data());
         for(unsigned int j=0;j<buf.cols();++j){
-          dst(i,j)=temp[j];
+          dst.index_yx(j, i)=temp[j];
         }
         delete[] temp;
 	}
@@ -1234,14 +1232,14 @@ namespace icl::math {
 	for(unsigned int i=0;i<rows;++i){
         temp = ifft_cpp<T1,T2>(cols,src.row_begin(i));
         for(unsigned int j=0;j<cols;++j){
-          buf(i,j)=temp[j];
+          buf.index_yx(j, i)=temp[j];
         }
         delete[] temp;
 	}
 	for(unsigned int i=0;i<buf.rows();++i){
         temp = ifft_cpp<std::complex<T2>,T2>(buf.cols(),buf.row_begin(i));
         for(unsigned int j=0;j<buf.cols();++j){
-          dst(i,j)=temp[j];
+          dst.index_yx(j, i)=temp[j];
         }
         delete[] temp;
 	}
@@ -1437,14 +1435,14 @@ namespace icl::math {
         temp = idft<T1,T2>(src.cols(),(src.row(i)).data());
         //already transposed
         for(unsigned int j=0;j<src.cols();++j){
-          buf(i,j)=temp[j];
+          buf.index_yx(j, i)=temp[j];
         }
         delete[] temp;
 	}
 	for(unsigned int i=0;i<buf.cols();++i){
         temp =  idft<std::complex<T2>,T2>(buf.rows(),(buf.row(i)).data());
         for(unsigned int j=0;j<buf.rows();++j){
-          dst(i,j)=temp[j];
+          dst.index_yx(j, i)=temp[j];
         }
         delete[] temp;
 	}

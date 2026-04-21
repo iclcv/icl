@@ -70,7 +70,7 @@ namespace icl::geom2 {
     // i.e. T(3,r) += T(0,r)*dx + T(1,r)*dy + T(2,r)*dz for each row r
     auto &T = m_data->transformation;
     for (int r = 0; r < 4; r++) {
-      T(3,r) += T(0,r)*dx + T(1,r)*dy + T(2,r)*dz;
+      T.index_yx(r, 3) += T.index_yx(r, 0)*dx + T.index_yx(r, 1)*dy + T.index_yx(r, 2)*dz;
     }
     m_data->hasTransformation = true;
   }
@@ -79,9 +79,9 @@ namespace icl::geom2 {
     // T = T * S: scale columns 0,1,2
     auto &T = m_data->transformation;
     for (int r = 0; r < 4; r++) {
-      T(0,r) *= sx;
-      T(1,r) *= sy;
-      T(2,r) *= sz;
+      T.index_yx(r, 0) *= sx;
+      T.index_yx(r, 1) *= sy;
+      T.index_yx(r, 2) *= sz;
     }
     m_data->hasTransformation = true;
   }

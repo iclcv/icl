@@ -227,12 +227,12 @@ namespace icl::math {
         std::vector<const PolynomialRegressionAttrib<T>*> atts = getAttribs();
         for(size_t x=0;x<atts.size();++x){
           if(atts[x]->toString() == "1"){
-            stream << (x ? fabs(getParams()(y,x)) : getParams()(x,y) )<< " ";
+            stream << (x ? fabs(getParams().index_yx(x, y)) : getParams().index_yx(y, x) )<< " ";
           }else{
-            stream << (x ? fabs(getParams()(y,x)) : getParams()(x,y) )<< " * " << atts[x]->toString();
+            stream << (x ? fabs(getParams().index_yx(x, y)) : getParams().index_yx(y, x) )<< " * " << atts[x]->toString();
           }
           if(x < atts.size()-1){
-            if(getParams()(x,y) < 0){
+            if(getParams().index_yx(y, x) < 0){
               stream << " - ";
             }else{
               stream << " - ";

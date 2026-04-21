@@ -33,7 +33,7 @@ namespace icl::math {
     using DynMatrixBase<T>::begin;
     using DynMatrixBase<T>::end;
     using DynMatrixBase<T>::data;
-    using DynMatrixBase<T>::operator();
+    using DynMatrixBase<T>::index_yx;
     using DynMatrixBase<T>::operator[];
     using DynMatrixBase<T>::row_check;
     using DynMatrixBase<T>::col_check;

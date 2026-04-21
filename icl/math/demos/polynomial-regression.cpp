@@ -48,12 +48,12 @@ ImgQ approx(const ImgQ &image){
 
     for(int y=0,idx=0;y<image.getHeight();++y){
       for(int x=0;x<image.getWidth();++x,++idx){
-        xs(0,idx) = x;
-        xs(1,idx) = y;
+        xs.index_yx(idx, 0) = x;
+        xs.index_yx(idx, 1) = y;
 
-        ys(0,idx) = image(x,y,0);
-        ys(1,idx) = image(x,y,1);
-        ys(2,idx) = image(x,y,2);
+        ys.index_yx(idx, 0) = image(x,y,0);
+        ys.index_yx(idx, 1) = image(x,y,1);
+        ys.index_yx(idx, 2) = image(x,y,2);
       }
     }
 
@@ -108,11 +108,11 @@ void init_3D_demo(){
   SceneObject *o = new SceneObject;
 
   for(int i=0;i<N;++i){
-    xs(0,i) = r;
-    xs(1,i) = r;
-    ys[i] = 0.1 * ( sqr(xs(0,i)) + sqr(xs(1,i)) ) + noise;
+    xs.index_yx(i, 0) = r;
+    xs.index_yx(i, 1) = r;
+    ys[i] = 0.1 * ( sqr(xs.index_yx(i, 0)) + sqr(xs.index_yx(i, 1)) ) + noise;
 
-    o->addVertex(Vec(xs(0,i), xs(1,i), ys[i], 1));
+    o->addVertex(Vec(xs.index_yx(i, 0), xs.index_yx(i, 1), ys[i], 1));
   }
 
   o->setMaterial(Material::fromColor(geom_red()));
@@ -126,8 +126,8 @@ void init_3D_demo(){
   xs.setBounds(2,dim*dim);
   for(float x=-dim/2;x<=dim/2;++x){
     for(float y=-dim/2;y<=dim/2;++y){
-      xs(0,(x+dim/2)+dim*(y+dim/2)) = x/10.0;
-      xs(1,(x+dim/2)+dim*(y+dim/2)) = y/10.0;
+      xs.index_yx((x+dim/2)+dim*(y+dim/2), 0) = x/10.0;
+      xs.index_yx((x+dim/2)+dim*(y+dim/2), 1) = y/10.0;
     }
   }
 
@@ -135,7 +135,7 @@ void init_3D_demo(){
 
   std::vector<Vec> ps(dim*dim);
   for(int i=0;i<dim*dim;++i){
-    ps[i] = Vec(xs(0,i), xs(1,i), grid[i]);
+    ps[i] = Vec(xs.index_yx(i, 0), xs.index_yx(i, 1), grid[i]);
   }
 
 

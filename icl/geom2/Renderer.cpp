@@ -552,7 +552,7 @@ void main() { FragColor = vColor; }
       Mat t = light->getTransformation(true);
       GeomColor c = light->getColor();
       float intensity = light->getIntensity();
-      lights.push_back({{t(3,0), t(3,1), t(3,2)},
+      lights.push_back({{t.index_yx(0, 3), t.index_yx(1, 3), t.index_yx(2, 3)},
                          {c[0]*intensity, c[1]*intensity, c[2]*intensity}});
     }
     if (auto *group = dynamic_cast<GroupNode*>(node)) {
@@ -590,9 +590,9 @@ void main() { FragColor = vColor; }
     // view = [R|t], camPos = -R^T * t. For orthonormal R: R^T = R^-1.
     // The 4th column of the inverse view is the camera position.
     // Approximate: last row of ICL row-major view matrix has translation.
-    float camX = -(viewMatrix(0,0)*viewMatrix(3,0) + viewMatrix(0,1)*viewMatrix(3,1) + viewMatrix(0,2)*viewMatrix(3,2));
-    float camY = -(viewMatrix(1,0)*viewMatrix(3,0) + viewMatrix(1,1)*viewMatrix(3,1) + viewMatrix(1,2)*viewMatrix(3,2));
-    float camZ = -(viewMatrix(2,0)*viewMatrix(3,0) + viewMatrix(2,1)*viewMatrix(3,1) + viewMatrix(2,2)*viewMatrix(3,2));
+    float camX = -(viewMatrix.index_yx(0, 0)*viewMatrix.index_yx(0, 3) + viewMatrix.index_yx(1, 0)*viewMatrix.index_yx(1, 3) + viewMatrix.index_yx(2, 0)*viewMatrix.index_yx(2, 3));
+    float camY = -(viewMatrix.index_yx(0, 1)*viewMatrix.index_yx(0, 3) + viewMatrix.index_yx(1, 1)*viewMatrix.index_yx(1, 3) + viewMatrix.index_yx(2, 1)*viewMatrix.index_yx(2, 3));
+    float camZ = -(viewMatrix.index_yx(0, 2)*viewMatrix.index_yx(0, 3) + viewMatrix.index_yx(1, 2)*viewMatrix.index_yx(1, 3) + viewMatrix.index_yx(2, 2)*viewMatrix.index_yx(2, 3));
     glUniform3f(m_data->locCameraPos, camX, camY, camZ);
 
     // Upload lights
@@ -662,16 +662,16 @@ void main() { FragColor = vColor; }
       // Billboard: cancel view rotation so quad always faces camera
       if (auto *text = dynamic_cast<TextNode*>(node); text && text->isBillboard()) {
         // Extract world position from model matrix (row 3 in ICL row-major)
-        float tx = modelMatrix(3,0), ty = modelMatrix(3,1), tz = modelMatrix(3,2);
+        float tx = modelMatrix.index_yx(0, 3), ty = modelMatrix.index_yx(1, 3), tz = modelMatrix.index_yx(2, 3);
         // Extract inverse view rotation (transpose of upper-left 3x3)
         Mat bill = Mat::id();
         for (int i = 0; i < 3; i++)
           for (int j = 0; j < 3; j++)
-            bill(i, j) = viewMatrix(j, i);
+            bill.index_yx(j, i) = viewMatrix.index_yx(i, j);
         // Apply as: translate to world pos, then inverse-rotate
-        bill(3, 0) = tx;
-        bill(3, 1) = ty;
-        bill(3, 2) = tz;
+        bill.index_yx(0, 3) = tx;
+        bill.index_yx(1, 3) = ty;
+        bill.index_yx(2, 3) = tz;
         modelMatrix = bill;
       }
 

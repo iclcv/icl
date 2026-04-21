@@ -142,7 +142,7 @@ namespace icl::filter {
           DynMatrix<T> m2 = src->extractDynMatrix(i);
           for(int y = 0; y < roi.height; ++y) {
             for(int x = 0; x < roi.width; ++x) {
-              m(x, y) = m2(x + roi.x, y + roi.y);
+              m.index_yx(y, x) = m2.index_yx(y + roi.y, x + roi.x);
             }
           }
         }
@@ -347,41 +347,41 @@ namespace icl::filter {
         T temp = T(0);
         for(unsigned int y = 0; y < rows2; ++y) {
           for(unsigned int x = 0; x < cols2; ++x) {
-            temp = mat(x, y);
-            mat(x, y) = mat(x + cols2, y + rows2);
-            mat(x + cols2, y + rows2) = temp;
-            temp = mat(x + cols2, y);
-            mat(x + cols2, y) = mat(x, y + rows2);
-            mat(x, y + rows2) = temp;
+            temp = mat.index_yx(y, x);
+            mat.index_yx(y, x) = mat.index_yx(y + rows2, x + cols2);
+            mat.index_yx(y + rows2, x + cols2) = temp;
+            temp = mat.index_yx(y, x + cols2);
+            mat.index_yx(y, x + cols2) = mat.index_yx(y + rows2, x);
+            mat.index_yx(y + rows2, x) = temp;
           }
         }
         if(cols % 2 == 1 && rows % 2 == 0) {
           T t2, t3;
           for(unsigned int y = 0; y < rows2; ++y) {
-            t2 = mat(cols - 1, y);
-            t3 = mat(cols - 1, y + rows2);
-            mat(cols - 1, y) = mat(0, y);
-            mat(cols - 1, y + rows2) = mat(0, y + rows2);
+            t2 = mat.index_yx(y, cols - 1);
+            t3 = mat.index_yx(y + rows2, cols - 1);
+            mat.index_yx(y, cols - 1) = mat.index_yx(y, 0);
+            mat.index_yx(y + rows2, cols - 1) = mat.index_yx(y + rows2, 0);
             for(unsigned int x = 1; x < cols2; ++x) {
-              mat(x - 1, y) = mat(x, y);
-              mat(x - 1, y + rows2) = mat(x, y + rows2);
+              mat.index_yx(y, x - 1) = mat.index_yx(y, x);
+              mat.index_yx(y + rows2, x - 1) = mat.index_yx(y + rows2, x);
             }
-            mat(cols2 - 1, y) = t3;
-            mat(cols2 - 1, y + rows2) = t2;
+            mat.index_yx(y, cols2 - 1) = t3;
+            mat.index_yx(y + rows2, cols2 - 1) = t2;
           }
         } else if(cols % 2 == 0 && rows % 2 == 1) {
           T t2, t3;
           for(unsigned int x = 0; x < cols2; ++x) {
-            t2 = mat(x, rows - 1);
-            t3 = mat(x + cols2, rows - 1);
-            mat(x, rows - 1) = mat(x, 0);
-            mat(x + cols2, rows - 1) = mat(x + cols2, 0);
+            t2 = mat.index_yx(rows - 1, x);
+            t3 = mat.index_yx(rows - 1, x + cols2);
+            mat.index_yx(rows - 1, x) = mat.index_yx(0, x);
+            mat.index_yx(rows - 1, x + cols2) = mat.index_yx(0, x + cols2);
             for(unsigned int y = 1; y < rows2; ++y) {
-              mat(x, y - 1) = mat(x, y);
-              mat(x + cols2, y - 1) = mat(x + cols2, y);
+              mat.index_yx(y - 1, x) = mat.index_yx(y, x);
+              mat.index_yx(y - 1, x + cols2) = mat.index_yx(y, x + cols2);
             }
-            mat(x, rows2 - 1) = t3;
-            mat(x + cols2, rows2 - 1) = t2;
+            mat.index_yx(rows2 - 1, x) = t3;
+            mat.index_yx(rows2 - 1, x + cols2) = t2;
           }
         }
       } else {
@@ -397,11 +397,11 @@ namespace icl::filter {
         }
         dim = rows; dim2 = dim / 2;
         for(unsigned int k = 0; k < cols; ++k) {
-          for(unsigned int i = 0; i < dim2; ++i) std::swap(mat(k, i), mat(k, i + dim2));
-          T temp = mat(k, dim - 1);
-          mat(k, dim - 1) = mat(k, 0);
-          for(unsigned int i = 1; i < dim2; ++i) mat(k, i - 1) = mat(k, i);
-          if(dim2 > 0) mat(k, dim2 - 1) = temp;
+          for(unsigned int i = 0; i < dim2; ++i) std::swap(mat.index_yx(i + dim2, k), mat.index_yx(i, k));
+          T temp = mat.index_yx(dim - 1, k);
+          mat.index_yx(dim - 1, k) = mat.index_yx(0, k);
+          for(unsigned int i = 1; i < dim2; ++i) mat.index_yx(i - 1, k) = mat.index_yx(i, k);
+          if(dim2 > 0) mat.index_yx(dim2 - 1, k) = temp;
         }
       }
     } else {
@@ -428,50 +428,50 @@ namespace icl::filter {
         T temp = T(0);
         for(unsigned int y = 0; y < rows2; ++y) {
           for(unsigned int x = 0; x < cols2; ++x) {
-            temp = mat(x, y);
-            mat(x, y) = mat(x + cols2, y + rows2);
-            mat(x + cols2, y + rows2) = temp;
-            temp = mat(x + cols2, y);
-            mat(x + cols2, y) = mat(x, y + rows2);
-            mat(x, y + rows2) = temp;
+            temp = mat.index_yx(y, x);
+            mat.index_yx(y, x) = mat.index_yx(y + rows2, x + cols2);
+            mat.index_yx(y + rows2, x + cols2) = temp;
+            temp = mat.index_yx(y, x + cols2);
+            mat.index_yx(y, x + cols2) = mat.index_yx(y + rows2, x);
+            mat.index_yx(y + rows2, x) = temp;
           }
         }
         if(cols % 2 == 1 && rows % 2 == 0) {
           T t2, t3;
           for(unsigned int y = 0; y < rows2; ++y) {
-            t2 = mat(cols - 1, y);
-            t3 = mat(cols - 1, y + rows2);
-            mat(cols - 1, y) = mat(0, y);
-            mat(cols - 1, y + rows2) = mat(0, y + rows2);
+            t2 = mat.index_yx(y, cols - 1);
+            t3 = mat.index_yx(y + rows2, cols - 1);
+            mat.index_yx(y, cols - 1) = mat.index_yx(y, 0);
+            mat.index_yx(y + rows2, cols - 1) = mat.index_yx(y + rows2, 0);
             for(unsigned int x = 1; x < cols2; ++x) {
-              mat(x - 1, y) = mat(x, y);
-              mat(x - 1, y + rows2) = mat(x, y + rows2);
+              mat.index_yx(y, x - 1) = mat.index_yx(y, x);
+              mat.index_yx(y + rows2, x - 1) = mat.index_yx(y + rows2, x);
             }
-            mat(cols2 - 1, y) = t3;
-            mat(cols2 - 1, y + rows2) = t2;
+            mat.index_yx(y, cols2 - 1) = t3;
+            mat.index_yx(y + rows2, cols2 - 1) = t2;
           }
           for(unsigned int y = 0; y < rows; ++y) {
             for(unsigned int x = cols - 1; x > 0; --x) {
-              std::swap(mat(x, y), mat(x - 1, y));
+              std::swap(mat.index_yx(y, x - 1), mat.index_yx(y, x));
             }
           }
         } else if(cols % 2 == 0 && rows % 2 == 1) {
           T t2, t3;
           for(unsigned int x = 0; x < cols2; ++x) {
-            t2 = mat(x, rows - 1);
-            t3 = mat(x + cols2, rows - 1);
-            mat(x, rows - 1) = mat(x, 0);
-            mat(x + cols2, rows - 1) = mat(x + cols2, 0);
+            t2 = mat.index_yx(rows - 1, x);
+            t3 = mat.index_yx(rows - 1, x + cols2);
+            mat.index_yx(rows - 1, x) = mat.index_yx(0, x);
+            mat.index_yx(rows - 1, x + cols2) = mat.index_yx(0, x + cols2);
             for(unsigned int y = 1; y < rows2; ++y) {
-              mat(x, y - 1) = mat(x, y);
-              mat(x + cols2, y - 1) = mat(x + cols2, y);
+              mat.index_yx(y - 1, x) = mat.index_yx(y, x);
+              mat.index_yx(y - 1, x + cols2) = mat.index_yx(y, x + cols2);
             }
-            mat(x, rows2 - 1) = t3;
-            mat(x + cols2, rows2 - 1) = t2;
+            mat.index_yx(rows2 - 1, x) = t3;
+            mat.index_yx(rows2 - 1, x + cols2) = t2;
           }
           for(unsigned int x = 0; x < cols; ++x) {
             for(unsigned int y = rows - 1; y > 0; --y) {
-              std::swap(mat(x, y), mat(x, y - 1));
+              std::swap(mat.index_yx(y - 1, x), mat.index_yx(y, x));
             }
           }
         }
@@ -485,8 +485,8 @@ namespace icl::filter {
         }
         dim = rows; dim2 = dim / 2;
         for(unsigned int k = 0; k < cols; ++k) {
-          for(unsigned int i = 0; i < dim2; ++i) std::swap(mat(k, i), mat(k, i + dim2));
-          for(unsigned int i = dim - 1; i > dim2; --i) std::swap(mat(k, i), mat(k, i - 1));
+          for(unsigned int i = 0; i < dim2; ++i) std::swap(mat.index_yx(i + dim2, k), mat.index_yx(i, k));
+          for(unsigned int i = dim - 1; i > dim2; --i) std::swap(mat.index_yx(i - 1, k), mat.index_yx(i, k));
         }
       }
     } else {

@@ -34,10 +34,10 @@ namespace icl::markers {
       for(int i=0;i<n;++i){
         Point32f p = ps[i] - Point32f(pca.c.x,pca.c.y);
         float xx = p.x*p.x, yy = p.y*p.y, xy = p.x*p.y;
-        C(0,0) += xx;
-        C(1,1) += yy;
-        C(0,1) += xy;
-        C(1,0) += xy;
+        C.index_yx(0, 0) += xx;
+        C.index_yx(1, 1) += yy;
+        C.index_yx(1, 0) += xy;
+        C.index_yx(0, 1) += xy;
       }
       C *= 1./n;
 

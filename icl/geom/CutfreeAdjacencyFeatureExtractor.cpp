@@ -63,7 +63,7 @@ namespace icl::geom {
               int passes, int tolerance, core::Img32s labelImage){
     math::DynMatrixBase<bool> cutfreeMatrix(testMatrix);
     for(unsigned int x=0; x<cutfreeMatrix.rows(); x++){
-      cutfreeMatrix(x,x)=false;
+      cutfreeMatrix.index_yx(x, x)=false;
     }
     math::DynMatrix<PlanarRansacEstimator::Result> result = m_data->ransac->apply(xyzh, surfaces,
                   cutfreeMatrix, euclideanDistance, passes, tolerance,
@@ -71,9 +71,9 @@ namespace icl::geom {
 
     for(unsigned int x=0; x<result.rows(); x++){
       for(unsigned int y=0; y<result.cols(); y++){
-        if(result(x,y).nacc>=result(x,y).acc){
-          cutfreeMatrix(x,y)=false;
-          cutfreeMatrix(y,x)=false;
+        if(result.index_yx(y, x).nacc>=result.index_yx(y, x).acc){
+          cutfreeMatrix.index_yx(y, x)=false;
+          cutfreeMatrix.index_yx(x, y)=false;
         }
       }
     }
@@ -87,16 +87,16 @@ namespace icl::geom {
               std::vector<SurfaceFeatureExtractor::SurfaceFeature> feature, float minAngle){
     math::DynMatrixBase<bool> cutfreeMatrix(testMatrix);
     for(unsigned int x=0; x<cutfreeMatrix.rows(); x++){
-      cutfreeMatrix(x,x)=false;
+      cutfreeMatrix.index_yx(x, x)=false;
       for(unsigned int y=0; y<cutfreeMatrix.cols(); y++){
-        if(cutfreeMatrix(x,y)==true || cutfreeMatrix(y,x)==true){
+        if(cutfreeMatrix.index_yx(y, x)==true || cutfreeMatrix.index_yx(x, y)==true){
           Vec n1=feature[x].meanNormal;
           Vec n2=feature[y].meanNormal;
           float a1 = (n1[0] * n2[0]+ n1[1] * n2[1]+ n1[2] * n2[2]);
 	          float ang=acos(a1)*180./M_PI;
 	          if(ang<minAngle){
-            cutfreeMatrix(x,y)=false;
-            cutfreeMatrix(y,x)=false;
+            cutfreeMatrix.index_yx(y, x)=false;
+            cutfreeMatrix.index_yx(x, y)=false;
           }
         }
       }
@@ -107,9 +107,9 @@ namespace icl::geom {
 
     for(unsigned int x=0; x<result.rows(); x++){
       for(unsigned int y=0; y<result.cols(); y++){
-        if(result(x,y).nacc>=result(x,y).acc){
-          cutfreeMatrix(x,y)=false;
-          cutfreeMatrix(y,x)=false;
+        if(result.index_yx(y, x).nacc>=result.index_yx(y, x).acc){
+          cutfreeMatrix.index_yx(y, x)=false;
+          cutfreeMatrix.index_yx(x, y)=false;
         }
       }
     }

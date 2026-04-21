@@ -22,7 +22,7 @@ namespace {
     double inv[3][3];
     for(int i = 0; i < 3; ++i)
       for(int j = 0; j < 3; ++j)
-        inv[i][j] = M(i,j);
+        inv[i][j] = M.index_yx(j, i);
 
     src.visitWith(dst, [&](const auto &s, auto &d) {
       using T = typename std::remove_reference_t<decltype(s)>::type;

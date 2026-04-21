@@ -47,7 +47,7 @@ namespace icl::markers {
       dst = poseEst.getPose(n, ps.data(), ps.data()+n, *camera);
       for(int x=1;x<3;++x){
         for(int y=0;y<3;++y){
-          dst(x,y) *= -1;
+          dst.index_yx(y, x) *= -1;
         }
       }
     }catch(ICLException &){

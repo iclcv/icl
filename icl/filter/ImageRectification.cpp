@@ -90,12 +90,12 @@ namespace icl::filter {
       if(hom) *hom = HOM;
       if(Q || R || (maxTilt > 0)){
         FixedMatrix<float,2,2> q,r;
-        FixedMatrix<float,2,2>(HOM(0,0),HOM(1,0),
-                               HOM(0,1),HOM(1,1)).decompose_QR(q,r);
+        FixedMatrix<float,2,2>(HOM.index_yx(0, 0),HOM.index_yx(0, 1),
+                               HOM.index_yx(1, 0),HOM.index_yx(1, 1)).decompose_QR(q,r);
         if(Q) *Q = q;
         if(R) *R = r;
         if(maxTilt>0){
-          float a = fabs(r(0,0)), b=fabs(r(1,1));
+          float a = fabs(r.index_yx(0, 0)), b=fabs(r.index_yx(1, 1));
           if(a < 1E-6 || b < 1E-5) throw ICLException("ImageRectification<T>::apply: maxTilt criterion not "
                                                       "met (at least one diagonal element of R is too small)");
           if(iclMax(a/b,b/a) > maxTilt) throw ICLException("ImageRectification<T>::apply: maxTilt criterion not "
@@ -122,15 +122,15 @@ namespace icl::filter {
 
 #ifdef ICL_HAVE_SSE2
       // convert the values of the homography matrix in sse-types
-      const __m128 hom00 = _mm_set1_ps(hom(0,0));
-      const __m128 hom01 = _mm_set1_ps(hom(0,1));
-      const __m128 hom02 = _mm_set1_ps(hom(0,2));
-      const __m128 hom10 = _mm_set1_ps(hom(1,0));
-      const __m128 hom11 = _mm_set1_ps(hom(1,1));
-      const __m128 hom12 = _mm_set1_ps(hom(1,2));
-      const __m128 hom20 = _mm_set1_ps(hom(2,0));
-      const __m128 hom21 = _mm_set1_ps(hom(2,1));
-      const __m128 hom22 = _mm_set1_ps(hom(2,2));
+      const __m128 hom00 = _mm_set1_ps(hom.index_yx(0, 0));
+      const __m128 hom01 = _mm_set1_ps(hom.index_yx(1, 0));
+      const __m128 hom02 = _mm_set1_ps(hom.index_yx(2, 0));
+      const __m128 hom10 = _mm_set1_ps(hom.index_yx(0, 1));
+      const __m128 hom11 = _mm_set1_ps(hom.index_yx(1, 1));
+      const __m128 hom12 = _mm_set1_ps(hom.index_yx(2, 1));
+      const __m128 hom20 = _mm_set1_ps(hom.index_yx(0, 2));
+      const __m128 hom21 = _mm_set1_ps(hom.index_yx(1, 2));
+      const __m128 hom22 = _mm_set1_ps(hom.index_yx(2, 2));
       // constant for faster counting
       const __m128 r0123 = _mm_set_ps(3,2,1,0);
 
@@ -230,15 +230,15 @@ namespace icl::filter {
 
 #ifdef ICL_HAVE_SSE2
       // convert the values of the homography matrix in sse-types
-      const __m128 hom00 = _mm_set1_ps(hom(0,0));
-      const __m128 hom01 = _mm_set1_ps(hom(0,1));
-      const __m128 hom02 = _mm_set1_ps(hom(0,2));
-      const __m128 hom10 = _mm_set1_ps(hom(1,0));
-      const __m128 hom11 = _mm_set1_ps(hom(1,1));
-      const __m128 hom12 = _mm_set1_ps(hom(1,2));
-      const __m128 hom20 = _mm_set1_ps(hom(2,0));
-      const __m128 hom21 = _mm_set1_ps(hom(2,1));
-      const __m128 hom22 = _mm_set1_ps(hom(2,2));
+      const __m128 hom00 = _mm_set1_ps(hom.index_yx(0, 0));
+      const __m128 hom01 = _mm_set1_ps(hom.index_yx(1, 0));
+      const __m128 hom02 = _mm_set1_ps(hom.index_yx(2, 0));
+      const __m128 hom10 = _mm_set1_ps(hom.index_yx(0, 1));
+      const __m128 hom11 = _mm_set1_ps(hom.index_yx(1, 1));
+      const __m128 hom12 = _mm_set1_ps(hom.index_yx(2, 1));
+      const __m128 hom20 = _mm_set1_ps(hom.index_yx(0, 2));
+      const __m128 hom21 = _mm_set1_ps(hom.index_yx(1, 2));
+      const __m128 hom22 = _mm_set1_ps(hom.index_yx(2, 2));
       // constant for faster counting
       const __m128 r0123 = _mm_set_ps(3,2,1,0);
 

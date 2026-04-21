@@ -227,7 +227,7 @@ namespace icl::geom {
         }
 
         for(size_t j=0; j<testMatrix.rows(); j++){
-          if(testMatrix(i,j)==true){
+          if(testMatrix.index_yx(j, i)==true){
             adjs.push_back(j);
             count++;
             for(int k=0; k<passes; k++){
@@ -931,7 +931,7 @@ namespace icl::geom {
           }
           int numPoints = pointIDs.at(k).size();
           Result res = createResult(n0Pre[i], distPre[i], above, below, on, threshold, passes, tolerance, optimization, numPoints);
-          result(i,k)=res;
+          result.index_yx(k, i)=res;
         }
       }
 

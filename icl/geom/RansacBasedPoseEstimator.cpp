@@ -97,9 +97,9 @@ namespace icl::geom {
       p[0] =  e[0];
       p[1] =  e[1];
       p[2] =  e[2];
-      p[3] = T(3,0);
-      p[4] = T(3,1);
-      p[5] = T(3,2);
+      p[3] = T.index_yx(0, 3);
+      p[4] = T.index_yx(1, 3);
+      p[5] = T.index_yx(2, 3);
       /*
       std::cout << "model: ["
                 << p[0] << ", "

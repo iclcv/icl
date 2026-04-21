@@ -202,9 +202,9 @@ namespace icl::geom {
 
 
   inline Point map_rgbd(const Mat &M, const ViewRayDir &v){
-    const float phInv = 1.0/ ( M(0,3) * v[0] + M(1,3) * v[1] + M(2,3) * v[2] + M(3,3) );
-    const int px = phInv * ( M(0,0) * v[0] + M(1,0) * v[1] + M(2,0) * v[2] + M(3,0) );
-    const int py = phInv * ( M(0,1) * v[0] + M(1,1) * v[1] + M(2,1) * v[2] + M(3,1) );
+    const float phInv = 1.0/ ( M.index_yx(3, 0) * v[0] + M.index_yx(3, 1) * v[1] + M.index_yx(3, 2) * v[2] + M.index_yx(3, 3) );
+    const int px = phInv * ( M.index_yx(0, 0) * v[0] + M.index_yx(0, 1) * v[1] + M.index_yx(0, 2) * v[2] + M.index_yx(0, 3) );
+    const int py = phInv * ( M.index_yx(1, 0) * v[0] + M.index_yx(1, 1) * v[1] + M.index_yx(1, 2) * v[2] + M.index_yx(1, 3) );
     return Point(px,py);
   }
 

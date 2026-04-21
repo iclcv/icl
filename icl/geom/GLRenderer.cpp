@@ -1509,7 +1509,7 @@ void GLRenderer::renderWithViewport(const Scene &scene, int camIndex,
       auto mat = obj->getMaterial();
       if (!mat || !mat->isTransmissive()) continue;
       Mat T = obj->getTransformation(true);
-      float dx = T(3,0) - camPos[0], dy = T(3,1) - camPos[1], dz = T(3,2) - camPos[2];
+      float dx = T.index_yx(0, 3) - camPos[0], dy = T.index_yx(1, 3) - camPos[1], dz = T.index_yx(2, 3) - camPos[2];
       transparents.push_back({obj, dx*dx + dy*dy + dz*dz});
     }
     std::sort(transparents.begin(), transparents.end(),
@@ -1681,7 +1681,7 @@ void GLRenderer::renderObject(const SceneObject *obj,
     float mvpGL[16];
     for (int i = 0; i < 4; i++)
       for (int j = 0; j < 4; j++)
-        mvpGL[j * 4 + i] = mvp(i, j);
+        mvpGL[j * 4 + i] = mvp.index_yx(j, i);
     glUniformMatrix4fv(m_data->unlitLocMVP, 1, GL_FALSE, mvpGL);
 
     if (cache->numLineVertices > 0) {
