@@ -40,7 +40,7 @@
 
 ## Code changes required (cvt/cvt8u/load<T> removal, ImgQ→Image)
 
-- io/apps/create.cpp — `ImgBase *image = new ImgQ(create(...))` → `Image image = create(...)`, `.ptr()` for FixedConverter
+- io/apps/create.cpp — **fixed and tested** — rewritten with `fixed_convert()` + `save()`, uses `getChannelsOfFormat()` for `-f` flag
 - qt/apps/xv.cpp — `ImgQ o = ones(...)*100` → `Image o = ones(...)*100`, `.ptr()` for widget
 - qt/apps/create-button-icon.cpp — `load<icl8u>()` → `icl::qt::load().as8u()`
 - cv/apps/crop.cpp — `ImgQ image = qt::load(f[i])` → `Image image = load(f[i])`

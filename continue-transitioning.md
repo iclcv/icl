@@ -1,6 +1,77 @@
 # ICL — Continuation Guide
 
-## Current State (Session 38 — Quick2 framework)
+## Current State (Session 39 — Quick2 Phase 2 migration)
+
+### Session 39 Summary
+
+Bulk migration of ~100 demos/apps from Quick.h/Common.h to Quick2.h/Common2.h.
+FixedConvertOp as proper UnaryOp. Bug fix in pa_def().
+
+#### A. Common2.h + bulk migration
+
+- **Common2.h**: parallel to Common.h, includes Quick2.h instead of Quick.h.
+  Allows incremental per-file migration (Quick.h and Quick2.h cannot coexist
+  due to ambiguous overloads on same-named functions).
+- **~100 demos/apps migrated**: most were trivial header swaps. ~15 needed
+  code changes: `cvt()`/`cvt8u()` → `Image()` + `.as8u()`, `load<icl8u>()`
+  → `icl::qt::load().as8u()`, name conflicts requiring `icl::qt::` qualification.
+- **QuickIO.h**: added tic/toc, openFileDialog, saveFileDialog,
+  textInputDialog, execute_process declarations (were only in Quick.h).
+- **Quick2.h**: added `#include <icl/core/CoreFunctions.h>` — needed so
+  `parse<depth>` and `parse<format>` find their `operator>>` declarations.
+
+#### B. FixedConvertOp (new UnaryOp)
+
+- `icl/filter/FixedConvertOp.h/.cpp` — UnaryOp wrapping core::Converter,
+  converts images to fixed output parameters (size, format, depth).
+  Overrides `apply()` and `getDestinationParams()`.
+- `fixed_convert(image, params, depth)` Quick2 convenience function in
+  QuickFilter — one-liner via `applyOp(FixedConvertOp(...), src)`.
+- Old `core::FixedConverter` stays for now (Widget.cpp, convert.cpp use it).
+
+#### C. Bug fix: pa_def() and parse<T>
+
+`pa_def<T>(id, default)` called `parse<T>(progArg)` where `progArg` is a
+`ProgArg`. Since `parse` takes `string_view`, the compiler used
+`ProgArg::operator string_view()` → `parse<string_view>()` — but
+`string_view` is not stream-extractable (doesn't own memory). Fix:
+use `pa_subarg_internal(p)` to get `const string&` directly, bypassing
+the generic `operator T()` conversion chain.
+
+#### D. create.cpp rewritten with Quick2
+
+`io/apps/create.cpp` now uses `fixed_convert()` + `save()`:
+```cpp
+save(fixed_convert(image, p, d), outFileName);
+```
+Down from 6 lines of FixedConverter + ImgBase** + FileWriter boilerplate.
+Also fixed: `-f` flag now derives channel count from format via
+`getChannelsOfFormat()` instead of hardcoding source image channels.
+
+#### E. Migration tracking docs
+
+- `demos-ported.md` — all ported demos, categorized trivial vs code changes
+- `apps-ported.md` — all ported apps, same structure
+
+### What's next
+
+**Quick2 Phase 2 remaining**:
+- 5 demos with heavy ImgQ pixel access: canvas.cpp, pseudo-color.cpp,
+  signature-extraction.cpp, llm-2D.cpp, polynomial-regression.cpp
+- 3 library .cpp files using ImgQ: Scene.cpp, FiducialDetectorPluginICL1.cpp,
+  DrawWidget.h
+- ~16 library headers (umbrella/convenience includes) — trivial header swap
+  once library code is done
+- Final: delete Quick.h/Quick.cpp, retire Common.h
+
+**Quick2 open items**:
+- MorphologicalOp opening/closing crash via Quick2 `filter()` — pre-existing
+- Pool memory accounting drift — periodic reconciliation
+- `ImgROI2`: store target ROI separately instead of modifying image (deferred)
+
+---
+
+## Session 38 (Quick2 framework)
 
 ### Session 38 Summary (12 commits)
 
@@ -64,15 +135,6 @@ concurrent image drawing, pool isolation with 4MB cap.
 - TODO: `BackendDispatching::addStateful` eagerly calls factory at static init
 - Removed stale `Testing/` CTest artifact directory
 - Plan document: `iclquick-plan.md`
-
-### What's next
-
-**Quick2 Phase 2**: migrate consumers from `Quick.h` → `Quick2.h` one file at
-a time. Demos/examples first (self-contained), library code after. See
-`iclquick-plan.md` for full file list. Start with `qt/examples/quick.cpp`.
-
-**Quick2 open items**:
-- `ImgROI2`: store target ROI separately instead of modifying image (deferred)
 - MorphologicalOp opening/closing crash via Quick2 `filter()` — pre-existing bug
 - Consider `localThresh()` convenience function
 - Pool memory accounting may drift over time (currentUsage counter) — add
