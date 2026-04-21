@@ -156,6 +156,11 @@ namespace icl::core {
     /// Returns true if all channel data is exclusively owned
     bool isIndependent() const;
 
+    /// Returns true if this is the only Image sharing the underlying ImgBase
+    /** Use this for buffer pools: a buffer is safe to reclaim only when
+        no other Image holds a reference to the same ImgBase. */
+    bool isExclusivelyOwned() const;
+
     /// @}
     /// @name Copy / Convert
     /// @{

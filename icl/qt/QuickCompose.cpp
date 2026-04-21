@@ -31,6 +31,20 @@ namespace icl::qt {
 
   // ---- horizontal concatenation ----
 
+  // Helper: blit src into dst at given offset, channel-by-channel
+  static void blitInto(const Image &src, Image &dst, const Point &dstOffset) {
+    dst.visit([&](auto &dstImg) {
+      using T = typename std::remove_reference_t<decltype(dstImg)>::type;
+      const auto &srcImg = src.as<T>();
+      int ch = std::min(srcImg.getChannels(), dstImg.getChannels());
+      Size srcSize = srcImg.getSize();
+      for(int c = 0; c < ch; ++c) {
+        deepCopyChannelROI(&srcImg, c, Point::null, srcSize,
+                           &dstImg, c, dstOffset, srcSize);
+      }
+    });
+  }
+
   Image operator,(const Image &a, const Image &b) {
     if(a.isNull() || a.getSize() == Size::null) return b.isNull() ? Image() : b.deepCopy();
     if(b.isNull() || b.getSize() == Size::null) return a.deepCopy();
@@ -43,23 +57,8 @@ namespace icl::qt {
 
     Image r = activeContext().getBuffer(d, ImgParams(sz, ch));
     r.clear();
-
-    // Copy a into left portion
-    r.setROI(Rect(Point::null, ca.getSize()));
-    ImgROI2 lr = roi(r);
-    // Need to match channel count for copy
-    Image ta = ca;
-    if(ta.getChannels() < ch) ta.setChannels(ch);
-    lr = ta;
-
-    // Copy b into right portion
-    r.setROI(Rect(Point(ca.getWidth(), 0), cb.getSize()));
-    ImgROI2 rr = roi(r);
-    Image tb = cb;
-    if(tb.getChannels() < ch) tb.setChannels(ch);
-    rr = tb;
-
-    r.setFullROI();
+    blitInto(ca, r, Point::null);
+    blitInto(cb, r, Point(ca.getWidth(), 0));
     return r;
   }
 
@@ -77,20 +76,8 @@ namespace icl::qt {
 
     Image r = activeContext().getBuffer(d, ImgParams(sz, ch));
     r.clear();
-
-    r.setROI(Rect(Point::null, ca.getSize()));
-    ImgROI2 tr = roi(r);
-    Image ta = ca;
-    if(ta.getChannels() < ch) ta.setChannels(ch);
-    tr = ta;
-
-    r.setROI(Rect(Point(0, ca.getHeight()), cb.getSize()));
-    ImgROI2 br = roi(r);
-    Image tb = cb;
-    if(tb.getChannels() < ch) tb.setChannels(ch);
-    br = tb;
-
-    r.setFullROI();
+    blitInto(ca, r, Point::null);
+    blitInto(cb, r, Point(0, ca.getHeight()));
     return r;
   }
 

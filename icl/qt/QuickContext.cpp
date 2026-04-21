@@ -76,7 +76,7 @@ namespace icl::qt {
 
     // 1. Exact match among independent buffers
     for(auto &buf : buffers) {
-      if(buf.isIndependent() && buf.getDepth() == d
+      if(buf.isExclusivelyOwned() && buf.getDepth() == d
          && buf.getSize() == params.getSize()
          && buf.getChannels() == params.getChannels()) {
         buf.setFormat(params.getFormat());
@@ -86,7 +86,7 @@ namespace icl::qt {
 
     // 2. Any independent buffer → resize
     for(auto &buf : buffers) {
-      if(buf.isIndependent()) {
+      if(buf.isExclusivelyOwned()) {
         m_data->currentUsage -= buf.memoryUsage();
         buf.ensureCompatible(d, params.getSize(), params.getChannels(), params.getFormat());
         m_data->currentUsage += buf.memoryUsage();
@@ -98,7 +98,7 @@ namespace icl::qt {
     if(m_data->currentUsage + needed > m_data->memoryCap) {
       // Evict independent buffers (back to front) until enough room
       for(int i = static_cast<int>(buffers.size()) - 1; i >= 0; --i) {
-        if(buffers[i].isIndependent()) {
+        if(buffers[i].isExclusivelyOwned()) {
           m_data->currentUsage -= buffers[i].memoryUsage();
           buffers.erase(buffers.begin() + i);
           if(m_data->currentUsage + needed <= m_data->memoryCap) break;
@@ -141,7 +141,7 @@ namespace icl::qt {
   void QuickContext::clearBuffers() {
     auto &buffers = m_data->buffers;
     for(int i = static_cast<int>(buffers.size()) - 1; i >= 0; --i) {
-      if(buffers[i].isIndependent()) {
+      if(buffers[i].isExclusivelyOwned()) {
         m_data->currentUsage -= buffers[i].memoryUsage();
         buffers.erase(buffers.begin() + i);
       }

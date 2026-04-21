@@ -85,6 +85,7 @@ namespace icl::core {
 
   void Image::detach(int channel) { m_impl->detach(channel); }
   bool Image::isIndependent() const { return m_impl->isIndependent(); }
+  bool Image::isExclusivelyOwned() const { return m_impl && m_impl.use_count() == 1; }
 
   // --- Equality ---
 

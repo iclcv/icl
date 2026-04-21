@@ -102,28 +102,35 @@ namespace icl::qt {
   // ---- logical operators ----
 
   namespace {
-    /// Promotes both images to the deeper depth and ensures matching ROI/channels
+    /// Promotes both images to the deeper depth and ensures matching size/channels
     std::pair<Image, Image> prepareLogicalOp(const Image &a, const Image &b) {
-      // Use the deeper depth for the result
       depth d = std::max(a.getDepth(), b.getDepth());
-      auto &ctx = activeContext();
 
       Size s(std::max(a.getROISize().width, b.getROISize().width),
              std::max(a.getROISize().height, b.getROISize().height));
       int ch = std::max(a.getChannels(), b.getChannels());
 
-      Image na = ctx.getBuffer(d, ImgParams(s, ch));
-      Image nb = ctx.getBuffer(d, ImgParams(s, ch));
-
+      // Use non-pooled images to avoid aliasing
+      Image na(s, d, ch);
+      Image nb(s, d, ch);
       na.clear();
       nb.clear();
 
-      // Copy a's ROI data into na
-      ImgBase *naPtr = na.ptr();
-      a.ptr()->deepCopyROI(&naPtr);
-
-      ImgBase *nbPtr = nb.ptr();
-      b.ptr()->deepCopyROI(&nbPtr);
+      // Copy matching channels from each source
+      na.visit([&](auto &dst) {
+        using T = typename std::remove_reference_t<decltype(dst)>::type;
+        const auto &sa = a.as<T>();
+        for(int c = 0; c < sa.getChannels(); ++c)
+          deepCopyChannelROI(&sa, c, sa.getROIOffset(), sa.getROISize(),
+                             &dst, c, Point::null, sa.getROISize());
+      });
+      nb.visit([&](auto &dst) {
+        using T = typename std::remove_reference_t<decltype(dst)>::type;
+        const auto &sb = b.as<T>();
+        for(int c = 0; c < sb.getChannels(); ++c)
+          deepCopyChannelROI(&sb, c, sb.getROIOffset(), sb.getROISize(),
+                             &dst, c, Point::null, sb.getROISize());
+      });
 
       return {na, nb};
     }
