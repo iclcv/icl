@@ -187,15 +187,18 @@ namespace icl::math {
 
     // operator()(col,row) REMOVED — use index_yx(row,col) instead
 
-    /// element access with index check
-    inline T &at(unsigned int col,unsigned int row){
+    /// Bounds-checked element access with (row, col) convention
+    inline T &at(unsigned int row,unsigned int col){
+#ifdef DYN_MATRIX_INDEX_CHECK
+      if(static_cast<int>(col) >= m_cols || static_cast<int>(row) >= m_rows) ERROR_LOG("access to "<<m_cols<<'x'<<m_rows<<"-matrix index (" << col << "," << row << ")");
+#endif
       if(col>=cols() || row >= rows()) throw InvalidIndexException("row or col index too large");
       return m_data[col+cols()*row];
     }
 
-    /// element access with index check (const)
-    inline const T &at(unsigned int col,unsigned int row) const{
-      return const_cast<DynMatrixBase*>(this)->at(col,row);
+    /// Bounds-checked element access with (row, col) convention (const)
+    inline const T &at(unsigned int row,unsigned int col) const{
+      return const_cast<DynMatrixBase*>(this)->at(row,col);
     }
 
     /// linear access to actual data array

@@ -25,8 +25,8 @@ namespace icl::geom {
     R2.setBounds(1,3);
     R3.setBounds(1,3);
     eye2_2.setBounds(2,2);
-    eye2_2.at(0,0) = 1.0;
-    eye2_2.at(1,1) = 1.0;
+    eye2_2.index_yx(0, 0) = 1.0;
+    eye2_2.index_yx(1, 1) = 1.0;
     draw = false;
   }
 #else
@@ -37,8 +37,8 @@ namespace icl::geom {
     R2.setBounds(1,3);
     R3.setBounds(1,3);
     eye2_2.setBounds(2,2);
-    eye2_2.at(0,0) = 1.0;
-    eye2_2.at(1,1) = 1.0;
+    eye2_2.index_yx(0, 0) = 1.0;
+    eye2_2.index_yx(1, 1) = 1.0;
     draw = false;
   }
 #endif
@@ -79,16 +79,16 @@ namespace icl::geom {
 
     centeredImage.setBounds(imagePts.cols(),imagePts.rows());
     for(unsigned int i=0;i<imagePts.rows();++i){
-      centeredImage.at(0,i) =(imagePts.at(0,i)-center.at(0,0))/focalLength;
-      centeredImage.at(1,i) =(imagePts.at(1,i)-center.at(1,0))/focalLength;
+      centeredImage.index_yx(i, 0) =(imagePts.index_yx(i, 0)-center.index_yx(0, 0))/focalLength;
+      centeredImage.index_yx(i, 1) =(imagePts.index_yx(i, 1)-center.index_yx(0, 1))/focalLength;
     }
     DynMatrix<icl64f> imageOnes(1,nbImagePts,1);
     DynMatrix<icl64f> homogeneousWorldPts(4,nbWorldPts) ;
     for(unsigned int i=0;i<nbWorldPts;++i){
       for(unsigned int j=0;j<3;++j){
-        homogeneousWorldPts.at(j,i) = worldPts.at(j,i);
+        homogeneousWorldPts.index_yx(i, j) = worldPts.index_yx(i, j);
       }
-      homogeneousWorldPts.at(3,i) = 1.0;
+      homogeneousWorldPts.index_yx(i, 3) = 1.0;
     }
     //Initial rotation and translation as passed into this function.
     ROT = initRot;
@@ -98,7 +98,7 @@ namespace icl::geom {
 
     DynMatrix<icl64f> temp(1,4,1);
     for(unsigned int i=0;i<3;++i){
-      temp.at(0,i)=ROT.at(i,2)/T.at(0,2);
+      temp.index_yx(i, 0)=ROT.index_yx(2, i)/T.index_yx(2, 0);
     }
     DynMatrix<icl64f> wk = homogeneousWorldPts * temp;
 
@@ -112,8 +112,8 @@ namespace icl::geom {
 #endif
     //First two rows of the camera matrices (for both perspective and SOP).  Note:
     //the scale factor is s = f/Tz = 1/Tz since f = 1.  These are column 4-vectors.
-    double t1[] = {ROT.index_yx(0, 0)/T.at(0,2),ROT.index_yx(0, 1)/T.at(0,2),ROT.index_yx(0, 2)/T.at(0,2), T.at(0,0)/T.at(0,2)};
-    double t2[] = {ROT.index_yx(1, 0)/T.at(0,2),ROT.index_yx(1, 1)/T.at(0,2),ROT.index_yx(1, 2)/T.at(0,2), T.at(0,1)/T.at(0,2)};
+    double t1[] = {ROT.index_yx(0, 0)/T.index_yx(2, 0),ROT.index_yx(0, 1)/T.index_yx(2, 0),ROT.index_yx(0, 2)/T.index_yx(2, 0), T.index_yx(0, 0)/T.index_yx(2, 0)};
+    double t2[] = {ROT.index_yx(1, 0)/T.index_yx(2, 0),ROT.index_yx(1, 1)/T.index_yx(2, 0),ROT.index_yx(1, 2)/T.index_yx(2, 0), T.index_yx(1, 0)/T.index_yx(2, 0)};
     r1T = DynMatrix<icl64f>(1,4,t1);
     r2T = DynMatrix<icl64f>(1,4,t2);
     r3T.setBounds(1,4);
@@ -140,21 +140,21 @@ namespace icl::geom {
       DynMatrix<icl64f> temp2 = replicatedProjectedV - wkyj;
       for(unsigned int i=0;i<nbWorldPts;++i){
         for(unsigned j=0;j<nbImagePts;++j){
-          distMat.at(i,j) = focalLength*focalLength*(temp1.index_yx(j, i)*temp1.index_yx(j, i)+temp2.index_yx(j, i)*temp2.index_yx(j, i));
+          distMat.index_yx(j, i) = focalLength*focalLength*(temp1.index_yx(j, i)*temp1.index_yx(j, i)+temp2.index_yx(j, i)*temp2.index_yx(j, i));
         }
       }
       for(unsigned int i=0;i<nbWorldPts;++i){
         for(unsigned int j=0;j<nbImagePts;++j){
-          assignMat.at(i,j) = scale * ( std::exp( -beta*( distMat.index_yx(j, i) - alpha ) ) );
+          assignMat.index_yx(j, i) = scale * ( std::exp( -beta*( distMat.index_yx(j, i) - alpha ) ) );
         }
       }
       //assignMat(1:nbImagePts+1,nbWorldPts+1) = scale;
       for(unsigned int i=0;i<nbImagePts+1;++i){
-        assignMat.at(nbWorldPts,i) = scale;
+        assignMat.index_yx(i, nbWorldPts) = scale;
       }
       //assignMat(nbImagePts+1,1:nbWorldPts+1) = scale;
       for(unsigned int i=0;i<nbWorldPts+1;++i){
-        assignMat.at(i,nbImagePts) = scale;
+        assignMat.index_yx(nbImagePts, i) = scale;
       }
       sinkhornImp(assignMat);
 
@@ -171,7 +171,7 @@ namespace icl::geom {
       summedByColAssign = DynMatrix<icl64f>(nbWorldPts,1);
       for(unsigned int i=0;i<nbWorldPts;++i){
         for(unsigned int j=0;j<nbImagePts;++j){
-          summedByColAssign.at(i,0) += assignMat.index_yx(j, i);
+          summedByColAssign.index_yx(0, i) += assignMat.index_yx(j, i);
         }
       }
 
@@ -183,12 +183,12 @@ namespace icl::geom {
       DynMatrix<icl64f> temp44(4,4);
       for (unsigned int k = 0;k<nbWorldPts;k++){
         for(int i=0;i<4;++i){
-          temp11.at(0,i) = homogeneousWorldPts.at(i,k);
-          temp22.at(i,0) = homogeneousWorldPts.at(i,k);
+          temp11.index_yx(i, 0) = homogeneousWorldPts.index_yx(k, i);
+          temp22.index_yx(0, i) = homogeneousWorldPts.index_yx(k, i);
         }
-        //sumSkSkT = sumSkSkT + summedByColAssign.at(k,1) * homogeneousWorldPts(k,:)' * homogeneousWorldPts(k,:);
+        //sumSkSkT = sumSkSkT + summedByColAssign.index_yx(1, k) * homogeneousWorldPts(k,:)' * homogeneousWorldPts(k,:);
         temp33 = temp11 * temp22;
-        temp33.mult(summedByColAssign.at(k,0),temp44);
+        temp33.mult(summedByColAssign.index_yx(0, k),temp44);
         L = L + temp44;
       }
       if (cond(L) > 1e10){
@@ -207,7 +207,7 @@ namespace icl::geom {
       for(unsigned int j = 0;j<nbImagePts;++j){
         for(unsigned int k = 0;k<nbWorldPts;++k){
           for(int i=0;i<4;++i){
-            temp55.at(0,i) = homogeneousWorldPts.at(i,k);
+            temp55.index_yx(i, 0) = homogeneousWorldPts.index_yx(k, i);
           }
           temp55.mult(assignMat.index_yx(j, k) * wk.index_yx(0, k) * centeredImage.index_yx(j, 0), temp66);
           weightedUi = weightedUi + temp66;
@@ -221,25 +221,25 @@ namespace icl::geom {
       r2T = invL * weightedVi;
 
       for(unsigned int i=0;i<3;++i){
-        r1Tr2T.at(0,i) = r1T.at(0,i);
-        r1Tr2T.at(1,i) = r2T.at(0,i);
+        r1Tr2T.index_yx(i, 0) = r1T.index_yx(i, 0);
+        r1Tr2T.index_yx(i, 1) = r2T.index_yx(i, 0);
       }
 
       if (1) {//calculation of R and T.
         r1Tr2T.svd(U,s,V);
         svdResult = U * eye2_2 * V.transp();
         for(unsigned int i=0;i<3;++i){
-          R1.at(0,i) = svdResult.at(0,i);
-          R2.at(0,i) = svdResult.at(1,i);
+          R1.index_yx(i, 0) = svdResult.index_yx(i, 0);
+          R2.index_yx(i, 0) = svdResult.index_yx(i, 1);
         }
         cross(R1,R2,R3);
-        Tz = 2 / (s.at(0,0) + s.at(0,1));
-        Tx = r1T.at(0,3) * Tz;
-        Ty = r2T.at(0,3) * Tz;
-        r3T.at(0,0)=R3.at(0,0);
-        r3T.at(0,1)=R3.at(0,1);
-        r3T.at(0,2)=R3.at(0,2);
-        r3T.at(0,3)=Tz;
+        Tz = 2 / (s.index_yx(0, 0) + s.index_yx(1, 0));
+        Tx = r1T.index_yx(3, 0) * Tz;
+        Ty = r2T.index_yx(3, 0) * Tz;
+        r3T.index_yx(0, 0)=R3.index_yx(0, 0);
+        r3T.index_yx(1, 0)=R3.index_yx(1, 0);
+        r3T.index_yx(2, 0)=R3.index_yx(2, 0);
+        r3T.index_yx(3, 0)=Tz;
       }else{
         //TODO implement me
         /* % Standard calculation of R and T.  The rotation matrix may not be
@@ -257,14 +257,14 @@ namespace icl::geom {
             Tx = r1N(4);
             Ty = r2N(4);*/
       }
-      r1T.at(0,0) = R1.at(0,0)/Tz;
-      r1T.at(0,1) = R1.at(0,1)/Tz;
-      r1T.at(0,2) = R1.at(0,2)/Tz;
-      r1T.at(0,3) = Tx/Tz;
-      r2T.at(0,0) = R2.at(0,0)/Tz;
-      r2T.at(0,1) = R2.at(0,1)/Tz;
-      r2T.at(0,2) = R2.at(0,2)/Tz;
-      r2T.at(0,3) = Ty/Tz;
+      r1T.index_yx(0, 0) = R1.index_yx(0, 0)/Tz;
+      r1T.index_yx(1, 0) = R1.index_yx(1, 0)/Tz;
+      r1T.index_yx(2, 0) = R1.index_yx(2, 0)/Tz;
+      r1T.index_yx(3, 0) = Tx/Tz;
+      r2T.index_yx(0, 0) = R2.index_yx(0, 0)/Tz;
+      r2T.index_yx(1, 0) = R2.index_yx(1, 0)/Tz;
+      r2T.index_yx(2, 0) = R2.index_yx(2, 0)/Tz;
+      r2T.index_yx(3, 0) = Ty/Tz;
       //TODO
       DynMatrix<icl64f> temp001(1,3);
       r3T.mult(1/Tz,temp001);
@@ -273,13 +273,13 @@ namespace icl::geom {
       temp001.setBounds(nbWorldPts,nbImagePts,false);
       for(unsigned int i=0;i<nbWorldPts;++i){
         for(unsigned int j=0;j<nbImagePts;++j){
-          temp001.at(i,j) = assignMat.at(i,j)*distMat.at(i,j);
+          temp001.index_yx(j, i) = assignMat.index_yx(j, i)*distMat.index_yx(j, i);
         }
       }
       sum = 0.0;
       for(unsigned int i=0;i<temp001.cols();++i){
         for(unsigned int j=0;j<temp001.rows();++j){
-          sum += temp001.at(i,j);
+          sum += temp001.index_yx(j, i);
         }
       }
       double delta = sqrt(sum/nbWorldPts);
@@ -295,14 +295,14 @@ namespace icl::geom {
       else
         assignConverged = 0;
 
-      T.at(0,0) = Tx;
-      T.at(0,1) = Ty;
-      T.at(0,2) = Tz;
+      T.index_yx(0, 0) = Tx;
+      T.index_yx(1, 0) = Ty;
+      T.index_yx(2, 0) = Tz;
 
       for(unsigned int i=0;i<3;++i){
-        ROT.at(i,0) = R1.at(0,i);
-        ROT.at(i,1) = R2.at(0,i);
-        ROT.at(i,2) = R3.at(0,i);
+        ROT.index_yx(0, i) = R1.index_yx(i, 0);
+        ROT.index_yx(1, i) = R2.index_yx(i, 0);
+        ROT.index_yx(2, i) = R3.index_yx(i, 0);
       }
       //	if(delta < maxDelta && betaCount > minBetaCount)
       //	foundPose = 1;
@@ -335,14 +335,14 @@ namespace icl::geom {
                             double focalLength, DynMatrix<icl64f> center){
     DynMatrix<icl64f> imagePt(2,imagePts.size());
     for(unsigned int i=0; i<imagePts.size();++i){
-      imagePt.at(0,i) = imagePts.at(i).x;
-      imagePt.at(1,i) = imagePts.at(i).y;
+      imagePt.index_yx(i, 0) = imagePts.at(i).x;
+      imagePt.index_yx(i, 1) = imagePts.at(i).y;
     }
     DynMatrix<icl64f> worldPt(3,worldPts.size());
     for(unsigned int i=0; i<worldPts.size();++i){
-      worldPt.at(0,i) = worldPts.at(i).at(0,0);
-      worldPt.at(1,i) = worldPts.at(i).at(0,1);
-      worldPt.at(2,i) = worldPts.at(i).at(0,2);
+      worldPt.index_yx(i, 0) = worldPts.at(i).index_yx(0, 0);
+      worldPt.index_yx(i, 1) = worldPts.at(i).index_yx(1, 0);
+      worldPt.index_yx(i, 2) = worldPts.at(i).index_yx(2, 0);
     }
 
     softPosit(imagePt, worldPt, beta0, noiseStd, initRot, initTrans, focalLength, center, draw);
@@ -354,14 +354,14 @@ namespace icl::geom {
 
     DynMatrix<icl64f> imagePt(2,imagePts.size());
     for(unsigned int i=0; i<imagePts.size();++i){
-      imagePt.at(0,i) = imagePts.at(i).x;
-      imagePt.at(1,i) = imagePts.at(i).y;
+      imagePt.index_yx(i, 0) = imagePts.at(i).x;
+      imagePt.index_yx(i, 1) = imagePts.at(i).y;
     }
     DynMatrix<icl64f> worldPt(3,worldPts.size());
     for(unsigned int i=0; i<worldPts.size();++i){
-      worldPt.at(0,i) = worldPts.at(i).at(0,0);
-      worldPt.at(1,i) = worldPts.at(i).at(0,1);
-      worldPt.at(2,i) = worldPts.at(i).at(0,2);
+      worldPt.index_yx(i, 0) = worldPts.at(i).index_yx(0, 0);
+      worldPt.index_yx(i, 1) = worldPts.at(i).index_yx(1, 0);
+      worldPt.index_yx(i, 2) = worldPts.at(i).index_yx(2, 0);
     }
 
     softPosit(imagePt, imageAdj, worldPt, worldAdj, beta0, noiseStd, initRot, initTrans, focalLength, w, center, draw);
@@ -370,9 +370,9 @@ namespace icl::geom {
 
   DynMatrix<icl64f>& SoftPosit::cross(DynMatrix<icl64f> &x, DynMatrix<icl64f> &y, DynMatrix<icl64f> &r){
     if(x.cols()==1 && y.cols()==1 && x.rows()==3 && y.rows()==3){
-      r.at(0,0) = x.at(0,1)*y.at(0,2)-x.at(0,2)*y.at(0,1);
-      r.at(0,1) = x.at(0,2)*y.at(0,0)-x.at(0,0)*y.at(0,2);
-      r.at(0,2) = x.at(0,0)*y.at(0,1)-x.at(0,1)*y.at(0,0);
+      r.index_yx(0, 0) = x.index_yx(1, 0)*y.index_yx(2, 0)-x.index_yx(2, 0)*y.index_yx(1, 0);
+      r.index_yx(1, 0) = x.index_yx(2, 0)*y.index_yx(0, 0)-x.index_yx(0, 0)*y.index_yx(2, 0);
+      r.index_yx(2, 0) = x.index_yx(0, 0)*y.index_yx(1, 0)-x.index_yx(1, 0)*y.index_yx(0, 0);
     }
     return r;
   }
@@ -387,25 +387,25 @@ namespace icl::geom {
     unsigned int numpts = pts3d.cols();
     DynMatrix<icl64f> newtrans(numpts,3);
     for(unsigned int i=0;i<numpts;++i){
-      newtrans.at(i,0) = trans.at(0,0);
-      newtrans.at(i,1) = trans.at(0,1);
-      newtrans.at(i,2) = trans.at(0,2);
+      newtrans.index_yx(0, i) = trans.index_yx(0, 0);
+      newtrans.index_yx(1, i) = trans.index_yx(1, 0);
+      newtrans.index_yx(2, i) = trans.index_yx(2, 0);
     }
     DynMatrix<icl64f> campts = rot*pts3d+newtrans;
     for(unsigned int i=0;i<campts.cols();++i){
-      if(campts.at(i,2)<1e-20){
-        campts.at(i,2) = 1e-20;
+      if(campts.index_yx(2, i)<1e-20){
+        campts.index_yx(2, i) = 1e-20;
       }
     }
     pts2d.setBounds(campts.cols(),2);
     for(unsigned int i=0;i<campts.cols();++i){
-      pts2d.at(i,0) = flength * campts.at(i,0)*(1/campts.at(i,2));
-      pts2d.at(i,1) = flength * campts.at(i,1)*(1/campts.at(i,2));
+      pts2d.index_yx(0, i) = flength * campts.index_yx(0, i)*(1/campts.index_yx(2, i));
+      pts2d.index_yx(1, i) = flength * campts.index_yx(1, i)*(1/campts.index_yx(2, i));
     }
     DynMatrix<icl64f> cent(numpts,2);
     for(unsigned int i=0;i<numpts;++i){
-      cent.at(i,0) = center.at(0,0);
-      cent.at(i,1) = center.at(1,0);
+      cent.index_yx(0, i) = center.index_yx(0, 0);
+      cent.index_yx(1, i) = center.index_yx(0, 1);
     }
     pts2d = pts2d +cent;
     if (objdim == 1){
@@ -421,11 +421,11 @@ namespace icl::geom {
     double cr = 0.0;
     double rr = 0.0;
     for(unsigned int k = 0;k<assignMat.cols()-1;++k){
-      vmax = assignMat.at(k,0);
+      vmax = assignMat.index_yx(0, k);
       imax = 0;
       for(unsigned int i=1;i<assignMat.rows();++i){
-        if(vmax < assignMat.at(k,i)){
-          vmax = assignMat.at(k,i);
+        if(vmax < assignMat.index_yx(i, k)){
+          vmax = assignMat.index_yx(i, k);
           imax = i;
         }
       }
@@ -433,18 +433,18 @@ namespace icl::geom {
         continue;
       isMaxInRow = true;
       for(unsigned int i=0;i<assignMat.cols();++i){
-        if(vmax < assignMat.at(i,imax) && i != k)
+        if(vmax < assignMat.index_yx(imax, i) && i != k)
           isMaxInRow = false;
       }
       if(isMaxInRow){
         pos.setBounds(2,pos.rows()+1);
-        pos.at(0,pos.rows()-1) = imax;
-        pos.at(1,pos.rows()-1) = k;
-        rr = assignMat.at(assignMat.cols()-1,imax)/assignMat.at(k,imax);
-        cr = assignMat.at(k,assignMat.rows()-1)/assignMat.at(k,imax);
+        pos.index_yx(pos.rows()-1, 0) = imax;
+        pos.index_yx(pos.rows()-1, 1) = k;
+        rr = assignMat.index_yx(imax, assignMat.cols()-1)/assignMat.index_yx(imax, k);
+        cr = assignMat.index_yx(assignMat.rows()-1, k)/assignMat.index_yx(imax, k);
         ratios.setBounds(2,ratios.rows()+1);
-        ratios.at(0,ratios.rows()-1) = rr;
-        ratios.at(1,ratios.rows()-1) = cr;
+        ratios.index_yx(ratios.rows()-1, 0) = rr;
+        ratios.index_yx(ratios.rows()-1, 1) = cr;
       }
     }
   }
@@ -472,30 +472,30 @@ namespace icl::geom {
       Mprev = M;
       for(unsigned int j=0;j<M.cols();++j)
         for(unsigned int i=0;i<M.rows();++i){
-          McolSums.at(j,0) += M.at(j,i);
+          McolSums.index_yx(0, j) += M.index_yx(i, j);
         }
 
-      McolSums.at(nbCols-1,0) = 1;
+      McolSums.index_yx(0, nbCols-1) = 1;
       ones.setBounds(1,M.cols(),false,1.0);
       McolSumsRep = ones * McolSums;
       for(unsigned int i=0; i<M.cols();++i){
         for(unsigned j=0; j<M.rows();++j){
-          M.at(i,j) = M.at(i,j)/McolSumsRep.at(i,j);
+          M.index_yx(j, i) = M.index_yx(j, i)/McolSumsRep.index_yx(j, i);
         }
       }
       for(unsigned int i=0;i<posmax.rows();++i){
-        M.at(nbCols-1,posmax.index_yx(i, 0)) = ratios.index_yx(i, 0)*M.index_yx(posmax.index_yx(i, 1), posmax.index_yx(i, 0));
+        M.index_yx(posmax.index_yx(i, 0), nbCols-1) = ratios.index_yx(i, 0)*M.index_yx(posmax.index_yx(i, 1), posmax.index_yx(i, 0));
       }
       for(unsigned int j=0;j<M.rows();++j)
         for(unsigned int i=0;i<M.cols();++i){
-          MrowSums.at(0,j) += M.at(i,j);
+          MrowSums.index_yx(j, 0) += M.index_yx(j, i);
         }
-      MrowSums.at(0,nbRows-1) = 1;
+      MrowSums.index_yx(nbRows-1, 0) = 1;
       ones.setBounds(nbCols,1,false,1.0);
       MrowSumsRep = MrowSums*ones;
       for(unsigned int i=0; i<M.cols();++i){
         for(unsigned j=0; j<M.rows();++j){
-          M.at(i,j) = M.at(i,j)/MrowSumsRep.at(i,j);
+          M.index_yx(j, i) = M.index_yx(j, i)/MrowSumsRep.index_yx(j, i);
         }
       }
       for(unsigned int i=0;i<posmax.rows();++i){
@@ -505,7 +505,7 @@ namespace icl::geom {
       fMdiffSum = 0.0;
       for(unsigned int i=0;i<M.cols();++i){
         for(unsigned int j=0;j<M.rows();++j){
-          fMdiffSum += std::abs(M.at(i,j)-Mprev.at(i,j));
+          fMdiffSum += std::abs(M.index_yx(j, i)-Mprev.index_yx(j, i));
         }
       }
     }
@@ -519,11 +519,11 @@ namespace icl::geom {
     int imax = 0;
     bool isMaxInRow = true;
     for(unsigned int k = 0 ;k<assignMat.cols();++k){
-      vmax = assignMat.at(k,0);
+      vmax = assignMat.index_yx(0, k);
       imax = 0;
       for(unsigned int i=1;i<assignMat.rows();++i){
-        if(vmax < assignMat.at(k,i)){
-          vmax = assignMat.at(k,i);
+        if(vmax < assignMat.index_yx(i, k)){
+          vmax = assignMat.index_yx(i, k);
           imax = i;
         }
       }
@@ -532,7 +532,7 @@ namespace icl::geom {
       }
       isMaxInRow = true;
       for(unsigned int i=0;i<assignMat.cols();++i){
-        if(vmax < assignMat.at(i,imax) && i != k)
+        if(vmax < assignMat.index_yx(imax, i) && i != k)
           isMaxInRow = false;
       }
       if(isMaxInRow){
@@ -554,10 +554,10 @@ namespace icl::geom {
   }
 
   double SoftPosit::max(DynMatrix<icl64f> s){
-    double max = s.at(0,0);
+    double max = s.index_yx(0, 0);
     for(unsigned int i=0;i<s.rows();++i){
-      if(max < s.at(0,i))
-        max = s.at(0,i);
+      if(max < s.index_yx(i, 0))
+        max = s.index_yx(i, 0);
     }
     return max;
   }
@@ -573,18 +573,18 @@ namespace icl::geom {
     float offsety=dw->size().rheight()/2.0;
     for(unsigned int i=0;i<wAdj.cols();++i){
       for(unsigned int j=0;j<wAdj.rows();++j){
-        if(wAdj.at(i,j)==1){
-          dw->line(projWorldPts.at(0,i)+offsetx, projWorldPts.at(1,i)+offsety,
-                   projWorldPts.at(0,j)+offsetx, projWorldPts.at(1,j)+offsety);
+        if(wAdj.index_yx(j, i)==1){
+          dw->line(projWorldPts.index_yx(i, 0)+offsetx, projWorldPts.index_yx(i, 1)+offsety,
+                   projWorldPts.index_yx(j, 0)+offsetx, projWorldPts.index_yx(j, 1)+offsety);
         }
       }
     }
     dw->color(0,0,255,255);
     for(unsigned int i=0;i<iAdj.cols();++i){
       for(unsigned int j=0;j<iAdj.rows();++j){
-        if(iAdj.at(i,j) == 1){
-          dw->line(imagePts.at(0,i)+offsetx, imagePts.at(1,i)+offsety,
-                   imagePts.at(0,j)+offsetx, imagePts.at(1,j)+offsety);
+        if(iAdj.index_yx(j, i) == 1){
+          dw->line(imagePts.index_yx(i, 0)+offsetx, imagePts.index_yx(i, 1)+offsety,
+                   imagePts.index_yx(j, 0)+offsetx, imagePts.index_yx(j, 1)+offsety);
         }
       }
     }
@@ -603,18 +603,18 @@ namespace icl::geom {
     float offsety=w.size().rheight()/2.0;
     for(unsigned int i=0;i<worldAdj.cols();++i){
       for(unsigned int j=0;j<worldAdj.rows();++j){
-        if(worldAdj.at(i,j)==1){
-          w.line(projWorldPts.at(0,i)+offsetx, projWorldPts.at(1,i)+offsety,
-                 projWorldPts.at(0,j)+offsetx, projWorldPts.at(1,j)+offsety);
+        if(worldAdj.index_yx(j, i)==1){
+          w.line(projWorldPts.index_yx(i, 0)+offsetx, projWorldPts.index_yx(i, 1)+offsety,
+                 projWorldPts.index_yx(j, 0)+offsetx, projWorldPts.index_yx(j, 1)+offsety);
         }
       }
     }
     w.color(0,0,255,255);
     for(unsigned int i=0;i<imageAdj.cols();++i){
       for(unsigned int j=0;j<imageAdj.rows();++j){
-        if(imageAdj.at(i,j) == 1){
-          w.line(imagePts.at(0,i)+offsetx, imagePts.at(1,i)+offsety,
-                 imagePts.at(0,j)+offsetx, imagePts.at(1,j)+offsety);
+        if(imageAdj.index_yx(j, i) == 1){
+          w.line(imagePts.index_yx(i, 0)+offsetx, imagePts.index_yx(i, 1)+offsety,
+                 imagePts.index_yx(j, 0)+offsetx, imagePts.index_yx(j, 1)+offsety);
         }
       }
     }

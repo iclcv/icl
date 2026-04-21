@@ -392,15 +392,15 @@ namespace icl::math {
 
     // operator()(col,row) REMOVED — use index_yx(row,col) instead
 
-    /// Element access index save (with exception if index is invalid)
-    T &at(unsigned int col,unsigned int row){
+    /// Bounds-checked element access with (row, col) convention
+    T &at(unsigned int row,unsigned int col){
       if(col>=cols() || row >= rows()) throw InvalidIndexException("row or col index too large");
       return begin()[col+cols()*row];
     }
 
-    /// Element access index save (with exception if index is invalid) (const)
-    const T &at(unsigned int col,unsigned int row) const{
-      return const_cast<FixedMatrix*>(this)->at(col,row);
+    /// Bounds-checked element access with (row, col) convention (const)
+    const T &at(unsigned int row,unsigned int col) const{
+      return const_cast<FixedMatrix*>(this)->at(row,col);
     }
 
     /// linear data view element access

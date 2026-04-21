@@ -60,8 +60,8 @@ ICL_REGISTER_TEST("math.fixed.access_colrow", "operator()(col,row) indexing")
 ICL_REGISTER_TEST("math.fixed.at_throws", "at() throws on invalid index")
 {
   FixedMatrix<float,2,2> m(1.0f);
-  ICL_TEST_THROW(m.at(2,0), InvalidIndexException);
-  ICL_TEST_THROW(m.at(0,2), InvalidIndexException);
+  ICL_TEST_THROW(m.index_yx(0, 2), InvalidIndexException);
+  ICL_TEST_THROW(m.index_yx(2, 0), InvalidIndexException);
 }
 
 // =====================================================================

@@ -1395,16 +1395,16 @@ namespace icl::io {
 
     }
 
-    (m_data->intrinsic_matrix)->at(0,0) = param[0];
-    (m_data->intrinsic_matrix)->at(1,1) = param[1];
-    (m_data->intrinsic_matrix)->at(2,0) = param[2];
-    (m_data->intrinsic_matrix)->at(2,1) = param[3];
-    (m_data->intrinsic_matrix)->at(1,0) = param[4];
-    (m_data->distortion_coeffs)->at(0,0) = param[5];
-    (m_data->distortion_coeffs)->at(1,0) = param[6];
-    (m_data->distortion_coeffs)->at(2,0) = param[7];
-    (m_data->distortion_coeffs)->at(3,0) = param[8];
-    (m_data->distortion_coeffs)->at(4,0) = param[9];
+    (m_data->intrinsic_matrix)->index_yx(0, 0) = param[0];
+    (m_data->intrinsic_matrix)->index_yx(1, 1) = param[1];
+    (m_data->intrinsic_matrix)->index_yx(0, 2) = param[2];
+    (m_data->intrinsic_matrix)->index_yx(1, 2) = param[3];
+    (m_data->intrinsic_matrix)->index_yx(0, 1) = param[4];
+    (m_data->distortion_coeffs)->index_yx(0, 0) = param[5];
+    (m_data->distortion_coeffs)->index_yx(0, 1) = param[6];
+    (m_data->distortion_coeffs)->index_yx(0, 2) = param[7];
+    (m_data->distortion_coeffs)->index_yx(0, 3) = param[8];
+    (m_data->distortion_coeffs)->index_yx(0, 4) = param[9];
 
     std::vector<double> paramsVec(param.begin(),param.end());
     m_calres = Result(paramsVec,Size(m_data->nx,m_data->ny));
@@ -1419,16 +1419,16 @@ namespace icl::io {
   void IntrinsicCalibrator::loadIntrinsics(const std::string &filename){
     static_cast<ImageUndistortion&>(m_calres) = ImageUndistortion(filename);
 
-    (m_data->intrinsic_matrix)->at(0,0) = m_calres.getParams()[0];
-    (m_data->intrinsic_matrix)->at(1,1) = m_calres.getParams()[1];
-    (m_data->intrinsic_matrix)->at(2,0) = m_calres.getParams()[2];
-    (m_data->intrinsic_matrix)->at(2,1) = m_calres.getParams()[3];
-    (m_data->intrinsic_matrix)->at(1,0) = m_calres.getParams()[4];
-    (m_data->distortion_coeffs)->at(0,0) = m_calres.getParams()[5];
-    (m_data->distortion_coeffs)->at(1,0) = m_calres.getParams()[6];
-    (m_data->distortion_coeffs)->at(2,0) = m_calres.getParams()[7];
-    (m_data->distortion_coeffs)->at(3,0) = m_calres.getParams()[8];
-    (m_data->distortion_coeffs)->at(4,0) = m_calres.getParams()[9];
+    (m_data->intrinsic_matrix)->index_yx(0, 0) = m_calres.getParams()[0];
+    (m_data->intrinsic_matrix)->index_yx(1, 1) = m_calres.getParams()[1];
+    (m_data->intrinsic_matrix)->index_yx(0, 2) = m_calres.getParams()[2];
+    (m_data->intrinsic_matrix)->index_yx(1, 2) = m_calres.getParams()[3];
+    (m_data->intrinsic_matrix)->index_yx(0, 1) = m_calres.getParams()[4];
+    (m_data->distortion_coeffs)->index_yx(0, 0) = m_calres.getParams()[5];
+    (m_data->distortion_coeffs)->index_yx(0, 1) = m_calres.getParams()[6];
+    (m_data->distortion_coeffs)->index_yx(0, 2) = m_calres.getParams()[7];
+    (m_data->distortion_coeffs)->index_yx(0, 3) = m_calres.getParams()[8];
+    (m_data->distortion_coeffs)->index_yx(0, 4) = m_calres.getParams()[9];
   }
 
   void IntrinsicCalibrator::resetData(unsigned int boardWidth, unsigned int boardHeight,

@@ -43,7 +43,7 @@ namespace icl::math {
     unsigned int median = list.size()/2;
 
     node->left = new Node();
-    node->median = double((list.at(median)).at(0,axis));
+    node->median = double((list.at(median)).index_yx(axis, 0));
     std::vector<DynMatrix<icl64f> > sublist;
     for(unsigned int i=0;i<median;++i){
       sublist.push_back(list.at(i));
@@ -71,7 +71,7 @@ namespace icl::math {
     unsigned int median = list.size()/2;
 
     node->left = new Node();
-    node->median = double((list.at(median))->at(0,axis));
+    node->median = double((list.at(median))->index_yx(axis, 0));
     std::vector<DynMatrix<icl64f>* > sublist;
     for(unsigned int i=0;i<median;++i){
       sublist.push_back(list.at(i));
@@ -92,7 +92,7 @@ namespace icl::math {
     for(unsigned int i=0;i<list.size()-1;++i){
       minIndex = i;
       for(unsigned int j=(i+1);j<list.size();++j){
-        if((list.at(minIndex)).at(0,dim) < (list.at(j)).at(0,dim)){
+        if((list.at(minIndex)).index_yx(dim, 0) < (list.at(j)).index_yx(dim, 0)){
           minIndex = j;
         }
       }
@@ -110,7 +110,7 @@ namespace icl::math {
     for(unsigned int i=0;i<list.size()-1;++i){
       minIndex = i;
       for(unsigned int j=(i+1);j<list.size();++j){
-        if(list.at(minIndex)->at(0,dim) < list.at(j)->at(0,dim)){
+        if(list.at(minIndex)->index_yx(dim, 0) < list.at(j)->index_yx(dim, 0)){
           minIndex = j;
         }
       }
