@@ -28,6 +28,8 @@ public:
                     const RTMaterial *materials, int numMaterials,
                     const RTFloat4 &backgroundColor) override;
 
+  void setEmissiveTriangles(const RTEmissiveTriangle *tris, int count) override;
+
   void render(const RTRayGenParams &camera) override;
 
   const core::Img8u &readback() override { return m_output; }
@@ -96,6 +98,8 @@ private:
   std::vector<RTInstance> m_instances;
   std::vector<RTLight> m_lights;
   std::vector<RTMaterial> m_materials;
+  std::vector<RTEmissiveTriangle> m_emissives;
+  float m_totalEmissiveArea = 0;
   /// FXAA post-process on the output image.
   void applyFXAA();
 

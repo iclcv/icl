@@ -44,6 +44,12 @@ public:
                             const RTMaterial *materials, int numMaterials,
                             const RTFloat4 &backgroundColor) = 0;
 
+  /// Upload emissive triangle list for area light sampling in path tracing.
+  /// Called when scene geometry or materials change.
+  virtual void setEmissiveTriangles(const RTEmissiveTriangle *tris, int count) {
+    (void)tris; (void)count; // default: no-op
+  }
+
   /// Render one frame. Output is stored internally; retrieve via readback().
   virtual void render(const RTRayGenParams &camera) = 0;
 

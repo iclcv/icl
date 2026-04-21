@@ -133,6 +133,16 @@ enum class DenoisingMethod {
   // OIDN,        ///< Intel Open Image Denoise (library dependency)
 };
 
+/// Emissive triangle for area light sampling in path tracing.
+/// Precomputed during scene build — one entry per emissive triangle.
+struct alignas(16) RTEmissiveTriangle {
+  RTFloat3 v0, v1, v2;   // world-space vertex positions
+  RTFloat3 normal;        // face normal (for oriented emission)
+  RTFloat3 emission;      // emission color (RGB * intensity)
+  float area;             // triangle area (for PDF)
+  float _pad[3] = {};
+};
+
 /// Tone mapping curve for HDR → LDR conversion.
 enum class ToneMapMethod {
   None = 0,       ///< Clamp to [0,1] (current default)

@@ -75,8 +75,10 @@ struct SceneParams {
   int32_t numLights;
   int32_t numInstances;
   int32_t frameNumber;
-  int32_t _pad;
+  int32_t numEmissives;
   RTFloat4 bgColor;
+  float totalEmissiveArea;
+  float _scenePad[3];
 };
 
 // ---- Load shader source from file -----------------------------------------
@@ -153,6 +155,9 @@ struct MetalRTBackend::Impl {
   mtl::Buffer flatTriangleBuf;
   mtl::Buffer lightBuf;
   mtl::Buffer materialBuf;
+  mtl::Buffer emissiveBuf;
+  int numEmissives = 0;
+  float totalEmissiveArea = 0;
 
   // Output buffers
   mtl::Buffer outR, outG, outB;
@@ -726,6 +731,16 @@ void MetalRTBackend::setSceneData(const RTLight *lights, int numLights,
   m_impl->sceneDataDirty = true;
 }
 
+void MetalRTBackend::setEmissiveTriangles(const RTEmissiveTriangle *tris, int count) {
+  m_impl->numEmissives = count;
+  m_impl->totalEmissiveArea = 0;
+  if (count > 0) {
+    m_impl->uploadBuffer(m_impl->emissiveBuf, tris, count * sizeof(RTEmissiveTriangle));
+    for (int i = 0; i < count; i++)
+      m_impl->totalEmissiveArea += tris[i].area;
+  }
+}
+
 // ---- Render ---------------------------------------------------------------
 
 void MetalRTBackend::render(const RTRayGenParams &camera) {
@@ -776,7 +791,9 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
   params.numLights = (int)m_impl->lights.size();
   params.numInstances = (int)m_impl->instances.size();
   params.bgColor = m_impl->bgColor;
-  params._pad = 0;
+  params.numEmissives = m_impl->numEmissives;
+  params.totalEmissiveArea = m_impl->totalEmissiveArea;
+  memset(params._scenePad, 0, sizeof(params._scenePad));
 
   // Apply sub-pixel jitter for MetalFX Temporal upscaling.
   // Offset ray directions so the scaler gets different sub-pixel samples each frame.
@@ -846,11 +863,12 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
         {&m_impl->normalYBuf, 15},
         {&m_impl->normalZBuf, 16},
         {&m_impl->reflectBuf, 17},
+        {&m_impl->emissiveBuf, 18},
       };
 
       m_impl->dispatch(m_impl->ptPipeline, w, h, bufs,
                        &jitteredCamera, sizeof(jitteredCamera),
-                       &params, sizeof(params), 18, 19);
+                       &params, sizeof(params), 19, 20);
 
       auto now = std::chrono::steady_clock::now();
       float elapsedMs =

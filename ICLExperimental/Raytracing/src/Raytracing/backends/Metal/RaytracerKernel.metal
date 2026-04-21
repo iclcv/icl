@@ -73,8 +73,18 @@ struct SceneParams {
   int numLights;
   int numInstances;
   int frameNumber;
-  int _pad;
+  int numEmissives;
   RTFloat4 bgColor;
+  float totalEmissiveArea;
+  float _scenePad[3];
+};
+
+struct RTEmissiveTriangle {
+  RTFloat3 v0, v1, v2;
+  RTFloat3 normal;
+  RTFloat3 emission;
+  float area;
+  float _pad[3];
 };
 
 // ---- Vector helpers ----
@@ -839,8 +849,9 @@ void pathTrace(
     device float              *normalYOut     [[buffer(15)]],
     device float              *normalZOut     [[buffer(16)]],
     device float              *reflectOut     [[buffer(17)]],
-    constant RTRayGenParams   &camera          [[buffer(18)]],
-    constant SceneParams      &params          [[buffer(19)]],
+    device const RTEmissiveTriangle *emissives [[buffer(18)]],
+    constant RTRayGenParams   &camera          [[buffer(19)]],
+    constant SceneParams      &params          [[buffer(20)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int px = tid.x;
@@ -940,6 +951,48 @@ void pathTrace(
                              lights[li].attenuation.y * dist +
                              lights[li].attenuation.z * dist * dist);
       color += throughput * f3v(lights[li].diffuse) * s.color * NdotL * atten;
+    }
+
+    // Area light sampling: pick one random emissive triangle
+    if (params.numEmissives > 0 && params.totalEmissiveArea > 0) {
+      // Select triangle weighted by area
+      float r = rngFloat(rng) * params.totalEmissiveArea;
+      float cumArea = 0;
+      int ei = 0;
+      for (int j = 0; j < params.numEmissives; j++) {
+        cumArea += emissives[j].area;
+        if (cumArea >= r) { ei = j; break; }
+      }
+
+      // Random point on triangle (uniform barycentric)
+      float u1 = rngFloat(rng), u2 = rngFloat(rng);
+      if (u1 + u2 > 1.0f) { u1 = 1.0f - u1; u2 = 1.0f - u2; }
+      float3 lv0 = f3(emissives[ei].v0);
+      float3 lv1 = f3(emissives[ei].v1);
+      float3 lv2 = f3(emissives[ei].v2);
+      float3 lightPt = lv0 * (1-u1-u2) + lv1 * u1 + lv2 * u2;
+      float3 lightN = f3(emissives[ei].normal);
+
+      float3 toLight = lightPt - s.position;
+      float dist = length(toLight);
+      if (dist > 1e-4f) {
+        float3 L = toLight / dist;
+        float NdotL = max(0.0f, dot(s.normal, L));
+        float lightNdotL = max(0.0f, -dot(lightN, L));
+        if (NdotL > 0 && lightNdotL > 0) {
+          ray sr;
+          sr.origin = s.position + s.normal * 1.0f;
+          sr.direction = L;
+          sr.min_distance = 0.0f;
+          sr.max_distance = dist - 1.0f;
+
+          auto shadowResult = shadowInter.intersect(sr, accelStruct);
+          if (shadowResult.type == intersection_type::none) {
+            float geomTerm = NdotL * lightNdotL * params.totalEmissiveArea / (dist * dist);
+            color += throughput * f3(emissives[ei].emission) * s.color * geomTerm;
+          }
+        }
+      }
     }
 
     // Mirror reflection or diffuse bounce

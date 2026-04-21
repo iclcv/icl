@@ -34,6 +34,8 @@ public:
                     const RTMaterial *materials, int numMaterials,
                     const RTFloat4 &backgroundColor) override;
 
+  void setEmissiveTriangles(const RTEmissiveTriangle *tris, int count) override;
+
   void render(const RTRayGenParams &camera) override;
 
   const core::Img8u &readback() override;
