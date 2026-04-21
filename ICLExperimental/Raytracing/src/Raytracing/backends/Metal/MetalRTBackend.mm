@@ -13,9 +13,9 @@
 #define ICL_HAVE_METALFX 0
 #endif
 
-#include "RaytracerBackend_Metal.h"
+#include "MetalRTBackend.h"
 #include "MetalRT.h"
-#include "RaytracerTypes.h"
+#include "../../RaytracerTypes.h"
 #include <ICLUtils/Macros.h>
 #include <chrono>
 #include <fstream>
@@ -50,10 +50,10 @@ struct SceneParams {
 static std::string loadMetalSource() {
   const char *paths[] = {
     "RaytracerKernel.metal",
-    "../ICLExperimental/Raytracing/src/Raytracing/RaytracerKernel.metal",
+    "../ICLExperimental/Raytracing/src/Raytracing/backends/Metal/RaytracerKernel.metal",
 #ifdef ICL_SOURCE_DIR
     ICL_SOURCE_DIR
-    "/ICLExperimental/Raytracing/src/Raytracing/RaytracerKernel.metal",
+    "/ICLExperimental/Raytracing/src/Raytracing/backends/Metal/RaytracerKernel.metal",
 #endif
     nullptr};
   for (int i = 0; paths[i]; i++) {

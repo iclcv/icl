@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include "RaytracerBackend_Cpu.h"
+#include "CpuRTBackend.h"
 #include <algorithm>
 #include <cmath>
 

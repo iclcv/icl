@@ -3,12 +3,12 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "SceneRaytracer.h"
-#include "RaytracerBackend_Cpu.h"
+#include "backends/Cpu/CpuRTBackend.h"
 #ifdef ICL_HAVE_OPENCL
-#include "RaytracerBackend_OpenCL.h"
+#include "backends/OpenCL/OpenCLRTBackend.h"
 #endif
 #ifdef ICL_HAVE_METAL
-#include "RaytracerBackend_Metal.h"
+#include "backends/Metal/MetalRTBackend.h"
 #endif
 #include <ICLGeom/Scene.h>
 #include <ICLUtils/Macros.h>

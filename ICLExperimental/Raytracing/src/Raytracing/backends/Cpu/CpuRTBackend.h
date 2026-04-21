@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "RaytracerBackend.h"
-#include "BVH.h"
+#include "../../RaytracerBackend.h"
+#include "../../BVH.h"
 #include <vector>
 
 namespace icl::rt {
