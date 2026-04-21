@@ -87,6 +87,7 @@ uniform mat4 uPrevInvProjection;
 uniform vec2 uScreenSize;
 
 uniform int uDebugMode;
+uniform int uUnlit;
 
 // Per-light shadow: slot index into shadow map array (-1 = no shadow)
 uniform int uLightShadowSlot[MAX_LIGHTS];
@@ -237,6 +238,14 @@ void main() {
     if (uHasBaseColorMap != 0) {
         baseCol *= texture(uBaseColorMap, vTexCoord);
     }
+
+    // Unlit mode: output baseColor directly (used for billboard text)
+    if (uUnlit != 0) {
+        if (baseCol.a < 0.01) discard;
+        FragColor = vec4(baseCol.rgb, baseCol.a * uOverlayAlpha);
+        return;
+    }
+
     vec3 albedo = baseCol.rgb;
     float alpha = baseCol.a;
 
@@ -716,9 +725,10 @@ void main() { }
     GLint shadowLocModelMatrix = -1;
     GLint shadowLocLightVP = -1;
 
-    // Debug mode
+    // Debug mode / unlit
     int debugMode = 0;
     GLint locDebugMode = -1;
+    GLint locUnlit = -1;
 
     // Unlit uniform locations
     GLint locUnlitMVP = -1, locUnlitPointSize = -1;
@@ -924,6 +934,7 @@ void main() { }
       m_data->locPrevInvProjection = glGetUniformLocation(m_data->pbrProgram, "uPrevInvProjection");
       m_data->locScreenSize = glGetUniformLocation(m_data->pbrProgram, "uScreenSize");
       m_data->locDebugMode = glGetUniformLocation(m_data->pbrProgram, "uDebugMode");
+      m_data->locUnlit = glGetUniformLocation(m_data->pbrProgram, "uUnlit");
       for (int i = 0; i < 8; i++) {
         char buf[64];
         snprintf(buf, sizeof(buf), "uLightPos[%d]", i);
@@ -1140,6 +1151,7 @@ void main() { }
   void Renderer::renderNodeShadow(Node *node) {
     if (!node || !node->isVisible()) return;
     if (dynamic_cast<LightNode*>(node)) return;
+    if (dynamic_cast<TextNode*>(node)) return;  // text labels don't cast shadows
 
     if (auto *group = dynamic_cast<GroupNode*>(node)) {
       for (int i = 0; i < group->getChildCount(); i++)
@@ -1488,6 +1500,10 @@ void main() { }
         bindTex(m_data->locHasMetallicRoughnessMap, m_data->locMetallicRoughnessMap, 2, mt.metallicRoughness);
         bindTex(m_data->locHasEmissiveMap, m_data->locEmissiveMap, 3, mt.emissive);
         bindTex(m_data->locHasOcclusionMap, m_data->locOcclusionMap, 4, mt.occlusion);
+
+        // Billboard text: render unlit so text color comes through directly
+        if (auto *text = dynamic_cast<TextNode*>(geom); text && text->isBillboard())
+          glUniform1i(m_data->locUnlit, 1);
       } else {
         glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
         glUniform1f(m_data->locMetallic, 0.0f);
@@ -1501,12 +1517,13 @@ void main() { }
         glUniform1i(m_data->locHasOcclusionMap, 0);
       }
 
-      // Draw triangles (PBR lit)
+      // Draw triangles
       if (cache->numTriIndices > 0) {
         glBindVertexArray(cache->triVao);
         glDrawElements(GL_TRIANGLES, cache->numTriIndices, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
       }
+      glUniform1i(m_data->locUnlit, 0);
 
       // Unbind textures
       for (int u = 0; u < 5; u++) {
