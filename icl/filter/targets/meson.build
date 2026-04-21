@@ -2,17 +2,14 @@
 
 # ---- Demos (all need Qt) ----
 if _build_demos and qt_found
+  # Most single-op demos have been retired — the unified filter-playground
+  # app (in apps/) covers them via the Configurable/Prop introspection path.
+  # Kept here are the demos with bespoke UX that doesn't map onto Prop:
+  # - affine-op:    interactive ROI overlay + LIN/NN bench
+  # - pseudo-color: 6-stop custom gradient editor + XML load/save
   _filter_demos = {
     'affine-op': [],
-    'bilateral-filter-op': [],
-    'canny-op': [],
-    'convolution-op': [],
-    'dither-op': [],
-    'fft': [],
-    'gabor-op': [],
     'pseudo-color': [],
-    'temporal-smoothing': [],
-    'warp-op': [],
   }
   foreach name, extra_deps : _filter_demos
     executable(name + '-demo',
@@ -27,7 +24,6 @@ endif
 if _build_apps and qt_found
   _filter_apps = {
     'color-segmentation': [icl_geom2_dep],
-    'filter-array': [],
     'filter-playground': [],
     'local-thresh': [],
     'rectify-image': [],
