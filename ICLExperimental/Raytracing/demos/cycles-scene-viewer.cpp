@@ -189,26 +189,48 @@ static void setupScene() {
         v[2] = (v[2] - cz) * scaleFactor;
       }
     }
-    // Recompute normals after scaling
+    // Recompute normals after vertex scaling
     for (auto &obj : loadedObjects) {
       obj->createAutoNormals(true);
-      // Debug: check normal lengths
-      const auto &normals = obj->getNormals();
-      if (!normals.empty()) {
-        float minLen = 1e10, maxLen = 0;
-        for (size_t ni = 0; ni < std::min(normals.size(), (size_t)100); ni++) {
-          float l = std::sqrt(normals[ni][0]*normals[ni][0] + normals[ni][1]*normals[ni][1] + normals[ni][2]*normals[ni][2]);
-          minLen = std::min(minLen, l); maxLen = std::max(maxLen, l);
-        }
-        fprintf(stderr, "  Normals: %zu (verts: %zu) len range: [%.4f, %.4f] first: (%.4f, %.4f, %.4f, %.4f)\n",
-                normals.size(), obj->getVertices().size(), minLen, maxLen,
-                normals[0][0], normals[0][1], normals[0][2], normals[0][3]);
-      }
     }
     // Recompute bounds after scaling
     computeSceneBounds(minX, minY, minZ, maxX, maxY, maxZ);
     cx = (minX + maxX) / 2; cy = (minY + maxY) / 2; cz = (minZ + maxZ) / 2;
     extent = targetSize;
+  }
+
+  // Add checkerboard ground plane at the bottom of the scene
+  {
+    float groundY = minY;
+    float gs = extent * 1.5f;  // ground extends beyond scene
+    int tiles = 8;             // 8x8 checkerboard
+    float tileSize = (2.0f * gs) / tiles;
+
+    auto matLight = Material::fromColor(GeomColor(220, 215, 210, 255));
+    matLight->roughness = 0.6f;
+    auto matDark = Material::fromColor(GeomColor(80, 75, 70, 255));
+    matDark->roughness = 0.6f;
+
+    for (int tx = 0; tx < tiles; tx++) {
+      for (int tz = 0; tz < tiles; tz++) {
+        float x0 = cx - gs + tx * tileSize;
+        float z0 = cz - gs + tz * tileSize;
+        float x1 = x0 + tileSize;
+        float z1 = z0 + tileSize;
+
+        auto tile = std::make_shared<SceneObject>();
+        tile->addVertex(Vec(x0, groundY, z0, 1));
+        tile->addVertex(Vec(x1, groundY, z0, 1));
+        tile->addVertex(Vec(x1, groundY, z1, 1));
+        tile->addVertex(Vec(x0, groundY, z1, 1));
+        tile->addTriangle(0, 1, 2);
+        tile->addTriangle(0, 2, 3);
+        tile->setMaterial((tx + tz) % 2 == 0 ? matLight : matDark);
+        tile->getMaterial()->smoothShading = true;
+        scene.addObject(tile.get());
+        loadedObjects.push_back(tile);
+      }
+    }
   }
 
   float dist = extent * 1.5f;
@@ -220,14 +242,23 @@ static void setupScene() {
       pa("-size"),
       55.0f));
 
-  // Lights
-  scene.getLight(0).setOn(true);
-  scene.getLight(0).setPosition(Vec(cx + dist, cy + dist, cz - dist, 1));
-  scene.getLight(0).setDiffuse(GeomColor(255, 245, 230, 255));
+  // 3-point lighting for shape visibility
+  float r = extent * 0.7f;
 
+  // Key light: upper-right, close and strong — creates defining shadows
+  scene.getLight(0).setOn(true);
+  scene.getLight(0).setPosition(Vec(cx + r * 0.8f, cy + r * 0.6f, cz - r * 0.3f, 1));
+  scene.getLight(0).setDiffuse(GeomColor(255, 248, 235, 255));
+
+  // Fill light: left-front, much dimmer — softens shadows without flattening
   scene.getLight(1).setOn(true);
-  scene.getLight(1).setPosition(Vec(cx - dist * 0.5f, cy + dist * 0.3f, cz + dist * 0.5f, 1));
-  scene.getLight(1).setDiffuse(GeomColor(100, 120, 160, 255));
+  scene.getLight(1).setPosition(Vec(cx - r * 0.6f, cy + r * 0.2f, cz - r * 0.5f, 1));
+  scene.getLight(1).setDiffuse(GeomColor(40, 50, 70, 255));
+
+  // Rim/back light: behind-above — edge highlights
+  scene.getLight(2).setOn(true);
+  scene.getLight(2).setPosition(Vec(cx - r * 0.2f, cy + r, cz + r * 0.6f, 1));
+  scene.getLight(2).setDiffuse(GeomColor(180, 190, 210, 255));
 
   for (int i = 0; i < scene.getObjectCount(); i++)
     scene.getObject(i)->prepareForRendering();
