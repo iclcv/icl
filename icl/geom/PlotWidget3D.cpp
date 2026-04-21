@@ -617,11 +617,8 @@ namespace icl{
         Plot3DGUIWidgetRegisterer(){
           qt::GUI::register_widget_type("plot3D",create_plot_3D_widget_instance);
 
-          // Legacy DataStore rule (removed when DataStore::assign flips
-          // to AssignRegistry::dispatch); the new-world equivalent is
-          // the enroll_identity call below, which lets
-          // `PlotHandle3D p = gui["key"]` route through AssignRegistry.
-          qt::DataStore::register_trivial_assignment_rule<PlotHandle3D,PlotHandle3D>("PlotHandle3D","PlotHandle3D");
+          // `PlotHandle3D p = gui["key"]` routes through AssignRegistry
+          // via DataStore::Data::assign.
           utils::AssignRegistry::enroll_identity<PlotHandle3D>();
         }
       } plot3DWidgetRegisterer;

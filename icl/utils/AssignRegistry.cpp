@@ -4,6 +4,8 @@
 
 #include <icl/utils/AssignRegistry.h>
 
+#include <algorithm>
+
 namespace icl::utils {
 
   AssignRegistry &AssignRegistry::instance() {
@@ -73,6 +75,37 @@ namespace icl::utils {
       total += inner.size();
     }
     return total;
+  }
+
+  std::vector<std::pair<std::string, std::string>>
+  AssignRegistry::listRules(const std::string &srcFilter,
+                            const std::string &dstFilter) {
+    // Reverse the name table so we can print the RTTI names alongside
+    // the type_indices.  Multiple names can map to the same
+    // type_index (alias via the same typeid), but typically one each.
+    const auto &r = instance();
+    std::unordered_map<std::type_index, std::string> typeToName;
+    for (const auto &[name, idx] : r.m_nameToType) {
+      typeToName.insert({idx, name});
+    }
+
+    std::vector<std::pair<std::string, std::string>> out;
+    for (const auto &[dstT, innerMap] : r.m_map) {
+      auto dstIt = typeToName.find(dstT);
+      const std::string &dstName = (dstIt != typeToName.end()) ? dstIt->second
+                                                               : std::string(dstT.name());
+      if (!dstFilter.empty() && dstName.find(dstFilter) == std::string::npos) continue;
+      for (const auto &[srcT, fn] : innerMap) {
+        (void)fn;
+        auto srcIt = typeToName.find(srcT);
+        const std::string &srcName = (srcIt != typeToName.end()) ? srcIt->second
+                                                                 : std::string(srcT.name());
+        if (!srcFilter.empty() && srcName.find(srcFilter) == std::string::npos) continue;
+        out.emplace_back(srcName, dstName);
+      }
+    }
+    std::sort(out.begin(), out.end());
+    return out;
   }
 
 }  // namespace icl::utils

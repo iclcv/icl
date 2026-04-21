@@ -13,6 +13,8 @@
 #include <string>
 #include <typeindex>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace icl::utils {
 
@@ -135,6 +137,14 @@ namespace icl::utils {
 
     /// Total number of registered `(Dst, Src)` pairs.
     static std::size_t size() noexcept;
+
+    /// List all `(srcName, dstName)` pairs that match the given
+    /// substring filters (empty filter = match everything).  Names
+    /// are RTTI-name strings as populated by `enroll()`.
+    /// Ordered alphabetically by (srcName, dstName) for stable output.
+    static std::vector<std::pair<std::string, std::string>>
+    listRules(const std::string &srcFilter = "",
+              const std::string &dstFilter = "");
 
   private:
     /// Meyers singleton — holds the actual map state.  Private: all

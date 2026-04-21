@@ -2,12 +2,20 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/DataStore.h>
+#include <icl/utils/AssignRegistry.h>
 #include <icl/utils/ProgArg.h>
 
-int main(int n, char **args){
-  icl::utils::pa_init(n,args,"-src-type|-s(name) -dst-type|-d(mame)");
+#include <iostream>
 
-  icl::qt::DataStore::list_possible_assignments(icl::utils::pa("-s") ? *icl::utils::pa("-s") : icl::utils::str(""),
-                                                icl::utils::pa("-d") ? *icl::utils::pa("-d") : icl::utils::str("") );
+int main(int n, char **args){
+  icl::utils::pa_init(n, args, "-src-type|-s(name) -dst-type|-d(name)");
+
+  const std::string src = icl::utils::pa("-s") ? *icl::utils::pa("-s") : std::string();
+  const std::string dst = icl::utils::pa("-d") ? *icl::utils::pa("-d") : std::string();
+
+  const auto rules = icl::utils::AssignRegistry::listRules(src, dst);
+  for (const auto &[s, d] : rules) {
+    std::cout << s << "  ->  " << d << "\n";
+  }
+  std::cout << rules.size() << " rule(s)\n";
 }
