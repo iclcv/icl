@@ -64,6 +64,7 @@ void SceneRaytracer::render(int camIndex) {
     m_backend->setSceneData(extracted.lights.data(), (int)extracted.lights.size(),
                             extracted.materials.data(), (int)extracted.materials.size(),
                             extracted.backgroundColor);
+    m_backend->setMaterialTextures(extracted.materialPtrs);
     m_backend->setEmissiveTriangles(extracted.emissiveTriangles.data(),
                                     (int)extracted.emissiveTriangles.size());
   }

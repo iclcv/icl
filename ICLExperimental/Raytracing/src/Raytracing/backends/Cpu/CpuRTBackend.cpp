@@ -3,6 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "CpuRTBackend.h"
+#include <ICLGeom/Material.h>
+#include <ICLCore/Img.h>
 #include <algorithm>
 #include <cmath>
 
@@ -53,6 +55,10 @@ void CpuRTBackend::setEmissiveTriangles(const RTEmissiveTriangle *tris, int coun
   m_totalEmissiveArea = 0;
   for (const auto &et : m_emissives)
     m_totalEmissiveArea += et.area;
+}
+
+void CpuRTBackend::setMaterialTextures(const std::vector<std::shared_ptr<geom::Material>> &materials) {
+  m_materialPtrs = materials;
 }
 
 // ---- Transform helpers ----
@@ -122,15 +128,133 @@ bool CpuRTBackend::traceShadow(const RTFloat3 &from, const RTFloat3 &toLight, fl
   return false;
 }
 
-// ---- Blinn-Phong shading ----
+// ---- Texture sampling ----
+
+/// Sample an ImgBase texture at (u,v) with wrapping. Returns RGBA in [0,1].
+static RTFloat4 sampleTexture(const core::ImgBase *img, float u, float v) {
+  if (!img) return {1, 1, 1, 1};
+  int w = img->getWidth(), h = img->getHeight();
+  if (w <= 0 || h <= 0) return {1, 1, 1, 1};
+
+  // Wrap UVs to [0,1]
+  u = u - std::floor(u);
+  v = v - std::floor(v);
+  int x = std::min((int)(u * w), w - 1);
+  int y = std::min((int)(v * h), h - 1);
+
+  // Sample via Img8u (most common format)
+  if (img->getDepth() == core::depth8u) {
+    const auto *typed = img->as8u();
+    int c = typed->getChannels();
+    int idx = x + y * w;
+    float r = typed->getData(0)[idx] / 255.0f;
+    float g = c > 1 ? typed->getData(1)[idx] / 255.0f : r;
+    float b = c > 2 ? typed->getData(2)[idx] / 255.0f : r;
+    float a = c > 3 ? typed->getData(3)[idx] / 255.0f : 1.0f;
+    return {r, g, b, a};
+  }
+  if (img->getDepth() == core::depth32f) {
+    const auto *typed = img->as32f();
+    int c = typed->getChannels();
+    int idx = x + y * w;
+    float r = typed->getData(0)[idx];
+    float g = c > 1 ? typed->getData(1)[idx] : r;
+    float b = c > 2 ? typed->getData(2)[idx] : r;
+    float a = c > 3 ? typed->getData(3)[idx] : 1.0f;
+    return {r, g, b, a};
+  }
+  return {1, 1, 1, 1};
+}
+
+// ---- PBR Cook-Torrance BRDF helpers ----
+
+static constexpr float PI = 3.14159265358979323846f;
+
+// GGX/Trowbridge-Reitz normal distribution
+static float distributionGGX(float NdotH, float roughness) {
+  float a = roughness * roughness;
+  float a2 = a * a;
+  float denom = NdotH * NdotH * (a2 - 1.0f) + 1.0f;
+  return a2 / (PI * denom * denom + 1e-7f);
+}
+
+// Smith's geometry function (Schlick-GGX approximation)
+static float geometrySmith(float NdotV, float NdotL, float roughness) {
+  float r = roughness + 1.0f;
+  float k = (r * r) / 8.0f;
+  float ggx1 = NdotV / (NdotV * (1.0f - k) + k + 1e-7f);
+  float ggx2 = NdotL / (NdotL * (1.0f - k) + k + 1e-7f);
+  return ggx1 * ggx2;
+}
+
+// Schlick Fresnel approximation
+static RTFloat3 fresnelSchlick(float cosTheta, const RTFloat3 &F0) {
+  float t = 1.0f - cosTheta;
+  float t2 = t * t;
+  float t5 = t2 * t2 * t;
+  return {F0.x + (1.0f - F0.x) * t5,
+          F0.y + (1.0f - F0.y) * t5,
+          F0.z + (1.0f - F0.z) * t5};
+}
+
+// ---- PBR shading (Cook-Torrance) ----
 
 RTFloat3 CpuRTBackend::shade(const RTFloat3 &hitPos, const RTFloat3 &normal,
                               const RTFloat3 &viewDir,
                               const RTFloat4 &vertexColor, const RTMaterial &material,
-                              int depth) const {
+                              int depth, float texU, float texV, int matIdx) const {
   RTFloat3 color{0, 0, 0};
-  RTFloat3 baseColor{vertexColor.x, vertexColor.y, vertexColor.z};
+  RTFloat3 albedo{vertexColor.x, vertexColor.y, vertexColor.z};
   RTFloat3 N = normalize(normal);
+  float metallic = material.metallic;
+  float roughness = material.roughness;
+
+  // Apply texture maps if available
+  const geom::Material *matPtr = (matIdx >= 0 && matIdx < (int)m_materialPtrs.size())
+    ? m_materialPtrs[matIdx].get() : nullptr;
+  if (matPtr) {
+    if (matPtr->baseColorMap) {
+      RTFloat4 tc = sampleTexture(matPtr->baseColorMap.get(), texU, texV);
+      albedo = {albedo.x * tc.x, albedo.y * tc.y, albedo.z * tc.z};
+    }
+    if (matPtr->metallicRoughnessMap) {
+      RTFloat4 mr = sampleTexture(matPtr->metallicRoughnessMap.get(), texU, texV);
+      metallic = mr.x;   // R channel = metallic
+      roughness = mr.y;  // G channel = roughness
+    }
+    if (matPtr->emissiveMap) {
+      RTFloat4 em = sampleTexture(matPtr->emissiveMap.get(), texU, texV);
+      // Modulate emission by emissive map
+      color.x += material.emissive.x * em.x;
+      color.y += material.emissive.y * em.y;
+      color.z += material.emissive.z * em.z;
+    }
+    // Normal map: perturb N in tangent space
+    if (matPtr->normalMap) {
+      RTFloat4 nm = sampleTexture(matPtr->normalMap.get(), texU, texV);
+      // Convert from [0,1] to [-1,1]
+      RTFloat3 mapN{nm.x * 2.0f - 1.0f, nm.y * 2.0f - 1.0f, nm.z * 2.0f - 1.0f};
+      // Build tangent frame from N
+      RTFloat3 up = std::abs(N.y) < 0.999f ? RTFloat3{0,1,0} : RTFloat3{1,0,0};
+      RTFloat3 T = normalize(up.cross(N));
+      RTFloat3 B = N.cross(T);
+      N = normalize(RTFloat3{
+        T.x * mapN.x + B.x * mapN.y + N.x * mapN.z,
+        T.y * mapN.x + B.y * mapN.y + N.y * mapN.z,
+        T.z * mapN.x + B.z * mapN.y + N.z * mapN.z
+      });
+    }
+  }
+  RTFloat3 V = normalize(viewDir * -1.0f);
+  float NdotV = std::max(0.001f, N.dot(V));
+
+  // F0: reflectance at normal incidence
+  // Dielectrics: 0.04, metals: albedo
+  RTFloat3 F0{
+    0.04f * (1.0f - metallic) + albedo.x * metallic,
+    0.04f * (1.0f - metallic) + albedo.y * metallic,
+    0.04f * (1.0f - metallic) + albedo.z * metallic
+  };
 
   for (const auto &light : m_lights) {
     if (!light.on) continue;
@@ -141,52 +265,63 @@ RTFloat3 CpuRTBackend::shade(const RTFloat3 &hitPos, const RTFloat3 &normal,
     if (dist < 1e-6f) continue;
     L = L * (1.0f / dist);
 
+    float NdotL = std::max(0.0f, N.dot(L));
+    if (NdotL <= 0) continue;
+
     // Spot light attenuation
     float spotFactor = 1.0f;
     if (light.spotCutoff < 180.0f) {
       RTFloat3 spotDir = normalize(light.spotDirection);
       float cosAngle = -(L.dot(spotDir));
-      float cosCutoff = std::cos(light.spotCutoff * 3.14159265f / 180.0f);
+      float cosCutoff = std::cos(light.spotCutoff * PI / 180.0f);
       if (cosAngle < cosCutoff) continue;
       spotFactor = std::pow(cosAngle, light.spotExponent);
     }
 
-    // Distance attenuation
     float atten = 1.0f / (light.attenuation.x + light.attenuation.y * dist +
                           light.attenuation.z * dist * dist);
 
-    // Shadow test
     if (traceShadow(hitPos + N * 1.0f, L, dist)) continue;
 
-    float factor = atten * spotFactor;
-
-    // Diffuse
-    float NdotL = std::max(0.0f, N.dot(L));
-    RTFloat3 diffuse{
-      light.diffuse.x * baseColor.x * NdotL,
-      light.diffuse.y * baseColor.y * NdotL,
-      light.diffuse.z * baseColor.z * NdotL
-    };
-
-    // Specular (Blinn-Phong) — use actual view direction
-    RTFloat3 V = normalize(viewDir * -1.0f);
     RTFloat3 H = normalize(L + V);
     float NdotH = std::max(0.0f, N.dot(H));
-    float spec = std::pow(NdotH, material.shininess);
+    float HdotV = std::max(0.0f, H.dot(V));
+
+    // Cook-Torrance specular BRDF
+    float D = distributionGGX(NdotH, roughness);
+    float G = geometrySmith(NdotV, NdotL, roughness);
+    RTFloat3 F = fresnelSchlick(HdotV, F0);
+
     RTFloat3 specular{
-      light.specular.x * material.specularColor.x * spec,
-      light.specular.y * material.specularColor.y * spec,
-      light.specular.z * material.specularColor.z * spec
+      D * G * F.x / (4.0f * NdotV * NdotL + 1e-4f),
+      D * G * F.y / (4.0f * NdotV * NdotL + 1e-4f),
+      D * G * F.z / (4.0f * NdotV * NdotL + 1e-4f)
+    };
+
+    // Diffuse: energy-conserving Lambert (metals have no diffuse)
+    RTFloat3 kD{(1.0f - F.x) * (1.0f - metallic),
+                (1.0f - F.y) * (1.0f - metallic),
+                (1.0f - F.z) * (1.0f - metallic)};
+    RTFloat3 diffuse{
+      kD.x * albedo.x / PI,
+      kD.y * albedo.y / PI,
+      kD.z * albedo.z / PI
+    };
+
+    RTFloat3 lightColor{light.diffuse.x, light.diffuse.y, light.diffuse.z};
+    float factor = NdotL * atten * spotFactor;
+    color = color + RTFloat3{
+      (diffuse.x + specular.x) * lightColor.x * factor,
+      (diffuse.y + specular.y) * lightColor.y * factor,
+      (diffuse.z + specular.z) * lightColor.z * factor
     };
 
     // Ambient
-    RTFloat3 ambient{
-      light.ambient.x * baseColor.x,
-      light.ambient.y * baseColor.y,
-      light.ambient.z * baseColor.z
+    color = color + RTFloat3{
+      light.ambient.x * albedo.x * 0.3f,
+      light.ambient.y * albedo.y * 0.3f,
+      light.ambient.z * albedo.z * 0.3f
     };
-
-    color = color + (diffuse + specular) * factor + ambient;
   }
 
   // Reflections
@@ -198,9 +333,9 @@ RTFloat3 CpuRTBackend::shade(const RTFloat3 &hitPos, const RTFloat3 &normal,
   }
 
   // Add emission
-  color.x += material.emission.x;
-  color.y += material.emission.y;
-  color.z += material.emission.z;
+  color.x += material.emissive.x;
+  color.y += material.emissive.y;
+  color.z += material.emissive.z;
 
   // Clamp to [0,1]
   color.x = std::min(1.0f, std::max(0.0f, color.x));
@@ -257,6 +392,8 @@ struct SurfaceHit {
   RTFloat3 normal;
   RTFloat4 color;
   RTMaterial material;
+  float u = 0, v = 0;  // interpolated texture coordinates
+  int materialIndex = -1;  // for texture lookup
 };
 
 static SurfaceHit interpolateHit(const CpuRTBackend::BLASEntry &blas,
@@ -291,8 +428,11 @@ static SurfaceHit interpolateHit(const CpuRTBackend::BLASEntry &blas,
     v0.position.z*w0 + v1.position.z*w1 + v2.position.z*w2
   };
   s.position = transformPoint(inst.transform, localPos);
+  s.materialIndex = inst.materialIndex;
   s.material = (inst.materialIndex < (int)materials.size())
     ? materials[inst.materialIndex] : RTMaterial{};
+  s.u = v0.u*w0 + v1.u*w1 + v2.u*w2;
+  s.v = v0.v*w0 + v1.v*w1 + v2.v*w2;
   return s;
 }
 
@@ -305,7 +445,7 @@ RTFloat3 CpuRTBackend::traceColor(const RTFloat3 &origin, const RTFloat3 &dir, i
 
   SurfaceHit s = interpolateHit(m_blas[m_instances[instIdx].blasIndex],
                                  m_instances[instIdx], m_materials, hit);
-  return shade(s.position, s.normal, dir, s.color, s.material, depth);
+  return shade(s.position, s.normal, dir, s.color, s.material, depth, s.u, s.v, s.materialIndex);
 }
 
 // ---- Path tracing with random hemisphere bounces ----
@@ -340,27 +480,105 @@ RTFloat3 CpuRTBackend::pathTrace(const RTFloat3 &origin, const RTFloat3 &dir,
   BVHHit hit;
   int instIdx = traceScene(origin, dir, hit);
   if (instIdx < 0) {
-    // Sky: subtle gradient for ambient light
-    float t = 0.5f * (dir.y + 1.0f);
-    return RTFloat3{0.05f, 0.05f, 0.08f} * (1-t) + RTFloat3{0.1f, 0.12f, 0.2f} * t;
+    // Sky: bright gradient — essential for PBR materials to have something to reflect.
+    // Horizon is warm white, zenith is blue. Provides ambient illumination and
+    // environment reflections that make roughness/metallic differences visible.
+    float up = dir.z; // Z-up convention
+    float t = std::max(0.0f, std::min(1.0f, 0.5f * (up + 1.0f)));
+    // Ground (below horizon): dark warm
+    if (up < 0) {
+      float g = std::max(0.0f, 1.0f + up * 2.0f); // fade to dark below -0.5
+      return RTFloat3{0.15f, 0.12f, 0.08f} * g;
+    }
+    // Sky: warm horizon → blue zenith
+    RTFloat3 horizon{0.6f, 0.55f, 0.5f};
+    RTFloat3 zenith{0.15f, 0.25f, 0.55f};
+    return horizon * (1-t) + zenith * t;
   }
 
   SurfaceHit s = interpolateHit(m_blas[m_instances[instIdx].blasIndex],
                                  m_instances[instIdx], m_materials, hit);
   RTFloat3 N = s.normal;
-  RTFloat3 baseColor{s.color.x, s.color.y, s.color.z};
+  RTFloat3 albedo{s.color.x, s.color.y, s.color.z};
+  const auto &mat = s.material;
+  float metallic = mat.metallic;
+  float roughness = mat.roughness;
+
+  // Apply texture maps
+  const geom::Material *matPtr = (s.materialIndex >= 0 && s.materialIndex < (int)m_materialPtrs.size())
+    ? m_materialPtrs[s.materialIndex].get() : nullptr;
+  if (matPtr) {
+    if (matPtr->baseColorMap) {
+      RTFloat4 tc = sampleTexture(matPtr->baseColorMap.get(), s.u, s.v);
+      albedo = {albedo.x * tc.x, albedo.y * tc.y, albedo.z * tc.z};
+    }
+    if (matPtr->metallicRoughnessMap) {
+      RTFloat4 mr = sampleTexture(matPtr->metallicRoughnessMap.get(), s.u, s.v);
+      metallic = mr.x;
+      roughness = mr.y;
+    }
+    if (matPtr->normalMap) {
+      RTFloat4 nm = sampleTexture(matPtr->normalMap.get(), s.u, s.v);
+      RTFloat3 mapN{nm.x * 2.0f - 1.0f, nm.y * 2.0f - 1.0f, nm.z * 2.0f - 1.0f};
+      RTFloat3 up = std::abs(N.y) < 0.999f ? RTFloat3{0,1,0} : RTFloat3{1,0,0};
+      RTFloat3 T = normalize(up.cross(N));
+      RTFloat3 B = N.cross(T);
+      N = normalize(RTFloat3{
+        T.x * mapN.x + B.x * mapN.y + N.x * mapN.z,
+        T.y * mapN.x + B.y * mapN.y + N.y * mapN.z,
+        T.z * mapN.x + B.z * mapN.y + N.z * mapN.z
+      });
+    }
+  }
 
   // Flip normal if we hit the back face
   if (N.dot(dir) > 0) N = N * -1.0f;
 
-  // Surface emission (area light)
-  RTFloat3 emitted{
-    s.material.emission.x,
-    s.material.emission.y,
-    s.material.emission.z
+  RTFloat3 V = normalize(dir * -1.0f);
+  float NdotV = std::max(0.001f, N.dot(V));
+
+  // F0: dielectric base 0.04, metals use albedo
+  RTFloat3 F0{
+    0.04f * (1.0f - metallic) + albedo.x * metallic,
+    0.04f * (1.0f - metallic) + albedo.y * metallic,
+    0.04f * (1.0f - metallic) + albedo.z * metallic
   };
 
-  // Direct lighting: sample each light explicitly (next event estimation)
+  // Surface emission (area light)
+  RTFloat3 emitted{mat.emissive.x, mat.emissive.y, mat.emissive.z};
+  if (matPtr && matPtr->emissiveMap) {
+    RTFloat4 em = sampleTexture(matPtr->emissiveMap.get(), s.u, s.v);
+    emitted = {emitted.x * em.x, emitted.y * em.y, emitted.z * em.z};
+  }
+
+  // Direct lighting with PBR BRDF (next event estimation)
+  auto evalDirectPBR = [&](const RTFloat3 &L, float NdotL, const RTFloat3 &lightColor, float factor) {
+    RTFloat3 H = normalize(L + V);
+    float NdotH = std::max(0.0f, N.dot(H));
+    float HdotV = std::max(0.0f, H.dot(V));
+
+    float D = distributionGGX(NdotH, roughness);
+    float G = geometrySmith(NdotV, NdotL, roughness);
+    RTFloat3 F = fresnelSchlick(HdotV, F0);
+
+    RTFloat3 spec{D * G * F.x / (4.0f * NdotV * NdotL + 1e-4f),
+                  D * G * F.y / (4.0f * NdotV * NdotL + 1e-4f),
+                  D * G * F.z / (4.0f * NdotV * NdotL + 1e-4f)};
+
+    RTFloat3 kD{(1.0f - F.x) * (1.0f - metallic),
+                (1.0f - F.y) * (1.0f - metallic),
+                (1.0f - F.z) * (1.0f - metallic)};
+    RTFloat3 diff{kD.x * albedo.x / PI, kD.y * albedo.y / PI, kD.z * albedo.z / PI};
+
+    float f = NdotL * factor;
+    emitted = emitted + RTFloat3{
+      (diff.x + spec.x) * lightColor.x * f,
+      (diff.y + spec.y) * lightColor.y * f,
+      (diff.z + spec.z) * lightColor.z * f
+    };
+  };
+
+  // Point/spot lights
   for (const auto &light : m_lights) {
     if (!light.on) continue;
     RTFloat3 lightPos{light.position.x, light.position.y, light.position.z};
@@ -377,27 +595,21 @@ RTFloat3 CpuRTBackend::pathTrace(const RTFloat3 &origin, const RTFloat3 &dir,
     float atten = 1.0f / (light.attenuation.x + light.attenuation.y * dist +
                           light.attenuation.z * dist * dist);
 
-    // Spot
     float spotFactor = 1.0f;
     if (light.spotCutoff < 180.0f) {
       RTFloat3 spotDir = normalize(light.spotDirection);
       float cosAngle = -(L.dot(spotDir));
-      float cosCutoff = std::cos(light.spotCutoff * 3.14159265f / 180.0f);
+      float cosCutoff = std::cos(light.spotCutoff * PI / 180.0f);
       if (cosAngle < cosCutoff) continue;
       spotFactor = std::pow(cosAngle, light.spotExponent);
     }
 
     RTFloat3 lightColor{light.diffuse.x, light.diffuse.y, light.diffuse.z};
-    emitted = emitted + RTFloat3{
-      lightColor.x * baseColor.x * NdotL * atten * spotFactor,
-      lightColor.y * baseColor.y * NdotL * atten * spotFactor,
-      lightColor.z * baseColor.z * NdotL * atten * spotFactor
-    };
+    evalDirectPBR(L, NdotL, lightColor, atten * spotFactor);
   }
 
   // Area light sampling: pick one random emissive triangle
   if (!m_emissives.empty() && m_totalEmissiveArea > 0) {
-    // Select a triangle weighted by area
     float r = fastRandFloat(rng) * m_totalEmissiveArea;
     float cumArea = 0;
     int ei = 0;
@@ -407,7 +619,6 @@ RTFloat3 CpuRTBackend::pathTrace(const RTFloat3 &origin, const RTFloat3 &dir,
     }
     const auto &et = m_emissives[ei];
 
-    // Random point on triangle (uniform barycentric)
     float u1 = fastRandFloat(rng), u2 = fastRandFloat(rng);
     if (u1 + u2 > 1.0f) { u1 = 1.0f - u1; u2 = 1.0f - u2; }
     RTFloat3 lightPt{
@@ -424,37 +635,66 @@ RTFloat3 CpuRTBackend::pathTrace(const RTFloat3 &origin, const RTFloat3 &dir,
       float lightNdotL = -(et.normal.dot(L));
       if (NdotL > 0 && lightNdotL > 0) {
         if (!traceShadow(s.position + N * 1.0f, L, dist - 1.0f)) {
-          // PDF = 1 / totalArea, solid angle = area * cos(lightAngle) / dist^2
-          float geomTerm = NdotL * lightNdotL * m_totalEmissiveArea / (dist * dist);
-          emitted = emitted + RTFloat3{
-            et.emission.x * baseColor.x * geomTerm,
-            et.emission.y * baseColor.y * geomTerm,
-            et.emission.z * baseColor.z * geomTerm
-          };
+          float geomTerm = lightNdotL * m_totalEmissiveArea / (dist * dist);
+          RTFloat3 emLight{et.emission.x, et.emission.y, et.emission.z};
+          evalDirectPBR(L, NdotL, emLight, geomTerm);
         }
       }
     }
   }
 
-  // Indirect lighting: one random bounce (cosine-weighted hemisphere)
-  RTFloat3 bounceDir = randomHemisphere(N, rng);
-  RTFloat3 indirect = pathTrace(s.position + N * 1.0f, bounceDir, depth + 1, rng);
+  // Indirect lighting: split between diffuse and specular bounces.
+  // Probability of specular vs diffuse sampling based on Fresnel + metallic.
+  RTFloat3 kS = fresnelSchlick(NdotV, F0);
+  float specWeight = (kS.x + kS.y + kS.z) / 3.0f;
+  // Metals are fully specular; smooth dielectrics also lean specular
+  float specProb = std::max(specWeight, metallic);
+  specProb = std::max(0.1f, std::min(0.9f, specProb)); // clamp to avoid zero probability
 
-  // Diffuse BRDF: albedo / pi, but cosine weighting in the hemisphere sample
-  // cancels with the cos(theta)/pi in the rendering equation, leaving just albedo
-  RTFloat3 gi{
-    baseColor.x * indirect.x,
-    baseColor.y * indirect.y,
-    baseColor.z * indirect.z
-  };
+  RTFloat3 gi{0, 0, 0};
 
-  // Mirror reflection for reflective materials
-  if (s.material.reflectivity > 0.01f) {
+  if (fastRandFloat(rng) < specProb) {
+    // Specular bounce: reflect + roughness perturbation
+    RTFloat3 reflDir = dir - N * (2.0f * dir.dot(N));
+    reflDir = normalize(reflDir);
+
+    // Perturb reflection direction by roughness (GGX-like lobe approximation)
+    if (roughness > 0.01f) {
+      // Blend between perfect reflection and random hemisphere based on roughness²
+      RTFloat3 randDir = randomHemisphere(N, rng);
+      float blend = roughness * roughness;
+      reflDir = normalize(RTFloat3{
+        reflDir.x * (1-blend) + randDir.x * blend,
+        reflDir.y * (1-blend) + randDir.y * blend,
+        reflDir.z * (1-blend) + randDir.z * blend
+      });
+      // Ensure direction is in the same hemisphere as normal
+      if (reflDir.dot(N) < 0) reflDir = normalize(reflDir + N * 0.1f);
+    }
+
+    RTFloat3 specColor = pathTrace(s.position + N * 1.0f, reflDir, depth + 1, rng);
+    // Weight by F0 (metal color) / specProb for unbiased estimate
+    gi = {F0.x * specColor.x / specProb,
+          F0.y * specColor.y / specProb,
+          F0.z * specColor.z / specProb};
+  } else {
+    // Diffuse bounce: cosine-weighted hemisphere
+    RTFloat3 bounceDir = randomHemisphere(N, rng);
+    RTFloat3 diffColor = pathTrace(s.position + N * 1.0f, bounceDir, depth + 1, rng);
+    // Diffuse: albedo * (1-F) * (1-metallic) / (1-specProb) for unbiased MIS
+    float diffProb = 1.0f - specProb;
+    gi = {albedo.x * (1.0f - kS.x) * (1.0f - metallic) * diffColor.x / diffProb,
+          albedo.y * (1.0f - kS.y) * (1.0f - metallic) * diffColor.y / diffProb,
+          albedo.z * (1.0f - kS.z) * (1.0f - metallic) * diffColor.z / diffProb};
+  }
+
+  // Mirror reflection for explicit reflectivity (on top of PBR)
+  if (mat.reflectivity > 0.01f) {
     RTFloat3 reflDir = dir - N * (2.0f * dir.dot(N));
     RTFloat3 reflColor = pathTrace(s.position + N * 1.0f, normalize(reflDir), depth + 1, rng);
-    float r = s.material.reflectivity;
-    emitted = emitted * (1-r);
-    gi = gi * (1-r) + reflColor * r;
+    float rv = mat.reflectivity;
+    emitted = emitted * (1-rv);
+    gi = gi * (1-rv) + reflColor * rv;
   }
 
   return emitted + gi;
@@ -486,12 +726,14 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
   m_normalY.resize(n);
   m_normalZ.resize(n);
   m_reflectivity.resize(n);
+  m_roughnessBuffer.resize(n);
   std::fill(m_objectIdBuffer.begin(), m_objectIdBuffer.end(), -1);
   std::fill(m_depthBuffer.begin(), m_depthBuffer.end(), camera.farClip);
   std::fill(m_normalX.begin(), m_normalX.end(), 0.0f);
   std::fill(m_normalY.begin(), m_normalY.end(), 0.0f);
   std::fill(m_normalZ.begin(), m_normalZ.end(), 0.0f);
   std::fill(m_reflectivity.begin(), m_reflectivity.end(), 0.0f);
+  std::fill(m_roughnessBuffer.begin(), m_roughnessBuffer.end(), 0.5f);
   m_lastRenderCamera = camera;
 
   // Ray generation uses inverse Q-matrix stored in camera.invViewProj.
@@ -537,6 +779,7 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
             m_normalY[idx] = N.y;
             m_normalZ[idx] = N.z;
             m_reflectivity[idx] = s.material.reflectivity;
+            m_roughnessBuffer[idx] = s.material.roughness;
           }
         }
         // Running average: new = old * (1 - 1/N) + sample * (1/N)
@@ -582,6 +825,7 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
         m_normalY[idx_gb] = N.y;
         m_normalZ[idx_gb] = N.z;
         m_reflectivity[idx_gb] = s.material.reflectivity;
+        m_roughnessBuffer[idx_gb] = s.material.roughness;
       }
 
       if (spp == 1) {

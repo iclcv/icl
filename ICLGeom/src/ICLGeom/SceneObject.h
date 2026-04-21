@@ -15,8 +15,10 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLGeom/Primitive.h>
+#include <ICLGeom/Material.h>
 #include <ICLGeom/Hit.h>
 #include <mutex>
+#include <cmath>
 
 namespace icl{ namespace qt{ class GLFragmentShader; } }
 
@@ -276,6 +278,12 @@ namespace icl::geom {
     /// adds a new normal to this object
     ICLGeom_API void addNormal(const Vec &n);
 
+    /// adds a texture coordinate (UV) to this object's texcoord list
+    inline void addTexCoord(float u, float v) { m_texCoords.push_back({u, v}); }
+
+    /// returns the texture coordinates
+    inline const std::vector<utils::Point32f> &getTexCoords() const { return m_texCoords; }
+
     /// adds a new line to this object
     /** If the given normal indices (na and nb) are -1, no normals are used for this primitives */
     ICLGeom_API void addLine(int x, int y, const GeomColor &color = GeomColor(100, 100, 100, 255));
@@ -437,6 +445,7 @@ namespace icl::geom {
 
 
     /// tints all Primitives with given type in given color
+    [[deprecated("use setMaterial() instead")]]
     ICLGeom_API void setColor(Primitive::Type t, const GeomColor &color, bool recursive = true);
 
     /// sets point size
@@ -732,40 +741,73 @@ namespace icl::geom {
 
     inline bool getReceiveShadowsEnabled() { return m_receiveShadows; }
 
+    // --- Material API (PBR) ---
+
+    /// sets the default material for this object (shared across all primitives without their own)
+    ICLGeom_API void setMaterial(std::shared_ptr<Material> mat, bool recursive = true);
+
+    /// sets a material for a specific primitive by index
+    ICLGeom_API void setMaterial(int primIdx, std::shared_ptr<Material> mat);
+
+    /// returns the default material (may be null if none set)
+    inline std::shared_ptr<Material> getMaterial() const { return m_defaultMaterial; }
+
+    /// returns the material for a specific primitive (falls back to default if primitive has none)
+    ICLGeom_API std::shared_ptr<Material> getMaterial(int primIdx) const;
+
+    /// returns or lazily creates the default material
+    /** Used internally by deprecated setters to auto-create a material */
+    ICLGeom_API std::shared_ptr<Material> getOrCreateMaterial();
+
+    // --- Legacy API (deprecated, prefer Material) ---
+
     /// returns the material shininess
+    [[deprecated("use getMaterial()->roughness instead")]]
     inline icl8u getShininess() const { return m_shininess; }
 
     /// sets the material shininess (default is 128)
+    [[deprecated("use setMaterial() with Material::roughness instead")]]
     inline void setShininess(icl8u value, bool recursive = true){
       m_shininess = value;
+      getOrCreateMaterial()->roughness = std::sqrt(2.0f / (value + 2.0f));
       if (recursive) for (int i = 0; i < getChildCount(); i++) getChild(i)->setShininess(value, true);
     }
 
     /// returns the materials specular reflectance (in [0,1] range)
+    [[deprecated("use getMaterial()->metallic instead")]]
     inline const GeomColor &getSpecularReflectance() const { return m_specularReflectance; }
 
     /// sets the materials specular reflectance
     /** given color ranges are expected in range [0,255] */
+    [[deprecated("use setMaterial() with Material::metallic instead")]]
     inline void setSpecularReflectance(const GeomColor &values, bool recursive = true){
       m_specularReflectance = values*(1.0/255);
+      float specLum = (values[0] + values[1] + values[2]) / (3.0f * 255.0f);
+      getOrCreateMaterial()->metallic = specLum > 0.5f ? 1.0f : 0.0f;
       if (recursive) for (int i = 0; i < getChildCount(); i++) getChild(i)->setSpecularReflectance(values, true);
     }
 
     /// returns the reflectivity for raytracing (0=none, 1=mirror)
+    [[deprecated("use getMaterial()->reflectivity instead")]]
     inline float getReflectivity() const { return m_reflectivity; }
 
     /// sets the reflectivity for raytracing (0=none, 1=mirror)
+    [[deprecated("use setMaterial() with Material::reflectivity instead")]]
     inline void setReflectivity(float value, bool recursive = true) {
       m_reflectivity = std::max(0.0f, std::min(1.0f, value));
+      getOrCreateMaterial()->reflectivity = m_reflectivity;
       if (recursive) for (int i = 0; i < getChildCount(); i++) getChild(i)->setReflectivity(value, true);
     }
 
     /// returns the emission color for raytracing (in [0,1] range, pre-multiplied by intensity)
+    [[deprecated("use getMaterial()->emissive instead")]]
     inline const GeomColor &getEmission() const { return m_emission; }
 
     /// sets the emission color for raytracing (color in [0,255], intensity multiplier)
+    [[deprecated("use setMaterial() with Material::emissive instead")]]
     inline void setEmission(const GeomColor &color, float intensity = 1.0f, bool recursive = true) {
       m_emission = color * (intensity / 255.0f);
+      getOrCreateMaterial()->emissive = m_emission;
       if (recursive) for (int i = 0; i < getChildCount(); i++) getChild(i)->setEmission(color, intensity, true);
     }
 
@@ -806,6 +848,7 @@ namespace icl::geom {
 
     std::vector<Vec> m_vertices;
     std::vector<Vec> m_normals;
+    std::vector<utils::Point32f> m_texCoords;  //!< per-vertex texture coordinates (optional)
 
     std::vector<GeomColor> m_vertexColors;
     std::vector<Primitive*> m_primitives;
@@ -839,10 +882,12 @@ namespace icl::geom {
     bool m_polygonSmoothingEnabled;
     bool m_depthTestEnabled; //!< default is true
 
-    icl8u m_shininess;
-    GeomColor m_specularReflectance;
-    float m_reflectivity = 0; //!< raytracing reflectivity (0=none, 1=mirror)
-    GeomColor m_emission{0,0,0,0}; //!< raytracing emission (RGB in [0,1], pre-multiplied by intensity)
+    std::shared_ptr<Material> m_defaultMaterial;  //!< PBR material (new API)
+
+    icl8u m_shininess;                    //!< legacy, kept for deprecated API
+    GeomColor m_specularReflectance;      //!< legacy, kept for deprecated API
+    float m_reflectivity = 0;             //!< legacy, kept for deprecated API
+    GeomColor m_emission{0,0,0,0};        //!< legacy, kept for deprecated API
 
     private:
 

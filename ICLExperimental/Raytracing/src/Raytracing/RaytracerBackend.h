@@ -9,6 +9,9 @@
 #include "Denoising.h"
 #include <ICLCore/Img.h>
 #include <memory>
+#include <vector>
+
+namespace icl::geom { class Material; }
 
 namespace icl::rt {
 
@@ -48,6 +51,12 @@ public:
   /// Called when scene geometry or materials change.
   virtual void setEmissiveTriangles(const RTEmissiveTriangle *tris, int count) {
     (void)tris; (void)count; // default: no-op
+  }
+
+  /// Pass Material objects for texture access (one per object, matching materials array).
+  /// Default no-op — only CPU backend uses this for texture sampling.
+  virtual void setMaterialTextures(const std::vector<std::shared_ptr<geom::Material>> &materials) {
+    (void)materials;
   }
 
   /// Render one frame. Output is stored internally; retrieve via readback().
@@ -182,6 +191,7 @@ public:
   virtual const float *getNormalYBuffer() const { return nullptr; }
   virtual const float *getNormalZBuffer() const { return nullptr; }
   virtual const float *getReflectivityBuffer() const { return nullptr; }
+  virtual const float *getRoughnessBuffer() const { return nullptr; }
 
 protected:
   UpsamplingMethod m_upsamplingMethod = UpsamplingMethod::None;
@@ -211,8 +221,8 @@ protected:
       auto *nx = getNormalXBuffer();
       if (!d || !nx) return;
       denoiseSVGF(output, denoised, d, nx, getNormalYBuffer(), getNormalZBuffer(),
-                  getReflectivityBuffer(), m_lastRenderCamera, m_svgfState,
-                  m_denoisingStrength);
+                  getReflectivityBuffer(), getRoughnessBuffer(),
+                  m_lastRenderCamera, m_svgfState, m_denoisingStrength);
     } else {
       return;
     }

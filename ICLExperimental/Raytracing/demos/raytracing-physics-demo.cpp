@@ -4,6 +4,7 @@
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Camera.h>
+#include <ICLGeom/Material.h>
 #include <ICLUtils/Time.h>
 #include <ICLPhysics/PhysicsScene.h>
 #include <ICLPhysics/RigidBoxObject.h>
@@ -66,6 +67,9 @@ static std::uniform_int_distribution<int> randType(0, 2);
 static std::uniform_int_distribution<int> randColor(60, 230);
 static std::uniform_real_distribution<float> randAngle(0.0f, 6.283f);
 static std::uniform_real_distribution<float> randRefl(0.0f, 0.8f);
+static std::uniform_real_distribution<float> randMetallic(0.0f, 1.0f);
+static std::uniform_real_distribution<float> randRoughness(0.05f, 0.95f);
+static std::uniform_real_distribution<float> randUnit(0.0f, 1.0f);
 
 // Table parameters (Z-up convention, matching ICL/Bullet default)
 static constexpr float TABLE_Z = -30;
@@ -86,18 +90,53 @@ static void setupPhysicsBody(RigidObject *obj, const GeomColor &color, bool smoo
   obj->setVisible(Primitive::line, false);
   obj->setVisible(Primitive::vertex, false);
   if (!skipNormals) obj->createAutoNormals(smooth);
-  obj->setColor(Primitive::quad, color);
-  obj->setColor(Primitive::triangle, color);
-  obj->setReflectivity(randRefl(rng));
-  obj->setFriction(0.7f);
-  obj->setRestitution(0.25f);
-  obj->setRollingFriction(0.1f);
-  obj->setDamping(0.3f, 0.4f);
+
+  // Create a PBR material with random properties
+  auto mat = std::make_shared<Material>();
+  mat->baseColor = color * (1.0f / 255.0f);
+
+  // Random material class: 40% plastic, 30% metal, 20% rough, 10% mirror
+  float roll = randUnit(rng);
+  if (roll < 0.4f) {
+    // Plastic: dielectric, low-to-medium roughness
+    mat->metallic = 0.0f;
+    mat->roughness = 0.2f + randRoughness(rng) * 0.5f;
+    mat->reflectivity = 0.0f;
+  } else if (roll < 0.7f) {
+    // Metal: metallic, variable roughness
+    mat->metallic = 0.8f + randUnit(rng) * 0.2f;
+    mat->roughness = 0.1f + randUnit(rng) * 0.6f;
+    mat->reflectivity = 0.0f;
+    // Metals tint their specular with base color (already handled by BRDF)
+  } else if (roll < 0.9f) {
+    // Rough/matte: high roughness, no metallic
+    mat->metallic = 0.0f;
+    mat->roughness = 0.7f + randUnit(rng) * 0.3f;
+    mat->reflectivity = 0.0f;
+  } else {
+    // Mirror: explicit reflectivity
+    mat->metallic = 0.0f;
+    mat->roughness = 0.05f;
+    mat->reflectivity = 0.5f + randUnit(rng) * 0.5f;
+    mat->baseColor = GeomColor(0.9f, 0.9f, 0.92f, 1.0f); // silver tint
+  }
+
+  obj->setMaterial(mat);
+
+  obj->setFriction(0.5f);
+  obj->setRestitution(0.35f);
+  obj->setRollingFriction(0.02f);
+  obj->setDamping(0.2f, 0.08f); // low angular damping — let objects topple naturally
 
   btRigidBody *body = obj->getRigidBody();
   if (body) {
     body->setCcdMotionThreshold(1.0f);
     body->setCcdSweptSphereRadius(0.05f);
+    // Give a random spin so objects tumble instead of balancing on edges
+    float wx = (randUnit(rng) - 0.5f) * 4.0f;
+    float wy = (randUnit(rng) - 0.5f) * 4.0f;
+    float wz = (randUnit(rng) - 0.5f) * 4.0f;
+    body->setAngularVelocity(btVector3(wx, wy, wz));
   }
 }
 
@@ -183,8 +222,14 @@ void init() {
   table->setVisible(Primitive::line, false);
   table->setVisible(Primitive::vertex, false);
   table->createAutoNormals(false);
-  table->setColor(Primitive::quad, GeomColor(140, 100, 60, 255));
-  table->setReflectivity(0.1f);
+  {
+    auto mat = std::make_shared<Material>();
+    mat->baseColor = GeomColor(0.55f, 0.39f, 0.24f, 1.0f); // wood brown
+    mat->metallic = 0.0f;
+    mat->roughness = 0.7f;
+    mat->reflectivity = 0.05f;
+    table->setMaterial(mat);
+  }
   table->setFriction(0.8f);
   table->setRestitution(0.15f);
   scene.addObject(table, true);
@@ -202,53 +247,91 @@ void init() {
   scene.getLight(1).setDiffuse(GeomColor(60, 70, 100, 255));
   scene.getLight(1).setAmbient(GeomColor(10, 10, 15, 255));
 
-  // Pre-populate scene with a curated arrangement + one glowing object
+  // ---- Material archetype display ----
+  // Helper to create a static sphere with a given material
+  auto addArchetype = [&](float x, float y, float radius,
+                          std::shared_ptr<Material> mat) {
+    auto *obj = new RigidSphereObject(x, y, TABLE_Z + radius + 5, radius, 0);
+    obj->setVisible(Primitive::line, false);
+    obj->setVisible(Primitive::vertex, false);
+    obj->createAutoNormals(true);
+    obj->setMaterial(mat);
+    scene.addObject(obj, true);
+  };
+
+  float sphereR = 25;
+  float rowSpacing = 70;
+
+  // Row 1 (back, y=100): Roughness gradient — same red dielectric, roughness 0.05 to 0.95
   {
-    // Large white sphere (emissive area light) in the center
-    auto *glow = new RigidSphereObject(0, 0, TABLE_Z + 80, 40, 0);
-    glow->setVisible(Primitive::line, false);
-    glow->setVisible(Primitive::vertex, false);
-    glow->createAutoNormals(true);
-    glow->setColor(Primitive::triangle, GeomColor(255, 220, 150, 255));
-    glow->setEmission(GeomColor(255, 230, 180, 255), 1.5f);
-    glow->setReflectivity(0.0f);
-    scene.addObject(glow, true);
+    float y = 100;
+    const char *labels[] = {"r=0.05", "r=0.2", "r=0.4", "r=0.6", "r=0.8", "r=0.95"};
+    float roughVals[] = {0.05f, 0.2f, 0.4f, 0.6f, 0.8f, 0.95f};
+    int n = 6;
+    float startX = -(n - 1) * rowSpacing / 2.0f;
+    for (int i = 0; i < n; i++) {
+      auto mat = std::make_shared<Material>();
+      mat->name = labels[i];
+      mat->baseColor = GeomColor(0.8f, 0.15f, 0.15f, 1.0f);
+      mat->metallic = 0.0f;
+      mat->roughness = roughVals[i];
+      addArchetype(startX + i * rowSpacing, y, sphereR, mat);
+    }
+  }
 
-    // Red cube to the left
-    auto *cube1 = new RigidBoxObject(-120, -40, TABLE_Z + 30, 50, 50, 50, 0);
-    cube1->setVisible(Primitive::line, false);
-    cube1->setVisible(Primitive::vertex, false);
-    cube1->createAutoNormals(false);
-    cube1->setColor(Primitive::quad, GeomColor(200, 60, 60, 255));
-    cube1->setReflectivity(0.05f);
-    scene.addObject(cube1, true);
+  // Row 2 (front, y=-30): Material archetypes
+  {
+    float y = -30;
+    float startX = -2.5f * rowSpacing;
 
-    // Blue cube to the right
-    auto *cube2 = new RigidBoxObject(130, 30, TABLE_Z + 25, 40, 40, 40, 0);
-    cube2->setVisible(Primitive::line, false);
-    cube2->setVisible(Primitive::vertex, false);
-    cube2->createAutoNormals(false);
-    cube2->setColor(Primitive::quad, GeomColor(60, 80, 200, 255));
-    cube2->setReflectivity(0.3f);
-    scene.addObject(cube2, true);
+    // Gold metal
+    auto gold = std::make_shared<Material>();
+    gold->name = "gold";
+    gold->baseColor = GeomColor(1.0f, 0.76f, 0.34f, 1.0f);
+    gold->metallic = 1.0f;
+    gold->roughness = 0.2f;
+    addArchetype(startX, y, sphereR, gold);
 
-    // Green sphere behind
-    auto *sphere2 = new RigidSphereObject(30, 100, TABLE_Z + 35, 30, 0);
-    sphere2->setVisible(Primitive::line, false);
-    sphere2->setVisible(Primitive::vertex, false);
-    sphere2->createAutoNormals(true);
-    sphere2->setColor(Primitive::triangle, GeomColor(60, 180, 80, 255));
-    sphere2->setReflectivity(0.1f);
-    scene.addObject(sphere2, true);
+    // Copper metal
+    auto copper = std::make_shared<Material>();
+    copper->name = "copper";
+    copper->baseColor = GeomColor(0.95f, 0.64f, 0.54f, 1.0f);
+    copper->metallic = 1.0f;
+    copper->roughness = 0.4f;
+    addArchetype(startX + rowSpacing, y, sphereR, copper);
 
-    // Shiny mirror cylinder in front
-    auto *cyl = new RigidCylinderObject(-30, -100, TABLE_Z + 35, 20, 60, 0);
-    cyl->setVisible(Primitive::line, false);
-    cyl->setVisible(Primitive::vertex, false);
-    cyl->setColor(Primitive::quad, GeomColor(200, 200, 210, 255));
-    cyl->setColor(Primitive::triangle, GeomColor(200, 200, 210, 255));
-    cyl->setReflectivity(0.7f);
-    scene.addObject(cyl, true);
+    // White plastic
+    auto plastic = std::make_shared<Material>();
+    plastic->name = "plastic";
+    plastic->baseColor = GeomColor(0.9f, 0.9f, 0.9f, 1.0f);
+    plastic->metallic = 0.0f;
+    plastic->roughness = 0.3f;
+    addArchetype(startX + 2 * rowSpacing, y, sphereR, plastic);
+
+    // Green rubber
+    auto rubber = std::make_shared<Material>();
+    rubber->name = "rubber";
+    rubber->baseColor = GeomColor(0.2f, 0.6f, 0.15f, 1.0f);
+    rubber->metallic = 0.0f;
+    rubber->roughness = 0.95f;
+    addArchetype(startX + 3 * rowSpacing, y, sphereR, rubber);
+
+    // Mirror
+    auto mirror = std::make_shared<Material>();
+    mirror->name = "mirror";
+    mirror->baseColor = GeomColor(0.95f, 0.95f, 0.97f, 1.0f);
+    mirror->metallic = 0.0f;
+    mirror->roughness = 0.02f;
+    mirror->reflectivity = 0.9f;
+    addArchetype(startX + 4 * rowSpacing, y, sphereR, mirror);
+
+    // Emissive
+    auto emissive = std::make_shared<Material>();
+    emissive->name = "emissive";
+    emissive->baseColor = GeomColor(1.0f, 0.9f, 0.6f, 1.0f);
+    emissive->emissive = GeomColor(1.5f, 1.2f, 0.7f, 1.0f);
+    emissive->roughness = 0.8f;
+    addArchetype(startX + 5 * rowSpacing, y, sphereR, emissive);
   }
 
   std::string backend = pa("-backend");
@@ -403,23 +486,20 @@ void run() {
     if (clickedObj >= 0 && clickedObj < scene.getObjectCount()) {
       // Reset previous glowing object
       if (glowingObject >= 0 && glowingObject < scene.getObjectCount()) {
-        scene.getObject(glowingObject)->setEmission(GeomColor(0,0,0,255), 0);
+        auto mat = scene.getObject(glowingObject)->getOrCreateMaterial();
+        mat->emissive = GeomColor(0, 0, 0, 1);
       }
       if (clickedObj == glowingObject) {
         glowingObject = -1; // toggle off
       } else {
         glowingObject = clickedObj;
         auto *obj = scene.getObject(clickedObj);
-        const auto &prims = obj->getPrimitives();
-        GeomColor glowColor(255, 220, 100, 255);
-        if (!prims.empty()) {
-          const auto &c = prims[0]->color;
-          glowColor = GeomColor(
-            std::min(255.0f, c[0] * 255 + 100),
-            std::min(255.0f, c[1] * 255 + 100),
-            std::min(255.0f, c[2] * 255 + 100), 255);
-        }
-        obj->setEmission(glowColor, 2.0f);
+        auto mat = obj->getOrCreateMaterial();
+        // Glow with a brightened version of the base color
+        mat->emissive = GeomColor(
+          std::min(1.5f, mat->baseColor[0] + 0.4f),
+          std::min(1.5f, mat->baseColor[1] + 0.4f),
+          std::min(1.5f, mat->baseColor[2] + 0.4f), 1.0f);
       }
       geometryChanged = true; // emission change = material change
     }
@@ -509,6 +589,42 @@ void run() {
            " | total %.0f ms", totalMs);
 
   draw->text(buf, 10, 20, 10);
+
+  // Material tooltip on hover
+  if (hoveredObject >= 0 && hoveredObject < scene.getObjectCount() &&
+      mouseX >= 0 && mouseY >= 0) {
+    auto mat = scene.getObject(hoveredObject)->getMaterial();
+    if (mat) {
+      char tip[512];
+      int tipY = std::max(40, mouseY - 80);
+      int tipX = std::min(mouseX + 15, (int)img.getWidth() - 200);
+
+      const char *matClass = "custom";
+      if (mat->reflectivity > 0.3f) matClass = "mirror";
+      else if (mat->metallic > 0.5f) matClass = "metal";
+      else if (mat->roughness > 0.6f) matClass = "matte";
+      else matClass = "plastic";
+
+      snprintf(tip, sizeof(tip), "%s%s",
+               mat->name.empty() ? matClass : mat->name.c_str(),
+               mat->emissive[0] + mat->emissive[1] + mat->emissive[2] > 0.01f ? " [emissive]" : "");
+      draw->text(tip, tipX, tipY, 9);
+
+      snprintf(tip, sizeof(tip), "color: (%.0f%%, %.0f%%, %.0f%%)",
+               mat->baseColor[0]*100, mat->baseColor[1]*100, mat->baseColor[2]*100);
+      draw->text(tip, tipX, tipY + 14, 8);
+
+      snprintf(tip, sizeof(tip), "metallic: %.0f%%  roughness: %.0f%%",
+               mat->metallic*100, mat->roughness*100);
+      draw->text(tip, tipX, tipY + 26, 8);
+
+      if (mat->reflectivity > 0.01f) {
+        snprintf(tip, sizeof(tip), "reflectivity: %.0f%%", mat->reflectivity*100);
+        draw->text(tip, tipX, tipY + 38, 8);
+      }
+    }
+  }
+
   draw->render();
 
   gui["info"] = std::string(buf);

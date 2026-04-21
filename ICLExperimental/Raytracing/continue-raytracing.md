@@ -1,6 +1,6 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 5 — Denoisers, Tone Mapping, Area Lights, Tooling)
+## Current State (Session 6 — PBR Material System)
 
 ### What Was Built
 
@@ -168,28 +168,73 @@ cmake --build . -j16
 9. **Emissive shadow artifacts** — use averaged smooth vertex normals instead of
    cross-product face normals for emissive triangles
 
+### Material System (Session 6)
+
+**Phase 1 — Material class + SceneObject integration:**
+- `ICLGeom/src/ICLGeom/Material.h/.cpp` — PBR `Material` class with `baseColor`,
+  `metallic`, `roughness`, `reflectivity`, `emissive`, texture map slots
+  (`baseColorMap`, `normalMap`, `metallicRoughnessMap`, `emissiveMap` as
+  `shared_ptr<ImgBase>`), alpha mode, display hints. Static factories
+  `fromColor()`, `fromPhong()`, plus `toPhongParams()` for GL fallback.
+- `Primitive.h` — `shared_ptr<Material> material` on base Primitive struct
+- `SceneObject.h/.cpp` — `m_defaultMaterial`, `setMaterial()`/`getMaterial()` API,
+  `getOrCreateMaterial()`. Old `setColor`/`setShininess`/`setSpecularReflectance`/
+  `setReflectivity`/`setEmission` deprecated with `[[deprecated]]` — still work,
+  auto-sync to material.
+
+**Phase 2 — Raytracer PBR shading:**
+- `RTMaterial` updated: `baseColor`, `emissive`, `metallic`, `roughness`,
+  `reflectivity` (replaces diffuseColor/specularColor/shininess)
+- `GeometryExtractor` reads from Material class when available, legacy fallback
+- Cook-Torrance microfacet BRDF (GGX + Smith + Schlick Fresnel) in all three
+  backends: CPU, Metal, OpenCL. Energy-conserving Lambert diffuse for dielectrics,
+  zero diffuse for metals.
+
+**Phase 3 — OpenGL renderer adaptation:**
+- `Scene::renderSceneObjectRecursive()` uses `Material::toPhongParams()` for GL state
+- Per-primitive material override in render loop (set/restore GL specular/shininess)
+
+**Phase 4 — Texture support:**
+- `Material` stores textures as `shared_ptr<core::ImgBase>` (portable, no Qt dep)
+- `RTVertex` extended with `float u, v` (UV coordinates)
+- `SceneObject` gets `m_texCoords` vector, `addTexCoord()`/`getTexCoords()`
+- `GeometryExtractor` flows UVs through: from per-vertex texCoords, or generates
+  (0,0)→(1,1) for TexturePrimitive quads
+- `RaytracerBackend::setMaterialTextures()` virtual passes Material pointers
+- CPU backend samples all four texture maps at hit UVs:
+  - `baseColorMap` → modulates albedo
+  - `metallicRoughnessMap` → overrides metallic (R) and roughness (G)
+  - `normalMap` → perturbs shading normal via tangent-space transform
+  - `emissiveMap` → modulates emission
+- GPU texture sampling deferred (Metal/OpenCL need texture upload infrastructure)
+
+**Key design decisions (Session 6):**
+- Texture images stored as `ImgBase` (not `GLImg`) for portability across backends
+- PBR↔Phong conversion in both directions preserves visual appearance
+- Deprecated API auto-creates Material on first use via `getOrCreateMaterial()`
+- Per-primitive material override: primitive's material > object's material > legacy
+- Normal map uses constructed tangent frame from shading normal (no explicit tangents)
+
 ## Next Steps
-
-### Material System (Phase 5)
-
-Approved plan in `material-plan.md`. PBR metallic-roughness model in ICLGeom,
-shared via `shared_ptr<Material>`. Old `setColor`/`setShininess` deprecated.
 
 ### Remaining Work
 
-- **GPU SVGF improvements** — the variance-guided spatial filter works but could
-  benefit from tuning sigma parameters; temporal variance tracking could be made
-  more robust for dynamic scenes
+- **GPU texture sampling** — upload material textures to Metal/OpenCL and sample
+  in kernels (baseColorMap first, then other maps)
 - **glTF import** — extend SceneLoader with tinygltf for standard 3D model loading
+  (brings UVs, PBR materials, and textures from glTF files)
+- **XML scene loader material support** — extend SceneLoader to parse PBR material
+  parameters and texture paths from XML scene files
+- **GPU SVGF improvements** — tune sigma parameters; more robust temporal variance
 - **UpsamplingOp in ICLFilter** — promote bilinear/edge-aware to a proper UnaryOp
 - **Environment maps** — HDR sky/environment instead of flat background
-- **Texture/UV support** — UV mapping and texture sampling in materials
 - **MetalWidget** — QWidget wrapping CAMetalLayer for zero-copy display in ICLQt
 
 ### Known Limitations
 
-- No texture primitive support (rendered as flat-colored quads)
-- No line / text / billboard rendering
+- GPU backends (Metal, OpenCL) do not sample material textures yet (CPU only)
+- Normal maps use constructed tangent frames (no explicit per-vertex tangents)
+- No line / text / billboard rendering in raytracer
 - Shadow bias (1mm) may cause light leaking on very thin geometry
 - OpenCL path on macOS goes through cl2Metal translation (deprecated)
 - Metal RT requires macOS 13+ and Apple Silicon

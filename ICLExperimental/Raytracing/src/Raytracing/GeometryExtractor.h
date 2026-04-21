@@ -7,11 +7,13 @@
 #include "RaytracerTypes.h"
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 namespace icl::geom {
   class Scene;
   class SceneObject;
   class Camera;
+  class Material;
 }
 
 namespace icl::rt {
@@ -31,6 +33,7 @@ struct ObjectGeometry {
   std::vector<RTVertex> vertices;
   std::vector<RTTriangle> triangles;
   RTMaterial material;
+  std::shared_ptr<geom::Material> materialPtr;  //!< for texture access
   RTMat4 transform;
   RTMat4 transformInverse;
   bool geometryChanged = false;  // BLAS needs rebuild
@@ -42,6 +45,7 @@ struct ExtractedScene {
   std::vector<ObjectGeometry> objects;
   std::vector<RTInstance> instances;
   std::vector<RTMaterial> materials;
+  std::vector<std::shared_ptr<geom::Material>> materialPtrs; //!< for texture access
   std::vector<RTLight> lights;
   std::vector<RTEmissiveTriangle> emissiveTriangles;
   RTRayGenParams camera;
@@ -80,6 +84,10 @@ private:
                         std::vector<RTVertex> &vertices,
                         std::vector<RTTriangle> &triangles,
                         RTMaterial &material);
+
+  /// Extract only material properties (no tessellation). Used when geometry
+  /// hasn't changed but material may have, or to avoid uninitialized fields.
+  void tessellateExtractMaterial(const geom::SceneObject *obj, RTMaterial &material);
 
   /// Extract lights from Scene.
   void extractLights(const geom::Scene &scene, ExtractedScene &result);

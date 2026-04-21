@@ -591,10 +591,16 @@ namespace icl::geom {
     //check if the custom shader has been set
     bool useCustomShader = o->getFragmentShader();
 
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, o->m_specularReflectance.data());
-
-    float shininess[] = { static_cast<float>(o->m_shininess) };
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+    // Set GL material state from Material (PBR→Phong) or legacy fields
+    if (auto mat = o->getMaterial()) {
+      auto phong = mat->toPhongParams();
+      glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, phong.specular.data());
+      glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &phong.shininess);
+    } else {
+      glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, o->m_specularReflectance.data());
+      float shininess[] = { static_cast<float>(o->m_shininess) };
+      glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+    }
 
     glPointSize(o->m_pointSize);
     glLineWidth(o->m_lineWidth);
@@ -625,6 +631,12 @@ namespace icl::geom {
         for(unsigned int j=0;j<o->m_primitives.size();++j){
           Primitive *p = o->m_primitives[j];
           if(o->isVisible(p->type)){
+            // Per-primitive material override
+            if(p->material) {
+              auto phong = p->material->toPhongParams();
+              glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, phong.specular.data());
+              glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &phong.shininess);
+            }
             //use the texture shader if the primitive is a texture or text
             if(useCustomShader) {
               o->getFragmentShader()->activate();
@@ -633,6 +645,18 @@ namespace icl::geom {
               p->render(ctx);
             } else {
               p->render(ctx);
+            }
+            // Restore object-level material after per-primitive override
+            if(p->material) {
+              if (auto mat = o->getMaterial()) {
+                auto phong = mat->toPhongParams();
+                glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, phong.specular.data());
+                glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &phong.shininess);
+              } else {
+                glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, o->m_specularReflectance.data());
+                float shin[] = { static_cast<float>(o->m_shininess) };
+                glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shin);
+              }
             }
           }
         }

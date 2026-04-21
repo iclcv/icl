@@ -58,6 +58,8 @@ struct alignas(16) RTVertex {
   RTFloat3 position;
   RTFloat3 normal;
   RTFloat4 color; // RGBA [0,1]
+  float u = 0, v = 0;  // texture coordinates
+  float _vtxPad[2] = {};
 };
 
 /// Triangle: 3 indices into the per-object vertex array.
@@ -66,14 +68,14 @@ struct RTTriangle {
   uint32_t materialIndex;
 };
 
-/// Per-object material properties.
+/// Per-object material properties (PBR metallic-roughness).
 struct alignas(16) RTMaterial {
-  RTFloat4 diffuseColor;    // base color (RGBA)
-  RTFloat4 specularColor;   // specular reflectance color
-  RTFloat4 emission;        // emissive color + intensity (RGB * intensity)
-  float shininess;          // Phong exponent (0-255 from ICL)
-  float reflectivity;       // mirror reflection (0=matte, 1=mirror)
-  float _pad[2] = {};
+  RTFloat4 baseColor;       // albedo (RGBA, [0,1])
+  RTFloat4 emissive;        // emission color (RGB * intensity, [0,1]+)
+  float metallic = 0;       // 0 = dielectric, 1 = metal
+  float roughness = 0.5f;   // 0 = mirror, 1 = fully diffuse
+  float reflectivity = 0;   // explicit mirror reflection (0=matte, 1=mirror)
+  float _pad = 0;
 };
 
 /// Light source — mirrors ICL's SceneLight properties.
