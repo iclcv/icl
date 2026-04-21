@@ -122,4 +122,14 @@ enum class UpsamplingMethod {
   MetalFXTemporal ///< Apple MetalFX temporal upscaler (Metal only)
 };
 
+/// Denoising method for path-traced output.
+enum class DenoisingMethod {
+  None = 0,       ///< No denoising
+  Bilateral,      ///< Edge-preserving bilateral filter (all backends)
+  ATrousWavelet,  ///< À-Trous wavelet filter, 5 passes (all backends)
+  // Future:
+  // SVGF,        ///< Spatiotemporal variance-guided filtering (needs depth + normals + motion)
+  // OIDN,        ///< Intel Open Image Denoise (library dependency)
+};
+
 } // namespace icl::rt

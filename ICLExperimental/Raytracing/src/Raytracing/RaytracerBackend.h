@@ -6,6 +6,7 @@
 
 #include "RaytracerTypes.h"
 #include "Upsampling.h"
+#include "Denoising.h"
 #include <ICLCore/Img.h>
 #include <memory>
 
@@ -116,11 +117,52 @@ public:
   int getDisplayWidth() const { return m_displayWidth; }
   int getDisplayHeight() const { return m_displayHeight; }
 
+  // ---- Denoising support ----
+
+  /// Query whether this backend supports a given denoising method.
+  virtual bool supportsDenoising(DenoisingMethod method) const {
+    return method == DenoisingMethod::None ||
+           method == DenoisingMethod::Bilateral ||
+           method == DenoisingMethod::ATrousWavelet;
+  }
+
+  /// Set the denoising method. Returns false if not supported.
+  virtual bool setDenoising(DenoisingMethod method) {
+    if (!supportsDenoising(method)) return false;
+    m_denoisingMethod = method;
+    return true;
+  }
+
+  /// Set denoising strength (0.0–1.0). Interpretation depends on method.
+  virtual void setDenoisingStrength(float strength) {
+    m_denoisingStrength = strength < 0.0f ? 0.0f : (strength > 1.0f ? 1.0f : strength);
+  }
+
+  DenoisingMethod getDenoisingMethod() const { return m_denoisingMethod; }
+  float getDenoisingStrength() const { return m_denoisingStrength; }
+
 protected:
   UpsamplingMethod m_upsamplingMethod = UpsamplingMethod::None;
   float m_renderScale = 1.0f;
   int m_displayWidth = 0;
   int m_displayHeight = 0;
+  DenoisingMethod m_denoisingMethod = DenoisingMethod::None;
+  float m_denoisingStrength = 0.5f;
+
+  /// Apply CPU denoising to the output image.
+  /// Call after render, before upsampling. Only applies if a method is set.
+  void applyDenoising(core::Img8u &output) {
+    if (m_denoisingMethod == DenoisingMethod::None) return;
+    core::Img8u denoised;
+    if (m_denoisingMethod == DenoisingMethod::Bilateral) {
+      denoiseBilateral(output, denoised, m_denoisingStrength);
+    } else if (m_denoisingMethod == DenoisingMethod::ATrousWavelet) {
+      denoiseATrous(output, denoised, m_denoisingStrength);
+    } else {
+      return;
+    }
+    output = denoised;
+  }
 
   /// Apply CPU upsampling to the output image + object ID buffer.
   /// Call at the end of render() if display size is set and method is Bilinear/EdgeAware.

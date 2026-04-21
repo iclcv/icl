@@ -85,6 +85,20 @@ public:
   /// Get current render scale.
   float getRenderScale() const;
 
+  // ---- Denoising ----
+
+  /// Set denoising method. Returns false if not supported.
+  bool setDenoising(DenoisingMethod method);
+
+  /// Set denoising strength (0.0–1.0).
+  void setDenoisingStrength(float strength);
+
+  /// Query backend support.
+  bool supportsDenoising(DenoisingMethod method) const;
+
+  /// Get current denoising method.
+  DenoisingMethod getDenoisingMethod() const;
+
 private:
   geom::Scene &m_scene;
   GeometryExtractor m_extractor;

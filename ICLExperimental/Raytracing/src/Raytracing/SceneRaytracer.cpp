@@ -74,15 +74,29 @@ void SceneRaytracer::render(int camIndex) {
     m_backend->resetAccumulation();
   }
 
-  // Apply render scale: render at lower resolution, backend upsamples to display res
+  // Apply render scale: render at lower resolution, upscale to display res.
+  // When scale < 1.0, always upscale — default to Bilinear if no method set.
   RTRayGenParams renderCamera = extracted.camera;
   float scale = m_backend->getRenderScale();
-  if (scale < 1.0f && m_backend->getUpsamplingMethod() != UpsamplingMethod::None) {
+  if (scale < 1.0f) {
+    if (m_backend->getUpsamplingMethod() == UpsamplingMethod::None) {
+      m_backend->setUpsampling(UpsamplingMethod::Bilinear);
+    }
     m_backend->setDisplaySize(renderCamera.imageWidth, renderCamera.imageHeight);
     renderCamera.imageWidth  = std::max(1, (int)(renderCamera.imageWidth * scale));
     renderCamera.imageHeight = std::max(1, (int)(renderCamera.imageHeight * scale));
+
+    // Scale the invViewProj so that pixels in the smaller image map to the
+    // same ray directions as in the full-resolution image.
+    // dir = Qi * (px, py, 1). For reduced res, px covers [0..smallW) instead
+    // of [0..fullW), so columns 0 and 1 must be scaled by 1/scale.
+    float invScale = 1.0f / scale;
+    for (int r = 0; r < 4; r++) {
+      renderCamera.invViewProj.cols[0][r] *= invScale;
+      renderCamera.invViewProj.cols[1][r] *= invScale;
+    }
   } else {
-    m_backend->setDisplaySize(0, 0); // no upsampling
+    m_backend->setDisplaySize(0, 0);
   }
 
   m_backend->render(renderCamera);
@@ -110,5 +124,9 @@ void SceneRaytracer::setRenderScale(float scale) {
 bool SceneRaytracer::supportsUpsampling(UpsamplingMethod method) const { return m_backend->supportsUpsampling(method); }
 UpsamplingMethod SceneRaytracer::getUpsamplingMethod() const { return m_backend->getUpsamplingMethod(); }
 float SceneRaytracer::getRenderScale() const { return m_backend->getRenderScale(); }
+bool SceneRaytracer::setDenoising(DenoisingMethod method) { return m_backend->setDenoising(method); }
+void SceneRaytracer::setDenoisingStrength(float s) { m_backend->setDenoisingStrength(s); }
+bool SceneRaytracer::supportsDenoising(DenoisingMethod method) const { return m_backend->supportsDenoising(method); }
+DenoisingMethod SceneRaytracer::getDenoisingMethod() const { return m_backend->getDenoisingMethod(); }
 
 } // namespace icl::rt
