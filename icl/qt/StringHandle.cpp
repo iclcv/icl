@@ -13,9 +13,8 @@
 
 namespace icl::qt {
 
-  StringHandle::StringHandle(QLineEdit *le, std::string *str, GUIWidget *w)
+  StringHandle::StringHandle(QLineEdit *le, GUIWidget *w)
     : GUIHandle<QLineEdit>(le, w),
-      m_str(str),
       m_cache(std::make_shared<Cache>()) {
     if (le) m_cache->text = le->text().toLatin1().data();
     if (!le) return;
@@ -30,22 +29,12 @@ namespace icl::qt {
 
   void StringHandle::operator=(const std::string &text){
     (**this)->setText(text.c_str());
-    getGUIWidget()->getGUI()->lockData();
-    *m_str = text;
-    getGUIWidget()->getGUI()->unlockData();
+  }
 
-	}
   std::string StringHandle::getCurrentText() const{
     if (!m_cache) return {};
     std::scoped_lock lock(m_cache->mutex);
     return m_cache->text;
-  }
-  std::string StringHandle::getValue() const{
-    std::string s;
-    const_cast<StringHandle*>(this)->getGUIWidget()->getGUI()->lockData();
-    s = *m_str;
-    const_cast<StringHandle*>(this)->getGUIWidget()->getGUI()->unlockData();
-    return s;
   }
 
   template<typename T>

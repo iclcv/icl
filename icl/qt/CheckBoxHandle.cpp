@@ -11,11 +11,10 @@
 
 
 namespace icl::qt {
-  CheckBoxHandle::CheckBoxHandle():m_stateRef(0){}
+  CheckBoxHandle::CheckBoxHandle() = default;
 
-  CheckBoxHandle::CheckBoxHandle(QCheckBox *cb, GUIWidget *w, bool *stateRef):
+  CheckBoxHandle::CheckBoxHandle(QCheckBox *cb, GUIWidget *w):
     GUIHandle<QCheckBox>(cb,w),
-    m_stateRef(stateRef),
     m_cache(std::make_shared<std::atomic<bool>>(cb ? cb->isChecked() : false)) {
     if (!cb) return;
     auto cache = m_cache;
@@ -28,13 +27,11 @@ namespace icl::qt {
 
 
   void CheckBoxHandle::check(bool execCallbacks){
-    *m_stateRef = true;
     (***this).setCheckState(Qt::Checked);
     if(execCallbacks) cb();
   }
 
   void CheckBoxHandle::uncheck(bool execCallbacks){
-    *m_stateRef = false;
     (***this).setCheckState(Qt::Unchecked);
     if(execCallbacks) cb();
   }

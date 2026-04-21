@@ -23,7 +23,7 @@ namespace icl::qt {
     CheckBoxHandle();
 
     /// create a new event with a given button id
-    CheckBoxHandle(QCheckBox *cb, GUIWidget *w, bool *stateRef);
+    CheckBoxHandle(QCheckBox *cb, GUIWidget *w);
 
     /// checks this checkbox
     void check(bool execCallbacks=true);
@@ -59,15 +59,9 @@ namespace icl::qt {
 
     private:
 
-    /// internal state reference variable
-    bool *m_stateRef;
-
     /// Lock-free snapshot of the checkbox state.  Written from the
     /// GUI thread by a `stateChanged(int)` lambda installed in the
     /// primary ctor; read from any thread via `isChecked()`.
-    /// Coexists with `m_stateRef` (the old `.out()`-allocated bool)
-    /// during the thread-safety transition — both track the same
-    /// value but `m_stateRef` reads are unsynchronized.
     std::shared_ptr<std::atomic<bool>> m_cache;
 
   };

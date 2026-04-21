@@ -1031,18 +1031,10 @@ namespace icl{
 
         m_haveAlpha = (def.numParams() == 4);
 
+        m_color = Color4D(def.intParam(0), def.intParam(1), def.intParam(2),
+                          m_haveAlpha ? def.intParam(3) : 0);
 
-
-        if(m_haveAlpha) m_color = new Color4D(def.intParam(0),def.intParam(1),def.intParam(2),0);
-        else m_color = new Color4D();
-
-        Color4D col(def.intParam(0),def.intParam(1),def.intParam(2),m_haveAlpha ?def.intParam(3):0);
-
-        getGUI()->lockData();
-        m_color = &getGUI()->allocValue<Color4D>(def.output(0),col);
-        getGUI()->unlockData();
-
-        colorLabel = new ColorLabel(*m_color,m_haveAlpha,def.parentWidget());
+        colorLabel = new ColorLabel(m_color,m_haveAlpha,def.parentWidget());
 
         if(def.hasToolTip()) colorLabel->setToolTip(def.toolTip().c_str());
 
@@ -1059,8 +1051,8 @@ namespace icl{
 
       virtual void processIO(){
         QColor c = !m_haveAlpha ?
-                   QColor((*m_color)[0],(*m_color)[1],(*m_color)[2]) :
-                   QColor((*m_color)[0],(*m_color)[1],(*m_color)[2],(*m_color)[3]);
+                   QColor(m_color[0],m_color[1],m_color[2]) :
+                   QColor(m_color[0],m_color[1],m_color[2],m_color[3]);
 
         QColor color = QColorDialog::getColor(c,this,"choose color...",
                                               m_haveAlpha ? QColorDialog::ShowAlphaChannel :
@@ -1076,7 +1068,7 @@ namespace icl{
       }
       ColorLabel *colorLabel;
       ColorHandle *handle;
-      Color4D *m_color;
+      Color4D m_color;
       bool m_haveAlpha;
     };
 
@@ -1131,10 +1123,6 @@ namespace icl{
           connect(b,SIGNAL(clicked()),this,SLOT(ioSlot()));
         }
 
-        getGUI()->lockData();
-        m_uiIdx = &getGUI()->allocValue<unsigned int>(def.output(0),m_uiInitialIndex);
-        getGUI()->unlockData();
-
         m_vecButtons[m_uiInitialIndex]->setChecked(true);
 
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -1151,20 +1139,11 @@ namespace icl{
         std::string("\tthe button with a '!'-prefix is selected (of index 0 by default)\n")+
         gen_params();
       }
-      virtual void processIO(){
-        *m_uiIdx = 0;
-        for(unsigned int i=0;i<m_vecButtons.size();i++){
-          if(m_vecButtons[i]->isChecked()){
-            *m_uiIdx = i;
-            break;
-          }
-        }
-      }
+      virtual void processIO(){}
       //    virtual Size getDefaultSize() {
       //  return Size(4,m_vecButtons.size());
       //}
     private:
-      unsigned int *m_uiIdx;
       std::vector<QRadioButton*> m_vecButtons;
       unsigned int m_uiInitialIndex ;
     };
@@ -1179,15 +1158,11 @@ namespace icl{
           initToggled = true;
         }
 
-        getGUI()->lockData();
-        bool *stateRef = &getGUI()->allocValue<bool>(def.output(0),initToggled);
-        getGUI()->unlockData();
-
         std::string t1 = def.param(0);
         std::string t2 = def.param(1);
         if(t1.length() && t1[0]=='!') t1 = t1.substr(1);
         if(t2.length() && t2[0]=='!') t2 = t2.substr(1);
-        m_poButton = new ToggleButton(t1,t2,def.parentWidget(),stateRef);
+        m_poButton = new ToggleButton(t1,t2,def.parentWidget());
         if(def.hasToolTip()) m_poButton->setToolTip(def.toolTip().c_str());
 
         if(initToggled){
@@ -1238,10 +1213,6 @@ namespace icl{
           initChecked = true;
         }
 
-        getGUI()->lockData();
-        m_stateRef = &getGUI()->allocValue<bool>(def.output(0),initChecked);
-        getGUI()->unlockData();
-
         std::string t = def.param(0);
         m_poCheckBox = new QCheckBox(def.param(0).c_str(),def.parentWidget());
         m_poCheckBox->setTristate(false);
@@ -1262,7 +1233,7 @@ namespace icl{
 
         if(def.handle() != ""){
           getGUI()->lockData();
-          getGUI()->allocValue<CheckBoxHandle>(def.handle(),CheckBoxHandle(m_poCheckBox,this,m_stateRef));
+          getGUI()->allocValue<CheckBoxHandle>(def.handle(),CheckBoxHandle(m_poCheckBox,this));
           getGUI()->unlockData();
         }
       }
@@ -1272,12 +1243,8 @@ namespace icl{
         std::string("\tINIT defines whether the checkbox is initially checked (checked|unchecked)\n")+
         gen_params();
       }
-      virtual void processIO(){
-        *m_stateRef = m_poCheckBox->checkState() == Qt::Checked;
-        //        DEBUG_LOG("check-box-process-IO::: " << *m_stateRef);
-      }
+      virtual void processIO(){}
     private:
-      bool *m_stateRef;
       QCheckBox *m_poCheckBox;
     };
 
@@ -1355,8 +1322,6 @@ namespace icl{
         }
         /// min,max,curr,vertical ,"off" for no display
 
-        m_piValue = &getGUI()->allocValue<int>(def.output(0),def.intParam(2));
-
         int iVerticalFlag = vertical(def);
         int iMin = def.intParam(0);
         int iMax = def.intParam(1);
@@ -1426,14 +1391,11 @@ namespace icl{
         //iStep is handled as a value that must '%' the slider to 0
         int value = m_poSlider->value();
         value = (value / m_stepping) * m_stepping;
-        *m_piValue = value;
-        //        Thread::msleep(100);
         if(m_poLCD) m_poLCD->display(value);
       }
     private:
       ThreadedUpdatableSlider *m_poSlider;
       QLCDNumber *m_poLCD;
-      int *m_piValue;
       bool m_bVerticalFlag;
       int m_stepping;
 
@@ -1455,10 +1417,6 @@ namespace icl{
         //
 
         /// param_order = min,max,curr,orientation=("horizontal")|"vertical"
-
-        getGUI()->lockData();
-        m_pfValue = &getGUI()->allocValue<float>(def.output(0),def.floatParam(2));
-        getGUI()->unlockData();
 
         int iVerticalFlag = vertical(def);
         m_fMinVal = def.floatParam(0);
@@ -1514,16 +1472,13 @@ namespace icl{
         gen_params();
       }
       virtual void processIO(){
-        float value = i2f(m_poSlider->value());
         if(m_poLCD){
-          m_poLCD->display(value);
+          m_poLCD->display(i2f(m_poSlider->value()));
         }
-        *m_pfValue = value;
       }
     private:
       ThreadedUpdatableSlider *m_poSlider;
       QLCDNumber *m_poLCD;
-      float *m_pfValue;
       float m_fM,m_fB;
       float m_fMinVal, m_fMaxVal;
       int f2i(float f){
@@ -1547,10 +1502,6 @@ namespace icl{
 
         addToGrid(m_poLineEdit);
 
-        getGUI()->lockData();
-        m_piOutput = &getGUI()->allocValue<int>(def.output(0),def.intParam(2));
-        getGUI()->unlockData();
-
         if(def.handle() != ""){
           getGUI()->lockData();
           getGUI()->allocValue<IntHandle>(def.handle(),IntHandle(m_poLineEdit,this));
@@ -1565,16 +1516,9 @@ namespace icl{
         std::string("\tCURR is the initial value of the textfield\n")+
         gen_params();
       }
-      virtual void processIO(){
-        bool iOk;
-        int iVal = m_poLineEdit->text().toInt(&iOk);
-        if(iOk){
-          *m_piOutput = iVal;
-        }
-      }
+      virtual void processIO(){}
     private:
       QLineEdit *m_poLineEdit;
-      int *m_piOutput;
     };
 
     struct FloatGUIWidget : public GUIWidget{
@@ -1589,9 +1533,6 @@ namespace icl{
         QObject::connect(m_poLineEdit,SIGNAL(returnPressed ()),this,SLOT(ioSlot()));
 
         addToGrid(m_poLineEdit);
-        getGUI()->lockData();
-        m_pfOutput = &getGUI()->allocValue<float>(def.output(0),def.intParam(2));
-        getGUI()->unlockData();
 
         if(def.handle() != ""){
           getGUI()->lockData();
@@ -1608,16 +1549,9 @@ namespace icl{
         std::string("\tCURR is the initial value of the textfield\n")+
         gen_params();
       }
-      virtual void processIO(){
-        bool iOk;
-        float fVal = m_poLineEdit->text().toFloat(&iOk);
-        if(iOk){
-          *m_pfOutput = fVal;
-        }
-      }
+      virtual void processIO(){}
     private:
       QLineEdit *m_poLineEdit;
-      float *m_pfOutput;
     };
 
     struct StringGUIWidget : public GUIWidget{
@@ -1645,13 +1579,9 @@ namespace icl{
 
         addToGrid(m_poLineEdit);
 
-        getGUI()->lockData();
-        m_psOutput = &getGUI()->allocValue<std::string>(def.output(0),def.param(0));
-        getGUI()->unlockData();
-
         if(def.handle() != ""){
           getGUI()->lockData();
-          getGUI()->allocValue<StringHandle>(def.handle(),StringHandle(m_poLineEdit,m_psOutput,this));
+          getGUI()->allocValue<StringHandle>(def.handle(),StringHandle(m_poLineEdit,this));
           getGUI()->unlockData();
         }
 
@@ -1663,14 +1593,9 @@ namespace icl{
         std::string("\tMAXLEN is max. number of characters that might be written into the textfiled\n")+
         gen_params();
       }
-      virtual void processIO(){
-        getGUI()->lockData();
-        *m_psOutput = m_poLineEdit->text().toLatin1().data();
-        getGUI()->unlockData();
-      }
+      virtual void processIO(){}
     private:
       QLineEdit *m_poLineEdit;
-      std::string *m_psOutput;
     };
 
     struct DispGUIWidget : public GUIWidget{
@@ -1969,10 +1894,6 @@ namespace icl{
           }
         }
 
-        getGUI()->lockData();
-        m_psCurrentText = &getGUI()->allocValue<std::string>(def.output(0),sFirst);
-        getGUI()->unlockData();
-
         m_poCombo->setCurrentIndex(selectedIndex);
 
         connect(m_poCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(ioSlot()));
@@ -1989,14 +1910,9 @@ namespace icl{
         std::string("\tif any entry has a '!'-prefix, this entry will be selected initially\n")+
         gen_params();
       }
-      virtual void processIO(){
-        getGUI()->lockData();
-        *m_psCurrentText = m_poCombo->currentText().toLatin1().data();
-        getGUI()->unlockData();
-      }
+      virtual void processIO(){}
 
     private:
-      std::string *m_psCurrentText;
       QComboBox *m_poCombo;
     };
 
@@ -2014,10 +1930,6 @@ namespace icl{
 
         addToGrid(m_poSpinBox);
 
-        getGUI()->lockData();
-        m_piOutput = &getGUI()->allocValue<int>(def.output(0),def.intParam(2));
-        getGUI()->unlockData();
-
         if(def.handle() != ""){
           getGUI()->lockData();
           getGUI()->allocValue<SpinnerHandle>(def.handle(),SpinnerHandle(m_poSpinBox,this));
@@ -2033,12 +1945,9 @@ namespace icl{
         std::string("\tCURR is the initial value of the spinbox\n")+
         gen_params();
       }
-      virtual void processIO(){
-        *m_piOutput = m_poSpinBox->value();
-      }
+      virtual void processIO(){}
     private:
       QSpinBox *m_poSpinBox;
-      int *m_piOutput;
     };
 
 

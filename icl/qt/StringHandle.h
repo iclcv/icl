@@ -24,12 +24,10 @@ namespace icl::qt {
     /// Creates an empty string handle
     StringHandle() = default;
 
-    /// Create a new StringHandle wrapping `le`.  Seeds the
-    /// current-text cache from the line edit and installs a
-    /// `textChanged(QString)` lambda that updates it on the GUI
-    /// thread.  The "committed" value (`getValue()`) still routes
-    /// through the `*m_str` DataStore bool until `.out()` retirement.
-    StringHandle(QLineEdit *le, std::string *str, GUIWidget *w);
+    /// Create a new StringHandle wrapping `le`.  Seeds the cache from
+    /// the line edit and installs a `textChanged(QString)` lambda
+    /// that updates it on the GUI thread.
+    StringHandle(QLineEdit *le, GUIWidget *w);
 
     /// makes the associated textfield show the given text
     void operator=(const std::string &text);
@@ -46,11 +44,11 @@ namespace icl::qt {
       requires std::is_arithmetic_v<T>
     void operator=(T v);
 
-    /// returns the current text (only updated when enter is pressed)
-    std::string getValue() const;
-
     /// returns the currently shown text of the textfield
     std::string getCurrentText() const;
+
+    /// alias for `getCurrentText()`.
+    std::string getValue() const { return getCurrentText(); }
 
     /// Explicit readback.  Arithmetic specialization parses the current
     /// text as T; string specialization returns the text.
@@ -63,7 +61,6 @@ namespace icl::qt {
     T as() const { return getValue(); }
 
     private:
-    std::string *m_str;
 
     /// Mutex-guarded snapshot of the live QLineEdit text.  Written
     /// from the GUI thread on every `textChanged(QString)` — read
