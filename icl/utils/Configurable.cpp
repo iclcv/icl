@@ -209,6 +209,26 @@ namespace icl::utils {
     call_callbacks(propertyName, this);
   }
 
+  void Configurable::setPropertyPayload(const std::string &propertyName, std::any payload){
+    Property &p = prop(propertyName);
+    if(p.configurable != this){
+      p.configurable->setPropertyPayload(propertyName.substr(p.childPrefix.length()), std::move(payload));
+    }else{
+      std::scoped_lock<std::recursive_mutex> lock(m_mutex);
+      p.payload = std::move(payload);
+    }
+    call_callbacks(propertyName, this);
+  }
+
+  std::any Configurable::getPropertyPayload(const std::string &propertyName) const{
+    const Property &p = prop(propertyName);
+    if(p.configurable != this){
+      return p.configurable->getPropertyPayload(propertyName.substr(p.childPrefix.length()));
+    }
+    std::scoped_lock<std::recursive_mutex> lock(m_mutex);
+    return p.payload;
+  }
+
   std::vector<std::string> remove_by_filter(const std::vector<std::string> &ps,
                                             const std::vector<std::string> &filter){
     std::vector<std::string> ps2;

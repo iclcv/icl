@@ -9,6 +9,7 @@
 #include <icl/utils/Any.h>
 #include <icl/utils/UncopiedInstance.h>
 
+#include <any>
 #include <functional>
 
 #include <vector>
@@ -183,6 +184,11 @@ namespace icl::utils {
       int volatileness;  //!< volatileness of a this property (0= no-volatileness, X=expected update every X msec)
       std::string tooltip; //!< property description, that is also used as tooltip
       std::string childPrefix;
+      /// Type-erased payload for properties whose value doesn't fit in the
+      /// `value` string — primarily the "image" property type, whose payload
+      /// holds a core::Image. The Prop GUI widget renders an embedded Display
+      /// that polls getPropertyPayload() on the volatileness timer.
+      std::any payload;
       /// for more efficient find
       bool operator==(const std::string &name) const { return this->name == name; }
     };
@@ -366,6 +372,15 @@ namespace icl::utils {
         If the property is actually owned by a child-configurable,
         the function forwards to that configurable */
     virtual void setPropertyValue(const std::string &propertyName, const Any &value);
+
+    /// sets the type-erased payload for a property (for non-string types like "image")
+    /** Fires all registered callbacks, same as setPropertyValue. The caller is
+        responsible for matching the payload's concrete type to the property's
+        declared type — e.g. an "image" property expects a core::Image. */
+    virtual void setPropertyPayload(const std::string &propertyName, std::any payload);
+
+    /// returns the type-erased payload for a property (empty std::any if never set)
+    virtual std::any getPropertyPayload(const std::string &propertyName) const;
 
     /// returns a list of All properties, that can be set using setProperty
     /** This function should usually not be used. Instead, you should call getPropertyListWithoutDeactivated

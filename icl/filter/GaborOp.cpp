@@ -11,7 +11,60 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::filter {
-  GaborOp::GaborOp(){}
+  // Refresh the "kernel preview" image property payload from the currently
+  // configured kernels. Called at the end of updateKernels(); the Prop GUI
+  // widget polls the payload via its volatileness timer.
+  void GaborOp::updatePreview(){
+    if(m_vecKernels.empty()) return;
+    Img32f k = m_vecKernels[0].detached();
+    k.normalizeAllChannels(Range<float>(0, 255));
+    setPropertyPayload("kernel preview", std::any(core::Image(k)));
+  }
+
+  // Rebuild kernel bank from the scalar properties — collapses the 5
+  // multi-value bank slots into single-element vectors so the playground
+  // shows one kernel per knob-set. The multi-value bank API (addLambda/
+  // addTheta/...) still exists for direct users.
+  void GaborOp::rebuildFromProperties(){
+    m_oKernelSize = Size(parse<int>(prop("size.w").value),
+                         parse<int>(prop("size.h").value));
+    m_vecLambdas = {parse<float>(prop("lambda").value)};
+    m_vecThetas  = {parse<float>(prop("theta").value)};
+    m_vecPsis    = {parse<float>(prop("psi").value)};
+    m_vecSigmas  = {parse<float>(prop("sigma").value)};
+    m_vecGammas  = {parse<float>(prop("gamma").value)};
+    updateKernels();
+  }
+
+  void GaborOp::addGaborProperties(){
+    addProperty("size.w","range:spinbox","[3,50]",str(m_oKernelSize.width  > 0 ? m_oKernelSize.width  : 10));
+    addProperty("size.h","range:spinbox","[3,50]",str(m_oKernelSize.height > 0 ? m_oKernelSize.height : 10));
+    addProperty("lambda","range:slider","[0.1,100]:0.1",
+                str(m_vecLambdas.empty() ? 20.f : m_vecLambdas.front()));
+    addProperty("theta","range:slider","[0,3.15]:0.01",
+                str(m_vecThetas.empty() ? 0.f : m_vecThetas.front()));
+    addProperty("psi","range:slider","[0,50]:0.1",
+                str(m_vecPsis.empty() ? 0.f : m_vecPsis.front()));
+    addProperty("sigma","range:slider","[0.1,30]:0.1",
+                str(m_vecSigmas.empty() ? 5.f : m_vecSigmas.front()));
+    addProperty("gamma","range:slider","[0.01,10]:0.01",
+                str(m_vecGammas.empty() ? 0.5f : m_vecGammas.front()));
+    addProperty("kernel preview","image","", Any(), /*volatileness=*/100);
+    registerCallback([this](const Property &p){
+      static const std::string knobs[] =
+        {"size.w","size.h","lambda","theta","psi","sigma","gamma"};
+      for(const auto &k : knobs){
+        if(p.name == k){ rebuildFromProperties(); return; }
+      }
+    });
+  }
+
+  GaborOp::GaborOp(){
+    addGaborProperties();
+    // Seed the kernel bank from the property defaults so the very first
+    // apply() produces a non-empty result (and the preview payload is set).
+    rebuildFromProperties();
+  }
   GaborOp::GaborOp(const Size &kernelSize,
                    std::vector<icl32f> lambdas,
                    std::vector<icl32f> thetas,
@@ -25,10 +78,15 @@ namespace icl::filter {
     m_vecGammas = gammas;
     m_oKernelSize = kernelSize;
 
+    // Properties must exist before updateKernels runs, since updateKernels
+    // calls updatePreview → setPropertyPayload("kernel preview", ...).
+    addGaborProperties();
     updateKernels();
   }
 
   GaborOp::~GaborOp(){}
+
+  REGISTER_CONFIGURABLE_DEFAULT(GaborOp);
 
   void GaborOp::setKernelSize(const Size &size){
     m_oKernelSize = size;
@@ -43,6 +101,7 @@ namespace icl::filter {
   void GaborOp::addGamma(float gamma){ m_vecGammas.push_back(gamma); }
 
   void GaborOp::updateKernels(){
+    std::scoped_lock lock(m_mutex);
     m_vecKernels.clear();
     m_vecResults.clear();
 
@@ -67,10 +126,31 @@ namespace icl::filter {
         }
       }
     }
+    updatePreview();
   }
 
   void GaborOp::apply(const Image &src, Image &dst) {
     ICLASSERT_RETURN(!src.isNull());
+    // Serialize with updateKernels() — property callbacks on the GUI thread
+    // can rebuild the kernel bank while run()'s exec thread is iterating it.
+    std::scoped_lock lock(m_mutex);
+
+    // Gabor kernels are real-valued (sub-unit coefficients). Convolving them
+    // as "custom" kernels against an integer source forces a lossy int cast
+    // that zeroes the kernel — and produces an integer result that Img32f
+    // cannot append. Normalize to 32f once up front, reusing an internal
+    // buffer across frames.
+    const Image *src32f = &src;
+    if(src.getDepth() != depth32f){
+      if(m_src32fBuffer.isNull()
+         || m_src32fBuffer.getSize()      != src.getSize()
+         || m_src32fBuffer.getChannels()  != src.getChannels()
+         || m_src32fBuffer.getFormat()    != src.getFormat()){
+        m_src32fBuffer = Image(src.getSize(), depth32f, src.getChannels(), src.getFormat());
+      }
+      src.convertTo(m_src32fBuffer);
+      src32f = &m_src32fBuffer;
+    }
 
     Img32f result(Size::null, 0);
 
@@ -79,7 +159,7 @@ namespace icl::filter {
       co.setCheckOnly(false);
       co.setClipToROI(true);
 
-      co.apply(src, m_vecResults[i]);
+      co.apply(*src32f, m_vecResults[i]);
 
       result.setSize(m_vecResults[i].getSize());
       result.append(&m_vecResults[i].as32f());

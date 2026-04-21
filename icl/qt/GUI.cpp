@@ -126,6 +126,37 @@ namespace icl{
           QApplication::processEvents();
         }
       };
+
+      /// Polls a Configurable's "image" property payload and pushes it into
+      /// the Prop widget's embedded ImageHandle. Mirrors VolatileUpdater but
+      /// for the "image" property type instead of "info" labels.
+      struct VolatileImageUpdater : public QTimer{
+        std::string prop;
+        GUI &gui;
+        Configurable &conf;
+        ImageHandle *h;
+        VolatileImageUpdater(int msec, const std::string &prop, GUI &gui, Configurable &conf):
+          prop(prop),gui(gui),conf(conf),h(0){
+          setInterval(msec);
+        }
+        virtual void timerEvent(QTimerEvent * e){
+          if(!h){
+            h = &gui.get<ImageHandle>("#img#"+prop);
+          }
+          std::any payload = conf.getPropertyPayload(prop);
+          if(!payload.has_value()) return;
+          try{
+            core::Image img = std::any_cast<core::Image>(payload);
+            if(!img.isNull()){
+              *h = img;
+              h->render();
+            }
+          }catch(const std::bad_any_cast&){
+            // payload type mismatch — skip silently; the Op is responsible for
+            // matching the payload type to the property's declared type.
+          }
+        }
+      };
     }
 
     static const std::string &gen_params(){
@@ -246,7 +277,9 @@ namespace icl{
     // quite complex component for embedded property component 'prop'
     struct ConfigurableGUIWidget : public GUIWidget{
 
-      std::vector<std::shared_ptr<VolatileUpdater> > timers;
+      // Holds both VolatileUpdater (info labels) and VolatileImageUpdater
+      // (image previews) polymorphically through the QTimer base.
+      std::vector<std::shared_ptr<QTimer> > timers;
       Configurable *conf;
       GUI gui;
       GUI sub_gui;
@@ -281,6 +314,10 @@ namespace icl{
             gui["#i#"+p] = conf->getPropertyValue(p);
           }else if( t == "flag"){
             gui["#f#"+p] = conf->getPropertyValue(p).as<bool>();
+          }else if( t == "image"){
+            // Image properties are refreshed by a VolatileImageUpdater on the
+            // property's volatileness timer; no work to do on the aggregate
+            // snapshot path.
           }else if( t == "int"){
             gui["#I#"+p] = parse<int>(conf->getPropertyValue(p));
           }else if( t == "float"){
@@ -346,8 +383,20 @@ namespace icl{
 
           int volatileness = conf->getPropertyVolatileness(p.full);
           if(volatileness){
-            timers.push_back(std::shared_ptr<VolatileUpdater>(new VolatileUpdater(volatileness,p.full,timerGUI,*conf)));
+            timers.push_back(std::make_shared<VolatileUpdater>(volatileness,p.full,timerGUI,*conf));
           }
+        }else if(t == "image"){
+          // Volatile read-only image preview. The Op writes the payload via
+          // setPropertyPayload(name, std::any(core::Image)); the
+          // VolatileImageUpdater polls it on the property's volatileness timer
+          // (defaults to 100ms if the Op didn't set one). Intentionally NOT
+          // added to the callback list (ostr) — ImageHandle is output-only
+          // and rejects GUI::ComplexCallback registrations.
+          std::string handle = "#img#"+p.full;
+          gui << Display().tooltip(tt).handle(handle).minSize(12,8).label(p.half);
+          int volatileness = conf->getPropertyVolatileness(p.full);
+          if(!volatileness) volatileness = 100;
+          timers.push_back(std::make_shared<VolatileImageUpdater>(volatileness,p.full,timerGUI,*conf));
         }else if(t == "flag"){
           std::string handle = "#f#"+p.full;
           ostr << '\1' << handle;

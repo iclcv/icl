@@ -16,6 +16,7 @@
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/DitheringOp.h>
 #include <icl/filter/FFTOp.h>
+#include <icl/filter/GaborOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MorphologicalOp.h>
 #include <icl/filter/ThresholdOp.h>
@@ -44,6 +45,7 @@ static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> &filters()
     {"ConvolutionOp",   []{ return new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3)); }},
     {"DitheringOp",     []{ return new DitheringOp;     }},
     {"FFTOp",           []{ return new FFTOp;           }},
+    {"GaborOp",         []{ return new GaborOp;         }},
     {"MedianOp",        []{ return new MedianOp(Size(3,3));         }},
     {"MorphologicalOp", []{ return new MorphologicalOp(MorphologicalOp::dilate); }},
     {"ThresholdOp",     []{ return new ThresholdOp;     }},
