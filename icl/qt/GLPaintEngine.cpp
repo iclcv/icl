@@ -163,7 +163,7 @@ namespace icl::qt {
     glColor4f(1,1,1,1);
     GLImg gli(image,sm);
     gli.setBCI(m_bci[0],m_bci[1],m_bci[2]);
-    gli.draw2D(computeRect(r,image->getSize(),mode), Size(m_widget->width(),m_widget->height()));
+    gli.draw2D(computeRect(r,image->getSize(),mode).rounded(), Size(m_widget->width(),m_widget->height()));
   }
 
 
@@ -324,7 +324,7 @@ namespace icl::qt {
     glColor4f(1,1,1,1);
     GLImg gli(&buf, interpolateLIN);
     gli.setBCI(m_bci[0], m_bci[1], m_bci[2]);
-    gli.draw2D(computeRect(r, Size(logW, logH), mode), Size(m_widget->width(), m_widget->height()));
+    gli.draw2D(computeRect(r, Size(logW, logH), mode).rounded(), Size(m_widget->width(), m_widget->height()));
     /*
         setupPixelTransfer(depth8u,0,0,0);
         glPixelStorei(GL_UNPACK_ALIGNMENT,4);

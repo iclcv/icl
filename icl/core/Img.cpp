@@ -8,7 +8,7 @@
 #include <functional>
 #include <limits>
 #include <cstring>
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 #include <icl/utils/StringUtils.h>
 
 using namespace icl::utils;

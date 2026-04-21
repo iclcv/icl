@@ -7,7 +7,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/VisualizationDescription.h>
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/math/FixedVector.h>

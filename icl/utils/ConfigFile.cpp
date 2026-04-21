@@ -17,7 +17,7 @@
 #include <icl/utils/Point.h>
 
 #include <icl/utils/Rect.h>
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 
 #include <icl/utils/Range.h>
 #include <icl/utils/SteppingRange.h>

@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/HistogrammWidget.h>
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 
 #include <QPainter>
 

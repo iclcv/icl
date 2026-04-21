@@ -15,7 +15,7 @@
 #endif
 
 #include <icl/utils/Array2D.h>
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 #include <icl/utils/Lockable.h>
 #include <map>
 

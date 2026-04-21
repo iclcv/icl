@@ -7,7 +7,7 @@
 #include <icl/math/HomogeneousMath.h>
 #include <icl/utils/Point.h>
 #include <vector>
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 #include <icl/utils/Rect.h>
 
 namespace icl::math {

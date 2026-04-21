@@ -61,7 +61,7 @@
 #include <icl/utils/StringUtils.h>
 
 
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 #include <icl/utils/File.h>
 #include <icl/io/FileWriter.h>
 #include <icl/utils/Range.h>

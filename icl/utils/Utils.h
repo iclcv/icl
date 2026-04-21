@@ -17,7 +17,7 @@
 #include <icl/utils/MultiTypeMap.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/Range.h>
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 #include <icl/utils/Rect.h>
 #include <icl/utils/SignalHandler.h>
 #include <icl/utils/StackTimer.h>

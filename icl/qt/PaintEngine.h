@@ -8,7 +8,7 @@
 #include <icl/utils/Point.h>
 #include <icl/utils/Size.h>
 #include <icl/utils/Size.h>
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 #include <icl/core/Types.h>
 #include <string>
 #include <stdio.h>

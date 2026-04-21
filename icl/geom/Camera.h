@@ -8,7 +8,7 @@
 #include <icl/utils/Size.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Rect.h>
-#include <icl/utils/Rect32f.h>
+#include <icl/utils/Rect.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Array2D.h>
 #include <icl/geom/PlaneEquation.h>
