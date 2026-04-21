@@ -11,6 +11,7 @@ geom2_headers = files(
   'CylinderNode.h',
   'ConeNode.h',
   'Renderer.h',
+  'LightNode.h',
   'Scene2.h',
 )
 
@@ -24,6 +25,7 @@ geom2_sources = files(
   'CylinderNode.cpp',
   'ConeNode.cpp',
   'Renderer.cpp',
+  'LightNode.cpp',
   'Scene2.cpp',
 )
 

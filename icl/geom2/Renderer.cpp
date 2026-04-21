@@ -5,6 +5,7 @@
 #include <icl/geom2/Renderer.h>
 #include <icl/geom2/GroupNode.h>
 #include <icl/geom2/GeometryNode.h>
+#include <icl/geom2/LightNode.h>
 #include <icl/core/Img.h>
 #include <icl/geom/Material.h>
 
@@ -47,6 +48,7 @@ void main() {
 
   static const char *PBR_FRAG = R"(
 #version 410 core
+#define MAX_LIGHTS 8
 uniform vec4 uBaseColor;
 uniform float uMetallic;
 uniform float uRoughness;
@@ -54,6 +56,9 @@ uniform vec4 uEmissive;
 uniform float uAmbient;
 uniform float uExposure;
 uniform vec3 uCameraPos;
+uniform int uNumLights;
+uniform vec3 uLightPos[MAX_LIGHTS];
+uniform vec3 uLightColor[MAX_LIGHTS];
 in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
@@ -62,23 +67,37 @@ out vec4 FragColor;
 void main() {
     vec3 N = normalize(vNormal);
     vec3 V = normalize(uCameraPos - vWorldPos);
-
-    // Simple directional light (top-right)
-    vec3 L = normalize(vec3(0.5, 1.0, 0.3));
-    float NdotL = max(dot(N, L), 0.0);
-
     vec3 albedo = uBaseColor.rgb;
-    vec3 ambient = albedo * uAmbient;
-    vec3 diffuse = albedo * NdotL * (1.0 - uMetallic);
 
-    // Blinn-Phong specular approximation
-    vec3 H = normalize(L + V);
+    vec3 color = albedo * uAmbient;  // ambient
+
     float shininess = 2.0 / (uRoughness * uRoughness + 0.0001) - 2.0;
     shininess = clamp(shininess, 1.0, 256.0);
-    float spec = pow(max(dot(N, H), 0.0), shininess);
-    vec3 specular = vec3(spec) * mix(vec3(0.04), albedo, uMetallic);
 
-    vec3 color = ambient + diffuse + specular + uEmissive.rgb;
+    for (int i = 0; i < uNumLights && i < MAX_LIGHTS; i++) {
+        vec3 L = normalize(uLightPos[i] - vWorldPos);
+        float NdotL = max(dot(N, L), 0.0);
+
+        // Diffuse
+        color += albedo * NdotL * (1.0 - uMetallic) * uLightColor[i];
+
+        // Blinn-Phong specular
+        vec3 H = normalize(L + V);
+        float spec = pow(max(dot(N, H), 0.0), shininess);
+        color += vec3(spec) * mix(vec3(0.04), albedo, uMetallic) * uLightColor[i];
+    }
+
+    // Fallback: if no lights, use a default directional light
+    if (uNumLights == 0) {
+        vec3 L = normalize(vec3(0.5, 1.0, 0.3));
+        float NdotL = max(dot(N, L), 0.0);
+        color += albedo * NdotL * (1.0 - uMetallic);
+        vec3 H = normalize(L + V);
+        float spec = pow(max(dot(N, H), 0.0), shininess);
+        color += vec3(spec) * mix(vec3(0.04), albedo, uMetallic);
+    }
+
+    color += uEmissive.rgb;
 
     // Tone mapping
     color = vec3(1.0) - exp(-color * uExposure);
@@ -271,6 +290,11 @@ void main() { FragColor = vColor; }
 
   // ---- Renderer Data ----
 
+  struct LightInfo {
+    float pos[3];
+    float color[3];
+  };
+
   struct Renderer::Data {
     GLuint pbrProgram = 0;
     GLuint unlitProgram = 0;
@@ -278,17 +302,24 @@ void main() { FragColor = vColor; }
     float exposure = 1.0f;
     float ambient = 0.15f;
     Mat currentProjection;
+    Mat currentView;
 
     // PBR uniform locations
     GLint locModel = -1, locView = -1, locProj = -1;
     GLint locBaseColor = -1, locMetallic = -1, locRoughness = -1;
     GLint locEmissive = -1, locAmbient = -1, locExposure = -1;
     GLint locCameraPos = -1;
+    GLint locNumLights = -1;
+    GLint locLightPos[8] = {};
+    GLint locLightColor[8] = {};
 
     // Unlit uniform locations
     GLint locUnlitMVP = -1, locUnlitPointSize = -1;
 
     std::unordered_map<const GeometryNode*, std::unique_ptr<GeomCache>> cache;
+
+    // Lights collected during traversal
+    std::vector<LightInfo> lights;
   };
 
   // ---- Shader helpers ----
@@ -354,6 +385,14 @@ void main() { FragColor = vColor; }
       m_data->locAmbient = glGetUniformLocation(m_data->pbrProgram, "uAmbient");
       m_data->locExposure = glGetUniformLocation(m_data->pbrProgram, "uExposure");
       m_data->locCameraPos = glGetUniformLocation(m_data->pbrProgram, "uCameraPos");
+      m_data->locNumLights = glGetUniformLocation(m_data->pbrProgram, "uNumLights");
+      for (int i = 0; i < 8; i++) {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "uLightPos[%d]", i);
+        m_data->locLightPos[i] = glGetUniformLocation(m_data->pbrProgram, buf);
+        snprintf(buf, sizeof(buf), "uLightColor[%d]", i);
+        m_data->locLightColor[i] = glGetUniformLocation(m_data->pbrProgram, buf);
+      }
     }
     if (vs) glDeleteShader(vs);
     if (fs) glDeleteShader(fs);
@@ -383,6 +422,21 @@ void main() { FragColor = vColor; }
     glUniformMatrix4fv(loc, 1, GL_FALSE, gl);
   }
 
+  static void collectLights(SceneNode *node, std::vector<LightInfo> &lights) {
+    if (!node || !node->isVisible()) return;
+    if (auto *light = dynamic_cast<LightNode*>(node)) {
+      Mat t = light->getTransformation(true);
+      GeomColor c = light->getColor();
+      float intensity = light->getIntensity();
+      lights.push_back({{t(3,0), t(3,1), t(3,2)},
+                         {c[0]*intensity, c[1]*intensity, c[2]*intensity}});
+    }
+    if (auto *group = dynamic_cast<GroupNode*>(node)) {
+      for (int i = 0; i < group->getChildCount(); i++)
+        collectLights(group->getChild(i), lights);
+    }
+  }
+
   void Renderer::render(const std::vector<std::shared_ptr<SceneNode>> &nodes,
                          const Mat &viewMatrix,
                          const Mat &projectionMatrix) {
@@ -390,6 +444,12 @@ void main() { FragColor = vColor; }
     if (!m_data->pbrProgram) return;
 
     m_data->currentProjection = projectionMatrix;
+    m_data->currentView = viewMatrix;
+
+    // Collect lights from scene graph
+    m_data->lights.clear();
+    for (auto &node : nodes)
+      collectLights(node.get(), m_data->lights);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -400,9 +460,22 @@ void main() { FragColor = vColor; }
     glUniform1f(m_data->locAmbient, m_data->ambient);
     glUniform1f(m_data->locExposure, m_data->exposure);
 
-    // Extract camera position from inverse view matrix (translation column)
-    // For now, approximate with view matrix inverse translation
-    glUniform3f(m_data->locCameraPos, 0, 0, 500);  // TODO: extract from view
+    // Camera position from view matrix (inverse translation)
+    // view = [R|t], camPos = -R^T * t. For orthonormal R: R^T = R^-1.
+    // The 4th column of the inverse view is the camera position.
+    // Approximate: last row of ICL row-major view matrix has translation.
+    float camX = -(viewMatrix(0,0)*viewMatrix(3,0) + viewMatrix(0,1)*viewMatrix(3,1) + viewMatrix(0,2)*viewMatrix(3,2));
+    float camY = -(viewMatrix(1,0)*viewMatrix(3,0) + viewMatrix(1,1)*viewMatrix(3,1) + viewMatrix(1,2)*viewMatrix(3,2));
+    float camZ = -(viewMatrix(2,0)*viewMatrix(3,0) + viewMatrix(2,1)*viewMatrix(3,1) + viewMatrix(2,2)*viewMatrix(3,2));
+    glUniform3f(m_data->locCameraPos, camX, camY, camZ);
+
+    // Upload lights
+    int numLights = std::min((int)m_data->lights.size(), 8);
+    glUniform1i(m_data->locNumLights, numLights);
+    for (int i = 0; i < numLights; i++) {
+      glUniform3fv(m_data->locLightPos[i], 1, m_data->lights[i].pos);
+      glUniform3fv(m_data->locLightColor[i], 1, m_data->lights[i].color);
+    }
 
     for (auto &node : nodes) {
       renderNode(node.get(), viewMatrix);
@@ -413,6 +486,9 @@ void main() { FragColor = vColor; }
     if (!node || !node->isVisible()) return;
 
     Mat modelMatrix = node->getTransformation(true);
+
+    // Skip lights (already collected in render())
+    if (dynamic_cast<LightNode*>(node)) return;
 
     if (auto *group = dynamic_cast<GroupNode*>(node)) {
       for (int i = 0; i < group->getChildCount(); i++) {

@@ -27,6 +27,7 @@ namespace icl::geom2 {
 
   struct Scene2::Data {
     std::vector<std::shared_ptr<SceneNode>> objects;
+    std::vector<std::shared_ptr<LightNode>> lights;  // also in objects, tracked for fast access
     std::vector<geom::Camera> cameras;
     Renderer renderer;
     std::vector<std::shared_ptr<GLCallback>> callbacks;
@@ -65,8 +66,21 @@ namespace icl::geom2 {
 
   void Scene2::clear() {
     m_data->objects.clear();
+    m_data->lights.clear();
     m_data->renderer.invalidateCache();
   }
+
+  // Lights
+  void Scene2::addLight(std::shared_ptr<LightNode> light) {
+    m_data->lights.push_back(light);
+    addObject(std::static_pointer_cast<SceneNode>(light));
+  }
+
+  LightNode *Scene2::getLight(int i) {
+    return (i >= 0 && i < (int)m_data->lights.size()) ? m_data->lights[i].get() : nullptr;
+  }
+
+  int Scene2::getLightCount() const { return (int)m_data->lights.size(); }
 
   // Cameras
   void Scene2::addCamera(const geom::Camera &cam) {

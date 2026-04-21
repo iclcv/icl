@@ -6,6 +6,7 @@
 
 #include <icl/geom2/SceneNode.h>
 #include <icl/geom2/Renderer.h>
+#include <icl/geom2/LightNode.h>
 #include <memory>
 #include <vector>
 #include <type_traits>
@@ -41,6 +42,11 @@ namespace icl::geom2 {
     void removeObject(int index);
     void removeObject(SceneNode *node);
     void clear();
+
+    // --- Lights (also added to scene graph for traversal) ---
+    void addLight(std::shared_ptr<LightNode> light);
+    LightNode *getLight(int index);
+    int getLightCount() const;
 
     // --- Cameras ---
     void addCamera(const geom::Camera &cam);
