@@ -459,10 +459,22 @@ void main() {
 // ---- GLGeometryCache: VAO/VBO/EBO per SceneObject ----
 
 struct GLGeometryCache {
+  // Triangle mesh (PBR-lit)
   GLuint vao = 0;
   GLuint vbo = 0;
   GLuint ebo = 0;
   int numIndices = 0;
+
+  // Line primitives (unlit, flat color)
+  GLuint lineVao = 0;
+  GLuint lineVbo = 0;
+  int numLineVertices = 0;
+
+  // Point/vertex primitives (unlit, flat color)
+  GLuint pointVao = 0;
+  GLuint pointVbo = 0;
+  int numPointVertices = 0;
+
   GLuint baseColorTex = 0;
   GLuint normalMapTex = 0;
   GLuint metallicRoughnessTex = 0;
@@ -474,6 +486,10 @@ struct GLGeometryCache {
     if (vao) glDeleteVertexArrays(1, &vao);
     if (vbo) glDeleteBuffers(1, &vbo);
     if (ebo) glDeleteBuffers(1, &ebo);
+    if (lineVao) glDeleteVertexArrays(1, &lineVao);
+    if (lineVbo) glDeleteBuffers(1, &lineVbo);
+    if (pointVao) glDeleteVertexArrays(1, &pointVao);
+    if (pointVbo) glDeleteBuffers(1, &pointVbo);
     if (baseColorTex) glDeleteTextures(1, &baseColorTex);
     if (normalMapTex) glDeleteTextures(1, &normalMapTex);
     if (metallicRoughnessTex) glDeleteTextures(1, &metallicRoughnessTex);
@@ -489,11 +505,27 @@ struct GLGeometryCache {
 
     if (verts.empty()) return;
 
+    // Resolve effective line/point colors from material
+    auto mat = obj->getMaterial();
+    const auto &vertColors = obj->getVertexColors();
+    GeomColor defaultLineColor(1, 1, 1, 1);
+    GeomColor defaultPointColor(1, 1, 1, 1);
+    if (mat) {
+      // Use material lineColor/pointColor if alpha > 0, else baseColor
+      defaultLineColor = (mat->lineColor[3] > 0) ? mat->lineColor : mat->baseColor;
+      defaultPointColor = (mat->pointColor[3] > 0) ? mat->pointColor : mat->baseColor;
+    }
+
     // Collect triangles with per-corner data
     // Each corner: pos(3) + normal(3) + uv(2) = 8 floats
     struct Vertex { float px, py, pz, nx, ny, nz, u, v; };
     std::vector<Vertex> vertexData;
     std::vector<unsigned int> indices;
+
+    // Collect line/point data: pos(3) + color(4) = 7 floats
+    struct ColorVertex { float px, py, pz, r, g, b, a; };
+    std::vector<ColorVertex> lineData;
+    std::vector<ColorVertex> pointData;
 
     for (const auto *prim : prims) {
       auto addTri = [&](int va, int vb, int vc, int na, int nb, int nc,
@@ -561,8 +593,69 @@ struct GLGeometryCache {
           }
           break;
         }
+        case Primitive::line: {
+          const auto *lp = dynamic_cast<const LinePrimitive*>(prim);
+          if (!lp || !obj->isVisible(Primitive::line)) break;
+          GeomColor c = (lp->color[3] > 0.001f) ? lp->color : defaultLineColor;
+          for (int j = 0; j < 2; j++) {
+            int vi = lp->i(j);
+            ColorVertex cv;
+            cv.px = verts[vi][0]; cv.py = verts[vi][1]; cv.pz = verts[vi][2];
+            cv.r = c[0]; cv.g = c[1]; cv.b = c[2]; cv.a = c[3];
+            lineData.push_back(cv);
+          }
+          break;
+        }
         default: break;
       }
+    }
+
+    // Collect visible vertices as points
+    if (obj->isVisible(Primitive::vertex)) {
+      for (int i = 0; i < (int)verts.size(); i++) {
+        ColorVertex cv;
+        cv.px = verts[i][0]; cv.py = verts[i][1]; cv.pz = verts[i][2];
+        if (i < (int)vertColors.size() && vertColors[i][3] > 0.001f) {
+          cv.r = vertColors[i][0]; cv.g = vertColors[i][1];
+          cv.b = vertColors[i][2]; cv.a = vertColors[i][3];
+        } else {
+          cv.r = defaultPointColor[0]; cv.g = defaultPointColor[1];
+          cv.b = defaultPointColor[2]; cv.a = defaultPointColor[3];
+        }
+        pointData.push_back(cv);
+      }
+    }
+
+    // Build line VAO
+    numLineVertices = (int)lineData.size();
+    if (numLineVertices > 0) {
+      if (!lineVao) glGenVertexArrays(1, &lineVao);
+      glBindVertexArray(lineVao);
+      if (!lineVbo) glGenBuffers(1, &lineVbo);
+      glBindBuffer(GL_ARRAY_BUFFER, lineVbo);
+      glBufferData(GL_ARRAY_BUFFER, lineData.size() * sizeof(ColorVertex),
+                   lineData.data(), GL_STATIC_DRAW);
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+      glEnableVertexAttribArray(1);
+      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+      glBindVertexArray(0);
+    }
+
+    // Build point VAO
+    numPointVertices = (int)pointData.size();
+    if (numPointVertices > 0) {
+      if (!pointVao) glGenVertexArrays(1, &pointVao);
+      glBindVertexArray(pointVao);
+      if (!pointVbo) glGenBuffers(1, &pointVbo);
+      glBindBuffer(GL_ARRAY_BUFFER, pointVbo);
+      glBufferData(GL_ARRAY_BUFFER, pointData.size() * sizeof(ColorVertex),
+                   pointData.data(), GL_STATIC_DRAW);
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+      glEnableVertexAttribArray(1);
+      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+      glBindVertexArray(0);
     }
 
     if (indices.empty()) return;
@@ -691,10 +784,37 @@ static GLuint linkProgram(GLuint vs, GLuint fs) {
 
 // ---- GLRenderer::Data ----
 
+// Simple unlit shader for lines and points (core profile)
+static const char *UNLIT_VERT = R"(
+#version 410 core
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec4 aColor;
+uniform mat4 uMVP;
+uniform float uPointSize;
+out vec4 vColor;
+void main() {
+    gl_Position = uMVP * vec4(aPosition, 1.0);
+    gl_PointSize = uPointSize;
+    vColor = aColor;
+}
+)";
+
+static const char *UNLIT_FRAG = R"(
+#version 410 core
+in vec4 vColor;
+out vec4 FragColor;
+void main() {
+    FragColor = vColor;
+}
+)";
+
 struct GLRenderer::Data {
   GLuint program = 0;
   GLuint shadowProgram = 0;
   GLuint skyProgram = 0;
+  GLuint unlitProgram = 0;
+  GLint unlitLocMVP = -1;
+  GLint unlitLocPointSize = -1;
   GLuint skyVAO = 0, skyVBO = 0;
   GLint skyLocInvVP = -1;
   GLint skyLocMode = -1;
@@ -719,6 +839,7 @@ struct GLRenderer::Data {
   bool ssrFirstFrame = true;
   bool ssrEnabled = true;
   Mat prevViewMatrix, prevProjectionMatrix;
+  Mat currentProjection;  ///< current frame's projection matrix (for unlit shader MVP)
 
   // Projection crop matrix for zoom (identity = no crop)
   Mat projCropMatrix = Mat::id();
@@ -974,6 +1095,19 @@ void GLRenderer::ensureShaderCompiled() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glBindVertexArray(0);
+  }
+
+  // Unlit shader (lines/points)
+  {
+    GLuint uvs = compileShader(GL_VERTEX_SHADER, UNLIT_VERT);
+    GLuint ufs = compileShader(GL_FRAGMENT_SHADER, UNLIT_FRAG);
+    if (uvs && ufs) {
+      m_data->unlitProgram = linkProgram(uvs, ufs);
+      m_data->unlitLocMVP = glGetUniformLocation(m_data->unlitProgram, "uMVP");
+      m_data->unlitLocPointSize = glGetUniformLocation(m_data->unlitProgram, "uPointSize");
+    }
+    if (uvs) glDeleteShader(uvs);
+    if (ufs) glDeleteShader(ufs);
   }
 
   // Shadow shader
@@ -1280,6 +1414,7 @@ void GLRenderer::renderWithViewport(const Scene &scene, int camIndex,
 
   glUseProgram(m_data->program);
 
+  m_data->currentProjection = projGL;
   m_data->setUniformMat4(m_data->locProjectionMatrix, projGL);
   m_data->setUniformMat4(m_data->locViewMatrix, viewGL);
   glUniform1f(m_data->locAmbient, m_data->ambient);
@@ -1455,7 +1590,7 @@ void GLRenderer::renderObject(const SceneObject *obj,
   // Re-upload textures when material changes (e.g. material preset switching)
   cache->uploadMaterialTextures(obj->getMaterial());
 
-  if (cache->numIndices == 0) return;
+  if (cache->numIndices == 0 && cache->numLineVertices == 0 && cache->numPointVertices == 0) return;
 
   Mat modelMatrix = obj->getTransformation(true);
   m_data->setUniformMat4(m_data->locModelMatrix, modelMatrix);
@@ -1524,15 +1659,52 @@ void GLRenderer::renderObject(const SceneObject *obj,
     glBindTexture(GL_TEXTURE_2D, cache->occlusionMapTex);
   }
 
-  glBindVertexArray(cache->vao);
-  glDrawElements(GL_TRIANGLES, cache->numIndices, GL_UNSIGNED_INT, 0);
-  glBindVertexArray(0);
+  // Draw triangles (PBR lit)
+  if (cache->numIndices > 0) {
+    glBindVertexArray(cache->vao);
+    glDrawElements(GL_TRIANGLES, cache->numIndices, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+  }
 
   if (cache->baseColorTex) { glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, 0); }
   if (cache->normalMapTex) { glActiveTexture(GL_TEXTURE5); glBindTexture(GL_TEXTURE_2D, 0); }
   if (cache->metallicRoughnessTex) { glActiveTexture(GL_TEXTURE6); glBindTexture(GL_TEXTURE_2D, 0); }
   if (cache->emissiveMapTex) { glActiveTexture(GL_TEXTURE7); glBindTexture(GL_TEXTURE_2D, 0); }
   if (cache->occlusionMapTex) { glActiveTexture(GL_TEXTURE8); glBindTexture(GL_TEXTURE_2D, 0); }
+
+  // Draw lines and points (unlit, flat color)
+  if ((cache->numLineVertices > 0 || cache->numPointVertices > 0) && m_data->unlitProgram) {
+    glUseProgram(m_data->unlitProgram);
+
+    // Compute MVP = projection * view * model
+    FixedMatrix<float,4,4> mvp = FixedMatrix<float,4,4>(m_data->currentProjection.data()) * viewMatrix * FixedMatrix<float,4,4>(modelMatrix.data());
+    float mvpGL[16];
+    for (int i = 0; i < 4; i++)
+      for (int j = 0; j < 4; j++)
+        mvpGL[j * 4 + i] = mvp(i, j);
+    glUniformMatrix4fv(m_data->unlitLocMVP, 1, GL_FALSE, mvpGL);
+
+    if (cache->numLineVertices > 0) {
+      float lw = mat ? mat->lineWidth : 1.0f;
+      glLineWidth(lw);
+      glBindVertexArray(cache->lineVao);
+      glDrawArrays(GL_LINES, 0, cache->numLineVertices);
+      glBindVertexArray(0);
+    }
+
+    if (cache->numPointVertices > 0) {
+      float ps = mat ? mat->pointSize : 3.0f;
+      glUniform1f(m_data->unlitLocPointSize, ps);
+      glEnable(GL_PROGRAM_POINT_SIZE);
+      glBindVertexArray(cache->pointVao);
+      glDrawArrays(GL_POINTS, 0, cache->numPointVertices);
+      glBindVertexArray(0);
+      glDisable(GL_PROGRAM_POINT_SIZE);
+    }
+
+    // Restore main program
+    glUseProgram(m_data->program);
+  }
 
   for (int c = 0; c < obj->getChildCount(); c++) {
     renderObject(obj->getChild(c), viewMatrix);
