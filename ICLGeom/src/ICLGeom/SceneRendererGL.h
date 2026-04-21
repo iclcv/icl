@@ -19,10 +19,12 @@ namespace icl::geom {
   class SceneObject;
   class Material;
 
-  /// Modern OpenGL renderer for Scene (GL 4.1 compatible, VBO/VAO based)
+  /// Modern OpenGL 4.1 Core renderer for Scene (VAO/VBO/shader based)
   /** Replaces the legacy fixed-function pipeline with a shader-based approach.
-      Supports: PBR material textures (baseColorMap), per-pixel Blinn-Phong lighting,
-      up to 8 lights, shadow mapping (TODO).
+      Requires GL 4.1 Core Profile (set QSurfaceFormat before QApplication).
+
+      Supports: PBR material properties, per-pixel Blinn-Phong lighting,
+      up to 8 lights, baseColorMap textures.
 
       The camera projection matrix from Camera::getProjectionMatrixGL() is passed
       directly as a uniform, preserving pixel-perfect alignment with calibrated cameras.
@@ -50,6 +52,19 @@ namespace icl::geom {
   private:
     void ensureShaderCompiled();
     void renderObject(const SceneObject *obj, const math::FixedMatrix<float,4,4> &viewMatrix);
+  };
+
+  /// Fullscreen textured quad renderer for displaying 2D images in GL 4.1 Core
+  /** Used by the Cycles viewer pane to display raytraced output without legacy GL. */
+  class ICLGeom_API GLImageRenderer {
+    struct Data;
+    Data *m_data;
+  public:
+    GLImageRenderer();
+    ~GLImageRenderer();
+
+    /// Upload and render an image as a fullscreen quad
+    void render(const core::Image &img);
   };
 
 } // namespace icl::geom

@@ -12,7 +12,7 @@
 #include <ICLCore/Img.h>
 #include <ICLCore/CCFunctions.h>
 #ifdef ICL_SYSTEM_APPLE
-#include <OpenGL/gl.h>
+#include <OpenGL/gl3.h>
 #else
 #include <GL/glew.h>
 #endif
@@ -26,128 +26,81 @@ using namespace icl::utils;
 
 namespace icl::geom {
 
-// ---- Shader sources ----
+// ---- Shader sources (GL 4.1 Core) ----
+// Step 2: Single hardcoded directional light, world-space lighting
 
 static const char *VERT_SHADER = R"(
-#version 120
+#version 410 core
 
-attribute vec3 aPosition;
-attribute vec3 aNormal;
-attribute vec2 aTexCoord;
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec3 aNormal;
+layout(location = 2) in vec2 aTexCoord;
 
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
-varying vec3 vViewPos;
-varying vec3 vNormal;
-varying vec2 vTexCoord;
+out vec3 vWorldPos;
+out vec3 vNormal;
+out vec2 vTexCoord;
 
 void main() {
-    // GL_TRUE gives shader the ICL matrix M directly (same as legacy glLoadMatrixf).
-    // Standard column-vector multiply: P * V * M * pos
-    vec4 viewPos = uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
-    vViewPos = viewPos.xyz;
-    mat3 normalMat = mat3(uViewMatrix * uModelMatrix);
+    vec4 worldPos = uModelMatrix * vec4(aPosition, 1.0);
+    vWorldPos = worldPos.xyz;
+
+    mat3 normalMat = mat3(uModelMatrix);
     vNormal = normalize(normalMat * aNormal);
+
     vTexCoord = aTexCoord;
-    gl_Position = uProjectionMatrix * viewPos;
+    gl_Position = uProjectionMatrix * uViewMatrix * worldPos;
 }
 )";
 
 static const char *FRAG_SHADER = R"(
-#version 120
+#version 410 core
 
-uniform vec4  uBaseColor;
-uniform float uMetallic;
-uniform float uRoughness;
-uniform vec4  uEmissive;
-
-uniform int uHasBaseColorMap;
-uniform sampler2D uBaseColorMap;
-
-uniform int  uNumLights;
-uniform vec4 uLightPos[8];
-uniform vec4 uLightColor[8];
-uniform vec4 uAmbientLight;
+uniform vec4 uBaseColor;
+uniform float uAmbient;
 uniform float uExposure;
-uniform int uDebugMode;
+uniform int uNumLights;
+uniform vec4 uLightPos[8];
+uniform vec3 uLightColor[8];
 
-varying vec3 vViewPos;
-varying vec3 vNormal;
-varying vec2 vTexCoord;
+in vec3 vWorldPos;
+in vec3 vNormal;
+in vec2 vTexCoord;
+
+out vec4 FragColor;
 
 void main() {
     vec3 N = normalize(vNormal);
-    // Two-sided lighting: flip normal for back faces
     if (!gl_FrontFacing) N = -N;
 
-    vec4 albedo = uBaseColor;
-    if (uHasBaseColorMap != 0) {
-        albedo *= texture2D(uBaseColorMap, vTexCoord);
-    }
+    vec3 result = uBaseColor.rgb * uAmbient;
 
-    float shininess = max(2.0 / (uRoughness * uRoughness + 1e-4) - 2.0, 1.0);
-    vec3 V = normalize(-vViewPos);
-
-    vec3 result = uAmbientLight.rgb * albedo.rgb;
-
-    for (int i = 0; i < uNumLights && i < 8; i++) {
-        vec3 L = normalize(uLightPos[i].xyz - vViewPos);
-        vec3 H = normalize(L + V);
-
+    for (int i = 0; i < uNumLights; i++) {
+        vec3 L = normalize(uLightPos[i].xyz - vWorldPos);
         float NdotL = max(dot(N, L), 0.0);
-        float NdotH = max(dot(N, H), 0.0);
-
-        vec3 lightCol = uLightColor[i].rgb;
-
-        vec3 diffuse = albedo.rgb * NdotL;
-        float specPow = pow(NdotH, shininess);
-        vec3 specColor = mix(vec3(0.04), albedo.rgb, uMetallic);
-        vec3 specular = specColor * specPow * (1.0 - uRoughness * 0.8);
-
-        result += lightCol * (diffuse + specular);
+        result += uBaseColor.rgb * uLightColor[i] * NdotL;
     }
 
-    result += uEmissive.rgb;
     result *= uExposure;
     result = clamp(result, 0.0, 1.0);
-
-    // Debug modes
-    if (uDebugMode == 1) { gl_FragColor = vec4(N * 0.5 + 0.5, 1.0); return; }  // normals
-    if (uDebugMode == 2) { gl_FragColor = albedo; return; }                      // albedo/texture
-    if (uDebugMode == 3) { gl_FragColor = vec4(vTexCoord, 0.0, 1.0); return; }  // UVs
-    if (uDebugMode == 5) {                                                       // max NdotL grayscale
-      float maxNdL = 0.0;
-      for (int i = 0; i < uNumLights && i < 8; i++) {
-        vec3 L2 = normalize(uLightPos[i].xyz - vViewPos);
-        maxNdL = max(maxNdL, dot(N, L2));
-      }
-      gl_FragColor = vec4(vec3(maxNdL), 1.0); return;
-    }
-    if (uDebugMode == 4) {                                                       // lighting only (white albedo)
-      vec3 whiteResult = uAmbientLight.rgb;
-      for (int i = 0; i < uNumLights && i < 8; i++) {
-        vec3 L2 = normalize(uLightPos[i].xyz - vViewPos);
-        float NdL = max(dot(N, L2), 0.0);
-        whiteResult += uLightColor[i].rgb * NdL;
-      }
-      whiteResult *= uExposure;
-      gl_FragColor = vec4(clamp(whiteResult, 0.0, 1.0), 1.0); return;
-    }
-    gl_FragColor = vec4(result, albedo.a);
+    FragColor = vec4(result, uBaseColor.a);
 }
 )";
 
-// ---- GLGeometryCache: VBO/VAO per SceneObject ----
+// ---- GLGeometryCache: VAO/VBO/EBO per SceneObject ----
 
 struct GLGeometryCache {
+  GLuint vao = 0;
   GLuint vbo = 0;
   GLuint ebo = 0;
   int numIndices = 0;
-  GLuint baseColorTex = 0;  // cached GL texture from Material::baseColorMap
+  GLuint baseColorTex = 0;
 
   ~GLGeometryCache() {
+    if (vao) glDeleteVertexArrays(1, &vao);
     if (vbo) glDeleteBuffers(1, &vbo);
     if (ebo) glDeleteBuffers(1, &ebo);
     if (baseColorTex) glDeleteTextures(1, &baseColorTex);
@@ -161,17 +114,12 @@ struct GLGeometryCache {
 
     if (verts.empty()) return;
 
-    bool hasNormals = (norms.size() == verts.size());
-    bool hasUVs = !texCoords.empty();
-
     // Collect triangles with per-corner data
     // Each corner: pos(3) + normal(3) + uv(2) = 8 floats
     struct Vertex { float px, py, pz, nx, ny, nz, u, v; };
     std::vector<Vertex> vertexData;
     std::vector<unsigned int> indices;
 
-    // We can't share vertices across different UV corners, so we emit
-    // per-corner vertices (3 per triangle). EBO is sequential.
     for (const auto *prim : prims) {
       auto addTri = [&](int va, int vb, int vc, int na, int nb, int nc,
                         int ta, int tb, int tc) {
@@ -182,7 +130,6 @@ struct GLGeometryCache {
           if (ni >= 0 && ni < (int)norms.size()) {
             v.nx = norms[ni][0]; v.ny = norms[ni][1]; v.nz = norms[ni][2];
           } else {
-            // Auto-compute face normal
             const auto &a = verts[va], &b = verts[vb], &c = verts[vc];
             Vec e1 = b - a, e2 = c - a;
             Vec n = cross(e1, e2);
@@ -247,6 +194,10 @@ struct GLGeometryCache {
 
     numIndices = (int)indices.size();
 
+    // Create VAO
+    if (!vao) glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
     // Create VBO
     if (!vbo) glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -259,29 +210,15 @@ struct GLGeometryCache {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
                  indices.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  }
+    // Vertex attributes
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
-  /// Bind VBO + EBO and set up vertex attrib pointers (call before glDrawElements)
-  void bind(GLuint posLoc, GLuint normalLoc, GLuint texCoordLoc) {
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
-    glEnableVertexAttribArray(posLoc);
-    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(normalLoc);
-    glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(texCoordLoc);
-    glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-  }
-
-  void unbind(GLuint posLoc, GLuint normalLoc, GLuint texCoordLoc) {
-    glDisableVertexAttribArray(posLoc);
-    glDisableVertexAttribArray(normalLoc);
-    glDisableVertexAttribArray(texCoordLoc);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
   }
 
   void uploadBaseColorMap(const core::Image &img) {
@@ -291,7 +228,6 @@ struct GLGeometryCache {
     const auto &img8u = img.as<icl8u>();
     int w = img8u.getWidth(), h = img8u.getHeight(), ch = img8u.getChannels();
 
-    // Always upload as RGBA for simplicity
     std::vector<icl8u> rgba(w * h * 4);
     for (int i = 0; i < w * h; i++) {
       rgba[i*4+0] = (ch > 0) ? img8u.getData(0)[i] : 0;
@@ -323,7 +259,7 @@ static GLuint compileShader(GLenum type, const char *src) {
   if (!ok) {
     char log[1024];
     glGetShaderInfoLog(s, sizeof(log), nullptr, log);
-    fprintf(stderr, "[ModernGL] Shader compile error:\n%s\n", log);
+    fprintf(stderr, "[SceneRendererGL] Shader compile error:\n%s\n", log);
     glDeleteShader(s);
     return 0;
   }
@@ -334,17 +270,13 @@ static GLuint linkProgram(GLuint vs, GLuint fs) {
   GLuint prog = glCreateProgram();
   glAttachShader(prog, vs);
   glAttachShader(prog, fs);
-  // Bind attribute locations before linking
-  glBindAttribLocation(prog, 0, "aPosition");
-  glBindAttribLocation(prog, 1, "aNormal");
-  glBindAttribLocation(prog, 2, "aTexCoord");
   glLinkProgram(prog);
   GLint ok = 0;
   glGetProgramiv(prog, GL_LINK_STATUS, &ok);
   if (!ok) {
     char log[1024];
     glGetProgramInfoLog(prog, sizeof(log), nullptr, log);
-    fprintf(stderr, "[ModernGL] Program link error:\n%s\n", log);
+    fprintf(stderr, "[SceneRendererGL] Program link error:\n%s\n", log);
     glDeleteProgram(prog);
     return 0;
   }
@@ -361,23 +293,40 @@ struct SceneRendererGL::Data {
   int debugMode = 0;
   std::unordered_map<const SceneObject*, std::unique_ptr<GLGeometryCache>> geometryCache;
 
-  void setUniformMat4(const char *name, const Mat &m) {
-    GLint loc = glGetUniformLocation(program, name);
-    // GL_TRUE: GL transposes the row-major data, giving the shader M directly.
-    // This matches glLoadMatrixf(M.transp().data()) used by the legacy pipeline.
+  // Uniform locations (cached after shader compilation)
+  GLint locModelMatrix = -1;
+  GLint locViewMatrix = -1;
+  GLint locProjectionMatrix = -1;
+  GLint locBaseColor = -1;
+  GLint locAmbient = -1;
+  GLint locExposure = -1;
+  GLint locNumLights = -1;
+  GLint locLightPos[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
+  GLint locLightColor[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
+
+  void cacheUniformLocations() {
+    locModelMatrix = glGetUniformLocation(program, "uModelMatrix");
+    locViewMatrix = glGetUniformLocation(program, "uViewMatrix");
+    locProjectionMatrix = glGetUniformLocation(program, "uProjectionMatrix");
+    locBaseColor = glGetUniformLocation(program, "uBaseColor");
+    locAmbient = glGetUniformLocation(program, "uAmbient");
+    locExposure = glGetUniformLocation(program, "uExposure");
+    locNumLights = glGetUniformLocation(program, "uNumLights");
+    // Query each array element individually (not loc+i)
+    for (int i = 0; i < 8; i++) {
+      char name[32];
+      snprintf(name, sizeof(name), "uLightPos[%d]", i);
+      locLightPos[i] = glGetUniformLocation(program, name);
+      snprintf(name, sizeof(name), "uLightColor[%d]", i);
+      locLightColor[i] = glGetUniformLocation(program, name);
+    }
+    fprintf(stderr, "[SceneRendererGL] Uniforms: model=%d view=%d proj=%d numLights=%d lightPos[0]=%d lightColor[0]=%d\n",
+            locModelMatrix, locViewMatrix, locProjectionMatrix, locNumLights,
+            locLightPos[0], locLightColor[0]);
+  }
+
+  void setUniformMat4(GLint loc, const Mat &m) {
     if (loc >= 0) glUniformMatrix4fv(loc, 1, GL_TRUE, m.data());
-  }
-  void setUniformVec4(const char *name, float x, float y, float z, float w) {
-    GLint loc = glGetUniformLocation(program, name);
-    if (loc >= 0) glUniform4f(loc, x, y, z, w);
-  }
-  void setUniformFloat(const char *name, float v) {
-    GLint loc = glGetUniformLocation(program, name);
-    if (loc >= 0) glUniform1f(loc, v);
-  }
-  void setUniformInt(const char *name, int v) {
-    GLint loc = glGetUniformLocation(program, name);
-    if (loc >= 0) glUniform1i(loc, v);
   }
 };
 
@@ -407,7 +356,10 @@ void SceneRendererGL::ensureShaderCompiled() {
   if (fs) glDeleteShader(fs);
 
   if (m_data->program) {
-    fprintf(stderr, "[ModernGL] Shader compiled and linked successfully\n");
+    m_data->cacheUniformLocations();
+    fprintf(stderr, "[SceneRendererGL] GL 4.1 Core shader compiled OK\n");
+  } else {
+    fprintf(stderr, "[SceneRendererGL] SHADER COMPILATION FAILED\n");
   }
 }
 
@@ -419,7 +371,7 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   Mat projGL = cam.getProjectionMatrixGL();
   Mat viewGL = cam.getCSTransformationMatrixGL();
 
-  // Set viewport to match camera aspect ratio (centered in widget)
+  // Set viewport to match camera aspect ratio (letterboxed in widget)
   GLint widgetVP[4];
   glGetIntegerv(GL_VIEWPORT, widgetVP);
   int ww = widgetVP[2], wh = widgetVP[3];
@@ -444,53 +396,35 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
 
   glUseProgram(m_data->program);
 
-  // ICL matrices use row-vector convention (pos * M).
-  // GLSL's vec*mat operator does row-vector multiply, so we pass matrices
-  // with GL_TRUE (transpose) which gives the shader the ICL matrix directly.
-  // The shader uses: gl_Position = vec4(pos,1) * modelView * projection
-  m_data->setUniformMat4("uProjectionMatrix", projGL);
-  m_data->setUniformMat4("uViewMatrix", viewGL);
+  m_data->setUniformMat4(m_data->locProjectionMatrix, projGL);
+  m_data->setUniformMat4(m_data->locViewMatrix, viewGL);
+  glUniform1f(m_data->locAmbient, m_data->ambient);
+  glUniform1f(m_data->locExposure, m_data->exposure);
 
-  // Lights: transform to view space
-  // Use base uniform location + offset (more reliable than "name[i]" on some drivers)
-  GLint locLightPos = glGetUniformLocation(m_data->program, "uLightPos");
-  GLint locLightColor = glGetUniformLocation(m_data->program, "uLightColor");
+  // Set all active lights from Scene (world-space positions and colors)
   int numLights = 0;
   static bool lightsPrinted = false;
-  float intensity = 0.7f;
   for (int i = 0; i < 8; i++) {
     const auto &light = scene.getLight(i);
     if (!light.isOn()) continue;
+    if (numLights >= 8) break;
 
     Vec wp = light.getPosition();
-    Vec vp = viewGL * wp;
-    auto d = light.getDiffuse();
+    auto d = light.getDiffuse();  // already [0,1] — setDiffuse divides by 255
+    glUniform4f(m_data->locLightPos[numLights], wp[0], wp[1], wp[2], 1.0f);
+    glUniform3f(m_data->locLightColor[numLights], d[0], d[1], d[2]);
 
     if (!lightsPrinted) {
-      fprintf(stderr, "[ModernGL] Light %d: world=(%.1f,%.1f,%.1f) view=(%.1f,%.1f,%.1f) color=(%.2f,%.2f,%.2f)*%.1f\n",
-              i, wp[0], wp[1], wp[2], vp[0], vp[1], vp[2],
-              d[0]/255.f, d[1]/255.f, d[2]/255.f, intensity);
+      fprintf(stderr, "[SceneRendererGL] Light %d→slot %d: pos=(%.0f,%.0f,%.0f) color=(%.2f,%.2f,%.2f)\n",
+              i, numLights, wp[0], wp[1], wp[2], d[0], d[1], d[2]);
     }
-
-    if (locLightPos >= 0)
-      glUniform4f(locLightPos + numLights, vp[0], vp[1], vp[2], 1);
-    if (locLightColor >= 0)
-      glUniform4f(locLightColor + numLights, d[0]/255.f * intensity, d[1]/255.f * intensity,
-                  d[2]/255.f * intensity, 1.0f);
     numLights++;
   }
-  if (!lightsPrinted) {
-    fprintf(stderr, "[ModernGL] %d lights, locPos=%d locColor=%d exposure=%.2f\n",
-            numLights, locLightPos, locLightColor, m_data->exposure);
-    fflush(stderr);
+  if (!lightsPrinted && numLights > 0) {
+    fprintf(stderr, "[SceneRendererGL] %d lights active\n", numLights);
+    lightsPrinted = true;
   }
-  lightsPrinted = true;
-  m_data->setUniformInt("uNumLights", numLights);
-  float a = m_data->ambient;
-  m_data->setUniformVec4("uAmbientLight", a, a * 1.05f, a * 1.15f, 1);
-  m_data->setUniformInt("uBaseColorMap", 0);
-  m_data->setUniformFloat("uExposure", m_data->exposure);
-  m_data->setUniformInt("uDebugMode", m_data->debugMode);
+  glUniform1i(m_data->locNumLights, numLights);
 
   for (int i = 0; i < scene.getObjectCount(); i++) {
     const SceneObject *obj = scene.getObject(i);
@@ -507,61 +441,180 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
   if (!cache) {
     cache = std::make_unique<GLGeometryCache>();
     cache->build(obj);
-    auto mat = obj->getMaterial();
-    if (mat && !mat->baseColorMap.isNull()) {
-      cache->uploadBaseColorMap(mat->baseColorMap);
-      fprintf(stderr, "[ModernGL] Object %p: uploaded baseColorMap tex=%u (%dx%d)\n",
-              (void*)obj, cache->baseColorTex,
-              mat->baseColorMap.getWidth(), mat->baseColorMap.getHeight());
+    static bool firstObj = true;
+    if (firstObj) {
+      fprintf(stderr, "[SceneRendererGL] First object: %d indices\n", cache->numIndices);
+      firstObj = false;
     }
-    fprintf(stderr, "[ModernGL] Object %p: %d indices, tex=%u, mat=%s baseColor=(%.2f,%.2f,%.2f)\n",
-            (void*)obj, cache->numIndices, cache->baseColorTex,
-            mat ? mat->name.c_str() : "none",
-            mat ? mat->baseColor[0] : 0, mat ? mat->baseColor[1] : 0, mat ? mat->baseColor[2] : 0);
-    fflush(stderr);
   }
 
   if (cache->numIndices == 0) return;
 
   Mat modelMatrix = obj->getTransformation(true);
-  m_data->setUniformMat4("uModelMatrix", modelMatrix);
+  m_data->setUniformMat4(m_data->locModelMatrix, modelMatrix);
 
+  // Step 1: flat color from material
   auto mat = obj->getMaterial();
   if (mat) {
-    m_data->setUniformVec4("uBaseColor", mat->baseColor[0], mat->baseColor[1],
-                            mat->baseColor[2], mat->baseColor[3]);
-    m_data->setUniformFloat("uMetallic", mat->metallic);
-    m_data->setUniformFloat("uRoughness", mat->roughness);
-    // Only apply emissive factor when there's no emissive texture map
-    // (with a map, the factor is a multiplier for the texture, not standalone)
-    bool hasEmissiveMap = !mat->emissiveMap.isNull();
-    float em0 = hasEmissiveMap ? 0 : mat->emissive[0];
-    float em1 = hasEmissiveMap ? 0 : mat->emissive[1];
-    float em2 = hasEmissiveMap ? 0 : mat->emissive[2];
-    m_data->setUniformVec4("uEmissive", em0, em1, em2, 0);
+    glUniform4f(m_data->locBaseColor, mat->baseColor[0], mat->baseColor[1],
+                mat->baseColor[2], mat->baseColor[3]);
   } else {
-    m_data->setUniformVec4("uBaseColor", 0.8f, 0.8f, 0.8f, 1.0f);
-    m_data->setUniformFloat("uMetallic", 0.0f);
-    m_data->setUniformFloat("uRoughness", 0.5f);
-    m_data->setUniformVec4("uEmissive", 0, 0, 0, 0);
+    glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
   }
 
-  bool hasTexture = cache->baseColorTex != 0;
-  m_data->setUniformInt("uHasBaseColorMap", hasTexture ? 1 : 0);
-  if (hasTexture) {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, cache->baseColorTex);
-  }
-
-  cache->bind(0, 1, 2);
+  glBindVertexArray(cache->vao);
   glDrawElements(GL_TRIANGLES, cache->numIndices, GL_UNSIGNED_INT, 0);
-  cache->unbind(0, 1, 2);
-
-  if (hasTexture) glBindTexture(GL_TEXTURE_2D, 0);
+  glBindVertexArray(0);
 
   for (int c = 0; c < obj->getChildCount(); c++) {
     renderObject(obj->getChild(c), viewMatrix);
   }
+}
+
+// =====================================================================
+// GLImageRenderer — fullscreen textured quad for 2D image display
+// =====================================================================
+
+static const char *QUAD_VERT = R"(
+#version 410 core
+layout(location = 0) in vec2 aPos;
+layout(location = 1) in vec2 aUV;
+uniform vec2 uScale;  // letterbox scale (1.0 = fill, <1.0 = shrink on that axis)
+out vec2 vUV;
+void main() {
+    vUV = aUV;
+    gl_Position = vec4(aPos * uScale, 0.0, 1.0);
+}
+)";
+
+static const char *QUAD_FRAG = R"(
+#version 410 core
+uniform sampler2D uTexture;
+in vec2 vUV;
+out vec4 FragColor;
+void main() {
+    FragColor = texture(uTexture, vUV);
+}
+)";
+
+struct GLImageRenderer::Data {
+  GLuint program = 0;
+  GLuint vao = 0;
+  GLuint vbo = 0;
+  GLuint texture = 0;
+  int texW = 0, texH = 0;
+  bool ready = false;
+
+  void init() {
+    if (ready) return;
+    ready = true;
+
+    GLuint vs = compileShader(GL_VERTEX_SHADER, QUAD_VERT);
+    GLuint fs = compileShader(GL_FRAGMENT_SHADER, QUAD_FRAG);
+    if (vs && fs) program = linkProgram(vs, fs);
+    if (vs) glDeleteShader(vs);
+    if (fs) glDeleteShader(fs);
+
+    if (!program) {
+      fprintf(stderr, "[GLImageRenderer] Shader compilation failed!\n");
+      return;
+    }
+
+    // Fullscreen quad: 2 triangles, each vertex = pos(2) + uv(2)
+    float quad[] = {
+      -1, -1,  0, 1,   // bottom-left  (UV flipped Y: 0,1 → top of image)
+       1, -1,  1, 1,   // bottom-right
+       1,  1,  1, 0,   // top-right
+      -1, -1,  0, 1,   // bottom-left
+       1,  1,  1, 0,   // top-right
+      -1,  1,  0, 0,   // top-left
+    };
+
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+    glBindVertexArray(0);
+
+    glGenTextures(1, &texture);
+    fprintf(stderr, "[GLImageRenderer] Initialized (program=%u vao=%u tex=%u)\n",
+            program, vao, texture);
+  }
+};
+
+GLImageRenderer::GLImageRenderer() : m_data(new Data) {}
+
+GLImageRenderer::~GLImageRenderer() {
+  if (m_data->program) glDeleteProgram(m_data->program);
+  if (m_data->vao) glDeleteVertexArrays(1, &m_data->vao);
+  if (m_data->vbo) glDeleteBuffers(1, &m_data->vbo);
+  if (m_data->texture) glDeleteTextures(1, &m_data->texture);
+  delete m_data;
+}
+
+void GLImageRenderer::render(const core::Image &img) {
+  m_data->init();
+  if (!m_data->program || img.isNull()) return;
+
+  const auto &img8u = img.as<icl8u>();
+  int w = img8u.getWidth(), h = img8u.getHeight(), ch = img8u.getChannels();
+
+  // Upload image data as RGBA texture
+  std::vector<icl8u> rgba(w * h * 4);
+  for (int i = 0; i < w * h; i++) {
+    rgba[i*4+0] = (ch > 0) ? img8u.getData(0)[i] : 0;
+    rgba[i*4+1] = (ch > 1) ? img8u.getData(1)[i] : 0;
+    rgba[i*4+2] = (ch > 2) ? img8u.getData(2)[i] : 0;
+    rgba[i*4+3] = (ch > 3) ? img8u.getData(3)[i] : 255;
+  }
+
+  glBindTexture(GL_TEXTURE_2D, m_data->texture);
+  if (w != m_data->texW || h != m_data->texH) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, rgba.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    m_data->texW = w;
+    m_data->texH = h;
+  } else {
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA,
+                    GL_UNSIGNED_BYTE, rgba.data());
+  }
+
+  // Compute letterbox scale to preserve image aspect ratio
+  GLint vp[4];
+  glGetIntegerv(GL_VIEWPORT, vp);
+  float widgetW = vp[2], widgetH = vp[3];
+  float imgAR = (float)w / h;
+  float widgetAR = widgetW / widgetH;
+  float scaleX = 1.0f, scaleY = 1.0f;
+  if (widgetAR > imgAR) {
+    scaleX = imgAR / widgetAR;  // pillarbox
+  } else {
+    scaleY = widgetAR / imgAR;  // letterbox
+  }
+
+  // Draw letterboxed quad
+  glDisable(GL_DEPTH_TEST);
+  glUseProgram(m_data->program);
+  glUniform1i(glGetUniformLocation(m_data->program, "uTexture"), 0);
+  glUniform2f(glGetUniformLocation(m_data->program, "uScale"), scaleX, scaleY);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, m_data->texture);
+
+  glBindVertexArray(m_data->vao);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glBindVertexArray(0);
+
+  glUseProgram(0);
 }
 
 } // namespace icl::geom

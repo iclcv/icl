@@ -639,11 +639,15 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
 
   cclCam->set_matrix(tfm);
 
-  // FOV from ICL intrinsics: fov = 2 * atan(w / (2 * f * mx))
+  // Cycles' projection_perspective applies FOV equally to X and Y, then
+  // compute_auto_viewplane stretches X by aspect ratio for landscape images.
+  // So Cycles' set_fov() expects the VERTICAL FOV (the dimension that maps
+  // to the viewplane [-1,1] range), not horizontal.
+  // Vertical FOV: fov = 2 * atan(h / (2 * f * my))
   float f = cam.getFocalLength();
-  float mx = cam.getSamplingResolutionX();
-  if (f > 0 && mx > 0 && w > 0) {
-    float fov = 2.0f * std::atan(float(w) / (2.0f * f * mx));
+  float my = cam.getSamplingResolutionY();
+  if (f > 0 && my > 0 && h > 0) {
+    float fov = 2.0f * std::atan(float(h) / (2.0f * f * my));
     // Clamp to reasonable range (5° to 170°)
     fov = std::max(0.087f, std::min(2.97f, fov));
     cclCam->set_fov(fov);

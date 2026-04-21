@@ -20,6 +20,7 @@
 #include <Raytracing/GltfLoader.h>
 #include <ICLGeom/SceneRendererGL.h>
 
+#include <QSurfaceFormat>
 #include <memory>
 #include <vector>
 
@@ -31,6 +32,7 @@ using namespace icl::geom;
 static Scene scene;
 static std::unique_ptr<icl::rt::CyclesRenderer> renderer;
 static std::unique_ptr<SceneRendererGL> glRenderer;
+static std::unique_ptr<GLImageRenderer> imageRenderer;
 static std::vector<std::shared_ptr<SceneObject>> loadedObjects;
 static std::vector<std::shared_ptr<Material>> originalMaterials;  // saved at load time
 static int numLoadedMeshes = 0;  // how many are actual meshes (not checker tiles)
@@ -221,24 +223,8 @@ static void setupScene() {
 
   if (loadedObjects.empty()) {
     // No files loaded — create a default scene with some objects
+    // (no ground here — checkerboard ground is always added below)
     fprintf(stderr, "No -scene files specified, creating default scene.\n");
-
-    auto ground = std::make_shared<SceneObject>();
-    float gs = 500;
-    ground->addVertex(Vec(-gs, 0, -gs, 1));
-    ground->addVertex(Vec( gs, 0, -gs, 1));
-    ground->addVertex(Vec( gs, 0,  gs, 1));
-    ground->addVertex(Vec(-gs, 0,  gs, 1));
-    ground->addNormal(Vec(0, 1, 0, 1));
-    ground->addNormal(Vec(0, 1, 0, 1));
-    ground->addNormal(Vec(0, 1, 0, 1));
-    ground->addNormal(Vec(0, 1, 0, 1));
-    ground->addTriangle(0, 1, 2, 0, 1, 2);
-    ground->addTriangle(0, 2, 3, 0, 2, 3);
-    ground->setMaterial(Material::fromColor(GeomColor(180, 160, 140, 255)));
-    ground->getMaterial()->roughness = 0.8f;
-    scene.addObject(ground.get());
-    loadedObjects.push_back(ground);
 
     // Sphere
     auto *s = SceneObject::sphere(0, 100, 0, 100, 40, 40);
@@ -416,12 +402,6 @@ static void setupScene() {
   // Ambient light to approximate Cycles sky/environment lighting
   scene.setGlobalAmbientLight(GeomColor(60, 65, 80, 255));
 
-  // TODO: improved shading + shadow mapping needs to be updated to support
-  // Material-based textures on regular triangles/quads (currently only works
-  // for TexturePrimitive). The shader selects SHADOW_TEXTURE only for
-  // Primitive::texture type, and the shadow camera setup has issues.
-  // For now, use fixed-function GL which handles material textures correctly.
-
   for (int i = 0; i < scene.getObjectCount(); i++) {
     scene.getObject(i)->setCastShadowsEnabled(true);
     scene.getObject(i)->setReceiveShadowsEnabled(true);
@@ -436,12 +416,13 @@ void init() {
       scene, icl::rt::RenderQuality::Preview);
   renderer->setSceneScale(1.0f);
   glRenderer = std::make_unique<SceneRendererGL>();
+  imageRenderer = std::make_unique<GLImageRenderer>();
 
-  // GUI
+  // GUI: both panes are Canvas3D (Core Profile compatible)
   gui << (VSplit()
          << (HSplit()
-            << Canvas().handle("draw").minSize(32, 24).label("Cycles")
-            << Canvas3D().handle("gl").minSize(32, 24).label("OpenGL (modern)"))
+            << Canvas3D().handle("draw").minSize(32, 24).label("Cycles")
+            << Canvas3D().handle("gl").minSize(32, 24).label("OpenGL 4.1"))
          << (HBox()
             << Combo("!Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive").handle("material").label("Material").minSize(10,2)
             << Combo("!1,2,4,8,16").handle("initSamples").label("Steps/Frame").minSize(8,2)
@@ -471,9 +452,8 @@ void run() {
   renderer->setExposure(exposure);
   renderer->setBrightness(brightness);
   if (glRenderer) {
-    // GL exposure: slider 100% → 1.0 (reasonable default with intensity=5 lights)
     glRenderer->setExposure(exposure);
-    glRenderer->setAmbient(brightness);
+    glRenderer->setAmbient(brightness * 0.15f);
     glRenderer->setDebugMode(gui["glDebug"].as<ComboHandle>().getSelectedIndex());
   }
 
@@ -522,18 +502,10 @@ void run() {
     renderer->invalidateAll();
   }
 
-  // (headlight is static, set in setupScene)
-
   for (int i = 0; i < scene.getObjectCount(); i++)
     scene.getObject(i)->prepareForRendering();
 
   renderer->render(0);
-
-  const auto &img = renderer->getImage();
-  DrawHandle draw = gui["draw"];
-  if (img.getWidth() > 0 && img.getHeight() > 0) {
-    draw = img;
-  }
 
   // Render FPS tracking
   static int lastUpdateCount = 0;
@@ -551,15 +523,27 @@ void run() {
   char buf[256];
   snprintf(buf, sizeof(buf), "%d obj | %.1f fps | %d bounces",
            scene.getObjectCount(), renderFps, bounces);
-  draw->text(buf, 10, 20, 10);
-  draw->render();
 
-  // Render GL using modern pipeline (link callback + trigger repaint each frame)
+  // Render Cycles image via GLImageRenderer callback
+  static struct CyclesImageCallback : public ICLDrawWidget3D::GLCallback {
+    void draw(ICLDrawWidget3D *) override {
+      if (imageRenderer && !renderer->getImage().isNull()) {
+        imageRenderer->render(renderer->getImage());
+      }
+    }
+  } cyclesImageCB;
+
+  DrawHandle3D draw = gui["draw"];
+  draw->link(&cyclesImageCB);
+  draw.render();
+
+  // Render GL using SceneRendererGL callback
   static struct ModernGLCallback : public ICLDrawWidget3D::GLCallback {
     void draw(ICLDrawWidget3D *) override {
       if (glRenderer) glRenderer->render(scene, 0);
     }
   } modernCB;
+
   DrawHandle3D gl = gui["gl"];
   gl->link(&modernCB);
   gl.render();
@@ -606,6 +590,14 @@ int main(int argc, char **argv) {
     offscreen_render(offscreenFile);
     return 0;
   }
+
+  // Request GL 4.1 Core Profile (must be set before QApplication creation)
+  QSurfaceFormat fmt;
+  fmt.setVersion(4, 1);
+  fmt.setProfile(QSurfaceFormat::CoreProfile);
+  fmt.setDepthBufferSize(24);
+  fmt.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+  QSurfaceFormat::setDefaultFormat(fmt);
 
   return ICLApp(argc, argv,
     "-size(Size=1280x960) -scene(...) -decimate(int) -rotate(string)",

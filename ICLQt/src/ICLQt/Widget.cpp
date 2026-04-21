@@ -1924,6 +1924,13 @@ namespace icl::qt {
 
   void ICLWidget::initializeGL(){
     glClearColor (0.0, 0.0, 0.0, 0.0);
+
+    // Check if we are in Core Profile (no fixed-function pipeline)
+    GLint profileMask = 0;
+    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
+    if (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) return;
+
+    // Legacy compatibility profile setup
     glEnable(GL_TEXTURE_2D);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
@@ -1941,6 +1948,10 @@ namespace icl::qt {
     LOCK_SECTION;
     makeCurrent();
     glViewport(0, 0, static_cast<GLint>(w), static_cast<GLint>(h));
+
+    GLint profileMask = 0;
+    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
+    if (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) return;
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -1964,6 +1975,16 @@ namespace icl::qt {
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+    // In Core Profile, GLImg::draw2D and GLPaintEngine use deprecated GL calls.
+    // Skip them — the GLCallback (linked via DrawWidget3D) handles all rendering.
+    GLint profileMask = 0;
+    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
+    if (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) {
+      customPaintEvent(nullptr);
+      return;
+    }
+
     GLPaintEngine *pe = 0;
     if(!m_data->image.isNull()){
       Rect r;
