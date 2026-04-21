@@ -36,6 +36,10 @@ public:
   /// Force full rebuild of all acceleration structures.
   void invalidateAll();
 
+  /// Force only transform updates (no retessellation / BLAS rebuild).
+  /// Use this when objects move but their geometry hasn't changed (e.g. physics).
+  void invalidateTransforms();
+
   /// Force rebuild for a specific object.
   void invalidateObject(geom::SceneObject *obj);
 
