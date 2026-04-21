@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/FileGrabberPluginCSV.h>
+#include <icl/io/FileGrabber.h>  // for HeaderInfo
 #include <icl/core/CoreFunctions.h>
 #include <mutex>
 #include <icl/utils/StrTok.h>
@@ -69,7 +70,7 @@ namespace icl::io {
     //////////////////////////////////////////////////////////////////////
     //// Estimate Header Data 1st: look at the filename  /////////////////
     //////////////////////////////////////////////////////////////////////
-    FileGrabberPlugin::HeaderInfo oInfo;
+    HeaderInfo oInfo;
     oInfo.channelCount = 1;
     oInfo.imageDepth = depth64f;
     oInfo.imageFormat = formatMatrix;
@@ -189,12 +190,14 @@ namespace icl::io {
   } // namespace icl::io
 
 #include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
-namespace {
-  using icl::io::FileGrabberPlugin;
-  using icl::io::FileGrabberPluginCSV;
-  using P = std::unique_ptr<FileGrabberPlugin>;
-}
-REGISTER_FILE_GRABBER_PLUGIN(csv, ".csv", []{ return P(new FileGrabberPluginCSV); })
+namespace { using icl::io::FileGrabberPluginCSV; }
+#define ICL_CSV_REG(TAG, EXT)                                                 \
+  REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \
+    [](icl::utils::File &f, icl::core::ImgBase **dst) {                       \
+      static FileGrabberPluginCSV impl; impl.grab(f, dst);                    \
+    })
+ICL_CSV_REG(csv, ".csv");
 #ifdef ICL_HAVE_LIBZ
-REGISTER_FILE_GRABBER_PLUGIN(csv_gz, ".csv.gz", []{ return P(new FileGrabberPluginCSV); })
+ICL_CSV_REG(csv_gz, ".csv.gz");
 #endif
+#undef ICL_CSV_REG

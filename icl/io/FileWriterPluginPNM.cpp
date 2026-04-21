@@ -181,20 +181,24 @@ namespace icl{
 
 #include <icl/io/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
 namespace {
-  using icl::io::FileWriterPlugin;
   using icl::io::FileWriterPluginPNM;
-  using P = std::unique_ptr<FileWriterPlugin>;
 }
-REGISTER_FILE_WRITER_PLUGIN(ppm, ".ppm", []{ return P(new FileWriterPluginPNM); })
-REGISTER_FILE_WRITER_PLUGIN(pgm, ".pgm", []{ return P(new FileWriterPluginPNM); })
-REGISTER_FILE_WRITER_PLUGIN(pnm, ".pnm", []{ return P(new FileWriterPluginPNM); })
-REGISTER_FILE_WRITER_PLUGIN(icl, ".icl", []{ return P(new FileWriterPluginPNM); })
+#define ICL_PNM_REG(TAG, EXT)                                                 \
+  REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \
+    [](icl::utils::File &f, const icl::core::ImgBase *img) {                  \
+      static FileWriterPluginPNM impl; impl.write(f, img);                    \
+    })
+ICL_PNM_REG(ppm, ".ppm");
+ICL_PNM_REG(pgm, ".pgm");
+ICL_PNM_REG(pnm, ".pnm");
+ICL_PNM_REG(icl, ".icl");
 #ifdef ICL_HAVE_LIBZ
-REGISTER_FILE_WRITER_PLUGIN(ppm_gz, ".ppm.gz", []{ return P(new FileWriterPluginPNM); })
-REGISTER_FILE_WRITER_PLUGIN(pgm_gz, ".pgm.gz", []{ return P(new FileWriterPluginPNM); })
-REGISTER_FILE_WRITER_PLUGIN(pnm_gz, ".pnm.gz", []{ return P(new FileWriterPluginPNM); })
-REGISTER_FILE_WRITER_PLUGIN(icl_gz, ".icl.gz", []{ return P(new FileWriterPluginPNM); })
+ICL_PNM_REG(ppm_gz, ".ppm.gz");
+ICL_PNM_REG(pgm_gz, ".pgm.gz");
+ICL_PNM_REG(pnm_gz, ".pnm.gz");
+ICL_PNM_REG(icl_gz, ".icl.gz");
 #endif
+#undef ICL_PNM_REG
 
 /*
       void FileWriterPluginPNM::write(File &file, const ImgBase *poSrc){

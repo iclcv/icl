@@ -40,25 +40,26 @@ namespace icl::io {
 
 // ----- registrations: BICL handles its own ext + the rle1/4/6/8/jicl
 // pseudo-extensions that just instantiate BICL with different codec specs.
-// Each gets its own factory (the plugin instance is stateful — it owns
-// its compressor — and each codec spec needs a distinct instance).
-namespace {
-  using icl::io::FileWriterPlugin;
-  using icl::io::FileWriterPluginBICL;
-  using P = std::unique_ptr<FileWriterPlugin>;
-}
-REGISTER_FILE_WRITER_PLUGIN(bicl, ".bicl", []{ return P(new FileWriterPluginBICL); })
-REGISTER_FILE_WRITER_PLUGIN(rle1, ".rle1", []{ return P(new FileWriterPluginBICL("rlen","1")); })
-REGISTER_FILE_WRITER_PLUGIN(rle4, ".rle4", []{ return P(new FileWriterPluginBICL("rlen","4")); })
-REGISTER_FILE_WRITER_PLUGIN(rle6, ".rle6", []{ return P(new FileWriterPluginBICL("rlen","6")); })
-REGISTER_FILE_WRITER_PLUGIN(rle8, ".rle8", []{ return P(new FileWriterPluginBICL("rlen","8")); })
+// Each lambda has its own per-type static impl with distinct ctor args.
+namespace { using icl::io::FileWriterPluginBICL; }
+#define ICL_BICL_REG(TAG, EXT, ...)                                           \
+  REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \
+    [](icl::utils::File &f, const icl::core::ImgBase *img) {                  \
+      static FileWriterPluginBICL impl{__VA_ARGS__}; impl.write(f, img);      \
+    })
+ICL_BICL_REG(bicl, ".bicl");
+ICL_BICL_REG(rle1, ".rle1", "rlen", "1");
+ICL_BICL_REG(rle4, ".rle4", "rlen", "4");
+ICL_BICL_REG(rle6, ".rle6", "rlen", "6");
+ICL_BICL_REG(rle8, ".rle8", "rlen", "8");
 #ifdef ICL_HAVE_LIBJPEG
-REGISTER_FILE_WRITER_PLUGIN(jicl, ".jicl", []{ return P(new FileWriterPluginBICL("jpeg","85")); })
+ICL_BICL_REG(jicl, ".jicl", "jpeg", "85");
 #endif
 #ifdef ICL_HAVE_LIBZ
-REGISTER_FILE_WRITER_PLUGIN(bicl_gz, ".bicl.gz", []{ return P(new FileWriterPluginBICL); })
-REGISTER_FILE_WRITER_PLUGIN(rle1_gz, ".rle1.gz", []{ return P(new FileWriterPluginBICL("rlen","1")); })
-REGISTER_FILE_WRITER_PLUGIN(rle4_gz, ".rle4.gz", []{ return P(new FileWriterPluginBICL("rlen","4")); })
-REGISTER_FILE_WRITER_PLUGIN(rle6_gz, ".rle6.gz", []{ return P(new FileWriterPluginBICL("rlen","6")); })
-REGISTER_FILE_WRITER_PLUGIN(rle8_gz, ".rle8.gz", []{ return P(new FileWriterPluginBICL("rlen","8")); })
+ICL_BICL_REG(bicl_gz, ".bicl.gz");
+ICL_BICL_REG(rle1_gz, ".rle1.gz", "rlen", "1");
+ICL_BICL_REG(rle4_gz, ".rle4.gz", "rlen", "4");
+ICL_BICL_REG(rle6_gz, ".rle6.gz", "rlen", "6");
+ICL_BICL_REG(rle8_gz, ".rle8.gz", "rlen", "8");
 #endif
+#undef ICL_BICL_REG

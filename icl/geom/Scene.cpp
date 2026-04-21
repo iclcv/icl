@@ -13,7 +13,7 @@
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Time.h>
 #include <icl/utils/File.h>
-#include <icl/utils/PluginRegister.h>
+#include <icl/geom/PointCloudGrabberRegistry.h>
 
 #ifdef ICL_HAVE_QT
 #include <icl/qt/Quick.h>
@@ -1886,7 +1886,7 @@ namespace icl::geom {
     return 0;
   }
 
-  REGISTER_PLUGIN(PointCloudGrabber,scene,create_scene_point_cloud_grabber,
+  REGISTER_POINT_CLOUD_GRABBER(scene,create_scene_point_cloud_grabber,
                   "Simulation based Grabber that renders a point cloud in a virtual scene",
                   "creation-string: {shape|object-file}[:camera-file] (shape can be sphere or cube)");
 

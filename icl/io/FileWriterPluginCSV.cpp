@@ -77,12 +77,14 @@ namespace icl::io {
   } // namespace icl::io
 
 #include <icl/io/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
-namespace {
-  using icl::io::FileWriterPlugin;
-  using icl::io::FileWriterPluginCSV;
-  using P = std::unique_ptr<FileWriterPlugin>;
-}
-REGISTER_FILE_WRITER_PLUGIN(csv, ".csv", []{ return P(new FileWriterPluginCSV); })
+namespace { using icl::io::FileWriterPluginCSV; }
+#define ICL_CSV_REG(TAG, EXT)                                                 \
+  REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \
+    [](icl::utils::File &f, const icl::core::ImgBase *img) {                  \
+      static FileWriterPluginCSV impl; impl.write(f, img);                    \
+    })
+ICL_CSV_REG(csv, ".csv");
 #ifdef ICL_HAVE_LIBZ
-REGISTER_FILE_WRITER_PLUGIN(csv_gz, ".csv.gz", []{ return P(new FileWriterPluginCSV); })
+ICL_CSV_REG(csv_gz, ".csv.gz");
 #endif
+#undef ICL_CSV_REG

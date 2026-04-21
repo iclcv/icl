@@ -21,7 +21,6 @@ option('imagemagick',  type: 'feature', value: 'auto', description: 'ImageMagick
 option('libav',        type: 'feature', value: 'auto', description: 'FFmpeg/libav video I/O')
 option('libdc',        type: 'feature', value: 'disabled', description: 'FireWire camera support')
 option('v4l',          type: 'feature', value: 'disabled', description: 'V4L2 USB camera support')
-option('zmq',          type: 'feature', value: 'disabled', description: 'ZeroMQ network I/O')
 option('pcl',          type: 'feature', value: 'disabled', description: 'PCL point cloud support')
 option('pylon',        type: 'feature', value: 'disabled', description: 'Basler Pylon GigE cameras')
 option('libfreenect',  type: 'feature', value: 'disabled', description: 'Kinect 1 support')

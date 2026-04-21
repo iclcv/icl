@@ -6,7 +6,7 @@
 #include <icl/geom/PointCloudCreator.h>
 
 #include <icl/io/GenericGrabber.h>
-#include <icl/utils/PluginRegister.h>
+#include <icl/geom/PointCloudGrabberRegistry.h>
 #include <icl/filter/MotionSensitiveTemporalSmoothing.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/ConvolutionOp.h>
@@ -433,7 +433,7 @@ namespace icl::geom {
     }
   }
 
-  REGISTER_PLUGIN(PointCloudGrabber,dcam,create_depth_camera_point_cloud_grabber,
+  REGISTER_POINT_CLOUD_GRABBER(dcam,create_depth_camera_point_cloud_grabber,
                   "Point cloud grabber based on a depth and an optional color camera",
                   "creation-string: depth-camera-type,depth-camera-id,depth-camera-calib-file"
                   "[,depth-camera-type,depth-camera-id,depth-camera-calib-file] use 'DEFAULT'"

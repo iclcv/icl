@@ -5,28 +5,19 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/FileGrabberPlugin.h>
+#include <icl/utils/File.h>
+#include <icl/core/Img.h>
+
 #include <mutex>
 
 namespace icl::io {
-  /// FileGrabber plugins for writing ".csv" files (<b>C</b>omma-<b>S</b>eparated <b>V</b>alues) \ingroup FILEIO_G
+  /// Plugin for writing ".csv" files (Comma-Separated Values) \ingroup FILEIO_G
   /** image parameters can be found by three different means:
-      -# <b>Encoded into the file name.</b> When using the ICLFileWriter to write
-         csv files, it can be set up to encode the images parameter into the
-         filename using a string extension of the underlying filename. The
-         following pattern is used for this:
-         "DIR/ORIG_FILE_BASE_NANE-ICL:WxHxC:DEPTH:format.csv"
-      -# <b>As comment block</b> Although the CSV-file convention does not
-         include comments, a common standard is to add a "#"-character to signal
-         comment lines. By this means, a default ".icl"-header can be used to
-         define an csv-images shape and parameters.
-      -# <b>Interpret a csv file as matrix data</b> If no of the other two
-         possibilities were successful to determine a csv-image's size, the
-         file is interpreted as double-matrix. The line count of the matrix defines
-         the image height; its horizontal comma-separated token count defines its
-         width.
+      -# <b>Encoded into the file name.</b>
+      -# <b>As comment block</b>
+      -# <b>Interpret a csv file as matrix data</b>
       */
-  class ICLIO_API FileGrabberPluginCSV : public FileGrabberPlugin{
+  class ICLIO_API FileGrabberPluginCSV {
     public:
     /// Create a new Plugin
     FileGrabberPluginCSV();
@@ -35,7 +26,7 @@ namespace icl::io {
     ~FileGrabberPluginCSV();
 
     /// grab implementation
-    virtual void grab(utils::File &file, core::ImgBase **dest);
+    void grab(utils::File &file, core::ImgBase **dest);
 
     private:
 

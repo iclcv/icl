@@ -25,23 +25,25 @@ namespace icl::io {
   } // namespace icl::io
 
 #include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
-namespace {
-  using icl::io::FileGrabberPlugin;
-  using icl::io::FileGrabberPluginBICL;
-  using P = std::unique_ptr<FileGrabberPlugin>;
-}
-REGISTER_FILE_GRABBER_PLUGIN(bicl, ".bicl", []{ return P(new FileGrabberPluginBICL); })
-REGISTER_FILE_GRABBER_PLUGIN(rle1, ".rle1", []{ return P(new FileGrabberPluginBICL); })
-REGISTER_FILE_GRABBER_PLUGIN(rle4, ".rle4", []{ return P(new FileGrabberPluginBICL); })
-REGISTER_FILE_GRABBER_PLUGIN(rle6, ".rle6", []{ return P(new FileGrabberPluginBICL); })
-REGISTER_FILE_GRABBER_PLUGIN(rle8, ".rle8", []{ return P(new FileGrabberPluginBICL); })
+namespace { using icl::io::FileGrabberPluginBICL; }
+#define ICL_BICL_REG(TAG, EXT)                                                \
+  REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \
+    [](icl::utils::File &f, icl::core::ImgBase **dst) {                       \
+      static FileGrabberPluginBICL impl; impl.grab(f, dst);                   \
+    })
+ICL_BICL_REG(bicl, ".bicl");
+ICL_BICL_REG(rle1, ".rle1");
+ICL_BICL_REG(rle4, ".rle4");
+ICL_BICL_REG(rle6, ".rle6");
+ICL_BICL_REG(rle8, ".rle8");
 #ifdef ICL_HAVE_LIBJPEG
-REGISTER_FILE_GRABBER_PLUGIN(jicl, ".jicl", []{ return P(new FileGrabberPluginBICL); })
+ICL_BICL_REG(jicl, ".jicl");
 #endif
 #ifdef ICL_HAVE_LIBZ
-REGISTER_FILE_GRABBER_PLUGIN(bicl_gz, ".bicl.gz", []{ return P(new FileGrabberPluginBICL); })
-REGISTER_FILE_GRABBER_PLUGIN(rle1_gz, ".rle1.gz", []{ return P(new FileGrabberPluginBICL); })
-REGISTER_FILE_GRABBER_PLUGIN(rle4_gz, ".rle4.gz", []{ return P(new FileGrabberPluginBICL); })
-REGISTER_FILE_GRABBER_PLUGIN(rle6_gz, ".rle6.gz", []{ return P(new FileGrabberPluginBICL); })
-REGISTER_FILE_GRABBER_PLUGIN(rle8_gz, ".rle8.gz", []{ return P(new FileGrabberPluginBICL); })
+ICL_BICL_REG(bicl_gz, ".bicl.gz");
+ICL_BICL_REG(rle1_gz, ".rle1.gz");
+ICL_BICL_REG(rle4_gz, ".rle4.gz");
+ICL_BICL_REG(rle6_gz, ".rle6.gz");
+ICL_BICL_REG(rle8_gz, ".rle8.gz");
 #endif
+#undef ICL_BICL_REG

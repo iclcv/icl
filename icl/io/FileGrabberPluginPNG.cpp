@@ -142,10 +142,9 @@ namespace icl::io {
 
 #ifdef ICL_HAVE_LIBPNG
 #include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
-namespace {
-  using icl::io::FileGrabberPlugin;
-  using icl::io::FileGrabberPluginPNG;
-  using P = std::unique_ptr<FileGrabberPlugin>;
-}
-REGISTER_FILE_GRABBER_PLUGIN(png, ".png", []{ return P(new FileGrabberPluginPNG); })
+namespace { using icl::io::FileGrabberPluginPNG; }
+REGISTER_FILE_GRABBER_PLUGIN(png, ".png",
+  [](icl::utils::File &f, icl::core::ImgBase **dst) {
+    static FileGrabberPluginPNG impl; impl.grab(f, dst);
+  })
 #endif

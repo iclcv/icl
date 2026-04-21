@@ -6,7 +6,7 @@
 //#include <icl/io/FileGrabber.h>
 #include <icl/io/FileList.h>
 #include <icl/utils/File.h>
-#include <icl/utils/PluginRegister.h>
+#include <icl/geom/PointCloudGrabberRegistry.h>
 
 #include <bitset>
 #include <fstream>
@@ -360,7 +360,7 @@ namespace icl{
 
     }
 
-    REGISTER_PLUGIN(PointCloudGrabber,pcd,create_pcd_file_grabber,
+    REGISTER_POINT_CLOUD_GRABBER(pcd,create_pcd_file_grabber,
                     "Point cloud grabber using an input patter for grabbing pcd-files",
                     "creation-string: filepattern[@loop=off]");
 

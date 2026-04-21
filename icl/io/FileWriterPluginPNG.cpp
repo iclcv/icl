@@ -154,10 +154,9 @@ namespace icl::io {
 
 #ifdef ICL_HAVE_LIBPNG
 #include <icl/io/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
-namespace {
-  using icl::io::FileWriterPlugin;
-  using icl::io::FileWriterPluginPNG;
-  using P = std::unique_ptr<FileWriterPlugin>;
-}
-REGISTER_FILE_WRITER_PLUGIN(png, ".png", []{ return P(new FileWriterPluginPNG); })
+namespace { using icl::io::FileWriterPluginPNG; }
+REGISTER_FILE_WRITER_PLUGIN(png, ".png",
+  [](icl::utils::File &f, const icl::core::ImgBase *img) {
+    static FileWriterPluginPNG impl; impl.write(f, img);
+  })
 #endif

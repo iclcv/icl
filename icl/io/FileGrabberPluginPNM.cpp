@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting
 
 #include <icl/io/FileGrabberPluginPNM.h>
+#include <icl/io/FileGrabber.h>  // for HeaderInfo
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
@@ -27,7 +28,7 @@ namespace icl::io {
     //////////////////////////////////////////////////////////////////////
     /// READ HEADER INFORMATION FROM THE FILE  ///////////////////////////
     //////////////////////////////////////////////////////////////////////
-    FileGrabberPlugin::HeaderInfo oInfo;
+    HeaderInfo oInfo;
     oInfo.imageFormat = formatGray;
     oInfo.imageDepth = depth8u;
     oInfo.channelCount = 0;
@@ -133,18 +134,20 @@ namespace icl::io {
   } // namespace icl::io
 
 #include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
-namespace {
-  using icl::io::FileGrabberPlugin;
-  using icl::io::FileGrabberPluginPNM;
-  using P = std::unique_ptr<FileGrabberPlugin>;
-}
-REGISTER_FILE_GRABBER_PLUGIN(ppm, ".ppm", []{ return P(new FileGrabberPluginPNM); })
-REGISTER_FILE_GRABBER_PLUGIN(pgm, ".pgm", []{ return P(new FileGrabberPluginPNM); })
-REGISTER_FILE_GRABBER_PLUGIN(pnm, ".pnm", []{ return P(new FileGrabberPluginPNM); })
-REGISTER_FILE_GRABBER_PLUGIN(icl, ".icl", []{ return P(new FileGrabberPluginPNM); })
+namespace { using icl::io::FileGrabberPluginPNM; }
+#define ICL_PNM_REG(TAG, EXT)                                                 \
+  REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \
+    [](icl::utils::File &f, icl::core::ImgBase **dst) {                       \
+      static FileGrabberPluginPNM impl; impl.grab(f, dst);                    \
+    })
+ICL_PNM_REG(ppm, ".ppm");
+ICL_PNM_REG(pgm, ".pgm");
+ICL_PNM_REG(pnm, ".pnm");
+ICL_PNM_REG(icl, ".icl");
 #ifdef ICL_HAVE_LIBZ
-REGISTER_FILE_GRABBER_PLUGIN(ppm_gz, ".ppm.gz", []{ return P(new FileGrabberPluginPNM); })
-REGISTER_FILE_GRABBER_PLUGIN(pgm_gz, ".pgm.gz", []{ return P(new FileGrabberPluginPNM); })
-REGISTER_FILE_GRABBER_PLUGIN(pnm_gz, ".pnm.gz", []{ return P(new FileGrabberPluginPNM); })
-REGISTER_FILE_GRABBER_PLUGIN(icl_gz, ".icl.gz", []{ return P(new FileGrabberPluginPNM); })
+ICL_PNM_REG(ppm_gz, ".ppm.gz");
+ICL_PNM_REG(pgm_gz, ".pgm.gz");
+ICL_PNM_REG(pnm_gz, ".pnm.gz");
+ICL_PNM_REG(icl_gz, ".icl.gz");
 #endif
+#undef ICL_PNM_REG

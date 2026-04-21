@@ -5,15 +5,15 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
+#include <icl/utils/PluginRegistry.h>
 
-#include <algorithm>
-#include <vector>
-#include <string>
+#include <functional>
 #include <memory>
 #include <optional>
-#include <functional>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
+#include <vector>
 
 namespace icl::utils {
   // ================================================================
@@ -51,22 +51,26 @@ namespace icl::utils {
 
   // ================================================================
   // BackendSelector — dispatch table for one operation.
-  // Stores registered backends in a sorted vector (highest priority
-  // first). Only backends that are actually registered occupy space.
+  //
+  // Thin specialization over utils::PluginRegistry keyed on Backend,
+  // with Payload = shared_ptr<ImplBase> (a type-erased callable for the
+  // operation's signature). Entry metadata (description, applicability
+  // predicate, priority) lives in the registry's Entry; ImplBase carries
+  // only the callable itself and the backend tag.
   // ================================================================
 
   template<class Context>
-  using ApplicabilityFn = std::function<bool(const Context&)>;
+  using ApplicabilityFn = PluginApplicabilityFn<Context>;
 
   template<class Context>
   struct BackendSelectorBase {
     virtual ~BackendSelectorBase() = default;
 
     std::string name;
-    std::optional<Backend> forcedBackend;
 
-    void force(Backend b) { forcedBackend = b; }
-    void unforce() { forcedBackend = std::nullopt; }
+    virtual void force(Backend b) = 0;
+    virtual void unforce() = 0;
+    [[nodiscard]] virtual std::optional<Backend> forcedBackend() const = 0;
 
     virtual std::unique_ptr<BackendSelectorBase> clone() const = 0;
     [[nodiscard]] virtual std::vector<Backend> registeredBackends() const = 0;
@@ -85,49 +89,38 @@ namespace icl::utils {
 
     struct ImplBase {
       Backend backend;
-      std::string description;
-      ApplicabilityFn<Context> applicabilityFn;
       std::function<std::shared_ptr<ImplBase>()> cloneFn;  // set for stateful backends
 
-      ImplBase(Backend b, std::string desc, ApplicabilityFn<Context> app)
-        : backend(b), description(std::move(desc)), applicabilityFn(std::move(app)) {}
+      explicit ImplBase(Backend b) : backend(b) {}
       virtual ~ImplBase() = default;
 
       virtual R apply(Args... args) = 0;
-
-      bool applicableTo(const Context& ctx) const {
-        return !applicabilityFn || applicabilityFn(ctx);
-      }
     };
 
     template<class F>
     struct Impl : ImplBase {
       F f;
-      Impl(F f, Backend b, std::string desc, ApplicabilityFn<Context> app)
-        : ImplBase(b, std::move(desc), std::move(app)), f(std::move(f)) {}
+      Impl(F f, Backend b) : ImplBase(b), f(std::move(f)) {}
 
       R apply(Args... args) override {
         return f(std::forward<Args>(args)...);
       }
     };
 
-    // --- Storage: sorted vector of (backend, impl) pairs ---
-    // Sorted by backend priority descending (highest first).
+    // --- Storage: PluginRegistry keyed on Backend ---
+    // priority = static_cast<int>(backend) — matches the pre-refactor
+    // behaviour where higher enum value = preferred.
 
-    struct Entry {
-      Backend backend;
-      std::shared_ptr<ImplBase> impl;
-    };
-
-    std::vector<Entry> impls;
+    using Registry = PluginRegistry<Backend, std::shared_ptr<ImplBase>, Context>;
+    Registry registry{OnDuplicate::Replace};
 
     template<class F>
     void add(Backend b, F&& f, ApplicabilityFn<Context> applicability,
              std::string description = "") {
       if(description.empty()) description = std::string(backendName(b)) + " fallback";
-      auto impl = std::make_shared<Impl<std::decay_t<F>>>(
-        std::forward<F>(f), b, std::move(description), std::move(applicability));
-      setImpl(b, std::move(impl));
+      auto impl = std::make_shared<Impl<std::decay_t<F>>>(std::forward<F>(f), b);
+      registry.registerPlugin(b, std::move(impl), std::move(description),
+                              static_cast<int>(b), std::move(applicability));
     }
 
     template<class F>
@@ -147,27 +140,21 @@ namespace icl::utils {
                      std::string description = "") {
       if(description.empty()) description = std::string(backendName(b)) + " fallback";
       auto fn = factory();
-      auto impl = std::make_shared<Impl<std::decay_t<decltype(fn)>>>(
-        std::move(fn), b, description, applicability);
-      impl->cloneFn = [factory = std::decay_t<Factory>(std::forward<Factory>(factory)),
-                       b, description, applicability]() -> std::shared_ptr<ImplBase> {
-        auto fn = factory();
-        return std::make_shared<Impl<std::decay_t<decltype(fn)>>>(
-          std::move(fn), b, description, applicability);
+      auto impl = std::make_shared<Impl<std::decay_t<decltype(fn)>>>(std::move(fn), b);
+      impl->cloneFn = [factory = std::decay_t<Factory>(std::forward<Factory>(factory)), b]()
+                      -> std::shared_ptr<ImplBase> {
+        auto fresh = factory();
+        return std::make_shared<Impl<std::decay_t<decltype(fresh)>>>(std::move(fresh), b);
       };
-      setImpl(b, std::move(impl));
+      registry.registerPlugin(b, std::move(impl), std::move(description),
+                              static_cast<int>(b), std::move(applicability));
     }
 
-    // --- Resolution: iterate highest-priority first ---
+    // --- Resolution: highest-priority applicable wins; forcedBackend overrides ---
 
     ImplBase* resolve(const Context& ctx) const {
-      if(this->forcedBackend) {
-        if(auto* p = get(*this->forcedBackend)) return p;
-      }
-      for(auto& e : impls) {
-        if(e.impl->applicableTo(ctx)) return e.impl.get();
-      }
-      return nullptr;
+      const auto* e = registry.resolve(ctx);
+      return e ? e->payload.get() : nullptr;
     }
 
     ImplBase* resolveOrThrow(const Context& ctx) const {
@@ -182,10 +169,16 @@ namespace icl::utils {
     ImplBase* resolveOrThrow() const { return resolveOrThrow(Context{}); }
 
     ImplBase* get(Backend b) const {
-      for(auto& e : impls) {
-        if(e.backend == b) return e.impl.get();
-      }
-      return nullptr;
+      const auto* e = registry.get(b);
+      return e ? e->payload.get() : nullptr;
+    }
+
+    // --- Forced override (delegates to registry) ---
+
+    void force(Backend b) override { registry.setForced(b); }
+    void unforce() override { registry.clearForced(); }
+    [[nodiscard]] std::optional<Backend> forcedBackend() const override {
+      return registry.forcedKey();
     }
 
     // --- Clone: stateful backends get fresh state, stateless share ImplBase ---
@@ -193,8 +186,10 @@ namespace icl::utils {
     std::unique_ptr<BackendSelectorBase<Context>> clone() const override {
       auto c = std::make_unique<BackendSelector>();
       c->name = this->name;
-      for(auto& e : impls) {
-        c->impls.push_back({e.backend, e.impl->cloneFn ? e.impl->cloneFn() : e.impl});
+      for(const auto& e : registry.entries()) {
+        auto payload = e.payload->cloneFn ? e.payload->cloneFn() : e.payload;
+        c->registry.registerPlugin(e.key, std::move(payload),
+                                   e.description, e.priority, e.applicability);
       }
       return c;
     }
@@ -202,9 +197,7 @@ namespace icl::utils {
     // --- Introspection (tests / cross-validation) ---
 
     std::vector<Backend> registeredBackends() const override {
-      std::vector<Backend> r;
-      for(auto& e : impls) r.push_back(e.backend);
-      return r;
+      return registry.keys();
     }
 
     Backend bestBackendFor(const Context& ctx) const override {
@@ -214,23 +207,10 @@ namespace icl::utils {
 
     std::vector<Backend> applicableBackendsFor(const Context& ctx) const override {
       std::vector<Backend> r;
-      for(auto& e : impls)
-        if(e.impl->applicableTo(ctx))
-          r.push_back(e.backend);
-      return r;
-    }
-
-  private:
-    /// Insert or replace an impl, maintaining descending priority order.
-    void setImpl(Backend b, std::shared_ptr<ImplBase> impl) {
-      for(auto& e : impls) {
-        if(e.backend == b) { e.impl = std::move(impl); return; }
+      for(const auto& e : registry.entries()) {
+        if(!e.applicability || e.applicability(ctx)) r.push_back(e.key);
       }
-      impls.push_back({b, std::move(impl)});
-      std::sort(impls.begin(), impls.end(),
-                [](const Entry& a, const Entry& b) {
-                  return static_cast<int>(a.backend) > static_cast<int>(b.backend);
-                });
+      return r;
     }
   };
 

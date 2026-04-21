@@ -84,9 +84,9 @@ namespace icl::io {
   };
 
   // ----------------------------- FileGrabberPluginRegister --
-  // Plugins self-register via REGISTER_FILE_GRABBER_PLUGIN at static-init
-  // time; instances are built lazily on first use and cached. Symmetric
-  // with FileWriterPluginRegister.
+  // Thin façade over utils::FunctionPluginRegistry. Each registered
+  // callable carries its own state (per-lambda function-local static),
+  // so no external cache is needed.
 
   FileGrabberPluginRegister &FileGrabberPluginRegister::instance() {
     static FileGrabberPluginRegister inst;
@@ -94,42 +94,29 @@ namespace icl::io {
   }
 
   void FileGrabberPluginRegister::registerExtension(
-      const std::string &extension, Factory factory, bool overrideExisting) {
-    auto &inst = instance();
-    std::scoped_lock lk(inst.m_mutex);
-    auto it = inst.m_factories.find(extension);
-    if (it != inst.m_factories.end() && !overrideExisting) return;
-    inst.m_factories[extension] = std::move(factory);
-    inst.m_cache.erase(extension);
+      const std::string &extension, Factory factory, int priority) {
+    instance().m_registry.registerPlugin(extension, std::move(factory),
+                                         /*description*/ {}, priority);
   }
 
-  FileGrabberPlugin *FileGrabberPluginRegister::getOrCreate(const std::string &ext) {
-    auto &inst = instance();
-    std::scoped_lock lk(inst.m_mutex);
-    if (auto cit = inst.m_cache.find(ext); cit != inst.m_cache.end()) return cit->second.get();
-    auto fit = inst.m_factories.find(ext);
-    if (fit == inst.m_factories.end()) return nullptr;
-    auto plugin = (fit->second)();
-    FileGrabberPlugin *raw = plugin.get();
-    inst.m_cache[ext] = std::move(plugin);
-    return raw;
+  const FileGrabberPluginRegister::Factory *
+  FileGrabberPluginRegister::find(const std::string &ext) {
+    const auto *e = instance().m_registry.get(ext);
+    return e ? &e->payload : nullptr;
   }
 
   std::vector<std::string> FileGrabberPluginRegister::extensions() {
-    auto &inst = instance();
-    std::scoped_lock lk(inst.m_mutex);
-    std::vector<std::string> out;
-    out.reserve(inst.m_factories.size());
-    for (const auto &[k, _] : inst.m_factories) out.push_back(k);
+    auto out = instance().m_registry.keys();
+    std::sort(out.begin(), out.end());
     return out;
   }
 
-  static FileGrabberPlugin *find_plugin(const std::string &type){
+  static const FileGrabberPluginRegister::Factory *find_plugin(const std::string &type){
     std::string lowerType = type;
     for (unsigned int i = 0; i < lowerType.length(); ++i) {
       lowerType[i] = tolower(lowerType[i]);
     }
-    return FileGrabberPluginRegister::getOrCreate(lowerType);
+    return FileGrabberPluginRegister::find(lowerType);
   }
 
   FileGrabber::FileGrabber()
@@ -335,14 +322,14 @@ namespace icl::io {
         //DEBUG_LOG("updating curr idx to " << m_data->iCurrIdx);
       }
 
-      FileGrabberPlugin *p = find_plugin(m_data->forcedPluginType == "" ? f.getSuffix() : m_data->forcedPluginType);
-      if(!p){
+      const auto *fn = find_plugin(m_data->forcedPluginType == "" ? f.getSuffix() : m_data->forcedPluginType);
+      if(!fn){
         throw InvalidFileException(str("file type (filename was \"")+f.getName()+"\")");
         return 0;
       }
 
       try{
-        p->grab(f,&m_data->poBufferImage);
+        (*fn)(f,&m_data->poBufferImage);
       }catch(ICLException&){
         if(f.isOpen()) f.close();
         throw;

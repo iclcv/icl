@@ -38,7 +38,7 @@ jobs:
           libmagick++-dev libavcodec-dev libavformat-dev libswscale-dev libavutil-dev \
           libglew-dev libocl-icd-opencl-dev opencl-headers \
           libpcl-dev libbullet-dev \
-          libdc1394-dev libfreenect-dev libusb-1.0-0-dev libzmq3-dev
+          libdc1394-dev libfreenect-dev libusb-1.0-0-dev
 
     - name: Configure
       env:
@@ -64,7 +64,6 @@ jobs:
         -DBUILD_WITH_LIBFREENECT=ON
         -DBUILD_WITH_V4L=ON
         -DBUILD_WITH_LIBUSB=ON
-        -DBUILD_WITH_ZMQ=ON
 
     - name: Build
       run: cmake --build build -j$(nproc)

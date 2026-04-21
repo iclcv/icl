@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include <icl/io/FileGrabberPlugin.h>
+#include <icl/utils/CompatMacros.h>
+#include <icl/utils/File.h>
+#include <icl/core/Img.h>
 
 namespace icl::io {
-  /// Interface class for reading images using an ImageMagick++ wrapper  \ingroup FILEIO_G
+  /// Reader using an ImageMagick++ wrapper \ingroup FILEIO_G
   /** @copydoc icl::io::FileWriterPluginImageMagick
   */
-  class ICLIO_API FileGrabberPluginImageMagick : public FileGrabberPlugin{
+  class ICLIO_API FileGrabberPluginImageMagick {
     public:
     /// Create a new Plugin
     FileGrabberPluginImageMagick();
@@ -19,7 +21,7 @@ namespace icl::io {
     ~FileGrabberPluginImageMagick();
 
     /// grab implementation
-    virtual void grab(utils::File &file, core::ImgBase **dest);
+    void grab(utils::File &file, core::ImgBase **dest);
 
     /// Internal data storage class
     struct InternalData;

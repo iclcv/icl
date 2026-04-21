@@ -7,14 +7,15 @@
 #include <memory>
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/ImageOutput.h>
+#include <icl/utils/Size.h>
 #include <icl/utils/Uncopyable.h>
+#include <icl/core/Image.h>
 
 #include <string>
 #include <opencv2/videoio.hpp>
 
 namespace icl::io {
-  class ICLIO_API OpenCVVideoWriter :public ImageOutput{
+  class ICLIO_API OpenCVVideoWriter {
     private:
     ///OpenCV VideoWriter struct
 	  std::unique_ptr<cv::VideoWriter> writer;
@@ -48,8 +49,8 @@ namespace icl::io {
 	/// writes the next image
 	void write(const core::ImgBase *image);
 
-      /// wraps write to implement ImageOutput interface
-      virtual void send(const core::Image &image) { write(image.ptr()); }
+      /// accept a value-type Image (was virtual ImageOutput::send pre-4a)
+      void send(const core::Image &image) { write(image.ptr()); }
 
 	/// as write but in stream manner
 	OpenCVVideoWriter &operator<<(const core::ImgBase *image);

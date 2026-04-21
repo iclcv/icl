@@ -10,7 +10,7 @@
 #ifdef ICL_HAVE_ZSTD
 
 #include <icl/io/CompressionPlugin.h>
-#include <icl/io/CompressionRegister.h>
+#include <icl/io/CompressionRegistry.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/Img.h>
 #include <icl/core/ImgBase.h>

@@ -6,7 +6,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/io/JPEGHandle.h>
 #include <icl/utils/Macros.h>
-#include <icl/io/FileGrabberPlugin.h>
+#include <icl/io/FileGrabber.h>  // for HeaderInfo
 #include <icl/utils/StrTok.h>
 #include <charconv>
 
@@ -119,7 +119,7 @@ namespace icl::io {
     /* Step 3: read file parameters with jpeg_read_header() */
     jpeg_read_header(&jpegHandle.info, TRUE);
 
-    FileGrabberPlugin::HeaderInfo oInfo;
+    HeaderInfo oInfo;
 
     /* evaluate markers, i.e. comments */
     for (jpeg_saved_marker_ptr m = jpegHandle.info.marker_list; m; m = m->next){

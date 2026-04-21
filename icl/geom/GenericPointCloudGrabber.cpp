@@ -3,8 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom/GenericPointCloudGrabber.h>
-
-#include <icl/utils/PluginRegister.h>
+#include <icl/geom/PointCloudGrabberRegistry.h>
 
 namespace icl{
   using namespace utils;
@@ -69,10 +68,7 @@ namespace icl{
 
     void GenericPointCloudGrabber::init(const std::string &sourceType, const std::string &srcDescription){
       if(sourceType == "list"){
-        std::cout << PluginRegister<PointCloudGrabber>::instance().getRegisteredInstanceDescription()
-                  << std::endl;
-
-
+        std::cout << pointCloudGrabberInfoTable() << std::endl;
         throw ICLException("GenericPointCloudGrabber list presented successfully");
       }
       if(m_data->impl){
@@ -80,9 +76,14 @@ namespace icl{
         delete m_data->impl;
       }
 
-      std::map<std::string,std::string, std::less<>> data;
+      PointCloudGrabberData data;
       data["creation-string"] = srcDescription;
-      m_data->impl = PluginRegister<PointCloudGrabber>::instance().createInstance(sourceType,data);
+      const auto *e = pointCloudGrabberRegistry().get(sourceType);
+      if(!e){
+        throw ICLException("GenericPointCloudGrabber::init::unable to create"
+                           " GenericPointGrabber instance of type" + sourceType);
+      }
+      m_data->impl = e->payload(data).release();
       if(!m_data->impl){
         throw ICLException("GenericPointCloudGrabber::init::unable to create"
                            " GenericPointGrabber instance of type" + sourceType);

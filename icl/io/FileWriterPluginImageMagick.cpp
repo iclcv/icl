@@ -190,7 +190,6 @@ namespace icl::io {
 #ifdef ICL_HAVE_IMAGEMAGICK
 #include <icl/io/FileWriter.h>  // FileWriterPluginRegister
 namespace {
-  using icl::io::FileWriterPlugin;
   using icl::io::FileWriterPluginImageMagick;
   using icl::io::FileWriterPluginRegister;
 
@@ -213,13 +212,28 @@ namespace {
   };
 }
 
+// One shared IM impl across all extensions, protected by its own mutex.
+// This differs from the pre-4b per-extension-instance caching but is
+// semantically stricter (IM's InternalData holds a single Converter +
+// buffers, so concurrent writes already raced — now they're serialized).
+static void iclImageMagickWrite(icl::utils::File &f, const icl::core::ImgBase *img) {
+  static std::mutex m;
+  static FileWriterPluginImageMagick impl;
+  std::scoped_lock lock(m);
+  impl.write(f, img);
+}
+
 extern "C" __attribute__((constructor, used)) void
 iclRegisterFileWriterPluginsImageMagick() {
-  auto factory = []{
-    return std::unique_ptr<FileWriterPlugin>(new FileWriterPluginImageMagick);
-  };
+  // Register at low priority so libpng / libjpeg (priority 0) win for
+  // extensions they also claim. For formats libpng/libjpeg don't handle
+  // (tiff, gif, bmp, svg, …), ImageMagick's registration is unopposed
+  // and wins by default.
+  constexpr int kImageMagickPriority = -10;
   for (const char **pc = imageMagickFormats; *pc; ++pc) {
-    FileWriterPluginRegister::registerExtension(std::string(".") + *pc, factory);
+    FileWriterPluginRegister::registerExtension(std::string(".") + *pc,
+                                                &iclImageMagickWrite,
+                                                kImageMagickPriority);
   }
 }
 #endif

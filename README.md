@@ -94,7 +94,6 @@ All dependencies except libjpeg and libpng are **optional**. Enable them with `-
 | **Bullet3** | `BUILD_WITH_BULLET` | Physics simulation (ICLPhysics) | `libbullet-dev` | `bullet` |
 | **Qt6 WebSockets** | *(auto when Qt found)* | `WSGrabber`/`WSImageOutput` for cross-process / cross-host image transfer with auto-reconnect | `qt6-websockets-dev` | `qtwebsockets` |
 | **zstd** | *(auto-detect)* | `zstd` codec plugin for `ImageCompressor` (lossless, modern) | `libzstd-dev` | `zstd` |
-| **ZeroMQ** | `BUILD_WITH_ZMQ` | Network image streaming | `libzmq3-dev` | `zeromq` |
 | **libusb** | `BUILD_WITH_LIBUSB` | USB device support | `libusb-dev` | `libusb` |
 | **Intel IPP** | `BUILD_WITH_IPP` | Intel Performance Primitives (Linux x86 only) | Intel oneAPI | n/a |
 | **Intel MKL** | `BUILD_WITH_MKL` | Intel Math Kernel Library (Linux x86 only) | Intel oneAPI | n/a |

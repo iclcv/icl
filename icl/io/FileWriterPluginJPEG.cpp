@@ -184,11 +184,13 @@ namespace icl::io {
 
 #ifdef ICL_HAVE_LIBJPEG
 #include <icl/io/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
-namespace {
-  using icl::io::FileWriterPlugin;
-  using icl::io::FileWriterPluginJPEG;
-  using P = std::unique_ptr<FileWriterPlugin>;
-}
-REGISTER_FILE_WRITER_PLUGIN(jpeg, ".jpeg", []{ return P(new FileWriterPluginJPEG); })
-REGISTER_FILE_WRITER_PLUGIN(jpg,  ".jpg",  []{ return P(new FileWriterPluginJPEG); })
+namespace { using icl::io::FileWriterPluginJPEG; }
+#define ICL_JPEG_REG(TAG, EXT)                                                \
+  REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \
+    [](icl::utils::File &f, const icl::core::ImgBase *img) {                  \
+      static FileWriterPluginJPEG impl; impl.write(f, img);                   \
+    })
+ICL_JPEG_REG(jpeg, ".jpeg");
+ICL_JPEG_REG(jpg,  ".jpg");
+#undef ICL_JPEG_REG
 #endif

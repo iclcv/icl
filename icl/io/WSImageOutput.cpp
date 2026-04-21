@@ -4,7 +4,7 @@
 
 #include <icl/io/WSImageOutput.h>
 #include <icl/io/ImageCompressor.h>
-#include <icl/io/CompressionRegister.h>
+#include <icl/io/CompressionRegistry.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Macros.h>
 
@@ -254,3 +254,21 @@ namespace icl::io {
   }
 
 } // namespace icl::io
+
+// ----- registration with GenericImageOutput -----------------------------
+#include <icl/io/GenericImageOutput.h>
+REGISTER_IMAGE_OUTPUT(ws, "ws",
+  ([](const std::string &params) -> icl::io::ImageOutputFn {
+    // params form: "PORT" (bind 0.0.0.0) or "BIND:PORT"
+    std::string bind = "0.0.0.0";
+    std::string portStr = params;
+    const auto colon = params.find(':');
+    if (colon != std::string::npos) {
+      bind = params.substr(0, colon);
+      portStr = params.substr(colon + 1);
+    }
+    auto impl = std::make_shared<icl::io::WSImageOutput>(
+        icl::utils::parse<int>(portStr), bind);
+    return [impl](const icl::core::Image &img) { impl->send(img); };
+  }),
+  "PORT or BIND:PORT~WebSocket server (broadcasts ImageCompressor envelopes to all clients)")

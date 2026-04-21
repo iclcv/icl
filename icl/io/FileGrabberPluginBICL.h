@@ -5,13 +5,14 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/FileGrabberPlugin.h>
+#include <icl/utils/File.h>
+#include <icl/core/Img.h>
 
 namespace icl::io {
   /// Plugin to grab binary icl image (.bicl or .bicl.gz) \ingroup GRABBER_G
-  class ICLIO_API FileGrabberPluginBICL : public FileGrabberPlugin{
+  class ICLIO_API FileGrabberPluginBICL {
     public:
     /// grab implementation
-    virtual void grab(utils::File &file, core::ImgBase **dest);
+    void grab(utils::File &file, core::ImgBase **dest);
   };
   } // namespace icl::io

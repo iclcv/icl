@@ -5,15 +5,16 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/FileWriterPlugin.h>
+#include <icl/utils/File.h>
+#include <icl/core/Img.h>
 
 namespace icl::io {
-  /// Writer plugins for ".csv"-files (<b>Comma</b>-<b>Separated</b> <b>Values</b>) \ingroup FILEIO_G
-  class ICLIO_API FileWriterPluginCSV : public FileWriterPlugin{
+  /// Writer backend for ".csv" (Comma-Separated Values) \ingroup FILEIO_G
+  class ICLIO_API FileWriterPluginCSV {
     public:
 
     /// write implementation
-    virtual void write(utils::File &file, const core::ImgBase *image);
+    void write(utils::File &file, const core::ImgBase *image);
 
     /// static feature adaption function
     /** if the flag is set to true, the writer will encode image

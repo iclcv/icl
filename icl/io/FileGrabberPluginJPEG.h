@@ -5,13 +5,14 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/FileGrabberPlugin.h>
+#include <icl/utils/File.h>
+#include <icl/core/Img.h>
 
 namespace icl::io {
-  /// Plugin class to read "jpeg" and "jpg" images \ingroup FILEIO_G
-  class ICLIO_API FileGrabberPluginJPEG : public FileGrabberPlugin {
+  /// Plugin to read ".jpeg" and ".jpg" images \ingroup FILEIO_G
+  class ICLIO_API FileGrabberPluginJPEG {
     public:
     /// grab implementation
-    virtual void grab(utils::File &file, core::ImgBase **dest);
+    void grab(utils::File &file, core::ImgBase **dest);
   };
   } // namespace icl::io

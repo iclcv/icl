@@ -12,7 +12,6 @@ io_headers = files(
   'DCGrabberThread.h',
   'DemoGrabber.h',
   'FileGrabber.h',
-  'FileGrabberPlugin.h',
   'FileGrabberPluginBICL.h',
   'FileGrabberPluginCSV.h',
   'FileGrabberPluginImageMagick.h',
@@ -21,7 +20,6 @@ io_headers = files(
   'FileGrabberPluginPNM.h',
   'FileList.h',
   'FileWriter.h',
-  'FileWriterPlugin.h',
   'FileWriterPluginBICL.h',
   'FileWriterPluginCSV.h',
   'FileWriterPluginImageMagick.h',
@@ -31,7 +29,7 @@ io_headers = files(
   'FilenameGenerator.h',
   'FourCC.h',
   'CompressionPlugin.h',
-  'CompressionRegister.h',
+  'CompressionRegistry.h',
   'GenericGrabber.h',
   'GenericImageOutput.h',
   'Grabber.h',
@@ -39,7 +37,6 @@ io_headers = files(
   'IO.h',
   'IOFunctions.h',
   'ImageCompressor.h',
-  'ImageOutput.h',
   'ImageUndistortion.h',
   'IntrinsicCalibrator.h',
   'JPEGDecoder.h',
@@ -69,8 +66,6 @@ io_headers = files(
   'V4L2Grabber.h',
   'V4L2LoopBackOutput.h',
   'XiGrabber.h',
-  'ZmqGrabber.h',
-  'ZmqImageOutput.h',
   'WSGrabber.h',
   'WSImageOutput.h',
 )
@@ -108,7 +103,7 @@ io_sources = files(
   'CompressionPluginJpeg.cpp',
   'CompressionPluginRaw.cpp',
   'CompressionPluginRlen.cpp',
-  'CompressionRegister.cpp',
+  'CompressionRegistry.cpp',
   'ImageCompressor.cpp',
   'ImageUndistortion.cpp',
   'IntrinsicCalibrator.cpp',
@@ -191,15 +186,6 @@ endif
 if libav_found
   io_sources += files('LibAVVideoWriter.cpp')
   io_extra_deps += libav_deps
-endif
-
-# ZeroMQ
-if zmq_dep.found()
-  io_sources += files(
-    'ZmqGrabber.cpp',
-    'ZmqImageOutput.cpp',
-  )
-  io_extra_deps += zmq_dep
 endif
 
 # zstd compression plugin (optional)

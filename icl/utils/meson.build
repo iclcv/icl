@@ -57,7 +57,7 @@ utils_headers = files(
   'MultiTypeMap.h',
   'PThreadFix.h',
   'ParamList.h',
-  'PluginRegister.h',
+  'PluginRegistry.h',
   'Point.h',
   'Point32f.h',
   'ProcessMonitor.h',

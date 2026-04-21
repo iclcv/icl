@@ -5,38 +5,45 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
+#include <icl/utils/PluginRegistry.h>
 #include <icl/utils/ProgArg.h>
-#include <memory>
-#include <icl/io/ImageOutput.h>
+#include <icl/core/Image.h>
+
+#include <functional>
+#include <string>
 
 namespace icl::io {
-  /// Generic Sink for images
-  /** Like the GenericGrabber, the GenericImageOutput provides a string-configurable
-      interface for arbitrary image sinks.
+  /// Sender callable: receives one image and forwards it to a backend.
+  /// Returned by each backend's factory after construction; holds backend
+  /// state via captured `shared_ptr<ImplType>` closures.
+  using ImageOutputFn = std::function<void(const core::Image&)>;
+
+  /// Process-wide registry of image-output backends (type name → factory).
+  /// The factory takes the `description`/`params` string, constructs the
+  /// backend, and returns a sender callable. The registry is populated
+  /// at static-init time by each backend's `.cpp` via `REGISTER_IMAGE_OUTPUT`.
+  using ImageOutputRegistry = utils::FunctionPluginRegistry<ImageOutputFn(const std::string&)>;
+  ICLIO_API ImageOutputRegistry& imageOutputRegistry();
+
+  /// Generic Sink for images.
+  /** Like the GenericGrabber, the GenericImageOutput provides a
+      string-configurable interface for arbitrary image sinks.
 
       \section BACK Supported Backends
 
-      Supported Backends are:
+      Currently:
         - "file" (description=filepattern)
-        - "video" (description=output-video-filename,CODEC-FOURCCC=DIV3,VideoSize=VGA,FPS=24)
-        - "ws" (WebSocket server, description=PORT or BIND:PORT — broadcasts to
-          every connected client; counterpart on the receiver side is the `ws`
-          GenericGrabber backend (WSGrabber); see WSImageOutput.h)
-        - "zmq" (ZeroMQ publisher, description=PORT)
-        - "udp" QUdpSocket-based udp transfer, description=host:port
+        - "video" (description=output-video-filename,CODEC-FOURCC=DIV3,VideoSize=VGA,FPS=24)
+        - "ws"   (WebSocket server, description=PORT or BIND:PORT)
+        - "v4l"  (V4L2 loopback device name)
 
-      \section META Image Meta Data
-
-      Only a few backends do actually support sending also image meta data. So far,
-      this is only supported by the RSB and by the shared memory backend, however,
-      we plan to add this feature at least for the .icl-file core::format. The corresponding
-      GenericGrabber backends for these types are also able to deserialize the images meta data
+      Pass `-o list` (or type=="list") to auto-print the up-to-date
+      table from the process-wide registry.
   */
-
-  class ICLIO_API GenericImageOutput : public ImageOutput{
-    std::string type;
-    std::string description;
-    std::shared_ptr<ImageOutput> impl;
+  class ICLIO_API GenericImageOutput {
+    std::string   type;
+    std::string   description;
+    ImageOutputFn impl;
 
     public:
 
@@ -56,32 +63,43 @@ namespace icl::io {
     /// initialization method (from given progarg)
     void init(const utils::ProgArg &pa);
 
-    /// releases the internal plugin (after this, isNull() returns true again!)
+    /// releases the internal sender callable (after this, isNull() returns true)
     void release();
 
     /// sends a new image
-    virtual void send(const core::Image &image){
-      if (impl) {
-        impl->send(image);
-      }
-      else{
-        ERROR_LOG("unable to send image with a NULL output");
-      }
-    }
+    void send(const core::Image &image);
 
     /// returns whether this instance was already initialized
-    inline bool isNull() const { return !impl; };
+    bool isNull() const { return !impl; }
 
-    /// retusn current type string
-    inline const std::string &getType() const { return type; }
+    /// current type string
+    const std::string &getType() const { return type; }
 
-    /// retusn current description string
-    inline const std::string &getDescription() const { return description; }
+    /// current description string
+    const std::string &getDescription() const { return description; }
 
-    // Compression configuration is now exposed via the underlying output's
+    // Compression configuration is exposed via the underlying output's
     // Configurable child (under the `compression.` prefix on outputs that
-    // own an ImageCompressor — e.g. WSImageOutput). Use Prop(&output) or
-    // setPropertyValue("compression.mode", "...") instead of the retired
-    // setCompression/getCompression direct accessors.
+    // own an ImageCompressor — e.g. WSImageOutput). Access the backend
+    // directly (not via GenericImageOutput) to read/write those properties.
   };
   } // namespace icl::io
+
+/// Self-register an image-output backend at static-init time.
+/** Expands to `ICL_REGISTER_PLUGIN`. The FACTORY expression must be a
+    callable `(const std::string& params) -> ImageOutputFn`. The Entry's
+    description field doubles as a "paramHint~explanation" pair for the
+    `-o list` affordance (separated by `~`). Example:
+    \code
+      REGISTER_IMAGE_OUTPUT(ws, "ws",
+        [](const std::string& p) -> icl::io::ImageOutputFn {
+          auto impl = std::make_shared<WSImageOutput>(parsePort(p));
+          return [impl](const core::Image& img) { impl->send(img); };
+        },
+        "PORT or BIND:PORT~WebSocket server")
+    \endcode */
+#define REGISTER_IMAGE_OUTPUT(TAG, TYPE, FACTORY, HELP)                        \
+  extern "C" __attribute__((constructor, used)) void                           \
+  iclRegisterImageOutput_##TAG() {                                             \
+    ::icl::io::imageOutputRegistry().registerPlugin((TYPE), FACTORY, HELP);    \
+  }

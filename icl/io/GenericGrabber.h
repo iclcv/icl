@@ -134,7 +134,6 @@ namespace icl::io {
                                   - kinectc=device-index (int)
                                   - kinecti=device-index (int)
                                   - optris=camera-serial
-                                  - zmq=host:port (subscribes to a ZmqImageOutput publisher)
                                   - ws=ws://host:port (connects to a WSImageOutput publisher;
                                     auto-reconnects on server vanish — see WSGrabber.h)
 

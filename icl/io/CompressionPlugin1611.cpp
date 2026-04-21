@@ -9,7 +9,7 @@
 // Always built (no external dep beyond ICLIO itself).
 
 #include <icl/io/CompressionPlugin.h>
-#include <icl/io/CompressionRegister.h>
+#include <icl/io/CompressionRegistry.h>
 #include <icl/io/Kinect11BitCompressor.h>
 #include <icl/core/Img.h>
 #include <icl/utils/StringUtils.h>

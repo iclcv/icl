@@ -151,12 +151,6 @@ if libav_found
   add_project_arguments('-DICL_HAVE_LIBAV', language: 'cpp')
 endif
 
-# ZeroMQ
-zmq_dep = dependency('libzmq', required: get_option('zmq'))
-if zmq_dep.found()
-  add_project_arguments('-DICL_HAVE_ZMQ', language: 'cpp')
-endif
-
 # V4L2
 v4l_dep = dependency('libv4l2', required: get_option('v4l'))
 if v4l_dep.found()
@@ -252,7 +246,6 @@ _cfg = {
   'ICL_HAVE_IMAGEMAGICK': imagemagick_dep.found(),
   'ICL_HAVE_LIBDC': libdc_dep.found(),
   'ICL_HAVE_VIDEODEV': v4l_dep.found(),
-  'ICL_HAVE_ZMQ': zmq_dep.found(),
   'ICL_HAVE_QT': qt_found,
   'ICL_HAVE_QT_WEBSOCKETS': qt_found and qt_websockets_dep.found(),
   'ICL_HAVE_ZSTD': zstd_dep.found(),

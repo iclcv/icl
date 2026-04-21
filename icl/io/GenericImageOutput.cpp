@@ -3,39 +3,25 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/GenericImageOutput.h>
-
-#include <icl/io/ImageOutput.h>
-
-#ifdef ICL_HAVE_QT_WEBSOCKETS
-#include <icl/io/WSImageOutput.h>
-#endif
-
-#ifdef ICL_HAVE_ZMQ
-#include <icl/io/ZmqImageOutput.h>
-#endif
-
-#ifdef ICL_HAVE_OPENCV
-#include <icl/io/OpenCVVideoWriter.h>
-#endif
-
-#ifdef ICL_HAVE_LIBAV
-#include <icl/io/LibAVVideoWriter.h>
-#endif
-
-
-#ifdef ICL_HAVE_VIDEODEV
-#include <icl/io/V4L2LoopBackOutput.h>
-#endif
-
-#include <icl/io/FileWriter.h>
+#include <icl/io/FileWriter.h>  // built-in "file" backend registration
 
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/TextTable.h>
+
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
+
+  ImageOutputRegistry& imageOutputRegistry() {
+    static ImageOutputRegistry reg(utils::OnDuplicate::KeepFirst);
+    return reg;
+  }
+
   GenericImageOutput::GenericImageOutput(const std::string &type, const std::string &description){
     init(type,description);
   }
@@ -45,132 +31,83 @@ namespace icl::io {
   }
 
   void GenericImageOutput::init(const ProgArg &pa){
-    init(*pa,utils::pa(pa.getID(),1));
+    init(*pa, utils::pa(pa.getID(), 1));
   }
 
   void GenericImageOutput::release(){
-    impl = std::shared_ptr<ImageOutput>();
+    impl = {};
+  }
+
+  void GenericImageOutput::send(const core::Image &image) {
+    if (impl) {
+      impl(image);
+    } else {
+      ERROR_LOG("unable to send image with a NULL output");
+    }
   }
 
   void GenericImageOutput::init(const std::string &type, const std::string &description){
-    impl = std::shared_ptr<ImageOutput>();
-
-    this->type = type;
+    impl = {};
+    this->type        = type;
     this->description = description;
 
-    ImageOutput *o = 0;
-
+    // strip leading "<type>=" from description if present
     std::string d = description;
-    if(d.substr(0,type.length()+1) == type+"=") d = d.substr(type.length()+1);
-
-    if(type == "null"){
-      struct NullOutput : public ImageOutput{
-        virtual void send(const Image &) {}
-      };
-      o = new NullOutput;
-    }
-    std::vector<std::string> plugins;
-
-#ifdef ICL_HAVE_LIBAV
-    plugins.push_back("video~Video File~libav based video file writer");
-    if(type == "video"){
-      try{
-        std::vector<std::string> t = tok(d,",");
-        if(!t.size()) throw ICLException("unable to create LibAVVideoWriter with empty destination filename");
-        std::string fourcc = t.size() > 1 ? t[1] : std::string();
-        Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
-        double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
-        o = new LibAVVideoWriter(t[0], fourcc, fps, size);
-      }catch(const std::exception &e){
-        ERROR_LOG("Unable to create LibAVVideoWriter with this parameters: " << d << "(error: " << e.what() << ")");
-      }
-
-    }
-#else
-#ifdef ICL_HAVE_OPENCV
-    plugins.push_back("video~Video File~OpenCV based video file writer");
-    if(type == "video"){
-      try{
-        std::vector<std::string> t = tok(d,",");
-        if(!t.size()) throw ICLException("unable to create OpenCVVideoWriter with empty destination filename");
-        std::string fourcc = t.size() > 1 ? t[1] : str("DIV3");
-        Size size = t.size() > 2 ? parse<Size>(t[2]) : Size::VGA;
-        double fps = t.size() > 3 ? parse<double>(t[3]) : 24;
-        o = new OpenCVVideoWriter(t[0], fourcc, fps, size);
-      }catch(const std::exception &e){
-        ERROR_LOG("Unable to create OpenCVVideoWriter with this parameters: " << d << "(error: " << e.what() << ")");
-      }
-
-    }
-#endif
-#endif
-
-#ifdef ICL_HAVE_VIDEODEV
-    plugins.push_back("v4l~device name or ID~V4L2-loopback device based image transfer");
-    if(type == "v4l"){
-      o = new V4L2LoopBackOutput(d);
+    if (d.substr(0, type.length() + 1) == type + "=") {
+      d = d.substr(type.length() + 1);
     }
 
-#endif
-#ifdef ICL_HAVE_ZMQ
-    plugins.push_back("zmq~port~ZMQ-based network transfer");
-    if(type == "zmq"){
-      o = new ZmqImageOutput(parse<int>(d));
-    }
-
-#endif
-#ifdef ICL_HAVE_QT_WEBSOCKETS
-    plugins.push_back("ws~PORT or BIND:PORT~WebSocket server "
-                      "(broadcasts ImageCompressor envelopes to all clients)");
-    if(type == "ws"){
-      // Accept "PORT" (default bind 0.0.0.0) or "BIND:PORT".
-      std::string bind = "0.0.0.0";
-      std::string portStr = d;
-      const auto colon = d.find(':');
-      if (colon != std::string::npos) {
-        bind = d.substr(0, colon);
-        portStr = d.substr(colon + 1);
-      }
-      o = new WSImageOutput(parse<int>(portStr), bind);
-    }
-#endif
-
-    // (sm~Shared Memory Segment writer was retired in Session 47;
-    //  use ws~PORT instead — same loose-coupling use case, with
-    //  auto-reconnect resilience and cross-host as a free bonus.)
-
-    plugins.push_back("file~File Pattern~File Writer");
-
-    if(type == "file"){
-      o = new FileWriter(d);
-    }
-
-    if(type == "list"){
-      int numPlugins = plugins.size();
-      TextTable t(4,numPlugins+1,50);
+    if (type == "list") {
+      const auto entries = imageOutputRegistry().entries();
+      TextTable t(4, static_cast<int>(entries.size()) + 1, 50);
       t(0,0) = "nr";
       t(1,0) = "id";
       t(2,0) = "parameter";
       t(3,0) = "explanation";
-      for(size_t i=0;i<plugins.size();++i){
-        t(0,i+1) = str(i);
-        std::vector<std::string> ts = tok(plugins[i],"~");
-        t(1,i+1) = ts[0];
-        t(2,i+1) = ts[1];
-        t(3,i+1) = ts[2];
+      int i = 1;
+      for (const auto &e : entries) {
+        auto parts = tok(e.description, "~");
+        t(0,i) = str(i - 1);
+        t(1,i) = e.key;
+        t(2,i) = parts.size() > 0 ? parts[0] : std::string();
+        t(3,i) = parts.size() > 1 ? parts[1] : std::string();
+        ++i;
       }
-
-      std::cout << "Supported Image Output Devices: "<< std::endl
-                << std::endl << t << std::endl;
-
+      std::cout << "Supported Image Output Devices:\n\n" << t << std::endl;
       std::terminate();
     }
 
-    if(!o){
-      ERROR_LOG("unable to instantiate GenericImageOutput with type \"" << type << "\" and params \"" << d << "\"");
+    const auto *entry = imageOutputRegistry().get(type);
+    if (!entry) {
+      ERROR_LOG("unable to instantiate GenericImageOutput with type \""
+                << type << "\" and params \"" << d << "\"");
+      return;
     }
-    else{
-      impl = std::shared_ptr<ImageOutput>(o);
+    try {
+      impl = entry->payload(d);
+    } catch (const std::exception &ex) {
+      ERROR_LOG("Unable to construct GenericImageOutput of type \""
+                << type << "\" with params \"" << d << "\": " << ex.what());
+      impl = {};
     }
   }
+
   } // namespace icl::io
+
+// ----- built-in backends that don't have their own .cpp -----------------
+
+// "null" — discard every image.
+REGISTER_IMAGE_OUTPUT(null_sink, "null",
+  ([](const std::string&) -> icl::io::ImageOutputFn {
+    return [](const icl::core::Image&) {};
+  }),
+  "(ignored)~Null output, discards every frame")
+
+// "file" — forward to FileWriter. Lives here (rather than in FileWriter.cpp)
+// to keep FileWriter.cpp independent of GenericImageOutput.
+REGISTER_IMAGE_OUTPUT(file_sink, "file",
+  ([](const std::string &params) -> icl::io::ImageOutputFn {
+    auto w = std::make_shared<icl::io::FileWriter>(params);
+    return [w](const icl::core::Image &img) { w->write(img.ptr()); };
+  }),
+  "File Pattern~File Writer (suffix dispatches to the appropriate file-writer plugin)")

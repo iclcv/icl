@@ -5,61 +5,72 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
+#include <icl/utils/File.h>
+#include <icl/utils/PluginRegistry.h>
+#include <icl/utils/Rect.h>
+#include <icl/utils/Size.h>
+#include <icl/utils/Time.h>
+#include <icl/utils/Uncopyable.h>
+#include <icl/core/Img.h>
 #include <icl/io/Grabber.h>
-#include <icl/io/FileGrabberPlugin.h>
+
 #include <functional>
-#include <map>
-#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
 
 namespace icl::io {
-  /// Process-wide registry of file-extension → FileGrabberPlugin factories.
-  /** Mirror of `FileWriterPluginRegister`. Plugins self-register at
-      static-init time via `REGISTER_FILE_GRABBER_PLUGIN`; the factory
-      is invoked the first time the matching extension is read, and the
-      resulting plugin is cached for the rest of the process lifetime. */
-  class ICLIO_API FileGrabberPluginRegister {
+
+  /// Collection of image parameters decoded from a file header. Used by
+  /// file-grabber plugins (CSV, PNM, JPEG decoder) to communicate
+  /// per-file metadata to their callers. Formerly nested as
+  /// `FileGrabberPlugin::HeaderInfo`; hoisted to namespace scope in the
+  /// Phase-4c function-plugin conversion.
+  struct HeaderInfo {
+    core::format imageFormat;
+    core::depth  imageDepth;
+    utils::Rect  roi;
+    utils::Time  time;
+    utils::Size  size;
+    int          channelCount;
+    int          imageCount;
+  };
+
+  /// Process-wide registry of file-extension → grab callable.
+  /** Thin façade over `utils::FunctionPluginRegistry<Signature>` with
+      `OnDuplicate::KeepHighestPriority`: strictly-higher priority wins,
+      ties fall back to first-wins. Used so libpng (prio 0) beats
+      ImageMagick (prio -10) for `.png` deterministically regardless of
+      dyld static-init order. */
+  class ICLIO_API FileGrabberPluginRegister : public utils::Uncopyable {
     public:
 
-    using Factory = std::function<std::unique_ptr<FileGrabberPlugin>()>;
+    /// Grab callable: (file, dest) → void. Allocates/updates `*dest`.
+    using Factory  = std::function<void(utils::File&, core::ImgBase**)>;
+    using Registry = utils::FunctionPluginRegistry<void(utils::File&, core::ImgBase**)>;
 
-    /// Register `factory` for `extension`. First-wins on duplicate
-    /// (pass `overrideExisting=true` for last-wins).
+    /// Register `factory` for `extension`. Strictly-higher `priority` wins
+    /// against any competing registration; ties resolve first-wins.
     static void registerExtension(const std::string &extension,
                                   Factory factory,
-                                  bool overrideExisting = false);
+                                  int priority = 0);
 
-    /// Lazily-construct (or return cached) plugin for `extension`.
-    /// Returns nullptr if no plugin is registered.
-    static FileGrabberPlugin *getOrCreate(const std::string &extension);
+    /// Look up the grab callable for `extension`. Returns nullptr if absent.
+    static const Factory *find(const std::string &extension);
 
     /// All registered extensions, lex-sorted.
     static std::vector<std::string> extensions();
 
-    private:
-    FileGrabberPluginRegister() = default;
     static FileGrabberPluginRegister &instance();
+    Registry       &registry()       { return m_registry; }
+    const Registry &registry() const { return m_registry; }
 
-    std::mutex m_mutex;
-    std::map<std::string, Factory, std::less<>>                          m_factories;
-    std::map<std::string, std::unique_ptr<FileGrabberPlugin>, std::less<>> m_cache;
+    private:
+    FileGrabberPluginRegister() : m_registry(utils::OnDuplicate::KeepHighestPriority) {}
+    Registry m_registry;
   };
 
   /// Grabber implementation to grab from files \ingroup FILEIO_G \ingroup GRABBER_G
-  /** This implementation of a file grabber class provides an internally used
-      and expendable plugin-based interface for reading files of different types.
-
-      \section EX Example
-      \code
-      FileGrabber g("image/image*.jpg"); //
-      while(true){
-        const core::ImgBase *image = g.grab();
-        ...
-      }
-      \endcode
-  **/
   class ICLIO_API FileGrabber : public Grabber {
     public:
 
@@ -67,31 +78,6 @@ namespace icl::io {
       FileGrabber();
 
       /// Create a file grabber with given pattern and parameters
-      /** \section BUF Buffering
-        Images are buffered internally using the original image core::format i.e. most images are
-        stored as icl8u images. At first during the grab(..) call, the images are converted
-        automatically to the desired parameters (dependent on the desired params flag)
-
-        @param pattern file pattern (e.g. images/ *.jpg ...)
-        @param buffer flag to determine, whether images should be pre-buffered. If the flag is
-                      set to true, images are buffered immediately in the constructor. If
-                      exceptions that occur during this buffering procedure are <b>not</b>
-                      caught internally (i.e. these exceptions are thrown). This is necessary
-                      because, the FileGrabber can become inconsistent in this case, which
-                      must be reported explicitly using an exception.\n
-
-                      To pre-buffer images in a error-tolerant way, use the constructor without
-                      a set buffer flag and call bufferImages(false) after the FileGrabber
-                      instantiation.
-        @param ignoreDesiredParams In some cases, grabbed images should not be adapted to the
-                                   given parameters using a converter, but the original image
-                                   parameters stored in the file header should be restored. In
-                                   this case the ignoreDesiredParams flag must be set to true
-                                   in the constructor or by using the setIgnoreDesiredParams(bool)
-                                   function. To ensure compatibility to other grabbers, the
-                                   "ignore desired params" flag is set to false by default.
-
-        */
       FileGrabber(const std::string &pattern, bool buffer=false, bool ignoreDesiredParams=false);
 
       /// Destructor
@@ -107,70 +93,21 @@ namespace icl::io {
       const std::string &getNextFileName() const;
 
       /// pre-buffers all images internally
-      /** This function is called automatically,if the "buffer"-flag of the constructor is set.
-        The function internally pre-buffers all images, that are contained in the current
-        FileList. During this procedure, some exception may occur:
-        - <b>FileNotFoundException</b>, if a file list entry references a non-existing file
-        - <b>InvalidFileException</b>, if no FileGrabberPlugin can be found to read files
-          of the given core::format (determined by the file postfix e.g. ".icl" or ".ppm")
-        - <b>InvalidFileFormatException</b>, if the FileGrabberPlugin encounters a file section
-          with invalid contents (e.g. if a file header is corrupted, or if the file contains
-          not enough data elements to fill an image with size determined by the file header)
-        - <b>ICLException</b> some "not-more-specified" errors (e.g if a file could not be read
-          due to missing permissions)
-
-        To skip these exceptions by just leaving out files that could not be read by any reason,
-        the omitExceptions flag can be set (default). In this case, exceptions mentioned above
-        are caught implicitly. \n
-        However if not even a single file could be read, a FileNotFoundException is thrown, to indicate,
-        that the FileGrabber's grab/prev and next function will not work properly. \n
-
-        To indicate which files could be buffered, a reference to the internal file list is
-        returned.
-        */
       void bufferImages(bool omitExceptions=true);
 
       /// internally skips the next to-be-grabbed image
-      /** E.g. if the image directory "images/" contains 6 valid ".jpg"-files,
-        the following code grabs all images with even indices (0,2, and 4)
-        \code
-        FileGrabber g("images/ *.jpg");
-        for(int i=0;i<g.getFileCount()/2;++i){
-          g.grabImage();
-          g.next();
-        }
-        \endcode
-    */
       void next();
 
       /// internally sets the next-image pointer back
-      /** \code
-        FileGrabber g(...);
-        g.grab(); // grabs image A
-        g.grab(); // grabs image B
-        g.prev();
-        g.grab(); // again grabs image B
-        \endcode
-    */
       void prev();
 
-
       /// forces the filegrabber to use a plugin for the given suffix
-      /** suffix must be something like png or csv (without a trailing .)
-        By default, the forced plugin type string is "". In this case,
-        the filename suffix is evaluated to determine the appropriate
-        grabber plugin.
-    */
       void forcePluginType(const std::string &suffix);
 
     private:
-      /// grab implementation called bz acquireDisplay().
       const core::ImgBase *grabDisplay();
-      /// adds FileGrabbers properties to Configurable.
       void addProperties();
-      /// callback function for property changes.
       void processPropertyChange(const utils::Configurable::Property &p);
-      /// updates properties values.
       void updateProperties(const core::ImgBase* img);
 
       struct Data;
@@ -181,10 +118,12 @@ namespace icl::io {
 
   } // namespace icl::io
 
-/// Self-register a `FileGrabberPlugin` factory for a given file extension.
-/** Mirror of `REGISTER_FILE_WRITER_PLUGIN`. See FileWriter.h for details. */
-#define REGISTER_FILE_GRABBER_PLUGIN(TAG, EXTENSION, FACTORY)                  \
-  extern "C" __attribute__((constructor, used)) void                           \
-  iclRegisterFileGrabberPlugin_##TAG() {                                       \
-    ::icl::io::FileGrabberPluginRegister::registerExtension(EXTENSION, FACTORY); \
+/// Self-register a grab callable for a given file extension.
+/** Mirror of `REGISTER_FILE_WRITER_PLUGIN`. FACTORY is a callable of
+    signature `void(utils::File&, core::ImgBase**)` — typically a lambda
+    with a function-local static impl instance. */
+#define REGISTER_FILE_GRABBER_PLUGIN(TAG, EXTENSION, ...)                       \
+  extern "C" __attribute__((constructor, used)) void                            \
+  iclRegisterFileGrabberPlugin_##TAG() {                                        \
+    ::icl::io::FileGrabberPluginRegister::registerExtension(EXTENSION, __VA_ARGS__); \
   }

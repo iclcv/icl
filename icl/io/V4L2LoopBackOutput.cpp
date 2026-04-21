@@ -145,7 +145,7 @@ namespace icl::io {
       delete m_data;
     }
 
-    void send(const core::Image &image){
+    void V4L2LoopBackOutput::send(const core::Image &image){
       m_data->send(image);
     }
   }

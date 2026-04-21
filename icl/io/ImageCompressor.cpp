@@ -4,7 +4,9 @@
 
 #include <icl/io/ImageCompressor.h>
 #include <icl/io/CompressionPlugin.h>
-#include <icl/io/CompressionRegister.h>
+#include <icl/io/CompressionRegistry.h>
+
+#include <algorithm>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/core/CoreFunctions.h>
@@ -208,16 +210,19 @@ namespace icl::io {
   // FileWriter and FileGrabber are now factory-based (Session 47): no
   // FileWriterPluginBICL / FileGrabberPluginBICL instances are
   // constructed during static init — they're built lazily on first
-  // use, after main() is running and the CompressionRegister has been
+  // use, after main() is running and the compressionRegistry() has been
   // fully populated. Anyone constructing an ImageCompressor outside of
   // a static initializer will see a fully-wired plugin immediately.
   ImageCompressor::ImageCompressor(const CompressionSpec &spec)
     : m_data(new Data) {
     m_data->spec = spec;
     // Build the codec menu from the (now-populated) plugin registry.
+    // Historical lex-sort preserved for deterministic menu ordering.
+    auto names = compressionRegistry().keys();
+    std::sort(names.begin(), names.end());
     std::string menu;
     bool first = true;
-    for (const auto &n : CompressionRegister::names()) {
+    for (const auto &n : names) {
       if (!first) menu += ',';
       menu += n;
       first = false;
@@ -243,7 +248,7 @@ namespace icl::io {
     if (m_data->plugin) {
       removeChildConfigurable(m_data->plugin.get());
     }
-    m_data->plugin = CompressionRegister::create(mode);
+    m_data->plugin = compressionRegistry().getOrThrow(mode).payload();
     if (!params.empty()) m_data->plugin->setCodecParamsString(params);
     // Add as child with empty prefix so the plugin's own properties
     // (`quality`, `level`, …) surface as siblings of `mode`. When this
@@ -306,7 +311,7 @@ namespace icl::io {
 
     // Cache the decode plugin if the codec name didn't change between calls.
     if (m_data->decodePluginName != f.codecName) {
-      m_data->decodePlugin     = CompressionRegister::create(f.codecName);
+      m_data->decodePlugin     = compressionRegistry().getOrThrow(f.codecName).payload();
       m_data->decodePluginName = f.codecName;
     }
     m_data->decodePlugin->setCodecParamsString(f.codecParams);

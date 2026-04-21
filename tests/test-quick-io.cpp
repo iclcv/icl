@@ -4,7 +4,7 @@
 #include <icl/core/Img.h>
 #include <icl/io/ImageCompressor.h>
 
-#include <icl/io/CompressionRegister.h>
+#include <icl/io/CompressionRegistry.h>
 #ifdef ICL_HAVE_QT_WEBSOCKETS
 #include <icl/io/WSImageOutput.h>
 #include <icl/io/WSGrabber.h>
@@ -94,7 +94,7 @@ ICL_REGISTER_TEST("Quick2.IO.save.null", "saving null image does not crash") {
 
 ICL_REGISTER_TEST("CompressionRegister.builtins_registered",
                   "all built-in codecs self-register at static init") {
-  auto names = io::CompressionRegister::names();
+  auto names = io::compressionRegistry().keys();
   // raw / rlen / 1611 are always built; jpeg requires libjpeg, zstd
   // requires libzstd. Test the unconditional ones plus assert the menu
   // contains _at least_ those.

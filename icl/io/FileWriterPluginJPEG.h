@@ -5,17 +5,19 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/FileWriterPlugin.h>
+#include <icl/utils/File.h>
+#include <icl/core/Img.h>
+
 #include <mutex>
 
 namespace icl::io {
-  /// A Writer Plugin for writing ".jpeg" and ".jpg" images \ingroup FILEIO_G
-  class ICLIO_API FileWriterPluginJPEG : public FileWriterPlugin{
+  /// Writer backend for ".jpeg" and ".jpg" images \ingroup FILEIO_G
+  class ICLIO_API FileWriterPluginJPEG {
     public:
     /// write implementation
-    virtual void write(utils::File &file, const core::ImgBase *image);
+    void write(utils::File &file, const core::ImgBase *image);
 
-    /// sets the currently used jped quality (0-100) (by default 90%)
+    /// sets the currently used jpeg quality (0-100) (by default 90%)
     static void setQuality(int value);
 
     private:

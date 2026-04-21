@@ -262,3 +262,21 @@ namespace icl::io {
   }
 
   } // namespace icl::io
+
+// ----- registration with GenericImageOutput -----------------------------
+#include <icl/io/GenericImageOutput.h>
+#include <icl/utils/StringUtils.h>
+REGISTER_IMAGE_OUTPUT(video_libav, "video",
+  ([](const std::string &params) -> icl::io::ImageOutputFn {
+    // params form: filename[,fourcc[,size[,fps]]]
+    auto t = icl::utils::tok(params, ",");
+    if (t.empty())
+      throw icl::utils::ICLException("LibAVVideoWriter: empty destination filename");
+    std::string fourcc = t.size() > 1 ? t[1] : std::string();
+    icl::utils::Size size = t.size() > 2 ? icl::utils::parse<icl::utils::Size>(t[2])
+                                         : icl::utils::Size::VGA;
+    double fps = t.size() > 3 ? icl::utils::parse<double>(t[3]) : 24.0;
+    auto impl = std::make_shared<icl::io::LibAVVideoWriter>(t[0], fourcc, fps, size);
+    return [impl](const icl::core::Image &img) { impl->send(img); };
+  }),
+  "filename[,fourcc[,WxH[,fps]]]~libav-based video file writer")

@@ -78,7 +78,6 @@ namespace icl::io {
 #ifdef ICL_HAVE_IMAGEMAGICK
 #include <icl/io/FileGrabber.h>  // FileGrabberPluginRegister
 namespace {
-  using icl::io::FileGrabberPlugin;
   using icl::io::FileGrabberPluginImageMagick;
   using icl::io::FileGrabberPluginRegister;
 
@@ -96,13 +95,25 @@ namespace {
   };
 }
 
+// One shared IM grabber impl across all extensions, mutex-protected.
+static void iclImageMagickGrab(icl::utils::File &f, icl::core::ImgBase **dst) {
+  static std::mutex m;
+  static FileGrabberPluginImageMagick impl;
+  std::scoped_lock lock(m);
+  impl.grab(f, dst);
+}
+
 extern "C" __attribute__((constructor, used)) void
 iclRegisterFileGrabberPluginsImageMagick() {
-  auto factory = []{
-    return std::unique_ptr<FileGrabberPlugin>(new FileGrabberPluginImageMagick);
-  };
+  // Register at low priority so libpng / libjpeg (priority 0) win for
+  // extensions they also claim. Formats libpng/libjpeg don't read (tiff,
+  // gif, bmp, svg, …) have no competing registration — ImageMagick wins
+  // there unopposed.
+  constexpr int kImageMagickPriority = -10;
   for (const char **pc = imageMagickFormats; *pc; ++pc) {
-    FileGrabberPluginRegister::registerExtension(std::string(".") + *pc, factory);
+    FileGrabberPluginRegister::registerExtension(std::string(".") + *pc,
+                                                 &iclImageMagickGrab,
+                                                 kImageMagickPriority);
   }
 }
 #endif

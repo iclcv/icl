@@ -5,17 +5,18 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/core/Types.h>
-#include <icl/io/FileWriterPlugin.h>
-#include <vector>
+#include <icl/utils/File.h>
+#include <icl/core/Img.h>
+
 #include <mutex>
+#include <vector>
 
 namespace icl::io {
-  /// Writer plugin to write images as ".ppm", ".pgm", ".pnm" and ".icl" \ingroup FILEIO_G
-  class ICLIO_API FileWriterPluginPNM : public FileWriterPlugin{
+  /// Writer backend for ".ppm", ".pgm", ".pnm" and ".icl" \ingroup FILEIO_G
+  class ICLIO_API FileWriterPluginPNM {
     public:
     /// write implementation
-    virtual void write(utils::File &file, const core::ImgBase *image);
+    void write(utils::File &file, const core::ImgBase *image);
 
     private:
     /// internal mutex to protect the buffer

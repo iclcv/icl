@@ -11,17 +11,17 @@
 #endif
 #include <icl/io/FileWriterPluginCSV.h>
 
+#include <algorithm>
+
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
   // -------------------------------- FileWriterPluginRegister --
   // Plugins self-register via REGISTER_FILE_WRITER_PLUGIN at static-init
-  // time, but actual plugin instances are built lazily on first lookup
-  // (and cached). This keeps ImageCompressor — which some plugins like
-  // BICL hold internally — out of the static-init phase, so the
-  // CompressionRegister is fully populated by the time any compressor
-  // gets constructed.
+  // time. Each registered callable carries its own state (per-lambda
+  // function-local statics initialized on first call), so no external
+  // per-extension cache is needed — a wash vs the pre-4b m_cache map.
 
   FileWriterPluginRegister &FileWriterPluginRegister::instance() {
     static FileWriterPluginRegister inst;
@@ -29,39 +29,22 @@ namespace icl::io {
   }
 
   void FileWriterPluginRegister::registerExtension(
-      const std::string &extension, Factory factory, bool overrideExisting) {
-    auto &inst = instance();
-    std::scoped_lock lk(inst.m_mutex);
-    auto it = inst.m_factories.find(extension);
-    if (it != inst.m_factories.end() && !overrideExisting) {
-      // Silently keep the first registration. Pre-refactor behaviour
-      // was last-wins via map-assignment; we keep first-wins to make
-      // build configurations deterministic. Pass overrideExisting=true
-      // to opt in to last-wins (e.g. ImageMagick deferring to libpng).
-      return;
-    }
-    inst.m_factories[extension] = std::move(factory);
-    inst.m_cache.erase(extension);  // invalidate cached instance
+      const std::string &extension, Factory factory, int priority) {
+    // Empty description, empty applicability; the registry's
+    // KeepHighestPriority policy uses `priority` to resolve conflicts.
+    instance().m_registry.registerPlugin(extension, std::move(factory),
+                                         /*description*/ {}, priority);
   }
 
-  FileWriterPlugin *FileWriterPluginRegister::getOrCreate(const std::string &ext) {
-    auto &inst = instance();
-    std::scoped_lock lk(inst.m_mutex);
-    if (auto cit = inst.m_cache.find(ext); cit != inst.m_cache.end()) return cit->second.get();
-    auto fit = inst.m_factories.find(ext);
-    if (fit == inst.m_factories.end()) return nullptr;
-    auto plugin = (fit->second)();
-    FileWriterPlugin *raw = plugin.get();
-    inst.m_cache[ext] = std::move(plugin);
-    return raw;
+  const FileWriterPluginRegister::Factory *
+  FileWriterPluginRegister::find(const std::string &ext) {
+    const auto *e = instance().m_registry.get(ext);
+    return e ? &e->payload : nullptr;
   }
 
   std::vector<std::string> FileWriterPluginRegister::extensions() {
-    auto &inst = instance();
-    std::scoped_lock lk(inst.m_mutex);
-    std::vector<std::string> out;
-    out.reserve(inst.m_factories.size());
-    for (const auto &[k, _] : inst.m_factories) out.push_back(k);
+    auto out = instance().m_registry.keys();
+    std::sort(out.begin(), out.end());
     return out;
   }
 
@@ -101,13 +84,12 @@ namespace icl::io {
 
     File file(m_oGen.next());
 
-    FileWriterPlugin *plugin = FileWriterPluginRegister::getOrCreate(
-      toLower(file.getSuffix()));
-    if (!plugin) {
+    const auto *fn = FileWriterPluginRegister::find(toLower(file.getSuffix()));
+    if (!fn) {
       ERROR_LOG("No Plugin to write files with suffix " << file.getSuffix() << " available");
       return;
     }
-    plugin->write(file, image);
+    (*fn)(file, image);
   }
 
 

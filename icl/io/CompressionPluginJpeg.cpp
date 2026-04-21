@@ -11,7 +11,7 @@
 #ifdef ICL_HAVE_LIBJPEG
 
 #include <icl/io/CompressionPlugin.h>
-#include <icl/io/CompressionRegister.h>
+#include <icl/io/CompressionRegistry.h>
 #include <icl/io/JPEGEncoder.h>
 #include <icl/io/JPEGDecoder.h>
 #include <icl/core/Img.h>

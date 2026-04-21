@@ -336,89 +336,73 @@ namespace icl::io {
     return &inst;
   }
 
+  // GrabberRegister is a thin façade over utils::PluginRegistry for the
+  // factory map, plus side maps for device-list / bus-reset / description.
+  // The latter three are orthogonal concerns of the Grabber domain that
+  // don't fit a generic registry's Entry shape.
+
   void GrabberRegister::registerGrabberType(const std::string &grabberid,
-                                 std::function<Grabber *(const std::string &)> creator,
-                                 std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> device_list)
+                                            CreateFn creator,
+                                            DeviceListFn device_list)
   {
-    std::scoped_lock<std::recursive_mutex> l(mutex);
-    if(auto it = gfm.find(grabberid); it != gfm.end()) throw ICLException("unable to register grabber "
-        + grabberid + ": name already in use");
-    GrabberFunctions f;
-    f.init = creator;
-    f.list = device_list;
-    gfm[grabberid] = f;
+    m_factories.registerPlugin(grabberid, std::move(creator));
+    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    m_deviceLists[grabberid] = std::move(device_list);
   }
 
   void GrabberRegister::registerGrabberBusReset(const std::string &grabberid,
-                                 std::function<void(bool)> reset_function)
+                                                BusResetFn reset_function)
   {
-    std::scoped_lock<std::recursive_mutex> l(mutex);
-    if(auto it = gbrm.find(grabberid); it != gbrm.end()) throw ICLException(
-        "unable to register grabber bus reset function for "
-        + grabberid + ": only one per greabber can be registered");
-    gbrm[grabberid] = reset_function;
+    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    if(auto it = m_busResets.find(grabberid); it != m_busResets.end())
+      throw ICLException("unable to register grabber bus reset function for "
+          + grabberid + ": only one per grabber can be registered");
+    m_busResets[grabberid] = std::move(reset_function);
   }
 
   void GrabberRegister::addGrabberDescription(const std::string &grabber_description)
   {
-    std::scoped_lock<std::recursive_mutex> l(mutex);
-    if(auto it = gds.find(grabber_description); it != gds.end()) throw ICLException(
-        "unable to add grabber description: \n"
-        + grabber_description + "\n description already exists");
-    gds.insert(grabber_description);
+    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    if(auto it = m_descriptions.find(grabber_description); it != m_descriptions.end())
+      throw ICLException("unable to add grabber description: \n"
+          + grabber_description + "\n description already exists");
+    m_descriptions.insert(grabber_description);
   }
 
   Grabber* GrabberRegister::createGrabber(const std::string &grabberid, const std::string &param){
-    std::scoped_lock<std::recursive_mutex> l(mutex);
-    if(auto it = gfm.find(grabberid); it != gfm.end()){
-      // init grabber
-      return (it -> second).init(param); // can throw too
-    } else {
-      throw ICLException("unknown grabber id '"
-          + grabberid + "'. can not create unknown grabber");
-    }
+    const auto *e = m_factories.get(grabberid);
+    if(!e) throw ICLException("unknown grabber id '"
+        + grabberid + "'. can not create unknown grabber");
+    return e->payload(param);  // can throw too
   }
 
   std::vector<std::string> GrabberRegister::getRegisteredGrabbers(){
-    std::scoped_lock<std::recursive_mutex> l(mutex);
-    std::vector<std::string> all;
-    for(GFM::iterator it = gfm.begin(); it != gfm.end(); ++it){
-      all.push_back(it->first);
-    }
-    return all;
+    return m_factories.keys();
   }
 
   std::vector<std::string> GrabberRegister::getGrabberInfos(){
-    std::scoped_lock<std::recursive_mutex> l(mutex);
-    std::vector<std::string> ret;
-    for(GDS::iterator it = gds.begin(); it != gds.end(); ++it){
-      ret.push_back(*it);
-    }
-    return ret;
+    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    return std::vector<std::string>(m_descriptions.begin(), m_descriptions.end());
   }
 
   const std::vector<GrabberDeviceDescription>&
   GrabberRegister::getDeviceList(std::string id, std::string hint, bool rescan){
-    std::scoped_lock<std::recursive_mutex> l(mutex);
-    if(auto it = gfm.find(id); it != gfm.end()){
-      // return device list
-      return ((it -> second).list)(hint,rescan);
-    } else {
-      throw ICLException("unknown grabber id '"
-          + id + "'. can not std::list devices of unknown grabber");
+    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    if(auto it = m_deviceLists.find(id); it != m_deviceLists.end()){
+      return (it->second)(hint, rescan);
     }
+    throw ICLException("unknown grabber id '"
+        + id + "'. can not std::list devices of unknown grabber");
   }
 
   void GrabberRegister::resetGrabberBus(const std::string &id, bool verbose){
-    std::scoped_lock<std::recursive_mutex> l(mutex);
-    if(auto it = gbrm.find(id); it != gbrm.end()){
-      // reset bus
-      return (it -> second)(verbose);
-    } else {
-      std::ostringstream error;
-      error << "Can not reset bus of grabber '" << id << "'. No bus-reset function registered.";
-      throw ICLException(error.str());
+    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    if(auto it = m_busResets.find(id); it != m_busResets.end()){
+      return (it->second)(verbose);
     }
+    std::ostringstream error;
+    error << "Can not reset bus of grabber '" << id << "'. No bus-reset function registered.";
+    throw ICLException(error.str());
   }
 
   } // namespace icl::io

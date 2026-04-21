@@ -5,6 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
+#include <icl/utils/PluginRegistry.h>
 #include <icl/utils/SteppingRange.h>
 #include <icl/utils/Uncopyable.h>
 #include <icl/utils/Configurable.h>
@@ -326,69 +327,64 @@ template<> inline bool Grabber::desiredUsed<core::depth>() const{ return static_
 template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
 
 class ICLIO_API GrabberRegister : utils::Uncopyable {
-private:
-std::recursive_mutex mutex;
-
-struct GrabberFunctions{
-  std::function<Grabber*(const std::string&)> init;
-  std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> list;
-};
-
-// grabber functions map
-using GFM = std::map<std::string, GrabberFunctions, std::less<>>;
-GFM gfm;
-
-// grabber bus reset functions map
-using GBRM = std::map<std::string, std::function<void(bool)>, std::less<>>;
-GBRM gbrm;
-
-// grabber device descriptions map
-using GDS = std::set<std::string>;
-GDS gds;
-
-// private constructor
-GrabberRegister(){}
-
 public:
-static GrabberRegister* getInstance();
+  using CreateFn     = std::function<Grabber*(const std::string&)>;
+  using DeviceListFn = std::function<const std::vector<GrabberDeviceDescription>&(std::string, bool)>;
+  using BusResetFn   = std::function<void(bool)>;
 
-void registerGrabberType(const std::string &grabberid,
-                           std::function<Grabber *(const std::string &)> creator,
-                           std::function<const std::vector<GrabberDeviceDescription> &(std::string,bool)> device_list);
+  /// Underlying primitive for the factory map. Device lists, bus resets
+  /// and description strings are per-backend side concerns kept on the
+  /// class itself.
+  using Registry = utils::PluginRegistry<std::string, CreateFn>;
 
-void registerGrabberBusReset(const std::string &grabberid,
-                           std::function<void(bool)> reset_function);
+  static GrabberRegister* getInstance();
 
-void addGrabberDescription(const std::string &grabber_description);
+  void registerGrabberType(const std::string &grabberid,
+                           CreateFn creator,
+                           DeviceListFn device_list);
 
-Grabber* createGrabber(const std::string &grabberid, const std::string &param);
+  void registerGrabberBusReset(const std::string &grabberid,
+                               BusResetFn reset_function);
 
-std::vector<std::string> getRegisteredGrabbers();
+  void addGrabberDescription(const std::string &grabber_description);
 
-std::vector<std::string> getGrabberInfos();
+  Grabber* createGrabber(const std::string &grabberid, const std::string &param);
 
-const std::vector<GrabberDeviceDescription>& getDeviceList(std::string id, std::string hint="", bool rescan=true);
+  std::vector<std::string> getRegisteredGrabbers();
 
-void resetGrabberBus(const std::string &id, bool verbose);
+  std::vector<std::string> getGrabberInfos();
+
+  const std::vector<GrabberDeviceDescription>& getDeviceList(std::string id, std::string hint="", bool rescan=true);
+
+  void resetGrabberBus(const std::string &id, bool verbose);
+
+private:
+  GrabberRegister() : m_factories(utils::OnDuplicate::Throw) {}
+
+  Registry m_factories;                                                     //!< id → CreateFn
+  std::recursive_mutex m_mutex;                                             //!< guards the side maps below
+  std::map<std::string, DeviceListFn, std::less<>> m_deviceLists;           //!< id → listing function
+  std::map<std::string, BusResetFn,   std::less<>> m_busResets;             //!< id → bus reset function
+  std::set<std::string>                            m_descriptions;          //!< verbatim strings, for getGrabberInfos()
 };
 
 /** \endcond */
 
 /// registration macro for grabbers
 /** @see \ref REG */
-#define REGISTER_GRABBER(NAME,CREATE_FUNC,DEVICE_LIST_FUNC,DESCRIPTION)                                        \
-struct StaticGrabberRegistrationFor_##NAME{                                                                    \
-StaticGrabberRegistrationFor_##NAME(){                                                                       \
-icl::io::GrabberRegister::getInstance() -> registerGrabberType(#NAME, CREATE_FUNC, DEVICE_LIST_FUNC);      \
-icl::io::GrabberRegister::getInstance() -> addGrabberDescription(DESCRIPTION);                             \
-}                                                                                                            \
-} staticGrabberRegistrationFor_##NAME;
+#define REGISTER_GRABBER(NAME,CREATE_FUNC,DEVICE_LIST_FUNC,DESCRIPTION)        \
+  extern "C" __attribute__((constructor, used)) void                           \
+  iclRegisterGrabber_##NAME() {                                                \
+    auto *_inst = ::icl::io::GrabberRegister::getInstance();                   \
+    _inst->registerGrabberType(#NAME, CREATE_FUNC, DEVICE_LIST_FUNC);          \
+    _inst->addGrabberDescription(DESCRIPTION);                                 \
+  }
 
-#define REGISTER_GRABBER_BUS_RESET_FUNCTION(NAME,BUS_RESET_FUNC)                                               \
-struct StaticGrabberBusResetRegistrationFor_##NAME{                                                            \
-StaticGrabberBusResetRegistrationFor_##NAME(){                                                               \
-icl::io::GrabberRegister::getInstance() -> registerGrabberBusReset(#NAME, BUS_RESET_FUNC);                 \
-}                                                                                                            \
-} staticGrabberBusResetRegistrationFor_##NAME;
+#define REGISTER_GRABBER_BUS_RESET_FUNCTION(NAME,BUS_RESET_FUNC)               \
+  extern "C" __attribute__((constructor, used)) void                           \
+  iclRegisterGrabberBusReset_##NAME() {                                        \
+    ::icl::io::GrabberRegister::getInstance()                                  \
+        ->registerGrabberBusReset(#NAME, BUS_RESET_FUNC);                      \
+  }
 
   } // namespace icl::io

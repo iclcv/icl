@@ -120,7 +120,7 @@ ICL has a uniform "name → factory" plugin pattern across the framework:
 
 | Registry | Self-registration macro | Used for |
 |---|---|---|
-| `GrabberRegister` | `REGISTER_GRABBER` | `dc`, `v4l`, `ws`, `zmq`, … grabber backends |
+| `GrabberRegister` | `REGISTER_GRABBER` | `dc`, `v4l`, `ws`, … grabber backends |
 | `CompressionRegister` | `REGISTER_COMPRESSION_PLUGIN` | `raw`, `rlen`, `jpeg`, `1611`, `zstd` codecs |
 | `FileWriterPluginRegister` | `REGISTER_FILE_WRITER_PLUGIN` | `.png`, `.jpg`, `.bicl`, … extension dispatch |
 | `FileGrabberPluginRegister` | `REGISTER_FILE_GRABBER_PLUGIN` | mirrored for read |

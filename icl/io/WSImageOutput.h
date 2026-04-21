@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Configurable.h>
-#include <icl/io/ImageOutput.h>
+#include <icl/core/Image.h>
 #include <string>
 
 namespace icl::io {
@@ -48,13 +48,14 @@ namespace icl::io {
         - `bytes sent`          info (lifetime)
         - `frames sent`         info (lifetime)
    */
-  class ICLIO_API WSImageOutput : public ImageOutput,
-                                  public utils::Configurable {
+  class ICLIO_API WSImageOutput : public utils::Configurable {
     // Note: WSImageOutput inherits Configurable directly to expose its
     // own properties (port, clients, bytes sent, …); the active codec's
     // tunables surface separately as a child Configurable under the
     // `compression.` prefix (the inner `m_data->compressor` —
     // an ImageCompressor — is itself a Configurable). See WSImageOutput.cpp.
+    // Pre-4a this also inherited `ImageOutput`; that base class is gone
+    // now, but the `send(Image)` method remains intact for direct callers.
     /// pimpl
     struct Data;
     Data *m_data;
@@ -68,8 +69,9 @@ namespace icl::io {
     /// Destructor (closes the server, drops every client)
     ~WSImageOutput();
 
-    /// ImageOutput contract — broadcast to all connected clients
-    virtual void send(const core::Image &image) override;
+    /// Broadcast an image to all connected clients (was virtual
+    /// ImageOutput::send pre-4a).
+    void send(const core::Image &image);
 
     /// The actually bound port (useful when port=0 was requested)
     int actualPort() const;

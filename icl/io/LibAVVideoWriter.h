@@ -5,11 +5,14 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/ImageOutput.h>
+#include <icl/utils/Size.h>
 #include <icl/utils/Uncopyable.h>
+#include <icl/core/Image.h>
+
+#include <string>
 
 namespace icl::io {
-  class ICLIO_API LibAVVideoWriter :public ImageOutput{
+  class ICLIO_API LibAVVideoWriter {
     struct Data;
     Data *m_data;
 
@@ -41,8 +44,8 @@ namespace icl::io {
 	/// Destructor
   ~LibAVVideoWriter();
 
-  /// wraps write to implement ImageOutput interface
-  virtual void send(const core::Image &image);
+  /// write an image (value semantics; was virtual ImageOutput::send pre-4a)
+  void send(const core::Image &image);
 
 	/// as write but in stream manner
   LibAVVideoWriter &operator<<(const core::ImgBase *image);

@@ -5,13 +5,14 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/FileGrabberPlugin.h>
+#include <icl/utils/File.h>
+#include <icl/core/Img.h>
 
 namespace icl::io {
-  /// Plugin to grab ".ppm", ".pgm", ".pgm" and ".icl" images \ingroup FILEIO_G
-  class ICLIO_API FileGrabberPluginPNM : public FileGrabberPlugin{
+  /// Plugin to grab ".ppm", ".pgm", ".pnm" and ".icl" images \ingroup FILEIO_G
+  class ICLIO_API FileGrabberPluginPNM {
     public:
     /// grab implementation
-    virtual void grab(utils::File &file, core::ImgBase **dest);
+    void grab(utils::File &file, core::ImgBase **dest);
   };
   } // namespace icl::io

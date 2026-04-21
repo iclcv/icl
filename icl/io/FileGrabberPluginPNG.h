@@ -5,21 +5,21 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/FileGrabberPlugin.h>
-#include <vector>
+#include <icl/utils/File.h>
+#include <icl/core/Img.h>
+
 #include <mutex>
+#include <vector>
 
 namespace icl::io {
-  /// Plugin class to read "png" images \ingroup FILEIO_G
-  class ICLIO_API FileGrabberPluginPNG : public FileGrabberPlugin {
+  /// Plugin to read ".png" images \ingroup FILEIO_G
+  class ICLIO_API FileGrabberPluginPNG {
     std::vector<unsigned char> data;
     std::vector<unsigned char*> rows;
-
-    /// ensures, that data and rows is not used from several threads
     std::recursive_mutex mutex;
 
     public:
     /// grab implementation
-    virtual void grab(utils::File &file, core::ImgBase **dest);
+    void grab(utils::File &file, core::ImgBase **dest);
   };
   } // namespace icl::io

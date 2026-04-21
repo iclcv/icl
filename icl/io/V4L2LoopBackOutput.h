@@ -5,7 +5,9 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/ImageOutput.h>
+#include <icl/core/Image.h>
+
+#include <string>
 
 namespace icl::io {
     /// ImageOutput implementation for V4L2-Looback devices
@@ -33,7 +35,7 @@ namespace icl::io {
         More information can be found at https://github.com/umlaeute/v4l2loopback
     */
 
-    class ICLIO_API V4L2LoopBackOutput : public ImageOutput{
+    class ICLIO_API V4L2LoopBackOutput {
       struct Data;   //!< internal data structure
       Data *m_data;  //!< internal data pointer
 
@@ -53,6 +55,6 @@ namespace icl::io {
       void init(const std::string &deviceString);
 
       /// actual publishing function
-      virtual void send(const core::Image &image);
+      void send(const core::Image &image);
     };
   }
