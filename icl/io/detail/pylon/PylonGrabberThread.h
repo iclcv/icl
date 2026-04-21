@@ -10,6 +10,7 @@
 #include <icl/io/detail/pylon/PylonColorConverter.h>
 #include <icl/io/detail/pylon/PylonCameraOptions.h>
 
+#include <mutex>
 #include <queue>
 
 namespace icl::io {
@@ -58,6 +59,9 @@ namespace icl::io {
 
         /// grabs a single image into m_BufferQueue.
         void grab();
+
+        /// guards grab() against concurrent access from stop()/dtor.
+        mutable std::recursive_mutex m_mutex;
   };
 
   }//namespace pylon

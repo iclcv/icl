@@ -23,14 +23,15 @@ namespace icl::qt {
   struct ExecThread : public Thread{
     using callback = ICLApplication::callback;
     callback cb;
+    std::recursive_mutex m_mutex;
     ExecThread(callback cb):cb(std::move(cb)){
       if(!this->cb) throw ICLException("ExecThread called with NULL function!");
     }
     void run() override {
       while(running()){
-        if(!trylock()){
+        if(m_mutex.try_lock()){
           cb();
-          unlock();
+          m_mutex.unlock();
         }
         usleep(1);
       }

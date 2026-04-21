@@ -41,10 +41,6 @@ namespace icl::utils {
     }
   }
 
-  void Thread::lock(){ m_mutex.lock(); }
-  int Thread::trylock(){ return m_mutex.try_lock() ? 0 : 1; }
-  void Thread::unlock(){ m_mutex.unlock(); }
-
   void Thread::join(){
     std::scoped_lock<std::mutex> l(m_lifecycle);
     if(m_thread.joinable()) m_thread.join();

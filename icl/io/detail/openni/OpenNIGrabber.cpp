@@ -31,15 +31,13 @@ OpenNIGrabberThread::~OpenNIGrabberThread(){
 }
 
 void OpenNIGrabberThread::addGrabber(OpenNIGrabber* grabber){
-  oniGrabberThread.lock();
+  std::scoped_lock lk(oniGrabberThread.m_mutex);
   oniGrabberThread.m_Grabber.insert(grabber);
-  oniGrabberThread.unlock();
 }
 
 void OpenNIGrabberThread::removeGrabber(OpenNIGrabber* grabber){
-  oniGrabberThread.lock();
+  std::scoped_lock lk(oniGrabberThread.m_mutex);
   oniGrabberThread.m_Grabber.erase(grabber);
-  oniGrabberThread.unlock();
 }
 
 // constantly calls grabNextImage.
@@ -48,7 +46,7 @@ void OpenNIGrabberThread::run(){
   while(!m_Grabber.empty()){
     msleep(1);
     // locking thread
-    if(trylock()) {
+    if(!m_mutex.try_lock()) {
       DEBUG_LOG("threadlock returned error. sleep and retry.");
       continue;
     }
@@ -63,7 +61,7 @@ void OpenNIGrabberThread::run(){
       }
     }
     // allow thread-stop.
-    unlock();
+    m_mutex.unlock();
   }
 }
 

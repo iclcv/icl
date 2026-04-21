@@ -16,20 +16,26 @@ namespace icl::utils {
       to control the thread. Subclass run() methods should check running()
       periodically and return when it becomes false.
 
+      Thread owns only the thread lifecycle — subclasses that need to
+      protect shared state should contain their own `std::mutex` or
+      `std::recursive_mutex` member.
+
       \code
       class CounterThread : public utils::Thread{
         public:
         CounterThread(int n):n(n){}
         virtual void run(){
            while(running() && n > 0){
-              lock();
-              n--;
-              printf("%d cycles left\n",n);
-              unlock();
+              {
+                std::scoped_lock lk(m_mutex);
+                n--;
+                printf("%d cycles left\n",n);
+              }
               msleep(1000);
            }
         }
         private:
+        mutable std::mutex m_mutex;
         int n;
       };
       \endcode
@@ -83,22 +89,11 @@ namespace icl::utils {
     /// sets the running flag to false (run() should check running() and return)
     void exit();
 
-    /// internal used lock function
-    void lock();
-
-    /// internal used trylock function
-    /** @return zero if lock is acquired, non-zero otherwise */
-    int trylock();
-
-    /// internal used unlock function
-    void unlock();
-
     /// internal used join function
     void join();
 
     private:
     std::thread m_thread;
-    std::recursive_mutex m_mutex;
     std::mutex m_lifecycle;
     std::atomic<bool> m_running{false};
   };

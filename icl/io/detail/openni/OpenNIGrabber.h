@@ -43,6 +43,9 @@ namespace icl::io {
 
       /// internally used set of grabber pointers
       std::set<OpenNIGrabber*> m_Grabber;
+
+      /// guards m_Grabber and run()'s update loop
+      std::recursive_mutex m_mutex;
   };
 
   /// Grabber implementation for OpenNI based camera access.

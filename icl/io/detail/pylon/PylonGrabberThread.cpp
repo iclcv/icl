@@ -33,14 +33,14 @@ void PylonGrabberThread::run(){
   while(running()){
     msleep(1);
     // locking thread
-    if(trylock()) {
+    if(!m_mutex.try_lock()) {
       DEBUG_LOG("threadlock returned error. sleep and retry.");
       continue;
     }
     //thread locked grab image.
     grab();
     // allow thread-stop.
-    unlock();
+    m_mutex.unlock();
   }
 }
 
