@@ -436,12 +436,17 @@ struct SVGFTemporalParams {
     }
   }
 
+  // Pass through the current (already accumulated) color unchanged.
+  // The path tracer handles temporal integration; SVGF just does
+  // variance-guided spatial filtering on the accumulated result.
+  outR[idx] = cr;
+  outG[idx] = cg;
+  outB[idx] = cb;
+
   if (valid) {
+    // Track variance across frames via luminance moments (EMA)
     int hist = min(255, prevHist[prevIdx] + 1);
     float alpha = max(1.0f / float(hist), 0.05f);
-    outR[idx] = prevR[prevIdx] * (1-alpha) + cr * alpha;
-    outG[idx] = prevG[prevIdx] * (1-alpha) + cg * alpha;
-    outB[idx] = prevB[prevIdx] * (1-alpha) + cb * alpha;
     float m1 = prevMom1[prevIdx] * (1-alpha) + lum * alpha;
     float m2 = prevMom2[prevIdx] * (1-alpha) + lum*lum * alpha;
     outMom1[idx] = m1;
@@ -449,15 +454,11 @@ struct SVGFTemporalParams {
     outVar[idx] = max(0.0f, m2 - m1*m1);
     outHist[idx] = hist;
   } else {
-    // Disoccluded: use current frame, estimate spatial variance
-    outR[idx] = cr;
-    outG[idx] = cg;
-    outB[idx] = cb;
+    // Disoccluded or first frame: spatial variance estimate
     outMom1[idx] = lum;
     outMom2[idx] = lum * lum;
     outHist[idx] = 1;
 
-    // 3×3 spatial variance
     float sumL = 0, sumL2 = 0;
     int cnt = 0;
     for (int ky = -1; ky <= 1; ky++) {
