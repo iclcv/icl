@@ -1,6 +1,88 @@
-# Image Migration — Continuation Guide
+# ICL — Continuation Guide
 
-## Current State (Session 30 — Bilinear fix, LAPACK helpers, IPP backend implementations)
+## Current State (Session 31 — Meson build system, directory restructure)
+
+### Session 31 Summary
+
+**Build system migrated from CMake to Meson+Ninja:**
+
+The entire project structure was overhauled in one session. 9 commits.
+
+**Directory restructure:**
+- `ICLGeom/src/ICLGeom/Scene.h` → `icl/geom/Scene.h` (matches `icl::geom` namespace)
+- All 10 modules renamed: `ICLUtils→icl/utils`, `ICLMath→icl/math`, etc.
+- `src/` wrapper dropped — headers and sources coexist directly
+- Include paths: `#include <icl/geom/Scene.h>` (was `<ICLGeom/Scene.h>`)
+- Library names: `libicl-geom.dylib` (was `libICLGeom.dylib`)
+
+**Demos/apps flattened:**
+- 120+ single-file subdirectories eliminated (each had its own CMakeLists.txt)
+- Now: `icl/filter/demos/canny-op.cpp` (was `ICLFilter/demos/canny-op/canny-op.cpp`)
+- Multi-file targets use naming convention: `camera-calibration-CalibrationGrid.cpp`
+
+**Meson build system:**
+- `meson.build` + `meson.options` replace ~170 CMakeLists.txt + 29 cmake modules
+- 10 module `meson.build` + 10 target `meson.build` files
+- All dependencies detected: Qt6, OpenCV, Eigen3, OpenCL, ImageMagick, FFmpeg,
+  Bullet, Accelerate, Cycles (full integration with 21 compile defs, 20+ include
+  dirs, 14 static + 18 shared libs)
+- Config headers generated without `.in` templates (Meson `configure_file()`)
+- Qt MOC via `qt6.compile_moc()` — trimmed to 11 headers with actual Q_OBJECT
+- PCH headers in `icl/_pch/` (required: macOS case-insensitive FS shadows
+  system `<time.h>` with our `Time.h` — fixed via `implicit_include_directories: false`)
+- Post-build hook symlinks all executables into `build/bin/`
+
+**Build result:** 122 targets (10 libs + 68 demos + 35 apps + 8 examples + 1 test)
+all compile and link. Tests pass.
+
+**Dead code removed:**
+- `VideoGrabber.cpp/.h` — xine dependency no longer exists
+- Old CMake system: 518 files deleted (45K lines)
+- Old `ICL*` module directories removed
+- `ICLExperimental/` removed (Cycles demos moved to `icl/geom/demos/`)
+
+**Scenes and assets:** moved to `icl/geom/scenes/` (9 glb/obj files),
+doc images moved into `icl/*/doc/`.
+
+**Key Meson commands:**
+```bash
+meson setup build                              # configure
+meson setup build -Ddemos=true -Dapps=true     # with demos+apps
+meson compile -C build -j16                    # build
+meson test -C build                            # run tests
+meson configure build -Dtests=true             # reconfigure option
+```
+
+**Known disabled targets (pre-existing code issues, not build system):**
+- 3 OpenCV legacy C API files (`OpenCVCamCalib`, `LensUndistortionCalibrator`,
+  `OpenSurfLib`) — need rewrite for OpenCV 4+
+- `TemplateTracker` — depends on IPP-only `ProximityOp`
+- `corner-detection-css` demo — uses removed `DebugInformation` API
+- `heart-rate-detector` demo — needs `ICL_OPENCV_INSTALL_PATH` define
+- `octree` demo — needs PCL
+- `point-cloud-primitive-filter` app — needs dead RSB dependency
+
+### Next Steps
+
+**Immediate:**
+- **CI update** — `.github/workflows/ci.yaml` needs `pip install meson ninja`
+  and `meson setup/compile/test` instead of cmake
+- **CLAUDE.md update** — build instructions reference cmake, need meson equivalents
+- **Docker scripts** — `scripts/docker/` needs meson adaptation
+
+**Build system polish:**
+- OpenCL kernel header generation (`scripts/cl2header.py` + `custom_target` in
+  `icl/filter/meson.build`) — currently no `.cl` kernels are being compiled
+- Fix disabled targets: rewrite OpenCV C API files for OpenCV 4+
+- Add `subprojects/*.wrap` for Windows builds (zlib, libpng, libjpeg, gtest)
+
+**Other work (unchanged from Session 30):**
+- **ConvolutionOp IPP: mixed-depth support**
+- **Benchmark IPP backends**
+- **ImageMagick 7** — rewrite for Quantum/Pixels API
+- **FFmpeg 7+** — rewrite LibAVVideoWriter.cpp for modern API
+
+## Previous State (Session 30 — Bilinear fix, LAPACK helpers, IPP backend implementations)
 
 ### Session 30 Summary
 
