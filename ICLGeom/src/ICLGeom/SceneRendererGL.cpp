@@ -27,6 +27,46 @@ using namespace icl::utils;
 namespace icl::geom {
 
 // ---- Shader sources (GL 4.1 Core) ----
+// ---- Sky gradient shaders ----
+
+static const char *SKY_VERT = R"(
+#version 410 core
+layout(location = 0) in vec2 aPos;
+out vec2 vNDC;
+void main() {
+    vNDC = aPos;
+    gl_Position = vec4(aPos, 0.999, 1.0);  // at far plane
+}
+)";
+
+static const char *SKY_FRAG = R"(
+#version 410 core
+uniform mat4 uInvVP;
+uniform float uBrightness;
+in vec2 vNDC;
+out vec4 FragColor;
+void main() {
+    // Reconstruct world-space view direction from NDC
+    vec4 worldFar = uInvVP * vec4(vNDC, 1.0, 1.0);
+    vec3 dir = normalize(worldFar.xyz / worldFar.w);
+    float y = dir.y;  // vertical component: +1=up, -1=down
+
+    // Sky gradient: warm horizon → blue zenith, dark below
+    vec3 zenith  = vec3(0.45, 0.55, 0.75) * uBrightness;
+    vec3 horizon = vec3(0.85, 0.85, 0.82) * uBrightness;
+    vec3 ground  = vec3(0.25, 0.22, 0.20) * uBrightness;
+
+    vec3 color;
+    if (y > 0.0) {
+        float t = pow(y, 0.4);  // compress near horizon for wider bright band
+        color = mix(horizon, zenith, t);
+    } else {
+        color = mix(horizon, ground, min(-y * 3.0, 1.0));
+    }
+    FragColor = vec4(color, 1.0);
+}
+)";
+
 // ---- Shadow pass shaders (depth only) ----
 
 static const char *SHADOW_VERT = R"(
@@ -89,6 +129,12 @@ uniform vec3  uLightColor[8];
 
 uniform int uHasBaseColorMap;
 uniform sampler2D uBaseColorMap;
+uniform int uHasNormalMap;
+uniform sampler2D uNormalMap;
+uniform int uHasMetallicRoughnessMap;
+uniform sampler2D uMetallicRoughnessMap;
+uniform int uHasEmissiveMap;
+uniform sampler2D uEmissiveMap;
 uniform int uDebugMode;
 
 // Per-light shadow: slot index into shadow map array (-1 = no shadow)
@@ -103,6 +149,20 @@ in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
 
+// Evaluate sky gradient for a world-space direction (matches sky shader)
+vec3 sampleSky(vec3 dir, float brightness) {
+    float y = dir.y;
+    vec3 zenith  = vec3(0.55, 0.65, 0.85) * brightness;
+    vec3 horizon = vec3(0.95, 0.93, 0.90) * brightness;
+    vec3 ground  = vec3(0.30, 0.27, 0.25) * brightness;
+    if (y > 0.0) {
+        float t = pow(y, 0.4);
+        return mix(horizon, zenith, t);
+    } else {
+        return mix(horizon, ground, min(-y * 3.0, 1.0));
+    }
+}
+
 float sampleShadow(int slot, vec3 coord) {
     if (slot == 0) return texture(uShadowMap0, coord);
     if (slot == 1) return texture(uShadowMap1, coord);
@@ -116,6 +176,23 @@ void main() {
     vec3 N = normalize(vNormal);
     if (!gl_FrontFacing) N = -N;
 
+    // Normal map: perturb N using tangent-space normal from texture
+    if (uHasNormalMap != 0) {
+        vec3 tsNormal = texture(uNormalMap, vTexCoord).rgb * 2.0 - 1.0;
+        // Construct TBN from screen-space derivatives (no explicit tangents needed)
+        vec3 dPdx = dFdx(vWorldPos);
+        vec3 dPdy = dFdy(vWorldPos);
+        vec2 dUVdx = dFdx(vTexCoord);
+        vec2 dUVdy = dFdy(vTexCoord);
+        float det = dUVdx.x * dUVdy.y - dUVdx.y * dUVdy.x;
+        if (abs(det) > 1e-6) {
+            float invDet = 1.0 / det;
+            vec3 T = normalize((dPdx * dUVdy.y - dPdy * dUVdx.y) * invDet);
+            vec3 B = normalize((dPdy * dUVdx.x - dPdx * dUVdy.x) * invDet);
+            N = normalize(mat3(T, B, N) * tsNormal);
+        }
+    }
+
     vec4 baseColor = uBaseColor;
     if (uHasBaseColorMap != 0) {
         baseColor *= texture(uBaseColorMap, vTexCoord);
@@ -123,15 +200,37 @@ void main() {
     vec3 albedo = baseColor.rgb;
     vec3 V = normalize(uCameraPos - vWorldPos);
 
+    // Metallic-roughness map (glTF: blue=metallic, green=roughness)
+    float metallic = uMetallic;
+    float roughness = uRoughness;
+    if (uHasMetallicRoughnessMap != 0) {
+        vec4 mr = texture(uMetallicRoughnessMap, vTexCoord);
+        metallic = mr.b * uMetallic;    // blue channel, modulated by uniform
+        roughness = mr.g * uRoughness;  // green channel, modulated by uniform
+    }
+
     // Shininess from roughness (clamped to avoid invisible pinpoint highlights)
-    float shininess = clamp(2.0 / (uRoughness * uRoughness + 1e-4) - 2.0, 1.0, 512.0);
+    float shininess = clamp(2.0 / (roughness * roughness + 1e-4) - 2.0, 1.0, 512.0);
 
     // F0: dielectric = 0.04, metal = albedo
-    vec3 specColor = mix(vec3(0.04), albedo, uMetallic);
+    vec3 specColor = mix(vec3(0.04), albedo, metallic);
 
-    // Metals get a stronger ambient (approximates environment reflection)
-    float metalAmbientBoost = mix(1.0, 3.0, uMetallic * (1.0 - uRoughness));
-    vec3 result = albedo * uAmbient * metalAmbientBoost;
+    // Environment reflection: sample sky in reflection direction for metals
+    vec3 R = reflect(-V, N);
+    vec3 envColor = sampleSky(R, uExposure);
+    // Roughness blurs the reflection (approximate by blending toward diffuse sky)
+    vec3 diffuseEnv = sampleSky(N, uExposure);
+    vec3 envReflection = mix(envColor, diffuseEnv, roughness);
+
+    // Ambient/environment: dielectrics get diffuse irradiance, metals get specular reflection
+    vec3 ambientDiffuse = albedo * diffuseEnv * (1.0 - metallic);
+    vec3 ambientSpecular = specColor * envReflection;
+    // Fresnel at grazing angles brightens reflections (Schlick approx)
+    float NdotV = max(dot(N, V), 0.0);
+    float fresnel = pow(1.0 - NdotV, 5.0);
+    vec3 envFresnel = mix(specColor, vec3(1.0), fresnel);
+    ambientSpecular *= envFresnel;
+    vec3 result = ambientDiffuse + ambientSpecular;
 
     for (int i = 0; i < uNumLights; i++) {
         vec3 L = normalize(uLightPos[i].xyz - vWorldPos);
@@ -152,7 +251,7 @@ void main() {
         }
 
         // Diffuse: reduced for metals (metals have no diffuse)
-        vec3 diffuse = albedo * (1.0 - uMetallic) * NdotL;
+        vec3 diffuse = albedo * (1.0 - metallic) * NdotL;
 
         // Specular: Blinn-Phong
         float specPow = pow(NdotH, shininess);
@@ -161,7 +260,12 @@ void main() {
         result += shadow * uLightColor[i] * (diffuse + specular * NdotL);
     }
 
-    result += uEmissive.rgb;
+    // Emissive: factor * map (per glTF spec)
+    vec3 emissive = uEmissive.rgb;
+    if (uHasEmissiveMap != 0) {
+        emissive = texture(uEmissiveMap, vTexCoord).rgb * max(uEmissive.rgb, vec3(1.0));
+    }
+    result += emissive;
     result *= uExposure;
     result = clamp(result, 0.0, 1.0);
 
@@ -198,12 +302,18 @@ struct GLGeometryCache {
   GLuint ebo = 0;
   int numIndices = 0;
   GLuint baseColorTex = 0;
+  GLuint normalMapTex = 0;
+  GLuint metallicRoughnessTex = 0;
+  GLuint emissiveMapTex = 0;
 
   ~GLGeometryCache() {
     if (vao) glDeleteVertexArrays(1, &vao);
     if (vbo) glDeleteBuffers(1, &vbo);
     if (ebo) glDeleteBuffers(1, &ebo);
     if (baseColorTex) glDeleteTextures(1, &baseColorTex);
+    if (normalMapTex) glDeleteTextures(1, &normalMapTex);
+    if (metallicRoughnessTex) glDeleteTextures(1, &metallicRoughnessTex);
+    if (emissiveMapTex) glDeleteTextures(1, &emissiveMapTex);
   }
 
   void build(const SceneObject *obj) {
@@ -321,10 +431,8 @@ struct GLGeometryCache {
     glBindVertexArray(0);
   }
 
-  void uploadBaseColorMap(const core::Image &img) {
-    if (img.isNull()) return;
-    if (baseColorTex) return; // already uploaded
-
+  static GLuint uploadTexture(const core::Image &img) {
+    if (img.isNull()) return 0;
     const auto &img8u = img.as<icl8u>();
     int w = img8u.getWidth(), h = img8u.getHeight(), ch = img8u.getChannels();
 
@@ -336,8 +444,9 @@ struct GLGeometryCache {
       rgba[i*4+3] = (ch > 3) ? img8u.getData(3)[i] : 255;
     }
 
-    glGenTextures(1, &baseColorTex);
-    glBindTexture(GL_TEXTURE_2D, baseColorTex);
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -345,6 +454,19 @@ struct GLGeometryCache {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, rgba.data());
     glBindTexture(GL_TEXTURE_2D, 0);
+    return tex;
+  }
+
+  void uploadMaterialTextures(const std::shared_ptr<Material> &mat) {
+    if (!mat) return;
+    if (!baseColorTex && !mat->baseColorMap.isNull())
+      baseColorTex = uploadTexture(mat->baseColorMap);
+    if (!normalMapTex && !mat->normalMap.isNull())
+      normalMapTex = uploadTexture(mat->normalMap);
+    if (!metallicRoughnessTex && !mat->metallicRoughnessMap.isNull())
+      metallicRoughnessTex = uploadTexture(mat->metallicRoughnessMap);
+    if (!emissiveMapTex && !mat->emissiveMap.isNull())
+      emissiveMapTex = uploadTexture(mat->emissiveMap);
   }
 };
 
@@ -388,6 +510,10 @@ static GLuint linkProgram(GLuint vs, GLuint fs) {
 struct SceneRendererGL::Data {
   GLuint program = 0;
   GLuint shadowProgram = 0;
+  GLuint skyProgram = 0;
+  GLuint skyVAO = 0, skyVBO = 0;
+  GLint skyLocInvVP = -1;
+  GLint skyLocBrightness = -1;
   bool shaderReady = false;
   float exposure = 1.0f;
   float ambient = 0.1f;
@@ -416,6 +542,12 @@ struct SceneRendererGL::Data {
   GLint locCameraPos = -1;
   GLint locHasBaseColorMap = -1;
   GLint locBaseColorMap = -1;
+  GLint locHasNormalMap = -1;
+  GLint locNormalMap = -1;
+  GLint locHasMetallicRoughnessMap = -1;
+  GLint locMetallicRoughnessMap = -1;
+  GLint locHasEmissiveMap = -1;
+  GLint locEmissiveMap = -1;
   GLint locDebugMode = -1;
   GLint locLightShadowSlot[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
   GLint locShadowMatrix[4] = {-1,-1,-1,-1};
@@ -437,6 +569,12 @@ struct SceneRendererGL::Data {
     locCameraPos = glGetUniformLocation(program, "uCameraPos");
     locHasBaseColorMap = glGetUniformLocation(program, "uHasBaseColorMap");
     locBaseColorMap = glGetUniformLocation(program, "uBaseColorMap");
+    locHasNormalMap = glGetUniformLocation(program, "uHasNormalMap");
+    locNormalMap = glGetUniformLocation(program, "uNormalMap");
+    locHasMetallicRoughnessMap = glGetUniformLocation(program, "uHasMetallicRoughnessMap");
+    locMetallicRoughnessMap = glGetUniformLocation(program, "uMetallicRoughnessMap");
+    locHasEmissiveMap = glGetUniformLocation(program, "uHasEmissiveMap");
+    locEmissiveMap = glGetUniformLocation(program, "uEmissiveMap");
     locDebugMode = glGetUniformLocation(program, "uDebugMode");
     for (int i = 0; i < 8; i++) {
       char name[48];
@@ -477,6 +615,9 @@ SceneRendererGL::SceneRendererGL() : m_data(new Data) {}
 SceneRendererGL::~SceneRendererGL() {
   if (m_data->program) glDeleteProgram(m_data->program);
   if (m_data->shadowProgram) glDeleteProgram(m_data->shadowProgram);
+  if (m_data->skyProgram) glDeleteProgram(m_data->skyProgram);
+  if (m_data->skyVAO) glDeleteVertexArrays(1, &m_data->skyVAO);
+  if (m_data->skyVBO) glDeleteBuffers(1, &m_data->skyVBO);
   for (int i = 0; i < 4; i++) {
     if (m_data->shadowFBO[i]) glDeleteFramebuffers(1, &m_data->shadowFBO[i]);
     if (m_data->shadowTex[i]) glDeleteTextures(1, &m_data->shadowTex[i]);
@@ -516,6 +657,29 @@ void SceneRendererGL::ensureShaderCompiled() {
             m_data->locShadowMap[2], m_data->locShadowMap[3]);
   } else {
     fprintf(stderr, "[SceneRendererGL] SHADER COMPILATION FAILED\n");
+  }
+
+  // Sky shader + fullscreen quad
+  {
+    GLuint svs = compileShader(GL_VERTEX_SHADER, SKY_VERT);
+    GLuint sfs = compileShader(GL_FRAGMENT_SHADER, SKY_FRAG);
+    if (svs && sfs) {
+      m_data->skyProgram = linkProgram(svs, sfs);
+      m_data->skyLocInvVP = glGetUniformLocation(m_data->skyProgram, "uInvVP");
+      m_data->skyLocBrightness = glGetUniformLocation(m_data->skyProgram, "uBrightness");
+    }
+    if (svs) glDeleteShader(svs);
+    if (sfs) glDeleteShader(sfs);
+
+    float quad[] = { -1,-1, 1,-1, 1,1, -1,-1, 1,1, -1,1 };
+    glGenVertexArrays(1, &m_data->skyVAO);
+    glBindVertexArray(m_data->skyVAO);
+    glGenBuffers(1, &m_data->skyVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_data->skyVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindVertexArray(0);
   }
 
   // Shadow shader
@@ -566,10 +730,7 @@ void SceneRendererGL::renderObjectShadow(const SceneObject *obj) {
   if (!cache) {
     cache = std::make_unique<GLGeometryCache>();
     cache->build(obj);
-    auto mat = obj->getMaterial();
-    if (mat && !mat->baseColorMap.isNull()) {
-      cache->uploadBaseColorMap(mat->baseColorMap);
-    }
+    cache->uploadMaterialTextures(obj->getMaterial());
   }
   if (cache->numIndices == 0) goto children;
 
@@ -669,11 +830,27 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   }
   glViewport(vpX, vpY, vpW, vpH);
 
+  glDisable(GL_CULL_FACE);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // Sky gradient background
+  if (m_data->skyProgram) {
+    glDisable(GL_DEPTH_TEST);
+    glUseProgram(m_data->skyProgram);
+    // Inverse view-projection matrix for reconstructing world-space ray direction
+    Mat vp = projGL * viewGL;
+    Mat invVP = vp.inv();
+    glUniformMatrix4fv(m_data->skyLocInvVP, 1, GL_TRUE, invVP.data());
+    glUniform1f(m_data->skyLocBrightness, m_data->exposure);
+    glBindVertexArray(m_data->skyVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    glUseProgram(0);
+  }
+
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
-  glDisable(GL_CULL_FACE);
-  glClearColor(0.12f, 0.12f, 0.15f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glUseProgram(m_data->program);
 
@@ -743,10 +920,7 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
   if (!cache) {
     cache = std::make_unique<GLGeometryCache>();
     cache->build(obj);
-    auto mat = obj->getMaterial();
-    if (mat && !mat->baseColorMap.isNull()) {
-      cache->uploadBaseColorMap(mat->baseColorMap);
-    }
+    cache->uploadMaterialTextures(obj->getMaterial());
   }
 
   if (cache->numIndices == 0) return;
@@ -760,11 +934,9 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
                 mat->baseColor[2], mat->baseColor[3]);
     glUniform1f(m_data->locMetallic, mat->metallic);
     glUniform1f(m_data->locRoughness, mat->roughness);
-    bool hasEmissiveMap = !mat->emissiveMap.isNull();
-    float em0 = hasEmissiveMap ? 0 : mat->emissive[0];
-    float em1 = hasEmissiveMap ? 0 : mat->emissive[1];
-    float em2 = hasEmissiveMap ? 0 : mat->emissive[2];
-    glUniform4f(m_data->locEmissive, em0, em1, em2, 0);
+    // Pass emissive factor always (shader uses it as multiplier for emissive map)
+    glUniform4f(m_data->locEmissive, mat->emissive[0], mat->emissive[1],
+                mat->emissive[2], 0);
   } else {
     glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
     glUniform1f(m_data->locMetallic, 0.0f);
@@ -772,20 +944,43 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
     glUniform4f(m_data->locEmissive, 0, 0, 0, 0);
   }
 
-  // Texture binding
-  bool hasTexture = cache->baseColorTex != 0;
-  glUniform1i(m_data->locHasBaseColorMap, hasTexture ? 1 : 0);
+  // Texture binding (units 0, 5, 6 — units 1-4 reserved for shadow maps)
+  glUniform1i(m_data->locHasBaseColorMap, cache->baseColorTex ? 1 : 0);
   glUniform1i(m_data->locBaseColorMap, 0);
-  if (hasTexture) {
+  if (cache->baseColorTex) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, cache->baseColorTex);
+  }
+
+  glUniform1i(m_data->locHasNormalMap, cache->normalMapTex ? 1 : 0);
+  glUniform1i(m_data->locNormalMap, 5);
+  if (cache->normalMapTex) {
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D, cache->normalMapTex);
+  }
+
+  glUniform1i(m_data->locHasMetallicRoughnessMap, cache->metallicRoughnessTex ? 1 : 0);
+  glUniform1i(m_data->locMetallicRoughnessMap, 6);
+  if (cache->metallicRoughnessTex) {
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_2D, cache->metallicRoughnessTex);
+  }
+
+  glUniform1i(m_data->locHasEmissiveMap, cache->emissiveMapTex ? 1 : 0);
+  glUniform1i(m_data->locEmissiveMap, 7);
+  if (cache->emissiveMapTex) {
+    glActiveTexture(GL_TEXTURE7);
+    glBindTexture(GL_TEXTURE_2D, cache->emissiveMapTex);
   }
 
   glBindVertexArray(cache->vao);
   glDrawElements(GL_TRIANGLES, cache->numIndices, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 
-  if (hasTexture) glBindTexture(GL_TEXTURE_2D, 0);
+  if (cache->baseColorTex) { glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, 0); }
+  if (cache->normalMapTex) { glActiveTexture(GL_TEXTURE5); glBindTexture(GL_TEXTURE_2D, 0); }
+  if (cache->metallicRoughnessTex) { glActiveTexture(GL_TEXTURE6); glBindTexture(GL_TEXTURE_2D, 0); }
+  if (cache->emissiveMapTex) { glActiveTexture(GL_TEXTURE7); glBindTexture(GL_TEXTURE_2D, 0); }
 
   for (int c = 0; c < obj->getChildCount(); c++) {
     renderObject(obj->getChild(c), viewMatrix);
