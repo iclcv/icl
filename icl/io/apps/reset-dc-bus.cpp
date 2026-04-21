@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/DCDevice.h>
+#include <icl/io/detail/dc/DCDevice.h>
 #include <icl/utils/ProgArg.h>
 
 int main(int n, char **ppc){

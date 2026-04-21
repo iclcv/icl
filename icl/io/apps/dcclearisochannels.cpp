@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/DCGrabber.h>
-#include <icl/io/DC.h>
+#include <icl/io/detail/dc/DCGrabber.h>
+#include <icl/io/detail/dc/DC.h>
 #include <map>
 #include <vector>
 using namespace icl::io;

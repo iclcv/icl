@@ -7,9 +7,9 @@
 #include <icl/utils/Exception.h>
 
 #ifdef ICL_HAVE_LIBJPEG
-#include <icl/io/FileWriterPluginJPEG.h>
+#include <icl/io/detail/file-plugins/FileWriterPluginJPEG.h>
 #endif
-#include <icl/io/FileWriterPluginCSV.h>
+#include <icl/io/detail/file-plugins/FileWriterPluginCSV.h>
 
 #include <algorithm>
 

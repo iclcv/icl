@@ -7,7 +7,6 @@
 #include <icl/qt/Common2.h>
 #include <icl/utils/FPSEstimator.h>
 #include <icl/utils/ConsoleProgress.h>
-#include <icl/io/IOFunctions.h>
 
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/ConvolutionOp.h>

@@ -7,6 +7,8 @@
 #include <icl/core/Img.h>
 #include <icl/core/CoreFunctions.h>
 #include <iostream>
+#include <cstring>
+#include <map>
 
 namespace icl::core {
   // --- Constructors ---
@@ -207,6 +209,136 @@ namespace icl::core {
     }
     return s << img.getSize() << "x" << img.getChannels() << "ch "
              << img.getDepth() << " " << img.getFormat();
+  }
+
+  // --- addLabel --- ASCII-art text label rendered into the upper-left corner.
+  namespace {
+    using utils::Point;
+    using utils::Rect;
+
+    struct OffsPtr {
+      OffsPtr(const Point &offs = Point::null, icl8u *img = 0, int width = 0)
+        : offs(offs), img(img), width(width) {}
+      Point  offs;
+      icl8u *img;
+      int    width;
+    };
+
+    template<class T>
+    void drawLabel(Img<T> *image, const char *txt,
+                   const std::map<char, OffsPtr> &m)
+    {
+      static const Point OFS(5, 5);
+
+      Rect roi = Rect(OFS.x - 1, OFS.y - 1,
+                      int(strlen(txt)) * (7 + 2), 7 + 2);
+      if(Rect(Point::null, image->getSize()).contains(roi)){
+        Img<T> *boxImage = image->shallowCopy(roi);
+        boxImage->clear();
+        delete boxImage;
+      }
+
+      int letterIdx = 0;
+      for(const char *p = txt; *p; p++){
+        auto it = m.find(*p);
+        if(it == m.end()) continue;
+        const OffsPtr &op = it->second;
+
+        for(int c = 0; c < image->getChannels(); c++){
+          int xStartLetter = op.offs.x;
+          int xEndLetter   = xStartLetter + 7;
+          int xStartImage  = OFS.x + letterIdx * (7 + 2);
+          for(int xL = xStartLetter, xI = xStartImage;
+              xL < xEndLetter; xI++, xL++){
+            if(xI < image->getWidth()){
+              int yStartLetter = 0;
+              int yEndLetter   = 7;
+              int yStartImage  = OFS.y;
+              for(int yL = yStartLetter, yI = yStartImage;
+                  yL < yEndLetter; yI++, yL++){
+                if(yI < image->getHeight()){
+                  (*image)(xI, yI, c) =
+                    (char(op.img[xL + yL * op.width]) == '#') ? T(255) : T(0);
+                }
+              }
+            }
+          }
+        }
+        letterIdx++;
+      }
+    }
+
+    const std::map<char, OffsPtr>& getFontMap() {
+      static char ABC_AM[] =
+      " ##### ######  ############ ############## ##### #     ################     ##      #     #"
+      "#     ##     ##      #     ##      #      #     ##     #   #         ##    # #      ##   ##"
+      "#     ##     ##      #     ##      #      #      #     #   #         ##   #  #      # # # #"
+      "#     ####### #      #     ################  ###########   #         #####   #      #  #  #"
+      "########     ##      #     ##      #      #     ##     #   #         ##   #  #      #     #"
+      "#     ##     ##      #     ##      #      #     ##     #   #         ##    # #      #     #"
+      "#     #######  ############ ########       ##### #     ############## #     #########     #";
+
+      static char ABC_NZ[] =
+      "#     # ##### ######  ##### ######  ##### ########     ##     ##     ##     ##     ########"
+      "##    ##     ##     ##     ##     ##     #   #   #     ##     ##     # #   #  #   #      # "
+      "# #   ##     ##     ##     ##     ##         #   #     # #   # #     #  # #    # #      #  "
+      "#  #  ##     ####### #     #######  #####    #   #     # #   # #  #  #   #      #      #   "
+      "#   # ##     ##      # ### ##   #        #   #   #     #  # #  # # # #  # #     #     #    "
+      "#    ###     ##      #    ###    # #     #   #   #     #  # #  ##   ## #   #    #    #     "
+      "#     # ##### #       ##### #     # #####    #    #####    #   #     ##     #   #   #######";
+
+      static char ABC_09[] =
+      " #####      ## #####  ##### #   #  ####### ##### ####### #####  ##### "
+      "#     #   ## ##     ##     ##   #  #      #     #      ##     ##     #"
+      "#     # ##   #      #      ##   #  #      #           # #     ##     #"
+      "#     ##     #  ####  ##### ############# ######  ###### #####  ######"
+      "#     #      ###           #    #        ##     #   #   #     #      #"
+      "#     #      ##      #     #    #  #     ##     #  #    #     ##     #"
+      " #####       ######## #####     #   #####  #####  #      #####  ##### ";
+
+      static char ABC_EX[] =
+      "          #    #   #  #   #  #####  #    # ###      #       #    #     # # #                                   #"
+      "          #    #   # ########  #  ## #  # #   #     #      #      #     ###     #                             # "
+      "          #           #   #    #  # #  #   ###             #      #    #####    #                            #  "
+      "          #           #   #  #####    #    # #            #        #    ###   #####         #####           #   "
+      "          #           #   # #  #     #  # #   ##           #      #    # # #    #       #                  #    "
+      "                     ########  #  # #  # ##   ##           #      #             #      #             ##   #     "
+      "          #           #   #  ##### #    #  #### #           #    #                    #              ##  #      ";
+
+      static std::map<char, OffsPtr> m = [&]{
+        std::map<char, OffsPtr> r;
+        for(int c = 'a', xoffs = 0; c <= 'm'; c++, xoffs += 7){
+          r[c]      = OffsPtr(Point(xoffs, 0), reinterpret_cast<icl8u*>(ABC_AM), 13 * 7);
+          r[c - 32] = OffsPtr(Point(xoffs, 0), reinterpret_cast<icl8u*>(ABC_AM), 13 * 7);
+        }
+        for(int c = 'n', xoffs = 0; c <= 'z'; c++, xoffs += 7){
+          r[c]      = OffsPtr(Point(xoffs, 0), reinterpret_cast<icl8u*>(ABC_NZ), 13 * 7);
+          r[c - 32] = OffsPtr(Point(xoffs, 0), reinterpret_cast<icl8u*>(ABC_NZ), 13 * 7);
+        }
+        for(int c = '0', xoffs = 0; c <= '9'; c++, xoffs += 7){
+          r[c] = OffsPtr(Point(xoffs, 0), reinterpret_cast<icl8u*>(ABC_09), 10 * 7);
+        }
+        for(int c = ' ', xoffs = 0; c <= '/'; c++, xoffs += 7){
+          r[c] = OffsPtr(Point(xoffs, 0), reinterpret_cast<icl8u*>(ABC_EX), 16 * 7);
+        }
+        return r;
+      }();
+      return m;
+    }
+  } // anonymous namespace
+
+  void Image::addLabel(const std::string &label) {
+    ICLASSERT_RETURN(!isNull());
+    ICLASSERT_RETURN(label.length());
+
+    ImgBase *image = m_impl.get();
+    const auto &m = getFontMap();
+    switch(image->getDepth()){
+#define ICL_INSTANTIATE_DEPTH(D) \
+      case depth##D: drawLabel<icl##D>(image->asImg<icl##D>(), label.c_str(), m); break;
+      ICL_INSTANTIATE_ALL_DEPTHS
+#undef ICL_INSTANTIATE_DEPTH
+    }
   }
 
   } // namespace icl::core

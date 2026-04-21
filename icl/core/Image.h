@@ -262,6 +262,13 @@ namespace icl::core {
 
     void print(const std::string &title = "image") const;
 
+    /// Draws a text label (ASCII-art) into the upper-left corner.
+    /** Debug affordance for identifying images in long computation queues.
+        Uses a hard-coded 7x7 bitmap font covering 'A'-'Z', 'a'-'z', '0'-'9'
+        and the punctuation range ' '-'/'. No line-break handling — labels
+        wider than the image are cropped. Modifies pixel data in place. */
+    void addLabel(const std::string &label);
+
     /// @}
 
     // ================================================================

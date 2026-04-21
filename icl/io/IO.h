@@ -4,27 +4,16 @@
 
 #pragma once
 
-#ifdef ICL_HAVE_LIBDC
-#include <icl/io/DCGrabber.h>
-#endif
-
-#include <icl/io/DemoGrabber.h>
+// Umbrella header for the public ICLIO consumer API.  Per-backend headers
+// (DCGrabber, PylonGrabber, WSGrabber, …) are implementation details and
+// are deliberately not pulled in here — applications should go through
+// GenericGrabber / GenericImageOutput instead.
 #include <icl/io/FileGrabber.h>
-#include <icl/io/File.h>
 #include <icl/io/FileList.h>
 #include <icl/io/FilenameGenerator.h>
 #include <icl/io/FileWriter.h>
 #include <icl/io/GenericGrabber.h>
-#include <icl/io/IOFunctions.h>
-
-#ifdef ICL_HAVE_VIDEODEV
-#include <PWCGrabber.h>
-#endif
-
-#ifdef ICL_HAVE_LIBMESASR
-#include <icl/io/SwissRangerGrabber.h>
-#endif
-
+#include <icl/io/GenericImageOutput.h>
 #include <icl/io/TestImages.h>
 
 
@@ -160,29 +149,17 @@
     # for more ore less trailing zeros, just add more or less hashes #)
     icl-pipe -input dc 0 -o file images/image-####.ppm
 
-    # grab images and pipe them to a shared memory segment which can directly be accessed by other
-    # icl-applications
-    icl-pipe -input dc 0 -o sm my-segment
+    # publish images on a WebSocket port so other icl-applications (or browser
+    # viewers) can connect and receive them. Replaces the retired 'sm' backend.
+    icl-pipe -input dc 0 -o ws 9999
 
-    # now, the images can be read online from the shared memory
-    icl-camviewer -input sm my-segment
+    # now, the images can be received on another process / machine
+    icl-camviewer -input ws ws://localhost:9999
 
     # capture a video using an opencv based video writer (here, with DIVX code, VGA-resolution
     # and playback speed of 24 frames per second (note, not all combinations of codecs, resolutions
     # and sizes are possible (actually, most are not :-)
     icl-pipe -input dc 0 -o video my-video.avi,DIVX,VGA,24
-
-    # re-encode a video using a xine-based grabber
-    icl-pipe -input video some-file.mpg -o some-file-converted,DIVX,SVGA,30
-
-    # grab images from a robotics service bus scope /foo/bar (using spread-based multicast connection)
-    icl-camviewer -input rsb /foo/bar
-
-    # grab images from a robotics service bus scope /foo/bar (using socket connection)
-    icl-camviewer -input rsb socket:/foo/bar
-
-    # grab video file and use a robotics service bus informer to publish the image via spread and socket
-    icl-pipe -input cvvideo myfile.avi -o rsb spread,socket:/foo/bar
     </pre>
 
     For further details and a complete list of possible Grabber-backends,
@@ -199,13 +176,9 @@
     - <b>icl::DemoGrabber</b> Creates images with a moving red rectangle (no dependencies)
     - <b>icl::PylonGrabber</b> Grabber using Baslers Pylon-Libraries for grabbing from Gigabit Ethernet (GIG-E) cameras
     - <b>icl::SwissRangerGrabber</b> Grabber for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
-    - <b>icl::VideoGrabber</b> Xine based video grabber (grabbing videos frame by frame) (needs libxine)
-    - <b>icl::OpenCVVideoGrabber</b> OpenCV based video grabber (needs opencv 2)
+    - <b>icl::OpenCVVideoGrabber</b> OpenCV based video grabber (needs OpenCV)
     - <b>icl::WSGrabber</b> WebSocket-based grabber for receiving images from a icl::WSImageOutput publisher (needs Qt6Websockets) — replaced the retired SharedMemory backend
     - <b>icl::OpenCVCamGrabber</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
     - <b>icl::KinectGrabber</b> libfreenect based Grabber for Microsoft's Kinect Camera (supports color-, core::depth and IR-camera)
-    - <b>icl::MyrmexGrabber</b> v4l2-based grabber for the Myrmex tactile device developed by Carsten Schürman
-    - <b>icl::RSBGrabber</b> Robotics Service Bus based grabber
-      (Supports different transport-layers, such as inprocess, spread and socket)
 
 */

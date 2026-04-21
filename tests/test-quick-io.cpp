@@ -4,10 +4,10 @@
 #include <icl/core/Img.h>
 #include <icl/io/ImageCompressor.h>
 
-#include <icl/io/CompressionRegistry.h>
+#include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #ifdef ICL_HAVE_QT_WEBSOCKETS
-#include <icl/io/WSImageOutput.h>
-#include <icl/io/WSGrabber.h>
+#include <icl/io/detail/network/WSImageOutput.h>
+#include <icl/io/detail/network/WSGrabber.h>
 #include <icl/utils/Thread.h>
 #include <chrono>
 #include <thread>

@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/ImageCompressor.h>
-#include <icl/io/CompressionPlugin.h>
-#include <icl/io/CompressionRegistry.h>
+#include <icl/io/detail/compression-plugins/CompressionPlugin.h>
+#include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 
 #include <algorithm>
 #include <icl/utils/Exception.h>

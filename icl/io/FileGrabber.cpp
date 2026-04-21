@@ -12,20 +12,20 @@
 #include <icl/utils/Thread.h>
 #include <icl/utils/File.h>
 // plugins
-#include <icl/io/FileGrabberPluginPNM.h>
-#include <icl/io/FileGrabberPluginBICL.h>
-#include <icl/io/FileGrabberPluginCSV.h>
+#include <icl/io/detail/file-plugins/FileGrabberPluginPNM.h>
+#include <icl/io/detail/file-plugins/FileGrabberPluginBICL.h>
+#include <icl/io/detail/file-plugins/FileGrabberPluginCSV.h>
 
 #ifdef ICL_HAVE_LIBJPEG
-#include <icl/io/FileGrabberPluginJPEG.h>
+#include <icl/io/detail/file-plugins/FileGrabberPluginJPEG.h>
 #endif
 
 #ifdef ICL_HAVE_LIBPNG
-#include <icl/io/FileGrabberPluginPNG.h>
+#include <icl/io/detail/file-plugins/FileGrabberPluginPNG.h>
 #endif
 
 #ifdef ICL_HAVE_IMAGEMAGICK
-#include <icl/io/FileGrabberPluginImageMagick.h>
+#include <icl/io/detail/file-plugins/FileGrabberPluginImageMagick.h>
 #endif
 
 #include <string>
