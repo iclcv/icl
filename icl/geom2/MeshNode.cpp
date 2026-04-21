@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom2/MeshNode.h>
+#include <icl/geom2/Loader.h>
 
 namespace icl::geom2 {
 
@@ -56,9 +57,7 @@ namespace icl::geom2 {
   }
 
   std::vector<std::shared_ptr<MeshNode>> MeshNode::load(const std::string &filename) {
-    // TODO: implement file loading (.obj, .glb, .gltf)
-    (void)filename;
-    return {};
+    return loadFile(filename);
   }
 
 } // namespace icl::geom2

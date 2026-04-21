@@ -13,6 +13,7 @@ geom2_headers = files(
   'Renderer.h',
   'LightNode.h',
   'Scene2.h',
+  'Loader.h',
 )
 
 geom2_sources = files(
@@ -27,11 +28,21 @@ geom2_sources = files(
   'Renderer.cpp',
   'LightNode.cpp',
   'Scene2.cpp',
+  'Loader.cpp',
 )
+
+# Include dirs for 3rdparty single-header libs used by Loader.cpp
+_stb_inc = include_directories('../../3rdparty')
+_cgltf_inc = []
+_cp = '../../3rdparty/cycles/lib/macos_arm64'
+_cgltf_path = _cp / 'materialx/include/MaterialXRender/External/Cgltf'
+if fs.is_dir(meson.project_source_root() / '3rdparty/cycles/lib/macos_arm64/materialx/include/MaterialXRender/External/Cgltf')
+  _cgltf_inc = [include_directories(_cgltf_path)]
+endif
 
 icl_geom2_lib = shared_library('icl-geom2',
   geom2_sources,
-  include_directories: [root_inc, gen_inc],
+  include_directories: [root_inc, gen_inc, _stb_inc] + _cgltf_inc,
   dependencies: [icl_qt_dep, icl_geom_dep],  # qt for DrawWidget3D, geom for Camera+Material
   version: so_version,
   implicit_include_directories: false,
