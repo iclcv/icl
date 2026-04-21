@@ -1,77 +1,242 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 14 — Raytracing Integration into ICLGeom)
+## Current State (Session 17 — Zoom Fix: UV Crop + Projection Crop Matrix)
 
-### Session 14 Summary
+### Session 17 Summary
 
-**Raytracing moved from ICLExperimental into ICLGeom:**
-- All raytracing sources (CyclesRenderer, SceneSynchronizer, GltfLoader, SceneSetup)
-  now live in `ICLGeom/src/ICLGeom/`, conditionally compiled via `BUILD_WITH_CYCLES`.
-- New `cmake/Modules/ICLFindCycles.cmake` provides `cycles_target_setup()` macro.
-- Top-level CMakeLists auto-detects Cycles in `3rdparty/cycles/build/`.
-- Demos moved to `ICLGeom/demos/`, scenes to `ICLGeom/scenes/`.
-- ICLGeom builds cleanly with and without Cycles.
+**Fixed 2D image zoom (UV-based crop in GLImageRenderer):**
+- Old approach used oversized `glViewport` that conflicted with GLImageRenderer's
+  letterbox scaling, causing misaligned zoom, NaN artifacts, and broken AR handling.
+- New: `render(cropX, cropY, cropW, cropH)` passes zoom sub-region as UV coordinates
+  to `uUVOffset`/`uUVScale` shader uniforms. Renderer letterboxes based on crop AR.
+- No stored crop state — crop rect passed directly to render call (eliminates race).
+- `GL_CLAMP_TO_EDGE` on texture prevents repeated/mirrored artifacts in letterbox bars.
+- NaN/bounds validation in `drawQuadWithCrop` falls back to full image if invalid.
+- GL state save/restore (depth test, texture binding) prevents QPainter interference.
+- `mouseReleaseEvent`: removed `fixRectAR` (no longer needed — renderer handles any AR
+  via letterboxing), added [0,1] clamping and div-by-zero guard.
+- `resizeEvent`: removed `fixRectAR` for zoom mode (UV zoom re-letterboxes automatically).
+- `getImageRect()` for zoom: computes virtual image rect from display rect + zoom rect
+  for correct mouse/pixel coordinate mapping.
 
-**Scene owns both renderers:**
-- `scene.getGLRenderer()` — GLRenderer (renamed from SceneRendererGL), lazy-created.
-  GLCallback::draw() auto-selects it in Core Profile, legacy renderScene() otherwise.
-- `scene.getRaytracer()` — returns Raytracer interface (CyclesRenderer when available,
-  DummyRaytracer fallback when `BUILD_WITH_CYCLES=OFF`). Lazy-created via `#ifdef ICL_HAVE_CYCLES`.
-- Raytracer base class (`ICLGeom/Raytracer.h`): virtual interface for start/stop/render/
-  getImage/invalidate/setSamples/setMaxBounces/setExposure/setBrightness/setSamplesPerStep.
+**Fixed 3D scene zoom (projection crop matrix in GLRenderer):**
+- Old viewport approach created SSR FBOs at N× widget size, hitting GPU texture limits
+  at ~3-5× zoom (scene suddenly disappeared).
+- New: crop matrix pre-multiplied onto projection matrix narrows FOV to zoomed sub-region,
+  rendering at native viewport resolution regardless of zoom level.
+- Crop matrix (row-major): `sx=1/zw, tx=(1-2*zx-zw)/zw, sy=1/zh, ty=(2*zy+zh-1)/zh`
+- Viewport letterboxed for crop sub-region's AR, matching 2D image display.
+- Previous Session 16 attempt at crop matrix failed due to wrong math — this session
+  re-derived correctly accounting for ICL's row-major Mat with GL_TRUE transpose.
 
-**Naming cleanup:**
-- `SceneRendererGL` → `GLRenderer` (file `GLRenderer.h/.cpp`)
-- `getRendererGL()` → `getGLRenderer()`
-- `setOverlayMode()` → `setHideSky()`
-- `initialSamples` → `samplesPerStep` / `setSamplesPerStep()`
-- No backwards-compat aliases.
+**Overlay viewer verified working:**
+- Cycles bg + GL overlay compositing, alpha slider, camera sync, material presets, zoom
+  all tested and confirmed working.
 
-**Event-driven CyclesRenderer:**
-- `start(camIndex)`: management thread drives progressive state machine (16ms polling)
-- `stop()`: joins thread (also from destructor)
-- `setOnImageReady(cb)`: callback from OutputDriver::write_render_tile
-- `invalidateAll()` triggers re-rendering (mutex-protected)
-- `session->start()` now called after each `set_samples()` extension to wake session thread
+### Next Steps
 
-**Other improvements:**
-- `ProgArg::subargs<T>()` — returns all sub-args as `vector<T>`
-- `FPSEstimator::formatted()` with `#fps` token
-- GL 4.1 Core Profile set automatically in ICLApp constructor
-- GLImageRenderer thread-safe (recursive_mutex on storedImage)
-- GL material cache invalidated on material pointer change
+- **Refactor cycles-scene-viewer.cpp** — replace inline setupScene/decimateMesh with
+  `SceneSetup.h` calls (duplicate code exists in both viewer and library)
+- **Red-tinted context in letterbox bars** — deferred idea: show surrounding image content
+  tinted red in the letterbox areas during zoom for spatial context
+- **Wheel zoom** — currently `#if 0`'d out in Widget.cpp, needs reimplementation with
+  UV-based zoom approach
 
-### BUG: Overlay viewer doesn't show progressive intermediate results
+## Previous State (Session 16 — Crash Fix + Camera Drag Optimization)
 
-**Symptom:** `cycles-overlay-viewer` shows only the final converged image after ~2s.
-The scene viewer (`cycles-scene-viewer`) shows progressive updates correctly.
+### Session 16 Summary
 
-**What works:** The management thread correctly extends samples step by step
-(verified by adding `session->start()` after `set_samples()`). The scene viewer
-polls `render(0)` directly in its run() loop and renders the Cycles image inside
-its GL callback — this shows every intermediate frame.
+**Fixed overlay viewer crash #1 (null outputDriver):**
+- Root cause: `CyclesRenderer::getImage()` dereferenced `m_impl->outputDriver` which is
+  null before `ensureInitialized()` runs. The management thread (started by `start()`)
+  calls `ensureInitialized()` asynchronously, but `run()` calls `rt.getImage()` immediately.
+- Fix: `getImage()` returns a static empty `Img8u` when `outputDriver` is null.
+  Same guard added to `setOnImageReady()`.
+- Stack trace showed: `pthread_mutex_lock` crash at address 0xe0 (null + mutex offset)
+  in `RaytracingOutputBuffer::getImage()` called from `CyclesRenderer::getImage()`.
 
-**What doesn't work:** The overlay viewer uses `start(0)` (autonomous thread) and
-tries to display via either:
-1. Widget background image path (`canvas = &rt.getImage()`) — too slow/delayed
-2. Custom GL callback with `bgRenderer.render(Image(img))` — still no intermediates
+**Fixed overlay viewer crash #2 (DataStore UnassignableTypesException):**
+- `gui["canvas"] = Image(rtImg)` threw because DataStore had no `core::Image` →
+  handle conversions registered. The `FROM_IMG` macro only covers `Img8u`,
+  `Img16s`, etc. and `ImgBase` — not the `Image` wrapper.
+- Fix: added `Image` → `ImageHandle`, `DrawHandle`, `DrawHandle3D` conversions
+  in DataStore.cpp (both assignment specializations and registrations).
+  `Image` delegates to `setImage(src.ptr())` for widget handles.
 
-**Suspected root cause:** The overlay viewer's `run()` loop runs at 30fps (FPSLimiter).
-Between display frames, the management thread advances many steps. But even rendering
-the Cycles image directly in the GL callback (approach 2) doesn't show intermediates.
-This suggests the image data from `getImage()` isn't updating, OR the GL callback
-isn't being triggered frequently enough, OR there's a race between the OutputDriver
-writing the image and the GL callback reading it.
+**Camera drag uses invalidateTransforms() instead of invalidateAll():**
+- `handleMouse()` in `cycles-overlay-viewer.cpp` now calls `invalidateTransforms()`
+  on drag/release. This only sets `transformDirty` on SceneSynchronizer entries,
+  skipping expensive retessellation that `invalidateAll()` would trigger via
+  `geometryDirty`. Camera rotation only needs transform/camera update.
 
-**Debug approach for next session:**
-- Add fprintf in OutputDriver::write_render_tile to confirm it fires per step
-- Check if `getImage()` returns different data between run() iterations
-- Compare exact GL callback timing between scene viewer and overlay viewer
-- Consider: scene viewer calls `render(0)` synchronously in run() which blocks
-  until state machine advances — overlay viewer's management thread runs independently
-- The `getImage()` race: OutputDriver returns `const Img8u&` after releasing its
-  mutex. The caller reads while the next write_render_tile overwrites. May need
-  double-buffering or a copy inside getImage().
+**Removed 1ms sleep between batches:**
+- The sleep was unnecessary — if multiple batches complete between GUI redraws,
+  the user just sees a less noisy (better) image. Faster convergence is always better.
+- The GUI thread picks up whatever the latest image is via the double buffer.
+
+**Grabber acquireImage/acquireDisplay bridge:**
+- `Grabber::grabImage()` calls `grab()` → `acquireImage()`, but ALL existing grabber
+  subclasses override `acquireDisplay()` (the old name). `acquireImage()` returned nullptr.
+- Fix: `Grabber::acquireImage()` now falls back to `acquireDisplay()`. All grabbers work.
+
+**DemoImage in-memory JPEG decode:**
+- All 6 `DemoImage*.cpp` files (lena, parrot, mandril, flowers, cameraman, windows)
+  used to write the compiled-in JPEG bytes to a temp file, then read it back via
+  FileGrabber. This failed in sandboxed environments.
+- Fix: decode directly from memory via `JPEGDecoder::decode(buf.data(), DIM, &image)`.
+  No temp files needed. Include changed from `FileGrabber.h` to `JPEGDecoder.h`.
+
+**Added `ICLWidget::getZoomRect()`:**
+- Returns normalized zoom rect or (0,0,1,1) if not zoomed. In Widget.h/.cpp.
+
+**GLRenderer zoom — crop matrix REVERTED:**
+- Attempted projection crop matrix approach for 3D zoom (normal viewport + modified
+  projection). Showed only a triangle — crop matrix math was wrong (likely ICL's
+  row-major matrix convention vs the column-major assumption in the derivation).
+- Reverted to viewport-based zoom (same as 2D image). Both renderers use the same
+  viewport, so they stay in sync even though the zoom is wrong.
+- The crop matrix approach IS the right long-term solution (avoids huge SSR FBOs,
+  correct at extreme zoom). The math needs to be re-derived accounting for ICL's
+  `Mat` conventions (row-major, GL_TRUE transpose in `glUniformMatrix4fv`).
+- Crop matrix formula (for reference, needs verification with ICL's Mat layout):
+  ```
+  sx = 1/zw,  tx = (1 - 2*zx - zw) / zw
+  sy = 1/zh,  ty = (2*zy + zh - 1) / zh
+  ```
+
+### Zoom Bug — Analysis and Status (UNRESOLVED)
+
+**The core problem:** `computeRect(fmZoom)` produces a viewport rect that interacts
+with `GLImageRenderer::drawQuad()`'s internal letterbox scaling. When the viewport AR
+doesn't match the image AR, GLImageRenderer shifts the image within the viewport,
+breaking the zoom alignment.
+
+**How zoom currently works (viewport approach):**
+1. User drags rect on image → `mouseReleaseEvent` normalizes to image coords → `fixRectAR`
+   adjusts width/height so `vpAR = imageAR` at the current widget size
+2. `computeRect(fmZoom)` produces viewport: `vpW=widgetW/zoomW, vpH=widgetH/zoomH`
+3. `glViewport(vpX, vpY, vpW, vpH)` with GL Y-flip: `vpY = (-dy - r.y) * dpr`
+4. `GLImageRenderer::drawQuad()` reads viewport, computes letterbox `uScale`, renders
+
+**Where it breaks:**
+- **Non-square images:** For a 750×1002 (portrait) image in a 320×240 (landscape) widget,
+  `fixRectAR` sets `zoomW/zoomH = widgetAR/imageAR = 1.780`. This makes
+  `vpAR = widgetAR * zoomH/zoomW = ... = imageAR`. So no letterboxing — should work.
+  BUT: empirically the zoom is still wrong for the parrot. Need to investigate whether
+  `fixRectAR` itself, the mouseReleaseEvent normalization, or the GL Y-flip is at fault.
+- **Widget resize while zoomed:** `fixRectAR` was applied once at zoom-selection time
+  for a specific widget AR. When the widget is resized, the zoomRect's AR no longer
+  matches. Attempted fix: re-apply AR adjustment in `computeRect` (preserving center
+  and area) — still produces wrong results. Left in code for now, may need removal.
+- **Excessive zoom:** viewport values reach 8760×11704 pixels (for ~14× zoom). Not a
+  GPU limit issue (viewport is just a clipping region), but wasteful for 3D rendering
+  where SSR FBO is sized to viewport.
+
+**Debug output in place:** Widget.cpp paintGL prints `[Zoom]` lines every 60 frames
+with zoomRect, computeRect result, and glViewport values. Remove when fixed.
+
+**Key files for zoom investigation:**
+- `ICLQt/src/ICLQt/Widget.cpp:863` — `computeRect()` function (fmZoom case ~line 895)
+- `ICLQt/src/ICLQt/Widget.cpp:915` — `fixRectAR()` function
+- `ICLQt/src/ICLQt/Widget.cpp:2267` — `mouseReleaseEvent` zoom rect normalization
+- `ICLQt/src/ICLQt/Widget.cpp:2414` — wheel zoom handling
+- `ICLQt/src/ICLQt/Widget.cpp:1994` — Core Profile paintGL zoom viewport
+- `ICLQt/src/ICLQt/GLImageRenderer.cpp:270` — `drawQuad()` with letterbox scaling
+- `ICLGeom/src/ICLGeom/GLRenderer.cpp:1096` — GLRenderer widget-aware zoom viewport
+
+**Possible fix approaches (not yet tried):**
+1. **UV-based zoom in GLImageRenderer:** Add `uUVOffset`/`uUVScale` uniforms to the
+   quad shader. Instead of viewport tricks, set the viewport to the base letterboxed
+   rect and adjust UVs to show the zoom sub-region. Cleanest separation of concerns.
+   GLImageRenderer would need `setCropRect(Rect32f)`. The letterbox scaling must then
+   use the sub-region AR, not the full image AR.
+2. **Disable GLImageRenderer letterbox in zoom mode:** Set `scaleX=scaleY=1.0` when
+   zoomed, since `computeRect` already accounts for AR. Risk: breaks if computeRect
+   doesn't perfectly match the image AR.
+3. **Build a minimal test case:** Write a simple test app that shows a known image with
+   known zoom rect and prints all coordinates. Verify each step of the pipeline.
+
+### Next Steps
+
+## Previous State (Session 15 — Autonomous CyclesRenderer + Progressive Display)
+
+### Session 15 Summary
+
+**CyclesRenderer autonomous mode fully reworked:**
+
+The `start(camIndex)` API now provides proper autonomous progressive rendering.
+A background management thread drives the render loop; the application just calls
+`getImage()` to display the latest intermediate result.
+
+**Architecture (autonomous mode):**
+- `start(0)` launches a management thread running `managementLoop()`
+- Outer loop: waits on CV for `dirty` signal → syncs scene → `session->reset()` +
+  `session->start()` with `samplesPerStep` samples
+- Inner loop: waits on CV for `batchReady` (signaled by `write_render_tile` callback)
+  → checks dirty after each batch → if dirty, breaks and restarts; if not, extends
+  samples until converged
+- Dirty is only checked AFTER each batch completes, so every batch produces a visible
+  intermediate image (noisy → progressively refined)
+- Setters (setMaxBounces, setExposure, etc.) have equality guards — no-op if value
+  unchanged. When value changes, `markDirty()` sets dirty flag + notifies CV.
+- `invalidateAll()` / `invalidateTransforms()` also call `markDirty()`
+- No `session->cancel()` from main thread. `session->reset()` handles cancellation
+  internally (waits for current batch to finish, which is fast at 1 sample/step)
+- 1ms sleep between batches ensures Qt's paint cycle can display intermediates
+
+**RaytracingOutputBuffer (renamed from ICLOutputDriver):**
+
+Thread-safe double-buffered image capture. Cycles' render thread writes; GUI reads.
+- Two `Img8u` buffers alternate. Write always targets `1 - frontIdx` (never the
+  buffer the GUI is currently reading)
+- After capture, publishes new front buffer under mutex
+- Before writing, checks `isIndependent()` on target buffer. If a previous
+  `getImage()` caller still holds a shallow copy (use_count > 1), calls `detach()`
+  to allocate fresh channel storage (rare fallback path)
+- `getImage()` returns stable `const Img8u&` to front buffer
+- `setBatchDoneCallback(cb)` — management thread wires this to its CV for
+  batch-completion notifications
+
+**Raytracer interface expanded:**
+- Added `setDenoising(bool)` to virtual interface (was CyclesRenderer-only)
+
+**Overlay viewer simplified:**
+- Removed custom `OverlayCallback` struct and `GLImageRenderer bgRenderer`
+- Uses `scene.getGLCallback(0)` for the GL overlay rendering
+- Sets Cycles image as widget background via `gui["canvas"] = Image(rtImg)` in
+  `run()` — enables image info indicator, pixel query, zoom
+- `handleMouse` only calls `invalidateAll()` on drag/release (not every event)
+- Initial params set in `init()` before `start()` to avoid setter/default mismatch
+- Denoising disabled for interactive preview (fast noisy intermediates)
+
+**Key lessons learned during debugging:**
+1. **Denoiser hides noise** — with denoising on, even 1-sample images look clean.
+   Must disable for interactive preview where the user expects to see progressive
+   noise reduction.
+2. **Setters must check equality** before calling `markDirty()`. Without guards,
+   `run()` firing at 30fps continuously restarts the renderer.
+3. **Mouse events fire at system rate (~60Hz)**, not at FPS limiter rate. Without
+   the "don't interrupt mid-batch" design, camera drag events starve the renderer.
+4. **Qt paint cycle timing** — (Session 16: sleep removed. Multiple batches per paint
+   cycle is fine — user just sees a less noisy image.)
+5. **Double-buffer must write to non-front** — the original post-publish buffer
+   selection could detach the just-published front buffer, corrupting displayed data.
+
+### Next Steps
+
+**Performance:**
+- **Fast camera-only sync path** — skip full `sync.synchronize()` when only the
+  camera changed. Just update the Cycles camera and reset the render buffer.
+- **Consider adaptive samplesPerStep** — start with 1 during drag (responsive),
+  increase to 4-8 after drag stops (faster convergence)
+- **Denoising toggle** — enable denoising only after N samples for final quality,
+  keep off during interactive preview
+
+**Other:**
+- **Refactor cycles-scene-viewer.cpp** — replace inline setupScene/decimateMesh
+  with `SceneSetup.h` calls
+- ~~**Zoom viewport**~~ — Session 17: both 2D (UV crop) and 3D (projection crop matrix)
+  zoom fully fixed. Works at any zoom level, any AR, no oversized FBOs.
 
 ## Previous State (Session 13 — GLImageRenderer, Overlay Viewer, SceneSetup)
 
@@ -739,16 +904,13 @@ ICLExperimental/Raytracing/
 
 #### Immediate TODO
 
-- **FIX: Overlay viewer progressive rendering** — see bug description above.
-  The overlay viewer doesn't show intermediate raytracing results.
+- ~~**FIX: Overlay viewer crashes**~~ — Session 16: fixed (null outputDriver + DataStore).
 - **Refactor cycles-scene-viewer.cpp** — replace inline setupScene/decimateMesh/
   computeSceneBounds/material-switching with `SceneSetup.h` calls. Currently both
   implementations exist (viewer has its own, library has the extracted version).
-- **Zoom still buggy** — the viewport math qualitatively works but the zoom rect
-  mapping doesn't always show the right region; excessive zoom goes black. Needs
-  investigation of the viewport-to-NDC mapping in the SSR FBO path.
-- **Test overlay viewer** — verify Cycles bg + GL overlay compositing works, alpha
-  slider, camera sync, material presets.
+- ~~**Zoom still buggy**~~ — Session 17: fully fixed (UV crop for 2D, crop matrix for 3D).
+- ~~**Test overlay viewer**~~ — Session 17: verified working (compositing, alpha, camera
+  sync, material presets, zoom).
 
 #### GL Renderer — Remaining
 
