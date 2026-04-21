@@ -26,7 +26,6 @@ namespace icl::qt {
     struct Options {
     Options():margin(-1),spacing(-1), hide(false){}
       std::string handle;  //!< the component handle
-      std::string out;     //!< the component output (only GUIComponentWithOutput subclasses)
       std::string in;      //!< not used!
       std::string label;   //!< label (results in a titeld border
       std::string tooltip; //!< component tooltip (not for containers)
@@ -225,7 +224,6 @@ namespace icl::qt {
       }
       if(m_options.handle.length() ||
          m_options.label.length() ||
-         m_options.out.length() ||
          m_options.in.length() ||
          m_options.tooltip.length() ||
          m_options.margin > 0 ||
@@ -235,7 +233,6 @@ namespace icl::qt {
          m_options.size != utils::Size::null ){
         str << '[';
         if(m_options.handle.length()) str << "@handle=" << m_options.handle;
-        if(m_options.out.length()) str << "@out=" << m_options.out;
         if(m_options.in.length()) str << "@in=" << m_options.in;
         if(m_options.label.length()) str << "@label=" << m_options.label;
         if(m_options.tooltip.length()) str << "@tooltip=" << m_options.tooltip;

@@ -19,6 +19,24 @@ Applied per `module-audit-checklist.md`.
 
 ---
 
+## Qt GUI component plumbing
+
+- [ ] **Rework `GUIComponent` internal representation.**  Today every
+  component is serialized to a `type(params)[@handle=X@label=L@...]`
+  string in `GUIComponent::toString()`, parsed back by
+  `GUIDefinition` inside `GUI::create()`, then dispatched to a
+  `GUIWidget` subclass.  The string round-trip is baroque (comma
+  escaping issues, default-out-N autogeneration, parse errors that
+  bubble up to the user as opaque exceptions) and exists mainly
+  because the original GUI API accepted raw string definitions.
+  Replace with direct typed component → widget dispatch: each
+  component emits a typed descriptor struct; `GUI::create()`
+  dispatches without going through a string.  The string parser
+  can remain as a legacy entry point for callers that still pass
+  raw definitions.
+
+---
+
 ## DataStore / Assign migration (Session 50 landed infrastructure; flip pending)
 
 See `project_assign_migration.md` for full status.  Infrastructure

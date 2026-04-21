@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Any.h>
-#include <icl/qt/GUIComponentWithOutput.h>
+#include <icl/qt/GUIComponent.h>
 
 namespace icl{
   /** \cond */
@@ -21,7 +21,7 @@ namespace icl{
         Buttons create a ButtonHandle. If a toggle button is created, also an output of type bool is created,
         which is true as long as the button is toggled.
     */
-    struct Button : public GUIComponentWithOutput{
+    struct Button : public GUIComponent{
       private:
       /// utility method
       static std::string form_args(const std::string &text, const std::string &toggledText, bool initiallyToggled){
@@ -37,22 +37,22 @@ namespace icl{
       public:
       /// creates button component (if toggledText is empty, a push-button is created)
       Button(const std::string &text, const std::string &toggledText="", bool initiallyToggled=false):
-      GUIComponentWithOutput(toggledText.length() ? "togglebutton" : "button",form_args(text,toggledText,initiallyToggled)){}
+      GUIComponent(toggledText.length() ? "togglebutton" : "button",form_args(text,toggledText,initiallyToggled)){}
     };
 
     /// ButtonGroup component (aka vertical list of radio buttons)
     /** Creates a ButtonGroupHandle and an int-valued output, that contains the index of the currently checked radio-button */
-    struct ButtonGroup : public GUIComponentWithOutput{
+    struct ButtonGroup : public GUIComponent{
       ButtonGroup(const std::string &commaSepTexts):
-      GUIComponentWithOutput("buttongroup",commaSepTexts){}
+      GUIComponent("buttongroup",commaSepTexts){}
     };
 
     /// CheckBox component
     /** Creates a CheckBoxHandle and a boolean output that is true as long as the check box is checked */
-    struct CheckBox : public GUIComponentWithOutput{
+    struct CheckBox : public GUIComponent{
       /// create a check box component, optionally checked intially
       CheckBox(const std::string &label, bool checked=false):
-      GUIComponentWithOutput("checkbox",label+','+(checked ? "checked":"unchecked")){}
+      GUIComponent("checkbox",label+','+(checked ? "checked":"unchecked")){}
     };
 
     /// Label component for displaying text
@@ -65,43 +65,43 @@ namespace icl{
     /// Slider component for int-ranges
     /** Creates a SliderHandle and an int-valued ouptut that contains the current slider value.
         Sliders always come with an QLCDNumber component, that displays the current slider value */
-    struct Slider : public GUIComponentWithOutput{
+    struct Slider : public GUIComponent{
       /// creates a slider with given POD parameters
       Slider(int min=0, int max=100, int curr=50, bool vertical=false, int stepping=1):
-      GUIComponentWithOutput("slider",form_args_6(min,max,curr,vertical?"vertical":"horizontal","on",stepping)){}
+      GUIComponent("slider",form_args_6(min,max,curr,vertical?"vertical":"horizontal","on",stepping)){}
 
       /// creates a slider from given int-range
       Slider(const utils::Range32f &r, int curr, bool vertical=false, int stepping=1):
-      GUIComponentWithOutput("slider",form_args_6(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal","on",stepping)){}
+      GUIComponent("slider",form_args_6(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal","on",stepping)){}
     };
 
     /// Float-valued Slider component
     /** Creates a FSliderHandle and an float-valued ouptut that contains the current slider value.
         Sliders always come with an QLCDNumber component, that displays the current slider value */
-    struct FSlider : public GUIComponentWithOutput{
+    struct FSlider : public GUIComponent{
       /// creates a FSlider with given POD parameters
       FSlider(float min=0, float max=1, float curr=0.5, bool vertical=false):
-      GUIComponentWithOutput("fslider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
+      GUIComponent("fslider",form_args_4(min,max,curr,vertical?"vertical":"horizontal")){}
 
       /// creates a FSlider from given float-range
       FSlider(const utils::Range32f &r, float curr=0.5, bool vertical=false):
-      GUIComponentWithOutput("fslider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
+      GUIComponent("fslider",form_args_4(r.minVal,r.maxVal,curr,vertical?"vertical":"horizontal")){}
     };
 
     /// Text Input component, that allows integer inputs in a given range
     /** Creates an IntHandle and an int-valued output */
-    struct Int : public GUIComponentWithOutput{
+    struct Int : public GUIComponent{
       /// create integer input component with given range and initial value
       Int(int min=0, int max=100, int curr=50):
-      GUIComponentWithOutput("int",form_args_3(min, max, curr)){}
+      GUIComponent("int",form_args_3(min, max, curr)){}
     };
 
     /// Text Input component, that allows float inputs in a given range
     /** Creates an FloatHandle and an float-valued output */
-    struct Float : public GUIComponentWithOutput{
+    struct Float : public GUIComponent{
       /// create float input component with given range and initial value
       Float(float min=0, float max=1, float curr=0.5):
-      GUIComponentWithOutput("float",form_args_3(min, max, curr)){}
+      GUIComponent("float",form_args_3(min, max, curr)){}
     };
 
     /// Text Input component, that allows float inputs with a given maximun length
@@ -232,10 +232,10 @@ namespace icl{
 
     /// SpinBox component
     /** Creates a SpinnerHandle and an int-valued output that reflects the current value */
-    struct Spinner : public GUIComponentWithOutput{
+    struct Spinner : public GUIComponent{
       /// creat spinbox component with given range and initial value
       Spinner(int min, int max, int curr):
-      GUIComponentWithOutput("spinner",form_args_3(min,max,curr)){}
+      GUIComponent("spinner",form_args_3(min,max,curr)){}
     };
 
 
@@ -294,10 +294,10 @@ namespace icl{
 
     /// Color selection component
     /** Creates a ColorHandle. */
-    struct ColorSelect : public GUIComponentWithOutput{
+    struct ColorSelect : public GUIComponent{
       /// create color selection component
       /** if the alpha parameter is set to -1, no alpha value can be specified */
-      ColorSelect(int r, int g, int b, int a=-1):GUIComponentWithOutput("color",a>=0 ? form_args_4(r,g,b,a) : form_args_3(r,g,b)){}
+      ColorSelect(int r, int g, int b, int a=-1):GUIComponent("color",a>=0 ? form_args_4(r,g,b,a) : form_args_3(r,g,b)){}
     };
 
     /// Process status component

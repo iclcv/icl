@@ -77,7 +77,7 @@ namespace icl::qt {
                        << Button("rescan").handle("scan").maxSize(3,8)
                      )
                   <<  ( HBox().label("control / FPS")
-                        << Button("capture!","stop").handle("capture").out("grabbing")
+                        << Button("capture!","stop").handle("grabbing")
                         << Combo("max 1Hz,max 5Hz,max 10Hz,max 15Hz,max 20Hz,max 25Hz,max 30Hz,max 50Hz,max 100Hz,max 120Hz,!no limit").handle("hz").minSize(5,2).maxSize(5,2)
                         << Label("--.--").handle("fps")
                       )

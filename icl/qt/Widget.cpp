@@ -1217,7 +1217,7 @@ namespace icl::qt {
     bool bciAuto = data->bciUpdateAuto && *data->bciUpdateAuto;
     bciGUI << ( HBox()
                 << Combo(bcis[0]+bcis[1]+bcis[2]).label("bci-mode").handle("bci-mode")
-                << Button("manual","auto",bciAuto).label("update mode").out("bci-update-mode")
+                << Button("manual","auto",bciAuto).label("update mode").handle("bci-update-mode")
               )
            << Slider(-255,255,data->bci[0]).handle("brightness").label("brightness")
            << Slider(-255,255,data->bci[1]).handle("contrast").label("contrast")
@@ -1233,7 +1233,7 @@ namespace icl::qt {
 
     VBox channelGUI;
     channelGUI << Combo("all,channel #0,channel #1,channel #2,channel #3").maxSize(100,2).handle("channel").label("visualized channel")
-               << Button("manual","auto").maxSize(100,2).label("update mode").out("channel-update-mode");
+               << Button("manual","auto").maxSize(100,2).label("update mode").handle("channel-update-mode");
 
     VBox captureGUI;
     captureGUI << ( HBox()
@@ -1274,7 +1274,7 @@ namespace icl::qt {
                     << String(autoCapFP,200).label("output params").handle("auto-cap-filepattern")
                   )
                << ( HBox()
-                    << CheckBox("force params").out("auto-cap-force")
+                    << CheckBox("force params").handle("auto-cap-force")
                     << Combo(sizes).label("size").handle("auto-cap-size")
                     << Combo("gray,!rgb,hls,yuv,lab").label("color").handle("auto-cap-format")
                     << Combo("depth8u,depth16s,depth32s,depth32f,depth64f").label("depth").handle("auto-cap-depth")
@@ -1308,9 +1308,9 @@ namespace icl::qt {
     ContainerGUIComponent infoGUI = VSplit().handle("info-tab");
     infoGUI << ( HBox()
                  << Spinner(-1,100,-1).handle("histo-channel").label("select channel").tooltip("pick a single channel,\nchoose -1 for all")
-                 << CheckBox("median").handle("median").out("median-on")
-                 << CheckBox("log").handle("log").out("log-on")
-                 << CheckBox("blur").handle("blur").out("blur-on")
+                 << CheckBox("median").handle("median-on")
+                 << CheckBox("log").handle("log-on")
+                 << CheckBox("blur").handle("blur-on")
                )
             <<  ( HSplit()
                   << HBox().label("histogramm").handle("histo-box").minSize(12,10)

@@ -64,7 +64,6 @@ qt_module_headers = files(
   'GLPaintEngine.h',
   'GUI.h',
   'GUIComponent.h',
-  'GUIComponentWithOutput.h',
   'GUIComponents.h',
   'GUIDefinition.h',
   'GUIHandle.h',
