@@ -42,7 +42,7 @@
 | geom/demos/kinect-segmentation.cpp | :white_check_mark: Done | Header swap |
 | geom/demos/offscreen-rendering.cpp | :white_check_mark: Done | Header swap |
 | geom/demos/plot-widget-3D.cpp | :white_check_mark: Done | Header swap |
-| geom/demos/ray-cast-octree.cpp | :white_check_mark: Done | Header swap |
+| geom/demos/ray-cast-octree.cpp | :wastebasket: Removed | Replaced by geom2/demos/raycast-octree.cpp |
 | geom/demos/rgbd-mapping.cpp | :white_check_mark: Done | Header swap |
 | geom/demos/scene-graph.cpp | :white_check_mark: Done | Header swap |
 | geom/demos/scene-object.cpp | :white_check_mark: Done | Header swap |
@@ -62,12 +62,12 @@
 | io/demos/undistortion.cpp | :white_check_mark: Done | Header swap |
 | markers/demos/multi-cam-marker-demo.cpp | :white_check_mark: Done | Header swap |
 | markers/demos/simple-marker-demo.cpp | :white_check_mark: Done | Header swap |
-| math/demos/k-means.cpp | :white_check_mark: Done | Header swap |
-| math/demos/llm-1D.cpp | :white_check_mark: Done | Header swap |
-| math/demos/llm-2D.cpp | :x: TODO | Heavy ImgQ pixel access — needs DrawTarget rewrite |
-| math/demos/octree.cpp | :white_check_mark: Done | Header swap |
-| math/demos/polynomial-regression.cpp | :x: TODO | Heavy ImgQ pixel access — needs DrawTarget rewrite |
-| math/demos/quad-tree.cpp | :white_check_mark: Done | Header swap |
+| math/demos/k-means.cpp | :white_check_mark: Done | Header swap, checked |
+| math/demos/llm-1D.cpp | :white_check_mark: Done | Cleaned up: constexpr, brace init |
+| math/demos/llm-2D.cpp | :white_check_mark: Done | Ported from ImgQ, planarToInterleaved, reset/rebuild |
+| math/demos/octree.cpp | :wastebasket: Removed | Replaced by geom2/demos/raycast-octree.cpp |
+| math/demos/polynomial-regression.cpp | :wastebasket: Split | → polynomial-regression-1D (plot), -2D (Scene2 surface), -image (cell approx) |
+| math/demos/quad-tree.cpp | :white_check_mark: Done | Cleaned up, QuadTree nn() bug fixed |
 | physics/demos/phyisics-car.cpp | :white_check_mark: Done | Header swap |
 | physics/demos/phyisics-constraints.cpp | :white_check_mark: Done | Header swap |
 | physics/demos/physics-maze.cpp | :white_check_mark: Done | Header swap |
@@ -174,10 +174,13 @@
 
 ## Summary
 
-| Category | Done | TODO | N/A | Total |
-|----------|------|------|-----|-------|
-| Demos | 68 | 5 | 3 | 76 |
-| Apps | 42 | 0 | 7 | 49 |
-| Examples | 2 | 0 | 7 | 9 |
-| Library | 6 | 3 | 0 | 9 |
-| **Total** | **118** | **8** | **17** | **143** |
+| Category | Done | TODO | Removed/Split | N/A | Total |
+|----------|------|------|---------------|-----|-------|
+| Demos | 72 | 1 | 4 | 3 | 80 |
+| Apps | 42 | 0 | 0 | 7 | 49 |
+| Examples | 2 | 0 | 0 | 7 | 9 |
+| Library | 6 | 3 | 0 | 0 | 9 |
+| **Total** | **122** | **4** | **4** | **17** | **147** |
+
+Remaining TODO: cv/demos/signature-extraction.cpp (ImgQ),
+3 library files (Scene.cpp, FiducialDetectorPluginICL1.cpp, DrawWidget.h)

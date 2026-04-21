@@ -1,61 +1,80 @@
 # ICL — Continuation Guide
 
-## Current State (Session 40 — Module-by-module app/demo audit)
+## Current State (Session 40 — Module audit: utils, core, math)
 
 ### Session 40 Summary
 
-Manual audit of every demo/app per module: check if it compiles, runs,
-is still useful, needs modernization. Also DataStore improvements and
-PseudoColorConverter → PseudoColorOp migration.
+Module-by-module audit of all demos/apps. Completed utils, core, math.
+Major framework improvements along the way.
 
-#### A. DataStore: string_view + parse fallback
+#### A. DataStore improvements
 
-- `DataStore::Data::operator string_view()` — routes through
-  `as<std::string>()` with thread-local buffer so `parse<T>(gui["key"])`
-  works after parse was changed to take string_view.
-- `DataStore::Data::operator T()` — for stream-extractable types, if the
-  direct DataStore assignment fails, falls back to
-  `parse<T>(as<std::string>())`. Makes `cc(image, gui["fmt"])` work where
-  gui["fmt"] is a ComboHandle and cc() expects a format enum.
+- `operator string_view()` — thread-local buffer for `parse<T>(gui["key"])`
+- `operator T()` fallback — stream-extractable types try string→parse<T>
+  when direct assignment fails (e.g. `cc(image, gui["fmt"])`)
 
 #### B. PseudoColorConverter → PseudoColorOp
 
-- Moved from `core` to `filter` as a proper `UnaryOp` subclass.
-- Deleted `core/PseudoColorConverter.h/.cpp`.
-- Created `filter/PseudoColorOp.h/.cpp` with `apply(Image&, Image&)` +
-  `getDestinationParams()`. Output always depth8u/formatRGB.
-- Updated 7 consumer files (4 kinect demos, OptrisGrabber, DisplacementMap,
-  lens-undistortion-calibration).
-- `pseudo(image, stops, maxValue)` Quick2 convenience function in
-  QuickFilter. Stops use `vector<pair<float, Color>>` to avoid pulling
-  `icl::filter` namespace into QuickFilter.h (which would collide with
-  the `filter()` function name under `using namespace icl`).
+- Moved from core to filter as proper UnaryOp. `pseudo()` Quick2 function.
+- Updated all 7 consumers (kinect demos, OptrisGrabber, etc.)
 
-#### C. AbstractCanvas removed
+#### C. AbstractCanvas removed (unused outside its own demo)
 
-- `core/AbstractCanvas.h/.cpp` + `core/demos/canvas.cpp` deleted — only
-  used by its own demo, superseded by Quick2 DrawTarget.
+#### D. Quick2 additions
 
-#### D. Module audit progress
+- `create()` accepts `optional<depth>` for direct depth conversion
+- `pseudo(image, stops, maxValue)` in QuickFilter
+- `roi(Image&, Rect)` and `copyroi(Image&, Rect)` overloads
+- AbstractPlotWidget default background → white
 
-Per-module walk-through of all demos/apps: compile, run, modernize,
-remove if obsolete. Progress tracked in `porting-progress.md`.
+#### E. Bug fixes
 
-- **utils**: done — `configurable-info.cpp` checked (no changes needed)
-- **core**: done — `colorspace.cpp` modernized (`cc(image, gui["fmt"])`
-  via DataStore fallback), `pseudo-color.cpp` moved to filter as
-  PseudoColorOp, `canvas.cpp` removed
+- **DrawWidget::customPaintEvent** null PaintEngine crash on macOS Core Profile
+- **QuadTree nn()**: rewrote with double-precision distance math; fixed AABB
+  degeneration bug (integer halfSize/2 reaches 0 after ~9 levels); fixed
+  queryAll() inner loop bound + missing root points
+- **Renderer::invalidateCache()** — deferred GL cleanup to render thread
+  (was calling glDelete* from run thread → crash)
+
+#### F. Scene2 enhancements
+
+- Inherits Configurable: background color, wireframe, enable lighting,
+  point size, info properties. OSD button on Canvas3D.
+- Thread safety: lock()/unlock() with recursive mutex, render() auto-locks
+- **BVH::raycastToImage()** — CPU raycast to Img8u + Img32f depth buffer
+- **RayCastOctree** (new, geom2) — Octree with rayCast/rayCastSort methods
+- **DemoScene2::setupNatureScene()** — green ground, rocks, trees
+- **raycast-octree demo** — BVH→pointcloud→octree, mouse probe highlights
+
+#### G. Module audit results
+
+- **utils**: done — configurable-info checked (no changes needed)
+- **core**: done — colorspace modernized, pseudo-color moved to filter,
+  canvas removed
+- **math**: done — all 6 demos checked:
+  - k-means: done (header swap)
+  - llm-1D: cleaned up (constexpr, brace init)
+  - llm-2D: fully ported from ImgQ to Image + planarToInterleaved
+  - octree: removed → replaced by geom2/raycast-octree demo
+  - quad-tree: cleaned up, QuadTree NN bug fixed
+  - polynomial-regression: split into 3 demos (1D plot, 2D surface
+    with Scene2, image approximation), all ported to Quick2/geom2
+
+#### H. PCL integration
+
+- Meson: manual include path extraction for Homebrew
+  (meson strips Cellar paths as "system")
+- PCL includes propagated through icl_geom_dep
 
 ### What's next
 
-**Module audit** — continue through remaining modules in dependency order:
-- [ ] math (demos: k-means, llm-1D, llm-2D, octree, polynomial-regression, quad-tree)
-- [ ] filter (demos: 9 filter demos + pseudo-color; apps: 4)
+**Module audit** — continue through remaining modules:
+- [ ] filter (demos: 10; apps: 4)
 - [ ] io (demos: 3; apps: 12)
 - [ ] cv (demos: 12; apps: 6)
 - [ ] qt (demos: 8; apps: 7; examples: 2)
-- [ ] geom (demos: 24; apps: 16)
-- [ ] geom2 (demos: 5)
+- [ ] geom (demos: 23; apps: 16)
+- [ ] geom2 (demos: 6)
 - [ ] markers (demos: 2; apps: 8)
 - [ ] physics (demos: 8)
 
@@ -63,7 +82,7 @@ For each: compile, run, check if still useful/valid, modernize API usage,
 remove if obsolete. See `porting-progress.md` for per-file status.
 
 **Quick2 Phase 2 remaining** (ImgQ pixel access rewrites):
-- 3 demos: signature-extraction.cpp, llm-2D.cpp, polynomial-regression.cpp
+- 1 demo: signature-extraction.cpp (llm-2D and polynomial-regression done)
 - 3 library files: Scene.cpp, FiducialDetectorPluginICL1.cpp, DrawWidget.h
 - ~16 umbrella headers — trivial swap once library code is done
 - Final: delete Quick.h/Quick.cpp, retire Common.h
@@ -82,6 +101,7 @@ remove if obsolete. See `porting-progress.md` for per-file status.
   Enter/returnPressed, not on every keystroke. The `.handle("name")` path
   reads the live widget value via `getValue()`. Consider removing `.out()`
   entirely or making it sync on every change.
+- QuadTree: SF template parameter is dead weight with double math — remove
 
 ---
 
