@@ -159,6 +159,36 @@ function(cycles_target_setup TARGET_NAME)
   )
 endfunction()
 
+# ---- ICLRaytracing library (Cycles-powered) ----
+set(RT_SOURCES
+  src/Raytracing/CyclesRenderer.cpp
+  src/Raytracing/SceneSynchronizer.cpp
+)
+set(RT_HEADERS
+  src/Raytracing/CyclesRenderer.h
+  src/Raytracing/SceneSynchronizer.h
+)
+
+add_library(ICLRaytracing SHARED ${RT_SOURCES} ${RT_HEADERS})
+target_include_directories(ICLRaytracing PUBLIC src/)
+target_include_directories(ICLRaytracing PRIVATE
+  ${ICL_MODULE_INCLUDE_DIRS}
+  ${CMAKE_BINARY_DIR}/src
+)
+target_link_libraries(ICLRaytracing ICLGeom)
+cycles_target_setup(ICLRaytracing)
+
+# ---- CyclesRenderer test (Phase 3) ----
+add_executable(cycles-renderer-test demos/cycles-renderer-test.cpp)
+target_include_directories(cycles-renderer-test PRIVATE
+  ${ICL_MODULE_INCLUDE_DIRS}
+  ${CMAKE_BINARY_DIR}/src
+  src/
+)
+target_link_libraries(cycles-renderer-test ICLRaytracing ICLIO)
+set_target_properties(cycles-renderer-test PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # ---- Cycles link test (Phase 1) ----
 add_executable(cycles-link-test demos/cycles-link-test.cpp)
 target_include_directories(cycles-link-test PRIVATE

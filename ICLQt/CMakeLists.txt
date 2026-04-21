@@ -5,8 +5,19 @@ file(GLOB HEADERS src/ICLQt/*.h)
 list(REMOVE_ITEM SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/RSBRemoteGUI.cpp)
 list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/RSBRemoteGUI.h)
 
-set(ICL_MOC_HEADERS src/ICLQt/ICLVideoSurface.h
-                    src/ICLQt/Widget.h
+# Remove Qt Multimedia dependent files if not available
+if(NOT Qt6Multimedia_FOUND)
+  list(REMOVE_ITEM SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/ICLVideoSurface.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/QtCameraGrabber.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/QtVideoGrabber.cpp)
+  list(REMOVE_ITEM HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/ICLVideoSurface.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/QtCameraGrabber.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLQt/QtVideoGrabber.h)
+endif()
+
+set(ICL_MOC_HEADERS src/ICLQt/Widget.h
                     src/ICLQt/MouseHandler.h
                     src/ICLQt/DoubleSlider.h
                     src/ICLQt/ImgParamWidget.h
@@ -17,6 +28,9 @@ set(ICL_MOC_HEADERS src/ICLQt/ICLVideoSurface.h
                     src/ICLQt/MultiDrawHandle.h
                     src/ICLQt/ToggleButton.h
                     src/ICLQt/Application.h)
+if(Qt6Multimedia_FOUND)
+  list(APPEND ICL_MOC_HEADERS src/ICLQt/ICLVideoSurface.h)
+endif()
 
 icl_add_module(ICLQt
   SOURCES ${SOURCES}
