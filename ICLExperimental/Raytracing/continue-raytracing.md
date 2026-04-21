@@ -655,6 +655,8 @@ ICLExperimental/Raytracing/
 - ✅ SceneRendererGL overlay mode (transparent clear, skip sky, alpha-blended blit)
 - ✅ SceneSetup utility (shared scene loading)
 - ✅ cycles-overlay-viewer app
+- ✅ GL material cache invalidation on material change (texture cache was stale)
+- ✅ Overlay viewer GUI: controls on right panel with labeled sliders
 
 #### Immediate TODO
 

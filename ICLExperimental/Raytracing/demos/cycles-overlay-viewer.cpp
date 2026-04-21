@@ -71,14 +71,14 @@ static void init() {
   glRenderer = std::make_unique<SceneRendererGL>();
   glRenderer->setOverlayMode(true);
 
-  // GUI
-  gui << (VSplit()
+  // GUI: canvas on left, controls on right
+  gui << (HSplit()
        << Canvas3D(size).handle("canvas").minSize(32, 24)
-       << (HBox()
-          << Slider(0, 100, 50).handle("alpha").label("GL %")
-          << Combo("!Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive").handle("material")
-          << Slider(1, 16, 4).handle("bounces")
-          << Slider(10, 500, 100).handle("exposure")
+       << (VBox().minSize(12, 0)
+          << Slider(0, 100, 50).handle("alpha").label("GL Overlay %")
+          << Slider(1, 16, 4).handle("bounces").label("Bounces")
+          << Slider(10, 500, 100).handle("exposure").label("Exposure %")
+          << Combo("!Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive").handle("material").label("Material")
           << Label("--").handle("info")))
      << Show();
 

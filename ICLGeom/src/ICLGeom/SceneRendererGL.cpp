@@ -468,6 +468,7 @@ struct GLGeometryCache {
   GLuint metallicRoughnessTex = 0;
   GLuint emissiveMapTex = 0;
   GLuint occlusionMapTex = 0;
+  Material *lastMaterial = nullptr;  // track material identity for change detection
 
   ~GLGeometryCache() {
     if (vao) glDeleteVertexArrays(1, &vao);
@@ -621,8 +622,23 @@ struct GLGeometryCache {
     return tex;
   }
 
+  void clearTextures() {
+    if (baseColorTex) { glDeleteTextures(1, &baseColorTex); baseColorTex = 0; }
+    if (normalMapTex) { glDeleteTextures(1, &normalMapTex); normalMapTex = 0; }
+    if (metallicRoughnessTex) { glDeleteTextures(1, &metallicRoughnessTex); metallicRoughnessTex = 0; }
+    if (emissiveMapTex) { glDeleteTextures(1, &emissiveMapTex); emissiveMapTex = 0; }
+    if (occlusionMapTex) { glDeleteTextures(1, &occlusionMapTex); occlusionMapTex = 0; }
+  }
+
   void uploadMaterialTextures(const std::shared_ptr<Material> &mat) {
-    if (!mat) return;
+    if (!mat) { clearTextures(); lastMaterial = nullptr; return; }
+
+    // Detect material change — clear old textures and re-upload
+    if (mat.get() != lastMaterial) {
+      clearTextures();
+      lastMaterial = mat.get();
+    }
+
     if (!baseColorTex && !mat->baseColorMap.isNull())
       baseColorTex = uploadTexture(mat->baseColorMap);
     if (!normalMapTex && !mat->normalMap.isNull())
@@ -1396,8 +1412,9 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
   if (!cache) {
     cache = std::make_unique<GLGeometryCache>();
     cache->build(obj);
-    cache->uploadMaterialTextures(obj->getMaterial());
   }
+  // Re-upload textures when material changes (e.g. material preset switching)
+  cache->uploadMaterialTextures(obj->getMaterial());
 
   if (cache->numIndices == 0) return;
 
