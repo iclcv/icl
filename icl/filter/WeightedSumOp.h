@@ -40,13 +40,12 @@ namespace icl::filter {
   class ICLFilter_API WeightedSumOp : public UnaryOp {
     public:
     /// creates a new WeightedSumOp object
-    WeightedSumOp(){}
+    WeightedSumOp();
 
     /// creates an new WeightedSumOp object  with a given weights vector
     /** @param weights channel weights vector
         **/
-    WeightedSumOp(const std::vector<icl64f> &weights):
-    m_vecWeights(weights){}
+    WeightedSumOp(const std::vector<icl64f> &weights);
 
     /// applies this operation on the source image
     /** @param poSrc source image
@@ -66,7 +65,7 @@ namespace icl::filter {
 
     /// sets up the current weights vector
     /** @param weights new weight vector **/
-    void setWeights(const std::vector<icl64f> &weights){ m_vecWeights = weights; }
+    void setWeights(const std::vector<icl64f> &weights);
 
     private:
     /// internal storage for the channel weights

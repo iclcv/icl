@@ -41,18 +41,35 @@ namespace icl::filter {
     }
   }
 
+  static const char *WARP_INTERP_MENU = "NN,LIN";
+  static const char *warpInterpName(scalemode m){
+    return m == interpolateNN ? "NN" : "LIN";
+  }
+  static scalemode parseWarpInterp(const std::string &s){
+    return s == "NN" ? interpolateNN : interpolateLIN;
+  }
+
   WarpOp::WarpOp(const Img32f &warpMap, scalemode mode, bool allowWarpMapScaling):
     ImageBackendDispatching(prototype()),
     m_allowWarpMapScaling(allowWarpMapScaling), m_scaleMode(mode) {
     warpMap.deepCopy(&m_warpMap);
     prepare_warp_table_inplace(m_warpMap);
+    addProperty("interpolation","menu",WARP_INTERP_MENU,warpInterpName(mode));
+    addProperty("allow warp map scaling","flag","",allowWarpMapScaling);
+    registerCallback([this](const Property &p){
+      if(p.name == "interpolation")               m_scaleMode = parseWarpInterp(p.value);
+      else if(p.name == "allow warp map scaling") m_allowWarpMapScaling = parse<bool>(p.value);
+    });
+    // No file-path prop: filter lib can't depend on ICLIO for image loading,
+    // so the warp table is supplied only through setWarpMap() (e.g. from the
+    // playground which can use qt's load() before/after creating the op).
   }
 
   WarpOp::~WarpOp() {
   }
 
   void WarpOp::setScaleMode(scalemode scaleMode){
-    m_scaleMode = scaleMode;
+    setPropertyValue("interpolation", warpInterpName(scaleMode));
   }
 
   void WarpOp::setWarpMap(const Img32f &warpMap){
@@ -62,8 +79,10 @@ namespace icl::filter {
   }
 
   void WarpOp::setAllowWarpMapScaling(bool allow){
-    m_allowWarpMapScaling = allow;
+    setPropertyValue("allow warp map scaling", allow);
   }
+
+  REGISTER_CONFIGURABLE_DEFAULT(WarpOp);
 
   void WarpOp::apply(const Image &src, Image &dst) {
     ICLASSERT_RETURN(!src.isNull());

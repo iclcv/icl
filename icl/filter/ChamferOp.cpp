@@ -189,7 +189,19 @@ namespace icl::filter {
      m_iScaleFactor(scaleFactor),
      m_bScaleUpResult(scaleUpResult){
     setClipToROI(false);
+    addProperty("hv distance","range:spinbox","[1,10000]",str(horizontalAndVerticalNeighbourDistance));
+    addProperty("diag distance","range:spinbox","[1,10000]",str(diagonalNeighborDistance));
+    addProperty("scale factor","range:spinbox","[1,16]",str(scaleFactor));
+    addProperty("scale up result","flag","",scaleUpResult);
+    registerCallback([this](const Property &p){
+      if(p.name == "hv distance")         m_iHorizontalAndVerticalNeighbourDistance = parse<icl32s>(p.value);
+      else if(p.name == "diag distance")  m_iDiagonalNeighborDistance = parse<icl32s>(p.value);
+      else if(p.name == "scale factor")   m_iScaleFactor = parse<int>(p.value);
+      else if(p.name == "scale up result") m_bScaleUpResult = parse<bool>(p.value);
+    });
   }
+
+  REGISTER_CONFIGURABLE_DEFAULT(ChamferOp);
 
 
 

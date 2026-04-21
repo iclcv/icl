@@ -35,7 +35,7 @@ namespace icl::filter {
     using NeighborhoodOp::apply;
 
     icl32f getNoise() const { return m_fNoise; }
-    void setNoise(icl32f noise) { m_fNoise = noise; }
+    void setNoise(icl32f noise);
 
     private:
     icl32f m_fNoise;

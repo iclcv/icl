@@ -14,16 +14,21 @@
 #include <icl/filter/AffineOp.h>
 #include <icl/filter/BilateralFilterOp.h>
 #include <icl/filter/CannyOp.h>
+#include <icl/filter/ChamferOp.h>
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/DitheringOp.h>
 #include <icl/filter/FFTOp.h>
+#include <icl/filter/FixedConvertOp.h>
 #include <icl/filter/GaborOp.h>
+#include <icl/filter/GradientOp.h>
+#include <icl/filter/IntegralImgOp.h>
 #include <icl/filter/LocalThresholdOp.h>
 #include <icl/filter/LUTOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/MorphologicalOp.h>
 #include <icl/filter/MotionSensitiveTemporalSmoothing.h>
+#include <icl/filter/PseudoColorOp.h>
 #include <icl/filter/RotateOp.h>
 #include <icl/filter/ScaleOp.h>
 #include <icl/filter/ThresholdOp.h>
@@ -31,6 +36,10 @@
 #include <icl/filter/UnaryArithmeticalOp.h>
 #include <icl/filter/UnaryCompareOp.h>
 #include <icl/filter/UnaryLogicalOp.h>
+#include <icl/filter/WarpOp.h>
+#include <icl/filter/WeightChannelsOp.h>
+#include <icl/filter/WeightedSumOp.h>
+#include <icl/filter/WienerOp.h>
 #include <icl/qt/BoxHandle.h>
 
 #include <memory>
@@ -53,16 +62,21 @@ static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> &filters()
     {"AffineOp",         []{ return new AffineOp;         }},
     {"BilateralFilterOp",[]{ return new BilateralFilterOp;}},
     {"CannyOp",          []{ return new CannyOp;          }},
+    {"ChamferOp",        []{ return new ChamferOp;        }},
     {"ConvolutionOp",    []{ return new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3)); }},
     {"DitheringOp",      []{ return new DitheringOp;      }},
     {"FFTOp",            []{ return new FFTOp;            }},
+    {"FixedConvertOp",   []{ return new FixedConvertOp(ImgParams(Size(320,240), formatRGB), depth8u); }},
     {"GaborOp",          []{ return new GaborOp;          }},
+    {"GradientOp",       []{ return new GradientOp;       }},
+    {"IntegralImgOp",    []{ return new IntegralImgOp;    }},
     {"LocalThresholdOp", []{ return new LocalThresholdOp;   }},
     {"LUTOp",            []{ return new LUTOp;            }},
     {"MedianOp",         []{ return new MedianOp(Size(3,3)); }},
     {"MirrorOp",         []{ return new MirrorOp(axisHorz);   }},
     {"MorphologicalOp",  []{ return new MorphologicalOp(MorphologicalOp::dilate); }},
     {"MSTS",             []{ return new MotionSensitiveTemporalSmoothing(-1, 20); }},
+    {"PseudoColorOp",    []{ return new PseudoColorOp;    }},
     {"RotateOp",         []{ return new RotateOp;         }},
     {"ScaleOp",          []{ return new ScaleOp;          }},
     {"ThresholdOp",      []{ return new ThresholdOp;      }},
@@ -70,6 +84,10 @@ static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> &filters()
     {"UnaryArithmeticalOp",[]{ return new UnaryArithmeticalOp; }},
     {"UnaryCompareOp",   []{ return new UnaryCompareOp;   }},
     {"UnaryLogicalOp",   []{ return new UnaryLogicalOp(UnaryLogicalOp::andOp, 255); }},
+    {"WarpOp",           []{ return new WarpOp;           }},
+    {"WeightChannelsOp", []{ return new WeightChannelsOp; }},
+    {"WeightedSumOp",    []{ return new WeightedSumOp;    }},
+    {"WienerOp",         []{ return new WienerOp(Size(3,3)); }},
   };
   return f;
 }

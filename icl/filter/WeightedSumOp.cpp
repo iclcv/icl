@@ -10,6 +10,40 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::filter {
+  // Same "weights as comma-separated string" pattern as WeightChannelsOp.
+  static const char *WEIGHTED_SUM_DEFAULT = "0.299,0.587,0.114";
+
+  static std::string joinW(const std::vector<icl64f> &w){
+    std::string s;
+    for(size_t i = 0; i < w.size(); ++i){ if(i) s += ","; s += str(w[i]); }
+    return s.empty() ? std::string(WEIGHTED_SUM_DEFAULT) : s;
+  }
+  static std::vector<icl64f> parseW(const std::string &s){
+    std::vector<icl64f> out;
+    for(const std::string &t : tok(s, ",")){
+      try{ out.push_back(parse<icl64f>(t)); }catch(...){}
+    }
+    return out;
+  }
+
+  WeightedSumOp::WeightedSumOp(){
+    addProperty("weights","string","128",WEIGHTED_SUM_DEFAULT);
+    registerCallback([this](const Property &p){
+      if(p.name == "weights") m_vecWeights = parseW(p.value);
+    });
+    m_vecWeights = parseW(WEIGHTED_SUM_DEFAULT);
+  }
+  WeightedSumOp::WeightedSumOp(const std::vector<icl64f> &weights)
+    : m_vecWeights(weights){
+    addProperty("weights","string","128",joinW(weights));
+    registerCallback([this](const Property &p){
+      if(p.name == "weights") m_vecWeights = parseW(p.value);
+    });
+  }
+  void WeightedSumOp::setWeights(const std::vector<icl64f> &weights){
+    setPropertyValue("weights", joinW(weights));
+  }
+
   template <class T, class D>
   void apply_ws(const Img<T> &src, Img<D> &dst, const std::vector<D> &weights) {
     const ImgIterator<T> itSrc = src.beginROI(0);
@@ -59,4 +93,5 @@ namespace icl::filter {
     }
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(WeightedSumOp);
   } // namespace icl::filter

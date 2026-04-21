@@ -33,13 +33,12 @@ namespace icl::filter {
   class ICLFilter_API WeightChannelsOp : public UnaryOp {
     public:
     /// creates a new WeightChannelsOp object
-    WeightChannelsOp(){}
+    WeightChannelsOp();
 
     /// creates an new WeightChannelsOp object  with a given weights vector
     /** @param weights channel weights vector
         **/
-    WeightChannelsOp(const std::vector<icl64f> &weights):
-    m_vecWeights(weights){}
+    WeightChannelsOp(const std::vector<icl64f> &weights);
 
     /// applies this operation on the source image
     /** @param poSrc source image
@@ -60,8 +59,7 @@ namespace icl::filter {
 
     /// sets up the current weights vector
     /** @param weights new weight vector **/
-    void setWeights(const std::vector<icl64f> &weights) {
-      m_vecWeights = weights; }
+    void setWeights(const std::vector<icl64f> &weights);
 
     private:
     /// internal storage for the channel weights

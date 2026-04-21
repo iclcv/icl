@@ -120,14 +120,43 @@ namespace icl::filter {
     }
   };
 
+  // Note: the "Custom" mode needs a stops vector — playground leaves that
+  // to the dedicated pseudo-color demo with its stop editor. Setting mode
+  // to Custom through the property without stops is a no-op.
   PseudoColorOp::PseudoColorOp(int maxValue) : m_data(new Data) {
     m_data->setDefault(maxValue);
+    addProperty("mode","menu","Default,Custom","Default");
+    addProperty("max value","range:spinbox","[1,65535]",str(maxValue));
+    registerCallback([this](const Property &p){
+      if(p.name == "mode"){
+        if(p.value == "Default"){
+          m_data->setDefault(m_data->maxVal);
+        }
+      }else if(p.name == "max value"){
+        const int v = parse<int>(p.value);
+        if(m_data->mode == Default)    m_data->setDefault(v);
+        else                           m_data->setCustom(m_data->stops, v);
+      }
+    });
   }
 
   PseudoColorOp::PseudoColorOp(const std::vector<Stop> &stops, int maxValue)
     : m_data(new Data) {
     m_data->setCustom(stops, maxValue);
+    addProperty("mode","menu","Default,Custom","Custom");
+    addProperty("max value","range:spinbox","[1,65535]",str(maxValue));
+    registerCallback([this](const Property &p){
+      if(p.name == "mode"){
+        if(p.value == "Default")       m_data->setDefault(m_data->maxVal);
+      }else if(p.name == "max value"){
+        const int v = parse<int>(p.value);
+        if(m_data->mode == Default)    m_data->setDefault(v);
+        else                           m_data->setCustom(m_data->stops, v);
+      }
+    });
   }
+
+  REGISTER_CONFIGURABLE_DEFAULT(PseudoColorOp);
 
   void PseudoColorOp::setColorTable(ColorTable t, const std::vector<Stop> &stops, int maxValue){
     if(t == Custom){

@@ -28,7 +28,20 @@ namespace icl::filter {
   WienerOp::WienerOp(const Size &maskSize, icl32f noise)
     : NeighborhoodOp(maskSize), ImageBackendDispatching(prototype()),
       m_fNoise(noise)
-  {}
+  {
+    addProperty("noise","range:slider","[0,100]:0.01",str(noise));
+    addProperty("mask size.w","range:spinbox","[1,51]",str(maskSize.width));
+    addProperty("mask size.h","range:spinbox","[1,51]",str(maskSize.height));
+    registerCallback([this](const Property &p){
+      if(p.name == "noise") m_fNoise = parse<icl32f>(p.value);
+      else if(p.name == "mask size.w" || p.name == "mask size.h"){
+        setMask(Size(parse<int>(prop("mask size.w").value),
+                     parse<int>(prop("mask size.h").value)));
+      }
+    });
+  }
+
+  void WienerOp::setNoise(icl32f noise){ setPropertyValue("noise", noise); }
 
   void WienerOp::apply(const Image &src, Image &dst) {
     if(!prepare(dst, src)) return;
@@ -36,4 +49,5 @@ namespace icl::filter {
       src, dst, getMaskSize(), getAnchor(), getROIOffset(), m_fNoise);
   }
 
+  REGISTER_CONFIGURABLE(WienerOp, return new WienerOp(utils::Size(3,3)));
   } // namespace icl::filter

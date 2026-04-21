@@ -10,8 +10,26 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::filter {
+  // Integral images need a wide value domain; these three depths are what
+  // the C++ backend supports (see the apply() dispatch below).
+  static const char *INTEGRAL_DEPTH_MENU = "depth32s,depth32f,depth64f";
+
+  static const char *depthName(depth d){
+    switch(d){
+      case depth32s: return "depth32s";
+      case depth32f: return "depth32f";
+      case depth64f: return "depth64f";
+      default: return "depth32s";
+    }
+  }
+
   IntegralImgOp::IntegralImgOp(depth d):
     m_integralImageDepth(d),m_buf(0){
+    addProperty("integral image depth","menu",INTEGRAL_DEPTH_MENU,depthName(d));
+    registerCallback([this](const Property &p){
+      if(p.name == "integral image depth")
+        m_integralImageDepth = parse<depth>(p.value);
+    });
   }
 
 
@@ -20,14 +38,14 @@ namespace icl::filter {
   }
 
   void IntegralImgOp::setIntegralImageDepth(depth integralImageDepth){
-
-    m_integralImageDepth = integralImageDepth;
+    setPropertyValue("integral image depth", depthName(integralImageDepth));
   }
 
   depth IntegralImgOp::getIntegralImageDepth() const{
-
     return m_integralImageDepth;
   }
+
+  REGISTER_CONFIGURABLE_DEFAULT(IntegralImgOp);
 
 
 

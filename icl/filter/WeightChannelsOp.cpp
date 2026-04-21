@@ -11,6 +11,49 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::filter {
+  // Shared weight-string helpers used by both WeightChannelsOp and WeightedSumOp.
+  // Weights live in a "string" property (comma-separated doubles) because the
+  // vector length depends on the input image's channel count — no single
+  // slider widget fits. Default: ITU-R BT.601 luminance for 3-channel RGB.
+  static const char *WEIGHT_STRING_DEFAULT = "0.299,0.587,0.114";
+
+  static std::string joinWeights(const std::vector<icl64f> &w){
+    std::string s;
+    for(size_t i = 0; i < w.size(); ++i){
+      if(i) s += ",";
+      s += str(w[i]);
+    }
+    return s.empty() ? std::string(WEIGHT_STRING_DEFAULT) : s;
+  }
+
+  static std::vector<icl64f> parseWeights(const std::string &s){
+    std::vector<icl64f> out;
+    for(const std::string &tok : tok(s, ",")){
+      try{ out.push_back(parse<icl64f>(tok)); }catch(...){}
+    }
+    return out;
+  }
+
+  WeightChannelsOp::WeightChannelsOp(){
+    addProperty("weights","string","128",WEIGHT_STRING_DEFAULT);
+    registerCallback([this](const Property &p){
+      if(p.name == "weights") m_vecWeights = parseWeights(p.value);
+    });
+    m_vecWeights = parseWeights(WEIGHT_STRING_DEFAULT);
+  }
+
+  WeightChannelsOp::WeightChannelsOp(const std::vector<icl64f> &weights)
+    : m_vecWeights(weights){
+    addProperty("weights","string","128",joinWeights(weights));
+    registerCallback([this](const Property &p){
+      if(p.name == "weights") m_vecWeights = parseWeights(p.value);
+    });
+  }
+
+  void WeightChannelsOp::setWeights(const std::vector<icl64f> &weights){
+    setPropertyValue("weights", joinWeights(weights));
+  }
+
   void WeightChannelsOp::apply(const Image &src, Image &dst) {
     ICLASSERT_RETURN( static_cast<int>(m_vecWeights.size()) == src.getChannels() );
     if(!prepare(dst, src)) return;
@@ -25,4 +68,5 @@ namespace icl::filter {
     });
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(WeightChannelsOp);
   } // namespace icl::filter
