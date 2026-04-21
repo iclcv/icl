@@ -57,15 +57,13 @@ namespace icl::geom {
       o->rotate(rxs[i],rys[i],rzs[i]);
       o->setVisible(Primitive::line,false);
       o->setVisible(Primitive::vertex,false);
-      o->setColor(Primitive::quad,cs[i]);
-      o->setColor(Primitive::polygon,cs[i]);
+      o->setMaterial(Material::fromColor(cs[i]));
 
       o = addCone(0,0,l, 2*d,2*d,3*d, 20);
       o->rotate(rxs[i],rys[i],rzs[i]);
       o->setVisible(Primitive::line,false);
       o->setVisible(Primitive::vertex,false);
-      o->setColor(Primitive::triangle,cs[i]);
-      o->setColor(Primitive::polygon,cs[i]);
+      o->setMaterial(Material::fromColor(cs[i]));
     }
 
     float dFac = (xLabel.length() == 1 && yLabel.length() == 1 && zLabel.length() == 1) ? 3 : 5;

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 #include <icl/qt/Common.h>
 #include <icl/utils/FPSLimiter.h>
 
@@ -87,9 +88,9 @@ void init(){
                0,0,0,1);
   wheel_cons[3] = new HingeConstraint(chasis,wheels[3],frameA,frameB,0);
 
-  ground->setColor(Primitive::all,geom_red());
+  ground->setMaterial(Material::fromColor(geom_red()));
   ground->setRollingFriction(0.1f);
-  chasis->setColor(Primitive::all,geom_green());
+  chasis->setMaterial(Material::fromColor(geom_green()));
 
   scene.addObject(ground,true);
   scene.addObject(chasis,true);

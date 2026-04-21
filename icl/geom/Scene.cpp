@@ -346,7 +346,7 @@ namespace icl::geom {
     }
 
     m_cursor = SceneObject::sphere(0,0,0,1,10,10);
-    m_cursor->setColor(Primitive::all,GeomColor(255,0,255,255),true);
+    m_cursor->setMaterial(Material::fromColor(GeomColor(255,0,255,255)));
     m_cursor->addChild(new CoordinateFrameSceneObject(5,0.5),true);
 
     addProperty("visualize cameras","flag","",false);

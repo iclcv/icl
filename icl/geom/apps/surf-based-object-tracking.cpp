@@ -5,6 +5,7 @@
 #include <icl/cv/SurfFeatureDetector.h>
 #include <icl/qt/Common.h>
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 #include <icl/geom/RansacBasedPoseEstimator.h>
 
 GenericGrabber grabber;
@@ -26,8 +27,7 @@ void init(){
   pe = new RansacBasedPoseEstimator(scene.getCamera(0));
 
   obj = SceneObject::cuboid(t.width/2,t.height/2,d/2,t.width,t.height,d);
-  obj->setColor(Primitive::quad, GeomColor(0,100,255,50));
-  obj->setColor(Primitive::line, geom_red());
+  obj->setMaterial(Material::fromColors(GeomColor(0,100,255,50), geom_red()));
   obj->setLineWidth(3);
   scene.addObject(obj);
 

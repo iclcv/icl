@@ -39,7 +39,7 @@ namespace icl::geom {
     axisLength(axisLength),axisThickness(axisThickness){
       for(int i=0;i<3;++i){
         axis[i] = addCube(0,0,0,1);
-        axis[i]->setColor(Primitive::quad,GeomColor((i==0)*255,(i==1)*255,(i==2)*255,255));
+        axis[i]->setMaterial(Material::fromColor(GeomColor((i==0)*255,(i==1)*255,(i==2)*255,255)));
       }
       setVisible(Primitive::vertex,false,true);
       setVisible(Primitive::line,false,true);

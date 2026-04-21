@@ -4,6 +4,7 @@
 
 #include <icl/qt/Common.h>
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 #include <icl/utils/FPSLimiter.h>
 
 // global data
@@ -14,7 +15,7 @@ void reload_obj(){
   scene.removeObject(0);
   SceneObject *o = new SceneObject(*pa("-o"));
   o->setPointHitMaxDistance(0.1);
-  o->setColor(Primitive::line,GeomColor(255,0,0,255));
+  o->setMaterial(Material::fromColors(GeomColor(255,255,255,255), GeomColor(255,0,0,255)));
   o->setVisible(Primitive::line,true);
   scene.addObject(o);
 }
@@ -76,7 +77,7 @@ void init(){
     if(pa("-n")){
       o->createAutoNormals();
     }
-    o->setColor(Primitive::line,GeomColor(255,0,0,255));
+    o->setMaterial(Material::fromColors(GeomColor(255,255,255,255), GeomColor(255,0,0,255)));
     o->setPolygonSmoothingEnabled(false);
 
     if(!(bool)pa("-render-lines"))o->setVisible(Primitive::line,false);

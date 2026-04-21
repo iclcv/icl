@@ -613,7 +613,7 @@ namespace icl::geom {
               }
           }
           if(added_obj){
-            added_obj->setColor(Primitive::all,color);
+            added_obj->setMaterial(Material::fromColor(color));
             added_obj->setTransformation(mat);
           }
 

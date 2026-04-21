@@ -71,7 +71,7 @@ namespace physics{
       SceneObject *o = h.obj;
       Vec pos = h.pos;
       if(o && o->getParent() == parent && !dynamic_cast<ManipulatablePaper::DraggedPositionIndicator*>(o)){
-        o->setColor(Primitive::quad,GeomColor(255,150,0,255));
+        o->setMaterial(Material::fromColor(GeomColor(255,150,0,255)));
         if(!menu){
           menu.reset(new QMenu);
           menu->addAction("fix here");
@@ -210,7 +210,7 @@ namespace physics{
       for(int x=0;x<dim.width;++x){
         SceneObject *cube = addCube(0,0,0,2);
         nodes.push_back(cube);
-        cube->setColor(Primitive::quad,GeomColor(255,0,0,255));
+        cube->setMaterial(Material::fromColor(GeomColor(255,0,0,255)));
       }
     }
     setVisible(Primitive::vertex,false);
@@ -260,7 +260,7 @@ namespace physics{
     }else{
       attractors[hash] = new VertexAttractor(scene, coords, oscillating, this);
       GeomColor color = oscillating ? GeomColor(255,255,0,255) : GeomColor(0,255,0,255);
-      nodes[coords.x + getDimensions().width * coords.y]->setColor(Primitive::quad,color);
+      nodes[coords.x + getDimensions().width * coords.y]->setMaterial(Material::fromColor(color));
     }
   }
 
@@ -271,7 +271,7 @@ namespace physics{
     if(it != attractors.end()){
       delete it->second;
       attractors.erase(it);
-      nodes[coords.x + getDimensions().width * coords.y]->setColor(Primitive::quad,geom_red(255));
+      nodes[coords.x + getDimensions().width * coords.y]->setMaterial(Material::fromColor(geom_red(255)));
     }
   }
 
@@ -282,7 +282,7 @@ namespace physics{
       attractors.erase(it);
     }
     for(size_t i=0;i<nodes.size();++i){
-      nodes[i]->setColor(Primitive::quad,geom_red(255));
+      nodes[i]->setMaterial(Material::fromColor(geom_red(255)));
     }
   }
 
@@ -374,7 +374,7 @@ namespace physics{
   void ManipulatablePaper::adaptGlobalStiffness(float val){
     PhysicsPaper::adaptGlobalStiffness(val);
     for(size_t i=0;i<nodes.size();++i){
-      nodes[i]->setColor(Primitive::quad,GeomColor(255,255-255*val,0,255));
+      nodes[i]->setMaterial(Material::fromColor(GeomColor(255,255-255*val,0,255)));
     }
 
     removeAllLineAnnoations();
@@ -465,7 +465,7 @@ namespace physics{
 
   ManipulatablePaper::DraggedPositionIndicator::DraggedPositionIndicator(ManipulatablePaper *parent):
     SceneObject("sphere",Mat(0,0,0,4,15,15).data()),parent(parent){
-    setColor(Primitive::quad, GeomColor(255,0,0,255));
+    setMaterial(Material::fromColor(GeomColor(255,0,0,255)));
     setVisible(false);
     setVisible(Primitive::line,false);
     setVisible(Primitive::vertex,false);

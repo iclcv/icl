@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 #include <icl/qt/Common.h>
 #include <icl/utils/FPSLimiter.h>
 
@@ -33,7 +34,7 @@ void init(){
   RigidBoxObject *ground = new RigidBoxObject(0.0,0.0,-10, 1000, 1000, 20, 0);
   HingeConstraint *hinge_constraint = new HingeConstraint(hinge, door, Vec(0,0,0), Vec(0,-115,0), 2);
 
-  ground->setColor(Primitive::all,geom_red());
+  ground->setMaterial(Material::fromColor(geom_red()));
 
   //simulate friction between the hinge and the door by adding some damping
   door->setDamping(0.2,0.2);

@@ -5,6 +5,7 @@
 #include "camera-calibration-CameraCalibrationUtils.h"
 #include <icl/core/CoreFunctions.h>
 #include <icl/geom/Scene.h>
+#include <icl/geom/Material.h>
 
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/ConfigFile.h>
@@ -274,8 +275,7 @@ namespace icl::markers {
         }
 
         SceneObject *o = new SceneObject(tmpFilename.c_str());
-        o->setColor(Primitive::quad,GeomColor(0,100,255,100));
-        o->setColor(Primitive::line,GeomColor(255,0,0,255));
+        o->setMaterial(Material::fromColors(GeomColor(0,100,255,100), GeomColor(255,0,0,255)));
         o->setVisible(Primitive::line,true);
         o->setLineWidth(2);
         o->setTransformation(cf.transforms[0].transform);
@@ -445,7 +445,7 @@ namespace icl::markers {
       int n2 = n/2;
 
       calibFileData.planeObj = new GridSceneObject(n,n,o -dx*(n2) - dy*(n2) ,dx,dy,true,false);
-      calibFileData.planeObj->setColor(Primitive::line,GeomColor(c[0],c[1],c[2],c[3]));
+      calibFileData.planeObj->setMaterial(Material::fromColor(GeomColor(c[0],c[1],c[2],c[3])));
       calibFileData.planeObj->setVisible(Primitive::vertex,false);
 
       calibFileData.planeObj->addVertex(set_3_to_1(o-dx*n2));

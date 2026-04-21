@@ -1,6 +1,7 @@
 #include "physics-maze-MazeObject.h"
 #include <icl/qt/Quick.h>
 #include <icl/physics/RigidBoxObject.h>
+#include <icl/geom/Material.h>
 #include <icl/physics/SixDOFConstraint.h>
 // #include <MILabIO/viconreader.h>
 
@@ -155,9 +156,8 @@ namespace icl{
 
         setLineWidth(2);
         setVisible(Primitive::all,true);
-        setColor(Primitive::quad, bg_color[0]);
-        setColor(Primitive::line, fg_color[0]);
-        setColor(Primitive::text, fg_color[0]);
+        setMaterial(Material::fromColors(bg_color[0], fg_color[0]));
+        for (auto *p : getPrimitives()) if (p->type == Primitive::text) p->color = fg_color[0] * (1.f/255);
 
         //rotate(M_PI,0,0);
         //m_pos = rot * m_pos;
@@ -201,9 +201,8 @@ namespace icl{
     //-----------------------------------------------------------------
 
     void MazeSection::setActivated(const bool act) {
-        setColor(Primitive::quad, bg_color[(int)act]);
-        setColor(Primitive::line, fg_color[(int)act]);
-        setColor(Primitive::text, fg_color[(int)act]);
+        setMaterial(Material::fromColors(bg_color[(int)act], fg_color[(int)act]));
+        for (auto *p : getPrimitives()) if (p->type == Primitive::text) p->color = fg_color[(int)act] * (1.f/255);
     }
 
     //==================================================================
@@ -302,7 +301,7 @@ namespace icl{
         setRollingFriction(0.0f);
         //add mazeGround
         mazeGround = new RigidBoxObject(85-2.5 - cx, 75-2.5 - cy, -13.5, 170, 150, 3,1);
-        mazeGround->setColor(Primitive::all,geom_white());
+        mazeGround->setMaterial(Material::fromColor(geom_white()));
 
         //add holes
         for(int i = 0; i < NUM_HOLES; i++) {
@@ -315,14 +314,13 @@ namespace icl{
         mazeBall->setRestitution(0.1f);
         mazeBall->setFriction(0.5f);
         mazeBall->setRollingFriction(0.0f);
-        mazeBall->setColor(Primitive::all,geom_red());
+        mazeBall->setMaterial(Material::fromColor(geom_red()));
         mazeBall->setCollisionCallback([this](PhysicsObject* self, PhysicsObject* other, geom::Vec pos){ ballCallback(self, other, pos); });
 
         setLineSmoothingEnabled(false);
         setPolygonSmoothingEnabled(false);
-        setColor(Primitive::line, GeomColor(0,100,200,255),true);
         //setVisible(Primitive::quad,false);
-        setColor(Primitive::quad, GeomColor(255,255,255,255));
+        setMaterial(Material::fromColors(GeomColor(255,255,255,255), GeomColor(0,100,200,255)), true);
 
         for (size_t i=0; i < NUM_MAZE_SECTIONS; ++i) {
             MazeSection *part = new MazeSection(Point32f(sections[i*4], sections[i*4+1]),

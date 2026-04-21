@@ -5,6 +5,7 @@
 #include <icl/qt/Common.h>
 #include <icl/math/PolynomialRegression.h>
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 #include <icl/geom/GridSceneObject.h>
 #include <icl/utils/Random.h>
 
@@ -114,7 +115,7 @@ void init_3D_demo(){
     o->addVertex(Vec(xs(0,i), xs(1,i), ys[i], 1));
   }
 
-  o->setColor(Primitive::vertex,geom_red());
+  o->setMaterial(Material::fromColor(geom_red()));
   o->setVisible(Primitive::vertex,true);
   o->setPointSize(5);
   scene.addObject(o);
@@ -141,7 +142,7 @@ void init_3D_demo(){
   SceneObject *ogrid = new GridSceneObject(dim,dim,ps,false,true);
   ogrid->createAutoNormals();
   ogrid->setVisible(Primitive::vertex,false);
-  ogrid->setColor(Primitive::quad,GeomColor(0,100,255,200));
+  ogrid->setMaterial(Material::fromColor(GeomColor(0,100,255,200)));
 
 
   scene.addObject(ogrid);

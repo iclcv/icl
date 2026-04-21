@@ -50,7 +50,7 @@ namespace icl::physics {
         static_cast<RigidObject *>(new RigidSphereObject(rand1,rand1,rand2, rand5,10));
         cube->setVisible(geom::Primitive::vertex,false);
         cube->setVisible(geom::Primitive::line,false);
-        cube->setColor(geom::Primitive::quad,geom::GeomColor(rand4,rand4,rand4,255));
+        cube->setMaterial(geom::Material::fromColor(geom::GeomColor(rand4,rand4,rand4,255)));
         cube->setCollisionMargin(1);
         scene->addObject(cube);
         world->addObject(cube);

@@ -4,6 +4,7 @@
 
 #include <icl/qt/Common.h>
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 
 GUI gui;
 Scene scene;
@@ -40,7 +41,7 @@ struct Light : public SceneObject{
   int idx;
   Light(int idx):
     SceneObject("sphere",FixedColVector<float,6>(0,0,0,0.4,10,10).data()),idx(idx){
-    setColor(Primitive::quad,GeomColor(255,255,255,255));
+    setMaterial(Material::fromColor(GeomColor(255,255,255,255)));
     setVisible(Primitive::line,false);
     setVisible(Primitive::vertex,false);
   }
@@ -76,8 +77,11 @@ void init(){
 
   float bgsphere[] = {0,0,0,40,40,100};
   SceneObject *bg = new SceneObject("sphere",bgsphere);
-  bg->setColor(Primitive::quad,GeomColor(0,0,100,255));
-  bg->setColor(Primitive::vertex,GeomColor(255,255,255,255));
+  {
+    auto mat = Material::fromColor(GeomColor(0,0,100,255));
+    mat->pointColor = GeomColor(1,1,1,1);
+    bg->setMaterial(std::move(mat));
+  }
   bg->setPointSize(3);
   bg->setVisible(Primitive::line,false);
   scene.addObject(bg);

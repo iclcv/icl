@@ -6,6 +6,7 @@
 
 #include <icl/qt/Common.h>
 #include <icl/geom/Scene.h>
+#include <icl/geom/Material.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
 #include <icl/qt/AdjustGridMouseHandler.h>
@@ -320,23 +321,20 @@ void run(){
     if(!calibObj) continue;
     calibObj->setTransformation(Trel * Ts[i]);
     const int a = gui["objAlpha"];
-    if(a){
-      const int r = enabled[i] ? 0 : 100, g = 100, b = enabled[i] ? 255 : 100;
-      calibObj->setVisible(Primitive::quad,true);
-      calibObj->setVisible(Primitive::triangle,true);
-      calibObj->setVisible(Primitive::polygon,true);
-      calibObj->setColor(Primitive::quad,GeomColor(r,g,b,a));
-      calibObj->setColor(Primitive::triangle,GeomColor(r,g,b,a));
-      calibObj->setColor(Primitive::polygon,GeomColor(r,g,b,a));
-    }else{
-      calibObj->setVisible(Primitive::quad,false);
-      calibObj->setVisible(Primitive::triangle,false);
-      calibObj->setVisible(Primitive::polygon,false);
-    }
-    if(!enabled[i]){
-      calibObj->setColor(Primitive::line,GeomColor(200,200,200,a));
-    }else{
-      calibObj->setColor(Primitive::line,GeomColor(255,0,0,a));
+    {
+      GeomColor lineColor = enabled[i] ? GeomColor(255,0,0,a) : GeomColor(200,200,200,a);
+      if(a){
+        const int r = enabled[i] ? 0 : 100, g = 100, b = enabled[i] ? 255 : 100;
+        calibObj->setVisible(Primitive::quad,true);
+        calibObj->setVisible(Primitive::triangle,true);
+        calibObj->setVisible(Primitive::polygon,true);
+        calibObj->setMaterial(Material::fromColors(GeomColor(r,g,b,a), lineColor));
+      }else{
+        calibObj->setVisible(Primitive::quad,false);
+        calibObj->setVisible(Primitive::triangle,false);
+        calibObj->setVisible(Primitive::polygon,false);
+        calibObj->setMaterial(Material::fromColors(GeomColor(0,0,0,0), lineColor));
+      }
     }
   }
 

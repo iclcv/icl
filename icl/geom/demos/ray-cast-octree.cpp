@@ -6,6 +6,7 @@
 #include <icl/geom/RayCastOctreeObject.h>
 #include <icl/geom/GenericPointCloudGrabber.h>
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 
 GUI gui;
 Scene scene;
@@ -87,7 +88,7 @@ struct Mouse : public MouseHandler{
           box->setVisible(Primitive::vertex,false);
           box->setVisible(Primitive::quad,false);
           box->setVisible(Primitive::line,true);
-          box->setColor(Primitive::line, geom_white(255));
+          box->setMaterial(Material::fromColor(geom_white(255)));
         }
         oPoints->setPointSize(7);
 

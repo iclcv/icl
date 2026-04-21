@@ -2,6 +2,7 @@
 
 #include <icl/physics/RigidCylinderObject.h>
 #include <icl/physics/RigidSphereObject.h>
+#include <icl/geom/Material.h>
 
 namespace icl::physics {
     class HoleObject : public RigidCylinderObject{
@@ -17,7 +18,7 @@ namespace icl::physics {
           timer = 0;
           setVisible(geom::Primitive::all,false);
           addCylinder(0, 0, 0, 11, 11, 1, 16);
-          setColor(geom::Primitive::all, geom::geom_green());
+          setMaterial(geom::Material::fromColor(geom::geom_green()));
           setCollisionCallback([this](PhysicsObject* self, PhysicsObject* other, geom::Vec pos){ onHit(self, other, pos); });
           setContactResponse(false);
           PhysicsObject::setContactResponse(false);
@@ -25,10 +26,10 @@ namespace icl::physics {
       void updateSceneObject() {
         RigidCylinderObject::updateSceneObject();
         if(timer > 0) {
-            setColor(geom::Primitive::all, geom::geom_yellow());
+            setMaterial(geom::Material::fromColor(geom::geom_yellow()));
             timer--;
         } else {
-            setColor(geom::Primitive::all, geom::geom_green());
+            setMaterial(geom::Material::fromColor(geom::geom_green()));
         }
       }
     };

@@ -55,13 +55,13 @@ namespace icl{
 
         DragIndicator(Data *parent):parent(parent){
           mousePos = SceneObject::sphere(0,0,0,3,10,10);
-          mousePos->setColor(Primitive::quad,GeomColor(255,0,0,255));
+          mousePos->setMaterial(Material::fromColor(GeomColor(255,0,0,255)));
           mousePos->setVisible(false);
           mousePos->setVisible(Primitive::line,false);
           mousePos->setVisible(Primitive::vertex,false);
 
           paperDragPos = SceneObject::sphere(0,0,0,3,10,10);
-          paperDragPos->setColor(Primitive::quad,GeomColor(0,100,255,255));
+          paperDragPos->setMaterial(Material::fromColor(GeomColor(0,100,255,255)));
           paperDragPos->setVisible(false);
           paperDragPos->setVisible(Primitive::line,false);
           paperDragPos->setVisible(Primitive::vertex,false);

@@ -151,15 +151,18 @@ namespace icl::geom {
         }
       }
 
-      setColor(Primitive::quad,GeomColor(255,240,230,255));
+      setMaterial(Material::fromColor(GeomColor(255,240,230,255)));
       setVisible(Primitive::line,false);
       setVisible(Primitive::vertex,false);
 
       createAutoNormals();
 
-      thread->setColor(Primitive::quad,GeomColor(250,250,250,255));
+      {
+        auto mat = Material::fromColor(GeomColor(250,250,250,255));
+        mat->roughness = std::sqrt(2.0f / (255.0f + 2.0f));
+        thread->setMaterial(std::move(mat));
+      }
       thread->setVisible(Primitive::line,false);
-      thread->setShininess(255);
       thread->createAutoNormals();
 
     }

@@ -4,6 +4,7 @@
 
 #include <icl/qt/Common.h>
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 #include <icl/utils/FPSLimiter.h>
 
 // global data
@@ -31,7 +32,7 @@ struct LorenzAttractor  : public Vec{
 void reload_obj(){
   scene.removeObject(0);
   SceneObject *o = new SceneObject(*pa("-o"));
-  o->setColor(Primitive::line,GeomColor(255,0,0,255));
+  o->setMaterial(Material::fromColors(GeomColor(255,255,255,255), GeomColor(255,0,0,255)));
   o->setVisible(Primitive::line,true);
   scene.addObject(o);
 }
@@ -61,7 +62,7 @@ void init(){
     if(pa("-n")){
       o->createAutoNormals();
     }
-    o->setColor(Primitive::line,GeomColor(255,0,0,255));
+    o->setMaterial(Material::fromColors(GeomColor(255,255,255,255), GeomColor(255,0,0,255)));
     o->setVisible(Primitive::line,true);
     scene.addObject(o);
   }else{ // or create a simple cube

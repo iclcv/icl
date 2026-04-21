@@ -12,6 +12,7 @@
 
 #include <icl/geom/Scene.h>
 #include <icl/geom/GeomDefs.h>
+#include <icl/geom/Material.h>
 #include <mutex>
 
 VSplit gui;
@@ -75,8 +76,7 @@ struct LUT3DSceneObject : public SceneObject {
                   t==1 ? 127 : z*dz,
                   rs[i],gs[i],bs[i]);
           SceneObject *o = addCube(x-cx+0.5,y-cy+0.5,z-cz+0.5,1);
-          o->setColor(Primitive::quad, GeomColor(rs[i],gs[i],bs[i],255));
-          o->setColor(Primitive::line, GeomColor(255,255,255,255));
+          o->setMaterial(Material::fromColors(GeomColor(rs[i],gs[i],bs[i],255), GeomColor(255,255,255,255)));
           o->setVisible(Primitive::line,false);
           o->setVisible(Primitive::vertex,false);
         }
@@ -86,7 +86,7 @@ struct LUT3DSceneObject : public SceneObject {
     o->setVisible(Primitive::line,true);
     o->setVisible(Primitive::quad,false);
     o->setVisible(Primitive::vertex,false);
-    o->setColor(Primitive::line,GeomColor(255,255,255,255));
+    o->setMaterial(Material::fromColor(GeomColor(255,255,255,255)));
 
 
     float wl = 1.3*(w/2);
@@ -124,7 +124,7 @@ struct LUT3DSceneObject : public SceneObject {
     const icl8u *lut = segmenter->getLUT();
     for(int i=0;i<dim;++i){
       m_children[i]->setVisible( lut[i] );
-      m_children[i]->setColor(Primitive::quad,GeomColor(rs[i],gs[i],bs[i],alpha));
+      m_children[i]->setMaterial(Material::fromColor(GeomColor(rs[i],gs[i],bs[i],alpha)));
       m_children[i]->setVisible(Primitive::line,hoveredClassID == lut[i]);
     }
     // createDisplayList(); // this does not help yet, since we update

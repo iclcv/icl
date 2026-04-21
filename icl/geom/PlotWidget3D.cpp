@@ -223,8 +223,7 @@ namespace icl{
           }else{
             obj->setVisible(Primitive::vertex,true);
             obj->setVisible(Primitive::line,true);
-            obj->setColor(Primitive::vertex,color);
-            obj->setColor(Primitive::line,color);
+            obj->fillVertexColors(color);
           }
 
           if(!fill[3]){
@@ -235,10 +234,15 @@ namespace icl{
             obj->setVisible(Primitive::triangle,true);
             obj->setVisible(Primitive::quad,true);
             obj->setVisible(Primitive::polygon,true);
+          }
 
-            obj->setColor(Primitive::triangle,fill);
-            obj->setColor(Primitive::quad,fill);
-            obj->setColor(Primitive::polygon,fill);
+          // set material: combine face and wire colors as needed
+          if(fill[3] && color[3]){
+            obj->setMaterial(Material::fromColors(fill, color));
+          }else if(fill[3]){
+            obj->setMaterial(Material::fromColor(fill));
+          }else if(color[3]){
+            obj->setMaterial(Material::fromColor(color));
           }
         }
         rootObject->lock();

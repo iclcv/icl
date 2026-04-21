@@ -6,6 +6,7 @@
 #define ICL_DEFAULT_GROUND_OBJECT_H
 
 #include <icl/physics/RigidBoxObject.h>
+#include <icl/geom/Material.h>
 
 namespace icl{
 
@@ -21,7 +22,7 @@ namespace icl{
 
       setVisible(Primitive::vertex,false);
       setVisible(Primitive::line,false);
-      setColor(Primitive::quad,GeomColor(200,200,200,255));
+      setMaterial(Material::fromColor(GeomColor(200,200,200,255)));
       //((QuadPrimitive*)getPrimitives()[12])->tesselationResolution = 50;
     }
   };

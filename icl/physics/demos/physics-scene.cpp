@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 #include <icl/qt/Common.h>
 #include <icl/utils/FPSLimiter.h>
 
@@ -31,7 +32,7 @@ void init(){
   gui << Canvas3D().handle("draw") << Show();
   scene.addCamera(cam);
 
-  table.setColor(Primitive::all,geom_red());
+  table.setMaterial(Material::fromColor(geom_red()));
 
   cylinder.setRestitution(0.5f);
   sphere.setRestitution(0.5f);

@@ -4,6 +4,7 @@
 
 #include <icl/qt/Common.h>
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 #include <icl/utils/FPSLimiter.h>
 #include <icl/geom/ComplexCoordinateFrameSceneObject.h>
 
@@ -26,7 +27,7 @@ struct Planet : public SceneObject{
     SceneObject *s = addSphere(0,0,0,radius,30,30);
     s->setVisible(Primitive::vertex,false);
     s->setVisible(Primitive::line,false);
-    s->setColor(Primitive::quad,color);
+    s->setMaterial(Material::fromColor(color));
   }
   void prepareForRendering(){
     float dt = (Time::now()-startTime).toSecondsDouble();

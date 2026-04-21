@@ -4,6 +4,7 @@
 
 #include <icl/qt/Common.h>
 #include <icl/geom/Geom.h>
+#include <icl/geom/Material.h>
 #include <icl/utils/FPSLimiter.h>
 #include <icl/io/GenericImageOutput.h>
 Scene scene;
@@ -72,7 +73,7 @@ void init(){
   }
 
   SceneObject* ground = SceneObject::cuboid(0,0,0,200,200,3);
-  ground->setColor(Primitive::quad,GeomColor(100,100,100,255));
+  ground->setMaterial(Material::fromColor(GeomColor(100,100,100,255)));
 
   scene.addObject(ground);
   if(pa("-object")){
@@ -80,9 +81,7 @@ void init(){
   }else{
     scene.addObject( (obj = SceneObject::cube(0,0,3, 3) ) );
   }
-  obj->setColor(Primitive::quad, GeomColor(0,100,255,255));
-  obj->setColor(Primitive::triangle, GeomColor(0,100,255,255));
-  obj->setColor(Primitive::polygon, GeomColor(0,100,255,255));
+  obj->setMaterial(Material::fromColor(GeomColor(0,100,255,255)));
   obj->setVisible(Primitive::line | Primitive::vertex, false);
 
   gui["draw"].link(scene.getGLCallback(0));
