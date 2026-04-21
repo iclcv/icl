@@ -45,7 +45,8 @@ void init() {
 
   // DemoScene2 handles loading, auto-scaling, ground, lights, camera
   scene.setup(files, viewSize,
-              pa("-rotate") ? pa("-rotate").as<std::string>() : "");
+              pa("-rotate") ? pa("-rotate").as<std::string>() : "",
+              pa("-no-checkerboard"));
 
   // GUI: single canvas with overlay controls
   gui << (HSplit()
@@ -99,6 +100,6 @@ void run() {
 
 int main(int argc, char **argv) {
   return ICLApp(argc, argv,
-    "-scene(...) -size(Size=800x600) -samples(int=256) -rotate(string)",
+    "-scene(...) -size(Size=800x600) -samples(int=256) -rotate(string) -no-checkerboard",
     init, run).exec();
 }

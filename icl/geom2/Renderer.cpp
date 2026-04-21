@@ -55,6 +55,7 @@ void main() {
 uniform vec4 uBaseColor;
 uniform float uMetallic;
 uniform float uRoughness;
+uniform float uReflectivity;
 uniform vec4 uEmissive;
 uniform float uAmbient;
 uniform float uExposure;
@@ -80,6 +81,9 @@ uniform int uSSREnabled;
 uniform sampler2D uPrevColorMap;
 uniform sampler2D uPrevDepthMap;
 uniform mat4 uPrevVP;
+uniform mat4 uPrevView;
+uniform mat4 uPrevProjection;
+uniform mat4 uPrevInvProjection;
 uniform vec2 uScreenSize;
 
 uniform int uDebugMode;
@@ -102,97 +106,82 @@ vec3 sampleSky(vec3 dir) {
     }
 }
 
-vec4 traceSSR(vec3 worldPos, vec3 reflectDir, float roughness) {
+// Reconstruct view-space position from depth buffer value at a UV
+vec3 viewPosFromDepth(vec2 uv, float depth) {
+    vec4 clip = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+    vec4 viewPos = uPrevInvProjection * clip;
+    return viewPos.xyz / viewPos.w;
+}
+
+// SSR: view-space ray march with per-step projection and binary refinement.
+// Steps in view space (linear Z), projects each step to screen to sample
+// the depth buffer. Compares in view-space Z for precision.
+vec4 traceSSR(vec3 worldPos, vec3 N, vec3 reflectDir, float roughness) {
     if (uSSREnabled == 0 || roughness > 0.7) return vec4(0.0);
 
-    // World-space ray march: step along the actual 3D reflection ray and
-    // project each sample to screen space. Unlike screen-space marching,
-    // this gives correct depth at every step and different ground pixels
-    // sample genuinely different screen positions due to perspective.
-    float camDist = length(worldPos - uCameraPos);
-    float maxDist = camDist * 0.5;
-    int maxSteps = 64;
-    float stepDist = maxDist / float(maxSteps);
+    // Transform to previous frame's view space
+    vec3 viewPos = (uPrevView * vec4(worldPos, 1.0)).xyz;
+    vec3 viewNorm = normalize((uPrevView * vec4(N, 0.0)).xyz);
+    vec3 viewDir = normalize(viewPos); // view-space: camera at origin
+    vec3 reflectView = reflect(viewDir, viewNorm);
 
-    // Per-pixel jitter to break step coherence
-    float jitter = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+    // Step parameters — generous range, binary search handles precision
+    float maxRayDist = -viewPos.z * 4.0;
+    int maxSteps = 256;
+    float stepSize = maxRayDist / float(maxSteps);
+    int binarySteps = 8;
 
-    float hitT = -1.0;
-    vec2 hitUV = vec2(0.0);
-    float prevDepthDiff = -1.0;
-    float prevSceneDepth = 0.0;
+    // Ray march in view space
+    vec3 hitCoord = viewPos;
+    vec3 dir = reflectView * stepSize;
+    float dDepth;
+    vec4 projCoord;
 
-    for (int i = 1; i < maxSteps; i++) {
-        float d = (float(i) + jitter) * stepDist;
-        vec3 sampleWorld = worldPos + reflectDir * d;
+    for (int i = 0; i < maxSteps; i++) {
+        hitCoord += dir;
 
-        vec4 sampleClip = uPrevVP * vec4(sampleWorld, 1.0);
-        if (sampleClip.w < 0.001) continue;
-        vec3 sampleNDC = sampleClip.xyz / sampleClip.w;
-        vec2 sampleUV = sampleNDC.xy * 0.5 + 0.5;
-        float rayDepth = sampleNDC.z * 0.5 + 0.5;
+        // Project to screen UV
+        projCoord = uPrevProjection * vec4(hitCoord, 1.0);
+        projCoord.xy /= projCoord.w;
+        projCoord.xy = projCoord.xy * 0.5 + 0.5;
 
-        if (sampleUV.x < 0.0 || sampleUV.x > 1.0 ||
-            sampleUV.y < 0.0 || sampleUV.y > 1.0) break;
+        if (projCoord.x < 0.0 || projCoord.x > 1.0 ||
+            projCoord.y < 0.0 || projCoord.y > 1.0) break;
 
-        float sceneDepth = texture(uPrevDepthMap, sampleUV).r;
-        if (sceneDepth > 0.999) { prevDepthDiff = -1.0; prevSceneDepth = 0.0; continue; }
+        // Read scene depth, reconstruct view-space Z
+        float sceneDepth = texture(uPrevDepthMap, projCoord.xy).r;
+        if (sceneDepth > 0.999) continue; // sky
 
-        // Depth-adaptive thickness (based on scene depth at sample)
-        float thickness = 0.0005 + sceneDepth * sceneDepth * 0.005;
+        vec3 sceneViewPos = viewPosFromDepth(projCoord.xy, sceneDepth);
+        dDepth = hitCoord.z - sceneViewPos.z;
 
-        float depthDiff = rayDepth - sceneDepth;
-
-        // Require sign change: ray was in front, now behind surface
-        if (depthDiff > 0.0 && depthDiff < thickness && prevDepthDiff <= 0.0) {
-            // Reject depth discontinuities (silhouette edges)
-            if (prevSceneDepth > 0.0 && abs(sceneDepth - prevSceneDepth) > thickness * 4.0) {
-                prevDepthDiff = depthDiff;
-                prevSceneDepth = sceneDepth;
-                continue;
+        // Check if ray crossed behind the surface (dDepth sign change)
+        if (dDepth <= 0.0 && abs(dDepth) < length(dir) * 1.5) {
+            // Binary search refinement
+            dir *= 0.5;
+            for (int j = 0; j < binarySteps; j++) {
+                hitCoord += (dDepth > 0.0 ? 1.0 : -1.0) * dir;
+                projCoord = uPrevProjection * vec4(hitCoord, 1.0);
+                projCoord.xy /= projCoord.w;
+                projCoord.xy = projCoord.xy * 0.5 + 0.5;
+                sceneDepth = texture(uPrevDepthMap, projCoord.xy).r;
+                sceneViewPos = viewPosFromDepth(projCoord.xy, sceneDepth);
+                dDepth = hitCoord.z - sceneViewPos.z;
+                dir *= 0.5;
             }
-            hitT = float(i) / float(maxSteps);
-            hitUV = sampleUV;
-            break;
+
+            // Screen-edge fade + roughness fade
+            vec2 edgeDist = min(projCoord.xy, 1.0 - projCoord.xy);
+            float confidence = smoothstep(0.0, 0.05, edgeDist.x)
+                             * smoothstep(0.0, 0.05, edgeDist.y);
+            confidence *= 1.0 - smoothstep(0.3, 0.7, roughness);
+            // Fade reflections pointing toward camera (less reliable)
+            confidence *= clamp(-reflectView.z, 0.0, 1.0);
+
+            return vec4(texture(uPrevColorMap, projCoord.xy).rgb, confidence);
         }
-        prevDepthDiff = depthDiff;
-        prevSceneDepth = sceneDepth;
     }
-    if (hitT < 0.0) return vec4(0.0);
-
-    // Binary refinement in world space
-    float lo = (hitT * float(maxSteps) - 1.0) * stepDist;
-    float hi = hitT * float(maxSteps) * stepDist;
-    for (int i = 0; i < 6; i++) {
-        float mid = (lo + hi) * 0.5;
-        vec3 midWorld = worldPos + reflectDir * mid;
-        vec4 midClip = uPrevVP * vec4(midWorld, 1.0);
-        if (midClip.w < 0.001) { lo = mid; continue; }
-        vec2 midUV = midClip.xy / midClip.w * 0.5 + 0.5;
-        float rayD = midClip.z / midClip.w * 0.5 + 0.5;
-        float sceneD = texture(uPrevDepthMap, midUV).r;
-        if (rayD > sceneD) { hi = mid; hitUV = midUV; }
-        else               { lo = mid; }
-    }
-
-    // Confidence
-    float confidence = 1.0;
-    vec2 edgeDist = min(hitUV, 1.0 - hitUV);
-    confidence *= smoothstep(0.0, 0.05, edgeDist.x) * smoothstep(0.0, 0.05, edgeDist.y);
-    confidence *= 1.0 - smoothstep(0.3, 0.6, hitT);
-    confidence *= 1.0 - smoothstep(0.3, 0.7, roughness);
-
-    // Final depth-fit confidence
-    vec3 finalWorld = worldPos + reflectDir * hi;
-    vec4 finalClip = uPrevVP * vec4(finalWorld, 1.0);
-    if (finalClip.w > 0.001) {
-        float finalRayD = finalClip.z / finalClip.w * 0.5 + 0.5;
-        float finalSceneD = texture(uPrevDepthMap, hitUV).r;
-        float thickness = 0.0005 + finalSceneD * finalSceneD * 0.005;
-        confidence *= 1.0 - smoothstep(0.0, thickness, abs(finalRayD - finalSceneD));
-    }
-
-    return vec4(texture(uPrevColorMap, hitUV).rgb, confidence);
+    return vec4(0.0);
 }
 
 void main() {
@@ -248,7 +237,7 @@ void main() {
     vec3 envReflection = mix(envColor, diffuseEnv, roughness);
 
     // SSR: blend with screen-space reflection where available
-    vec4 ssrResult = traceSSR(vWorldPos, R, roughness);
+    vec4 ssrResult = traceSSR(vWorldPos, N, R, roughness);
     envReflection = mix(envReflection, ssrResult.rgb, ssrResult.a);
 
     // Debug modes: 0=shaded, 1=normals, 2=albedo, 3=UVs, 4=lighting only,
@@ -293,10 +282,14 @@ void main() {
     float fresnel = pow(1.0 - NdotV, 5.0);
     vec3 envFresnel = specColor + (max(vec3(1.0 - roughness), specColor) - specColor) * fresnel;
 
+    // Reflectivity: scales the specular reflection (Fresnel is the minimum)
+    // At reflectivity=0, only Fresnel contributes; at 1.0, full mirror.
+    vec3 reflFactor = max(envFresnel, vec3(uReflectivity));
+
     // Energy-conserving ambient
-    vec3 kD = (vec3(1.0) - envFresnel) * (1.0 - metallic);
+    vec3 kD = (vec3(1.0) - reflFactor) * (1.0 - metallic);
     vec3 ambientDiffuse = albedo * diffuseEnv * kD;
-    vec3 ambientSpecular = envReflection * envFresnel;
+    vec3 ambientSpecular = envReflection * reflFactor;
 
     // Occlusion
     float occlusion = selfOcclusion;
@@ -629,7 +622,7 @@ void main() {
 
     // PBR uniform locations
     GLint locModel = -1, locView = -1, locProj = -1;
-    GLint locBaseColor = -1, locMetallic = -1, locRoughness = -1;
+    GLint locBaseColor = -1, locMetallic = -1, locRoughness = -1, locReflectivity = -1;
     GLint locEmissive = -1, locAmbient = -1, locExposure = -1, locOverlayAlpha = -1;
     GLint locCameraPos = -1;
     GLint locNumLights = -1;
@@ -646,6 +639,7 @@ void main() {
     // SSR uniform locations
     GLint locSSREnabled = -1, locPrevColorMap = -1, locPrevDepthMap = -1;
     GLint locPrevVP = -1, locScreenSize = -1;
+    GLint locPrevView = -1, locPrevProjection = -1, locPrevInvProjection = -1;
 
     // Debug mode
     int debugMode = 0;
@@ -704,7 +698,7 @@ void main() {
 
         glGenTextures(1, &ssrDepthTex[i]);
         glBindTexture(GL_TEXTURE_2D, ssrDepthTex[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, w, h, 0,
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, w, h, 0,
                      GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -806,6 +800,7 @@ void main() {
       m_data->locBaseColor = glGetUniformLocation(m_data->pbrProgram, "uBaseColor");
       m_data->locMetallic = glGetUniformLocation(m_data->pbrProgram, "uMetallic");
       m_data->locRoughness = glGetUniformLocation(m_data->pbrProgram, "uRoughness");
+      m_data->locReflectivity = glGetUniformLocation(m_data->pbrProgram, "uReflectivity");
       m_data->locEmissive = glGetUniformLocation(m_data->pbrProgram, "uEmissive");
       m_data->locAmbient = glGetUniformLocation(m_data->pbrProgram, "uAmbient");
       m_data->locExposure = glGetUniformLocation(m_data->pbrProgram, "uExposure");
@@ -826,6 +821,9 @@ void main() {
       m_data->locPrevColorMap = glGetUniformLocation(m_data->pbrProgram, "uPrevColorMap");
       m_data->locPrevDepthMap = glGetUniformLocation(m_data->pbrProgram, "uPrevDepthMap");
       m_data->locPrevVP = glGetUniformLocation(m_data->pbrProgram, "uPrevVP");
+      m_data->locPrevView = glGetUniformLocation(m_data->pbrProgram, "uPrevView");
+      m_data->locPrevProjection = glGetUniformLocation(m_data->pbrProgram, "uPrevProjection");
+      m_data->locPrevInvProjection = glGetUniformLocation(m_data->pbrProgram, "uPrevInvProjection");
       m_data->locScreenSize = glGetUniformLocation(m_data->pbrProgram, "uScreenSize");
       m_data->locDebugMode = glGetUniformLocation(m_data->pbrProgram, "uDebugMode");
       for (int i = 0; i < 8; i++) {
@@ -1003,6 +1001,10 @@ void main() {
       Mat prevVP = m_data->prevProj * m_data->prevView;
       // Upload directly with GL_TRUE transpose (matches geom GLRenderer)
       glUniformMatrix4fv(m_data->locPrevVP, 1, GL_TRUE, prevVP.data());
+      glUniformMatrix4fv(m_data->locPrevView, 1, GL_TRUE, m_data->prevView.data());
+      glUniformMatrix4fv(m_data->locPrevProjection, 1, GL_TRUE, m_data->prevProj.data());
+      Mat invProj = m_data->prevProj.inv();
+      glUniformMatrix4fv(m_data->locPrevInvProjection, 1, GL_TRUE, invProj.data());
     }
     glActiveTexture(GL_TEXTURE0);
 
@@ -1137,6 +1139,7 @@ void main() {
                     mat->baseColor[2], mat->baseColor[3]);
         glUniform1f(m_data->locMetallic, mat->metallic);
         glUniform1f(m_data->locRoughness, mat->roughness);
+        glUniform1f(m_data->locReflectivity, mat->reflectivity);
         glUniform4f(m_data->locEmissive, mat->emissive[0], mat->emissive[1],
                     mat->emissive[2], 0);
 
@@ -1173,6 +1176,7 @@ void main() {
         glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
         glUniform1f(m_data->locMetallic, 0.0f);
         glUniform1f(m_data->locRoughness, 0.5f);
+        glUniform1f(m_data->locReflectivity, 0.0f);
         glUniform4f(m_data->locEmissive, 0, 0, 0, 0);
         glUniform1i(m_data->locHasBaseColorMap, 0);
         glUniform1i(m_data->locHasNormalMap, 0);

@@ -14,6 +14,7 @@
 #include <icl/geom/Material.h>
 
 #include <cstdio>
+#include <cstdlib>
 #include <cmath>
 #include <algorithm>
 
@@ -47,7 +48,8 @@ namespace icl::geom2 {
 
   void DemoScene2::setup(const std::vector<std::string> &files,
                           const Size &resolution,
-                          const std::string &rotation) {
+                          const std::string &rotation,
+                          bool noCheckerboard) {
     m_ownedNodes.clear();
 
     // Root group: all loaded/default geometry goes here.
@@ -67,20 +69,55 @@ namespace icl::geom2 {
       if (!meshes.empty()) hasContent = true;
     }
 
-    // Default scene if nothing loaded
+    // Default scene if nothing loaded: SSR test scene
     if (!hasContent) {
-      fprintf(stderr, "No scene files specified, creating default scene.\n");
+      fprintf(stderr, "No scene files specified, creating SSR test scene.\n");
 
-      auto sphere = std::make_shared<SphereNode>(0, 100, 0, 100, 40, 40);
+      // Reflective red sphere next to cube
+      auto sphere = std::make_shared<SphereNode>(200, 100, 0, 100, 40, 40);
       sphere->setMaterial(Material::fromColor(GeomColor(220, 60, 60, 255)));
-      sphere->getMaterial()->roughness = 0.3f;
+      sphere->getMaterial()->roughness = 0.15f;
+      sphere->getMaterial()->reflectivity = 0.9f;
       root->addChild(sphere);
 
-      auto cube = std::make_shared<CuboidNode>(200, 80, 0, 60, 60, 60);
-      cube->setMaterial(Material::fromColor(GeomColor(60, 60, 220, 255)));
-      cube->getMaterial()->metallic = 0.8f;
-      cube->getMaterial()->roughness = 0.2f;
-      root->addChild(cube);
+      // RGB wireframe cube: 12 edges built from 10%-sized voxels
+      // Corner colors = RGB cube: (x,y,z) → (R,G,B), linearly interpolated.
+      // Each voxel gets random reflectivity.
+      float cubeSize = 200.0f;
+      float voxelSize = cubeSize * 0.1f;
+      // Center cube at origin, base at y=0
+      float ox = -cubeSize / 2, oy = 0.0f, oz = -cubeSize / 2;
+
+      srand(42);
+      for (int ix = 0; ix < 10; ix++) {
+        for (int iy = 0; iy < 10; iy++) {
+          for (int iz = 0; iz < 10; iz++) {
+            // On an edge: at least 2 of 3 axes at boundary (0 or 9)
+            int boundary = 0;
+            if (ix == 0 || ix == 9) boundary++;
+            if (iy == 0 || iy == 9) boundary++;
+            if (iz == 0 || iz == 9) boundary++;
+            if (boundary < 2) continue;
+
+            float cx = ox + (ix + 0.5f) * voxelSize;
+            float cy = oy + (iy + 0.5f) * voxelSize;
+            float cz = oz + (iz + 0.5f) * voxelSize;
+
+            float r = ix / 9.0f * 255.0f;
+            float g = iy / 9.0f * 255.0f;
+            float b = iz / 9.0f * 255.0f;
+
+            auto voxel = std::make_shared<CuboidNode>(
+                cx, cy, cz, voxelSize, voxelSize, voxelSize);
+            auto vmat = Material::fromColor(GeomColor(r, g, b, 255));
+            vmat->roughness = 0.3f;
+            vmat->reflectivity = 0.0f;
+            voxel->setMaterial(vmat);
+            root->addChild(voxel);
+          }
+        }
+      }
+      fprintf(stderr, "  RGB wireframe cube: 104 voxels\n");
     }
 
     // Compute bounding box of all content (in root-local coords)
@@ -138,31 +175,34 @@ namespace icl::geom2 {
     // All scene furniture (ground, lights, camera) placed in world coords.
     float halfExt = targetSize / 2;
 
-    // Checkerboard ground plane (world coords, below the transformed content)
+    // Ground plane (world coords, below the transformed content)
     {
       float groundY = -halfExt - targetSize * 0.02f;
-      float gs = targetSize * 1.5f;
-
-      // Procedural checkerboard texture
-      int tiles = 8, texSize = 1024;
-      int pixelsPerTile = texSize / tiles;
-      core::Img8u checkerTex(Size(texSize, texSize), 4);
-      for (int ty = 0; ty < texSize; ty++) {
-        for (int tx = 0; tx < texSize; tx++) {
-          bool light = ((tx / pixelsPerTile) + (ty / pixelsPerTile)) % 2 == 0;
-          icl8u rv = light ? 220 : 80, gv = light ? 215 : 75, bv = light ? 210 : 70;
-          checkerTex(tx, ty, 0) = rv; checkerTex(tx, ty, 1) = gv;
-          checkerTex(tx, ty, 2) = bv; checkerTex(tx, ty, 3) = 255;
-        }
-      }
+      float gs = targetSize * 3.0f;  // 2x bigger ground
 
       auto groundMat = std::make_shared<Material>();
-      groundMat->baseColor = GeomColor(0.8f, 0.8f, 0.8f, 1);
       groundMat->roughness = 0.5f;
-      groundMat->reflectivity = 0.3f;
+      groundMat->reflectivity = 0.5f;
       groundMat->smoothShading = true;
-      groundMat->textures = std::make_shared<Material::TextureMaps>();
-      groundMat->textures->baseColorMap = core::Image(checkerTex);
+
+      if (noCheckerboard) {
+        groundMat->baseColor = GeomColor(0.05f, 0.05f, 0.05f, 1);
+      } else {
+        groundMat->baseColor = GeomColor(0.8f, 0.8f, 0.8f, 1);
+        int tiles = 8, texSize = 1024;
+        int pixelsPerTile = texSize / tiles;
+        core::Img8u checkerTex(Size(texSize, texSize), 4);
+        for (int ty = 0; ty < texSize; ty++) {
+          for (int tx = 0; tx < texSize; tx++) {
+            bool light = ((tx / pixelsPerTile) + (ty / pixelsPerTile)) % 2 == 0;
+            icl8u rv = light ? 80 : 20, gv = light ? 50 : 15, bv = light ? 30 : 10;
+            checkerTex(tx, ty, 0) = rv; checkerTex(tx, ty, 1) = gv;
+            checkerTex(tx, ty, 2) = bv; checkerTex(tx, ty, 3) = 255;
+          }
+        }
+        groundMat->textures = std::make_shared<Material::TextureMaps>();
+        groundMat->textures->baseColorMap = core::Image(checkerTex);
+      }
 
       auto ground = std::make_shared<MeshNode>();
       ground->addVertex(Vec(-gs, groundY, -gs, 1));
@@ -179,15 +219,48 @@ namespace icl::geom2 {
       ground->setMaterial(groundMat);
       addNode(ground);
       m_ownedNodes.push_back(ground);
+
+      if (!noCheckerboard) {
+        // Checkerboard back wall (same texture, vertical at +Z)
+        auto wallMat = std::make_shared<Material>();
+        wallMat->baseColor = GeomColor(0.8f, 0.8f, 0.8f, 1);
+        wallMat->roughness = 0.5f;
+        wallMat->smoothShading = true;
+        wallMat->textures = std::make_shared<Material::TextureMaps>();
+        wallMat->textures->baseColorMap = groundMat->textures->baseColorMap;
+
+        float wallZ = gs;
+        auto wall = std::make_shared<MeshNode>();
+        wall->addVertex(Vec(-gs, groundY,        wallZ, 1));
+        wall->addVertex(Vec( gs, groundY,        wallZ, 1));
+        wall->addVertex(Vec( gs, groundY + 2*gs, wallZ, 1));
+        wall->addVertex(Vec(-gs, groundY + 2*gs, wallZ, 1));
+        for (int i = 0; i < 4; i++) wall->addNormal(Vec(0, 0, -1, 1));
+        wall->addTexCoord(0, 0);
+        wall->addTexCoord(1, 0);
+        wall->addTexCoord(1, 1);
+        wall->addTexCoord(0, 1);
+        wall->addTriangle(0, 1, 2, 0, 1, 2, 0, 1, 2);
+        wall->addTriangle(0, 2, 3, 0, 2, 3, 0, 2, 3);
+        wall->setMaterial(wallMat);
+        addNode(wall);
+        m_ownedNodes.push_back(wall);
+      }
     }
 
-    // Camera
+    // Camera — set near/far tight to the scene for depth buffer precision
     float dist = targetSize * 1.5f;
-    addCamera(Camera::lookAt(
+    auto cam = Camera::lookAt(
         Vec(dist * 0.5f, dist * 0.5f, -dist * 0.7f, 1),
         Vec(0, 0, 0, 1),
         Vec(0, 1, 0, 1),
-        resolution, 55.0f));
+        resolution, 55.0f);
+    cam.getRenderParams().clipZNear = targetSize * 0.05f;
+    cam.getRenderParams().clipZFar  = targetSize * 16.0f;
+    fprintf(stderr, "Camera near=%.1f far=%.1f (ratio %.0f:1)\n",
+            cam.getRenderParams().clipZNear, cam.getRenderParams().clipZFar,
+            cam.getRenderParams().clipZFar / cam.getRenderParams().clipZNear);
+    addCamera(cam);
 
     // 3-point lighting (world coords, around origin)
     float r = targetSize * 0.7f;

@@ -21,7 +21,8 @@ namespace icl::geom2 {
     /// Set up demo scene from files with standard presentation environment
     void setup(const std::vector<std::string> &files,
                const utils::Size &resolution,
-               const std::string &rotation = "");
+               const std::string &rotation = "",
+               bool noCheckerboard = false);
 
   private:
     std::vector<std::shared_ptr<Node>> m_ownedNodes;
