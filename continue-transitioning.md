@@ -1,6 +1,117 @@
 # ICL — Continuation Guide
 
-## Current State (Session 34 — Matrix migration + Cycles geom2 integration)
+## Current State (Session 35 — Cycles geom2 rewrite + GL PBR textures)
+
+### Session 35 Summary (7 commits)
+
+Complete rewrite of geom2 Cycles integration from scratch using the working
+geom version as reference, plus full PBR texture support for the GL Renderer.
+
+#### A. Cycles SceneSynchronizer rewrite
+
+**Rewrote from scratch** (`SceneSynchronizer.cpp`): the previous port had
+multiple critical bugs causing broken rendering. Key fixes:
+
+1. **Missing `tag_*_modified()` calls** — Cycles never processed mesh data.
+   Now calls `tag_verts/triangles/shader/smooth_modified()`.
+2. **Missing `resize_mesh()` + shader indices** — mesh wasn't properly
+   allocated. Now uses `resize_mesh()` + per-triangle `get_shader()[ti] = 0`.
+3. **Light intensity 255x too bright** — `LightNode::getColor()` returns
+   0-255 but geom's `SceneLight::getDiffuse()` returns 0-1. The calibration
+   factor 300 was tuned with geom's accidental double `/255` normalization.
+   Fixed: calibration adjusted to `300/255 ≈ 1.176`.
+4. **Wrong `MixNode` for background** — replaced deprecated `MixNode` with
+   `MixColorNode` (Cycles 4.x API). Background now exact match of
+   `geom::Sky` defaults with `pow(y, 0.4)` falloff.
+5. **Background rebuilt every frame** — now uses in-place `m_bgNode`
+   strength update (no shader graph rebuild).
+6. **Missing `cclCam->need_flags_update`** in syncCamera.
+
+**Full texture pipeline ported from geom**:
+- `ICLImageLoader` bridges ICL Image to Cycles ImageManager
+- Base color, metallic-roughness, normal, emissive texture maps
+- UV coordinates uploaded as `ATTR_STD_UV` per-corner
+- Transmission/glass with MixClosure + volume absorption
+- Reflectivity via GlossyBsdf mix layer
+- Tracked `surfaceOutput` name (BSDF vs Closure) through shader node chain
+
+#### B. GL Renderer — full PBR texture support
+
+**5 texture maps** in PBR fragment shader (units 0-4):
+- Base color map (unit 0)
+- Normal map (unit 1) — screen-space TBN from `dFdx/dFdy` derivatives
+- Metallic-roughness map (unit 2) — glTF G=roughness, B=metallic
+- Emissive map (unit 3)
+- Occlusion map (unit 4)
+
+**Environment reflections**: sky sampling (gradient matching Sky defaults),
+Fresnel-aware Schlick (Lagarde 2014), energy-conserving ambient
+(kD/envFresnel split), self-occlusion from normal map, roughness-blurred
+reflections.
+
+**GL light color fix**: `LightNode::getColor()` 0-255 values normalized to
+0-1 before passing to shader (same root cause as Cycles brightness bug).
+
+**Texture upload fix**: ported exact `getData()` channel-access approach from
+geom GLRenderer. The previous `visit()`-based approach produced wrong colors.
+
+**Overlay support**: `setOverlayAlpha(float)` for semi-transparent GL
+compositing over Cycles background.
+
+**Tone mapping**: switched from exponential to linear clamp to match geom
+GLRenderer brightness.
+
+#### C. DemoScene2
+
+**Port of `geom::DemoScene`** for geom2 scene graph (`DemoScene2.h/.cpp`):
+- Loads model files via `geom2::loadFile()`
+- Uses **GroupNode with R\*S\*T transform** for auto-scaling (no vertex
+  mutation) — centers at origin, scales to ~400mm extent
+- Checkerboard ground plane with texture + 30% reflectivity
+- 4-light setup (key/fill/rim/top), auto-positioned camera
+- Hides wireframe on loaded meshes
+- Optional rotation via `"rx,ry,rz"` string
+
+#### D. New demos
+
+- **`cycles-overlay-viewer.cpp`**: single-pane Cycles background + GL overlay
+  with alpha/bounces/exposure sliders. Uses DemoScene2.
+- **`cycles-scene-viewer.cpp`**: simplified to use DemoScene2 for auto-camera.
+
+#### E. SSR infrastructure (disabled)
+
+Full SSR implementation in GL Renderer: ping-pong FBOs, 64-step linear ray
+march with binary refinement, confidence-weighted blending, blit composite.
+**Disabled by default** (`ssrEnabled=false`) due to vertical streak artifacts
+on flat reflective surfaces. Enable via `setSSREnabled(true)`.
+
+### What's next
+
+**SSR debugging** (priority):
+- Add debug visualization modes: SSR-only, depth buffer, UV coords, hit
+  confidence as color output
+- Investigate vertical streak artifacts on floor reflections — likely a
+  depth/UV space mismatch or self-intersection issue
+- Compare with geom GLRenderer's SSR frame-by-frame
+
+**Shadow maps**:
+- Add `setShadowEnabled()` + shadow camera to `LightNode`
+- Port shadow depth pass from geom GLRenderer (4 shadow maps, 2048x2048)
+- Shadow sampling in PBR shader with PCF
+
+**geom2 API cleanup**:
+- Scene2 getters: return references or shared_ptrs instead of raw pointers
+- `getGLCallback()`: return raw ptr instead of shared_ptr (avoid `.get()`)
+- CoordinateFrameSceneObject: add PIMPL
+
+**Other work**:
+- CI update — meson in GitHub Actions
+- ImageMagick 7 / FFmpeg 7+ rewrites
+- ConvolutionOp IPP mixed-depth
+
+---
+
+## Previous State (Session 34 — Matrix migration + Cycles geom2 integration)
 
 ### Session 34 Summary (8 commits)
 
@@ -39,38 +150,6 @@ compile flags, and link libraries from geom module's meson config.
 - Light color normalized from 0-255 to 0-1 before applying physical intensity
 - Gradient sky background added (zenith/horizon/ground blend)
 - Analytic sphere path disabled (known offset bug), always tessellates
-
-**Scene2 additions**: `const getLight()` overload.
-
-**Demos** (2 new, both compile and link):
-- `cycles-renderer-test.cpp`: headless render of spheres + ground to PNG
-- `cycles-scene-viewer.cpp`: dual-panel GL preview + Cycles raytrace
-
-**Known bug**: geom2 Cycles renders show white/uncolored spheres despite correct
-material properties being set. Shader graph creation and `set_used_shaders` follow
-the same pattern as the working legacy geom SceneSynchronizer, but materials don't
-appear in the final render. The legacy `cycles-renderer-test` demo was also fixed
-(`render` → `renderBlocking`) and produces correct colored output. Root cause needs
-investigation — likely a subtle difference in Cycles scene graph commit/update
-ordering between the geom and geom2 synchronizers.
-
-### What's next
-
-**Cycles geom2 — fix material rendering** (priority):
-- Debug why `set_used_shaders` + `tag_update` doesn't apply materials in geom2
-- Compare geom vs geom2 SceneSynchronizer step-by-step with Cycles debugger
-- Once fixed: port the full interactive scene viewer features (material editing,
-  decimation, OBJ/glTF loading, compare mode)
-
-**geom2 API cleanup**:
-- Scene2 getters: return references or shared_ptrs instead of raw pointers
-- `getGLCallback()`: return raw ptr instead of shared_ptr (avoid `.get()`)
-- CoordinateFrameSceneObject: add PIMPL
-
-**Other work**:
-- CI update — meson in GitHub Actions
-- ImageMagick 7 / FFmpeg 7+ rewrites
-- ConvolutionOp IPP mixed-depth
 
 ---
 
