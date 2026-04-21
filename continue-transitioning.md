@@ -1,102 +1,72 @@
 # ICL — Continuation Guide
 
-## Current State (Session 35 — Cycles geom2 rewrite + GL PBR textures)
+## Current State (Session 36 — SSR rewrite + reflectivity + demo scene)
 
-### Session 35 Summary (7 commits)
+### Session 36 Summary (4 commits)
 
-Complete rewrite of geom2 Cycles integration from scratch using the working
-geom version as reference, plus full PBR texture support for the GL Renderer.
+Complete SSR rewrite from broken world-space/texture-space approaches to
+working view-space ray march. Added reflectivity uniform, improved demo
+scene, fixed Cycles smooth shading bug.
 
-#### A. Cycles SceneSynchronizer rewrite
+#### A. SSR rewrite — view-space ray march
 
-**Rewrote from scratch** (`SceneSynchronizer.cpp`): the previous port had
-multiple critical bugs causing broken rendering. Key fixes:
+**Three failed approaches** before finding the working one:
+1. World-space stepping + projected depth comparison — banding, wrong depths
+2. Screen-space DDA + linear depth interpolation — depth is non-linear for
+   rays toward camera (floor reflecting objects above), fundamentally broken
+3. Texture-space linear march (ported from 3rdparty/SSR) — self-intersection
+   from previous-frame depth mismatch, tight threshold issues
 
-1. **Missing `tag_*_modified()` calls** — Cycles never processed mesh data.
-   Now calls `tag_verts/triangles/shader/smooth_modified()`.
-2. **Missing `resize_mesh()` + shader indices** — mesh wasn't properly
-   allocated. Now uses `resize_mesh()` + per-triangle `get_shader()[ti] = 0`.
-3. **Light intensity 255x too bright** — `LightNode::getColor()` returns
-   0-255 but geom's `SceneLight::getDiffuse()` returns 0-1. The calibration
-   factor 300 was tuned with geom's accidental double `/255` normalization.
-   Fixed: calibration adjusted to `300/255 ≈ 1.176`.
-4. **Wrong `MixNode` for background** — replaced deprecated `MixNode` with
-   `MixColorNode` (Cycles 4.x API). Background now exact match of
-   `geom::Sky` defaults with `pow(y, 0.4)` falloff.
-5. **Background rebuilt every frame** — now uses in-place `m_bgNode`
-   strength update (no shader graph rebuild).
-6. **Missing `cclCam->need_flags_update`** in syncCamera.
+**Working approach**: view-space ray march with per-step projection:
+- Transform fragment to previous frame's view space via `uPrevView`
+- Step along reflection ray in view space (linear Z — no non-linear artifacts)
+- At each step: project to screen via `uPrevProjection`, read depth buffer,
+  reconstruct view-space Z via `uPrevInvProjection`, compare in linear space
+- 8-iteration binary search refinement on sign change
+- **4x supersampled**: traces 4 rays with stratified jitter offsets (0, 0.25,
+  0.5, 0.75 of one step), confidence-weighted average eliminates Moiré ring
+  artifacts on curved surfaces
+- 256 steps, ray distance 4x camera depth, screen-edge + roughness fade
+- SSR skipped for non-reflective surfaces (`reflectivity < 0.01 && !metallic`)
 
-**Full texture pipeline ported from geom**:
-- `ICLImageLoader` bridges ICL Image to Cycles ImageManager
-- Base color, metallic-roughness, normal, emissive texture maps
-- UV coordinates uploaded as `ATTR_STD_UV` per-corner
-- Transmission/glass with MixClosure + volume absorption
-- Reflectivity via GlossyBsdf mix layer
-- Tracked `surfaceOutput` name (BSDF vs Closure) through shader node chain
+**New uniforms**: `uPrevView`, `uPrevProjection`, `uPrevInvProjection`
+(uploaded alongside existing `uPrevVP`). Inverse projection computed per
+frame via `Mat::inv()`.
 
-#### B. GL Renderer — full PBR texture support
+**Depth buffer**: upgraded from `GL_DEPTH_COMPONENT24` to
+`GL_DEPTH_COMPONENT32F` for better precision.
 
-**5 texture maps** in PBR fragment shader (units 0-4):
-- Base color map (unit 0)
-- Normal map (unit 1) — screen-space TBN from `dFdx/dFdy` derivatives
-- Metallic-roughness map (unit 2) — glTF G=roughness, B=metallic
-- Emissive map (unit 3)
-- Occlusion map (unit 4)
+#### B. Reflectivity uniform
 
-**Environment reflections**: sky sampling (gradient matching Sky defaults),
-Fresnel-aware Schlick (Lagarde 2014), energy-conserving ambient
-(kD/envFresnel split), self-occlusion from normal map, roughness-blurred
-reflections.
+`uReflectivity` wired from `Material::reflectivity` to PBR shader. Controls
+reflection strength: `reflFactor = max(envFresnel, vec3(uReflectivity))`.
+At reflectivity=0, only Fresnel contributes; at 1.0, full mirror. Previously
+the reflectivity field was ignored by the GL renderer.
 
-**GL light color fix**: `LightNode::getColor()` 0-255 values normalized to
-0-1 before passing to shader (same root cause as Cycles brightness bug).
+#### C. Demo scene overhaul
 
-**Texture upload fix**: ported exact `getData()` channel-access approach from
-geom GLRenderer. The previous `visit()`-based approach produced wrong colors.
+**SSR test scene** (default when no `-scene` files given):
+- RGB wireframe cube: 104 CuboidNode voxels forming 12 thick edges, corner
+  colors from RGB cube (x,y,z → R,G,B), `smoothShading=false` for crisp edges
+- Red sphere (90% reflective, roughness 0.15) — mirror-like SSR test
+- Gold metallic sphere (metallic 0.9, roughness 0.35, reflectivity 0.3)
+- Brown/black checkerboard ground (2x bigger, 50% reflective)
+- Checkerboard back wall
+- `-no-checkerboard` flag: flat black ground, no wall
+- Camera near/far set tight to scene (20/6400, ratio 320:1) for depth precision
 
-**Overlay support**: `setOverlayAlpha(float)` for semi-transparent GL
-compositing over Cycles background.
+#### D. Cycles smooth shading fix
 
-**Tone mapping**: switched from exponential to linear clamp to match geom
-GLRenderer brightness.
-
-#### C. DemoScene2
-
-**Port of `geom::DemoScene`** for geom2 scene graph (`DemoScene2.h/.cpp`):
-- Loads model files via `geom2::loadFile()`
-- Uses **GroupNode with R\*S\*T transform** for auto-scaling (no vertex
-  mutation) — centers at origin, scales to ~400mm extent
-- Checkerboard ground plane with texture + 30% reflectivity
-- 4-light setup (key/fill/rim/top), auto-positioned camera
-- Hides wireframe on loaded meshes
-- Optional rotation via `"rx,ry,rz"` string
-
-#### D. New demos
-
-- **`cycles-overlay-viewer.cpp`**: single-pane Cycles background + GL overlay
-  with alpha/bounces/exposure sliders. Uses DemoScene2.
-- **`cycles-scene-viewer.cpp`**: simplified to use DemoScene2 for auto-camera.
-
-#### E. SSR infrastructure (disabled)
-
-Full SSR implementation in GL Renderer: ping-pong FBOs, 64-step linear ray
-march with binary refinement, confidence-weighted blending, blit composite.
-**Disabled by default** (`ssrEnabled=false`) due to vertical streak artifacts
-on flat reflective surfaces. Enable via `setSSREnabled(true)`.
+`SceneSynchronizer.cpp`: smooth shading now based on `Material::smoothShading`
+only, not on presence of normals. Previously any geometry with normals
+(including flat-faced cuboids) got smooth shading → rounded/glassy appearance.
 
 ### What's next
 
-**SSR debugging** (done / in progress):
-- ~~Add debug visualization modes~~ — DONE: modes 0-8 (normals, albedo, UVs,
-  lighting, NdotL, SSR confidence, depth, SSR only) with `setDebugMode()` API
-- ~~Vertical streak artifacts~~ — PARTIALLY FIXED: rewrote SSR from screen-space
-  to world-space ray march, added jitter + sign-change detection + silhouette
-  rejection. Streaks reduced but not fully eliminated — needs further tuning
-- SSR debug modes freeze ping-pong FBO (read but don't write) to prevent
-  feedback degradation
-- Ground plane winding fix (CW → CCW) fixed black NdotL
-- SSR enabled by default
+**SSR polish**:
+- Step aliasing still visible at extreme close-up (could increase to 512 steps)
+- Temporal accumulation: ping-pong feedback should naturally denoise over frames
+- Consider Hi-Z acceleration for performance (hierarchical depth mip chain)
 
 **Quick framework rework** (priority):
 - `ImgQ` (`Img<icl32f>`) forces all Quick operations to float depth, causing
