@@ -5,7 +5,9 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <cmath>
+// Point.h hosts the `detail::BiTuple` CRTP mixin shared with SizeT —
+// see its preamble.  We need it here for SizeT to inherit from.
+#include <icl/utils/Point.h>
 #include <iosfwd>
 #include <string>
 #include <type_traits>
@@ -24,28 +26,30 @@ namespace icl::utils {
   /// Templated 2D size.
   /** ICL provides two instantiations as typedefs:
       - `Size` (aka `SizeT<int>`) — integer pixel dimensions
-      - `Size32f` (aka `SizeT<float>`) — sub-pixel dimensions (e.g. in
-        an OpenGL texture-coord context)
+      - `Size32f` (aka `SizeT<float>`) — sub-pixel dimensions (e.g.
+        for an OpenGL-texture-coord context)
 
-      Cross-type construction follows the same rule as `PointT`:
-      int → float is implicit (lossless); float → int (or any other
-      narrowing) is explicit, and callers choose a rounding policy
-      at the call site via `.rounded()`, `.floored()`, `.ceiled()`,
-      or `.truncated()`. */
+      Arithmetic, equality, and narrow/widen conversion machinery are
+      inherited from `detail::BiTuple`; only size-specific features
+      (`getDim`, `toIppiSize`, named resolution constants,
+      string-parse constructor) live here. */
   template<typename T>
-  class SizeT {
+  class SizeT : public detail::BiTuple<SizeT<T>, T> {
     public:
     /// width
     T width{T(0)};
     /// height
     T height{T(0)};
 
+    /// required by BiTuple's cross-type conversion helpers
+    template<typename U> using rebind = SizeT<U>;
+
     /// null size (0, 0)
     inline static const SizeT null{};
 
     // ---------- Named screen / video resolutions ----------
     // Defined for every instantiation — SizeT<float>::VGA is
-    // simply SizeT<float>{640.f, 480.f}.
+    // SizeT<float>{640.f, 480.f}.
     inline static const SizeT QQVGA { T(160),  T(120) };  ///< Quater QVGA
     inline static const SizeT CGA   { T(320),  T(200) };  ///< Color Graphics Adapter
     inline static const SizeT QVGA  { T(320),  T(240) };  ///< Quarter VGA
@@ -107,25 +111,9 @@ namespace icl::utils {
     explicit constexpr SizeT(const SizeT<U> &o)
       : width(static_cast<T>(o.width)), height(static_cast<T>(o.height)) {}
 
-    /// returns whether width == 0 && height == 0
-    constexpr bool isNull() const { return width == T(0) && height == T(0); }
-
-    constexpr bool operator==(const SizeT &s) const { return width == s.width && height == s.height; }
-    constexpr bool operator!=(const SizeT &s) const { return width != s.width || height != s.height; }
-
-    constexpr SizeT operator+(const SizeT &s) const { return {T(width + s.width), T(height + s.height)}; }
-    constexpr SizeT operator-(const SizeT &s) const { return {T(width - s.width), T(height - s.height)}; }
-    constexpr SizeT operator*(double d) const {
-      return {static_cast<T>(d * width), static_cast<T>(d * height)};
-    }
-    constexpr SizeT operator/(double d) const { return (*this) * (1.0 / d); }
-
-    SizeT &operator+=(const SizeT &s) { width += s.width; height += s.height; return *this; }
-    SizeT &operator-=(const SizeT &s) { width -= s.width; height -= s.height; return *this; }
-    SizeT &operator*=(double d) {
-      width = static_cast<T>(width * d); height = static_cast<T>(height * d); return *this;
-    }
-    SizeT &operator/=(double d) { return (*this) *= (1.0 / d); }
+    /// BiTuple element access (i == 0 → width, else → height)
+    constexpr T &operator[](int i) { return i ? height : width; }
+    constexpr const T &operator[](int i) const { return i ? height : width; }
 
     /// returns width * height
     constexpr auto getDim() const { return width * height; }
@@ -133,28 +121,6 @@ namespace icl::utils {
     /// explicit conversion to IppiSize (int dimensions)
     IppiSize toIppiSize() const {
       return { static_cast<int>(width), static_cast<int>(height) };
-    }
-
-    // ---------- explicit cross-type conversions ----------
-
-    template<typename U = int>
-    constexpr SizeT<U> truncated() const {
-      return { static_cast<U>(width), static_cast<U>(height) };
-    }
-
-    template<typename U = int>
-    SizeT<U> rounded() const {
-      return { static_cast<U>(std::round(width)), static_cast<U>(std::round(height)) };
-    }
-
-    template<typename U = int>
-    SizeT<U> floored() const {
-      return { static_cast<U>(std::floor(width)), static_cast<U>(std::floor(height)) };
-    }
-
-    template<typename U = int>
-    SizeT<U> ceiled() const {
-      return { static_cast<U>(std::ceil(width)), static_cast<U>(std::ceil(height)) };
     }
   };
 

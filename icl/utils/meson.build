@@ -155,6 +155,7 @@ install_headers(
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'detail' / 'pugi',
 )
 
+
 pkg.generate(icl_utils_lib,
   name: 'icl-utils',
   description: 'ICL Utils module',

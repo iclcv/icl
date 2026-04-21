@@ -21,23 +21,137 @@ struct IppiPoint { int x, y; };
 
 namespace icl::utils {
 
+  namespace detail {
+    /// Internal CRTP mixin shared between `PointT` and `SizeT`.
+    /** These two types are semantically different (one is a position,
+        the other a dimension — hence `x,y` vs `width,height`) but
+        their arithmetic, comparison, and narrow/widen-conversion
+        machinery is identical.  BiTuple collects that machinery in
+        one place, accessing the two elements of its Derived through
+        Derived's `operator[]`.
+
+        Each Derived class must:
+          * inherit publicly from `BiTuple<Derived, T>`
+          * expose `operator[](int)` / `operator[](int) const`
+            (i == 0 → first element, else → second)
+          * provide a two-argument `(T, T)` constructor
+          * define `template<typename U> using rebind = …;` so the
+            narrowing helpers can synthesize a differently-typed result
+            (e.g. `PointT<int>::rebind<float>` == `PointT<float>`).
+
+        Defined in Point.h so that neither a separate header nor an
+        extra installed file is required.  SizeT picks it up by
+        including Point.h. */
+    template<typename Derived, typename T>
+    class BiTuple {
+      protected:
+      constexpr Derived &self() { return static_cast<Derived&>(*this); }
+      constexpr const Derived &self() const { return static_cast<const Derived&>(*this); }
+
+      public:
+      /// true iff both elements are zero
+      constexpr bool isNull() const {
+        return self()[0] == T(0) && self()[1] == T(0);
+      }
+
+      constexpr bool operator==(const Derived &o) const {
+        return self()[0] == o[0] && self()[1] == o[1];
+      }
+      constexpr bool operator!=(const Derived &o) const {
+        return !(self() == o);
+      }
+
+      constexpr Derived operator+(const Derived &o) const {
+        return { T(self()[0] + o[0]), T(self()[1] + o[1]) };
+      }
+      constexpr Derived operator-(const Derived &o) const {
+        return { T(self()[0] - o[0]), T(self()[1] - o[1]) };
+      }
+      constexpr Derived operator*(double d) const {
+        return { static_cast<T>(d * self()[0]), static_cast<T>(d * self()[1]) };
+      }
+      constexpr Derived operator/(double d) const { return (*this) * (1.0 / d); }
+
+      Derived &operator+=(const Derived &o) {
+        self()[0] = T(self()[0] + o[0]);
+        self()[1] = T(self()[1] + o[1]);
+        return self();
+      }
+      Derived &operator-=(const Derived &o) {
+        self()[0] = T(self()[0] - o[0]);
+        self()[1] = T(self()[1] - o[1]);
+        return self();
+      }
+      Derived &operator*=(double d) {
+        self()[0] = static_cast<T>(self()[0] * d);
+        self()[1] = static_cast<T>(self()[1] * d);
+        return self();
+      }
+      Derived &operator/=(double d) { return (*this) *= (1.0 / d); }
+
+      // ---------- explicit cross-type conversions ----------
+      //
+      // Each returns a Derived re-bound to the target type U — e.g.
+      // `PointT<float>{1.5f, 2.5f}.rounded<int>()` → `PointT<int>{2, 3}`.
+      // Default U=int covers the common float → int narrowing; the
+      // caller picks the policy (round / floor / ceil / trunc) at
+      // the call site instead of it happening silently inside an
+      // implicit conversion.
+
+      template<typename U = int>
+      constexpr auto truncated() const {
+        using R = typename Derived::template rebind<U>;
+        return R{ static_cast<U>(self()[0]), static_cast<U>(self()[1]) };
+      }
+
+      template<typename U = int>
+      auto rounded() const {
+        using R = typename Derived::template rebind<U>;
+        return R{ static_cast<U>(std::round(self()[0])),
+                  static_cast<U>(std::round(self()[1])) };
+      }
+
+      template<typename U = int>
+      auto floored() const {
+        using R = typename Derived::template rebind<U>;
+        return R{ static_cast<U>(std::floor(self()[0])),
+                  static_cast<U>(std::floor(self()[1])) };
+      }
+
+      template<typename U = int>
+      auto ceiled() const {
+        using R = typename Derived::template rebind<U>;
+        return R{ static_cast<U>(std::ceil(self()[0])),
+                  static_cast<U>(std::ceil(self()[1])) };
+      }
+    };
+  } // namespace detail
+
+
   /// Templated 2D point.
   /** ICL provides two instantiations as typedefs:
       - `Point` (aka `PointT<int>`) — integer pixel coordinates
       - `Point32f` (aka `PointT<float>`) — sub-pixel coordinates
 
-      Cross-type construction is *explicit* and truncates via
-      `static_cast`.  For narrowing conversions (e.g. float→int) with
-      a specific rounding policy, use the named `rounded()`,
-      `floored()`, `ceiled()`, or `truncated()` methods — the policy
-      is chosen at the call site, not silently. */
+      Arithmetic, equality, and narrow/widen conversion machinery are
+      inherited from `detail::BiTuple`; only point-specific methods
+      (distanceTo, norm, normalize, inTriangle, toIppiPoint) live here.
+
+      Cross-type construction is implicit int → float (lossless) and
+      explicit for anything lossy (float → int, etc.).  Narrowing with
+      a specific rounding policy is performed via the inherited
+      `.rounded()`, `.floored()`, `.ceiled()`, or `.truncated()` at
+      the call site. */
   template<typename T>
-  class PointT {
+  class PointT : public detail::BiTuple<PointT<T>, T> {
     public:
     /// x position
     T x{T(0)};
     /// y position
     T y{T(0)};
+
+    /// required by BiTuple's cross-type conversion helpers
+    template<typename U> using rebind = PointT<U>;
 
     /// null point (x=0, y=0)
     inline static const PointT null{};
@@ -48,7 +162,7 @@ namespace icl::utils {
     /// coordinate constructor
     constexpr PointT(T x_, T y_) : x(x_), y(y_) {}
 
-    /// implicit widening from an integer-coord point to a floating-coord point.
+    /// implicit widening from integer-coord point to floating-coord point
     /** Lossless — integer pixel coordinates fit exactly in `float`. */
     template<typename U>
       requires (!std::is_same_v<U, T>
@@ -57,71 +171,26 @@ namespace icl::utils {
     constexpr PointT(const PointT<U> &o)
       : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)) {}
 
-    /// explicit cross-type construction for anything lossy (truncates).
-    /** To narrow float → int with a chosen rounding policy, prefer
+    /// explicit cross-type construction for anything lossy (truncates)
+    /** For narrowing with a specific rounding policy, prefer
         `.rounded<int>()`, `.floored<int>()`, `.ceiled<int>()`, or
-        `.truncated<int>()` at the call site — the rounding choice is
-        then visible where it matters. */
+        `.truncated<int>()` at the call site. */
     template<typename U>
       requires (!std::is_same_v<U, T>
                 && !(std::is_integral_v<U> && std::is_floating_point_v<T>))
     explicit constexpr PointT(const PointT<U> &o)
       : x(static_cast<T>(o.x)), y(static_cast<T>(o.y)) {}
 
-    /// returns whether x == 0 && y == 0
-    constexpr bool isNull() const { return x == T(0) && y == T(0); }
-
-    constexpr bool operator==(const PointT &s) const { return x == s.x && y == s.y; }
-    constexpr bool operator!=(const PointT &s) const { return x != s.x || y != s.y; }
-
-    constexpr PointT operator+(const PointT &s) const { return {T(x + s.x), T(y + s.y)}; }
-    constexpr PointT operator-(const PointT &s) const { return {T(x - s.x), T(y - s.y)}; }
-    constexpr PointT operator*(double d) const {
-      return {static_cast<T>(d * x), static_cast<T>(d * y)};
-    }
-
-    PointT &operator+=(const PointT &s) { x += s.x; y += s.y; return *this; }
-    PointT &operator-=(const PointT &s) { x -= s.x; y -= s.y; return *this; }
-    PointT &operator*=(double d) {
-      x = static_cast<T>(x * d); y = static_cast<T>(y * d); return *this;
-    }
-
-    /// index-based access (i==0 → x, else y)
-    T &operator[](int i) { return i ? y : x; }
-    const T &operator[](int i) const { return i ? y : x; }
+    /// BiTuple element access (i == 0 → x, else → y)
+    constexpr T &operator[](int i) { return i ? y : x; }
+    constexpr const T &operator[](int i) const { return i ? y : x; }
 
     /// explicit conversion to IppiPoint (int coordinates)
     IppiPoint toIppiPoint() const {
       return { static_cast<int>(x), static_cast<int>(y) };
     }
 
-    // ---------- explicit cross-type conversions ----------
-
-    /// `static_cast` narrowing (truncates for float→int)
-    template<typename U = int>
-    constexpr PointT<U> truncated() const {
-      return { static_cast<U>(x), static_cast<U>(y) };
-    }
-
-    /// rounds each coordinate (std::round) before casting
-    template<typename U = int>
-    PointT<U> rounded() const {
-      return { static_cast<U>(std::round(x)), static_cast<U>(std::round(y)) };
-    }
-
-    /// floors each coordinate (std::floor) before casting
-    template<typename U = int>
-    PointT<U> floored() const {
-      return { static_cast<U>(std::floor(x)), static_cast<U>(std::floor(y)) };
-    }
-
-    /// ceilings each coordinate (std::ceil) before casting
-    template<typename U = int>
-    PointT<U> ceiled() const {
-      return { static_cast<U>(std::ceil(x)), static_cast<U>(std::ceil(y)) };
-    }
-
-    // ---------- heavier methods (out-of-line) ----------
+    // ---------- point-specific math (out-of-line) ----------
 
     /// element-wise scale
     PointT transform(double xfac, double yfac) const;
@@ -139,7 +208,7 @@ namespace icl::utils {
     /// triangle-containment test (works for any T)
     bool inTriangle(const PointT &v1, const PointT &v2, const PointT &v3) const;
 
-    // ---------- float-only methods ----------
+    // ---------- float-only ----------
 
     /// normalize this vector to length 1 (euclidean norm)
     PointT &normalize() requires std::is_floating_point_v<T>;
