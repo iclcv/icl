@@ -14,6 +14,9 @@ geom2_headers = files(
   'LightNode.h',
   'Scene2.h',
   'Loader.h',
+  'Raytracer.h',
+  'CyclesRenderer.h',
+  'SceneSynchronizer.h',
 )
 
 geom2_sources = files(
@@ -29,6 +32,9 @@ geom2_sources = files(
   'LightNode.cpp',
   'Scene2.cpp',
   'Loader.cpp',
+  # CyclesRenderer.cpp and SceneSynchronizer.cpp need Cycles include paths
+  # and link libraries — deferred until Cycles build integration is ported.
+  # Headers (Raytracer.h, CyclesRenderer.h, SceneSynchronizer.h) are ready.
 )
 
 # Include dirs for 3rdparty single-header libs used by Loader.cpp

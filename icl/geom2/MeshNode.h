@@ -45,6 +45,8 @@ namespace icl::geom2 {
                  int na = -1, int nb = -1, int nc = -1, int nd = -1,
                  int ta = -1, int tb = -1, int tc = -1, int td = -1);
 
+    //void digest(std::optional<std::vector<Vec>&&> vertices);
+
     /// Clears all geometry (vertices, normals, colors, primitives)
     void clearGeometry();
 
