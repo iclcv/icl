@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/PugiXML.h>
+#include <icl/utils/detail/pugi/PugiXML.h>
 
 namespace icl::utils {
   // note: this file basically contains ICL-specific typedefs for

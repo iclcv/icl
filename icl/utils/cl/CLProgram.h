@@ -7,11 +7,11 @@
 #ifdef ICL_HAVE_OPENCL
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/CLBuffer.h>
-#include <icl/utils/CLKernel.h>
-#include <icl/utils/CLImage2D.h>
-#include <icl/utils/CLException.h>
-#include <icl/utils/CLDeviceContext.h>
+#include <icl/utils/cl/CLBuffer.h>
+#include <icl/utils/cl/CLKernel.h>
+#include <icl/utils/cl/CLImage2D.h>
+#include <icl/utils/cl/CLException.h>
+#include <icl/utils/cl/CLDeviceContext.h>
 #include <string.h>
 #include <fstream>
 
@@ -60,7 +60,7 @@ namespace icl::utils {
 
 
         \code
-        #include <icl/utils/CLProgram.h>
+        #include <icl/utils/cl/CLProgram.h>
         #include <icl/qt/Common.h>
 
         struct Conv{
@@ -144,7 +144,7 @@ namespace icl::utils {
         The same example but this time CLImage2D is used for the memory access instead of CLBuffer.
 
         \code
-        #include <icl/utils/CLProgram.h>
+        #include <icl/utils/cl/CLProgram.h>
         #include <icl/qt/Common.h>
 
         struct Conv{

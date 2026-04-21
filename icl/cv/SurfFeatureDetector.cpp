@@ -9,7 +9,7 @@
 
 #ifdef ICL_HAVE_OPENCL
 #include <icl/cv/CLSurfLib.h>
-#include <icl/utils/CLProgram.h>
+#include <icl/utils/cl/CLProgram.h>
 #endif
 
 #ifdef ICL_HAVE_OPENCV

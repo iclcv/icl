@@ -6,7 +6,7 @@
 #include <icl/utils/StringUtils.h>
 #ifdef ICL_HAVE_OPENCL
 #define USE_OPENCL
-#include <icl/utils/CLProgram.h>
+#include <icl/utils/cl/CLProgram.h>
 #endif
 
 

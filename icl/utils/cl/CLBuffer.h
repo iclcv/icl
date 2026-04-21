@@ -6,9 +6,9 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/CLException.h>
-#include <icl/utils/CLMemory.h>
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLException.h>
+#include <icl/utils/cl/CLMemory.h>
+#include <icl/utils/cl/CLIncludes.h>
 #include <string>
 
 namespace icl::utils {

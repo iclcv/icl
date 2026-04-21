@@ -29,10 +29,10 @@
  ********************************************************************/
 
 #ifdef ICL_HAVE_OPENCL
-#include <icl/utils/CLDeviceContext.h>
+#include <icl/utils/cl/CLDeviceContext.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/CLIncludes.h>
-#include <icl/utils/CLException.h>
+#include <icl/utils/cl/CLIncludes.h>
+#include <icl/utils/cl/CLException.h>
 #include <iostream>
 #include <sstream>
 #include <string>

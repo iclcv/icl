@@ -30,9 +30,9 @@
 
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
 #ifdef ICL_HAVE_OPENCL
-#include <icl/utils/CLKernel.h>
-#include <icl/utils/CLBuffer.h>
-#include <icl/utils/CLProgram.h>
+#include <icl/utils/cl/CLKernel.h>
+#include <icl/utils/cl/CLBuffer.h>
+#include <icl/utils/cl/CLProgram.h>
 #endif
 
 #include <icl/geom/PointCloudNormalEstimator.h>

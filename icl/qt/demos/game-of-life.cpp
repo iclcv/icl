@@ -8,9 +8,9 @@
 #include <icl/utils/Time.h>
 
 #ifdef ICL_HAVE_OPENCL
-#include <icl/utils/CLProgram.h>
-#include <icl/utils/CLBuffer.h>
-#include <icl/utils/CLKernel.h>
+#include <icl/utils/cl/CLProgram.h>
+#include <icl/utils/cl/CLBuffer.h>
+#include <icl/utils/cl/CLKernel.h>
 #endif
 
 #include <vector>

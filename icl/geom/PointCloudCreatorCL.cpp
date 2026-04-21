@@ -30,7 +30,7 @@
 
 #include <icl/geom/PointCloudCreatorCL.h>
 
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLIncludes.h>
 
 using namespace icl::utils;
 using namespace icl::math;

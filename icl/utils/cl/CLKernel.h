@@ -33,10 +33,10 @@
 #ifdef ICL_HAVE_OPENCL
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/CLBuffer.h>
-#include <icl/utils/CLImage2D.h>
-#include <icl/utils/CLException.h>
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLBuffer.h>
+#include <icl/utils/cl/CLImage2D.h>
+#include <icl/utils/cl/CLException.h>
+#include <icl/utils/cl/CLIncludes.h>
 #include <icl/utils/FixedArray.h>
 #include <string>
 

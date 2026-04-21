@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/DynamicGUI.h>
-#include <icl/utils/PugiXML.h>
+#include <icl/utils/detail/pugi/PugiXML.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
 #include <fstream>

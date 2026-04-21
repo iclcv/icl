@@ -84,7 +84,7 @@
 
 #include <icl/core/CCFunctions.h>
 
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLIncludes.h>
 
 #include "cstdio"
 #ifdef WIN32

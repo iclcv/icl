@@ -5,8 +5,8 @@
 #ifdef ICL_HAVE_OPENCL
 
 #include <icl/filter/BilateralFilterOp.h>
-#include <icl/utils/CLProgram.h>
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLProgram.h>
+#include <icl/utils/cl/CLIncludes.h>
 #include <icl/core/ImageBackendDispatching.h>
 #include <icl/filter/OpenCL/BilateralFilterOpKernel.h>
 

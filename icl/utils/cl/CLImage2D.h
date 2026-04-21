@@ -31,16 +31,16 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/CLException.h>
+#include <icl/utils/cl/CLException.h>
 #include <icl/utils/Rect.h>
-#include <icl/utils/CLMemory.h>
+#include <icl/utils/cl/CLMemory.h>
 #include <string>
 
 #include <set>
 #include <map>
 #include <stdint.h>
 
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLIncludes.h>
 
 namespace icl::utils {
         /// Wrapper for an OpenCL Image2D

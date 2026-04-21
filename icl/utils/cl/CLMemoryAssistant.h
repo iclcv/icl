@@ -32,10 +32,10 @@
 
 #ifdef ICL_HAVE_OPENCL
 
-#include <icl/utils/CLDeviceContext.h>
-#include <icl/utils/CLMemory.h>
-#include <icl/utils/CLBuffer.h>
-#include <icl/utils/CLImage2D.h>
+#include <icl/utils/cl/CLDeviceContext.h>
+#include <icl/utils/cl/CLMemory.h>
+#include <icl/utils/cl/CLBuffer.h>
+#include <icl/utils/cl/CLImage2D.h>
 #include <icl/utils/Exception.h>
 #include <map>
 

@@ -30,7 +30,7 @@
 
 #include <icl/geom/Segmentation3D.h>
 
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLIncludes.h>
 
 #include <icl/qt/Quick2.h>
 #include <icl/geom/GeomDefs.h>

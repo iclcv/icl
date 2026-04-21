@@ -28,7 +28,7 @@
  **                                                                 **
  ********************************************************************/
 
-#include <icl/utils/CLMemoryAssistant.h>
+#include <icl/utils/cl/CLMemoryAssistant.h>
 #include <string>
 
 #ifdef ICL_HAVE_OPENCL

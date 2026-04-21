@@ -29,10 +29,10 @@
  ********************************************************************/
 #ifdef ICL_HAVE_OPENCL
 
-#include <icl/utils/CLImage2D.h>
+#include <icl/utils/cl/CLImage2D.h>
 #include <icl/utils/Macros.h>
 
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLIncludes.h>
 
 #include <iostream>
 #include <sstream>

@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Viktor Losing, Christof Elbrechter
 
 #ifdef ICL_HAVE_OPENCL
-#include <icl/utils/CLKernel.h>
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLKernel.h>
+#include <icl/utils/cl/CLIncludes.h>
 
 #include <cstring>
 

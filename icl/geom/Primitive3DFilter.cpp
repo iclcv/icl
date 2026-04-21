@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Lukas Twardon, Christof Elbrechter
 
 #include <icl/geom/Primitive3DFilter.h>
-#include <icl/utils/PugiXML.h>
+#include <icl/utils/detail/pugi/PugiXML.h>
 #include <icl/utils/StringUtils.h>
 
 namespace icl::geom {

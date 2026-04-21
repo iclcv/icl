@@ -1,6 +1,6 @@
 
-#include <icl/utils/CLProgram.h>
-#include <icl/utils/CLMemoryAssistant.h>
+#include <icl/utils/cl/CLProgram.h>
+#include <icl/utils/cl/CLMemoryAssistant.h>
 #include <vector>
 
 using namespace icl::utils;

@@ -3,10 +3,10 @@
 // Copyright (C) 2006-2026 Viktor Losing, Christof Elbrechter
 
 #ifdef ICL_HAVE_OPENCL
-#include <icl/utils/CLProgram.h>
+#include <icl/utils/cl/CLProgram.h>
 #include <icl/utils/StringUtils.h>
 
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLIncludes.h>
 
 #include <iostream>
 #include <sstream>

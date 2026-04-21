@@ -29,15 +29,6 @@ utils_headers = files(
   'BackendDispatching.h',
   'BasicTypes.h',
   'Benchmark.h',
-  'CLBuffer.h',
-  'CLDeviceContext.h',
-  'CLException.h',
-  'CLImage2D.h',
-  'CLIncludes.h',
-  'CLKernel.h',
-  'CLMemory.h',
-  'CLMemoryAssistant.h',
-  'CLProgram.h',
   'ClippedCast.h',
   'CompatMacros.h',
   'ConfigFile.h',
@@ -62,7 +53,6 @@ utils_headers = files(
   'Point32f.h',
   'ProcessMonitor.h',
   'ProgArg.h',
-  'PugiXML.h',
   'Random.h',
   'Range.h',
   'Rect.h',
@@ -89,13 +79,28 @@ utils_headers = files(
   'XML.h',
 )
 
+# OpenCL wrappers — conditionally compiled; always-installed public
+# headers so dependent headers (PointCloudCreatorCL, Segmentation3D, …)
+# keep working when OpenCL is on.
+utils_cl_headers = files(
+  'cl/CLBuffer.h',
+  'cl/CLDeviceContext.h',
+  'cl/CLException.h',
+  'cl/CLImage2D.h',
+  'cl/CLIncludes.h',
+  'cl/CLKernel.h',
+  'cl/CLMemory.h',
+  'cl/CLMemoryAssistant.h',
+  'cl/CLProgram.h',
+)
+
 utils_sources = files(
-  'CLBuffer.cpp',
-  'CLDeviceContext.cpp',
-  'CLImage2D.cpp',
-  'CLKernel.cpp',
-  'CLMemoryAssistant.cpp',
-  'CLProgram.cpp',
+  'cl/CLBuffer.cpp',
+  'cl/CLDeviceContext.cpp',
+  'cl/CLImage2D.cpp',
+  'cl/CLKernel.cpp',
+  'cl/CLMemoryAssistant.cpp',
+  'cl/CLProgram.cpp',
   'ConfigFile.cpp',
   'Configurable.cpp',
   'ConsoleProgress.cpp',
@@ -109,7 +114,7 @@ utils_sources = files(
   'Point32f.cpp',
   'ProcessMonitor.cpp',
   'ProgArg.cpp',
-  'PugiXML.cpp',
+  'detail/pugi/PugiXML.cpp',
   'Range.cpp',
   'Rect.cpp',
   'Rect32f.cpp',
@@ -145,6 +150,18 @@ icl_utils_dep = declare_dependency(
 
 install_headers(utils_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils',
+)
+
+install_headers(utils_cl_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'cl',
+)
+
+# Vendored pugixml lives under detail/pugi/ — it's only reached via
+# icl/utils/XML.h (which aliases pugi:: types as icl::utils::XML*).
+# The header must still be installed so XML.h is self-contained.
+install_headers(
+  files('detail/pugi/PugiXML.h', 'detail/pugi/pugiconfig.hpp'),
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'detail' / 'pugi',
 )
 
 pkg.generate(icl_utils_lib,

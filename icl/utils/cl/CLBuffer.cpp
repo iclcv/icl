@@ -4,10 +4,10 @@
 
 #ifdef ICL_HAVE_OPENCL
 
-#include <icl/utils/CLBuffer.h>
+#include <icl/utils/cl/CLBuffer.h>
 #include <icl/utils/Macros.h>
 
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLIncludes.h>
 
 #include <iostream>
 #include <sstream>

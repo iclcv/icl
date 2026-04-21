@@ -4,7 +4,7 @@
 
 #include <icl/geom/PlanarRansacEstimator.h>
 
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLIncludes.h>
 
 #include <icl/core/Img.h>
 

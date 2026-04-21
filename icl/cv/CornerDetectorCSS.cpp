@@ -8,9 +8,9 @@
 #include <cstring>
 
 #ifdef ICL_HAVE_OPENCL
-#include <icl/utils/CLProgram.h>
+#include <icl/utils/cl/CLProgram.h>
 #endif
-#include <icl/utils/CLIncludes.h>
+#include <icl/utils/cl/CLIncludes.h>
 using namespace icl::utils;
 using namespace icl::core;
 

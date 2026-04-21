@@ -33,7 +33,7 @@
 #ifdef ICL_HAVE_OPENCL
 
 #include <memory>
-#include <icl/utils/CLException.h>
+#include <icl/utils/cl/CLException.h>
 #include <icl/utils/BasicTypes.h>
 #include <vector>
 
