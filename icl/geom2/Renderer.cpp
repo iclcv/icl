@@ -63,57 +63,139 @@ uniform vec3 uCameraPos;
 uniform int uNumLights;
 uniform vec3 uLightPos[MAX_LIGHTS];
 uniform vec3 uLightColor[MAX_LIGHTS];
-uniform sampler2D uBaseColorTex;
-uniform int uHasTexture;
+
+uniform int uHasBaseColorMap;
+uniform sampler2D uBaseColorMap;
+uniform int uHasNormalMap;
+uniform sampler2D uNormalMap;
+uniform int uHasMetallicRoughnessMap;
+uniform sampler2D uMetallicRoughnessMap;
+uniform int uHasEmissiveMap;
+uniform sampler2D uEmissiveMap;
+uniform int uHasOcclusionMap;
+uniform sampler2D uOcclusionMap;
+
 in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
 out vec4 FragColor;
 
+// Approximate sky sampling for environment reflections (matches Sky defaults)
+vec3 sampleSky(vec3 dir) {
+    vec3 zenith  = vec3(0.55, 0.65, 0.85);
+    vec3 horizon = vec3(0.95, 0.93, 0.90);
+    vec3 ground  = vec3(0.30, 0.27, 0.25);
+    float y = dir.y;
+    if (y > 0.0) {
+        return mix(horizon, zenith, pow(y, 0.4));
+    } else {
+        return mix(horizon, ground, min(-y * 3.0, 1.0));
+    }
+}
+
 void main() {
     vec3 N = normalize(vNormal);
+    if (!gl_FrontFacing) N = -N;
+    vec3 geomN = N;
+
+    // Normal map: perturb N using tangent-space normal from texture
+    if (uHasNormalMap != 0) {
+        vec3 tsNormal = texture(uNormalMap, vTexCoord).rgb * 2.0 - 1.0;
+        vec3 dPdx = dFdx(vWorldPos);
+        vec3 dPdy = dFdy(vWorldPos);
+        vec2 dUVdx = dFdx(vTexCoord);
+        vec2 dUVdy = dFdy(vTexCoord);
+        float det = dUVdx.x * dUVdy.y - dUVdx.y * dUVdy.x;
+        if (abs(det) > 1e-6) {
+            float invDet = 1.0 / det;
+            vec3 T = normalize((dPdx * dUVdy.y - dPdy * dUVdx.y) * invDet);
+            vec3 B = normalize((dPdy * dUVdx.x - dPdx * dUVdy.x) * invDet);
+            N = normalize(mat3(T, B, N) * tsNormal);
+        }
+    }
+    float selfOcclusion = max(dot(N, geomN), 0.0);
+
     vec3 V = normalize(uCameraPos - vWorldPos);
 
+    // Base color
     vec4 baseCol = uBaseColor;
-    if (uHasTexture != 0) {
-        vec4 texCol = texture(uBaseColorTex, vTexCoord);
-        baseCol *= texCol;
+    if (uHasBaseColorMap != 0) {
+        baseCol *= texture(uBaseColorMap, vTexCoord);
     }
     vec3 albedo = baseCol.rgb;
     float alpha = baseCol.a;
 
-    vec3 color = albedo * uAmbient;  // ambient
+    // Metallic-roughness map (glTF: green=roughness, blue=metallic)
+    float metallic = uMetallic;
+    float roughness = uRoughness;
+    if (uHasMetallicRoughnessMap != 0) {
+        vec4 mr = texture(uMetallicRoughnessMap, vTexCoord);
+        metallic = mr.b * uMetallic;
+        roughness = mr.g * uRoughness;
+    }
 
-    float shininess = 2.0 / (uRoughness * uRoughness + 0.0001) - 2.0;
-    shininess = clamp(shininess, 1.0, 256.0);
+    float shininess = 2.0 / (roughness * roughness + 0.0001) - 2.0;
+    shininess = clamp(shininess, 1.0, 512.0);
+
+    vec3 specColor = mix(vec3(0.04), albedo, metallic);
+
+    // Environment reflection
+    vec3 R = reflect(-V, N);
+    vec3 envColor = sampleSky(R);
+    vec3 diffuseEnv = sampleSky(N);
+    vec3 envReflection = mix(envColor, diffuseEnv, roughness);
+
+    // Fresnel: roughness-aware Schlick (Lagarde 2014)
+    float NdotV = max(dot(N, V), 0.0);
+    float fresnel = pow(1.0 - NdotV, 5.0);
+    vec3 envFresnel = specColor + (max(vec3(1.0 - roughness), specColor) - specColor) * fresnel;
+
+    // Energy-conserving ambient
+    vec3 kD = (vec3(1.0) - envFresnel) * (1.0 - metallic);
+    vec3 ambientDiffuse = albedo * diffuseEnv * kD;
+    vec3 ambientSpecular = envReflection * envFresnel;
+
+    // Occlusion
+    float occlusion = selfOcclusion;
+    if (uHasOcclusionMap != 0) {
+        occlusion *= texture(uOcclusionMap, vTexCoord).r;
+    }
+
+    vec3 color = (ambientDiffuse + ambientSpecular) * occlusion;
 
     for (int i = 0; i < uNumLights && i < MAX_LIGHTS; i++) {
         vec3 L = normalize(uLightPos[i] - vWorldPos);
-        float NdotL = max(dot(N, L), 0.0);
-
-        // Diffuse
-        color += albedo * NdotL * (1.0 - uMetallic) * uLightColor[i];
-
-        // Blinn-Phong specular
         vec3 H = normalize(L + V);
-        float spec = pow(max(dot(N, H), 0.0), shininess);
-        color += vec3(spec) * mix(vec3(0.04), albedo, uMetallic) * uLightColor[i];
+        float NdotL = max(dot(N, L), 0.0);
+        float NdotH = max(dot(N, H), 0.0);
+
+        vec3 diffuse = albedo * (1.0 - metallic) * NdotL;
+        float specPow = pow(NdotH, shininess);
+        vec3 specular = specColor * specPow;
+
+        color += uLightColor[i] * (diffuse + specular * NdotL);
     }
 
     // Fallback: if no lights, use a default directional light
     if (uNumLights == 0) {
         vec3 L = normalize(vec3(0.5, 1.0, 0.3));
-        float NdotL = max(dot(N, L), 0.0);
-        color += albedo * NdotL * (1.0 - uMetallic);
         vec3 H = normalize(L + V);
-        float spec = pow(max(dot(N, H), 0.0), shininess);
-        color += vec3(spec) * mix(vec3(0.04), albedo, uMetallic);
+        float NdotL = max(dot(N, L), 0.0);
+        float NdotH = max(dot(N, H), 0.0);
+        color += albedo * NdotL * (1.0 - metallic);
+        color += specColor * pow(NdotH, shininess) * NdotL;
     }
 
-    color += uEmissive.rgb;
+    // Emissive
+    vec3 emissive = uEmissive.rgb;
+    if (uHasEmissiveMap != 0) {
+        emissive = texture(uEmissiveMap, vTexCoord).rgb * max(uEmissive.rgb, vec3(1.0));
+    }
+    color += emissive;
 
-    // Tone mapping
-    color = vec3(1.0) - exp(-color * uExposure);
+    // Tone mapping (linear, matches geom GLRenderer)
+    color *= uExposure;
+    color = clamp(color, 0.0, 1.0);
 
     alpha *= uOverlayAlpha;
     if (alpha < 0.01) discard;
@@ -388,13 +470,21 @@ void main() { FragColor = vColor; }
     GLint locLightColor[8] = {};
 
     // Texture uniform locations
-    GLint locBaseColorTex = -1, locHasTexture = -1;
+    GLint locBaseColorMap = -1, locHasBaseColorMap = -1;
+    GLint locNormalMap = -1, locHasNormalMap = -1;
+    GLint locMetallicRoughnessMap = -1, locHasMetallicRoughnessMap = -1;
+    GLint locEmissiveMap = -1, locHasEmissiveMap = -1;
+    GLint locOcclusionMap = -1, locHasOcclusionMap = -1;
 
     // Unlit uniform locations
     GLint locUnlitMVP = -1, locUnlitPointSize = -1;
 
-    // Texture cache: Material* -> GL texture handle
-    std::unordered_map<const geom::Material*, GLuint> texCache;
+    // Per-material texture cache
+    struct MatTextures {
+      GLuint baseColor = 0, normalMap = 0, metallicRoughness = 0;
+      GLuint emissive = 0, occlusion = 0;
+    };
+    std::unordered_map<const geom::Material*, MatTextures> texCache;
 
     std::unordered_map<const GeometryNode*, std::unique_ptr<GeomCache>> cache;
     std::unordered_map<const PointCloudNode*, std::unique_ptr<PCCache>> pcCache;
@@ -449,8 +539,9 @@ void main() { FragColor = vColor; }
   void Renderer::invalidateCache() {
     m_data->cache.clear();
     m_data->pcCache.clear();
-    for (auto &[_, tex] : m_data->texCache) {
-      if (tex) glDeleteTextures(1, &tex);
+    for (auto &[_, mt] : m_data->texCache) {
+      GLuint texs[] = {mt.baseColor, mt.normalMap, mt.metallicRoughness, mt.emissive, mt.occlusion};
+      for (auto t : texs) if (t) glDeleteTextures(1, &t);
     }
     m_data->texCache.clear();
   }
@@ -476,8 +567,16 @@ void main() { FragColor = vColor; }
       m_data->locOverlayAlpha = glGetUniformLocation(m_data->pbrProgram, "uOverlayAlpha");
       m_data->locCameraPos = glGetUniformLocation(m_data->pbrProgram, "uCameraPos");
       m_data->locNumLights = glGetUniformLocation(m_data->pbrProgram, "uNumLights");
-      m_data->locBaseColorTex = glGetUniformLocation(m_data->pbrProgram, "uBaseColorTex");
-      m_data->locHasTexture = glGetUniformLocation(m_data->pbrProgram, "uHasTexture");
+      m_data->locBaseColorMap = glGetUniformLocation(m_data->pbrProgram, "uBaseColorMap");
+      m_data->locHasBaseColorMap = glGetUniformLocation(m_data->pbrProgram, "uHasBaseColorMap");
+      m_data->locNormalMap = glGetUniformLocation(m_data->pbrProgram, "uNormalMap");
+      m_data->locHasNormalMap = glGetUniformLocation(m_data->pbrProgram, "uHasNormalMap");
+      m_data->locMetallicRoughnessMap = glGetUniformLocation(m_data->pbrProgram, "uMetallicRoughnessMap");
+      m_data->locHasMetallicRoughnessMap = glGetUniformLocation(m_data->pbrProgram, "uHasMetallicRoughnessMap");
+      m_data->locEmissiveMap = glGetUniformLocation(m_data->pbrProgram, "uEmissiveMap");
+      m_data->locHasEmissiveMap = glGetUniformLocation(m_data->pbrProgram, "uHasEmissiveMap");
+      m_data->locOcclusionMap = glGetUniformLocation(m_data->pbrProgram, "uOcclusionMap");
+      m_data->locHasOcclusionMap = glGetUniformLocation(m_data->pbrProgram, "uHasOcclusionMap");
       for (int i = 0; i < 8; i++) {
         char buf[64];
         snprintf(buf, sizeof(buf), "uLightPos[%d]", i);
@@ -676,7 +775,6 @@ void main() { FragColor = vColor; }
 
       // Material uniforms
       auto mat = geom->getMaterial();
-      bool hasTex = false;
       if (mat) {
         glUniform4f(m_data->locBaseColor, mat->baseColor[0], mat->baseColor[1],
                     mat->baseColor[2], mat->baseColor[3]);
@@ -685,31 +783,46 @@ void main() { FragColor = vColor; }
         glUniform4f(m_data->locEmissive, mat->emissive[0], mat->emissive[1],
                     mat->emissive[2], 0);
 
-        // Texture binding
-        if (mat->textures && !mat->textures->baseColorMap.isNull()) {
-          auto it = m_data->texCache.find(mat.get());
-          GLuint tex = 0;
-          if (it != m_data->texCache.end()) {
-            tex = it->second;
-          } else {
-            tex = uploadTexture(mat->textures->baseColorMap);
-            m_data->texCache[mat.get()] = tex;
-          }
-          if (tex) {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, tex);
-            glUniform1i(m_data->locBaseColorTex, 0);
-            glUniform1i(m_data->locHasTexture, 1);
-            hasTex = true;
-          }
+        // Upload all textures for this material (cached)
+        auto &mt = m_data->texCache[mat.get()];
+        if (mat->textures) {
+          if (!mt.baseColor && !mat->textures->baseColorMap.isNull())
+            mt.baseColor = uploadTexture(mat->textures->baseColorMap);
+          if (!mt.normalMap && !mat->textures->normalMap.isNull())
+            mt.normalMap = uploadTexture(mat->textures->normalMap);
+          if (!mt.metallicRoughness && !mat->textures->metallicRoughnessMap.isNull())
+            mt.metallicRoughness = uploadTexture(mat->textures->metallicRoughnessMap);
+          if (!mt.emissive && !mat->textures->emissiveMap.isNull())
+            mt.emissive = uploadTexture(mat->textures->emissiveMap);
+          if (!mt.occlusion && !mat->textures->occlusionMap.isNull())
+            mt.occlusion = uploadTexture(mat->textures->occlusionMap);
         }
+
+        // Bind textures to texture units
+        auto bindTex = [](GLint locHas, GLint locSampler, int unit, GLuint tex) {
+          glUniform1i(locHas, tex ? 1 : 0);
+          if (tex) {
+            glActiveTexture(GL_TEXTURE0 + unit);
+            glBindTexture(GL_TEXTURE_2D, tex);
+            glUniform1i(locSampler, unit);
+          }
+        };
+        bindTex(m_data->locHasBaseColorMap, m_data->locBaseColorMap, 0, mt.baseColor);
+        bindTex(m_data->locHasNormalMap, m_data->locNormalMap, 1, mt.normalMap);
+        bindTex(m_data->locHasMetallicRoughnessMap, m_data->locMetallicRoughnessMap, 2, mt.metallicRoughness);
+        bindTex(m_data->locHasEmissiveMap, m_data->locEmissiveMap, 3, mt.emissive);
+        bindTex(m_data->locHasOcclusionMap, m_data->locOcclusionMap, 4, mt.occlusion);
       } else {
         glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
         glUniform1f(m_data->locMetallic, 0.0f);
         glUniform1f(m_data->locRoughness, 0.5f);
         glUniform4f(m_data->locEmissive, 0, 0, 0, 0);
+        glUniform1i(m_data->locHasBaseColorMap, 0);
+        glUniform1i(m_data->locHasNormalMap, 0);
+        glUniform1i(m_data->locHasMetallicRoughnessMap, 0);
+        glUniform1i(m_data->locHasEmissiveMap, 0);
+        glUniform1i(m_data->locHasOcclusionMap, 0);
       }
-      if (!hasTex) glUniform1i(m_data->locHasTexture, 0);
 
       // Draw triangles (PBR lit)
       if (cache->numTriIndices > 0) {
@@ -718,10 +831,12 @@ void main() { FragColor = vColor; }
         glBindVertexArray(0);
       }
 
-      // Unbind texture
-      if (hasTex) {
+      // Unbind textures
+      for (int u = 0; u < 5; u++) {
+        glActiveTexture(GL_TEXTURE0 + u);
         glBindTexture(GL_TEXTURE_2D, 0);
       }
+      glActiveTexture(GL_TEXTURE0);
 
       // Draw lines + points (unlit)
       if ((cache->numLineVerts > 0 || cache->numPointVerts > 0) && m_data->unlitProgram) {
