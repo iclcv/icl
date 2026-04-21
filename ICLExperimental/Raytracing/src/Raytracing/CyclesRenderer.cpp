@@ -157,14 +157,10 @@ struct CyclesRenderer::Impl {
     vector<DeviceInfo> devices = Device::available_devices();
     DeviceInfo deviceInfo = devices[0]; // CPU fallback
     for (const auto &d : devices) {
-      fprintf(stderr, "[Cycles] Available device: %s (type %d)\n",
-              d.description.c_str(), (int)d.type);
       if (d.type == DEVICE_METAL) {
         deviceInfo = d;
       }
     }
-    fprintf(stderr, "[Cycles] Selected: %s (type %d)\n",
-            deviceInfo.description.c_str(), (int)deviceInfo.type);
 
     // Session params
     SessionParams sessionParams;
@@ -312,10 +308,8 @@ void CyclesRenderer::render(int camIndex) {
     bp.full_width = w;  bp.full_height = h;
 
     m_impl->session->reset(sp, bp);
-    if (!m_impl->sessionStarted) {
-      m_impl->session->start();
-      m_impl->sessionStarted = true;
-    }
+    m_impl->session->start();  // must call after every reset to wake session thread
+    m_impl->sessionStarted = true;
     m_impl->accumulated = 0;
     m_impl->target = A;
     m_impl->updateCountAtReset = m_impl->outputDriver->getUpdateCount();
@@ -345,8 +339,6 @@ void CyclesRenderer::render(int camIndex) {
   // Wait for the render to produce a new tile after reset.
   if (m_impl->state == S::WAIT_FOR_START) {
     if (m_impl->outputDriver->getUpdateCount() <= m_impl->updateCountAtReset) return;
-    double waitMs = (ccl::time_dt() - m_impl->resetTime) * 1000.0;
-    fprintf(stderr, "[Cycles] Reset→tile: %.0fms\n", waitMs);
     m_impl->state = S::RENDERING;
   }
 

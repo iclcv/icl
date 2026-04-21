@@ -91,7 +91,7 @@ private:
   void syncMaterial(ObjectEntry &entry, ccl::Scene *cclScene);
 
   /// Update the Cycles Object transform from ICL SceneObject.
-  void syncTransform(ObjectEntry &entry, float sceneScale);
+  void syncTransform(ObjectEntry &entry, ccl::Scene *cclScene, float sceneScale);
 
   /// Sync ICL Camera to Cycles Camera.
   void syncCamera(const geom::Camera &cam, ccl::Scene *cclScene, float sceneScale);

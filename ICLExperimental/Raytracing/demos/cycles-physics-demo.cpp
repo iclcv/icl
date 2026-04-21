@@ -89,11 +89,11 @@ static constexpr float SPAWN_HEIGHT = 500;
 
 static std::deque<PhysicsObject *> dynamicObjects;
 
-// Objects waiting to be activated (spawned static, activated after render catches up)
+// Objects waiting to be activated (spawned frozen, activated after render catches up)
 struct PendingObject {
   RigidObject *obj;
   float mass;
-  int framesUntilActivate;  // countdown
+  Time activateTime;
 };
 static std::deque<PendingObject> pendingObjects;
 
@@ -187,18 +187,17 @@ static void spawnObject() {
 
     scene.addObject(obj, true);
     dynamicObjects.push_back(obj);
-    // Queue for unfreeze after ~30 frames (~1s at 30fps),
-    // giving the renderer time to show the object before it falls.
-    pendingObjects.push_back({obj, mass, 30});
+    // Queue for unfreeze after 1 second, giving the renderer time
+    // to show the object before it falls.
+    pendingObjects.push_back({obj, mass, Time::now() + Time(1000000)});
   }
 }
 
 static void activatePendingObjects() {
+  Time now = Time::now();
   for (auto &p : pendingObjects) {
-    if (p.framesUntilActivate > 0) {
-      p.framesUntilActivate--;
-    } else if (p.framesUntilActivate == 0) {
-      p.framesUntilActivate = -1;  // mark as activated
+    if (p.activateTime.toMicroSeconds() > 0 && now >= p.activateTime) {
+      p.activateTime = Time(0);  // mark as activated
       btRigidBody *body = p.obj->getRigidBody();
       if (body) {
         // Unfreeze — restore full motion
@@ -211,7 +210,7 @@ static void activatePendingObjects() {
     }
   }
   // Remove activated entries
-  while (!pendingObjects.empty() && pendingObjects.front().framesUntilActivate < 0)
+  while (!pendingObjects.empty() && pendingObjects.front().activateTime.toMicroSeconds() == 0)
     pendingObjects.pop_front();
 }
 
@@ -322,12 +321,13 @@ void init() {
             << Canvas3D().handle("gl").minSize(32, 24).label("OpenGL"))
          << (HBox()
             << CheckBox("pause physics", "unchecked").handle("pause")
-            << Slider(10, 120, 30).handle("spawnRate").label("spawn interval")
+            << Slider(5, 500, 50).handle("spawnRate").label("spawn ms")
             << Button("spawn 10").handle("burst")
-            << Fps(30).handle("fps")
+            << Label("--").handle("renderFps")
             << Combo("!Preview,Interactive,Final").handle("quality").label("Quality")
-            << Combo("!1,2,4,8,16").handle("initSamples").label("Initial Samples")
-            << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iterations")
+            << Combo("!1,2,4,8,16").handle("initSamples").label("Steps/Frame")
+            << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iter"))
+         << (HBox()
             << Slider(1, 16, 2).handle("bounces").label("Max Bounces")
             << CheckBox("Denoising OIDN", "unchecked").handle("denoising")
             << Slider(10, 500, 100).handle("exposure").label("Exposure %")
@@ -342,10 +342,13 @@ void init() {
 }
 
 static int frameCount = 0;
+static Time lastSpawnTime = Time::now();
+static Time lastPhysicsTime = Time::now();
 
 void run() {
-  static FPSLimiter fpsLimit(30);
-  fpsLimit.wait();
+  // FPS limiter disabled — let the render pipeline pace the loop.
+  // static FPSLimiter fpsLimit(30);
+  // fpsLimit.wait();
 
   // Apply GUI settings to renderer
   static int lastQuality = -1;
@@ -380,12 +383,19 @@ void run() {
   bool geometryChanged = false;
 
   if (!paused) {
-    scene.step();
+    // Fixed physics timestep (1/60s) regardless of frame rate
+    Time now = Time::now();
+    float dtSec = (float)(now - lastPhysicsTime).toSecondsDouble();
+    lastPhysicsTime = now;
+    float fixedStep = 1.0f / 60.0f;
+    scene.step(std::min(dtSec, 0.1f), 4, fixedStep);
     activatePendingObjects();
     frameCount++;
 
-    int spawnRate = gui["spawnRate"].as<int>();
-    if (frameCount % spawnRate == 0) {
+    // Time-based spawn: spawnRate slider = spawn interval in ms
+    float spawnInterval = gui["spawnRate"].as<int>() / 1000.0f;  // seconds
+    if ((float)(now - lastSpawnTime).toSecondsDouble() >= spawnInterval) {
+      lastSpawnTime = now;
       spawnObject();
       geometryChanged = true;
     }
@@ -417,15 +427,26 @@ void run() {
     draw = img;
   }
 
-  char buf[256];
-  int progress = (int)(renderer->getProgress() * 100);
+  // Track render FPS based on tile updates
+  static int lastUpdateCount = 0;
+  static Time lastFpsTime = Time::now();
+  static float renderFps = 0;
   int updates = renderer->getUpdateCount();
-  snprintf(buf, sizeof(buf), "%d obj | %d%% (%d upd) | A=%d B=%d | %d bounces%s",
-           (int)dynamicObjects.size(), progress, updates,
-           initSamples, maxIter, bounces,
-           denoising ? " | OIDN" : "");
+  Time now2 = Time::now();
+  float dtFps = (float)(now2 - lastFpsTime).toSecondsDouble();
+  if (dtFps >= 0.5f) {  // update every 0.5s
+    renderFps = (updates - lastUpdateCount) / dtFps;
+    lastUpdateCount = updates;
+    lastFpsTime = now2;
+  }
+
+  char buf[256];
+  snprintf(buf, sizeof(buf), "%d obj | %.1f render fps | A=%d B=%d",
+           (int)dynamicObjects.size(), renderFps, initSamples, maxIter);
   draw->text(buf, 10, 20, 10);
   draw->render();
+
+  gui["renderFps"] = std::string(buf);
 
   // OpenGL reference view — same scene, same camera
   DrawHandle3D gl = gui["gl"];
@@ -433,7 +454,6 @@ void run() {
   gl.render();
 
   gui["info"] = std::string(buf);
-  gui["fps"].render();
 }
 
 static void saveImage(icl::rt::CyclesRenderer &r, const std::string &path) {

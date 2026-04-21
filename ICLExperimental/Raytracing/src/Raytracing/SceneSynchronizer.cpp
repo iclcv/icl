@@ -332,7 +332,7 @@ void SceneSynchronizer::walkObject(const geom::SceneObject *obj,
     }
 
     if (entry.transformDirty || geomDirty) {
-      syncTransform(entry, sceneScale);
+      syncTransform(entry, cclScene, sceneScale);
       entry.transformDirty = false;
       anyTransformChanged = true;
     }
@@ -422,10 +422,10 @@ void SceneSynchronizer::syncMaterial(ObjectEntry &entry,
   entry.geometry->set_used_shaders(used_shaders);
 }
 
-void SceneSynchronizer::syncTransform(ObjectEntry &entry, float sceneScale) {
+void SceneSynchronizer::syncTransform(ObjectEntry &entry, ccl::Scene *cclScene, float sceneScale) {
   Transform tfm = iclTransformToCycles(entry.iclObj, sceneScale);
   entry.object->set_tfm(tfm);
-  entry.object->tag_tfm_modified();
+  entry.object->tag_update(cclScene);
 }
 
 void SceneSynchronizer::syncCamera(const geom::Camera &cam,
