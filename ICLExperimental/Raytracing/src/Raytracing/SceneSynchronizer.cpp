@@ -267,16 +267,27 @@ bool SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
   // Sync lights
   syncLights(iclScene, cclScene, sceneScale);
 
-  // Set up a default background (sky-like) on first sync
+  // Set up sky background on first sync
   if (m_lastLightHash == 0) {
     Shader *bg = cclScene->default_background;
     ShaderGraph *graph = new ShaderGraph();
+
+    // Use Hosek-Wilkie sky texture for realistic environment lighting
+    SkyTextureNode *sky = graph->create_node<SkyTextureNode>();
+    sky->set_sky_type(NODE_SKY_HOSEK);
+    sky->set_sun_elevation(float(50.0 * M_PI / 180.0));
+    sky->set_sun_rotation(0.0f);
+    sky->set_sun_intensity(1.0f);
+    sky->set_altitude(0.0f);
+
     BackgroundNode *bgn = graph->create_node<BackgroundNode>();
-    bgn->set_color(make_float3(0.4f, 0.55f, 0.8f));
-    bgn->set_strength(1.5f);
+    bgn->set_strength(5.0f);
+
+    graph->connect(sky->output("Color"), bgn->input("Color"));
     graph->connect(bgn->output("Background"), graph->output()->input("Surface"));
     bg->set_graph(unique_ptr<ShaderGraph>(graph));
     bg->tag_update(cclScene);
+    m_lastLightHash = 1;  // mark as initialized
   }
 
   return anyChanged;
@@ -498,11 +509,13 @@ void SceneSynchronizer::syncLights(const geom::Scene &iclScene,
     auto diffuse = light.getDiffuse();
 
     // Create point light
-    // Intensity scales with distance²: for mm-scale scenes (dist ~500mm),
-    // need ~500² = 250000 base intensity for reasonable illumination.
+    // Cycles uses physical units: intensity in watts, inverse-square falloff.
+    // ICL light positions are in scene units. For typical scenes at ~500 units
+    // from objects, we need intensity proportional to distance².
+    // Base: 500² * 2.0 = 500000 gives good illumination at 500 scene-units.
     PointLight *cclLight = cclScene->create_node<PointLight>();
-    float distScale = 1.0f / (sceneScale * sceneScale);  // compensate for unit scaling
-    float intensity = 4.0f * distScale;  // ~4 watts equivalent at 1 Cycles-unit distance
+    float typicalDist = 500.0f * sceneScale;  // ~500 scene units as typical distance
+    float intensity = 2.0f * typicalDist * typicalDist;
     cclLight->set_strength(make_float3(
         diffuse[0] / 255.0f * intensity,
         diffuse[1] / 255.0f * intensity,

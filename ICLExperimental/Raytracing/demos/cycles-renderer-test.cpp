@@ -38,9 +38,15 @@ int main(int argc, const char **argv) {
   scene.addCamera(cam);
 
   // Light
+  // Key light: front-left, above
   scene.getLight(0).setOn(true);
-  scene.getLight(0).setPosition(Vec(300, 500, -200, 1));
+  scene.getLight(0).setPosition(Vec(-300, 400, -100, 1));
   scene.getLight(0).setDiffuse(GeomColor(255, 250, 240, 255));
+
+  // Fill light: front-right, dimmer
+  scene.getLight(1).setOn(true);
+  scene.getLight(1).setPosition(Vec(400, 300, -200, 1));
+  scene.getLight(1).setDiffuse(GeomColor(180, 200, 220, 255));
 
   // Ground plane
   auto ground = std::make_shared<SceneObject>();
