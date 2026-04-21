@@ -40,5 +40,6 @@ namespace {
         const core::Img8u*, const core::Img16s*, const core::Img32s*,
         const core::Img32f*, const core::Img64f*, const core::ImgBase*,
         core::Image>();
+    AssignRegistry::enroll_identity<DrawHandle3D>();
   }
 }

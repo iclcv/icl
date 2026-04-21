@@ -92,5 +92,6 @@ namespace {
   static void icl_register_button_group_handle_assignments() {
     AssignRegistry::enroll_provider<ButtonGroupHandle,
                                     bool, int, float, double, std::string>();
+    AssignRegistry::enroll_identity<ButtonGroupHandle>();
   }
 }

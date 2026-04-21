@@ -22,5 +22,6 @@ namespace {
   __attribute__((constructor))
   static void icl_register_color_handle_assignments() {
     AssignRegistry::enroll_symmetric<ColorHandle, core::Color, core::Color4D>();
+    AssignRegistry::enroll_identity<ColorHandle>();
   }
 }

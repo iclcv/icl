@@ -73,5 +73,6 @@ namespace {
   __attribute__((constructor))
   static void icl_register_spinner_handle_assignments() {
     AssignRegistry::enroll_symmetric<SpinnerHandle, int, float, double, std::string>();
+    AssignRegistry::enroll_identity<SpinnerHandle>();
   }
 }

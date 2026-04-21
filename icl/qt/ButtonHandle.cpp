@@ -42,5 +42,6 @@ namespace {
   __attribute__((constructor))
   static void icl_register_button_handle_assignments() {
     AssignRegistry::enroll_provider<ButtonHandle, bool, int, float, double>();
+    AssignRegistry::enroll_identity<ButtonHandle>();
   }
 }

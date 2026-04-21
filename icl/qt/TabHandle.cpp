@@ -16,5 +16,6 @@ namespace {
   __attribute__((constructor))
   static void icl_register_tab_handle_assignments() {
     AssignRegistry::enroll_provider<TabHandle, bool, int, float, double>();
+    AssignRegistry::enroll_identity<TabHandle>();
   }
 }

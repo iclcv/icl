@@ -52,6 +52,7 @@ namespace {
     // Label accepts strings + arithmetic (for display); only string
     // is readable (the displayed text).
     AssignRegistry::enroll_receiver<LabelHandle, int, float, double, std::string>();
+    AssignRegistry::enroll_identity<LabelHandle>();
     AssignRegistry::enroll<std::string, LabelHandle>();
   }
 }

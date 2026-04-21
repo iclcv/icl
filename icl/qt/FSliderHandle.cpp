@@ -67,5 +67,6 @@ namespace {
   __attribute__((constructor))
   static void icl_register_fslider_handle_assignments() {
     AssignRegistry::enroll_symmetric<FSliderHandle, int, float, double, std::string>();
+    AssignRegistry::enroll_identity<FSliderHandle>();
   }
 }

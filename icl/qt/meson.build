@@ -150,6 +150,7 @@ qt_sources = files(
   'GUI.cpp',
   'GUIDefinition.cpp',
   'GUIWidget.cpp',
+  'HandleIdentityEnrollments.cpp',
   'HistogrammWidget.cpp',
   'IconFactory.cpp',
   'ImageHandle.cpp',

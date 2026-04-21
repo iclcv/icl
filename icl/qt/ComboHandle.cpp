@@ -87,5 +87,6 @@ namespace {
   __attribute__((constructor))
   static void icl_register_combo_handle_assignments() {
     AssignRegistry::enroll_symmetric<ComboHandle, int, float, double, std::string>();
+    AssignRegistry::enroll_identity<ComboHandle>();
   }
 }

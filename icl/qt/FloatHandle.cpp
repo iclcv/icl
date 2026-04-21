@@ -59,5 +59,6 @@ namespace {
   __attribute__((constructor))
   static void icl_register_float_handle_assignments() {
     AssignRegistry::enroll_symmetric<FloatHandle, int, float, double, std::string>();
+    AssignRegistry::enroll_identity<FloatHandle>();
   }
 }

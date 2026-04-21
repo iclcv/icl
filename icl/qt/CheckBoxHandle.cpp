@@ -59,5 +59,6 @@ namespace {
   __attribute__((constructor))
   static void icl_register_check_box_handle_assignments() {
     AssignRegistry::enroll_symmetric<CheckBoxHandle, bool, int, float, double, std::string>();
+    AssignRegistry::enroll_identity<CheckBoxHandle>();
   }
 }
