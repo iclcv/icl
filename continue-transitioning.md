@@ -1,79 +1,71 @@
 # ICL — Continuation Guide
 
-## Current State (Session 33 — PointCloud, BVH, textures, text, mouse interaction)
+## Current State (Session 34 — Matrix migration + Cycles geom2 integration)
 
-### Session 33 Summary (5 commits)
+### Session 34 Summary (8 commits)
 
-Major geom2 additions: PointCloud data container, BVH raytracer, texture/text
-rendering, mouse interaction, and matrix indexing migration kickoff.
+Two major areas: completed the matrix (row,col) convention migration across the
+entire codebase, and wired Cycles renderer into geom2 with demos.
 
-#### A. PointCloud + PointCloudNode + BVH + mouse interaction
+#### A. Matrix (row,col) migration — COMPLETE
 
-**PointCloud** (`PointCloud.h/.cpp`): standalone data container, separated from
-scene graph. Owns XYZ/Normal/RGBA/Label/Depth/Intensity vectors, DataSegment
-accessors, organized/unorganized, own mutex. Designed for shared_ptr sharing
-between processing and rendering threads.
+**Full migration**: `operator()(col,row)` → `operator()(row,col)` across 67
+files, ~1200 call sites. Three-phase approach:
+1. Remove `operator()`, add `index_yx(row,col)` to both `FixedMatrix` and
+   `DynMatrixBase`. Automated via `scripts/fix-matrix-indexing.py` (column-based)
+   and new `scripts/fix-matrix-indexing2.py` (regex inside-out, handles nested
+   calls, deref patterns, chained calls). Iterated build→fix→rebuild until clean.
+2. Migrate `at(col,row)` → `at(row,col)` (5 files, ~60 sites).
+3. Rename `index_yx` back to `operator()` — clean `M(row, col)` syntax restored.
 
-**PointCloudNode** (`PointCloudNode.h/.cpp`): wraps `shared_ptr<PointCloud>`,
-inherits Node directly (not GeometryNode). Dedicated `GL_POINTS` render path
-with per-frame `GL_DYNAMIC_DRAW` upload in Renderer.
+**False positives caught**: `pow.index_yx`, `atan2.index_yx`, `std::swap.index_yx`,
+`.mult.index_yx`, `setSamplingResolution.index_yx`, `Point32f.index_yx`,
+`ICL_TEST_EQ.index_yx` — all fixed. Two semantic bugs caught in geom module
+review (Camera.cpp principal point, Posit.cpp atan2 arg order).
 
-**BVH** (`BVH.h/.cpp`): bounding volume hierarchy for fast ray-triangle
-intersection. Median-split construction, stack-based traversal, AABB slab test.
-`BVH::raycastImage()` casts all rays OpenMP-parallel from a Camera into a
-PointCloud. `Scene2::buildBVH()` creates a BVH from scene geometry.
+**384/384 tests pass** after migration.
 
-**Scene2MouseHandler** (`Scene2MouseHandler.h/.cpp`): self-contained camera
-navigation (freeView, strafe, rotateAroundOrigin, rollAndDistance, placeCursor).
-Same mappings as old SceneMouseHandler.
+#### B. Cycles renderer wired into geom2
 
-**Scene2 additions**: `getMouseHandler()`, `findObject(ViewRay)` with recursive
-ray-triangle intersection, `setCursor()`/`getCursor()`, `setBounds()`.
+**Meson build wiring** (`icl/geom2/meson.build`): `CyclesRenderer.cpp` and
+`SceneSynchronizer.cpp` now compiled when `cycles_found`. Reuses include paths,
+compile flags, and link libraries from geom module's meson config.
 
-**OpenMP**: added as optional meson dependency, used in BVH raycast.
+**SceneSynchronizer fixes** for current Cycles 4.x API:
+- `unique_ptr<ShaderGraph>` for `set_graph()`
+- Removed `graph->add()` (nodes auto-added via `create_node`)
+- `PointLight` instead of generic `Light`
+- Camera FOV uses `getSamplingResolutionY()` + `compute_auto_viewplane()`
+- Light color normalized from 0-255 to 0-1 before applying physical intensity
+- Gradient sky background added (zenith/horizon/ground blend)
+- Analytic sphere path disabled (known offset bug), always tessellates
 
-**Demo** (`scene-to-pointcloud.cpp`): two-panel app — left shows 3D scene (24
-objects), right shows live point cloud from BVH raycasting every frame.
+**Scene2 additions**: `const getLight()` overload.
 
-#### B. Texture support + TextNode
+**Demos** (2 new, both compile and link):
+- `cycles-renderer-test.cpp`: headless render of spheres + ground to PNG
+- `cycles-scene-viewer.cpp`: dual-panel GL preview + Cycles raytrace
 
-**Renderer texture support**: PBR shader samples `uBaseColorTex` when material
-has `baseColorMap`. Lazy GL texture upload with caching per Material. Alpha
-blending + discard for transparency.
-
-**TextNode** (`TextNode.h/.cpp`): GeometryNode subclass rendering text via
-QPainter to RGBA texture on a billboard quad. Always faces camera via inverse
-view rotation in Renderer.
-
-**CoordinateFrameNode**: added complex mode with cone arrowheads + X/Y/Z
-billboard text labels. Uses same rotation convention as old
-ComplexCoordinateFrameSceneObject.
-
-#### C. Node transform optimization + matrix migration start
-
-**Node::rotate()**: now uses ICL's `create_hom_4x4` (proven rxyz Euler
-convention) instead of hand-built rotation matrices.
-
-**Node::translate()/scale()**: optimized to modify transform matrix directly
-instead of constructing temp 4x4 and multiplying.
-
-**Matrix indexing migration begun**: `FixedMatrix::index_yx(row, col)` added
-alongside legacy `operator()(col, row)`. Math module (35 sites) migrated.
-Script `scripts/fix-matrix-indexing.py` auto-fixes callsites from compiler
-errors. ~1267 total sites remain across all modules.
+**Known bug**: geom2 Cycles renders show white/uncolored spheres despite correct
+material properties being set. Shader graph creation and `set_used_shaders` follow
+the same pattern as the working legacy geom SceneSynchronizer, but materials don't
+appear in the final render. The legacy `cycles-renderer-test` demo was also fixed
+(`render` → `renderBlocking`) and produces correct colored output. Root cause needs
+investigation — likely a subtle difference in Cycles scene graph commit/update
+ordering between the geom and geom2 synchronizers.
 
 ### What's next
 
-**Matrix migration** (dedicated session):
-- Disable `operator()` per module bottom-up, run fix script, manual review
-- Modules: utils(50) → core(41) → filter(129) → io(171) → cv(91) → qt(170)
-  → geom(498) → geom2(28) → markers(62) → physics(65)
-- Also migrate DynMatrixBase (same convention)
-- Final step: delete `operator()`, rename `index_yx` → `operator()`
+**Cycles geom2 — fix material rendering** (priority):
+- Debug why `set_used_shaders` + `tag_update` doesn't apply materials in geom2
+- Compare geom vs geom2 SceneSynchronizer step-by-step with Cycles debugger
+- Once fixed: port the full interactive scene viewer features (material editing,
+  decimation, OBJ/glTF loading, compare mode)
 
-**geom2 remaining**:
-- Cycles build wiring (headers ready, meson linking TODO)
-- More demos (file loading, interactive picking)
+**geom2 API cleanup**:
+- Scene2 getters: return references or shared_ptrs instead of raw pointers
+- `getGLCallback()`: return raw ptr instead of shared_ptr (avoid `.get()`)
+- CoordinateFrameSceneObject: add PIMPL
 
 **Other work**:
 - CI update — meson in GitHub Actions
@@ -87,6 +79,14 @@ errors. ~1267 total sites remain across all modules.
 ### Session 32 Summary (23 commits)
 
 Two major areas of work:
+
+## Previous State (Session 33 — PointCloud, BVH, textures, text, mouse interaction)
+
+Session 33 added PointCloud, PointCloudNode, BVH raytracer, texture/text
+rendering, mouse interaction to geom2. Started matrix indexing migration
+(added `index_yx`, migrated math module). 5 commits.
+
+### Session 32 Summary (23 commits)
 
 #### A. Material & deprecated warning cleanup (geom module, 7 commits)
 
