@@ -15,7 +15,7 @@ namespace icl::geom2 {
   MeshNode::MeshNode(MeshNode &&other) noexcept = default;
   MeshNode &MeshNode::operator=(MeshNode &&other) noexcept = default;
 
-  SceneNode *MeshNode::deepCopy() const { return new MeshNode(*this); }
+  Node *MeshNode::deepCopy() const { return new MeshNode(*this); }
 
   // Mutable access (delegates to protected GeometryNode accessors)
   std::vector<Vec> &MeshNode::getVertices() { return vertices(); }

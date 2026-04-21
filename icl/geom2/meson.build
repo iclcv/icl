@@ -1,7 +1,7 @@
 # ICL geom2 module — clean scene graph
 
 geom2_headers = files(
-  'SceneNode.h',
+  'Node.h',
   'GroupNode.h',
   'GeometryNode.h',
   'MeshNode.h',
@@ -16,7 +16,7 @@ geom2_headers = files(
 )
 
 geom2_sources = files(
-  'SceneNode.cpp',
+  'Node.cpp',
   'GroupNode.cpp',
   'GeometryNode.cpp',
   'MeshNode.cpp',

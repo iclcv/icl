@@ -42,7 +42,7 @@ namespace icl::geom2 {
     return *this;
   }
 
-  SceneNode *CylinderNode::deepCopy() const { return new CylinderNode(*this); }
+  Node *CylinderNode::deepCopy() const { return new CylinderNode(*this); }
 
   Vec CylinderNode::getCenter() const { return Vec(m_cx, m_cy, m_cz, 1); }
   float CylinderNode::getHeight() const { return m_h; }

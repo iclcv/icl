@@ -22,10 +22,10 @@ namespace icl::geom2 {
   /// Abstract base for all scene graph nodes
   /** Provides transform, visibility, name, and locking.
       No children (GroupNode), no geometry (GeometryNode). */
-  class ICLGeom2_API SceneNode {
+  class ICLGeom2_API Node {
   public:
-    virtual ~SceneNode();
-    virtual SceneNode *deepCopy() const = 0;
+    virtual ~Node();
+    virtual Node *deepCopy() const = 0;
 
     // --- Transform ---
     void setTransformation(const Mat &m);
@@ -42,8 +42,8 @@ namespace icl::geom2 {
     bool isVisible() const;
 
     // --- Parent (set by GroupNode::addChild) ---
-    SceneNode *getParent();
-    const SceneNode *getParent() const;
+    Node *getParent();
+    const Node *getParent() const;
 
     // --- Lifecycle ---
     virtual void prepareForRendering() {}
@@ -57,14 +57,14 @@ namespace icl::geom2 {
     const std::string &getName() const;
 
   protected:
-    SceneNode();
-    SceneNode(const SceneNode &other);
-    SceneNode &operator=(const SceneNode &other);
-    SceneNode(SceneNode &&other) noexcept;
-    SceneNode &operator=(SceneNode &&other) noexcept;
+    Node();
+    Node(const Node &other);
+    Node &operator=(const Node &other);
+    Node(Node &&other) noexcept;
+    Node &operator=(Node &&other) noexcept;
 
   private:
-    void setParent(SceneNode *parent);
+    void setParent(Node *parent);
 
     struct Data;
     std::unique_ptr<Data> m_data;

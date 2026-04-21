@@ -422,7 +422,7 @@ void main() { FragColor = vColor; }
     glUniformMatrix4fv(loc, 1, GL_FALSE, gl);
   }
 
-  static void collectLights(SceneNode *node, std::vector<LightInfo> &lights) {
+  static void collectLights(Node *node, std::vector<LightInfo> &lights) {
     if (!node || !node->isVisible()) return;
     if (auto *light = dynamic_cast<LightNode*>(node)) {
       Mat t = light->getTransformation(true);
@@ -437,7 +437,7 @@ void main() { FragColor = vColor; }
     }
   }
 
-  void Renderer::render(const std::vector<std::shared_ptr<SceneNode>> &nodes,
+  void Renderer::render(const std::vector<std::shared_ptr<Node>> &nodes,
                          const Mat &viewMatrix,
                          const Mat &projectionMatrix) {
     ensureShaderCompiled();
@@ -482,7 +482,7 @@ void main() { FragColor = vColor; }
     }
   }
 
-  void Renderer::renderNode(SceneNode *node, const Mat &viewMatrix) {
+  void Renderer::renderNode(Node *node, const Mat &viewMatrix) {
     if (!node || !node->isVisible()) return;
 
     Mat modelMatrix = node->getTransformation(true);

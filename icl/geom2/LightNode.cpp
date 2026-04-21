@@ -18,11 +18,11 @@ namespace icl::geom2 {
   LightNode::LightNode(Type type) : m_data(std::make_unique<Data>()) { m_data->type = type; }
   LightNode::~LightNode() = default;
 
-  LightNode::LightNode(const LightNode &o) : SceneNode(o), m_data(std::make_unique<Data>(*o.m_data)) {}
+  LightNode::LightNode(const LightNode &o) : Node(o), m_data(std::make_unique<Data>(*o.m_data)) {}
 
   LightNode &LightNode::operator=(const LightNode &o) {
     if (this != &o) {
-      SceneNode::operator=(o);
+      Node::operator=(o);
       *m_data = *o.m_data;
     }
     return *this;
@@ -31,7 +31,7 @@ namespace icl::geom2 {
   LightNode::LightNode(LightNode &&o) noexcept = default;
   LightNode &LightNode::operator=(LightNode &&o) noexcept = default;
 
-  SceneNode *LightNode::deepCopy() const { return new LightNode(*this); }
+  Node *LightNode::deepCopy() const { return new LightNode(*this); }
 
   LightNode::Type LightNode::getLightType() const { return m_data->type; }
   void LightNode::setLightType(Type t) { m_data->type = t; }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/geom2/SceneNode.h>
+#include <icl/geom2/Node.h>
 #include <icl/geom2/Primitive.h>
 #include <memory>
 
@@ -12,9 +12,9 @@ namespace icl::geom2 {
 
   /// Light node — position/direction comes from the node's transform
   /** A LightNode is a leaf in the scene graph. Its world position is
-      determined by its transform (inherited from SceneNode).
+      determined by its transform (inherited from Node).
       For directional lights, the transform's translation is the direction. */
-  class ICLGeom2_API LightNode : public SceneNode {
+  class ICLGeom2_API LightNode : public Node {
   public:
     enum Type { Point, Directional, Spot };
 
@@ -24,7 +24,7 @@ namespace icl::geom2 {
     LightNode &operator=(const LightNode &);
     LightNode(LightNode &&) noexcept;
     LightNode &operator=(LightNode &&) noexcept;
-    SceneNode *deepCopy() const override;
+    Node *deepCopy() const override;
 
     Type getLightType() const;
     void setLightType(Type type);

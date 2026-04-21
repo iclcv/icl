@@ -31,13 +31,13 @@ namespace icl::geom2 {
   GeometryNode::~GeometryNode() = default;
 
   GeometryNode::GeometryNode(const GeometryNode &other)
-      : SceneNode(other), m_data(std::make_unique<Data>(*other.m_data)) {
+      : Node(other), m_data(std::make_unique<Data>(*other.m_data)) {
     if (m_data->material) m_data->material = m_data->material->deepCopy();
   }
 
   GeometryNode &GeometryNode::operator=(const GeometryNode &other) {
     if (this != &other) {
-      SceneNode::operator=(other);
+      Node::operator=(other);
       m_data = std::make_unique<Data>(*other.m_data);
       if (m_data->material) m_data->material = m_data->material->deepCopy();
     }

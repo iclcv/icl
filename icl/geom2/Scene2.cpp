@@ -26,7 +26,7 @@ namespace icl::geom2 {
   // ---- Data ----
 
   struct Scene2::Data {
-    std::vector<std::shared_ptr<SceneNode>> objects;
+    std::vector<std::shared_ptr<Node>> objects;
     std::vector<std::shared_ptr<LightNode>> lights;  // also in objects, tracked for fast access
     std::vector<geom::Camera> cameras;
     Renderer renderer;
@@ -38,27 +38,27 @@ namespace icl::geom2 {
   Scene2::Scene2() : m_data(std::make_unique<Data>()) {}
   Scene2::~Scene2() = default;
 
-  void Scene2::addObject(std::shared_ptr<SceneNode> node) {
+  void Scene2::addNode(std::shared_ptr<Node> node) {
     m_data->objects.push_back(std::move(node));
   }
 
-  SceneNode *Scene2::getObject(int i) {
+  Node *Scene2::getNode(int i) {
     return (i >= 0 && i < (int)m_data->objects.size()) ? m_data->objects[i].get() : nullptr;
   }
 
-  const SceneNode *Scene2::getObject(int i) const {
+  const Node *Scene2::getNode(int i) const {
     return (i >= 0 && i < (int)m_data->objects.size()) ? m_data->objects[i].get() : nullptr;
   }
 
-  int Scene2::getObjectCount() const { return (int)m_data->objects.size(); }
+  int Scene2::getNodeCount() const { return (int)m_data->objects.size(); }
 
-  void Scene2::removeObject(int i) {
+  void Scene2::removeNode(int i) {
     if (i >= 0 && i < (int)m_data->objects.size()) {
       m_data->objects.erase(m_data->objects.begin() + i);
     }
   }
 
-  void Scene2::removeObject(SceneNode *node) {
+  void Scene2::removeNode(Node *node) {
     auto &o = m_data->objects;
     o.erase(std::remove_if(o.begin(), o.end(),
             [node](const auto &p) { return p.get() == node; }), o.end());
@@ -73,7 +73,7 @@ namespace icl::geom2 {
   // Lights
   void Scene2::addLight(std::shared_ptr<LightNode> light) {
     m_data->lights.push_back(light);
-    addObject(std::static_pointer_cast<SceneNode>(light));
+    addNode(std::static_pointer_cast<Node>(light));
   }
 
   LightNode *Scene2::getLight(int i) {

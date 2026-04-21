@@ -19,7 +19,7 @@ namespace icl::geom2 {
     CylinderNode &operator=(const CylinderNode &);
     CylinderNode(CylinderNode &&) noexcept;
     CylinderNode &operator=(CylinderNode &&) noexcept;
-    SceneNode *deepCopy() const override;
+    Node *deepCopy() const override;
 
     Vec getCenter() const;
     float getHeight() const;

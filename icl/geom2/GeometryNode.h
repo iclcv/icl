@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/geom2/SceneNode.h>
+#include <icl/geom2/Node.h>
 #include <icl/geom2/Primitive.h>
 #include <icl/math/FixedVector.h>
 #include <icl/utils/Point32f.h>
@@ -25,7 +25,7 @@ namespace icl::geom2 {
       Subclasses use protected mutable access:
       - MeshNode exposes it publicly (for freeform/dynamic meshes)
       - Parametric nodes (SphereNode etc.) use it internally in generateMesh() */
-  class ICLGeom2_API GeometryNode : public SceneNode {
+  class ICLGeom2_API GeometryNode : public Node {
   public:
     ~GeometryNode() override;
 

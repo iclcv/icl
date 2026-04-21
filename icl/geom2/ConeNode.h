@@ -20,7 +20,7 @@ namespace icl::geom2 {
     ConeNode &operator=(const ConeNode &);
     ConeNode(ConeNode &&) noexcept;
     ConeNode &operator=(ConeNode &&) noexcept;
-    SceneNode *deepCopy() const override;
+    Node *deepCopy() const override;
 
     Vec getCenter() const;
     float getHeight() const;

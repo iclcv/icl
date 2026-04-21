@@ -24,7 +24,7 @@ namespace icl::geom2 {
     MeshNode &operator=(const MeshNode &other);
     MeshNode(MeshNode &&other) noexcept;
     MeshNode &operator=(MeshNode &&other) noexcept;
-    SceneNode *deepCopy() const override;
+    Node *deepCopy() const override;
 
     // --- Mutable geometry access (for physics, dynamic meshes) ---
     std::vector<Vec> &getVertices();

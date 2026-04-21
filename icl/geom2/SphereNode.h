@@ -24,7 +24,7 @@ namespace icl::geom2 {
     SphereNode &operator=(const SphereNode &other);
     SphereNode(SphereNode &&other) noexcept;
     SphereNode &operator=(SphereNode &&other) noexcept;
-    SceneNode *deepCopy() const override;
+    Node *deepCopy() const override;
 
     Vec getCenter() const;
     Vec getRadii() const;

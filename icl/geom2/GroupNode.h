@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <icl/geom2/SceneNode.h>
+#include <icl/geom2/Node.h>
 #include <memory>
 
 namespace icl::geom2 {
 
   /// A pure container node — owns children, no geometry
-  class ICLGeom2_API GroupNode : public SceneNode {
+  class ICLGeom2_API GroupNode : public Node {
   public:
     GroupNode();
     ~GroupNode() override;
@@ -18,15 +18,15 @@ namespace icl::geom2 {
     GroupNode &operator=(const GroupNode &other);
     GroupNode(GroupNode &&other) noexcept;
     GroupNode &operator=(GroupNode &&other) noexcept;
-    SceneNode *deepCopy() const override;
+    Node *deepCopy() const override;
 
-    void addChild(std::shared_ptr<SceneNode> child);
-    void removeChild(SceneNode *child);
+    void addChild(std::shared_ptr<Node> child);
+    void removeChild(Node *child);
     void removeAllChildren();
     int getChildCount() const;
-    SceneNode *getChild(int index);
-    const SceneNode *getChild(int index) const;
-    std::shared_ptr<SceneNode> getChildPtr(int index);
+    Node *getChild(int index);
+    const Node *getChild(int index) const;
+    std::shared_ptr<Node> getChildPtr(int index);
 
   private:
     struct Data;

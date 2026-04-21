@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/geom2/SceneNode.h>
+#include <icl/geom2/Node.h>
 #include <icl/geom2/Renderer.h>
 #include <icl/geom2/LightNode.h>
 #include <memory>
@@ -26,21 +26,21 @@ namespace icl::geom2 {
     ~Scene2();
 
     // --- Objects (shared_ptr only, no raw pointers) ---
-    void addObject(std::shared_ptr<SceneNode> node);
+    void addNode(std::shared_ptr<Node> node);
 
     /// Move a stack-constructed node into the scene, returns shared_ptr
-    template<class T, class = std::enable_if_t<std::is_base_of_v<SceneNode, T>>>
-    std::shared_ptr<T> addObject(T &&node) {
+    template<class T, class = std::enable_if_t<std::is_base_of_v<Node, T>>>
+    std::shared_ptr<T> addNode(T &&node) {
       auto p = std::make_shared<T>(std::move(node));
-      addObject(std::static_pointer_cast<SceneNode>(p));
+      addNode(std::static_pointer_cast<Node>(p));
       return p;
     }
 
-    SceneNode *getObject(int index);
-    const SceneNode *getObject(int index) const;
-    int getObjectCount() const;
-    void removeObject(int index);
-    void removeObject(SceneNode *node);
+    Node *getNode(int index);
+    const Node *getNode(int index) const;
+    int getNodeCount() const;
+    void removeNode(int index);
+    void removeNode(Node *node);
     void clear();
 
     // --- Lights (also added to scene graph for traversal) ---

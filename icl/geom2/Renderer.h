@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/geom2/SceneNode.h>
+#include <icl/geom2/Node.h>
 #include <memory>
 #include <vector>
 
@@ -22,7 +22,7 @@ namespace icl::geom2 {
     ~Renderer();
 
     /// Render a list of top-level nodes with given view and projection matrices
-    void render(const std::vector<std::shared_ptr<SceneNode>> &nodes,
+    void render(const std::vector<std::shared_ptr<Node>> &nodes,
                 const Mat &viewMatrix,
                 const Mat &projectionMatrix);
 
@@ -40,7 +40,7 @@ namespace icl::geom2 {
     std::unique_ptr<Data> m_data;
 
     void ensureShaderCompiled();
-    void renderNode(SceneNode *node, const Mat &viewMatrix);
+    void renderNode(Node *node, const Mat &viewMatrix);
   };
 
 } // namespace icl::geom2

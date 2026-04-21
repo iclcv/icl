@@ -2,33 +2,33 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/geom2/SceneNode.h>
+#include <icl/geom2/Node.h>
 #include <mutex>
 #include <cmath>
 
 namespace icl::geom2 {
 
-  struct SceneNode::Data {
+  struct Node::Data {
     Mat transformation = Mat::id();
     bool hasTransformation = false;
-    SceneNode *parent = nullptr;
+    Node *parent = nullptr;
     bool isVisible = true;
     mutable std::recursive_mutex mutex;
     std::string name;
   };
 
-  SceneNode::SceneNode() : m_data(std::make_unique<Data>()) {}
+  Node::Node() : m_data(std::make_unique<Data>()) {}
 
-  SceneNode::~SceneNode() = default;
+  Node::~Node() = default;
 
-  SceneNode::SceneNode(const SceneNode &other) : m_data(std::make_unique<Data>()) {
+  Node::Node(const Node &other) : m_data(std::make_unique<Data>()) {
     m_data->transformation = other.m_data->transformation;
     m_data->hasTransformation = other.m_data->hasTransformation;
     m_data->isVisible = other.m_data->isVisible;
     m_data->name = other.m_data->name;
   }
 
-  SceneNode &SceneNode::operator=(const SceneNode &other) {
+  Node &Node::operator=(const Node &other) {
     if (this != &other) {
       auto *parent = m_data->parent;
       m_data->transformation = other.m_data->transformation;
@@ -40,25 +40,25 @@ namespace icl::geom2 {
     return *this;
   }
 
-  SceneNode::SceneNode(SceneNode &&other) noexcept = default;
-  SceneNode &SceneNode::operator=(SceneNode &&other) noexcept = default;
+  Node::Node(Node &&other) noexcept = default;
+  Node &Node::operator=(Node &&other) noexcept = default;
 
-  void SceneNode::setTransformation(const Mat &m) {
+  void Node::setTransformation(const Mat &m) {
     m_data->transformation = m;
     m_data->hasTransformation = true;
   }
 
-  void SceneNode::removeTransformation() {
+  void Node::removeTransformation() {
     m_data->transformation = Mat::id();
     m_data->hasTransformation = false;
   }
 
-  void SceneNode::transform(const Mat &m) {
+  void Node::transform(const Mat &m) {
     m_data->transformation = m_data->transformation * m;
     m_data->hasTransformation = true;
   }
 
-  void SceneNode::rotate(float rx, float ry, float rz) {
+  void Node::rotate(float rx, float ry, float rz) {
     float cx = std::cos(rx), sx = std::sin(rx);
     float cy = std::cos(ry), sy = std::sin(ry);
     float cz = std::cos(rz), sz = std::sin(rz);
@@ -68,43 +68,43 @@ namespace icl::geom2 {
     transform(Rz * Ry * Rx);
   }
 
-  void SceneNode::translate(float dx, float dy, float dz) {
+  void Node::translate(float dx, float dy, float dz) {
     Mat t = Mat::id();
     t(3,0) = dx; t(3,1) = dy; t(3,2) = dz;
     transform(t);
   }
 
-  void SceneNode::scale(float sx, float sy, float sz) {
+  void Node::scale(float sx, float sy, float sz) {
     Mat s = Mat::id();
     s(0,0) = sx; s(1,1) = sy; s(2,2) = sz;
     transform(s);
   }
 
-  Mat SceneNode::getTransformation(bool includeParent) const {
+  Mat Node::getTransformation(bool includeParent) const {
     if (includeParent && m_data->parent) {
       return m_data->parent->getTransformation(true) * m_data->transformation;
     }
     return m_data->transformation;
   }
 
-  bool SceneNode::hasTransformation(bool includeParent) const {
+  bool Node::hasTransformation(bool includeParent) const {
     if (m_data->hasTransformation) return true;
     if (includeParent && m_data->parent) return m_data->parent->hasTransformation(true);
     return false;
   }
 
-  void SceneNode::setVisible(bool visible) { m_data->isVisible = visible; }
-  bool SceneNode::isVisible() const { return m_data->isVisible; }
+  void Node::setVisible(bool visible) { m_data->isVisible = visible; }
+  bool Node::isVisible() const { return m_data->isVisible; }
 
-  SceneNode *SceneNode::getParent() { return m_data->parent; }
-  const SceneNode *SceneNode::getParent() const { return m_data->parent; }
+  Node *Node::getParent() { return m_data->parent; }
+  const Node *Node::getParent() const { return m_data->parent; }
 
-  void SceneNode::lock() const { m_data->mutex.lock(); }
-  void SceneNode::unlock() const { m_data->mutex.unlock(); }
+  void Node::lock() const { m_data->mutex.lock(); }
+  void Node::unlock() const { m_data->mutex.unlock(); }
 
-  void SceneNode::setName(const std::string &name) { m_data->name = name; }
-  const std::string &SceneNode::getName() const { return m_data->name; }
+  void Node::setName(const std::string &name) { m_data->name = name; }
+  const std::string &Node::getName() const { return m_data->name; }
 
-  void SceneNode::setParent(SceneNode *parent) { m_data->parent = parent; }
+  void Node::setParent(Node *parent) { m_data->parent = parent; }
 
 } // namespace icl::geom2
