@@ -7,6 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Thread.h>
 #include <mutex>
+#include <memory>
 
 #include <functional>
 #include <iostream>
@@ -37,8 +38,8 @@ namespace icl::utils {
     /// internal data structure (pimpl)
     struct Data;
 
-    /// internal data pointer
-    Data *m_data;
+    /// internal data pointer (PIMPL)
+    std::unique_ptr<Data> m_data;
 
     public:
     ProcessMonitor(const ProcessMonitor&) = delete;

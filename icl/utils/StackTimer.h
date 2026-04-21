@@ -144,21 +144,18 @@ namespace icl::utils {
       bool m_bWriteMax;
     };
     /// StackTimer constructor, USE BENCHMARK_THIS_FUNCTION-MACRO instead
-    StackTimer(StackTimerNotifier *notifier){
-      m_poTimer = new Timer(1);//1=ns
-      m_poNotifier = notifier;
+    StackTimer(StackTimerNotifier *notifier)
+      : m_timer(1/*ns*/), m_notifier(notifier) {
       notifier->incCount();
-      m_poTimer->start();
+      m_timer.start();
     }
     /// StackTimerNotifier destructor, USE BENCHMARK_THIS_FUNCTION-MACRO instead
     ~StackTimer(){
-      m_poNotifier->incTime(m_poTimer->stopSilent());
-      delete m_poTimer;
+      m_notifier->incTime(m_timer.stopSilent());
     }
     private:
-    Timer *m_poTimer;
-    StackTimerNotifier* m_poNotifier;
-
+    Timer m_timer;
+    StackTimerNotifier* m_notifier;
   };
 
 #define BENCHMARK_THIS_SECTION(SECTION_NAME)                            \

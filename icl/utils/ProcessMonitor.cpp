@@ -62,8 +62,7 @@ namespace icl::utils {
 
   };
 
-  ProcessMonitor::ProcessMonitor(){
-    m_data = new Data;
+  ProcessMonitor::ProcessMonitor() : m_data(std::make_unique<Data>()){
     m_data->info.pid = getpid();
 #ifndef ICL_SYSTEM_WINDOWS
     FILE * fp;
@@ -84,7 +83,6 @@ namespace icl::utils {
 #else
     if (m_data->pipe) pclose(m_data->pipe);
 #endif
-    delete m_data;
   }
 
   static std::string strip_line(const std::string &s){
