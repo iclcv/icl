@@ -55,6 +55,9 @@ namespace icl::geom {
     virtual void setExposure(float exposure) = 0;
     virtual void setBrightness(float brightness) = 0;
 
+    /// Enable/disable denoising (default: on for quality, off for interactive preview)
+    virtual void setDenoising(bool enabled) { (void)enabled; }
+
     /// Samples per progressive step (default 1)
     /** Each step renders N samples, fires onImageReady, then extends.
         Higher values = fewer intermediate updates, faster convergence.

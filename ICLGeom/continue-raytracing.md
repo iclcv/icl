@@ -33,10 +33,24 @@
 - Cycles bg + GL overlay compositing, alpha slider, camera sync, material presets, zoom
   all tested and confirmed working.
 
+**DemoScene class + Scene API refactoring:**
+- New `DemoScene` class (inherits Scene) replaces `icl::rt::setupScene()` free function.
+  `setup()` method handles: file loading, mesh decimation, transform baking, rotation,
+  auto-scaling to 400mm, checkerboard ground, 3-point lighting + shadows, camera, sky.
+- Deleted `SceneSetup.h/.cpp` — fully replaced by DemoScene + Scene API.
+- Scene gains general-purpose features:
+  - `loadFiles(files, clearBefore)`: OBJ/glTF dispatch by extension
+  - `setMaterialPreset(index)`: lazy (no-op if unchanged), 10 built-in presets.
+    Calls `prepareForRendering()` on affected objects + invalidates raytracer.
+  - `saveOriginalMaterials()`: snapshot for preset restore (called by DemoScene::setup)
+  - `getMaterialPresetNames()`: static, for GUI combo boxes
+- Ownership fix: `addObject(ptr)` with `passOwnerShip=false` uses null deleter —
+  DemoScene keeps `m_ownedObjects` vector to maintain shared_ptr lifetime.
+- `cycles-overlay-viewer.cpp` simplified: 125 → 101 lines, no more SceneSetupResult.
+
 ### Next Steps
 
-- **Refactor cycles-scene-viewer.cpp** — replace inline setupScene/decimateMesh with
-  `SceneSetup.h` calls (duplicate code exists in both viewer and library)
+- **Refactor cycles-scene-viewer.cpp** — replace inline setupScene with DemoScene
 - **Red-tinted context in letterbox bars** — deferred idea: show surrounding image content
   tinted red in the letterbox areas during zoom for spatial context
 - **Wheel zoom** — currently `#if 0`'d out in Widget.cpp, needs reimplementation with
@@ -905,9 +919,8 @@ ICLExperimental/Raytracing/
 #### Immediate TODO
 
 - ~~**FIX: Overlay viewer crashes**~~ — Session 16: fixed (null outputDriver + DataStore).
-- **Refactor cycles-scene-viewer.cpp** — replace inline setupScene/decimateMesh/
-  computeSceneBounds/material-switching with `SceneSetup.h` calls. Currently both
-  implementations exist (viewer has its own, library has the extracted version).
+- **Refactor cycles-scene-viewer.cpp** — replace inline setupScene with DemoScene.
+  Currently the viewer has its own duplicate implementation.
 - ~~**Zoom still buggy**~~ — Session 17: fully fixed (UV crop for 2D, crop matrix for 3D).
 - ~~**Test overlay viewer**~~ — Session 17: verified working (compositing, alpha, camera
   sync, material presets, zoom).

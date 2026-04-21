@@ -2,10 +2,10 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <ICLIO/FileGrabber.h>
+#include <ICLIO/JPEGDecoder.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Img.h>
-#include <ICLUtils/File.h>
+#include <vector>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -1129,11 +1129,8 @@ namespace icl::io {
   ImgBase* createImage_macaw(){
     static ImgBase *image = 0;
     if(image) return image->deepCopy();
-
-    File f("./.tmp_image_buffer.jpg",File::writeBinary);
-
     const int DIM = NROWS*NCOLS+NEXTRA;
-    char *buf= new char[DIM];
+    std::vector<unsigned char> buf(DIM);
     int j=0;
     for(int i=0;i<NROWS;++i){
       for(int k=0;k<NCOLS;k++,j++){
@@ -1143,12 +1140,7 @@ namespace icl::io {
     for(int i=0;i<NEXTRA;i++,j++){
       buf[j] = auc_ExtraData_macaw[i];
     }
-    f.write(buf,DIM);
-
-    f.close();
-    delete [] buf;
-    image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grabImage().ptr();
-    f.erase();
+    JPEGDecoder::decode(buf.data(), DIM, &image);
     return image->deepCopy();
   }
   } // namespace icl::io

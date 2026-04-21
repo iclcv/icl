@@ -2,9 +2,10 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <ICLIO/FileGrabber.h>
+#include <ICLIO/JPEGDecoder.h>
 #include <ICLCore/Image.h>
 #include <ICLCore/Img.h>
+#include <vector>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -2210,9 +2211,8 @@ unsigned char auc_ExtraData_cameraman[NEXTRA] = {
   ImgBase* createImage_cameraman(){
     static ImgBase *image = 0;
     if(image) return image->deepCopy();
-    FILE *f = fopen("./.tmp_image_buffer.jpg","wb");
     const int DIM = NROWS*NCOLS+NEXTRA;
-    char *buf= new char[DIM];
+    std::vector<unsigned char> buf(DIM);
     int j=0;
     for(int i=0;i<NROWS;++i){
       for(int k=0;k<NCOLS;k++,j++){
@@ -2222,11 +2222,7 @@ unsigned char auc_ExtraData_cameraman[NEXTRA] = {
     for(int i=0;i<NEXTRA;i++,j++){
       buf[j] = auc_ExtraData_cameraman[i];
     }
-    fwrite(buf,1,DIM,f);
-    fclose(f);
-    delete [] buf;
-    image = FileGrabber("./.tmp_image_buffer.jpg",false,true).grabImage().ptr();
-    remove("./.tmp_image_buffer.jpg");
+    JPEGDecoder::decode(buf.data(), DIM, &image);
     return image->deepCopy();
   }
   } // namespace icl::io

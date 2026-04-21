@@ -26,90 +26,144 @@
 #include "util/time.h"
 #include "util/unique_ptr.h"
 
-
 #include <cmath>
 #include <mutex>
+#include <condition_variable>
 #include <vector>
 #include <thread>
 #include <atomic>
-#include <functional>
 #include <chrono>
+#include <functional>
 
 using namespace ccl;
 
 namespace icl::rt {
 
-// ---- ICLOutputDriver: captures Cycles render output into ICL Img8u ----
+// ---- RaytracingOutputBuffer: double-buffered image capture from Cycles ----
+//
+// Inherits from Cycles' OutputDriver to receive render tiles, but from ICL's
+// perspective it's a thread-safe double-buffered image output.
+//
+// Cycles calls write_render_tile() from its render thread; the application
+// reads getImage() from the GUI thread.
+//
+// Two Img8u buffers alternate as write target. After capturing a tile, the
+// write buffer is published as the "front" buffer. Before the next write,
+// the driver checks whether the alternate buffer's channel data is exclusively
+// owned (isIndependent()). If yes, it switches to that buffer. If no (a
+// getImage() caller still holds a shallow copy), it detaches the current
+// buffer to allocate fresh channel storage. In steady state (display running
+// at 30fps, Cycles producing ~2-10 updates/sec), the alternate buffer is
+// always free, so detach() never fires.
 
-class ICLOutputDriver : public OutputDriver {
+class RaytracingOutputBuffer : public OutputDriver {
 public:
   void write_render_tile(const Tile &tile) override {
-    captureTile(tile);
-    if (m_onImageReady) {
+    // Select write target: always the non-front buffer so we never
+    // overwrite what the GL thread is currently reading.
+    int front;
+    {
       std::lock_guard<std::mutex> lock(m_mutex);
-      m_onImageReady(m_image);
+      front = m_frontIdx;
+    }
+    m_writeIdx = 1 - front;
+
+    // If the target buffer's channel data is still held by a previous
+    // getImage() caller (rare: GL thread kept an Image across two frames),
+    // detach to get fresh storage rather than corrupting their data.
+    if (m_buf[m_writeIdx].getChannels() > 0 && !m_buf[m_writeIdx].isIndependent()) {
+      m_buf[m_writeIdx].detach();
+    }
+
+    if (!captureTile(tile)) return;
+
+    // Publish: make the write buffer the new front buffer.
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_frontIdx = m_writeIdx;
+    }
+
+    // Signal management thread that a batch produced output.
+    if (m_batchDoneCb) m_batchDoneCb();
+
+    // Fire user callback with the freshly published image.
+    if (m_onImageReady) {
+      m_onImageReady(m_buf[m_frontIdx]);
     }
   }
 
+  /// Returns the latest rendered image. The returned reference is stable:
+  /// it points to the front buffer, which is never written to directly.
+  /// Callers that need to hold the data beyond the next getImage() call
+  /// should take an Image shallow copy — the shared_ptr keeps the channel
+  /// data alive even after the front buffer index swaps.
   const core::Img8u &getImage() const {
     std::lock_guard<std::mutex> lock(m_mutex);
-    return m_image;
+    return m_buf[m_frontIdx];
   }
 
   int getUpdateCount() const { return m_updateCount; }
-  void resetUpdateCount() { m_updateCount = 0; }
 
   void setOnImageReady(std::function<void(const core::Img8u &)> cb) {
     m_onImageReady = std::move(cb);
   }
 
+  /// Called by management thread to receive batch-done signals from Cycles.
+  void setBatchDoneCallback(std::function<void()> cb) {
+    m_batchDoneCb = std::move(cb);
+  }
+
 private:
-  std::function<void(const core::Img8u &)> m_onImageReady;
-  void captureTile(const Tile &tile) {
+  bool captureTile(const Tile &tile) {
     try {
-      if (!(tile.size == tile.full_size))
-        return;
+      if (!(tile.size == tile.full_size)) return false;
 
       const int w = tile.size.x;
       const int h = tile.size.y;
-      if (w <= 0 || h <= 0) return;
+      if (w <= 0 || h <= 0) return false;
 
       std::vector<float> pixels(w * h * 4);
-      if (!tile.get_pass_pixels("combined", 4, pixels.data()))
-        return;
+      if (!tile.get_pass_pixels("combined", 4, pixels.data())) return false;
+
+      auto &dst = m_buf[m_writeIdx];
+      dst.setSize(utils::Size(w, h));
+      dst.setChannels(3);
+
+      icl8u *r = dst.begin(0);
+      icl8u *g = dst.begin(1);
+      icl8u *b = dst.begin(2);
+
+      // Cycles outputs pixels bottom-up; convert to top-down for ICL.
+      for (int y = 0; y < h; ++y) {
+        const int srcY = h - 1 - y;
+        for (int x = 0; x < w; ++x) {
+          const int srcIdx = (srcY * w + x) * 4;
+          const int dstIdx = y * w + x;
+          auto toSRGB = [](float v) -> icl8u {
+            v = std::max(0.0f, std::min(1.0f, v));
+            return static_cast<icl8u>(std::pow(v, 1.0f / 2.2f) * 255.0f + 0.5f);
+          };
+          r[dstIdx] = toSRGB(pixels[srcIdx + 0]);
+          g[dstIdx] = toSRGB(pixels[srcIdx + 1]);
+          b[dstIdx] = toSRGB(pixels[srcIdx + 2]);
+        }
+      }
 
       m_updateCount++;
-      std::lock_guard<std::mutex> lock(m_mutex);
-      m_image.setSize(utils::Size(w, h));
-      m_image.setChannels(3);
-
-    icl8u *r = m_image.begin(0);
-    icl8u *g = m_image.begin(1);
-    icl8u *b = m_image.begin(2);
-
-    // Cycles outputs pixels bottom-up; convert to top-down for ICL image.
-    for (int y = 0; y < h; ++y) {
-      const int srcY = h - 1 - y;
-      for (int x = 0; x < w; ++x) {
-        const int srcIdx = (srcY * w + x) * 4;
-        const int dstIdx = y * w + x;
-        auto toSRGB = [](float v) -> icl8u {
-          v = std::max(0.0f, std::min(1.0f, v));
-          return static_cast<icl8u>(std::pow(v, 1.0f / 2.2f) * 255.0f + 0.5f);
-        };
-        r[dstIdx] = toSRGB(pixels[srcIdx + 0]);
-        g[dstIdx] = toSRGB(pixels[srcIdx + 1]);
-        b[dstIdx] = toSRGB(pixels[srcIdx + 2]);
-      }
-    }
+      return true;
     } catch (...) {
-      // Silently ignore — can happen during session reset with changed resolution
+      // Can happen during session reset with changed resolution.
+      return false;
     }
   }
 
-  mutable std::mutex m_mutex;
-  core::Img8u m_image;
+  core::Img8u m_buf[2];        // double buffer
+  int m_writeIdx = 0;           // which buffer we write to next (Cycles thread only)
+  int m_frontIdx = 0;           // which buffer holds the latest result (guarded by m_mutex)
+  mutable std::mutex m_mutex;   // guards m_frontIdx
   std::atomic<int> m_updateCount{0};
+  std::function<void(const core::Img8u &)> m_onImageReady;
+  std::function<void()> m_batchDoneCb;
 };
 
 // ---- CyclesRenderer::Impl ----
@@ -122,7 +176,7 @@ struct CyclesRenderer::Impl {
   // Cycles objects
   unique_ptr<Session> session;
   Scene *scene = nullptr;  // owned by session
-  ICLOutputDriver *outputDriver = nullptr;  // raw ptr, owned by session via unique_ptr
+  RaytracingOutputBuffer *outputDriver = nullptr;  // raw ptr, owned by session via unique_ptr
 
   // Scene synchronizer
   SceneSynchronizer sync;
@@ -141,22 +195,24 @@ struct CyclesRenderer::Impl {
   bool initialized = false;
   bool sessionStarted = false;
 
-  // State machine
-  enum class State { IDLE, WAIT_FOR_START, RENDERING };
-  State state = State::IDLE;
-  bool dirty = true;       // starts dirty → first render triggers on first call
-  int accumulated = 0;     // samples in current accum buffer
-  int target = 0;          // current Cycles sample target
-  int updateCountAtReset = 0; // OutputDriver update count when reset was issued
-  double resetTime = 0;       // time when reset was issued (for timing)
-
-  // Autonomous rendering thread
+  // --- Autonomous mode state (used by managementLoop) ---
   std::thread managementThread;
   std::atomic<bool> running{false};
   std::atomic<int> activeCamIndex{0};
+  std::mutex cvMutex;              // guards dirty/batchReady flags + CV
+  std::condition_variable cv;      // signaled on dirty, batchReady, or !running
+  bool dirty = true;               // starts dirty → first render triggers immediately
+  bool batchReady = false;         // set by write_render_tile callback
+
+  // --- Poll mode state (used by render()) ---
+  enum class State { IDLE, WAIT_FOR_START, RENDERING };
+  State state = State::IDLE;
+  int accumulated = 0;             // samples rendered so far in current accumulation
+  int target = 0;                  // current Cycles sample target
+  int updateCountAtReset = 0;
   std::recursive_mutex renderMutex;  // protects render() state machine
 
-  // Change detection
+  // Change detection (for poll-mode render() only)
   float lastCamHash = 0;
   int lastSamples = -1;
   int lastInitialSamples = -1;
@@ -198,7 +254,7 @@ struct CyclesRenderer::Impl {
     scene = session->scene.get();
 
     // Output driver
-    auto driver = ccl::make_unique<ICLOutputDriver>();
+    auto driver = ccl::make_unique<RaytracingOutputBuffer>();
     outputDriver = driver.get();
     session->set_output_driver(std::move(driver));
 
@@ -242,15 +298,138 @@ struct CyclesRenderer::Impl {
     if (!scene) return;
 
     Integrator *integrator = scene->integrator;
-    // User's bounces slider controls all bounce types uniformly.
     integrator->set_max_bounce(maxBounces);
     integrator->set_max_diffuse_bounce(maxBounces);
     integrator->set_max_glossy_bounce(maxBounces);
     integrator->set_max_transmission_bounce(maxBounces);
-    // User's denoising checkbox always respected.
     integrator->set_use_denoise(denoising);
 
     scene->film->set_exposure(exposure);
+  }
+
+  /// Mark scene as dirty and wake the management thread (if running).
+  /// Does NOT call session->cancel() — the management thread handles
+  /// session lifecycle exclusively via reset() which cancels internally.
+  void markDirty() {
+    {
+      std::lock_guard<std::mutex> lock(cvMutex);
+      dirty = true;
+    }
+    cv.notify_one();
+  }
+
+  /// Compute a cheap hash of the camera pose for change detection.
+  float computeCamHash(int camIndex) const {
+    if (camIndex >= (int)iclScene.getCameraCount()) return 0;
+    auto pos = iclScene.getCamera(camIndex).getPosition();
+    auto norm = iclScene.getCamera(camIndex).getNorm();
+    return pos[0] + pos[1]*7 + pos[2]*13 + norm[0]*17 + norm[1]*23 + norm[2]*29;
+  }
+
+  // --- Autonomous management loop (runs in managementThread) ---
+  //
+  // Outer loop: wait for dirty signal, sync scene, reset Cycles.
+  // Inner loop: wait for batch completion via CV, extend samples, repeat.
+  // Each batch finishes before dirty is checked, so intermediate images
+  // are always captured and visible. Exits when running becomes false.
+
+  void managementLoop() {
+    ensureInitialized();
+
+    // Wire the OutputDriver's batch-done signal into our CV.
+    outputDriver->setBatchDoneCallback([this]() {
+      {
+        std::lock_guard<std::mutex> lock(cvMutex);
+        batchReady = true;
+      }
+      cv.notify_one();
+    });
+
+    while (running) {
+      // Wait for dirty signal or shutdown.
+      {
+        std::unique_lock<std::mutex> lock(cvMutex);
+        cv.wait(lock, [&] { return dirty || !running.load(); });
+        if (!running) break;
+        dirty = false;
+        batchReady = false;
+      }
+
+      // Sync ICL scene → Cycles scene.
+      int camIndex = activeCamIndex;
+      sync.setBackgroundStrength(brightness);
+      sync.synchronize(iclScene, camIndex, scene, sceneScale);
+
+      // Compute resolution.
+      int wFull = scene->camera->get_full_width();
+      int hFull = scene->camera->get_full_height();
+      if (wFull <= 0) wFull = 800;
+      if (hFull <= 0) hFull = 600;
+      float s = std::max(0.1f, std::min(1.0f, resolutionScale));
+      int w = std::max(1, (int)(wFull * s));
+      int h = std::max(1, (int)(hFull * s));
+
+      applyQualityToScene();
+      scene->camera->set_full_width(w);
+      scene->camera->set_full_height(h);
+      scene->camera->compute_auto_viewplane();
+      scene->camera->need_flags_update = true;
+
+      int A = std::min(samplesPerStep, samples);
+
+      SessionParams sp = session->params;
+      sp.samples = A;
+      BufferParams bp;
+      bp.width = w;  bp.height = h;
+      bp.full_width = w;  bp.full_height = h;
+
+      // reset() waits for any active render to finish (producing a valid
+      // last image), then reinitializes. No cancel needed — the current
+      // batch is only 1 sample, so the wait is brief.
+      session->reset(sp, bp);
+      {
+        std::lock_guard<std::mutex> lock(cvMutex);
+        batchReady = false;
+      }
+
+      session->start();
+      sessionStarted = true;
+      accumulated = 0;
+      target = A;
+
+      // Progressive refinement: render N_step samples at a time.
+      // Wait only for batch completion — NOT for dirty. This lets each
+      // batch finish, producing a visible (noisy) intermediate image.
+      // Dirty is checked AFTER each batch: if the scene changed during
+      // rendering, we restart from scratch with the new camera. If not,
+      // we extend samples and the image progressively refines.
+      while (running) {
+        {
+          std::unique_lock<std::mutex> lock(cvMutex);
+          cv.wait(lock, [&] { return batchReady || !running.load(); });
+          if (!running) break;
+          batchReady = false;
+        }
+
+        // Batch done — image captured and published by write_render_tile.
+        accumulated = target;
+
+        // Check if scene changed during this batch.
+        {
+          std::lock_guard<std::mutex> lock(cvMutex);
+          if (dirty) break;  // outer loop picks up dirty immediately
+        }
+
+        if (accumulated >= samples) break;  // fully converged
+
+        // Extend: render the next batch of samples (Cycles accumulates).
+        target = std::min(accumulated + samplesPerStep, samples);
+        session->set_samples(target);
+        session->start();
+      }
+    }
+
+    outputDriver->setBatchDoneCallback(nullptr);
   }
 };
 
@@ -269,20 +448,45 @@ CyclesRenderer::~CyclesRenderer() {
 CyclesRenderer::CyclesRenderer(CyclesRenderer &&) noexcept = default;
 CyclesRenderer &CyclesRenderer::operator=(CyclesRenderer &&) noexcept = default;
 
+// ---- Autonomous mode: start/stop ----
+
+void CyclesRenderer::start(int camIndex) {
+  if (m_impl->running) return;
+  m_impl->activeCamIndex = camIndex;
+  m_impl->running = true;
+  {
+    std::lock_guard<std::mutex> lock(m_impl->cvMutex);
+    m_impl->dirty = true;  // ensure first render fires
+  }
+
+  m_impl->managementThread = std::thread([this]() {
+    m_impl->managementLoop();
+  });
+}
+
+void CyclesRenderer::stop() {
+  if (!m_impl->running) return;
+  m_impl->running = false;
+  m_impl->cv.notify_one();
+  // Management thread's CV wait will see !running and exit.
+  // Cycles' session thread may still be rendering; the management thread
+  // will exit its loop, and ~CyclesRenderer calls session->cancel().
+  if (m_impl->managementThread.joinable()) {
+    m_impl->managementThread.join();
+  }
+}
+
+// ---- Poll-driven mode: render() for scene-viewer use case ----
+//
+// Called once per frame from a run() loop. Non-blocking state machine:
+// each call either advances state or returns immediately.
+
 void CyclesRenderer::render(int camIndex) {
   std::lock_guard<std::recursive_mutex> lock(m_impl->renderMutex);
   m_impl->ensureInitialized();
-  // Note: applyQualityToScene() is called inside fullReset() only,
-  // not here — modifying the Cycles scene while the render thread
-  // is running causes crashes.
 
   // --- Detect changes → set dirty ---
-  float camHash = 0;
-  if (camIndex < (int)m_impl->iclScene.getCameraCount()) {
-    auto pos = m_impl->iclScene.getCamera(camIndex).getPosition();
-    auto norm = m_impl->iclScene.getCamera(camIndex).getNorm();
-    camHash = pos[0] + pos[1]*7 + pos[2]*13 + norm[0]*17 + norm[1]*23 + norm[2]*29;
-  }
+  float camHash = m_impl->computeCamHash(camIndex);
   if (camHash != m_impl->lastCamHash
       || m_impl->samples != m_impl->lastSamples
       || m_impl->samplesPerStep != m_impl->lastInitialSamples
@@ -305,7 +509,7 @@ void CyclesRenderer::render(int camIndex) {
   m_impl->lastResScale = m_impl->resolutionScale;
   m_impl->lastQuality = m_impl->quality;
 
-  // --- Helper: full reset (new geometry, resolution change, etc.) ---
+  // --- Helper: full reset ---
   auto fullReset = [&]() {
     int wFull = m_impl->scene->camera->get_full_width();
     int hFull = m_impl->scene->camera->get_full_height();
@@ -315,8 +519,6 @@ void CyclesRenderer::render(int camIndex) {
     int w = std::max(1, (int)(wFull * s));
     int h = std::max(1, (int)(hFull * s));
 
-    // Apply integrator/film settings and camera resolution before reset.
-    // Safe here because reset() cancels the render thread first.
     m_impl->applyQualityToScene();
     m_impl->scene->camera->set_full_width(w);
     m_impl->scene->camera->set_full_height(h);
@@ -332,63 +534,55 @@ void CyclesRenderer::render(int camIndex) {
     bp.full_width = w;  bp.full_height = h;
 
     m_impl->session->reset(sp, bp);
-    m_impl->session->start();  // must call after every reset to wake session thread
+    m_impl->session->start();
     m_impl->sessionStarted = true;
     m_impl->accumulated = 0;
     m_impl->target = A;
     m_impl->updateCountAtReset = m_impl->outputDriver->getUpdateCount();
-    m_impl->resetTime = ccl::time_dt();
     m_impl->state = Impl::State::WAIT_FOR_START;
   };
 
-  // --- Helper: sync scene and determine what changed ---
-  auto syncScene = [&]() -> SceneSynchronizer::SyncResult {
+  auto syncScene = [&]() {
     m_impl->dirty = false;
     m_impl->sync.setBackgroundStrength(m_impl->brightness);
-    return m_impl->sync.synchronize(
+    m_impl->sync.synchronize(
         m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
   };
 
   // --- State machine ---
   using S = Impl::State;
-  using SR = SceneSynchronizer::SyncResult;
 
   if (m_impl->state == S::IDLE) {
-    if (!m_impl->dirty) return;  // fully refined, nothing to do
-    auto result = syncScene();
+    if (!m_impl->dirty) return;
+    syncScene();
     fullReset();
     return;
   }
 
-  // Wait for the render to produce a new tile after reset.
   if (m_impl->state == S::WAIT_FOR_START) {
     if (m_impl->outputDriver->getUpdateCount() <= m_impl->updateCountAtReset) return;
     m_impl->state = S::RENDERING;
   }
 
-  // state == RENDERING
   double progress = m_impl->session->progress.get_progress();
-  if (progress < 1.0) return;  // still cooking — GUI stays responsive
+  if (progress < 1.0) return;  // still rendering — don't block
 
-  // Step done: write_render_tile has captured the image.
   m_impl->accumulated = m_impl->target;
 
   if (m_impl->dirty) {
-    // Changes arrived during render — sync and restart.
     syncScene();
     fullReset();
   } else if (m_impl->accumulated < m_impl->samples) {
-    // Keep refining: extend target by A (accumulates, no buffer clear).
     int A = m_impl->samplesPerStep;
     m_impl->target = std::min(m_impl->accumulated + A, m_impl->samples);
     m_impl->session->set_samples(m_impl->target);
-    m_impl->session->start();  // wake session thread for next step
-    // stay in RENDERING
+    m_impl->session->start();
   } else {
-    // Reached max samples — done.
     m_impl->state = S::IDLE;
   }
 }
+
+// ---- Blocking render (offline/headless) ----
 
 void CyclesRenderer::renderBlocking(int camIndex) {
   m_impl->ensureInitialized();
@@ -407,29 +601,40 @@ void CyclesRenderer::renderBlocking(int camIndex) {
   bp.width = w;  bp.height = h;
   bp.full_width = w;  bp.full_height = h;
 
-  // Apply settings and reset. Safe because renderBlocking is single-threaded.
   m_impl->applyQualityToScene();
-  int prevUpdates = m_impl->outputDriver->getUpdateCount();
   m_impl->session->reset(sp, bp);
   m_impl->session->start();
   m_impl->sessionStarted = true;
-  // Poll for completion — wait() can return prematurely after delayed reset.
-  while (m_impl->outputDriver->getUpdateCount() <= prevUpdates) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  }
+  m_impl->session->wait();
 
   m_impl->accumulated = m_impl->samples;
   m_impl->state = Impl::State::IDLE;
   m_impl->dirty = false;
 }
 
+// ---- Image access ----
+
 const core::Img8u &CyclesRenderer::getImage() const {
+  static const core::Img8u empty;
+  if (!m_impl->outputDriver) return empty;
   return m_impl->outputDriver->getImage();
 }
 
+void CyclesRenderer::setOnImageReady(std::function<void(const core::Img8u &)> cb) {
+  if (!m_impl->outputDriver) return;  // will be set once initialized
+  m_impl->outputDriver->setOnImageReady(std::move(cb));
+}
+
+// ---- Quality / parameter setters ----
+//
+// Each setter that changes rendering state calls markDirty() so the
+// autonomous management thread restarts immediately.
+
 void CyclesRenderer::setQuality(RenderQuality quality) {
+  if (m_impl->quality == quality) return;
   m_impl->quality = quality;
   m_impl->paramsOverridden = false;
+  m_impl->markDirty();
 }
 
 RenderQuality CyclesRenderer::getQuality() const {
@@ -437,8 +642,10 @@ RenderQuality CyclesRenderer::getQuality() const {
 }
 
 void CyclesRenderer::setSamples(int samples) {
+  if (m_impl->samples == samples) return;
   m_impl->samples = samples;
   m_impl->paramsOverridden = true;
+  m_impl->markDirty();
 }
 
 void CyclesRenderer::setSamplesPerStep(int n) {
@@ -446,44 +653,57 @@ void CyclesRenderer::setSamplesPerStep(int n) {
 }
 
 void CyclesRenderer::setMaxBounces(int bounces) {
+  if (m_impl->maxBounces == bounces) return;
   m_impl->maxBounces = bounces;
   m_impl->paramsOverridden = true;
+  m_impl->markDirty();
 }
 
 void CyclesRenderer::setDenoising(bool enabled) {
+  if (m_impl->denoising == enabled) return;
   m_impl->denoising = enabled;
   m_impl->paramsOverridden = true;
+  m_impl->markDirty();
 }
 
 void CyclesRenderer::setExposure(float exposure) {
+  if (m_impl->exposure == exposure) return;
   m_impl->exposure = exposure;
+  m_impl->markDirty();
 }
 
 void CyclesRenderer::setBrightness(float b) {
-  m_impl->brightness = std::max(0.0f, std::min(1.0f, b));
+  b = std::max(0.0f, std::min(1.0f, b));
+  if (m_impl->brightness == b) return;
+  m_impl->brightness = b;
+  m_impl->markDirty();
 }
 
 void CyclesRenderer::setResolutionScale(float scale) {
-  m_impl->resolutionScale = std::max(0.1f, std::min(1.0f, scale));
+  scale = std::max(0.1f, std::min(1.0f, scale));
+  if (m_impl->resolutionScale == scale) return;
+  m_impl->resolutionScale = scale;
+  m_impl->markDirty();
 }
 
+// ---- Scene invalidation ----
+
 void CyclesRenderer::invalidateAll() {
-  std::lock_guard<std::recursive_mutex> lock(m_impl->renderMutex);
   m_impl->sync.invalidateAll();
-  m_impl->dirty = true;
+  m_impl->markDirty();
 }
 
 void CyclesRenderer::invalidateTransforms() {
-  std::lock_guard<std::recursive_mutex> lock(m_impl->renderMutex);
   m_impl->sync.invalidateTransforms();
-  m_impl->dirty = true;
+  m_impl->markDirty();
 }
 
 void CyclesRenderer::invalidateObject(geom::SceneObject *obj) {
-  std::lock_guard<std::recursive_mutex> lock(m_impl->renderMutex);
   m_impl->sync.invalidateObject(obj);
-  m_impl->dirty = true;
+  m_impl->markDirty();
 }
+
+// ---- Progress / state queries ----
 
 float CyclesRenderer::getProgress() const {
   if (!m_impl->session) return 0.0f;
@@ -496,43 +716,19 @@ int CyclesRenderer::getUpdateCount() const {
 
 bool CyclesRenderer::isRendering() const {
   if (!m_impl->session) return false;
-  return m_impl->session->progress.get_progress() < 1.0f;
+  return m_impl->running || m_impl->session->progress.get_progress() < 1.0f;
 }
 
+// ---- Device / scale ----
+
 void CyclesRenderer::setDevice(const std::string &device) {
-  // Must be called before first render
-  // TODO: re-create session with new device if already initialized
+  // Must be called before first render.
+  // TODO: re-create session with new device if already initialized.
+  (void)device;
 }
 
 void CyclesRenderer::setSceneScale(float scale) {
   m_impl->sceneScale = scale;
-}
-
-
-void CyclesRenderer::setOnImageReady(std::function<void(const core::Img8u &)> cb) {
-  m_impl->outputDriver->setOnImageReady(std::move(cb));
-}
-
-void CyclesRenderer::start(int camIndex) {
-  if (m_impl->running) return;
-  m_impl->activeCamIndex = camIndex;
-  m_impl->running = true;
-  m_impl->dirty = true;  // ensure first render fires
-
-  m_impl->managementThread = std::thread([this]() {
-    while (m_impl->running) {
-      render(m_impl->activeCamIndex);
-      std::this_thread::sleep_for(std::chrono::milliseconds(16));
-    }
-  });
-}
-
-void CyclesRenderer::stop() {
-  if (!m_impl->running) return;
-  m_impl->running = false;
-  if (m_impl->managementThread.joinable()) {
-    m_impl->managementThread.join();
-  }
 }
 
 } // namespace icl::rt

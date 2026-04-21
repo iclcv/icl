@@ -276,7 +276,10 @@ protected:
 /// main interface method, that is implemented by the actual grabber instances
 /** This method is defined in the grabber implementation. It acquires a new image
    using the grabbers specific image acquisition back-end */
-virtual const core::ImgBase *acquireImage(){ return nullptr; }
+virtual const core::ImgBase *acquireImage(){ return acquireDisplay(); }
+
+/// Legacy name for acquireImage (override this OR acquireImage in subclasses)
+virtual const core::ImgBase *acquireDisplay(){ return nullptr; }
 
 /// Utility function that allows for much easier implementation of grabUD
 /** called by the grabbers grab() method **/

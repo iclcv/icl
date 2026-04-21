@@ -57,10 +57,11 @@ public:
   bool isRendering() const override;
   bool isAvailable() const override { return true; }
 
+  void setDenoising(bool enabled) override;
+
   // Cycles-specific (not in Raytracer interface)
   void setQuality(RenderQuality quality);
   RenderQuality getQuality() const;
-  void setDenoising(bool enabled);
   void setResolutionScale(float scale);
 
   /// Select compute device: "CPU", "METAL", "CUDA", or "" for auto-detect.

@@ -11,6 +11,7 @@
 #include <ICLUtils/Point32f.h>
 #include <ICLUtils/Range.h>
 #include <ICLCore/Img.h>
+#include <ICLCore/Image.h>
 
 #include <ICLQt/PlotHandle.h>
 #include <ICLQt/TabHandle.h>
@@ -246,6 +247,7 @@ INST_OTHER_TYPES
     // ImageHandle
     FROM_IMG(ImageHandle,dst=src);
     FROM_IMG_PTR(ImageHandle,dst=src);
+    FROM_TO(Image,ImageHandle,if(src.ptr()) dst=*src.ptr());
 
     // Color Handle and Color
     FROM_TO(ColorHandle,Color,dst=src.getRGB());
@@ -347,6 +349,7 @@ INST_OTHER_TYPES
     // DrawHandle
     FROM_IMG(DrawHandle,dst=src);
     FROM_IMG_PTR(DrawHandle,dst=src);
+    FROM_TO(Image,DrawHandle,if(src.ptr()) dst=*src.ptr());
     FROM_TO(DataStore::Data::Event,DrawHandle,
             if(src.message=="render"){
               dst.render();
@@ -362,6 +365,7 @@ INST_OTHER_TYPES
     // DrawHandle3D
     FROM_IMG(DrawHandle3D,(*dst)->setImage(&src));
     FROM_IMG_PTR(DrawHandle3D,dst=src);
+    FROM_TO(Image,DrawHandle3D,if(src.ptr()) (*dst)->setImage(src.ptr()));
     //FROM_TO(DataStore::Data::Event,DrawHandle,if(src.message=="update")dst.update());
     FROM_TO(DataStore::Data::Event,DrawHandle3D,
             if(src.message=="render"){
@@ -591,6 +595,7 @@ namespace icl::qt {
     // ImageHandle
     FROM_IMG_ADD(ImageHandle);
     FROM_IMG_PTR_ADD(ImageHandle);
+    ADD(Image,ImageHandle);
     ADD(DataStore::Data::Event,ImageHandle);
     ADD_T_TO_T(ImageHandle);
     ADD(ImageHandle,ICLWidget*);
@@ -603,6 +608,7 @@ namespace icl::qt {
     // DrawHandle
     FROM_IMG_ADD(DrawHandle);
     FROM_IMG_PTR_ADD(DrawHandle);
+    ADD(Image,DrawHandle);
     ADD(DataStore::Data::Event,DrawHandle);
     ADD_T_TO_T(DrawHandle);
     ADD(DrawHandle,ICLDrawWidget*);
@@ -613,6 +619,7 @@ namespace icl::qt {
     // DrawHandle3D
     FROM_IMG_ADD(DrawHandle3D);
     FROM_IMG_PTR_ADD(DrawHandle3D);
+    ADD(Image,DrawHandle3D);
     ADD(DataStore::Data::Event,DrawHandle3D);
     ADD_T_TO_T(DrawHandle3D);
     ADD(DrawHandle3D,ICLDrawWidget3D*);
