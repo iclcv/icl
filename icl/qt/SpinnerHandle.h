@@ -8,6 +8,9 @@
 #include <icl/qt/GUIHandle.h>
 #include <QtWidgets/QSpinBox>
 
+#include <string>
+#include <type_traits>
+
 namespace icl::qt {
   /// Handle class for spinner components \ingroup HANDLES
   class ICLQt_API SpinnerHandle : public GUIHandle<QSpinBox>{
@@ -46,6 +49,19 @@ namespace icl::qt {
 
     /// assigns a new value to the spin-box (equal to setValue)
     void operator=(int val) { setValue(val); }
+
+    /// parses `s` as an int and sets the spin-box.  Throws on bad input.
+    void operator=(const std::string &s);
+
+    /// Explicit readback.  Arithmetic specialization static-casts
+    /// the current value; string specialization formats it.
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const { return static_cast<T>(getValue()); }
+
+    template<typename T>
+      requires std::is_same_v<T, std::string>
+    T as() const;
 
     private:
     /// internally used utility function

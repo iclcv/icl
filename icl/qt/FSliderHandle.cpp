@@ -3,6 +3,10 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/FSliderHandle.h>
+
+#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/StringUtils.h>
+
 #include <QSlider>
 
 namespace icl::qt {
@@ -40,4 +44,34 @@ namespace icl::qt {
   float FSliderHandle::getValue() const{
     return i2f((**this)->value());
   }
-  } // namespace icl::qt
+
+  void FSliderHandle::operator=(const std::string &s){
+    setValue(icl::utils::parse<float>(s));
+  }
+
+  template<typename T>
+    requires std::is_same_v<T, std::string>
+  T FSliderHandle::as() const {
+    return icl::utils::str(getValue());
+  }
+  template std::string FSliderHandle::as<std::string>() const;
+
+  }  // namespace icl::qt
+
+namespace {
+  __attribute__((constructor))
+  static void icl_register_fslider_handle_assignments() {
+    auto &r = icl::utils::AssignRegistry::instance();
+    using icl::qt::FSliderHandle;
+
+    r.enroll<FSliderHandle, int>();
+    r.enroll<FSliderHandle, float>();
+    r.enroll<FSliderHandle, double>();
+    r.enroll<FSliderHandle, std::string>();
+
+    r.enroll<int,         FSliderHandle>();
+    r.enroll<float,       FSliderHandle>();
+    r.enroll<double,      FSliderHandle>();
+    r.enroll<std::string, FSliderHandle>();
+  }
+}

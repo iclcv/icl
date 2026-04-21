@@ -8,6 +8,9 @@
 #include <icl/qt/GUIHandle.h>
 #include <icl/qt/ThreadedUpdatableSlider.h>
 
+#include <string>
+#include <type_traits>
+
 /** \cond */
 class QSlider;
 class QLCDNumber;
@@ -55,6 +58,19 @@ namespace icl::qt {
 
     /// assigns a new value to the slider (equal to setValue)
     void operator=(float val) { setValue(val); }
+
+    /// parses `s` as a float and sets the slider.  Throws on bad input.
+    void operator=(const std::string &s);
+
+    /// Explicit readback.  Arithmetic specialization static-casts
+    /// the current value; string specialization formats it.
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const { return static_cast<T>(getValue()); }
+
+    template<typename T>
+      requires std::is_same_v<T, std::string>
+    T as() const;
 
     /// overloaded method for registering callbacks to specific slider events
     /** <b>Please note:</b> Only this callback mechanism is overloaded for the slider class
