@@ -146,6 +146,12 @@ namespace icl::qt {
     return ImgROI2{r.shallowCopy()};
   }
 
+  ImgROI2 roi(Image &r, const utils::Rect &rect) {
+    Image s = r.shallowCopy();
+    s.setROI(rect);
+    return ImgROI2{s};
+  }
+
   ImgROI2 data(Image &r) {
     ImgROI2 result{r.shallowCopy()};
     result.image.setFullROI();

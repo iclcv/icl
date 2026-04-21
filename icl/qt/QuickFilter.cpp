@@ -187,6 +187,12 @@ namespace icl::qt {
     return dst;
   }
 
+  Image copyroi(const Image &image, const utils::Rect &rect) {
+    Image tmp = image;
+    tmp.setROI(rect);
+    return copyroi(tmp);
+  }
+
   Image norm(const Image &image) {
     Image cpy = poolCopy(image);
     cpy.normalizeAllChannels(Range<icl64f>(0, 255));

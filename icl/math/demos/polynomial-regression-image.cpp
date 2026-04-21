@@ -29,27 +29,27 @@ GenericGrabber grabber;
 Reg *reg = nullptr;
 int lastPolyIdx = -1;
 
-Img32f approxCell(const Img32f &cell){
-  const int N = cell.getDim();
+Image approxCell(const Img32f &src, const Rect &r){
+  const int w = r.width, h = r.height, N = w * h;
   Matrix xs(2, N);
   Matrix ys(3, N);
 
-  for(int y = 0, idx = 0; y < cell.getHeight(); ++y)
-    for(int x = 0; x < cell.getWidth(); ++x, ++idx){
+  for(int y = 0, idx = 0; y < h; ++y)
+    for(int x = 0; x < w; ++x, ++idx){
       xs(idx, 0) = x;
       xs(idx, 1) = y;
-      ys(idx, 0) = cell(x, y, 0);
-      ys(idx, 1) = cell(x, y, 1);
-      ys(idx, 2) = cell(x, y, 2);
+      ys(idx, 0) = src(r.x + x, r.y + y, 0);
+      ys(idx, 1) = src(r.x + x, r.y + y, 1);
+      ys(idx, 2) = src(r.x + x, r.y + y, 2);
     }
 
   const Reg::Result &result = reg->apply(xs, ys);
   const Matrix &z = result(xs);
 
-  Img32f out(cell.getSize(), 3);
+  Img32f out(Size(w, h), 3);
   for(int c = 0; c < 3; ++c)
     std::copy(z.col_begin(c), z.col_end(c), out.begin(c));
-  return out;
+  return Image(out);
 }
 
 std::string polyComboStr() {
@@ -93,43 +93,26 @@ void run(){
     lastPolyIdx = polyIdx;
   }
 
-  Img32f result(image.getSize(), formatRGB);
+  Image input(image);
+  Image result = zeros(image.getWidth(), image.getHeight(), 3, depth32f);
 
   try {
-    Img32f cellBuf(Size(cellsize, cellsize), formatRGB);
     for(int cy = 0; cy < image.getHeight() / cellsize; ++cy){
       for(int cx = 0; cx < image.getWidth() / cellsize; ++cx){
         Rect r(cx * cellsize, cy * cellsize, cellsize, cellsize);
-
-        // Extract cell
-        image.setROI(r);
-        image.deepCopyROI(&cellBuf);
-
-        // Approximate
-        Img32f approxed = approxCell(cellBuf);
-
-        // Paste into result: copy channel by channel into the right position
-        for(int c = 0; c < 3; ++c){
-          const float *src = approxed.getData(c);
-          for(int ly = 0; ly < cellsize; ++ly){
-            float *dst = &result(cx*cellsize, cy*cellsize + ly, c);
-            std::copy(src + ly*cellsize, src + (ly+1)*cellsize, dst);
-          }
-        }
+        roi(result, r) = approxCell(image, r);
       }
     }
   } catch(ICLException &e) {
     gui["status"] = str(e.what());
   }
 
-  image.setFullROI();
-
   int ts = tok(reg->getFunctionString(), "+").size();
   int orig = cellsize * cellsize * 3;
   int compr = ts * 3 * sizeof(float);
   gui["compression"] = str(int(float(compr) / orig * 100)) + "%";
-  gui["input"] = Image(image);
-  gui["result"] = Image(result);
+  gui["input"] = input;
+  gui["result"] = result;
 }
 
 int main(int n, char **ppc){

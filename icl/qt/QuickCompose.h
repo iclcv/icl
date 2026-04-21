@@ -5,6 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
+#include <icl/utils/Rect.h>
 #include <icl/core/Image.h>
 
 namespace icl::qt {
@@ -43,6 +44,9 @@ namespace icl::qt {
 
   /// Creates an ImgROI2 referencing the image's current ROI
   ICLQt_API ImgROI2 roi(core::Image &r);
+
+  /// Creates an ImgROI2 for a specific rectangle (sets ROI, returns reference)
+  ICLQt_API ImgROI2 roi(core::Image &r, const utils::Rect &rect);
 
   /// Creates an ImgROI2 referencing the full image (full ROI)
   ICLQt_API ImgROI2 data(core::Image &r);

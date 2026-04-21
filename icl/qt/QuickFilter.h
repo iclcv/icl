@@ -61,6 +61,9 @@ namespace icl::qt {
   /// Deep copy of just the ROI
   ICLQt_API core::Image copyroi(const core::Image &image);
 
+  /// Deep copy of a specific rectangle
+  ICLQt_API core::Image copyroi(const core::Image &image, const utils::Rect &rect);
+
   /// Normalize all channels to [0, 255]
   ICLQt_API core::Image norm(const core::Image &image);
 
