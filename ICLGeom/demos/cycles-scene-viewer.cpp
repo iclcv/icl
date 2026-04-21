@@ -627,7 +627,7 @@ void run() {
   float exposure = gui["exposure"].as<int>() / 100.0f;
   float brightness = gui["brightness"].as<int>() / 100.0f;
 
-  renderer->setInitialSamples(initSamples);
+  renderer->setSamplesPerStep(initSamples);
   renderer->setSamples(maxIter);
   renderer->setMaxBounces(bounces);
   renderer->setDenoising(false);

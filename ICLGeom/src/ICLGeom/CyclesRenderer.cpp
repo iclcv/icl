@@ -129,7 +129,7 @@ struct CyclesRenderer::Impl {
 
   // Quality parameters (may be overridden)
   int samples = 64;
-  int initialSamples = 1;
+  int samplesPerStep = 1;
   int maxBounces = 6;
   bool denoising = true;
   float exposure = 1.0f;
@@ -155,9 +155,6 @@ struct CyclesRenderer::Impl {
   std::atomic<bool> running{false};
   std::atomic<int> activeCamIndex{0};
   std::recursive_mutex renderMutex;  // protects render() state machine
-
-  // Progressive display: minimum seconds between step extensions
-  double minStepDisplayTime = 0.1;  // 100ms default — ensures intermediate results visible
 
   // Change detection
   float lastCamHash = 0;
@@ -288,7 +285,7 @@ void CyclesRenderer::render(int camIndex) {
   }
   if (camHash != m_impl->lastCamHash
       || m_impl->samples != m_impl->lastSamples
-      || m_impl->initialSamples != m_impl->lastInitialSamples
+      || m_impl->samplesPerStep != m_impl->lastInitialSamples
       || m_impl->maxBounces != m_impl->lastBounces
       || m_impl->denoising != m_impl->lastDenoising
       || m_impl->brightness != m_impl->lastBrightness
@@ -300,7 +297,7 @@ void CyclesRenderer::render(int camIndex) {
   }
   m_impl->lastCamHash = camHash;
   m_impl->lastSamples = m_impl->samples;
-  m_impl->lastInitialSamples = m_impl->initialSamples;
+  m_impl->lastInitialSamples = m_impl->samplesPerStep;
   m_impl->lastBounces = m_impl->maxBounces;
   m_impl->lastDenoising = m_impl->denoising;
   m_impl->lastBrightness = m_impl->brightness;
@@ -326,7 +323,7 @@ void CyclesRenderer::render(int camIndex) {
     m_impl->scene->camera->compute_auto_viewplane();
     m_impl->scene->camera->need_flags_update = true;
 
-    int A = std::min(m_impl->initialSamples, m_impl->samples);
+    int A = std::min(m_impl->samplesPerStep, m_impl->samples);
 
     SessionParams sp = m_impl->session->params;
     sp.samples = A;
@@ -374,11 +371,6 @@ void CyclesRenderer::render(int camIndex) {
   if (progress < 1.0) return;  // still cooking — GUI stays responsive
 
   // Step done: write_render_tile has captured the image.
-  // Wait for minimum display time so intermediate results are visible.
-  double now = ccl::time_dt();
-  double elapsed = now - m_impl->resetTime;
-  if (elapsed < m_impl->minStepDisplayTime) return;  // let the display catch up
-
   m_impl->accumulated = m_impl->target;
 
   if (m_impl->dirty) {
@@ -387,10 +379,9 @@ void CyclesRenderer::render(int camIndex) {
     fullReset();
   } else if (m_impl->accumulated < m_impl->samples) {
     // Keep refining: extend target by A (accumulates, no buffer clear).
-    int A = m_impl->initialSamples;
+    int A = m_impl->samplesPerStep;
     m_impl->target = std::min(m_impl->accumulated + A, m_impl->samples);
     m_impl->session->set_samples(m_impl->target);
-    m_impl->resetTime = ccl::time_dt();
     // stay in RENDERING
   } else {
     // Reached max samples — done.
@@ -449,8 +440,8 @@ void CyclesRenderer::setSamples(int samples) {
   m_impl->paramsOverridden = true;
 }
 
-void CyclesRenderer::setInitialSamples(int n) {
-  m_impl->initialSamples = std::max(1, n);
+void CyclesRenderer::setSamplesPerStep(int n) {
+  m_impl->samplesPerStep = std::max(1, n);
 }
 
 void CyclesRenderer::setMaxBounces(int bounces) {
@@ -516,9 +507,6 @@ void CyclesRenderer::setSceneScale(float scale) {
   m_impl->sceneScale = scale;
 }
 
-void CyclesRenderer::setStepInterval(double seconds) {
-  m_impl->minStepDisplayTime = std::max(0.0, seconds);
-}
 
 void CyclesRenderer::setOnImageReady(std::function<void(const core::Img8u &)> cb) {
   m_impl->outputDriver->setOnImageReady(std::move(cb));

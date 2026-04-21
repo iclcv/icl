@@ -51,7 +51,7 @@ public:
   void invalidateTransforms() override;
   void invalidateObject(geom::SceneObject *obj) override;
 
-  void setStepInterval(double seconds) override;
+  void setSamplesPerStep(int n) override;
   float getProgress() const override;
   int getUpdateCount() const override;
   bool isRendering() const override;
@@ -60,7 +60,6 @@ public:
   // Cycles-specific (not in Raytracer interface)
   void setQuality(RenderQuality quality);
   RenderQuality getQuality() const;
-  void setInitialSamples(int n);
   void setDenoising(bool enabled);
   void setResolutionScale(float scale);
 
