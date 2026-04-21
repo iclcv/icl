@@ -162,41 +162,59 @@ namespace icl::geom2 {
 
     auto mesh = std::make_shared<MeshNode>();
 
-    auto positions = readAccessorFloats(posAcc);
+    // Build vertex data
+    auto posFloats = readAccessorFloats(posAcc);
+    std::vector<Vec> verts(posAcc->count);
     for (size_t i = 0; i < posAcc->count; i++)
-      mesh->addVertex(Vec(positions[i*3+0], positions[i*3+1], positions[i*3+2], 1));
+      verts[i] = Vec(posFloats[i*3+0], posFloats[i*3+1], posFloats[i*3+2], 1);
 
-    if (normAcc && normAcc->count == posAcc->count) {
-      auto normals = readAccessorFloats(normAcc);
+    bool hasNormals = normAcc && normAcc->count == posAcc->count;
+    std::optional<std::vector<Vec>> norms;
+    if (hasNormals) {
+      auto nf = readAccessorFloats(normAcc);
+      std::vector<Vec> nv(normAcc->count);
       for (size_t i = 0; i < normAcc->count; i++)
-        mesh->addNormal(Vec(normals[i*3+0], normals[i*3+1], normals[i*3+2], 0));
+        nv[i] = Vec(nf[i*3+0], nf[i*3+1], nf[i*3+2], 0);
+      norms = std::move(nv);
     }
 
     bool hasUVs = uvAcc && uvAcc->count == posAcc->count;
+    std::optional<std::vector<utils::Point32f>> uvData;
     if (hasUVs) {
-      auto uvs = readAccessorFloats(uvAcc);
+      auto uf = readAccessorFloats(uvAcc);
+      std::vector<utils::Point32f> uv(uvAcc->count);
       for (size_t i = 0; i < uvAcc->count; i++)
-        mesh->addTexCoord(uvs[i*2+0], uvs[i*2+1]);
+        uv[i] = utils::Point32f(uf[i*2+0], uf[i*2+1]);
+      uvData = std::move(uv);
     }
 
-    bool hasNormals = normAcc && normAcc->count == posAcc->count;
-
+    // Build triangle indices
+    std::vector<TrianglePrimitive> tris;
     if (prim.indices) {
       auto indices = readAccessorIndices(prim.indices);
+      tris.reserve(indices.size() / 3);
       for (size_t i = 0; i + 2 < indices.size(); i += 3) {
         int a = indices[i], b = indices[i+1], c = indices[i+2];
-        mesh->addTriangle(a, b, c,
-                          hasNormals ? a : -1, hasNormals ? b : -1, hasNormals ? c : -1,
-                          hasUVs ? a : -1, hasUVs ? b : -1, hasUVs ? c : -1);
+        tris.push_back({{a, b, c},
+                         {hasNormals?a:-1, hasNormals?b:-1, hasNormals?c:-1},
+                         {hasUVs?a:-1, hasUVs?b:-1, hasUVs?c:-1}});
       }
     } else {
+      tris.reserve(posAcc->count / 3);
       for (size_t i = 0; i + 2 < posAcc->count; i += 3) {
         int ii = (int)i;
-        mesh->addTriangle(ii, ii+1, ii+2,
-                          hasNormals ? ii : -1, hasNormals ? ii+1 : -1, hasNormals ? ii+2 : -1,
-                          hasUVs ? ii : -1, hasUVs ? ii+1 : -1, hasUVs ? ii+2 : -1);
+        tris.push_back({{ii, ii+1, ii+2},
+                         {hasNormals?ii:-1, hasNormals?ii+1:-1, hasNormals?ii+2:-1},
+                         {hasUVs?ii:-1, hasUVs?ii+1:-1, hasUVs?ii+2:-1}});
       }
     }
+
+    mesh->digest({
+      .vertices  = std::move(verts),
+      .normals   = std::move(norms),
+      .uvs       = std::move(uvData),
+      .triangles = std::move(tris),
+    });
 
     if (prim.material) {
       auto it = matCache.find(prim.material);
@@ -316,21 +334,24 @@ namespace icl::geom2 {
       }
     }
 
-    // Add vertex data to mesh
-    for (auto &p : positions) mesh->addVertex(p);
-    for (auto &n : objNormals) mesh->addNormal(n);
-    for (auto &t : uvs) mesh->addTexCoord(t.x, t.y);
-
-    // Add faces as triangles (fan-triangulate)
+    // Fan-triangulate faces into TrianglePrimitive list
+    std::vector<TrianglePrimitive> tris;
     for (auto &face : faces) {
       for (size_t i = 1; i + 1 < face.verts.size(); i++) {
-        mesh->addTriangle(face.verts[0].v, face.verts[i].v, face.verts[i+1].v,
-                          face.verts[0].vn, face.verts[i].vn, face.verts[i+1].vn,
-                          face.verts[0].vt, face.verts[i].vt, face.verts[i+1].vt);
+        tris.push_back({{face.verts[0].v, face.verts[i].v, face.verts[i+1].v},
+                         {face.verts[0].vn, face.verts[i].vn, face.verts[i+1].vn},
+                         {face.verts[0].vt, face.verts[i].vt, face.verts[i+1].vt}});
       }
     }
 
-    if (objNormals.empty()) mesh->createAutoNormals(true);
+    // Bulk-ingest: moves vectors without copying
+    mesh->digest({
+      .vertices  = std::move(positions),
+      .normals   = objNormals.empty() ? std::nullopt : std::optional(std::move(objNormals)),
+      .uvs       = uvs.empty() ? std::nullopt : std::optional(std::move(uvs)),
+      .triangles = std::move(tris),
+    });
+
     mesh->setMaterial(Material::fromColor(geom2::GeomColor(200, 200, 200, 255)));
 
     return {mesh};

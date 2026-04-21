@@ -52,6 +52,24 @@ namespace icl::geom2 {
     quads().push_back({{a, b, c, d}, {na, nb, nc, nd}, {ta, tb, tc, td}});
   }
 
+  void MeshNode::digest(MeshData data) {
+    clearGeometryData();
+
+    if (data.vertices) vertices() = std::move(*data.vertices);
+    if (data.normals)  normals() = std::move(*data.normals);
+    if (data.uvs)      texCoords() = std::move(*data.uvs);
+    if (data.colors)   vertexColors() = std::move(*data.colors);
+    if (data.triangles) triangles() = std::move(*data.triangles);
+    if (data.quads)    quads() = std::move(*data.quads);
+    if (data.lines)    lines() = std::move(*data.lines);
+
+    // Auto-generate normals if geometry present but normals absent
+    if (!data.normals && !vertices().empty()
+        && (!triangles().empty() || !quads().empty())) {
+      createAutoNormals(true);
+    }
+  }
+
   void MeshNode::clearGeometry() {
     clearGeometryData();
   }

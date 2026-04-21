@@ -5,8 +5,29 @@
 #pragma once
 
 #include <icl/geom2/GeometryNode.h>
+#include <optional>
 
 namespace icl::geom2 {
+
+  /// Bulk geometry data for MeshNode::digest()
+  /** Use designated initializers + std::move for zero-copy ingestion:
+      @code
+      digest({
+          .vertices  = std::move(verts),
+          .normals   = std::move(norms),
+          .triangles = std::move(tris),
+          // uvs, colors absent → left empty
+      });
+      @endcode */
+  struct MeshData {
+    std::optional<std::vector<Vec>> vertices;
+    std::optional<std::vector<Vec>> normals;
+    std::optional<std::vector<utils::Point32f>> uvs;
+    std::optional<std::vector<GeomColor>> colors;
+    std::optional<std::vector<TrianglePrimitive>> triangles;
+    std::optional<std::vector<QuadPrimitive>> quads;
+    std::optional<std::vector<LinePrimitive>> lines;
+  };
 
   /// Mutable geometry leaf — for freeform meshes, physics, dynamic geometry
   /** MeshNode adds public mutable access to GeometryNode's geometry:
@@ -45,7 +66,11 @@ namespace icl::geom2 {
                  int na = -1, int nb = -1, int nc = -1, int nd = -1,
                  int ta = -1, int tb = -1, int tc = -1, int td = -1);
 
-    //void digest(std::optional<std::vector<Vec>&&> vertices);
+    /// Bulk-ingest geometry data, moving vectors in without copying
+    /** Clears existing geometry, then moves present fields into the node.
+        Absent (nullopt) fields are left empty. Auto-generates normals
+        if vertices and triangles/quads are present but normals are not. */
+    void digest(MeshData data);
 
     /// Clears all geometry (vertices, normals, colors, primitives)
     void clearGeometry();
