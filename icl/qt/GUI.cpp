@@ -2429,12 +2429,25 @@ namespace icl{
       }
     }
 
+    // The three *Callback*() methods used to reinterpret_cast the
+    // stored handle to `GUIHandleBase*` via `MultiTypeMap::getValue`
+    // (safe only because every handle inherits `GUIHandleBase` and
+    // MultiTypeMap skipped the RTTI check when `typeCheck=false`).
+    // std::any's `any_cast<GUIHandleBase&>` matches only the exact
+    // stored type, so that trick no longer compiles.  Route through
+    // the `Data` proxy instead — its `registerCallback` / `removeCallbacks`
+    // smuggle an `Event` through AssignRegistry, which dispatches to
+    // the registered `Assign<H, Event>::apply` (see
+    // `icl/qt/HandleEventEnrollments.cpp`) for every handle that
+    // supports callbacks.  To be retired together with the Event
+    // smuggling itself.
+
     void GUI::registerCallback(const Callback &cb, const std::string &handleNamesList, char delim){
       std::string delims; delims+=delim;
 
       StrTok tok(handleNamesList,delims);
       while(tok.hasMoreTokens()){
-        get<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
+        m_oDataStore[tok.nextToken()].registerCallback(cb);
       }
     }
 
@@ -2443,7 +2456,7 @@ namespace icl{
 
       StrTok tok(handleNamesList,delims);
       while(tok.hasMoreTokens()){
-        get<GUIHandleBase>(tok.nextToken(),false).registerCallback(cb);
+        m_oDataStore[tok.nextToken()].registerCallback(cb);
       }
     }
 
@@ -2452,7 +2465,7 @@ namespace icl{
 
       StrTok tok(handleNamesList,delims);
       while(tok.hasMoreTokens()){
-        get<GUIHandleBase>(tok.nextToken(),false).removeCallbacks();
+        m_oDataStore[tok.nextToken()].removeCallbacks();
       }
     }
 

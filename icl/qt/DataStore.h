@@ -190,6 +190,9 @@ namespace icl::qt {
 
       /// Disable the underlying widget.
       void disable() { *this = Event("disable"); }
+
+      /// Drop every callback the handle currently holds.
+      void removeCallbacks() { *this = Event("removeCallbacks"); }
     };
 
     /// Store a `T` under `id`, default-constructing if omitted.

@@ -95,6 +95,9 @@ namespace icl::utils {
   template<class H>
   concept HasEnableDisable = requires(H h) { h.enable(); h.disable(); };
 
+  template<class H>
+  concept HasRemoveCallbacks = requires(H h) { h.removeCallbacks(); };
+
   // Specialization of the Assign trait for `H = Event`.  Any handle
   // that lets at least one of the event verbs through satisfies
   // `value = true`.  The `apply()` body is a message-string dispatch,
@@ -102,7 +105,7 @@ namespace icl::utils {
   template<class H>
     requires (HasRender<H> || HasInstallMouse<H> || HasLink<H>
               || HasRegisterCallback<H> || HasRegisterComplexCallback<H>
-              || HasEnableDisable<H>)
+              || HasEnableDisable<H> || HasRemoveCallbacks<H>)
   struct Assign<H, icl::qt::DataStore::Data::Event>
       : std::true_type {
     static void apply(H &dst, icl::qt::DataStore::Data::Event &src) {
@@ -123,6 +126,8 @@ namespace icl::utils {
       } else if (m == "link") {
         if constexpr (HasLink<H>)
           (*dst)->link(static_cast<icl::qt::GLCallback *>(src.data));
+      } else if (m == "removeCallbacks") {
+        if constexpr (HasRemoveCallbacks<H>) dst.removeCallbacks();
       } else {
         ERROR_LOG("DataStore Event '" << m << "' not supported by handle type "
                   << typeid(H).name());
