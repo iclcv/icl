@@ -380,12 +380,22 @@ namespace icl::math {
     }
 
 
-    /// Element access operator
+    /// Element access with (row, col) convention — standard math indexing
+    T &index_yx(unsigned int row, unsigned int col){
+      return begin()[col+cols()*row];
+    }
+
+    /// Element access with (row, col) convention — standard math indexing (const)
+    const T &index_yx(unsigned int row, unsigned int col) const{
+      return begin()[col+cols()*row];
+    }
+
+    /// Element access operator (legacy col,row — being migrated to index_yx)
     T &operator()(unsigned int col,unsigned int row){
       return begin()[col+cols()*row];
     }
 
-    /// Element access operator (const)
+    /// Element access operator (const, legacy col,row)
     const T &operator() (unsigned int col,unsigned int row) const{
       return begin()[col+cols()*row];
     }
@@ -661,7 +671,7 @@ namespace icl::math {
     void mult(const FixedMatrix<T,MCOLS,COLS> &m,  FixedMatrix<T,MCOLS,ROWS> &dst) const{
       for(unsigned int c=0;c<MCOLS;++c){
         for(unsigned int r=0;r<ROWS;++r){
-          dst(c,r) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
+          dst.index_yx(r, c) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
         }
       }
     }
@@ -819,7 +829,7 @@ namespace icl::math {
     static FixedMatrix<T,ROWS,COLS> id(){
       FixedMatrix<T,ROWS,COLS> m(T(0));
       for(unsigned int i=0;i<ROWS && i<COLS;++i){
-        m(i,i) = 1;
+        m.index_yx(i, i) = 1;
       }
       return m;
     }

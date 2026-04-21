@@ -144,9 +144,9 @@ namespace icl::math {
 
     /// applies a given homography matrix
     static inline utils::Point32f apply_homography(const FixedMatrix<float,3,3> &H, const utils::Point32f &p){
-      float az = H(0,2)*p.x + H(1,2) * p.y + H(2,2);
-      return utils::Point32f(( H(0,0)*p.x + H(1,0) * p.y + H(2,0) ) / az,
-                             ( H(0,1)*p.x + H(1,1) * p.y + H(2,1) ) / az );
+      float az = H.index_yx(2, 0)*p.x + H.index_yx(2, 1) * p.y + H.index_yx(2, 2);
+      return utils::Point32f(( H.index_yx(0, 0)*p.x + H.index_yx(0, 1) * p.y + H.index_yx(0, 2) ) / az,
+                             ( H.index_yx(1, 0)*p.x + H.index_yx(1, 1) * p.y + H.index_yx(1, 2) ) / az );
     }
 
     /// applies the homography
@@ -156,9 +156,9 @@ namespace icl::math {
 
     /// applies a given homography matrix
     static inline utils::Point apply_homography_int(const FixedMatrix<float,3,3> &H, const utils::Point &p){
-      float az = H(0,2)*p.x + H(1,2) * p.y + H(2,2);
-      return utils::Point(round(( H(0,0)*p.x + H(1,0) * p.y + H(2,0) ) / az),
-                   round(( H(0,1)*p.x + H(1,1) * p.y + H(2,1) ) / az) );
+      float az = H.index_yx(2, 0)*p.x + H.index_yx(2, 1) * p.y + H.index_yx(2, 2);
+      return utils::Point(round(( H.index_yx(0, 0)*p.x + H.index_yx(0, 1) * p.y + H.index_yx(0, 2) ) / az),
+                   round(( H.index_yx(1, 0)*p.x + H.index_yx(1, 1) * p.y + H.index_yx(1, 2) ) / az) );
     }
 
     /// applies the homography

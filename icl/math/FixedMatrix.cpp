@@ -32,11 +32,11 @@ namespace icl::math {
   FixedMatrix<T,3,3> create_hom_3x3(T angle, T dx, T dy, T v0, T v1){
     FixedMatrix<T,3,3> m;
     get_2x2_rot_data<T,true>(angle,m.data());
-    m(2,0) = dx;
-    m(2,1) = dy;
-    m(2,2) = 1;
-    m(0,2) = v0;
-    m(1,2) = v1;
+    m.index_yx(0, 2) = dx;
+    m.index_yx(1, 2) = dy;
+    m.index_yx(2, 2) = 1;
+    m.index_yx(2, 0) = v0;
+    m.index_yx(2, 1) = v1;
     return m;
   }
 
@@ -73,25 +73,25 @@ namespace icl::math {
 
     FixedMatrix<T,3,3> m;
     if (repetition) {
-      m(i,i) = cj;
-      m(j,i) = sj*si;
-      m(k,i) = sj*ci;
-      m(i,j) = sj*sk;
-      m(j,j) = -cj*ss+cc;
-      m(k,j) = -cj*cs-sc;
-      m(i,k) = -sj*ck;
-      m(j,k) = cj*sc+cs;
-      m(k,k) = cj*cc-ss;
+      m.index_yx(i, i) = cj;
+      m.index_yx(i, j) = sj*si;
+      m.index_yx(i, k) = sj*ci;
+      m.index_yx(j, i) = sj*sk;
+      m.index_yx(j, j) = -cj*ss+cc;
+      m.index_yx(j, k) = -cj*cs-sc;
+      m.index_yx(k, i) = -sj*ck;
+      m.index_yx(k, j) = cj*sc+cs;
+      m.index_yx(k, k) = cj*cc-ss;
     }else{
-      m(i,i) = cj*ck;
-      m(j,i) = sj*sc-cs;
-      m(k,i) = sj*cc+ss;
-      m(i,j) = cj*sk;
-      m(j,j) = sj*ss+cc;
-      m(k,j) = sj*cs-sc;
-      m(i,k) = -sj;
-      m(j,k) = cj*si;
-      m(k,k) = cj*ci;
+      m.index_yx(i, i) = cj*ck;
+      m.index_yx(i, j) = sj*sc-cs;
+      m.index_yx(i, k) = sj*cc+ss;
+      m.index_yx(j, i) = cj*sk;
+      m.index_yx(j, j) = sj*ss+cc;
+      m.index_yx(j, k) = sj*cs-sc;
+      m.index_yx(k, i) = -sj;
+      m.index_yx(k, j) = cj*si;
+      m.index_yx(k, k) = cj*ci;
     }
     return m;
   }
@@ -115,25 +115,25 @@ namespace icl::math {
       k = NEXT_AXIS[i-parity+1];
 
     if (repetition) {
-      T sy = sqrt(m(j,i)*m(j,i) + m(k,i)*m(k,i));
+      T sy = sqrt(m.index_yx(i,j)*m.index_yx(i,j) + m.index_yx(i,k)*m.index_yx(i,k));
       if (sy > EPS) {
-          ai = atan2( m(j,i),  m(k,i));
-          aj = atan2( sy,      m(i,i));
-          ak = atan2( m(i,j), -m(i,k));
+          ai = atan2( m.index_yx(i, j),  m.index_yx(i, k));
+          aj = atan2( sy,      m.index_yx(i, i));
+          ak = atan2( m.index_yx(j, i), -m.index_yx(k, i));
       }else{
-          ai = atan2(-m(k,j),  m(j,j));
-          aj = atan2( sy,      m(i,i));
+          ai = atan2(-m.index_yx(j, k),  m.index_yx(j, j));
+          aj = atan2( sy,      m.index_yx(i, i));
           ak = 0.0;
       }
     }else{
-      T cy = sqrt(m(i,i)*m(i,i) + m(i,j)*m(i,j));
+      T cy = sqrt(m.index_yx(i,i)*m.index_yx(i,i) + m.index_yx(j,i)*m.index_yx(j,i));
       if (cy > EPS) {
-          ai = atan2( m(j,k),  m(k,k));
-          aj = atan2(-m(i,k),  cy);
-          ak = atan2( m(i,j),  m(i,i));
+          ai = atan2( m.index_yx(k,j),  m.index_yx(k,k));
+          aj = atan2(-m.index_yx(k,i),  cy);
+          ak = atan2( m.index_yx(j,i),  m.index_yx(i,i));
       }else{
-          ai = atan2(-m(k,j),  m(j,j));
-          aj = atan2(-m(i,k),  cy);
+          ai = atan2(-m.index_yx(j,k),  m.index_yx(j,j));
+          aj = atan2(-m.index_yx(k,i),  cy);
           ak = 0.0;
       }
     }
