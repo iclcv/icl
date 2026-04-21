@@ -197,6 +197,12 @@ void DemoScene::setup(const std::vector<std::string> &files,
     fprintf(stderr, "Rotating scene by (%.0f, %.0f, %.0f) degrees\n", rx, ry, rz);
     for (auto &obj : loaded) {
       for (auto &v : obj->getVertices()) v = R * v;
+      if (obj->getObjectType() == SceneObject::Sphere) {
+        float scx, scy, scz, sr;
+        obj->getSphereParams(scx, scy, scz, sr);
+        Vec c = R * Vec(scx, scy, scz, 1);
+        obj->setSphereParams(c[0], c[1], c[2], sr);
+      }
     }
   }
 
@@ -217,6 +223,15 @@ void DemoScene::setup(const std::vector<std::string> &files,
       v[0] = (v[0] - cx) * scaleFactor;
       v[1] = (v[1] - cy) * scaleFactor;
       v[2] = (v[2] - cz) * scaleFactor;
+    }
+    // Update sphere params to match transformed vertices
+    if (obj->getObjectType() == SceneObject::Sphere) {
+      float scx, scy, scz, sr;
+      obj->getSphereParams(scx, scy, scz, sr);
+      obj->setSphereParams((scx - cx) * scaleFactor,
+                           (scy - cy) * scaleFactor,
+                           (scz - cz) * scaleFactor,
+                           sr * scaleFactor);
     }
   }
   for (auto &obj : loaded) obj->createAutoNormals(true);

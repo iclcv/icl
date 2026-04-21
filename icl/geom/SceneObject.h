@@ -659,6 +659,12 @@ namespace icl::geom {
       radius = m_sphereRadius;
     }
 
+    /// updates sphere center and radius (after vertex transforms)
+    void setSphereParams(float cx, float cy, float cz, float radius) {
+      m_sphereCenter[0] = cx; m_sphereCenter[1] = cy; m_sphereCenter[2] = cz;
+      m_sphereRadius = radius;
+    }
+
     /// calls setVisible(false)
     void hide(bool recursive=true){ setVisible(false); }
 

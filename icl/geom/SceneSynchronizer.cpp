@@ -602,11 +602,17 @@ void SceneSynchronizer::walkObject(const geom::SceneObject *obj,
 void SceneSynchronizer::syncGeometry(ObjectEntry &entry,
                                      ccl::Scene *cclScene,
                                      float sceneScale) {
-  // TODO: analytic PointCloud sphere has a position offset bug vs GL mesh rendering.
-  // Disabled until fixed — always use tessellated mesh path for correct overlay alignment.
   float3 sphereCenter = make_float3(0, 0, 0);
   float sphereRadius = 0;
   bool isSphere = false;
+
+  if (entry.iclObj->getObjectType() == geom::SceneObject::Sphere) {
+    float cx, cy, cz, r;
+    entry.iclObj->getSphereParams(cx, cy, cz, r);
+    sphereCenter = make_float3(cx, cy, cz);
+    sphereRadius = r;
+    isSphere = true;
+  }
 
   if (isSphere) {
     // Use Cycles PointCloud for perfect analytic sphere
