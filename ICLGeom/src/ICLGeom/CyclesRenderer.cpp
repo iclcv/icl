@@ -519,9 +519,18 @@ void CyclesRenderer::start(int camIndex) {
   m_impl->dirty = true;  // ensure first render fires
 
   m_impl->managementThread = std::thread([this]() {
+    int lastUpdate = 0;
     while (m_impl->running) {
       render(m_impl->activeCamIndex);
-      std::this_thread::sleep_for(std::chrono::milliseconds(16));
+      int update = m_impl->outputDriver ?
+                   m_impl->outputDriver->getUpdateCount() : 0;
+      if (update > lastUpdate) {
+        // New image available — wait for display to catch up
+        lastUpdate = update;
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+      } else {
+        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+      }
     }
   });
 }
