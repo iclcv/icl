@@ -893,7 +893,21 @@ namespace icl::qt {
         return Rect(0,0,iW,iH);
         break;
       case ICLWidget::fmZoom:{
-        const Rect32f &rel = relZoomRect;
+        // Re-adjust zoom rect AR for current widget/image size so the
+        // viewport AR always matches the image AR. This keeps the zoom
+        // valid when the widget is resized.
+        Rect32f rel = relZoomRect;
+        float imAR = static_cast<float>(iImageW) / static_cast<float>(iImageH);
+        float widAR = static_cast<float>(iW) / static_cast<float>(iH);
+        float frac = rel.width * rel.height;  // preserve zoom area
+        if (frac > 0 && imAR > 0) {
+          float newW = sqrt(widAR / imAR * frac);
+          float newH = frac / newW;
+          float cx = rel.x + rel.width * 0.5f;
+          float cy = rel.y + rel.height * 0.5f;
+          rel = Rect32f(cx - newW * 0.5f, cy - newH * 0.5f, newW, newH);
+        }
+
         float x = (rel.x/rel.width)*widgetSize.width;
         float y = (rel.y/rel.height)*widgetSize.height;
 
@@ -1993,22 +2007,19 @@ namespace icl::qt {
     if (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) {
       // Render background image if set
       if (!m_data->image.isNull()) {
-        Rect r;
-        if (m_data->fm == fmZoom) {
-          QMutexLocker locker(&m_data->menuMutex);
-          r = computeRect(m_data->image.getSize(), getSize(), fmZoom, m_data->zoomRect);
-        } else {
-          r = computeRect(m_data->image.getSize(), getSize(), m_data->fm);
-        }
         m_data->image.setScaleMode(m_data->useLinInterpolation ? interpolateLIN : interpolateNN);
         float dpr = devicePixelRatioF();
+
         if (m_data->fm == fmZoom) {
-          float dy = r.height - height();
-          glViewport(r.x*dpr, (-dy-r.y)*dpr, r.width*dpr, r.height*dpr);
+          QMutexLocker locker(&m_data->menuMutex);
+          glViewport(0, 0, (int)(width()*dpr), (int)(height()*dpr));
+          m_data->image.render(m_data->zoomRect.x, m_data->zoomRect.y,
+                               m_data->zoomRect.width, m_data->zoomRect.height);
         } else {
+          Rect r = computeRect(m_data->image.getSize(), getSize(), m_data->fm);
           glViewport(r.x*dpr, r.y*dpr, r.width*dpr, r.height*dpr);
+          m_data->image.render();
         }
-        m_data->image.render();
         glViewport(0, 0, (int)(width()*dpr), (int)(height()*dpr));
       }
 
@@ -2075,22 +2086,19 @@ namespace icl::qt {
 
     GLPaintEngine *pe = 0;
     if(!m_data->image.isNull()){
-      Rect r;
-      if(m_data->fm == fmZoom){
-        QMutexLocker locker(&m_data->menuMutex);
-        r = computeRect(m_data->image.getSize(),getSize(),fmZoom,m_data->zoomRect);
-      }else{
-        r = computeRect(m_data->image.getSize(),getSize(),m_data->fm);
-      }
       m_data->image.setScaleMode(m_data->useLinInterpolation?interpolateLIN:interpolateNN);
       float dpr = devicePixelRatioF();
+
       if (m_data->fm == fmZoom) {
-        float dy = r.height - height();
-        glViewport(r.x*dpr, (-dy-r.y)*dpr, r.width*dpr, r.height*dpr);
+        QMutexLocker locker(&m_data->menuMutex);
+        glViewport(0, 0, (int)(width()*dpr), (int)(height()*dpr));
+        m_data->image.render(m_data->zoomRect.x, m_data->zoomRect.y,
+                             m_data->zoomRect.width, m_data->zoomRect.height);
       } else {
+        Rect r = computeRect(m_data->image.getSize(),getSize(),m_data->fm);
         glViewport(r.x*dpr, r.y*dpr, r.width*dpr, r.height*dpr);
+        m_data->image.render();
       }
-      m_data->image.render();
       glViewport(0, 0, (int)(width()*dpr), (int)(height()*dpr));
     }else{
       pe = new GLPaintEngine(this);
@@ -2275,18 +2283,19 @@ namespace icl::qt {
           Rect ir = getImageRect();
 
           Rect32f &nr = m_data->zoomRect;
-          nr.x = (r.x-ir.x)/float(ir.width);
-          nr.y = (r.y-ir.y)/float(ir.height);
-          nr.width = r.width/ir.width;
-          nr.height = r.height/ir.height;
-          nr = fixRectAR(nr,this);
-          // xxxxx
-          /*
-              m_data->zoomRect.x = r.x/wSize.width;
-              m_data->zoomRect.y = r.y/wSize.height;
-              m_data->zoomRect.width = r.width/wSize.width;
-              m_data->zoomRect.height = r.height/wSize.height;
-          */
+          if (ir.width > 0 && ir.height > 0) {
+            nr.x = (r.x-ir.x)/float(ir.width);
+            nr.y = (r.y-ir.y)/float(ir.height);
+            nr.width = r.width/float(ir.width);
+            nr.height = r.height/float(ir.height);
+            // Clamp to valid image range [0,1]
+            if (nr.x < 0) { nr.width += nr.x; nr.x = 0; }
+            if (nr.y < 0) { nr.height += nr.y; nr.y = 0; }
+            if (nr.right() > 1) nr.width = 1 - nr.x;
+            if (nr.bottom() > 1) nr.height = 1 - nr.y;
+            nr.width = std::max(nr.width, 0.01f);
+            nr.height = std::max(nr.height, 0.01f);
+          }
           m_data->pushScaleModeAndChangeToZoom();
         }
         ICL_DELETE(m_data->embeddedZoomRect);
@@ -2470,11 +2479,8 @@ namespace icl::qt {
     if(m_data->menuptr && m_data->menuptr->parent() == this){
       m_data->adaptMenuSize(size());
     }
-    if(m_data->embeddedZoomMode || m_data->fm == fmZoom){
-      m_data->zoomRect = fixRectAR(m_data->zoomRect,this);
-      if(m_data->fm == fmZoom){
-        if(m_data->zoomAdjuster) m_data->zoomAdjuster->update();
-      }
+    if(m_data->fm == fmZoom){
+      if(m_data->zoomAdjuster) m_data->zoomAdjuster->update();
     }
   }
 
@@ -2678,7 +2684,20 @@ namespace icl::qt {
     Rect r;
     if(m_data->fm == fmZoom){
       QMutexLocker locker(&m_data->menuMutex);
-      r = computeRect(!m_data->image.isNull() ? m_data->image.getSize() : m_data->defaultViewPort, getSize(),fmZoom,m_data->zoomRect);
+      // UV-based zoom: compute where the cropped sub-region is displayed
+      // (letterboxed for its AR), then derive a virtual image rect that
+      // maps widget coords to full-image pixel coords.
+      Size imgSize = !m_data->image.isNull() ? m_data->image.getSize() : m_data->defaultViewPort;
+      Size cropSize(std::max(1, (int)(imgSize.width * m_data->zoomRect.width)),
+                    std::max(1, (int)(imgSize.height * m_data->zoomRect.height)));
+      Rect dr = computeRect(cropSize, getSize(), fmHoldAR);
+      const Rect32f &zr = m_data->zoomRect;
+      float zw = std::max(zr.width, 1e-6f);
+      float zh = std::max(zr.height, 1e-6f);
+      r.x = (int)(dr.x - dr.width * zr.x / zw);
+      r.y = (int)(dr.y - dr.height * zr.y / zh);
+      r.width = (int)(dr.width / zw);
+      r.height = (int)(dr.height / zh);
     }else{
       r = computeRect(!m_data->image.isNull() ? m_data->image.getSize() : m_data->defaultViewPort, getSize(),m_data->fm);
     }
@@ -2690,6 +2709,13 @@ namespace icl::qt {
   }
 
 
+
+  Rect32f ICLWidget::getZoomRect() {
+    if (m_data->fm == fmZoom) {
+      return m_data->zoomRect;
+    }
+    return Rect32f(0, 0, 1, 1);
+  }
 
   const MouseEvent &ICLWidget::createMouseEvent(MouseEventType type){
     MouseEvent &evt = m_data->mouseEvent;

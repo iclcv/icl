@@ -58,6 +58,11 @@ namespace icl::qt {
     /// Render stored image to current GL viewport (letterboxed)
     void render();
 
+    /// Render with UV crop rect (normalized 0-1 in image coords)
+    /** Only the sub-region defined by (cx,cy,cw,ch) is displayed,
+        letterboxed by the crop sub-region's aspect ratio. */
+    void render(float cropX, float cropY, float cropW, float cropH);
+
     /// Upload and render an image (convenience, does not store)
     void render(const core::Image &img);
 

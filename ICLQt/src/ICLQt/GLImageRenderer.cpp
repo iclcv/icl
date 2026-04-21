@@ -65,9 +65,11 @@ static const char *QUAD_VERT = R"(
 layout(location = 0) in vec2 aPos;
 layout(location = 1) in vec2 aUV;
 uniform vec2 uScale;
+uniform vec2 uUVOffset;
+uniform vec2 uUVScale;
 out vec2 vUV;
 void main() {
-    vUV = aUV;
+    vUV = uUVOffset + aUV * uUVScale;
     gl_Position = vec4(aPos * uScale, 0.0, 1.0);
 }
 )";
@@ -96,6 +98,7 @@ struct GLImageRenderer::Data {
   int texW = 0, texH = 0;
   bool glReady = false;
   GLint locScale = -1, locBCIScale = -1, locBCIBias = -1;
+  GLint locUVOffset = -1, locUVScale = -1;
 
   // Stored image (guarded by mutex for thread safety)
   ImgBase *storedImage = nullptr;
@@ -138,6 +141,8 @@ struct GLImageRenderer::Data {
     }
 
     locScale = glGetUniformLocation(program, "uScale");
+    locUVOffset = glGetUniformLocation(program, "uUVOffset");
+    locUVScale = glGetUniformLocation(program, "uUVScale");
     locBCIScale = glGetUniformLocation(program, "uBCIScale");
     locBCIBias = glGetUniformLocation(program, "uBCIBias");
 
@@ -257,6 +262,8 @@ struct GLImageRenderer::Data {
                    GL_UNSIGNED_BYTE, rgba.data());
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
       texW = w;
       texH = h;
     } else {
@@ -267,18 +274,27 @@ struct GLImageRenderer::Data {
     }
   }
 
-  void drawQuad() {
+  void drawQuadWithCrop(float cx, float cy, float cw, float ch) {
     if (!program || imageNull) return;
 
     std::lock_guard<std::recursive_mutex> lock(imageMutex);
     updateBCI();
     uploadTexture();
 
-    // Compute letterbox scale
+    // Validate crop — fall back to full image if invalid
+    if (std::isnan(cx) || std::isnan(cy) || std::isnan(cw) || std::isnan(ch) ||
+        cw <= 0 || ch <= 0 || cx < 0 || cy < 0 || cx + cw > 1.001f || cy + ch > 1.001f) {
+      cx = 0; cy = 0; cw = 1; ch = 1;
+    }
+
+    // Compute letterbox scale using effective (cropped) image AR
     GLint vp[4];
     glGetIntegerv(GL_VIEWPORT, vp);
     float widgetW = vp[2], widgetH = vp[3];
-    float imgAR = (float)texW / texH;
+    if (widgetW <= 0 || widgetH <= 0) return;
+    float effectiveW = texW * cw;
+    float effectiveH = texH * ch;
+    float imgAR = effectiveW / effectiveH;
     float widgetAR = widgetW / widgetH;
     float scaleX = 1.0f, scaleY = 1.0f;
     if (widgetAR > imgAR) {
@@ -287,10 +303,16 @@ struct GLImageRenderer::Data {
       scaleY = widgetAR / imgAR;
     }
 
+    // Save GL state that QPainter might depend on
+    GLboolean depthWasEnabled;
+    glGetBooleanv(GL_DEPTH_TEST, &depthWasEnabled);
+
     glDisable(GL_DEPTH_TEST);
     glUseProgram(program);
     glUniform1i(glGetUniformLocation(program, "uTexture"), 0);
     glUniform2f(locScale, scaleX, scaleY);
+    glUniform2f(locUVOffset, cx, cy);
+    glUniform2f(locUVScale, cw, ch);
     glUniform1f(locBCIScale, bciScale);
     glUniform1f(locBCIBias, bciBias);
     glActiveTexture(GL_TEXTURE0);
@@ -301,6 +323,8 @@ struct GLImageRenderer::Data {
     glBindVertexArray(0);
 
     glUseProgram(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    if (depthWasEnabled) glEnable(GL_DEPTH_TEST);
   }
 
   void computeStats() const {
@@ -405,7 +429,12 @@ int GLImageRenderer::getHeight() const {
 
 void GLImageRenderer::render() {
   m_data->initGL();
-  m_data->drawQuad();
+  m_data->drawQuadWithCrop(0, 0, 1, 1);
+}
+
+void GLImageRenderer::render(float cropX, float cropY, float cropW, float cropH) {
+  m_data->initGL();
+  m_data->drawQuadWithCrop(cropX, cropY, cropW, cropH);
 }
 
 void GLImageRenderer::render(const Image &img) {

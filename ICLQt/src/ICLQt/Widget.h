@@ -105,6 +105,12 @@ namespace icl::qt {
     /// returns current fit-mode
     fitmode getFitMode();
 
+    /// returns the normalized zoom rect (valid when getFitMode() == fmZoom)
+    /** The rect is in normalized image coordinates [0,1].
+        x,y = top-left corner, width,height = extent.
+        Returns (0,0,1,1) when not zoomed. */
+    utils::Rect32f getZoomRect();
+
     /// returns current range mode
     rangemode getRangeMode();
 
