@@ -497,13 +497,18 @@ void run() {
 
     int w = pa("-size").as<Size>().width;
     int h = pa("-size").as<Size>().height;
+    float bgPct = pa("-bg").as<int>() / 100.0f;
+    float expPct = pa("-exp").as<int>() / 100.0f;
+
+    // Apply BG% to sky intensity (affects both renderers via shared Sky)
+    scene.getSky().intensity = bgPct;
 
     // Render Cycles (blocking)
     renderer->setSamples(64);
     renderer->setMaxBounces(4);
     renderer->setDenoising(false);
-    renderer->setExposure(1.0f);
-    renderer->setBrightness(scene.getSky().intensity);
+    renderer->setExposure(expPct);
+    renderer->setBrightness(bgPct);
     renderer->renderBlocking(0);
     const auto &cyclesImg = renderer->getImage();
 
@@ -520,9 +525,9 @@ void run() {
 
       // New context needs fresh renderer (shaders compiled per-context)
       SceneRendererGL offscreenGL;
-      offscreenGL.setExposure(1.0f);
-      offscreenGL.setEnvMultiplier(glRenderer->getEnvMultiplier());
-      offscreenGL.setDirectMultiplier(glRenderer->getDirectMultiplier());
+      offscreenGL.setExposure(expPct);
+      offscreenGL.setEnvMultiplier(1.5f);
+      offscreenGL.setDirectMultiplier(1.0f);
       glImg = offscreenGL.renderToImage(scene, 0, w, h);
 
       ctx.doneCurrent();
@@ -757,6 +762,6 @@ int main(int argc, char **argv) {
   QSurfaceFormat::setDefaultFormat(fmt);
 
   return ICLApp(argc, argv,
-    "-size(Size=1280x960) -scene(...) -decimate(int) -rotate(string) -background(string=gradient) -compare(string)",
+    "-size(Size=1280x960) -scene(...) -decimate(int) -rotate(string) -background(string=gradient) -compare(string) -bg(int=100) -exp(int=100)",
     init, run).exec();
 }

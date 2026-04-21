@@ -244,8 +244,12 @@ void main() {
     vec3 diffuseEnv = sampleSky(N);
     vec3 envReflection = mix(envColor, diffuseEnv, roughness);
 
-    // Ambient/environment: approximate multi-bounce indirect illumination
-    vec3 ambientDiffuse = albedo * diffuseEnv * (1.0 - metallic) * uEnvMul;
+    // Multi-bounce approximation: L = E / (1 - a) where a = albedo luminance
+    // This analytically models the geometric series of infinite bounces
+    float albedoLum = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
+    float bounceBoost = 1.0 / max(1.0 - albedoLum, 0.05);
+
+    vec3 ambientDiffuse = albedo * diffuseEnv * (1.0 - metallic) * bounceBoost * uEnvMul;
     vec3 ambientSpecular = specColor * envReflection * uEnvMul;
     // Fresnel at grazing angles brightens reflections (Schlick approx)
     float NdotV = max(dot(N, V), 0.0);
@@ -924,7 +928,7 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   glUniform1i(m_data->locDebugMode, m_data->debugMode);
 
   // Environment uniforms for sampleSky() in fragment shader
-  // 2x boost matches Cycles' background strength convention (2.0 * intensity)
+  // Cycles uses bgStrength = 2.0 * intensity; match that baseline for env
   float ei = si * 2.0f;
   glUniform3f(m_data->locEnvZenith, effZenith[0]*ei, effZenith[1]*ei, effZenith[2]*ei);
   glUniform3f(m_data->locEnvHorizon, effHorizon[0]*ei, effHorizon[1]*ei, effHorizon[2]*ei);

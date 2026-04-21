@@ -114,24 +114,34 @@ Expand to 8 lights:
 - Metallic tints specular color
 - Exposure multiplier
 
-**Light/ambient calibration (GL ↔ Cycles):**
-This is the right point to establish a common brightness convention between
-the two renderers, since all material params and multi-light support are in
-place. Specifically:
-- Match Cycles' light intensity scaling (300x multiplier) against GL light
-  colors. Define a common convention: "diffuse color 255 = intensity X" in
-  both renderers.
-- Map the ambient/BG slider to something physically motivated: Cycles sky
-  brightness vs GL ambient term, so the same slider value produces similar
-  overall brightness.
-- Tune exposure so the same scene with the same materials produces similar
-  brightness in both panes.
-- Before Step 5, we're comparing a single hardcoded Lambert light against a
-  full path tracer with environment lighting — no meaningful calibration
-  target exists yet.
+**Light/ambient calibration (GL ↔ Cycles) — current state and TODO:**
+
+Current: a fixed 2x env boost matches Cycles at default settings (BG%=100,
+Exposure%=100) to within 3% overall brightness. But this is a single-point
+calibration — changing BG% or Exposure% causes the renderers to diverge
+because:
+- Cycles: multi-bounce indirect lighting responds NON-LINEARLY to environment
+  brightness (brighter env → exponentially more bounced light in shadows)
+- GL: single-bounce env reflection is LINEAR in env brightness
+
+**TODO — proper mapping function:**
+1. Use the `-compare` mode to sample brightness at a grid of (BG%, Exposure%)
+   combinations, e.g. BG∈{25,50,75,100}, Exp∈{50,100,150,200}
+2. For each combination, record the Cycles/GL brightness ratio (overall and
+   per-region)
+3. Fit a mapping function `gl_env_mul(bg, exp)` that minimizes the ratio
+   difference across the grid — likely a simple polynomial like
+   `a + b*bg + c*exp + d*bg*exp`
+4. Apply this mapping in SceneRendererGL::render() instead of the current
+   hardcoded 2x
+5. Revalidate with `-compare` at all grid points
+
+The compare infrastructure is in place (`-compare prefix` CLI). The mapping
+function just needs to be derived from data and wired in.
 
 **Verification:** Material presets show visible differences. Same scene with
-same settings produces quantitatively similar brightness in GL and Cycles.
+same settings produces quantitatively similar brightness in GL and Cycles
+across the full range of BG% and Exposure% sliders.
 
 ### Step 6: baseColorMap Textures
 
