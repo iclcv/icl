@@ -220,6 +220,39 @@ class ICLGeom_API SceneLight {
   /// returns whether the light is activated
   bool isOn() const;
 
+  /// returns the light's position
+  const Vec &getPosition() const { return position; }
+
+  /// returns the light's ambient color
+  const GeomColor &getAmbient() const { return ambient; }
+
+  /// returns the light's diffuse color
+  const GeomColor &getDiffuse() const { return diffuse; }
+
+  /// returns the light's specular color
+  const GeomColor &getSpecular() const { return specular; }
+
+  /// returns the spot direction
+  const Vec &getSpotDirection() const { return spotDirection; }
+
+  /// returns the spot exponent
+  float getSpotExponent() const { return spotExponent; }
+
+  /// returns the spot cutoff angle
+  float getSpotCutoff() const { return spotCutoff; }
+
+  /// returns the attenuation factors (constant, linear, quadratic)
+  const Vec &getAttenuation() const { return attenuation; }
+
+  /// returns whether ambient component is enabled
+  bool isAmbientEnabled() const { return ambientOn; }
+
+  /// returns whether diffuse component is enabled
+  bool isDiffuseEnabled() const { return diffuseOn; }
+
+  /// returns whether specular component is enabled
+  bool isSpecularEnabled() const { return specularOn; }
+
   /// returns whether the light casts shadows or not
   bool getShadowEnabled() const;
 

@@ -616,6 +616,12 @@ if(BUILD_APPS)
   _icl_add_deferred_dirs(ICL_APP_DIRS)
 endif()
 
+# ---- Experimental projects (after all modules) ----
+option(BUILD_EXPERIMENTAL "Build experimental projects" OFF)
+if(BUILD_EXPERIMENTAL AND QT_FOUND)
+  add_subdirectory(ICLExperimental)
+endif()
+
 # ---- Benchmark tool (after all modules) ----
 add_subdirectory(benchmarks)
 
