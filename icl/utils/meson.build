@@ -68,7 +68,6 @@ utils_headers = files(
   'UncopiedInstance.h',
   'Utils.h',
   'VisualizationDescription.h',
-  'XML.h',
 )
 
 # OpenCL wrappers — conditionally compiled; always-installed public
@@ -144,14 +143,12 @@ install_headers(utils_cl_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'cl',
 )
 
-# Vendored pugixml lives under detail/pugi/ — it's only reached via
-# icl/utils/XML.h (which aliases pugi:: types as icl::utils::XML*).
-# The header must still be installed so XML.h is self-contained.
-install_headers(
-  files('detail/pugi/PugiXML.h', 'detail/pugi/pugiconfig.hpp'),
-  install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'detail' / 'pugi',
-)
-
+# Vendored pugixml lives under detail/pugi/ — genuinely private.  No
+# installed header pulls it in: ConfigFile uses it only in its .cpp
+# (behind a PIMPL), and other consumers (Camera, ImageUndistortion,
+# OptrisGrabber, Primitive3DFilter) include detail/pugi/PugiXML.h
+# directly from their own .cpp.  Therefore the pugi headers are NOT
+# installed.
 
 pkg.generate(icl_utils_lib,
   name: 'icl-utils',

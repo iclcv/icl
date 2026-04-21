@@ -26,8 +26,6 @@
 #include <icl/math/StraightLine2D.h>
 #include <icl/utils/StrTok.h>
 
-#include <icl/utils/XML.h>
-
 /**
     \defgroup TIME Time and Timer Support Classes and Functions
     \defgroup EXCEPT Special Exceptions

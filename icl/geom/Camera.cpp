@@ -5,7 +5,6 @@
 #include <icl/utils/ConfigFile.h>
 #include <icl/math/DynMatrixUtils.h>
 #include <icl/math/LevenbergMarquardtFitter.h>
-#include <icl/utils/XML.h>
 #include <icl/filter/ImageUndistortion.h>
 #include <icl/utils/File.h>
 #include <icl/geom/Camera.h>
@@ -536,10 +535,7 @@ namespace icl::geom {
   void Camera::load_camera_from_stream(std::istream &is, const std::string &prefix,
                                          Camera &cam){
     cam = Camera(); // load default values
-    utils::XMLDocument *doc = new utils::XMLDocument;
-    doc->load(is);
-
-    ConfigFile f(doc);
+    ConfigFile f(is);
     f.setPrefix(prefix);
 
     #define LOAD_FROM_STREAM(KEY,FNAME) \

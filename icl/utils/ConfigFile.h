@@ -13,13 +13,6 @@
 #include <typeinfo>
 #include <memory>
 
-/** \cond */
-namespace pugi{
-  class xml_document;
-}
-/** \endcond */
-
-
 namespace icl::utils {
   /** \cond */
   /** \endcond */
@@ -283,10 +276,6 @@ namespace icl::utils {
                         stored internally for later use if load(void) or save(void) is called. */
     ConfigFile(const std::string &filename);
 
-    /// Creates a ConfigFile from given handle instance
-    /** Note: Ownership is passed to this ConfigFile instance here */
-    ConfigFile(pugi::xml_document *handle);
-
     /// creates a ConfigFile instance from given istream.
     /** The constructor will only read the stream until the
         first opening tag is closed */
@@ -534,12 +523,6 @@ namespace icl::utils {
     /// removes all contents (except config and title node)
     void clear();
 
-    /// returns internal document handle (forward declared here) (const only)
-    /** this function is not available in un-const manner, to avoid that users
-        change the document structure somehow, what would cause inconsistencies
-        between the internal XMLDocument structure and the ConfigFile data-base */
-    const pugi::xml_document *getHandle() const { return m_doc.get(); }
-
     private:
 
     /// internal utitlity function to parse existing XMLDocument
@@ -554,12 +537,12 @@ namespace icl::utils {
     /// internal utility function
     void set_internal(const std::string &id, const std::string &val, const std::string &type);
 
-    /// internally synchronized an add- or a set call
-    static void add_to_doc(pugi::xml_document &h,const std::string &id,const std::string &type,
-                           const std::string &value,const KeyRestriction *restr=0);
+    /// Opaque PIMPL holding the underlying XML document (pugi is kept out of
+    /// the public header — consumers never see pugi types via ConfigFile).
+    struct Impl;
 
-    /// shallow copyable smart pointer of the document handle
-    mutable std::shared_ptr<pugi::xml_document> m_doc;
+    /// shallow copyable smart pointer of the pimpl
+    mutable std::shared_ptr<Impl> m_impl;
 
     /// global ConfigFile instance
     static ConfigFile s_oConfig;

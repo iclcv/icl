@@ -5,7 +5,7 @@
 #include <icl/utils/ConfigFile.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/XML.h>
+#include <icl/utils/detail/pugi/PugiXML.h>
 
 #include <fstream>
 #include <list>
@@ -25,6 +25,13 @@
 #include <icl/utils/Any.h>
 
 namespace icl::utils {
+
+  /// Pimpl: owns the underlying pugi document.  Kept out of the public
+  /// header so pugi never surfaces through ConfigFile.h.
+  struct ConfigFile::Impl {
+    pugi::xml_document doc;
+  };
+
   ConfigFile::Maps *ConfigFile::getMapsInstance(){
     static std::shared_ptr<Maps> typeMap(new Maps);
     return typeMap.get();
@@ -101,101 +108,103 @@ namespace icl::utils {
     }
   }
 
-  static inline bool is_text_node(const XMLNode &node){
-    return node && node.type() == pugi::node_pcdata;
-  }
+  namespace {
+    inline bool is_text_node(const pugi::xml_node &node){
+      return node && node.type() == pugi::node_pcdata;
+    }
 
-  void ConfigFile::add_to_doc(XMLDocument &doc,
-                              const std::string &name,
-                              const std::string &type,
-                              const std::string &value,
-                              const ConfigFile::KeyRestriction *restr){
-    std::vector<std::string> t = tok(name,".");
-    ICLASSERT_RETURN(t.size()>1);
-    ICLASSERT_RETURN(t[0]=="config");
+    void add_to_doc(pugi::xml_document &doc,
+                    const std::string &name,
+                    const std::string &type,
+                    const std::string &value,
+                    const ConfigFile::KeyRestriction *restr = nullptr){
+      std::vector<std::string> t = tok(name,".");
+      ICLASSERT_RETURN(t.size()>1);
+      ICLASSERT_RETURN(t[0]=="config");
 
-    XMLNode n = doc.document_element();
+      pugi::xml_node n = doc.document_element();
 
-    for(unsigned int i=1;i<t.size()-1;++i){
-      XMLNode sn = n.find_child_by_attribute("section","id",t[i].c_str());
-      if(!sn){
-        n = n.append_child("section");
-        XMLAttribute id = n.append_attribute("id");
-        id.set_value(t[i].c_str());
+      for(unsigned int i=1;i<t.size()-1;++i){
+        pugi::xml_node sn = n.find_child_by_attribute("section","id",t[i].c_str());
+        if(!sn){
+          n = n.append_child("section");
+          pugi::xml_attribute id = n.append_attribute("id");
+          id.set_value(t[i].c_str());
+        }else{
+          n = sn;
+        }
+      }
+
+      pugi::xml_node data = n.find_child_by_attribute("data","id",t.back().c_str());
+      if(!data){
+        data = n.append_child("data");
+        pugi::xml_attribute id = data.append_attribute("id");
+        id.set_value(t.back().c_str());
+      }
+
+      pugi::xml_attribute typeAtt = data.attribute("type");
+      if(!typeAtt){
+        typeAtt = data.append_attribute("type");
+      }
+      typeAtt.set_value(type.c_str());
+
+      pugi::xml_node text;
+      if( (text = data.find_child(is_text_node)) ){
+        text.set_value(value.c_str());
       }else{
-        n = sn;
+        data.append_child(pugi::node_pcdata).set_value(value.c_str());
+      }
+
+      if(restr){
+        pugi::xml_attribute rangeAtt = data.attribute("range");
+        pugi::xml_attribute valuesAtt = data.attribute("values");
+        if(restr->hasRange){
+          if(valuesAtt){
+            data.remove_attribute(valuesAtt);
+          }
+          if(!rangeAtt) rangeAtt = data.append_attribute("range");
+          rangeAtt.set_value(restr->toString().c_str());
+        }else if(restr->hasValues){
+          if(rangeAtt){
+            data.remove_attribute(rangeAtt);
+          }
+          if(!valuesAtt) valuesAtt = data.append_attribute("values");
+          valuesAtt.set_value(restr->toString().c_str());
+        }else{
+          WARNING_LOG("NULL KeyRestriction detected (this is ignored)");
+        }
       }
     }
 
-    XMLNode data = n.find_child_by_attribute("data","id",t.back().c_str());
-    if(!data){
-      data = n.append_child("data");
-      XMLAttribute id = data.append_attribute("id");
-      id.set_value(t.back().c_str());
-    }
+    std::string get_id_path(pugi::xml_node n){
+      std::list<std::string> l;
 
-    XMLAttribute typeAtt = data.attribute("type");
-    if(!typeAtt){
-      typeAtt = data.append_attribute("type");
-    }
-    typeAtt.set_value(type.c_str());
-
-    XMLNode text;
-    if( (text = data.find_child(is_text_node)) ){
-      text.set_value(value.c_str());
-    }else{
-      data.append_child(pugi::node_pcdata).set_value(value.c_str());
-    }
-
-    if(restr){
-      XMLAttribute rangeAtt = data.attribute("range");
-      XMLAttribute valuesAtt = data.attribute("values");
-      if(restr->hasRange){
-        if(valuesAtt){
-          data.remove_attribute(valuesAtt);
-        }
-        if(!rangeAtt) rangeAtt = data.append_attribute("range");
-        rangeAtt.set_value(restr->toString().c_str());
-      }else if(restr->hasValues){
-        if(rangeAtt){
-          data.remove_attribute(rangeAtt);
-        }
-        if(!valuesAtt) valuesAtt = data.append_attribute("values");
-        valuesAtt.set_value(restr->toString().c_str());
-      }else{
-        WARNING_LOG("NULL KeyRestriction detected (this is ignored)");
+      while(n.parent()){
+        l.push_front(n.attribute("id").value());
+        n = n.parent();
       }
+
+      std::ostringstream str;
+      str << "config";
+      std::copy(l.begin(),--l.end(),std::ostream_iterator<std::string>(str,"."));
+      str << l.back();
+      return str.str();
     }
-  }
-
-  static std::string get_id_path(XMLNode n){
-    std::list<std::string> l;
-
-    while(n.parent()){
-      l.push_front(n.attribute("id").value());
-      n = n.parent();
-    }
-
-    std::ostringstream str;
-    str << "config";
-    std::copy(l.begin(),--l.end(),std::ostream_iterator<std::string>(str,"."));
-    str << l.back();
-    return str.str();
-  }
+  } // anonymous namespace
 
   void ConfigFile::load_internal(){
-    //m_doc->removeAllComments();
+    //m_impl->removeAllComments();
     m_entries.clear();
 
 
-    static const XPathQuery query("//data[@id and @type]");
-    XPathNodeSet ds = m_doc->document_element().select_nodes(query);
+    static const pugi::xpath_query query("//data[@id and @type]");
+    pugi::xpath_node_set ds = m_impl->doc.document_element().select_nodes(query);
 
     std::string pfx = m_sDefaultPrefix;
     if(pfx.length() && pfx[pfx.length()-1] != '.') pfx+='.';
 
-    for(XPathNodeSet::const_iterator it = ds.begin(); it != ds.end(); ++it){
-      XMLNode n = it->node();
+    for(pugi::xpath_node_set::const_iterator it = ds.begin(); it != ds.end(); ++it){
+      pugi::xml_node n = it->node();
       if(!n) throw ICLException("XML node expected, but attribute found??");
 
       const std::string key = pfx+get_id_path(n);
@@ -215,7 +224,7 @@ namespace icl::utils {
         e.rttiType = jt->second;
       }
 
-      XMLAttribute rangeAtt = n.attribute("range");
+      pugi::xml_attribute rangeAtt = n.attribute("range");
 
       if(rangeAtt){
         std::string mm = rangeAtt.value();
@@ -230,7 +239,7 @@ namespace icl::utils {
         continue;
       }
 
-      XMLAttribute valuesAtt = n.attribute("values");
+      pugi::xml_attribute valuesAtt = n.attribute("values");
       if(valuesAtt){
         std::string vl = valuesAtt.value();
         setRestriction(key,vl.substr(1,vl.size()-2));
@@ -240,8 +249,8 @@ namespace icl::utils {
 
   void ConfigFile::load(const std::string &filename){
 
-    m_doc = std::make_shared<XMLDocument>();
-    pugi::xml_parse_result res = m_doc->load_file(filename.c_str());
+    m_impl = std::make_shared<Impl>();
+    pugi::xml_parse_result res = m_impl->doc.load_file(filename.c_str());
     if(res.status != pugi::status_ok){
       if(res.status == pugi::status_file_not_found){
         throw FileNotFoundException(filename);
@@ -258,19 +267,19 @@ namespace icl::utils {
 
   ConfigFile::ConfigFile(){
 
-    m_doc = std::make_shared<XMLDocument>();
+    m_impl = std::make_shared<Impl>();
 
-    m_doc->load_string("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-                       "<config>\n"
-                       "</config>\n");
+    m_impl->doc.load_string("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
+                           "<config>\n"
+                           "</config>\n");
   }
 
 
   ConfigFile::ConfigFile(std::istream &stream){
 
-    XMLDocument *doc = new XMLDocument;
-    doc->load(stream);
-    *this = ConfigFile(doc);
+    m_impl = std::make_shared<Impl>();
+    m_impl->doc.load(stream);
+    load_internal();
   }
 
 
@@ -291,12 +300,6 @@ namespace icl::utils {
     load(filename);
   }
 
-
-  ConfigFile::ConfigFile(XMLDocument *handle):
-    m_doc(handle){
-    load_internal();
-  }
-
   void ConfigFile::loadConfig(const std::string &filename){
 
     s_oConfig.load(filename);
@@ -312,7 +315,7 @@ namespace icl::utils {
 
 
   void ConfigFile::save(const std::string &filename) const{
-	  if (!m_doc->save_file(filename.c_str())) {
+	  if (!m_impl->doc.save_file(filename.c_str())) {
 		  throw ICLException("failed to open file");
 	  }
   }
@@ -357,7 +360,7 @@ namespace icl::utils {
       e.id = id;
       e.rttiType = type;
       e.value = val;
-      add_to_doc(*m_doc,id,it->second,val);
+      add_to_doc(m_impl->doc,id,it->second,val);
     }
   }
 
@@ -404,7 +407,7 @@ namespace icl::utils {
 
 
   std::ostream &operator<<(std::ostream &s, const ConfigFile &cf){
-    cf.m_doc->save(s);
+    cf.m_impl->doc.save(s);
     return s;
   }
 

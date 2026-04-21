@@ -5,7 +5,6 @@
 #include <icl/filter/ImageUndistortion.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/ConfigFile.h>
-#include <icl/utils/XML.h>
 #include <fstream>
 
 using namespace icl::utils;
@@ -164,9 +163,7 @@ namespace icl::filter {
   }
 
   std::istream &operator>>(std::istream &is, ImageUndistortion &dest){
-    utils::XMLDocument *doc = new utils::XMLDocument;
-    doc->load(is);
-    ConfigFile f(doc);
+    ConfigFile f(is);
     f.setPrefix("config.");
     std::vector<double> params;
 
