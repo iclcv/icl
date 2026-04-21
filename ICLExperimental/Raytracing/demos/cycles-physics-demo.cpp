@@ -235,7 +235,8 @@ void init() {
          << Fps(30).handle("fps")
          << (HBox()
             << Combo("!Preview,Interactive,Final").handle("quality").label("Quality"))
-         << Slider(1, 1024, 4).handle("samples").label("Samples")
+         << Combo("!1,2,4,8,16").handle("initSamples").label("Initial Samples")
+         << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iterations")
          << Slider(1, 16, 2).handle("bounces").label("Max Bounces")
          << CheckBox("Denoising OIDN", "unchecked").handle("denoising")
          << Slider(10, 500, 100).handle("exposure").label("Exposure %")
@@ -261,12 +262,14 @@ void run() {
     lastQuality = qualityIdx;
   }
 
-  int samples = gui["samples"].as<int>();
+  int initSamples = std::atoi(gui["initSamples"].as<ComboHandle>().getSelectedItem().c_str());
+  int maxIter = std::atoi(gui["maxIter"].as<ComboHandle>().getSelectedItem().c_str());
   int bounces = gui["bounces"].as<int>();
   bool denoising = gui["denoising"].as<bool>();
   float exposure = gui["exposure"].as<int>() / 100.0f;
 
-  renderer->setSamples(samples);
+  renderer->setInitialSamples(initSamples);
+  renderer->setSamples(maxIter);
   renderer->setMaxBounces(bounces);
   renderer->setDenoising(denoising);
   renderer->setExposure(exposure);
@@ -313,8 +316,10 @@ void run() {
   }
 
   char buf[256];
-  snprintf(buf, sizeof(buf), "%.0f ms | %d obj | %d spp | %d bounces%s",
-           ms, (int)dynamicObjects.size(), samples, bounces,
+  int progress = (int)(renderer->getProgress() * 100);
+  int updates = renderer->getUpdateCount();
+  snprintf(buf, sizeof(buf), "%d obj | %d%% (%d updates) | %d max | %d bounces%s",
+           (int)dynamicObjects.size(), progress, updates, maxIter, bounces,
            denoising ? " | OIDN" : "");
   draw->text(buf, 10, 20, 10);
   draw->render();
@@ -375,10 +380,20 @@ static void offscreen_render(const std::string &output) {
 }
 
 int main(int argc, char **argv) {
-  pa_init(argc, argv, "-size(Size=800x600) -offscreen(string) -samples(int=64)");
+  // Check for -offscreen before pa_init, since ICLApp also calls pa_init
+  // and it must not be called twice.
+  bool offscreen = false;
+  std::string offscreenFile;
+  for (int i = 1; i < argc; ++i) {
+    if (std::string("-offscreen") == argv[i] && i + 1 < argc) {
+      offscreen = true;
+      offscreenFile = argv[++i];
+    }
+  }
 
-  if (pa("-offscreen")) {
-    offscreen_render(pa("-offscreen").as<std::string>());
+  if (offscreen) {
+    pa_init(argc, argv, "-size(Size=800x600) -offscreen(string) -samples(int=64)");
+    offscreen_render(offscreenFile);
     return 0;
   }
 

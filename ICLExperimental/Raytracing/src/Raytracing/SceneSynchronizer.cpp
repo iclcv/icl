@@ -499,17 +499,6 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
   cclCam->set_nearclip(nearClip);
   cclCam->set_farclip(farClip);
 
-  fprintf(stderr, "[Camera] f=%.3f mx=%.1f near=%.2f far=%.2f res=%dx%d\n",
-          f, mx, nearClip, farClip, w, h);
-  fprintf(stderr, "[Camera] pos=(%.1f,%.1f,%.1f) fwd=(%.2f,%.2f,%.2f) up=(%.2f,%.2f,%.2f) fov=%.1f°\n",
-          camPos.x, camPos.y, camPos.z, forward.x, forward.y, forward.z,
-          cycUp.x, cycUp.y, cycUp.z,
-          cclCam->get_fov() * 180.0f / M_PI);
-  fprintf(stderr, "[Camera] tfm: [%.2f %.2f %.2f %.1f] [%.2f %.2f %.2f %.1f] [%.2f %.2f %.2f %.1f]\n",
-          tfm.x.x, tfm.x.y, tfm.x.z, tfm.x.w,
-          tfm.y.x, tfm.y.y, tfm.y.z, tfm.y.w,
-          tfm.z.x, tfm.z.y, tfm.z.z, tfm.z.w);
-
   cclCam->compute_auto_viewplane();
   cclCam->need_flags_update = true;
   // Note: don't call cclCam->update(cclScene) here — the Session handles it
@@ -605,6 +594,13 @@ void SceneSynchronizer::invalidateObject(const geom::SceneObject *obj) {
     it->second.geometryDirty = true;
     it->second.transformDirty = true;
   }
+}
+
+bool SceneSynchronizer::hasPendingChanges() const {
+  for (const auto &[ptr, entry] : m_entries) {
+    if (entry.geometryDirty || entry.transformDirty) return true;
+  }
+  return false;
 }
 
 } // namespace icl::rt

@@ -56,6 +56,9 @@ public:
   /// Force re-extraction for a specific object.
   void invalidateObject(const geom::SceneObject *obj);
 
+  /// Check if any object has pending dirty flags (without consuming them).
+  bool hasPendingChanges() const;
+
 private:
   /// Per-object tracking entry.
   struct ObjectEntry {

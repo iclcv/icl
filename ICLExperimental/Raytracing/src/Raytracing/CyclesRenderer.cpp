@@ -42,15 +42,16 @@ public:
     captureTile(tile);
   }
 
-  bool update_render_tile(const Tile &tile) override {
-    captureTile(tile);
-    return true;
-  }
+  // Don't capture intermediate tiles — only write_render_tile (above) fires
+  // when the target sample count is reached, giving a clean image per step.
 
   const core::Img8u &getImage() const {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_image;
   }
+
+  int getUpdateCount() const { return m_updateCount; }
+  void resetUpdateCount() { m_updateCount = 0; }
 
 private:
   void captureTile(const Tile &tile) {
@@ -64,6 +65,7 @@ private:
     if (!tile.get_pass_pixels("combined", 4, pixels.data()))
       return;
 
+    m_updateCount++;
     std::lock_guard<std::mutex> lock(m_mutex);
     m_image.setSize(utils::Size(w, h));
     m_image.setChannels(3);
@@ -91,6 +93,7 @@ private:
 
   mutable std::mutex m_mutex;
   core::Img8u m_image;
+  std::atomic<int> m_updateCount{0};
 };
 
 // ---- CyclesRenderer::Impl ----
@@ -110,6 +113,7 @@ struct CyclesRenderer::Impl {
 
   // Quality parameters (may be overridden)
   int samples = 64;
+  int initialSamples = 1;
   int maxBounces = 6;
   bool denoising = true;
   float exposure = 1.0f;
@@ -119,6 +123,15 @@ struct CyclesRenderer::Impl {
   bool initialized = false;
   bool sceneDirty = true;
   bool hasRendered = false;
+  bool renderInProgress = false;
+
+  // Change detection
+  float lastCamHash = 0;
+  RenderQuality lastQuality = RenderQuality::Preview;
+
+  // Progressive refinement state
+  int currentSamples = 0;   // samples accumulated so far
+  int targetSamples = 0;    // current target (doubles each step)
 
   Impl(geom::Scene &scene, RenderQuality q)
       : iclScene(scene), quality(q) {}
@@ -241,34 +254,66 @@ void CyclesRenderer::render(int camIndex) {
   m_impl->ensureInitialized();
   m_impl->applyQualityToScene();
 
-  // Synchronize ICL scene → Cycles scene
-  auto syncResult = m_impl->sync.synchronize(
-      m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
+  // Detect what changed since last call
+  float camHash = 0;
+  if (camIndex < (int)m_impl->iclScene.getCameraCount()) {
+    auto pos = m_impl->iclScene.getCamera(camIndex).getPosition();
+    auto norm = m_impl->iclScene.getCamera(camIndex).getNorm();
+    camHash = pos[0] + pos[1]*7 + pos[2]*13 + norm[0]*17 + norm[1]*23 + norm[2]*29;
+  }
 
-  // Get camera resolution for buffer params
-  int w = m_impl->scene->camera->get_full_width();
-  int h = m_impl->scene->camera->get_full_height();
-  if (w <= 0) w = 800;
-  if (h <= 0) h = 600;
+  bool needsReset = !m_impl->hasRendered
+                 || (camHash != m_impl->lastCamHash)
+                 || (m_impl->quality != m_impl->lastQuality)
+                 || m_impl->sync.hasPendingChanges();
 
-  using SR = SceneSynchronizer::SyncResult;
-  bool needsRender = !m_impl->hasRendered
-                  || syncResult != SR::NoChange;
+  m_impl->lastCamHash = camHash;
+  m_impl->lastQuality = m_impl->quality;
 
-  if (needsRender) {
-    SessionParams sessionParams = m_impl->session->params;
-    sessionParams.samples = m_impl->samples;
+  if (needsReset) {
+    m_impl->sync.synchronize(
+        m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
 
-    BufferParams bufferParams;
-    bufferParams.width = w;
-    bufferParams.height = h;
-    bufferParams.full_width = w;
-    bufferParams.full_height = h;
+    int w = m_impl->scene->camera->get_full_width();
+    int h = m_impl->scene->camera->get_full_height();
+    if (w <= 0) w = 800;
+    if (h <= 0) h = 600;
 
-    m_impl->session->reset(sessionParams, bufferParams);
+    int firstStep = std::min(m_impl->initialSamples, m_impl->samples);
+
+    SessionParams sp = m_impl->session->params;
+    sp.samples = firstStep;
+
+    BufferParams bp;
+    bp.width = w;  bp.height = h;
+    bp.full_width = w;  bp.full_height = h;
+
+    m_impl->session->reset(sp, bp);
     m_impl->session->start();
-    m_impl->session->wait();
+    m_impl->targetSamples = firstStep;
+    m_impl->currentSamples = 0;
     m_impl->hasRendered = true;
+    return;
+  }
+
+  // Already reached max — nothing more to do.
+  if (m_impl->currentSamples >= m_impl->samples) return;
+
+  // Check if current step has finished (non-blocking).
+  double progress = m_impl->session->progress.get_progress();
+  if (progress < 1.0) return;  // still rendering — GUI stays responsive
+
+  // Current step done. Record it.
+  m_impl->currentSamples = m_impl->targetSamples;
+
+  // Advance to next step if below max.
+  if (m_impl->currentSamples < m_impl->samples) {
+    m_impl->targetSamples = std::min(
+        m_impl->currentSamples + m_impl->initialSamples,
+        m_impl->samples);
+    // Extend the sample target — Cycles continues accumulating without
+    // clearing the buffer.
+    m_impl->session->set_samples(m_impl->targetSamples);
   }
 }
 
@@ -288,6 +333,10 @@ RenderQuality CyclesRenderer::getQuality() const {
 void CyclesRenderer::setSamples(int samples) {
   m_impl->samples = samples;
   m_impl->paramsOverridden = true;
+}
+
+void CyclesRenderer::setInitialSamples(int n) {
+  m_impl->initialSamples = std::max(1, n);
 }
 
 void CyclesRenderer::setMaxBounces(int bounces) {
@@ -319,6 +368,10 @@ void CyclesRenderer::invalidateObject(geom::SceneObject *obj) {
 float CyclesRenderer::getProgress() const {
   if (!m_impl->session) return 0.0f;
   return m_impl->session->progress.get_progress();
+}
+
+int CyclesRenderer::getUpdateCount() const {
+  return m_impl->outputDriver ? m_impl->outputDriver->getUpdateCount() : 0;
 }
 
 bool CyclesRenderer::isRendering() const {

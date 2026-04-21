@@ -52,6 +52,7 @@ public:
 
   /// Fine-grained overrides (override preset defaults).
   void setSamples(int samples);
+  void setInitialSamples(int n);  ///< Samples for first progressive step (default: 1).
   void setMaxBounces(int bounces);
   void setDenoising(bool enabled);
   void setExposure(float exposure);
@@ -63,6 +64,9 @@ public:
 
   /// Rendering progress (0.0 to 1.0).
   float getProgress() const;
+
+  /// Number of times the output driver received a tile update.
+  int getUpdateCount() const;
 
   /// Whether the renderer is currently producing samples.
   bool isRendering() const;
