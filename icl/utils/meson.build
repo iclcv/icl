@@ -25,7 +25,10 @@ configure_file(
 
 utils_headers = files(
   'Any.h',
+  'AnyMap.h',
   'Array2D.h',
+  'Assign.h',
+  'AssignRegistry.h',
   'BackendDispatching.h',
   'BasicTypes.h',
   'ClippedCast.h',
@@ -87,6 +90,7 @@ utils_sources = files(
   'cl/CLKernel.cpp',
   'cl/CLMemoryAssistant.cpp',
   'cl/CLProgram.cpp',
+  'AssignRegistry.cpp',
   'ConfigFile.cpp',
   'Configurable.cpp',
   'ConsoleProgress.cpp',

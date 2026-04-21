@@ -1,6 +1,8 @@
 test_sources = files(
   'icl-tests.cpp',
   'test-utils.cpp',
+  'test-any-map.cpp',
+  'test-assign.cpp',
   'test-plugin-registry.cpp',
   'test-math.cpp',
   'test-core.cpp',
