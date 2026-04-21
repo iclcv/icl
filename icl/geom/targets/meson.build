@@ -23,6 +23,7 @@ if _build_demos and qt_found
     'superquadric': [],
     'swiss-ranger': [],
     'texture-cube': [],
+    'gl-renderer-test': [],
   }
   foreach name, extra_deps : _geom_demos
     executable(name + '-demo',
@@ -31,6 +32,22 @@ if _build_demos and qt_found
       install: false,
     )
   endforeach
+
+  # Cycles demos (only when Cycles is available)
+  if cycles_found
+    _cycles_demos = {
+      'cycles-overlay-viewer': [],
+      'cycles-renderer-test': [],
+      'cycles-scene-viewer': [],
+    }
+    foreach name, extra_deps : _cycles_demos
+      executable(name + '-demo',
+        files('../demos' / name + '.cpp'),
+        dependencies: [icl_geom_dep] + extra_deps,
+        install: false,
+      )
+    endforeach
+  endif
 endif
 
 # ---- Apps ----
