@@ -101,7 +101,10 @@ namespace icl::filter {
   void GaborOp::addGamma(float gamma){ m_vecGammas.push_back(gamma); }
 
   void GaborOp::updateKernels(){
-    std::scoped_lock lock(m_mutex);
+    // Explicit lock covers direct callers (ctors) — the callback-driven path
+    // is already auto-wrapped by UnaryOp::registerCallback. Recursive so the
+    // nested acquire is harmless.
+    std::scoped_lock lock(m_applyMutex);
     m_vecKernels.clear();
     m_vecResults.clear();
 
@@ -131,9 +134,8 @@ namespace icl::filter {
 
   void GaborOp::apply(const Image &src, Image &dst) {
     ICLASSERT_RETURN(!src.isNull());
-    // Serialize with updateKernels() — property callbacks on the GUI thread
-    // can rebuild the kernel bank while run()'s exec thread is iterating it.
-    std::scoped_lock lock(m_mutex);
+    // Reader-side lock — the callback side is auto-wrapped by UnaryOp.
+    std::scoped_lock lock(m_applyMutex);
 
     // Gabor kernels are real-valued (sub-unit coefficients). Convolving them
     // as "custom" kernels against an integer source forces a lossy int cast

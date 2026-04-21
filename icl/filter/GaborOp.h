@@ -9,7 +9,6 @@
 #include <icl/utils/Point.h>
 #include <icl/core/Img.h>
 #include <icl/filter/UnaryOp.h>
-#include <mutex>
 #include <vector>
 #include <icl/core/Image.h>
 
@@ -197,8 +196,5 @@ namespace icl::filter {
     /// member avoids per-frame reallocation when the source is 8u/16s/etc.
     core::Image m_src32fBuffer;
     utils::Size m_oKernelSize;
-    /// Guards the kernel/result vectors against racing apply() on one thread
-    /// with updateKernels() fired from a property callback on another.
-    mutable std::recursive_mutex m_mutex;
   };
   } // namespace icl::filter

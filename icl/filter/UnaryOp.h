@@ -9,6 +9,7 @@
 #include <icl/core/Image.h>
 #include <icl/core/ImgParams.h>
 #include <icl/filter/OpROIHandler.h>
+#include <mutex>
 
 namespace icl::filter {
   /// Abstract Base class for Unary Operators \ingroup UNARY
@@ -116,7 +117,25 @@ namespace icl::filter {
                                 const core::ImgBase *src,
                                 core::ImgBase **dst);
 
+    /// Same as Configurable::registerCallback, but wraps the callback so it
+    /// acquires `m_applyMutex` before firing. Lets subclasses that mutate
+    /// internal state from a property change rely on the base for the
+    /// callback-side lock; they still need to acquire `m_applyMutex` at the
+    /// top of apply() to close the race (reader-side). Shadows the base's
+    /// non-virtual registerCallback — call sites on a UnaryOp-or-derived
+    /// object resolve to this overload via static dispatch.
+    void registerCallback(const Callback &cb);
+    using utils::Configurable::registerCallback;
+
     protected:
+
+    /// Serializes the apply() reader against property callbacks that mutate
+    /// subclass state. Recursive so nested locking (e.g. apply → setMask
+    /// path firing a callback) doesn't deadlock. See
+    /// project_configurable_op_threadsafety.md for rationale — this replaces
+    /// the per-Op mutex pattern that GaborOp / WienerOp used to roll manually.
+    mutable std::recursive_mutex m_applyMutex;
+
 
     /// Image-based prepare: ensures dst matches the given parameters
     bool prepare(core::Image &dst, core::depth d, const utils::Size &s,

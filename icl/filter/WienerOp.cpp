@@ -36,9 +36,7 @@ namespace icl::filter {
     addProperty("mask size.w","range:spinbox","[1,51]",str(maskSize.width));
     addProperty("mask size.h","range:spinbox","[1,51]",str(maskSize.height));
     registerCallback([this](const Property &p){
-      // Lock against the apply-side reader — mask size change between
-      // prepare() and backend dispatch is the failure mode.
-      std::scoped_lock lock(m_mutex);
+      // Callback side is auto-locked by UnaryOp::registerCallback.
       if(p.name == "noise") m_fNoise = parse<icl32f>(p.value);
       else if(p.name == "mask size.w" || p.name == "mask size.h"){
         setMask(Size(parse<int>(prop("mask size.w").value),
@@ -50,9 +48,10 @@ namespace icl::filter {
   void WienerOp::setNoise(icl32f noise){ setPropertyValue("noise", noise); }
 
   void WienerOp::apply(const Image &src, Image &dst) {
-    // Serialize prepare() + getMaskSize/Anchor/ROIOffset + backend dispatch
-    // against property callbacks that mutate the mask on another thread.
-    std::scoped_lock lock(m_mutex);
+    // Reader-side lock covers prepare() + getMaskSize/Anchor/ROIOffset +
+    // backend dispatch as a single critical section against mid-apply
+    // property callbacks.
+    std::scoped_lock lock(m_applyMutex);
     if(!prepare(dst, src)) return;
     getSelector<WienerSig>(Op::apply).resolve(src)->apply(
       src, dst, getMaskSize(), getAnchor(), getROIOffset(), m_fNoise);

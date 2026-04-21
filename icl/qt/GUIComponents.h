@@ -108,7 +108,24 @@ namespace icl{
     /** Creates an StringHandle (but no output) */
     struct String : public GUIComponent{
       /// create string input compoent with given max length
-      String(const std::string &initText, int maxLen=100):GUIComponent("string",initText+','+utils::str(maxLen)){}
+      /** The GUI definition parser splits the type's parameter list on
+          commas, so an initText that contains literal commas (e.g. CSV data)
+          must be backslash-escaped before concatenation. GUIDefinition's
+          StrTok is configured with `\\` as the escape char, so `\,` survives
+          as a single comma in the resulting token. Also escape literal
+          backslashes so Windows-style paths round-trip unchanged. */
+      String(const std::string &initText, int maxLen=100)
+        : GUIComponent("string", escape_param(initText)+','+utils::str(maxLen)){}
+      private:
+      static std::string escape_param(const std::string &s){
+        std::string out;
+        out.reserve(s.size() + 4);
+        for(char c : s){
+          if(c == ',' || c == '\\') out += '\\';
+          out += c;
+        }
+        return out;
+      }
     };
 
     /// Display component for a 2D Array of labels

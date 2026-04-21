@@ -7,7 +7,6 @@
 #include <icl/filter/NeighborhoodOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImageBackendDispatching.h>
-#include <mutex>
 
 namespace icl::filter {
   /// Class for Wiener Filter (IPP only) \ingroup UNARY \ingroup NBH
@@ -40,12 +39,6 @@ namespace icl::filter {
 
     private:
     icl32f m_fNoise;
-    /// Serializes apply() against property-driven mask/noise changes fired
-    /// from the GUI thread. Without this, the mask size can change between
-    /// prepare() (which sizes dst.ROI for the old mask) and the backend
-    /// dispatch (which reads the new mask), leading to out-of-bounds access
-    /// in the integral-image lookup.
-    mutable std::recursive_mutex m_mutex;
   };
 
   /// ADL-visible toString for WienerOp::Op (defined in WienerOp.cpp)
