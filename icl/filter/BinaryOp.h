@@ -6,6 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Image.h>
+#include <icl/core/ImgParams.h>
 #include <icl/filter/OpROIHandler.h>
 
 namespace icl::filter {
@@ -55,6 +56,12 @@ namespace icl::filter {
     inline core::Image operator()(const core::Image &src1, const core::Image &src2){
       return apply(src1, src2);
     }
+
+    /// Returns the expected destination image parameters for given sources
+    /** Default: clipToROI → src1 ROI size; else → src1 full size, same depth/channels/format.
+        Subclasses with different output geometry should override. */
+    virtual std::pair<core::depth, core::ImgParams> getDestinationParams(
+        const core::Image &src1, const core::Image &src2) const;
 
     /// sets if the image should be clip to ROI or not
     /**

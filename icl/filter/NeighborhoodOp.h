@@ -51,6 +51,9 @@ namespace icl::filter {
     /// *NEW* apply function for multithreaded filtering (reimplemented here for special roi handling!)
     virtual void applyMT(const core::ImgBase *operand1, core::ImgBase **dst, unsigned int nThreads);
 
+    /// Returns destination params accounting for mask margin shrinkage
+    std::pair<core::depth, core::ImgParams> getDestinationParams(const core::Image &src) const override;
+
     /// Import unaryOps apply function without destination image
     using UnaryOp::apply;
 
@@ -83,17 +86,14 @@ namespace icl::filter {
     }
     protected:
 
-    /// Image-based prepare: computes shrunk ROI for mask, then delegates to UnaryOp::prepare
-    bool prepare(core::Image &dst, const core::Image &src);
+    // Bring in UnaryOp's Image-based prepare (otherwise hidden by legacy overrides below)
+    using UnaryOp::prepare;
 
-    /// Image-based prepare: as above, but with explicit depth
-    bool prepare(core::Image &dst, const core::Image &src, core::depth d);
+    /// Legacy prepare: ensure compatible image format and size
+    bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc) override;
 
-    /// prepare filter operation: ensure compatible image format and size
-    virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc);
-
-    /// prepare filter operation: as above, but with depth parameter
-    virtual bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc, core::depth eDepht);
+    /// Legacy prepare: as above, but with depth parameter
+    bool prepare (core::ImgBase **ppoDst, const core::ImgBase *poSrc, core::depth eDepht) override;
 
     /// this function can be reimplemented e.g to enshure an odd mask width and height
      /** E.g. some implementations of Neighborhood-operation could demand odd or even
@@ -107,6 +107,6 @@ namespace icl::filter {
     protected:
     utils::Size  m_oMaskSize;  ///< size of filter mask
     utils::Point m_oAnchor;    ///< anchor of filter mask
-    utils::Point m_oROIOffset; ///< to-be-used ROI offset for source image
+    mutable utils::Point m_oROIOffset; ///< to-be-used ROI offset for source image (mutable: set by getDestinationParams)
   };
   } // namespace icl::filter

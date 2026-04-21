@@ -167,6 +167,13 @@ namespace icl::core {
     return m_impl->getMinMax(channel);
   }
 
+  // --- Memory ---
+
+  size_t Image::memoryUsage() const {
+    if(isNull()) return 0;
+    return size_t(getDim()) * getChannels() * getSizeOf(getDepth());
+  }
+
   // --- Raw pointer access ---
 
   ImgBase* Image::ptr() { return m_impl.get(); }

@@ -13,18 +13,16 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::filter {
-  bool NeighborhoodOp::prepare(Image &dst, const Image &src) {
-    return prepare(dst, src, src.getDepth());
-  }
+  std::pair<depth, ImgParams>
+  NeighborhoodOp::getDestinationParams(const Image &src) const {
+    Rect imageRect(Point::null, src.getSize());
+    Rect shrunkROI = src.getROI() & (imageRect + m_oAnchor - m_oMaskSize + Size(1,1));
 
-  bool NeighborhoodOp::prepare(Image &dst, const Image &src, depth d) {
-    Size oROIsize;
-    if (!computeROI(src.ptr(), m_oROIOffset, oROIsize)) return false;
-    return UnaryOp::prepare(dst, d,
-                            getClipToROI() ? oROIsize : src.getSize(),
-                            src.getFormat(), src.getChannels(),
-                            Rect(getClipToROI() ? Point::null : m_oROIOffset, oROIsize),
-                            src.getTime());
+    m_oROIOffset = shrunkROI.ul();  // cached for apply implementations (mutable)
+
+    Size dstSize = getClipToROI() ? shrunkROI.getSize() : src.getSize();
+    Rect dstROI(getClipToROI() ? Point::null : shrunkROI.ul(), shrunkROI.getSize());
+    return { src.getDepth(), ImgParams(dstSize, src.getChannels(), src.getFormat(), dstROI) };
   }
 
   bool NeighborhoodOp::prepare (ImgBase **ppoDst, const ImgBase *poSrc) {

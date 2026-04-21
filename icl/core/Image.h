@@ -227,6 +227,13 @@ namespace icl::core {
     void swap(Image &other);
 
     /// @}
+    /// @name Memory
+    /// @{
+
+    /// Returns the pixel data footprint in bytes (w * h * channels * bytesPerElement)
+    size_t memoryUsage() const;
+
+    /// @}
     /// @name Debug
     /// @{
 

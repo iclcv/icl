@@ -25,6 +25,16 @@ namespace icl::filter {
     ICL_DELETE(m_buf);
   }
 
+  std::pair<core::depth, core::ImgParams>
+  BinaryOp::getDestinationParams(const core::Image &src1, const core::Image &src2) const {
+    (void)src2;
+    utils::Size s = getClipToROI() ? src1.getROISize() : src1.getSize();
+    utils::Rect roi = getClipToROI()
+      ? utils::Rect(utils::Point::null, s)
+      : src1.getROI();
+    return { src1.getDepth(), core::ImgParams(s, src1.getChannels(), src1.getFormat(), roi) };
+  }
+
   bool BinaryOp::prepare(core::Image &dst, const core::Image &src) {
     core::ImgBase *tmp = dst.isNull() ? nullptr : dst.ptr();
     bool r = m_oROIHandler.prepare(&tmp, src.ptr());

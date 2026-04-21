@@ -103,22 +103,28 @@ namespace icl::filter {
     return true;
   }
 
-  bool UnaryOp::prepare(core::Image &dst, const core::Image &src) {
-    utils::Size dstSize = getClipToROI() ? src.getROISize() : src.getSize();
-    utils::Rect dstROI = getClipToROI()
-      ? utils::Rect(utils::Point::null, src.getROISize())
+  std::pair<core::depth, core::ImgParams>
+  UnaryOp::getDestinationParams(const core::Image &src) const {
+    utils::Size s = getClipToROI() ? src.getROISize() : src.getSize();
+    utils::Rect roi = getClipToROI()
+      ? utils::Rect(utils::Point::null, s)
       : src.getROI();
-    return prepare(dst, src.getDepth(), dstSize,
-                   src.getFormat(), src.getChannels(), dstROI, src.getTime());
+    return { src.getDepth(), ImgParams(s, src.getChannels(), src.getFormat(), roi) };
+  }
+
+  bool UnaryOp::prepare(core::Image &dst, const core::Image &src) {
+    auto [d, params] = getDestinationParams(src);
+    return prepare(dst, d, params.getSize(),
+                   params.getFormat(), params.getChannels(),
+                   params.getROI(), src.getTime());
   }
 
   bool UnaryOp::prepare(core::Image &dst, const core::Image &src, core::depth d) {
-    utils::Size dstSize = getClipToROI() ? src.getROISize() : src.getSize();
-    utils::Rect dstROI = getClipToROI()
-      ? utils::Rect(utils::Point::null, src.getROISize())
-      : src.getROI();
-    return prepare(dst, d, dstSize,
-                   src.getFormat(), src.getChannels(), dstROI, src.getTime());
+    auto [defaultDepth, params] = getDestinationParams(src);
+    (void)defaultDepth;
+    return prepare(dst, d, params.getSize(),
+                   params.getFormat(), params.getChannels(),
+                   params.getROI(), src.getTime());
   }
 
 

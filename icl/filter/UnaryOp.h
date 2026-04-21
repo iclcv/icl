@@ -7,6 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Configurable.h>
 #include <icl/core/Image.h>
+#include <icl/core/ImgParams.h>
 #include <icl/filter/OpROIHandler.h>
 
 namespace icl::filter {
@@ -45,6 +46,11 @@ namespace icl::filter {
     [[nodiscard]] inline const core::Image& operator()(const core::Image &src){
       return apply(src);
     }
+
+    /// Returns the expected destination image parameters for a given source
+    /** Default: clipToROI → src ROI size; else → src full size, same depth/channels/format.
+        Subclasses with different output geometry (e.g. NeighborhoodOp) should override. */
+    virtual std::pair<core::depth, core::ImgParams> getDestinationParams(const core::Image &src) const;
 
 
     /// sets if the image should be clip to ROI or not
@@ -117,10 +123,10 @@ namespace icl::filter {
                  core::format fmt, int channels, const utils::Rect &roi,
                  utils::Time t = utils::Time::null);
 
-    /// Image-based prepare: ensures dst matches src's parameters
+    /// Image-based prepare: uses getDestinationParams() to determine dst parameters
     bool prepare(core::Image &dst, const core::Image &src);
 
-    /// Image-based prepare: matches src but with explicit depth
+    /// Image-based prepare: as above, but with explicit depth override
     bool prepare(core::Image &dst, const core::Image &src, core::depth d);
 
     /// Legacy prepare (for subclasses not yet migrated)
