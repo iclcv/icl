@@ -831,12 +831,6 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
   }
 
   if (m_impl->pathTracing) {
-    // When SVGF is active, output a single raw sample per frame
-    // (no internal accumulation) — SVGF handles temporal integration.
-    if (m_denoisingMethod == DenoisingMethod::SVGF) {
-      m_impl->accumFrame = 0;
-    }
-
     // Clear accum on frame 0
     if (m_impl->accumFrame == 0) {
       memset(m_impl->accumR.contents(), 0, n * sizeof(float));
@@ -882,8 +876,6 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
           std::chrono::duration<float, std::milli>(now - t0).count();
       if (firstPassMs == 0) firstPassMs = std::max(0.1f, elapsedMs);
 
-      // SVGF: single sample per frame (temporal filter does the integration)
-      if (m_denoisingMethod == DenoisingMethod::SVGF) break;
       if (m_impl->targetFrameMs <= 0) break;
       if (elapsedMs + firstPassMs > m_impl->targetFrameMs) break;
     } while (true);
