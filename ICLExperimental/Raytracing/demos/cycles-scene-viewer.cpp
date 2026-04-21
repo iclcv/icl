@@ -29,6 +29,8 @@ using namespace icl::geom;
 static Scene scene;
 static std::unique_ptr<icl::rt::CyclesRenderer> renderer;
 static std::vector<std::shared_ptr<SceneObject>> loadedObjects;
+static std::vector<std::shared_ptr<Material>> originalMaterials;  // saved at load time
+static int numLoadedMeshes = 0;  // how many are actual meshes (not checker tiles)
 HSplit gui;
 
 static void handleMouse(const MouseEvent &evt) {
@@ -207,6 +209,13 @@ static void setupScene() {
     }
   }
 
+  // Save original materials and mesh count before adding checker tiles
+  numLoadedMeshes = loadedObjects.size();
+  for (int i = 0; i < numLoadedMeshes; i++) {
+    auto mat = loadedObjects[i]->getMaterial();
+    originalMaterials.push_back(mat ? std::make_shared<Material>(*mat) : nullptr);
+  }
+
   if (loadedObjects.empty()) {
     // No files loaded — create a default scene with some objects
     fprintf(stderr, "No -scene files specified, creating default scene.\n");
@@ -371,7 +380,7 @@ void init() {
             << Canvas().handle("draw").minSize(32, 24).label("Cycles")
             << Canvas3D().handle("gl").minSize(32, 24).label("OpenGL"))
          << (HBox()
-            << Combo("!Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive").handle("material").label("Material").minSize(10,2)
+            << Combo("!Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive").handle("material").label("Material").minSize(10,2)
             << Combo("!1,2,4,8,16").handle("initSamples").label("Steps/Frame").minSize(8,2)
             << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iter").minSize(8,2)
             << Slider(1, 16, 4).handle("bounces").label("Bounces").minSize(10,2)
@@ -398,39 +407,47 @@ void run() {
   renderer->setExposure(exposure);
   renderer->setBrightness(brightness);
 
-  // Material preset switching — applies to all loaded objects (not checker tiles)
+  // Material preset switching — applies to loaded meshes only (not checker tiles)
   static int lastMaterial = -1;
   int matIdx = gui["material"].as<ComboHandle>().getSelectedIndex();
   if (matIdx != lastMaterial) {
     lastMaterial = matIdx;
-    auto mat = std::make_shared<Material>();
-    mat->smoothShading = true;
-    switch (matIdx) {
-      case 0: // Clay
-        mat->baseColor = GeomColor(0.7f, 0.5f, 0.4f, 1); mat->roughness = 0.6f; break;
-      case 1: // Mirror
-        mat->baseColor = GeomColor(0.95f, 0.95f, 0.97f, 1); mat->metallic = 1; mat->roughness = 0.01f; break;
-      case 2: // Gold
-        mat->baseColor = GeomColor(1.0f, 0.76f, 0.34f, 1); mat->metallic = 1; mat->roughness = 0.15f; break;
-      case 3: // Copper
-        mat->baseColor = GeomColor(0.95f, 0.64f, 0.54f, 1); mat->metallic = 1; mat->roughness = 0.3f; break;
-      case 4: // Chrome
-        mat->baseColor = GeomColor(0.9f, 0.9f, 0.92f, 1); mat->metallic = 1; mat->roughness = 0.05f; break;
-      case 5: // Red Plastic
-        mat->baseColor = GeomColor(0.8f, 0.1f, 0.1f, 1); mat->roughness = 0.25f; break;
-      case 6: // Green Rubber
-        mat->baseColor = GeomColor(0.15f, 0.6f, 0.1f, 1); mat->roughness = 0.9f; break;
-      case 7: // Glass
-        mat->baseColor = GeomColor(0.95f, 0.95f, 0.95f, 1); mat->roughness = 0.02f;
-        mat->reflectivity = 0.9f; break;
-      case 8: // Emissive
-        mat->baseColor = GeomColor(1.0f, 0.9f, 0.6f, 1); mat->roughness = 0.8f;
-        mat->emissive = GeomColor(2.0f, 1.5f, 0.8f, 1); break;
-    }
-    // Apply to loaded objects only (skip checker tiles)
-    int nLoaded = pa("-scene") ? pa("-scene").n() : 0;
-    for (int i = 0; i < std::min((int)loadedObjects.size(), std::max(nLoaded, 3)); i++) {
-      loadedObjects[i]->setMaterial(mat);
+
+    if (matIdx == 0) {
+      // Original: restore saved materials
+      for (int i = 0; i < numLoadedMeshes && i < (int)originalMaterials.size(); i++) {
+        if (originalMaterials[i]) {
+          loadedObjects[i]->setMaterial(std::make_shared<Material>(*originalMaterials[i]));
+        }
+      }
+    } else {
+      auto mat = std::make_shared<Material>();
+      mat->smoothShading = true;
+      switch (matIdx) {
+        case 1: // Clay
+          mat->baseColor = GeomColor(0.7f, 0.5f, 0.4f, 1); mat->roughness = 0.6f; break;
+        case 2: // Mirror
+          mat->baseColor = GeomColor(0.95f, 0.95f, 0.97f, 1); mat->metallic = 1; mat->roughness = 0.01f; break;
+        case 3: // Gold
+          mat->baseColor = GeomColor(1.0f, 0.76f, 0.34f, 1); mat->metallic = 1; mat->roughness = 0.15f; break;
+        case 4: // Copper
+          mat->baseColor = GeomColor(0.95f, 0.64f, 0.54f, 1); mat->metallic = 1; mat->roughness = 0.3f; break;
+        case 5: // Chrome
+          mat->baseColor = GeomColor(0.9f, 0.9f, 0.92f, 1); mat->metallic = 1; mat->roughness = 0.05f; break;
+        case 6: // Red Plastic
+          mat->baseColor = GeomColor(0.8f, 0.1f, 0.1f, 1); mat->roughness = 0.25f; break;
+        case 7: // Green Rubber
+          mat->baseColor = GeomColor(0.15f, 0.6f, 0.1f, 1); mat->roughness = 0.9f; break;
+        case 8: // Glass
+          mat->baseColor = GeomColor(0.95f, 0.95f, 0.95f, 1); mat->roughness = 0.02f;
+          mat->reflectivity = 0.9f; break;
+        case 9: // Emissive
+          mat->baseColor = GeomColor(1.0f, 0.9f, 0.6f, 1); mat->roughness = 0.8f;
+          mat->emissive = GeomColor(2.0f, 1.5f, 0.8f, 1); break;
+      }
+      for (int i = 0; i < numLoadedMeshes; i++) {
+        loadedObjects[i]->setMaterial(mat);
+      }
     }
     renderer->invalidateAll();
   }
