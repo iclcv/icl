@@ -1,6 +1,79 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 13 — GLImageRenderer, Overlay Viewer, SceneSetup)
+## Current State (Session 14 — Raytracing Integration into ICLGeom)
+
+### Session 14 Summary
+
+**Raytracing moved from ICLExperimental into ICLGeom:**
+- All raytracing sources (CyclesRenderer, SceneSynchronizer, GltfLoader, SceneSetup)
+  now live in `ICLGeom/src/ICLGeom/`, conditionally compiled via `BUILD_WITH_CYCLES`.
+- New `cmake/Modules/ICLFindCycles.cmake` provides `cycles_target_setup()` macro.
+- Top-level CMakeLists auto-detects Cycles in `3rdparty/cycles/build/`.
+- Demos moved to `ICLGeom/demos/`, scenes to `ICLGeom/scenes/`.
+- ICLGeom builds cleanly with and without Cycles.
+
+**Scene owns both renderers:**
+- `scene.getGLRenderer()` — GLRenderer (renamed from SceneRendererGL), lazy-created.
+  GLCallback::draw() auto-selects it in Core Profile, legacy renderScene() otherwise.
+- `scene.getRaytracer()` — returns Raytracer interface (CyclesRenderer when available,
+  DummyRaytracer fallback when `BUILD_WITH_CYCLES=OFF`). Lazy-created via `#ifdef ICL_HAVE_CYCLES`.
+- Raytracer base class (`ICLGeom/Raytracer.h`): virtual interface for start/stop/render/
+  getImage/invalidate/setSamples/setMaxBounces/setExposure/setBrightness/setSamplesPerStep.
+
+**Naming cleanup:**
+- `SceneRendererGL` → `GLRenderer` (file `GLRenderer.h/.cpp`)
+- `getRendererGL()` → `getGLRenderer()`
+- `setOverlayMode()` → `setHideSky()`
+- `initialSamples` → `samplesPerStep` / `setSamplesPerStep()`
+- No backwards-compat aliases.
+
+**Event-driven CyclesRenderer:**
+- `start(camIndex)`: management thread drives progressive state machine (16ms polling)
+- `stop()`: joins thread (also from destructor)
+- `setOnImageReady(cb)`: callback from OutputDriver::write_render_tile
+- `invalidateAll()` triggers re-rendering (mutex-protected)
+- `session->start()` now called after each `set_samples()` extension to wake session thread
+
+**Other improvements:**
+- `ProgArg::subargs<T>()` — returns all sub-args as `vector<T>`
+- `FPSEstimator::formatted()` with `#fps` token
+- GL 4.1 Core Profile set automatically in ICLApp constructor
+- GLImageRenderer thread-safe (recursive_mutex on storedImage)
+- GL material cache invalidated on material pointer change
+
+### BUG: Overlay viewer doesn't show progressive intermediate results
+
+**Symptom:** `cycles-overlay-viewer` shows only the final converged image after ~2s.
+The scene viewer (`cycles-scene-viewer`) shows progressive updates correctly.
+
+**What works:** The management thread correctly extends samples step by step
+(verified by adding `session->start()` after `set_samples()`). The scene viewer
+polls `render(0)` directly in its run() loop and renders the Cycles image inside
+its GL callback — this shows every intermediate frame.
+
+**What doesn't work:** The overlay viewer uses `start(0)` (autonomous thread) and
+tries to display via either:
+1. Widget background image path (`canvas = &rt.getImage()`) — too slow/delayed
+2. Custom GL callback with `bgRenderer.render(Image(img))` — still no intermediates
+
+**Suspected root cause:** The overlay viewer's `run()` loop runs at 30fps (FPSLimiter).
+Between display frames, the management thread advances many steps. But even rendering
+the Cycles image directly in the GL callback (approach 2) doesn't show intermediates.
+This suggests the image data from `getImage()` isn't updating, OR the GL callback
+isn't being triggered frequently enough, OR there's a race between the OutputDriver
+writing the image and the GL callback reading it.
+
+**Debug approach for next session:**
+- Add fprintf in OutputDriver::write_render_tile to confirm it fires per step
+- Check if `getImage()` returns different data between run() iterations
+- Compare exact GL callback timing between scene viewer and overlay viewer
+- Consider: scene viewer calls `render(0)` synchronously in run() which blocks
+  until state machine advances — overlay viewer's management thread runs independently
+- The `getImage()` race: OutputDriver returns `const Img8u&` after releasing its
+  mutex. The caller reads while the next write_render_tile overwrites. May need
+  double-buffering or a copy inside getImage().
+
+## Previous State (Session 13 — GLImageRenderer, Overlay Viewer, SceneSetup)
 
 ### Session 13 Summary
 
@@ -666,6 +739,8 @@ ICLExperimental/Raytracing/
 
 #### Immediate TODO
 
+- **FIX: Overlay viewer progressive rendering** — see bug description above.
+  The overlay viewer doesn't show intermediate raytracing results.
 - **Refactor cycles-scene-viewer.cpp** — replace inline setupScene/decimateMesh/
   computeSceneBounds/material-switching with `SceneSetup.h` calls. Currently both
   implementations exist (viewer has its own, library has the extracted version).
