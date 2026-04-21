@@ -11,21 +11,51 @@ namespace icl::utils {
     return r;
   }
 
-  void AssignRegistry::dispatch(std::any &dst, std::any &src) {
+  const AssignRegistry::Fn &
+  AssignRegistry::lookup(std::type_index dstT, std::type_index srcT,
+                         const char *dstName, const char *srcName) {
     const auto &m = instance().m_map;
-    auto dstIt = m.find(std::type_index(dst.type()));
+    auto dstIt = m.find(dstT);
     if (dstIt == m.end()) {
       throw std::runtime_error(
         std::string("AssignRegistry::dispatch: no rule with destination type ")
-        + dst.type().name());
+        + dstName);
     }
-    auto srcIt = dstIt->second.find(std::type_index(src.type()));
+    auto srcIt = dstIt->second.find(srcT);
     if (srcIt == dstIt->second.end()) {
       throw std::runtime_error(
         std::string("AssignRegistry::dispatch: no rule for ")
-        + dst.type().name() + " = " + src.type().name());
+        + dstName + " = " + srcName);
     }
-    srcIt->second(dst, src);
+    return srcIt->second;
+  }
+
+  void AssignRegistry::dispatch(std::any &dst, std::any &src) {
+    const auto &fn = lookup(std::type_index(dst.type()),
+                            std::type_index(src.type()),
+                            dst.type().name(), src.type().name());
+    fn.any(dst, src);
+  }
+
+  void AssignRegistry::dispatch(void *dst, std::type_index dstT,
+                                void *src, std::type_index srcT) {
+    const auto &fn = lookup(dstT, srcT, dstT.name(), srcT.name());
+    fn.ptr(dst, src);
+  }
+
+  void AssignRegistry::dispatch(void *dst, const std::string &dstName,
+                                void *src, const std::string &srcName) {
+    const auto &r = instance();
+    auto dstNt = r.m_nameToType.find(dstName);
+    auto srcNt = r.m_nameToType.find(srcName);
+    if (dstNt == r.m_nameToType.end() || srcNt == r.m_nameToType.end()) {
+      throw std::runtime_error(
+        std::string("AssignRegistry::dispatch: type not enrolled for ")
+        + srcName + " -> " + dstName);
+    }
+    const auto &fn = lookup(dstNt->second, srcNt->second,
+                            dstName.c_str(), srcName.c_str());
+    fn.ptr(dst, src);
   }
 
   bool AssignRegistry::has(std::type_index dstType,
