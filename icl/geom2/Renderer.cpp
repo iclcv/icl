@@ -113,75 +113,84 @@ vec3 viewPosFromDepth(vec2 uv, float depth) {
     return viewPos.xyz / viewPos.w;
 }
 
-// SSR: view-space ray march with per-step projection and binary refinement.
-// Steps in view space (linear Z), projects each step to screen to sample
-// the depth buffer. Compares in view-space Z for precision.
-vec4 traceSSR(vec3 worldPos, vec3 N, vec3 reflectDir, float roughness) {
-    if (uSSREnabled == 0 || roughness > 0.7) return vec4(0.0);
-
-    // Transform to previous frame's view space
-    vec3 viewPos = (uPrevView * vec4(worldPos, 1.0)).xyz;
-    vec3 viewNorm = normalize((uPrevView * vec4(N, 0.0)).xyz);
-    vec3 viewDir = normalize(viewPos); // view-space: camera at origin
-    vec3 reflectView = reflect(viewDir, viewNorm);
-
-    // Step parameters — generous range, binary search handles precision
-    float maxRayDist = -viewPos.z * 4.0;
-    int maxSteps = 256;
-    float stepSize = maxRayDist / float(maxSteps);
-    int binarySteps = 8;
-
-    // Ray march in view space
-    vec3 hitCoord = viewPos;
+// Single SSR ray march with jitter offset (0..1 fraction of one step)
+vec4 traceSSRSingle(vec3 viewPos, vec3 reflectView, float stepSize,
+                     int maxSteps, float jitter) {
     vec3 dir = reflectView * stepSize;
-    float dDepth;
-    vec4 projCoord;
+    vec3 hitCoord = viewPos + dir * jitter; // jitter start
 
     for (int i = 0; i < maxSteps; i++) {
         hitCoord += dir;
 
-        // Project to screen UV
-        projCoord = uPrevProjection * vec4(hitCoord, 1.0);
+        vec4 projCoord = uPrevProjection * vec4(hitCoord, 1.0);
         projCoord.xy /= projCoord.w;
         projCoord.xy = projCoord.xy * 0.5 + 0.5;
 
         if (projCoord.x < 0.0 || projCoord.x > 1.0 ||
             projCoord.y < 0.0 || projCoord.y > 1.0) break;
 
-        // Read scene depth, reconstruct view-space Z
         float sceneDepth = texture(uPrevDepthMap, projCoord.xy).r;
-        if (sceneDepth > 0.999) continue; // sky
+        if (sceneDepth > 0.999) continue;
 
         vec3 sceneViewPos = viewPosFromDepth(projCoord.xy, sceneDepth);
-        dDepth = hitCoord.z - sceneViewPos.z;
+        float dDepth = hitCoord.z - sceneViewPos.z;
 
-        // Check if ray crossed behind the surface (dDepth sign change)
         if (dDepth <= 0.0 && abs(dDepth) < length(dir) * 1.5) {
-            // Binary search refinement
-            dir *= 0.5;
-            for (int j = 0; j < binarySteps; j++) {
-                hitCoord += (dDepth > 0.0 ? 1.0 : -1.0) * dir;
+            // Binary search refinement (8 iterations)
+            vec3 refDir = dir * 0.5;
+            for (int j = 0; j < 8; j++) {
+                hitCoord += (dDepth > 0.0 ? 1.0 : -1.0) * refDir;
                 projCoord = uPrevProjection * vec4(hitCoord, 1.0);
                 projCoord.xy /= projCoord.w;
                 projCoord.xy = projCoord.xy * 0.5 + 0.5;
                 sceneDepth = texture(uPrevDepthMap, projCoord.xy).r;
                 sceneViewPos = viewPosFromDepth(projCoord.xy, sceneDepth);
                 dDepth = hitCoord.z - sceneViewPos.z;
-                dir *= 0.5;
+                refDir *= 0.5;
             }
 
-            // Screen-edge fade + roughness fade
             vec2 edgeDist = min(projCoord.xy, 1.0 - projCoord.xy);
             float confidence = smoothstep(0.0, 0.05, edgeDist.x)
                              * smoothstep(0.0, 0.05, edgeDist.y);
-            confidence *= 1.0 - smoothstep(0.3, 0.7, roughness);
-            // Fade reflections pointing toward camera (less reliable)
             confidence *= clamp(-reflectView.z, 0.0, 1.0);
-
             return vec4(texture(uPrevColorMap, projCoord.xy).rgb, confidence);
         }
     }
     return vec4(0.0);
+}
+
+// SSR: 4x supersampled view-space ray march.
+// Traces 4 rays with stratified jitter offsets and averages the result,
+// eliminating Moiré ring artifacts on curved surfaces.
+vec4 traceSSR(vec3 worldPos, vec3 N, vec3 reflectDir, float roughness) {
+    if (uSSREnabled == 0 || roughness > 0.7) return vec4(0.0);
+
+    // Transform to previous frame's view space
+    vec3 viewPos = (uPrevView * vec4(worldPos, 1.0)).xyz;
+    vec3 viewNorm = normalize((uPrevView * vec4(N, 0.0)).xyz);
+    vec3 viewDir = normalize(viewPos);
+    vec3 reflectView = reflect(viewDir, viewNorm);
+
+    float maxRayDist = -viewPos.z * 4.0;
+    int maxSteps = 256;
+    float stepSize = maxRayDist / float(maxSteps);
+
+    // 4 stratified samples: offsets at 0, 0.25, 0.5, 0.75 of one step
+    vec4 s0 = traceSSRSingle(viewPos, reflectView, stepSize, maxSteps, 0.0);
+    vec4 s1 = traceSSRSingle(viewPos, reflectView, stepSize, maxSteps, 0.25);
+    vec4 s2 = traceSSRSingle(viewPos, reflectView, stepSize, maxSteps, 0.5);
+    vec4 s3 = traceSSRSingle(viewPos, reflectView, stepSize, maxSteps, 0.75);
+
+    // Average: weight by confidence (alpha)
+    float totalWeight = s0.a + s1.a + s2.a + s3.a;
+    if (totalWeight < 0.001) return vec4(0.0);
+
+    vec3 color = (s0.rgb * s0.a + s1.rgb * s1.a + s2.rgb * s2.a + s3.rgb * s3.a)
+               / totalWeight;
+    float confidence = totalWeight * 0.25;
+    confidence *= 1.0 - smoothstep(0.3, 0.7, roughness);
+
+    return vec4(color, confidence);
 }
 
 void main() {
