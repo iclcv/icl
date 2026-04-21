@@ -113,6 +113,8 @@ void GeometryExtractor::tessellateObject(
   material.specularColor = colorToFloat4(obj->getSpecularReflectance());
   material.shininess = obj->getShininess();
   material.reflectivity = obj->getReflectivity();
+  const auto &em = obj->getEmission();
+  material.emission = {em[0], em[1], em[2], em[3]};
 
   uint32_t materialIdx = 0; // one material per object for now
 
@@ -332,11 +334,10 @@ void GeometryExtractor::extractCamera(const geom::Camera &cam, RTRayGenParams &p
   params.cameraPos = {pos[0], pos[1], pos[2]};
 
   // The inverse Q-matrix maps (pixel_x, pixel_y, 1) → direction in world space.
-  // It's a 3x4 matrix (FixedMatrix<float,3,4> = 3 cols, 4 rows).
-  // We store it in the 4x4 invViewProj for convenience (top-left 4x3 block).
+  // We store it as-is; the render loop uses the camera's native pixel coordinates.
+  // The final image is flipped vertically after rendering to match Img8u convention.
   auto Qi = cam.getInvQMatrix();
-  params.invViewProj = RTMat4(); // zero
-  // Qi is stored as FixedMatrix<float,3,4> which is column-major: 3 columns of 4 rows
+  params.invViewProj = RTMat4();
   for (int c = 0; c < 3; c++)
     for (int r = 0; r < 4; r++)
       params.invViewProj.cols[c][r] = Qi(c, r);

@@ -44,6 +44,19 @@ public:
   /// Enable/disable FXAA post-process (fast image-based AA, nearly free).
   void setFXAA(bool enabled);
 
+  /// Enable/disable adaptive supersampling (re-raytrace edge pixels only).
+  void setAdaptiveAA(bool enabled, int edgeSpp = 4);
+
+  /// Enable/disable path tracing with temporal accumulation.
+  void setPathTracing(bool enabled);
+
+  /// Get the number of accumulated path tracing frames.
+  int getAccumulatedFrames() const;
+
+  /// Get the object instance index at a pixel (-1 = background).
+  /// The returned index corresponds to the order objects were extracted from the scene.
+  int getObjectAtPixel(int x, int y) const;
+
   /// Get the active backend name.
   const char *backendName() const;
 
@@ -51,6 +64,7 @@ private:
   geom::Scene &m_scene;
   GeometryExtractor m_extractor;
   std::unique_ptr<RaytracerBackend> m_backend;
+  RTRayGenParams m_lastCamera{}; // for detecting camera changes
 };
 
 } // namespace icl::rt

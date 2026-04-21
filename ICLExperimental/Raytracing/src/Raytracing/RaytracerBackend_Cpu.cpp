@@ -186,6 +186,11 @@ RTFloat3 CpuRTBackend::shade(const RTFloat3 &hitPos, const RTFloat3 &normal,
     color = color * (1.0f - r) + reflColor * r;
   }
 
+  // Add emission
+  color.x += material.emission.x;
+  color.y += material.emission.y;
+  color.z += material.emission.z;
+
   // Clamp to [0,1]
   color.x = std::min(1.0f, std::max(0.0f, color.x));
   color.y = std::min(1.0f, std::max(0.0f, color.y));
@@ -193,12 +198,11 @@ RTFloat3 CpuRTBackend::shade(const RTFloat3 &hitPos, const RTFloat3 &normal,
   return color;
 }
 
-// ---- Trace a ray and return color (recursive for reflections) ----
+// ---- Scene intersection (shared by traceColor and pathTrace) ----
 
-RTFloat3 CpuRTBackend::traceColor(const RTFloat3 &origin, const RTFloat3 &dir, int depth) const {
+int CpuRTBackend::traceScene(const RTFloat3 &origin, const RTFloat3 &dir, BVHHit &outHit) const {
   float closestT = 1e30f;
   int closestInstance = -1;
-  BVHHit closestHit;
 
   for (size_t i = 0; i < m_instances.size(); i++) {
     const auto &inst = m_instances[i];
@@ -228,53 +232,180 @@ RTFloat3 CpuRTBackend::traceColor(const RTFloat3 &origin, const RTFloat3 &dir, i
       if (worldT < closestT) {
         closestT = worldT;
         closestInstance = (int)i;
-        closestHit = hit;
+        outHit = hit;
       }
     }
   }
+  return closestInstance;
+}
 
-  if (closestInstance < 0) {
-    // Miss: background color
-    return {m_bgColor.x, m_bgColor.y, m_bgColor.z};
-  }
+// ---- Interpolate hit surface properties ----
 
-  const auto &inst = m_instances[closestInstance];
-  int bi = inst.blasIndex;
-  const auto &tri = m_blas[bi].triangles[closestHit.triIndex];
-  const auto &v0 = m_blas[bi].vertices[tri.v0];
-  const auto &v1 = m_blas[bi].vertices[tri.v1];
-  const auto &v2 = m_blas[bi].vertices[tri.v2];
+struct SurfaceHit {
+  RTFloat3 position;
+  RTFloat3 normal;
+  RTFloat4 color;
+  RTMaterial material;
+};
 
-  float w0 = 1.0f - closestHit.u - closestHit.v;
-  float w1 = closestHit.u;
-  float w2 = closestHit.v;
+static SurfaceHit interpolateHit(const CpuRTBackend::BLASEntry &blas,
+                                  const RTInstance &inst,
+                                  const std::vector<RTMaterial> &materials,
+                                  const BVHHit &hit) {
+  const auto &tri = blas.triangles[hit.triIndex];
+  const auto &v0 = blas.vertices[tri.v0];
+  const auto &v1 = blas.vertices[tri.v1];
+  const auto &v2 = blas.vertices[tri.v2];
 
+  float w0 = 1.0f - hit.u - hit.v;
+  float w1 = hit.u;
+  float w2 = hit.v;
+
+  SurfaceHit s;
   RTFloat3 localNormal{
     v0.normal.x*w0 + v1.normal.x*w1 + v2.normal.x*w2,
     v0.normal.y*w0 + v1.normal.y*w1 + v2.normal.y*w2,
     v0.normal.z*w0 + v1.normal.z*w1 + v2.normal.z*w2
   };
-  RTFloat3 worldNormal = normalize(transformNormal(inst.transformInverse, localNormal));
-
-  RTFloat4 vertColor{
+  s.normal = normalize(transformNormal(inst.transformInverse, localNormal));
+  s.color = {
     v0.color.x*w0 + v1.color.x*w1 + v2.color.x*w2,
     v0.color.y*w0 + v1.color.y*w1 + v2.color.y*w2,
     v0.color.z*w0 + v1.color.z*w1 + v2.color.z*w2,
     1.0f
   };
-
-  RTFloat3 localHit{
+  RTFloat3 localPos{
     v0.position.x*w0 + v1.position.x*w1 + v2.position.x*w2,
     v0.position.y*w0 + v1.position.y*w1 + v2.position.y*w2,
     v0.position.z*w0 + v1.position.z*w1 + v2.position.z*w2
   };
-  RTFloat3 worldHit = transformPoint(inst.transform, localHit);
+  s.position = transformPoint(inst.transform, localPos);
+  s.material = (inst.materialIndex < (int)materials.size())
+    ? materials[inst.materialIndex] : RTMaterial{};
+  return s;
+}
 
-  const auto &mat = (inst.materialIndex < (int)m_materials.size())
-    ? m_materials[inst.materialIndex]
-    : RTMaterial{};
+// ---- Trace a ray and return color (Blinn-Phong + reflections) ----
 
-  return shade(worldHit, worldNormal, dir, vertColor, mat, depth);
+RTFloat3 CpuRTBackend::traceColor(const RTFloat3 &origin, const RTFloat3 &dir, int depth) const {
+  BVHHit hit;
+  int instIdx = traceScene(origin, dir, hit);
+  if (instIdx < 0) return {m_bgColor.x, m_bgColor.y, m_bgColor.z};
+
+  SurfaceHit s = interpolateHit(m_blas[m_instances[instIdx].blasIndex],
+                                 m_instances[instIdx], m_materials, hit);
+  return shade(s.position, s.normal, dir, s.color, s.material, depth);
+}
+
+// ---- Path tracing with random hemisphere bounces ----
+
+static float fastRandFloat(uint32_t &state) {
+  state = state * 1103515245u + 12345u;
+  return (state >> 8 & 0xFFFF) / 65536.0f;
+}
+
+// Cosine-weighted hemisphere sample (importance sampling for diffuse)
+static RTFloat3 randomHemisphere(const RTFloat3 &normal, uint32_t &rng) {
+  float u1 = fastRandFloat(rng);
+  float u2 = fastRandFloat(rng);
+  float r = std::sqrt(u1);
+  float theta = 2.0f * 3.14159265f * u2;
+  float x = r * std::cos(theta);
+  float y = r * std::sin(theta);
+  float z = std::sqrt(std::max(0.0f, 1.0f - u1));
+
+  // Build tangent frame from normal
+  RTFloat3 up = std::abs(normal.y) < 0.999f ? RTFloat3{0,1,0} : RTFloat3{1,0,0};
+  RTFloat3 tangent = normalize(up.cross(normal));
+  RTFloat3 bitangent = normal.cross(tangent);
+
+  return normalize(tangent * x + bitangent * y + normal * z);
+}
+
+RTFloat3 CpuRTBackend::pathTrace(const RTFloat3 &origin, const RTFloat3 &dir,
+                                  int depth, uint32_t &rng) const {
+  if (depth > PT_MAX_BOUNCES) return {0, 0, 0};
+
+  BVHHit hit;
+  int instIdx = traceScene(origin, dir, hit);
+  if (instIdx < 0) {
+    // Sky: subtle gradient for ambient light
+    float t = 0.5f * (dir.y + 1.0f);
+    return RTFloat3{0.05f, 0.05f, 0.08f} * (1-t) + RTFloat3{0.1f, 0.12f, 0.2f} * t;
+  }
+
+  SurfaceHit s = interpolateHit(m_blas[m_instances[instIdx].blasIndex],
+                                 m_instances[instIdx], m_materials, hit);
+  RTFloat3 N = s.normal;
+  RTFloat3 baseColor{s.color.x, s.color.y, s.color.z};
+
+  // Flip normal if we hit the back face
+  if (N.dot(dir) > 0) N = N * -1.0f;
+
+  // Surface emission (area light)
+  RTFloat3 emitted{
+    s.material.emission.x,
+    s.material.emission.y,
+    s.material.emission.z
+  };
+
+  // Direct lighting: sample each light explicitly (next event estimation)
+  for (const auto &light : m_lights) {
+    if (!light.on) continue;
+    RTFloat3 lightPos{light.position.x, light.position.y, light.position.z};
+    RTFloat3 L = lightPos - s.position;
+    float dist = length(L);
+    if (dist < 1e-6f) continue;
+    L = L * (1.0f / dist);
+
+    float NdotL = N.dot(L);
+    if (NdotL <= 0) continue;
+
+    if (traceShadow(s.position + N * 1.0f, L, dist)) continue;
+
+    float atten = 1.0f / (light.attenuation.x + light.attenuation.y * dist +
+                          light.attenuation.z * dist * dist);
+
+    // Spot
+    float spotFactor = 1.0f;
+    if (light.spotCutoff < 180.0f) {
+      RTFloat3 spotDir = normalize(light.spotDirection);
+      float cosAngle = -(L.dot(spotDir));
+      float cosCutoff = std::cos(light.spotCutoff * 3.14159265f / 180.0f);
+      if (cosAngle < cosCutoff) continue;
+      spotFactor = std::pow(cosAngle, light.spotExponent);
+    }
+
+    RTFloat3 lightColor{light.diffuse.x, light.diffuse.y, light.diffuse.z};
+    emitted = emitted + RTFloat3{
+      lightColor.x * baseColor.x * NdotL * atten * spotFactor,
+      lightColor.y * baseColor.y * NdotL * atten * spotFactor,
+      lightColor.z * baseColor.z * NdotL * atten * spotFactor
+    };
+  }
+
+  // Indirect lighting: one random bounce (cosine-weighted hemisphere)
+  RTFloat3 bounceDir = randomHemisphere(N, rng);
+  RTFloat3 indirect = pathTrace(s.position + N * 1.0f, bounceDir, depth + 1, rng);
+
+  // Diffuse BRDF: albedo / pi, but cosine weighting in the hemisphere sample
+  // cancels with the cos(theta)/pi in the rendering equation, leaving just albedo
+  RTFloat3 gi{
+    baseColor.x * indirect.x,
+    baseColor.y * indirect.y,
+    baseColor.z * indirect.z
+  };
+
+  // Mirror reflection for reflective materials
+  if (s.material.reflectivity > 0.01f) {
+    RTFloat3 reflDir = dir - N * (2.0f * dir.dot(N));
+    RTFloat3 reflColor = pathTrace(s.position + N * 1.0f, normalize(reflDir), depth + 1, rng);
+    float r = s.material.reflectivity;
+    emitted = emitted * (1-r);
+    gi = gi * (1-r) + reflColor * r;
+  }
+
+  return emitted + gi;
 }
 
 // ---- Main render ----
@@ -295,82 +426,188 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
   icl8u *G = m_output.getData(1);
   icl8u *B = m_output.getData(2);
 
+  // Allocate object ID buffer
+  int n = w * h;
+  m_objectIdBuffer.resize(n);
+  std::fill(m_objectIdBuffer.begin(), m_objectIdBuffer.end(), -1);
+
   // Ray generation uses inverse Q-matrix stored in camera.invViewProj.
   // Direction = Qi * (px, py, 1), where Qi is the 4x3 sub-matrix.
   const auto &Qi = camera.invViewProj;
   RTFloat3 camPos = camera.cameraPos;
 
+  // Path tracing: accumulate across frames
+  if (m_pathTracing) {
+    int n = w * h;
+    if ((int)m_accumR.size() != n) {
+      m_accumR.assign(n, 0); m_accumG.assign(n, 0); m_accumB.assign(n, 0);
+      m_accumFrame = 0;
+    }
+
+    m_accumFrame++;
+    float weight = 1.0f / m_accumFrame;
+
+    #pragma omp parallel for schedule(dynamic, 4)
+    for (int y = 0; y < h; y++) {
+      uint32_t rng = (uint32_t)(y * 7919 + m_accumFrame * 1361 + 5381);
+      for (int x = 0; x < w; x++) {
+        float px = x + fastRandFloat(rng);
+        float py = y + fastRandFloat(rng);
+        RTFloat3 dir = generateRayDir(Qi, px, py);
+        RTFloat3 c = pathTrace(camPos, dir, 0, rng);
+
+        int idx = x + y * w;
+
+        // Object ID (only on first frame to avoid overhead)
+        if (m_accumFrame == 1) {
+          BVHHit pickHit;
+          m_objectIdBuffer[idx] = traceScene(camPos, generateRayDir(Qi, x + 0.5f, y + 0.5f), pickHit);
+        }
+        // Running average: new = old * (1 - 1/N) + sample * (1/N)
+        m_accumR[idx] += (c.x - m_accumR[idx]) * weight;
+        m_accumG[idx] += (c.y - m_accumG[idx]) * weight;
+        m_accumB[idx] += (c.z - m_accumB[idx]) * weight;
+
+        R[idx] = (icl8u)(std::min(255.0f, std::max(0.0f, m_accumR[idx] * 255)));
+        G[idx] = (icl8u)(std::min(255.0f, std::max(0.0f, m_accumG[idx] * 255)));
+        B[idx] = (icl8u)(std::min(255.0f, std::max(0.0f, m_accumB[idx] * 255)));
+      }
+    }
+    return; // skip MSAA/FXAA/adaptive in path tracing mode
+  }
+
+  // Non-path-tracing mode: direct illumination with optional MSAA
   int spp = m_aaSamples;
   float invSpp = 1.0f / spp;
-
-  // Precompute jitter offsets for stratified sampling
-  // For N samples, use a sqrt(N) x sqrt(N) grid with jitter
   int gridSize = (int)std::ceil(std::sqrt((float)spp));
   float cellSize = 1.0f / gridSize;
 
   #pragma omp parallel for schedule(dynamic, 4)
   for (int y = 0; y < h; y++) {
-    // Per-thread RNG for jitter (seeded from row index for reproducibility)
     uint32_t rngState = (uint32_t)(y * 1237 + 5381);
-    auto fastRand = [&]() -> float {
-      rngState = rngState * 1103515245u + 12345u;
-      return (rngState >> 8 & 0xFFFF) / 65536.0f;
-    };
 
     for (int x = 0; x < w; x++) {
       RTFloat3 accum{0, 0, 0};
 
+      // Record object ID for picking (use center ray)
+      BVHHit pickHit;
+      m_objectIdBuffer[x + y * w] = traceScene(camPos, generateRayDir(Qi, x + 0.5f, y + 0.5f), pickHit);
+
       if (spp == 1) {
-        // No AA: single ray through pixel center
-        float px = x + 0.5f;
-        float py = y + 0.5f;
-        RTFloat3 dir{
-          Qi.cols[0][0]*px + Qi.cols[1][0]*py + Qi.cols[2][0],
-          Qi.cols[0][1]*px + Qi.cols[1][1]*py + Qi.cols[2][1],
-          Qi.cols[0][2]*px + Qi.cols[1][2]*py + Qi.cols[2][2]
-        };
-        accum = traceColor(camPos, normalize(dir), 0);
+        accum = traceColor(camPos, generateRayDir(Qi, x + 0.5f, y + 0.5f), 0);
       } else {
-        // Stratified jittered multi-sampling
         int sample = 0;
         for (int sy = 0; sy < gridSize && sample < spp; sy++) {
           for (int sx = 0; sx < gridSize && sample < spp; sx++, sample++) {
-            float jx = (sx + fastRand()) * cellSize;
-            float jy = (sy + fastRand()) * cellSize;
-            float px = x + jx;
-            float py = y + jy;
-            RTFloat3 dir{
-              Qi.cols[0][0]*px + Qi.cols[1][0]*py + Qi.cols[2][0],
-              Qi.cols[0][1]*px + Qi.cols[1][1]*py + Qi.cols[2][1],
-              Qi.cols[0][2]*px + Qi.cols[1][2]*py + Qi.cols[2][2]
-            };
-            RTFloat3 c = traceColor(camPos, normalize(dir), 0);
-            accum = accum + c;
+            float px = x + (sx + fastRandFloat(rngState)) * cellSize;
+            float py = y + (sy + fastRandFloat(rngState)) * cellSize;
+            accum = accum + traceColor(camPos, generateRayDir(Qi, px, py), 0);
           }
         }
         accum = accum * invSpp;
       }
 
-      // ICL camera pixel y=0 is bottom of view; Img8u row 0 is top → flip Y
-      int idx = x + (h - 1 - y) * w;
+      int idx = x + y * w;
       R[idx] = (icl8u)(std::min(255.0f, accum.x * 255));
       G[idx] = (icl8u)(std::min(255.0f, accum.y * 255));
       B[idx] = (icl8u)(std::min(255.0f, accum.z * 255));
     }
   }
 
+  if (m_adaptiveAA) applyAdaptiveAA(camera);
   if (m_fxaa) applyFXAA();
 }
 
+// ---- Ray direction helper ----
+
+RTFloat3 CpuRTBackend::generateRayDir(const RTMat4 &Qi, float px, float py) const {
+  return normalize(RTFloat3{
+    Qi.cols[0][0]*px + Qi.cols[1][0]*py + Qi.cols[2][0],
+    Qi.cols[0][1]*px + Qi.cols[1][1]*py + Qi.cols[2][1],
+    Qi.cols[0][2]*px + Qi.cols[1][2]*py + Qi.cols[2][2]
+  });
+}
+
+// ---- Adaptive supersampling ----
+// After 1-spp render, detect edges by luminance contrast, re-raytrace edge pixels at higher spp.
+
+void CpuRTBackend::applyAdaptiveAA(const RTRayGenParams &camera) {
+  int w = camera.imageWidth;
+  int h = camera.imageHeight;
+  if (w < 3 || h < 3) return;
+
+  const icl8u *R = m_output.getData(0);
+  const icl8u *G = m_output.getData(1);
+  const icl8u *B = m_output.getData(2);
+
+  // Fast luminance: use green channel as proxy (0.587 weight, dominates)
+  // Detect edges by checking only 4 cardinal neighbors (not 8)
+  std::vector<uint8_t> edgeMask(w * h, 0);
+  constexpr int EDGE_THRESHOLD = 40;
+
+  #pragma omp parallel for schedule(static)
+  for (int y = 1; y < h - 1; y++) {
+    for (int x = 1; x < w - 1; x++) {
+      int i = x + y * w;
+      int g = G[i];
+      int maxDiff = std::max({std::abs(g - (int)G[i-1]), std::abs(g - (int)G[i+1]),
+                              std::abs(g - (int)G[i-w]), std::abs(g - (int)G[i+w])});
+      if (maxDiff > EDGE_THRESHOLD) edgeMask[i] = 1;
+    }
+  }
+
+  // Re-raytrace edge pixels with jittered multi-sampling
+  const auto &Qi = camera.invViewProj;
+  RTFloat3 camPos = camera.cameraPos;
+  int spp = m_adaptiveEdgeSpp;
+  float invSpp = 1.0f / spp;
+  int gridSize = (int)std::ceil(std::sqrt((float)spp));
+  float cellSize = 1.0f / gridSize;
+
+  icl8u *dR = m_output.getData(0);
+  icl8u *dG = m_output.getData(1);
+  icl8u *dB = m_output.getData(2);
+
+  #pragma omp parallel for schedule(dynamic, 4)
+  for (int y = 1; y < h - 1; y++) {
+    uint32_t rngState = (uint32_t)(y * 7919 + 1361);
+    auto fastRand = [&]() -> float {
+      rngState = rngState * 1103515245u + 12345u;
+      return (rngState >> 8 & 0xFFFF) / 65536.0f;
+    };
+
+    int camY = y;
+
+    for (int x = 0; x < w; x++) {
+      int idx = x + y * w;
+      if (!edgeMask[idx]) continue;
+
+      RTFloat3 accum{0, 0, 0};
+      int sample = 0;
+      for (int sy = 0; sy < gridSize && sample < spp; sy++) {
+        for (int sx = 0; sx < gridSize && sample < spp; sx++, sample++) {
+          float px = x + (sx + fastRand()) * cellSize;
+          float py = camY + (sy + fastRand()) * cellSize;
+          accum = accum + traceColor(camPos, generateRayDir(Qi, px, py), 0);
+        }
+      }
+      accum = accum * invSpp;
+      dR[idx] = (icl8u)(std::min(255.0f, accum.x * 255));
+      dG[idx] = (icl8u)(std::min(255.0f, accum.y * 255));
+      dB[idx] = (icl8u)(std::min(255.0f, accum.z * 255));
+    }
+  }
+}
+
 // ---- FXAA post-process ----
-// Simplified FXAA: detect edges by luminance contrast, blend along edge direction.
+// Lightweight edge AA: only blend at strong silhouette edges, perpendicular
+// to the edge direction, with a conservative blend factor.
 
 void CpuRTBackend::applyFXAA() {
   int w = m_output.getWidth();
   int h = m_output.getHeight();
   if (w < 3 || h < 3) return;
 
-  // Work on a copy so we read original values while writing blended ones
   core::Img8u src(*m_output.deepCopy());
   const icl8u *sR = src.getData(0);
   const icl8u *sG = src.getData(1);
@@ -379,60 +616,43 @@ void CpuRTBackend::applyFXAA() {
   icl8u *dG = m_output.getData(1);
   icl8u *dB = m_output.getData(2);
 
-  auto luma = [](int r, int g, int b) -> float {
-    return 0.299f * r + 0.587f * g + 0.114f * b;
-  };
+  // Precompute luminance
+  std::vector<float> luma(w * h);
+  for (int i = 0; i < w * h; i++) {
+    luma[i] = 0.299f * sR[i] + 0.587f * sG[i] + 0.114f * sB[i];
+  }
 
-  auto sample = [&](int x, int y) -> float {
-    int i = std::max(0, std::min(w-1, x)) + std::max(0, std::min(h-1, y)) * w;
-    return luma(sR[i], sG[i], sB[i]);
-  };
-
-  auto sampleRGB = [&](int x, int y, float &r, float &g, float &b) {
-    int i = std::max(0, std::min(w-1, x)) + std::max(0, std::min(h-1, y)) * w;
-    r = sR[i]; g = sG[i]; b = sB[i];
-  };
-
-  constexpr float EDGE_THRESHOLD = 16.0f;  // minimum luminance contrast to trigger AA
-  constexpr float BLEND_FACTOR = 0.5f;
-
-  #pragma omp parallel for schedule(dynamic, 8)
+  #pragma omp parallel for schedule(dynamic, 16)
   for (int y = 1; y < h - 1; y++) {
     for (int x = 1; x < w - 1; x++) {
-      float lumaC  = sample(x, y);
-      float lumaN  = sample(x, y-1);
-      float lumaS  = sample(x, y+1);
-      float lumaW  = sample(x-1, y);
-      float lumaE  = sample(x+1, y);
+      int i = x + y * w;
+      float lC = luma[i];
+      float lN = luma[i - w], lS = luma[i + w];
+      float lW = luma[i - 1], lE = luma[i + 1];
 
-      float rangeMax = std::max({lumaC, lumaN, lumaS, lumaW, lumaE});
-      float rangeMin = std::min({lumaC, lumaN, lumaS, lumaW, lumaE});
-      float range = rangeMax - rangeMin;
+      // Only trigger on strong contrast (silhouette edges, not shading gradients)
+      float maxL = std::max({lC, lN, lS, lW, lE});
+      float minL = std::min({lC, lN, lS, lW, lE});
+      float contrast = maxL - minL;
+      if (contrast < 40.0f) continue; // high threshold — only real edges
 
-      if (range < EDGE_THRESHOLD) continue; // not an edge
+      // Edge direction: compare horizontal vs vertical gradient
+      float gH = std::abs(lW - lE);
+      float gV = std::abs(lN - lS);
 
-      // Determine edge direction
-      float gradH = std::abs(lumaW - lumaC) + std::abs(lumaE - lumaC);
-      float gradV = std::abs(lumaN - lumaC) + std::abs(lumaS - lumaC);
-      bool horizontal = gradH < gradV;
-
-      // Blend with neighbors along the edge direction
-      float r0, g0, b0, r1, g1, b1, r2, g2, b2;
-      sampleRGB(x, y, r0, g0, b0);
-
-      if (horizontal) {
-        sampleRGB(x-1, y, r1, g1, b1);
-        sampleRGB(x+1, y, r2, g2, b2);
-      } else {
-        sampleRGB(x, y-1, r1, g1, b1);
-        sampleRGB(x, y+1, r2, g2, b2);
+      // Blend with the two neighbors perpendicular to the edge, at 25%
+      // This is subtle enough to smooth jaggies without blurring
+      int n1, n2;
+      if (gV > gH) { // horizontal edge → blend vertically
+        n1 = i - w; n2 = i + w;
+      } else {        // vertical edge → blend horizontally
+        n1 = i - 1; n2 = i + 1;
       }
 
-      float f = BLEND_FACTOR;
-      int idx = x + y * w;
-      dR[idx] = (icl8u)std::min(255.0f, r0 * (1-f) + (r1 + r2) * 0.5f * f);
-      dG[idx] = (icl8u)std::min(255.0f, g0 * (1-f) + (g1 + g2) * 0.5f * f);
-      dB[idx] = (icl8u)std::min(255.0f, b0 * (1-f) + (b1 + b2) * 0.5f * f);
+      constexpr float f = 0.25f;
+      dR[i] = (icl8u)(sR[i] * (1-f) + (sR[n1] + sR[n2]) * 0.5f * f);
+      dG[i] = (icl8u)(sG[i] * (1-f) + (sG[n1] + sG[n2]) * 0.5f * f);
+      dB[i] = (icl8u)(sB[i] * (1-f) + (sB[n1] + sB[n2]) * 0.5f * f);
     }
   }
 }

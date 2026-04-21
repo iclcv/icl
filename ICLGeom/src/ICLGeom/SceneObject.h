@@ -736,8 +736,9 @@ namespace icl::geom {
     inline icl8u getShininess() const { return m_shininess; }
 
     /// sets the material shininess (default is 128)
-    inline void setShininess(icl8u value){
+    inline void setShininess(icl8u value, bool recursive = true){
       m_shininess = value;
+      if (recursive) for (int i = 0; i < getChildCount(); i++) getChild(i)->setShininess(value, true);
     }
 
     /// returns the materials specular reflectance (in [0,1] range)
@@ -745,15 +746,28 @@ namespace icl::geom {
 
     /// sets the materials specular reflectance
     /** given color ranges are expected in range [0,255] */
-    inline void setSpecularReflectance(const GeomColor &values){
+    inline void setSpecularReflectance(const GeomColor &values, bool recursive = true){
       m_specularReflectance = values*(1.0/255);
+      if (recursive) for (int i = 0; i < getChildCount(); i++) getChild(i)->setSpecularReflectance(values, true);
     }
 
     /// returns the reflectivity for raytracing (0=none, 1=mirror)
     inline float getReflectivity() const { return m_reflectivity; }
 
     /// sets the reflectivity for raytracing (0=none, 1=mirror)
-    inline void setReflectivity(float value) { m_reflectivity = std::max(0.0f, std::min(1.0f, value)); }
+    inline void setReflectivity(float value, bool recursive = true) {
+      m_reflectivity = std::max(0.0f, std::min(1.0f, value));
+      if (recursive) for (int i = 0; i < getChildCount(); i++) getChild(i)->setReflectivity(value, true);
+    }
+
+    /// returns the emission color for raytracing (in [0,1] range, pre-multiplied by intensity)
+    inline const GeomColor &getEmission() const { return m_emission; }
+
+    /// sets the emission color for raytracing (color in [0,255], intensity multiplier)
+    inline void setEmission(const GeomColor &color, float intensity = 1.0f, bool recursive = true) {
+      m_emission = color * (intensity / 255.0f);
+      if (recursive) for (int i = 0; i < getChildCount(); i++) getChild(i)->setEmission(color, intensity, true);
+    }
 
     /// returns whether depth test is enabled for this object
     inline bool getDepthTestEnabled() const{ return m_depthTestEnabled;  }
@@ -828,6 +842,7 @@ namespace icl::geom {
     icl8u m_shininess;
     GeomColor m_specularReflectance;
     float m_reflectivity = 0; //!< raytracing reflectivity (0=none, 1=mirror)
+    GeomColor m_emission{0,0,0,0}; //!< raytracing emission (RGB in [0,1], pre-multiplied by intensity)
 
     private:
 

@@ -6,6 +6,7 @@
 #include "RaytracerBackend_Cpu.h"
 #include <ICLGeom/Scene.h>
 #include <ICLUtils/Macros.h>
+#include <cstring>
 
 namespace icl::rt {
 
@@ -43,6 +44,19 @@ void SceneRaytracer::render(int camIndex) {
                             extracted.backgroundColor);
   }
 
+  // Detect camera changes → reset path tracing accumulation
+  if (std::memcmp(&extracted.camera, &m_lastCamera, sizeof(RTRayGenParams)) != 0) {
+    auto *cpu = dynamic_cast<CpuRTBackend *>(m_backend.get());
+    if (cpu) cpu->resetAccumulation();
+    m_lastCamera = extracted.camera;
+  }
+
+  // Also reset if scene geometry changed
+  if (extracted.anyGeometryChanged || extracted.anyTransformChanged) {
+    auto *cpu = dynamic_cast<CpuRTBackend *>(m_backend.get());
+    if (cpu) cpu->resetAccumulation();
+  }
+
   // Render
   m_backend->render(extracted.camera);
 }
@@ -67,6 +81,26 @@ void SceneRaytracer::setAASamples(int spp) {
 void SceneRaytracer::setFXAA(bool enabled) {
   auto *cpu = dynamic_cast<CpuRTBackend *>(m_backend.get());
   if (cpu) cpu->setFXAA(enabled);
+}
+
+void SceneRaytracer::setAdaptiveAA(bool enabled, int edgeSpp) {
+  auto *cpu = dynamic_cast<CpuRTBackend *>(m_backend.get());
+  if (cpu) cpu->setAdaptiveAA(enabled, edgeSpp);
+}
+
+void SceneRaytracer::setPathTracing(bool enabled) {
+  auto *cpu = dynamic_cast<CpuRTBackend *>(m_backend.get());
+  if (cpu) cpu->setPathTracing(enabled);
+}
+
+int SceneRaytracer::getAccumulatedFrames() const {
+  auto *cpu = dynamic_cast<CpuRTBackend *>(m_backend.get());
+  return cpu ? cpu->getAccumulatedFrames() : 0;
+}
+
+int SceneRaytracer::getObjectAtPixel(int x, int y) const {
+  auto *cpu = dynamic_cast<CpuRTBackend *>(m_backend.get());
+  return cpu ? cpu->getObjectAtPixel(x, y) : -1;
 }
 
 const char *SceneRaytracer::backendName() const {
