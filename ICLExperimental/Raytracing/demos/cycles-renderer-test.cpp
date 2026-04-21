@@ -26,13 +26,13 @@ int main(int argc, const char **argv) {
   Scene scene;
 
   // Camera at (0, 200, -600), looking toward origin, Y up
-  // Same position that showed the spheres, but with reasonable FOV
+  // Camera with standard intrinsics: f=5mm, mx=200px/mm → ~43° hfov
   Camera cam(Vec(0, 200, -600, 1),        // position (mm)
-             Vec(0, -0.15, 1, 1),          // norm — mostly forward, slight downward tilt
+             Vec(0, -0.15, 1, 1),          // norm
              Vec(0, 1, 0, 1),              // up
-             600,                           // focal length (fov ≈ 67° with mx=1)
+             5,                             // focal length (mm)
              utils::Point32f(0, 0),         // principal point offset
-             1.0, 1.0,                      // sampling res x, y
+             200, 200,                      // sampling res (px/mm)
              0,                             // skew
              Camera::RenderParams(utils::Size(800, 600), 1.0f, 100000.0f));
   scene.addCamera(cam);

@@ -29,6 +29,7 @@
 #include "scene/background.h"
 #include "scene/integrator.h"
 #include "util/transform.h"
+#include "kernel/types.h"
 
 #include <cmath>
 #include <cstring>
@@ -457,21 +458,29 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
 
   cclCam->set_matrix(tfm);
 
-  // FOV from ICL intrinsics
+  // FOV from ICL intrinsics: fov = 2 * atan(w / (2 * f * mx))
   float f = cam.getFocalLength();
   float mx = cam.getSamplingResolutionX();
   if (f > 0 && mx > 0 && w > 0) {
     float fov = 2.0f * std::atan(float(w) / (2.0f * f * mx));
+    // Clamp to reasonable range (5° to 170°)
+    fov = std::max(0.087f, std::min(2.97f, fov));
     cclCam->set_fov(fov);
   }
 
-  // Clip planes
-  if (rp.clipZNear > 0) cclCam->set_nearclip(rp.clipZNear * sceneScale);
-  if (rp.clipZFar > 0) cclCam->set_farclip(rp.clipZFar * sceneScale);
+  // Clip planes (clamp to reasonable range for Cycles)
+  float nearClip = rp.clipZNear * sceneScale;
+  float farClip = rp.clipZFar * sceneScale;
+  if (nearClip <= 0) nearClip = 0.01f;
+  if (farClip <= nearClip) farClip = nearClip * 10000.0f;
+  // Cycles doesn't handle extreme far/near ratios well
+  if (farClip / nearClip > 1e6f) farClip = nearClip * 1e6f;
+  cclCam->set_nearclip(nearClip);
+  cclCam->set_farclip(farClip);
 
   cclCam->compute_auto_viewplane();
   cclCam->need_flags_update = true;
-  cclCam->update(cclScene);
+  // Note: don't call cclCam->update(cclScene) here — the Session handles it
 }
 
 void SceneSynchronizer::syncLights(const geom::Scene &iclScene,
@@ -498,7 +507,7 @@ void SceneSynchronizer::syncLights(const geom::Scene &iclScene,
         diffuse[0] / 255.0f * intensity,
         diffuse[1] / 255.0f * intensity,
         diffuse[2] / 255.0f * intensity));
-    cclLight->set_radius(0.05f);
+    cclLight->set_radius(0.1f * sceneScale);  // small light source
 
     // Emission shader for light
     Shader *lightShader = cclScene->create_node<Shader>();
@@ -514,11 +523,12 @@ void SceneSynchronizer::syncLights(const geom::Scene &iclScene,
     used_shaders.push_back_slow(lightShader);
     cclLight->set_used_shaders(used_shaders);
 
-    // Object for the light
+    // Object for the light (hidden from camera to avoid visible sphere)
     ccl::Object *lightObj = cclScene->create_node<ccl::Object>();
     lightObj->set_geometry(cclLight);
     lightObj->set_tfm(transform_translate(make_float3(
         pos[0] * sceneScale, pos[1] * sceneScale, pos[2] * sceneScale)));
+    lightObj->set_visibility(PATH_RAY_ALL_VISIBILITY & ~PATH_RAY_CAMERA);
   }
 }
 
