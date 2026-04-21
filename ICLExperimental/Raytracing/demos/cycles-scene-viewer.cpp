@@ -66,6 +66,87 @@ static void handleMouse(const MouseEvent &evt) {
   if (evt.isDragEvent()) pressPending = false;
 }
 
+/// Decimate a SceneObject using vertex clustering.
+/// gridRes controls the grid resolution per axis (higher = more detail).
+static void decimateMesh(SceneObject &obj, int gridRes = 64) {
+  auto &verts = obj.getVertices();
+  const auto &prims = obj.getPrimitives();
+  if (verts.size() < 100) return;
+
+  // Compute bounding box
+  float bmin[3] = {1e10f, 1e10f, 1e10f}, bmax[3] = {-1e10f, -1e10f, -1e10f};
+  for (const auto &v : verts) {
+    for (int i = 0; i < 3; i++) {
+      bmin[i] = std::min(bmin[i], v[i]);
+      bmax[i] = std::max(bmax[i], v[i]);
+    }
+  }
+  float pad = 0.001f;
+  for (int i = 0; i < 3; i++) { bmin[i] -= pad; bmax[i] += pad; }
+  float cellSize[3];
+  for (int i = 0; i < 3; i++) cellSize[i] = (bmax[i] - bmin[i]) / gridRes;
+
+  // Map each vertex to a grid cell, accumulate centroids
+  auto cellKey = [&](const Vec &v) -> int {
+    int cx = std::min((int)((v[0] - bmin[0]) / cellSize[0]), gridRes - 1);
+    int cy = std::min((int)((v[1] - bmin[1]) / cellSize[1]), gridRes - 1);
+    int cz = std::min((int)((v[2] - bmin[2]) / cellSize[2]), gridRes - 1);
+    return cx + cy * gridRes + cz * gridRes * gridRes;
+  };
+
+  std::unordered_map<int, std::pair<Vec, int>> cells; // cell → (sum, count)
+  std::vector<int> vertToCell(verts.size());
+  for (size_t i = 0; i < verts.size(); i++) {
+    int key = cellKey(verts[i]);
+    vertToCell[i] = key;
+    auto &[sum, cnt] = cells[key];
+    if (cnt == 0) sum = Vec(0, 0, 0, 1);
+    sum[0] += verts[i][0]; sum[1] += verts[i][1]; sum[2] += verts[i][2];
+    cnt++;
+  }
+
+  // Assign new vertex indices and compute centroids
+  std::unordered_map<int, int> cellToNewIdx;
+  std::vector<Vec> newVerts;
+  for (auto &[key, sc] : cells) {
+    cellToNewIdx[key] = newVerts.size();
+    float n = sc.second;
+    newVerts.push_back(Vec(sc.first[0] / n, sc.first[1] / n, sc.first[2] / n, 1));
+  }
+
+  // Collect triangles, skip degenerate (all 3 verts in same cell)
+  struct Tri { int a, b, c; };
+  std::vector<Tri> newTris;
+  for (const auto *prim : prims) {
+    auto addTri = [&](int a, int b, int c) {
+      int na = cellToNewIdx[vertToCell[a]];
+      int nb = cellToNewIdx[vertToCell[b]];
+      int nc = cellToNewIdx[vertToCell[c]];
+      if (na != nb && nb != nc && na != nc) {
+        newTris.push_back({na, nb, nc});
+      }
+    };
+    if (prim->type == Primitive::triangle) {
+      auto *tp = dynamic_cast<const TrianglePrimitive*>(prim);
+      if (tp) addTri(tp->i(0), tp->i(1), tp->i(2));
+    } else if (prim->type == Primitive::quad || prim->type == Primitive::texture) {
+      auto *qp = dynamic_cast<const QuadPrimitive*>(prim);
+      if (qp) { addTri(qp->i(0), qp->i(1), qp->i(2)); addTri(qp->i(0), qp->i(2), qp->i(3)); }
+    }
+  }
+
+  size_t oldV = verts.size(), oldT = prims.size();
+
+  // Rebuild the SceneObject
+  obj.clearAllPrimitives();
+  verts.clear();
+  for (auto &v : newVerts) obj.addVertex(v);
+  for (auto &t : newTris) obj.addTriangle(t.a, t.b, t.c);
+
+  fprintf(stderr, "  Decimated: %zu→%zu verts, %zu→%zu tris (grid=%d)\n",
+          oldV, newVerts.size(), oldT, newTris.size(), gridRes);
+}
+
 /// Compute the bounding box of all scene objects (in world space)
 static void computeSceneBounds(float &minX, float &minY, float &minZ,
                                 float &maxX, float &maxY, float &maxZ) {
@@ -98,7 +179,10 @@ static void setupScene() {
       obj->setVisible(Primitive::line, false);
       obj->setVisible(Primitive::vertex, false);
 
-      // Normals will be computed after vertex scaling (below)
+      // Decimate if requested
+      if (pa("-decimate")) {
+        decimateMesh(*obj, pa("-decimate").as<int>());
+      }
 
       // Default PBR material with smooth shading
       if (!obj->getMaterial()) {
@@ -299,6 +383,7 @@ void run() {
   renderer->setInitialSamples(initSamples);
   renderer->setSamples(maxIter);
   renderer->setMaxBounces(bounces);
+  renderer->setDenoising(false);  // OIDN off by default — too slow for interactive
   renderer->setExposure(exposure);
   renderer->setBrightness(brightness);
 
@@ -349,6 +434,7 @@ static void offscreen_render(const std::string &output) {
   renderer.setSceneScale(1.0f);
   renderer.setSamples(samples);
   renderer.setMaxBounces(4);
+  renderer.setDenoising(false);
   renderer.setBrightness(0.3f);
   renderer.renderBlocking(0);
 
@@ -373,12 +459,12 @@ int main(int argc, char **argv) {
   }
 
   if (offscreen) {
-    pa_init(argc, argv, "-size(Size=800x600) -scene(...) -offscreen(string) -samples(int=16)");
+    pa_init(argc, argv, "-size(Size=800x600) -scene(...) -offscreen(string) -samples(int=16) -decimate(int)");
     offscreen_render(offscreenFile);
     return 0;
   }
 
   return ICLApp(argc, argv,
-    "-size(Size=1280x960) -scene(...)",
+    "-size(Size=1280x960) -scene(...) -decimate(int)",
     init, run).exec();
 }
