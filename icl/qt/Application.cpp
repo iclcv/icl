@@ -21,10 +21,10 @@ using namespace icl::utils;
 
 namespace icl::qt {
   struct ExecThread : public Thread{
-    typedef void (*callback)(void);
+    using callback = ICLApplication::callback;
     callback cb;
-    ExecThread(callback cb):cb(cb){
-      if(!cb) throw ICLException("ExecThread called with NULL function!");
+    ExecThread(callback cb):cb(std::move(cb)){
+      if(!this->cb) throw ICLException("ExecThread called with NULL function!");
     }
     void run() override {
       while(running()){

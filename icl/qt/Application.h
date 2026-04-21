@@ -79,7 +79,12 @@ namespace icl::qt {
     QOpenGLWidget *sharedWidget;
 
     /// just type definition for convenience a void valued function with no args)
-    using callback = void(*)(void);
+    /// Callback signature for init / threaded-run / finalize / shutdown
+    /// hooks. Used to be a raw function pointer; now `std::function` so
+    /// capturing lambdas work too. Plain function pointers still convert
+    /// implicitly, so all existing `app.addThread(my_run)` call sites are
+    /// unchanged.
+    using callback = std::function<void()>;
 
     /// Such an exception is returned if a 2nd instance of ICLApplication is created
     struct SecondSingeltonException : public utils::ICLException{

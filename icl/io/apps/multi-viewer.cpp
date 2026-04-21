@@ -150,18 +150,21 @@ void init(){
   }
 }
 
-template<int N>
-void run(){
+// Threaded function. In synchronous mode (default) only thread 0 is
+// registered and it drives every input + GUI bookkeeping per tick. In
+// async mode each input gets its own thread (`n` is the input index);
+// thread 0 still owns the FPS counter and save button.
+void run(int n){
   while(!gui["on"].as<bool>()){
     Thread::msleep(10);
-    if(!N && !asyncMode){
+    if(n == 0 && !asyncMode){
       static ButtonHandle save = gui["save"];
       if(save.wasTriggered()){
         save_all();
       }
     }
   }
-  if(!N){
+  if(n == 0){
     gui["fps"].render();
     if(!asyncMode){
       static ButtonHandle save = gui["save"];
@@ -179,8 +182,8 @@ void run(){
       }
     }
   }
-  if(N || asyncMode){
-    inputs[N]();
+  if(n != 0 || asyncMode){
+    inputs[n]();
   }
 }
 
@@ -209,17 +212,11 @@ int main(int n, char **ppc){
   if(pa("-a")){
     if(pa("-o")) throw ICLException("output is not supported in async mode");
     asyncMode = true;
-    if(nInputs > 8) throw ICLException("asynchronous mode is only supported for up to 8 inputs!");
-    if(nInputs > 0) app.addThread(run<0>);
-    if(nInputs > 1) app.addThread(run<1>);
-    if(nInputs > 2) app.addThread(run<2>);
-    if(nInputs > 3) app.addThread(run<3>);
-    if(nInputs > 4) app.addThread(run<4>);
-    if(nInputs > 5) app.addThread(run<5>);
-    if(nInputs > 6) app.addThread(run<6>);
-    if(nInputs > 7) app.addThread(run<7>);
+    for(int i=0;i<nInputs;++i){
+      app.addThread([i]{ run(i); });
+    }
   }else{
-    app.addThread(run<0>);
+    app.addThread([]{ run(0); });
   }
   return app.exec();
 }

@@ -8,8 +8,6 @@
 VSplit gui;
 std::string filename;
 GenericGrabber grabber;
-bool disableNextUpdate = false;
-bool mouseInWindow = false;
 std::recursive_mutex mtex;
 bool paused=false;
 
@@ -84,7 +82,6 @@ void run(){
   gui["fps"].render();
 
   int p = parse<int>(grabber.getPropertyValue(::pos));
-  disableNextUpdate = true;
   if(pos.getValue() != p) pos.setValue(p);
 #ifndef ICL_HAVE_OPENCV
   if(parse<int>(grabber.getPropertyValue("speed")) != speed){
@@ -110,5 +107,5 @@ int main(int n,char **ppc){
     return -1;
   }
   filename = ppc[1];
-  return ICLApplication(n,ppc,"",init,run).exec();
+  return ICLApp(n,ppc,"",init,run).exec();
 }

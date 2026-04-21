@@ -11,9 +11,10 @@
 
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/UnaryOp.h>
 #include <icl/core/BayerConverter.h>
 #include <icl/core/CCFunctions.h>
-#include <pthread.h>
+#include <memory>
 
 using namespace icl;
 using namespace icl::utils;
@@ -23,9 +24,6 @@ using namespace icl::filter;
 #ifdef ICL_HAVE_QT
 VBox gui;
 #endif
-
-// also comment in include/ICLUtils/PThreadFix.h and .cpp
-// EXPLICITLY_INSTANTIATE_PTHREAD_AT_FORK;
 
 bool first = true;
 bool *ppEnabled = 0;
@@ -42,18 +40,12 @@ std::vector<std::string> remove_size(const std::vector<std::string> &v){
 
 void init_grabber(){
   grabber.init(pa("-i"));
-  //grabber->setIgnoreDesiredParams(true);
-  //if(pa("-size")){
-  //  grabber.useDesired<Size>(pa("-size"));
-  //}
   if(pa("-depth")){
     grabber.useDesired<depth>(pa("-depth"));
   }
   if(pa("-format")){
     grabber.useDesired<format>(pa("-format"));
   }
-
-
   if(pa("-camera-config")){
     grabber.loadProperties(pa("-camera-config"));
   }
@@ -102,23 +94,6 @@ const ImgBase *grab_image(){
       }
     }
   }
-  /* this does not work in the intended way because the images are converted to dst-format by the
-     grabbers grab function using useDesired ...
-  static bool reint = pa("-reinterpret-input-format");
-  if(reint){
-    static std::shared_ptr<const ImgBase> re;
-    static format fmt = pa("-reinterpret-input-format");
-    format ifmt = img->getFormat();
-    if(fmt != formatMatrix && getChannelsOfFormat(fmt) != img->getChannels()){
-      ERROR_LOG("cannot reinterpret image format " << str(ifmt)
-                << " to " << str(fmt) << " (cannel cout missmatch)");
-    }else{
-      re = img->reinterpretChannels(fmt);
-      img = re.get();
-    }
-  }
-   */
-
   if(!(bool)pa("-clip") && !(bool)pa("-crop-and-rescale") && !(bool)pa("-size")){
     return img;
   }else{
@@ -150,35 +125,31 @@ const ImgBase *grab_image(){
       delete tmp;
       img = croppedAndRescaled;
     }else if(pa("-clip")){
-      if(*pa("-clip")=="interactive"){
-        throw ICLException("interactive clipmode is not yet implemented ...");
-      }else{
-        static Rect *r = 0;
-        static ImgBase *clipped = 0;
-        if(!r){
-          r = new Rect;
-          *r = pa("-clip");
+      static Rect *r = 0;
+      static ImgBase *clipped = 0;
+      if(!r){
+        r = new Rect;
+        *r = pa("-clip");
 
-          ICLASSERT_THROW(r->width <= img->getWidth(),
-                          ICLException("clipping rect width is larger then image width (image width is "
-                                       + str(img->getWidth()) + " but clip rect width was set to "
-                                             + str(r->width)));
-          ICLASSERT_THROW(r->height <= img->getHeight(),
-                          ICLException("clipping rect height is larger then image height (image height is "
-                                       + str(img->getHeight()) + " but clip rect height was set to "
-                                             + str(r->height)));
+        ICLASSERT_THROW(r->width <= img->getWidth(),
+                        ICLException("clipping rect width is larger then image width (image width is "
+                                     + str(img->getWidth()) + " but clip rect width was set to "
+                                           + str(r->width)));
+        ICLASSERT_THROW(r->height <= img->getHeight(),
+                        ICLException("clipping rect height is larger then image height (image height is "
+                                     + str(img->getHeight()) + " but clip rect height was set to "
+                                           + str(r->height)));
 
-          ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
-          ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
-          ICLASSERT_THROW(r->right() <= img->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
-          ICLASSERT_THROW(r->bottom() <= img->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
-          clipped = imgNew(img->getDepth(),r->getSize(),img->getChannels(),img->getFormat());
-        }
-        const ImgBase *tmp = img->shallowCopy(*r);
-        tmp->deepCopyROI(&clipped);
-        delete tmp;
-        img = clipped;
+        ICLASSERT_THROW(r->x>= 0,ICLException("clipping x-offset < 0"));
+        ICLASSERT_THROW(r->y>= 0,ICLException("clipping y-offset < 0"));
+        ICLASSERT_THROW(r->right() <= img->getWidth(),ICLException("clipping rect's right edge is outside the image rect"));
+        ICLASSERT_THROW(r->bottom() <= img->getHeight(),ICLException("clipping rect's right edge is outside the image rect"));
+        clipped = imgNew(img->getDepth(),r->getSize(),img->getChannels(),img->getFormat());
       }
+      const ImgBase *tmp = img->shallowCopy(*r);
+      tmp->deepCopyROI(&clipped);
+      delete tmp;
+      img = clipped;
     }
 
     if(pa("-size")){
@@ -208,22 +179,32 @@ void send_app(){
     const ImgBase *ppImage = 0;
 
     if(pa("-pp") && *ppEnabled){
-      static UnaryOp *pp = 0;
-      if(!pp){
-        static std::string pps = pa("-pp").as<std::string>();
-        if (pps == "gauss"){
-          pp = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3));
-        }else if(pps == "gauss5") {
-          pp = new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss5x5));
-        }else if(pps == "median"){
-          pp = new MedianOp(Size(3,3));
-        }else if(pps == "median5"){
-          pp = new MedianOp(Size(5,5));
-        }else{
-          ERROR_LOG("undefined preprocessing mode");
-          ::exit(0);
+      // Lazy-built once; either a hard-coded mnemonic (gauss/gauss5/median/median5)
+      // or any registered UnaryOp class via Configurable factory (Session 43).
+      static std::unique_ptr<UnaryOp> pp = []() -> std::unique_ptr<UnaryOp> {
+        const std::string pps = pa("-pp").as<std::string>();
+        if (pps == "gauss")   return std::make_unique<ConvolutionOp>(ConvolutionKernel(ConvolutionKernel::gauss3x3));
+        if (pps == "gauss5")  return std::make_unique<ConvolutionOp>(ConvolutionKernel(ConvolutionKernel::gauss5x5));
+        if (pps == "median")  return std::make_unique<MedianOp>(Size(3,3));
+        if (pps == "median5") return std::make_unique<MedianOp>(Size(5,5));
+        // Fallback: any UnaryOp registered with REGISTER_CONFIGURABLE
+        // (CannyOp, FFTOp, BilateralFilterOp, GaborOp, ...). The factory
+        // throws ICLException on unknown names — catch so we can give a
+        // pipe-flavoured error rather than a stack trace.
+        try {
+          Configurable *raw = Configurable::create_configurable(pps);
+          if (auto *op = dynamic_cast<UnaryOp*>(raw)) {
+            return std::unique_ptr<UnaryOp>(op);
+          }
+          delete raw;
+          ERROR_LOG("'" << pps << "' is registered as a Configurable but is not a UnaryOp.");
+        } catch (const ICLException &e) {
+          ERROR_LOG("undefined preprocessing mode '" << pps << "': " << e.what()
+                    << ". Allowed: gauss, gauss5, median, median5, or any registered "
+                    "UnaryOp class name.");
         }
-      }
+        ::exit(1);
+      }();
       pp->setClipToROI(false);
       static ImgBase *ppBuf = 0;
       pp->apply(grabbedImage, &ppBuf);
@@ -357,18 +338,18 @@ int main(int n, char **ppc){
   ("-decode-bayer","tells the decoder that input images are assued "
    "to be in a one-channel bayer encoded grayscale format. Output format can either be gray or rgb. The "
    "filterquality must be one of (nearestNeighbor,simple,bilinear,hqLinear,edgeSense,vng) ")
-  ("-clip","define clip-rect ala ((x,y)WxH) or string interactive (which is not yet supported)")
-  ("-pp","select preprocessing (one of \n"
+  ("-clip","define clip-rect ala ((x,y)WxH)")
+  ("-pp","select preprocessing. Either a built-in mnemonic\n"
    "\t- gauss 3x3 gaussian blur\n"
    "\t- gauss5 5x5 gaussian blur\n"
    "\t- median 3x3 median filter\n"
-   "\t- median5 5x5 median filter\n")
+   "\t- median5 5x5 median filter\n"
+   "or the class name of any UnaryOp registered with the Configurable\n"
+   "factory (CannyOp, FFTOp, BilateralFilterOp, GaborOp, ...). When using\n"
+   "a registry name, defaults are used; for parameter tweaking, use\n"
+   "icl-filter-playground or `-camera-config` with a saved property XML.")
   ("-ppp","if this flag is set, the image ROI, that results form preprocessing is actually sent")
-  //("-dist","give 4 parameters for radial lens distortion.\n"
-  // "\tThis parameters can be obtained using ICL application\n"
-  //"\ticl-calib-radial-distortion")
   ("-reset","reset bus on startup")
-  //("-reinterpret-input-format","can be used to e.g. reinterpret input matrix-format images as gray")
   ("-progress","show progress bar (only used in -no-gui mode)")
   ("-idu","if this is given, image updates are initally switched off which means, that no"
    "image is visualized in the preview widget. This helps to reduce network traffic!")
@@ -384,13 +365,11 @@ int main(int n, char **ppc){
   pa_init(n,ppc,"[m]-output|-o(output-type-string,output-parameters) "
          "-flip|-f(string) -single-shot [m]-input|-i(device,device-params) "
          "-size|(Size) -no-gui -pp(1) "
-          //"-reinterpret-input-format(fmt) "
-	 //-dist|-d(float,float,float,float) -reset|-r "
-	 "-dist|-d(fn) -reset|-r "
-          "-decode-bayer(bayer-pattern,outputformat,filterquality) "
+         "-reset|-r "
+         "-decode-bayer(bayer-pattern,outputformat,filterquality) "
          "-fps(float=15.0) -clip|-c(Rect) "
-          "-crop-and-rescale|-cr(hcrop_pix,vcrop_pix,target_width,target_height) "
-          "-camera-config(filename) -depth(depth) -format(format) -normalize|-n "
+         "-crop-and-rescale|-cr(hcrop_pix,vcrop_pix,target_width,target_height) "
+         "-camera-config(filename) -depth(depth) -format(format) -normalize|-n "
          "-perserve-preprocessing-roi|-ppp -progress "
          "-initially-disable-image-updates|-idu");
 
