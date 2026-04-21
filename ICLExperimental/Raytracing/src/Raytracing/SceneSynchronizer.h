@@ -40,9 +40,12 @@ public:
   /// @param camIndex  Which ICL camera to use.
   /// @param cclScene  The Cycles scene to write to.
   /// @param sceneScale Scale factor for positions (default 0.001 for mm→m).
-  /// @return true if any scene data changed (geometry, transforms, materials, camera, lights).
-  bool synchronize(const geom::Scene &iclScene, int camIndex,
-                   ccl::Scene *cclScene, float sceneScale = 0.001f);
+  /// Sync result indicating what changed.
+  enum class SyncResult { NoChange, TransformOnly, GeometryChanged };
+
+  /// @return what changed in the scene.
+  SyncResult synchronize(const geom::Scene &iclScene, int camIndex,
+                          ccl::Scene *cclScene, float sceneScale = 0.001f);
 
   /// Force full re-extraction next frame.
   void invalidateAll();
@@ -72,7 +75,8 @@ private:
   void walkObject(const geom::SceneObject *obj,
                   ccl::Scene *cclScene,
                   float sceneScale,
-                  bool &anyChanged);
+                  bool &anyGeomChanged,
+                  bool &anyTransformChanged);
 
   /// Create or update a Cycles Mesh from ICL SceneObject geometry.
   void syncGeometry(ObjectEntry &entry, ccl::Scene *cclScene, float sceneScale);
@@ -96,6 +100,7 @@ private:
 
   /// Previous light state hash for dirty detection.
   size_t m_lastLightHash = 0;
+  bool m_lightsCreated = false;
 };
 
 } // namespace icl::rt

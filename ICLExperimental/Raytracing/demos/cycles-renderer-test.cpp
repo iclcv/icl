@@ -26,16 +26,13 @@ int main(int argc, const char **argv) {
   Scene scene;
 
   // Camera at (0, 200, -600), looking toward origin, Y up
-  // Camera with standard intrinsics: f=5mm, mx=200px/mm → ~43° hfov
-  Camera cam(Vec(0, 200, -600, 1),        // position (mm)
-             Vec(0, -0.15, 1, 1),          // norm
-             Vec(0, 1, 0, 1),              // up
-             5,                             // focal length (mm)
-             utils::Point32f(0, 0),         // principal point offset
-             200, 200,                      // sampling res (px/mm)
-             0,                             // skew
-             Camera::RenderParams(utils::Size(800, 600), 1.0f, 100000.0f));
-  scene.addCamera(cam);
+  // Camera looking at the spheres from front-above
+  scene.addCamera(Camera::lookAt(
+      Vec(0, 300, -500, 1),               // position
+      Vec(0, 50, 200, 1),                 // look at center of sphere row
+      Vec(0, 1, 0, 1),                     // Y-up
+      utils::Size(800, 600),
+      55.0f));
 
   // Light
   // Key light: front-left, above

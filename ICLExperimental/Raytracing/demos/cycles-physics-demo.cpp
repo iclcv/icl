@@ -11,6 +11,7 @@
 #include <ICLPhysics/RigidSphereObject.h>
 #include <ICLPhysics/RigidCylinderObject.h>
 #include <Raytracing/CyclesRenderer.h>
+#include <ICLIO/FileWriter.h>
 
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 
@@ -143,13 +144,13 @@ static bool removeObjectsBelowThreshold() {
 }
 
 void init() {
-  // Camera: Z-up, looking at the table
-  Camera cam(Vec(800, -600, 500, 1),
-             Vec(-0.7, 0.5, -0.4, 1),
-             Vec(0, 0, -1, 1),
-             5, utils::Point32f(0, 0), 200, 200, 0,
-             Camera::RenderParams(pa("-size"), 1.0f, 100000.0f));
-  scene.addCamera(cam);
+  // Camera: Z-up scene, looking at the table from above-right
+  scene.addCamera(Camera::lookAt(
+      Vec(600, -500, 400, 1),     // position
+      Vec(0, 0, TABLE_Z, 1),     // look at table center
+      Vec(0, 0, 1, 1),            // Z-up
+      pa("-size"),                 // resolution
+      55.0f));                     // 55° horizontal FOV
 
   // Table
   auto *table = new RigidBoxObject(0, 0, TABLE_Z, 500, 350, TABLE_THICKNESS, 0);
@@ -236,7 +237,7 @@ void init() {
             << Combo("!Preview,Interactive,Final").handle("quality").label("Quality"))
          << Slider(1, 1024, 4).handle("samples").label("Samples")
          << Slider(1, 16, 2).handle("bounces").label("Max Bounces")
-         << CheckBox("Denoising (OIDN)", "unchecked").handle("denoising")
+         << CheckBox("Denoising OIDN", "unchecked").handle("denoising")
          << Slider(10, 500, 100).handle("exposure").label("Exposure %")
          << Label("--").handle("info")
        ) << Show();
@@ -307,7 +308,9 @@ void run() {
 
   const auto &img = renderer->getImage();
   DrawHandle draw = gui["draw"];
-  draw = img;
+  if (img.getWidth() > 0 && img.getHeight() > 0) {
+    draw = img;
+  }
 
   char buf[256];
   snprintf(buf, sizeof(buf), "%.0f ms | %d obj | %d spp | %d bounces%s",
@@ -320,6 +323,64 @@ void run() {
   gui["fps"].render();
 }
 
+static void offscreen_render(const std::string &output) {
+  // Same scene setup as init() but without GUI
+  scene.addCamera(Camera::lookAt(
+      Vec(600, -500, 400, 1),
+      Vec(0, 0, TABLE_Z, 1),
+      Vec(0, 0, 1, 1),
+      pa("-size"),
+      55.0f));
+
+  auto *table = new RigidBoxObject(0, 0, TABLE_Z, 500, 350, TABLE_THICKNESS, 0);
+  table->setVisible(Primitive::line, false);
+  table->setVisible(Primitive::vertex, false);
+  table->createAutoNormals(false);
+  {
+    auto mat = std::make_shared<Material>();
+    mat->baseColor = GeomColor(0.55f, 0.39f, 0.24f, 1.0f);
+    mat->roughness = 0.7f;
+    table->setMaterial(mat);
+  }
+  scene.addObject(table, true);
+
+  scene.getLight(0).setOn(true);
+  scene.getLight(0).setPosition(Vec(200, -200, 500, 1));
+  scene.getLight(0).setDiffuse(GeomColor(255, 245, 220, 255));
+
+  // Spawn objects and run physics so they fall onto the table
+  for (int i = 0; i < 10; i++) spawnObject();
+  for (int i = 0; i < 300; i++) {
+    scene.step(1.0f / 60.0f, 1);
+    removeObjectsBelowThreshold();
+  }
+  for (int i = 0; i < scene.getObjectCount(); i++)
+    scene.getObject(i)->prepareForRendering();
+
+  printf("Rendering %d objects to %s...\n", scene.getObjectCount(), output.c_str());
+
+  icl::rt::CyclesRenderer renderer(scene, icl::rt::RenderQuality::Final);
+  renderer.setSceneScale(1.0f);
+  renderer.setSamples(pa("-samples").as<int>());
+  renderer.render(0);
+
+  const auto &img = renderer.getImage();
+  if (img.getWidth() > 0) {
+    icl::io::FileWriter writer(output);
+    writer.write(&img);
+    printf("Saved %dx%d image to %s\n", img.getWidth(), img.getHeight(), output.c_str());
+  } else {
+    fprintf(stderr, "ERROR: No image produced\n");
+  }
+}
+
 int main(int argc, char **argv) {
-  return ICLApp(argc, argv, "-size(Size=800x600)", init, run).exec();
+  pa_init(argc, argv, "-size(Size=800x600) -offscreen(string) -samples(int=64)");
+
+  if (pa("-offscreen")) {
+    offscreen_render(pa("-offscreen").as<std::string>());
+    return 0;
+  }
+
+  return ICLApp(argc, argv, "-size(Size=800x600) -samples(int=4)", init, run).exec();
 }

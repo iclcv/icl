@@ -72,11 +72,11 @@ private:
     icl8u *g = m_image.begin(1);
     icl8u *b = m_image.begin(2);
 
-    // Cycles outputs bottom-up; convert to top-down + linear→sRGB gamma
+    // Y row is negated in camera matrix to match ICL's down-pointing up vector.
+    // This makes Cycles output top-down already — no flip needed.
     for (int y = 0; y < h; ++y) {
-      const int srcY = h - 1 - y;
       for (int x = 0; x < w; ++x) {
-        const int srcIdx = (srcY * w + x) * 4;
+        const int srcIdx = (y * w + x) * 4;
         const int dstIdx = y * w + x;
         auto toSRGB = [](float v) -> icl8u {
           v = std::max(0.0f, std::min(1.0f, v));
@@ -118,6 +118,7 @@ struct CyclesRenderer::Impl {
   // State
   bool initialized = false;
   bool sceneDirty = true;
+  bool hasRendered = false;
 
   Impl(geom::Scene &scene, RenderQuality q)
       : iclScene(scene), quality(q) {}
@@ -241,7 +242,7 @@ void CyclesRenderer::render(int camIndex) {
   m_impl->applyQualityToScene();
 
   // Synchronize ICL scene → Cycles scene
-  bool changed = m_impl->sync.synchronize(
+  auto syncResult = m_impl->sync.synchronize(
       m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
 
   // Get camera resolution for buffer params
@@ -250,20 +251,24 @@ void CyclesRenderer::render(int camIndex) {
   if (w <= 0) w = 800;
   if (h <= 0) h = 600;
 
-  BufferParams bufferParams;
-  bufferParams.width = w;
-  bufferParams.height = h;
-  bufferParams.full_width = w;
-  bufferParams.full_height = h;
+  using SR = SceneSynchronizer::SyncResult;
+  bool needsRender = !m_impl->hasRendered
+                  || syncResult != SR::NoChange;
 
-  SessionParams sessionParams = m_impl->session->params;
-  sessionParams.samples = m_impl->samples;
+  if (needsRender) {
+    SessionParams sessionParams = m_impl->session->params;
+    sessionParams.samples = m_impl->samples;
 
-  m_impl->session->reset(sessionParams, bufferParams);
-  m_impl->session->start();
+    BufferParams bufferParams;
+    bufferParams.width = w;
+    bufferParams.height = h;
+    bufferParams.full_width = w;
+    bufferParams.full_height = h;
 
-  if (m_impl->quality == RenderQuality::Final) {
+    m_impl->session->reset(sessionParams, bufferParams);
+    m_impl->session->start();
     m_impl->session->wait();
+    m_impl->hasRendered = true;
   }
 }
 

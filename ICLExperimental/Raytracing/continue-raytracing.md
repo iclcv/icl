@@ -348,32 +348,80 @@ cmake --build . -j16
 ./bin/cycles-renderer-test -o output.png
 ```
 
+### Camera Orientation Issue (IN PROGRESS — Session 7)
+
+The camera orientation conversion from ICL to Cycles is partially working but
+has a subtle Y-axis flip problem related to ICL's unconventional `up` vector:
+
+**ICL Camera convention** (from Camera.h docs):
+- `norm` = view direction (the direction the camera looks)
+- `up` = direction pointing toward **positive image Y**, which is the **bottom**
+  of the image (image Y increases downward). This is opposite to most 3D APIs
+  where "up" means scene-up / image-top.
+- `horiz` = computed as `cross(up, norm)`, forms right-handed system with norm and up
+
+**Current state of syncCamera (SceneSynchronizer.cpp):**
+- `camUp = -icl_up` (negated, since ICL up points down)
+- `right = cross(forward, camUp)`
+- `upVec = cross(right, forward)`
+- Cycles transform: `tfm.y = -upVec` (negated Y row)
+- OutputDriver: no Y-flip (direct copy)
+
+**What works:** Y-up scenes with `Camera::lookAt()` render correctly
+(`cycles-renderer-test` shows spheres on ground, right-side up, correct FOV).
+
+**What doesn't work:** Z-up scenes (physics demo). The camera at
+`(600, -500, 400)` looking at `(0, 0, -30)` with `up=(0,0,1)` shows only sky.
+The camera orientation math produces a valid-looking matrix but the objects
+aren't in the field of view.
+
+**`Camera::lookAt()` factory** (added in Session 7, in Camera.h/.cpp):
+- Takes intuitive params: position, target, up, resolution, hfov_degrees
+- Computes `norm = normalize(target - position)`
+- Computes `imageUp` = component of world-up perpendicular to norm
+- Derives `f` and `mx` from desired horizontal FOV
+- Sets `principalPointOffset` to image center
+- Works for Y-up; untested/broken for Z-up
+
+**Key insight still needed:** The relationship between ICL's `up` vector,
+the Cycles Transform rows, and the OutputDriver's Y-flip needs to be resolved
+as a single coherent convention. The current approach of individual negations
+and flips is fragile. Consider studying how the old GeometryExtractor's
+`extractCamera` built the ray generation matrix — it worked for both Y-up
+and Z-up scenes. That code is in git history at commit 47ee811d0.
+
+**Debug aids in place:**
+- `fprintf(stderr, "[Camera] ...")` prints in syncCamera showing pos, fwd, up,
+  fov, near/far, and the full 3x4 transform matrix. Remove when fixed.
+
 ### Next Steps
 
-1. **Port physics demo** — recreate `raytracing-physics-demo.cpp` as
-   `cycles-physics.cpp` using CyclesRenderer with Preview quality +
-   `invalidateTransforms()` on physics step. Old code in git at 47ee811d0.
+1. **Fix camera orientation** — resolve the Y-axis flip for both Y-up and Z-up
+   scenes. The physics demo (`cycles-physics-demo`) is the test case for Z-up.
+   The renderer test (`cycles-renderer-test`) is the test case for Y-up.
 
-2. **Texture support** — implement ICLImageLoader (ccl::ImageLoader subclass)
-   to feed ICL Material texture maps (baseColorMap, normalMap, etc.) to Cycles
-   ImageTextureNode.
+2. **Physics demo** — `cycles-physics-demo.cpp` is written and builds. It has
+   GUI controls (quality preset, samples, bounces, denoising, exposure) and an
+   `--offscreen` mode for headless testing. Needs the camera fix to work.
 
-3. **Custom environment maps** — allow loading HDR environment maps as
-   background (currently hardcoded Hosek-Wilkie sky). Add `setBackground()`
-   API to CyclesRenderer for sky params or HDR image path.
+3. **Texture support** — implement ICLImageLoader (ccl::ImageLoader subclass)
+   to feed ICL Material texture maps to Cycles ImageTextureNode.
 
-4. **Interactive demo** — ICLApp-based demo with mouse orbit, quality slider,
+4. **Custom environment maps** — allow loading HDR environment maps as
+   background. Add `setBackground()` API to CyclesRenderer.
+
+5. **Interactive demo** — ICLApp-based demo with mouse orbit, quality slider,
    progressive rendering display.
 
-5. **Scene/Material API cleanups** — remove legacy deprecated accessors,
+6. **Scene/Material API cleanups** — remove legacy deprecated accessors,
    add `transmissionWeight` for glass, physical light units.
 
 ### Known Limitations
 
+- Camera orientation broken for Z-up scenes (see above)
 - No texture mapping yet (Material textures not forwarded to Cycles)
-- Lights are recreated every frame (no incremental light sync)
+- Lights are only created once (no dynamic light updates)
 - Only point lights supported (no spot/area/sun lights yet)
-- Default sky is Hosek-Wilkie (hardcoded) — no custom environment map loading yet
-- Camera must be configured via ICL intrinsics (no direct FOV setter yet)
+- Default sky is Hosek-Wilkie (hardcoded) — no custom environment map loading
 - SceneObject::ObjectType only set for sphere/cube factories (not for
   programmatically-built objects)

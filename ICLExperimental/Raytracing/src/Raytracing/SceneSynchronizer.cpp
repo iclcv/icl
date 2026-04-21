@@ -242,9 +242,11 @@ static void tessellateToMesh(const geom::SceneObject *obj,
 
 // ---- SceneSynchronizer implementation ----
 
-bool SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
-                                    ccl::Scene *cclScene, float sceneScale) {
-  bool anyChanged = false;
+SceneSynchronizer::SyncResult
+SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
+                               ccl::Scene *cclScene, float sceneScale) {
+  bool anyGeomChanged = false;
+  bool anyTransformChanged = false;
 
   // Mark all entries as unvisited
   for (auto &[ptr, entry] : m_entries)
@@ -253,11 +255,13 @@ bool SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
   // Walk ICL scene graph
   for (int i = 0; i < iclScene.getObjectCount(); i++) {
     auto *obj = const_cast<geom::SceneObject*>(iclScene.getObject(i));
-    walkObject(obj, cclScene, sceneScale, anyChanged);
+    walkObject(obj, cclScene, sceneScale, anyGeomChanged, anyTransformChanged);
   }
 
   // Remove stale objects
-  removeStaleObjects(cclScene, anyChanged);
+  bool removedAny = false;
+  removeStaleObjects(cclScene, removedAny);
+  if (removedAny) anyGeomChanged = true;
 
   // Sync camera
   if (camIndex < iclScene.getCameraCount()) {
@@ -290,13 +294,16 @@ bool SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
     m_lastLightHash = 1;  // mark as initialized
   }
 
-  return anyChanged;
+  if (anyGeomChanged) return SyncResult::GeometryChanged;
+  if (anyTransformChanged) return SyncResult::TransformOnly;
+  return SyncResult::NoChange;
 }
 
 void SceneSynchronizer::walkObject(const geom::SceneObject *obj,
                                    ccl::Scene *cclScene,
                                    float sceneScale,
-                                   bool &anyChanged) {
+                                   bool &anyGeomChanged,
+                                   bool &anyTransformChanged) {
   if (!obj || !obj->isVisible()) return;
 
   // Check if this object has renderable geometry
@@ -322,19 +329,19 @@ void SceneSynchronizer::walkObject(const geom::SceneObject *obj,
       entry.vertexCount = vc;
       entry.primitiveCount = pc;
       entry.geometryDirty = false;
-      anyChanged = true;
+      anyGeomChanged = true;
     }
 
     if (entry.transformDirty || geomDirty) {
       syncTransform(entry, sceneScale);
       entry.transformDirty = false;
-      anyChanged = true;
+      anyTransformChanged = true;
     }
   }
 
   // Recurse into children
   for (int i = 0; i < obj->getChildCount(); i++) {
-    walkObject(obj->getChild(i), cclScene, sceneScale, anyChanged);
+    walkObject(obj->getChild(i), cclScene, sceneScale, anyGeomChanged, anyTransformChanged);
   }
 }
 
@@ -442,9 +449,11 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
 
   float3 camPos = make_float3(pos[0] * sceneScale, pos[1] * sceneScale, pos[2] * sceneScale);
   float3 forward = normalize(make_float3(norm[0], norm[1], norm[2]));
+  // ICL's "up" points toward the BOTTOM of the image (positive image Y = down).
+  // Use as-is for computing the camera basis.
   float3 camUp = normalize(make_float3(up[0], up[1], up[2]));
 
-  // Ensure forward and up are not parallel
+  // Compute right vector
   float3 right = cross(forward, camUp);
   float rightLen = len(right);
   if (rightLen < 1e-6f) {
@@ -458,13 +467,14 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
   }
   float3 upVec = cross(right, forward);
 
-  // Cycles camera-to-world: rows are right, up, -forward (camera looks down +Z in local)
-  // But based on our testing, the working convention is:
-  //   row x = right, row y = up, row z = -forward, translation = position
-  // However, our link test showed camera looks toward +Z, so forward maps to +Z:
+  // Cycles camera-to-world transform: rows are the camera's local axes in world space.
+  // Camera looks along +Z in local space (row z = forward).
+  // ICL's up points to image-bottom, so the Y axis in camera space is flipped
+  // relative to Cycles' convention. Negate the Y row to correct this.
+  // The OutputDriver's bottom-to-top flip then produces the correct orientation.
   Transform tfm;
   tfm.x = make_float4(right.x, right.y, right.z, camPos.x);
-  tfm.y = make_float4(upVec.x, upVec.y, upVec.z, camPos.y);
+  tfm.y = make_float4(-upVec.x, -upVec.y, -upVec.z, camPos.y);
   tfm.z = make_float4(forward.x, forward.y, forward.z, camPos.z);
 
   cclCam->set_matrix(tfm);
@@ -489,6 +499,17 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
   cclCam->set_nearclip(nearClip);
   cclCam->set_farclip(farClip);
 
+  fprintf(stderr, "[Camera] f=%.3f mx=%.1f near=%.2f far=%.2f res=%dx%d\n",
+          f, mx, nearClip, farClip, w, h);
+  fprintf(stderr, "[Camera] pos=(%.1f,%.1f,%.1f) fwd=(%.2f,%.2f,%.2f) up=(%.2f,%.2f,%.2f) fov=%.1f°\n",
+          camPos.x, camPos.y, camPos.z, forward.x, forward.y, forward.z,
+          upVec.x, upVec.y, upVec.z,
+          cclCam->get_fov() * 180.0f / M_PI);
+  fprintf(stderr, "[Camera] tfm: [%.2f %.2f %.2f %.1f] [%.2f %.2f %.2f %.1f] [%.2f %.2f %.2f %.1f]\n",
+          tfm.x.x, tfm.x.y, tfm.x.z, tfm.x.w,
+          tfm.y.x, tfm.y.y, tfm.y.z, tfm.y.w,
+          tfm.z.x, tfm.z.y, tfm.z.z, tfm.z.w);
+
   cclCam->compute_auto_viewplane();
   cclCam->need_flags_update = true;
   // Note: don't call cclCam->update(cclScene) here — the Session handles it
@@ -497,9 +518,10 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
 void SceneSynchronizer::syncLights(const geom::Scene &iclScene,
                                    ccl::Scene *cclScene,
                                    float sceneScale) {
-  // For now, create point lights from ICL's 8 fixed lights.
-  // TODO: incremental light sync with dirty tracking
-  // TODO: this recreates lights every frame — optimize later
+  // Only create lights once (on first sync when m_lightsCreated is false).
+  // TODO: incremental light sync with dirty tracking for dynamic lights.
+  if (m_lightsCreated) return;
+  m_lightsCreated = true;
 
   for (int i = 0; i < 8; i++) {
     const auto &light = iclScene.getLight(i);
@@ -568,6 +590,7 @@ void SceneSynchronizer::invalidateAll() {
     entry.geometryDirty = true;
     entry.transformDirty = true;
   }
+  // Note: don't reset m_lightsCreated — lights don't need rebuild on geometry change
 }
 
 void SceneSynchronizer::invalidateTransforms() {

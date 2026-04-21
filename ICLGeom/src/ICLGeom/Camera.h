@@ -142,6 +142,17 @@ namespace icl::geom {
            m_px(principalPointOffset.x), m_py(principalPointOffset.y),
            m_mx(sampling_res_x), m_my(sampling_res_y), m_skew(skew), m_renderParams(renderParams) {}
 
+    /// Create a camera using intuitive look-at parameters.
+    /// @param position Camera position in world coordinates.
+    /// @param target   Point the camera looks at.
+    /// @param up       World up direction (default: Y-up).
+    /// @param resolution Image resolution in pixels.
+    /// @param hfovDeg  Horizontal field of view in degrees (default: 60).
+    static Camera lookAt(const Vec &position, const Vec &target,
+                         const Vec &up = Vec(0, 1, 0, 1),
+                         const utils::Size &resolution = utils::Size(800, 600),
+                         float hfovDeg = 60.0f);
+
     /// loads a camera from given file
     /** @param filename file name of valid configuration file (in ICL's ConfigFile core::format)
         @param prefix valid prefix that determines wheret to find the camera within the
