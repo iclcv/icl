@@ -52,8 +52,29 @@ namespace icl::utils {
   }
 
   void Configurable::removeChildConfigurable(Configurable *configurable){
-    static_cast<void>(configurable);
-    throw ICLException("removeChildConfigurable: is not yet implemented");
+    ICLASSERT_RETURN(configurable);
+    auto cit = m_childConfigurables.find(configurable);
+    if (cit == m_childConfigurables.end()) return;
+    const std::string pfx = cit->second;
+    // Drop every property previously imported from this child (matched
+    // by `(child*, prefix)` rather than by name to be defensive against
+    // name collisions across siblings).
+    for (auto it = m_properties.begin(); it != m_properties.end(); ) {
+      if (it->second.configurable == configurable && it->second.childPrefix == pfx) {
+        // Also rewrite the ordering map if used.
+        if (m_isOrdered) {
+          for (auto oit = m_ordering.begin(); oit != m_ordering.end(); ) {
+            if (oit->second == it->first) oit = m_ordering.erase(oit);
+            else ++oit;
+          }
+        }
+        it = m_properties.erase(it);
+      } else {
+        ++it;
+      }
+    }
+    m_childConfigurables.erase(cit);
+    configurable->m_elderConfigurable = nullptr;
   }
 
   const Configurable::Property &Configurable::prop(const std::string &propertyName) const{
