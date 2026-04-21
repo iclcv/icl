@@ -188,10 +188,10 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_IMAGEMAGICK
-#include <icl/io/FileWriter.h>  // FileWriterPluginRegister
+#include <icl/io/FileWriter.h>  // fileWriterRegistry
 namespace {
   using icl::io::FileWriterPluginImageMagick;
-  using icl::io::FileWriterPluginRegister;
+  using icl::io::fileWriterRegistry;
 
   // ImageMagick claims a *lot* of formats. Register them all under one
   // factory. JPEG/PNG slots are also wired here as a fallback for builds
@@ -231,9 +231,10 @@ iclRegisterFileWriterPluginsImageMagick() {
   // and wins by default.
   constexpr int kImageMagickPriority = -10;
   for (const char **pc = imageMagickFormats; *pc; ++pc) {
-    FileWriterPluginRegister::registerExtension(std::string(".") + *pc,
-                                                &iclImageMagickWrite,
-                                                kImageMagickPriority);
+    fileWriterRegistry().registerPlugin(std::string(".") + *pc,
+                                        &iclImageMagickWrite,
+                                        /*description*/ {},
+                                        kImageMagickPriority);
   }
 }
 #endif

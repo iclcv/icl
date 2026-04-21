@@ -44,52 +44,24 @@ namespace icl::io {
         writer.write(&a);
       \endcode
   **/
+  /// Callable type stored in the file-writer registry: `(file, image)`.
+  /// Thread-safety is the callable's own responsibility (plugin backends
+  /// use static per-lambda state with their own mutexes).
+  using FileWriterFn = std::function<void(utils::File&, const core::ImgBase*)>;
+
   /// Process-wide registry of file-extension → write-callable.
-  /** Thin façade over `utils::FunctionPluginRegistry<Signature>` with
-      `OnDuplicate::KeepHighestPriority`: whoever registers with the
+  /** Uses `OnDuplicate::KeepHighestPriority`: whoever registers with the
       highest priority wins a contested extension; ties fall back to
       first-wins. Used so libpng (prio 0) beats ImageMagick (prio -10)
       for `.png` deterministically across dyld static-init orderings.
 
       The stored callable carries its own state (per-lambda function-local
-      statics), so no external per-extension cache is needed — a no-op
-      compared to the pre-4b `m_cache` map. */
-  class ICLIO_API FileWriterPluginRegister : public utils::Uncopyable {
-    public:
+      statics), so no external per-extension cache is needed. */
+  using FileWriterRegistry =
+      utils::FunctionPluginRegistry<void(utils::File&, const core::ImgBase*)>;
 
-    /// Write callable: (file, image) → void. Thread-safety is the
-    /// callable's own responsibility (plugin backends use static
-    /// per-lambda state with their own mutexes).
-    using Factory  = std::function<void(utils::File&, const core::ImgBase*)>;
-    using Registry = utils::FunctionPluginRegistry<void(utils::File&, const core::ImgBase*)>;
-
-    /// Register `factory` as the writer for `extension`.
-    /// Strictly-higher `priority` wins against any competing registration;
-    /// ties resolve first-wins. Pass a negative priority (e.g. -10) to
-    /// register as a fallback that only activates when no higher-priority
-    /// plugin is available (ImageMagick's pattern for .png / .jpg /
-    /// other formats also handled by libpng / libjpeg).
-    static void registerExtension(const std::string &extension,
-                                  Factory factory,
-                                  int priority = 0);
-
-    /// Look up the write callable for `extension`. Returns nullptr if no
-    /// plugin is registered for the extension.
-    static const Factory *find(const std::string &extension);
-
-    /// All registered extensions, lex-sorted.
-    static std::vector<std::string> extensions();
-
-    /// Singleton accessor (also used by `ICL_REGISTER_PLUGIN` / the
-    /// `REGISTER_FILE_WRITER_PLUGIN` macro).
-    static FileWriterPluginRegister &instance();
-    Registry       &registry()       { return m_registry; }
-    const Registry &registry() const { return m_registry; }
-
-    private:
-    FileWriterPluginRegister() : m_registry(utils::OnDuplicate::KeepHighestPriority) {}
-    Registry m_registry;
-  };
+  /// Singleton accessor for the process-wide file-writer registry.
+  ICLIO_API FileWriterRegistry& fileWriterRegistry();
 
   class ICLIO_API FileWriter {
     public:
@@ -149,7 +121,4 @@ namespace icl::io {
     .rle1/.rle4/.jicl variants) each get their own instance with
     distinct ctor args. */
 #define REGISTER_FILE_WRITER_PLUGIN(TAG, EXTENSION, ...)                       \
-  extern "C" __attribute__((constructor, used)) void                           \
-  iclRegisterFileWriterPlugin_##TAG() {                                        \
-    ::icl::io::FileWriterPluginRegister::registerExtension(EXTENSION, __VA_ARGS__); \
-  }
+  ICL_REGISTER_PLUGIN(::icl::io::fileWriterRegistry(), TAG, EXTENSION, __VA_ARGS__)

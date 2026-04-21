@@ -17,35 +17,14 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  // -------------------------------- FileWriterPluginRegister --
   // Plugins self-register via REGISTER_FILE_WRITER_PLUGIN at static-init
   // time. Each registered callable carries its own state (per-lambda
   // function-local statics initialized on first call), so no external
-  // per-extension cache is needed — a wash vs the pre-4b m_cache map.
+  // per-extension cache is needed.
 
-  FileWriterPluginRegister &FileWriterPluginRegister::instance() {
-    static FileWriterPluginRegister inst;
+  FileWriterRegistry& fileWriterRegistry() {
+    static FileWriterRegistry inst(utils::OnDuplicate::KeepHighestPriority);
     return inst;
-  }
-
-  void FileWriterPluginRegister::registerExtension(
-      const std::string &extension, Factory factory, int priority) {
-    // Empty description, empty applicability; the registry's
-    // KeepHighestPriority policy uses `priority` to resolve conflicts.
-    instance().m_registry.registerPlugin(extension, std::move(factory),
-                                         /*description*/ {}, priority);
-  }
-
-  const FileWriterPluginRegister::Factory *
-  FileWriterPluginRegister::find(const std::string &ext) {
-    const auto *e = instance().m_registry.get(ext);
-    return e ? &e->payload : nullptr;
-  }
-
-  std::vector<std::string> FileWriterPluginRegister::extensions() {
-    auto out = instance().m_registry.keys();
-    std::sort(out.begin(), out.end());
-    return out;
   }
 
 
@@ -84,12 +63,12 @@ namespace icl::io {
 
     File file(m_oGen.next());
 
-    const auto *fn = FileWriterPluginRegister::find(toLower(file.getSuffix()));
-    if (!fn) {
+    const auto *e = fileWriterRegistry().get(toLower(file.getSuffix()));
+    if (!e) {
       ERROR_LOG("No Plugin to write files with suffix " << file.getSuffix() << " available");
       return;
     }
-    (*fn)(file, image);
+    e->payload(file, image);
   }
 
 

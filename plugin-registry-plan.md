@@ -224,26 +224,30 @@ Replace FileWriter/FileGrabber's `overrideExisting` bool with priority:
 
 This is strictly nicer than the bool flag but not blocking.
 
-### Future (post-Phase 7) — Demolish façades entirely
+### Phase 8 (landed 2026-04-20) — Final façade cleanup
 
-**User intent (2026-04-20):** "get rid of the façades if at all feasible."
+After the post-Phase-7 discussion the remaining façades got treated in
+three ways:
 
-After Phase 6 demolished CompressionRegister + PluginRegister<T>, the
-remaining façades are `GrabberRegister`, `FileWriterPluginRegister`, and
-`FileGrabberPluginRegister`. Each is a thin wrapper over the primitive
-plus (for Grabber) side maps for device-list / bus-reset / descriptions.
+- **`FileWriterPluginRegister` façade → demolished.** Replaced by a free
+  function `fileWriterRegistry()` returning `FunctionPluginRegistry<Sig>&`
+  directly. `REGISTER_FILE_WRITER_PLUGIN` becomes a one-line alias over
+  `ICL_REGISTER_PLUGIN`. ImageMagick's priority registration calls the
+  registry's `registerPlugin` directly.
+- **`FileGrabberPluginRegister` façade → demolished.** Symmetric to
+  above; `fileGrabberRegistry()` free function.
+- **`GrabberRegister` → renamed to `GrabberRegistry` (façade kept).**
+  Keeps its side maps for device-list / bus-reset / per-backend
+  descriptions — those orthogonal concerns don't fit the primitive's
+  `Entry` shape. Rename acknowledges the new naming convention while
+  admitting this façade has domain-specific value worth keeping.
 
-Scope of further demolition:
-- Callers reach directly into a free-function singleton returning a
-  `PluginRegistry<...>&` (e.g. `grabberRegistry()`, `fileWriterRegistry()`).
-- GrabberRegister's extras (device-list, bus-reset, description) become
-  free-function helpers on a companion namespace or similar.
-- All domain-specific `REGISTER_X` macros disappear or become one-line
-  aliases over `ICL_REGISTER_PLUGIN`.
-
-Open for discussion once Phase 7 has stabilized the primitive's contract.
-The goal is one registration idiom across the codebase rather than six
-near-identical thin façades.
+Naming convention across the codebase is now:
+- Free-function accessors for demolished façades: `compressionRegistry()`,
+  `fileWriterRegistry()`, `fileGrabberRegistry()`, `pointCloudGrabberRegistry()`,
+  `pointCloudOutputRegistry()`, `imageOutputRegistry()`.
+- Remaining class-shaped façade: `GrabberRegistry` (was `GrabberRegister`).
+- Primitive: `utils::PluginRegistry<...>` + aliases.
 
 ---
 
@@ -267,8 +271,9 @@ near-identical thin façades.
 | 4 — Function-plugin conversions (3 sub-phases) | ~2.5h |
 | 5 — GrabberRegister | ~1h |
 | 6 — Demolish CompressionRegister + PluginRegister<T> façades | ~1.5h |
-| 7 (optional) — Priority-based FileWriter conflicts | ~30m |
-| **Total (0–6)** | **~9h** |
+| 7 — Priority-based FileWriter conflicts | ~30m |
+| 8 — Demolish FileWriter/FileGrabber façades, rename GrabberRegister → GrabberRegistry | ~45m |
+| **Total (0–8)** | **~10h** |
 
 ## Net result
 

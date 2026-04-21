@@ -83,40 +83,21 @@ namespace icl::io {
 
   };
 
-  // ----------------------------- FileGrabberPluginRegister --
-  // Thin façade over utils::FunctionPluginRegistry. Each registered
-  // callable carries its own state (per-lambda function-local static),
-  // so no external cache is needed.
+  // Plugins self-register via REGISTER_FILE_GRABBER_PLUGIN at static-init
+  // time. Each registered callable carries its own state; no external cache.
 
-  FileGrabberPluginRegister &FileGrabberPluginRegister::instance() {
-    static FileGrabberPluginRegister inst;
+  FileGrabberRegistry& fileGrabberRegistry() {
+    static FileGrabberRegistry inst(utils::OnDuplicate::KeepHighestPriority);
     return inst;
   }
 
-  void FileGrabberPluginRegister::registerExtension(
-      const std::string &extension, Factory factory, int priority) {
-    instance().m_registry.registerPlugin(extension, std::move(factory),
-                                         /*description*/ {}, priority);
-  }
-
-  const FileGrabberPluginRegister::Factory *
-  FileGrabberPluginRegister::find(const std::string &ext) {
-    const auto *e = instance().m_registry.get(ext);
-    return e ? &e->payload : nullptr;
-  }
-
-  std::vector<std::string> FileGrabberPluginRegister::extensions() {
-    auto out = instance().m_registry.keys();
-    std::sort(out.begin(), out.end());
-    return out;
-  }
-
-  static const FileGrabberPluginRegister::Factory *find_plugin(const std::string &type){
+  static const FileGrabberFn *find_plugin(const std::string &type){
     std::string lowerType = type;
     for (unsigned int i = 0; i < lowerType.length(); ++i) {
       lowerType[i] = tolower(lowerType[i]);
     }
-    return FileGrabberPluginRegister::find(lowerType);
+    const auto *e = fileGrabberRegistry().get(lowerType);
+    return e ? &e->payload : nullptr;
   }
 
   FileGrabber::FileGrabber()

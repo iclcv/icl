@@ -76,10 +76,10 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_IMAGEMAGICK
-#include <icl/io/FileGrabber.h>  // FileGrabberPluginRegister
+#include <icl/io/FileGrabber.h>  // fileGrabberRegistry
 namespace {
   using icl::io::FileGrabberPluginImageMagick;
-  using icl::io::FileGrabberPluginRegister;
+  using icl::io::fileGrabberRegistry;
 
   static const char *imageMagickFormats[] = {
     "png","jpeg","jpg",
@@ -111,9 +111,10 @@ iclRegisterFileGrabberPluginsImageMagick() {
   // there unopposed.
   constexpr int kImageMagickPriority = -10;
   for (const char **pc = imageMagickFormats; *pc; ++pc) {
-    FileGrabberPluginRegister::registerExtension(std::string(".") + *pc,
-                                                 &iclImageMagickGrab,
-                                                 kImageMagickPriority);
+    fileGrabberRegistry().registerPlugin(std::string(".") + *pc,
+                                         &iclImageMagickGrab,
+                                         /*description*/ {},
+                                         kImageMagickPriority);
   }
 }
 #endif

@@ -326,7 +326,7 @@ template<> inline bool Grabber::desiredUsed<core::format>() const{ return static
 template<> inline bool Grabber::desiredUsed<core::depth>() const{ return static_cast<int>(getDesired<core::depth>()) != -1; }
 template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
 
-class ICLIO_API GrabberRegister : utils::Uncopyable {
+class ICLIO_API GrabberRegistry : utils::Uncopyable {
 public:
   using CreateFn     = std::function<Grabber*(const std::string&)>;
   using DeviceListFn = std::function<const std::vector<GrabberDeviceDescription>&(std::string, bool)>;
@@ -337,7 +337,7 @@ public:
   /// class itself.
   using Registry = utils::PluginRegistry<std::string, CreateFn>;
 
-  static GrabberRegister* getInstance();
+  static GrabberRegistry* getInstance();
 
   void registerGrabberType(const std::string &grabberid,
                            CreateFn creator,
@@ -359,7 +359,7 @@ public:
   void resetGrabberBus(const std::string &id, bool verbose);
 
 private:
-  GrabberRegister() : m_factories(utils::OnDuplicate::Throw) {}
+  GrabberRegistry() : m_factories(utils::OnDuplicate::Throw) {}
 
   Registry m_factories;                                                     //!< id → CreateFn
   std::recursive_mutex m_mutex;                                             //!< guards the side maps below
@@ -375,7 +375,7 @@ private:
 #define REGISTER_GRABBER(NAME,CREATE_FUNC,DEVICE_LIST_FUNC,DESCRIPTION)        \
   extern "C" __attribute__((constructor, used)) void                           \
   iclRegisterGrabber_##NAME() {                                                \
-    auto *_inst = ::icl::io::GrabberRegister::getInstance();                   \
+    auto *_inst = ::icl::io::GrabberRegistry::getInstance();                   \
     _inst->registerGrabberType(#NAME, CREATE_FUNC, DEVICE_LIST_FUNC);          \
     _inst->addGrabberDescription(DESCRIPTION);                                 \
   }
@@ -383,7 +383,7 @@ private:
 #define REGISTER_GRABBER_BUS_RESET_FUNCTION(NAME,BUS_RESET_FUNC)               \
   extern "C" __attribute__((constructor, used)) void                           \
   iclRegisterGrabberBusReset_##NAME() {                                        \
-    ::icl::io::GrabberRegister::getInstance()                                  \
+    ::icl::io::GrabberRegistry::getInstance()                                  \
         ->registerGrabberBusReset(#NAME, BUS_RESET_FUNC);                      \
   }
 

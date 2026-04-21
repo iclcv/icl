@@ -120,10 +120,10 @@ ICL has a uniform "name → factory" plugin pattern across the framework:
 
 | Registry | Self-registration macro | Used for |
 |---|---|---|
-| `GrabberRegister` | `REGISTER_GRABBER` | `dc`, `v4l`, `ws`, … grabber backends |
-| `CompressionRegister` | `REGISTER_COMPRESSION_PLUGIN` | `raw`, `rlen`, `jpeg`, `1611`, `zstd` codecs |
-| `FileWriterPluginRegister` | `REGISTER_FILE_WRITER_PLUGIN` | `.png`, `.jpg`, `.bicl`, … extension dispatch |
-| `FileGrabberPluginRegister` | `REGISTER_FILE_GRABBER_PLUGIN` | mirrored for read |
+| `GrabberRegistry` | `REGISTER_GRABBER` | `dc`, `v4l`, `ws`, … grabber backends |
+| `compressionRegistry()` | `REGISTER_COMPRESSION_PLUGIN` | `raw`, `rlen`, `jpeg`, `1611`, `zstd` codecs |
+| `fileWriterRegistry()` | `REGISTER_FILE_WRITER_PLUGIN` | `.png`, `.jpg`, `.bicl`, … extension dispatch |
+| `fileGrabberRegistry()` | `REGISTER_FILE_GRABBER_PLUGIN` | mirrored for read |
 
 All four use `__attribute__((constructor))` on a free function (the only macOS-portable way to guarantee dyld-time invocation; anonymous-namespace static-storage ctors can be silently dead-stripped at the .o level on macOS even though their `__GLOBAL__sub_I_*` symbol survives in `nm`). All four are first-wins on duplicate registration; pass `overrideExisting=true` to opt in to last-wins. Plugin instances are constructed lazily on first lookup and cached for the process lifetime — *never at static-init time*, which keeps the registries consistent regardless of TU init order.
 

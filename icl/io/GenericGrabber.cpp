@@ -50,7 +50,7 @@ namespace icl::io {
         } else {
           DEBUG_LOG("create new grabber " << desc.name());
           // init grabber
-          Grabber* gPtr = GrabberRegister::getInstance() -> createGrabber(desc.type, desc.id);
+          Grabber* gPtr = GrabberRegistry::getInstance() -> createGrabber(desc.type, desc.id);
           gpm[desc.name()] = GrabberInstance(gPtr,desc,1);
           return gPtr;
         }
@@ -117,7 +117,7 @@ namespace icl::io {
     std::vector<std::string> ts = tok(filter,",");
 
     ParamMap pmap;
-    static GrabberRegister* reg = GrabberRegister::getInstance();
+    static GrabberRegistry* reg = GrabberRegistry::getInstance();
     static std::vector<std::string> plugins = reg -> getRegisteredGrabbers();
     for(unsigned int i=0;i<ts.size();++i){
       auto [deviceSpec, optionStr] = split_at_first('@',ts[i]);
@@ -155,7 +155,7 @@ namespace icl::io {
   {
     // get lock and grabber information
     std::scoped_lock<std::recursive_mutex> __lock(m_mutex);
-    GrabberRegister *grabberReg = GrabberRegister::getInstance();
+    GrabberRegistry *grabberReg = GrabberRegistry::getInstance();
 
     // (re)set GenericGrabber to default values
     if(m_poGrabber){
@@ -283,7 +283,7 @@ namespace icl::io {
     for(unsigned int i=0;i<ts.size();++i){
       const std::string &t = ts[i];
       try{
-        GrabberRegister::getInstance() ->resetGrabberBus(t.substr(0,t.find('=')),verbose);
+        GrabberRegistry::getInstance() ->resetGrabberBus(t.substr(0,t.find('=')),verbose);
       } catch (ICLException &e){
         DEBUG_LOG(e.what());
       } catch (...){
@@ -325,7 +325,7 @@ namespace icl::io {
       pmap = create_param_map(filter);
     }
     std::vector<std::string> grabberList =
-        GrabberRegister::getInstance() -> getRegisteredGrabbers();
+        GrabberRegistry::getInstance() -> getRegisteredGrabbers();
 
     std::vector<std::string>::iterator it;
     for(it = grabberList.begin(); it != grabberList.end(); ++it){
@@ -334,9 +334,9 @@ namespace icl::io {
         // get descriptions for this grabber
         std::vector<GrabberDeviceDescription> ds;
         if(!useFilter){
-          ds = GrabberRegister::getInstance() -> getDeviceList(grabber);
+          ds = GrabberRegistry::getInstance() -> getDeviceList(grabber);
         } else if (contains(pmap,grabber)) {
-          ds  = GrabberRegister::getInstance() -> getDeviceList(grabber,pmap[grabber].id);
+          ds  = GrabberRegistry::getInstance() -> getDeviceList(grabber,pmap[grabber].id);
         }
         DEBUG_LOG(grabber << " found " << ds.size() << " grabbers");
         if(useFilter && contains(pmap,grabber) && pmap[grabber].id.length()){
