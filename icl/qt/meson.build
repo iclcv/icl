@@ -3,26 +3,15 @@
 qt6 = import('qt6')
 
 qt_moc_headers = files(
-  'AbstractPlotWidget.h',
   'Application.h',
-  'CamCfgWidget.h',
   'ChromaGUI.h',
-  'ColorLabel.h',
-  'CompabilityLabel.h',
   'DoubleSlider.h',
-  'DrawWidget.h',
-  'DrawWidget3D.h',
   'GUIWidget.h',
-  'HistogrammWidget.h',
-  'IconFactory.h',
   'ImgParamWidget.h',
-  'LowLevelPlotWidget.h',
   'MouseHandler.h',
   'MultiDrawHandle.h',
-  'PlotWidget.h',
   'StringSignalButton.h',
   'ThreadedUpdatableSlider.h',
-  'ThreadedUpdatableTextView.h',
   'ToggleButton.h',
   'Widget.h',
 )
