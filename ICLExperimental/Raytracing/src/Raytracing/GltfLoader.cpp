@@ -76,12 +76,16 @@ static std::shared_ptr<Material> convertMaterial(const cgltf_material *gmat,
     mat->normalMap = decodeImage(gmat->normal_texture.texture->image, data, basePath);
   }
 
-  // Emissive
-  float em = gmat->emissive_factor[0] + gmat->emissive_factor[1] + gmat->emissive_factor[2];
-  if (em > 0.001f) {
-    mat->emissive = GeomColor(gmat->emissive_factor[0],
-                               gmat->emissive_factor[1],
-                               gmat->emissive_factor[2], 1.0f);
+  // Emissive — only apply if there's no emissive texture (which we can't decode yet).
+  // With a texture, the factor is a multiplier for the texture; without the texture,
+  // applying the factor uniformly makes the entire mesh glow.
+  if (!gmat->emissive_texture.texture) {
+    float em = gmat->emissive_factor[0] + gmat->emissive_factor[1] + gmat->emissive_factor[2];
+    if (em > 0.001f) {
+      mat->emissive = GeomColor(gmat->emissive_factor[0],
+                                 gmat->emissive_factor[1],
+                                 gmat->emissive_factor[2], 1.0f);
+    }
   }
 
   if (gmat->name && gmat->name[0]) {
