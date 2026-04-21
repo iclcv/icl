@@ -202,6 +202,17 @@ if(BULLET_FOUND)
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
+# ---- Scene viewer (OBJ loader + Cycles) ----
+add_executable(cycles-scene-viewer demos/cycles-scene-viewer.cpp)
+target_include_directories(cycles-scene-viewer PRIVATE
+  ${ICL_MODULE_INCLUDE_DIRS}
+  ${CMAKE_BINARY_DIR}/src
+  src/
+)
+target_link_libraries(cycles-scene-viewer ICLRaytracing ICLQt)
+set_target_properties(cycles-scene-viewer PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # ---- Cycles link test (Phase 1) ----
 add_executable(cycles-link-test demos/cycles-link-test.cpp)
 target_include_directories(cycles-link-test PRIVATE

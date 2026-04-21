@@ -230,14 +230,14 @@ static void tessellateToMesh(const geom::SceneObject *obj,
     }
   }
 
-  // Add vertex normals as attribute if available
-  if (hasNormals) {
-    Attribute *attr = mesh->attributes.add(ATTR_STD_VERTEX_NORMAL);
-    float3 *normals = attr->data_float3();
-    for (size_t i = 0; i < srcNormals.size(); i++) {
-      normals[i] = make_float3(srcNormals[i][0], srcNormals[i][1], srcNormals[i][2]);
-    }
-  }
+  // Don't upload explicit vertex normals — let Cycles compute them from
+  // the smooth flag and face geometry.
+
+  // Tag mesh as modified so Cycles processes the new data.
+  mesh->tag_verts_modified();
+  mesh->tag_triangles_modified();
+  mesh->tag_shader_modified();
+  mesh->tag_smooth_modified();
 }
 
 // ---- SceneSynchronizer implementation ----
