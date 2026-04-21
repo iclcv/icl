@@ -87,7 +87,7 @@ namespace icl::qt {
     }
 
     /// returns a Data instance from the datastore
-    DataStore::Data operator[](const std::string &key){
+    DataStore::Slot operator[](const std::string &key){
       return m_oDataStore.operator[](key);
     }
 

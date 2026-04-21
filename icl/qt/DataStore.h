@@ -47,7 +47,7 @@ namespace icl::qt {
         : utils::ICLException("Key not found: " + key) {}
     };
 
-    /// Thrown by `Data::operator=` / `Data::as<T>()` when no
+    /// Thrown by `Slot::operator=` / `Slot::as<T>()` when no
     /// `AssignRegistry` rule exists for the requested pair.
     struct UnassignableTypesException : public utils::ICLException {
       UnassignableTypesException(const std::string &tSrc, const std::string &tDst)
@@ -56,12 +56,12 @@ namespace icl::qt {
 
     /// Value-proxy returned from `operator[]` — a lightweight view
     /// over one std::any entry in the underlying `AnyMap`.
-    class Data {
+    class Slot {
       std::any *m_entry;
 
       friend class DataStore;
 
-      inline Data(std::any *entry) : m_entry(entry) {}
+      inline Slot(std::any *entry) : m_entry(entry) {}
 
       /// Run an `AssignRegistry::dispatch` on the typed payloads
       /// behind two std::any objects, translating a miss into an
@@ -215,7 +215,7 @@ namespace icl::qt {
 
     /// Return a proxy-view over the value at `key`.
     /// @throws KeyNotFoundException if `key` is missing.
-    Data operator[](const std::string &key);
+    Slot operator[](const std::string &key);
 
     /// Convenience: collect values from many keys into a vector.
     /// Each key is extracted via `operator[]` and implicitly

@@ -12,7 +12,7 @@ namespace icl::qt {
     : m_store(std::make_shared<utils::AnyMap>()),
       m_mutex(std::make_shared<std::recursive_mutex>()) {}
 
-  void DataStore::Data::assignAny(std::any &dst, std::any &src) {
+  void DataStore::Slot::assignAny(std::any &dst, std::any &src) {
     try {
       utils::AssignRegistry::dispatch(dst, src);
     } catch (const std::runtime_error &) {
@@ -21,12 +21,12 @@ namespace icl::qt {
     }
   }
 
-  DataStore::Data DataStore::operator[](const std::string &key) {
-    if (auto *entry = m_store->findAny(key)) return Data(entry);
+  DataStore::Slot DataStore::operator[](const std::string &key) {
+    if (auto *entry = m_store->findAny(key)) return Slot(entry);
     throw KeyNotFoundException(key);
   }
 
-  // `Data::render() / install() / link() / registerCallback() /
+  // `Slot::render() / install() / link() / registerCallback() /
   // enable() / disable() / removeCallbacks()` implementations live in
   // `icl/qt/HandleVerbDispatch.cpp` — they need every handle type to
   // be complete, so the cascade is isolated to a dedicated TU.

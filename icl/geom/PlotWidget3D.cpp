@@ -618,7 +618,7 @@ namespace icl{
           qt::GUI::register_widget_type("plot3D",create_plot_3D_widget_instance);
 
           // `PlotHandle3D p = gui["key"]` routes through AssignRegistry
-          // via DataStore::Data::assign.
+          // via DataStore::Slot::assign.
           utils::AssignRegistry::enroll_identity<PlotHandle3D>();
         }
       } plot3DWidgetRegisterer;

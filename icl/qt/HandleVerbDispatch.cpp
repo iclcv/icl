@@ -2,10 +2,10 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// Implementation of `DataStore::Data::render() / install() / link() /
+// Implementation of `DataStore::Slot::render() / install() / link() /
 // registerCallback() / enable() / disable() / removeCallbacks()`.
 //
-// These methods used to smuggle a `DataStore::Data::Event` payload
+// These methods used to smuggle a `DataStore::Slot::Event` payload
 // through `AssignRegistry::dispatch` (resolving to an
 // `Assign<H, Event>::apply` specialization per handle type).  With
 // `DataStore` now holding entries as `std::any`, there's no reason
@@ -128,7 +128,7 @@ namespace icl::qt {
     template<typename F>
     void dispatchHandle(std::any &entry, const char *verb, F f) {
       if (!visitHandle(entry, f)) {
-        ERROR_LOG("DataStore::Data::" << verb
+        ERROR_LOG("DataStore::Slot::" << verb
                   << "() not supported for type " << entry.type().name());
       }
     }
@@ -137,7 +137,7 @@ namespace icl::qt {
 
   // --- Verb implementations --------------------------------------------
 
-  void DataStore::Data::render() {
+  void DataStore::Slot::render() {
     dispatchHandle(*m_entry, "render", [](auto &h) {
       using H = std::decay_t<decltype(h)>;
       if constexpr (HasRender<H>) h.render();
@@ -145,7 +145,7 @@ namespace icl::qt {
     });
   }
 
-  void DataStore::Data::link(GLCallback *cb) {
+  void DataStore::Slot::link(GLCallback *cb) {
     dispatchHandle(*m_entry, "link", [cb](auto &h) {
       using H = std::decay_t<decltype(h)>;
       if constexpr (HasLink<H>) (*h)->link(cb);
@@ -153,7 +153,7 @@ namespace icl::qt {
     });
   }
 
-  void DataStore::Data::install(MouseHandler *data) {
+  void DataStore::Slot::install(MouseHandler *data) {
     dispatchHandle(*m_entry, "install", [data](auto &h) {
       using H = std::decay_t<decltype(h)>;
       if constexpr (HasInstallMouse<H>) (*h)->install(data);
@@ -161,7 +161,7 @@ namespace icl::qt {
     });
   }
 
-  void DataStore::Data::install(std::function<void(const MouseEvent &)> f) {
+  void DataStore::Slot::install(std::function<void(const MouseEvent &)> f) {
     // Adapter — keeps the function alive inside a MouseHandler
     // subclass so the handle's existing install(MouseHandler*) path
     // works.
@@ -174,7 +174,7 @@ namespace icl::qt {
     install(new FunctionMouseHandler(f));
   }
 
-  void DataStore::Data::registerCallback(const std::function<void()> &cb) {
+  void DataStore::Slot::registerCallback(const std::function<void()> &cb) {
     dispatchHandle(*m_entry, "registerCallback", [&cb](auto &h) {
       using H = std::decay_t<decltype(h)>;
       if constexpr (HasRegisterCallback<H>) h.registerCallback(cb);
@@ -182,7 +182,7 @@ namespace icl::qt {
     });
   }
 
-  void DataStore::Data::registerCallback(const std::function<void(const std::string &)> &cb) {
+  void DataStore::Slot::registerCallback(const std::function<void(const std::string &)> &cb) {
     dispatchHandle(*m_entry, "registerCallback(complex)", [&cb](auto &h) {
       using H = std::decay_t<decltype(h)>;
       if constexpr (HasRegisterComplexCallback<H>) h.registerCallback(cb);
@@ -190,7 +190,7 @@ namespace icl::qt {
     });
   }
 
-  void DataStore::Data::enable() {
+  void DataStore::Slot::enable() {
     dispatchHandle(*m_entry, "enable", [](auto &h) {
       using H = std::decay_t<decltype(h)>;
       if constexpr (HasEnableDisable<H>) h.enable();
@@ -198,7 +198,7 @@ namespace icl::qt {
     });
   }
 
-  void DataStore::Data::disable() {
+  void DataStore::Slot::disable() {
     dispatchHandle(*m_entry, "disable", [](auto &h) {
       using H = std::decay_t<decltype(h)>;
       if constexpr (HasEnableDisable<H>) h.disable();
@@ -206,7 +206,7 @@ namespace icl::qt {
     });
   }
 
-  void DataStore::Data::removeCallbacks() {
+  void DataStore::Slot::removeCallbacks() {
     dispatchHandle(*m_entry, "removeCallbacks", [](auto &h) {
       using H = std::decay_t<decltype(h)>;
       if constexpr (HasRemoveCallbacks<H>) h.removeCallbacks();

@@ -62,20 +62,13 @@ and `gui["x"].render()` both work against the new registry.
 
 What's still open:
 
-- [ ] **Retire the `Event` smuggling** in `DataStore::Data` —
-  `render()`, `install()`, `link()`, `registerCallback()`,
-  `enable()`, `disable()` currently work by building an `Event`
-  struct and sending it through assign.  Now that the store
-  internally holds `std::any`, replace with direct type-dispatch
-  on the stored handle (e.g. `if (auto *h = std::any_cast<ImageHandle>(&*m_entry)) h->render()`).
-  `Event` struct + `HandleEventEnrollments.cpp` +
-  `Assign<H, Event>` specialization retire with it.
-
-- [ ] **`Slot` proxy** — the `gui["key"]` return type.  Implement
-  templated `operator=(T)` and `operator T() const` that box/unbox
-  via `std::any` and call `AssignRegistry::dispatch`.  Makes
-  `int v = gui["key"]` work without users writing `.as<int>()`.
-  Independent of the storage flip but natural to bundle.
+(Event smuggling retirement + Slot proxy — landed; the Data class
+was renamed `Slot`, the `Event` struct / `Assign<H, Event>` trait
+/ `HandleEventEnrollments.cpp` are deleted.  `Slot::render()` and
+the other verbs do a direct type-cascade over the stored
+`std::any` in `qt/HandleVerbDispatch.cpp`.  `Slot` already carries
+templated `operator=(T)` / `operator T() const`, so
+`int v = gui["k"]` works without `.as<int>()`.)
 
 - [ ] **Core-type identity** enrollments (Rect, Size, Point, Image,
   std::string, utils::Any) if any end up stored in DataStore.  Not
