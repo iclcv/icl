@@ -215,20 +215,107 @@ cmake --build . -j16
 - Per-primitive material override: primitive's material > object's material > legacy
 - Normal map uses constructed tangent frame from shading normal (no explicit tangents)
 
-## Next Steps
+### Session 6 additional improvements
 
-### Remaining Work
+- **Roughness-aware SVGF denoising** — roughness passed through G-buffer alongside
+  reflectivity. Spatial filter scales neighbor weights by `roughness²`: smooth
+  surfaces get almost no blur (preserves specular highlights), rough surfaces get
+  full denoising. Combined with reflectivity via `min(reflScale, roughScale)`.
+- **Specular indirect lighting** — path tracer now does MIS between specular and
+  diffuse bounces (was diffuse-only). Metals get ~90% specular bounces with
+  roughened reflection direction. Fixes metals appearing flat/matte.
+- **Brighter sky gradient** — warm horizon (0.6) → blue zenith (0.55), dark below
+  horizon. Essential for PBR materials to have something to reflect.
+- **Material extraction bug fix** — RTMaterial fields were uninitialized when
+  `geomDirty=false`, corrupting all materials on geometry change. Fixed by always
+  extracting material via `tessellateExtractMaterial()` + adding default initializers
+  to RTMaterial fields.
+- **Demo improvements** — PBR material archetypes (roughness gradient, gold, copper,
+  plastic, rubber, mirror, emissive), material tooltip on hover, improved physics
+  parameters (lower angular damping, initial spin for realistic tumbling).
 
-- **GPU texture sampling** — upload material textures to Metal/OpenCL and sample
-  in kernels (baseColorMap first, then other maps)
-- **glTF import** — extend SceneLoader with tinygltf for standard 3D model loading
-  (brings UVs, PBR materials, and textures from glTF files)
-- **XML scene loader material support** — extend SceneLoader to parse PBR material
-  parameters and texture paths from XML scene files
-- **GPU SVGF improvements** — tune sigma parameters; more robust temporal variance
-- **UpsamplingOp in ICLFilter** — promote bilinear/edge-aware to a proper UnaryOp
-- **Environment maps** — HDR sky/environment instead of flat background
-- **MetalWidget** — QWidget wrapping CAMetalLayer for zero-copy display in ICLQt
+### Known issues with custom raytracer
+
+The custom Cook-Torrance BRDF implementation has visual quality limitations:
+- **Roughness differences barely visible for dielectrics** — F0=0.04 means only 4%
+  specular, dwarfed by diffuse. Needs HDR environment maps (not just a sky gradient)
+  to show glossy reflections convincingly.
+- **Metals look better after specular indirect fix** but still not production quality.
+- **Denoiser vs roughness tension** — SVGF spatial filter still erases subtle specular
+  differences despite roughness-aware edge-stopping.
+- **No importance-sampled GGX** — specular indirect uses roughened reflection
+  approximation, not proper GGX importance sampling.
+
+These limitations motivated the decision to integrate Blender Cycles instead.
+
+## Cycles Integration (Session 6 — In Progress)
+
+### Decision
+
+Replace the custom raytracing backends with Blender Cycles as the rendering engine.
+Cycles provides production-quality PBR (Principled BSDF), Metal GPU acceleration,
+OIDN denoising, environment maps, and 15+ years of battle-tested code.
+
+### Build Status
+
+Cycles standalone is checked out at `3rdparty/cycles/` and builds successfully.
+See `3rdparty/cycles/INSTALL_ICL.md` for build instructions.
+
+**Prerequisites (macOS):**
+```bash
+brew install git-lfs python@3.13
+```
+
+**Build:**
+```bash
+cd 3rdparty/cycles
+make update                    # ~1.2 GB precompiled deps via Git LFS
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release \
+  -DPYTHON_ROOT_DIR=/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13 \
+  -DPYTHON_LIBRARY=/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/libpython3.13.dylib \
+  -DPYTHON_INCLUDE_DIR=/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/include/python3.13
+cmake --build . -j16 --target install
+```
+
+**Verified:** Metal and CPU devices detected, `install/cycles` executable built.
+
+### Cycles XML Shader Node Issue — FIXED (Session 7)
+
+The standalone `cycles` executable had a **lazy initialization problem**: most
+shader node types failed with "Unknown shader node" errors because `NODE_DEFINE`
+only registers a node type when `get_node_type()` is explicitly called, but the
+XML parser calls `NodeType::find()` which does a plain map lookup. In full Blender,
+the UI code constructs every node type (triggering registration); the standalone
+never did. **Not a linker issue** — the code was linked, just never called.
+
+**Fix:** Added `xml_register_shader_nodes()` in `src/app/cycles_xml.cpp` — a
+bootstrap function that calls `get_node_type()` on all 90 concrete shader node
+classes before XML parsing starts. Called at the top of `xml_read_file()`.
+
+**Verified:** All example scenes render correctly — `sky_texture`, `background`,
+`checker_texture`, `glass_bsdf`, `noise_texture`, `glossy_bsdf`, `diffuse_bsdf`,
+`wave_texture`, `bump`, `emission`, etc. all work.
+
+### Next Steps for Cycles Integration
+
+1. ~~**Fix shader node registration**~~ ✓ Done (Session 7)
+
+2. ~~**Verify full rendering**~~ ✓ Done — monkey, PBR test, cube surface, sphere
+   bump scenes all render correctly with sky, textures, and PBR materials.
+
+3. **Design ICL ↔ Cycles bridge** — plan how ICL's `Scene`/`SceneObject`/`Material`
+   map to Cycles' `ccl::Scene`/`ccl::Object`/`ccl::Shader`. The bridge would:
+   - Extract ICL scene geometry → Cycles meshes
+   - Map ICL `Material` → Cycles `PrincipledBsdfNode` shader graphs
+   - Map ICL `Camera` → Cycles camera
+   - Map ICL `SceneLight` → Cycles lights
+   - Drive `ccl::Session` for progressive rendering
+   - Read back rendered pixels to ICL `Img8u`
+
+4. **Create `CyclesRTBackend`** — new backend implementing `RaytracerBackend`
+   interface, replacing CpuRTBackend/MetalRTBackend/OpenCLRTBackend with a single
+   Cycles-powered backend that handles CPU/Metal device selection internally.
 
 ### Known Limitations
 
