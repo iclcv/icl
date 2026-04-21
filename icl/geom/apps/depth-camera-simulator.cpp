@@ -34,13 +34,13 @@ void init(){
 
   gui << Canvas3D().handle("draw")
       << ( VBox().minSize(10,2)
-           << FSlider(-10,10,0).out("x").label("translate x")
-           << FSlider(-10,10,0).out("y").label("translate y")
-           << FSlider(1.5,10,0).out("z").label("translate z")
+           << FSlider(-10,10,0).handle("x").label("translate x")
+           << FSlider(-10,10,0).handle("y").label("translate y")
+           << FSlider(1.5,10,0).handle("z").label("translate z")
 
-           << FSlider(-4,4,0).out("rx").label("rotate x")
-           << FSlider(-4,4,0).out("ry").label("rotate y")
-           << FSlider(-4,4,0).out("rz").label("rotate z")
+           << FSlider(-4,4,0).handle("rx").label("rotate x")
+           << FSlider(-4,4,0).handle("ry").label("rotate y")
+           << FSlider(-4,4,0).handle("rz").label("rotate z")
 
            << ((cOut||dOut) ? (const GUIComponent&)Button("show","hide").label("preview").handle("preview")
                : (const GUIComponent&)Dummy() )

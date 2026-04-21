@@ -129,8 +129,8 @@ void init(){
           << Button("new data").handle("new")
           << Button("stopped","running").handle("run")
           << ( HBox()
-               << FSlider(0.01,1,0.2,true).out("noise").label("noise").tooltip("noise factor")
-               << Slider(0,100,30,true).out("random").label("good %").tooltip("percentage of non-random points")
+               << FSlider(0.01,1,0.2,true).handle("noise").label("noise").tooltip("noise factor")
+               << Slider(0,100,30,true).handle("random").label("good %").tooltip("percentage of non-random points")
               )
           )
       << Show();

@@ -39,7 +39,7 @@ void init(){
                 << CamCfg("")
                 <<  Combo("color image,binary image").handle("vis")
               )
-           << FSlider(0,1,0.03).out("t").label("threshold")
+           << FSlider(0,1,0.03).handle("t").label("threshold")
          )
       << ( VSplit()
            << ( HBox()

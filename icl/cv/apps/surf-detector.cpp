@@ -122,7 +122,7 @@ void init(){
            << Slider(0,20,4).handle("octaves").label("octaves")
            << Slider(0,20,4).handle("intervals").label("intervals/octavelayer")
            << Slider(0,10,2).handle("step").label("sample step")
-           << FSlider(0,0.04,0.005).out("thresh").label("threshold")
+           << FSlider(0,0.04,0.005).handle("thresh").label("threshold")
 
            << (HBox()
                << Fps().handle("fps")

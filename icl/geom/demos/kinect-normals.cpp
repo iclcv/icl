@@ -45,14 +45,14 @@ void init(){
   grabColor.useDesired(depth8u, size, formatRGB);
   GUI controls = VBox().minSize(12,2);
   controls << Fps(10).handle("fps")
-           << FSlider(0.7,1.0,0.89).out("threshold").label("threshold").handle("thresholdHandle")
+           << FSlider(0.7,1.0,0.89).handle("threshold").label("threshold")
            << ButtonGroup("unfiltered,median3x3,median5x5").handle("usedFilter")
-           << Slider(1,15,2).out("normalrange").label("normal range").handle("normalrangeHandle")
-           << Button("disable averaging","enable averaging").out("disableAveraging")
+           << Slider(1,15,2).handle("normalrange").label("normal range")
+           << Button("disable averaging","enable averaging").handle("disableAveraging")
            << ButtonGroup("linear,gauss").handle("usedSmoothing")
-           << Slider(1,15,1).out("avgrange").label("averaging range").handle("avgrangeHandle")
+           << Slider(1,15,1).handle("avgrange").label("averaging range")
            << ButtonGroup("max,mean").handle("usedAngle")
-           << Slider(1,15,3).out("neighbrange").label("neighborhood range").handle("neighbrangeHandle");
+           << Slider(1,15,3).handle("neighbrange").label("neighborhood range");
 
   gui << Display().handle("depth").minSize(16,12)
       << Display().handle("color").minSize(16,12)

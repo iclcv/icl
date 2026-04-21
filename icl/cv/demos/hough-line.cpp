@@ -30,7 +30,7 @@ void init(){
            << Display().handle("lut").label("hough space").minSize(16,12)
            << ( VBox()
                 << Button("load image").handle("load")
-                << Spinner(0,100,1).out("maxlines").label("max lines")
+                << Spinner(0,100,1).handle("maxlines").label("max lines")
                 << Prop("hld")
                 )
            )

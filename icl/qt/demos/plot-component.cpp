@@ -41,7 +41,7 @@ void init(){
           << Plot(0,0,0,0,gl,"something [pi]").handle("plot7").minSize(15,12)
           << Plot(0,0,0,0,gl).handle("plot8").minSize(15,12)
           << Plot(0,0,0,0,gl).handle("plot12").minSize(15,12)
-          << CheckBox("animate",true).out("run")
+          << CheckBox("animate",true).handle("run")
           )
       << Show();
 

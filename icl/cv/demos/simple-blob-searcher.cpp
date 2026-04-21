@@ -28,9 +28,9 @@ void mouse(const MouseEvent &e){
 void init(){
   gui << Canvas().minSize(32,24).handle("draw");
   gui << ( HBox().maxSize(100,3)
-           << Spinner(1,100000,100).out("minSize").label("min size")
-           << Spinner(1,100000,1000).out("maxSize").label("max size")
-           << FSlider(0,300,30).out("thresh").label("threshold")
+           << Spinner(1,100000,100).handle("minSize").label("min size")
+           << Spinner(1,100000,1000).handle("maxSize").label("max size")
+           << FSlider(0,300,30).handle("thresh").label("threshold")
            )
       << Show();
 

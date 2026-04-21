@@ -165,11 +165,11 @@ void init(){
            << (VBox().label("visualization").minSize(1,5)
                << ( HBox().maxSize(100,3).minSize(1,3)
                     << Combo(calibFileData.iin).handle("iin").label("visualized image")
-                    << Slider(0,255,128).out("objAlpha").label("object-alpha")
+                    << Slider(0,255,128).handle("objAlpha").label("object-alpha")
                     )
                << ( HBox().maxSize(100,3)
-                    << CheckBox("use corners",true).out("useCorners")
-                    << CheckBox("show CS",false).out("showCS")
+                    << CheckBox("use corners",true).handle("useCorners")
+                    << CheckBox("show CS",false).handle("showCS")
                     )
                )
            << ( VBox().label("more options").minSize(1,6).maxSize(100,6)
@@ -188,7 +188,7 @@ void init(){
                )
            << (HBox().maxSize(100,4)
                << ( VBox()
-                    << CheckBox("nomalized error",true).out("errNormalized").tooltip("if checked, the total calibration error\n"
+                    << CheckBox("nomalized error",true).handle("errNormalized").tooltip("if checked, the total calibration error\n"
                                                                                      "is not devided by the number of calibration points N,\n"
                                                                                      "but by N^2 in order to avoid favoring frames where\n"
                                                                                      "only few markers were found.")
@@ -220,7 +220,7 @@ void init(){
            << Label("ready..").minSize(1,2).maxSize(100,2).label("detection status").handle("status")
            << ( VBox().maxSize(100,6).minSize(1,6)
                 << ( HBox()
-                     << Spinner(1,10000,10).out("save_num_frames").label("# frames").tooltip("When you press save, "
+                     << Spinner(1,10000,10).handle("save_num_frames").label("# frames").tooltip("When you press save, "
                                                                                              "the system will\ncapture "
                                                                                              "that many frames to find\nan "
                                                                                              "optimal calibration result")
@@ -252,14 +252,14 @@ void init(){
 
   relTransGUI << ( VBox().label("rel-transformation")
                    << ( HBox()
-                        << Spinner(0,8,0).label("x-rotation *pi/4").out("rx")
-                        << Spinner(0,8,0).label("y-rotation *pi/4").out("ry")
-                        << Spinner(0,8,0).label("z-rotation *pi/4").out("rz")
+                        << Spinner(0,8,0).label("x-rotation *pi/4").handle("rx")
+                        << Spinner(0,8,0).label("y-rotation *pi/4").handle("ry")
+                        << Spinner(0,8,0).label("z-rotation *pi/4").handle("rz")
                         )
                    << ( HBox()
-                        << Float(-100000,100000,0).label("x-offset").out("tx")
-                        << Float(-100000,100000,0).label("y-offset").out("ty")
-                        << Float(-100000,100000,0).label("z-offset").out("tz")
+                        << Float(-100000,100000,0).label("x-offset").handle("tx")
+                        << Float(-100000,100000,0).label("y-offset").handle("ty")
+                        << Float(-100000,100000,0).label("z-offset").handle("tz")
                         )
                    )
               << Button("show transformation matrix").handle("showRelTrans")

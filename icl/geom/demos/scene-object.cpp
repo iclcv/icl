@@ -42,7 +42,7 @@ void init(){
 
   gui << Canvas3D().minSize(16,12).handle("draw").label("scene view")
       << ( HBox()
-           << FSlider(0.5,20,3).out("f").handle("focal").label("focal length").maxSize(100,3)
+           << FSlider(0.5,20,3).handle("f").label("focal length").maxSize(100,3)
            << Button("reload").handle("reload").hideIf(!pa("-o"))
          )
       << Show();

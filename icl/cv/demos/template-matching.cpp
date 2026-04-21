@@ -78,11 +78,11 @@ void init(){
            << Canvas().label("buffer").minSize(10,6).handle("buf")
            )
       << (VBox().minSize(7,7)
-          << FSlider(0,1,0.9).handle("significance-handle").label("significance").out("significance")
+          << FSlider(0,1,0.9).label("significance").handle("significance")
           << Fps(50).handle("fps").minSize(5,5)
-          << Button("no masks"," with masks").out("use-masks")
-          << Button("dont clip buffers","clip buffers").out("clip-buffers")
-          << Button("square distance","norm. cross corr").out("mode")
+          << Button("no masks"," with masks").handle("use-masks")
+          << Button("dont clip buffers","clip buffers").handle("clip-buffers")
+          << Button("square distance","norm. cross corr").handle("mode")
           )
       << Show();
 

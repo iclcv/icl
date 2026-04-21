@@ -28,7 +28,7 @@ enum SliderEventType { press,release };
 template<SliderEventType t>
 void stream_pos(){
   std::scoped_lock<std::recursive_mutex> lock(mtex);
-  int posVal = gui["posVal"];
+  int posVal = gui["pos"];
   switch(t){
     case press: paused = true; break;
     case release:{
@@ -43,14 +43,14 @@ void init(){
   grabber.init(type,type+"="+filename);
   int len = parse<int>(grabber.getPropertyValue("len"));
   gui << Display().minSize(32,24).handle("image")
-      << Slider(0,len,0).label("stream position in "+unit).out("posVal").handle("pos").maxSize(1000,2)
+      << Slider(0,len,0).label("stream position in "+unit).handle("pos").maxSize(1000,2)
       << ( HBox().maxSize(1000,3)
 #ifndef ICL_HAVE_OPENCV
-           << Slider(0,100,50).out("speed").label("playback speed")
-           << Slider(0,100,50).out("volume").label("audio volume")
+           << Slider(0,100,50).handle("speed").label("playback speed")
+           << Slider(0,100,50).handle("volume").label("audio volume")
 #endif
            << Fps(100).handle("fps").maxSize(5,2).minSize(5,2)
-           << Button("play","pause").out("pause").maxSize(4,2)
+           << Button("play","pause").handle("pause").maxSize(4,2)
            << CamCfg()
          )
       << Show();

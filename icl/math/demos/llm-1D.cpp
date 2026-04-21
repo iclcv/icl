@@ -25,12 +25,12 @@ void init(){
   gui << Canvas().minSize(40,30).label("View").handle("draw")
       << ( VBox().minSize(15,0)
            << Button("Train Step").handle("train")
-           << Button("Train Off","Train On").out("train-loop")
+           << Button("Train Off","Train On").handle("train-loop")
            << Label("NAN").handle("mse").label("mse")
            << Prop("llm")
            << Button("Show Kernels").handle("show-k")
            << Button("Reset").handle("reset")
-           << Int(1,1000,10).out("kernel-count").label("Kernel Count")
+           << Int(1,1000,10).handle("kernel-count").label("Kernel Count")
          )
       << Show();
 

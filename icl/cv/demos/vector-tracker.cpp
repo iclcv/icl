@@ -312,8 +312,8 @@ void init(){
   grabber->useDesired(formatGray);
   gui << Canvas().handle("image").minSize(32,24);
   gui << ( HBox()
-           << Slider(0,100,pa("-sleeptime")).handle("Hsl").out("Vsl").label("sleeptime")
-           << Button("off","on",true).out("Vlo").label("Show labels")
+           << Slider(0,100,pa("-sleeptime")).handle("Vsl").label("sleeptime")
+           << Button("off","on",true).handle("Vlo").label("Show labels")
            )
       << Show();
 

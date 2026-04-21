@@ -60,9 +60,9 @@ void step(const std::string &handle){
 void stop_chooser(GUI &dst, int idx, float pos, float r, float g, float b){
   std::string si = str(idx);
   dst << ( HBox()
-           << CheckBox("use",true).out("use"+si).handle(si)
-           << FSlider(0,1,pos).out("relPos"+si).handle("p"+si)
-           << ColorSelect(r,g,b).out("color"+si).handle("c"+si)
+           << CheckBox("use",true).handle("use"+si)
+           << FSlider(0,1,pos).handle("relPos"+si)
+           << ColorSelect(r,g,b).handle("color"+si)
          );
 }
 
@@ -73,7 +73,7 @@ void init(){
   input_img = grabber.grabImage();
 
   GUI colors = ( VBox().minSize(18,1)
-                 << CheckBox("use custom gradient below").out("custom").handle("customH")
+                 << CheckBox("use custom gradient below").handle("custom")
                );
   stop_chooser(colors,0,0.1,0,0,0);
   stop_chooser(colors,1,0.2,0,255,0);

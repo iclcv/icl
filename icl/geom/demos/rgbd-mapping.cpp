@@ -49,7 +49,7 @@ void init(){
           << Canvas3D().handle("scene").label("interactive scene")
           )
       <<( VBox()
-          << CheckBox("show overlay",true).out("showOverlay")
+          << CheckBox("show overlay",true).handle("showOverlay")
           )
       << Show();
 

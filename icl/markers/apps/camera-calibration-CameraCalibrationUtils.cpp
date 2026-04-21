@@ -251,7 +251,7 @@ namespace icl::markers {
       std::string tt = "full path: " + cf.filename;
       int initIdx = pa("-it");
       d.objGUI << ( HBox().label(cff.getBaseName()+cff.getSuffix()).minSize(1,3).maxSize(100,3)
-                    << CheckBox("enable",true).out("enable-obj-"+str(c)).tooltip(tt)
+                    << CheckBox("enable",true).handle("enable-obj-"+str(c)).tooltip(tt)
                     << Combo(transformNameList.str() + (transformGiven?"":",id"),initIdx).handle("transform-obj-"+str(c)).tooltip(tt)
                     );
 

@@ -72,11 +72,11 @@ void bench(){
 void init(){
   gui << Display().handle("draw").minSize(32,24)
       << ( VBox().minSize(20,1)
-           << FSlider(0.1,5,1).out("scale").label("scale").handle("scaleH")
-           << FSlider(0,6.3,0).out("angle").label("angle").handle("angleH")
-           << CheckBox("source image has ROI", false).out("hasROI").handle("hasROIH")
-           << CheckBox("clipToROI", false).out("clipToROI").handle("clipH")
-           << Button("lin","nn").label("interp.").out("interp").handle("interpH")
+           << FSlider(0.1,5,1).handle("scale").label("scale")
+           << FSlider(0,6.3,0).handle("angle").label("angle")
+           << CheckBox("source image has ROI", false).handle("hasROI")
+           << CheckBox("clipToROI", false).handle("clipToROI")
+           << Button("lin","nn").label("interp.").handle("interp")
            << Button("bench").handle("bench")
           )
       << Show();

@@ -106,7 +106,7 @@ void init(){
 
 
   gui << Display().label("image").handle("image").size(32,24);
-  gui << Button("Run!","Stop!",true).out("running");
+  gui << Button("Run!","Stop!",true).handle("running");
   gui << ( HBox()
               << Combo("!rgb,hls,gray,yuv").handle("colormode").label("colormode")
               << Button("Reset List").handle("reset")

@@ -283,12 +283,12 @@ void init_gui(){
         << ( VBox().maxSize(100,8)
              <<  ( HBox()
                    << CamCfg().maxSize(5,2)
-                   << Spinner(1,100,pa("-fps").as<int>()).out("fpsLimit").label("max fps")
+                   << Spinner(1,100,pa("-fps").as<int>()).handle("fpsLimit").label("max fps")
                    << Fps(10).handle("fps")
                    )
              <<  ( HBox()
-                   << Button("off","on",!idu).out("updateImages").label("update images")
-                   << Button("off","!on").handle("_").out("pp-on").label("preprocessing").minSize(5,2)
+                   << Button("off","on",!idu).handle("updateImages").label("update images")
+                   << Button("off","!on").handle("pp-on").label("preprocessing").minSize(5,2)
                    )
              );
     gui.show();
@@ -299,11 +299,11 @@ void init_gui(){
         << ( VBox().maxSize(100,8)
              <<  ( HBox()
                    << CamCfg().maxSize(5,2)
-                   << Spinner(1,100,pa("-fps").as<int>()).out("fpsLimit").label("max fps")
+                   << Spinner(1,100,pa("-fps").as<int>()).handle("fpsLimit").label("max fps")
                    )
              <<  ( HBox()
                    << Fps(10).handle("fps")
-                   << Button("off","on",!idu).out("updateImages").label("update images")
+                   << Button("off","on",!idu).handle("updateImages").label("update images")
                    )
              );
     gui.show();
