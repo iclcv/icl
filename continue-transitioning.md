@@ -1,6 +1,153 @@
 # ICL — Continuation Guide
 
-## Current State (Session 48 — plugin-registry unification + ZMQ retirement)
+## Current State (Session 49 — math detail/ reorg + pugi privatization + DynamicGUI retirement)
+
+### Session 49 Summary
+
+Three landings, one theme: **strict `detail/` invariant**. Under the strict
+rule (locked this session per user directive), anything under a module's
+`detail/` subdirectory must never be reachable by an installed public
+header. Previously `utils/detail/pugi/` was installed-anyway because
+`utils/XML.h` pulled in pugi types — that was the anti-pattern. This
+session fixes it, along with a related math reorg and a dead-code cull.
+
+See `feedback_detail_strict_rule.md` for the rule itself.
+
+#### 1. `icl/math/` detail/ reorg
+
+Backend-dispatch facade files moved under per-family subdirs:
+
+```
+icl/math/detail/
+  blas/     BlasOps.{h,cpp} + BlasOps_{Accelerate,Cpp,Mkl}.cpp
+  fft/      FFTOps.{h,cpp}  + FFTOps_{Accelerate,Cpp,Mkl}.cpp
+  lapack/   LapackOps.{h,cpp} + LapackOps_{Accelerate,Cpp,Eigen,Mkl}.cpp
+  mathops/  MathOps.{h,cpp} + MathOps_Cpp.cpp
+```
+
+**19 files moved.** All 4 facade headers dropped from the `math_headers`
+install list — they're genuinely private (zero external consumers; the
+22 `#include`s of them are all from `.cpp`s inside `icl/math/` itself).
+Facade types (`utils::BackendDispatching<>` subclasses named `BlasOps`,
+`LapackOps`, `FFTOps`, `MathOps`) never appeared in any other public
+header, so no API break. Top-level `icl/math/` shrinks 74 → 55 files.
+
+Meson updates: per-subdir source paths + removal from `math_headers`.
+Internal `#include`s rewritten: `<icl/math/BlasOps.h>` →
+`<icl/math/detail/blas/BlasOps.h>`, etc. 22 include sites, all inside
+`icl/math/`.
+
+#### 2. Pugi privatization
+
+The trigger: `utils/meson.build` had this anti-pattern block —
+
+```
+# Vendored pugixml lives under detail/pugi/ — it's only reached via
+# icl/utils/XML.h (which aliases pugi:: types as icl::utils::XML*).
+# The header must still be installed so XML.h is self-contained.
+install_headers(files('detail/pugi/PugiXML.h', 'detail/pugi/pugiconfig.hpp'), …)
+```
+
+"detail/ but installed because a public header needs it" is exactly the
+state the strict rule forbids. Fixed by making pugi actually private:
+
+**`utils/XML.h` — deleted.** Contained 21 `using` aliases (`XMLDocument =
+pugi::xml_document`, etc). Audit showed **zero** ICL public headers
+consumed any of those aliases, and only 4 in-tree .cpps used them —
+trivially switched to `pugi::` directly. Dropped from `utils_headers`,
+removed from `Utils.h` umbrella include, deleted.
+
+**`utils/ConfigFile.h` → pugi-free via PIMPL.** Four pugi references in
+the public header, all now gone:
+
+| Old | New |
+|---|---|
+| `ConfigFile(pugi::xml_document *handle)` ctor | **Deleted.** 2 external callers (ImageUndistortion, Camera) switched to existing `ConfigFile(std::istream&)` ctor. |
+| `const pugi::xml_document *getHandle()` inline | **Deleted.** Zero callers. |
+| `static void add_to_doc(pugi::xml_document&, …)` static private | Moved to anonymous namespace free function in `ConfigFile.cpp`. |
+| `mutable std::shared_ptr<pugi::xml_document> m_doc` member | **PIMPL**: `struct Impl { pugi::xml_document doc; }; mutable std::shared_ptr<Impl> m_impl;` |
+| `namespace pugi { class xml_document; }` forward decl | **Deleted.** |
+
+The PIMPL member is `m_impl` (renamed from `m_doc` per user preference
+— name reflects it's the opaque pimpl, not just the document).
+
+**`utils/ConfigFile.cpp`** — swapped the 21 XML-alias references for
+direct `pugi::xml_document` / `pugi::xml_node` / `pugi::xml_attribute` /
+`pugi::xpath_query` / `pugi::xpath_node_set` / `pugi::xpath_node`.
+`is_text_node`, `add_to_doc`, `get_id_path` moved into an anonymous
+namespace. `#include <icl/utils/XML.h>` replaced by direct
+`#include <icl/utils/detail/pugi/PugiXML.h>` (privately — the header is
+no longer installed, but `.cpp`s can reach into `detail/` freely during
+in-tree builds).
+
+**`filter/ImageUndistortion.cpp`, `geom/Camera.cpp`** — dropped the
+`new XMLDocument + doc->load(is)` pattern; now `ConfigFile(is)` directly.
+Cleaner anyway; the pattern existed only because the `ConfigFile(pugi::…*)`
+ctor used to take ownership of a raw pugi doc, which is no more.
+
+**`io/detail/grabbers/OptrisGrabber.cpp`** — uses pugi directly now:
+`pugi::xml_document`, `pugi::xpath_node`. Include path updated to
+`<icl/utils/detail/pugi/PugiXML.h>` (private — this .cpp is itself under
+`io/detail/`, so it's in-tree-only anyway).
+
+**`geom/Primitive3DFilter.cpp`** — was already pugi-direct; no change.
+
+**`utils/meson.build`** — dropped `install_headers(files('detail/pugi/PugiXML.h', 'detail/pugi/pugiconfig.hpp'), …)`. Pugi is now genuinely private: compiled into libicl-utils, not shipped in the install tree.
+
+#### 3. DynamicGUI retirement
+
+`icl/qt/DynamicGUI.{h,cpp}` surfaced during the pugi work — three private
+methods had `pugi::xml_node` in their signatures (already forward-declared,
+so the header compiled without pugi, but still leaked pugi names).
+
+Audit: **zero in-tree consumers.** The only `#include <icl/qt/DynamicGUI.h>`
+in the entire tree is `DynamicGUI.cpp` itself. No apps, demos, examples,
+tests, other modules. Framework-DSL-for-out-of-tree-users or dead code —
+the user confirmed it was dead ("cannot remember needing this at any
+time"). Retired:
+
+- `icl/qt/DynamicGUI.h` — deleted
+- `icl/qt/DynamicGUI.cpp` — deleted
+- `icl/qt/meson.build` — entries removed
+
+(A brief intermediate state had DynamicGUI's pugi refs moved to anonymous-
+namespace helpers in the .cpp — rendered moot by the subsequent deletion.
+Not worth preserving in git history.)
+
+#### Verification
+
+- Full build clean (124 targets linked post-retirement).
+- `tests/icl-tests -j 1` → **567/567 pass**, unchanged.
+- `grep 'pugi::' icl/**/*.h` → zero hits outside vendored `detail/pugi/PugiXML.h` itself. Rule holds strictly.
+- `grep '#include.*detail/' icl/**/*.h` → zero installed-header hits into `detail/`. Audit clean.
+
+#### Memory writes this session
+
+- `feedback_detail_strict_rule.md` — new. Captures the strict invariant
+  "`detail/` ⟺ not installed; no installed header may reach into detail/".
+- `project_module_subdirs.md` — updated: math now DONE; utils now fully
+  DONE (pugi genuinely private).
+- `project_utils_subdirs.md` — updated: XML.h deletion noted; pugi's
+  not-installed status noted; cross-link to `feedback_detail_strict_rule.md`.
+- `project_test_parallel_flakiness.md` — new, surfaced during verification.
+  `tests/icl-tests` default-parallel loses 5-10 tests; `-j 1` passes all
+  567; shared static/global somewhere in `Quick2` path.
+
+#### What's deferred
+
+- **The other module reorgs** (`icl/core/`, `icl/filter/`). `filter/`
+  pairs with `project_filter_dispatch_arch.md` (splitting legacy Ops
+  into `X.cpp / X_Cpp.cpp / X_Ipp.cpp / X_SSE.cpp`). Core is smaller.
+- **Parallel-test flakiness root cause** — likely `QuickContext` pool
+  (see `project_memorypool.md`) or a filter Op scratch buffer. Debug
+  with `TEST_FOREACH` around a flaky test to reproduce reliably.
+- All Session 48 deferrals still open: browser viewer for WSGrabber,
+  `wss://`, additional codecs (`webp`, `jxl`, `lz4`), `Configurable`
+  events on child-set change, capability-flag codec classification.
+
+---
+
+## Previous State (Session 48 — plugin-registry unification + ZMQ retirement)
 
 ### Session 48 Summary
 
