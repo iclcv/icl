@@ -10,6 +10,7 @@
 #include <QTextStream>
 #include <QPalette>
 #include <QStyleFactory>
+#include <QSurfaceFormat>
 #include <ICLUtils/ProgArg.h>
 #include <ICLUtils/Thread.h>
 #include <ICLUtils/SignalHandler.h>
@@ -131,6 +132,13 @@ ICLApplication::ICLApplication(int n, char **ppc,
   // For some reason,  passing argv and argc to the QApplication leads
   // to a seg-fault because of reading a NULL string internally ??
   // Therefore we simply pass this static empty parameter list
+
+  // Request GL 4.1 Core Profile by default (must be set before QApplication).
+  // ICLWidget auto-detects the profile and adapts rendering accordingly.
+  QSurfaceFormat fmt;
+  fmt.setVersion(4, 1);
+  fmt.setProfile(QSurfaceFormat::CoreProfile);
+  QSurfaceFormat::setDefaultFormat(fmt);
 
   QCoreApplication *existingApp = QCoreApplication::instance();
   if(existingApp && dynamic_cast<QApplication*>(existingApp)){

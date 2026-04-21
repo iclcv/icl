@@ -289,7 +289,14 @@ namespace icl::geom {
         performLink(widget);
         needLink = false;
       }
-      parent->renderScene(cameraIndex, widget);
+      // Use SceneRendererGL in Core Profile, legacy renderScene otherwise
+      GLint profileMask = 0;
+      glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
+      if (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) {
+        parent->getRendererGL().render(*parent, cameraIndex, widget);
+      } else {
+        parent->renderScene(cameraIndex, widget);
+      }
     }
 
     Color bgfunc(){
@@ -1204,6 +1211,13 @@ namespace icl::geom {
     }
     m_glCallbacks.push_back(std::shared_ptr<GLCallback>(new GLCallback(camIndex,this)));
     return m_glCallbacks.back().get();
+  }
+
+  SceneRendererGL &Scene::getRendererGL() {
+    if (!m_rendererGL) {
+      m_rendererGL = std::make_unique<SceneRendererGL>();
+    }
+    return *m_rendererGL;
   }
 
 #endif // QT

@@ -33,6 +33,7 @@
 #include <memory>
 #include <map>
 #include <ICLGeom/ShaderUtil.h>
+#include <ICLGeom/SceneRendererGL.h>
 
 /** \cond */
 namespace icl::qt { class ICLDrawWidget; }
@@ -236,6 +237,9 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
   /// returns a callback that is used to render the scene into a GL-context
   /** please see ICLQt::ICLDrawWidget3D::callback */
   qt::ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
+
+  /// returns the scene's GL 4.1 Core Profile renderer (created on first access)
+  SceneRendererGL &getRendererGL();
 
   enum DepthBufferMode{
     RawDepth01,      //!< raw core::depth buffer in range [0,1]
@@ -461,6 +465,9 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
 
   /// internally used list of callbacks
   std::vector<std::shared_ptr<GLCallback> > m_glCallbacks;
+
+  /// GL 4.1 Core Profile renderer (lazy, created on first getRendererGL())
+  std::unique_ptr<SceneRendererGL> m_rendererGL;
 
   struct PBuffer;
 

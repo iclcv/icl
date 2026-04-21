@@ -18,7 +18,6 @@
 #include <Raytracing/CyclesRenderer.h>
 #include <Raytracing/SceneSetup.h>
 
-#include <QSurfaceFormat>
 #include <memory>
 
 using namespace icl::utils;
@@ -28,7 +27,6 @@ using namespace icl::geom;
 
 static Scene scene;
 static std::unique_ptr<icl::rt::CyclesRenderer> renderer;
-static std::unique_ptr<SceneRendererGL> glRenderer;
 static icl::rt::SceneSetupResult setupResult;
 HSplit gui;
 
@@ -37,24 +35,10 @@ static void handleMouse(const MouseEvent &evt) {
   if (renderer) renderer->invalidateAll();
 }
 
-// todo: the SceneGLRenderer should live in the scene maybe or in Qt? .. what's better for the dependency chain?
-// extra_cb coulb be an optional extra lambda, that we could use hiere to call invalidateAll()
-//   .. then we could have gui["canvas"]->link(&scene.getGLRenderer(extra_cb)) and the renderer would automatically trigger redraws when the scene changes (and we would not need to call invalidateAll() manually in the mouse handler)
-// GL callback: render GL overlay on top of background image
-static struct OverlayCallback : public ICLDrawWidget3D::GLCallback {
-  void draw(ICLDrawWidget3D *widget) override {
-    if (glRenderer) glRenderer->render(scene, 0, widget);
-  }
-} overlayCB;
-
 static void init() {
   Size size = pa("-size").as<Size>();
 
-  // todo let's add a pa("-scene").args() or sth. to get all args with a common prefix as vector of strings, that would be much more convenient for this use case than the current way to get multiple args with the same name (which is a bit clumsy)
-  // Load scene 
-  std::vector<std::string> files;
-  for (int i = 0; i < pa("-scene").n(); i++)
-    files.push_back(pa("-scene", i).as<std::string>());
+  auto files = pa("-scene").subargs<std::string>();
 
   setupResult = icl::rt::setupScene(scene, files, size,
       pa("-background").as<std::string>(),
@@ -67,9 +51,8 @@ static void init() {
       scene, icl::rt::RenderQuality::Preview);
   renderer->setSceneScale(1.0f);
 
-  // todo: as above: this must live somewhere else, maybe in the scene or in Qt? .. overlay mode can be set automatically then
-  glRenderer = std::make_unique<SceneRendererGL>();
-  glRenderer->setOverlayMode(true);
+  // Scene owns the GL renderer — set overlay mode for compositing
+  scene.getRendererGL().setOverlayMode(true);
 
   // GUI: canvas on left, controls on right
   gui << (HSplit()
@@ -85,7 +68,7 @@ static void init() {
   DrawHandle3D canvas = gui["canvas"];
   canvas->setViewPort(size);
   canvas->install(new MouseHandler(handleMouse));
-  canvas->link(&overlayCB);
+  canvas->link(scene.getGLCallback(0));
 }
 
 static void run() {
@@ -98,8 +81,8 @@ static void run() {
   renderer->setExposure(exposure);
   renderer->setBrightness(scene.getSky().intensity * 100.0f);
 
-  glRenderer->setExposure(exposure);
-  glRenderer->setOverlayAlpha(alpha);
+  scene.getRendererGL().setExposure(exposure);
+  scene.getRendererGL().setOverlayAlpha(alpha);
 
   // ok, interesting .. maybe we can move that into a debug-feature in the scene class 
   // like it has an enum of DebugMaterials (and a function to apply them) and then we can just use that here?
@@ -113,45 +96,20 @@ static void run() {
       scene.getObject(i)->prepareForRendering();
   }
 
-  // todo: this and the if statement should be shrinked to 
-  // gui["canvas"] = renderer->render(0);
-
-  // Render Cycles (non-blocking progressive)
+  // Render Cycles + set as background (triggers widget redraw + GL callback)
   renderer->render(0);
+  DrawHandle3D canvas = gui["canvas"];
+  canvas = &renderer->getImage();
+  canvas.render();
 
-  // Set Cycles image as background → triggers widget redraw + GL callback
-  if (!renderer->getImage().isNull()) {
-    DrawHandle3D canvas = gui["canvas"];
-    canvas = renderer->getImage();
-    canvas.render();
-  }
-
-  // todo: use FpsEstimator for this (possibly extend it if functionality is missing`)
-  // FPS info
-  static Time lastFpsTime = Time::now();
-  static int lastCount = 0;
-  static float fps = 0;
-  int count = renderer->getUpdateCount();
-  Time now = Time::now();
-  float dt = (float)(now - lastFpsTime).toSecondsDouble();
-  if (dt >= 0.5f) {
-    fps = (count - lastCount) / dt;
-    lastCount = count;
-    lastFpsTime = now;
-  }
-
+  static FPSEstimator fpsEst(10);
   char buf[128];
-  snprintf(buf, sizeof(buf), "%d spp | %.1f fps | GL %.0f%%", count, fps, alpha * 100);
+  snprintf(buf, sizeof(buf), "%d spp | %.0f fps | GL %.0f%%",
+           renderer->getUpdateCount(), fpsEst.getFPSVal(), alpha * 100);
   gui["info"] = std::string(buf);
 }
 
 int main(int argc, char **argv) {
-  // todo: this should go into ICLApp constructor 
-  QSurfaceFormat fmt;
-  fmt.setVersion(4, 1);
-  fmt.setProfile(QSurfaceFormat::CoreProfile);
-  QSurfaceFormat::setDefaultFormat(fmt);
-
   return ICLApp(argc, argv,
     "-size(Size=800x600) -scene(...) -background(string=gradient) "
     "-backlight -decimate(int) -rotate(string)",

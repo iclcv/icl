@@ -657,6 +657,12 @@ ICLExperimental/Raytracing/
 - ✅ cycles-overlay-viewer app
 - ✅ GL material cache invalidation on material change (texture cache was stale)
 - ✅ Overlay viewer GUI: controls on right panel with labeled sliders
+- ✅ SceneRendererGL moved into Scene (lazy `getRendererGL()`, GLCallback auto-selects
+  Core Profile renderer in `draw()`)
+- ✅ `ProgArg::subargs<T>()` — returns all sub-args as `vector<T>`
+- ✅ GL 4.1 Core Profile set in ICLApp constructor (all ICL apps get it automatically)
+- ✅ Overlay viewer simplified: uses `scene.getGLCallback(0)`, `FPSEstimator`, no manual
+  QSurfaceFormat setup
 
 #### Immediate TODO
 

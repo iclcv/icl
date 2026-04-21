@@ -105,6 +105,18 @@ namespace icl::utils {
       return pa_subarg_internal(*this);
     }
 
+    /// returns all sub-arguments as a vector of T
+    /** e.g. pa("-scene").subargs<std::string>() returns all -scene values */
+    template<class T>
+    inline std::vector<T> subargs() const {
+      std::vector<T> result;
+      int count = n();
+      for (int i = 0; i < count; i++) {
+        result.push_back(ProgArg(id, i).as<T>());
+      }
+      return result;
+    }
+
     /// returns the prog-arg id
     inline const std::string &getID() const {
       return id;
