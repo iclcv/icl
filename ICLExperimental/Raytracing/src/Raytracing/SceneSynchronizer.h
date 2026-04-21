@@ -59,6 +59,9 @@ public:
   /// Check if any object has pending dirty flags (without consuming them).
   bool hasPendingChanges() const;
 
+  /// Force light re-sync on next synchronize() call.
+  void invalidateLights() { m_lightsCreated = false; }
+
   /// Set background environment strength (0..1). Applied on next sync.
   void setBackgroundStrength(float s) { m_backgroundStrength = s; }
 

@@ -344,6 +344,11 @@ static void setupScene() {
   scene.getLight(2).setPosition(Vec(cx - r * 0.2f, cy + r, cz + r * 0.6f, 1));
   scene.getLight(2).setDiffuse(GeomColor(180, 190, 210, 255));
 
+  // Top light: directly above scene center — reveals surface detail
+  scene.getLight(3).setOn(true);
+  scene.getLight(3).setPosition(Vec(cx, cy + r * 1.5f, cz, 1));
+  scene.getLight(3).setDiffuse(GeomColor(220, 215, 210, 255));
+
   for (int i = 0; i < scene.getObjectCount(); i++)
     scene.getObject(i)->prepareForRendering();
 }
@@ -361,6 +366,7 @@ void init() {
             << Canvas().handle("draw").minSize(32, 24).label("Cycles")
             << Canvas3D().handle("gl").minSize(32, 24).label("OpenGL"))
          << (HBox()
+            << Combo("!Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive").handle("material").label("Material").minSize(10,2)
             << Combo("!1,2,4,8,16").handle("initSamples").label("Steps/Frame").minSize(8,2)
             << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iter").minSize(8,2)
             << Slider(1, 16, 4).handle("bounces").label("Bounces").minSize(10,2)
@@ -383,9 +389,48 @@ void run() {
   renderer->setInitialSamples(initSamples);
   renderer->setSamples(maxIter);
   renderer->setMaxBounces(bounces);
-  renderer->setDenoising(false);  // OIDN off by default — too slow for interactive
+  renderer->setDenoising(false);
   renderer->setExposure(exposure);
   renderer->setBrightness(brightness);
+
+  // Material preset switching — applies to all loaded objects (not checker tiles)
+  static int lastMaterial = -1;
+  int matIdx = gui["material"].as<ComboHandle>().getSelectedIndex();
+  if (matIdx != lastMaterial) {
+    lastMaterial = matIdx;
+    auto mat = std::make_shared<Material>();
+    mat->smoothShading = true;
+    switch (matIdx) {
+      case 0: // Clay
+        mat->baseColor = GeomColor(0.7f, 0.5f, 0.4f, 1); mat->roughness = 0.6f; break;
+      case 1: // Mirror
+        mat->baseColor = GeomColor(0.95f, 0.95f, 0.97f, 1); mat->metallic = 1; mat->roughness = 0.01f; break;
+      case 2: // Gold
+        mat->baseColor = GeomColor(1.0f, 0.76f, 0.34f, 1); mat->metallic = 1; mat->roughness = 0.15f; break;
+      case 3: // Copper
+        mat->baseColor = GeomColor(0.95f, 0.64f, 0.54f, 1); mat->metallic = 1; mat->roughness = 0.3f; break;
+      case 4: // Chrome
+        mat->baseColor = GeomColor(0.9f, 0.9f, 0.92f, 1); mat->metallic = 1; mat->roughness = 0.05f; break;
+      case 5: // Red Plastic
+        mat->baseColor = GeomColor(0.8f, 0.1f, 0.1f, 1); mat->roughness = 0.25f; break;
+      case 6: // Green Rubber
+        mat->baseColor = GeomColor(0.15f, 0.6f, 0.1f, 1); mat->roughness = 0.9f; break;
+      case 7: // Glass
+        mat->baseColor = GeomColor(0.95f, 0.95f, 0.95f, 1); mat->roughness = 0.02f;
+        mat->reflectivity = 0.9f; break;
+      case 8: // Emissive
+        mat->baseColor = GeomColor(1.0f, 0.9f, 0.6f, 1); mat->roughness = 0.8f;
+        mat->emissive = GeomColor(2.0f, 1.5f, 0.8f, 1); break;
+    }
+    // Apply to loaded objects only (skip checker tiles)
+    int nLoaded = pa("-scene") ? pa("-scene").n() : 0;
+    for (int i = 0; i < std::min((int)loadedObjects.size(), std::max(nLoaded, 3)); i++) {
+      loadedObjects[i]->setMaterial(mat);
+    }
+    renderer->invalidateAll();
+  }
+
+  // (headlight is static, set in setupScene)
 
   for (int i = 0; i < scene.getObjectCount(); i++)
     scene.getObject(i)->prepareForRendering();
