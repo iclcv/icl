@@ -1,5 +1,5 @@
 #include "physics-maze-MazeObject.h"
-#include <icl/qt/Quick.h>
+#include <icl/qt/Quick2.h>
 #include <icl/physics/RigidBoxObject.h>
 #include <icl/geom/Material.h>
 #include <icl/physics/SixDOFConstraint.h>
@@ -117,7 +117,7 @@ namespace icl{
 
     //=============================================================
 
-    Img32f MazeObject::topImage;
+    Image MazeObject::topImage;
 
     /*        <-- width -->
               .___________. ^

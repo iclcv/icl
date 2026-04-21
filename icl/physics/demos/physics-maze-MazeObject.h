@@ -123,7 +123,7 @@ namespace icl{
     static const float points[2*39];
     static const int lines[2*26];
     static const geom::Vec hole_positions[NUM_HOLES];
-    static core::Img32f topImage;
+    static core::Image topImage;
 
 
     public:
@@ -137,7 +137,7 @@ namespace icl{
       return topEdges;
     }
 
-    const core::Img32f &getTopDisplay() const{
+    const core::Image &getTopDisplay() const{
       return topImage;
     }
 

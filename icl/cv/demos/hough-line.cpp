@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/cv/HoughLineDetector.h>
 
 typedef FixedColVector<float,2> Pos;
@@ -51,7 +51,7 @@ void run(){
   static ButtonHandle load = gui["load"];
   if(load.wasTriggered()){
     try{
-      edgeImage = qt::load<icl8u>(openFileDialog());
+      edgeImage = icl::qt::load(openFileDialog()).as8u();
     }catch(...){}
   }
 

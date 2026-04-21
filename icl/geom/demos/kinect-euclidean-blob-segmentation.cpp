@@ -4,7 +4,7 @@
 
 #include <icl/geom/EuclideanBlobSegmenter.h>
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 
 #include <icl/geom/PointCloudCreator.h>

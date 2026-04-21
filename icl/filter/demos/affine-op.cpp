@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/filter/AffineOp.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/utils/StackTimer.h>
 
 GUI gui = HSplit().minSize(32,24);
@@ -55,7 +55,7 @@ void init(){
           )
       << Show();
 
-  image = cvt8u(scale(create("parrot"),0.4));
+  image = scale(create("parrot"),0.4).as8u();
 
   gui.registerCallback(step,"a,b,c,d");
   gui.registerCallback(bench,"bench");

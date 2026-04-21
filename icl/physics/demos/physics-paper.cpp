@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/utils/FPSLimiter.h>
 
@@ -97,8 +97,8 @@ void init(){
 
   //static const int W=20,H=13,DIM=W*H;
   static const int W=pa("-paper-dim",0), H=pa("-paper-dim",1);
-  static Img8u frontFace = load<icl8u>(*pa("-ff"));
-  static Img8u backFace = load<icl8u>(*pa("-bf"));
+  static Img8u frontFace = icl::qt::load(*pa("-ff")).as8u();
+  static Img8u backFace = icl::qt::load(*pa("-bf")).as8u();
 
   const Size s(210,297);
   const Vec corners[4] = {

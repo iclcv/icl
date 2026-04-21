@@ -5,7 +5,7 @@
 #include <icl/geom/SceneMouseHandler.h>
 
 
-#include <icl/qt/Quick.h>
+#include <icl/qt/Quick2.h>
 #include <icl/qt/Widget.h>
 
 #include <icl/geom/GeomDefs.h>

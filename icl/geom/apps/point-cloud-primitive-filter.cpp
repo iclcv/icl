@@ -9,7 +9,7 @@
 #include <rsb/converter/Repository.h>
 #include <rsb/converter/ProtocolBufferConverter.h>
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 
 #include <icl/geom/PointCloudObject.h>

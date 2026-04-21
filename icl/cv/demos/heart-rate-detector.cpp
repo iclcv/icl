@@ -4,7 +4,7 @@
 
 #define ICL_NO_USING_NAMESPACES
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/utils/FPSLimiter.h>
 
 #include <icl/utils/Random.h>

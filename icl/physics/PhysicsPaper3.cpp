@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/physics/PhysicsPaper3.h>
-#include <icl/qt/Quick.h>
+#include <icl/qt/Quick2.h>
 #include <icl/physics/GeometricTools.h>
 #include <icl/physics/PhysicsWorld.h>
 #include <icl/physics/PhysicsDefs.h>

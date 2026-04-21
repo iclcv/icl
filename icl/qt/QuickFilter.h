@@ -7,6 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Image.h>
 #include <icl/core/Types.h>
+#include <icl/core/ImgParams.h>
 
 #include <string>
 
@@ -68,6 +69,11 @@ namespace icl::qt {
 
   /// Vertical flip (mirror along horizontal axis)
   ICLQt_API core::Image flipy(const core::Image &image);
+
+  /// Convert image to fixed output parameters (size, format, depth)
+  ICLQt_API core::Image fixed_convert(const core::Image &src,
+                                       const core::ImgParams &p,
+                                       core::depth d = core::depth8u);
 
   /** @} */
 

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/core/PseudoColorConverter.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
@@ -154,7 +154,7 @@ void run(){
   }
 
   if(tab.current() == 2){
-    gui["diff"] = abs(cvt(useImage) - cvt(uDistUseImage));
+    gui["diff"] = abs(Image(useImage) - Image(uDistUseImage));
   }else if(tab.current() == 3){
     static Img8u *pseudo = 0;
     static icl8u *lut[3] = {0,0,0};

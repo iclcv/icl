@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/filter/ImageRectification.h>
 #include <icl/filter/RotateOp.h>
 #include <icl/qt/DefineRectanglesMouseHandler.h>
@@ -147,7 +147,7 @@ void batch_pattern_changed(){
     GenericImageOutput out("file","file="+sho.getValue());
     for(int i=0;i<f.size();++i){
       try{
-        ImgQ image = qt::load(f[i]);
+        Image image = load(f[i]);
         if(!image.getDim()) throw 42;
         box.add(new QLabel(f[i].c_str()));
         ImgBase *dst = 0;

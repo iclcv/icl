@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/filter/WarpOp.h>
 
 GUI gui;
@@ -24,7 +24,7 @@ void init(){
 }
 
 void run(){
-  static WarpOp op(icl::qt::load(pa("-w")));
+  static WarpOp op(load(pa("-w")).as32f());
   grabber.useDesired(parse<depth>(gui["depth"]));
 
   Image image = grabber.grabImage();

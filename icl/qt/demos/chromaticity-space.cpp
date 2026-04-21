@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/ChromaGUI.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 
 using namespace icl;
 

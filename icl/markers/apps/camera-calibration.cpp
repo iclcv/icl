@@ -4,7 +4,7 @@
 
 #include "camera-calibration-CameraCalibrationUtils.h"
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Scene.h>
 #include <icl/geom/Material.h>
 #include <icl/markers/FiducialDetector.h>

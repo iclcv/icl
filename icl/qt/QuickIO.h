@@ -8,6 +8,7 @@
 #include <icl/core/Image.h>
 
 #include <string>
+#include <vector>
 
 namespace icl::qt {
 
@@ -24,8 +25,43 @@ namespace icl::qt {
 
   /** @} */
 
-  // tic/toc: identical signatures to old Quick — users get them from either header.
-  // Not re-declared here to avoid duplicate symbols when both Quick.h and Quick2.h
-  // coexist in the same library.
+  /** @{ @name Timing (Quick2) */
+
+  /// Starts a timer
+  ICLQt_API void tic(const std::string &label = "");
+
+  /// Stops a timer started with tic()
+  ICLQt_API void toc();
+
+  /** @} */
+
+#ifdef ICL_HAVE_QT
+  /** @{ @name Qt dialogs and utilities (Quick2) */
+
+  /// Spawns an open-file dialog (thread-safe)
+  ICLQt_API std::string openFileDialog(const std::string &filter = "",
+                             const std::string &caption = "open file",
+                             const std::string &initialDirectory = "_____last",
+                             void *parentWidget = 0);
+
+  /// Spawns a save-file dialog (thread-safe)
+  ICLQt_API std::string saveFileDialog(const std::string &filter = "",
+                             const std::string &caption = "save file",
+                             const std::string &initialDirectory = "_____last",
+                             void *parentWidget = 0);
+
+  /// Spawns a text input dialog (thread-safe)
+  ICLQt_API std::string textInputDialog(const std::string &caption = "text ...",
+                              const std::string &message = "please write your text here",
+                              const std::string &initialText = "",
+                              void *parentWidget = 0,
+                              core::ImgBase *visImage = 0,
+                              std::vector<std::string> completionOptions = std::vector<std::string>());
+
+  /// Executes a command as a child process and returns its output
+  ICLQt_API std::string execute_process(const std::string &command);
+
+  /** @} */
+#endif
 
 } // namespace icl::qt

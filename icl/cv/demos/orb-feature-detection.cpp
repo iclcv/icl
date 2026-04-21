@@ -5,7 +5,7 @@
 #define ICL_NO_USING_NAMESPACES
 
 #include <icl/core/OpenCV.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/cv/ORBFeatureDetector.h>
 
 using namespace icl::qt;

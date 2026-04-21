@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/utils/Time.h>
 #include <icl/filter/MedianOp.h>
@@ -126,7 +126,7 @@ void run(){
     useImage = grabbedImage;
 
     if(levels != 256){
-      reducedLevels = cvt8u(icl::qt::levels(cvt(grabbedImage),levels));
+      reducedLevels = icl::qt::levels(Image(*grabbedImage),levels).as8u();
       useImage = &reducedLevels;
     }
 
@@ -152,7 +152,7 @@ void run(){
     rdUpdated = true;
   }else if(lastLevels != levels || ms != lastMedianSize){
     if(levels != 256){
-      reducedLevels = cvt8u(icl::qt::levels(cvt(grabbedImage),levels));
+      reducedLevels = icl::qt::levels(Image(*grabbedImage),levels).as8u();
       useImage = &reducedLevels;
       if(ms){
         mo = std::shared_ptr<MedianOp>(new MedianOp(Size(ms,ms)));

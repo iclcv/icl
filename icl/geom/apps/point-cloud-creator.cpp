@@ -1,4 +1,4 @@
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 
 #include <icl/io/GenericGrabber.h>
 #include <icl/io/GenericImageOutput.h>

@@ -1,5 +1,5 @@
 // Minimal test for GLRenderer: coordinate frame (X=red, Y=green, Z=blue)
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Camera.h>
 #include <icl/geom/Scene.h>
 #include <icl/geom/SceneObject.h>

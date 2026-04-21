@@ -16,7 +16,7 @@
 #include <icl/geom/Primitive.h>
 
 #include <icl/markers/FiducialDetector.h>
-#include <icl/qt/Quick.h>
+#include <icl/qt/Quick2.h>
 
 
 namespace icl{

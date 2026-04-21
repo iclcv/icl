@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/cv/CV.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/cv/ViewBasedTemplateMatcher.h>
@@ -19,7 +19,7 @@ Img8u currTempl;
 Img8u templMask(Size(1,1),1);
 
 Img8u currImage;
-Img8u imageMask = cvt8u(ones(imageSize.width,imageSize.height,1)*255);
+Img8u imageMask = (ones(imageSize.width,imageSize.height,1)*255).as8u();
 
 std::recursive_mutex mutex;
 bool dragging = false;

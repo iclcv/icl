@@ -5,7 +5,7 @@
 #include <iostream>
 #include <iterator>
 #include <icl/io/FileGrabber.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <QScreen>
 
 GUI gui;
@@ -55,10 +55,10 @@ int main (int n, char **ppc){
         }
       }
     }catch(const ICLException& e){
-      static ImgQ o = ones(320,240,1)*100;
+      static Image o = ones(320,240,1)*100;
       fontsize(15);
       text(o, 90,90,"image not found!");
-      image = &o;
+      image = o.ptr();
     }
     if(pa_get_count()){
       std::cout << "Warning if called with -input, all extra given filenames are omitted!" << std::endl;

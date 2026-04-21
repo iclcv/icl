@@ -13,6 +13,7 @@
 #include <icl/qt/QuickIO.h>
 
 #include <icl/core/Img.h>
+#include <icl/core/CoreFunctions.h>
 
 namespace icl::utils{}
 namespace icl::math{}

@@ -32,7 +32,7 @@
 
 #include <icl/utils/CLIncludes.h>
 
-#include <icl/qt/Quick.h>
+#include <icl/qt/Quick2.h>
 #include <icl/geom/GeomDefs.h>
 
 using namespace icl::core;

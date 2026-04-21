@@ -301,7 +301,7 @@ namespace icl::utils {
   template<class T>
   inline const T pa_def(const std::string &id, unsigned int subargidx, const T &def){
     const ProgArg p = pa(id,subargidx);
-    return p ? parse<T>(p) : def;
+    return p ? parse<T>(pa_subarg_internal(p)) : def;
   }
 
   /// utility function that allows to use a default value, if given argument was not defined \ingroup PA

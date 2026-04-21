@@ -8,7 +8,7 @@
 //   cycles-scene-viewer -scene model.obj [-scene another.glb ...]
 //                       [-size 1280x960] [-samples 512]
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom2/DemoScene2.h>
 #include <icl/geom2/CyclesRenderer.h>
 #include <icl/geom2/Renderer.h>

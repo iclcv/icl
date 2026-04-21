@@ -8,7 +8,7 @@
 // Usage:
 //   cycles-overlay-viewer -scene model.glb [-size 800x600] [-background gradient]
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/DemoScene.h>
 #include <icl/geom/GLRenderer.h>
 #include <icl/geom/Raytracer.h>

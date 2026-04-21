@@ -1,4 +1,4 @@
-#include <icl/qt/Quick.h>
+#include <icl/qt/Quick2.h>
 #include <icl/io/GenericImageOutput.h>
 
 using namespace icl::utils;

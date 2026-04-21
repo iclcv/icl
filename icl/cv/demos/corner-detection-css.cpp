@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Erik Weitnauer, Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/core/Color.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/core/Line.h>

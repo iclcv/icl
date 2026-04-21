@@ -71,7 +71,7 @@
 #include <icl/qt/ColorHandle.h>
 #include <icl/qt/PlotHandle.h>
 #include <icl/qt/PlotWidget.h>
-#include <icl/qt/Quick.h>
+#include <icl/qt/Quick2.h>
 #include <QCheckBox>
 #include <QtCore/QTimer>
 

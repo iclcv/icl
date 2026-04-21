@@ -9,7 +9,7 @@
 //   cycles-scene-viewer -scene monkey.obj [-scene another.obj ...] [-size 1280x960]
 //                      [-rotate rx,ry,rz]  (degrees around X,Y,Z axes)
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Camera.h>
 #include <icl/geom/Scene.h>
 #include <icl/geom/SceneObject.h>

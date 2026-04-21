@@ -5,7 +5,7 @@
 #include <icl/io/FileGrabber.h>
 #include <icl/io/FileWriter.h>
 #include <icl/core/FixedConverter.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/utils/Size32f.h>
 #include <icl/filter/RotateOp.h>
 

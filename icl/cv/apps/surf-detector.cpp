@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/cv/SurfFeatureDetector.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/filter/ImageRectification.h>
 #include <icl/filter/RotateOp.h>
 
@@ -175,7 +175,7 @@ void rotate_template(){
 void load(){
   try{
     std::string fn = openFileDialog();
-    Img8u image = load<icl8u>(fn);
+    Img8u image = icl::qt::load(fn).as8u();
     if(image.getWidth() > iW ||
        image.getHeight() > iH){
       ERROR_LOG("template width and height must not be larger that the image width and height");

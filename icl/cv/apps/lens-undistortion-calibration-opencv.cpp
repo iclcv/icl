@@ -12,7 +12,7 @@
 #include <mutex>
 #include <icl/core/ConvexHull.h>
 #include <icl/filter/WarpOp.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/cv/LensUndistortionCalibrator.h>
 #include <icl/cv/CheckerboardDetector.h>
 #include <icl/geom/Scene.h>

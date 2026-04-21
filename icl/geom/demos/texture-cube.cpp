@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Erik Weitnauer
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 
@@ -12,7 +12,7 @@ Scene scene;
 float cubep[] = {0,0,0,7};
 struct TextureCube : public SceneObject{
   TextureCube():SceneObject("cube",cubep){
-    Img8u image = cvt8u(icl::qt::scale(create("lena"),300,300));
+    Img8u image = icl::qt::scale(create("lena"),300,300).as8u();
 
 #if DO_NOT_USE_SHARED_TEXTURE
     addTexture(0,1,2,3,&image,0,0,0,0);

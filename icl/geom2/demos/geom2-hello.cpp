@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 // ICL geom2 demo: minimal scene with parametric shapes + lighting
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom2/Scene2.h>
 #include <icl/geom2/GroupNode.h>
 #include <icl/geom2/SphereNode.h>

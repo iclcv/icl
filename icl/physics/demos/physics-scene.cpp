@@ -4,7 +4,7 @@
 
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/utils/FPSLimiter.h>
 
 #include <icl/physics/PhysicsScene.h>

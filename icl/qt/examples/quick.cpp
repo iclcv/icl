@@ -2,11 +2,11 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Quick.h>
+#include <icl/qt/Quick2.h>
 
 int main(int nargs, char **ppc){
 
-  ImgQ image = scale(create("parrot"),0.5);
+  Image image = scale(create("parrot"),0.5);
 
   show(image);
 

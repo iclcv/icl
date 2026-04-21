@@ -2,11 +2,9 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Quick.h>
+#include <icl/qt/Quick2.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/core/FixedConverter.h>
-#include <icl/io/FileWriter.h>
 #include <icl/utils/Size32f.h>
 
 int main(int n, char **ppc){
@@ -24,14 +22,12 @@ int main(int n, char **ppc){
           "-size|-s(Size) -depth|-d(depth=depth8u) -format|-f(format=rgb) "
           "-scale|-sc(scalefactor=1.0)",true);
 
-  std::string patternName,outFileName;
-
 
   if( pa("-p") && pa_get_count()){
     pa_show_usage("if patterns are defined using -p or -pattern, dangling arguments are not allowed");
     exit(-1);
   }
-  patternName = pa_get_count() ? *pa(0) : *pa("-p");
+  std::string patternName = pa_get_count() ? *pa(0) : *pa("-p");
 
   if(pa_get_count() > 2){
     pa_show_usage("only two dangling arguments are allowed");
@@ -48,28 +44,17 @@ int main(int n, char **ppc){
     pa_show_usage("arguments -size and -scale cannot be combined");
     exit(-1);
   }
-  outFileName = pa_get_count()==2 ? *pa(1) : *pa("-o");
+  std::string outFileName = pa_get_count()==2 ? *pa(1) : *pa("-o");
 
-  ImgBase *image = new ImgQ(create(patternName));
+  Image image = create(patternName);
 
-  format fmt = pa("-f");
-  int channels = image->getChannels();
-  Size size = pa_def("-s",image->getSize());
+  Size size = pa_def("-s",image.getSize());
   if(pa("-sc")){
-    Size32f s32(size.width,size.height);
-    s32 = s32 * (float)pa("-sc");
-    size.width = round(s32.width);
-    size.height = round(s32.height);
+    float factor = pa("-sc");
+    size = Size(round(size.width*factor), round(size.height*factor));
   }
-  ImgParams p(size,channels,fmt);
-  depth d = pa_def("-d",image->getDepth());
-
-  FixedConverter conv(p,d);
-
-  ImgBase *dst = 0;
-  conv.apply(image,&dst);
-
-  FileWriter fw(outFileName);
-  fw.write(dst);
+  format fmt = pa_def("-f", image.getFormat());
+  ImgParams p(size, getChannelsOfFormat(fmt), fmt);
+  save(fixed_convert(image, p, pa_def("-d",image.getDepth())), outFileName);
 
 }

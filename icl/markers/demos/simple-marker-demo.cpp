@@ -29,7 +29,7 @@
  **                                                                 **
  ********************************************************************/
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPluginBCH.h>
 

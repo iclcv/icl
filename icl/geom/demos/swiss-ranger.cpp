@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Camera.h>
 
 #include <icl/geom/Scene.h>
@@ -236,11 +236,11 @@ void run(){
       mo.setClipToROI(false);
       static ImgBase *moBuf = 0;
       mo.apply(image.ptr(), &moBuf);
-      IMAGE=cvt(moBuf);
+      IMAGE=Image(*moBuf).as32f();
       ImgBorder::copy(&IMAGE);
       IMAGE.setFullROI();
     }else{
-      IMAGE=cvt(image.ptr());
+      IMAGE=Image(*image.ptr()).as32f();
     }
   }
   draw = IMAGE;

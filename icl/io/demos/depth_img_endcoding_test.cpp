@@ -1,4 +1,4 @@
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/io/ImageCompressor.h>
 #include <icl/io/Kinect11BitCompressor.h>
 #include <icl/utils/StackTimer.h>

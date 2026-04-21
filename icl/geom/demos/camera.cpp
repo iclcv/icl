@@ -5,7 +5,7 @@
 #include <icl/geom/Geom.h>
 #include <icl/geom/Scene.h>
 #include <icl/geom/Camera.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/utils/FPSLimiter.h>
 #include <icl/geom/Primitive.h>
 

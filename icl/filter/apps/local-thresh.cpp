@@ -8,7 +8,7 @@
 #include <icl/filter/LocalThresholdOp.h>
 #include <icl/core/CCFunctions.h>
 #include <icl/utils/ConfigFile.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/io/FileList.h>
 
 #include <QInputDialog>

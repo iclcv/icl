@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/qt/GLFragmentShader.h>
 #include <icl/physics/PhysicsPaper3MouseHandler.h>
@@ -27,8 +27,8 @@ void fold_map_changed(const Img32f &image){
 
 void init(){
   if(pa("-textures")){
-    Img8u ft = load<icl8u>(*pa("-textures",0));
-    Img8u bt = load<icl8u>(*pa("-textures",1));
+    Img8u ft = icl::qt::load(*pa("-textures",0)).as8u();
+    Img8u bt = icl::qt::load(*pa("-textures",1)).as8u();
     model = new PhysicsPaper3(&scene,pa("-self"),pa("-dim"), 0, &ft, &bt, pa("-it"), pa("-id"));
   }else{
     model = new PhysicsPaper3(&scene,pa("-self"),pa("-dim"),0,0,0, pa("-it"), pa("-id"));

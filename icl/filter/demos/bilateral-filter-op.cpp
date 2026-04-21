@@ -11,7 +11,7 @@
 #include <icl/core/CCFunctions.h>
 
 #include <icl/utils/StackTimer.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/BinaryArithmeticalOp.h>

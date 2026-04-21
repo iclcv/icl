@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/cv/SurfFeatureDetector.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 #include <icl/geom/RansacBasedPoseEstimator.h>
@@ -32,7 +32,7 @@ void init(){
   scene.addObject(obj);
 
   surf.reset(new SurfFeatureDetector(5,4,2,0.00005,"opensurf"));
-  Img8u templ = load<icl8u>(pa("-t"));
+  Img8u templ = icl::qt::load(pa("-t")).as8u();
   surf->setReferenceImage(&templ);
 
   ts = Size32f(t.width/templ.getWidth(), t.height/templ.getHeight());

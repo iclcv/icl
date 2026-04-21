@@ -10,7 +10,7 @@
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/ConfigFile.h>
 #include <icl/math/LevenbergMarquardtFitter.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <fstream>
 
 #include <QtWidgets/QMessageBox>

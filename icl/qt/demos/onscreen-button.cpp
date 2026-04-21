@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/qt/IconFactory.h>
 #include <mutex>
 
@@ -15,7 +15,7 @@ void capture(){
   std::scoped_lock<std::recursive_mutex> lock(mtex);
   std::string filename = saveFileDialog();
   if(filename.length()){
-    save(cvt(image.ptr()),filename);
+    save(image,filename);
   }
 }
 
@@ -26,8 +26,8 @@ void init(){
 
   ICLWidget *w = gui["image"];
 
-  ImgQ empty = cvt(IconFactory::create_image("empty"));
-  ImgQ camera = empty.detached();
+  Image empty = Image(IconFactory::create_image("empty")).deepCopy();
+  Image camera = empty.deepCopy();
 
   color(255,255,255,255);
   fill(0,0,0,0);
@@ -36,7 +36,7 @@ void init(){
   circle(camera,16,16,4);
   fill(0,0,0,0);
   rect(camera,16,6,6,4);
-  w->addSpecialButton("im",&camera,capture,"capture current image");
+  w->addSpecialButton("im",camera.ptr(),capture,"capture current image");
 }
 
 void run(){

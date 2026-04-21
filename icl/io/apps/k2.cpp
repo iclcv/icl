@@ -14,7 +14,7 @@
 
 //#include <Kinect2Grabber.h>//
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/core/CCFunctions.h>
 

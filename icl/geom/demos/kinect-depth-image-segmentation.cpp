@@ -5,7 +5,7 @@
 #include <icl/geom/ConfigurableDepthImageSegmenter.h>
 #include <icl/core/PseudoColorConverter.h>
 #include <icl/geom/Scene.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <mutex>
 
 using namespace icl;

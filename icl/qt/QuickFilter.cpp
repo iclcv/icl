@@ -14,6 +14,7 @@
 #include <icl/filter/LUTOp.h>
 #include <icl/filter/RotateOp.h>
 #include <icl/filter/MirrorOp.h>
+#include <icl/filter/FixedConvertOp.h>
 
 #include <map>
 #include <cmath>
@@ -201,5 +202,11 @@ namespace icl::qt {
 
   Image flipx(const Image &image) { return activeContext().applyOp(MirrorOp(axisVert), image); }
   Image flipy(const Image &image) { return activeContext().applyOp(MirrorOp(axisHorz), image); }
+
+  // ---- fixed_convert ----
+
+  Image fixed_convert(const Image &src, const ImgParams &p, depth d) {
+    return activeContext().applyOp(filter::FixedConvertOp(p, d), src);
+  }
 
 } // namespace icl::qt

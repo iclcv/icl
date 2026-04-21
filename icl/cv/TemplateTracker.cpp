@@ -6,7 +6,7 @@
 
 #include <icl/filter/ProximityOp.h>
 #include <icl/filter/RotateOp.h>
-//#include <icl/qt/Quick.h>
+//#include <icl/qt/Quick2.h>
 #include <icl/io/TestImages.h>
 
 

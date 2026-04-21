@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/geom/RayCastOctreeObject.h>
 #include <icl/geom/GenericPointCloudGrabber.h>
 #include <icl/geom/Geom.h>
