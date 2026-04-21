@@ -94,17 +94,17 @@ namespace icl::geom {
     T yz = y*z;
 
     FixedMatrix<T,3,3> M;
-    M.index_yx(0, 0) = ww + xx - yy - zz;
-    M.index_yx(1, 0) = 2.0*(wz + xy);
-    M.index_yx(2, 0) = 2.0*(-wy + xz);
+    M(0, 0) = ww + xx - yy - zz;
+    M(1, 0) = 2.0*(wz + xy);
+    M(2, 0) = 2.0*(-wy + xz);
 
-    M.index_yx(0, 1) = 2.0*(-wz + xy);
-    M.index_yx(1, 1) = ww - xx + yy - zz;
-    M.index_yx(2, 1) = 2.0*(wx + yz);
+    M(0, 1) = 2.0*(-wz + xy);
+    M(1, 1) = ww - xx + yy - zz;
+    M(2, 1) = 2.0*(wx + yz);
 
-    M.index_yx(0, 2) = 2.0*(wy + xz);
-    M.index_yx(1, 2) = 2.0*(-wx + yz);
-    M.index_yx(2, 2) = ww - xx - yy + zz;
+    M(0, 2) = 2.0*(wy + xz);
+    M(1, 2) = 2.0*(-wx + yz);
+    M(2, 2) = ww - xx - yy + zz;
 
     return M;
   }
@@ -130,7 +130,7 @@ namespace icl::geom {
       FixedMatrix<T,4,4> TT;
       for(int x=0;x<4;++x){
         for(int y=0;y<4;++y){
-          TT.index_yx(y, x) = TM(y,x);
+          TT(y, x) = TM(y,x);
         }
       }
       return TT;
@@ -163,8 +163,8 @@ namespace icl::geom {
     T sx=0,sy=0;
     for(unsigned i=0; i < N_PTS; ++i) {
       // get origin centered point
-      V3 x=V3(Xs.index_yx(0, i),Xs.index_yx(1, i),Xs.index_yx(2, i))-cx;
-      V3 y=V3(Ys.index_yx(0, i),Ys.index_yx(1, i),Ys.index_yx(2, i))-cy;
+      V3 x=V3(Xs(0, i),Xs(1, i),Xs(2, i))-cx;
+      V3 y=V3(Ys(0, i),Ys(1, i),Ys(2, i))-cy;
 
       // accumulate the products a*b' into the matrix M
       M += x*y.transp();
@@ -185,7 +185,7 @@ namespace icl::geom {
       // copy transposed
       for(int y=0;y<3;++y){
         for(int x=0;x<3;++x){
-          TM.index_yx(y, x) = R.index_yx(x, y);
+          TM(y, x) = R(x, y);
         }
       }
 
@@ -197,18 +197,18 @@ namespace icl::geom {
       M4 N;
 
       // on-diagonal elements
-      N.index_yx(0, 0) = M.index_yx(0, 0)+M.index_yx(1, 1)+M.index_yx(2, 2);
-      N.index_yx(1, 1) = M.index_yx(0, 0)-M.index_yx(1, 1)-M.index_yx(2, 2);
-      N.index_yx(2, 2) = -M.index_yx(0, 0)+M.index_yx(1, 1)-M.index_yx(2, 2);
-      N.index_yx(3, 3) = -M.index_yx(0, 0)-M.index_yx(1, 1)+M.index_yx(2, 2);
+      N(0, 0) = M(0, 0)+M(1, 1)+M(2, 2);
+      N(1, 1) = M(0, 0)-M(1, 1)-M(2, 2);
+      N(2, 2) = -M(0, 0)+M(1, 1)-M(2, 2);
+      N(3, 3) = -M(0, 0)-M(1, 1)+M(2, 2);
       // off-diagonal elements
-      N.index_yx(0, 1) = N.index_yx(1, 0) = M.index_yx(1, 2)-M.index_yx(2, 1);
-      N.index_yx(0, 2) = N.index_yx(2, 0) = M.index_yx(2, 0)-M.index_yx(0, 2);
-      N.index_yx(0, 3) = N.index_yx(3, 0) = M.index_yx(0, 1)-M.index_yx(1, 0);
+      N(0, 1) = N(1, 0) = M(1, 2)-M(2, 1);
+      N(0, 2) = N(2, 0) = M(2, 0)-M(0, 2);
+      N(0, 3) = N(3, 0) = M(0, 1)-M(1, 0);
 
-      N.index_yx(2, 1) = N.index_yx(1, 2) = M.index_yx(0, 1)+M.index_yx(1, 0);
-      N.index_yx(3, 1) = N.index_yx(1, 3) = M.index_yx(2, 0)+M.index_yx(0, 2);
-      N.index_yx(3, 2) = N.index_yx(2, 3) = M.index_yx(1, 2)+M.index_yx(2, 1);
+      N(2, 1) = N(1, 2) = M(0, 1)+M(1, 0);
+      N(3, 1) = N(1, 3) = M(2, 0)+M(0, 2);
+      N(3, 2) = N(2, 3) = M(1, 2)+M(2, 1);
 
       // the eigenvector with the largest eigenvalue is the quaternion we want
       T w; V3 v;
@@ -224,8 +224,8 @@ namespace icl::geom {
         // if points are collinear, choose the quaternion that
         // results in the smallest rotation.
 
-        V3 dx( Xs.index_yx(0, 1)-Xs.index_yx(0, 0), Xs.index_yx(1, 1)-Xs.index_yx(1, 0), Xs.index_yx(2, 1)-Xs.index_yx(2, 0));
-        V3 dy( Ys.index_yx(0, 1)-Ys.index_yx(0, 0), Ys.index_yx(1, 1)-Ys.index_yx(1, 0), Ys.index_yx(2, 1)-Ys.index_yx(2, 0));
+        V3 dx( Xs(0, 1)-Xs(0, 0), Xs(1, 1)-Xs(1, 0), Xs(2, 1)-Xs(2, 0));
+        V3 dy( Ys(0, 1)-Ys(0, 0), Ys(1, 1)-Ys(1, 0), Ys(2, 1)-Ys(2, 0));
         dx.normalize();
         dy.normalize();
 
@@ -244,12 +244,12 @@ namespace icl::geom {
         }
       } else {
         // points are not collinear
-        w = evecs.index_yx(0, 0); //
+        w = evecs(0, 0); //
         // goes not! -> g++ seems not to be in the mood to compile this :-)
         // v = evecs.part<3,1,1,3>();
 
         for(int y=0;y<3;++y){
-          v[y] = evecs.index_yx(y+1, 0);
+          v[y] = evecs(y+1, 0);
         }
 
       }
@@ -258,7 +258,7 @@ namespace icl::geom {
       // here, also part<..> was supposed to work
       for(int i=0;i<3;++i){
         for(int j=0;j<3;++j){
-          TM.index_yx(j, i) = R.index_yx(j, i);
+          TM(j, i) = R(j, i);
         }
       }
 

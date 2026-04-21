@@ -381,16 +381,14 @@ namespace icl::math {
 
 
     /// Element access with (row, col) convention — standard math indexing
-    T &index_yx(unsigned int row, unsigned int col){
+    T &operator()(unsigned int row, unsigned int col){
       return begin()[col+cols()*row];
     }
 
     /// Element access with (row, col) convention — standard math indexing (const)
-    const T &index_yx(unsigned int row, unsigned int col) const{
+    const T &operator()(unsigned int row, unsigned int col) const{
       return begin()[col+cols()*row];
     }
-
-    // operator()(col,row) REMOVED — use index_yx(row,col) instead
 
     /// Bounds-checked element access with (row, col) convention
     T &at(unsigned int row,unsigned int col){
@@ -663,7 +661,7 @@ namespace icl::math {
     void mult(const FixedMatrix<T,MCOLS,COLS> &m,  FixedMatrix<T,MCOLS,ROWS> &dst) const{
       for(unsigned int c=0;c<MCOLS;++c){
         for(unsigned int r=0;r<ROWS;++r){
-          dst.index_yx(r, c) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
+          dst(r, c) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
         }
       }
     }
@@ -807,7 +805,7 @@ namespace icl::math {
       FixedMatrix<T,NEW_WIDTH,NEW_HEIGHT> M(init);
       for(unsigned int x=0;x<COLS && x < NEW_WIDTH; ++x){
         for(unsigned int y=0;y<ROWS && y < NEW_HEIGHT; ++y){
-          M.index_yx(y, x) = (*this).index_yx(y, x);
+          M(y, x) = (*this)(y, x);
         }
       }
       return M;
@@ -821,7 +819,7 @@ namespace icl::math {
     static FixedMatrix<T,ROWS,COLS> id(){
       FixedMatrix<T,ROWS,COLS> m(T(0));
       for(unsigned int i=0;i<ROWS && i<COLS;++i){
-        m.index_yx(i, i) = 1;
+        m(i, i) = 1;
       }
       return m;
     }
@@ -1030,9 +1028,9 @@ namespace icl::math {
   template<class T>
   inline FixedMatrix<T, 4, 4> create_hom_4x4_trans(T dx, T dy, T dz){
     FixedMatrix<T,4,4> m = FixedMatrix<T,4,4>::id();
-    m.index_yx(0, 3)=dx;
-    m.index_yx(1, 3)=dy;
-    m.index_yx(2, 3)=dz;
+    m(0, 3)=dx;
+    m(1, 3)=dy;
+    m(2, 3)=dz;
     return m;
   }
 

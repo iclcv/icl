@@ -600,7 +600,7 @@ namespace icl::geom {
       for(int y=0; y<size.height; y++){//count overlap points (cross-correlated)
         for(int x=0; x<size.width; x++){
           if(labelImageC(x,y)>0 && lastLabelImageC(x,y)>0){
-            assignmentMatrix.index_yx(lastLabelImageC(x,y)-1, labelImageC(x,y)-1)++;//num match points
+            assignmentMatrix(lastLabelImageC(x,y)-1, labelImageC(x,y)-1)++;//num match points
             lastNum[lastLabelImageC(x,y)-1]++;//num segment points
             curNum[labelImageC(x,y)-1]++;//num segment points
           }
@@ -612,9 +612,9 @@ namespace icl::geom {
           float curScore;
           float lastScore;
           float compScore;
-          if(assignmentMatrix.index_yx(j, i)>0){
-            curScore=static_cast<float>(assignmentMatrix.index_yx(j, i))/static_cast<float>(curNum[i]);
-            lastScore=static_cast<float>(assignmentMatrix.index_yx(j, i))/static_cast<float>(lastNum[j]);
+          if(assignmentMatrix(j, i)>0){
+            curScore=static_cast<float>(assignmentMatrix(j, i))/static_cast<float>(curNum[i]);
+            lastScore=static_cast<float>(assignmentMatrix(j, i))/static_cast<float>(lastNum[j]);
             compScore=(curScore+lastScore)/2.;
           }
           else{
@@ -710,7 +710,7 @@ namespace icl::geom {
 				      numSurfaces*numSurfaces * sizeof(unsigned char));
 				  for(unsigned int i=0; i<neighboursC.rows(); i++){
 				    for(unsigned int j=0; j<neighboursC.cols(); j++){
-				      neighbours.index_yx(j, i)=static_cast<bool>(neighboursC.index_yx(j, i));
+				      neighbours(j, i)=static_cast<bool>(neighboursC(j, i));
 				    }
 				  }
 		      if(pointAssignment){
@@ -720,7 +720,7 @@ namespace icl::geom {
 				    maskImage = core::Img8u(utils::Size(w,h),1,std::vector<unsigned char*>(1,m_data->maskArray.data()),false);
           }
 		      for(int i=0; i<numSurfaces; i++) {
-			      neighbours.index_yx(i, i)=true;
+			      neighbours(i, i)=true;
 		      }
 	      } catch (utils::CLException &err) { //catch openCL errors
 		      ERROR_LOG(err.what());
@@ -773,8 +773,8 @@ namespace icl::geom {
 			      for(int a=0; a<numSurfaces-1; a++) {
 				      for (int b=a+1; b<numSurfaces; b++) {
 					      if(adj[a]==true && adj[b]==true) {
-						      neighbours.index_yx(b, a)=true;
-						      neighbours.index_yx(a, b)=true;
+						      neighbours(b, a)=true;
+						      neighbours(a, b)=true;
 					      }
 				      }
 			      }
@@ -794,7 +794,7 @@ namespace icl::geom {
 	      }
       }
       for (int i = 0; i < numSurfaces; i++) {
-	      neighbours.index_yx(i, i) = true;
+	      neighbours(i, i) = true;
       }
       if(pointAssignment==true) {
         labelImageOut.deepCopy(&labelImage);

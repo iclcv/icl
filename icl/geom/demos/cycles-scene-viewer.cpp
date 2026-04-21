@@ -276,16 +276,16 @@ static void setupScene() {
 
     // Build rotation matrix: Rz * Ry * Rx
     Mat Rx = Mat::id();
-    Rx.index_yx(1, 1) =  cosf(cx); Rx.index_yx(1, 2) = sinf(cx);
-    Rx.index_yx(2, 1) = -sinf(cx); Rx.index_yx(2, 2) = cosf(cx);
+    Rx(1, 1) =  cosf(cx); Rx(1, 2) = sinf(cx);
+    Rx(2, 1) = -sinf(cx); Rx(2, 2) = cosf(cx);
 
     Mat Ry = Mat::id();
-    Ry.index_yx(0, 0) =  cosf(cy); Ry.index_yx(0, 2) = -sinf(cy);
-    Ry.index_yx(2, 0) =  sinf(cy); Ry.index_yx(2, 2) =  cosf(cy);
+    Ry(0, 0) =  cosf(cy); Ry(0, 2) = -sinf(cy);
+    Ry(2, 0) =  sinf(cy); Ry(2, 2) =  cosf(cy);
 
     Mat Rz = Mat::id();
-    Rz.index_yx(0, 0) =  cosf(cz); Rz.index_yx(0, 1) = sinf(cz);
-    Rz.index_yx(1, 0) = -sinf(cz); Rz.index_yx(1, 1) = cosf(cz);
+    Rz(0, 0) =  cosf(cz); Rz(0, 1) = sinf(cz);
+    Rz(1, 0) = -sinf(cz); Rz(1, 1) = cosf(cz);
 
     Mat R = Rz * Ry * Rx;
 

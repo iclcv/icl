@@ -46,7 +46,7 @@ namespace icl::cv {
           const Point &p1 = contour[col];
           for (uint32_t row = col+1; row < dim; ++row) {
               const Point &p2 = contour[row];
-              dist.index_yx(row, col) = dist.index_yx(col, row) = fabs(p1.distanceTo(p2));
+              dist(row, col) = dist(col, row) = fabs(p1.distanceTo(p2));
           }
       }
 
@@ -84,15 +84,15 @@ namespace icl::cv {
 				for (uint32_t k = 0; k < 2 * s; ++k) {
 					const uint32_t i1 = (min + k) % dim;
 					const uint32_t i2 = (min + k + 1) % dim;
-                  l += dist.index_yx(i2, i1);
+                  l += dist(i2, i1);
               }
               // compute the curavature 'k_i'
-              float k_i = delta * (l / dist.index_yx(max, min));
+              float k_i = delta * (l / dist(max, min));
               if (std::isinf(k_i)) {
                   k_i = delta;
               }
               // fill the curvature matrix
-              curvature.index_yx(s, i) = k_i;
+              curvature(s, i) = k_i;
               // histogram value
               h_i += k_i;
           }

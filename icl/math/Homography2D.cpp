@@ -15,12 +15,12 @@ namespace icl::math {
     if(alg == Simple){
       DynMatrix<T> X(n,3),Y(n,3);
       for(int i=0;i<n;++i){
-        X.index_yx(0, i) = x[i].x;
-        X.index_yx(1, i) = x[i].y;
-        X.index_yx(2, i) = 1;
-        Y.index_yx(0, i) = y[i].x;
-        Y.index_yx(1, i) = y[i].y;
-        Y.index_yx(2, i) = 1;
+        X(0, i) = x[i].x;
+        X(1, i) = x[i].y;
+        X(2, i) = 1;
+        Y(0, i) = y[i].x;
+        Y(1, i) = y[i].y;
+        Y(2, i) = 1;
       }
       DynMatrix<T> H = X*Y.pinv(); // A * B.pinv()
 
@@ -32,7 +32,7 @@ namespace icl::math {
       DynMatrix<T> M(8,2*n),r(1,2*n);
       for(int i=0;i<n;++i){
         T xx = x[i].x, xy=x[i].y, yx=y[i].x, yy=y[i].y;
-        T *m = &M.index_yx(2*i, 0);
+        T *m = &M(2*i, 0);
         m[0] = xx;
         m[1] = xy;
         m[2] = 1;

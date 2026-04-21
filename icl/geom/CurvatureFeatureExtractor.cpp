@@ -16,16 +16,16 @@ namespace icl::geom {
     for(size_t i=0; i<initialMatrix.rows(); i++){
       for(size_t j=0; j<initialMatrix.rows(); j++){
         //only test pairs of non-adjacent curved surfaces
-        if(initialMatrix.index_yx(j, i)==true ||
+        if(initialMatrix(j, i)==true ||
             (features[i].curvatureFactor!=SurfaceFeatureExtractor::CURVED_1D && features[i].curvatureFactor!=SurfaceFeatureExtractor::CURVED_2D) ||
             (features[j].curvatureFactor!=SurfaceFeatureExtractor::CURVED_1D && features[j].curvatureFactor!=SurfaceFeatureExtractor::CURVED_2D) ){
-          curvature.index_yx(j, i)=false;
+          curvature(j, i)=false;
         }
       }
     }
     for(size_t i=0; i<curvature.rows(); i++){
       for(size_t j=i+1; j<curvature.cols(); j++){//dont check pairs twice
-        if(curvature.index_yx(j, i)==true){//candidate
+        if(curvature(j, i)==true){//candidate
           bool proceed=true;
 
           //joint criterion: similar surface shape and orientation (normal histogram matching)
@@ -48,8 +48,8 @@ namespace icl::geom {
           }
 
           if(!proceed){//remove if no case succeeded
-            curvature.index_yx(j, i)=false;
-            curvature.index_yx(i, j)=false;
+            curvature(j, i)=false;
+            curvature(i, j)=false;
           }
         }
       }

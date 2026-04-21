@@ -58,9 +58,9 @@ ObjectEdgeDetectorData::m_kernel ObjectEdgeDetectorData::getKernel(int size){
 	    returnKernel.kSize = 3 * 3;
 	    returnKernel.rowSize = 3;
 	    DynMatrix<float> k1 = DynMatrix<float>(1, 3, 0.0);
-	    k1.index_yx(0, 0) = 1.;
-	    k1.index_yx(1, 0) = 2.;
-	    k1.index_yx(2, 0) = 1.;
+	    k1(0, 0) = 1.;
+	    k1(1, 0) = 2.;
+	    k1(2, 0) = 1.;
 	    returnKernel.kernel = k1 * k1.transp();
     } else if (size <= 5) {
 	    returnKernel.norm = 256.;
@@ -68,11 +68,11 @@ ObjectEdgeDetectorData::m_kernel ObjectEdgeDetectorData::getKernel(int size){
 	    returnKernel.kSize = 5 * 5;
 	    returnKernel.rowSize = 5;
 	    DynMatrix<float> k1 = DynMatrix<float>(1, 5, 0.0);
-	    k1.index_yx(0, 0) = 1.;
-	    k1.index_yx(1, 0) = 4.;
-	    k1.index_yx(2, 0) = 6.;
-	    k1.index_yx(3, 0) = 4.;
-	    k1.index_yx(4, 0) = 1.;
+	    k1(0, 0) = 1.;
+	    k1(1, 0) = 4.;
+	    k1(2, 0) = 6.;
+	    k1(3, 0) = 4.;
+	    k1(4, 0) = 1.;
 	    returnKernel.kernel = k1 * k1.transp();
     } else {
 	    returnKernel.norm = 4096.;
@@ -80,13 +80,13 @@ ObjectEdgeDetectorData::m_kernel ObjectEdgeDetectorData::getKernel(int size){
 	    returnKernel.kSize = 7 * 7;
 	    returnKernel.rowSize = 7;
 	    DynMatrix<float> k1 = DynMatrix<float>(1, 7, 0.0);
-	    k1.index_yx(0, 0) = 1.;
-	    k1.index_yx(1, 0) = 6.;
-	    k1.index_yx(2, 0) = 15.;
-	    k1.index_yx(3, 0) = 20.;
-	    k1.index_yx(4, 0) = 15.;
-	    k1.index_yx(5, 0) = 6.;
-	    k1.index_yx(6, 0) = 1.;
+	    k1(0, 0) = 1.;
+	    k1(1, 0) = 6.;
+	    k1(2, 0) = 15.;
+	    k1(3, 0) = 20.;
+	    k1(4, 0) = 15.;
+	    k1(5, 0) = 6.;
+	    k1(6, 0) = 1.;
 	    returnKernel.kernel = k1 * k1.transp();
     }
 

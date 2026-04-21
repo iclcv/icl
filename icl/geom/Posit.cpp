@@ -52,10 +52,10 @@ namespace icl::geom {
 
     for(int i=0;i<N;++i){
       const Vec &v = modelPoints[i];
-      data->M.index_yx(i, 0) = v[0];
-      data->M.index_yx(i, 1) = v[1];
-      data->M.index_yx(i, 2) = v[2];
-      data->M.index_yx(i, 3) = 1;
+      data->M(i, 0) = v[0];
+      data->M(i, 1) = v[1];
+      data->M(i, 2) = v[2];
+      data->M(i, 3) = 1;
     }
     data->O = data->M.pinv();
 
@@ -117,14 +117,14 @@ namespace icl::geom {
   FixedColVector<float,3> Posit::Result::getAngles() const{
     const Mat &M = *this;
     float angle_x(0), angle_y(0), angle_z(0);
-    angle_y = asin(M.index_yx(2, 0));
+    angle_y = asin(M(2, 0));
     /* http://en.wikipedia.org/wiki/Gimbal_lock ? */
     if ( fabs( cos( angle_y ) ) > 1.0e-6f ) {
-      angle_x  = atan2(-M.index_yx(2, 1),M.index_yx(2, 2));
-      angle_z  = atan2(-M.index_yx(1, 0),M.index_yx(0, 0));
+      angle_x  = atan2(-M(2, 1),M(2, 2));
+      angle_z  = atan2(-M(1, 0),M(0, 0));
     }else{
       angle_x  = 0;
-      angle_z  = atan2(M.index_yx(0, 1), M.index_yx(1, 1));
+      angle_z  = atan2(M(0, 1), M(1, 1));
     }
 
     return FixedColVector<float,3>(angle_x,angle_y,angle_z);
@@ -132,7 +132,7 @@ namespace icl::geom {
 
   FixedColVector<float,3> Posit::Result::getTranslation() const{
     const Mat &m = *this;
-    return FixedColVector<float,3>(m.index_yx(0, 3),m.index_yx(1, 3),m.index_yx(2, 3),1);
+    return FixedColVector<float,3>(m(0, 3),m(1, 3),m(2, 3),1);
   }
 
 
@@ -157,8 +157,8 @@ namespace icl::geom {
     float ify = 1.0/fy;
 
     for(int i=0;i<N;++i){
-      data->U[i] = data->I.index_yx(i, 0) = (imagePoints[i].x - pp.x)*ifx;
-      data->V[i] = data->I.index_yx(i, 1) = (imagePoints[i].y - pp.y)*ify;
+      data->U[i] = data->I(i, 0) = (imagePoints[i].x - pp.x)*ifx;
+      data->V[i] = data->I(i, 1) = (imagePoints[i].y - pp.y)*ify;
     }
 
     float T[3]={0,0,0};
@@ -205,8 +205,8 @@ namespace icl::geom {
         u = data->U[j];
         v = data->V[j];
 
-        data->U[j] = data->W[j] * data->I.index_yx(j, 0);
-        data->V[j] = data->W[j] * data->I.index_yx(j, 1);
+        data->U[j] = data->W[j] * data->I(j, 0);
+        data->V[j] = data->W[j] * data->I(j, 1);
 
         du = u-data->U[j];
         dv = v-data->V[j];
@@ -220,23 +220,23 @@ namespace icl::geom {
       }
     }
 
-    data->result.index_yx(0, 0) = R[0][0];
-    data->result.index_yx(0, 1) = R[0][1];
-    data->result.index_yx(0, 2) = R[0][2];
-    data->result.index_yx(0, 3) = T[0];
+    data->result(0, 0) = R[0][0];
+    data->result(0, 1) = R[0][1];
+    data->result(0, 2) = R[0][2];
+    data->result(0, 3) = T[0];
 
-    data->result.index_yx(1, 0) = R[1][0];
-    data->result.index_yx(1, 1) = R[1][1];
-    data->result.index_yx(1, 2) = R[1][2];
-    data->result.index_yx(1, 3) = T[1];
+    data->result(1, 0) = R[1][0];
+    data->result(1, 1) = R[1][1];
+    data->result(1, 2) = R[1][2];
+    data->result(1, 3) = T[1];
 
-    data->result.index_yx(2, 0) = R[2][0];
-    data->result.index_yx(2, 1) = R[2][1];
-    data->result.index_yx(2, 2) = R[2][2];
-    data->result.index_yx(2, 3) = T[2];
+    data->result(2, 0) = R[2][0];
+    data->result(2, 1) = R[2][1];
+    data->result(2, 2) = R[2][2];
+    data->result(2, 3) = T[2];
 
-    data->result.index_yx(3, 0) = data->result.index_yx(3, 1) = data->result.index_yx(3, 2) = 0;
-    data->result.index_yx(3, 3) = 1;
+    data->result(3, 0) = data->result(3, 1) = data->result(3, 2) = 0;
+    data->result(3, 3) = 1;
 
     return data->result;
   }

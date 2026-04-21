@@ -62,9 +62,9 @@ namespace icl::markers {
         std::copy(pW.begin(),pW.begin()+3,W.col_begin(i));
 
         Point32f p = fids[0].getKeyPoints2D()[i].markerPos;
-        O.index_yx(0, i) = p.x;
-        O.index_yx(1, i) = p.y;
-        O.index_yx(2, i) = 0;
+        O(0, i) = p.x;
+        O(1, i) = p.y;
+        O(2, i) = 0;
       }
       try{
         pose = PoseEstimator::map(O,W);
@@ -72,7 +72,7 @@ namespace icl::markers {
         /// invert y and z axis!
         for(int x=1;x<3;++x){
           for(int y=0;y<3;++y){
-            pose.index_yx(y, x) *= -1;
+            pose(y, x) *= -1;
           }
         }
       }catch(ICLException &){
@@ -82,7 +82,7 @@ namespace icl::markers {
     }
     havePose = true;
 
-    center = FixedColVector<float,3>(pose.index_yx(0, 3), pose.index_yx(1, 3), pose.index_yx(2, 3));
+    center = FixedColVector<float,3>(pose(0, 3), pose(1, 3), pose(2, 3));
     haveCenter = true;
 
     return pose;

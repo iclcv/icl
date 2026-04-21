@@ -161,7 +161,7 @@ namespace icl::math {
           for(int i=0;i<D;++i){
             Vector Ji(P,J.row_begin(i),false);
             js[o](params,xs_rows[i],Ji);
-            dy[i] = f(params, xs_rows[i])[o] - ys.index_yx(i, o);
+            dy[i] = f(params, xs_rows[i])[o] - ys(i, o);
           }
 
           matrix_mult_t(J,J,H,SRC1_T);
@@ -179,16 +179,16 @@ namespace icl::math {
 
           // first guess of lambda
           if (it == 0) {
-            Scalar H_max = H.index_yx(0, 0);
+            Scalar H_max = H(0, 0);
             for (unsigned int i = 1; i < H.cols(); ++i) {
-              if (H.index_yx(i, i) > H_max) H_max = H.index_yx(i, i);
+              if (H(i, i) > H_max) H_max = H(i, i);
             }
             lambdas[o] = tau * H_max;
           }
         }
 
         for(int i=0;i<P;++i){
-          H.index_yx(i, i) += lambdas[o];
+          H(i, i) += lambdas[o];
         }
 
         // Creating Mx = b to solve
@@ -232,7 +232,7 @@ namespace icl::math {
             for(int i=0;i<D;++i){
               Vector Ji(P,J.row_begin(i),false);
               js[o](params,xs_rows[i],Ji);
-              dy[i] = f(params, xs_rows[i])[o] - ys.index_yx(i, o);
+              dy[i] = f(params, xs_rows[i])[o] - ys(i, o);
             }
 
             matrix_mult_t(J,J,H,SRC1_T);
@@ -252,7 +252,7 @@ namespace icl::math {
           if (O == 1) {
             // change the hessian back to normal
             for(int i=0;i<P;++i){
-              H.index_yx(i, i) -= lambdas[o];
+              H(i, i) -= lambdas[o];
             }
           }
 
@@ -336,16 +336,16 @@ namespace icl::math {
 
           // first guess of lambda
           if (it == 0) {
-            Scalar H_max = H.index_yx(0, 0);
+            Scalar H_max = H(0, 0);
             for (unsigned int i = 1; i < H.cols(); ++i) {
-              if (H.index_yx(i, i) > H_max) H_max = H.index_yx(i, i);
+              if (H(i, i) > H_max) H_max = H(i, i);
             }
             lambdas[o] = tau * H_max;
           }
         }
 
         for(int i=0;i<P;++i){
-          H.index_yx(i, i) += lambdas[o];
+          H(i, i) += lambdas[o];
         }
 
         // Creating Mx = b to solve
@@ -398,7 +398,7 @@ namespace icl::math {
           if (O == 1) {
             // change the hessian back to normal
             for(int i=0;i<P;++i){
-              H.index_yx(i, i) -= lambdas[o];
+              H(i, i) -= lambdas[o];
             }
           }
 

@@ -96,26 +96,26 @@ namespace icl{
                     mean(Mx.row_begin(2), Mx.row_end(2)));
 
       for (int i = 0; i < cols; ++i) {
-        Mx.index_yx(0, i) -= center[0];
-        Mx.index_yx(1, i) -= center[1];
-        Mx.index_yx(2, i) -= center[2];
+        Mx(0, i) -= center[0];
+        Mx(1, i) -= center[1];
+        Mx(2, i) -= center[2];
       }
 
       // matrix of central moments
       LM::Matrix M(3,3,0.0f);
 
       for (int i = 0; i < cols; ++i) {
-        M.index_yx(0, 0) += Mx.index_yx(0, i)*Mx.index_yx(0, i);
-        M.index_yx(0, 1) += Mx.index_yx(0, i)*Mx.index_yx(1, i);
-        M.index_yx(0, 2) += Mx.index_yx(0, i)*Mx.index_yx(2, i);
-        M.index_yx(1, 1) += Mx.index_yx(1, i)*Mx.index_yx(1, i);
-        M.index_yx(1, 2) += Mx.index_yx(1, i)*Mx.index_yx(2, i);
-        M.index_yx(2, 2) += Mx.index_yx(2, i)*Mx.index_yx(2, i);
+        M(0, 0) += Mx(0, i)*Mx(0, i);
+        M(0, 1) += Mx(0, i)*Mx(1, i);
+        M(0, 2) += Mx(0, i)*Mx(2, i);
+        M(1, 1) += Mx(1, i)*Mx(1, i);
+        M(1, 2) += Mx(1, i)*Mx(2, i);
+        M(2, 2) += Mx(2, i)*Mx(2, i);
       }
 
-      M.index_yx(1, 0) = M.index_yx(0, 1);
-      M.index_yx(2, 0) = M.index_yx(0, 2);
-      M.index_yx(2, 1) = M.index_yx(1, 2);
+      M(1, 0) = M(0, 1);
+      M(2, 0) = M(0, 2);
+      M(2, 1) = M(1, 2);
 
       M /= static_cast<float>(cols);
 
@@ -130,16 +130,16 @@ namespace icl{
 
       // get bounding box
       LM::Matrix D = eVec.inv()*Mx;
-      Vec3 minV(D.index_yx(0, 0), D.index_yx(1, 0), D.index_yx(2, 0));
+      Vec3 minV(D(0, 0), D(1, 0), D(2, 0));
       Vec3 maxV(minV);
 
       for (unsigned int i = 1; i < D.cols(); ++i) {
-        if (D.index_yx(0, i) < minV[0]) minV[0] = D.index_yx(0, i);
-        else if (D.index_yx(0, i) > maxV[0]) maxV[0] = D.index_yx(0, i);
-        if (D.index_yx(1, i) < minV[1]) minV[1] = D.index_yx(1, i);
-        else if (D.index_yx(1, i) > maxV[1]) maxV[1] = D.index_yx(1, i);
-        if (D.index_yx(2, i) < minV[2]) minV[2] = D.index_yx(2, i);
-        else if (D.index_yx(2, i) > maxV[2]) maxV[2] = D.index_yx(2, i);
+        if (D(0, i) < minV[0]) minV[0] = D(0, i);
+        else if (D(0, i) > maxV[0]) maxV[0] = D(0, i);
+        if (D(1, i) < minV[1]) minV[1] = D(1, i);
+        else if (D(1, i) > maxV[1]) maxV[1] = D(1, i);
+        if (D(2, i) < minV[2]) minV[2] = D(2, i);
+        else if (D(2, i) > maxV[2]) maxV[2] = D(2, i);
       }
 
       size = maxV - minV;
@@ -175,22 +175,22 @@ namespace icl{
         size[0] = params.size[0];
         size[1] = params.size[2];
         size[2] = params.size[1];
-        sR = FixedMatrix<float,3,3>(R.index_yx(0, 0), R.index_yx(0, 2), R.index_yx(0, 1),
-                                               R.index_yx(1, 0), R.index_yx(1, 2), R.index_yx(1, 1),
-                                               R.index_yx(2, 0), R.index_yx(2, 2), R.index_yx(2, 1));
+        sR = FixedMatrix<float,3,3>(R(0, 0), R(0, 2), R(0, 1),
+                                               R(1, 0), R(1, 2), R(1, 1),
+                                               R(2, 0), R(2, 2), R(2, 1));
       } else {
         size[0] = params.size[1];
         size[1] = params.size[2];
         size[2] = params.size[0];
-        sR = FixedMatrix<float,3,3>(R.index_yx(0, 1), R.index_yx(0, 2), R.index_yx(0, 0),
-                                               R.index_yx(1, 1), R.index_yx(1, 2), R.index_yx(1, 0),
-                                               R.index_yx(2, 1), R.index_yx(2, 2), R.index_yx(2, 0));
+        sR = FixedMatrix<float,3,3>(R(0, 1), R(0, 2), R(0, 0),
+                                               R(1, 1), R(1, 2), R(1, 0),
+                                               R(2, 1), R(2, 2), R(2, 0));
       }
 
       // recalculate z-axis for the correct sign
-      sR.index_yx(0, 2) = sR.index_yx(1, 0)*sR.index_yx(2, 1) - sR.index_yx(2, 0)*sR.index_yx(1, 1);
-      sR.index_yx(1, 2) = sR.index_yx(2, 0)*sR.index_yx(0, 1) - sR.index_yx(0, 0)*sR.index_yx(2, 1);
-      sR.index_yx(2, 2) = sR.index_yx(0, 0)*sR.index_yx(1, 1) - sR.index_yx(1, 0)*sR.index_yx(0, 1);
+      sR(0, 2) = sR(1, 0)*sR(2, 1) - sR(2, 0)*sR(1, 1);
+      sR(1, 2) = sR(2, 0)*sR(0, 1) - sR(0, 0)*sR(2, 1);
+      sR(2, 2) = sR(0, 0)*sR(1, 1) - sR(1, 0)*sR(0, 1);
 
 
       // calculate euler angles
@@ -338,9 +338,9 @@ namespace icl{
       // get points from the point cloud
       for (size_t i=0, n=0; i < N; ++i) {
         if (i * maxN / N >= n) {
-          Mx.index_yx(0, n) = xyz[i][0];
-          Mx.index_yx(1, n) = xyz[i][1];
-          Mx.index_yx(2, n) = xyz[i][2];
+          Mx(0, n) = xyz[i][0];
+          Mx(1, n) = xyz[i][1];
+          Mx(2, n) = xyz[i][2];
           ++n;
         }
       }

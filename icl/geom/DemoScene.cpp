@@ -184,14 +184,14 @@ void DemoScene::setup(const std::vector<std::string> &files,
     float czr = float(M_PI / 180.0) * rz;
 
     Mat Rx = Mat::id();
-    Rx.index_yx(1, 1) = cosf(cxr); Rx.index_yx(1, 2) = sinf(cxr);
-    Rx.index_yx(2, 1) = -sinf(cxr); Rx.index_yx(2, 2) = cosf(cxr);
+    Rx(1, 1) = cosf(cxr); Rx(1, 2) = sinf(cxr);
+    Rx(2, 1) = -sinf(cxr); Rx(2, 2) = cosf(cxr);
     Mat Ry = Mat::id();
-    Ry.index_yx(0, 0) = cosf(cyr); Ry.index_yx(0, 2) = -sinf(cyr);
-    Ry.index_yx(2, 0) = sinf(cyr); Ry.index_yx(2, 2) = cosf(cyr);
+    Ry(0, 0) = cosf(cyr); Ry(0, 2) = -sinf(cyr);
+    Ry(2, 0) = sinf(cyr); Ry(2, 2) = cosf(cyr);
     Mat Rz = Mat::id();
-    Rz.index_yx(0, 0) = cosf(czr); Rz.index_yx(0, 1) = sinf(czr);
-    Rz.index_yx(1, 0) = -sinf(czr); Rz.index_yx(1, 1) = cosf(czr);
+    Rz(0, 0) = cosf(czr); Rz(0, 1) = sinf(czr);
+    Rz(1, 0) = -sinf(czr); Rz(1, 1) = cosf(czr);
     Mat R = Rz * Ry * Rx;
 
     fprintf(stderr, "Rotating scene by (%.0f, %.0f, %.0f) degrees\n", rx, ry, rz);

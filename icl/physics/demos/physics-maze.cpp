@@ -42,7 +42,7 @@ void run()
   maze->rotate(M_PI/180.f*fun(sin(time_val)),0,0);
   maze->rotate(0,M_PI/180.f*fun(cos(time_val)),0);
   Mat ball_trans = maze->mazeBall->getTransformation();
-  Vec v(ball_trans.index_yx(0, 3),ball_trans.index_yx(1, 3),ball_trans.index_yx(2, 3));
+  Vec v(ball_trans(0, 3),ball_trans(1, 3),ball_trans(2, 3));
   std::cout<<maze->getWorldToMazeTransform()*v<<std::endl;
   scene.step(-1,50,1/120.);
   scene.Scene::unlock();

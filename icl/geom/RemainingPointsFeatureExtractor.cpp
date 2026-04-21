@@ -48,8 +48,8 @@ namespace icl::geom {
     for(unsigned int x=numCluster; x<surfaces.size(); x++){
       std::vector<int> nb = neighbours[x-numCluster];
       for(unsigned int y=0; y<nb.size(); y++){
-        remainingMatrix.index_yx(nb[y], x)=true;//nb-1
-        remainingMatrix.index_yx(x, nb[y])=true;//nb-1
+        remainingMatrix(nb[y], x)=true;//nb-1
+        remainingMatrix(x, nb[y])=true;//nb-1
       }
     }
     return remainingMatrix;

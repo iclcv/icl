@@ -77,7 +77,7 @@ namespace icl::markers {
     Mat dist(0.0f);
     for(int i=0;i<4;++i){
       for(int j=0;j<i;++j){
-        dist.index_yx(j, i) = cogs[i].distanceTo(cogs[j]);
+        dist(j, i) = cogs[i].distanceTo(cogs[j]);
       }
     }
     int idx = static_cast<int>(std::max_element(dist.begin(),dist.end()) - dist.begin());

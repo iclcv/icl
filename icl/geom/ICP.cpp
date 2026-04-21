@@ -54,9 +54,9 @@ namespace icl::geom {
         mat3[i] = mat[i];
       }
       for(unsigned int i=0;i<3;++i){
-        m_result.translation[i] = mat3.index_yx(i, 3);
+        m_result.translation[i] = mat3(i, 3);
         for(unsigned int j=0;j<3;++j){
-          m_result.rotation.index_yx(j, i) = mat3.index_yx(j, i);
+          m_result.rotation(j, i) = mat3(j, i);
         }
       }
       //SHOW(rotation);
@@ -82,9 +82,9 @@ namespace icl::geom {
 
     }while(cerror != m_result.error);
     for(unsigned int i=0;i<3;++i){
-      m_result.translation[i] = mat2.index_yx(i, 3);
+      m_result.translation[i] = mat2(i, 3);
       for(unsigned int j=0;j<3;++j){
-        m_result.rotation.index_yx(j, i) = mat2.index_yx(j, i);
+        m_result.rotation(j, i) = mat2(j, i);
       }
     }
     for(unsigned int i=0;i<lpointlist.size();++i){

@@ -232,7 +232,7 @@ namespace physics{
     lock();
     Size dim = getDimensions();
     Mat m = nodes[idx.x+dim.width*idx.y]->getTransformation();
-    return Vec(m.index_yx(0, 3),m.index_yx(1, 3),m.index_yx(2, 3),1);
+    return Vec(m(0, 3),m(1, 3),m(2, 3),1);
     unlock();
   }
 

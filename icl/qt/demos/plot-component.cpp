@@ -156,11 +156,11 @@ void run(){
 
   for(size_t i=0;i<fDataSamples.size();++i){
     const float x = fDataSamples[i].x, y = fDataSamples[i].y;
-    X.index_yx(0, i) = 1;
-    X.index_yx(1, i) = x;
-    X.index_yx(2, i) = x*x;
-    X.index_yx(3, i) = x*x*x;
-    X.index_yx(4, i) = x*x*x*x;
+    X(0, i) = 1;
+    X(1, i) = x;
+    X(2, i) = x*x;
+    X(3, i) = x*x*x;
+    X(4, i) = x*x*x*x;
     Y[i] = y;
   }
   DynMatrix<float> R = Y*X.pinv();

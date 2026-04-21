@@ -522,7 +522,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 					w*h * sizeof(bool));
 
 			for(int i=0; i<numFaces; i++) { ///DIAG
-				neighbours.index_yx(i, i)=true;
+				neighbours(i, i)=true;
 			}
 			cluster.clear();
 			for(int x=0; x<w*h; x++) {
@@ -573,8 +573,8 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 					for(int a=0; a<numFaces-1; a++) {
 						for (int b=a+1; b<numFaces; b++) {
 							if(adj[a]==true && adj[b]==true) {
-								neighbours.index_yx(b, a)=true;
-								neighbours.index_yx(a, b)=true;
+								neighbours(b, a)=true;
+								neighbours(a, b)=true;
 							}
 						}
 					}
@@ -594,7 +594,7 @@ void Segmentation3D::calculatePointAssignmentAndAdjacency() {
 			}
 		}
 		for (int i = 0; i < numFaces; i++) {
-			neighbours.index_yx(i, i) = true;
+			neighbours(i, i) = true;
 		}
 		memcpy(assignment, assignmentOut, w*h*sizeof(int));
     ICL_DELETE_ARRAY(assignmentOut);
@@ -615,9 +615,9 @@ void Segmentation3D::calculateCutfreeMatrix() {
 
 		for (unsigned int b = 0; b < neighbours.cols(); b++) {
 			if (a == b) {
-				cutfree.index_yx(b, a) = true;
-			} else if (neighbours.index_yx(b, a) == false) {
-				cutfree.index_yx(b, a) = false;
+				cutfree(b, a) = true;
+			} else if (neighbours(b, a) == false) {
+				cutfree(b, a) = false;
 			} else {
 				int countAcc = 0;
 				int countNAcc = 0;
@@ -702,9 +702,9 @@ void Segmentation3D::calculateCutfreeMatrix() {
 					}
 
 					if(countAcc>countNAcc) {
-						cutfree.index_yx(b, a)=true;
+						cutfree(b, a)=true;
 					} else {
-						cutfree.index_yx(b, a)=false;
+						cutfree(b, a)=false;
 					}
 
           delete[] n0;
@@ -768,9 +768,9 @@ void Segmentation3D::calculateCutfreeMatrix() {
 						}
 					}
 					if (countAcc > countNAcc) {
-						cutfree.index_yx(b, a) = true;
+						cutfree(b, a) = true;
 					} else {
-						cutfree.index_yx(b, a) = false;
+						cutfree(b, a) = false;
 					}
 				}
 			}
@@ -785,14 +785,14 @@ void Segmentation3D::greedyComposition() {
 	for (unsigned int a = 0; a < cutfree.cols(); a++) {
 		for (unsigned int b = a; b < cutfree.cols(); b++) {
 			if (a == b) {
-				combinable.index_yx(b, a) = 0;
+				combinable(b, a) = 0;
 			} else {
-				if (cutfree.index_yx(b, a) == 1 && cutfree.index_yx(a, b) == 1) {
-					combinable.index_yx(b, a) = 1;
-					combinable.index_yx(a, b) = 1;
+				if (cutfree(b, a) == 1 && cutfree(a, b) == 1) {
+					combinable(b, a) = 1;
+					combinable(a, b) = 1;
 				} else {
-					combinable.index_yx(b, a) = 0;
-					combinable.index_yx(a, b) = 0;
+					combinable(b, a) = 0;
+					combinable(a, b) = 0;
 				}
 			}
 		}
@@ -801,12 +801,12 @@ void Segmentation3D::greedyComposition() {
 	for (unsigned int a = 0; a < combinable.cols(); a++) {
 		int count = 0;
 		for (unsigned int b = 0; b < combinable.rows(); b++) {
-			if (combinable.index_yx(a, b) == true)
+			if (combinable(a, b) == true)
 				count++;
 		}
 		for (unsigned int b = 0; b < combinable.rows(); b++) {
-			if (combinable.index_yx(a, b) == true)
-				probabilities.index_yx(a, b) = 1. / static_cast<float>(count);
+			if (combinable(a, b) == true)
+				probabilities(a, b) = 1. / static_cast<float>(count);
 		}
 	}
 
@@ -816,12 +816,12 @@ void Segmentation3D::greedyComposition() {
 	std::vector<float> probsCom;
 	for (unsigned int a = 0; a < W.cols(); a++) {
 		for (unsigned int b = 0; b < W.cols(); b++) {
-			if (W.index_yx(b, a) > 0) {
+			if (W(b, a) > 0) {
 				std::vector<int> add;
 				add.push_back(a);
 				add.push_back(b);
 				facesCom.push_back(add);
-				probsCom.push_back(W.index_yx(b, a));
+				probsCom.push_back(W(b, a));
 			}
 		}
 	}
@@ -832,7 +832,7 @@ void Segmentation3D::greedyComposition() {
 				if (facesCom.at(a).at(c) == static_cast<int>(b)) {
 					breaking = true;
 					break;
-				} else if (W.index_yx(b, facesCom.at(a).at(c)) == 0) {
+				} else if (W(b, facesCom.at(a).at(c)) == 0) {
 					breaking = true;
 					break;
 				} else {
@@ -848,7 +848,7 @@ void Segmentation3D::greedyComposition() {
 				facesCom.push_back(add);
 				for (unsigned int d = 1;
 						d < facesCom.at(facesCom.size() - 1).size(); d++) {
-					sum += W.index_yx(facesCom.at(facesCom.size() - 1).at(d),
+					sum += W(facesCom.at(facesCom.size() - 1).at(d),
 							facesCom.at(facesCom.size() - 1).at(0));
 				}
 				probsCom.push_back(sum);

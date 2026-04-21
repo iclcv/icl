@@ -53,12 +53,12 @@ namespace icl::io {
     DynMatrix<icl64f> x1(m_data->bSize,2);
     for(int kk = 0;kk<m_data->successes;++kk){
       for(int i=0;i<m_data->bSize;++i){
-        x1.index_yx(0, i) = x.index_yx(2*kk, i);
-        x1.index_yx(1, i) = x.index_yx(2*kk+1, i);
+        x1(0, i) = x(2*kk, i);
+        x1(1, i) = x(2*kk+1, i);
       }
       compute_homography(x1,X,H);
       for(int i=0;i<9;++i){
-        HH.index_yx(kk, i) = H[i];
+        HH(kk, i) = H[i];
       }
     }
     // initial guess for principal point and distortion:
@@ -82,7 +82,7 @@ namespace icl::io {
     DynMatrix<icl64f> A(2,2*(m_data->successes)), b(1,2*m_data->successes);
     for(int kk=0, mm=0;kk<m_data->successes;++kk,mm+=2){//:n_ima,
       for(int i=0;i<9;++i){
-        Hkk[i] = HH.index_yx(kk, i);
+        Hkk[i] = HH(kk, i);
       }
       Hkk2 = Sub_cc * Hkk;
       // Extract vanishing points (direct and diagonals):
@@ -137,13 +137,13 @@ namespace icl::io {
       DynMatrix<icl64f> b_kk(1,2);
       b_kk[0] = -c1*c2; b_kk[1] = -c3*c4;
 
-      A.index_yx(mm, 0) = A_kk[0];
-      A.index_yx(mm, 1) = A_kk[1];
-      A.index_yx(mm+1, 0) = A_kk[2];
-      A.index_yx(mm+1, 1) = A_kk[3];
+      A(mm, 0) = A_kk[0];
+      A(mm, 1) = A_kk[1];
+      A(mm+1, 0) = A_kk[2];
+      A(mm+1, 1) = A_kk[3];
 
-      b.index_yx(mm, 0) = b_kk[0];
-      b.index_yx(mm+1, 0) = b_kk[1];
+      b(mm, 0) = b_kk[0];
+      b(mm+1, 0) = b_kk[1];
     }
 
     // use all the vanishing points to estimate focal length:
@@ -153,7 +153,7 @@ namespace icl::io {
     DynMatrix<icl64f> ATS(AT.cols(),1);
     for(unsigned int i=0;i<AT.cols();++i){
       for(unsigned int j=0;j<AT.rows();++j)
-        ATS[i] = ATS[i] + AT.index_yx(j, i);
+        ATS[i] = ATS[i] + AT(j, i);
     }
     DynMatrix<icl64f> ATST = ATS.transp();
     DynMatrix<icl64f> bt = b.transp();
@@ -210,18 +210,18 @@ namespace icl::io {
     Y = R*X;
 
     for(unsigned int i=0;i<Y.cols();++i){
-      Y.index_yx(0, i) = Y.index_yx(0, i)+T[0];
-      Y.index_yx(1, i) = Y.index_yx(1, i)+T[1];
-      Y.index_yx(2, i) = Y.index_yx(2, i)+T[2];
+      Y(0, i) = Y(0, i)+T[0];
+      Y(1, i) = Y(1, i)+T[1];
+      Y(2, i) = Y(2, i)+T[2];
     }
     DynMatrix<icl64f> dYdR(9,3*n);
     int j=0;
     for(int i=0;i<n;++i){
       j=3*i;
-      dYdR.index_yx(j, 0) = X.index_yx(0, i); dYdR.index_yx(j+1, 1) = X.index_yx(0, i); dYdR.index_yx(j+2, 2) = X.index_yx(0, i);
-      dYdR.index_yx(j, 3) = X.index_yx(1, i); dYdR.index_yx(j+1, 4) = X.index_yx(1, i); dYdR.index_yx(j+2, 5) = X.index_yx(1, i);
+      dYdR(j, 0) = X(0, i); dYdR(j+1, 1) = X(0, i); dYdR(j+2, 2) = X(0, i);
+      dYdR(j, 3) = X(1, i); dYdR(j+1, 4) = X(1, i); dYdR(j+2, 5) = X(1, i);
 
-      dYdT.index_yx(3*i, 0) = 1; dYdT.index_yx(3*i+1, 1) = 1; dYdT.index_yx(3*i+2, 2) = 1;
+      dYdT(3*i, 0) = 1; dYdT(3*i+1, 1) = 1; dYdT(3*i+2, 2) = 1;
     }
     dYdom = dYdR * dRdom;
   }
@@ -237,36 +237,36 @@ namespace icl::io {
     DynMatrix<icl64f> inv_Z(n,1);
     DynMatrix<icl64f> x(n,2);
     for(int i=0;i<n;++i){
-      inv_Z[i] = 1.0/Y.index_yx(2, i);
-      x.index_yx(0, i) = Y.index_yx(0, i)*inv_Z[i];
-      x.index_yx(1, i) = Y.index_yx(1, i)*inv_Z[i];
+      inv_Z[i] = 1.0/Y(2, i);
+      x(0, i) = Y(0, i)*inv_Z[i];
+      x(1, i) = Y(1, i)*inv_Z[i];
     }
     DynMatrix<icl64f> cc(3,m_data->bSize);
     DynMatrix<icl64f> bb(3,m_data->bSize);
     for(int i=0;i<n;++i){
-      bb.index_yx(i, 0) = -x.index_yx(0, i)*inv_Z[i]; bb.index_yx(i, 1) = bb.index_yx(i, 0); bb.index_yx(i, 2) = bb.index_yx(i, 0);
-      cc.index_yx(i, 0) = -x.index_yx(1, i)*inv_Z[i]; cc.index_yx(i, 1) = cc.index_yx(i, 0); cc.index_yx(i, 2) = cc.index_yx(i, 0);
+      bb(i, 0) = -x(0, i)*inv_Z[i]; bb(i, 1) = bb(i, 0); bb(i, 2) = bb(i, 0);
+      cc(i, 0) = -x(1, i)*inv_Z[i]; cc(i, 1) = cc(i, 0); cc(i, 2) = cc(i, 0);
     }
 
     DynMatrix<icl64f> dxdom(3,2*n);
     for(int i=0;i<n;++i){
-      dxdom.index_yx(2*i, 0) = inv_Z[i]*dYdom.index_yx(3*i, 0) + bb[3*i]*dYdom.index_yx(3*i+2, 0);
-      dxdom.index_yx(2*i, 1) = inv_Z[i]*dYdom.index_yx(3*i, 1) + bb[3*i+1]*dYdom.index_yx(3*i+2, 1);
-      dxdom.index_yx(2*i, 2) = inv_Z[i]*dYdom.index_yx(3*i, 2) + bb[3*i+2]*dYdom.index_yx(3*i+2, 2);
+      dxdom(2*i, 0) = inv_Z[i]*dYdom(3*i, 0) + bb[3*i]*dYdom(3*i+2, 0);
+      dxdom(2*i, 1) = inv_Z[i]*dYdom(3*i, 1) + bb[3*i+1]*dYdom(3*i+2, 1);
+      dxdom(2*i, 2) = inv_Z[i]*dYdom(3*i, 2) + bb[3*i+2]*dYdom(3*i+2, 2);
 
-      dxdom.index_yx(2*i+1, 0) = inv_Z[i]*dYdom.index_yx(3*i+1, 0) + cc[3*i]*dYdom.index_yx(3*i+2, 0);
-      dxdom.index_yx(2*i+1, 1) = inv_Z[i]*dYdom.index_yx(3*i+1, 1) + cc[3*i+1]*dYdom.index_yx(3*i+2, 1);
-      dxdom.index_yx(2*i+1, 2) = inv_Z[i]*dYdom.index_yx(3*i+1, 2) + cc[3*i+2]*dYdom.index_yx(3*i+2, 2);
+      dxdom(2*i+1, 0) = inv_Z[i]*dYdom(3*i+1, 0) + cc[3*i]*dYdom(3*i+2, 0);
+      dxdom(2*i+1, 1) = inv_Z[i]*dYdom(3*i+1, 1) + cc[3*i+1]*dYdom(3*i+2, 1);
+      dxdom(2*i+1, 2) = inv_Z[i]*dYdom(3*i+1, 2) + cc[3*i+2]*dYdom(3*i+2, 2);
     }
 
     DynMatrix<icl64f> dxdT(3,2*n);
     for(int i=0;i<n;++i){
-      dxdT.index_yx(2*i, 0) = inv_Z[i]*dYdT.index_yx(3*i, 0) + bb[3*i]*dYdT.index_yx(3*i+2, 0);
-      dxdT.index_yx(2*i, 1) = inv_Z[i]*dYdT.index_yx(3*i, 1) + bb[3*i+1]*dYdT.index_yx(3*i+2, 1);
-      dxdT.index_yx(2*i, 2) = inv_Z[i]*dYdT.index_yx(3*i, 2) + bb[3*i+2]*dYdT.index_yx(3*i+2, 2);
-      dxdT.index_yx(2*i+1, 0) = inv_Z[i]*dYdT.index_yx(3*i+1, 0) + cc[3*i]*dYdT.index_yx(3*i+2, 0);
-      dxdT.index_yx(2*i+1, 1) = inv_Z[i]*dYdT.index_yx(3*i+1, 1) + cc[3*i+1]*dYdT.index_yx(3*i+2, 1);
-      dxdT.index_yx(2*i+1, 2) = inv_Z[i]*dYdT.index_yx(3*i+1, 2) + cc[3*i+2]*dYdT.index_yx(3*i+2, 2);
+      dxdT(2*i, 0) = inv_Z[i]*dYdT(3*i, 0) + bb[3*i]*dYdT(3*i+2, 0);
+      dxdT(2*i, 1) = inv_Z[i]*dYdT(3*i, 1) + bb[3*i+1]*dYdT(3*i+2, 1);
+      dxdT(2*i, 2) = inv_Z[i]*dYdT(3*i, 2) + bb[3*i+2]*dYdT(3*i+2, 2);
+      dxdT(2*i+1, 0) = inv_Z[i]*dYdT(3*i+1, 0) + cc[3*i]*dYdT(3*i+2, 0);
+      dxdT(2*i+1, 1) = inv_Z[i]*dYdT(3*i+1, 1) + cc[3*i+1]*dYdT(3*i+2, 1);
+      dxdT(2*i+1, 2) = inv_Z[i]*dYdT(3*i+1, 2) + cc[3*i+2]*dYdT(3*i+2, 2);
     }
 
     //Add distortion:
@@ -274,40 +274,40 @@ namespace icl::io {
     DynMatrix<icl64f> r4(m_data->bSize,1);
     DynMatrix<icl64f> r6(m_data->bSize,1);
     for(int i=0;i<(m_data->bSize);++i){
-      r2[i] = x.index_yx(0, i)*x.index_yx(0, i)+x.index_yx(1, i)*x.index_yx(1, i);
+      r2[i] = x(0, i)*x(0, i)+x(1, i)*x(1, i);
       r4[i] = r2[i]*r2[i];
       r6[i] = r2[i]*r2[i]*r2[i];
     }
 
     DynMatrix<icl64f> dr2dom(3,m_data->bSize), dr2dT(3,m_data->bSize);
     for(int i=0;i<n;++i){
-      dr2dom.index_yx(i, 0) = 2*x.index_yx(0, i) * dxdom.index_yx(2*i, 0) + 2*x.index_yx(1, i)*dxdom.index_yx(2*i+1, 0);
-      dr2dom.index_yx(i, 1) = 2*x.index_yx(0, i) * dxdom.index_yx(2*i, 1) + 2*x.index_yx(1, i)*dxdom.index_yx(2*i+1, 1);
-      dr2dom.index_yx(i, 2) = 2*x.index_yx(0, i) * dxdom.index_yx(2*i, 2) + 2*x.index_yx(1, i)*dxdom.index_yx(2*i+1, 2);
+      dr2dom(i, 0) = 2*x(0, i) * dxdom(2*i, 0) + 2*x(1, i)*dxdom(2*i+1, 0);
+      dr2dom(i, 1) = 2*x(0, i) * dxdom(2*i, 1) + 2*x(1, i)*dxdom(2*i+1, 1);
+      dr2dom(i, 2) = 2*x(0, i) * dxdom(2*i, 2) + 2*x(1, i)*dxdom(2*i+1, 2);
 
-      dr2dT.index_yx(i, 0) = 2*x.index_yx(0, i) * dxdT.index_yx(2*i, 0) + 2*x.index_yx(1, i)*dxdT.index_yx(2*i+1, 0);
-      dr2dT.index_yx(i, 1) = 2*x.index_yx(0, i) * dxdT.index_yx(2*i, 1) + 2*x.index_yx(1, i)*dxdT.index_yx(2*i+1, 1);
-      dr2dT.index_yx(i, 2) = 2*x.index_yx(0, i) * dxdT.index_yx(2*i, 2) + 2*x.index_yx(1, i)*dxdT.index_yx(2*i+1, 2);
+      dr2dT(i, 0) = 2*x(0, i) * dxdT(2*i, 0) + 2*x(1, i)*dxdT(2*i+1, 0);
+      dr2dT(i, 1) = 2*x(0, i) * dxdT(2*i, 1) + 2*x(1, i)*dxdT(2*i+1, 1);
+      dr2dT(i, 2) = 2*x(0, i) * dxdT(2*i, 2) + 2*x(1, i)*dxdT(2*i+1, 2);
     }
 
     DynMatrix<icl64f> dr4dom(3,m_data->bSize), dr4dT(3,m_data->bSize);
     for(int i=0;i<n;++i){
-      dr4dom.index_yx(i, 0) = 2*r2[i]*dr2dom.index_yx(i, 0);
-      dr4dom.index_yx(i, 1) = 2*r2[i]*dr2dom.index_yx(i, 1);
-      dr4dom.index_yx(i, 2) = 2*r2[i]*dr2dom.index_yx(i, 2);
-      dr4dT.index_yx(i, 0) = 2*r2[i]*dr2dT.index_yx(i, 0);
-      dr4dT.index_yx(i, 1) = 2*r2[i]*dr2dT.index_yx(i, 1);
-      dr4dT.index_yx(i, 2) = 2*r2[i]*dr2dT.index_yx(i, 2);
+      dr4dom(i, 0) = 2*r2[i]*dr2dom(i, 0);
+      dr4dom(i, 1) = 2*r2[i]*dr2dom(i, 1);
+      dr4dom(i, 2) = 2*r2[i]*dr2dom(i, 2);
+      dr4dT(i, 0) = 2*r2[i]*dr2dT(i, 0);
+      dr4dT(i, 1) = 2*r2[i]*dr2dT(i, 1);
+      dr4dT(i, 2) = 2*r2[i]*dr2dT(i, 2);
     }
 
     DynMatrix<icl64f> dr6dom(3,m_data->bSize), dr6dT(3,m_data->bSize);
     for(int i=0;i<n;++i){
-      dr6dom.index_yx(i, 0) = 3*r2[i]*r2[i]*dr2dom.index_yx(i, 0);
-      dr6dom.index_yx(i, 1) = 3*r2[i]*r2[i]*dr2dom.index_yx(i, 1);
-      dr6dom.index_yx(i, 2) = 3*r2[i]*r2[i]*dr2dom.index_yx(i, 2);
-      dr6dT.index_yx(i, 0) = 3*r2[i]*r2[i]*dr2dT.index_yx(i, 0);
-      dr6dT.index_yx(i, 1) = 3*r2[i]*r2[i]*dr2dT.index_yx(i, 1);
-      dr6dT.index_yx(i, 2) = 3*r2[i]*r2[i]*dr2dT.index_yx(i, 2);
+      dr6dom(i, 0) = 3*r2[i]*r2[i]*dr2dom(i, 0);
+      dr6dom(i, 1) = 3*r2[i]*r2[i]*dr2dom(i, 1);
+      dr6dom(i, 2) = 3*r2[i]*r2[i]*dr2dom(i, 2);
+      dr6dT(i, 0) = 3*r2[i]*r2[i]*dr2dT(i, 0);
+      dr6dT(i, 1) = 3*r2[i]*r2[i]*dr2dT(i, 1);
+      dr6dT(i, 2) = 3*r2[i]*r2[i]*dr2dT(i, 2);
     }
 
     //Radial distortion:
@@ -319,82 +319,82 @@ namespace icl::io {
     DynMatrix<icl64f> dcdistdom(3,m_data->bSize);
     DynMatrix<icl64f> dcdistdT(3,m_data->bSize);
     for(int i=0;i<m_data->bSize;++i){
-      dcdistdom.index_yx(i, 0) = k[0]*dr2dom.index_yx(i, 0); dcdistdom.index_yx(i, 0) += k[1]*dr4dom.index_yx(i, 0); dcdistdom.index_yx(i, 0) += k[4]*dr6dom.index_yx(i, 0);
-      dcdistdom.index_yx(i, 1) = k[0]*dr2dom.index_yx(i, 1); dcdistdom.index_yx(i, 1) += k[1]*dr4dom.index_yx(i, 1); dcdistdom.index_yx(i, 1) += k[4]*dr6dom.index_yx(i, 1);
-      dcdistdom.index_yx(i, 2) = k[0]*dr2dom.index_yx(i, 2); dcdistdom.index_yx(i, 2) += k[1]*dr4dom.index_yx(i, 2); dcdistdom.index_yx(i, 2) += k[4]*dr6dom.index_yx(i, 2);
+      dcdistdom(i, 0) = k[0]*dr2dom(i, 0); dcdistdom(i, 0) += k[1]*dr4dom(i, 0); dcdistdom(i, 0) += k[4]*dr6dom(i, 0);
+      dcdistdom(i, 1) = k[0]*dr2dom(i, 1); dcdistdom(i, 1) += k[1]*dr4dom(i, 1); dcdistdom(i, 1) += k[4]*dr6dom(i, 1);
+      dcdistdom(i, 2) = k[0]*dr2dom(i, 2); dcdistdom(i, 2) += k[1]*dr4dom(i, 2); dcdistdom(i, 2) += k[4]*dr6dom(i, 2);
 
-      dcdistdT.index_yx(i, 0) = k[0]*dr2dT.index_yx(i, 0); dcdistdT.index_yx(i, 0) += k[1]*dr4dT.index_yx(i, 0); dcdistdT.index_yx(i, 0) += k[4]*dr6dT.index_yx(i, 0);
-      dcdistdT.index_yx(i, 1) = k[0]*dr2dT.index_yx(i, 1); dcdistdT.index_yx(i, 1) += k[1]*dr4dT.index_yx(i, 1); dcdistdT.index_yx(i, 1) += k[4]*dr6dT.index_yx(i, 1);
-      dcdistdT.index_yx(i, 2) = k[0]*dr2dT.index_yx(i, 2); dcdistdT.index_yx(i, 2) += k[1]*dr4dT.index_yx(i, 2); dcdistdT.index_yx(i, 2) += k[4]*dr6dT.index_yx(i, 2);
+      dcdistdT(i, 0) = k[0]*dr2dT(i, 0); dcdistdT(i, 0) += k[1]*dr4dT(i, 0); dcdistdT(i, 0) += k[4]*dr6dT(i, 0);
+      dcdistdT(i, 1) = k[0]*dr2dT(i, 1); dcdistdT(i, 1) += k[1]*dr4dT(i, 1); dcdistdT(i, 1) += k[4]*dr6dT(i, 1);
+      dcdistdT(i, 2) = k[0]*dr2dT(i, 2); dcdistdT(i, 2) += k[1]*dr4dT(i, 2); dcdistdT(i, 2) += k[4]*dr6dT(i, 2);
     }
 
     DynMatrix<icl64f> dcdistdk(5,m_data->bSize);
     for(unsigned int i=0;i<r2.cols();++i){
-      dcdistdk.index_yx(i, 0) = r2[i]; dcdistdk.index_yx(i, 1) = r4[i]; dcdistdk.index_yx(i, 4) = r6[i];
+      dcdistdk(i, 0) = r2[i]; dcdistdk(i, 1) = r4[i]; dcdistdk(i, 4) = r6[i];
     }
 
     DynMatrix<icl64f> xd1(m_data->bSize,2);
     for(int i=0;i<m_data->bSize;++i){
-      xd1.index_yx(0, i) = x.index_yx(0, i)*cdist[i]; xd1.index_yx(1, i) = x.index_yx(1, i)*cdist[i];
+      xd1(0, i) = x(0, i)*cdist[i]; xd1(1, i) = x(1, i)*cdist[i];
     }
     DynMatrix<icl64f> dxd1dom(3,2*n);
     for(int i=0;i<n;++i){
-      dxd1dom.index_yx(2*i, 0) = x.index_yx(0, i)*dcdistdom.index_yx(i, 0);
-      dxd1dom.index_yx(2*i, 1) = x.index_yx(0, i)*dcdistdom.index_yx(i, 1);
-      dxd1dom.index_yx(2*i, 2) = x.index_yx(0, i)*dcdistdom.index_yx(i, 2);
+      dxd1dom(2*i, 0) = x(0, i)*dcdistdom(i, 0);
+      dxd1dom(2*i, 1) = x(0, i)*dcdistdom(i, 1);
+      dxd1dom(2*i, 2) = x(0, i)*dcdistdom(i, 2);
 
-      dxd1dom.index_yx(2*i+1, 0) = x.index_yx(1, i)*dcdistdom.index_yx(i, 0);
-      dxd1dom.index_yx(2*i+1, 1) = x.index_yx(1, i)*dcdistdom.index_yx(i, 1);
-      dxd1dom.index_yx(2*i+1, 2) = x.index_yx(1, i)*dcdistdom.index_yx(i, 2);
+      dxd1dom(2*i+1, 0) = x(1, i)*dcdistdom(i, 0);
+      dxd1dom(2*i+1, 1) = x(1, i)*dcdistdom(i, 1);
+      dxd1dom(2*i+1, 2) = x(1, i)*dcdistdom(i, 2);
     }
 
     DynMatrix<icl64f> coeff(3,2*n);
     for(int i=0;i<n;++i){
-      coeff.index_yx(2*i, 0) = cdist[i]; coeff.index_yx(2*i, 1) = cdist[i]; coeff.index_yx(2*i, 2) = cdist[i];
-      coeff.index_yx(2*i+1, 0) = cdist[i]; coeff.index_yx(2*i+1, 1) = cdist[i]; coeff.index_yx(2*i+1, 2) = cdist[i];
+      coeff(2*i, 0) = cdist[i]; coeff(2*i, 1) = cdist[i]; coeff(2*i, 2) = cdist[i];
+      coeff(2*i+1, 0) = cdist[i]; coeff(2*i+1, 1) = cdist[i]; coeff(2*i+1, 2) = cdist[i];
     }
 
     dxd1dom = dxd1dom + coeff.elementwise_mult(dxdom);
 
     DynMatrix<icl64f> dxd1dT(3,2*n);
     for(int i=0;i<m_data->bSize;++i){
-      dxd1dT.index_yx(2*i, 0) = x.index_yx(0, i)*dcdistdT.index_yx(i, 0);
-      dxd1dT.index_yx(2*i, 1) = x.index_yx(0, i)*dcdistdT.index_yx(i, 1);
-      dxd1dT.index_yx(2*i, 2) = x.index_yx(0, i)*dcdistdT.index_yx(i, 2);
+      dxd1dT(2*i, 0) = x(0, i)*dcdistdT(i, 0);
+      dxd1dT(2*i, 1) = x(0, i)*dcdistdT(i, 1);
+      dxd1dT(2*i, 2) = x(0, i)*dcdistdT(i, 2);
 
-      dxd1dT.index_yx(2*i+1, 0) = x.index_yx(1, i)*dcdistdT.index_yx(i, 0);
-      dxd1dT.index_yx(2*i+1, 1) = x.index_yx(1, i)*dcdistdT.index_yx(i, 1);
-      dxd1dT.index_yx(2*i+1, 2) = x.index_yx(1, i)*dcdistdT.index_yx(i, 2);
+      dxd1dT(2*i+1, 0) = x(1, i)*dcdistdT(i, 0);
+      dxd1dT(2*i+1, 1) = x(1, i)*dcdistdT(i, 1);
+      dxd1dT(2*i+1, 2) = x(1, i)*dcdistdT(i, 2);
     }
 
     dxd1dT = dxd1dT + coeff.elementwise_mult(dxdT);
 
     DynMatrix<icl64f> dxd1dk(5,2*n);
     for(int i=0;i<n;++i){
-      dxd1dk.index_yx(2*i, 0) = x.index_yx(0, i)*dcdistdk.index_yx(i, 0);
-      dxd1dk.index_yx(2*i, 1) = x.index_yx(0, i)*dcdistdk.index_yx(i, 1);
-      dxd1dk.index_yx(2*i, 2) = x.index_yx(0, i)*dcdistdk.index_yx(i, 2);
-      dxd1dk.index_yx(2*i, 3) = x.index_yx(0, i)*dcdistdk.index_yx(i, 3);
-      dxd1dk.index_yx(2*i, 4) = x.index_yx(0, i)*dcdistdk.index_yx(i, 4);
+      dxd1dk(2*i, 0) = x(0, i)*dcdistdk(i, 0);
+      dxd1dk(2*i, 1) = x(0, i)*dcdistdk(i, 1);
+      dxd1dk(2*i, 2) = x(0, i)*dcdistdk(i, 2);
+      dxd1dk(2*i, 3) = x(0, i)*dcdistdk(i, 3);
+      dxd1dk(2*i, 4) = x(0, i)*dcdistdk(i, 4);
 
-      dxd1dk.index_yx(2*i+1, 0) = x.index_yx(1, i)*dcdistdk.index_yx(i, 0);
-      dxd1dk.index_yx(2*i+1, 1) = x.index_yx(1, i)*dcdistdk.index_yx(i, 1);
-      dxd1dk.index_yx(2*i+1, 2) = x.index_yx(1, i)*dcdistdk.index_yx(i, 2);
-      dxd1dk.index_yx(2*i+1, 3) = x.index_yx(1, i)*dcdistdk.index_yx(i, 3);
-      dxd1dk.index_yx(2*i+1, 4) = x.index_yx(1, i)*dcdistdk.index_yx(i, 4);
+      dxd1dk(2*i+1, 0) = x(1, i)*dcdistdk(i, 0);
+      dxd1dk(2*i+1, 1) = x(1, i)*dcdistdk(i, 1);
+      dxd1dk(2*i+1, 2) = x(1, i)*dcdistdk(i, 2);
+      dxd1dk(2*i+1, 3) = x(1, i)*dcdistdk(i, 3);
+      dxd1dk(2*i+1, 4) = x(1, i)*dcdistdk(i, 4);
     }
 
     //tangential distortion:
     DynMatrix<icl64f> a1(r2.cols(),1), a2(r2.cols(),1), a3(r2.cols(),1);
     for(unsigned int i=0;i<r2.cols();++i){
-      a1[i] = 2*x.index_yx(0, i)*x.index_yx(1, i);
-      a2[i] = r2[i] + 2*x.index_yx(0, i)*x.index_yx(0, i);
-      a3[i] = r2[i] + 2*x.index_yx(1, i)*x.index_yx(1, i);
+      a1[i] = 2*x(0, i)*x(1, i);
+      a2[i] = r2[i] + 2*x(0, i)*x(0, i);
+      a3[i] = r2[i] + 2*x(1, i)*x(1, i);
     }
     DynMatrix<icl64f> delta_x(m_data->bSize,2);
     for(int i=0;i<m_data->bSize;++i){
-      delta_x.index_yx(0, i) = k[2]*a1[i]+k[3]*a2[i];
-      delta_x.index_yx(1, i) = k[2]*a3[i]+k[3]*a1[i];
+      delta_x(0, i) = k[2]*a1[i]+k[3]*a2[i];
+      delta_x(1, i) = k[2]*a3[i]+k[3]*a1[i];
     }
 
     DynMatrix<icl64f> ddelta_xdom(3,2*n);
@@ -403,36 +403,36 @@ namespace icl::io {
     {
       DynMatrix<icl64f> aa(3,m_data->bSize), bb(3,m_data->bSize), cc(3,m_data->bSize);
       for(int i=0;i<n;++i){
-        aa.index_yx(i, 0) = 2*k[2]*x.index_yx(1, i) + 6*k[3]*x.index_yx(0, i); aa.index_yx(i, 1) = aa.index_yx(i, 0); aa.index_yx(i, 2) = aa.index_yx(i, 0);
-        bb.index_yx(i, 0) = 2*k[2]*x.index_yx(0, i) + 2*k[3]*x.index_yx(1, i); bb.index_yx(i, 1) = bb.index_yx(i, 0); bb.index_yx(i, 2) = bb.index_yx(i, 0);
-        cc.index_yx(i, 0) = 6*k[2]*x.index_yx(1, i) + 2*k[3]*x.index_yx(0, i); cc.index_yx(i, 1) = cc.index_yx(i, 0); cc.index_yx(i, 2) = cc.index_yx(i, 0);
+        aa(i, 0) = 2*k[2]*x(1, i) + 6*k[3]*x(0, i); aa(i, 1) = aa(i, 0); aa(i, 2) = aa(i, 0);
+        bb(i, 0) = 2*k[2]*x(0, i) + 2*k[3]*x(1, i); bb(i, 1) = bb(i, 0); bb(i, 2) = bb(i, 0);
+        cc(i, 0) = 6*k[2]*x(1, i) + 2*k[3]*x(0, i); cc(i, 1) = cc(i, 0); cc(i, 2) = cc(i, 0);
       }
 
       for(int i=0;i<n;++i){
-        ddelta_xdom.index_yx(2*i, 0) = aa.index_yx(i, 0)*dxdom.index_yx(2*i, 0) + bb.index_yx(i, 0)*dxdom.index_yx(2*i+1, 0);
-        ddelta_xdom.index_yx(2*i, 1) = aa.index_yx(i, 1)*dxdom.index_yx(2*i, 1) + bb.index_yx(i, 1)*dxdom.index_yx(2*i+1, 1);
-        ddelta_xdom.index_yx(2*i, 2) = aa.index_yx(i, 2)*dxdom.index_yx(2*i, 2) + bb.index_yx(i, 2)*dxdom.index_yx(2*i+1, 2);
+        ddelta_xdom(2*i, 0) = aa(i, 0)*dxdom(2*i, 0) + bb(i, 0)*dxdom(2*i+1, 0);
+        ddelta_xdom(2*i, 1) = aa(i, 1)*dxdom(2*i, 1) + bb(i, 1)*dxdom(2*i+1, 1);
+        ddelta_xdom(2*i, 2) = aa(i, 2)*dxdom(2*i, 2) + bb(i, 2)*dxdom(2*i+1, 2);
 
-        ddelta_xdom.index_yx(2*i+1, 0) = bb.index_yx(i, 0)*dxdom.index_yx(2*i, 0) + cc.index_yx(i, 0)*dxdom.index_yx(2*i+1, 0);
-        ddelta_xdom.index_yx(2*i+1, 1) = bb.index_yx(i, 1)*dxdom.index_yx(2*i, 1) + cc.index_yx(i, 1)*dxdom.index_yx(2*i+1, 1);
-        ddelta_xdom.index_yx(2*i+1, 2) = bb.index_yx(i, 2)*dxdom.index_yx(2*i, 2) + cc.index_yx(i, 2)*dxdom.index_yx(2*i+1, 2);
+        ddelta_xdom(2*i+1, 0) = bb(i, 0)*dxdom(2*i, 0) + cc(i, 0)*dxdom(2*i+1, 0);
+        ddelta_xdom(2*i+1, 1) = bb(i, 1)*dxdom(2*i, 1) + cc(i, 1)*dxdom(2*i+1, 1);
+        ddelta_xdom(2*i+1, 2) = bb(i, 2)*dxdom(2*i, 2) + cc(i, 2)*dxdom(2*i+1, 2);
       }
 
       for(int i=0;i<n;++i){
-        ddelta_xdT.index_yx(2*i, 0) = aa.index_yx(i, 0)*dxdT.index_yx(2*i, 0) + bb.index_yx(i, 0)*dxdT.index_yx(2*i+1, 0);
-        ddelta_xdT.index_yx(2*i, 1) = aa.index_yx(i, 1)*dxdT.index_yx(2*i, 1) + bb.index_yx(i, 1)*dxdT.index_yx(2*i+1, 1);
-        ddelta_xdT.index_yx(2*i, 2) = aa.index_yx(i, 2)*dxdT.index_yx(2*i, 2) + bb.index_yx(i, 2)*dxdT.index_yx(2*i+1, 2);
+        ddelta_xdT(2*i, 0) = aa(i, 0)*dxdT(2*i, 0) + bb(i, 0)*dxdT(2*i+1, 0);
+        ddelta_xdT(2*i, 1) = aa(i, 1)*dxdT(2*i, 1) + bb(i, 1)*dxdT(2*i+1, 1);
+        ddelta_xdT(2*i, 2) = aa(i, 2)*dxdT(2*i, 2) + bb(i, 2)*dxdT(2*i+1, 2);
 
-        ddelta_xdT.index_yx(2*i+1, 0) = bb.index_yx(i, 0)*dxdT.index_yx(2*i, 0) + cc.index_yx(i, 0)*dxdT.index_yx(2*i+1, 0);
-        ddelta_xdT.index_yx(2*i+1, 1) = bb.index_yx(i, 1)*dxdT.index_yx(2*i, 1) + cc.index_yx(i, 1)*dxdT.index_yx(2*i+1, 1);
-        ddelta_xdT.index_yx(2*i+1, 2) = bb.index_yx(i, 2)*dxdT.index_yx(2*i, 2) + cc.index_yx(i, 2)*dxdT.index_yx(2*i+1, 2);
+        ddelta_xdT(2*i+1, 0) = bb(i, 0)*dxdT(2*i, 0) + cc(i, 0)*dxdT(2*i+1, 0);
+        ddelta_xdT(2*i+1, 1) = bb(i, 1)*dxdT(2*i, 1) + cc(i, 1)*dxdT(2*i+1, 1);
+        ddelta_xdT(2*i+1, 2) = bb(i, 2)*dxdT(2*i, 2) + cc(i, 2)*dxdT(2*i+1, 2);
       }
 
       for(int i=0;i<n;++i){
-        ddelta_xdk.index_yx(2*i, 2) = a1[i];
-        ddelta_xdk.index_yx(2*i, 3) = a2[i];
-        ddelta_xdk.index_yx(2*i+1, 2) = a3[i];
-        ddelta_xdk.index_yx(2*i+1, 3) = a1[i];
+        ddelta_xdk(2*i, 2) = a1[i];
+        ddelta_xdk(2*i, 3) = a2[i];
+        ddelta_xdk(2*i+1, 2) = a3[i];
+        ddelta_xdk(2*i+1, 3) = a1[i];
       }
     }
 
@@ -446,47 +446,47 @@ namespace icl::io {
     //Add Skew:
     DynMatrix<icl64f> xd3(m_data->bSize,2);
     for(int i=0;i<m_data->bSize;++i){
-      xd3.index_yx(0, i) = xd2.index_yx(0, i)+alpha*xd2.index_yx(1, i); xd3.index_yx(1, i)=xd2.index_yx(1, i);
+      xd3(0, i) = xd2(0, i)+alpha*xd2(1, i); xd3(1, i)=xd2(1, i);
     }
     // Compute: dxd3dom, dxd3dT, dxd3dk, dxd3dalpha
     DynMatrix<icl64f> dxd3dom(3,2*n);
     for(int i=0;i<n;++i){
-      dxd3dom.index_yx(2*i, 0) = dxd2dom.index_yx(2*i, 0) +alpha*dxd2dom.index_yx(2*i+1, 0);
-      dxd3dom.index_yx(2*i, 1) = dxd2dom.index_yx(2*i, 1) +alpha*dxd2dom.index_yx(2*i+1, 1);
-      dxd3dom.index_yx(2*i, 2) = dxd2dom.index_yx(2*i, 2) +alpha*dxd2dom.index_yx(2*i+1, 2);
+      dxd3dom(2*i, 0) = dxd2dom(2*i, 0) +alpha*dxd2dom(2*i+1, 0);
+      dxd3dom(2*i, 1) = dxd2dom(2*i, 1) +alpha*dxd2dom(2*i+1, 1);
+      dxd3dom(2*i, 2) = dxd2dom(2*i, 2) +alpha*dxd2dom(2*i+1, 2);
 
-      dxd3dom.index_yx(2*i+1, 0) = dxd2dom.index_yx(2*i+1, 0);
-      dxd3dom.index_yx(2*i+1, 1) = dxd2dom.index_yx(2*i+1, 1);;
-      dxd3dom.index_yx(2*i+1, 2) = dxd2dom.index_yx(2*i+1, 2);;
+      dxd3dom(2*i+1, 0) = dxd2dom(2*i+1, 0);
+      dxd3dom(2*i+1, 1) = dxd2dom(2*i+1, 1);;
+      dxd3dom(2*i+1, 2) = dxd2dom(2*i+1, 2);;
     }
     DynMatrix<icl64f> dxd3dT(3,2*n);
     for(int i=0;i<n;++i){
-      dxd3dT.index_yx(2*i, 0) = dxd2dT.index_yx(2*i, 0) +alpha*dxd2dT.index_yx(2*i+1, 0);
-      dxd3dT.index_yx(2*i, 1) = dxd2dT.index_yx(2*i, 1) +alpha*dxd2dT.index_yx(2*i+1, 1);
-      dxd3dT.index_yx(2*i, 2) = dxd2dT.index_yx(2*i, 2) +alpha*dxd2dT.index_yx(2*i+1, 2);
+      dxd3dT(2*i, 0) = dxd2dT(2*i, 0) +alpha*dxd2dT(2*i+1, 0);
+      dxd3dT(2*i, 1) = dxd2dT(2*i, 1) +alpha*dxd2dT(2*i+1, 1);
+      dxd3dT(2*i, 2) = dxd2dT(2*i, 2) +alpha*dxd2dT(2*i+1, 2);
 
-      dxd3dT.index_yx(2*i+1, 0) = dxd2dT.index_yx(2*i+1, 0);
-      dxd3dT.index_yx(2*i+1, 1) = dxd2dT.index_yx(2*i+1, 1);;
-      dxd3dT.index_yx(2*i+1, 2) = dxd2dT.index_yx(2*i+1, 2);;
+      dxd3dT(2*i+1, 0) = dxd2dT(2*i+1, 0);
+      dxd3dT(2*i+1, 1) = dxd2dT(2*i+1, 1);;
+      dxd3dT(2*i+1, 2) = dxd2dT(2*i+1, 2);;
     }
 
     DynMatrix<icl64f> dxd3dk(5,2*n);
     for(int i=0;i<n;++i){
-      dxd3dk.index_yx(2*i, 0) = dxd2dk.index_yx(2*i, 0) +alpha*dxd2dk.index_yx(2*i+1, 0);
-      dxd3dk.index_yx(2*i, 1) = dxd2dk.index_yx(2*i, 1) +alpha*dxd2dk.index_yx(2*i+1, 1);
-      dxd3dk.index_yx(2*i, 2) = dxd2dk.index_yx(2*i, 2) +alpha*dxd2dk.index_yx(2*i+1, 2);
-      dxd3dk.index_yx(2*i, 3) = dxd2dk.index_yx(2*i, 3) +alpha*dxd2dk.index_yx(2*i+1, 3);
-      dxd3dk.index_yx(2*i, 4) = dxd2dk.index_yx(2*i, 4) +alpha*dxd2dk.index_yx(2*i+1, 4);
+      dxd3dk(2*i, 0) = dxd2dk(2*i, 0) +alpha*dxd2dk(2*i+1, 0);
+      dxd3dk(2*i, 1) = dxd2dk(2*i, 1) +alpha*dxd2dk(2*i+1, 1);
+      dxd3dk(2*i, 2) = dxd2dk(2*i, 2) +alpha*dxd2dk(2*i+1, 2);
+      dxd3dk(2*i, 3) = dxd2dk(2*i, 3) +alpha*dxd2dk(2*i+1, 3);
+      dxd3dk(2*i, 4) = dxd2dk(2*i, 4) +alpha*dxd2dk(2*i+1, 4);
 
-      dxd3dk.index_yx(2*i+1, 0) = dxd2dk.index_yx(2*i+1, 0);
-      dxd3dk.index_yx(2*i+1, 1) = dxd2dk.index_yx(2*i+1, 1);
-      dxd3dk.index_yx(2*i+1, 2) = dxd2dk.index_yx(2*i+1, 2);
-      dxd3dk.index_yx(2*i+1, 3) = dxd2dk.index_yx(2*i+1, 3);
-      dxd3dk.index_yx(2*i+1, 4) = dxd2dk.index_yx(2*i+1, 4);
+      dxd3dk(2*i+1, 0) = dxd2dk(2*i+1, 0);
+      dxd3dk(2*i+1, 1) = dxd2dk(2*i+1, 1);
+      dxd3dk(2*i+1, 2) = dxd2dk(2*i+1, 2);
+      dxd3dk(2*i+1, 3) = dxd2dk(2*i+1, 3);
+      dxd3dk(2*i+1, 4) = dxd2dk(2*i+1, 4);
     }
     DynMatrix<icl64f> dxd3dalpha(1,2*n);
     for(int i=0;i<n;++i){
-      dxd3dalpha.index_yx(2*i, 0) = xd2.index_yx(1, i);
+      dxd3dalpha(2*i, 0) = xd2(1, i);
     }
 
     //Pixel coordinates:
@@ -505,8 +505,8 @@ namespace icl::io {
       dxpdk = (coeff*o5).elementwise_mult(dxd3dk);
       dxpdalpha = coeff.elementwise_mult(dxd3dalpha);
       for(int i=0;i<n;++i){
-        dxpdf.index_yx(2*i, 0) = xd3.index_yx(0, i); dxpdf.index_yx(2*i+1, 0) = 0.0;
-        dxpdf.index_yx(2*i+1, 1) = xd3.index_yx(1, i); dxpdf.index_yx(2*i, 1) = 0.0;
+        dxpdf(2*i, 0) = xd3(0, i); dxpdf(2*i+1, 0) = 0.0;
+        dxpdf(2*i+1, 1) = xd3(1, i); dxpdf(2*i, 1) = 0.0;
       }
     } else {
       DynMatrix<icl64f> o(n,1,1);
@@ -517,13 +517,13 @@ namespace icl::io {
       dxpdk = f  * dxd3dk;
       dxpdalpha = f.elementwise_mult(dxd3dalpha);
       for(int i=0;m_data->bSize;++i){
-        dxpdf[2*i] = xd3.index_yx(0, i);
-        dxpdf[2*i+1] = xd3.index_yx(1, i);
+        dxpdf[2*i] = xd3(0, i);
+        dxpdf[2*i+1] = xd3(1, i);
       }
     }
 
     for(int i=0;i<n;++i){
-      dxpdc.index_yx(2*i, 0) = 1; dxpdc.index_yx(2*i+1, 1) = 1;
+      dxpdc(2*i, 0) = 1; dxpdc(2*i+1, 1) = 1;
     }
   }
 
@@ -553,8 +553,8 @@ namespace icl::io {
 
       DynMatrix<icl64f> JJ(6,2*m_data->bSize);
       for(int i=0;i<(2*m_data->bSize);++i){
-        JJ.index_yx(i, 0) = dxdom.index_yx(i, 0); JJ.index_yx(i, 1) = dxdom.index_yx(i, 1); JJ.index_yx(i, 2) = dxdom.index_yx(i, 2);
-        JJ.index_yx(i, 3) = dxdT.index_yx(i, 0); JJ.index_yx(i, 4) = dxdT.index_yx(i, 1); JJ.index_yx(i, 5) = dxdT.index_yx(i, 2);
+        JJ(i, 0) = dxdom(i, 0); JJ(i, 1) = dxdom(i, 1); JJ(i, 2) = dxdom(i, 2);
+        JJ(i, 3) = dxdT(i, 0); JJ(i, 4) = dxdT(i, 1); JJ(i, 5) = dxdT(i, 2);
       }
       if (JJ.cond() > thresh_cond){
         change = 0;
@@ -626,9 +626,9 @@ namespace icl::io {
         DynMatrix<icl64f> A = omega*omega.transp();
 
         DynMatrix<icl64f> dm1dm2(4,21);
-        dm1dm2.index_yx(0, 3) = -sin(theta);
-        dm1dm2.index_yx(1, 3) = cos(theta);
-        dm1dm2.index_yx(2, 3) = -dm1dm2.index_yx(0, 3);
+        dm1dm2(0, 3) = -sin(theta);
+        dm1dm2(1, 3) = cos(theta);
+        dm1dm2(2, 3) = -dm1dm2(0, 3);
 
         dm1dm2[18] = 1.0; dm1dm2[21] = -1.0; dm1dm2[26] = -1.0;
         dm1dm2[32] = 1.0; dm1dm2[37] = 1.0; dm1dm2[40] = -1.0;
@@ -636,9 +636,9 @@ namespace icl::io {
         double w2 = omega[1];
         double w3 = omega[2];
 
-        dm1dm2.index_yx(12, 0) = 2*w1; dm1dm2.index_yx(13, 0) = w2; dm1dm2.index_yx(14, 0) = w3; dm1dm2.index_yx(15, 0) = w2; dm1dm2.index_yx(18, 0) = w3;
-        dm1dm2.index_yx(13, 1) = w1; dm1dm2.index_yx(15, 1) = w1; dm1dm2.index_yx(16, 1) = 2*w2; dm1dm2.index_yx(17, 1) = w3; dm1dm2.index_yx(19, 1) = w3;
-        dm1dm2.index_yx(14, 2) = w1; dm1dm2.index_yx(17, 2) = w2; dm1dm2.index_yx(18, 2) = w1; dm1dm2.index_yx(19, 2) = w2; dm1dm2.index_yx(20, 2) = 2*w3;
+        dm1dm2(12, 0) = 2*w1; dm1dm2(13, 0) = w2; dm1dm2(14, 0) = w3; dm1dm2(15, 0) = w2; dm1dm2(18, 0) = w3;
+        dm1dm2(13, 1) = w1; dm1dm2(15, 1) = w1; dm1dm2(16, 1) = 2*w2; dm1dm2(17, 1) = w3; dm1dm2(19, 1) = w3;
+        dm1dm2(14, 2) = w1; dm1dm2(17, 2) = w2; dm1dm2(18, 2) = w1; dm1dm2(19, 2) = w2; dm1dm2(20, 2) = 2*w3;
 
         DynMatrix<icl64f> temp1;
         eye3.mult(alpha,temp1);
@@ -649,20 +649,20 @@ namespace icl::io {
         R=temp1+temp2+temp3;
         DynMatrix<icl64f> dRdm1(21,9);
 
-        dRdm1.index_yx(0, 0) = 1; dRdm1.index_yx(4, 0) = 1; dRdm1.index_yx(8, 0) = 1;
+        dRdm1(0, 0) = 1; dRdm1(4, 0) = 1; dRdm1(8, 0) = 1;
         DynMatrix<icl64f> omegav_T = omegav.transp();
         for(int i=0;i<9;++i){
-          dRdm1.index_yx(i, 1) = omegav_T[i];
+          dRdm1(i, 1) = omegav_T[i];
         }
-        dRdm1.index_yx(0, 3) = beta; dRdm1.index_yx(1, 4) = beta; dRdm1.index_yx(2, 5) = beta;
-        dRdm1.index_yx(3, 6) = beta; dRdm1.index_yx(4, 7) = beta; dRdm1.index_yx(5, 8) = beta;
-        dRdm1.index_yx(6, 9) = beta; dRdm1.index_yx(7, 10) = beta; dRdm1.index_yx(8, 11) = beta;
+        dRdm1(0, 3) = beta; dRdm1(1, 4) = beta; dRdm1(2, 5) = beta;
+        dRdm1(3, 6) = beta; dRdm1(4, 7) = beta; dRdm1(5, 8) = beta;
+        dRdm1(6, 9) = beta; dRdm1(7, 10) = beta; dRdm1(8, 11) = beta;
         for(int i=0;i<9;++i){
-          dRdm1.index_yx(i, 2) = A[i];
+          dRdm1(i, 2) = A[i];
         }
-        dRdm1.index_yx(0, 12) = gamma; dRdm1.index_yx(1, 13) = gamma; dRdm1.index_yx(2, 14) = gamma;
-        dRdm1.index_yx(3, 15) = gamma; dRdm1.index_yx(4, 16) = gamma; dRdm1.index_yx(5, 17) = gamma;
-        dRdm1.index_yx(6, 18) = gamma; dRdm1.index_yx(7, 19) = gamma; dRdm1.index_yx(8, 20) = gamma;
+        dRdm1(0, 12) = gamma; dRdm1(1, 13) = gamma; dRdm1(2, 14) = gamma;
+        dRdm1(3, 15) = gamma; dRdm1(4, 16) = gamma; dRdm1(5, 17) = gamma;
+        dRdm1(6, 18) = gamma; dRdm1(7, 19) = gamma; dRdm1(8, 20) = gamma;
 
         dRdin = dRdm1 * dm1dm2 * dm2dm3 * dm3din;
 
@@ -692,7 +692,7 @@ namespace icl::io {
 
 
         DynMatrix<icl64f> om1(1,3);
-        om1[0] = R.index_yx(2, 1)-R.index_yx(1, 2); om1[1] = R.index_yx(0, 2)-R.index_yx(2, 0); om1[2] = R.index_yx(1, 0)-R.index_yx(0, 1);
+        om1[0] = R(2, 1)-R(1, 2); om1[1] = R(0, 2)-R(2, 0); om1[2] = R(1, 0)-R(0, 1);
 
 
         DynMatrix<icl64f> dvardR(9,5);
@@ -729,12 +729,12 @@ namespace icl::io {
           DynMatrix<icl64f> Smat(3,11,dat);
 
           DynMatrix<icl64f> M = (R+eye3)/2.0;
-          double uabs = sqrt(M.index_yx(0, 0));
-          double vabs = sqrt(M.index_yx(1, 1));
-          double wabs = sqrt(M.index_yx(2, 2));
+          double uabs = sqrt(M(0, 0));
+          double vabs = sqrt(M(1, 1));
+          double wabs = sqrt(M(2, 2));
 
           DynMatrix<icl64f> mvec(3,1);// = [M(1,2), M(2,3), M(1,3)];
-          mvec[0] = M.index_yx(0, 1); mvec[1] = M.index_yx(1, 2); mvec[2] = M.index_yx(0, 2);
+          mvec[0] = M(0, 1); mvec[1] = M(1, 2); mvec[2] = M(0, 2);
           DynMatrix<icl64f> syn(3,1);//  = ((mvec > 1e-4) - (mvec < -1e-4)); //robust sign() function
 
           for(int i=0;i<3;++i){
@@ -759,7 +759,7 @@ namespace icl::io {
           }
           DynMatrix<icl64f> svec(1,3);
           for(unsigned int i=0;i<3;++i){
-            svec[i] = hashvec.index_yx(idx, i);
+            svec[i] = hashvec(idx, i);
           }
           out[0] = theta*uabs*svec[0];
           out[1] = theta*vabs*svec[1];
@@ -791,10 +791,10 @@ namespace icl::io {
       DynMatrix<icl64f> r_22(m_data->bSize,1);
       DynMatrix<icl64f> r_23(m_data->bSize,1);
       for(int i=0;i<m_data->bSize;++i){
-        r_2.index_yx(0, i) = x.index_yx(0, i)*x.index_yx(0, i)+x.index_yx(1, i)*x.index_yx(1, i);
-        r_21.index_yx(0, i) = r_2.index_yx(0, i);
-        r_22.index_yx(0, i) = r_2.index_yx(0, i)*r_2.index_yx(0, i);
-        r_23.index_yx(0, i) = r_22.index_yx(0, i)*r_2.index_yx(0, i);
+        r_2(0, i) = x(0, i)*x(0, i)+x(1, i)*x(1, i);
+        r_21(0, i) = r_2(0, i);
+        r_22(0, i) = r_2(0, i)*r_2(0, i);
+        r_23(0, i) = r_22(0, i)*r_2(0, i);
       }
 
       r_21 *= k1;
@@ -805,8 +805,8 @@ namespace icl::io {
       DynMatrix<icl64f> delta_x(m_data->bSize,2);
 
       for(int i=0;i<m_data->bSize;++i){
-        delta_x.index_yx(0, i) = 2*p1*x.index_yx(0, i)*x.index_yx(1, i) + p2*(r_2[i] + 2*x.index_yx(0, i)*x.index_yx(0, i));
-        delta_x.index_yx(1, i) = p1 * (r_2[i] + 2*x.index_yx(1, i)*x.index_yx(1, i))+2*p2*x.index_yx(0, i)*x.index_yx(1, i);
+        delta_x(0, i) = 2*p1*x(0, i)*x(1, i) + p2*(r_2[i] + 2*x(0, i)*x(0, i));
+        delta_x(1, i) = p1 * (r_2[i] + 2*x(1, i)*x(1, i))+2*p2*x(0, i)*x(1, i);
       }
 
       for(unsigned int i=0;i<x.dim();++i){
@@ -825,12 +825,12 @@ namespace icl::io {
     //First: Subtract principal point, and divide by the focal length:
     DynMatrix<icl64f> x_distort(m_data->bSize,2);
     for(int i=0;i<m_data->bSize;++i){
-      x_distort.index_yx(0, i) = (x_kk.index_yx(0, i)-cc[0])/fc[0];
-      x_distort.index_yx(1, i) = (x_kk.index_yx(1, i)-cc[1])/fc[1];
+      x_distort(0, i) = (x_kk(0, i)-cc[0])/fc[0];
+      x_distort(1, i) = (x_kk(1, i)-cc[1])/fc[1];
     }
     //Second: undo skew
     for(int i=0;i<m_data->bSize;++i){
-      x_distort.index_yx(0, i) = x_distort.index_yx(0, i) -alpha_c*x_distort.index_yx(1, i);
+      x_distort(0, i) = x_distort(0, i) -alpha_c*x_distort(1, i);
     }
     if (kc.norm() != 0){
       //Third: Compensate for lens distortion:
@@ -846,7 +846,7 @@ namespace icl::io {
       res.setBounds(x_k.cols(),1);
       for(unsigned int j=0;j<x_k.cols();++j)
         for(unsigned int i=0;i<x_k.rows();++i){
-          res[j] += x_k.index_yx(i, j);
+          res[j] += x_k(i, j);
         }
 
       for(unsigned int i=0;i<res.cols();++i){
@@ -867,49 +867,49 @@ namespace icl::io {
     DynMatrix<icl64f> mm(m_data->bSize,3);
     if(m.rows()<3){
       for(int i=0;i<m_data->bSize;++i){
-        mm.index_yx(0, i) = m.index_yx(0, i);
-        mm.index_yx(1, i) = m.index_yx(1, i);
-        mm.index_yx(2, i) = 1;
+        mm(0, i) = m(0, i);
+        mm(1, i) = m(1, i);
+        mm(2, i) = 1;
       }
     } else {
       for(int i=0;i<m_data->bSize;++i){
-        mm.index_yx(0, i) = m.index_yx(0, i);
-        mm.index_yx(1, i) = m.index_yx(1, i);
-        mm.index_yx(2, i) = m.index_yx(2, i);
+        mm(0, i) = m(0, i);
+        mm(1, i) = m(1, i);
+        mm(2, i) = m(2, i);
       }
     }
     DynMatrix<icl64f> MM(m_data->bSize,3);
     if(M.rows()<3){
       for(int i=0;i<m_data->bSize;++i){
-        MM.index_yx(0, i) = M.index_yx(0, i);
-        MM.index_yx(1, i) = M.index_yx(1, i);
-        MM.index_yx(2, i) = 1;
+        MM(0, i) = M(0, i);
+        MM(1, i) = M(1, i);
+        MM(2, i) = 1;
       }
     } else {
       for(int i=0;i<m_data->bSize;++i){
-        MM.index_yx(0, i) = M.index_yx(0, i);
-        MM.index_yx(1, i) = M.index_yx(1, i);
-        if(M.index_yx(2, i) == 0){
-          MM.index_yx(2, i) = 1;
+        MM(0, i) = M(0, i);
+        MM(1, i) = M(1, i);
+        if(M(2, i) == 0){
+          MM(2, i) = 1;
         } else {
-          MM.index_yx(2, i) = M.index_yx(2, i);
+          MM(2, i) = M(2, i);
         }
       }
     }
     for(int i=0;i<m_data->bSize;++i){
-      mm.index_yx(0, i) = mm.index_yx(0, i) * 1.0/mm.index_yx(2, i);
-      mm.index_yx(1, i) = mm.index_yx(1, i) * 1.0/mm.index_yx(2, i);
+      mm(0, i) = mm(0, i) * 1.0/mm(2, i);
+      mm(1, i) = mm(1, i) * 1.0/mm(2, i);
 
-      MM.index_yx(0, i) = MM.index_yx(0, i) * 1.0/MM.index_yx(2, i);
-      MM.index_yx(1, i) = MM.index_yx(1, i) * 1.0/MM.index_yx(2, i);
+      MM(0, i) = MM(0, i) * 1.0/MM(2, i);
+      MM(1, i) = MM(1, i) * 1.0/MM(2, i);
     }
     // Prenormalization of point coordinates (very important):
     // (Affine normalization)
     DynMatrix<icl64f> ax(m_data->bSize,1);
     DynMatrix<icl64f> ay(m_data->bSize,1);
     for(int i=0;i<m_data->bSize;++i){
-      ax[i] = mm.index_yx(0, i);
-      ay[i] = mm.index_yx(1, i);
+      ax[i] = mm(0, i);
+      ay[i] = mm(1, i);
     }
     DynMatrix<icl64f> mxx(1,1);
     mean(ax,mxx);
@@ -945,18 +945,18 @@ namespace icl::io {
     DynMatrix<icl64f> L(9,2*m_data->bSize);
     DynMatrix<icl64f> ones(1,3,1);
     for(int i=0;i<Np;++i){
-      L.index_yx(2*i, 0) = MM.index_yx(0, i);
-      L.index_yx(2*i, 1) = MM.index_yx(1, i);
-      L.index_yx(2*i, 2) = MM.index_yx(2, i);
-      L.index_yx(2*i+1, 3) = MM.index_yx(0, i);
-      L.index_yx(2*i+1, 4) = MM.index_yx(1, i);
-      L.index_yx(2*i+1, 5) = MM.index_yx(2, i);
-      L.index_yx(2*i, 6) = -mn.index_yx(0, i)*MM.index_yx(0, i);
-      L.index_yx(2*i, 7) = -mn.index_yx(0, i)*MM.index_yx(1, i);
-      L.index_yx(2*i, 8) = -mn.index_yx(0, i)*MM.index_yx(2, i);
-      L.index_yx(2*i+1, 6) = -mn.index_yx(1, i)*MM.index_yx(0, i);
-      L.index_yx(2*i+1, 7) = -mn.index_yx(1, i)*MM.index_yx(1, i);
-      L.index_yx(2*i+1, 8) = -mn.index_yx(1, i)*MM.index_yx(2, i);
+      L(2*i, 0) = MM(0, i);
+      L(2*i, 1) = MM(1, i);
+      L(2*i, 2) = MM(2, i);
+      L(2*i+1, 3) = MM(0, i);
+      L(2*i+1, 4) = MM(1, i);
+      L(2*i+1, 5) = MM(2, i);
+      L(2*i, 6) = -mn(0, i)*MM(0, i);
+      L(2*i, 7) = -mn(0, i)*MM(1, i);
+      L(2*i, 8) = -mn(0, i)*MM(2, i);
+      L(2*i+1, 6) = -mn(1, i)*MM(0, i);
+      L(2*i+1, 7) = -mn(1, i)*MM(1, i);
+      L(2*i+1, 8) = -mn(1, i)*MM(2, i);
     }
 
     if (Np > 4){
@@ -968,7 +968,7 @@ namespace icl::io {
     DynMatrix<icl64f> hh(1,9);
 
     for(int i=0;i<9;++i){
-      hh[i] = V.index_yx(i, 8)/V.index_yx(8, 8);
+      hh[i] = V(i, 8)/V(8, 8);
     }
     DynMatrix<icl64f> hhh(3,3);
     hhh[0] = hh[0]; hhh[1] = hh[1]; hhh[2] = hh[2];
@@ -993,27 +993,27 @@ namespace icl::io {
         MMM = DynMatrix<icl64f>(m_data->bSize,3);
         mrep = H * MM;
         for(int i=0;i<m_data->bSize;++i){
-          MMM.index_yx(0, i)=MM.index_yx(0, i)/mrep.index_yx(2, i);
-          MMM.index_yx(1, i)=MM.index_yx(1, i)/mrep.index_yx(2, i);
-          MMM.index_yx(2, i)=MM.index_yx(2, i)/mrep.index_yx(2, i);
+          MMM(0, i)=MM(0, i)/mrep(2, i);
+          MMM(1, i)=MM(1, i)/mrep(2, i);
+          MMM(2, i)=MM(2, i)/mrep(2, i);
         }
         for(int i=0;i<Np;++i){
-          J.index_yx(2*i, 0) = MMM.index_yx(0, i);
-          J.index_yx(2*i, 1) = MMM.index_yx(1, i);
-          J.index_yx(2*i, 2) = MMM.index_yx(2, i);
-          J.index_yx(2*i+1, 3) = MMM.index_yx(0, i);
-          J.index_yx(2*i+1, 4) = MMM.index_yx(1, i);
-          J.index_yx(2*i+1, 5) = MMM.index_yx(2, i);
+          J(2*i, 0) = MMM(0, i);
+          J(2*i, 1) = MMM(1, i);
+          J(2*i, 2) = MMM(2, i);
+          J(2*i+1, 3) = MMM(0, i);
+          J(2*i+1, 4) = MMM(1, i);
+          J(2*i+1, 5) = MMM(2, i);
         }
         J *= -1;
         for(unsigned int i=0;i<mrep.cols();++i){
-          mrep.index_yx(0, i) = mrep.index_yx(0, i)/mrep.index_yx(2, i);
-          mrep.index_yx(1, i) = mrep.index_yx(1, i)/mrep.index_yx(2, i);
-          mrep.index_yx(2, i) = mrep.index_yx(2, i)/mrep.index_yx(2, i);
+          mrep(0, i) = mrep(0, i)/mrep(2, i);
+          mrep(1, i) = mrep(1, i)/mrep(2, i);
+          mrep(2, i) = mrep(2, i)/mrep(2, i);
         }
         for(int i=0;i<Np;++i){
-          m_err.index_yx(2*i, 0) = mm.index_yx(0, i)-mrep.index_yx(0, i);
-          m_err.index_yx(2*i+1, 0) = mm.index_yx(1, i)-mrep.index_yx(1, i);
+          m_err(2*i, 0) = mm(0, i)-mrep(0, i);
+          m_err(2*i+1, 0) = mm(1, i)-mrep(1, i);
         }
 
         DynMatrix<icl64f> mrep_t = ones*mrep.row(0);
@@ -1023,16 +1023,16 @@ namespace icl::io {
         DynMatrix<icl64f> MMM3 = mrep_t.elementwise_mult(MMM);
 
         for(int i=0;i<Np;++i){
-          J.index_yx(2*i, 6) = MMM2.index_yx(0, i);
-          J.index_yx(2*i, 7) = MMM2.index_yx(1, i);
-          J.index_yx(2*i+1, 6) = MMM3.index_yx(0, i);
-          J.index_yx(2*i+1, 7) = MMM3.index_yx(1, i);
+          J(2*i, 6) = MMM2(0, i);
+          J(2*i, 7) = MMM2(1, i);
+          J(2*i+1, 6) = MMM3(0, i);
+          J(2*i+1, 7) = MMM3(1, i);
         }
 
         for(int i=0;i<m_data->bSize;++i){
-          MMM.index_yx(0, i) = MM.index_yx(0, i)/mrep.index_yx(2, i);
-          MMM.index_yx(1, i) = MM.index_yx(1, i)/mrep.index_yx(2, i);
-          MMM.index_yx(2, i) = MM.index_yx(2, i)/mrep.index_yx(2, i);
+          MMM(0, i) = MM(0, i)/mrep(2, i);
+          MMM(1, i) = MM(1, i)/mrep(2, i);
+          MMM(2, i) = MM(2, i)/mrep(2, i);
         }
         MMM = MMM.transp();
         DynMatrix<icl64f> JT = J.transp();
@@ -1090,8 +1090,8 @@ namespace icl::io {
       // Compute the planar homography:
       DynMatrix<icl64f> H(3,3), X_new2(X_new.cols(),2);
       for(unsigned int i=0;i<X_new.cols();++i){
-        X_new2.index_yx(0, i) = X_new.index_yx(0, i);
-        X_new2.index_yx(1, i) = X_new.index_yx(1, i);
+        X_new2(0, i) = X_new(0, i);
+        X_new2(1, i) = X_new(1, i);
       }
 
       compute_homography(xn,X_new2, H);
@@ -1147,8 +1147,8 @@ namespace icl::io {
     //compute extrinsic params
     for(int i=0;i<m_data->successes;++i){
       for(int j=0;j<m_data->bSize;++j){
-        x.index_yx(0, j) = impoints.index_yx(2*i, j);
-        x.index_yx(1, j) = impoints.index_yx(2*i+1, j);
+        x(0, j) = impoints(2*i, j);
+        x(1, j) = impoints(2*i+1, j);
       }
       comp_ext_calib(x,worldpoints,fc,cc,kc,alpha_c,1e6,omckk,Tckk,Rckk);
       for(int j=0;j<3;++j){
@@ -1218,8 +1218,8 @@ namespace icl::io {
         //image coords
         DynMatrix<icl64f> x_kk(m_data->bSize,2);
         for(int i=0;i<m_data->bSize;++i){
-          x_kk.index_yx(0, i) = impoints.index_yx(2*kk, i);
-          x_kk.index_yx(1, i) = impoints.index_yx(2*kk+1, i);
+          x_kk(0, i) = impoints(2*kk, i);
+          x_kk(1, i) = impoints(2*kk+1, i);
         }
 
         DynMatrix<icl64f> x(m_data->bSize,2), dxdom(3,2*m_data->bSize), dxdT(3,2*m_data->bSize),
@@ -1231,60 +1231,60 @@ namespace icl::io {
 
         DynMatrix<icl64f> A(2*m_data->bSize,10);
         for(int i=0;i<(2*m_data->bSize);++i){
-          A.index_yx(0, i) = dxdf.index_yx(i, 0);
-          A.index_yx(1, i) = dxdf.index_yx(i, 1);
-          A.index_yx(2, i) = dxdc.index_yx(i, 0);
-          A.index_yx(3, i) = dxdc.index_yx(i, 1);
-          A.index_yx(4, i) = dxdalpha.index_yx(i, 0);
-          A.index_yx(5, i) = dxdk.index_yx(i, 0);
-          A.index_yx(6, i) = dxdk.index_yx(i, 1);
-          A.index_yx(7, i) = dxdk.index_yx(i, 2);
-          A.index_yx(8, i) = dxdk.index_yx(i, 3);
-          A.index_yx(9, i) = dxdk.index_yx(i, 4);
+          A(0, i) = dxdf(i, 0);
+          A(1, i) = dxdf(i, 1);
+          A(2, i) = dxdc(i, 0);
+          A(3, i) = dxdc(i, 1);
+          A(4, i) = dxdalpha(i, 0);
+          A(5, i) = dxdk(i, 0);
+          A(6, i) = dxdk(i, 1);
+          A(7, i) = dxdk(i, 2);
+          A(8, i) = dxdk(i, 3);
+          A(9, i) = dxdk(i, 4);
         }
 
         DynMatrix<icl64f> B(2*m_data->bSize,6);
         for(int i=0;i<(2*m_data->bSize);++i){
-          B.index_yx(0, i) = dxdom.index_yx(i, 0);
-          B.index_yx(1, i) = dxdom.index_yx(i, 1);
-          B.index_yx(2, i) = dxdom.index_yx(i, 2);
-          B.index_yx(3, i) = dxdT.index_yx(i, 0);
-          B.index_yx(4, i) = dxdT.index_yx(i, 1);
-          B.index_yx(5, i) = dxdT.index_yx(i, 2);
+          B(0, i) = dxdom(i, 0);
+          B(1, i) = dxdom(i, 1);
+          B(2, i) = dxdom(i, 2);
+          B(3, i) = dxdT(i, 0);
+          B(4, i) = dxdT(i, 1);
+          B(5, i) = dxdT(i, 2);
         }
 
         DynMatrix<icl64f> AAT = A*A.transp();
         for(int i=0;i<10;++i){
           for(int j=0;j<10;++j){
-            JJ3.index_yx(j, i) = JJ3.index_yx(j, i) + AAT.index_yx(j, i);
+            JJ3(j, i) = JJ3(j, i) + AAT(j, i);
           }
         }
 
         DynMatrix<icl64f> BBT = B*B.transp();
         for(int i=0;i<6;++i){
           for(int j=0;j<6;++j){
-            JJ3.index_yx(offset+6*kk +j, offset+6*kk + i) = BBT.index_yx(j, i);
+            JJ3(offset+6*kk +j, offset+6*kk + i) = BBT(j, i);
           }
         }
 
         DynMatrix<icl64f> AB = A*B.transp();
         for(int i=0;i<6;++i){
           for(int j=0;j<10;++j){
-            JJ3.index_yx(j, offset+6*kk + i) = AB.index_yx(j, i);
+            JJ3(j, offset+6*kk + i) = AB(j, i);
           }
         }
 
         DynMatrix<icl64f> ABT = (AB).transp();
         for(int i=0;i<10;++i){
           for(int j=0;j<6;++j){
-            JJ3.index_yx(offset+6*kk +j, i) = ABT.index_yx(j, i);
+            JJ3(offset+6*kk +j, i) = ABT(j, i);
           }
         }
 
         DynMatrix<icl64f> exkk2(1,2*exkk.cols());
         for(unsigned int i=0;i<exkk.cols();++i){
-          exkk2[2*i] = exkk.index_yx(0, i);
-          exkk2[2*i+1] = exkk.index_yx(1, i);
+          exkk2[2*i] = exkk(0, i);
+          exkk2[2*i+1] = exkk(1, i);
         }
 
         DynMatrix<icl64f> exkk3 = A*exkk2;
@@ -1368,8 +1368,8 @@ namespace icl::io {
           DynMatrix<icl64f> Rckk(3,3);
           DynMatrix<icl64f> x_kk(m_data->bSize,2);
           for(int i=0;i<m_data->bSize;++i){
-            x_kk.index_yx(0, i) = impoints.index_yx(2*kk, i);
-            x_kk.index_yx(1, i) = impoints.index_yx(2*kk+1, i);
+            x_kk(0, i) = impoints(2*kk, i);
+            x_kk(1, i) = impoints(2*kk+1, i);
           }
           DynMatrix<icl64f> omckk(1,3),Tckk(1,3),JJ_kk(6,2*m_data->bSize);
           compute_extrinsic_init(x_kk,X_kk,fc_current,cc_current,kc_current,alpha_current,
@@ -1395,16 +1395,16 @@ namespace icl::io {
 
     }
 
-    (m_data->intrinsic_matrix)->index_yx(0, 0) = param[0];
-    (m_data->intrinsic_matrix)->index_yx(1, 1) = param[1];
-    (m_data->intrinsic_matrix)->index_yx(0, 2) = param[2];
-    (m_data->intrinsic_matrix)->index_yx(1, 2) = param[3];
-    (m_data->intrinsic_matrix)->index_yx(0, 1) = param[4];
-    (m_data->distortion_coeffs)->index_yx(0, 0) = param[5];
-    (m_data->distortion_coeffs)->index_yx(0, 1) = param[6];
-    (m_data->distortion_coeffs)->index_yx(0, 2) = param[7];
-    (m_data->distortion_coeffs)->index_yx(0, 3) = param[8];
-    (m_data->distortion_coeffs)->index_yx(0, 4) = param[9];
+    (m_data->intrinsic_matrix)->operator()(0, 0) = param[0];
+    (m_data->intrinsic_matrix)->operator()(1, 1) = param[1];
+    (m_data->intrinsic_matrix)->operator()(0, 2) = param[2];
+    (m_data->intrinsic_matrix)->operator()(1, 2) = param[3];
+    (m_data->intrinsic_matrix)->operator()(0, 1) = param[4];
+    (m_data->distortion_coeffs)->operator()(0, 0) = param[5];
+    (m_data->distortion_coeffs)->operator()(0, 1) = param[6];
+    (m_data->distortion_coeffs)->operator()(0, 2) = param[7];
+    (m_data->distortion_coeffs)->operator()(0, 3) = param[8];
+    (m_data->distortion_coeffs)->operator()(0, 4) = param[9];
 
     std::vector<double> paramsVec(param.begin(),param.end());
     m_calres = Result(paramsVec,Size(m_data->nx,m_data->ny));
@@ -1419,16 +1419,16 @@ namespace icl::io {
   void IntrinsicCalibrator::loadIntrinsics(const std::string &filename){
     static_cast<ImageUndistortion&>(m_calres) = ImageUndistortion(filename);
 
-    (m_data->intrinsic_matrix)->index_yx(0, 0) = m_calres.getParams()[0];
-    (m_data->intrinsic_matrix)->index_yx(1, 1) = m_calres.getParams()[1];
-    (m_data->intrinsic_matrix)->index_yx(0, 2) = m_calres.getParams()[2];
-    (m_data->intrinsic_matrix)->index_yx(1, 2) = m_calres.getParams()[3];
-    (m_data->intrinsic_matrix)->index_yx(0, 1) = m_calres.getParams()[4];
-    (m_data->distortion_coeffs)->index_yx(0, 0) = m_calres.getParams()[5];
-    (m_data->distortion_coeffs)->index_yx(0, 1) = m_calres.getParams()[6];
-    (m_data->distortion_coeffs)->index_yx(0, 2) = m_calres.getParams()[7];
-    (m_data->distortion_coeffs)->index_yx(0, 3) = m_calres.getParams()[8];
-    (m_data->distortion_coeffs)->index_yx(0, 4) = m_calres.getParams()[9];
+    (m_data->intrinsic_matrix)->operator()(0, 0) = m_calres.getParams()[0];
+    (m_data->intrinsic_matrix)->operator()(1, 1) = m_calres.getParams()[1];
+    (m_data->intrinsic_matrix)->operator()(0, 2) = m_calres.getParams()[2];
+    (m_data->intrinsic_matrix)->operator()(1, 2) = m_calres.getParams()[3];
+    (m_data->intrinsic_matrix)->operator()(0, 1) = m_calres.getParams()[4];
+    (m_data->distortion_coeffs)->operator()(0, 0) = m_calres.getParams()[5];
+    (m_data->distortion_coeffs)->operator()(0, 1) = m_calres.getParams()[6];
+    (m_data->distortion_coeffs)->operator()(0, 2) = m_calres.getParams()[7];
+    (m_data->distortion_coeffs)->operator()(0, 3) = m_calres.getParams()[8];
+    (m_data->distortion_coeffs)->operator()(0, 4) = m_calres.getParams()[9];
   }
 
   void IntrinsicCalibrator::resetData(unsigned int boardWidth, unsigned int boardHeight,
@@ -1462,8 +1462,8 @@ namespace icl::io {
 
       for(int y=0;y<h;++y){
         for(int x=0;x<w;++x){
-          I.index_yx(2*i, x+y*w) = data.data[i](x,y)[0];
-          I.index_yx(2*i+1, x+y*w) = data.data[i](x,y)[1];
+          I(2*i, x+y*w) = data.data[i](x,y)[0];
+          I(2*i+1, x+y*w) = data.data[i](x,y)[1];
         }
       }
     }

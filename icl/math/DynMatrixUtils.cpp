@@ -470,7 +470,7 @@ namespace icl::math {
     // Transpose Vt → V
     for(unsigned int r = 0; r < cols; ++r)
       for(unsigned int c = 0; c < cols; ++c)
-        V.index_yx(r, c) = Vt.index_yx(c, r);
+        V(r, c) = Vt(c, r);
   }
   template ICLMath_API void svd_dyn(const DynMatrix<icl32f>&, DynMatrix<icl32f>&, DynMatrix<icl32f>&, DynMatrix<icl32f>&);
   template ICLMath_API void svd_dyn(const DynMatrix<icl64f>&, DynMatrix<icl64f>&, DynMatrix<icl64f>&, DynMatrix<icl64f>&);

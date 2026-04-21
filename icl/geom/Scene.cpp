@@ -1469,14 +1469,14 @@ namespace icl::geom {
 
   void Scene::setCursor(Vec newPosition) {
       Mat4 trans = m_cursor->getTransformation();
-      trans.index_yx(0, 3) = newPosition.index_yx(0, 0);
-      trans.index_yx(1, 3) = newPosition.index_yx(1, 0);
-      trans.index_yx(2, 3) = newPosition.index_yx(2, 0);
+      trans(0, 3) = newPosition(0, 0);
+      trans(1, 3) = newPosition(1, 0);
+      trans(2, 3) = newPosition(2, 0);
       m_cursor->setTransformation(trans);
   }
   Vec Scene::getCursor() {
       Mat4 trans = m_cursor->getTransformation();
-      return Vec(trans.index_yx(0, 3),trans.index_yx(1, 3),trans.index_yx(2, 3));
+      return Vec(trans(0, 3),trans(1, 3),trans(2, 3));
   }
 
   void Scene::activateCursor(bool activate) {

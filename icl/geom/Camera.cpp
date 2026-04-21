@@ -56,10 +56,10 @@ namespace icl::geom {
     T.row(3) = Vec(0.0);
     T.col(3) = Vec(0.0);
 
-    T.index_yx(0, 3) = -sprod_3(hh, pos);
-    T.index_yx(1, 3) = -sprod_3(uu, pos);
-    T.index_yx(2, 3) = -sprod_3(norm, pos);
-    T.index_yx(3, 3) = 1;
+    T(0, 3) = -sprod_3(hh, pos);
+    T(1, 3) = -sprod_3(uu, pos);
+    T(2, 3) = -sprod_3(norm, pos);
+    T(3, 3) = 1;
 
     return T;
   }
@@ -96,9 +96,9 @@ namespace icl::geom {
     Mat CS = getCSTransformationMatrix();
 
     FixedMatrix<icl32f,4,3> cs(CS.begin());
-    FixedMatrix<icl32f,3,3> k( K.index_yx(0, 0), K.index_yx(0, 1), K.index_yx(0, 2),
-                               K.index_yx(1, 0), K.index_yx(1, 1), K.index_yx(1, 2),
-                               K.index_yx(3, 0), K.index_yx(3, 1), K.index_yx(3, 2) );
+    FixedMatrix<icl32f,3,3> k( K(0, 0), K(0, 1), K(0, 2),
+                               K(1, 0), K(1, 1), K(1, 2),
+                               K(3, 0), K(3, 1), K(3, 2) );
     return k*cs;
   }
 
@@ -108,10 +108,10 @@ namespace icl::geom {
     Mat Tinv = getInvCSTransformationMatrix();
     Mat P = getProjectionMatrix();
     Mat II = Tinv * P.pinv(std::numeric_limits<icl32f>::epsilon());
-    return FixedMatrix<icl32f,3,4> (II.index_yx(0, 0),II.index_yx(0, 1),II.index_yx(0, 3),
-                                    II.index_yx(1, 0),II.index_yx(1, 1),II.index_yx(1, 3),
-                                    II.index_yx(2, 0),II.index_yx(2, 1),II.index_yx(2, 3),
-                                    II.index_yx(3, 0),II.index_yx(3, 1),II.index_yx(3, 3));
+    return FixedMatrix<icl32f,3,4> (II(0, 0),II(0, 1),II(0, 3),
+                                    II(1, 0),II(1, 1),II(1, 3),
+                                    II(2, 0),II(2, 1),II(2, 3),
+                                    II(3, 0),II(3, 1),II(3, 3));
   }
 
 
@@ -191,7 +191,7 @@ namespace icl::geom {
     Mat T = getCSTransformationMatrix();
     Mat P = getProjectionMatrixGL();
     // correct the sign of skew and y-offset component
-    P.index_yx(0, 1) *= -1; P.index_yx(1, 2) *= -1;
+    P(0, 1) *= -1; P(1, 2) *= -1;
     Mat V = getViewportMatrixGL();
     return homogenize(V*P*T*Xw);
   }
@@ -202,7 +202,7 @@ namespace icl::geom {
     Mat T = getCSTransformationMatrix();
     Mat P = getProjectionMatrixGL();
     // correct the sign of skew and y-offset component
-    P.index_yx(0, 1) *= -1; P.index_yx(1, 2) *= -1;
+    P(0, 1) *= -1; P(1, 2) *= -1;
     Mat V = getViewportMatrixGL();
     Mat M = V*P*T;
     for(unsigned int i=0;i<Xws.size();++i) {
@@ -218,9 +218,9 @@ namespace icl::geom {
   }
 
   void Camera::setRotation(const Mat3x3 &rot) {
-    m_norm = Vec(rot.index_yx(2, 0), rot.index_yx(2, 1), rot.index_yx(2, 2), 0).normalized();
+    m_norm = Vec(rot(2, 0), rot(2, 1), rot(2, 2), 0).normalized();
     m_norm[3] = 1;
-    m_up = Vec(rot.index_yx(1, 0), rot.index_yx(1, 1), rot.index_yx(1, 2), 0).normalized();
+    m_up = Vec(rot(1, 0), rot(1, 1), rot(1, 2), 0).normalized();
     m_up[3] = 1;
     // we need to check the handedness
     Vec v = cross(m_up,m_norm);
@@ -229,7 +229,7 @@ namespace icl::geom {
     if (abs(v[1]) > abs(v[idx])) idx = 1;
     if (abs(v[2]) > abs(v[idx])) idx = 2;
     // check if the signs are same
-    if (v[idx] * rot.index_yx(0, idx) < 0) {
+    if (v[idx] * rot(0, idx) < 0) {
       // not the same sign -- switch directions to make right handed cs
       m_norm *= -1; m_norm[3] = 1;
       m_up *= -1; m_up[3] = 1;
@@ -245,9 +245,9 @@ namespace icl::geom {
     FixedMatrix<float,3,3> R = m.part<0,0,3,3>();
     setRotation(R.transp());
 
-    m_pos[0] = m.index_yx(0, 3);
-    m_pos[1] = m.index_yx(1, 3);
-    m_pos[2] = m.index_yx(2, 3);
+    m_pos[0] = m(0, 3);
+    m_pos[1] = m(1, 3);
+    m_pos[2] = m(2, 3);
   }
 
 
@@ -275,15 +275,15 @@ namespace icl::geom {
     FixedMatrix<float,1,3> T; // extrinsic (tranlation vector)
 
     M.decompose_RQ(K,R);
-    K = K/K.index_yx(2, 2); // normalize K
+    K = K/K(2, 2); // normalize K
     T = -M.inv() * c4;
     Camera cam;
     cam.setPosition(Vec(T[0],T[1],T[2],1));
     cam.setRotation(R);
     cam.setFocalLength(focalLength);
-    cam.setSamplingResolution(K.index_yx(0, 0)/focalLength, K.index_yx(1, 1)/focalLength);
-    cam.setPrincipalPointOffset(Point32f(K.index_yx(0, 2), K.index_yx(1, 2)));
-    cam.setSkew(K.index_yx(0, 1));
+    cam.setSamplingResolution(K(0, 0)/focalLength, K(1, 1)/focalLength);
+    cam.setPrincipalPointOffset(Point32f(K(0, 2), K(1, 2)));
+    cam.setSkew(K(0, 1));
     return cam;
   }
 
@@ -298,7 +298,7 @@ namespace icl::geom {
                                      const Mat &camIntrinsicProjectionMatrix, const RenderParams &renderParams,
                                      bool performLMAbasedOptimiziation) {
     const Mat &k = camIntrinsicProjectionMatrix;
-    return calibrate_extrinsic(Xws, xis, k.index_yx(0, 0), k.index_yx(1, 1), k.index_yx(0, 1), k.index_yx(0, 2), k.index_yx(1, 2), renderParams, performLMAbasedOptimiziation);
+    return calibrate_extrinsic(Xws, xis, k(0, 0), k(1, 1), k(0, 1), k(0, 2), k(1, 2), renderParams, performLMAbasedOptimiziation);
   }
 
   template<class T, unsigned int N, unsigned int M>
@@ -320,7 +320,7 @@ namespace icl::geom {
       const double F[12] = {x,y,z,1,x,y,z,1,x,y,z,1};
       const double A[12] = { fx,fx,fx,fx, s, s, s, s, du,du,du,du };
       const double B[12] = { 0, 0, 0, 0, fy,fy,fy,fy, dv,dv,dv,dv };
-      double *a = &M.index_yx(2*i, 0), *b = &M.index_yx(2*i+1, 0);
+      double *a = &M(2*i, 0), *b = &M(2*i+1, 0);
       for(int j=0;j<12;++j){
         a[j] = A[j] * F[j];
         b[j] = B[j] * F[j];
@@ -344,12 +344,12 @@ namespace icl::geom {
     R.decompose_RQ(r,q);
     DMat3 Ri = q.transp();
 
-    double norm = 3./(r.index_yx(0, 0) + r.index_yx(1, 1) + r.index_yx(2, 2));
+    double norm = 3./(r(0, 0) + r(1, 1) + r(2, 2));
     t = -Ri * ( t * norm );
 
     Camera cam(Vec(t[0],    t[1],    t[2],    1),
-               Vec(Ri.index_yx(0, 2), Ri.index_yx(1, 2), Ri.index_yx(2, 2), 1),
-               Vec(Ri.index_yx(0, 1), Ri.index_yx(1, 1), Ri.index_yx(2, 1), 1),
+               Vec(Ri(0, 2), Ri(1, 2), Ri(2, 2), 1),
+               Vec(Ri(0, 1), Ri(1, 1), Ri(2, 1), 1),
                1, Point32f(px,py), fx, fy, s, renderParams);
     if(performLMAbasedOptimiziation){
       return optimize_camera_calibration_lma(Xws, xis, cam);
@@ -387,8 +387,8 @@ namespace icl::geom {
         Mat3 dRR = dR * R;
 
         Camera c = cam;
-        c.setUp(Vec(dRR.index_yx(1, 0), dRR.index_yx(1, 1), dRR.index_yx(1, 2), 1));
-        c.setNorm(Vec(dRR.index_yx(2, 0), dRR.index_yx(2, 1), dRR.index_yx(2, 2), 1));
+        c.setUp(Vec(dRR(1, 0), dRR(1, 1), dRR(1, 2), 1));
+        c.setNorm(Vec(dRR(2, 0), dRR(2, 1), dRR(2, 2), 1));
         c.setPosition( (pOrig - dRR.transp() * dt).resize<1,4>(1));
 
         return c;
@@ -419,12 +419,12 @@ namespace icl::geom {
         int n = static_cast<int>(Xws.size());
         mat xs(3,n), ys(2,n);
         for(int i=0;i<n;++i){
-          xs.index_yx(i, 0) = Xws[i].x;
-          xs.index_yx(i, 1) = Xws[i].y;
-          xs.index_yx(i, 2) = Xws[i].z;
+          xs(i, 0) = Xws[i].x;
+          xs(i, 1) = Xws[i].y;
+          xs(i, 2) = Xws[i].z;
 
-          ys.index_yx(i, 0) = xis[i].x;
-          ys.index_yx(i, 1) = xis[i].y;
+          ys(i, 0) = xis[i].x;
+          ys(i, 1) = xis[i].y;
         }
 
         LMA::Result r = lma.fit(xs, ys, params(6,0.0));
@@ -492,13 +492,13 @@ namespace icl::geom {
       int i = 2*k;
       float x = xis[k].x; float y = xis[k].y;
       float X = Xws[k][0]; float Y = Xws[k][1]; float Z = Xws[k][2]; float W = Xws[k][3];
-      A.index_yx(i, 0) = 0; A.index_yx(i, 1) = 0; A.index_yx(i, 2) = 0; A.index_yx(i, 3) = 0;
-      A.index_yx(i, 4) = -X; A.index_yx(i, 5) = -Y; A.index_yx(i, 6) = -Z; A.index_yx(i, 7) = -W;
-      A.index_yx(i, 8) = y*X; A.index_yx(i, 9) = y*Y; A.index_yx(i, 10) = y*Z; A.index_yx(i, 11) = y*W;
+      A(i, 0) = 0; A(i, 1) = 0; A(i, 2) = 0; A(i, 3) = 0;
+      A(i, 4) = -X; A(i, 5) = -Y; A(i, 6) = -Z; A(i, 7) = -W;
+      A(i, 8) = y*X; A(i, 9) = y*Y; A(i, 10) = y*Z; A(i, 11) = y*W;
       i = 2*k+1;
-      A.index_yx(i, 0) = X; A.index_yx(i, 1) = Y; A.index_yx(i, 2) = Z; A.index_yx(i, 3) = W;
-      A.index_yx(i, 4) = 0; A.index_yx(i, 5) = 0; A.index_yx(i, 6) = 0; A.index_yx(i, 7) = 0;
-      A.index_yx(i, 8) = -x*X; A.index_yx(i, 9) = -x*Y; A.index_yx(i, 10) = -x*Z; A.index_yx(i, 11) = -x*W;
+      A(i, 0) = X; A(i, 1) = Y; A(i, 2) = Z; A(i, 3) = W;
+      A(i, 4) = 0; A(i, 5) = 0; A(i, 6) = 0; A(i, 7) = 0;
+      A(i, 8) = -x*X; A(i, 9) = -x*Y; A(i, 10) = -x*Z; A(i, 11) = -x*W;
     }
 
     DynMatrix<icl32f> U,s,V;
@@ -506,7 +506,7 @@ namespace icl::geom {
 
     FixedMatrix<float,4,3> Q;
     for (int i=0; i<4; i++) for (int j=0; j<3; j++) {
-      Q.index_yx(j, i) = V.index_yx(j*4+i, 11);
+      Q(j, i) = V(j*4+i, 11);
     }
 
     Camera cam = Camera::createFromProjectionMatrix(Q, focalLength);
@@ -828,7 +828,7 @@ namespace icl::geom {
       FixedMatrix<icl32f,4,3> m = contr_eps(FixedMatrix<icl32f,1,3>(u[k][0],u[k][1],1))*P[k];
       for(unsigned int y=0;y<3;++y){
         for(unsigned int x=0;x<4;++x){
-          A.index_yx(k*3+y, x) = m.index_yx(y, x);
+          A(k*3+y, x) = m(y, x);
         }
       }
     }

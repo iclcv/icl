@@ -59,8 +59,8 @@ namespace icl::core {
       std::vector<State> stack;
 
       inline utils::Point32f transform(float x, float y) const{
-        return utils::Point32f(state.T.index_yx(0, 0)*x + state.T.index_yx(0, 1)*y + state.T.index_yx(0, 2),
-                               state.T.index_yx(1, 0)*x + state.T.index_yx(1, 1)*y + state.T.index_yx(1, 2));
+        return utils::Point32f(state.T(0, 0)*x + state.T(0, 1)*y + state.T(0, 2),
+                               state.T(1, 0)*x + state.T(1, 1)*y + state.T(1, 2));
       }
       inline bool clip(float x, float y) const{
         return state.clip.in(x,y);
@@ -96,9 +96,9 @@ namespace icl::core {
         return state.T;
       }
       virtual void getTransform(float &angle, float &tx, float &ty) const{
-        angle = acos(state.T.index_yx(0, 0));
-        tx = state.T.index_yx(0, 2);
-        ty = state.T.index_yx(1, 2);
+        angle = acos(state.T(0, 0));
+        tx = state.T(0, 2);
+        ty = state.T(1, 2);
       }
 
 
@@ -172,8 +172,8 @@ namespace icl::core {
                               -sa,ca,ty,
                               0,0,1)*state.T;
         }else{
-          state.T.index_yx(0, 2) += tx;
-          state.T.index_yx(1, 2) += ty;
+          state.T(0, 2) += tx;
+          state.T(1, 2) += ty;
         }
       }
 

@@ -332,11 +332,11 @@ namespace icl::markers {
         /* initialise table entries */
         m_d[0] = 0;			/* index form */
         m_d[1] = m_s[1];		/* index form */
-        m_elp.index_yx(0, 0) = 0;//[0][0] = 0;		/* index form */
-        m_elp.index_yx(0, 1) = 1;		/* polynomial form */
+        m_elp(0, 0) = 0;//[0][0] = 0;		/* index form */
+        m_elp(0, 1) = 1;		/* polynomial form */
         for (i = 1; i < t2; i++) {
-          m_elp.index_yx(i, 0) = -1;	/* index form */
-          m_elp.index_yx(i, 1) = 0;	/* polynomial form */
+          m_elp(i, 0) = -1;	/* index form */
+          m_elp(i, 1) = 0;	/* polynomial form */
         }
         m_l[0] = 0;
         m_l[1] = 0;
@@ -349,8 +349,8 @@ namespace icl::markers {
           if (m_d[u] == -1) {
             m_l[u + 1] = m_l[u];
             for (i = 0; i <= m_l[u]; i++) {
-              m_elp.index_yx(i, u + 1) = m_elp.index_yx(i, u);
-              m_elp.index_yx(i, u) = index_of[m_elp.index_yx(i, u)];
+              m_elp(i, u + 1) = m_elp(i, u);
+              m_elp(i, u) = index_of[m_elp(i, u)];
             }
           } else
             /*
@@ -383,14 +383,14 @@ namespace icl::markers {
 
               /* form new elp(x) */
               for (i = 0; i < t2; i++)
-                m_elp.index_yx(i, u + 1) = 0;
+                m_elp(i, u + 1) = 0;
               for (i = 0; i <= m_l[q]; i++)
-                if (m_elp.index_yx(i, q) != -1)
-                  m_elp.index_yx(i + u - q, u + 1) =
-                  alpha_to[(m_d[u] + n - m_d[q] + m_elp.index_yx(i, q)) % n];
+                if (m_elp(i, q) != -1)
+                  m_elp(i + u - q, u + 1) =
+                  alpha_to[(m_d[u] + n - m_d[q] + m_elp(i, q)) % n];
               for (i = 0; i <= m_l[u]; i++) {
-                m_elp.index_yx(i, u + 1) ^= m_elp.index_yx(i, u);
-                m_elp.index_yx(i, u) = index_of[m_elp.index_yx(i, u)];
+                m_elp(i, u + 1) ^= m_elp(i, u);
+                m_elp(i, u) = index_of[m_elp(i, u)];
               }
             }
           m_ulu[u + 1] = u - m_l[u + 1];
@@ -403,9 +403,9 @@ namespace icl::markers {
             else
               m_d[u + 1] = 0;
             for (i = 1; i <= m_l[u + 1]; i++)
-              if ((m_s[u + 1 - i] != -1) && (m_elp.index_yx(i, u + 1) != 0))
+              if ((m_s[u + 1 - i] != -1) && (m_elp(i, u + 1) != 0))
                 m_d[u + 1] ^= alpha_to[(m_s[u + 1 - i]
-                                        + index_of[m_elp.index_yx(i, u + 1)]) % n];
+                                        + index_of[m_elp(i, u + 1)]) % n];
             /* put m_d[u+1] into index form */
             m_d[u + 1] = index_of[m_d[u + 1]];
           }
@@ -415,11 +415,11 @@ namespace icl::markers {
         if (m_l[u] <= t) {/* Can correct errors */
           /* put elp into index form */
           for (i = 0; i <= m_l[u]; i++)
-            m_elp.index_yx(i, u) = index_of[m_elp.index_yx(i, u)];
+            m_elp(i, u) = index_of[m_elp(i, u)];
 
           /* Chien search: find roots of the error location polynomial */
           for (i = 1; i <= m_l[u]; i++)
-            m_reg[i] = m_elp.index_yx(i, u);
+            m_reg[i] = m_elp(i, u);
           count = 0;
           for (i = 1; i <= n; i++) {
             q = 1;

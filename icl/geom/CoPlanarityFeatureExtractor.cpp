@@ -14,14 +14,14 @@ namespace icl::geom {
     for(size_t i=0; i<initialMatrix.rows(); i++){
       for(size_t j=0; j<initialMatrix.rows(); j++){
         //only test pairs of non-adjacent planar surfaces
-        if(initialMatrix.index_yx(j, i)==true || features[i].curvatureFactor!=SurfaceFeatureExtractor::PLANAR || features[j].curvatureFactor!=SurfaceFeatureExtractor::PLANAR){
-          coplanar.index_yx(j, i)=false;
+        if(initialMatrix(j, i)==true || features[i].curvatureFactor!=SurfaceFeatureExtractor::PLANAR || features[j].curvatureFactor!=SurfaceFeatureExtractor::PLANAR){
+          coplanar(j, i)=false;
         }
       }
     }
     for(size_t i=0; i<coplanar.rows(); i++){
       for(size_t j=i+1; j<coplanar.cols(); j++){//dont check pairs twice
-        if(coplanar.index_yx(j, i)==true){//candidate
+        if(coplanar(j, i)==true){//candidate
           bool proceed=true;
 
           //criterion 1: both surfaces have similar mean normal (same orientation)
@@ -38,8 +38,8 @@ namespace icl::geom {
           }
 
           if(!proceed){//remove if one of the criterions failed
-            coplanar.index_yx(j, i)=false;
-            coplanar.index_yx(i, j)=false;
+            coplanar(j, i)=false;
+            coplanar(i, j)=false;
           }
         }
       }

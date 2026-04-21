@@ -39,7 +39,7 @@ namespace icl::math {
 
       for (i=0;i<m;i++)
         for (j=0;j<n;j++)
-          u.index_yx(i, j) = a.index_yx(i, j);
+          u(i, j) = a(i, j);
 
       // Householder's reduction to bidiagonal form
       g = x = 0.0;
@@ -47,34 +47,34 @@ namespace icl::math {
         e[i] = g;
         s = 0.0;
         l = i+1;
-        for (j=i;j<m;j++) s += u.index_yx(j, i)*u.index_yx(j, i);
+        for (j=i;j<m;j++) s += u(j, i)*u(j, i);
         if (s < tol) { g = 0.0; }
         else {
-          f = u.index_yx(i, i);
+          f = u(i, i);
           g = (f < 0) ? sqrt(s) : -sqrt(s);
           h = f * g - s;
-          u.index_yx(i, i) = f - g;
+          u(i, i) = f - g;
           for (j=l;j<n;j++) {
             s = 0.0;
-            for (k=i;k<m;k++) s += u.index_yx(k, i) * u.index_yx(k, j);
+            for (k=i;k<m;k++) s += u(k, i) * u(k, j);
             f = s / h;
-            for (k=i;k<m;k++) u.index_yx(k, j) += f * u.index_yx(k, i);
+            for (k=i;k<m;k++) u(k, j) += f * u(k, i);
           }
         }
         q[i] = g;
         s = 0.0;
-        for (j=l;j<n;j++) s += u.index_yx(i, j) * u.index_yx(i, j);
+        for (j=l;j<n;j++) s += u(i, j) * u(i, j);
         if (s < tol) { g = 0.0; }
         else {
-          f = u.index_yx(i, i+1);
+          f = u(i, i+1);
           g = (f < 0) ? sqrt(s) : -sqrt(s);
           h = f * g - s;
-          u.index_yx(i, i+1) = f - g;
-          for (j=l;j<n;j++) e[j] = u.index_yx(i, j)/h;
+          u(i, i+1) = f - g;
+          for (j=l;j<n;j++) e[j] = u(i, j)/h;
           for (j=l;j<m;j++) {
             s = 0.0;
-            for (k=l;k<n;k++) s += u.index_yx(j, k) * u.index_yx(i, k);
-            for (k=l;k<n;k++) u.index_yx(j, k) += s * e[k];
+            for (k=l;k<n;k++) s += u(j, k) * u(i, k);
+            for (k=l;k<n;k++) u(j, k) += s * e[k];
           }
         }
         y = fabs(q[i]) + fabs(e[i]);
@@ -85,16 +85,16 @@ namespace icl::math {
       if (withv) {
         for (i=n-1;i>=0;i--) {
           if (g != 0.0) {
-            h = u.index_yx(i, i+1) * g;
-            for (j=l;j<n;j++) v.index_yx(j, i) = u.index_yx(i, j)/h;
+            h = u(i, i+1) * g;
+            for (j=l;j<n;j++) v(j, i) = u(i, j)/h;
             for (j=l;j<n;j++) {
               s = 0.0;
-              for (k=l;k<n;k++) s += u.index_yx(i, k) * v.index_yx(k, j);
-              for (k=l;k<n;k++) v.index_yx(k, j) += s * v.index_yx(k, i);
+              for (k=l;k<n;k++) s += u(i, k) * v(k, j);
+              for (k=l;k<n;k++) v(k, j) += s * v(k, i);
             }
           }
-          for (j=l;j<n;j++) v.index_yx(i, j) = v.index_yx(j, i) = 0.0;
-          v.index_yx(i, i) = 1.0;
+          for (j=l;j<n;j++) v(i, j) = v(j, i) = 0.0;
+          v(i, i) = 1.0;
           g = e[i];
           l = i;
         }
@@ -103,26 +103,26 @@ namespace icl::math {
       // Accumulation of left-hand transformations
       if (withu) {
         for (i=n;i<m;i++) {
-          for (j=n;j<m;j++) u.index_yx(i, j) = 0.0;
-          u.index_yx(i, i) = 1.0;
+          for (j=n;j<m;j++) u(i, j) = 0.0;
+          u(i, i) = 1.0;
         }
         for (i=n-1;i>=0;i--) {
           l = i + 1;
           g = q[i];
-          for (j=l;j<m;j++) u.index_yx(i, j) = 0.0;
+          for (j=l;j<m;j++) u(i, j) = 0.0;
           if (g != 0.0) {
-            h = u.index_yx(i, i) * g;
+            h = u(i, i) * g;
             for (j=l;j<m;j++) {
               s = 0.0;
-              for (k=l;k<m;k++) s += u.index_yx(k, i) * u.index_yx(k, j);
+              for (k=l;k<m;k++) s += u(k, i) * u(k, j);
               f = s / h;
-              for (k=i;k<m;k++) u.index_yx(k, j) += f * u.index_yx(k, i);
+              for (k=i;k<m;k++) u(k, j) += f * u(k, i);
             }
-            for (j=i;j<m;j++) u.index_yx(j, i) /= g;
+            for (j=i;j<m;j++) u(j, i) /= g;
           } else {
-            for (j=i;j<m;j++) u.index_yx(j, i) = 0.0;
+            for (j=i;j<m;j++) u(j, i) = 0.0;
           }
-          u.index_yx(i, i) += 1.0;
+          u(i, i) += 1.0;
         }
       }
 
@@ -146,9 +146,9 @@ namespace icl::math {
           c = g / h; s = -f / h;
           if (withu) {
             for (j=0;j<m;j++) {
-              y = u.index_yx(j, l1); z = u.index_yx(j, i);
-              u.index_yx(j, l1) = y * c + z * s;
-              u.index_yx(j, i) = -y * s + z * c;
+              y = u(j, l1); z = u(j, i);
+              u(j, l1) = y * c + z * s;
+              u(j, i) = -y * s + z * c;
             }
           }
         }
@@ -173,9 +173,9 @@ namespace icl::math {
           h = y * s; y *= c;
           if (withv) {
             for (j=0;j<n;j++) {
-              x = v.index_yx(j, i-1); z = v.index_yx(j, i);
-              v.index_yx(j, i-1) = x * c + z * s;
-              v.index_yx(j, i) = -x * s + z * c;
+              x = v(j, i-1); z = v(j, i);
+              v(j, i-1) = x * c + z * s;
+              v(j, i) = -x * s + z * c;
             }
           }
           q[i-1] = z = sqrt(f*f + h*h);
@@ -183,9 +183,9 @@ namespace icl::math {
           f = c * g + s * y; x = -s * g + c * y;
           if (withu) {
             for (j=0;j<m;j++) {
-              y = u.index_yx(j, i-1); z = u.index_yx(j, i);
-              u.index_yx(j, i-1) = y * c + z * s;
-              u.index_yx(j, i) = -y * s + z * c;
+              y = u(j, i-1); z = u(j, i);
+              u(j, i-1) = y * c + z * s;
+              u(j, i) = -y * s + z * c;
             }
           }
         }
@@ -196,7 +196,7 @@ namespace icl::math {
         if (z < 0.0) {
           q[k] = -z;
           if (withv)
-            for (j=0;j<n;j++) v.index_yx(j, k) = -v.index_yx(j, k);
+            for (j=0;j<n;j++) v(j, k) = -v(j, k);
         }
       }
       return retval;
@@ -215,7 +215,7 @@ namespace icl::math {
       DynMatrix<icl64f> Ad(N, M);
       for(int i = 0; i < M; ++i)
         for(int j = 0; j < N; ++j)
-          Ad.index_yx(i, j) = static_cast<icl64f>(A[i * lda + j]);
+          Ad(i, j) = static_cast<icl64f>(A[i * lda + j]);
 
       DynMatrix<icl64f> Ud(M, M), Vd(N, N);
       std::vector<icl64f> sq(std::max(M, N));
@@ -244,12 +244,12 @@ namespace icl::math {
         for(int j = 0; j < mn; ++j) {
           int jidx = sorted[j].idx;
           for(int i = 0; i < M; ++i)
-            U[i * ldu + j] = static_cast<T>(Ud.index_yx(i, jidx));
+            U[i * ldu + j] = static_cast<T>(Ud(i, jidx));
         }
         for(int j = 0; j < mn; ++j) {
           int jidx = sorted[j].idx;
           for(int i = 0; i < N; ++i)
-            Vt[j * ldvt + i] = static_cast<T>(Vd.index_yx(i, jidx));
+            Vt[j * ldvt + i] = static_cast<T>(Vd(i, jidx));
         }
       }
 
