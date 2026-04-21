@@ -2,9 +2,9 @@ build/
 ICLFilter/src/ICLFilter/OpenCL/BilateralFilterOpKernel.h
 doc/icl-manual/js.rst
 
-screenshot.png
 outputs
 3rdparty/cycles
 .DS_Store
 
-sandbox.conf.cache/
+sandbox.conf
+.cache/
