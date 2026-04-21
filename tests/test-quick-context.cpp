@@ -50,13 +50,18 @@ ICL_REGISTER_TEST("Quick2.Context.memoryUsage", "tracks pool size") {
   ICL_TEST_EQ(ctx.memoryUsage(), size_t(100 * 100 * 1));
 }
 
-ICL_REGISTER_TEST("Quick2.Context.memoryCap", "cap is respected") {
+ICL_REGISTER_TEST("Quick2.Context.memoryCap", "cap exceeded throws in strict mode") {
   QuickContext ctx(1024); // tiny cap: 1KB
-  // Fill pool beyond cap — should get unpooled images (with warning)
-  Image a = ctx.getBuffer(depth8u, Size(100, 100), 1); // 10KB — over cap but first alloc
-  // Hold a so it can't be evicted
-  Image b = ctx.getBuffer(depth8u, Size(100, 100), 1); // should be unpooled (a is pinned)
-  ICL_TEST_TRUE(!b.isNull());
+  // Strict mode makes over-cap requests throw instead of falling back to
+  // an unpooled allocation with a warning. This lets the test assert the
+  // overflow path is taken *without* spamming stderr with WARNING lines.
+  ctx.setThrowOnCapExceeded(true);
+  // 10 KB request exceeds the 1 KB cap and there is nothing to evict —
+  // must throw.
+  ICL_TEST_THROW(ctx.getBuffer(depth8u, Size(100, 100), 1), ICLException);
+  // Fits inside the cap → must succeed.
+  Image small = ctx.getBuffer(depth8u, Size(16, 16), 1); // 256 B
+  ICL_TEST_TRUE(!small.isNull());
 }
 
 ICL_REGISTER_TEST("Quick2.Context.clearBuffers", "clears independent buffers") {

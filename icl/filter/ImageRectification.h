@@ -47,15 +47,13 @@ namespace icl::filter {
                  scale and shear information)
           @param maxTilt can optionally be given. If it is greater than zero, it is used as
                          maximum ratio between R's diagonal elements.
-          @param advanedAlgorithm selects the algorithm that is used for the creation of
-                                  the homography internally (@see Homography2D)
           @param resultROI if this parameter is given, the final homography is only evaluated within
                            the resulting images ROI
           */
       const core::Img<T> &apply(const utils::Point32f ps[4], const core::Img<T> &src,
                           const utils::Size &resultSize,math::FixedMatrix<float,3,3> *hom=0,
                           math::FixedMatrix<float,2,2> *Q=0,math::FixedMatrix<float,2,2> *R=0,
-                          float maxTilt=0, bool advanedAlgorithm=true,
+                          float maxTilt=0,
                           const utils::Rect *resultROI=0, const core::scalemode eScaleMode=core::interpolateLIN);
 
 

@@ -21,8 +21,11 @@ Color-segmentation app ported to geom2. All compiler warnings eliminated.
   3 separate mouse handlers instead of widget-dispatch pattern)
 - **local-thresh** — split into GUI app + headless `local-thresh-batch` CLI;
   fixed ROI clamping to image bounds, skip filter when ROI too small for mask
-- **rectify-image** — TODO: mouse install for DefineQuadrangleMouseHandler
-  not working via DataStore::install(void*), needs investigation
+- **rectify-image** — fixed. Added typed `DataStore::Data::install(MouseHandler*)`
+  overload that forwards to the `void*` version after implicit derived-to-base
+  conversion — ensures the stored void* points to the MouseHandler subobject for
+  multiply-inherited handlers (DefineQuadrangleMouseHandler etc.). Call site
+  now passes `&mouse` (was `install(mouse)` which didn't compile).
 
 #### B. clipped_cast UB fix (ClippedCast.h) — CRITICAL
 
@@ -140,19 +143,24 @@ Major framework improvements along the way.
 - [ ] markers (demos: 2; apps: 8)
 - [ ] physics (demos: 8)
 
-**Open filter items:**
-- rectify-image: DefineQuadrangleMouseHandler install via DataStore not working.
-  `gui["draw"].install(&mouse)` passes void* which loses MI base offset.
-  Need to fix DataStore::install or add explicit MouseHandler* overload.
-- DataStore::install(void*) is fragile for multiple-inheritance MouseHandlers
-  in general — affects DefineQuadrangleMouseHandler, DragRectangleMouseHandler,
-  AdjustGridMouseHandler etc. Consider adding typed install() to DataStore::Data.
+**Open filter items:** none. All 5 filter apps (color-segmentation,
+filter-array, local-thresh, local-thresh-batch, rectify-image) audited,
+compiled, and behaviorally verified. rectify-image end-to-end fix:
+- typed `install(MouseHandler*)` overload in DataStore.h (pointer-offset
+  correctness for multiply-inherited MouseHandler subclasses)
+- widget-pixel click tolerance in DefineQuadrangleMouseHandler (FullHD
+  camera in small window no longer unclickable)
+- Hartley normalization in Homography2D (was ~128 px residual on rotated
+  quads → now <1 px); `Simple` algorithm and `advanedAlgorithm` param
+  removed from the API
+- richer ImageRectification exception message (names the offending
+  corner, mapped point, source rect)
 
 For each: compile, run, check if still useful/valid, modernize API usage,
 remove if obsolete. See `porting-progress.md` for per-file status.
 
 **Quick2 Phase 2 remaining** (ImgQ pixel access rewrites):
-- 1 demo: signature-extraction.cpp (llm-2D and polynomial-regression done)
+- signature-extraction demo — deleted (was the only demo left on ImgQ)
 - 3 library files: Scene.cpp, FiducialDetectorPluginICL1.cpp, DrawWidget.h
 - ~16 umbrella headers — trivial swap once library code is done
 - Final: delete Quick.h/Quick.cpp, retire Common.h
@@ -166,6 +174,14 @@ remove if obsolete. See `porting-progress.md` for per-file status.
 **Quick2 open items**:
 - MorphologicalOp opening/closing crash via Quick2 `filter()` — pre-existing
 - Pool memory accounting drift — periodic reconciliation
+- **Long-term: replace QuickContext's `std::vector<Image>` pool with a generic
+  `utils::MemoryPool` (raw-byte chunks + shared_ptr custom-deleter release).**
+  Current pool polls `isExclusivelyOwned()` and queries `memoryUsage()` at
+  mutation time, which desyncs the byte tracker if callers externally resize
+  handed-out Images (observed in icl-tests as `size_t` underflow to ~2^44 bytes,
+  2026-04-17). Short-term workaround: store `(Image, size_t trackedBytes)`
+  pairs so decrements use the tracked value, plus `ERROR_LOG` underflow guard
+  that clamps to 0. Proper fix sketched in `project_memorypool.md` (memory).
 - `ImgROI2`: store target ROI separately instead of modifying image (deferred)
 - `.out("name")` on `Int`/`Float`/`String` GUI components only updates on
   Enter/returnPressed, not on every keystroke. The `.handle("name")` path

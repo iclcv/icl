@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/DefineQuadrangleMouseHandler.h>
+#include <icl/qt/Widget.h>
 #include <vector>
 #include <icl/core/ConvexHull.h>
 #include <icl/core/Line.h>
@@ -115,13 +116,35 @@ namespace icl::qt {
         return;
       }
 
+      // Click detection uses widget-pixel distance so the tolerance is
+      // independent of image/widget scale. Rendering stays in image coords
+      // (so the handle size scales visually with zoom). We pick the larger
+      // of handleSize-projected-to-widget and MIN_CLICK_PX as the threshold.
+      constexpr float MIN_CLICK_PX = 10.0f;
+      const int iw = m_data->bounds.width + 1;
+      const int ih = m_data->bounds.height + 1;
+      ICLWidget *w = e.getWidget();
+      Rect r = w ? w->getImageRect(true) : Rect(0,0,iw,ih);
+      const float sx = iw > 0 && r.width  > 0 ? float(r.width)  / iw : 1.f;
+      const float sy = ih > 0 && r.height > 0 ? float(r.height) / ih : 1.f;
+      const Point pw = e.getWidgetPos();
+      auto handleWidgetPos = [&](int i) {
+        return Point32f((m_data->ps[i].x + m_data->xoffset) * sx + r.x,
+                        (m_data->ps[i].y + m_data->yoffset) * sy + r.y);
+      };
+      auto hitsHandle = [&](int i){
+        const float projected = m_data->handleSize * std::min(sx, sy);
+        const float thresh = std::max(projected, MIN_CLICK_PX);
+        return handleWidgetPos(i).distanceTo(Point32f(pw.x, pw.y)) < thresh;
+      };
+
       if(e.isReleaseEvent()){
         m_data->dragged = -1;
         std::fill(m_data->handles,m_data->handles+4,0);
       }
       if(e.isPressEvent()){
         for(int i=0;i<4;++i){
-          if(m_data->ps[i].distanceTo(p) < m_data->handleSize){
+          if(hitsHandle(i)){
             m_data->dragged = i;
             m_data->handles[i] = 2;
           }
@@ -137,11 +160,7 @@ namespace icl::qt {
         }
       }else if(e.isMoveEvent()){
         for(int i=0;i<4;++i){
-          if(m_data->ps[i].distanceTo(p) < m_data->handleSize){
-            m_data->handles[i] = 1;
-          }else{
-            m_data->handles[i] = 0;
-          }
+          m_data->handles[i] = hitsHandle(i) ? 1 : 0;
         }
       }
     }

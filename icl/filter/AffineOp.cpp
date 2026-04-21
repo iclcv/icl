@@ -89,7 +89,14 @@ namespace icl::filter {
      Size oSize;
 
      if(m_adaptResultImage){
-       getShiftAndSize(src.getROI(), oSize, xShift, yShift);
+       // dst is sized to the bbox of a transformed region. clipToROI
+       // controls which region: src.getROI() (tight dst, only ROI is
+       // visible) vs src.getImageRect() (dst big enough to contain the
+       // full transformed image — pixels outside the ROI appear as the
+       // backend's background color, because backends always sample
+       // only within src.getROI()).
+       const Rect region = getClipToROI() ? src.getROI() : src.getImageRect();
+       getShiftAndSize(region, oSize, xShift, yShift);
        translate(-xShift, -yShift);
      }else{
        oSize = src.getSize();

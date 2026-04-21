@@ -10,136 +10,55 @@
 
 namespace icl::math {
   /// Utility structure that represents a 2D homography (implemented for float and double)
-  /** Basically, a 2D homography implements a transformation between 2 paralellograms
-      Given a set of at least 4 points in parallellogram A and the same number of
-      corresponding points in parallelogram B, the homography (affine 2D transformation
-      between space A and space B is defined as follows:
+  /** Given two sets of at least 4 corresponding 2D points \f$\{a_i\}\f$ and
+      \f$\{b_i\}\f$ (\f$i \in [0,n[\f$), this class computes the 3x3
+      homography matrix \f$H\f$ such that \f$H\,a_i = b_i\f$ (in homogeneous
+      coordinates).
 
-      \f$H\f$ must transform each point \f$a_i\f$ (given wrt. space A) to it's corresponding
-      point \f$b_i\f$. Please refer to Wikipedia or the class implementation for
-      more details:
+      @section ALG Algorithm
 
-      @section ALG Algorithms
-      The Homography2D class provides two different algorithms: a  faster simple one, and a
-      slightly slower, but more elaborated one. The simple algorithm creates a simpler
-      matrix whose last row becomes (0,0,1)^T. In some cases, this is enough, which is why,
-      this algorithm is provided even though, it does not lead to perfect results.
+      The homography has 8 degrees of freedom (a 3x3 matrix defined up to
+      scale). For each point pair \f$(a, b)\f$ we get two linear equations
+      in the 8 unknowns \f$h = (X^T Y^T L_x L_y)^T\f$, where \f$H\f$'s rows
+      are \f$X, Y, (L_x\, L_y\, 1)\f$. Stacking the equations for all
+      \f$n\f$ pairs gives a \f$2n \times 8\f$ system \f$M h = r\f$. For
+      \f$n = 4\f$ this is exactly determined; for \f$n > 4\f$ the system
+      is over-determined and solved in a least-squares sense via
+      DynMatrix::solve (LAPACK gelsd / SVD).
 
-      @subsection SIMPLE The Simple Algorithm
-
-      The homography is used to transform a set of homogeneous 2D source points
-      \f$ \{a_i\} \;\;i \in [0,n[ \f$ into a set of 2D destination points
-      \f$ \{b_i\} \;\;i \in [0,n[ \f$.
-      Since we search for a linear transformation, This transformation H is modelled by
-      a 3x3 matrix whose last element is fixed to 1. We call the rows of H X,Y,L, which
-      leads to the targeted equation:
-      \f[
-      H a_i = b_i \;\;\; \forall i \in [0,n[
-      \f]
-      The most simple approach is to stack all \f$a_i\f$ and all \f$b_i\f$ horizontally
-      which leads to the equation
-      \f[
-      H A = B
-      \f]
-      \f[
-      H (a_0 a_1 a_2 ... a_{n-1}) = (b_0 b_1 b_2 ... b_{n-1})
-      \f]
-      Obviously, this can be solved using a standard pseudoinverse approach
-      \f[
-      H = B A^{-1}
-      \f]
-      This approach does somehow optimize the problem, but it does not really touch
-      the last row of H. Therefore, the results of this simple approach are sometimes
-      not good enough. Please continue with \ref ADV
-
-
-
-      \subsection ADV The Advanced Algorithm
-
-      In order to also fill the last row of H with optimal values, the originating problem
-      must be reformulated in matrix notation in a different way:\n
-      Again, we start with
+      For each pair \f$(a, b)\f$, two rows of \f$M\f$ are:
 
       \f[
-      H a_i = b_i \;\;\; \forall i \in [0,n[
+      M = \left(\begin{array}{cccccccc}
+      a_x & a_y & 1 & 0   & 0   & 0 & -a_x b_x & -a_y b_x \\
+      0   & 0   & 0 & a_x & a_y & 1 & -a_x b_y & -a_y b_y \\
+      \vdots
+      \end{array}\right), \quad r = (b_x\; b_y\; \ldots)^T
       \f]
 
-      For a single \f$a_i\f$ (we call it a and the counter part b resp.), we always have two
-      formulas, one for the x- and one for the y-component.
+      @section NORM Hartley Normalization
 
-      \f[
-      H ( a_x a_y 1 )^T = (b_x b_y 1)^T
-      \f]
-
-      Decomposing H to its rows X,Y and L, this can be reformulated as
-
-      \f[
-      \frac{X a}{L a} = b_x    \;\;\;\;\;and\;\;\;\;\;\;    \frac{Y a}{L a} = b_y
-      \f]
-
-      \f[
-      \Leftrightarrow \frac{X a}{b_x} = La    \;\;\;\;\;and\;\;\;\;\;\;    \frac{Y a}{b_y} = La
-      \f]
-
-      \f[
-      \Leftrightarrow \frac{X a}{b_x} - La = 0    \;\;\;\;\;and\;\;\;\;\;\;    \frac{Y a}{b_y} - La = 0
-      \f]
-
-      \f[
-      \Leftrightarrow \frac{X a}{b_x} - L_x a_x - L_y a_y - 1 = 0    \;\;\;\;\;and\;\;\;\;\;\;    \frac{Y a}{b_y} - L_x a_x - L_y a_y - 1 = 0
-      \f]
-
-      \f[
-      \Leftrightarrow \frac{X a}{b_x} - L_x a_x - L_y a_y = 1    \;\;\;\;\;and\;\;\;\;\;\;    \frac{Y a}{b_y} - L_x a_x - L_y a_y = 1
-      \f]
-
-      By multiplying with \f$ b_x \f$ (\f$ b_y \f$ resp.), we get
-
-      \f[
-      \Leftrightarrow X a - L_x b_x a_x - L_y a_y b_x = b_x    \;\;\;\;\;and\;\;\;\;\;\;    Y a - L_x a_x b_y - L_y a_y b_y = b_y
-      \f]
-
-      These two equations can be expressed in a single huge matrix expression  \f$ M h = r \f$ where M is a 2n by 8 matrix,
-      and \f$ h = (X^T Y^T L_x L_y)^T \f$ and r are 2n-dimensional row vectors. M and r are build as follows. For each input/output tuple
-      \f$(a_i,b_i)\f$, two rows of M are created using the following scheme:
-
-      \f[
-      M=\left(\begin{array}{cccccccc}
-      a_x & a_y & 1 & 0 & 0 & 0 & -a_x b_x & -a_y b_x  \\
-      0 & 0 & 0 & a_x & a_y & 1 & -a_x b_y & -a_y b_y  \\
-      ...
-      \end{array}\right)
-      \f]
-
-      The result vector r is just filled with the target values
-      \f[
-      r = ( b_x b_y ... )^T
-      \f]
-
-      Finally the matrix equation \f$ M h = r \f$ is evaluated with respect to h by
-      \f[
-      h = M^{-1} r
-      \f]
-      And h's elements are put back into the homography matrix H in a row-wise manner. Remember that The last elememt
-      of H was set fixed to 1. <b>Please note:</b> Internally, the matrix equation \f$ M h = r \f$ is solved using
-      an SVD (@see ICLMath/DynMatrix::solve) based solver (the much faster lu-decomposition based solver does not provide useful results)
+      Solving the DLT system directly in pixel coordinates is numerically
+      unstable: entries span several orders of magnitude (products of two
+      pixel coordinates appear in the last two columns), which ill-conditions
+      \f$M\f$ and produces errors of tens of pixels even for exactly-determined
+      systems. This class applies the standard Hartley normalization
+      (Hartley &amp; Zisserman, Algorithm 4.2): each point set is translated
+      so its centroid is at the origin and scaled so the mean distance from
+      the origin is \f$\sqrt{2}\f$; the homography is fitted in this
+      well-conditioned coordinate system and then un-normalized
+      (\f$H = T_b^{-1}\,\tilde{H}\,T_a\f$).
   */
   template<class T>
   struct ICLMath_IMP GenericHomography2D : public FixedMatrix<T, 3, 3>{
     /// super class typedef for shorter super-class references
     using Super = FixedMatrix<T,3,3>;
 
-    /// Internally used algorithm type
-    enum Algorithm{
-      Simple,   //!< use the simple algorithm (@see @ref ALG)
-      Advanced, //!< use the advanced algorithm (@see @ref ALG)
-    };
-
     /// Empty constructor
     GenericHomography2D(){}
 
     /// Constructor from given two point sets of size n>=4
-    GenericHomography2D(const utils::Point32f *pAs, const utils::Point32f *pBs, int n=4, Algorithm algo = Advanced);
+    GenericHomography2D(const utils::Point32f *pAs, const utils::Point32f *pBs, int n=4);
 
 
     /// applies a given homography matrix

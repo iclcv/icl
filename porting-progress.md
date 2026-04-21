@@ -98,7 +98,8 @@
 | filter/apps/color-segmentation.cpp | :white_check_mark: Done | Header swap |
 | filter/apps/filter-array.cpp | :white_check_mark: Done | Header swap |
 | filter/apps/local-thresh.cpp | :white_check_mark: Done | Header swap |
-| filter/apps/rectify-image.cpp | :white_check_mark: Done | Header swap |
+| filter/apps/local-thresh-batch.cpp | :white_check_mark: Done | Non-GUI CLI split from local-thresh |
+| filter/apps/rectify-image.cpp | :white_check_mark: Done | Header swap; mouse install fix + Hartley-normalized homography |
 | geom/apps/compute-relative-camera-transform.cpp | :white_check_mark: Done | Header swap |
 | geom/apps/depth-camera-simulator.cpp | :white_check_mark: Done | Header swap |
 | geom/apps/fix-kinect-calibration.cpp | :white_check_mark: Done | Header swap |

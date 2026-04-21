@@ -5,6 +5,7 @@
 #include <icl/utils/Test.h>
 #include <icl/math/FixedMatrix.h>
 #include <icl/math/DynMatrix.h>
+#include <icl/math/Homography2D.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -1169,4 +1170,46 @@ ICL_REGISTER_TEST("math.dyn.det_5x5", "5x5 determinant via LU dispatch")
   DynMatrix<float> A(5, 5, 0.0f);
   A(0, 0)=2; A(1, 1)=3; A(2, 2)=4; A(3, 3)=5; A(4, 4)=6;
   ICL_TEST_NEAR(A.det(), 720.0f, 1e-2f);
+}
+
+// ============================================================
+// Homography2D — round-trip on exact 4-point pairs
+// ============================================================
+
+// A Homography2D fitted to 4 exact source/dest point pairs is an
+// exactly-determined system and must reproduce each mapping to within
+// floating-point precision. If it fails with large residuals the fit
+// is numerically unstable (typically from unnormalized DLT); that
+// would manifest as ImageRectification's pre-check rejecting inputs
+// that should be valid.
+
+ICL_REGISTER_TEST("math.homography.roundtrip_axis_aligned",
+                  "axis-aligned quad → rectangle must be near-exact")
+{
+  // 1920x1080 source, 512x512 destination, centred axis-aligned quad
+  const Point32f ps[4] = { {20,20}, {1899,20}, {1899,1059}, {20,1059} };
+  const Point32f ys[4] = { {0,0}, {511,0}, {511,511}, {0,511} };
+  const Homography2D HOM(ps, ys, 4);
+  for(int i = 0; i < 4; ++i){
+    const Point32f p = HOM.apply(ys[i]);
+    ICL_TEST_NEAR(p.x, ps[i].x, 1e-2f);
+    ICL_TEST_NEAR(p.y, ps[i].y, 1e-2f);
+  }
+}
+
+ICL_REGISTER_TEST("math.homography.roundtrip_rotated_quad",
+                  "rotated convex quad (from rectify-image in the wild)")
+{
+  // This is the actual failing configuration reported by a user running
+  // rectify-image on a 1920x1080 camera. corner 2 = (1818,1014).
+  // Before Hartley normalization the DLT solve produced an error of
+  // ~128 px in y for this case. Post-fix must round-trip to <1 px.
+  const Point32f ps[4] = { {620,270}, {1200,250}, {1818,1014}, {460,920} };
+  const Point32f ys[4] = { {0,0}, {511,0}, {511,511}, {0,511} };
+  const Homography2D HOM(ps, ys, 4);
+  for(int i = 0; i < 4; ++i){
+    const Point32f p = HOM.apply(ys[i]);
+    ICL_TEST_NEAR(p.x, ps[i].x, 1.0f);
+    ICL_TEST_NEAR(p.y, ps[i].y, 1.0f);
+  }
 }

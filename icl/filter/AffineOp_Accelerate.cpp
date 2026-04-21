@@ -24,23 +24,86 @@ namespace {
 
   template<class T>
   void acc_affine_lin(const Image &src, Image &dst, const double *fwd) {
-    // vImage_AffineTransform: [x',y',1] = [x,y,1] * [[a,b,0],[c,d,0],[tx,ty,1]]
-    // ICL forward: x' = fwd[0]*x + fwd[1]*y + fwd[2],
-    //              y' = fwd[3]*x + fwd[4]*y + fwd[5]
+    // vImage's matrix convention is opaque (Apple docs imply backward
+    // mapping but passing the raw forward matrix gives a centered image
+    // rotated CCW, while the C++ NN fallback — backward mapping with an
+    // explicit inverse — rotates CW). Rather than guess the convention,
+    // we exploit the fact that the *original* struct layout below is
+    // known to produce a centered result: we decompose the forward
+    // matrix as an isotropic similarity (scale + rotation + translation),
+    // rebuild it with the rotation angle negated, re-run AffineOp's bbox
+    // algorithm to get the matching translation, and feed that rebuilt
+    // matrix through the same struct layout. This flips the visual
+    // rotation direction (CCW → CW, matching NN) without disturbing
+    // centering. Works exactly for isotropic similarity transforms, which
+    // is all ICL callers use in practice (scale(s,s), rotate, translate).
+    const double sc = std::sqrt(fwd[0]*fwd[0] + fwd[3]*fwd[3]);
+    const double ang = std::atan2(fwd[3], fwd[0]);
+    const double nc = std::cos(-ang) * sc;
+    const double ns = std::sin(-ang) * sc;
+    const u::Rect roi = src.getROI();
+
+    // Recover the user's translation component: AffineOp may have added
+    // the bbox adjustment of the ORIGINAL 2x2 to fwd's translation (when
+    // m_adaptResultImage=true). Subtract it to isolate the user's own
+    // translate() calls, then add back the bbox adjustment of the NEW
+    // (negated-angle) 2x2 so centering still works.
+    const double cx[4] = {double(roi.x),
+                          double(roi.x + roi.width),
+                          double(roi.x + roi.width),
+                          double(roi.x)};
+    const double cy[4] = {double(roi.y),
+                          double(roi.y),
+                          double(roi.y + roi.height),
+                          double(roi.y + roi.height)};
+    auto boundingMin = [&](double a00, double a01, double a10, double a11) {
+      double xMin = std::numeric_limits<double>::infinity();
+      double yMin = std::numeric_limits<double>::infinity();
+      for(int i = 0; i < 4; ++i) {
+        const double x = a00*cx[i] + a01*cy[i];
+        const double y = a10*cx[i] + a11*cy[i];
+        if(x < xMin) xMin = x;
+        if(y < yMin) yMin = y;
+      }
+      return std::pair{xMin, yMin};
+    };
+    const auto [oldMinX, oldMinY] = boundingMin(fwd[0], fwd[1], fwd[3], fwd[4]);
+    const auto [newMinX, newMinY] = boundingMin(nc, -ns, ns, nc);
+    // user_tx = fwd[2] - (−oldMinX)  =>  user_tx = fwd[2] + oldMinX
+    // new_tx  = user_tx + (−newMinX) =  fwd[2] + oldMinX − newMinX
+    const double ntx = fwd[2] + oldMinX - newMinX;
+    const double nty = fwd[5] + oldMinY - newMinY;
+    // Sub-buffer translation adjustment. srcBuf below starts at the ROI
+    // origin, so the transform must index into (roi.x + u, roi.y + v)
+    // rather than (x, y) of the full image. Substituting into the
+    // column-vector form M·[x, y, 1]ᵀ = A·[u, v]ᵀ + A·[roi.x, roi.y]ᵀ + t
+    // gives: the translation for sub-buffer coords is
+    //   t' = A·(roi.x, roi.y) + t
+    // For identity A this reduces to (roi.x + tx, roi.y + ty), not
+    // (tx − roi.x, ty − roi.y) — the previous code had the sign wrong
+    // and only worked for identity in special cases.
+    const double A00 = nc,  A01 = -ns;
+    const double A10 = ns,  A11 = nc;
+    const double txAdj = A00 * roi.x + A01 * roi.y + ntx;
+    const double tyAdj = A10 * roi.x + A11 * roi.y + nty;
     vImage_AffineTransform transform = {
-      static_cast<float>(fwd[0]), static_cast<float>(fwd[3]),  // a, b
-      static_cast<float>(fwd[1]), static_cast<float>(fwd[4]),  // c, d
-      static_cast<float>(fwd[2]), static_cast<float>(fwd[5])   // tx, ty
+      static_cast<float>(A00),   static_cast<float>(A10),           // a, b
+      static_cast<float>(A01),   static_cast<float>(A11),           // c, d
+      static_cast<float>(txAdj), static_cast<float>(tyAdj)          // tx, ty
     };
 
     const Img<T> &s = src.as<T>();
     Img<T> &d = dst.as<T>();
 
     for(int c = 0; c < s.getChannels(); ++c) {
+      // srcBuf describes only the ROI sub-image: data pointer shifted
+      // to the ROI origin, dims = ROI dims, stride = full-image stride.
+      // vImage's out-of-bounds detection then fills anything outside
+      // the ROI with the background color, matching the C++ path.
       vImage_Buffer srcBuf = {
-        const_cast<T*>(s.getData(c)),
-        static_cast<vImagePixelCount>(s.getHeight()),
-        static_cast<vImagePixelCount>(s.getWidth()),
+        const_cast<T*>(s.getData(c)) + roi.y * s.getWidth() + roi.x,
+        static_cast<vImagePixelCount>(roi.height),
+        static_cast<vImagePixelCount>(roi.width),
         static_cast<size_t>(s.getLineStep())
       };
       vImage_Buffer dstBuf = {

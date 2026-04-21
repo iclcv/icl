@@ -54,15 +54,17 @@ void run(){
 
   if(!std::equal(params, params+5, saveParams) || size != saveSize || !g){
     g = std::make_shared<GaborOp>(size,vec1(lambda),vec1(theta),vec1(psi),vec1(sigma),vec1(gamma));
+    // getKernels() returns std::vector<Img32f> by API, so keep Img32f
+    // here; normalize in place and wrap in Image for assignment.
     Img32f m = g->getKernels()[0].detached();
     m.normalizeAllChannels(Range<float>(0,255));
-    gui["mask"] = m;
+    gui["mask"] = Image(m);
   }
   saveSize = size;
   std::copy(params, params+5, saveParams);
 
   Image result = g->apply(grabber.grabImage());
-  result.ptr()->normalizeAllChannels(Range<icl64f>(0,255));
+  result.normalizeAllChannels(Range<icl64f>(0,255));
 
   gui["image"] = result;
   gui["fps"].render();

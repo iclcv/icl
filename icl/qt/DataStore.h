@@ -12,6 +12,10 @@
 #include <icl/qt/MouseEvent.h>
 
 namespace icl::qt {
+  class MouseHandler;
+}
+
+namespace icl::qt {
   /// Extension of the associative container MultiTypeMap \ingroup UNCOMMON
   /** Adds an index operator[string] for direct access to contained values
    */
@@ -123,6 +127,15 @@ namespace icl::qt {
       /// data must be of type MouseHandler*
       void install(void *data){
         *this  = Event("install",data);
+      }
+
+      /// typed overload: ensures correct base-subobject pointer for
+      /// multiply-inherited MouseHandler subclasses (e.g.
+      /// DefineQuadrangleMouseHandler). The implicit derived-to-base
+      /// conversion is performed here, so the void* stored in the Event
+      /// actually points to the MouseHandler subobject.
+      void install(MouseHandler *data){
+        install(static_cast<void*>(data));
       }
 
       /// installs a function directly

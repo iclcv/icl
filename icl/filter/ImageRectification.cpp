@@ -7,6 +7,7 @@
 #include <icl/core/ConvexHull.h>
 
 #include <deque>
+#include <sstream>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -59,7 +60,7 @@ namespace icl::filter {
     static const Homography2D create_and_check_homography(bool validateAndSortPoints,const Point32f psin[4], const Img<T> &src,
                                                           const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                           FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,float maxTilt,
-                                                          Img<T> &buffer, bool advanedAlgorithm){
+                                                          Img<T> &buffer){
       Point32f ps[4]={psin[0],psin[1],psin[2],psin[3]};
       // we need this check, because otherwise, we cannot check whether
       // the image boarders are intersected by checking the four corners only
@@ -84,7 +85,7 @@ namespace icl::filter {
         Point32f(0,H-1)
       };
 
-      const Homography2D HOM(ps,ys,4, (Homography2D::Algorithm)advanedAlgorithm);
+      const Homography2D HOM(ps, ys, 4);
 
 
       if(hom) *hom = HOM;
@@ -106,8 +107,14 @@ namespace icl::filter {
       const Rect rect = src.getImageRect();
       for(int i=0;i<4;++i){
         Point32f p = HOM.apply(ys[i]);
-        if(!rect.contains(p.x,p.y)) throw ICLException("ImageRectification<T>::apply: at least one edge of "
-                                                       "the source rect is outside the source image rectangle");
+        if(!rect.contains(p.x,p.y)){
+          std::ostringstream msg;
+          msg << "ImageRectification<T>::apply: corner " << i
+              << " of the destination rect maps to (" << p.x << "," << p.y
+              << "), which is outside the source image rect " << rect
+              << " (source quad corner: " << ps[i] << ", dst corner: " << ys[i] << ")";
+          throw ICLException(msg.str());
+        }
       }
       return HOM;
     }
@@ -328,9 +335,9 @@ namespace icl::filter {
     const Img<T> &ImageRectification<T>::apply(const Point32f ps[4], const Img<T> &src,
                                                const Size &resultSize, FixedMatrix<float,3,3> *hom,
                                                FixedMatrix<float,2,2> *Q, FixedMatrix<float,2,2> *R,
-                                               float maxTilt, bool advanedAlgorithm,
+                                               float maxTilt,
                                                const Rect *resultROI, const core::scalemode eScaleMode){
-      const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer, advanedAlgorithm);
+      const Homography2D HOM = create_and_check_homography(validateAndSortPoints,ps,src,resultSize,hom,Q,R,maxTilt,buffer);
 
       switch (eScaleMode) {
       case core::interpolateNN:

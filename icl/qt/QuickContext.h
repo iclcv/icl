@@ -76,6 +76,25 @@ namespace icl::qt {
     /// Drop all independent buffers from the pool
     void clearBuffers();
 
+    /// Toggle per-event pool tracing to stderr (alloc/resize/evict/unpooled).
+    /** When enabled every change to the pool prints a one-line trace with
+        the event, delta, current usage, and buffer size/depth/channels.
+        Intended for diagnosing pool-accounting bugs (e.g. currentUsage
+        underflow). Off by default. */
+    void setTracing(bool enabled);
+
+    /// Whether per-event pool tracing is currently enabled
+    bool isTracing() const;
+
+    /// If enabled, getBuffer() throws ICLException instead of logging a
+    /// WARNING and falling back to an unpooled allocation when the pool
+    /// cap is exceeded. Useful for tests that need to assert the
+    /// overflow path is taken without polluting stderr. Off by default. */
+    void setThrowOnCapExceeded(bool enabled);
+
+    /// Whether getBuffer() throws when the pool cap is exceeded
+    bool throwsOnCapExceeded() const;
+
     /// @}
     /// @name Op Application
     /// @{

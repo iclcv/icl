@@ -164,7 +164,7 @@ namespace icl::markers {
       //#warning remove static here!
       Img8u rect;
       try {
-        rect = data->rectify.apply(q.data(),image,s,&HOM,0,0,m,true,&roi);
+        rect = data->rectify.apply(q.data(),image,s,&HOM,0,0,m,&roi);
         //static_data_set("rectified-image",Any::ptr(&rect));
       }catch(const ICLException){ continue; }
 
