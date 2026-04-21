@@ -112,6 +112,27 @@ Filters are split into `UnaryOp` (one input image) and `BinaryOp` (two input ima
 
 `GenericGrabber` provides a plugin-based backend system for image acquisition. Backend and device are selected at runtime via string-based `-input` / `-i` program argument (e.g., `-i file image.png`, `-i dc 0`, `-i create lena`). Use `grabImage()` to get an `Image` value. Properties are set inline: `-i dc 0@gain=500`. The same plugin architecture exists for image output.
 
+**Cross-process / cross-host transport:** `WSImageOutput` (server) + `WSGrabber` (client) move `Image`s between processes via Qt6 WebSockets. The grabber owns a reconnect state machine (exponential backoff, replay-last-frame on timeout), so the consumer loop never sees a "dead" state when the publisher restarts. Use `-o ws PORT` and `-i ws ws://host:port` (or `-i ws PORT` for localhost). Replaces the historical SharedMemory-based `sm` backend (retired Session 47).
+
+### Plugin-registration pattern (used everywhere in ICLIO)
+
+ICL has a uniform "name → factory" plugin pattern across the framework:
+
+| Registry | Self-registration macro | Used for |
+|---|---|---|
+| `GrabberRegister` | `REGISTER_GRABBER` | `dc`, `v4l`, `ws`, `zmq`, … grabber backends |
+| `CompressionRegister` | `REGISTER_COMPRESSION_PLUGIN` | `raw`, `rlen`, `jpeg`, `1611`, `zstd` codecs |
+| `FileWriterPluginRegister` | `REGISTER_FILE_WRITER_PLUGIN` | `.png`, `.jpg`, `.bicl`, … extension dispatch |
+| `FileGrabberPluginRegister` | `REGISTER_FILE_GRABBER_PLUGIN` | mirrored for read |
+
+All four use `__attribute__((constructor))` on a free function (the only macOS-portable way to guarantee dyld-time invocation; anonymous-namespace static-storage ctors can be silently dead-stripped at the .o level on macOS even though their `__GLOBAL__sub_I_*` symbol survives in `nm`). All four are first-wins on duplicate registration; pass `overrideExisting=true` to opt in to last-wins. Plugin instances are constructed lazily on first lookup and cached for the process lifetime — *never at static-init time*, which keeps the registries consistent regardless of TU init order.
+
+A future session will collapse the four into a single `utils::PluginRegistry<T>` template (see memory `project_plugin_registry_unification.md`).
+
+### Image compression (ICLIO)
+
+`ImageCompressor` is a thin facade over `CompressionRegister`. Sender picks a codec via `setCompression(spec)` (or the `mode` Configurable property); receiver auto-detects from the wire envelope on `uncompress()` — receiver does not have to match sender's codec. Each plugin inherits `Configurable` and exposes its own tunables (`quality`, `level`, …); `ImageCompressor` adds the active plugin as a child Configurable with empty prefix, so codec-specific properties surface as siblings of `mode` and switch dynamically when the codec changes. Owning classes (e.g. `WSImageOutput`) typically `addChildConfigurable(&compressor, "compression")` to surface the codec UI as `compression.mode` / `compression.quality` / etc. Adding a new codec = drop a new `CompressionPluginXxx.cpp` with `REGISTER_COMPRESSION_PLUGIN(name, factory)` at the bottom; no edits to `ImageCompressor` required.
+
 ### Application Pattern (ICLQt)
 
 `ICLApp` ties together program argument parsing, an `init()` callback, and a `run()` callback that loops automatically. GUI is built declaratively with stream operators:

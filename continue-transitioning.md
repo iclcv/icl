@@ -1,6 +1,438 @@
 # ICL — Continuation Guide
 
-## Current State (Session 43 — ICLFilter Configurable migration + filter-playground)
+## Current State (Session 47 — SharedMemory retired + ImageCompressor → plugin framework + FileWriter/Grabber factory-ized)
+
+### Session 47 Summary
+
+Three landings, related by a common theme (uniform plugin-registration
+across ICLIO).
+
+#### 1. Retired the SharedMemory backend (1274 LOC)
+
+- Deleted `SharedMemoryGrabber.{h,cpp}`, `SharedMemoryPublisher.{h,cpp}`,
+  `SharedMemorySegment.{h,cpp}`. Removed from meson, GenericGrabber.h,
+  GenericImageOutput.{h,cpp}, IO.h, V4L2LoopBackOutput.h (dead include),
+  ZmqGrabber.h (stale comment).
+- Migrated 4 consumers off `sm`: `SceneMultiCamCapturer.cpp` and
+  `physics-paper-SceneMultiCamCapturer.cpp` now use `ws=PORT`;
+  `Widget.cpp`'s auto-cap Combo now offers `ws` instead of `sm` (and
+  finally consumes the `FILE/VIDEO/XCFP/SM`-style "active" markers it
+  was preparing all along — that was dead code).
+- WSImageOutput/Grabber doxygen note that they replace SM.
+- Why: WS loopback covers the same loose-coupling-between-processes use
+  case with auto-reconnect resilience and cross-host as a free bonus,
+  for ~100 µs more latency (invisible at typical 30 fps workloads).
+
+#### 2. ImageCompressor → plugin framework
+
+`ImageCompressor` is now a thin **facade** over a process-wide
+`CompressionRegister`. Built-in codecs (`raw`, `rlen`, `jpeg`, `1611`)
+are now plugin classes that self-register at static init via
+`REGISTER_COMPRESSION_PLUGIN`; new codecs drop in as a single .cpp.
+**`zstd`** added as a proof-of-extensibility (optional dep on libzstd —
+`brew install zstd` on macOS, gated by `ICL_HAVE_ZSTD`).
+
+Wire format **broken vs the pre-Session-47 `Header::Params` POD** (per
+explicit user OK — "no backwards compat required"). New envelope is a
+46-byte fixed prefix + variable-length codec-name / codec-params /
+image-meta / payload. Codec name has no length cap (so codecs longer
+than 4 chars work, e.g. `deflate`).
+
+Each plugin inherits `Configurable` so per-codec tunables auto-surface.
+`ImageCompressor` itself inherits `Configurable` and exposes a `mode`
+property (menu populated from the registry) plus the **active plugin
+as a child Configurable** with empty prefix — its `quality`/`level`/etc.
+appear as siblings of `mode` and switch when the codec changes. When
+`ImageCompressor` is itself added as a child of (e.g.) `WSImageOutput`
+under prefix `compression`, the user sees `compression.mode` plus
+`compression.quality` / `compression.level` / etc.
+
+**Implemented `Configurable::removeChildConfigurable`** along the way
+(previously a stub that threw `"is not yet implemented"`) so codec
+swaps actually work.
+
+`ImageOutput`'s historic `protected ImageCompressor` inheritance dropped
+— the legacy `setCompression`/`getCompression` re-exports were the only
+users; consumers that need compression now own an `ImageCompressor`
+explicitly and expose it as a child Configurable (clean diamond-free
+inheritance hierarchy).
+
+#### 3. FileWriter + FileGrabber → factory-based plugin map
+
+The static initialization order trap: `FileWriter::s_mapPlugins[".bicl"]
+= new FileWriterPluginBICL` ran during dyld init, eagerly constructing
+an `ImageCompressor`, which queried the (still-empty) `CompressionRegister`
+and threw — aborting the rest of dyld's init pass and leaving the
+process with a permanently empty registry.
+
+Fix: make both file-format plugin maps factory-based, mirroring
+`REGISTER_GRABBER` and `REGISTER_COMPRESSION_PLUGIN`:
+
+- `icl/io/FileWriter.h`: new `FileWriterPluginRegister` singleton +
+  `REGISTER_FILE_WRITER_PLUGIN(tag, ext, factory)` macro using
+  `__attribute__((constructor, used))`.
+- `icl/io/FileGrabber.h`: symmetric `FileGrabberPluginRegister` +
+  `REGISTER_FILE_GRABBER_PLUGIN`.
+- Each `FileWriterPluginXxx.cpp` / `FileGrabberPluginXxx.cpp` adds its
+  registrations at the bottom (one line per extension; ImageMagick uses
+  a custom `__attribute__((constructor))` for its long extension list).
+- The old `FileWriterPluginMapInitializer` static class and the
+  function-local-static `find_plugin` map are gone.
+- Plugin instances are built lazily on first lookup and cached for the
+  lifetime of the process (semantically identical to the previous
+  shared-instance model, but no static-init-time construction).
+
+With both file-format plugin systems factory-based, **no `ImageCompressor`
+is ever constructed before main**, so its constructor can again be eager
+(install the active plugin immediately). Consumers don't need to know
+about any laziness — `ImageCompressor` "just works".
+
+**Static-init lesson learned (worth recording):**
+`__attribute__((constructor))` on a free function is the only macOS-portable
+way to guarantee dyld-time invocation. Anonymous-namespace static-storage
+objects with non-trivial constructors *can* be dead-stripped at the .o
+level even though their `__GLOBAL__sub_I_*` symbol survives in `nm`.
+LLVM/Clang/GoogleTest/Boost-Test all use the constructor-attribute idiom
+for this reason.
+
+#### Verification
+
+- Full build clean.
+- 551/551 tests pass sequentially (was 547; +4 new compression-framework
+  tests: `CompressionRegister.builtins_registered`,
+  `ImageCompressor.raw.roundtrip`, `ImageCompressor.auto_detect_codec`,
+  `ImageCompressor.zstd.roundtrip`).
+- End-to-end smoke: `icl-pipe -i create lena -o ws 9999 -no-gui` +
+  `icl-pipe -i ws 9999 -o file '/tmp/v4_###.png' -no-gui` produces
+  24 PNGs/2s. WSGrabber introspection (`icl-camera-param-io -i ws PORT
+  -l`) shows the full property tree.
+
+#### Memory writes this session
+
+- `reference_websocket.md` — extended with the SM-replacement note (was
+  written in Session 46, this session validates and extends).
+- `project_dynamic_child_configurables.md` — TODO: `qt::Prop` doesn't
+  auto-rebuild when child Configurables are added/removed at runtime
+  (surfaced when ImageCompressor swaps codec plugins).
+- `project_plugin_registry_unification.md` — TODO: collapse the now-4
+  plugin-registration patterns (GrabberRegister, CompressionRegister,
+  FileWriterPluginRegister, FileGrabberPluginRegister, plus the filter
+  backend dispatch idiom) into one generic `utils::PluginRegistry<T>`
+  template + one macro family. Estimated ~4-6 hours.
+
+#### What's deferred
+
+- **Generic plugin registry in ICLUtils** (per `project_plugin_registry_unification.md`)
+- **Capability-flag-based codec classification** (lossy vs. lossless +
+  supported depths) — surfaces in the v2 `auto` codec mode + future
+  `auto-but-non-lossy` mode hint
+- **`auto` codec mode** that picks per-frame based on entropy/sparsity
+- **Additional codecs**: `webp`, `jxl`, `lz4`, `deflate`/`zlib`
+- **Browser viewer** for WSGrabber (would need a JS-side envelope parser)
+- **`Configurable` events on child set change** so `qt::Prop` can
+  rebuild when codec swaps
+
+---
+
+## Previous State (Session 46 — WebSocket image I/O via Qt6 WebSockets)
+
+### Session 46 Summary
+
+Added a WebSocket-based image transfer pair to ICLIO for loose coupling
+between ICL processes (and potentially browser viewers later).
+
+#### Files added
+
+- `icl/io/WSImageOutput.{h,cpp}` — server side (`QWebSocketServer`),
+  broadcasts every `send()`-ed image to all connected clients. PIMPL,
+  Configurable.
+- `icl/io/WSGrabber.{h,cpp}` — client side (`QWebSocket`) with
+  auto-reconnect state machine (Disconnected → Connecting → Connected),
+  exponential backoff (250 ms → 5 s capped), bounded frame queue
+  (drop-oldest), block-with-timeout + replay-last semantics in
+  `acquireImage()`.
+- `tests/test-quick-io.cpp` — three new tests:
+  `WS.loopback.roundtrip`, `WS.multi_client.broadcast`,
+  `WS.client_survives_server_restart`.
+- Memory: `reference_websocket.md`.
+
+#### Wiring
+
+- meson detects `Qt6 WebSockets` (`brew install qtwebsockets` on macOS),
+  defines `ICL_HAVE_QT_WEBSOCKETS`, gates the new sources in
+  `icl/io/meson.build`. Build-clean either way.
+- `WSGrabber` registers itself with the GenericGrabber plugin map via
+  `REGISTER_GRABBER(ws, ...)` — `-i ws ws://host:port` works through any
+  GenericGrabber-driven app.
+- `WSImageOutput` plugged into `GenericImageOutput.cpp`'s switch — `-o
+  ws PORT` (or `-o ws BIND:PORT`) works through `icl-pipe` etc.
+
+#### URL form
+
+```
+-o ws PORT                # server: bind 0.0.0.0:PORT, broadcast (LAN-open)
+-o ws BIND:PORT           # server: bind a specific interface
+-i ws ws://host:port      # client: connect & receive (auto-reconnect)
+```
+
+Server bind defaults to `0.0.0.0` per the loose-coupling-between-machines
+use case. Server-mode WSGrabber (`-i ws server:PORT`, push-source) is
+deferred to v2.
+
+#### Wire format
+
+`ImageCompressor::Header` + compressed payload (one binary WS frame per
+image). Default mode = `none` (raw bytes, lossless). The `compression`
+property on WSImageOutput exposes ImageCompressor's full menu (`none`,
+`rlen`, `jpeg`, `1611`).
+
+#### Resilience
+
+The WSGrabber's reconnect state machine on a private QThread papers over
+server outages: on disconnect, schedules a `QTimer::singleShot` retry
+with exponential backoff. `acquireImage()` blocks for up to `block
+timeout ms` (default 1000), then either replays the last successfully
+decoded frame (default true) or returns null. The application loop never
+observes a dead state.
+
+#### Threading + bootstrap
+
+QWebSocket(Server) needs an event loop. Each WS class owns its own
+QThread that runs the local event loop — no main-thread `exec()`
+required. But `QObject` machinery requires *some* `QCoreApplication` to
+exist in the process. ICL apps using `ICLApp::exec()` already create a
+`QApplication`. Headless callers (`icl-pipe -no-gui`, library users
+embedding ICL without Qt main loops) are covered by a static
+`ensureQCoreApplication()` lazy bootstrap inside both WS classes' ctors.
+Tests get a `QCoreApplication` from `tests/icl-tests.cpp main()` via a
+new `#ifdef ICL_HAVE_QT` block.
+
+#### Verification
+
+- Full build clean (118 binaries, all module libs, including
+  `WSImageOutput.cpp.o` and `WSGrabber.cpp.o`).
+- 546/546 tests pass sequentially (was 543; +3 WS tests).
+- End-to-end smoke: `icl-pipe -i create lena -o ws 19090 -no-gui`
+  publisher + `icl-pipe -i ws ws://127.0.0.1:19090 -o file
+  '/tmp/wspipe_###.png' -no-gui` receiver wrote 24 PNG frames in 2 s.
+- Reconnect path proven by `WS.client_survives_server_restart`: the same
+  grabber receives frames from a brand-new server brought up on the
+  same port post-disconnect.
+
+#### Doxygen / discoverability
+
+- `GenericGrabber.h` backend-list comment now includes `ws` and `zmq`.
+- `GenericImageOutput.h` backend-list comment now includes `ws`.
+
+#### What's deferred (per `reference_websocket.md`)
+
+- `wss://` (TLS)
+- WSGrabber server mode (push-source workflow)
+- Path-based multi-stream on one server (`/cam0`, `/cam1`)
+- Generic `CompressionPlugin` interface + `auto` codec mode (drops
+  zstd/webp/jxl/lz4/etc. into the same envelope without touching
+  `ImageCompressor.cpp`)
+- Promote `ImageOutput` base to `Configurable`
+- Browser viewer
+
+---
+
+## Previous State (Session 45 — ICLIO demos retired, apps modernized)
+
+### Session 45 Summary
+
+Audited ICLIO module (12 apps + 3 demos) following the playbook from
+Session 43 (Filter audit). Net: 3 demos + 2 apps retired, 1 demo
+converted to a test, 4 latent bugs fixed, dead code stripped from
+2 apps, two apps modernized, framework callback type upgraded to
+`std::function`.
+
+#### A. Demos folder is now empty
+
+All three IO demos retired:
+- **`png_write_test`** → already covered by `Quick2.IO.save.load.png`
+- **`undistortion`** → subsumed by the `@udist=file.xml` qualifier on
+  every GenericGrabber-driven app (`GenericGrabber.cpp:273` calls
+  `enableUndistortion(propVal)` directly during init)
+- **`depth_img_endcoding_test`** → converted into two real tests in
+  `tests/test-quick-io.cpp`:
+  - `ImageCompressor.1611.lossless_in_range` (lossless 11-bit pack
+    with quality="1")
+  - `ImageCompressor.1611.clamps_above_11bit` (overflow → mask 2047,
+    not modulo wrap)
+  - Discovered while writing the tests: `"1611"` quality `"0"` is the
+    *lossy* depth-mapping variant (`pack16to11_2`/`unpack11to16_2`,
+    applies the Kinect Z formula); quality `"1"` is the lossless
+    bit-pack. The original demo used quality `"0"` so its visual
+    "roundtrip" was actually lossy.
+
+#### B. Apps retired (2)
+
+- **`icl-k2`** — bypassed ICL's own `Kinect2Grabber` to talk to
+  libfreenect2 directly (~110 lines, with pointless GLFW init). Use
+  `icl-pipe -i kinect2 0` instead.
+- **`icl-dcdeviceinfo`** — trivial `DCGrabber::getDCDeviceList()`
+  wrapper. Subsumed by `-i dc 0@info` on any GenericGrabber-driven app.
+
+Remaining IO apps (8 + 2 dc1394-only): camera-param-io, convert,
+create, jpg2cpp, multi-viewer, pipe, reset-bus, video-player +
+dcclearisochannels, reset-dc-bus.
+
+#### C. Real bugs fixed (4)
+
+1. **`icl-convert`** — every typed flag (`-size`, `-format`, `-scale`,
+   `-depth`) crashed with `parse<T>: type is not stream-extractable`.
+   Root cause: `parse<X>(pa("-y"))` doesn't compile cleanly for ProgArg
+   inputs; should be `pa("-y").as<X>()`. Same file already used the
+   correct form in one place.
+2. **`icl-convert`** `-scalemode` was silently ignored — inner
+   `std::string sm = pa("-scalemode").as<std::string>();` shadowed the
+   outer `scalemode sm`, then `sm = interpolateNN;` assigned an enum
+   into the *string* variable (compiles via implicit char conversion!),
+   never updating the actual scalemode used. Fixed by renaming the
+   local string `s`.
+3. **`icl-camera-param-io`** had two duplicate `pa_explain` entries:
+   `-p` was described twice (first wrong, "grabber type"; second
+   correct, "parameter file"), and `-g` was described twice (second
+   actually for `-go`/`-grab-once`). Help output dropped the first
+   in each pair. Fixed: each flag described once with the right
+   meaning.
+4. **`icl-jpg2cpp`** with a path-containing input filename emitted
+   invalid C++ identifiers (`aauc_Data_/tmp/lena[NROWS][NCOLS]`).
+   Documented caveat, but trivially fixed with
+   `std::filesystem::path::stem()`.
+
+Plus the `icl-dcclearisochannels` source had unqualified `vector<>`
+(would not compile even with libdc); fixed.
+
+#### D. Dead code stripped
+
+- **`icl-pipe`**: `pthread.h` include + retired
+  `EXPLICITLY_INSTANTIATE_PTHREAD_AT_FORK` comment, commented-out
+  `setIgnoreDesiredParams` block, ~14-line commented-out
+  `-reinterpret-input-format` block + matching `-dist` arg, "interactive
+  clip mode is not yet implemented" branch + corresponding help text.
+- **`icl-video-player`**: dead globals `disableNextUpdate`,
+  `mouseInWindow`. Old name `ICLApplication` → `ICLApp`.
+
+#### E. Apps modernized (3)
+
+1. **`icl-pipe`** — the `-pp <name>` filter ladder used to be a hard-coded
+   string menu (`gauss/gauss5/median/median5`); now also accepts any
+   UnaryOp class registered with `REGISTER_CONFIGURABLE` (CannyOp, FFTOp,
+   BilateralFilterOp, GaborOp, ConvolutionOp, MedianOp, ... — all 29
+   from Session 43). The fallback uses `Configurable::create_configurable`
+   and a `dynamic_cast<UnaryOp*>`; raw `UnaryOp*` static became
+   `unique_ptr`. Help text updated; bad names get a friendly error
+   instead of an uncaught exception.
+2. **`icl-convert`** — one-shot CLI no longer uses static buffers for
+   intermediate ImgBase pointers. Each stage (convert / flip / rotate /
+   crop) now produces an `Image` (shared_ptr-backed) which auto-releases
+   on reassignment. Added missing `return 0;` and second `return -1;`
+   on the bad-crop-rect error path.
+3. **`icl-multi-viewer`** — collapsed `template<int N> void run()` plus
+   8 explicit `if(nInputs > N) app.addThread(run<N>);` blocks (lines
+   213-220) into a single `void run(int n)` registered via
+   `app.addThread([i]{ run(i); })`. Required upgrading the framework
+   callback type (see F).
+
+#### F. Framework: ICLApplication callback type → std::function
+
+`icl::qt::ICLApplication::callback` was `void(*)(void)` (raw function
+pointer, 2006-style). Upgraded to `std::function<void()>` so capturing
+lambdas work. Function pointers still convert implicitly so every
+existing `app.addThread(my_run_fn)` call site is unchanged. Internal
+`ExecThread` ctor also updated to take callback by value + move. Net
+cost: one indirection per thread tick (invisible at typical 30-fps
+loops). Net win: lambdas become first-class throughout the framework.
+
+#### G. Verification
+
+- Full build clean (118 binaries linked, down from 121 — 3 demos +
+  2 apps retired, 1 net new test pair added).
+- 543/543 tests pass sequentially. Parallel-run flakes (4 in Quick2
+  Math/Filter/Compose) reproduce on master, unrelated.
+- Smoke-tested the modernized apps: `icl-pipe -pp gauss5` (legacy
+  mnemonic), `icl-pipe -pp CannyOp` (registry fallback), `icl-pipe -pp
+  NotAnOp` (friendly error), `icl-convert -size … -scalemode NN`,
+  `icl-convert -rotate 30`, `icl-convert -flip both`, `icl-convert
+  -c x y w h`, `icl-multi-viewer` in both sync and async modes.
+
+#### H. What's next
+
+Filter playbook step matched on IO. Possible next targets within IO:
+- ImageMagick 7 PixelPacket → Quantum (per `project_imagemagick7.md`)
+- LibAVVideoWriter for FFmpeg 6/7 (per `project_ffmpeg.md`)
+- Qt6 multimedia grabbers (per `project_qt6_multimedia.md`)
+- Or move on to **ICLCV** (next module in the dependency chain).
+
+---
+
+## Previous State (Session 44 — io::Grabber mutex pattern + entry into ICLIO audit)
+
+### Session 44 Summary
+
+Ported the `UnaryOp::m_applyMutex` pattern (Session 43, see
+`project_configurable_op_threadsafety.md`) into `io::Grabber` as a
+preventative against the analogous race (GUI/control thread firing
+`processPropertyChange` mid-`acquireImage()`). Same shape, same rationale —
+a property mutation that rebuilds backend state (size, format, depth,
+exposure, gain, mode menus, etc.) must not interleave with the grab
+thread's read of that state.
+
+#### Grabber base changes
+- `protected: mutable std::recursive_mutex m_grabMutex;` added.
+- `void registerCallback(const Configurable::Callback &cb);` overload added,
+  wrapping `cb` with a `scoped_lock(m_grabMutex)` before dispatch. Mirror
+  of `UnaryOp::registerCallback`. `using Configurable::registerCallback;`
+  re-exposes the base overload list.
+- `Grabber::grab(ImgBase**)` acquires `m_grabMutex` at the top — single
+  funnel for every backend's `acquireImage()` + `adaptGrabResult` + warp
+  undistortion. No subclass changes required for reader-side coverage.
+
+#### Subclass migrations (writer-side)
+All 16 Grabber subclass ctors swapped from
+`Configurable::registerCallback([this](Property &p){processPropertyChange(p);})`
+→ unqualified `registerCallback(...)` so the wrap takes effect:
+- always-built: CreateGrabber, FileGrabber, DemoGrabber, SharedMemoryGrabber,
+  GenericGrabber, OpenCVCamGrabber, OpenCVVideoGrabber
+- platform-conditional (mechanical rename, can't local-build): DCGrabber,
+  V4L2Grabber, KinectGrabber, Kinect2Grabber, OpenNIGrabber,
+  SwissRangerGrabber, XiGrabber
+
+OptrisGrabber and PylonGrabber don't register property callbacks at the
+Grabber level so they didn't need migration. Helpers that are Configurables
+but not Grabbers (DCDeviceFeatures, OpenNIUtils generator-options,
+PylonCameraOptions) intentionally still call `Configurable::registerCallback`
+— they're outside the Grabber inheritance chain and have their own locking
+strategies (often a per-class `m_propertyMutex` already).
+
+#### Verification
+- Full build clean (240/240 targets) on macOS with the always-built
+  backends.
+- Test suite: 541/541 pass when run sequentially (`-j 1`). Parallel runs
+  (`-j 16`, the harness default) show 4 pre-existing flakes
+  (Quick2.Math.scalar.add, Quick2.Math.chained, Quick2.Filter.filter.chain,
+  Quick2.Compose.vconcat.triple) — confirmed identical behaviour against
+  the unmodified tree, unrelated to this change.
+
+#### What's next — ICLIO audit (after Filter)
+Module dependency order is `…→Filter→IO→CV→Qt→…`, so IO is the natural
+next module to audit. Suggested entry points:
+- Run each grabber backend's demo/app under `icl-camviewer -i <backend>`
+  to confirm the property-callback path is exercised post-migration.
+- Look at `icl-pipe`, `icl-stream-server`, `icl-create`, `icl-image-viewer`,
+  `icl-rtsp-streamer`, `icl-recorder`, `icl-video-recorder` etc. — same
+  Configurable-driven UI pattern as the filter audit suggests these may
+  benefit from `qt::Prop(&grabber)` to auto-render device controls
+  (would need a brief look at how CamCfgWidget already does it).
+- ImageOutput counterpart: spot-checked — ImageOutput is a minimal
+  `send(Image)` interface, NOT a Configurable, no property callbacks. No
+  race surface analogous to Grabber. Skip.
+
+---
+
+## Previous State (Session 43 — ICLFilter Configurable migration + filter-playground)
 
 ### Session 43 Summary
 
