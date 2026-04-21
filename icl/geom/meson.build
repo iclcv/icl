@@ -313,7 +313,7 @@ endif
 
 geom_deps = [geom_base_dep, icl_io_dep] + geom_extra_deps
 
-_geom_inc = [root_inc, gen_inc, sse2neon_inc]
+_geom_inc = [root_inc, gen_inc, sse2neon_inc] + pcl_inc
 if cycles_found
   _geom_inc += [geom_cycles_inc, _cycles_sys_inc]
 endif
@@ -333,7 +333,7 @@ icl_geom_lib = shared_library('icl-geom',
 # Don't propagate Cycles includes/deps to consumers — only ICL headers needed
 icl_geom_dep = declare_dependency(
   link_with: icl_geom_lib,
-  include_directories: [root_inc, gen_inc, sse2neon_inc],
+  include_directories: [root_inc, gen_inc, sse2neon_inc] + pcl_inc,
   dependencies: [geom_base_dep],
 )
 

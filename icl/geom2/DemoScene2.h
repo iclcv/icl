@@ -24,6 +24,11 @@ namespace icl::geom2 {
                const std::string &rotation = "",
                bool noCheckerboard = false);
 
+    /// Set up a nature scene: green ground, gray rocks, simple trees
+    /** Good for point cloud / octree demos that need a realistic 3D scene
+        without external model files. */
+    void setupNatureScene(const utils::Size &resolution);
+
   private:
     std::vector<std::shared_ptr<Node>> m_ownedNodes;
   };

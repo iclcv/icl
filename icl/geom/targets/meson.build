@@ -13,7 +13,7 @@ if _build_demos and qt_found
     'kinect-segmentation': [],
     'offscreen-rendering': [],
     'plot-widget-3D': [],
-    'ray-cast-octree': [],
+    # 'ray-cast-octree': [],  # replaced by geom2/raycast-octree-demo
     'rgbd-mapping': [],
     'scene-graph': [],
     'scene-object': [],

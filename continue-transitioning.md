@@ -68,6 +68,12 @@ remove if obsolete. See `porting-progress.md` for per-file status.
 - ~16 umbrella headers — trivial swap once library code is done
 - Final: delete Quick.h/Quick.cpp, retire Common.h
 
+**Scene2 open items**:
+- Wire remaining Configurable properties to Renderer: "enable lighting"
+  (needs Renderer toggle), "point size" (default override for all point clouds)
+- Consider adding more properties: shadows toggle, SSR toggle, debug viz mode,
+  exposure, ambient level
+
 **Quick2 open items**:
 - MorphologicalOp opening/closing crash via Quick2 `filter()` — pre-existing
 - Pool memory accounting drift — periodic reconciliation

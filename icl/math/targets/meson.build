@@ -6,7 +6,6 @@ if _build_demos and qt_found
     'k-means': [],
     'llm-1D': [],
     'llm-2D': [],
-    # 'octree': [icl_geom_dep],  # needs PCL
     'polynomial-regression': [icl_geom_dep],
     'quad-tree': [],
   }

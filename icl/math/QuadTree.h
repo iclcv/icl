@@ -332,21 +332,21 @@ namespace icl::math {
         }
       }
 
-      /// returns all contained points
+      /// returns all contained points from allocator-managed nodes
       std::vector<Pt> all() const{
         std::vector<Pt> pts;
         for(size_t i=0;i<allocated.size()-1;++i){
           const Node *ns = allocated[i];
-          for(size_t j=0;j<allocated.size();++j){
+          for(int j=0;j<ALLOC_CHUNK_SIZE*4;++j){
             for(const Pt* p = ns[j].points; p != ns[j].next;++p){
-              pts.push_back((*p)/SF);//Pt((*p)[0]/SF,(*p)[1]/SF));
+              pts.push_back((*p)/SF);
             }
           }
         }
         const Node *ns = allocated.back();
         for(int i=0;i<curr*4;++i){
           for(const Pt* p = ns[i].points; p != ns[i].next;++p){
-            pts.push_back((*p)/SF); //Pt((*p)[0]/SF,(*p)[1]/SF));
+            pts.push_back((*p)/SF);
           }
         }
         return pts;
@@ -409,53 +409,30 @@ namespace icl::math {
     protected:
 
     /// internal utility method that is used to find an approximated nearest neighbour
-    const Pt &nn_approx_internal(const Pt &p, double &currMinDist, const Pt *&currNN) const{
-      // 1st find cell, that continas p
-      const Node *n = root;
-      while(n->children){
-        n = (n->children + (p[0] > n->boundary.center[0]) + 2 * (p[1] > n->boundary.center[1]));
-      }
-
-      // this cell could be empty, in this case, the parent must contain good points
-      if(n->next == n->points){
-        n = n->parent;
-        if(!n) throw utils::ICLException("no nn found for given point " + utils::str(p));
-      }
-
-      double sqrMinDist = utils::sqr(currMinDist);
-
-      for(const Pt *x=n->points; x < n->next; ++x){
-        Scalar dSqr = utils::sqr(x->operator[](0)-p[0]) + utils::sqr(x->operator[](1)-p[1]);
-        if(dSqr < sqrMinDist){
-          sqrMinDist = dSqr;
-          currNN = x;
-        }
-      }
-      currMinDist = sqrt(sqrMinDist);
-
-      if(!currNN){
-        throw utils::ICLException("no nn found for given point " + utils::str(p));
-      }
-      return *currNN;
-    }
     public:
 
-
-    /// returns an approximated nearst neighbour
-    /** While the real nearst neighbour must not neccessarily be
-        in the cell that would theoretically contain p, The approximated
-        one is always assumed to be in that bottom layer cell. If, by chance,
-        the optimal leaf node does not contain any points (because it was just
-        created as empty leaf), the leaf's parent node, which must actually contain
-        CAPACITY points, is used instead. The approximate nearest neighbour search
-        can easily be 5 times as fast as the real nearest neighbor search.
-        The result quality depends on the number of contained points, and
-        on the QuadTree's template parameters */
-    Pt nn_approx(const Pt &p) const{
-      double currMinDist = sqrt(utils::Range<Scalar>::limits().maxVal-1);
-      const Pt *currNN  = 0;
-      nn_approx_internal(p*SF /*Pt(SF*p[0],SF*p[1])*/,currMinDist,currNN);
-      return (*currNN)/SF; //Pt((*currNN)[0]/SF,(*currNN)[1]/SF) ;
+    /// Returns an approximate nearest neighbour (fast, not exact)
+    /** Navigates to the leaf that should contain p and returns the
+        closest point in that leaf (or its parent if the leaf is empty).
+        Typically 5x faster than exact nn(). */
+    Pt nn_approx(const Pt &pIn) const{
+      const Pt p = pIn * SF;
+      const Node *n = root;
+      while(n->children){
+        n = n->children + (p[0] > n->boundary.center[0]) + 2 * (p[1] > n->boundary.center[1]);
+      }
+      if(n->next == n->points){
+        n = n->parent;
+        if(!n) throw utils::ICLException("nn_approx: empty QuadTree");
+      }
+      double bestSqrDist = std::numeric_limits<double>::max();
+      const Pt *bestPt = nullptr;
+      for(const Pt *x = n->points; x < n->next; ++x){
+        double dSqr = utils::sqr(double((*x)[0] - p[0])) + utils::sqr(double((*x)[1] - p[1]));
+        if(dSqr < bestSqrDist){ bestSqrDist = dSqr; bestPt = x; }
+      }
+      if(!bestPt) throw utils::ICLException("nn_approx: no point found");
+      return (*bestPt) / SF;
     }
 
     /// finds the nearest neighbor to the given node
@@ -478,37 +455,64 @@ namespace icl::math {
         actually only happen when nn is called on an empty QuadTree
     */
     Pt nn(const Pt &pIn) const{
-      const Pt p = pIn*SF;//p(SF*pIn[0],SF*pIn[1]);
+      const Pt p = pIn * SF;
+      double bestSqrDist = std::numeric_limits<double>::max();
+      const Pt *bestPt = nullptr;
+
+      // Seed with approx NN for tighter initial pruning radius
+      {
+        const Node *n = root;
+        while(n->children)
+          n = n->children + (p[0] > n->boundary.center[0]) + 2 * (p[1] > n->boundary.center[1]);
+        if(n->next == n->points && n->parent) n = n->parent;
+        for(const Pt *x = n->points; x < n->next; ++x){
+          double dSqr = utils::sqr(double((*x)[0] - p[0])) + utils::sqr(double((*x)[1] - p[1]));
+          if(dSqr < bestSqrDist){ bestSqrDist = dSqr; bestPt = x; }
+        }
+      }
+
+      // Stack-based traversal with squared-distance pruning at push time
       std::vector<const Node*> stack;
-      stack.reserve(128);
+      stack.reserve(256);
       stack.push_back(root);
-      double currMinDist = sqrt(utils::Range<Scalar>::limits().maxVal-1);
-      const Pt *currNN  = 0;
 
-      nn_approx_internal(p,currMinDist,currNN);
-
-      while(stack.size()){
+      while(!stack.empty()){
         const Node *n = stack.back();
         stack.pop_back();
-        if(n->children){
-          const AABB b(p, Pt(currMinDist,currMinDist));
-          if(b.intersects(n->children[0].boundary)) stack.push_back(n->children);
-          if(b.intersects(n->children[1].boundary)) stack.push_back(n->children+1);
-          if(b.intersects(n->children[2].boundary)) stack.push_back(n->children+2);
-          if(b.intersects(n->children[3].boundary)) stack.push_back(n->children+3);
-        }
-        Scalar sqrMinDist = utils::sqr(currMinDist);
 
-        for(const Pt *x=n->points; x < n->next; ++x){
-          Scalar dSqr = utils::sqr(x->operator[](0)-p[0]) + utils::sqr(x->operator[](1)-p[1]);
-          if(dSqr < sqrMinDist){
-            sqrMinDist = dSqr;
-            currNN = x;
+        // Check points in this node
+        for(const Pt *x = n->points; x < n->next; ++x){
+          double dSqr = utils::sqr(double((*x)[0] - p[0])) + utils::sqr(double((*x)[1] - p[1]));
+          if(dSqr < bestSqrDist){
+            bestSqrDist = dSqr;
+            bestPt = x;
           }
         }
-        currMinDist = sqrt(sqrMinDist);
+
+        // Push children whose AABB is closer than current best
+        // Note: when halfSize reaches 0 due to integer division, the AABB
+        // degenerates and no longer covers the actual point extent — skip pruning.
+        if(n->children){
+          bool degenerate = (n->children[0].boundary.halfSize[0] == 0 ||
+                             n->children[0].boundary.halfSize[1] == 0);
+          for(int i = 0; i < 4; ++i){
+            if(degenerate){
+              stack.push_back(n->children + i);
+            } else {
+              const AABB &cb = n->children[i].boundary;
+              double dx = std::max(0.0, std::max(double(cb.center[0] - cb.halfSize[0]) - p[0],
+                                                  double(p[0]) - (cb.center[0] + cb.halfSize[0])));
+              double dy = std::max(0.0, std::max(double(cb.center[1] - cb.halfSize[1]) - p[1],
+                                                  double(p[1]) - (cb.center[1] + cb.halfSize[1])));
+              if(dx*dx + dy*dy < bestSqrDist){
+                stack.push_back(n->children + i);
+              }
+            }
+          }
+        }
       }
-      return (*currNN)/SF; //Pt((*currNN)[0]/SF, (*currNN)[1]/SF);
+      if(!bestPt) throw utils::ICLException("nn: empty QuadTree");
+      return (*bestPt) / SF;
     }
 
     /// convenience wrapper for the Point32f type
@@ -570,7 +574,14 @@ namespace icl::math {
 
     /// returns all contained points
     std::vector<Pt> queryAll() const {
-      return alloc.all();
+      std::vector<Pt> pts;
+      // root is not managed by the allocator
+      for(const Pt *p = root->points; p != root->next; ++p){
+        pts.push_back((*p)/SF);
+      }
+      auto rest = alloc.all();
+      pts.insert(pts.end(), rest.begin(), rest.end());
+      return pts;
     }
 
     /// returns a visualization description for QuadTree structure (not for the contained points)

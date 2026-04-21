@@ -162,10 +162,17 @@ if bullet_found
   add_project_arguments('-DICL_HAVE_BULLET', language: 'cpp')
 endif
 
-# PCL
+# PCL — meson strips Homebrew Cellar include paths as "system", so we
+# locate the include dir manually from the .pc file prefix.
 pcl_dep = dependency('pcl_common', required: get_option('pcl'))
+pcl_inc = []
 if pcl_dep.found()
   add_project_arguments('-DICL_HAVE_PCL', language: 'cpp')
+  _pcl_prefix = run_command('pkg-config', '--variable=prefix', 'pcl_common',
+                            check: true).stdout().strip()
+  _pcl_version = pcl_dep.version()
+  _pcl_inc_path = _pcl_prefix / 'include' / ('pcl-' + _pcl_version.split('.')[0] + '.' + _pcl_version.split('.')[1])
+  pcl_inc = [include_directories(_pcl_inc_path)]
 endif
 
 # Apple Accelerate framework

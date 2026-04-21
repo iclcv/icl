@@ -6,6 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/FixedVector.h>
+#include <icl/core/Img.h>
 #include <icl/geom2/Primitive.h>  // GeomColor
 #include <memory>
 #include <vector>
@@ -66,6 +67,28 @@ namespace icl::geom2 {
         @param stepY  pixel step in Y (>1 for subsampling) */
     void raycastImage(const geom::Camera &cam, PointCloud &cloud,
                       int stepX = 1, int stepY = 1) const;
+
+    /// Result of raycastToImage
+    struct ImageResult {
+      core::Img8u image;     ///< RGB image (flat material colors, no shading)
+      core::Img32f depth;    ///< depth buffer (empty if mode == NoDepth)
+    };
+
+    /// Depth buffer modes
+    enum DepthMode {
+      NoDepth,          ///< don't compute depth buffer
+      DistToCamCenter,  ///< Euclidean distance from camera center to hit point
+      DistToCamPlane    ///< distance along camera's viewing direction (Z-depth)
+    };
+
+    /// Raycast an entire camera image, returning RGB + optional depth buffer
+    /** @param cam    camera to cast from
+        @param mode   depth buffer mode (NoDepth to skip)
+        @param stepX  pixel step in X (>1 for subsampling)
+        @param stepY  pixel step in Y (>1 for subsampling) */
+    ImageResult raycastToImage(const geom::Camera &cam,
+                               DepthMode mode = DistToCamCenter,
+                               int stepX = 1, int stepY = 1) const;
 
     /// Number of triangles in the BVH
     int getTriangleCount() const;

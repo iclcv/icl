@@ -9,6 +9,7 @@
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/BVH.h>
 #include <icl/math/FixedVector.h>
+#include <icl/utils/Configurable.h>
 #include <memory>
 #include <vector>
 #include <type_traits>
@@ -41,7 +42,9 @@ namespace icl::geom2 {
   };
 
   /// Scene manager for geom2 — owns nodes, cameras, and renderer
-  class ICLGeom2_API Scene2 {
+  /** Inherits Configurable to expose scene properties (background color,
+      wireframe, lighting, etc.) via an OSD button when linked to a Canvas3D. */
+  class ICLGeom2_API Scene2 : public utils::Configurable {
   public:
     Scene2();
     ~Scene2();

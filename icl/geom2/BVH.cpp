@@ -263,6 +263,65 @@ namespace icl::geom2 {
     }
   }
 
+  BVH::ImageResult BVH::raycastToImage(const geom::Camera &cam,
+                                       DepthMode mode,
+                                       int stepX, int stepY) const {
+    int camW = cam.getResolution().width;
+    int camH = cam.getResolution().height;
+    int outW = camW / stepX;
+    int outH = camH / stepY;
+
+    ImageResult result;
+    result.image = core::Img8u(utils::Size(outW, outH), core::formatRGB);
+    result.image.clear(-1, 0, false);
+
+    bool wantDepth = (mode != NoDepth);
+    if (wantDepth) {
+      result.depth = core::Img32f(utils::Size(outW, outH), 1);
+      result.depth.clear(-1, 0, false);
+    }
+
+    // For DistToCamPlane we need the camera's forward direction
+    Vec camPos(cam.getPosition()[0], cam.getPosition()[1],
+               cam.getPosition()[2], 1);
+    Vec camFwd(cam.getNorm()[0], cam.getNorm()[1], cam.getNorm()[2], 0);
+
+    icl8u *rData = result.image.getData(0);
+    icl8u *gData = result.image.getData(1);
+    icl8u *bData = result.image.getData(2);
+    float *dData = wantDepth ? result.depth.getData(0) : nullptr;
+
+    #pragma omp parallel for schedule(dynamic, 8) collapse(2)
+    for (int y = 0; y < outH; y++) {
+      for (int x = 0; x < outW; x++) {
+        int idx = y * outW + x;
+        float px = x * stepX + stepX * 0.5f;
+        float py = y * stepY + stepY * 0.5f;
+
+        geom::ViewRay ray = cam.getViewRay(utils::Point32f(px, py));
+        BVHHit hit = intersect(ray);
+
+        if (hit) {
+          rData[idx] = static_cast<icl8u>(std::clamp(hit.color[0], 0.f, 255.f));
+          gData[idx] = static_cast<icl8u>(std::clamp(hit.color[1], 0.f, 255.f));
+          bData[idx] = static_cast<icl8u>(std::clamp(hit.color[2], 0.f, 255.f));
+
+          if (dData) {
+            if (mode == DistToCamCenter) {
+              dData[idx] = hit.dist;
+            } else {
+              // DistToCamPlane: project hit-to-camera vector onto forward direction
+              Vec diff = hit.pos - camPos;
+              dData[idx] = diff[0]*camFwd[0] + diff[1]*camFwd[1] + diff[2]*camFwd[2];
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
   int BVH::getTriangleCount() const { return (int)m_data->triangles.size(); }
   int BVH::getNodeCount() const { return (int)m_data->nodes.size(); }
 

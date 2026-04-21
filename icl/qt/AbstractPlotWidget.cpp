@@ -249,7 +249,7 @@ namespace icl::qt {
         defaultPen = QPen(QColor(50,50,50));
         gridPen = QPen(QColor(150,150,150));
         axisLabelPen = QPen(QColor(0,0,0));
-        data->bgBrush = QPalette().window();
+        data->bgBrush = QBrush(Qt::white);
       }else if(preset == "black"){
         defaultPen = QPen(QColor(150,150,150));
         gridPen = QPen(QColor(50,50,50));
@@ -318,7 +318,7 @@ namespace icl::qt {
 
     data->disableUpdate = false;
     data->menuCreated = false;
-    data->bgBrush = QPalette().window();
+    data->bgBrush = QBrush(Qt::white);
 
     addProperty("borders.left","range:spinbox","[0,1000]",35,0,"Left distance from widget border to the drawing area");
     addProperty("borders.right","range:spinbox","[0,1000]",5,0,"Right distance from widget border to the drawing area");

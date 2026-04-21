@@ -22,6 +22,7 @@ geom2_headers = files(
   'PointCloudNode.h',
   'Scene2MouseHandler.h',
   'BVH.h',
+  'RayCastOctree.h',
   'TextNode.h',
   'DemoScene2.h',
 )
@@ -44,6 +45,7 @@ geom2_sources = files(
   'PointCloudNode.cpp',
   'Scene2MouseHandler.cpp',
   'BVH.cpp',
+  'RayCastOctree.cpp',
   'TextNode.cpp',
   'DemoScene2.cpp',
 )

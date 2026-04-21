@@ -12,6 +12,10 @@
 #include <icl/geom/ViewRay.h>
 #include <icl/geom/Material.h>
 #include <icl/qt/DrawWidget3D.h>
+#include <icl/qt/Widget.h>
+#include <icl/qt/IconFactory.h>
+#include <icl/qt/ContainerGUIComponents.h>
+#include <icl/qt/GUIComponents.h>
 #include <icl/core/Img.h>
 
 #ifdef ICL_HAVE_OPENGL
@@ -32,11 +36,32 @@ namespace icl::geom2 {
   struct Scene2::GLCallback : public qt::ICLDrawWidget3D::GLCallback {
     Scene2 *scene;
     int camIndex;
+    bool needLink = true;
+    qt::GUI *gui = nullptr;
 
     GLCallback(Scene2 *s, int ci) : scene(s), camIndex(ci) {}
 
+    void performLink(qt::ICLDrawWidget3D *widget) {
+      std::string id = "scene2-" + utils::str(this);
+      std::string save = scene->getConfigurableID();
+      scene->setConfigurableID(id);
+
+      gui = new qt::GUI(qt::VBox());
+      *gui << qt::Prop(id) << qt::Create();
+
+      static const core::Img8u &icon = qt::IconFactory::create_image("scene-props");
+      widget->addSpecialButton("scene2-props",
+          &icon,
+          [this]{ gui->switchVisibility(); },
+          "3D scene properties");
+      scene->setConfigurableID(save);
+    }
+
     void draw(qt::ICLDrawWidget3D *widget) override {
-      (void)widget;
+      if (needLink && widget) {
+        performLink(widget);
+        needLink = false;
+      }
       scene->render(camIndex);
     }
   };
@@ -56,7 +81,14 @@ namespace icl::geom2 {
 
   // ---- Scene2 implementation ----
 
-  Scene2::Scene2() : m_data(std::make_unique<Data>()) {}
+  Scene2::Scene2() : m_data(std::make_unique<Data>()) {
+    addProperty("background color","color","",core::Color(0,0,0));
+    addProperty("wireframe","flag","",false);
+    addProperty("enable lighting","flag","",true);
+    addProperty("point size","range","[1,20]",3);
+    addProperty("info.Nodes","info","",0);
+    addProperty("info.Lights","info","",0);
+  }
   Scene2::~Scene2() = default;
 
   void Scene2::addNode(std::shared_ptr<Node> node) {
@@ -124,6 +156,18 @@ namespace icl::geom2 {
 
     const auto &cam = m_data->cameras[cameraIndex];
 
+    // Apply configurable properties
+    core::Color4D bg = getPropertyValue("background color");
+    glClearColor(bg[0]/255.f, bg[1]/255.f, bg[2]/255.f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    bool wireframe = getPropertyValue("wireframe");
+    if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    // Update info properties
+    setPropertyValue("info.Nodes", (int)m_data->objects.size());
+    setPropertyValue("info.Lights", (int)m_data->lights.size());
+
     // Compute letterbox viewport to preserve camera aspect ratio
     GLint widgetVP[4];
     glGetIntegerv(GL_VIEWPORT, widgetVP);
@@ -147,7 +191,8 @@ namespace icl::geom2 {
 
     m_data->renderer.render(m_data->objects, viewGL, projGL);
 
-    // Restore original viewport
+    // Restore state
+    if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glViewport(widgetVP[0], widgetVP[1], widgetVP[2], widgetVP[3]);
   }
 

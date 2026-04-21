@@ -7,6 +7,8 @@
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/CuboidNode.h>
+#include <icl/geom2/CylinderNode.h>
+#include <icl/geom2/ConeNode.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/Loader.h>
 #include <icl/geom/Camera.h>
@@ -304,6 +306,113 @@ namespace icl::geom2 {
     // Mouse navigation cursor at origin, bounds for sensitivity
     setCursor(Vec(0, 0, 0, 1));
     setBounds(targetSize);
+  }
+
+  void DemoScene2::setupNatureScene(const Size &resolution) {
+    m_ownedNodes.clear();
+
+    float ext = 400;      // scene extent
+    float half = ext / 2;
+
+    // Green ground plane
+    {
+      auto ground = std::make_shared<MeshNode>();
+      float gs = ext * 2;
+      ground->addVertex(Vec(-gs, 0, -gs, 1));
+      ground->addVertex(Vec( gs, 0, -gs, 1));
+      ground->addVertex(Vec( gs, 0,  gs, 1));
+      ground->addVertex(Vec(-gs, 0,  gs, 1));
+      for (int i = 0; i < 4; i++) ground->addNormal(Vec(0, 1, 0, 1));
+      ground->addTriangle(0, 2, 1);
+      ground->addTriangle(0, 3, 2);
+      ground->setMaterial(Material::fromColor(GeomColor(60, 130, 45, 255)));
+      ground->getMaterial()->roughness = 0.9f;
+      addNode(ground);
+      m_ownedNodes.push_back(ground);
+    }
+
+    srand(42);
+    auto randf = [](float lo, float hi) {
+      return lo + (hi - lo) * (rand() / (float)RAND_MAX);
+    };
+
+    // Gray rocks: squashed spheres
+    for (int i = 0; i < 15; i++) {
+      float x = randf(-half, half);
+      float z = randf(-half, half);
+      float r = randf(8, 25);
+      float squash = randf(0.3f, 0.7f);
+      auto rock = SphereNode::create(0, 0, 0, r, 12, 12);
+      icl8u gray = 100 + rand() % 80;
+      rock->setMaterial(Material::fromColor(GeomColor(gray, gray, gray-10, 255)));
+      rock->getMaterial()->roughness = 0.85f;
+      rock->translate(x, r * squash, z);
+      rock->scale(1, squash, 1);
+      addNode(rock);
+      m_ownedNodes.push_back(rock);
+    }
+
+    // Trees: cylinder trunk + cone foliage
+    // CylinderNode/ConeNode are Z-axis aligned, so we create at origin,
+    // rotate -90° around X to stand upright, then translate into position.
+    for (int i = 0; i < 8; i++) {
+      float x = randf(-half * 0.9f, half * 0.9f);
+      float z = randf(-half * 0.9f, half * 0.9f);
+      float trunkH = randf(40, 80);
+      float trunkR = randf(4, 8);
+      float foliageH = randf(40, 70);
+      float foliageR = randf(20, 40);
+
+      // Trunk: centered at origin along Z, then T*v = Translate * Rotate * v
+      // Call order: translate first (right-multiplied), then rotate (right-multiplied)
+      // Result: T = Tr * R, applied as Tr * R * v = translate(rotate(v))
+      auto trunk = CylinderNode::create(0, 0, 0, trunkR, trunkR, trunkH, 12);
+      trunk->setMaterial(Material::fromColor(GeomColor(100, 65, 30, 255)));
+      trunk->getMaterial()->roughness = 0.9f;
+      trunk->translate(x, trunkH/2, z);
+      trunk->rotate(-M_PI/2, 0, 0);
+      addNode(trunk);
+      m_ownedNodes.push_back(trunk);
+
+      // Foliage (cone): same approach
+      auto foliage = ConeNode::create(0, 0, 0, foliageR, foliageR, foliageH, 12);
+      icl8u g = 80 + rand() % 80;
+      foliage->setMaterial(Material::fromColor(GeomColor(30, g, 20, 255)));
+      foliage->getMaterial()->roughness = 0.8f;
+      foliage->translate(x, trunkH + foliageH/2, z);
+      foliage->rotate(-M_PI/2, 0, 0);
+      addNode(foliage);
+      m_ownedNodes.push_back(foliage);
+    }
+
+    // Camera
+    float dist = ext * 1.5f;
+    auto cam = Camera::lookAt(
+        Vec(dist * 0.6f, dist * 0.4f, -dist * 0.6f, 1),
+        Vec(0, 30, 0, 1),
+        Vec(0, 1, 0, 1),
+        resolution, 55.0f);
+    cam.getRenderParams().clipZNear = ext * 0.05f;
+    cam.getRenderParams().clipZFar  = ext * 16.0f;
+    addCamera(cam);
+
+    // Lighting
+    float lr = ext * 0.8f;
+
+    auto sun = std::make_shared<LightNode>();
+    sun->setColor(GeomColor(255, 245, 220, 255));
+    sun->setIntensity(1.2f);
+    sun->translate(lr, lr * 1.5f, -lr * 0.5f);
+    addLight(sun);
+
+    auto fill = std::make_shared<LightNode>();
+    fill->setColor(GeomColor(100, 130, 180, 255));
+    fill->setIntensity(0.4f);
+    fill->translate(-lr * 0.5f, lr * 0.3f, -lr);
+    addLight(fill);
+
+    setCursor(Vec(0, 30, 0, 1));
+    setBounds(ext);
   }
 
 } // namespace icl::geom2
