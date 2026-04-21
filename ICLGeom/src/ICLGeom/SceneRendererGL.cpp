@@ -159,6 +159,13 @@ uniform int uHasOcclusionMap;
 uniform sampler2D uOcclusionMap;
 uniform int uDebugMode;
 
+// Screen-space reflections (previous-frame ping-pong)
+uniform int uSSREnabled;
+uniform sampler2D uPrevColorMap;
+uniform sampler2D uPrevDepthMap;
+uniform mat4 uPrevVP;
+uniform vec2 uScreenSize;
+
 // Per-light shadow: slot index into shadow map array (-1 = no shadow)
 uniform int uLightShadowSlot[8];
 uniform mat4 uShadowMatrix[4];
@@ -195,6 +202,83 @@ float sampleShadow(int slot, vec3 coord) {
 }
 
 out vec4 FragColor;
+
+// Screen-space reflection: march along reflect direction in previous frame's
+// screen space. Returns vec4(hitColor, confidence) where confidence fades
+// at screen edges, long distances, and rough surfaces.
+vec4 traceSSR(vec3 worldPos, vec3 reflectDir, float roughness) {
+    if (uSSREnabled == 0 || roughness > 0.7) return vec4(0.0);
+
+    // Project origin and endpoint into previous frame's screen space
+    vec4 startClip = uPrevVP * vec4(worldPos, 1.0);
+    if (startClip.w < 0.001) return vec4(0.0);
+    vec3 startNDC = startClip.xyz / startClip.w;
+    vec2 startUV = startNDC.xy * 0.5 + 0.5;
+    float startDepth = startNDC.z * 0.5 + 0.5;
+
+    // Ray endpoint (world space → previous screen space)
+    float rayLen = length(worldPos - uCameraPos) * 0.5;
+    vec3 endWorld = worldPos + reflectDir * rayLen;
+    vec4 endClip = uPrevVP * vec4(endWorld, 1.0);
+    if (endClip.w < 0.001) return vec4(0.0);
+    vec3 endNDC = endClip.xyz / endClip.w;
+    vec2 endUV = endNDC.xy * 0.5 + 0.5;
+    float endDepth = endNDC.z * 0.5 + 0.5;
+
+    vec2 rayDir2D = endUV - startUV;
+    float depthDelta = endDepth - startDepth;
+
+    int maxSteps = 48;
+    float stepSize = 1.0 / float(maxSteps);
+    float thickness = 0.002;
+
+    // Linear march
+    float hitT = -1.0;
+    vec2 hitUV;
+    for (int i = 2; i < maxSteps; i++) {
+        float t = float(i) * stepSize;
+        vec2 sampleUV = startUV + rayDir2D * t;
+        if (sampleUV.x < 0.0 || sampleUV.x > 1.0 ||
+            sampleUV.y < 0.0 || sampleUV.y > 1.0) break;
+
+        float rayDepth = startDepth + depthDelta * t;
+        float sceneDepth = texture(uPrevDepthMap, sampleUV).r;
+        if (sceneDepth > 0.999) continue;  // sky
+
+        float depthDiff = rayDepth - sceneDepth;
+        if (depthDiff > 0.0 && depthDiff < thickness) {
+            hitT = t;
+            hitUV = sampleUV;
+            break;
+        }
+    }
+    if (hitT < 0.0) return vec4(0.0);
+
+    // Binary refinement
+    float lo = hitT - stepSize, hi = hitT;
+    for (int i = 0; i < 4; i++) {
+        float mid = (lo + hi) * 0.5;
+        vec2 midUV = startUV + rayDir2D * mid;
+        float rayD = startDepth + depthDelta * mid;
+        float sceneD = texture(uPrevDepthMap, midUV).r;
+        if (rayD > sceneD) { hi = mid; hitUV = midUV; }
+        else               { lo = mid; }
+    }
+
+    // Confidence fading
+    float confidence = 1.0;
+    vec2 edgeDist = min(hitUV, 1.0 - hitUV);
+    confidence *= smoothstep(0.0, 0.05, edgeDist.x) * smoothstep(0.0, 0.05, edgeDist.y);
+    confidence *= 1.0 - smoothstep(0.5, 1.0, hitT);
+    confidence *= 1.0 - smoothstep(0.3, 0.7, roughness);
+
+    // Depth thickness rejection
+    float finalRayD = startDepth + depthDelta * hi;
+    float finalSceneD = texture(uPrevDepthMap, hitUV).r;
+    confidence *= 1.0 - smoothstep(0.0, thickness, abs(finalRayD - finalSceneD));
+
+    return vec4(texture(uPrevColorMap, hitUV).rgb, confidence);
+}
 
 void main() {
     vec3 N = normalize(vNormal);
@@ -244,12 +328,16 @@ void main() {
     // F0: dielectric = 0.04, metal = albedo
     vec3 specColor = mix(vec3(0.04), albedo, metallic);
 
-    // Environment reflection: sample sky in reflection direction for metals
+    // Environment reflection: sample sky in reflection direction
     vec3 R = reflect(-V, N);
     vec3 envColor = sampleSky(R);
     // Roughness blurs the reflection (approximate by blending toward diffuse sky)
     vec3 diffuseEnv = sampleSky(N);
     vec3 envReflection = mix(envColor, diffuseEnv, roughness);
+
+    // SSR: blend with screen-space reflection where available
+    vec4 ssrResult = traceSSR(vWorldPos, R, roughness);
+    envReflection = mix(envReflection, ssrResult.rgb, ssrResult.a);
 
     // Fresnel: roughness-aware Schlick (Lagarde 2014).
     // Smoother surfaces have higher effective reflectivity at grazing angles.
@@ -324,6 +412,10 @@ void main() {
             maxNdL = max(maxNdL, dot(N, L2));
         }
         FragColor = vec4(vec3(maxNdL), 1.0); return;
+    }
+    if (uDebugMode == 6) {
+        // SSR confidence: green=hit, red=sky fallback
+        FragColor = vec4(1.0 - ssrResult.a, ssrResult.a, 0.0, 1.0); return;
     }
 
     FragColor = vec4(result, baseColor.a);
@@ -566,6 +658,16 @@ struct SceneRendererGL::Data {
   int debugMode = 0;
   std::unordered_map<const SceneObject*, std::unique_ptr<GLGeometryCache>> geometryCache;
 
+  // SSR ping-pong buffers (previous-frame reflections)
+  GLuint ssrFBO[2] = {};
+  GLuint ssrColorTex[2] = {};
+  GLuint ssrDepthTex[2] = {};
+  int ssrCurrentIdx = 0;
+  int ssrWidth = 0, ssrHeight = 0;
+  bool ssrFirstFrame = true;
+  bool ssrEnabled = true;
+  Mat prevViewMatrix, prevProjectionMatrix;
+
   // Shadow maps (up to 4 shadow-casting lights)
   static const int MAX_SHADOWS = 4;
   GLuint shadowFBO[4] = {};
@@ -598,6 +700,12 @@ struct SceneRendererGL::Data {
   GLint locEmissiveMap = -1;
   GLint locHasOcclusionMap = -1;
   GLint locOcclusionMap = -1;
+  // SSR uniforms
+  GLint locSSREnabled = -1;
+  GLint locPrevColorMap = -1;
+  GLint locPrevDepthMap = -1;
+  GLint locPrevVP = -1;
+  GLint locScreenSize = -1;
   GLint locDebugMode = -1;
   GLint locLightShadowSlot[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
   GLint locShadowMatrix[4] = {-1,-1,-1,-1};
@@ -629,6 +737,11 @@ struct SceneRendererGL::Data {
     locEmissiveMap = glGetUniformLocation(program, "uEmissiveMap");
     locHasOcclusionMap = glGetUniformLocation(program, "uHasOcclusionMap");
     locOcclusionMap = glGetUniformLocation(program, "uOcclusionMap");
+    locSSREnabled = glGetUniformLocation(program, "uSSREnabled");
+    locPrevColorMap = glGetUniformLocation(program, "uPrevColorMap");
+    locPrevDepthMap = glGetUniformLocation(program, "uPrevDepthMap");
+    locPrevVP = glGetUniformLocation(program, "uPrevVP");
+    locScreenSize = glGetUniformLocation(program, "uScreenSize");
     locEnvZenith = glGetUniformLocation(program, "uEnvZenith");
     locEnvHorizon = glGetUniformLocation(program, "uEnvHorizon");
     locEnvGround = glGetUniformLocation(program, "uEnvGround");
@@ -664,6 +777,43 @@ struct SceneRendererGL::Data {
   void setUniformMat4(GLint loc, const Mat &m) {
     if (loc >= 0) glUniformMatrix4fv(loc, 1, GL_TRUE, m.data());
   }
+
+  void ensureSSRBuffers(int w, int h) {
+    if (ssrWidth == w && ssrHeight == h && ssrFBO[0] != 0) return;
+    for (int i = 0; i < 2; i++) {
+      if (ssrFBO[i]) glDeleteFramebuffers(1, &ssrFBO[i]);
+      if (ssrColorTex[i]) glDeleteTextures(1, &ssrColorTex[i]);
+      if (ssrDepthTex[i]) glDeleteTextures(1, &ssrDepthTex[i]);
+    }
+    ssrWidth = w; ssrHeight = h; ssrFirstFrame = true;
+    for (int i = 0; i < 2; i++) {
+      glGenTextures(1, &ssrColorTex[i]);
+      glBindTexture(GL_TEXTURE_2D, ssrColorTex[i]);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+      glGenTextures(1, &ssrDepthTex[i]);
+      glBindTexture(GL_TEXTURE_2D, ssrDepthTex[i]);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
+      glGenFramebuffers(1, &ssrFBO[i]);
+      glBindFramebuffer(GL_FRAMEBUFFER, ssrFBO[i]);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssrColorTex[i], 0);
+      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ssrDepthTex[i], 0);
+      if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        fprintf(stderr, "[SceneRendererGL] SSR FBO %d incomplete\n", i);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
 };
 
 // ---- Implementation ----
@@ -680,6 +830,11 @@ SceneRendererGL::~SceneRendererGL() {
     if (m_data->shadowFBO[i]) glDeleteFramebuffers(1, &m_data->shadowFBO[i]);
     if (m_data->shadowTex[i]) glDeleteTextures(1, &m_data->shadowTex[i]);
   }
+  for (int i = 0; i < 2; i++) {
+    if (m_data->ssrFBO[i]) glDeleteFramebuffers(1, &m_data->ssrFBO[i]);
+    if (m_data->ssrColorTex[i]) glDeleteTextures(1, &m_data->ssrColorTex[i]);
+    if (m_data->ssrDepthTex[i]) glDeleteTextures(1, &m_data->ssrDepthTex[i]);
+  }
   delete m_data;
 }
 
@@ -690,6 +845,8 @@ void SceneRendererGL::setEnvMultiplier(float m) { m_data->envMultiplier = m; }
 float SceneRendererGL::getEnvMultiplier() const { return m_data->envMultiplier; }
 void SceneRendererGL::setDirectMultiplier(float m) { m_data->directMultiplier = m; }
 float SceneRendererGL::getDirectMultiplier() const { return m_data->directMultiplier; }
+void SceneRendererGL::setSSREnabled(bool enabled) { m_data->ssrEnabled = enabled; }
+bool SceneRendererGL::getSSREnabled() const { return m_data->ssrEnabled; }
 
 void SceneRendererGL::ensureShaderCompiled() {
   if (m_data->shaderReady) return;
@@ -897,6 +1054,15 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   }
   glViewport(vpX, vpY, vpW, vpH);
 
+  // SSR: redirect rendering to FBO (previous frame's textures used for reflections)
+  m_data->ensureSSRBuffers(vpW, vpH);
+  int ssrWriteIdx = m_data->ssrCurrentIdx;
+  int ssrReadIdx = 1 - ssrWriteIdx;
+  GLint mainPassPrevFBO = 0;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &mainPassPrevFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, m_data->ssrFBO[ssrWriteIdx]);
+  glViewport(0, 0, vpW, vpH);  // FBO has no letterboxing offset
+
   glDisable(GL_CULL_FACE);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -944,6 +1110,21 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   glUniform1f(m_data->locEnvMul, m_data->envMultiplier);
   glUniform1f(m_data->locDirectMul, m_data->directMultiplier);
   glUniform1i(m_data->locDebugMode, m_data->debugMode);
+
+  // SSR uniforms: bind previous frame's color+depth for screen-space reflections
+  bool ssrActive = m_data->ssrEnabled && !m_data->ssrFirstFrame;
+  glUniform1i(m_data->locSSREnabled, ssrActive ? 1 : 0);
+  glUniform2f(m_data->locScreenSize, (float)vpW, (float)vpH);
+  if (ssrActive) {
+    glActiveTexture(GL_TEXTURE9);
+    glBindTexture(GL_TEXTURE_2D, m_data->ssrColorTex[ssrReadIdx]);
+    glUniform1i(m_data->locPrevColorMap, 9);
+    glActiveTexture(GL_TEXTURE10);
+    glBindTexture(GL_TEXTURE_2D, m_data->ssrDepthTex[ssrReadIdx]);
+    glUniform1i(m_data->locPrevDepthMap, 10);
+    Mat prevVP = m_data->prevProjectionMatrix * m_data->prevViewMatrix;
+    m_data->setUniformMat4(m_data->locPrevVP, prevVP);
+  }
 
   // Environment uniforms for sampleSky() in fragment shader.
   // These must NOT include exposure — the fragment shader applies uExposure
@@ -1006,8 +1187,28 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
     glActiveTexture(GL_TEXTURE1 + s);
     glBindTexture(GL_TEXTURE_2D, 0);
   }
+  if (ssrActive) {
+    glActiveTexture(GL_TEXTURE9);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE10);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
   glActiveTexture(GL_TEXTURE0);
   glUseProgram(0);
+
+  // Blit from SSR FBO to the original framebuffer (with letterboxing)
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_data->ssrFBO[ssrWriteIdx]);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mainPassPrevFBO);
+  glBlitFramebuffer(0, 0, vpW, vpH,
+                    vpX, vpY, vpX + vpW, vpY + vpH,
+                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  glBindFramebuffer(GL_FRAMEBUFFER, mainPassPrevFBO);
+
+  // Store current matrices for next frame's SSR reprojection
+  m_data->prevViewMatrix = viewGL;
+  m_data->prevProjectionMatrix = projGL;
+  m_data->ssrCurrentIdx = 1 - m_data->ssrCurrentIdx;
+  m_data->ssrFirstFrame = false;
 }
 
 void SceneRendererGL::renderObject(const SceneObject *obj,

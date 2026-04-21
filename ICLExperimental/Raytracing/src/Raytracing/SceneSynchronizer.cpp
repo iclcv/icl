@@ -435,7 +435,7 @@ SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
   // but setBrightness() only serves as a dirty-detection trigger.
   // Multiplying both would create a quadratic response (bgPct²).
   const auto &sky = iclScene.getSky();
-  float bgStrength = 2.0f * sky.intensity;
+  float bgStrength = sky.intensity;
   if (m_lastLightHash == 0) {
     Shader *bg = cclScene->default_background;
     ShaderGraph *graph = new ShaderGraph();
@@ -451,10 +451,16 @@ SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
       // Uses the ray direction's Y component to blend between zenith (up),
       // horizon (middle), and ground (down) colors with configurable sharpness.
 
-      // Ray direction → extract Y component
+      // Ray direction → extract Y component.
+      // Negate Y: Cycles background Normal points inward, so Y is flipped
+      // relative to GL's outward-facing view direction.
       auto *geomNode = graph->create_node<GeometryNode>();
       auto *sepXYZ = graph->create_node<SeparateXYZNode>();
       graph->connect(geomNode->output("Normal"), sepXYZ->input("Vector"));
+      auto *flipY = graph->create_node<MathNode>();
+      flipY->set_math_type(NODE_MATH_MULTIPLY);
+      flipY->set_value2(-1.0f);
+      graph->connect(sepXYZ->output("Y"), flipY->input("Value1"));
 
       // Sky colors
       auto *zenithCol = graph->create_node<ColorNode>();
@@ -468,7 +474,7 @@ SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
       auto *clampY = graph->create_node<MathNode>();
       clampY->set_math_type(NODE_MATH_MAXIMUM);
       clampY->set_value2(0.0f);
-      graph->connect(sepXYZ->output("Y"), clampY->input("Value1"));
+      graph->connect(flipY->output("Value"), clampY->input("Value1"));
 
       auto *powNode = graph->create_node<MathNode>();
       powNode->set_math_type(NODE_MATH_POWER);
@@ -482,11 +488,11 @@ SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
       graph->connect(zenithCol->output("Color"), mixUp->input("B"));
       graph->connect(powNode->output("Value"), mixUp->input("Factor"));
 
-      // Lower hemisphere: tDown = clamp(-Y * 3, 0, 1)
+      // Lower hemisphere: tDown = clamp(-flippedY * 3, 0, 1)
       auto *negY = graph->create_node<MathNode>();
       negY->set_math_type(NODE_MATH_MULTIPLY);
       negY->set_value2(-1.0f);
-      graph->connect(sepXYZ->output("Y"), negY->input("Value1"));
+      graph->connect(flipY->output("Value"), negY->input("Value1"));
 
       auto *mulThree = graph->create_node<MathNode>();
       mulThree->set_math_type(NODE_MATH_MULTIPLY);
@@ -501,11 +507,11 @@ SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
       graph->connect(groundCol->output("Color"), mixDown->input("B"));
       graph->connect(mulThree->output("Value"), mixDown->input("Factor"));
 
-      // Select above/below: isAbove = (Y > 0) ? 1 : 0
+      // Select above/below: isAbove = (flippedY > 0) ? 1 : 0
       auto *isAbove = graph->create_node<MathNode>();
       isAbove->set_math_type(NODE_MATH_GREATER_THAN);
       isAbove->set_value2(0.0f);
-      graph->connect(sepXYZ->output("Y"), isAbove->input("Value1"));
+      graph->connect(flipY->output("Value"), isAbove->input("Value1"));
 
       // finalColor = mix(skyBelow, skyAbove, isAbove)
       auto *mixFinal = graph->create_node<MixColorNode>();

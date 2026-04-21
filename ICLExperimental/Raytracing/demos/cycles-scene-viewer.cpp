@@ -466,7 +466,8 @@ void init() {
             << Slider(1, 16, 4).handle("bounces").label("Bounces").minSize(10,2)
             << Slider(10, 500, 100).handle("exposure").label("Exposure %").minSize(10,2)
             << Slider(0, 100, 100).handle("brightness").label("BG %").minSize(10,2)
-            << Combo("!Shaded,Normals,Albedo,UVs,Lighting Only,NdotL").handle("glDebug").label("GL Debug").minSize(10,2)
+            << Combo("!Shaded,Normals,Albedo,UVs,Lighting Only,NdotL,SSR Confidence").handle("glDebug").label("GL Debug").minSize(10,2)
+            << CheckBox("SSR", true).handle("ssrEnabled").minSize(4,2)
             << Slider(10, 500, 150).handle("glEnv").label("GL Env %").minSize(8,2)
             << Slider(10, 500, 100).handle("glDirect").label("GL Direct %").minSize(8,2)
             << Label("--").handle("info").minSize(15,2))
@@ -615,6 +616,7 @@ void run() {
     glRenderer->setEnvMultiplier(gui["glEnv"].as<int>() / 100.0f);
     glRenderer->setDirectMultiplier(gui["glDirect"].as<int>() / 100.0f);
     glRenderer->setDebugMode(gui["glDebug"].as<ComboHandle>().getSelectedIndex());
+    glRenderer->setSSREnabled(gui["ssrEnabled"].as<bool>());
   }
 
   // Material preset switching — applies to loaded meshes only (not checker tiles)

@@ -57,6 +57,10 @@ namespace icl::geom {
     void setDirectMultiplier(float m);
     float getDirectMultiplier() const;
 
+    /// Enable/disable screen-space reflections (default: enabled)
+    void setSSREnabled(bool enabled);
+    bool getSSREnabled() const;
+
     /// Render scene to an offscreen image (creates temporary FBO)
     core::Image renderToImage(const Scene &scene, int camIndex, int width, int height);
 
