@@ -69,7 +69,6 @@ io_headers = files(
   'TestImages.h',
   'V4L2Grabber.h',
   'V4L2LoopBackOutput.h',
-  'VideoGrabber.h',
   'XiGrabber.h',
   'ZmqGrabber.h',
   'ZmqImageOutput.h',

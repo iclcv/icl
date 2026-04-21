@@ -28,9 +28,6 @@
 #include <icl/io/TestImages.h>
 
 
-#ifdef ICL_HAVE_XINE
-#include <icl/io/VideoGrabber.h>
-#endif
 
 
 /** \defgroup DC_G LibDC1394-2 based IEEE-1394 Camera Grabber and Control API
