@@ -47,7 +47,14 @@ public:
   void setTargetFrameTime(float ms) override;
   int getObjectAtPixel(int x, int y) const override;
 
+  bool supportsUpsampling(UpsamplingMethod method) const override;
+  bool setUpsampling(UpsamplingMethod method) override;
+
 private:
+  void applyMetalFXSpatial(int renderW, int renderH);
+  void applyMetalFXTemporal(const RTRayGenParams &camera,
+                            int renderW, int renderH);
+
   struct Impl;
   std::unique_ptr<Impl> m_impl;
 };

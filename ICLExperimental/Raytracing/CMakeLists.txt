@@ -56,6 +56,13 @@ target_compile_definitions(ICLRaytracing PRIVATE ICL_SOURCE_DIR="${CMAKE_SOURCE_
 if(APPLE AND METAL_FRAMEWORK)
   target_link_libraries(ICLRaytracing ${METAL_FRAMEWORK} ${FOUNDATION_FRAMEWORK})
   target_compile_definitions(ICLRaytracing PUBLIC ICL_HAVE_METAL=1)
+
+  # MetalFX for spatial/temporal upscaling (macOS 13+)
+  find_library(METALFX_FRAMEWORK MetalFX)
+  if(METALFX_FRAMEWORK)
+    target_link_libraries(ICLRaytracing ${METALFX_FRAMEWORK})
+    message(STATUS "MetalFX found — spatial/temporal upscaling available")
+  endif()
 endif()
 
 # OpenMP for parallel ray tracing

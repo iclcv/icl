@@ -22,6 +22,10 @@ struct ComputePipeline::Impl {
   id<MTLComputePipelineState> state;
 };
 
+struct Texture::Impl {
+  id<MTLTexture> texture;
+};
+
 struct AccelStruct::Impl {
   id<MTLAccelerationStructure> accel;
 };
@@ -82,6 +86,26 @@ Buffer Device::newBuffer(const void *data, size_t bytes) {
                                    options:MTLResourceStorageModeShared];
   }
   return buf;
+}
+
+// ---- Texture factory ------------------------------------------------------
+
+Texture Device::newTexture(int pixelFormat, int w, int h, int usage) {
+  Texture tex;
+  if (!isValid() || w <= 0 || h <= 0) return tex;
+
+  @autoreleasepool {
+    auto *desc = [MTLTextureDescriptor
+        texture2DDescriptorWithPixelFormat:(MTLPixelFormat)pixelFormat
+                                     width:w
+                                    height:h
+                                 mipmapped:NO];
+    desc.usage = (MTLTextureUsage)usage;
+    desc.storageMode = MTLStorageModePrivate;
+    tex.m_impl = std::make_shared<Texture::Impl>();
+    tex.m_impl->texture = [m_impl->device newTextureWithDescriptor:desc];
+  }
+  return tex;
 }
 
 // ---- Pipeline factory -----------------------------------------------------
@@ -379,6 +403,31 @@ Buffer::operator bool() const { return m_impl && m_impl->buffer != nil; }
 
 void *Buffer::nativeHandle() const {
   return m_impl ? (__bridge void *)m_impl->buffer : nullptr;
+}
+
+// ===== Texture =============================================================
+
+Texture::Texture() = default;
+Texture::~Texture() = default;
+Texture::Texture(const Texture &) = default;
+Texture &Texture::operator=(const Texture &) = default;
+Texture::Texture(Texture &&) noexcept = default;
+Texture &Texture::operator=(Texture &&) noexcept = default;
+
+int Texture::width() const {
+  return m_impl ? (int)[m_impl->texture width] : 0;
+}
+
+int Texture::height() const {
+  return m_impl ? (int)[m_impl->texture height] : 0;
+}
+
+Texture::operator bool() const {
+  return m_impl && m_impl->texture != nil;
+}
+
+void *Texture::nativeHandle() const {
+  return m_impl ? (__bridge void *)m_impl->texture : nullptr;
 }
 
 // ===== ComputePipeline =====================================================

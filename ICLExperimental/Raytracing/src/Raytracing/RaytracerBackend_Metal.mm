@@ -5,6 +5,14 @@
 #ifdef ICL_HAVE_METAL
 
 #import <Metal/Metal.h>
+
+#if __has_include(<MetalFX/MetalFX.h>)
+#import <MetalFX/MetalFX.h>
+#define ICL_HAVE_METALFX 1
+#else
+#define ICL_HAVE_METALFX 0
+#endif
+
 #include "RaytracerBackend_Metal.h"
 #include "MetalRT.h"
 #include "RaytracerTypes.h"
@@ -124,6 +132,28 @@ struct MetalRTBackend::Impl {
   float targetFrameMs = 0;
   std::vector<int32_t> cpuObjectIds;
   core::Img8u output;
+
+  // MetalFX upsampling state
+  mtl::ComputePipeline planarToRGBAPipeline;
+  mtl::ComputePipeline rgbaToPlanarPipeline;
+  mtl::ComputePipeline depthToTexturePipeline;
+  mtl::ComputePipeline motionVectorPipeline;
+  mtl::Texture renderColorTex;   // input color at render resolution
+  mtl::Texture displayColorTex;  // output color at display resolution
+  mtl::Texture depthTex;         // depth at render resolution (R32Float)
+  mtl::Texture motionTex;        // motion vectors at render resolution (RG16Float)
+  mtl::Buffer displayOutR, displayOutG, displayOutB;
+  mtl::Buffer depthBuf;          // depth output from raytracing kernel
+  int metalfxRenderW = 0, metalfxRenderH = 0;
+  int metalfxDisplayW = 0, metalfxDisplayH = 0;
+#if ICL_HAVE_METALFX
+  id<MTLFXSpatialScaler> spatialScaler = nil;
+  id<MTLFXTemporalScaler> temporalScaler = nil;
+#endif
+  RTRayGenParams prevCamera{};   // previous frame camera for motion vectors
+  bool hasPrevCamera = false;
+  int temporalFrameIndex = 0;
+  float jitterX = 0, jitterY = 0; // current frame's sub-pixel jitter
 
   // Active BLAS list for TLAS build (contiguous, no gaps)
   std::vector<mtl::AccelStruct> activeBLAS;
@@ -328,6 +358,169 @@ struct MetalRTBackend::Impl {
     sceneDataDirty = false;
   }
 
+  // ---- MetalFX scaler setup/teardown -----------------------------------
+
+  void setupSpatialScaler(int renderW, int renderH, int dispW, int dispH) {
+#if ICL_HAVE_METALFX
+    renderColorTex = device.newTexture(
+        mtl::PixelFormatRGBA8Unorm, renderW, renderH,
+        mtl::TextureUsageShaderRead | mtl::TextureUsageShaderWrite);
+    displayColorTex = device.newTexture(
+        mtl::PixelFormatRGBA8Unorm, dispW, dispH,
+        mtl::TextureUsageShaderRead | mtl::TextureUsageShaderWrite);
+
+    size_t dispN = dispW * dispH;
+    displayOutR = device.newBuffer(dispN * sizeof(uint8_t));
+    displayOutG = device.newBuffer(dispN * sizeof(uint8_t));
+    displayOutB = device.newBuffer(dispN * sizeof(uint8_t));
+
+    MTLFXSpatialScalerDescriptor *desc =
+        [[MTLFXSpatialScalerDescriptor alloc] init];
+    desc.inputWidth = renderW;
+    desc.inputHeight = renderH;
+    desc.outputWidth = dispW;
+    desc.outputHeight = dispH;
+    desc.colorTextureFormat = MTLPixelFormatRGBA8Unorm;
+    desc.outputTextureFormat = MTLPixelFormatRGBA8Unorm;
+    desc.colorProcessingMode =
+        MTLFXSpatialScalerColorProcessingModePerceptual;
+
+    spatialScaler = [desc newSpatialScalerWithDevice:
+        (__bridge id<MTLDevice>)device.nativeDevice()];
+
+    if (!spatialScaler) {
+      WARNING_LOG("MetalFX: spatial scaler creation failed");
+    }
+
+    metalfxRenderW = renderW;
+    metalfxRenderH = renderH;
+    metalfxDisplayW = dispW;
+    metalfxDisplayH = dispH;
+#endif
+  }
+
+  void setupTemporalScaler(int renderW, int renderH, int dispW, int dispH) {
+#if ICL_HAVE_METALFX
+    id<MTLDevice> mtlDevice = (__bridge id<MTLDevice>)device.nativeDevice();
+
+    // Check device support first
+    if (![MTLFXTemporalScalerDescriptor supportsDevice:mtlDevice]) {
+      WARNING_LOG("MetalFX: temporal scaling not supported on this device");
+      return;
+    }
+
+    // Temporal scaler uses RGBA16Float for color (higher precision for
+    // temporal accumulation). Conversion kernels handle 8-bit ↔ 16-bit.
+    renderColorTex = device.newTexture(
+        mtl::PixelFormatRGBA16Float, renderW, renderH,
+        mtl::TextureUsageShaderRead | mtl::TextureUsageShaderWrite);
+    displayColorTex = device.newTexture(
+        mtl::PixelFormatRGBA16Float, dispW, dispH,
+        mtl::TextureUsageShaderRead | mtl::TextureUsageShaderWrite |
+        mtl::TextureUsageRenderTarget);
+    // Depth texture must use Depth32Float (not R32Float) for MetalFX temporal.
+    // Written via blit from buffer (compute shaders can't write depth textures).
+    depthTex = device.newTexture(
+        mtl::PixelFormatDepth32Float, renderW, renderH,
+        mtl::TextureUsageShaderRead | mtl::TextureUsageRenderTarget);
+    motionTex = device.newTexture(
+        mtl::PixelFormatRG16Float, renderW, renderH,
+        mtl::TextureUsageShaderRead | mtl::TextureUsageShaderWrite);
+
+    size_t dispN = dispW * dispH;
+    displayOutR = device.newBuffer(dispN * sizeof(uint8_t));
+    displayOutG = device.newBuffer(dispN * sizeof(uint8_t));
+    displayOutB = device.newBuffer(dispN * sizeof(uint8_t));
+
+    // Depth buffer at render resolution
+    depthBuf = device.newBuffer(renderW * renderH * sizeof(float));
+
+    MTLFXTemporalScalerDescriptor *desc =
+        [[MTLFXTemporalScalerDescriptor alloc] init];
+    desc.inputWidth = renderW;
+    desc.inputHeight = renderH;
+    desc.outputWidth = dispW;
+    desc.outputHeight = dispH;
+    desc.colorTextureFormat = MTLPixelFormatRGBA16Float;
+    desc.depthTextureFormat = MTLPixelFormatDepth32Float;
+    desc.motionTextureFormat = MTLPixelFormatRG16Float;
+    desc.outputTextureFormat = MTLPixelFormatRGBA16Float;
+
+    temporalScaler = [desc newTemporalScalerWithDevice:mtlDevice];
+
+    if (!temporalScaler) {
+      WARNING_LOG("MetalFX: temporal scaler creation failed — "
+                  << renderW << "x" << renderH << " -> "
+                  << dispW << "x" << dispH);
+    } else {
+      DEBUG_LOG("MetalFX: temporal scaler created — "
+                << renderW << "x" << renderH << " -> "
+                << dispW << "x" << dispH);
+    }
+
+    metalfxRenderW = renderW;
+    metalfxRenderH = renderH;
+    metalfxDisplayW = dispW;
+    metalfxDisplayH = dispH;
+    temporalFrameIndex = 0;
+    hasPrevCamera = false;
+#endif
+  }
+
+  void invalidateMetalFXScalers() {
+#if ICL_HAVE_METALFX
+    spatialScaler = nil;
+    temporalScaler = nil;
+#endif
+    metalfxRenderW = metalfxRenderH = 0;
+    metalfxDisplayW = metalfxDisplayH = 0;
+    hasPrevCamera = false;
+    temporalFrameIndex = 0;
+  }
+
+  // ---- Encode a lightweight compute dispatch (texture conversion, etc.) --
+
+  void dispatchCompute(const mtl::ComputePipeline &pipeline, int w, int h,
+                       const std::vector<std::pair<mtl::Buffer *, int>> &bufs,
+                       const std::vector<std::pair<mtl::Texture *, int>> &texs,
+                       const void *constBytes = nullptr, size_t constSize = 0,
+                       int constIdx = -1) {
+    @autoreleasepool {
+      id<MTLCommandQueue> queue =
+          (__bridge id<MTLCommandQueue>)device.nativeQueue();
+      id<MTLComputePipelineState> pso =
+          (__bridge id<MTLComputePipelineState>)pipeline.nativeHandle();
+
+      id<MTLCommandBuffer> cmdBuf = [queue commandBuffer];
+      id<MTLComputeCommandEncoder> enc = [cmdBuf computeCommandEncoder];
+      [enc setComputePipelineState:pso];
+
+      for (const auto &[buf, idx] : bufs) {
+        if (*buf)
+          [enc setBuffer:(__bridge id<MTLBuffer>)buf->nativeHandle()
+                  offset:0
+                 atIndex:idx];
+      }
+      for (const auto &[tex, idx] : texs) {
+        if (*tex)
+          [enc setTexture:(__bridge id<MTLTexture>)tex->nativeHandle()
+                  atIndex:idx];
+      }
+      if (constBytes && constSize > 0 && constIdx >= 0) {
+        [enc setBytes:constBytes length:constSize atIndex:constIdx];
+      }
+
+      NSUInteger execWidth = [pso threadExecutionWidth];
+      NSUInteger groupH = [pso maxTotalThreadsPerThreadgroup] / execWidth;
+      if (groupH == 0) groupH = 1;
+      [enc dispatchThreads:MTLSizeMake(w, h, 1)
+     threadsPerThreadgroup:MTLSizeMake(execWidth, groupH, 1)];
+      [enc endEncoding];
+      [cmdBuf commit];
+      [cmdBuf waitUntilCompleted];
+    }
+  }
+
   // ---- Dispatch a compute kernel ----------------------------------------
 
   void dispatch(const mtl::ComputePipeline &pipeline,
@@ -402,6 +595,10 @@ MetalRTBackend::MetalRTBackend() : m_impl(std::make_unique<Impl>()) {
 
   m_impl->directPipeline = m_impl->device.newPipeline(src, "raytrace");
   m_impl->ptPipeline = m_impl->device.newPipeline(src, "pathTrace");
+  m_impl->planarToRGBAPipeline = m_impl->device.newPipeline(src, "planarToRGBA");
+  m_impl->rgbaToPlanarPipeline = m_impl->device.newPipeline(src, "rgbaToPlanar");
+  m_impl->depthToTexturePipeline = m_impl->device.newPipeline(src, "depthToTexture");
+  m_impl->motionVectorPipeline = m_impl->device.newPipeline(src, "computeMotionVectors");
   m_impl->valid = (bool)m_impl->directPipeline && (bool)m_impl->ptPipeline;
 
   if (m_impl->valid)
@@ -511,6 +708,40 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
   params.bgColor = m_impl->bgColor;
   params._pad = 0;
 
+  // Apply sub-pixel jitter for MetalFX Temporal upscaling.
+  // Offset ray directions so the scaler gets different sub-pixel samples each frame.
+  // Halton(2,3) sequence gives low-discrepancy offsets in [-0.5, 0.5].
+  RTRayGenParams jitteredCamera = camera;
+  m_impl->jitterX = 0;
+  m_impl->jitterY = 0;
+  if (m_upsamplingMethod == UpsamplingMethod::MetalFXTemporal) {
+    auto halton = [](int i, int base) -> float {
+      float r = 0, f = 1.0f / base;
+      while (i > 0) { r += f * (i % base); i /= base; f /= base; }
+      return r;
+    };
+    int fi = m_impl->temporalFrameIndex + 1;
+    float jx = halton(fi, 2) - 0.5f;
+    float jy = halton(fi, 3) - 0.5f;
+    m_impl->jitterX = jx;
+    m_impl->jitterY = jy;
+
+    // dir = Qi * (px, py, 1) = col0*px + col1*py + col2
+    // Jittered: col0*(px+jx) + col1*(py+jy) + col2 = col0*px + col1*py + (col2 + col0*jx + col1*jy)
+    // So shift col2 += col0*jx + col1*jy
+    for (int r = 0; r < 4; r++) {
+      jitteredCamera.invViewProj.cols[2][r] +=
+          jitteredCamera.invViewProj.cols[0][r] * jx +
+          jitteredCamera.invViewProj.cols[1][r] * jy;
+    }
+  }
+
+  // Ensure depth buffer exists (needed for MetalFX temporal)
+  size_t depthBytes = n * sizeof(float);
+  if (!m_impl->depthBuf || m_impl->depthBuf.length() < depthBytes) {
+    m_impl->depthBuf = m_impl->device.newBuffer(depthBytes);
+  }
+
   if (m_impl->pathTracing) {
     // Clear accum on frame 0
     if (m_impl->accumFrame == 0) {
@@ -526,7 +757,7 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
       m_impl->accumFrame++;
       params.frameNumber = m_impl->accumFrame;
 
-      // Buffer bindings: 0=TLAS (handled in dispatch), 1..14 as per kernel
+      // Buffer bindings: 0=TLAS, 1..15 as per kernel
       std::vector<std::pair<mtl::Buffer *, int>> bufs = {
         {&m_impl->instanceDataBuf, 1},
         {&m_impl->flatVertexBuf, 2},
@@ -540,11 +771,12 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
         {&m_impl->outG, 10},
         {&m_impl->outB, 11},
         {&m_impl->objectIdBuf, 12},
+        {&m_impl->depthBuf, 13},
       };
 
       m_impl->dispatch(m_impl->ptPipeline, w, h, bufs,
-                       &camera, sizeof(camera), &params, sizeof(params),
-                       13, 14);
+                       &jitteredCamera, sizeof(jitteredCamera),
+                       &params, sizeof(params), 14, 15);
 
       auto now = std::chrono::steady_clock::now();
       float elapsedMs =
@@ -567,11 +799,12 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
       {&m_impl->outG, 7},
       {&m_impl->outB, 8},
       {&m_impl->objectIdBuf, 9},
+      {&m_impl->depthBuf, 10},
     };
 
     m_impl->dispatch(m_impl->directPipeline, w, h, bufs,
-                     &camera, sizeof(camera), &params, sizeof(params),
-                     10, 11);
+                     &jitteredCamera, sizeof(jitteredCamera),
+                     &params, sizeof(params), 11, 12);
   }
 
   // Read back from unified memory (just memcpy from buffer contents)
@@ -588,10 +821,238 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
          n * sizeof(int32_t));
 
   // Denoising (before upsampling, at internal resolution)
+  bool useMetalFX = (m_upsamplingMethod == UpsamplingMethod::MetalFXSpatial ||
+                     m_upsamplingMethod == UpsamplingMethod::MetalFXTemporal);
   applyDenoising(m_impl->output);
 
-  // Upsampling (render scale < 1.0)
+  // If denoising ran and we're using MetalFX, copy denoised image back to
+  // GPU buffers so the planarToRGBA kernel picks up the denoised result.
+  if (useMetalFX && m_denoisingMethod != DenoisingMethod::None) {
+    memcpy(m_impl->outR.contents(), m_impl->output.getData(0), n);
+    memcpy(m_impl->outG.contents(), m_impl->output.getData(1), n);
+    memcpy(m_impl->outB.contents(), m_impl->output.getData(2), n);
+  }
+
+  // Upsampling
+  if (m_upsamplingMethod == UpsamplingMethod::MetalFXSpatial) {
+    applyMetalFXSpatial(w, h);
+  } else if (m_upsamplingMethod == UpsamplingMethod::MetalFXTemporal) {
+    applyMetalFXTemporal(camera, w, h);
+  } else {
+    // CPU upsampling (Bilinear / EdgeAware)
+    applyUpsampling(m_impl->output, m_impl->cpuObjectIds);
+  }
+}
+
+// ---- MetalFX upsampling ---------------------------------------------------
+
+void MetalRTBackend::applyMetalFXSpatial(int renderW, int renderH) {
+#if ICL_HAVE_METALFX
+  int dispW = m_displayWidth;
+  int dispH = m_displayHeight;
+  if (dispW <= 0 || dispH <= 0 || (dispW == renderW && dispH == renderH)) {
+    return;
+  }
+
+  // Recreate scaler if resolution changed
+  if (renderW != m_impl->metalfxRenderW || renderH != m_impl->metalfxRenderH ||
+      dispW != m_impl->metalfxDisplayW || dispH != m_impl->metalfxDisplayH ||
+      !m_impl->spatialScaler) {
+    m_impl->setupSpatialScaler(renderW, renderH, dispW, dispH);
+  }
+  if (!m_impl->spatialScaler) return;
+
+  // 1. planarToRGBA: outR/G/B → renderColorTex
+  int width = renderW;
+  m_impl->dispatchCompute(m_impl->planarToRGBAPipeline, renderW, renderH,
+      {{&m_impl->outR, 0}, {&m_impl->outG, 1}, {&m_impl->outB, 2}},
+      {{&m_impl->renderColorTex, 0}},
+      &width, sizeof(width), 3);
+
+  // 2. MetalFX spatial scale: renderColorTex → displayColorTex
+  @autoreleasepool {
+    id<MTLCommandQueue> queue =
+        (__bridge id<MTLCommandQueue>)m_impl->device.nativeQueue();
+    id<MTLCommandBuffer> cmdBuf = [queue commandBuffer];
+
+    m_impl->spatialScaler.colorTexture =
+        (__bridge id<MTLTexture>)m_impl->renderColorTex.nativeHandle();
+    m_impl->spatialScaler.outputTexture =
+        (__bridge id<MTLTexture>)m_impl->displayColorTex.nativeHandle();
+    [m_impl->spatialScaler encodeToCommandBuffer:cmdBuf];
+
+    [cmdBuf commit];
+    [cmdBuf waitUntilCompleted];
+  }
+
+  // 3. rgbaToPlanar: displayColorTex → displayOutR/G/B
+  int dispWidth = dispW;
+  m_impl->dispatchCompute(m_impl->rgbaToPlanarPipeline, dispW, dispH,
+      {{&m_impl->displayOutR, 0}, {&m_impl->displayOutG, 1}, {&m_impl->displayOutB, 2}},
+      {{&m_impl->displayColorTex, 0}},
+      &dispWidth, sizeof(dispWidth), 3);
+
+  // 4. Read back to output image at display resolution
+  int dispN = dispW * dispH;
+  m_impl->output = core::Img8u(utils::Size(dispW, dispH), core::formatRGB);
+  memcpy(m_impl->output.getData(0), m_impl->displayOutR.contents(), dispN);
+  memcpy(m_impl->output.getData(1), m_impl->displayOutG.contents(), dispN);
+  memcpy(m_impl->output.getData(2), m_impl->displayOutB.contents(), dispN);
+
+  // Upsample object IDs via nearest-neighbor
+  if (!m_impl->cpuObjectIds.empty()) {
+    std::vector<int32_t> upIds;
+    upsampleNearestInt(m_impl->cpuObjectIds, renderW, renderH,
+                       upIds, dispW, dispH);
+    m_impl->cpuObjectIds = std::move(upIds);
+  }
+#else
+  // Fallback to CPU upsampling
   applyUpsampling(m_impl->output, m_impl->cpuObjectIds);
+#endif
+}
+
+void MetalRTBackend::applyMetalFXTemporal(const RTRayGenParams &camera,
+                                           int renderW, int renderH) {
+#if ICL_HAVE_METALFX
+  int dispW = m_displayWidth;
+  int dispH = m_displayHeight;
+  if (dispW <= 0 || dispH <= 0) {
+    return;
+  }
+
+  // Recreate scaler if resolution changed
+  if (renderW != m_impl->metalfxRenderW || renderH != m_impl->metalfxRenderH ||
+      dispW != m_impl->metalfxDisplayW || dispH != m_impl->metalfxDisplayH ||
+      !m_impl->temporalScaler) {
+    m_impl->setupTemporalScaler(renderW, renderH, dispW, dispH);
+  }
+  if (!m_impl->temporalScaler) return;
+
+  // Ensure depth buffer exists
+  size_t depthBytes = renderW * renderH * sizeof(float);
+  if (!m_impl->depthBuf || m_impl->depthBuf.length() < depthBytes) {
+    m_impl->depthBuf = m_impl->device.newBuffer(depthBytes);
+  }
+
+  // 1. planarToRGBA: outR/G/B → renderColorTex
+  int width = renderW;
+  m_impl->dispatchCompute(m_impl->planarToRGBAPipeline, renderW, renderH,
+      {{&m_impl->outR, 0}, {&m_impl->outG, 1}, {&m_impl->outB, 2}},
+      {{&m_impl->renderColorTex, 0}},
+      &width, sizeof(width), 3);
+
+  // 2. Blit depth buffer → Depth32Float texture (can't use compute for depth textures)
+  @autoreleasepool {
+    id<MTLCommandQueue> queue =
+        (__bridge id<MTLCommandQueue>)m_impl->device.nativeQueue();
+    id<MTLCommandBuffer> cmdBuf = [queue commandBuffer];
+    id<MTLBlitCommandEncoder> blit = [cmdBuf blitCommandEncoder];
+    [blit copyFromBuffer:(__bridge id<MTLBuffer>)m_impl->depthBuf.nativeHandle()
+            sourceOffset:0
+       sourceBytesPerRow:renderW * sizeof(float)
+     sourceBytesPerImage:renderW * renderH * sizeof(float)
+              sourceSize:MTLSizeMake(renderW, renderH, 1)
+               toTexture:(__bridge id<MTLTexture>)m_impl->depthTex.nativeHandle()
+        destinationSlice:0
+        destinationLevel:0
+       destinationOrigin:MTLOriginMake(0, 0, 0)];
+    [blit endEncoding];
+    [cmdBuf commit];
+    [cmdBuf waitUntilCompleted];
+  }
+
+  // 3. Compute motion vectors (if we have a previous camera)
+  if (m_impl->hasPrevCamera && m_impl->motionVectorPipeline) {
+    @autoreleasepool {
+      id<MTLCommandQueue> queue =
+          (__bridge id<MTLCommandQueue>)m_impl->device.nativeQueue();
+      id<MTLComputePipelineState> pso =
+          (__bridge id<MTLComputePipelineState>)
+              m_impl->motionVectorPipeline.nativeHandle();
+
+      id<MTLCommandBuffer> cmdBuf = [queue commandBuffer];
+      id<MTLComputeCommandEncoder> enc = [cmdBuf computeCommandEncoder];
+      [enc setComputePipelineState:pso];
+
+      [enc setBuffer:(__bridge id<MTLBuffer>)m_impl->depthBuf.nativeHandle()
+              offset:0
+             atIndex:0];
+      [enc setTexture:(__bridge id<MTLTexture>)m_impl->motionTex.nativeHandle()
+              atIndex:0];
+      [enc setBytes:&camera length:sizeof(camera) atIndex:1];
+      [enc setBytes:&m_impl->prevCamera.viewProj
+             length:sizeof(RTMat4)
+            atIndex:2];
+
+      NSUInteger execWidth = [pso threadExecutionWidth];
+      NSUInteger groupH = [pso maxTotalThreadsPerThreadgroup] / execWidth;
+      if (groupH == 0) groupH = 1;
+      [enc dispatchThreads:MTLSizeMake(renderW, renderH, 1)
+     threadsPerThreadgroup:MTLSizeMake(execWidth, groupH, 1)];
+      [enc endEncoding];
+      [cmdBuf commit];
+      [cmdBuf waitUntilCompleted];
+    }
+  }
+
+  // 4. Temporal scale: renderColorTex + depthTex + motionTex → displayColorTex
+  // Jitter was already computed and applied to the camera in render().
+  float jitterX = m_impl->jitterX;
+  float jitterY = m_impl->jitterY;
+  bool resetHistory = !m_impl->hasPrevCamera || m_impl->accumFrame <= 1;
+  @autoreleasepool {
+    id<MTLCommandQueue> queue =
+        (__bridge id<MTLCommandQueue>)m_impl->device.nativeQueue();
+    id<MTLCommandBuffer> cmdBuf = [queue commandBuffer];
+
+    m_impl->temporalScaler.colorTexture =
+        (__bridge id<MTLTexture>)m_impl->renderColorTex.nativeHandle();
+    m_impl->temporalScaler.depthTexture =
+        (__bridge id<MTLTexture>)m_impl->depthTex.nativeHandle();
+    m_impl->temporalScaler.motionTexture =
+        (__bridge id<MTLTexture>)m_impl->motionTex.nativeHandle();
+    m_impl->temporalScaler.outputTexture =
+        (__bridge id<MTLTexture>)m_impl->displayColorTex.nativeHandle();
+    m_impl->temporalScaler.jitterOffsetX = jitterX;
+    m_impl->temporalScaler.jitterOffsetY = jitterY;
+    m_impl->temporalScaler.reset = resetHistory ? YES : NO;
+
+    [m_impl->temporalScaler encodeToCommandBuffer:cmdBuf];
+    [cmdBuf commit];
+    [cmdBuf waitUntilCompleted];
+  }
+
+  // 6. rgbaToPlanar: displayColorTex → displayOutR/G/B
+  int dispWidth = dispW;
+  m_impl->dispatchCompute(m_impl->rgbaToPlanarPipeline, dispW, dispH,
+      {{&m_impl->displayOutR, 0}, {&m_impl->displayOutG, 1}, {&m_impl->displayOutB, 2}},
+      {{&m_impl->displayColorTex, 0}},
+      &dispWidth, sizeof(dispWidth), 3);
+
+  // 7. Read back to output image at display resolution
+  int dispN = dispW * dispH;
+  m_impl->output = core::Img8u(utils::Size(dispW, dispH), core::formatRGB);
+  memcpy(m_impl->output.getData(0), m_impl->displayOutR.contents(), dispN);
+  memcpy(m_impl->output.getData(1), m_impl->displayOutG.contents(), dispN);
+  memcpy(m_impl->output.getData(2), m_impl->displayOutB.contents(), dispN);
+
+  // Upsample object IDs via nearest-neighbor
+  if (!m_impl->cpuObjectIds.empty()) {
+    std::vector<int32_t> upIds;
+    upsampleNearestInt(m_impl->cpuObjectIds, renderW, renderH,
+                       upIds, dispW, dispH);
+    m_impl->cpuObjectIds = std::move(upIds);
+  }
+
+  // Store current camera for next frame's motion vectors
+  m_impl->prevCamera = camera;
+  m_impl->hasPrevCamera = true;
+  m_impl->temporalFrameIndex++;
+#else
+  // Fallback to CPU upsampling
+  applyUpsampling(m_impl->output, m_impl->cpuObjectIds);
+#endif
 }
 
 // ---- Readback + mode control ----------------------------------------------
@@ -602,7 +1063,11 @@ void MetalRTBackend::setPathTracing(bool enabled) {
   m_impl->pathTracing = enabled;
 }
 
-void MetalRTBackend::resetAccumulation() { m_impl->accumFrame = 0; }
+void MetalRTBackend::resetAccumulation() {
+  m_impl->accumFrame = 0;
+  m_impl->hasPrevCamera = false;
+  m_impl->temporalFrameIndex = 0;
+}
 
 int MetalRTBackend::getAccumulatedFrames() const {
   return m_impl->accumFrame;
@@ -618,6 +1083,27 @@ int MetalRTBackend::getObjectAtPixel(int x, int y) const {
   if (x < 0 || x >= w || y < 0 || y >= h || m_impl->cpuObjectIds.empty())
     return -1;
   return m_impl->cpuObjectIds[x + y * w];
+}
+
+bool MetalRTBackend::supportsUpsampling(UpsamplingMethod m) const {
+#if ICL_HAVE_METALFX
+  if (m == UpsamplingMethod::MetalFXSpatial ||
+      m == UpsamplingMethod::MetalFXTemporal)
+    return m_impl && m_impl->valid;
+#endif
+  return RaytracerBackend::supportsUpsampling(m);
+}
+
+bool MetalRTBackend::setUpsampling(UpsamplingMethod method) {
+  if (!supportsUpsampling(method)) return false;
+
+  // Invalidate scalers when changing method
+  if (method != m_upsamplingMethod) {
+    m_impl->invalidateMetalFXScalers();
+  }
+
+  m_upsamplingMethod = method;
+  return true;
 }
 
 } // namespace icl::rt

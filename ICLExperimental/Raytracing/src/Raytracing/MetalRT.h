@@ -24,6 +24,7 @@
 namespace icl::rt::mtl {
 
 class Buffer;
+class Texture;
 class ComputePipeline;
 class AccelStruct;
 
@@ -65,6 +66,9 @@ public:
 
   Buffer newBuffer(size_t bytes);
   Buffer newBuffer(const void *data, size_t bytes);
+
+  /// Create a 2D texture with the given pixel format, dimensions, and usage flags.
+  Texture newTexture(int pixelFormat, int width, int height, int usage);
 
   /// Compile a compute pipeline from Metal Shading Language source code.
   ComputePipeline newPipeline(const std::string &source,
@@ -130,6 +134,42 @@ public:
   size_t length() const;
   explicit operator bool() const;
   void *nativeHandle() const; // id<MTLBuffer>
+
+private:
+  friend class Device;
+  struct Impl;
+  std::shared_ptr<Impl> m_impl;
+};
+
+// ---------------------------------------------------------------------------
+// Texture
+// ---------------------------------------------------------------------------
+
+/// Pixel format constants (match MTLPixelFormat values)
+constexpr int PixelFormatRGBA8Unorm   = 70;
+constexpr int PixelFormatRGBA16Float  = 115;
+constexpr int PixelFormatR32Float     = 55;
+constexpr int PixelFormatRG16Float    = 105;
+constexpr int PixelFormatDepth32Float = 252;
+
+/// Texture usage constants (match MTLTextureUsage flags)
+constexpr int TextureUsageShaderRead   = 0x01;
+constexpr int TextureUsageShaderWrite  = 0x02;
+constexpr int TextureUsageRenderTarget = 0x04;
+
+class Texture {
+public:
+  Texture();
+  ~Texture();
+  Texture(const Texture &);
+  Texture &operator=(const Texture &);
+  Texture(Texture &&) noexcept;
+  Texture &operator=(Texture &&) noexcept;
+
+  int width() const;
+  int height() const;
+  explicit operator bool() const;
+  void *nativeHandle() const; // id<MTLTexture>
 
 private:
   friend class Device;

@@ -49,6 +49,7 @@ struct RTLight {
 struct RTRayGenParams {
   RTFloat3 cameraPos;
   RTMat4 invViewProj;
+  RTMat4 viewProj;
   int imageWidth;
   int imageHeight;
   float nearClip;
@@ -229,6 +230,100 @@ inline float3 directLight(float3 hitPos, float3 N, float3 viewDir,
 }
 
 // ==========================================================================
+// Buffer ↔ Texture conversion kernels (for MetalFX upscaling)
+// ==========================================================================
+
+/// Convert planar ICL Img8u (separate R, G, B channel buffers) → RGBA8 texture.
+[[kernel]] void planarToRGBA(
+    device const uchar *inR [[buffer(0)]],
+    device const uchar *inG [[buffer(1)]],
+    device const uchar *inB [[buffer(2)]],
+    texture2d<float, access::write> outTex [[texture(0)]],
+    constant int &width [[buffer(3)]],
+    uint2 tid [[thread_position_in_grid]])
+{
+  if (tid.x >= uint(width) || tid.y >= outTex.get_height()) return;
+  int i = tid.x + tid.y * width;
+  outTex.write(float4(float(inR[i]) / 255.0f, float(inG[i]) / 255.0f,
+                       float(inB[i]) / 255.0f, 1.0f), tid);
+}
+
+/// Convert RGBA8 texture → planar ICL Img8u (separate R, G, B channel buffers).
+[[kernel]] void rgbaToPlanar(
+    texture2d<float, access::read> inTex [[texture(0)]],
+    device uchar *outR [[buffer(0)]],
+    device uchar *outG [[buffer(1)]],
+    device uchar *outB [[buffer(2)]],
+    constant int &width [[buffer(3)]],
+    uint2 tid [[thread_position_in_grid]])
+{
+  if (tid.x >= uint(width) || tid.y >= inTex.get_height()) return;
+  float4 c = inTex.read(tid);
+  int i = tid.x + tid.y * width;
+  outR[i] = uchar(clamp(c.x, 0.0f, 1.0f) * 255.0f);
+  outG[i] = uchar(clamp(c.y, 0.0f, 1.0f) * 255.0f);
+  outB[i] = uchar(clamp(c.z, 0.0f, 1.0f) * 255.0f);
+}
+
+/// Copy float depth buffer → R32Float depth texture.
+[[kernel]] void depthToTexture(
+    device const float *depthBuf [[buffer(0)]],
+    texture2d<float, access::write> depthTex [[texture(0)]],
+    constant int &width [[buffer(1)]],
+    uint2 tid [[thread_position_in_grid]])
+{
+  if (tid.x >= uint(width) || tid.y >= depthTex.get_height()) return;
+  int i = tid.x + tid.y * width;
+  depthTex.write(float4(depthBuf[i], 0, 0, 0), tid);
+}
+
+/// Compute per-pixel motion vectors by reprojecting current world positions
+/// through the previous frame's view-projection matrix.
+/// Output: RG16Float texture with (dx, dy) in pixel units.
+[[kernel]] void computeMotionVectors(
+    device const float *depthBuf          [[buffer(0)]],
+    texture2d<float, access::write> motionTex [[texture(0)]],
+    constant RTRayGenParams &curCam       [[buffer(1)]],
+    constant RTMat4 &prevViewProj         [[buffer(2)]],
+    uint2 tid [[thread_position_in_grid]])
+{
+  int w = curCam.imageWidth;
+  int h = curCam.imageHeight;
+  if (int(tid.x) >= w || int(tid.y) >= h) return;
+
+  int idx = tid.x + tid.y * w;
+  float depth = depthBuf[idx];
+
+  // Reconstruct world position: camPos + depth * rayDir
+  float px = float(tid.x) + 0.5f;
+  float py = float(tid.y) + 0.5f;
+  float3 rayDir = generateRayDir(curCam, px, py);
+  float3 worldPos = f3(curCam.cameraPos) + rayDir * depth;
+
+  // Project through previous frame's viewProj (Q-matrix)
+  // Q is stored as 4×4 with rows 0-2 being the 3×4 projection.
+  // result = Q * (x, y, z, 1), then screen = result.xy / result.z
+  constant RTMat4 &Q = prevViewProj;
+  float qx = Q.cols[0][0]*worldPos.x + Q.cols[1][0]*worldPos.y +
+             Q.cols[2][0]*worldPos.z + Q.cols[3][0];
+  float qy = Q.cols[0][1]*worldPos.x + Q.cols[1][1]*worldPos.y +
+             Q.cols[2][1]*worldPos.z + Q.cols[3][1];
+  float qz = Q.cols[0][2]*worldPos.x + Q.cols[1][2]*worldPos.y +
+             Q.cols[2][2]*worldPos.z + Q.cols[3][2];
+
+  float2 motion = float2(0);
+  if (abs(qz) > 1e-6f) {
+    float prevPx = qx / qz;
+    float prevPy = qy / qz;
+    // Motion in pixels, normalized to [0,1] range for MetalFX
+    motion.x = (px - prevPx) / float(w);
+    motion.y = (py - prevPy) / float(h);
+  }
+
+  motionTex.write(float4(motion.x, motion.y, 0, 0), tid);
+}
+
+// ==========================================================================
 // Direct lighting kernel (Blinn-Phong + reflections)
 // ==========================================================================
 
@@ -244,8 +339,9 @@ void raytrace(
     device uchar              *outG            [[buffer(7)]],
     device uchar              *outB            [[buffer(8)]],
     device int                *objectIds       [[buffer(9)]],
-    constant RTRayGenParams   &camera          [[buffer(10)]],
-    constant SceneParams      &params          [[buffer(11)]],
+    device float              *depthOut        [[buffer(10)]],
+    constant RTRayGenParams   &camera          [[buffer(11)]],
+    constant SceneParams      &params          [[buffer(12)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int px = tid.x;
@@ -254,6 +350,7 @@ void raytrace(
   int h = camera.imageHeight;
   if (px >= w || py >= h) return;
 
+  int idx = px + py * w;
   float3 camPos = f3(camera.cameraPos);
   float3 dir = generateRayDir(camera, float(px) + 0.5f, float(py) + 0.5f);
   float3 origin = camPos;
@@ -273,10 +370,14 @@ void raytrace(
 
     auto result = inter.intersect(r, accelStruct);
 
-    if (bounce == 0)
+    if (bounce == 0) {
       primaryInstance = (result.type != intersection_type::none)
                             ? int(result.instance_id)
                             : -1;
+      depthOut[idx] = (result.type != intersection_type::none)
+                          ? result.distance
+                          : camera.farClip;
+    }
 
     if (result.type == intersection_type::none) {
       color += throughput * f3v(params.bgColor);
@@ -310,7 +411,6 @@ void raytrace(
     origin = s.position + s.normal * 1.0f;
   }
 
-  int idx = px + py * w;
   objectIds[idx] = primaryInstance;
   color = clamp(color, 0.0f, 1.0f);
   outR[idx] = uchar(color.x * 255);
@@ -337,8 +437,9 @@ void pathTrace(
     device uchar              *outG            [[buffer(10)]],
     device uchar              *outB            [[buffer(11)]],
     device int                *objectIds       [[buffer(12)]],
-    constant RTRayGenParams   &camera          [[buffer(13)]],
-    constant SceneParams      &params          [[buffer(14)]],
+    device float              *depthOut        [[buffer(13)]],
+    constant RTRayGenParams   &camera          [[buffer(14)]],
+    constant SceneParams      &params          [[buffer(15)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int px = tid.x;
@@ -373,10 +474,14 @@ void pathTrace(
 
     auto result = inter.intersect(r, accelStruct);
 
-    if (bounce == 0)
+    if (bounce == 0) {
       primaryInstance = (result.type != intersection_type::none)
                             ? int(result.instance_id)
                             : -1;
+      depthOut[idx] = (result.type != intersection_type::none)
+                          ? result.distance
+                          : camera.farClip;
+    }
 
     if (result.type == intersection_type::none) {
       // Sky gradient

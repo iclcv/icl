@@ -107,6 +107,7 @@ struct alignas(16) RTInstance {
 struct alignas(16) RTRayGenParams {
   RTFloat3 cameraPos;       // camera position in world space
   RTMat4 invViewProj;       // inverse of combined view-projection (for pixel→ray)
+  RTMat4 viewProj;          // forward view-projection (for motion vector reprojection)
   int32_t imageWidth;
   int32_t imageHeight;
   float nearClip;
