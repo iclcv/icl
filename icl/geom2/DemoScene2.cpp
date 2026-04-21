@@ -112,6 +112,7 @@ namespace icl::geom2 {
             auto vmat = Material::fromColor(GeomColor(r, g, b, 255));
             vmat->roughness = 0.3f;
             vmat->reflectivity = 0.0f;
+            vmat->smoothShading = false;
             voxel->setMaterial(vmat);
             root->addChild(voxel);
           }

@@ -246,7 +246,10 @@ void main() {
     vec3 envReflection = mix(envColor, diffuseEnv, roughness);
 
     // SSR: blend with screen-space reflection where available
-    vec4 ssrResult = traceSSR(vWorldPos, N, R, roughness);
+    // Skip SSR for non-reflective surfaces (saves 4 ray marches)
+    vec4 ssrResult = vec4(0.0);
+    if (uReflectivity > 0.01 || metallic > 0.5)
+        ssrResult = traceSSR(vWorldPos, N, R, roughness);
     envReflection = mix(envReflection, ssrResult.rgb, ssrResult.a);
 
     // Debug modes: 0=shaded, 1=normals, 2=albedo, 3=UVs, 4=lighting only,

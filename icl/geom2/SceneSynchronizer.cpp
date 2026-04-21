@@ -310,7 +310,7 @@ namespace icl::geom2 {
     bool hasNormals = !srcNormals.empty();
     bool hasUVs = !texCoords.empty();
     auto mat = node->getMaterial();
-    bool useSmooth = hasNormals || (mat && mat->smoothShading);
+    bool useSmooth = mat && mat->smoothShading;
     int ti = 0;
 
     // Collect per-corner UV indices alongside triangles
