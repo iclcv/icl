@@ -11,6 +11,8 @@
 #include <icl/geom2/CoordinateFrameNode.h>
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/LightNode.h>
+#include <icl/geom2/TextNode.h>
+#include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom/Material.h>
 #include <icl/geom/Camera.h>
 
@@ -75,9 +77,29 @@ void init() {
   light->translate(200, 150, 300);
   scene.addLight(light);
 
+  // Text labels above each shape
+  auto labelSphere = TextNode::create("Sphere", 25, GeomColor(255,80,80,255));
+  labelSphere->translate(-100, -100, 120);
+  scene.addNode(labelSphere);
+
+  auto labelCube = TextNode::create("Cube", 25, GeomColor(80,80,255,255));
+  labelCube->translate(120, 0, 80);
+  scene.addNode(labelCube);
+
+  auto labelCyl = TextNode::create("Cylinder", 25, GeomColor(80,220,80,255));
+  labelCyl->translate(-80, 0, 100);
+  scene.addNode(labelCyl);
+
+  auto labelCone = TextNode::create("Cone", 25, GeomColor(255,220,60,255));
+  labelCone->translate(-80, 120, 75);
+  scene.addNode(labelCone);
+
+  scene.setBounds(400);
+
   // GUI
   gui << Canvas3D(Size(800, 600)).handle("canvas") << Show();
   gui["canvas"].link(scene.getGLCallback(0).get());
+  gui["canvas"].install(scene.getMouseHandler(0));
 }
 
 void run() {

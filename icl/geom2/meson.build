@@ -22,6 +22,7 @@ geom2_headers = files(
   'PointCloudNode.h',
   'Scene2MouseHandler.h',
   'BVH.h',
+  'TextNode.h',
 )
 
 geom2_sources = files(
@@ -42,6 +43,7 @@ geom2_sources = files(
   'PointCloudNode.cpp',
   'Scene2MouseHandler.cpp',
   'BVH.cpp',
+  'TextNode.cpp',
   # CyclesRenderer.cpp and SceneSynchronizer.cpp need Cycles include paths
   # and link libraries — deferred until Cycles build integration is ported.
   # Headers (Raytracer.h, CyclesRenderer.h, SceneSynchronizer.h) are ready.

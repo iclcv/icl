@@ -7,6 +7,7 @@
 #include <icl/geom2/GeometryNode.h>
 #include <icl/geom2/PointCloudNode.h>
 #include <icl/geom2/PointCloud.h>
+#include <icl/geom2/TextNode.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/core/Img.h>
 #include <icl/geom/Material.h>
@@ -61,6 +62,8 @@ uniform vec3 uCameraPos;
 uniform int uNumLights;
 uniform vec3 uLightPos[MAX_LIGHTS];
 uniform vec3 uLightColor[MAX_LIGHTS];
+uniform sampler2D uBaseColorTex;
+uniform int uHasTexture;
 in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
@@ -69,7 +72,14 @@ out vec4 FragColor;
 void main() {
     vec3 N = normalize(vNormal);
     vec3 V = normalize(uCameraPos - vWorldPos);
-    vec3 albedo = uBaseColor.rgb;
+
+    vec4 baseCol = uBaseColor;
+    if (uHasTexture != 0) {
+        vec4 texCol = texture(uBaseColorTex, vTexCoord);
+        baseCol *= texCol;
+    }
+    vec3 albedo = baseCol.rgb;
+    float alpha = baseCol.a;
 
     vec3 color = albedo * uAmbient;  // ambient
 
@@ -104,7 +114,8 @@ void main() {
     // Tone mapping
     color = vec3(1.0) - exp(-color * uExposure);
 
-    FragColor = vec4(color, uBaseColor.a);
+    if (alpha < 0.3) discard;
+    FragColor = vec4(color, alpha);
 }
 )";
 
@@ -373,8 +384,14 @@ void main() { FragColor = vColor; }
     GLint locLightPos[8] = {};
     GLint locLightColor[8] = {};
 
+    // Texture uniform locations
+    GLint locBaseColorTex = -1, locHasTexture = -1;
+
     // Unlit uniform locations
     GLint locUnlitMVP = -1, locUnlitPointSize = -1;
+
+    // Texture cache: Material* -> GL texture handle
+    std::unordered_map<const geom::Material*, GLuint> texCache;
 
     std::unordered_map<const GeometryNode*, std::unique_ptr<GeomCache>> cache;
     std::unordered_map<const PointCloudNode*, std::unique_ptr<PCCache>> pcCache;
@@ -425,7 +442,14 @@ void main() { FragColor = vColor; }
 
   void Renderer::setExposure(float e) { m_data->exposure = e; }
   void Renderer::setAmbient(float a) { m_data->ambient = a; }
-  void Renderer::invalidateCache() { m_data->cache.clear(); m_data->pcCache.clear(); }
+  void Renderer::invalidateCache() {
+    m_data->cache.clear();
+    m_data->pcCache.clear();
+    for (auto &[_, tex] : m_data->texCache) {
+      if (tex) glDeleteTextures(1, &tex);
+    }
+    m_data->texCache.clear();
+  }
 
   void Renderer::ensureShaderCompiled() {
     if (m_data->shaderReady) return;
@@ -447,6 +471,8 @@ void main() { FragColor = vColor; }
       m_data->locExposure = glGetUniformLocation(m_data->pbrProgram, "uExposure");
       m_data->locCameraPos = glGetUniformLocation(m_data->pbrProgram, "uCameraPos");
       m_data->locNumLights = glGetUniformLocation(m_data->pbrProgram, "uNumLights");
+      m_data->locBaseColorTex = glGetUniformLocation(m_data->pbrProgram, "uBaseColorTex");
+      m_data->locHasTexture = glGetUniformLocation(m_data->pbrProgram, "uHasTexture");
       for (int i = 0; i < 8; i++) {
         char buf[64];
         snprintf(buf, sizeof(buf), "uLightPos[%d]", i);
@@ -472,6 +498,43 @@ void main() { FragColor = vColor; }
     if (m_data->pbrProgram) {
       fprintf(stderr, "[geom2::Renderer] Shaders compiled OK\n");
     }
+  }
+
+  // Upload an ICL Image to a GL texture (creates or updates)
+  static GLuint uploadTexture(const core::Image &img) {
+    if (img.isNull()) return 0;
+    GLuint tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int w = img.getWidth(), h = img.getHeight(), c = img.getChannels();
+    GLenum fmt = (c >= 4) ? GL_RGBA : (c == 3 ? GL_RGB : GL_RED);
+    GLenum ifmt = (c >= 4) ? GL_RGBA8 : (c == 3 ? GL_RGB8 : GL_R8);
+
+    // Convert to interleaved 8u, flip Y for GL (origin = bottom-left)
+    std::vector<uint8_t> buf(w * h * c);
+    bool isFloat = (img.getDepth() == core::depth32f || img.getDepth() == core::depth64f);
+    img.visit([&](auto &typed) {
+      for (int y = 0; y < h; y++) {
+        int srcY = h - 1 - y;  // flip vertically
+        for (int x = 0; x < w; x++) {
+          for (int ch = 0; ch < c; ch++) {
+            float v = static_cast<float>(typed(x, srcY, ch));
+            buf[(y * w + x) * c + ch] = isFloat
+              ? static_cast<uint8_t>(std::min(std::max(v * 255.f, 0.f), 255.f))
+              : static_cast<uint8_t>(std::min(std::max(v, 0.f), 255.f));
+          }
+        }
+      }
+    });
+
+    glTexImage2D(GL_TEXTURE_2D, 0, ifmt, w, h, 0, fmt, GL_UNSIGNED_BYTE, buf.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return tex;
   }
 
   static void setUniformMat4(GLint loc, const Mat &m) {
@@ -514,6 +577,8 @@ void main() { FragColor = vColor; }
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glUseProgram(m_data->pbrProgram);
     setUniformMat4(m_data->locProj, projectionMatrix);
@@ -594,11 +659,28 @@ void main() { FragColor = vColor; }
         cache->build(geom);
       }
 
+      // Billboard: cancel view rotation so quad always faces camera
+      if (auto *text = dynamic_cast<TextNode*>(node); text && text->isBillboard()) {
+        // Extract world position from model matrix (row 3 in ICL row-major)
+        float tx = modelMatrix(3,0), ty = modelMatrix(3,1), tz = modelMatrix(3,2);
+        // Extract inverse view rotation (transpose of upper-left 3x3)
+        Mat bill = Mat::id();
+        for (int i = 0; i < 3; i++)
+          for (int j = 0; j < 3; j++)
+            bill(i, j) = viewMatrix(j, i);
+        // Apply as: translate to world pos, then inverse-rotate
+        bill(3, 0) = tx;
+        bill(3, 1) = ty;
+        bill(3, 2) = tz;
+        modelMatrix = bill;
+      }
+
       // Set model matrix
       setUniformMat4(m_data->locModel, modelMatrix);
 
       // Material uniforms
       auto mat = geom->getMaterial();
+      bool hasTex = false;
       if (mat) {
         glUniform4f(m_data->locBaseColor, mat->baseColor[0], mat->baseColor[1],
                     mat->baseColor[2], mat->baseColor[3]);
@@ -606,18 +688,43 @@ void main() { FragColor = vColor; }
         glUniform1f(m_data->locRoughness, mat->roughness);
         glUniform4f(m_data->locEmissive, mat->emissive[0], mat->emissive[1],
                     mat->emissive[2], 0);
+
+        // Texture binding
+        if (mat->textures && !mat->textures->baseColorMap.isNull()) {
+          auto it = m_data->texCache.find(mat.get());
+          GLuint tex = 0;
+          if (it != m_data->texCache.end()) {
+            tex = it->second;
+          } else {
+            tex = uploadTexture(mat->textures->baseColorMap);
+            m_data->texCache[mat.get()] = tex;
+          }
+          if (tex) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, tex);
+            glUniform1i(m_data->locBaseColorTex, 0);
+            glUniform1i(m_data->locHasTexture, 1);
+            hasTex = true;
+          }
+        }
       } else {
         glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
         glUniform1f(m_data->locMetallic, 0.0f);
         glUniform1f(m_data->locRoughness, 0.5f);
         glUniform4f(m_data->locEmissive, 0, 0, 0, 0);
       }
+      if (!hasTex) glUniform1i(m_data->locHasTexture, 0);
 
       // Draw triangles (PBR lit)
       if (cache->numTriIndices > 0) {
         glBindVertexArray(cache->triVao);
         glDrawElements(GL_TRIANGLES, cache->numTriIndices, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+      }
+
+      // Unbind texture
+      if (hasTex) {
+        glBindTexture(GL_TEXTURE_2D, 0);
       }
 
       // Draw lines + points (unlit)
