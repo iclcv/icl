@@ -444,38 +444,35 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
 
   float3 camPos = make_float3(pos[0] * sceneScale, pos[1] * sceneScale, pos[2] * sceneScale);
   float3 forward = normalize(make_float3(norm[0], norm[1], norm[2]));
-  // ICL's m_up points toward positive image-Y (visual down on screen).
-  // ICL's pinhole model inverts both axes: horiz and up define image-coordinate
-  // directions, not visual screen directions.  For Cycles' camera-to-world we
-  // need the non-inverted basis: visual screen-right and visual screen-up.
+  // ICL camera axes: horiz = cross(up, norm), up, norm.
+  // These define the world-to-camera basis in ICL's projection model.
+  // For Cycles' camera-to-world transform, we use the same axes as columns
+  // (the transpose/inverse of the world-to-camera rotation).
+  // This matches what ICL's OpenGL renderer does with the same camera.
   float3 iclUp = normalize(make_float3(up[0], up[1], up[2]));
-
-  // Visual right = cross(forward, iclUp)  (negated ICL horiz — undo pinhole X-inversion)
-  float3 cycRight = cross(forward, iclUp);
-  float rightLen = len(cycRight);
-  if (rightLen < 1e-6f) {
-    // Fallback: forward and iclUp are parallel — pick an arbitrary perpendicular
-    cycRight = make_float3(1, 0, 0);
-    if (fabsf(dot(forward, cycRight)) > 0.9f)
-      cycRight = make_float3(0, 1, 0);
-    cycRight = normalize(cross(cycRight, forward));
+  float3 horiz = cross(iclUp, forward);
+  float horizLen = len(horiz);
+  if (horizLen < 1e-6f) {
+    horiz = make_float3(1, 0, 0);
+    if (fabsf(dot(forward, horiz)) > 0.9f)
+      horiz = make_float3(0, 1, 0);
+    horiz = normalize(cross(horiz, forward));
   } else {
-    cycRight = cycRight * (1.0f / rightLen);
+    horiz = horiz * (1.0f / horizLen);
   }
-  // Reorthogonalize visual up (right-hand rule: up = forward × right)
-  float3 cycUp = cross(forward, cycRight);
+  // Reorthogonalize up
+  float3 upVec = cross(forward, horiz);
 
-  // Cycles Transform is row-stored but transform_direction reads COLUMNS as
-  // the camera basis.  So camera axes go as columns:
-  //   column 0 = cycRight  (camera +X = visual right)
-  //   column 1 = cycUp     (camera +Y = visual up)
-  //   column 2 = forward   (camera +Z = view direction)
-  //   column 3 = camPos    (.w components)
-  // Cycles outputs pixels bottom-up; OutputDriver flips to top-down for ICL.
+  // Cycles Transform: row-stored, transform_direction reads COLUMNS as basis.
+  //   column 0 =  horiz  (ICL image +X — matches OpenGL left-right)
+  //   column 1 = -upVec  (negated: ICL up = visual down, but Cycles +Y = visual up;
+  //                        combined with OutputDriver Y-flip gives correct orientation)
+  //   column 2 =  forward (view direction)
+  //   column 3 =  camPos
   Transform tfm;
-  tfm.x = make_float4(cycRight.x, cycUp.x, forward.x, camPos.x);
-  tfm.y = make_float4(cycRight.y, cycUp.y, forward.y, camPos.y);
-  tfm.z = make_float4(cycRight.z, cycUp.z, forward.z, camPos.z);
+  tfm.x = make_float4( horiz.x, -upVec.x, forward.x, camPos.x);
+  tfm.y = make_float4( horiz.y, -upVec.y, forward.y, camPos.y);
+  tfm.z = make_float4( horiz.z, -upVec.z, forward.z, camPos.z);
 
   cclCam->set_matrix(tfm);
 

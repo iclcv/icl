@@ -226,24 +226,28 @@ void init() {
       scene, icl::rt::RenderQuality::Preview);
   renderer->setSceneScale(1.0f);
 
-  // GUI with Cycles-specific quality controls
-  gui << Canvas().handle("draw").minSize(64, 48)
-      << (VBox().minSize(20, 24)
-         << CheckBox("pause physics", "unchecked").handle("pause")
-         << Slider(10, 120, 30).handle("spawnRate").label("spawn interval")
-         << Button("spawn 10").handle("burst")
-         << Fps(30).handle("fps")
+  // GUI: Cycles view + OpenGL reference view + controls
+  gui << (VSplit()
+         << (HSplit()
+            << Canvas().handle("draw").minSize(32, 24).label("Cycles")
+            << Canvas3D().handle("gl").minSize(32, 24).label("OpenGL"))
          << (HBox()
-            << Combo("!Preview,Interactive,Final").handle("quality").label("Quality"))
-         << Combo("!1,2,4,8,16").handle("initSamples").label("Initial Samples")
-         << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iterations")
-         << Slider(1, 16, 2).handle("bounces").label("Max Bounces")
-         << CheckBox("Denoising OIDN", "unchecked").handle("denoising")
-         << Slider(10, 500, 100).handle("exposure").label("Exposure %")
-         << Label("--").handle("info")
+            << CheckBox("pause physics", "unchecked").handle("pause")
+            << Slider(10, 120, 30).handle("spawnRate").label("spawn interval")
+            << Button("spawn 10").handle("burst")
+            << Fps(30).handle("fps")
+            << Combo("!Preview,Interactive,Final").handle("quality").label("Quality")
+            << Combo("!1,2,4,8,16").handle("initSamples").label("Initial Samples")
+            << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iterations")
+            << Slider(1, 16, 2).handle("bounces").label("Max Bounces")
+            << CheckBox("Denoising OIDN", "unchecked").handle("denoising")
+            << Slider(10, 500, 100).handle("exposure").label("Exposure %")
+            << Label("--").handle("info"))
        ) << Show();
 
+  // Both views share the same camera via the same mouse handler
   gui["draw"].install(scene.getMouseHandler(0));
+  gui["gl"].install(scene.getMouseHandler(0));
 }
 
 static int frameCount = 0;
@@ -324,6 +328,11 @@ void run() {
            denoising ? " | OIDN" : "");
   draw->text(buf, 10, 20, 10);
   draw->render();
+
+  // OpenGL reference view — same scene, same camera
+  DrawHandle3D gl = gui["gl"];
+  gl->link(scene.getGLCallback(0));
+  gl.render();
 
   gui["info"] = std::string(buf);
   gui["fps"].render();
