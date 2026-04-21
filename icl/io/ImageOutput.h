@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Image.h>
-#include <icl/io/ImageCompressor.h>
 
 namespace icl::io {
   /// Minimal interface for image output classes
@@ -16,24 +15,18 @@ namespace icl::io {
       backend.
 
       \section CMP Compression
-      A few outputs do also support generic image compression, while
-      other implementation provide output dependend compression parameters.
-      E.g. shared memory or RSB-based network output streams use
-      the inherited ImageCompressor to compress sent data. The file- our
-      video image output of course use the used video/file formats compression
-      mechanism.
+      Outputs that need to compress before transmission (network sinks
+      like WSImageOutput) own an `ImageCompressor` instance and expose
+      its `Configurable` properties as a child under the `compression.`
+      sub-scope, so callers can introspect or live-tune the codec via
+      `Prop(&output)`. File-format outputs use the format's own
+      compression mechanism and don't go through ImageCompressor.
   */
-  struct ICLIO_API ImageOutput : protected ImageCompressor{
+  struct ICLIO_API ImageOutput {
     /// virtual destructor
     virtual ~ImageOutput() {}
 
     /// ImageOutput instances must implement this method
     virtual void send(const core::Image &image) = 0;
-
-    /// provide the protectedly inherited image compressor options here
-    using ImageCompressor::getCompression;
-
-    /// provide the protectedly inherited image compressor options here
-    using ImageCompressor::setCompression;
   };
   } // namespace icl::io

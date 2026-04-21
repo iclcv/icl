@@ -6,23 +6,35 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/io/FileWriterPlugin.h>
-#include <icl/io/ImageCompressor.h>
+#include <memory>
 #include <mutex>
+#include <string>
 
 namespace icl::io {
+  class ImageCompressor;  // forward decl: avoid pulling ImageCompressor.h
+                          // into static-init paths (FileWriter's plugin
+                          // map constructs us at static init time)
+
   /// Writer plugin to write binary icl image (extension bicl / bicl.gz)
-  /** The bicl-core::format does also support saving image meta data */
+  /** The bicl-core::format does also support saving image meta data.
+      The wrapped `ImageCompressor` is built lazily on first write so
+      that this plugin can itself be constructed at static-init time
+      (FileWriter's `s_mapPlugins[".bicl"] = new FileWriterPluginBICL`)
+      without touching the (still-empty) CompressionRegister. */
   class ICLIO_API FileWriterPluginBICL : public FileWriterPlugin{
     public:
 
-    FileWriterPluginBICL(const std::string &compressionType="none",
-                         const std::string &quality="none");
+    FileWriterPluginBICL(const std::string &compressionType="raw",
+                         const std::string &quality="");
+    ~FileWriterPluginBICL();
 
     /// write implementation
     virtual void write(utils::File &file, const core::ImgBase *image);
 
     private:
-    ImageCompressor compressor;
+    std::unique_ptr<ImageCompressor> compressor;  // lazy
+    std::string compressionType;
+    std::string compressionQuality;
     std::recursive_mutex mutex;
   };
   } // namespace icl::io

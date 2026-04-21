@@ -84,6 +84,11 @@ qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Widgets', 'OpenGL', 'OpenGL
                     required: qt_opt)
 qt_found = qt_dep.found()
 qt_multimedia_dep = dependency('qt6', modules: ['Multimedia'], required: false)
+qt_websockets_dep = dependency('qt6', modules: ['WebSockets'], required: false)
+zstd_dep = dependency('libzstd', required: false)
+if zstd_dep.found()
+  add_project_arguments('-DICL_HAVE_ZSTD', language: 'cpp')
+endif
 if qt_found
   add_project_arguments('-DICL_HAVE_QT', '-DICL_HAVE_OPENGL', language: 'cpp')
   opengl_dep = dependency('gl')
@@ -91,6 +96,9 @@ if qt_found
 else
   opengl_dep = dependency('', required: false)
   glew_dep = dependency('', required: false)
+endif
+if qt_found and qt_websockets_dep.found()
+  add_project_arguments('-DICL_HAVE_QT_WEBSOCKETS', language: 'cpp')
 endif
 
 # OpenCV
@@ -246,6 +254,8 @@ _cfg = {
   'ICL_HAVE_VIDEODEV': v4l_dep.found(),
   'ICL_HAVE_ZMQ': zmq_dep.found(),
   'ICL_HAVE_QT': qt_found,
+  'ICL_HAVE_QT_WEBSOCKETS': qt_found and qt_websockets_dep.found(),
+  'ICL_HAVE_ZSTD': zstd_dep.found(),
   'ICL_HAVE_OPENGL': qt_found,
   'ICL_HAVE_LIBFREENECT': freenect_dep.found(),
   'ICL_HAVE_PYLON': pylon_dep.found(),

@@ -16,7 +16,32 @@ namespace icl::io {
     const std::vector<icl8u> &data = file.readAll();
 
     ImageCompressor cmp;
-    cmp.uncompress(data.data(), data.size(), dest);
+    Image img = cmp.uncompress(data.data(), data.size());
+    // The legacy FileGrabberPlugin API takes an `ImgBase **` outparam; the
+    // new ImageCompressor returns an Image. Deep-copy across the boundary.
+    img.ptr()->deepCopy(dest);
   }
 
   } // namespace icl::io
+
+#include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
+namespace {
+  using icl::io::FileGrabberPlugin;
+  using icl::io::FileGrabberPluginBICL;
+  using P = std::unique_ptr<FileGrabberPlugin>;
+}
+REGISTER_FILE_GRABBER_PLUGIN(bicl, ".bicl", []{ return P(new FileGrabberPluginBICL); })
+REGISTER_FILE_GRABBER_PLUGIN(rle1, ".rle1", []{ return P(new FileGrabberPluginBICL); })
+REGISTER_FILE_GRABBER_PLUGIN(rle4, ".rle4", []{ return P(new FileGrabberPluginBICL); })
+REGISTER_FILE_GRABBER_PLUGIN(rle6, ".rle6", []{ return P(new FileGrabberPluginBICL); })
+REGISTER_FILE_GRABBER_PLUGIN(rle8, ".rle8", []{ return P(new FileGrabberPluginBICL); })
+#ifdef ICL_HAVE_LIBJPEG
+REGISTER_FILE_GRABBER_PLUGIN(jicl, ".jicl", []{ return P(new FileGrabberPluginBICL); })
+#endif
+#ifdef ICL_HAVE_LIBZ
+REGISTER_FILE_GRABBER_PLUGIN(bicl_gz, ".bicl.gz", []{ return P(new FileGrabberPluginBICL); })
+REGISTER_FILE_GRABBER_PLUGIN(rle1_gz, ".rle1.gz", []{ return P(new FileGrabberPluginBICL); })
+REGISTER_FILE_GRABBER_PLUGIN(rle4_gz, ".rle4.gz", []{ return P(new FileGrabberPluginBICL); })
+REGISTER_FILE_GRABBER_PLUGIN(rle6_gz, ".rle6.gz", []{ return P(new FileGrabberPluginBICL); })
+REGISTER_FILE_GRABBER_PLUGIN(rle8_gz, ".rle8.gz", []{ return P(new FileGrabberPluginBICL); })
+#endif
