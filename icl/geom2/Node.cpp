@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom2/Node.h>
+#include <icl/math/FixedMatrix.h>
 #include <mutex>
 #include <cmath>
 
@@ -59,25 +60,30 @@ namespace icl::geom2 {
   }
 
   void Node::rotate(float rx, float ry, float rz) {
-    float cx = std::cos(rx), sx = std::sin(rx);
-    float cy = std::cos(ry), sy = std::sin(ry);
-    float cz = std::cos(rz), sz = std::sin(rz);
-    Mat Rx = Mat::id(); Rx(1,1) = cx; Rx(2,1) = sx; Rx(1,2) = -sx; Rx(2,2) = cx;
-    Mat Ry = Mat::id(); Ry(0,0) = cy; Ry(2,0) = -sy; Ry(0,2) = sy; Ry(2,2) = cy;
-    Mat Rz = Mat::id(); Rz(0,0) = cz; Rz(1,0) = sz; Rz(0,1) = -sz; Rz(1,1) = cz;
-    transform(Rz * Ry * Rx);
+    // Use ICL's proven Euler angle rotation (rxyz convention, same as geom::SceneObject)
+    transform(math::create_hom_4x4<float>(rx, ry, rz));
   }
 
   void Node::translate(float dx, float dy, float dz) {
-    Mat t = Mat::id();
-    t(3,0) = dx; t(3,1) = dy; t(3,2) = dz;
-    transform(t);
+    // T = T * Tr where Tr has translation in column 3.
+    // Result: column 3 of T gets T*[dx,dy,dz,1]^T
+    // i.e. T(3,r) += T(0,r)*dx + T(1,r)*dy + T(2,r)*dz for each row r
+    auto &T = m_data->transformation;
+    for (int r = 0; r < 4; r++) {
+      T(3,r) += T(0,r)*dx + T(1,r)*dy + T(2,r)*dz;
+    }
+    m_data->hasTransformation = true;
   }
 
   void Node::scale(float sx, float sy, float sz) {
-    Mat s = Mat::id();
-    s(0,0) = sx; s(1,1) = sy; s(2,2) = sz;
-    transform(s);
+    // T = T * S: scale columns 0,1,2
+    auto &T = m_data->transformation;
+    for (int r = 0; r < 4; r++) {
+      T(0,r) *= sx;
+      T(1,r) *= sy;
+      T(2,r) *= sz;
+    }
+    m_data->hasTransformation = true;
   }
 
   Mat Node::getTransformation(bool includeParent) const {

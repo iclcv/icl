@@ -55,8 +55,8 @@ void init() {
   cone->setMaterial(Material::fromColor(GeomColor(240, 200, 40, 255)));
   scene.addNode(cone);
 
-  // Coordinate frame
-  scene.addNode(CoordinateFrameNode::create(100, 5));
+  // Coordinate frame (complex: with arrowheads + labels)
+  scene.addNode(CoordinateFrameNode::create(100, 2.5, true));
 
   // Ground plane (freeform MeshNode)
   auto ground = std::make_shared<MeshNode>();
