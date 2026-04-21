@@ -650,6 +650,9 @@ namespace icl::geom {
     /// returns the geometry type hint (for render backend optimizations)
     ObjectType getObjectType() const { return m_objectType; }
 
+    /// sets the geometry type hint
+    void setObjectType(ObjectType t) { m_objectType = t; }
+
     /// returns sphere center (only meaningful when objectType == Sphere)
     void getSphereParams(float &cx, float &cy, float &cz, float &radius) const {
       cx = m_sphereCenter[0]; cy = m_sphereCenter[1]; cz = m_sphereCenter[2];

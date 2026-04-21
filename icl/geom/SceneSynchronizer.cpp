@@ -286,42 +286,6 @@ static Shader *createDefaultShader(ccl::Scene *scene) {
 
 // ---- Analytic sphere detection ----
 
-/// Check if an ICL SceneObject is a sphere (all vertices equidistant from center).
-/// Returns true and sets center/radius if detected.
-static bool detectSphere(const geom::SceneObject *obj, float3 &center, float &radius) {
-  const auto &verts = obj->getVertices();
-  if (verts.size() < 12) return false;  // too few verts for a meaningful sphere
-
-  // Compute bounding box center
-  float3 mn = make_float3(1e20f, 1e20f, 1e20f);
-  float3 mx = make_float3(-1e20f, -1e20f, -1e20f);
-  for (const auto &v : verts) {
-    mn.x = fminf(mn.x, v[0]); mn.y = fminf(mn.y, v[1]); mn.z = fminf(mn.z, v[2]);
-    mx.x = fmaxf(mx.x, v[0]); mx.y = fmaxf(mx.y, v[1]); mx.z = fmaxf(mx.z, v[2]);
-  }
-  center = (mn + mx) * 0.5f;
-
-  // Compute average distance from center
-  float sumDist = 0;
-  for (const auto &v : verts) {
-    float3 d = make_float3(v[0], v[1], v[2]) - center;
-    sumDist += sqrtf(d.x * d.x + d.y * d.y + d.z * d.z);
-  }
-  radius = sumDist / float(verts.size());
-
-  if (radius < 1e-6f) return false;
-
-  // Check all vertices are within 2% of the average radius
-  float tolerance = radius * 0.02f;
-  for (const auto &v : verts) {
-    float3 d = make_float3(v[0], v[1], v[2]) - center;
-    float dist = sqrtf(d.x * d.x + d.y * d.y + d.z * d.z);
-    if (fabsf(dist - radius) > tolerance) return false;
-  }
-
-  return true;
-}
-
 // ---- Tessellation: ICL primitives → Cycles triangle mesh ----
 
 static void tessellateToMesh(const geom::SceneObject *obj,
@@ -638,21 +602,11 @@ void SceneSynchronizer::walkObject(const geom::SceneObject *obj,
 void SceneSynchronizer::syncGeometry(ObjectEntry &entry,
                                      ccl::Scene *cclScene,
                                      float sceneScale) {
-  // Use ObjectType hint for analytic sphere, or fall back to heuristic detection
-  float3 sphereCenter;
-  float sphereRadius;
+  // TODO: analytic PointCloud sphere has a position offset bug vs GL mesh rendering.
+  // Disabled until fixed — always use tessellated mesh path for correct overlay alignment.
+  float3 sphereCenter = make_float3(0, 0, 0);
+  float sphereRadius = 0;
   bool isSphere = false;
-
-  if (entry.iclObj->getObjectType() == geom::SceneObject::Sphere) {
-    float cx, cy, cz, r;
-    entry.iclObj->getSphereParams(cx, cy, cz, r);
-    sphereCenter = make_float3(cx, cy, cz);
-    sphereRadius = r;
-    isSphere = true;
-  } else {
-    // Heuristic fallback for spheres created without the factory
-    isSphere = detectSphere(entry.iclObj, sphereCenter, sphereRadius);
-  }
 
   if (isSphere) {
     // Use Cycles PointCloud for perfect analytic sphere
