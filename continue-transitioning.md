@@ -143,9 +143,14 @@ Major framework improvements along the way.
 - [ ] markers (demos: 2; apps: 8)
 - [ ] physics (demos: 8)
 
-**Open filter items:** none. All 5 filter apps (color-segmentation,
-filter-array, local-thresh, local-thresh-batch, rectify-image) audited,
-compiled, and behaviorally verified. rectify-image end-to-end fix:
+**Open filter items:** All 5 filter apps verified in Session 41.
+Session 42 completed the 10 filter demos:
+- affine-op, bilateral-filter-op, canny-op, convolution-op, dither-op,
+  fft, gabor-op, pseudo-color, temporal-smoothing — runtime-verified
+- warp-op — deferred; needs a warp table (look at camera-distortion
+  pipeline first)
+
+rectify-image end-to-end fix (Session 42):
 - typed `install(MouseHandler*)` overload in DataStore.h (pointer-offset
   correctness for multiply-inherited MouseHandler subclasses)
 - widget-pixel click tolerance in DefineQuadrangleMouseHandler (FullHD
@@ -155,6 +160,26 @@ compiled, and behaviorally verified. rectify-image end-to-end fix:
   removed from the API
 - richer ImageRectification exception message (names the offending
   corner, mapped point, source rect)
+
+AffineOp backend fixes (Session 42, macOS/Accelerate):
+- Decompose → negate angle → recompute bbox + preserve user-translate;
+  now matches C++ NN rotation direction
+- Respect `src.getROI()` via sub-buffer with `A·(roi.x, roi.y) + t`
+  translation adjustment
+- `clipToROI` now controls whether dst bbox is from ROI (tight) or from
+  full image (visible ROI content, black elsewhere); `m_adaptResultImage`
+  remains orthogonal
+
+Known gotchas flagged for future attention:
+- **`parse<T>(pa("..."))`** — throws at runtime. ProgArg's templated
+  conversion op picks `operator std::string_view()` which re-enters
+  `parse<std::string_view>` → not stream-extractable → throw. Use
+  `pa(...).as<T>()` or `useDesired<T>(pa(...))` instead. Present in
+  ~20 files, worth a sweep later.
+- **vImage matrix convention** remains opaque; current backend works
+  for isotropic similarity (ICL's common case). Non-isotropic scale or
+  shear degrades to similarity approximation. Documented in
+  `project_affineop_vimage.md` memory.
 
 For each: compile, run, check if still useful/valid, modernize API usage,
 remove if obsolete. See `porting-progress.md` for per-file status.
