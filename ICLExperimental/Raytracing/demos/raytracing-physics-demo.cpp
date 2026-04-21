@@ -225,7 +225,7 @@ void init() {
           << CheckBox("Adaptive AA", "unchecked").handle("adaptiveAA")
           << Combo("!Bilinear,Edge-Aware,MetalFX Spatial,MetalFX Temporal").handle("upsampling").label("Upsampling")
           << Slider(25, 100, 100).handle("renderScale").label("Render Resolution %")
-          << Combo("!None,Bilateral,A-Trous Wavelet").handle("denoising").label("Denoising")
+          << Combo("!None,Bilateral,A-Trous Wavelet,SVGF").handle("denoising").label("Denoising")
           << Slider(0, 100, 50).handle("denoiseStrength").label("Denoise Strength %")
           << Label("--").handle("info")
         )<< Show();
@@ -263,6 +263,7 @@ void run() {
     icl::rt::DenoisingMethod::None,
     icl::rt::DenoisingMethod::Bilateral,
     icl::rt::DenoisingMethod::ATrousWavelet,
+    icl::rt::DenoisingMethod::SVGF,
   };
   int dnIdx = gui["denoising"].as<ComboHandle>().getSelectedIndex();
   raytracer->setDenoising(dnMethods[dnIdx]);
@@ -400,7 +401,7 @@ void run() {
     snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
              " | %dx%d->%dx%d%s", rw, rh, img.getWidth(), img.getHeight(), upLabel);
   }
-  const char *dnNames[] = {"", " bilateral", " a-trous"};
+  const char *dnNames[] = {"", " bilateral", " a-trous", " svgf"};
   auto dnMethod = raytracer->getDenoisingMethod();
   if (dnMethod != icl::rt::DenoisingMethod::None) {
     snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),

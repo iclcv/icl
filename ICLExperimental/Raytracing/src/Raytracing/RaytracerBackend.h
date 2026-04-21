@@ -123,7 +123,8 @@ public:
   virtual bool supportsDenoising(DenoisingMethod method) const {
     return method == DenoisingMethod::None ||
            method == DenoisingMethod::Bilateral ||
-           method == DenoisingMethod::ATrousWavelet;
+           method == DenoisingMethod::ATrousWavelet ||
+           method == DenoisingMethod::SVGF;
   }
 
   /// Set the denoising method. Returns false if not supported.
@@ -141,6 +142,13 @@ public:
   DenoisingMethod getDenoisingMethod() const { return m_denoisingMethod; }
   float getDenoisingStrength() const { return m_denoisingStrength; }
 
+  // ---- G-buffer access for SVGF (backends override to provide data) ----
+
+  virtual const float *getDepthBuffer() const { return nullptr; }
+  virtual const float *getNormalXBuffer() const { return nullptr; }
+  virtual const float *getNormalYBuffer() const { return nullptr; }
+  virtual const float *getNormalZBuffer() const { return nullptr; }
+
 protected:
   UpsamplingMethod m_upsamplingMethod = UpsamplingMethod::None;
   float m_renderScale = 1.0f;
@@ -148,6 +156,8 @@ protected:
   int m_displayHeight = 0;
   DenoisingMethod m_denoisingMethod = DenoisingMethod::None;
   float m_denoisingStrength = 0.5f;
+  SVGFState m_svgfState;
+  RTRayGenParams m_lastRenderCamera{};
 
   /// Apply CPU denoising to the output image.
   /// Call after render, before upsampling. Only applies if a method is set.
@@ -158,6 +168,12 @@ protected:
       denoiseBilateral(output, denoised, m_denoisingStrength);
     } else if (m_denoisingMethod == DenoisingMethod::ATrousWavelet) {
       denoiseATrous(output, denoised, m_denoisingStrength);
+    } else if (m_denoisingMethod == DenoisingMethod::SVGF) {
+      auto *d = getDepthBuffer();
+      auto *nx = getNormalXBuffer();
+      if (!d || !nx) return;
+      denoiseSVGF(output, denoised, d, nx, getNormalYBuffer(), getNormalZBuffer(),
+                  m_lastRenderCamera, m_svgfState, m_denoisingStrength);
     } else {
       return;
     }

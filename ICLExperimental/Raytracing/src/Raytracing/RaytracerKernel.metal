@@ -340,8 +340,11 @@ void raytrace(
     device uchar              *outB            [[buffer(8)]],
     device int                *objectIds       [[buffer(9)]],
     device float              *depthOut        [[buffer(10)]],
-    constant RTRayGenParams   &camera          [[buffer(11)]],
-    constant SceneParams      &params          [[buffer(12)]],
+    device float              *normalXOut     [[buffer(11)]],
+    device float              *normalYOut     [[buffer(12)]],
+    device float              *normalZOut     [[buffer(13)]],
+    constant RTRayGenParams   &camera          [[buffer(14)]],
+    constant SceneParams      &params          [[buffer(15)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int px = tid.x;
@@ -377,6 +380,7 @@ void raytrace(
       depthOut[idx] = (result.type != intersection_type::none)
                           ? result.distance
                           : camera.farClip;
+      normalXOut[idx] = normalYOut[idx] = normalZOut[idx] = 0;
     }
 
     if (result.type == intersection_type::none) {
@@ -389,6 +393,12 @@ void raytrace(
                                 result.triangle_barycentric_coord);
 
     if (dot(s.normal, dir) > 0) s.normal = -s.normal;
+
+    if (bounce == 0) {
+      normalXOut[idx] = s.normal.x;
+      normalYOut[idx] = s.normal.y;
+      normalZOut[idx] = s.normal.z;
+    }
 
     device const RTMaterial &mat = materials[s.materialIndex];
 
@@ -438,8 +448,11 @@ void pathTrace(
     device uchar              *outB            [[buffer(11)]],
     device int                *objectIds       [[buffer(12)]],
     device float              *depthOut        [[buffer(13)]],
-    constant RTRayGenParams   &camera          [[buffer(14)]],
-    constant SceneParams      &params          [[buffer(15)]],
+    device float              *normalXOut     [[buffer(14)]],
+    device float              *normalYOut     [[buffer(15)]],
+    device float              *normalZOut     [[buffer(16)]],
+    constant RTRayGenParams   &camera          [[buffer(17)]],
+    constant SceneParams      &params          [[buffer(18)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int px = tid.x;
@@ -481,6 +494,7 @@ void pathTrace(
       depthOut[idx] = (result.type != intersection_type::none)
                           ? result.distance
                           : camera.farClip;
+      normalXOut[idx] = normalYOut[idx] = normalZOut[idx] = 0;
     }
 
     if (result.type == intersection_type::none) {
@@ -497,6 +511,12 @@ void pathTrace(
                                 result.triangle_barycentric_coord);
 
     if (dot(s.normal, dir) > 0) s.normal = -s.normal;
+
+    if (bounce == 0) {
+      normalXOut[idx] = s.normal.x;
+      normalYOut[idx] = s.normal.y;
+      normalZOut[idx] = s.normal.z;
+    }
 
     device const RTMaterial &mat = materials[s.materialIndex];
 

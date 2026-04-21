@@ -430,10 +430,19 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
   icl8u *G = m_output.getData(1);
   icl8u *B = m_output.getData(2);
 
-  // Allocate object ID buffer
+  // Allocate object ID and G-buffers
   int n = w * h;
   m_objectIdBuffer.resize(n);
+  m_depthBuffer.resize(n);
+  m_normalX.resize(n);
+  m_normalY.resize(n);
+  m_normalZ.resize(n);
   std::fill(m_objectIdBuffer.begin(), m_objectIdBuffer.end(), -1);
+  std::fill(m_depthBuffer.begin(), m_depthBuffer.end(), camera.farClip);
+  std::fill(m_normalX.begin(), m_normalX.end(), 0.0f);
+  std::fill(m_normalY.begin(), m_normalY.end(), 0.0f);
+  std::fill(m_normalZ.begin(), m_normalZ.end(), 0.0f);
+  m_lastRenderCamera = camera;
 
   // Ray generation uses inverse Q-matrix stored in camera.invViewProj.
   // Direction = Qi * (px, py, 1), where Qi is the 4x3 sub-matrix.
@@ -461,10 +470,23 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
 
         int idx = x + y * w;
 
-        // Object ID (only on first frame to avoid overhead)
-        if (m_accumFrame == 1) {
+        // G-buffer pass: object ID, depth, normals (every frame for SVGF)
+        if (m_accumFrame == 1 || m_denoisingMethod == DenoisingMethod::SVGF) {
+          RTFloat3 centerDir = generateRayDir(Qi, x + 0.5f, y + 0.5f);
           BVHHit pickHit;
-          m_objectIdBuffer[idx] = traceScene(camPos, generateRayDir(Qi, x + 0.5f, y + 0.5f), pickHit);
+          int instIdx = traceScene(camPos, centerDir, pickHit);
+          m_objectIdBuffer[idx] = instIdx;
+          if (instIdx >= 0) {
+            SurfaceHit s = interpolateHit(m_blas[m_instances[instIdx].blasIndex],
+                                          m_instances[instIdx], m_materials, pickHit);
+            RTFloat3 diff = s.position - camPos;
+            m_depthBuffer[idx] = std::sqrt(diff.dot(diff));
+            RTFloat3 N = s.normal;
+            if (N.dot(centerDir) > 0) N = N * -1.0f;
+            m_normalX[idx] = N.x;
+            m_normalY[idx] = N.y;
+            m_normalZ[idx] = N.z;
+          }
         }
         // Running average: new = old * (1 - 1/N) + sample * (1/N)
         m_accumR[idx] += (c.x - m_accumR[idx]) * weight;
@@ -492,9 +514,23 @@ void CpuRTBackend::render(const RTRayGenParams &camera) {
     for (int x = 0; x < w; x++) {
       RTFloat3 accum{0, 0, 0};
 
-      // Record object ID for picking (use center ray)
+      // G-buffer pass: object ID, depth, normals (center ray)
+      RTFloat3 centerDir = generateRayDir(Qi, x + 0.5f, y + 0.5f);
       BVHHit pickHit;
-      m_objectIdBuffer[x + y * w] = traceScene(camPos, generateRayDir(Qi, x + 0.5f, y + 0.5f), pickHit);
+      int instIdx = traceScene(camPos, centerDir, pickHit);
+      int idx_gb = x + y * w;
+      m_objectIdBuffer[idx_gb] = instIdx;
+      if (instIdx >= 0) {
+        SurfaceHit s = interpolateHit(m_blas[m_instances[instIdx].blasIndex],
+                                      m_instances[instIdx], m_materials, pickHit);
+        RTFloat3 diff = s.position - camPos;
+        m_depthBuffer[idx_gb] = std::sqrt(diff.dot(diff));
+        RTFloat3 N = s.normal;
+        if (N.dot(centerDir) > 0) N = N * -1.0f;
+        m_normalX[idx_gb] = N.x;
+        m_normalY[idx_gb] = N.y;
+        m_normalZ[idx_gb] = N.z;
+      }
 
       if (spp == 1) {
         accum = traceColor(camPos, generateRayDir(Qi, x + 0.5f, y + 0.5f), 0);

@@ -51,7 +51,7 @@ public:
   void setPathTracing(bool enabled) { m_pathTracing = enabled; }
 
   /// Reset the accumulation buffer (call when camera/scene changes).
-  void resetAccumulation() { m_accumFrame = 0; }
+  void resetAccumulation() { m_accumFrame = 0; m_svgfState.reset(); }
 
   /// Get the current accumulation frame count.
   int getAccumulatedFrames() const { return m_accumFrame; }
@@ -105,6 +105,19 @@ private:
   /// Generate a ray direction from pixel coordinates.
   RTFloat3 generateRayDir(const RTMat4 &Qi, float px, float py) const;
 
+  const float *getDepthBuffer() const override {
+    return m_depthBuffer.empty() ? nullptr : m_depthBuffer.data();
+  }
+  const float *getNormalXBuffer() const override {
+    return m_normalX.empty() ? nullptr : m_normalX.data();
+  }
+  const float *getNormalYBuffer() const override {
+    return m_normalY.empty() ? nullptr : m_normalY.data();
+  }
+  const float *getNormalZBuffer() const override {
+    return m_normalZ.empty() ? nullptr : m_normalZ.data();
+  }
+
   RTFloat4 m_bgColor;
   int m_aaSamples = 1;
   bool m_fxaa = false;
@@ -114,6 +127,8 @@ private:
   int m_accumFrame = 0;
   std::vector<float> m_accumR, m_accumG, m_accumB; // running sum per pixel
   std::vector<int32_t> m_objectIdBuffer; // per-pixel: instance index (-1 = background)
+  std::vector<float> m_depthBuffer;
+  std::vector<float> m_normalX, m_normalY, m_normalZ;
   core::Img8u m_output;
 };
 
