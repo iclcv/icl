@@ -507,9 +507,9 @@ struct SVGFTemporalParams {
   float lumSigma = params.sigmaColor * sqrt(max(1e-6f, cVar)) + 1e-6f;
 
   // Reduce spatial filtering for reflective surfaces — their color variation
-  // is from the reflected scene, not noise.
+  // is from the reflected scene, not noise. Quadratic falloff for aggressive preservation.
   float refl = reflectivity[ci];
-  float reflScale = max(0.05f, 1.0f - refl);
+  float reflScale = max(0.01f, (1.0f - refl) * (1.0f - refl));
 
   const float bspline[5] = {0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f};
   int step = params.stepSize;
@@ -991,7 +991,7 @@ void pathTrace(
       if (dist > 1e-4f) {
         float3 L = toLight / dist;
         float NdotL = max(0.0f, dot(s.normal, L));
-        float lightNdotL = max(0.0f, -dot(lightN, L));
+        float lightNdotL = abs(dot(lightN, L)); // abs: allow emission from both sides (avoids tessellation artifacts)
         if (NdotL > 0 && lightNdotL > 0) {
           ray sr;
           sr.origin = s.position + s.normal * 1.0f;
