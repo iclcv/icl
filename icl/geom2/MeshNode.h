@@ -9,10 +9,10 @@
 
 namespace icl::geom2 {
 
-  /// Bulk geometry data for MeshNode::digest()
+  /// Bulk geometry data for MeshNode::ingest()
   /** Use designated initializers + std::move for zero-copy ingestion:
       @code
-      digest({
+      ingest({
           .vertices  = std::move(verts),
           .normals   = std::move(norms),
           .triangles = std::move(tris),
@@ -70,7 +70,7 @@ namespace icl::geom2 {
     /** Clears existing geometry, then moves present fields into the node.
         Absent (nullopt) fields are left empty. Auto-generates normals
         if vertices and triangles/quads are present but normals are not. */
-    void digest(MeshData data);
+    void ingest(MeshData data);
 
     /// Clears all geometry (vertices, normals, colors, primitives)
     void clearGeometry();

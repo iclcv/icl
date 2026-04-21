@@ -209,7 +209,7 @@ namespace icl::geom2 {
       }
     }
 
-    mesh->digest({
+    mesh->ingest({
       .vertices  = std::move(verts),
       .normals   = std::move(norms),
       .uvs       = std::move(uvData),
@@ -345,7 +345,7 @@ namespace icl::geom2 {
     }
 
     // Bulk-ingest: moves vectors without copying
-    mesh->digest({
+    mesh->ingest({
       .vertices  = std::move(positions),
       .normals   = objNormals.empty() ? std::nullopt : std::optional(std::move(objNormals)),
       .uvs       = uvs.empty() ? std::nullopt : std::optional(std::move(uvs)),

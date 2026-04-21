@@ -52,7 +52,7 @@ namespace icl::geom2 {
     quads().push_back({{a, b, c, d}, {na, nb, nc, nd}, {ta, tb, tc, td}});
   }
 
-  void MeshNode::digest(MeshData data) {
+  void MeshNode::ingest(MeshData data) {
     clearGeometryData();
 
     if (data.vertices) vertices() = std::move(*data.vertices);

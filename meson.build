@@ -291,6 +291,9 @@ if _build_demos or _build_apps or _build_examples
     subdir('icl/qt/targets')
   endif
   subdir('icl/geom/targets')
+  if qt_found
+    subdir('icl/geom2/targets')
+  endif
   subdir('icl/markers/targets')
   if bullet_found and qt_found
     subdir('icl/physics/targets')
