@@ -1,6 +1,148 @@
 # ICL — Continuation Guide
 
-## Current State (Session 42 — rectify-image fix, AffineOp backends, Quick2 pool)
+## Current State (Session 43 — ICLFilter Configurable migration + filter-playground)
+
+### Session 43 Summary
+
+Completed Phase 1 of the ICLFilter migration plan (see
+`project_filter_playground.md` memory): 29 UnaryOps ported from hand-rolled
+setters/getters to `utils::Configurable` properties, a unified
+`icl-filter-playground` app built that auto-generates the UI from any Op's
+properties, and 9 redundant per-op demos + the `UnaryOp::fromString`
+string-registry deleted (~970 lines net). Several latent framework bugs
+found and fixed along the way. Four Configurable-level extensions landed
+so the migration could avoid per-Op boilerplate.
+
+Final op count by family:
+
+- **Arithmetic/logic/compare:** UnaryArithmeticalOp, UnaryCompareOp, UnaryLogicalOp
+- **Thresholding:** ThresholdOp, LocalThresholdOp
+- **Neighborhood:** ConvolutionOp, MedianOp, MorphologicalOp, WienerOp
+- **Affine:** AffineOp + RotateOp/ScaleOp/TranslateOp (inherit AffineOp with
+  irrelevant knobs hidden via `deactivateProperty` regex filters) +
+  MirrorOp (BaseAffineOp direct)
+- **Derivative/gradient:** CannyOp, GradientOp (new — supersedes the
+  non-UnaryOp `GradientImage` class which was retired)
+- **Color/LUT:** LUTOp, PseudoColorOp, DitheringOp
+- **Bank/feature:** GaborOp (with live kernel-preview image property),
+  BilateralFilterOp, MotionSensitiveTemporalSmoothing (MSTS)
+- **Transform/rescale:** FFTOp, WarpOp, FixedConvertOp, IntegralImgOp,
+  ChamferOp, WeightChannelsOp, WeightedSumOp
+
+Skipped: ProximityOp (BinaryOp + apply currently unimplemented),
+ImageRectification (needs 4-point quadrangle input, not a straightforward
+UnaryOp).
+
+#### A. Configurable framework extensions
+
+1. **"image" property type + type-erased `Property::payload`** —
+   `utils::Configurable::Property` gained a `std::any payload` field and
+   two new virtuals (`setPropertyPayload` / `getPropertyPayload`). The Qt
+   `Prop` widget now renders an embedded `Display` for `type == "image"`,
+   polled on the property's volatileness timer by a new
+   `VolatileImageUpdater`. `core::Image` is ref-counted via shared_ptr so
+   the handoff is cheap. First consumer: GaborOp's kernel preview —
+   visible in the playground without any bespoke GUI plumbing. Design
+   captured and then resolved in `project_configurable_image_type.md`.
+
+2. **UnaryOp-level apply/callback mutex** — `UnaryOp` now owns a
+   protected `mutable std::recursive_mutex m_applyMutex` and overrides
+   `registerCallback` to auto-wrap every callback with a lock on that
+   mutex. Subclasses only need one line (`std::scoped_lock lock(m_applyMutex);`
+   at the top of their `apply()`). Hit after 3 open-coded consumers
+   (filter-swap UAF, GaborOp vector race, WienerOp mid-apply mask race).
+   Design captured and resolved in `project_configurable_op_threadsafety.md`.
+
+3. **GUIComponents `String` now escapes commas** — initText with literal
+   commas (e.g. CSV defaults like `"0.299,0.587,0.114"` for
+   WeightChannelsOp) was tripping the GUI definition parser's
+   comma-split. Now backslash-escapes commas and backslashes before
+   concatenation; the parser's StrTok (configured with `\\` as escape
+   char) unescapes on split. Latent bug, affected anyone with commas in
+   `String` defaults.
+
+4. **Collapsed setter boilerplate** — all migration sites went from
+   `prop("X").value = str(v); call_callbacks("X", this);` to
+   `setPropertyValue("X", v);` (existing Configurable API — just wasn't
+   being used by the pre-existing LocalThresholdOp pattern that everyone
+   was copying).
+
+#### B. filter-playground (`icl/filter/apps/filter-playground.cpp`)
+
+A single unified app exposing every migrated Op through
+introspection-driven UI. Users pick a filter from a combo; the properties
+panel is rebuilt via `Prop(&currentOp)` using the CamCfgWidget-style
+BoxHandle-swap pattern. The playground subsumes 9 retired single-op
+demos (canny-op, convolution-op, dither-op, fft, temporal-smoothing,
+warp-op, bilateral-filter-op, gabor-op, filter-array).
+
+Polish landed this session:
+
+- **Source controls** — size / depth / format combos feeding `useDesired`
+  on the grabber, plus a source-ROI mode combo with 7 presets
+  (none/UL/UR/LL/LR/center/interactive).
+- **Interactive ROI** — left-click-drag on the source canvas defines a
+  rubber-banded (transparent blue) rect; release commits it (red
+  outline); right-click resets.
+- **Dynamic Prop panel** — full filter swap on combo change, serialized
+  against the exec thread's `apply()` via `opMutex`.
+- **Auto-range result display** — `ImageHandle::setRangeMode(rmAuto)` on
+  the result so 16s/32f filter outputs render over their actual dynamic
+  range (gradients, FFT magnitude, etc. stop looking mostly-black).
+- **Timing + status** — apply-time label, fps counter, status label
+  (shows "ok" or the exception text).
+
+#### C. Framework bug fixes exposed by the playground
+
+1. **`CannyOp::followEdge` stack overflow** — recursive 8-connected flood
+   fill blew the thread stack when low threshold ≈ 0 made most pixels
+   weak edges. Rewrote as iterative with a heap-backed work stack;
+   identical semantics. Latent for years, trivially reached once the
+   playground exposed the default `lowT=0`.
+2. **`ConvolutionOp` black-output-on-depth-flip** — when reverting
+   float→int, `m_kernel.toInt(true)` truncates normalized gauss/sobel
+   kernels to all-zero. Fix: if the kernel has a known `fixedType`,
+   rebuild from the lookup table instead of truncating. Custom float
+   kernels still warn+truncate as before.
+3. **`GaborOp`** — three bugs: (a) float-Gabor-kernel applied to int src
+   degraded to toInt zeros + Img32f append type mismatch (now converts
+   non-float src once via an internal `m_src32fBuffer`); (b) default ctor
+   produced empty kernel bank → black first frame (now seeds from
+   property defaults); (c) property-driven updateKernels raced the exec
+   thread's vector iteration (initially fixed with a per-op mutex, then
+   folded into the framework-level `UnaryOp::m_applyMutex`).
+4. **`WienerOp` had no C++ fallback** — implemented one: classic
+   adaptive Wiener (output = μ + max(0, σ²−noise)/max(σ², noise) ·
+   (src − μ)) over 8u/16s/32f via an integral-image optimization
+   (allocates once per apply, reused across channels, gives O(W·H)
+   independent of mask size). Playground default seeded at 5×5 /
+   noise=100 so the filter produces visible output at load time
+   (`noise=0` is a mathematical no-op — textbook Wiener with "no noise
+   expected" returns src unchanged). Mid-apply mask race (same pattern
+   as GaborOp) fixed via the UnaryOp mutex. 3 new tests.
+5. **GradientImage retired** — fully replaced by GradientOp
+   (x/y/intensity/angle mode menu + normalize flag, ConvolutionOp-backed).
+
+#### D. Phase 2 deferred items
+
+- ImageRectification → UnaryOp (needs a 4-point quadrangle GUI picker;
+  playground would grow a point-picker mode)
+- `project_configurable_op_threadsafety.md` pattern potentially applies
+  to `io::Grabber`/similar Configurables outside ICLFilter; revisit if
+  those hit the same races
+
+#### E. Memory writes this session
+
+- `project_filter_playground.md` — the overall plan (already approved)
+- `project_configurable_image_type.md` — resolved (first consumer GaborOp)
+- `project_configurable_op_threadsafety.md` — resolved (UnaryOp mutex)
+- `feedback_img_channel_access.md` — prefer `ImgChannel<T> c = img[0];
+  c(x,y)` over `img(x,y,c)` in pixel loops (cached pointer vs. vector
+  re-lookup)
+
+---
+
+## Previous State (Session 42 — rectify-image fix, AffineOp backends, Quick2 pool)
 
 ### Session 42 Summary
 
