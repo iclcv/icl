@@ -37,8 +37,6 @@
 - geom2/demos/cycles-scene-viewer.cpp
 - geom2/demos/geom2-hello.cpp
 - geom2/demos/scene-to-pointcloud.cpp
-- io/demos/depth_img_endcoding_test.cpp
-- io/demos/undistortion.cpp
 - markers/demos/multi-cam-marker-demo.cpp
 - math/demos/k-means.cpp
 - math/demos/llm-1D.cpp
@@ -60,7 +58,6 @@
 
 - qt/examples/quick.cpp — `ImgQ` → `Image`
 - qt/demos/onscreen-button.cpp — `ImgQ` → `Image`, `cvt()` removed, `.ptr()` for widget API
-- io/demos/png_write_test.cpp — header swap only (Quick.h → Quick2.h)
 - markers/demos/simple-marker-demo.cpp — header swap only (Common.h → Common2.h)
 - cv/demos/hough-line.cpp — `load<icl8u>()` → `icl::qt::load().as8u()` (name conflict with local `load` variable)
 - cv/demos/template-matching.cpp — `cvt8u(ones(...)*255)` → `(ones(...)*255).as8u()`

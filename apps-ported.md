@@ -21,7 +21,6 @@
 - geom/apps/simple-point-cloud-viewer.cpp
 - io/apps/camera-param-io.cpp
 - io/apps/convert.cpp
-- io/apps/k2.cpp
 - io/apps/multi-viewer.cpp
 - io/apps/pipe.cpp
 - io/apps/reset-bus.cpp

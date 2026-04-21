@@ -57,9 +57,9 @@
 | geom2/demos/cycles-scene-viewer.cpp | :white_check_mark: Done | Header swap |
 | geom2/demos/geom2-hello.cpp | :white_check_mark: Done | Header swap |
 | geom2/demos/scene-to-pointcloud.cpp | :white_check_mark: Done | Header swap |
-| io/demos/depth_img_endcoding_test.cpp | :white_check_mark: Done | Header swap |
-| io/demos/png_write_test.cpp | :white_check_mark: Done | Header swap |
-| io/demos/undistortion.cpp | :white_check_mark: Done | Header swap |
+| io/demos/depth_img_endcoding_test.cpp | :wastebasket: Retired (Session 45) | Moved to tests/test-quick-io.cpp as `ImageCompressor.1611.*` tests |
+| io/demos/png_write_test.cpp | :wastebasket: Retired (Session 45) | Already covered by `Quick2.IO.save.load.png` |
+| io/demos/undistortion.cpp | :wastebasket: Retired (Session 45) | Subsumed by `@udist=file.xml` qualifier on every GenericGrabber app |
 | markers/demos/multi-cam-marker-demo.cpp | :white_check_mark: Done | Header swap |
 | markers/demos/simple-marker-demo.cpp | :white_check_mark: Done | Header swap |
 | math/demos/k-means.cpp | :white_check_mark: Done | Header swap, checked |
@@ -121,9 +121,9 @@
 | io/apps/convert.cpp | :white_check_mark: Done | Header swap |
 | io/apps/create.cpp | :white_check_mark: Done | Rewritten with `fixed_convert()` + `save()` |
 | io/apps/dcclearisochannels.cpp | :heavy_minus_sign: N/A | No Quick.h/Common.h |
-| io/apps/dcdeviceinfo.cpp | :heavy_minus_sign: N/A | No Quick.h/Common.h |
+| io/apps/dcdeviceinfo.cpp | :wastebasket: Retired (Session 45) | Subsumed by `-i dc 0@info` qualifier on every GenericGrabber app |
 | io/apps/jpg2cpp.cpp | :heavy_minus_sign: N/A | No Quick.h/Common.h |
-| io/apps/k2.cpp | :white_check_mark: Done | Header swap |
+| io/apps/k2.cpp | :wastebasket: Retired (Session 45) | Bypassed Kinect2Grabber; use `icl-pipe -i kinect2 0` instead |
 | io/apps/multi-viewer.cpp | :white_check_mark: Done | Header swap |
 | io/apps/pipe.cpp | :white_check_mark: Done | Header swap |
 | io/apps/reset-bus.cpp | :white_check_mark: Done | Header swap |

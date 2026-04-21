@@ -1,20 +1,11 @@
 # ICL IO - demos, apps, examples
-
-# ---- Demos (all need Qt) ----
-if _build_demos and qt_found
-  _io_demos = {
-    'depth_img_endcoding_test': [],
-    'png_write_test': [],
-    'undistortion': [],
-  }
-  foreach name, extra_deps : _io_demos
-    executable(name + '-demo',
-      files('../demos' / name + '.cpp'),
-      dependencies: [icl_qt_dep, icl_io_dep] + extra_deps,
-      install: false,
-    )
-  endforeach
-endif
+#
+# Note: ICL IO has no demos. The historic three (depth_img_endcoding_test,
+# png_write_test, undistortion) were retired in Session 45 — the depth
+# 11-bit roundtrip moved to tests/test-quick-io.cpp, png writing is
+# already covered by Quick2.IO.save.load.png, and undistortion is
+# accessible from every GenericGrabber-based app via the `@udist=file.xml`
+# qualifier (see GenericGrabber.cpp ~line 273).
 
 # ---- Apps ----
 if _build_apps
@@ -26,14 +17,12 @@ if _build_apps
   )
 
   # Apps needing libdc
+  # icl-dcdeviceinfo retired Session 45 — `icl-pipe -i dc 0@info`
+  # (or any GenericGrabber-driven app with the same qualifier) prints the
+  # same property table on demand.
   if libdc_dep.found()
     executable('icl-dcclearisochannels',
       files('../apps/dcclearisochannels.cpp'),
-      dependencies: [icl_io_dep],
-      install: true,
-    )
-    executable('icl-dcdeviceinfo',
-      files('../apps/dcdeviceinfo.cpp'),
       dependencies: [icl_io_dep],
       install: true,
     )
@@ -63,13 +52,9 @@ if _build_apps
       )
     endforeach
 
-    # k2 needs freenect2
-    if freenect2_dep.found()
-      executable('icl-k2',
-        files('../apps/k2.cpp'),
-        dependencies: [icl_qt_dep, icl_io_dep],
-        install: true,
-      )
-    endif
+    # icl-k2 retired Session 45 — bypassed Kinect2Grabber by talking to
+    # libfreenect2 directly. Use `icl-pipe -i kinect2 0` (or any
+    # GenericGrabber-driven app) instead, which goes through ICL's own
+    # Kinect2Grabber backend.
   endif
 endif
