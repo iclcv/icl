@@ -66,7 +66,6 @@ utils_headers = files(
   'Time.h',
   'Timer.h',
   'UncopiedInstance.h',
-  'Uncopyable.h',
   'Utils.h',
   'VisualizationDescription.h',
   'XML.h',

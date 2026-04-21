@@ -7,7 +7,6 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Thread.h>
 #include <mutex>
-#include <icl/utils/Uncopyable.h>
 
 #include <functional>
 #include <iostream>

@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/BasicTypes.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/core/Img.h>
 #include <bitset>
 

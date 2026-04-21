@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <icl/utils/Uncopyable.h>
 #include <icl/math/Octree.h>
 #include <icl/math/HomogeneousMath.h>
 

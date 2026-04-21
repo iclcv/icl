@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/Lockable.h>
 #include <icl/math/DynMatrix.h>
 #include <icl/geom/Geom.h>

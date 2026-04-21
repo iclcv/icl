@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/Point.h>
 #include <icl/core/Img.h>
 #include <icl/filter/UnaryOp.h>

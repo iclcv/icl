@@ -7,7 +7,6 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/PluginRegistry.h>
 #include <icl/utils/SteppingRange.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/Configurable.h>
 #include <icl/core/ImgBase.h>
 #include <icl/io/GrabberDeviceDescription.h>
@@ -326,8 +325,11 @@ template<> inline bool Grabber::desiredUsed<core::format>() const{ return static
 template<> inline bool Grabber::desiredUsed<core::depth>() const{ return static_cast<int>(getDesired<core::depth>()) != -1; }
 template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
 
-class ICLIO_API GrabberRegistry : utils::Uncopyable {
+class ICLIO_API GrabberRegistry {
 public:
+  GrabberRegistry(const GrabberRegistry&) = delete;
+  GrabberRegistry &operator=(const GrabberRegistry&) = delete;
+
   using CreateFn     = std::function<Grabber*(const std::string&)>;
   using DeviceListFn = std::function<const std::vector<GrabberDeviceDescription>&(std::string, bool)>;
   using BusResetFn   = std::function<void(bool)>;

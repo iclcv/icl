@@ -6,7 +6,6 @@
 #include <icl/core/VisitorsN.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/File.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/filter/ColorSegmentationOp.h>
 #include <icl/core/Color.h>
 #include <icl/core/Image.h>

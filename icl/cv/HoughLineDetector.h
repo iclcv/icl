@@ -13,7 +13,6 @@
 #include <icl/math/DynMatrix.h>
 #include <icl/math/StraightLine2D.h>
 #include <icl/core/Img.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/Configurable.h>
 
 namespace icl::cv {

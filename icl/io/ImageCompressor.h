@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Configurable.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/Time.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
@@ -45,12 +44,14 @@ namespace icl::io {
       (codec names are no longer 4-byte truncated; tunable codec
       parameters can be richer than `int32 quality`).
    */
-  class ICLIO_API ImageCompressor : public utils::Configurable,
-                                    public utils::Uncopyable {
+  class ICLIO_API ImageCompressor : public utils::Configurable {
     struct Data;
     Data *m_data;
 
     public:
+    ImageCompressor(const ImageCompressor&) = delete;
+    ImageCompressor &operator=(const ImageCompressor&) = delete;
+
 
     /// Codec selection: name + opaque per-codec parameters string.
     /** `mode` is the codec name (matches a registered plugin). `quality`

@@ -14,7 +14,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/GeomDefs.h>
-#include <icl/utils/Uncopyable.h>
 
 /** \cond */
 namespace icl::qt { class GLImg; }

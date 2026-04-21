@@ -8,7 +8,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Size.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/core/Image.h>
 
 #include <string>

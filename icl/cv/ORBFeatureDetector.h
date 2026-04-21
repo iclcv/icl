@@ -9,7 +9,6 @@
 #endif
 
 #include <icl/core/Img.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/Configurable.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/VisualizationDescription.h>

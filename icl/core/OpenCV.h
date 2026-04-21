@@ -22,7 +22,6 @@
 #include <icl/core/CCFunctions.h>
 #include <icl/core/Img.h>
 #include <icl/core/ImgBase.h>
-#include <icl/utils/Uncopyable.h>
 
 namespace icl::core {
   /// Modes that define whether to prefer the source image's or the destination image's depth

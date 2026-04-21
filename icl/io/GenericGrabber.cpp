@@ -11,7 +11,11 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  class GrabberInstanceTable : Uncopyable {
+  class GrabberInstanceTable {
+    public:
+      GrabberInstanceTable(const GrabberInstanceTable&) = delete;
+      GrabberInstanceTable &operator=(const GrabberInstanceTable&) = delete;
+
     private:
       static GrabberInstanceTable inst;
       std::recursive_mutex mutex;

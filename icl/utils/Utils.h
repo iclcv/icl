@@ -65,7 +65,6 @@
     - <tt>icl::Range</tt> and <tt>icl::SteppingRange</tt>
     - <tt>icl::StraightLine2D</tt>
     - <tt>std::shared_ptr</tt>
-    - <tt>icl::Uncopyable</tt>
     - <tt>icl::ShallowCopyable</tt>
 
     \section STRING String manipulation functions

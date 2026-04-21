@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/utils/Point.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/Size.h>
 #include <icl/utils/Size.h>
 

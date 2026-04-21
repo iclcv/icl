@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/core/Img.h>
 #include <icl/qt/PlotWidget.h>
 namespace icl::cv {

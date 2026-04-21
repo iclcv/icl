@@ -4,7 +4,6 @@
 
 #include <icl/geom/RansacBasedPoseEstimator.h>
 
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/StringUtils.h>
 
 #include <icl/math/RansacFitter.h>

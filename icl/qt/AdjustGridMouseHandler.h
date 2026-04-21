@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/utils/Lockable.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/VisualizationDescription.h>
 #include <icl/qt/MouseHandler.h>
 #include <icl/core/Line32f.h>

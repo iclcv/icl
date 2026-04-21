@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Lockable.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/VisualizationDescription.h>
 #include <icl/qt/MouseHandler.h>
 

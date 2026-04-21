@@ -8,7 +8,6 @@
 #include <icl/geom/GeomDefs.h>
 #include <icl/core/Img.h>
 #include <icl/geom/Camera.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/core/DataSegment.h>
 
 #include <icl/geom/ObjectEdgeDetectorPlugin.h>

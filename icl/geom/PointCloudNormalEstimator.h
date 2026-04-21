@@ -8,7 +8,6 @@
 #include <icl/geom/GeomDefs.h>
 #include <icl/core/Img.h>
 #include <icl/geom/Camera.h>
-#include <icl/utils/Uncopyable.h>
 
 namespace icl::geom {
   /** Utility class for point cloud normal and depth-edge estimation

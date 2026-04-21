@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <icl/utils/Uncopyable.h>
 #include <LinearMath/btMotionState.h>
 
 namespace icl::physics {

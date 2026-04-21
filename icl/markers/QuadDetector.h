@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Configurable.h>
-#include <icl/utils/Uncopyable.h>
 // forward declaration (was #include <icl/core/ImgBase.h>)
 #include <icl/cv/RegionDetector.h>
 #include <vector>

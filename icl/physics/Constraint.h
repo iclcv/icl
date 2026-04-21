@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <icl/utils/Uncopyable.h>
 #include <BulletDynamics/ConstraintSolver/btTypedConstraint.h>
 #include <icl/physics/RigidObject.h>
 #include <vector>

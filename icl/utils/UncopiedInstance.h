@@ -21,10 +21,10 @@ namespace icl::utils {
          ...
       };
       \endcode
-      As the mutex class is an instance of the Uncopyable interfaces, it cannot
-      be copied. Furthermore, all classes X that have a member of type Mutex are Uncopyable too, unless,
-      A special copy constructor and assignment operator for X is defined. This can be bypassed using the
-      UncopiedInstance interface.\n
+      As the mutex class is non-copyable, it cannot be copied. Furthermore,
+      all classes X that have a member of type Mutex are non-copyable too,
+      unless a special copy constructor and assignment operator for X is
+      defined. This can be bypassed using the UncopiedInstance interface.\n
       Due to template based inheritance, Uncopied instances can be used as their (templated) child instances.
       One major drawback is, that the wrapped T instance (wrapped by inheritance) is always constructed using
       the ()-empty constructor.\n

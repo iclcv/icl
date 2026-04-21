@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/core/Core.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/math/DynMatrix.h>
 #include <icl/cv/ImageRegion.h>
 #include <stdint.h>
@@ -17,9 +16,12 @@ namespace icl::cv {
    * Journal of Zhejiang University-SCIENCE C (Computers & Electronics) 2014
    * @brief The RegionCurvature class
    */
-  class ICLCV_API CurvatureExtractor : utils::Uncopyable {
+  class ICLCV_API CurvatureExtractor {
 
   public:
+      CurvatureExtractor(const CurvatureExtractor&) = delete;
+      CurvatureExtractor &operator=(const CurvatureExtractor&) = delete;
+
 
       /// Internal used matrix type
       using DMatF = math::DynMatrix<float>;

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/Point.h>
 #include <functional>
 #include <string>

@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Range.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/core/Color.h>
 #include <icl/cv/ImageRegion.h>
 

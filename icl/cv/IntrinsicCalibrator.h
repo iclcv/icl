@@ -6,7 +6,6 @@
 
 #include <icl/utils/BasicTypes.h>
 #include <icl/utils/Macros.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/ConfigFile.h>
 #include <icl/utils/StackTimer.h>
 #include <icl/utils/Array2D.h>

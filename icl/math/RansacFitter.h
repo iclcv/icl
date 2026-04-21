@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Uncopyable.h>
 #include <icl/utils/Random.h>
 #include <icl/math/DynVector.h>
 #include <icl/math/FixedVector.h>

@@ -9,7 +9,6 @@
 #include <icl/utils/Configurable.h>
 #include <icl/core/Types.h>
 #include <vector>
-#include <icl/utils/Uncopyable.h>
 
 namespace icl::cv {
     /// Curvature Corner Detector

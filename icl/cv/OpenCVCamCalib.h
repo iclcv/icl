@@ -9,7 +9,6 @@
 #include <icl/math/DynMatrix.h>
 
 #include <icl/utils/Macros.h>
-#include <icl/utils/Uncopyable.h>
 
 #include <icl/core/OpenCV.h>
 

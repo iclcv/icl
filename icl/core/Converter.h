@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Img.h>
-#include <icl/utils/Uncopyable.h>
 
 
 namespace icl::core {

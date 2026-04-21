@@ -7,7 +7,6 @@
 #include <QWidget>
 #include <icl/utils/Size.h>
 #include <icl/qt/GUI.h>
-#include <icl/utils/Uncopyable.h>
 
 /** \cond */
 class QGridLayout;

@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Uncopyable.h>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 // forward declaration (was #include <icl/core/ImgBase.h>)
 

@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/geom/SceneObject.h>
-#include <icl/utils/Uncopyable.h>
 #include <mutex>
 #include <functional>
 class btCollisionObject;

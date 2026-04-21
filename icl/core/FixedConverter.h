@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Converter.h>
-#include <icl/utils/Uncopyable.h>
 
 namespace icl::core {
   /// Special converter "producing" images with fixed parameters

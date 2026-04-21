@@ -8,7 +8,6 @@
 #include <icl/math/DynMatrix.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/BasicTypes.h>
-#include <icl/utils/Uncopyable.h>
 #include <vector>
 
 namespace icl::math {
