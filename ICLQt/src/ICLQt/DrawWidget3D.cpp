@@ -28,45 +28,54 @@ namespace icl::qt {
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
     bool coreProfile = (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) != 0;
 
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-    if (!coreProfile) {
-      // Legacy compatibility profile: save state, set up default 3D view
-      glPushAttrib(GL_ALL_ATTRIB_BITS);
-      glMatrixMode(GL_PROJECTION);
-      glPushMatrix();
-      glLoadIdentity();
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-      glLoadIdentity();
-
-      glEnable(GL_LIGHTING);
-      glEnable(GL_COLOR_MATERIAL);
-      glEnable(GL_DEPTH_TEST);
-
-      glMatrixMode(GL_PROJECTION);
-      gluPerspective( 45,  float(width())/height(), 0.1, 100);
-      glMatrixMode(GL_MODELVIEW);
-      gluLookAt(0, 0, -1,   // pos
-                0, 0,  0,   // view center point
-                1, 0,  0 );// up vector
-    } else {
-      glEnable(GL_DEPTH_TEST);
+    if (coreProfile) {
+      // Core Profile two-phase rendering:
+      //   Phase 1 (e==nullptr): run GL callback only
+      //   Phase 2 (e!=nullptr): run 2D draw commands only
+      if (!e) {
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+        if (m_linkedCallback) {
+          m_linkedCallback->draw(this);
+        }
+      } else {
+        ICLDrawWidget::customPaintEvent(e);
+      }
+      return;
     }
+
+    // Legacy compatibility profile
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_COLOR_MATERIAL);
+    glEnable(GL_DEPTH_TEST);
+
+    glMatrixMode(GL_PROJECTION);
+    gluPerspective( 45,  float(width())/height(), 0.1, 100);
+    glMatrixMode(GL_MODELVIEW);
+    gluLookAt(0, 0, -1,   // pos
+              0, 0,  0,   // view center point
+              1, 0,  0 );// up vector
 
     if(m_linkedCallback){
       m_linkedCallback->draw(this);
     }
 
-    if (!coreProfile) {
-      glPopAttrib();
-      glMatrixMode(GL_PROJECTION);
-      glPopMatrix();
-      glMatrixMode(GL_MODELVIEW);
-      glPopMatrix();
+    glPopAttrib();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
 
-      ICLDrawWidget::customPaintEvent(e);
-    }
+    ICLDrawWidget::customPaintEvent(e);
   }
 
   void ICLDrawWidget3D::link(ICLDrawWidget3D::GLCallback *cb){

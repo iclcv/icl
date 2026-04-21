@@ -10,6 +10,7 @@
 #include <QScreen>
 #include <ICLQt/GLImg.h>
 #include <ICLQt/GLPaintEngine.h>
+#include <ICLQt/QPainterPaintEngine.h>
 #include <ICLIO/GenericImageOutput.h>
 #include <ICLQt/ContainerGUIComponents.h>
 #include <string>
@@ -237,6 +238,12 @@ namespace icl::qt {
 
       tmImage.draw2D(bounds,windowSize);
     }
+    void drawWithPaintEngine(PaintEngine *pe) {
+      if(!visible || !pe) return;
+      const Img8u &im = toggled ? downIcon : icon;
+      pe->image(Rect32f(bounds.x, bounds.y, bounds.width, bounds.height),
+                const_cast<Img8u*>(&im));
+    }
     bool update_mouse_move(int x, int y, ICLWidget *parent){
       if(!visible) return false;
       over = bounds.contains(x,y);
@@ -396,7 +403,7 @@ namespace icl::qt {
      isVisible = false;
    }
 
-   void paint(GLPaintEngine *pe) {
+   void paint(PaintEngine *pe) {
      if(!isVisible)return;
      static const char D[] = " ";
      std::string info_str;
@@ -518,13 +525,17 @@ namespace icl::qt {
     std::string infoText;
     QTimer embedTimer;
 
-    bool event(int x, int y, OSDGLButton::Event evt){
+    bool event(int x, int y, OSDGLButton::Event evt, PaintEngine *pe = nullptr){
       bool any = false;
       for(unsigned int i=0;i<glbuttons.size();++i){
         if(i == 7 && (evt == OSDGLButton::Enter || evt == OSDGLButton::Leave)){
           continue;
         }
-        any |= glbuttons[i]->event(x,y,evt,parent);
+        if(pe && evt == OSDGLButton::Draw){
+          glbuttons[i]->drawWithPaintEngine(pe);
+        }else{
+          any |= glbuttons[i]->event(x,y,evt,parent);
+        }
       }
       return any;
     }
@@ -1976,12 +1987,70 @@ namespace icl::qt {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    // In Core Profile, GLImg::draw2D and GLPaintEngine use deprecated GL calls.
-    // Skip them — the GLCallback (linked via DrawWidget3D) handles all rendering.
+    // Core Profile: two-phase rendering
+    //   Phase 1: GL rendering (3D callback via customPaintEvent(nullptr))
+    //   Phase 2: QPainter overlay (OSD, draw commands, zoom rect, tooltips, info)
     GLint profileMask = 0;
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
     if (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) {
+      // Phase 1: run 3D GL callback
       customPaintEvent(nullptr);
+
+      // Phase 2: QPainter overlay
+      QPainter painter(this);
+      painter.setRenderHint(QPainter::Antialiasing, true);
+      painter.setRenderHint(QPainter::TextAntialiasing, true);
+      QPainterPaintEngine pe(&painter, this);
+      pe.color(255,255,255,255);
+      pe.fill(255,255,255,255);
+
+      // Run 2D draw commands (DrawWidget command queue)
+      customPaintEvent(&pe);
+
+      if(m_data->outputCap){
+        m_data->outputCap->captureFrameBufferHook();
+      }
+
+      // Zoom rectangle
+      if(m_data->embeddedZoomRect){
+        pe.color(0,150,255,200);
+        pe.fill(0,150,255,50);
+        Rect32f &r = *m_data->embeddedZoomRect;
+        pe.rect(Rect(static_cast<int>(r.x),static_cast<int>(r.y),
+                     static_cast<int>(r.width),static_cast<int>(r.height)));
+      }
+
+      // Tooltips
+      for(unsigned int i=0;i<m_data->glbuttons.size();++i){
+        if(m_data->glbuttons[i]->isToolTipVisible()){
+          pe.fontsize(10);
+          const Rect &rr = m_data->glbuttons[i]->bounds;
+          std::string text = m_data->glbuttons[i]->toolTipText;
+          if(!text.length()) text = "no tooltip available";
+          Size size = pe.estimateTextBounds(text);
+          Rect r(rr.x+20,24,size.width+8, 16), r2=r;
+          r2.y -= 2;
+          pe.color(20,120,255,255);
+          pe.linewidth(2);
+          pe.line(Point32f(rr.x+rr.width/2., 18),
+                  Point32f(rr.x+rr.width/2., 32));
+          pe.line(Point32f(rr.x+rr.width/2., 32),
+                  Point32f(rr.x+rr.width/2.+10, 32));
+          pe.fill(20,120,255,200);
+          pe.rect(r);
+          pe.color(255,255,255,255);
+          pe.text(r2,text);
+          break;
+        }
+      }
+
+      // OSD buttons
+      m_data->event(0,0,OSDGLButton::Draw, &pe);
+
+      // Image info indicator
+      m_data->imageInfoIndicator->paint(&pe);
+
+      painter.end();
       return;
     }
 

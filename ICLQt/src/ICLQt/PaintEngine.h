@@ -6,6 +6,7 @@
 
 #include <ICLUtils/CompatMacros.h>
 #include <ICLUtils/Point32f.h>
+#include <ICLUtils/Size.h>
 #include <ICLUtils/Size32f.h>
 #include <ICLUtils/Rect32f.h>
 #include <ICLCore/Types.h>
@@ -54,6 +55,10 @@ namespace icl{
       virtual void getFill(float *piColor)=0;
 
       virtual float getFontSize() const =0;
+      virtual float getLineWidth() const =0;
+      virtual float getPointSize() const =0;
+      virtual utils::Size getSize() =0;
+      virtual utils::Size estimateTextBounds(const std::string &text) const =0;
 
     };
   } // namespace qt
