@@ -421,6 +421,7 @@ void SceneSynchronizer::syncMaterial(ObjectEntry &entry,
 void SceneSynchronizer::syncTransform(ObjectEntry &entry, float sceneScale) {
   Transform tfm = iclTransformToCycles(entry.iclObj, sceneScale);
   entry.object->set_tfm(tfm);
+  entry.object->tag_tfm_modified();
 }
 
 void SceneSynchronizer::syncCamera(const geom::Camera &cam,

@@ -23,6 +23,7 @@
 #include "session/session.h"
 #include "util/log.h"
 #include "util/path.h"
+#include "util/time.h"
 #include "util/unique_ptr.h"
 
 
@@ -131,6 +132,7 @@ struct CyclesRenderer::Impl {
   int accumulated = 0;     // samples in current accum buffer
   int target = 0;          // current Cycles sample target
   int updateCountAtReset = 0; // OutputDriver update count when reset was issued
+  double resetTime = 0;       // time when reset was issued (for timing)
 
   // Change detection
   float lastCamHash = 0;
@@ -153,11 +155,14 @@ struct CyclesRenderer::Impl {
     vector<DeviceInfo> devices = Device::available_devices();
     DeviceInfo deviceInfo = devices[0]; // CPU fallback
     for (const auto &d : devices) {
+      fprintf(stderr, "[Cycles] Available device: %s (type %d)\n",
+              d.description.c_str(), (int)d.type);
       if (d.type == DEVICE_METAL) {
         deviceInfo = d;
-        break;
       }
     }
+    fprintf(stderr, "[Cycles] Selected: %s (type %d)\n",
+            deviceInfo.description.c_str(), (int)deviceInfo.type);
 
     // Session params
     SessionParams sessionParams;
@@ -315,6 +320,7 @@ void CyclesRenderer::render(int camIndex) {
     // Wait for the render thread to pick up the delayed reset before
     // checking progress — it will drop below 1.0 once rendering starts.
     m_impl->updateCountAtReset = m_impl->outputDriver->getUpdateCount();
+    m_impl->resetTime = ccl::time_dt();
     m_impl->state = Impl::State::WAIT_FOR_START;
   };
 
@@ -333,6 +339,7 @@ void CyclesRenderer::render(int camIndex) {
   if (m_impl->state == S::WAIT_FOR_START) {
     if (m_impl->outputDriver->getUpdateCount() <= m_impl->updateCountAtReset) return;
     m_impl->state = S::RENDERING;
+    fprintf(stderr, "[Cycles] Render started (waited for tile)\n");
   }
 
   // state == RENDERING
@@ -340,6 +347,10 @@ void CyclesRenderer::render(int camIndex) {
   if (progress < 1.0) return;  // still cooking — GUI stays responsive
 
   // Step done: write_render_tile has captured the image.
+  double elapsed = ccl::time_dt() - m_impl->resetTime;
+  fprintf(stderr, "[Cycles] Step done: %d/%d spp in %.0fms (%d updates)\n",
+          m_impl->target, m_impl->samples, elapsed * 1000.0,
+          m_impl->outputDriver->getUpdateCount());
   m_impl->accumulated = m_impl->target;
 
   if (m_impl->dirty) {
@@ -355,6 +366,40 @@ void CyclesRenderer::render(int camIndex) {
     // Reached max samples — done.
     m_impl->state = S::IDLE;
   }
+}
+
+void CyclesRenderer::renderBlocking(int camIndex) {
+  m_impl->ensureInitialized();
+  m_impl->applyQualityToScene();
+  m_impl->sync.setBackgroundStrength(m_impl->brightness);
+  m_impl->sync.synchronize(
+      m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
+
+  int w = m_impl->scene->camera->get_full_width();
+  int h = m_impl->scene->camera->get_full_height();
+  if (w <= 0) w = 800;
+  if (h <= 0) h = 600;
+
+  SessionParams sp = m_impl->session->params;
+  sp.samples = m_impl->samples;
+  BufferParams bp;
+  bp.width = w;  bp.height = h;
+  bp.full_width = w;  bp.full_height = h;
+
+  // reset() + start() + wait() for a clean blocking render cycle.
+  // start() must be called after each reset() to wake the session thread.
+  int prevUpdates = m_impl->outputDriver->getUpdateCount();
+  m_impl->session->reset(sp, bp);
+  m_impl->session->start();
+  m_impl->sessionStarted = true;
+  // Poll for completion — wait() can return prematurely after delayed reset.
+  while (m_impl->outputDriver->getUpdateCount() <= prevUpdates) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+
+  m_impl->accumulated = m_impl->samples;
+  m_impl->state = Impl::State::IDLE;
+  m_impl->dirty = false;
 }
 
 const core::Img8u &CyclesRenderer::getImage() const {

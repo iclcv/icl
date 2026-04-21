@@ -30,29 +30,44 @@ static PhysicsScene scene;
 static std::unique_ptr<icl::rt::CyclesRenderer> renderer;
 HSplit gui;
 
-static void handleClick(const MouseEvent &evt) {
-  if (evt.isPressEvent() && evt.isLeft() && !evt.isModifierActive(ShiftModifier)
-      && !evt.isModifierActive(ControlModifier)) {
-    Hit hit = scene.findObject(0, evt.getX(), evt.getY());
-    if (hit) {
-      auto mat = hit.obj->getMaterial();
-      if (!mat) {
-        mat = std::make_shared<Material>();
-        hit.obj->setMaterial(mat);
+// Track mouse press position to distinguish clicks from drags
+static Point32f pressPos(-1, -1);
+static bool pressPending = false;
+
+static void handleMouse(const MouseEvent &evt) {
+  // Forward all events to the scene's camera handler
+  scene.getMouseHandler(0)->process(evt);
+
+  // Track press/release to detect click (no drag)
+  if (evt.isPressEvent() && evt.isMiddle()) {
+    pressPos = evt.getPos();
+    pressPending = true;
+  }
+  if (evt.isReleaseEvent() && evt.isMiddle() && pressPending) {
+    pressPending = false;
+    Point32f delta = evt.getPos() - pressPos;
+    if (std::abs(delta.x) < 5 && std::abs(delta.y) < 5) {
+      // Middle-click without drag → toggle emissive
+      Hit hit = scene.findObject(0, evt.getX(), evt.getY());
+      if (hit) {
+        auto mat = hit.obj->getMaterial();
+        if (!mat) {
+          mat = std::make_shared<Material>();
+          hit.obj->setMaterial(mat);
+        }
+        float emSum = mat->emissive[0] + mat->emissive[1] + mat->emissive[2];
+        if (emSum > 0.01f) {
+          mat->emissive = GeomColor(0, 0, 0, 1);
+        } else {
+          mat->emissive = GeomColor(mat->baseColor[0] * 2.0f,
+                                     mat->baseColor[1] * 2.0f,
+                                     mat->baseColor[2] * 2.0f, 1.0f);
+        }
+        if (renderer) renderer->invalidateAll();
       }
-      float emSum = mat->emissive[0] + mat->emissive[1] + mat->emissive[2];
-      if (emSum > 0.01f) {
-        // Turn off emission
-        mat->emissive = GeomColor(0, 0, 0, 1);
-      } else {
-        // Make emissive based on base color
-        mat->emissive = GeomColor(mat->baseColor[0] * 2.0f,
-                                   mat->baseColor[1] * 2.0f,
-                                   mat->baseColor[2] * 2.0f, 1.0f);
-      }
-      if (renderer) renderer->invalidateAll();
     }
   }
+  if (evt.isDragEvent()) pressPending = false;
 }
 
 // Random generators
@@ -273,11 +288,9 @@ void init() {
             << Label("--").handle("info"))
        ) << Show();
 
-  // Both views share the same camera via the same mouse handler.
-  // The GL view also handles click-to-toggle-emissive (needs GL coordinates for picking).
-  gui["draw"].install(scene.getMouseHandler(0));
-  gui["gl"].install(scene.getMouseHandler(0));
-  gui["gl"].install(new MouseHandler(handleClick));
+  // Unified mouse handler: camera control (forwarded to scene) + middle-click picking.
+  gui["draw"].install(new MouseHandler(handleMouse));
+  gui["gl"].install(new MouseHandler(handleMouse));
 }
 
 static int frameCount = 0;
@@ -338,10 +351,9 @@ void run() {
   for (int i = 0; i < scene.getObjectCount(); i++)
     scene.getObject(i)->prepareForRendering();
 
-  // Invalidate based on what changed
-  if (geometryChanged) {
-    renderer->invalidateAll();
-  } else if (!paused) {
+  // Invalidate transforms when physics is running. The sync automatically
+  // detects new/removed objects — no need for invalidateAll().
+  if (!paused || geometryChanged) {
     renderer->invalidateTransforms();
   }
 
@@ -374,8 +386,21 @@ void run() {
   gui["fps"].render();
 }
 
+static void saveImage(icl::rt::CyclesRenderer &r, const std::string &path) {
+  const auto &img = r.getImage();
+  if (img.getWidth() > 0) {
+    icl::io::FileWriter writer(path);
+    writer.write(&img);
+    fprintf(stderr, "  Saved %dx%d → %s\n", img.getWidth(), img.getHeight(), path.c_str());
+  } else {
+    fprintf(stderr, "  ERROR: No image produced\n");
+  }
+}
+
 static void offscreen_render(const std::string &output) {
-  // Same scene setup as init() but without GUI
+  using namespace icl::rt;
+  int samples = pa("-samples").as<int>();
+
   scene.addCamera(Camera::lookAt(
       Vec(600, -500, 400, 1),
       Vec(0, 0, TABLE_Z, 1),
@@ -383,6 +408,7 @@ static void offscreen_render(const std::string &output) {
       pa("-size"),
       55.0f));
 
+  // Table
   auto *table = new RigidBoxObject(0, 0, TABLE_Z, 500, 350, TABLE_THICKNESS, 0);
   table->setVisible(Primitive::line, false);
   table->setVisible(Primitive::vertex, false);
@@ -399,30 +425,82 @@ static void offscreen_render(const std::string &output) {
   scene.getLight(0).setPosition(Vec(200, -200, 500, 1));
   scene.getLight(0).setDiffuse(GeomColor(255, 245, 220, 255));
 
-  // Spawn objects and run physics so they fall onto the table
-  for (int i = 0; i < 10; i++) spawnObject();
-  for (int i = 0; i < 300; i++) {
-    scene.step(1.0f / 60.0f, 1);
-    removeObjectsBelowThreshold();
-  }
   for (int i = 0; i < scene.getObjectCount(); i++)
     scene.getObject(i)->prepareForRendering();
 
-  printf("Rendering %d objects to %s...\n", scene.getObjectCount(), output.c_str());
+  // --- Test 1: Initial scene (table only) ---
+  fprintf(stderr, "\n=== Test 1: Table only (%d objects, %d spp) ===\n",
+          scene.getObjectCount(), samples);
 
-  icl::rt::CyclesRenderer renderer(scene, icl::rt::RenderQuality::Final);
+  CyclesRenderer renderer(scene, RenderQuality::Final);
   renderer.setSceneScale(1.0f);
-  renderer.setSamples(pa("-samples").as<int>());
-  renderer.render(0);
+  renderer.setSamples(samples);
 
-  const auto &img = renderer.getImage();
-  if (img.getWidth() > 0) {
-    icl::io::FileWriter writer(output);
-    writer.write(&img);
-    printf("Saved %dx%d image to %s\n", img.getWidth(), img.getHeight(), output.c_str());
-  } else {
-    fprintf(stderr, "ERROR: No image produced\n");
-  }
+  Time t0 = Time::now();
+  renderer.renderBlocking(0);
+  float ms1 = (float)(Time::now() - t0).toMilliSeconds();
+  fprintf(stderr, "  Render: %.0fms\n", ms1);
+  saveImage(renderer, output + "_1_table.png");
+
+  // --- Test 2: Add 5 objects, run physics briefly ---
+  fprintf(stderr, "\n=== Test 2: Add 5 objects + 60 physics steps ===\n");
+  for (int i = 0; i < 5; i++) spawnObject();
+  for (int i = 0; i < 60; i++) scene.step(1.0f / 60.0f, 1);
+  for (int i = 0; i < scene.getObjectCount(); i++)
+    scene.getObject(i)->prepareForRendering();
+  renderer.invalidateTransforms();
+
+  fprintf(stderr, "  %d objects\n", scene.getObjectCount());
+  Time t1 = Time::now();
+  renderer.renderBlocking(0);
+  float ms2 = (float)(Time::now() - t1).toMilliSeconds();
+  fprintf(stderr, "  Render: %.0fms\n", ms2);
+  saveImage(renderer, output + "_2_added.png");
+
+  // --- Test 3: Transform-only update (no new objects) ---
+  fprintf(stderr, "\n=== Test 3: Transform-only (60 more physics steps) ===\n");
+  for (int i = 0; i < 60; i++) scene.step(1.0f / 60.0f, 1);
+  for (int i = 0; i < scene.getObjectCount(); i++)
+    scene.getObject(i)->prepareForRendering();
+  renderer.invalidateTransforms();
+
+  Time t2 = Time::now();
+  renderer.renderBlocking(0);
+  float ms3 = (float)(Time::now() - t2).toMilliSeconds();
+  fprintf(stderr, "  Render: %.0fms\n", ms3);
+  saveImage(renderer, output + "_3_moved.png");
+
+  // --- Test 4: Add 5 more objects ---
+  fprintf(stderr, "\n=== Test 4: Add 5 more objects ===\n");
+  for (int i = 0; i < 5; i++) spawnObject();
+  for (int i = 0; i < 60; i++) scene.step(1.0f / 60.0f, 1);
+  for (int i = 0; i < scene.getObjectCount(); i++)
+    scene.getObject(i)->prepareForRendering();
+  renderer.invalidateTransforms();
+
+  fprintf(stderr, "  %d objects\n", scene.getObjectCount());
+  Time t3 = Time::now();
+  renderer.renderBlocking(0);
+  float ms4 = (float)(Time::now() - t3).toMilliSeconds();
+  fprintf(stderr, "  Render: %.0fms\n", ms4);
+  saveImage(renderer, output + "_4_more.png");
+
+  // --- Test 5: 1-sample render (interactive speed test) ---
+  fprintf(stderr, "\n=== Test 5: 1-sample speed test ===\n");
+  renderer.setSamples(1);
+  renderer.invalidateTransforms();
+
+  Time t4 = Time::now();
+  renderer.renderBlocking(0);
+  float ms5 = (float)(Time::now() - t4).toMilliSeconds();
+  fprintf(stderr, "  1-spp render: %.0fms\n", ms5);
+
+  fprintf(stderr, "\n=== Summary ===\n");
+  fprintf(stderr, "  Test 1 (initial):       %.0fms\n", ms1);
+  fprintf(stderr, "  Test 2 (add objects):    %.0fms\n", ms2);
+  fprintf(stderr, "  Test 3 (transform only): %.0fms\n", ms3);
+  fprintf(stderr, "  Test 4 (add more):       %.0fms\n", ms4);
+  fprintf(stderr, "  Test 5 (1-spp):          %.0fms\n", ms5);
 }
 
 int main(int argc, char **argv) {

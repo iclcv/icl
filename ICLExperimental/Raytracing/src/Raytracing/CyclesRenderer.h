@@ -38,10 +38,13 @@ public:
   CyclesRenderer(CyclesRenderer &&) noexcept;
   CyclesRenderer &operator=(CyclesRenderer &&) noexcept;
 
-  /// Render the scene from the given camera.
-  /// In Preview/Interactive mode: non-blocking progressive rendering.
-  /// In Final mode: blocks until rendering completes.
+  /// Render the scene from the given camera (non-blocking).
+  /// Call repeatedly; progressive results available via getImage().
   void render(int camIndex = 0);
+
+  /// Blocking render: syncs scene, renders all samples, returns when done.
+  /// Use for offline/headless rendering.
+  void renderBlocking(int camIndex = 0);
 
   /// Get the latest rendered frame (progressively refined in interactive mode).
   const core::Img8u &getImage() const;
