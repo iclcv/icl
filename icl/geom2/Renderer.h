@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#pragma once
+
+#include <icl/geom2/SceneNode.h>
+#include <memory>
+#include <vector>
+
+namespace icl::geom2 {
+
+  /// GL 4.1 Core renderer for geom2 scene graphs
+  /** Traverses the node graph with dynamic_cast dispatch:
+      - GroupNode → recurse into children
+      - GeometryNode → build geometry cache, render with PBR shader
+      Lines and points rendered with a separate unlit shader.
+      No legacy fixed-function GL. */
+  class ICLGeom2_API Renderer {
+  public:
+    Renderer();
+    ~Renderer();
+
+    /// Render a list of top-level nodes with given view and projection matrices
+    void render(const std::vector<std::shared_ptr<SceneNode>> &nodes,
+                const Mat &viewMatrix,
+                const Mat &projectionMatrix);
+
+    /// Set exposure for tone mapping
+    void setExposure(float exposure);
+
+    /// Set ambient light level
+    void setAmbient(float ambient);
+
+    /// Invalidate all geometry caches (call when scene structure changes)
+    void invalidateCache();
+
+  private:
+    struct Data;
+    Data *m_data;
+
+    void ensureShaderCompiled();
+    void renderNode(SceneNode *node, const Mat &viewMatrix);
+  };
+
+} // namespace icl::geom2

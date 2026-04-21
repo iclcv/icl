@@ -10,6 +10,7 @@ geom2_headers = files(
   'CuboidNode.h',
   'CylinderNode.h',
   'ConeNode.h',
+  'Renderer.h',
 )
 
 geom2_sources = files(
@@ -21,6 +22,7 @@ geom2_sources = files(
   'CuboidNode.cpp',
   'CylinderNode.cpp',
   'ConeNode.cpp',
+  'Renderer.cpp',
 )
 
 icl_geom2_lib = shared_library('icl-geom2',
