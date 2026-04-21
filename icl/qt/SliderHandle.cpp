@@ -54,21 +54,10 @@ namespace icl::qt {
 //  the trait now delegates to the C++ operators added above.
 // ============================================================
 namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::SliderHandle;
   __attribute__((constructor))
   static void icl_register_slider_handle_assignments() {
-    auto &r = icl::utils::AssignRegistry::instance();
-    using icl::qt::SliderHandle;
-
-    // me = X    (SliderHandle accepts …)
-    r.enroll<SliderHandle, int>();
-    r.enroll<SliderHandle, float>();
-    r.enroll<SliderHandle, double>();
-    r.enroll<SliderHandle, std::string>();
-
-    // X = me    (readback from slider)
-    r.enroll<int,         SliderHandle>();
-    r.enroll<float,       SliderHandle>();
-    r.enroll<double,      SliderHandle>();
-    r.enroll<std::string, SliderHandle>();
+    AssignRegistry::enroll_symmetric<SliderHandle, int, float, double, std::string>();
   }
 }

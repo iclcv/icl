@@ -59,19 +59,10 @@ namespace icl::qt {
   }  // namespace icl::qt
 
 namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::FSliderHandle;
   __attribute__((constructor))
   static void icl_register_fslider_handle_assignments() {
-    auto &r = icl::utils::AssignRegistry::instance();
-    using icl::qt::FSliderHandle;
-
-    r.enroll<FSliderHandle, int>();
-    r.enroll<FSliderHandle, float>();
-    r.enroll<FSliderHandle, double>();
-    r.enroll<FSliderHandle, std::string>();
-
-    r.enroll<int,         FSliderHandle>();
-    r.enroll<float,       FSliderHandle>();
-    r.enroll<double,      FSliderHandle>();
-    r.enroll<std::string, FSliderHandle>();
+    AssignRegistry::enroll_symmetric<FSliderHandle, int, float, double, std::string>();
   }
 }

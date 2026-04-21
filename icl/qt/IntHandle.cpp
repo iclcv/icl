@@ -36,19 +36,10 @@ namespace icl::qt {
   }  // namespace icl::qt
 
 namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::IntHandle;
   __attribute__((constructor))
   static void icl_register_int_handle_assignments() {
-    auto &r = icl::utils::AssignRegistry::instance();
-    using icl::qt::IntHandle;
-
-    r.enroll<IntHandle, int>();
-    r.enroll<IntHandle, float>();
-    r.enroll<IntHandle, double>();
-    r.enroll<IntHandle, std::string>();
-
-    r.enroll<int,         IntHandle>();
-    r.enroll<float,       IntHandle>();
-    r.enroll<double,      IntHandle>();
-    r.enroll<std::string, IntHandle>();
+    AssignRegistry::enroll_symmetric<IntHandle, int, float, double, std::string>();
   }
 }

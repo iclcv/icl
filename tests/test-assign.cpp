@@ -27,6 +27,7 @@ namespace test_assign {
     int value = 0;
     FakeSlider &operator=(int v)   { value = v;                   return *this; }
     FakeSlider &operator=(float v) { value = static_cast<int>(v); return *this; }
+    FakeSlider &operator=(const std::string &s) { value = std::stoi(s); return *this; }
 
     template<typename T>
       requires std::is_arithmetic_v<T>
@@ -148,24 +149,22 @@ ICL_REGISTER_TEST("utils.assign.apply_direct_wins_over_extract", "when both are 
 
 namespace {
   void enrollAll() {
-    auto &r = AssignRegistry::instance();
-    r.enroll<FakeSlider, int>();          // direct
-    r.enroll<FakeSlider, float>();        // direct
-    r.enroll<int,        FakeSlider>();   // extract
-    r.enroll<float,      FakeSlider>();   // extract
-    r.enroll<std::string, FakeSlider>();  // extract (string specialization)
-    r.enroll<FakeLabel,  std::string>();  // direct
+    AssignRegistry::enroll<FakeSlider,   int>();          // direct
+    AssignRegistry::enroll<FakeSlider,   float>();        // direct
+    AssignRegistry::enroll<int,          FakeSlider>();   // extract
+    AssignRegistry::enroll<float,        FakeSlider>();   // extract
+    AssignRegistry::enroll<std::string,  FakeSlider>();   // extract (string specialization)
+    AssignRegistry::enroll<FakeLabel,    std::string>();  // direct
   }
 }
 
 ICL_REGISTER_TEST("utils.assign.registry_has", "has() reflects enrolled pairs")
 {
   enrollAll();
-  auto &r = AssignRegistry::instance();
-  ICL_TEST_TRUE(r.has(typeid(FakeSlider),  typeid(int)));
-  ICL_TEST_TRUE(r.has(typeid(int),         typeid(FakeSlider)));
-  ICL_TEST_TRUE(r.has(typeid(std::string), typeid(FakeSlider)));
-  ICL_TEST_FALSE(r.has(typeid(FakeLabel), typeid(FakeSlider)));  // not enrolled (and not assignable)
+  ICL_TEST_TRUE(AssignRegistry::has(typeid(FakeSlider),  typeid(int)));
+  ICL_TEST_TRUE(AssignRegistry::has(typeid(int),         typeid(FakeSlider)));
+  ICL_TEST_TRUE(AssignRegistry::has(typeid(std::string), typeid(FakeSlider)));
+  ICL_TEST_FALSE(AssignRegistry::has(typeid(FakeLabel),  typeid(FakeSlider)));
 }
 
 ICL_REGISTER_TEST("utils.assign.dispatch_direct", "dispatch uses direct path when available")
@@ -173,7 +172,7 @@ ICL_REGISTER_TEST("utils.assign.dispatch_direct", "dispatch uses direct path whe
   enrollAll();
   std::any dst = FakeSlider{};
   std::any src = 77;
-  AssignRegistry::instance().dispatch(dst, src);
+  AssignRegistry::dispatch(dst, src);
   ICL_TEST_EQ(std::any_cast<FakeSlider &>(dst).value, 77);
 }
 
@@ -184,7 +183,7 @@ ICL_REGISTER_TEST("utils.assign.dispatch_extract", "dispatch uses extraction pat
   s.value = 12;
   std::any dst = 0;
   std::any src = s;
-  AssignRegistry::instance().dispatch(dst, src);
+  AssignRegistry::dispatch(dst, src);
   ICL_TEST_EQ(std::any_cast<int &>(dst), 12);
 }
 
@@ -195,7 +194,7 @@ ICL_REGISTER_TEST("utils.assign.dispatch_extract_to_string", "dispatch dispatche
   s.value = 256;
   std::any dst = std::string{};
   std::any src = s;
-  AssignRegistry::instance().dispatch(dst, src);
+  AssignRegistry::dispatch(dst, src);
   ICL_TEST_EQ(std::any_cast<std::string &>(dst), std::string("256"));
 }
 
@@ -204,16 +203,30 @@ ICL_REGISTER_TEST("utils.assign.dispatch_unknown_throws", "unknown pair throws")
   enrollAll();
   std::any dst = Opaque{};
   std::any src = 42;
-  ICL_TEST_THROW(AssignRegistry::instance().dispatch(dst, src), std::runtime_error);
+  ICL_TEST_THROW(AssignRegistry::dispatch(dst, src), std::runtime_error);
+}
+
+ICL_REGISTER_TEST("utils.assign.enroll_symmetric", "enroll_symmetric<A, Bs...> registers both directions for every B")
+{
+  AssignRegistry::enroll_symmetric<FakeSlider, int, float, std::string>();
+
+  // forward direction: FakeSlider = B
+  ICL_TEST_TRUE(AssignRegistry::has(typeid(FakeSlider), typeid(int)));
+  ICL_TEST_TRUE(AssignRegistry::has(typeid(FakeSlider), typeid(float)));
+  ICL_TEST_TRUE(AssignRegistry::has(typeid(FakeSlider), typeid(std::string)));
+
+  // reverse direction: B = FakeSlider (via as<B>())
+  ICL_TEST_TRUE(AssignRegistry::has(typeid(int),         typeid(FakeSlider)));
+  ICL_TEST_TRUE(AssignRegistry::has(typeid(float),       typeid(FakeSlider)));
+  ICL_TEST_TRUE(AssignRegistry::has(typeid(std::string), typeid(FakeSlider)));
 }
 
 ICL_REGISTER_TEST("utils.assign.reenroll_idempotent", "re-enrolling same pair doesn't duplicate")
 {
-  auto &r = AssignRegistry::instance();
-  const std::size_t before = r.size();
-  r.enroll<FakeSlider, int>();
-  r.enroll<FakeSlider, int>();
-  ICL_TEST_EQ(r.size(), before);
+  const std::size_t before = AssignRegistry::size();
+  AssignRegistry::enroll<FakeSlider, int>();
+  AssignRegistry::enroll<FakeSlider, int>();
+  ICL_TEST_EQ(AssignRegistry::size(), before);
 }
 
 // ============================================================
@@ -229,7 +242,7 @@ ICL_REGISTER_TEST("utils.assign.parity_direct_vs_runtime", "compile-time and run
 
   std::any dst = FakeSlider{};
   std::any src = 55;
-  AssignRegistry::instance().dispatch(dst, src);
+  AssignRegistry::dispatch(dst, src);
   auto &b = std::any_cast<FakeSlider &>(dst);
 
   ICL_TEST_EQ(a.value, 55);

@@ -48,19 +48,10 @@ namespace icl::qt {
   }  // namespace icl::qt
 
 namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::SpinnerHandle;
   __attribute__((constructor))
   static void icl_register_spinner_handle_assignments() {
-    auto &r = icl::utils::AssignRegistry::instance();
-    using icl::qt::SpinnerHandle;
-
-    r.enroll<SpinnerHandle, int>();
-    r.enroll<SpinnerHandle, float>();
-    r.enroll<SpinnerHandle, double>();
-    r.enroll<SpinnerHandle, std::string>();
-
-    r.enroll<int,         SpinnerHandle>();
-    r.enroll<float,       SpinnerHandle>();
-    r.enroll<double,      SpinnerHandle>();
-    r.enroll<std::string, SpinnerHandle>();
+    AssignRegistry::enroll_symmetric<SpinnerHandle, int, float, double, std::string>();
   }
 }

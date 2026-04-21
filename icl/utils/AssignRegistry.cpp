@@ -11,9 +11,10 @@ namespace icl::utils {
     return r;
   }
 
-  void AssignRegistry::dispatch(std::any &dst, std::any &src) const {
-    auto dstIt = m_map.find(std::type_index(dst.type()));
-    if (dstIt == m_map.end()) {
+  void AssignRegistry::dispatch(std::any &dst, std::any &src) {
+    const auto &m = instance().m_map;
+    auto dstIt = m.find(std::type_index(dst.type()));
+    if (dstIt == m.end()) {
       throw std::runtime_error(
         std::string("AssignRegistry::dispatch: no rule with destination type ")
         + dst.type().name());
@@ -28,15 +29,16 @@ namespace icl::utils {
   }
 
   bool AssignRegistry::has(std::type_index dstType,
-                           std::type_index srcType) const noexcept {
-    auto dstIt = m_map.find(dstType);
-    if (dstIt == m_map.end()) return false;
+                           std::type_index srcType) noexcept {
+    const auto &m = instance().m_map;
+    auto dstIt = m.find(dstType);
+    if (dstIt == m.end()) return false;
     return dstIt->second.find(srcType) != dstIt->second.end();
   }
 
-  std::size_t AssignRegistry::size() const noexcept {
+  std::size_t AssignRegistry::size() noexcept {
     std::size_t total = 0;
-    for (const auto &[k, inner] : m_map) {
+    for (const auto &[k, inner] : instance().m_map) {
       (void)k;
       total += inner.size();
     }

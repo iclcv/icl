@@ -34,24 +34,37 @@ namespace icl::utils {
   /// direction of `dst = src`.
   class ICLUtils_API AssignRegistry {
   public:
-    /// Meyers singleton.  Safe to call at any time after static init.
-    static AssignRegistry &instance();
-
     /// Enroll a `Dst = Src` pair for runtime dispatch.  Requires that
     /// `dst = src` is well-formed (checked via `static_assert`).
     /// Overwrites any prior entry for the pair.
     template<typename Dst, typename Src>
-    void enroll() {
+    static void enroll() {
       static_assert(is_assignable_v<Dst, Src>,
                     "AssignRegistry::enroll<Dst, Src>: `dst = src` is not "
                     "well-formed — give the class an operator= or a "
                     "conversion operator for this pair first");
-      m_map[std::type_index(typeid(Dst))]
-           [std::type_index(typeid(Src))] =
+      instance().m_map
+        [std::type_index(typeid(Dst))]
+        [std::type_index(typeid(Src))] =
         +[](std::any &dst, std::any &src) {
           Assign<Dst, Src>::apply(std::any_cast<Dst &>(dst),
                                   std::any_cast<Src &>(src));
         };
+    }
+
+    /// Enroll `A = B` AND `B = A` for each `B` in one call.  Both
+    /// directions must be assignable for every `B` (each side's
+    /// `static_assert` fires independently).
+    ///
+    /// Example:
+    /// ```
+    ///   AssignRegistry::enroll_symmetric<SliderHandle, int, float, double, std::string>();
+    /// ```
+    /// enrolls 8 entries (4 × 2 directions) in a single line.
+    template<typename A, typename... Bs>
+    static void enroll_symmetric() {
+      (enroll<A, Bs>(), ...);   // A = B_i
+      (enroll<Bs, A>(), ...);   // B_i = A
     }
 
     /// Dispatch: invoke the registered rule for `(dst.type(), src.type())`.
@@ -59,15 +72,20 @@ namespace icl::utils {
     /// @throws std::bad_any_cast  if `dst`/`src` somehow hold different
     ///                            types than their `type_index` suggests
     ///                            (shouldn't happen in normal use).
-    void dispatch(std::any &dst, std::any &src) const;
+    static void dispatch(std::any &dst, std::any &src);
 
     /// True iff a rule is registered for `Dst = Src`.
-    bool has(std::type_index dstType, std::type_index srcType) const noexcept;
+    static bool has(std::type_index dstType, std::type_index srcType) noexcept;
 
     /// Total number of registered `(Dst, Src)` pairs.
-    std::size_t size() const noexcept;
+    static std::size_t size() noexcept;
 
   private:
+    /// Meyers singleton — holds the actual map state.  Private: all
+    /// public API is static and routes through `instance()` internally,
+    /// so callers never need to write `.instance().` anywhere.
+    static AssignRegistry &instance();
+
     using Fn = void (*)(std::any &, std::any &);
     std::unordered_map<
       std::type_index,

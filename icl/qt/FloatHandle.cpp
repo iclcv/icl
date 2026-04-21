@@ -34,19 +34,10 @@ namespace icl::qt {
   }  // namespace icl::qt
 
 namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::FloatHandle;
   __attribute__((constructor))
   static void icl_register_float_handle_assignments() {
-    auto &r = icl::utils::AssignRegistry::instance();
-    using icl::qt::FloatHandle;
-
-    r.enroll<FloatHandle, int>();
-    r.enroll<FloatHandle, float>();
-    r.enroll<FloatHandle, double>();
-    r.enroll<FloatHandle, std::string>();
-
-    r.enroll<int,         FloatHandle>();
-    r.enroll<float,       FloatHandle>();
-    r.enroll<double,      FloatHandle>();
-    r.enroll<std::string, FloatHandle>();
+    AssignRegistry::enroll_symmetric<FloatHandle, int, float, double, std::string>();
   }
 }
