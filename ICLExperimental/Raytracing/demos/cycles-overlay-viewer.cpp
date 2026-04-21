@@ -66,7 +66,6 @@ static void init() {
      << Show();
 
   DrawHandle3D canvas = gui["canvas"];
-  canvas->setViewPort(size);
   canvas->install(new MouseHandler(handleMouse));
   canvas->link(scene.getGLCallback(0));
 }
@@ -103,10 +102,8 @@ static void run() {
   canvas.render();
 
   static FPSEstimator fpsEst(10);
-  char buf[128];
-  snprintf(buf, sizeof(buf), "%d spp | %.0f fps | GL %.0f%%",
-           renderer->getUpdateCount(), fpsEst.getFPSVal(), alpha * 100);
-  gui["info"] = std::string(buf);
+  gui["info"] = fpsEst.formatted("%d spp | #fps fps | GL %.0f%%",
+                                  renderer->getUpdateCount(), alpha * 100);
 }
 
 int main(int argc, char **argv) {

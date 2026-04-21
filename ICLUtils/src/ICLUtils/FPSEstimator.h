@@ -36,6 +36,13 @@ namespace icl::utils {
     /// applies tic() and shows current FPS estimate on std::out
     virtual void showFPS(const std::string &text="") const;
 
+    /// printf-style format with automatic FPS insertion
+    /** The token #fps in the format string is replaced by the current FPS
+        value (formatted as "%.0f"). All other %-specifiers are filled from
+        the variadic args. Calls tic() internally.
+        Example: fpsEst.formatted("%d spp | #fps fps | GL %.0f%%", count, alpha) */
+    std::string formatted(const char *fmt, ...) const;
+
     private:
     /// internal time queue
     mutable std::deque<Time> m_qTimes;
