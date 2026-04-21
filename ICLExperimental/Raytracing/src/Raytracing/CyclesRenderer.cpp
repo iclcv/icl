@@ -117,6 +117,7 @@ struct CyclesRenderer::Impl {
   int maxBounces = 6;
   bool denoising = true;
   float exposure = 1.0f;
+  float brightness = 1.0f;
   bool paramsOverridden = false;
 
   // Initialization
@@ -129,11 +130,14 @@ struct CyclesRenderer::Impl {
   bool dirty = true;       // starts dirty → first render triggers on first call
   int accumulated = 0;     // samples in current accum buffer
   int target = 0;          // current Cycles sample target
+  int updateCountAtReset = 0; // OutputDriver update count when reset was issued
 
   // Change detection
   float lastCamHash = 0;
   int lastSamples = -1;
   int lastInitialSamples = -1;
+  float lastBrightness = -1;
+  float lastExposure = -1;
   RenderQuality lastQuality = RenderQuality::Preview;
 
   Impl(geom::Scene &scene, RenderQuality q)
@@ -267,6 +271,8 @@ void CyclesRenderer::render(int camIndex) {
   if (camHash != m_impl->lastCamHash
       || m_impl->samples != m_impl->lastSamples
       || m_impl->initialSamples != m_impl->lastInitialSamples
+      || m_impl->brightness != m_impl->lastBrightness
+      || m_impl->exposure != m_impl->lastExposure
       || m_impl->quality != m_impl->lastQuality
       || m_impl->sync.hasPendingChanges()) {
     m_impl->dirty = true;
@@ -274,11 +280,14 @@ void CyclesRenderer::render(int camIndex) {
   m_impl->lastCamHash = camHash;
   m_impl->lastSamples = m_impl->samples;
   m_impl->lastInitialSamples = m_impl->initialSamples;
+  m_impl->lastBrightness = m_impl->brightness;
+  m_impl->lastExposure = m_impl->exposure;
   m_impl->lastQuality = m_impl->quality;
 
   // --- Helper: sync scene + reset session + start rendering A passes ---
   auto startFreshRender = [&]() {
     m_impl->dirty = false;
+    m_impl->sync.setBackgroundStrength(m_impl->brightness);
     m_impl->sync.synchronize(
         m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
 
@@ -305,6 +314,7 @@ void CyclesRenderer::render(int camIndex) {
     // After reset(), progress is stale (1.0 from previous render).
     // Wait for the render thread to pick up the delayed reset before
     // checking progress — it will drop below 1.0 once rendering starts.
+    m_impl->updateCountAtReset = m_impl->outputDriver->getUpdateCount();
     m_impl->state = Impl::State::WAIT_FOR_START;
   };
 
@@ -317,11 +327,11 @@ void CyclesRenderer::render(int camIndex) {
     return;
   }
 
-  // Wait for the render thread to process the delayed reset.
-  // Progress drops below 1.0 once the new render actually starts.
+  // Wait for the render to produce a new tile after reset.
+  // Can't use progress (it may go 1.0→0→1.0 within one GUI frame for fast renders).
+  // Instead check if the OutputDriver received a new tile since the reset.
   if (m_impl->state == S::WAIT_FOR_START) {
-    double progress = m_impl->session->progress.get_progress();
-    if (progress >= 1.0) return;  // stale progress — render hasn't started yet
+    if (m_impl->outputDriver->getUpdateCount() <= m_impl->updateCountAtReset) return;
     m_impl->state = S::RENDERING;
   }
 
@@ -381,6 +391,10 @@ void CyclesRenderer::setDenoising(bool enabled) {
 
 void CyclesRenderer::setExposure(float exposure) {
   m_impl->exposure = exposure;
+}
+
+void CyclesRenderer::setBrightness(float b) {
+  m_impl->brightness = std::max(0.0f, std::min(1.0f, b));
 }
 
 void CyclesRenderer::invalidateAll() {

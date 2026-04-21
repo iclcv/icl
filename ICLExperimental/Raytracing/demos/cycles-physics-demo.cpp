@@ -5,7 +5,9 @@
 #include <ICLQt/Common.h>
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/Material.h>
+#include <ICLGeom/Hit.h>
 #include <ICLUtils/Time.h>
+#include <ICLUtils/FPSLimiter.h>
 #include <ICLPhysics/PhysicsScene.h>
 #include <ICLPhysics/RigidBoxObject.h>
 #include <ICLPhysics/RigidSphereObject.h>
@@ -27,6 +29,31 @@ using namespace icl::physics;
 static PhysicsScene scene;
 static std::unique_ptr<icl::rt::CyclesRenderer> renderer;
 HSplit gui;
+
+static void handleClick(const MouseEvent &evt) {
+  if (evt.isPressEvent() && evt.isLeft() && !evt.isModifierActive(ShiftModifier)
+      && !evt.isModifierActive(ControlModifier)) {
+    Hit hit = scene.findObject(0, evt.getX(), evt.getY());
+    if (hit) {
+      auto mat = hit.obj->getMaterial();
+      if (!mat) {
+        mat = std::make_shared<Material>();
+        hit.obj->setMaterial(mat);
+      }
+      float emSum = mat->emissive[0] + mat->emissive[1] + mat->emissive[2];
+      if (emSum > 0.01f) {
+        // Turn off emission
+        mat->emissive = GeomColor(0, 0, 0, 1);
+      } else {
+        // Make emissive based on base color
+        mat->emissive = GeomColor(mat->baseColor[0] * 2.0f,
+                                   mat->baseColor[1] * 2.0f,
+                                   mat->baseColor[2] * 2.0f, 1.0f);
+      }
+      if (renderer) renderer->invalidateAll();
+    }
+  }
+}
 
 // Random generators
 static std::mt19937 rng(42);
@@ -242,17 +269,23 @@ void init() {
             << Slider(1, 16, 2).handle("bounces").label("Max Bounces")
             << CheckBox("Denoising OIDN", "unchecked").handle("denoising")
             << Slider(10, 500, 100).handle("exposure").label("Exposure %")
+            << Slider(0, 100, 100).handle("brightness").label("Light/BG %")
             << Label("--").handle("info"))
        ) << Show();
 
-  // Both views share the same camera via the same mouse handler
+  // Both views share the same camera via the same mouse handler.
+  // The GL view also handles click-to-toggle-emissive (needs GL coordinates for picking).
   gui["draw"].install(scene.getMouseHandler(0));
   gui["gl"].install(scene.getMouseHandler(0));
+  gui["gl"].install(new MouseHandler(handleClick));
 }
 
 static int frameCount = 0;
 
 void run() {
+  static FPSLimiter fpsLimit(30);
+  fpsLimit.wait();
+
   // Apply GUI settings to renderer
   static int lastQuality = -1;
   int qualityIdx = gui["quality"].as<ComboHandle>().getSelectedIndex();
@@ -272,11 +305,14 @@ void run() {
   bool denoising = gui["denoising"].as<bool>();
   float exposure = gui["exposure"].as<int>() / 100.0f;
 
+  float brightness = gui["brightness"].as<int>() / 100.0f;
+
   renderer->setInitialSamples(initSamples);
   renderer->setSamples(maxIter);
   renderer->setMaxBounces(bounces);
   renderer->setDenoising(denoising);
   renderer->setExposure(exposure);
+  renderer->setBrightness(brightness);
 
   bool paused = gui["pause"].as<bool>();
   bool geometryChanged = false;

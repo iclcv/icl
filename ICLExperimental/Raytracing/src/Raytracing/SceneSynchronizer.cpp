@@ -271,22 +271,22 @@ SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
   // Sync lights
   syncLights(iclScene, cclScene, sceneScale);
 
-  // Set up sky background on first sync
+  // Set up background on first sync; update strength on every sync.
   if (m_lastLightHash == 0) {
     Shader *bg = cclScene->default_background;
     ShaderGraph *graph = new ShaderGraph();
 
-    // Neutral warm-grey environment for even ambient fill.
-    // A flat environment keeps material colors accurate; the Hosek-Wilkie
-    // sky model adds too much blue bias at any meaningful strength.
-    // TODO: add API to choose sky/HDR environment per-scene.
     BackgroundNode *bgn = graph->create_node<BackgroundNode>();
     bgn->set_color(make_float3(0.8f, 0.75f, 0.7f));
-    bgn->set_strength(2.0f);
+    bgn->set_strength(2.0f * m_backgroundStrength);
     graph->connect(bgn->output("Background"), graph->output()->input("Surface"));
     bg->set_graph(unique_ptr<ShaderGraph>(graph));
     bg->tag_update(cclScene);
-    m_lastLightHash = 1;  // mark as initialized
+    m_bgNode = static_cast<void*>(bgn);
+    m_lastLightHash = 1;
+  } else if (m_bgNode) {
+    static_cast<BackgroundNode*>(m_bgNode)->set_strength(2.0f * m_backgroundStrength);
+    cclScene->default_background->tag_update(cclScene);
   }
 
   if (anyGeomChanged) return SyncResult::GeometryChanged;

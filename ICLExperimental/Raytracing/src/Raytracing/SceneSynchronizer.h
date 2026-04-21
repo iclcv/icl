@@ -59,6 +59,9 @@ public:
   /// Check if any object has pending dirty flags (without consuming them).
   bool hasPendingChanges() const;
 
+  /// Set background environment strength (0..1). Applied on next sync.
+  void setBackgroundStrength(float s) { m_backgroundStrength = s; }
+
 private:
   /// Per-object tracking entry.
   struct ObjectEntry {
@@ -104,6 +107,8 @@ private:
   /// Previous light state hash for dirty detection.
   size_t m_lastLightHash = 0;
   bool m_lightsCreated = false;
+  float m_backgroundStrength = 1.0f;
+  void *m_bgNode = nullptr;  // BackgroundNode*, avoid Cycles header dependency
 };
 
 } // namespace icl::rt

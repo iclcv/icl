@@ -56,6 +56,7 @@ public:
   void setMaxBounces(int bounces);
   void setDenoising(bool enabled);
   void setExposure(float exposure);
+  void setBrightness(float brightness);  ///< Scale background + lights (0..1).
 
   /// Scene change notification — call before render() when scene has changed.
   void invalidateAll();                           ///< Full geometry + material rebuild.
