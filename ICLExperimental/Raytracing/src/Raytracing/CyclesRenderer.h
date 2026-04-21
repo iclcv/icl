@@ -60,6 +60,7 @@ public:
   void setDenoising(bool enabled);
   void setExposure(float exposure);
   void setBrightness(float brightness);  ///< Scale background + lights (0..1).
+  void setResolutionScale(float scale);  ///< Render at fraction of camera resolution (0.1..1.0).
 
   /// Scene change notification — call before render() when scene has changed.
   void invalidateAll();                           ///< Full geometry + material rebuild.

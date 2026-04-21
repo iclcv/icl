@@ -285,8 +285,12 @@ SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
     m_bgNode = static_cast<void*>(bgn);
     m_lastLightHash = 1;
   } else if (m_bgNode) {
-    static_cast<BackgroundNode*>(m_bgNode)->set_strength(2.0f * m_backgroundStrength);
-    cclScene->default_background->tag_update(cclScene);
+    float newStrength = 2.0f * m_backgroundStrength;
+    auto *bgn = static_cast<BackgroundNode*>(m_bgNode);
+    if (bgn->get_strength() != newStrength) {
+      bgn->set_strength(newStrength);
+      cclScene->default_background->tag_update(cclScene);
+    }
   }
 
   if (anyGeomChanged) return SyncResult::GeometryChanged;

@@ -119,6 +119,7 @@ struct CyclesRenderer::Impl {
   bool denoising = true;
   float exposure = 1.0f;
   float brightness = 1.0f;
+  float resolutionScale = 1.0f;
   bool paramsOverridden = false;
 
   // Initialization
@@ -140,6 +141,7 @@ struct CyclesRenderer::Impl {
   int lastInitialSamples = -1;
   float lastBrightness = -1;
   float lastExposure = -1;
+  float lastResScale = -1;
   RenderQuality lastQuality = RenderQuality::Preview;
 
   Impl(geom::Scene &scene, RenderQuality q)
@@ -278,6 +280,7 @@ void CyclesRenderer::render(int camIndex) {
       || m_impl->initialSamples != m_impl->lastInitialSamples
       || m_impl->brightness != m_impl->lastBrightness
       || m_impl->exposure != m_impl->lastExposure
+      || m_impl->resolutionScale != m_impl->lastResScale
       || m_impl->quality != m_impl->lastQuality
       || m_impl->sync.hasPendingChanges()) {
     m_impl->dirty = true;
@@ -287,19 +290,18 @@ void CyclesRenderer::render(int camIndex) {
   m_impl->lastInitialSamples = m_impl->initialSamples;
   m_impl->lastBrightness = m_impl->brightness;
   m_impl->lastExposure = m_impl->exposure;
+  m_impl->lastResScale = m_impl->resolutionScale;
   m_impl->lastQuality = m_impl->quality;
 
-  // --- Helper: sync scene + reset session + start rendering A passes ---
-  auto startFreshRender = [&]() {
-    m_impl->dirty = false;
-    m_impl->sync.setBackgroundStrength(m_impl->brightness);
-    m_impl->sync.synchronize(
-        m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
-
-    int w = m_impl->scene->camera->get_full_width();
-    int h = m_impl->scene->camera->get_full_height();
-    if (w <= 0) w = 800;
-    if (h <= 0) h = 600;
+  // --- Helper: full reset (new geometry, resolution change, etc.) ---
+  auto fullReset = [&]() {
+    int wFull = m_impl->scene->camera->get_full_width();
+    int hFull = m_impl->scene->camera->get_full_height();
+    if (wFull <= 0) wFull = 800;
+    if (hFull <= 0) hFull = 600;
+    float s = std::max(0.1f, std::min(1.0f, m_impl->resolutionScale));
+    int w = std::max(1, (int)(wFull * s));
+    int h = std::max(1, (int)(hFull * s));
 
     int A = std::min(m_impl->initialSamples, m_impl->samples);
 
@@ -316,30 +318,36 @@ void CyclesRenderer::render(int camIndex) {
     }
     m_impl->accumulated = 0;
     m_impl->target = A;
-    // After reset(), progress is stale (1.0 from previous render).
-    // Wait for the render thread to pick up the delayed reset before
-    // checking progress — it will drop below 1.0 once rendering starts.
     m_impl->updateCountAtReset = m_impl->outputDriver->getUpdateCount();
     m_impl->resetTime = ccl::time_dt();
     m_impl->state = Impl::State::WAIT_FOR_START;
   };
 
+  // --- Helper: sync scene and determine what changed ---
+  auto syncScene = [&]() -> SceneSynchronizer::SyncResult {
+    m_impl->dirty = false;
+    m_impl->sync.setBackgroundStrength(m_impl->brightness);
+    return m_impl->sync.synchronize(
+        m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
+  };
+
   // --- State machine ---
   using S = Impl::State;
+  using SR = SceneSynchronizer::SyncResult;
 
   if (m_impl->state == S::IDLE) {
     if (!m_impl->dirty) return;  // fully refined, nothing to do
-    startFreshRender();
+    auto result = syncScene();
+    fullReset();
     return;
   }
 
   // Wait for the render to produce a new tile after reset.
-  // Can't use progress (it may go 1.0→0→1.0 within one GUI frame for fast renders).
-  // Instead check if the OutputDriver received a new tile since the reset.
   if (m_impl->state == S::WAIT_FOR_START) {
     if (m_impl->outputDriver->getUpdateCount() <= m_impl->updateCountAtReset) return;
+    double waitMs = (ccl::time_dt() - m_impl->resetTime) * 1000.0;
+    fprintf(stderr, "[Cycles] Reset→tile: %.0fms\n", waitMs);
     m_impl->state = S::RENDERING;
-    fprintf(stderr, "[Cycles] Render started (waited for tile)\n");
   }
 
   // state == RENDERING
@@ -347,15 +355,14 @@ void CyclesRenderer::render(int camIndex) {
   if (progress < 1.0) return;  // still cooking — GUI stays responsive
 
   // Step done: write_render_tile has captured the image.
-  double elapsed = ccl::time_dt() - m_impl->resetTime;
-  fprintf(stderr, "[Cycles] Step done: %d/%d spp in %.0fms (%d updates)\n",
-          m_impl->target, m_impl->samples, elapsed * 1000.0,
-          m_impl->outputDriver->getUpdateCount());
   m_impl->accumulated = m_impl->target;
 
   if (m_impl->dirty) {
-    // New changes arrived during render — restart from scratch.
-    startFreshRender();
+    // Changes arrived during render — sync and restart.
+    // reset() is needed even for transform-only changes because the
+    // accumulation buffer must be cleared for a fresh image.
+    syncScene();
+    fullReset();
   } else if (m_impl->accumulated < m_impl->samples) {
     // Keep refining: extend target by A (accumulates, no buffer clear).
     int A = m_impl->initialSamples;
@@ -440,6 +447,10 @@ void CyclesRenderer::setExposure(float exposure) {
 
 void CyclesRenderer::setBrightness(float b) {
   m_impl->brightness = std::max(0.0f, std::min(1.0f, b));
+}
+
+void CyclesRenderer::setResolutionScale(float scale) {
+  m_impl->resolutionScale = std::max(0.1f, std::min(1.0f, scale));
 }
 
 void CyclesRenderer::invalidateAll() {

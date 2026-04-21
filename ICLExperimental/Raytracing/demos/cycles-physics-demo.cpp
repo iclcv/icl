@@ -16,6 +16,7 @@
 #include <ICLIO/FileWriter.h>
 
 #include <BulletDynamics/Dynamics/btRigidBody.h>
+#include <BulletCollision/CollisionShapes/btCollisionShape.h>
 
 #include <random>
 #include <deque>
@@ -88,6 +89,14 @@ static constexpr float SPAWN_HEIGHT = 500;
 
 static std::deque<PhysicsObject *> dynamicObjects;
 
+// Objects waiting to be activated (spawned static, activated after render catches up)
+struct PendingObject {
+  RigidObject *obj;
+  float mass;
+  int framesUntilActivate;  // countdown
+};
+static std::deque<PendingObject> pendingObjects;
+
 static GeomColor randomColor() {
   return GeomColor(randColor(rng), randColor(rng), randColor(rng), 255);
 }
@@ -139,14 +148,18 @@ static void spawnObject() {
   float aspect = randAspect(rng);
   int type = randType(rng);
   GeomColor color = randomColor();
+  float mass = 0.2f;
 
+  // Spawn with real mass but frozen (linearFactor=0, angularFactor=0).
+  // After a few frames (enough for reset+render to show the object),
+  // unfreeze so it starts falling visibly.
   RigidObject *obj = nullptr;
   switch (type) {
-    case 0: obj = new RigidBoxObject(x, y, SPAWN_HEIGHT, sz, sz*aspect, sz/aspect, 0.2f);
+    case 0: obj = new RigidBoxObject(x, y, SPAWN_HEIGHT, sz, sz*aspect, sz/aspect, mass);
             setupPhysicsBody(obj, color, false); break;
-    case 1: obj = new RigidSphereObject(x, y, SPAWN_HEIGHT, sz*0.5f, 0.2f);
+    case 1: obj = new RigidSphereObject(x, y, SPAWN_HEIGHT, sz*0.5f, mass);
             setupPhysicsBody(obj, color, true); break;
-    case 2: obj = new RigidCylinderObject(x, y, SPAWN_HEIGHT, sz*0.3f, sz*aspect, 0.2f);
+    case 2: obj = new RigidCylinderObject(x, y, SPAWN_HEIGHT, sz*0.3f, sz*aspect, mass);
             setupPhysicsBody(obj, color, false, true); break;
   }
 
@@ -163,9 +176,43 @@ static void spawnObject() {
     rot(3,0) = t(3,0); rot(3,1) = t(3,1); rot(3,2) = t(3,2);
     obj->setTransformation(rot);
 
+    // Freeze the body so it hovers at spawn height
+    btRigidBody *body = obj->getRigidBody();
+    if (body) {
+      body->setLinearFactor(btVector3(0, 0, 0));
+      body->setAngularFactor(btVector3(0, 0, 0));
+      body->setLinearVelocity(btVector3(0, 0, 0));
+      body->setAngularVelocity(btVector3(0, 0, 0));
+    }
+
     scene.addObject(obj, true);
     dynamicObjects.push_back(obj);
+    // Queue for unfreeze after ~30 frames (~1s at 30fps),
+    // giving the renderer time to show the object before it falls.
+    pendingObjects.push_back({obj, mass, 30});
   }
+}
+
+static void activatePendingObjects() {
+  for (auto &p : pendingObjects) {
+    if (p.framesUntilActivate > 0) {
+      p.framesUntilActivate--;
+    } else if (p.framesUntilActivate == 0) {
+      p.framesUntilActivate = -1;  // mark as activated
+      btRigidBody *body = p.obj->getRigidBody();
+      if (body) {
+        // Unfreeze — restore full motion
+        body->setLinearFactor(btVector3(1, 1, 1));
+        body->setAngularFactor(btVector3(1, 1, 1));
+        body->activate(true);
+        float w = (randUnit(rng) - 0.5f) * 4.0f;
+        body->setAngularVelocity(btVector3(w, w, w));
+      }
+    }
+  }
+  // Remove activated entries
+  while (!pendingObjects.empty() && pendingObjects.front().framesUntilActivate < 0)
+    pendingObjects.pop_front();
 }
 
 static bool removeObjectsBelowThreshold() {
@@ -285,6 +332,7 @@ void init() {
             << CheckBox("Denoising OIDN", "unchecked").handle("denoising")
             << Slider(10, 500, 100).handle("exposure").label("Exposure %")
             << Slider(0, 100, 100).handle("brightness").label("Light/BG %")
+            << Slider(10, 100, 100).handle("resScale").label("Resolution %")
             << Label("--").handle("info"))
        ) << Show();
 
@@ -326,12 +374,14 @@ void run() {
   renderer->setDenoising(denoising);
   renderer->setExposure(exposure);
   renderer->setBrightness(brightness);
+  renderer->setResolutionScale(gui["resScale"].as<int>() / 100.0f);
 
   bool paused = gui["pause"].as<bool>();
   bool geometryChanged = false;
 
   if (!paused) {
     scene.step();
+    activatePendingObjects();
     frameCount++;
 
     int spawnRate = gui["spawnRate"].as<int>();
