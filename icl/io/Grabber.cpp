@@ -140,6 +140,11 @@ namespace icl::io {
   }
 
   const ImgBase *Grabber::grab(ImgBase **ppoDst){
+    // Reader-side of the m_grabMutex pattern (mirrors UnaryOp::apply()).
+    // Single funnel for every backend's acquireImage() + adaptGrabResult
+    // + warp; serializes against property-change callbacks routed through
+    // the wrapped registerCallback overload below.
+    std::scoped_lock<std::recursive_mutex> lock(m_grabMutex);
     const ImgBase *acquired = acquireImage();
     if(!acquired) return acquired;
     // todo, on which image is the warping applied ?
@@ -264,6 +269,16 @@ namespace icl::io {
   void Grabber::registerCallback(Grabber::callback cb){
     std::scoped_lock<std::recursive_mutex> lock(data->callbackMutex);
     data->callbacks.push_back(cb);
+  }
+
+  void Grabber::registerCallback(const utils::Configurable::Callback &cb){
+    // Every Grabber-level registered property callback implicitly serializes
+    // against grab() via m_grabMutex. Matches the reader-side scoped_lock at
+    // the top of Grabber::grab(). Mirror of UnaryOp::registerCallback.
+    Configurable::registerCallback([this, cb](const Property &p){
+      std::scoped_lock<std::recursive_mutex> lock(m_grabMutex);
+      cb(p);
+    });
   }
 
   void Grabber::removeAllCallbacks(){

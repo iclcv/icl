@@ -266,6 +266,15 @@ virtual void registerCallback(callback cb);
 /// removes all registered image callbacks
 virtual void removeAllCallbacks();
 
+/// Same as Configurable::registerCallback, but wraps the callback so it
+/// acquires `m_grabMutex` before firing. Lets backends that mutate
+/// internal state from a property change (typically via
+/// processPropertyChange) rely on the base for the callback-side lock
+/// against the grab() reader path. Mirrors UnaryOp::registerCallback —
+/// see project_configurable_op_threadsafety.md for rationale.
+void registerCallback(const utils::Configurable::Callback &cb);
+using utils::Configurable::registerCallback;
+
 /// this function can be implemented by subclasses in order to notify, that a new image is available
 /** When this function is called, it will automatically call all callbacks with the given image. */
 virtual void notifyNewImageAvailable(const core::ImgBase *image);
@@ -284,6 +293,14 @@ virtual const core::ImgBase *acquireDisplay(){ return nullptr; }
 /// Utility function that allows for much easier implementation of grabUD
 /** called by the grabbers grab() method **/
 const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **dst);
+
+/// Serializes the grab() reader against property callbacks that mutate
+/// backend state. Recursive so a property change firing during
+/// adaptGrabResult / undistortion (which uses internal WarpOp etc.)
+/// doesn't deadlock. Acquired at the top of Grabber::grab() and
+/// inside the wrapped registerCallback overload above. Mirrors
+/// UnaryOp::m_applyMutex.
+mutable std::recursive_mutex m_grabMutex;
 
 protected:
 /// Internal grab using legacy ImgBase** mechanism (not public — use grabImage())
