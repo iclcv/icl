@@ -54,18 +54,18 @@ namespace icl::qt {
     return dst;
   }
 
-  Image create(const std::string &name, format fmt) {
+  Image create(const std::string &name, format fmt, std::optional<depth> d) {
     // TestImages::create returns a new ImgBase* (caller owns it)
-    // TODO: add a TestImages::create_into(name, Image &dst) and TestImage::get_size_and_format("name")
     std::unique_ptr<ImgBase> raw(TestImages::create(name, fmt));
     if(!raw) {
       ERROR_LOG("unable to create test image: \"" << name << "\"");
       return Image();
     }
-    Image dst = activeContext().getBuffer(raw->getDepth(),
+    depth outDepth = d.value_or(raw->getDepth());
+    Image dst = activeContext().getBuffer(outDepth,
         ImgParams(raw->getSize(), raw->getChannels(), raw->getFormat()));
     ImgBase *dstPtr = dst.ptr();
-    raw->deepCopy(&dstPtr);
+    raw->convert(dstPtr);
     return dst;
   }
 

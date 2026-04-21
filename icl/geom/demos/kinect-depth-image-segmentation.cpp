@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
 #include <icl/geom/ConfigurableDepthImageSegmenter.h>
-#include <icl/core/PseudoColorConverter.h>
+#include <icl/filter/PseudoColorOp.h>
 #include <icl/geom/Scene.h>
 #include <icl/qt/Common2.h>
 #include <mutex>
@@ -23,7 +23,7 @@ int KINECT_CAM=0,VIEW_CAM=1;
 
 Camera depthCam;
 
-PseudoColorConverter *pseudoColorConverter;
+PseudoColorOp *pseudoColorConverter;
 ConfigurableDepthImageSegmenter *segmentation;
 PointCloudObject *obj;
 Scene scene;
@@ -62,13 +62,13 @@ void init(){
   depthCam.setName("Kinect Depth Camera");
 
   //initialize depth heatmap mapping
-  std::vector<PseudoColorConverter::Stop> stops; //create heatmap
-  stops.push_back(PseudoColorConverter::Stop(0.25, Color(255,0,0)));
-  stops.push_back(PseudoColorConverter::Stop(0.35, Color(255,255,0)));
-  stops.push_back(PseudoColorConverter::Stop(0.45, Color(0,255,0)));
-  stops.push_back(PseudoColorConverter::Stop(0.55, Color(0,255,255)));
-  stops.push_back(PseudoColorConverter::Stop(0.8, Color(0,0,255)));
-  pseudoColorConverter = new PseudoColorConverter(stops, 2046);
+  std::vector<PseudoColorOp::Stop> stops; //create heatmap
+  stops.push_back(PseudoColorOp::Stop(0.25, Color(255,0,0)));
+  stops.push_back(PseudoColorOp::Stop(0.35, Color(255,255,0)));
+  stops.push_back(PseudoColorOp::Stop(0.45, Color(0,255,0)));
+  stops.push_back(PseudoColorOp::Stop(0.55, Color(0,255,255)));
+  stops.push_back(PseudoColorOp::Stop(0.8, Color(0,0,255)));
+  pseudoColorConverter = new PseudoColorOp(stops, 2046);
 
   obj = new PointCloudObject(size.width, size.height,true,true,true);
 

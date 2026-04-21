@@ -9,7 +9,7 @@
 #include <icl/core/Img.h>
 #include <icl/utils/XML.h>
 #include <icl/io/FileList.h>
-#include <icl/core/PseudoColorConverter.h>
+#include <icl/filter/PseudoColorOp.h>
 #include <icl/filter/LocalThresholdOp.h>
 
 #include <icl/io/V4L2Grabber.h>
@@ -86,7 +86,7 @@ namespace icl{
     struct OptrisGrabber::Data : public utils::Thread{
       std::shared_ptr<IRImager> imager;
       Buffer buffer;
-      PseudoColorConverter pcc;
+      filter::PseudoColorOp pcc;
       Img8u pccSrc;
       Img8u pccOutNull;
       Img32f pccOutNull32f;

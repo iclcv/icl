@@ -8,8 +8,11 @@
 #include <icl/core/Image.h>
 #include <icl/core/Types.h>
 #include <icl/core/ImgParams.h>
+#include <icl/core/Color.h>
 
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace icl::qt {
 
@@ -74,6 +77,15 @@ namespace icl::qt {
   ICLQt_API core::Image fixed_convert(const core::Image &src,
                                        const core::ImgParams &p,
                                        core::depth d = core::depth8u);
+
+  /// Pseudo-color mapping: single-channel → RGB via LUT
+  /** With no stops, uses the default blue→green→red→yellow gradient.
+      With stops, uses a custom piecewise-linear gradient where each
+      stop is a (relativePosition, color) pair with relPos in [0,1].
+      @param maxValue maximum expected pixel value (default 255) */
+  ICLQt_API core::Image pseudo(const core::Image &image,
+                                const std::vector<std::pair<float, core::Color>> &stops = {},
+                                int maxValue = 255);
 
   /** @} */
 

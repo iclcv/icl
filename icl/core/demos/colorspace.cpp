@@ -3,7 +3,6 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/core/CCFunctions.h>
 GUI gui;
 GenericGrabber grabber;
 
@@ -18,13 +17,8 @@ void init(){
 }
 
 void run(){
-  //grabber.useDesired(parse<format>(gui["fmt"]));
-  //gui["image"] = grabber.grabImage();
-  Image image = grabber.grabImage();
-  static Img8u dst;
-  dst.setFormat(parse<format>(gui["fmt"]));
-  cc(image.ptr(),&dst);
-  gui["image"] = dst;
+  Image image = grabber.grabImage();  
+  gui["image"] = cc(image, gui["fmt"]);
 }
 
 int main(int n, char **args){

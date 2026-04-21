@@ -1,7 +1,6 @@
 # ICL Core module
 
 core_headers = files(
-  'AbstractCanvas.h',
   'BayerConverter.h',
   'CCFunctions.h',
   'CCLUT.h',
@@ -35,14 +34,12 @@ core_headers = files(
   'Parable.h',
   'PixelOps.h',
   'PixelRef.h',
-  'PseudoColorConverter.h',
   'Types.h',
   'Visitors.h',
   'VisitorsN.h',
 )
 
 core_sources = files(
-  'AbstractCanvas.cpp',
   'BayerConverter.cpp',
   'CCFunctions.cpp',
   'CCLUT.cpp',
@@ -65,7 +62,6 @@ core_sources = files(
   'Line32f.cpp',
   'LineSampler.cpp',
   'PixelOps.cpp',
-  'PseudoColorConverter.cpp',
 )
 
 # Conditional backend sources

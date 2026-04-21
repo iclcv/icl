@@ -1,73 +1,81 @@
 # ICL — Continuation Guide
 
-## Current State (Session 39 — Quick2 Phase 2 migration)
+## Current State (Session 40 — Module-by-module app/demo audit)
 
-### Session 39 Summary
+### Session 40 Summary
 
-Bulk migration of ~100 demos/apps from Quick.h/Common.h to Quick2.h/Common2.h.
-FixedConvertOp as proper UnaryOp. Bug fix in pa_def().
+Manual audit of every demo/app per module: check if it compiles, runs,
+is still useful, needs modernization. Also DataStore improvements and
+PseudoColorConverter → PseudoColorOp migration.
 
-#### A. Common2.h + bulk migration
+#### A. DataStore: string_view + parse fallback
 
-- **Common2.h**: parallel to Common.h, includes Quick2.h instead of Quick.h.
-  Allows incremental per-file migration (Quick.h and Quick2.h cannot coexist
-  due to ambiguous overloads on same-named functions).
-- **~100 demos/apps migrated**: most were trivial header swaps. ~15 needed
-  code changes: `cvt()`/`cvt8u()` → `Image()` + `.as8u()`, `load<icl8u>()`
-  → `icl::qt::load().as8u()`, name conflicts requiring `icl::qt::` qualification.
-- **QuickIO.h**: added tic/toc, openFileDialog, saveFileDialog,
-  textInputDialog, execute_process declarations (were only in Quick.h).
-- **Quick2.h**: added `#include <icl/core/CoreFunctions.h>` — needed so
-  `parse<depth>` and `parse<format>` find their `operator>>` declarations.
+- `DataStore::Data::operator string_view()` — routes through
+  `as<std::string>()` with thread-local buffer so `parse<T>(gui["key"])`
+  works after parse was changed to take string_view.
+- `DataStore::Data::operator T()` — for stream-extractable types, if the
+  direct DataStore assignment fails, falls back to
+  `parse<T>(as<std::string>())`. Makes `cc(image, gui["fmt"])` work where
+  gui["fmt"] is a ComboHandle and cc() expects a format enum.
 
-#### B. FixedConvertOp (new UnaryOp)
+#### B. PseudoColorConverter → PseudoColorOp
 
-- `icl/filter/FixedConvertOp.h/.cpp` — UnaryOp wrapping core::Converter,
-  converts images to fixed output parameters (size, format, depth).
-  Overrides `apply()` and `getDestinationParams()`.
-- `fixed_convert(image, params, depth)` Quick2 convenience function in
-  QuickFilter — one-liner via `applyOp(FixedConvertOp(...), src)`.
-- Old `core::FixedConverter` stays for now (Widget.cpp, convert.cpp use it).
+- Moved from `core` to `filter` as a proper `UnaryOp` subclass.
+- Deleted `core/PseudoColorConverter.h/.cpp`.
+- Created `filter/PseudoColorOp.h/.cpp` with `apply(Image&, Image&)` +
+  `getDestinationParams()`. Output always depth8u/formatRGB.
+- Updated 7 consumer files (4 kinect demos, OptrisGrabber, DisplacementMap,
+  lens-undistortion-calibration).
+- `pseudo(image, stops, maxValue)` Quick2 convenience function in
+  QuickFilter. Stops use `vector<pair<float, Color>>` to avoid pulling
+  `icl::filter` namespace into QuickFilter.h (which would collide with
+  the `filter()` function name under `using namespace icl`).
 
-#### C. Bug fix: pa_def() and parse<T>
+#### C. AbstractCanvas removed
 
-`pa_def<T>(id, default)` called `parse<T>(progArg)` where `progArg` is a
-`ProgArg`. Since `parse` takes `string_view`, the compiler used
-`ProgArg::operator string_view()` → `parse<string_view>()` — but
-`string_view` is not stream-extractable (doesn't own memory). Fix:
-use `pa_subarg_internal(p)` to get `const string&` directly, bypassing
-the generic `operator T()` conversion chain.
+- `core/AbstractCanvas.h/.cpp` + `core/demos/canvas.cpp` deleted — only
+  used by its own demo, superseded by Quick2 DrawTarget.
 
-#### D. create.cpp rewritten with Quick2
+#### D. Module audit progress
 
-`io/apps/create.cpp` now uses `fixed_convert()` + `save()`:
-```cpp
-save(fixed_convert(image, p, d), outFileName);
-```
-Down from 6 lines of FixedConverter + ImgBase** + FileWriter boilerplate.
-Also fixed: `-f` flag now derives channel count from format via
-`getChannelsOfFormat()` instead of hardcoding source image channels.
+Per-module walk-through of all demos/apps: compile, run, modernize,
+remove if obsolete. Progress tracked in `porting-progress.md`.
 
-#### E. Migration tracking docs
-
-- `demos-ported.md` — all ported demos, categorized trivial vs code changes
-- `apps-ported.md` — all ported apps, same structure
+- **utils**: done — `configurable-info.cpp` checked (no changes needed)
+- **core**: done — `colorspace.cpp` modernized (`cc(image, gui["fmt"])`
+  via DataStore fallback), `pseudo-color.cpp` moved to filter as
+  PseudoColorOp, `canvas.cpp` removed
 
 ### What's next
 
-**Quick2 Phase 2 remaining**:
-- 5 demos with heavy ImgQ pixel access: canvas.cpp, pseudo-color.cpp,
-  signature-extraction.cpp, llm-2D.cpp, polynomial-regression.cpp
-- 3 library .cpp files using ImgQ: Scene.cpp, FiducialDetectorPluginICL1.cpp,
-  DrawWidget.h
-- ~16 library headers (umbrella/convenience includes) — trivial header swap
-  once library code is done
+**Module audit** — continue through remaining modules in dependency order:
+- [ ] math (demos: k-means, llm-1D, llm-2D, octree, polynomial-regression, quad-tree)
+- [ ] filter (demos: 9 filter demos + pseudo-color; apps: 4)
+- [ ] io (demos: 3; apps: 12)
+- [ ] cv (demos: 12; apps: 6)
+- [ ] qt (demos: 8; apps: 7; examples: 2)
+- [ ] geom (demos: 24; apps: 16)
+- [ ] geom2 (demos: 5)
+- [ ] markers (demos: 2; apps: 8)
+- [ ] physics (demos: 8)
+
+For each: compile, run, check if still useful/valid, modernize API usage,
+remove if obsolete. See `porting-progress.md` for per-file status.
+
+**Quick2 Phase 2 remaining** (ImgQ pixel access rewrites):
+- 3 demos: signature-extraction.cpp, llm-2D.cpp, polynomial-regression.cpp
+- 3 library files: Scene.cpp, FiducialDetectorPluginICL1.cpp, DrawWidget.h
+- ~16 umbrella headers — trivial swap once library code is done
 - Final: delete Quick.h/Quick.cpp, retire Common.h
 
 **Quick2 open items**:
 - MorphologicalOp opening/closing crash via Quick2 `filter()` — pre-existing
 - Pool memory accounting drift — periodic reconciliation
 - `ImgROI2`: store target ROI separately instead of modifying image (deferred)
+- `.out("name")` on `Int`/`Float`/`String` GUI components only updates on
+  Enter/returnPressed, not on every keystroke. The `.handle("name")` path
+  reads the live widget value via `getValue()`. Consider removing `.out()`
+  entirely or making it sync on every change.
 
 ---
 

@@ -1035,6 +1035,7 @@ namespace icl::qt {
 
 
   void ICLDrawWidget::customPaintEvent(PaintEngine *e){
+    if(!e) return;  // GL phase (nullptr) — draw commands need a paint engine
 
     QMutexLocker lock(&m_oCommandMutex);
     //Rect r = getImageRect();

@@ -15,6 +15,7 @@
 #include <icl/filter/RotateOp.h>
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/FixedConvertOp.h>
+#include <icl/filter/PseudoColorOp.h>
 
 #include <map>
 #include <cmath>
@@ -207,6 +208,20 @@ namespace icl::qt {
 
   Image fixed_convert(const Image &src, const ImgParams &p, depth d) {
     return activeContext().applyOp(filter::FixedConvertOp(p, d), src);
+  }
+
+  // ---- pseudo ----
+
+  Image pseudo(const Image &image, const std::vector<std::pair<float, Color>> &stops,
+               int maxValue) {
+    if(stops.empty()) {
+      return activeContext().applyOp(PseudoColorOp(maxValue), image);
+    } else {
+      std::vector<PseudoColorOp::Stop> s;
+      s.reserve(stops.size());
+      for(auto &[pos, col] : stops) s.emplace_back(pos, col);
+      return activeContext().applyOp(PseudoColorOp(s, maxValue), image);
+    }
   }
 
 } // namespace icl::qt

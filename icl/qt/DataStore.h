@@ -76,10 +76,34 @@ namespace icl::qt {
         return t;
       }
 
-      /// implicit conversion into l-value type (little dangerous)
+      /// implicit conversion into l-value type
+      /** For stream-extractable types (enums with operator>>, numeric types,
+          etc.), if the direct DataStore assignment fails, falls back to
+          converting to string first and then parsing. This makes patterns
+          like `cc(image, gui["fmt"])` work where gui["fmt"] is a ComboHandle
+          and cc() expects a format enum. */
       template<class T>
       operator T() const{
-        return as<T>();
+        if constexpr (utils::is_stream_extractable<T>::value) {
+          try {
+            return as<T>();
+          } catch(const UnassignableTypesException&) {
+            return utils::parse<T>(as<std::string>());
+          }
+        } else {
+          return as<T>();
+        }
+      }
+
+      /// string_view conversion — routes through as<string>() so all handle
+      /// types that support string conversion (Combo, Slider, …) work with
+      /// parse<T>(gui["key"]) after parse was changed to take string_view.
+      /// Uses a thread-local buffer; the returned view is valid until the
+      /// next string_view conversion on the same thread.
+      operator std::string_view() const {
+        static thread_local std::string buf;
+        buf = as<std::string>();
+        return buf;
       }
 
       /// returns the internal type ID (obtained by C++'s RTTI)

@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/core/Img.h>
-#include <icl/core/PseudoColorConverter.h>
+#include <icl/filter/PseudoColorOp.h>
 #include <icl/qt/DrawHandle.h>
 #include <icl/qt/DrawWidget.h>
 #include <icl/cv/RegionDetector.h>
@@ -23,8 +23,10 @@ namespace icl::cv {
           for(int i=0;i<pseudo.getWidth();++i){
             s(i,0,0) = i;
           }
-          core::PseudoColorConverter c;
-          c.apply(s, pseudo);
+          filter::PseudoColorOp c;
+          core::Image dst;
+          c.apply(core::Image(s), dst);
+          pseudo = dst.as8u();
           lut[0] = pseudo.begin(0);
           lut[1] = pseudo.begin(1);
           lut[2] = pseudo.begin(2);

@@ -43,7 +43,7 @@ void run(){
 }
 
 void init(){
-  gui << Plot().handle("plot")
+  gui << Plot().handle("plot").minSize(40,30)
       << Button("run").handle("run")
       << Show();
 
@@ -65,6 +65,7 @@ void init(){
   plot->setPropertyValue("tics.x-distance",2);
 
   plot->label("data");
+  plot->symsize(3);
   plot->scatter(&D[0][0],&D[0][1],D.size(),2,2);
   plot->linewidth(2);
 }

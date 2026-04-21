@@ -10,6 +10,7 @@ if _build_demos and qt_found
     'dither-op': [],
     'fft': [],
     'gabor-op': [],
+    'pseudo-color': [],
     'temporal-smoothing': [],
     'warp-op': [],
   }

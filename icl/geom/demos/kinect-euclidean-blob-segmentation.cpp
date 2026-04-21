@@ -10,7 +10,7 @@
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/geom/PointCloudObject.h>
 #include <icl/geom/ObjectEdgeDetector.h>
-#include <icl/core/PseudoColorConverter.h>
+#include <icl/filter/PseudoColorOp.h>
 #include <icl/filter/MotionSensitiveTemporalSmoothing.h>
 #include <mutex>
 
@@ -30,7 +30,7 @@ Camera depthCam, colorCam;
 PointCloudObject *obj;
 PointCloudCreator *creator;
 ObjectEdgeDetector *objectEdgeDetector;
-PseudoColorConverter *pseudoColorConverter;
+PseudoColorOp *pseudoColorConverter;
 MotionSensitiveTemporalSmoothing *temporalSmoothing;
 EuclideanBlobSegmenter *segmentation;
 
@@ -112,13 +112,13 @@ void init(){
   }
 
   //initialize depth heatmap mapping
-  std::vector<PseudoColorConverter::Stop> stops; //create heatmap
-  stops.push_back(PseudoColorConverter::Stop(0.25, Color(255,0,0)));
-  stops.push_back(PseudoColorConverter::Stop(0.35, Color(255,255,0)));
-  stops.push_back(PseudoColorConverter::Stop(0.45, Color(0,255,0)));
-  stops.push_back(PseudoColorConverter::Stop(0.55, Color(0,255,255)));
-  stops.push_back(PseudoColorConverter::Stop(0.8, Color(0,0,255)));
-  pseudoColorConverter = new PseudoColorConverter(stops, 2046);
+  std::vector<PseudoColorOp::Stop> stops; //create heatmap
+  stops.push_back(PseudoColorOp::Stop(0.25, Color(255,0,0)));
+  stops.push_back(PseudoColorOp::Stop(0.35, Color(255,255,0)));
+  stops.push_back(PseudoColorOp::Stop(0.45, Color(0,255,0)));
+  stops.push_back(PseudoColorOp::Stop(0.55, Color(0,255,255)));
+  stops.push_back(PseudoColorOp::Stop(0.8, Color(0,0,255)));
+  pseudoColorConverter = new PseudoColorOp(stops, 2046);
 
   //create GUI
   GUI controlsGeneral = HBox().minSize(12,12);

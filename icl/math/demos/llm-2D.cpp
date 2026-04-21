@@ -3,148 +3,105 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/math/LLM.h>
-#include <icl/qt/Common.h>
+#include <icl/qt/Common2.h>
 #include <icl/utils/Random.h>
-
+#include <icl/core/CCFunctions.h>
 
 static LLM llm(2,3);
 HBox gui;
-static const int W = 100;
-static const int H = 100;
-static const float MINX = 0;
-static const float MAXX = iclMax(W,H);
-float I[W][H][3];
-static int *nTrainingSteps = new int(100);
-static ImgQ image = scale(create("parrot"),W,H);
-//static ImgQ image = scale(load("sprirals1.ppm"),W,H);
-DispHandle *mseDisp = 0;
-static int *nKernels = new int(50);
-static float *initialSigma = new float(10);
-static bool *softMaxEnabled = new bool(true);
+static constexpr int W = 100, H = 100;
+static constexpr float MINX = 0, MAXX = iclMax(W,H);
 
-void initI(){
-  for(int i=0;i<W;++i){
-    for(int j=0;j<H;++j){
-      for(int c=0;c<3;++c){
-        I[i][j][c] = image(i,j,c);
-      }
-    }
-  }
-}
-static void initLLM(){
+float planar_image[W*H*3];  // interleaved RGB training data
+Img32f netImage(Size(W,H), 3);
+
+void resetLLM(){
+  int nKernels = iclMax(1, (int)gui["kc"]);
+  float sigma = gui["init-sigma"];
   llm = LLM(2,3);
-  llm.init(*nKernels, std::vector<Range<icl32f> >(2,Range<icl32f>(MINX,MAXX)),std::vector<float>(2,*initialSigma));
-  llm.setSoftMaxEnabled(*softMaxEnabled);
+  llm.init(nKernels, {Range<icl32f>(MINX,MAXX), Range<icl32f>(MINX,MAXX)}, {sigma, sigma});
+  llm.setSoftMaxEnabled(gui["use-soft-max"].as<bool>());
+  netImage.clear();
+  gui["net-image"] = Image(netImage);
 }
-static void trainLLM(){
-  int N = *nTrainingSteps;
+
+void trainLLM(){
+  int N = gui["steps"].as<int>();
   float x[2];
   for(int i=0;i<N;i++){
     x[0] = (int)icl::utils::random(0,W-1);
     x[1] = (int)icl::utils::random(0,H-1);
-    const float * y = I[(int)x[0]][(int)x[1]];
-    llm.train(x,y,LLM::TRAIN_ALL);
+    llm.train(x, &planar_image[((int)x[1]*W + (int)x[0])*3], LLM::TRAIN_ALL);
   }
 }
 
-class MyThread : public Thread{
-public:
-  MyThread(){
-    initI();
+void init(){
+  Img32f src = scale(create("parrot", formatRGB, depth32f), W, H).as32f();
+  planarToInterleaved(&src, planar_image);
 
+  gui << Display().minSize(20,15).label("Original").handle("orig-image")
+      << Display().minSize(20,15).label("Net Output").handle("net-image")
+      << ( VBox().minSize(15,0)
+           << Button("Train Step").handle("train")
+           << Button("Train Off","Train On").out("train-loop")
+           << Button("NO Soft-Max","Soft-Max").out("use-soft-max")
+           << Slider(1,10000,1000).out("steps").label("Steps per Cycle")
+           << Disp(3,1).handle("mse").label("MSE").minSize(5,2)
+           << FSlider(0,0.1,0.01).out("e-in").label("Epsilon In")
+           << FSlider(0,0.1,0.01).out("e-out").label("Epsilon Out")
+           << FSlider(0,0.5,0.1).out("e-a").label("Epsilon A")
+           << FSlider(0,0.0001,0.0).out("e-sigma").label("Epsilon Sigma")
+           << FSlider(1,100,10).out("init-sigma").label("Initial Sigma")
+           << Button("Show Kernels").handle("show-k")
+           << Button("Reset").handle("reset")
+           << Int(1,1000,20).handle("kc").label("Kernel Count")
+         )
+      << Show();
 
-    gui << Display().minSize(20,15).label("Original").handle("orig-image")
-        << Display().minSize(20,15).label("Net Output").handle("net-image")
-        << ( VBox().minSize(15,0)
-             << Button("Train Step").handle("train")
-             << Button("Train Off","Train On").out("train-loop")
-             << Button("NO Soft-Max","Soft-Max").out("use-soft-max")
-             << Slider(1,10000,1000).out("steps").label("Steps per Cycle")
-             << Disp(3,1).handle("mse").label("MSE").minSize(5,2)
-             << FSlider(0,0.1,0.01).out("e-in").label("Epsilon In")
-             << FSlider(0,0.1,0.01).out("e-out").label("Epsilon Out")
-             << FSlider(0,0.5,0.1).out("e-a").label("Epsilon A")
-             << FSlider(0,0.0001,0.0).out("e-sigma").label("Epsilon Sigma")
-             << FSlider(1,100,10).out("init-sigma").label("Initial Sigma")
-             << Button("Show Kernels").handle("show-k")
-             << Button("Reset").handle("reset")
-             << Int(1,1000,20).out("kc").label("Kernel Count")
-           )
-        << Show();
+  gui["orig-image"] = scale(create("parrot"), W, H);
+  resetLLM();
+}
 
-    gui["orig-image"] = image;
+void run(){
+  static ButtonHandle train = gui["train"],
+                      showKernels = gui["show-k"],
+                      reset = gui["reset"];
+  static DispHandle &mse = gui.get<DispHandle>("mse");
 
-    initLLM();
-  }
-  virtual void run(){
-    static ICLWidget &w = **gui.get<ImageHandle>("net-image");
-    static ButtonHandle &trainButton = gui.get<ButtonHandle>("train");
-    static ButtonHandle &showKernelsButton = gui.get<ButtonHandle>("show-k");
-    static ButtonHandle &resetButton = gui.get<ButtonHandle>("reset");
+  llm.setEpsilonIn(gui["e-in"]);
+  llm.setEpsilonOut(gui["e-out"]);
+  llm.setEpsilonA(gui["e-a"]);
+  llm.setEpsilonSigma(gui["e-sigma"]);
+  llm.setSoftMaxEnabled(gui["use-soft-max"].as<bool>());
 
+  if(train.wasTriggered() || gui["train-loop"].as<bool>()){
+    trainLLM();
 
-    nKernels = &gui.get<int>("kc");
-    mseDisp = &gui.get<DispHandle>("mse");
-    nTrainingSteps = &gui.get<int>("steps");
-    initialSigma = &gui.get<float>("init-sigma");
-    softMaxEnabled = &gui.get<bool>("use-soft-max");
-    //    ImgQ netImage(image.getSize(),formatRGB);
-    ImgQ netImage = copy(image);
-    w.setImage(&netImage);
-
-    w.render();
-
-    while(running()){
-
-      llm.setEpsilonIn(gui.get<float>("e-in"));
-      llm.setEpsilonOut(gui.get<float>("e-out"));
-      llm.setEpsilonA(gui.get<float>("e-a"));
-      llm.setEpsilonSigma(gui.get<float>("e-sigma"));
-      llm.setSoftMaxEnabled(*softMaxEnabled);
-
-      if(trainButton.wasTriggered() || gui.get<bool>("train-loop")){
-        trainLLM();
-
-        float xx[2]={0,0};
-        float mse[3]={0,0,0};
-        for(int x=0;x<W;++x){
-          xx[0]=x;
-          for(int y=0;y<H;++y){
-            xx[1]=y;
-            const float *ynet = llm.apply(xx);
-            for(int i=0;i<3;++i){
-              mse[i] += pow(ynet[i]-I[x][y][i],2);
-              netImage(x,y,i) = ynet[i];
-            }
-          }
+    float xx[2] = {0,0};
+    float mseVal[3] = {0,0,0};
+    for(int x=0;x<W;++x){
+      xx[0] = x;
+      for(int y=0;y<H;++y){
+        xx[1] = y;
+        const float *ynet = llm.apply(xx);
+        for(int c=0;c<3;++c){
+          mseVal[c] += pow(ynet[c] - planar_image[(y*W+x)*3+c], 2);
+          netImage(x, y, c) = ynet[c];
         }
-        w.setImage(&netImage);
-
-        for(int j=0;j<3;++j){
-          (*mseDisp)(j,0) = mse[j]/(W*H);
-        }
-        w.render();
       }
-      if(showKernelsButton.wasTriggered()){
-        llm.showKernels();
-      }
-      if(resetButton.wasTriggered()){
-        initLLM();
-      }
-
-      msleep(15);
     }
-  }
-};
+    gui["net-image"] = Image(netImage);
 
+    for(int c=0;c<3;++c) mse(c,0) = mseVal[c]/(W*H);
+  }
+  if(showKernels.wasTriggered()){
+    llm.showKernels();
+  }
+  if(reset.wasTriggered()){
+    resetLLM();
+  }
+}
 
 int main(int n, char **ppc){
-  QApplication app(n,ppc);
-
-  randomSeed();
-
-  MyThread x;
-  x.start();
-
-  return app.exec();
+  return ICLApp(n,ppc,"",init,run).exec();
 }

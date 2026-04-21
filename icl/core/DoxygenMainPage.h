@@ -32,8 +32,8 @@
       icl::math::RansacFitter, icl::math::LevenbergMarquardtFitter,
       icl::math::SimplexOptimizer, icl::math::SOM
     - <b>Core</b> icl::core::ImgBase, icl::core::ImgBase, icl::core::Converter, icl::core::Line,
-      icl::core::Line32f, icl::core::LineSampler, icl::core::PseudoColorConverter, icl::core::cc
-    - <b>Filter</b> icl::filter::UnaryOp, icl::filter::BinaryOp
+      icl::core::Line32f, icl::core::LineSampler, icl::core::cc
+    - <b>Filter</b> icl::filter::UnaryOp, icl::filter::BinaryOp, icl::filter::PseudoColorOp
     - <b>Io</b> icl::io::GenericGrabber, icl::io::GenericImageOutput
     - <b>Qt</b> icl::qt::GUI, icl::qt::ICLApplication, icl::qt::ICLWidget,
       icl::qt::ICLDrawWidget, icl::qt::ICLDrawWidget3D, icl::qt::PlotWidget, icl::qt::QImageConverter

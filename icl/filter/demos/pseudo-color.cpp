@@ -2,36 +2,28 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/qt/Common.h>
-#include <icl/core/PseudoColorConverter.h>
+#include <icl/qt/Common2.h>
+#include <icl/filter/PseudoColorOp.h>
 #include <mutex>
+
+using icl::filter::PseudoColorOp;
 
 HSplit gui;
 GenericGrabber grabber;
-PseudoColorConverter pcc;
-Img8u image;
-Img32f color;
-void update_color(int maxSteps){
-  ::color = Img32f(Size(maxSteps+1,50),1);
-  Channel32f col = ::color[0];
-  for(int i=0;i<=maxSteps;++i){
-    for(unsigned int j=0;j<50;++j){
-      col(i,j) = i;
-    }
-  }
-}
+PseudoColorOp pcc;
+Image input_img;
+Image color_img;
 
 void step(const std::string &handle){
   static std::recursive_mutex mutex;
-  std::scoped_lock<std::recursive_mutex> lock(mutex);
+  std::scoped_lock lock(mutex);
 
   const float mult = gui["mult"];
   static float lastMult = -1;
   const int maxVal = mult*256;
   if(mult != lastMult){
-    update_color(maxVal);
+    color_img = Img32f::from(maxVal+1, 50, 1, [](int x, int, int){ return x; });
   }
-
   lastMult = mult;
 
   if(handle == "load"){
@@ -40,56 +32,45 @@ void step(const std::string &handle){
     pcc.save(saveFileDialog("XML Files (*.xml)"));
   }else{
     if(gui["custom"]){
-      std::vector<PseudoColorConverter::Stop> colors;
+      std::vector<PseudoColorOp::Stop> colors;
       for(int i=0;i<6;++i){
         if(gui["use"+str(i)]){
-          colors.push_back(PseudoColorConverter::Stop(gui["relPos"+str(i)],gui["color"+str(i)]));
+          colors.push_back(PseudoColorOp::Stop(gui["relPos"+str(i)],gui["color"+str(i)]));
         }
-      }try{
-        pcc.setColorTable(PseudoColorConverter::Custom,colors,maxVal);
+      }
+      try{
+        pcc.setColorTable(PseudoColorOp::Custom,colors,maxVal);
       }catch(...){}
     }else{
-      pcc.setColorTable(PseudoColorConverter::Default,std::vector<PseudoColorConverter::Stop>(),maxVal);
+      pcc.setColorTable(PseudoColorOp::Default,{},maxVal);
     }
   }
 
-  static ImgBase *colorOut = 0;
-  pcc.apply(&::color,&colorOut);
-  gui["color"] = colorOut;
+  gui["color"] = pcc.apply(color_img);
 
+  Time t = Time::now();
   if(maxVal == 255){
-    Time t = Time::now();
-    const Img8u &res = pcc.apply(::image);
-    gui["dt"] = str(t.age().toMilliSecondsDouble()) + "ms";
-    gui["image"] = &res;
+    gui["image"] = pcc.apply(input_img);
   }else{
-    ImgQ fim = cvt(image) * mult;
-    static ImgBase *result = 0;
-    Time t = Time::now();
-    pcc.apply(&fim,&result);
-    gui["dt"] = str(t.age().toMilliSecondsDouble()) + "ms";
-    gui["image"] = result;
+    gui["image"] = pcc.apply(input_img * mult);
   }
+  gui["dt"] = str(t.age().toMilliSecondsDouble()) + "ms";
 }
 
-void stop_chooser(GUI &dst, int idx,float pos, float r, float g, float b){
+void stop_chooser(GUI &dst, int idx, float pos, float r, float g, float b){
   std::string si = str(idx);
-
-
   dst << ( HBox()
            << CheckBox("use",true).out("use"+si).handle(si)
            << FSlider(0,1,pos).out("relPos"+si).handle("p"+si)
            << ColorSelect(r,g,b).out("color"+si).handle("c"+si)
-           );
-
-
+         );
 }
 
 void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(formatGray);
   grabber.useDesired(depth8u);
-  grabber.grabImage();
+  input_img = grabber.grabImage();
 
   GUI colors = ( VBox().minSize(18,1)
                  << CheckBox("use custom gradient below").out("custom").handle("customH")
@@ -101,11 +82,10 @@ void init(){
   stop_chooser(colors,4,0.5,255,0,255);
   stop_chooser(colors,5,0.6,255,255,255);
 
-
   colors << ( HBox()
               << Button("load").handle("load")
               << Button("save").handle("save")
-             )
+            )
          << FSlider(0.1,10,1).handle("mult").label("range multiplier")
          << Label("--").handle("dt").label("time");
 
@@ -125,7 +105,7 @@ void init(){
 }
 
 void run(){
-  ::image = grabber.grabImage().as8u();
+  input_img = grabber.grabImage();
   step("");
 }
 

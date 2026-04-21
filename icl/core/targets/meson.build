@@ -3,9 +3,7 @@
 # ---- Demos (all need Qt) ----
 if _build_demos and qt_found
   _core_demos = {
-    'canvas': [],
     'colorspace': [],
-    'pseudo-color': [],
   }
   foreach name, extra_deps : _core_demos
     executable(name + '-demo',

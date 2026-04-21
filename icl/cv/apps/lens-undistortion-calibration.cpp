@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/markers/FiducialDetector.h>
-#include <icl/core/PseudoColorConverter.h>
+#include <icl/filter/PseudoColorOp.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/markers/MarkerGridEvaluater.h>
@@ -163,9 +163,10 @@ void run(){
       for(int i=0;i<s.getWidth();++i){
         s(i,0,0) = i;
       }
-      PseudoColorConverter c;
-      pseudo = new Img8u(s.getSize(), formatRGB);
-      c.apply(s, *pseudo);
+      PseudoColorOp c;
+      Image dst;
+      c.apply(Image(s), dst);
+      pseudo = new Img8u(dst.as8u());
       lut[0] = pseudo->begin(0);
       lut[1] = pseudo->begin(1);
       lut[2] = pseudo->begin(2);

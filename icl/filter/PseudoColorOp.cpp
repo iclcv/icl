@@ -2,14 +2,17 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/PseudoColorConverter.h>
+#include <icl/filter/PseudoColorOp.h>
+#include <icl/core/Img.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/ConfigFile.h>
 
 using namespace icl::utils;
+using namespace icl::core;
 
-namespace icl::core {
+namespace icl::filter {
+
   static const icl8u defLut[3][256]={{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,6,9,12,15,19,22,25,28,31,35,38,41,44,
@@ -47,28 +50,25 @@ namespace icl::core {
                                       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                                       0,0,0,0}};
 
-  bool cmp_stop(const PseudoColorConverter::Stop &a, const PseudoColorConverter::Stop &b){
+  static bool cmp_stop(const PseudoColorOp::Stop &a, const PseudoColorOp::Stop &b){
     return a.relPos < b.relPos;
   }
 
-  struct PseudoColorConverter::Data{
-    std::vector<icl8u> luts[3]; // one Lookup-Table per channel RGB
+  struct PseudoColorOp::Data {
+    std::vector<icl8u> luts[3];
     std::vector<Stop> stops;
-    PseudoColorConverter::ColorTable mode;
-    Img8u outputBuffer;
-    Img8u sourceBuffer;
+    ColorTable mode;
     int maxVal;
 
     template<class T>
     void lut(const Img<T> &src, Img8u &dst){
       const T *s = src.begin(0);
-      icl8u *r = dst.begin(0), *g = dst.begin(1), *b=dst.begin(2);
+      icl8u *r = dst.begin(0), *g = dst.begin(1), *b = dst.begin(2);
       const icl8u *rlut = luts[0].data();
       const icl8u *glut = luts[1].data();
       const icl8u *blut = luts[2].data();
-
       const int dim = src.getDim();
-      for(int i=0;i<dim;++i){
+      for(int i = 0; i < dim; ++i){
         const int si = s[i];
         r[i] = rlut[si];
         g[i] = glut[si];
@@ -76,139 +76,116 @@ namespace icl::core {
       }
     }
 
-    void def(int maxValue){
+    void fill_lin(icl8u *p, int a, int b, float c1, float c2){
+      for(int i = a; i < b; ++i){
+        float f = float(i - a) / (b - a);
+        p[i] = f * c2 + (1.0f - f) * c1;
+      }
+    }
+
+    void setDefault(int maxValue){
       maxVal = maxValue;
       std::vector<Stop> s(256);
-      for(int i=0;i<256;++i){
-        s[i] = Stop(i/255.0f,Color(defLut[0][i],defLut[1][i],defLut[2][i]));
+      for(int i = 0; i < 256; ++i){
+        s[i] = Stop(i / 255.0f, Color(defLut[0][i], defLut[1][i], defLut[2][i]));
       }
-      custom(s,maxValue);
-      mode = PseudoColorConverter::Default;
+      setCustom(s, maxValue);
+      mode = Default;
     }
 
-    void fill_lin(icl8u *p, int a, int b, float c1, float c2){
-      for(int i=a;i<b;++i){
-        float f = float(i-a)/(b-a);
-        p[i] = f*c2 + (1.0f-f)*c1;
-      }
-    }
-
-    void custom(const std::vector<Stop> &stopsIn, int maxValue){
+    void setCustom(const std::vector<Stop> &stopsIn, int maxValue){
       maxVal = maxValue;
-      if(!stopsIn.size()) throw ICLException("PseudoColorConverter: no stops found");
-      mode = PseudoColorConverter::Custom;
+      if(!stopsIn.size()) throw ICLException("PseudoColorOp: no stops found");
+      mode = Custom;
       stops = stopsIn;
       if(stops.size() == 1){
-        std::fill(luts[0].begin(),luts[0].end(),stops[0].color[0]);
-        std::fill(luts[1].begin(),luts[1].end(),stops[0].color[1]);
-        std::fill(luts[2].begin(),luts[2].end(),stops[0].color[1]);
+        std::fill(luts[0].begin(), luts[0].end(), stops[0].color[0]);
+        std::fill(luts[1].begin(), luts[1].end(), stops[0].color[1]);
+        std::fill(luts[2].begin(), luts[2].end(), stops[0].color[2]);
         return;
       }
-      std::sort(this->stops.begin(),this->stops.end(),cmp_stop);
-      ICLASSERT_THROW(stops.front().relPos >= 0, ICLException("PseudoColorConverter: stop with relative position < 0.0 found"));
-      ICLASSERT_THROW(stops.back().relPos <= 1, ICLException("PseudoColorConverter: stop with relative position > 1.0 found"));
-      if(stops[0].relPos != 0) stops.insert(stops.begin(),Stop(0,Color(0,0,0)));
-      if(stops.back().relPos != 1) stops.push_back(Stop(1,Color(255,255,255)));
+      std::sort(stops.begin(), stops.end(), cmp_stop);
+      ICLASSERT_THROW(stops.front().relPos >= 0, ICLException("PseudoColorOp: stop with relative position < 0.0 found"));
+      ICLASSERT_THROW(stops.back().relPos <= 1, ICLException("PseudoColorOp: stop with relative position > 1.0 found"));
+      if(stops[0].relPos != 0) stops.insert(stops.begin(), Stop(0, Color(0,0,0)));
+      if(stops.back().relPos != 1) stops.push_back(Stop(1, Color(255,255,255)));
 
-      for(unsigned int i=0;i<3;++i){
-        luts[i].resize(maxVal+1);
-        for(unsigned int s=0;s<stops.size()-1;++s){
-          fill_lin(luts[i].data(),(maxVal+1)*stops[s].relPos,(maxVal+1)*stops[s+1].relPos,stops[s].color[i],stops[s+1].color[i]);
+      for(unsigned int c = 0; c < 3; ++c){
+        luts[c].resize(maxVal + 1);
+        for(unsigned int s = 0; s < stops.size() - 1; ++s){
+          fill_lin(luts[c].data(), (maxVal+1)*stops[s].relPos, (maxVal+1)*stops[s+1].relPos,
+                   stops[s].color[c], stops[s+1].color[c]);
         }
       }
     }
   };
 
-    /// creates instance with default color table
-  PseudoColorConverter::PseudoColorConverter(int maxValue):m_data(new Data){
-    m_data->def(maxValue);
+  PseudoColorOp::PseudoColorOp(int maxValue) : m_data(new Data) {
+    m_data->setDefault(maxValue);
   }
 
-    /// creates instance with custom mode
-  PseudoColorConverter::PseudoColorConverter(const std::vector<Stop> &stops, int maxValue):m_data(new Data){
-    m_data->custom(stops,maxValue);
+  PseudoColorOp::PseudoColorOp(const std::vector<Stop> &stops, int maxValue)
+    : m_data(new Data) {
+    m_data->setCustom(stops, maxValue);
   }
 
-    /// sets the mode
-  void PseudoColorConverter::setColorTable(ColorTable t, const std::vector<Stop> &stops, int maxValue){
+  void PseudoColorOp::setColorTable(ColorTable t, const std::vector<Stop> &stops, int maxValue){
     if(t == Custom){
-      m_data->custom(stops,maxValue);
-    }else{
-      m_data->def(maxValue);
+      m_data->setCustom(stops, maxValue);
+    } else {
+      m_data->setDefault(maxValue);
     }
   }
 
-    /// create a speudo color image from given source image
-  void PseudoColorConverter::apply(const ImgBase *src, ImgBase **dst){
-    ICLASSERT_THROW(src,ICLException(str(__FUNCTION__)+": src image was NULL"));
-    ICLASSERT_THROW(dst,ICLException(str(__FUNCTION__)+": destination image was NULL"));
-    ICLASSERT_THROW(src->getChannels() == 1, ICLException(str(__FUNCTION__)+": source image has more than one channel"));
-    ensureCompatible(dst,depth8u,src->getSize(),formatRGB);
-    if(src->getDepth() == depth8u){
-      apply(*src->asImg<icl8u>(),*(*dst)->asImg<icl8u>());
-    }else{
-      switch(src->getDepth()){
-        case depth8u: m_data->lut(*src->as8u(), *(*dst)->as8u()); break;
-        case depth16s: m_data->lut(*src->as16s(), *(*dst)->as8u()); break;
-        case depth32s: m_data->lut(*src->as32s(), *(*dst)->as8u()); break;
-        case depth32f: m_data->lut(*src->as32f(), *(*dst)->as8u()); break;
-        case depth64f: m_data->lut(*src->as64f(), *(*dst)->as8u()); break;
-        default:
-          ICL_INVALID_DEPTH;
-      }
-    }
+  void PseudoColorOp::apply(const Image &src, Image &dst){
+    ICLASSERT_THROW(src.ptr(), ICLException("PseudoColorOp::apply: src is null"));
+    ICLASSERT_THROW(src.getChannels() == 1,
+                    ICLException("PseudoColorOp::apply: source must have exactly 1 channel"));
+
+    auto [d, p] = getDestinationParams(src);
+    dst.ensureCompatible(d, p.getSize(), p.getChannels(), p.getFormat());
+
+    src.visit([&](auto &typed) {
+      m_data->lut(typed, dst.as8u());
+    });
   }
 
-  /// create a speudo color image from given source image
-  void PseudoColorConverter::apply(const Img8u &src, Img8u &dst){
-    dst.setSize(src.getSize());
-    dst.setFormat(formatRGB);
-    dst.setROI(src.getROI());
-    dst.setTime(src.getTime());
-    Img8u ci;
-    for(int i=0;i<3;++i){
-      dst.selectChannel(i,&ci);
-      src.lut(m_data->luts[i].data(),&ci,8);
-    }
+  std::pair<depth, ImgParams>
+  PseudoColorOp::getDestinationParams(const Image &src) const {
+    return { depth8u, ImgParams(src.getSize(), formatRGB) };
   }
 
-    /// create a speudo color image from given source image (using an internal buffer)
-  const Img8u &PseudoColorConverter::apply(const Img8u &src){
-    apply(src,m_data->outputBuffer);
-    return m_data->outputBuffer;
-  }
-
-
-  void PseudoColorConverter::save(const std::string &filename){
+  void PseudoColorOp::save(const std::string &filename){
     ConfigFile f;
-    f.setPrefix("config.pseudo-color-converter.");
+    f.setPrefix("config.pseudo-color-op.");
     f["maxVal"] = m_data->maxVal;
     f["mode"] = std::string(m_data->mode == Default ? "default" : "custom");
     if(m_data->mode == Custom){
       f["stop-count"] = static_cast<int>(m_data->stops.size());
-      for(unsigned int i=0;i<m_data->stops.size();++i){
-        f["stop-"+str(i)+".color"] = str(m_data->stops[i].color[0]) +  " "
-                                   + str(m_data->stops[i].color[1]) +  " "
-                                   +   str(m_data->stops[i].color[2]);
+      for(unsigned int i = 0; i < m_data->stops.size(); ++i){
+        f["stop-"+str(i)+".color"] = str(m_data->stops[i].color[0]) + " "
+                                   + str(m_data->stops[i].color[1]) + " "
+                                   + str(m_data->stops[i].color[2]);
         f["stop-"+str(i)+".relative-position"] = m_data->stops[i].relPos;
       }
     }
     f.save(filename);
   }
 
-  void PseudoColorConverter::load(const std::string &filename){
+  void PseudoColorOp::load(const std::string &filename){
     ConfigFile f(filename);
-    f.setPrefix("config.pseudo-color-converter.");
+    f.setPrefix("config.pseudo-color-op.");
     if(f["mode"].as<std::string>() == "default"){
-      m_data->def(f["maxVal"]);
-    }else{
+      m_data->setDefault(f["maxVal"]);
+    } else {
       int n = f["stop-count"];
       std::vector<Stop> stops(n);
-      for(int i=0;i<n;++i){
-        stops[i] = Stop(f["stop-"+str(i)+".relative-position"],parse<Color>(f["stop-"+str(i)+".color"]));
+      for(int i = 0; i < n; ++i){
+        stops[i] = Stop(f["stop-"+str(i)+".relative-position"],
+                        parse<Color>(f["stop-"+str(i)+".color"]));
       }
-      m_data->custom(stops,f["maxVal"]);
+      m_data->setCustom(stops, f["maxVal"]);
     }
   }
 
-  } // namespace icl::core
+} // namespace icl::filter

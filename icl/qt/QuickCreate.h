@@ -9,6 +9,7 @@
 #include <icl/core/Types.h>
 #include <icl/utils/Size.h>
 
+#include <optional>
 #include <string>
 
 namespace icl::qt {
@@ -30,8 +31,10 @@ namespace icl::qt {
   ICLQt_API core::Image load(const std::string &filename, core::format fmt);
 
   /// Creates a test image (parrot, lena, cameraman, mandril, etc.)
+  /** If depth is given, the image is converted to that depth. */
   ICLQt_API core::Image create(const std::string &name,
-                                core::format fmt = core::formatRGB);
+                                core::format fmt = core::formatRGB,
+                                std::optional<core::depth> d = std::nullopt);
 
   /// Grabs a new image from a device, returning native depth
   /** @param dev device driver type (see GenericGrabber)
