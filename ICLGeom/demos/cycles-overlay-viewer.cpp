@@ -15,6 +15,7 @@
 #include <ICLGeom/Material.h>
 #include <ICLGeom/GLRenderer.h>
 #include <ICLGeom/Raytracer.h>
+#include <ICLQt/GLImageRenderer.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLGeom/SceneSetup.h>
 
@@ -25,12 +26,24 @@ using namespace icl::geom;
 
 static Scene scene;
 static icl::rt::SceneSetupResult setupResult;
+static GLImageRenderer bgRenderer;
 HSplit gui;
 
 static void handleMouse(const MouseEvent &evt) {
   scene.getMouseHandler(0)->process(evt);
   scene.getRaytracer().invalidateAll();
 }
+
+/// Renders Cycles image as background, then GL scene on top
+static struct OverlayCallback : public ICLDrawWidget3D::GLCallback {
+  void draw(ICLDrawWidget3D *widget) override {
+    // Background: latest Cycles image
+    const auto &img = scene.getRaytracer().getImage();
+    if (img.getDim()) bgRenderer.render(Image(img));
+    // Overlay: GL scene (no sky, alpha-blended)
+    scene.getGLRenderer().render(scene, 0, widget);
+  }
+} overlayCB;
 
 static void init() {
   Size size = pa("-size").as<Size>();
@@ -59,7 +72,7 @@ static void init() {
 
   DrawHandle3D canvas = gui["canvas"];
   canvas->install(new MouseHandler(handleMouse));
-  canvas->link(scene.getGLCallback(0));
+  canvas->link(&overlayCB);
 
   // Start autonomous rendering
   scene.getRaytracer().start(0);
@@ -89,10 +102,8 @@ static void run() {
       scene.getObject(i)->prepareForRendering();
   }
 
-  // Pull latest Cycles image (renderer runs autonomously via start())
-  DrawHandle3D canvas = gui["canvas"];
-  canvas = &rt.getImage();
-  canvas.render();
+  // Trigger repaint (GL callback renders both Cycles bg + GL overlay)
+  gui["canvas"].render();
 
   static FPSEstimator fpsEst(10);
   gui["info"] = fpsEst.formatted("%d spp | #fps fps | GL %.0f%%",
