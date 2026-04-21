@@ -11,6 +11,7 @@ geom2_headers = files(
   'CylinderNode.h',
   'ConeNode.h',
   'Renderer.h',
+  'Scene2.h',
 )
 
 geom2_sources = files(
@@ -23,12 +24,13 @@ geom2_sources = files(
   'CylinderNode.cpp',
   'ConeNode.cpp',
   'Renderer.cpp',
+  'Scene2.cpp',
 )
 
 icl_geom2_lib = shared_library('icl-geom2',
   geom2_sources,
   include_directories: [root_inc, gen_inc],
-  dependencies: [icl_geom_dep],  # for Material (temporary, until Material is moved)
+  dependencies: [icl_qt_dep, icl_geom_dep],  # qt for DrawWidget3D, geom for Camera+Material
   version: so_version,
   implicit_include_directories: false,
   install: true,
@@ -37,7 +39,7 @@ icl_geom2_lib = shared_library('icl-geom2',
 icl_geom2_dep = declare_dependency(
   link_with: icl_geom2_lib,
   include_directories: [root_inc, gen_inc],
-  dependencies: [icl_geom_dep],
+  dependencies: [icl_qt_dep, icl_geom_dep],
 )
 
 install_headers(geom2_headers,

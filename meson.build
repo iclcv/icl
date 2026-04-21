@@ -271,10 +271,12 @@ if qt_found
   subdir('icl/qt')
 endif
 subdir('icl/geom')
-subdir('icl/geom2')
 subdir('icl/markers')
 if bullet_found and qt_found
   subdir('icl/physics')
+endif
+if qt_found
+  subdir('icl/geom2')
 endif
 
 # ---- Demos, apps, examples (after all libraries are defined) ----
