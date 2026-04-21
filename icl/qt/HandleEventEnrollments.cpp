@@ -6,9 +6,9 @@
 // that `DataStore::Data::render() / install() / link() /
 // registerCallback() / enable() / disable()` can reach.  The
 // alternative — replacing the smuggling in `DataStore::Data` with
-// direct method dispatch over the stored handle type — is a cleaner
-// refactor but out of scope here; see the "MultiTypeMap -> AnyMap"
-// item on TODO.md, which will rewrite `Data::*` in one pass.
+// direct type-dispatch over the stored `std::any` — is a cleaner
+// refactor but out of scope for now; see the "Event smuggling
+// retirement" item on TODO.md.
 
 #include <icl/utils/Assign.h>
 #include <icl/utils/AssignRegistry.h>

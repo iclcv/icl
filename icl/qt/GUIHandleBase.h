@@ -23,7 +23,6 @@ namespace icl::qt {
     /** \cond */
     friend class icl::qt::GUI;
     friend class icl::qt::DataStore;
-    friend class icl::utils::MultiTypeMap;
     /** \endcond */
 
     /// returns parent GUIWidget pointer

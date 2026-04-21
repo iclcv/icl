@@ -13,51 +13,21 @@ namespace icl::utils {
     return r;
   }
 
-  const AssignRegistry::Fn &
-  AssignRegistry::lookup(std::type_index dstT, std::type_index srcT,
-                         const char *dstName, const char *srcName) {
+  void AssignRegistry::dispatch(std::any &dst, std::any &src) {
     const auto &m = instance().m_map;
-    auto dstIt = m.find(dstT);
+    auto dstIt = m.find(std::type_index(dst.type()));
     if (dstIt == m.end()) {
       throw std::runtime_error(
         std::string("AssignRegistry::dispatch: no rule with destination type ")
-        + dstName);
+        + dst.type().name());
     }
-    auto srcIt = dstIt->second.find(srcT);
+    auto srcIt = dstIt->second.find(std::type_index(src.type()));
     if (srcIt == dstIt->second.end()) {
       throw std::runtime_error(
         std::string("AssignRegistry::dispatch: no rule for ")
-        + dstName + " = " + srcName);
+        + dst.type().name() + " = " + src.type().name());
     }
-    return srcIt->second;
-  }
-
-  void AssignRegistry::dispatch(std::any &dst, std::any &src) {
-    const auto &fn = lookup(std::type_index(dst.type()),
-                            std::type_index(src.type()),
-                            dst.type().name(), src.type().name());
-    fn.any(dst, src);
-  }
-
-  void AssignRegistry::dispatch(void *dst, std::type_index dstT,
-                                void *src, std::type_index srcT) {
-    const auto &fn = lookup(dstT, srcT, dstT.name(), srcT.name());
-    fn.ptr(dst, src);
-  }
-
-  void AssignRegistry::dispatch(void *dst, const std::string &dstName,
-                                void *src, const std::string &srcName) {
-    const auto &r = instance();
-    auto dstNt = r.m_nameToType.find(dstName);
-    auto srcNt = r.m_nameToType.find(srcName);
-    if (dstNt == r.m_nameToType.end() || srcNt == r.m_nameToType.end()) {
-      throw std::runtime_error(
-        std::string("AssignRegistry::dispatch: type not enrolled for ")
-        + srcName + " -> " + dstName);
-    }
-    const auto &fn = lookup(dstNt->second, srcNt->second,
-                            dstName.c_str(), srcName.c_str());
-    fn.ptr(dst, src);
+    srcIt->second(dst, src);
   }
 
   bool AssignRegistry::has(std::type_index dstType,
@@ -80,27 +50,14 @@ namespace icl::utils {
   std::vector<std::pair<std::string, std::string>>
   AssignRegistry::listRules(const std::string &srcFilter,
                             const std::string &dstFilter) {
-    // Reverse the name table so we can print the RTTI names alongside
-    // the type_indices.  Multiple names can map to the same
-    // type_index (alias via the same typeid), but typically one each.
-    const auto &r = instance();
-    std::unordered_map<std::type_index, std::string> typeToName;
-    for (const auto &[name, idx] : r.m_nameToType) {
-      typeToName.insert({idx, name});
-    }
-
     std::vector<std::pair<std::string, std::string>> out;
-    for (const auto &[dstT, innerMap] : r.m_map) {
-      auto dstIt = typeToName.find(dstT);
-      const std::string &dstName = (dstIt != typeToName.end()) ? dstIt->second
-                                                               : std::string(dstT.name());
-      if (!dstFilter.empty() && dstName.find(dstFilter) == std::string::npos) continue;
+    for (const auto &[dstT, innerMap] : instance().m_map) {
+      const char *dstName = dstT.name();
+      if (!dstFilter.empty() && std::string(dstName).find(dstFilter) == std::string::npos) continue;
       for (const auto &[srcT, fn] : innerMap) {
         (void)fn;
-        auto srcIt = typeToName.find(srcT);
-        const std::string &srcName = (srcIt != typeToName.end()) ? srcIt->second
-                                                                 : std::string(srcT.name());
-        if (!srcFilter.empty() && srcName.find(srcFilter) == std::string::npos) continue;
+        const char *srcName = srcT.name();
+        if (!srcFilter.empty() && std::string(srcName).find(srcFilter) == std::string::npos) continue;
         out.emplace_back(srcName, dstName);
       }
     }

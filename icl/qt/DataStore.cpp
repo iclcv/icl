@@ -9,31 +9,28 @@
 
 namespace icl::qt {
 
-  void DataStore::Data::assign(void *src, const std::string &srcType,
-                               void *dst, const std::string &dstType) {
-    // All assignment rules live in the runtime AssignRegistry (enrolled
-    // at static-init time via __attribute__((constructor)) blocks in
-    // each handle's TU).  DataStore owns the raw `void* + RTTI-name`
-    // storage, so the name-keyed dispatch overload is the one we want;
-    // it translates to `type_index` internally via AssignRegistry's
-    // shadow name table.
+  DataStore::DataStore()
+    : m_store(std::make_shared<utils::AnyMap>()),
+      m_mutex(std::make_shared<std::recursive_mutex>()) {}
+
+  void DataStore::Data::assignAny(std::any &dst, std::any &src) {
     try {
-      utils::AssignRegistry::dispatch(dst, dstType, src, srcType);
+      utils::AssignRegistry::dispatch(dst, src);
     } catch (const std::runtime_error &) {
-      throw DataStore::UnassignableTypesException(srcType, dstType);
+      throw DataStore::UnassignableTypesException(src.type().name(),
+                                                  dst.type().name());
     }
   }
 
   DataStore::Data DataStore::operator[](const std::string &key) {
-    if (auto it = m_oDataMapPtr->find(key); it == m_oDataMapPtr->end()) {
-      throw KeyNotFoundException(key);
-    } else {
-      return Data(&it->second);
-    }
+    if (auto *entry = m_store->findAny(key)) return Data(entry);
+    throw KeyNotFoundException(key);
   }
 
   void DataStore::Data::install(std::function<void(const MouseEvent &)> f) {
-    /// crazy local class here!
+    /// Locally-defined adapter — keeps the function alive inside a
+    /// MouseHandler subclass so the handle's usual install(MouseHandler*)
+    /// path works.
     struct FunctionMouseHandler : public MouseHandler {
       std::function<void(const MouseEvent &)> f;
       FunctionMouseHandler(std::function<void(const MouseEvent &)> f) : f(f) {}

@@ -5,52 +5,77 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/MultiTypeMap.h>
+#include <icl/utils/AnyMap.h>
+#include <icl/utils/AssignRegistry.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
-#include <functional>
 #include <icl/qt/MouseEvent.h>
+
+#include <any>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <typeinfo>
+#include <vector>
 
 namespace icl::qt {
   class MouseHandler;
-}
 
-namespace icl::qt {
-  /// Extension of the associative container MultiTypeMap \ingroup UNCOMMON
-  /** Adds an index operator[string] for direct access to contained values
-   */
-  class ICLQt_API DataStore : public utils::MultiTypeMap{
+  /// Heterogeneous keyed store for GUI handles (and anything else a
+  /// caller wants to keep per string key).
+  ///
+  /// Holds a `utils::AnyMap` (`std::map<std::string, std::any>`) for
+  /// values and a recursive mutex for serialization; both are held by
+  /// `shared_ptr` so shallow-copies of a DataStore share the backing
+  /// state — matching the old `MultiTypeMap` semantics that GUI /
+  /// GUIImpl relied on.
+  ///
+  /// All cross-type dispatch (`store["k"] = 42` when the stored value
+  /// is a `SliderHandle`, or `int v = store["k"]` in the reverse
+  /// direction) goes through `utils::AssignRegistry`.  DataStore
+  /// itself owns no rule table.
+  class ICLQt_API DataStore {
+  public:
+    DataStore();
+    ~DataStore() = default;
+
+    /// Thrown by `operator[]` when the key isn't present.
+    struct KeyNotFoundException : public utils::ICLException {
+      KeyNotFoundException(const std::string &key)
+        : utils::ICLException("Key not found: " + key) {}
+    };
+
+    /// Thrown by `Data::operator=` / `Data::as<T>()` when no
+    /// `AssignRegistry` rule exists for the requested pair.
+    struct UnassignableTypesException : public utils::ICLException {
+      UnassignableTypesException(const std::string &tSrc, const std::string &tDst)
+        : utils::ICLException("Unable to assign " + tDst + " = " + tSrc) {}
+    };
+
+    /// Value-proxy returned from `operator[]` — a lightweight view
+    /// over one std::any entry in the underlying `AnyMap`.
+    class Data {
+      std::any *m_entry;
+
+      friend class DataStore;
+
+      inline Data(std::any *entry) : m_entry(entry) {}
+
+      /// Run an `AssignRegistry::dispatch` on the typed payloads
+      /// behind two std::any objects, translating a miss into an
+      /// `UnassignableTypesException` for API stability.
+      ICLQt_API static void assignAny(std::any &dst, std::any &src);
+
     public:
-
-    /// Internal Exception type thrown if operator[] is given an unknown index string
-    struct KeyNotFoundException : public utils::ICLException{
-      KeyNotFoundException(const std::string &key):utils::ICLException("Key not found: " + key){}
-    };
-
-    /// Internal Exception type thrown if Data::operator= is called for incompatible values
-    struct UnassignableTypesException : public utils::ICLException{
-      UnassignableTypesException(const std::string &tSrc, const std::string &tDst):
-      utils::ICLException("Unable to assign "+ tDst+ " = "+ tSrc){}
-    };
-
-
-    /// Arbitrary Data encapsulation type
-    class Data{
-
-      /// internally reference DataStore entry
-      DataArray *data;
-
-      /// Constructor (private->only the parent DataStore is allowed to contruct Data's)
-      inline Data(DataArray *data):data(data){}
-
-      /// This is the mighty and magic conversion function
-      ICLQt_API static void assign(void *src, const std::string &srcType, void *dst,
-                         const std::string &dstType);
-
-      public:
-
-      /// Internally used Data- Structure
-      struct Event{
+      /// Legacy "smuggled-command" payload used by the `render()` /
+      /// `install()` / `link()` / `registerCallback()` / `enable()` /
+      /// `disable()` methods below.  Dispatched via the
+      /// `Assign<H, Event>` trait specialization registered in
+      /// `qt/HandleEventEnrollments.cpp` — scheduled for retirement
+      /// once `Data::*` is rewritten to direct type-dispatch over
+      /// the stored `std::any`.
+      struct Event {
         Event(const std::string &msg="", void *data=0):message(msg),data(data){}
         Event(const std::string &msg, const std::function<void()> &cb): message(msg),data(0),cb(cb){}
         Event(const std::string &msg, const std::function<void(const std::string&)> &cb2): message(msg),data(0),cb2(cb2){}
@@ -60,38 +85,43 @@ namespace icl::qt {
         std::function<void(const std::string&)> cb2;
       };
 
-      friend class DataStore;
-
-      /// Trys to assign an instance of T to this Data-Element
-      /** This will only work, if the data types are assignable */
+      /// Assign an instance of `T` into this entry.  Dispatch picks
+      /// the registered `Assign<Stored, T>::apply` via the runtime
+      /// `AssignRegistry`.
+      ///
+      /// `std::in_place_type<T>` forces std::any to store exactly
+      /// `T` — necessary because some types (e.g. `utils::Any` which
+      /// publicly inherits `std::string` and has a templated converting
+      /// ctor) otherwise trigger an ambiguous-overload error in
+      /// std::any's own templated ctor.
       template<class T>
-      inline void operator=(const T &t){
-        assign(const_cast<void*>(reinterpret_cast<const void*>(&t)),
-               get_type_name<T>(),data->data,data->type);
+      inline void operator=(const T &t) {
+        std::any src(std::in_place_type<T>, t);
+        assignAny(*m_entry, src);
       }
 
-      /// Trys to convert a Data element into a (by template parameter) given type
-      /** this will only work, if the data element is convertable to the
-          desired type. Otherwise an exception is thrown*/
+      /// Extract the entry's value as `T`.  Creates a default-
+      /// constructed `T` and invokes the registered
+      /// `Assign<T, Stored>::apply` rule through a copy of the
+      /// stored payload (so the stored value is never mutated).
       template<class T>
-      inline T as() const{
-        T t;
-        assign(data->data,data->type,&t,get_type_name<T>());
-        return t;
+      inline T as() const {
+        std::any dst(std::in_place_type<T>, T{});
+        std::any src = *m_entry;  // copy: dispatch might mutate src in-place
+        assignAny(dst, src);
+        return std::any_cast<T>(dst);
       }
 
-      /// implicit conversion into l-value type
-      /** For stream-extractable types (enums with operator>>, numeric types,
-          etc.), if the direct DataStore assignment fails, falls back to
-          converting to string first and then parsing. This makes patterns
-          like `cc(image, gui["fmt"])` work where gui["fmt"] is a ComboHandle
-          and cc() expects a format enum. */
+      /// Implicit conversion to `T`.  Stream-extractable `T`s
+      /// (primitives, enum types with `operator>>`) additionally get
+      /// a string-round-trip fallback on assign-miss, so idioms like
+      /// `cc(img, gui["fmt"])` work when `fmt` is a ComboHandle.
       template<class T>
-      operator T() const{
+      operator T() const {
         if constexpr (utils::is_stream_extractable<T>::value) {
           try {
             return as<T>();
-          } catch(const UnassignableTypesException&) {
+          } catch (const UnassignableTypesException &) {
             return utils::parse<T>(as<std::string>());
           }
         } else {
@@ -99,127 +129,134 @@ namespace icl::qt {
         }
       }
 
-      /// string_view conversion — routes through as<string>() so all handle
-      /// types that support string conversion (Combo, Slider, …) work with
-      /// parse<T>(gui["key"]) after parse was changed to take string_view.
-      /// Uses a thread-local buffer; the returned view is valid until the
-      /// next string_view conversion on the same thread.
+      /// Thread-local string-view conversion — routes through
+      /// `as<string>()` so callers can pass `gui["k"]` to APIs that
+      /// take a `std::string_view` without round-tripping through a
+      /// temporary.  The returned view is valid until the next
+      /// conversion on the same thread.
       operator std::string_view() const {
         static thread_local std::string buf;
         buf = as<std::string>();
         return buf;
       }
 
-      /// returns the internal type ID (obtained by C++'s RTTI)
-      const std::string &getTypeID() const { return data->type; }
+      /// RTTI of the currently-stored value.
+      const std::type_info &getTypeID() const { return m_entry->type(); }
 
-
-      /** Currently supported for Data-types ImageHandle, DrawHandle, FPSHandle and PlotHandle */
-      void render(){
+      /// Trigger a `render` on the stored handle (handlers: Image,
+      /// Draw, Draw3D, Plot, FPS — see Assign<H, Event>).
+      void render() {
         *this = Event("render");
       }
 
-      /// links DrawWidget3D and GLCallback
-      void link(void *data){
+      /// Forward a void-pointer payload to the stored handle under
+      /// the "link" verb.  Currently only DrawHandle3D responds to
+      /// `link` (binding an ICLDrawWidget3D::GLCallback).
+      void link(void *data) {
         *this = Event("link", data);
       }
 
-      /// data must be of type MouseHandler*
-      void install(void *data){
-        *this  = Event("install",data);
+      /// Forward a raw MouseHandler pointer to the stored handle's
+      /// `install` path (ImageHandle / DrawHandle / DrawHandle3D).
+      void install(void *data) {
+        *this = Event("install", data);
       }
 
-      /// typed overload: ensures correct base-subobject pointer for
-      /// multiply-inherited MouseHandler subclasses (e.g.
-      /// DefineQuadrangleMouseHandler). The implicit derived-to-base
-      /// conversion is performed here, so the void* stored in the Event
-      /// actually points to the MouseHandler subobject.
-      void install(MouseHandler *data){
-        install(static_cast<void*>(data));
+      /// Typed overload — ensures the multiply-inherited subobject
+      /// pointer is passed through correctly (e.g.
+      /// `DefineQuadrangleMouseHandler` has an extra non-MouseHandler
+      /// base).
+      void install(MouseHandler *data) {
+        install(static_cast<void *>(data));
       }
 
-      /// installs a function directly
+      /// Convenience — install a plain lambda / std::function.  The
+      /// out-of-line body wraps it in an internal MouseHandler subclass.
       ICLQt_API void install(std::function<void(const MouseEvent &)> f);
 
-      // installs a global function (should be implicit)
-      //void install(void (*f)(const MouseEvent &)){
-      //  install(function(f));
-      //}
-
-      /// register simple callback type
-      void registerCallback(const std::function<void()> &cb){
-        *this = Event("register",cb);
+      /// Register a simple void-callback.
+      void registerCallback(const std::function<void()> &cb) {
+        *this = Event("register", cb);
       }
 
-      /// register simple callback type
-      void registerCallback(const std::function<void(const std::string&)> &cb){
-        *this = Event("register-complex",cb);
+      /// Register a "complex" callback that receives the
+      /// originating handle key.
+      void registerCallback(const std::function<void(const std::string &)> &cb) {
+        *this = Event("register-complex", cb);
       }
 
-      /// possible for all handle-types
-      void enable(){
-        *this = Event("enable");
-      }
+      /// Enable the underlying widget (handle-specific).
+      void enable()  { *this = Event("enable"); }
 
-      /// possible for all handle types
-      void disable(){
-        *this = Event("disable");
-      }
+      /// Disable the underlying widget.
+      void disable() { *this = Event("disable"); }
     };
 
+    /// Store a `T` under `id`, default-constructing if omitted.
+    /// Returns a reference into the AnyMap's stable (map-node-based)
+    /// storage — callers can hold `&allocValue<T>(...)` for the
+    /// entry's lifetime.
+    template<class T>
+    inline T &allocValue(const std::string &id, const T &val = T()) {
+      m_store->template set<T>(id, val);
+      return m_store->template get<T>(id);
+    }
 
-    /// Allows to assign new values to a entry with given key (*NEW*)
-    /** The returned Data-Element is a shallow Reference of a DataStore entry of
-        internal type DataArray.
-        Each entry is typed by C++'s RTTI, so, the function can determine if the
-        assigned value is compatible to actual type of the data element.
-        Internally a <em>magic</em> assignment system is used to determine whether
-        two types can be assigned, and what to do if.
-        Basically one can say, type assignments line T = T are of course allowed
-        as well as type assignments A = B, if A and B are C++ built-in numerical
-        type (int, float, etc.)
-        Additionally a lot of GUIHandle types (contained by a GUI's DataStore)
-        can be assigned (and updated, see void DataStore::Data::update()) with
-        this mechanism
+    /// Access as `T&`.  Throws via AnyMap on key miss or type
+    /// mismatch.  The `typeCheck` parameter is accepted for
+    /// API compatibility with the old MultiTypeMap and ignored —
+    /// AnyMap always type-checks.
+    template<class T>
+    inline T &getValue(const std::string &id, bool typeCheck = true) {
+      (void)typeCheck;
+      return m_store->template get<T>(id);
+    }
 
-        A detailed description of all allowed assigmnet must ba added here:
-        TODO...
+    template<class T>
+    inline const T &getValue(const std::string &id, bool typeCheck = true) const {
+      (void)typeCheck;
+      return m_store->template get<T>(id);
+    }
 
-        Here are some examples ...
-        \code
-        DataStore x;
-        x.allocValue("hello",int(5));
-        x.allocValue("world",float(5));
-        x.allocValue("!",std::string("yes yes!"));
+    /// True iff `id` is present (any type).
+    bool contains(const std::string &id) const { return m_store->contains(id); }
 
-        x["hello"] = "44"; // string to int
-        x["world"] = 4;    // int to float
-        x["!"] = 44;       // int to string
-        x["hello"] = 44;   // int to int
+    /// True iff `id` is present AND stores exactly `T`.
+    template<class T>
+    bool checkType(const std::string &id) const { return m_store->template containsAs<T>(id); }
 
-        x.allocValue("image",ImgHandle(...));
-        x["image"] = icl::create("parrot");   // ImgQ to ImageHandle
+    /// Remove every entry.
+    void clear() { m_store->clear(); }
 
-        x.allocValue("sl",SliderHandle(...));
+    /// Serialize operations across DataStore consumers.  Recursive
+    /// so the same thread can re-acquire (e.g. during nested GUI
+    /// creation).  Held by shared_ptr so shallow-copies share the
+    /// lock.
+    void lock() const { m_mutex->lock(); }
+    void unlock() const { m_mutex->unlock(); }
 
-        x["sl"] = 7;               // sets slider value to 7
-        std::cout << "slider val is:" << x["sl"].as<int>() << std::endl;
-
-        x["sl"] = Range32s(3,9);   // sets slider's Range ...
-        \endcode
-    */
+    /// Return a proxy-view over the value at `key`.
+    /// @throws KeyNotFoundException if `key` is missing.
     Data operator[](const std::string &key);
 
-
-    /// convenience function that allows collecting data from different source entries
-    /** This function can e.g. be used to obtain data from an array of 'float' GUI
-        components */
+    /// Convenience: collect values from many keys into a vector.
+    /// Each key is extracted via `operator[]` and implicitly
+    /// converted to `T`.
     template<class T>
-    std::vector<T> collect(const std::vector<std::string> &keys){
+    std::vector<T> collect(const std::vector<std::string> &keys) {
       std::vector<T> v(keys.size());
-      for(unsigned int i=0;i<keys.size();++i) v[i] = operator[](keys[i]);
+      for (unsigned int i = 0; i < keys.size(); ++i) v[i] = operator[](keys[i]);
       return v;
     }
 
+  protected:
+    /// Shared typed map.  Held by `shared_ptr` so that copy-assigning
+    /// a DataStore (done by `GUI::operator=`) shares one backing map
+    /// across all GUI references.
+    std::shared_ptr<utils::AnyMap> m_store;
+
+    /// Shared recursive mutex backing `lock()`/`unlock()`.
+    mutable std::shared_ptr<std::recursive_mutex> m_mutex;
   };
-  } // namespace icl::qt
+
+}  // namespace icl::qt

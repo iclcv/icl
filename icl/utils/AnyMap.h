@@ -80,6 +80,22 @@ namespace icl::utils {
       return std::any_cast<const T>(&it->second);
     }
 
+    /// Raw pointer to the stored `std::any` under `key`, or
+    /// `nullptr` if no such key.  Useful for callers (e.g. DataStore)
+    /// that want to hand the std::any directly to AssignRegistry
+    /// without knowing its concrete type.  The returned pointer is
+    /// stable — std::map is node-based — until the entry is erased
+    /// or overwritten.
+    std::any *findAny(const std::string &key) noexcept {
+      auto it = m_data.find(key);
+      return it == m_data.end() ? nullptr : &it->second;
+    }
+
+    const std::any *findAny(const std::string &key) const noexcept {
+      auto it = m_data.find(key);
+      return it == m_data.end() ? nullptr : &it->second;
+    }
+
     /// True iff a value is stored under `key` (regardless of its type).
     bool contains(const std::string &key) const noexcept {
       return m_data.find(key) != m_data.end();

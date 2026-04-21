@@ -81,12 +81,6 @@ namespace icl::qt {
       return m_oDataStore.allocValue<T>(id,val);
     }
 
-    /// wraps the datastores release function
-    template<class T>
-    inline void release(const std::string &id){
-      m_oDataStore.release<T>(id);
-    }
-
     template<class T>
     T &get(const std::string &id, bool typeCheck=true){
       return m_oDataStore.getValue<T>(id,typeCheck);

@@ -48,45 +48,28 @@ Applied per `module-audit-checklist.md`.
 
 ---
 
-## DataStore / Assign migration (Session 51 landed the flip; storage cleanup pending)
+## DataStore / Assign migration (storage cleanup landed; Event smuggling pending)
 
-See `project_assign_migration.md` for full status.  Session 51
+Session 51 closed every storage-side item on this section:
 flipped `DataStore::Data::assign()` to `AssignRegistry::dispatch()`
-and deleted the in-DataStore `AssignSpecial<>` machinery (~830
-lines).  Identity enrollments + `Event → H` enrollments are in
-place, so `HandleType h = gui["name"]` and `gui["x"].render()` both
-work against the new registry.  What remains is the storage-side
-cleanup — the step that finally retires the void*+RTTI-name
-dispatch that only exists to bridge DataStore's legacy storage:
+(~830 lines of `AssignSpecial<>` machinery deleted); added identity
++ `Event → H` enrollments; replaced `MultiTypeMap` with composed
+`AnyMap` inside DataStore; deleted the `void* + RTTI-name`
+dispatch paths from `AssignRegistry` (now std::any-based
+end-to-end); and deleted `MultiTypeMap` entirely (272 lines + its
+`friend class` in `GUIHandleBase.h`).  `HandleType h = gui["name"]`
+and `gui["x"].render()` both work against the new registry.
 
-- [ ] **Replace `MultiTypeMap` base of `DataStore` with composed
-  `AnyMap`.**  `DataStore::Data` internally holds a `std::any *`
-  instead of a `DataArray *`; `assign` / `operator=(T)` / `as<T>()`
-  pack and unpack `std::any` and call
-  `AssignRegistry::dispatch(std::any&, std::any&)`.  `AnyMap` is
-  already `std::map`-backed so stored references stay stable for
-  the GUI-code pattern `m_poHandle = &allocValue<H>(...)`.
-
-- [ ] **Delete the void*/name-based dispatch from `AssignRegistry`**
-  once DataStore no longer calls it: drop the
-  `dispatch(void*, type_index, void*, type_index)` and
-  `dispatch(void*, string, void*, string)` overloads, the
-  `m_nameToType` shadow table, and the `Fn::ptr` branch of the per-pair
-  function pair.  Only the `dispatch(std::any&, std::any&)` path
-  survives.
-
-- [ ] **Delete `MultiTypeMap`** entirely (272 lines) — dead after
-  DataStore stops inheriting it.  One `friend class` declaration in
-  `GUIHandleBase.h` goes with it.
+What's still open:
 
 - [ ] **Retire the `Event` smuggling** in `DataStore::Data` —
   `render()`, `install()`, `link()`, `registerCallback()`,
   `enable()`, `disable()` currently work by building an `Event`
-  struct and sending it through assign.  Replace with direct
-  type-dispatch on the stored handle (now trivially doable once
-  `*entry` is a `std::any`).  `Event` struct + the
-  `HandleEventEnrollments.cpp` trait specializations go away with
-  it.
+  struct and sending it through assign.  Now that the store
+  internally holds `std::any`, replace with direct type-dispatch
+  on the stored handle (e.g. `if (auto *h = std::any_cast<ImageHandle>(&*m_entry)) h->render()`).
+  `Event` struct + `HandleEventEnrollments.cpp` +
+  `Assign<H, Event>` specialization retire with it.
 
 - [ ] **`Slot` proxy** — the `gui["key"]` return type.  Implement
   templated `operator=(T)` and `operator T() const` that box/unbox
