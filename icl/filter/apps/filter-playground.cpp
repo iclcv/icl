@@ -41,6 +41,7 @@
 #include <icl/filter/WeightedSumOp.h>
 #include <icl/filter/WienerOp.h>
 #include <icl/qt/BoxHandle.h>
+#include <icl/qt/MouseHandler.h>
 
 #include <memory>
 #include <mutex>
@@ -54,6 +55,14 @@ std::string currentFilter;   // tracks the displayed filter to detect swaps
 // currentOp->apply() in run() (ICLApp's exec thread). Without this, a filter
 // swap frees the op mid-apply → segfault on the next m_data dereference.
 std::recursive_mutex opMutex;
+
+// Interactive-ROI state. Written on the GUI thread by the mouse handler,
+// read on the exec thread by run(). `interactiveRoi` is the committed rect
+// (Rect::null → default to full image). `draggingRoi` is the live rubber-band
+// while the mouse button is held.
+std::mutex roiMtx;
+Rect interactiveRoi;
+Rect draggingRoi;
 
 // Factory for the UnaryOps currently known to the playground. Keep the order
 // of this vector stable; the combo labels are derived from the first element.
@@ -128,12 +137,38 @@ static void rebuildPropPanel(const std::string &name){
 
 static Rect roiFor(const std::string &mode, const Rect &full){
   if(mode == "full" || mode == "none") return full;
+  if(mode == "interactive"){
+    // Committed rect, clamped to the current image. Empty → full image.
+    std::scoped_lock lock(roiMtx);
+    if(interactiveRoi == Rect::null) return full;
+    Rect r = interactiveRoi & full;
+    return r.getDim() > 0 ? r : full;
+  }
   Size half = full.getSize()/2;
   if(mode == "center") return Rect(Point(full.width/4, full.height/4), half);
   Point off;
   if(mode[0] == 'L') off.y = full.height/2;  // L = lower
   if(mode[1] == 'R') off.x = full.width/2;   // R = right
   return Rect(off, half);
+}
+
+static void onSourceMouse(const MouseEvent &e){
+  std::scoped_lock lock(roiMtx);
+  if(e.isRight()){
+    // Right-click anywhere clears the interactive ROI back to full image.
+    interactiveRoi = Rect::null;
+    draggingRoi    = Rect::null;
+  }else if(e.isLeft()){
+    if(e.isPressEvent()){
+      draggingRoi = Rect(e.getPos(), Size(1,1));
+    }else if(e.isDragEvent()){
+      draggingRoi.width  = e.getX() - draggingRoi.x;
+      draggingRoi.height = e.getY() - draggingRoi.y;
+    }else if(e.isReleaseEvent()){
+      interactiveRoi = draggingRoi.normalized();
+      draggingRoi    = Rect::null;
+    }
+  }
 }
 
 void init(){
@@ -149,7 +184,7 @@ void init(){
                 << Combo("1:1,QVGA,!VGA,SVGA,XGA,WXGA,UXGA").handle("dsize").label("size")
                 << Combo("!depth8u,depth16s,depth32s,depth32f,depth64f").handle("ddepth").label("depth")
                 << Combo("gray,!rgb,hls,lab,yuv").handle("dformat").label("format")
-                << Combo("!none,UL,UR,LL,LR,center").handle("roi").label("source ROI")
+                << Combo("!none,UL,UR,LL,LR,center,interactive").handle("roi").label("source ROI")
               )
            << VBox().handle("props").minSize(16,10)
            << ( HBox().maxSize(99,2)
@@ -163,6 +198,16 @@ void init(){
   gui.registerCallback([](const std::string &h){
     if(h == "filter") rebuildPropPanel(gui["filter"].as<std::string>());
   }, "filter");
+
+  // Drag-select ROI on the source canvas (only honored when the "source ROI"
+  // combo is set to "interactive"; other modes override). Right-click resets.
+  static MouseHandler mouseHandler(onSourceMouse);
+  gui["src"].install(&mouseHandler);
+
+  // Auto-range the result view so 16s/32f filter outputs (gradients, FFT,
+  // etc.) render over their actual dynamic range instead of the fixed
+  // [0,255] window that renders them as mostly-black.
+  gui.get<ImageHandle>("dst")->setRangeMode(ICLWidget::rmAuto);
 
   // Initial filter = first entry in the combo.
   rebuildPropPanel(filters().front().first);
@@ -186,12 +231,21 @@ void run(){
   Image roiedSrc = src.shallowCopy();
   roiedSrc.setROI(roi);
 
-  // Source display with a thin red rect around the active ROI.
+  // Source display with the active ROI outlined in red, plus — if the user
+  // is currently dragging — a transparent-blue rubber-band rect.
   DrawHandle srcH = gui.get<DrawHandle>("src");
   srcH = roiedSrc;
   srcH->color(255,0,0,255);
   srcH->fill(0,0,0,0);
   srcH->rect(roi);
+  {
+    std::scoped_lock lock(roiMtx);
+    if(draggingRoi != Rect::null){
+      srcH->color(0, 128, 255, 255);
+      srcH->fill(0, 128, 255, 60);
+      srcH->rect(draggingRoi);
+    }
+  }
   srcH.render();
 
   // Lock across the whole apply — the filter-combo callback on the GUI
