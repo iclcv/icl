@@ -42,7 +42,10 @@ namespace icl::qt {
     return *m_fMax;
   }
   float FSliderHandle::getValue() const{
-    return i2f((**this)->value());
+    // Lock-free read through the atomic cache in ThreadedUpdatableSlider.
+    // Mapping from integer slider coordinates to float value is pure
+    // arithmetic on plain-old-data members; no Qt-widget access.
+    return i2f((**this)->atomicValue());
   }
 
   void FSliderHandle::operator=(const std::string &s){
