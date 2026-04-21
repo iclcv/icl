@@ -13,6 +13,15 @@
 #include <icl/geom/Material.h>
 #include <icl/qt/DrawWidget3D.h>
 #include <icl/core/Img.h>
+
+#ifdef ICL_HAVE_OPENGL
+#ifdef ICL_SYSTEM_APPLE
+#include <OpenGL/gl3.h>
+#else
+#include <GL/glew.h>
+#endif
+#endif
+
 #include <algorithm>
 #include <cmath>
 
@@ -114,10 +123,32 @@ namespace icl::geom2 {
     if (cameraIndex < 0 || cameraIndex >= (int)m_data->cameras.size()) return;
 
     const auto &cam = m_data->cameras[cameraIndex];
+
+    // Compute letterbox viewport to preserve camera aspect ratio
+    GLint widgetVP[4];
+    glGetIntegerv(GL_VIEWPORT, widgetVP);
+    int ww = widgetVP[2], wh = widgetVP[3];
+
+    const utils::Size &chip = cam.getRenderParams().chipSize;
+    float camAR = (float)chip.width / chip.height;
+    float widgetAR = (float)ww / std::max(wh, 1);
+    int vpX = widgetVP[0], vpY = widgetVP[1], vpW = ww, vpH = wh;
+    if (widgetAR > camAR) {
+      vpW = (int)(wh * camAR);
+      vpX += (ww - vpW) / 2;
+    } else {
+      vpH = (int)(ww / camAR);
+      vpY += (wh - vpH) / 2;
+    }
+    glViewport(vpX, vpY, vpW, vpH);
+
     Mat viewGL = cam.getCSTransformationMatrixGL();
     Mat projGL = cam.getProjectionMatrixGL();
 
     m_data->renderer.render(m_data->objects, viewGL, projGL);
+
+    // Restore original viewport
+    glViewport(widgetVP[0], widgetVP[1], widgetVP[2], widgetVP[3]);
   }
 
   // GL callback for ICLQt integration

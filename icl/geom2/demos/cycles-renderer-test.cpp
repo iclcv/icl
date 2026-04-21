@@ -46,12 +46,14 @@ int main(int argc, const char **argv) {
   keyLight->setColor(GeomColor(255, 250, 240, 255));
   keyLight->setIntensity(1.0f);
   keyLight->translate(-300, 400, -100);
+  keyLight->setShadowEnabled(true);
   scene.addLight(keyLight);
 
   auto fillLight = std::make_shared<LightNode>();
   fillLight->setColor(GeomColor(180, 200, 220, 255));
   fillLight->setIntensity(1.0f);
   fillLight->translate(400, 300, -200);
+  fillLight->setShadowEnabled(true);
   scene.addLight(fillLight);
 
   // Ground plane

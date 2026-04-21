@@ -88,10 +88,25 @@ uniform vec2 uScreenSize;
 
 uniform int uDebugMode;
 
+// Per-light shadow: slot index into shadow map array (-1 = no shadow)
+uniform int uLightShadowSlot[MAX_LIGHTS];
+uniform mat4 uShadowMatrix[4];
+uniform sampler2DShadow uShadowMap0;
+uniform sampler2DShadow uShadowMap1;
+uniform sampler2DShadow uShadowMap2;
+uniform sampler2DShadow uShadowMap3;
+
 in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
 out vec4 FragColor;
+
+float sampleShadow(int slot, vec3 coord) {
+    if (slot == 0) return texture(uShadowMap0, coord);
+    if (slot == 1) return texture(uShadowMap1, coord);
+    if (slot == 2) return texture(uShadowMap2, coord);
+    return texture(uShadowMap3, coord);
+}
 
 // Approximate sky sampling for environment reflections (matches Sky defaults)
 vec3 sampleSky(vec3 dir) {
@@ -317,11 +332,23 @@ void main() {
         float NdotL = max(dot(N, L), 0.0);
         float NdotH = max(dot(N, H), 0.0);
 
+        // Per-light shadow lookup
+        float shadow = 1.0;
+        int slot = uLightShadowSlot[i];
+        if (slot >= 0 && slot < 4) {
+            vec4 sc4 = uShadowMatrix[slot] * vec4(vWorldPos, 1.0);
+            vec3 sc = sc4.xyz / sc4.w;
+            sc = sc * 0.5 + 0.5;
+            if (sc.x >= 0.0 && sc.x <= 1.0 && sc.y >= 0.0 && sc.y <= 1.0) {
+                shadow = sampleShadow(slot, vec3(sc.xy, sc.z - 0.0005));
+            }
+        }
+
         vec3 diffuse = albedo * (1.0 - metallic) * NdotL;
         float specPow = pow(NdotH, shininess);
         vec3 specular = specColor * specPow;
 
-        color += uLightColor[i] * (diffuse + specular * NdotL);
+        color += shadow * uLightColor[i] * (diffuse + specular * NdotL);
     }
 
     // Fallback: if no lights, use a default directional light
@@ -394,6 +421,23 @@ void main() {
     vec4 c = texture(uBlitTex, vUV);
     FragColor = vec4(c.rgb, c.a * uAlpha);
 }
+)";
+
+  // ---- Shadow pass shaders (depth only) ----
+
+  static const char *SHADOW_VERT = R"(
+#version 410 core
+layout(location = 0) in vec3 aPosition;
+uniform mat4 uModelMatrix;
+uniform mat4 uLightVP;
+void main() {
+    gl_Position = uLightVP * uModelMatrix * vec4(aPosition, 1.0);
+}
+)";
+
+  static const char *SHADOW_FRAG = R"(
+#version 410 core
+void main() { }
 )";
 
   // ---- Geometry Cache ----
@@ -620,6 +664,8 @@ void main() {
   struct LightInfo {
     float pos[3];
     float color[3];
+    bool shadowEnabled = false;
+    int sceneLightIdx = -1;   // index in traversal order
   };
 
   struct Renderer::Data {
@@ -652,6 +698,23 @@ void main() {
     GLint locSSREnabled = -1, locPrevColorMap = -1, locPrevDepthMap = -1;
     GLint locPrevVP = -1, locScreenSize = -1;
     GLint locPrevView = -1, locPrevProjection = -1, locPrevInvProjection = -1;
+
+    // Shadow uniforms in PBR shader
+    GLint locLightShadowSlot[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
+    GLint locShadowMatrix[4] = {-1,-1,-1,-1};
+    GLint locShadowMap[4] = {-1,-1,-1,-1};
+
+    // Shadow maps (up to 4 shadow-casting lights)
+    static const int MAX_SHADOWS = 4;
+    GLuint shadowFBO[4] = {};
+    GLuint shadowTex[4] = {};
+    int shadowMapSize = 2048;
+    bool shadowsEnabled = true;
+
+    // Shadow depth program
+    GLuint shadowProgram = 0;
+    GLint shadowLocModelMatrix = -1;
+    GLint shadowLocLightVP = -1;
 
     // Debug mode
     int debugMode = 0;
@@ -780,12 +843,35 @@ void main() {
   // ---- Renderer implementation ----
 
   Renderer::Renderer() : m_data(std::make_unique<Data>()) {}
-  Renderer::~Renderer() = default;
+
+  Renderer::~Renderer() {
+    if (m_data->pbrProgram) glDeleteProgram(m_data->pbrProgram);
+    if (m_data->unlitProgram) glDeleteProgram(m_data->unlitProgram);
+    if (m_data->blitProgram) glDeleteProgram(m_data->blitProgram);
+    if (m_data->shadowProgram) glDeleteProgram(m_data->shadowProgram);
+    for (int i = 0; i < Data::MAX_SHADOWS; i++) {
+      if (m_data->shadowFBO[i]) glDeleteFramebuffers(1, &m_data->shadowFBO[i]);
+      if (m_data->shadowTex[i]) glDeleteTextures(1, &m_data->shadowTex[i]);
+    }
+    for (int i = 0; i < 2; i++) {
+      if (m_data->ssrFBO[i]) glDeleteFramebuffers(1, &m_data->ssrFBO[i]);
+      if (m_data->ssrColorTex[i]) glDeleteTextures(1, &m_data->ssrColorTex[i]);
+      if (m_data->ssrDepthTex[i]) glDeleteTextures(1, &m_data->ssrDepthTex[i]);
+    }
+    if (m_data->quadVAO) glDeleteVertexArrays(1, &m_data->quadVAO);
+    if (m_data->quadVBO) glDeleteBuffers(1, &m_data->quadVBO);
+    // Prevent unique_ptr from double-deleting GL resources
+    m_data->pbrProgram = 0;
+    m_data->unlitProgram = 0;
+    m_data->blitProgram = 0;
+    m_data->shadowProgram = 0;
+  }
 
   void Renderer::setExposure(float e) { m_data->exposure = e; }
   void Renderer::setAmbient(float a) { m_data->ambient = a; }
   void Renderer::setOverlayAlpha(float a) { m_data->overlayAlpha = a; }
   void Renderer::setSSREnabled(bool e) { m_data->ssrEnabled = e; }
+  void Renderer::setShadowsEnabled(bool e) { m_data->shadowsEnabled = e; }
   void Renderer::setDebugMode(int mode) { m_data->debugMode = mode; }
   void Renderer::invalidateCache() {
     m_data->cache.clear();
@@ -871,8 +957,83 @@ void main() {
     if (vs) glDeleteShader(vs);
     if (fs) glDeleteShader(fs);
 
+    // Shadow shader
+    {
+      GLuint svs = compileShader(GL_VERTEX_SHADER, SHADOW_VERT);
+      GLuint sfs = compileShader(GL_FRAGMENT_SHADER, SHADOW_FRAG);
+      if (svs && sfs) {
+        m_data->shadowProgram = linkProgram(svs, sfs);
+        m_data->shadowLocModelMatrix = glGetUniformLocation(m_data->shadowProgram, "uModelMatrix");
+        m_data->shadowLocLightVP = glGetUniformLocation(m_data->shadowProgram, "uLightVP");
+      }
+      if (svs) glDeleteShader(svs);
+      if (sfs) glDeleteShader(sfs);
+    }
+
+    // Shadow FBOs + depth textures
+    if (m_data->shadowProgram) {
+      int sz = m_data->shadowMapSize;
+      float borderColor[] = {1, 1, 1, 1};
+      for (int i = 0; i < Data::MAX_SHADOWS; i++) {
+        glGenTextures(1, &m_data->shadowTex[i]);
+        glBindTexture(GL_TEXTURE_2D, m_data->shadowTex[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, sz, sz, 0,
+                     GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glGenFramebuffers(1, &m_data->shadowFBO[i]);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_data->shadowFBO[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                               GL_TEXTURE_2D, m_data->shadowTex[i], 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+        GLenum fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (fbStatus != GL_FRAMEBUFFER_COMPLETE)
+          fprintf(stderr, "[geom2::Renderer] Shadow FBO %d incomplete: 0x%x\n", i, fbStatus);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      }
+      fprintf(stderr, "[geom2::Renderer] %d shadow maps (%dx%d) ready\n", Data::MAX_SHADOWS, sz, sz);
+    }
+
+    // Cache shadow-related uniform locations in PBR shader
     if (m_data->pbrProgram) {
-      fprintf(stderr, "[geom2::Renderer] Shaders compiled OK\n");
+      for (int i = 0; i < 8; i++) {
+        char name[48];
+        snprintf(name, sizeof(name), "uLightShadowSlot[%d]", i);
+        m_data->locLightShadowSlot[i] = glGetUniformLocation(m_data->pbrProgram, name);
+      }
+      for (int i = 0; i < 4; i++) {
+        char name[48];
+        snprintf(name, sizeof(name), "uShadowMatrix[%d]", i);
+        m_data->locShadowMatrix[i] = glGetUniformLocation(m_data->pbrProgram, name);
+      }
+      m_data->locShadowMap[0] = glGetUniformLocation(m_data->pbrProgram, "uShadowMap0");
+      m_data->locShadowMap[1] = glGetUniformLocation(m_data->pbrProgram, "uShadowMap1");
+      m_data->locShadowMap[2] = glGetUniformLocation(m_data->pbrProgram, "uShadowMap2");
+      m_data->locShadowMap[3] = glGetUniformLocation(m_data->pbrProgram, "uShadowMap3");
+
+      // Initialize shadow uniforms to safe defaults (all shadows disabled)
+      glUseProgram(m_data->pbrProgram);
+      for (int i = 0; i < 8; i++)
+        if (m_data->locLightShadowSlot[i] >= 0)
+          glUniform1i(m_data->locLightShadowSlot[i], -1);
+      for (int i = 0; i < 4; i++)
+        if (m_data->locShadowMap[i] >= 0)
+          glUniform1i(m_data->locShadowMap[i], 5 + i);  // texture units 5-8
+      glUseProgram(0);
+    }
+
+    if (m_data->pbrProgram) {
+      fprintf(stderr, "[geom2::Renderer] Shaders compiled OK (shadow locs: %d %d %d %d)\n",
+              m_data->locShadowMap[0], m_data->locShadowMap[1],
+              m_data->locShadowMap[2], m_data->locShadowMap[3]);
     }
   }
 
@@ -916,14 +1077,87 @@ void main() {
     if (!node || !node->isVisible()) return;
     if (auto *light = dynamic_cast<LightNode*>(node)) {
       Mat t = light->getTransformation(true);
-      GeomColor c = light->getColor() * (1.0f / 255.0f);
+      GeomColor c = light->getColor();
+      // Normalize: if any channel > 1, assume legacy 0-255 convention
+      if (c[0] > 1.01f || c[1] > 1.01f || c[2] > 1.01f)
+        c = c * (1.0f / 255.0f);
       float intensity = light->getIntensity();
+      int idx = (int)lights.size();
       lights.push_back({{t(0, 3), t(1, 3), t(2, 3)},
-                         {c[0]*intensity, c[1]*intensity, c[2]*intensity}});
+                         {c[0]*intensity, c[1]*intensity, c[2]*intensity},
+                         light->getShadowEnabled(), idx});
     }
     if (auto *group = dynamic_cast<GroupNode*>(node)) {
       for (int i = 0; i < group->getChildCount(); i++)
         collectLights(group->getChild(i), lights);
+    }
+  }
+
+  /// Build a light view-projection matrix from a LightNode's world transform.
+  /// The light looks along its local -Z axis (OpenGL convention).
+  static Mat buildLightVP(const LightInfo &li) {
+    // Light position
+    float ex = li.pos[0], ey = li.pos[1], ez = li.pos[2];
+
+    // Default: light looks toward origin. If already at origin, look along -Z.
+    float tx = 0, ty = 0, tz = 0;
+    float dx = tx - ex, dy = ty - ey, dz = tz - ez;
+    float dist = std::sqrt(dx*dx + dy*dy + dz*dz);
+    if (dist < 1.0f) {
+      tx = ex; ty = ey; tz = ez - 1000.0f;
+      dx = 0; dy = 0; dz = -1000.0f;
+      dist = 1000.0f;
+    }
+
+    // lookAt: z = normalize(eye - target), x = normalize(cross(up, z)), y = cross(z, x)
+    float zx = -dx/dist, zy = -dy/dist, zz = -dz/dist;
+    // up = (0,1,0) unless looking straight up/down
+    float upx = 0, upy = 1, upz = 0;
+    if (std::abs(zy) > 0.99f) { upx = 0; upy = 0; upz = -1; }
+    // x = cross(up, z)
+    float xx = upy*zz - upz*zy, xy = upz*zx - upx*zz, xz = upx*zy - upy*zx;
+    float xlen = std::sqrt(xx*xx + xy*xy + xz*xz);
+    xx /= xlen; xy /= xlen; xz /= xlen;
+    // y = cross(z, x)
+    float yx = zy*xz - zz*xy, yy = zz*xx - zx*xz, yz = zx*xy - zy*xx;
+
+    Mat view(xx, xy, xz, -(xx*ex + xy*ey + xz*ez),
+             yx, yy, yz, -(yx*ex + yy*ey + yz*ez),
+             zx, zy, zz, -(zx*ex + zy*ey + zz*ez),
+             0,  0,  0,  1);
+
+    // Perspective projection: 90° FOV, 1:1 aspect, near=10mm, far=50000mm
+    float n = 10.0f, f = 50000.0f;
+    float t = 1.0f;  // tan(45°) = 1
+    Mat proj(1/t, 0,   0,            0,
+             0,   1/t, 0,            0,
+             0,   0,   -(f+n)/(f-n), -2*f*n/(f-n),
+             0,   0,   -1,           0);
+
+    return proj * view;
+  }
+
+  void Renderer::renderNodeShadow(Node *node) {
+    if (!node || !node->isVisible()) return;
+    if (dynamic_cast<LightNode*>(node)) return;
+
+    if (auto *group = dynamic_cast<GroupNode*>(node)) {
+      for (int i = 0; i < group->getChildCount(); i++)
+        renderNodeShadow(group->getChild(i));
+    }
+    else if (auto *geom = dynamic_cast<GeometryNode*>(node)) {
+      auto &cache = m_data->cache[geom];
+      if (!cache) {
+        cache = std::make_unique<GeomCache>();
+        cache->build(geom);
+      }
+      if (cache->numTriIndices > 0) {
+        Mat modelMatrix = node->getTransformation(true);
+        setUniformMat4(m_data->shadowLocModelMatrix, modelMatrix);
+        glBindVertexArray(cache->triVao);
+        glDrawElements(GL_TRIANGLES, cache->numTriIndices, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+      }
     }
   }
 
@@ -940,6 +1174,55 @@ void main() {
     m_data->lights.clear();
     for (auto &node : nodes)
       collectLights(node.get(), m_data->lights);
+
+    // ---- Shadow passes (one per shadow-casting light, up to 4) ----
+    struct ShadowInfo { int lightIdx; Mat lightVP; };
+    ShadowInfo shadowInfos[4];
+    int numShadows = 0;
+    int lightToShadowSlot[8];
+    for (int i = 0; i < 8; i++) lightToShadowSlot[i] = -1;
+
+    if (m_data->shadowsEnabled && m_data->shadowProgram) {
+      int numLights = std::min((int)m_data->lights.size(), 8);
+      for (int i = 0; i < numLights && numShadows < Data::MAX_SHADOWS; i++) {
+        if (m_data->lights[i].shadowEnabled) {
+          shadowInfos[numShadows].lightIdx = i;
+          shadowInfos[numShadows].lightVP = buildLightVP(m_data->lights[i]);
+          lightToShadowSlot[i] = numShadows;
+          numShadows++;
+        }
+      }
+
+      if (numShadows > 0) {
+        GLint prevFBO = 0;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFBO);
+        GLint prevViewport[4];
+        glGetIntegerv(GL_VIEWPORT, prevViewport);
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(2.0f, 4.0f);
+
+        glUseProgram(m_data->shadowProgram);
+        int sz = m_data->shadowMapSize;
+
+        for (int s = 0; s < numShadows; s++) {
+          glBindFramebuffer(GL_FRAMEBUFFER, m_data->shadowFBO[s]);
+          glViewport(0, 0, sz, sz);
+          glClear(GL_DEPTH_BUFFER_BIT);
+          setUniformMat4(m_data->shadowLocLightVP, shadowInfos[s].lightVP);
+
+          for (auto &node : nodes)
+            renderNodeShadow(node.get());
+        }
+
+        glDisable(GL_POLYGON_OFFSET_FILL);
+        glBindFramebuffer(GL_FRAMEBUFFER, prevFBO);
+        glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+      }
+    }
 
     // SSR: get viewport, set up ping-pong FBOs
     GLint viewport[4];
@@ -990,12 +1273,24 @@ void main() {
     float camZ = -(viewMatrix(0, 2)*viewMatrix(0, 3) + viewMatrix(1, 2)*viewMatrix(1, 3) + viewMatrix(2, 2)*viewMatrix(2, 3));
     glUniform3f(m_data->locCameraPos, camX, camY, camZ);
 
-    // Upload lights
+    // Upload lights + shadow slot mapping
     int numLights = std::min((int)m_data->lights.size(), 8);
     glUniform1i(m_data->locNumLights, numLights);
     for (int i = 0; i < numLights; i++) {
       glUniform3fv(m_data->locLightPos[i], 1, m_data->lights[i].pos);
       glUniform3fv(m_data->locLightColor[i], 1, m_data->lights[i].color);
+      glUniform1i(m_data->locLightShadowSlot[i], lightToShadowSlot[i]);
+    }
+    // Clear unused light shadow slots
+    for (int i = numLights; i < 8; i++)
+      glUniform1i(m_data->locLightShadowSlot[i], -1);
+
+    // Bind shadow maps on texture units 5..8
+    for (int s = 0; s < numShadows; s++) {
+      glActiveTexture(GL_TEXTURE5 + s);
+      glBindTexture(GL_TEXTURE_2D, m_data->shadowTex[s]);
+      glUniform1i(m_data->locShadowMap[s], 5 + s);
+      setUniformMat4(m_data->locShadowMatrix[s], shadowInfos[s].lightVP);
     }
 
     // SSR: bind previous frame's textures for reading
@@ -1023,6 +1318,12 @@ void main() {
     // Render scene
     for (auto &node : nodes) {
       renderNode(node.get(), viewMatrix);
+    }
+
+    // Unbind shadow maps
+    for (int s = 0; s < numShadows; s++) {
+      glActiveTexture(GL_TEXTURE5 + s);
+      glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     // Unbind prev-frame SSR textures
@@ -1127,17 +1428,20 @@ void main() {
 
       // Billboard: cancel view rotation so quad always faces camera
       if (auto *text = dynamic_cast<TextNode*>(node); text && text->isBillboard()) {
-        // Extract world position from model matrix (row 3 in ICL row-major)
         float tx = modelMatrix(0, 3), ty = modelMatrix(1, 3), tz = modelMatrix(2, 3);
-        // Extract inverse view rotation (transpose of upper-left 3x3)
+        // Inverse view rotation = transpose of upper-left 3x3
         Mat bill = Mat::id();
         for (int i = 0; i < 3; i++)
           for (int j = 0; j < 3; j++)
             bill(j, i) = viewMatrix(i, j);
-        // Apply as: translate to world pos, then inverse-rotate
         bill(0, 3) = tx;
         bill(1, 3) = ty;
         bill(2, 3) = tz;
+        // ICL projection flips Y (image convention: Y-down). The text quad
+        // has Y-up vertices, so flip the billboard's local Y axis to match.
+        bill(0, 1) = -bill(0, 1);
+        bill(1, 1) = -bill(1, 1);
+        bill(2, 1) = -bill(2, 1);
         modelMatrix = bill;
       }
 

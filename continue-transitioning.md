@@ -87,10 +87,15 @@ only, not on presence of normals. Previously any geometry with normals
   size filter, alpha blur, scale-down factor, save PNG with transparency
 - Uses `executeInGUIThread()` for save dialog (blocking, from worker thread)
 
-**Shadow maps**:
-- Add `setShadowEnabled()` + shadow camera to `LightNode`
-- Port shadow depth pass from geom GLRenderer (4 shadow maps, 2048x2048)
-- Shadow sampling in PBR shader with PCF
+**Shadow maps** (DONE — Session 37):
+- `LightNode::setShadowEnabled()` was already in place
+- Shadow depth pass ported from geom GLRenderer (4 maps, 2048×2048, sampler2DShadow)
+- Shadow sampling in PBR shader with hardware PCF via `GL_COMPARE_REF_TO_TEXTURE`
+- Auto-computed light VP matrix from LightNode world transform (lookAt + 90° perspective)
+- `Renderer::setShadowsEnabled()` API added
+- Demos updated: geom2-hello + cycles-renderer-test both enable shadows
+- TODO: shadow camera direction/FOV controls on LightNode, PCF soft shadow taps,
+  directional light ortho projection, debug visualization mode for shadow maps
 
 **geom2 API cleanup**:
 - Scene2 getters: return references or shared_ptrs instead of raw pointers

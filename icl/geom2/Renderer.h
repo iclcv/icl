@@ -39,6 +39,9 @@ namespace icl::geom2 {
     /// Enable/disable screen-space reflections (default: true)
     void setSSREnabled(bool enabled);
 
+    /// Enable/disable shadow mapping (default: true)
+    void setShadowsEnabled(bool enabled);
+
     /// Set debug visualization mode
     /** 0=shaded (default), 1=normals, 2=albedo, 3=UVs, 4=lighting only,
         5=NdotL, 6=SSR confidence, 7=depth buffer, 8=SSR only */
@@ -53,6 +56,7 @@ namespace icl::geom2 {
 
     void ensureShaderCompiled();
     void renderNode(Node *node, const Mat &viewMatrix);
+    void renderNodeShadow(Node *node);
   };
 
 } // namespace icl::geom2

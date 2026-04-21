@@ -73,8 +73,9 @@ void init() {
   // Light
   auto light = std::make_shared<LightNode>(LightNode::Point);
   light->setColor(GeomColor(1.0f, 0.97f, 0.92f, 1.0f));
-  light->setIntensity(1.5f);
+  light->setIntensity(0.8f);
   light->translate(200, 150, 300);
+  light->setShadowEnabled(true);
   scene.addLight(light);
 
   // Text labels above each shape
