@@ -12,6 +12,8 @@
 #include <ICLGeom/Primitive.h>
 #include <ICLCore/Img.h>
 #include <ICLCore/CCFunctions.h>
+#include <algorithm>
+#include <vector>
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl3.h>
 #else
@@ -158,6 +160,11 @@ uniform sampler2D uEmissiveMap;
 uniform int uHasOcclusionMap;
 uniform sampler2D uOcclusionMap;
 uniform int uDebugMode;
+
+// Transmission / glass
+uniform float uTransmission;
+uniform float uIOR;
+uniform vec3  uAttenuationColor;
 
 // Screen-space reflections (previous-frame ping-pong)
 uniform int uSSREnabled;
@@ -430,7 +437,19 @@ void main() {
         FragColor = vec4(1.0 - ssrResult.a, ssrResult.a, 0.0, 1.0); return;
     }
 
-    FragColor = vec4(result, baseColor.a);
+    // Glass / transmission
+    if (uTransmission > 0.001) {
+        // Fresnel: IOR-based F0, Schlick approximation
+        float f0 = pow((uIOR - 1.0) / (uIOR + 1.0), 2.0);
+        float fresnel = f0 + (1.0 - f0) * pow(1.0 - NdotV, 5.0);
+        // alpha = how opaque: Fresnel reflections stay, rest transmits
+        float alpha = fresnel + (1.0 - fresnel) * (1.0 - uTransmission);
+        // Tint specular/env by attenuation color for colored glass
+        result *= mix(uAttenuationColor, vec3(1.0), fresnel);
+        FragColor = vec4(result, alpha);
+    } else {
+        FragColor = vec4(result, baseColor.a);
+    }
 }
 )";
 
@@ -719,6 +738,9 @@ struct SceneRendererGL::Data {
   GLint locPrevVP = -1;
   GLint locScreenSize = -1;
   GLint locDebugMode = -1;
+  GLint locTransmission = -1;
+  GLint locIOR = -1;
+  GLint locAttenuationColor = -1;
   GLint locLightShadowSlot[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
   GLint locShadowMatrix[4] = {-1,-1,-1,-1};
   GLint locShadowMap[4] = {-1,-1,-1,-1};  // uShadowMap0..3
@@ -759,6 +781,9 @@ struct SceneRendererGL::Data {
     locEnvGround = glGetUniformLocation(program, "uEnvGround");
     locEnvSharpness = glGetUniformLocation(program, "uEnvSharpness");
     locDebugMode = glGetUniformLocation(program, "uDebugMode");
+    locTransmission = glGetUniformLocation(program, "uTransmission");
+    locIOR = glGetUniformLocation(program, "uIOR");
+    locAttenuationColor = glGetUniformLocation(program, "uAttenuationColor");
     for (int i = 0; i < 8; i++) {
       char name[48];
       snprintf(name, sizeof(name), "uLightShadowSlot[%d]", i);
@@ -1043,6 +1068,8 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
       for (int i = 0; i < scene.getObjectCount(); i++) {
         const SceneObject *obj = scene.getObject(i);
         if (!obj->isVisible()) continue;
+        auto mat = obj->getMaterial();
+        if (mat && mat->isTransmissive()) continue;  // glass doesn't cast opaque shadows
         renderObjectShadow(obj);
       }
     }
@@ -1189,10 +1216,42 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   }
   glUniform1i(m_data->locNumLights, numLights);
 
+  // Pass 1: opaque objects
   for (int i = 0; i < scene.getObjectCount(); i++) {
     const SceneObject *obj = scene.getObject(i);
     if (!obj->isVisible()) continue;
+    auto mat = obj->getMaterial();
+    if (mat && mat->isTransmissive()) continue;
     renderObject(obj, viewGL);
+  }
+
+  // Pass 2: transparent objects (back-to-front sorted)
+  {
+    struct TransObj { const SceneObject *obj; float dist; };
+    std::vector<TransObj> transparents;
+    Vec camPos = cam.getPosition();
+    for (int i = 0; i < scene.getObjectCount(); i++) {
+      const SceneObject *obj = scene.getObject(i);
+      if (!obj->isVisible()) continue;
+      auto mat = obj->getMaterial();
+      if (!mat || !mat->isTransmissive()) continue;
+      Mat T = obj->getTransformation(true);
+      float dx = T(3,0) - camPos[0], dy = T(3,1) - camPos[1], dz = T(3,2) - camPos[2];
+      transparents.push_back({obj, dx*dx + dy*dy + dz*dz});
+    }
+    std::sort(transparents.begin(), transparents.end(),
+              [](const TransObj &a, const TransObj &b) { return a.dist > b.dist; });
+
+    if (!transparents.empty()) {
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glDepthMask(GL_FALSE);
+      for (auto &t : transparents) {
+        renderObject(t.obj, viewGL);
+      }
+      glDepthMask(GL_TRUE);
+      glDisable(GL_BLEND);
+    }
   }
 
   for (int s = 0; s < numShadows; s++) {
@@ -1243,14 +1302,20 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
                 mat->baseColor[2], mat->baseColor[3]);
     glUniform1f(m_data->locMetallic, mat->metallic);
     glUniform1f(m_data->locRoughness, mat->roughness);
-    // Pass emissive factor always (shader uses it as multiplier for emissive map)
     glUniform4f(m_data->locEmissive, mat->emissive[0], mat->emissive[1],
                 mat->emissive[2], 0);
+    glUniform1f(m_data->locTransmission, mat->transmission);
+    glUniform1f(m_data->locIOR, mat->ior);
+    glUniform3f(m_data->locAttenuationColor,
+                mat->attenuationColor[0], mat->attenuationColor[1], mat->attenuationColor[2]);
   } else {
     glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
     glUniform1f(m_data->locMetallic, 0.0f);
     glUniform1f(m_data->locRoughness, 0.5f);
     glUniform4f(m_data->locEmissive, 0, 0, 0, 0);
+    glUniform1f(m_data->locTransmission, 0.0f);
+    glUniform1f(m_data->locIOR, 1.5f);
+    glUniform3f(m_data->locAttenuationColor, 1.0f, 1.0f, 1.0f);
   }
 
   // Texture binding (units 0, 5, 6 — units 1-4 reserved for shadow maps)

@@ -146,14 +146,40 @@ static std::shared_ptr<Material> convertMaterial(const cgltf_material *gmat,
     mat->emissiveMap = decodeImage(gmat->emissive_texture.texture->image, data, basePath);
   }
 
+  // KHR_materials_transmission
+  if (gmat->has_transmission) {
+    mat->transmission = gmat->transmission.transmission_factor;
+  }
+
+  // KHR_materials_ior
+  if (gmat->has_ior) {
+    mat->ior = gmat->ior.ior;
+  }
+
+  // KHR_materials_volume (attenuation)
+  if (gmat->has_volume) {
+    mat->thicknessFactor = gmat->volume.thickness_factor;
+    mat->attenuationColor = GeomColor(
+      gmat->volume.attenuation_color[0],
+      gmat->volume.attenuation_color[1],
+      gmat->volume.attenuation_color[2], 1.0f);
+    mat->attenuationDistance = gmat->volume.attenuation_distance;
+  }
+
   if (gmat->name && gmat->name[0]) {
     mat->name = gmat->name;
   }
 
   fprintf(stderr, "  [material] '%s': baseColor=(%.2f,%.2f,%.2f,%.2f) metallic=%.2f roughness=%.2f"
-          " maps: base=%d normal=%d mr=%d occ=%d emissive=%d\n",
+          " transmission=%.2f ior=%.2f",
           mat->name.c_str(), mat->baseColor[0], mat->baseColor[1], mat->baseColor[2], mat->baseColor[3],
-          mat->metallic, mat->roughness,
+          mat->metallic, mat->roughness, mat->transmission, mat->ior);
+  if (mat->attenuationDistance > 0.0f) {
+    fprintf(stderr, " volume: attenColor=(%.2f,%.2f,%.2f) attenDist=%.4f thick=%.4f",
+            mat->attenuationColor[0], mat->attenuationColor[1], mat->attenuationColor[2],
+            mat->attenuationDistance, mat->thicknessFactor);
+  }
+  fprintf(stderr, " maps: base=%d normal=%d mr=%d occ=%d emissive=%d\n",
           (bool)mat->baseColorMap, (bool)mat->normalMap, (bool)mat->metallicRoughnessMap,
           (bool)mat->occlusionMap, (bool)mat->emissiveMap);
 

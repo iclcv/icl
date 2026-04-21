@@ -41,6 +41,17 @@ namespace icl::geom {
     float reflectivity = 0.0f;      ///< explicit mirror reflections (raytracing)
     GeomColor emissive{0,0,0,1};    ///< self-illumination in [0,1]
 
+    // -- Transmission / glass (glTF KHR_materials_transmission + ior + volume) --
+
+    float transmission = 0.0f;            ///< 0 = opaque, 1 = fully transmissive
+    float ior = 1.5f;                     ///< index of refraction (glTF default)
+    GeomColor attenuationColor{1,1,1,1};  ///< volume absorption tint (white = none)
+    float attenuationDistance = 0.0f;     ///< Beer-Lambert distance (0 = no attenuation)
+    float thicknessFactor = 0.0f;         ///< thin-wall thickness for volume
+
+    /// Returns true if this material has glass/transmission behavior
+    bool isTransmissive() const { return transmission > 0.001f; }
+
     // -- Optional texture maps (as Image for portability and value semantics) --
 
     core::Image baseColorMap;          ///< albedo texture (RGB/RGBA)

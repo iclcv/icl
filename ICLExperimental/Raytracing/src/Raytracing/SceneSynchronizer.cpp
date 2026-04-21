@@ -214,8 +214,51 @@ static Shader *createPrincipledShader(ccl::Scene *scene, const geom::Material *m
     }
   }
 
-  graph->connect(surfaceNode->output("BSDF"),
-                 graph->output()->input("Surface"));
+  // Transmission: glTF spec defines transmission roughness as always smooth (0),
+  // separate from surface roughness. Cycles' PrincipledBsdf applies roughness to
+  // both surface and transmission uniformly, so we use a MixClosure instead:
+  //   mix(PrincipledBsdf, GlassBsdf(roughness=0), transmission_factor)
+  if (mat->isTransmissive()) {
+    auto *glass = graph->create_node<GlassBsdfNode>();
+    glass->set_roughness(0.0f);
+    glass->set_IOR(mat->ior);
+    glass->set_color(make_float3(mat->baseColor[0], mat->baseColor[1], mat->baseColor[2]));
+    // Share the base color texture with the glass node if present
+    if (!mat->baseColorMap.isNull()) {
+      auto *bcInput = bsdf->input("Base Color");
+      if (bcInput && bcInput->link) {
+        graph->connect(bcInput->link, glass->input("Color"));
+      }
+    }
+    // Share normal map with glass node
+    if (!mat->normalMap.isNull()) {
+      auto *nInput = bsdf->input("Normal");
+      if (nInput && nInput->link) {
+        graph->connect(nInput->link, glass->input("Normal"));
+      }
+    }
+
+    auto *mix = graph->create_node<MixClosureNode>();
+    mix->set_fac(mat->transmission);
+    graph->connect(surfaceNode->output("BSDF"), mix->input("Closure1"));
+    graph->connect(glass->output("BSDF"), mix->input("Closure2"));
+    graph->connect(mix->output("Closure"), graph->output()->input("Surface"));
+  } else {
+    graph->connect(surfaceNode->output("BSDF"),
+                   graph->output()->input("Surface"));
+  }
+
+  // Volume absorption for colored glass (KHR_materials_volume)
+  // Cycles AbsorptionVolumeNode: absorption = (1 - Color) * Density
+  // glTF spec: attenuationColor is the color light becomes after attenuationDistance
+  if (mat->isTransmissive() && mat->attenuationDistance > 0.0f
+      && mat->attenuationDistance < 1e10f) {
+    auto *absNode = graph->create_node<AbsorptionVolumeNode>();
+    absNode->set_color(make_float3(
+      mat->attenuationColor[0], mat->attenuationColor[1], mat->attenuationColor[2]));
+    absNode->set_density(1.0f / mat->attenuationDistance);
+    graph->connect(absNode->output("Volume"), graph->output()->input("Volume"));
+  }
 
   shader->set_graph(unique_ptr<ShaderGraph>(graph));
   shader->tag_update(scene);

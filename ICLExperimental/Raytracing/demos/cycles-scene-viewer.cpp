@@ -421,6 +421,31 @@ static void setupScene() {
   scene.getLight(3).setDiffuse(GeomColor(220, 215, 210, 255));
   setupShadowCam(3, topLightPos);
 
+  // Optional emissive backlight panel for testing transmission
+  if (pa("-backlight")) {
+    float blSize = extent * 1.2f;
+    float blDist = extent * 0.8f;
+    auto panel = std::make_shared<SceneObject>();
+    panel->addVertex(Vec(cx - blSize, cy - blSize, cz + blDist, 1));
+    panel->addVertex(Vec(cx + blSize, cy - blSize, cz + blDist, 1));
+    panel->addVertex(Vec(cx + blSize, cy + blSize, cz + blDist, 1));
+    panel->addVertex(Vec(cx - blSize, cy + blSize, cz + blDist, 1));
+    panel->addNormal(Vec(0, 0, -1, 1));
+    panel->addNormal(Vec(0, 0, -1, 1));
+    panel->addNormal(Vec(0, 0, -1, 1));
+    panel->addNormal(Vec(0, 0, -1, 1));
+    panel->addTriangle(0, 1, 2, 0, 1, 2);
+    panel->addTriangle(0, 2, 3, 0, 2, 3);
+    auto mat = std::make_shared<Material>();
+    mat->baseColor = GeomColor(1, 1, 1, 1);
+    mat->emissive = GeomColor(5.0f, 5.0f, 5.0f, 1);
+    mat->roughness = 1.0f;
+    panel->setMaterial(mat);
+    scene.addObject(panel.get());
+    loadedObjects.push_back(panel);
+    fprintf(stderr, "Backlight panel at z=%.0f (%.0f x %.0f)\n", cz + blDist, blSize * 2, blSize * 2);
+  }
+
   // Sky/environment (shared between GL and Cycles renderers)
   std::string bgMode = pa("-background").as<std::string>();
   if (bgMode == "white") {
@@ -750,7 +775,7 @@ int main(int argc, char **argv) {
   }
 
   if (offscreen) {
-    pa_init(argc, argv, "-size(Size=800x600) -scene(...) -offscreen(string) -samples(int=16) -decimate(int) -rotate(string) -background(string=gradient)");
+    pa_init(argc, argv, "-size(Size=800x600) -scene(...) -offscreen(string) -samples(int=16) -decimate(int) -rotate(string) -background(string=gradient) -backlight");
     offscreen_render(offscreenFile);
     return 0;
   }
@@ -764,6 +789,6 @@ int main(int argc, char **argv) {
   QSurfaceFormat::setDefaultFormat(fmt);
 
   return ICLApp(argc, argv,
-    "-size(Size=1280x960) -scene(...) -decimate(int) -rotate(string) -background(string=gradient) -compare(string) -bg(int=100) -exp(int=100)",
+    "-size(Size=1280x960) -scene(...) -decimate(int) -rotate(string) -background(string=gradient) -compare(string) -bg(int=100) -exp(int=100) -backlight",
     init, run).exec();
 }
