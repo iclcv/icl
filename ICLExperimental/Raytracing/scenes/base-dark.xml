@@ -1,9 +1,0 @@
-<scene>
-  <!-- Dark environment: camera + dim ambient only (for testing area lights) -->
-  <camera pos="500 -400 350" dir="-0.6 0.5 -0.35" up="0 0 -1" res="640x480"/>
-  <light pos="200 -200 500" diffuse="255 245 220" ambient="10 10 10" scale="0.0"/>
-
-  <!-- Ground table (lighter for visibility) -->
-  <object type="cube" pos="0 0 -40" size="500" sx="1" sy="0.7" sz="0.04"
-          color="180 160 140"/>
-</scene>

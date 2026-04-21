@@ -1,7 +1,0 @@
-<scene>
-  <!-- Simple shadow test: one emissive sphere, one occluder cube -->
-  <object type="sphere" pos="0 0 100" radius="25"
-          color="255 240 200" emission="255 240 200" emissionIntensity="2.0"/>
-  <object type="cube" pos="-60 0 0" size="50" color="200 60 60"/>
-  <object type="cube" pos="70 50 -5" size="35" color="60 100 200"/>
-</scene>
