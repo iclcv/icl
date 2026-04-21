@@ -18,6 +18,7 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <Raytracing/CyclesRenderer.h>
 #include <Raytracing/GltfLoader.h>
+#include <ICLGeom/SceneRendererGL.h>
 
 #include <memory>
 #include <vector>
@@ -29,6 +30,7 @@ using namespace icl::geom;
 
 static Scene scene;
 static std::unique_ptr<icl::rt::CyclesRenderer> renderer;
+static std::unique_ptr<SceneRendererGL> glRenderer;
 static std::vector<std::shared_ptr<SceneObject>> loadedObjects;
 static std::vector<std::shared_ptr<Material>> originalMaterials;  // saved at load time
 static int numLoadedMeshes = 0;  // how many are actual meshes (not checker tiles)
@@ -433,12 +435,13 @@ void init() {
   renderer = std::make_unique<icl::rt::CyclesRenderer>(
       scene, icl::rt::RenderQuality::Preview);
   renderer->setSceneScale(1.0f);
+  glRenderer = std::make_unique<SceneRendererGL>();
 
   // GUI
   gui << (VSplit()
          << (HSplit()
             << Canvas().handle("draw").minSize(32, 24).label("Cycles")
-            << Canvas3D().handle("gl").minSize(32, 24).label("OpenGL"))
+            << Canvas3D().handle("gl").minSize(32, 24).label("OpenGL (modern)"))
          << (HBox()
             << Combo("!Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive").handle("material").label("Material").minSize(10,2)
             << Combo("!1,2,4,8,16").handle("initSamples").label("Steps/Frame").minSize(8,2)
@@ -451,6 +454,15 @@ void init() {
 
   gui["draw"].install(new MouseHandler(handleMouse));
   gui["gl"].install(new MouseHandler(handleMouse));
+
+  // Link GL canvas to modern renderer (once, not every frame)
+  struct ModernGLCallback : public ICLDrawWidget3D::GLCallback {
+    void draw(ICLDrawWidget3D *) override {
+      if (glRenderer) glRenderer->render(scene, 0);
+    }
+  };
+  DrawHandle3D gl = gui["gl"];
+  gl->link(new ModernGLCallback());
 }
 
 void run() {
@@ -545,7 +557,6 @@ void run() {
   draw->render();
 
   DrawHandle3D gl = gui["gl"];
-  gl->link(scene.getGLCallback(0));
   gl.render();
 
   gui["info"] = std::string(buf);

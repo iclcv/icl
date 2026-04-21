@@ -223,6 +223,17 @@ target_link_libraries(cycles-scene-viewer ICLRaytracing ICLQt)
 set_target_properties(cycles-scene-viewer PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# ---- GL renderer test (coordinate axes, legacy vs modern side by side) ----
+add_executable(gl-renderer-test demos/gl-renderer-test.cpp)
+target_include_directories(gl-renderer-test PRIVATE
+  ${ICL_MODULE_INCLUDE_DIRS}
+  ${CMAKE_BINARY_DIR}/src
+  src/
+)
+target_link_libraries(gl-renderer-test ICLGeom ICLQt)
+set_target_properties(gl-renderer-test PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # ---- Cycles link test (Phase 1) ----
 add_executable(cycles-link-test demos/cycles-link-test.cpp)
 target_include_directories(cycles-link-test PRIVATE
