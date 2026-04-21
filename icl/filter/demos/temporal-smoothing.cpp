@@ -12,8 +12,6 @@ VSplit gui;
 std::unique_ptr<MotionSensitiveTemporalSmoothing> smoothing;
 GenericGrabber grabber;
 
-void update();
-
 void init(){
   gui << Display().handle("image").minSize(32,24)
       << Display().handle("imageOut").minSize(32,24)
@@ -27,12 +25,10 @@ void init(){
 
   smoothing = std::make_unique<MotionSensitiveTemporalSmoothing>(nullValue, maxFilterSize);
   grabber.init(pa("-i"));
-
-  update();
 }
 
 
-void update(){
+void run(){
   static std::recursive_mutex mutex;
   std::scoped_lock<std::recursive_mutex> l(mutex);
 
@@ -56,10 +52,6 @@ void update(){
   std::cout << (endT-startT).toMilliSeconds() << " ms" << std::endl;
   imageOut = dst;
   image = src;
-}
-
-void run(){
-  update();
 }
 
 int main(int n, char **ppc){
