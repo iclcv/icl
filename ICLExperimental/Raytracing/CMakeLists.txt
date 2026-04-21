@@ -6,12 +6,14 @@ set(RT_SOURCES
   src/Raytracing/BVH.cpp
   src/Raytracing/backends/Cpu/CpuRTBackend.cpp
   src/Raytracing/SceneRaytracer.cpp
+  src/Raytracing/SceneLoader.cpp
   src/Raytracing/Upsampling.cpp
   src/Raytracing/Denoising.cpp
 )
 
 set(RT_HEADERS
   src/Raytracing/RaytracerTypes.h
+  src/Raytracing/SceneLoader.h
   src/Raytracing/RaytracerBackend.h
   src/Raytracing/GeometryExtractor.h
   src/Raytracing/BVH.h
@@ -111,6 +113,14 @@ target_include_directories(benchmark-raytracer PRIVATE
   ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src src/)
 target_link_libraries(benchmark-raytracer ICLRaytracing ICLQt)
 set_target_properties(benchmark-raytracer PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# ---- Offline renderer (for visual verification) ----
+add_executable(render-offline demos/render_offline.cpp)
+target_include_directories(render-offline PRIVATE
+  ${ICL_MODULE_INCLUDE_DIRS} ${CMAKE_BINARY_DIR}/src src/)
+target_link_libraries(render-offline ICLRaytracing ICLIO)
+set_target_properties(render-offline PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # ---- Headless test ----
