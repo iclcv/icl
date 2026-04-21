@@ -95,14 +95,14 @@ namespace icl::qt {
         if(y1 == y2) { hline(x1, x2, y1, color, A); return; }
 
         LineSampler ls(Rect(0, 0, w, h));
-        LineSampler::Result xys = ls.sample(Point(x1, y1), Point(x2, y2));
+        // Channel-outer: iterate each channel plane, then each pixel
         for(int c = 0; c < NC; ++c) {
           T *p = ch[c];
           float col = color[c];
-          for(int i = 0; i < xys.n; ++i) {
-            int idx = xys[i].x + xys[i].y * w;
+          ls.forEach(Point(x1, y1), Point(x2, y2), [&](int x, int y) {
+            int idx = x + y * w;
             p[idx] = static_cast<T>((1.f - A) * p[idx] + A * col);
-          }
+          });
         }
       }
 
