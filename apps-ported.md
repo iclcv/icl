@@ -3,7 +3,6 @@
 ## Trivial (header swap only)
 
 - filter/apps/color-segmentation.cpp
-- filter/apps/filter-array.cpp
 - filter/apps/local-thresh.cpp
 - filter/apps/rectify-image.cpp
 - geom/apps/compute-relative-camera-transform.cpp
@@ -50,6 +49,18 @@
 - cv/apps/lens-undistortion-calibration-UndistortionUtil.cpp — header swap only (Quick.h → Quick2.h)
 - cv/apps/lens-undistortion-calibration-opencv.cpp — header swap only
 - geom/apps/surf-based-object-tracking.cpp — `load<icl8u>()` → `icl::qt::load().as8u()`
+
+## Retired (superseded by the ICLFilter Configurable migration, Session 43)
+
+- filter/apps/filter-array.cpp — replaced by `icl-filter-playground -n N`
+  which chains N Prop-driven filter stages. See the Session 43 summary in
+  `continue-transitioning.md` for the full context.
+
+## Added this migration
+
+- filter/apps/filter-playground.cpp — unified app; every Configurable
+  UnaryOp appears in a combo with an auto-generated Prop panel. `-n N`
+  builds a pipeline of N chained stages.
 
 ## Also ported (library code, not apps/demos)
 

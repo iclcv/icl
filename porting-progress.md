@@ -20,14 +20,14 @@
 | cv/demos/template-matching.cpp | :white_check_mark: Done | `cvt8u()` -> `.as8u()` |
 | cv/demos/vector-tracker.cpp | :white_check_mark: Done | Header swap |
 | filter/demos/affine-op.cpp | :white_check_mark: Done | `cvt8u()` -> `.as8u()` |
-| filter/demos/bilateral-filter-op.cpp | :white_check_mark: Done | Header swap |
-| filter/demos/canny-op.cpp | :white_check_mark: Done | Header swap |
-| filter/demos/convolution-op.cpp | :white_check_mark: Done | Header swap |
-| filter/demos/dither-op.cpp | :white_check_mark: Done | Header swap |
-| filter/demos/fft.cpp | :white_check_mark: Done | Header swap |
-| filter/demos/gabor-op.cpp | :white_check_mark: Done | Header swap |
-| filter/demos/temporal-smoothing.cpp | :white_check_mark: Done | Header swap |
-| filter/demos/warp-op.cpp | :white_check_mark: Done | `load()` -> `load().as32f()` |
+| filter/demos/bilateral-filter-op.cpp | :wastebasket: Retired | Replaced by icl-filter-playground (S43) |
+| filter/demos/canny-op.cpp | :wastebasket: Retired | Replaced by icl-filter-playground (S43) |
+| filter/demos/convolution-op.cpp | :wastebasket: Retired | Replaced by icl-filter-playground (S43) |
+| filter/demos/dither-op.cpp | :wastebasket: Retired | Replaced by icl-filter-playground (S43) |
+| filter/demos/fft.cpp | :wastebasket: Retired | Replaced by icl-filter-playground (S43) |
+| filter/demos/gabor-op.cpp | :wastebasket: Retired | Replaced by icl-filter-playground (S43); kernel preview via "image" property type |
+| filter/demos/temporal-smoothing.cpp | :wastebasket: Retired | Replaced by icl-filter-playground (S43) |
+| filter/demos/warp-op.cpp | :wastebasket: Retired | Replaced by icl-filter-playground (S43); was `load()` -> `load().as32f()` |
 | geom/demos/animated-grid.cpp | :white_check_mark: Done | Header swap |
 | geom/demos/camera.cpp | :white_check_mark: Done | Header swap |
 | geom/demos/cycles-overlay-viewer.cpp | :white_check_mark: Done | Header swap |
@@ -96,7 +96,8 @@
 | cv/apps/region-inspector.cpp | :white_check_mark: Done | `cvt8u()` -> `.as8u()` (name conflict) |
 | cv/apps/surf-detector.cpp | :white_check_mark: Done | `load<icl8u>()` -> `icl::qt::load().as8u()` |
 | filter/apps/color-segmentation.cpp | :white_check_mark: Done | Header swap |
-| filter/apps/filter-array.cpp | :white_check_mark: Done | Header swap |
+| filter/apps/filter-array.cpp | :wastebasket: Retired | Replaced by `icl-filter-playground -n N` (S43) |
+| filter/apps/filter-playground.cpp | :heavy_check_mark: New (S43) | Unified ICLFilter app — combo + auto Prop panel per stage |
 | filter/apps/local-thresh.cpp | :white_check_mark: Done | Header swap |
 | filter/apps/local-thresh-batch.cpp | :white_check_mark: Done | Non-GUI CLI split from local-thresh |
 | filter/apps/rectify-image.cpp | :white_check_mark: Done | Header swap; mouse install fix + Hartley-normalized homography |
@@ -175,13 +176,19 @@
 
 ## Summary
 
-| Category | Done | TODO | Removed/Split | N/A | Total |
-|----------|------|------|---------------|-----|-------|
-| Demos | 72 | 1 | 4 | 3 | 80 |
-| Apps | 42 | 0 | 0 | 7 | 49 |
-| Examples | 2 | 0 | 0 | 7 | 9 |
-| Library | 6 | 3 | 0 | 0 | 9 |
-| **Total** | **122** | **4** | **4** | **17** | **147** |
+| Category | Done | TODO | Retired | Removed/Split | N/A | Total |
+|----------|------|------|---------|---------------|-----|-------|
+| Demos | 64 | 1 | 8 | 4 | 3 | 80 |
+| Apps | 42 | 0 | 1 | 0 | 7 | 50 |
+| Examples | 2 | 0 | 0 | 0 | 7 | 9 |
+| Library | 6 | 3 | 0 | 0 | 0 | 9 |
+| **Total** | **114** | **4** | **9** | **4** | **17** | **148** |
+
+Apps total bumped by 1 for the new `filter-playground.cpp` (Session 43).
+
+Retirement column reflects the ICLFilter Configurable migration (Session
+43): 8 single-op demos and `filter-array` all covered by the unified
+`icl-filter-playground` app via auto-generated Prop UIs.
 
 Remaining TODO: cv/demos/signature-extraction.cpp (ImgQ),
 3 library files (Scene.cpp, FiducialDetectorPluginICL1.cpp, DrawWidget.h)

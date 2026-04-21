@@ -104,6 +104,10 @@ Copy semantics are shallow (shared_ptr). Use `deepCopy()` for independence, `det
 
 Filters are split into `UnaryOp` (one input image) and `BinaryOp` (two input images) base classes. `UnaryOp` has a deep inheritance hierarchy (see `ICLFilter/src/ICLFilter/`): `BaseAffineOp`, `NeighborhoodOp`, etc. The `apply()` method returns `Image` for convenience, or takes `Image &dst` for buffer reuse. The virtual dispatch mechanism uses the 2-arg `apply(const ImgBase*, ImgBase**)` internally.
 
+**Property-driven UI.** Every migrated `UnaryOp` (29 of them as of Session 43 — Canny, Convolution, Gabor, Bilateral, MSTS, Warp, Wiener, LocalThreshold, Morphological, Affine/Rotate/Scale/Translate/Mirror, Threshold, UnaryCompare/Logical/Arithmetical, LUT, FFT, Median, Dithering, Gradient, Chamfer, FixedConvert, IntegralImg, PseudoColor, WeightChannels/Sum) exposes its tunable parameters through `utils::Configurable` properties. The `qt::Prop(&op)` GUI component auto-renders sliders/menus/flags, so apps like `icl-filter-playground` work without per-op UI code. New UnaryOp subclasses should follow this pattern — `addProperty(...)` in the ctor, `registerCallback([this](const Property &p){...})` to sync internal caches, `setPropertyValue(name, v)` from typed setters. `UnaryOp::m_applyMutex` auto-wraps the callback; subclasses just `std::scoped_lock lock(m_applyMutex);` at the top of `apply()`.
+
+`icl-filter-playground -i <src> [-n N]` is the canonical way to exercise any migrated Op visually. Retired per-op demos (canny-op, fft, etc.) were all subsumed by it.
+
 ### Grabber Framework (ICLIO)
 
 `GenericGrabber` provides a plugin-based backend system for image acquisition. Backend and device are selected at runtime via string-based `-input` / `-i` program argument (e.g., `-i file image.png`, `-i dc 0`, `-i create lena`). Use `grabImage()` to get an `Image` value. Properties are set inline: `-i dc 0@gain=500`. The same plugin architecture exists for image output.

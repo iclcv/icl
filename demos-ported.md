@@ -12,13 +12,6 @@
 - cv/demos/region-detection.cpp
 - cv/demos/simple-blob-searcher.cpp
 - cv/demos/vector-tracker.cpp
-- filter/demos/bilateral-filter-op.cpp
-- filter/demos/canny-op.cpp
-- filter/demos/convolution-op.cpp
-- filter/demos/dither-op.cpp
-- filter/demos/fft.cpp
-- filter/demos/gabor-op.cpp
-- filter/demos/temporal-smoothing.cpp
 - geom/demos/animated-grid.cpp
 - geom/demos/camera.cpp
 - geom/demos/cycles-overlay-viewer.cpp
@@ -72,13 +65,33 @@
 - cv/demos/hough-line.cpp — `load<icl8u>()` → `icl::qt::load().as8u()` (name conflict with local `load` variable)
 - cv/demos/template-matching.cpp — `cvt8u(ones(...)*255)` → `(ones(...)*255).as8u()`
 - filter/demos/affine-op.cpp — `cvt8u(scale(create(...)))` → `scale(create(...)).as8u()`
-- filter/demos/warp-op.cpp — `load(pa("-w"))` → `load(pa("-w")).as32f()` (WarpOp needs Img32f)
 - geom/demos/swiss-ranger.cpp — `cvt(moBuf)` → `Image(*moBuf).as32f()`
 - geom/demos/texture-cube.cpp — `cvt8u(icl::qt::scale(...))` → `icl::qt::scale(...).as8u()` (name conflict with SceneObject::scale)
 - physics/demos/physics-maze-MazeObject.cpp — `Img32f topImage` → `Image topImage` (member + header change)
 - physics/demos/physics-paper.cpp — `load<icl8u>()` → `icl::qt::load().as8u()`
 - physics/demos/physics-paper3.cpp — `load<icl8u>()` → `icl::qt::load().as8u()`
 - qt/examples/model-fitting.cpp — header swap only
+
+## Retired (superseded by the ICLFilter Configurable migration, Session 43)
+
+All eight ICLFilter single-op demos below were ported to Quick2 in
+earlier sessions, then retired once every corresponding UnaryOp was
+migrated to Configurable properties. The unified `icl-filter-playground`
+app covers them via introspection (`Prop(&op)` auto-generates the UI).
+
+- filter/demos/bilateral-filter-op.cpp — was Quick2 header swap
+- filter/demos/canny-op.cpp — was Quick2 header swap
+- filter/demos/convolution-op.cpp — was Quick2 header swap
+- filter/demos/dither-op.cpp — was Quick2 header swap
+- filter/demos/fft.cpp — was Quick2 header swap
+- filter/demos/gabor-op.cpp — was Quick2 header swap
+- filter/demos/temporal-smoothing.cpp — was Quick2 header swap
+- filter/demos/warp-op.cpp — was `load()` → `load().as32f()`
+
+Kept: `filter/demos/affine-op.cpp` (interactive ROI-overlay + LIN/NN
+bench) and `filter/demos/pseudo-color.cpp` (6-stop custom gradient
+editor + XML load/save) — genuinely unique UX that doesn't fit the
+generic Prop pattern.
 
 ## NOT ported (use ImgQ with heavy pixel access)
 
