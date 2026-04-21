@@ -87,7 +87,7 @@ static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> &filters()
     {"WarpOp",           []{ return new WarpOp;           }},
     {"WeightChannelsOp", []{ return new WeightChannelsOp; }},
     {"WeightedSumOp",    []{ return new WeightedSumOp;    }},
-    {"WienerOp",         []{ return new WienerOp(Size(3,3)); }},
+    {"WienerOp",         []{ return new WienerOp(Size(5,5), 100.f); }},
   };
   return f;
 }

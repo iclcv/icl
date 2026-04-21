@@ -29,10 +29,16 @@ namespace icl::filter {
     : NeighborhoodOp(maskSize), ImageBackendDispatching(prototype()),
       m_fNoise(noise)
   {
-    addProperty("noise","range:slider","[0,100]:0.01",str(noise));
+    // Default range covers the useful span for 8u-gray inputs: 0 is a no-op
+    // (textbook Wiener with "no noise expected" returns src unchanged), ~100
+    // is moderate smoothing (σ≈10 gray levels), ~1000 is aggressive.
+    addProperty("noise","range:slider","[0,1000]:0.1",str(noise));
     addProperty("mask size.w","range:spinbox","[1,51]",str(maskSize.width));
     addProperty("mask size.h","range:spinbox","[1,51]",str(maskSize.height));
     registerCallback([this](const Property &p){
+      // Lock against the apply-side reader — mask size change between
+      // prepare() and backend dispatch is the failure mode.
+      std::scoped_lock lock(m_mutex);
       if(p.name == "noise") m_fNoise = parse<icl32f>(p.value);
       else if(p.name == "mask size.w" || p.name == "mask size.h"){
         setMask(Size(parse<int>(prop("mask size.w").value),
@@ -44,6 +50,9 @@ namespace icl::filter {
   void WienerOp::setNoise(icl32f noise){ setPropertyValue("noise", noise); }
 
   void WienerOp::apply(const Image &src, Image &dst) {
+    // Serialize prepare() + getMaskSize/Anchor/ROIOffset + backend dispatch
+    // against property callbacks that mutate the mask on another thread.
+    std::scoped_lock lock(m_mutex);
     if(!prepare(dst, src)) return;
     getSelector<WienerSig>(Op::apply).resolve(src)->apply(
       src, dst, getMaskSize(), getAnchor(), getROIOffset(), m_fNoise);

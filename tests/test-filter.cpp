@@ -13,6 +13,7 @@
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/DitheringOp.h>
 #include <icl/filter/LUTOp.h>
+#include <icl/filter/WienerOp.h>
 #include <icl/filter/IntegralImgOp.h>
 #include <icl/filter/ColorDistanceOp.h>
 #include <icl/filter/ColorSegmentationOp.h>
@@ -3099,4 +3100,54 @@ ICL_REGISTER_TEST("Filter.MSTS.getters", "getters return correct values") {
   op.setDifference(3);
   ICL_TEST_TRUE(op.getFilterSize() == 5);
   ICL_TEST_TRUE(op.getDifference() == 3);
+}
+
+// ---------- Wiener (C++ fallback) ----------
+
+ICL_REGISTER_TEST("Filter.WienerOp.uniform_preserved",
+                  "uniform input → uniform output (within rounding)") {
+  // Adaptive Wiener on a constant field: σ²=0 ≤ noise ⇒ dst = mean = src.
+  Img8u src(Size(32, 32), 1);
+  src.clear(-1, 128.f);
+  WienerOp op(Size(3, 3), 10.f);
+  op.setClipToROI(true);
+  Image out = op.apply(src);
+  Channel8u c = out.as8u()[0];
+  for(int y = 0; y < c.getHeight(); ++y){
+    for(int x = 0; x < c.getWidth(); ++x){
+      ICL_TEST_TRUE(std::abs(int(c(x,y)) - 128) <= 1);
+    }
+  }
+}
+
+ICL_REGISTER_TEST("Filter.WienerOp.edge_preserved",
+                  "sharp edge: Wiener stays close to src where variance is high") {
+  // Half-black / half-white image. Pixels far from the edge sit in uniform
+  // regions (var=0 ⇒ dst=mean=src). Pixels exactly on the edge see high local
+  // variance ⇒ output stays close to src.
+  Img8u src = Img8u::from(32, 32, 1, [](int x, int, int){ return x < 16 ? 0 : 255; });
+
+  WienerOp op(Size(3, 3), 5.f);
+  op.setClipToROI(true);
+  Image out = op.apply(src);
+  Channel8u c = out.as8u()[0];
+
+  // Spot-check: far-left pixel should be 0, far-right should be 255.
+  ICL_TEST_TRUE(c(1, 15) == 0);
+  ICL_TEST_TRUE(c(c.getWidth()-2, 15) == 255);
+}
+
+ICL_REGISTER_TEST("Filter.WienerOp.32f_float_path",
+                  "32f source routes through the C++ backend cleanly") {
+  Img32f src(Size(16, 16), 1);
+  src.clear(-1, 0.5f);
+  WienerOp op(Size(3, 3), 0.01f);
+  op.setClipToROI(true);
+  Image out = op.apply(src);
+  Channel32f c = out.as32f()[0];
+  for(int y = 0; y < c.getHeight(); ++y){
+    for(int x = 0; x < c.getWidth(); ++x){
+      ICL_TEST_TRUE(std::abs(c(x,y) - 0.5f) < 1e-4f);
+    }
+  }
 }
