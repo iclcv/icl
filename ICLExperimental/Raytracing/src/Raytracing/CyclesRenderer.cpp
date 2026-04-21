@@ -154,6 +154,7 @@ struct CyclesRenderer::Impl {
   std::thread managementThread;
   std::atomic<bool> running{false};
   std::atomic<int> activeCamIndex{0};
+  std::recursive_mutex renderMutex;  // protects render() state machine
 
   // Change detection
   float lastCamHash = 0;
@@ -269,6 +270,7 @@ CyclesRenderer::CyclesRenderer(CyclesRenderer &&) noexcept = default;
 CyclesRenderer &CyclesRenderer::operator=(CyclesRenderer &&) noexcept = default;
 
 void CyclesRenderer::render(int camIndex) {
+  std::lock_guard<std::recursive_mutex> lock(m_impl->renderMutex);
   m_impl->ensureInitialized();
   // Note: applyQualityToScene() is called inside fullReset() only,
   // not here — modifying the Cycles scene while the render thread
@@ -467,15 +469,21 @@ void CyclesRenderer::setResolutionScale(float scale) {
 }
 
 void CyclesRenderer::invalidateAll() {
+  std::lock_guard<std::recursive_mutex> lock(m_impl->renderMutex);
   m_impl->sync.invalidateAll();
+  m_impl->dirty = true;
 }
 
 void CyclesRenderer::invalidateTransforms() {
+  std::lock_guard<std::recursive_mutex> lock(m_impl->renderMutex);
   m_impl->sync.invalidateTransforms();
+  m_impl->dirty = true;
 }
 
 void CyclesRenderer::invalidateObject(geom::SceneObject *obj) {
+  std::lock_guard<std::recursive_mutex> lock(m_impl->renderMutex);
   m_impl->sync.invalidateObject(obj);
+  m_impl->dirty = true;
 }
 
 float CyclesRenderer::getProgress() const {
