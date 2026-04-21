@@ -1,6 +1,113 @@
 # ICL — Continuation Guide
 
-## Current State (Session 31 — Meson build system, directory restructure)
+## Current State (Session 32 — Material refactoring + geom2 scene graph)
+
+### Session 32 Summary (23 commits)
+
+Two major areas of work:
+
+#### A. Material & deprecated warning cleanup (geom module, 7 commits)
+
+**Material restructured** with lazy sub-structs:
+- `TextureMaps` behind `shared_ptr` (null for untextured objects, saves ~80 bytes)
+- `TransmissionParams` behind `shared_ptr` (null for opaque objects)
+- New fields: `lineColor`, `pointColor`, `pointSize`, `lineWidth`
+- Non-copyable with explicit `deepCopy()` returning `shared_ptr<Material>`
+- New factory: `fromColors(faceColor, wireColor)` for mixed face+wire colors
+
+**SceneObject copy semantics fixed:**
+- `operator=` deleted, `copy()` renamed to `deepCopy()`
+- Protected copy ctor preserved for subclass deepCopy()
+- Old `operator=` was buggy (missing material, reflectivity, emission)
+- All PointCloud subclasses updated: `copy()` → `deepCopy()` with override
+
+**GLRenderer line/point rendering:**
+- New unlit shader (GLSL 410) for GL_LINES + GL_POINTS
+- Separate VAOs in GLGeometryCache for lines and points
+- Lines and points now visible in GLRenderer (were silently dropped)
+
+**All 77 deprecated setColor/setShininess calls migrated** across 26 files.
+
+**Bugs fixed:**
+- Analytic sphere overlay offset: DemoScene auto-scale modified vertices
+  but not `m_sphereCenter`/`m_sphereRadius`. Fixed by updating sphere params
+  after transforms + adding `setSphereParams()` setter.
+
+#### B. geom2 — Clean scene graph module from scratch (16 commits)
+
+**Why:** SceneObject was a 940-line monolith (geometry + scene graph + materials +
+transforms + rendering + physics base). Every incremental refactor tangled in
+backward compatibility. geom2 is a greenfield design in `icl/geom2/` namespace
+`icl::geom2`, independent of ICLGeom.
+
+**Node hierarchy (clean separation of concerns):**
+```
+Node (abstract)              ← transform + visibility + name + locking. PIMPL'd.
+├── GroupNode                ← has children. No geometry. Pure container.
+├── GeometryNode (abstract)  ← read-only geometry + material (renderer interface)
+│   ├── MeshNode             ← mutable geometry leaf (addVertex, getVertices()&)
+│   ├── SphereNode           ← parametric sphere (no mutable vertices)
+│   ├── CuboidNode           ← parametric box
+│   ├── CylinderNode         ← parametric cylinder
+│   └── ConeNode             ← parametric cone
+├── LightNode                ← point/directional/spot, position from transform
+└── CoordinateFrameNode      ← GroupNode with 3 CuboidNode axes (R=X, G=Y, B=Z)
+```
+
+**Key design rules:**
+- GroupNode has children. Leaf nodes (MeshNode, SphereNode, LightNode) do not.
+- GeometryNode provides read-only const access for renderers.
+- MeshNode adds mutable access (for physics/dynamic geometry).
+- Parametric shapes inherit GeometryNode (NOT MeshNode) — no mutable vertex access.
+- All nodes PIMPL'd with `unique_ptr<Data>`, Rule of 5 (copy+move).
+- No raw pointer ownership. `shared_ptr` everywhere.
+- No display lists. No legacy GL. Core profile only.
+- `MeshNode::ingest(MeshData{...})` for zero-copy bulk geometry loading.
+
+**Components implemented:**
+- `Node.h/.cpp` — abstract base (~120 lines)
+- `GroupNode.h/.cpp` — children container (~80 lines)
+- `GeometryNode.h/.cpp` — read-only geometry + material (~230 lines)
+- `MeshNode.h/.cpp` — mutable geometry + `ingest()` (~120 lines)
+- `Primitive.h` — Line/Triangle/Quad as plain structs (~50 lines)
+- `SphereNode`, `CuboidNode`, `CylinderNode`, `ConeNode` — parametric shapes
+- `CoordinateFrameNode` — ported from geom's CoordinateFrameSceneObject
+- `LightNode` — point/directional/spot with color+intensity
+- `Renderer.h/.cpp` — GL 4.1 Core, PBR shader + unlit shader, multi-light (~530 lines)
+- `Scene2.h/.cpp` — scene manager with cameras, shared_ptr ownership, GL callback
+- `Loader.h/.cpp` — .obj + .glb/.gltf file loading via `ingest()`
+- `Raytracer.h`, `CyclesRenderer.h`, `SceneSynchronizer.h/.cpp` — Cycles scaffolding
+  (headers ready, .cpp adapted but not compiled — needs Cycles build wiring)
+- `PORTING.md` — geom → geom2 migration guide
+- `demos/geom2-hello.cpp` — working demo with all shape types + lighting
+
+**Total: 24 files, ~4800 lines, zero warnings.**
+
+**Material is shared** between geom and geom2 (`icl::geom::Material` used by both).
+
+### What's next for geom2
+
+Remaining items from PORTING.md:
+- **PointCloudNode** — replaces PointCloudObjectBase (important for CV visualization)
+- **Mouse interaction / picking** — hit testing against the scene graph
+- **Text primitives / billboard text** — needed for labels and debug overlays
+- **Texture primitives** — textured quads
+- **Cycles build wiring** — connect CyclesRenderer.cpp + SceneSynchronizer.cpp to Cycles
+  libraries in geom2/meson.build (headers and adapted .cpp are ready)
+- **ComplexCoordinateFrameNode** — cones + cylinders + text labels
+- **More demos** — file loading demo, interactive mouse demo
+
+### Build
+
+```bash
+meson setup build --buildtype=debug --wipe
+CCACHE_DISABLE=1 meson compile -C build -j16
+bin/geom2-hello-demo   # first geom2 visual demo
+```
+
+---
+
+## Previous State (Session 31 — Meson build system, directory restructure)
 
 ### Session 31 Summary
 
