@@ -668,7 +668,7 @@ namespace icl::qt {
       else if(newDevice == "xcfp") menu["auto-cap-filepattern"] = str("publisher-name");
       else if(newDevice == "xcfs") menu["auto-cap-filepattern"] = str("stream-name");
       else if(newDevice == "file") menu["auto-cap-filepattern"] = str("image_######.pnm");
-      else if(newDevice == "sm") menu["auto-cap-filepattern"] = str("id-string");
+      else if(newDevice == "ws") menu["auto-cap-filepattern"] = str("9090");
     }
   };
 
@@ -1253,12 +1253,12 @@ namespace icl::qt {
     std::string FILE = "file";
     std::string VIDEO = "video";
     std::string XCFP = "xcfp";
-    std::string SM = "sm";
+    std::string WS = "ws";
     if(data->outputCap){
       if(data->outputCap->deviceType == "file") FILE = "!"+FILE;
       else if(data->outputCap->deviceType == "video") VIDEO = "!"+VIDEO;
       else if(data->outputCap->deviceType == "xcfp") XCFP = "!"+XCFP;
-      else if(data->outputCap->deviceType == "sm") SM = "!"+SM;
+      else if(data->outputCap->deviceType == "ws") WS = "!"+WS;
     }
     std::string autoCapFP = data->outputCap ? data->outputCap->deviceInfo : "captured/image_####.ppm";
 
@@ -1270,7 +1270,7 @@ namespace icl::qt {
     autoCapGUI << ( HBox()
                     << Combo("image,frame buffer",!!autoCapFB).label("mode").handle("auto-cap-mode")
                     << Spinner(0,100,autoCapFS).label("frame skip").handle("auto-cap-frameskip")
-                    << Combo("file,video,xcfp,sm").label("dest.").handle("auto-cap-device")
+                    << Combo(FILE+","+VIDEO+","+XCFP+","+WS).label("dest.").handle("auto-cap-device")
                     << String(autoCapFP,200).label("output params").handle("auto-cap-filepattern")
                   )
                << ( HBox()

@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/SharedMemorySegment.h>
 #include <icl/io/ImageOutput.h>
 
 namespace icl::io {

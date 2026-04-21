@@ -201,7 +201,7 @@
     - <b>icl::SwissRangerGrabber</b> Grabber for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
     - <b>icl::VideoGrabber</b> Xine based video grabber (grabbing videos frame by frame) (needs libxine)
     - <b>icl::OpenCVVideoGrabber</b> OpenCV based video grabber (needs opencv 2)
-    - <b>icl::SharedMemoryGrabber</b> Uses QSharedMemory to grab images that were send via icl::SharedMemoryPublisher (needs Qt)
+    - <b>icl::WSGrabber</b> WebSocket-based grabber for receiving images from a icl::WSImageOutput publisher (needs Qt6Websockets) — replaced the retired SharedMemory backend
     - <b>icl::OpenCVCamGrabber</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
     - <b>icl::KinectGrabber</b> libfreenect based Grabber for Microsoft's Kinect Camera (supports color-, core::depth and IR-camera)
     - <b>icl::MyrmexGrabber</b> v4l2-based grabber for the Myrmex tactile device developed by Carsten Schürman

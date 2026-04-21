@@ -36,7 +36,9 @@ namespace icl{
       for(int i=0;i<3;++i){
         camIndices.push_back(num+i);
         this->scene->addCamera(cams2[i]);
-        outputs[i].reset(new GenericImageOutput("sm","sm="+str(i)));
+        // Each camera publishes on a distinct WS port (9090, 9091, …).
+        // Receivers attach via `-i ws ws://localhost:909N`.
+        outputs[i].reset(new GenericImageOutput("ws","ws="+str(9090+i)));
       }
     }else{
       outputs.resize(cams.size());
@@ -44,7 +46,9 @@ namespace icl{
       for(size_t i=0;i<cams.size();++i){
         camIndices.push_back(num+i);
         this->scene->addCamera(cams[i]);
-        outputs[i].reset(new GenericImageOutput("sm","sm="+str(i)));
+        // Each camera publishes on a distinct WS port (9090, 9091, …).
+        // Receivers attach via `-i ws ws://localhost:909N`.
+        outputs[i].reset(new GenericImageOutput("ws","ws="+str(9090+i)));
       }
 
     }
