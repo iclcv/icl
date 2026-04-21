@@ -32,6 +32,8 @@
 #include "util/unique_ptr.h"
 #include "kernel/types.h"
 
+#include <cmath>
+
 using namespace ccl;
 
 namespace icl::geom2 {
@@ -43,6 +45,7 @@ namespace icl::geom2 {
     if (node->hasTransformation(true)) {
       auto m = node->getTransformation(true);
       const float *d = m.data();
+      // ICL row-major 4x4 -> Cycles Transform (row-major 4x3, rows=x,y,z)
       tfm.x = make_float4(d[0], d[1], d[2], d[3] * scale);
       tfm.y = make_float4(d[4], d[5], d[6], d[7] * scale);
       tfm.z = make_float4(d[8], d[9], d[10], d[11] * scale);
@@ -53,26 +56,30 @@ namespace icl::geom2 {
   // ---- Material/shader creation ----
 
   static Shader *createDefaultShader(ccl::Scene *scene) {
-    auto *shader = scene->create_node<Shader>();
-    auto *graph = new ShaderGraph();
-    auto *bsdf = graph->create_node<PrincipledBsdfNode>();
+    Shader *shader = scene->create_node<Shader>();
+    ShaderGraph *graph = new ShaderGraph();
+
+    PrincipledBsdfNode *bsdf = graph->create_node<PrincipledBsdfNode>();
     bsdf->set_base_color(make_float3(0.8f, 0.8f, 0.8f));
     bsdf->set_roughness(0.5f);
+
     graph->connect(bsdf->output("BSDF"), graph->output()->input("Surface"));
+
     shader->set_graph(unique_ptr<ShaderGraph>(graph));
     shader->tag_update(scene);
     return shader;
   }
 
   static Shader *createPrincipledShader(ccl::Scene *scene, const geom::Material *mat) {
-    auto *shader = scene->create_node<Shader>();
-    auto *graph = new ShaderGraph();
-    auto *bsdf = graph->create_node<PrincipledBsdfNode>();
+    Shader *shader = scene->create_node<Shader>();
+    ShaderGraph *graph = new ShaderGraph();
 
+    PrincipledBsdfNode *bsdf = graph->create_node<PrincipledBsdfNode>();
     bsdf->set_base_color(make_float3(mat->baseColor[0], mat->baseColor[1], mat->baseColor[2]));
     bsdf->set_metallic(mat->metallic);
     bsdf->set_roughness(mat->roughness);
 
+    // Emissive
     float emL = mat->emissive[0] + mat->emissive[1] + mat->emissive[2];
     if (emL > 0.001f) {
       bsdf->set_emission_color(make_float3(mat->emissive[0], mat->emissive[1], mat->emissive[2]));
@@ -80,12 +87,17 @@ namespace icl::geom2 {
     }
 
     graph->connect(bsdf->output("BSDF"), graph->output()->input("Surface"));
+
     shader->set_graph(unique_ptr<ShaderGraph>(graph));
     shader->tag_update(scene);
     return shader;
   }
 
-  // ---- Tessellation: geom2 primitives → Cycles Mesh ----
+  // ---- Tessellation: geom2 primitives -> Cycles Mesh ----
+  //
+  // Follows the same pattern as the working geom SceneSynchronizer:
+  // resize_mesh(), fill via direct array access, set shader indices,
+  // then tag all modified arrays.
 
   static void tessellateToMesh(const GeometryNode *node, ccl::Mesh *mesh, float scale) {
     const auto &srcVerts = node->getVertices();
@@ -97,70 +109,180 @@ namespace icl::geom2 {
     int numTris = (int)node->getTriangles().size();
     numTris += (int)node->getQuads().size() * 2;
 
+    // Set vertices (applying scale)
     array<float3> P;
     for (const auto &v : srcVerts)
       P.push_back_slow(make_float3(v[0] * scale, v[1] * scale, v[2] * scale));
     mesh->set_verts(P);
 
-    array<float3> N;
+    // Allocate triangle storage
+    mesh->resize_mesh(srcVerts.size(), numTris);
+    int *triangles = mesh->get_triangles().data();
+    bool *smooth = mesh->get_smooth().data();
+
     bool hasNormals = !srcNormals.empty();
-    if (hasNormals) {
-      for (const auto &n : srcNormals)
-        N.push_back_slow(make_float3(n[0], n[1], n[2]));
-    }
+    auto mat = node->getMaterial();
+    bool useSmooth = hasNormals || (mat && mat->smoothShading);
+    int ti = 0;
 
-    // Build triangles
-    int numCorners = numTris * 3;
-    array<int> triangles(numCorners);
-    array<bool> smooth(numTris);
-    array<float3> vertexNormals;
-    if (hasNormals) vertexNormals.resize(numCorners);
-
-    int ti = 0, ci = 0;
     for (const auto &t : node->getTriangles()) {
-      triangles[ci] = t.v[0]; triangles[ci+1] = t.v[1]; triangles[ci+2] = t.v[2];
-      smooth[ti] = node->getSmoothShading();
-      if (hasNormals) {
-        for (int j = 0; j < 3; j++) {
-          int ni = t.n[j];
-          vertexNormals[ci+j] = (ni >= 0 && ni < (int)N.size()) ? N[ni] : make_float3(0,0,1);
-        }
-      }
-      ti++; ci += 3;
+      triangles[ti * 3 + 0] = t.v[0];
+      triangles[ti * 3 + 1] = t.v[1];
+      triangles[ti * 3 + 2] = t.v[2];
+      smooth[ti] = useSmooth;
+      mesh->get_shader()[ti] = 0;
+      ti++;
     }
     for (const auto &q : node->getQuads()) {
-      // Quad → 2 triangles
-      int vi[4] = {q.v[0], q.v[1], q.v[2], q.v[3]};
-      int ni[4] = {q.n[0], q.n[1], q.n[2], q.n[3]};
+      // Quad -> 2 triangles
+      triangles[ti * 3 + 0] = q.v[0];
+      triangles[ti * 3 + 1] = q.v[1];
+      triangles[ti * 3 + 2] = q.v[2];
+      smooth[ti] = useSmooth;
+      mesh->get_shader()[ti] = 0;
+      ti++;
 
-      triangles[ci] = vi[0]; triangles[ci+1] = vi[1]; triangles[ci+2] = vi[2];
-      smooth[ti] = node->getSmoothShading();
-      if (hasNormals) {
-        for (int j = 0; j < 3; j++) {
-          int idx = ni[j];
-          vertexNormals[ci+j] = (idx >= 0 && idx < (int)N.size()) ? N[idx] : make_float3(0,0,1);
-        }
-      }
-      ti++; ci += 3;
-
-      triangles[ci] = vi[0]; triangles[ci+1] = vi[2]; triangles[ci+2] = vi[3];
-      smooth[ti] = node->getSmoothShading();
-      if (hasNormals) {
-        int idx0 = ni[0], idx2 = ni[2], idx3 = ni[3];
-        vertexNormals[ci] = (idx0 >= 0 && idx0 < (int)N.size()) ? N[idx0] : make_float3(0,0,1);
-        vertexNormals[ci+1] = (idx2 >= 0 && idx2 < (int)N.size()) ? N[idx2] : make_float3(0,0,1);
-        vertexNormals[ci+2] = (idx3 >= 0 && idx3 < (int)N.size()) ? N[idx3] : make_float3(0,0,1);
-      }
-      ti++; ci += 3;
+      triangles[ti * 3 + 0] = q.v[0];
+      triangles[ti * 3 + 1] = q.v[2];
+      triangles[ti * 3 + 2] = q.v[3];
+      smooth[ti] = useSmooth;
+      mesh->get_shader()[ti] = 0;
+      ti++;
     }
 
-    mesh->set_triangles(triangles);
-    mesh->set_smooth(smooth);
-    // Cycles computes vertex normals from topology + smooth flags automatically.
-    // Shader assignment handled by syncMaterial().
+    // Tag mesh as modified so Cycles processes the new data.
+    mesh->tag_verts_modified();
+    mesh->tag_triangles_modified();
+    mesh->tag_shader_modified();
+    mesh->tag_smooth_modified();
   }
 
   // ---- SceneSynchronizer implementation ----
+
+  SceneSynchronizer::SyncResult
+  SceneSynchronizer::synchronize(const Scene2 &scene, int camIndex,
+                                  ccl::Scene *cclScene, float sceneScale) {
+    bool anyGeomChanged = false, anyTransformChanged = false;
+
+    // Mark all entries as unvisited
+    for (auto &[_, entry] : m_entries)
+      entry.visited = false;
+
+    // Walk scene graph
+    for (int i = 0; i < scene.getNodeCount(); i++)
+      walkNode(scene.getNode(i), cclScene, sceneScale, anyGeomChanged, anyTransformChanged);
+
+    // Remove stale objects
+    bool removedAny = false;
+    removeStaleNodes(cclScene, removedAny);
+    if (removedAny) anyGeomChanged = true;
+
+    // Sync camera
+    if (camIndex >= 0 && camIndex < scene.getCameraCount())
+      syncCamera(scene.getCamera(camIndex), cclScene, sceneScale);
+
+    // Sync lights
+    syncLights(scene, cclScene, sceneScale);
+
+    // Background: create once, then update strength in-place
+    float bgStrength = m_backgroundStrength;
+    if (!m_bgNode) {
+      // First time: build gradient background shader graph
+      Shader *bg = cclScene->default_background;
+      ShaderGraph *graph = new ShaderGraph();
+
+      auto *bgn = graph->create_node<BackgroundNode>();
+      bgn->set_strength(bgStrength);
+
+      // Gradient: ray direction Y -> blend ground/horizon/zenith
+      // Identical to geom SceneSynchronizer using Sky default colors.
+      // Negate Y: Cycles background Normal points inward
+      auto *geomNode = graph->create_node<ccl::GeometryNode>();
+      auto *sepXYZ = graph->create_node<SeparateXYZNode>();
+      graph->connect(geomNode->output("Normal"), sepXYZ->input("Vector"));
+      auto *flipY = graph->create_node<MathNode>();
+      flipY->set_math_type(NODE_MATH_MULTIPLY);
+      flipY->set_value2(-1.0f);
+      graph->connect(sepXYZ->output("Y"), flipY->input("Value1"));
+
+      // Sky colors (exact match: geom::Sky default gradient)
+      auto *zenithCol = graph->create_node<ColorNode>();
+      zenithCol->set_value(make_float3(0.55f, 0.65f, 0.85f));
+      auto *horizCol = graph->create_node<ColorNode>();
+      horizCol->set_value(make_float3(0.95f, 0.93f, 0.90f));
+      auto *groundCol = graph->create_node<ColorNode>();
+      groundCol->set_value(make_float3(0.30f, 0.27f, 0.25f));
+
+      // Upper hemisphere: tUp = pow(max(Y, 0), 0.4)
+      auto *clampY = graph->create_node<MathNode>();
+      clampY->set_math_type(NODE_MATH_MAXIMUM);
+      clampY->set_value2(0.0f);
+      graph->connect(flipY->output("Value"), clampY->input("Value1"));
+
+      auto *powNode = graph->create_node<MathNode>();
+      powNode->set_math_type(NODE_MATH_POWER);
+      powNode->set_value2(0.4f);  // horizonSharpness
+      graph->connect(clampY->output("Value"), powNode->input("Value1"));
+
+      // skyAbove = mix(horizon, zenith, tUp)
+      auto *mixUp = graph->create_node<MixColorNode>();
+      mixUp->set_blend_type(NODE_MIX_BLEND);
+      graph->connect(horizCol->output("Color"), mixUp->input("A"));
+      graph->connect(zenithCol->output("Color"), mixUp->input("B"));
+      graph->connect(powNode->output("Value"), mixUp->input("Factor"));
+
+      // Lower hemisphere: tDown = clamp(-flippedY * 3, 0, 1)
+      auto *negY = graph->create_node<MathNode>();
+      negY->set_math_type(NODE_MATH_MULTIPLY);
+      negY->set_value2(-1.0f);
+      graph->connect(flipY->output("Value"), negY->input("Value1"));
+
+      auto *mulThree = graph->create_node<MathNode>();
+      mulThree->set_math_type(NODE_MATH_MULTIPLY);
+      mulThree->set_value2(3.0f);
+      mulThree->set_use_clamp(true);
+      graph->connect(negY->output("Value"), mulThree->input("Value1"));
+
+      // skyBelow = mix(horizon, ground, tDown)
+      auto *mixDown = graph->create_node<MixColorNode>();
+      mixDown->set_blend_type(NODE_MIX_BLEND);
+      graph->connect(horizCol->output("Color"), mixDown->input("A"));
+      graph->connect(groundCol->output("Color"), mixDown->input("B"));
+      graph->connect(mulThree->output("Value"), mixDown->input("Factor"));
+
+      // Select above/below: isAbove = (flippedY > 0) ? 1 : 0
+      auto *isAbove = graph->create_node<MathNode>();
+      isAbove->set_math_type(NODE_MATH_GREATER_THAN);
+      isAbove->set_value2(0.0f);
+      graph->connect(flipY->output("Value"), isAbove->input("Value1"));
+
+      // finalColor = mix(skyBelow, skyAbove, isAbove)
+      auto *mixFinal = graph->create_node<MixColorNode>();
+      mixFinal->set_blend_type(NODE_MIX_BLEND);
+      graph->connect(mixDown->output("Result"), mixFinal->input("A"));
+      graph->connect(mixUp->output("Result"), mixFinal->input("B"));
+      graph->connect(isAbove->output("Value"), mixFinal->input("Factor"));
+
+      graph->connect(mixFinal->output("Result"), bgn->input("Color"));
+      graph->connect(bgn->output("Background"), graph->output()->input("Surface"));
+
+      m_bgNode = static_cast<void*>(bgn);
+
+      bg->set_graph(unique_ptr<ShaderGraph>(graph));
+      bg->tag_update(cclScene);
+    } else {
+      // Update strength in-place (no shader graph rebuild)
+      auto *bgn = static_cast<BackgroundNode*>(m_bgNode);
+      if (bgn->get_strength() != bgStrength) {
+        bgn->set_strength(bgStrength);
+        cclScene->default_background->tag_update(cclScene);
+      }
+    }
+
+    if (anyGeomChanged) return SyncResult::GeometryChanged;
+    if (anyTransformChanged) return SyncResult::TransformOnly;
+    return SyncResult::NoChange;
+  }
 
   void SceneSynchronizer::walkNode(const Node *node, ccl::Scene *cclScene,
                                     float sceneScale,
@@ -176,20 +298,24 @@ namespace icl::geom2 {
       entry.geomNode = geom;
       entry.visited = true;
 
-      bool geomDirty = entry.geometryDirty;
-      if (geomDirty) {
+      // Check for changes
+      size_t vc = geom->getVertices().size();
+      size_t tc = geom->getTriangles().size() + geom->getQuads().size();
+      bool geomDirty = entry.geometryDirty || (vc != entry.vertexCount) || (tc != entry.primitiveCount);
+
+      if (!entry.geometry || geomDirty) {
         syncGeometry(entry, cclScene, sceneScale);
         syncMaterial(entry, cclScene);
+        entry.vertexCount = vc;
+        entry.primitiveCount = tc;
         entry.geometryDirty = false;
         anyGeomChanged = true;
       }
+
       if (entry.transformDirty || geomDirty) {
         syncTransform(entry, cclScene, sceneScale);
         entry.transformDirty = false;
         anyTransformChanged = true;
-      }
-      if (geomDirty && entry.object) {
-        entry.object->tag_update(cclScene);
       }
     }
     // LightNodes handled separately in syncLights()
@@ -197,7 +323,6 @@ namespace icl::geom2 {
 
   void SceneSynchronizer::syncGeometry(ObjectEntry &entry, ccl::Scene *cclScene,
                                         float sceneScale) {
-    // Always tessellate to mesh (Cycles analytic spheres have position offset bugs)
     if (!entry.geometry) {
       auto *mesh = cclScene->create_node<ccl::Mesh>();
       entry.geometry = mesh;
@@ -208,6 +333,7 @@ namespace icl::geom2 {
   }
 
   void SceneSynchronizer::syncMaterial(ObjectEntry &entry, ccl::Scene *cclScene) {
+    // Remove old shader if exists
     if (entry.shader) {
       cclScene->delete_node(entry.shader);
       entry.shader = nullptr;
@@ -220,9 +346,10 @@ namespace icl::geom2 {
       entry.shader = createDefaultShader(cclScene);
     }
 
-    array<ccl::Node*> shaders;
-    shaders.push_back_slow(entry.shader);
-    entry.geometry->set_used_shaders(shaders);
+    // Assign shader to geometry
+    array<ccl::Node*> used_shaders;
+    used_shaders.push_back_slow(entry.shader);
+    entry.geometry->set_used_shaders(used_shaders);
   }
 
   void SceneSynchronizer::syncTransform(ObjectEntry &entry, ccl::Scene *cclScene,
@@ -235,20 +362,43 @@ namespace icl::geom2 {
   void SceneSynchronizer::syncCamera(const geom::Camera &cam, ccl::Scene *cclScene,
                                       float sceneScale) {
     ccl::Camera *cclCam = cclScene->camera;
+
+    // Resolution
     auto rp = cam.getRenderParams();
     int w = rp.chipSize.width, h = rp.chipSize.height;
-    if (w > 0 && h > 0) { cclCam->set_full_width(w); cclCam->set_full_height(h); }
+    if (w > 0 && h > 0) {
+      cclCam->set_full_width(w);
+      cclCam->set_full_height(h);
+    }
 
+    // Camera position and orientation
     auto pos = cam.getPosition();
     auto norm = cam.getNorm();
     auto up = cam.getUp();
 
     float3 camPos = make_float3(pos[0]*sceneScale, pos[1]*sceneScale, pos[2]*sceneScale);
     float3 forward = normalize(make_float3(norm[0], norm[1], norm[2]));
-    float3 upVec = normalize(make_float3(up[0], up[1], up[2]));
-    float3 horiz = normalize(cross(upVec, forward));
-    upVec = cross(forward, horiz);
 
+    // ICL camera axes: horiz = cross(up, norm), up, norm.
+    float3 iclUp = normalize(make_float3(up[0], up[1], up[2]));
+    float3 horiz = cross(iclUp, forward);
+    float horizLen = len(horiz);
+    if (horizLen < 1e-6f) {
+      horiz = make_float3(1, 0, 0);
+      if (fabsf(dot(forward, horiz)) > 0.9f)
+        horiz = make_float3(0, 1, 0);
+      horiz = normalize(cross(horiz, forward));
+    } else {
+      horiz = horiz * (1.0f / horizLen);
+    }
+    // Reorthogonalize up
+    float3 upVec = cross(forward, horiz);
+
+    // Cycles Transform: row-stored, columns are basis vectors.
+    //   column 0 =  horiz  (ICL image +X)
+    //   column 1 = -upVec  (negated: ICL up = visual down in Cycles)
+    //   column 2 =  forward (view direction)
+    //   column 3 =  camPos
     Transform tfm;
     tfm.x = make_float4( horiz.x, -upVec.x, forward.x, camPos.x);
     tfm.y = make_float4( horiz.y, -upVec.y, forward.y, camPos.y);
@@ -266,6 +416,7 @@ namespace icl::geom2 {
       cclCam->set_fov(fov);
     }
 
+    // Clip planes
     float nearClip = rp.clipZNear * sceneScale;
     float farClip = rp.clipZFar * sceneScale;
     if (nearClip <= 0) nearClip = 0.01f;
@@ -275,6 +426,7 @@ namespace icl::geom2 {
     cclCam->set_farclip(farClip);
 
     cclCam->compute_auto_viewplane();
+    cclCam->need_flags_update = true;
   }
 
   void SceneSynchronizer::syncLights(const Scene2 &scene, ccl::Scene *cclScene,
@@ -293,10 +445,14 @@ namespace icl::geom2 {
       // Translation in column 3 of the 4x4 transform (row-major, (row,col) convention)
       float3 pos = make_float3(t(0,3)*sceneScale, t(1,3)*sceneScale, t(2,3)*sceneScale);
 
-      // Physical inverse-square falloff calibration (same as legacy geom)
-      // Color is in 0-255 range, normalize to 0-1 before applying intensity
+      // Physical inverse-square falloff calibration.
+      // The geom version's SceneLight::getDiffuse() returns 0-1 range colors,
+      // but the sync divides by 255 again — an accidental double-normalization.
+      // The 300.0 factor was calibrated with that double /255 baked in.
+      // Since LightNode::getColor() returns 0-255 range (single /255 below),
+      // we divide the calibration by 255 to match: 300/255 ≈ 1.176.
       float typicalDist = 500.0f * sceneScale;
-      float physIntensity = intensity * 300.0f * typicalDist * typicalDist;
+      float physIntensity = intensity * (300.0f / 255.0f) * typicalDist * typicalDist;
 
       PointLight *cclLight = cclScene->create_node<PointLight>();
       cclLight->set_strength(make_float3(
@@ -305,7 +461,7 @@ namespace icl::geom2 {
           c[2] / 255.0f * physIntensity));
       cclLight->set_radius(0.1f * sceneScale);
 
-      // Emission shader
+      // Emission shader for light
       Shader *lightShader = cclScene->create_node<Shader>();
       ShaderGraph *graph = new ShaderGraph();
       EmissionNode *emNode = graph->create_node<EmissionNode>();
@@ -327,102 +483,19 @@ namespace icl::geom2 {
     }
   }
 
-  void SceneSynchronizer::syncBackground(ccl::Scene *cclScene) {
-    if (m_backgroundCreated) return;
-    m_backgroundCreated = true;
-
-    // Default grey gradient background (matches legacy Scene default sky)
-    Shader *bg = cclScene->default_background;
-    ShaderGraph *graph = new ShaderGraph();
-
-    auto *bgn = graph->create_node<BackgroundNode>();
-    bgn->set_strength(m_backgroundStrength);
-
-    // Simple gradient: use ray direction Y to blend ground→horizon→zenith
-    auto *geomNode = graph->create_node<ccl::GeometryNode>();
-    auto *sepXYZ = graph->create_node<SeparateXYZNode>();
-    graph->connect(geomNode->output("Normal"), sepXYZ->input("Vector"));
-    auto *flipY = graph->create_node<MathNode>();
-    flipY->set_math_type(NODE_MATH_MULTIPLY);
-    flipY->set_value2(-1.0f);
-    graph->connect(sepXYZ->output("Y"), flipY->input("Value1"));
-
-    // Zenith (sky blue-grey), horizon (light grey), ground (dark grey)
-    auto *zenithCol = graph->create_node<ColorNode>();
-    zenithCol->set_value(make_float3(0.6f, 0.65f, 0.75f));
-    auto *horizCol = graph->create_node<ColorNode>();
-    horizCol->set_value(make_float3(0.8f, 0.8f, 0.8f));
-    auto *groundCol = graph->create_node<ColorNode>();
-    groundCol->set_value(make_float3(0.3f, 0.3f, 0.3f));
-
-    // Upper blend: mix horizon→zenith by max(Y, 0)
-    auto *clampUp = graph->create_node<MathNode>();
-    clampUp->set_math_type(NODE_MATH_MAXIMUM);
-    clampUp->set_value2(0.0f);
-    graph->connect(flipY->output("Value"), clampUp->input("Value1"));
-
-    auto *mixUp = graph->create_node<MixNode>();
-    mixUp->set_mix_type(NODE_MIX_BLEND);
-    graph->connect(horizCol->output("Color"), mixUp->input("Color1"));
-    graph->connect(zenithCol->output("Color"), mixUp->input("Color2"));
-    graph->connect(clampUp->output("Value"), mixUp->input("Fac"));
-
-    // Lower blend: mix horizon→ground by max(-Y, 0)
-    auto *clampDown = graph->create_node<MathNode>();
-    clampDown->set_math_type(NODE_MATH_MAXIMUM);
-    clampDown->set_value2(0.0f);
-    auto *negY = graph->create_node<MathNode>();
-    negY->set_math_type(NODE_MATH_MULTIPLY);
-    negY->set_value2(-1.0f);
-    graph->connect(flipY->output("Value"), negY->input("Value1"));
-    graph->connect(negY->output("Value"), clampDown->input("Value1"));
-
-    auto *mixDown = graph->create_node<MixNode>();
-    mixDown->set_mix_type(NODE_MIX_BLEND);
-    graph->connect(mixUp->output("Color"), mixDown->input("Color1"));
-    graph->connect(groundCol->output("Color"), mixDown->input("Color2"));
-    graph->connect(clampDown->output("Value"), mixDown->input("Fac"));
-
-    graph->connect(mixDown->output("Color"), bgn->input("Color"));
-    graph->connect(bgn->output("Background"), graph->output()->input("Surface"));
-    bg->set_graph(unique_ptr<ShaderGraph>(graph));
-    bg->tag_update(cclScene);
-  }
-
   void SceneSynchronizer::removeStaleNodes(ccl::Scene *cclScene, bool &anyChanged) {
-    for (auto it = m_entries.begin(); it != m_entries.end();) {
-      if (!it->second.visited) {
-        if (it->second.object) cclScene->delete_node(it->second.object);
-        if (it->second.geometry) cclScene->delete_node(it->second.geometry);
-        if (it->second.shader) cclScene->delete_node(it->second.shader);
-        it = m_entries.erase(it);
+    std::vector<const GeometryNode *> toRemove;
+    for (auto &[ptr, entry] : m_entries) {
+      if (!entry.visited) {
+        if (entry.object) cclScene->delete_node(entry.object);
+        if (entry.geometry) cclScene->delete_node(entry.geometry);
+        if (entry.shader) cclScene->delete_node(entry.shader);
+        toRemove.push_back(ptr);
         anyChanged = true;
-      } else {
-        it->second.visited = false;
-        ++it;
       }
     }
-  }
-
-  SceneSynchronizer::SyncResult
-  SceneSynchronizer::synchronize(const Scene2 &scene, int camIndex,
-                                  ccl::Scene *cclScene, float sceneScale) {
-    bool anyGeomChanged = false, anyTransformChanged = false;
-
-    for (int i = 0; i < scene.getNodeCount(); i++)
-      walkNode(scene.getNode(i), cclScene, sceneScale, anyGeomChanged, anyTransformChanged);
-
-    removeStaleNodes(cclScene, anyGeomChanged);
-
-    if (camIndex >= 0 && camIndex < scene.getCameraCount())
-      syncCamera(scene.getCamera(camIndex), cclScene, sceneScale);
-
-    syncLights(scene, cclScene, sceneScale);
-    syncBackground(cclScene);
-
-    if (anyGeomChanged) return SyncResult::GeometryChanged;
-    if (anyTransformChanged) return SyncResult::TransformOnly;
-    return SyncResult::NoChange;
+    for (auto *ptr : toRemove)
+      m_entries.erase(ptr);
   }
 
   void SceneSynchronizer::invalidateAll() {
@@ -430,7 +503,7 @@ namespace icl::geom2 {
       entry.geometryDirty = true;
       entry.transformDirty = true;
     }
-    m_lightsCreated = false;
+    // Note: don't reset m_lightsCreated - lights don't need rebuild on geometry change
   }
 
   void SceneSynchronizer::invalidateTransforms() {

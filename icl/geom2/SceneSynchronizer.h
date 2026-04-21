@@ -27,6 +27,10 @@ namespace icl::geom2 {
   class Scene2;
 
   /// Synchronizes a geom2 scene graph to a Cycles Scene.
+  ///
+  /// Walks the geom2 node tree, creates/updates Cycles meshes, objects,
+  /// shaders, camera, and lights. Tracks per-node state to support
+  /// incremental updates (only changed nodes are re-synchronized).
   class SceneSynchronizer {
   public:
     SceneSynchronizer() = default;
@@ -41,8 +45,9 @@ namespace icl::geom2 {
     void invalidateNode(const Node *node);
     bool hasPendingChanges() const;
     void invalidateLights() { m_lightsCreated = false; }
-    void invalidateBackground() { m_backgroundCreated = false; }
-    void setBackgroundStrength(float s) { m_backgroundStrength = s; m_backgroundCreated = false; }
+
+    /// Set background environment strength (0..1). Applied on next sync.
+    void setBackgroundStrength(float s) { m_backgroundStrength = s; }
 
   private:
     struct ObjectEntry {
@@ -51,11 +56,10 @@ namespace icl::geom2 {
       ccl::Object *object = nullptr;
       ccl::Shader *shader = nullptr;
       size_t vertexCount = 0;
-      size_t triCount = 0;
+      size_t primitiveCount = 0;
       bool geometryDirty = true;
       bool transformDirty = true;
       bool visited = false;
-      bool isSphere = false;
     };
 
     void walkNode(const Node *node, ccl::Scene *cclScene, float sceneScale,
@@ -65,14 +69,12 @@ namespace icl::geom2 {
     void syncTransform(ObjectEntry &entry, ccl::Scene *cclScene, float sceneScale);
     void syncCamera(const geom::Camera &cam, ccl::Scene *cclScene, float sceneScale);
     void syncLights(const Scene2 &scene, ccl::Scene *cclScene, float sceneScale);
-    void syncBackground(ccl::Scene *cclScene);
     void removeStaleNodes(ccl::Scene *cclScene, bool &anyChanged);
 
     std::unordered_map<const GeometryNode *, ObjectEntry> m_entries;
-    size_t m_lastLightHash = 0;
     bool m_lightsCreated = false;
-    bool m_backgroundCreated = false;
     float m_backgroundStrength = 0.8f;
+    void *m_bgNode = nullptr;  // BackgroundNode*, avoid Cycles header dependency
   };
 
 } // namespace icl::geom2
