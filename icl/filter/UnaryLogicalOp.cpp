@@ -26,11 +26,41 @@ namespace icl::filter {
     return proto;
   }
 
-  // Constructor — clones selectors from the class prototype
+  static const char *LOGIC_MENU = "and,or,xor,not";
+
+  static const char *logicName(UnaryLogicalOp::optype t){
+    switch(t){
+      case UnaryLogicalOp::andOp: return "and";
+      case UnaryLogicalOp::orOp:  return "or";
+      case UnaryLogicalOp::xorOp: return "xor";
+      case UnaryLogicalOp::notOp: return "not";
+    }
+    return "and";
+  }
+  static UnaryLogicalOp::optype parseLogic(const std::string &s){
+    if(s == "or")  return UnaryLogicalOp::orOp;
+    if(s == "xor") return UnaryLogicalOp::xorOp;
+    if(s == "not") return UnaryLogicalOp::notOp;
+    return UnaryLogicalOp::andOp;
+  }
+
   UnaryLogicalOp::UnaryLogicalOp(optype t, icl32s val)
     : ImageBackendDispatching(prototype()),
       m_eOpType(t), m_dValue(val)
-  {}
+  {
+    addProperty("op","menu",LOGIC_MENU,logicName(t));
+    addProperty("value","range:spinbox","[0,255]",str(val));
+    registerCallback([this](const Property &p){
+      if(p.name == "op")        m_eOpType = parseLogic(p.value);
+      else if(p.name == "value") m_dValue = parse<icl32s>(p.value);
+    });
+  }
+
+  void UnaryLogicalOp::setOpType(optype t){ setPropertyValue("op", logicName(t)); }
+  void UnaryLogicalOp::setValue(icl32s v){ setPropertyValue("value", v); }
+
+  REGISTER_CONFIGURABLE(UnaryLogicalOp,
+                        return new UnaryLogicalOp(UnaryLogicalOp::andOp, 255));
 
   void UnaryLogicalOp::apply(const Image &src, Image &dst) {
     ICLASSERT_RETURN(src.getDepth() == depth8u || src.getDepth() == depth16s || src.getDepth() == depth32s);

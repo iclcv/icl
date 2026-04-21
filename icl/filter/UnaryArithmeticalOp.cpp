@@ -26,11 +26,50 @@ namespace icl::filter {
     return proto;
   }
 
-  // Constructor — clones selectors from the class prototype
+  static const char *ARITH_MENU = "add,sub,mul,div,sqr,sqrt,ln,exp,abs";
+
+  static const char *arithName(UnaryArithmeticalOp::optype t){
+    switch(t){
+      case UnaryArithmeticalOp::addOp:  return "add";
+      case UnaryArithmeticalOp::subOp:  return "sub";
+      case UnaryArithmeticalOp::mulOp:  return "mul";
+      case UnaryArithmeticalOp::divOp:  return "div";
+      case UnaryArithmeticalOp::sqrOp:  return "sqr";
+      case UnaryArithmeticalOp::sqrtOp: return "sqrt";
+      case UnaryArithmeticalOp::lnOp:   return "ln";
+      case UnaryArithmeticalOp::expOp:  return "exp";
+      case UnaryArithmeticalOp::absOp:  return "abs";
+    }
+    return "add";
+  }
+  static UnaryArithmeticalOp::optype parseArith(const std::string &s){
+    if(s == "sub")  return UnaryArithmeticalOp::subOp;
+    if(s == "mul")  return UnaryArithmeticalOp::mulOp;
+    if(s == "div")  return UnaryArithmeticalOp::divOp;
+    if(s == "sqr")  return UnaryArithmeticalOp::sqrOp;
+    if(s == "sqrt") return UnaryArithmeticalOp::sqrtOp;
+    if(s == "ln")   return UnaryArithmeticalOp::lnOp;
+    if(s == "exp")  return UnaryArithmeticalOp::expOp;
+    if(s == "abs")  return UnaryArithmeticalOp::absOp;
+    return UnaryArithmeticalOp::addOp;
+  }
+
   UnaryArithmeticalOp::UnaryArithmeticalOp(optype t, icl64f val)
     : ImageBackendDispatching(prototype()),
       m_eOpType(t), m_dValue(val)
-  {}
+  {
+    addProperty("op","menu",ARITH_MENU,arithName(t));
+    addProperty("value","range:slider","[-255,512]",str(val));
+    registerCallback([this](const Property &p){
+      if(p.name == "op")        m_eOpType = parseArith(p.value);
+      else if(p.name == "value") m_dValue = parse<icl64f>(p.value);
+    });
+  }
+
+  void UnaryArithmeticalOp::setOpType(optype t){ setPropertyValue("op", arithName(t)); }
+  void UnaryArithmeticalOp::setValue(icl64f v){ setPropertyValue("value", v); }
+
+  REGISTER_CONFIGURABLE_DEFAULT(UnaryArithmeticalOp);
 
   // ================================================================
   // apply()

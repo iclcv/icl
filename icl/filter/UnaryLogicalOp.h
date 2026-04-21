@@ -47,9 +47,9 @@ namespace icl::filter {
     /// Import unaryOps apply function without destination image
     using UnaryOp::apply;
 
-    void setValue(icl32s value) { m_dValue = value; }
+    void setValue(icl32s value);
     icl32s getValue() const { return m_dValue; }
-    void setOpType(optype t){ m_eOpType = t;}
+    void setOpType(optype t);
     optype getOpType() const { return m_eOpType; }
 
     /// Class-level prototype — owns selectors, populated during static init

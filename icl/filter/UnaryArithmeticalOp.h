@@ -27,9 +27,9 @@ namespace icl::filter {
     void apply(const core::Image &src, core::Image &dst) override;
     using UnaryOp::apply;
 
-    void setValue(icl64f value) { m_dValue = value; }
+    void setValue(icl64f value);
     icl64f getValue() const { return m_dValue; }
-    void setOpType(optype t) { m_eOpType = t; }
+    void setOpType(optype t);
     optype getOpType() const { return m_eOpType; }
 
     // Sub-op signatures for backend dispatch

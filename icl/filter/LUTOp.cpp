@@ -30,7 +30,19 @@ namespace icl::filter {
     m_bLevelsSet(true), m_bLutSet(false),
     m_ucQuantizationLevels(quantizationLevels),
     m_poBuffer(new Img8u())
-  {}
+  {
+    // Only the Levels mode has a GUI-tunable knob; LUT mode takes an entire
+    // 256-element table from code and can't meaningfully be a slider.
+    addProperty("quantization levels","range:spinbox","[2,255]",str((int)quantizationLevels));
+    registerCallback([this](const Property &p){
+      if(p.name == "quantization levels"){
+        m_ucQuantizationLevels = parse<int>(p.value);
+        m_vecLUT.clear();
+        m_bLutSet = false;
+        m_bLevelsSet = true;
+      }
+    });
+  }
 
   LUTOp::LUTOp(const std::vector<icl8u> &lut):
     ImageBackendDispatching(prototype()),
@@ -38,7 +50,11 @@ namespace icl::filter {
     m_vecLUT(lut),
     m_ucQuantizationLevels(0),
     m_poBuffer(new Img8u())
-  {}
+  {
+    // Same property for interop, but deactivated since we're in LUT mode.
+    addProperty("quantization levels","range:spinbox","[2,255]","0");
+    deactivateProperty("quantization levels");
+  }
 
   void LUTOp::setLUT(const std::vector<icl8u> &lut){
     m_vecLUT = lut;
@@ -47,11 +63,10 @@ namespace icl::filter {
     m_ucQuantizationLevels = 0;
   }
   void LUTOp::setQuantizationLevels(int levels){
-    m_ucQuantizationLevels = levels;
-    m_vecLUT.clear();
-    m_bLutSet = false;
-    m_bLevelsSet = true;
+    setPropertyValue("quantization levels", levels);
   }
+
+  REGISTER_CONFIGURABLE_DEFAULT(LUTOp);
 
   icl8u LUTOp::getQuantizationLevels() const{
     return m_ucQuantizationLevels;

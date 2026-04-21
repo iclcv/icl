@@ -598,4 +598,5 @@ namespace icl::filter {
     }
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(LocalThresholdOp);
   } // namespace icl::filter

@@ -18,6 +18,8 @@
 #include <icl/filter/DitheringOp.h>
 #include <icl/filter/FFTOp.h>
 #include <icl/filter/GaborOp.h>
+#include <icl/filter/LocalThresholdOp.h>
+#include <icl/filter/LUTOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/MorphologicalOp.h>
@@ -26,7 +28,9 @@
 #include <icl/filter/ScaleOp.h>
 #include <icl/filter/ThresholdOp.h>
 #include <icl/filter/TranslateOp.h>
+#include <icl/filter/UnaryArithmeticalOp.h>
 #include <icl/filter/UnaryCompareOp.h>
+#include <icl/filter/UnaryLogicalOp.h>
 #include <icl/qt/BoxHandle.h>
 
 #include <memory>
@@ -53,6 +57,8 @@ static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> &filters()
     {"DitheringOp",      []{ return new DitheringOp;      }},
     {"FFTOp",            []{ return new FFTOp;            }},
     {"GaborOp",          []{ return new GaborOp;          }},
+    {"LocalThresholdOp", []{ return new LocalThresholdOp;   }},
+    {"LUTOp",            []{ return new LUTOp;            }},
     {"MedianOp",         []{ return new MedianOp(Size(3,3)); }},
     {"MirrorOp",         []{ return new MirrorOp(axisHorz);   }},
     {"MorphologicalOp",  []{ return new MorphologicalOp(MorphologicalOp::dilate); }},
@@ -61,7 +67,9 @@ static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> &filters()
     {"ScaleOp",          []{ return new ScaleOp;          }},
     {"ThresholdOp",      []{ return new ThresholdOp;      }},
     {"TranslateOp",      []{ return new TranslateOp;      }},
+    {"UnaryArithmeticalOp",[]{ return new UnaryArithmeticalOp; }},
     {"UnaryCompareOp",   []{ return new UnaryCompareOp;   }},
+    {"UnaryLogicalOp",   []{ return new UnaryLogicalOp(UnaryLogicalOp::andOp, 255); }},
   };
   return f;
 }
