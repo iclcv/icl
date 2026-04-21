@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#include <iostream>
+#include <iterator>
+#include <icl/io/FileGrabber.h>
+#include <icl/qt/Common.h>
+#include <QScreen>
+
+GUI gui;
+
+Size compute_image_size(const std::vector<const ImgBase*> &is, QScreen *screen){
+  Size s;
+  for(unsigned int i=0;i<is.size();++i){
+    s.width = iclMax(s.width,is[i]->getWidth());
+    s.height = iclMax(s.height,is[i]->getHeight());
+  }
+  QRect r = screen->availableGeometry();
+
+  return Size(iclMin(s.width,r.width()-20),iclMin(s.height,r.height()-20));
+}
+
+int main (int n, char **ppc){
+  pa_set_help_text("icl-xv is ICL's simple image viewer.\n"
+                   "It can display images of all supported file formats.\n"
+                   "Furthermore, icl-xv is used for ICLQuick's\n"
+                   "global icl::show(image) function. Here, the -delete\n"
+                   "flag is used in order to delete a temporary image\n"
+                   "after loading it.");
+  ICLApplication app(n,ppc);
+  pa_explain
+  ("-input","define image to read")
+  ("-delete","delete image file after reading")
+  ("-roi","if set, image roi is visualized")
+  ("-fs","shows the widget in fullscreen mode on the given\n"
+   "screen ID (or any screen if the passed id is -1).\n"
+   "The -fs flag only works when explicitly defining the input using the -input|-i arg!");
+  pa_init(n,ppc,"-input|-i(filename) -delete|-d -roi|-r -fullscreen|-fs(screen)",true);
+
+  static Image imageHolder;
+  const ImgBase *image = 0;
+  if(pa("-input")){
+    std::string imageName = pa("-input").as<std::string>();
+
+    try{
+      static FileGrabber w(imageName);
+      imageHolder = w.grabImage();
+      image = imageHolder.ptr();
+      if(pa("-delete")){
+        if(imageName.length()){
+          int errorCode = system((std::string(ICL_SYSTEMCALL_RM) + imageName).c_str());
+          if ( errorCode != 0 )
+            WARNING_LOG( "Error code of system call unequal 0!" );
+        }
+      }
+    }catch(const ICLException& e){
+      static ImgQ o = ones(320,240,1)*100;
+      fontsize(15);
+      text(o, 90,90,"image not found!");
+      image = &o;
+    }
+    if(pa_get_count()){
+      std::cout << "Warning if called with -input, all extra given filenames are omitted!" << std::endl;
+    }
+
+    Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::primaryScreen());
+    gui << Canvas().handle("draw").size(size/20);
+    gui.show();
+
+    DrawHandle draw = gui["draw"];
+    draw = image;
+    draw.render();
+
+    if(pa("-fs")){
+      draw->setFullScreenMode(true,pa("-fs"));
+    }
+  }else if(pa_get_count()){
+    if(pa("-delete")){
+      std::cout << "-delete flag is not supported when running in multi image mode" << std::endl;
+      std::cout << "call iclxv -input ImageName -delete instead (for single images only)" << std::endl;
+    }
+    std::string imageList = "";
+    std::vector<const ImgBase*> imageVec;
+    std::vector<std::string> imageVecStrs;
+
+    Size maxSize;
+    for(unsigned int i=0;i<pa_get_count();++i){
+      std::string s = pa(i).as<std::string>();
+      try{
+        FileGrabber grabber(s,false,true);
+        Image image = grabber.grabImage();
+        if(!image) throw ICLException("");
+        maxSize.width = iclMax(image.getWidth(),maxSize.width);
+        maxSize.height = iclMax(image.getHeight(),maxSize.height);
+        imageVec.push_back(image.ptr()->deepCopy());
+
+        std::replace(s.begin(),s.end(),',','-');
+        imageList += (imageList.length() ? ",": "") +s;
+        imageVecStrs.push_back(s);
+      }catch(const ICLException &ex){
+        std::cout << "unable to load image: " << s << std::endl;
+        std::cout << "(skipping!)" << std::endl;
+      }
+    }
+    Size size = compute_image_size(imageVec,QApplication::primaryScreen());
+    Tab t(imageList);
+
+    for(size_t i=0;i<imageVecStrs.size();++i){
+      t << Display().handle("image-"+str(i)).size(size/20);
+    }
+
+    gui << t << Show();
+
+    for(size_t i=0;i<imageVecStrs.size();++i){
+      gui["image-"+str(i)] = imageVec[i];
+      ICL_DELETE(imageVec[i]);
+    }
+  }else{
+    throw ICLException("no image given, or none of the given images was found!");
+  }
+
+  if(pa("-roi")){
+    if(pa("-input")){
+      static DrawHandle draw = gui["draw"];
+      draw->color(255,0,0);
+      draw->fill(0,0,0,0);
+      draw->rect(image->getROI().x,image->getROI().y,image->getROI().width,image->getROI().height);
+      draw.render();
+    }else{
+      std::cout << "roi visualization is not supported in multi image mode!" << std::endl;
+    }
+  }
+
+
+
+
+
+  return app.exec();
+}

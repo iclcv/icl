@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#include <icl/physics/Constraint.h>
+namespace icl::physics {
+    void Constraint::initUserPointer() {
+      m_constraint->setUserConstraintPtr(this);
+    }
+
+    Constraint::Constraint(){
+    }
+
+    Constraint::~Constraint(){
+      delete m_constraint;
+    }
+
+    btTypedConstraint* Constraint::getConstraint(){
+      return m_constraint;
+    }
+
+    std::vector<RigidObject*>& Constraint::getObjects() {
+      return m_objects;
+    }
+  }

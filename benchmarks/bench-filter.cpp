@@ -2,21 +2,21 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <ICLUtils/Benchmark.h>
-#include <ICLCore/Img.h>
-#include <ICLCore/ImageBackendDispatching.h>
-#include <ICLFilter/ThresholdOp.h>
-#include <ICLFilter/UnaryArithmeticalOp.h>
-#include <ICLFilter/UnaryCompareOp.h>
-#include <ICLFilter/UnaryLogicalOp.h>
-#include <ICLFilter/ConvolutionOp.h>
-#include <ICLFilter/MedianOp.h>
-#include <ICLFilter/MorphologicalOp.h>
-#include <ICLFilter/BinaryArithmeticalOp.h>
-#include <ICLFilter/BinaryCompareOp.h>
-#include <ICLFilter/BinaryLogicalOp.h>
-#include <ICLFilter/WarpOp.h>
-#include <ICLFilter/BilateralFilterOp.h>
+#include <icl/utils/Benchmark.h>
+#include <icl/core/Img.h>
+#include <icl/core/ImageBackendDispatching.h>
+#include <icl/filter/ThresholdOp.h>
+#include <icl/filter/UnaryArithmeticalOp.h>
+#include <icl/filter/UnaryCompareOp.h>
+#include <icl/filter/UnaryLogicalOp.h>
+#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/MedianOp.h>
+#include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/BinaryArithmeticalOp.h>
+#include <icl/filter/BinaryCompareOp.h>
+#include <icl/filter/BinaryLogicalOp.h>
+#include <icl/filter/WarpOp.h>
+#include <icl/filter/BilateralFilterOp.h>
 
 using namespace icl::utils;
 using namespace icl::core;

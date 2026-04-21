@@ -1,0 +1,194 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#pragma once
+
+#include <icl/utils/CompatMacros.h>
+#include <icl/utils/Time.h>
+#include <icl/utils/Range.h>
+#include <icl/utils/Exception.h>
+#include <icl/utils/ClippedCast.h>
+#include <cmath>
+#include <algorithm>
+#include <random>
+#include <vector>
+
+namespace icl::utils {
+  /// Thread-local random engine used by all ICL random functions \ingroup RANDOM
+  inline std::mt19937 &random_engine(){
+    static thread_local std::mt19937 engine(std::random_device{}());
+    return engine;
+  }
+
+  /// Seed the random number generator. \ingroup RANDOM
+  /** @param seedval The seed value (e.g. time(0) ...) */
+  inline void randomSeed(long int seedval) {
+    random_engine().seed(static_cast<std::mt19937::result_type>(seedval));
+  }
+
+  /// Seed the random number generator with current time.\ingroup RANDOM
+  inline void randomSeed() { randomSeed(Time::now().toMicroSeconds()); }
+
+  /// Object based random seed caller \ingroup RANDOM
+  /** Calls randomSeed() at construction time */
+  struct RandomSeeder{
+    inline RandomSeeder(){randomSeed();}
+  };
+
+  /// Generates random numbers in range [0,max]  \ingroup RANDOM
+  inline double random(double max = 1) {
+    std::uniform_real_distribution<double> dist(0.0, max);
+    return dist(random_engine());
+  }
+
+  /// Generate a random number in range [min,max] \ingroup RANDOM
+  inline double random(double min, double max) {
+    std::uniform_real_distribution<double> dist(min, max);
+    return dist(random_engine());
+  }
+
+  /// equivalent to random(r.minVal, r.maxVal) \ingroup RANDOM
+  template<class T>
+  inline double random(const Range<T> &r){
+    return random(static_cast<double>(r.minVal), static_cast<double>(r.maxVal));
+  }
+
+  /// Creates a non-negative random number in range [0,max] \ingroup RANDOM
+  inline unsigned int random(unsigned int max) {
+    std::uniform_int_distribution<unsigned int> dist(0, max);
+    return dist(random_engine());
+  }
+
+  /// Generate a gaussian random number with given mean and variance \ingroup RANDOM
+  /** Thread-safe (uses thread-local state).
+      @param mean mode of the gaussian
+      @param var variance of the gaussian (standard deviation)
+      @return gaussian distributed variable */
+  inline double gaussRandom(double mean, double var){
+    std::normal_distribution<double> dist(mean, var);
+    return dist(random_engine());
+  }
+
+  /// Generate a gaussian random number clipped to a range \ingroup RANDOM
+  inline double gaussRandom(double mean, double var, const Range<double> &range){
+    return clip<double>( gaussRandom(mean,var), range.minVal, range.maxVal);
+  }
+
+  /// lightweight Random generator class for uniform random distributions
+  /** URand obeject can be used like 'normal double values'. Each time
+      some other variable is assigned by it, it returns a random value.
+      By this means, e.g. STL-containers can be filled/created with random numbers
+      \code
+      std::vector<double> foo(100,URand());
+      std::fill(foo.begin(),foo.end(),URand(0,42));
+      \endcode
+      But do not try to fill an Image with random numbers like this:
+      \code
+      Img64f image(Size::VGA,1);
+      image.clearAllChannels(URand());
+      \endcode
+      Here: URand is only evaluatet at the function interface, so the
+      image is filled with a single random value;
+   */
+  class URand{
+    Range64f range;
+    public:
+    /// Range [0,1]
+    inline URand():range(0,1){};
+
+    /// Given range
+    inline URand(icl64f min, icl64f max):range(min,max){}
+
+    /// Given range
+    inline URand(const Range64f &range):range(range){};
+
+    /// returns random(this->min,this->max)
+    inline operator icl64f() const { return random(range.minVal,range.maxVal); }
+  };
+
+  /// lightweight Random generator class for uniform random distributions in positive integer domain
+  /** @see URand*/
+  class URandI{
+    unsigned int max;
+    public:
+    /// Create with given max value
+    inline URandI(unsigned int max):max(max){}
+
+    /// returns random(this->max)
+    inline operator unsigned int() const{ return random(max); }
+  };
+
+  /// lightweight Random generator class for gaussian distributed numbers
+  /** @see URand*/
+  class GRand{
+    icl64f mean,var;
+    public:
+    /// Create with optionally given mean and variance
+    inline GRand(icl64f mean=0, icl64f var=1.0):mean(mean),var(var){}
+
+    /// returns gaussRandom(this->mean,this->var)
+    inline operator icl64f() const { return gaussRandom(mean,var); }
+  };
+
+  /// lightweight Random generator class for gaussian distributed numbers clipped to a given range
+  /** @see URand*/
+  class GRandClip{
+    icl64f mean,var;
+    Range64f range;
+    public:
+    /// Create with optionally given mean and variance
+    inline GRandClip(icl64f mean, icl64f var,const Range64f &range):mean(mean),var(var),range(range){}
+
+    /// returns gaussRandom(this->mean,this->var)
+    inline operator icl64f() const { return gaussRandom(mean,var,range); }
+  };
+
+
+/* }}} */
+
+  inline std::vector<int> get_random_index_subset(int containerSize,
+                                                  int subsetSize){
+    if(subsetSize > containerSize){
+      throw ICLException("get_random_index_subset: subsetsize must be <= containerSize");
+    }
+    std::vector<int> s(containerSize);
+    for(int i=0;i<containerSize;++i) s[i] = i;
+    static thread_local std::mt19937 rng(std::random_device{}());
+    std::shuffle(s.begin(), s.end(), rng);
+    return std::vector<int>(s.begin(), s.begin()+subsetSize);
+  }
+
+  template<class T>
+  inline std::vector<T> get_random_subset(const std::vector<T> &s, int subsetSize){
+    std::vector<int> indices = get_random_index_subset(s.size(), subsetSize);
+    std::vector<T> subset(subsetSize);
+    for(int i=0;i<subsetSize;++i){
+      subset[i] = s[indices[i]];
+    }
+    return subset;
+  }
+
+  template<class T>
+  inline void get_random_subset(const std::vector<T> &s, int subsetSize,
+                                std::vector<T> &subset){
+    std::vector<int> indices = get_random_index_subset(s.size(), subsetSize);
+    subset.resize(subsetSize);
+    for(int i=0;i<subsetSize;++i){
+      subset[i] = s[indices[i]];
+    }
+  }
+
+  template<class T>
+  inline void get_random_subset(const std::vector<T> &s, int subsetSize,
+                                std::vector<T> &subset, std::vector<int> &indices){
+    indices = get_random_index_subset(s.size(), subsetSize);
+    subset.resize(subsetSize);
+    for(int i=0;i<subsetSize;++i){
+      subset[i] = s[indices[i]];
+    }
+  }
+
+
+
+  } // namespace icl::utils

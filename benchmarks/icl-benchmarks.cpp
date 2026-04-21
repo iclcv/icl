@@ -2,9 +2,9 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <ICLUtils/Benchmark.h>
-#include <ICLUtils/ProgArg.h>
-#include <ICLUtils/StringUtils.h>
+#include <icl/utils/Benchmark.h>
+#include <icl/utils/ProgArg.h>
+#include <icl/utils/StringUtils.h>
 #include <iostream>
 #include <string>
 

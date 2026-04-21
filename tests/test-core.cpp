@@ -1,6 +1,6 @@
-#include <ICLUtils/Test.h>
-#include <ICLCore/Image.h>
-#include <ICLCore/Img.h>
+#include <icl/utils/Test.h>
+#include <icl/core/Image.h>
+#include <icl/core/Img.h>
 
 using namespace icl;
 using namespace icl::utils;

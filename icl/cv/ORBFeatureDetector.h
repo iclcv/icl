@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#pragma once
+
+#ifndef ICL_HAVE_OPENCV_FEATURES_2D
+#warning "This header must not be included without ICL_HAVE_OPENCV_FEATURES_2D defined"
+#endif
+
+#include <icl/core/Img.h>
+#include <icl/utils/Uncopyable.h>
+#include <icl/utils/Configurable.h>
+#include <icl/utils/Point32f.h>
+#include <icl/utils/VisualizationDescription.h>
+
+namespace icl::cv {
+    class ICLCV_API ORBFeatureDetector : public utils::Configurable{
+      struct Data;
+      Data *m_data;
+
+      public:
+      ORBFeatureDetector();
+
+      ~ORBFeatureDetector();
+
+      struct ICLCV_API FeatureSetClass {
+        FeatureSetClass(const FeatureSetClass&) = delete;
+        FeatureSetClass& operator=(const FeatureSetClass&) = delete;
+        struct Impl;
+        Impl *impl;
+        FeatureSetClass();
+        ~FeatureSetClass();
+        utils::VisualizationDescription vis() const;
+      };
+
+      using FeatureSet = std::shared_ptr<FeatureSetClass>;
+
+
+      struct Match{
+        utils::Point32f a,b;
+        float distance;
+      };
+
+      FeatureSet detect(const core::Img8u &image);
+
+      const core::ImgBase *getIntermediateImage(const std::string &id);
+
+      std::vector<Match> match(const FeatureSet &a, const FeatureSet &b);
+    };
+  }

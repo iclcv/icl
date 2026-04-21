@@ -2,11 +2,11 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <ICLUtils/Benchmark.h>
-#include <ICLCore/Img.h>
-#include <ICLIO/TestImages.h>
-#include <ICLFilter/ThresholdOp.h>
-#include <ICLCV/RunLengthEncoder.h>
+#include <icl/utils/Benchmark.h>
+#include <icl/core/Img.h>
+#include <icl/io/TestImages.h>
+#include <icl/filter/ThresholdOp.h>
+#include <icl/cv/RunLengthEncoder.h>
 
 using namespace icl::utils;
 using namespace icl::core;

@@ -1,0 +1,128 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
+
+#pragma once
+
+#include <icl/io/PylonIncludes.h>
+
+#include <icl/utils/CompatMacros.h>
+#include <icl/io/Grabber.h>
+#include <icl/io/PylonUtils.h>
+#include <icl/io/PylonCameraOptions.h>
+#include <icl/io/PylonGrabberThread.h>
+#include <icl/io/PylonColorConverter.h>
+#include <icl/utils/Time.h>
+#include <mutex>
+
+namespace icl::io {
+  namespace pylon {
+
+    /// Grabber implementation for a Basler Pylon-based GIG-E Grabber \ingroup GIGE_G
+    /**
+        This is just a wrapper class of the underlying PylonGrabberImpl class
+
+        Some useful hints to increase GigE camera output:
+
+       -# Jumbo Frames: If your Network Adapter supports Jumbo Frames they
+          should be enabled by setting the Maximum Transfer Unit (MTU) size
+          to 8192. Accordingly the cameras property "GevSCPSPacketSize" is
+          set to 8192 per default. Setting this property to a value higher
+          then the Network Adapters MTU may create transfer errors.
+       -# Real-time thread priorities: To minimize network packet losses it
+          helps to grant pylon the permission to change a threads priority
+          to real time. This can be achieved by adding the line:
+          \code
+             *      -      rtprio      99
+          \endcode
+          to
+          \code
+          /etc/security/limits.conf
+          \endcode
+          This can make the difference between a network throughput of 32 and 100Mb/s.
+       -# Transmission errors: If you often get the error code
+          'GX status 0xe1000014' and already followed the previous hints
+          increasing the 'GevSCPD' (Inter packet delay) parameter can help to
+          minimize these transmission errors.
+       -# Camera IP Configuration: can be made with the IpConfigurator which
+          is included in the Pylon driver package. When the tool does not
+          find the camera, ICL will neither. This most commonly means that the
+          camera is in an other ip-address block then the computer. Because a
+          connection to the camera is needed in order to change the cameras ip
+          settings, it is possible to either chnage the ip address of the
+          computer to the same ip-address block or to use the Windows version
+          of the IpConfigurator - which does not seem to have souch problems - to
+          change the cameras ip settings once.
+       -# Network Adapter: Basler is recommending Network Adapters of the
+          Intel PRO 1000 series. They observed a significantly higher CPU load
+          when working with other.
+
+    **/
+    class PylonGrabber : public Grabber, public Interruptable {
+      public:
+        /// The constructor
+        /**
+        * @param dev The PylonDevice that should be used for image acquisition.
+        * @param args The arguments provided to this grabber.
+        */
+        ICLIO_API PylonGrabber(const Pylon::CDeviceInfo &dev, const std::string args);
+
+        /// Destructor
+        ICLIO_API ~PylonGrabber();
+
+        /// grab function grabs an image (destination image is adapted on demand)
+        /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
+        ICLIO_API virtual const core::ImgBase* acquireDisplay();
+
+        /// Uses args to choose a pylon device
+        /**
+        * @param args The arguments provided to this grabber.
+        * @throw ICLException when no suitable device exists.
+        */
+        ICLIO_API static Pylon::CDeviceInfo getDeviceFromArgs(std::string args);
+
+      private:
+        /// A mutex lock to synchronize buffer and color converter access.
+        std::recursive_mutex m_ImgMutex;
+        /// The PylonEnvironment automation.
+        PylonAutoEnv m_PylonEnv;
+        /// Count of buffers for grabbing
+        static const int m_NumBuffers = 3;
+        /// The camera interface.
+        Pylon::IPylonDevice* m_Camera;
+        /// The streamGrabber of the camera.
+        Pylon::IStreamGrabber* m_Grabber;
+        /// PylonCameraOptions used to get and set camera settings.
+        PylonCameraOptions* m_CameraOptions;
+        /// PylonColorConverter used for color conversion.
+        PylonColorConverter* m_ColorConverter;
+        /// PylonGrabberThread used for continous image acquisition.
+        PylonGrabberThread* m_GrabberThread;
+        /// A list of used buffers.
+        std::vector<PylonGrabberBuffer<uint16_t>*> m_BufferList;
+        /// A pointer to the last used buffer.
+        core::ImgBase* m_LastBuffer;
+
+        /// starts the acquisition of pictures by the camera
+        void acquisitionStart();
+        /// stops the acquisition of pictures by the camera
+        void acquisitionStop();
+        /// creates buffers and registers them at the grabber
+        void grabbingStart();
+        /// deregisters buffers from grabber and deletes them
+        void grabbingStop();
+
+        /// Prints information about the startup argument options
+        static void printHelp();
+
+        /// helper function that makes default settings for the camera.
+        void cameraDefaultSettings();
+        /// Converts pImageBuffer to correct type and writes it into m_Image
+        void convert(const void *pImageBuffer);
+    };
+
+  } //namespace pylon
+
+  using PylonGrabber = pylon::PylonGrabber;
+
+  } // namespace icl::io

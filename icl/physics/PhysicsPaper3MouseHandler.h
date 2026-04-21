@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#pragma once
+
+#include <icl/qt/MouseHandler.h>
+#include <icl/geom/Scene.h>
+#include <icl/utils/VisualizationDescription.h>
+
+namespace icl::physics {
+    /** \cond */
+    class PhysicsPaper3;
+    /** \endcond */
+
+    class PhysicsPaper3MouseHandler : public qt::MouseHandler{
+      struct Data;
+      Data *m_data;
+
+      protected:
+
+      void menuCallback(const std::string &entry);
+
+      public:
+
+      PhysicsPaper3MouseHandler(PhysicsPaper3 *model, geom::Scene *scene, int camIndex=0);
+
+      virtual void process(const qt::MouseEvent &e);
+
+      utils::VisualizationDescription vis() const;
+
+      void applyForceToModel(float streangth=1, float radius = 0.1);
+
+      /// if enabled, links are always added twice (with few pixels distance)
+      void setAddLinksTwice(bool enabled);
+
+      void setDragIndicatorsVisible(bool on);
+    };
+
+  }

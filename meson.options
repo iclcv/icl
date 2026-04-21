@@ -1,0 +1,28 @@
+# Build targets
+option('examples',   type: 'boolean', value: false, description: 'Build example programs')
+option('demos',      type: 'boolean', value: false, description: 'Build demo programs')
+option('apps',       type: 'boolean', value: false, description: 'Build applications')
+option('tests',      type: 'boolean', value: false, description: 'Build test suite')
+option('benchmarks', type: 'boolean', value: false, description: 'Build benchmarks')
+
+# Optimization
+option('native', type: 'boolean', value: false, description: 'Enable -march=native')
+
+# Optional dependencies (auto = detect, enabled = require, disabled = skip)
+option('qt',           type: 'feature', value: 'auto', description: 'Qt6 GUI framework')
+option('opencv',       type: 'feature', value: 'auto', description: 'OpenCV image conversion')
+option('ipp',          type: 'feature', value: 'disabled', description: 'Intel IPP acceleration')
+option('mkl',          type: 'feature', value: 'disabled', description: 'Intel MKL math')
+option('opencl',       type: 'feature', value: 'auto', description: 'OpenCL acceleration')
+option('eigen',        type: 'feature', value: 'auto', description: 'Eigen3 math library')
+option('bullet',       type: 'feature', value: 'auto', description: 'Bullet physics engine')
+option('imagemagick',  type: 'feature', value: 'auto', description: 'ImageMagick image I/O')
+option('libav',        type: 'feature', value: 'auto', description: 'FFmpeg/libav video I/O')
+option('libdc',        type: 'feature', value: 'disabled', description: 'FireWire camera support')
+option('v4l',          type: 'feature', value: 'disabled', description: 'V4L2 USB camera support')
+option('zmq',          type: 'feature', value: 'disabled', description: 'ZeroMQ network I/O')
+option('pcl',          type: 'feature', value: 'disabled', description: 'PCL point cloud support')
+option('pylon',        type: 'feature', value: 'disabled', description: 'Basler Pylon GigE cameras')
+option('libfreenect',  type: 'feature', value: 'disabled', description: 'Kinect 1 support')
+option('libfreenect2', type: 'feature', value: 'disabled', description: 'Kinect 2 support')
+option('cycles',       type: 'feature', value: 'auto', description: 'Blender Cycles raytracing')

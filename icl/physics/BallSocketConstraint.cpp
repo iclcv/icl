@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#include <icl/physics/BallSocketConstraint.h>
+#include <icl/physics/PhysicsDefs.h>
+#include <icl/physics/RigidBoxObject.h>
+
+namespace icl::physics {
+    BallSocketConstraint::BallSocketConstraint(RigidObject* a, RigidObject* b, const geom::Mat &frameInA, const geom::Mat &frameInB, const bool useLinearReferenceFrameA):
+      SixDOFConstraint(a,b,frameInA,frameInB,useLinearReferenceFrameA) {
+      setAngularLowerLimit(geom::Vec(1,1,1));
+      setAngularUpperLimit(geom::Vec(0,0,0));
+    }
+    BallSocketConstraint::BallSocketConstraint(RigidObject* a, RigidObject* b, const geom::Vec &pivotInA, const geom::Vec &pivotInB, const bool useLinearReferenceFrameA):
+    SixDOFConstraint(a,b,pivotInA,pivotInB,useLinearReferenceFrameA) {
+      setAngularLowerLimit(geom::Vec(1,1,1));
+      setAngularUpperLimit(geom::Vec(0,0,0));
+    }
+  }

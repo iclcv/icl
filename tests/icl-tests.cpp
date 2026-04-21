@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <ICLUtils/Test.h>
-#include <ICLUtils/ProgArg.h>
+#include <icl/utils/Test.h>
+#include <icl/utils/ProgArg.h>
 #include <iostream>
 #include <string>
 #include <thread>

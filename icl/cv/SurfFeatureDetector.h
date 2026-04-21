@@ -1,0 +1,79 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#pragma once
+
+#include <icl/utils/CompatMacros.h>
+#include <icl/cv/SurfFeature.h>
+#include <string>
+#include <vector>
+#include <icl/core/Image.h>
+
+namespace icl{
+  namespace core{ class Image; }
+  namespace cv{
+
+      /// ICL's *New* Generic Surf Feature detection class
+      /** Internally, the class either uses the opensurf-based implementation
+          or an OpenCL-based implementation based on the clsurf library.
+          The OpenSurf backend needs OpenCV, while the clsurf-backend
+          builds on mandatory OpenCL support.
+      */
+      class ICLCV_API SurfFeatureDetector {
+        struct Data;  //!< hidden implementation
+        Data *m_data; //!< hidden data pointer
+
+        public:
+
+        /// Constructor with given SURF detection parameters
+        /** plugin can be either "opensurf" or "clsurf" or "best",
+            which will prefer "clsurf" if possible */
+        SurfFeatureDetector(int octaves=5, int intervals=4, int sampleStep=2,
+                            float threshold = 0.00005f,
+                            const std::string &plugin="best");
+
+        ~SurfFeatureDetector();
+
+        /// detects SURF features in given image
+        const std::vector<SurfFeature> &detect(const core::ImgBase *image);
+
+        /// Image-based overload
+        inline const std::vector<SurfFeature> &detect(const core::Image &image) {
+          return detect(image.ptr());
+        }
+
+        /// detects SURF features in given image and stores them as internal reference features
+        /** Please note, that the reference image is internally stored (by deep copy)
+            When parameters are changed and the back-end must be re-initialized, the
+            copy of the reference image is used to compute a new reference feature set
+            based on the new parameters. */
+        void setReferenceImage(const core::ImgBase *image);
+
+        /// Image-based overload
+        inline void setReferenceImage(const core::Image &image) {
+          setReferenceImage(image.ptr());
+        }
+
+        /// returns the featuers internally stored as reference
+        const std::vector<SurfFeature> &getReferenceFeatures() const ;
+
+        /// detections SURF features and matches them against the given reference features
+        const std::vector<SurfMatch> &match(const core::ImgBase *image, float significance=0.65);
+
+        /// Image-based overload
+        inline const std::vector<SurfMatch> &match(const core::Image &image, float significance=0.65) {
+          return match(image.ptr(), significance);
+        }
+
+        void setOctaves(int octaves);
+
+        void setIntervals(int intervals);
+
+        void setSampleStep(int sampleStep);
+
+        void setThreshold(float threshold);
+      };
+
+  }
+}

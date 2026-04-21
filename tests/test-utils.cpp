@@ -2,13 +2,13 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <ICLUtils/Test.h>
-#include <ICLUtils/Size.h>
-#include <ICLUtils/Point.h>
-#include <ICLUtils/Rect.h>
-#include <ICLUtils/Range.h>
-#include <ICLUtils/StringUtils.h>
-#include <ICLUtils/Random.h>
+#include <icl/utils/Test.h>
+#include <icl/utils/Size.h>
+#include <icl/utils/Point.h>
+#include <icl/utils/Rect.h>
+#include <icl/utils/Range.h>
+#include <icl/utils/StringUtils.h>
+#include <icl/utils/Random.h>
 
 using namespace icl::utils;
 

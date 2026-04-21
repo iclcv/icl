@@ -1,0 +1,21 @@
+// Precompiled header for icl-core
+#include <vector>
+#include <string>
+#include <map>
+#include <algorithm>
+#include <functional>
+#include <iostream>
+#include <sstream>
+#include <memory>
+#include <cmath>
+#include <type_traits>
+#include <icl/utils/CompatMacros.h>
+#include <icl/utils/BasicTypes.h>
+#include <icl/utils/Exception.h>
+#include <icl/utils/StringUtils.h>
+#include <icl/utils/Macros.h>
+#include <icl/math/DynMatrix.h>
+#include <icl/core/Img.h>
+#include <icl/core/ImgBase.h>
+#include <icl/core/Types.h>
+#include <icl/core/Color.h>

@@ -2,9 +2,9 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <ICLUtils/Test.h>
-#include <ICLMath/FixedMatrix.h>
-#include <ICLMath/DynMatrix.h>
+#include <icl/utils/Test.h>
+#include <icl/math/FixedMatrix.h>
+#include <icl/math/DynMatrix.h>
 
 using namespace icl::utils;
 using namespace icl::math;
