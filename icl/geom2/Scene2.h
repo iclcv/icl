@@ -67,6 +67,7 @@ namespace icl::geom2 {
     // --- Lights (also added to scene graph for traversal) ---
     void addLight(std::shared_ptr<LightNode> light);
     LightNode *getLight(int index);
+    const LightNode *getLight(int index) const;
     int getLightCount() const;
 
     // --- Cameras ---

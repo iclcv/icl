@@ -44,10 +44,19 @@ geom2_sources = files(
   'Scene2MouseHandler.cpp',
   'BVH.cpp',
   'TextNode.cpp',
-  # CyclesRenderer.cpp and SceneSynchronizer.cpp need Cycles include paths
-  # and link libraries — deferred until Cycles build integration is ported.
-  # Headers (Raytracer.h, CyclesRenderer.h, SceneSynchronizer.h) are ready.
 )
+
+# Cycles renderer (reuses include/link config computed in icl/geom/meson.build)
+geom2_cycles_args = []
+geom2_cycles_deps = []
+if cycles_found
+  geom2_sources += files(
+    'CyclesRenderer.cpp',
+    'SceneSynchronizer.cpp',
+  )
+  geom2_cycles_args = geom_cycles_args
+  geom2_cycles_deps = geom_cycles_link
+endif
 
 # Include dirs for 3rdparty single-header libs used by Loader.cpp
 _stb_inc = include_directories('../../3rdparty')
@@ -58,13 +67,20 @@ if fs.is_dir(meson.project_source_root() / '3rdparty/cycles/lib/macos_arm64/mate
   _cgltf_inc = [include_directories(_cgltf_path)]
 endif
 
+_geom2_inc = [root_inc, gen_inc, _stb_inc] + _cgltf_inc
+if cycles_found
+  _geom2_inc += [geom_cycles_inc, _cycles_sys_inc]
+endif
+
 icl_geom2_lib = shared_library('icl-geom2',
   geom2_sources,
-  include_directories: [root_inc, gen_inc, _stb_inc] + _cgltf_inc,
-  dependencies: [icl_qt_dep, icl_geom_dep],  # qt for DrawWidget3D, geom for Camera+Material
+  include_directories: _geom2_inc,
+  dependencies: [icl_qt_dep, icl_geom_dep] + geom2_cycles_deps,
+  cpp_args: geom2_cycles_args,
   version: so_version,
   implicit_include_directories: false,
   install: true,
+  install_rpath: cycles_found ? _cycles_install / 'lib' : '',
 )
 
 icl_geom2_dep = declare_dependency(

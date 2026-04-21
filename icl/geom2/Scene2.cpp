@@ -92,6 +92,10 @@ namespace icl::geom2 {
     return (i >= 0 && i < (int)m_data->lights.size()) ? m_data->lights[i].get() : nullptr;
   }
 
+  const LightNode *Scene2::getLight(int i) const {
+    return (i >= 0 && i < (int)m_data->lights.size()) ? m_data->lights[i].get() : nullptr;
+  }
+
   int Scene2::getLightCount() const { return (int)m_data->lights.size(); }
 
   // Cameras

@@ -29,6 +29,7 @@
 #include "scene/background.h"
 #include "scene/integrator.h"
 #include "util/transform.h"
+#include "util/unique_ptr.h"
 #include "kernel/types.h"
 
 using namespace ccl;
@@ -49,7 +50,7 @@ namespace icl::geom2 {
     return tfm;
   }
 
-  // ---- Material/shader creation (reused from geom SceneSynchronizer) ----
+  // ---- Material/shader creation ----
 
   static Shader *createDefaultShader(ccl::Scene *scene) {
     auto *shader = scene->create_node<Shader>();
@@ -57,10 +58,8 @@ namespace icl::geom2 {
     auto *bsdf = graph->create_node<PrincipledBsdfNode>();
     bsdf->set_base_color(make_float3(0.8f, 0.8f, 0.8f));
     bsdf->set_roughness(0.5f);
-    graph->add(bsdf);
-    ShaderOutput *out = bsdf->output("BSDF");
-    graph->connect(out, graph->output()->input("Surface"));
-    shader->set_graph(graph);
+    graph->connect(bsdf->output("BSDF"), graph->output()->input("Surface"));
+    shader->set_graph(unique_ptr<ShaderGraph>(graph));
     shader->tag_update(scene);
     return shader;
   }
@@ -80,9 +79,8 @@ namespace icl::geom2 {
       bsdf->set_emission_strength(1.0f);
     }
 
-    graph->add(bsdf);
     graph->connect(bsdf->output("BSDF"), graph->output()->input("Surface"));
-    shader->set_graph(graph);
+    shader->set_graph(unique_ptr<ShaderGraph>(graph));
     shader->tag_update(scene);
     return shader;
   }
@@ -165,7 +163,7 @@ namespace icl::geom2 {
         ndata[i] = (i < (int)srcNormals.size()) ? N[i] : make_float3(0, 0, 1);
     }
 
-    array<Node*> shaders;
+    array<ccl::Node*> shaders;
     if (!mesh->get_used_shaders().empty())
       shaders = mesh->get_used_shaders();
     mesh->set_used_shaders(shaders);
@@ -271,7 +269,6 @@ namespace icl::geom2 {
 
   void SceneSynchronizer::syncCamera(const geom::Camera &cam, ccl::Scene *cclScene,
                                       float sceneScale) {
-    // Reuse camera sync from geom SceneSynchronizer (copied verbatim)
     ccl::Camera *cclCam = cclScene->camera;
     auto rp = cam.getRenderParams();
     int w = rp.chipSize.width, h = rp.chipSize.height;
@@ -282,30 +279,37 @@ namespace icl::geom2 {
     auto up = cam.getUp();
 
     float3 camPos = make_float3(pos[0]*sceneScale, pos[1]*sceneScale, pos[2]*sceneScale);
-    float3 lookDir = normalize(make_float3(norm[0], norm[1], norm[2]));
+    float3 forward = normalize(make_float3(norm[0], norm[1], norm[2]));
     float3 upVec = normalize(make_float3(up[0], up[1], up[2]));
-    float3 horiz = normalize(cross(lookDir, upVec));
-    upVec = cross(horiz, lookDir);
+    float3 horiz = normalize(cross(upVec, forward));
+    upVec = cross(forward, horiz);
 
-    Transform cam2world;
-    cam2world.x = make_float4(horiz.x, -upVec.x, -lookDir.x, camPos.x);
-    cam2world.y = make_float4(horiz.y, -upVec.y, -lookDir.y, camPos.y);
-    cam2world.z = make_float4(horiz.z, -upVec.z, -lookDir.z, camPos.z);
+    Transform tfm;
+    tfm.x = make_float4( horiz.x, -upVec.x, forward.x, camPos.x);
+    tfm.y = make_float4( horiz.y, -upVec.y, forward.y, camPos.y);
+    tfm.z = make_float4( horiz.z, -upVec.z, forward.z, camPos.z);
 
-    cclCam->set_matrix(cam2world);
+    cclCam->set_matrix(tfm);
     cclCam->set_camera_type(CAMERA_PERSPECTIVE);
 
-    float focalMM = cam.getFocalLength();
-    float sensorW = rp.chipSize.width * rp.samplingResolution;
-    float fovRad = 2.0f * std::atan2(sensorW * 0.5f, focalMM);
-    cclCam->set_fov(fovRad);
+    // Vertical FOV: fov = 2 * atan(h / (2 * f * my))
+    float f = cam.getFocalLength();
+    float my = cam.getSamplingResolutionY();
+    if (f > 0 && my > 0 && h > 0) {
+      float fov = 2.0f * std::atan(float(h) / (2.0f * f * my));
+      fov = std::max(0.087f, std::min(2.97f, fov));
+      cclCam->set_fov(fov);
+    }
 
     float nearClip = rp.clipZNear * sceneScale;
     float farClip = rp.clipZFar * sceneScale;
-    cclCam->set_nearclip(nearClip > 0 ? nearClip : 0.01f);
-    cclCam->set_farclip(farClip > 0 ? farClip : 10000.0f);
+    if (nearClip <= 0) nearClip = 0.01f;
+    if (farClip <= nearClip) farClip = nearClip * 10000.0f;
+    if (farClip / nearClip > 1e6f) farClip = nearClip * 1e6f;
+    cclCam->set_nearclip(nearClip);
+    cclCam->set_farclip(farClip);
 
-    cclCam->tag_update();
+    cclCam->compute_auto_viewplane();
   }
 
   void SceneSynchronizer::syncLights(const Scene2 &scene, ccl::Scene *cclScene,
@@ -313,43 +317,45 @@ namespace icl::geom2 {
     if (m_lightsCreated) return;
     m_lightsCreated = true;
 
-    // Remove existing Cycles lights
-    while (!cclScene->lights.empty())
-      cclScene->delete_node(cclScene->lights.back());
-
     for (int i = 0; i < scene.getLightCount(); i++) {
-      auto *light = scene.getLight(i);
+      const auto *light = scene.getLight(i);
       if (!light || !light->isVisible()) continue;
 
-      auto *cLight = cclScene->create_node<ccl::Light>();
       auto c = light->getColor();
       float intensity = light->getIntensity();
 
       auto t = light->getTransformation(true);
-      float3 pos = make_float3(t(3,0)*sceneScale, t(3,1)*sceneScale, t(3,2)*sceneScale);
+      // Translation in column 3 of the 4x4 transform (row-major, (row,col) convention)
+      float3 pos = make_float3(t(0,3)*sceneScale, t(1,3)*sceneScale, t(2,3)*sceneScale);
 
-      cLight->set_light_type(LIGHT_POINT);
-      cLight->set_co(pos);
-      cLight->set_strength(make_float3(c[0]*intensity, c[1]*intensity, c[2]*intensity));
-
+      // Physical inverse-square falloff calibration (same as legacy geom)
       float typicalDist = 500.0f * sceneScale;
-      cLight->set_size(typicalDist * 0.05f);
+      float physIntensity = 300.0f * typicalDist * typicalDist;
 
-      auto *shader = cclScene->create_node<Shader>();
-      auto *graph = new ShaderGraph();
-      auto *emNode = graph->create_node<EmissionNode>();
-      emNode->set_color(make_float3(c[0], c[1], c[2]));
-      emNode->set_strength(intensity * 100.0f);
-      graph->add(emNode);
+      PointLight *cclLight = cclScene->create_node<PointLight>();
+      cclLight->set_strength(make_float3(
+          c[0] * physIntensity, c[1] * physIntensity, c[2] * physIntensity));
+      cclLight->set_radius(0.1f * sceneScale);
+
+      // Emission shader
+      Shader *lightShader = cclScene->create_node<Shader>();
+      ShaderGraph *graph = new ShaderGraph();
+      EmissionNode *emNode = graph->create_node<EmissionNode>();
+      emNode->set_color(make_float3(1, 1, 1));
+      emNode->set_strength(1.0f);
       graph->connect(emNode->output("Emission"), graph->output()->input("Surface"));
-      shader->set_graph(graph);
-      shader->tag_update(cclScene);
-      cLight->set_shader(shader);
+      lightShader->set_graph(unique_ptr<ShaderGraph>(graph));
+      lightShader->tag_update(cclScene);
 
-      auto *lightObj = cclScene->create_node<ccl::Object>();
+      array<ccl::Node *> used_shaders;
+      used_shaders.push_back_slow(lightShader);
+      cclLight->set_used_shaders(used_shaders);
+
+      // Object for the light (hidden from camera to avoid visible sphere)
+      ccl::Object *lightObj = cclScene->create_node<ccl::Object>();
+      lightObj->set_geometry(cclLight);
       lightObj->set_tfm(transform_translate(pos));
       lightObj->set_visibility(PATH_RAY_ALL_VISIBILITY & ~PATH_RAY_CAMERA);
-      cLight->tag_update(cclScene);
     }
   }
 

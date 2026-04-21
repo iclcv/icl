@@ -6,6 +6,7 @@
 #include <icl/geom2/SceneSynchronizer.h>
 
 #include <icl/geom2/Scene2.h>
+#include <icl/geom/Camera.h>
 
 // Qt defines 'emit' as a macro; ICL defines LOG_LEVEL as a macro.
 // Both conflict with Cycles headers.
