@@ -80,6 +80,14 @@ namespace icl::geom2 {
       sphere->getMaterial()->reflectivity = 0.9f;
       root->addChild(sphere);
 
+      // Gold metallic sphere
+      auto goldSphere = std::make_shared<SphereNode>(-200, 80, 0, 80, 40, 40);
+      goldSphere->setMaterial(Material::fromColor(GeomColor(255, 200, 80, 255)));
+      goldSphere->getMaterial()->metallic = 0.9f;
+      goldSphere->getMaterial()->roughness = 0.35f;
+      goldSphere->getMaterial()->reflectivity = 0.3f;
+      root->addChild(goldSphere);
+
       // RGB wireframe cube: 12 edges built from 10%-sized voxels
       // Corner colors = RGB cube: (x,y,z) → (R,G,B), linearly interpolated.
       // Each voxel gets random reflectivity.
