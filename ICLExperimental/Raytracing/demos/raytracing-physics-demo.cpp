@@ -202,11 +202,64 @@ void init() {
   scene.getLight(1).setDiffuse(GeomColor(60, 70, 100, 255));
   scene.getLight(1).setAmbient(GeomColor(10, 10, 15, 255));
 
-  for (int i = 0; i < 5; i++) spawnObject();
+  // Pre-populate scene with a curated arrangement + one glowing object
+  {
+    // Large white sphere (emissive area light) in the center
+    auto *glow = new RigidSphereObject(0, 0, TABLE_Z + 80, 40, 0);
+    glow->setVisible(Primitive::line, false);
+    glow->setVisible(Primitive::vertex, false);
+    glow->createAutoNormals(true);
+    glow->setColor(Primitive::triangle, GeomColor(255, 220, 150, 255));
+    glow->setEmission(GeomColor(255, 230, 180, 255), 1.5f);
+    glow->setReflectivity(0.0f);
+    scene.addObject(glow, true);
+
+    // Red cube to the left
+    auto *cube1 = new RigidBoxObject(-120, -40, TABLE_Z + 30, 50, 50, 50, 0);
+    cube1->setVisible(Primitive::line, false);
+    cube1->setVisible(Primitive::vertex, false);
+    cube1->createAutoNormals(false);
+    cube1->setColor(Primitive::quad, GeomColor(200, 60, 60, 255));
+    cube1->setReflectivity(0.05f);
+    scene.addObject(cube1, true);
+
+    // Blue cube to the right
+    auto *cube2 = new RigidBoxObject(130, 30, TABLE_Z + 25, 40, 40, 40, 0);
+    cube2->setVisible(Primitive::line, false);
+    cube2->setVisible(Primitive::vertex, false);
+    cube2->createAutoNormals(false);
+    cube2->setColor(Primitive::quad, GeomColor(60, 80, 200, 255));
+    cube2->setReflectivity(0.3f);
+    scene.addObject(cube2, true);
+
+    // Green sphere behind
+    auto *sphere2 = new RigidSphereObject(30, 100, TABLE_Z + 35, 30, 0);
+    sphere2->setVisible(Primitive::line, false);
+    sphere2->setVisible(Primitive::vertex, false);
+    sphere2->createAutoNormals(true);
+    sphere2->setColor(Primitive::triangle, GeomColor(60, 180, 80, 255));
+    sphere2->setReflectivity(0.1f);
+    scene.addObject(sphere2, true);
+
+    // Shiny mirror cylinder in front
+    auto *cyl = new RigidCylinderObject(-30, -100, TABLE_Z + 35, 20, 60, 0);
+    cyl->setVisible(Primitive::line, false);
+    cyl->setVisible(Primitive::vertex, false);
+    cyl->setColor(Primitive::quad, GeomColor(200, 200, 210, 255));
+    cyl->setColor(Primitive::triangle, GeomColor(200, 200, 210, 255));
+    cyl->setReflectivity(0.7f);
+    scene.addObject(cyl, true);
+  }
 
   std::string backend = pa("-backend");
   if (backend == "auto") backend = "";
   raytracer = std::make_unique<icl::rt::SceneRaytracer>(scene, backend);
+
+  // Default to path tracing + SVGF + ACES for best visual quality
+  raytracer->setPathTracing(true);
+  raytracer->setDenoising(icl::rt::DenoisingMethod::SVGF);
+  raytracer->setToneMapping(icl::rt::ToneMapMethod::ACES);
+  raytracer->setExposure(0.7f);
 
   float initialScale = pa("-scale");
   if (initialScale < 1.0f) {
@@ -216,19 +269,20 @@ void init() {
 
   gui  << Canvas().handle("draw").minSize(64, 48)
        << (VBox().minSize(20, 24)
-          << CheckBox("pause physics", "unchecked").handle("pause")
+          << CheckBox("pause physics", "checked").handle("pause")
           << Slider(10, 120, 30).handle("spawnRate").label("spawn interval")
           << Button("spawn 10").handle("burst")
-          << CheckBox("Path tracing GI", "unchecked").handle("pathTracing")
+          << CheckBox("Path tracing GI", "checked").handle("pathTracing")
           << Combo("!1x off,4x 2x2,9x 3x3,16x 4x4").handle("aa").label("MSAA")
           << CheckBox("FXAA", "checked").handle("fxaa")
           << CheckBox("Adaptive AA", "unchecked").handle("adaptiveAA")
           << Combo("!Bilinear,Edge-Aware,MetalFX Spatial,MetalFX Temporal").handle("upsampling").label("Upsampling")
           << Slider(25, 100, 100).handle("renderScale").label("Render Resolution %")
-          << Combo("!None,Bilateral,A-Trous Wavelet,SVGF").handle("denoising").label("Denoising")
+          << Combo("None,Bilateral,A-Trous Wavelet,!SVGF").handle("denoising").label("Denoising")
           << Slider(0, 100, 50).handle("denoiseStrength").label("Denoise Strength %")
-          << Combo("!None,Reinhard,ACES Filmic,Hable").handle("toneMap").label("Tone Mapping")
-          << Slider(10, 500, 100).handle("exposure").label("Exposure %")
+          << Slider(0, 100, 100).handle("lightDim").label("Scene Lights %")
+          << Combo("None,Reinhard,!ACES Filmic,Hable").handle("toneMap").label("Tone Mapping")
+          << Slider(10, 500, 70).handle("exposure").label("Exposure %")
           << Label("--").handle("info")
         )<< Show();
 
@@ -240,6 +294,29 @@ void init() {
 static int frameCount = 0;
 
 void run() {
+  // Scene light intensity
+  static float lastLightDim = -1;
+  float lightDim = gui["lightDim"].as<int>() / 100.0f;
+  if (lightDim != lastLightDim) {
+    // Base colors from init()
+    static const GeomColor baseDiffuse0(255, 245, 220, 255);
+    static const GeomColor baseAmbient0(35, 33, 30, 255);
+    static const GeomColor baseSpecular0(255, 245, 220, 255);
+    static const GeomColor baseDiffuse1(60, 70, 100, 255);
+    static const GeomColor baseAmbient1(10, 10, 15, 255);
+
+    auto scale = [](const GeomColor &c, float s) {
+      return GeomColor(c[0]*s, c[1]*s, c[2]*s, c[3]);
+    };
+    scene.getLight(0).setDiffuse(scale(baseDiffuse0, lightDim));
+    scene.getLight(0).setAmbient(scale(baseAmbient0, lightDim));
+    scene.getLight(0).setSpecular(scale(baseSpecular0, lightDim));
+    scene.getLight(1).setDiffuse(scale(baseDiffuse1, lightDim));
+    scene.getLight(1).setAmbient(scale(baseAmbient1, lightDim));
+    lastLightDim = lightDim;
+    raytracer->invalidateAll(); // force scene data re-upload
+  }
+
   static const int aaValues[] = {1, 4, 9, 16};
   int aaIdx = gui["aa"].as<ComboHandle>().getSelectedIndex();
   raytracer->setAASamples(aaValues[aaIdx]);
