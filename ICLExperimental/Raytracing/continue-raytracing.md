@@ -312,6 +312,10 @@ classes before XML parsing starts. Called at the top of `xml_read_file()`.
 5. ~~**Delete old infrastructure**~~ ✓ Done (Session 7) — removed ~9,870 lines
 6. ~~**Analytic spheres**~~ ✓ Done (Session 7) — SceneObject::ObjectType::Sphere
    renders via Cycles PointCloud (perfect ray-sphere intersection, zero faceting)
+7. ~~**Camera crash fix**~~ ✓ Done (Session 7) — removed `cclCam->update()` call
+   that caused SIGBUS; Session::reset() handles it. FOV/clip plane clamping added.
+8. ~~**Hosek-Wilkie sky**~~ ✓ Done (Session 7) — realistic environment lighting
+   via SkyTextureNode, proper light intensity scaling for scene units
 
 ### Source Layout (Post-Cycles Migration)
 
@@ -354,8 +358,9 @@ cmake --build . -j16
    to feed ICL Material texture maps (baseColorMap, normalMap, etc.) to Cycles
    ImageTextureNode.
 
-3. **Environment maps** — allow setting HDR environment maps for realistic
-   reflections and sky lighting instead of the constant background.
+3. **Custom environment maps** — allow loading HDR environment maps as
+   background (currently hardcoded Hosek-Wilkie sky). Add `setBackground()`
+   API to CyclesRenderer for sky params or HDR image path.
 
 4. **Interactive demo** — ICLApp-based demo with mouse orbit, quality slider,
    progressive rendering display.
@@ -368,7 +373,7 @@ cmake --build . -j16
 - No texture mapping yet (Material textures not forwarded to Cycles)
 - Lights are recreated every frame (no incremental light sync)
 - Only point lights supported (no spot/area/sun lights yet)
-- No environment map / HDR sky support
+- Default sky is Hosek-Wilkie (hardcoded) — no custom environment map loading yet
 - Camera must be configured via ICL intrinsics (no direct FOV setter yet)
 - SceneObject::ObjectType only set for sphere/cube factories (not for
   programmatically-built objects)
