@@ -5,6 +5,8 @@
 #include <icl/geom2/Renderer.h>
 #include <icl/geom2/GroupNode.h>
 #include <icl/geom2/GeometryNode.h>
+#include <icl/geom2/PointCloudNode.h>
+#include <icl/geom2/PointCloud.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/core/Img.h>
 #include <icl/geom/Material.h>
@@ -288,6 +290,64 @@ void main() { FragColor = vColor; }
     }
   };
 
+  // ---- Point Cloud Cache ----
+
+  struct PCCache {
+    GLuint vao = 0, vbo = 0;
+    int numPoints = 0;
+
+    ~PCCache() {
+      if (vao) glDeleteVertexArrays(1, &vao);
+      if (vbo) glDeleteBuffers(1, &vbo);
+    }
+
+    void upload(const PointCloud &cloud, const GeomColor &fallbackColor) {
+      int n = cloud.getDim();
+      if (n == 0) { numPoints = 0; return; }
+
+      struct ColorVert { float px,py,pz, r,g,b,a; };
+      std::vector<ColorVert> data(n);
+
+      auto xyz = cloud.selectXYZ();
+      bool hasColor = cloud.supports(PointCloud::RGBA32f);
+      core::DataSegment<float,4> rgba = hasColor
+        ? cloud.selectRGBA32f()
+        : core::DataSegment<float,4>();
+
+      for (int i = 0; i < n; i++) {
+        auto &v = xyz[i];
+        data[i].px = v[0]; data[i].py = v[1]; data[i].pz = v[2];
+        if (hasColor) {
+          auto &c = rgba[i];
+          // Normalize: if colors are in [0,255] range, convert to [0,1]
+          if (c[0] > 1.01f || c[1] > 1.01f || c[2] > 1.01f) {
+            data[i].r = c[0]/255.f; data[i].g = c[1]/255.f;
+            data[i].b = c[2]/255.f; data[i].a = c[3]/255.f;
+          } else {
+            data[i].r = c[0]; data[i].g = c[1];
+            data[i].b = c[2]; data[i].a = c[3];
+          }
+        } else {
+          data[i].r = fallbackColor[0]; data[i].g = fallbackColor[1];
+          data[i].b = fallbackColor[2]; data[i].a = fallbackColor[3];
+        }
+      }
+
+      if (!vao) glGenVertexArrays(1, &vao);
+      glBindVertexArray(vao);
+      if (!vbo) glGenBuffers(1, &vbo);
+      glBindBuffer(GL_ARRAY_BUFFER, vbo);
+      glBufferData(GL_ARRAY_BUFFER, n * sizeof(ColorVert), data.data(), GL_DYNAMIC_DRAW);
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7*sizeof(float), 0);
+      glEnableVertexAttribArray(1);
+      glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7*sizeof(float), (void*)(3*sizeof(float)));
+      glBindVertexArray(0);
+
+      numPoints = n;
+    }
+  };
+
   // ---- Renderer Data ----
 
   struct LightInfo {
@@ -317,6 +377,7 @@ void main() { FragColor = vColor; }
     GLint locUnlitMVP = -1, locUnlitPointSize = -1;
 
     std::unordered_map<const GeometryNode*, std::unique_ptr<GeomCache>> cache;
+    std::unordered_map<const PointCloudNode*, std::unique_ptr<PCCache>> pcCache;
 
     // Lights collected during traversal
     std::vector<LightInfo> lights;
@@ -364,7 +425,7 @@ void main() { FragColor = vColor; }
 
   void Renderer::setExposure(float e) { m_data->exposure = e; }
   void Renderer::setAmbient(float a) { m_data->ambient = a; }
-  void Renderer::invalidateCache() { m_data->cache.clear(); }
+  void Renderer::invalidateCache() { m_data->cache.clear(); m_data->pcCache.clear(); }
 
   void Renderer::ensureShaderCompiled() {
     if (m_data->shaderReady) return;
@@ -493,6 +554,37 @@ void main() { FragColor = vColor; }
     if (auto *group = dynamic_cast<GroupNode*>(node)) {
       for (int i = 0; i < group->getChildCount(); i++) {
         renderNode(group->getChild(i), viewMatrix);
+      }
+    }
+    else if (auto *pcn = dynamic_cast<PointCloudNode*>(node)) {
+      auto cloud = pcn->getPointCloud();
+      if (cloud && cloud->getDim() > 0 && m_data->unlitProgram) {
+        auto &pc = m_data->pcCache[pcn];
+        if (!pc) pc = std::make_unique<PCCache>();
+
+        // Determine fallback color from material or default white
+        GeomColor fallback(1,1,1,1);
+        auto mat = pcn->getMaterial();
+        if (mat) fallback = mat->baseColor;
+
+        // Lock cloud, re-upload every frame (point clouds are dynamic)
+        cloud->lock();
+        pc->upload(*cloud, fallback);
+        cloud->unlock();
+
+        if (pc->numPoints > 0) {
+          glUseProgram(m_data->unlitProgram);
+          Mat mvp = m_data->currentProjection * viewMatrix * modelMatrix;
+          setUniformMat4(m_data->locUnlitMVP, mvp);
+          float ps = pcn->getPointSize();
+          glUniform1f(m_data->locUnlitPointSize, ps);
+          glEnable(GL_PROGRAM_POINT_SIZE);
+          glBindVertexArray(pc->vao);
+          glDrawArrays(GL_POINTS, 0, pc->numPoints);
+          glBindVertexArray(0);
+          glDisable(GL_PROGRAM_POINT_SIZE);
+          glUseProgram(m_data->pbrProgram);
+        }
       }
     }
     else if (auto *geom = dynamic_cast<GeometryNode*>(node)) {

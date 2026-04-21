@@ -43,6 +43,12 @@ elif have_neon
 endif
 add_project_arguments(simd_args, language: 'cpp')
 
+# ---- OpenMP ----
+openmp_dep = dependency('openmp', required: get_option('openmp'))
+if openmp_dep.found()
+  add_project_arguments('-DICL_HAVE_OPENMP', language: 'cpp')
+endif
+
 # ---- Platform definitions ----
 if host_machine.system() == 'darwin'
   add_project_arguments('-DICL_SYSTEM_APPLE', language: 'cpp')
@@ -68,7 +74,7 @@ add_project_arguments(
   language: 'cpp',
 )
 
-required_deps = [thread_dep, zlib_dep, jpeg_dep, png_dep, dl_dep, m_dep]
+required_deps = [thread_dep, zlib_dep, jpeg_dep, png_dep, dl_dep, m_dep, openmp_dep]
 
 # ---- Optional dependencies ----
 

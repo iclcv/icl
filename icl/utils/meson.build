@@ -125,7 +125,7 @@ utils_sources = files(
   'Timer.cpp',
 )
 
-utils_deps = [thread_dep, zlib_dep, jpeg_dep, png_dep, dl_dep, m_dep, opencl_dep, glew_dep]
+utils_deps = [thread_dep, zlib_dep, jpeg_dep, png_dep, dl_dep, m_dep, opencl_dep, glew_dep, openmp_dep]
 
 icl_utils_lib = shared_library('icl-utils',
   utils_sources,

@@ -23,7 +23,7 @@ using namespace icl::geom2;
 | `CoordinateFrameSceneObject` | `CoordinateFrameNode` | GroupNode with 3 CuboidNode axes |
 | `SceneObject(filename)` | `MeshNode::load(filename)` | Returns `vector<shared_ptr<MeshNode>>` |
 | `SceneLight` + `SceneLightObject` | `LightNode` | Single class, position from transform |
-| `PointCloudObjectBase` | `PointCloudNode` | TODO |
+| `PointCloudObjectBase` | `PointCloudNode` + `PointCloud` | Node wraps shared_ptr\<PointCloud\> |
 
 ## Key Differences
 
@@ -193,9 +193,33 @@ for (auto &m : MeshNode::load("model.glb"))
     scene.addNode(m);
 ```
 
+### Point cloud
+
+```cpp
+// Old: PointCloudObject inherits SceneObject (data + rendering mixed)
+PointCloudObject *obj = new PointCloudObject(w, h, true, true, true);
+scene.addObject(obj, true);
+obj->lock();
+creator.create(depthImg, *obj, &colorImg);
+obj->unlock();
+
+// New: PointCloud (data) + PointCloudNode (scene graph) — cleanly separated
+auto cloud = std::make_shared<PointCloud>(w, h, PointCloud::XYZ | PointCloud::RGBA32f);
+auto node = PointCloudNode::create(cloud);
+scene.addNode(node);
+cloud->lock();
+auto xyz = cloud->selectXYZ();       // DataSegment<float,3>
+auto rgba = cloud->selectRGBA32f();  // DataSegment<float,4>
+// ... fill xyz/rgba from depth camera ...
+cloud->unlock();
+
+// Swap point cloud atomically (zero lock contention)
+auto newCloud = std::make_shared<PointCloud>(w, h, PointCloud::XYZ);
+node->setPointCloud(newCloud);
+```
+
 ## What's NOT yet ported
 
-- PointCloudNode (replaces PointCloudObjectBase)
 - Mouse interaction / picking (hit testing)
 - Cycles renderer compilation (headers ready, build wiring TODO)
 - Text primitives / billboard text

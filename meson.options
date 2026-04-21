@@ -7,6 +7,7 @@ option('benchmarks', type: 'boolean', value: false, description: 'Build benchmar
 
 # Optimization
 option('native', type: 'boolean', value: false, description: 'Enable -march=native')
+option('openmp', type: 'feature', value: 'auto', description: 'OpenMP parallelization')
 
 # Optional dependencies (auto = detect, enabled = require, disabled = skip)
 option('qt',           type: 'feature', value: 'auto', description: 'Qt6 GUI framework')
