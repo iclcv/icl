@@ -43,20 +43,20 @@ namespace icl::io {
   }
 
   const std::vector<GrabberDeviceDescription>& getCreateDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
-    if(deviceList.empty()){
-        deviceList.push_back(GrabberDeviceDescription("create","parrot", "everywhere available test images source parrot"));
-        deviceList.push_back(GrabberDeviceDescription("create","lena", "everywhere available test images source lena"));
-        deviceList.push_back(GrabberDeviceDescription("create","flowers", "everywhere available test images source flowers"));
-        deviceList.push_back(GrabberDeviceDescription("create","mandril", "everywhere available test images source mandril"));
-        deviceList.push_back(GrabberDeviceDescription("create","cameraman", "everywhere available test images source cameraman"));
-        deviceList.push_back(GrabberDeviceDescription("create","women", "everywhere available test images source women"));
-        deviceList.push_back(GrabberDeviceDescription("create","tree", "everywhere available test images source tree"));
-        deviceList.push_back(GrabberDeviceDescription("create","house", "everywhere available test images source house"));
-    }
+    static const std::vector<GrabberDeviceDescription> deviceList = []{
+      std::vector<GrabberDeviceDescription> v;
+      // Names must match TestImages::internalCreate — keep in sync.
+      for(const char *name : {"parrot", "lena", "cameraman", "mandril",
+                              "flowers", "windows", "women", "tree", "house"}){
+        v.push_back(GrabberDeviceDescription("create", name,
+                    std::string("built-in test image '") + name + "'"));
+      }
+      return v;
+    }();
     return deviceList;
   }
 
-  REGISTER_GRABBER(create,createCreateGrabber, getCreateDeviceList,"create:parrot|lena|cameraman|mandril:everywhere available test images source");
+  REGISTER_GRABBER(create, createCreateGrabber, getCreateDeviceList,
+                   "create:parrot|lena|cameraman|mandril|flowers|windows|women|tree|house:built-in test image");
 
   } // namespace icl::io
