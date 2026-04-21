@@ -28,6 +28,10 @@
 #include <QOpenGLFramebufferObject>
 #include <QOffscreenSurface>
 #include <ICLCore/CCFunctions.h>
+
+#ifdef ICL_HAVE_CYCLES
+#include <ICLGeom/CyclesRenderer.h>
+#endif
 #endif
 
 #include <set>
@@ -1218,6 +1222,39 @@ namespace icl::geom {
       m_rendererGL = std::make_unique<SceneRendererGL>();
     }
     return *m_rendererGL;
+  }
+
+  /// Dummy raytracer fallback: returns a gray placeholder image
+  struct DummyRaytracer : public Raytracer {
+    core::Img8u placeholder;
+
+    void start(int) override {}
+    void stop() override {}
+    void setOnImageReady(std::function<void(const core::Img8u &)>) override {}
+    void render(int) override {}
+    void renderBlocking(int) override {}
+    const core::Img8u &getImage() const override { return placeholder; }
+    void invalidateAll() override {}
+    void invalidateTransforms() override {}
+    void invalidateObject(SceneObject *) override {}
+    void setSamples(int) override {}
+    void setMaxBounces(int) override {}
+    void setExposure(float) override {}
+    void setBrightness(float) override {}
+    float getProgress() const override { return 0; }
+    int getUpdateCount() const override { return 0; }
+    bool isRendering() const override { return false; }
+  };
+
+  Raytracer &Scene::getRaytracer() {
+    if (!m_raytracer) {
+#ifdef ICL_HAVE_CYCLES
+      m_raytracer = std::make_unique<rt::CyclesRenderer>(*this);
+#else
+      m_raytracer = std::make_unique<DummyRaytracer>();
+#endif
+    }
+    return *m_raytracer;
   }
 
 #endif // QT

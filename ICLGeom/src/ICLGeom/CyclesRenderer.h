@@ -4,15 +4,9 @@
 
 #pragma once
 
-#include <ICLCore/Img.h>
+#include <ICLGeom/Raytracer.h>
 #include <memory>
 #include <string>
-#include <functional>
-
-namespace icl::geom {
-  class Scene;
-  class SceneObject;
-}
 
 namespace icl::rt {
 
@@ -21,10 +15,9 @@ enum class RenderQuality { Preview, Interactive, Final };
 
 /// Renders an ICL Scene using Blender Cycles as the backend.
 ///
-/// Uses PIMPL to hide all Cycles headers from ICL consumers.
-/// Supports incremental scene updates — only changed objects are
-/// re-synchronized to the Cycles scene.
-class CyclesRenderer {
+/// Implements the Raytracer interface. Uses PIMPL to hide all Cycles
+/// headers from ICL consumers. Supports incremental scene updates.
+class CyclesRenderer : public geom::Raytracer {
 public:
   /// Create a renderer for the given scene.
   /// @param scene The ICL scene to render (kept by reference).
@@ -42,52 +35,33 @@ public:
   /// Start autonomous rendering: internal thread drives progressive refinement.
   /// Calls onImageReady callback (if set) whenever a new result is available.
   /// Call invalidateAll() when scene changes — the renderer restarts automatically.
-  void start(int camIndex = 0);
+  void start(int camIndex = 0) override;
+  void stop() override;
+  void setOnImageReady(std::function<void(const core::Img8u &)> cb) override;
+  void render(int camIndex = 0) override;
+  void renderBlocking(int camIndex = 0) override;
+  const core::Img8u &getImage() const override;
 
-  /// Stop autonomous rendering and join the management thread.
-  void stop();
+  void setSamples(int samples) override;
+  void setMaxBounces(int bounces) override;
+  void setExposure(float exposure) override;
+  void setBrightness(float brightness) override;
 
-  /// Set callback for new progressive results (called from render thread).
-  /// The callback receives a const reference to the latest image.
-  void setOnImageReady(std::function<void(const core::Img8u &)> cb);
+  void invalidateAll() override;
+  void invalidateTransforms() override;
+  void invalidateObject(geom::SceneObject *obj) override;
 
-  /// Render the scene from the given camera (non-blocking, poll-driven).
-  /// Legacy API: call repeatedly from run() loop. Prefer start()/stop().
-  void render(int camIndex = 0);
+  float getProgress() const override;
+  int getUpdateCount() const override;
+  bool isRendering() const override;
+  bool isAvailable() const override { return true; }
 
-  /// Blocking render: syncs scene, renders all samples, returns when done.
-  /// Use for offline/headless rendering.
-  void renderBlocking(int camIndex = 0);
-
-  /// Get the latest rendered frame (progressively refined, thread-safe).
-  const core::Img8u &getImage() const;
-
-  /// Quality preset control.
+  // Cycles-specific (not in Raytracer interface)
   void setQuality(RenderQuality quality);
   RenderQuality getQuality() const;
-
-  /// Fine-grained overrides (override preset defaults).
-  void setSamples(int samples);
-  void setInitialSamples(int n);  ///< Samples for first progressive step (default: 1).
-  void setMaxBounces(int bounces);
+  void setInitialSamples(int n);
   void setDenoising(bool enabled);
-  void setExposure(float exposure);
-  void setBrightness(float brightness);  ///< Scale background + lights (0..1).
-  void setResolutionScale(float scale);  ///< Render at fraction of camera resolution (0.1..1.0).
-
-  /// Scene change notification — call before render() when scene has changed.
-  void invalidateAll();                           ///< Full geometry + material rebuild.
-  void invalidateTransforms();                    ///< Transform-only update (physics).
-  void invalidateObject(geom::SceneObject *obj);  ///< Single object changed.
-
-  /// Rendering progress (0.0 to 1.0).
-  float getProgress() const;
-
-  /// Number of times the output driver received a tile update.
-  int getUpdateCount() const;
-
-  /// Whether the renderer is currently producing samples.
-  bool isRendering() const;
+  void setResolutionScale(float scale);
 
   /// Select compute device: "CPU", "METAL", "CUDA", or "" for auto-detect.
   void setDevice(const std::string &device);

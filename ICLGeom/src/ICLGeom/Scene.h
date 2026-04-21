@@ -34,6 +34,7 @@
 #include <map>
 #include <ICLGeom/ShaderUtil.h>
 #include <ICLGeom/SceneRendererGL.h>
+#include <ICLGeom/Raytracer.h>
 
 /** \cond */
 namespace icl::qt { class ICLDrawWidget; }
@@ -240,6 +241,9 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
 
   /// returns the scene's GL 4.1 Core Profile renderer (created on first access)
   SceneRendererGL &getRendererGL();
+
+  /// returns the scene's raytracer (CyclesRenderer if available, dummy otherwise)
+  Raytracer &getRaytracer();
 
   enum DepthBufferMode{
     RawDepth01,      //!< raw core::depth buffer in range [0,1]
@@ -468,6 +472,9 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
 
   /// GL 4.1 Core Profile renderer (lazy, created on first getRendererGL())
   std::unique_ptr<SceneRendererGL> m_rendererGL;
+
+  /// Raytracer (lazy, created on first getRaytracer())
+  std::unique_ptr<Raytracer> m_raytracer;
 
   struct PBuffer;
 

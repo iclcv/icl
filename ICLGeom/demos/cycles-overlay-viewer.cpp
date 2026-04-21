@@ -14,11 +14,9 @@
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Material.h>
 #include <ICLGeom/SceneRendererGL.h>
+#include <ICLGeom/Raytracer.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <ICLGeom/CyclesRenderer.h>
 #include <ICLGeom/SceneSetup.h>
-
-#include <memory>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -26,13 +24,12 @@ using namespace icl::qt;
 using namespace icl::geom;
 
 static Scene scene;
-static std::unique_ptr<icl::rt::CyclesRenderer> renderer;
 static icl::rt::SceneSetupResult setupResult;
 HSplit gui;
 
 static void handleMouse(const MouseEvent &evt) {
   scene.getMouseHandler(0)->process(evt);
-  if (renderer) renderer->invalidateAll();
+  scene.getRaytracer().invalidateAll();
 }
 
 static void init() {
@@ -46,12 +43,7 @@ static void init() {
       pa("-decimate") ? pa("-decimate").as<int>() : 0,
       pa("-rotate") ? pa("-rotate").as<std::string>() : "");
 
-  // Renderers
-  renderer = std::make_unique<icl::rt::CyclesRenderer>(
-      scene, icl::rt::RenderQuality::Preview);
-  renderer->setSceneScale(1.0f);
-
-  // Scene owns the GL renderer — set overlay mode for compositing
+  // Scene owns both renderers
   scene.getRendererGL().setOverlayMode(true);
 
   // GUI: canvas on left, controls on right
@@ -69,8 +61,8 @@ static void init() {
   canvas->install(new MouseHandler(handleMouse));
   canvas->link(scene.getGLCallback(0));
 
-  // Start autonomous rendering — fires callback on each progressive result
-  renderer->start(0);
+  // Start autonomous rendering
+  scene.getRaytracer().start(0);
 }
 
 static void run() {
@@ -78,9 +70,10 @@ static void run() {
   float exposure = gui["exposure"].as<float>() / 100.0f;
   int bounces = gui["bounces"].as<int>();
 
-  renderer->setMaxBounces(bounces);
-  renderer->setExposure(exposure);
-  renderer->setBrightness(scene.getSky().intensity * 100.0f);
+  auto &rt = scene.getRaytracer();
+  rt.setMaxBounces(bounces);
+  rt.setExposure(exposure);
+  rt.setBrightness(scene.getSky().intensity * 100.0f);
 
   scene.getRendererGL().setExposure(exposure);
   scene.getRendererGL().setOverlayAlpha(alpha);
@@ -90,19 +83,20 @@ static void run() {
   int matIdx = gui["material"].as<ComboHandle>().getSelectedIndex();
   if (matIdx != lastMat) {
     lastMat = matIdx;
-    icl::rt::applyMaterialPreset(matIdx, setupResult, renderer.get());
+    icl::rt::applyMaterialPreset(matIdx, setupResult, nullptr);
+    rt.invalidateAll();
     for (int i = 0; i < scene.getObjectCount(); i++)
       scene.getObject(i)->prepareForRendering();
   }
 
   // Pull latest Cycles image (renderer runs autonomously via start())
   DrawHandle3D canvas = gui["canvas"];
-  canvas = &renderer->getImage();
+  canvas = &rt.getImage();
   canvas.render();
 
   static FPSEstimator fpsEst(10);
   gui["info"] = fpsEst.formatted("%d spp | #fps fps | GL %.0f%%",
-                                  renderer->getUpdateCount(), alpha * 100);
+                                  rt.getUpdateCount(), alpha * 100);
 
   static FPSLimiter fpslim(30);
   fpslim.wait();
