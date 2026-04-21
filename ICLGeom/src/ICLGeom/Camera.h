@@ -143,11 +143,49 @@ namespace icl::geom {
            m_mx(sampling_res_x), m_my(sampling_res_y), m_skew(skew), m_renderParams(renderParams) {}
 
     /// Create a camera using intuitive look-at parameters.
-    /// @param position Camera position in world coordinates.
-    /// @param target   Point the camera looks at.
-    /// @param up       World up direction (default: Y-up).
-    /// @param resolution Image resolution in pixels.
-    /// @param hfovDeg  Horizontal field of view in degrees (default: 60).
+    /** This is a convenience factory that shields callers from ICL's internal
+        camera axis conventions. Internally, ICL's Camera stores an \b up vector
+        (\c m_up) that points toward \e positive \e image-Y — i.e. toward the
+        \b bottom of the displayed image, not the top. This is a consequence of
+        the pinhole camera model: the image plane's Y axis increases downward,
+        matching the sensor/pixel convention (row 0 = top). The derived
+        horizontal vector \c horiz = cross(up, norm) then points in the
+        positive image-X direction, which — due to the same pinhole geometry —
+        is opposite to the visual "screen right" direction.
+
+        In contrast, \c lookAt() accepts the world direction that should appear
+        at the \e top of the image (the conventional meaning of "up" in most
+        3D APIs). It projects this onto the plane perpendicular to the view
+        direction, then \b negates it to obtain the internal \c m_up.
+
+        \b Coordinate \b system \b conventions:
+
+        ICL Camera stores three extrinsic vectors:
+        \li \c norm — view direction (camera center → scene), same across all conventions.
+        \li \c m_up — positive image-Y direction = visual \e down (toward the
+            bottom of the displayed image).
+        \li \c horiz = cross(m_up, norm) — positive image-X direction.
+
+        Because \c m_up points downward on screen and \c horiz is derived from
+        it via a cross product, the resulting image-plane coordinate system is
+        left-handed (mirrored in X relative to the real world when viewed from
+        the camera's perspective). This is correct for the pinhole projection
+        formula \c image_x = px + f·mx·dot(horiz, P-C)/dot(norm, P-C) where a
+        positive dot product with \c horiz produces a positive image-X offset.
+        The mirror cancels out in the projection math.
+
+        When converting these axes to a conventional 3D rendering API (OpenGL,
+        Cycles, …) where camera +X = visual right and +Y = visual up, both
+        axes must be negated: \c screen_right = −horiz, \c screen_up = −m_up.
+
+        @param position   Camera position in world coordinates.
+        @param target     Point the camera looks at.
+        @param up         World-up direction — the direction that should appear at
+                          the \e top of the rendered image (default: Y-up).
+                          Must not be parallel to the view direction.
+        @param resolution Image resolution in pixels.
+        @param hfovDeg    Horizontal field of view in degrees (default: 60).
+    */
     static Camera lookAt(const Vec &position, const Vec &target,
                          const Vec &up = Vec(0, 1, 0, 1),
                          const utils::Size &resolution = utils::Size(800, 600),

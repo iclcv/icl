@@ -859,37 +859,53 @@ namespace icl::geom {
 
   Camera Camera::lookAt(const Vec &position, const Vec &target,
                         const Vec &up, const Size &resolution, float hfovDeg) {
-    // Compute view direction (norm)
+    // --- View direction (norm) ---
     Vec norm = target - position;
     norm[3] = 0;
     float len = std::sqrt(norm[0]*norm[0] + norm[1]*norm[1] + norm[2]*norm[2]);
     if (len > 1e-10f) { norm[0] /= len; norm[1] /= len; norm[2] /= len; }
     norm[3] = 1;
 
-    // ICL's "up" is the direction in world space that maps to the image's
-    // upward direction. For a standard look-at with a world up vector,
-    // the image-up is the component of world-up perpendicular to norm.
-    // We compute this as: image_up = world_up - (world_up · norm) * norm
-    Vec imageUp = up;
-    imageUp[3] = 0;
-    float d = imageUp[0]*norm[0] + imageUp[1]*norm[1] + imageUp[2]*norm[2];
-    imageUp[0] -= d * norm[0];
-    imageUp[1] -= d * norm[1];
-    imageUp[2] -= d * norm[2];
-    float ulen = std::sqrt(imageUp[0]*imageUp[0] + imageUp[1]*imageUp[1] + imageUp[2]*imageUp[2]);
-    if (ulen > 1e-10f) { imageUp[0] /= ulen; imageUp[1] /= ulen; imageUp[2] /= ulen; }
-    imageUp[3] = 1;
+    // --- Up vector conversion ---
+    //
+    // The caller's "up" is the world direction that should appear at the top
+    // of the image — the standard meaning in OpenGL, Blender, etc.
+    //
+    // ICL's internal m_up has a different meaning: it points toward *positive
+    // image-Y*, which increases downward on screen (row 0 = top of image).
+    // So m_up points toward the BOTTOM of the displayed image.
+    //
+    // Derivation:
+    //   1. Gram-Schmidt: project world-up perpendicular to norm → visualUp
+    //   2. Negate: iclUp = −visualUp  (visual top → positive image-Y = visual bottom)
+    //
+    // This negation is critical.  Without it, the camera's horiz vector
+    // (cross(m_up, norm)) points in the wrong direction, producing a
+    // horizontally mirrored image, and the image-Y axis points upward
+    // instead of downward, flipping the image vertically.
+    //
+    Vec visualUp = up;
+    visualUp[3] = 0;
+    float d = visualUp[0]*norm[0] + visualUp[1]*norm[1] + visualUp[2]*norm[2];
+    visualUp[0] -= d * norm[0];
+    visualUp[1] -= d * norm[1];
+    visualUp[2] -= d * norm[2];
+    float ulen = std::sqrt(visualUp[0]*visualUp[0] + visualUp[1]*visualUp[1] + visualUp[2]*visualUp[2]);
+    if (ulen > 1e-10f) { visualUp[0] /= ulen; visualUp[1] /= ulen; visualUp[2] /= ulen; }
 
-    // Compute intrinsics from hfov: fov = 2*atan(w/(2*f*mx))
-    // Using ICL's default mx=200: f = w / (2 * mx * tan(fov/2))
+    Vec iclUp(-visualUp[0], -visualUp[1], -visualUp[2], 1);
+
+    // --- Intrinsics from horizontal FOV ---
+    // ICL's projection: image_x = px + f * mx * dot(h, P-C) / dot(n, P-C)
+    // At the image edge (image_x = px + w/2), the angle satisfies:
+    //   tan(hfov/2) = (w/2) / (f * mx)   →   f = w / (2 * mx * tan(hfov/2))
     float mx = 200.0f;
     float hfovRad = hfovDeg * M_PI / 180.0f;
     float f = resolution.width / (2.0f * mx * std::tan(hfovRad / 2.0f));
 
-    // Principal point at image center
     Point32f pp(resolution.width / 2.0f, resolution.height / 2.0f);
 
-    Camera cam(position, norm, imageUp, f, pp, mx, mx, 0,
+    Camera cam(position, norm, iclUp, f, pp, mx, mx, 0,
                RenderParams(resolution, 1.0f, 100000.0f));
     return cam;
   }

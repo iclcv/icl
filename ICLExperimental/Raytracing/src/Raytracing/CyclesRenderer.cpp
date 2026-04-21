@@ -72,11 +72,11 @@ private:
     icl8u *g = m_image.begin(1);
     icl8u *b = m_image.begin(2);
 
-    // Y row is negated in camera matrix to match ICL's down-pointing up vector.
-    // This makes Cycles output top-down already — no flip needed.
+    // Cycles outputs pixels bottom-up; convert to top-down for ICL image.
     for (int y = 0; y < h; ++y) {
+      const int srcY = h - 1 - y;
       for (int x = 0; x < w; ++x) {
-        const int srcIdx = (y * w + x) * 4;
+        const int srcIdx = (srcY * w + x) * 4;
         const int dstIdx = y * w + x;
         auto toSRGB = [](float v) -> icl8u {
           v = std::max(0.0f, std::min(1.0f, v));

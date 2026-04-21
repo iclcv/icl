@@ -449,33 +449,38 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
 
   float3 camPos = make_float3(pos[0] * sceneScale, pos[1] * sceneScale, pos[2] * sceneScale);
   float3 forward = normalize(make_float3(norm[0], norm[1], norm[2]));
-  // ICL's "up" points toward the BOTTOM of the image (positive image Y = down).
-  // Use as-is for computing the camera basis.
-  float3 camUp = normalize(make_float3(up[0], up[1], up[2]));
+  // ICL's m_up points toward positive image-Y (visual down on screen).
+  // ICL's pinhole model inverts both axes: horiz and up define image-coordinate
+  // directions, not visual screen directions.  For Cycles' camera-to-world we
+  // need the non-inverted basis: visual screen-right and visual screen-up.
+  float3 iclUp = normalize(make_float3(up[0], up[1], up[2]));
 
-  // Compute right vector
-  float3 right = cross(forward, camUp);
-  float rightLen = len(right);
+  // Visual right = cross(forward, iclUp)  (negated ICL horiz — undo pinhole X-inversion)
+  float3 cycRight = cross(forward, iclUp);
+  float rightLen = len(cycRight);
   if (rightLen < 1e-6f) {
-    // Fallback: pick an arbitrary perpendicular
-    right = make_float3(1, 0, 0);
-    if (fabsf(dot(forward, right)) > 0.9f)
-      right = make_float3(0, 1, 0);
-    right = normalize(cross(forward, right));
+    // Fallback: forward and iclUp are parallel — pick an arbitrary perpendicular
+    cycRight = make_float3(1, 0, 0);
+    if (fabsf(dot(forward, cycRight)) > 0.9f)
+      cycRight = make_float3(0, 1, 0);
+    cycRight = normalize(cross(cycRight, forward));
   } else {
-    right = right * (1.0f / rightLen);
+    cycRight = cycRight * (1.0f / rightLen);
   }
-  float3 upVec = cross(right, forward);
+  // Reorthogonalize visual up (right-hand rule: up = forward × right)
+  float3 cycUp = cross(forward, cycRight);
 
-  // Cycles camera-to-world transform: rows are the camera's local axes in world space.
-  // Camera looks along +Z in local space (row z = forward).
-  // ICL's up points to image-bottom, so the Y axis in camera space is flipped
-  // relative to Cycles' convention. Negate the Y row to correct this.
-  // The OutputDriver's bottom-to-top flip then produces the correct orientation.
+  // Cycles Transform is row-stored but transform_direction reads COLUMNS as
+  // the camera basis.  So camera axes go as columns:
+  //   column 0 = cycRight  (camera +X = visual right)
+  //   column 1 = cycUp     (camera +Y = visual up)
+  //   column 2 = forward   (camera +Z = view direction)
+  //   column 3 = camPos    (.w components)
+  // Cycles outputs pixels bottom-up; OutputDriver flips to top-down for ICL.
   Transform tfm;
-  tfm.x = make_float4(right.x, right.y, right.z, camPos.x);
-  tfm.y = make_float4(-upVec.x, -upVec.y, -upVec.z, camPos.y);
-  tfm.z = make_float4(forward.x, forward.y, forward.z, camPos.z);
+  tfm.x = make_float4(cycRight.x, cycUp.x, forward.x, camPos.x);
+  tfm.y = make_float4(cycRight.y, cycUp.y, forward.y, camPos.y);
+  tfm.z = make_float4(cycRight.z, cycUp.z, forward.z, camPos.z);
 
   cclCam->set_matrix(tfm);
 
@@ -503,7 +508,7 @@ void SceneSynchronizer::syncCamera(const geom::Camera &cam,
           f, mx, nearClip, farClip, w, h);
   fprintf(stderr, "[Camera] pos=(%.1f,%.1f,%.1f) fwd=(%.2f,%.2f,%.2f) up=(%.2f,%.2f,%.2f) fov=%.1f°\n",
           camPos.x, camPos.y, camPos.z, forward.x, forward.y, forward.z,
-          upVec.x, upVec.y, upVec.z,
+          cycUp.x, cycUp.y, cycUp.z,
           cclCam->get_fov() * 180.0f / M_PI);
   fprintf(stderr, "[Camera] tfm: [%.2f %.2f %.2f %.1f] [%.2f %.2f %.2f %.1f] [%.2f %.2f %.2f %.1f]\n",
           tfm.x.x, tfm.x.y, tfm.x.z, tfm.x.w,
