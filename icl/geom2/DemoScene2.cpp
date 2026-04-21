@@ -158,7 +158,7 @@ namespace icl::geom2 {
 
       auto groundMat = std::make_shared<Material>();
       groundMat->baseColor = GeomColor(0.8f, 0.8f, 0.8f, 1);
-      groundMat->roughness = 0.4f;
+      groundMat->roughness = 0.5f;
       groundMat->reflectivity = 0.3f;
       groundMat->smoothShading = true;
       groundMat->textures = std::make_shared<Material::TextureMaps>();

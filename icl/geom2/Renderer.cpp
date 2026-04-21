@@ -75,6 +75,13 @@ uniform sampler2D uEmissiveMap;
 uniform int uHasOcclusionMap;
 uniform sampler2D uOcclusionMap;
 
+// Screen-space reflections
+uniform int uSSREnabled;
+uniform sampler2D uPrevColorMap;
+uniform sampler2D uPrevDepthMap;
+uniform mat4 uPrevVP;
+uniform vec2 uScreenSize;
+
 in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
@@ -91,6 +98,85 @@ vec3 sampleSky(vec3 dir) {
     } else {
         return mix(horizon, ground, min(-y * 3.0, 1.0));
     }
+}
+
+vec4 traceSSR(vec3 worldPos, vec3 reflectDir, float roughness) {
+    if (uSSREnabled == 0 || roughness > 0.7) return vec4(0.0);
+
+    // Reproject to previous frame screen space
+    vec4 startClip = uPrevVP * vec4(worldPos, 1.0);
+    vec3 startNDC = startClip.xyz / startClip.w;
+    vec2 startUV = startNDC.xy * 0.5 + 0.5;
+    float startDepth = startNDC.z * 0.5 + 0.5;
+
+    if (startUV.x < 0.0 || startUV.x > 1.0 || startUV.y < 0.0 || startUV.y > 1.0)
+        return vec4(0.0);
+
+    // Reflection ray endpoint in screen space
+    float probeDist = length(worldPos - uCameraPos) * 0.1;
+    vec3 probeWorld = worldPos + reflectDir * probeDist;
+    vec4 probeClip = uPrevVP * vec4(probeWorld, 1.0);
+    vec3 probeNDC = probeClip.xyz / probeClip.w;
+
+    // Screen-space ray direction
+    vec2 dir2D = (probeNDC.xy * 0.5 + 0.5) - startUV;
+    float dirLen = length(dir2D);
+    if (dirLen < 1e-6) return vec4(0.0);
+    float maxScreenDist = 0.4;
+    float scale = maxScreenDist / dirLen;
+    vec2 rayDir2D = dir2D * scale;
+    float depthSlope = ((probeNDC.z * 0.5 + 0.5) - startDepth) * scale;
+
+    // Depth-adaptive thickness
+    float thickness = 0.001 + startDepth * startDepth * 0.01;
+
+    // Linear ray march
+    int maxSteps = 64;
+    float stepSize = 1.0 / float(maxSteps);
+    float hitT = -1.0;
+    vec2 hitUV = vec2(0.0);
+
+    for (int i = 2; i < maxSteps; i++) {
+        float t = float(i) * stepSize;
+        vec2 sampleUV = startUV + rayDir2D * t;
+        if (sampleUV.x < 0.0 || sampleUV.x > 1.0 || sampleUV.y < 0.0 || sampleUV.y > 1.0) break;
+
+        float rayDepth = startDepth + depthSlope * t;
+        float sceneDepth = texture(uPrevDepthMap, sampleUV).r;
+        if (sceneDepth > 0.999) continue;
+
+        float depthDiff = rayDepth - sceneDepth;
+        if (depthDiff > 0.0 && depthDiff < thickness) {
+            hitT = t;
+            hitUV = sampleUV;
+            break;
+        }
+    }
+    if (hitT < 0.0) return vec4(0.0);
+
+    // Binary refinement
+    float lo = hitT - stepSize, hi = hitT;
+    for (int i = 0; i < 6; i++) {
+        float mid = (lo + hi) * 0.5;
+        vec2 midUV = startUV + rayDir2D * mid;
+        float rayD = startDepth + depthSlope * mid;
+        float sceneD = texture(uPrevDepthMap, midUV).r;
+        if (rayD > sceneD) { hi = mid; hitUV = midUV; }
+        else               { lo = mid; }
+    }
+
+    // Confidence
+    float confidence = 1.0;
+    vec2 edgeDist = min(hitUV, 1.0 - hitUV);
+    confidence *= smoothstep(0.0, 0.05, edgeDist.x) * smoothstep(0.0, 0.05, edgeDist.y);
+    confidence *= 1.0 - smoothstep(0.4, 0.8, hitT);
+    confidence *= 1.0 - smoothstep(0.3, 0.7, roughness);
+
+    float finalRayD = startDepth + depthSlope * hi;
+    float finalSceneD = texture(uPrevDepthMap, hitUV).r;
+    confidence *= 1.0 - smoothstep(0.0, thickness, abs(finalRayD - finalSceneD));
+
+    return vec4(texture(uPrevColorMap, hitUV).rgb, confidence);
 }
 
 void main() {
@@ -144,6 +230,10 @@ void main() {
     vec3 envColor = sampleSky(R);
     vec3 diffuseEnv = sampleSky(N);
     vec3 envReflection = mix(envColor, diffuseEnv, roughness);
+
+    // SSR: blend with screen-space reflection where available
+    vec4 ssrResult = traceSSR(vWorldPos, R, roughness);
+    envReflection = mix(envReflection, ssrResult.rgb, ssrResult.a);
 
     // Fresnel: roughness-aware Schlick (Lagarde 2014)
     float NdotV = max(dot(N, V), 0.0);
@@ -222,6 +312,30 @@ void main() {
 in vec4 vColor;
 out vec4 FragColor;
 void main() { FragColor = vColor; }
+)";
+
+  // ---- Blit shader (fullscreen quad for SSR composite) ----
+
+  static const char *BLIT_VERT = R"(
+#version 410 core
+layout(location = 0) in vec2 aPos;
+out vec2 vUV;
+void main() {
+    vUV = aPos * 0.5 + 0.5;
+    gl_Position = vec4(aPos, 0.0, 1.0);
+}
+)";
+
+  static const char *BLIT_FRAG = R"(
+#version 410 core
+uniform sampler2D uBlitTex;
+uniform float uAlpha;
+in vec2 vUV;
+out vec4 FragColor;
+void main() {
+    vec4 c = texture(uBlitTex, vUV);
+    FragColor = vec4(c.rgb, c.a * uAlpha);
+}
 )";
 
   // ---- Geometry Cache ----
@@ -476,8 +590,29 @@ void main() { FragColor = vColor; }
     GLint locEmissiveMap = -1, locHasEmissiveMap = -1;
     GLint locOcclusionMap = -1, locHasOcclusionMap = -1;
 
+    // SSR uniform locations
+    GLint locSSREnabled = -1, locPrevColorMap = -1, locPrevDepthMap = -1;
+    GLint locPrevVP = -1, locScreenSize = -1;
+
     // Unlit uniform locations
     GLint locUnlitMVP = -1, locUnlitPointSize = -1;
+
+    // Blit shader
+    GLuint blitProgram = 0;
+    GLint blitLocTex = -1, blitLocAlpha = -1;
+
+    // SSR ping-pong buffers
+    GLuint ssrFBO[2] = {};
+    GLuint ssrColorTex[2] = {};
+    GLuint ssrDepthTex[2] = {};
+    int ssrCurrentIdx = 0;
+    int ssrWidth = 0, ssrHeight = 0;
+    bool ssrFirstFrame = true;
+    bool ssrEnabled = false;  // TODO: debug vertical streak artifacts before enabling
+    Mat prevView, prevProj;
+
+    // Fullscreen quad VAO for blit
+    GLuint quadVAO = 0, quadVBO = 0;
 
     // Per-material texture cache
     struct MatTextures {
@@ -491,6 +626,57 @@ void main() { FragColor = vColor; }
 
     // Lights collected during traversal
     std::vector<LightInfo> lights;
+
+    void ensureSSRBuffers(int w, int h) {
+      if (ssrWidth == w && ssrHeight == h && ssrFBO[0] != 0) return;
+      for (int i = 0; i < 2; i++) {
+        if (ssrFBO[i]) glDeleteFramebuffers(1, &ssrFBO[i]);
+        if (ssrColorTex[i]) glDeleteTextures(1, &ssrColorTex[i]);
+        if (ssrDepthTex[i]) glDeleteTextures(1, &ssrDepthTex[i]);
+      }
+      ssrWidth = w; ssrHeight = h; ssrFirstFrame = true;
+
+      for (int i = 0; i < 2; i++) {
+        glGenTextures(1, &ssrColorTex[i]);
+        glBindTexture(GL_TEXTURE_2D, ssrColorTex[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glGenTextures(1, &ssrDepthTex[i]);
+        glBindTexture(GL_TEXTURE_2D, ssrDepthTex[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, w, h, 0,
+                     GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
+        glGenFramebuffers(1, &ssrFBO[i]);
+        glBindFramebuffer(GL_FRAMEBUFFER, ssrFBO[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, ssrColorTex[i], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                               GL_TEXTURE_2D, ssrDepthTex[i], 0);
+      }
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void ensureQuadVAO() {
+      if (quadVAO) return;
+      float quad[] = {-1,-1, 1,-1, 1,1, -1,-1, 1,1, -1,1};
+      glGenVertexArrays(1, &quadVAO);
+      glBindVertexArray(quadVAO);
+      glGenBuffers(1, &quadVBO);
+      glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+      glBindVertexArray(0);
+    }
   };
 
   // ---- Shader helpers ----
@@ -536,6 +722,7 @@ void main() { FragColor = vColor; }
   void Renderer::setExposure(float e) { m_data->exposure = e; }
   void Renderer::setAmbient(float a) { m_data->ambient = a; }
   void Renderer::setOverlayAlpha(float a) { m_data->overlayAlpha = a; }
+  void Renderer::setSSREnabled(bool e) { m_data->ssrEnabled = e; }
   void Renderer::invalidateCache() {
     m_data->cache.clear();
     m_data->pcCache.clear();
@@ -577,6 +764,11 @@ void main() { FragColor = vColor; }
       m_data->locHasEmissiveMap = glGetUniformLocation(m_data->pbrProgram, "uHasEmissiveMap");
       m_data->locOcclusionMap = glGetUniformLocation(m_data->pbrProgram, "uOcclusionMap");
       m_data->locHasOcclusionMap = glGetUniformLocation(m_data->pbrProgram, "uHasOcclusionMap");
+      m_data->locSSREnabled = glGetUniformLocation(m_data->pbrProgram, "uSSREnabled");
+      m_data->locPrevColorMap = glGetUniformLocation(m_data->pbrProgram, "uPrevColorMap");
+      m_data->locPrevDepthMap = glGetUniformLocation(m_data->pbrProgram, "uPrevDepthMap");
+      m_data->locPrevVP = glGetUniformLocation(m_data->pbrProgram, "uPrevVP");
+      m_data->locScreenSize = glGetUniformLocation(m_data->pbrProgram, "uScreenSize");
       for (int i = 0; i < 8; i++) {
         char buf[64];
         snprintf(buf, sizeof(buf), "uLightPos[%d]", i);
@@ -595,6 +787,17 @@ void main() { FragColor = vColor; }
       m_data->unlitProgram = linkProgram(vs, fs);
       m_data->locUnlitMVP = glGetUniformLocation(m_data->unlitProgram, "uMVP");
       m_data->locUnlitPointSize = glGetUniformLocation(m_data->unlitProgram, "uPointSize");
+    }
+    if (vs) glDeleteShader(vs);
+    if (fs) glDeleteShader(fs);
+
+    // Blit shader (SSR composite)
+    vs = compileShader(GL_VERTEX_SHADER, BLIT_VERT);
+    fs = compileShader(GL_FRAGMENT_SHADER, BLIT_FRAG);
+    if (vs && fs) {
+      m_data->blitProgram = linkProgram(vs, fs);
+      m_data->blitLocTex = glGetUniformLocation(m_data->blitProgram, "uBlitTex");
+      m_data->blitLocAlpha = glGetUniformLocation(m_data->blitProgram, "uAlpha");
     }
     if (vs) glDeleteShader(vs);
     if (fs) glDeleteShader(fs);
@@ -669,6 +872,26 @@ void main() { FragColor = vColor; }
     for (auto &node : nodes)
       collectLights(node.get(), m_data->lights);
 
+    // SSR: get viewport, set up ping-pong FBOs
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    int vpW = viewport[2], vpH = viewport[3];
+
+    GLint mainFBO = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &mainFBO);
+
+    bool useSSR = m_data->ssrEnabled && vpW > 0 && vpH > 0;
+    if (useSSR) {
+      m_data->ensureSSRBuffers(vpW, vpH);
+      m_data->ensureQuadVAO();
+
+      int writeIdx = m_data->ssrCurrentIdx;
+      glBindFramebuffer(GL_FRAMEBUFFER, m_data->ssrFBO[writeIdx]);
+      glViewport(0, 0, vpW, vpH);
+      glClearColor(0, 0, 0, 0);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
@@ -679,12 +902,9 @@ void main() { FragColor = vColor; }
     setUniformMat4(m_data->locView, viewMatrix);
     glUniform1f(m_data->locAmbient, m_data->ambient);
     glUniform1f(m_data->locExposure, m_data->exposure);
-    glUniform1f(m_data->locOverlayAlpha, m_data->overlayAlpha);
+    glUniform1f(m_data->locOverlayAlpha, useSSR ? 1.0f : m_data->overlayAlpha);
 
-    // Camera position from view matrix (inverse translation)
-    // view = [R|t], camPos = -R^T * t. For orthonormal R: R^T = R^-1.
-    // The 4th column of the inverse view is the camera position.
-    // Approximate: last row of ICL row-major view matrix has translation.
+    // Camera position from view matrix
     float camX = -(viewMatrix(0, 0)*viewMatrix(0, 3) + viewMatrix(1, 0)*viewMatrix(1, 3) + viewMatrix(2, 0)*viewMatrix(2, 3));
     float camY = -(viewMatrix(0, 1)*viewMatrix(0, 3) + viewMatrix(1, 1)*viewMatrix(1, 3) + viewMatrix(2, 1)*viewMatrix(2, 3));
     float camZ = -(viewMatrix(0, 2)*viewMatrix(0, 3) + viewMatrix(1, 2)*viewMatrix(1, 3) + viewMatrix(2, 2)*viewMatrix(2, 3));
@@ -698,8 +918,74 @@ void main() { FragColor = vColor; }
       glUniform3fv(m_data->locLightColor[i], 1, m_data->lights[i].color);
     }
 
+    // SSR: bind previous frame's textures
+    bool ssrActive = useSSR && !m_data->ssrFirstFrame;
+    glUniform1i(m_data->locSSREnabled, ssrActive ? 1 : 0);
+    if (ssrActive) {
+      int readIdx = 1 - m_data->ssrCurrentIdx;
+      glActiveTexture(GL_TEXTURE9);
+      glBindTexture(GL_TEXTURE_2D, m_data->ssrColorTex[readIdx]);
+      glUniform1i(m_data->locPrevColorMap, 9);
+      glActiveTexture(GL_TEXTURE10);
+      glBindTexture(GL_TEXTURE_2D, m_data->ssrDepthTex[readIdx]);
+      glUniform1i(m_data->locPrevDepthMap, 10);
+      glUniform2f(m_data->locScreenSize, (float)vpW, (float)vpH);
+
+      Mat prevVP = m_data->prevProj * m_data->prevView;
+      // Upload directly with GL_TRUE transpose (matches geom GLRenderer)
+      glUniformMatrix4fv(m_data->locPrevVP, 1, GL_TRUE, prevVP.data());
+    }
+    glActiveTexture(GL_TEXTURE0);
+
+    // Render scene
     for (auto &node : nodes) {
       renderNode(node.get(), viewMatrix);
+    }
+
+    // SSR: composite back to main framebuffer
+    if (useSSR) {
+      // Unbind prev-frame textures
+      glActiveTexture(GL_TEXTURE9);
+      glBindTexture(GL_TEXTURE_2D, 0);
+      glActiveTexture(GL_TEXTURE10);
+      glBindTexture(GL_TEXTURE_2D, 0);
+      glActiveTexture(GL_TEXTURE0);
+
+      glBindFramebuffer(GL_FRAMEBUFFER, mainFBO);
+      glViewport(viewport[0], viewport[1], vpW, vpH);
+
+      int writeIdx = m_data->ssrCurrentIdx;
+
+      if (m_data->overlayAlpha >= 0.999f) {
+        // Standard mode: fast blit
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, m_data->ssrFBO[writeIdx]);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mainFBO);
+        glBlitFramebuffer(0, 0, vpW, vpH,
+                          viewport[0], viewport[1], viewport[0]+vpW, viewport[1]+vpH,
+                          GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_FRAMEBUFFER, mainFBO);
+      } else {
+        // Overlay mode: alpha-blended blit
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glUseProgram(m_data->blitProgram);
+        glUniform1i(m_data->blitLocTex, 0);
+        glUniform1f(m_data->blitLocAlpha, m_data->overlayAlpha);
+        glBindTexture(GL_TEXTURE_2D, m_data->ssrColorTex[writeIdx]);
+
+        glBindVertexArray(m_data->quadVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+      }
+
+      // Store matrices for next frame's reprojection, swap indices
+      m_data->prevView = viewMatrix;
+      m_data->prevProj = projectionMatrix;
+      m_data->ssrCurrentIdx = 1 - m_data->ssrCurrentIdx;
+      m_data->ssrFirstFrame = false;
     }
   }
 
