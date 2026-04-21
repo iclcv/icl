@@ -6,8 +6,8 @@
 
 #include <icl/io/ImageOutput.h>
 
-#ifdef ICL_HAVE_QT
-#include <icl/io/SharedMemoryPublisher.h>
+#ifdef ICL_HAVE_QT_WEBSOCKETS
+#include <icl/io/WSImageOutput.h>
 #endif
 
 #ifdef ICL_HAVE_ZMQ
@@ -119,14 +119,25 @@ namespace icl::io {
     }
 
 #endif
-
-#ifdef ICL_HAVE_QT
-    plugins.push_back("sm~Shared Memory Segment ID~Qt based shared memory writer");
-
-    if(type == "sm"){
-      o = new SharedMemoryPublisher(d);
+#ifdef ICL_HAVE_QT_WEBSOCKETS
+    plugins.push_back("ws~PORT or BIND:PORT~WebSocket server "
+                      "(broadcasts ImageCompressor envelopes to all clients)");
+    if(type == "ws"){
+      // Accept "PORT" (default bind 0.0.0.0) or "BIND:PORT".
+      std::string bind = "0.0.0.0";
+      std::string portStr = d;
+      const auto colon = d.find(':');
+      if (colon != std::string::npos) {
+        bind = d.substr(0, colon);
+        portStr = d.substr(colon + 1);
+      }
+      o = new WSImageOutput(parse<int>(portStr), bind);
     }
 #endif
+
+    // (sm~Shared Memory Segment writer was retired in Session 47;
+    //  use ws~PORT instead — same loose-coupling use case, with
+    //  auto-reconnect resilience and cross-host as a free bonus.)
 
     plugins.push_back("file~File Pattern~File Writer");
 

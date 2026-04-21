@@ -19,9 +19,10 @@ namespace icl::io {
       Supported Backends are:
         - "file" (description=filepattern)
         - "video" (description=output-video-filename,CODEC-FOURCCC=DIV3,VideoSize=VGA,FPS=24)
-        - "sm" (SharedMemory output, description=memory-segment-ID)
-        - "xcfp" (XCF Publisher output, description=stream-name)
-        - "rsb" (Robotics Service Bus Output), description=[comma-sep. transport-list=spread]:scope)
+        - "ws" (WebSocket server, description=PORT or BIND:PORT — broadcasts to
+          every connected client; counterpart on the receiver side is the `ws`
+          GenericGrabber backend (WSGrabber); see WSImageOutput.h)
+        - "zmq" (ZeroMQ publisher, description=PORT)
         - "udp" QUdpSocket-based udp transfer, description=host:port
 
       \section META Image Meta Data
@@ -77,16 +78,10 @@ namespace icl::io {
     /// retusn current description string
     inline const std::string &getDescription() const { return description; }
 
-    /// sets the implementations compression options
-    virtual void setCompression(const ImageCompressor::CompressionSpec &spec){
-      ICLASSERT_THROW(impl,utils::ICLException("GenericImageOutput:setCompression: impl was null"));
-      impl->setCompression(spec);
-    }
-
-    /// returns the implementation's current compression type (result.first) and quality (result.second)
-    virtual CompressionSpec getCompression() const{
-      ICLASSERT_THROW(impl,utils::ICLException("GenericImageOutput:getCompression: impl was null"));
-      return impl->getCompression();
-    }
+    // Compression configuration is now exposed via the underlying output's
+    // Configurable child (under the `compression.` prefix on outputs that
+    // own an ImageCompressor — e.g. WSImageOutput). Use Prop(&output) or
+    // setPropertyValue("compression.mode", "...") instead of the retired
+    // setCompression/getCompression direct accessors.
   };
   } // namespace icl::io

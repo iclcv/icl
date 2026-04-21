@@ -30,6 +30,8 @@ io_headers = files(
   'FileWriterPluginPNM.h',
   'FilenameGenerator.h',
   'FourCC.h',
+  'CompressionPlugin.h',
+  'CompressionRegister.h',
   'GenericGrabber.h',
   'GenericImageOutput.h',
   'Grabber.h',
@@ -62,9 +64,6 @@ io_headers = files(
   'PylonGrabberThread.h',
   'PylonIncludes.h',
   'PylonUtils.h',
-  'SharedMemoryGrabber.h',
-  'SharedMemoryPublisher.h',
-  'SharedMemorySegment.h',
   'SwissRangerGrabber.h',
   'TestImages.h',
   'V4L2Grabber.h',
@@ -72,6 +71,8 @@ io_headers = files(
   'XiGrabber.h',
   'ZmqGrabber.h',
   'ZmqImageOutput.h',
+  'WSGrabber.h',
+  'WSImageOutput.h',
 )
 
 # Core (always-compiled) sources
@@ -103,6 +104,11 @@ io_sources = files(
   'GenericImageOutput.cpp',
   'Grabber.cpp',
   'IOFunctions.cpp',
+  'CompressionPlugin1611.cpp',
+  'CompressionPluginJpeg.cpp',
+  'CompressionPluginRaw.cpp',
+  'CompressionPluginRlen.cpp',
+  'CompressionRegister.cpp',
   'ImageCompressor.cpp',
   'ImageUndistortion.cpp',
   'IntrinsicCalibrator.cpp',
@@ -196,13 +202,23 @@ if zmq_dep.found()
   io_extra_deps += zmq_dep
 endif
 
-# Qt-dependent sources (shared memory grabbers)
-if qt_found
+# zstd compression plugin (optional)
+if zstd_dep.found()
+  io_sources += files('CompressionPluginZstd.cpp')
+  io_extra_deps += zstd_dep
+endif
+
+# Qt6 WebSockets (WSImageOutput + WSGrabber). Self-gating: only built
+# when both Qt and the WebSockets module are available. WS replaces the
+# legacy SharedMemoryGrabber/Publisher pair retired in Session 47 — the
+# loopback path covers the same loose-coupling-between-processes use
+# case with auto-reconnect resilience and cross-host as a free bonus.
+if qt_found and qt_websockets_dep.found()
   io_sources += files(
-    'SharedMemoryGrabber.cpp',
-    'SharedMemoryPublisher.cpp',
-    'SharedMemorySegment.cpp',
+    'WSImageOutput.cpp',
+    'WSGrabber.cpp',
   )
+  io_extra_deps += qt_websockets_dep
   io_extra_deps += qt_dep
 endif
 

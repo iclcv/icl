@@ -128,12 +128,15 @@ namespace icl::io {
                                     - 700 Direct Show Video Input
                                     (e.g. device ID 301 selects the 2nd firewire device)
                                   - cvvideo=video-filename (string)
-                                  - sm=Shared-memory-segment-id (string)
+                                  // (sm=…  retired in Session 47 — use ws=ws://… instead)
                                   - myr=deviceIndex (int) (the device index is used to create the /dev/videoX device)
                                   - kinectd=device-index (int)
                                   - kinectc=device-index (int)
                                   - kinecti=device-index (int)
                                   - optris=camera-serial
+                                  - zmq=host:port (subscribes to a ZmqImageOutput publisher)
+                                  - ws=ws://host:port (connects to a WSImageOutput publisher;
+                                    auto-reconnects on server vanish — see WSGrabber.h)
 
         @param notifyErrors if set to false, no exception is thrown if no suitable device was found
     **/

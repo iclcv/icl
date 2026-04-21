@@ -234,7 +234,7 @@ namespace icl::io {
       m_poGrabber -> addProperty("undistortion.use OpenCL","flag","",false, 0,"trys to use OpenCL for the Warping operation (if possible, please note that OpenCL-based image warping is not neccessarily faster)");
 #endif
 
-      m_poGrabber -> Configurable::registerCallback([this](const utils::Configurable::Property &p){ m_poGrabber->processPropertyChange(p); });
+      m_poGrabber -> registerCallback([this](const utils::Configurable::Property &p){ m_poGrabber->processPropertyChange(p); });
       setInternalConfigurable(m_poGrabber);
 
       const std::vector<std::string> &options = pmap[m_poDesc.type].options;
