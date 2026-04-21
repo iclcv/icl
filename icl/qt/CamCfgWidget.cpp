@@ -191,7 +191,7 @@ namespace icl::qt {
 
   void CamCfgWidget::update(){
     data->mutex.lock();
-    bool &b = data->gui.get<bool>("grabbing");
+    bool b = data->gui["grabbing"];
     if(!b){
       data->gui["fps"] = str("--.--");
       data->grabbing = false;

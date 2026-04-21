@@ -180,7 +180,7 @@ void run(){
   static Img8u bgImage1(image.getSize(), 1); bgImage1.clear(0,255);
   static Img8u bgImage2(image.getSize(), 1); bgImage2.clear(0,255);
   static Img8u bgImage3(image.getSize(), 1); bgImage3.clear(0,255);
-  thresh(image,threshedImage,gui.get<float>("t"),refColor);
+  thresh(image,threshedImage,gui["t"].as<float>(),refColor);
 
 	// draw background images
   std::string vis = gui["vis"];

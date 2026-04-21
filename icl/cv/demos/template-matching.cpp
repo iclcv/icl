@@ -115,14 +115,14 @@ void run(){
     }
     mutex.unlock();
 
-    static DrawHandle &image = gui.get<DrawHandle>("image");
-    static DrawHandle &templ = gui.get<DrawHandle>("templ");
-    static DrawHandle &buf = gui.get<DrawHandle>("buf");
-    static float &significance = gui.get<float>("significance");
-    static bool &useMasks = gui.get<bool>("use-masks");
-    static bool &clipBuffers = gui.get<bool>("clip-buffers");
-    static bool &mode = gui.get<bool>("mode");
-    static FPSHandle &fps = gui.get<FPSHandle>("fps");
+    DrawHandle image = gui["image"];
+    DrawHandle templ = gui["templ"];
+    DrawHandle buf = gui["buf"];
+    float significance = gui["significance"];
+    bool useMasks = gui["use-masks"];
+    bool clipBuffers = gui["clip-buffers"];
+    bool mode = gui["mode"];
+    FPSHandle fps = gui["fps"];
 
 
     fps.render();

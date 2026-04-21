@@ -10,6 +10,8 @@
 
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/ConvolutionOp.h>
+
+#include <functional>
 #include <icl/filter/UnaryOp.h>
 #include <icl/core/BayerConverter.h>
 #include <icl/core/CCFunctions.h>
@@ -25,7 +27,12 @@ VBox gui;
 #endif
 
 bool first = true;
-bool *ppEnabled = 0;
+// Current state of the optional preprocessing-enable toggle.  With
+// the `.out()` retirement the GUI no longer exposes a raw bool in
+// DataStore; replace the `bool *` indirection with a function that
+// reads the live state on demand (from the Button handle, or returns
+// a fixed yes/no in non-GUI modes).
+std::function<bool()> ppEnabled;
 
 GenericGrabber grabber;
 
@@ -177,7 +184,7 @@ void send_app(){
     const ImgBase *grabbedImage = grab_image();
     const ImgBase *ppImage = 0;
 
-    if(pa("-pp") && *ppEnabled){
+    if(pa("-pp") && ppEnabled && ppEnabled()){
       // Lazy-built once; either a hard-coded mnemonic (gauss/gauss5/median/median5)
       // or any registered UnaryOp class via Configurable factory (Session 43).
       static std::unique_ptr<UnaryOp> pp = []() -> std::unique_ptr<UnaryOp> {
@@ -228,7 +235,7 @@ void send_app(){
     output.send(*normImage);
 #ifdef ICL_HAVE_QT
     if(!(bool)pa("-no-gui")){
-      bool &updateImages = gui.get<bool>("updateImages");
+      bool updateImages = gui["updateImages"];
       if(updateImages){
         IH = normImage;
       }
@@ -241,7 +248,7 @@ void send_app(){
 #ifdef ICL_HAVE_QT
     int fpsLimit = 0;
     if(!(bool)pa("-no-gui")){
-      fpsLimit = gui.get<int>("fpsLimit");
+      fpsLimit = gui["fpsLimit"];
       useGUI = true;
     }else{
       fpsLimit = pa("-fps").as<int>();
@@ -293,7 +300,7 @@ void init_gui(){
              );
     gui.show();
 
-    ppEnabled = &gui.get<bool>("pp-on");
+    ppEnabled = []{ return (bool)gui["pp-on"]; };
   }else{
     gui << Display().handle("image").minSize(12,8)
         << ( VBox().maxSize(100,8)
@@ -308,7 +315,7 @@ void init_gui(){
              );
     gui.show();
 
-    ppEnabled = new bool(false);
+    ppEnabled = []{ return false; };
   }
 }
 #endif
@@ -382,14 +389,12 @@ int main(int n, char **ppc){
   if(!pa("-no-gui")){
     return ICLApp(n,ppc,"",init_gui,send_app).exec();
   }else{
-    static bool alwaysTrue = 1;
-    ppEnabled = &alwaysTrue;
+    ppEnabled = []{ return true; };
     output.init(pa("-o"));
     send_app();
   }
 #else
-  static bool alwaysTrue = 1;
-  ppEnabled = &alwaysTrue;
+  ppEnabled = []{ return true; };
   output.init(pa("-o"));
   send_app();
 #endif

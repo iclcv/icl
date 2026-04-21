@@ -87,16 +87,20 @@ void run(){
   static LabelHandle nAllSub = gui["nAllSub"];
   static LabelHandle total = gui["total"];
 
-  static LabelHandle &valHandle = gui.get<LabelHandle>("val-handle");
-  static LabelHandle &cogHandle = gui.get<LabelHandle>("cog-handle");
-  static LabelHandle &sizeHandle = gui.get<LabelHandle>("size-handle");
-  static LabelHandle &ffHandle = gui.get<LabelHandle>("ff-handle");
-  static LabelHandle &evratioHandle = gui.get<LabelHandle>("evratio-handle");
-  static LabelHandle &blHandle = gui.get<LabelHandle>("bl-handle");
-  static bool &grabButtonDown = gui.get<bool>("grabbing");
-  static ButtonHandle &grabNextHandle = gui.get<ButtonHandle>("grab-next-handle");
+  static LabelHandle valHandle = gui["val-handle"];
+  static LabelHandle cogHandle = gui["cog-handle"];
+  static LabelHandle sizeHandle = gui["size-handle"];
+  static LabelHandle ffHandle = gui["ff-handle"];
+  static LabelHandle evratioHandle = gui["evratio-handle"];
+  static LabelHandle blHandle = gui["bl-handle"];
+  static ButtonHandle grabNextHandle = gui["grab-next-handle"];
 
-  int &levels = gui.get<int>("levels");
+  // `grabbing` and `levels` used to be raw bool / int in the DataStore
+  // (via `.out()`); after retirement they route through the Button /
+  // Slider handle atomic caches.  Read them each iteration via the
+  // registry-driven `operator T()`.
+  bool grabButtonDown = gui["grabbing"];
+  int levels = gui["levels"];
   int medianSize = gui["medianSize"];
   bool showSubRegions = gui["showSubRegions"];
   bool showAllSubRegions = gui["showAllSubRegions"];

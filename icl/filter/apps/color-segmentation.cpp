@@ -360,7 +360,7 @@ void init(){
 
 void run(){
   static ButtonHandle smooth = gui["smooth"];
-  static int &smoothThresh = gui.get<int>("smoothThresh");
+  int smoothThresh = gui["smoothThresh"];
 
   if(smooth.wasTriggered()){
     icl8u *lut = segmenter->getLUT();
@@ -405,13 +405,13 @@ void run(){
   DrawHandle seg = gui["seg"];
 
   LabelHandle time = gui["time"];
-  bool &preMedian = gui.get<bool>("preMedian");
-  bool &postMedian = gui.get<bool>("postMedian");
-  bool &postErosion = gui.get<bool>("postErosion");
-  bool &postDilatation = gui.get<bool>("postDilatation");
+  bool preMedian = gui["preMedian"];
+  bool postMedian = gui["postMedian"];
+  bool postErosion = gui["postErosion"];
+  bool postDilatation = gui["postDilatation"];
 
   int zAxis = gui["zAxis"];
-  int &z = gui.get<int>("z");
+  int z = gui["z"];
 
   static Image inputImage;
   if(!inputImage || !gui["paused"].as<bool>()){

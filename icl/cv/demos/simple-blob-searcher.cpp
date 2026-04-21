@@ -13,9 +13,9 @@ std::recursive_mutex mtex;
 
 void mouse(const MouseEvent &e){
   if(e.hitDisplay() && e.isPressEvent()){
-    static int &minSize = gui.get<int>("minSize");
-    static int &maxSize = gui.get<int>("maxSize");
-    static float &thresh = gui.get<float>("thresh");
+    int minSize = gui["minSize"];
+    int maxSize = gui["maxSize"];
+    float thresh = gui["thresh"];
     std::scoped_lock<std::recursive_mutex> lock(mtex);
     int idx = e.isMiddle() ? 1 : e.isRight() ? 2 : 0;
     std::vector<double> color = e.getColor();

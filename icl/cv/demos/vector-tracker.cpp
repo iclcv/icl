@@ -356,7 +356,7 @@ void run(){
       int curr_y = vVT[i][1];
 
       w->sym(curr_x,curr_y,ICLDrawWidget::symCross);
-      static bool &labelsOnFlag = gui.get<bool>("Vlo");
+      bool labelsOnFlag = gui["Vlo"];
 
 
 
@@ -387,7 +387,7 @@ void run(){
 
   w->render();
 
-  static int &sleepTime = gui.get<int>("Vsl");
+  int sleepTime = gui["Vsl"];
   Thread::msleep(sleepTime);
 }
 

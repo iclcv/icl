@@ -315,7 +315,7 @@ void run(){
   for(unsigned int i=0;i<calibFileData.loadedFiles.size();++i){
     int tidx = gui.get<ComboHandle>("transform-obj-"+str(i)).getSelectedIndex();
     Ts[i] = calibFileData.loadedFiles[i].transforms[tidx].transform;
-    enabled[i] = gui.get<bool>("enable-obj-"+str(i));
+    enabled[i] = gui["enable-obj-"+str(i)].as<bool>();
 
     SceneObject *calibObj = calibFileData.loadedFiles[i].obj;
     if(!calibObj) continue;

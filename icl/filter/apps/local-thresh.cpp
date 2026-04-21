@@ -37,9 +37,9 @@ void mouse(const MouseEvent &e){
 }
 
 void save(){
-  static int &masksize = gui.get<int>("masksize");
-  static int &thresh = gui.get<int>("threshold");
-  static float &gamma = gui.get<float>("gamma");
+  int masksize = gui["masksize"];
+  int thresh = gui["threshold"];
+  float gamma = gui["gamma"];
   bool ok = false;
 
   QString qname = QInputDialog::getText(0,"Save Params",

@@ -86,11 +86,11 @@ void run(){
   m.lock();
   const Img32f &wi = create_weight_image(*image,COLOR);
 
-  static int &maxCycles = gui.get<int>("maxCycles");
-  static float &convergence = gui.get<float>("convergence");
-  static ComboHandle &kernelType = gui.get<ComboHandle>("kernel-type");
-  static ComboHandle &shownImage = gui.get<ComboHandle>("vis");
-  static int &bandwidth = gui.get<int>("bandwidth");
+  int maxCycles = gui["maxCycles"];
+  float convergence = gui["convergence"];
+  ComboHandle kernelType = gui["kernel-type"];
+  ComboHandle shownImage = gui["vis"];
+  int bandwidth = gui["bandwidth"];
 
   static MeanShiftTracker ms(MeanShiftTracker::epanechnikov, 1);
 
