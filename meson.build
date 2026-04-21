@@ -89,8 +89,13 @@ endif
 
 # OpenCV
 opencv_dep = dependency('opencv4', required: get_option('opencv'))
+have_opencv_features2d = false
 if opencv_dep.found()
   add_project_arguments('-DICL_HAVE_OPENCV', language: 'cpp')
+  have_opencv_features2d = cc.has_header('opencv2/features2d.hpp', dependencies: opencv_dep)
+  if have_opencv_features2d
+    add_project_arguments('-DICL_HAVE_OPENCV_FEATURES_2D', language: 'cpp')
+  endif
 endif
 
 # Eigen3

@@ -657,8 +657,8 @@ namespace icl::math {
 
   // Whole-class explicit instantiation for float and double.
   // Covers all out-of-line member functions (arithmetic, linalg, norms, etc.)
-  template class ICLMath_API DynMatrix<float>;
-  template class ICLMath_API DynMatrix<double>;
+  template struct ICLMath_API DynMatrix<float>;
+  template struct ICLMath_API DynMatrix<double>;
 
 
   // ================================================================

@@ -8,7 +8,6 @@ if _build_demos and qt_found
     # 'heart-rate-detector': [],  # needs ICL_OPENCV_INSTALL_PATH define
     'hough-line': [],
     'mean-shift': [],
-    'orb-feature-detection': [],
     'region-curvature': [],
     'region-detection': [],
     'simple-blob-searcher': [],
@@ -22,6 +21,13 @@ if _build_demos and qt_found
       install: false,
     )
   endforeach
+  if have_opencv_features2d
+    executable('orb-feature-detection-demo',
+      files('../demos/orb-feature-detection.cpp'),
+      dependencies: [icl_qt_dep, icl_cv_dep],
+      install: false,
+    )
+  endif
 endif
 
 # ---- Apps (all need Qt) ----

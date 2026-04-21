@@ -1876,4 +1876,12 @@ namespace icl::core {
   /* }}} */
 
   /* }}} */
+
+  // Suppress -Wundefined-var-template: Img<T> is explicitly instantiated in Img.cpp
+  extern template class Img<icl8u>;
+  extern template class Img<icl16s>;
+  extern template class Img<icl32s>;
+  extern template class Img<icl32f>;
+  extern template class Img<icl64f>;
+
   } // namespace icl::core

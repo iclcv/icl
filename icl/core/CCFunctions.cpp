@@ -114,8 +114,6 @@ namespace icl::core {
 
   void releaseAllLUTs(){
 
-    typedef std::map<format,CCLUT*> fmap;
-    typedef std::map<format,fmap> ffmap;
     for(auto& [srcFmt, innerMap] : g_mapCCLUTs){
       for(auto& [dstFmt, lut] : innerMap){
         if(lut){

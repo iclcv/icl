@@ -14,7 +14,7 @@
 
 
 /** \cond */
-class btSoftBodyWorldInfo;
+struct btSoftBodyWorldInfo;
 /** \endcond */
 
 namespace icl::geom{

@@ -1171,9 +1171,8 @@ void GLRenderer::renderWithViewport(const Scene &scene, int camIndex,
   struct ShadowInfo { int lightIdx; Mat lightVP; };
   ShadowInfo shadows[4];
   int numShadows = 0;
-  // Also build a mapping: compacted light slot → shadow slot (-1 = none)
-  int lightShadowSlot[8];
-  // We need to build this after we know which lights are active (below),
+  // We need to build the compacted light → shadow slot mapping after we know
+  // which lights are active (below),
   // but we need shadow maps rendered first. So collect shadow lights first,
   // then map after compacting active lights.
   int sceneLightToShadow[8];  // scene light index → shadow slot

@@ -20,7 +20,6 @@ cv_headers = files(
   'LensUndistortionCalibrator.h',
   'LineSegment.h',
   'MeanShiftTracker.h',
-  'ORBFeatureDetector.h',
   'OpenCVCamCalib.h',
   'OpenSurfLib.h',
   'PositionTracker.h',
@@ -55,7 +54,6 @@ cv_sources = files(
   'ImageRegion.cpp',
   'ImageRegionData.cpp',
   'MeanShiftTracker.cpp',
-  'ORBFeatureDetector.cpp',
   'PositionTracker.cpp',
   'RDPApproximation.cpp',
   'RegionDetector.cpp',
@@ -82,6 +80,12 @@ endif
 # IPP-dependent (TemplateTracker needs ProximityOp which is IPP-only)
 if ipp_dep.found()
   cv_sources += files('TemplateTracker.cpp')
+endif
+
+# OpenCV features2d (ORB detector)
+if have_opencv_features2d
+  cv_headers += files('ORBFeatureDetector.h')
+  cv_sources += files('ORBFeatureDetector.cpp')
 endif
 
 # OpenCV (legacy C API files — disabled, need rewrite for OpenCV 4+)
