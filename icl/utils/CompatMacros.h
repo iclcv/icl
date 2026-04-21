@@ -20,43 +20,6 @@
 #ifndef M_PI
   #define M_PI 3.14159265358979323846
 #endif
-  // TODOWW: test with _MSC_VER == 1700
-  #if (defined _MSC_VER && _MSC_VER < 1800)
-    #include <cmath>
-    inline double round(double a)
-    {
-      return floor(a + 0.5f);
-    }
-    inline double log2(double a)
-    {
-      return log(a) / 0.69314718055994530943;
-    }
-    inline float pow(int a, int b)
-    {
-      return pow(static_cast<float>(a), b);
-    }
-    inline double pow(float a, double b)
-    {
-      return pow(static_cast<double>(a), b);
-    }
-    inline int rint(double a)
-    {
-      // this is not really what it should do
-      return static_cast<int>(round(a));
-    }
-    inline float log(int a)
-    {
-      return log(static_cast<float>(a));
-    }
-    inline float exp(int a)
-    {
-      return exp(static_cast<float>(a));
-    }
-    inline float sqrt(int a)
-    {
-      return sqrt(static_cast<float>(a));
-    }
-  #endif
   // in windows use this instead of #warning
   #define WARNING(msg) message(__FILE__ "(" STRINGSIZE(__LINE__) ") : warning: " #msg)
 #endif
