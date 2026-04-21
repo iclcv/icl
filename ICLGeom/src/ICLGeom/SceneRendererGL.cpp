@@ -27,7 +27,24 @@ using namespace icl::utils;
 namespace icl::geom {
 
 // ---- Shader sources (GL 4.1 Core) ----
-// Step 2: Single hardcoded directional light, world-space lighting
+// ---- Shadow pass shaders (depth only) ----
+
+static const char *SHADOW_VERT = R"(
+#version 410 core
+layout(location = 0) in vec3 aPosition;
+uniform mat4 uModelMatrix;
+uniform mat4 uLightVP;
+void main() {
+    gl_Position = uLightVP * uModelMatrix * vec4(aPosition, 1.0);
+}
+)";
+
+static const char *SHADOW_FRAG = R"(
+#version 410 core
+void main() { }
+)";
+
+// ---- Main pass shaders ----
 
 static const char *VERT_SHADER = R"(
 #version 410 core
@@ -74,9 +91,24 @@ uniform int uHasBaseColorMap;
 uniform sampler2D uBaseColorMap;
 uniform int uDebugMode;
 
+// Per-light shadow: slot index into shadow map array (-1 = no shadow)
+uniform int uLightShadowSlot[8];
+uniform mat4 uShadowMatrix[4];
+uniform sampler2DShadow uShadowMap0;
+uniform sampler2DShadow uShadowMap1;
+uniform sampler2DShadow uShadowMap2;
+uniform sampler2DShadow uShadowMap3;
+
 in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
+
+float sampleShadow(int slot, vec3 coord) {
+    if (slot == 0) return texture(uShadowMap0, coord);
+    if (slot == 1) return texture(uShadowMap1, coord);
+    if (slot == 2) return texture(uShadowMap2, coord);
+    return texture(uShadowMap3, coord);
+}
 
 out vec4 FragColor;
 
@@ -107,6 +139,18 @@ void main() {
         float NdotL = max(dot(N, L), 0.0);
         float NdotH = max(dot(N, H), 0.0);
 
+        // Per-light shadow lookup
+        float shadow = 1.0;
+        int slot = uLightShadowSlot[i];
+        if (slot >= 0 && slot < 4) {
+            vec4 sc4 = uShadowMatrix[slot] * vec4(vWorldPos, 1.0);
+            vec3 sc = sc4.xyz / sc4.w;
+            sc = sc * 0.5 + 0.5;
+            if (sc.x >= 0.0 && sc.x <= 1.0 && sc.y >= 0.0 && sc.y <= 1.0) {
+                shadow = sampleShadow(slot, vec3(sc.xy, sc.z - 0.0005));
+            }
+        }
+
         // Diffuse: reduced for metals (metals have no diffuse)
         vec3 diffuse = albedo * (1.0 - uMetallic) * NdotL;
 
@@ -114,7 +158,7 @@ void main() {
         float specPow = pow(NdotH, shininess);
         vec3 specular = specColor * specPow;
 
-        result += uLightColor[i] * (diffuse + specular * NdotL);
+        result += shadow * uLightColor[i] * (diffuse + specular * NdotL);
     }
 
     result += uEmissive.rgb;
@@ -343,11 +387,21 @@ static GLuint linkProgram(GLuint vs, GLuint fs) {
 
 struct SceneRendererGL::Data {
   GLuint program = 0;
+  GLuint shadowProgram = 0;
   bool shaderReady = false;
   float exposure = 1.0f;
   float ambient = 0.1f;
   int debugMode = 0;
   std::unordered_map<const SceneObject*, std::unique_ptr<GLGeometryCache>> geometryCache;
+
+  // Shadow maps (up to 4 shadow-casting lights)
+  static const int MAX_SHADOWS = 4;
+  GLuint shadowFBO[4] = {};
+  GLuint shadowTex[4] = {};
+  int numShadowMaps = 0;
+  int shadowMapSize = 2048;
+  GLint shadowLocModelMatrix = -1;
+  GLint shadowLocLightVP = -1;
 
   // Uniform locations (cached after shader compilation)
   GLint locModelMatrix = -1;
@@ -363,6 +417,9 @@ struct SceneRendererGL::Data {
   GLint locHasBaseColorMap = -1;
   GLint locBaseColorMap = -1;
   GLint locDebugMode = -1;
+  GLint locLightShadowSlot[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
+  GLint locShadowMatrix[4] = {-1,-1,-1,-1};
+  GLint locShadowMap[4] = {-1,-1,-1,-1};  // uShadowMap0..3
   GLint locNumLights = -1;
   GLint locLightPos[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
   GLint locLightColor[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
@@ -381,6 +438,20 @@ struct SceneRendererGL::Data {
     locHasBaseColorMap = glGetUniformLocation(program, "uHasBaseColorMap");
     locBaseColorMap = glGetUniformLocation(program, "uBaseColorMap");
     locDebugMode = glGetUniformLocation(program, "uDebugMode");
+    for (int i = 0; i < 8; i++) {
+      char name[48];
+      snprintf(name, sizeof(name), "uLightShadowSlot[%d]", i);
+      locLightShadowSlot[i] = glGetUniformLocation(program, name);
+    }
+    for (int i = 0; i < 4; i++) {
+      char name[48];
+      snprintf(name, sizeof(name), "uShadowMatrix[%d]", i);
+      locShadowMatrix[i] = glGetUniformLocation(program, name);
+    }
+    locShadowMap[0] = glGetUniformLocation(program, "uShadowMap0");
+    locShadowMap[1] = glGetUniformLocation(program, "uShadowMap1");
+    locShadowMap[2] = glGetUniformLocation(program, "uShadowMap2");
+    locShadowMap[3] = glGetUniformLocation(program, "uShadowMap3");
     locNumLights = glGetUniformLocation(program, "uNumLights");
     for (int i = 0; i < 8; i++) {
       char name[32];
@@ -405,6 +476,11 @@ SceneRendererGL::SceneRendererGL() : m_data(new Data) {}
 
 SceneRendererGL::~SceneRendererGL() {
   if (m_data->program) glDeleteProgram(m_data->program);
+  if (m_data->shadowProgram) glDeleteProgram(m_data->shadowProgram);
+  for (int i = 0; i < 4; i++) {
+    if (m_data->shadowFBO[i]) glDeleteFramebuffers(1, &m_data->shadowFBO[i]);
+    if (m_data->shadowTex[i]) glDeleteTextures(1, &m_data->shadowTex[i]);
+  }
   delete m_data;
 }
 
@@ -426,9 +502,88 @@ void SceneRendererGL::ensureShaderCompiled() {
 
   if (m_data->program) {
     m_data->cacheUniformLocations();
-    fprintf(stderr, "[SceneRendererGL] GL 4.1 Core shader compiled OK\n");
+    // Initialize shadow uniforms to safe defaults (all shadows disabled)
+    glUseProgram(m_data->program);
+    for (int i = 0; i < 8; i++)
+      if (m_data->locLightShadowSlot[i] >= 0)
+        glUniform1i(m_data->locLightShadowSlot[i], -1);
+    for (int i = 0; i < 4; i++)
+      if (m_data->locShadowMap[i] >= 0)
+        glUniform1i(m_data->locShadowMap[i], 1 + i);  // bind to texture units 1-4
+    glUseProgram(0);
+    fprintf(stderr, "[SceneRendererGL] GL 4.1 Core shader compiled OK (shadowMap locs: %d %d %d %d)\n",
+            m_data->locShadowMap[0], m_data->locShadowMap[1],
+            m_data->locShadowMap[2], m_data->locShadowMap[3]);
   } else {
     fprintf(stderr, "[SceneRendererGL] SHADER COMPILATION FAILED\n");
+  }
+
+  // Shadow shader
+  GLuint svs = compileShader(GL_VERTEX_SHADER, SHADOW_VERT);
+  GLuint sfs = compileShader(GL_FRAGMENT_SHADER, SHADOW_FRAG);
+  if (svs && sfs) {
+    m_data->shadowProgram = linkProgram(svs, sfs);
+    m_data->shadowLocModelMatrix = glGetUniformLocation(m_data->shadowProgram, "uModelMatrix");
+    m_data->shadowLocLightVP = glGetUniformLocation(m_data->shadowProgram, "uLightVP");
+  }
+  if (svs) glDeleteShader(svs);
+  if (sfs) glDeleteShader(sfs);
+
+  // Shadow FBOs + depth textures (create up to MAX_SHADOWS)
+  int sz = m_data->shadowMapSize;
+  float borderColor[] = {1, 1, 1, 1};
+  for (int i = 0; i < Data::MAX_SHADOWS; i++) {
+    glGenTextures(1, &m_data->shadowTex[i]);
+    glBindTexture(GL_TEXTURE_2D, m_data->shadowTex[i]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, sz, sz, 0,
+                 GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenFramebuffers(1, &m_data->shadowFBO[i]);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_data->shadowFBO[i]);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_data->shadowTex[i], 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    GLenum fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {
+      fprintf(stderr, "[SceneRendererGL] Shadow FBO %d incomplete: 0x%x\n", i, fbStatus);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
+  fprintf(stderr, "[SceneRendererGL] %d shadow maps (%dx%d) ready\n", Data::MAX_SHADOWS, sz, sz);
+}
+
+/// Render a single object in the shadow pass (depth only, recursive)
+void SceneRendererGL::renderObjectShadow(const SceneObject *obj) {
+  auto &cache = m_data->geometryCache[obj];
+  if (!cache) {
+    cache = std::make_unique<GLGeometryCache>();
+    cache->build(obj);
+    auto mat = obj->getMaterial();
+    if (mat && !mat->baseColorMap.isNull()) {
+      cache->uploadBaseColorMap(mat->baseColorMap);
+    }
+  }
+  if (cache->numIndices == 0) goto children;
+
+  {
+    Mat modelMatrix = obj->getTransformation(true);
+    glUniformMatrix4fv(m_data->shadowLocModelMatrix, 1, GL_TRUE, modelMatrix.data());
+    glBindVertexArray(cache->vao);
+    glDrawElements(GL_TRIANGLES, cache->numIndices, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+  }
+
+children:
+  for (int c = 0; c < obj->getChildCount(); c++) {
+    renderObjectShadow(obj->getChild(c));
   }
 }
 
@@ -440,10 +595,67 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   Mat projGL = cam.getProjectionMatrixGL();
   Mat viewGL = cam.getCSTransformationMatrixGL();
 
-  // Set viewport to match camera aspect ratio (letterboxed in widget)
+  // Save widget viewport
   GLint widgetVP[4];
   glGetIntegerv(GL_VIEWPORT, widgetVP);
   int ww = widgetVP[2], wh = widgetVP[3];
+
+  // Collect shadow-enabled lights (up to MAX_SHADOWS)
+  struct ShadowInfo { int lightIdx; Mat lightVP; };
+  ShadowInfo shadows[4];
+  int numShadows = 0;
+  // Also build a mapping: compacted light slot → shadow slot (-1 = none)
+  int lightShadowSlot[8];
+  // We need to build this after we know which lights are active (below),
+  // but we need shadow maps rendered first. So collect shadow lights first,
+  // then map after compacting active lights.
+  int sceneLightToShadow[8];  // scene light index → shadow slot
+  for (int i = 0; i < 8; i++) sceneLightToShadow[i] = -1;
+
+  for (int i = 0; i < 8 && numShadows < Data::MAX_SHADOWS; i++) {
+    const auto &light = scene.getLight(i);
+    if (light.isOn() && light.getShadowEnabled() && light.getShadowCam()) {
+      const Camera *sc = light.getShadowCam();
+      shadows[numShadows].lightIdx = i;
+      shadows[numShadows].lightVP = sc->getProjectionMatrixGL() * sc->getCSTransformationMatrixGL();
+      sceneLightToShadow[i] = numShadows;
+      numShadows++;
+    }
+  }
+
+  // ---- Shadow passes (one per shadow-casting light) ----
+  if (numShadows > 0 && m_data->shadowProgram) {
+    GLint prevFBO = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFBO);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(2.0f, 4.0f);
+
+    glUseProgram(m_data->shadowProgram);
+    int sz = m_data->shadowMapSize;
+
+    for (int s = 0; s < numShadows; s++) {
+      glBindFramebuffer(GL_FRAMEBUFFER, m_data->shadowFBO[s]);
+      glViewport(0, 0, sz, sz);
+      glClear(GL_DEPTH_BUFFER_BIT);
+      glUniformMatrix4fv(m_data->shadowLocLightVP, 1, GL_TRUE, shadows[s].lightVP.data());
+
+      for (int i = 0; i < scene.getObjectCount(); i++) {
+        const SceneObject *obj = scene.getObject(i);
+        if (!obj->isVisible()) continue;
+        renderObjectShadow(obj);
+      }
+    }
+
+    glDisable(GL_POLYGON_OFFSET_FILL);
+    glBindFramebuffer(GL_FRAMEBUFFER, prevFBO);
+  }
+
+  // ---- Main pass ----
+  // Set viewport to match camera aspect ratio (letterboxed in widget)
   const Size &chip = cam.getRenderParams().chipSize;
   float camAR = (float)chip.width / chip.height;
   float widgetAR = (float)ww / wh;
@@ -475,6 +687,14 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   Vec camPos = cam.getPosition();
   glUniform3f(m_data->locCameraPos, camPos[0], camPos[1], camPos[2]);
 
+  // Bind shadow maps on texture units 1..4
+  for (int s = 0; s < numShadows; s++) {
+    glActiveTexture(GL_TEXTURE1 + s);
+    glBindTexture(GL_TEXTURE_2D, m_data->shadowTex[s]);
+    glUniform1i(m_data->locShadowMap[s], 1 + s);
+    m_data->setUniformMat4(m_data->locShadowMatrix[s], shadows[s].lightVP);
+  }
+
   // Set all active lights from Scene (world-space positions and colors)
   int numLights = 0;
   static bool lightsPrinted = false;
@@ -484,18 +704,21 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
     if (numLights >= 8) break;
 
     Vec wp = light.getPosition();
-    auto d = light.getDiffuse();  // already [0,1] — setDiffuse divides by 255
+    auto d = light.getDiffuse();
     glUniform4f(m_data->locLightPos[numLights], wp[0], wp[1], wp[2], 1.0f);
     glUniform3f(m_data->locLightColor[numLights], d[0], d[1], d[2]);
 
+    // Map this compacted light slot to its shadow slot (-1 if no shadow)
+    glUniform1i(m_data->locLightShadowSlot[numLights], sceneLightToShadow[i]);
+
     if (!lightsPrinted) {
-      fprintf(stderr, "[SceneRendererGL] Light %d→slot %d: pos=(%.0f,%.0f,%.0f) color=(%.2f,%.2f,%.2f)\n",
-              i, numLights, wp[0], wp[1], wp[2], d[0], d[1], d[2]);
+      fprintf(stderr, "[SceneRendererGL] Light %d→slot %d: shadow=%d pos=(%.0f,%.0f,%.0f) color=(%.2f,%.2f,%.2f)\n",
+              i, numLights, sceneLightToShadow[i], wp[0], wp[1], wp[2], d[0], d[1], d[2]);
     }
     numLights++;
   }
   if (!lightsPrinted && numLights > 0) {
-    fprintf(stderr, "[SceneRendererGL] %d lights active\n", numLights);
+    fprintf(stderr, "[SceneRendererGL] %d lights, %d shadow maps\n", numLights, numShadows);
     lightsPrinted = true;
   }
   glUniform1i(m_data->locNumLights, numLights);
@@ -506,6 +729,11 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
     renderObject(obj, viewGL);
   }
 
+  for (int s = 0; s < numShadows; s++) {
+    glActiveTexture(GL_TEXTURE1 + s);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+  glActiveTexture(GL_TEXTURE0);
   glUseProgram(0);
 }
 

@@ -378,26 +378,43 @@ static void setupScene() {
   // 3-point lighting for shape visibility
   float r = extent * 0.7f;
 
-  // Key light: upper-right, close and strong — creates defining shadows
-  scene.getLight(0).setOn(true);
-  scene.getLight(0).setPosition(Vec(cx + r * 0.8f, cy + r * 0.6f, cz - r * 0.3f, 1));
-  scene.getLight(0).setDiffuse(GeomColor(255, 248, 235, 255));
-  scene.getLight(0).setShadowEnabled(true);
+  // Helper: configure shadow camera for a light
+  Vec sceneCenter(cx, cy, cz, 1);
+  auto setupShadowCam = [&](int lightIdx, const Vec &lightPos) {
+    scene.getLight(lightIdx).setShadowEnabled(true);
+    Camera *sc = scene.getLight(lightIdx).getShadowCam();
+    *sc = Camera::lookAt(lightPos, sceneCenter, Vec(0, 1, 0, 1),
+                         Size(2048, 2048), 120.0f);
+    sc->getRenderParams().clipZNear = extent * 0.05f;
+    sc->getRenderParams().clipZFar = extent * 6.0f;
+  };
 
-  // Fill light: left-front, much dimmer — softens shadows without flattening
+  // Key light: upper-right, close and strong — creates defining shadows
+  Vec keyLightPos(cx + r * 0.8f, cy + r * 0.6f, cz - r * 0.3f, 1);
+  scene.getLight(0).setOn(true);
+  scene.getLight(0).setPosition(keyLightPos);
+  scene.getLight(0).setDiffuse(GeomColor(255, 248, 235, 255));
+  setupShadowCam(0, keyLightPos);
+
+  // Fill light: left-front, much dimmer — no shadow (too dim to matter)
+  Vec fillLightPos(cx - r * 0.6f, cy + r * 0.2f, cz - r * 0.5f, 1);
   scene.getLight(1).setOn(true);
-  scene.getLight(1).setPosition(Vec(cx - r * 0.6f, cy + r * 0.2f, cz - r * 0.5f, 1));
+  scene.getLight(1).setPosition(fillLightPos);
   scene.getLight(1).setDiffuse(GeomColor(40, 50, 70, 255));
 
-  // Rim/back light: behind-above — edge highlights
+  // Rim/back light: behind-above — edge highlights + shadow
+  Vec rimLightPos(cx - r * 0.2f, cy + r, cz + r * 0.6f, 1);
   scene.getLight(2).setOn(true);
-  scene.getLight(2).setPosition(Vec(cx - r * 0.2f, cy + r, cz + r * 0.6f, 1));
+  scene.getLight(2).setPosition(rimLightPos);
   scene.getLight(2).setDiffuse(GeomColor(180, 190, 210, 255));
+  setupShadowCam(2, rimLightPos);
 
-  // Top light: directly above scene center — reveals surface detail
+  // Top light: directly above scene center — reveals surface detail + shadow
+  Vec topLightPos(cx, cy + r * 1.5f, cz, 1);
   scene.getLight(3).setOn(true);
-  scene.getLight(3).setPosition(Vec(cx, cy + r * 1.5f, cz, 1));
+  scene.getLight(3).setPosition(topLightPos);
   scene.getLight(3).setDiffuse(GeomColor(220, 215, 210, 255));
+  setupShadowCam(3, topLightPos);
 
   // Ambient light to approximate Cycles sky/environment lighting
   scene.setGlobalAmbientLight(GeomColor(60, 65, 80, 255));

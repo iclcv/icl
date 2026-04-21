@@ -52,6 +52,7 @@ namespace icl::geom {
   private:
     void ensureShaderCompiled();
     void renderObject(const SceneObject *obj, const math::FixedMatrix<float,4,4> &viewMatrix);
+    void renderObjectShadow(const SceneObject *obj);
   };
 
   /// Fullscreen textured quad renderer for displaying 2D images in GL 4.1 Core
