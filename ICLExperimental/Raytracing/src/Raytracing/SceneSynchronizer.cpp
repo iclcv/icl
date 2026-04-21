@@ -142,13 +142,16 @@ static void tessellateToMesh(const geom::SceneObject *obj,
   bool *smooth = mesh->get_smooth().data();
 
   bool hasNormals = (srcNormals.size() == srcVerts.size());
+  // Use smooth shading if normals are available or material requests it
+  auto mat = obj->getMaterial();
+  bool useSmooth = hasNormals || (mat && mat->smoothShading);
   int ti = 0;
 
-  auto addTri = [&](int a, int b, int c, bool isSmooth) {
+  auto addTri = [&](int a, int b, int c) {
     triangles[ti * 3 + 0] = a;
     triangles[ti * 3 + 1] = b;
     triangles[ti * 3 + 2] = c;
-    smooth[ti] = isSmooth;
+    smooth[ti] = useSmooth;
     mesh->get_shader()[ti] = 0;
     ti++;
   };
@@ -159,7 +162,7 @@ static void tessellateToMesh(const geom::SceneObject *obj,
     case geom::Primitive::triangle: {
       const auto *tp = dynamic_cast<const geom::TrianglePrimitive*>(prim);
       if (!tp) break;
-      addTri(tp->i(0), tp->i(1), tp->i(2), hasNormals);
+      addTri(tp->i(0), tp->i(1), tp->i(2));
       break;
     }
 
@@ -167,8 +170,8 @@ static void tessellateToMesh(const geom::SceneObject *obj,
     case geom::Primitive::texture: {
       const auto *qp = dynamic_cast<const geom::QuadPrimitive*>(prim);
       if (!qp) break;
-      addTri(qp->i(0), qp->i(1), qp->i(2), hasNormals);
-      addTri(qp->i(0), qp->i(2), qp->i(3), hasNormals);
+      addTri(qp->i(0), qp->i(1), qp->i(2));
+      addTri(qp->i(0), qp->i(2), qp->i(3));
       break;
     }
 
@@ -177,8 +180,7 @@ static void tessellateToMesh(const geom::SceneObject *obj,
       if (!pp || pp->getNumPoints() < 3) break;
       int n = pp->getNumPoints();
       for (int j = 1; j < n - 1; j++) {
-        addTri(pp->getVertexIndex(0), pp->getVertexIndex(j), pp->getVertexIndex(j + 1),
-               hasNormals);
+        addTri(pp->getVertexIndex(0), pp->getVertexIndex(j), pp->getVertexIndex(j + 1));
       }
       break;
     }
@@ -402,8 +404,11 @@ void SceneSynchronizer::syncLights(const geom::Scene &iclScene,
     auto diffuse = light.getDiffuse();
 
     // Create point light
+    // Intensity scales with distance²: for mm-scale scenes (dist ~500mm),
+    // need ~500² = 250000 base intensity for reasonable illumination.
     PointLight *cclLight = cclScene->create_node<PointLight>();
-    float intensity = 1000.0f; // tunable scale factor
+    float distScale = 1.0f / (sceneScale * sceneScale);  // compensate for unit scaling
+    float intensity = 4.0f * distScale;  // ~4 watts equivalent at 1 Cycles-unit distance
     cclLight->set_strength(make_float3(
         diffuse[0] / 255.0f * intensity,
         diffuse[1] / 255.0f * intensity,

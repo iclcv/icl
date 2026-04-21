@@ -26,11 +26,11 @@ int main(int argc, const char **argv) {
   Scene scene;
 
   // Camera at (0, 200, -600), looking toward origin, Y up
-  // Use simple camera params that worked before
-  Camera cam(Vec(0, 200, -600, 1),        // position
-             Vec(0, -0.3, 1, 1),           // norm (view dir, will be normalized)
+  // Same position that showed the spheres, but with reasonable FOV
+  Camera cam(Vec(0, 200, -600, 1),        // position (mm)
+             Vec(0, -0.15, 1, 1),          // norm — mostly forward, slight downward tilt
              Vec(0, 1, 0, 1),              // up
-             24,                            // focal length
+             600,                           // focal length (fov ≈ 67° with mx=1)
              utils::Point32f(0, 0),         // principal point offset
              1.0, 1.0,                      // sampling res x, y
              0,                             // skew
@@ -54,29 +54,29 @@ int main(int argc, const char **argv) {
   ground->addNormal(Vec(0, 1, 0, 1));
   ground->addTriangle(0, 1, 2, 0, 1, 2);
   ground->addTriangle(0, 2, 3, 0, 2, 3);
-  ground->setMaterial(Material::fromColor(GeomColor(0.4f, 0.35f, 0.3f, 1.0f)));
+  ground->setMaterial(Material::fromColor(GeomColor(102, 89, 77, 255)));
   ground->getMaterial()->roughness = 0.8f;
   scene.addObject(ground.get());
 
-  // Gold sphere
-  auto *goldRaw = SceneObject::sphere(-200, 100, 200, 100, 20, 20);
+  // Gold sphere — fromColor expects [0,255] range
+  auto *goldRaw = SceneObject::sphere(-200, 100, 200, 100, 40, 40);
   auto goldSphere = std::shared_ptr<SceneObject>(goldRaw);
-  goldSphere->setMaterial(Material::fromColor(GeomColor(1.0f, 0.76f, 0.34f, 1.0f)));
+  goldSphere->setMaterial(Material::fromColor(GeomColor(255, 194, 87, 255)));
   goldSphere->getMaterial()->metallic = 1.0f;
   goldSphere->getMaterial()->roughness = 0.15f;
   scene.addObject(goldSphere.get());
 
   // Red plastic sphere
-  auto *redRaw = SceneObject::sphere(0, 100, 200, 100, 20, 20);
+  auto *redRaw = SceneObject::sphere(0, 100, 200, 100, 40, 40);
   auto redSphere = std::shared_ptr<SceneObject>(redRaw);
-  redSphere->setMaterial(Material::fromColor(GeomColor(0.8f, 0.1f, 0.1f, 1.0f)));
+  redSphere->setMaterial(Material::fromColor(GeomColor(204, 26, 26, 255)));
   redSphere->getMaterial()->roughness = 0.3f;
   scene.addObject(redSphere.get());
 
   // Green rubber sphere
-  auto *greenRaw = SceneObject::sphere(200, 100, 200, 100, 20, 20);
+  auto *greenRaw = SceneObject::sphere(200, 100, 200, 100, 40, 40);
   auto greenSphere = std::shared_ptr<SceneObject>(greenRaw);
-  greenSphere->setMaterial(Material::fromColor(GeomColor(0.1f, 0.6f, 0.15f, 1.0f)));
+  greenSphere->setMaterial(Material::fromColor(GeomColor(26, 153, 38, 255)));
   greenSphere->getMaterial()->roughness = 0.9f;
   scene.addObject(greenSphere.get());
 
