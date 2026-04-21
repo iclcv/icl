@@ -11,8 +11,11 @@
 #include <icl/io/FilenameGenerator.h>
 #include <icl/io/FileWriterPlugin.h>
 #include <functional>
-#include <string>
 #include <map>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
 namespace icl::io {
   ///  File Writer implementation writing images to the hard disc \ingroup FILEIO_G
@@ -97,11 +100,43 @@ namespace icl::io {
       }
       \endcode
   **/
+  /// Process-wide registry of file-extension → FileWriterPlugin factories.
+  /** Mirrors `GrabberRegister` and `CompressionRegister`. Plugins
+      self-register at static-init time via `REGISTER_FILE_WRITER_PLUGIN`
+      (see below). The factory is invoked the first time a given extension
+      is requested; the resulting plugin is cached for the lifetime of the
+      process. */
+  class ICLIO_API FileWriterPluginRegister {
+    public:
+
+    using Factory = std::function<std::unique_ptr<FileWriterPlugin>()>;
+
+    /// Register `factory` as the constructor for `extension`. Throws on
+    /// duplicate registration unless `override` is true (last-writer-wins —
+    /// useful for build configurations where ImageMagick claims an
+    /// extension that libpng/libjpeg also claim, see FileWriter.cpp).
+    static void registerExtension(const std::string &extension,
+                                  Factory factory,
+                                  bool overrideExisting = false);
+
+    /// Lazily-construct (or return cached) plugin for the given extension.
+    /// Returns nullptr if no plugin is registered for `extension`.
+    static FileWriterPlugin *getOrCreate(const std::string &extension);
+
+    /// All registered extensions, lex-sorted.
+    static std::vector<std::string> extensions();
+
+    private:
+    FileWriterPluginRegister() = default;
+    static FileWriterPluginRegister &instance();
+
+    std::mutex m_mutex;
+    std::map<std::string, Factory, std::less<>>                          m_factories;
+    std::map<std::string, std::unique_ptr<FileWriterPlugin>, std::less<>> m_cache;
+  };
+
   class ICLIO_API FileWriter : public ImageOutput{
     public:
-    /// initializer class
-    friend class FileWriterPluginMapInitializer;
-
     /// creates an empty file writer
     FileWriter();
 
@@ -139,9 +174,27 @@ namespace icl::io {
     private:
     /// internal generator for new filenames
     FilenameGenerator m_oGen;
-
-    /// static map of writer plugins
-    static std::map<std::string,FileWriterPlugin*, std::less<>> s_mapPlugins;
   };
 
   } // namespace icl::io
+
+/// Self-register a `FileWriterPlugin` factory for a given file extension.
+/** Use exactly once per (plugin, extension) pair, at the bottom of the
+    plugin's `.cpp`. The TAG must be a unique C++ identifier within the
+    TU; the EXTENSION is the matched suffix including the leading dot.
+    \code
+      REGISTER_FILE_WRITER_PLUGIN(ppm, ".ppm", []{
+        return std::make_unique<icl::io::FileWriterPluginPNM>();
+      })
+      REGISTER_FILE_WRITER_PLUGIN(pgm, ".pgm", []{
+        return std::make_unique<icl::io::FileWriterPluginPNM>();
+      })
+    \endcode
+    `__attribute__((constructor, used))` puts the registration call into
+    the dylib's `__init_offsets` section — guaranteed to run on dlopen
+    even if nothing else in the .o is referenced. */
+#define REGISTER_FILE_WRITER_PLUGIN(TAG, EXTENSION, FACTORY)                   \
+  extern "C" __attribute__((constructor, used)) void                           \
+  iclRegisterFileWriterPlugin_##TAG() {                                        \
+    ::icl::io::FileWriterPluginRegister::registerExtension(EXTENSION, FACTORY);\
+  }

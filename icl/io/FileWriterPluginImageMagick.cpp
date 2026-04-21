@@ -186,3 +186,40 @@ namespace icl::io {
 #endif
 
   } // namespace icl::io
+
+#ifdef ICL_HAVE_IMAGEMAGICK
+#include <icl/io/FileWriter.h>  // FileWriterPluginRegister
+namespace {
+  using icl::io::FileWriterPlugin;
+  using icl::io::FileWriterPluginImageMagick;
+  using icl::io::FileWriterPluginRegister;
+
+  // ImageMagick claims a *lot* of formats. Register them all under one
+  // factory. JPEG/PNG slots are also wired here as a fallback for builds
+  // without libjpeg/libpng — registerExtension does first-wins by
+  // default, so libjpeg/libpng's registrations (in their own .cpp files)
+  // take precedence when those libs are present.
+  static const char *imageMagickFormats[] = {
+    "png","jpeg","jpg",
+    "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
+    "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
+    "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
+    "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",
+    "mpc","msl","mtv","mvg","palm","pbm","pcd","pcds","pcl","pcx","pdb",
+    "pfa","pfb","picon","pict","pix","ps2","ps3","psd","ptif","pwp",
+    "rad","rgb","pgba","rla","rle","sct","sfw","sgi","shtml","sun","svg",
+    "tga","tiff","tim","ttf","txt","uil","uyuv","vicar","viff","wbmp",
+    "wmf","wpg","xbm","xcf","xpm","xwd","ydbcr","ycbcra","yuv",nullptr
+  };
+}
+
+extern "C" __attribute__((constructor, used)) void
+iclRegisterFileWriterPluginsImageMagick() {
+  auto factory = []{
+    return std::unique_ptr<FileWriterPlugin>(new FileWriterPluginImageMagick);
+  };
+  for (const char **pc = imageMagickFormats; *pc; ++pc) {
+    FileWriterPluginRegister::registerExtension(std::string(".") + *pc, factory);
+  }
+}
+#endif

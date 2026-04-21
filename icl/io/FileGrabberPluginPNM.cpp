@@ -131,3 +131,20 @@ namespace icl::io {
   }
 
   } // namespace icl::io
+
+#include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
+namespace {
+  using icl::io::FileGrabberPlugin;
+  using icl::io::FileGrabberPluginPNM;
+  using P = std::unique_ptr<FileGrabberPlugin>;
+}
+REGISTER_FILE_GRABBER_PLUGIN(ppm, ".ppm", []{ return P(new FileGrabberPluginPNM); })
+REGISTER_FILE_GRABBER_PLUGIN(pgm, ".pgm", []{ return P(new FileGrabberPluginPNM); })
+REGISTER_FILE_GRABBER_PLUGIN(pnm, ".pnm", []{ return P(new FileGrabberPluginPNM); })
+REGISTER_FILE_GRABBER_PLUGIN(icl, ".icl", []{ return P(new FileGrabberPluginPNM); })
+#ifdef ICL_HAVE_LIBZ
+REGISTER_FILE_GRABBER_PLUGIN(ppm_gz, ".ppm.gz", []{ return P(new FileGrabberPluginPNM); })
+REGISTER_FILE_GRABBER_PLUGIN(pgm_gz, ".pgm.gz", []{ return P(new FileGrabberPluginPNM); })
+REGISTER_FILE_GRABBER_PLUGIN(pnm_gz, ".pnm.gz", []{ return P(new FileGrabberPluginPNM); })
+REGISTER_FILE_GRABBER_PLUGIN(icl_gz, ".icl.gz", []{ return P(new FileGrabberPluginPNM); })
+#endif

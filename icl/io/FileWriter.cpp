@@ -4,106 +4,66 @@
 
 #include <icl/io/FileWriter.h>
 #include <icl/utils/StringUtils.h>
+#include <icl/utils/Exception.h>
 
-// plugins
-#include <icl/io/FileWriterPluginPNM.h>
-#include <icl/io/FileWriterPluginCSV.h>
-#include <icl/io/FileWriterPluginBICL.h>
 #ifdef ICL_HAVE_LIBJPEG
 #include <icl/io/FileWriterPluginJPEG.h>
 #endif
-#ifdef ICL_HAVE_IMAGEMAGICK
-#include <icl/io/FileWriterPluginImageMagick.h>
-#endif
-
-#ifdef ICL_HAVE_LIBPNG
-#include <icl/io/FileWriterPluginPNG.h>
-#endif
+#include <icl/io/FileWriterPluginCSV.h>
 
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  std::map<std::string,FileWriterPlugin*, std::less<>> FileWriter::s_mapPlugins;
+  // -------------------------------- FileWriterPluginRegister --
+  // Plugins self-register via REGISTER_FILE_WRITER_PLUGIN at static-init
+  // time, but actual plugin instances are built lazily on first lookup
+  // (and cached). This keeps ImageCompressor — which some plugins like
+  // BICL hold internally — out of the static-init phase, so the
+  // CompressionRegister is fully populated by the time any compressor
+  // gets constructed.
 
-  class FileWriterPluginMapInitializer{
-  public:
+  FileWriterPluginRegister &FileWriterPluginRegister::instance() {
+    static FileWriterPluginRegister inst;
+    return inst;
+  }
 
-    FileWriterPluginMapInitializer(){
-      FileWriter::s_mapPlugins[".ppm"] = new FileWriterPluginPNM;
-      FileWriter::s_mapPlugins[".pgm"] = new FileWriterPluginPNM;
-      FileWriter::s_mapPlugins[".pnm"] = new FileWriterPluginPNM;
-      FileWriter::s_mapPlugins[".icl"] = new FileWriterPluginPNM;
-      FileWriter::s_mapPlugins[".csv"] = new FileWriterPluginCSV;
-      FileWriter::s_mapPlugins[".bicl"] = new FileWriterPluginBICL;
-      FileWriter::s_mapPlugins[".rle1"] = new FileWriterPluginBICL("rlen","1");
-      FileWriter::s_mapPlugins[".rle4"] = new FileWriterPluginBICL("rlen","4");
-      FileWriter::s_mapPlugins[".rle6"] = new FileWriterPluginBICL("rlen","6");
-      FileWriter::s_mapPlugins[".rle8"] = new FileWriterPluginBICL("rlen","8");
-
-
-
-#ifdef ICL_HAVE_LIBJPEG
-      FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginJPEG;
-      FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginJPEG;
-      FileWriter::s_mapPlugins[".jicl"] = new FileWriterPluginBICL("jpeg","85");
-#elif ICL_HAVE_IMAGEMAGICK
-      FileWriter::s_mapPlugins[".jpeg"] = new FileWriterPluginImageMagick;
-      FileWriter::s_mapPlugins[".jpg"] = new FileWriterPluginImageMagick;
-#endif
-
-#ifdef ICL_HAVE_LIBZ
-      FileWriter::s_mapPlugins[".ppm.gz"] = new FileWriterPluginPNM;
-      FileWriter::s_mapPlugins[".pgm.gz"] = new FileWriterPluginPNM;
-      FileWriter::s_mapPlugins[".pnm.gz"] = new FileWriterPluginPNM;
-      FileWriter::s_mapPlugins[".icl.gz"] = new FileWriterPluginPNM;
-      FileWriter::s_mapPlugins[".csv.gz"] = new FileWriterPluginCSV;
-      FileWriter::s_mapPlugins[".bicl.gz"] = new FileWriterPluginBICL;
-      FileWriter::s_mapPlugins[".rle1.gz"] = new FileWriterPluginBICL("rlen","1");
-      FileWriter::s_mapPlugins[".rle4.gz"] = new FileWriterPluginBICL("rlen","4");
-      FileWriter::s_mapPlugins[".rle6.gz"] = new FileWriterPluginBICL("rlen","6");
-      FileWriter::s_mapPlugins[".rle8.gz"] = new FileWriterPluginBICL("rlen","8");
-
-#endif
-
-#ifdef ICL_HAVE_LIBPNG
-      FileWriter::s_mapPlugins[".png"] = new FileWriterPluginPNG;
-#endif
-
-#ifdef ICL_HAVE_IMAGEMAGICK
-
-      static const char *imageMagickFormats[] = {
-#ifndef ICL_HAVE_LIBPNG
-        "png",
-#endif
-        "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
-        "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
-        "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
-        "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",
-        "mpc","msl","mtv","mvg","palm","pbm","pcd","pcds","pcl","pcx","pdb",
-        "pfa","pfb","picon","pict","pix","ps","ps2","ps3","psd","ptif","pwp",
-        "rad","rgb","pgba","rla","rle","sct","sfw","sgi","shtml","sun","svg",
-        "tga","tiff","tim","ttf","txt","uil","uyuv","vicar","viff","wbmp",
-        "wmf","wpg","xbm","xcf","xpm","xwd","ydbcr","ycbcra","yuv",0
-      };
-      for(const char **pc=imageMagickFormats;*pc;++pc){
-        FileWriter::s_mapPlugins[std::string(".")+*pc] = new FileWriterPluginImageMagick;
-      }
-
-
-#endif
-      // add plugins
+  void FileWriterPluginRegister::registerExtension(
+      const std::string &extension, Factory factory, bool overrideExisting) {
+    auto &inst = instance();
+    std::scoped_lock lk(inst.m_mutex);
+    auto it = inst.m_factories.find(extension);
+    if (it != inst.m_factories.end() && !overrideExisting) {
+      // Silently keep the first registration. Pre-refactor behaviour
+      // was last-wins via map-assignment; we keep first-wins to make
+      // build configurations deterministic. Pass overrideExisting=true
+      // to opt in to last-wins (e.g. ImageMagick deferring to libpng).
+      return;
     }
-    ~FileWriterPluginMapInitializer(){
-      for(std::map<std::string,FileWriterPlugin*, std::less<>>::iterator it = FileWriter::s_mapPlugins.begin();
-          it != FileWriter::s_mapPlugins.end(); ++it){
-        delete it->second;
-      }
-    }
-  };
+    inst.m_factories[extension] = std::move(factory);
+    inst.m_cache.erase(extension);  // invalidate cached instance
+  }
 
+  FileWriterPlugin *FileWriterPluginRegister::getOrCreate(const std::string &ext) {
+    auto &inst = instance();
+    std::scoped_lock lk(inst.m_mutex);
+    if (auto cit = inst.m_cache.find(ext); cit != inst.m_cache.end()) return cit->second.get();
+    auto fit = inst.m_factories.find(ext);
+    if (fit == inst.m_factories.end()) return nullptr;
+    auto plugin = (fit->second)();
+    FileWriterPlugin *raw = plugin.get();
+    inst.m_cache[ext] = std::move(plugin);
+    return raw;
+  }
 
-  static FileWriterPluginMapInitializer __static_filewriter_plugin_initializer__;
+  std::vector<std::string> FileWriterPluginRegister::extensions() {
+    auto &inst = instance();
+    std::scoped_lock lk(inst.m_mutex);
+    std::vector<std::string> out;
+    out.reserve(inst.m_factories.size());
+    for (const auto &[k, _] : inst.m_factories) out.push_back(k);
+    return out;
+  }
 
 
   FileWriter::FileWriter(){
@@ -141,12 +101,13 @@ namespace icl::io {
 
     File file(m_oGen.next());
 
-    if(auto it = FileWriter::s_mapPlugins.find(toLower(file.getSuffix())); it == s_mapPlugins.end()){
+    FileWriterPlugin *plugin = FileWriterPluginRegister::getOrCreate(
+      toLower(file.getSuffix()));
+    if (!plugin) {
       ERROR_LOG("No Plugin to write files with suffix " << file.getSuffix() << " available");
       return;
-    } else {
-      it->second->write(file,image);
     }
+    plugin->write(file, image);
   }
 
 

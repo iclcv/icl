@@ -179,6 +179,22 @@ namespace icl{
   } // namespace io
 }
 
+#include <icl/io/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
+namespace {
+  using icl::io::FileWriterPlugin;
+  using icl::io::FileWriterPluginPNM;
+  using P = std::unique_ptr<FileWriterPlugin>;
+}
+REGISTER_FILE_WRITER_PLUGIN(ppm, ".ppm", []{ return P(new FileWriterPluginPNM); })
+REGISTER_FILE_WRITER_PLUGIN(pgm, ".pgm", []{ return P(new FileWriterPluginPNM); })
+REGISTER_FILE_WRITER_PLUGIN(pnm, ".pnm", []{ return P(new FileWriterPluginPNM); })
+REGISTER_FILE_WRITER_PLUGIN(icl, ".icl", []{ return P(new FileWriterPluginPNM); })
+#ifdef ICL_HAVE_LIBZ
+REGISTER_FILE_WRITER_PLUGIN(ppm_gz, ".ppm.gz", []{ return P(new FileWriterPluginPNM); })
+REGISTER_FILE_WRITER_PLUGIN(pgm_gz, ".pgm.gz", []{ return P(new FileWriterPluginPNM); })
+REGISTER_FILE_WRITER_PLUGIN(pnm_gz, ".pnm.gz", []{ return P(new FileWriterPluginPNM); })
+REGISTER_FILE_WRITER_PLUGIN(icl_gz, ".icl.gz", []{ return P(new FileWriterPluginPNM); })
+#endif
 
 /*
       void FileWriterPluginPNM::write(File &file, const ImgBase *poSrc){

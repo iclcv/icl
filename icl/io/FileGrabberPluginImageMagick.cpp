@@ -74,3 +74,35 @@ namespace icl::io {
   }
 #endif
   } // namespace icl::io
+
+#ifdef ICL_HAVE_IMAGEMAGICK
+#include <icl/io/FileGrabber.h>  // FileGrabberPluginRegister
+namespace {
+  using icl::io::FileGrabberPlugin;
+  using icl::io::FileGrabberPluginImageMagick;
+  using icl::io::FileGrabberPluginRegister;
+
+  static const char *imageMagickFormats[] = {
+    "png","jpeg","jpg",
+    "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
+    "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
+    "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
+    "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",
+    "mpc","msl","mtv","mvg","palm","pbm","pcd","pcds","pcl","pcx","pdb",
+    "pfa","pfb","picon","pict","pix","ps2","ps3","psd","ptif","pwp",
+    "rad","rgb","pgba","rla","rle","sct","sfw","sgi","shtml","sun","svg",
+    "tga","tiff","tim","ttf","txt","uil","uyuv","vicar","viff","wbmp",
+    "wmf","wpg","xbm","xcf","xpm","xwd","ydbcr","ycbcra","yuv",nullptr
+  };
+}
+
+extern "C" __attribute__((constructor, used)) void
+iclRegisterFileGrabberPluginsImageMagick() {
+  auto factory = []{
+    return std::unique_ptr<FileGrabberPlugin>(new FileGrabberPluginImageMagick);
+  };
+  for (const char **pc = imageMagickFormats; *pc; ++pc) {
+    FileGrabberPluginRegister::registerExtension(std::string(".") + *pc, factory);
+  }
+}
+#endif

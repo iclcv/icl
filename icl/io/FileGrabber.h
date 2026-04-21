@@ -7,9 +7,46 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/io/Grabber.h>
 #include <icl/io/FileGrabberPlugin.h>
+#include <functional>
+#include <map>
+#include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
 
 namespace icl::io {
+  /// Process-wide registry of file-extension → FileGrabberPlugin factories.
+  /** Mirror of `FileWriterPluginRegister`. Plugins self-register at
+      static-init time via `REGISTER_FILE_GRABBER_PLUGIN`; the factory
+      is invoked the first time the matching extension is read, and the
+      resulting plugin is cached for the rest of the process lifetime. */
+  class ICLIO_API FileGrabberPluginRegister {
+    public:
+
+    using Factory = std::function<std::unique_ptr<FileGrabberPlugin>()>;
+
+    /// Register `factory` for `extension`. First-wins on duplicate
+    /// (pass `overrideExisting=true` for last-wins).
+    static void registerExtension(const std::string &extension,
+                                  Factory factory,
+                                  bool overrideExisting = false);
+
+    /// Lazily-construct (or return cached) plugin for `extension`.
+    /// Returns nullptr if no plugin is registered.
+    static FileGrabberPlugin *getOrCreate(const std::string &extension);
+
+    /// All registered extensions, lex-sorted.
+    static std::vector<std::string> extensions();
+
+    private:
+    FileGrabberPluginRegister() = default;
+    static FileGrabberPluginRegister &instance();
+
+    std::mutex m_mutex;
+    std::map<std::string, Factory, std::less<>>                          m_factories;
+    std::map<std::string, std::unique_ptr<FileGrabberPlugin>, std::less<>> m_cache;
+  };
+
   /// Grabber implementation to grab from files \ingroup FILEIO_G \ingroup GRABBER_G
   /** This implementation of a file grabber class provides an internally used
       and expendable plugin-based interface for reading files of different types.
@@ -25,9 +62,6 @@ namespace icl::io {
   **/
   class ICLIO_API FileGrabber : public Grabber {
     public:
-
-      /// for the internal plugin concept
-      friend class FileGrabberPluginMapInitializer;
 
       /// Create a NULL FileGrabber
       FileGrabber();
@@ -146,3 +180,11 @@ namespace icl::io {
   };
 
   } // namespace icl::io
+
+/// Self-register a `FileGrabberPlugin` factory for a given file extension.
+/** Mirror of `REGISTER_FILE_WRITER_PLUGIN`. See FileWriter.h for details. */
+#define REGISTER_FILE_GRABBER_PLUGIN(TAG, EXTENSION, FACTORY)                  \
+  extern "C" __attribute__((constructor, used)) void                           \
+  iclRegisterFileGrabberPlugin_##TAG() {                                       \
+    ::icl::io::FileGrabberPluginRegister::registerExtension(EXTENSION, FACTORY); \
+  }

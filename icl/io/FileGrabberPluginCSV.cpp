@@ -187,3 +187,14 @@ namespace icl::io {
   }
 
   } // namespace icl::io
+
+#include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
+namespace {
+  using icl::io::FileGrabberPlugin;
+  using icl::io::FileGrabberPluginCSV;
+  using P = std::unique_ptr<FileGrabberPlugin>;
+}
+REGISTER_FILE_GRABBER_PLUGIN(csv, ".csv", []{ return P(new FileGrabberPluginCSV); })
+#ifdef ICL_HAVE_LIBZ
+REGISTER_FILE_GRABBER_PLUGIN(csv_gz, ".csv.gz", []{ return P(new FileGrabberPluginCSV); })
+#endif

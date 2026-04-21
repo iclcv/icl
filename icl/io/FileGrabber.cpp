@@ -83,77 +83,53 @@ namespace icl::io {
 
   };
 
+  // ----------------------------- FileGrabberPluginRegister --
+  // Plugins self-register via REGISTER_FILE_GRABBER_PLUGIN at static-init
+  // time; instances are built lazily on first use and cached. Symmetric
+  // with FileWriterPluginRegister.
+
+  FileGrabberPluginRegister &FileGrabberPluginRegister::instance() {
+    static FileGrabberPluginRegister inst;
+    return inst;
+  }
+
+  void FileGrabberPluginRegister::registerExtension(
+      const std::string &extension, Factory factory, bool overrideExisting) {
+    auto &inst = instance();
+    std::scoped_lock lk(inst.m_mutex);
+    auto it = inst.m_factories.find(extension);
+    if (it != inst.m_factories.end() && !overrideExisting) return;
+    inst.m_factories[extension] = std::move(factory);
+    inst.m_cache.erase(extension);
+  }
+
+  FileGrabberPlugin *FileGrabberPluginRegister::getOrCreate(const std::string &ext) {
+    auto &inst = instance();
+    std::scoped_lock lk(inst.m_mutex);
+    if (auto cit = inst.m_cache.find(ext); cit != inst.m_cache.end()) return cit->second.get();
+    auto fit = inst.m_factories.find(ext);
+    if (fit == inst.m_factories.end()) return nullptr;
+    auto plugin = (fit->second)();
+    FileGrabberPlugin *raw = plugin.get();
+    inst.m_cache[ext] = std::move(plugin);
+    return raw;
+  }
+
+  std::vector<std::string> FileGrabberPluginRegister::extensions() {
+    auto &inst = instance();
+    std::scoped_lock lk(inst.m_mutex);
+    std::vector<std::string> out;
+    out.reserve(inst.m_factories.size());
+    for (const auto &[k, _] : inst.m_factories) out.push_back(k);
+    return out;
+  }
+
   static FileGrabberPlugin *find_plugin(const std::string &type){
-    static std::map<std::string,std::shared_ptr<FileGrabberPlugin>, std::less<>> plugins;
-    if(!plugins.size()){
-      plugins[".ppm"].reset(new FileGrabberPluginPNM);
-      plugins[".pgm"].reset(new FileGrabberPluginPNM);
-      plugins[".pnm"].reset(new FileGrabberPluginPNM);
-      plugins[".icl"].reset(new FileGrabberPluginPNM);
-      plugins[".csv"].reset(new FileGrabberPluginCSV);
-      plugins[".bicl"].reset(new FileGrabberPluginBICL);
-      plugins[".rle1"].reset(new FileGrabberPluginBICL);
-      plugins[".rle4"].reset(new FileGrabberPluginBICL);
-      plugins[".rle6"].reset(new FileGrabberPluginBICL);
-      plugins[".rle8"].reset(new FileGrabberPluginBICL);
-
-#ifdef ICL_HAVE_LIBJPEG
-      plugins[".jpg"].reset(new FileGrabberPluginJPEG);
-      plugins[".jpeg"].reset(new FileGrabberPluginJPEG);
-      plugins[".jicl"].reset(new FileGrabberPluginBICL);
-#elif ICL_HAVE_IMAGEMAGICK
-      plugins[".jpg"].reset(new FileGrabberPluginImageMagick);
-      plugins[".jpeg"].reset(new FileGrabberPluginImageMagick);
-#endif
-
-#ifdef ICL_HAVE_LIBZ
-      plugins[".ppm.gz"].reset(new FileGrabberPluginPNM);
-      plugins[".pgm.gz"].reset(new FileGrabberPluginPNM);
-      plugins[".pnm.gz"].reset(new FileGrabberPluginPNM);
-      plugins[".icl.gz"].reset(new FileGrabberPluginPNM);
-      plugins[".csv.gz"].reset(new FileGrabberPluginCSV);
-      plugins[".bicl.gz"].reset(new FileGrabberPluginBICL);
-      plugins[".rle1.gz"].reset(new FileGrabberPluginBICL);
-      plugins[".rle4.gz"].reset(new FileGrabberPluginBICL);
-      plugins[".rle6.gz"].reset(new FileGrabberPluginBICL);
-      plugins[".rle8.gz"].reset(new FileGrabberPluginBICL);
-#endif
-
-#ifdef ICL_HAVE_LIBPNG
-      plugins[".png"].reset(new FileGrabberPluginPNG);
-#endif
-
-#ifdef ICL_HAVE_IMAGEMAGICK
-      const char *imageMagickFormats[] = {
-#ifndef ICL_HAVE_LIBPNG
-        "png",
-#endif
-        "gif","pdf","ps","avs","bmp","cgm","cin","cur","cut","dcx",
-        "dib","dng","dot","dpx","emf","epdf","epi","eps","eps2","eps3",
-        "epsf","epsi","ept","fax","gplt","gray","hpgl","html","ico","info",
-        "jbig","jng","jp2","jpc","man","mat","miff","mono","mng","mpeg","m2v",
-        "mpc","msl","mtv","mvg","palm","pbm","pcd","pcds","pcl","pcx","pdb",
-        "pfa","pfb","picon","pict","pix","ps","ps2","ps3","psd","ptif","pwp",
-        "rad","rgb","pgba","rla","rle","sct","sfw","sgi","shtml","sun","svg",
-        "tga","tiff","tim","ttf","txt","uil","uyuv","vicar","viff","wbmp",
-        "wmf","wpg","xbm","xcf","xpm","xwd","ydbcr","ycbcra","yuv",0
-      };
-
-      for(const char **pc=imageMagickFormats;*pc;++pc){
-        plugins[std::string(".")+*pc].reset(new FileGrabberPluginImageMagick);
-      }
-#endif
-      // add additional plugins to the map
-    }
     std::string lowerType = type;
-    for(unsigned int i=0;i<lowerType.length();++i){
+    for (unsigned int i = 0; i < lowerType.length(); ++i) {
       lowerType[i] = tolower(lowerType[i]);
     }
-    if(auto it = plugins.find(lowerType); it == plugins.end()){
-      return 0;
-    } else {
-      return it->second.get();
-    }
+    return FileGrabberPluginRegister::getOrCreate(lowerType);
   }
 
   FileGrabber::FileGrabber()
@@ -429,7 +405,7 @@ namespace icl::io {
       addProperty("print meta-data","menu","disregard,to std::out,to meta-data label","disregard");
       addProperty("meta-data","info","","",0,"current image meta-data. Depends on mode set in print meta-data.");
 
-      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+      registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     void FileGrabber::processPropertyChange(const utils::Configurable::Property &prop){

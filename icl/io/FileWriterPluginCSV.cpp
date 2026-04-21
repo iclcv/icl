@@ -75,3 +75,14 @@ namespace icl::io {
     }
   }
   } // namespace icl::io
+
+#include <icl/io/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
+namespace {
+  using icl::io::FileWriterPlugin;
+  using icl::io::FileWriterPluginCSV;
+  using P = std::unique_ptr<FileWriterPlugin>;
+}
+REGISTER_FILE_WRITER_PLUGIN(csv, ".csv", []{ return P(new FileWriterPluginCSV); })
+#ifdef ICL_HAVE_LIBZ
+REGISTER_FILE_WRITER_PLUGIN(csv_gz, ".csv.gz", []{ return P(new FileWriterPluginCSV); })
+#endif

@@ -27,3 +27,14 @@ namespace icl::io {
 #endif
 
   } // namespace icl::io
+
+#ifdef ICL_HAVE_LIBJPEG
+#include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
+namespace {
+  using icl::io::FileGrabberPlugin;
+  using icl::io::FileGrabberPluginJPEG;
+  using P = std::unique_ptr<FileGrabberPlugin>;
+}
+REGISTER_FILE_GRABBER_PLUGIN(jpeg, ".jpeg", []{ return P(new FileGrabberPluginJPEG); })
+REGISTER_FILE_GRABBER_PLUGIN(jpg,  ".jpg",  []{ return P(new FileGrabberPluginJPEG); })
+#endif
