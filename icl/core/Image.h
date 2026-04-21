@@ -160,6 +160,10 @@ namespace icl::core {
     /// @name Copy / Convert
     /// @{
 
+    /// Returns a shallow copy: new ImgBase with independent metadata (ROI, format, time)
+    /// but shared channel pixel data. Cheap — no pixel copy.
+    [[nodiscard]] Image shallowCopy() const;
+
     /// Returns a deep (independent) copy
     [[nodiscard]] Image deepCopy() const;
 

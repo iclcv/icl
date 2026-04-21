@@ -100,6 +100,11 @@ namespace icl::core {
 
   // --- Copy / Convert ---
 
+  Image Image::shallowCopy() const {
+    if(isNull()) return Image();
+    return Image(m_impl->shallowCopy());
+  }
+
   Image Image::deepCopy() const {
     if(isNull()) return Image();
     return Image(m_impl->deepCopy());
