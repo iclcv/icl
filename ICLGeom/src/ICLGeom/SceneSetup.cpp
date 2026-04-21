@@ -2,9 +2,9 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <Raytracing/SceneSetup.h>
-#include <Raytracing/GltfLoader.h>
-#include <Raytracing/CyclesRenderer.h>
+#include <ICLGeom/SceneSetup.h>
+#include <ICLGeom/GltfLoader.h>
+#include <ICLGeom/CyclesRenderer.h>
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/SceneLight.h>
 #include <ICLGeom/Sky.h>

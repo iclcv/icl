@@ -16,8 +16,8 @@
 #include <ICLGeom/Material.h>
 #include <ICLGeom/Hit.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <Raytracing/CyclesRenderer.h>
-#include <Raytracing/GltfLoader.h>
+#include <ICLGeom/CyclesRenderer.h>
+#include <ICLGeom/GltfLoader.h>
 #include <ICLGeom/SceneRendererGL.h>
 
 #include <QSurfaceFormat>

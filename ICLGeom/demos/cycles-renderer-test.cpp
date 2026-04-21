@@ -1,7 +1,7 @@
 /* Test the CyclesRenderer API: create an ICL Scene, render it through
  * Cycles, and save the result to PNG. */
 
-#include <Raytracing/CyclesRenderer.h>
+#include <ICLGeom/CyclesRenderer.h>
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/SceneLight.h>

@@ -39,6 +39,20 @@ if(NOT OPENCL_FOUND OR NOT QT_FOUND)
                            ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/IterativeClosestPointCLCode.h)
 endif()
 
+# Raytracing (Cycles) — optional, requires manual build in 3rdparty/cycles/
+if(NOT BUILD_WITH_CYCLES OR NOT QT_FOUND)
+  list(REMOVE_ITEM SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/CyclesRenderer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/SceneSynchronizer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/GltfLoader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/SceneSetup.cpp)
+  list(REMOVE_ITEM HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/CyclesRenderer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/SceneSynchronizer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/GltfLoader.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/SceneSetup.h)
+endif()
+
 # Determine primary dependency
 if(QT_FOUND)
   set(_DEP ICLQt)
@@ -74,4 +88,11 @@ icl_add_module(ICLGeom
 # Suppress Qt #warning about GLEW incompatibility (Scene.cpp includes QOpenGLContext after GLEW)
 if(TARGET ICLGeom AND QT_FOUND)
   target_compile_options(ICLGeom PRIVATE -Wno-\#warnings)
+endif()
+
+# Apply Cycles linking to ICLGeom when available
+if(BUILD_WITH_CYCLES AND QT_FOUND AND TARGET ICLGeom)
+  include(ICLFindCycles)
+  cycles_target_setup(ICLGeom)
+  target_include_directories(ICLGeom PRIVATE ${CGLTF_INCLUDE_DIR} ${STB_INCLUDE_DIR})
 endif()

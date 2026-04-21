@@ -15,8 +15,8 @@
 #include <ICLGeom/Material.h>
 #include <ICLGeom/SceneRendererGL.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <Raytracing/CyclesRenderer.h>
-#include <Raytracing/SceneSetup.h>
+#include <ICLGeom/CyclesRenderer.h>
+#include <ICLGeom/SceneSetup.h>
 
 #include <memory>
 
