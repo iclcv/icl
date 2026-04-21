@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <icl/qt/SliderUpdateEvent.h>
 #include <icl/utils/Macros.h>
+#include <atomic>
 #include <functional>
 
 namespace icl::qt {
@@ -40,6 +41,14 @@ namespace icl::qt {
 
     int m_stepping;
 
+    /// Lock-free snapshot of the current slider value.  Written from the
+    /// GUI thread in `collectValueChanged` (the slot Qt wires to
+    /// `valueChanged(int)`); read from any thread via `atomicValue()`.
+    /// Exists so that application-thread readers (`SliderHandle::getValue()`)
+    /// don't have to touch `QSlider::value()` cross-thread — Qt widgets
+    /// are not thread-safe for reads outside the GUI thread.
+    std::atomic<int> m_atomicValue{0};
+
     public:
 
     /// Base constructor
@@ -57,6 +66,14 @@ namespace icl::qt {
       }else{
         QApplication::postEvent(this,new SliderUpdateEvent(value),Qt::HighEventPriority);
       }
+    }
+
+    /// Lock-free read of the current slider value.  Safe from any
+    /// thread — returns the value cached by `collectValueChanged` the
+    /// last time Qt fired `valueChanged(int)` on the GUI thread.
+    /// Prefer this over `QSlider::value()` from non-GUI threads.
+    int atomicValue() const noexcept {
+      return m_atomicValue.load(std::memory_order_relaxed);
     }
 
     /// the given stepping is automatically clipped to [1,...]

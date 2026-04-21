@@ -29,7 +29,10 @@ namespace icl::qt {
     return (**this)->maximum();
   }
   int SliderHandle::getValue() const{
-    return (**this)->value();
+    // Lock-free read of the cached value — safe from the application
+    // thread.  Bypasses QSlider::value(), which is not documented as
+    // thread-safe and would race with GUI-thread updates.
+    return (**this)->atomicValue();
   }
 
   void SliderHandle::operator=(const std::string &s){

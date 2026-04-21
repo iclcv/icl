@@ -47,6 +47,7 @@ namespace icl::qt {
     QObject::connect(this,SIGNAL(sliderPressed()),this,SLOT(collectSliderPressed()));
     QObject::connect(this,SIGNAL(sliderReleased()),this,SLOT(collectSliderReleased()));
     installEventFilter(new EventFilter(this));
+    m_atomicValue.store(value(), std::memory_order_relaxed);
   }
 
   ThreadedUpdatableSlider::ThreadedUpdatableSlider(Qt::Orientation o, QWidget *parent): QSlider(o, parent), m_stepping(1){
@@ -55,6 +56,7 @@ namespace icl::qt {
     QObject::connect(this,SIGNAL(sliderPressed()),this,SLOT(collectSliderPressed()));
     QObject::connect(this,SIGNAL(sliderReleased()),this,SLOT(collectSliderReleased()));
     installEventFilter(new EventFilter(this));
+    m_atomicValue.store(value(), std::memory_order_relaxed);
   }
 
   bool ThreadedUpdatableSlider::event(QEvent *event){
@@ -92,6 +94,11 @@ namespace icl::qt {
       setValue(stepped); // this will re-call this method with an appropriate value
                          // which then actually calls the callbacks ...
     }else{
+      // Publish the settled value to the lock-free cache before firing
+      // callbacks.  Relaxed ordering is sufficient: the cache is only
+      // ever written from the GUI thread, and readers don't need any
+      // happens-before relationship with other Qt state.
+      m_atomicValue.store(stepped, std::memory_order_relaxed);
       for(unsigned int i=0;i<callbacks.size();++i){
         if(callbacks[i].event == CB::all || callbacks[i].event == CB::value) callbacks[i].f();
       }
