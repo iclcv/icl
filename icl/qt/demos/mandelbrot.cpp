@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common.h>
+#include <iomanip>
 #include <icl/core/Img.h>
 #include <icl/utils/Time.h>
 

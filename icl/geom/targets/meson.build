@@ -52,8 +52,6 @@ if _build_apps
       'point-cloud-creator': [],
       'point-cloud-define-world-frame': [],
       'point-cloud-pipe': [],
-      'point-cloud-primitive-filter': [],
-      'point-cloud-tests': [],
       'point-cloud-viewer': [],
       'rotate-image-3D': [],
       'show-extrinsic-calibration-grid': [],

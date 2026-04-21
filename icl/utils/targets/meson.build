@@ -4,7 +4,7 @@
 if _build_apps
   executable('icl-configurable-info',
     files('../apps/configurable-info.cpp'),
-    dependencies: [icl_utils_dep],
+    dependencies: [icl_markers_dep],
     install: true,
   )
 endif

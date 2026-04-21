@@ -7,7 +7,7 @@
 #include <icl/qt/GLFragmentShader.h>
 #include <icl/physics/PhysicsPaper3MouseHandler.h>
 #include <icl/physics/PhysicsPaper3.h>
-#include <DefaultGroundObject.h>
+#include "physics-paper-DefaultGroundObject.h"
 #include <icl/utils/File.h>
 #include <icl/physics/PhysicsScene.h>
 
