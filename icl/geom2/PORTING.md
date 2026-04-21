@@ -20,6 +20,7 @@ using namespace icl::geom2;
 | `SceneObject::cylinder(...)` | `CylinderNode::create(...)` | |
 | `SceneObject::cone(...)` | `ConeNode::create(...)` | |
 | `SceneObject("sphere", params)` | `SphereNode(cx,cy,cz,r)` | No string-based construction |
+| `CoordinateFrameSceneObject` | `CoordinateFrameNode` | GroupNode with 3 CuboidNode axes |
 | `SceneObject(filename)` | `MeshNode::load(filename)` | Returns `vector<shared_ptr<MeshNode>>` |
 | `SceneLight` + `SceneLightObject` | `LightNode` | Single class, position from transform |
 | `PointCloudObjectBase` | `PointCloudNode` | TODO |
@@ -163,13 +164,8 @@ struct Planet : public GroupNode {
 auto *frame = new CoordinateFrameSceneObject(100, 5);
 
 // New
-auto frame = std::make_shared<GroupNode>();
-auto x = CylinderNode::create(0,0,0, 2,2,100);
-x->setMaterial(Material::fromColor(GeomColor(255,0,0,255)));
-x->rotate(0, M_PI/2, 0);
-x->translate(50, 0, 0);
-frame->addChild(x);
-// ... y, z axes similarly
+auto frame = CoordinateFrameNode::create(100, 5);
+frame->setParams(200, 3);  // dynamic resize
 ```
 
 ### Physics/dynamic mesh
