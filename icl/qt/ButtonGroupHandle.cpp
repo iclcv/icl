@@ -3,7 +3,10 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/ButtonGroupHandle.h>
+
+#include <icl/utils/AssignRegistry.h>
 #include <icl/utils/Macros.h>
+
 #include <QRadioButton>
 namespace icl::qt {
   void ButtonGroupHandle::select(int id){
@@ -57,4 +60,14 @@ namespace icl::qt {
   }
 
 
-  } // namespace icl::qt
+  }  // namespace icl::qt
+
+namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::ButtonGroupHandle;
+  __attribute__((constructor))
+  static void icl_register_button_group_handle_assignments() {
+    AssignRegistry::enroll_provider<ButtonGroupHandle,
+                                    bool, int, float, double, std::string>();
+  }
+}

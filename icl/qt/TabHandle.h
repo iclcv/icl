@@ -10,6 +10,8 @@
 #include <QTabWidget>
 #include <QLayout>
 
+#include <type_traits>
+
 namespace icl::qt {
   /// A Handle for TabWidget container GUI components  \ingroup HANDLES
   class TabHandle : public GUIHandle<QTabWidget>, public ContainerHandle{
@@ -31,13 +33,21 @@ namespace icl::qt {
     }
 
     /// returns the currently selected index
-    inline int current() {
-      return (**this)->currentIndex();
+    inline int current() const {
+      return (*this)->currentIndex();
     }
 
     /// returns the number of tabs of this tab-widget
-    inline int num() {
-      return (**this)->count();
+    inline int num() const {
+      return (*this)->count();
     }
+
+    /// Explicit readback — returns the current tab index cast to T.
+    /// Provider-only (tabs don't accept assignment through the Assign
+    /// system; callers use the direct TabWidget API to programmatically
+    /// switch tabs).
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const { return static_cast<T>(current()); }
   };
   } // namespace icl::qt

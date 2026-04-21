@@ -8,6 +8,7 @@
 #include <icl/qt/GUIHandle.h>
 #include <vector>
 #include <string>
+#include <type_traits>
 
 /** \cond */
 class QRadioButton;
@@ -52,6 +53,16 @@ namespace icl::qt {
 
     /// enables button at index
     ICLQt_API void enable(int index);
+
+    /// Explicit readback.  Arithmetic specialization returns the selected
+    /// index cast to T; string specialization returns the selected text.
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const { return static_cast<T>(getSelected()); }
+
+    template<typename T>
+      requires std::is_same_v<T, std::string>
+    T as() const { return getSelectedText(); }
 
     private:
     /// utility function (number of elements)

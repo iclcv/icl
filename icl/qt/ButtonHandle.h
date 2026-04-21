@@ -8,6 +8,7 @@
 #include <memory>
 #include <icl/qt/GUIHandle.h>
 #include <string>
+#include <type_traits>
 #include <vector>
 #include <QPushButton>
 
@@ -55,6 +56,13 @@ namespace icl::qt {
 
     /// returns this buttons id (uncommon)
     ICLQt_API const std::string &getID() const;
+
+    /// Explicit readback — returns the wrapped button's current checked
+    /// state static-cast to T.  Provider-only (buttons don't accept
+    /// assignment; they're read for their state).
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const { return static_cast<T>((*this)->isChecked()); }
 
     private:
 

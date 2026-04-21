@@ -8,6 +8,7 @@
 #include <icl/qt/GUIHandle.h>
 #include <QtCore/QString>
 #include <string>
+#include <type_traits>
 
 /** \cond */
 class QLineEdit;
@@ -33,11 +34,27 @@ namespace icl::qt {
     /// makes the associated textfield show the given text
     void operator=(const char *text) {(*this) = std::string(text); }
 
+    /// makes the associated textfield show the given arithmetic value,
+    /// formatted via `utils::str()`.
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    void operator=(T v);
+
     /// returns the current text (only updated when enter is pressed)
     std::string getValue() const;
 
     /// returns the currently shown text of the textfield
     std::string getCurrentText() const;
+
+    /// Explicit readback.  Arithmetic specialization parses the current
+    /// text as T; string specialization returns the text.
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const;
+
+    template<typename T>
+      requires std::is_same_v<T, std::string>
+    T as() const { return getValue(); }
 
     private:
     std::string *m_str;

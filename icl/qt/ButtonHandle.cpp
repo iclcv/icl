@@ -3,6 +3,9 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/ButtonHandle.h>
+
+#include <icl/utils/AssignRegistry.h>
+
 #include <QPushButton>
 #include <algorithm>
 
@@ -29,4 +32,13 @@ namespace icl::qt {
   }
 
 
-  } // namespace icl::qt
+  }  // namespace icl::qt
+
+namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::ButtonHandle;
+  __attribute__((constructor))
+  static void icl_register_button_handle_assignments() {
+    AssignRegistry::enroll_provider<ButtonHandle, bool, int, float, double>();
+  }
+}

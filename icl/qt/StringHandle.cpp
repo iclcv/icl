@@ -3,6 +3,10 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/StringHandle.h>
+
+#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/StringUtils.h>
+
 #include <string>
 #include <QLineEdit>
 
@@ -25,4 +29,33 @@ namespace icl::qt {
     const_cast<StringHandle*>(this)->getGUIWidget()->getGUI()->unlockData();
     return s;
   }
-  } // namespace icl::qt
+
+  template<typename T>
+    requires std::is_arithmetic_v<T>
+  void StringHandle::operator=(T v) {
+    *this = icl::utils::str(v);
+  }
+  template<typename T>
+    requires std::is_arithmetic_v<T>
+  T StringHandle::as() const {
+    return icl::utils::parse<T>(getCurrentText());
+  }
+
+  // Emit the specializations we enroll into AssignRegistry below.
+  template void StringHandle::operator=<int>(int);
+  template void StringHandle::operator=<float>(float);
+  template void StringHandle::operator=<double>(double);
+  template int    StringHandle::as<int>() const;
+  template float  StringHandle::as<float>() const;
+  template double StringHandle::as<double>() const;
+
+  }  // namespace icl::qt
+
+namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::StringHandle;
+  __attribute__((constructor))
+  static void icl_register_string_handle_assignments() {
+    AssignRegistry::enroll_symmetric<StringHandle, int, float, double, std::string>();
+  }
+}

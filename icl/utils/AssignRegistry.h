@@ -67,6 +67,22 @@ namespace icl::utils {
       (enroll<Bs, A>(), ...);   // B_i = A
     }
 
+    /// One-directional bulk enroll — `Dst = Src` for each Src.  For
+    /// handles that accept multiple source types but have no readback
+    /// (pure "receivers", e.g. LabelHandle).
+    template<typename Dst, typename... Srcs>
+    static void enroll_receiver() {
+      (enroll<Dst, Srcs>(), ...);
+    }
+
+    /// One-directional bulk enroll — `Dst = Src` for each Dst.  For
+    /// handles whose state can only be *read* (pure "providers",
+    /// e.g. ButtonHandle, TabHandle).
+    template<typename Src, typename... Dsts>
+    static void enroll_provider() {
+      (enroll<Dsts, Src>(), ...);
+    }
+
     /// Dispatch: invoke the registered rule for `(dst.type(), src.type())`.
     /// @throws std::runtime_error if no rule is registered for the pair.
     /// @throws std::bad_any_cast  if `dst`/`src` somehow hold different

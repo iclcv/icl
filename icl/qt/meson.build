@@ -177,6 +177,7 @@ qt_sources = files(
   'StateHandle.cpp',
   'StringHandle.cpp',
   'StringSignalButton.cpp',
+  'TabHandle.cpp',
   'ThreadedUpdatableSlider.cpp',
   'ThreadedUpdatableTextView.cpp',
   'ToggleButton.cpp',

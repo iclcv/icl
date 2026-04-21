@@ -7,6 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/qt/GUIHandle.h>
 #include <string>
+#include <type_traits>
 #include <vector>
 #include <QtWidgets/QCheckBox>
 
@@ -35,6 +36,23 @@ namespace icl::qt {
 
     // returns whether this the checkbox is currently checked
     bool isChecked() const;
+
+    /// assigns the check-state (true → checked, false → unchecked).
+    /// Also accepts arithmetic sources via implicit conversion to bool.
+    void operator=(bool on) { doCheck(on); }
+
+    /// parses `s` as a bool and sets the check-state.  Throws on bad input.
+    void operator=(const std::string &s);
+
+    /// Explicit readback.  Arithmetic specialization casts `isChecked()`
+    /// to T; string specialization formats it as "0" or "1".
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const { return static_cast<T>(isChecked()); }
+
+    template<typename T>
+      requires std::is_same_v<T, std::string>
+    T as() const;
 
     private:
 
