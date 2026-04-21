@@ -53,7 +53,7 @@
 
 - filter/apps/filter-array.cpp — replaced by `icl-filter-playground -n N`
   which chains N Prop-driven filter stages. See the Session 43 summary in
-  `continue-transitioning.md` for the full context.
+  `CONTINUE.md` for the full context.
 
 ## Added this migration
 
