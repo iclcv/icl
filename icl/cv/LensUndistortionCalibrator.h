@@ -9,7 +9,7 @@
 #include <icl/utils/Size.h>
 #include <icl/utils/Size32f.h>
 
-#include <icl/io/ImageUndistortion.h>
+#include <icl/filter/ImageUndistortion.h>
 
 #include <vector>
 
@@ -100,7 +100,7 @@ namespace icl::cv {
       Info getInfo();
 
       /// computes an image undistortion structure using all points added before
-      io::ImageUndistortion computeUndistortion();
+      filter::ImageUndistortion computeUndistortion();
 
     };
   }

@@ -13,7 +13,7 @@
 #include <icl/math/DynMatrix.h>
 #include <icl/math/DynMatrixUtils.h>
 #include <icl/core/Img.h>
-#include <icl/io/ImageUndistortion.h>
+#include <icl/filter/ImageUndistortion.h>
 
 namespace icl::io {
   /**
@@ -30,14 +30,14 @@ namespace icl::io {
     IntrinsicCalibrator& operator=(const IntrinsicCalibrator&) = delete;
 
     ///Simple struct for handle result of computation of intrinsics
-    struct ICLIO_API Result : public ImageUndistortion{
+    struct ICLIO_API Result : public filter::ImageUndistortion{
 
       /// create a null result
       Result(){}
 
       /// create a result with given parameters
       Result(const std::vector<double> &params, const utils::Size &size):
-      ImageUndistortion("MatlabModel5Params",params,size){}
+      filter::ImageUndistortion("MatlabModel5Params",params,size){}
 
       ///returns focal length for x direction
       /** return x component of focal length

@@ -127,7 +127,7 @@ namespace icl{
       m_data->subSetSizes.pop_back();
     }
 
-    io::ImageUndistortion LensUndistortionCalibrator::computeUndistortion(){
+    filter::ImageUndistortion LensUndistortionCalibrator::computeUndistortion(){
       ICLASSERT_THROW(m_data,ICLException("LensUndistortionCalibrator::computeUndistortion: instance is null"));
 
       const std::vector<Point32f> &ps = m_data->points;
@@ -170,7 +170,7 @@ namespace icl{
       }
 
 
-      return io::ImageUndistortion("MatlabModel5Params", params,
+      return filter::ImageUndistortion("MatlabModel5Params", params,
                                    m_data->imageSize);
     }
 

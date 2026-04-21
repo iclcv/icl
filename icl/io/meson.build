@@ -15,7 +15,6 @@ io_public_headers = files(
   'GrabberDeviceDescription.h',
   'IO.h',
   'ImageCompressor.h',
-  'ImageUndistortion.h',
   'IntrinsicCalibrator.h',
   'TestImages.h',
 )
@@ -30,7 +29,6 @@ io_sources = files(
   'GenericImageOutput.cpp',
   'Grabber.cpp',
   'ImageCompressor.cpp',
-  'ImageUndistortion.cpp',
   'IntrinsicCalibrator.cpp',
   'TestImages.cpp',
 )

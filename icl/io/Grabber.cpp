@@ -5,7 +5,7 @@
 #include <icl/io/Grabber.h>
 #include <icl/core/Image.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/io/ImageUndistortion.h>
+#include <icl/filter/ImageUndistortion.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/filter/WarpOp.h>
 #include <icl/utils/StringUtils.h>
@@ -180,12 +180,12 @@ namespace icl::io {
     return core::Image(result->deepCopy());
   }
 
-  void Grabber::enableUndistortion(const ImageUndistortion &udist){
+  void Grabber::enableUndistortion(const filter::ImageUndistortion &udist){
     enableUndistortion(udist.createWarpMap());//warpMap);
   }
 
   void Grabber::enableUndistortion(const std::string &filename){
-    enableUndistortion(ImageUndistortion(filename));
+    enableUndistortion(filter::ImageUndistortion(filename));
   }
 
   void Grabber::enableUndistortion(const ProgArg &pa){

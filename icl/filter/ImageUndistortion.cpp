@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
-#include <icl/io/ImageUndistortion.h>
+#include <icl/filter/ImageUndistortion.h>
 #include <icl/utils/Point32f.h>
 #include <icl/utils/ConfigFile.h>
 #include <icl/utils/XML.h>
@@ -12,7 +12,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl::io {
+namespace icl::filter {
   struct ImageUndistortion::Impl{
     virtual ~Impl(){}
     Img32f warpMap;
@@ -263,4 +263,4 @@ namespace icl::io {
     }
     return impl->warpMap;
   }
-  } // namespace icl::io
+  } // namespace icl::filter

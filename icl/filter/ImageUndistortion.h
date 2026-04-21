@@ -7,8 +7,8 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Img.h>
 
-namespace icl::io {
-  class ICLIO_API ImageUndistortion{
+namespace icl::filter {
+  class ICLFilter_API ImageUndistortion{
     public:
     struct Impl; //!< internal impl
 
@@ -50,8 +50,8 @@ namespace icl::io {
   };
 
   /// overloaded ostream operator for ImageUndistortion instances
-  ICLIO_API std::istream &operator>>(std::istream &is, ImageUndistortion &udist);
+  ICLFilter_API std::istream &operator>>(std::istream &is, ImageUndistortion &udist);
 
   /// overloaded istream operator for ImageUndistortion instances
-  ICLIO_API std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
-  } // namespace icl::io
+  ICLFilter_API std::ostream &operator<<(std::ostream &s, const ImageUndistortion &udist);
+  } // namespace icl::filter

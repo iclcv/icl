@@ -291,7 +291,7 @@ namespace icl::io {
       }
 
       /// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
-      void enableUndistortion(const ImageUndistortion &udist){
+      void enableUndistortion(const filter::ImageUndistortion &udist){
         ICLASSERT_RETURN(!isNull());
         std::scoped_lock<std::recursive_mutex> l(m_mutex);
         m_poGrabber->enableUndistortion(udist);

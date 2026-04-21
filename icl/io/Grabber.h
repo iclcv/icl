@@ -14,7 +14,7 @@
 
 namespace icl::core { class Image; }
 namespace icl::utils { class ProgArg; }
-namespace icl::io { class ImageUndistortion; }
+namespace icl::filter { class ImageUndistortion; }
 
 #include <functional>
 #include <string>
@@ -228,7 +228,7 @@ static std::vector<std::string> translateStringVec(const std::string &stringVecS
 void enableUndistortion(const std::string &filename);
 
 /// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
-void enableUndistortion(const ImageUndistortion &udist);
+void enableUndistortion(const filter::ImageUndistortion &udist);
 
 /// enables undistortion from given programm argument.
 /** where first argument is the filename of the xml file and second is the size of picture*/

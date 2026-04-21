@@ -6,7 +6,7 @@
 #include <icl/math/DynMatrixUtils.h>
 #include <icl/math/LevenbergMarquardtFitter.h>
 #include <icl/utils/XML.h>
-#include <icl/io/ImageUndistortion.h>
+#include <icl/filter/ImageUndistortion.h>
 #include <icl/utils/File.h>
 #include <icl/geom/Camera.h>
 #include <fstream>
@@ -923,9 +923,9 @@ namespace icl::geom {
   }
 
   Camera Camera::create_camera_from_calibration_or_udist_file(const std::string &filename){
-    std::shared_ptr<io::ImageUndistortion> udist;
+    std::shared_ptr<filter::ImageUndistortion> udist;
     try{
-      udist.reset(new io::ImageUndistortion(filename));
+      udist.reset(new filter::ImageUndistortion(filename));
     }catch(...){
       return Camera(filename);
     }

@@ -1417,7 +1417,7 @@ namespace icl::io {
 
 
   void IntrinsicCalibrator::loadIntrinsics(const std::string &filename){
-    static_cast<ImageUndistortion&>(m_calres) = ImageUndistortion(filename);
+    static_cast<filter::ImageUndistortion&>(m_calres) = filter::ImageUndistortion(filename);
 
     (m_data->intrinsic_matrix)->operator()(0, 0) = m_calres.getParams()[0];
     (m_data->intrinsic_matrix)->operator()(1, 1) = m_calres.getParams()[1];
