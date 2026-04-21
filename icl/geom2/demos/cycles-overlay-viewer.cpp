@@ -13,7 +13,6 @@
 #include <icl/geom2/CyclesRenderer.h>
 #include <icl/geom2/Renderer.h>
 #include <icl/geom2/Scene2MouseHandler.h>
-#include <icl/utils/FPSLimiter.h>
 
 using namespace icl::utils;
 using namespace icl::core;

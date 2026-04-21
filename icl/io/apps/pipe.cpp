@@ -6,7 +6,6 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/qt/Common2.h>
 #include <icl/utils/FPSEstimator.h>
-#include <icl/utils/FPSLimiter.h>
 #include <icl/utils/ConsoleProgress.h>
 #include <icl/io/IOFunctions.h>
 

@@ -14,6 +14,7 @@
 #include <icl/utils/StringUtils.h>
 #include <icl/io/GenericGrabber.h>
 #include <icl/utils/ProgArg.h>
+#include <icl/utils/FPSLimiter.h>
 #include <mutex>
 #include <icl/io/FileWriter.h>
 #include <icl/core/Color.h>

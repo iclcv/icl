@@ -3,7 +3,6 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/utils/FPSLimiter.h>
 
 #include <icl/utils/Random.h>
 #include <deque>

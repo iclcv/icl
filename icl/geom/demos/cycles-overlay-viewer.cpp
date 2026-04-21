@@ -12,7 +12,6 @@
 #include <icl/geom/DemoScene.h>
 #include <icl/geom/GLRenderer.h>
 #include <icl/geom/Raytracer.h>
-#include <icl/utils/FPSLimiter.h>
 
 using namespace icl::utils;
 using namespace icl::core;

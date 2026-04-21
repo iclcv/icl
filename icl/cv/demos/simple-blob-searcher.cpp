@@ -4,7 +4,6 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/cv/SimpleBlobSearcher.h>
-#include <icl/utils/FPSLimiter.h>
 #include <mutex>
 
 GUI gui;

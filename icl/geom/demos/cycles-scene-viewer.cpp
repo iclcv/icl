@@ -15,7 +15,6 @@
 #include <icl/geom/SceneObject.h>
 #include <icl/geom/Material.h>
 #include <icl/geom/Hit.h>
-#include <icl/utils/FPSLimiter.h>
 #include <icl/geom/CyclesRenderer.h>
 #include <icl/geom/GltfLoader.h>
 #include <icl/geom/GLRenderer.h>

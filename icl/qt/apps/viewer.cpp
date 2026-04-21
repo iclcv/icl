@@ -4,7 +4,6 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/core/Image.h>
-#include <icl/utils/FPSLimiter.h>
 
 GUI gui;
 GenericGrabber grabber;

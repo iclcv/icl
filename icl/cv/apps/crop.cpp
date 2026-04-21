@@ -7,7 +7,6 @@
 #include <icl/filter/RotateOp.h>
 #include <icl/qt/DefineRectanglesMouseHandler.h>
 #include <icl/io/GenericImageOutput.h>
-#include <icl/utils/FPSLimiter.h>
 #include <icl/io/FileList.h>
 
 #include <QtWidgets/QScrollArea>

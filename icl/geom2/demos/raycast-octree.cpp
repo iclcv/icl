@@ -17,7 +17,6 @@
 #include <icl/geom2/LightNode.h>
 #include <icl/geom/Camera.h>
 #include <icl/utils/Time.h>
-#include <icl/utils/FPSLimiter.h>
 #include <mutex>
 
 using namespace icl::geom2;

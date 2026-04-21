@@ -8,7 +8,6 @@
 #include "DisplacementMap.h"
 #include <icl/utils/ConfigFile.h>
 #include <icl/utils/Configurable.h>
-#include <icl/utils/FPSLimiter.h>
 #include <mutex>
 #include <icl/core/ConvexHull.h>
 #include <icl/filter/WarpOp.h>

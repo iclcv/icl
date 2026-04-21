@@ -5,7 +5,6 @@
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
-#include <icl/utils/FPSLimiter.h>
 #include <icl/geom/ComplexCoordinateFrameSceneObject.h>
 
 HBox gui;

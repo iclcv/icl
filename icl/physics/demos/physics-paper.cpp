@@ -4,7 +4,6 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
-#include <icl/utils/FPSLimiter.h>
 
 #include <icl/physics/PhysicsDefs.h>
 #include <icl/physics/PhysicsWorld.h>
