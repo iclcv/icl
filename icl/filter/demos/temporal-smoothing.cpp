@@ -4,13 +4,12 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/filter/MotionSensitiveTemporalSmoothing.h>
-#include <icl/filter/ConvolutionOp.h>
 #include <icl/utils/Time.h>
 #include <mutex>
 
 VSplit gui;
 
-MotionSensitiveTemporalSmoothing* smoothing;
+std::unique_ptr<MotionSensitiveTemporalSmoothing> smoothing;
 GenericGrabber grabber;
 
 void update();
@@ -26,7 +25,7 @@ void init(){
   int maxFilterSize=pa("-maxFilterSize");
   int nullValue=pa("-nullValue");
 
-  smoothing = new MotionSensitiveTemporalSmoothing(nullValue, maxFilterSize);
+  smoothing = std::make_unique<MotionSensitiveTemporalSmoothing>(nullValue, maxFilterSize);
   grabber.init(pa("-i"));
 
   update();
@@ -42,22 +41,17 @@ void update(){
   int filterSize = gui["filterSize"];
   int difference = gui["difference"];
 
-  if(gui["disableCL"]){
-    smoothing->setUseCL(true);
-  }else{
-    smoothing->setUseCL(false);
-  }
+  smoothing->setUseCL(gui["disableCL"].as<bool>());
 
-  static ImgBase *dst = 0;
   Image src = grabber.grabImage();
+  Image dst;
 
   smoothing->setFilterSize(filterSize);
   smoothing->setDifference(difference);
 
-  Time startT, endT;
-  startT = Time::now();
-  smoothing->apply(src.ptr(), &dst);
-  endT = Time::now();
+  Time startT = Time::now();
+  smoothing->apply(src, dst);
+  Time endT = Time::now();
   std::cout << (smoothing->isCLActive() ? "OpenCL: " : "CPU: ");
   std::cout << (endT-startT).toMilliSeconds() << " ms" << std::endl;
   imageOut = dst;

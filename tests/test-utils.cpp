@@ -116,3 +116,53 @@ ICL_REGISTER_TEST("utils.random.uniform", "random within range")
     ICL_TEST_TRUE(v >= -5.0 && v <= 5.0);
   }
 }
+
+// --- ClippedCast ---
+
+#include <icl/utils/ClippedCast.h>
+#include <icl/core/Types.h>
+using namespace icl;
+
+ICL_REGISTER_TEST("utils.clipped_cast.u8_to_f32", "unsigned char to float (was UB on ARM)")
+{
+  auto f = [](icl8u v){ return clipped_cast<icl8u,icl32f>(v); };
+  ICL_TEST_NEAR(f(0), 0.0f, 0.01f);
+  ICL_TEST_NEAR(f(128), 128.0f, 0.01f);
+  ICL_TEST_NEAR(f(255), 255.0f, 0.01f);
+}
+
+ICL_REGISTER_TEST("utils.clipped_cast.s16_to_f32", "signed short to float")
+{
+  auto f = [](icl16s v){ return clipped_cast<icl16s,icl32f>(v); };
+  ICL_TEST_NEAR(f(-1000), -1000.0f, 0.01f);
+  ICL_TEST_NEAR(f(0), 0.0f, 0.01f);
+  ICL_TEST_NEAR(f(1000), 1000.0f, 0.01f);
+}
+
+ICL_REGISTER_TEST("utils.clipped_cast.f32_to_u8", "float to unsigned char clamps")
+{
+  auto f = [](icl32f v){ return clipped_cast<icl32f,icl8u>(v); };
+  ICL_TEST_EQ(f(0.0f), (icl8u)0);
+  ICL_TEST_EQ(f(128.0f), (icl8u)128);
+  ICL_TEST_EQ(f(255.0f), (icl8u)255);
+  ICL_TEST_EQ(f(-100.0f), (icl8u)0);
+  ICL_TEST_EQ(f(999.0f), (icl8u)255);
+}
+
+ICL_REGISTER_TEST("utils.clipped_cast.f32_to_s16", "float to signed short clamps")
+{
+  auto f = [](icl32f v){ return clipped_cast<icl32f,icl16s>(v); };
+  ICL_TEST_EQ(f(100.0f), (icl16s)100);
+  ICL_TEST_EQ(f(-40000.0f), (icl16s)-32768);
+  ICL_TEST_EQ(f(40000.0f), (icl16s)32767);
+}
+
+ICL_REGISTER_TEST("utils.clipped_cast.int_to_int", "integer narrowing clamps")
+{
+  auto f8 = [](int v){ return clipped_cast<int,icl8u>(v); };
+  ICL_TEST_EQ(f8(300), (icl8u)255);
+  ICL_TEST_EQ(f8(-10), (icl8u)0);
+  ICL_TEST_EQ(f8(42), (icl8u)42);
+  auto fs = [](icl16s v){ return clipped_cast<icl16s,icl8u>(v); };
+  ICL_TEST_EQ(fs(-1), (icl8u)0);
+}

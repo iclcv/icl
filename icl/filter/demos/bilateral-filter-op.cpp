@@ -2,202 +2,114 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <iostream>
-#include <fstream>
-#include <limits>
-
-//------------------------------------------------------------------------------
-
-#include <icl/core/CCFunctions.h>
-
 #include <icl/utils/StackTimer.h>
 #include <icl/qt/Common2.h>
-
 #include <icl/filter/ConvolutionOp.h>
-#include <icl/filter/BinaryArithmeticalOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/BilateralFilterOp.h>
-
 #include <icl/filter/CannyOp.h>
 
-#include <icl/geom/Camera.h>
-#include <icl/geom/PointCloudCreator.h>
-#include <icl/geom/PointCloudObject.h>
-#include <icl/geom/PointCloudNormalEstimator.h>
-#include <icl/geom/Scene.h>
-
-using namespace icl;
-using namespace icl::core;
-using namespace icl::utils;
-using namespace icl::io;
-using namespace icl::filter;
-using namespace icl::qt;
-
-//==============================================================================
-
 GUI gui;
-
 GenericGrabber grabber;
-
-BilateralFilterOp *bi_filter;
-
+BilateralFilterOp bi_filter;
 CannyOp canny(200,255,0);
 
-//==============================================================================
+void run() {
+  BENCHMARK_THIS_FUNCTION;
 
-template<typename T>
-void grab_cb(const ImgBase *img) {
+  int roi_percent = gui["roi_size"].as<int>();
+  canny.setThresholds(gui["canny_low_th"].as<int>(),gui["canny_high_th"].as<int>());
 
-	BENCHMARK_THIS_FUNCTION;
+  Image color_original = grabber.grabImage();
+  bool use_gray = gui["to_gray"].as<bool>();
 
-	int roi_percent = gui["roi_size"].as<int>();
+  Size size = color_original.getSize();
+  size.width = std::floor(size.width*((float)roi_percent/100.0));
+  size.height = std::floor(size.height*((float)roi_percent)/100.0);
+  size.width = size.width%2+size.width;
+  size.height = size.height%2+size.height;
+  Point offset(color_original.getWidth()/2.0-size.width/2.0,color_original.getHeight()/2.0-size.height/2.0);
+  color_original.setROI(offset,size);
 
-	canny.setThresholds(gui["canny_low_th"].as<int>(),gui["canny_high_th"].as<int>());
+  Image input = use_gray ? gray(color_original) : color_original;
 
-	Img<T> color_original = *img->asImg<T>();
+  Image edge_original;
+  canny.apply(input, edge_original);
 
-	Size size = color_original.getSize();
+  Image color_median;
+  {
+    BENCHMARK_THIS_SECTION(median_call);
+    MedianOp median(utils::Size(gui["median_radius"].as<int>(),gui["median_radius"].as<int>()));
+    median.apply(input, color_median);
+  }
 
-	size.width = std::floor(size.width*((float)roi_percent/100.0));
-	size.height = std::floor(size.height*((float)roi_percent)/100.0);
+  Image edge_median;
+  canny.apply(color_median, edge_median);
 
-	size.width = size.width%2+size.width;
-	size.height = size.height%2+size.height;
+  bi_filter.setRadius(gui["bi_radius"].as<int>());
+  bi_filter.setSigmaR(gui["sigma_r"].as<float>());
+  bi_filter.setSigmaS(gui["sigma_s"].as<float>());
+  bi_filter.setUseLAB(gui["use_lab"].as<bool>());
 
-	Point offset(color_original.getWidth()/2.0-size.width/2.0,color_original.getHeight()/2.0-size.height/2.0);
+  Image color_bilateral;
+  {
+    BENCHMARK_THIS_SECTION(bilateral_filter_call);
+    bi_filter.apply(color_median, color_bilateral);
+  }
 
-	color_original.setROI(offset,size);
+  Image edge_bilateral;
+  canny.apply(color_bilateral, edge_bilateral);
 
-	Img<T> color_median(color_original.getParams());
-	MedianOp median(utils::Size(gui["median_radius"].as<int>(),gui["median_radius"].as<int>()));
+  gui["view1"] = input;
+  gui["view2"] = color_median;
+  gui["view3"] = color_bilateral;
 
-	bool use_gray = gui["to_gray"].as<bool>();
-	Img<T> gray_image(color_original.getSize(),core::formatGray);
-	//color_original.setFormat(core::formatRGB);
-	Img8u edge_;
-	if (use_gray) {
-		core::cc(&color_original,&gray_image);
-		canny.apply(&gray_image,bpp(edge_));
-	} else {
-		canny.apply(&color_original,bpp(edge_));
-	}
+  gui["viewedge1"] = edge_original;
+  gui["viewedge2"] = edge_median;
+  gui["viewedge3"] = edge_bilateral;
 
-	{
-		BENCHMARK_THIS_SECTION(median_call);
-		if (use_gray)
-			median.apply(&gray_image,bpp(color_median));
-		else
-			median.apply(&color_original,bpp(color_median));
-
-	}
-	Img8u edge_median;//(color_median.getSize(),core::formatGray);
-	canny.apply(&color_median,bpp(edge_median));
-
-	bi_filter->setRadius(gui["bi_radius"].as<int>());
-	bi_filter->setSigmaR(gui["sigma_r"].as<float>());
-	bi_filter->setSigmaS(gui["sigma_s"].as<float>());
-	bi_filter->setUseLAB(gui["use_lab"].as<bool>());
-	Img<T> color_bilateral(color_median.getParams());
-	{
-		BENCHMARK_THIS_SECTION(bilateral_filter_call);
-		if (use_gray)
-			bi_filter->apply(&color_median,bpp(color_bilateral));
-		else
-			bi_filter->apply(&color_median,bpp(color_bilateral));
-	}
-
-	Img8u edge_bi_filtered;//(edge_bi_filtered.getSize(),core::formatGray);
-	canny.apply(&color_bilateral,bpp(edge_bi_filtered));
-
-	// set images
-	if (use_gray)
-		gui["view1"] = &gray_image;
-	else
-		gui["view1"] = &color_original;
-	gui["view2"] = &color_median;
-	gui["view3"] = &color_bilateral;
-
-	gui["viewedge1"] = &edge_;
-	gui["viewedge2"] = &edge_median;
-	gui["viewedge3"] = &edge_bi_filtered;
-
-	// update view:
-	gui["view1"].render();
-	gui["view2"].render();
-	gui["view3"].render();
-
-	gui["viewedge1"].render();
-	gui["viewedge2"].render();
-	gui["viewedge3"].render();
-
+  gui["view1"].render();
+  gui["view2"].render();
+  gui["view3"].render();
+  gui["viewedge1"].render();
+  gui["viewedge2"].render();
+  gui["viewedge3"].render();
+  gui["fps"].render();
 }
-
-//==============================================================================
 
 void init() {
+  grabber.init(pa("-i"));
 
-	grabber.init(pa("-i"));
+  if (pa("-s")) {
+    utils::Size size = pa("-s");
+    grabber.setDesiredSizeInternal(size);
+  }
 
-	if (pa("-s")) {
-		utils::Size size = pa("-s");
-		grabber.setDesiredSizeInternal(size);
-	}
-
-    // create the GUI
-	gui << ( VBox()
-			 << ( HBox()
-				  << Canvas().label("Original").handle("view1").minSize(16, 12)
-				  << Canvas().label("Median").handle("view2").minSize(16, 12)
-				  << Canvas().label("Bilateral Filtered").handle("view3").minSize(16, 12)
-				  )
-			 << ( HBox()
-				  << Canvas().label("Original").handle("viewedge1").minSize(16, 12)
-				  << Canvas().label("Median").handle("viewedge2").minSize(16, 12)
-				  << Canvas().label("Bilateral Filtered").handle("viewedge3").minSize(16, 12)
-				  )
-			 << CheckBox("Use LAB",true).handle("use_lab")
-			 << CheckBox("Use gray image",false).handle("to_gray")
-			 << Slider(1,24,4).label("Bilateral Kernel Radius").handle("bi_radius")
-			 << Slider(1,24,4).label("Median Kernel Radius").handle("median_radius")
-			 << FSlider(0.1,200,5).label("sigma_r (bilateral) ").handle("sigma_r")
-			 << FSlider(0.1,200,5).label("sigma_s (bilateral) ").handle("sigma_s")
-			 << Slider(0,255,200).label("Canny low th").handle("canny_low_th")
-			 << Slider(0,255,255).label("Canny high th").handle("canny_high_th")
-			 << Slider(10,100,100).label("ROI of Img (Percent)").handle("roi_size")
-			 << Fps().handle("fps")
-			 );
-    gui << Show();
-
-	bi_filter = new BilateralFilterOp();
-
+  gui << ( VBox()
+           << ( HBox()
+                << Canvas().label("Original").handle("view1").minSize(16, 12)
+                << Canvas().label("Median").handle("view2").minSize(16, 12)
+                << Canvas().label("Bilateral Filtered").handle("view3").minSize(16, 12)
+                )
+           << ( HBox()
+                << Canvas().label("Original").handle("viewedge1").minSize(16, 12)
+                << Canvas().label("Median").handle("viewedge2").minSize(16, 12)
+                << Canvas().label("Bilateral Filtered").handle("viewedge3").minSize(16, 12)
+                )
+           << CheckBox("Use LAB",true).handle("use_lab")
+           << CheckBox("Use gray image",false).handle("to_gray")
+           << Slider(1,24,4).label("Bilateral Kernel Radius").handle("bi_radius")
+           << Slider(1,24,4).label("Median Kernel Radius").handle("median_radius")
+           << FSlider(0.1,200,5).label("sigma_r (bilateral) ").handle("sigma_r")
+           << FSlider(0.1,200,5).label("sigma_s (bilateral) ").handle("sigma_s")
+           << Slider(0,255,200).label("Canny low th").handle("canny_low_th")
+           << Slider(0,255,255).label("Canny high th").handle("canny_high_th")
+           << Slider(10,100,100).label("ROI of Img (Percent)").handle("roi_size")
+           << Fps().handle("fps")
+           );
+  gui << Show();
 }
 
-//==============================================================================
-
-void run() {
-
-	Image img = grabber.grabImage();
-
-	switch(img.getDepth()) {
-		case(core::depth8u): {
-			grab_cb<icl8u>(img.ptr());
-			break;
-		}
-		case(core::depth32f): {
-			grab_cb<icl32f>(img.ptr());
-			break;
-		}
-		default: break;
-	}
-
-	gui["fps"].render();
-}
-
-//==============================================================================
 int main(int argc, char **argv) {
-
-	ICLApp app(argc,argv,"[m]-input|-i(2) -size|-s(1)",init,run);
-    return app.exec();
-
-    return 0;
+  return ICLApp(argc,argv,"[m]-input|-i(2) -size|-s(1)",init,run).exec();
 }

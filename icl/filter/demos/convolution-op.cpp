@@ -68,42 +68,37 @@ void run(){
   static FPSHandle fps = gui.get<FPSHandle>("fps");
   static LabelHandle applyTime = gui.get<LabelHandle>("apply-time");
 
-  static ImgBase *dstImage = 0;
-
   grabber.useDesired(parse<Size>(srcSize.getSelectedItem()));
   grabber.useDesired(parse<depth>(srcDepth.getSelectedItem()));
 
   Image grabbedImage = grabber.grabImage();
-  Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage.ptr()->getImageRect());
-  const ImgBase *roiedImage = grabbedImage.ptr()->shallowCopy(roi);
+  Rect roi = get_roi(srcROI.getSelectedItem(),grabbedImage.getImageRect());
+  Image roiedImage = grabbedImage.shallowCopy();
+  roiedImage.setROI(roi);
 
   ConvolutionOp conv(ConvolutionKernel(get_kernel(kernel.getSelectedItem())),forceUnsigned);
   conv.setClipToROI(clipToROI);
 
   Time t = Time::now();
-  conv.apply(roiedImage,&dstImage);
+  Image result;
+  conv.apply(roiedImage, result);
   applyTime = (Time::now()-t).toStringFormated("%Ss %#ms %-us");
-  std::ostringstream sstr; sstr << *dstImage;
+  std::ostringstream sstr; sstr << *result.ptr();
 
   src = roiedImage;
   src->color(255,0,0,255);
   src->fill(0,0,0,0);
   src->rect(roi.enlarged(-1));
 
-  dst = dstImage;
+  dst = result;
   dst->color(255,0,0,255);
   dst->text(sstr.str(),10,10,-1,-1,7);
 
   src.render();
   dst.render();
   fps.render();
-
-  delete roiedImage;
 }
 
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
 }
-
-/// there is an error when getting info from 16 bit image ???
-/// add text field with output image string

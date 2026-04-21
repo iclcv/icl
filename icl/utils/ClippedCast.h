@@ -29,14 +29,24 @@ namespace icl::utils {
   /// utility cast function wrapping the standard lib's numerical_limits template
   template<class S, class D>
   inline D clipped_cast(S src){
-    if(is_float_type<D>()){ //hopefully this is const enough for optimize this expresseion out
-      return src < static_cast<S>(-(std::numeric_limits<D>::max)()) ? static_cast<D>(-(std::numeric_limits<D>::max)()) :
-      src > static_cast<S>((std::numeric_limits<D>::max)()) ? (std::numeric_limits<D>::max)() :
-      static_cast<D>(src);
-    }else{
+    if constexpr (std::is_floating_point_v<D>){
+      // Any integer type fits in float/double — just cast.
+      // The old code did static_cast<S>(-FLT_MAX) which is UB when S is unsigned.
+      return static_cast<D>(src);
+    }else if constexpr (std::is_floating_point_v<S>){
+      // Float → integer: clamp to destination range
       return src < static_cast<S>((std::numeric_limits<D>::min)()) ? (std::numeric_limits<D>::min)() :
-      src > static_cast<S>((std::numeric_limits<D>::max)()) ? (std::numeric_limits<D>::max)() :
-      static_cast<D>(src);
+             src > static_cast<S>((std::numeric_limits<D>::max)()) ? (std::numeric_limits<D>::max)() :
+             static_cast<D>(src);
+    }else{
+      // Integer → integer: clamp to destination range
+      using Wide = std::conditional_t<std::is_signed_v<S> || std::is_signed_v<D>, long long, unsigned long long>;
+      Wide w = static_cast<Wide>(src);
+      constexpr Wide dmin = static_cast<Wide>((std::numeric_limits<D>::min)());
+      constexpr Wide dmax = static_cast<Wide>((std::numeric_limits<D>::max)());
+      return w < dmin ? static_cast<D>(dmin) :
+             w > dmax ? static_cast<D>(dmax) :
+             static_cast<D>(w);
     }
   }
 

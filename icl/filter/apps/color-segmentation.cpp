@@ -10,14 +10,22 @@
 #include <icl/core/Color.h>
 #include <icl/cv/RegionDetector.h>
 
-#include <icl/geom/Scene.h>
+#include <icl/geom2/Scene2.h>
+#include <icl/geom2/GroupNode.h>
+#include <icl/geom2/CuboidNode.h>
+#include <icl/geom2/MeshNode.h>
+#include <icl/geom2/TextNode.h>
+#include <icl/geom2/Scene2MouseHandler.h>
+#include <icl/geom/Camera.h>
 #include <icl/geom/GeomDefs.h>
 #include <icl/geom/Material.h>
 #include <mutex>
 
+using namespace icl::geom2;
+
 VSplit gui;
 
-#define MAX_LUT_3D_DIM 1000000
+constexpr int MAX_LUT_3D_DIM = 10000000;
 
 GenericGrabber grabber;
 std::shared_ptr<ColorSegmentationOp> segmenter;
@@ -35,114 +43,136 @@ void cc_util_hls_to_rgb_i(int h, int l, int s, int &r, int &g, int &b){
   r = R;
   g = G;
   b = B;
-  //  DEBUG_LOG("h:" << h << " l:" << l << " s:" << s << " --> r:" << r << " g:" << g << " b:" << b);
 }
 void rgb_id(int r, int g, int b, int &r2, int &g2, int &b2){
   r2=r; g2=g; b2=b;
 }
 
-Scene scene;
+Scene2 scene;
 
-struct LUT3DSceneObject : public SceneObject {
-  int w,h,t,dx,dy,dz,dim;
-  std::vector<int> rs,gs,bs;
-  mutable std::recursive_mutex mtex;
-  void lock() const override { mtex.lock(); }
-  void unlock() const override { mtex.unlock(); }
+// 3D LUT visualization state
+struct LUT3D {
+  std::shared_ptr<GroupNode> group;
+  std::vector<std::shared_ptr<CuboidNode>> cubes;
+  std::vector<int> rs, gs, bs;
+  int dim = 0;
 
-  LUT3DSceneObject(){
-
-    segmenter->getLUTDims(w,h,t);
-    dim = w*h*t;
-    rs.resize(dim);
-    gs.resize(dim);
-    bs.resize(dim);
-    format f = segmenter->getSegmentationFormat();
-    void (*cc_func)(int,int,int,int&,int&,int&) = ( f == formatYUV ? cc_util_yuv_to_rgb :
-                                                    f == formatHLS ? cc_util_hls_to_rgb_i :
-                                                    rgb_id );
-    float cx = float(w)/2;
-    float cy = float(h)/2;
-    float cz = float(t)/2;
-    dx = 256/w;
-    dy = 256/h;
-    dz = 256/t;
-    int i=0;
-    for(int z=0;z<t;++z){
-      for(int y=0;y<h;++y){
-        for(int x=0;x<w;++x,++i){
-          cc_func(w==1 ? 127 : x*dx,
-                  h==1 ? 127 : y*dy,
-                  t==1 ? 127 : z*dz,
-                  rs[i],gs[i],bs[i]);
-          SceneObject *o = addCube(x-cx+0.5,y-cy+0.5,z-cz+0.5,1);
-          o->setMaterial(Material::fromColors(GeomColor(rs[i],gs[i],bs[i],255), GeomColor(255,255,255,255)));
-          o->setVisible(Primitive::line,false);
-          o->setVisible(Primitive::vertex,false);
-        }
-      }
-    }
-    SceneObject *o = addCuboid(0,0,0,w,h,t);
-    o->setVisible(Primitive::line,true);
-    o->setVisible(Primitive::quad,false);
-    o->setVisible(Primitive::vertex,false);
-    o->setMaterial(Material::fromColor(GeomColor(255,255,255,255)));
-
-
-    float wl = 1.3*(w/2);
-    float hl = 1.3*(h/2);
-    float tl = 1.3*(t/2);
-
-    addVertex(Vec(-wl,0,0,1),geom_invisible());
-    addVertex(Vec(wl,0,0,1),geom_invisible());
-    addVertex(Vec(0,-hl,0,1),geom_invisible());
-    addVertex(Vec(0,hl,0,1),geom_invisible());
-    addVertex(Vec(0,0,-tl,1),geom_invisible());
-    addVertex(Vec(0,0,tl,1),geom_invisible());
-
-    addLine(0,1,geom_red(255));
-    addLine(2,3,geom_green(255));
-    addLine(4,5,geom_blue(255));
-
-
-    for(int i=0;i<6;++i){
-      std::string s = (i&1)? "" : "-";
-      switch(segmenter->getSegmentationFormat()){
-        case formatYUV: s += "yuv"[i/2]; break;
-        case formatRGB: s += "rgb"[i/2]; break;
-        case formatHLS: s += "hls"[i/2]; break;
-        default:
-          throw ICLException("invalid segmentation format");
-      }
-      addText(i,s,2);
-    }
-
-
-  }
-
-  void update(float alpha){
+  void update(float alpha) {
+    scene.lock();
     const icl8u *lut = segmenter->getLUT();
-    for(int i=0;i<dim;++i){
-      m_children[i]->setVisible( lut[i] );
-      m_children[i]->setMaterial(Material::fromColor(GeomColor(rs[i],gs[i],bs[i],alpha)));
-      m_children[i]->setVisible(Primitive::line,hoveredClassID == lut[i]);
+    for(int i = 0; i < dim; ++i){
+      cubes[i]->setVisible(lut[i] != 0);
+      cubes[i]->setMaterial(Material::fromColor(GeomColor(rs[i],gs[i],bs[i],alpha)));
+      cubes[i]->setPrimitiveVisible(PrimLine, hoveredClassID == lut[i]);
     }
-    // createDisplayList(); // this does not help yet, since we update
-    // the object every cycle even if nothing was changed ...
+    scene.unlock();
+  }
+};
+std::unique_ptr<LUT3D> lut3D;
+
+void prepare_scene(){
+  int dim = ( (1+(0xff >> pa("-s",0).as<int>()))
+              *(1+(0xff >> pa("-s",1).as<int>()))
+              *(1+(0xff >> pa("-s",2).as<int>())) );
+  if(dim > MAX_LUT_3D_DIM) return;
+
+  lut3D = std::make_unique<LUT3D>();
+  lut3D->group = std::make_shared<GroupNode>();
+
+  int w, h, t;
+  segmenter->getLUTDims(w, h, t);
+  lut3D->dim = w * h * t;
+  lut3D->rs.resize(lut3D->dim);
+  lut3D->gs.resize(lut3D->dim);
+  lut3D->bs.resize(lut3D->dim);
+
+  format f = segmenter->getSegmentationFormat();
+  void (*cc_func)(int,int,int,int&,int&,int&) = ( f == formatYUV ? cc_util_yuv_to_rgb :
+                                                   f == formatHLS ? cc_util_hls_to_rgb_i :
+                                                   rgb_id );
+  float cx = float(w) / 2;
+  float cy = float(h) / 2;
+  float cz = float(t) / 2;
+  int dx = 256 / w;
+  int dy = 256 / h;
+  int dz = 256 / t;
+
+  int i = 0;
+  for(int z = 0; z < t; ++z){
+    for(int y = 0; y < h; ++y){
+      for(int x = 0; x < w; ++x, ++i){
+        cc_func(w == 1 ? 127 : x * dx,
+                h == 1 ? 127 : y * dy,
+                t == 1 ? 127 : z * dz,
+                lut3D->rs[i], lut3D->gs[i], lut3D->bs[i]);
+        auto cube = CuboidNode::createCube(x - cx + 0.5f, y - cy + 0.5f, z - cz + 0.5f, 1);
+        cube->setMaterial(Material::fromColors(
+            GeomColor(lut3D->rs[i], lut3D->gs[i], lut3D->bs[i], 255),
+            GeomColor(255, 255, 255, 255)));
+        cube->setPrimitiveVisible(PrimLine | PrimVertex, false);
+        lut3D->cubes.push_back(cube);
+        lut3D->group->addChild(cube);
+      }
+    }
+  }
+  scene.addNode(lut3D->group);
+
+  // Bounding box wireframe
+  auto bbox = CuboidNode::create(0, 0, 0, w, h, t);
+  bbox->setPrimitiveVisible(PrimLine, true);
+  bbox->setPrimitiveVisible(PrimQuad | PrimVertex, false);
+  bbox->setMaterial(Material::fromColor(GeomColor(255, 255, 255, 255)));
+  scene.addNode(bbox);
+
+  // Axis lines
+  float wl = 1.3f * (w / 2.0f);
+  float hl = 1.3f * (h / 2.0f);
+  float tl = 1.3f * (t / 2.0f);
+
+  auto axes = std::make_shared<MeshNode>();
+  axes->addVertex(Vec(-wl, 0, 0, 1));
+  axes->addVertex(Vec( wl, 0, 0, 1));
+  axes->addVertex(Vec(0, -hl, 0, 1));
+  axes->addVertex(Vec(0,  hl, 0, 1));
+  axes->addVertex(Vec(0, 0, -tl, 1));
+  axes->addVertex(Vec(0, 0,  tl, 1));
+  axes->addLine(0, 1, GeomColor(255, 0, 0, 255));
+  axes->addLine(2, 3, GeomColor(0, 255, 0, 255));
+  axes->addLine(4, 5, GeomColor(0, 0, 255, 255));
+  axes->setPrimitiveVisible(PrimQuad, false);
+  axes->setPrimitiveVisible(PrimTriangle, false);
+  scene.addNode(axes);
+
+  // Axis labels as billboard TextNodes
+  Vec labelPositions[6] = {
+    Vec(-wl, 0, 0, 1), Vec(wl, 0, 0, 1),
+    Vec(0, -hl, 0, 1), Vec(0, hl, 0, 1),
+    Vec(0, 0, -tl, 1), Vec(0, 0, tl, 1)
+  };
+  for(int i = 0; i < 6; ++i){
+    std::string s = (i & 1) ? "" : "-";
+    switch(f){
+      case formatYUV: s += "yuv"[i/2]; break;
+      case formatRGB: s += "rgb"[i/2]; break;
+      case formatHLS: s += "hls"[i/2]; break;
+      default: throw ICLException("invalid segmentation format");
+    }
+    auto label = TextNode::create(s, 2, GeomColor(255, 255, 255, 255));
+    label->translate(labelPositions[i][0], labelPositions[i][1], labelPositions[i][2]);
+    scene.addNode(label);
   }
 
-} *lut3D=0;
-
-void init_3D_LUT(){
-  lut3D = new LUT3DSceneObject;
-  scene.addObject(lut3D);
+  // Camera + link to GUI
+  scene.addCamera(Camera(Vec(0,0,100,1),Vec(0,0,-1,1),Vec(1,0,0,1)));
+  scene.setBounds(50);
+  gui["lut3D"].link(scene.getGLCallback(0).get());
+  gui["lut3D"].install(scene.getMouseHandler(0));
 }
 
 void highlight_regions(int classID){
   hoveredClassID = classID;
   drawIM_AND_SEG.clear();
   drawLUT.clear();
-
 
   static RegionDetector rdLUT(1,1<<22,1,255);
   static RegionDetector rdSEG(1,1<<22,1,255);
@@ -152,57 +182,66 @@ void highlight_regions(int classID){
   if(classID < 1) return;
   const std::vector<ImageRegion> &rseg = rdSEG.detect(&segImage);
 
-  for(unsigned int i=0;i<rseg.size();++i){
+  for(size_t i = 0; i < rseg.size(); ++i){
     if(rseg[i].getVal() == classID){
       drawIM_AND_SEG.push_back(rseg[i]);
     }
   }
 }
 
-void mouse(const MouseEvent &e){
+void mouse_image(const MouseEvent &e){
   std::scoped_lock<std::recursive_mutex> lock(mtex);
   if(!currLUT.getDim()) return;
+  if(e.isLeaveEvent()){ highlight_regions(-1); return; }
 
-  static const ICLWidget *wIM = *gui.get<DrawHandle>("image");
-  static const ICLWidget *wLUT = *gui.get<DrawHandle>("lut");
-  static const ICLWidget *wSEG = *gui.get<DrawHandle>("seg");
+  int cc = gui["currClass"];
+  int r = gui["radius"];
+  std::vector<double> c = e.getColor();
 
-  Point p = e.getPos();
+  if(c.size() == 3){
+    if(e.isLeft()){
+      segmenter->lutEntry(formatRGB,(int)c[0],(int)c[1],(int)c[2],r,r,r, (!gui["lb"].as<bool>()) * (cc+1));
+    }
+
+    highlight_regions(segmenter->classifyPixel(c[0],c[1],c[2]));
+
+    if(e.isRight()){
+      gui["currClass"] = (hoveredClassID-1);
+    }
+  }
+}
+
+void mouse_lut(const MouseEvent &e){
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
+  if(!currLUT.getDim()) return;
 
   if(e.isLeaveEvent()){
     highlight_regions(-1);
     return;
   }
-  if(e.getWidget() == wLUT){
-    highlight_regions(currLUT.getImageRect().contains(p.x,p.y) ?
-                      currLUT(p.x,p.y,0) :
-                      0 );
-    if(e.isPressEvent()){
-      gui["currClass"] = (hoveredClassID-1);
-    }
-  }else if (e.getWidget() == wIM){
-    int cc = gui["currClass"];
-    int r = gui["radius"];
-    std::vector<double> c = e.getColor();
 
-    if(c.size() == 3){
-      if(e.isLeft()){
-        segmenter->lutEntry(formatRGB,(int)c[0],(int)c[1],(int)c[2],r,r,r, (!gui["lb"].as<bool>()) * (cc+1) );
-      }
+  Point p = e.getPos();
+  highlight_regions(currLUT.getImageRect().contains(p.x,p.y) ?
+                    currLUT(p.x,p.y,0) : 0);
+  if(e.isPressEvent()){
+    gui["currClass"] = (hoveredClassID-1);
+  }
+}
 
-      highlight_regions(segmenter->classifyPixel(c[0],c[1],c[2]));
+void mouse_seg(const MouseEvent &e){
+  std::scoped_lock<std::recursive_mutex> lock(mtex);
+  if(!currLUT.getDim()) return;
 
-      if(e.isRight()){
-        gui["currClass"] = (hoveredClassID-1);
-      }
-    }
-  }else if(e.getWidget() == wSEG){
-    highlight_regions(segImage.getImageRect().contains(p.x,p.y) ?
-                      segImage(p.x,p.y,0) :
-                      0);
-    if(e.isPressEvent()){
-      gui["currClass"] = (hoveredClassID-1);
-    }
+  if(e.isLeaveEvent()){
+    highlight_regions(-1);
+    return;
+  }
+
+  Point p = e.getPos();
+  highlight_regions(segImage.getImageRect().contains(p.x,p.y) ?
+                    segImage(p.x,p.y,0) : 0);
+  if(e.isPressEvent()){
+    gui["currClass"] = (hoveredClassID-1);
   }
 }
 
@@ -242,9 +281,7 @@ void init(){
     WARNING_LOG("program arguments -l and -s are exclusive:(-l is used here)");
   }
 
-  segmenter.reset(new ColorSegmentationOp(pa("-s",0),pa("-s",1),pa("-s",2),pa("-f")));
-
-
+  segmenter = std::make_shared<ColorSegmentationOp>(pa("-s",0),pa("-s",1),pa("-s",2),pa("-f"));
 
   if(pa("-l")){
     segmenter->load(pa("-l"));
@@ -304,9 +341,9 @@ void init(){
       << Show();
 
 
-  gui["seg"].install(new MouseHandler(mouse));
-  gui["image"].install(new MouseHandler(mouse));
-  gui["lut"].install(new MouseHandler(mouse));
+  gui["image"].install(mouse_image);
+  gui["lut"].install(mouse_lut);
+  gui["seg"].install(mouse_seg);
 
   DrawHandle lut = gui["lut"];
   DrawHandle seg = gui["seg"];
@@ -318,16 +355,7 @@ void init(){
   gui["save"].registerCallback(save_dialog);
   gui["clear"].registerCallback(clear_lut);
 
-  int dim =  ( (1+(0xff >> pa("-s",0).as<int>()))
-               *(1+(0xff >> pa("-s",1).as<int>()))
-               *(1+(0xff >> pa("-s",2).as<int>())) );
-  if(dim <= MAX_LUT_3D_DIM){
-    init_3D_LUT();
-    scene.addCamera(Camera(Vec(0,0,100,1),Vec(0,0,-1,1),Vec(1,0,0,1)));
-    DrawHandle3D lut3D = gui["lut3D"];
-    lut3D->link(scene.getGLCallback(0));
-    lut3D->install(scene.getMouseHandler(0));
-  }
+  prepare_scene();
 }
 
 void run(){
@@ -369,8 +397,6 @@ void run(){
       }
     }
     std::copy(buf.begin(),buf.end(),lut);
-
-
   }
 
   static const Point xys[3]={Point(1,2),Point(0,2),Point(0,1)};
@@ -391,52 +417,48 @@ void run(){
   if(!inputImage || !gui["paused"].as<bool>()){
     inputImage = grabber.grabImage();
   }else{
-    Thread::msleep(50); // somehow, otherwise the whole UI went to sleep ;-)
+    Thread::msleep(50);
   }
 
-  const Img8u *grabbedImage = &inputImage.as8u();
+  Image filtered = inputImage;
 
   std::scoped_lock<std::recursive_mutex> lock(mtex);
 
   if(preMedian){
     static MedianOp m(Size(3,3));
-    static ImgBase *preMedianBuf = 0;
-    m.apply(grabbedImage, &preMedianBuf);
-    grabbedImage = preMedianBuf->asImg<icl8u>();
+    m.apply(filtered, filtered);
   }
 
-  image = grabbedImage;
+  image = filtered;
   Time t = Time::now();
   {
-    static ImgBase *segBuf = 0;
-    segmenter->apply(grabbedImage, &segBuf);
-    segImage = *segBuf->asImg<icl8u>();
+    Image segResult;
+    segmenter->apply(filtered, segResult);
+    segImage = segResult.as8u();
   }
 
   if(postMedian){
     static MedianOp m(Size(3,3));
-    static ImgBase *postMedianBuf = 0;
-    m.apply(&segImage, &postMedianBuf);
-    segImage = *postMedianBuf->asImg<icl8u>();
+    Image tmp;
+    m.apply(Image(segImage), tmp);
+    segImage = tmp.as8u();
   }
 
   if(postErosion){
     static MorphologicalOp m(MorphologicalOp::erode3x3);
-    static ImgBase *erosionBuf = 0;
-    m.apply(&segImage, &erosionBuf);
-    segImage = *erosionBuf->asImg<icl8u>();
+    Image tmp;
+    m.apply(Image(segImage), tmp);
+    segImage = tmp.as8u();
   }
   if(postDilatation){
     static MorphologicalOp m(MorphologicalOp::dilate3x3);
-    static ImgBase *dilateBuf = 0;
-    m.apply(&segImage, &dilateBuf);
-    segImage = *dilateBuf->asImg<icl8u>();
+    Image tmp;
+    m.apply(Image(segImage), tmp);
+    segImage = tmp.as8u();
   }
 
   seg = &segImage;
   time = str(t.age().toMilliSecondsDouble())+"ms";
-
-
 
   currLUT = segmenter->getLUTPreview(xys[zAxis].x,xys[zAxis].y,z);
   currLUTColor = segmenter->getColoredLUTPreview(xys[zAxis].x,xys[zAxis].y,z);
@@ -447,7 +469,7 @@ void run(){
   lut = &currLUTColor;
   lut->linewidth(2);
 
-  for(unsigned int i=0;i<drawLUT.size();++i){
+  for(size_t i = 0; i < drawLUT.size(); ++i){
     float x = drawLUT[i].getCOG().x, y=drawLUT[i].getCOG().y;
     lut->color(255,255,255,255);
     lut->linestrip(drawLUT[i].getBoundary(false));
@@ -468,7 +490,7 @@ void run(){
   for(int i=0;i<2;++i){
     ws[i]->linewidth(2);
     ws[i]->color(255,255-i*255,255-i*255,255);
-    for(unsigned int j=0;j<drawIM_AND_SEG.size();++j){
+    for(size_t j = 0; j < drawIM_AND_SEG.size(); ++j){
       ws[i]->linestrip(drawIM_AND_SEG[j].getBoundary());
     }
     ws[i]->render();
@@ -483,7 +505,7 @@ void run(){
 }
 
 int main(int n,char **args){
-  return ICLApp(n,args,"-shifts|-s(int=8,int=0,int=0) "
+  return ICLApp(n,args,"-shifts|-s(int=8,int=2,int=2) "
                 "-seg-format|-f(format=YUV) "
                 "[m]-input|-i(2) "
                 "-num-classes|-n(int=12) "

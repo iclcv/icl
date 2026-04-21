@@ -18,7 +18,7 @@
 
 namespace icl::geom {
   class Camera;
-  class ViewRay;
+  struct ViewRay;
 }
 
 namespace icl::geom2 {

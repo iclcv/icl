@@ -81,27 +81,22 @@ void step(){
     bool init = !image;
     image = grabber.grabImage();
     if(init){
-      selroi[0]=selroi[2]=image.ptr()->getImageRect();
+      selroi[0]=selroi[2]=image.getImageRect();
     }
   }
 
-  const ImgBase *useImage = image.ptr();
-  if(selroi[1] != image.ptr()->getImageRect()){
-    useImage = useImage->shallowCopy(selroi[1]);
+  Image useImage = image;
+  if(selroi[1] != image.getImageRect()){
+    useImage = image.shallowCopy();
+    useImage.setROI(selroi[1]);
   }
+
   Time last = Time::now();
-  static ImgBase *resultBuf = 0;
-  ltop.apply(useImage, &resultBuf);
-  const ImgBase *result = resultBuf;
+  Image result;
+  ltop.apply(useImage, result);
   time = str((Time::now()-last).toMilliSeconds())+"ms";
 
-
   orig = image;
-
-  if(image.ptr() != useImage){
-    delete useImage;
-  }
-
 
   if(selroi[0] != Rect::null){
     orig->color(0,100,255);
@@ -172,7 +167,7 @@ void batch_mode(){
     int thresh = f["config.threshold"];
     float gamma = f["config.gammaslope"];
     if(!pa("-output")){
-      printf("please specify output file pattern\n");
+      std::cout << "please specify output file pattern" << std::endl;
       return;
     }
 
@@ -184,8 +179,8 @@ void batch_mode(){
       maxSteps = fl.size();
     }
 
-    static FileWriter w(*pa("-output"));
-    static LocalThresholdOp t;
+    FileWriter w(*pa("-output"));
+    LocalThresholdOp t;
     t.setMaskSize(masksize);
     t.setGlobalThreshold(thresh);
     t.setGammaSlope(gamma);
@@ -193,25 +188,16 @@ void batch_mode(){
     int i=0;
     while(maxSteps < 0 || maxSteps--){
       if(maxSteps > 0){
-        printf("processing image %30s ......",fl[i++].c_str());
+        std::cout << "processing image " << fl[i++] << " ...";
       }
       Image grabImg = grabber.grabImage();
-      const ImgBase *image = grabImg.ptr();
-      if(image->getFormat() != formatGray){
-        printf("...");
-        static ImgBase *grayImage = 0;
-        ensureCompatible(&grayImage,depth8u,image->getSize(),formatGray);
-        cc(image,grayImage);
-        printf("...");
-        image = grayImage;
-      }
-      static ImgBase *dst = 0;
-      printf("...");
-      t.apply(image,&dst);
-      printf("...");
-      w.write(dst);
-      printf("done! \n");
-      printf("writing image to %30s ... done\n",w.getFilenameGenerator().showNext().c_str());
+      Image image = grabImg.getFormat() != formatGray ? gray(grabImg) : grabImg;
+
+      Image dst;
+      t.apply(image, dst);
+      w.write(dst.ptr());
+      std::cout << " done!" << std::endl;
+      std::cout << "writing image to " << w.getFilenameGenerator().showNext() << std::endl;
     }
   }else{
     ERROR_LOG("please run with -config config-filename!");

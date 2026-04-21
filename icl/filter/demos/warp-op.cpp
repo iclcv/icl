@@ -29,7 +29,7 @@ void run(){
 
   Image image = grabber.grabImage();
   if(gui["warp"]){
-    op.setScaleMode(gui["lin"]?interpolateLIN:interpolateNN);
+    op.setScaleMode(gui["interpolation"]?interpolateLIN:interpolateNN);
 
     Time t = Time::now();
     Image result = op.apply(image);

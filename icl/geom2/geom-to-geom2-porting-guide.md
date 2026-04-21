@@ -220,8 +220,6 @@ node->setPointCloud(newCloud);
 
 ## What's NOT yet ported
 
-- Mouse interaction / picking (hit testing)
 - Cycles renderer compilation (headers ready, build wiring TODO)
-- Text primitives / billboard text
 - Texture primitives
 - Display list equivalent (not needed — GL Core renderer uses geometry cache)

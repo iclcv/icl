@@ -3,12 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-
 #include <icl/filter/UnaryOp.h>
-#include <icl/filter/ConvolutionOp.h>
-#include <icl/filter/MedianOp.h>
-#include <icl/filter/MorphologicalOp.h>
-#include <map>
 
 HSplit gui;
 int N = 0;
@@ -38,14 +33,6 @@ GUI gui_col(int i){
 
 void init(){
   N = pa("-n");
-#ifdef OLD_GUI
-         gui << ( GUI("vbox")
-                  << "image[@handle=input@minsize=8x6]"
-                  << (GUI("hbox[@label=desired params@maxsize=100x4]")
-                      << "combo(QVGA,!VGA,SVGA,XGA,WXGA,UXGA)[@out=_dsize@handle=dsize@label=size]"
-                      << "combo(!depth8u,depth16s,depth32s,depth32f,depth64f)[@out=_ddepeth@handle=ddepth@label=size]"
-                      << "combo(gray,!rgb,hls,lab,yuv)[@out=_dformat@handle=dformat@label=format]"));
-#endif
 
   gui << ( VBox()
            << Display().handle("input").minSize(8,6)
@@ -75,37 +62,28 @@ void run(){
 
   Image image = g.grabImage();
   gui["input"] = image;
-  std::vector<UnaryOp*> ops;
+  std::vector<std::unique_ptr<UnaryOp>> ops;
   for(int i=0;i<N;++i){
     Time t = Time::now();
     std::string si = str(i);
     std::string opName = gui["cb"+si].as<std::string>();
     std::string params = gui["ps"+si].as<std::string>();
 
-    UnaryOp *op = 0;
     gui["syn"+si] = UnaryOp::getFromStringSyntax(opName);
     try{
-      op = UnaryOp::fromString(params.size() ? (opName+"("+params+")") : opName);
+      ops.emplace_back(UnaryOp::fromString(params.size() ? (opName+"("+params+")") : opName));
+      auto &op = ops.back();
       op->setClipToROI(false);
-      ops.push_back(op);
       gui["err"+si] = str("ok");
+
+      if(image && gui["vis"+si].as<bool>()){
+        image = op->apply(image);
+      }
     }catch(const ICLException &ex){
       gui["err"+si] = str(ex.what());
     }
-    if(op && image && gui["vis"+si].as<bool>()){
-      try{
-        static ImgBase *buf = 0;
-        op->apply(image.ptr(), &buf);
-        image = Image(*buf);
-      }catch(const ICLException &ex){
-        gui["err"+si] = str(ex.what());
-      }
-      gui["dt"+si] = str((Time::now()-t).toMilliSeconds())+"ms";
-      gui["im"+si] = image;
-    }
-  }
-  for(unsigned int i=0;i<ops.size();++i){
-    delete ops[i];
+    gui["dt"+si] = str((Time::now()-t).toMilliSeconds())+"ms";
+    gui["im"+si] = image;
   }
 }
 

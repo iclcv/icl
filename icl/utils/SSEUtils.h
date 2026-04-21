@@ -94,7 +94,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, D*),
                         void (*subSSEMethod)(const S*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -117,7 +117,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, D*, D*),
                         void (*subSSEMethod)(const S*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -141,7 +141,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, D*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -166,7 +166,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, D*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, D*, D*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -192,7 +192,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, D*),
                         void (*subSSEMethod)(const S*, const S*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -216,7 +216,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -241,7 +241,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, D*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -267,7 +267,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, D*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, D*, D*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -294,7 +294,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -319,7 +319,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -345,7 +345,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -372,7 +372,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, D*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -400,7 +400,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, const S*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -426,7 +426,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, const S*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -453,7 +453,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, const S*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -481,7 +481,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, const S*, D*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*, D*, D*),
                         long step) {
-      D *dstSSEEnd = dstEnd - (step - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0;
 
       for (; dst0<dstSSEEnd;) {
           // convert 'rvalues' values at the same time
@@ -514,7 +514,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, D*),
                         void (*subSSEMethod)(const S*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -546,7 +546,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, D*, D*),
                         void (*subSSEMethod)(const S*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -579,7 +579,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, D*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -613,7 +613,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, D*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, D*, D*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -648,7 +648,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, D*),
                         void (*subSSEMethod)(const S*, const S*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -681,7 +681,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -715,7 +715,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, D*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -750,7 +750,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, D*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, D*, D*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -786,7 +786,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -820,7 +820,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -855,7 +855,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -891,7 +891,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, D*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -928,7 +928,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, const S*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -963,7 +963,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, const S*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -999,7 +999,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, const S*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -1036,7 +1036,7 @@ namespace icl::utils {
                         void (*subMethod)(const S*, const S*, const S*, const S*, D*, D*, D*, D*),
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*, D*, D*),
                         long srcStep, long dstStep) {
-      D *dstSSEEnd = dstEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstEnd - dst0 >= dstStep) ? dstEnd - (dstStep - 1) : dst0;
       long sStep, dStep;
 
       if (srcStep < dstStep) {
@@ -1085,7 +1085,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1120,7 +1120,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1157,7 +1157,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, D*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1196,7 +1196,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, D*, D*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1237,7 +1237,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1276,7 +1276,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, D*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1317,7 +1317,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, D*, D*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1360,7 +1360,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1399,7 +1399,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1440,7 +1440,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1483,7 +1483,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1528,7 +1528,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1569,7 +1569,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1612,7 +1612,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1657,7 +1657,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*, D*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1704,7 +1704,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, const S*, D*),
                         long step) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (step - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= step) ? dstLEnd - (step - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
 
@@ -1751,7 +1751,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -1795,7 +1795,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -1841,7 +1841,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, D*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -1889,7 +1889,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, D*, D*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -1939,7 +1939,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -1987,7 +1987,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, D*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2037,7 +2037,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, D*, D*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2089,7 +2089,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2137,7 +2137,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2187,7 +2187,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2239,7 +2239,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, D*, D*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2293,7 +2293,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2343,7 +2343,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2395,7 +2395,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2449,7 +2449,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, D*, D*, D*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;
@@ -2505,7 +2505,7 @@ namespace icl::utils {
                         void (*subSSEMethod)(const S*, const S*, const S*, const S*, const S*, D*),
                         long srcStep, long dstStep) {
       D *dstLEnd   = dst0 + lineWidth;
-      D *dstSSEEnd = dstLEnd - (dstStep - 1);
+      D *dstSSEEnd = (dstLEnd - dst0 >= dstStep) ? dstLEnd - (dstStep - 1) : dst0;
       long srcOffset = srcWidth - lineWidth;
       long dstOffset = dstWidth - lineWidth;
       long sStep, dStep;

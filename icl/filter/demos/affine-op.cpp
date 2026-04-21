@@ -17,22 +17,18 @@ void step(){
   op.scale(gui["scale"],gui["scale"]);
   op.rotate(gui["angle"].as<float>()*180/M_PI);
 
-  static ImgBase *dst = 0;
-  op.apply(&image,&dst);
-
-  gui["draw"] = dst;
+  gui["draw"] = op.apply(image);
   Thread::msleep(10);
 }
 
 void bench(){
-  static ImgBase *dst = 0;
   for(int i=0;i<100;++i){
     BENCHMARK_THIS_SECTION(linear interpolation);
     AffineOp op(interpolateLIN);
     image.setFullROI();
     op.scale(1.001,1.001);
     op.rotate(3.6*i);
-    op.apply(&image,&dst);
+    (void)op.apply(image);
   }
   for(int i=0;i<100;++i){
     BENCHMARK_THIS_SECTION(nn interpolation);
@@ -40,7 +36,7 @@ void bench(){
     image.setFullROI();
     op.scale(1.001,1.001);
     op.rotate(3.6*i);
-    op.apply(&image,&dst);
+    (void)op.apply(image);
   }
 }
 

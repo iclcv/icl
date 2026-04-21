@@ -9,7 +9,6 @@
 HSplit gui;
 GenericGrabber grabber;
 DefineQuadrangleMouseHandler mouse;
-ImgBase *rect = 0;
 ImageRectification<icl8u> ir;
 
 void init(){

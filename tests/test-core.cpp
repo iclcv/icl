@@ -464,3 +464,53 @@ ICL_REGISTER_TEST("Img.visitPixels_full", "visitPixels roiOnly=false ignores ROI
   ICL_TEST_EQ(img(5, 5, 0), (icl8u)42);
   ICL_TEST_EQ(img(3, 3, 0), (icl8u)42);
 }
+
+// ---- Color conversion (cc) ----
+
+#include <icl/core/CCFunctions.h>
+
+ICL_REGISTER_TEST("core.cc.rgb_to_yuv_1x1", "cc() works for 1x1 images") {
+  Img8u src(utils::Size(1,1), formatRGB);
+  Img8u dst(utils::Size(1,1), formatYUV);
+  src(0,0).set(200, 30, 20);
+  cc(&src, &dst);
+  // Y should be roughly 0.299*200 + 0.587*30 + 0.114*20 ≈ 79
+  ICL_TEST_TRUE(dst(0,0,0) > 50 && dst(0,0,0) < 110);
+  // U and V should NOT be neutral (128) for a strong red
+  ICL_TEST_TRUE(dst(0,0,1) != 128 || dst(0,0,2) != 128);
+}
+
+ICL_REGISTER_TEST("core.cc.rgb_to_yuv_roundtrip", "RGB→YUV→RGB roundtrip") {
+  Img8u src(utils::Size(4,4), formatRGB);
+  for(int i = 0; i < 16; ++i){
+    src.getData(0)[i] = 50 + i*12;
+    src.getData(1)[i] = 100 + i*5;
+    src.getData(2)[i] = 200 - i*8;
+  }
+  Img8u yuv(utils::Size(4,4), formatYUV);
+  Img8u back(utils::Size(4,4), formatRGB);
+  cc(&src, &yuv);
+  cc(&yuv, &back);
+  for(int i = 0; i < 16; ++i){
+    // Roundtrip has some loss due to clamping in V, allow +-35
+    ICL_TEST_TRUE(std::abs((int)src.getData(0)[i] - (int)back.getData(0)[i]) < 35);
+    ICL_TEST_TRUE(std::abs((int)src.getData(1)[i] - (int)back.getData(1)[i]) < 35);
+    ICL_TEST_TRUE(std::abs((int)src.getData(2)[i] - (int)back.getData(2)[i]) < 35);
+  }
+}
+
+ICL_REGISTER_TEST("core.cc.rgb_to_yuv_large", "cc() correct for normal-sized images") {
+  Img8u src(utils::Size(64,64), formatRGB);
+  for(int c = 0; c < 3; ++c)
+    for(int i = 0; i < 64*64; ++i)
+      src.getData(c)[i] = (i * 7 + c * 83) & 0xFF;
+  Img8u dst(utils::Size(64,64), formatYUV);
+  cc(&src, &dst);
+  // Spot-check pixel (0,0): R=0, G=83, B=166
+  // SSE path uses float intermediary, integer path uses icl32s — allow +-1
+  icl32s ey, eu, ev;
+  cc_util_rgb_to_yuv(0, 83, 166, ey, eu, ev);
+  ICL_TEST_TRUE(std::abs((int)dst(0,0,0) - ey) <= 1);
+  ICL_TEST_TRUE(std::abs((int)dst(0,0,1) - eu) <= 1);
+  ICL_TEST_TRUE(std::abs((int)dst(0,0,2) - ev) <= 1);
+}

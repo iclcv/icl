@@ -3,20 +3,9 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/utils/FPSEstimator.h>
 #include <icl/filter/GaborOp.h>
 HBox gui;
 GenericGrabber grabber;
-
-inline bool is_equal(const float *a, const float *b, unsigned int n){
-  for(unsigned int i=0;i<n;i++){
-    if(a[i] != b[i]) return false;
-  }
-  return true;
-}
-inline std::vector<float> vec1(float f) {
-  return std::vector<float>(1,f);
-}
 
 void init(){
   gui << Display().minSize(32,24).label("Result Image").handle("image")
@@ -41,48 +30,43 @@ void init(){
   grabber.useDesired(parse<Size>(pa("-size")));
   grabber.useDesired(parse<format>(*pa("-format")));
   grabber.useDesired(parse<depth>(*pa("-depth")));
+}
 
+inline std::vector<float> vec1(float f) {
+  return std::vector<float>(1,f);
 }
 
 void run(){
-  float &lambda = gui.get<float>("lambda");
-  float &theta = gui.get<float>("theta");
-  float &psi = gui.get<float>("psi");
-  float &gamma = gui.get<float>("gamma");
-  float &sigma = gui.get<float>("sigma");
-  int &width = gui.get<int>("width");
-  int &height = gui.get<int>("height");
+  float lambda = gui["lambda"];
+  float theta = gui["theta"];
+  float psi = gui["psi"];
+  float gamma = gui["gamma"];
+  float sigma = gui["sigma"];
+  int width = gui["width"];
+  int height = gui["height"];
 
-  float saveParams[] = {0,0,0,0,0};
-  Size saveSize = Size::null;
+  static float saveParams[] = {0,0,0,0,0};
+  static Size saveSize = Size::null;
+  static std::shared_ptr<GaborOp> g;
 
-  ImgBase *resultImage = 0;
+  float params[] = {lambda,theta,psi,gamma,sigma};
+  Size size(width,height);
 
-  std::shared_ptr<GaborOp> g;
-
-  while(1){
-    float params[] = {lambda,theta,psi,gamma,sigma};
-    Size size = Size(width,height);
-
-
-    if(!is_equal(params,saveParams,5) || size != saveSize || !g){
-      g.reset(new GaborOp(size,vec1(lambda),vec1(theta),vec1(psi),vec1(sigma),vec1(gamma)));
-      Img32f m = g->getKernels()[0].detached();
-      m.normalizeAllChannels(Range<float>(0,255));
-      gui["mask"] = m;
-    }
-    saveSize = size;
-    memcpy(saveParams,params,5*sizeof(float));
-
-    g->apply(grabber.grabImage().ptr(),&resultImage);
-    resultImage->normalizeAllChannels(Range<icl64f>(0,255));
-
-    gui["image"] = resultImage;
-    gui["fps"].render();
+  if(!std::equal(params, params+5, saveParams) || size != saveSize || !g){
+    g = std::make_shared<GaborOp>(size,vec1(lambda),vec1(theta),vec1(psi),vec1(sigma),vec1(gamma));
+    Img32f m = g->getKernels()[0].detached();
+    m.normalizeAllChannels(Range<float>(0,255));
+    gui["mask"] = m;
   }
+  saveSize = size;
+  std::copy(params, params+5, saveParams);
+
+  Image result = g->apply(grabber.grabImage());
+  result.ptr()->normalizeAllChannels(Range<icl64f>(0,255));
+
+  gui["image"] = result;
+  gui["fps"].render();
 }
-
-
 
 int main(int n, char **ppc){
   return ICLApp(n,ppc,"[m]-input|-i(device,device-params) -format(format=rgb) -depth(depth=depth32f) -size(size=VGA)",init,run).exec();

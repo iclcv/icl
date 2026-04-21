@@ -404,37 +404,35 @@ namespace icl::filter {
   }
 
   void ColorSegmentationOp::lutEntry(icl8u a, icl8u b, icl8u c, icl8u rA, icl8u rB, icl8u rC, icl8u value){
-    const int sa = pow(2, m_bitShifts[0]);
-    const int sb = pow(2, m_bitShifts[1]);
-    const int sc = pow(2, m_bitShifts[2]);
+    const int sa = 1 << m_bitShifts[0];
+    const int sb = 1 << m_bitShifts[1];
+    const int sc = 1 << m_bitShifts[2];
     ShiftedLUT3D lut(m_bitShifts,*m_lut);
 
-    for(int ia=a-rA; ia<=a+rA; ia+=sa){
-      //if(ia < 0) continue;
-      //else if(ia > 255) break;
-      for(int ib=b-rB; ib<=b+rB; ib+=sb){
-        //if(ib < 0) continue;
-        //else if(ib > 255); break;
-        for(int ic=c-rC; ic<=c+rC; ic+=sc){
-          //if(ic < 0) continue;
-          //else if(ic > 255) break;
-          if(ia >= 0 && ia < 256 &&
-             ib >= 0 && ib < 256 &&
-             ic >= 0 && ic < 256){
-               lut(ia,ib,ic) = value;
-          }
+    const int aEnd = std::min(255, a+rA);
+    const int bEnd = std::min(255, b+rB);
+    const int cEnd = std::min(255, c+rC);
+    for(int ia = std::max(0, a-rA); ia <= aEnd; ia += sa){
+      for(int ib = std::max(0, b-rB); ib <= bEnd; ib += sb){
+        for(int ic = std::max(0, c-rC); ic <= cEnd; ic += sc){
+          lut(ia,ib,ic) = value;
         }
       }
     }
   }
 
   void ColorSegmentationOp::lutEntry(format fmt, int a, int b, int c, int rA, int rB, int rC, icl8u value){
-    if(fmt == m_segFormat) lutEntry(a,b,c,rA,rB,rC,value);
+    if(fmt == m_segFormat){
+      lutEntry(a,b,c,rA,rB,rC,value);
+      return;
+    }
     ICLASSERT_THROW(getChannelsOfFormat(fmt) == 3, ICLException("ColorSegmentationOp::lutEntry format must have 3 channels"));
     Img8u src(Size(1,1),fmt),dst(Size(1,1),m_segFormat);
     src(0,0).set(a,b,c);
-    cc(&src,&dst);
-    lutEntry(dst(0,0,0),dst(0,0,1),dst(0,0,2),rA,rB,rC,value);
+    Img8u ccSrc(Size(1,1),fmt), ccDst(Size(1,1),m_segFormat);
+    ccSrc(0,0).set(a,b,c);
+    cc(&ccSrc,&ccDst);
+    lutEntry(ccDst(0,0,0),ccDst(0,0,1),ccDst(0,0,2),rA,rB,rC,value);
   }
 
   void ColorSegmentationOp::clearLUT(icl8u value){
