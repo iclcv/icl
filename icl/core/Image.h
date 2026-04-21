@@ -153,12 +153,26 @@ namespace icl::core {
     /** If channel == -1, detaches all channels. */
     void detach(int channel = -1);
 
-    /// Returns true if all channel data is exclusively owned
+    /// Returns true if all channel pixel data is exclusively owned (no sharing via shallowCopy)
+    /** Image has two levels of sharing:
+        - **Level 1 (ImgBase handle)**: `Image b = a;` — both point to the same ImgBase.
+          Checked by isExclusivelyOwned().
+        - **Level 2 (channel pixel data)**: `Image c = a.shallowCopy();` — new ImgBase, but
+          channel SmartPtrs are shared. Modifying pixels in one affects the other.
+          Checked by isIndependent(). Broken by detach().
+
+        isIndependent() answers: "does my pixel data have no other readers?"
+        (all channel SmartPtr use counts are 1). This is relevant after shallowCopy()
+        or selectChannel() — operations that create a new ImgBase sharing pixel buffers. */
     bool isIndependent() const;
 
-    /// Returns true if this is the only Image sharing the underlying ImgBase
-    /** Use this for buffer pools: a buffer is safe to reclaim only when
-        no other Image holds a reference to the same ImgBase. */
+    /// Returns true if this is the only Image pointing to the underlying ImgBase
+    /** Answers: "am I the sole owner of this ImgBase handle?" (shared_ptr use_count == 1).
+        This is what buffer pools need: a buffer is safe to reclaim only when no other
+        Image holds a reference to the same ImgBase. Note that isIndependent() is NOT
+        sufficient for pools — two Image copies share the same ImgBase (same channel
+        SmartPtrs, same object), so isIndependent() returns true even when the buffer
+        is still held externally. */
     bool isExclusivelyOwned() const;
 
     /// @}
