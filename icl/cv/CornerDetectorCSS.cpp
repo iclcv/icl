@@ -4,7 +4,7 @@
 
 #include <icl/cv/CornerDetectorCSS.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <cstring>
 
 #ifdef ICL_HAVE_OPENCL

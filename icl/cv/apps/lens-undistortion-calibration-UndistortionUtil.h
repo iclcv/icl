@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/utils/FixedArray.h>
 #include <icl/utils/Size.h>
 #include <icl/core/Img.h>

@@ -6,7 +6,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Random.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/io/detail/grabbers/DemoGrabber.h>
 #include <mutex>
 

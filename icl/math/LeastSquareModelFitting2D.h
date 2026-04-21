@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/LeastSquareModelFitting.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 namespace icl::math {
   /// Direct Least Square Fitting specialization for 2D input data

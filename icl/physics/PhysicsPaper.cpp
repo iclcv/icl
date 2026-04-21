@@ -246,7 +246,8 @@ namespace physics{
     const Point32f ps[4] = { Point(x0,y0), Point(x1,y0), Point(x0,y1), Point(x1,y1) };
     for(int i=0;i<4;++i){
       float contribution = iclMax(1.0 - ::sqrt( ::sqr(ps[i].x-x) + ::sqr(ps[i].y-y) ), 0.0);
-      moveVertex( ps[i], pos + (getNodePosition(ps[i])-currPos),factor * contribution);
+      const Point psi(ps[i]);
+      moveVertex( psi, pos + (getNodePosition(psi)-currPos),factor * contribution);
     }
   }
 

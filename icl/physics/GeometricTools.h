@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/geom/GeomDefs.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 namespace icl::physics {
     bool line_segment_intersect(const utils::Point32f &a, const utils::Point32f &b,

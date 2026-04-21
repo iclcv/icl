@@ -5,7 +5,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/math/RansacFitter.h>
 #include <icl/utils/Random.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/math/LeastSquareModelFitting2D.h>
 #include <mutex>
 

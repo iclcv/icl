@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/cv/MeanShiftTracker.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/core/Channel.h>
 
 using namespace icl::utils;

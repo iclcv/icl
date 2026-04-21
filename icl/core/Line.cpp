@@ -6,7 +6,7 @@
 #include <icl/core/LineSampler.h>
 #include <cmath>
 #include <algorithm>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 using namespace icl::utils;
 
@@ -72,7 +72,9 @@ namespace icl::core {
     if(dsts) *dsts = 1.0f-s;
 
     if(r >= 0 && r <= 1 && s >= 0 && s <= 1){
-      if(p) *p = a + (b-a)*r;
+      // do the interpolation in float — (b-a)*r loses precision if evaluated on int Points
+      const Point32f af = a, bf = b;
+      if(p) *p = af + (bf - af) * r;
       return true;
     }
     return false;

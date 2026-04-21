@@ -10,7 +10,6 @@
 #include <icl/math/FixedVector.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/Point.h>
-#include <icl/utils/Point32f.h>
 #include <icl/math/DynMatrix.h>
 #include <icl/math/StraightLine2D.h>
 #include <icl/core/Img.h>

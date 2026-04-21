@@ -146,10 +146,10 @@ void extract_template(const Img8u &image){
   static ImageRectification<icl8u> ir;
 
   Point32f ps[4] = { mouse->ps[0],  mouse->ps[1],  mouse->ps[2],  mouse->ps[3] };
-  Rect r(ps[0],Size(1,1));
-  r |= Rect(ps[1],Size(1,1));
-  r |= Rect(ps[2],Size(1,1));
-  r |= Rect(ps[3],Size(1,1));
+  Rect r(ps[0].rounded(),Size(1,1));
+  r |= Rect(ps[1].rounded(),Size(1,1));
+  r |= Rect(ps[2].rounded(),Size(1,1));
+  r |= Rect(ps[3].rounded(),Size(1,1));
   float dim = iclMax(r.width,r.height);
   Size32f size(dim*ar,dim);
   while(size.width > iW || size.height > iH

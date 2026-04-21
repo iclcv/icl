@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
 #include <icl/filter/ImageUndistortion.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/utils/ConfigFile.h>
 #include <icl/utils/XML.h>
 #include <fstream>

@@ -846,7 +846,7 @@ namespace icl::markers {
     std::copy(boundary.begin(), boundary.begin() + i0, b2.begin() + (num - i0));
 
     int i = 0;
-    Point next = e4[1];
+    Point next = Point(e4[1]);
     Point32f means[4];
     int ns[4] = { 0 };
     float xx[4] = { 0 }, xy[4] = { 0 }, yy[4] = { 0 };
@@ -860,7 +860,7 @@ namespace icl::markers {
       yy[0] += y * y;
       ++ns[0];
     }
-    next = e4[2];
+    next = Point(e4[2]);
     for (; i < num && b2[i] != next; ++i) {
       int x = b2[i].x, y = b2[i].y;
       means[1].x += x;
@@ -870,7 +870,7 @@ namespace icl::markers {
       yy[1] += y * y;
       ++ns[1];
     }
-    next = e4[3];
+    next = Point(e4[3]);
     for (; i < num && b2[i] != next; ++i) {
       int x = b2[i].x, y = b2[i].y;
       means[2].x += x;

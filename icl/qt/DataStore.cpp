@@ -8,7 +8,6 @@
 #include <icl/utils/Rect32f.h>
 #include <icl/utils/Size.h>
 #include <icl/utils/Point.h>
-#include <icl/utils/Point32f.h>
 #include <icl/utils/Range.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>

@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/VisualizationDescription.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/utils/Rect32f.h>
 #include <icl/math/FixedMatrix.h>
 #include <icl/qt/Widget.h>

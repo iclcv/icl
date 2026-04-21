@@ -15,7 +15,6 @@
 #include <icl/utils/Size32f.h>
 
 #include <icl/utils/Point.h>
-#include <icl/utils/Point32f.h>
 
 #include <icl/utils/Rect.h>
 #include <icl/utils/Rect32f.h>

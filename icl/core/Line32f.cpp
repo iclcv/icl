@@ -47,7 +47,10 @@ namespace icl::core {
 
   bool Line32f::intersects(const core::Line32f &other, utils::Point32f *p,
                         float *dstr, float *dsts) const{
-    const Point &a = start, &b = end, &c = other.start, &d = other.end;
+    // Note: binding these as `const Point&` (as the previous code did)
+    // used to silently round each endpoint to int via the implicit
+    // Point32f→Point conversion, throwing away sub-pixel precision.
+    const Point32f &a = start, &b = end, &c = other.start, &d = other.end;
 
     const float x1 = (a.y-c.y)*(d.x-c.x)-(a.x-c.x)*(d.y-c.y);
     const float x2 = (b.x-a.x)*(d.y-c.y)-(b.y-a.y)*(d.x-c.x);

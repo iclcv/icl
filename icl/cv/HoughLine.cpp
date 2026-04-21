@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/cv/HoughLine.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/utils/Range.h>
 #include <icl/math/FixedMatrix.h>
 #include <icl/core/Img.h>

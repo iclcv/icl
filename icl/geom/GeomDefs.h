@@ -11,7 +11,7 @@
 #include <icl/math/HomogeneousMath.h>
 #include <vector>
 #include <icl/core/Color.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 namespace icl::geom {
   /// color for geometry primitives

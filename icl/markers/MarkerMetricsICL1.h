@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/markers/MarkerCodeICL1.h>
 #include <icl/utils/Rect32f.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 namespace icl::markers {
   /// Marker metrics for "icl1" markers

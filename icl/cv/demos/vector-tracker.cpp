@@ -297,7 +297,7 @@ static std::vector<std::vector<float> > getCentersAndSizes(const Img8u &image){
   std::vector<std::vector<float> > v;
 
   for(unsigned int i=0;i<bd.size();++i){
-    Point p = bd[i].getCOG();
+    Point p = bd[i].getCOG().rounded();
     float x[] = { (float)p.x, (float)p.y, (float)bd[i].getSize() };
     v.push_back(std::vector<float>(x,x+3));
   }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/utils/Uncopyable.h>
 
 #include <vector>

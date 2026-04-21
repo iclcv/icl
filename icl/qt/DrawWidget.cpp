@@ -275,7 +275,7 @@ namespace icl::qt {
       e->getColor(colorSave);
       e->color(0,0,0,0);
 
-      Point c = tP(center.x,center.y,s);
+      Point c = tP(center.x,center.y,s).rounded();
 
       const unsigned int n = pts.size();
       for(unsigned int i=0; i<n;++i){
@@ -283,8 +283,8 @@ namespace icl::qt {
         if(next == n) next = 0;
         const Point32f &a = pts[i];
         const Point32f &b = pts[next];
-        Point A = tP(a.x,a.y,s);
-        Point B = tP(b.x,b.y,s);
+        Point A = tP(a.x,a.y,s).rounded();
+        Point B = tP(b.x,b.y,s).rounded();
         e->color(0,0,0,0);
         e->triangle(A,B,c);
         e->color(colorSave[0],colorSave[1],colorSave[2],colorSave[3]);
@@ -490,7 +490,7 @@ namespace icl::qt {
     SymCommand(float x, float y, ICLDrawWidget::Sym s):
       m_fX(x),m_fY(y),m_eS(s){}
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-      Rect r(tP(m_fX,m_fY,s),tS(s->symsize.width(),s->symsize.height(),s));
+      Rect r(tP(m_fX,m_fY,s).rounded(),tS(s->symsize.width(),s->symsize.height(),s));
       r.x-=r.width/2;
       r.y-=r.height/2;
       switch(m_eS){
@@ -536,7 +536,7 @@ namespace icl::qt {
       if(m_poImage)delete m_poImage;
     }
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
-      e->image(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),m_poImage,PaintEngine::Justify);
+      e->image(Rect(tP(m_fA,m_fB,s).rounded(),tS(m_fC, m_fD,s)),m_poImage,PaintEngine::Justify);
     }
     ImgBase *m_poImage;
   };
@@ -556,7 +556,7 @@ namespace icl::qt {
     virtual void exec(PaintEngine *e, ICLDrawWidget::State *s){
       static_cast<void>(e);
       //Rect r(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s));
-      image.draw2D(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),s->size);
+      image.draw2D(Rect(tP(m_fA,m_fB,s).rounded(),tS(m_fC, m_fD,s)),s->size);
     }
     GLImg image;
   };
@@ -607,9 +607,9 @@ namespace icl::qt {
       int oldFontSize = e->getFontSize();
       e->fontsize(fs < 0 ? (-fs * float(s->rect.height)/float(s->imsize.height)) : fs);
       if(m_fC == -1 || m_fD == -1){
-        e->text(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),text,PaintEngine::NoAlign, s->textAngle);
+        e->text(Rect(tP(m_fA,m_fB,s).rounded(),tS(m_fC, m_fD,s)),text,PaintEngine::NoAlign, s->textAngle);
       }else{
-        e->text(Rect(tP(m_fA,m_fB,s),tS(m_fC, m_fD,s)),text,PaintEngine::Justify, s->textAngle);
+        e->text(Rect(tP(m_fA,m_fB,s).rounded(),tS(m_fC, m_fD,s)),text,PaintEngine::Justify, s->textAngle);
       }
       e->fontsize(oldFontSize);
     }

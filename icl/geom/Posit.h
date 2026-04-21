@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/GeomDefs.h>
 #include <icl/utils/Exception.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 namespace icl::geom {
   /** \cond */

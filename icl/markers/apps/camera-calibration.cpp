@@ -523,7 +523,7 @@ void run(){
       c.setSamplingResolutionY(c.getSamplingResolutionY() * fy);
       // c.setSkew(c.getSkew() * fx); fx or fy? we simply dont scale it!
       c.setResolution(ir, Point32f(c.getPrincipalPointOffsetX() * fx,
-                                   c.getPrincipalPointOffsetY() * fy));
+                                   c.getPrincipalPointOffsetY() * fy).rounded());
     }
     if(gui["extr"].as<std::string>() != "default"){
       intr = &c;

@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Point.h>
-#include <icl/utils/Point32f.h>
 #include <vector>
 
 namespace icl::core {

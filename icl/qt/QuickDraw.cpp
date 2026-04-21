@@ -7,7 +7,7 @@
 #include <icl/qt/QuickFilter.h>
 #include <icl/core/Img.h>
 #include <icl/core/LineSampler.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 #ifdef ICL_HAVE_QT
 #include <icl/qt/QImageConverter.h>

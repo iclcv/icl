@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Point.h>
-#include <icl/utils/Point32f.h>
 #include <icl/core/Img.h>
 #include <QtCore/Qt>
 #include <vector>
@@ -222,7 +221,7 @@ namespace icl::qt {
     inline MouseEvent remapEvent(const utils::Point32f &imagePos) const {
       qt::MouseEvent cpy = *this;
       cpy.m_imagePos32f = imagePos;
-      cpy.m_imagePos = imagePos;
+      cpy.m_imagePos = imagePos.rounded();
       return cpy;
     }
   };

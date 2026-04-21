@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <vector>
 
 namespace icl { namespace core { class ImgBase; } }

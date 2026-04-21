@@ -5,7 +5,7 @@
 #include <icl/markers/FiducialDetectorPluginICL1.h>
 #include <icl/markers/MarkerMetricsICL1.h>
 #include <icl/utils/Range.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/core/Img.h>
 #include <icl/cv/ImageRegion.h>
 #include <icl/geom/GeomDefs.h>

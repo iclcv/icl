@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Point.h>
-#include <icl/utils/Point32f.h>
 #include <icl/core/Img.h>
 #include <icl/core/Types.h>
 #include <vector>

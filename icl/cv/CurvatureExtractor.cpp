@@ -70,8 +70,8 @@ namespace icl::cv {
               // the curent indices i-s_j and i+s_j
               const uint32_t min = restOp((index-s),dim);
               const uint32_t max = restOp((index+s),dim);
-              const Point32f p_1 = contour[min];
-              const Point32f p_2 = contour[max];
+              const Point32f p_1(contour[min]);
+              const Point32f p_2(contour[max]);
 
               // look whether this is a convex region or not:
               float delta = -1;

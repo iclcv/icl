@@ -5,7 +5,7 @@
 #pragma once
 #include <vector>
 #include <deque>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 namespace icl::cv {
   /// How should new ID's be allocated

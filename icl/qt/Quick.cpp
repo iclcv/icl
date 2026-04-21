@@ -49,7 +49,7 @@
 #endif
 
 #include <icl/core/LineSampler.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/core/ImgBuffer.h>
 
 #include <fstream>
@@ -1649,7 +1649,7 @@ namespace icl::qt {
       center *= 1.0/corners.size();
 
       for(size_t i=0;i<corners.size();++i){
-        Point t[] = {center, corners[i%corners.size()], corners[i] };
+        Point t[] = {center.rounded(), corners[i%corners.size()], corners[i] };
         triangle(image, t[0].x, t[0].y, t[1].x, t[1].y, t[2].x, t[2].y);
       }
       color(c[0],c[1],c[2],c[3]);

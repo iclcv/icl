@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/FixedMatrix.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 namespace icl::math {
   /// Utility structure that represents a 2D homography (implemented for float and double)
@@ -82,7 +82,7 @@ namespace icl::math {
 
     /// applies the homography
     inline utils::Point32f apply_int(const utils::Point32f &p) const{
-      return apply_homography_int(*this, p);
+      return utils::Point32f(apply_homography_int(*this, p.rounded()));
     }
   };
 

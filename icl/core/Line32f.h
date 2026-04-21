@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <icl/utils/Rect.h>
 #include <vector>
 
@@ -26,8 +26,8 @@ namespace icl::core {
     /** @param start start point
         @param end end point
     */
-    Line32f(utils::Point32f start=utils::Point::null,
-            utils::Point32f end=utils::Point::null):
+    Line32f(utils::Point32f start=utils::Point32f::null,
+            utils::Point32f end=utils::Point32f::null):
     start(start),end(end){}
 
     /// Creates a new line by given polar coordinates

@@ -54,7 +54,7 @@ static void handleMouse(const MouseEvent &evt) {
   }
   if (evt.isReleaseEvent() && evt.isMiddle() && pressPending) {
     pressPending = false;
-    Point32f delta = evt.getPos() - pressPos;
+    Point32f delta = Point32f(evt.getPos()) - pressPos;
     if (std::abs(delta.x) < 5 && std::abs(delta.y) < 5) {
       Hit hit = scene.findObject(0, evt.getX(), evt.getY());
       if (hit) {

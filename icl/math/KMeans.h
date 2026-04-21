@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Random.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <algorithm>
 
 namespace icl::math {

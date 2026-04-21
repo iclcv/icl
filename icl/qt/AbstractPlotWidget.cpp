@@ -120,7 +120,7 @@ namespace icl::qt {
 
       const Point widgetPos(event->position().x(), event->position().y());
       const Point32f renderPos = w->winToDraw(widgetPos);
-      const MouseEvent e(widgetPos, renderPos, renderPos,
+      const MouseEvent e(widgetPos, renderPos.rounded(), renderPos,
                          Point32f(0,0),d,std::vector<double>(),Point(),t,0);
       if(e.isModifierActive(ShiftModifier)
          || e.isModifierActive(ControlModifier)

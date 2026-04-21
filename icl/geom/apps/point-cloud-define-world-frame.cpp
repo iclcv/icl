@@ -68,7 +68,7 @@ void mouse(const MouseEvent &e){
     Point32f p = grabber->getDepthCamera().project(v);
     static RegionDetector rd;
     rd.detect(&seg);
-    ImageRegion r = rd.click(p);
+    ImageRegion r = rd.click(p.rounded());
 
     if(r){
       Mat3 C(0.0f);

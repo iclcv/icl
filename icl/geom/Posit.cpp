@@ -145,7 +145,8 @@ namespace icl::geom {
     Point32f pp = cam.getPrincipalPointOffset();
     float fx = cam.getFocalLength()*cam.getSamplingResolutionX();
     float fy = cam.getFocalLength()*cam.getSamplingResolutionY();
-    return findPose(imagePoints,pp,fx,fy);
+    // N.B. findPose(Point,...) overload rounds pp to pixel grid — historic behavior.
+    return findPose(imagePoints,pp.rounded(),fx,fy);
   }
 
   const Posit::Result &Posit::findPose(const std::vector<Point32f> &imagePoints, const Point &pp,

@@ -159,10 +159,11 @@ namespace icl{
       Rect templRect(halfTemplROI * (-1),templ.getROISize());
       templRect += offs;
       for(unsigned int i=0;i<blobData.size();i++){
+        const Point cog = blobData[i].getCOG().rounded();
         if(clipBuffersToROI){
-          resultVec[i] =  (templRect + blobData[i].getCOG()) & src.getImageRect();
+          resultVec[i] =  (templRect + cog) & src.getImageRect();
         }else{
-          resultVec[i] = ( Rect(blobData[i].getCOG(),templ.getROISize())-halfTemplROI ) & src.getImageRect();
+          resultVec[i] = ( Rect(cog,templ.getROISize())-halfTemplROI ) & src.getImageRect();
         }
         // const Img8u *tmp = src.shallowCopy(resultVec[i]);
         // show(copyroi(cvt(tmp)));

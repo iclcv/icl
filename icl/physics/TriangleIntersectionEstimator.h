@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/geom/ViewRay.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 
 namespace icl::physics {
 class ICLPhysics_API TriangleIntersectionEstimator{

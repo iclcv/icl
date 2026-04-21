@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Uncopyable.h>
 #include <icl/utils/Range.h>
-#include <icl/utils/Point32f.h>
+#include <icl/utils/Point.h>
 #include <functional>
 #include <icl/math/FixedVector.h>
 #include <icl/core/ImgBase.h>
