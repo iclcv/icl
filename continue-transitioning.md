@@ -104,16 +104,27 @@ only, not on presence of normals. Previously any geometry with normals
 - Temporal accumulation: ping-pong feedback should naturally denoise over frames
 - Consider Hi-Z acceleration for performance (hierarchical depth mip chain)
 
-**Quick framework rework** (priority):
-- `ImgQ` (`Img<icl32f>`) forces all Quick operations to float depth, causing
-  unnecessary conversions. Consider reworking to use `Image` (preserves depth)
-- Float image display was broken: `GLImageRenderer` converts all depths to
-  uint8 but BCI shader applied depth-specific scale (double-scaling → black).
-  Fixed in `GLImageRenderer::updateBCI()` — BCI scale is now always relative
-  to uint8 since texture is always `GL_UNSIGNED_BYTE`. Also removed deprecated
-  `glPixelTransfer` calls from `GLImg.cpp` (no-op in GL Core profile).
-- `blur()` in Quick.h — verify it works correctly with large images
-- Consider adding `localThresh()` convenience function
+**Quick2 framework** (Phase 1 complete, Phase 2 next):
+- Quick2.h fully implemented: QuickContext (memory-capped pool, thread-local
+  activation, applyOp), QuickCreate, QuickFilter, QuickMath, QuickCompose,
+  QuickDraw (DrawTarget<T,NC> optimized), QuickIO. 144 tests passing.
+- Phase 2: migrate consumers from Quick.h → Quick2.h one file at a time
+  (demos first, then library code). See `iclquick-plan.md` for full list.
+- Key architectural additions: Image::memoryUsage(), Image::shallowCopy(),
+  Image::isExclusivelyOwned(), UnaryOp/BinaryOp::getDestinationParams(),
+  LineSampler::forEach(), QuickContext::applyOp(UnaryOp&&/BinaryOp&&).
+- Pool bug found+fixed: isIndependent() vs isExclusivelyOwned() — two levels
+  of Image sharing (ImgBase handle vs channel pixel data).
+- MorphologicalOp opening/closing crash via Quick2 filter() — pre-existing bug.
+
+**BackendDispatching TODO**:
+- `addStateful` eagerly calls factory() at static init (registration time),
+  triggering CLDeviceContext/CLProgram construction before main(). For OpenCL
+  backends this causes heavyweight GPU driver calls during library loading.
+  Fix: defer first factory() call to first resolve/apply. See TODO in
+  `icl/utils/BackendDispatching.h:addStateful`.
+- CLDeviceContext should be a per-thread singleton instead of created per-
+  CLProgram. Currently ~30 CLDeviceContext instances created during test runs.
 
 **Signature extraction demo** (`icl/cv/demos/signature-extraction.cpp`):
 - Uses RotateOp, LocalThresholdOp, RegionDetector, blur, Quick.h functions

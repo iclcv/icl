@@ -137,6 +137,10 @@ namespace icl::utils {
 
     /// Add a stateful backend. Factory is called once per clone to create fresh state.
     /// Factory signature: () -> callable(Args...) -> R
+    // TODO: the factory is eagerly invoked during registration (line below: auto fn = factory()).
+    // For OpenCL backends this triggers CLDeviceContext construction at static init time,
+    // causing heavyweight GPU driver calls before main(). Consider deferring the first
+    // factory() call until first resolve/apply to avoid this.
     template<class Factory>
     void addStateful(Backend b, Factory&& factory,
                      ApplicabilityFn<Context> applicability,
