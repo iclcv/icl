@@ -189,6 +189,19 @@ target_link_libraries(cycles-renderer-test ICLRaytracing ICLIO)
 set_target_properties(cycles-renderer-test PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# ---- Physics demo (requires Bullet + Qt) ----
+if(BULLET_FOUND)
+  add_executable(cycles-physics-demo demos/cycles-physics-demo.cpp)
+  target_include_directories(cycles-physics-demo PRIVATE
+    ${ICL_MODULE_INCLUDE_DIRS}
+    ${CMAKE_BINARY_DIR}/src
+    src/
+  )
+  target_link_libraries(cycles-physics-demo ICLRaytracing ICLPhysics ICLQt)
+  set_target_properties(cycles-physics-demo PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
 # ---- Cycles link test (Phase 1) ----
 add_executable(cycles-link-test demos/cycles-link-test.cpp)
 target_include_directories(cycles-link-test PRIVATE
