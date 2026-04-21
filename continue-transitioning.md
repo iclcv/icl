@@ -1,6 +1,88 @@
 # ICL — Continuation Guide
 
-## Current State (Session 32 — Material refactoring + geom2 scene graph)
+## Current State (Session 33 — PointCloud, BVH, textures, text, mouse interaction)
+
+### Session 33 Summary (5 commits)
+
+Major geom2 additions: PointCloud data container, BVH raytracer, texture/text
+rendering, mouse interaction, and matrix indexing migration kickoff.
+
+#### A. PointCloud + PointCloudNode + BVH + mouse interaction
+
+**PointCloud** (`PointCloud.h/.cpp`): standalone data container, separated from
+scene graph. Owns XYZ/Normal/RGBA/Label/Depth/Intensity vectors, DataSegment
+accessors, organized/unorganized, own mutex. Designed for shared_ptr sharing
+between processing and rendering threads.
+
+**PointCloudNode** (`PointCloudNode.h/.cpp`): wraps `shared_ptr<PointCloud>`,
+inherits Node directly (not GeometryNode). Dedicated `GL_POINTS` render path
+with per-frame `GL_DYNAMIC_DRAW` upload in Renderer.
+
+**BVH** (`BVH.h/.cpp`): bounding volume hierarchy for fast ray-triangle
+intersection. Median-split construction, stack-based traversal, AABB slab test.
+`BVH::raycastImage()` casts all rays OpenMP-parallel from a Camera into a
+PointCloud. `Scene2::buildBVH()` creates a BVH from scene geometry.
+
+**Scene2MouseHandler** (`Scene2MouseHandler.h/.cpp`): self-contained camera
+navigation (freeView, strafe, rotateAroundOrigin, rollAndDistance, placeCursor).
+Same mappings as old SceneMouseHandler.
+
+**Scene2 additions**: `getMouseHandler()`, `findObject(ViewRay)` with recursive
+ray-triangle intersection, `setCursor()`/`getCursor()`, `setBounds()`.
+
+**OpenMP**: added as optional meson dependency, used in BVH raycast.
+
+**Demo** (`scene-to-pointcloud.cpp`): two-panel app — left shows 3D scene (24
+objects), right shows live point cloud from BVH raycasting every frame.
+
+#### B. Texture support + TextNode
+
+**Renderer texture support**: PBR shader samples `uBaseColorTex` when material
+has `baseColorMap`. Lazy GL texture upload with caching per Material. Alpha
+blending + discard for transparency.
+
+**TextNode** (`TextNode.h/.cpp`): GeometryNode subclass rendering text via
+QPainter to RGBA texture on a billboard quad. Always faces camera via inverse
+view rotation in Renderer.
+
+**CoordinateFrameNode**: added complex mode with cone arrowheads + X/Y/Z
+billboard text labels. Uses same rotation convention as old
+ComplexCoordinateFrameSceneObject.
+
+#### C. Node transform optimization + matrix migration start
+
+**Node::rotate()**: now uses ICL's `create_hom_4x4` (proven rxyz Euler
+convention) instead of hand-built rotation matrices.
+
+**Node::translate()/scale()**: optimized to modify transform matrix directly
+instead of constructing temp 4x4 and multiplying.
+
+**Matrix indexing migration begun**: `FixedMatrix::index_yx(row, col)` added
+alongside legacy `operator()(col, row)`. Math module (35 sites) migrated.
+Script `scripts/fix-matrix-indexing.py` auto-fixes callsites from compiler
+errors. ~1267 total sites remain across all modules.
+
+### What's next
+
+**Matrix migration** (dedicated session):
+- Disable `operator()` per module bottom-up, run fix script, manual review
+- Modules: utils(50) → core(41) → filter(129) → io(171) → cv(91) → qt(170)
+  → geom(498) → geom2(28) → markers(62) → physics(65)
+- Also migrate DynMatrixBase (same convention)
+- Final step: delete `operator()`, rename `index_yx` → `operator()`
+
+**geom2 remaining**:
+- Cycles build wiring (headers ready, meson linking TODO)
+- More demos (file loading, interactive picking)
+
+**Other work**:
+- CI update — meson in GitHub Actions
+- ImageMagick 7 / FFmpeg 7+ rewrites
+- ConvolutionOp IPP mixed-depth
+
+---
+
+## Previous State (Session 32 — Material refactoring + geom2 scene graph)
 
 ### Session 32 Summary (23 commits)
 
