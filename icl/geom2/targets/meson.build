@@ -22,5 +22,10 @@ if _build_demos and qt_found
       dependencies: [icl_geom2_dep],
       install: false,
     )
+    executable('geom2-cycles-overlay-viewer-demo',
+      files('../demos/cycles-overlay-viewer.cpp'),
+      dependencies: [icl_geom2_dep],
+      install: false,
+    )
   endif
 endif

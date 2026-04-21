@@ -32,6 +32,10 @@ namespace icl::geom2 {
     /// Set ambient light level
     void setAmbient(float ambient);
 
+    /// Set overlay alpha (0..1). When < 1, geometry is semi-transparent
+    /// so a background image (e.g. Cycles render) shows through.
+    void setOverlayAlpha(float alpha);
+
     /// Invalidate all geometry caches (call when scene structure changes)
     void invalidateCache();
 

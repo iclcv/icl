@@ -58,6 +58,7 @@ uniform float uRoughness;
 uniform vec4 uEmissive;
 uniform float uAmbient;
 uniform float uExposure;
+uniform float uOverlayAlpha;
 uniform vec3 uCameraPos;
 uniform int uNumLights;
 uniform vec3 uLightPos[MAX_LIGHTS];
@@ -114,7 +115,8 @@ void main() {
     // Tone mapping
     color = vec3(1.0) - exp(-color * uExposure);
 
-    if (alpha < 0.3) discard;
+    alpha *= uOverlayAlpha;
+    if (alpha < 0.01) discard;
     FragColor = vec4(color, alpha);
 }
 )";
@@ -372,13 +374,14 @@ void main() { FragColor = vColor; }
     bool shaderReady = false;
     float exposure = 1.0f;
     float ambient = 0.15f;
+    float overlayAlpha = 1.0f;
     Mat currentProjection;
     Mat currentView;
 
     // PBR uniform locations
     GLint locModel = -1, locView = -1, locProj = -1;
     GLint locBaseColor = -1, locMetallic = -1, locRoughness = -1;
-    GLint locEmissive = -1, locAmbient = -1, locExposure = -1;
+    GLint locEmissive = -1, locAmbient = -1, locExposure = -1, locOverlayAlpha = -1;
     GLint locCameraPos = -1;
     GLint locNumLights = -1;
     GLint locLightPos[8] = {};
@@ -442,6 +445,7 @@ void main() { FragColor = vColor; }
 
   void Renderer::setExposure(float e) { m_data->exposure = e; }
   void Renderer::setAmbient(float a) { m_data->ambient = a; }
+  void Renderer::setOverlayAlpha(float a) { m_data->overlayAlpha = a; }
   void Renderer::invalidateCache() {
     m_data->cache.clear();
     m_data->pcCache.clear();
@@ -469,6 +473,7 @@ void main() { FragColor = vColor; }
       m_data->locEmissive = glGetUniformLocation(m_data->pbrProgram, "uEmissive");
       m_data->locAmbient = glGetUniformLocation(m_data->pbrProgram, "uAmbient");
       m_data->locExposure = glGetUniformLocation(m_data->pbrProgram, "uExposure");
+      m_data->locOverlayAlpha = glGetUniformLocation(m_data->pbrProgram, "uOverlayAlpha");
       m_data->locCameraPos = glGetUniformLocation(m_data->pbrProgram, "uCameraPos");
       m_data->locNumLights = glGetUniformLocation(m_data->pbrProgram, "uNumLights");
       m_data->locBaseColorTex = glGetUniformLocation(m_data->pbrProgram, "uBaseColorTex");
@@ -550,7 +555,7 @@ void main() { FragColor = vColor; }
     if (!node || !node->isVisible()) return;
     if (auto *light = dynamic_cast<LightNode*>(node)) {
       Mat t = light->getTransformation(true);
-      GeomColor c = light->getColor();
+      GeomColor c = light->getColor() * (1.0f / 255.0f);
       float intensity = light->getIntensity();
       lights.push_back({{t(0, 3), t(1, 3), t(2, 3)},
                          {c[0]*intensity, c[1]*intensity, c[2]*intensity}});
@@ -585,6 +590,7 @@ void main() { FragColor = vColor; }
     setUniformMat4(m_data->locView, viewMatrix);
     glUniform1f(m_data->locAmbient, m_data->ambient);
     glUniform1f(m_data->locExposure, m_data->exposure);
+    glUniform1f(m_data->locOverlayAlpha, m_data->overlayAlpha);
 
     // Camera position from view matrix (inverse translation)
     // view = [R|t], camPos = -R^T * t. For orthonormal R: R^T = R^-1.

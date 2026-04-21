@@ -23,6 +23,7 @@ geom2_headers = files(
   'Scene2MouseHandler.h',
   'BVH.h',
   'TextNode.h',
+  'DemoScene2.h',
 )
 
 geom2_sources = files(
@@ -44,6 +45,7 @@ geom2_sources = files(
   'Scene2MouseHandler.cpp',
   'BVH.cpp',
   'TextNode.cpp',
+  'DemoScene2.cpp',
 )
 
 # Cycles renderer (reuses include/link config computed in icl/geom/meson.build)
