@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/utils/Test.h>
+#include "harness/Test.h"
 #include <icl/utils/ProgArg.h>
 #include <iostream>
 #include <string>

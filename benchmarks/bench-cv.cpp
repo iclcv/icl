@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/utils/Benchmark.h>
+#include "harness/Benchmark.h"
 #include <icl/core/Img.h>
 #include <icl/io/TestImages.h>
 #include <icl/filter/ThresholdOp.h>

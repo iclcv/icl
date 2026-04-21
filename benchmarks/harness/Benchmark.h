@@ -101,7 +101,7 @@ namespace icl::utils {
   };
 
   /// Singleton registry for benchmarks
-  class ICLUtils_API BenchmarkRegistry {
+  class BenchmarkRegistry {
   public:
     static BenchmarkRegistry &instance(){
       static BenchmarkRegistry reg;
@@ -158,7 +158,7 @@ namespace icl::utils {
   };
 
   /// Run a benchmark with warmup and timing
-  class ICLUtils_API BenchmarkRunner {
+  class BenchmarkRunner {
   public:
     BenchmarkRunner(int iterations = 50, double warmupSeconds = 2.0)
       : m_iterations(iterations), m_warmupSeconds(warmupSeconds) {}

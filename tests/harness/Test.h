@@ -41,7 +41,7 @@ namespace icl::utils {
   };
 
   /// Singleton registry for tests — mirrors BenchmarkRegistry
-  class ICLUtils_API TestRegistry {
+  class TestRegistry {
   public:
     static TestRegistry &instance(){
       static TestRegistry reg;
@@ -94,7 +94,7 @@ namespace icl::utils {
   };
 
   /// Runs tests and collects results
-  class ICLUtils_API TestRunner {
+  class TestRunner {
   public:
     TestResult run(const TestEntry &entry) const {
       TestResult r;

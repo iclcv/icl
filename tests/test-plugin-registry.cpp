@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/utils/PluginRegistry.h>
-#include <icl/utils/Test.h>
+#include "harness/Test.h"
 #include <icl/utils/Exception.h>
 
 #include <atomic>

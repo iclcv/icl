@@ -1,4 +1,4 @@
-#include <icl/utils/Test.h>
+#include "harness/Test.h"
 #include <icl/qt/QuickContext.h>
 #include <icl/qt/QuickCreate.h>
 #include <icl/qt/QuickFilter.h>
