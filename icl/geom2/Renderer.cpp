@@ -505,39 +505,29 @@ void main() { FragColor = vColor; }
     }
   }
 
-  // Upload an ICL Image to a GL texture (creates or updates)
+  // Upload an ICL Image to a GL texture (matches geom GLRenderer)
   static GLuint uploadTexture(const core::Image &img) {
     if (img.isNull()) return 0;
-    GLuint tex = 0;
+    const auto &img8u = img.as<icl8u>();
+    int w = img8u.getWidth(), h = img8u.getHeight(), ch = img8u.getChannels();
+
+    std::vector<icl8u> rgba(w * h * 4);
+    for (int i = 0; i < w * h; i++) {
+      rgba[i*4+0] = (ch > 0) ? img8u.getData(0)[i] : 0;
+      rgba[i*4+1] = (ch > 1) ? img8u.getData(1)[i] : 0;
+      rgba[i*4+2] = (ch > 2) ? img8u.getData(2)[i] : 0;
+      rgba[i*4+3] = (ch > 3) ? img8u.getData(3)[i] : 255;
+    }
+
+    GLuint tex;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    int w = img.getWidth(), h = img.getHeight(), c = img.getChannels();
-    GLenum fmt = (c >= 4) ? GL_RGBA : (c == 3 ? GL_RGB : GL_RED);
-    GLenum ifmt = (c >= 4) ? GL_RGBA8 : (c == 3 ? GL_RGB8 : GL_R8);
-
-    // Convert to interleaved 8u, flip Y for GL (origin = bottom-left)
-    std::vector<uint8_t> buf(w * h * c);
-    bool isFloat = (img.getDepth() == core::depth32f || img.getDepth() == core::depth64f);
-    img.visit([&](auto &typed) {
-      for (int y = 0; y < h; y++) {
-        int srcY = h - 1 - y;  // flip vertically
-        for (int x = 0; x < w; x++) {
-          for (int ch = 0; ch < c; ch++) {
-            float v = static_cast<float>(typed(x, srcY, ch));
-            buf[(y * w + x) * c + ch] = isFloat
-              ? static_cast<uint8_t>(std::min(std::max(v * 255.f, 0.f), 255.f))
-              : static_cast<uint8_t>(std::min(std::max(v, 0.f), 255.f));
-          }
-        }
-      }
-    });
-
-    glTexImage2D(GL_TEXTURE_2D, 0, ifmt, w, h, 0, fmt, GL_UNSIGNED_BYTE, buf.data());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, rgba.data());
     glBindTexture(GL_TEXTURE_2D, 0);
     return tex;
   }
