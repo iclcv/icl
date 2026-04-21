@@ -5,7 +5,7 @@
 // MKL backend for BLAS/LAPACK operations.
 // This file is excluded from the build when MKL is not found.
 
-#include <icl/math/BlasOps.h>
+#include <icl/math/detail/blas/BlasOps.h>
 
 #include "mkl_cblas.h"
 #include "mkl_lapack.h"

@@ -5,7 +5,7 @@
 // MKL DFTI backend for FFT operations.
 // This file is excluded from the build when MKL is not found.
 
-#include <icl/math/FFTOps.h>
+#include <icl/math/detail/fft/FFTOps.h>
 #include <icl/utils/Exception.h>
 #include <mkl_dfti.h>
 #include <complex>

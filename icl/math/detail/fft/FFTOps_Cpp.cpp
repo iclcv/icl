@@ -5,7 +5,7 @@
 // C++ fallback backends for FFT operations.
 // Delegates to existing fft2D_cpp / ifft2D_cpp via non-owning DynMatrix wrappers.
 
-#include <icl/math/FFTOps.h>
+#include <icl/math/detail/fft/FFTOps.h>
 #include <icl/math/FFTUtils.h>
 
 using namespace icl::utils;

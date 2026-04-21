@@ -5,7 +5,7 @@
 // Apple Accelerate backend for LAPACK operations.
 // This file is excluded from the build when Accelerate is not found.
 
-#include <icl/math/LapackOps.h>
+#include <icl/math/detail/lapack/LapackOps.h>
 #include <Accelerate/Accelerate.h>
 #include <vector>
 #include <algorithm>

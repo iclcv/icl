@@ -4,7 +4,7 @@
 
 // C++ fallback backends for MathOps dispatch.
 
-#include <icl/math/MathOps.h>
+#include <icl/math/detail/mathops/MathOps.h>
 #include <numeric>
 #include <algorithm>
 #include <cmath>

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/LapackOps.h>
+#include <icl/math/detail/lapack/LapackOps.h>
 
 using namespace icl::utils;
 

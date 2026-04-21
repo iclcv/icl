@@ -5,7 +5,7 @@
 // Apple Accelerate backend for BLAS/LAPACK operations.
 // This file is excluded from the build when Accelerate is not found.
 
-#include <icl/math/BlasOps.h>
+#include <icl/math/detail/blas/BlasOps.h>
 #include <Accelerate/Accelerate.h>
 #include <vector>
 #include <algorithm>

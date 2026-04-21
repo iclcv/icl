@@ -5,7 +5,7 @@
 // Eigen backend for LAPACK operations.
 // This file is excluded from the build when Eigen3 is not found.
 
-#include <icl/math/LapackOps.h>
+#include <icl/math/detail/lapack/LapackOps.h>
 
 #include <Eigen/SVD>
 #include <Eigen/Eigenvalues>

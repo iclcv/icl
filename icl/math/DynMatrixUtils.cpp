@@ -4,13 +4,13 @@
 
 #include <icl/utils/Macros.h>
 #include <icl/math/DynMatrixUtils.h>
-#include <icl/math/MathOps.h>
+#include <icl/math/detail/mathops/MathOps.h>
 #include <icl/utils/StringUtils.h>
 #include <cmath>
 #include <numeric>
 
-#include <icl/math/BlasOps.h>
-#include <icl/math/LapackOps.h>
+#include <icl/math/detail/blas/BlasOps.h>
+#include <icl/math/detail/lapack/LapackOps.h>
 
 
 // Eigen/SVD no longer needed — SVD dispatches through BlasOps

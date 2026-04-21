@@ -10,8 +10,8 @@
 #include <functional>
 #include <fstream>
 
-#include <icl/math/BlasOps.h>
-#include <icl/math/LapackOps.h>
+#include <icl/math/detail/blas/BlasOps.h>
+#include <icl/math/detail/lapack/LapackOps.h>
 
 #include <icl/math/DynMatrixUtils.h>
 #include <icl/utils/StringUtils.h>

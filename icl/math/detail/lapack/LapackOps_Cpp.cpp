@@ -4,8 +4,8 @@
 
 // C++ fallback backends for LAPACK operations.
 
-#include <icl/math/LapackOps.h>
-#include <icl/math/BlasOps.h>
+#include <icl/math/detail/lapack/LapackOps.h>
+#include <icl/math/detail/blas/BlasOps.h>
 #include <icl/math/DynMatrix.h>
 #include <icl/utils/BasicTypes.h>
 

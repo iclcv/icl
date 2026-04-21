@@ -1,13 +1,16 @@
 # ICL Math module
 
+# Public headers (installed).  The Blas/Lapack/FFT/MathOps backend-dispatch
+# facades live under detail/<family>/ and are intentionally NOT installed —
+# they are implementation details.  Public consumers reach backend ops through
+# DynMatrix / DynMatrixUtils / FFTUtils / FixedMatrix etc., which dispatch
+# internally.
 math_headers = files(
-  'BlasOps.h',
   'DynMatrix.h',
   'DynMatrixBase.h',
   'DynMatrixUtils.h',
   'DynVector.h',
   'FFTException.h',
-  'FFTOps.h',
   'FFTUtils.h',
   'FixedMatrix.h',
   'FixedVector.h',
@@ -17,14 +20,12 @@ math_headers = files(
   'KDTree.h',
   'KMeans.h',
   'LLM.h',
-  'LapackOps.h',
   'LeastSquareModelFitting.h',
   'LeastSquareModelFitting2D.h',
   'LevenbergMarquardtFitter.h',
   'LinearTransform1D.h',
   'Math.h',
   'MathFunctions.h',
-  'MathOps.h',
   'MatrixSubRectIterator.h',
   'Octree.h',
   'PCLKdtree.h',
@@ -42,14 +43,11 @@ math_headers = files(
   'StraightLine2D.h',
 )
 
+# Always-compiled sources (root-level public API impls).
 math_sources = files(
-  'BlasOps.cpp',
-  'BlasOps_Cpp.cpp',
   'DynMatrix.cpp',
   'DynMatrixUtils.cpp',
   'DynVector.cpp',
-  'FFTOps.cpp',
-  'FFTOps_Cpp.cpp',
   'FFTUtils.cpp',
   'FixedMatrix.cpp',
   'GraphCutter.cpp',
@@ -57,11 +55,7 @@ math_sources = files(
   'Homography2D.cpp',
   'KDTree.cpp',
   'LLM.cpp',
-  'LapackOps.cpp',
-  'LapackOps_Cpp.cpp',
   'LevenbergMarquardtFitter.cpp',
-  'MathOps.cpp',
-  'MathOps_Cpp.cpp',
   'PolynomialRegression.cpp',
   'Projective4PointTransform.cpp',
   'SOM.cpp',
@@ -70,26 +64,40 @@ math_sources = files(
   'StraightLine2D.cpp',
 )
 
+# Backend-dispatch facades (private to libicl-math).  Each family has a
+# facade header + main .cpp + per-backend dispatch cpps gated by the
+# corresponding backend dep.
+math_sources += files(
+  'detail/blas/BlasOps.cpp',
+  'detail/blas/BlasOps_Cpp.cpp',
+  'detail/fft/FFTOps.cpp',
+  'detail/fft/FFTOps_Cpp.cpp',
+  'detail/lapack/LapackOps.cpp',
+  'detail/lapack/LapackOps_Cpp.cpp',
+  'detail/mathops/MathOps.cpp',
+  'detail/mathops/MathOps_Cpp.cpp',
+)
+
 # Conditional backend sources
 if accelerate_dep.found()
   math_sources += files(
-    'BlasOps_Accelerate.cpp',
-    'FFTOps_Accelerate.cpp',
-    'LapackOps_Accelerate.cpp',
+    'detail/blas/BlasOps_Accelerate.cpp',
+    'detail/fft/FFTOps_Accelerate.cpp',
+    'detail/lapack/LapackOps_Accelerate.cpp',
   )
 endif
 
 if mkl_dep.found()
   math_sources += files(
-    'BlasOps_Mkl.cpp',
-    'FFTOps_Mkl.cpp',
-    'LapackOps_Mkl.cpp',
+    'detail/blas/BlasOps_Mkl.cpp',
+    'detail/fft/FFTOps_Mkl.cpp',
+    'detail/lapack/LapackOps_Mkl.cpp',
   )
 endif
 
 if eigen_dep.found()
   math_sources += files(
-    'LapackOps_Eigen.cpp',
+    'detail/lapack/LapackOps_Eigen.cpp',
   )
 endif
 

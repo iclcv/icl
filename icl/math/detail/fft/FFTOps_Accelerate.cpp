@@ -6,7 +6,7 @@
 // Uses vDSP_DFT for 1D transforms, row-column decomposition for 2D.
 // This file is excluded from the build when Accelerate is not found.
 
-#include <icl/math/FFTOps.h>
+#include <icl/math/detail/fft/FFTOps.h>
 #include <icl/utils/Exception.h>
 #include <Accelerate/Accelerate.h>
 #include <complex>

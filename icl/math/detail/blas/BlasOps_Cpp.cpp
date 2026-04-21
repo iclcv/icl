@@ -5,7 +5,7 @@
 // C++ fallback backends for BLAS/LAPACK operations.
 // Contains naive GEMM and Golub-Kahan bidiagonalization SVD.
 
-#include <icl/math/BlasOps.h>
+#include <icl/math/detail/blas/BlasOps.h>
 #include <icl/math/DynMatrix.h>
 
 #include <vector>

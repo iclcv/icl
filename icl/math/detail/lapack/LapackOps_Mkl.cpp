@@ -5,7 +5,7 @@
 // MKL backend for LAPACK operations.
 // This file is excluded from the build when MKL is not found.
 
-#include <icl/math/LapackOps.h>
+#include <icl/math/detail/lapack/LapackOps.h>
 #include "mkl_lapack.h"
 #include <vector>
 #include <algorithm>

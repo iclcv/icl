@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/MathOps.h>
+#include <icl/math/detail/mathops/MathOps.h>
 
 namespace icl::math {
   const char* toString(MathOp op) {

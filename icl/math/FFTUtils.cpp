@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
 #include <icl/math/FFTUtils.h>
-#include <icl/math/FFTOps.h>
+#include <icl/math/detail/fft/FFTOps.h>
 #include <limits>
 #include <type_traits>
 #include <algorithm>
