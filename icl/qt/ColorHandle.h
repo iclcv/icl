@@ -8,6 +8,8 @@
 #include <icl/qt/GUIHandle.h>
 #include <icl/qt/ColorLabel.h>
 
+#include <type_traits>
+
 namespace icl::qt {
   /// Class wrapping ColorLabel GUI compoenent handling \ingroup HANDLES
   class ColorHandle : public GUIHandle<ColorLabel>{
@@ -40,6 +42,16 @@ namespace icl::qt {
 
     /// return whether wrapped ColorLabel supports alpha
     inline bool hasAlpha() const { return lab()->hasAlpha(); }
+
+    /// Explicit readback.  `as<Color>()` returns the current RGB triple;
+    /// `as<Color4D>()` returns the RGBA quadruple.
+    template<typename T>
+      requires std::is_same_v<T, core::Color>
+    T as() const { return getRGB(); }
+
+    template<typename T>
+      requires std::is_same_v<T, core::Color4D>
+    T as() const { return getRGBA(); }
 
     private:
     /// utitlity function

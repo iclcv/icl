@@ -5,6 +5,9 @@
 #include <icl/qt/DrawHandle3D.h>
 #include <icl/qt/DrawWidget3D.h>
 
+#include <icl/utils/AssignRegistry.h>
+#include <icl/core/Img.h>
+
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -23,4 +26,19 @@ namespace icl::qt {
     (**this)->removeCallbacks();
   }
 
-  } // namespace icl::qt
+  }  // namespace icl::qt
+
+namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::DrawHandle3D;
+  namespace core = icl::core;
+  __attribute__((constructor))
+  static void icl_register_draw_handle3d_assignments() {
+    AssignRegistry::enroll_receiver<DrawHandle3D,
+        core::Img8u,  core::Img16s,  core::Img32s,  core::Img32f,  core::Img64f,
+        core::Img8u*, core::Img16s*, core::Img32s*, core::Img32f*, core::Img64f*, core::ImgBase*,
+        const core::Img8u*, const core::Img16s*, const core::Img32s*,
+        const core::Img32f*, const core::Img64f*, const core::ImgBase*,
+        core::Image>();
+  }
+}

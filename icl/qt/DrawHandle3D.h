@@ -35,6 +35,9 @@ namespace icl{
       /// make the wrapped ICLWidget show a given image (as set Image)
       void operator=(const core::ImgBase *image) { setImage(image); }
 
+      /// reference-based overload — matches the legacy FROM_IMG rule
+      void operator=(const core::ImgBase &image) { setImage(&image); }
+
       /// Image-based overload
       void operator=(const core::Image &image) { setImage(image.ptr()); }
 

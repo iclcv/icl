@@ -128,6 +128,7 @@ qt_sources = files(
   'CheckBoxHandle.cpp',
   'ChromaClassifierIO.cpp',
   'ChromaGUI.cpp',
+  'ColorHandle.cpp',
   'ColorLabel.cpp',
   'ComboHandle.cpp',
   'CompabilityLabel.cpp',

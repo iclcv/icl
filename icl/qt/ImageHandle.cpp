@@ -5,6 +5,9 @@
 #include <icl/qt/ImageHandle.h>
 #include <icl/qt/Widget.h>
 
+#include <icl/utils/AssignRegistry.h>
+#include <icl/core/Img.h>
+
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -25,4 +28,23 @@ namespace icl::qt {
   }
 
 
-  } // namespace icl::qt
+  }  // namespace icl::qt
+
+namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::ImageHandle;
+  namespace core = icl::core;
+  __attribute__((constructor))
+  static void icl_register_image_handle_assignments() {
+    // ImageHandle accepts an image (by value, by ref/pointer, by Image).
+    // All Img<T> paths fall through to operator=(const ImgBase&) or
+    // operator=(const ImgBase*) via derived-to-base conversion; the
+    // trait's DirectlyAssignable picks them up.
+    AssignRegistry::enroll_receiver<ImageHandle,
+        core::Img8u,  core::Img16s,  core::Img32s,  core::Img32f,  core::Img64f,
+        core::Img8u*, core::Img16s*, core::Img32s*, core::Img32f*, core::Img64f*, core::ImgBase*,
+        const core::Img8u*, const core::Img16s*, const core::Img32s*,
+        const core::Img32f*, const core::Img64f*, const core::ImgBase*,
+        core::Image>();
+  }
+}
