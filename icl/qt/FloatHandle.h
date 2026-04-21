@@ -7,6 +7,8 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/qt/GUIHandle.h>
 
+#include <atomic>
+#include <memory>
 #include <string>
 #include <type_traits>
 
@@ -20,10 +22,12 @@ namespace icl::qt {
     public:
 
     /// Create an empty handle
-    FloatHandle(){}
+    FloatHandle() = default;
 
-    /// Create a new FloatHandel
-    FloatHandle(QLineEdit *le, GUIWidget *w):GUIHandle<QLineEdit>(le,w){}
+    /// Create a new FloatHandle wrapping `le`.  Seeds the lock-free
+    /// cache from the QLineEdit's current text and installs a Qt
+    /// connection that re-parses on every `textChanged(QString)`.
+    FloatHandle(QLineEdit *le, GUIWidget *w);
 
     /// make the associated text field show a float
     void operator=(float f);
@@ -43,5 +47,10 @@ namespace icl::qt {
     template<typename T>
       requires std::is_same_v<T, std::string>
     T as() const;
+
+    private:
+    /// Lock-free snapshot of the parsed text, updated on every
+    /// `QLineEdit::textChanged(QString)`.
+    std::shared_ptr<std::atomic<float>> m_cache;
   };
   } // namespace icl::qt

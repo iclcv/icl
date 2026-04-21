@@ -9,18 +9,41 @@
 
 #include <QRadioButton>
 namespace icl::qt {
+
+  ButtonGroupHandle::ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w)
+    : GUIHandle<RadioButtonVec>(buttons, w),
+      m_selectedIndex(std::make_shared<std::atomic<int>>(-1)) {
+    if (!buttons) return;
+    // Seed: find the initial selected index, if any.
+    for (int i = 0; i < static_cast<int>(buttons->size()); ++i) {
+      if ((*buttons)[i] && (*buttons)[i]->isChecked()) {
+        m_selectedIndex->store(i, std::memory_order_relaxed);
+        break;
+      }
+    }
+    // Each radio button writes its own index into the cache when
+    // toggled on (we don't care about toggled-off: the sibling that
+    // was turned on will publish the new index).  The lambda captures
+    // the shared_ptr by value so the cache outlives all handle copies;
+    // the connection's context is the button, so it's dropped when
+    // the button is destroyed.
+    auto cache = m_selectedIndex;
+    for (int i = 0; i < static_cast<int>(buttons->size()); ++i) {
+      QRadioButton *b = (*buttons)[i];
+      if (!b) continue;
+      QObject::connect(b, &QRadioButton::toggled, b,
+                       [cache, i](bool checked){
+                         if (checked) cache->store(i, std::memory_order_relaxed);
+                       });
+    }
+  }
+
   void ButtonGroupHandle::select(int id){
     ICLASSERT_RETURN(valid(id));
     vec()[id]->setChecked(true);
   }
   int ButtonGroupHandle::getSelected() const{
-    ICLASSERT_RETURN_VAL(n(),-1);
-    for(int i=0;i<n();i++){
-      if(vec()[i]->isChecked()){
-        return i;
-      }
-    }
-    return -1;
+    return m_selectedIndex ? m_selectedIndex->load(std::memory_order_relaxed) : -1;
   }
   std::string ButtonGroupHandle::getSelectedText() const{
     ICLASSERT_RETURN_VAL(n(),"");

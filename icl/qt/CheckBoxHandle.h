@@ -6,6 +6,9 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/qt/GUIHandle.h>
+
+#include <atomic>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -58,6 +61,14 @@ namespace icl::qt {
 
     /// internal state reference variable
     bool *m_stateRef;
+
+    /// Lock-free snapshot of the checkbox state.  Written from the
+    /// GUI thread by a `stateChanged(int)` lambda installed in the
+    /// primary ctor; read from any thread via `isChecked()`.
+    /// Coexists with `m_stateRef` (the old `.out()`-allocated bool)
+    /// during the thread-safety transition — both track the same
+    /// value but `m_stateRef` reads are unsynchronized.
+    std::shared_ptr<std::atomic<bool>> m_cache;
 
   };
   } // namespace icl::qt

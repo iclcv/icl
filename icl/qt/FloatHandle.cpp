@@ -13,6 +13,27 @@
 
 
 namespace icl::qt {
+
+  namespace {
+    /// Parse `text` as float — strtof semantics (returns 0.0f on
+    /// empty / non-numeric input).
+    float parseFloat(const QString &text) {
+      auto bytes = text.toLatin1();
+      return std::strtof(bytes.data(), nullptr);
+    }
+  }
+
+  FloatHandle::FloatHandle(QLineEdit *le, GUIWidget *w)
+    : GUIHandle<QLineEdit>(le, w),
+      m_cache(std::make_shared<std::atomic<float>>(le ? parseFloat(le->text()) : 0.0f)) {
+    if (!le) return;
+    auto cache = m_cache;
+    QObject::connect(le, &QLineEdit::textChanged, le,
+                     [cache](const QString &t){
+                       cache->store(parseFloat(t), std::memory_order_relaxed);
+                     });
+  }
+
   void FloatHandle::operator=(float f){
     (**this)->setText(QString::number(f));
   }
@@ -20,8 +41,7 @@ namespace icl::qt {
     *this = icl::utils::parse<float>(s);
   }
   float FloatHandle::getValue() const{
-    auto bytes = (**this)->text().toLatin1();
-    return std::strtof(bytes.data(), nullptr);
+    return m_cache ? m_cache->load(std::memory_order_relaxed) : 0.0f;
   }
 
   template<typename T>

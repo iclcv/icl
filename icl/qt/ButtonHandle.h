@@ -5,8 +5,10 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <memory>
 #include <icl/qt/GUIHandle.h>
+
+#include <atomic>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -41,7 +43,7 @@ namespace icl::qt {
 
     /// trigger this event (sets the internal boolean variable to true)
     void trigger(bool execCallbacks = true){
-      *m_triggered = true;
+      m_triggered->store(true, std::memory_order_relaxed);
       if(execCallbacks){
         cb();
       }
@@ -66,7 +68,11 @@ namespace icl::qt {
 
     private:
 
-    std::shared_ptr<bool> m_triggered; //!< internal boolean variable
+    /// Lock-free "was triggered" flag — set by `trigger()` on the GUI
+    /// thread (Qt signal) and read-reset by `wasTriggered()` on the
+    /// app thread.  shared_ptr so copies of the handle observe the
+    /// same flag; std::atomic so reads/writes don't race on bool.
+    std::shared_ptr<std::atomic<bool>> m_triggered;
     std::string m_sID; //!< corresponding id
   };
   } // namespace icl::qt

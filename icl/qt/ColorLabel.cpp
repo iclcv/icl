@@ -56,31 +56,37 @@ namespace icl::qt {
 
     /// returns current color
   Color ColorLabel::getRGB() const{
+    QMutexLocker lock(&m_oMutex);
     return Color(m_color[0],m_color[1],m_color[2]);
   }
 
     /// returns current rgba color
   Color4D ColorLabel::getRGBA() const{
+    QMutexLocker lock(&m_oMutex);
     return m_color;
   }
 
     /// returns current red value
   int ColorLabel::getRed() const{
+    QMutexLocker lock(&m_oMutex);
     return m_color[0];
   }
 
     /// returns current green value
   int ColorLabel::getGreen() const{
+    QMutexLocker lock(&m_oMutex);
     return m_color[1];
   }
 
     /// returns current blue value
   int ColorLabel::getBlue() const{
+    QMutexLocker lock(&m_oMutex);
     return m_color[2];
   }
 
     /// return current alpha value
   int ColorLabel::getAlhpa() const{
+    QMutexLocker lock(&m_oMutex);
     return m_color[3];
   }
 

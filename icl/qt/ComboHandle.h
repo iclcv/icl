@@ -6,6 +6,9 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/qt/GUIHandle.h>
+
+#include <memory>
+#include <mutex>
 #include <string>
 #include <type_traits>
 
@@ -18,10 +21,13 @@ namespace icl::qt {
   class ComboHandle : public GUIHandle<QComboBox>{
     public:
     /// create an empty handle
-    ComboHandle(){}
+    ComboHandle() = default;
 
-    /// create a new ComboHandle wrapping a given QComboBox
-    ComboHandle(QComboBox *cb, GUIWidget *w):GUIHandle<QComboBox>(cb,w){}
+    /// create a new ComboHandle wrapping `cb`.  Seeds the cache from
+    /// the combo's current selection and installs a Qt connection
+    /// that updates both index and text on every
+    /// `currentIndexChanged(int)` — runs on the GUI thread.
+    ICLQt_API ComboHandle(QComboBox *cb, GUIWidget *w);
 
     /// add an item
     ICLQt_API void add(const std::string &item);
@@ -81,6 +87,17 @@ namespace icl::qt {
 
     /// utility function (internally used)
     const QComboBox *cbx() const{ return **this; }
+
+    /// Mutex-guarded snapshot of the current selection.  Updated from
+    /// the GUI thread on every `currentIndexChanged(int)`.  Both
+    /// fields are read under the same lock so `getSelectedIndex`
+    /// and `getSelectedItem` are guaranteed to see a consistent pair.
+    struct Cache {
+      mutable std::mutex mutex;
+      int index = -1;
+      std::string text;
+    };
+    std::shared_ptr<Cache> m_cache;
   };
 
   } // namespace icl::qt

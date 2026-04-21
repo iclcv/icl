@@ -12,6 +12,22 @@
 
 
 namespace icl::qt {
+
+  StringHandle::StringHandle(QLineEdit *le, std::string *str, GUIWidget *w)
+    : GUIHandle<QLineEdit>(le, w),
+      m_str(str),
+      m_cache(std::make_shared<Cache>()) {
+    if (le) m_cache->text = le->text().toLatin1().data();
+    if (!le) return;
+    auto cache = m_cache;
+    QObject::connect(le, &QLineEdit::textChanged, le,
+                     [cache](const QString &t){
+                       auto s = t.toLatin1();
+                       std::scoped_lock lock(cache->mutex);
+                       cache->text.assign(s.data(), s.size());
+                     });
+  }
+
   void StringHandle::operator=(const std::string &text){
     (**this)->setText(text.c_str());
     getGUIWidget()->getGUI()->lockData();
@@ -20,7 +36,9 @@ namespace icl::qt {
 
 	}
   std::string StringHandle::getCurrentText() const{
-    return (**this)->text().toLatin1().data();
+    if (!m_cache) return {};
+    std::scoped_lock lock(m_cache->mutex);
+    return m_cache->text;
   }
   std::string StringHandle::getValue() const{
     std::string s;

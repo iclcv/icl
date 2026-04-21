@@ -8,6 +8,8 @@
 #include <icl/qt/GUIHandle.h>
 #include <QtWidgets/QSpinBox>
 
+#include <atomic>
+#include <memory>
 #include <string>
 #include <type_traits>
 
@@ -18,10 +20,15 @@ namespace icl::qt {
     public:
 
     /// Create an empty spinner handle
-    SpinnerHandle(){}
+    SpinnerHandle() = default;
 
-    /// create a new SpinnerHandle with given QSpinBox* to wrap
-    SpinnerHandle(QSpinBox *sb, GUIWidget *w) : GUIHandle<QSpinBox>(sb,w){}
+    /// create a new SpinnerHandle wrapping `sb`.  Seeds the lock-free
+    /// value cache and installs a Qt connection that writes to it on
+    /// every `valueChanged(int)` — runs on the GUI thread.  The cache
+    /// is held by shared_ptr, captured by value into the lambda, so it
+    /// outlives all handle copies.  The connection's context is `sb`,
+    /// so it's dropped automatically when the widget is destroyed.
+    SpinnerHandle(QSpinBox *sb, GUIWidget *w);
 
     /// set the min value
     void setMin(int min);
@@ -69,5 +76,12 @@ namespace icl::qt {
 
     /// internally used utility function
     const QSpinBox *sb() const{ return **this; }
+
+    /// Lock-free snapshot of `valueChanged(int)`.  Written from the
+    /// GUI thread by a lambda wired to the signal; read from any
+    /// thread via `getValue()` / `as<T>()`.  Held by shared_ptr so
+    /// copies of the handle observe the same cache.  Null on a
+    /// default-constructed handle (no widget).
+    std::shared_ptr<std::atomic<int>> m_cache;
   };
   } // namespace icl::qt

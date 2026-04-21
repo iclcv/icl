@@ -10,6 +10,24 @@
 #include <QSpinBox>
 
 namespace icl::qt {
+
+  SpinnerHandle::SpinnerHandle(QSpinBox *sb, GUIWidget *w)
+    : GUIHandle<QSpinBox>(sb, w),
+      m_cache(std::make_shared<std::atomic<int>>(sb ? sb->value() : 0)) {
+    if (!sb) return;
+    // Capture the cache by value (shared_ptr copy) so the atomic
+    // outlives the handle: the cache survives as long as either any
+    // handle copy OR the Qt connection is alive.  The context object
+    // is the widget, so the connection is dropped automatically when
+    // `sb` is destroyed — matching the lifetime of everything else
+    // routed through the handle.
+    auto cache = m_cache;
+    QObject::connect(sb, QOverload<int>::of(&QSpinBox::valueChanged),
+                     sb, [cache](int v){
+                       cache->store(v, std::memory_order_relaxed);
+                     });
+  }
+
   void SpinnerHandle::setMin(int min){
     sb()->setMinimum(min);
   }
@@ -31,7 +49,9 @@ namespace icl::qt {
   }
 
   int SpinnerHandle::getValue() const{
-    return sb()->value();
+    // Lock-free read; `m_cache` is null only on default-constructed
+    // handles, where the "value" is undefined anyway.
+    return m_cache ? m_cache->load(std::memory_order_relaxed) : 0;
   }
 
   void SpinnerHandle::operator=(const std::string &s){

@@ -14,7 +14,16 @@ namespace icl::qt {
   CheckBoxHandle::CheckBoxHandle():m_stateRef(0){}
 
   CheckBoxHandle::CheckBoxHandle(QCheckBox *cb, GUIWidget *w, bool *stateRef):
-    GUIHandle<QCheckBox>(cb,w),m_stateRef(stateRef){
+    GUIHandle<QCheckBox>(cb,w),
+    m_stateRef(stateRef),
+    m_cache(std::make_shared<std::atomic<bool>>(cb ? cb->isChecked() : false)) {
+    if (!cb) return;
+    auto cache = m_cache;
+    QObject::connect(cb, &QCheckBox::stateChanged, cb,
+                     [cache](int state){
+                       cache->store(state == Qt::Checked,
+                                    std::memory_order_relaxed);
+                     });
   }
 
 
@@ -31,7 +40,7 @@ namespace icl::qt {
   }
 
   bool CheckBoxHandle::isChecked() const{
-    return *m_stateRef;
+    return m_cache ? m_cache->load(std::memory_order_relaxed) : false;
   }
 
   void CheckBoxHandle::operator=(const std::string &s){

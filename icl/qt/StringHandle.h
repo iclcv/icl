@@ -7,6 +7,9 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/qt/GUIHandle.h>
 #include <QtCore/QString>
+
+#include <memory>
+#include <mutex>
 #include <string>
 #include <type_traits>
 
@@ -19,11 +22,14 @@ namespace icl::qt {
   class ICLQt_API StringHandle : public GUIHandle<QLineEdit>{
     public:
     /// Creates an empty string handle
-    StringHandle(){}
+    StringHandle() = default;
 
-    /// Create a new Int handle
-    StringHandle(QLineEdit *le,std::string *str, GUIWidget *w):
-	  GUIHandle<QLineEdit>(le,w),m_str(str){}
+    /// Create a new StringHandle wrapping `le`.  Seeds the
+    /// current-text cache from the line edit and installs a
+    /// `textChanged(QString)` lambda that updates it on the GUI
+    /// thread.  The "committed" value (`getValue()`) still routes
+    /// through the `*m_str` DataStore bool until `.out()` retirement.
+    StringHandle(QLineEdit *le, std::string *str, GUIWidget *w);
 
     /// makes the associated textfield show the given text
     void operator=(const std::string &text);
@@ -58,5 +64,15 @@ namespace icl::qt {
 
     private:
     std::string *m_str;
+
+    /// Mutex-guarded snapshot of the live QLineEdit text.  Written
+    /// from the GUI thread on every `textChanged(QString)` — read
+    /// from any thread via `getCurrentText()`.  std::string is not
+    /// lock-free so a plain mutex is the right primitive.
+    struct Cache {
+      mutable std::mutex mutex;
+      std::string text;
+    };
+    std::shared_ptr<Cache> m_cache;
   };
   } // namespace icl::qt

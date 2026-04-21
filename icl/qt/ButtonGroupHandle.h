@@ -6,9 +6,12 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/qt/GUIHandle.h>
-#include <vector>
+
+#include <atomic>
+#include <memory>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 /** \cond */
 class QRadioButton;
@@ -22,10 +25,13 @@ namespace icl::qt {
   class ButtonGroupHandle : public GUIHandle<RadioButtonVec> {
     public:
     /// Create an empty handle
-    ButtonGroupHandle(){}
+    ButtonGroupHandle() = default;
 
-    /// Craete a valid handle
-    ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w) : GUIHandle<RadioButtonVec>(buttons, w){ }
+    /// Create a valid handle.  Seeds the selected-index cache by
+    /// scanning the initial button states, and installs a
+    /// `toggled(bool)` lambda on each radio button so the cache
+    /// tracks selection changes on the GUI thread.
+    ICLQt_API ButtonGroupHandle(RadioButtonVec *buttons, GUIWidget *w);
 
     /// select a button with given index
     ICLQt_API void select(int id);
@@ -76,6 +82,11 @@ namespace icl::qt {
 
     /// utitliy function returns the underlying vector (const)
     const RadioButtonVec &vec() const { return const_cast<ButtonGroupHandle*>(this)->vec(); }
+
+    /// Lock-free snapshot of the selected index.  Written from the
+    /// GUI thread by per-button `toggled(true)` lambdas installed in
+    /// the primary ctor.  `-1` means no button is currently checked.
+    std::shared_ptr<std::atomic<int>> m_selectedIndex;
   };
 
   } // namespace icl::qt

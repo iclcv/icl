@@ -9,6 +9,26 @@
 #include <QComboBox>
 
 namespace icl::qt {
+
+  ComboHandle::ComboHandle(QComboBox *cb, GUIWidget *w)
+    : GUIHandle<QComboBox>(cb, w),
+      m_cache(std::make_shared<Cache>()) {
+    if (cb) {
+      m_cache->index = cb->currentIndex();
+      m_cache->text  = cb->currentText().toLatin1().data();
+    }
+    if (!cb) return;
+    auto cache = m_cache;
+    QObject::connect(cb, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                     cb, [cache, cb](int idx){
+                       // Runs on the GUI thread — safe to read the widget.
+                       std::string t = cb->itemText(idx).toLatin1().data();
+                       std::scoped_lock lock(cache->mutex);
+                       cache->index = idx;
+                       cache->text = std::move(t);
+                     });
+  }
+
   void ComboHandle::add(const std::string &item){
     cbx()->addItem(item.c_str());
   }
@@ -34,10 +54,14 @@ namespace icl::qt {
   }
 
   int ComboHandle::getSelectedIndex() const{
-    return cbx()->currentIndex();
+    if (!m_cache) return -1;
+    std::scoped_lock lock(m_cache->mutex);
+    return m_cache->index;
   }
   std::string ComboHandle::getSelectedItem() const{
-    return cbx()->currentText().toLatin1().data();
+    if (!m_cache) return {};
+    std::scoped_lock lock(m_cache->mutex);
+    return m_cache->text;
   }
 
   int ComboHandle::getItemCount() const{

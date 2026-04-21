@@ -13,6 +13,29 @@
 
 
 namespace icl::qt {
+
+  namespace {
+    /// Parse `text` as int — same semantics as the old read-time path:
+    /// leading digits are parsed; empty / non-numeric input yields 0.
+    int parseInt(const QString &text) {
+      auto bytes = text.toLatin1();
+      int val = 0;
+      std::from_chars(bytes.data(), bytes.data() + bytes.size(), val);
+      return val;
+    }
+  }
+
+  IntHandle::IntHandle(QLineEdit *le, GUIWidget *w)
+    : GUIHandle<QLineEdit>(le, w),
+      m_cache(std::make_shared<std::atomic<int>>(le ? parseInt(le->text()) : 0)) {
+    if (!le) return;
+    auto cache = m_cache;
+    QObject::connect(le, &QLineEdit::textChanged, le,
+                     [cache](const QString &t){
+                       cache->store(parseInt(t), std::memory_order_relaxed);
+                     });
+  }
+
   void IntHandle::operator=(int i){
     (**this)->setText(QString::number(i));
   }
@@ -20,10 +43,7 @@ namespace icl::qt {
     *this = icl::utils::parse<int>(s);
   }
   int IntHandle::getValue() const{
-    auto bytes = (**this)->text().toLatin1();
-    int val = 0;
-    std::from_chars(bytes.data(), bytes.data() + bytes.size(), val);
-    return val;
+    return m_cache ? m_cache->load(std::memory_order_relaxed) : 0;
   }
 
   template<typename T>

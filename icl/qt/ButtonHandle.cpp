@@ -13,19 +13,21 @@ namespace icl::qt {
   ButtonHandle::ButtonHandle(){}
 
   ButtonHandle::ButtonHandle(QPushButton *b, GUIWidget *w):
-    GUIHandle<QPushButton>(b,w),m_triggered(new bool(false)){
+    GUIHandle<QPushButton>(b,w),
+    m_triggered(std::make_shared<std::atomic<bool>>(false)){
   }
 
   bool ButtonHandle::wasTriggered(bool reset) {
-    if(*m_triggered){
-      if(reset) *m_triggered = false;
-      return true;
+    if (reset) {
+      // Atomic read-modify-write: return the old value and clear
+      // in one step so two concurrent readers don't both see "true".
+      return m_triggered->exchange(false, std::memory_order_relaxed);
     }
-    return false;
+    return m_triggered->load(std::memory_order_relaxed);
   }
 
   void ButtonHandle::reset() {
-    *m_triggered = false;
+    m_triggered->store(false, std::memory_order_relaxed);
   }
   const std::string &ButtonHandle::getID() const {
     return m_sID;
