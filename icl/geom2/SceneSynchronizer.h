@@ -41,7 +41,8 @@ namespace icl::geom2 {
     void invalidateNode(const Node *node);
     bool hasPendingChanges() const;
     void invalidateLights() { m_lightsCreated = false; }
-    void setBackgroundStrength(float s) { m_backgroundStrength = s; }
+    void invalidateBackground() { m_backgroundCreated = false; }
+    void setBackgroundStrength(float s) { m_backgroundStrength = s; m_backgroundCreated = false; }
 
   private:
     struct ObjectEntry {
@@ -64,13 +65,14 @@ namespace icl::geom2 {
     void syncTransform(ObjectEntry &entry, ccl::Scene *cclScene, float sceneScale);
     void syncCamera(const geom::Camera &cam, ccl::Scene *cclScene, float sceneScale);
     void syncLights(const Scene2 &scene, ccl::Scene *cclScene, float sceneScale);
+    void syncBackground(ccl::Scene *cclScene);
     void removeStaleNodes(ccl::Scene *cclScene, bool &anyChanged);
 
     std::unordered_map<const GeometryNode *, ObjectEntry> m_entries;
     size_t m_lastLightHash = 0;
     bool m_lightsCreated = false;
-    float m_backgroundStrength = 1.0f;
-    void *m_bgNode = nullptr;
+    bool m_backgroundCreated = false;
+    float m_backgroundStrength = 0.8f;
   };
 
 } // namespace icl::geom2

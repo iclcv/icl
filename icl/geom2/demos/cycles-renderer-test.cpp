@@ -50,7 +50,7 @@ int main(int argc, const char **argv) {
 
   auto fillLight = std::make_shared<LightNode>();
   fillLight->setColor(GeomColor(180, 200, 220, 255));
-  fillLight->setIntensity(0.6f);
+  fillLight->setIntensity(1.0f);
   fillLight->translate(400, 300, -200);
   scene.addLight(fillLight);
 

@@ -156,12 +156,8 @@ namespace icl::geom2 {
 
     mesh->set_triangles(triangles);
     mesh->set_smooth(smooth);
-    // Cycles computes vertex normals from topology + smooth flags automatically
-
-    array<ccl::Node*> shaders;
-    if (!mesh->get_used_shaders().empty())
-      shaders = mesh->get_used_shaders();
-    mesh->set_used_shaders(shaders);
+    // Cycles computes vertex normals from topology + smooth flags automatically.
+    // Shader assignment handled by syncMaterial().
   }
 
   // ---- SceneSynchronizer implementation ----
@@ -192,49 +188,23 @@ namespace icl::geom2 {
         entry.transformDirty = false;
         anyTransformChanged = true;
       }
+      if (geomDirty && entry.object) {
+        entry.object->tag_update(cclScene);
+      }
     }
     // LightNodes handled separately in syncLights()
   }
 
   void SceneSynchronizer::syncGeometry(ObjectEntry &entry, ccl::Scene *cclScene,
                                         float sceneScale) {
-    bool isSphere = (dynamic_cast<const SphereNode*>(entry.geomNode) != nullptr);
-
-    if (isSphere) {
-      auto *sphere = static_cast<const SphereNode*>(entry.geomNode);
-      if (!entry.geometry || !entry.isSphere) {
-        if (entry.geometry) {
-          if (entry.object) cclScene->delete_node(entry.object);
-          cclScene->delete_node(entry.geometry);
-        }
-        auto *pc = cclScene->create_node<ccl::PointCloud>();
-        entry.geometry = pc;
-        entry.object = cclScene->create_node<ccl::Object>();
-        entry.object->set_geometry(pc);
-        entry.isSphere = true;
-      }
-
-      auto center = sphere->getCenter();
-      float r = sphere->getRadius();
-      auto *pc = static_cast<ccl::PointCloud*>(entry.geometry);
-      pc->resize(1);
-      pc->get_points()[0] = make_float3(center[0]*sceneScale, center[1]*sceneScale, center[2]*sceneScale);
-      pc->get_radius()[0] = r * sceneScale;
-      pc->get_shader()[0] = 0;
-    } else {
-      if (!entry.geometry || entry.isSphere) {
-        if (entry.geometry) {
-          if (entry.object) cclScene->delete_node(entry.object);
-          cclScene->delete_node(entry.geometry);
-        }
-        auto *mesh = cclScene->create_node<ccl::Mesh>();
-        entry.geometry = mesh;
-        entry.object = cclScene->create_node<ccl::Object>();
-        entry.object->set_geometry(mesh);
-        entry.isSphere = false;
-      }
-      tessellateToMesh(entry.geomNode, static_cast<ccl::Mesh*>(entry.geometry), sceneScale);
+    // Always tessellate to mesh (Cycles analytic spheres have position offset bugs)
+    if (!entry.geometry) {
+      auto *mesh = cclScene->create_node<ccl::Mesh>();
+      entry.geometry = mesh;
+      entry.object = cclScene->create_node<ccl::Object>();
+      entry.object->set_geometry(mesh);
     }
+    tessellateToMesh(entry.geomNode, static_cast<ccl::Mesh*>(entry.geometry), sceneScale);
   }
 
   void SceneSynchronizer::syncMaterial(ObjectEntry &entry, ccl::Scene *cclScene) {
@@ -357,6 +327,68 @@ namespace icl::geom2 {
     }
   }
 
+  void SceneSynchronizer::syncBackground(ccl::Scene *cclScene) {
+    if (m_backgroundCreated) return;
+    m_backgroundCreated = true;
+
+    // Default grey gradient background (matches legacy Scene default sky)
+    Shader *bg = cclScene->default_background;
+    ShaderGraph *graph = new ShaderGraph();
+
+    auto *bgn = graph->create_node<BackgroundNode>();
+    bgn->set_strength(m_backgroundStrength);
+
+    // Simple gradient: use ray direction Y to blend ground→horizon→zenith
+    auto *geomNode = graph->create_node<ccl::GeometryNode>();
+    auto *sepXYZ = graph->create_node<SeparateXYZNode>();
+    graph->connect(geomNode->output("Normal"), sepXYZ->input("Vector"));
+    auto *flipY = graph->create_node<MathNode>();
+    flipY->set_math_type(NODE_MATH_MULTIPLY);
+    flipY->set_value2(-1.0f);
+    graph->connect(sepXYZ->output("Y"), flipY->input("Value1"));
+
+    // Zenith (sky blue-grey), horizon (light grey), ground (dark grey)
+    auto *zenithCol = graph->create_node<ColorNode>();
+    zenithCol->set_value(make_float3(0.6f, 0.65f, 0.75f));
+    auto *horizCol = graph->create_node<ColorNode>();
+    horizCol->set_value(make_float3(0.8f, 0.8f, 0.8f));
+    auto *groundCol = graph->create_node<ColorNode>();
+    groundCol->set_value(make_float3(0.3f, 0.3f, 0.3f));
+
+    // Upper blend: mix horizon→zenith by max(Y, 0)
+    auto *clampUp = graph->create_node<MathNode>();
+    clampUp->set_math_type(NODE_MATH_MAXIMUM);
+    clampUp->set_value2(0.0f);
+    graph->connect(flipY->output("Value"), clampUp->input("Value1"));
+
+    auto *mixUp = graph->create_node<MixNode>();
+    mixUp->set_mix_type(NODE_MIX_BLEND);
+    graph->connect(horizCol->output("Color"), mixUp->input("Color1"));
+    graph->connect(zenithCol->output("Color"), mixUp->input("Color2"));
+    graph->connect(clampUp->output("Value"), mixUp->input("Fac"));
+
+    // Lower blend: mix horizon→ground by max(-Y, 0)
+    auto *clampDown = graph->create_node<MathNode>();
+    clampDown->set_math_type(NODE_MATH_MAXIMUM);
+    clampDown->set_value2(0.0f);
+    auto *negY = graph->create_node<MathNode>();
+    negY->set_math_type(NODE_MATH_MULTIPLY);
+    negY->set_value2(-1.0f);
+    graph->connect(flipY->output("Value"), negY->input("Value1"));
+    graph->connect(negY->output("Value"), clampDown->input("Value1"));
+
+    auto *mixDown = graph->create_node<MixNode>();
+    mixDown->set_mix_type(NODE_MIX_BLEND);
+    graph->connect(mixUp->output("Color"), mixDown->input("Color1"));
+    graph->connect(groundCol->output("Color"), mixDown->input("Color2"));
+    graph->connect(clampDown->output("Value"), mixDown->input("Fac"));
+
+    graph->connect(mixDown->output("Color"), bgn->input("Color"));
+    graph->connect(bgn->output("Background"), graph->output()->input("Surface"));
+    bg->set_graph(unique_ptr<ShaderGraph>(graph));
+    bg->tag_update(cclScene);
+  }
+
   void SceneSynchronizer::removeStaleNodes(ccl::Scene *cclScene, bool &anyChanged) {
     for (auto it = m_entries.begin(); it != m_entries.end();) {
       if (!it->second.visited) {
@@ -386,6 +418,7 @@ namespace icl::geom2 {
       syncCamera(scene.getCamera(camIndex), cclScene, sceneScale);
 
     syncLights(scene, cclScene, sceneScale);
+    syncBackground(cclScene);
 
     if (anyGeomChanged) return SyncResult::GeometryChanged;
     if (anyTransformChanged) return SyncResult::TransformOnly;

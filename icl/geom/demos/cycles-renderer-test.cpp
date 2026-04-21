@@ -88,7 +88,7 @@ int main(int argc, const char **argv) {
   rt::CyclesRenderer renderer(scene, rt::RenderQuality::Final);
   renderer.setSamples(256);
   renderer.setSceneScale(1.0f);  // Keep mm as scene units for now
-  renderer.render(0);
+  renderer.renderBlocking(0);
 
   // Save
   const auto &image = renderer.getImage();
