@@ -1,6 +1,86 @@
 # ICL — Continuation Guide
 
-## Current State (Session 37 — Shadow mapping + soft shadows + renderer fixes)
+## Current State (Session 38 — Quick2 framework)
+
+### Session 38 Summary (12 commits)
+
+Complete implementation of Quick2 — the Image-based replacement for
+Quick.h's float-only ImgQ API. Quick.h stays untouched for incremental
+migration (Phase 2).
+
+#### A. Quick2 Architecture (8 sub-files + multi-includer)
+
+- **QuickContext**: memory-capped buffer pool (default 256 MB) with eviction,
+  thread-local activation via `QuickScope` RAII, drawing state (color/fill/font)
+  with push/pop stack, grabber cache, `applyOp(UnaryOp&/&&)` and
+  `applyOp(BinaryOp&/&&)` for one-liner pool-backed op application
+- **QuickCreate**: zeros, ones, load, create, grab — all return `Image` at
+  native depth (no forced float conversion)
+- **QuickFilter**: 18 functions (filter, blur, cc, rgb/hls/lab/gray, scale,
+  channel, levels, thresh, copy, copyroi, norm, rotate, flipx, flipy) via
+  `applyOp` + `poolCopy`/`poolConvert`
+- **QuickMath**: arithmetic (+,-,*,/), math (exp,ln,sqr,sqrt,abs), logical
+  (||,&&), bitwise (binOR/XOR/AND) — all via `BinaryArithmeticalOp`/
+  `UnaryArithmeticalOp` + `applyOp`
+- **QuickCompose**: concatenation (,/%/|) with depth promotion, `ImgROI2`
+  with `shallowCopy()` for side-effect-free ROI operations
+- **QuickDraw**: `DrawTarget<T,NC>` template with compile-time channel count,
+  cached raw channel pointers, channel-outer loops for cache-friendly bulk ops.
+  `withDrawTarget(image, lambda)` dispatches 5 depths × 3 NC = 15 variants
+- **QuickIO**: save, show, print
+- **Quick2.h**: multi-includer entry point
+
+#### B. Framework additions
+
+- `Image::memoryUsage()` — pool tracking
+- `Image::shallowCopy()` — new ImgBase, shared pixels, independent metadata
+- `Image::isExclusivelyOwned()` — `shared_ptr::use_count() == 1`, for pool
+  safety. Documents two levels of sharing (ImgBase handle vs channel data)
+- `UnaryOp::getDestinationParams()` / `BinaryOp::getDestinationParams()` —
+  virtual, returns `pair<depth, ImgParams>`. `NeighborhoodOp` overrides to
+  subtract mask margin. `prepare()` refactored to non-virtual, delegates to
+  `getDestinationParams()`
+- `LineSampler::forEach(a, b, callback)` — zero-allocation Bresenham with
+  fully-inlined callback (engine moved to header `detail` namespace)
+
+#### C. Critical bug fix — pool aliasing
+
+`Image` copies share the same `ImgBase` via `shared_ptr`. The pool's
+`isIndependent()` check tested channel-level sharing (SmartPtr use counts),
+but both the pool entry and the returned Image share the same ImgBase object
+— so channel SmartPtrs have use_count=1 even when the buffer is held externally.
+Fix: `isExclusivelyOwned()` checks `shared_ptr::use_count() == 1`.
+
+#### D. Test suite
+
+528 tests in single `icl-tests` binary (384 existing + 144 Quick2).
+7 test files: context, create, filter, math, compose, draw, io.
+3 multithreaded stress tests (10 parallel workers each): arithmetic+drawing,
+concurrent image drawing, pool isolation with 4MB cap.
+
+#### E. Misc
+
+- `CLDeviceContext` startup message changed from `std::cout` to `DEBUG_LOG`
+- TODO: `BackendDispatching::addStateful` eagerly calls factory at static init
+- Removed stale `Testing/` CTest artifact directory
+- Plan document: `iclquick-plan.md`
+
+### What's next
+
+**Quick2 Phase 2**: migrate consumers from `Quick.h` → `Quick2.h` one file at
+a time. Demos/examples first (self-contained), library code after. See
+`iclquick-plan.md` for full file list. Start with `qt/examples/quick.cpp`.
+
+**Quick2 open items**:
+- `ImgROI2`: store target ROI separately instead of modifying image (deferred)
+- MorphologicalOp opening/closing crash via Quick2 `filter()` — pre-existing bug
+- Consider `localThresh()` convenience function
+- Pool memory accounting may drift over time (currentUsage counter) — add
+  periodic reconciliation or compute from scratch
+
+---
+
+## Session 37 — Shadow mapping + soft shadows + renderer fixes
 
 ### Session 37 Summary (4 commits)
 
