@@ -35,7 +35,7 @@
     will shortly introduce our understanding of image filters.
 
 
-    \image html filter-array-demo.png "The icl-filter-playground app with -n N can be used to examine filter chains"
+    \image html filter-playground.png "The icl-filter-playground app (use -n N for chained filter stages)"
 
     \section FILTERS What are Image-Filters
 
