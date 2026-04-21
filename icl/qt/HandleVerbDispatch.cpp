@@ -86,7 +86,7 @@ namespace icl::qt {
     >;
 
     // Apply `f` to the concrete handle stored in `entry`.  Returns
-    // true iff the entry was one of the types in `AllHandles`.  On
+    // true if the entry was one of the types in `AllHandles`.  On
     // match, `f` is invoked with a `H &` for the stored type.
     template<typename F>
     bool visitHandle(std::any &entry, F f) {

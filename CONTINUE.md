@@ -1,6 +1,217 @@
 # ICL — Continuation Guide
 
-## Current State (Session 50 — AnyMap + Assign<Dst,Src> infrastructure; 15 qt handles migrated)
+## Current State (Session 51 — thread-safe handle reads, `.out()` retired, DataStore on AnyMap, Event smuggling gone)
+
+### Session 51 Summary
+
+20 commits along a single coherent arc.  Closed out everything on
+the Session 50 "DataStore / Assign" punch list plus the larger
+`.out()` retirement that the atomic-cache work unblocked.  Net:
+the `void* + RTTI-name` dispatch that had been the main source of
+hacky type erasure in the GUI path is gone, the DataStore is
+std::any-backed end-to-end, and every `Data::*` verb
+(`render` / `install` / `link` / `registerCallback` / `enable` /
+`disable` / `removeCallbacks`) is a one-line macro expansion over
+a direct `std::any_cast<H>` type-cascade.
+
+#### 1. Thread-safe handle reads (6 commits)
+
+Problem: every value-carrying handle's `getValue()` reached into
+the wrapped Qt widget from the application thread (e.g.
+`SliderHandle::getValue()` called `QSlider::value()`).  Qt doesn't
+document widgets as thread-safe for reads outside the GUI thread.
+
+Pattern landed in two forms:
+
+- **Slider / FSliderHandle** — the pre-existing
+  `ThreadedUpdatableSlider` widget subclass gained
+  `std::atomic<int> m_atomicValue`, seeded in both ctors and
+  published from `collectValueChanged` (the GUI-thread slot wired
+  to `valueChanged(int)` in the widget ctor — always connected
+  before any external `connect` call).  Handle `getValue()` reads
+  via `atomicValue()`.
+
+- **Remaining 9 handles** (Spinner / Int / Float / CheckBox /
+  Button / ButtonGroup / Combo / String / Color) — Option H
+  chosen over Option W (no new widget subclasses): each handle
+  owns a `std::shared_ptr<std::atomic<T>>` (or a mutex-guarded
+  struct for string / color / combo index+text).  The primary
+  ctor installs a `QObject::connect(widget, signal, widget,
+  lambda)` with the widget as the connection's context object;
+  the lambda captures the `shared_ptr` by value so the cache
+  outlives every handle copy, and the connection dies with the
+  widget.
+
+- **Signal-ordering bug** discovered during testing: GUI.cpp
+  connects `widget→ioSlot` before `allocValue<Handle>()` installs
+  the cache-update lambda, so user callbacks (dispatched from
+  ioSlot) ran before the cache updated — visible in
+  `icl-filter-playground` as a "one selection behind" Combo lag.
+  Fixed by reordering four widget ctors (Combo, Spinner, CheckBox,
+  ButtonGroup) so the handle is allocated first.
+
+- **`ButtonHandle::m_triggered`** upgraded from `shared_ptr<bool>`
+  to `shared_ptr<std::atomic<bool>>` with `exchange(false)` read-
+  and-clear semantics.
+
+#### 2. `.out()` retirement (4 commits, 38 files migrated)
+
+After atomic caches, `.out("name")` — which allocated a raw `int`
+/ `bool` / `float` / `std::string` in the DataStore and updated
+it via a Qt signal slot — no longer served any purpose; reading
+via `gui["handle-name"]` dispatched through the registry and hit
+the thread-safe cache.
+
+- New `scripts/migrate-out-to-handle.py` mechanically rewrote
+  consumer sites per the rule table (dead handle → drop; both
+  named → keep reader's name; single `.out()` → promote to
+  `.handle()`).  287 edits across 38 files; 1 ambiguous case
+  (`video-player.cpp` reading both names) fixed manually.  3
+  sites with dynamic-string keys (`"enable-obj-"+str(c)`) fixed by
+  hand — the regex was intentionally conservative.
+
+- User-API surface deleted: the `.out()` method and
+  `GUIComponentWithOutput` subclass.  Every
+  `GUIComponentWithOutput` inheritor (Button, CheckBox, Slider,
+  FSlider, Int, Float, Spinner, ColorSelect, ButtonGroup)
+  collapsed onto `GUIComponent` directly; the `Options::out` field
+  and `@out=X` serialization removed.
+
+- Producer-side removal: 11 `allocValue<primitive>(def.output(0),
+  ...)` branches in `GUI.cpp` gutted, each with its cache field
+  (`m_piValue` / `m_pfValue` / `m_stateRef` / `m_psOutput` /
+  `m_uiIdx` / `m_psCurrentText`) and the processIO slot that used
+  to mirror widget state into that primitive.  ProcessIOs became
+  empty or reduced to the remaining side effect (LCD display
+  update for sliders).
+
+- Handle API cleanup: `CheckBoxHandle::m_stateRef` and
+  `StringHandle::m_str` dropped from handle ctors (no longer need
+  the external pointer); `CheckBoxHandle::check/uncheck` no longer
+  write to the stateRef, they just call setCheckState and let the
+  signal update the atomic cache.
+
+- `ColorSelectGUIWidget` fix: was leaking a `Color4D` (allocated
+  at the top of the ctor, then m_color reassigned to point into
+  DataStore).  Replaced with inline `Color4D m_color;` member.
+
+- Fallout cleanup: `gui.get<primitive>("key")` sites (27 across
+  11 apps/demos) rewritten as `T v = gui["key"]` — snapshot reads
+  via the handle rather than live references to a DataStore
+  primitive that no longer exists.  `pipe.cpp`'s
+  `bool *ppEnabled` indirection replaced with
+  `std::function<bool()>`; `Widget.cpp`'s bciUpdateAuto /
+  channelUpdateAuto got the same treatment.
+
+#### 3. DataStore/Assign finalization (7 commits)
+
+Picking up from Session 50's infrastructure (AnyMap, Assign trait,
+AssignRegistry with compile-time + std::any runtime dispatch):
+
+- **Flip the dispatch.**  `DataStore::Data::assign()` routes to
+  `AssignRegistry::dispatch()`.  The ~830-line in-DataStore
+  `AssignSpecial<>` / `create_assign_map` / `INST_NUM_TYPES` /
+  `ADD_T_TO_T` / `register_assignment_rule` machinery deleted in
+  one pass.  Identity enrollments (`enroll_identity<H>()`) added
+  to every migrated handle's constructor + a consolidated
+  `HandleIdentityEnrollments.cpp` for the remaining ones (Border,
+  Box, Disp, FPS, Plot, Splitter, State).  `Event → H` rules
+  re-enrolled under AssignRegistry via a concept-driven
+  `Assign<H, Event>` specialization (later retired — see #4).
+
+- **AnyMap → std::map.**  Swap the internal container from
+  `std::unordered_map` to `std::map` for pointer-stability, so
+  GUI code like `m_poHandle = &allocValue<H>(...)` keeps working.
+
+- **Compose AnyMap inside DataStore.**  DataStore stops
+  inheriting `MultiTypeMap`; instead composes
+  `shared_ptr<AnyMap>` + `shared_ptr<recursive_mutex>` (preserving
+  the shared-backing semantics GUI copy-assign relies on).
+  `Data::m_entry` changes from `DataArray*` to `std::any*`;
+  `operator=(T)` / `as<T>()` pack and unpack via
+  `std::in_place_type<T>` (required to disambiguate
+  std::any's templated ctor for types like `utils::Any` that
+  publicly inherit `std::string`).  `AssignRegistry`'s transitional
+  `void*` / name-table paths all deleted — one dispatch form
+  (`dispatch(std::any&, std::any&)`) remains.  `MultiTypeMap.{h,cpp}`
+  deleted (~312 lines) along with its `friend class` in
+  `GUIHandleBase.h`.  The vestigial `GUI::release<T>` wrapper
+  goes with it.
+
+- **GUI::registerCallback/removeCallbacks fix.**  These used to
+  `reinterpret_cast` through `getValue<GUIHandleBase>(key, false)`
+  — safe only under `MultiTypeMap`'s void* storage, UB under
+  `std::any`.  Rewritten to route through the `Slot` proxy's own
+  `registerCallback` / `removeCallbacks` methods.
+
+- **Retire the `Event` smuggling.**  `Data::render() /
+  install() / link() / registerCallback() / enable() / disable() /
+  removeCallbacks()` used to build an `Event` struct and push it
+  through AssignRegistry to a per-handle `Assign<H, Event>`
+  specialization.  Now that the store is `std::any`-backed,
+  dispatch goes directly: new `qt/HandleVerbDispatch.cpp` owns a
+  single `visitHandle()` type-cascade over a
+  `std::tuple<AllHandles...>`, with per-verb capability concepts
+  (`HasRender`, `HasInstallMouse`, etc.) gating the call via
+  `if constexpr`.  Each `Slot` method collapses to a one-line
+  `ICL_SLOT_VERB(Cap, action)` macro expansion — verb name comes
+  from `__func__` so the log label can't drift from the method
+  name.  `Event` struct + `Assign<H, Event>` specialization +
+  `HandleEventEnrollments.cpp` deleted.
+
+- **Kill void* on the Data API.**  `Data::install(void*)` →
+  `Data::install(MouseHandler*)`; `Data::link(void*)` →
+  `Data::link(GLCallback*)`.  `GLCallback` pulled out of its
+  nested `ICLDrawWidget3D::GLCallback` scope into a top-level
+  `icl::qt::GLCallback` class (new 40-line `qt/GLCallback.h`), with
+  a backward-compat `using GLCallback = icl::qt::GLCallback;`
+  alias inside the widget class preserving all 89 existing
+  spellings.  One knock-on: `Scene2::getGLCallback` returned
+  `shared_ptr<Scene2::GLCallback>` where the inner type was
+  forward-declared — now returns `shared_ptr<qt::GLCallback>`
+  (base) with the impl class moved to an anonymous namespace as
+  `SceneGLCallback`.  One file-local name clash fixed in
+  `camera-calibration-planar.cpp` (`struct GLCallback` renamed to
+  `MultiViewGLCallback`).
+
+- **Rename `DataStore::Data` → `DataStore::Slot`.**  Historical
+  "Data" name was an artifact of `MultiTypeMap`'s "data arrays";
+  `Slot` is the modern description of a one-entry view over the
+  keyed store.  Purely cosmetic — same template API as before,
+  `int v = gui["k"]` already worked without `.as<int>()`.
+
+#### 4. Verification & test status
+
+- `tests/icl-tests -j 1` — 607/607 pass at every commit.
+- Full build of all 240 targets clean at every commit.
+- GUI runtime surfaced a few fallouts handled as they appeared
+  (`Any = FSliderHandle` assign rule missing; signal-ordering
+  lag; `any_cast<GUIHandleBase&>` exact-match failure).  All
+  captured in the history.
+
+#### 5. Bugs surfaced; not fixed (deferred to TODO.md)
+
+- **AffineOp: translation component ignored** (Filter section).
+  Rotate and scale work; translate-x / translate-y sliders in
+  `icl-filter-playground` don't shift the output.
+- **Scale-range OSD button in ICLWidget behaves strangely** —
+  symptom uncharacterized.
+- **Qt6 `QOpenGLWidget` ctor crashes in sandboxed/macOS-26
+  terminals** — Qt / Cocoa issue, not ICL.  Blocks runtime GUI
+  verification in this environment.
+
+#### 6. What's deferred
+
+TODO.md's "DataStore / Assign migration" section is effectively
+closed.  Remaining items are the surfaced bugs above + speculative
+ones (core-type identity enrollments — not needed unless a
+non-handle ends up in DataStore).  The GUIComponent
+stringification rework the user flagged is in a new
+"Qt GUI component plumbing" section, unrelated to this arc.
+
+---
+
+## Previous State (Session 50 — AnyMap + Assign<Dst,Src> infrastructure; 15 qt handles migrated)
 
 ### Session 50 Summary
 
