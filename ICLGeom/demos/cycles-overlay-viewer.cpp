@@ -13,7 +13,7 @@
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Material.h>
-#include <ICLGeom/SceneRendererGL.h>
+#include <ICLGeom/GLRenderer.h>
 #include <ICLGeom/Raytracer.h>
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLGeom/SceneSetup.h>
@@ -44,7 +44,7 @@ static void init() {
       pa("-rotate") ? pa("-rotate").as<std::string>() : "");
 
   // Scene owns both renderers
-  scene.getRendererGL().setOverlayMode(true);
+  scene.getGLRenderer().setHideSky(true);
 
   // GUI: canvas on left, controls on right
   gui << (HSplit()
@@ -75,8 +75,8 @@ static void run() {
   rt.setExposure(exposure);
   rt.setBrightness(scene.getSky().intensity * 100.0f);
 
-  scene.getRendererGL().setExposure(exposure);
-  scene.getRendererGL().setOverlayAlpha(alpha);
+  scene.getGLRenderer().setExposure(exposure);
+  scene.getGLRenderer().setOverlayAlpha(alpha);
 
   // Material preset
   static int lastMat = -1;

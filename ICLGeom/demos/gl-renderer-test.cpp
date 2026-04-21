@@ -1,10 +1,10 @@
-// Minimal test for SceneRendererGL: coordinate frame (X=red, Y=green, Z=blue)
+// Minimal test for GLRenderer: coordinate frame (X=red, Y=green, Z=blue)
 #include <ICLQt/Common.h>
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/Material.h>
-#include <ICLGeom/SceneRendererGL.h>
+#include <ICLGeom/GLRenderer.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -12,7 +12,7 @@ using namespace icl::qt;
 using namespace icl::geom;
 
 static Scene scene;
-static std::unique_ptr<SceneRendererGL> glRenderer;
+static std::unique_ptr<GLRenderer> glRenderer;
 static std::vector<std::shared_ptr<SceneObject>> objects;
 HSplit gui;
 
@@ -78,7 +78,7 @@ void init() {
   for (int i = 0; i < scene.getObjectCount(); i++)
     scene.getObject(i)->prepareForRendering();
 
-  glRenderer = std::make_unique<SceneRendererGL>();
+  glRenderer = std::make_unique<GLRenderer>();
 
   gui << (HSplit()
          << Canvas3D().handle("modern").minSize(32, 24).label("Modern GL")

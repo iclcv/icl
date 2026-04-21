@@ -31,13 +31,13 @@ namespace icl::geom {
       The camera projection matrix from Camera::getProjectionMatrixGL() is passed
       directly as a uniform, preserving pixel-perfect alignment with calibrated cameras.
   */
-  class ICLGeom_API SceneRendererGL {
+  class ICLGeom_API GLRenderer {
     struct Data;
     Data *m_data;
 
   public:
-    SceneRendererGL();
-    ~SceneRendererGL();
+    GLRenderer();
+    ~GLRenderer();
 
     /// Render the scene using the modern pipeline
     void render(const Scene &scene, int camIndex);
@@ -67,7 +67,7 @@ namespace icl::geom {
     bool getSSREnabled() const;
 
     /// Enable overlay mode: no sky, transparent clear, alpha-blended blit
-    void setOverlayMode(bool enabled);
+    void setHideSky(bool enabled);
 
     /// Set overlay alpha (0-1, default 1.0). Only used in overlay mode.
     void setOverlayAlpha(float alpha);
@@ -84,9 +84,3 @@ namespace icl::geom {
   };
 
 } // namespace icl::geom
-
-// Backwards compatibility: GLImageRenderer moved to ICLQt
-#include <ICLQt/GLImageRenderer.h>
-namespace icl::geom {
-  using GLImageRenderer = icl::qt::GLImageRenderer;
-}

@@ -293,11 +293,11 @@ namespace icl::geom {
         performLink(widget);
         needLink = false;
       }
-      // Use SceneRendererGL in Core Profile, legacy renderScene otherwise
+      // Use GLRenderer in Core Profile, legacy renderScene otherwise
       GLint profileMask = 0;
       glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
       if (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) {
-        parent->getRendererGL().render(*parent, cameraIndex, widget);
+        parent->getGLRenderer().render(*parent, cameraIndex, widget);
       } else {
         parent->renderScene(cameraIndex, widget);
       }
@@ -1217,9 +1217,9 @@ namespace icl::geom {
     return m_glCallbacks.back().get();
   }
 
-  SceneRendererGL &Scene::getRendererGL() {
+  GLRenderer &Scene::getGLRenderer() {
     if (!m_rendererGL) {
-      m_rendererGL = std::make_unique<SceneRendererGL>();
+      m_rendererGL = std::make_unique<GLRenderer>();
     }
     return *m_rendererGL;
   }

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <ICLGeom/SceneRendererGL.h>
+#include <ICLGeom/GLRenderer.h>
 #include <ICLGeom/Scene.h>
 #include <ICLGeom/Sky.h>
 #include <ICLGeom/SceneObject.h>
@@ -663,7 +663,7 @@ static GLuint compileShader(GLenum type, const char *src) {
   if (!ok) {
     char log[1024];
     glGetShaderInfoLog(s, sizeof(log), nullptr, log);
-    fprintf(stderr, "[SceneRendererGL] Shader compile error:\n%s\n", log);
+    fprintf(stderr, "[GLRenderer] Shader compile error:\n%s\n", log);
     glDeleteShader(s);
     return 0;
   }
@@ -680,16 +680,16 @@ static GLuint linkProgram(GLuint vs, GLuint fs) {
   if (!ok) {
     char log[1024];
     glGetProgramInfoLog(prog, sizeof(log), nullptr, log);
-    fprintf(stderr, "[SceneRendererGL] Program link error:\n%s\n", log);
+    fprintf(stderr, "[GLRenderer] Program link error:\n%s\n", log);
     glDeleteProgram(prog);
     return 0;
   }
   return prog;
 }
 
-// ---- SceneRendererGL::Data ----
+// ---- GLRenderer::Data ----
 
-struct SceneRendererGL::Data {
+struct GLRenderer::Data {
   GLuint program = 0;
   GLuint shadowProgram = 0;
   GLuint skyProgram = 0;
@@ -719,7 +719,7 @@ struct SceneRendererGL::Data {
   Mat prevViewMatrix, prevProjectionMatrix;
 
   // Overlay mode
-  bool overlayMode = false;
+  bool hideSky = false;
   float overlayAlpha = 1.0f;
   GLuint blitProgram = 0;
   GLint blitLocTex = -1, blitLocAlpha = -1;
@@ -831,7 +831,7 @@ struct SceneRendererGL::Data {
       snprintf(name, sizeof(name), "uLightColor[%d]", i);
       locLightColor[i] = glGetUniformLocation(program, name);
     }
-    fprintf(stderr, "[SceneRendererGL] Uniforms: model=%d view=%d proj=%d metallic=%d roughness=%d cameraPos=%d\n",
+    fprintf(stderr, "[GLRenderer] Uniforms: model=%d view=%d proj=%d metallic=%d roughness=%d cameraPos=%d\n",
             locModelMatrix, locViewMatrix, locProjectionMatrix,
             locMetallic, locRoughness, locCameraPos);
   }
@@ -871,7 +871,7 @@ struct SceneRendererGL::Data {
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssrColorTex[i], 0);
       glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ssrDepthTex[i], 0);
       if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        fprintf(stderr, "[SceneRendererGL] SSR FBO %d incomplete\n", i);
+        fprintf(stderr, "[GLRenderer] SSR FBO %d incomplete\n", i);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -880,9 +880,9 @@ struct SceneRendererGL::Data {
 
 // ---- Implementation ----
 
-SceneRendererGL::SceneRendererGL() : m_data(new Data) {}
+GLRenderer::GLRenderer() : m_data(new Data) {}
 
-SceneRendererGL::~SceneRendererGL() {
+GLRenderer::~GLRenderer() {
   if (m_data->program) glDeleteProgram(m_data->program);
   if (m_data->shadowProgram) glDeleteProgram(m_data->shadowProgram);
   if (m_data->skyProgram) glDeleteProgram(m_data->skyProgram);
@@ -900,19 +900,19 @@ SceneRendererGL::~SceneRendererGL() {
   delete m_data;
 }
 
-void SceneRendererGL::setExposure(float e) { m_data->exposure = e; }
-void SceneRendererGL::setAmbient(float a) { m_data->ambient = a; }
-void SceneRendererGL::setDebugMode(int mode) { m_data->debugMode = mode; }
-void SceneRendererGL::setEnvMultiplier(float m) { m_data->envMultiplier = m; }
-float SceneRendererGL::getEnvMultiplier() const { return m_data->envMultiplier; }
-void SceneRendererGL::setDirectMultiplier(float m) { m_data->directMultiplier = m; }
-float SceneRendererGL::getDirectMultiplier() const { return m_data->directMultiplier; }
-void SceneRendererGL::setSSREnabled(bool enabled) { m_data->ssrEnabled = enabled; }
-bool SceneRendererGL::getSSREnabled() const { return m_data->ssrEnabled; }
-void SceneRendererGL::setOverlayMode(bool enabled) { m_data->overlayMode = enabled; }
-void SceneRendererGL::setOverlayAlpha(float alpha) { m_data->overlayAlpha = alpha; }
+void GLRenderer::setExposure(float e) { m_data->exposure = e; }
+void GLRenderer::setAmbient(float a) { m_data->ambient = a; }
+void GLRenderer::setDebugMode(int mode) { m_data->debugMode = mode; }
+void GLRenderer::setEnvMultiplier(float m) { m_data->envMultiplier = m; }
+float GLRenderer::getEnvMultiplier() const { return m_data->envMultiplier; }
+void GLRenderer::setDirectMultiplier(float m) { m_data->directMultiplier = m; }
+float GLRenderer::getDirectMultiplier() const { return m_data->directMultiplier; }
+void GLRenderer::setSSREnabled(bool enabled) { m_data->ssrEnabled = enabled; }
+bool GLRenderer::getSSREnabled() const { return m_data->ssrEnabled; }
+void GLRenderer::setHideSky(bool enabled) { m_data->hideSky = enabled; }
+void GLRenderer::setOverlayAlpha(float alpha) { m_data->overlayAlpha = alpha; }
 
-void SceneRendererGL::ensureShaderCompiled() {
+void GLRenderer::ensureShaderCompiled() {
   if (m_data->shaderReady) return;
   m_data->shaderReady = true;
 
@@ -935,11 +935,11 @@ void SceneRendererGL::ensureShaderCompiled() {
       if (m_data->locShadowMap[i] >= 0)
         glUniform1i(m_data->locShadowMap[i], 1 + i);  // bind to texture units 1-4
     glUseProgram(0);
-    fprintf(stderr, "[SceneRendererGL] GL 4.1 Core shader compiled OK (shadowMap locs: %d %d %d %d)\n",
+    fprintf(stderr, "[GLRenderer] GL 4.1 Core shader compiled OK (shadowMap locs: %d %d %d %d)\n",
             m_data->locShadowMap[0], m_data->locShadowMap[1],
             m_data->locShadowMap[2], m_data->locShadowMap[3]);
   } else {
-    fprintf(stderr, "[SceneRendererGL] SHADER COMPILATION FAILED\n");
+    fprintf(stderr, "[GLRenderer] SHADER COMPILATION FAILED\n");
   }
 
   // Sky shader + fullscreen quad
@@ -1038,15 +1038,15 @@ void main() {
     glReadBuffer(GL_NONE);
     GLenum fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {
-      fprintf(stderr, "[SceneRendererGL] Shadow FBO %d incomplete: 0x%x\n", i, fbStatus);
+      fprintf(stderr, "[GLRenderer] Shadow FBO %d incomplete: 0x%x\n", i, fbStatus);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
-  fprintf(stderr, "[SceneRendererGL] %d shadow maps (%dx%d) ready\n", Data::MAX_SHADOWS, sz, sz);
+  fprintf(stderr, "[GLRenderer] %d shadow maps (%dx%d) ready\n", Data::MAX_SHADOWS, sz, sz);
 }
 
 /// Render a single object in the shadow pass (depth only, recursive)
-void SceneRendererGL::renderObjectShadow(const SceneObject *obj) {
+void GLRenderer::renderObjectShadow(const SceneObject *obj) {
   auto &cache = m_data->geometryCache[obj];
   if (!cache) {
     cache = std::make_unique<GLGeometryCache>();
@@ -1069,7 +1069,7 @@ children:
   }
 }
 
-void SceneRendererGL::render(const Scene &scene, int camIndex) {
+void GLRenderer::render(const Scene &scene, int camIndex) {
   ensureShaderCompiled();
   if (!m_data->program) return;
 
@@ -1093,7 +1093,7 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   renderWithViewport(scene, camIndex, vpX, vpY, vpW, vpH);
 }
 
-void SceneRendererGL::render(const Scene &scene, int camIndex,
+void GLRenderer::render(const Scene &scene, int camIndex,
                               qt::ICLDrawWidget3D *widget) {
   ensureShaderCompiled();
   if (!m_data->program) return;
@@ -1123,7 +1123,7 @@ void SceneRendererGL::render(const Scene &scene, int camIndex,
   renderWithViewport(scene, camIndex, vpX, vpY, vpW, vpH);
 }
 
-void SceneRendererGL::renderWithViewport(const Scene &scene, int camIndex,
+void GLRenderer::renderWithViewport(const Scene &scene, int camIndex,
                                           int vpX, int vpY, int vpW, int vpH) {
   const Camera &cam = scene.getCamera(camIndex);
   Mat projGL = cam.getProjectionMatrixGL();
@@ -1198,7 +1198,7 @@ void SceneRendererGL::renderWithViewport(const Scene &scene, int camIndex,
   glViewport(0, 0, vpW, vpH);  // FBO has no letterboxing offset
 
   glDisable(GL_CULL_FACE);
-  if (m_data->overlayMode) {
+  if (m_data->hideSky) {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   } else {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1218,7 +1218,7 @@ void SceneRendererGL::renderWithViewport(const Scene &scene, int camIndex,
     effGround = sky.groundColor;
   }
 
-  if (m_data->skyProgram && !m_data->overlayMode) {
+  if (m_data->skyProgram && !m_data->hideSky) {
     glDisable(GL_DEPTH_TEST);
     glUseProgram(m_data->skyProgram);
     Mat vp = projGL * viewGL;
@@ -1304,13 +1304,13 @@ void SceneRendererGL::renderWithViewport(const Scene &scene, int camIndex,
     glUniform1i(m_data->locLightShadowSlot[numLights], sceneLightToShadow[i]);
 
     if (!lightsPrinted) {
-      fprintf(stderr, "[SceneRendererGL] Light %d→slot %d: shadow=%d pos=(%.0f,%.0f,%.0f) color=(%.2f,%.2f,%.2f)\n",
+      fprintf(stderr, "[GLRenderer] Light %d→slot %d: shadow=%d pos=(%.0f,%.0f,%.0f) color=(%.2f,%.2f,%.2f)\n",
               i, numLights, sceneLightToShadow[i], wp[0], wp[1], wp[2], d[0], d[1], d[2]);
     }
     numLights++;
   }
   if (!lightsPrinted && numLights > 0) {
-    fprintf(stderr, "[SceneRendererGL] %d lights, %d shadow maps\n", numLights, numShadows);
+    fprintf(stderr, "[GLRenderer] %d lights, %d shadow maps\n", numLights, numShadows);
     lightsPrinted = true;
   }
   glUniform1i(m_data->locNumLights, numLights);
@@ -1370,7 +1370,7 @@ void SceneRendererGL::renderWithViewport(const Scene &scene, int camIndex,
   glBindFramebuffer(GL_FRAMEBUFFER, mainPassPrevFBO);
   glViewport(vpX, vpY, vpW, vpH);
 
-  if (m_data->overlayMode && m_data->blitProgram) {
+  if (m_data->hideSky && m_data->blitProgram) {
     // Alpha-blended compositing: draw textured quad from SSR color texture
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -1406,7 +1406,7 @@ void SceneRendererGL::renderWithViewport(const Scene &scene, int camIndex,
   m_data->ssrFirstFrame = false;
 }
 
-void SceneRendererGL::renderObject(const SceneObject *obj,
+void GLRenderer::renderObject(const SceneObject *obj,
                                     const FixedMatrix<float,4,4> &viewMatrix) {
   auto &cache = m_data->geometryCache[obj];
   if (!cache) {
@@ -1496,7 +1496,7 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
 
 // GLImageRenderer moved to ICLQt/GLImageRenderer.h/.cpp
 
-Image SceneRendererGL::renderToImage(const Scene &scene, int camIndex, int width, int height) {
+Image GLRenderer::renderToImage(const Scene &scene, int camIndex, int width, int height) {
   ensureShaderCompiled();
   if (!m_data->program) return Image();
 
@@ -1517,7 +1517,7 @@ Image SceneRendererGL::renderToImage(const Scene &scene, int camIndex, int width
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRB);
 
   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    fprintf(stderr, "[SceneRendererGL] renderToImage: FBO incomplete\n");
+    fprintf(stderr, "[GLRenderer] renderToImage: FBO incomplete\n");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDeleteFramebuffers(1, &fbo);
     glDeleteTextures(1, &colorTex);

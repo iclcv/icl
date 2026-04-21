@@ -18,7 +18,8 @@
 #include <ICLUtils/FPSLimiter.h>
 #include <ICLGeom/CyclesRenderer.h>
 #include <ICLGeom/GltfLoader.h>
-#include <ICLGeom/SceneRendererGL.h>
+#include <ICLGeom/GLRenderer.h>
+#include <ICLQt/GLImageRenderer.h>  // for Cycles pane image display
 
 #include <QSurfaceFormat>
 #include <QOpenGLContext>
@@ -33,7 +34,7 @@ using namespace icl::geom;
 
 static Scene scene;
 static std::unique_ptr<icl::rt::CyclesRenderer> renderer;
-static std::unique_ptr<SceneRendererGL> glRenderer;
+static std::unique_ptr<GLRenderer> glRenderer;
 static std::unique_ptr<GLImageRenderer> imageRenderer;
 static bool compareMode = false;
 static std::string comparePrefix;
@@ -477,7 +478,7 @@ void init() {
   renderer = std::make_unique<icl::rt::CyclesRenderer>(
       scene, icl::rt::RenderQuality::Preview);
   renderer->setSceneScale(1.0f);
-  glRenderer = std::make_unique<SceneRendererGL>();
+  glRenderer = std::make_unique<GLRenderer>();
   imageRenderer = std::make_unique<GLImageRenderer>();
 
   // GUI: both panes are Canvas3D (Core Profile compatible)
@@ -551,7 +552,7 @@ void run() {
       ctx.makeCurrent(&surface);
 
       // New context needs fresh renderer (shaders compiled per-context)
-      SceneRendererGL offscreenGL;
+      GLRenderer offscreenGL;
       offscreenGL.setExposure(expPct);
       offscreenGL.setEnvMultiplier(1.5f);
       offscreenGL.setDirectMultiplier(1.0f);
@@ -740,7 +741,7 @@ void run() {
   draw->link(&cyclesImageCB);
   draw.render();
 
-  // Render GL using SceneRendererGL callback
+  // Render GL using GLRenderer callback
   static struct ModernGLCallback : public ICLDrawWidget3D::GLCallback {
     void draw(ICLDrawWidget3D *widget) override {
       if (glRenderer) glRenderer->render(scene, 0, widget);

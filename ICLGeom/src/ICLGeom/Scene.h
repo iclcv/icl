@@ -33,7 +33,7 @@
 #include <memory>
 #include <map>
 #include <ICLGeom/ShaderUtil.h>
-#include <ICLGeom/SceneRendererGL.h>
+#include <ICLGeom/GLRenderer.h>
 #include <ICLGeom/Raytracer.h>
 
 /** \cond */
@@ -240,7 +240,7 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
   qt::ICLDrawWidget3D::GLCallback *getGLCallback(int camIndex);
 
   /// returns the scene's GL 4.1 Core Profile renderer (created on first access)
-  SceneRendererGL &getRendererGL();
+  GLRenderer &getGLRenderer();
 
   /// returns the scene's raytracer (CyclesRenderer if available, dummy otherwise)
   Raytracer &getRaytracer();
@@ -470,8 +470,8 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
   /// internally used list of callbacks
   std::vector<std::shared_ptr<GLCallback> > m_glCallbacks;
 
-  /// GL 4.1 Core Profile renderer (lazy, created on first getRendererGL())
-  std::unique_ptr<SceneRendererGL> m_rendererGL;
+  /// GL 4.1 Core Profile renderer (lazy, created on first getGLRenderer())
+  std::unique_ptr<GLRenderer> m_rendererGL;
 
   /// Raytracer (lazy, created on first getRaytracer())
   std::unique_ptr<Raytracer> m_raytracer;
