@@ -30,7 +30,7 @@ void init() {
       Size(800, 600), 60.0f));
 
   // Red sphere
-  auto sphere = SphereNode::create(0, 0, 50, 50, 40, 40);
+  auto sphere = SphereNode::create(-100, -100, 50, 50, 40, 40);
   sphere->setMaterial(Material::fromColor(GeomColor(220, 60, 60, 255)));
   sphere->getMaterial()->roughness = 0.3f;
   scene.addNode(sphere);
