@@ -691,7 +691,12 @@ namespace icl{
           case 'F':
           case 'S':
           case 'p':
-            conf->setPropertyValue(prop,gui[handle].as<Any>());
+            // `Any = handle` is not an enrolled AssignRegistry rule;
+            // every handle with a string surface exposes `as<std::string>()`,
+            // and `Any` is implicitly constructible from `std::string`
+            // (it publicly inherits `std::string`), so the string path
+            // reaches `setPropertyValue(const Any &)` via one cheap copy.
+            conf->setPropertyValue(prop,gui[handle].as<std::string>());
             break;
           case 'C':
             conf->setPropertyValue(prop,gui[handle].as<Color>());
@@ -1120,17 +1125,25 @@ namespace icl{
 
           m_vecButtons.push_back(b);
           addToGrid(b,0,i);
-          connect(b,SIGNAL(clicked()),this,SLOT(ioSlot()));
         }
 
         m_vecButtons[m_uiInitialIndex]->setChecked(true);
 
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
 
+        // Allocate the handle before wiring up ioSlot: ButtonGroupHandle
+        // installs a per-button `toggled(bool)` lambda that updates its
+        // cached selected index.  Qt's default per-object connection
+        // order = connection order, so the lambda must be installed
+        // first to fire before user callbacks.
         if(def.handle() != ""){
           getGUI()->lockData();
           getGUI()->allocValue<ButtonGroupHandle>(def.handle(),ButtonGroupHandle(&m_vecButtons,this));
           getGUI()->unlockData();
+        }
+
+        for(QRadioButton *b : m_vecButtons){
+          connect(b,SIGNAL(clicked()),this,SLOT(ioSlot()));
         }
       }
       static std::string getSyntax(){
@@ -1226,16 +1239,19 @@ namespace icl{
 
         addToGrid(m_poCheckBox);
 
-        // this must be connected to the toggled function too (not to the clicked() signal) because
-        // the clicked()-signal is emitted BEFORE the toggled-signale, which makes the button get
-        // out of sync-with it's underlying value :-(
-        connect(m_poCheckBox,SIGNAL(stateChanged(int)),this,SLOT(ioSlot()));
-
+        // Handle first so CheckBoxHandle's stateChanged lambda runs
+        // before the user-callback-dispatching ioSlot.  See
+        // ComboGUIWidget for the full ordering rationale.
         if(def.handle() != ""){
           getGUI()->lockData();
           getGUI()->allocValue<CheckBoxHandle>(def.handle(),CheckBoxHandle(m_poCheckBox,this));
           getGUI()->unlockData();
         }
+
+        // this must be connected to the toggled function too (not to the clicked() signal) because
+        // the clicked()-signal is emitted BEFORE the toggled-signale, which makes the button get
+        // out of sync-with it's underlying value :-(
+        connect(m_poCheckBox,SIGNAL(stateChanged(int)),this,SLOT(ioSlot()));
       }
       static std::string getSyntax(){
         return std::string("checkbox(TEXT,INIT>)[general params] \n")+
@@ -1896,13 +1912,19 @@ namespace icl{
 
         m_poCombo->setCurrentIndex(selectedIndex);
 
-        connect(m_poCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(ioSlot()));
-
+        // Order matters: ComboHandle's ctor installs a Qt connection
+        // that updates the handle's cached index/text on every
+        // `currentIndexChanged(int)` firing.  The user-facing
+        // `ioSlot()` hook (which runs registered callbacks) must be
+        // connected AFTER that, so Qt fires the cache update first
+        // and user callbacks see the new value via `handle.getSelectedIndex()`.
         if(def.handle() != ""){
           getGUI()->lockData();
           getGUI()->allocValue<ComboHandle>(def.handle(),ComboHandle(m_poCombo,this));
           getGUI()->unlockData();
         }
+
+        connect(m_poCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(ioSlot()));
       }
       static std::string getSyntax(){
         return std::string("combo(entry1,entry2,entry3)[general params] \n")+
@@ -1925,16 +1947,19 @@ namespace icl{
 
         if(def.hasToolTip()) m_poSpinBox->setToolTip(def.toolTip().c_str());
 
-
-        QObject::connect(m_poSpinBox,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
-
         addToGrid(m_poSpinBox);
 
+        // Handle first, then ioSlot wiring — so the handle's
+        // valueChanged cache-update lambda runs before user callbacks
+        // registered via the handle.  See ComboGUIWidget for the
+        // same ordering rationale.
         if(def.handle() != ""){
           getGUI()->lockData();
           getGUI()->allocValue<SpinnerHandle>(def.handle(),SpinnerHandle(m_poSpinBox,this));
           getGUI()->unlockData();
         }
+
+        QObject::connect(m_poSpinBox,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
 
       }
       static std::string getSyntax(){

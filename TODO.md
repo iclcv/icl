@@ -126,6 +126,15 @@ See `project_image_migration.md`.
 
 ## Filter module
 
+- [ ] **AffineOp: translation component is ignored.**  Surfaced in
+  `icl-filter-playground -i create parrot` on 2026-04-21 — sliding
+  the translate-x / translate-y controls doesn't shift the output.
+  Rotate and scale work.  Likely the translation matrix row is
+  dropped or zeroed somewhere in the transform composition /
+  backend dispatch.  Investigate: `AffineOp::apply()` / the
+  translate cached transform / any recent backend (IPP/vImage/C++)
+  divergence.
+
 - [ ] **Backend split for legacy Ops** — `X.cpp / X_Cpp.cpp / X_Ipp.cpp / X_SSE.cpp / X_OpenCL.cpp` layout, pair with `filter/detail/` placement.  See `project_filter_dispatch_arch.md` and `project_module_subdirs.md`.
 - [ ] **IPP cross-check** — verify non-IPP filter impls against IPP in a Linux container.  See `project_ipp_crosscheck.md`.
 - [ ] **`BackendProxy::backends(Backend b)`** proxy for terser multi-registration.  See `project_backends_proxy.md`.
