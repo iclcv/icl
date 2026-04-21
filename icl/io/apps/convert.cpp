@@ -6,7 +6,7 @@
 #include <icl/io/FileWriter.h>
 #include <icl/core/FixedConverter.h>
 #include <icl/qt/Common2.h>
-#include <icl/utils/Size32f.h>
+#include <icl/utils/Size.h>
 #include <icl/filter/RotateOp.h>
 
 using namespace icl;

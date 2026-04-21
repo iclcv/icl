@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Time.h>
-#include <icl/utils/Size32f.h>
+#include <icl/utils/Size.h>
 #include <icl/core/Color.h>
 
 #include <icl/io/Grabber.h>

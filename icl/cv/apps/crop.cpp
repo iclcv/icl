@@ -283,7 +283,7 @@ void run(){
       case depth##D:{                                           \
         static ImageRectification<icl##D> ir;                   \
         try{                                                    \
-          rot.apply(&ir.apply(ps,*image->as##D(),s), &croBuf);  \
+          rot.apply(&ir.apply(ps,*image->as##D(),s.rounded()), &croBuf);  \
           croValid = true;                                      \
         }catch(...){}                                           \
         break;                                                  \

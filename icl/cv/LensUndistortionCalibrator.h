@@ -7,7 +7,7 @@
 #include <icl/utils/Point.h>
 #include <icl/utils/Uncopyable.h>
 #include <icl/utils/Size.h>
-#include <icl/utils/Size32f.h>
+#include <icl/utils/Size.h>
 
 #include <icl/filter/ImageUndistortion.h>
 

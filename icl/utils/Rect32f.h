@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Point.h>
-#include <icl/utils/Size32f.h>
+#include <icl/utils/Size.h>
 #include <icl/utils/Rect.h>
 #include <stdio.h>
 #include <algorithm>

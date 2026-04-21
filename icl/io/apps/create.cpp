@@ -5,7 +5,7 @@
 #include <icl/qt/Quick2.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/Size32f.h>
+#include <icl/utils/Size.h>
 
 int main(int n, char **ppc){
   pa_explain

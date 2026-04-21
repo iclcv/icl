@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Size32f.h>
+#include <icl/utils/Size.h>
 #include <icl/markers/Fiducial.h>
 
 #include <bitset>

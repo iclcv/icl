@@ -12,7 +12,7 @@
 #include <vector>
 
 #include <icl/utils/Size.h>
-#include <icl/utils/Size32f.h>
+#include <icl/utils/Size.h>
 
 #include <icl/utils/Point.h>
 
