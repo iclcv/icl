@@ -6,7 +6,9 @@ if _build_demos and qt_found
     'k-means': [],
     'llm-1D': [],
     'llm-2D': [],
-    'polynomial-regression': [icl_geom_dep],
+    'polynomial-regression-1D': [],
+    'polynomial-regression-2D': [icl_geom2_dep, icl_geom_dep],
+    'polynomial-regression-image': [],
     'quad-tree': [],
   }
   foreach name, extra_deps : _math_demos

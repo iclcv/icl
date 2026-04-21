@@ -77,9 +77,13 @@ namespace icl::geom2 {
     std::vector<std::unique_ptr<Scene2MouseHandler>> mouseHandlers;
     Vec cursor{0, 0, 0, 1};
     float bounds = 1000.0f;
+    std::recursive_mutex mutex;
   };
 
   // ---- Scene2 implementation ----
+
+  void Scene2::lock() { m_data->mutex.lock(); }
+  void Scene2::unlock() { m_data->mutex.unlock(); }
 
   Scene2::Scene2() : m_data(std::make_unique<Data>()) {
     addProperty("background color","color","",core::Color(0,0,0));
@@ -152,6 +156,7 @@ namespace icl::geom2 {
   Renderer &Scene2::getRenderer() { return m_data->renderer; }
 
   void Scene2::render(int cameraIndex) {
+    std::lock_guard<std::recursive_mutex> guard(m_data->mutex);
     if (cameraIndex < 0 || cameraIndex >= (int)m_data->cameras.size()) return;
 
     const auto &cam = m_data->cameras[cameraIndex];

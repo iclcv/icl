@@ -11,6 +11,7 @@
 #include <icl/math/FixedVector.h>
 #include <icl/utils/Configurable.h>
 #include <memory>
+#include <mutex>
 #include <vector>
 #include <type_traits>
 #include <iostream>
@@ -48,6 +49,13 @@ namespace icl::geom2 {
   public:
     Scene2();
     ~Scene2();
+
+    // --- Thread safety ---
+    /// Lock the scene for multi-threaded access (run thread vs GL thread)
+    /** Use std::lock_guard<Scene2> or call lock()/unlock() manually.
+        The GL callback locks automatically during render(). */
+    void lock();
+    void unlock();
 
     // --- Objects (shared_ptr only, no raw pointers) ---
     void addNode(std::shared_ptr<Node> node);

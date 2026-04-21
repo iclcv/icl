@@ -788,6 +788,7 @@ void main() { }
 
     std::unordered_map<const GeometryNode*, std::unique_ptr<GeomCache>> cache;
     std::unordered_map<const PointCloudNode*, std::unique_ptr<PCCache>> pcCache;
+    std::atomic<bool> cacheInvalid{false};
 
     // Lights collected during traversal
     std::vector<LightInfo> lights;
@@ -913,6 +914,11 @@ void main() { }
   void Renderer::setShadowsEnabled(bool e) { m_data->shadowsEnabled = e; }
   void Renderer::setDebugMode(int mode) { m_data->debugMode = mode; }
   void Renderer::invalidateCache() {
+    m_data->cacheInvalid = true;
+  }
+
+  void Renderer::flushInvalidatedCache() {
+    if (!m_data->cacheInvalid.exchange(false)) return;
     m_data->cache.clear();
     m_data->pcCache.clear();
     for (auto &[_, mt] : m_data->texCache) {
@@ -1210,6 +1216,7 @@ void main() { }
   void Renderer::render(const std::vector<std::shared_ptr<Node>> &nodes,
                          const Mat &viewMatrix,
                          const Mat &projectionMatrix) {
+    flushInvalidatedCache();
     ensureShaderCompiled();
     if (!m_data->pbrProgram) return;
 

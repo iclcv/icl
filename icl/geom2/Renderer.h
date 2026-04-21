@@ -48,7 +48,12 @@ namespace icl::geom2 {
     void setDebugMode(int mode);
 
     /// Invalidate all geometry caches (call when scene structure changes)
+    /** Safe to call from any thread — actual GL cleanup is deferred to
+        the next render() call on the GL thread. */
     void invalidateCache();
+
+    /// Flush invalidated caches (called automatically by render on GL thread)
+    void flushInvalidatedCache();
 
   private:
     struct Data;
