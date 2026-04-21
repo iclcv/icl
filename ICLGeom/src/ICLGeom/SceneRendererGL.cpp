@@ -59,12 +59,16 @@ void main() {
 static const char *FRAG_SHADER = R"(
 #version 410 core
 
-uniform vec4 uBaseColor;
+uniform vec4  uBaseColor;
+uniform float uMetallic;
+uniform float uRoughness;
+uniform vec4  uEmissive;
 uniform float uAmbient;
 uniform float uExposure;
-uniform int uNumLights;
-uniform vec4 uLightPos[8];
-uniform vec3 uLightColor[8];
+uniform vec3  uCameraPos;
+uniform int   uNumLights;
+uniform vec4  uLightPos[8];
+uniform vec3  uLightColor[8];
 
 in vec3 vWorldPos;
 in vec3 vNormal;
@@ -76,14 +80,36 @@ void main() {
     vec3 N = normalize(vNormal);
     if (!gl_FrontFacing) N = -N;
 
-    vec3 result = uBaseColor.rgb * uAmbient;
+    vec3 albedo = uBaseColor.rgb;
+    vec3 V = normalize(uCameraPos - vWorldPos);
+
+    // Shininess from roughness (clamped to avoid invisible pinpoint highlights)
+    float shininess = clamp(2.0 / (uRoughness * uRoughness + 1e-4) - 2.0, 1.0, 512.0);
+
+    // F0: dielectric = 0.04, metal = albedo
+    vec3 specColor = mix(vec3(0.04), albedo, uMetallic);
+
+    // Metals get a stronger ambient (approximates environment reflection)
+    float metalAmbientBoost = mix(1.0, 3.0, uMetallic * (1.0 - uRoughness));
+    vec3 result = albedo * uAmbient * metalAmbientBoost;
 
     for (int i = 0; i < uNumLights; i++) {
         vec3 L = normalize(uLightPos[i].xyz - vWorldPos);
+        vec3 H = normalize(L + V);
         float NdotL = max(dot(N, L), 0.0);
-        result += uBaseColor.rgb * uLightColor[i] * NdotL;
+        float NdotH = max(dot(N, H), 0.0);
+
+        // Diffuse: reduced for metals (metals have no diffuse)
+        vec3 diffuse = albedo * (1.0 - uMetallic) * NdotL;
+
+        // Specular: Blinn-Phong
+        float specPow = pow(NdotH, shininess);
+        vec3 specular = specColor * specPow;
+
+        result += uLightColor[i] * (diffuse + specular * NdotL);
     }
 
+    result += uEmissive.rgb;
     result *= uExposure;
     result = clamp(result, 0.0, 1.0);
     FragColor = vec4(result, uBaseColor.a);
@@ -298,8 +324,12 @@ struct SceneRendererGL::Data {
   GLint locViewMatrix = -1;
   GLint locProjectionMatrix = -1;
   GLint locBaseColor = -1;
+  GLint locMetallic = -1;
+  GLint locRoughness = -1;
+  GLint locEmissive = -1;
   GLint locAmbient = -1;
   GLint locExposure = -1;
+  GLint locCameraPos = -1;
   GLint locNumLights = -1;
   GLint locLightPos[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
   GLint locLightColor[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
@@ -309,10 +339,13 @@ struct SceneRendererGL::Data {
     locViewMatrix = glGetUniformLocation(program, "uViewMatrix");
     locProjectionMatrix = glGetUniformLocation(program, "uProjectionMatrix");
     locBaseColor = glGetUniformLocation(program, "uBaseColor");
+    locMetallic = glGetUniformLocation(program, "uMetallic");
+    locRoughness = glGetUniformLocation(program, "uRoughness");
+    locEmissive = glGetUniformLocation(program, "uEmissive");
     locAmbient = glGetUniformLocation(program, "uAmbient");
     locExposure = glGetUniformLocation(program, "uExposure");
+    locCameraPos = glGetUniformLocation(program, "uCameraPos");
     locNumLights = glGetUniformLocation(program, "uNumLights");
-    // Query each array element individually (not loc+i)
     for (int i = 0; i < 8; i++) {
       char name[32];
       snprintf(name, sizeof(name), "uLightPos[%d]", i);
@@ -320,9 +353,9 @@ struct SceneRendererGL::Data {
       snprintf(name, sizeof(name), "uLightColor[%d]", i);
       locLightColor[i] = glGetUniformLocation(program, name);
     }
-    fprintf(stderr, "[SceneRendererGL] Uniforms: model=%d view=%d proj=%d numLights=%d lightPos[0]=%d lightColor[0]=%d\n",
-            locModelMatrix, locViewMatrix, locProjectionMatrix, locNumLights,
-            locLightPos[0], locLightColor[0]);
+    fprintf(stderr, "[SceneRendererGL] Uniforms: model=%d view=%d proj=%d metallic=%d roughness=%d cameraPos=%d\n",
+            locModelMatrix, locViewMatrix, locProjectionMatrix,
+            locMetallic, locRoughness, locCameraPos);
   }
 
   void setUniformMat4(GLint loc, const Mat &m) {
@@ -401,6 +434,10 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   glUniform1f(m_data->locAmbient, m_data->ambient);
   glUniform1f(m_data->locExposure, m_data->exposure);
 
+  // Camera position in world space (for specular)
+  Vec camPos = cam.getPosition();
+  glUniform3f(m_data->locCameraPos, camPos[0], camPos[1], camPos[2]);
+
   // Set all active lights from Scene (world-space positions and colors)
   int numLights = 0;
   static bool lightsPrinted = false;
@@ -453,13 +490,22 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
   Mat modelMatrix = obj->getTransformation(true);
   m_data->setUniformMat4(m_data->locModelMatrix, modelMatrix);
 
-  // Step 1: flat color from material
   auto mat = obj->getMaterial();
   if (mat) {
     glUniform4f(m_data->locBaseColor, mat->baseColor[0], mat->baseColor[1],
                 mat->baseColor[2], mat->baseColor[3]);
+    glUniform1f(m_data->locMetallic, mat->metallic);
+    glUniform1f(m_data->locRoughness, mat->roughness);
+    bool hasEmissiveMap = !mat->emissiveMap.isNull();
+    float em0 = hasEmissiveMap ? 0 : mat->emissive[0];
+    float em1 = hasEmissiveMap ? 0 : mat->emissive[1];
+    float em2 = hasEmissiveMap ? 0 : mat->emissive[2];
+    glUniform4f(m_data->locEmissive, em0, em1, em2, 0);
   } else {
     glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
+    glUniform1f(m_data->locMetallic, 0.0f);
+    glUniform1f(m_data->locRoughness, 0.5f);
+    glUniform4f(m_data->locEmissive, 0, 0, 0, 0);
   }
 
   glBindVertexArray(cache->vao);

@@ -214,13 +214,6 @@ static void setupScene() {
     }
   }
 
-  // Save original materials and mesh count before adding checker tiles
-  numLoadedMeshes = loadedObjects.size();
-  for (int i = 0; i < numLoadedMeshes; i++) {
-    auto mat = loadedObjects[i]->getMaterial();
-    originalMaterials.push_back(mat ? std::make_shared<Material>(*mat) : nullptr);
-  }
-
   if (loadedObjects.empty()) {
     // No files loaded — create a default scene with some objects
     // (no ground here — checkerboard ground is always added below)
@@ -246,6 +239,13 @@ static void setupScene() {
     cube->getMaterial()->roughness = 0.2f;
     scene.addObject(cube.get());
     loadedObjects.push_back(cube);
+  }
+
+  // Save original materials and mesh count before adding checker tiles
+  numLoadedMeshes = loadedObjects.size();
+  for (int i = 0; i < numLoadedMeshes; i++) {
+    auto mat = loadedObjects[i]->getMaterial();
+    originalMaterials.push_back(mat ? std::make_shared<Material>(*mat) : nullptr);
   }
 
   // Apply user-specified rotation (in degrees around X, Y, Z)
