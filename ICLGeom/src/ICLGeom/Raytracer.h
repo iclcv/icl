@@ -55,6 +55,11 @@ namespace icl::geom {
     virtual void setExposure(float exposure) = 0;
     virtual void setBrightness(float brightness) = 0;
 
+    /// Minimum seconds between progressive steps (default 0.1s)
+    /** Controls how long each intermediate result is visible before
+        the renderer extends to more samples. Set to 0 for maximum speed. */
+    virtual void setStepInterval(double seconds) { (void)seconds; }
+
     /// Progress and state
     virtual float getProgress() const = 0;
     virtual int getUpdateCount() const = 0;

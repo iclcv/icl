@@ -156,6 +156,9 @@ struct CyclesRenderer::Impl {
   std::atomic<int> activeCamIndex{0};
   std::recursive_mutex renderMutex;  // protects render() state machine
 
+  // Progressive display: minimum seconds between step extensions
+  double minStepDisplayTime = 0.1;  // 100ms default — ensures intermediate results visible
+
   // Change detection
   float lastCamHash = 0;
   int lastSamples = -1;
@@ -371,12 +374,15 @@ void CyclesRenderer::render(int camIndex) {
   if (progress < 1.0) return;  // still cooking — GUI stays responsive
 
   // Step done: write_render_tile has captured the image.
+  // Wait for minimum display time so intermediate results are visible.
+  double now = ccl::time_dt();
+  double elapsed = now - m_impl->resetTime;
+  if (elapsed < m_impl->minStepDisplayTime) return;  // let the display catch up
+
   m_impl->accumulated = m_impl->target;
 
   if (m_impl->dirty) {
     // Changes arrived during render — sync and restart.
-    // reset() is needed even for transform-only changes because the
-    // accumulation buffer must be cleared for a fresh image.
     syncScene();
     fullReset();
   } else if (m_impl->accumulated < m_impl->samples) {
@@ -384,6 +390,7 @@ void CyclesRenderer::render(int camIndex) {
     int A = m_impl->initialSamples;
     m_impl->target = std::min(m_impl->accumulated + A, m_impl->samples);
     m_impl->session->set_samples(m_impl->target);
+    m_impl->resetTime = ccl::time_dt();
     // stay in RENDERING
   } else {
     // Reached max samples — done.
@@ -507,6 +514,10 @@ void CyclesRenderer::setDevice(const std::string &device) {
 
 void CyclesRenderer::setSceneScale(float scale) {
   m_impl->sceneScale = scale;
+}
+
+void CyclesRenderer::setStepInterval(double seconds) {
+  m_impl->minStepDisplayTime = std::max(0.0, seconds);
 }
 
 void CyclesRenderer::setOnImageReady(std::function<void(const core::Img8u &)> cb) {
