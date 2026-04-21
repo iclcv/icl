@@ -183,20 +183,7 @@ namespace icl::geom {
     /// creates a scene object from given .obj file
     ICLGeom_API SceneObject(const std::string &objFileName);
 
-    /// deep copy of SceneObject instance
-    /** The new instance's parent is set to null, i.e. it must
-        be added to other's parent explicitly if this is necessary. */
-    SceneObject(const SceneObject &other) {
-      m_displayListHandle = 0;
-      m_fragmentShader = 0;
-      *this = other;
-      m_parent = 0;
-    }
-
-    /// assignment operator for deep copy
-    /** This instances parent is not changed. I.e. it must
-        be added to other's parent explicitly if this is necessary. */
-    ICLGeom_API SceneObject &operator=(const SceneObject &other);
+    SceneObject &operator=(const SceneObject &) = delete;
 
     /// Empty destructor (but virtual)
     ICLGeom_API virtual ~SceneObject();
@@ -220,6 +207,8 @@ namespace icl::geom {
     /// returns object vertex colors (const)
     ICLGeom_API const std::vector<GeomColor> &getVertexColors() const;
 
+    /// fills all vertex colors with the given color (expected in [0,255] range)
+    ICLGeom_API void fillVertexColors(const GeomColor &color);
 
     /// returns object's primitives (lines, quads, etc...)
     ICLGeom_API std::vector<Primitive*> &getPrimitives();
@@ -471,8 +460,8 @@ namespace icl::geom {
     /// if set, only custom render is used
     ICLGeom_API void setUseCustomRender(bool use, bool recursive = true);
 
-    /// performs a deep copy of this object
-    ICLGeom_API virtual SceneObject *copy() const;
+    /// performs a deep copy of this object (parent is set to null)
+    ICLGeom_API virtual SceneObject *deepCopy() const;
 
     /// called by the renderer before the object is rendered
     /** here, dynamic object types can adapt e.g. their vertices or colors*/
@@ -864,6 +853,9 @@ namespace icl::geom {
     }
 
     protected:
+    /// deep copy constructor (for deepCopy() and subclasses)
+    ICLGeom_API SceneObject(const SceneObject &other);
+
     /// recursive picking method
     static void collect_hits_recursive(SceneObject *obj, const ViewRay &v,
                                        std::vector<Hit> &hits,

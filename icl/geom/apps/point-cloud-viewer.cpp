@@ -150,7 +150,7 @@ void run_octree(){
     Thread::sleep(1000);
     return;
   }
-  std::shared_ptr<PointCloudObject> other(obj.copy());
+  std::shared_ptr<PointCloudObject> other(static_cast<PointCloudObject*>(obj.deepCopy()));
   RayCastOctreeObject *octree = new RayCastOctreeObject(-3000,6000);
   //  Time t = Time::now();
   const DataSegment<float,4> xyzh = other->selectXYZH();

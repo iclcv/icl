@@ -99,7 +99,7 @@ namespace icl::geom {
     virtual void addFeature(FeatureType t);
 
     /// deep copy function
-    virtual PointCloudObject *copy() const {
+    virtual PointCloudObject *deepCopy() const override {
       return new PointCloudObject(*this);
     }
 

@@ -26,7 +26,7 @@ namespace icl::geom {
   /** TODO */
   class SceneObjectBase{
     public:
-    virtual SceneObjectBase *copy() const = 0;
+    virtual SceneObjectBase *deepCopy() const = 0;
 
     virtual void customRender() = 0;
   };

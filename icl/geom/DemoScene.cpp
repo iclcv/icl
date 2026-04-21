@@ -243,7 +243,8 @@ void DemoScene::setup(const std::vector<std::string> &files,
     groundMat->baseColor = GeomColor(0.8f, 0.8f, 0.8f, 1);
     groundMat->roughness = 0.6f;
     groundMat->smoothShading = true;
-    groundMat->baseColorMap = Image(checkerTex);
+    groundMat->textures = std::make_shared<Material::TextureMaps>();
+    groundMat->textures->baseColorMap = Image(checkerTex);
 
     auto ground = std::make_shared<SceneObject>();
     ground->addVertex(Vec(cx - gs, groundY, cz - gs, 1));

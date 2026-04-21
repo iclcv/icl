@@ -38,7 +38,7 @@ namespace icl::geom {
       PointCloudSegment(PointCloudObject &obj,
                         const std::vector<const std::vector<int>*> &indices);
 
-      PointCloudSegment *copy() const;
+      PointCloudSegment *deepCopy() const override;
 
       Mat computeEigenVectorFrame() const;
 

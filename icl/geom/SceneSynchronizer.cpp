@@ -163,19 +163,20 @@ static Shader *createPrincipledShader(ccl::Scene *scene, const geom::Material *m
   };
 
   // Base color texture
-  if (!mat->baseColorMap.isNull()) {
-    auto *tex = createImageTexNode(graph, scene, mat->baseColorMap, mat->name + "_baseColor");
+  if (mat->textures && !mat->textures->baseColorMap.isNull()) {
+    auto *tex = createImageTexNode(graph, scene, mat->textures->baseColorMap, mat->name + "_baseColor");
     graph->connect(getUV(), tex->input("Vector"));
     graph->connect(tex->output("Color"), bsdf->input("Base Color"));
     // Alpha from base color texture → BSDF alpha (for cutout transparency)
-    if (mat->alphaMode != geom::Material::Opaque) {
+    auto alphaMode = mat->transmission ? mat->transmission->alphaMode : geom::Material::Opaque;
+    if (alphaMode != geom::Material::Opaque) {
       graph->connect(tex->output("Alpha"), bsdf->input("Alpha"));
     }
   }
 
   // Metallic-roughness texture (glTF: R=unused/occlusion, G=roughness, B=metallic)
-  if (!mat->metallicRoughnessMap.isNull()) {
-    auto *tex = createImageTexNode(graph, scene, mat->metallicRoughnessMap,
+  if (mat->textures && !mat->textures->metallicRoughnessMap.isNull()) {
+    auto *tex = createImageTexNode(graph, scene, mat->textures->metallicRoughnessMap,
                                     mat->name + "_metalRough", true);
     graph->connect(getUV(), tex->input("Vector"));
 
@@ -186,8 +187,8 @@ static Shader *createPrincipledShader(ccl::Scene *scene, const geom::Material *m
   }
 
   // Normal map
-  if (!mat->normalMap.isNull()) {
-    auto *tex = createImageTexNode(graph, scene, mat->normalMap,
+  if (mat->textures && !mat->textures->normalMap.isNull()) {
+    auto *tex = createImageTexNode(graph, scene, mat->textures->normalMap,
                                     mat->name + "_normal", true);
     graph->connect(getUV(), tex->input("Vector"));
 
@@ -201,13 +202,14 @@ static Shader *createPrincipledShader(ccl::Scene *scene, const geom::Material *m
   ShaderNode *surfaceNode = bsdf;
 
   // Emissive: use PrincipledBsdf's built-in emission (simpler than AddClosure)
+  bool hasEmissiveMap = mat->textures && !mat->textures->emissiveMap.isNull();
   float emStrength = (mat->emissive[0] + mat->emissive[1] + mat->emissive[2]) / 3.0f;
-  if (emStrength > 0.001f || !mat->emissiveMap.isNull()) {
+  if (emStrength > 0.001f || hasEmissiveMap) {
     bsdf->set_emission_color(make_float3(mat->emissive[0], mat->emissive[1], mat->emissive[2]));
     bsdf->set_emission_strength(1.0f);
 
-    if (!mat->emissiveMap.isNull()) {
-      auto *tex = createImageTexNode(graph, scene, mat->emissiveMap,
+    if (hasEmissiveMap) {
+      auto *tex = createImageTexNode(graph, scene, mat->textures->emissiveMap,
                                       mat->name + "_emissive");
       graph->connect(getUV(), tex->input("Vector"));
       graph->connect(tex->output("Color"), bsdf->input("Emission Color"));
@@ -221,17 +223,17 @@ static Shader *createPrincipledShader(ccl::Scene *scene, const geom::Material *m
   if (mat->isTransmissive()) {
     auto *glass = graph->create_node<GlassBsdfNode>();
     glass->set_roughness(0.0f);
-    glass->set_IOR(mat->ior);
+    glass->set_IOR(mat->transmission ? mat->transmission->ior : 1.5f);
     glass->set_color(make_float3(mat->baseColor[0], mat->baseColor[1], mat->baseColor[2]));
     // Share the base color texture with the glass node if present
-    if (!mat->baseColorMap.isNull()) {
+    if (mat->textures && !mat->textures->baseColorMap.isNull()) {
       auto *bcInput = bsdf->input("Base Color");
       if (bcInput && bcInput->link) {
         graph->connect(bcInput->link, glass->input("Color"));
       }
     }
     // Share normal map with glass node
-    if (!mat->normalMap.isNull()) {
+    if (mat->textures && !mat->textures->normalMap.isNull()) {
       auto *nInput = bsdf->input("Normal");
       if (nInput && nInput->link) {
         graph->connect(nInput->link, glass->input("Normal"));
@@ -239,7 +241,7 @@ static Shader *createPrincipledShader(ccl::Scene *scene, const geom::Material *m
     }
 
     auto *mix = graph->create_node<MixClosureNode>();
-    mix->set_fac(mat->transmission);
+    mix->set_fac(mat->transmission ? mat->transmission->transmission : 0.0f);
     graph->connect(surfaceNode->output("BSDF"), mix->input("Closure1"));
     graph->connect(glass->output("BSDF"), mix->input("Closure2"));
     graph->connect(mix->output("Closure"), graph->output()->input("Surface"));
@@ -251,13 +253,15 @@ static Shader *createPrincipledShader(ccl::Scene *scene, const geom::Material *m
   // Volume absorption for colored glass (KHR_materials_volume)
   // Cycles AbsorptionVolumeNode: absorption = (1 - Color) * Density
   // glTF spec: attenuationColor is the color light becomes after attenuationDistance
-  if (mat->isTransmissive() && mat->attenuationDistance > 0.0f
-      && mat->attenuationDistance < 1e10f) {
-    auto *absNode = graph->create_node<AbsorptionVolumeNode>();
-    absNode->set_color(make_float3(
-      mat->attenuationColor[0], mat->attenuationColor[1], mat->attenuationColor[2]));
-    absNode->set_density(1.0f / mat->attenuationDistance);
-    graph->connect(absNode->output("Volume"), graph->output()->input("Volume"));
+  if (mat->isTransmissive() && mat->transmission) {
+    float attDist = mat->transmission->attenuationDistance;
+    if (attDist > 0.0f && attDist < 1e10f) {
+      auto *absNode = graph->create_node<AbsorptionVolumeNode>();
+      const auto &attCol = mat->transmission->attenuationColor;
+      absNode->set_color(make_float3(attCol[0], attCol[1], attCol[2]));
+      absNode->set_density(1.0f / attDist);
+      graph->connect(absNode->output("Volume"), graph->output()->input("Volume"));
+    }
   }
 
   shader->set_graph(unique_ptr<ShaderGraph>(graph));

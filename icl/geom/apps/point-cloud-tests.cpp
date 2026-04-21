@@ -80,8 +80,8 @@ void test_point_cloud_deep_copy(){
   std::vector<PointCloudObjectBase*> copies(clouds.size());
 
   for(size_t i=0;i<clouds.size();++i){
-    copies[i] = clouds[i]->copy();
-    std::cout << "  checking point cloud " << i << ".... copy(): ";
+    copies[i] = clouds[i]->deepCopy();
+    std::cout << "  checking point cloud " << i << ".... deepCopy(): ";
     if(clouds[i]->equals(*copies[i])){
       std::cout << "OK!";
     }else{

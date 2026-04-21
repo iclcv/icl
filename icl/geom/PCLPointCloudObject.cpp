@@ -159,7 +159,7 @@ namespace icl::geom {
   }
 
   template<class PCLPointType>
-  PCLPointCloudObject<PCLPointType> *PCLPointCloudObject<PCLPointType>::copy() const {
+  PCLPointCloudObject<PCLPointType> *PCLPointCloudObject<PCLPointType>::deepCopy() const {
     PCLPointCloudObject<PCLPointType> *p = new PCLPointCloudObject<PCLPointType>(*this);
     if(supports(Normal)){ // little hack because pcl does in general not support a 4th-normal component
       DataSegment<float,4> n = p->selectNormal();

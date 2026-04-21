@@ -394,7 +394,7 @@ namespace icl::geom {
     m_objects.resize(scene.m_objects.size());
     m_backgroundColor = scene.m_backgroundColor;
     for(unsigned int i=0;i<m_objects.size();++i){
-      m_objects[i].reset(scene.m_objects[i]->copy());
+      m_objects[i].reset(scene.m_objects[i]->deepCopy());
     }
 #ifdef ICL_HAVE_QT
     m_mouseHandlers.resize(scene.m_mouseHandlers.size());
@@ -1326,7 +1326,7 @@ namespace icl::geom {
     m_originalMaterials.clear();
     for (auto &obj : m_objects) {
       if (obj && obj->getMaterial()) {
-        m_originalMaterials.push_back({obj, std::make_shared<Material>(*obj->getMaterial())});
+        m_originalMaterials.push_back({obj, obj->getMaterial()->deepCopy()});
       }
     }
   }
@@ -1338,7 +1338,7 @@ namespace icl::geom {
     if (index == 0) {
       for (auto &om : m_originalMaterials) {
         if (om.object && om.material) {
-          om.object->setMaterial(std::make_shared<Material>(*om.material));
+          om.object->setMaterial(om.material->deepCopy());
         }
       }
     } else {

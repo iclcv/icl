@@ -219,7 +219,7 @@ namespace icl::geom {
       updateFeatures();
     }
 
-    PointCloudSegment *PointCloudSegment::copy() const{
+    PointCloudSegment *PointCloudSegment::deepCopy() const{
       return new PointCloudSegment(*this);
     }
 

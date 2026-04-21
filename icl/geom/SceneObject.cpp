@@ -247,8 +247,84 @@ namespace icl::geom {
     m_primitives.push_back(new TextPrimitive(a,0,0,0,text,textRenderSize,color,-1,-1,-1,-1,billboardHeight, sm));
   }
 
-  SceneObject *SceneObject::copy() const{
+  SceneObject::SceneObject(const SceneObject &other)
+    : m_vertices(other.m_vertices),
+      m_normals(other.m_normals),
+      m_texCoords(other.m_texCoords),
+      m_vertexColors(other.m_vertexColors),
+      m_primitives(other.m_primitives),
+      m_visibleMask(other.m_visibleMask),
+      m_lineColorsFromVertices(other.m_lineColorsFromVertices),
+      m_triangleColorsFromVertices(other.m_triangleColorsFromVertices),
+      m_quadColorsFromVertices(other.m_quadColorsFromVertices),
+      m_polyColorsFromVertices(other.m_polyColorsFromVertices),
+      m_useCustomRender(other.m_useCustomRender),
+      m_pointSize(other.m_pointSize),
+      m_lineWidth(other.m_lineWidth),
+      m_useSmoothShading(other.m_useSmoothShading),
+      m_isVisible(other.m_isVisible),
+      m_objectType(other.m_objectType),
+      m_sphereRadius(other.m_sphereRadius),
+      m_transformation(other.m_transformation),
+      m_hasTransformation(other.m_hasTransformation),
+      m_pointSmoothingEnabled(other.m_pointSmoothingEnabled),
+      m_lineSmoothingEnabled(other.m_lineSmoothingEnabled),
+      m_polygonSmoothingEnabled(other.m_polygonSmoothingEnabled),
+      m_depthTestEnabled(other.m_depthTestEnabled),
+      m_shininess(other.m_shininess),
+      m_specularReflectance(other.m_specularReflectance),
+      m_reflectivity(other.m_reflectivity),
+      m_emission(other.m_emission),
+      m_castShadows(other.m_castShadows),
+      m_receiveShadows(other.m_receiveShadows),
+      m_pointHitMaxDistance(other.m_pointHitMaxDistance)
+  {
+    m_displayListHandle = 0;
+    m_fragmentShader = 0;
+    m_parent = 0;
+
+    m_sphereCenter[0] = other.m_sphereCenter[0];
+    m_sphereCenter[1] = other.m_sphereCenter[1];
+    m_sphereCenter[2] = other.m_sphereCenter[2];
+
+    setLockingEnabled(other.getLockingEnabled());
+
+    // deep copy material
+    if (other.m_defaultMaterial) {
+      m_defaultMaterial = other.m_defaultMaterial->deepCopy();
+    }
+
+    // deep copy primitives
+    for(unsigned int i = 0; i < m_primitives.size(); ++i){
+      m_primitives[i] = m_primitives[i]->copy();
+    }
+
+    // deep copy children
+    m_children.resize(other.m_children.size());
+    for(unsigned int i = 0; i < other.m_children.size(); ++i){
+      m_children[i] = std::shared_ptr<SceneObject>(other.m_children[i]->deepCopy());
+    }
+
+    // deep copy shared textures
+    m_sharedTextures.resize(other.m_sharedTextures.size());
+    for(unsigned int i = 0; i < other.m_sharedTextures.size(); ++i){
+      m_sharedTextures[i].reset(new GLImg(other.m_sharedTextures[i]->extractDisplay(),
+                                           other.m_sharedTextures[i]->getScaleMode()));
+    }
+
+    // deep copy fragment shader
+    if(other.getFragmentShader()){
+      setFragmentShader(other.getFragmentShader()->copy());
+    }
+  }
+
+  SceneObject *SceneObject::deepCopy() const{
     return new SceneObject(*this);
+  }
+
+  void SceneObject::fillVertexColors(const GeomColor &color){
+    GeomColor scaled = color * (1.0f / 255.0f);
+    std::fill(m_vertexColors.begin(), m_vertexColors.end(), scaled);
   }
 
   // --- Material API ---
@@ -1001,6 +1077,7 @@ namespace icl::geom {
 
   void SceneObject::setPointSize(float pointSize, bool recursive){
     m_pointSize = pointSize;
+    if (m_defaultMaterial) m_defaultMaterial->pointSize = pointSize;
     if(recursive){
       for(unsigned int i=0;i<m_children.size();++i){
         m_children[i]->setPointSize(pointSize);
@@ -1010,6 +1087,7 @@ namespace icl::geom {
 
   void SceneObject::setLineWidth(float lineWidth, bool recursive){
     m_lineWidth = lineWidth;
+    if (m_defaultMaterial) m_defaultMaterial->lineWidth = lineWidth;
     if(recursive){
       for(unsigned int i=0;i<m_children.size();++i){
         m_children[i]->setLineWidth(lineWidth);
@@ -1027,56 +1105,6 @@ namespace icl::geom {
     }
   }
 
-  SceneObject &SceneObject::operator=(const SceneObject &other){
-    if(this == &other) return *this;
-#define DEEP_COPY(X) X = other.X
-#define DEEP_COPY_2(X,Y) DEEP_COPY(X); DEEP_COPY(Y)
-#define DEEP_COPY_4(X,Y,A,B) DEEP_COPY_2(X,Y); DEEP_COPY_2(A,B)
-    DEEP_COPY_2(m_vertices,m_vertexColors);
-    DEEP_COPY(m_normals);
-    DEEP_COPY_4(m_primitives,m_lineColorsFromVertices,m_triangleColorsFromVertices,m_quadColorsFromVertices);
-    DEEP_COPY_4(m_polyColorsFromVertices,m_pointSize,m_lineWidth,m_useSmoothShading);
-    DEEP_COPY_2(m_transformation,m_hasTransformation);
-#undef DEEP_COPY
-#undef DEEP_COPY_2
-#undef DEEP_COPY_4
-
-    m_pointSmoothingEnabled = other.m_pointSmoothingEnabled;
-    m_lineSmoothingEnabled  = other.m_lineSmoothingEnabled;
-    m_polygonSmoothingEnabled = other.m_polygonSmoothingEnabled;
-    m_depthTestEnabled = other.m_depthTestEnabled;
-    m_shininess = other.m_shininess;
-    m_specularReflectance = other.m_specularReflectance;
-    m_pointHitMaxDistance = other.m_pointHitMaxDistance;
-    m_useCustomRender = other.m_useCustomRender;
-
-    setLockingEnabled(other.getLockingEnabled());
-    m_visibleMask = other.m_visibleMask;
-    m_children.clear();
-    m_children.resize(other.m_children.size());
-    for(unsigned int i=0;i<other.m_children.size();++i){
-      m_children[i] = std::shared_ptr<SceneObject>(other.m_children[i]->copy());
-    }
-
-    for(unsigned int i=0;i<m_primitives.size();++i){
-      m_primitives[i] = m_primitives[i]->copy();
-    }
-    m_sharedTextures = other.m_sharedTextures;
-    for(unsigned int i=0;i<m_sharedTextures.size();++i){
-      m_sharedTextures[i].reset(new GLImg(m_sharedTextures[i]->extractDisplay(),
-                                      m_sharedTextures[i]->getScaleMode()));
-    }
-    if(m_displayListHandle){
-      Scene::freeDisplayList(m_displayListHandle);
-      m_displayListHandle = 0;
-    }
-    if(other.getFragmentShader()){
-      setFragmentShader(other.getFragmentShader()->copy());
-    }else{
-      setFragmentShader(0);
-    }
-    return *this;
-  }
 
   SceneObject *SceneObject::addCube(float x, float y, float z, float d){
     return addCuboid(x,y,z,d,d,d);

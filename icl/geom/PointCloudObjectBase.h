@@ -314,7 +314,7 @@ namespace icl::geom {
     void setUseTexturing(bool use, core::Img8u &tex, core::DataSegment<float,2> texCoords);
 
     /// deep copy interface (needs to be implemented by subclasses)
-    virtual PointCloudObjectBase *copy() const {
+    virtual PointCloudObjectBase *deepCopy() const override {
       return 0;
     }
 

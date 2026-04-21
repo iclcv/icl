@@ -249,7 +249,7 @@ static void setupScene() {
   numLoadedMeshes = loadedObjects.size();
   for (int i = 0; i < numLoadedMeshes; i++) {
     auto mat = loadedObjects[i]->getMaterial();
-    originalMaterials.push_back(mat ? std::make_shared<Material>(*mat) : nullptr);
+    originalMaterials.push_back(mat ? mat->deepCopy() : nullptr);
   }
 
   // Bake node transforms into vertices so all subsequent operations
@@ -350,7 +350,8 @@ static void setupScene() {
     groundMat->baseColor = GeomColor(0.8f, 0.8f, 0.8f, 1);
     groundMat->roughness = 0.6f;
     groundMat->smoothShading = true;
-    groundMat->baseColorMap = Image(checkerTex);
+    groundMat->textures = std::make_shared<Material::TextureMaps>();
+    groundMat->textures->baseColorMap = Image(checkerTex);
 
     auto ground = std::make_shared<SceneObject>();
     ground->addVertex(Vec(cx - gs, groundY, cz - gs, 1));
@@ -653,7 +654,7 @@ void run() {
       // Original: restore saved materials
       for (int i = 0; i < numLoadedMeshes && i < (int)originalMaterials.size(); i++) {
         if (originalMaterials[i]) {
-          loadedObjects[i]->setMaterial(std::make_shared<Material>(*originalMaterials[i]));
+          loadedObjects[i]->setMaterial(originalMaterials[i]->deepCopy());
         }
       }
     } else {

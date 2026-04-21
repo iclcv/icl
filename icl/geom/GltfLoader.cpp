@@ -117,21 +117,25 @@ static std::shared_ptr<Material> convertMaterial(const cgltf_material *gmat,
 
     // Texture references (decoded in Phase 2)
     if (pbr.base_color_texture.texture && pbr.base_color_texture.texture->image) {
-      mat->baseColorMap = decodeImage(pbr.base_color_texture.texture->image, data, basePath);
+      if (!mat->textures) mat->textures = std::make_shared<Material::TextureMaps>();
+      mat->textures->baseColorMap = decodeImage(pbr.base_color_texture.texture->image, data, basePath);
     }
     if (pbr.metallic_roughness_texture.texture && pbr.metallic_roughness_texture.texture->image) {
-      mat->metallicRoughnessMap = decodeImage(pbr.metallic_roughness_texture.texture->image, data, basePath);
+      if (!mat->textures) mat->textures = std::make_shared<Material::TextureMaps>();
+      mat->textures->metallicRoughnessMap = decodeImage(pbr.metallic_roughness_texture.texture->image, data, basePath);
     }
   }
 
   // Normal map
   if (gmat->normal_texture.texture && gmat->normal_texture.texture->image) {
-    mat->normalMap = decodeImage(gmat->normal_texture.texture->image, data, basePath);
+    if (!mat->textures) mat->textures = std::make_shared<Material::TextureMaps>();
+    mat->textures->normalMap = decodeImage(gmat->normal_texture.texture->image, data, basePath);
   }
 
   // Occlusion map (ambient occlusion, R channel)
   if (gmat->occlusion_texture.texture && gmat->occlusion_texture.texture->image) {
-    mat->occlusionMap = decodeImage(gmat->occlusion_texture.texture->image, data, basePath);
+    if (!mat->textures) mat->textures = std::make_shared<Material::TextureMaps>();
+    mat->textures->occlusionMap = decodeImage(gmat->occlusion_texture.texture->image, data, basePath);
   }
 
   // Emissive — always store the factor. Per glTF spec: final emission = factor * texture.
@@ -143,45 +147,54 @@ static std::shared_ptr<Material> convertMaterial(const cgltf_material *gmat,
                                gmat->emissive_factor[2], 1.0f);
   }
   if (gmat->emissive_texture.texture && gmat->emissive_texture.texture->image) {
-    mat->emissiveMap = decodeImage(gmat->emissive_texture.texture->image, data, basePath);
+    if (!mat->textures) mat->textures = std::make_shared<Material::TextureMaps>();
+    mat->textures->emissiveMap = decodeImage(gmat->emissive_texture.texture->image, data, basePath);
   }
 
   // KHR_materials_transmission
   if (gmat->has_transmission) {
-    mat->transmission = gmat->transmission.transmission_factor;
+    if (!mat->transmission) mat->transmission = std::make_shared<Material::TransmissionParams>();
+    mat->transmission->transmission = gmat->transmission.transmission_factor;
   }
 
   // KHR_materials_ior
   if (gmat->has_ior) {
-    mat->ior = gmat->ior.ior;
+    if (!mat->transmission) mat->transmission = std::make_shared<Material::TransmissionParams>();
+    mat->transmission->ior = gmat->ior.ior;
   }
 
   // KHR_materials_volume (attenuation)
   if (gmat->has_volume) {
-    mat->thicknessFactor = gmat->volume.thickness_factor;
-    mat->attenuationColor = GeomColor(
+    if (!mat->transmission) mat->transmission = std::make_shared<Material::TransmissionParams>();
+    mat->transmission->thicknessFactor = gmat->volume.thickness_factor;
+    mat->transmission->attenuationColor = GeomColor(
       gmat->volume.attenuation_color[0],
       gmat->volume.attenuation_color[1],
       gmat->volume.attenuation_color[2], 1.0f);
-    mat->attenuationDistance = gmat->volume.attenuation_distance;
+    mat->transmission->attenuationDistance = gmat->volume.attenuation_distance;
   }
 
   if (gmat->name && gmat->name[0]) {
     mat->name = gmat->name;
   }
 
+  float dbgTransmission = mat->transmission ? mat->transmission->transmission : 0.0f;
+  float dbgIor = mat->transmission ? mat->transmission->ior : 1.5f;
   fprintf(stderr, "  [material] '%s': baseColor=(%.2f,%.2f,%.2f,%.2f) metallic=%.2f roughness=%.2f"
           " transmission=%.2f ior=%.2f",
           mat->name.c_str(), mat->baseColor[0], mat->baseColor[1], mat->baseColor[2], mat->baseColor[3],
-          mat->metallic, mat->roughness, mat->transmission, mat->ior);
-  if (mat->attenuationDistance > 0.0f) {
+          mat->metallic, mat->roughness, dbgTransmission, dbgIor);
+  if (mat->transmission && mat->transmission->attenuationDistance > 0.0f) {
     fprintf(stderr, " volume: attenColor=(%.2f,%.2f,%.2f) attenDist=%.4f thick=%.4f",
-            mat->attenuationColor[0], mat->attenuationColor[1], mat->attenuationColor[2],
-            mat->attenuationDistance, mat->thicknessFactor);
+            mat->transmission->attenuationColor[0], mat->transmission->attenuationColor[1],
+            mat->transmission->attenuationColor[2],
+            mat->transmission->attenuationDistance, mat->transmission->thicknessFactor);
   }
+  auto *tex = mat->textures.get();
   fprintf(stderr, " maps: base=%d normal=%d mr=%d occ=%d emissive=%d\n",
-          (bool)mat->baseColorMap, (bool)mat->normalMap, (bool)mat->metallicRoughnessMap,
-          (bool)mat->occlusionMap, (bool)mat->emissiveMap);
+          tex ? (bool)tex->baseColorMap : 0, tex ? (bool)tex->normalMap : 0,
+          tex ? (bool)tex->metallicRoughnessMap : 0, tex ? (bool)tex->occlusionMap : 0,
+          tex ? (bool)tex->emissiveMap : 0);
 
   return mat;
 }

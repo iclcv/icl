@@ -139,7 +139,7 @@ namespace icl::geom {
     virtual core::DataSegmentBase select(const std::string &featureName);
 
     /// deep copy interface
-    virtual PCLPointCloudObject<PCLPointType> *copy() const;
+    virtual PCLPointCloudObject<PCLPointType> *deepCopy() const override;
 
   };
 

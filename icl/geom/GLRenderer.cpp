@@ -639,16 +639,18 @@ struct GLGeometryCache {
       lastMaterial = mat.get();
     }
 
-    if (!baseColorTex && !mat->baseColorMap.isNull())
-      baseColorTex = uploadTexture(mat->baseColorMap);
-    if (!normalMapTex && !mat->normalMap.isNull())
-      normalMapTex = uploadTexture(mat->normalMap);
-    if (!metallicRoughnessTex && !mat->metallicRoughnessMap.isNull())
-      metallicRoughnessTex = uploadTexture(mat->metallicRoughnessMap);
-    if (!emissiveMapTex && !mat->emissiveMap.isNull())
-      emissiveMapTex = uploadTexture(mat->emissiveMap);
-    if (!occlusionMapTex && !mat->occlusionMap.isNull())
-      occlusionMapTex = uploadTexture(mat->occlusionMap);
+    if (mat->textures) {
+      if (!baseColorTex && !mat->textures->baseColorMap.isNull())
+        baseColorTex = uploadTexture(mat->textures->baseColorMap);
+      if (!normalMapTex && !mat->textures->normalMap.isNull())
+        normalMapTex = uploadTexture(mat->textures->normalMap);
+      if (!metallicRoughnessTex && !mat->textures->metallicRoughnessMap.isNull())
+        metallicRoughnessTex = uploadTexture(mat->textures->metallicRoughnessMap);
+      if (!emissiveMapTex && !mat->textures->emissiveMap.isNull())
+        emissiveMapTex = uploadTexture(mat->textures->emissiveMap);
+      if (!occlusionMapTex && !mat->textures->occlusionMap.isNull())
+        occlusionMapTex = uploadTexture(mat->textures->occlusionMap);
+    }
   }
 };
 
@@ -1466,10 +1468,16 @@ void GLRenderer::renderObject(const SceneObject *obj,
     glUniform1f(m_data->locRoughness, mat->roughness);
     glUniform4f(m_data->locEmissive, mat->emissive[0], mat->emissive[1],
                 mat->emissive[2], 0);
-    glUniform1f(m_data->locTransmission, mat->transmission);
-    glUniform1f(m_data->locIOR, mat->ior);
-    glUniform3f(m_data->locAttenuationColor,
-                mat->attenuationColor[0], mat->attenuationColor[1], mat->attenuationColor[2]);
+    if (mat->transmission) {
+      glUniform1f(m_data->locTransmission, mat->transmission->transmission);
+      glUniform1f(m_data->locIOR, mat->transmission->ior);
+      glUniform3f(m_data->locAttenuationColor,
+                  mat->transmission->attenuationColor[0], mat->transmission->attenuationColor[1], mat->transmission->attenuationColor[2]);
+    } else {
+      glUniform1f(m_data->locTransmission, 0.0f);
+      glUniform1f(m_data->locIOR, 1.5f);
+      glUniform3f(m_data->locAttenuationColor, 1.0f, 1.0f, 1.0f);
+    }
   } else {
     glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
     glUniform1f(m_data->locMetallic, 0.0f);
