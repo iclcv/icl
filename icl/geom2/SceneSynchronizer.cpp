@@ -18,6 +18,8 @@
 #undef ERROR
 #undef LOG_LEVEL
 
+#include <icl/core/CCFunctions.h>
+
 #include "scene/scene.h"
 #include "scene/mesh.h"
 #include "scene/object.h"
@@ -28,11 +30,15 @@
 #include "scene/light.h"
 #include "scene/background.h"
 #include "scene/integrator.h"
+#include "scene/image.h"
+#include "scene/image_loader.h"
+#include "util/image_metadata.h"
 #include "util/transform.h"
 #include "util/unique_ptr.h"
 #include "kernel/types.h"
 
 #include <cmath>
+#include <cstring>
 
 using namespace ccl;
 
@@ -53,7 +59,79 @@ namespace icl::geom2 {
     return tfm;
   }
 
+  // ---- ICLImageLoader: bridges ICL Image to Cycles ImageManager ----
+
+  class ICLImageLoader : public ImageLoader {
+    core::Image m_img;
+    std::string m_name;
+
+  public:
+    ICLImageLoader(const core::Image &img, const std::string &name)
+      : m_img(img), m_name(name) {}
+
+    bool load_metadata(ImageMetaData &meta) override {
+      if (m_img.isNull()) return false;
+      meta.width = m_img.getWidth();
+      meta.height = m_img.getHeight();
+      meta.channels = std::min(m_img.getChannels(), 4);
+      meta.type = IMAGE_DATA_TYPE_BYTE4;
+      meta.colorspace_file_hint = "sRGB";
+      meta.finalize();
+      return true;
+    }
+
+    bool load_pixels(const ImageMetaData &meta, void *pixels) override {
+      if (m_img.isNull()) return false;
+      const int w = m_img.getWidth();
+      const int h = m_img.getHeight();
+      const int ch = m_img.getChannels();
+      uchar *dst = (uchar *)pixels;
+
+      const auto &img8u = m_img.as<icl8u>();
+      if (ch == 4) {
+        core::planarToInterleaved(&img8u, dst);
+      } else {
+        std::memset(dst, 255, w * h * 4);
+        for (int c = 0; c < ch; c++) {
+          const icl8u *src = img8u.getData(c);
+          for (int i = 0; i < w * h; i++)
+            dst[i * 4 + c] = src[i];
+        }
+      }
+      meta.conform_pixels(pixels);
+      return true;
+    }
+
+    string name() const override { return m_name; }
+
+    bool equals(const ImageLoader &other) const override {
+      const auto *o = dynamic_cast<const ICLImageLoader *>(&other);
+      return o && o->m_img.ptr() == m_img.ptr();
+    }
+  };
+
   // ---- Material/shader creation ----
+
+  static ImageTextureNode *createImageTexNode(ShaderGraph *graph, ccl::Scene *scene,
+                                               const core::Image &img,
+                                               const std::string &name,
+                                               bool isLinear = false) {
+    auto *tex = graph->create_node<ImageTextureNode>();
+    tex->set_filename(ustring("icl_inline_" + name));
+    tex->set_interpolation(INTERPOLATION_LINEAR);
+    tex->set_extension(EXTENSION_REPEAT);
+    tex->set_colorspace(ustring(isLinear ? "scene_linear" : "sRGB"));
+    tex->set_alpha_type(IMAGE_ALPHA_AUTO);
+
+    ImageParams params;
+    params.interpolation = INTERPOLATION_LINEAR;
+    params.extension = EXTENSION_REPEAT;
+    params.colorspace = ustring(isLinear ? "scene_linear" : "sRGB");
+
+    auto loader = make_unique<ICLImageLoader>(img, name);
+    tex->handle = scene->image_manager->add_image(std::move(loader), params);
+    return tex;
+  }
 
   static Shader *createDefaultShader(ccl::Scene *scene) {
     Shader *shader = scene->create_node<Shader>();
@@ -79,14 +157,122 @@ namespace icl::geom2 {
     bsdf->set_metallic(mat->metallic);
     bsdf->set_roughness(mat->roughness);
 
-    // Emissive
-    float emL = mat->emissive[0] + mat->emissive[1] + mat->emissive[2];
-    if (emL > 0.001f) {
-      bsdf->set_emission_color(make_float3(mat->emissive[0], mat->emissive[1], mat->emissive[2]));
-      bsdf->set_emission_strength(1.0f);
+    // Shared UV node for all texture lookups
+    TextureCoordinateNode *texCoordNode = nullptr;
+    auto getUV = [&]() -> ShaderOutput * {
+      if (!texCoordNode)
+        texCoordNode = graph->create_node<TextureCoordinateNode>();
+      return texCoordNode->output("UV");
+    };
+
+    // Base color texture
+    if (mat->textures && !mat->textures->baseColorMap.isNull()) {
+      auto *tex = createImageTexNode(graph, scene, mat->textures->baseColorMap,
+                                      mat->name + "_baseColor");
+      graph->connect(getUV(), tex->input("Vector"));
+      graph->connect(tex->output("Color"), bsdf->input("Base Color"));
+      auto alphaMode = mat->transmission ? mat->transmission->alphaMode : geom::Material::Opaque;
+      if (alphaMode != geom::Material::Opaque)
+        graph->connect(tex->output("Alpha"), bsdf->input("Alpha"));
     }
 
-    graph->connect(bsdf->output("BSDF"), graph->output()->input("Surface"));
+    // Metallic-roughness texture (glTF: G=roughness, B=metallic)
+    if (mat->textures && !mat->textures->metallicRoughnessMap.isNull()) {
+      auto *tex = createImageTexNode(graph, scene, mat->textures->metallicRoughnessMap,
+                                      mat->name + "_metalRough", true);
+      graph->connect(getUV(), tex->input("Vector"));
+      auto *sep = graph->create_node<SeparateColorNode>();
+      graph->connect(tex->output("Color"), sep->input("Color"));
+      graph->connect(sep->output("Blue"), bsdf->input("Metallic"));
+      graph->connect(sep->output("Green"), bsdf->input("Roughness"));
+    }
+
+    // Normal map
+    if (mat->textures && !mat->textures->normalMap.isNull()) {
+      auto *tex = createImageTexNode(graph, scene, mat->textures->normalMap,
+                                      mat->name + "_normal", true);
+      graph->connect(getUV(), tex->input("Vector"));
+      auto *nmap = graph->create_node<NormalMapNode>();
+      nmap->set_space(NODE_NORMAL_MAP_TANGENT);
+      nmap->set_strength(1.0f);
+      graph->connect(tex->output("Color"), nmap->input("Color"));
+      graph->connect(nmap->output("Normal"), bsdf->input("Normal"));
+    }
+
+    ShaderNode *surfaceNode = bsdf;
+    const char *surfaceOutput = "BSDF";
+
+    // Emissive
+    bool hasEmissiveMap = mat->textures && !mat->textures->emissiveMap.isNull();
+    float emStrength = (mat->emissive[0] + mat->emissive[1] + mat->emissive[2]) / 3.0f;
+    if (emStrength > 0.001f || hasEmissiveMap) {
+      bsdf->set_emission_color(make_float3(mat->emissive[0], mat->emissive[1], mat->emissive[2]));
+      bsdf->set_emission_strength(1.0f);
+      if (hasEmissiveMap) {
+        auto *tex = createImageTexNode(graph, scene, mat->textures->emissiveMap,
+                                        mat->name + "_emissive");
+        graph->connect(getUV(), tex->input("Vector"));
+        graph->connect(tex->output("Color"), bsdf->input("Emission Color"));
+      }
+    }
+
+    // Reflectivity: mix in a glossy mirror layer
+    if (mat->reflectivity > 0.001f) {
+      auto *glossy = graph->create_node<GlossyBsdfNode>();
+      glossy->set_roughness(mat->roughness * 0.1f);  // near-mirror
+      glossy->set_color(make_float3(1, 1, 1));
+      // Share normal map with glossy node
+      if (mat->textures && !mat->textures->normalMap.isNull()) {
+        auto *nInput = bsdf->input("Normal");
+        if (nInput && nInput->link)
+          graph->connect(nInput->link, glossy->input("Normal"));
+      }
+
+      auto *mixRefl = graph->create_node<MixClosureNode>();
+      mixRefl->set_fac(mat->reflectivity);
+      graph->connect(surfaceNode->output(surfaceOutput), mixRefl->input("Closure1"));
+      graph->connect(glossy->output("BSDF"), mixRefl->input("Closure2"));
+      surfaceNode = mixRefl;
+      surfaceOutput = "Closure";
+    }
+
+    // Transmission (glass)
+    if (mat->isTransmissive()) {
+      auto *glass = graph->create_node<GlassBsdfNode>();
+      glass->set_roughness(0.0f);
+      glass->set_IOR(mat->transmission ? mat->transmission->ior : 1.5f);
+      glass->set_color(make_float3(mat->baseColor[0], mat->baseColor[1], mat->baseColor[2]));
+      if (mat->textures && !mat->textures->baseColorMap.isNull()) {
+        auto *bcInput = bsdf->input("Base Color");
+        if (bcInput && bcInput->link)
+          graph->connect(bcInput->link, glass->input("Color"));
+      }
+      if (mat->textures && !mat->textures->normalMap.isNull()) {
+        auto *nInput = bsdf->input("Normal");
+        if (nInput && nInput->link)
+          graph->connect(nInput->link, glass->input("Normal"));
+      }
+
+      auto *mix = graph->create_node<MixClosureNode>();
+      mix->set_fac(mat->transmission ? mat->transmission->transmission : 0.0f);
+      graph->connect(surfaceNode->output(surfaceOutput), mix->input("Closure1"));
+      graph->connect(glass->output("BSDF"), mix->input("Closure2"));
+      graph->connect(mix->output("Closure"), graph->output()->input("Surface"));
+    } else {
+      graph->connect(surfaceNode->output(surfaceOutput), graph->output()->input("Surface"));
+    }
+
+    // Volume absorption for colored glass
+    if (mat->isTransmissive() && mat->transmission) {
+      float attDist = mat->transmission->attenuationDistance;
+      if (attDist > 0.0f && attDist < 1e10f) {
+        auto *absNode = graph->create_node<AbsorptionVolumeNode>();
+        const auto &attCol = mat->transmission->attenuationColor;
+        absNode->set_color(make_float3(attCol[0], attCol[1], attCol[2]));
+        absNode->set_density(1.0f / attDist);
+        graph->connect(absNode->output("Volume"), graph->output()->input("Volume"));
+      }
+    }
 
     shader->set_graph(unique_ptr<ShaderGraph>(graph));
     shader->tag_update(scene);
@@ -102,6 +288,7 @@ namespace icl::geom2 {
   static void tessellateToMesh(const GeometryNode *node, ccl::Mesh *mesh, float scale) {
     const auto &srcVerts = node->getVertices();
     const auto &srcNormals = node->getNormals();
+    const auto &texCoords = node->getTexCoords();
 
     if (srcVerts.empty()) return;
 
@@ -121,9 +308,14 @@ namespace icl::geom2 {
     bool *smooth = mesh->get_smooth().data();
 
     bool hasNormals = !srcNormals.empty();
+    bool hasUVs = !texCoords.empty();
     auto mat = node->getMaterial();
     bool useSmooth = hasNormals || (mat && mat->smoothShading);
     int ti = 0;
+
+    // Collect per-corner UV indices alongside triangles
+    std::vector<int> uvCornerIndices;
+    if (hasUVs) uvCornerIndices.reserve(numTris * 3);
 
     for (const auto &t : node->getTriangles()) {
       triangles[ti * 3 + 0] = t.v[0];
@@ -131,6 +323,11 @@ namespace icl::geom2 {
       triangles[ti * 3 + 2] = t.v[2];
       smooth[ti] = useSmooth;
       mesh->get_shader()[ti] = 0;
+      if (hasUVs) {
+        uvCornerIndices.push_back(t.t[0]);
+        uvCornerIndices.push_back(t.t[1]);
+        uvCornerIndices.push_back(t.t[2]);
+      }
       ti++;
     }
     for (const auto &q : node->getQuads()) {
@@ -140,6 +337,11 @@ namespace icl::geom2 {
       triangles[ti * 3 + 2] = q.v[2];
       smooth[ti] = useSmooth;
       mesh->get_shader()[ti] = 0;
+      if (hasUVs) {
+        uvCornerIndices.push_back(q.t[0]);
+        uvCornerIndices.push_back(q.t[1]);
+        uvCornerIndices.push_back(q.t[2]);
+      }
       ti++;
 
       triangles[ti * 3 + 0] = q.v[0];
@@ -147,7 +349,26 @@ namespace icl::geom2 {
       triangles[ti * 3 + 2] = q.v[3];
       smooth[ti] = useSmooth;
       mesh->get_shader()[ti] = 0;
+      if (hasUVs) {
+        uvCornerIndices.push_back(q.t[0]);
+        uvCornerIndices.push_back(q.t[2]);
+        uvCornerIndices.push_back(q.t[3]);
+      }
       ti++;
+    }
+
+    // Upload per-corner UV coordinates as ATTR_STD_UV
+    if (hasUVs && (int)uvCornerIndices.size() == numTris * 3) {
+      Attribute *uv_attr = mesh->attributes.add(ATTR_STD_UV, ustring("UVMap"));
+      float2 *uv_data = uv_attr->data_float2();
+      for (int i = 0; i < numTris * 3; i++) {
+        int idx = uvCornerIndices[i];
+        if (idx >= 0 && idx < (int)texCoords.size()) {
+          uv_data[i] = make_float2(texCoords[idx].x, texCoords[idx].y);
+        } else {
+          uv_data[i] = make_float2(0.0f, 0.0f);
+        }
+      }
     }
 
     // Tag mesh as modified so Cycles processes the new data.

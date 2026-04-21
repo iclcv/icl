@@ -60,7 +60,10 @@ namespace icl::geom2 {
       fprintf(stderr, "Loading %s...\n", file.c_str());
       auto meshes = loadFile(file);
       fprintf(stderr, "  %zu mesh(es) loaded\n", meshes.size());
-      for (auto &m : meshes) root->addChild(m);
+      for (auto &m : meshes) {
+        m->setPrimitiveVisible(PrimLine | PrimVertex, false);
+        root->addChild(m);
+      }
       if (!meshes.empty()) hasContent = true;
     }
 
@@ -135,10 +138,31 @@ namespace icl::geom2 {
     // All scene furniture (ground, lights, camera) placed in world coords.
     float halfExt = targetSize / 2;
 
-    // Ground plane (world coords, below the transformed content)
+    // Checkerboard ground plane (world coords, below the transformed content)
     {
       float groundY = -halfExt - targetSize * 0.02f;
       float gs = targetSize * 1.5f;
+
+      // Procedural checkerboard texture
+      int tiles = 8, texSize = 1024;
+      int pixelsPerTile = texSize / tiles;
+      core::Img8u checkerTex(Size(texSize, texSize), 4);
+      for (int ty = 0; ty < texSize; ty++) {
+        for (int tx = 0; tx < texSize; tx++) {
+          bool light = ((tx / pixelsPerTile) + (ty / pixelsPerTile)) % 2 == 0;
+          icl8u rv = light ? 220 : 80, gv = light ? 215 : 75, bv = light ? 210 : 70;
+          checkerTex(tx, ty, 0) = rv; checkerTex(tx, ty, 1) = gv;
+          checkerTex(tx, ty, 2) = bv; checkerTex(tx, ty, 3) = 255;
+        }
+      }
+
+      auto groundMat = std::make_shared<Material>();
+      groundMat->baseColor = GeomColor(0.8f, 0.8f, 0.8f, 1);
+      groundMat->roughness = 0.4f;
+      groundMat->reflectivity = 0.3f;
+      groundMat->smoothShading = true;
+      groundMat->textures = std::make_shared<Material::TextureMaps>();
+      groundMat->textures->baseColorMap = core::Image(checkerTex);
 
       auto ground = std::make_shared<MeshNode>();
       ground->addVertex(Vec(-gs, groundY, -gs, 1));
@@ -146,10 +170,13 @@ namespace icl::geom2 {
       ground->addVertex(Vec( gs, groundY,  gs, 1));
       ground->addVertex(Vec(-gs, groundY,  gs, 1));
       for (int i = 0; i < 4; i++) ground->addNormal(Vec(0, 1, 0, 1));
-      ground->addTriangle(0, 1, 2, 0, 1, 2);
-      ground->addTriangle(0, 2, 3, 0, 2, 3);
-      ground->setMaterial(Material::fromColor(GeomColor(180, 175, 170, 255)));
-      ground->getMaterial()->roughness = 0.6f;
+      ground->addTexCoord(0, 0);
+      ground->addTexCoord(1, 0);
+      ground->addTexCoord(1, 1);
+      ground->addTexCoord(0, 1);
+      ground->addTriangle(0, 1, 2, 0, 1, 2, 0, 1, 2);
+      ground->addTriangle(0, 2, 3, 0, 2, 3, 0, 2, 3);
+      ground->setMaterial(groundMat);
       addNode(ground);
       m_ownedNodes.push_back(ground);
     }
