@@ -21,6 +21,8 @@
 #include <ICLGeom/SceneRendererGL.h>
 
 #include <QSurfaceFormat>
+#include <QOpenGLContext>
+#include <QOffscreenSurface>
 #include <memory>
 #include <vector>
 
@@ -33,6 +35,8 @@ static Scene scene;
 static std::unique_ptr<icl::rt::CyclesRenderer> renderer;
 static std::unique_ptr<SceneRendererGL> glRenderer;
 static std::unique_ptr<GLImageRenderer> imageRenderer;
+static bool compareMode = false;
+static std::string comparePrefix;
 static std::vector<std::shared_ptr<SceneObject>> loadedObjects;
 static std::vector<std::shared_ptr<Material>> originalMaterials;  // saved at load time
 static int numLoadedMeshes = 0;  // how many are actual meshes (not checker tiles)
@@ -416,7 +420,22 @@ static void setupScene() {
   scene.getLight(3).setDiffuse(GeomColor(220, 215, 210, 255));
   setupShadowCam(3, topLightPos);
 
-  // Ambient light to approximate Cycles sky/environment lighting
+  // Sky/environment (shared between GL and Cycles renderers)
+  std::string bgMode = pa("-background").as<std::string>();
+  if (bgMode == "white") {
+    scene.setSky(Sky::solid(GeomColor(1.0f, 1.0f, 1.0f, 1.0f)));
+  } else if (bgMode == "black") {
+    scene.setSky(Sky::solid(GeomColor(0.05f, 0.05f, 0.05f, 1.0f)));
+  } else if (bgMode == "physical") {
+    // Sun direction matching the key light
+    Vec sunDir = keyLightPos - Vec(cx, cy, cz, 0);
+    sunDir[3] = 0;
+    scene.setSky(Sky::physical(sunDir, 3.0f));
+  } else {
+    // "gradient" (default)
+    scene.setSky(Sky::defaultSky());
+  }
+  fprintf(stderr, "Background mode: %s\n", bgMode.c_str());
   scene.setGlobalAmbientLight(GeomColor(60, 65, 80, 255));
 
   for (int i = 0; i < scene.getObjectCount(); i++) {
@@ -448,6 +467,8 @@ void init() {
             << Slider(10, 500, 100).handle("exposure").label("Exposure %").minSize(10,2)
             << Slider(0, 100, 100).handle("brightness").label("BG %").minSize(10,2)
             << Combo("!Shaded,Normals,Albedo,UVs,Lighting Only,NdotL").handle("glDebug").label("GL Debug").minSize(10,2)
+            << Slider(10, 500, 150).handle("glEnv").label("GL Env %").minSize(8,2)
+            << Slider(10, 500, 100).handle("glDirect").label("GL Direct %").minSize(8,2)
             << Label("--").handle("info").minSize(15,2))
        ) << Show();
 
@@ -455,7 +476,118 @@ void init() {
   gui["gl"].install(new MouseHandler(handleMouse));
 }
 
+static float computeMeanBrightness(const Image &img) {
+  if (img.isNull()) return 0;
+  const auto &i8 = img.as<icl8u>();
+  int w = i8.getWidth(), h = i8.getHeight(), ch = i8.getChannels();
+  double sum = 0;
+  for (int c = 0; c < std::min(ch, 3); c++)
+    for (int y = 0; y < h; y++)
+      for (int x = 0; x < w; x++)
+        sum += i8(x, y, c);
+  return (float)(sum / (w * h * std::min(ch, 3) * 255.0));
+}
+
 void run() {
+  // Compare mode: render both, save files, print stats, exit
+  if (compareMode) {
+    static bool done = false;
+    if (done) { QApplication::quit(); return; }
+    done = true;
+
+    int w = pa("-size").as<Size>().width;
+    int h = pa("-size").as<Size>().height;
+
+    // Render Cycles (blocking)
+    renderer->setSamples(64);
+    renderer->setMaxBounces(4);
+    renderer->setDenoising(false);
+    renderer->setExposure(1.0f);
+    renderer->setBrightness(scene.getSky().intensity);
+    renderer->renderBlocking(0);
+    const auto &cyclesImg = renderer->getImage();
+
+    // Render GL to offscreen FBO (create standalone GL context for worker thread)
+    Image glImg;
+    {
+      QOpenGLContext ctx;
+      ctx.setFormat(QSurfaceFormat::defaultFormat());
+      ctx.create();
+      QOffscreenSurface surface;
+      surface.setFormat(ctx.format());
+      surface.create();
+      ctx.makeCurrent(&surface);
+
+      // New context needs fresh renderer (shaders compiled per-context)
+      SceneRendererGL offscreenGL;
+      offscreenGL.setExposure(1.0f);
+      offscreenGL.setEnvMultiplier(glRenderer->getEnvMultiplier());
+      offscreenGL.setDirectMultiplier(glRenderer->getDirectMultiplier());
+      glImg = offscreenGL.renderToImage(scene, 0, w, h);
+
+      ctx.doneCurrent();
+    }
+
+    // Compute stats
+    float cyclesBright = computeMeanBrightness(cyclesImg);
+    float glBright = computeMeanBrightness(glImg);
+    float ratio = (glBright > 0) ? cyclesBright / glBright : 0;
+
+    // Regional brightness comparison (4x4 grid)
+    auto regionBrightness = [](const Image &img, int rx, int ry, int rw, int rh) -> float {
+      if (img.isNull()) return 0;
+      const auto &i8 = img.as<icl8u>();
+      int ch = std::min(i8.getChannels(), 3);
+      double sum = 0; int count = 0;
+      for (int y = ry; y < std::min(ry + rh, i8.getHeight()); y++)
+        for (int x = rx; x < std::min(rx + rw, i8.getWidth()); x++)
+          for (int c = 0; c < ch; c++) { sum += i8(x, y, c); count++; }
+      return count > 0 ? (float)(sum / (count * 255.0)) : 0;
+    };
+
+    fprintf(stderr, "\n=== COMPARE (%dx%d) ===\n", w, h);
+    fprintf(stderr, "Overall: Cycles=%.3f  GL=%.3f  ratio=%.2f\n", cyclesBright, glBright, ratio);
+
+    // 4x4 grid comparison
+    int gw = w / 4, gh = h / 4;
+    fprintf(stderr, "Region brightness (Cycles / GL / ratio):\n");
+    for (int gy = 0; gy < 4; gy++) {
+      for (int gx = 0; gx < 4; gx++) {
+        float cb = regionBrightness(cyclesImg, gx*gw, gy*gh, gw, gh);
+        float gb = regionBrightness(glImg, gx*gw, gy*gh, gw, gh);
+        float r = gb > 0.01f ? cb / gb : 0;
+        fprintf(stderr, " %5.3f/%5.3f/%4.2f", cb, gb, r);
+      }
+      fprintf(stderr, "\n");
+    }
+    fprintf(stderr, "========================\n\n");
+
+    // Save images
+    if (!comparePrefix.empty()) {
+      std::string cf = comparePrefix + "_cycles.ppm";
+      std::string gf = comparePrefix + "_gl.ppm";
+      auto writePPM = [](const std::string &path, const Image &img) {
+        const auto &i8 = img.as<icl8u>();
+        FILE *f = fopen(path.c_str(), "wb");
+        if (!f) return;
+        fprintf(f, "P6\n%d %d\n255\n", i8.getWidth(), i8.getHeight());
+        int ch = std::min(i8.getChannels(), 3);
+        for (int y = 0; y < i8.getHeight(); y++)
+          for (int x = 0; x < i8.getWidth(); x++) {
+            for (int c = 0; c < 3; c++)
+              fputc(c < ch ? i8(x, y, c) : 0, f);
+          }
+        fclose(f);
+      };
+      writePPM(cf, cyclesImg);
+      writePPM(gf, glImg);
+      fprintf(stderr, "Saved: %s, %s\n", cf.c_str(), gf.c_str());
+    }
+
+    QApplication::quit();
+    return;
+  }
+
   int initSamples = std::atoi(gui["initSamples"].as<ComboHandle>().getSelectedItem().c_str());
   int maxIter = std::atoi(gui["maxIter"].as<ComboHandle>().getSelectedItem().c_str());
   int bounces = gui["bounces"].as<int>();
@@ -468,9 +600,13 @@ void run() {
   renderer->setDenoising(false);
   renderer->setExposure(exposure);
   renderer->setBrightness(brightness);
+  // Update Sky intensity from BG% slider (affects both GL env and Cycles background)
+  scene.getSky().intensity = brightness;
+
   if (glRenderer) {
     glRenderer->setExposure(exposure);
-    glRenderer->setAmbient(brightness * 0.15f);
+    glRenderer->setEnvMultiplier(gui["glEnv"].as<int>() / 100.0f);
+    glRenderer->setDirectMultiplier(gui["glDirect"].as<int>() / 100.0f);
     glRenderer->setDebugMode(gui["glDebug"].as<ComboHandle>().getSelectedIndex());
   }
 
@@ -600,10 +736,14 @@ int main(int argc, char **argv) {
       offscreen = true;
       offscreenFile = argv[++i];
     }
+    if (std::string("-compare") == argv[i]) {
+      compareMode = true;
+      if (i + 1 < argc && argv[i+1][0] != '-') comparePrefix = argv[++i];
+    }
   }
 
   if (offscreen) {
-    pa_init(argc, argv, "-size(Size=800x600) -scene(...) -offscreen(string) -samples(int=16) -decimate(int) -rotate(string)");
+    pa_init(argc, argv, "-size(Size=800x600) -scene(...) -offscreen(string) -samples(int=16) -decimate(int) -rotate(string) -background(string=gradient)");
     offscreen_render(offscreenFile);
     return 0;
   }
@@ -617,6 +757,6 @@ int main(int argc, char **argv) {
   QSurfaceFormat::setDefaultFormat(fmt);
 
   return ICLApp(argc, argv,
-    "-size(Size=1280x960) -scene(...) -decimate(int) -rotate(string)",
+    "-size(Size=1280x960) -scene(...) -decimate(int) -rotate(string) -background(string=gradient) -compare(string)",
     init, run).exec();
 }

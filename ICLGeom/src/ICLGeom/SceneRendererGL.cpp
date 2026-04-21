@@ -4,6 +4,7 @@
 
 #include <ICLGeom/SceneRendererGL.h>
 #include <ICLGeom/Scene.h>
+#include <ICLGeom/Sky.h>
 #include <ICLGeom/SceneObject.h>
 #include <ICLGeom/SceneLight.h>
 #include <ICLGeom/Camera.h>
@@ -42,26 +43,43 @@ void main() {
 static const char *SKY_FRAG = R"(
 #version 410 core
 uniform mat4 uInvVP;
-uniform float uBrightness;
+uniform int uSkyMode;        // 0=solid, 1=gradient, 2=physical
+uniform vec3 uSkyZenith;
+uniform vec3 uSkyHorizon;
+uniform vec3 uSkyGround;
+uniform float uSkySharpness;
+uniform vec3 uSkySunDir;
 in vec2 vNDC;
 out vec4 FragColor;
 void main() {
-    // Reconstruct world-space view direction from NDC
     vec4 worldFar = uInvVP * vec4(vNDC, 1.0, 1.0);
     vec3 dir = normalize(worldFar.xyz / worldFar.w);
-    float y = dir.y;  // vertical component: +1=up, -1=down
-
-    // Sky gradient: warm horizon → blue zenith, dark below
-    vec3 zenith  = vec3(0.45, 0.55, 0.75) * uBrightness;
-    vec3 horizon = vec3(0.85, 0.85, 0.82) * uBrightness;
-    vec3 ground  = vec3(0.25, 0.22, 0.20) * uBrightness;
+    float y = dir.y;
 
     vec3 color;
-    if (y > 0.0) {
-        float t = pow(y, 0.4);  // compress near horizon for wider bright band
-        color = mix(horizon, zenith, t);
+    if (uSkyMode == 0) {
+        color = uSkyHorizon;
+    } else if (uSkyMode == 2) {
+        // Physical: simplified Preetham with sun disc
+        float sunDot = max(dot(dir, normalize(uSkySunDir)), 0.0);
+        float sunDisc = pow(sunDot, 256.0) * 4.0;
+        float sunGlow = pow(sunDot, 8.0) * 0.3;
+        vec3 skyBase;
+        if (y > 0.0) {
+            float t = pow(y, uSkySharpness);
+            skyBase = mix(uSkyHorizon, uSkyZenith, t);
+        } else {
+            skyBase = mix(uSkyHorizon, uSkyGround, min(-y * 3.0, 1.0));
+        }
+        color = skyBase + vec3(1.0, 0.95, 0.8) * (sunDisc + sunGlow);
     } else {
-        color = mix(horizon, ground, min(-y * 3.0, 1.0));
+        // Gradient (default)
+        if (y > 0.0) {
+            float t = pow(y, uSkySharpness);
+            color = mix(uSkyHorizon, uSkyZenith, t);
+        } else {
+            color = mix(uSkyHorizon, uSkyGround, min(-y * 3.0, 1.0));
+        }
     }
     FragColor = vec4(color, 1.0);
 }
@@ -122,6 +140,8 @@ uniform float uRoughness;
 uniform vec4  uEmissive;
 uniform float uAmbient;
 uniform float uExposure;
+uniform float uEnvMul;
+uniform float uDirectMul;
 uniform vec3  uCameraPos;
 uniform int   uNumLights;
 uniform vec4  uLightPos[8];
@@ -149,17 +169,19 @@ in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
 
-// Evaluate sky gradient for a world-space direction (matches sky shader)
-vec3 sampleSky(vec3 dir, float brightness) {
+// Evaluate sky for a world-space direction (uses same uniforms as sky shader)
+uniform vec3 uEnvZenith;
+uniform vec3 uEnvHorizon;
+uniform vec3 uEnvGround;
+uniform float uEnvSharpness;
+
+vec3 sampleSky(vec3 dir) {
     float y = dir.y;
-    vec3 zenith  = vec3(0.55, 0.65, 0.85) * brightness;
-    vec3 horizon = vec3(0.95, 0.93, 0.90) * brightness;
-    vec3 ground  = vec3(0.30, 0.27, 0.25) * brightness;
     if (y > 0.0) {
-        float t = pow(y, 0.4);
-        return mix(horizon, zenith, t);
+        float t = pow(y, uEnvSharpness);
+        return mix(uEnvHorizon, uEnvZenith, t);
     } else {
-        return mix(horizon, ground, min(-y * 3.0, 1.0));
+        return mix(uEnvHorizon, uEnvGround, min(-y * 3.0, 1.0));
     }
 }
 
@@ -217,14 +239,14 @@ void main() {
 
     // Environment reflection: sample sky in reflection direction for metals
     vec3 R = reflect(-V, N);
-    vec3 envColor = sampleSky(R, uExposure);
+    vec3 envColor = sampleSky(R);
     // Roughness blurs the reflection (approximate by blending toward diffuse sky)
-    vec3 diffuseEnv = sampleSky(N, uExposure);
+    vec3 diffuseEnv = sampleSky(N);
     vec3 envReflection = mix(envColor, diffuseEnv, roughness);
 
-    // Ambient/environment: dielectrics get diffuse irradiance, metals get specular reflection
-    vec3 ambientDiffuse = albedo * diffuseEnv * (1.0 - metallic);
-    vec3 ambientSpecular = specColor * envReflection;
+    // Ambient/environment: approximate multi-bounce indirect illumination
+    vec3 ambientDiffuse = albedo * diffuseEnv * (1.0 - metallic) * uEnvMul;
+    vec3 ambientSpecular = specColor * envReflection * uEnvMul;
     // Fresnel at grazing angles brightens reflections (Schlick approx)
     float NdotV = max(dot(N, V), 0.0);
     float fresnel = pow(1.0 - NdotV, 5.0);
@@ -257,7 +279,7 @@ void main() {
         float specPow = pow(NdotH, shininess);
         vec3 specular = specColor * specPow;
 
-        result += shadow * uLightColor[i] * (diffuse + specular * NdotL);
+        result += shadow * uLightColor[i] * uDirectMul * (diffuse + specular * NdotL);
     }
 
     // Emissive: factor * map (per glTF spec)
@@ -513,10 +535,16 @@ struct SceneRendererGL::Data {
   GLuint skyProgram = 0;
   GLuint skyVAO = 0, skyVBO = 0;
   GLint skyLocInvVP = -1;
-  GLint skyLocBrightness = -1;
+  GLint skyLocMode = -1;
+  GLint skyLocZenith = -1, skyLocHorizon = -1, skyLocGround = -1;
+  GLint skyLocSharpness = -1, skyLocSunDir = -1;
+  // Environment uniforms in main shader (for sampleSky function)
+  GLint locEnvZenith = -1, locEnvHorizon = -1, locEnvGround = -1, locEnvSharpness = -1;
   bool shaderReady = false;
   float exposure = 1.0f;
   float ambient = 0.1f;
+  float envMultiplier = 1.5f;
+  float directMultiplier = 1.0f;
   int debugMode = 0;
   std::unordered_map<const SceneObject*, std::unique_ptr<GLGeometryCache>> geometryCache;
 
@@ -539,6 +567,8 @@ struct SceneRendererGL::Data {
   GLint locEmissive = -1;
   GLint locAmbient = -1;
   GLint locExposure = -1;
+  GLint locEnvMul = -1;
+  GLint locDirectMul = -1;
   GLint locCameraPos = -1;
   GLint locHasBaseColorMap = -1;
   GLint locBaseColorMap = -1;
@@ -566,6 +596,8 @@ struct SceneRendererGL::Data {
     locEmissive = glGetUniformLocation(program, "uEmissive");
     locAmbient = glGetUniformLocation(program, "uAmbient");
     locExposure = glGetUniformLocation(program, "uExposure");
+    locEnvMul = glGetUniformLocation(program, "uEnvMul");
+    locDirectMul = glGetUniformLocation(program, "uDirectMul");
     locCameraPos = glGetUniformLocation(program, "uCameraPos");
     locHasBaseColorMap = glGetUniformLocation(program, "uHasBaseColorMap");
     locBaseColorMap = glGetUniformLocation(program, "uBaseColorMap");
@@ -575,6 +607,10 @@ struct SceneRendererGL::Data {
     locMetallicRoughnessMap = glGetUniformLocation(program, "uMetallicRoughnessMap");
     locHasEmissiveMap = glGetUniformLocation(program, "uHasEmissiveMap");
     locEmissiveMap = glGetUniformLocation(program, "uEmissiveMap");
+    locEnvZenith = glGetUniformLocation(program, "uEnvZenith");
+    locEnvHorizon = glGetUniformLocation(program, "uEnvHorizon");
+    locEnvGround = glGetUniformLocation(program, "uEnvGround");
+    locEnvSharpness = glGetUniformLocation(program, "uEnvSharpness");
     locDebugMode = glGetUniformLocation(program, "uDebugMode");
     for (int i = 0; i < 8; i++) {
       char name[48];
@@ -628,6 +664,10 @@ SceneRendererGL::~SceneRendererGL() {
 void SceneRendererGL::setExposure(float e) { m_data->exposure = e; }
 void SceneRendererGL::setAmbient(float a) { m_data->ambient = a; }
 void SceneRendererGL::setDebugMode(int mode) { m_data->debugMode = mode; }
+void SceneRendererGL::setEnvMultiplier(float m) { m_data->envMultiplier = m; }
+float SceneRendererGL::getEnvMultiplier() const { return m_data->envMultiplier; }
+void SceneRendererGL::setDirectMultiplier(float m) { m_data->directMultiplier = m; }
+float SceneRendererGL::getDirectMultiplier() const { return m_data->directMultiplier; }
 
 void SceneRendererGL::ensureShaderCompiled() {
   if (m_data->shaderReady) return;
@@ -666,7 +706,12 @@ void SceneRendererGL::ensureShaderCompiled() {
     if (svs && sfs) {
       m_data->skyProgram = linkProgram(svs, sfs);
       m_data->skyLocInvVP = glGetUniformLocation(m_data->skyProgram, "uInvVP");
-      m_data->skyLocBrightness = glGetUniformLocation(m_data->skyProgram, "uBrightness");
+      m_data->skyLocMode = glGetUniformLocation(m_data->skyProgram, "uSkyMode");
+      m_data->skyLocZenith = glGetUniformLocation(m_data->skyProgram, "uSkyZenith");
+      m_data->skyLocHorizon = glGetUniformLocation(m_data->skyProgram, "uSkyHorizon");
+      m_data->skyLocGround = glGetUniformLocation(m_data->skyProgram, "uSkyGround");
+      m_data->skyLocSharpness = glGetUniformLocation(m_data->skyProgram, "uSkySharpness");
+      m_data->skyLocSunDir = glGetUniformLocation(m_data->skyProgram, "uSkySunDir");
     }
     if (svs) glDeleteShader(svs);
     if (sfs) glDeleteShader(sfs);
@@ -834,15 +879,31 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // Sky gradient background
+  // Sky background (reads from Scene::getSky())
+  // Resolve effective colors: Solid mode uses solidColor for all three
+  const Sky &sky = scene.getSky();
+  float si = sky.intensity * m_data->exposure;
+  GeomColor effZenith, effHorizon, effGround;
+  if (sky.mode == Sky::Solid) {
+    effZenith = effHorizon = effGround = sky.solidColor;
+  } else {
+    effZenith = sky.zenithColor;
+    effHorizon = sky.horizonColor;
+    effGround = sky.groundColor;
+  }
+
   if (m_data->skyProgram) {
     glDisable(GL_DEPTH_TEST);
     glUseProgram(m_data->skyProgram);
-    // Inverse view-projection matrix for reconstructing world-space ray direction
     Mat vp = projGL * viewGL;
     Mat invVP = vp.inv();
     glUniformMatrix4fv(m_data->skyLocInvVP, 1, GL_TRUE, invVP.data());
-    glUniform1f(m_data->skyLocBrightness, m_data->exposure);
+    glUniform1i(m_data->skyLocMode, (int)sky.mode);
+    glUniform3f(m_data->skyLocZenith, effZenith[0]*si, effZenith[1]*si, effZenith[2]*si);
+    glUniform3f(m_data->skyLocHorizon, effHorizon[0]*si, effHorizon[1]*si, effHorizon[2]*si);
+    glUniform3f(m_data->skyLocGround, effGround[0]*si, effGround[1]*si, effGround[2]*si);
+    glUniform1f(m_data->skyLocSharpness, sky.horizonSharpness);
+    glUniform3f(m_data->skyLocSunDir, sky.sunDirection[0], sky.sunDirection[1], sky.sunDirection[2]);
     glBindVertexArray(m_data->skyVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
@@ -858,7 +919,17 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   m_data->setUniformMat4(m_data->locViewMatrix, viewGL);
   glUniform1f(m_data->locAmbient, m_data->ambient);
   glUniform1f(m_data->locExposure, m_data->exposure);
+  glUniform1f(m_data->locEnvMul, m_data->envMultiplier);
+  glUniform1f(m_data->locDirectMul, m_data->directMultiplier);
   glUniform1i(m_data->locDebugMode, m_data->debugMode);
+
+  // Environment uniforms for sampleSky() in fragment shader
+  // 2x boost matches Cycles' background strength convention (2.0 * intensity)
+  float ei = si * 2.0f;
+  glUniform3f(m_data->locEnvZenith, effZenith[0]*ei, effZenith[1]*ei, effZenith[2]*ei);
+  glUniform3f(m_data->locEnvHorizon, effHorizon[0]*ei, effHorizon[1]*ei, effHorizon[2]*ei);
+  glUniform3f(m_data->locEnvGround, effGround[0]*ei, effGround[1]*ei, effGround[2]*ei);
+  glUniform1f(m_data->locEnvSharpness, sky.horizonSharpness);
 
   // Camera position in world space (for specular)
   Vec camPos = cam.getPosition();
@@ -1131,6 +1202,64 @@ void GLImageRenderer::render(const core::Image &img) {
   glBindVertexArray(0);
 
   glUseProgram(0);
+}
+
+Image SceneRendererGL::renderToImage(const Scene &scene, int camIndex, int width, int height) {
+  ensureShaderCompiled();
+  if (!m_data->program) return Image();
+
+  // Create temporary FBO with color + depth attachments
+  GLuint fbo, colorTex, depthRB;
+  glGenFramebuffers(1, &fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+  glGenTextures(1, &colorTex);
+  glBindTexture(GL_TEXTURE_2D, colorTex);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTex, 0);
+
+  glGenRenderbuffers(1, &depthRB);
+  glBindRenderbuffer(GL_RENDERBUFFER, depthRB);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRB);
+
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    fprintf(stderr, "[SceneRendererGL] renderToImage: FBO incomplete\n");
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteFramebuffers(1, &fbo);
+    glDeleteTextures(1, &colorTex);
+    glDeleteRenderbuffers(1, &depthRB);
+    return Image();
+  }
+
+  // Set viewport and render
+  glViewport(0, 0, width, height);
+  render(scene, camIndex);
+
+  // Read back pixels
+  std::vector<icl8u> pixels(width * height * 4);
+  glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+  // Convert to ICL Image (planar, flip Y since GL reads bottom-up)
+  Img8u result(Size(width, height), 3);
+  for (int y = 0; y < height; y++) {
+    int srcY = height - 1 - y;
+    for (int x = 0; x < width; x++) {
+      int idx = (srcY * width + x) * 4;
+      result(x, y, 0) = pixels[idx + 0];
+      result(x, y, 1) = pixels[idx + 1];
+      result(x, y, 2) = pixels[idx + 2];
+    }
+  }
+
+  // Cleanup
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDeleteFramebuffers(1, &fbo);
+  glDeleteTextures(1, &colorTex);
+  glDeleteRenderbuffers(1, &depthRB);
+
+  return Image(result);
 }
 
 } // namespace icl::geom

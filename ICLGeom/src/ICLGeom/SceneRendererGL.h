@@ -49,6 +49,17 @@ namespace icl::geom {
     /// Set debug mode: 0=shaded, 1=normals, 2=albedo, 3=UVs, 4=lighting only
     void setDebugMode(int mode);
 
+    /// Set environment light multiplier (default 1.5)
+    void setEnvMultiplier(float m);
+    float getEnvMultiplier() const;
+
+    /// Set direct light multiplier (default 1.0)
+    void setDirectMultiplier(float m);
+    float getDirectMultiplier() const;
+
+    /// Render scene to an offscreen image (creates temporary FBO)
+    core::Image renderToImage(const Scene &scene, int camIndex, int width, int height);
+
   private:
     void ensureShaderCompiled();
     void renderObject(const SceneObject *obj, const math::FixedMatrix<float,4,4> &viewMatrix);

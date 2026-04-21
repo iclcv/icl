@@ -17,6 +17,7 @@
 #include <ICLGeom/Camera.h>
 #include <ICLGeom/SceneLight.h>
 #include <ICLGeom/Primitive.h>
+#include <ICLGeom/Sky.h>
 #include <ICLGeom/PointCloudGrabber.h>
 #include <ICLCore/Img.h>
 #include <ICLUtils/FPSEstimator.h>
@@ -343,6 +344,15 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
       [255,255,255,20]. The color values are given in ranges [0,255]*/
   void setGlobalAmbientLight(const GeomColor &color);
 
+  /// sets the sky/environment for rendering (used by both GL and Cycles backends)
+  void setSky(const Sky &sky) { m_sky = sky; }
+
+  /// returns the current sky/environment
+  const Sky &getSky() const { return m_sky; }
+
+  /// returns a mutable reference to the sky (for in-place modification)
+  Sky &getSky() { return m_sky; }
+
   /// picks the closest contained scene-object clicked at given ScreenPosition
   /** returns 0 if no object was hit, if contactPos is not 0, the 3D-contact position
       is stored there. */
@@ -488,6 +498,9 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
 
   /// global ambient light
   math::FixedColVector<int,4> m_globalAmbientLight;
+
+  /// sky/environment definition
+  Sky m_sky;
 
   /// current scene background color
   GeomColor m_backgroundColor;

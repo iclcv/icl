@@ -429,24 +429,40 @@ SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
   // Sync lights
   syncLights(iclScene, cclScene, sceneScale);
 
-  // Set up background on first sync; update strength on every sync.
+  // Set up background from Scene::getSky()
+  const auto &sky = iclScene.getSky();
+  float bgStrength = 2.0f * sky.intensity * m_backgroundStrength;
   if (m_lastLightHash == 0) {
     Shader *bg = cclScene->default_background;
     ShaderGraph *graph = new ShaderGraph();
 
-    BackgroundNode *bgn = graph->create_node<BackgroundNode>();
-    bgn->set_color(make_float3(0.8f, 0.75f, 0.7f));
-    bgn->set_strength(2.0f * m_backgroundStrength);
+    // Background color from Sky: solid uses solidColor, gradient/physical use
+    // a weighted blend of zenith/horizon/ground to approximate the gradient.
+    // (Full gradient node graph deferred — needs more Cycles node API investigation)
+    float3 bgColor;
+    if (sky.mode == geom::Sky::Solid) {
+      bgColor = make_float3(sky.solidColor[0], sky.solidColor[1], sky.solidColor[2]);
+    } else {
+      // Weighted average: horizon dominates (60%), zenith 25%, ground 15%
+      bgColor = make_float3(
+        sky.horizonColor[0] * 0.6f + sky.zenithColor[0] * 0.25f + sky.groundColor[0] * 0.15f,
+        sky.horizonColor[1] * 0.6f + sky.zenithColor[1] * 0.25f + sky.groundColor[1] * 0.15f,
+        sky.horizonColor[2] * 0.6f + sky.zenithColor[2] * 0.25f + sky.groundColor[2] * 0.15f);
+    }
+
+    auto *bgn = graph->create_node<BackgroundNode>();
+    bgn->set_color(bgColor);
+    bgn->set_strength(bgStrength);
     graph->connect(bgn->output("Background"), graph->output()->input("Surface"));
+    m_bgNode = static_cast<void*>(bgn);
+
     bg->set_graph(unique_ptr<ShaderGraph>(graph));
     bg->tag_update(cclScene);
-    m_bgNode = static_cast<void*>(bgn);
     m_lastLightHash = 1;
   } else if (m_bgNode) {
-    float newStrength = 2.0f * m_backgroundStrength;
     auto *bgn = static_cast<BackgroundNode*>(m_bgNode);
-    if (bgn->get_strength() != newStrength) {
-      bgn->set_strength(newStrength);
+    if (bgn->get_strength() != bgStrength) {
+      bgn->set_strength(bgStrength);
       cclScene->default_background->tag_update(cclScene);
     }
   }
