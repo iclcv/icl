@@ -1,6 +1,142 @@
 # ICL — Continuation Guide
 
-## Current State (Session 41 — Filter module audit + framework bug fixes)
+## Current State (Session 42 — rectify-image fix, AffineOp backends, Quick2 pool)
+
+### Session 42 Summary
+
+Finished the filter module audit (9/10 demos runtime-verified, warp-op deferred).
+Major framework work driven by a broken `icl-rectify-image`:
+- Hartley-normalized homography estimator (fixes ~128 px fitting errors)
+- AffineOp Accelerate backend fixes (rotation direction, ROI respect, centering)
+- Quick2 pool accounting workaround (trackedBytes per PooledBuffer)
+- DataStore typed `install(MouseHandler*)` overload for MI-safe pointer offsets
+
+Also: Common2.h now transitively exposes FPSLimiter. Two pre-existing
+gotchas flagged (parse<T>(pa()) trap, vImage matrix convention).
+
+#### A. rectify-image fix trail
+
+Root cause was a chain of four independent issues, each found by attempting
+to reproduce the reported "can't drag corners, bad output" failure mode:
+
+1. **Mouse install broken** — `gui["draw"].install(mouse)` didn't compile
+   (non-copyable AffineOp). Changed to `install(&mouse)`. Added a typed
+   `DataStore::Data::install(MouseHandler*)` overload
+   (icl/qt/DataStore.h:137-139) that performs the derived→base conversion at
+   the call site, so the stored `void*` actually points to the MouseHandler
+   subobject — matters for multiply-inherited handlers like
+   DefineQuadrangleMouseHandler. Forward-declared `MouseHandler` in DataStore.h.
+
+2. **Handles unclickable in small window** — DefineQuadrangleMouseHandler's
+   click-tolerance was 8 *image pixels*. On a FullHD camera shown in a
+   compact window the handles became sub-pixel-sized. Rewrote process() at
+   icl/qt/DefineQuadrangleMouseHandler.cpp:105-166 to use *widget-pixel*
+   distance via `e.getWidgetPos()` + widget-image scale, `max(projected,
+   10px)` threshold. Rendering unchanged (still in image coords).
+
+3. **Homography residuals of ~128 px** — unnormalized DLT is numerically
+   unstable. Added Hartley normalization in
+   icl/math/Homography2D.cpp:17-63 (translate centroid to origin, scale to
+   mean-distance √2, fit there, un-normalize with `H = Ty^-1 · H̃ · Tx`).
+   Both algorithms previously failed on rotated quads; now < 1 px residual.
+   **Deleted the `Simple` algorithm** — nobody in the codebase passed it,
+   it was structurally wrong for any perspective mapping. Also removed
+   `advanedAlgorithm` param from ImageRectification::apply. 3 new tests
+   in tests/test-math.cpp:1174-1221.
+
+4. **Opaque error messages** — ImageRectification's "at least one edge…
+   outside the source image rectangle" throw now names the offending
+   corner, its mapped (x,y) value, the src rect, and the source quad
+   corner for debugging (icl/filter/ImageRectification.cpp:106-115).
+
+#### B. AffineOp backend rework (macOS/Accelerate)
+
+Working on affine-op-demo revealed three distinct bugs in the Accelerate
+LIN path. All in icl/filter/AffineOp_Accelerate.cpp.
+
+1. **Rotation direction flipped vs NN** — vImage's matrix convention is
+   empirically not what the docs imply. Guesswork (invert + row-vector,
+   invert + column-vector) all broke centering. Working fix: decompose
+   the forward matrix as an isotropic similarity (scale + angle + user
+   translation), negate the angle, recompute the bbox-centering
+   translation, feed through the original (known-centered) struct layout.
+   Documented in the project_affineop_vimage.md memory.
+
+2. **Lost user translation** — the decomposition was rebuilding the
+   translation purely from ROI bbox, throwing away `op.translate(1, 0)`
+   calls and breaking Filter.AffineOp.translate test. Fixed by separating
+   user-translation from bbox-centering adjustment
+   (AffineOp_Accelerate.cpp:71-75).
+
+3. **ROI not respected** — vImage_Buffer described the full image, so
+   clipToROI silently bled pixels outside the ROI. Fixed by pointing
+   srcBuf at ROI origin (`s.getData(c) + roi.y*W + roi.x`), using ROI
+   dims, and adjusting the translation by `A·(roi.x, roi.y) + t`
+   (column-vector form). Initial sign error of `t − (roi.x, roi.y)` only
+   worked for identity A — corrected to proper formula.
+
+Separate cleanup: **AffineOp::apply** (icl/filter/AffineOp.cpp:91-95)
+now consults `getClipToROI()` to choose the bbox region
+(`src.getROI()` vs `src.getImageRect()`). `m_adaptResultImage` stays
+orthogonal (used by TranslateOp + tests, unchanged).
+
+#### C. Quick2 / QuickContext pool accounting
+
+The pool's `currentUsage` (a `size_t`) was underflowing to ~2^44 during
+icl-tests. Diagnosed with a new `setTracing(bool)` emitting per-event
+alloc/resize/evict/unpooled traces to stderr, plus an `ERROR_LOG` +
+clamp-to-0 guard that caught the underflow. Root cause: pool tracked
+sizes via live `Image::memoryUsage()` queries at mutation time, which
+desyncs if callers externally resize a handed-out buffer.
+
+Workaround (not the real fix): **PooledBuffer{Image, size_t trackedBytes}**
+pairs (icl/qt/QuickContext.cpp:62-64). Decrements use `trackedBytes`, not
+live queries. Underflow vanishes.
+
+Also added **`setThrowOnCapExceeded(bool)`** for strict-mode test assertions
+— keeps stderr clean in icl-tests' `Quick2.Context.memoryCap` test.
+
+**Real fix deferred**: replace the Image-holding pool with a generic
+`utils::MemoryPool` of raw byte chunks + `shared_ptr` custom-deleter
+release (captured in project_memorypool.md memory). Green-field refactor,
+not worth interleaving with other work.
+
+#### D. Filter demo audit (runtime verification)
+
+All 10 filter demos from Session 41 had been *header-swap Done*. Session 42
+ran each one end-to-end:
+
+- ✅ affine-op (modernized), bilateral-filter-op, canny-op, convolution-op,
+  dither-op, fft, gabor-op (modernized + parse<T>(pa()) fix),
+  pseudo-color, temporal-smoothing
+- ⏸ warp-op — needs camera-distortion pipeline to produce warp tables
+
+Modernization touched affine-op.cpp (Img8u global → Image, static AffineOps
+with explicit reset(), FPSLimiter, two orthogonal checkboxes + QuickDraw
+ROI overlay) and gabor-op.cpp (std::vector<float>{x} over vec1 helper,
+useDesired<T>(pa()) over parse<T>(pa())).
+
+Minor cleanups: **canny-op** and **temporal-smoothing** had a useless
+`update()` indirection (run() just called update()). Folded into run().
+
+#### E. Common2.h + pre-existing gotchas
+
+- **Common2.h** now `#include`s FPSLimiter.h transitively, matching the
+  old Common.h convention. Stripped the redundant explicit include from
+  25 demo/app files.
+- **parse<T>(pa("…"))** throws at runtime — ProgArg's templated
+  `operator T()` matches `operator std::string_view()` which recurses
+  into `parse<std::string_view>` (not stream-extractable). Use
+  `pa(...).as<T>()` or `useDesired<T>(pa(...))` instead. Present in
+  ~20 files, worth a sweep later. Documented inline in gabor-op.cpp
+  and in this guide.
+- **vImage matrix convention** stays opaque; the Accelerate backend
+  works for isotropic similarity transforms (ICL's overwhelmingly common
+  case). Documented in project_affineop_vimage.md memory.
+
+---
+
+## Session 41 (Filter module audit + framework bug fixes)
 
 ### Session 41 Summary
 
@@ -131,55 +267,35 @@ Major framework improvements along the way.
   (meson strips Cellar paths as "system")
 - PCL includes propagated through icl_geom_dep
 
-### What's next
+### What's next (after Session 42)
 
 **Module audit** — continue through remaining modules:
-- [x] filter (demos: 10; apps: 4+1 batch) — done Session 41
+- [x] filter (demos: 9/10; apps: 4+1 batch) — warp-op deferred
 - [ ] io (demos: 3; apps: 12)
-- [ ] cv (demos: 12; apps: 6)
+- [ ] cv (demos: 12; apps: 6) — `lens-undistortion-calibration` also unlocks warp-op
 - [ ] qt (demos: 8; apps: 7; examples: 2)
 - [ ] geom (demos: 23; apps: 16)
 - [ ] geom2 (demos: 6)
 - [ ] markers (demos: 2; apps: 8)
 - [ ] physics (demos: 8)
 
-**Open filter items:** All 5 filter apps verified in Session 41.
-Session 42 completed the 10 filter demos:
-- affine-op, bilateral-filter-op, canny-op, convolution-op, dither-op,
-  fft, gabor-op, pseudo-color, temporal-smoothing — runtime-verified
-- warp-op — deferred; needs a warp table (look at camera-distortion
-  pipeline first)
-
-rectify-image end-to-end fix (Session 42):
-- typed `install(MouseHandler*)` overload in DataStore.h (pointer-offset
-  correctness for multiply-inherited MouseHandler subclasses)
-- widget-pixel click tolerance in DefineQuadrangleMouseHandler (FullHD
-  camera in small window no longer unclickable)
-- Hartley normalization in Homography2D (was ~128 px residual on rotated
-  quads → now <1 px); `Simple` algorithm and `advanedAlgorithm` param
-  removed from the API
-- richer ImageRectification exception message (names the offending
-  corner, mapped point, source rect)
-
-AffineOp backend fixes (Session 42, macOS/Accelerate):
-- Decompose → negate angle → recompute bbox + preserve user-translate;
-  now matches C++ NN rotation direction
-- Respect `src.getROI()` via sub-buffer with `A·(roi.x, roi.y) + t`
-  translation adjustment
-- `clipToROI` now controls whether dst bbox is from ROI (tight) or from
-  full image (visible ROI content, black elsewhere); `m_adaptResultImage`
-  remains orthogonal
-
-Known gotchas flagged for future attention:
-- **`parse<T>(pa("..."))`** — throws at runtime. ProgArg's templated
-  conversion op picks `operator std::string_view()` which re-enters
-  `parse<std::string_view>` → not stream-extractable → throw. Use
-  `pa(...).as<T>()` or `useDesired<T>(pa(...))` instead. Present in
-  ~20 files, worth a sweep later.
-- **vImage matrix convention** remains opaque; current backend works
-  for isotropic similarity (ICL's common case). Non-isotropic scale or
-  shear degrades to similarity approximation. Documented in
-  `project_affineop_vimage.md` memory.
+**Deferred framework cleanups** (all non-blocking, documented in memory):
+- `utils::MemoryPool` refactor → QuickContext migrates to raw-byte chunks
+  with shared_ptr custom-deleter release. Current `(Image, trackedBytes)`
+  workaround fixes the observed underflow without restructuring anything.
+  See `project_memorypool.md`.
+- vImage matrix convention investigation — needs empirical pixel-diff
+  testing against C++ fallback. Current backend's "decompose & negate"
+  approach works for isotropic similarity transforms. See
+  `project_affineop_vimage.md`.
+- Sweep `parse<T>(pa("..."))` usages (~20 files) and convert to
+  `pa(...).as<T>()` / `useDesired<T>(pa(...))`. They all throw at runtime
+  but most haven't been exercised yet.
+- CPP LIN backend in `AffineOp_Cpp.cpp` samples from outside ROI when
+  bilinear neighborhood is within full-image bounds — falls back to
+  ROI-respecting NN only at the edges. Pre-existing, inconsistent with
+  NN behavior. Not the same path as the Accelerate backend so doesn't
+  affect macOS users.
 
 For each: compile, run, check if still useful/valid, modernize API usage,
 remove if obsolete. See `porting-progress.md` for per-file status.
@@ -198,15 +314,10 @@ remove if obsolete. See `porting-progress.md` for per-file status.
 
 **Quick2 open items**:
 - MorphologicalOp opening/closing crash via Quick2 `filter()` — pre-existing
-- Pool memory accounting drift — periodic reconciliation
-- **Long-term: replace QuickContext's `std::vector<Image>` pool with a generic
-  `utils::MemoryPool` (raw-byte chunks + shared_ptr custom-deleter release).**
-  Current pool polls `isExclusivelyOwned()` and queries `memoryUsage()` at
-  mutation time, which desyncs the byte tracker if callers externally resize
-  handed-out Images (observed in icl-tests as `size_t` underflow to ~2^44 bytes,
-  2026-04-17). Short-term workaround: store `(Image, size_t trackedBytes)`
-  pairs so decrements use the tracked value, plus `ERROR_LOG` underflow guard
-  that clamps to 0. Proper fix sketched in `project_memorypool.md` (memory).
+- Pool byte-accounting desync — *workaround landed* Session 42:
+  `(Image, trackedBytes)` per buffer + ERROR_LOG underflow clamp +
+  `setTracing()` for diagnosis + `setThrowOnCapExceeded()` for tests.
+  Real fix (raw-byte MemoryPool) still deferred — see `project_memorypool.md`.
 - `ImgROI2`: store target ROI separately instead of modifying image (deferred)
 - `.out("name")` on `Int`/`Float`/`String` GUI components only updates on
   Enter/returnPressed, not on every keystroke. The `.handle("name")` path
