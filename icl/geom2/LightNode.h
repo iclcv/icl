@@ -38,6 +38,12 @@ namespace icl::geom2 {
     void setShadowEnabled(bool on);
     bool getShadowEnabled() const;
 
+    /// Soft shadow PCF radius in texels (0 = hard shadow, default)
+    /** Higher values produce softer shadow edges. Typical range: 1-5.
+        Uses a 16-sample Poisson disk filter. */
+    void setSoftShadowRadius(float texels);
+    float getSoftShadowRadius() const;
+
     /// Spot light cone angle (radians, default pi/4)
     void setSpotAngle(float radians);
     float getSpotAngle() const;

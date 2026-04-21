@@ -76,6 +76,7 @@ void init() {
   light->setIntensity(0.8f);
   light->translate(200, 150, 300);
   light->setShadowEnabled(true);
+  light->setSoftShadowRadius(3.0f);
   scene.addLight(light);
 
   // Text labels above each shape

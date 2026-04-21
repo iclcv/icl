@@ -92,6 +92,7 @@ uniform int uUnlit;
 // Per-light shadow: slot index into shadow map array (-1 = no shadow)
 uniform int uLightShadowSlot[MAX_LIGHTS];
 uniform mat4 uShadowMatrix[4];
+uniform float uShadowSoftness[4];  // PCF radius in UV space (0 = hard)
 uniform sampler2DShadow uShadowMap0;
 uniform sampler2DShadow uShadowMap1;
 uniform sampler2DShadow uShadowMap2;
@@ -102,11 +103,36 @@ in vec3 vNormal;
 in vec2 vTexCoord;
 out vec4 FragColor;
 
-float sampleShadow(int slot, vec3 coord) {
+float sampleShadowSingle(int slot, vec3 coord) {
     if (slot == 0) return texture(uShadowMap0, coord);
     if (slot == 1) return texture(uShadowMap1, coord);
     if (slot == 2) return texture(uShadowMap2, coord);
     return texture(uShadowMap3, coord);
+}
+
+// 16-sample Poisson disk for soft shadow PCF
+const vec2 poissonDisk[16] = vec2[](
+    vec2(-0.9420, -0.3990), vec2( 0.9456, -0.7689),
+    vec2(-0.0942, -0.9293), vec2( 0.3449,  0.2939),
+    vec2(-0.9159,  0.4578), vec2(-0.8154, -0.8791),
+    vec2(-0.3829,  0.0165), vec2( 0.8607,  0.5734),
+    vec2(-0.1282, -0.3965), vec2( 0.1193,  0.8127),
+    vec2( 0.5275, -0.0868), vec2(-0.4670, -0.6856),
+    vec2( 0.6339,  0.8850), vec2(-0.5484,  0.7192),
+    vec2( 0.1654, -0.6349), vec2(-0.3025,  0.3637)
+);
+
+float sampleShadow(int slot, vec3 coord, float softness) {
+    if (softness <= 0.0)
+        return sampleShadowSingle(slot, coord);
+
+    // Multi-tap PCF with Poisson disk
+    float sum = 0.0;
+    for (int i = 0; i < 16; i++) {
+        vec3 offset = vec3(poissonDisk[i] * softness, 0.0);
+        sum += sampleShadowSingle(slot, coord + offset);
+    }
+    return sum / 16.0;
 }
 
 // Approximate sky sampling for environment reflections (matches Sky defaults)
@@ -349,7 +375,8 @@ void main() {
             vec3 sc = sc4.xyz / sc4.w;
             sc = sc * 0.5 + 0.5;
             if (sc.x >= 0.0 && sc.x <= 1.0 && sc.y >= 0.0 && sc.y <= 1.0) {
-                shadow = sampleShadow(slot, vec3(sc.xy, sc.z - 0.0005));
+                shadow = sampleShadow(slot, vec3(sc.xy, sc.z - 0.0005),
+                                      uShadowSoftness[slot]);
             }
         }
 
@@ -675,6 +702,7 @@ void main() { }
     float color[3];
     bool shadowEnabled = false;
     int sceneLightIdx = -1;   // index in traversal order
+    float softShadowRadius = 0.0f;
   };
 
   struct Renderer::Data {
@@ -711,6 +739,7 @@ void main() { }
     // Shadow uniforms in PBR shader
     GLint locLightShadowSlot[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
     GLint locShadowMatrix[4] = {-1,-1,-1,-1};
+    GLint locShadowSoftness[4] = {-1,-1,-1,-1};
     GLint locShadowMap[4] = {-1,-1,-1,-1};
 
     // Shadow maps (up to 4 shadow-casting lights)
@@ -1024,6 +1053,8 @@ void main() { }
         char name[48];
         snprintf(name, sizeof(name), "uShadowMatrix[%d]", i);
         m_data->locShadowMatrix[i] = glGetUniformLocation(m_data->pbrProgram, name);
+        snprintf(name, sizeof(name), "uShadowSoftness[%d]", i);
+        m_data->locShadowSoftness[i] = glGetUniformLocation(m_data->pbrProgram, name);
       }
       m_data->locShadowMap[0] = glGetUniformLocation(m_data->pbrProgram, "uShadowMap0");
       m_data->locShadowMap[1] = glGetUniformLocation(m_data->pbrProgram, "uShadowMap1");
@@ -1093,10 +1124,13 @@ void main() { }
       if (c[0] > 1.01f || c[1] > 1.01f || c[2] > 1.01f)
         c = c * (1.0f / 255.0f);
       float intensity = light->getIntensity();
-      int idx = (int)lights.size();
-      lights.push_back({{t(0, 3), t(1, 3), t(2, 3)},
-                         {c[0]*intensity, c[1]*intensity, c[2]*intensity},
-                         light->getShadowEnabled(), idx});
+      LightInfo li{};
+      li.pos[0] = t(0, 3); li.pos[1] = t(1, 3); li.pos[2] = t(2, 3);
+      li.color[0] = c[0]*intensity; li.color[1] = c[1]*intensity; li.color[2] = c[2]*intensity;
+      li.shadowEnabled = light->getShadowEnabled();
+      li.sceneLightIdx = (int)lights.size();
+      li.softShadowRadius = light->getSoftShadowRadius();
+      lights.push_back(li);
     }
     if (auto *group = dynamic_cast<GroupNode*>(node)) {
       for (int i = 0; i < group->getChildCount(); i++)
@@ -1188,7 +1222,7 @@ void main() { }
       collectLights(node.get(), m_data->lights);
 
     // ---- Shadow passes (one per shadow-casting light, up to 4) ----
-    struct ShadowInfo { int lightIdx; Mat lightVP; };
+    struct ShadowInfo { int lightIdx; Mat lightVP; float softness; };
     ShadowInfo shadowInfos[4];
     int numShadows = 0;
     int lightToShadowSlot[8];
@@ -1200,6 +1234,9 @@ void main() { }
         if (m_data->lights[i].shadowEnabled) {
           shadowInfos[numShadows].lightIdx = i;
           shadowInfos[numShadows].lightVP = buildLightVP(m_data->lights[i]);
+          // Convert texel radius to UV space for the shader
+          shadowInfos[numShadows].softness =
+              m_data->lights[i].softShadowRadius / (float)m_data->shadowMapSize;
           lightToShadowSlot[i] = numShadows;
           numShadows++;
         }
@@ -1303,6 +1340,7 @@ void main() { }
       glBindTexture(GL_TEXTURE_2D, m_data->shadowTex[s]);
       glUniform1i(m_data->locShadowMap[s], 5 + s);
       setUniformMat4(m_data->locShadowMatrix[s], shadowInfos[s].lightVP);
+      glUniform1f(m_data->locShadowSoftness[s], shadowInfos[s].softness);
     }
 
     // SSR: bind previous frame's textures for reading

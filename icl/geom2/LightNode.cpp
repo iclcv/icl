@@ -12,6 +12,7 @@ namespace icl::geom2 {
     GeomColor color{1.0f, 0.97f, 0.92f, 1.0f};  // warm white
     float intensity = 1.0f;
     bool shadowEnabled = false;
+    float softShadowRadius = 0.0f;
     float spotAngle = M_PI / 4.0f;
   };
 
@@ -44,6 +45,9 @@ namespace icl::geom2 {
 
   void LightNode::setShadowEnabled(bool on) { m_data->shadowEnabled = on; }
   bool LightNode::getShadowEnabled() const { return m_data->shadowEnabled; }
+
+  void LightNode::setSoftShadowRadius(float r) { m_data->softShadowRadius = r; }
+  float LightNode::getSoftShadowRadius() const { return m_data->softShadowRadius; }
 
   void LightNode::setSpotAngle(float r) { m_data->spotAngle = r; }
   float LightNode::getSpotAngle() const { return m_data->spotAngle; }

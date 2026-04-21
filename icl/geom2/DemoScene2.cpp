@@ -278,6 +278,8 @@ namespace icl::geom2 {
     keyLight->setColor(GeomColor(255, 248, 235, 255));
     keyLight->setIntensity(1.0f);
     keyLight->translate(r * 0.8f, r * 0.6f, -r * 0.3f);
+    keyLight->setShadowEnabled(true);
+    keyLight->setSoftShadowRadius(3.0f);
     addLight(keyLight);
 
     auto fillLight = std::make_shared<LightNode>();
@@ -296,6 +298,7 @@ namespace icl::geom2 {
     topLight->setColor(GeomColor(220, 215, 210, 255));
     topLight->setIntensity(1.0f);
     topLight->translate(0, r * 1.5f, 0);
+    topLight->setShadowEnabled(true);
     addLight(topLight);
 
     // Mouse navigation cursor at origin, bounds for sensitivity

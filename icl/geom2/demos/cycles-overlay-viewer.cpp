@@ -55,6 +55,7 @@ void init() {
           << Slider(0, 100, 50).handle("alpha").label("GL Overlay %")
           << Slider(1, 16, 4).handle("bounces").label("Bounces")
           << Slider(10, 500, 100).handle("exposure").label("Exposure %")
+          << Slider(0, 20, 3).handle("shadowSoft").label("Shadow Softness")
           << Combo("shaded,normals,albedo,UVs,lighting,NdotL,"
                    "SSR confidence,depth,SSR only").handle("glDebug")
                    .label("GL Debug")
@@ -88,6 +89,14 @@ void run() {
   scene.getRenderer().setExposure(exposure);
   scene.getRenderer().setOverlayAlpha(alpha);
   scene.getRenderer().setDebugMode(gui["glDebug"].as<ComboHandle>().getSelectedIndex());
+
+  // Apply shadow softness to all shadow-enabled lights
+  float softness = gui["shadowSoft"].as<float>();
+  for (int i = 0; i < scene.getLightCount(); i++) {
+    auto *l = scene.getLight(i);
+    if (l && l->getShadowEnabled())
+      l->setSoftShadowRadius(softness);
+  }
 
   // Feed latest Cycles image as canvas background, then render GL on top
   gui["canvas"] = renderer->getImage();
