@@ -45,8 +45,9 @@ namespace icl::geom {
 
     core::Image baseColorMap;          ///< albedo texture (RGB/RGBA)
     core::Image normalMap;             ///< tangent-space normal map (RGB)
-    core::Image metallicRoughnessMap;  ///< R=metallic, G=roughness
+    core::Image metallicRoughnessMap;  ///< G=roughness, B=metallic (glTF convention)
     core::Image emissiveMap;           ///< emission texture (RGB)
+    core::Image occlusionMap;          ///< ambient occlusion (R channel, 1=fully lit)
 
     // -- Alpha handling --
 

@@ -155,6 +155,8 @@ uniform int uHasMetallicRoughnessMap;
 uniform sampler2D uMetallicRoughnessMap;
 uniform int uHasEmissiveMap;
 uniform sampler2D uEmissiveMap;
+uniform int uHasOcclusionMap;
+uniform sampler2D uOcclusionMap;
 uniform int uDebugMode;
 
 // Per-light shadow: slot index into shadow map array (-1 = no shadow)
@@ -197,6 +199,7 @@ out vec4 FragColor;
 void main() {
     vec3 N = normalize(vNormal);
     if (!gl_FrontFacing) N = -N;
+    vec3 geomN = N;  // save geometric normal before perturbation
 
     // Normal map: perturb N using tangent-space normal from texture
     if (uHasNormalMap != 0) {
@@ -214,6 +217,10 @@ void main() {
             N = normalize(mat3(T, B, N) * tsNormal);
         }
     }
+    // Self-occlusion: where the normal map bends normals away from the
+    // geometric surface (crevices, borders), reduce ambient light.
+    // Approximates the self-shadowing that path tracing computes naturally.
+    float selfOcclusion = max(dot(N, geomN), 0.0);
 
     vec4 baseColor = uBaseColor;
     if (uHasBaseColorMap != 0) {
@@ -222,7 +229,7 @@ void main() {
     vec3 albedo = baseColor.rgb;
     vec3 V = normalize(uCameraPos - vWorldPos);
 
-    // Metallic-roughness map (glTF: blue=metallic, green=roughness)
+    // Metallic-roughness map (glTF: green=roughness, blue=metallic)
     float metallic = uMetallic;
     float roughness = uRoughness;
     if (uHasMetallicRoughnessMap != 0) {
@@ -244,19 +251,22 @@ void main() {
     vec3 diffuseEnv = sampleSky(N);
     vec3 envReflection = mix(envColor, diffuseEnv, roughness);
 
-    // Multi-bounce approximation: L = E / (1 - a) where a = albedo luminance
-    // This analytically models the geometric series of infinite bounces
-    float albedoLum = dot(albedo, vec3(0.2126, 0.7152, 0.0722));
-    float bounceBoost = 1.0 / max(1.0 - albedoLum, 0.05);
-
-    vec3 ambientDiffuse = albedo * diffuseEnv * (1.0 - metallic) * bounceBoost * uEnvMul;
-    vec3 ambientSpecular = specColor * envReflection * uEnvMul;
-    // Fresnel at grazing angles brightens reflections (Schlick approx)
+    // Fresnel: roughness-aware Schlick (Lagarde 2014).
+    // Smoother surfaces have higher effective reflectivity at grazing angles.
     float NdotV = max(dot(N, V), 0.0);
     float fresnel = pow(1.0 - NdotV, 5.0);
-    vec3 envFresnel = mix(specColor, vec3(1.0), fresnel);
-    ambientSpecular *= envFresnel;
-    vec3 result = ambientDiffuse + ambientSpecular;
+    vec3 envFresnel = specColor + (max(vec3(1.0 - roughness), specColor) - specColor) * fresnel;
+
+    // Energy conservation: diffuse attenuated by specular reflection
+    vec3 kD = (vec3(1.0) - envFresnel) * (1.0 - metallic);
+    vec3 ambientDiffuse = albedo * diffuseEnv * kD * uEnvMul;
+    vec3 ambientSpecular = envReflection * envFresnel * uEnvMul;
+    // Occlusion: combine texture AO (if present) with normal-map self-occlusion
+    float occlusion = selfOcclusion;
+    if (uHasOcclusionMap != 0) {
+        occlusion *= texture(uOcclusionMap, vTexCoord).r;
+    }
+    vec3 result = (ambientDiffuse + ambientSpecular) * occlusion;
 
     for (int i = 0; i < uNumLights; i++) {
         vec3 L = normalize(uLightPos[i].xyz - vWorldPos);
@@ -331,6 +341,7 @@ struct GLGeometryCache {
   GLuint normalMapTex = 0;
   GLuint metallicRoughnessTex = 0;
   GLuint emissiveMapTex = 0;
+  GLuint occlusionMapTex = 0;
 
   ~GLGeometryCache() {
     if (vao) glDeleteVertexArrays(1, &vao);
@@ -340,6 +351,7 @@ struct GLGeometryCache {
     if (normalMapTex) glDeleteTextures(1, &normalMapTex);
     if (metallicRoughnessTex) glDeleteTextures(1, &metallicRoughnessTex);
     if (emissiveMapTex) glDeleteTextures(1, &emissiveMapTex);
+    if (occlusionMapTex) glDeleteTextures(1, &occlusionMapTex);
   }
 
   void build(const SceneObject *obj) {
@@ -493,6 +505,8 @@ struct GLGeometryCache {
       metallicRoughnessTex = uploadTexture(mat->metallicRoughnessMap);
     if (!emissiveMapTex && !mat->emissiveMap.isNull())
       emissiveMapTex = uploadTexture(mat->emissiveMap);
+    if (!occlusionMapTex && !mat->occlusionMap.isNull())
+      occlusionMapTex = uploadTexture(mat->occlusionMap);
   }
 };
 
@@ -582,6 +596,8 @@ struct SceneRendererGL::Data {
   GLint locMetallicRoughnessMap = -1;
   GLint locHasEmissiveMap = -1;
   GLint locEmissiveMap = -1;
+  GLint locHasOcclusionMap = -1;
+  GLint locOcclusionMap = -1;
   GLint locDebugMode = -1;
   GLint locLightShadowSlot[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
   GLint locShadowMatrix[4] = {-1,-1,-1,-1};
@@ -611,6 +627,8 @@ struct SceneRendererGL::Data {
     locMetallicRoughnessMap = glGetUniformLocation(program, "uMetallicRoughnessMap");
     locHasEmissiveMap = glGetUniformLocation(program, "uHasEmissiveMap");
     locEmissiveMap = glGetUniformLocation(program, "uEmissiveMap");
+    locHasOcclusionMap = glGetUniformLocation(program, "uHasOcclusionMap");
+    locOcclusionMap = glGetUniformLocation(program, "uOcclusionMap");
     locEnvZenith = glGetUniformLocation(program, "uEnvZenith");
     locEnvHorizon = glGetUniformLocation(program, "uEnvHorizon");
     locEnvGround = glGetUniformLocation(program, "uEnvGround");
@@ -927,9 +945,10 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   glUniform1f(m_data->locDirectMul, m_data->directMultiplier);
   glUniform1i(m_data->locDebugMode, m_data->debugMode);
 
-  // Environment uniforms for sampleSky() in fragment shader
-  // Cycles uses bgStrength = 2.0 * intensity; match that baseline for env
-  float ei = si * 2.0f;
+  // Environment uniforms for sampleSky() in fragment shader.
+  // These must NOT include exposure — the fragment shader applies uExposure
+  // once at the end to all contributions (env + direct + emissive) uniformly.
+  float ei = sky.intensity;
   glUniform3f(m_data->locEnvZenith, effZenith[0]*ei, effZenith[1]*ei, effZenith[2]*ei);
   glUniform3f(m_data->locEnvHorizon, effHorizon[0]*ei, effHorizon[1]*ei, effHorizon[2]*ei);
   glUniform3f(m_data->locEnvGround, effGround[0]*ei, effGround[1]*ei, effGround[2]*ei);
@@ -958,7 +977,9 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
     Vec wp = light.getPosition();
     auto d = light.getDiffuse();
     glUniform4f(m_data->locLightPos[numLights], wp[0], wp[1], wp[2], 1.0f);
-    glUniform3f(m_data->locLightColor[numLights], d[0], d[1], d[2]);
+    // Normalize legacy 0-255 light colors to [0,1] (matches Cycles convention
+    // and keeps direct lighting in a physically reasonable range).
+    glUniform3f(m_data->locLightColor[numLights], d[0]/255.0f, d[1]/255.0f, d[2]/255.0f);
 
     // Map this compacted light slot to its shadow slot (-1 if no shadow)
     glUniform1i(m_data->locLightShadowSlot[numLights], sceneLightToShadow[i]);
@@ -1048,6 +1069,13 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
     glBindTexture(GL_TEXTURE_2D, cache->emissiveMapTex);
   }
 
+  glUniform1i(m_data->locHasOcclusionMap, cache->occlusionMapTex ? 1 : 0);
+  glUniform1i(m_data->locOcclusionMap, 8);
+  if (cache->occlusionMapTex) {
+    glActiveTexture(GL_TEXTURE8);
+    glBindTexture(GL_TEXTURE_2D, cache->occlusionMapTex);
+  }
+
   glBindVertexArray(cache->vao);
   glDrawElements(GL_TRIANGLES, cache->numIndices, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
@@ -1056,6 +1084,7 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
   if (cache->normalMapTex) { glActiveTexture(GL_TEXTURE5); glBindTexture(GL_TEXTURE_2D, 0); }
   if (cache->metallicRoughnessTex) { glActiveTexture(GL_TEXTURE6); glBindTexture(GL_TEXTURE_2D, 0); }
   if (cache->emissiveMapTex) { glActiveTexture(GL_TEXTURE7); glBindTexture(GL_TEXTURE_2D, 0); }
+  if (cache->occlusionMapTex) { glActiveTexture(GL_TEXTURE8); glBindTexture(GL_TEXTURE_2D, 0); }
 
   for (int c = 0; c < obj->getChildCount(); c++) {
     renderObject(obj->getChild(c), viewMatrix);

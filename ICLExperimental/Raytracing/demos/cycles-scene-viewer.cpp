@@ -500,7 +500,8 @@ void run() {
     float bgPct = pa("-bg").as<int>() / 100.0f;
     float expPct = pa("-exp").as<int>() / 100.0f;
 
-    // Apply BG% to sky intensity (affects both renderers via shared Sky)
+    // sky.intensity is the single env brightness knob.
+    // setBrightness triggers dirty detection; sync uses only sky.intensity.
     scene.getSky().intensity = bgPct;
 
     // Render Cycles (blocking)
@@ -604,8 +605,9 @@ void run() {
   renderer->setMaxBounces(bounces);
   renderer->setDenoising(false);
   renderer->setExposure(exposure);
-  renderer->setBrightness(brightness);
-  // Update Sky intensity from BG% slider (affects both GL env and Cycles background)
+  renderer->setBrightness(brightness);  // triggers Cycles dirty detection
+  // sky.intensity is the single env brightness knob (used by both renderers).
+  // The sync formula uses sky.intensity only (not m_backgroundStrength).
   scene.getSky().intensity = brightness;
 
   if (glRenderer) {

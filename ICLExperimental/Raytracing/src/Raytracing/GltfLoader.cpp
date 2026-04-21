@@ -129,6 +129,11 @@ static std::shared_ptr<Material> convertMaterial(const cgltf_material *gmat,
     mat->normalMap = decodeImage(gmat->normal_texture.texture->image, data, basePath);
   }
 
+  // Occlusion map (ambient occlusion, R channel)
+  if (gmat->occlusion_texture.texture && gmat->occlusion_texture.texture->image) {
+    mat->occlusionMap = decodeImage(gmat->occlusion_texture.texture->image, data, basePath);
+  }
+
   // Emissive — always store the factor. Per glTF spec: final emission = factor * texture.
   // When there's no texture, the factor alone controls uniform emission.
   float em = gmat->emissive_factor[0] + gmat->emissive_factor[1] + gmat->emissive_factor[2];

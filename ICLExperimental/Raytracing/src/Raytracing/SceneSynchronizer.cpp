@@ -430,29 +430,93 @@ SceneSynchronizer::synchronize(const geom::Scene &iclScene, int camIndex,
   syncLights(iclScene, cclScene, sceneScale);
 
   // Set up background from Scene::getSky()
+  // bgStrength uses only sky.intensity — NOT m_backgroundStrength.
+  // The viewer sets both sky.intensity and setBrightness() to the BG slider,
+  // but setBrightness() only serves as a dirty-detection trigger.
+  // Multiplying both would create a quadratic response (bgPct²).
   const auto &sky = iclScene.getSky();
-  float bgStrength = 2.0f * sky.intensity * m_backgroundStrength;
+  float bgStrength = 2.0f * sky.intensity;
   if (m_lastLightHash == 0) {
     Shader *bg = cclScene->default_background;
     ShaderGraph *graph = new ShaderGraph();
 
-    // Background color from Sky: solid uses solidColor, gradient/physical use
-    // a weighted blend of zenith/horizon/ground to approximate the gradient.
-    // (Full gradient node graph deferred — needs more Cycles node API investigation)
-    float3 bgColor;
+    auto *bgn = graph->create_node<BackgroundNode>();
+    bgn->set_strength(bgStrength);
+
     if (sky.mode == geom::Sky::Solid) {
-      bgColor = make_float3(sky.solidColor[0], sky.solidColor[1], sky.solidColor[2]);
+      // Solid: flat color, no directional variation
+      bgn->set_color(make_float3(sky.solidColor[0], sky.solidColor[1], sky.solidColor[2]));
     } else {
-      // Weighted average: horizon dominates (60%), zenith 25%, ground 15%
-      bgColor = make_float3(
-        sky.horizonColor[0] * 0.6f + sky.zenithColor[0] * 0.25f + sky.groundColor[0] * 0.15f,
-        sky.horizonColor[1] * 0.6f + sky.zenithColor[1] * 0.25f + sky.groundColor[1] * 0.15f,
-        sky.horizonColor[2] * 0.6f + sky.zenithColor[2] * 0.25f + sky.groundColor[2] * 0.15f);
+      // Gradient: build a directional sky matching GL's sampleSky() function.
+      // Uses the ray direction's Y component to blend between zenith (up),
+      // horizon (middle), and ground (down) colors with configurable sharpness.
+
+      // Ray direction → extract Y component
+      auto *geomNode = graph->create_node<GeometryNode>();
+      auto *sepXYZ = graph->create_node<SeparateXYZNode>();
+      graph->connect(geomNode->output("Normal"), sepXYZ->input("Vector"));
+
+      // Sky colors
+      auto *zenithCol = graph->create_node<ColorNode>();
+      zenithCol->set_value(make_float3(sky.zenithColor[0], sky.zenithColor[1], sky.zenithColor[2]));
+      auto *horizCol = graph->create_node<ColorNode>();
+      horizCol->set_value(make_float3(sky.horizonColor[0], sky.horizonColor[1], sky.horizonColor[2]));
+      auto *groundCol = graph->create_node<ColorNode>();
+      groundCol->set_value(make_float3(sky.groundColor[0], sky.groundColor[1], sky.groundColor[2]));
+
+      // Upper hemisphere: tUp = pow(max(Y, 0), sharpness)
+      auto *clampY = graph->create_node<MathNode>();
+      clampY->set_math_type(NODE_MATH_MAXIMUM);
+      clampY->set_value2(0.0f);
+      graph->connect(sepXYZ->output("Y"), clampY->input("Value1"));
+
+      auto *powNode = graph->create_node<MathNode>();
+      powNode->set_math_type(NODE_MATH_POWER);
+      powNode->set_value2(sky.horizonSharpness);
+      graph->connect(clampY->output("Value"), powNode->input("Value1"));
+
+      // skyAbove = mix(horizon, zenith, tUp)
+      auto *mixUp = graph->create_node<MixColorNode>();
+      mixUp->set_blend_type(NODE_MIX_BLEND);
+      graph->connect(horizCol->output("Color"), mixUp->input("A"));
+      graph->connect(zenithCol->output("Color"), mixUp->input("B"));
+      graph->connect(powNode->output("Value"), mixUp->input("Factor"));
+
+      // Lower hemisphere: tDown = clamp(-Y * 3, 0, 1)
+      auto *negY = graph->create_node<MathNode>();
+      negY->set_math_type(NODE_MATH_MULTIPLY);
+      negY->set_value2(-1.0f);
+      graph->connect(sepXYZ->output("Y"), negY->input("Value1"));
+
+      auto *mulThree = graph->create_node<MathNode>();
+      mulThree->set_math_type(NODE_MATH_MULTIPLY);
+      mulThree->set_value2(3.0f);
+      mulThree->set_use_clamp(true);  // clamp result to [0,1]
+      graph->connect(negY->output("Value"), mulThree->input("Value1"));
+
+      // skyBelow = mix(horizon, ground, tDown)
+      auto *mixDown = graph->create_node<MixColorNode>();
+      mixDown->set_blend_type(NODE_MIX_BLEND);
+      graph->connect(horizCol->output("Color"), mixDown->input("A"));
+      graph->connect(groundCol->output("Color"), mixDown->input("B"));
+      graph->connect(mulThree->output("Value"), mixDown->input("Factor"));
+
+      // Select above/below: isAbove = (Y > 0) ? 1 : 0
+      auto *isAbove = graph->create_node<MathNode>();
+      isAbove->set_math_type(NODE_MATH_GREATER_THAN);
+      isAbove->set_value2(0.0f);
+      graph->connect(sepXYZ->output("Y"), isAbove->input("Value1"));
+
+      // finalColor = mix(skyBelow, skyAbove, isAbove)
+      auto *mixFinal = graph->create_node<MixColorNode>();
+      mixFinal->set_blend_type(NODE_MIX_BLEND);
+      graph->connect(mixDown->output("Result"), mixFinal->input("A"));
+      graph->connect(mixUp->output("Result"), mixFinal->input("B"));
+      graph->connect(isAbove->output("Value"), mixFinal->input("Factor"));
+
+      graph->connect(mixFinal->output("Result"), bgn->input("Color"));
     }
 
-    auto *bgn = graph->create_node<BackgroundNode>();
-    bgn->set_color(bgColor);
-    bgn->set_strength(bgStrength);
     graph->connect(bgn->output("Background"), graph->output()->input("Surface"));
     m_bgNode = static_cast<void*>(bgn);
 
