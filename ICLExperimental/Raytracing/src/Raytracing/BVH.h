@@ -92,6 +92,12 @@ public:
 
   bool empty() const { return m_nodes.empty(); }
 
+  /// Access the flat node array (for GPU upload).
+  const std::vector<BVHNode> &getNodes() const { return m_nodes; }
+
+  /// Access the permuted triangle index array (for GPU upload).
+  const std::vector<uint32_t> &getTriIndices() const { return m_triIndices; }
+
 private:
   void buildRecursive(uint32_t nodeIdx, uint32_t start, uint32_t count);
   float evaluateSAH(uint32_t start, uint32_t count, int axis, float splitPos) const;
