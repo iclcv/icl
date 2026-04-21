@@ -29,6 +29,50 @@ namespace icl::filter {
     return proto;
   }
 
+  static const char *OPTYPE_MENU =
+    "dilate,erode,dilate3x3,erode3x3,dilateBorderReplicate,erodeBorderReplicate,"
+    "openBorder,closeBorder,tophatBorder,blackhatBorder,gradientBorder";
+
+  static const char *optypeName(MorphologicalOp::optype t){
+    switch(t){
+      case MorphologicalOp::dilate:                return "dilate";
+      case MorphologicalOp::erode:                 return "erode";
+      case MorphologicalOp::dilate3x3:             return "dilate3x3";
+      case MorphologicalOp::erode3x3:              return "erode3x3";
+      case MorphologicalOp::dilateBorderReplicate: return "dilateBorderReplicate";
+      case MorphologicalOp::erodeBorderReplicate:  return "erodeBorderReplicate";
+      case MorphologicalOp::openBorder:            return "openBorder";
+      case MorphologicalOp::closeBorder:           return "closeBorder";
+      case MorphologicalOp::tophatBorder:          return "tophatBorder";
+      case MorphologicalOp::blackhatBorder:        return "blackhatBorder";
+      case MorphologicalOp::gradientBorder:        return "gradientBorder";
+    }
+    return "dilate";
+  }
+  static MorphologicalOp::optype parseOptype(const std::string &o){
+#define X(N) if(o == #N) return MorphologicalOp::N
+    X(erode); X(dilate3x3); X(erode3x3); X(dilateBorderReplicate);
+    X(erodeBorderReplicate); X(openBorder); X(closeBorder); X(tophatBorder);
+    X(blackhatBorder); X(gradientBorder);
+#undef X
+    return MorphologicalOp::dilate;
+  }
+
+  void MorphologicalOp::addMorphProperties(){
+    addProperty("optype","menu",OPTYPE_MENU,optypeName(m_eType));
+    addProperty("mask size.w","range:spinbox","[1,51]",str(m_oMaskSizeMorphOp.width));
+    addProperty("mask size.h","range:spinbox","[1,51]",str(m_oMaskSizeMorphOp.height));
+    registerCallback([this](const Property &p){
+      if(p.name == "optype"){
+        setOptype(parseOptype(p.value));
+      }else if(p.name == "mask size.w" || p.name == "mask size.h"){
+        const Size s(parse<int>(prop("mask size.w").value),
+                     parse<int>(prop("mask size.h").value));
+        setMask(s, m_pcMask);
+      }
+    });
+  }
+
   MorphologicalOp::MorphologicalOp(optype eOptype, const Size &maskSize, const icl8u *pcMask)
     : ImageBackendDispatching(prototype())
   {
@@ -36,31 +80,17 @@ namespace icl::filter {
     m_eType = eOptype;
     m_pcMask = 0;
     setMask(maskSize, pcMask);
+    addMorphProperties();
   }
 
   MorphologicalOp::MorphologicalOp(const std::string &o, const Size &maskSize, const icl8u *pcMask)
     : ImageBackendDispatching(prototype())
   {
     ICLASSERT_RETURN(maskSize.getDim());
-
-#define CHECK_OPTYPE(X) else if(o == #X) { m_eType = X; }
-    if(o == "dilate") { m_eType = dilate; }
-    CHECK_OPTYPE(erode)
-    CHECK_OPTYPE(dilate3x3)
-    CHECK_OPTYPE(erode3x3)
-    CHECK_OPTYPE(dilateBorderReplicate)
-    CHECK_OPTYPE(erodeBorderReplicate)
-    CHECK_OPTYPE(openBorder)
-    CHECK_OPTYPE(closeBorder)
-    CHECK_OPTYPE(tophatBorder)
-    CHECK_OPTYPE(blackhatBorder)
-    CHECK_OPTYPE(gradientBorder)
-#undef CHECK_OPTYPE
-    else{
-      throw ICLException("MorphologicalOp::MorphologicalOp: invalid optype string!");
-    }
+    m_eType = parseOptype(o);
     m_pcMask = 0;
     setMask(maskSize, pcMask);
+    addMorphProperties();
   }
 
   MorphologicalOp::~MorphologicalOp(){
@@ -112,4 +142,6 @@ namespace icl::filter {
     getSelector<MorphSig>(Op::apply).resolve(src)->apply(src, dst, *this);
   }
 
+  REGISTER_CONFIGURABLE(MorphologicalOp,
+                        return new MorphologicalOp(MorphologicalOp::dilate));
   } // namespace icl::filter

@@ -39,12 +39,13 @@ namespace icl::filter {
     void apply(const core::Image &src, core::Image &dst) override;
     using UnaryOp::apply;
 
-    void setOpType(optype ot) { m_eOpType = ot; }
+    void setOpType(optype ot);
     optype getOpType() const { return m_eOpType; }
-    void setValue(icl64f value) { m_dValue = value; }
+    void setValue(icl64f value);
     icl64f getValue() const { return m_dValue; }
-    void setTolerance(icl64f tolerance) { m_dTolerance = tolerance; }
-    void setTollerance(icl64f tolerance) { m_dTolerance = tolerance; }
+    void setTolerance(icl64f tolerance);
+    /// typo-preserving alias — forwards to setTolerance
+    void setTollerance(icl64f tolerance){ setTolerance(tolerance); }
     icl64f getTolerance() const { return m_dTolerance; }
 
     // Sub-op signatures for backend dispatch
@@ -55,6 +56,7 @@ namespace icl::filter {
     static core::ImageBackendDispatching& prototype();
 
     private:
+    void property_callback(const Property &p);
     optype m_eOpType;
     icl64f m_dValue;
     icl64f m_dTolerance;

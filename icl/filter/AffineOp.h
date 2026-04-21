@@ -55,6 +55,9 @@ namespace icl::filter {
     inline bool getAdaptResultDisplay() const{ return m_adaptResultImage; }
 
     private:
+    /// rebuild m_aadT from the scalar properties (scale, rotate, translate)
+    void rebuildFromProperties();
+
     void applyT (const double p[2], double aResult[2]);
     static void useMinMax (const double aCur[2],
                            double aMin[2], double aMax[2]);

@@ -29,12 +29,60 @@ namespace icl::filter {
     return proto;
   }
 
+  static const char *INTERP_MENU = "NN,LIN,RA";
+
+  static const char *interpName(core::scalemode m){
+    switch(m){
+      case core::interpolateNN:  return "NN";
+      case core::interpolateLIN: return "LIN";
+      case core::interpolateRA:  return "RA";
+    }
+    return "LIN";
+  }
+  static core::scalemode parseInterp(const std::string &s){
+    if(s == "NN") return core::interpolateNN;
+    if(s == "RA") return core::interpolateRA;
+    return core::interpolateLIN;
+  }
+
+  // Rebuild m_aadT from the four scalar knobs (scale, rotate.deg, translate.x/y)
+  // in a fixed order: identity → scale → rotate → translate. Any imperative
+  // rotate()/scale()/translate() calls between property changes are lost on
+  // the next property-driven rebuild — the property knobs are the authoritative
+  // source of truth for property-consumer code (e.g. filter-playground).
+  void AffineOp::rebuildFromProperties(){
+    const double sx = parse<double>(prop("scale.x").value);
+    const double sy = parse<double>(prop("scale.y").value);
+    const double deg = parse<double>(prop("rotate.deg").value);
+    const double tx = parse<double>(prop("translate.x").value);
+    const double ty = parse<double>(prop("translate.y").value);
+    reset();
+    scale(sx, sy);
+    rotate(deg);
+    translate(tx, ty);
+  }
+
   AffineOp::AffineOp (scalemode eInterpolate)
     : ImageBackendDispatching(prototype()),
       m_eInterpolate(eInterpolate),
       m_adaptResultImage(true) {
-     reset ();
-   }
+    reset();
+    addProperty("scale.x","range:slider","[0.1,5]:0.01","1.0");
+    addProperty("scale.y","range:slider","[0.1,5]:0.01","1.0");
+    addProperty("rotate.deg","range:slider","[-360,360]:0.1","0");
+    addProperty("translate.x","range:slider","[-500,500]","0");
+    addProperty("translate.y","range:slider","[-500,500]","0");
+    addProperty("interpolation","menu",INTERP_MENU,interpName(eInterpolate));
+    registerCallback([this](const Property &p){
+      if(p.name == "interpolation"){
+        m_eInterpolate = parseInterp(p.value);
+      }else if(p.name == "scale.x"     || p.name == "scale.y" ||
+               p.name == "rotate.deg"  ||
+               p.name == "translate.x" || p.name == "translate.y"){
+        rebuildFromProperties();
+      }
+    });
+  }
 
    void AffineOp::reset () {
       m_aadT[0][0] = m_aadT[1][1] = 1.0;
@@ -114,4 +162,5 @@ namespace icl::filter {
      }
    }
 
+  REGISTER_CONFIGURABLE_DEFAULT(AffineOp);
   } // namespace icl::filter

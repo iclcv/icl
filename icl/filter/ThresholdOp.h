@@ -30,13 +30,13 @@ namespace icl::filter {
     void apply(const core::Image &src, core::Image &dst) override;
     using UnaryOp::apply;
 
-    // ---- Accessors ----
-    void setType(optype t) { m_eType = t; }
+    // ---- Accessors (forward through the Configurable property store) ----
+    void setType(optype t);
     optype getType() const { return m_eType; }
-    void setLowThreshold(float t) { m_fLowThreshold = t; }
-    void setHighThreshold(float t) { m_fHighThreshold = t; }
-    void setLowVal(float v) { m_fLowVal = v; }
-    void setHighVal(float v) { m_fHighVal = v; }
+    void setLowThreshold(float t);
+    void setHighThreshold(float t);
+    void setLowVal(float v);
+    void setHighVal(float v);
     float getLowThreshold() const { return m_fLowThreshold; }
     float getHighThreshold() const { return m_fHighThreshold; }
     float getLowVal() const { return m_fLowVal; }
@@ -46,6 +46,7 @@ namespace icl::filter {
     static core::ImageBackendDispatching& prototype();
 
     private:
+    void property_callback(const Property &p);
     optype m_eType;
     float m_fLowThreshold;
     float m_fHighThreshold;

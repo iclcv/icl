@@ -28,13 +28,66 @@ namespace icl::filter {
     return proto;
   }
 
+  static const char *TYPE_MENU = "lt,gt,ltgt,ltVal,gtVal,ltgtVal";
+
+  static const char *typeName(ThresholdOp::optype t){
+    switch(t){
+      case ThresholdOp::lt:      return "lt";
+      case ThresholdOp::gt:      return "gt";
+      case ThresholdOp::ltgt:    return "ltgt";
+      case ThresholdOp::ltVal:   return "ltVal";
+      case ThresholdOp::gtVal:   return "gtVal";
+      case ThresholdOp::ltgtVal: return "ltgtVal";
+    }
+    return "ltVal";
+  }
+  static ThresholdOp::optype parseType(const std::string &s){
+    if(s == "lt")      return ThresholdOp::lt;
+    if(s == "gt")      return ThresholdOp::gt;
+    if(s == "ltgt")    return ThresholdOp::ltgt;
+    if(s == "gtVal")   return ThresholdOp::gtVal;
+    if(s == "ltgtVal") return ThresholdOp::ltgtVal;
+    return ThresholdOp::ltVal;
+  }
+
+  void ThresholdOp::property_callback(const Property &p){
+    if(p.name == "type")                m_eType          = parseType(p.value);
+    else if(p.name == "low threshold")  m_fLowThreshold  = parse<float>(p.value);
+    else if(p.name == "high threshold") m_fHighThreshold = parse<float>(p.value);
+    else if(p.name == "low val")        m_fLowVal        = parse<float>(p.value);
+    else if(p.name == "high val")       m_fHighVal       = parse<float>(p.value);
+  }
+
   // Constructor — clones selectors from the class prototype
   ThresholdOp::ThresholdOp(optype ttype, float lowThreshold,
                                  float highThreshold, float lowVal, float highVal)
     : ImageBackendDispatching(prototype()),
       m_eType(ttype), m_fLowThreshold(lowThreshold),
       m_fHighThreshold(highThreshold), m_fLowVal(lowVal), m_fHighVal(highVal)
-  {}
+  {
+    addProperty("type","menu",TYPE_MENU,typeName(ttype));
+    addProperty("low threshold","range:slider","[-255,255]",str(lowThreshold));
+    addProperty("high threshold","range:slider","[-255,255]",str(highThreshold));
+    addProperty("low val","range:slider","[0,255]",str(lowVal));
+    addProperty("high val","range:slider","[0,255]",str(highVal));
+    registerCallback([this](const Property &p){ property_callback(p); });
+  }
+
+  void ThresholdOp::setType(optype t){
+    prop("type").value = typeName(t); call_callbacks("type", this);
+  }
+  void ThresholdOp::setLowThreshold(float t){
+    prop("low threshold").value = str(t); call_callbacks("low threshold", this);
+  }
+  void ThresholdOp::setHighThreshold(float t){
+    prop("high threshold").value = str(t); call_callbacks("high threshold", this);
+  }
+  void ThresholdOp::setLowVal(float v){
+    prop("low val").value = str(v); call_callbacks("low val", this);
+  }
+  void ThresholdOp::setHighVal(float v){
+    prop("high val").value = str(v); call_callbacks("high val", this);
+  }
 
   void ThresholdOp::apply(const Image &src, Image &dst) {
     if(!prepare(dst, src)) return;
@@ -69,4 +122,5 @@ namespace icl::filter {
     }
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(ThresholdOp);
   } // namespace icl::filter

@@ -137,6 +137,9 @@ namespace icl::filter {
     core::Image& gradientBuffer2() { return m_gradientBorderBuffer_2; }
 
   private:
+    /// registers Configurable properties in both ctors
+    void addMorphProperties();
+
     icl8u *m_pcMask;
     utils::Size m_oMaskSizeMorphOp;
     optype m_eType;
