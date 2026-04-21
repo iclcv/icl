@@ -123,9 +123,9 @@ namespace icl::utils {
         // Select first matching device
         selectFirstDevice(device_type, platforms);
 
-        std::cout << "[CLDeviceContext] desired OpenCL "
-                  << deviceTypeToString(device_type)
-                  << " device selected" << std::endl;
+        DEBUG_LOG("[CLDeviceContext] desired OpenCL "
+                 << deviceTypeToString(device_type)
+                 << " device selected");
 
         // Create context
         cl_context_properties props[] = {
