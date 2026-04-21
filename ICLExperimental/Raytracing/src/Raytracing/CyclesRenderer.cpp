@@ -56,20 +56,22 @@ public:
 
 private:
   void captureTile(const Tile &tile) {
-    if (!(tile.size == tile.full_size))
-      return;
+    try {
+      if (!(tile.size == tile.full_size))
+        return;
 
-    const int w = tile.size.x;
-    const int h = tile.size.y;
+      const int w = tile.size.x;
+      const int h = tile.size.y;
+      if (w <= 0 || h <= 0) return;
 
-    std::vector<float> pixels(w * h * 4);
-    if (!tile.get_pass_pixels("combined", 4, pixels.data()))
-      return;
+      std::vector<float> pixels(w * h * 4);
+      if (!tile.get_pass_pixels("combined", 4, pixels.data()))
+        return;
 
-    m_updateCount++;
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_image.setSize(utils::Size(w, h));
-    m_image.setChannels(3);
+      m_updateCount++;
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_image.setSize(utils::Size(w, h));
+      m_image.setChannels(3);
 
     icl8u *r = m_image.begin(0);
     icl8u *g = m_image.begin(1);
@@ -89,6 +91,9 @@ private:
         g[dstIdx] = toSRGB(pixels[srcIdx + 1]);
         b[dstIdx] = toSRGB(pixels[srcIdx + 2]);
       }
+    }
+    } catch (...) {
+      // Silently ignore — can happen during session reset with changed resolution
     }
   }
 
@@ -140,6 +145,8 @@ struct CyclesRenderer::Impl {
   int lastSamples = -1;
   int lastInitialSamples = -1;
   float lastBrightness = -1;
+  int lastBounces = -1;
+  bool lastDenoising = false;
   float lastExposure = -1;
   float lastResScale = -1;
   RenderQuality lastQuality = RenderQuality::Preview;
@@ -219,28 +226,13 @@ struct CyclesRenderer::Impl {
     if (!scene) return;
 
     Integrator *integrator = scene->integrator;
+    // User's bounces slider controls all bounce types uniformly.
     integrator->set_max_bounce(maxBounces);
-
-    switch (quality) {
-      case RenderQuality::Preview:
-        integrator->set_max_diffuse_bounce(1);
-        integrator->set_max_glossy_bounce(1);
-        integrator->set_max_transmission_bounce(1);
-        integrator->set_use_denoise(false);
-        break;
-      case RenderQuality::Interactive:
-        integrator->set_max_diffuse_bounce(3);
-        integrator->set_max_glossy_bounce(3);
-        integrator->set_max_transmission_bounce(4);
-        integrator->set_use_denoise(denoising);
-        break;
-      case RenderQuality::Final:
-        integrator->set_max_diffuse_bounce(6);
-        integrator->set_max_glossy_bounce(6);
-        integrator->set_max_transmission_bounce(8);
-        integrator->set_use_denoise(denoising);
-        break;
-    }
+    integrator->set_max_diffuse_bounce(maxBounces);
+    integrator->set_max_glossy_bounce(maxBounces);
+    integrator->set_max_transmission_bounce(maxBounces);
+    // User's denoising checkbox always respected.
+    integrator->set_use_denoise(denoising);
 
     scene->film->set_exposure(exposure);
   }
@@ -262,7 +254,9 @@ CyclesRenderer &CyclesRenderer::operator=(CyclesRenderer &&) noexcept = default;
 
 void CyclesRenderer::render(int camIndex) {
   m_impl->ensureInitialized();
-  m_impl->applyQualityToScene();
+  // Note: applyQualityToScene() is called inside fullReset() only,
+  // not here — modifying the Cycles scene while the render thread
+  // is running causes crashes.
 
   // --- Detect changes → set dirty ---
   float camHash = 0;
@@ -274,6 +268,8 @@ void CyclesRenderer::render(int camIndex) {
   if (camHash != m_impl->lastCamHash
       || m_impl->samples != m_impl->lastSamples
       || m_impl->initialSamples != m_impl->lastInitialSamples
+      || m_impl->maxBounces != m_impl->lastBounces
+      || m_impl->denoising != m_impl->lastDenoising
       || m_impl->brightness != m_impl->lastBrightness
       || m_impl->exposure != m_impl->lastExposure
       || m_impl->resolutionScale != m_impl->lastResScale
@@ -284,6 +280,8 @@ void CyclesRenderer::render(int camIndex) {
   m_impl->lastCamHash = camHash;
   m_impl->lastSamples = m_impl->samples;
   m_impl->lastInitialSamples = m_impl->initialSamples;
+  m_impl->lastBounces = m_impl->maxBounces;
+  m_impl->lastDenoising = m_impl->denoising;
   m_impl->lastBrightness = m_impl->brightness;
   m_impl->lastExposure = m_impl->exposure;
   m_impl->lastResScale = m_impl->resolutionScale;
@@ -298,6 +296,14 @@ void CyclesRenderer::render(int camIndex) {
     float s = std::max(0.1f, std::min(1.0f, m_impl->resolutionScale));
     int w = std::max(1, (int)(wFull * s));
     int h = std::max(1, (int)(hFull * s));
+
+    // Apply integrator/film settings and camera resolution before reset.
+    // Safe here because reset() cancels the render thread first.
+    m_impl->applyQualityToScene();
+    m_impl->scene->camera->set_full_width(w);
+    m_impl->scene->camera->set_full_height(h);
+    m_impl->scene->camera->compute_auto_viewplane();
+    m_impl->scene->camera->need_flags_update = true;
 
     int A = std::min(m_impl->initialSamples, m_impl->samples);
 
@@ -369,7 +375,6 @@ void CyclesRenderer::render(int camIndex) {
 
 void CyclesRenderer::renderBlocking(int camIndex) {
   m_impl->ensureInitialized();
-  m_impl->applyQualityToScene();
   m_impl->sync.setBackgroundStrength(m_impl->brightness);
   m_impl->sync.synchronize(
       m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
@@ -385,8 +390,8 @@ void CyclesRenderer::renderBlocking(int camIndex) {
   bp.width = w;  bp.height = h;
   bp.full_width = w;  bp.full_height = h;
 
-  // reset() + start() + wait() for a clean blocking render cycle.
-  // start() must be called after each reset() to wake the session thread.
+  // Apply settings and reset. Safe because renderBlocking is single-threaded.
+  m_impl->applyQualityToScene();
   int prevUpdates = m_impl->outputDriver->getUpdateCount();
   m_impl->session->reset(sp, bp);
   m_impl->session->start();

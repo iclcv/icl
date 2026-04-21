@@ -309,6 +309,50 @@ void init() {
   emissive->roughness = 0.8f;
   addArchetype(startX + 5*spacing, y, sphereR, emissive);
 
+  // Two mirroring boxes, slightly misaligned — inter-reflections show bounce count
+  {
+    auto mirrorMat = std::make_shared<Material>();
+    mirrorMat->baseColor = GeomColor(0.97f, 0.97f, 0.99f, 1.0f);
+    mirrorMat->metallic = 1.0f;
+    mirrorMat->roughness = 0.01f;
+
+    float boxH = 120, boxW = 150, boxD = 10;
+    float cx = 0, cy = 80;  // centered on table
+
+    // Left mirror — angled slightly inward
+    auto *leftBox = new RigidBoxObject(cx - 50, cy, TABLE_Z + boxH/2 + 5,
+                                        boxD, boxW, boxH, 0);
+    leftBox->setVisible(Primitive::line, false);
+    leftBox->setVisible(Primitive::vertex, false);
+    leftBox->createAutoNormals(false);
+    leftBox->setMaterial(mirrorMat);
+    // Rotate ~-10° around Z to angle inward
+    Mat rot = Mat::id();
+    float a = -0.17f; // ~-10 degrees
+    rot(0,0) = std::cos(a);  rot(1,0) = -std::sin(a);
+    rot(0,1) = std::sin(a);  rot(1,1) = std::cos(a);
+    Mat t = leftBox->getTransformation();
+    rot(3,0) = t(3,0); rot(3,1) = t(3,1); rot(3,2) = t(3,2);
+    leftBox->setTransformation(rot);
+    scene.addObject(leftBox, true);
+
+    // Right mirror — angled slightly inward (opposite direction)
+    auto *rightBox = new RigidBoxObject(cx + 50, cy, TABLE_Z + boxH/2 + 5,
+                                         boxD, boxW, boxH, 0);
+    rightBox->setVisible(Primitive::line, false);
+    rightBox->setVisible(Primitive::vertex, false);
+    rightBox->createAutoNormals(false);
+    rightBox->setMaterial(mirrorMat);
+    rot = Mat::id();
+    a = 0.17f;
+    rot(0,0) = std::cos(a);  rot(1,0) = -std::sin(a);
+    rot(0,1) = std::sin(a);  rot(1,1) = std::cos(a);
+    t = rightBox->getTransformation();
+    rot(3,0) = t(3,0); rot(3,1) = t(3,1); rot(3,2) = t(3,2);
+    rightBox->setTransformation(rot);
+    scene.addObject(rightBox, true);
+  }
+
   // Create renderer
   renderer = std::make_unique<icl::rt::CyclesRenderer>(
       scene, icl::rt::RenderQuality::Preview);
@@ -320,20 +364,21 @@ void init() {
             << Canvas().handle("draw").minSize(32, 24).label("Cycles")
             << Canvas3D().handle("gl").minSize(32, 24).label("OpenGL"))
          << (HBox()
-            << CheckBox("pause physics", "unchecked").handle("pause")
-            << Slider(5, 500, 50).handle("spawnRate").label("spawn ms")
-            << Button("spawn 10").handle("burst")
-            << Label("--").handle("renderFps")
-            << Combo("!Preview,Interactive,Final").handle("quality").label("Quality")
-            << Combo("!1,2,4,8,16").handle("initSamples").label("Steps/Frame")
-            << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iter"))
+            << CheckBox("pause physics", "unchecked").handle("pause").minSize(8,2)
+            << Slider(5, 500, 50).handle("spawnRate").label("spawn ms").minSize(10,2)
+            << Button("spawn 10").handle("burst").minSize(6,2)
+            << Label("--").handle("renderFps").minSize(12,2))
          << (HBox()
-            << Slider(1, 16, 2).handle("bounces").label("Max Bounces")
-            << CheckBox("Denoising OIDN", "unchecked").handle("denoising")
-            << Slider(10, 500, 100).handle("exposure").label("Exposure %")
-            << Slider(0, 100, 100).handle("brightness").label("Light/BG %")
-            << Slider(10, 100, 100).handle("resScale").label("Resolution %")
-            << Label("--").handle("info"))
+            << Combo("!Preview,Interactive,Final").handle("quality").label("Quality").minSize(8,2)
+            << Combo("!1,2,4,8,16").handle("initSamples").label("Steps/Frame").minSize(8,2)
+            << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iter").minSize(8,2)
+            << Slider(1, 16, 2).handle("bounces").label("Max Bounces").minSize(10,2)
+            << CheckBox("OIDN", "unchecked").handle("denoising").minSize(6,2))
+         << (HBox()
+            << Slider(10, 500, 100).handle("exposure").label("Exposure %").minSize(10,2)
+            << Slider(0, 100, 100).handle("brightness").label("Light/BG %").minSize(10,2)
+            << Slider(10, 100, 100).handle("resScale").label("Resolution %").minSize(10,2)
+            << Label("--").handle("info").minSize(12,2))
        ) << Show();
 
   // Unified mouse handler: camera control (forwarded to scene) + middle-click picking.
