@@ -115,27 +115,19 @@ namespace icl::filter {
   // ================================================================
 
   void BaseFFTOp::setResultMode(ResultMode rm) {
-    prop("result mode").value = resultModeName(rm);
-    call_callbacks("result mode", this);
+    setPropertyValue("result mode", resultModeName(rm));
   }
   BaseFFTOp::ResultMode BaseFFTOp::getResultMode() const { return m_data->m_rm; }
 
   void BaseFFTOp::setSizeAdaptionMode(SizeAdaptionMode sam) {
-    prop("size adaption").value = sizeAdaptionName(sam);
-    call_callbacks("size adaption", this);
+    setPropertyValue("size adaption", sizeAdaptionName(sam));
   }
   BaseFFTOp::SizeAdaptionMode BaseFFTOp::getSizeAdaptionMode() const { return m_data->m_sam; }
 
-  void BaseFFTOp::setForceDFT(bool f) {
-    prop("force DFT").value = str(f);
-    call_callbacks("force DFT", this);
-  }
+  void BaseFFTOp::setForceDFT(bool f) { setPropertyValue("force DFT", f); }
   bool BaseFFTOp::getForceDFT() const { return m_data->m_forceDFT; }
 
-  void BaseFFTOp::setShift(bool s) {
-    prop("fft shift").value = str(s);
-    call_callbacks("fft shift", this);
-  }
+  void BaseFFTOp::setShift(bool s) { setPropertyValue("fft shift", s); }
   bool BaseFFTOp::getShift() const { return m_data->m_shift; }
 
   bool BaseFFTOp::isInverse() const { return m_data->m_inverse; }

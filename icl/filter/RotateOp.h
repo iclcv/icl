@@ -15,6 +15,10 @@ namespace icl::filter {
     RotateOp (double dAngle=0.0, core::scalemode eInterpolate=core::interpolateLIN) :
       AffineOp (eInterpolate) {
         setAngle(dAngle);
+        // Hide the scale/translate knobs inherited from AffineOp — RotateOp
+        // exposes only the angle.
+        deactivateProperty("^scale\\..*");
+        deactivateProperty("^translate\\..*");
       }
 
     /// sets the rotation angle

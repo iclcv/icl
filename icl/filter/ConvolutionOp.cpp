@@ -97,18 +97,12 @@ namespace icl::filter {
   void ConvolutionOp::setKernel(const ConvolutionKernel &kernel){
     m_kernel = kernel;
     setMask(m_kernel.getSize());
-    // Sync the "kernel" property without firing the callback's kernel-rebuild path
-    // (we already assigned; the callback would either reassign-identically or
-    // leave alone on "custom"). Direct prop write + call_callbacks keeps behavior
-    // visible to other listeners.
-    prop("kernel").value = fixedTypeName(kernel.getFixedType());
-    call_callbacks("kernel", this);
+    // Sync the "kernel" property so listeners (GUI etc.) see the change; the
+    // callback's own rebuild path is a no-op on identical values / "custom".
+    setPropertyValue("kernel", fixedTypeName(kernel.getFixedType()));
   }
 
-  void ConvolutionOp::setForceUnsignedOutput(bool v){
-    prop("force unsigned output").value = str(v);
-    call_callbacks("force unsigned output", this);
-  }
+  void ConvolutionOp::setForceUnsignedOutput(bool v){ setPropertyValue("force unsigned output", v); }
 
   bool ConvolutionOp::getForceUnsignedOutput() const {
     return parse<bool>(prop("force unsigned output").value);

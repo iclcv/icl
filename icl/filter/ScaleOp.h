@@ -12,10 +12,14 @@ namespace icl::filter {
   class ICLFilter_API ScaleOp : public AffineOp{
     public:
     /// Constructor
-    ScaleOp (double factorX=0.0, double factorY=0.0,
+    ScaleOp (double factorX=1.0, double factorY=1.0,
              core::scalemode eInterpolate=core::interpolateLIN) :
     AffineOp (eInterpolate) {
       setScale(factorX,factorY);
+      // Hide the rotate/translate knobs inherited from AffineOp — ScaleOp
+      // exposes only the scale factors.
+      deactivateProperty("^rotate\\..*");
+      deactivateProperty("^translate\\..*");
     }
 
     /// performs a scale

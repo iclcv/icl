@@ -60,6 +60,7 @@ filter_headers = files(
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
+  'AffineWrappers.cpp',
   'BaseFFTOp.cpp',
   'BilateralFilterOp.cpp',
   'BilateralFilterOp_Cpp.cpp',

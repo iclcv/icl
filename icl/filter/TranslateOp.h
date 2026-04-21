@@ -18,6 +18,10 @@ namespace icl::filter {
       AffineOp (eInterpolate) {
         setTranslation(dX,dY);
         setAdaptResultImage(false);
+        // Hide the scale/rotate knobs inherited from AffineOp — TranslateOp
+        // exposes only the translation offsets.
+        deactivateProperty("^scale\\..*");
+        deactivateProperty("^rotate\\..*");
       }
 
     /// performs a translation

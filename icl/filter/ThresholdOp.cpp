@@ -73,21 +73,11 @@ namespace icl::filter {
     registerCallback([this](const Property &p){ property_callback(p); });
   }
 
-  void ThresholdOp::setType(optype t){
-    prop("type").value = typeName(t); call_callbacks("type", this);
-  }
-  void ThresholdOp::setLowThreshold(float t){
-    prop("low threshold").value = str(t); call_callbacks("low threshold", this);
-  }
-  void ThresholdOp::setHighThreshold(float t){
-    prop("high threshold").value = str(t); call_callbacks("high threshold", this);
-  }
-  void ThresholdOp::setLowVal(float v){
-    prop("low val").value = str(v); call_callbacks("low val", this);
-  }
-  void ThresholdOp::setHighVal(float v){
-    prop("high val").value = str(v); call_callbacks("high val", this);
-  }
+  void ThresholdOp::setType(optype t){ setPropertyValue("type", typeName(t)); }
+  void ThresholdOp::setLowThreshold(float t){ setPropertyValue("low threshold", t); }
+  void ThresholdOp::setHighThreshold(float t){ setPropertyValue("high threshold", t); }
+  void ThresholdOp::setLowVal(float v){ setPropertyValue("low val", v); }
+  void ThresholdOp::setHighVal(float v){ setPropertyValue("high val", v); }
 
   void ThresholdOp::apply(const Image &src, Image &dst) {
     if(!prepare(dst, src)) return;

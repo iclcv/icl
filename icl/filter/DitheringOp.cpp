@@ -22,10 +22,7 @@ namespace icl{
       });
     }
 
-    void DitheringOp::setLevels(int l){
-      prop("levels").value = str(std::clamp(l, 2, 128));
-      call_callbacks("levels", this);
-    }
+    void DitheringOp::setLevels(int l){ setPropertyValue("levels", std::clamp(l, 2, 128)); }
 
     int DitheringOp::getLevels() const {
       return parse<int>(prop("levels").value);

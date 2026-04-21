@@ -10,9 +10,31 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::filter {
+   static const char *AXIS_MENU = "axisHorz,axisVert,axisBoth";
+   static const char *axisName(axis a){
+     switch(a){
+       case axisHorz: return "axisHorz";
+       case axisVert: return "axisVert";
+       case axisBoth: return "axisBoth";
+     }
+     return "axisHorz";
+   }
+   static axis parseAxis(const std::string &s){
+     if(s == "axisVert") return axisVert;
+     if(s == "axisBoth") return axisBoth;
+     return axisHorz;
+   }
+
    MirrorOp::MirrorOp (axis eAxis) :
       m_eAxis (eAxis)
-   {}
+   {
+     addProperty("axis", "menu", AXIS_MENU, axisName(eAxis));
+     registerCallback([this](const Property &p){
+       if(p.name == "axis") m_eAxis = parseAxis(p.value);
+     });
+   }
+
+   REGISTER_CONFIGURABLE(MirrorOp, return new MirrorOp(axisHorz));
 
    void MirrorOp::apply(const Image &src, Image &dst) {
       Point oROIOffset;

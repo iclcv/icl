@@ -42,10 +42,10 @@ public:
   using UnaryOp::apply;
   void apply(const core::Image &src, core::Image &dst) override;
 
-  void setRadius(int r) { m_radius = r; }
-  void setSigmaS(float s) { m_sigmaS = s; }
-  void setSigmaR(float r) { m_sigmaR = r; }
-  void setUseLAB(bool b) { m_useLAB = b; }
+  void setRadius(int r);
+  void setSigmaS(float s);
+  void setSigmaR(float r);
+  void setUseLAB(bool b);
 
   int getRadius() const { return m_radius; }
   float getSigmaS() const { return m_sigmaS; }

@@ -12,14 +12,20 @@
 #include <icl/qt/Common2.h>
 #include <icl/filter/UnaryOp.h>
 #include <icl/filter/AffineOp.h>
+#include <icl/filter/BilateralFilterOp.h>
 #include <icl/filter/CannyOp.h>
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/DitheringOp.h>
 #include <icl/filter/FFTOp.h>
 #include <icl/filter/GaborOp.h>
 #include <icl/filter/MedianOp.h>
+#include <icl/filter/MirrorOp.h>
 #include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/MotionSensitiveTemporalSmoothing.h>
+#include <icl/filter/RotateOp.h>
+#include <icl/filter/ScaleOp.h>
 #include <icl/filter/ThresholdOp.h>
+#include <icl/filter/TranslateOp.h>
 #include <icl/filter/UnaryCompareOp.h>
 #include <icl/qt/BoxHandle.h>
 
@@ -40,16 +46,22 @@ std::recursive_mutex opMutex;
 // of this vector stable; the combo labels are derived from the first element.
 static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> &filters(){
   static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> f = {
-    {"AffineOp",        []{ return new AffineOp;        }},
-    {"CannyOp",         []{ return new CannyOp;         }},
-    {"ConvolutionOp",   []{ return new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3)); }},
-    {"DitheringOp",     []{ return new DitheringOp;     }},
-    {"FFTOp",           []{ return new FFTOp;           }},
-    {"GaborOp",         []{ return new GaborOp;         }},
-    {"MedianOp",        []{ return new MedianOp(Size(3,3));         }},
-    {"MorphologicalOp", []{ return new MorphologicalOp(MorphologicalOp::dilate); }},
-    {"ThresholdOp",     []{ return new ThresholdOp;     }},
-    {"UnaryCompareOp",  []{ return new UnaryCompareOp;  }},
+    {"AffineOp",         []{ return new AffineOp;         }},
+    {"BilateralFilterOp",[]{ return new BilateralFilterOp;}},
+    {"CannyOp",          []{ return new CannyOp;          }},
+    {"ConvolutionOp",    []{ return new ConvolutionOp(ConvolutionKernel(ConvolutionKernel::gauss3x3)); }},
+    {"DitheringOp",      []{ return new DitheringOp;      }},
+    {"FFTOp",            []{ return new FFTOp;            }},
+    {"GaborOp",          []{ return new GaborOp;          }},
+    {"MedianOp",         []{ return new MedianOp(Size(3,3)); }},
+    {"MirrorOp",         []{ return new MirrorOp(axisHorz);   }},
+    {"MorphologicalOp",  []{ return new MorphologicalOp(MorphologicalOp::dilate); }},
+    {"MSTS",             []{ return new MotionSensitiveTemporalSmoothing(-1, 20); }},
+    {"RotateOp",         []{ return new RotateOp;         }},
+    {"ScaleOp",          []{ return new ScaleOp;          }},
+    {"ThresholdOp",      []{ return new ThresholdOp;      }},
+    {"TranslateOp",      []{ return new TranslateOp;      }},
+    {"UnaryCompareOp",   []{ return new UnaryCompareOp;   }},
   };
   return f;
 }

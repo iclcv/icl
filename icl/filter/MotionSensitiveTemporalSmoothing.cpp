@@ -107,7 +107,24 @@ MotionSensitiveTemporalSmoothing::MotionSensitiveTemporalSmoothing(
   , m_difference(10)
   , m_useCL(true)
 {
+  addProperty("filter size","range:spinbox","[1,"+str(maxFilterSize)+"]",str(m_filterSize));
+  addProperty("difference","range:slider","[1,50]",str(m_difference));
+  addProperty("use CL","flag","",true);
+  registerCallback([this](const Property &p){
+    if(p.name == "filter size"){
+      int v = std::clamp(parse<int>(p.value), 1, m_maxFilterSize);
+      if(v != m_filterSize){
+        m_filterSize = v;
+        for(auto &ch : m_channels) ch.imgCount = 0;
+      }
+    }
+    else if(p.name == "difference")   m_difference = parse<int>(p.value);
+    else if(p.name == "use CL")       m_useCL = parse<bool>(p.value);
+  });
 }
+
+REGISTER_CONFIGURABLE(MotionSensitiveTemporalSmoothing,
+  return new MotionSensitiveTemporalSmoothing(-1, 20));
 
 MotionSensitiveTemporalSmoothing::~MotionSensitiveTemporalSmoothing() = default;
 
@@ -183,7 +200,7 @@ if (d == depth32f) {
 }
 
 void MotionSensitiveTemporalSmoothing::setUseCL(bool use) {
-m_useCL = use;
+  setPropertyValue("use CL", use);
 }
 
 bool MotionSensitiveTemporalSmoothing::isCLActive() const {
@@ -191,17 +208,11 @@ return m_useCL;
 }
 
 void MotionSensitiveTemporalSmoothing::setFilterSize(int filterSize) {
-filterSize = std::clamp(filterSize, 1, m_maxFilterSize);
-if (filterSize != m_filterSize) {
-  m_filterSize = filterSize;
-  for (auto& ch : m_channels) {
-    ch.imgCount = 0;
-  }
-}
+  setPropertyValue("filter size", std::clamp(filterSize, 1, m_maxFilterSize));
 }
 
 void MotionSensitiveTemporalSmoothing::setDifference(int difference) {
-m_difference = difference;
+  setPropertyValue("difference", difference);
 }
 
 Img32f MotionSensitiveTemporalSmoothing::getMotionImage() const {
