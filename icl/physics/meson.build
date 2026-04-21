@@ -65,7 +65,7 @@ physics_sources = files(
   'TriangleIntersectionEstimator.cpp',
 )
 
-physics_deps = [icl_geom_dep, bullet_dep]
+physics_deps = [icl_markers_dep, icl_geom_dep, bullet_dep]
 
 icl_physics_lib = shared_library('icl-physics',
   physics_sources,
