@@ -40,11 +40,11 @@ int main(int n, char **ppc){
 
 
   FiducialDetector d(*pa("-i"));
-  ParamList params;
+  ParamMap params;
   if(*pa("-i") == "art"){
-    params = ParamList("border ratio",*pa("-r"));
+    params = {{"border ratio",*pa("-r")}};
   }else if(*pa("-i") == "bch"){
-    params = ParamList("border width",*pa("-b"));
+    params = {{"border width",*pa("-b")}};
   }
   Img8u image = d.createMarker(*pa("-i",1), pa("-s"), params);
 

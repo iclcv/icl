@@ -163,16 +163,16 @@ namespace icl::markers {
 
     }
 
-    static utils::ParamList create_param_list(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def){
-      return utils::ParamList("size",def.getMarkerBounds());
+    static utils::ParamMap create_param_map(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def){
+      return utils::ParamMap{{"size",def.getMarkerBounds()}};
     }
 
     AdvancedMarkerGridDetector::AdvancedMarkerGridDetector(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def):
-      Super(def,create_param_list(def)), grid(def){
+      Super(def,create_param_map(def)), grid(def){
 
     }
     void AdvancedMarkerGridDetector::init(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def){
-      Super::init(def,create_param_list(def));
+      Super::init(def,create_param_map(def));
       grid.init(def);
     }
 

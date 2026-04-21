@@ -7,8 +7,10 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/StringUtils.h>
 #include <cstring>
+#include <map>
 #include <type_traits>
 #include <sstream>
+#include <string>
 
 namespace icl::utils {
   /// Simple generic data type implementation that uses a string based data representation
@@ -200,5 +202,12 @@ namespace icl::utils {
 
   /** \endcond */
 
+
+  /// Parameter map: key → Any value, with transparent lookup (find("literal") OK).
+  /** Used across the framework as a "bag of parameters" passed through generic
+      APIs (e.g. FiducialDetector, MarkerGridDetector).  Typical construction is
+      via braced initializer list: `{{"size", Size(30,30)}, {"border ratio", 0.3f}}`.
+  */
+  using ParamMap = std::map<std::string, Any, std::less<>>;
 
   } // namespace icl::utils

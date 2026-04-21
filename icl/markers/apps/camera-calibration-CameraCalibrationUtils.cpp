@@ -339,9 +339,9 @@ namespace icl::markers {
         } catch(...){}
 
         if(markerIDs.size() > 1){
-          d.fds[t]->loadMarkers("{"+cat(markerIDs,",")+"}",t==AMOEBA ? ParamList() : ParamList("size",ms));
+          d.fds[t]->loadMarkers("{"+cat(markerIDs,",")+"}",t==AMOEBA ? ParamMap() : ParamMap{{"size",ms}});
         }else{
-          d.fds[t]->loadMarkers(str(markerIDs[0]),t==AMOEBA ? ParamList() : ParamList("size",ms));
+          d.fds[t]->loadMarkers(str(markerIDs[0]),t==AMOEBA ? ParamMap() : ParamMap{{"size",ms}});
         }
 
         if(mode == ExtractGrids){

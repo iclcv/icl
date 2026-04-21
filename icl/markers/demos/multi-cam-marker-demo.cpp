@@ -42,7 +42,7 @@ void init(){
     scene.addCamera(Camera(*pa("-c",i)));
   }
 
-  fd.init(pa("-m",0), *pa("-m",1), ParamList("size",*pa("-m",2)),
+  fd.init(pa("-m",0), *pa("-m",1), ParamMap{{"size",*pa("-m",2)}},
           scene.getAllCameras(), !pa("-nosync").as<bool>());
   fd.setConfigurableID("fd");
 

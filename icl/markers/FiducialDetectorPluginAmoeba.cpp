@@ -109,7 +109,7 @@ namespace icl::markers {
   }
 
 
-  void FiducialDetectorPluginAmoeba::addOrRemoveMarkers(bool add, const Any &which, const ParamList &params){
+  void FiducialDetectorPluginAmoeba::addOrRemoveMarkers(bool add, const Any &which, const ParamMap &params){
     File f(which);
 
     std::vector<TwoLevelRegionStructure> rs;

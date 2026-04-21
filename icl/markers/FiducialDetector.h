@@ -7,7 +7,6 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Configurable.h>
 #include <icl/utils/Any.h>
-#include <icl/utils/ParamList.h>
 
 #include <icl/geom/Camera.h>
 
@@ -73,7 +72,7 @@ namespace icl::markers {
     */
     FiducialDetector(const std::string &plugin="bch",
                      const utils::Any &markersToLoad=utils::Any(),
-                     const utils::ParamList &params=utils::ParamList(),
+                     const utils::ParamMap &params=utils::ParamMap(),
                      const geom::Camera *camera=0);
 
     /// Destructor
@@ -100,7 +99,7 @@ namespace icl::markers {
           Please note that angular braces define a range, while curly
           braces define a list here.\n
           Artoolkit markers need extra param in the param list which is the real marker size (in mm)
-          An example param list is <tt>ParamList("size",utils::Size(50,50));</tt>
+          An example param list is <tt>ParamMap{{"size",utils::Size(50,50)}};</tt>
         - "art":\n
           here, an image file-name or file-pattern is required. This image is automatically
           converted into an appropriate matching representation
@@ -119,7 +118,7 @@ namespace icl::markers {
           add all markers. Actually if you load a marker ID x, also the inverted marker
           (that has a white root-region) with ID -x is added.
     */
-    void loadMarkers(const utils::Any &which, const utils::ParamList &params=utils::ParamList());
+    void loadMarkers(const utils::Any &which, const utils::ParamMap &params=utils::ParamMap());
 
 
     /// unloads all already defined markers
@@ -179,7 +178,7 @@ namespace icl::markers {
         * <b>icl1</b> does not need extra parameters
         * <b>amoeba</b> is not supported
     */
-    core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
+    core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamMap &params);
 
     /// returns the internal plugin
     FiducialDetectorPlugin* getPlugin();

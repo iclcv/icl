@@ -28,7 +28,7 @@ struct Obj : public SceneObject{
 void init(){
   fid = new FiducialDetector(pa("-m").as<std::string>(),
                              pa("-m",1).as<std::string>(),
-                             ParamList("size",(*pa("-m",2)) ) );
+                             ParamMap{{"size",*pa("-m",2)}});
   fid->setConfigurableID("fid");
   canShowRegionCorners = (*pa("-m") == "bch" || *pa("-m") == "art");
 
@@ -63,7 +63,7 @@ void init(){
          )
       << Show();
 
-  //fid->loadMarkers("[0,10]",ParamList("size",Size(96,96)));
+  //fid->loadMarkers("[0,10]",ParamMap("size",Size(96,96)));
   try{
     fid->setPropertyValue("quads.minimum region size",400);
     fid->setPropertyValue("thresh.global threshold",-11);

@@ -83,7 +83,7 @@ namespace icl::markers {
   struct FiducialDetectorPlugin_VIRTUAL : public FiducialDetectorPlugin{
     virtual void getFeatures(Fiducial::FeatureSet&){}
     virtual void detect(std::vector<FiducialImpl*> &, const Img8u &){}
-    virtual void addOrRemoveMarkers(bool, const Any &, const ParamList &){}
+    virtual void addOrRemoveMarkers(bool, const Any &, const ParamMap &){}
   };
 
   REGISTER_CONFIGURABLE_DEFAULT(FiducialDetectorPlugin_VIRTUAL);

@@ -45,7 +45,7 @@ namespace icl::markers {
 
   MultiCamFiducialDetector::MultiCamFiducialDetector(const std::string &pluginType,
                                                      const Any &markersToLoad,
-                                                     const ParamList &params,
+                                                     const ParamMap &params,
                                                      const std::vector<Camera*> &cams,
                                                      bool syncProperties,
                                                      bool deepCopyCams):m_data(0){
@@ -55,7 +55,7 @@ namespace icl::markers {
 
   void MultiCamFiducialDetector::init(const std::string &pluginType,
                                       const Any &markersToLoad,
-                                      const ParamList &params,
+                                      const ParamMap &params,
                                       const std::vector<Camera*> &cams,
                                       bool syncProperties,
                                       bool deepCopyCams){
@@ -150,7 +150,7 @@ namespace icl::markers {
     return *m_data->detectors[idx];
   }
 
-  void MultiCamFiducialDetector::loadMarkers(const Any &which, const ParamList &params){
+  void MultiCamFiducialDetector::loadMarkers(const Any &which, const ParamMap &params){
     ICLASSERT_THROW(m_data, ICLException(str(__FUNCTION__)+": this is null"));
     for(int i=0;i<getNumCameras();++i){
       m_data->detectors[i]->loadMarkers(which,params);

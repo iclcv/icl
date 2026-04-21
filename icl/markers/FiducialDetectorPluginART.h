@@ -48,7 +48,7 @@ namespace icl::markers {
                      The parameter list params must contain the real markers 'size' in mm
        @param params
     */
-    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
+    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamMap &params);
 
     /// Identifies the given image patch using bch decoding
     virtual FiducialImpl *classifyPatch(const core::Img8u &image, int *rot, bool returnRejectedQuads,cv::ImageRegion r);
@@ -61,6 +61,6 @@ namespace icl::markers {
                                                 utils::Size &markerSizeWithoutBorder);
 
     /// creates marker image from given parameters (see FiducialDetector for more details)
-    virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
+    virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamMap &params);
   };
   } // namespace icl::markers

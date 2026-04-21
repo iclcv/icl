@@ -270,10 +270,10 @@ namespace icl::markers {
     delete data;
   }
 
-  void FiducialDetectorPluginART::addOrRemoveMarkers(bool add, const Any &which, const ParamList &params){
+  void FiducialDetectorPluginART::addOrRemoveMarkers(bool add, const Any &which, const ParamMap &params){
     FileList l(which);
 
-    Size size = params["size"];
+    Size size = params.at("size");
 
 
     if(add){
@@ -357,13 +357,13 @@ namespace icl::markers {
     markerSizeWithoutBorder = Size(d,d);
   }
 
-  Img8u FiducialDetectorPluginART::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
+  Img8u FiducialDetectorPluginART::createMarker(const Any &whichOne,const Size &size, const ParamMap &params){
     FileGrabber g(whichOne);
     g.useDesired(formatGray);
     g.useDesired(depth8u);
     Image grabbed = g.grabImage();
     const Img8u &l = grabbed.as8u();
-    float b = params["border ratio"];
+    float b = params.at("border ratio");
     Size s(l.getWidth()*(1+b), l.getHeight()*(1+b));
     Img8u r(s,1);
     r.setROI(Rect(l.getWidth()*b*.5, l.getHeight()*b*.5,l.getWidth(),l.getHeight()));

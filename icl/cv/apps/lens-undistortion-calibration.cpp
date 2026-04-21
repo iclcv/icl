@@ -103,7 +103,7 @@ void run(){
 
   const MarkerGrid &grid = detector.detect(image.ptr());
 
-  static  FiducialDetector abc ("bch","[0-23]",ParamList("size","40x40"));
+  static  FiducialDetector abc ("bch","[0-23]",ParamMap{{"size","40x40"}});
 
   gui["error"] = gridEval.evalError();
 

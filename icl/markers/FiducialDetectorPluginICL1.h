@@ -52,9 +52,9 @@ namespace icl::markers {
     /** The Any paramter 'which' can either be a filename to a file that contains
         TwoLevelRegionStructure codes per row,
         or a newline or comma or space separated list of
-        TwoLevelRegionStructure codes. The ParamList params is not used here.
+        TwoLevelRegionStructure codes. The ParamMap params is not used here.
     */
-    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
+    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamMap &params);
 
     /// returns how to compute a list of image-position/marker-position correspondences
     /** The 2D-keypoints are the most common information that is use to compute a markers
@@ -63,7 +63,7 @@ namespace icl::markers {
     virtual void getKeyPoints2D(std::vector<Fiducial::KeyPoint> &dst, FiducialImpl &impl);
 
     /// creates an image of a given marker
-    virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamList &params);
+    virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamMap &params);
 
 
   };

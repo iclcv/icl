@@ -77,7 +77,7 @@ namespace icl::markers {
 
   FiducialDetector::FiducialDetector(const std::string &plugin,
                                      const Any &markersToLoad,
-                                     const ParamList &params,
+                                     const ParamMap &params,
                                      const Camera *camera):
     data(new Data){
     data->plugin = 0;
@@ -135,12 +135,12 @@ namespace icl::markers {
     return data->plugintype;
   }
 
-  void  FiducialDetector::loadMarkers(const Any &which, const ParamList &params){
+  void  FiducialDetector::loadMarkers(const Any &which, const ParamMap &params){
     data->plugin->addOrRemoveMarkers(true,which,params);
   }
 
   void FiducialDetector::unloadMarkers(const Any &which){
-    data->plugin->addOrRemoveMarkers(false,which,ParamList());
+    data->plugin->addOrRemoveMarkers(false,which,ParamMap());
   }
 
   const std::vector<Fiducial> &FiducialDetector::detect(const ImgBase *image){
@@ -183,7 +183,7 @@ namespace icl::markers {
     return data->plugin->getIntermediateImage(name);
   }
 
-  Img8u FiducialDetector::createMarker(const Any &whichOne,const Size &size, const ParamList &params){
+  Img8u FiducialDetector::createMarker(const Any &whichOne,const Size &size, const ParamMap &params){
     return data->plugin->createMarker(whichOne,size,params);
   }
 

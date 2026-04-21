@@ -40,7 +40,7 @@ namespace icl::markers {
     virtual void detect(std::vector<FiducialImpl*> &dst, const std::vector<cv::ImageRegion> &regions) = 0;
 
     /// defines how to load/remove marker definitions
-    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params)=0;
+    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamMap &params)=0;
   };
 
   } // namespace icl::markers

@@ -43,7 +43,6 @@ utils_headers = files(
   'Lockable.h',
   'Macros.h',
   'MultiTypeMap.h',
-  'ParamList.h',
   'PluginRegistry.h',
   'Point.h',
   'ProcessMonitor.h',

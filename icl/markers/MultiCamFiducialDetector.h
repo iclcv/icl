@@ -48,7 +48,7 @@ namespace icl::markers {
     /** @see MultiCamFiducialDetector::init */
     MultiCamFiducialDetector(const std::string &pluginType,
                              const utils::Any &markersToLoad,
-                             const utils::ParamList &params,
+                             const utils::ParamMap &params,
                              const std::vector<geom::Camera*> &cams,
                              bool syncProperties=true,
                              bool deepCopyCams=false);
@@ -69,7 +69,7 @@ namespace icl::markers {
     */
     void init(const std::string &pluginType,
               const utils::Any &markersToLoad,
-              const utils::ParamList &params,
+              const utils::ParamMap &params,
               const std::vector<geom::Camera*> &cams,
               bool syncProperties=true,
               bool deepCopyCams=false);
@@ -90,7 +90,7 @@ namespace icl::markers {
     FiducialDetector &getFiducialDetector(int idx);
 
     /// loads additional markers (passed to all 2D detectors)
-    void loadMarkers(const utils::Any &which, const utils::ParamList &params);
+    void loadMarkers(const utils::Any &which, const utils::ParamMap &params);
 
     /// unloads markers (passed to all 2D detectors)
     void unloadMarkers(const utils::Any &which);

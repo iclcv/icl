@@ -6,7 +6,7 @@
 
 #include <icl/utils/Configurable.h>
 #include <icl/utils/Array2D.h>
-#include <icl/utils/ParamList.h>
+#include <icl/utils/Any.h>
 #include <icl/markers/FiducialDetector.h>
 
 namespace icl::markers {
@@ -76,7 +76,7 @@ namespace icl::markers {
       /// Well defined constructor
       /** Equivalent to calling the empty constructor followed by calling init(...) */
       MarkerGridDetector(const GridDefinition &gridDef,
-                         const utils::ParamList &extraParams=utils::ParamList("size","1x1"));
+                         const utils::ParamMap &extraParams=utils::ParamMap{{"size","1x1"}});
 
       /// Destructor
       ~MarkerGridDetector();
@@ -88,7 +88,7 @@ namespace icl::markers {
           The extraParams list is directly passed to the internal FiducialDetector instance
           */
       void init(const GridDefinition &gridDef,
-                const utils::ParamList &extraParams=utils::ParamList("size","1x1"));
+                const utils::ParamMap &extraParams=utils::ParamMap{{"size","1x1"}});
 
       /// returns the internal grid definition
       const GridDefinition &getGridDefinition() const;

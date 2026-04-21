@@ -42,8 +42,8 @@ namespace icl::markers {
     /** The Any paramter 'which' can either be a filename to a file that contains
         TwoLevelRegionStructure codes per row,
         or a newline or comma or space separated list of
-        TwoLevelRegionStructure codes. The ParamList params is not used here.
+        TwoLevelRegionStructure codes. The ParamMap params is not used here.
     */
-    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params);
+    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamMap &params);
   };
   } // namespace icl::markers

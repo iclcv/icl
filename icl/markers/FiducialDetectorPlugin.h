@@ -7,7 +7,6 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Any.h>
 #include <icl/utils/Configurable.h>
-#include <icl/utils/ParamList.h>
 
 #include <icl/core/Img.h>
 
@@ -104,7 +103,7 @@ namespace icl::markers {
     virtual void detect(std::vector<FiducialImpl*> &dst, const core::Img8u &image)=0;
 
     /// defines how to load/remove marker definitions
-    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamList &params)=0;
+    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamMap &params)=0;
 
     /// creates a human readable name for the given impl
     /** Per default, this returns a string repesentation of the FiducialImpl's id */
@@ -132,7 +131,7 @@ namespace icl::markers {
     static std::vector<int> parse_list_str(const utils::Any &s);
 
     /// interface for creating an image of a specific marker
-    virtual core::Img8u createMarker(const utils::Any&,const utils::Size &, const utils::ParamList &){
+    virtual core::Img8u createMarker(const utils::Any&,const utils::Size &, const utils::ParamMap &){
       throw utils::ICLException("FiducialDetectorPlugin::createMarker seems to be not implemented for this marker type");
       return core::Img8u();
     }
