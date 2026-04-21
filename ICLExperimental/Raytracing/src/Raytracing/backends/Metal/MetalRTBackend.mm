@@ -145,6 +145,7 @@ struct MetalRTBackend::Impl {
   mtl::Buffer objectIdBuf;
   mtl::Buffer accumR, accumG, accumB;
   mtl::Buffer normalXBuf, normalYBuf, normalZBuf;
+  mtl::Buffer reflectBuf;
   int lastW = 0, lastH = 0;
 
   // State
@@ -747,6 +748,7 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
     m_impl->normalXBuf = m_impl->device.newBuffer(n * sizeof(float));
     m_impl->normalYBuf = m_impl->device.newBuffer(n * sizeof(float));
     m_impl->normalZBuf = m_impl->device.newBuffer(n * sizeof(float));
+    m_impl->reflectBuf = m_impl->device.newBuffer(n * sizeof(float));
     m_impl->lastW = w;
     m_impl->lastH = h;
     m_impl->accumFrame = 0;
@@ -825,11 +827,12 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
         {&m_impl->normalXBuf, 14},
         {&m_impl->normalYBuf, 15},
         {&m_impl->normalZBuf, 16},
+        {&m_impl->reflectBuf, 17},
       };
 
       m_impl->dispatch(m_impl->ptPipeline, w, h, bufs,
                        &jitteredCamera, sizeof(jitteredCamera),
-                       &params, sizeof(params), 17, 18);
+                       &params, sizeof(params), 18, 19);
 
       auto now = std::chrono::steady_clock::now();
       float elapsedMs =
@@ -856,11 +859,12 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
       {&m_impl->normalXBuf, 11},
       {&m_impl->normalYBuf, 12},
       {&m_impl->normalZBuf, 13},
+      {&m_impl->reflectBuf, 14},
     };
 
     m_impl->dispatch(m_impl->directPipeline, w, h, bufs,
                      &jitteredCamera, sizeof(jitteredCamera),
-                     &params, sizeof(params), 14, 15);
+                     &params, sizeof(params), 15, 16);
   }
 
   // Read back from unified memory (just memcpy from buffer contents)
@@ -1339,8 +1343,9 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
            {dstR, 3}, {dstG, 4}, {dstB, 5},
            {&m_impl->depthBuf, 6},
            {&m_impl->normalXBuf, 7}, {&m_impl->normalYBuf, 8}, {&m_impl->normalZBuf, 9},
-           {srcVar, 10}, {dstVar, 11}},
-          {}, &ap, sizeof(ap), 12);
+           {srcVar, 10}, {dstVar, 11},
+           {&m_impl->reflectBuf, 12}},
+          {}, &ap, sizeof(ap), 13);
 
       std::swap(srcR, dstR); std::swap(srcG, dstG); std::swap(srcB, dstB);
       std::swap(srcVar, dstVar);

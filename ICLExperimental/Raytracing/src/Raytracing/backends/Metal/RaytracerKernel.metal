@@ -460,21 +460,23 @@ struct SVGFTemporalParams {
   }
 }
 
-/// SVGF variant of À-Trous: uses per-pixel variance for luminance weight.
+/// SVGF variant of À-Trous: uses per-pixel variance for luminance weight,
+/// and reflectivity to reduce filtering on mirror-like surfaces.
 [[kernel]] void svgfATrousPass(
-    device const float *inR      [[buffer(0)]],
-    device const float *inG      [[buffer(1)]],
-    device const float *inB      [[buffer(2)]],
-    device float       *outR     [[buffer(3)]],
-    device float       *outG     [[buffer(4)]],
-    device float       *outB     [[buffer(5)]],
-    device const float *depth    [[buffer(6)]],
-    device const float *normalX  [[buffer(7)]],
-    device const float *normalY  [[buffer(8)]],
-    device const float *normalZ  [[buffer(9)]],
-    device const float *variance [[buffer(10)]],
-    device float       *outVar   [[buffer(11)]],
-    constant ATrousParams &params [[buffer(12)]],
+    device const float *inR        [[buffer(0)]],
+    device const float *inG        [[buffer(1)]],
+    device const float *inB        [[buffer(2)]],
+    device float       *outR       [[buffer(3)]],
+    device float       *outG       [[buffer(4)]],
+    device float       *outB       [[buffer(5)]],
+    device const float *depth      [[buffer(6)]],
+    device const float *normalX    [[buffer(7)]],
+    device const float *normalY    [[buffer(8)]],
+    device const float *normalZ    [[buffer(9)]],
+    device const float *variance   [[buffer(10)]],
+    device float       *outVar     [[buffer(11)]],
+    device const float *reflectivity [[buffer(12)]],
+    constant ATrousParams &params  [[buffer(13)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int w = params.width, h = params.height;
@@ -488,6 +490,11 @@ struct SVGFTemporalParams {
   float cLum = 0.2126f*cR + 0.7152f*cG + 0.0722f*cB;
   float cVar = variance[ci];
   float lumSigma = params.sigmaColor * sqrt(max(1e-6f, cVar)) + 1e-6f;
+
+  // Reduce spatial filtering for reflective surfaces — their color variation
+  // is from the reflected scene, not noise.
+  float refl = reflectivity[ci];
+  float reflScale = max(0.05f, 1.0f - refl);
 
   const float bspline[5] = {0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f};
   int step = params.stepSize;
@@ -508,6 +515,8 @@ struct SVGFTemporalParams {
       float wl = exp(-abs(nLum - cLum) / lumSigma);
 
       float wt = ws * wd * wn * wl;
+      // Scale down neighbor contribution for reflective pixels
+      if (kx != 0 || ky != 0) wt *= reflScale;
       sumR += wt * inR[ni];
       sumG += wt * inG[ni];
       sumB += wt * inB[ni];
@@ -660,8 +669,9 @@ void raytrace(
     device float              *normalXOut     [[buffer(11)]],
     device float              *normalYOut     [[buffer(12)]],
     device float              *normalZOut     [[buffer(13)]],
-    constant RTRayGenParams   &camera          [[buffer(14)]],
-    constant SceneParams      &params          [[buffer(15)]],
+    device float              *reflectOut     [[buffer(14)]],
+    constant RTRayGenParams   &camera          [[buffer(15)]],
+    constant SceneParams      &params          [[buffer(16)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int px = tid.x;
@@ -698,6 +708,7 @@ void raytrace(
                           ? result.distance
                           : camera.farClip;
       normalXOut[idx] = normalYOut[idx] = normalZOut[idx] = 0;
+      reflectOut[idx] = 0;
     }
 
     if (result.type == intersection_type::none) {
@@ -711,13 +722,14 @@ void raytrace(
 
     if (dot(s.normal, dir) > 0) s.normal = -s.normal;
 
+    device const RTMaterial &mat = materials[s.materialIndex];
+
     if (bounce == 0) {
       normalXOut[idx] = s.normal.x;
       normalYOut[idx] = s.normal.y;
       normalZOut[idx] = s.normal.z;
+      reflectOut[idx] = mat.reflectivity;
     }
-
-    device const RTMaterial &mat = materials[s.materialIndex];
 
     // Emission
     color += throughput * f3v(mat.emission);
@@ -768,8 +780,9 @@ void pathTrace(
     device float              *normalXOut     [[buffer(14)]],
     device float              *normalYOut     [[buffer(15)]],
     device float              *normalZOut     [[buffer(16)]],
-    constant RTRayGenParams   &camera          [[buffer(17)]],
-    constant SceneParams      &params          [[buffer(18)]],
+    device float              *reflectOut     [[buffer(17)]],
+    constant RTRayGenParams   &camera          [[buffer(18)]],
+    constant SceneParams      &params          [[buffer(19)]],
     uint2 tid [[thread_position_in_grid]])
 {
   int px = tid.x;
@@ -812,6 +825,7 @@ void pathTrace(
                           ? result.distance
                           : camera.farClip;
       normalXOut[idx] = normalYOut[idx] = normalZOut[idx] = 0;
+      reflectOut[idx] = 0;
     }
 
     if (result.type == intersection_type::none) {
@@ -829,13 +843,14 @@ void pathTrace(
 
     if (dot(s.normal, dir) > 0) s.normal = -s.normal;
 
+    device const RTMaterial &mat = materials[s.materialIndex];
+
     if (bounce == 0) {
       normalXOut[idx] = s.normal.x;
       normalYOut[idx] = s.normal.y;
       normalZOut[idx] = s.normal.z;
+      reflectOut[idx] = mat.reflectivity;
     }
-
-    device const RTMaterial &mat = materials[s.materialIndex];
 
     // Emission
     color += throughput * f3v(mat.emission);
