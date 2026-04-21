@@ -156,12 +156,7 @@ namespace icl::geom2 {
 
     mesh->set_triangles(triangles);
     mesh->set_smooth(smooth);
-    if (hasNormals) {
-      Attribute *attr = mesh->attributes.add(ATTR_STD_VERTEX_NORMAL);
-      float3 *ndata = attr->data_float3();
-      for (int i = 0; i < (int)P.size(); i++)
-        ndata[i] = (i < (int)srcNormals.size()) ? N[i] : make_float3(0, 0, 1);
-    }
+    // Cycles computes vertex normals from topology + smooth flags automatically
 
     array<ccl::Node*> shaders;
     if (!mesh->get_used_shaders().empty())
@@ -329,12 +324,15 @@ namespace icl::geom2 {
       float3 pos = make_float3(t(0,3)*sceneScale, t(1,3)*sceneScale, t(2,3)*sceneScale);
 
       // Physical inverse-square falloff calibration (same as legacy geom)
+      // Color is in 0-255 range, normalize to 0-1 before applying intensity
       float typicalDist = 500.0f * sceneScale;
-      float physIntensity = 300.0f * typicalDist * typicalDist;
+      float physIntensity = intensity * 300.0f * typicalDist * typicalDist;
 
       PointLight *cclLight = cclScene->create_node<PointLight>();
       cclLight->set_strength(make_float3(
-          c[0] * physIntensity, c[1] * physIntensity, c[2] * physIntensity));
+          c[0] / 255.0f * physIntensity,
+          c[1] / 255.0f * physIntensity,
+          c[2] / 255.0f * physIntensity));
       cclLight->set_radius(0.1f * sceneScale);
 
       // Emission shader
