@@ -50,53 +50,52 @@ namespace icl::geom {
                      bool withColors=true, bool withLabels=false, bool withDepth=false);
 
     /// returns which features are supported (only XYZ and RGBA32f)
-    virtual bool supports(FeatureType t) const;
+    bool supports(FeatureType t) const override;
 
     /// returns whether the points are 2D-ordered
-    virtual bool isOrganized() const;
+    bool isOrganized() const override;
 
     /// returns the 2D size of the pointcloud (throws exception if not ordered)
-    virtual utils::Size getSize() const;
+    utils::Size getSize() const override;
 
     /// return the linearily ordered number of point in the point cloud
-    virtual int getDim() const;
+    int getDim() const override;
 
     /// adapts the point cloud size
     /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
-    virtual void setSize(const utils::Size &size);
+    void setSize(const utils::Size &size) override;
 
     /// returns XYZ data segment
-    virtual core::DataSegment<float,3> selectXYZ();
+    core::DataSegment<float,3> selectXYZ() override;
 
     /// returns XYZH data segment
-    virtual core::DataSegment<float,4> selectXYZH();
+    core::DataSegment<float,4> selectXYZH() override;
 
     /// returns the RGBA data segment (4-floats)
-    virtual core::DataSegment<float,4> selectRGBA32f();
+    core::DataSegment<float,4> selectRGBA32f() override;
 
     /// returns the Normals data segment (4-floats)
     /** Only available if the constructor was called with "withNormals" set to true */
-    virtual core::DataSegment<float,4> selectNormal();
+    core::DataSegment<float,4> selectNormal() override;
 
     /// returns the label data segment (32-bit signed integer)
     /** Only available if the the Label feature was explicitly enabled */
-    virtual core::DataSegment<icl32s,1> selectLabel();
-
+    core::DataSegment<icl32s,1> selectLabel() override;
 
     /// returns the depth data segment (single channel float, packed)
     /** Only available if the the Depth feature was explicitly enabled */
-    virtual core::DataSegment<float,1> selectDepth();
+    core::DataSegment<float,1> selectDepth() override;
 
     /// important, this is again, reimplemented in order to NOT draw the stuff manually here
-    virtual void customRender();
+    void customRender() override;
 
     /// only normals and color can be added in hindsight
-    virtual bool canAddFeature(FeatureType t) const;
+    bool canAddFeature(FeatureType t) const override;
 
     /// adds normals or colors in hindsight
     /** If the given feature is already contained, calling this function has no effect.
         The function calls lock() and unlock() internally */
-    virtual void addFeature(FeatureType t);
+    void addFeature(FeatureType t) override;
 
     /// deep copy function
     virtual PointCloudObject *deepCopy() const override {

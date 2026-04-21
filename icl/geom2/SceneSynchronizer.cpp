@@ -287,7 +287,6 @@ namespace icl::geom2 {
 
   static void tessellateToMesh(const GeometryNode *node, ccl::Mesh *mesh, float scale) {
     const auto &srcVerts = node->getVertices();
-    const auto &srcNormals = node->getNormals();
     const auto &texCoords = node->getTexCoords();
 
     if (srcVerts.empty()) return;
@@ -307,7 +306,6 @@ namespace icl::geom2 {
     int *triangles = mesh->get_triangles().data();
     bool *smooth = mesh->get_smooth().data();
 
-    bool hasNormals = !srcNormals.empty();
     bool hasUVs = !texCoords.empty();
     auto mat = node->getMaterial();
     bool useSmooth = mat && mat->smoothShading;

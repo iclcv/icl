@@ -285,7 +285,7 @@ namespace icl::geom {
     void setDefaultVertexColor(const GeomColor &color);
 
     /// implements the SceneObject's virtual getter function for this feature
-    virtual GeomColor getDefaultVertexColor() const{ return m_defaultPointColor*255; }
+    GeomColor getDefaultVertexColor() const override { return m_defaultPointColor*255; }
 
     /// For subclasses that provide Dynamic features, this function must be implemented
     virtual std::vector<std::string> getSupportedDynamicFeatures() const {
@@ -299,7 +299,7 @@ namespace icl::geom {
         points using OpenGL color pointer. Miss-ordered BGR types are
         rendered using an OpenGL fragment shaded to swap the
         transferred blue and red channels */
-    virtual void customRender();
+    void customRender() override;
 
     /// set use draw normal lines
     void setUseDrawNormalLines(bool use, float lineLength=40, int granularity=4);

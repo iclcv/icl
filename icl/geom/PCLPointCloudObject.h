@@ -103,40 +103,40 @@ namespace icl::geom {
     void setPCL(pcl::PointCloud<PCLPointType> &pcl, bool deepCopy = true);
 
     /// generic version, that trys to get an offset (can be optimized with specialization)
-    virtual bool supports(FeatureType t) const;
+    bool supports(FeatureType t) const override;
 
     /// returns whether pointcloud is 2D organized
-    virtual bool isOrganized() const;
+    bool isOrganized() const override;
 
     /// returns the 2D size of the pointcloud (throws exception if not ordered)
-    virtual utils::Size getSize() const;
+    utils::Size getSize() const override;
 
     /// return the linearily ordered number of point in the point cloud
-    virtual int getDim() const;
+    int getDim() const override;
 
     /// adapts the point cloud size
     /** if the sizes height is smaller than 1, the cloud becomes un-organized*/
-    virtual void setSize(const utils::Size &size);
+    void setSize(const utils::Size &size) override;
 
     bool isNull() const;
 
     // well known fields
-    virtual core::DataSegment<float,1> selectIntensity();
-    virtual core::DataSegment<icl32s,1> selectLabel();
-    virtual core::DataSegment<icl8u,3> selectBGR();
-    virtual core::DataSegment<icl8u,4> selectBGRA();
-    virtual core::DataSegment<icl32s,1> selectBGRA32s();
+    core::DataSegment<float,1> selectIntensity() override;
+    core::DataSegment<icl32s,1> selectLabel() override;
+    core::DataSegment<icl8u,3> selectBGR() override;
+    core::DataSegment<icl8u,4> selectBGRA() override;
+    core::DataSegment<icl32s,1> selectBGRA32s() override;
 
-    virtual core::DataSegment<float,3> selectXYZ();
-    virtual core::DataSegment<float,4> selectXYZH();
-    virtual core::DataSegment<float,4> selectNormal();
-    virtual core::DataSegment<float,4> selectRGBA32f();
+    core::DataSegment<float,3> selectXYZ() override;
+    core::DataSegment<float,4> selectXYZH() override;
+    core::DataSegment<float,4> selectNormal() override;
+    core::DataSegment<float,4> selectRGBA32f() override;
 
     /// selects a dynamic feature
     /** some pcl types support special features that can be selected by a string ID.
         By default, the featureName 'all' can be used to create a DataSegment that
         give access to all data entries as floats */
-    virtual core::DataSegmentBase select(const std::string &featureName);
+    core::DataSegmentBase select(const std::string &featureName) override;
 
     /// deep copy interface
     virtual PCLPointCloudObject<PCLPointType> *deepCopy() const override;

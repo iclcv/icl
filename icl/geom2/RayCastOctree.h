@@ -14,7 +14,7 @@
 #endif
 
 namespace icl::geom {
-  class ViewRay;
+  struct ViewRay;
 }
 
 namespace icl::geom2 {
