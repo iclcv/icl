@@ -1,6 +1,230 @@
 # ICL — Continuation Guide
 
-## Current State (Session 47 — SharedMemory retired + ImageCompressor → plugin framework + FileWriter/Grabber factory-ized)
+## Current State (Session 48 — plugin-registry unification + ZMQ retirement)
+
+### Session 48 Summary
+
+Nine landings over one session, consolidated into two git commits
+(`ce7b47aa7` + `4d464b558`). Every plugin-registration mechanism in the
+codebase now runs on a single primitive (`utils::PluginRegistry<Key,
+Payload, Context>`); the remaining façades are either thin
+free-function accessors or one class (`GrabberRegistry`) that carries
+real domain-specific side maps. Three plugin base classes gone, two
+more façades gone, one network transport retired.
+
+See `plugin-registry-plan.md` at repo root for the full phase-by-phase
+intent; what's below is what actually shipped.
+
+#### 1. The primitive (`utils::PluginRegistry<Key, Payload, Context>`)
+
+New header `icl/utils/PluginRegistry.h` (~220 lines). Keyed-entry
+registry with five orthogonal capabilities the various ICL registries
+used to reimplement inconsistently:
+
+- **Payload-agnostic**: Payload is a template parameter. Callers pick
+  between `std::function<Sig>` (callable-plugin) or
+  `std::function<std::unique_ptr<T>(Args...)>` (class-plugin).
+- **Priority**: each entry has a `priority` int. `KeepHighestPriority`
+  policy resolves conflicts deterministically across TU static-init
+  orderings (replaces ImageMagick's previous dead `overrideExisting`
+  bool — libpng at prio 0 now beats ImageMagick at prio -10 for `.png`
+  by construction, not by linker luck).
+- **Applicability predicate**: optional `ApplicabilityFn<Context>`.
+  Used by `BackendSelector` for context-aware backend picking (depth,
+  size, IPP-applicability, …). Classics leave it empty.
+- **Forced-key override**: `setForced(key)` / `clearForced()` —
+  testing affordance used by `BackendDispatching::forceAll` to
+  cross-validate filter backends.
+- **OnDuplicate policies**: `Throw` / `KeepFirst` / `Replace` /
+  `KeepHighestPriority`.
+
+Public API: `registerPlugin`, `get`, `getOrThrow`, `resolve`,
+`resolveOrThrow`, `has`, `keys`, `entries`, `setForced`,
+`unregisterPlugin`, `clear`.
+
+Two canonical aliases:
+
+```cpp
+template <class Sig>
+using FunctionPluginRegistry =
+    PluginRegistry<std::string, std::function<Sig>>;
+
+template <class T, class... CtorArgs>
+using ClassPluginRegistry =
+    PluginRegistry<std::string, std::function<std::unique_ptr<T>(CtorArgs...)>>;
+```
+
+One registration macro `ICL_REGISTER_PLUGIN(registry_expr, tag, ...)`
+using `__attribute__((constructor, used))` — the only macOS-portable
+mechanism that survives dead-stripping (established in Session 47 for
+compression plugins; now applied universally).
+
+18 unit tests in `tests/test-plugin-registry.cpp` covering both
+aliases, all four policies, priority+applicability resolution, forcing,
+exact-match vs predicate-based lookup, threading stress (8 threads ×
+200 concurrent ops).
+
+#### 2. `BackendSelector` refactored onto the primitive
+
+The inner `impls` vector + manual sort + manual `setImpl` gone.
+`BackendSelector<Context, Sig>` now holds a `PluginRegistry<Backend,
+shared_ptr<ImplBase>, Context>` with `OnDuplicate::Replace`. Priority
+= `static_cast<int>(backend)` (matches pre-refactor "higher enum value
+= preferred" ordering).
+
+`ImplBase` slimmed: description + applicability hoisted to the
+registry's `Entry`; `cloneFn` stays for stateful backends.
+`BackendSelectorBase::forcedBackend` field → virtual `force/unforce/
+forcedBackend()` methods delegating to the registry's
+`setForced/clearForced/forcedKey`.
+
+`BackendDispatching<Context>` outer shell untouched (heterogeneous
+multi-Sig container + enum-indexed selector array + clone ctor +
+`forceAll`/`unforceAll` + `allBackendCombinations` + `BackendProxy`
+fluent API — all stay, they address a distinct "outer" dimension that
+the primitive doesn't).
+
+Zero behavioural change; all filter tests pass. `BackendDispatching.h`
+shrunk 378 → 327 lines.
+
+#### 3. Classic registries migrated
+
+| Old mechanism | Outcome |
+|---|---|
+| `utils::PluginRegister<T>` | **Deleted.** Replaced by domain-specific `pointCloudGrabberRegistry()` + `pointCloudOutputRegistry()` free-function accessors. `REGISTER_PLUGIN(TYPE, NAME, ...)` macro → domain-specific `REGISTER_POINT_CLOUD_GRABBER` / `REGISTER_POINT_CLOUD_OUTPUT`. TextTable rendering (`getRegisteredInstanceDescription`) moved to `pointCloudGrabberInfoTable()` / `pointCloudOutputInfoTable()` free functions. `creationSyntax` lives in a free-function-accessed side map. |
+| `CompressionRegister` | **Demolished.** Replaced by free-function `compressionRegistry()` returning `ClassPluginRegistry<CompressionPlugin>&`. `REGISTER_COMPRESSION_PLUGIN` macro is now a one-line alias over `ICL_REGISTER_PLUGIN`. 5 codec .cpps + WSImageOutput.cpp swapped include to `<icl/io/CompressionRegistry.h>`. ImageCompressor's 3 call sites rewritten to `compressionRegistry().getOrThrow(mode).payload()` + `.keys()` + sort. |
+| `FileWriterPluginRegister` | **Demolished.** Replaced by `fileWriterRegistry()` free function. `REGISTER_FILE_WRITER_PLUGIN` is a one-line alias. ImageMagick's priority-based loop calls `fileWriterRegistry().registerPlugin(...)` directly. |
+| `FileGrabberPluginRegister` | **Demolished.** Symmetric. Plus: `HeaderInfo` struct hoisted from nested `FileGrabberPlugin::HeaderInfo` to namespace-scope `icl::io::HeaderInfo` (consumers: `JPEGDecoder.cpp`, `FileGrabberPluginPNM.cpp`, `FileGrabberPluginCSV.cpp`). |
+| `GrabberRegister` | **Renamed to `GrabberRegistry`** — stays a class because it carries three orthogonal side maps (device-list per backend, bus-reset function per backend, per-backend description strings) that don't fit the primitive's `Entry`. Factory map now uses `PluginRegistry<string, CreateFn>` internally; side maps stay as plain `std::map`s on the class. `REGISTER_GRABBER` and `REGISTER_GRABBER_BUS_RESET_FUNCTION` macros upgraded to `__attribute__((constructor, used))` (drops the file-scope-static-struct idiom). Zero changes to the 19 grabber backend .cpp files. |
+| `GenericImageOutput` (was hardcoded `#ifdef` switch) | **Flipped to registry-based dispatch.** `imageOutputRegistry()` accessor; each backend (`WSImageOutput`, `LibAVVideoWriter`, `OpenCVVideoWriter`, `V4L2LoopBackOutput`, plus built-in `null`/`file`) registers a `params → sender-callable` factory via `REGISTER_IMAGE_OUTPUT`. `init()` shrunk from ~140 lines of `#ifdef` chain to ~20 lines of registry lookup. `-o list` affordance auto-populated from registry entries. |
+
+#### 4. Function-plugin conversions (3 base classes retired)
+
+- **`ImageOutput` base class deleted.** 7 backends drop inheritance.
+  WSImageOutput keeps `utils::Configurable` (its compression settings
+  + port/clients/bytes properties are still exposed); its ImageOutput
+  ancestry is just replaced by the class being directly-instantiable
+  and registering itself with `imageOutputRegistry()`. `GenericImageOutput`
+  itself no longer inherits anything; its `impl` is now
+  `std::function<void(const Image&)>` instead of `shared_ptr<ImageOutput>`.
+
+- **`FileWriterPlugin` base class deleted.** 6 plugins (PNG, JPEG, CSV,
+  PNM, BICL, ImageMagick) drop inheritance. Each plugin's registration
+  lambda uses a **per-macro-type function-local static** instance for
+  state, avoiding the dyld-init-time construction that caused the
+  Session 47 BICL/CompressionRegister ordering bug. BICL's multiple
+  variants (rle1/4/6/8, jicl) each get their own distinct lambda type
+  → their own static instance with distinct ctor args.
+
+- **`FileGrabberPlugin` base class deleted.** Symmetric conversion.
+  `HeaderInfo` struct hoisted to namespace scope (see above).
+
+#### 5. ZMQ backend retired (~260 LOC)
+
+Deleted `ZmqGrabber.{h,cpp}`, `ZmqImageOutput.{h,cpp}`, the
+`libzmq`/`cppzmq` dep detection in root `meson.build`, the `zmq`
+option in `meson.options`, the `libzmq3-dev` apt install and
+`BUILD_WITH_ZMQ=ON` CMake flag in CI, and all doc references.
+
+Why retire: `ws` (Qt6 WebSockets, added Session 46) covers the same
+pub/sub-over-network use case with auto-reconnect resilience, browser
+compatibility, and lower build-config weight. ZMQ's additional value
+(cross-language interop) has no active consumer in the ICL ecosystem.
+Strong circumstantial evidence of disuse: `ZmqImageOutput::send` had
+been missing its class qualifier (`void send(...)` instead of `void
+ZmqImageOutput::send(...)`) — a latent undefined-virtual that would've
+been a runtime crash or linker error for anyone actually using it.
+Parallels the SharedMemory retirement in Session 47.
+
+Pre-existing bugfix discovered in passing: the same missing-qualifier
+bug also affected `V4L2LoopBackOutput::send`. Fixed.
+
+#### 6. Priority-based conflict resolution (replaces dead `overrideExisting`)
+
+FileWriter / FileGrabber registries now use
+`OnDuplicate::KeepHighestPriority`. Register signature:
+`registerExtension(ext, factory, int priority = 0)`. ImageMagick
+registers all its extensions at `priority = -10` (fallback); libpng /
+libjpeg register at default priority 0 and win for .png/.jpg/.jpeg
+deterministically. Extensions ImageMagick uniquely handles (tiff,
+gif, bmp, svg, …) resolve to ImageMagick unopposed.
+
+The dead `overrideExisting = true` flag — nobody actually passed it —
+is gone.
+
+#### 7. `V4L2LoopBackOutput::send` + `ZmqImageOutput::send` bugfix
+
+See §5 above. Latent undefined-virtuals caused by missing
+`ClassName::` qualifier on the method definitions. ZMQ version fixed
+then deleted; V4L2 version kept (the V4L2 backend is still present).
+
+#### Final layout
+
+| Entity | Kind |
+|---|---|
+| `utils::PluginRegistry<Key, Payload, Context>` | primitive template |
+| `utils::FunctionPluginRegistry<Sig>` | alias (callable payload) |
+| `utils::ClassPluginRegistry<T, CtorArgs...>` | alias (factory-producing-unique_ptr payload) |
+| `ICL_REGISTER_PLUGIN(registry_expr, tag, ...)` | macro (attribute-constructor) |
+| `compressionRegistry()` | free-fn accessor |
+| `fileWriterRegistry()` | free-fn accessor |
+| `fileGrabberRegistry()` | free-fn accessor |
+| `imageOutputRegistry()` | free-fn accessor |
+| `pointCloudGrabberRegistry()` / `pointCloudOutputRegistry()` | free-fn accessors (with side-map + TextTable helpers) |
+| `GrabberRegistry` (class) | façade with side maps for device-list / bus-reset / descriptions |
+| `BackendSelector<Context, Sig>` (class) | Sig-specialization over the primitive, for filter backend dispatch |
+| `BackendDispatching<Context>` (class) | outer container over N BackendSelectors, for filter Op prototypes |
+
+Every `REGISTER_*` macro in the codebase now expands to
+`__attribute__((constructor, used))`. Every plugin-registration
+mechanism is backed by one primitive.
+
+#### Verification
+
+- Full build clean throughout (per phase)
+- 551 → 567 tests (18 new `utils.plugin-registry.*` + 1 `get_or_throw`
+  + 1 `policy.keep_highest_priority`). Zero regressions.
+- End-to-end smoke: `icl-pipe -i create lena -o ws PORT` + `-i ws PORT
+  -o file '/tmp/###.png'` round-trip. PNG write/read. BICL write.
+  `-o list` + `-i list` affordances auto-populated from registries.
+
+#### Memory writes this session
+
+- `project_plugin_registry_unification.md` — rewritten with the locked
+  design decisions (function-plugin vs class-plugin split, `Register`
+  → `Registry` rename intent, façade-demolition map, open questions
+  for future cleanup).
+- `project_module_subdirs.md` — new. TODO: consider `detail/` subdirs
+  per module (top-level = public API only; implementation-only files
+  like per-backend grabbers and per-extension plugins go under
+  `module/detail/<group>/`; second-order groupings like
+  `detail/pylon/`, `detail/video/`, `detail/network/`,
+  `detail/file-plugins/`, `detail/compression-plugins/`). Separate
+  session — best done after the plugin-registry work stabilizes
+  (done now).
+- `feedback_sed_sandbox.md` — updated. Use `perl -pi -e '...'` (not
+  `sed -i`) for bulk in-place substitutions in Agent sessions.
+
+#### What's deferred (post-Session-48)
+
+- **Directory reorganization** — `module/detail/<group>/` structure
+  per `project_module_subdirs.md`. Biggest cleanup still pending;
+  touches the entire source tree.
+- **Capability-flag codec classification** (lossy/lossless +
+  supported depths) — enables `auto` codec mode via the primitive's
+  `applicability` machinery. Currently deferred.
+- **Additional codecs**: `webp`, `jxl`, `lz4`, `deflate`/`zlib`.
+- **`Configurable` events on child-set change** (`qt::Prop`
+  auto-rebuild when `ImageCompressor` swaps codec) — surfaced in
+  Session 47, unblocked by this session but not done.
+- **Browser viewer for WSGrabber** (JS-side envelope parser).
+- **`wss://` TLS** for WS transport.
+- **WSGrabber server mode** (push-source workflow).
+- **Path-based multi-stream on one WS server** (`/cam0`, `/cam1`).
+
+---
+
+## Previous State (Session 47 — SharedMemory retired + ImageCompressor → plugin framework + FileWriter/Grabber factory-ized)
 
 ### Session 47 Summary
 
