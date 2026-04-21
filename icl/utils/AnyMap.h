@@ -7,27 +7,36 @@
 #include <icl/utils/CompatMacros.h>
 
 #include <any>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
-#include <unordered_map>
 #include <utility>
 
 namespace icl::utils {
 
   /// Type-erased heterogeneous string-keyed map.
   ///
-  /// Thin typed wrapper around `std::unordered_map<std::string, std::any>`.
+  /// Thin typed wrapper around `std::map<std::string, std::any>`.
   /// Callers `set()` values of any copyable type and `get<T>()` them back
   /// with the compile-time-specified type; wrong-type access throws
   /// `std::bad_any_cast`, missing keys throw `std::out_of_range`.
+  ///
+  /// **Pointer/reference stability.** The underlying container is
+  /// `std::map` (node-based), not `std::unordered_map`, so references
+  /// obtained from `get<T>()` / `tryGet<T>()` stay valid across
+  /// subsequent `set()` / `erase()` calls.  GUI code like
+  /// `auto *h = &store.get<ButtonHandle>("btn")` keeps a usable
+  /// pointer for the widget's lifetime.  Lookups are O(log N) instead
+  /// of O(1) on average; for the typical DataStore use case (tens of
+  /// keys) this difference is immeasurable.
   ///
   /// Intended as the modern replacement for `utils::MultiTypeMap` — same
   /// use-case (heterogeneous keyed storage) but no `void*`, no RTTI-string
   /// comparisons, no `static T _NULL` sentinel, no array/value bit-hack
   /// (store a `std::vector<T>` inside the `std::any` if you need an array).
   class AnyMap {
-    std::unordered_map<std::string, std::any> m_data;
+    std::map<std::string, std::any> m_data;
 
   public:
     /// Store a copy of `value` under `key`.  Overwrites any existing entry
