@@ -131,7 +131,7 @@ namespace icl::io {
 		 }
 		 m_data->oFileList = FileList(files);
 #else
-      m_data->oFileList = pattern+"/*";
+      m_data->oFileList = FileList::glob(pattern+"/*");
 #endif
       if(!m_data->oFileList.size()){
         throw FileNotFoundException(pattern);
@@ -154,7 +154,7 @@ namespace icl::io {
 			  throw ICLException("Error: file globbing is thus far not supported under windows. You can, however use a directory-name if possible");
 		  }
 #endif
-        m_data->oFileList = pattern;
+        m_data->oFileList = FileList::glob(pattern);
         if(!m_data->oFileList.size()){
           throw FileNotFoundException(pattern);
         }
@@ -439,7 +439,7 @@ namespace icl::io {
     REGISTER_CONFIGURABLE(FileGrabber, return new FileGrabber("*", false, false));
 
     Grabber* createGrabber(const std::string &param){
-      if(FileList(param).size()){
+      if(FileList::glob(param).size()){
         return new FileGrabber(param);
       }else{
         std::ostringstream error;

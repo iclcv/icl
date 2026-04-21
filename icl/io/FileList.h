@@ -21,42 +21,25 @@ namespace icl::io {
     /// Create a null file-list
     FileList();
 
-    /// Create a file-list of given type
-    /** pattern migtht be a file pattern like "images/ *.ppm"
-        a single file like "./theimage.jpg" or a file seqenece file
-        with postfix ".seq" which is a textfile where each line is
-        single filename.\n
-
-        \section Sequence File (postfix ".seq")
-        Sequence files which are determined by their postfix ".seq" are
-        are treated in a special way. A sequence file must contain a new-line
-        separated list of filename (in particular other sequence files).
-        Each entry of the seqence file is then added using a recursive "add"-
-        function. If a sequence file contains other sequence files, this files
-        are parsed recursively in the same way. Sequence files may not contain
-        file patterns like "*.ppm".\n
-        To avoid infinite recursion, the FileLists implementation internally
-        holds a list of all already contained sequence files, so adding the
-        same sequence more than once (even indirect by other sequence files)
-        will have no effect.
-
-        \section Omiting Doubled Files
-        Another feature of the FileList class is provided using an additional
-        constructor flag "omitDoubledFiles". If this flag is set to true
-        (it is false by default), the FileLists implementation will internally
-        skip files, which have already been added.
-
-
-        @param pattern the file pattern Either something like
-                       images/ *.p[gnp]m or a seqence file name
-        @param omitDoubledFiles flag to control the creation of double file names. Double file names creation is not allowed at default.
-    **/
-    FileList(const std::string &pattern, bool omitDoubledFiles=false);
-
-    /// create a file list by given set of filenames
-    /** double filenames are allowed in this mode. Sequence files are not
-        handled in a special way.*/
+    /// create a file list from an explicit set of filenames
+    /** Double filenames are allowed in this mode. Sequence files are not
+        handled in a special way. */
     FileList(const std::vector<std::string> &filenames);
+
+    /// Expand a pattern into a FileList.
+    /** `pattern` can be:
+        - A glob like `images/ *.ppm` or `images/ *.p[gnp]m`
+        - A single file path like `./theimage.jpg`
+        - A sequence file (postfix `.seq`) — a newline-separated list
+          of filenames (or other `.seq` files).  Sequence files are
+          expanded recursively with cycle-detection, and cannot themselves
+          contain glob patterns.
+
+        @param pattern    glob / path / `.seq` file
+        @param omitDoubledFiles  skip filenames that have already been
+                                 added (default: keep all matches as-is). */
+    static FileList glob(const std::string &pattern,
+                         bool omitDoubledFiles = false);
 
     /// does nothing
     ~FileList();

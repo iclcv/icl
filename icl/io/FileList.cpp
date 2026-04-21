@@ -163,12 +163,14 @@ namespace icl::io {
 
   FileList::FileList() = default;
 
-  FileList::FileList(const std::string &pattern, bool omitDoubledFiles):
-    impl(std::make_shared<FileListImpl>(pattern,omitDoubledFiles)){
-  }
-
   FileList::FileList(const std::vector<std::string> &filenames):
     impl(std::make_shared<FileListImpl>(filenames)){
+  }
+
+  FileList FileList::glob(const std::string &pattern, bool omitDoubledFiles){
+    FileList fl;
+    fl.impl = std::make_shared<FileListImpl>(pattern, omitDoubledFiles);
+    return fl;
   }
 
 

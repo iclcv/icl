@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   FileList fl;
   int maxSteps = -1;
   if(grabber.getType() == "file"){
-    fl = FileList(*pa("-input",1));
+    fl = FileList::glob(*pa("-input",1));
     maxSteps = fl.size();
   }
 

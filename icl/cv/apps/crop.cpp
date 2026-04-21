@@ -142,7 +142,7 @@ void batch_pattern_changed(){
   try{
     StringHandle shi = (*batchGUI)["ipat"];
     StringHandle sho = (*batchGUI)["opat"];
-    FileList f(shi.getValue());
+    FileList f = FileList::glob(shi.getValue());
     GenericImageOutput out("file","file="+sho.getValue());
     for(int i=0;i<f.size();++i){
       try{
@@ -225,7 +225,7 @@ void init(){
   if(!c_arg){
     gui["rect"].registerCallback(rectangular_changed);
     rectangular_changed();
-    if(*pa("-i",0) != "file" || FileList(*pa("-i",1)).size() != 1){
+    if(*pa("-i",0) != "file" || FileList::glob(*pa("-i",1)).size() != 1){
       gui["overwrite"].disable();
     }else{
       gui["overwrite"].registerCallback(overwrite);

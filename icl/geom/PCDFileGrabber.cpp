@@ -285,7 +285,7 @@ namespace icl{
 
     PCDFileGrabber::PCDFileGrabber(const std::string &filepattern, bool loop):
       m_data(new Data){
-      m_data->flist = FileList(filepattern);
+      m_data->flist = FileList::glob(filepattern);
       m_data->loop = loop;
       if(!m_data->flist.size()){
         delete m_data;
