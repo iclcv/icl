@@ -69,6 +69,8 @@ namespace icl::geom {
       bool quadColorsFromVertices;                 //!< quad coloring
       bool polygonColorsFromVertices;              //!< polygon coloring
       SceneObject *object;                         //!< the parent object
+      GeomColor lineColor;                         //!< material line color [0,1] (alpha=0 → use primitive color)
+      GeomColor pointColor;                        //!< material point color [0,1] (alpha=0 → use primitive color)
     };
 
     /// Default constructor

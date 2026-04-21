@@ -614,8 +614,11 @@ namespace icl::geom {
       glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
     }
 
-    glPointSize(o->m_pointSize);
-    glLineWidth(o->m_lineWidth);
+    {
+      auto _m = o->getMaterial();
+      glPointSize(_m ? _m->pointSize : o->m_pointSize);
+      glLineWidth(_m ? _m->lineWidth : o->m_lineWidth);
+    }
 
     o->prepareForRendering();
 
@@ -634,12 +637,16 @@ namespace icl::geom {
       o->complexCustomRender(util);
       if(o->m_primitives.size()){
 
+        auto _mat = o->getMaterial();
+        GeomColor _lc = (_mat && _mat->lineColor[3] > 0) ? _mat->lineColor : GeomColor(0,0,0,0);
+        GeomColor _pc = (_mat && _mat->pointColor[3] > 0) ? _mat->pointColor : GeomColor(0,0,0,0);
         const Primitive::RenderContext ctx = { o->m_vertices, o->m_normals, o->m_vertexColors,
                                                o->m_sharedTextures, o->m_texCoords,
                                                o->m_lineColorsFromVertices,
                                                o->m_triangleColorsFromVertices,
                                                o->m_quadColorsFromVertices,
-                                               o->m_polyColorsFromVertices, o };
+                                               o->m_polyColorsFromVertices, o,
+                                               _lc, _pc };
 
         for(unsigned int j=0;j<o->m_primitives.size();++j){
           Primitive *p = o->m_primitives[j];

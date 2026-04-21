@@ -142,7 +142,12 @@ namespace icl::geom {
     glDisable(GL_LIGHTING);
     glBegin(GL_LINES);
 
-    glColor4fv(color.data());
+    // Use material lineColor if set (alpha > 0), else fall back to primitive color
+    if (ctx.lineColor[3] > 0.001f) {
+      glColor4fv(ctx.lineColor.data());
+    } else {
+      glColor4fv(color.data());
+    }
 
     for(int j=0;j<2;++j){
       gl_color(ctx,i(j),ctx.lineColorsFromVertices);
