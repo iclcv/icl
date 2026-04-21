@@ -117,6 +117,9 @@ private:
   const float *getNormalZBuffer() const override {
     return m_normalZ.empty() ? nullptr : m_normalZ.data();
   }
+  const float *getReflectivityBuffer() const override {
+    return m_reflectivity.empty() ? nullptr : m_reflectivity.data();
+  }
 
   RTFloat4 m_bgColor;
   int m_aaSamples = 1;
@@ -129,6 +132,7 @@ private:
   std::vector<int32_t> m_objectIdBuffer; // per-pixel: instance index (-1 = background)
   std::vector<float> m_depthBuffer;
   std::vector<float> m_normalX, m_normalY, m_normalZ;
+  std::vector<float> m_reflectivity;
   core::Img8u m_output;
 };
 

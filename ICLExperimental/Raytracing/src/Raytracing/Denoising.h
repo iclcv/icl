@@ -55,6 +55,7 @@ void denoiseATrous(const core::Img8u &src, core::Img8u &dst,
 void denoiseSVGF(const core::Img8u &src, core::Img8u &dst,
                  const float *depth,
                  const float *normalX, const float *normalY, const float *normalZ,
+                 const float *reflectivity,
                  const RTRayGenParams &camera,
                  SVGFState &state,
                  float strength = 0.5f);

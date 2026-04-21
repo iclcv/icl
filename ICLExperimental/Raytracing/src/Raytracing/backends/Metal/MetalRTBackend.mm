@@ -155,6 +155,7 @@ struct MetalRTBackend::Impl {
   std::vector<int32_t> cpuObjectIds;
   std::vector<float> cpuDepth;
   std::vector<float> cpuNormalX, cpuNormalY, cpuNormalZ;
+  std::vector<float> cpuReflectivity;
   core::Img8u output;
 
   // GPU denoising state
@@ -887,6 +888,8 @@ void MetalRTBackend::render(const RTRayGenParams &camera) {
   memcpy(m_impl->cpuNormalX.data(), m_impl->normalXBuf.contents(), n * sizeof(float));
   memcpy(m_impl->cpuNormalY.data(), m_impl->normalYBuf.contents(), n * sizeof(float));
   memcpy(m_impl->cpuNormalZ.data(), m_impl->normalZBuf.contents(), n * sizeof(float));
+  m_impl->cpuReflectivity.resize(n);
+  memcpy(m_impl->cpuReflectivity.data(), m_impl->reflectBuf.contents(), n * sizeof(float));
   m_lastRenderCamera = camera;
 
   // Post-processing stages (virtual — base class runs CPU, we override upsampling for MetalFX)
@@ -1147,6 +1150,9 @@ const float *MetalRTBackend::getNormalYBuffer() const {
 }
 const float *MetalRTBackend::getNormalZBuffer() const {
   return m_impl->cpuNormalZ.empty() ? nullptr : m_impl->cpuNormalZ.data();
+}
+const float *MetalRTBackend::getReflectivityBuffer() const {
+  return m_impl->cpuReflectivity.empty() ? nullptr : m_impl->cpuReflectivity.data();
 }
 
 bool MetalRTBackend::supportsNativeDenoising(DenoisingMethod m) const {

@@ -54,6 +54,7 @@ public:
   const float *getNormalXBuffer() const override;
   const float *getNormalYBuffer() const override;
   const float *getNormalZBuffer() const override;
+  const float *getReflectivityBuffer() const override;
 
 protected:
   void applyDenoisingStage(core::Img8u &output) override;
