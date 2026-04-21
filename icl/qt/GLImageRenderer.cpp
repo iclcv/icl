@@ -176,7 +176,6 @@ struct GLImageRenderer::Data {
     if (!bciDirty || imageNull) return;
     bciDirty = false;
 
-    depth d = storedImage->getDepth();
     int ch = storedImage->getChannels();
 
     if (bci[0] < 0 && bci[1] < 0 && bci[2] < 0) {
@@ -191,22 +190,19 @@ struct GLImageRenderer::Data {
       }
       double len = std::max(1.0, range.maxVal - range.minVal);
 
-      if (d == depth8u) {
-        bciScale = (float)(255.0 / len);
-        bciBias = (float)(-bciScale * range.minVal / 255.0);
-      } else if (d == depth16s) {
-        bciScale = (float)(32767.0 / len);
-        bciBias = (float)(-bciScale * range.minVal / 255.0);
-      } else {
-        bciScale = (float)(255.0 / len);
-        bciBias = (float)(-bciScale * range.minVal / 255.0);
-        bciScale /= 255.0f;
-      }
+      // uploadTexture() converts all depths to uint8 [0,255] before the
+      // GL texture, so the shader always sees [0,1] from GL_UNSIGNED_BYTE.
+      // For auto-adapt, the uint8 conversion already clamps the raw values,
+      // so the BCI shader just needs to map [0,1] → [0,1] (identity for
+      // depth8u-range data). For wider ranges, the clamping in uploadTexture
+      // loses precision, but that's acceptable for display purposes.
+      bciScale = (float)(255.0 / len);
+      bciBias = (float)(-bciScale * range.minVal / 255.0);
     } else {
-      // Manual BCI
+      // Manual BCI. Since uploadTexture() converts all depths to uint8
+      // before uploading, the shader always sees [0,1] from uint8 data.
+      // Scale=1 maps that range back to [0,1] output (identity).
       bciScale = 1.0f;
-      if (d == depth16s) bciScale = 127.0f;
-      else if (d != depth8u) bciScale = 1.0f / 255.0f;
 
       bciBias = bci[0] / 255.0f;
       float c = bci[1] / 255.0f;

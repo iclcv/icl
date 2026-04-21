@@ -7,7 +7,6 @@
 #include <icl/cv/CV.h>
 #include <icl/filter/BinaryLogicalOp.h>
 #include <icl/core/Img.h>
-//#include <icl/qt/Quick.h>
 
 namespace icl{
 

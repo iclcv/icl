@@ -87,12 +87,35 @@ on flat reflective surfaces. Enable via `setSSREnabled(true)`.
 
 ### What's next
 
-**SSR debugging** (priority):
-- Add debug visualization modes: SSR-only, depth buffer, UV coords, hit
-  confidence as color output
-- Investigate vertical streak artifacts on floor reflections — likely a
-  depth/UV space mismatch or self-intersection issue
-- Compare with geom GLRenderer's SSR frame-by-frame
+**SSR debugging** (done / in progress):
+- ~~Add debug visualization modes~~ — DONE: modes 0-8 (normals, albedo, UVs,
+  lighting, NdotL, SSR confidence, depth, SSR only) with `setDebugMode()` API
+- ~~Vertical streak artifacts~~ — PARTIALLY FIXED: rewrote SSR from screen-space
+  to world-space ray march, added jitter + sign-change detection + silhouette
+  rejection. Streaks reduced but not fully eliminated — needs further tuning
+- SSR debug modes freeze ping-pong FBO (read but don't write) to prevent
+  feedback degradation
+- Ground plane winding fix (CW → CCW) fixed black NdotL
+- SSR enabled by default
+
+**Quick framework rework** (priority):
+- `ImgQ` (`Img<icl32f>`) forces all Quick operations to float depth, causing
+  unnecessary conversions. Consider reworking to use `Image` (preserves depth)
+- Float image display was broken: `GLImageRenderer` converts all depths to
+  uint8 but BCI shader applied depth-specific scale (double-scaling → black).
+  Fixed in `GLImageRenderer::updateBCI()` — BCI scale is now always relative
+  to uint8 since texture is always `GL_UNSIGNED_BYTE`. Also removed deprecated
+  `glPixelTransfer` calls from `GLImg.cpp` (no-op in GL Core profile).
+- `blur()` in Quick.h — verify it works correctly with large images
+- Consider adding `localThresh()` convenience function
+
+**Signature extraction demo** (`icl/cv/demos/signature-extraction.cpp`):
+- Uses RotateOp, LocalThresholdOp, RegionDetector, blur, Quick.h functions
+- Currently crashes — needs debugging (likely RegionDetector on filtered
+  binary image, or ImgQ channel mismatch in the `scaled | blurred` concat)
+- GUI: rotation, local threshold (mask size + global offset), min region
+  size filter, alpha blur, scale-down factor, save PNG with transparency
+- Uses `executeInGUIThread()` for save dialog (blocking, from worker thread)
 
 **Shadow maps**:
 - Add `setShadowEnabled()` + shadow camera to `LightNode`

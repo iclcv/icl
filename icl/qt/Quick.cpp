@@ -753,6 +753,9 @@ namespace icl::qt {
 
     template<class T>
     Img<T> blur(const Img<T> &image, int maskRadius){
+      if(maskRadius < 1){
+        return copy(image);
+      }
       if(maskRadius == 1) return filter(image,"gauss");
       std::vector<int> k(maskRadius*2+1);
       const float sigma2 = 2*(maskRadius/2*maskRadius/2);

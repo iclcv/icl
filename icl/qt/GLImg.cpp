@@ -405,21 +405,9 @@ namespace icl::qt {
       }
     }
 
-    static inline void setup_pixel_transfer(float sa, float sr, float sg, float sb,
-                                            float a, float r, float g, float b){
-      glPixelTransferf(GL_ALPHA_SCALE,sa);
-      glPixelTransferf(GL_RED_SCALE,sr);
-      glPixelTransferf(GL_GREEN_SCALE,sg);
-      glPixelTransferf(GL_BLUE_SCALE,sb);
-      glPixelTransferf(GL_ALPHA_BIAS,a);
-      glPixelTransferf(GL_RED_BIAS,r);
-      glPixelTransferf(GL_GREEN_BIAS,g);
-      glPixelTransferf(GL_BLUE_BIAS,b);
-    }
-
-    static inline void reset_bci(){
-      setup_pixel_transfer(1,1,1,1,0,0,0,0);
-    }
+    // Scale+bias applied on CPU during texture upload (glPixelTransfer
+    // is deprecated/no-op in GL Core profile).
+    float uploadScale = 1.0f, uploadBias = 0.0f;
 
     template<class T>
     const std::vector<double> findColor(int x, int y) const {
@@ -511,19 +499,15 @@ namespace icl::qt {
 
       float c = static_cast<float>(bci[1])/255;
       if(c>0) c*=10;
-      float s = fScaleRGB*(1.0+c);
-      float b = fBiasRGB-c/2;
-
-      setup_pixel_transfer(s,s,s,s,b,b,b,b);
-
+      uploadScale = fScaleRGB*(1.0+c);
+      uploadBias = fBiasRGB-c/2;
     }
 
     void uploadTextureData(){
       ICLASSERT_THROW(data.getDim(),ICLException("unable to draw GLImg: no texture data available"));
       if(!isDirty()) return;
-      setupPixelTransfer();
+      setupPixelTransfer();  // computes uploadScale + uploadBias
       std::vector<GLuint> &textures = info.textures;
-      //std::vector<GLuint> &textures = infos[QGLContext::currentContext()].textures;
       if(textures.size()){
         glDeleteTextures(textures.size(),textures.data());
       }
@@ -532,9 +516,14 @@ namespace icl::qt {
 
       textureBufferMutex.lock();
 
-
       static GLenum types[] = { GL_UNSIGNED_BYTE, GL_SHORT, GL_FLOAT, GL_FLOAT, GL_FLOAT };
       static GLenum chan[] = { 0, GL_LUMINANCE, GL_RGB, GL_RGB, GL_RGBA};
+
+      // For non-8u depths, apply scale+bias on CPU before upload.
+      // glPixelTransfer is deprecated/no-op in GL Core profile.
+      bool needCpuScaling = (imageDepth != depth8u)
+                         && (uploadScale != 1.0f || uploadBias != 0.0f);
+      std::vector<float> scaledBuf;
 
       for(int y=0;y<data.getHeight();++y){
         for(int x=0;x<data.getWidth();++x){
@@ -552,10 +541,20 @@ namespace icl::qt {
 
           setupUnpackAllignment( t.size.width );
 
+          const void *uploadData = t.data.data();
+          if(needCpuScaling) {
+            int numFloats = t.size.width * t.size.height * imageChannels;
+            scaledBuf.resize(numFloats);
+            const float *src = reinterpret_cast<const float*>(t.data.data());
+            for(int i = 0; i < numFloats; i++){
+              scaledBuf[i] = src[i] * uploadScale + uploadBias;
+            }
+            uploadData = scaledBuf.data();
+          }
+
           glTexImage2D(GL_TEXTURE_2D, 0, imageChannels == 4 ? GL_RGBA : GL_RGB,
                        t.size.width, t.size.height, 0,
-                       chan[imageChannels], types[imageDepth], t.data.data());
-
+                       chan[imageChannels], types[imageDepth], uploadData);
         }
       }
       setDirty(false);

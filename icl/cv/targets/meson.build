@@ -12,6 +12,7 @@ if _build_demos and qt_found
     'region-detection': [],
     'simple-blob-searcher': [],
     'template-matching': [],
+    'signature-extraction': [],
     'vector-tracker': [],
   }
   foreach name, extra_deps : _cv_demos
