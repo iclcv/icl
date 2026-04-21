@@ -5,6 +5,7 @@
 #pragma once
 
 #include "RaytracerTypes.h"
+#include "Upsampling.h"
 #include <ICLCore/Img.h>
 #include <memory>
 
@@ -82,6 +83,69 @@ public:
 
   /// Get the object instance index at a given pixel (-1 = background).
   virtual int getObjectAtPixel(int, int) const { return -1; }
+
+  // ---- Upsampling support ----
+
+  /// Query whether this backend supports a given upsampling method.
+  virtual bool supportsUpsampling(UpsamplingMethod method) const {
+    return method == UpsamplingMethod::None ||
+           method == UpsamplingMethod::Bilinear ||
+           method == UpsamplingMethod::EdgeAware;
+  }
+
+  /// Set the upsampling method. Returns false if not supported.
+  virtual bool setUpsampling(UpsamplingMethod method) {
+    if (!supportsUpsampling(method)) return false;
+    m_upsamplingMethod = method;
+    return true;
+  }
+
+  /// Set the render scale factor (0.25–1.0). 1.0 = full resolution.
+  virtual void setRenderScale(float scale) {
+    m_renderScale = scale < 0.25f ? 0.25f : (scale > 1.0f ? 1.0f : scale);
+  }
+
+  /// Set the display (output) resolution target.
+  virtual void setDisplaySize(int w, int h) {
+    m_displayWidth = w;
+    m_displayHeight = h;
+  }
+
+  UpsamplingMethod getUpsamplingMethod() const { return m_upsamplingMethod; }
+  float getRenderScale() const { return m_renderScale; }
+  int getDisplayWidth() const { return m_displayWidth; }
+  int getDisplayHeight() const { return m_displayHeight; }
+
+protected:
+  UpsamplingMethod m_upsamplingMethod = UpsamplingMethod::None;
+  float m_renderScale = 1.0f;
+  int m_displayWidth = 0;
+  int m_displayHeight = 0;
+
+  /// Apply CPU upsampling to the output image + object ID buffer.
+  /// Call at the end of render() if display size is set and method is Bilinear/EdgeAware.
+  void applyUpsampling(core::Img8u &output, std::vector<int32_t> &objectIds) {
+    if (m_displayWidth <= 0 || m_displayHeight <= 0) return;
+    int srcW = output.getWidth(), srcH = output.getHeight();
+    if (srcW == m_displayWidth && srcH == m_displayHeight) return;
+
+    core::Img8u upscaled;
+    if (m_upsamplingMethod == UpsamplingMethod::Bilinear) {
+      upsampleBilinear(output, upscaled, m_displayWidth, m_displayHeight);
+    } else if (m_upsamplingMethod == UpsamplingMethod::EdgeAware) {
+      upsampleEdgeAware(output, upscaled, m_displayWidth, m_displayHeight);
+    } else {
+      return;
+    }
+    output = upscaled;
+
+    if (!objectIds.empty()) {
+      std::vector<int32_t> upIds;
+      upsampleNearestInt(objectIds, srcW, srcH, upIds,
+                         m_displayWidth, m_displayHeight);
+      objectIds = std::move(upIds);
+    }
+  }
 };
 
 /// Factory: create the best available backend for this platform.

@@ -93,7 +93,9 @@ struct BenchResult {
 
 static BenchResult benchBackend(Scene &scene, const std::string &name,
                                 int w, int h, int warmup, int frames,
-                                int ptFrames) {
+                                int ptFrames,
+                                float renderScale = 1.0f,
+                                icl::rt::UpsamplingMethod upMethod = icl::rt::UpsamplingMethod::None) {
   BenchResult r;
   r.backend = name;
   r.available = false;
@@ -106,6 +108,10 @@ static BenchResult benchBackend(Scene &scene, const std::string &name,
   scene.getCamera(0) = cam;
 
   icl::rt::SceneRaytracer rt(scene, name);
+  if (renderScale < 1.0f) {
+    rt.setRenderScale(renderScale);
+    rt.setUpsampling(upMethod);
+  }
   if (std::string(rt.backendName()).find("CPU") != std::string::npos &&
       name != "cpu") {
     // Fell back to CPU — requested backend not available
@@ -234,6 +240,22 @@ int main(int argc, char **argv) {
     printf("%-28s %8.1f ms %10.1f ms %10.1f ms %10d\n",
            r.backend.c_str(), r.firstFrameMs, r.directAvgMs,
            r.ptAvgMs, r.ptPasses);
+  }
+
+  // Upsampled benchmark (50% scale, bilinear)
+  printf("\n--- With 50%% render scale + bilinear upsampling ---\n");
+  printf("%-28s %12s %12s\n", "Backend", "Direct avg", "PT avg");
+  printf("%-28s %12s %12s\n", "---", "---", "---");
+
+  for (const char *b : backends) {
+    auto r = benchBackend(scene, b, w, h, warmup, frames, ptFrames,
+                          0.5f, icl::rt::UpsamplingMethod::Bilinear);
+    if (!r.available) {
+      printf("%-28s %12s\n", b, "N/A");
+    } else {
+      printf("%-28s %10.1f ms %10.1f ms\n", r.backend.c_str(),
+             r.directAvgMs, r.ptAvgMs);
+    }
   }
 
   // Speedup comparison

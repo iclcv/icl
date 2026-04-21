@@ -149,6 +149,18 @@ are defined only in the .mm file. The header is pure C++ — no Obj-C visible.
 Approved plan in `material-plan.md`. PBR metallic-roughness model in ICLGeom,
 shared via `shared_ptr<Material>`. Old `setColor`/`setShininess` deprecated.
 
+### Upsampling (Phase 6)
+
+Detailed plan in `upsampling-plan.md`. Session A (Bilinear + Edge-Aware) is done.
+Remaining:
+- **Session B**: MetalFX Spatial — Texture wrapper, buffer↔texture kernels, spatial scaler
+- **Session C**: MetalFX Temporal — depth output, motion vectors, jitter, temporal scaler
+- **UpsamplingOp in ICLFilter** — implement bilinear/edge-aware upsampling as a proper
+  `UnaryOp` filter so it's available outside the raytracing framework. Currently the
+  upsampling code lives in `Raytracing/Upsampling.h/.cpp` — the algorithm should be
+  promoted to `ICLFilter/src/ICLFilter/UpsamplingOp.h/.cpp` as a general-purpose
+  image upscaling filter (bilinear, bicubic, edge-aware bilateral modes).
+
 ### Future Improvements
 
 - **MetalWidget** — QWidget wrapping CAMetalLayer for zero-copy display in ICLQt
@@ -162,7 +174,7 @@ shared via `shared_ptr<Material>`. Old `setColor`/`setShininess` deprecated.
 
 - No texture primitive support (rendered as flat-colored quads)
 - No line / text / billboard rendering
-- `invalidateAll()` called every frame when physics runs (no per-property dirty tracking)
+- Physics demo now uses `invalidateTransforms()` for transform-only updates (fixed in session 3)
 - Shadow bias (1mm) may cause light leaking on very thin geometry
 - OpenCL path on macOS goes through cl2Metal translation (deprecated, may break in future macOS) — Metal RT backend is the preferred alternative
 - Metal RT requires macOS 13+ and Apple Silicon (runtime check via supportsRaytracing())

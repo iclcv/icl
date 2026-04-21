@@ -68,6 +68,23 @@ public:
   /// Get the active backend name.
   const char *backendName() const;
 
+  // ---- Upsampling ----
+
+  /// Set upsampling method. Returns false if the active backend doesn't support it.
+  bool setUpsampling(UpsamplingMethod method);
+
+  /// Set render scale (0.25–1.0). Render at this fraction, upscale to display res.
+  void setRenderScale(float scale);
+
+  /// Query backend support for an upsampling method.
+  bool supportsUpsampling(UpsamplingMethod method) const;
+
+  /// Get current upsampling method.
+  UpsamplingMethod getUpsamplingMethod() const;
+
+  /// Get current render scale.
+  float getRenderScale() const;
+
 private:
   geom::Scene &m_scene;
   GeometryExtractor m_extractor;

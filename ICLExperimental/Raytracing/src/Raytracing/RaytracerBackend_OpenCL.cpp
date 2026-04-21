@@ -282,6 +282,9 @@ void OpenCLRTBackend::render(const RTRayGenParams &camera) {
   // Read back object IDs for picking
   m_cpuObjectIds.resize(n);
   gpuIds.read(m_cpuObjectIds.data(), n * sizeof(int));
+
+  // Upsampling (render scale < 1.0)
+  applyUpsampling(m_output, m_cpuObjectIds);
 }
 
 } // namespace icl::rt
