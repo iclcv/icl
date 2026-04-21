@@ -446,89 +446,115 @@ and Z-up scenes. That code is in git history at commit 47ee811d0.
   (glTF pre-splits at seams), passed through addTriangle(..., ta, tb, tc)
 - ✅ **Verified: DamagedHelmet.glb renders with full PBR textures**
 
-### Session 9b — Modern GL Renderer (SceneRendererGL)
+### Session 10 — GL 4.1 Core Profile Renderer Rebuild
 
-**Status: Working but lighting intensity needs tuning**
+**Status: Feature-complete PBR renderer with multi-light shadows, env reflections,
+and analytical brightness calibration. Visually close to Cycles (3% overall match
+on DamagedHelmet with white background).**
 
-Built a new VBO/shader-based GL renderer (`ICLGeom/src/ICLGeom/SceneRendererGL.h/.cpp`)
-alongside the legacy fixed-function pipeline. See `ICLGeom/gl-pipeline-rework-plan.md` for
-the full rework plan.
+Replaced the GLSL 1.20 compatibility-profile renderer with a full GL 4.1 Core
+Profile renderer. Switched the widget GL context via `QSurfaceFormat::setDefaultFormat()`
+before `ICLApp` construction. Legacy fixed-function GL calls in `ICLWidget` and
+`DrawWidget3D` are guarded with `GL_CONTEXT_PROFILE_MASK` checks.
 
-**What works:**
-- ✅ GLSL 1.20 vertex/fragment shaders (compatibility profile for macOS)
-- ✅ VBO/EBO per SceneObject via GLGeometryCache (no glBegin/glEnd)
-- ✅ Camera matrices from `getProjectionMatrixGL()`/`getCSTransformationMatrixGL()`
-  — geometry silhouette matches legacy pipeline pixel-perfectly
-- ✅ baseColorMap textures render correctly (DamagedHelmet shows full texture)
-- ✅ Per-pixel Blinn-Phong lighting with up to 8 lights
-- ✅ Normals correct (verified via debug normal visualization)
-- ✅ NdotL correct (verified via debug grayscale visualization)
-- ✅ Interactive debug mode selector (Shaded/Normals/Albedo/UVs/Lighting Only/NdotL)
-- ✅ Exposure + ambient sliders wired to GL renderer
-- ✅ Viewport aspect ratio correction (letterboxing)
-- ✅ Emissive suppressed when emissiveMap exists (prevents white blowout)
-- ✅ gl-renderer-test demo (coordinate axes, legacy vs modern side-by-side)
+**Completed:**
+- ✅ GL 4.1 Core Profile: `#version 410 core`, VAOs, `layout(location=N)`, `in`/`out`
+- ✅ Multi-light (8 lights, individually queried uniform locations — NOT `loc+i`)
+- ✅ PBR materials: metallic, roughness, emissive, Blinn-Phong specular
+- ✅ All texture maps: baseColorMap, normalMap (TBN from dFdx/dFdy),
+  metallicRoughnessMap (glTF blue/green), emissiveMap
+- ✅ Multi-light shadow mapping: up to 4 shadow maps, per-light shadow cameras,
+  `sampler2DShadow` with hardware PCF, `glPolygonOffset` bias
+- ✅ Sky gradient background: procedural from inverse VP matrix, shared Sky struct
+- ✅ Environment reflections: `reflect(-V, N)` samples sky gradient, Schlick Fresnel,
+  roughness-blurred via diffuse/specular env blend
+- ✅ Per-pixel multi-bounce approximation: `boost = 1/(1 - albedoLum)` analytically
+  models infinite light bounces, replacing hardcoded env multiplier
+- ✅ GLImageRenderer: fullscreen textured quad for 2D image display in Core Profile
+- ✅ Debug modes: Normals, Albedo, UVs, Lighting Only, NdotL
+- ✅ Sky struct (`Sky.h`): Solid/Gradient/Physical/Texture modes, shared between
+  GL and Cycles via `Scene::setSky()`/`getSky()`
+- ✅ Compare mode (`-compare prefix`): offscreen FBO rendering, 4×4 regional
+  brightness grid, per-pixel stats. Uses standalone `QOpenGLContext` +
+  `QOffscreenSurface` for worker-thread GL rendering
+- ✅ `-background white|black|gradient|physical` CLI flag
+- ✅ `-bg` / `-exp` CLI overrides for compare mode
+- ✅ `scripts/compare-grid.sh`: validates brightness match across BG%×Exposure% grid
+- ✅ Cycles camera FOV fix: pass vertical FOV (not horizontal) to `set_fov()`
+- ✅ GL Env % / GL Direct % tuning sliders for real-time calibration
 
-**Current issue — light uniform array:**
-The `uLightColor[i]` uniform array values are not reaching the shader. Hardcoded
-`vec3(5.0)` in the shader works, but setting via `glGetUniformLocation("uLightColor[0]")`
-+ `glUniform4f` does not. Switched to base-location approach
-(`glGetUniformLocation("uLightColor")` + offset `loc + i`). Need to verify by checking
-the `locColor=` debug output on next run. The `.w` component of vec4 uniforms also
-had issues — switched to baking intensity into RGB.
+**Brightness calibration results (DamagedHelmet, -background white):**
+```
+Overall: Cycles=0.909  GL=0.886  ratio=1.03  (3% match)
+```
+Regional 4×4 grid shows most areas within 0.90–1.15 ratio. Visor area remains
+1.33× darker in GL (no glass transmission in rasterizer).
 
-**Key ICL matrix convention discovery:**
-- `FixedMatrix::operator()(col, row)` — column-first indexing!
-- Data layout: `data[col + COLS*row]` — row-major in math terms
-- `glLoadMatrixf(M.transp().data())` loads the math matrix M into GL
-- `glUniformMatrix4fv(loc, 1, GL_TRUE, M.data())` gives the shader the same M
-- Standard `mat * vec` in GLSL then works as column-vector multiply
-- Camera::getProjectionMatrixGL() and getCSTransformationMatrixGL() produce
-  standard GL matrices (translation in column 3) — no convention mismatch
+**Key design decisions:**
+- **World-space lighting** — avoids view-space light transform bugs from Session 9b
+- **Per-pixel bounce correction** — analytically derived from geometric series
+  `E/(1-a)`, scene-independent, works across all BG%/Exposure% combinations
+- **Separate sky display vs env brightness** — sky background renders at 1× intensity,
+  env reflections use 2× to match Cycles' `bgStrength = 2.0 * intensity`
+- **No transmission** — dielectric surfaces (visor) stay opaque. Tried a transmission
+  approximation `(1-metallic)*(1-roughness)²` but it over-brightened all smooth
+  dielectrics. Proper fix needs per-material IOR/transmission parameter in Material.
 
 **Source layout:**
 ```
 ICLGeom/src/ICLGeom/
-  SceneRendererGL.h/.cpp    ── Modern GL renderer (GLSL + VBO)
-  gl-pipeline-rework-plan.md ── Full rework plan document
-ICLExperimental/Raytracing/demos/
-  gl-renderer-test.cpp      ── Side-by-side legacy vs modern test
-  cycles-scene-viewer.cpp   ── Wired to use SceneRendererGL for GL pane
+  SceneRendererGL.h/.cpp    ── GL 4.1 Core renderer (shaders, VAOs, shadows, env)
+  Sky.h                     ── Sky/environment struct (shared by GL + Cycles)
+  gl-pipeline-rework-plan.md ── Detailed plan document (steps, future work)
+ICLExperimental/Raytracing/
+  opengl-4x-plan.md         ── Incremental build plan with calibration notes
+  demos/cycles-scene-viewer.cpp ── Side-by-side GL + Cycles viewer with compare mode
+scripts/
+  compare-grid.sh            ── Brightness validation across BG%×Exposure% grid
 ```
 
 ### Next Steps
 
 #### GL Renderer — Immediate
 
-1. **Fix light uniform array** — verify `locColor` is not -1, debug why array uniforms
-   don't work. May need to set each element individually via `glGetUniformLocation("uLightColor[0]")`
-   with the brackets, or use a UBO.
-2. **Shadow mapping** — depth FBO from light, `sampler2DShadow` with hardware PCF
-3. **Normal map support** — sample normalMap in fragment shader, TBN matrix
-4. **Metallic-roughness map** — sample metallicRoughnessMap for per-pixel PBR params
+1. **Validate multi-bounce across settings** — run `scripts/compare-grid.sh`, check
+   that ratios stay near 1.0 across the full BG%×Exposure% grid
+2. **Glass/transmission** — add `Material::transmission` / `Material::ior` fields,
+   use in GL shader for transparent dielectrics (visor, glass). This is the biggest
+   remaining visual gap vs Cycles.
+3. **Cycles gradient background** — the node graph approach (TextureCoordinate →
+   SeparateXYZ → MixColor) crashed on wrong socket names. Needs investigation of
+   Cycles' exact node API. Currently falls back to weighted-average flat color.
+
+#### Widget Overlay — Core Profile Port
+
+4. **OSD button bar** — blue buttons at top-left, currently skipped in Core Profile
+5. **2D draw commands** — `draw->text()`, `draw->line()`, etc. in screen coords
+6. **Zoom rectangle** — left-mouse-drag zoom, needs rect overlay + zoom logic
+7. **Image info indicator** — bottom-right pixel info display
+8. **GLImg::draw2D** — 2D image display for Canvas widgets
+
+Approach options: QPainter overlay, or port GLPaintEngine to GL 4.1 shaders.
+
+#### Legacy Cleanup
+
+9. **Delete legacy renderer** — `Scene::renderSceneObjectRecursive()`, `ShaderUtil`,
+   display lists, all `glBegin/glEnd` code
+10. **Wire `Scene::getGLCallback()`** to SceneRendererGL for all ICL apps
 
 #### Cycles — Deferred
 
-- Cycles XML scene loader (low priority)
+- HDR environment maps (Sky::Texture mode)
+- Area/spot/sun light types
 - QEM mesh decimation
-- HDR environment maps, area/spot/sun lights, LOD, glass/transmission
-
-### Test Models
-
-**OBJ (working):**
-- Stanford bunny: `scenes/bunny.obj` (35K verts)
-
-**glTF/GLB (working with textures in Cycles + GL):**
-- DamagedHelmet.glb — verified in both renderers
-- glTF sample models: github.com/KhronosGroup/glTF-Sample-Assets
+- Cycles XML scene loader
 
 ### Known Limitations
 
-- GL light uniform array not reaching shader (workaround: base location + offset, untested)
+- No glass/transmission — smooth dielectrics (visor) appear too dark vs Cycles
+- Cycles background is flat color (gradient node graph TODO)
 - Lights created once per session in Cycles (no dynamic updates)
 - Only point lights (no spot/area/sun)
-- OIDN denoising too slow for interactive use
 - OBJ loader: no MTL material parsing
-- No glass/transmission material support
 - PolygonPrimitive doesn't carry UV indices yet
-- Legacy "improved shading" system incompatible with Material textures (to be replaced)
+- Widget 2D overlay (OSD, text, zoom) disabled in Core Profile
