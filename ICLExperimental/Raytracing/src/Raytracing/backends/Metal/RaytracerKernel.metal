@@ -615,6 +615,8 @@ struct SVGFTemporalParams {
   }
 }
 
+struct ImageDims { int width; int height; };
+
 /// Convert uint8 planar R/G/B → float [0,1] planar R/G/B.
 [[kernel]] void u8ToFloat(
     device const uchar *inR   [[buffer(0)]],
@@ -623,13 +625,14 @@ struct SVGFTemporalParams {
     device float       *outR  [[buffer(3)]],
     device float       *outG  [[buffer(4)]],
     device float       *outB  [[buffer(5)]],
-    constant int       &count [[buffer(6)]],
-    uint tid [[thread_position_in_grid]])
+    constant ImageDims &dims  [[buffer(6)]],
+    uint2 tid [[thread_position_in_grid]])
 {
-  if (int(tid) >= count) return;
-  outR[tid] = float(inR[tid]) / 255.0f;
-  outG[tid] = float(inG[tid]) / 255.0f;
-  outB[tid] = float(inB[tid]) / 255.0f;
+  if (int(tid.x) >= dims.width || int(tid.y) >= dims.height) return;
+  int i = tid.x + tid.y * dims.width;
+  outR[i] = float(inR[i]) / 255.0f;
+  outG[i] = float(inG[i]) / 255.0f;
+  outB[i] = float(inB[i]) / 255.0f;
 }
 
 /// Convert float [0,1] planar R/G/B → uint8 planar R/G/B.
@@ -640,13 +643,14 @@ struct SVGFTemporalParams {
     device uchar       *outR  [[buffer(3)]],
     device uchar       *outG  [[buffer(4)]],
     device uchar       *outB  [[buffer(5)]],
-    constant int       &count [[buffer(6)]],
-    uint tid [[thread_position_in_grid]])
+    constant ImageDims &dims  [[buffer(6)]],
+    uint2 tid [[thread_position_in_grid]])
 {
-  if (int(tid) >= count) return;
-  outR[tid] = uchar(clamp(inR[tid], 0.0f, 1.0f) * 255.0f);
-  outG[tid] = uchar(clamp(inG[tid], 0.0f, 1.0f) * 255.0f);
-  outB[tid] = uchar(clamp(inB[tid], 0.0f, 1.0f) * 255.0f);
+  if (int(tid.x) >= dims.width || int(tid.y) >= dims.height) return;
+  int i = tid.x + tid.y * dims.width;
+  outR[i] = uchar(clamp(inR[i], 0.0f, 1.0f) * 255.0f);
+  outG[i] = uchar(clamp(inG[i], 0.0f, 1.0f) * 255.0f);
+  outB[i] = uchar(clamp(inB[i], 0.0f, 1.0f) * 255.0f);
 }
 
 // ==========================================================================
@@ -654,10 +658,10 @@ struct SVGFTemporalParams {
 // ==========================================================================
 
 struct ToneMapParams {
-  int count;
+  int width;
+  int height;
   int method;     // 0=none, 1=reinhard, 2=aces, 3=hable
   float exposure;
-  float _pad;
 };
 
 inline float hableFunc(float x) {
@@ -670,13 +674,14 @@ inline float hableFunc(float x) {
     device float *G [[buffer(1)]],
     device float *B [[buffer(2)]],
     constant ToneMapParams &params [[buffer(3)]],
-    uint tid [[thread_position_in_grid]])
+    uint2 tid [[thread_position_in_grid]])
 {
-  if (int(tid) >= params.count) return;
+  if (int(tid.x) >= params.width || int(tid.y) >= params.height) return;
+  int i = tid.x + tid.y * params.width;
 
-  float r = R[tid] * params.exposure;
-  float g = G[tid] * params.exposure;
-  float b = B[tid] * params.exposure;
+  float r = R[i] * params.exposure;
+  float g = G[i] * params.exposure;
+  float b = B[i] * params.exposure;
 
   if (params.method == 1) {
     // Reinhard
@@ -697,9 +702,9 @@ inline float hableFunc(float x) {
     b = hableFunc(b) * ws;
   }
 
-  R[tid] = clamp(r, 0.0f, 1.0f);
-  G[tid] = clamp(g, 0.0f, 1.0f);
-  B[tid] = clamp(b, 0.0f, 1.0f);
+  R[i] = clamp(r, 0.0f, 1.0f);
+  G[i] = clamp(g, 0.0f, 1.0f);
+  B[i] = clamp(b, 0.0f, 1.0f);
 }
 
 // ==========================================================================

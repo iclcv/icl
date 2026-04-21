@@ -58,10 +58,15 @@ struct SVGFTemporalParams {
 // ---- Tone map params (matches ToneMapParams in .metal) --------------------
 
 struct ToneMapParams {
-  int32_t count;
+  int32_t width;
+  int32_t height;
   int32_t method;     // 0=none, 1=reinhard, 2=aces, 3=hable
   float exposure;
-  float _pad;
+};
+
+struct ImageDims {
+  int32_t width;
+  int32_t height;
 };
 
 // ---- Scene-wide constant parameters (matches SceneParams in .metal) -------
@@ -1195,26 +1200,27 @@ void MetalRTBackend::applyToneMappingStage(core::Img8u &output) {
   }
 
   // u8 → float
-  m_impl->dispatchCompute(m_impl->u8ToFloatPipeline, n, 1,
+  ImageDims dims = {w, h};
+  m_impl->dispatchCompute(m_impl->u8ToFloatPipeline, w, h,
       {{&m_impl->outR, 0}, {&m_impl->outG, 1}, {&m_impl->outB, 2},
        {&m_impl->denoiseA_R, 3}, {&m_impl->denoiseA_G, 4}, {&m_impl->denoiseA_B, 5}},
-      {}, &n, sizeof(n), 6);
+      {}, &dims, sizeof(dims), 6);
 
   // Tone map in-place on float buffers
   ToneMapParams tp;
-  tp.count = n;
+  tp.width = w;
+  tp.height = h;
   tp.method = (int)m_toneMapMethod;
   tp.exposure = m_exposure;
-  tp._pad = 0;
-  m_impl->dispatchCompute(m_impl->toneMapPipeline, n, 1,
+  m_impl->dispatchCompute(m_impl->toneMapPipeline, w, h,
       {{&m_impl->denoiseA_R, 0}, {&m_impl->denoiseA_G, 1}, {&m_impl->denoiseA_B, 2}},
       {}, &tp, sizeof(tp), 3);
 
   // float → u8
-  m_impl->dispatchCompute(m_impl->floatToU8Pipeline, n, 1,
+  m_impl->dispatchCompute(m_impl->floatToU8Pipeline, w, h,
       {{&m_impl->denoiseA_R, 0}, {&m_impl->denoiseA_G, 1}, {&m_impl->denoiseA_B, 2},
        {&m_impl->outR, 3}, {&m_impl->outG, 4}, {&m_impl->outB, 5}},
-      {}, &n, sizeof(n), 6);
+      {}, &dims, sizeof(dims), 6);
 
   // Update CPU output
   memcpy(output.getData(0), m_impl->outR.contents(), n);
@@ -1255,10 +1261,11 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
     }
 
     // Convert uint8 → float (outR/G/B → denoiseA)
-    m_impl->dispatchCompute(m_impl->u8ToFloatPipeline, n, 1,
+    ImageDims dims = {w, h};
+    m_impl->dispatchCompute(m_impl->u8ToFloatPipeline, w, h,
         {{&m_impl->outR, 0}, {&m_impl->outG, 1}, {&m_impl->outB, 2},
          {&m_impl->denoiseA_R, 3}, {&m_impl->denoiseA_G, 4}, {&m_impl->denoiseA_B, 5}},
-        {}, &n, sizeof(n), 6);
+        {}, &dims, sizeof(dims), 6);
 
     // 5 À-Trous passes with increasing step size
     // Edge-stopping sigmas scale with user strength (0.0–1.0)
@@ -1291,10 +1298,10 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
     }
 
     // Convert float → uint8 (result in src* after last swap → outR/G/B)
-    m_impl->dispatchCompute(m_impl->floatToU8Pipeline, n, 1,
+    m_impl->dispatchCompute(m_impl->floatToU8Pipeline, w, h,
         {{srcR, 0}, {srcG, 1}, {srcB, 2},
          {&m_impl->outR, 3}, {&m_impl->outG, 4}, {&m_impl->outB, 5}},
-        {}, &n, sizeof(n), 6);
+        {}, &dims, sizeof(dims), 6);
 
     // Update CPU output image from GPU buffers
     memcpy(output.getData(0), m_impl->outR.contents(), n);
@@ -1345,10 +1352,11 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
     }
 
     // Step 1: u8→float
-    m_impl->dispatchCompute(m_impl->u8ToFloatPipeline, n, 1,
+    ImageDims dims = {w, h};
+    m_impl->dispatchCompute(m_impl->u8ToFloatPipeline, w, h,
         {{&m_impl->outR, 0}, {&m_impl->outG, 1}, {&m_impl->outB, 2},
          {&m_impl->denoiseA_R, 3}, {&m_impl->denoiseA_G, 4}, {&m_impl->denoiseA_B, 5}},
-        {}, &n, sizeof(n), 6);
+        {}, &dims, sizeof(dims), 6);
 
     // Step 2: Temporal accumulation
     // Output goes to denoiseB (filtered color) + moments/variance/history
@@ -1432,10 +1440,10 @@ void MetalRTBackend::applyDenoisingStage(core::Img8u &output) {
     }
 
     // Step 4: float→u8
-    m_impl->dispatchCompute(m_impl->floatToU8Pipeline, n, 1,
+    m_impl->dispatchCompute(m_impl->floatToU8Pipeline, w, h,
         {{srcR, 0}, {srcG, 1}, {srcB, 2},
          {&m_impl->outR, 3}, {&m_impl->outG, 4}, {&m_impl->outB, 5}},
-        {}, &n, sizeof(n), 6);
+        {}, &dims, sizeof(dims), 6);
 
     // Step 5: Store temporal state for next frame
     // Copy filtered result + current G-buffers to prev buffers
