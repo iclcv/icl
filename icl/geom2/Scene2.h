@@ -66,7 +66,7 @@ namespace icl::geom2 {
 
   private:
     struct Data;
-    Data *m_data;
+    std::unique_ptr<Data> m_data;
   };
 
 } // namespace icl::geom2

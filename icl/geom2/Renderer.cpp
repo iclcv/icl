@@ -359,8 +359,8 @@ void main() { FragColor = vColor; }
 
   // ---- Renderer implementation ----
 
-  Renderer::Renderer() : m_data(new Data) {}
-  Renderer::~Renderer() { delete m_data; }
+  Renderer::Renderer() : m_data(std::make_unique<Data>()) {}
+  Renderer::~Renderer() = default;
 
   void Renderer::setExposure(float e) { m_data->exposure = e; }
   void Renderer::setAmbient(float a) { m_data->ambient = a; }

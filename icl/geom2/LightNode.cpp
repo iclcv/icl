@@ -15,10 +15,10 @@ namespace icl::geom2 {
     float spotAngle = M_PI / 4.0f;
   };
 
-  LightNode::LightNode(Type type) : m_data(new Data) { m_data->type = type; }
-  LightNode::~LightNode() { delete m_data; }
+  LightNode::LightNode(Type type) : m_data(std::make_unique<Data>()) { m_data->type = type; }
+  LightNode::~LightNode() = default;
 
-  LightNode::LightNode(const LightNode &o) : SceneNode(o), m_data(new Data(*o.m_data)) {}
+  LightNode::LightNode(const LightNode &o) : SceneNode(o), m_data(std::make_unique<Data>(*o.m_data)) {}
 
   LightNode &LightNode::operator=(const LightNode &o) {
     if (this != &o) {
@@ -28,19 +28,8 @@ namespace icl::geom2 {
     return *this;
   }
 
-  LightNode::LightNode(LightNode &&o) noexcept : SceneNode(std::move(o)), m_data(o.m_data) {
-    o.m_data = nullptr;
-  }
-
-  LightNode &LightNode::operator=(LightNode &&o) noexcept {
-    if (this != &o) {
-      SceneNode::operator=(std::move(o));
-      delete m_data;
-      m_data = o.m_data;
-      o.m_data = nullptr;
-    }
-    return *this;
-  }
+  LightNode::LightNode(LightNode &&o) noexcept = default;
+  LightNode &LightNode::operator=(LightNode &&o) noexcept = default;
 
   SceneNode *LightNode::deepCopy() const { return new LightNode(*this); }
 

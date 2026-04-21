@@ -6,6 +6,7 @@
 
 #include <icl/geom2/SceneNode.h>
 #include <icl/geom2/Primitive.h>
+#include <memory>
 
 namespace icl::geom2 {
 
@@ -43,7 +44,7 @@ namespace icl::geom2 {
 
   private:
     struct Data;
-    Data *m_data;
+    std::unique_ptr<Data> m_data;
   };
 
 } // namespace icl::geom2

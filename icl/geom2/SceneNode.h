@@ -7,6 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/FixedMatrix.h>
 #include <string>
+#include <memory>
 
 #ifndef ICLGeom2_API
 #define ICLGeom2_API
@@ -66,7 +67,7 @@ namespace icl::geom2 {
     void setParent(SceneNode *parent);
 
     struct Data;
-    Data *m_data;
+    std::unique_ptr<Data> m_data;
     friend class GroupNode;  // GroupNode sets parent via setParent()
   };
 

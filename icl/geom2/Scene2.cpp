@@ -35,8 +35,8 @@ namespace icl::geom2 {
 
   // ---- Scene2 implementation ----
 
-  Scene2::Scene2() : m_data(new Data) {}
-  Scene2::~Scene2() { delete m_data; }
+  Scene2::Scene2() : m_data(std::make_unique<Data>()) {}
+  Scene2::~Scene2() = default;
 
   void Scene2::addObject(std::shared_ptr<SceneNode> node) {
     m_data->objects.push_back(std::move(node));

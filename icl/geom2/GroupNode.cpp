@@ -11,11 +11,11 @@ namespace icl::geom2 {
     std::vector<std::shared_ptr<SceneNode>> children;
   };
 
-  GroupNode::GroupNode() : m_data(new Data) {}
+  GroupNode::GroupNode() : m_data(std::make_unique<Data>()) {}
 
-  GroupNode::~GroupNode() { delete m_data; }
+  GroupNode::~GroupNode() = default;
 
-  GroupNode::GroupNode(const GroupNode &other) : SceneNode(other), m_data(new Data) {
+  GroupNode::GroupNode(const GroupNode &other) : SceneNode(other), m_data(std::make_unique<Data>()) {
     m_data->children.resize(other.m_data->children.size());
     for (size_t i = 0; i < other.m_data->children.size(); ++i) {
       m_data->children[i].reset(other.m_data->children[i]->deepCopy());
@@ -31,25 +31,12 @@ namespace icl::geom2 {
     return *this;
   }
 
-  GroupNode::GroupNode(GroupNode &&other) noexcept
-      : SceneNode(std::move(other)), m_data(other.m_data) {
-    other.m_data = nullptr;
-  }
-
-  GroupNode &GroupNode::operator=(GroupNode &&other) noexcept {
-    if (this != &other) {
-      SceneNode::operator=(std::move(other));
-      delete m_data;
-      m_data = other.m_data;
-      other.m_data = nullptr;
-    }
-    return *this;
-  }
+  GroupNode::GroupNode(GroupNode &&other) noexcept = default;
+  GroupNode &GroupNode::operator=(GroupNode &&other) noexcept = default;
 
   SceneNode *GroupNode::deepCopy() const { return new GroupNode(*this); }
 
   void GroupNode::addChild(std::shared_ptr<SceneNode> child) {
-    // Set parent (friend access to SceneNode::m_data)
     child->setParent(this);
     m_data->children.push_back(std::move(child));
   }

@@ -17,17 +17,15 @@ namespace icl::geom2 {
     std::string name;
   };
 
-  SceneNode::SceneNode() : m_data(new Data) {}
+  SceneNode::SceneNode() : m_data(std::make_unique<Data>()) {}
 
-  SceneNode::~SceneNode() { delete m_data; }
+  SceneNode::~SceneNode() = default;
 
-  SceneNode::SceneNode(const SceneNode &other) : m_data(new Data) {
+  SceneNode::SceneNode(const SceneNode &other) : m_data(std::make_unique<Data>()) {
     m_data->transformation = other.m_data->transformation;
     m_data->hasTransformation = other.m_data->hasTransformation;
     m_data->isVisible = other.m_data->isVisible;
     m_data->name = other.m_data->name;
-    // parent stays nullptr — copy is detached from scene graph
-    // mutex is fresh — non-copyable
   }
 
   SceneNode &SceneNode::operator=(const SceneNode &other) {
@@ -37,23 +35,13 @@ namespace icl::geom2 {
       m_data->hasTransformation = other.m_data->hasTransformation;
       m_data->isVisible = other.m_data->isVisible;
       m_data->name = other.m_data->name;
-      m_data->parent = parent;  // preserve our parent
+      m_data->parent = parent;
     }
     return *this;
   }
 
-  SceneNode::SceneNode(SceneNode &&other) noexcept : m_data(other.m_data) {
-    other.m_data = nullptr;
-  }
-
-  SceneNode &SceneNode::operator=(SceneNode &&other) noexcept {
-    if (this != &other) {
-      delete m_data;
-      m_data = other.m_data;
-      other.m_data = nullptr;
-    }
-    return *this;
-  }
+  SceneNode::SceneNode(SceneNode &&other) noexcept = default;
+  SceneNode &SceneNode::operator=(SceneNode &&other) noexcept = default;
 
   void SceneNode::setTransformation(const Mat &m) {
     m_data->transformation = m;

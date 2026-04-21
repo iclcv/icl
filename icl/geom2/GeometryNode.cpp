@@ -27,38 +27,25 @@ namespace icl::geom2 {
     bool smoothShading = true;
   };
 
-  GeometryNode::GeometryNode() : m_data(new Data) {}
-  GeometryNode::~GeometryNode() { delete m_data; }
+  GeometryNode::GeometryNode() : m_data(std::make_unique<Data>()) {}
+  GeometryNode::~GeometryNode() = default;
 
-  GeometryNode::GeometryNode(const GeometryNode &other) : SceneNode(other), m_data(new Data(*other.m_data)) {
+  GeometryNode::GeometryNode(const GeometryNode &other)
+      : SceneNode(other), m_data(std::make_unique<Data>(*other.m_data)) {
     if (m_data->material) m_data->material = m_data->material->deepCopy();
   }
 
   GeometryNode &GeometryNode::operator=(const GeometryNode &other) {
     if (this != &other) {
       SceneNode::operator=(other);
-      auto *old = m_data;
-      m_data = new Data(*other.m_data);
+      m_data = std::make_unique<Data>(*other.m_data);
       if (m_data->material) m_data->material = m_data->material->deepCopy();
-      delete old;
     }
     return *this;
   }
 
-  GeometryNode::GeometryNode(GeometryNode &&other) noexcept
-      : SceneNode(std::move(other)), m_data(other.m_data) {
-    other.m_data = nullptr;
-  }
-
-  GeometryNode &GeometryNode::operator=(GeometryNode &&other) noexcept {
-    if (this != &other) {
-      SceneNode::operator=(std::move(other));
-      delete m_data;
-      m_data = other.m_data;
-      other.m_data = nullptr;
-    }
-    return *this;
-  }
+  GeometryNode::GeometryNode(GeometryNode &&other) noexcept = default;
+  GeometryNode &GeometryNode::operator=(GeometryNode &&other) noexcept = default;
 
   // Read-only accessors
   const std::vector<Vec> &GeometryNode::getVertices() const { return m_data->vertices; }
