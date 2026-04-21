@@ -64,13 +64,18 @@ io_sources += files(
   'detail/grabbers/ColorFormatDecoder.cpp',
   'detail/grabbers/CreateGrabber.cpp',
   'detail/grabbers/DemoGrabber.cpp',
-  'detail/grabbers/DemoImageCameraMan.cpp',
-  'detail/grabbers/DemoImageFlowers.cpp',
-  'detail/grabbers/DemoImageLena.cpp',
-  'detail/grabbers/DemoImageMacaw.cpp',
-  'detail/grabbers/DemoImageMandril.cpp',
-  'detail/grabbers/DemoImageWindows.cpp',
   'detail/grabbers/MyrmexDecoder.cpp',
+)
+
+# Built-in test images: raw JPEG/XPM blobs + factory lambdas that
+# self-register into testImageRegistry() at static-init time.
+io_sources += files(
+  'detail/builtin-images/TestImageCameraman.cpp',
+  'detail/builtin-images/TestImageFlowers.cpp',
+  'detail/builtin-images/TestImageLena.cpp',
+  'detail/builtin-images/TestImageMandril.cpp',
+  'detail/builtin-images/TestImageParrot.cpp',
+  'detail/builtin-images/TestImageWindows.cpp',
 )
 
 # 11-bit compressor — shared between Kinect grabber and CompressionPlugin1611.

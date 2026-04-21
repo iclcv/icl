@@ -5,6 +5,7 @@
 #include <icl/io/detail/file-plugins/JPEGDecoder.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
+#include <icl/io/TestImages.h>
 #include <vector>
 
 using namespace icl::utils;
@@ -5180,4 +5181,6 @@ namespace icl::io {
     JPEGDecoder::decode(buf.data(), DIM, &image);
     return image->deepCopy();
   }
+
+  REGISTER_TEST_IMAGE(lena, []{ return createImage_lena()->asImg<icl8u>(); })
   } // namespace icl::io

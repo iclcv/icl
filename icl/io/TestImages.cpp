@@ -464,35 +464,30 @@ namespace {
 }
 
 namespace icl::io {
+  TestImageRegistry& testImageRegistry(){
+    static TestImageRegistry r;
+    return r;
+  }
+
   Img8u *TestImages::internalCreate(const std::string &name){
     try{
-      if(name == "women"){
-        return read_xpm(ppc_woman_xpm);
-      }else if(name == "tree"){
-        return read_xpm(ppc_tree_xpm);
-      }else if(name == "house"){
-        return read_xpm(ppc_house_xpm);
-      }else if(name == "parrot"){
-        return createImage_macaw()->asImg<icl8u>();
-      }else if(name == "flowers"){
-        return createImage_flowers()->asImg<icl8u>();
-      }else if(name == "windows"){
-        return createImage_windows()->asImg<icl8u>();
-      }else if(name == "lena"){
-        return createImage_lena()->asImg<icl8u>();
-      }else if(name == "cameraman"){
-        return createImage_cameraman()->asImg<icl8u>();
-      }else if(name == "mandril"){
-        return createImage_mandril()->asImg<icl8u>();
-      }else{
-        ERROR_LOG("TestImage "<< name << "not found!");
+      const auto *entry = testImageRegistry().get(name);
+      if(!entry){
+        ERROR_LOG("TestImage " << name << " not found!");
         return 0;
       }
+      return entry->payload();
     }catch(ICLException &ex){
       ERROR_LOG("an exception occured while creating image: \""<< ex.what() << "\"");
       return 0;
     }
   }
+
+  // XPM-based built-ins registered here; JPEG-based ones (lena, parrot,
+  // cameraman, mandril, flowers, windows) register from their own .cpp.
+  REGISTER_TEST_IMAGE(women, []{ return read_xpm(ppc_woman_xpm); })
+  REGISTER_TEST_IMAGE(tree,  []{ return read_xpm(ppc_tree_xpm);  })
+  REGISTER_TEST_IMAGE(house, []{ return read_xpm(ppc_house_xpm); })
 
   ImgBase* TestImages::create(const std::string& name, format f, depth d){
 

@@ -5,6 +5,7 @@
 #include <icl/io/detail/file-plugins/JPEGDecoder.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
+#include <icl/io/TestImages.h>
 #include <vector>
 
 using namespace icl::utils;
@@ -15,7 +16,7 @@ namespace icl::io {
     const int NROWS = 1104;
     const int NCOLS = 30;
     const int NEXTRA = 26;
-    unsigned char aauc_Data_macaw[NROWS][NCOLS] = {
+    unsigned char aauc_Data_parrot[NROWS][NCOLS] = {
       {255,216,255,224,  0, 16, 74, 70, 73, 70,  0,  1,  1,  1,  0, 72,  0, 72,  0,  0,255,219,  0, 67,  0, 53, 37, 40, 47, 40},
       { 33, 53, 47, 43, 47, 60, 57, 53, 63, 80,133, 87, 80, 73, 73, 80,163,117,123, 97,133,193,170,203,200,190,170,186,183,213},
       {240,255,255,213,226,255,230,183,186,255,255,255,255,255,255,255,255,255,206,255,255,255,255,255,255,255,255,255,255,255},
@@ -1121,12 +1122,12 @@ namespace icl::io {
       {224,103, 40,180,116,153,204, 14,103, 38,133,185,177,204,132,111, 20,201,104,160, 40,148,139, 66,  4, 42, 85,128,134,101},
       { 10, 70, 50,149, 51,103,193,140,205,114,176,183, 49, 43, 98, 41, 27,104,152,138,100,128,  0,  0, 21, 22, 18, 66,143, 37}
     };
-    unsigned char auc_ExtraData_macaw[NEXTRA] = {
+    unsigned char auc_ExtraData_parrot[NEXTRA] = {
       75,130,  8,  0,  2,138,137,162, 34, 38,136,205, 74, 66, 99, 20,136,137,171, 29, 96, 16,209, 85,255,217
     };
 
   }//end namespace
-  ImgBase* createImage_macaw(){
+  ImgBase* createImage_parrot(){
     static ImgBase *image = 0;
     if(image) return image->deepCopy();
     const int DIM = NROWS*NCOLS+NEXTRA;
@@ -1134,13 +1135,15 @@ namespace icl::io {
     int j=0;
     for(int i=0;i<NROWS;++i){
       for(int k=0;k<NCOLS;k++,j++){
-        buf[j] = aauc_Data_macaw[i][k];
+        buf[j] = aauc_Data_parrot[i][k];
       }
     }
     for(int i=0;i<NEXTRA;i++,j++){
-      buf[j] = auc_ExtraData_macaw[i];
+      buf[j] = auc_ExtraData_parrot[i];
     }
     JPEGDecoder::decode(buf.data(), DIM, &image);
     return image->deepCopy();
   }
+
+  REGISTER_TEST_IMAGE(parrot, []{ return createImage_parrot()->asImg<icl8u>(); })
   } // namespace icl::io

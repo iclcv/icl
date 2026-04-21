@@ -5,6 +5,7 @@
 #include <icl/io/detail/file-plugins/JPEGDecoder.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
+#include <icl/io/TestImages.h>
 #include <vector>
 
 using namespace icl::utils;
@@ -1960,4 +1961,6 @@ unsigned char auc_ExtraData_mandril[NEXTRA] = {
     JPEGDecoder::decode(buf.data(), DIM, &image);
     return image->deepCopy();
   }
+
+  REGISTER_TEST_IMAGE(mandril, []{ return createImage_mandril()->asImg<icl8u>(); })
   } // namespace icl::io

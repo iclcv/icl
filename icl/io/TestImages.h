@@ -5,25 +5,29 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
+#include <icl/utils/PluginRegistry.h>
 #include <icl/core/Img.h>
 #include <string>
 
 namespace icl::io {
+  /// Process-wide registry of test-image factories keyed by name.
+  /** Each factory returns a freshly-allocated `Img8u*` owned by the
+      caller.  The built-in images (lena, parrot, cameraman, …) self-
+      register at static-init time via `REGISTER_TEST_IMAGE` — new
+      images drop in the same way, and `TestImages::create` /
+      `CreateGrabber` pick them up automatically with no edits to
+      either. */
+  using TestImageRegistry = utils::FunctionPluginRegistry<core::Img8u*()>;
+  ICLIO_API TestImageRegistry& testImageRegistry();
+
   /// Utility class for creating test images \ingroup UTILS_G
+  /** Available names are the keys of testImageRegistry(); the built-in
+      set is lena, cameraman, mandril, parrot, flowers, windows, women,
+      tree and house. */
   class ICLIO_API TestImages{
     public:
     /// creates a new testimage instance
-    /** possible values for name are
-        - lena
-        - cameraman
-        - mandril
-        - women
-        - house
-        - tree
-        - parrot
-        - windows
-        - flowers
-        @param name name identifier of the image
+    /** @param name name identifier of the image (see testImageRegistry().keys())
         @param size destination size of the image
         @param f core::format of the image
         @param d core::depth of the image
@@ -78,9 +82,9 @@ namespace icl::io {
     static core::Img8u *internalCreate(const std::string &name);
   };
 
-  /// shortcurt function to create the "macaw"-image
+  /// shortcurt function to create the "parrot"-image
   /** @return new image (ownership is passed to the caller!) */
-  ICLIO_API core::ImgBase *createImage_macaw();
+  ICLIO_API core::ImgBase *createImage_parrot();
 
   /// shortcurt function to create the "windows"-image
   /** @return new image (ownership is passed to the caller!) */
@@ -105,3 +109,15 @@ namespace icl::io {
 
 
   } // namespace icl::io
+
+/// Self-register a test-image factory at static-init time.
+/** Use exactly once per name, at the bottom of a .cpp that defines the
+    factory body:
+    \code
+      REGISTER_TEST_IMAGE(lena, []{
+        return createImage_lena()->asImg<icl::icl8u>();
+      });
+    \endcode */
+#define REGISTER_TEST_IMAGE(NAME, FACTORY_LAMBDA)                              \
+  ICL_REGISTER_PLUGIN(::icl::io::testImageRegistry(),                          \
+                      NAME, #NAME, FACTORY_LAMBDA)

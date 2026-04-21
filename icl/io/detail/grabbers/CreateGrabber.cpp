@@ -43,16 +43,15 @@ namespace icl::io {
   }
 
   const std::vector<GrabberDeviceDescription>& getCreateDeviceList(std::string hint, bool rescan){
-    static const std::vector<GrabberDeviceDescription> deviceList = []{
-      std::vector<GrabberDeviceDescription> v;
-      // Names must match TestImages::internalCreate — keep in sync.
-      for(const char *name : {"parrot", "lena", "cameraman", "mandril",
-                              "flowers", "windows", "women", "tree", "house"}){
-        v.push_back(GrabberDeviceDescription("create", name,
-                    std::string("built-in test image '") + name + "'"));
-      }
-      return v;
-    }();
+    // Rebuilt on each call: the test-image registry is populated by
+    // static-init-time REGISTER_TEST_IMAGE(...) invocations in sibling
+    // TUs, and new backends may register after the first call here.
+    static std::vector<GrabberDeviceDescription> deviceList;
+    deviceList.clear();
+    for(const std::string &name : testImageRegistry().keys()){
+      deviceList.push_back(GrabberDeviceDescription("create", name,
+                  std::string("built-in test image '") + name + "'"));
+    }
     return deviceList;
   }
 
