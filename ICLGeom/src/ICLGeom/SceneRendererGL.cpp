@@ -20,6 +20,9 @@
 #include <GL/glew.h>
 #endif
 
+#include <ICLQt/DrawWidget3D.h>
+#include <ICLQt/Widget.h>
+
 #include <cstdio>
 #include <unordered_map>
 
@@ -699,6 +702,12 @@ struct SceneRendererGL::Data {
   bool ssrEnabled = true;
   Mat prevViewMatrix, prevProjectionMatrix;
 
+  // Overlay mode
+  bool overlayMode = false;
+  float overlayAlpha = 1.0f;
+  GLuint blitProgram = 0;
+  GLint blitLocTex = -1, blitLocAlpha = -1;
+
   // Shadow maps (up to 4 shadow-casting lights)
   static const int MAX_SHADOWS = 4;
   GLuint shadowFBO[4] = {};
@@ -884,6 +893,8 @@ void SceneRendererGL::setDirectMultiplier(float m) { m_data->directMultiplier = 
 float SceneRendererGL::getDirectMultiplier() const { return m_data->directMultiplier; }
 void SceneRendererGL::setSSREnabled(bool enabled) { m_data->ssrEnabled = enabled; }
 bool SceneRendererGL::getSSREnabled() const { return m_data->ssrEnabled; }
+void SceneRendererGL::setOverlayMode(bool enabled) { m_data->overlayMode = enabled; }
+void SceneRendererGL::setOverlayAlpha(float alpha) { m_data->overlayAlpha = alpha; }
 
 void SceneRendererGL::ensureShaderCompiled() {
   if (m_data->shaderReady) return;
@@ -954,6 +965,39 @@ void SceneRendererGL::ensureShaderCompiled() {
   if (svs) glDeleteShader(svs);
   if (sfs) glDeleteShader(sfs);
 
+  // Blit shader (for overlay mode alpha-blended compositing)
+  {
+    static const char *BLIT_VERT = R"(
+#version 410 core
+layout(location = 0) in vec2 aPos;
+out vec2 vUV;
+void main() {
+    vUV = aPos * 0.5 + 0.5;
+    gl_Position = vec4(aPos, 0.0, 1.0);
+}
+)";
+    static const char *BLIT_FRAG = R"(
+#version 410 core
+uniform sampler2D uBlitTex;
+uniform float uAlpha;
+in vec2 vUV;
+out vec4 FragColor;
+void main() {
+    vec4 c = texture(uBlitTex, vUV);
+    FragColor = vec4(c.rgb, c.a * uAlpha);
+}
+)";
+    GLuint bvs = compileShader(GL_VERTEX_SHADER, BLIT_VERT);
+    GLuint bfs = compileShader(GL_FRAGMENT_SHADER, BLIT_FRAG);
+    if (bvs && bfs) {
+      m_data->blitProgram = linkProgram(bvs, bfs);
+      m_data->blitLocTex = glGetUniformLocation(m_data->blitProgram, "uBlitTex");
+      m_data->blitLocAlpha = glGetUniformLocation(m_data->blitProgram, "uAlpha");
+    }
+    if (bvs) glDeleteShader(bvs);
+    if (bfs) glDeleteShader(bfs);
+  }
+
   // Shadow FBOs + depth textures (create up to MAX_SHADOWS)
   int sz = m_data->shadowMapSize;
   float borderColor[] = {1, 1, 1, 1};
@@ -1013,14 +1057,61 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   ensureShaderCompiled();
   if (!m_data->program) return;
 
-  const Camera &cam = scene.getCamera(camIndex);
-  Mat projGL = cam.getProjectionMatrixGL();
-  Mat viewGL = cam.getCSTransformationMatrixGL();
-
-  // Save widget viewport
+  // Compute letterbox viewport from camera aspect ratio
   GLint widgetVP[4];
   glGetIntegerv(GL_VIEWPORT, widgetVP);
   int ww = widgetVP[2], wh = widgetVP[3];
+
+  const Size &chip = scene.getCamera(camIndex).getRenderParams().chipSize;
+  float camAR = (float)chip.width / chip.height;
+  float widgetAR = (float)ww / wh;
+  int vpX = 0, vpY = 0, vpW = ww, vpH = wh;
+  if (widgetAR > camAR) {
+    vpW = (int)(wh * camAR);
+    vpX = (ww - vpW) / 2;
+  } else {
+    vpH = (int)(ww / camAR);
+    vpY = (wh - vpH) / 2;
+  }
+
+  renderWithViewport(scene, camIndex, vpX, vpY, vpW, vpH);
+}
+
+void SceneRendererGL::render(const Scene &scene, int camIndex,
+                              qt::ICLDrawWidget3D *widget) {
+  ensureShaderCompiled();
+  if (!m_data->program) return;
+
+  if (!widget) {
+    render(scene, camIndex);
+    return;
+  }
+
+  // Read zoom-aware viewport from widget
+  Rect imageRect = widget->getImageRect(true);
+  float dpr = widget->devicePixelRatioF();
+  Size widgetSize = widget->getSize();
+
+  int vpX, vpY, vpW, vpH;
+  vpW = (int)(imageRect.width * dpr);
+  vpH = (int)(imageRect.height * dpr);
+  if (widget->getFitMode() == qt::ICLWidget::fmZoom) {
+    float dy = imageRect.height - widgetSize.height;
+    vpX = (int)(imageRect.x * dpr);
+    vpY = (int)((-dy - imageRect.y) * dpr);
+  } else {
+    vpX = (int)(imageRect.x * dpr);
+    vpY = (int)(imageRect.y * dpr);
+  }
+
+  renderWithViewport(scene, camIndex, vpX, vpY, vpW, vpH);
+}
+
+void SceneRendererGL::renderWithViewport(const Scene &scene, int camIndex,
+                                          int vpX, int vpY, int vpW, int vpH) {
+  const Camera &cam = scene.getCamera(camIndex);
+  Mat projGL = cam.getProjectionMatrixGL();
+  Mat viewGL = cam.getCSTransformationMatrixGL();
 
   // Collect shadow-enabled lights (up to MAX_SHADOWS)
   struct ShadowInfo { int lightIdx; Mat lightVP; };
@@ -1079,18 +1170,6 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   }
 
   // ---- Main pass ----
-  // Set viewport to match camera aspect ratio (letterboxed in widget)
-  const Size &chip = cam.getRenderParams().chipSize;
-  float camAR = (float)chip.width / chip.height;
-  float widgetAR = (float)ww / wh;
-  int vpX = 0, vpY = 0, vpW = ww, vpH = wh;
-  if (widgetAR > camAR) {
-    vpW = (int)(wh * camAR);
-    vpX = (ww - vpW) / 2;
-  } else {
-    vpH = (int)(ww / camAR);
-    vpY = (wh - vpH) / 2;
-  }
   glViewport(vpX, vpY, vpW, vpH);
 
   // SSR: redirect rendering to FBO (previous frame's textures used for reflections)
@@ -1103,7 +1182,11 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   glViewport(0, 0, vpW, vpH);  // FBO has no letterboxing offset
 
   glDisable(GL_CULL_FACE);
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  if (m_data->overlayMode) {
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  } else {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  }
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Sky background (reads from Scene::getSky())
@@ -1119,7 +1202,7 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
     effGround = sky.groundColor;
   }
 
-  if (m_data->skyProgram) {
+  if (m_data->skyProgram && !m_data->overlayMode) {
     glDisable(GL_DEPTH_TEST);
     glUseProgram(m_data->skyProgram);
     Mat vp = projGL * viewGL;
@@ -1267,13 +1350,38 @@ void SceneRendererGL::render(const Scene &scene, int camIndex) {
   glActiveTexture(GL_TEXTURE0);
   glUseProgram(0);
 
-  // Blit from SSR FBO to the original framebuffer (with letterboxing)
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, m_data->ssrFBO[ssrWriteIdx]);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mainPassPrevFBO);
-  glBlitFramebuffer(0, 0, vpW, vpH,
-                    vpX, vpY, vpX + vpW, vpY + vpH,
-                    GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  // Blit from SSR FBO to the original framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, mainPassPrevFBO);
+  glViewport(vpX, vpY, vpW, vpH);
+
+  if (m_data->overlayMode && m_data->blitProgram) {
+    // Alpha-blended compositing: draw textured quad from SSR color texture
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgram(m_data->blitProgram);
+    glUniform1i(m_data->blitLocTex, 0);
+    glUniform1f(m_data->blitLocAlpha, m_data->overlayAlpha);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_data->ssrColorTex[ssrWriteIdx]);
+
+    glBindVertexArray(m_data->skyVAO);  // reuse fullscreen quad
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    glUseProgram(0);
+    glDisable(GL_BLEND);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  } else {
+    // Standard blit (no blending)
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_data->ssrFBO[ssrWriteIdx]);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mainPassPrevFBO);
+    glBlitFramebuffer(0, 0, vpW, vpH,
+                      vpX, vpY, vpX + vpW, vpY + vpH,
+                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_FRAMEBUFFER, mainPassPrevFBO);
+  }
 
   // Store current matrices for next frame's SSR reprojection
   m_data->prevViewMatrix = viewGL;
@@ -1369,151 +1477,7 @@ void SceneRendererGL::renderObject(const SceneObject *obj,
   }
 }
 
-// =====================================================================
-// GLImageRenderer — fullscreen textured quad for 2D image display
-// =====================================================================
-
-static const char *QUAD_VERT = R"(
-#version 410 core
-layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec2 aUV;
-uniform vec2 uScale;  // letterbox scale (1.0 = fill, <1.0 = shrink on that axis)
-out vec2 vUV;
-void main() {
-    vUV = aUV;
-    gl_Position = vec4(aPos * uScale, 0.0, 1.0);
-}
-)";
-
-static const char *QUAD_FRAG = R"(
-#version 410 core
-uniform sampler2D uTexture;
-in vec2 vUV;
-out vec4 FragColor;
-void main() {
-    FragColor = texture(uTexture, vUV);
-}
-)";
-
-struct GLImageRenderer::Data {
-  GLuint program = 0;
-  GLuint vao = 0;
-  GLuint vbo = 0;
-  GLuint texture = 0;
-  int texW = 0, texH = 0;
-  bool ready = false;
-
-  void init() {
-    if (ready) return;
-    ready = true;
-
-    GLuint vs = compileShader(GL_VERTEX_SHADER, QUAD_VERT);
-    GLuint fs = compileShader(GL_FRAGMENT_SHADER, QUAD_FRAG);
-    if (vs && fs) program = linkProgram(vs, fs);
-    if (vs) glDeleteShader(vs);
-    if (fs) glDeleteShader(fs);
-
-    if (!program) {
-      fprintf(stderr, "[GLImageRenderer] Shader compilation failed!\n");
-      return;
-    }
-
-    // Fullscreen quad: 2 triangles, each vertex = pos(2) + uv(2)
-    float quad[] = {
-      -1, -1,  0, 1,   // bottom-left  (UV flipped Y: 0,1 → top of image)
-       1, -1,  1, 1,   // bottom-right
-       1,  1,  1, 0,   // top-right
-      -1, -1,  0, 1,   // bottom-left
-       1,  1,  1, 0,   // top-right
-      -1,  1,  0, 0,   // top-left
-    };
-
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-    glBindVertexArray(0);
-
-    glGenTextures(1, &texture);
-    fprintf(stderr, "[GLImageRenderer] Initialized (program=%u vao=%u tex=%u)\n",
-            program, vao, texture);
-  }
-};
-
-GLImageRenderer::GLImageRenderer() : m_data(new Data) {}
-
-GLImageRenderer::~GLImageRenderer() {
-  if (m_data->program) glDeleteProgram(m_data->program);
-  if (m_data->vao) glDeleteVertexArrays(1, &m_data->vao);
-  if (m_data->vbo) glDeleteBuffers(1, &m_data->vbo);
-  if (m_data->texture) glDeleteTextures(1, &m_data->texture);
-  delete m_data;
-}
-
-void GLImageRenderer::render(const core::Image &img) {
-  m_data->init();
-  if (!m_data->program || img.isNull()) return;
-
-  const auto &img8u = img.as<icl8u>();
-  int w = img8u.getWidth(), h = img8u.getHeight(), ch = img8u.getChannels();
-
-  // Upload image data as RGBA texture
-  std::vector<icl8u> rgba(w * h * 4);
-  for (int i = 0; i < w * h; i++) {
-    rgba[i*4+0] = (ch > 0) ? img8u.getData(0)[i] : 0;
-    rgba[i*4+1] = (ch > 1) ? img8u.getData(1)[i] : 0;
-    rgba[i*4+2] = (ch > 2) ? img8u.getData(2)[i] : 0;
-    rgba[i*4+3] = (ch > 3) ? img8u.getData(3)[i] : 255;
-  }
-
-  glBindTexture(GL_TEXTURE_2D, m_data->texture);
-  if (w != m_data->texW || h != m_data->texH) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, rgba.data());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    m_data->texW = w;
-    m_data->texH = h;
-  } else {
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA,
-                    GL_UNSIGNED_BYTE, rgba.data());
-  }
-
-  // Compute letterbox scale to preserve image aspect ratio
-  GLint vp[4];
-  glGetIntegerv(GL_VIEWPORT, vp);
-  float widgetW = vp[2], widgetH = vp[3];
-  float imgAR = (float)w / h;
-  float widgetAR = widgetW / widgetH;
-  float scaleX = 1.0f, scaleY = 1.0f;
-  if (widgetAR > imgAR) {
-    scaleX = imgAR / widgetAR;  // pillarbox
-  } else {
-    scaleY = widgetAR / imgAR;  // letterbox
-  }
-
-  // Draw letterboxed quad
-  glDisable(GL_DEPTH_TEST);
-  glUseProgram(m_data->program);
-  glUniform1i(glGetUniformLocation(m_data->program, "uTexture"), 0);
-  glUniform2f(glGetUniformLocation(m_data->program, "uScale"), scaleX, scaleY);
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, m_data->texture);
-
-  glBindVertexArray(m_data->vao);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
-  glBindVertexArray(0);
-
-  glUseProgram(0);
-}
+// GLImageRenderer moved to ICLQt/GLImageRenderer.h/.cpp
 
 Image SceneRendererGL::renderToImage(const Scene &scene, int camIndex, int width, int height) {
   ensureShaderCompiled();

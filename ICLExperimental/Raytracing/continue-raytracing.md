@@ -1,6 +1,64 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 12 — Glass/Transmission + Widget Overlay Port)
+## Current State (Session 13 — GLImageRenderer, Overlay Viewer, SceneSetup)
+
+### Session 13 Summary
+
+**GLImageRenderer moved to ICLQt + replaces GLImg for widget background images:**
+- New `ICLQt/src/ICLQt/GLImageRenderer.h/.cpp` — shader-based image renderer that
+  replaces GLImg's legacy `glPixelTransfer`/`draw2D` rendering pipeline.
+- Features: image storage (deep copy), BCI via shader uniforms (`uBCIScale`/`uBCIBias`),
+  pixel query, statistics, scale mode (nearest/linear), grid state, letterbox scaling.
+- `ICLWidget::Data::image` changed from `GLImg` to `GLImageRenderer`.
+- **Core Profile background images now work:** `gui["canvas"] = img` renders the image
+  as background before the GL callback (was missing — known limitation fixed).
+- Legacy path also uses GLImageRenderer (replaces `GLImg::draw2D`).
+- Both paths use `glViewport(imageRect)` → `render()` → restore viewport.
+- GLImg kept for OSD button icons (legacy path only) and DrawWidget/GLPaintEngine 3D
+  texture uses. Can be fully deprecated later.
+
+**SceneRendererGL — widget-aware zoom + overlay mode:**
+- Widget-aware `render(scene, camIndex, widget)` overload reads zoom state from widget.
+- Refactored: core rendering extracted to `renderWithViewport(scene, camIndex, vpX, vpY, vpW, vpH)`.
+- **Overlay mode** (`setOverlayMode(true)` + `setOverlayAlpha(float)`):
+  - Clears to transparent (0,0,0,0), skips sky rendering
+  - Replaces `glBlitFramebuffer` with alpha-blended textured quad from SSR FBO
+  - Blit shader: `FragColor = vec4(c.rgb, c.a * uAlpha)` with `GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA`
+  - Reuses skyVAO for the fullscreen blit quad
+- Old GLImageRenderer implementation removed from SceneRendererGL.cpp.
+  Backwards-compat alias: `icl::geom::GLImageRenderer = icl::qt::GLImageRenderer`.
+
+**SceneSetup utility (`src/Raytracing/SceneSetup.h/.cpp`):**
+- `setupScene()` — free function extracted from cycles-scene-viewer.cpp (~290 lines).
+  Handles: file loading (OBJ/glTF), mesh decimation, transform baking, user rotation,
+  auto-scaling to 400mm, checkerboard ground, 3-point lighting with shadows, camera
+  creation, sky/environment. Returns `SceneSetupResult` with object/material ownership.
+- `applyMaterialPreset()` — 10 presets (original, clay, mirror, gold, copper, chrome,
+  red plastic, green rubber, glass, emissive).
+- Both functions part of `icl::rt` namespace in ICLRaytracing library.
+
+**New overlay viewer (`demos/cycles-overlay-viewer.cpp`):**
+- Single Canvas3D pane compositing Cycles (background) + GL (overlay).
+- `gui["canvas"] = img` sets Cycles image as background (works via new GLImageRenderer).
+- GL callback renders SceneRendererGL in overlay mode on top.
+- Alpha slider controls GL overlay opacity (0-100%).
+- Material combo, bounces, exposure controls.
+- Uses SceneSetup for scene loading.
+
+**Files created:**
+- `ICLQt/src/ICLQt/GLImageRenderer.h/.cpp` — merged GLImg+renderer
+- `ICLExperimental/Raytracing/src/Raytracing/SceneSetup.h/.cpp` — shared setup
+- `ICLExperimental/Raytracing/demos/cycles-overlay-viewer.cpp` — overlay app
+
+**Files modified:**
+- `ICLQt/src/ICLQt/Widget.cpp` — GLImg→GLImageRenderer, Core Profile bg images
+- `ICLGeom/src/ICLGeom/SceneRendererGL.h` — removed GLImageRenderer, added overlay API
+- `ICLGeom/src/ICLGeom/SceneRendererGL.cpp` — removed GLImageRenderer impl, added
+  overlay mode (transparent clear, skip sky, alpha-blended blit), blit shader
+- `ICLExperimental/Raytracing/demos/cycles-scene-viewer.cpp` — widget-aware callbacks
+- `ICLExperimental/Raytracing/CMakeLists.txt` — SceneSetup source, overlay target
+
+## Previous State (Session 12 — Glass/Transmission + Widget Overlay Port)
 
 ### Session 12 Summary
 
@@ -588,83 +646,40 @@ ICLExperimental/Raytracing/
 
 ### Next Steps
 
-#### PRIORITY: Widget Zoom + Camera Coupling in Core Profile
+#### Completed (Session 13)
 
-**Problem:** The OSD zoom button works (rect drawing, state tracking) but the actual
-zoomed rendering doesn't happen. In legacy mode, zoom works by:
-1. User drags zoom rect → `m_data->zoomRect` set (normalized [0,1] coords)
-2. `computeRect(imageSize, widgetSize, fmZoom, zoomRect)` returns a screen-space rect
-3. Background image rendered at that rect via `GLImg::draw2D(r, windowSize)`
-4. **Critical coupling:** `Scene::renderScene()` line 819-827 reads
-   `widget->getImageRect(true)` and sets `cam.getRenderParams().viewport = currentImageRect`
-   — this makes the 3D camera projection match the zoomed image exactly
+- ✅ Widget zoom viewport (SceneRendererGL + callbacks)
+- ✅ Background images in Core Profile (GLImageRenderer replaces GLImg::draw2D)
+- ✅ SceneRendererGL overlay mode (transparent clear, skip sky, alpha-blended blit)
+- ✅ SceneSetup utility (shared scene loading)
+- ✅ cycles-overlay-viewer app
 
-**Why it's broken in Core Profile:**
-- `SceneRendererGL::render(scene, camIndex)` does NOT receive the widget pointer
-- It computes its own letterbox viewport from `cam.getRenderParams().chipSize`
-- It never queries `widget->getImageRect()`, so the zoom rect is ignored
-- The GLCallback in cycles-scene-viewer.cpp ignores the widget parameter:
-  ```cpp
-  void draw(ICLDrawWidget3D *) override {  // widget param ignored!
-      if (glRenderer) glRenderer->render(scene, 0);
-  }
-  ```
+#### Immediate TODO
 
-**Required fix (architectural):**
-1. **SceneRendererGL API change:** Add `render(scene, camIndex, widget)` overload that
-   reads `widget->getImageRect(true)` and uses it for viewport + projection setup.
-   The viewport from `getImageRect()` replaces the self-computed letterbox rect.
-   When no widget is passed, fall back to current letterbox behavior.
-2. **GLCallback wiring:** Pass the widget through to `SceneRendererGL::render()`:
-   ```cpp
-   void draw(ICLDrawWidget3D *widget) override {
-       if (glRenderer) glRenderer->render(scene, 0, widget);
-   }
-   ```
-3. **Background image in Core Profile:** When `m_data->image` is not null and zoom is
-   active, render the background image via QPainter at the zoomed rect in the Phase 2
-   overlay. This requires extracting the image data from `GLImg` (currently not exposed)
-   or caching the original `ImgBase*` alongside the GLImg.
-4. **defaultViewPort:** When no background image is set, `getImageRect()` uses
-   `m_data->defaultViewPort` (from Canvas3D constructor, default VGA). This is the
-   virtual image size that defines the coordinate space. SceneRendererGL needs to
-   respect this for letterboxing even without an image.
-
-**Key insight (from ICL's AR pipeline):**
-The zoom mechanism is fundamental to ICL's augmented reality workflow:
-- Real camera image displayed as letterboxed background
-- Calibrated virtual camera renders 3D scene aligned with the real image
-- Zoom into a sub-rect: BOTH the image crop AND the virtual camera adjust
-  (effectively increasing focal length / shifting principal point for that rect)
-- The coupling is through `Camera::RenderParams::viewport` — the zoom rect
-  directly becomes the camera viewport, and the projection matrix accounts for it
-
-**Files to modify:**
-- `ICLGeom/src/ICLGeom/SceneRendererGL.h/.cpp` — add widget-aware render overload
-- `ICLGeom/src/ICLGeom/Camera.cpp` — verify `getProjectionMatrixGL()` and
-  `getViewportMatrixGL()` handle the zoom viewport correctly for Core Profile
-- `ICLExperimental/Raytracing/demos/cycles-scene-viewer.cpp` — pass widget in GLCallback
-- `ICLQt/src/ICLQt/Widget.cpp` — Core Profile path: render background image when present
-
-**Reference code:** `Scene::renderScene()` lines 819-827 in `ICLGeom/src/ICLGeom/Scene.cpp`
-shows exactly how the legacy renderer reads and applies the zoom viewport.
+- **Refactor cycles-scene-viewer.cpp** — replace inline setupScene/decimateMesh/
+  computeSceneBounds/material-switching with `SceneSetup.h` calls. Currently both
+  implementations exist (viewer has its own, library has the extracted version).
+- **Zoom still buggy** — the viewport math qualitatively works but the zoom rect
+  mapping doesn't always show the right region; excessive zoom goes black. Needs
+  investigation of the viewport-to-NDC mapping in the SSR FBO path.
+- **Test overlay viewer** — verify Cycles bg + GL overlay compositing works, alpha
+  slider, camera sync, material presets.
 
 #### GL Renderer — Remaining
 
 1. **SSR tuning** — far-distance artifacts remain; revisit step count, thickness,
    and screen-space normalization. Consider adaptive step size.
 2. **Volume attenuation in GL** — currently only tints via attenuationColor; doesn't
-   model distance-dependent Beer-Lambert absorption (would need path length through object)
+   model distance-dependent Beer-Lambert absorption
 
-#### Widget Overlay — Remaining
+#### Widget — Remaining
 
 3. **DrawWidget ImageCommand** — `ImageCommand` in DrawWidget.cpp uses `GLImg::draw2D()`
-   directly, bypassing PaintEngine. In Core Profile, needs fallback to
-   `PaintEngine::image()` with a cached copy of the original image.
-4. **Background image display** — `GLImg::draw2D()` for background images in Core
-   Profile. Either use QPainter (simple) or create shader-based path like GLImageRenderer.
-5. **QPainter performance evaluation** — monitor frame rate with overlay enabled; if
-   bottleneck, replace QPainterPaintEngine backend with custom GL 4.1 shaders.
+   directly. In Core Profile, needs migration to GLImageRenderer or PaintEngine.
+4. **Fully deprecate GLImg** — remaining uses: OSD button icons (legacy), DrawWidget
+   ImageCommand, GLPaintEngine image rendering. Migrate each to GLImageRenderer.
+5. **Grid overlay** — GLImageRenderer stores grid state but drawing is not implemented
+   yet. Add grid line drawing in QPainter overlay phase.
 
 #### Legacy Cleanup
 
@@ -676,15 +691,12 @@ shows exactly how the legacy renderer reads and applies the zoom viewport.
 
 - HDR environment maps (Sky::Texture mode)
 - Area/spot/sun light types
-- Volume attenuation for colored glass (AbsorptionVolumeNode code exists but
-  MosquitoInAmber has attenuationDistance=FLT_MAX so it's effectively a no-op)
+- Volume attenuation for colored glass
 - QEM mesh decimation
 - Cycles XML scene loader
 
 ### Known Limitations
 
-- **Zoom doesn't work in Core Profile** — zoom rect draws, state tracks, but
-  SceneRendererGL doesn't read the widget's zoom state (see priority task above)
 - SSR only reflects visible geometry (not behind camera or occluded)
 - SSR has one-frame latency on reflections (imperceptible for slow camera motion)
 - SSR has artifacts at far distances (screen-space step overshooting)
@@ -693,6 +705,5 @@ shows exactly how the legacy renderer reads and applies the zoom viewport.
 - OBJ loader: no MTL material parsing
 - PolygonPrimitive doesn't carry UV indices yet
 - DrawWidget ImageCommand bypasses PaintEngine in Core Profile
-- Background image display not yet ported to Core Profile
 - Cycles `set_transmission_weight()` direct setter doesn't work for SVM compilation;
   must use ValueNode graph connections (or MixClosure approach as implemented)

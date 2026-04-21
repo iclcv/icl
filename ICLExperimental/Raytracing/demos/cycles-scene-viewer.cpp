@@ -711,25 +711,48 @@ void run() {
 
   // Render Cycles image via GLImageRenderer callback
   static struct CyclesImageCallback : public ICLDrawWidget3D::GLCallback {
-    void draw(ICLDrawWidget3D *) override {
-      if (imageRenderer && !renderer->getImage().isNull()) {
-        imageRenderer->render(renderer->getImage());
+    void draw(ICLDrawWidget3D *widget) override {
+      if (!imageRenderer || renderer->getImage().isNull()) return;
+
+      // Set viewport from widget zoom state
+      Rect ir = widget->getImageRect(true);
+      float dpr = widget->devicePixelRatioF();
+      Size ws = widget->getSize();
+      if (widget->getFitMode() == ICLWidget::fmZoom) {
+        float dy = ir.height - ws.height;
+        glViewport(ir.x * dpr, (-dy - ir.y) * dpr,
+                   ir.width * dpr, ir.height * dpr);
+      } else {
+        glViewport(ir.x * dpr, ir.y * dpr,
+                   ir.width * dpr, ir.height * dpr);
       }
+
+      imageRenderer->render(renderer->getImage());
     }
   } cyclesImageCB;
 
   DrawHandle3D draw = gui["draw"];
+  static bool viewPortSet = false;
+  if (!viewPortSet) {
+    Size camSize = pa("-size").as<Size>();
+    draw->setViewPort(camSize);
+  }
   draw->link(&cyclesImageCB);
   draw.render();
 
   // Render GL using SceneRendererGL callback
   static struct ModernGLCallback : public ICLDrawWidget3D::GLCallback {
-    void draw(ICLDrawWidget3D *) override {
-      if (glRenderer) glRenderer->render(scene, 0);
+    void draw(ICLDrawWidget3D *widget) override {
+      if (glRenderer) glRenderer->render(scene, 0, widget);
     }
   } modernCB;
 
   DrawHandle3D gl = gui["gl"];
+  if (!viewPortSet) {
+    Size camSize = pa("-size").as<Size>();
+    gl->setViewPort(camSize);
+    viewPortSet = true;
+  }
   gl->link(&modernCB);
   gl.render();
 

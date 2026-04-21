@@ -13,6 +13,8 @@
 #include <vector>
 #include <string>
 
+namespace icl::qt { class ICLDrawWidget3D; }
+
 namespace icl::geom {
 
   class Scene;
@@ -40,6 +42,9 @@ namespace icl::geom {
     /// Render the scene using the modern pipeline
     void render(const Scene &scene, int camIndex);
 
+    /// Render with zoom/viewport from the widget (reads imageRect, fitMode, DPR)
+    void render(const Scene &scene, int camIndex, qt::ICLDrawWidget3D *widget);
+
     /// Set exposure multiplier (default 1.0)
     void setExposure(float e);
 
@@ -61,26 +66,27 @@ namespace icl::geom {
     void setSSREnabled(bool enabled);
     bool getSSREnabled() const;
 
+    /// Enable overlay mode: no sky, transparent clear, alpha-blended blit
+    void setOverlayMode(bool enabled);
+
+    /// Set overlay alpha (0-1, default 1.0). Only used in overlay mode.
+    void setOverlayAlpha(float alpha);
+
     /// Render scene to an offscreen image (creates temporary FBO)
     core::Image renderToImage(const Scene &scene, int camIndex, int width, int height);
 
   private:
+    void renderWithViewport(const Scene &scene, int camIndex,
+                            int vpX, int vpY, int vpW, int vpH);
     void ensureShaderCompiled();
     void renderObject(const SceneObject *obj, const math::FixedMatrix<float,4,4> &viewMatrix);
     void renderObjectShadow(const SceneObject *obj);
   };
 
-  /// Fullscreen textured quad renderer for displaying 2D images in GL 4.1 Core
-  /** Used by the Cycles viewer pane to display raytraced output without legacy GL. */
-  class ICLGeom_API GLImageRenderer {
-    struct Data;
-    Data *m_data;
-  public:
-    GLImageRenderer();
-    ~GLImageRenderer();
-
-    /// Upload and render an image as a fullscreen quad
-    void render(const core::Image &img);
-  };
-
 } // namespace icl::geom
+
+// Backwards compatibility: GLImageRenderer moved to ICLQt
+#include <ICLQt/GLImageRenderer.h>
+namespace icl::geom {
+  using GLImageRenderer = icl::qt::GLImageRenderer;
+}

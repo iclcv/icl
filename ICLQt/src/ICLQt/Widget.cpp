@@ -9,6 +9,7 @@
 #include <QtCore/QTimer>
 #include <QScreen>
 #include <ICLQt/GLImg.h>
+#include <ICLQt/GLImageRenderer.h>
 #include <ICLQt/GLPaintEngine.h>
 #include <ICLQt/QPainterPaintEngine.h>
 #include <ICLIO/GenericImageOutput.h>
@@ -336,12 +337,9 @@ namespace icl::qt {
       }
     }
 
-    void updateMousePos(const Point &mousePos, const GLImg &glimg){
+    void updateMousePos(const Point &mousePos, const GLImageRenderer &glimg){
       try{
-        glimg.lock();
         this->color = glimg.getColor(mousePos.x, mousePos.y);
-        glimg.unlock();
-
       }catch(ICLException &){
         color.clear();
       }
@@ -475,7 +473,7 @@ namespace icl::qt {
 
     ICLWidget *parent;
     ImgBase *channelSelBuf;
-    GLImg image;
+    GLImageRenderer image;
     QImageConverter *qimageConv;
     QImage *qimage;
     QRecursiveMutex mutex;
@@ -1993,6 +1991,27 @@ namespace icl::qt {
     GLint profileMask = 0;
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
     if (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) {
+      // Render background image if set
+      if (!m_data->image.isNull()) {
+        Rect r;
+        if (m_data->fm == fmZoom) {
+          QMutexLocker locker(&m_data->menuMutex);
+          r = computeRect(m_data->image.getSize(), getSize(), fmZoom, m_data->zoomRect);
+        } else {
+          r = computeRect(m_data->image.getSize(), getSize(), m_data->fm);
+        }
+        m_data->image.setScaleMode(m_data->useLinInterpolation ? interpolateLIN : interpolateNN);
+        float dpr = devicePixelRatioF();
+        if (m_data->fm == fmZoom) {
+          float dy = r.height - height();
+          glViewport(r.x*dpr, (-dy-r.y)*dpr, r.width*dpr, r.height*dpr);
+        } else {
+          glViewport(r.x*dpr, r.y*dpr, r.width*dpr, r.height*dpr);
+        }
+        m_data->image.render();
+        glViewport(0, 0, (int)(width()*dpr), (int)(height()*dpr));
+      }
+
       // Phase 1: run 3D GL callback
       customPaintEvent(nullptr);
 
@@ -2064,7 +2083,15 @@ namespace icl::qt {
         r = computeRect(m_data->image.getSize(),getSize(),m_data->fm);
       }
       m_data->image.setScaleMode(m_data->useLinInterpolation?interpolateLIN:interpolateNN);
-      m_data->image.draw2D(r,getSize());
+      float dpr = devicePixelRatioF();
+      if (m_data->fm == fmZoom) {
+        float dy = r.height - height();
+        glViewport(r.x*dpr, (-dy-r.y)*dpr, r.width*dpr, r.height*dpr);
+      } else {
+        glViewport(r.x*dpr, r.y*dpr, r.width*dpr, r.height*dpr);
+      }
+      m_data->image.render();
+      glViewport(0, 0, (int)(width()*dpr), (int)(height()*dpr));
     }else{
       pe = new GLPaintEngine(this);
 
@@ -2146,7 +2173,7 @@ namespace icl::qt {
   void ICLWidget::setImage(const ImgBase *image){
     LOCK_SECTION;
     if(!image){
-      m_data->image.update(0);
+      m_data->image.update(nullptr);
       m_data->imageInfoIndicator->update(m_data->defaultViewPort, image, m_data->mouseX, m_data->mouseY);
       return;
     }
@@ -2595,28 +2622,30 @@ namespace icl::qt {
   std::vector<std::string> ICLWidget::getImageInfo(){
     std::vector<std::string> info;
 
-    GLImg &i = m_data->image;
-    if(i.isNull()){
+    if(m_data->image.isNull()){
       info.push_back("Image is NULL");
       return info;
     }
-    info.push_back(std::string("depth:   ")+str(i.getDepth()));
-    info.push_back(std::string("size:    ")+str(i.getSize()));
-    info.push_back(std::string("channels:")+str(i.getChannels()));
-    info.push_back(std::string("format:  ")+str(i.getFormat()));
-    if(i.getROI() == Rect(Point::null,i.getSize())){
+    const ImgBase *img = m_data->image.extractDisplay();
+    if (!img) { info.push_back("Image is NULL"); return info; }
+    info.push_back(std::string("depth:   ")+str(img->getDepth()));
+    info.push_back(std::string("size:    ")+str(img->getSize()));
+    info.push_back(std::string("channels:")+str(img->getChannels()));
+    info.push_back(std::string("format:  ")+str(img->getFormat()));
+    if(img->getROI() == Rect(Point::null,img->getSize())){
       info.push_back("roi:   full");
     }else{
-      info.push_back(str(i.getROI()));
+      info.push_back(str(img->getROI()));
     }
 
-    std::vector<Range<icl64f> > ranges = i.getMinMax();
-    for(int a=0;a<i.getChannels();a++){
+    int ch = img->getChannels();
+    for(int a=0;a<ch;a++){
+      Range64f r = img->getMinMax(a);
       info.push_back(str("channel "+str(a)+":"));
-      info.push_back(str("   ")+str(ranges[a]));
+      info.push_back(str("   ")+str(r));
     }
 
-    info.push_back(std::string("time:  ")+str(i.getTime()));
+    info.push_back(std::string("time:  ")+str(img->getTime()));
     return info;
   }
 

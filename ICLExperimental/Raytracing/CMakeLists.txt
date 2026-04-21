@@ -164,11 +164,13 @@ set(RT_SOURCES
   src/Raytracing/CyclesRenderer.cpp
   src/Raytracing/SceneSynchronizer.cpp
   src/Raytracing/GltfLoader.cpp
+  src/Raytracing/SceneSetup.cpp
 )
 set(RT_HEADERS
   src/Raytracing/CyclesRenderer.h
   src/Raytracing/SceneSynchronizer.h
   src/Raytracing/GltfLoader.h
+  src/Raytracing/SceneSetup.h
 )
 
 # cgltf.h location (single-header glTF parser from Cycles' MaterialX dependency)
@@ -221,6 +223,17 @@ target_include_directories(cycles-scene-viewer PRIVATE
 )
 target_link_libraries(cycles-scene-viewer ICLRaytracing ICLQt)
 set_target_properties(cycles-scene-viewer PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# ---- Overlay viewer (Cycles background + GL overlay) ----
+add_executable(cycles-overlay-viewer demos/cycles-overlay-viewer.cpp)
+target_include_directories(cycles-overlay-viewer PRIVATE
+  ${ICL_MODULE_INCLUDE_DIRS}
+  ${CMAKE_BINARY_DIR}/src
+  src/
+)
+target_link_libraries(cycles-overlay-viewer ICLRaytracing ICLQt)
+set_target_properties(cycles-overlay-viewer PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # ---- GL renderer test (coordinate axes, legacy vs modern side by side) ----
