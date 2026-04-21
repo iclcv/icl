@@ -7,6 +7,7 @@
 //
 // Usage:
 //   cycles-scene-viewer -scene monkey.obj [-scene another.obj ...] [-size 1280x960]
+//                      [-rotate rx,ry,rz]  (degrees around X,Y,Z axes)
 
 #include <ICLQt/Common.h>
 #include <ICLGeom/Camera.h>
@@ -257,6 +258,39 @@ static void setupScene() {
     cube->getMaterial()->roughness = 0.2f;
     scene.addObject(cube.get());
     loadedObjects.push_back(cube);
+  }
+
+  // Apply user-specified rotation (in degrees around X, Y, Z)
+  if (pa("-rotate")) {
+    std::string rs = pa("-rotate").as<std::string>();
+    float rx = 0, ry = 0, rz = 0;
+    sscanf(rs.c_str(), "%f,%f,%f", &rx, &ry, &rz);
+    float cx = float(M_PI / 180.0) * rx;
+    float cy = float(M_PI / 180.0) * ry;
+    float cz = float(M_PI / 180.0) * rz;
+
+    // Build rotation matrix: Rz * Ry * Rx
+    Mat Rx = Mat::id();
+    Rx(1,1) =  cosf(cx); Rx(2,1) = sinf(cx);
+    Rx(1,2) = -sinf(cx); Rx(2,2) = cosf(cx);
+
+    Mat Ry = Mat::id();
+    Ry(0,0) =  cosf(cy); Ry(2,0) = -sinf(cy);
+    Ry(0,2) =  sinf(cy); Ry(2,2) =  cosf(cy);
+
+    Mat Rz = Mat::id();
+    Rz(0,0) =  cosf(cz); Rz(1,0) = sinf(cz);
+    Rz(0,1) = -sinf(cz); Rz(1,1) = cosf(cz);
+
+    Mat R = Rz * Ry * Rx;
+
+    fprintf(stderr, "Rotating scene by (%.0f, %.0f, %.0f) degrees\n", rx, ry, rz);
+    for (auto &obj : loadedObjects) {
+      for (auto &v : obj->getVertices()) {
+        v = R * v;
+      }
+      obj->createAutoNormals(true);
+    }
   }
 
   // Auto-fit: scale scene so extent ≈ 500 units (matches ICL conventions)
@@ -526,12 +560,12 @@ int main(int argc, char **argv) {
   }
 
   if (offscreen) {
-    pa_init(argc, argv, "-size(Size=800x600) -scene(...) -offscreen(string) -samples(int=16) -decimate(int)");
+    pa_init(argc, argv, "-size(Size=800x600) -scene(...) -offscreen(string) -samples(int=16) -decimate(int) -rotate(string)");
     offscreen_render(offscreenFile);
     return 0;
   }
 
   return ICLApp(argc, argv,
-    "-size(Size=1280x960) -scene(...) -decimate(int)",
+    "-size(Size=1280x960) -scene(...) -decimate(int) -rotate(string)",
     init, run).exec();
 }
