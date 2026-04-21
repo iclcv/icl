@@ -97,7 +97,11 @@ typedef std::shared_ptr<View> ViewPtr;
 
 std::vector<ViewPtr> views;
 
-struct GLCallback : public ICLDrawWidget3D::GLCallback{
+// Renamed from `GLCallback` to avoid clashing with the top-level
+// `icl::qt::GLCallback` that `using namespace qt;` brings in — both
+// the local class and the framework class would otherwise match the
+// unqualified `new GLCallback` below.
+struct MultiViewGLCallback : public ICLDrawWidget3D::GLCallback{
   virtual void draw(ICLDrawWidget3D *w){
     int curr = gui["visinput"];
     scene.getGLCallback(curr)->draw(w);
@@ -242,7 +246,7 @@ void init(){
   scene.addObject(gridIndicator);
 
   //gui["draw"].install(scene.getMouseHandler(1));
-  gui["draw"].link(new GLCallback);//scene.getGLCallback(views.size()));
+  gui["draw"].link(new MultiViewGLCallback);//scene.getGLCallback(views.size()));
 
   gui["3D"].link(scene.getGLCallback(views.size()));
   gui["3D"].install(scene.getMouseHandler(views.size()));

@@ -9,6 +9,7 @@
 #include <icl/utils/AssignRegistry.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
+#include <icl/qt/GLCallback.h>
 #include <icl/qt/MouseEvent.h>
 
 #include <any>
@@ -68,23 +69,6 @@ namespace icl::qt {
       ICLQt_API static void assignAny(std::any &dst, std::any &src);
 
     public:
-      /// Legacy "smuggled-command" payload used by the `render()` /
-      /// `install()` / `link()` / `registerCallback()` / `enable()` /
-      /// `disable()` methods below.  Dispatched via the
-      /// `Assign<H, Event>` trait specialization registered in
-      /// `qt/HandleEventEnrollments.cpp` — scheduled for retirement
-      /// once `Data::*` is rewritten to direct type-dispatch over
-      /// the stored `std::any`.
-      struct Event {
-        Event(const std::string &msg="", void *data=0):message(msg),data(data){}
-        Event(const std::string &msg, const std::function<void()> &cb): message(msg),data(0),cb(cb){}
-        Event(const std::string &msg, const std::function<void(const std::string&)> &cb2): message(msg),data(0),cb2(cb2){}
-        std::string message;
-        void *data;
-        std::function<void()> cb;
-        std::function<void(const std::string&)> cb2;
-      };
-
       /// Assign an instance of `T` into this entry.  Dispatch picks
       /// the registered `Assign<Stored, T>::apply` via the runtime
       /// `AssignRegistry`.
@@ -143,56 +127,47 @@ namespace icl::qt {
       /// RTTI of the currently-stored value.
       const std::type_info &getTypeID() const { return m_entry->type(); }
 
-      /// Trigger a `render` on the stored handle (handlers: Image,
-      /// Draw, Draw3D, Plot, FPS — see Assign<H, Event>).
-      void render() {
-        *this = Event("render");
-      }
+      // Handle-verb dispatchers.  Each one does a direct
+      // type-cascade over the stored `std::any` in
+      // `qt/HandleVerbDispatch.cpp` — no smuggling through
+      // AssignRegistry.  Each verb is a no-op (with ERROR_LOG) for
+      // handle types that don't expose the method.
 
-      /// Forward a void-pointer payload to the stored handle under
-      /// the "link" verb.  Currently only DrawHandle3D responds to
-      /// `link` (binding an ICLDrawWidget3D::GLCallback).
-      void link(void *data) {
-        *this = Event("link", data);
-      }
+      /// Trigger a `render` on the stored handle.  Reachable handles:
+      /// Image, Draw, Draw3D, Plot, FPS.
+      ICLQt_API void render();
 
-      /// Forward a raw MouseHandler pointer to the stored handle's
-      /// `install` path (ImageHandle / DrawHandle / DrawHandle3D).
-      void install(void *data) {
-        *this = Event("install", data);
-      }
+      /// Forward a GLCallback pointer to the stored handle's `link`
+      /// method.  Reachable: DrawHandle3D only.
+      ICLQt_API void link(GLCallback *cb);
 
-      /// Typed overload — ensures the multiply-inherited subobject
-      /// pointer is passed through correctly (e.g.
-      /// `DefineQuadrangleMouseHandler` has an extra non-MouseHandler
-      /// base).
-      void install(MouseHandler *data) {
-        install(static_cast<void *>(data));
-      }
+      /// Forward a MouseHandler pointer to the stored handle's
+      /// `install` path.  Reachable: Image / Draw / Draw3D.
+      /// Multiply-inherited MouseHandler subclasses (e.g.
+      /// `DefineQuadrangleMouseHandler`) are handled by the
+      /// ordinary derived-to-base conversion at the call site.
+      ICLQt_API void install(MouseHandler *data);
 
       /// Convenience — install a plain lambda / std::function.  The
-      /// out-of-line body wraps it in an internal MouseHandler subclass.
+      /// body wraps it in an internal MouseHandler subclass.
       ICLQt_API void install(std::function<void(const MouseEvent &)> f);
 
-      /// Register a simple void-callback.
-      void registerCallback(const std::function<void()> &cb) {
-        *this = Event("register", cb);
-      }
+      /// Register a simple void-callback.  Reachable on most
+      /// value-carrying handles.
+      ICLQt_API void registerCallback(const std::function<void()> &cb);
 
       /// Register a "complex" callback that receives the
       /// originating handle key.
-      void registerCallback(const std::function<void(const std::string &)> &cb) {
-        *this = Event("register-complex", cb);
-      }
+      ICLQt_API void registerCallback(const std::function<void(const std::string &)> &cb);
 
       /// Enable the underlying widget (handle-specific).
-      void enable()  { *this = Event("enable"); }
+      ICLQt_API void enable();
 
       /// Disable the underlying widget.
-      void disable() { *this = Event("disable"); }
+      ICLQt_API void disable();
 
       /// Drop every callback the handle currently holds.
-      void removeCallbacks() { *this = Event("removeCallbacks"); }
+      ICLQt_API void removeCallbacks();
     };
 
     /// Store a `T` under `id`, default-constructing if omitted.

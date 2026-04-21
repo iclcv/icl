@@ -4,7 +4,6 @@
 
 #include <icl/qt/DataStore.h>
 
-#include <icl/qt/MouseHandler.h>
 #include <icl/utils/AssignRegistry.h>
 
 namespace icl::qt {
@@ -27,17 +26,9 @@ namespace icl::qt {
     throw KeyNotFoundException(key);
   }
 
-  void DataStore::Data::install(std::function<void(const MouseEvent &)> f) {
-    /// Locally-defined adapter — keeps the function alive inside a
-    /// MouseHandler subclass so the handle's usual install(MouseHandler*)
-    /// path works.
-    struct FunctionMouseHandler : public MouseHandler {
-      std::function<void(const MouseEvent &)> f;
-      FunctionMouseHandler(std::function<void(const MouseEvent &)> f) : f(f) {}
-      void process(const MouseEvent &e) { f(e); }
-    };
-
-    install(new FunctionMouseHandler(f));
-  }
+  // `Data::render() / install() / link() / registerCallback() /
+  // enable() / disable() / removeCallbacks()` implementations live in
+  // `icl/qt/HandleVerbDispatch.cpp` — they need every handle type to
+  // be complete, so the cascade is isolated to a dedicated TU.
 
   }  // namespace icl::qt

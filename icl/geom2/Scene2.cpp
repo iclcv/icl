@@ -32,39 +32,45 @@
 namespace icl::geom2 {
 
   // ---- GLCallback implementation ----
+  //
+  // Implementation-internal subclass of `qt::GLCallback`; not
+  // exposed in Scene2.h.  Scene2::getGLCallback() returns a
+  // `shared_ptr<qt::GLCallback>` (base) so callers never see this
+  // type.
+  namespace {
+    struct SceneGLCallback : public qt::GLCallback {
+      Scene2 *scene;
+      int camIndex;
+      bool needLink = true;
+      qt::GUI *gui = nullptr;
 
-  struct Scene2::GLCallback : public qt::ICLDrawWidget3D::GLCallback {
-    Scene2 *scene;
-    int camIndex;
-    bool needLink = true;
-    qt::GUI *gui = nullptr;
+      SceneGLCallback(Scene2 *s, int ci) : scene(s), camIndex(ci) {}
 
-    GLCallback(Scene2 *s, int ci) : scene(s), camIndex(ci) {}
+      void performLink(qt::ICLDrawWidget3D *widget) {
+        std::string id = "scene2-" + utils::str(this);
+        std::string save = scene->getConfigurableID();
+        scene->setConfigurableID(id);
 
-    void performLink(qt::ICLDrawWidget3D *widget) {
-      std::string id = "scene2-" + utils::str(this);
-      std::string save = scene->getConfigurableID();
-      scene->setConfigurableID(id);
+        gui = new qt::GUI(qt::VBox());
+        *gui << qt::Prop(id) << qt::Create();
 
-      gui = new qt::GUI(qt::VBox());
-      *gui << qt::Prop(id) << qt::Create();
-
-      static const core::Img8u &icon = qt::IconFactory::create_image("scene-props");
-      widget->addSpecialButton("scene2-props",
-          &icon,
-          [this]{ gui->switchVisibility(); },
-          "3D scene properties");
-      scene->setConfigurableID(save);
-    }
-
-    void draw(qt::ICLDrawWidget3D *widget) override {
-      if (needLink && widget) {
-        performLink(widget);
-        needLink = false;
+        static const core::Img8u &icon = qt::IconFactory::create_image("scene-props");
+        widget->addSpecialButton("scene2-props",
+            &icon,
+            [this]{ gui->switchVisibility(); },
+            "3D scene properties");
+        scene->setConfigurableID(save);
       }
-      scene->render(camIndex);
-    }
-  };
+
+      void draw(qt::ICLDrawWidget3D *widget) override {
+        if (needLink && widget) {
+          performLink(widget);
+          needLink = false;
+        }
+        scene->render(camIndex);
+      }
+    };
+  }  // namespace
 
   // ---- Data ----
 
@@ -73,7 +79,7 @@ namespace icl::geom2 {
     std::vector<std::shared_ptr<LightNode>> lights;  // also in objects, tracked for fast access
     std::vector<geom::Camera> cameras;
     Renderer renderer;
-    std::vector<std::shared_ptr<GLCallback>> callbacks;
+    std::vector<std::shared_ptr<SceneGLCallback>> callbacks;
     std::vector<std::unique_ptr<Scene2MouseHandler>> mouseHandlers;
     Vec cursor{0, 0, 0, 1};
     float bounds = 1000.0f;
@@ -202,11 +208,11 @@ namespace icl::geom2 {
   }
 
   // GL callback for ICLQt integration
-  std::shared_ptr<Scene2::GLCallback> Scene2::getGLCallback(int cameraIndex) {
+  std::shared_ptr<qt::GLCallback> Scene2::getGLCallback(int cameraIndex) {
     // Ensure enough callbacks exist
     while ((int)m_data->callbacks.size() <= cameraIndex) {
       m_data->callbacks.push_back(
-          std::make_shared<GLCallback>(this, (int)m_data->callbacks.size()));
+          std::make_shared<SceneGLCallback>(this, (int)m_data->callbacks.size()));
     }
     return m_data->callbacks[cameraIndex];
   }

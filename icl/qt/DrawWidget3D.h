@@ -6,6 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/qt/DrawWidget.h>
+#include <icl/qt/GLCallback.h>
 #include <vector>
 #include <mutex>
 
@@ -23,21 +24,11 @@ namespace icl::qt {
   class ICLQt_API ICLDrawWidget3D : public ICLDrawWidget {
     public:
 
-    /// internally used callback class type
-    class GLCallback{
-      public:
-      /// empty destructor (doing nothing)
-      virtual ~GLCallback(){}
-
-      /// 2nd draw functions that can access the parent draw-widget
-      virtual void draw(ICLDrawWidget3D *widget){}
-
-      /// custom code to link the visualization to the widget
-      virtual void link(ICLDrawWidget3D *widget){ static_cast<void>(widget); }
-
-      /// custom code to un-link the visualization from the widget
-      virtual void unlink(ICLDrawWidget3D *widget){ static_cast<void>(widget); }
-    };
+    /// Backward-compat alias — the actual class now lives at
+    /// `icl::qt::GLCallback` (see `icl/qt/GLCallback.h`).  Preserves
+    /// the historical `ICLDrawWidget3D::GLCallback` spelling for
+    /// existing callers.
+    using GLCallback = icl::qt::GLCallback;
 
     /// creates a new ICLDrawWidget embedded into the parent component
     ICLDrawWidget3D(QWidget *parent);

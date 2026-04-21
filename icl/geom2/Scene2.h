@@ -9,6 +9,7 @@
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/BVH.h>
 #include <icl/math/FixedVector.h>
+#include <icl/qt/GLCallback.h>
 #include <icl/utils/Configurable.h>
 #include <memory>
 #include <mutex>
@@ -92,10 +93,10 @@ namespace icl::geom2 {
     Renderer &getRenderer();
 
     // --- GL callback for ICLQt integration ---
-    /// Returns a callback suitable for canvas->link()
-    /** Usage: canvas->link(scene.getGLCallback(0).get()); */
-    struct GLCallback;
-    std::shared_ptr<GLCallback> getGLCallback(int cameraIndex);
+    /// Returns a callback suitable for `canvas->link()` /
+    /// `gui["canvas"].link(...)`.
+    /** Usage: gui["canvas"].link(scene.getGLCallback(0).get()); */
+    std::shared_ptr<qt::GLCallback> getGLCallback(int cameraIndex);
 
     // --- Mouse interaction ---
     /// Returns mouse handler for camera navigation (lazy-created per camera)
