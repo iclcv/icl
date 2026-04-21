@@ -49,6 +49,7 @@ public:
 
   bool supportsNativeUpscaling(UpsamplingMethod method) const override;
   bool supportsNativeDenoising(DenoisingMethod method) const override;
+  bool supportsNativeToneMapping(ToneMapMethod method) const override;
 
   const float *getDepthBuffer() const override;
   const float *getNormalXBuffer() const override;
@@ -58,6 +59,7 @@ public:
 
 protected:
   void applyDenoisingStage(core::Img8u &output) override;
+  void applyToneMappingStage(core::Img8u &output) override;
   void applyUpsamplingStage(core::Img8u &output,
                             std::vector<int32_t> &objectIds) override;
 

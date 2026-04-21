@@ -285,6 +285,7 @@ void OpenCLRTBackend::render(const RTRayGenParams &camera) {
 
   // Post-processing stages (virtual — CPU fallbacks by default)
   applyDenoisingStage(m_output);
+  applyToneMappingStage(m_output);
   applyUpsamplingStage(m_output, m_cpuObjectIds);
 }
 

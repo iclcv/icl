@@ -99,6 +99,13 @@ public:
   /// Get current denoising method.
   DenoisingMethod getDenoisingMethod() const;
 
+  // ---- Tone mapping ----
+
+  void setToneMapping(ToneMapMethod method);
+  void setExposure(float exposure);
+  ToneMapMethod getToneMapMethod() const;
+  float getExposure() const;
+
 private:
   geom::Scene &m_scene;
   GeometryExtractor m_extractor;

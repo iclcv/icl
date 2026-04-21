@@ -133,4 +133,12 @@ enum class DenoisingMethod {
   // OIDN,        ///< Intel Open Image Denoise (library dependency)
 };
 
+/// Tone mapping curve for HDR → LDR conversion.
+enum class ToneMapMethod {
+  None = 0,       ///< Clamp to [0,1] (current default)
+  Reinhard,       ///< Reinhard: color / (1 + color)
+  ACES,           ///< ACES filmic (industry standard, rich contrast)
+  Hable,          ///< Uncharted 2 / Hable filmic (nice shoulder)
+};
+
 } // namespace icl::rt

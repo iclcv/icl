@@ -93,6 +93,23 @@ public:
   /// Does this backend handle the given denoising method natively on GPU?
   virtual bool supportsNativeDenoising(DenoisingMethod) const { return false; }
 
+  /// Does this backend handle tone mapping natively on GPU?
+  virtual bool supportsNativeToneMapping(ToneMapMethod) const { return false; }
+
+  // ---- Tone mapping ----
+
+  /// Check if a tone mapping method is available.
+  bool supportsToneMapping(ToneMapMethod method) const {
+    if (supportsNativeToneMapping(method)) return true;
+    return method == ToneMapMethod::None || method == ToneMapMethod::Reinhard ||
+           method == ToneMapMethod::ACES || method == ToneMapMethod::Hable;
+  }
+
+  void setToneMapping(ToneMapMethod method) { m_toneMapMethod = method; }
+  void setExposure(float exposure) { m_exposure = exposure; }
+  ToneMapMethod getToneMapMethod() const { return m_toneMapMethod; }
+  float getExposure() const { return m_exposure; }
+
   // ---- Upsampling support ----
 
   /// Check if a method is available (native GPU OR CPU fallback).
@@ -167,6 +184,8 @@ protected:
   int m_displayHeight = 0;
   DenoisingMethod m_denoisingMethod = DenoisingMethod::None;
   float m_denoisingStrength = 0.5f;
+  ToneMapMethod m_toneMapMethod = ToneMapMethod::None;
+  float m_exposure = 1.0f;
   SVGFState m_svgfState;
   RTRayGenParams m_lastRenderCamera{};
 
@@ -192,6 +211,54 @@ protected:
       return;
     }
     output = denoised;
+  }
+
+  /// Tone mapping stage. Default: CPU implementation of Reinhard/ACES/Hable.
+  /// Backends override to run on GPU when supportsNativeToneMapping().
+  virtual void applyToneMappingStage(core::Img8u &output) {
+    if (m_toneMapMethod == ToneMapMethod::None) return;
+    int w = output.getWidth(), h = output.getHeight();
+    int n = w * h;
+    icl8u *R = output.getData(0), *G = output.getData(1), *B = output.getData(2);
+    float exp = m_exposure;
+
+    for (int i = 0; i < n; i++) {
+      float r = R[i] / 255.0f * exp;
+      float g = G[i] / 255.0f * exp;
+      float b = B[i] / 255.0f * exp;
+
+      if (m_toneMapMethod == ToneMapMethod::Reinhard) {
+        r = r / (1.0f + r); g = g / (1.0f + g); b = b / (1.0f + b);
+      } else if (m_toneMapMethod == ToneMapMethod::ACES) {
+        // ACES filmic approximation (Narkowicz 2015)
+        auto aces = [](float x) {
+          float a = 2.51f, b = 0.03f, c = 2.43f, d = 0.59f, e = 0.14f;
+          float v = (x * (a * x + b)) / (x * (c * x + d) + e);
+          return v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+        };
+        r = aces(r); g = aces(g); b = aces(b);
+      } else if (m_toneMapMethod == ToneMapMethod::Hable) {
+        // Uncharted 2 tone mapping (Hable)
+        auto hable = [](float x) {
+          float A=0.15f,B=0.50f,C=0.10f,D=0.20f,E=0.02f,F=0.30f;
+          return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+        };
+        float W = 11.2f;
+        float whiteScale = 1.0f / hable(W);
+        r = hable(r) * whiteScale;
+        g = hable(g) * whiteScale;
+        b = hable(b) * whiteScale;
+      }
+
+      // Gamma correction (linear → sRGB)
+      r = std::pow(r, 1.0f / 2.2f);
+      g = std::pow(g, 1.0f / 2.2f);
+      b = std::pow(b, 1.0f / 2.2f);
+
+      R[i] = (icl8u)(r < 0 ? 0 : (r > 1 ? 255 : r * 255));
+      G[i] = (icl8u)(g < 0 ? 0 : (g > 1 ? 255 : g * 255));
+      B[i] = (icl8u)(b < 0 ? 0 : (b > 1 ? 255 : b * 255));
+    }
   }
 
   /// Upsampling stage. Default: CPU bilinear / edge-aware + nearest-int for IDs.
