@@ -119,19 +119,22 @@ struct CyclesRenderer::Impl {
   float exposure = 1.0f;
   bool paramsOverridden = false;
 
-  // State
+  // Initialization
   bool initialized = false;
-  bool sceneDirty = true;
-  bool hasRendered = false;
-  bool renderInProgress = false;
+  bool sessionStarted = false;
+
+  // State machine
+  enum class State { IDLE, WAIT_FOR_START, RENDERING };
+  State state = State::IDLE;
+  bool dirty = true;       // starts dirty → first render triggers on first call
+  int accumulated = 0;     // samples in current accum buffer
+  int target = 0;          // current Cycles sample target
 
   // Change detection
   float lastCamHash = 0;
+  int lastSamples = -1;
+  int lastInitialSamples = -1;
   RenderQuality lastQuality = RenderQuality::Preview;
-
-  // Progressive refinement state
-  int currentSamples = 0;   // samples accumulated so far
-  int targetSamples = 0;    // current target (doubles each step)
 
   Impl(geom::Scene &scene, RenderQuality q)
       : iclScene(scene), quality(q) {}
@@ -254,23 +257,28 @@ void CyclesRenderer::render(int camIndex) {
   m_impl->ensureInitialized();
   m_impl->applyQualityToScene();
 
-  // Detect what changed since last call
+  // --- Detect changes → set dirty ---
   float camHash = 0;
   if (camIndex < (int)m_impl->iclScene.getCameraCount()) {
     auto pos = m_impl->iclScene.getCamera(camIndex).getPosition();
     auto norm = m_impl->iclScene.getCamera(camIndex).getNorm();
     camHash = pos[0] + pos[1]*7 + pos[2]*13 + norm[0]*17 + norm[1]*23 + norm[2]*29;
   }
-
-  bool needsReset = !m_impl->hasRendered
-                 || (camHash != m_impl->lastCamHash)
-                 || (m_impl->quality != m_impl->lastQuality)
-                 || m_impl->sync.hasPendingChanges();
-
+  if (camHash != m_impl->lastCamHash
+      || m_impl->samples != m_impl->lastSamples
+      || m_impl->initialSamples != m_impl->lastInitialSamples
+      || m_impl->quality != m_impl->lastQuality
+      || m_impl->sync.hasPendingChanges()) {
+    m_impl->dirty = true;
+  }
   m_impl->lastCamHash = camHash;
+  m_impl->lastSamples = m_impl->samples;
+  m_impl->lastInitialSamples = m_impl->initialSamples;
   m_impl->lastQuality = m_impl->quality;
 
-  if (needsReset) {
+  // --- Helper: sync scene + reset session + start rendering A passes ---
+  auto startFreshRender = [&]() {
+    m_impl->dirty = false;
     m_impl->sync.synchronize(
         m_impl->iclScene, camIndex, m_impl->scene, m_impl->sceneScale);
 
@@ -279,41 +287,63 @@ void CyclesRenderer::render(int camIndex) {
     if (w <= 0) w = 800;
     if (h <= 0) h = 600;
 
-    int firstStep = std::min(m_impl->initialSamples, m_impl->samples);
+    int A = std::min(m_impl->initialSamples, m_impl->samples);
 
     SessionParams sp = m_impl->session->params;
-    sp.samples = firstStep;
-
+    sp.samples = A;
     BufferParams bp;
     bp.width = w;  bp.height = h;
     bp.full_width = w;  bp.full_height = h;
 
     m_impl->session->reset(sp, bp);
-    m_impl->session->start();
-    m_impl->targetSamples = firstStep;
-    m_impl->currentSamples = 0;
-    m_impl->hasRendered = true;
+    if (!m_impl->sessionStarted) {
+      m_impl->session->start();
+      m_impl->sessionStarted = true;
+    }
+    m_impl->accumulated = 0;
+    m_impl->target = A;
+    // After reset(), progress is stale (1.0 from previous render).
+    // Wait for the render thread to pick up the delayed reset before
+    // checking progress — it will drop below 1.0 once rendering starts.
+    m_impl->state = Impl::State::WAIT_FOR_START;
+  };
+
+  // --- State machine ---
+  using S = Impl::State;
+
+  if (m_impl->state == S::IDLE) {
+    if (!m_impl->dirty) return;  // fully refined, nothing to do
+    startFreshRender();
     return;
   }
 
-  // Already reached max — nothing more to do.
-  if (m_impl->currentSamples >= m_impl->samples) return;
+  // Wait for the render thread to process the delayed reset.
+  // Progress drops below 1.0 once the new render actually starts.
+  if (m_impl->state == S::WAIT_FOR_START) {
+    double progress = m_impl->session->progress.get_progress();
+    if (progress >= 1.0) return;  // stale progress — render hasn't started yet
+    m_impl->state = S::RENDERING;
+  }
 
-  // Check if current step has finished (non-blocking).
+  // state == RENDERING
   double progress = m_impl->session->progress.get_progress();
-  if (progress < 1.0) return;  // still rendering — GUI stays responsive
+  if (progress < 1.0) return;  // still cooking — GUI stays responsive
 
-  // Current step done. Record it.
-  m_impl->currentSamples = m_impl->targetSamples;
+  // Step done: write_render_tile has captured the image.
+  m_impl->accumulated = m_impl->target;
 
-  // Advance to next step if below max.
-  if (m_impl->currentSamples < m_impl->samples) {
-    m_impl->targetSamples = std::min(
-        m_impl->currentSamples + m_impl->initialSamples,
-        m_impl->samples);
-    // Extend the sample target — Cycles continues accumulating without
-    // clearing the buffer.
-    m_impl->session->set_samples(m_impl->targetSamples);
+  if (m_impl->dirty) {
+    // New changes arrived during render — restart from scratch.
+    startFreshRender();
+  } else if (m_impl->accumulated < m_impl->samples) {
+    // Keep refining: extend target by A (accumulates, no buffer clear).
+    int A = m_impl->initialSamples;
+    m_impl->target = std::min(m_impl->accumulated + A, m_impl->samples);
+    m_impl->session->set_samples(m_impl->target);
+    // stay in RENDERING
+  } else {
+    // Reached max samples — done.
+    m_impl->state = S::IDLE;
   }
 }
 

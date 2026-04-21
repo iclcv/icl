@@ -318,8 +318,9 @@ void run() {
   char buf[256];
   int progress = (int)(renderer->getProgress() * 100);
   int updates = renderer->getUpdateCount();
-  snprintf(buf, sizeof(buf), "%d obj | %d%% (%d updates) | %d max | %d bounces%s",
-           (int)dynamicObjects.size(), progress, updates, maxIter, bounces,
+  snprintf(buf, sizeof(buf), "%d obj | %d%% (%d upd) | A=%d B=%d | %d bounces%s",
+           (int)dynamicObjects.size(), progress, updates,
+           initSamples, maxIter, bounces,
            denoising ? " | OIDN" : "");
   draw->text(buf, 10, 20, 10);
   draw->render();
