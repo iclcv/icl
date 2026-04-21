@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Erik Weitnauer, Daniel Dornbusch
 
 #include <ICLGeom/Scene.h>
+#include <ICLGeom/GltfLoader.h>
 #include <ICLQt/GLFragmentShader.h>
 #include <ICLGeom/SceneLightObject.h>
 #include <ICLGeom/CoordinateFrameSceneObject.h>
@@ -1283,6 +1284,94 @@ namespace icl::geom {
   GeomColor Scene::getBackgroundColor() const{
     Color c = (const_cast<Scene*>(this))->getPropertyValue("background color");
     return GeomColor(c[0],c[1],c[2],255);
+  }
+
+  std::vector<std::shared_ptr<SceneObject>> Scene::loadFiles(
+      const std::vector<std::string> &files, bool clearBefore) {
+    if (clearBefore) clear();
+    std::vector<std::shared_ptr<SceneObject>> loaded;
+    for (const auto &file : files) {
+      fprintf(stderr, "Loading %s...\n", file.c_str());
+      bool isGltf = (file.size() > 4 &&
+                     (file.substr(file.size()-4) == ".glb" ||
+                      (file.size() > 5 && file.substr(file.size()-5) == ".gltf")));
+      if (isGltf) {
+        auto objs = rt::loadGltf(file, *this);
+        for (auto &obj : objs) loaded.push_back(obj);
+        fprintf(stderr, "  glTF: %zu objects loaded\n", objs.size());
+      } else {
+        try {
+          auto obj = std::make_shared<SceneObject>(file);
+          fprintf(stderr, "  %zu vertices, %zu primitives\n",
+                  obj->getVertices().size(), obj->getPrimitives().size());
+          obj->setVisible(Primitive::line, false);
+          obj->setVisible(Primitive::vertex, false);
+          if (!obj->getMaterial()) {
+            auto mat = Material::fromColor(GeomColor(180, 120, 100, 255));
+            mat->roughness = 0.4f;
+            mat->smoothShading = true;
+            obj->setMaterial(mat);
+          }
+          addObject(obj.get());
+          loaded.push_back(obj);
+        } catch (const std::exception &e) {
+          fprintf(stderr, "  ERROR loading %s: %s\n", file.c_str(), e.what());
+        }
+      }
+    }
+    return loaded;
+  }
+
+  void Scene::saveOriginalMaterials() {
+    m_originalMaterials.clear();
+    for (auto &obj : m_objects) {
+      if (obj && obj->getMaterial()) {
+        m_originalMaterials.push_back({obj, std::make_shared<Material>(*obj->getMaterial())});
+      }
+    }
+  }
+
+  void Scene::setMaterialPreset(int index) {
+    if (m_originalMaterials.empty() || index == m_currentMaterialPreset) return;
+    m_currentMaterialPreset = index;
+
+    if (index == 0) {
+      for (auto &om : m_originalMaterials) {
+        if (om.object && om.material) {
+          om.object->setMaterial(std::make_shared<Material>(*om.material));
+        }
+      }
+    } else {
+      auto mat = std::make_shared<Material>();
+      mat->smoothShading = true;
+      switch (index) {
+        case 1: mat->baseColor = GeomColor(0.7f, 0.5f, 0.4f, 1); mat->roughness = 0.6f; break;
+        case 2: mat->baseColor = GeomColor(0.95f, 0.95f, 0.97f, 1); mat->metallic = 1; mat->roughness = 0.01f; break;
+        case 3: mat->baseColor = GeomColor(1.0f, 0.76f, 0.34f, 1); mat->metallic = 1; mat->roughness = 0.15f; break;
+        case 4: mat->baseColor = GeomColor(0.95f, 0.64f, 0.54f, 1); mat->metallic = 1; mat->roughness = 0.3f; break;
+        case 5: mat->baseColor = GeomColor(0.9f, 0.9f, 0.92f, 1); mat->metallic = 1; mat->roughness = 0.05f; break;
+        case 6: mat->baseColor = GeomColor(0.8f, 0.1f, 0.1f, 1); mat->roughness = 0.25f; break;
+        case 7: mat->baseColor = GeomColor(0.15f, 0.6f, 0.1f, 1); mat->roughness = 0.9f; break;
+        case 8: mat->baseColor = GeomColor(0.95f, 0.95f, 0.95f, 1); mat->roughness = 0.02f; mat->reflectivity = 0.9f; break;
+        case 9: mat->baseColor = GeomColor(1.0f, 0.9f, 0.6f, 1); mat->roughness = 0.8f;
+                mat->emissive = GeomColor(2.0f, 1.5f, 0.8f, 1); break;
+      }
+      for (auto &om : m_originalMaterials) {
+        if (om.object) om.object->setMaterial(mat);
+      }
+    }
+
+    for (auto &om : m_originalMaterials) {
+      if (om.object) om.object->prepareForRendering();
+    }
+
+#ifdef ICL_HAVE_QT
+    if (m_raytracer) m_raytracer->invalidateAll();
+#endif
+  }
+
+  std::string Scene::getMaterialPresetNames() {
+    return "Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive";
   }
 
 

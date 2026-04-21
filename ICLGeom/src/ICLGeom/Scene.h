@@ -224,6 +224,13 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
       throws ans exception if the given object cannot be found. */
   std::vector<int> findPath(const SceneObject *o) const;
 
+  /// loads OBJ/glTF files and adds them to the scene
+  /** Dispatches by extension (.glb/.gltf → glTF loader, else OBJ).
+      Returns the loaded objects. If clearBefore is true, removes all
+      existing objects first. */
+  std::vector<std::shared_ptr<SceneObject>> loadFiles(
+      const std::vector<std::string> &files, bool clearBefore = false);
+
   /// deletes and removes all objects, handlers and callbacks
   /** If camerasToo is set to true, also all cameras are removed */
   void clear(bool camerasToo=false);
@@ -392,6 +399,23 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
       internally */
   void setBounds(float minX, float maxX=0, float minY=0, float mayY=0, float minZ=0, float maxZ=0);
 
+  /// snapshots current materials for all objects as "originals"
+  /** Call after loading/setting up objects. applyMaterialPreset(0)
+      restores these saved materials. Only objects present at snapshot
+      time are affected by presets. */
+  void saveOriginalMaterials();
+
+  /// applies a material preset to all objects with saved originals
+  /** 0=original, 1=clay, 2=mirror, 3=gold, 4=copper, 5=chrome,
+      6=red plastic, 7=green rubber, 8=glass, 9=emissive.
+      No-op if index matches current preset. Calls prepareForRendering()
+      on affected objects and invalidates the raytracer if one exists. */
+  void setMaterialPreset(int index);
+
+  /// returns comma-separated preset names for GUI combo boxes
+  /** Format: "Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive" */
+  static std::string getMaterialPresetNames();
+
   /// sets the scene's background color (alpha is not used)
   /** channel ranges are assumed to be in [0,255]. The default
       background color is black */
@@ -515,6 +539,14 @@ class ICLGeom_API Scene : public utils::Lockable, public geom::PointCloudGrabber
 
   /// sky/environment definition
   Sky m_sky;
+
+  /// saved original materials (index → material) for preset support
+  struct OriginalMaterial {
+    std::shared_ptr<SceneObject> object;
+    std::shared_ptr<Material> material;
+  };
+  std::vector<OriginalMaterial> m_originalMaterials;
+  int m_currentMaterialPreset = 0;
 
   /// current scene background color
   GeomColor m_backgroundColor;

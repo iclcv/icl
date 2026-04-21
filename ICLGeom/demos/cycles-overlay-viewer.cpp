@@ -9,55 +9,46 @@
 //   cycles-overlay-viewer -scene model.glb [-size 800x600] [-background gradient]
 
 #include <ICLQt/Common.h>
-#include <ICLGeom/Camera.h>
-#include <ICLGeom/Scene.h>
-#include <ICLGeom/SceneObject.h>
-#include <ICLGeom/Material.h>
+#include <ICLGeom/DemoScene.h>
 #include <ICLGeom/GLRenderer.h>
 #include <ICLGeom/Raytracer.h>
-#include <ICLQt/GLImageRenderer.h>
 #include <ICLUtils/FPSLimiter.h>
-#include <ICLGeom/SceneSetup.h>
 
 using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::qt;
 using namespace icl::geom;
 
-static Scene scene;
-static icl::rt::SceneSetupResult setupResult;
-static GLImageRenderer bgRenderer;
+static DemoScene scene;
 HSplit gui;
 
 static void handleMouse(const MouseEvent &evt) {
   scene.getMouseHandler(0)->process(evt);
-  scene.getRaytracer().invalidateAll();
+  if (evt.isDragEvent() || evt.isReleaseEvent()) {
+    scene.getRaytracer().invalidateTransforms();
+  }
 }
 
-/// Renders Cycles image as background, then GL scene on top
-static struct OverlayCallback : public ICLDrawWidget3D::GLCallback {
-  void draw(ICLDrawWidget3D *widget) override {
-    // Background: latest Cycles image
-    const auto &img = scene.getRaytracer().getImage();
-    if (img.getDim()) bgRenderer.render(Image(img));
-    // Overlay: GL scene (no sky, alpha-blended)
-    scene.getGLRenderer().render(scene, 0, widget);
-  }
-} overlayCB;
 
 static void init() {
   Size size = pa("-size").as<Size>();
 
-  auto files = pa("-scene").subargs<std::string>();
-
-  setupResult = icl::rt::setupScene(scene, files, size,
-      pa("-background").as<std::string>(),
-      pa("-backlight").as<bool>(),
-      pa("-decimate") ? pa("-decimate").as<int>() : 0,
-      pa("-rotate") ? pa("-rotate").as<std::string>() : "");
+  scene.setup(pa("-scene").subargs<std::string>(), size,
+              pa("-background").as<std::string>(),
+              pa("-backlight").as<bool>(),
+              pa("-decimate") ? pa("-decimate").as<int>() : 0,
+              pa("-rotate") ? pa("-rotate").as<std::string>() : "");
 
   // Scene owns both renderers
   scene.getGLRenderer().setHideSky(true);
+
+  // Set initial raytracer params from GUI defaults BEFORE start(),
+  // so the first render isn't interrupted by setter mismatches in run().
+  auto &rt = scene.getRaytracer();
+  rt.setMaxBounces(4);        // match slider default
+  rt.setExposure(1.0f);       // match slider default (100/100)
+  rt.setBrightness(scene.getSky().intensity * 100.0f);
+  rt.setDenoising(false);     // off for interactive preview (fast noisy intermediates)
 
   // GUI: canvas on left, controls on right
   gui << (HSplit()
@@ -66,13 +57,13 @@ static void init() {
           << Slider(0, 100, 50).handle("alpha").label("GL Overlay %")
           << Slider(1, 16, 4).handle("bounces").label("Bounces")
           << Slider(10, 500, 100).handle("exposure").label("Exposure %")
-          << Combo("!Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive").handle("material").label("Material")
+          << Combo(std::string("!") + Scene::getMaterialPresetNames()).handle("material").label("Material")
           << Label("--").handle("info")))
      << Show();
 
   DrawHandle3D canvas = gui["canvas"];
   canvas->install(new MouseHandler(handleMouse));
-  canvas->link(&overlayCB);
+  canvas->link(scene.getGLCallback(0));
 
   // Start autonomous rendering
   scene.getRaytracer().start(0);
@@ -90,27 +81,15 @@ static void run() {
 
   scene.getGLRenderer().setExposure(exposure);
   scene.getGLRenderer().setOverlayAlpha(alpha);
+  scene.setMaterialPreset(gui["material"].as<ComboHandle>().getSelectedIndex());
 
-  // Material preset
-  static int lastMat = -1;
-  int matIdx = gui["material"].as<ComboHandle>().getSelectedIndex();
-  if (matIdx != lastMat) {
-    lastMat = matIdx;
-    icl::rt::applyMaterialPreset(matIdx, setupResult, nullptr);
-    rt.invalidateAll();
-    for (int i = 0; i < scene.getObjectCount(); i++)
-      scene.getObject(i)->prepareForRendering();
-  }
-
-  // Trigger repaint (GL callback renders both Cycles bg + GL overlay)
+  // Feed latest Cycles image to widget so the image info indicator works.
+  gui["canvas"] = rt.getImage();
   gui["canvas"].render();
 
-  static FPSEstimator fpsEst(10);
-  gui["info"] = fpsEst.formatted("%d spp | #fps fps | GL %.0f%%",
-                                  rt.getUpdateCount(), alpha * 100);
-
-  static FPSLimiter fpslim(30);
-  fpslim.wait();
+  static FPSLimiter fps(30);
+  gui["info"] = fps.formatted("%d spp | #fps fps | GL %.0f%%",
+                               rt.getUpdateCount(), alpha * 100);
 }
 
 int main(int argc, char **argv) {
