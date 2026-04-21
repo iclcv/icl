@@ -10,41 +10,69 @@
 
 namespace icl::utils {
 
-  /// Compile-time trait and minimal executor for `dst = src` assignments
-  /// across heterogeneous types.
+  /// Compile-time trait + minimal executor for `dst = src`-style
+  /// assignments across heterogeneous types.
   ///
-  /// `Assign<Dst, Src>::value` is `true` iff the expression `dst = src`
-  /// is well-formed — i.e., whenever `Dst` has an appropriate `operator=`
-  /// overload, or `Src` has a conversion to something `Dst` accepts.
-  /// The implementation defers to `std::is_assignable_v<Dst&, Src>`,
-  /// which already captures the C++ overload / conversion rules.
+  /// Accepts two forms, in priority order:
+  ///
+  /// 1. **Direct**: `dst = src` — works whenever an appropriate
+  ///    `operator=` (or built-in assignment) exists.  Covers primitives
+  ///    and classes with `operator=(Src)`.
+  ///
+  /// 2. **Extraction**: `dst = src.template as<Dst>()` — the fallback
+  ///    used when `Src` does not implicitly convert to `Dst` but
+  ///    provides an explicit `as<Dst>()` member template for the
+  ///    target type.  This is how classes expose their readback
+  ///    surface without adding implicit conversion operators (which
+  ///    are a well-known source of overload-resolution foot-guns).
+  ///
+  /// `value` is `true` iff at least one of the two forms is
+  /// well-formed.  The two `apply()` overloads have disjoint
+  /// constraints — exactly one is selected per `(Dst, Src)`
+  /// instantiation.
   ///
   /// Template parameter order matches `dst = src` and
   /// `std::is_assignable<Dst&, Src>`.
   ///
   /// Use-sites:
-  /// - **Compile-time dispatch** (typed handles, `slider = 42`) uses
-  ///   plain C++ overload resolution — this trait is *not* involved.
-  /// - **Runtime dispatch** (`AssignRegistry`, for string-keyed stores)
-  ///   uses `apply()` as the bridge between type-erased `std::any`
-  ///   payloads and the class's native `operator=`.
-  ///
-  /// Classes add support for a new source type simply by defining
-  /// `operator=(const Src&)` (or an implicit conversion chain) and
-  /// enrolling `Assign<Dst, Src>` in the registry.  No per-pair
-  /// specializations of this template are needed, and none should
-  /// normally be added.
+  /// - **Compile-time dispatch** (typed handles): users write
+  ///   natural C++ — `slider = 42` (direct) or
+  ///   `int v = slider.as<int>()` (explicit extraction).  This
+  ///   trait is not involved.
+  /// - **Runtime dispatch** (AssignRegistry): uses `apply()` to
+  ///   bridge type-erased `std::any` payloads back to the typed
+  ///   operators / extraction methods on the class.
+
   template<typename Dst, typename Src>
-  struct Assign : std::bool_constant<std::is_assignable_v<Dst &, Src>> {
+  concept DirectlyAssignable = std::is_assignable_v<Dst &, Src>;
+
+  template<typename Dst, typename Src>
+  concept ExtractableAs = requires(Dst &d, Src &s) {
+    d = s.template as<Dst>();
+  };
+
+  template<typename Dst, typename Src>
+  struct Assign : std::bool_constant<
+      DirectlyAssignable<Dst, Src> || ExtractableAs<Dst, Src>>
+  {
+    /// Path 1 — direct assignment.  Preferred when available.
     static void apply(Dst &dst, Src &src)
-      requires std::is_assignable_v<Dst &, Src>
+      requires DirectlyAssignable<Dst, Src>
     {
       dst = src;
     }
+
+    /// Path 2 — extraction fallback.  Selected only when direct
+    /// assignment would not compile; delegates to `src.as<Dst>()`.
+    static void apply(Dst &dst, Src &src)
+      requires (!DirectlyAssignable<Dst, Src> && ExtractableAs<Dst, Src>)
+    {
+      dst = src.template as<Dst>();
+    }
   };
 
-  /// Convenience trait: `is_assignable_v<Dst, Src>` is `true` iff
-  /// `dst = src` is well-formed.
+  /// Convenience trait: true iff some `Assign<Dst, Src>::apply`
+  /// overload is well-formed.
   template<typename Dst, typename Src>
   inline constexpr bool is_assignable_v = Assign<Dst, Src>::value;
 

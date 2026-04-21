@@ -8,6 +8,9 @@
 #include <icl/qt/GUIHandle.h>
 #include <icl/qt/ThreadedUpdatableSlider.h>
 
+#include <string>
+#include <type_traits>
+
 
 /** \cond */
 class QLCDNumber;
@@ -59,8 +62,31 @@ namespace icl::qt {
     /// returns the current value of the slider
     int getValue() const;
 
-    /// assigns a new value to the slider (equal to setValue)
+    /// assigns a new value to the slider (equal to setValue).
+    /// Accepts any arithmetic source via the implicit conversion to `int`,
+    /// so `slider = 3.7f` and `slider = 99L` work out of the box.
     void operator=(int val) { setValue(val); }
+
+    /// parses `s` as an int and sets the slider.  Throws if `s` is not
+    /// a valid int representation.
+    void operator=(const std::string &s);
+
+    /// Explicit readback — `int v = slider.as<int>()`,
+    /// `double v = slider.as<double>()`, …  Arithmetic specialization
+    /// returns the current value static-cast to T.  No implicit
+    /// conversion operators on this class, on purpose: implicit casts
+    /// cause subtle overload-resolution bugs that are very hard to
+    /// diagnose later.  Callers who want the raw integer can also use
+    /// the named `getValue()`.
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const { return static_cast<T>(getValue()); }
+
+    /// String readback — formats the current value via `utils::str()`.
+    /// (Defined out-of-line in `SliderHandle.cpp`.)
+    template<typename T>
+      requires std::is_same_v<T, std::string>
+    T as() const;
 
     /// overloaded method for registering callbacks to specific slider events
     /** <b>Please note:</b> Only this callback mechanism is overloaded for the slider class

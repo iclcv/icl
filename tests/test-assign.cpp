@@ -9,47 +9,63 @@
 #include <any>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 using namespace icl::utils;
 
 // ============================================================
-//  Fake stand-in types — exercise the trait/registry without
-//  dragging in Qt.  Each fakes a "widget handle" by exposing the
-//  natural C++ primitives (operator= for incoming conversions,
-//  conversion operators for readback).  No `Assign<>`
-//  specializations needed — the generic trait in `Assign.h`
-//  defers to these operators via `std::is_assignable_v`.
+//  Fake stand-in types — exercise both Assign dispatch paths
+//  without Qt.  FakeSlider uses the explicit `as<T>()` pattern
+//  (no implicit conversion operators); FakeLabel accepts strings
+//  via a normal operator= (direct path).
 // ============================================================
 
 namespace test_assign {
 
+  // Exposes readbacks via `as<T>()` — exercises the extraction path.
   struct FakeSlider {
     int value = 0;
     FakeSlider &operator=(int v)   { value = v;                   return *this; }
     FakeSlider &operator=(float v) { value = static_cast<int>(v); return *this; }
-    operator int() const { return value; }
+
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const { return static_cast<T>(value); }
+
+    template<typename T>
+      requires std::is_same_v<T, std::string>
+    T as() const { return std::to_string(value); }
   };
 
+  // Accepts a string via operator= — exercises the direct path.
   struct FakeLabel {
     std::string text;
     FakeLabel &operator=(const std::string &s) { text = s; return *this; }
   };
 
-  /// A type with no operators at all — used to verify the trait
-  /// reports unrelated pairs as non-assignable.
+  // Type with BOTH operator=(int) AND as<int>() — used to check
+  // that the direct path wins (disjoint-constraint tiebreak).
+  struct WithBoth {
+    int value = 0;
+    WithBoth &operator=(int v) { value = v + 1;  return *this; }   // mark of direct
+    template<typename T> T as() const { return static_cast<T>(value - 1); }  // inverse
+  };
+
+  // No operators at all.
   struct Opaque {};
 
 }  // namespace test_assign
 
 using test_assign::FakeSlider;
 using test_assign::FakeLabel;
+using test_assign::WithBoth;
 using test_assign::Opaque;
 
 // ============================================================
-//  Compile-time trait tests
+//  Trait tests — `value` must be true if either path works.
 // ============================================================
 
-ICL_REGISTER_TEST("utils.assign.trait_primitives", "primitives + numeric conversions are assignable")
+ICL_REGISTER_TEST("utils.assign.trait_primitives", "primitives + numeric conversions satisfy the trait")
 {
   static_assert(is_assignable_v<int, int>);
   static_assert(is_assignable_v<int, float>);
@@ -59,20 +75,27 @@ ICL_REGISTER_TEST("utils.assign.trait_primitives", "primitives + numeric convers
   ICL_TEST_TRUE(true);
 }
 
-ICL_REGISTER_TEST("utils.assign.trait_class_with_operators", "classes with operator= / conversion operators satisfy the trait")
+ICL_REGISTER_TEST("utils.assign.trait_direct_path", "operator= on dst side ⇒ direct-path assignable")
 {
-  // FakeSlider has operator=(int), operator=(float), operator int().
-  static_assert(is_assignable_v<FakeSlider, int>);
-  static_assert(is_assignable_v<FakeSlider, float>);
-  static_assert(is_assignable_v<int, FakeSlider>);         // via operator int()
+  static_assert(is_assignable_v<FakeSlider, int>);    // via operator=(int)
+  static_assert(is_assignable_v<FakeSlider, float>);  // via operator=(float)
   static_assert(is_assignable_v<FakeLabel, std::string>);
   ICL_TEST_TRUE(true);
 }
 
-ICL_REGISTER_TEST("utils.assign.trait_false_for_unrelated", "no operator = ⇒ trait false")
+ICL_REGISTER_TEST("utils.assign.trait_extract_path", "src.as<Dst>() ⇒ extraction-path assignable")
 {
-  static_assert(!is_assignable_v<FakeLabel, FakeSlider>);
-  static_assert(!is_assignable_v<FakeSlider, FakeLabel>);
+  static_assert(is_assignable_v<int, FakeSlider>);         // via fake.as<int>()
+  static_assert(is_assignable_v<float, FakeSlider>);       // via fake.as<float>()
+  static_assert(is_assignable_v<double, FakeSlider>);      // via fake.as<double>()
+  static_assert(is_assignable_v<std::string, FakeSlider>); // via fake.as<std::string>()
+  ICL_TEST_TRUE(true);
+}
+
+ICL_REGISTER_TEST("utils.assign.trait_neither_path", "no path available ⇒ trait false")
+{
+  static_assert(!is_assignable_v<FakeLabel, FakeSlider>);  // no op=, no as<FakeLabel>() on FakeSlider
+  static_assert(!is_assignable_v<FakeSlider, FakeLabel>);  // no op=(FakeLabel), no FakeLabel::as<FakeSlider>()
   static_assert(!is_assignable_v<FakeLabel, int>);
   static_assert(!is_assignable_v<Opaque, int>);
   static_assert(!is_assignable_v<int, Opaque>);
@@ -80,10 +103,10 @@ ICL_REGISTER_TEST("utils.assign.trait_false_for_unrelated", "no operator = ⇒ t
 }
 
 // ============================================================
-//  Direct Assign::apply — exercises the generic trait body.
+//  Direct apply — exercises each path explicitly.
 // ============================================================
 
-ICL_REGISTER_TEST("utils.assign.apply_int_into_slider", "apply delegates to operator=(int)")
+ICL_REGISTER_TEST("utils.assign.apply_direct_op_eq", "direct path: dst = src via operator=")
 {
   FakeSlider s;
   int v = 42;
@@ -91,149 +114,119 @@ ICL_REGISTER_TEST("utils.assign.apply_int_into_slider", "apply delegates to oper
   ICL_TEST_EQ(s.value, 42);
 }
 
-ICL_REGISTER_TEST("utils.assign.apply_float_into_slider", "apply delegates to operator=(float)")
-{
-  FakeSlider s;
-  float v = 3.7f;
-  Assign<FakeSlider, float>::apply(s, v);
-  ICL_TEST_EQ(s.value, 3);
-}
-
-ICL_REGISTER_TEST("utils.assign.apply_slider_into_int", "apply uses conversion operator for readback")
+ICL_REGISTER_TEST("utils.assign.apply_extract_via_as", "extract path: dst = src.as<Dst>()")
 {
   FakeSlider s;
   s.value = 99;
   int out = 0;
-  Assign<int, FakeSlider>::apply(out, s);  // relies on FakeSlider::operator int()
+  Assign<int, FakeSlider>::apply(out, s);  // must go through as<int>()
   ICL_TEST_EQ(out, 99);
 }
 
-ICL_REGISTER_TEST("utils.assign.apply_string_into_label", "apply forwards to operator=(const string&)")
+ICL_REGISTER_TEST("utils.assign.apply_extract_string", "extraction produces a std::string")
 {
-  FakeLabel l;
-  std::string s = "hello";
-  Assign<FakeLabel, std::string>::apply(l, s);
-  ICL_TEST_EQ(l.text, std::string("hello"));
+  FakeSlider s;
+  s.value = 7;
+  std::string out;
+  Assign<std::string, FakeSlider>::apply(out, s);
+  ICL_TEST_EQ(out, std::string("7"));
+}
+
+ICL_REGISTER_TEST("utils.assign.apply_direct_wins_over_extract", "when both are available, direct path is chosen")
+{
+  WithBoth w;
+  // Direct (operator=): stores (src + 1).  Extract (as<int>()): returns (value - 1).
+  // If direct is selected, w.value == 42 + 1 = 43.
+  int v = 42;
+  Assign<WithBoth, int>::apply(w, v);
+  ICL_TEST_EQ(w.value, 43);
 }
 
 // ============================================================
-//  Runtime registry: enroll / has / size
+//  Runtime registry: enroll / has / dispatch.
 // ============================================================
 
 namespace {
   void enrollAll() {
     auto &r = AssignRegistry::instance();
-    r.enroll<FakeSlider, int>();
-    r.enroll<FakeSlider, float>();
-    r.enroll<int,        FakeSlider>();
-    r.enroll<FakeLabel,  std::string>();
+    r.enroll<FakeSlider, int>();          // direct
+    r.enroll<FakeSlider, float>();        // direct
+    r.enroll<int,        FakeSlider>();   // extract
+    r.enroll<float,      FakeSlider>();   // extract
+    r.enroll<std::string, FakeSlider>();  // extract (string specialization)
+    r.enroll<FakeLabel,  std::string>();  // direct
   }
 }
 
-ICL_REGISTER_TEST("utils.assign.registry_enroll_size", "enroll grows the table")
+ICL_REGISTER_TEST("utils.assign.registry_has", "has() reflects enrolled pairs")
 {
   enrollAll();
   auto &r = AssignRegistry::instance();
-  ICL_TEST_TRUE(r.size() >= 4u);
+  ICL_TEST_TRUE(r.has(typeid(FakeSlider),  typeid(int)));
+  ICL_TEST_TRUE(r.has(typeid(int),         typeid(FakeSlider)));
+  ICL_TEST_TRUE(r.has(typeid(std::string), typeid(FakeSlider)));
+  ICL_TEST_FALSE(r.has(typeid(FakeLabel), typeid(FakeSlider)));  // not enrolled (and not assignable)
 }
 
-ICL_REGISTER_TEST("utils.assign.registry_has_hit", "has() true for enrolled pair (Dst, Src order)")
+ICL_REGISTER_TEST("utils.assign.dispatch_direct", "dispatch uses direct path when available")
 {
   enrollAll();
-  auto &r = AssignRegistry::instance();
-  ICL_TEST_TRUE(r.has(typeid(FakeSlider), typeid(int)));
-  ICL_TEST_TRUE(r.has(typeid(FakeSlider), typeid(float)));
-  ICL_TEST_TRUE(r.has(typeid(int),        typeid(FakeSlider)));
-  ICL_TEST_TRUE(r.has(typeid(FakeLabel),  typeid(std::string)));
+  std::any dst = FakeSlider{};
+  std::any src = 77;
+  AssignRegistry::instance().dispatch(dst, src);
+  ICL_TEST_EQ(std::any_cast<FakeSlider &>(dst).value, 77);
 }
 
-ICL_REGISTER_TEST("utils.assign.registry_has_miss", "has() false for unenrolled pair")
+ICL_REGISTER_TEST("utils.assign.dispatch_extract", "dispatch uses extraction path via as<T>()")
 {
   enrollAll();
-  auto &r = AssignRegistry::instance();
-  ICL_TEST_FALSE(r.has(typeid(FakeSlider), typeid(FakeLabel)));
-  ICL_TEST_FALSE(r.has(typeid(double),     typeid(FakeLabel)));
-  ICL_TEST_FALSE(r.has(typeid(Opaque),     typeid(int)));
+  FakeSlider s;
+  s.value = 12;
+  std::any dst = 0;
+  std::any src = s;
+  AssignRegistry::instance().dispatch(dst, src);
+  ICL_TEST_EQ(std::any_cast<int &>(dst), 12);
 }
 
-ICL_REGISTER_TEST("utils.assign.registry_reenroll_idempotent", "re-enrolling same pair doesn't duplicate")
+ICL_REGISTER_TEST("utils.assign.dispatch_extract_to_string", "dispatch dispatches as<std::string>()")
+{
+  enrollAll();
+  FakeSlider s;
+  s.value = 256;
+  std::any dst = std::string{};
+  std::any src = s;
+  AssignRegistry::instance().dispatch(dst, src);
+  ICL_TEST_EQ(std::any_cast<std::string &>(dst), std::string("256"));
+}
+
+ICL_REGISTER_TEST("utils.assign.dispatch_unknown_throws", "unknown pair throws")
+{
+  enrollAll();
+  std::any dst = Opaque{};
+  std::any src = 42;
+  ICL_TEST_THROW(AssignRegistry::instance().dispatch(dst, src), std::runtime_error);
+}
+
+ICL_REGISTER_TEST("utils.assign.reenroll_idempotent", "re-enrolling same pair doesn't duplicate")
 {
   auto &r = AssignRegistry::instance();
   const std::size_t before = r.size();
   r.enroll<FakeSlider, int>();
   r.enroll<FakeSlider, int>();
-  r.enroll<FakeSlider, int>();
-  ICL_TEST_EQ(r.size(), before);  // unchanged
+  ICL_TEST_EQ(r.size(), before);
 }
 
 // ============================================================
-//  Runtime registry: dispatch
+//  Parity — direct path and runtime dispatch produce equal results.
 // ============================================================
 
-ICL_REGISTER_TEST("utils.assign.dispatch_int_into_slider", "dispatch(FakeSlider = int)")
-{
-  enrollAll();
-  auto &r = AssignRegistry::instance();
-  std::any dst = FakeSlider{};
-  std::any src = 77;
-  r.dispatch(dst, src);
-  ICL_TEST_EQ(std::any_cast<FakeSlider &>(dst).value, 77);
-}
-
-ICL_REGISTER_TEST("utils.assign.dispatch_string_into_label", "dispatch(FakeLabel = string)")
-{
-  enrollAll();
-  auto &r = AssignRegistry::instance();
-  std::any dst = FakeLabel{};
-  std::any src = std::string("hi there");
-  r.dispatch(dst, src);
-  ICL_TEST_EQ(std::any_cast<FakeLabel &>(dst).text, std::string("hi there"));
-}
-
-ICL_REGISTER_TEST("utils.assign.dispatch_slider_into_int", "dispatch(int = FakeSlider) reads via conversion op")
-{
-  enrollAll();
-  auto &r = AssignRegistry::instance();
-  FakeSlider s;
-  s.value = 12;
-  std::any dst = 0;    // int
-  std::any src = s;
-  r.dispatch(dst, src);
-  ICL_TEST_EQ(std::any_cast<int &>(dst), 12);
-}
-
-ICL_REGISTER_TEST("utils.assign.dispatch_unknown_dst_throws", "dispatch throws when Dst type has no rules")
-{
-  enrollAll();
-  auto &r = AssignRegistry::instance();
-  std::any dst = Opaque{};
-  std::any src = 42;
-  ICL_TEST_THROW(r.dispatch(dst, src), std::runtime_error);
-}
-
-ICL_REGISTER_TEST("utils.assign.dispatch_unknown_src_throws", "dispatch throws when pair isn't registered")
-{
-  enrollAll();
-  auto &r = AssignRegistry::instance();
-  std::any dst = FakeSlider{};
-  std::any src = FakeLabel{};  // no rule FakeSlider = FakeLabel
-  ICL_TEST_THROW(r.dispatch(dst, src), std::runtime_error);
-}
-
-// ============================================================
-//  Parity — Path A (compile-time) and Path B (runtime) produce
-//  the same result on the same input.
-// ============================================================
-
-ICL_REGISTER_TEST("utils.assign.parity_direct_vs_registry", "both paths produce identical results")
+ICL_REGISTER_TEST("utils.assign.parity_direct_vs_runtime", "compile-time and runtime yield same result")
 {
   enrollAll();
 
-  // Path A (compile-time via operator=):
   FakeSlider a;
-  a = 55;
+  a = 55;   // operator=(int)
 
-  // Path B (runtime via registry):
   std::any dst = FakeSlider{};
   std::any src = 55;
   AssignRegistry::instance().dispatch(dst, src);
