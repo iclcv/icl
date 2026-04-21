@@ -132,18 +132,22 @@ function(cycles_target_setup TARGET_NAME)
     ICL_HAVE_CYCLES
   )
   target_link_directories(${TARGET_NAME} PUBLIC ${CYCLES_INSTALL}/lib)
-  target_link_libraries(${TARGET_NAME} ${CYCLES_STATIC_LIBS} ${CYCLES_DYNAMIC_LIBS})
+  # Use $<LINK_ONLY:> to prevent Cycles libs from propagating to consumers.
+  # All Cycles symbols are resolved into the target's shared library at link time.
+  target_link_libraries(${TARGET_NAME}
+    $<LINK_ONLY:${CYCLES_STATIC_LIBS}>
+    $<LINK_ONLY:${CYCLES_DYNAMIC_LIBS}>)
   if(Python3_FOUND)
-    target_link_libraries(${TARGET_NAME} Python3::Python)
+    target_link_libraries(${TARGET_NAME} $<LINK_ONLY:Python3::Python>)
   elseif(PYTHON_LIB)
-    target_link_libraries(${TARGET_NAME} ${PYTHON_LIB})
+    target_link_libraries(${TARGET_NAME} $<LINK_ONLY:${PYTHON_LIB}>)
   endif()
   if(APPLE)
-    target_link_libraries(${TARGET_NAME}
+    target_link_libraries(${TARGET_NAME} $<LINK_ONLY:
       "-framework Foundation" "-framework Metal" "-framework CoreVideo"
       "-framework Cocoa" "-framework OpenGL" "-framework IOKit"
       "-framework Carbon" "-framework Accelerate" "-framework CoreFoundation"
-      z
+      z>
     )
   endif()
   set_target_properties(${TARGET_NAME} PROPERTIES

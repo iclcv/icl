@@ -39,6 +39,9 @@ if(NOT OPENCL_FOUND OR NOT QT_FOUND)
                            ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/IterativeClosestPointCLCode.h)
 endif()
 
+# SceneSynchronizer.h is internal (forward-declares ccl types) — never install
+list(REMOVE_ITEM HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/src/ICLGeom/SceneSynchronizer.h)
+
 # Raytracing (Cycles) — optional, requires manual build in 3rdparty/cycles/
 if(NOT BUILD_WITH_CYCLES OR NOT QT_FOUND)
   list(REMOVE_ITEM SOURCES
