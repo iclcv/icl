@@ -54,12 +54,19 @@ void init() {
 
   // Coordinate frame as GroupNode
   auto frame = std::make_shared<GroupNode>();
-  auto xAxis = CylinderNode::create(50, 0, 0, 3, 3, 100, 12);
+  // X axis (red): cylinder along Z, rotated 90° around Y
+  auto xAxis = CylinderNode::create(0, 0, 0, 3, 3, 100, 12);
   xAxis->setMaterial(Material::fromColor(GeomColor(255, 0, 0, 255)));
+  xAxis->rotate(0, M_PI/2, 0);
+  xAxis->translate(50, 0, 0);
   frame->addChild(xAxis);
-  auto yAxis = CylinderNode::create(0, 50, 0, 3, 3, 100, 12);
+  // Y axis (green): cylinder along Z, rotated -90° around X
+  auto yAxis = CylinderNode::create(0, 0, 0, 3, 3, 100, 12);
   yAxis->setMaterial(Material::fromColor(GeomColor(0, 255, 0, 255)));
+  yAxis->rotate(-M_PI/2, 0, 0);
+  yAxis->translate(0, 50, 0);
   frame->addChild(yAxis);
+  // Z axis (blue): cylinder already along Z
   auto zAxis = CylinderNode::create(0, 0, 50, 3, 3, 100, 12);
   zAxis->setMaterial(Material::fromColor(GeomColor(0, 0, 255, 255)));
   frame->addChild(zAxis);
