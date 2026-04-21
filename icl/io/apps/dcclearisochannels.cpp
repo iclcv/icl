@@ -8,7 +8,7 @@
 #include <vector>
 using namespace icl::io;
 
-typedef std::map<int,vector<dc1394camera_t*> > cammap;
+typedef std::map<int,std::vector<dc1394camera_t*> > cammap;
 
 int main(int n, char **ppc){
   cammap m;

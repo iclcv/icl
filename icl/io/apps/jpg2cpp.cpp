@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <filesystem>
 int usage(){
   printf("jpg2cpp converts jpeg images into a c++ compatible data format.\n"
          "usage: jpg2cpp <FILE> > <DESTINATIONFILE> \n"
@@ -65,7 +66,10 @@ int main(int n, char **ppc){
   }
   fclose(f);
   //-------------------------------------------
-  std::string imageName = std::string(ppc[1]).substr(0,strlen(ppc[1])-4);
+  // Use just the filename stem as the C++ identifier base — paths and
+  // extensions in the input filename would produce invalid identifiers
+  // (slashes, dots) when concatenated into array names.
+  std::string imageName = std::filesystem::path(ppc[1]).stem().string();
   std::string arrayName = std::string("aauc_Data_")+imageName;
   std::string extraArrayName = std::string("auc_ExtraData_")+imageName;
 

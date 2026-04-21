@@ -18,14 +18,14 @@ namespace{
 }
 int main(int n, char **ppc){
   pa_explain
-     ("-s","set feature to value (e.g. -s gain 100). Incompatible to all others except -d.")
-     ("-g","get a value. Incompatible to all others except -d.")
-     ("-l","list features of device. Incompatible to all others except -d.")
-     ("-p","grabber type (-d dc 0, unicap 0, pwc)")
+     ("-s","set feature to value (e.g. -s gain 100). Incompatible to all others except -i.")
+     ("-g","get a value. Incompatible to all others except -i.")
+     ("-l","list features of device. Incompatible to all others except -i.")
+     ("-i","grabber type and id (e.g. -i dc 0, -i unicap 0, -i pwc)")
      ("-p","use input xml-file to setup a list of parameters together. "
-      "Incompatible to all others except -d.")
-     ("-o","writes all parameters to given output xml file. Incompatible to all others except -d.")
-     ("-g","makes the grabber to grab an image before and after loading all properties\n"
+      "Incompatible to all others except -i.")
+     ("-o","writes all parameters to given output xml file. Incompatible to all others except -i.")
+     ("-go","makes the grabber to grab an image before and after loading all properties\n"
       "for some devices (in particular some dc cameras), this is necessary to actually\n"
       "store the new parameters on the device");
 

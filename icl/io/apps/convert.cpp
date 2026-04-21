@@ -76,12 +76,12 @@ int main(int n, char **ppc){
 
   //ImgParams(const Size &size, int channels, format fmt, const Rect& roi = Rect::null)
 
-  format fmt = pa("-format") ? parse<format>(pa("-format")) : image.getFormat();
+  format fmt = pa("-format") ? pa("-format").as<format>() : image.getFormat();
   int channels = pa("-format") ? getChannelsOfFormat(fmt) : image.getChannels();
-  Size size = pa("-size") ? parse<Size>(pa("-size")) : image.getSize();
+  Size size = pa("-size") ? pa("-size").as<Size>() : image.getSize();
   if(pa("-scale")){
     Size32f s32(size.width,size.height);
-    s32 = s32 * parse<float>(pa("-scale"));
+    s32 = s32 * pa("-scale").as<float>();
     size.width = round(s32.width);
     size.height = round(s32.height);
 
@@ -89,18 +89,18 @@ int main(int n, char **ppc){
   ImgParams p(size,
               channels,
               fmt);
-  depth d = pa("-depth") ? parse<depth>(pa("-depth")) : image.getDepth();
+  depth d = pa("-depth") ? pa("-depth").as<depth>() : image.getDepth();
 
   FixedConverter conv(p,d);
   scalemode sm = interpolateLIN;
 
   if(pa("-scalemode")){
-    std::string sm = pa("-scalemode").as<std::string>();
-    if(sm == "NN"){
+    const std::string s = pa("-scalemode").as<std::string>();
+    if(s == "NN"){
       sm = interpolateNN;
-    }else if(sm == "LIN"){
+    }else if(s == "LIN"){
       sm = interpolateLIN;
-    }else if(sm == "RA"){
+    }else if(s == "RA"){
       sm = interpolateRA;
     }else{
       ERROR_LOG("unknown scale mode (allowed modes are NN, LIN and RA)");
@@ -109,44 +109,45 @@ int main(int n, char **ppc){
   }
   conv.setScaleMode(sm);
 
-  ImgBase *dst = 0;
-  conv.apply(image.ptr(),&dst);
+  // One-shot tool — no need for static buffers. Image() owns each
+  // intermediate ImgBase via shared_ptr and releases on reassignment.
+  ImgBase *converted = nullptr;
+  conv.apply(image.ptr(), &converted);
+  Image dst(converted);
 
   if(pa("-flip")){
-    std::string axis = pa("-flip").as<std::string>();
-    core::axis a = axisHorz;
-    if(axis == "horz"){}
+    const std::string axis = pa("-flip").as<std::string>();
+    core::axis a;
+    if(axis == "horz")      a = axisHorz;
     else if(axis == "vert") a = axisVert;
     else if(axis == "both") a = axisBoth;
     else {
-      ERROR_LOG("invalied flip axis (allowed is 'horz', 'vert' or 'both', but got " << axis << ")" );
+      ERROR_LOG("invalid flip axis (allowed is 'horz', 'vert' or 'both', but got " << axis << ")");
       return -1;
     }
-    dst->mirror(a);
+    dst.ptr()->mirror(a);
   }
+
   if(pa("-rotate")){
-    float angle = pa("-rotate");
-    static RotateOp rot(angle,sm);
-    static ImgBase *dst2 = 0;
-    rot.apply(dst,&dst2);
-    dst = dst2;
+    RotateOp rot(pa("-rotate").as<float>(), sm);
+    ImgBase *rotated = nullptr;
+    rot.apply(dst.ptr(), &rotated);
+    dst = Image(rotated);
   }
 
   if(pa("-c")){
-    static ImgBase *tmp = 0;
-    Rect r(pa("-c",0),
-           pa("-c",1),
-           pa("-c",2),
-           pa("-c",3));
-    if( (dst->getImageRect() | r) != dst->getImageRect()){
+    const Rect r(pa("-c",0), pa("-c",1), pa("-c",2), pa("-c",3));
+    if((dst.getImageRect() | r) != dst.getImageRect()){
       ERROR_LOG("wrong option -crop|-clip: given rectangle was "
-                << r << " but the image rect is only " << dst->getImageRect() );
+                << r << " but the image rect is only " << dst.getImageRect());
+      return -1;
     }
-    dst->setROI(r);
-    dst->deepCopyROI(&tmp);
-    dst = tmp;
+    dst.ptr()->setROI(r);
+    ImgBase *cropped = nullptr;
+    dst.ptr()->deepCopyROI(&cropped);
+    dst = Image(cropped);
   }
 
-  FileWriter fw(outFileName);
-  fw.write(dst);
+  FileWriter(outFileName).write(dst.ptr());
+  return 0;
 }
