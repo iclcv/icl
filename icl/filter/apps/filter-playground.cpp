@@ -2,14 +2,18 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// Unified "mighty" filter app: pick a filter from a combo; the UI adapts
-// automatically by reflecting the Op's Configurable properties via Prop(&op).
-// Super-set of what the individual per-op demos used to do.
+// Unified "mighty" filter app: pick one or more filters from a combo; the UI
+// adapts automatically by reflecting each Op's Configurable properties via
+// Prop(&op). Super-set of every retired single-op demo plus the old
+// filter-array app (via -n N multi-stage pipelines).
 //
-// Currently enumerates the ICLFilter ops that have been migrated to the
-// Configurable property system. As more ops migrate, add them to FILTERS.
+// Source → stage 0 → stage 1 → ... → stage N-1. Each stage has its own filter
+// combo, Prop(&op) panel, preview Display, and timing label; stages apply
+// in series. N=1 by default.
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/BoxHandle.h>
+#include <icl/qt/MouseHandler.h>
 #include <icl/filter/UnaryOp.h>
 #include <icl/filter/AffineOp.h>
 #include <icl/filter/BilateralFilterOp.h>
@@ -40,32 +44,33 @@
 #include <icl/filter/WeightChannelsOp.h>
 #include <icl/filter/WeightedSumOp.h>
 #include <icl/filter/WienerOp.h>
-#include <icl/qt/BoxHandle.h>
-#include <icl/qt/MouseHandler.h>
 
 #include <memory>
 #include <mutex>
 
 HSplit gui;
 GenericGrabber grabber;
-std::unique_ptr<UnaryOp> currentOp;
-GUI propGUI;                 // dynamic props panel — rebuilt on filter change
-std::string currentFilter;   // tracks the displayed filter to detect swaps
-// Serializes currentOp swap (GUI thread, via the filter-combo callback) with
-// currentOp->apply() in run() (ICLApp's exec thread). Without this, a filter
-// swap frees the op mid-apply → segfault on the next m_data dereference.
-std::recursive_mutex opMutex;
 
-// Interactive-ROI state. Written on the GUI thread by the mouse handler,
-// read on the exec thread by run(). `interactiveRoi` is the committed rect
-// (Rect::null → default to full image). `draggingRoi` is the live rubber-band
-// while the mouse button is held.
-std::mutex roiMtx;
-Rect interactiveRoi;
-Rect draggingRoi;
+// One per pipeline stage. Written on the GUI thread by the filter-combo
+// callback and read on the exec thread by run(); serialized by `mutex`
+// (same pattern as single-stage mode — apply() holds it for the full
+// currentOp->apply() duration).
+struct Stage {
+  std::unique_ptr<UnaryOp> op;
+  GUI propGUI;                 // dynamic props panel for this stage
+  std::string currentFilter;
+  std::recursive_mutex mutex;
+};
+static std::vector<std::unique_ptr<Stage>> stages;
 
-// Factory for the UnaryOps currently known to the playground. Keep the order
-// of this vector stable; the combo labels are derived from the first element.
+// Interactive-ROI state (source canvas left-click-drag). Written on the GUI
+// thread by the mouse handler, read on the exec thread by run().
+static std::mutex roiMtx;
+static Rect interactiveRoi;
+static Rect draggingRoi;
+
+// Factory for the UnaryOps. Keep the order stable; the combo labels are
+// derived from the first element.
 static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> &filters(){
   static std::vector<std::pair<std::string, std::function<UnaryOp*()>>> f = {
     {"AffineOp",         []{ return new AffineOp;         }},
@@ -110,35 +115,36 @@ static std::string filterCombo(){
   return out;
 }
 
-// Rebuild the props panel for the given filter name. Follows the CamCfgWidget
-// pattern: hide the old Prop GUI, construct a new one targeting &*currentOp,
-// inject its root widget into the persistent "props" box.
-static void rebuildPropPanel(const std::string &name){
-  std::scoped_lock lock(opMutex);
+// Rebuild a stage's props panel in response to its filter-combo change.
+// Follows the CamCfgWidget pattern: hide the old Prop GUI, construct a new
+// one targeting the new op, inject its root widget into the stage's
+// persistent "props_{idx}" box.
+static void rebuildStage(int idx, const std::string &name){
+  auto &st = *stages[idx];
+  std::scoped_lock lock(st.mutex);
 
   for(auto &[n, make] : filters()){
     if(n == name){
-      currentOp.reset(make());
+      st.op.reset(make());
       break;
     }
   }
-  if(!currentOp) return;
+  if(!st.op) return;
 
-  BoxHandle props = gui.get<BoxHandle>("props");
-  if(propGUI.hasBeenCreated()){
-    propGUI.hide();
+  BoxHandle props = gui.get<BoxHandle>("props_" + str(idx));
+  if(st.propGUI.hasBeenCreated()){
+    st.propGUI.hide();
   }
-  propGUI = GUI(VBox().handle("propBox"));
-  propGUI << Prop(currentOp.get()).label(name);
-  propGUI.create();
-  props.add(propGUI.getRootWidget());
-  currentFilter = name;
+  st.propGUI = GUI(VBox().handle("propBox_" + str(idx)));
+  st.propGUI << Prop(st.op.get()).label(name);
+  st.propGUI.create();
+  props.add(st.propGUI.getRootWidget());
+  st.currentFilter = name;
 }
 
 static Rect roiFor(const std::string &mode, const Rect &full){
   if(mode == "full" || mode == "none") return full;
   if(mode == "interactive"){
-    // Committed rect, clamped to the current image. Empty → full image.
     std::scoped_lock lock(roiMtx);
     if(interactiveRoi == Rect::null) return full;
     Rect r = interactiveRoi & full;
@@ -155,7 +161,6 @@ static Rect roiFor(const std::string &mode, const Rect &full){
 static void onSourceMouse(const MouseEvent &e){
   std::scoped_lock lock(roiMtx);
   if(e.isRight()){
-    // Right-click anywhere clears the interactive ROI back to full image.
     interactiveRoi = Rect::null;
     draggingRoi    = Rect::null;
   }else if(e.isLeft()){
@@ -171,50 +176,67 @@ static void onSourceMouse(const MouseEvent &e){
   }
 }
 
+// Builds one stage's GUI column: filter combo, dynamic props container,
+// per-stage preview Display, per-stage apply-time label.
+static GUI stageColumn(int idx){
+  const std::string is = str(idx);
+  return ( VBox().label("stage " + is).minSize(14, 1)
+           << Combo(filterCombo()).handle("filter_" + is).maxSize(99,2)
+           << VBox().handle("props_" + is).minSize(14,10)
+           << Display().handle("preview_" + is).minSize(14,10)
+           << Label("--").handle("dt_" + is).label("apply time").maxSize(99,2)
+         );
+}
+
 void init(){
+  const int N = std::max(1, pa("-n").as<int>());
+  stages.resize(N);
+  for(int i = 0; i < N; ++i) stages[i] = std::make_unique<Stage>();
+
   grabber.init(pa("-i"));
 
+  GUI stagesBox = HBox();
+  for(int i = 0; i < N; ++i) stagesBox << stageColumn(i);
+
   gui << ( VBox().minSize(24,14)
-           << Canvas().handle("src").minSize(24,16).label("source")
-           << Display().handle("dst").minSize(24,16).label("result")
-         )
-      << ( VBox().minSize(16,1)
-           << Combo(filterCombo()).handle("filter").label("filter").maxSize(99,2)
+           << Canvas().handle("src").minSize(24,20).label("source")
            << ( VBox().label("source")
                 << Combo("1:1,QVGA,!VGA,SVGA,XGA,WXGA,UXGA").handle("dsize").label("size")
                 << Combo("!depth8u,depth16s,depth32s,depth32f,depth64f").handle("ddepth").label("depth")
                 << Combo("gray,!rgb,hls,lab,yuv").handle("dformat").label("format")
                 << Combo("!none,UL,UR,LL,LR,center,interactive").handle("roi").label("source ROI")
               )
-           << VBox().handle("props").minSize(16,10)
            << ( HBox().maxSize(99,2)
-                << Label("--").handle("dt").label("apply time")
                 << Fps(10).handle("fps").label("fps")
+                << Label("ok").handle("status").label("status")
               )
-           << Label("ok").handle("status").label("status").maxSize(99,2)
          )
+      << stagesBox
       << Show();
 
-  gui.registerCallback([](const std::string &h){
-    if(h == "filter") rebuildPropPanel(gui["filter"].as<std::string>());
-  }, "filter");
+  // One callback per stage combo. Needs the index captured — bind a handle
+  // list per stage so the callback knows which one fired.
+  for(int i = 0; i < N; ++i){
+    const std::string h = "filter_" + str(i);
+    gui.registerCallback([i, h](const std::string &){
+      rebuildStage(i, gui[h].as<std::string>());
+    }, h);
+  }
 
-  // Drag-select ROI on the source canvas (only honored when the "source ROI"
-  // combo is set to "interactive"; other modes override). Right-click resets.
   static MouseHandler mouseHandler(onSourceMouse);
   gui["src"].install(&mouseHandler);
 
-  // Auto-range the result view so 16s/32f filter outputs (gradients, FFT,
-  // etc.) render over their actual dynamic range instead of the fixed
-  // [0,255] window that renders them as mostly-black.
-  gui.get<ImageHandle>("dst")->setRangeMode(ICLWidget::rmAuto);
+  // Auto-range each stage's preview so 16s/32f stage outputs render over
+  // their actual dynamic range instead of a fixed [0,255] window.
+  for(int i = 0; i < N; ++i){
+    gui.get<ImageHandle>("preview_" + str(i))->setRangeMode(ICLWidget::rmAuto);
+  }
 
-  // Initial filter = first entry in the combo.
-  rebuildPropPanel(filters().front().first);
+  // Initial filter for each stage = first entry in the combo.
+  for(int i = 0; i < N; ++i) rebuildStage(i, filters().front().first);
 }
 
 void run(){
-  // Configure grabber from the source controls.
   grabber.useDesired<depth>(parse<depth>(gui["ddepth"]));
   grabber.useDesired<format>(parse<format>(gui["dformat"]));
   if(gui["dsize"].as<std::string>() == "1:1"){
@@ -226,15 +248,15 @@ void run(){
   Image src = grabber.grabImage();
   if(!src) return;
 
-  // Apply source-ROI mode (before filter sees the image).
+  // Apply source-ROI mode before any filter sees the image.
   Rect roi = roiFor(gui["roi"].as<std::string>(), src.getImageRect());
-  Image roiedSrc = src.shallowCopy();
-  roiedSrc.setROI(roi);
+  Image flow = src.shallowCopy();   // threads through the pipeline stages
+  flow.setROI(roi);
 
-  // Source display with the active ROI outlined in red, plus — if the user
-  // is currently dragging — a transparent-blue rubber-band rect.
+  // Source display: active ROI outlined in red; rubber-band in blue while
+  // dragging.
   DrawHandle srcH = gui.get<DrawHandle>("src");
-  srcH = roiedSrc;
+  srcH = flow;
   srcH->color(255,0,0,255);
   srcH->fill(0,0,0,0);
   srcH->rect(roi);
@@ -248,25 +270,38 @@ void run(){
   }
   srcH.render();
 
-  // Lock across the whole apply — the filter-combo callback on the GUI
-  // thread can otherwise free currentOp mid-apply.
-  std::scoped_lock lock(opMutex);
-  if(!currentOp) return;
+  // Feed through each stage. On exception, short-circuit the rest of the
+  // chain (the remaining previews keep their last successful frame).
+  std::string status = "ok";
+  for(size_t i = 0; i < stages.size(); ++i){
+    Stage &st = *stages[i];
+    std::scoped_lock lock(st.mutex);
+    if(!st.op){ continue; }
 
-  Time t0 = Time::now();
-  Image result;
-  try{
-    currentOp->apply(roiedSrc, result);
-    gui["dt"] = str((Time::now()-t0).toMilliSecondsDouble())+"ms";
-    gui["status"] = std::string("ok");
-    gui["dst"] = result;
-  }catch(const std::exception &e){
-    gui["status"] = std::string(e.what());
+    const std::string is = str(i);
+    Time t0 = Time::now();
+    Image result;
+    try{
+      st.op->apply(flow, result);
+      gui["dt_" + is] = str((Time::now()-t0).toMilliSecondsDouble())+"ms";
+      gui["preview_" + is] = result;
+      flow = result;  // feeds the next stage
+    }catch(const std::exception &e){
+      status = "stage " + is + ": " + e.what();
+      break;
+    }
   }
+
+  gui["status"] = status;
   gui["fps"].render();
 }
 
 int main(int n, char **ppc){
-  pa_explain("-input","grabber definition, e.g. '-i file lena.png' or '-i dc 0'");
-  return ICLApp(n,ppc,"[m]-input|-i(device,device-params)",init,run).exec();
+  pa_explain
+    ("-input","grabber definition, e.g. '-i file lena.png' or '-i dc 0'")
+    ("-n",    "number of filter stages (pipeline length), default 1");
+  return ICLApp(n, ppc,
+                "[m]-input|-i(device,device-params) "
+                "-n|-num-filters(int=1)",
+                init, run).exec();
 }
