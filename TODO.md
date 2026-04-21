@@ -19,19 +19,32 @@ Applied per `module-audit-checklist.md`.
 
 ---
 
+## DataStore / Assign migration (Session 50 landed infrastructure; flip pending)
+
+See `project_assign_migration.md` for full status.  Infrastructure
+(`icl/utils/AnyMap.h`, `Assign.h`, `AssignRegistry.{h,cpp}`) and 15
+qt handles are migrated.  Legacy `DataStore::Assign` still alive in
+parallel; both dispatch tables coexist.  Remaining to close it out:
+
+- [ ] **Identity enrollments** (`enroll<H, H>()`) for every migrated handle — old DataStore had `ADD_T_TO_T`; new system needs these for `gui["a"] = gui["b"]` same-type dispatch.  Consider an `enroll_identity<T>()` helper.
+- [ ] **Core-type identity** enrollments (Rect, Size, Point, Image, std::string, utils::Any).  Needs a home outside qt — probably an init TU in utils and/or core.
+- [ ] **Event-only handles** — Plot, FPS, Box, Disp, State, Splitter, MultiDraw.  Had only `Event → H` + identity in old DataStore; decide: skip entirely or identity-only enroll.
+- [ ] **`Slot` proxy** — the `gui["key"]` return type.  Implement templated `operator=(T)` and `operator T() const` that box/unbox via `std::any` and call `AssignRegistry::dispatch`.  This makes `int v = gui["key"]` work without users writing `.as<int>()`.
+- [ ] **Flip `DataStore::Data::assign()`** to call `AssignRegistry::dispatch()`; retire `DataStore::Assign`, `AssignSpecial<>` machinery, `create_assign_map()`, `register_assignment_rule()`.
+- [ ] **Replace `MultiTypeMap` base** of `DataStore` with composed `AnyMap`.  Bigger API break — review `DataStore::Data` inner class's uses of `MultiTypeMap::allocValue<T>`, `getValue<T>`, etc.
+- [ ] **Smuggled-command fallout audit** — we retired `gui["h"] = Event("render")` / `gui["s"] = Range(a,b)` from the trait; find any callers and migrate them to direct method calls.  Search: `= Event(` and `= Range` against handle keys.
+
 ## Utils — long-term migrations (from Session 49+ audit)
 
 These duplicate / predate modern stdlib features.  Migrating them is a
 user-API break and touches many callers.
 
-- [ ] **`MultiTypeMap.h` → `std::any`-backed map.**  Current type uses RTTI strings + `reinterpret_cast` + `static T _NULL` hazards to reinvent `std::any`.  Public consumer: `qt::DataStore` inherits from it.  Migration ≈ rewrite DataStore's dispatch + every caller that uses `getValue<T>` / `allocValue<T>`.
 - [ ] **`File.h` → `std::filesystem` + `std::ifstream`.**  Predates C++17.  35 consumers.  Plausibly migrate piecemeal — `File` stays as a thin facade during transition.
 - [ ] **`Time.h` / `Timer.h` → `std::chrono`-based.**  41 consumers of `Time`.  Pervasive.  Likely keep the ICL `Time` name as a type alias over `std::chrono::nanoseconds` (or similar) — callers don't need to change arithmetic, just serialization.
 - [ ] **`Lockable.h` → `std::mutex` composition.**  13 classes inherit publicly for `lock()/unlock()/getMutex()`.  Migration: each class holds a `mutable std::mutex` and exposes `getMutex()`; callers write `std::scoped_lock lk(obj.getMutex())`.
 - [ ] **`UncopiedInstance<T>` → rename** to `DefaultConstructOnCopy<T>` or similar.  Style-only; 2 consumers (`Configurable`, `ViewBasedTemplateMatcher`).
 - [ ] **`Any.h`** — name collision with `std::any` is unfortunate.  No practical rename since it's pervasive.  Document the semantic distinction; don't touch.
 - [ ] **`Timer`** — `int m_iTimerMode` → enum; `startTimer()` → `start()`; raw-long returns → `std::chrono::nanoseconds`.
-- [ ] **`MultiTypeMap::getValue<T>` + `DataStore` API** — `static T _NULL` returns are a hazard (returning ref to static on miss).  Either throw or return `std::optional`.
 
 ## Utils — small follow-ups
 

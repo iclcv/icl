@@ -1,6 +1,169 @@
 # ICL — Continuation Guide
 
-## Current State (Session 49 — math detail/ reorg + pugi privatization + DynamicGUI retirement)
+## Current State (Session 50 — AnyMap + Assign<Dst,Src> infrastructure; 15 qt handles migrated)
+
+### Session 50 Summary
+
+One extended design conversation that landed a fresh, orthogonal
+replacement for the `MultiTypeMap` / `DataStore::Assign` machinery and
+then started mechanical per-handle migration onto it.  Key properties
+of the new design: compile-time and runtime dispatch paths that share
+one source of truth; no implicit conversion operators on handles
+(they're a known overload-resolution foot-gun); explicit `as<T>()`
+extraction for readback; `<Dst, Src>` template-arg order matching
+`dst = src` and `std::is_assignable`.  Legacy `DataStore` untouched
+throughout — both dispatch tables coexist.
+
+#### 1. Infrastructure — `icl/utils/` (commit 9fdd01a6b)
+
+Three new public headers, all header-only or tiny:
+
+- **`AnyMap.h`** — thin typed wrapper around
+  `std::unordered_map<std::string, std::any>`.  `set<T>`, `get<T>`
+  (throws on miss/mismatch), `tryGet<T>` (nullptr), `contains` /
+  `containsAs<T>`, `typeOf`, `erase`, `clear`, iteration.  Replaces
+  `MultiTypeMap`'s `void* + RTTI-string + static T _NULL + len-bit-hack`
+  machinery with plain `std::any`.  Not wired into DataStore yet;
+  orthogonal for now.
+
+- **`Assign.h`** — `Assign<Dst, Src>` trait collapsed to one template
+  with two `apply()` overloads on disjoint constraints:
+
+  ```cpp
+  template<typename Dst, typename Src>
+  concept DirectlyAssignable = std::is_assignable_v<Dst&, Src>;
+
+  template<typename Dst, typename Src>
+  concept ExtractableAs = requires(Dst &d, Src &s) {
+    d = s.template as<Dst>();
+  };
+
+  template<typename Dst, typename Src>
+  struct Assign : std::bool_constant<
+      DirectlyAssignable<Dst, Src> || ExtractableAs<Dst, Src>>
+  {
+    static void apply(Dst &dst, Src &src)
+      requires DirectlyAssignable<Dst, Src> { dst = src; }
+    static void apply(Dst &dst, Src &src)
+      requires (!DirectlyAssignable<Dst, Src> && ExtractableAs<Dst, Src>)
+      { dst = src.template as<Dst>(); }
+  };
+  ```
+
+  No per-pair specializations.  Direct path wins when both are viable.
+  Class-side convention: `operator=(Src)` for incoming, `as<T>()`
+  member template (constrained with `requires`) for outgoing.
+
+- **`AssignRegistry.{h,cpp}`** — runtime type-erased dispatcher.
+  **Fully static** public API (no `.instance().` noise at call sites;
+  the singleton is private-internal).  Map stores bare function
+  pointers via `+[](std::any&, std::any&){…}`, no `std::function`
+  overhead.  API:
+
+  ```cpp
+  AssignRegistry::enroll<Dst, Src>();               // static_asserts
+  AssignRegistry::enroll_symmetric<A, Bs...>();     // A↔B pairs
+  AssignRegistry::enroll_receiver<Dst, Srcs...>();  // Dst = each Src
+  AssignRegistry::enroll_provider<Src, Dsts...>();  // each Dst = Src
+  AssignRegistry::dispatch(any &dst, any &src);
+  AssignRegistry::has(type_index, type_index);
+  AssignRegistry::size();
+  ```
+
+  `enroll` static-asserts `is_assignable_v<Dst, Src>` so runtime
+  registration and compile-time trait stay in sync by construction.
+
+#### 2. Per-handle migrations — `icl/qt/`
+
+**Idiom** each migrated handle's `.cpp` picks up:
+
+```cpp
+namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::XxxHandle;
+  __attribute__((constructor))
+  static void icl_register_xxx_handle_assignments() {
+    AssignRegistry::enroll_symmetric<XxxHandle, int, float, double, std::string>();
+  }
+}
+```
+
+— one-line enroll call per handle.  Symmetric/receiver/provider
+variants handle the asymmetric cases.  **15 handles** landed across
+6 commits:
+
+| Commit | Handles | Shape |
+|---|---|---|
+| 30452ca07 | SliderHandle | symmetric value (pilot) |
+| 063b4b8fa | IntHandle, FSliderHandle, SpinnerHandle, FloatHandle | symmetric value |
+| 83c79a4b0 | *(infra: fully static API + enroll_symmetric)* | — |
+| 7e0364dc6 | CheckBoxHandle, StringHandle, ButtonHandle, ButtonGroupHandle, TabHandle | mixed (+ `enroll_receiver`/`enroll_provider`) |
+| cac200f0f | ComboHandle, LabelHandle | symmetric + receiver |
+| 398c01f19 | ImageHandle, DrawHandle, DrawHandle3D, ColorHandle | receiver (images) + symmetric (Color/Color4D) |
+
+Notable per-handle details:
+
+- **ComboHandle**: dropped the legacy `operator int() const` and
+  `operator std::string() const` implicit conversion operators — they
+  were the exact kind of landmine we're avoiding.  One caller
+  (`filter/apps/local-thresh.cpp`) had to be updated from
+  `(int)comboHandle` to `comboHandle.getSelectedIndex()`.  Zero other
+  callers in tree depended on the implicit operators.
+- **StringHandle**: templated `operator=(T)` for arithmetic writes via
+  `utils::str`; templated `as<T>()` for arithmetic reads via
+  `utils::parse`.
+- **DrawHandle3D**: was missing `operator=(const ImgBase&)` — legacy
+  FROM_IMG used `setImage(&src)`.  Added it.
+- **Image handles** (ImageHandle, DrawHandle, DrawHandle3D): each
+  enrolls 18 image-type pairs (5 `Img<T>` by value, 12 pointer
+  variants, `core::Image`) via a single `enroll_receiver<H, …>()`
+  call.  All Img<T> paths fall through to
+  `operator=(const ImgBase&)` via derived-to-base conversion.
+- **Smuggled-command pairs retired**: `Event → handle` (for
+  render/install/link) and `Range → SliderHandle` (setRange) do **not**
+  map through the new trait.  Those idioms become direct method calls
+  (`handle.render()`, `slider.setRange(a, b)`) in the new model.
+- **Color↔Color4D cross-conversions** deliberately not ported into
+  qt — they belong on the types themselves in core, not leaked into
+  qt registration.
+
+#### 3. Verification
+
+- Clean builds after every commit (full target set + tests + demos).
+- `tests/icl-tests -j 1` → **607/607 pass** throughout the migration.
+- New test coverage: 16 `utils.assign.*` tests (compile-time trait,
+  direct path, extract path, direct-wins priority, runtime dispatch
+  for both paths, parity, enroll_symmetric variadic expansion,
+  idempotent re-enrollment) + 24 `utils.anymap.*` tests.
+
+#### 4. What's deferred
+
+See `project_assign_migration.md` for the full punch list.  Highlights:
+
+- **Identity enrollments** (`enroll<H, H>()`) for every migrated handle.
+  Old DataStore had `ADD_T_TO_T` for each pair; new system doesn't yet.
+  Needed before flipping DataStore — a consumer writing
+  `gui["a"] = gui["b"]` with same-type handles needs this entry.
+- **Core-type identity** (Rect, Size, Point, Image, std::string, Any)
+  — same concern for non-handle types.  Needs a home outside qt.
+- **Event-only handles** (PlotHandle, FPSHandle, BoxHandle, DispHandle,
+  StateHandle, SplitterHandle, MultiDrawHandle) — had only `Event → H`
+  + identity in old DataStore; not yet migrated.  Decide whether to
+  skip entirely or add identity-only enrollment.
+- **`Slot` proxy** — the `gui["key"]` return type.  Needs
+  implicit-template `operator=(T)` and `operator T() const` that route
+  through `AssignRegistry::dispatch`.  This is what makes
+  `int v = gui["key"]` work without users writing `.as<int>()`.
+- **`DataStore::Data::assign()` flip** — replace the legacy
+  `AssignSpecial<>` map lookup with `AssignRegistry::dispatch()`;
+  retire `DataStore::Assign`, `create_assign_map()`,
+  `register_assignment_rule()`.
+- **`MultiTypeMap` replacement** — swap DataStore's inherited
+  `MultiTypeMap` for composed `AnyMap`.  Bigger API break.
+
+---
+
+## Previous State (Session 49 — math detail/ reorg + pugi privatization + DynamicGUI retirement)
 
 ### Session 49 Summary
 
