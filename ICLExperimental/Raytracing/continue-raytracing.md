@@ -394,34 +394,100 @@ and Z-up scenes. That code is in git history at commit 47ee811d0.
 - `fprintf(stderr, "[Camera] ...")` prints in syncCamera showing pos, fwd, up,
   fov, near/far, and the full 3x4 transform matrix. Remove when fixed.
 
-### Next Steps
+### Completed (Session 8)
 
-1. **Fix camera orientation** — resolve the Y-axis flip for both Y-up and Z-up
-   scenes. The physics demo (`cycles-physics-demo`) is the test case for Z-up.
-   The renderer test (`cycles-renderer-test`) is the test case for Y-up.
+- ✅ Camera orientation fixed for Y-up and Z-up (horiz, -up, forward as columns)
+- ✅ Camera::lookAt documented with ICL's unusual up=visual-down convention
+- ✅ Light intensity calibrated (300x multiplier for ICL scene distances)
+- ✅ Non-blocking progressive rendering (3-state machine: IDLE→WAIT_FOR_START→RENDERING)
+- ✅ tag_update(scene) for transform changes (was tag_tfm_modified which was a no-op)
+- ✅ session->start() after every session->reset() (session thread goes idle after completion)
+- ✅ Physics demo: time-based spawning, delayed object activation, side-by-side GL view
+- ✅ Scene viewer: OBJ loading, auto-scale, checkerboard ground, material presets
+- ✅ Vertex clustering mesh decimation (-decimate N)
+- ✅ renderBlocking() for offscreen rendering
 
-2. **Physics demo** — `cycles-physics-demo.cpp` is written and builds. It has
-   GUI controls (quality preset, samples, bounces, denoising, exposure) and an
-   `--offscreen` mode for headless testing. Needs the camera fix to work.
+### Next Steps — File Format Support & Textures
 
-3. **Texture support** — implement ICLImageLoader (ccl::ImageLoader subclass)
-   to feed ICL Material texture maps to Cycles ImageTextureNode.
+#### Phase 1: glTF/GLB Loader (Priority)
 
-4. **Custom environment maps** — allow loading HDR environment maps as
-   background. Add `setBackground()` API to CyclesRenderer.
+**Goal:** Load complex textured models (cars, characters, architectural scenes).
+glTF is the modern standard — single GLB file bundles meshes + PBR materials + textures.
 
-5. **Interactive demo** — ICLApp-based demo with mouse orbit, quality slider,
-   progressive rendering display.
+**Available:** `cgltf.h` single-header C parser already in `3rdparty/cycles/lib/macos_arm64/materialx/include/MaterialXRender/External/Cgltf/cgltf.h`
 
-6. **Scene/Material API cleanups** — remove legacy deprecated accessors,
-   add `transmissionWeight` for glass, physical light units.
+**Implementation plan:**
+1. Create `ICLExperimental/Raytracing/src/Raytracing/GltfLoader.h/.cpp`
+2. Parse GLB/glTF using cgltf: meshes → SceneObject, materials → Material, textures → ImgBase
+3. Handle: vertex positions, normals, UVs, indices, PBR metallic-roughness materials
+4. Handle: embedded textures (base64 or binary chunk), external texture references
+5. Create camera from glTF camera nodes (if present)
+6. Wire into cycles-scene-viewer: `-scene model.glb`
+
+**Key mapping:** glTF PBR → ICL Material (already compatible):
+- baseColorFactor → Material::baseColor
+- metallicFactor → Material::metallic
+- roughnessFactor → Material::roughness
+- emissiveFactor → Material::emissive
+- baseColorTexture → Material::baseColorMap (as ImgBase)
+- normalTexture → Material::normalMap
+- metallicRoughnessTexture → Material::metallicRoughnessMap
+
+#### Phase 2: Texture Support in Cycles Sync
+
+**Goal:** Forward ICL Material texture maps to Cycles ImageTextureNode.
+
+**Implementation plan:**
+1. Create `ICLImageLoader` subclass of `ccl::ImageLoader` in SceneSynchronizer
+2. Override `load_pixels()` to copy from ICL's `ImgBase` to Cycles' image buffer
+3. In `createPrincipledShader()`: if material has baseColorMap, create ImageTextureNode
+   connected to PrincipledBsdf's BaseColor input
+4. Same for normalMap → Normal input, metallicRoughnessMap → Metallic/Roughness
+5. Need UV coordinates: extend GeometryExtractor to pass `ATTR_STD_UV` from SceneObject's texCoords
+
+**Cycles API for textures:**
+```cpp
+ImageTextureNode *tex = graph->create_node<ImageTextureNode>();
+tex->set_filename(ustring("inline_image"));  // triggers ImageLoader
+// Register the ICLImageLoader with the ImageManager
+scene->image_manager->add_image(loader, ...);
+```
+
+#### Phase 3: Cycles XML Scene Loader (Low Priority)
+
+**Goal:** Load Cycles' native XML format for testing against reference scenes.
+The standalone `cycles` executable already renders these — useful for validation.
+
+**Available:** `3rdparty/cycles/src/app/cycles_xml.cpp` contains the full XML parser.
+Could either: (a) call it directly from our code, or (b) port scenes to glTF.
+
+#### Phase 4: Advanced Features (Deferred)
+
+- **QEM mesh decimation** — Quadric Error Metrics for quality-preserving simplification
+- **HDR environment maps** — `setBackground(filename)` API loading .hdr/.exr
+- **Area/spot/sun lights** — extend syncLights beyond point lights
+- **LOD system** — pre-compute 3-4 levels, switch by camera distance
+- **Glass/transmission** — add `transmissionWeight` to Material for glass BSDF
+
+### Test Models
+
+**OBJ (working now):**
+- Stanford bunny: `scenes/bunny.obj` (35K verts)
+- More at: github.com/alecjacobson/common-3d-test-models (dragon, buddha, teapot)
+
+**glTF/GLB (Phase 1 target):**
+- Sketchfab: thousands of free downloadable GLB models (cars, characters, scenes)
+- glTF sample models: github.com/KhronosGroup/glTF-Sample-Assets
+  - DamagedHelmet.glb — textured PBR, good first test
+  - FlightHelmet.glb — complex multi-material
+  - Sponza.glb — architectural interior, stress test
 
 ### Known Limitations
 
-- Camera orientation broken for Z-up scenes (see above)
 - No texture mapping yet (Material textures not forwarded to Cycles)
-- Lights are only created once (no dynamic light updates)
-- Only point lights supported (no spot/area/sun lights yet)
-- Default sky is Hosek-Wilkie (hardcoded) — no custom environment map loading
-- SceneObject::ObjectType only set for sphere/cube factories (not for
-  programmatically-built objects)
+- Lights created once per session (no dynamic light position updates in Cycles)
+- Only point lights (no spot/area/sun)
+- OIDN denoising too slow for interactive use
+- Vertex clustering decimation is crude (QEM would preserve features better)
+- OBJ loader: no MTL material parsing (uses default material)
+- No glass/transmission material support
