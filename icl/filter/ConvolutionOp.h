@@ -99,7 +99,9 @@ namespace icl::filter {
     using NeighborhoodOp::apply;
 
     /// change kernel
-    void setKernel (const ConvolutionKernel &kernel){ m_kernel = kernel; }
+    /** Also syncs the "kernel" Configurable property: sets it to the kernel's
+        fixedType name if it's one of the presets, otherwise to "custom". */
+    void setKernel(const ConvolutionKernel &kernel);
 
     /// returns currently used kernel (const)
     const ConvolutionKernel &getKernel() const { return m_kernel; }
@@ -107,7 +109,20 @@ namespace icl::filter {
     ///  returns currently used kernel (const)
     ConvolutionKernel &getKernel() { return m_kernel; }
 
+    /// enables/disables the force-unsigned-output flag
+    /** Forwards to the Configurable property "force unsigned output". */
+    void setForceUnsignedOutput(bool v);
+
+    /// returns current force-unsigned-output flag state
+    bool getForceUnsignedOutput() const;
+
     private:
+
+    void property_callback(const Property &p);
+
+    /// adds the ConvolutionOp Configurable properties; called from both ctors
+    void addConvProperties(const ConvolutionKernel &kernel, bool forceUnsignedOutput);
+
     ConvolutionKernel m_kernel;
     bool m_forceUnsignedOutput;
   };

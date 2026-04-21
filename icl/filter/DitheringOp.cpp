@@ -12,8 +12,23 @@ namespace icl{
 
   namespace filter{
     DitheringOp::DitheringOp (Algorithm a, int l){
-      setAlgorithm(a);
-      setLevels(l);
+      m_algorithm = a;
+      m_levels = std::clamp(l, 2, 128);
+      addProperty("levels","range:spinbox","[2,128]",str(m_levels));
+      registerCallback([this](const Property &p){
+        if(p.name == "levels"){
+          m_levels = std::clamp(parse<int>(p.value), 2, 128);
+        }
+      });
+    }
+
+    void DitheringOp::setLevels(int l){
+      prop("levels").value = str(std::clamp(l, 2, 128));
+      call_callbacks("levels", this);
+    }
+
+    int DitheringOp::getLevels() const {
+      return parse<int>(prop("levels").value);
     }
 
     inline void clipped_add(icl8u &v, int x){
@@ -68,5 +83,6 @@ namespace icl{
       }
     }
 
+    REGISTER_CONFIGURABLE_DEFAULT(DitheringOp);
   } // namespace filter
 }

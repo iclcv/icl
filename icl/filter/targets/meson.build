@@ -28,6 +28,7 @@ if _build_apps and qt_found
   _filter_apps = {
     'color-segmentation': [icl_geom2_dep],
     'filter-array': [],
+    'filter-playground': [],
     'local-thresh': [],
     'rectify-image': [],
   }

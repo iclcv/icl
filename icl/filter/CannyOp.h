@@ -76,19 +76,16 @@ namespace icl::filter {
     /**
         @param lowThresh lower threshold
         @param highThresh upper threshold
+
+        Forwards to the Configurable properties "low threshold" and
+        "high threshold".
     */
     void setThresholds(icl32f lowThresh, icl32f highThresh);
 
-    /// returns the lower threshold
-    /**
-        @return the lower threshold
-    */
+    /// returns the lower threshold (reads the Configurable property)
     icl32f getLowThreshold() const;
 
-    /// returns the upper threshold
-    /**
-        @return the upper threshold
-    */
+    /// returns the upper threshold (reads the Configurable property)
     icl32f getHighThreshold() const;
 
     ///applies the Canny Operator
@@ -109,25 +106,23 @@ namespace icl::filter {
     using UnaryOp::apply;
 
     /// sets the pre-blur-radius
-    /** if r> 0, gaussian kernel with masksize r*2+1 is applied to the input image first */
-    void setPreBlurRadius(int preBlurRadius){
-      m_preBlurRadius = preBlurRadius;
-      ICL_DELETE(m_preBlurOp);
-      setUpPreBlurOp();
-    }
+    /** if r> 0, gaussian kernel with masksize r*2+1 is applied to the input image first.
+        Forwards to the Configurable property "pre-blur radius". */
+    void setPreBlurRadius(int preBlurRadius);
 
 	  void setUseDerivativesInfo(bool use_derivatives) {
 		  m_use_derivatives_info = use_derivatives;
 	  }
 
-    /// returns current pre-blur feature state
-    bool getPreBlurRadius() const {
-      return m_preBlurRadius;
-    }
+    /// returns current pre-blur feature state (true if radius > 0)
+    bool getPreBlurRadius() const;
 
     private:
 
     void property_callback(const Property &p);
+
+    /// adds the three CannyOp Configurable properties; called from both ctors
+    void addCannyProperties(icl32f lowThresh, icl32f highThresh, int preBlurRadius);
 
     void setUpPreBlurOp();
 

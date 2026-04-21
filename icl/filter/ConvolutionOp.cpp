@@ -26,17 +26,92 @@ namespace icl::filter {
     return proto;
   }
 
+  // Keep these two mappings in lockstep with ConvolutionKernel::fixedType.
+  static const char *fixedTypeName(ConvolutionKernel::fixedType t){
+    switch(t){
+      case ConvolutionKernel::gauss3x3:   return "gauss3x3";
+      case ConvolutionKernel::gauss5x5:   return "gauss5x5";
+      case ConvolutionKernel::sobelX3x3:  return "sobelX3x3";
+      case ConvolutionKernel::sobelX5x5:  return "sobelX5x5";
+      case ConvolutionKernel::sobelY3x3:  return "sobelY3x3";
+      case ConvolutionKernel::sobelY5x5:  return "sobelY5x5";
+      case ConvolutionKernel::laplace3x3: return "laplace3x3";
+      case ConvolutionKernel::laplace5x5: return "laplace5x5";
+      case ConvolutionKernel::custom:     return "custom";
+    }
+    return "custom";
+  }
+
+  static const char *KERNEL_MENU =
+    "gauss3x3,gauss5x5,sobelX3x3,sobelX5x5,"
+    "sobelY3x3,sobelY5x5,laplace3x3,laplace5x5,custom";
+
+  static bool parseFixedType(const std::string &s, ConvolutionKernel::fixedType &out){
+    if(s == "gauss3x3")   { out = ConvolutionKernel::gauss3x3;   return true; }
+    if(s == "gauss5x5")   { out = ConvolutionKernel::gauss5x5;   return true; }
+    if(s == "sobelX3x3")  { out = ConvolutionKernel::sobelX3x3;  return true; }
+    if(s == "sobelX5x5")  { out = ConvolutionKernel::sobelX5x5;  return true; }
+    if(s == "sobelY3x3")  { out = ConvolutionKernel::sobelY3x3;  return true; }
+    if(s == "sobelY5x5")  { out = ConvolutionKernel::sobelY5x5;  return true; }
+    if(s == "laplace3x3") { out = ConvolutionKernel::laplace3x3; return true; }
+    if(s == "laplace5x5") { out = ConvolutionKernel::laplace5x5; return true; }
+    return false; // "custom" or unknown — caller leaves kernel untouched
+  }
+
+  void ConvolutionOp::addConvProperties(const ConvolutionKernel &kernel, bool forceUnsignedOutput){
+    addProperty("kernel","menu",KERNEL_MENU,fixedTypeName(kernel.getFixedType()));
+    addProperty("force unsigned output","flag","",forceUnsignedOutput);
+  }
+
+  void ConvolutionOp::property_callback(const Property &p){
+    if(p.name == "kernel"){
+      ConvolutionKernel::fixedType t;
+      if(parseFixedType(p.value, t)){
+        // Replace kernel + update NeighborhoodOp's mask size.
+        m_kernel = ConvolutionKernel(t);
+        setMask(m_kernel.getSize());
+      }
+      // else: "custom" — leave m_kernel alone (was set explicitly via setKernel)
+    }else if(p.name == "force unsigned output"){
+      m_forceUnsignedOutput = parse<bool>(p.value);
+    }
+  }
+
   ConvolutionOp::ConvolutionOp(const ConvolutionKernel &kernel):
     NeighborhoodOp(kernel.getSize()),
     ImageBackendDispatching(prototype()),
+    m_kernel(kernel),
     m_forceUnsignedOutput(false){
-    setKernel(kernel);
+    addConvProperties(kernel, false);
+    registerCallback([this](const Property &p){ property_callback(p); });
   }
   ConvolutionOp::ConvolutionOp(const ConvolutionKernel &kernel, bool forceUnsignedOutput):
     NeighborhoodOp(kernel.getSize()),
     ImageBackendDispatching(prototype()),
+    m_kernel(kernel),
     m_forceUnsignedOutput(forceUnsignedOutput){
-    setKernel(kernel);
+    addConvProperties(kernel, forceUnsignedOutput);
+    registerCallback([this](const Property &p){ property_callback(p); });
+  }
+
+  void ConvolutionOp::setKernel(const ConvolutionKernel &kernel){
+    m_kernel = kernel;
+    setMask(m_kernel.getSize());
+    // Sync the "kernel" property without firing the callback's kernel-rebuild path
+    // (we already assigned; the callback would either reassign-identically or
+    // leave alone on "custom"). Direct prop write + call_callbacks keeps behavior
+    // visible to other listeners.
+    prop("kernel").value = fixedTypeName(kernel.getFixedType());
+    call_callbacks("kernel", this);
+  }
+
+  void ConvolutionOp::setForceUnsignedOutput(bool v){
+    prop("force unsigned output").value = str(v);
+    call_callbacks("force unsigned output", this);
+  }
+
+  bool ConvolutionOp::getForceUnsignedOutput() const {
+    return parse<bool>(prop("force unsigned output").value);
   }
 
   void ConvolutionOp::apply(const core::Image &src, core::Image &dst) {
@@ -50,12 +125,21 @@ namespace icl::filter {
     if(src.getDepth() >= depth32f){
       m_kernel.toFloat();
     }else if(m_kernel.isFloat()){
-      WARNING_LOG("convolution of non-float images with float kernels is not supported\n"
-                  "use an int-kernel instead. For now, the kernel is casted to int-type");
-      m_kernel.toInt(true);
+      // Need an int kernel on an int-source path. toInt(true) truncates
+      // normalized floats to zeros (e.g. gauss3x3 1/16 → 0), producing an
+      // all-zero kernel → black output. If the kernel originated from a
+      // known fixed type, rebuild from the lookup table — lossless.
+      if(m_kernel.getFixedType() != ConvolutionKernel::custom){
+        m_kernel = ConvolutionKernel(m_kernel.getFixedType());
+      }else{
+        WARNING_LOG("convolution of non-float images with float kernels is not supported\n"
+                    "use an int-kernel instead. For now, the kernel is casted to int-type");
+        m_kernel.toInt(true);
+      }
     }
 
     getSelector<ConvSig>(Op::apply).resolve(src)->apply(src, dst, *this);
   }
 
+  REGISTER_CONFIGURABLE_DEFAULT(ConvolutionOp);
   } // namespace icl::filter

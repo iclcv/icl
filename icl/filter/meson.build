@@ -82,6 +82,7 @@ filter_sources = files(
   'ConvolutionOp_Cpp.cpp',
   'DitheringOp.cpp',
   'DynamicConvolutionOp.cpp',
+  'FFTOp.cpp',
   'FixedConvertOp.cpp',
   'GaborOp.cpp',
   'GradientImage.cpp',

@@ -30,7 +30,17 @@ namespace icl::filter {
   MedianOp::MedianOp(const Size &maskSize)
     : NeighborhoodOp(adaptSize(maskSize)),
       ImageBackendDispatching(prototype())
-  {}
+  {
+    const Size adapted = adaptSize(maskSize);
+    addProperty("mask size.w","range:spinbox","[1,51]",str(adapted.width));
+    addProperty("mask size.h","range:spinbox","[1,51]",str(adapted.height));
+    registerCallback([this](const Property &p){
+      if(p.name != "mask size.w" && p.name != "mask size.h") return;
+      const Size raw(parse<int>(prop("mask size.w").value),
+                     parse<int>(prop("mask size.h").value));
+      setMask(adaptSize(raw));
+    });
+  }
 
   void MedianOp::apply(const core::Image &src, core::Image &dst) {
     if (!prepare(dst, src)) return;
@@ -44,4 +54,5 @@ namespace icl::filter {
     }
   }
 
+  REGISTER_CONFIGURABLE(MedianOp, return new MedianOp(utils::Size(3,3)));
   } // namespace icl::filter

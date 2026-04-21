@@ -72,14 +72,11 @@ namespace icl::filter {
     void setAlgorithm(Algorithm a) { m_algorithm = a; }
 
     /// returns the number of quantisation levels
-    int getLevels() const { return m_levels; }
+    int getLevels() const;
 
-    /// sets the number of quantisation levels
-    void setLevels(int l) {
-      if(l<2) l=2;
-      if(l>128) l=128;
-      m_levels = l;
-    }
+    /// sets the number of quantisation levels (clipped to [2,128])
+    /** Forwards to the Configurable property "levels". */
+    void setLevels(int l);
 
     /// import base-class symbols
     using UnaryOp::apply;

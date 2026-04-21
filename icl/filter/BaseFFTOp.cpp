@@ -39,9 +39,74 @@ namespace icl::filter {
   // Constructor / Destructor
   // ================================================================
 
+  // Menu text for result mode / size adaption properties — keep in lockstep
+  // with the ResultMode / SizeAdaptionMode enums above.
+  static const char *RESULT_MODE_MENU =
+    "TWO_CHANNEL_COMPLEX,IMAG_ONLY,REAL_ONLY,POWER_SPECTRUM,"
+    "LOG_POWER_SPECTRUM,MAGNITUDE_ONLY,PHASE_ONLY,TWO_CHANNEL_MAGNITUDE_PHASE";
+  static const char *SIZE_ADAPTION_MENU =
+    "NO_SCALE,PAD_ZERO,PAD_COPY,PAD_MIRROR,SCALE_UP,SCALE_DOWN,PAD_REMOVE";
+
+  static const char *resultModeName(BaseFFTOp::ResultMode rm){
+    switch(rm){
+      case BaseFFTOp::TWO_CHANNEL_COMPLEX:        return "TWO_CHANNEL_COMPLEX";
+      case BaseFFTOp::IMAG_ONLY:                  return "IMAG_ONLY";
+      case BaseFFTOp::REAL_ONLY:                  return "REAL_ONLY";
+      case BaseFFTOp::POWER_SPECTRUM:             return "POWER_SPECTRUM";
+      case BaseFFTOp::LOG_POWER_SPECTRUM:         return "LOG_POWER_SPECTRUM";
+      case BaseFFTOp::MAGNITUDE_ONLY:             return "MAGNITUDE_ONLY";
+      case BaseFFTOp::PHASE_ONLY:                 return "PHASE_ONLY";
+      case BaseFFTOp::TWO_CHANNEL_MAGNITUDE_PHASE:return "TWO_CHANNEL_MAGNITUDE_PHASE";
+    }
+    return "LOG_POWER_SPECTRUM";
+  }
+  static BaseFFTOp::ResultMode parseResultMode(const std::string &s){
+    if(s == "TWO_CHANNEL_COMPLEX")        return BaseFFTOp::TWO_CHANNEL_COMPLEX;
+    if(s == "IMAG_ONLY")                  return BaseFFTOp::IMAG_ONLY;
+    if(s == "REAL_ONLY")                  return BaseFFTOp::REAL_ONLY;
+    if(s == "POWER_SPECTRUM")             return BaseFFTOp::POWER_SPECTRUM;
+    if(s == "MAGNITUDE_ONLY")             return BaseFFTOp::MAGNITUDE_ONLY;
+    if(s == "PHASE_ONLY")                 return BaseFFTOp::PHASE_ONLY;
+    if(s == "TWO_CHANNEL_MAGNITUDE_PHASE")return BaseFFTOp::TWO_CHANNEL_MAGNITUDE_PHASE;
+    return BaseFFTOp::LOG_POWER_SPECTRUM;
+  }
+
+  static const char *sizeAdaptionName(BaseFFTOp::SizeAdaptionMode sam){
+    switch(sam){
+      case BaseFFTOp::NO_SCALE:   return "NO_SCALE";
+      case BaseFFTOp::PAD_ZERO:   return "PAD_ZERO";
+      case BaseFFTOp::PAD_COPY:   return "PAD_COPY";
+      case BaseFFTOp::PAD_MIRROR: return "PAD_MIRROR";
+      case BaseFFTOp::SCALE_UP:   return "SCALE_UP";
+      case BaseFFTOp::SCALE_DOWN: return "SCALE_DOWN";
+      case BaseFFTOp::PAD_REMOVE: return "PAD_REMOVE";
+    }
+    return "NO_SCALE";
+  }
+  static BaseFFTOp::SizeAdaptionMode parseSizeAdaption(const std::string &s){
+    if(s == "PAD_ZERO")   return BaseFFTOp::PAD_ZERO;
+    if(s == "PAD_COPY")   return BaseFFTOp::PAD_COPY;
+    if(s == "PAD_MIRROR") return BaseFFTOp::PAD_MIRROR;
+    if(s == "SCALE_UP")   return BaseFFTOp::SCALE_UP;
+    if(s == "SCALE_DOWN") return BaseFFTOp::SCALE_DOWN;
+    if(s == "PAD_REMOVE") return BaseFFTOp::PAD_REMOVE;
+    return BaseFFTOp::NO_SCALE;
+  }
+
   BaseFFTOp::BaseFFTOp(bool inverse, ResultMode rm, SizeAdaptionMode sam,
                        bool shift, bool forceDFT)
-    : m_data(new Data(inverse, rm, sam, shift, forceDFT)) {}
+    : m_data(new Data(inverse, rm, sam, shift, forceDFT)) {
+    addProperty("result mode","menu",RESULT_MODE_MENU,resultModeName(rm));
+    addProperty("size adaption","menu",SIZE_ADAPTION_MENU,sizeAdaptionName(sam));
+    addProperty("fft shift","flag","",shift);
+    addProperty("force DFT","flag","",forceDFT);
+    registerCallback([this](const Property &p){
+      if(p.name == "result mode")        m_data->m_rm       = parseResultMode(p.value);
+      else if(p.name == "size adaption") m_data->m_sam      = parseSizeAdaption(p.value);
+      else if(p.name == "fft shift")     m_data->m_shift    = parse<bool>(p.value);
+      else if(p.name == "force DFT")     m_data->m_forceDFT = parse<bool>(p.value);
+    });
+  }
 
   BaseFFTOp::~BaseFFTOp() { delete m_data; }
 
@@ -49,16 +114,28 @@ namespace icl::filter {
   // Getters / Setters
   // ================================================================
 
-  void BaseFFTOp::setResultMode(ResultMode rm) { m_data->m_rm = rm; }
+  void BaseFFTOp::setResultMode(ResultMode rm) {
+    prop("result mode").value = resultModeName(rm);
+    call_callbacks("result mode", this);
+  }
   BaseFFTOp::ResultMode BaseFFTOp::getResultMode() const { return m_data->m_rm; }
 
-  void BaseFFTOp::setSizeAdaptionMode(SizeAdaptionMode sam) { m_data->m_sam = sam; }
+  void BaseFFTOp::setSizeAdaptionMode(SizeAdaptionMode sam) {
+    prop("size adaption").value = sizeAdaptionName(sam);
+    call_callbacks("size adaption", this);
+  }
   BaseFFTOp::SizeAdaptionMode BaseFFTOp::getSizeAdaptionMode() const { return m_data->m_sam; }
 
-  void BaseFFTOp::setForceDFT(bool f) { m_data->m_forceDFT = f; }
+  void BaseFFTOp::setForceDFT(bool f) {
+    prop("force DFT").value = str(f);
+    call_callbacks("force DFT", this);
+  }
   bool BaseFFTOp::getForceDFT() const { return m_data->m_forceDFT; }
 
-  void BaseFFTOp::setShift(bool s) { m_data->m_shift = s; }
+  void BaseFFTOp::setShift(bool s) {
+    prop("fft shift").value = str(s);
+    call_callbacks("fft shift", this);
+  }
   bool BaseFFTOp::getShift() const { return m_data->m_shift; }
 
   bool BaseFFTOp::isInverse() const { return m_data->m_inverse; }

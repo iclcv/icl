@@ -13,6 +13,22 @@ using namespace icl::core;
 
 namespace icl::filter {
   void CannyOp::property_callback(const Property &p){
+    // Keep inner-loop caches in sync with the property store.
+    if(p.name == "low threshold"){
+      m_lowT = parse<icl32f>(p.value);
+    }else if(p.name == "high threshold"){
+      m_highT = parse<icl32f>(p.value);
+    }else if(p.name == "pre-blur radius"){
+      m_preBlurRadius = parse<int>(p.value);
+      ICL_DELETE(m_preBlurOp);
+      setUpPreBlurOp();
+    }
+  }
+
+  void CannyOp::addCannyProperties(icl32f lowThresh, icl32f highThresh, int preBlurRadius){
+    addProperty("low threshold","range:slider","[0,2000]",str(lowThresh));
+    addProperty("high threshold","range:slider","[0,2000]",str(highThresh));
+    addProperty("pre-blur radius","range:spinbox","[0,10]",str(preBlurRadius));
   }
 
   CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,int preBlurRadius):
@@ -23,6 +39,7 @@ namespace icl::filter {
     m_preBlurOp = 0;
     m_use_derivatives_info = false;
     setUpPreBlurOp();
+    addCannyProperties(lowThresh, highThresh, preBlurRadius);
     registerCallback([this](const Property &p){ property_callback(p); });
   }
 
@@ -34,6 +51,7 @@ namespace icl::filter {
     m_preBlurOp = 0;
     m_use_derivatives_info = false;
     setUpPreBlurOp();
+    addCannyProperties(lowThresh, highThresh, preBlurRadius);
     registerCallback([this](const Property &p){ property_callback(p); });
   }
 
@@ -88,16 +106,27 @@ namespace icl::filter {
   }
 #endif
 
-  static void followEdge(icl8u *mag, int w) {
-    *mag = 255;
-    if (mag[-w-1] == 1) followEdge(&mag[-w-1], w);
-    if (mag[-w] == 1) followEdge(&mag[-w], w);
-    if (mag[-w+1] == 1) followEdge(&mag[-w+1], w);
-    if (mag[-1] == 1) followEdge(&mag[-1], w);
-    if (mag[1] == 1) followEdge(&mag[1], w);
-    if (mag[w-1] == 1) followEdge(&mag[w-1], w);
-    if (mag[w] == 1) followEdge(&mag[w], w);
-    if (mag[w+1] == 1) followEdge(&mag[w+1], w);
+  // Iterative 8-connected flood fill (hysteresis propagation from strong=2
+  // pixels through connected weak=1 pixels). A recursive version blows the
+  // thread stack when the weak-edge component is large — e.g. low threshold
+  // near 0 on a VGA image, where almost every pixel ends up in state 1.
+  static void followEdge(icl8u *seed, int w) {
+    const int offsets[8] = { -w-1, -w, -w+1, -1, 1, w-1, w, w+1 };
+    std::vector<icl8u*> stack;
+    stack.reserve(64);
+    *seed = 255;
+    stack.push_back(seed);
+    while (!stack.empty()) {
+      icl8u *p = stack.back();
+      stack.pop_back();
+      for (int off : offsets) {
+        icl8u *q = p + off;
+        if (*q == 1) {
+          *q = 255;
+          stack.push_back(q);
+        }
+      }
+    }
   }
 
   void CannyOp::applyCanny32f(const Img32f &dx, const Img32f &dy, Img8u &dst, int c) {
@@ -313,16 +342,29 @@ namespace icl::filter {
 
 
   void CannyOp::setThresholds(icl32f lo, icl32f hi){
-    m_lowT = lo;
-    m_highT = hi;
+    prop("low threshold").value = str(lo);
+    call_callbacks("low threshold", this);
+    prop("high threshold").value = str(hi);
+    call_callbacks("high threshold", this);
   }
 
   icl32f CannyOp::getLowThreshold()const {
-    return m_lowT;
+    return parse<icl32f>(prop("low threshold").value);
   }
 
   icl32f CannyOp::getHighThreshold()const {
-    return m_highT;
+    return parse<icl32f>(prop("high threshold").value);
   }
 
+  void CannyOp::setPreBlurRadius(int r){
+    prop("pre-blur radius").value = str(r);
+    call_callbacks("pre-blur radius", this);
+  }
+
+  bool CannyOp::getPreBlurRadius() const {
+    // name retained for ABI — semantic is "pre-blur feature active"
+    return parse<int>(prop("pre-blur radius").value) > 0;
+  }
+
+  REGISTER_CONFIGURABLE_DEFAULT(CannyOp);
   } // namespace icl::filter
