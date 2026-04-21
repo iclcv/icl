@@ -15,7 +15,7 @@
 #include <icl/core/Img.h>
 #include <icl/filter/ImageUndistortion.h>
 
-namespace icl::io {
+namespace icl::cv {
   /**
       This class implements the image undistortion procedure.
       It is a reimplementation from the matlab toolbox
@@ -23,14 +23,14 @@ namespace icl::io {
       or use the optimze call where world points are generated automatically and
       layout of image points must be rowwise.
       */
-  class ICLIO_API IntrinsicCalibrator {
+  class ICLCV_API IntrinsicCalibrator {
 
     public:
     IntrinsicCalibrator(const IntrinsicCalibrator&) = delete;
     IntrinsicCalibrator& operator=(const IntrinsicCalibrator&) = delete;
 
     ///Simple struct for handle result of computation of intrinsics
-    struct ICLIO_API Result : public filter::ImageUndistortion{
+    struct ICLCV_API Result : public filter::ImageUndistortion{
 
       /// create a null result
       Result(){}
@@ -318,4 +318,4 @@ namespace icl::io {
     static Result optimize(const CalibrationData &data);
 
   };
-  } // namespace icl::io
+  } // namespace icl::cv

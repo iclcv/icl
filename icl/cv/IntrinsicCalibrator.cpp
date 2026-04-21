@@ -2,14 +2,14 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
-#include <icl/io/IntrinsicCalibrator.h>
+#include <icl/cv/IntrinsicCalibrator.h>
 #include <fstream>
 
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 
-namespace icl::io {
+namespace icl::cv {
   class IntrinsicCalibrator::Data{
   public:
     int bWidth;
@@ -1474,4 +1474,4 @@ namespace icl::io {
     }
     return calib.calibrate(I,W);
   }
-  } // namespace icl::io
+  } // namespace icl::cv
