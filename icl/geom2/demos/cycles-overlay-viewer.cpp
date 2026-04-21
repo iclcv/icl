@@ -54,6 +54,9 @@ void init() {
           << Slider(0, 100, 50).handle("alpha").label("GL Overlay %")
           << Slider(1, 16, 4).handle("bounces").label("Bounces")
           << Slider(10, 500, 100).handle("exposure").label("Exposure %")
+          << Combo("shaded,normals,albedo,UVs,lighting,NdotL,"
+                   "SSR confidence,depth,SSR only").handle("glDebug")
+                   .label("GL Debug")
           << Label("--").handle("info")))
      << Show();
 
@@ -83,6 +86,7 @@ void run() {
   // Update GL renderer overlay
   scene.getRenderer().setExposure(exposure);
   scene.getRenderer().setOverlayAlpha(alpha);
+  scene.getRenderer().setDebugMode(gui["glDebug"].as<ComboHandle>().getSelectedIndex());
 
   // Feed latest Cycles image as canvas background, then render GL on top
   gui["canvas"] = renderer->getImage();

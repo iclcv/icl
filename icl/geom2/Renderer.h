@@ -36,8 +36,13 @@ namespace icl::geom2 {
     /// so a background image (e.g. Cycles render) shows through.
     void setOverlayAlpha(float alpha);
 
-    /// Enable/disable screen-space reflections (default: enabled)
+    /// Enable/disable screen-space reflections (default: true)
     void setSSREnabled(bool enabled);
+
+    /// Set debug visualization mode
+    /** 0=shaded (default), 1=normals, 2=albedo, 3=UVs, 4=lighting only,
+        5=NdotL, 6=SSR confidence, 7=depth buffer, 8=SSR only */
+    void setDebugMode(int mode);
 
     /// Invalidate all geometry caches (call when scene structure changes)
     void invalidateCache();

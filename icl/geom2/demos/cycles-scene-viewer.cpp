@@ -11,6 +11,7 @@
 #include <icl/qt/Common.h>
 #include <icl/geom2/DemoScene2.h>
 #include <icl/geom2/CyclesRenderer.h>
+#include <icl/geom2/Renderer.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/utils/FPSLimiter.h>
 
@@ -41,9 +42,15 @@ void init() {
 
   scene.setup(files, viewSize);
 
-  // GUI: left = GL preview, right = Cycles raytrace
-  gui << Canvas3D(viewSize).handle("gl").minSize(16, 12)
-      << Display().handle("rt").minSize(16, 12)
+  // GUI: left = GL preview, right = Cycles raytrace, debug controls below
+  gui << (VSplit()
+       << (HSplit()
+          << Canvas3D(viewSize).handle("gl").minSize(16, 12)
+          << Display().handle("rt").minSize(16, 12))
+       << (HBox()
+          << Combo("shaded,normals,albedo,UVs,lighting,NdotL,"
+                   "SSR confidence,depth,SSR only").handle("glDebug")
+                   .label("GL Debug")))
       << Show();
 
   gui["gl"].link(scene.getGLCallback(0).get());
@@ -58,6 +65,7 @@ void init() {
 }
 
 void run() {
+  scene.getRenderer().setDebugMode(gui["glDebug"].as<ComboHandle>().getSelectedIndex());
   gui["gl"].render();
 
   renderer->render(0);

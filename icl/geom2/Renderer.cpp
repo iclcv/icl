@@ -82,6 +82,8 @@ uniform sampler2D uPrevDepthMap;
 uniform mat4 uPrevVP;
 uniform vec2 uScreenSize;
 
+uniform int uDebugMode;
+
 in vec3 vWorldPos;
 in vec3 vNormal;
 in vec2 vTexCoord;
@@ -103,63 +105,71 @@ vec3 sampleSky(vec3 dir) {
 vec4 traceSSR(vec3 worldPos, vec3 reflectDir, float roughness) {
     if (uSSREnabled == 0 || roughness > 0.7) return vec4(0.0);
 
-    // Reproject to previous frame screen space
-    vec4 startClip = uPrevVP * vec4(worldPos, 1.0);
-    vec3 startNDC = startClip.xyz / startClip.w;
-    vec2 startUV = startNDC.xy * 0.5 + 0.5;
-    float startDepth = startNDC.z * 0.5 + 0.5;
-
-    if (startUV.x < 0.0 || startUV.x > 1.0 || startUV.y < 0.0 || startUV.y > 1.0)
-        return vec4(0.0);
-
-    // Reflection ray endpoint in screen space
-    float probeDist = length(worldPos - uCameraPos) * 0.1;
-    vec3 probeWorld = worldPos + reflectDir * probeDist;
-    vec4 probeClip = uPrevVP * vec4(probeWorld, 1.0);
-    vec3 probeNDC = probeClip.xyz / probeClip.w;
-
-    // Screen-space ray direction
-    vec2 dir2D = (probeNDC.xy * 0.5 + 0.5) - startUV;
-    float dirLen = length(dir2D);
-    if (dirLen < 1e-6) return vec4(0.0);
-    float maxScreenDist = 0.4;
-    float scale = maxScreenDist / dirLen;
-    vec2 rayDir2D = dir2D * scale;
-    float depthSlope = ((probeNDC.z * 0.5 + 0.5) - startDepth) * scale;
-
-    // Depth-adaptive thickness
-    float thickness = 0.001 + startDepth * startDepth * 0.01;
-
-    // Linear ray march
+    // World-space ray march: step along the actual 3D reflection ray and
+    // project each sample to screen space. Unlike screen-space marching,
+    // this gives correct depth at every step and different ground pixels
+    // sample genuinely different screen positions due to perspective.
+    float camDist = length(worldPos - uCameraPos);
+    float maxDist = camDist * 0.5;
     int maxSteps = 64;
-    float stepSize = 1.0 / float(maxSteps);
+    float stepDist = maxDist / float(maxSteps);
+
+    // Per-pixel jitter to break step coherence
+    float jitter = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+
     float hitT = -1.0;
     vec2 hitUV = vec2(0.0);
+    float prevDepthDiff = -1.0;
+    float prevSceneDepth = 0.0;
 
-    for (int i = 2; i < maxSteps; i++) {
-        float t = float(i) * stepSize;
-        vec2 sampleUV = startUV + rayDir2D * t;
-        if (sampleUV.x < 0.0 || sampleUV.x > 1.0 || sampleUV.y < 0.0 || sampleUV.y > 1.0) break;
+    for (int i = 1; i < maxSteps; i++) {
+        float d = (float(i) + jitter) * stepDist;
+        vec3 sampleWorld = worldPos + reflectDir * d;
 
-        float rayDepth = startDepth + depthSlope * t;
+        vec4 sampleClip = uPrevVP * vec4(sampleWorld, 1.0);
+        if (sampleClip.w < 0.001) continue;
+        vec3 sampleNDC = sampleClip.xyz / sampleClip.w;
+        vec2 sampleUV = sampleNDC.xy * 0.5 + 0.5;
+        float rayDepth = sampleNDC.z * 0.5 + 0.5;
+
+        if (sampleUV.x < 0.0 || sampleUV.x > 1.0 ||
+            sampleUV.y < 0.0 || sampleUV.y > 1.0) break;
+
         float sceneDepth = texture(uPrevDepthMap, sampleUV).r;
-        if (sceneDepth > 0.999) continue;
+        if (sceneDepth > 0.999) { prevDepthDiff = -1.0; prevSceneDepth = 0.0; continue; }
+
+        // Depth-adaptive thickness (based on scene depth at sample)
+        float thickness = 0.0005 + sceneDepth * sceneDepth * 0.005;
 
         float depthDiff = rayDepth - sceneDepth;
-        if (depthDiff > 0.0 && depthDiff < thickness) {
-            hitT = t;
+
+        // Require sign change: ray was in front, now behind surface
+        if (depthDiff > 0.0 && depthDiff < thickness && prevDepthDiff <= 0.0) {
+            // Reject depth discontinuities (silhouette edges)
+            if (prevSceneDepth > 0.0 && abs(sceneDepth - prevSceneDepth) > thickness * 4.0) {
+                prevDepthDiff = depthDiff;
+                prevSceneDepth = sceneDepth;
+                continue;
+            }
+            hitT = float(i) / float(maxSteps);
             hitUV = sampleUV;
             break;
         }
+        prevDepthDiff = depthDiff;
+        prevSceneDepth = sceneDepth;
     }
     if (hitT < 0.0) return vec4(0.0);
 
-    // Binary refinement
-    float lo = hitT - stepSize, hi = hitT;
+    // Binary refinement in world space
+    float lo = (hitT * float(maxSteps) - 1.0) * stepDist;
+    float hi = hitT * float(maxSteps) * stepDist;
     for (int i = 0; i < 6; i++) {
         float mid = (lo + hi) * 0.5;
-        vec2 midUV = startUV + rayDir2D * mid;
-        float rayD = startDepth + depthSlope * mid;
+        vec3 midWorld = worldPos + reflectDir * mid;
+        vec4 midClip = uPrevVP * vec4(midWorld, 1.0);
+        if (midClip.w < 0.001) { lo = mid; continue; }
+        vec2 midUV = midClip.xy / midClip.w * 0.5 + 0.5;
+        float rayD = midClip.z / midClip.w * 0.5 + 0.5;
         float sceneD = texture(uPrevDepthMap, midUV).r;
         if (rayD > sceneD) { hi = mid; hitUV = midUV; }
         else               { lo = mid; }
@@ -169,12 +179,18 @@ vec4 traceSSR(vec3 worldPos, vec3 reflectDir, float roughness) {
     float confidence = 1.0;
     vec2 edgeDist = min(hitUV, 1.0 - hitUV);
     confidence *= smoothstep(0.0, 0.05, edgeDist.x) * smoothstep(0.0, 0.05, edgeDist.y);
-    confidence *= 1.0 - smoothstep(0.4, 0.8, hitT);
+    confidence *= 1.0 - smoothstep(0.3, 0.6, hitT);
     confidence *= 1.0 - smoothstep(0.3, 0.7, roughness);
 
-    float finalRayD = startDepth + depthSlope * hi;
-    float finalSceneD = texture(uPrevDepthMap, hitUV).r;
-    confidence *= 1.0 - smoothstep(0.0, thickness, abs(finalRayD - finalSceneD));
+    // Final depth-fit confidence
+    vec3 finalWorld = worldPos + reflectDir * hi;
+    vec4 finalClip = uPrevVP * vec4(finalWorld, 1.0);
+    if (finalClip.w > 0.001) {
+        float finalRayD = finalClip.z / finalClip.w * 0.5 + 0.5;
+        float finalSceneD = texture(uPrevDepthMap, hitUV).r;
+        float thickness = 0.0005 + finalSceneD * finalSceneD * 0.005;
+        confidence *= 1.0 - smoothstep(0.0, thickness, abs(finalRayD - finalSceneD));
+    }
 
     return vec4(texture(uPrevColorMap, hitUV).rgb, confidence);
 }
@@ -234,6 +250,43 @@ void main() {
     // SSR: blend with screen-space reflection where available
     vec4 ssrResult = traceSSR(vWorldPos, R, roughness);
     envReflection = mix(envReflection, ssrResult.rgb, ssrResult.a);
+
+    // Debug modes: 0=shaded, 1=normals, 2=albedo, 3=UVs, 4=lighting only,
+    //              5=NdotL, 6=SSR confidence, 7=depth buffer, 8=SSR only
+    if (uDebugMode == 1) { FragColor = vec4(N * 0.5 + 0.5, 1.0); return; }
+    if (uDebugMode == 2) { FragColor = vec4(albedo, 1.0); return; }
+    if (uDebugMode == 3) { FragColor = vec4(vTexCoord, 0.0, 1.0); return; }
+    if (uDebugMode == 4) {
+        vec3 litOnly = vec3(uAmbient);
+        for (int i = 0; i < uNumLights && i < MAX_LIGHTS; i++) {
+            vec3 L2 = normalize(uLightPos[i] - vWorldPos);
+            litOnly += uLightColor[i] * max(dot(N, L2), 0.0);
+        }
+        FragColor = vec4(clamp(litOnly * uExposure, 0.0, 1.0), 1.0); return;
+    }
+    if (uDebugMode == 5) {
+        float maxNdL = 0.0;
+        for (int i = 0; i < uNumLights && i < MAX_LIGHTS; i++) {
+            vec3 L2 = normalize(uLightPos[i] - vWorldPos);
+            maxNdL = max(maxNdL, dot(N, L2));
+        }
+        FragColor = vec4(vec3(maxNdL), 1.0); return;
+    }
+    if (uDebugMode == 6) {
+        // SSR confidence: green=hit, red=sky fallback
+        FragColor = vec4(1.0 - ssrResult.a, ssrResult.a, 0.0, 1.0); return;
+    }
+    if (uDebugMode == 7) {
+        // Depth buffer: linearized for visualization
+        float d = gl_FragCoord.z;
+        float near = 0.1, far = 100000.0;
+        float lin = (2.0 * near) / (far + near - d * (far - near));
+        FragColor = vec4(vec3(lin), 1.0); return;
+    }
+    if (uDebugMode == 8) {
+        // SSR only: shows reflected color where SSR hits, black elsewhere
+        FragColor = vec4(ssrResult.rgb * ssrResult.a, 1.0); return;
+    }
 
     // Fresnel: roughness-aware Schlick (Lagarde 2014)
     float NdotV = max(dot(N, V), 0.0);
@@ -594,6 +647,10 @@ void main() {
     GLint locSSREnabled = -1, locPrevColorMap = -1, locPrevDepthMap = -1;
     GLint locPrevVP = -1, locScreenSize = -1;
 
+    // Debug mode
+    int debugMode = 0;
+    GLint locDebugMode = -1;
+
     // Unlit uniform locations
     GLint locUnlitMVP = -1, locUnlitPointSize = -1;
 
@@ -608,7 +665,7 @@ void main() {
     int ssrCurrentIdx = 0;
     int ssrWidth = 0, ssrHeight = 0;
     bool ssrFirstFrame = true;
-    bool ssrEnabled = false;  // TODO: debug vertical streak artifacts before enabling
+    bool ssrEnabled = true;
     Mat prevView, prevProj;
 
     // Fullscreen quad VAO for blit
@@ -723,6 +780,7 @@ void main() {
   void Renderer::setAmbient(float a) { m_data->ambient = a; }
   void Renderer::setOverlayAlpha(float a) { m_data->overlayAlpha = a; }
   void Renderer::setSSREnabled(bool e) { m_data->ssrEnabled = e; }
+  void Renderer::setDebugMode(int mode) { m_data->debugMode = mode; }
   void Renderer::invalidateCache() {
     m_data->cache.clear();
     m_data->pcCache.clear();
@@ -769,6 +827,7 @@ void main() {
       m_data->locPrevDepthMap = glGetUniformLocation(m_data->pbrProgram, "uPrevDepthMap");
       m_data->locPrevVP = glGetUniformLocation(m_data->pbrProgram, "uPrevVP");
       m_data->locScreenSize = glGetUniformLocation(m_data->pbrProgram, "uScreenSize");
+      m_data->locDebugMode = glGetUniformLocation(m_data->pbrProgram, "uDebugMode");
       for (int i = 0; i < 8; i++) {
         char buf[64];
         snprintf(buf, sizeof(buf), "uLightPos[%d]", i);
@@ -880,11 +939,21 @@ void main() {
     GLint mainFBO = 0;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &mainFBO);
 
-    bool useSSR = m_data->ssrEnabled && vpW > 0 && vpH > 0;
-    if (useSSR) {
+    // SSR has two independent concerns:
+    // - ssrWrite: render to FBO, blit back, update ping-pong (only in normal mode)
+    // - ssrRead: bind prev-frame textures so traceSSR() works (always when data exists)
+    // In debug modes, we read SSR data but don't write to the FBO, so the
+    // ping-pong stays frozen from the last normal frame instead of degrading.
+    bool needSSR = m_data->ssrEnabled || (m_data->debugMode >= 6 && m_data->debugMode <= 8);
+    bool ssrAvail = needSSR && vpW > 0 && vpH > 0;
+    bool ssrWrite = ssrAvail && m_data->debugMode == 0;
+    bool ssrRead = ssrAvail && !m_data->ssrFirstFrame;
+
+    if (ssrAvail) {
       m_data->ensureSSRBuffers(vpW, vpH);
       m_data->ensureQuadVAO();
-
+    }
+    if (ssrWrite) {
       int writeIdx = m_data->ssrCurrentIdx;
       glBindFramebuffer(GL_FRAMEBUFFER, m_data->ssrFBO[writeIdx]);
       glViewport(0, 0, vpW, vpH);
@@ -902,7 +971,8 @@ void main() {
     setUniformMat4(m_data->locView, viewMatrix);
     glUniform1f(m_data->locAmbient, m_data->ambient);
     glUniform1f(m_data->locExposure, m_data->exposure);
-    glUniform1f(m_data->locOverlayAlpha, useSSR ? 1.0f : m_data->overlayAlpha);
+    glUniform1f(m_data->locOverlayAlpha, ssrWrite ? 1.0f : m_data->overlayAlpha);
+    glUniform1i(m_data->locDebugMode, m_data->debugMode);
 
     // Camera position from view matrix
     float camX = -(viewMatrix(0, 0)*viewMatrix(0, 3) + viewMatrix(1, 0)*viewMatrix(1, 3) + viewMatrix(2, 0)*viewMatrix(2, 3));
@@ -918,10 +988,9 @@ void main() {
       glUniform3fv(m_data->locLightColor[i], 1, m_data->lights[i].color);
     }
 
-    // SSR: bind previous frame's textures
-    bool ssrActive = useSSR && !m_data->ssrFirstFrame;
-    glUniform1i(m_data->locSSREnabled, ssrActive ? 1 : 0);
-    if (ssrActive) {
+    // SSR: bind previous frame's textures for reading
+    glUniform1i(m_data->locSSREnabled, ssrRead ? 1 : 0);
+    if (ssrRead) {
       int readIdx = 1 - m_data->ssrCurrentIdx;
       glActiveTexture(GL_TEXTURE9);
       glBindTexture(GL_TEXTURE_2D, m_data->ssrColorTex[readIdx]);
@@ -942,15 +1011,17 @@ void main() {
       renderNode(node.get(), viewMatrix);
     }
 
-    // SSR: composite back to main framebuffer
-    if (useSSR) {
-      // Unbind prev-frame textures
+    // Unbind prev-frame SSR textures
+    if (ssrRead) {
       glActiveTexture(GL_TEXTURE9);
       glBindTexture(GL_TEXTURE_2D, 0);
       glActiveTexture(GL_TEXTURE10);
       glBindTexture(GL_TEXTURE_2D, 0);
       glActiveTexture(GL_TEXTURE0);
+    }
 
+    // SSR write path: composite FBO back to main framebuffer, update ping-pong
+    if (ssrWrite) {
       glBindFramebuffer(GL_FRAMEBUFFER, mainFBO);
       glViewport(viewport[0], viewport[1], vpW, vpH);
 
