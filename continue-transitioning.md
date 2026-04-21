@@ -1,6 +1,42 @@
 # ICL — Continuation Guide
 
-## Current State (Session 36 — SSR rewrite + reflectivity + demo scene)
+## Current State (Session 37 — Shadow mapping + soft shadows + renderer fixes)
+
+### Session 37 Summary (4 commits)
+
+Ported shadow mapping from geom GLRenderer to geom2 Renderer, added
+per-light soft shadows with Poisson disk PCF, fixed several rendering issues.
+
+#### A. Shadow mapping pipeline
+
+Shadow depth pass ported from geom `GLRenderer` (4× 2048² FBOs,
+`sampler2DShadow` with `GL_COMPARE_REF_TO_TEXTURE` for hardware PCF).
+Light VP matrix auto-computed from LightNode world position (lookAt toward
+origin + 90° perspective). Per-light shadow slot mapping in PBR shader via
+`uLightShadowSlot[8]` → `uShadowMatrix[4]` → `sampleShadow()`.
+
+#### B. Per-light soft shadows
+
+`LightNode::setSoftShadowRadius(float texels)` — 0 = hard (default),
+\>0 = 16-sample Poisson disk PCF. Radius stored per shadow slot as
+`uShadowSoftness[slot]` (converted from texels to UV space). Hard shadows
+take the fast single-sample path with zero overhead.
+
+DemoScene2: key light gets soft shadows (radius 3), top light hard shadows.
+Overlay viewer has interactive shadow softness slider (0-20).
+
+#### C. Rendering fixes
+
+- **Scene2::render()**: letterbox viewport to preserve camera aspect ratio
+  (was stretching when widget AR ≠ camera AR)
+- **Billboard text Y-flip**: negate local Y column of billboard matrix
+  (ICL projection uses Y-down image convention)
+- **Billboard text unlit**: added `uUnlit` flag to PBR shader — when set,
+  outputs baseColorMap directly without lighting (keeps alpha for transparency)
+- **TextNodes excluded from shadow depth pass** (no box shadows from labels)
+- **Light color auto-detection**: `collectLights()` handles both 0-1 and
+  0-255 GeomColor ranges (LightNode defaults are 0-1, old demos use 0-255)
+- **Renderer destructor**: properly cleans up GL resources (programs, FBOs, textures)
 
 ### Session 36 Summary (4 commits)
 
@@ -88,14 +124,11 @@ only, not on presence of normals. Previously any geometry with normals
 - Uses `executeInGUIThread()` for save dialog (blocking, from worker thread)
 
 **Shadow maps** (DONE — Session 37):
-- `LightNode::setShadowEnabled()` was already in place
-- Shadow depth pass ported from geom GLRenderer (4 maps, 2048×2048, sampler2DShadow)
-- Shadow sampling in PBR shader with hardware PCF via `GL_COMPARE_REF_TO_TEXTURE`
-- Auto-computed light VP matrix from LightNode world transform (lookAt + 90° perspective)
-- `Renderer::setShadowsEnabled()` API added
-- Demos updated: geom2-hello + cycles-renderer-test both enable shadows
-- TODO: shadow camera direction/FOV controls on LightNode, PCF soft shadow taps,
-  directional light ortho projection, debug visualization mode for shadow maps
+- Full pipeline: depth FBOs, shadow depth pass, PBR integration, soft PCF
+- See Session 37 summary above for details
+- TODO: shadow camera direction/FOV controls on LightNode,
+  directional light ortho projection, PCSS (variable penumbra),
+  debug visualization mode for shadow maps
 
 **geom2 API cleanup**:
 - Scene2 getters: return references or shared_ptrs instead of raw pointers
