@@ -14,6 +14,8 @@
   as background before the GL callback (was missing — known limitation fixed).
 - Legacy path also uses GLImageRenderer (replaces `GLImg::draw2D`).
 - Both paths use `glViewport(imageRect)` → `render()` → restore viewport.
+- Thread safety: `std::recursive_mutex` guards `storedImage` in GLImageRenderer —
+  `update()` runs from worker thread, `getColor()`/`getStats()` from GUI thread.
 - GLImg kept for OSD button icons (legacy path only) and DrawWidget/GLPaintEngine 3D
   texture uses. Can be fully deprecated later.
 

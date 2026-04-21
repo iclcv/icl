@@ -97,9 +97,10 @@ struct GLImageRenderer::Data {
   bool glReady = false;
   GLint locScale = -1, locBCIScale = -1, locBCIBias = -1;
 
-  // Stored image
+  // Stored image (guarded by mutex for thread safety)
   ImgBase *storedImage = nullptr;
   bool imageNull = true;
+  mutable std::recursive_mutex imageMutex;
 
   // BCI
   int bci[3] = {0, 0, 0};
@@ -269,6 +270,7 @@ struct GLImageRenderer::Data {
   void drawQuad() {
     if (!program || imageNull) return;
 
+    std::lock_guard<std::recursive_mutex> lock(imageMutex);
     updateBCI();
     uploadTexture();
 
@@ -367,6 +369,7 @@ void GLImageRenderer::update(const ImgBase *src) {
     clear();
     return;
   }
+  std::lock_guard<std::recursive_mutex> lock(m_data->imageMutex);
   if (m_data->storedImage) {
     delete m_data->storedImage;
   }
@@ -378,6 +381,7 @@ void GLImageRenderer::update(const ImgBase *src) {
 }
 
 void GLImageRenderer::clear() {
+  std::lock_guard<std::recursive_mutex> lock(m_data->imageMutex);
   delete m_data->storedImage;
   m_data->storedImage = nullptr;
   m_data->imageNull = true;
@@ -427,6 +431,7 @@ void GLImageRenderer::setBCI(int b, int c, int i) {
 }
 
 std::vector<icl64f> GLImageRenderer::getColor(int x, int y) const {
+  std::lock_guard<std::recursive_mutex> lock(m_data->imageMutex);
   if (m_data->imageNull) return {};
   const ImgBase *img = m_data->storedImage;
   if (x < 0 || y < 0 || x >= img->getWidth() || y >= img->getHeight()) return {};
@@ -446,11 +451,13 @@ std::vector<icl64f> GLImageRenderer::getColor(int x, int y) const {
 }
 
 const ImageStatistics &GLImageRenderer::getStats() const {
+  std::lock_guard<std::recursive_mutex> lock(m_data->imageMutex);
   m_data->computeStats();
   return m_data->stats;
 }
 
 const ImgBase *GLImageRenderer::extractDisplay() const {
+  std::lock_guard<std::recursive_mutex> lock(m_data->imageMutex);
   return m_data->storedImage;
 }
 
