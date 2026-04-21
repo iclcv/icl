@@ -718,6 +718,10 @@ struct GLRenderer::Data {
   bool ssrEnabled = true;
   Mat prevViewMatrix, prevProjectionMatrix;
 
+  // Projection crop matrix for zoom (identity = no crop)
+  Mat projCropMatrix = Mat::id();
+  bool hasProjCrop = false;
+
   // Overlay mode
   bool hideSky = false;
   float overlayAlpha = 1.0f;
@@ -1103,30 +1107,64 @@ void GLRenderer::render(const Scene &scene, int camIndex,
     return;
   }
 
-  // Read zoom-aware viewport from widget
-  Rect imageRect = widget->getImageRect(true);
   float dpr = widget->devicePixelRatioF();
-  Size widgetSize = widget->getSize();
 
-  int vpX, vpY, vpW, vpH;
-  vpW = (int)(imageRect.width * dpr);
-  vpH = (int)(imageRect.height * dpr);
   if (widget->getFitMode() == qt::ICLWidget::fmZoom) {
-    float dy = imageRect.height - widgetSize.height;
-    vpX = (int)(imageRect.x * dpr);
-    vpY = (int)((-dy - imageRect.y) * dpr);
-  } else {
-    vpX = (int)(imageRect.x * dpr);
-    vpY = (int)(imageRect.y * dpr);
-  }
+    // Crop matrix approach: render at native viewport, modify projection
+    // to show only the zoomed sub-region. No oversized FBOs needed.
+    Rect32f zr = widget->getZoomRect();
+    float zw = std::max(zr.width, 1e-6f);
+    float zh = std::max(zr.height, 1e-6f);
+    float sx = 1.0f / zw;
+    float sy = 1.0f / zh;
+    float tx = (1.0f - 2.0f * zr.x - zw) / zw;
+    float ty = (2.0f * zr.y + zh - 1.0f) / zh;
+    m_data->projCropMatrix = Mat(sx, 0,  0, tx,
+                                 0,  sy, 0, ty,
+                                 0,  0,  1, 0,
+                                 0,  0,  0, 1);
+    m_data->hasProjCrop = true;
 
-  renderWithViewport(scene, camIndex, vpX, vpY, vpW, vpH);
+    // Use native viewport: letterboxed for the crop sub-region's AR
+    Size imgSize = widget->getImageSize(true);
+    float cropW_px = std::max(1.0f, imgSize.width * zr.width);
+    float cropH_px = std::max(1.0f, imgSize.height * zr.height);
+    float cropAR = cropW_px / cropH_px;
+    Size ws = widget->getSize();
+    float widgetAR = (float)ws.width / std::max(1, ws.height);
+    int vpX, vpY, vpW, vpH;
+    if (cropAR >= widgetAR) {
+      float sf = (float)ws.width / cropW_px;
+      vpW = (int)(ws.width * dpr);
+      vpH = (int)(cropH_px * sf * dpr);
+      vpX = 0;
+      vpY = (int)((ws.height - cropH_px * sf) * 0.5f * dpr);
+    } else {
+      float sf = (float)ws.height / cropH_px;
+      vpW = (int)(cropW_px * sf * dpr);
+      vpH = (int)(ws.height * dpr);
+      vpX = (int)((ws.width - cropW_px * sf) * 0.5f * dpr);
+      vpY = 0;
+    }
+    renderWithViewport(scene, camIndex, vpX, vpY, vpW, vpH);
+    m_data->hasProjCrop = false;
+  } else {
+    Rect imageRect = widget->getImageRect(true);
+    int vpX = (int)(imageRect.x * dpr);
+    int vpY = (int)(imageRect.y * dpr);
+    int vpW = (int)(imageRect.width * dpr);
+    int vpH = (int)(imageRect.height * dpr);
+    renderWithViewport(scene, camIndex, vpX, vpY, vpW, vpH);
+  }
 }
 
 void GLRenderer::renderWithViewport(const Scene &scene, int camIndex,
                                           int vpX, int vpY, int vpW, int vpH) {
   const Camera &cam = scene.getCamera(camIndex);
   Mat projGL = cam.getProjectionMatrixGL();
+  if (m_data->hasProjCrop) {
+    projGL = m_data->projCropMatrix * projGL;
+  }
   Mat viewGL = cam.getCSTransformationMatrixGL();
 
   // Collect shadow-enabled lights (up to MAX_SHADOWS)
