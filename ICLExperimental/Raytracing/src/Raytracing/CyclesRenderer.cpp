@@ -30,6 +30,10 @@
 #include <cmath>
 #include <mutex>
 #include <vector>
+#include <thread>
+#include <atomic>
+#include <functional>
+#include <chrono>
 
 using namespace ccl;
 
@@ -41,10 +45,11 @@ class ICLOutputDriver : public OutputDriver {
 public:
   void write_render_tile(const Tile &tile) override {
     captureTile(tile);
+    if (m_onImageReady) {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      m_onImageReady(m_image);
+    }
   }
-
-  // Don't capture intermediate tiles — only write_render_tile (above) fires
-  // when the target sample count is reached, giving a clean image per step.
 
   const core::Img8u &getImage() const {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -54,7 +59,12 @@ public:
   int getUpdateCount() const { return m_updateCount; }
   void resetUpdateCount() { m_updateCount = 0; }
 
+  void setOnImageReady(std::function<void(const core::Img8u &)> cb) {
+    m_onImageReady = std::move(cb);
+  }
+
 private:
+  std::function<void(const core::Img8u &)> m_onImageReady;
   void captureTile(const Tile &tile) {
     try {
       if (!(tile.size == tile.full_size))
@@ -139,6 +149,11 @@ struct CyclesRenderer::Impl {
   int target = 0;          // current Cycles sample target
   int updateCountAtReset = 0; // OutputDriver update count when reset was issued
   double resetTime = 0;       // time when reset was issued (for timing)
+
+  // Autonomous rendering thread
+  std::thread managementThread;
+  std::atomic<bool> running{false};
+  std::atomic<int> activeCamIndex{0};
 
   // Change detection
   float lastCamHash = 0;
@@ -244,6 +259,7 @@ CyclesRenderer::CyclesRenderer(geom::Scene &scene, RenderQuality quality)
     : m_impl(std::make_unique<Impl>(scene, quality)) {}
 
 CyclesRenderer::~CyclesRenderer() {
+  stop();
   if (m_impl && m_impl->session) {
     m_impl->session->cancel();
   }
@@ -483,6 +499,32 @@ void CyclesRenderer::setDevice(const std::string &device) {
 
 void CyclesRenderer::setSceneScale(float scale) {
   m_impl->sceneScale = scale;
+}
+
+void CyclesRenderer::setOnImageReady(std::function<void(const core::Img8u &)> cb) {
+  m_impl->outputDriver->setOnImageReady(std::move(cb));
+}
+
+void CyclesRenderer::start(int camIndex) {
+  if (m_impl->running) return;
+  m_impl->activeCamIndex = camIndex;
+  m_impl->running = true;
+  m_impl->dirty = true;  // ensure first render fires
+
+  m_impl->managementThread = std::thread([this]() {
+    while (m_impl->running) {
+      render(m_impl->activeCamIndex);
+      std::this_thread::sleep_for(std::chrono::milliseconds(16));
+    }
+  });
+}
+
+void CyclesRenderer::stop() {
+  if (!m_impl->running) return;
+  m_impl->running = false;
+  if (m_impl->managementThread.joinable()) {
+    m_impl->managementThread.join();
+  }
 }
 
 } // namespace icl::rt

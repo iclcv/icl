@@ -7,6 +7,7 @@
 #include <ICLCore/Img.h>
 #include <memory>
 #include <string>
+#include <functional>
 
 namespace icl::geom {
   class Scene;
@@ -38,15 +39,27 @@ public:
   CyclesRenderer(CyclesRenderer &&) noexcept;
   CyclesRenderer &operator=(CyclesRenderer &&) noexcept;
 
-  /// Render the scene from the given camera (non-blocking).
-  /// Call repeatedly; progressive results available via getImage().
+  /// Start autonomous rendering: internal thread drives progressive refinement.
+  /// Calls onImageReady callback (if set) whenever a new result is available.
+  /// Call invalidateAll() when scene changes — the renderer restarts automatically.
+  void start(int camIndex = 0);
+
+  /// Stop autonomous rendering and join the management thread.
+  void stop();
+
+  /// Set callback for new progressive results (called from render thread).
+  /// The callback receives a const reference to the latest image.
+  void setOnImageReady(std::function<void(const core::Img8u &)> cb);
+
+  /// Render the scene from the given camera (non-blocking, poll-driven).
+  /// Legacy API: call repeatedly from run() loop. Prefer start()/stop().
   void render(int camIndex = 0);
 
   /// Blocking render: syncs scene, renders all samples, returns when done.
   /// Use for offline/headless rendering.
   void renderBlocking(int camIndex = 0);
 
-  /// Get the latest rendered frame (progressively refined in interactive mode).
+  /// Get the latest rendered frame (progressively refined, thread-safe).
   const core::Img8u &getImage() const;
 
   /// Quality preset control.

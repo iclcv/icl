@@ -68,6 +68,9 @@ static void init() {
   DrawHandle3D canvas = gui["canvas"];
   canvas->install(new MouseHandler(handleMouse));
   canvas->link(scene.getGLCallback(0));
+
+  // Start autonomous rendering — fires callback on each progressive result
+  renderer->start(0);
 }
 
 static void run() {
@@ -75,7 +78,6 @@ static void run() {
   float exposure = gui["exposure"].as<float>() / 100.0f;
   int bounces = gui["bounces"].as<int>();
 
-  // todo: future: the renderer couild become Configurable (then such features should automatically create a UI)
   renderer->setMaxBounces(bounces);
   renderer->setExposure(exposure);
   renderer->setBrightness(scene.getSky().intensity * 100.0f);
@@ -83,8 +85,6 @@ static void run() {
   scene.getRendererGL().setExposure(exposure);
   scene.getRendererGL().setOverlayAlpha(alpha);
 
-  // ok, interesting .. maybe we can move that into a debug-feature in the scene class 
-  // like it has an enum of DebugMaterials (and a function to apply them) and then we can just use that here?
   // Material preset
   static int lastMat = -1;
   int matIdx = gui["material"].as<ComboHandle>().getSelectedIndex();
@@ -95,8 +95,7 @@ static void run() {
       scene.getObject(i)->prepareForRendering();
   }
 
-  // Render Cycles + set as background (triggers widget redraw + GL callback)
-  renderer->render(0);
+  // Pull latest Cycles image (renderer runs autonomously via start())
   DrawHandle3D canvas = gui["canvas"];
   canvas = &renderer->getImage();
   canvas.render();
@@ -104,6 +103,9 @@ static void run() {
   static FPSEstimator fpsEst(10);
   gui["info"] = fpsEst.formatted("%d spp | #fps fps | GL %.0f%%",
                                   renderer->getUpdateCount(), alpha * 100);
+
+  static FPSLimiter fpslim(30);
+  fpslim.wait();
 }
 
 int main(int argc, char **argv) {
