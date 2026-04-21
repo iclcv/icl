@@ -2,39 +2,35 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
-#include <icl/io/FileGrabber.h>
-#include <icl/core/CoreFunctions.h>
-#include <icl/io/FileWriter.h>
 #include <icl/filter/LocalThresholdOp.h>
-#include <icl/core/CCFunctions.h>
 #include <icl/utils/ConfigFile.h>
 #include <icl/qt/Common2.h>
-#include <icl/io/FileList.h>
 
 #include <QInputDialog>
 #include <mutex>
+
 HBox gui;
 GenericGrabber grabber;
 LocalThresholdOp ltop;
 std::recursive_mutex mtex;
-Rect selroi[3];
+Rect draggedRoi, usedRoi, fullImageRoi;
 
 void step();
 
 void mouse(const MouseEvent &e){
   if(e.isRight()){
-    selroi[1] = selroi[2];
-    selroi[0] = Rect::null;
+    usedRoi = fullImageRoi;
+    draggedRoi = Rect::null;
     step();
   }else if(e.isLeft()){
     if(e.isPressEvent()){
-      selroi[0] = Rect(e.getPos(),Size(1,1));
+      draggedRoi = Rect(e.getPos(),Size(1,1));
     }else if(e.isDragEvent()){
-      selroi[0].width = e.getX() - selroi[0].x;
-      selroi[0].height = e.getY() - selroi[0].y;
+      draggedRoi.width = e.getX() - draggedRoi.x;
+      draggedRoi.height = e.getY() - draggedRoi.y;
     }else if(e.isReleaseEvent()){
-      selroi[1] = selroi[0].normalized();
-      selroi[0] = Rect::null;
+      usedRoi = draggedRoi.normalized() & fullImageRoi;
+      draggedRoi = Rect::null;
     }
     step();
   }
@@ -81,32 +77,35 @@ void step(){
     bool init = !image;
     image = grabber.grabImage();
     if(init){
-      selroi[0]=selroi[2]=image.getImageRect();
+      draggedRoi=fullImageRoi=image.getImageRect();
     }
   }
 
   Image useImage = image;
-  if(selroi[1] != image.getImageRect()){
+  if(usedRoi != image.getImageRect()){
     useImage = image.shallowCopy();
-    useImage.setROI(selroi[1]);
+    useImage.setROI(usedRoi);
   }
 
+  int minDim = 2 * masksize + 1;
   Time last = Time::now();
   Image result;
-  ltop.apply(useImage, result);
+  if(usedRoi.width >= minDim && usedRoi.height >= minDim){
+    ltop.apply(useImage, result);
+  }
   time = str((Time::now()-last).toMilliSeconds())+"ms";
 
   orig = image;
 
-  if(selroi[0] != Rect::null){
+  if(draggedRoi != Rect::null){
     orig->color(0,100,255);
     orig->fill(0,100,255,20);
-    orig->rect(selroi[0]);
+    orig->rect(draggedRoi);
   }
 
   orig->color(255,0,0);
   orig->nofill();
-  orig->rect(selroi[1]);
+  orig->rect(usedRoi);
   orig.render();
 
   prev = result;
@@ -159,73 +158,15 @@ void init(){
   step();
 }
 
-
-void batch_mode(){
-  if(pa("-config")){
-    ConfigFile f(*pa("-config"));
-    int masksize = f["config.masksize"];
-    int thresh = f["config.threshold"];
-    float gamma = f["config.gammaslope"];
-    if(!pa("-output")){
-      std::cout << "please specify output file pattern" << std::endl;
-      return;
-    }
-
-    grabber.init(pa("-i"));
-    FileList fl;
-    int maxSteps = -1;
-    if(grabber.getType() == "file"){
-      fl = FileList(*pa("-input",1));
-      maxSteps = fl.size();
-    }
-
-    FileWriter w(*pa("-output"));
-    LocalThresholdOp t;
-    t.setMaskSize(masksize);
-    t.setGlobalThreshold(thresh);
-    t.setGammaSlope(gamma);
-
-    int i=0;
-    while(maxSteps < 0 || maxSteps--){
-      if(maxSteps > 0){
-        std::cout << "processing image " << fl[i++] << " ...";
-      }
-      Image grabImg = grabber.grabImage();
-      Image image = grabImg.getFormat() != formatGray ? gray(grabImg) : grabImg;
-
-      Image dst;
-      t.apply(image, dst);
-      w.write(dst.ptr());
-      std::cout << " done!" << std::endl;
-      std::cout << "writing image to " << w.getFilenameGenerator().showNext() << std::endl;
-    }
-  }else{
-    ERROR_LOG("please run with -config config-filename!");
-    return;
-  }
-}
-
 void run(){
   while(!gui["loop"].as<bool>()) Thread::msleep(100);
   step();
 }
 
-int main (int argc, char **argv) {
-  pa_explain("-input","generic-grabbers generic grabbers params")
-            ("-config","config file input")
-            ("-size","grabbers desired image size")
-            ("-nogui","start without gui")
-            ("-output","for no gui batchmode: define output-image pattern\n"
-             "use ##### for the image index in this pattern");
-
-  pa_init(argc,argv,"[m]-input|-i(device,device-params) "
-          "-output|-o(output-file-pattern) -config|-c(cfg-filename) "
-          " -nogui|-n -color -size|-s(size=VGA)");
-
-
-  if(pa("-nogui")){
-    batch_mode();
-  }else{
-    return ICLApp(argc,argv,"",init,run).exec();
-  }
+int main(int argc, char **argv){
+  return ICLApp(argc, argv,
+                "[m]-input|-i(device,device-params) "
+                "-config|-c(cfg-filename) "
+                "-color -size|-s(size=VGA)",
+                init, run).exec();
 }

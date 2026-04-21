@@ -1,6 +1,68 @@
 # ICL — Continuation Guide
 
-## Current State (Session 40 — Module audit: utils, core, math)
+## Current State (Session 41 — Filter module audit + framework bug fixes)
+
+### Session 41 Summary
+
+Filter module audit complete. Three critical framework bugs found and fixed.
+Color-segmentation app ported to geom2. All compiler warnings eliminated.
+
+#### A. Filter demos/apps audit (all 10 demos + 4 apps checked)
+
+- **Modernized** 8 files: affine-op, bilateral-filter-op, convolution-op,
+  gabor-op, temporal-smoothing, filter-array, local-thresh, rectify-image
+  (Image-based apply, smart pointers, removed raw ImgBase* buffers)
+- **dither-op, fft, pseudo-color, canny-op** — already clean, no changes
+- **warp-op** — fixed gui key bug (`gui["lin"]` → `gui["interpolation"]`)
+- **bilateral-filter-op** — major cleanup: removed unused geom includes,
+  eliminated template dispatch, simplified to Image pipeline
+- **color-segmentation** — ported from geom::Scene to geom2::Scene2
+  (GroupNode + CuboidNode children, MeshNode for axes, TextNode for labels,
+  3 separate mouse handlers instead of widget-dispatch pattern)
+- **local-thresh** — split into GUI app + headless `local-thresh-batch` CLI;
+  fixed ROI clamping to image bounds, skip filter when ROI too small for mask
+- **rectify-image** — TODO: mouse install for DefineQuadrangleMouseHandler
+  not working via DataStore::install(void*), needs investigation
+
+#### B. clipped_cast UB fix (ClippedCast.h) — CRITICAL
+
+`static_cast<icl8u>(-FLT_MAX)` is undefined behavior. On ARM/Apple Clang
+with optimizations, this caused `clipped_cast<icl8u,icl32f>` to always
+return `-FLT_MAX`, breaking ALL SSE-path color conversions framework-wide.
+Rewritten with `if constexpr` dispatch: int→float just casts, float→int
+clamps, int→int uses wide intermediary. Added 5 tests.
+
+#### C. sse_for pointer underflow fix (SSEUtils.h)
+
+`dstEnd - (step - 1)` wraps when image dim < step (16 pixels), causing
+the SSE loop to process garbage. Fixed all 64 occurrences with safe guard:
+`(dstEnd - dst0 >= step) ? dstEnd - (step - 1) : dst0`.
+
+#### D. ColorSegmentationOp::lutEntry fix
+
+- Loop start `a-rA` goes negative when `a=0`, step 256 skips all valid bins.
+  Fixed with `std::max(0, ...)` clamping + precomputed end values.
+- Missing `return` on the `fmt == m_segFormat` early path (fell through to
+  double-conversion).
+- `pow(2, shift)` → `1 << shift`.
+
+#### E. Compiler warnings eliminated
+
+- Added `override` to 30 methods in PointCloudObject.h, PCLPointCloudObject.h,
+  PointCloudObjectBase.h
+- Fixed `class`/`struct` ViewRay mismatch in Scene2.h, BVH.h, RayCastOctree.h
+- Removed unused variables in SceneSynchronizer.cpp
+- Debug build now produces zero warnings from ICL code
+
+#### F. cc() color conversion tests
+
+Added 3 tests: 1x1 image conversion, RGB→YUV→RGB roundtrip, large image
+spot-check. Verified SSE path matches scalar path within ±1.
+
+#### G. Build system
+
+- Disabled ccache (was causing spurious rebuilds + stale .ninja_deps)
+- Fixed corrupted .ninja_deps by deleting and rebuilding
 
 ### Session 40 Summary
 
@@ -69,7 +131,7 @@ Major framework improvements along the way.
 ### What's next
 
 **Module audit** — continue through remaining modules:
-- [ ] filter (demos: 10; apps: 4)
+- [x] filter (demos: 10; apps: 4+1 batch) — done Session 41
 - [ ] io (demos: 3; apps: 12)
 - [ ] cv (demos: 12; apps: 6)
 - [ ] qt (demos: 8; apps: 7; examples: 2)
@@ -77,6 +139,14 @@ Major framework improvements along the way.
 - [ ] geom2 (demos: 6)
 - [ ] markers (demos: 2; apps: 8)
 - [ ] physics (demos: 8)
+
+**Open filter items:**
+- rectify-image: DefineQuadrangleMouseHandler install via DataStore not working.
+  `gui["draw"].install(&mouse)` passes void* which loses MI base offset.
+  Need to fix DataStore::install or add explicit MouseHandler* overload.
+- DataStore::install(void*) is fragile for multiple-inheritance MouseHandlers
+  in general — affects DefineQuadrangleMouseHandler, DragRectangleMouseHandler,
+  AdjustGridMouseHandler etc. Consider adding typed install() to DataStore::Data.
 
 For each: compile, run, check if still useful/valid, modernize API usage,
 remove if obsolete. See `porting-progress.md` for per-file status.

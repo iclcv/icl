@@ -39,3 +39,12 @@ if _build_apps and qt_found
     )
   endforeach
 endif
+
+# ---- CLI apps (no Qt) ----
+if _build_apps
+  executable('icl-local-thresh-batch',
+    files('../apps/local-thresh-batch.cpp'),
+    dependencies: [icl_io_dep, icl_filter_dep],
+    install: true,
+  )
+endif

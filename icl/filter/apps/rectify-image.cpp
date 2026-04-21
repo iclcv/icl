@@ -32,7 +32,7 @@ void init(){
 
   mouse.init(grabber.grabImage().getSize());
 
-  gui["draw"].install(&mouse);
+  gui["draw"].install(mouse);
 }
 
 void run(){
