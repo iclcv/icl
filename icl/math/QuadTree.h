@@ -454,6 +454,7 @@ namespace icl::math {
         If no neighbour could be found, an exception is thown. This should
         actually only happen when nn is called on an empty QuadTree
     */
+    /// finds the nearest neighbor
     Pt nn(const Pt &pIn) const{
       const Pt p = pIn * SF;
       double bestSqrDist = std::numeric_limits<double>::max();
