@@ -439,7 +439,7 @@ namespace icl::qt {
     Data(ICLWidget *parent):
       parent(parent),channelSelBuf(0),
       qimageConv(0),qimage(0),fm(fmHoldAR),fmSave(fmHoldAR),
-      rm(rmOff),bciUpdateAuto(0),channelUpdateAuto(0),
+      rm(rmOff),
       mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),
       outputCap(0),menuOn(true),menuptr(0),zoomAdjuster(0),
       qic(0),menuEnabled(true),infoTab(0),histoWidget(0),
@@ -481,8 +481,13 @@ namespace icl::qt {
     fitmode fmSave;
     rangemode rm;
     int bci[3];
-    bool *bciUpdateAuto;
-    bool *channelUpdateAuto;
+    // Live-read closures over the Button handles.  Nullable (empty
+    // before init); call-operator returns the current toggle state.
+    // Replaces the old `bool*` indirection — the underlying bool used
+    // to be DataStore-allocated via `.out("bci-update-mode")`, which
+    // went away with the handle-migration.
+    std::function<bool()> bciUpdateAuto;
+    std::function<bool()> channelUpdateAuto;
     bool downMask[3];
     int mouseX,mouseY;
     int selChannel;
@@ -1214,7 +1219,7 @@ namespace icl::qt {
 
     std::string bcis[3]={"custom,","off,","auto"};
     bcis[(static_cast<int>(data->rm))-1] = str("!")+bcis[(static_cast<int>(data->rm))-1];
-    bool bciAuto = data->bciUpdateAuto && *data->bciUpdateAuto;
+    bool bciAuto = data->bciUpdateAuto && data->bciUpdateAuto();
     bciGUI << ( HBox()
                 << Combo(bcis[0]+bcis[1]+bcis[2]).label("bci-mode").handle("bci-mode")
                 << Button("manual","auto",bciAuto).label("update mode").handle("bci-update-mode")
@@ -1407,8 +1412,8 @@ namespace icl::qt {
     //data->menuptr->setStyleSheet("QWidget { background : rgba(200,200,200,10) }");
 
 
-    data->bciUpdateAuto = &data->menu.get<bool>("bci-update-mode");
-    data->channelUpdateAuto = &data->menu.get<bool>("channel-update-mode");
+    data->bciUpdateAuto = [d = data]{ return (bool)d->menu["bci-update-mode"]; };
+    data->channelUpdateAuto = [d = data]{ return (bool)d->menu["channel-update-mode"]; };
 
     data->infoTab = *data->menu.get<SplitterHandle>("info-tab");
 
@@ -1438,9 +1443,12 @@ namespace icl::qt {
 
     QObject::connect(*data->menu.get<TabHandle>("root"),SIGNAL(currentChanged(int)),widget,SLOT(menuTabChanged(int)));
 
-    QObject::connect(*data->menu.get<CheckBoxHandle>("blur"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
-    QObject::connect(*data->menu.get<CheckBoxHandle>("median"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
-    QObject::connect(*data->menu.get<CheckBoxHandle>("log"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    // Keys were renamed `blur` / `median` / `log` -> `blur-on` /
+    // `median-on` / `log-on` when the `.out()` migration promoted the
+    // (originally dual-named) components to single-name handles.
+    QObject::connect(*data->menu.get<CheckBoxHandle>("blur-on"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.get<CheckBoxHandle>("median-on"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
+    QObject::connect(*data->menu.get<CheckBoxHandle>("log-on"),SIGNAL(stateChanged(int)),widget,SLOT(histoPanelParamChanged()));
     QObject::connect(*data->menu.get<SpinnerHandle>("histo-channel"),SIGNAL(valueChanged(int)),widget,SLOT(histoPanelParamChanged()));
 
 
@@ -1612,7 +1620,7 @@ namespace icl::qt {
       case 2: m_data->rm = rmAuto; break;
       default: ERROR_LOG("invalid range mode index");
     }
-    if(*m_data->bciUpdateAuto){
+    if(m_data->bciUpdateAuto()){
       rebufferImageInternal();
     }
   }
@@ -1621,7 +1629,7 @@ namespace icl::qt {
 
   void ICLWidget::brightnessChanged(int val){
     m_data->bci[0] = val;
-    if(*m_data->bciUpdateAuto){
+    if(m_data->bciUpdateAuto()){
       rebufferImageInternal();
     }
   }
@@ -1630,7 +1638,7 @@ namespace icl::qt {
 
   void ICLWidget::contrastChanged(int val){
     m_data->bci[1] = val;
-    if(*m_data->bciUpdateAuto){
+    if(m_data->bciUpdateAuto()){
       rebufferImageInternal();
     }
   }
@@ -1639,7 +1647,7 @@ namespace icl::qt {
 
   void ICLWidget::intensityChanged(int val){
     m_data->bci[2] = val;
-    if(*m_data->bciUpdateAuto){
+    if(m_data->bciUpdateAuto()){
       rebufferImageInternal();
     }
   }
@@ -1662,7 +1670,7 @@ namespace icl::qt {
 
   void ICLWidget::currentChannelChanged(int modeIdx){
     m_data->selChannel = modeIdx - 1;
-    if(*m_data->channelUpdateAuto){
+    if(m_data->channelUpdateAuto()){
       rebufferImageInternal();
     }
   }
@@ -1762,7 +1770,7 @@ namespace icl::qt {
       const std::string device = m_data->menu.get<ComboHandle>("auto-cap-device").getSelectedItem();
       int frameSkip = m_data->menu.get<SpinnerHandle>("auto-cap-frameskip").getValue();
 
-      bool forceParams = m_data->menu.get<bool>("auto-cap-force");
+      bool forceParams = m_data->menu["auto-cap-force"];
       Size dstSize = parse<Size>(m_data->menu.get<ComboHandle>("auto-cap-size").getSelectedItem());
       core::format dstFmt = parse<core::format>(m_data->menu.get<ComboHandle>("auto-cap-format").getSelectedItem());
       core::depth dstDepth = parse<core::depth>(m_data->menu.get<ComboHandle>("auto-cap-depth").getSelectedItem());

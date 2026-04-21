@@ -19,6 +19,17 @@ Applied per `module-audit-checklist.md`.
 
 ---
 
+## ICLWidget OSD
+
+- [ ] **Scale-range (zoom/fit) button behaves strangely.**  Surfaced
+  with `icl-region-inspector -i create cameraman` 2026-04-21 — the
+  scale-range OSD button in the image-viewer panel responds
+  oddly.  Symptom not yet characterized in detail; worth reproducing
+  and capturing before digging.  Possibly connected to signal /
+  state caching around `bciUpdateAuto` / `channelUpdateAuto` after
+  the `.out()`-retirement handle-pointer-to-std::function<bool()>
+  conversion in `icl/qt/Widget.cpp`, but could be independent.
+
 ## Qt GUI component plumbing
 
 - [ ] **Rework `GUIComponent` internal representation.**  Today every
