@@ -10,6 +10,7 @@
 #include <icl/qt/CompabilityLabel.h>
 #include <QWidget>
 #include <string>
+#include <type_traits>
 
 
 namespace icl::qt {
@@ -43,6 +44,13 @@ namespace icl::qt {
 
     /// appends text to the current text
     void operator+=(const std::string &text);
+
+    /// Explicit readback — returns the current label text.  Only a
+    /// string specialization: labels don't "own" a numeric value that
+    /// could be read back (they show arbitrary formatted text).
+    template<typename T>
+      requires std::is_same_v<T, std::string>
+    T as() const;
 
     private:
     /// utitlity function

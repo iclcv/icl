@@ -3,6 +3,9 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/LabelHandle.h>
+
+#include <icl/utils/AssignRegistry.h>
+
 #include <QPainter>
 #include <QLabel>
 
@@ -31,4 +34,24 @@ namespace icl::qt {
     lab()->setText(lab()->text() + text.c_str());
     lab()->updateFromOtherThread();
   }
-  } // namespace icl::qt
+
+  template<typename T>
+    requires std::is_same_v<T, std::string>
+  T LabelHandle::as() const {
+    return lab()->text().toLatin1().data();
+  }
+  template std::string LabelHandle::as<std::string>() const;
+
+  }  // namespace icl::qt
+
+namespace {
+  using icl::utils::AssignRegistry;
+  using icl::qt::LabelHandle;
+  __attribute__((constructor))
+  static void icl_register_label_handle_assignments() {
+    // Label accepts strings + arithmetic (for display); only string
+    // is readable (the displayed text).
+    AssignRegistry::enroll_receiver<LabelHandle, int, float, double, std::string>();
+    AssignRegistry::enroll<std::string, LabelHandle>();
+  }
+}

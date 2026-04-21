@@ -70,7 +70,8 @@ void step(){
   gui["save"].registerCallback([]{ save(); });
 
   ltop.setClipToROI(clipToROI);
-  ltop.setup(masksize, threshold, (LocalThresholdOp::algorithm)(int)algorithm, gamma);
+  ltop.setup(masksize, threshold,
+             (LocalThresholdOp::algorithm)algorithm.getSelectedIndex(), gamma);
 
   static Image image;
   if(!image || loop || next.wasTriggered()){

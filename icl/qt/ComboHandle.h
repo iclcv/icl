@@ -7,6 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/qt/GUIHandle.h>
 #include <string>
+#include <type_traits>
 
 /** \cond */
 class QComboBox;
@@ -55,11 +56,24 @@ namespace icl::qt {
     /// sets the current item
     ICLQt_API void setSelectedItem(const std::string &item);
 
-    /// convenience operator wrapping getSelectedIndex
-    inline operator int() const { return getSelectedIndex(); }
+    /// selects the item at index `i` (delegates to `setSelectedIndex`).
+    /// Accepts any arithmetic source via implicit conversion to `int`.
+    void operator=(int i) { setSelectedIndex(i); }
 
-    /// convenience operator wrapping getSelectedItem
-    inline operator std::string() const { return getSelectedItem(); }
+    /// selects the item whose text matches `s`.
+    void operator=(const std::string &s) { setSelectedItem(s); }
+
+    /// Explicit readback.  Arithmetic specialization returns the current
+    /// index cast to T; string specialization returns the current item.
+    /// No implicit conversion operators — callers use `.as<int>()` etc.,
+    /// the proxy returned by `gui[key]`, or the named getters.
+    template<typename T>
+      requires std::is_arithmetic_v<T>
+    T as() const { return static_cast<T>(getSelectedIndex()); }
+
+    template<typename T>
+      requires std::is_same_v<T, std::string>
+    T as() const { return getSelectedItem(); }
 
     private:
     /// utility function (internally used)
