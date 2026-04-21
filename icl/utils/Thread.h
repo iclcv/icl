@@ -81,9 +81,6 @@ namespace icl::utils {
     /// returns the internal running state (atomic, lock-free)
     bool running() const;
 
-    /// returns the running state of the thread (same as running())
-    bool runningNoLock() const;
-
     protected:
 
     /// sets the running flag to false (run() should check running() and return)

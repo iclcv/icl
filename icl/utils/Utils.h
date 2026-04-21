@@ -11,13 +11,11 @@
 #include <icl/math/DynMatrixUtils.h>
 #include <icl/math/DynVector.h>
 #include <icl/math/FixedVector.h>
-#include <icl/utils/FastMedianList.h>
 #include <icl/utils/FPSLimiter.h>
 #include <icl/utils/Timer.h>
 #include <icl/utils/MultiTypeMap.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/Range.h>
-#include <icl/utils/Rect.h>
 #include <icl/utils/Rect.h>
 #include <icl/utils/SignalHandler.h>
 #include <icl/utils/StackTimer.h>
@@ -33,7 +31,6 @@
     \defgroup RANDOM Random Number Generation fuctions and classes
     \defgroup UTILS General purpose Utiltiy Classes and Functions
     \defgroup PA Programm Argument Evaluation Functions
-    \defgroup XML XML Pasing and Creation Environment
     \defgroup STRUTILS String Manipuation Functions
     \defgroup FUNCTION ICL's Function Class and Creation Functions
     \defgroup BASIC_TYPES Fundamental Data Type Definitions

@@ -18,8 +18,8 @@ namespace icl::utils {
     /** Current FPS values are averaged over given intervall n*/
     FPSEstimator(int n=2);
 
-    /// virtual destructor
-    virtual ~FPSEstimator() {}
+    /// virtual destructor (FPSLimiter derives)
+    virtual ~FPSEstimator() = default;
 
     /// Sets a new averaging interval
     void reset(int n);
@@ -52,6 +52,6 @@ namespace icl::utils {
   };
 
 #define FPS_LOG_THIS_FUNCTION(N) static FPSEstimator __FPSEstimator__((N)); \
-                                 __FPSEstimator__.showFps(__FUNCTION__);
+                                 __FPSEstimator__.showFPS(__FUNCTION__);
 
   } // namespace icl::utils

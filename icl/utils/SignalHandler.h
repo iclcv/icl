@@ -69,16 +69,9 @@ namespace icl::utils {
         - <b>SIGXFSZ</b> ( File size limit exceeded)
     */
     private:
-    SignalHandler();
-
-    // todo: later the constructor should be made private!
-    //public:
-    /// this cannot be instantiated manually! Use SignalHandler::install instead
-    //SignalHandler(const std::string &signalsList="SIGINT,SIGHUP,SIGTERM,SIGSEGV");
-
+    SignalHandler() = default;
 
     public:
-    //friend class NamedCallbackHandler;
 
     /// installs a handler to the given signals!
     /** several handlers can be installed to the same signals.
@@ -95,40 +88,6 @@ namespace icl::utils {
                         int orderPercent = 0);
 
     static void uninstall(const std::string &id);
-
-
-    /// Destructor
-    /** When the destructor is called the system default signal handlers are
-        substituted instead of the handleSignals function */
-    // virtual ~SignalHandler();
-
-    /// virtual signal handling function
-    /** The SignalHandler implementation will track all instantiated
-        subclassed and, on signal, call the handleSignals functions
-        and in the end kill the process with the Hangup-signal.
-    **/
-    // virtual void handleSignals(const std::string &signalAsString)=0;
-
-    /// removes the signal handle for this instance
-    /** If this is the last instance registered to a certain signal, the
-        sygnal handle will be released and the default signal handlers are
-        registered.
-    **/
-    // void removeHandle(std::string signalName);
-
-    /// removes all handles for this instance
-    /** Basically calls removeHandle with all registeded handle names
-    **/
-    //void removeAllHandles();
-
-    /// calls the original action which was associated to the corresponding signal
-    /** This seems to be not practible, as the old actions are not defined by
-        callable functions in the old action sigaction struct. */
-    //void oldAction(const std::string &signal);
-
-    //private:
-    /// internal storage of associated signals
-    //std::vector<int> m_vecAssocitatedSignals;
   };
 
   } // namespace icl::utils

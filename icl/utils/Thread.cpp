@@ -49,7 +49,6 @@ namespace icl::utils {
   void Thread::exit(){ m_running = false; }
 
   bool Thread::running() const { return m_running.load(); }
-  bool Thread::runningNoLock() const { return m_running.load(); }
 
   void Thread::usleep(unsigned int usec){
     std::this_thread::sleep_for(std::chrono::microseconds(usec));
