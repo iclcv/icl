@@ -45,7 +45,7 @@
    The following examples will show some diffrent ways to use the SSE types:
 
    // ++++++++++++ black and white example ++++++++++++ //
-    #include <icl/utils/SSETypes.h>
+    #include <icl/utils/detail/simd/SSETypes.h>
     #include <icl/utils/Time.h>
     using namespace icl;
     using namespace icl::utils;
@@ -112,7 +112,7 @@
    // ------------ black and white example ------------ //
 
    // ++++++++++++ rgb to gray ++++++++++++ //
-   #include <icl/utils/SSETypes.h>
+   #include <icl/utils/detail/simd/SSETypes.h>
    #include <icl/utils/ClippedCast.h>
    #include <icl/utils/Time.h>
    using namespace icl;

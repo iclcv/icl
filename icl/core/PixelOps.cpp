@@ -4,7 +4,7 @@
 
 #include <icl/core/PixelOps.h>
 #include <icl/utils/ClippedCast.h>
-#include <icl/utils/SSETypes.h>
+#include <icl/utils/detail/simd/SSETypes.h>
 #include <cstring>
 #include <algorithm>
 #include <type_traits>

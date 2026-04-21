@@ -6,7 +6,6 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/BasicTypes.h>
-#include <icl/utils/SSETypes.h>
 
 namespace icl::cv {
   namespace region_detector_tools{

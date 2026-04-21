@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/SSEUtils.h>
 #include <icl/core/Img.h>
 #include <icl/math/FixedMatrix.h>
 

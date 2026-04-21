@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/SSETypes.h>
+#include <icl/utils/detail/simd/SSETypes.h>
 
 namespace icl::utils {
   #ifdef ICL_HAVE_SSE2

@@ -50,8 +50,6 @@ utils_headers = files(
   'Random.h',
   'Range.h',
   'Rect.h',
-  'SSETypes.h',
-  'SSEUtils.h',
   'SignalHandler.h',
   'Size.h',
   'StackTimer.h',

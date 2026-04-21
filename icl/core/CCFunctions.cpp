@@ -8,7 +8,7 @@
 #include <icl/core/ImgOps.h>
 #include <map>
 #include <icl/core/CCLUT.h>
-#include <icl/utils/SSEUtils.h>
+#include <icl/utils/detail/simd/SSEUtils.h>
 
 using namespace icl::utils;
 

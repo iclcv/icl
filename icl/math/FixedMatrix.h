@@ -12,7 +12,6 @@
 #include <icl/math/MatrixSubRectIterator.h>
 
 #include <iterator>
-#include <icl/utils/SSETypes.h>
 #include <icl/math/SimdCompat.h>
 #include <algorithm>
 #include <numeric>

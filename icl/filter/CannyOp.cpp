@@ -6,7 +6,7 @@
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <icl/filter/ConvolutionOp.h>
-#include <icl/utils/SSEUtils.h>
+#include <icl/utils/detail/simd/SSEUtils.h>
 
 using namespace icl::utils;
 using namespace icl::core;

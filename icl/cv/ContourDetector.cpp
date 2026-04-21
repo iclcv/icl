@@ -5,7 +5,7 @@
 #include <icl/cv/ContourDetector.h>
 
 #include <icl/core/Img.h>
-#include <icl/utils/SSEUtils.h>
+#include <icl/utils/detail/simd/SSEUtils.h>
 
 #include <cstring>
 #include <vector>

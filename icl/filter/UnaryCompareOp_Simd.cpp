@@ -8,7 +8,7 @@
 #include <icl/filter/UnaryCompareOp.h>
 
 #ifdef ICL_HAVE_SSE2
-#include <icl/utils/SSETypes.h>
+#include <icl/utils/detail/simd/SSETypes.h>
 
 using namespace icl;
 using namespace icl::utils;
