@@ -123,42 +123,44 @@ namespace icl::qt {
     template<class H> concept HasEnableDisable = requires(H h) { h.enable(); h.disable(); };
     template<class H> concept HasRemoveCallbacks = requires(H h) { h.removeCallbacks(); };
 
-    // Utility — shorthand for "dispatch over handle with error log on
-    // miss / unknown type".
-    template<typename F>
-    void dispatchHandle(std::any &entry, const char *verb, F f) {
-      if (!visitHandle(entry, f)) {
-        ERROR_LOG("DataStore::Slot::" << verb
-                  << "() not supported for type " << entry.type().name());
-      }
-    }
-
   }  // namespace
+
+  // Each `Slot` verb is a one-liner through `ICL_SLOT_VERB`:
+  //   - `Cap` is the capability concept the stored handle must satisfy;
+  //     if it doesn't, we log and do nothing.
+  //   - `action` is the method call (allowed to reference `h` and any
+  //     captured locals) applied to the typed handle.
+  //   - The verb name in the error message comes from `__func__`, so
+  //     the method name and the log label can never drift apart.
+  //   - `visitHandle` reports the "unknown stored type" case, `Cap`
+  //     gates the "known type but missing method" case.
+#define ICL_SLOT_VERB(Cap, action)                                          \
+  do {                                                                      \
+    const char *verb = __func__;                                            \
+    const bool known = visitHandle(*m_entry, [&](auto &h) {                 \
+      using H = std::decay_t<decltype(h)>;                                  \
+      if constexpr (Cap<H>) { action; }                                     \
+      else ERROR_LOG(verb << "() not supported by handle type "             \
+                          << typeid(H).name());                             \
+    });                                                                    \
+    if (!known) {                                                           \
+      ERROR_LOG("DataStore::Slot::" << verb                                 \
+                << "() — unknown stored type " << m_entry->type().name()); \
+    }                                                                       \
+  } while (0)
 
   // --- Verb implementations --------------------------------------------
 
   void DataStore::Slot::render() {
-    dispatchHandle(*m_entry, "render", [](auto &h) {
-      using H = std::decay_t<decltype(h)>;
-      if constexpr (HasRender<H>) h.render();
-      else ERROR_LOG("render() not supported by this handle type");
-    });
+    ICL_SLOT_VERB(HasRender, h.render());
   }
 
   void DataStore::Slot::link(GLCallback *cb) {
-    dispatchHandle(*m_entry, "link", [cb](auto &h) {
-      using H = std::decay_t<decltype(h)>;
-      if constexpr (HasLink<H>) (*h)->link(cb);
-      else ERROR_LOG("link() not supported by this handle type");
-    });
+    ICL_SLOT_VERB(HasLink, (*h)->link(cb));
   }
 
   void DataStore::Slot::install(MouseHandler *data) {
-    dispatchHandle(*m_entry, "install", [data](auto &h) {
-      using H = std::decay_t<decltype(h)>;
-      if constexpr (HasInstallMouse<H>) (*h)->install(data);
-      else ERROR_LOG("install() not supported by this handle type");
-    });
+    ICL_SLOT_VERB(HasInstallMouse, (*h)->install(data));
   }
 
   void DataStore::Slot::install(std::function<void(const MouseEvent &)> f) {
@@ -175,43 +177,25 @@ namespace icl::qt {
   }
 
   void DataStore::Slot::registerCallback(const std::function<void()> &cb) {
-    dispatchHandle(*m_entry, "registerCallback", [&cb](auto &h) {
-      using H = std::decay_t<decltype(h)>;
-      if constexpr (HasRegisterCallback<H>) h.registerCallback(cb);
-      else ERROR_LOG("registerCallback() not supported by this handle type");
-    });
+    ICL_SLOT_VERB(HasRegisterCallback, h.registerCallback(cb));
   }
 
   void DataStore::Slot::registerCallback(const std::function<void(const std::string &)> &cb) {
-    dispatchHandle(*m_entry, "registerCallback(complex)", [&cb](auto &h) {
-      using H = std::decay_t<decltype(h)>;
-      if constexpr (HasRegisterComplexCallback<H>) h.registerCallback(cb);
-      else ERROR_LOG("registerCallback(complex) not supported by this handle type");
-    });
+    ICL_SLOT_VERB(HasRegisterComplexCallback, h.registerCallback(cb));
   }
 
   void DataStore::Slot::enable() {
-    dispatchHandle(*m_entry, "enable", [](auto &h) {
-      using H = std::decay_t<decltype(h)>;
-      if constexpr (HasEnableDisable<H>) h.enable();
-      else ERROR_LOG("enable() not supported by this handle type");
-    });
+    ICL_SLOT_VERB(HasEnableDisable, h.enable());
   }
 
   void DataStore::Slot::disable() {
-    dispatchHandle(*m_entry, "disable", [](auto &h) {
-      using H = std::decay_t<decltype(h)>;
-      if constexpr (HasEnableDisable<H>) h.disable();
-      else ERROR_LOG("disable() not supported by this handle type");
-    });
+    ICL_SLOT_VERB(HasEnableDisable, h.disable());
   }
 
   void DataStore::Slot::removeCallbacks() {
-    dispatchHandle(*m_entry, "removeCallbacks", [](auto &h) {
-      using H = std::decay_t<decltype(h)>;
-      if constexpr (HasRemoveCallbacks<H>) h.removeCallbacks();
-      else ERROR_LOG("removeCallbacks() not supported by this handle type");
-    });
+    ICL_SLOT_VERB(HasRemoveCallbacks, h.removeCallbacks());
   }
+
+#undef ICL_SLOT_VERB
 
 }  // namespace icl::qt
