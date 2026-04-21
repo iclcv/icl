@@ -37,20 +37,62 @@ Applied per `module-audit-checklist.md`.
 
 ---
 
-## DataStore / Assign migration (Session 50 landed infrastructure; flip pending)
+## DataStore / Assign migration (Session 51 landed the flip; storage cleanup pending)
 
-See `project_assign_migration.md` for full status.  Infrastructure
-(`icl/utils/AnyMap.h`, `Assign.h`, `AssignRegistry.{h,cpp}`) and 15
-qt handles are migrated.  Legacy `DataStore::Assign` still alive in
-parallel; both dispatch tables coexist.  Remaining to close it out:
+See `project_assign_migration.md` for full status.  Session 51
+flipped `DataStore::Data::assign()` to `AssignRegistry::dispatch()`
+and deleted the in-DataStore `AssignSpecial<>` machinery (~830
+lines).  Identity enrollments + `Event → H` enrollments are in
+place, so `HandleType h = gui["name"]` and `gui["x"].render()` both
+work against the new registry.  What remains is the storage-side
+cleanup — the step that finally retires the void*+RTTI-name
+dispatch that only exists to bridge DataStore's legacy storage:
 
-- [ ] **Identity enrollments** (`enroll<H, H>()`) for every migrated handle — old DataStore had `ADD_T_TO_T`; new system needs these for `gui["a"] = gui["b"]` same-type dispatch.  Consider an `enroll_identity<T>()` helper.
-- [ ] **Core-type identity** enrollments (Rect, Size, Point, Image, std::string, utils::Any).  Needs a home outside qt — probably an init TU in utils and/or core.
-- [ ] **Event-only handles** — Plot, FPS, Box, Disp, State, Splitter, MultiDraw.  Had only `Event → H` + identity in old DataStore; decide: skip entirely or identity-only enroll.
-- [ ] **`Slot` proxy** — the `gui["key"]` return type.  Implement templated `operator=(T)` and `operator T() const` that box/unbox via `std::any` and call `AssignRegistry::dispatch`.  This makes `int v = gui["key"]` work without users writing `.as<int>()`.
-- [ ] **Flip `DataStore::Data::assign()`** to call `AssignRegistry::dispatch()`; retire `DataStore::Assign`, `AssignSpecial<>` machinery, `create_assign_map()`, `register_assignment_rule()`.
-- [ ] **Replace `MultiTypeMap` base** of `DataStore` with composed `AnyMap`.  Bigger API break — review `DataStore::Data` inner class's uses of `MultiTypeMap::allocValue<T>`, `getValue<T>`, etc.
-- [ ] **Smuggled-command fallout audit** — we retired `gui["h"] = Event("render")` / `gui["s"] = Range(a,b)` from the trait; find any callers and migrate them to direct method calls.  Search: `= Event(` and `= Range` against handle keys.
+- [ ] **Replace `MultiTypeMap` base of `DataStore` with composed
+  `AnyMap`.**  `DataStore::Data` internally holds a `std::any *`
+  instead of a `DataArray *`; `assign` / `operator=(T)` / `as<T>()`
+  pack and unpack `std::any` and call
+  `AssignRegistry::dispatch(std::any&, std::any&)`.  `AnyMap` is
+  already `std::map`-backed so stored references stay stable for
+  the GUI-code pattern `m_poHandle = &allocValue<H>(...)`.
+
+- [ ] **Delete the void*/name-based dispatch from `AssignRegistry`**
+  once DataStore no longer calls it: drop the
+  `dispatch(void*, type_index, void*, type_index)` and
+  `dispatch(void*, string, void*, string)` overloads, the
+  `m_nameToType` shadow table, and the `Fn::ptr` branch of the per-pair
+  function pair.  Only the `dispatch(std::any&, std::any&)` path
+  survives.
+
+- [ ] **Delete `MultiTypeMap`** entirely (272 lines) — dead after
+  DataStore stops inheriting it.  One `friend class` declaration in
+  `GUIHandleBase.h` goes with it.
+
+- [ ] **Retire the `Event` smuggling** in `DataStore::Data` —
+  `render()`, `install()`, `link()`, `registerCallback()`,
+  `enable()`, `disable()` currently work by building an `Event`
+  struct and sending it through assign.  Replace with direct
+  type-dispatch on the stored handle (now trivially doable once
+  `*entry` is a `std::any`).  `Event` struct + the
+  `HandleEventEnrollments.cpp` trait specializations go away with
+  it.
+
+- [ ] **`Slot` proxy** — the `gui["key"]` return type.  Implement
+  templated `operator=(T)` and `operator T() const` that box/unbox
+  via `std::any` and call `AssignRegistry::dispatch`.  Makes
+  `int v = gui["key"]` work without users writing `.as<int>()`.
+  Independent of the storage flip but natural to bundle.
+
+- [ ] **Core-type identity** enrollments (Rect, Size, Point, Image,
+  std::string, utils::Any) if any end up stored in DataStore.  Not
+  currently needed — after `.out()` retirement DataStore only holds
+  handles.  Add if/when a non-handle type gets an allocValue entry.
+
+- [ ] **Smuggled-command fallout audit** — `= Event(` / `= Range` call
+  sites outside `DataStore::Data`'s own methods.  Earlier session
+  note from Session 50 expected these to exist; quick grep didn't
+  find any in-tree, but worth a second pass as part of the Event
+  retirement above.
 
 ## Utils — long-term migrations (from Session 49+ audit)
 
