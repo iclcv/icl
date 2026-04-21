@@ -7,4 +7,4 @@ outputs
 3rdparty/cycles
 .DS_Store
 
-sandbox.conf
+sandbox.conf.cache/
