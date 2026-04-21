@@ -421,7 +421,21 @@ ExtractedScene GeometryExtractor::extract(const geom::Scene &scene, int camIndex
       float area = 0.5f * std::sqrt(cross.dot(cross));
       if (area < 1e-8f) continue;
 
-      RTFloat3 normal = cross * (1.0f / (2.0f * area));
+      // Use average of smooth vertex normals (from createAutoNormals)
+      // rather than cross product — avoids winding-order issues on
+      // tessellated surfaces like spheres.
+      const auto &invT = geo.transformInverse;
+      auto xformNormal = [&](const RTFloat3 &n) -> RTFloat3 {
+        return {invT.cols[0][0]*n.x + invT.cols[0][1]*n.y + invT.cols[0][2]*n.z,
+                invT.cols[1][0]*n.x + invT.cols[1][1]*n.y + invT.cols[1][2]*n.z,
+                invT.cols[2][0]*n.x + invT.cols[2][1]*n.y + invT.cols[2][2]*n.z};
+      };
+      RTFloat3 n0 = xformNormal(geo.vertices[tri.v0].normal);
+      RTFloat3 n1 = xformNormal(geo.vertices[tri.v1].normal);
+      RTFloat3 n2 = xformNormal(geo.vertices[tri.v2].normal);
+      RTFloat3 avgN{(n0.x+n1.x+n2.x)/3, (n0.y+n1.y+n2.y)/3, (n0.z+n1.z+n2.z)/3};
+      float nLen = std::sqrt(avgN.dot(avgN));
+      RTFloat3 normal = (nLen > 1e-6f) ? avgN * (1.0f / nLen) : cross * (1.0f / (2.0f * area));
 
       RTEmissiveTriangle et;
       et.v0 = w0; et.v1 = w1; et.v2 = w2;

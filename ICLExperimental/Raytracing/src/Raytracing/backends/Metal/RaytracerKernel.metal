@@ -991,7 +991,7 @@ void pathTrace(
       if (dist > 1e-4f) {
         float3 L = toLight / dist;
         float NdotL = max(0.0f, dot(s.normal, L));
-        float lightNdotL = abs(dot(lightN, L)); // abs: allow emission from both sides (avoids tessellation artifacts)
+        float lightNdotL = -dot(lightN, L);
         if (NdotL > 0 && lightNdotL > 0) {
           ray sr;
           sr.origin = s.position + s.normal * 1.0f;
