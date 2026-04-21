@@ -1,13 +1,19 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 6 — PBR Material System)
+## Current State (Session 8 — Interactive Cycles + glTF)
 
-### What Was Built
+### What Was Built (Session 8)
 
-Full real-time path tracing pipeline with hardware-accelerated BVH on Apple
-Silicon, MetalFX upscaling, GPU-native denoising (À-Trous + SVGF), tone mapping,
-emissive area light sampling, XML scene loading, and an offline renderer for
-visual verification — all with a modular backend architecture.
+Replaced the custom raytracing backends with Blender Cycles. Built a full
+interactive rendering pipeline: non-blocking progressive rendering state machine,
+physics demo with real-time object spawning, scene viewer with OBJ/glTF loading,
+material presets, checkerboard ground, 4-point lighting, and mesh decimation.
+
+### Previous Sessions (1-7) Built
+
+Custom path tracing pipeline (now replaced by Cycles): CPU/OpenCL/Metal RT
+backends, BVH, denoising, tone mapping, PBR materials, GeometryExtractor.
+All deleted in Session 7 when Cycles was integrated (~9,870 lines removed).
 
 **Architecture:**
 ```
@@ -317,15 +323,20 @@ classes before XML parsing starts. Called at the top of `xml_read_file()`.
 8. ~~**Hosek-Wilkie sky**~~ ✓ Done (Session 7) — realistic environment lighting
    via SkyTextureNode, proper light intensity scaling for scene units
 
-### Source Layout (Post-Cycles Migration)
+### Source Layout (Post-Session 8)
 
 ```
 src/Raytracing/
-  CyclesRenderer.h/.cpp      ── Public API (PIMPL), Session management, OutputDriver
+  CyclesRenderer.h/.cpp      ── Public API (PIMPL), 3-state machine, OutputDriver
   SceneSynchronizer.h/.cpp    ── ICL Scene → Cycles Scene bridge, dirty tracking
+  GltfLoader.h/.cpp           ── glTF/GLB parser using cgltf.h
 demos/
-  cycles-link-test.cpp        ── Minimal Cycles C++ API test (programmatic scene)
-  cycles-renderer-test.cpp    ── CyclesRenderer API test (ICL Scene → Cycles)
+  cycles-physics-demo.cpp     ── Interactive physics + Cycles (Z-up, Bullet)
+  cycles-scene-viewer.cpp     ── OBJ/glTF viewer with material presets
+  cycles-renderer-test.cpp    ── Offscreen render test (Y-up)
+scenes/
+  bunny.obj                   ── Stanford bunny (35K verts)
+  DamagedHelmet.glb           ── Khronos test model (14K verts, 5 textures)
 ```
 
 ### Build & Run
