@@ -297,33 +297,78 @@ classes before XML parsing starts. Called at the top of `xml_read_file()`.
 `checker_texture`, `glass_bsdf`, `noise_texture`, `glossy_bsdf`, `diffuse_bsdf`,
 `wave_texture`, `bump`, `emission`, etc. all work.
 
-### Next Steps for Cycles Integration
+### Cycles Integration Progress
 
 1. ~~**Fix shader node registration**~~ ✓ Done (Session 7)
+2. ~~**Verify full rendering**~~ ✓ Done (Session 7)
+3. ~~**CMake + Cycles linking**~~ ✓ Done (Session 7) — `cycles_target_setup()` helper
+4. ~~**CyclesRenderer + SceneSynchronizer**~~ ✓ Done (Session 7) — full bridge:
+   - ICL Scene → Cycles scene (meshes, materials, camera, lights)
+   - PrincipledBsdf shader graphs from ICL Material
+   - ICL Camera intrinsics → Cycles FOV
+   - Per-object dirty tracking for incremental updates
+   - OutputDriver → ICL Img8u with sRGB gamma
+   - Quality presets (Preview/Interactive/Final)
+5. ~~**Delete old infrastructure**~~ ✓ Done (Session 7) — removed ~9,870 lines
+6. ~~**Analytic spheres**~~ ✓ Done (Session 7) — SceneObject::ObjectType::Sphere
+   renders via Cycles PointCloud (perfect ray-sphere intersection, zero faceting)
 
-2. ~~**Verify full rendering**~~ ✓ Done — monkey, PBR test, cube surface, sphere
-   bump scenes all render correctly with sky, textures, and PBR materials.
+### Source Layout (Post-Cycles Migration)
 
-3. **Design ICL ↔ Cycles bridge** — plan how ICL's `Scene`/`SceneObject`/`Material`
-   map to Cycles' `ccl::Scene`/`ccl::Object`/`ccl::Shader`. The bridge would:
-   - Extract ICL scene geometry → Cycles meshes
-   - Map ICL `Material` → Cycles `PrincipledBsdfNode` shader graphs
-   - Map ICL `Camera` → Cycles camera
-   - Map ICL `SceneLight` → Cycles lights
-   - Drive `ccl::Session` for progressive rendering
-   - Read back rendered pixels to ICL `Img8u`
+```
+src/Raytracing/
+  CyclesRenderer.h/.cpp      ── Public API (PIMPL), Session management, OutputDriver
+  SceneSynchronizer.h/.cpp    ── ICL Scene → Cycles Scene bridge, dirty tracking
+demos/
+  cycles-link-test.cpp        ── Minimal Cycles C++ API test (programmatic scene)
+  cycles-renderer-test.cpp    ── CyclesRenderer API test (ICL Scene → Cycles)
+```
 
-4. **Create `CyclesRTBackend`** — new backend implementing `RaytracerBackend`
-   interface, replacing CpuRTBackend/MetalRTBackend/OpenCLRTBackend with a single
-   Cycles-powered backend that handles CPU/Metal device selection internally.
+### Build & Run
+
+```bash
+# Build Cycles first (one-time)
+cd 3rdparty/cycles && make update && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release \
+  -DPYTHON_ROOT_DIR=/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13 \
+  -DPYTHON_LIBRARY=/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/lib/libpython3.13.dylib \
+  -DPYTHON_INCLUDE_DIR=/opt/homebrew/opt/python@3.13/Frameworks/Python.framework/Versions/3.13/include/python3.13
+cmake --build . -j16 --target install
+
+# Build ICL with Cycles
+cd build
+cmake .. -DBUILD_EXPERIMENTAL=ON
+cmake --build . -j16
+
+# Render test scene
+./bin/cycles-renderer-test -o output.png
+```
+
+### Next Steps
+
+1. **Port physics demo** — recreate `raytracing-physics-demo.cpp` as
+   `cycles-physics.cpp` using CyclesRenderer with Preview quality +
+   `invalidateTransforms()` on physics step. Old code in git at 47ee811d0.
+
+2. **Texture support** — implement ICLImageLoader (ccl::ImageLoader subclass)
+   to feed ICL Material texture maps (baseColorMap, normalMap, etc.) to Cycles
+   ImageTextureNode.
+
+3. **Environment maps** — allow setting HDR environment maps for realistic
+   reflections and sky lighting instead of the constant background.
+
+4. **Interactive demo** — ICLApp-based demo with mouse orbit, quality slider,
+   progressive rendering display.
+
+5. **Scene/Material API cleanups** — remove legacy deprecated accessors,
+   add `transmissionWeight` for glass, physical light units.
 
 ### Known Limitations
 
-- GPU backends (Metal, OpenCL) do not sample material textures yet (CPU only)
-- Normal maps use constructed tangent frames (no explicit per-vertex tangents)
-- No line / text / billboard rendering in raytracer
-- Shadow bias (1mm) may cause light leaking on very thin geometry
-- OpenCL path on macOS goes through cl2Metal translation (deprecated)
-- Metal RT requires macOS 13+ and Apple Silicon
-- MetalFX Temporal requires RGBA16Float color format + Depth32Float
-- SVGF reflectivity preservation reduces denoising on mirror surfaces (by design)
+- No texture mapping yet (Material textures not forwarded to Cycles)
+- Lights are recreated every frame (no incremental light sync)
+- Only point lights supported (no spot/area/sun lights yet)
+- No environment map / HDR sky support
+- Camera must be configured via ICL intrinsics (no direct FOV setter yet)
+- SceneObject::ObjectType only set for sphere/cube factories (not for
+  programmatically-built objects)
