@@ -91,7 +91,7 @@ OpenNIGrabber::OpenNIGrabber(std::string args)
               0, "The image format.");
   addProperty("size", "info", "", "adjusted by format", 0, "This is set by the format-property.");
   addChildConfigurable(m_Generator -> getMapGeneratorOptions());
-  Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+  registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
 
   // register to grabber thread
   oniGrabberThread.addGrabber(this);

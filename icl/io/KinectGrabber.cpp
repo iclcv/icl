@@ -646,7 +646,7 @@ namespace icl::io {
     addProperty("depth-image-unit", "menu", "raw,mm", diunit, 0, "");
     addProperty("depth-image-post-processing", "menu", "off,median 3x3,median 5x5", ppvalue, 0, "");
 
-    Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+    registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
   KinectGrabber::~KinectGrabber(){

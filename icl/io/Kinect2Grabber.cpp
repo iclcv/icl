@@ -271,7 +271,7 @@ namespace icl::io {
         break;
     }
 
-    Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+    registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
   Kinect2Grabber::~Kinect2Grabber(){

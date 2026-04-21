@@ -81,7 +81,7 @@ namespace icl::io {
                 "The image format.");
     addProperty("size", "menu", "VGA,SVGA,QVGA", sizevalue, 0,
                 "The image size.");
-    Configurable::registerCallback(
+    registerCallback(
           [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 

@@ -731,7 +731,7 @@ namespace icl::io {
       Impl::SupportedPropertyPtr p = it -> second;
       addProperty(it->first,p -> getType(), p -> getInfo(), p -> getValue(), 0,"");
     }
-    Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+    registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
   // callback for changed configurable properties

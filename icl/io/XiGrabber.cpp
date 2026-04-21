@@ -240,7 +240,7 @@ namespace icl{
       m_data->addRangeProperty("int", this, XI_PRM_EXPOSURE);
       m_data->addRangeProperty("float", this, XI_PRM_GAIN);
 
-      Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+      registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }
 
     XiGrabber::XiGrabber(int deviceID) : m_data(0){

@@ -376,7 +376,7 @@ namespace icl::io {
     addProperty("format", "info", "", "not used", 0, "");
     addProperty("size", "info", "", "not used", 0, "");
 
-    Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+    registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
   // callback for changed configurable properties

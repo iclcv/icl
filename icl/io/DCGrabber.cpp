@@ -183,7 +183,7 @@ namespace icl::io {
                   "Sets the color interpolation method used for the bayer->color conversion.");
     }
     addChildConfigurable(&m_oDeviceFeatures);
-    Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+    registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
   void DCGrabber::processPropertyChange(const utils::Configurable::Property &prop){

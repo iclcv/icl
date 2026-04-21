@@ -31,7 +31,7 @@ namespace icl::io {
     addProperty("hue", "range", "[0,100]:1",
                 cvc->get(cv::CAP_PROP_HUE), 0, "");
     addProperty("format", "menu", "RGB", "RGB", 0, "");
-    Configurable::registerCallback(
+    registerCallback(
           [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 

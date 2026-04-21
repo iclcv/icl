@@ -23,7 +23,7 @@ namespace icl::io {
     addProperty("format", "info", "", "RGB", 0, "");
     addProperty("size", "info", "", "512x512", 0, "");
     addProperty("update timestamp", "flag", "", m_updateTimeStamp, 0, "Whether the timestamp of the image should be set everytime an the image is grabbed.");
-    Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+    registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
   CreateGrabber::~CreateGrabber(){

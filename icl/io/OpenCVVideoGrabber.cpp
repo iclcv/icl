@@ -81,7 +81,7 @@ namespace icl::io {
     addProperty("use_video_fps", "flag", "", data->use_video_fps, 0, "");
     addProperty("video_fps", "info", "", str(data->cvc->get(cv::CAP_PROP_FPS)), 0, "");
 
-    Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+    registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
   OpenCVVideoGrabber::~OpenCVVideoGrabber(){
