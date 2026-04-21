@@ -1,7 +1,0 @@
-ADD_SUBDIRECTORY(any)
-ADD_SUBDIRECTORY(config-file)
-ADD_SUBDIRECTORY(progarg)
-if (OPENCL_FOUND AND QT_FOUND)
-  ADD_SUBDIRECTORY(opencl_example)
-endif()
-ADD_SUBDIRECTORY(regex-find)
