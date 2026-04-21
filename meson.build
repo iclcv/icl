@@ -299,6 +299,14 @@ if get_option('benchmarks')
   subdir('benchmarks')
 endif
 
+# ---- Symlink all executables into build/bin/ ----
+custom_target('symlink-bin',
+  command: [find_program('scripts/symlink-bin.sh'), meson.project_build_root()],
+  output: 'symlink-bin.stamp',
+  build_always_stale: true,
+  build_by_default: true,
+)
+
 # ---- Build summary ----
 _simd_str = 'none'
 if have_sse2
