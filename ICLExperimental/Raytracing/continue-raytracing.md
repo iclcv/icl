@@ -1,6 +1,67 @@
 # Raytracing — Continuation Guide
 
-## Current State (Session 11 — GL/Cycles Parity + Screen-Space Reflections)
+## Current State (Session 12 — Glass/Transmission + Widget Overlay Port)
+
+### Session 12 Summary
+
+**Glass/Transmission support (Cycles + GL):**
+- `Material.h`: added `transmission`, `ior`, `attenuationColor`, `attenuationDistance`,
+  `thicknessFactor` fields + `isTransmissive()` query
+- `GltfLoader.cpp`: reads `KHR_materials_transmission`, `KHR_materials_ior`,
+  `KHR_materials_volume` extensions from glTF (cgltf parses them automatically)
+- Cycles: uses `MixClosure(PrincipledBsdf, GlassBsdf)` instead of PrincipledBsdf's
+  built-in `transmission_weight`. This is necessary because glTF spec defines transmission
+  roughness as always 0 (smooth), but Cycles' PrincipledBsdf applies surface roughness
+  to transmission uniformly. The MixClosure gives a separate GlassBsdf(roughness=0) for
+  the transmission lobe. Volume absorption via AbsorptionVolumeNode wired for materials
+  with finite attenuationDistance.
+- **Important finding:** `bsdf->set_transmission_weight()` direct setter did NOT work
+  for SVM compilation. Must use ValueNode graph connections instead. However, with the
+  MixClosure approach, the PrincipledBsdf transmission_weight is not used at all.
+- GL renderer: two-pass rendering (opaque then back-to-front transparent with alpha
+  blending). Fragment shader computes Fresnel-based alpha from IOR, tints with
+  attenuation color. Transmissive objects skipped in shadow pass.
+
+**Scene viewer improvements:**
+- Always normalize scenes to 400mm extent (removed conditional 10-10000 guard)
+- Bake glTF node transforms into vertices before scaling/rotation — fixes models
+  with nested hierarchies (ToyCar) where local-vs-world mismatch caused zoom issues
+- Lower ground plane slightly to avoid z-fighting with model-embedded floors
+- Simplified GUI: removed GL Env%/Direct% tuning sliders, split controls into two rows
+- Added `-backlight` flag: emissive panel behind scene for testing transmission
+- Added material debug logging in GltfLoader
+
+**SSR improvement:**
+- Normalize ray to fixed screen-space length (prevents far-distance overshooting)
+- Depth-adaptive thickness (`baseThickness + depth² * 0.01`)
+- 64 linear + 6 binary refinement steps (was 48 + 4)
+
+**Test scenes added:**
+- `scenes/ToyCar.glb` — glass windshield, chrome, glossy paint
+- `scenes/TransmissionTest.glb` — grid of clear→frosted glass spheres
+- `scenes/TransmissionRoughnessTest.glb` — transmission × roughness matrix
+- `scenes/DragonAttenuation.glb` — colored crystal with volume absorption
+- `scenes/MosquitoInAmber.glb` — amber resin block with insect inside
+- `scenes/MetalRoughSpheres.glb` — PBR calibration grid
+- `scenes/basic-shapes.obj` — sphere, box, cylinder for SSR/material testing
+
+**Widget overlay ported to Core Profile:**
+- Created `QPainterPaintEngine` implementing `PaintEngine` interface via QPainter
+- Two-phase rendering in `paintGL()`: Phase 1 runs GL callback (3D), Phase 2 creates
+  QPainter on the widget for all 2D overlay (OSD buttons, tooltips, zoom rect, info)
+- `DrawWidget3D::customPaintEvent()` splits GL phase (e==nullptr) and 2D phase
+  (e!=nullptr) for Core Profile
+- OSD buttons render via `drawWithPaintEngine()` using `PaintEngine::image()`
+- `ImageInfoIndicator::paint()` accepts `PaintEngine*` instead of `GLPaintEngine*`
+
+### Verified working:
+- ToyCar: green-tinted glass windshield visible in both Cycles and GL
+- MosquitoInAmber: amber block transmissive in both (mosquito visible with backlight)
+- OSD buttons, tooltips, image info visible in Core Profile
+- Zoom rect drawing works during drag
+- All test scenes load, auto-scale, and render correctly
+
+## Previous State (Session 11 — GL/Cycles Parity + Screen-Space Reflections)
 
 ### What Was Built (Session 8)
 
@@ -527,44 +588,111 @@ ICLExperimental/Raytracing/
 
 ### Next Steps
 
-#### GL Renderer — Immediate
+#### PRIORITY: Widget Zoom + Camera Coupling in Core Profile
 
-1. **Glass/transmission** — add `Material::transmission` / `Material::ior` fields,
-   use in GL shader for transparent dielectrics (visor, glass). This is the biggest
-   remaining visual gap vs Cycles.
-2. **SSR tuning** — adjust ray length, step count, thickness threshold based on
-   scene scale. Consider adaptive step size for better quality/performance.
+**Problem:** The OSD zoom button works (rect drawing, state tracking) but the actual
+zoomed rendering doesn't happen. In legacy mode, zoom works by:
+1. User drags zoom rect → `m_data->zoomRect` set (normalized [0,1] coords)
+2. `computeRect(imageSize, widgetSize, fmZoom, zoomRect)` returns a screen-space rect
+3. Background image rendered at that rect via `GLImg::draw2D(r, windowSize)`
+4. **Critical coupling:** `Scene::renderScene()` line 819-827 reads
+   `widget->getImageRect(true)` and sets `cam.getRenderParams().viewport = currentImageRect`
+   — this makes the 3D camera projection match the zoomed image exactly
 
-#### Widget Overlay — Core Profile Port
+**Why it's broken in Core Profile:**
+- `SceneRendererGL::render(scene, camIndex)` does NOT receive the widget pointer
+- It computes its own letterbox viewport from `cam.getRenderParams().chipSize`
+- It never queries `widget->getImageRect()`, so the zoom rect is ignored
+- The GLCallback in cycles-scene-viewer.cpp ignores the widget parameter:
+  ```cpp
+  void draw(ICLDrawWidget3D *) override {  // widget param ignored!
+      if (glRenderer) glRenderer->render(scene, 0);
+  }
+  ```
 
-3. **OSD button bar** — blue buttons at top-left, currently skipped in Core Profile
-4. **2D draw commands** — `draw->text()`, `draw->line()`, etc. in screen coords
-5. **Zoom rectangle** — left-mouse-drag zoom, needs rect overlay + zoom logic
-6. **Image info indicator** — bottom-right pixel info display
-7. **GLImg::draw2D** — 2D image display for Canvas widgets
+**Required fix (architectural):**
+1. **SceneRendererGL API change:** Add `render(scene, camIndex, widget)` overload that
+   reads `widget->getImageRect(true)` and uses it for viewport + projection setup.
+   The viewport from `getImageRect()` replaces the self-computed letterbox rect.
+   When no widget is passed, fall back to current letterbox behavior.
+2. **GLCallback wiring:** Pass the widget through to `SceneRendererGL::render()`:
+   ```cpp
+   void draw(ICLDrawWidget3D *widget) override {
+       if (glRenderer) glRenderer->render(scene, 0, widget);
+   }
+   ```
+3. **Background image in Core Profile:** When `m_data->image` is not null and zoom is
+   active, render the background image via QPainter at the zoomed rect in the Phase 2
+   overlay. This requires extracting the image data from `GLImg` (currently not exposed)
+   or caching the original `ImgBase*` alongside the GLImg.
+4. **defaultViewPort:** When no background image is set, `getImageRect()` uses
+   `m_data->defaultViewPort` (from Canvas3D constructor, default VGA). This is the
+   virtual image size that defines the coordinate space. SceneRendererGL needs to
+   respect this for letterboxing even without an image.
 
-Approach options: QPainter overlay, or port GLPaintEngine to GL 4.1 shaders.
+**Key insight (from ICL's AR pipeline):**
+The zoom mechanism is fundamental to ICL's augmented reality workflow:
+- Real camera image displayed as letterboxed background
+- Calibrated virtual camera renders 3D scene aligned with the real image
+- Zoom into a sub-rect: BOTH the image crop AND the virtual camera adjust
+  (effectively increasing focal length / shifting principal point for that rect)
+- The coupling is through `Camera::RenderParams::viewport` — the zoom rect
+  directly becomes the camera viewport, and the projection matrix accounts for it
+
+**Files to modify:**
+- `ICLGeom/src/ICLGeom/SceneRendererGL.h/.cpp` — add widget-aware render overload
+- `ICLGeom/src/ICLGeom/Camera.cpp` — verify `getProjectionMatrixGL()` and
+  `getViewportMatrixGL()` handle the zoom viewport correctly for Core Profile
+- `ICLExperimental/Raytracing/demos/cycles-scene-viewer.cpp` — pass widget in GLCallback
+- `ICLQt/src/ICLQt/Widget.cpp` — Core Profile path: render background image when present
+
+**Reference code:** `Scene::renderScene()` lines 819-827 in `ICLGeom/src/ICLGeom/Scene.cpp`
+shows exactly how the legacy renderer reads and applies the zoom viewport.
+
+#### GL Renderer — Remaining
+
+1. **SSR tuning** — far-distance artifacts remain; revisit step count, thickness,
+   and screen-space normalization. Consider adaptive step size.
+2. **Volume attenuation in GL** — currently only tints via attenuationColor; doesn't
+   model distance-dependent Beer-Lambert absorption (would need path length through object)
+
+#### Widget Overlay — Remaining
+
+3. **DrawWidget ImageCommand** — `ImageCommand` in DrawWidget.cpp uses `GLImg::draw2D()`
+   directly, bypassing PaintEngine. In Core Profile, needs fallback to
+   `PaintEngine::image()` with a cached copy of the original image.
+4. **Background image display** — `GLImg::draw2D()` for background images in Core
+   Profile. Either use QPainter (simple) or create shader-based path like GLImageRenderer.
+5. **QPainter performance evaluation** — monitor frame rate with overlay enabled; if
+   bottleneck, replace QPainterPaintEngine backend with custom GL 4.1 shaders.
 
 #### Legacy Cleanup
 
-8. **Delete legacy renderer** — `Scene::renderSceneObjectRecursive()`, `ShaderUtil`,
+6. **Delete legacy renderer** — `Scene::renderSceneObjectRecursive()`, `ShaderUtil`,
    display lists, all `glBegin/glEnd` code
-9. **Wire `Scene::getGLCallback()`** to SceneRendererGL for all ICL apps
+7. **Wire `Scene::getGLCallback()`** to SceneRendererGL for all ICL apps
 
 #### Cycles — Deferred
 
 - HDR environment maps (Sky::Texture mode)
 - Area/spot/sun light types
+- Volume attenuation for colored glass (AbsorptionVolumeNode code exists but
+  MosquitoInAmber has attenuationDistance=FLT_MAX so it's effectively a no-op)
 - QEM mesh decimation
 - Cycles XML scene loader
 
 ### Known Limitations
 
-- No glass/transmission — smooth dielectrics (visor) appear opaque vs Cycles
+- **Zoom doesn't work in Core Profile** — zoom rect draws, state tracks, but
+  SceneRendererGL doesn't read the widget's zoom state (see priority task above)
 - SSR only reflects visible geometry (not behind camera or occluded)
 - SSR has one-frame latency on reflections (imperceptible for slow camera motion)
+- SSR has artifacts at far distances (screen-space step overshooting)
 - Lights created once per session in Cycles (no dynamic updates)
 - Only point lights (no spot/area/sun)
 - OBJ loader: no MTL material parsing
 - PolygonPrimitive doesn't carry UV indices yet
-- Widget 2D overlay (OSD, text, zoom) disabled in Core Profile
+- DrawWidget ImageCommand bypasses PaintEngine in Core Profile
+- Background image display not yet ported to Core Profile
+- Cycles `set_transmission_weight()` direct setter doesn't work for SVM compilation;
+  must use ValueNode graph connections (or MixClosure approach as implemented)
