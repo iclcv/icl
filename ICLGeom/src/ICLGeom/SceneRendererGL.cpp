@@ -209,28 +209,40 @@ out vec4 FragColor;
 vec4 traceSSR(vec3 worldPos, vec3 reflectDir, float roughness) {
     if (uSSREnabled == 0 || roughness > 0.7) return vec4(0.0);
 
-    // Project origin and endpoint into previous frame's screen space
+    // Project origin into previous frame's screen space
     vec4 startClip = uPrevVP * vec4(worldPos, 1.0);
     if (startClip.w < 0.001) return vec4(0.0);
     vec3 startNDC = startClip.xyz / startClip.w;
     vec2 startUV = startNDC.xy * 0.5 + 0.5;
     float startDepth = startNDC.z * 0.5 + 0.5;
 
-    // Ray endpoint (world space → previous screen space)
-    float rayLen = length(worldPos - uCameraPos) * 0.5;
-    vec3 endWorld = worldPos + reflectDir * rayLen;
-    vec4 endClip = uPrevVP * vec4(endWorld, 1.0);
-    if (endClip.w < 0.001) return vec4(0.0);
-    vec3 endNDC = endClip.xyz / endClip.w;
-    vec2 endUV = endNDC.xy * 0.5 + 0.5;
-    float endDepth = endNDC.z * 0.5 + 0.5;
+    // Ray endpoint: use a short world-space ray to get the screen-space direction,
+    // then normalize to a fixed screen-space length. This prevents far-away
+    // fragments from taking huge steps that overshoot geometry.
+    float probeDist = length(worldPos - uCameraPos) * 0.1;
+    vec3 probeWorld = worldPos + reflectDir * probeDist;
+    vec4 probeClip = uPrevVP * vec4(probeWorld, 1.0);
+    if (probeClip.w < 0.001) return vec4(0.0);
+    vec3 probeNDC = probeClip.xyz / probeClip.w;
+    vec2 probeUV = probeNDC.xy * 0.5 + 0.5;
 
-    vec2 rayDir2D = endUV - startUV;
-    float depthDelta = endDepth - startDepth;
+    // Screen-space ray direction and depth slope from the probe
+    vec2 dir2D = probeUV - startUV;
+    float dirLen = length(dir2D);
+    if (dirLen < 1e-6) return vec4(0.0);
 
-    int maxSteps = 48;
+    // Normalize to a max screen-space travel of 0.4 (40% of screen)
+    float maxScreenDist = 0.4;
+    float scale = maxScreenDist / dirLen;
+    vec2 rayDir2D = dir2D * scale;
+    float depthSlope = ((probeNDC.z * 0.5 + 0.5) - startDepth) * scale;
+
+    // Depth-adaptive thickness: thicker at far distances where Z precision is lower
+    float baseThickness = 0.001;
+    float thickness = baseThickness + startDepth * startDepth * 0.01;
+
+    int maxSteps = 64;
     float stepSize = 1.0 / float(maxSteps);
-    float thickness = 0.002;
 
     // Linear march
     float hitT = -1.0;
@@ -241,7 +253,7 @@ vec4 traceSSR(vec3 worldPos, vec3 reflectDir, float roughness) {
         if (sampleUV.x < 0.0 || sampleUV.x > 1.0 ||
             sampleUV.y < 0.0 || sampleUV.y > 1.0) break;
 
-        float rayDepth = startDepth + depthDelta * t;
+        float rayDepth = startDepth + depthSlope * t;
         float sceneDepth = texture(uPrevDepthMap, sampleUV).r;
         if (sceneDepth > 0.999) continue;  // sky
 
@@ -256,10 +268,10 @@ vec4 traceSSR(vec3 worldPos, vec3 reflectDir, float roughness) {
 
     // Binary refinement
     float lo = hitT - stepSize, hi = hitT;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 6; i++) {
         float mid = (lo + hi) * 0.5;
         vec2 midUV = startUV + rayDir2D * mid;
-        float rayD = startDepth + depthDelta * mid;
+        float rayD = startDepth + depthSlope * mid;
         float sceneD = texture(uPrevDepthMap, midUV).r;
         if (rayD > sceneD) { hi = mid; hitUV = midUV; }
         else               { lo = mid; }
@@ -269,11 +281,11 @@ vec4 traceSSR(vec3 worldPos, vec3 reflectDir, float roughness) {
     float confidence = 1.0;
     vec2 edgeDist = min(hitUV, 1.0 - hitUV);
     confidence *= smoothstep(0.0, 0.05, edgeDist.x) * smoothstep(0.0, 0.05, edgeDist.y);
-    confidence *= 1.0 - smoothstep(0.5, 1.0, hitT);
+    confidence *= 1.0 - smoothstep(0.4, 0.8, hitT);
     confidence *= 1.0 - smoothstep(0.3, 0.7, roughness);
 
     // Depth thickness rejection
-    float finalRayD = startDepth + depthDelta * hi;
+    float finalRayD = startDepth + depthSlope * hi;
     float finalSceneD = texture(uPrevDepthMap, hitUV).r;
     confidence *= 1.0 - smoothstep(0.0, thickness, abs(finalRayD - finalSceneD));
 

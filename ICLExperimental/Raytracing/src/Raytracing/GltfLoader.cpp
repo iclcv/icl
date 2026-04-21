@@ -150,6 +150,13 @@ static std::shared_ptr<Material> convertMaterial(const cgltf_material *gmat,
     mat->name = gmat->name;
   }
 
+  fprintf(stderr, "  [material] '%s': baseColor=(%.2f,%.2f,%.2f,%.2f) metallic=%.2f roughness=%.2f"
+          " maps: base=%d normal=%d mr=%d occ=%d emissive=%d\n",
+          mat->name.c_str(), mat->baseColor[0], mat->baseColor[1], mat->baseColor[2], mat->baseColor[3],
+          mat->metallic, mat->roughness,
+          (bool)mat->baseColorMap, (bool)mat->normalMap, (bool)mat->metallicRoughnessMap,
+          (bool)mat->occlusionMap, (bool)mat->emissiveMap);
+
   return mat;
 }
 

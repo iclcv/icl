@@ -220,7 +220,6 @@ static void setupScene() {
 
   if (loadedObjects.empty()) {
     // No files loaded — create a default scene with some objects
-    // (no ground here — checkerboard ground is always added below)
     fprintf(stderr, "No -scene files specified, creating default scene.\n");
 
     // Sphere
@@ -252,6 +251,19 @@ static void setupScene() {
     originalMaterials.push_back(mat ? std::make_shared<Material>(*mat) : nullptr);
   }
 
+  // Bake node transforms into vertices so all subsequent operations
+  // (rotation, scaling) work in consistent world space.
+  for (auto &obj : loadedObjects) {
+    Mat T = obj->getTransformation();
+    if (T != Mat::id()) {
+      for (auto &v : obj->getVertices()) {
+        v = T * v;
+        v[3] = 1;
+      }
+      obj->setTransformation(Mat::id());
+    }
+  }
+
   // Apply user-specified rotation (in degrees around X, Y, Z)
   if (pa("-rotate")) {
     std::string rs = pa("-rotate").as<std::string>();
@@ -281,11 +293,10 @@ static void setupScene() {
       for (auto &v : obj->getVertices()) {
         v = R * v;
       }
-      obj->createAutoNormals(true);
     }
   }
 
-  // Auto-fit: scale scene so extent ≈ 500 units (matches ICL conventions)
+  // Auto-fit: always normalize scene to ~400mm extent (ICL uses mm)
   float minX, minY, minZ, maxX, maxY, maxZ;
   computeSceneBounds(minX, minY, minZ, maxX, maxY, maxZ);
   float extent = std::max({maxX - minX, maxY - minY, maxZ - minZ});
@@ -293,39 +304,29 @@ static void setupScene() {
   fprintf(stderr, "Scene bounds: (%.4f,%.4f,%.4f)-(%.4f,%.4f,%.4f) extent=%.4f\n",
           minX, minY, minZ, maxX, maxY, maxZ, extent);
 
-  // Only auto-scale if scene is very small (< 10 units) or very large (> 10000)
-  float targetSize = 500.0f;
-  float scaleFactor = 1.0f;
-  if (extent < 10.0f || extent > 10000.0f) {
-    scaleFactor = targetSize / extent;
-  }
+  float targetSize = 400.0f;
+  float scaleFactor = targetSize / extent;
   float cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, cz = (minZ + maxZ) / 2;
 
-  if (std::abs(scaleFactor - 1.0f) > 0.01f) {
-    fprintf(stderr, "Auto-scaling scene by %.1fx (%.4f → %.0f units)\n",
-            scaleFactor, extent, targetSize);
-    // Scale vertices directly (transforms don't work well with Cycles sync)
-    for (auto &obj : loadedObjects) {
-      auto &verts = obj->getVertices();
-      for (auto &v : verts) {
-        v[0] = (v[0] - cx) * scaleFactor;
-        v[1] = (v[1] - cy) * scaleFactor;
-        v[2] = (v[2] - cz) * scaleFactor;
-      }
+  fprintf(stderr, "Auto-scaling scene by %.1fx (%.4f → %.0f units)\n",
+          scaleFactor, extent, targetSize);
+  for (auto &obj : loadedObjects) {
+    for (auto &v : obj->getVertices()) {
+      v[0] = (v[0] - cx) * scaleFactor;
+      v[1] = (v[1] - cy) * scaleFactor;
+      v[2] = (v[2] - cz) * scaleFactor;
     }
-    // Recompute normals after vertex scaling
-    for (auto &obj : loadedObjects) {
-      obj->createAutoNormals(true);
-    }
-    // Recompute bounds after scaling
-    computeSceneBounds(minX, minY, minZ, maxX, maxY, maxZ);
-    cx = (minX + maxX) / 2; cy = (minY + maxY) / 2; cz = (minZ + maxZ) / 2;
-    extent = targetSize;
   }
+  for (auto &obj : loadedObjects) {
+    obj->createAutoNormals(true);
+  }
+  computeSceneBounds(minX, minY, minZ, maxX, maxY, maxZ);
+  cx = (minX + maxX) / 2; cy = (minY + maxY) / 2; cz = (minZ + maxZ) / 2;
+  extent = targetSize;
 
   // Add checkerboard ground plane as a single textured quad
   {
-    float groundY = minY;
+    float groundY = minY - extent * 0.02f;  // slightly below scene to avoid z-fighting
     float gs = extent * 1.5f;
 
     // Generate checkerboard texture (large enough for sharp tile edges)
@@ -464,13 +465,12 @@ void init() {
             << Combo("!1,2,4,8,16").handle("initSamples").label("Steps/Frame").minSize(8,2)
             << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096").handle("maxIter").label("Max Iter").minSize(8,2)
             << Slider(1, 16, 4).handle("bounces").label("Bounces").minSize(10,2)
+            << Label("--").handle("info").minSize(15,2))
+         << (HBox()
             << Slider(10, 500, 100).handle("exposure").label("Exposure %").minSize(10,2)
             << Slider(0, 100, 100).handle("brightness").label("BG %").minSize(10,2)
             << Combo("!Shaded,Normals,Albedo,UVs,Lighting Only,NdotL,SSR Confidence").handle("glDebug").label("GL Debug").minSize(10,2)
-            << CheckBox("SSR", true).handle("ssrEnabled").minSize(4,2)
-            << Slider(10, 500, 150).handle("glEnv").label("GL Env %").minSize(8,2)
-            << Slider(10, 500, 100).handle("glDirect").label("GL Direct %").minSize(8,2)
-            << Label("--").handle("info").minSize(15,2))
+            << CheckBox("SSR", true).handle("ssrEnabled").minSize(4,2))
        ) << Show();
 
   gui["draw"].install(new MouseHandler(handleMouse));
@@ -613,8 +613,6 @@ void run() {
 
   if (glRenderer) {
     glRenderer->setExposure(exposure);
-    glRenderer->setEnvMultiplier(gui["glEnv"].as<int>() / 100.0f);
-    glRenderer->setDirectMultiplier(gui["glDirect"].as<int>() / 100.0f);
     glRenderer->setDebugMode(gui["glDebug"].as<ComboHandle>().getSelectedIndex());
     glRenderer->setSSREnabled(gui["ssrEnabled"].as<bool>());
   }
