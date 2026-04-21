@@ -10,8 +10,10 @@
 // Forward declarations — Cycles types hidden behind pointers
 namespace ccl {
   class Scene;
+  class Geometry;
   class Mesh;
   class Object;
+  class PointCloud;
   class Shader;
 }
 
@@ -55,7 +57,7 @@ private:
   /// Per-object tracking entry.
   struct ObjectEntry {
     const geom::SceneObject *iclObj = nullptr;
-    ccl::Mesh *mesh = nullptr;
+    ccl::Geometry *geometry = nullptr;  ///< Mesh or PointCloud, owned by Cycles scene
     ccl::Object *object = nullptr;
     ccl::Shader *shader = nullptr;
     size_t vertexCount = 0;
@@ -63,6 +65,7 @@ private:
     bool geometryDirty = true;
     bool transformDirty = true;
     bool visited = false;  ///< Set during sync, cleared after; detects removed objects.
+    bool isSphere = false; ///< True if rendered as analytic sphere (PointCloud)
   };
 
   /// Walk the ICL scene graph recursively.

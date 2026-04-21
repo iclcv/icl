@@ -362,6 +362,7 @@ namespace icl::geom {
     m_visibleMask = Primitive::all;
 
     if(type == "cuboid" || type == "cube"){
+      m_objectType = Cube;
       float x = *params++;
       float y = *params++;
       float z = *params++;
@@ -431,6 +432,7 @@ namespace icl::geom {
       addQuad(3,2,6,7,5,5,5,5,GeomColor(0,100,255,200));
 
     }else if(type == "sphere" || type == "spheroid"){
+      m_objectType = Sphere;
       float x = *params++;
       float y = *params++;
       float z = *params++;
@@ -479,6 +481,9 @@ namespace icl::geom {
           if(j) addLine(i+na*j, i+na*(j-1));
         }
       }
+      // Store sphere params for render backends (e.g., Cycles analytic sphere)
+      m_sphereCenter[0] = x; m_sphereCenter[1] = y; m_sphereCenter[2] = z;
+      m_sphereRadius = rx; // use rx as primary radius (spheroids use max)
     }else if(type == "superquadric"){
       float x = *params++;
       float y = *params++;

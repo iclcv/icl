@@ -17,9 +17,11 @@
 #undef LOG_LEVEL
 
 #include "scene/camera.h"
+#include "scene/geometry.h"
 #include "scene/light.h"
 #include "scene/mesh.h"
 #include "scene/object.h"
+#include "scene/pointcloud.h"
 #include "scene/scene.h"
 #include "scene/shader.h"
 #include "scene/shader_graph.h"
@@ -100,6 +102,44 @@ static Shader *createDefaultShader(ccl::Scene *scene) {
   shader->set_graph(unique_ptr<ShaderGraph>(graph));
   shader->tag_update(scene);
   return shader;
+}
+
+// ---- Analytic sphere detection ----
+
+/// Check if an ICL SceneObject is a sphere (all vertices equidistant from center).
+/// Returns true and sets center/radius if detected.
+static bool detectSphere(const geom::SceneObject *obj, float3 &center, float &radius) {
+  const auto &verts = obj->getVertices();
+  if (verts.size() < 12) return false;  // too few verts for a meaningful sphere
+
+  // Compute bounding box center
+  float3 mn = make_float3(1e20f, 1e20f, 1e20f);
+  float3 mx = make_float3(-1e20f, -1e20f, -1e20f);
+  for (const auto &v : verts) {
+    mn.x = fminf(mn.x, v[0]); mn.y = fminf(mn.y, v[1]); mn.z = fminf(mn.z, v[2]);
+    mx.x = fmaxf(mx.x, v[0]); mx.y = fmaxf(mx.y, v[1]); mx.z = fmaxf(mx.z, v[2]);
+  }
+  center = (mn + mx) * 0.5f;
+
+  // Compute average distance from center
+  float sumDist = 0;
+  for (const auto &v : verts) {
+    float3 d = make_float3(v[0], v[1], v[2]) - center;
+    sumDist += sqrtf(d.x * d.x + d.y * d.y + d.z * d.z);
+  }
+  radius = sumDist / float(verts.size());
+
+  if (radius < 1e-6f) return false;
+
+  // Check all vertices are within 2% of the average radius
+  float tolerance = radius * 0.02f;
+  for (const auto &v : verts) {
+    float3 d = make_float3(v[0], v[1], v[2]) - center;
+    float dist = sqrtf(d.x * d.x + d.y * d.y + d.z * d.z);
+    if (fabsf(dist - radius) > tolerance) return false;
+  }
+
+  return true;
 }
 
 // ---- Tessellation: ICL primitives → Cycles triangle mesh ----
@@ -264,7 +304,7 @@ void SceneSynchronizer::walkObject(const geom::SceneObject *obj,
     size_t pc = prims.size();
     bool geomDirty = entry.geometryDirty || (vc != entry.vertexCount) || (pc != entry.primitiveCount);
 
-    if (!entry.mesh || geomDirty) {
+    if (!entry.geometry || geomDirty) {
       syncGeometry(entry, cclScene, sceneScale);
       syncMaterial(entry, cclScene);
       entry.vertexCount = vc;
@@ -289,13 +329,58 @@ void SceneSynchronizer::walkObject(const geom::SceneObject *obj,
 void SceneSynchronizer::syncGeometry(ObjectEntry &entry,
                                      ccl::Scene *cclScene,
                                      float sceneScale) {
-  if (!entry.mesh) {
-    entry.mesh = cclScene->create_node<ccl::Mesh>();
-    entry.object = cclScene->create_node<ccl::Object>();
-    entry.object->set_geometry(entry.mesh);
+  // Use ObjectType hint for analytic sphere, or fall back to heuristic detection
+  float3 sphereCenter;
+  float sphereRadius;
+  bool isSphere = false;
+
+  if (entry.iclObj->getObjectType() == geom::SceneObject::Sphere) {
+    float cx, cy, cz, r;
+    entry.iclObj->getSphereParams(cx, cy, cz, r);
+    sphereCenter = make_float3(cx, cy, cz);
+    sphereRadius = r;
+    isSphere = true;
+  } else {
+    // Heuristic fallback for spheres created without the factory
+    isSphere = detectSphere(entry.iclObj, sphereCenter, sphereRadius);
   }
 
-  tessellateToMesh(entry.iclObj, entry.mesh, sceneScale);
+  if (isSphere) {
+    // Use Cycles PointCloud for perfect analytic sphere
+    if (!entry.geometry || !entry.isSphere) {
+      // Remove old geometry if switching type
+      if (entry.geometry) {
+        if (entry.object) cclScene->delete_node(entry.object);
+        cclScene->delete_node(entry.geometry);
+      }
+      auto *pc = cclScene->create_node<ccl::PointCloud>();
+      entry.geometry = pc;
+      entry.object = cclScene->create_node<ccl::Object>();
+      entry.object->set_geometry(pc);
+      entry.isSphere = true;
+    }
+
+    auto *pc = static_cast<ccl::PointCloud *>(entry.geometry);
+    pc->resize(1);
+    pc->get_points()[0] = sphereCenter * sceneScale;
+    pc->get_radius()[0] = sphereRadius * sceneScale;
+    pc->get_shader()[0] = 0;
+  } else {
+    // Use triangle mesh
+    if (!entry.geometry || entry.isSphere) {
+      if (entry.geometry) {
+        if (entry.object) cclScene->delete_node(entry.object);
+        cclScene->delete_node(entry.geometry);
+      }
+      auto *mesh = cclScene->create_node<ccl::Mesh>();
+      entry.geometry = mesh;
+      entry.object = cclScene->create_node<ccl::Object>();
+      entry.object->set_geometry(mesh);
+      entry.isSphere = false;
+    }
+
+    tessellateToMesh(entry.iclObj, static_cast<ccl::Mesh *>(entry.geometry), sceneScale);
+  }
 }
 
 void SceneSynchronizer::syncMaterial(ObjectEntry &entry,
@@ -313,10 +398,10 @@ void SceneSynchronizer::syncMaterial(ObjectEntry &entry,
     entry.shader = createDefaultShader(cclScene);
   }
 
-  // Assign shader to mesh
+  // Assign shader to geometry (Mesh or PointCloud)
   array<Node *> used_shaders;
   used_shaders.push_back_slow(entry.shader);
-  entry.mesh->set_used_shaders(used_shaders);
+  entry.geometry->set_used_shaders(used_shaders);
 }
 
 void SceneSynchronizer::syncTransform(ObjectEntry &entry, float sceneScale) {
@@ -444,7 +529,7 @@ void SceneSynchronizer::removeStaleObjects(ccl::Scene *cclScene, bool &anyChange
     if (!entry.visited) {
       // Remove Cycles nodes
       if (entry.object) cclScene->delete_node(entry.object);
-      if (entry.mesh) cclScene->delete_node(entry.mesh);
+      if (entry.geometry) cclScene->delete_node(entry.geometry);
       if (entry.shader) cclScene->delete_node(entry.shader);
       toRemove.push_back(ptr);
       anyChanged = true;

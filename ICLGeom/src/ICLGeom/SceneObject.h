@@ -115,6 +115,16 @@ namespace icl::geom {
   class SceneObject{
     public:
 
+    /// Geometry type hint for render backends (e.g., Cycles uses analytic spheres).
+    /// Does not affect OpenGL rendering or intersection — those always use the triangle mesh.
+    enum ObjectType {
+      Generic = 0,  ///< Arbitrary triangle mesh (default)
+      Sphere,       ///< Created by sphere()/spheroid() factory — center + radius
+      Cube,         ///< Created by cube()/cuboid() factory
+      Cylinder,     ///< Created by cylinder() factory
+      Cone,         ///< Created by cone() factory
+    };
+
     /// provides direct access for the Scene class
     friend class Scene;
 
@@ -644,6 +654,15 @@ namespace icl::geom {
     /// returns whether this object is currently visible
     bool isVisible() const { return m_isVisible; }
 
+    /// returns the geometry type hint (for render backend optimizations)
+    ObjectType getObjectType() const { return m_objectType; }
+
+    /// returns sphere center (only meaningful when objectType == Sphere)
+    void getSphereParams(float &cx, float &cy, float &cz, float &radius) const {
+      cx = m_sphereCenter[0]; cy = m_sphereCenter[1]; cz = m_sphereCenter[2];
+      radius = m_sphereRadius;
+    }
+
     /// calls setVisible(false)
     void hide(bool recursive=true){ setVisible(false); }
 
@@ -867,6 +886,10 @@ namespace icl::geom {
 
     bool m_useSmoothShading;
     bool m_isVisible;
+
+    ObjectType m_objectType = Generic;
+    float m_sphereCenter[3] = {0, 0, 0};  ///< center for Sphere type
+    float m_sphereRadius = 0;              ///< radius for Sphere type
 
     /// for the scene graph implementation
     Mat m_transformation;
