@@ -138,6 +138,8 @@ void DemoScene::setup(const std::vector<std::string> &files,
 
     auto *s = SceneObject::sphere(0, 100, 0, 100, 40, 40);
     auto sphere = std::shared_ptr<SceneObject>(s);
+    sphere->setVisible(Primitive::line, false);
+    sphere->setVisible(Primitive::vertex, false);
     sphere->setMaterial(Material::fromColor(GeomColor(220, 60, 60, 255)));
     sphere->getMaterial()->roughness = 0.3f;
     addObject(sphere.get());
