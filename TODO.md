@@ -48,6 +48,19 @@ Applied per `module-audit-checklist.md`.
 
 ---
 
+## Next: Configurable internal storage → typed `std::any`
+
+- [ ] **Move `Configurable::Property::value` from `std::string` to `std::any`.**  Session 52 retired `utils::Any` and flipped Configurable's *API surface* to `AutoParse<std::string>`, but the *internal storage* is still a serialized string.  Next step: store property values as typed `std::any` (matching the declared property type), with `str(v)` / `parse<T>(s)` only at config-file I/O boundaries.  Affects:
+  - `Configurable.h`: `Property::value` (`std::string` → `std::any`), `Property::payload` (already `std::any` — may fold together).
+  - `Configurable.cpp`: `addProperty` constructs the `std::any` from the initial value using the declared type; `setPropertyValue(AutoParse<string>)` parses incoming strings into the declared type; `getPropertyValue()` returns `AutoParse<std::any>` so callers keep `T x = c.getPropertyValue(name)` ergonomics.
+  - `ConfigFile`: serialize with declared type on save, parse on load.  No on-disk format change.
+  - `qt::Prop`: already reads both string (`getPropertyValue`) and any (`getPropertyPayload`) — reconcile into a single typed read.
+  - Existing plugin `setPropertyValue` overrides (`UnaryOp`, `CornerDetectorCSS`, etc.) that manually `parse<float>(value)` simplify — they can take the typed value directly.
+  - Reading: 33 subclasses, ~524 `addProperty` call sites, ~557 `set/getPropertyValue` reads.  Most call sites are unaffected because `AutoParse<std::any>` extraction is drop-in for `AutoParse<std::string>` extraction (same `T x = ap` spelling).
+  Open question: what to declare as the type for `"menu"` / `"flag"` properties (strings vs bools)?  Probably a map from property-type-string to `std::type_info` at `addProperty` time.
+
+---
+
 ## DataStore / Assign migration (storage cleanup landed; Event smuggling pending)
 
 Session 51 closed every storage-side item on this section:

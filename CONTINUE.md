@@ -1,5 +1,20 @@
 # ICL — Continuation Guide
 
+## Next Step
+
+**Configurable internal storage → typed `std::any`.**  Session 52
+retired `utils::Any` and flipped Configurable's *public API* to
+`AutoParse<std::string>`, but properties are still string-backed
+internally (`Property::value` is `std::string`).  The next pass
+moves storage to `std::any` of the declared property type, with
+`str`/`parse` only at config-file I/O boundaries.  Full scope in
+`TODO.md` under "Next: Configurable internal storage → typed
+`std::any`".  Plugin `setPropertyValue` overrides that manually
+parse floats/ints simplify; `qt::Prop`'s dual string/payload read
+collapses to a single typed one.  No on-disk format change.
+
+---
+
 ## Current State (Session 52 — `utils::Any` retired; AutoParse<Backend> landed; plugin APIs split into overloads)
 
 ### Session 52 Summary
