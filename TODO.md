@@ -160,6 +160,12 @@ From Session 48 deferrals:
 
 ---
 
+## Configuration format
+
+- [ ] **Replace XML with YAML for `ConfigFile`.**  Current implementation (`icl/utils/ConfigFile.{h,cpp}` + `icl/utils/detail/pugi/`) serializes property trees as XML via a bundled pugixml.  YAML reads better for humans, nests naturally for ICL's dotted-key layout, and would let us drop pugi from the dependency surface entirely.  Pick a YAML lib (yaml-cpp is the obvious candidate; consider rapidyaml for zero-alloc reads), keep the ConfigFile public API stable (load/save/register_type still string-backed), migrate on-disk format.  Open questions: migration path for existing `.xml` configs (auto-detect + one-way convert? separate tool?), behavior for mixed-format trees during transition.  See `project_yaml_config.md` once drafted.
+
+---
+
 ## Dependency hygiene
 
 - [ ] **Qt6 multimedia grabbers** — QVideoSink rewrite needed.  See `project_qt6_multimedia.md`.
