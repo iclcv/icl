@@ -1,6 +1,188 @@
 # ICL — Continuation Guide
 
-## Current State (Session 51 — thread-safe handle reads, `.out()` retired, DataStore on AnyMap, Event smuggling gone)
+## Current State (Session 52 — `utils::Any` retired; AutoParse<Backend> landed; plugin APIs split into overloads)
+
+### Session 52 Summary
+
+7 commits along a single coherent arc.  Closed out the long-
+standing `utils::Any` vs `std::any` confusion by introducing a
+properly-named, properly-scoped conversion proxy
+(`utils::AutoParse<Backend>`), migrating every consumer onto it,
+and deleting `utils::Any.h` outright.  Net: ICL's own source no
+longer contains a general-purpose container called "Any" — the
+name collision with `std::any` is gone, and every former role of
+`utils::Any` is served by an appropriately-specific tool.
+
+#### 1. `utils::AutoParse<Backend>` — new conversion proxy (commit 56ad2eebc)
+
+New `icl/utils/AutoParse.h`, a lightweight by-value conversion
+proxy meant for index-style accessors like `ProgArg::operator[]`
+and `DataStore::operator[]`.  Two backends:
+
+- **`AutoParse<std::string>`** — publicly inherits `std::string`
+  (same trick `utils::Any` used; safe here because AutoParse is
+  disciplined-proxy-only, never stored).  Normal string operations
+  (concat with `+`, comparison, stream-insertion, passing to
+  `const std::string&` APIs) work without per-operator overloads.
+  Templated `operator T()` parses into any stream-extractable T
+  via `parse<T>`, SFINAE-excluding char-like types reachable
+  through the base to avoid ambiguity.  Templated constructor
+  accepts any streamable T (via `str(t)`) so
+  `setPropertyValue("gain", 500)` keeps working.
+
+- **`AutoParse<std::any>`** — cascade on extraction: exact
+  `std::any_cast<T>` → numeric widening for arithmetic T → parse
+  the stored value if it is a `std::string` → stringify the stored
+  value if T is `std::string` and the stored value is a numeric.
+  Used internally by `DataStore::Slot::operator T()` as a fast-path
+  before falling through to the existing AssignRegistry cross-type
+  dispatch — adds numeric-widening paths that previously required
+  a string round-trip.
+
+Discipline rule documented in the header: *AutoParse is a
+conversion proxy, not a storage type.*  Never stored, never a
+function-parameter type, never in a container — consume
+immediately as `T x = ap` or `ap.as<T>()`.
+
+Initial adopters: `ProgArg::operator[](int)` (return type flip
+from `utils::Any` to `AutoParse<std::string>`) and
+`DataStore::Slot::operator T()` (delegation to
+`AutoParse<std::any>` on the fast path).
+
+19 unit tests in `tests/test-auto-parse.cpp` covering both
+backends.
+
+#### 2. Configurable migration (commit 27a0cc5ea)
+
+The biggest former consumer.  Flipped
+`addProperty` / `setPropertyValue` / `getPropertyValue` / ditto on
+`ConfigurableProxy` + all subclass overrides (`UnaryOp`,
+`CornerDetectorCSS`, `MultiCamFiducialDetector::property_callback`)
+from `utils::Any` to `AutoParse<std::string>`.  Internal property
+storage untouched (still `std::string`), config-file
+serialization untouched — this was an API-surface rename.
+
+Semantics preserved exactly: both types inherit `std::string`,
+both accept arbitrary T in the constructor via `str(t)`, both
+parse on extraction via `parse<T>`.  Call sites unchanged.
+
+#### 3. `ParamMap` moved out of `Any.h` (commit d23d60298)
+
+`utils::ParamMap` — the `std::map<string, Any, std::less<>>` used
+across plugin APIs — moved to its own header
+`icl/utils/ParamMap.h` and retyped as
+`std::map<string, AutoParse<std::string>, std::less<>>`.
+`Any.h` kept the include transitively for continuity.
+
+#### 4. Plugin-code `Any()` sentinel cleanup (commit 6a8077d4c)
+
+7 residual `Any()` / `Any(value)` wrappers in
+`FileGrabber.cpp`, `DCDeviceFeatures.cpp`, `V4L2Grabber.cpp`
+replaced with plain `""` / the value itself — the wrapper was
+only there to pacify the old `const Any&` param type.
+
+#### 5. `FiducialDetector` overloads (commit c92621de7)
+
+The cleanest-design part of the arc.  Deleted the single
+`const Any &which` parameter throughout the FiducialDetector
+family and replaced with three purpose-built overloads reflecting
+what callers actually pass:
+
+```
+loadMarkers(int)                 → single numeric ID (BCH / ICL1)
+loadMarkers(const vector<int> &) → typed list (no string parse)
+loadMarkers(const string &)      → range "[a,b]", list "{a,b,c}",
+                                    or file path/glob (ART, Amoeba)
+```
+
+`unloadMarkers`, `createMarker`, and the constructor's
+`markersToLoad` parameter got the same treatment.  Int and
+vector-int overloads delegate internally to the string form so
+plugins still see a single string spec — plugin impls changed only
+by virtue of signature (`const std::string &` instead of
+`const Any &`), and the implicit Any→int conversions in three
+plugin create-marker bodies became explicit `parse<int>(...)`.
+
+18 files touched; `create-marker-grid-svg.cpp` was the only app
+call site needing an update (`Any()` dropped from the ctor call).
+
+#### 6. Delete `utils::Any.h` (commit 4e4c55f19)
+
+Final retirement.  Remaining consumers:
+
+- **`ImageRegion::{set,get}MetaData`** + `ImageRegionData::meta`
+  and **`DefineRectanglesMouseHandler`'s meta bag**: genuine
+  type-erased metadata stores, migrated to `std::any`.  Only the
+  visualization path needed a tiny guard — `w.text(meta, ...)`
+  became `if (auto *s = std::any_cast<std::string>(&meta)) w.text(*s, ...)`,
+  which preserves the previous implicit "Any→string via is-a"
+  behaviour.
+
+- **`VisualizationDescription::Part::content`** (stringly-typed
+  payload for draw primitives): migrated to
+  `AutoParse<std::string>`.  Callers passed `std::vector<float>` /
+  `<int>` for polygon/point lists; old Any had a binary packing
+  specialization.  Replaced with text CSV via new
+  `str(vector<T>)` + `parse<vector<T>>` specializations in
+  `StringUtils.h` for float / int / double.  Cheaper to reason
+  about than the binary packing; configs are cold-path anyway.
+
+- **`Any::ptr<T>` pointer encoding** (the only non-string-round-trip
+  use of Any): replaced by two small free functions
+  `qt::encode_pointer<T>` / `decode_pointer<T>` in
+  `qt/GUIComponents.h`.  Used only by the Prop GUI component to
+  smuggle a `Configurable*` through the stringly-typed GUI
+  parameter channel; will become moot when the GUIComponent
+  stringification rework lands.
+
+- **`ConfigFile.cpp`**: dropped `REGISTER_CONFIG_FILE_TYPE(Any)` —
+  plain `std::string` already covers that role.
+
+Headers that transitively pulled in `Any.h` rewired to include
+`ParamMap.h` (FiducialDetector, FiducialDetectorPlugin,
+Marker*Detector).  `Configurable.h` drops the Any include
+outright.
+
+Net delete: `icl/utils/Any.h` (211 LOC) + `examples/any.cpp`
+(43 LOC benchmark of the binary packing).
+
+#### 7. YAML config TODO (commit da12ae6f0)
+
+User flagged "I don't like XML anymore".  Added a TODO entry
+under a new `Configuration format` section in `TODO.md` + a
+`project_yaml_config.md` memory.  Migrate `ConfigFile` on-disk
+format from pugixml to YAML (yaml-cpp likely, rapidyaml if cold
+path turns out to matter); keep the public API stable; auto-detect
+existing `.xml` files on load during transition.  Leaves the
+pugi dependency deletable afterward.
+
+#### 8. Verification
+
+- `tests/icl-tests -j 1`: 626/626 pass at every commit (607 from
+  Session 51 + 19 new `utils.autoparse.*` cases).
+- Full tree builds clean at every commit (`meson compile -j16`).
+- No runtime verification of the FiducialDetector overloads (Qt
+  GUI ctor still crashes in this sandboxed-macOS environment per
+  the Session 51 note); API-surface change only, confirmed via
+  build + unit tests.
+
+#### 9. What's deferred
+
+- **AutoParse template flip**.  The decision to keep `AutoParse`
+  as `template<class Backend>` with explicit specializations for
+  `std::string` and `std::any` is held open for future extension.
+  No current consumer needs a third backend.
+- **Typed `std::any` internal storage for Configurable properties**.
+  Discussed during scoping; deferred.  Would require changes to
+  config-file format semantics (today all round-trips through
+  strings).  Separate future modernization pass.
+- **GUIComponent stringification rework** (TODO item still open):
+  will eliminate the `@pointer@:` encoding, making
+  `qt::encode_pointer` / `decode_pointer` deletable.
+
+---
+
+## Previous State (Session 51 — thread-safe handle reads, `.out()` retired, DataStore on AnyMap, Event smuggling gone)
 
 ### Session 51 Summary
 
