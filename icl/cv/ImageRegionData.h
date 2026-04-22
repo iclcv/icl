@@ -6,12 +6,13 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/StackTimer.h>
-#include <icl/utils/Any.h>
 #include <icl/core/Img.h>
 #include <icl/cv/ImageRegionPart.h>
 #include <icl/cv/ImageRegion.h>
 #include <icl/cv/RegionPCAInfo.h>
 #include <icl/cv/CornerDetectorCSS.h>
+
+#include <any>
 
 #include <set>
 
@@ -47,7 +48,7 @@ namespace icl::cv {
     std::vector<LineSegment> segments;
 
     /// meta data, that can be associated with a region structure
-    utils::Any meta;
+    std::any meta;
 
     /// structure for representing region-graph information
     struct RegionGraphInfo{

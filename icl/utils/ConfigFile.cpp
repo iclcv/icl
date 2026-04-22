@@ -22,8 +22,6 @@
 #include <icl/utils/Range.h>
 #include <icl/utils/SteppingRange.h>
 
-#include <icl/utils/Any.h>
-
 namespace icl::utils {
 
   /// Pimpl: owns the underlying pugi document.  Kept out of the public
@@ -54,7 +52,6 @@ namespace icl::utils {
         REGISTER_CONFIG_FILE_TYPE(float);
         REGISTER_CONFIG_FILE_TYPE(double);
         ::icl::utils::ConfigFile::register_type<std::string>("string");
-        REGISTER_CONFIG_FILE_TYPE(Any);
         REGISTER_CONFIG_FILE_TYPE(long int);
         REGISTER_CONFIG_FILE_TYPE(bool);
 

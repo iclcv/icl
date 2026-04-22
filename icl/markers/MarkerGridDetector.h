@@ -6,7 +6,7 @@
 
 #include <icl/utils/Configurable.h>
 #include <icl/utils/Array2D.h>
-#include <icl/utils/Any.h>
+#include <icl/utils/ParamMap.h>
 #include <icl/markers/FiducialDetector.h>
 
 namespace icl::markers {

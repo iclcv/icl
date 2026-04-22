@@ -709,11 +709,11 @@ namespace icl::cv {
     show_tree_recursive(*this,0);
   }
 
-  void ImageRegion::setMetaData(const Any &any) const{
+  void ImageRegion::setMetaData(const std::any &any) const{
     m_data->meta = any;
   }
 
-  const Any &ImageRegion::getMetaData() const{
+  const std::any &ImageRegion::getMetaData() const{
     return m_data->meta;
   }
 

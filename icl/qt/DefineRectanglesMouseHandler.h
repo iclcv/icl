@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Lockable.h>
-#include <icl/utils/Any.h>
+#include <any>
 #include <icl/core/Color.h>
 #include <functional>
 #include <icl/qt/MouseHandler.h>
@@ -163,7 +163,7 @@ namespace icl::qt {
       void visualize(ICLDrawWidget &w);
 
       /// this can be used to attach meta data to rectangles
-      utils::Any meta;
+      std::any meta;
     };
 
 
@@ -251,16 +251,16 @@ namespace icl::qt {
     int getMaxRects() const;
 
     /// gets the meta data associated with rect at given index
-    const utils::Any &getMetaData(int index) const;
+    const std::any &getMetaData(int index) const;
 
     /// gets the meta data associated with rect at given index
-    const utils::Any &getMetaDataAt(int x, int y) const;
+    const std::any &getMetaDataAt(int x, int y) const;
 
     /// associates some meta data with rect at given index
-    void setMetaData(int index, const utils::Any &data);
+    void setMetaData(int index, const std::any &data);
 
     /// sets the meta data at the rect at given x,y-position
-    void setMetaDataAt(int x, int y, const utils::Any &data);
+    void setMetaDataAt(int x, int y, const std::any &data);
 
     /// brings one rectangle to the front internally
     void bringToFront(int idx);

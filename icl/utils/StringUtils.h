@@ -136,13 +136,25 @@ namespace icl::utils {
   /// specialized for const char const pointers
   template<> inline std::string str(const char* const &pc) { return pc; }
 
+  /// forward declaration for use in vector str specializations below
+  template<class T>
+  std::string cat(const std::vector<T> &v, const std::string &delim = ",");
+
+  /// specialized for std::vector<T> — comma-separated list via cat().
+  /** Mirrored by a parse<std::vector<T>> specialization below so that
+      an AutoParse<std::string> can round-trip vector payloads as CSV.
+  **/
+  template<> inline std::string str(const std::vector<float> &v) { return cat(v, ","); }
+  template<> inline std::string str(const std::vector<int> &v)   { return cat(v, ","); }
+  template<> inline std::string str(const std::vector<double> &v){ return cat(v, ","); }
+
 
   /// creates a delim-separated string of str'ed values of given vector \ingroup STRUTILS
   /** e.g. if v is {1,2,3} and delim is '-' the resulting string will be
       "1-2-3"
   **/
   template<class T>
-  std::string cat(const std::vector<T> &v, const std::string &delim = ","){
+  std::string cat(const std::vector<T> &v, const std::string &delim){
     if(!v.size()) return "";
     std::ostringstream s; s << v[0];
     for(unsigned int i=1;i<v.size();++i){  s << delim << v[i]; }
@@ -230,6 +242,11 @@ namespace icl::utils {
   inline std::vector<T> parseVecStr(std::string_view vecStr, std::string_view delims = ","){
     return parseVec<T>(tok(vecStr,delims));
   }
+
+  /// parse<std::vector<T>> for use via AutoParse / parse<>
+  template<> inline std::vector<float>  parse<std::vector<float>> (std::string_view s){ return parseVecStr<float>(s,","); }
+  template<> inline std::vector<int>    parse<std::vector<int>>   (std::string_view s){ return parseVecStr<int>(s,","); }
+  template<> inline std::vector<double> parse<std::vector<double>>(std::string_view s){ return parseVecStr<double>(s,","); }
 
   /// convert a vector of T's into a vector of strings \ingroup STRUTILS
   template<class T>

@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Configurable.h>
-#include <icl/utils/Any.h>
+#include <icl/utils/ParamMap.h>
 
 #include <icl/geom/Camera.h>
 

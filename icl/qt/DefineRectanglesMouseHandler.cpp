@@ -177,7 +177,9 @@ namespace icl::qt {
     }
     if(options->showMetaData){
       w.color(options->metaColor);
-      w.text(meta,center().x,center().y,options->textSize);
+      if(auto *s = std::any_cast<std::string>(&meta)){
+        w.text(*s,center().x,center().y,options->textSize);
+      }
     }
   }
 
@@ -402,31 +404,31 @@ namespace icl::qt {
     return rects[index];
   }
 
-  const Any &DefineRectanglesMouseHandler::getMetaData(int index) const{
+  const std::any &DefineRectanglesMouseHandler::getMetaData(int index) const{
     std::scoped_lock<std::recursive_mutex> l(getMutex());
-    static Any null;
+    static std::any null;
     if(index < 0 || index >= static_cast<int>(rects.size())) return null;
     return rects[index].meta;
   }
 
-  void DefineRectanglesMouseHandler::setMetaData(int index, const Any &data){
+  void DefineRectanglesMouseHandler::setMetaData(int index, const std::any &data){
     std::scoped_lock<std::recursive_mutex> l(getMutex());
     ICLASSERT_RETURN(index >= 0 && index < static_cast<int>(rects.size()));
     rects[index].meta = data;
   }
 
-  const Any &DefineRectanglesMouseHandler::getMetaDataAt(int x, int y) const{
+  const std::any &DefineRectanglesMouseHandler::getMetaDataAt(int x, int y) const{
     std::scoped_lock<std::recursive_mutex> l(getMutex());
     for(unsigned int i=0;i<rects.size();++i){
       if(rects[i].contains(x,y)){
         return rects[i].meta;
       }
     }
-    static Any null;
+    static std::any null;
     return null;
   }
 
-  void DefineRectanglesMouseHandler::setMetaDataAt(int x, int y, const Any &meta){
+  void DefineRectanglesMouseHandler::setMetaDataAt(int x, int y, const std::any &meta){
     std::scoped_lock<std::recursive_mutex> l(getMutex());
     for(unsigned int i=0;i<rects.size();++i){
       if(rects[i].contains(x,y)){

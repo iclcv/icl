@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Any.h>
+#include <icl/utils/AutoParse.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Rect.h>
 
@@ -53,13 +53,13 @@ namespace icl{
         inline Part(){}
 
         /// constructor with given parameters
-        Part(char type, const Any &content):type(type),content(content){}
+        Part(char type, const AutoParse<std::string> &content):type(type),content(content){}
 
         /// type
         char type;
 
         /// strind-serialized content
-        Any content;
+        AutoParse<std::string> content;
       };
 
       /// Utility class for Text
@@ -137,7 +137,7 @@ namespace icl{
         parts.push_back(part);
       }
       /// adds a given part
-      inline void addPart(char c, const Any &content){
+      inline void addPart(char c, const AutoParse<std::string> &content){
         addPart(Part(c,content));
       }
 

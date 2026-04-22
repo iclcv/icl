@@ -473,7 +473,7 @@ namespace icl{
         static const std::string pointer_prefix = "@pointer@:";
         if(def.param(0).length() > pointer_prefix.length() &&
            def.param(0).substr(0,pointer_prefix.length()) == pointer_prefix){
-          conf = Any::ptr<Configurable>(def.param(0).substr(pointer_prefix.length()));
+          conf = decode_pointer<Configurable>(def.param(0).substr(pointer_prefix.length()));
         }else{
           conf = Configurable::get(def.param(0));
         }

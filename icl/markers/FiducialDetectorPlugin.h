@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Any.h>
+#include <icl/utils/ParamMap.h>
 #include <icl/utils/Configurable.h>
 
 #include <icl/core/Img.h>

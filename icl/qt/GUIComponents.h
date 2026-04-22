@@ -5,8 +5,10 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Any.h>
 #include <icl/qt/GUIComponent.h>
+
+#include <cstring>
+#include <string>
 
 namespace icl{
   /** \cond */
@@ -16,6 +18,26 @@ namespace icl{
   /** \endcond */
 
   namespace qt{
+
+    /// Encode a raw pointer into a fixed-size string for round-tripping
+    /// through GUIComponent's stringly-typed parameter channel.  Pair
+    /// with `decode_pointer<T>`.  Used by the Prop component to smuggle
+    /// a Configurable* to the GUI backend.
+    template<class T>
+    inline std::string encode_pointer(const T *p) {
+      std::string s(sizeof(void*), '\0');
+      std::memcpy(&s[0], &p, sizeof(void*));
+      return s;
+    }
+
+    /// Decode a pointer produced by `encode_pointer<T>`.
+    template<class T>
+    inline T *decode_pointer(const std::string &s) {
+      T *p = nullptr;
+      std::memcpy(&p, s.data(), sizeof(void*));
+      return p;
+    }
+
     /// Button Component
     /** Buttons can either be push- or toggle buttons.
         Buttons create a ButtonHandle. If a toggle button is created, also an output of type bool is created,
@@ -284,12 +306,12 @@ namespace icl{
       Prop(const std::string &configurableID):GUIComponent("prop",configurableID){}
 
       /// create configurable component from given configurable (pointer)
-      Prop(const utils::Configurable *cfg) : GUIComponent("prop","@pointer@:"+utils::Any::ptr(cfg)){
+      Prop(const utils::Configurable *cfg) : GUIComponent("prop","@pointer@:"+encode_pointer(cfg)){
         ICLASSERT_THROW(cfg, utils::ICLException("GUIComponent Prop(NULL-Pointer) cannot be created!"));
       }
 
       /// create configurable component from given configurable (reference)
-      Prop(const utils::Configurable &cfg):GUIComponent("prop","@pointer@:"+utils::Any::ptr(&cfg)){}
+      Prop(const utils::Configurable &cfg):GUIComponent("prop","@pointer@:"+encode_pointer(&cfg)){}
     };
 
     /// Color selection component

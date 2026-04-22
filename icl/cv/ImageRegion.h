@@ -5,10 +5,11 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Any.h>
 #include <icl/core/Img.h>
 #include <icl/cv/RegionPCAInfo.h>
 #include <icl/cv/LineSegment.h>
+
+#include <any>
 
 namespace icl::cv {
   /** \cond */
@@ -221,10 +222,10 @@ namespace icl::cv {
         also the meta-data is hold in the internally managed and shallowly
         copied data structure.
     */
-    void setMetaData(const utils::Any &any) const;
+    void setMetaData(const std::any &any) const;
 
     /// returns the meta data associated with this region
-    const utils::Any &getMetaData() const;
+    const std::any &getMetaData() const;
  };
 
   } // namespace icl::cv
