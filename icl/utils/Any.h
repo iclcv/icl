@@ -203,11 +203,9 @@ namespace icl::utils {
   /** \endcond */
 
 
-  /// Parameter map: key → Any value, with transparent lookup (find("literal") OK).
-  /** Used across the framework as a "bag of parameters" passed through generic
-      APIs (e.g. FiducialDetector, MarkerGridDetector).  Typical construction is
-      via braced initializer list: `{{"size", Size(30,30)}, {"border ratio", 0.3f}}`.
-  */
-  using ParamMap = std::map<std::string, Any, std::less<>>;
-
   } // namespace icl::utils
+
+// ParamMap lives in its own header now — string-backed via AutoParse,
+// no longer dependent on utils::Any.  Included transitively here for
+// callers that still `#include <icl/utils/Any.h>`.
+#include <icl/utils/ParamMap.h>
