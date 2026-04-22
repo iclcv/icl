@@ -357,12 +357,12 @@ namespace icl::io {
     void FileGrabber::addProperties(){
       addProperty("format","info","","unknown",0,"");
       addProperty("size","info","","unknown",0,"");
-      addProperty("next","command","",Any(),0,"Increments the file counter for the grabber");
-      addProperty("prev","command","",Any(),0,"Decrements the file counter for the grabber");
+      addProperty("next","command","","",0,"Increments the file counter for the grabber");
+      addProperty("prev","command","","",0,"Decrements the file counter for the grabber");
       addProperty("use-time-stamps","flag","",m_data->useTimeStamps,0,"Whether to use timestamps"); //TODO: what is this?
       addProperty("next filename","info","",getNextFileName(),0,"Name of the next file to grab");
       addProperty("current filename","info","",m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)],0,"Name of the last grabbed file");
-      addProperty("jump-to-start","command","",Any(),0,"Reset the file counter to 0");
+      addProperty("jump-to-start","command","","",0,"Reset the file counter to 0");
       addProperty("relative progress","info","",str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %",0,"The relative progress through the files in percent");
       addProperty("absolute progress","info","",str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()),0,"The absolute progress through the files. 'current nunmber/total number'");
       addProperty("auto-next","flag","",m_data->bAutoNext,0,"Whether to automatically grab the next file for every frame");
@@ -430,8 +430,8 @@ namespace icl::io {
       setPropertyValue("current filename", m_data->oFileList[usedIdx]);
       setPropertyValue("relative progress", str((100* (usedIdx+1)) / float(s))+" %");
       setPropertyValue("absolute progress", str(usedIdx+1) + " / " + str(s));
-      setPropertyValue("format", Any(img -> getFormat()));
-      setPropertyValue("size", Any(img -> getSize()));
+      setPropertyValue("format", img -> getFormat());
+      setPropertyValue("size", img -> getSize());
       //setPropertyValue("frame-index", m_data->iCurrIdx);
       m_updatingProperties = false;
     }

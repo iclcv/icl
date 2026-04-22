@@ -725,7 +725,7 @@ namespace icl::io {
     addProperty("device name","info","",impl->deviceNameInfo);
     addProperty("avoid doubled frames", "flag", "", impl->avoidDoubleFrames, 0, "");
     addProperty("format", "menu", clearFormatString(impl->getSupportedFormats()), impl->get_current_format(), 0, "The image format.");
-    addProperty("size", "menu", "ajusted by format", Any(), 0, "This is set by the format-property.");
+    addProperty("size", "menu", "ajusted by format", "", 0, "This is set by the format-property.");
     for(Impl::PMap::const_iterator it=impl->supportedProperties.begin();
         it != impl->supportedProperties.end();++it){
       Impl::SupportedPropertyPtr p = it -> second;
