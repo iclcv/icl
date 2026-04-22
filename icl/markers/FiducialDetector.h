@@ -25,6 +25,10 @@ namespace icl::markers {
     /// hidden data pointer
     Data *data;
 
+    /// shared ctor body — instantiate plugin, load markers, set camera, set up PP
+    void initPlugin(const std::string &plugin, const std::string &markerSpec,
+                    const utils::ParamMap &params, const geom::Camera *camera);
+
     public:
     FiducialDetector(const FiducialDetector&) = delete;
     FiducialDetector& operator=(const FiducialDetector&) = delete;
@@ -70,8 +74,26 @@ namespace icl::markers {
         <b>benchmarks</b>
         TODO
     */
+    /// Construct with no markers yet loaded.
     FiducialDetector(const std::string &plugin="bch",
-                     const utils::Any &markersToLoad=utils::Any(),
+                     const utils::ParamMap &params=utils::ParamMap(),
+                     const geom::Camera *camera=0);
+
+    /// Construct and load a single integer-ID marker (BCH / ICL1).
+    FiducialDetector(const std::string &plugin, int markerId,
+                     const utils::ParamMap &params=utils::ParamMap(),
+                     const geom::Camera *camera=0);
+
+    /// Construct and load a typed list of integer-ID markers.
+    FiducialDetector(const std::string &plugin, const std::vector<int> &markerIds,
+                     const utils::ParamMap &params=utils::ParamMap(),
+                     const geom::Camera *camera=0);
+
+    /// Construct and load markers from a string spec — a range `"[a,b]"`,
+    /// a list `"{a,b,c}"`, a single numeric ID, or a file path/glob
+    /// (ART / Amoeba plugins).  See `loadMarkers` for the per-plugin
+    /// interpretation.
+    FiducialDetector(const std::string &plugin, const std::string &markerSpec,
                      const utils::ParamMap &params=utils::ParamMap(),
                      const geom::Camera *camera=0);
 
@@ -118,13 +140,24 @@ namespace icl::markers {
           add all markers. Actually if you load a marker ID x, also the inverted marker
           (that has a white root-region) with ID -x is added.
     */
-    void loadMarkers(const utils::Any &which, const utils::ParamMap &params=utils::ParamMap());
+    void loadMarkers(int markerId, const utils::ParamMap &params=utils::ParamMap());
 
+    /// loads a typed list of integer-ID markers.
+    void loadMarkers(const std::vector<int> &markerIds, const utils::ParamMap &params=utils::ParamMap());
 
-    /// unloads all already defined markers
-    /** usually, markers are unloaded with the same pattern that was
-        also used for loading the markers before */
-    void unloadMarkers(const utils::Any &which);
+    /// loads markers from a string spec — see the per-plugin
+    /// documentation above for the meaning.
+    void loadMarkers(const std::string &markerSpec, const utils::ParamMap &params=utils::ParamMap());
+
+    /// unloads a single integer-ID marker.
+    void unloadMarkers(int markerId);
+
+    /// unloads a typed list of integer-ID markers.
+    void unloadMarkers(const std::vector<int> &markerIds);
+
+    /// unloads markers matching a string spec (same grammar as
+    /// `loadMarkers`).
+    void unloadMarkers(const std::string &markerSpec);
 
     /// detects markers in the given and returns all found markers
     /** Please note, the preferred input core::format is core::Img8u. Other formats
@@ -178,7 +211,13 @@ namespace icl::markers {
         * <b>icl1</b> does not need extra parameters
         * <b>amoeba</b> is not supported
     */
-    core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamMap &params);
+    /// creates an image of a specific integer-ID marker (BCH / ICL1).
+    core::Img8u createMarker(int markerId, const utils::Size &size, const utils::ParamMap &params=utils::ParamMap());
+
+    /// creates an image of a marker specified as a string — for the
+    /// ART plugin this is the image filename; BCH/ICL1 accept numeric
+    /// strings.
+    core::Img8u createMarker(const std::string &whichOne, const utils::Size &size, const utils::ParamMap &params=utils::ParamMap());
 
     /// returns the internal plugin
     FiducialDetectorPlugin* getPlugin();

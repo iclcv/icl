@@ -44,6 +44,6 @@ namespace icl::markers {
         or a newline or comma or space separated list of
         TwoLevelRegionStructure codes. The ParamMap params is not used here.
     */
-    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamMap &params);
+    virtual void addOrRemoveMarkers(bool add, const std::string &which, const utils::ParamMap &params);
   };
   } // namespace icl::markers

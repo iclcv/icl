@@ -75,11 +75,10 @@ namespace icl::markers {
   	return data->plugin.get();
   }
 
-  FiducialDetector::FiducialDetector(const std::string &plugin,
-                                     const Any &markersToLoad,
-                                     const ParamMap &params,
-                                     const Camera *camera):
-    data(new Data){
+  void FiducialDetector::initPlugin(const std::string &plugin,
+                                    const std::string &markerSpec,
+                                    const ParamMap &params,
+                                    const Camera *camera){
     data->plugin = 0;
     data->plugintype = plugin;
     if(plugin == "bch"){
@@ -94,12 +93,12 @@ namespace icl::markers {
       throw ICLException("FiducialDetector: invalid plugin type: " + plugin);
     }
 
-    if(markersToLoad.length()) loadMarkers(markersToLoad,params);
+    if(markerSpec.length()) loadMarkers(markerSpec,params);
     if(camera) setCamera(*camera);
 
     addChildConfigurable(data->plugin.get());
 
-	  switch(data->plugin->getPreProcessing()){
+    switch(data->plugin->getPreProcessing()){
       case FiducialDetectorPlugin::Binary:{
         BinaryPP *p = new BinaryPP;
         data->pp.reset(p);
@@ -115,6 +114,34 @@ namespace icl::markers {
       default:
         throw ICLException("FiducialDetector: invalid preprocessing type returned by plugin");
     }
+  }
+
+  FiducialDetector::FiducialDetector(const std::string &plugin,
+                                     const ParamMap &params,
+                                     const Camera *camera):
+    data(new Data){
+    initPlugin(plugin, "", params, camera);
+  }
+
+  FiducialDetector::FiducialDetector(const std::string &plugin, int markerId,
+                                     const ParamMap &params,
+                                     const Camera *camera):
+    data(new Data){
+    initPlugin(plugin, str(markerId), params, camera);
+  }
+
+  FiducialDetector::FiducialDetector(const std::string &plugin, const std::vector<int> &markerIds,
+                                     const ParamMap &params,
+                                     const Camera *camera):
+    data(new Data){
+    initPlugin(plugin, "{" + cat(markerIds, ",") + "}", params, camera);
+  }
+
+  FiducialDetector::FiducialDetector(const std::string &plugin, const std::string &markerSpec,
+                                     const ParamMap &params,
+                                     const Camera *camera):
+    data(new Data){
+    initPlugin(plugin, markerSpec, params, camera);
   }
 
   FiducialDetector::~FiducialDetector(){
@@ -135,12 +162,28 @@ namespace icl::markers {
     return data->plugintype;
   }
 
-  void  FiducialDetector::loadMarkers(const Any &which, const ParamMap &params){
-    data->plugin->addOrRemoveMarkers(true,which,params);
+  void FiducialDetector::loadMarkers(const std::string &markerSpec, const ParamMap &params){
+    data->plugin->addOrRemoveMarkers(true,markerSpec,params);
   }
 
-  void FiducialDetector::unloadMarkers(const Any &which){
-    data->plugin->addOrRemoveMarkers(false,which,ParamMap());
+  void FiducialDetector::loadMarkers(int markerId, const ParamMap &params){
+    loadMarkers(str(markerId), params);
+  }
+
+  void FiducialDetector::loadMarkers(const std::vector<int> &markerIds, const ParamMap &params){
+    loadMarkers("{" + cat(markerIds, ",") + "}", params);
+  }
+
+  void FiducialDetector::unloadMarkers(const std::string &markerSpec){
+    data->plugin->addOrRemoveMarkers(false,markerSpec,ParamMap());
+  }
+
+  void FiducialDetector::unloadMarkers(int markerId){
+    unloadMarkers(str(markerId));
+  }
+
+  void FiducialDetector::unloadMarkers(const std::vector<int> &markerIds){
+    unloadMarkers("{" + cat(markerIds, ",") + "}");
   }
 
   const std::vector<Fiducial> &FiducialDetector::detect(const ImgBase *image){
@@ -183,8 +226,12 @@ namespace icl::markers {
     return data->plugin->getIntermediateImage(name);
   }
 
-  Img8u FiducialDetector::createMarker(const Any &whichOne,const Size &size, const ParamMap &params){
+  Img8u FiducialDetector::createMarker(const std::string &whichOne, const Size &size, const ParamMap &params){
     return data->plugin->createMarker(whichOne,size,params);
+  }
+
+  Img8u FiducialDetector::createMarker(int markerId, const Size &size, const ParamMap &params){
+    return createMarker(str(markerId), size, params);
   }
 
   REGISTER_CONFIGURABLE_DEFAULT(FiducialDetector);

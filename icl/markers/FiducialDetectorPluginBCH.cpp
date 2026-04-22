@@ -97,7 +97,7 @@ namespace icl::markers {
   }
 
 
-  void FiducialDetectorPluginBCH::addOrRemoveMarkers(bool add, const Any &which, const ParamMap &l){
+  void FiducialDetectorPluginBCH::addOrRemoveMarkers(bool add, const std::string &which, const ParamMap &l){
     Size s = l.at("size");
 
     std::vector<int> ids = parse_list_str(which);
@@ -169,8 +169,8 @@ namespace icl::markers {
     markerSizeWithoutBorder = Size(f*6,f*6);
   }
 
-  Img8u FiducialDetectorPluginBCH::createMarker(const Any &whichOne,const Size &size, const ParamMap &params){
-    return BCHCoder::createMarkerImage(whichOne,params.at("border width"),size);
+  Img8u FiducialDetectorPluginBCH::createMarker(const std::string &whichOne,const Size &size, const ParamMap &params){
+    return BCHCoder::createMarkerImage(parse<int>(whichOne),params.at("border width"),size);
   }
 
 

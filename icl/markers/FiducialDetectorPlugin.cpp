@@ -60,7 +60,7 @@ namespace icl::markers {
     return str(impl->id);
   }
 
-  std::vector<int> FiducialDetectorPlugin::parse_list_str(const Any &s){
+  std::vector<int> FiducialDetectorPlugin::parse_list_str(const std::string &s){
     if(!s.length()) throw ICLException("FiducialDetectorPlugin::parse_list_str: got empty string");
     std::vector<int> back;
     switch(s[0]){
@@ -68,14 +68,14 @@ namespace icl::markers {
         back = parseVecStr<int>(s.substr(1,s.length()-2),",");
         break;
       case '[':{
-        Range32s r = s;
+        Range32s r = parse<Range32s>(s);
         for(int i=r.minVal;i<=r.maxVal;++i){
           back.push_back(i);
         }
         break;
       }
       default:
-        back.push_back(s.as<int>());
+        back.push_back(parse<int>(s));
     }
     return back;
   }
@@ -83,7 +83,7 @@ namespace icl::markers {
   struct FiducialDetectorPlugin_VIRTUAL : public FiducialDetectorPlugin{
     virtual void getFeatures(Fiducial::FeatureSet&){}
     virtual void detect(std::vector<FiducialImpl*> &, const Img8u &){}
-    virtual void addOrRemoveMarkers(bool, const Any &, const ParamMap &){}
+    virtual void addOrRemoveMarkers(bool, const std::string &, const ParamMap &){}
   };
 
   REGISTER_CONFIGURABLE_DEFAULT(FiducialDetectorPlugin_VIRTUAL);

@@ -47,7 +47,7 @@ namespace icl::markers {
     /// creates an initialized instance with given parameters
     /** @see MultiCamFiducialDetector::init */
     MultiCamFiducialDetector(const std::string &pluginType,
-                             const utils::Any &markersToLoad,
+                             const std::string &markersToLoad,
                              const utils::ParamMap &params,
                              const std::vector<geom::Camera*> &cams,
                              bool syncProperties=true,
@@ -68,7 +68,7 @@ namespace icl::markers {
                <b>Please Note:</b> you can obtain all cameras of a scene using Scene::getAllCameras()
     */
     void init(const std::string &pluginType,
-              const utils::Any &markersToLoad,
+              const std::string &markersToLoad,
               const utils::ParamMap &params,
               const std::vector<geom::Camera*> &cams,
               bool syncProperties=true,
@@ -90,10 +90,10 @@ namespace icl::markers {
     FiducialDetector &getFiducialDetector(int idx);
 
     /// loads additional markers (passed to all 2D detectors)
-    void loadMarkers(const utils::Any &which, const utils::ParamMap &params);
+    void loadMarkers(const std::string &which, const utils::ParamMap &params);
 
     /// unloads markers (passed to all 2D detectors)
-    void unloadMarkers(const utils::Any &which);
+    void unloadMarkers(const std::string &which);
 
     /// provides a comma separated list of intermediate images
     /** The returned list can simply be added to a view-selection combo box.

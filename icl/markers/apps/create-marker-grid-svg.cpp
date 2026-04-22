@@ -65,7 +65,7 @@ std::string getPngDataBase64(const Img8u &m){
 
 
 std::string create_marker_text(const Rect32f &r, int id){
-  static FiducialDetector fd("bch", Any(), ParamMap{{"size","1x1"}});
+  static FiducialDetector fd("bch", ParamMap{{"size","1x1"}});
   core::Img8u m = fd.createMarker(id, Size(300,300), ParamMap{{"border width",2}});
   std::ostringstream str;
   str << "<image x=\"" << r.x << "mm\" y=\"" << r.y << "mm\" id=\"marker_"

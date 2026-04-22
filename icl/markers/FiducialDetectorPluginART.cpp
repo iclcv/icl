@@ -270,8 +270,8 @@ namespace icl::markers {
     delete data;
   }
 
-  void FiducialDetectorPluginART::addOrRemoveMarkers(bool add, const Any &which, const ParamMap &params){
-    FileList l(which);
+  void FiducialDetectorPluginART::addOrRemoveMarkers(bool add, const std::string &which, const ParamMap &params){
+    FileList l = FileList::glob(which);
 
     Size size = params.at("size");
 
@@ -357,7 +357,7 @@ namespace icl::markers {
     markerSizeWithoutBorder = Size(d,d);
   }
 
-  Img8u FiducialDetectorPluginART::createMarker(const Any &whichOne,const Size &size, const ParamMap &params){
+  Img8u FiducialDetectorPluginART::createMarker(const std::string &whichOne,const Size &size, const ParamMap &params){
     FileGrabber g(whichOne);
     g.useDesired(formatGray);
     g.useDesired(depth8u);

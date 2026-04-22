@@ -54,7 +54,7 @@ namespace icl::markers {
         documentation of icl::markers::FiducialDetector::loadMarkers for more details
        @param params
     */
-    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamMap &params) = 0;
+    virtual void addOrRemoveMarkers(bool add, const std::string &which, const utils::ParamMap &params) = 0;
 
     /// this plugin provides some extra intermediate images
     std::string getIntermediateImageNames() const;

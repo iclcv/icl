@@ -227,7 +227,7 @@ namespace icl::markers {
     dst = data->impls;
   }
 
-  void FiducialDetectorPluginICL1::addOrRemoveMarkers(bool add, const Any &which, const ParamMap &params){
+  void FiducialDetectorPluginICL1::addOrRemoveMarkers(bool add, const std::string &which, const ParamMap &params){
     Size s = params.at("size");
 
     std::vector<int> ids = parse_list_str(which);
@@ -243,10 +243,10 @@ namespace icl::markers {
 
 
   /// marker is 13x17 cells
-  Img8u FiducialDetectorPluginICL1::createMarker(const Any &whichOne,const Size &size, const ParamMap &params){
+  Img8u FiducialDetectorPluginICL1::createMarker(const std::string &whichOne,const Size &size, const ParamMap &params){
 #ifdef ICL_HAVE_QT
     Size size2 = size * 2; // simulate anti-aliasing by rendering the marker in double size before downscaling
-    int which = whichOne;
+    int which = parse<int>(whichOne);
     const int white = which > 0 ? 255 :  0;
     const int black = 255-white;
 

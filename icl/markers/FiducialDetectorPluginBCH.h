@@ -42,7 +42,7 @@ namespace icl::markers {
         documentation of icl::markers::FiducialDetector::loadMarkers for more details
        @param params
     */
-    virtual void addOrRemoveMarkers(bool add, const utils::Any &which, const utils::ParamMap &params);
+    virtual void addOrRemoveMarkers(bool add, const std::string &which, const utils::ParamMap &params);
 
     /// extracts and stores some properties locally to speed up classifyPatch
     void prepareForPatchClassification();
@@ -55,7 +55,7 @@ namespace icl::markers {
                                                 utils::Size &markerSizeWithoutBorder);
 
     /// creates bch marker image
-    virtual core::Img8u createMarker(const utils::Any &whichOne,const utils::Size &size, const utils::ParamMap &params);
+    virtual core::Img8u createMarker(const std::string &whichOne,const utils::Size &size, const utils::ParamMap &params);
 
   };
   } // namespace icl::markers
