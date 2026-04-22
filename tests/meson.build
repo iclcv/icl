@@ -3,6 +3,7 @@ test_sources = files(
   'test-utils.cpp',
   'test-any-map.cpp',
   'test-assign.cpp',
+  'test-auto-parse.cpp',
   'test-plugin-registry.cpp',
   'test-math.cpp',
   'test-core.cpp',

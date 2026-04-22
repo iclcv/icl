@@ -564,8 +564,8 @@ namespace icl::utils {
     return g ? static_cast<int>(g->subargs.size()) : 0;
   }
 
-  Any ProgArg::operator[](int idx) const{
-    return *pa(id,idx);
+  AutoParse<std::string> ProgArg::operator[](int idx) const{
+    return AutoParse<std::string>(*pa(id,idx));
   }
 
 

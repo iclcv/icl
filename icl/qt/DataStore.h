@@ -7,6 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/AnyMap.h>
 #include <icl/utils/AssignRegistry.h>
+#include <icl/utils/AutoParse.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/qt/GLCallback.h>
@@ -96,12 +97,23 @@ namespace icl::qt {
         return std::any_cast<T>(dst);
       }
 
-      /// Implicit conversion to `T`.  Stream-extractable `T`s
-      /// (primitives, enum types with `operator>>`) additionally get
-      /// a string-round-trip fallback on assign-miss, so idioms like
-      /// `cc(img, gui["fmt"])` work when `fmt` is a ComboHandle.
+      /// Implicit conversion to `T`.  Three-stage cascade:
+      ///   1. `AutoParse<std::any>` fast path — exact type match,
+      ///      numeric widening (e.g. stored int → requested double),
+      ///      or parse-from-stored-string.  Handles the common case
+      ///      where the stored type is T (or a near-neighbour) without
+      ///      paying AssignRegistry dispatch cost.
+      ///   2. `as<T>()` — AssignRegistry cross-type conversion (e.g.
+      ///      SliderHandle → int, ComboHandle → std::string).
+      ///   3. Stream-extractable `T` + assign miss → string round-trip
+      ///      via `parse<T>(as<std::string>())`.
       template<class T>
       operator T() const {
+        try {
+          return utils::AutoParse<std::any>(*m_entry).template as<T>();
+        } catch (const utils::ICLException &) {
+          // fall through to AssignRegistry path
+        }
         if constexpr (utils::is_stream_extractable<T>::value) {
           try {
             return as<T>();

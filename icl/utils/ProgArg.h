@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Any.h>
+#include <icl/utils/AutoParse.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Macros.h>
 
@@ -76,8 +76,16 @@ namespace icl::utils {
     /** If this argument was not given, this function returns 0.*/
     ICLUtils_API int n() const;
 
-    /// returns the given sub-argument in shape of an utils::Any
-    ICLUtils_API Any operator[](int subArgIdx) const;
+    /// returns the given sub-argument as an AutoParse<std::string>
+    /** The returned proxy converts implicitly to any stream-extractable
+        target type via parse<T>.  Consume immediately — it is a short-
+        lived proxy, not a storage type.  Example:
+        \code
+        int i = pa("-x")[0];      // parses sub-arg 0 of -x as int
+        Size s = pa("-size")[0];  // parses as Size
+        \endcode
+    */
+    ICLUtils_API AutoParse<std::string> operator[](int subArgIdx) const;
 
     /// this is the main conversion function. It returns the associated sub argument as given T
     /** If T is bool, this operator returns whether the arg was given rather than
