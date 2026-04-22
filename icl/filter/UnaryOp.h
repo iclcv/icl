@@ -88,7 +88,7 @@ namespace icl::filter {
 
 
     /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
-    virtual void setPropertyValue(const std::string &propertyName, const utils::Any &value);
+    virtual void setPropertyValue(const std::string &propertyName, const utils::AutoParse<std::string> &value);
 
     // Note: the old fromString() / listFromStringOps() / getFromStringSyntax() /
     // applyFromString() registry was retired — `utils::Configurable::

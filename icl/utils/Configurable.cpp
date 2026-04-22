@@ -100,7 +100,7 @@ namespace icl::utils {
 
 
   void Configurable::addProperty(const std::string &name, const std::string &type,
-                                 const std::string &info, const Any &value,
+                                 const std::string &info, const AutoParse<std::string> &value,
                                  int volatileness, const std::string &tooltip){
     try{
       prop(name);
@@ -204,7 +204,7 @@ namespace icl::utils {
     // this method was never functional (empty body) and is retained
     // only for ABI compatibility.
   }
-  Any Configurable::getPropertyValue(const std::string &propertyName) const{
+  AutoParse<std::string> Configurable::getPropertyValue(const std::string &propertyName) const{
     const Property &p = prop(propertyName);
     if(p.configurable != this){
       return p.configurable->getPropertyValue(propertyName.substr(p.childPrefix.length()));
@@ -219,7 +219,7 @@ namespace icl::utils {
     return find(l.begin(),l.end(),propertyName) != l.end();
   }
 
-  void Configurable::setPropertyValue(const std::string &propertyName, const Any &value){
+  void Configurable::setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value){
     Property &p = prop(propertyName);
     if(p.configurable != this){
       p.configurable->setPropertyValue(propertyName.substr(p.childPrefix.length()),value);
@@ -467,7 +467,7 @@ namespace icl::utils {
   void Configurable::syncChangesTo(Configurable *others, int num){
     Configurable *src = this;
     registerCallback([src, others, num](const Configurable::Property &p){
-      Any val = src->getPropertyValue(p.name);
+      AutoParse<std::string> val = src->getPropertyValue(p.name);
       for(int i=0;i<num;++i){
         others[i].setPropertyValue(p.name,val);
       }

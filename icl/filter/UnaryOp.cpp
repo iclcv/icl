@@ -143,7 +143,7 @@ namespace icl::filter {
 
 
 
-  void UnaryOp::setPropertyValue(const std::string &propertyName, const Any &value){
+  void UnaryOp::setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value){
     if(propertyName == "UnaryOp.clip to ROI") setClipToROI(value == "on");
     else if(propertyName == "UnaryOp.check only") setCheckOnly(value == "on");
     Configurable::setPropertyValue(propertyName,value);

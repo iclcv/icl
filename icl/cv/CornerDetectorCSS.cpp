@@ -578,7 +578,7 @@ namespace icl::cv {
     template ICLCV_API const std::vector<std::vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const std::vector<std::vector<Point> > &boundaries, const std::vector<icl32f> &sigmas);
 
 
-    void CornerDetectorCSS::setPropertyValue(const std::string &propertyName, const Any &value){
+    void CornerDetectorCSS::setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value){
       if(propertyName == "angle-threshold") angle_thresh = parse<float>(value);
       else if(propertyName == "rc-coefficient") rc_coeff = parse<float>(value);
       else if(propertyName == "sigma") sigma = parse<float>(value);
@@ -613,7 +613,7 @@ namespace icl::cv {
       else return "undefined";
     }
 
-    Any CornerDetectorCSS::getPropertyValue(const std::string &propertyName) const{
+    AutoParse<std::string> CornerDetectorCSS::getPropertyValue(const std::string &propertyName) const{
       if(propertyName == "angle-threshold") return str(angle_thresh);
       else if(propertyName == "rc-coefficient") return str(rc_coeff);
       else if(propertyName == "sigma") return str(sigma);

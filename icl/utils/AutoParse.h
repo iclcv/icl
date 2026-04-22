@@ -72,7 +72,25 @@ namespace icl::utils {
 
   public:
     AutoParse() = default;
-    explicit AutoParse(std::string v) : std::string(std::move(v)) {}
+
+    /// String-construction: implicit, matching `std::string` behavior
+    /// of the underlying base (so `AutoParse<string> ap = "foo"` works,
+    /// and so does `c.setPropertyValue("k", "v")` when the parameter
+    /// type is AutoParse).
+    AutoParse(const std::string &v) : std::string(v) {}
+    AutoParse(std::string &&v) : std::string(std::move(v)) {}
+    AutoParse(const char *s) : std::string(s) {}
+
+    /// Implicit construction from any stream-insertable type via
+    /// `str(t)`.  Enables `c.setPropertyValue("gain", 500)` and
+    /// `addProperty("name", "range", "[0,1]", 0.5)` — the same
+    /// convenience `utils::Any` provided via its templated ctor.
+    /// SFINAE-excluded for string-convertible types (handled by the
+    /// ctors above) and for AutoParse itself (uses default copy-ctor).
+    template<class T, class = std::enable_if_t<
+        !std::is_base_of_v<std::string, std::decay_t<T>> &&
+        !std::is_convertible_v<const T&, const char*>>>
+    AutoParse(const T &t) : std::string(::icl::utils::str(t)) {}
 
     /// Implicit conversion to T via `parse<T>`, for types *other than*
     /// the string-like ones that the std::string base already handles.

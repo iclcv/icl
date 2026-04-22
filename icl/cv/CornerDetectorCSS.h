@@ -84,7 +84,7 @@ namespace icl::cv {
 
       /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
       virtual void setPropertyValue(const std::string &propertyName,
-                                    const utils::Any &value);
+                                    const utils::AutoParse<std::string> &value);
 
       /// returns Configurable property list
       virtual std::vector<std::string> getPropertyList() const;
@@ -96,7 +96,7 @@ namespace icl::cv {
       virtual std::string getPropertyInfo(const std::string &propertyName) const;
 
       /// returns value for given property
-      virtual utils::Any getPropertyValue(const std::string &propertyName) const;
+      virtual utils::AutoParse<std::string> getPropertyValue(const std::string &propertyName) const;
 
       /// returns volatileness for given property
       virtual inline int getPropertyVolatileness(const std::string &propertyName) const { return 0; }

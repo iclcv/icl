@@ -37,7 +37,7 @@ namespace icl::utils {
       }
 
       /// sets a property value
-      void setPropertyValue(const std::string &propertyName, const Any &value){
+      void setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value){
         getInternalConfigurable() -> setPropertyValue(propertyName, value);
       }
 
@@ -82,7 +82,7 @@ namespace icl::utils {
       }
 
       /// returns the current value of a property or a parameter
-      Any getPropertyValue(const std::string &propertyName) const{
+      AutoParse<std::string> getPropertyValue(const std::string &propertyName) const{
         return getInternalConfigurable() -> getPropertyValue(propertyName);
       }
 

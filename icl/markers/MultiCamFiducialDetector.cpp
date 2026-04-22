@@ -35,7 +35,7 @@ namespace icl::markers {
 
 
   void MultiCamFiducialDetector::property_callback(const Configurable::Property &p){
-    Any value = getPropertyValue(p.name);
+    AutoParse<std::string> value = getPropertyValue(p.name);
     for(unsigned int i=1;i<m_data->detectors.size();++i){
       m_data->detectors[i]->setPropertyValue(p.name, value);
     }

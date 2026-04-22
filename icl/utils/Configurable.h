@@ -7,6 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Any.h>
+#include <icl/utils/AutoParse.h>
 #include <icl/utils/UncopiedInstance.h>
 
 #include <any>
@@ -234,7 +235,8 @@ namespace icl::utils {
         This is then later translated into a structured configuratable GUI.
         */
     void addProperty(const std::string &name, const std::string &type,
-                     const std::string &info, const Any &value=Any(),
+                     const std::string &info,
+                     const AutoParse<std::string> &value=AutoParse<std::string>(),
                      const int volatileness=0, const std::string &tooltip=std::string());
 
     /// This adds another configurable as child
@@ -371,7 +373,7 @@ namespace icl::utils {
         call all registered callbacks.
         If the property is actually owned by a child-configurable,
         the function forwards to that configurable */
-    virtual void setPropertyValue(const std::string &propertyName, const Any &value);
+    virtual void setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value);
 
     /// sets the type-erased payload for a property (for non-string types like "image")
     /** Fires all registered callbacks, same as setPropertyValue. The caller is
@@ -453,7 +455,7 @@ namespace icl::utils {
     /// returns the current value of a property or a parameter
     /** If the property is actually owned by a child-configurable,
         the function forwards to that configurable */
-    virtual Any getPropertyValue(const std::string &propertyName) const;
+    virtual AutoParse<std::string> getPropertyValue(const std::string &propertyName) const;
 
     /// returns the tooltip description for a given property
     virtual std::string getPropertyToolTip(const std::string &propertyName) const{
