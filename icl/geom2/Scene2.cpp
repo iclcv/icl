@@ -170,16 +170,18 @@ namespace icl::geom2 {
     const auto &cam = m_data->cameras[cameraIndex];
 
     // Apply configurable properties
-    core::Color4D bg = getPropertyValue("background color");
+    core::Color4D bg = prop("background color").value;
     glClearColor(bg[0]/255.f, bg[1]/255.f, bg[2]/255.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    bool wireframe = getPropertyValue("wireframe");
+    bool wireframe = prop("wireframe").value;
     if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    // Update info properties
-    setPropertyValue("info.Nodes", (int)m_data->objects.size());
-    setPropertyValue("info.Lights", (int)m_data->lights.size());
+    // Update info properties (Info stores std::string — explicit str()
+    // keeps the adapter's toString happy; direct int write would put an
+    // int any into typed_value and break saveProperties).
+    prop("info.Nodes").value  = utils::str((int)m_data->objects.size());
+    prop("info.Lights").value = utils::str((int)m_data->lights.size());
 
     // Compute letterbox viewport to preserve camera aspect ratio
     GLint widgetVP[4];

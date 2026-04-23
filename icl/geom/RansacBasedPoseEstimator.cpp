@@ -137,11 +137,11 @@ namespace icl::geom {
     }
 
     void RansacBasedPoseEstimator::setStoreLastConsensusSet(bool on){
-      setPropertyValue("store last consensus set",on);
+      prop("store last consensus set").value = on;
     }
 
     std::vector<utils::Point32f>  RansacBasedPoseEstimator::getLastConsensusSet(){
-      bool hasSet = getPropertyValue("store last consensus set");
+      bool hasSet = prop("store last consensus set").value;
       if(!hasSet) throw utils::ICLException("RansacBasedPoseEstimator::getLastConsensusSet() even though "
                                             "'store last consensus set' property was not set to 'true'");
       return m_data->lastConsensusSet;
@@ -153,18 +153,21 @@ namespace icl::geom {
     }
 
     void RansacBasedPoseEstimator::setIterations(int iterations){
-      setPropertyValue("iterations",iterations);
+      prop("iterations").value = iterations;
     }
 
     void RansacBasedPoseEstimator::setMinPoints(int minPoints){
-      setPropertyValue("min points",minPoints);
+      prop("min points").value = minPoints;
     }
 
     void RansacBasedPoseEstimator::setMaxError(float maxError){
-      setPropertyValue("max error",maxError);
+      prop("max error").value = maxError;
     }
 
     void RansacBasedPoseEstimator::setMinPointsForGoodModel(float f){
+      // min points property is Range<int>; the API historically takes
+      // float and the legacy path stringified-then-reparsed to int.
+      // Stay on the public string setter until the API is tightened.
       setPropertyValue("min points for good model", f);
     }
 
@@ -172,11 +175,11 @@ namespace icl::geom {
     RansacBasedPoseEstimator::fit(const std::vector<Point32f> &templ,
                                    const std::vector<Point32f> &curr){
 
-      int iterations = getPropertyValue("iterations");
-      int maxError = getPropertyValue("max error");
-      int minPoints = getPropertyValue("min points");
-      int minPointsForGoodModel = getPropertyValue("min points for good model");
-      bool dbg = getPropertyValue("debug output");
+      int iterations = prop("iterations").value;
+      int maxError = prop("max error").value;
+      int minPoints = prop("min points").value;
+      int minPointsForGoodModel = prop("min points for good model").value;
+      bool dbg = prop("debug output").value;
 
 
 
@@ -208,7 +211,7 @@ namespace icl::geom {
 
       const RansacFitter<>::Result &res = ransac.fit(data);
 
-      if(getPropertyValue("store last consensus set")){
+      if(prop("store last consensus set").value){
         m_data->lastConsensusSet.resize(res.consensusSet.size());
         for(size_t i=0;i<m_data->lastConsensusSet.size();++i){
           m_data->lastConsensusSet[i] = Point32f(res.consensusSet[i][0], res.consensusSet[i][1]);

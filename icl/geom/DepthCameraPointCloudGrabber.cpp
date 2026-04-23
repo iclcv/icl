@@ -255,21 +255,21 @@ namespace icl::geom {
 
   void DepthCameraPointCloudGrabber::grab(PointCloudObjectBase &dst){
     dst.lock();
-    bool useNewImages = !getPropertyValue("re-use exisiting images").as<bool>();
+    bool useNewImages = !prop("re-use exisiting images").as<bool>();
     Img32f *depthImage = 0;
     if(useNewImages || !m_data->lastDepthImage){
       m_data->depthHolder = m_data->depthGrabber.grabImage();
       depthImage = &m_data->depthHolder.as32f();
-      if(getPropertyValue("pp.enable gaussian")){
-        int s = getPropertyValue("pp.spacial filter size");
+      if(prop("pp.enable gaussian").value){
+        int s = prop("pp.spacial filter size").value;
         m_data->blurTool->setMaskDim(s);
         static ImgBase *blurBuf = nullptr;
         m_data->blurTool->apply(depthImage, &blurBuf);
         depthImage = blurBuf->as32f();
         depthImage->setFullROI();
       }
-      if(getPropertyValue("pp.enable median")){
-        int s = getPropertyValue("pp.spacial filter size");
+      if(prop("pp.enable median").value){
+        int s = prop("pp.spacial filter size").value;
         m_data->median.reset(new MedianOp(Size(s,s)));
         m_data->median->setClipToROI(false);
         static ImgBase *medBuf = nullptr;
@@ -277,10 +277,10 @@ namespace icl::geom {
         depthImage = medBuf->as32f();
         depthImage->setFullROI();
       }
-      if(getPropertyValue("pp.enable temporal smoothing")){
-        int nFrames = getPropertyValue("pp.temporal smoothing frames");
-        int nullValue = getPropertyValue("pp.temporal smoothing null");
-        int threshold = getPropertyValue("pp.temporal smoothing threshold");
+      if(prop("pp.enable temporal smoothing").value){
+        int nFrames = prop("pp.temporal smoothing frames").value;
+        int nullValue = prop("pp.temporal smoothing null").value;
+        int threshold = prop("pp.temporal smoothing threshold").value;
         if(nullValue != m_data->lastNullValue){
           m_data->lastNullValue = nullValue;
           m_data->temporalSmoothing.reset();
@@ -333,8 +333,8 @@ namespace icl::geom {
       rgbImage = const_cast<Img8u*>(m_data->lastColorImage);
     }
 
-    float fFactor = getPropertyValue("focal length factor");
-    float pFix = getPropertyValue("positioning fix");
+    float fFactor = prop("focal length factor").value;
+    float pFix = prop("positioning fix").value;
 
     m_data->creator.setFixes(fFactor, pFix);
 

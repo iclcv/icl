@@ -168,22 +168,22 @@ namespace icl::geom {
   void ConfigurableDepthImageSegmenter::apply(const core::Img32f &depthImage, PointCloudObject &obj){// const core::Img8u &colorImage){
 
     //pre segmentation
-    m_data->temporalSmoothing->setFilterSize(getPropertyValue("pre.temporal smoothing size"));
-    m_data->temporalSmoothing->setDifference(getPropertyValue("pre.temporal smoothing diff"));
+    m_data->temporalSmoothing->setFilterSize(prop("pre.temporal smoothing size").value);
+    m_data->temporalSmoothing->setDifference(prop("pre.temporal smoothing diff").value);
     static core::ImgBase *filteredImage = 0;
-    bool useTempSmoothing = getPropertyValue("pre.enable temporal smoothing");
+    bool useTempSmoothing = prop("pre.enable temporal smoothing").value;
     if(useTempSmoothing==true){//temporal smoothing
       m_data->temporalSmoothing->apply(&depthImage,&filteredImage);
     }
 
-    std::string usedFilter=getPropertyValue("pre.filter");
-    bool useAveraging=getPropertyValue("pre.averaging");
-    std::string usedAngle=getPropertyValue("pre.edge angle method");
-    std::string usedSmoothing=getPropertyValue("pre.smoothing");
-    int normalrange = getPropertyValue("pre.normal range");
-    int neighbrange = getPropertyValue("pre.edge neighborhood");
-    float threshold = getPropertyValue("pre.edge threshold");
-    int avgrange = getPropertyValue("pre.averaging range");
+    std::string usedFilter=prop("pre.filter").value;
+    bool useAveraging=prop("pre.averaging").value;
+    std::string usedAngle=prop("pre.edge angle method").value;
+    std::string usedSmoothing=prop("pre.smoothing").value;
+    int normalrange = prop("pre.normal range").value;
+    int neighbrange = prop("pre.edge neighborhood").value;
+    float threshold = prop("pre.edge threshold").value;
+    int avgrange = prop("pre.averaging range").value;
 
     bool usedFilterFlag=true;
     if(usedFilter.compare("median3x3")==0){ //median 3x3
@@ -232,7 +232,7 @@ namespace icl::geom {
     obj.lock();
 
     //create pointcloud
-    float depthScaling=getPropertyValue("general.depth scaling");
+    float depthScaling=prop("general.depth scaling").value;
     GeomColor c(1.,0.,0.,1.);
 	    obj.selectRGBA32f().fill(c);
     if(useTempSmoothing==true){
@@ -242,55 +242,55 @@ namespace icl::geom {
     }
 
     //high level segmenation
-    bool enableSegmentation = getPropertyValue("general.enable segmentation");
+    bool enableSegmentation = prop("general.enable segmentation").value;
 
     if(enableSegmentation){
-      bool useROI = getPropertyValue("general.use ROI");
-      bool stabelizeSegmentation = getPropertyValue("general.stabelize segmentation");
+      bool useROI = prop("general.use ROI").value;
+      bool stabelizeSegmentation = prop("general.stabelize segmentation").value;
 
-      int surfaceMinSize = getPropertyValue("surfaces.min surface size");
-      int surfaceRadius = getPropertyValue("surfaces.assignment radius");
-      float surfaceDistance = getPropertyValue("surfaces.assignment distance");
+      int surfaceMinSize = prop("surfaces.min surface size").value;
+      int surfaceRadius = prop("surfaces.assignment radius").value;
+      float surfaceDistance = prop("surfaces.assignment distance").value;
 
-      bool cutfreeEnable = getPropertyValue("cutfree.enable cutfree adjacency feature");
-      float cutfreeEuclDist = getPropertyValue("cutfree.ransac euclidean distance");
-      int cutfreePasses = getPropertyValue("cutfree.ransac passes");
-      int cutfreeTolerance = getPropertyValue("cutfree.ransac tolerance");
-      float cutfreeMinAngle = getPropertyValue("cutfree.min angle");
+      bool cutfreeEnable = prop("cutfree.enable cutfree adjacency feature").value;
+      float cutfreeEuclDist = prop("cutfree.ransac euclidean distance").value;
+      int cutfreePasses = prop("cutfree.ransac passes").value;
+      int cutfreeTolerance = prop("cutfree.ransac tolerance").value;
+      float cutfreeMinAngle = prop("cutfree.min angle").value;
 
-      bool coplanEnable = getPropertyValue("coplanarity.enable coplanarity feature");
-      float coplanMaxAngle = getPropertyValue("coplanarity.max angle");
-      float coplanDistance = getPropertyValue("coplanarity.distance tolerance");
-      float coplanOutlier = getPropertyValue("coplanarity.outlier tolerance");
-      int coplanNumTriangles = getPropertyValue("coplanarity.num triangles");
-      int coplanNumScanlines = getPropertyValue("coplanarity.num scanlines");
+      bool coplanEnable = prop("coplanarity.enable coplanarity feature").value;
+      float coplanMaxAngle = prop("coplanarity.max angle").value;
+      float coplanDistance = prop("coplanarity.distance tolerance").value;
+      float coplanOutlier = prop("coplanarity.outlier tolerance").value;
+      int coplanNumTriangles = prop("coplanarity.num triangles").value;
+      int coplanNumScanlines = prop("coplanarity.num scanlines").value;
 
-      bool curveEnable = getPropertyValue("curvature.enable curvature feature");
-      float curveHistogram = getPropertyValue("curvature.histogram similarity");
-      bool curveUseOpen = getPropertyValue("curvature.enable open objects");
-      int curveMaxDist = getPropertyValue("curvature.max distance");
-      bool curveUseOccluded = getPropertyValue("curvature.enable occluded objects");
-      float curveMaxError = getPropertyValue("curvature.max error");
-      int curvePasses = getPropertyValue("curvature.ransac passes");
-      float curveDistance = getPropertyValue("curvature.distance tolerance");
-      float curveOutlier = getPropertyValue("curvature.outlier tolerance");
+      bool curveEnable = prop("curvature.enable curvature feature").value;
+      float curveHistogram = prop("curvature.histogram similarity").value;
+      bool curveUseOpen = prop("curvature.enable open objects").value;
+      int curveMaxDist = prop("curvature.max distance").value;
+      bool curveUseOccluded = prop("curvature.enable occluded objects").value;
+      float curveMaxError = prop("curvature.max error").value;
+      int curvePasses = prop("curvature.ransac passes").value;
+      float curveDistance = prop("curvature.distance tolerance").value;
+      float curveOutlier = prop("curvature.outlier tolerance").value;
 
-      bool remainingEnable = getPropertyValue("remaining.enable remaining points feature");
-      int remainingMinSize = getPropertyValue("remaining.min size");
-      float remainingEuclDist = getPropertyValue("remaining.euclidean distance");
-      int remainingRadius = getPropertyValue("remaining.radius");
-      float remainingAssignEuclDist = getPropertyValue("remaining.assign euclidean distance");
-      int remainingSupportTolerance = getPropertyValue("remaining.support tolerance");
+      bool remainingEnable = prop("remaining.enable remaining points feature").value;
+      int remainingMinSize = prop("remaining.min size").value;
+      float remainingEuclDist = prop("remaining.euclidean distance").value;
+      int remainingRadius = prop("remaining.radius").value;
+      float remainingAssignEuclDist = prop("remaining.assign euclidean distance").value;
+      int remainingSupportTolerance = prop("remaining.support tolerance").value;
 
-      float graphcutThreshold = getPropertyValue("graphcut.threshold");
+      float graphcutThreshold = prop("graphcut.threshold").value;
 
       if(useROI){
-        m_data->segmentation->setROI(getPropertyValue("general.ROI min x"),
-                                    getPropertyValue("general.ROI max x"),
-                                    getPropertyValue("general.ROI min y"),
-                                    getPropertyValue("general.ROI max y"),
-                                    getPropertyValue("general.ROI min z"),
-                                    getPropertyValue("general.ROI max z"));
+        m_data->segmentation->setROI(prop("general.ROI min x").value,
+                                    prop("general.ROI max x").value,
+                                    prop("general.ROI min y").value,
+                                    prop("general.ROI max y").value,
+                                    prop("general.ROI min z").value,
+                                    prop("general.ROI max z").value);
 
       }
       m_data->segmentation->setMinSurfaceSize(surfaceMinSize);
@@ -340,12 +340,12 @@ namespace icl::geom {
 
 
 	  core::Img32s ConfigurableDepthImageSegmenter::getLabelDisplay(){
-	    return m_data->segmentation->getLabelImage(getPropertyValue("general.stabelize segmentation"));
+	    return m_data->segmentation->getLabelImage(prop("general.stabelize segmentation").value);
 	  }
 
 
   core::Img8u ConfigurableDepthImageSegmenter::getColoredLabelDisplay(){
-    return m_data->segmentation->getColoredLabelImage(getPropertyValue("general.stabelize segmentation"));
+    return m_data->segmentation->getColoredLabelImage(prop("general.stabelize segmentation").value);
   }
 
   core::Img8u ConfigurableDepthImageSegmenter::getMappedColorImage(const core::Img8u &image) {
