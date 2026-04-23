@@ -175,7 +175,7 @@ namespace icl{
         std::string v4lDev;
         FileList ds("/dev/video*");
         for(int d=0;d<ds.size();++d){
-          std::string deviceName = V4L2Grabber(ds[d]).getPropertyValue("device name");
+          std::string deviceName = V4L2Grabber(ds[d]).prop("device name").value;
           DEBUG_LOG("Devicename for " + ds[d] + ": " + deviceName);
           if(match(ds[d], "/dev/video([0-9]+)",2) && match(deviceName, ".*PI-IMAGER.*",2)){
             v4lDev = ds[d];

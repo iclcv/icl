@@ -213,7 +213,7 @@ namespace icl{
       }
 
       if(bench){
-        setPropertyValue("bench.preprocessing time",bench_time_string(t.age()));
+        prop("bench.preprocessing time").value = bench_time_string(t.age());
       }
 
       Time tOrb = Time::now();
@@ -232,8 +232,8 @@ namespace icl{
 #endif
 
       if(bench){
-        setPropertyValue("bench.ORB extraction time",bench_time_string(tOrb.age()));
-        setPropertyValue("bench.detection time",bench_time_string(t.age()));
+        prop("bench.ORB extraction time").value = bench_time_string(tOrb.age());
+        prop("bench.detection time").value = bench_time_string(t.age());
       }
 
       return std::shared_ptr<FeatureSetClass>(ret);
@@ -272,7 +272,7 @@ namespace icl{
       }
 
       if(bench){
-        setPropertyValue("bench.matching time",bench_time_string(t.age()));
+        prop("bench.matching time").value = bench_time_string(t.age());
       }
 
       return ret;

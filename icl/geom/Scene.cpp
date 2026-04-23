@@ -822,7 +822,7 @@ namespace icl::geom {
     glewInit();
     std::scoped_lock<std::recursive_mutex> l(getMutex());
     //update Sceneinfo
-    (const_cast<Scene*>(this))->setPropertyValue("info.FPS",m_fps.getFPSString());
+    (const_cast<Scene*>(this))->prop("info.FPS").value = m_fps.getFPSString();
 
     /* this is not thread save!
         int nObjs = 0, nPrim = 0, nVert = 0;
@@ -830,9 +830,9 @@ namespace icl::geom {
         count_objs_recursive(m_objects[i].get(),nObjs,nPrim,nVert);
         }
 
-        ((Configurable*)this)->setPropertyValue("info.Objects in the Scene",nObjs);
-        ((Configurable*)this)->setPropertyValue("info.Primitives in the Scene",nPrim);
-        ((Configurable*)this)->setPropertyValue("info.Vertices in the Scene",nVert);
+        ((Configurable*)this)->prop("info.Objects in the Scene").value = nObjs;
+        ((Configurable*)this)->prop("info.Primitives in the Scene").value = nPrim;
+        ((Configurable*)this)->prop("info.Vertices in the Scene").value = nVert;
     */
 
     ICLASSERT_RETURN(camIndex >= 0 && camIndex < static_cast<int>(m_cameras.size()));
@@ -847,26 +847,26 @@ namespace icl::geom {
     if(widget){
       cam.getRenderParams().viewport = currentImageRect;
     }
-    m_renderSettings->lightingEnabled = (const_cast<Scene*>(this))->getPropertyValue("enable lighting");
-    m_renderSettings->useImprovedShading = (const_cast<Scene*>(this))->getPropertyValue("shadows.use improved shading");
-    m_renderSettings->shadowBias = (const_cast<Scene*>(this))->getPropertyValue("shadows.bias");
+    m_renderSettings->lightingEnabled = (const_cast<Scene*>(this))->prop("enable lighting").value;
+    m_renderSettings->useImprovedShading = (const_cast<Scene*>(this))->prop("shadows.use improved shading").value;
+    m_renderSettings->shadowBias = (const_cast<Scene*>(this))->prop("shadows.bias").value;
 
-    std::string lineSmoothing = (const_cast<Scene*>(this))->getPropertyValue("line smoothing");
+    std::string lineSmoothing = (const_cast<Scene*>(this))->prop("line smoothing").value;
     if(lineSmoothing == "force off")m_renderSettings->lineSmoothing=1;
     else if(lineSmoothing == "force on")m_renderSettings->lineSmoothing=2;
     else m_renderSettings->lineSmoothing=0;
 
-    std::string pointSmoothing = (const_cast<Scene*>(this))->getPropertyValue("point smoothing");
+    std::string pointSmoothing = (const_cast<Scene*>(this))->prop("point smoothing").value;
     if(pointSmoothing == "force off")m_renderSettings->pointSmoothing=1;
     else if(pointSmoothing == "force on")m_renderSettings->pointSmoothing=2;
     else m_renderSettings->pointSmoothing=0;
 
-    std::string polygonSmoothing = (const_cast<Scene*>(this))->getPropertyValue("polygon smoothing");
+    std::string polygonSmoothing = (const_cast<Scene*>(this))->prop("polygon smoothing").value;
     if(polygonSmoothing == "force off")m_renderSettings->polygonSmoothing=1;
     else if(polygonSmoothing == "force on")m_renderSettings->polygonSmoothing=2;
     else m_renderSettings->polygonSmoothing=0;
 
-    m_renderSettings->wireframe = (const_cast<Scene*>(this))->getPropertyValue("wireframe");
+    m_renderSettings->wireframe = (const_cast<Scene*>(this))->prop("wireframe").value;
 
     std::vector<Mat> project2shadow;
 
@@ -921,7 +921,7 @@ namespace icl::geom {
       }
 
       //recreate the shadowbuffer if the the lightsetup, or the resolution has changed
-      unsigned int resolution = (const_cast<Scene*>(this))->getPropertyValue("shadows.resolution");
+      unsigned int resolution = (const_cast<Scene*>(this))->prop("shadows.resolution").value;
       if(m_fboData->shadow_size != resolution || lightSetupChanged) {
         m_fboData->setShadowFBO(resolution,numShadowLights);
       }
@@ -974,7 +974,7 @@ namespace icl::geom {
     else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
     if(m_renderSettings->lightingEnabled){
-      float size = (const_cast<Scene*>(this))->getPropertyValue("light object size");
+      float size = (const_cast<Scene*>(this))->prop("light object size").value;
       glEnable(GL_LIGHTING);
       for(int i=0;i<8;++i){
         if(m_lights[i]) {
@@ -1017,7 +1017,7 @@ namespace icl::geom {
       }
     }
 
-    if((const_cast<Scene*>(this))->getPropertyValue("visualize cameras")){
+    if((const_cast<Scene*>(this))->prop("visualize cameras").value){
       for(unsigned int i=0;i<m_cameraObjects.size();++i){
         if(static_cast<int>(i) == camIndex) continue;
         renderSceneObjectRecursive(const_cast<SceneObject*>(m_cameraObjects[i].get()), camIndex);
@@ -1026,7 +1026,7 @@ namespace icl::geom {
 
     glPushAttrib(GL_ENABLE_BIT);
 
-    if(m_renderSettings->lightingEnabled && static_cast<bool>((const_cast<Scene*>(this))->getPropertyValue("visualize lights"))){
+    if(m_renderSettings->lightingEnabled && static_cast<bool>((const_cast<Scene*>(this))->prop("visualize lights").value)){
       for(int i=0;i<8;++i){
         if(m_lights[i] && m_lights[i]->on){
           if((m_lights[i]->anchor != SceneLight::CamAnchor) ||
@@ -1044,7 +1044,7 @@ namespace icl::geom {
     glPopAttrib();
 
     if(getDrawObjectFramesEnabled()){
-      float size = (const_cast<Scene*>(this))->getPropertyValue("object frame size");
+      float size = (const_cast<Scene*>(this))->prop("object frame size").value;
       if(!m_objectFrameObject){
         m_objectFrameObject.reset(new ComplexCoordinateFrameSceneObject(size,size/20));
         //m_objectFrameObject->createDisplayList();
@@ -1061,7 +1061,7 @@ namespace icl::geom {
     }
 
     if(getDrawCoordinateFrameEnabled()){
-      float size = (const_cast<Scene*>(this))->getPropertyValue("world frame size");
+      float size = (const_cast<Scene*>(this))->prop("world frame size").value;
       if(!m_coordinateFrameObject){
         m_coordinateFrameObject.reset(new ComplexCoordinateFrameSceneObject(size,size/20));
         //m_coordinateFrameObject->createDisplayList();
@@ -1082,7 +1082,7 @@ namespace icl::geom {
       renderSceneObjectRecursive(const_cast<SceneObject*>(m_coordinateFrameObject.get()), camIndex);
     }
 
-    if((const_cast<Scene*>(this))->getPropertyValue("visualize cursor")){
+    if((const_cast<Scene*>(this))->prop("visualize cursor").value){
       renderSceneObjectRecursive(m_cursor, camIndex);
       glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
       m_cursor->setDepthTestEnabled(false);
@@ -1124,7 +1124,7 @@ namespace icl::geom {
 
     glEnable(GL_CULL_FACE);
 
-    bool cullFront = (const_cast<Scene*>(this))->getPropertyValue("shadows.cull object front for shadows");
+    bool cullFront = (const_cast<Scene*>(this))->prop("shadows.cull object front for shadows").value;
       if(cullFront) {
         glCullFace(GL_FRONT);
     } else {
@@ -1159,12 +1159,12 @@ namespace icl::geom {
   }
 
   void Scene::setDrawLightsEnabled(bool enabled, float lightSize){
-    setPropertyValue("visualize lights",enabled);
-    setPropertyValue("light object size",lightSize);
+    prop("visualize lights").value = enabled;
+    prop("light object size").value = lightSize;
   }
 
   bool Scene::getDrawLightsEnabled() const {
-    return (const_cast<Scene*>(this))->getPropertyValue("visualize lights");
+    return (const_cast<Scene*>(this))->prop("visualize lights").value;
   }
 
   MouseHandler *Scene::getMouseHandler(int camIndex){
@@ -1270,28 +1270,28 @@ namespace icl::geom {
 #endif // QT
 
   void Scene::setDrawCamerasEnabled(bool enabled){
-    setPropertyValue("visualize cameras",enabled);
+    prop("visualize cameras").value = enabled;
   }
 
   void Scene::setDrawCoordinateFrameEnabled(bool enabled, float size){
-    setPropertyValue("visualize world frame",enabled);
-    setPropertyValue("world frame size",size);
+    prop("visualize world frame").value = enabled;
+    prop("world frame size").value = size;
   }
 
   bool Scene::getDrawCamerasEnabled() const{
-    return (const_cast<Scene*>(this))->getPropertyValue("visualize cameras");
+    return (const_cast<Scene*>(this))->prop("visualize cameras").value;
   }
 
   bool Scene::getDrawCoordinateFrameEnabled() const{
-    return (const_cast<Scene*>(this))->getPropertyValue("visualize world frame");
+    return (const_cast<Scene*>(this))->prop("visualize world frame").value;
   }
 
   void Scene::setBackgroundColor(const GeomColor &color){
-    setPropertyValue("background color",Color(color[0],color[1],color[2]));
+    prop("background color").value = Color(color[0],color[1],color[2]);
   }
 
   GeomColor Scene::getBackgroundColor() const{
-    Color c = (const_cast<Scene*>(this))->getPropertyValue("background color");
+    Color c = (const_cast<Scene*>(this))->prop("background color").value;
     return GeomColor(c[0],c[1],c[2],255);
   }
 
@@ -1457,16 +1457,16 @@ namespace icl::geom {
 
 
   void Scene::setLightingEnabled(bool flag){
-    setPropertyValue("enable lighting",flag);
+    prop("enable lighting").value = flag;
   }
 
   void Scene::setDrawObjectFramesEnabled(bool enabled, float size){
-    setPropertyValue("visualize object frames",enabled);
-    setPropertyValue("object frame size",size);
+    prop("visualize object frames").value = enabled;
+    prop("object frame size").value = size;
   }
 
   bool Scene::getDrawObjectFramesEnabled() const{
-    return (const_cast<Scene*>(this))->getPropertyValue("visualize object frames");
+    return (const_cast<Scene*>(this))->prop("visualize object frames").value;
   }
 
   void Scene::setCursor(Vec newPosition) {
@@ -1482,7 +1482,7 @@ namespace icl::geom {
   }
 
   void Scene::activateCursor(bool activate) {
-      (const_cast<Scene*>(this))->setPropertyValue("visualize cursor",activate);
+      (const_cast<Scene*>(this))->prop("visualize cursor").value = activate;
   }
 
 
@@ -1730,8 +1730,8 @@ namespace icl::geom {
   }
 
   void Scene::grab(PointCloudObjectBase &dst){
-    int camID = getPropertyValue("point cloud grabber cam");
-    bool withDepth = getPropertyValue("grab depth feature");
+    int camID = prop("point cloud grabber cam").value;
+    bool withDepth = prop("grab depth feature").value;
     if(static_cast<int>(m_cameras.size()) <= camID) {
       ERROR_LOG("invalid camera id");
       return;

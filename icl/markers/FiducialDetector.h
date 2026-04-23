@@ -163,7 +163,7 @@ namespace icl::markers {
     /** Please note, the preferred input core::format is core::Img8u. Other formats
         are converted to depth8u internally. Usually, your
         plugin will use gray images as input. You can query this information
-        by calling getPropertyValue("preferred image type") */
+        by calling prop("preferred image type").value */
     const std::vector<Fiducial> &detect(const core::ImgBase *image);
 
     /// Image-based detect overload

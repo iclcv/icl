@@ -67,8 +67,8 @@ namespace icl::filter {
     });
   }
 
-  void UnaryArithmeticalOp::setOpType(optype t){ setPropertyValue("op", arithName(t)); }
-  void UnaryArithmeticalOp::setValue(icl64f v){ setPropertyValue("value", v); }
+  void UnaryArithmeticalOp::setOpType(optype t){ prop("op").value = arithName(t); }
+  void UnaryArithmeticalOp::setValue(icl64f v){ prop("value").value = v; }
 
   REGISTER_CONFIGURABLE_DEFAULT(UnaryArithmeticalOp);
 

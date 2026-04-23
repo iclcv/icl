@@ -259,7 +259,7 @@ namespace icl::io {
           if(print == "to std::out"){
             std::cout << "image meta data: [" << img->getMetaData() << "]" << std::endl;
           }else if(print == "to meta-data label"){
-            setPropertyValue("meta-data", img->getMetaData());
+            prop("meta-data").value = img->getMetaData();
           }
         }
 
@@ -429,13 +429,13 @@ namespace icl::io {
 
       //DEBUG_LOG("in update properties: use idx = " << usedIdx);
       //std::cout << "--" << std::endl;
-      setPropertyValue("next filename", m_data->oFileList[usedIdx == s-1 ? 0 : usedIdx+1]);
-      setPropertyValue("current filename", m_data->oFileList[usedIdx]);
-      setPropertyValue("relative progress", str((100* (usedIdx+1)) / float(s))+" %");
-      setPropertyValue("absolute progress", str(usedIdx+1) + " / " + str(s));
-      setPropertyValue("format", img -> getFormat());
-      setPropertyValue("size", img -> getSize());
-      //setPropertyValue("frame-index", m_data->iCurrIdx);
+      prop("next filename").value = m_data->oFileList[usedIdx == s-1 ? 0 : usedIdx+1];
+      prop("current filename").value = m_data->oFileList[usedIdx];
+      prop("relative progress").value = str((100* (usedIdx+1)) / float(s))+" %";
+      prop("absolute progress").value = str(usedIdx+1) + " / " + str(s);
+      prop("format").value = img -> getFormat();
+      prop("size").value = img -> getSize();
+      //prop("frame-index").value = m_data->iCurrIdx;
       m_updatingProperties = false;
     }
 

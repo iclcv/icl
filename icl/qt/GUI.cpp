@@ -123,7 +123,7 @@ namespace icl{
           if(!l){
             l = &gui.get<LabelHandle>("#i#"+prop);
           }
-          (***l).setText(conf.getPropertyValue(prop).str().c_str());
+          (***l).setText(conf.prop(prop).value.str().c_str());
           (***l).update();
           QApplication::processEvents();
         }
@@ -147,12 +147,12 @@ namespace icl{
           }
           // Typed path: properties registered via
           // `addProperty<core::prop::ImageView>(...)` keep the live
-          // core::Image in Property::typed_value, accessible through
-          // getPropertyValue's AutoParse<any>.  Try this first.
+          // core::Image in Property::typed_value.  Inspect the any's
+          // type_info directly to avoid the AutoParse cascade.
           try{
-            auto ap = conf.getPropertyValue(prop);
-            if(ap.type() == typeid(core::Image)){
-              core::Image img = ap.as<core::Image>();
+            auto handle = conf.prop(prop);
+            if(handle.typed_value.type() == typeid(core::Image)){
+              core::Image img = std::any_cast<core::Image>(handle.typed_value);
               if(!img.isNull()){
                 *h = img;
                 h->render();
@@ -740,13 +740,13 @@ namespace icl{
             // and `Any` is implicitly constructible from `std::string`
             // (it publicly inherits `std::string`), so the string path
             // reaches `setPropertyValue(const Any &)` via one cheap copy.
-            conf->setPropertyValue(prop,gui[handle].as<std::string>());
+            conf->prop(prop).value = gui[handle].as<std::string>();
             break;
           case 'C':
-            conf->setPropertyValue(prop,gui[handle].as<Color>());
+            conf->prop(prop).value = gui[handle].as<Color>();
             break;
           case 'c':
-            conf->setPropertyValue(prop,"");
+            conf->prop(prop).value = "";
             break;
           case 'X':
             if(prop == "load"){

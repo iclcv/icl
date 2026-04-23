@@ -116,12 +116,12 @@ namespace icl::filter {
   // ================================================================
 
   void BaseFFTOp::setResultMode(ResultMode rm) {
-    setPropertyValue("result mode", resultModeName(rm));
+    prop("result mode").value = resultModeName(rm);
   }
   BaseFFTOp::ResultMode BaseFFTOp::getResultMode() const { return m_data->m_rm; }
 
   void BaseFFTOp::setSizeAdaptionMode(SizeAdaptionMode sam) {
-    setPropertyValue("size adaption", sizeAdaptionName(sam));
+    prop("size adaption").value = sizeAdaptionName(sam);
   }
   BaseFFTOp::SizeAdaptionMode BaseFFTOp::getSizeAdaptionMode() const { return m_data->m_sam; }
 

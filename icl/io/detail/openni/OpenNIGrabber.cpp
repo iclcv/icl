@@ -150,7 +150,8 @@ std::string OpenNIGrabber::getName(){
 void OpenNIGrabber::processPropertyChange(const utils::Configurable::Property &prop){
   DEBUG_LOG(prop.name << " := " << prop.as<std::string>());
   if (prop.name == "format"){
-    setPropertyValue("map output mode", prop.as<std::string>());
+    // `prop` parameter shadows Configurable::prop — spell out `this->`.
+    this->prop("map output mode").value = prop.as<std::string>();
   }
   if (prop.name == "omit double frames"){
     m_OmitDoubleFrames = prop.as<bool>();

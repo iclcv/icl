@@ -61,9 +61,9 @@ namespace icl::filter {
   UnaryCompareOp::UnaryCompareOp(const std::string &op, icl64f value, icl64f tolerance)
     : UnaryCompareOp(translate_op_type(op), value, tolerance) {}
 
-  void UnaryCompareOp::setOpType(optype ot){ setPropertyValue("op", opName(ot)); }
-  void UnaryCompareOp::setValue(icl64f v){ setPropertyValue("value", v); }
-  void UnaryCompareOp::setTolerance(icl64f t){ setPropertyValue("tolerance", t); }
+  void UnaryCompareOp::setOpType(optype ot){ prop("op").value = opName(ot); }
+  void UnaryCompareOp::setValue(icl64f v){ prop("value").value = v; }
+  void UnaryCompareOp::setTolerance(icl64f t){ prop("tolerance").value = t; }
 
   // ================================================================
   // apply()

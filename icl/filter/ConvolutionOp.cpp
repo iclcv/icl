@@ -100,7 +100,7 @@ namespace icl::filter {
     setMask(m_kernel.getSize());
     // Sync the "kernel" property so listeners (GUI etc.) see the change; the
     // callback's own rebuild path is a no-op on identical values / "custom".
-    setPropertyValue("kernel", fixedTypeName(kernel.getFixedType()));
+    prop("kernel").value = fixedTypeName(kernel.getFixedType());
   }
 
   void ConvolutionOp::setForceUnsignedOutput(bool v){ prop("force unsigned output").value = v; }

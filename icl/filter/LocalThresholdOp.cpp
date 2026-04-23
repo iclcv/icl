@@ -99,17 +99,17 @@ namespace icl::filter {
     // Route through setPropertyValue so typed_value + value stay in sync.
     // Callbacks fire from setPropertyValue — no need for an explicit
     // call_callbacks here.
-    setPropertyValue("mask size", str(maskSize));
+    prop("mask size").value = str(maskSize);
   }
 
 
   void LocalThresholdOp::setGlobalThreshold(float globalThreshold){
-    setPropertyValue("global threshold", str(globalThreshold));
+    prop("global threshold").value = str(globalThreshold);
   }
 
 
   void LocalThresholdOp::setGammaSlope(float gammaSlope){
-    setPropertyValue("gamma slope", str(gammaSlope));
+    prop("gamma slope").value = str(gammaSlope);
   }
 
 
@@ -148,10 +148,9 @@ namespace icl::filter {
 
   /// sets internally used algorithm
   void LocalThresholdOp::setAlgorithm(algorithm a){
-    setPropertyValue("algorithm",
-                     a==regionMean ? "region mean" :
-                     a==tiledNN    ? "tiledNN"     :
-                     a==global     ? "global"      : "tiled linear");
+    prop("algorithm").value = a==regionMean ? "region mean" :
+                              a==tiledNN    ? "tiledNN"     :
+                              a==global     ? "global"      : "tiled linear";
   }
 
 
@@ -496,7 +495,7 @@ namespace icl::filter {
         break;
       }
     }
-    setPropertyValue("actually used mask size",ts);
+    prop("actually used mask size").value = ts;
     //      std::cout << "orig: " << 2*getMaskSize() << " --> adapted:" << ts << std::endl;
 
     ICLASSERT_RETURN(ts>1);
@@ -534,7 +533,7 @@ namespace icl::filter {
     float t = getGlobalThreshold();
     int s = getMaskSize();
 
-    setPropertyValue("actually used mask size",s);
+    prop("actually used mask size").value = s;
     float gs = getGammaSlope();
 
     switch(src->getDepth()){
@@ -592,7 +591,7 @@ namespace icl::filter {
     dstPtr->setTime(psrc->getTime());
     dst = core::Image(*dstPtr);
 
-    if(dstDepth == depth8u && getPropertyValue("invert output").as<bool>()){
+    if(dstDepth == depth8u && prop("invert output").as<bool>()){
       Channel8u c = (*dst.ptr()->as8u())[0];
       const int dim = c.getDim();
       for(int i=0;i<dim;++i){

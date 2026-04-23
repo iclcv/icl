@@ -33,7 +33,7 @@ void stream_pos(){
     case press: paused = true; break;
     case release:{
       paused = false;
-      grabber.setPropertyValue(pos,str(posVal));
+      grabber.prop(pos).value = str(posVal);
       break;
     }
   }
@@ -81,7 +81,7 @@ void run(){
   image = grabber.grabImage();
   gui["fps"].render();
 
-  int p = parse<int>(grabber.getPropertyValue(::pos));
+  int p = parse<int>(grabber.prop(::pos).value);
   if(pos.getValue() != p) pos.setValue(p);
 #ifndef ICL_HAVE_OPENCV
   if(parse<int>(grabber.prop("speed").value) != speed){

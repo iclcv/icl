@@ -204,17 +204,17 @@ namespace icl::math {
 
 
     /// sets up learning rate for input weights to a new value (about 0..1)
-    void setEpsilonIn(float val) { setPropertyValue("epsilon In",val); }
+    void setEpsilonIn(float val) { prop("epsilon In").value = val; }
 
     /// sets up learning rate for output weights to a new value (about 0..1)
-    void setEpsilonOut(float val) { setPropertyValue("epsilon Out",val); }
+    void setEpsilonOut(float val) { prop("epsilon Out").value = val; }
 
     /// sets up learning rate for slope matrices to a new value (about 0..1)
-    void setEpsilonA(float val) { setPropertyValue("epsilon A",val); }
+    void setEpsilonA(float val) { prop("epsilon A").value = val; }
 
     /// sets up learning rate for sigmas to a new value (about 0..1)
     /** <b>Note</b> Update of the sigmas does not run very good! */
-    void setEpsilonSigma(float val) { setPropertyValue("epsilon Sigma",val); }
+    void setEpsilonSigma(float val) { prop("epsilon Sigma").value = val; }
 
     /// Shows all current kernels to std::out
     void showKernels() const;
@@ -233,10 +233,10 @@ namespace icl::math {
     Kernel &operator[](unsigned int i) { return m_kernels[i]; }
 
     /// returns whether the softmax function for calculation for g_i[x] is used
-    bool isSoftMaxUsed() const { return const_cast<Configurable*>(static_cast<const Configurable*>(this))->getPropertyValue("soft max enabled").as<bool>(); }
+    bool isSoftMaxUsed() const { return const_cast<Configurable*>(static_cast<const Configurable*>(this))->prop("soft max enabled").as<bool>(); }
 
     /// sets whether the softmax function for calculation for g_i[x] is used
-    void setSoftMaxEnabled(bool enabled) { setPropertyValue("soft max enabled",enabled); }
+    void setSoftMaxEnabled(bool enabled) { prop("soft max enabled").value = enabled; }
 
     private:
 

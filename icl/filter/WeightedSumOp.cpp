@@ -42,7 +42,7 @@ namespace icl::filter {
     });
   }
   void WeightedSumOp::setWeights(const std::vector<icl64f> &weights){
-    setPropertyValue("weights", joinW(weights));
+    prop("weights").value = joinW(weights);
   }
 
   template <class T, class D>

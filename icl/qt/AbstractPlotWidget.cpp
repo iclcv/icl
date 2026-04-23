@@ -237,11 +237,11 @@ namespace icl::qt {
 
   void AbstractPlotWidget::property_changed(const Property &p){
     if(p.name == "show mouse pos"){
-      bool on = getPropertyValue(p.name);
+      bool on = prop(p.name).value;
       data->track_mouse = on;
     }
     else if(p.name == "style preset"){
-      std::string preset = getPropertyValue("style preset");
+      std::string preset = prop("style preset").value;
       QPen defaultPen;
       QPen gridPen;
       QPen axisLabelPen;
@@ -407,8 +407,8 @@ namespace icl::qt {
 
   void AbstractPlotWidget::keyPressEvent(QKeyEvent *event){
     if(event->key() == Qt::Key_F11){
-      const bool on = getPropertyValue("fullscreen");
-      setPropertyValue("fullscreen",!on);
+      const bool on = prop("fullscreen").value;
+      prop("fullscreen").value = !on;
     }
   }
 
@@ -437,17 +437,17 @@ namespace icl::qt {
 
     data->currPainter = &p;
 
-    if(getPropertyValue("antialiasing")){
+    if(prop("antialiasing").value){
       p.setRenderHint(QPainter::Antialiasing);
     }
 
-    const float b_left = getPropertyValue("borders.left");
-    const float b_right = getPropertyValue("borders.right");
-    const float b_top = getPropertyValue("borders.top");
-    const float b_bottom = getPropertyValue("borders.bottom");
+    const float b_left = prop("borders.left").value;
+    const float b_right = prop("borders.right").value;
+    const float b_top = prop("borders.top").value;
+    const float b_bottom = prop("borders.bottom").value;
 
-    const bool showZoomIndicator = getPropertyValue("show zoom indicator");
-    const bool highlightZeroAxis = getPropertyValue("highlight 0-axis'");
+    const bool showZoomIndicator = prop("show zoom indicator").value;
+    const bool highlightZeroAxis = prop("highlight 0-axis'").value;
 
     const float w = width(), h = height();
 
@@ -461,10 +461,10 @@ namespace icl::qt {
 
 
     p.fillRect(QRect(0,0,w,h),data->bgBrush);
-    if(data->bgFunc && getPropertyValue("background functions.enable").as<bool>()){
+    if(data->bgFunc && prop("background functions.enable").as<bool>()){
       data->fillBackGround(p, data->bgFunc, data->lastWindowRect, v,
-                           getPropertyValue("background functions.use speudo color"),
-                           getPropertyValue("background functions.use openmp"));
+                           prop("background functions.use speudo color").value,
+                           prop("background functions.use openmp").value);
     }
 
     const bool zoomed = v != vd;
@@ -504,13 +504,13 @@ namespace icl::qt {
     p.translate(bx,by);
     p.scale(mx,my);
 
-    const int f = getPropertyValue("labels.text-size");
+    const int f = prop("labels.text-size").value;
     QFont font = p.font();
     font.setPointSizeF(f);
     p.setFont(font);
 
-    const int prx = getPropertyValue("labels.x-precision");
-    const int pry = getPropertyValue("labels.y-precision");
+    const int prx = prop("labels.x-precision").value;
+    const int pry = prop("labels.y-precision").value;
 
 
 
@@ -518,10 +518,10 @@ namespace icl::qt {
     // -- X-Axis Tics and labels ------------------------
     // --------------------------------------------------
     if(data->hasPen(X_TIC_PEN) || data->hasPen(X_LABEL_PEN) || data->hasPen(X_GRID_PEN) || data->hasPen(AXIS_NAME_PEN)){
-      const bool xgrid = getPropertyValue("tics.x-grid");
-      float dx = getPropertyValue("tics.x-distance");
+      const bool xgrid = prop("tics.x-grid").value;
+      float dx = prop("tics.x-distance").value;
 
-      if(v.width && vd.width && getPropertyValue("dynamic-tic-scaling").as<bool>()){
+      if(v.width && vd.width && prop("dynamic-tic-scaling").as<bool>()){
         float f = 1;
         while(2 * v.width * f < vd.width) f*=2;
         dx /= f;
@@ -537,7 +537,7 @@ namespace icl::qt {
         }
       }
 
-      const float tl = getPropertyValue("tics.length").as<float>()/(2*my) ;
+      const float tl = prop("tics.length").as<float>()/(2*my) ;
       const float y1 = winToDrawY(h-b_bottom) - tl, y2 =  winToDrawY(h-b_bottom) + tl;
 
       const float gridT = iclMax(ryd.minVal,winToDrawY(b_top));
@@ -566,7 +566,7 @@ namespace icl::qt {
           p.drawText(QRectF(mx*x+bx,h-b_bottom +f/2,0,0), Qt::AlignHCenter |  Qt::TextDontClip, QString::number(x,'f',prx));
 
           if(x == firstVisibleTic && data->setPen(AXIS_NAME_PEN)){
-            const std::string label = getPropertyValue("labels.x-axis");
+            const std::string label = prop("labels.x-axis").value;
             if(label.length()){
               p.drawText(QRect(b_left + (width()-(b_left+b_right))/2, h-b_bottom + 2*f, 0,0),
                          Qt::AlignHCenter | Qt::TextDontClip, label.c_str());
@@ -583,10 +583,10 @@ namespace icl::qt {
 
 
     if(data->hasPen(Y_TIC_PEN) || data->hasPen(Y_LABEL_PEN) || data->hasPen(Y_GRID_PEN) || data->hasPen(AXIS_NAME_PEN)){
-      const bool ygrid = getPropertyValue("tics.y-grid");
-      float dy = getPropertyValue("tics.y-distance");
+      const bool ygrid = prop("tics.y-grid").value;
+      float dy = prop("tics.y-distance").value;
 
-      if(v.height && vd.height && getPropertyValue("dynamic-tic-scaling").as<bool>()){
+      if(v.height && vd.height && prop("dynamic-tic-scaling").as<bool>()){
         float f = 1;
         while(v.height * f < vd.height) f*=2;
         dy /= f;
@@ -602,7 +602,7 @@ namespace icl::qt {
         }
       }
 
-      const float tl = getPropertyValue("tics.length").as<float>()/(2*mx) ;
+      const float tl = prop("tics.length").as<float>()/(2*mx) ;
       const float x1 = rx.minVal - tl, x2 = rx.minVal + tl;
       // const float numTics = ryd.getLength()/dy;
       //      const float lastTic = ryd.maxVal + ryd.getLength()/(numTics*100);
@@ -632,7 +632,7 @@ namespace icl::qt {
           p.drawText(QRectF(mx*x1+bx-f/2, my*y+by,0,0), Qt::AlignVCenter | Qt::AlignRight | Qt::TextDontClip,
                      QString::number(y,'f',pry));
           if(y == firstVisibleTic && data->setPen(AXIS_NAME_PEN)){
-            const std::string label = getPropertyValue("labels.y-axis");
+            const std::string label = prop("labels.y-axis").value;
             if(label.length()){
               p.translate(2,b_top + (height()-(b_top+b_bottom))/2);
               p.rotate(-90);
@@ -675,20 +675,20 @@ namespace icl::qt {
       p.drawRect(QRectF(0,0,w-1,h-1));
       p.drawText(QRectF(0,0,w,h),Qt::AlignCenter,"no data given");
       return;
-    }else if(getPropertyValue("draw legend")){
-      const int lx = getPropertyValue("legend.x");
-      const int ly = getPropertyValue("legend.y");
-      const int lw = getPropertyValue("legend.width");
-      const int lh = getPropertyValue("legend.height");
+    }else if(prop("draw legend").value){
+      const int lx = prop("legend.x").value;
+      const int ly = prop("legend.y").value;
+      const int lw = prop("legend.width").value;
+      const int lh = prop("legend.height").value;
 
       p.setClipping(false);
       drawLegend(p,Rect((lx<0) ? (w+lx) : lx,
                         (ly<0) ? (h+ly) : ly,
                         (lw<0) ? (w+lw) : lw,
-                        (lh<0) ? (h+lh) : lh), getPropertyValue("legend.orientation").str()[0] == 'h');
+                        (lh<0) ? (h+lh) : lh), prop("legend.orientation").value.str()[0] == 'h');
     }
 
-    std::string title = getPropertyValue("labels.diagramm");
+    std::string title = prop("labels.diagramm").value;
     if(title.length() && data->setPen(X_AXIS_PEN)){
       p.drawText(QRectF(w/2,10, 0, 0), Qt::AlignCenter | Qt::TextDontClip, title.c_str());
     }
@@ -887,7 +887,7 @@ namespace icl::qt {
 
     data->disableUpdate = true;
     const int dt = t.age().toMilliSeconds();
-    setPropertyValue("drawing time",str(dt) + "ms");
+    prop("drawing time").value = str(dt) + "ms";
     data->disableUpdate = false;
   }
 
@@ -1034,9 +1034,9 @@ namespace icl::qt {
     const int ENTRY_HEIGHT = (H-(USED_LEGEND_ROWS-1)*GAP_Y)/USED_LEGEND_ROWS;
 
     int next = 0;
-    const bool LINES_ON = getPropertyValue("enable lines");
-    const bool SYMBOLS_ON = getPropertyValue("enable symbols");
-    const bool FILL_ON = getPropertyValue("enable fill");
+    const bool LINES_ON = prop("enable lines").value;
+    const bool SYMBOLS_ON = prop("enable symbols").value;
+    const bool FILL_ON = prop("enable fill").value;
 
     for(int r=0;r<USED_LEGEND_ROWS;++r){
       const int ENTRIES_IN_THIS_ROW = (r == USED_LEGEND_ROWS-1) ? (ENTRIES_IN_LAST_ROW ? ENTRIES_IN_LAST_ROW : MAX_ENTRIES_PER_ROW) : MAX_ENTRIES_PER_ROW;

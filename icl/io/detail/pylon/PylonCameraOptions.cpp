@@ -51,10 +51,11 @@ void PylonCameraOptions::processPropertyChange(const utils::Configurable::Proper
   //DEBUG_LOG(prop.name << " = " << prop.as<std::string>());
   if(prop.name == "size"){
     Size size(prop.as<std::string>());
-    setPropertyValue("Width", size.width);
-    setPropertyValue("Height", size.height);
+    // `prop` parameter shadows Configurable::prop — spell out `this->`.
+    this->prop("Width").value = size.width;
+    this->prop("Height").value = size.height;
   } else if(prop.name == "format"){
-    setPropertyValue("PixelFormat", prop.as<std::string>());
+    this->prop("PixelFormat").value = prop.as<std::string>();
   } else if(prop.name == "OmitDoubleFrames"){
     m_OmitDoubleFrames = prop.as<bool>();
   } else {

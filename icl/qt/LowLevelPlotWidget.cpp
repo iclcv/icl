@@ -118,14 +118,14 @@ namespace icl::qt {
     const Rect32f dataViewPort = getDataViewPort();
 
     const DrawState state = {
-      getPropertyValue("enable lines").as<bool>(),
-      getPropertyValue("enable symbols").as<bool>(),
-      getPropertyValue("enable fill").as<bool>(),
-      getPropertyValue("borders.left").as<float>(),
-      getPropertyValue("borders.right").as<float>(),
-      getPropertyValue("borders.top").as<float>(),
-      getPropertyValue("borders.bottom").as<float>(),
-      getPropertyValue("render symbols as images").as<bool>(),
+      prop("enable lines").as<bool>(),
+      prop("enable symbols").as<bool>(),
+      prop("enable fill").as<bool>(),
+      prop("borders.left").as<float>(),
+      prop("borders.right").as<float>(),
+      prop("borders.top").as<float>(),
+      prop("borders.bottom").as<float>(),
+      prop("render symbols as images").as<bool>(),
       dynViewPort,
       dataViewPort,
       //(dynViewPort != dataViewPort),

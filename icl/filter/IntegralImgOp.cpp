@@ -39,7 +39,7 @@ namespace icl::filter {
   }
 
   void IntegralImgOp::setIntegralImageDepth(depth integralImageDepth){
-    setPropertyValue("integral image depth", depthName(integralImageDepth));
+    prop("integral image depth").value = depthName(integralImageDepth);
   }
 
   depth IntegralImgOp::getIntegralImageDepth() const{

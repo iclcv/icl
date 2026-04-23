@@ -132,7 +132,7 @@ namespace icl::geom {
 
       addChildConfigurable(&m_data->pe,"pose estimator");
 
-      setPropertyValue("pose estimator.algorithm","HomographyBasedOnly");
+      prop("pose estimator.algorithm").value = "HomographyBasedOnly";
       m_data->camera = camera;
     }
 
@@ -168,7 +168,7 @@ namespace icl::geom {
       // min points property is Range<int>; the API historically takes
       // float and the legacy path stringified-then-reparsed to int.
       // Stay on the public string setter until the API is tightened.
-      setPropertyValue("min points for good model", f);
+      prop("min points for good model").value = f;
     }
 
     RansacBasedPoseEstimator::Result

@@ -615,7 +615,7 @@ namespace icl::cv {
 
     AutoParse<std::any> CornerDetectorCSS::getPropertyValue(const std::string &propertyName) const{
       // Return values wrapped in std::any of their declared C++ types so
-      // callers reading `T x = d.getPropertyValue(...)` hit the fast path
+      // callers reading `T x = d.prop(...).value` hit the fast path
       // (exact any_cast / numeric widen) without a string round-trip.
       if(propertyName == "angle-threshold")         return AutoParse<std::any>(std::any(angle_thresh));
       else if(propertyName == "rc-coefficient")     return AutoParse<std::any>(std::any(rc_coeff));

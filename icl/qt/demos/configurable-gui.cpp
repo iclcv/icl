@@ -32,15 +32,15 @@ struct B : public Configurable, public Thread{
       Thread::msleep(100);
       // Update the info-typed property.  The GUI picks this up via the
       // VolatileUpdater timer based on the property's volatileness.
-      setPropertyValue("time", Time::now().toString());
-      int val =  getPropertyValue("general.x");
+      prop("time").value = Time::now().toString();
+      int val =  prop("general.x").value;
       val = (val+1) % 100;
       // this way not only the configurables property value is set but
       // all registered callbacks are called too. this way the gui will
       // get a qt-signal to process the new property value.
       // this is slower than using volatileness and should not be done
       // with a high frequency.
-      setPropertyValue("general.x", val);
+      prop("general.x").value = val;
     }
   }
 };

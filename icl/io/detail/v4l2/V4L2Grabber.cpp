@@ -745,11 +745,11 @@ namespace icl::io {
       impl->stop();
       delete impl;
       impl = new Impl(oldDeviceName,addBraces(prop.as<std::string>()));
-      setPropertyValue("avoid doubled frames",impl->avoidDoubleFrames);
+      prop("avoid doubled frames").value = impl->avoidDoubleFrames;
       for(Impl::PMap::const_iterator it=impl->supportedProperties.begin();
           it != impl->supportedProperties.end();++it){
         Impl::SupportedPropertyPtr p = it -> second;
-        setPropertyValue(it->first, p->getValue());
+        prop(it->first).value = p->getValue();
       }
     }else if(prop.name == "size"){
       // this is adjusted by the format

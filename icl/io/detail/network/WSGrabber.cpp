@@ -293,19 +293,19 @@ namespace icl::io {
     auto *c = m_data->client;
 
     // Refresh live-info properties cheaply — these are atomics, no locking.
-    setPropertyValue("connection state",
-                     str(connStateName(c->state.load())) +
-                     (c->state == ConnState::Disconnected
-                       ? str(" (next retry in ~") + str(c->currentBackoffMs) + "ms)"
-                       : str("")));
-    setPropertyValue("reconnect attempts", str(static_cast<long long>(c->reconnectAttempts)));
-    setPropertyValue("frames received",    str(static_cast<long long>(c->framesReceived)));
-    setPropertyValue("frames dropped",     str(static_cast<long long>(c->framesDropped)));
-    setPropertyValue("bytes received",     str(static_cast<long long>(c->bytesReceived)));
+    prop("connection state").value =
+        str(connStateName(c->state.load())) +
+        (c->state == ConnState::Disconnected
+           ? str(" (next retry in ~") + str(c->currentBackoffMs) + "ms)"
+           : str(""));
+    prop("reconnect attempts").value = str(static_cast<long long>(c->reconnectAttempts));
+    prop("frames received").value = str(static_cast<long long>(c->framesReceived));
+    prop("frames dropped").value = str(static_cast<long long>(c->framesDropped));
+    prop("bytes received").value = str(static_cast<long long>(c->bytesReceived));
     if (c->lastConnectedUsec > 0) {
-      setPropertyValue("last connected",
-                       Time(static_cast<Time::value_type>(c->lastConnectedUsec))
-                         .toStringFormated("%H:%M:%S"));
+      prop("last connected").value =
+          Time(static_cast<Time::value_type>(c->lastConnectedUsec))
+            .toStringFormated("%H:%M:%S");
     }
 
     // Wait for a fresh frame, with the timeout configured by the user.

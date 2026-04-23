@@ -289,7 +289,7 @@ namespace icl::math {
     if( (trainflags >> 1) & 1){
       trainSigmasIntern(x,g);
     }
-    const float eIn = getPropertyValue("epsilon In");
+    const float eIn = prop("epsilon In").value;
 
     const float *dy = 0;
     if( (trainflags >> 2) & 1){
@@ -326,7 +326,7 @@ namespace icl::math {
   const float *LLM::updateGs(const float *x){
 
     float *g = m_gBuf.data();
-    if(getPropertyValue("soft max enabled")){
+    if(prop("soft max enabled").value){
       //e/ calculate g_i(x) = (exp(-beta*|x-w_i^in|)) / (sum_j exp(-beta*|x-w_j^in|))
       float sum_gi = 0;
       for(unsigned int i=0;i<m_kernels.size();++i){
@@ -362,7 +362,7 @@ namespace icl::math {
   }
 
   void LLM::trainCentersIntern(const float *x,const float *g){
-    const float eIn = getPropertyValue("epsilon In");
+    const float eIn = prop("epsilon In").value;
     if(!eIn) return;
     //    printf("training of centers g=%s \n",vecToStr(g,m_kernels.size()).c_str());
     for(unsigned int i=0;i<m_kernels.size();++i){
@@ -375,7 +375,7 @@ namespace icl::math {
   }
 
   void LLM::trainSigmasIntern(const float *x,const float *g){
-    const float eS = getPropertyValue("epsilon Sigma");
+    const float eS = prop("epsilon Sigma").value;
     if(!eS) return;
     for(unsigned int i=0;i<m_kernels.size();++i){
       Kernel &k = m_kernels[i];
@@ -387,7 +387,7 @@ namespace icl::math {
   }
 
   void LLM::trainOutputsIntern(const float *x,const float *y, const float *g, const float *dy, bool useDeltaWin){
-    const float eO = getPropertyValue("epsilon Out");
+    const float eO = prop("epsilon Out").value;
     if(!eO) return;
     if(useDeltaWin){
       for(unsigned int i=0;i<m_kernels.size();++i){
@@ -405,7 +405,7 @@ namespace icl::math {
   }
 
   void LLM::trainMatricesIntern(const float *x,const float *y, const float *g, const float *dy){
-    const float eA = getPropertyValue("epsilon A");
+    const float eA = prop("epsilon A").value;
     if(!eA) return;
     for(unsigned int i=0;i<m_kernels.size();++i){
       //float fNorm = square_vec(x,m_kernels[i].w_in,m_inputDim);

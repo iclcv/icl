@@ -264,7 +264,7 @@ namespace icl::io {
 
   void ImageCompressor::setCompression(const CompressionSpec &spec) {
     installPlugin(spec.mode, spec.quality);
-    if (prop("mode").as<std::string>() != spec.mode) setPropertyValue("mode", spec.mode);
+    if (prop("mode").as<std::string>() != spec.mode) prop("mode").value = spec.mode;
   }
 
   ImageCompressor::CompressionSpec ImageCompressor::getCompression() const {

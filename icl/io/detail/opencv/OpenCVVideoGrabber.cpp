@@ -46,9 +46,9 @@ namespace icl::io {
     }
 
     updating = true;
-    setPropertyValue("pos_msec_current", data->cvc->get(cv::CAP_PROP_POS_MSEC));
-    setPropertyValue("pos_frames_current", data->cvc->get(cv::CAP_PROP_POS_FRAMES));
-    setPropertyValue("pos_avi_ratio", data->cvc->get(cv::CAP_PROP_POS_AVI_RATIO));
+    prop("pos_msec_current").value = data->cvc->get(cv::CAP_PROP_POS_MSEC);
+    prop("pos_frames_current").value = data->cvc->get(cv::CAP_PROP_POS_FRAMES);
+    prop("pos_avi_ratio").value = data->cvc->get(cv::CAP_PROP_POS_AVI_RATIO);
     updating = false;
     return data->m_buffer;
   }

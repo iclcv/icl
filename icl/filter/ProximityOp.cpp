@@ -30,19 +30,19 @@ namespace icl::filter {
   }
 
   void ProximityOp::setOpType(optype ot){
-    setPropertyValue("operation type",ot);
+    prop("operation type").value = ot;
   }
 
   void ProximityOp::setApplyMode(applymode am){
-    setPropertyValue("apply mode",am);
+    prop("apply mode").value = am;
   }
 
   ProximityOp::optype ProximityOp::getOpType() const{
-    return const_cast<ProximityOp*>(this)->getPropertyValue("operation type");
+    return const_cast<ProximityOp*>(this)->prop("operation type").value;
   }
 
   ProximityOp::applymode ProximityOp::getApplyMode() const{
-    return const_cast<ProximityOp*>(this)->getPropertyValue("apply mode");
+    return const_cast<ProximityOp*>(this)->prop("apply mode").value;
   }
 
   void ProximityOp::apply([[maybe_unused]] const core::Image &src1, [[maybe_unused]] const core::Image &src2, [[maybe_unused]] core::Image &dst){

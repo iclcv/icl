@@ -191,7 +191,7 @@ namespace icl::io {
       // express cleanly without a flag), but flip the property and warn.
       ERROR_LOG("WSImageOutput: server failed to bind, output is non-functional");
     } else {
-      setPropertyValue("port", str(static_cast<int>(m_data->actualPort)));
+      prop("port").value = str(static_cast<int>(m_data->actualPort));
     }
   }
 
@@ -230,9 +230,9 @@ namespace icl::io {
       Qt::QueuedConnection);
 
     // Refresh live-info properties (cheap, off the WS thread).
-    setPropertyValue("clients", str(static_cast<int>(m_data->server->clients.size())));
-    setPropertyValue("bytes sent", str(static_cast<long long>(m_data->server->bytesSent)));
-    setPropertyValue("frames sent", str(static_cast<long long>(m_data->server->framesSent)));
+    prop("clients").value = str(static_cast<int>(m_data->server->clients.size()));
+    prop("bytes sent").value = str(static_cast<long long>(m_data->server->bytesSent));
+    prop("frames sent").value = str(static_cast<long long>(m_data->server->framesSent));
   }
 
   void WSImageOutput::onPropertyChange(const Property &p) {

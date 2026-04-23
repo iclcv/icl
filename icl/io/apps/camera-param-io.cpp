@@ -47,10 +47,10 @@ int main(int n, char **ppc){
   if(s){
     std::string val = pa("-s", 1).as<std::string>();
     if(pa("-go")) grabber.grabImage();
-    grabber.setPropertyValue(pa("-s",0),val);
+    grabber.prop(pa("-s",0)).value = val;
     if(pa("-go")) grabber.grabImage();
   }else if(g){
-    std::cout << grabber.getPropertyValue(pa("-g")) << std::endl;
+    std::cout << grabber.prop(pa("-g")).value.str() << std::endl;
   }else if(p){
     if(pa("-go")) grabber.grabImage();
     grabber.loadProperties(pa("-p"));
@@ -71,7 +71,7 @@ int main(int n, char **ppc){
 
     for(unsigned int i=0;i<l.size();++i){
       const std::string &s = l[i];
-      std::string v = grabber.getPropertyValue(s);
+      std::string v = grabber.prop(s).value;
       std::cout << s;
       write_spaces(w-s.length());
       std::cout << v;

@@ -91,7 +91,7 @@ struct ConfigurableUDist : public Configurable{
   }
 
   void cb(const Property &p){
-    if(p.name != "activated" && getPropertyValue("activated").as<bool>()){
+    if(p.name != "activated" && prop("activated").as<bool>()){
       DEBUG_LOG("before: " << *udist);
       std::vector<double> ps = udist->getParams();
       if(p.name == "fx"){
@@ -115,11 +115,11 @@ struct ConfigurableUDist : public Configurable{
   }
 
   void updateConfigurableParams(){
-    setPropertyValue("activated",false);
+    prop("activated").value = false;
     const std::vector<double> &values = udist->getParams();
     std::vector<std::string> ps = tok("fx,fy,ix,iy,skew,k1,k2,k3,k4,k5",",");
     for(int i=0;i<10;++i){
-      setPropertyValue(ps[i], values[i]);
+      prop(ps[i]).value = values[i];
     }
     paramChanged = true;
   }

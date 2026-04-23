@@ -52,7 +52,7 @@ namespace icl::filter {
   }
 
   void WeightChannelsOp::setWeights(const std::vector<icl64f> &weights){
-    setPropertyValue("weights", joinWeights(weights));
+    prop("weights").value = joinWeights(weights);
   }
 
   void WeightChannelsOp::apply(const Image &src, Image &dst) {

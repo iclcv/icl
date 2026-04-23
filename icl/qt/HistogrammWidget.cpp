@@ -25,11 +25,11 @@ namespace icl::qt {
     PlotWidget(parent),logOn(false),meanOn(false),medianOn(false),
     selChannel(-1), buf(512){
 
-    setPropertyValue("labels.x-precision",0);
-    setPropertyValue("labels.y-precision",0);
+    prop("labels.x-precision").value = 0;
+    prop("labels.y-precision").value = 0;
 
-    setPropertyValue("tics.y-distance",1000);
-    setPropertyValue("borders.left",50);
+    prop("tics.y-distance").value = 1000;
+    prop("borders.left").value = 50;
 
     deactivateProperty("tics.x-distance");
   }
@@ -104,14 +104,13 @@ namespace icl::qt {
       }
 
       if(haveData){
-        setPropertyValue("tics.y-distance",
-                         logOn ? 2 :
-                         maxY > 100 ? int(maxY/100)*20 :
-                         20);
-        setPropertyValue("labels.y-axis",logOn ? "log(number of pixels)" : "number of pixels");
+        prop("tics.y-distance").value = logOn ? 2 :
+                                        maxY > 100 ? int(maxY/100)*20 :
+                                        20;
+        prop("labels.y-axis").value = logOn ? "log(number of pixels)" : "number of pixels";
         Range32f rx = Range32f(s.globalRange.minVal,s.globalRange.maxVal);
         setDataViewPort(rx,Range32f(0,maxY));
-        setPropertyValue("tics.x-distance",static_cast<int>(iclMax(4.0,round(rx.getLength()/8))));
+        prop("tics.x-distance").value = static_cast<int>(iclMax(4.0,round(rx.getLength()/8)));
       }
     }
     unlock();

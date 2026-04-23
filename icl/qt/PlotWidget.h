@@ -408,17 +408,17 @@ namespace icl::qt {
         Otherwise, the tiltle is placed within the drawing area
     */
     void title(const std::string &title){
-      setPropertyValue("labels.diagramm",title);
+      prop("labels.diagramm").value = title;
     }
 
     /// sets the x-axis label
     void xlabel(const std::string &xlabel){
-      setPropertyValue("labels.x-axis",xlabel);
+      prop("labels.x-axis").value = xlabel;
     }
 
     /// sets the y-axis label
     void ylabel(const std::string &ylabel){
-      setPropertyValue("labels.y-axis",ylabel);
+      prop("labels.y-axis").value = ylabel;
     }
 
   };

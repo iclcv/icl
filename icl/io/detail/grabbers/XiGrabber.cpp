@@ -321,8 +321,11 @@ namespace icl{
 
     void XiGrabber::processPropertyChange(const utils::Configurable::Property &prop){
       XI_RETURN s;
+      // prop.as<T>() reads the Property's typed_value — equivalent to
+      // the pre-proxy this->getPropertyValue(prop.name).as<T>() but
+      // sidesteps the `prop` parameter shadowing Configurable::prop().
       if(prop.name == "format"){
-        std::string value = prop(prop.name).value;
+        std::string value = prop.as<std::string>();
         if(value == "RGB 24Bit"){
           s = xiSetParamInt(m_data->xiH, XI_PRM_IMAGE_DATA_FORMAT, XI_RGB24);
           Data::handle_result(s,"setPaxiSetParamInt(format=RGB24)");
@@ -331,7 +334,7 @@ namespace icl{
           Data::handle_result(s,"setPaxiSetParamInt(format=mono8)");
         }
       }else if(prop.name == str(XI_PRM_EXPOSURE)){
-        int value = prop(prop.name).value;
+        int value = prop.as<int>();
         std::cout << "settings exposure to " << value << " !!" << std::endl;
         //s = xiStopAcquisition(m_data->xiH);
         // Data::handle_result(s,"xiStopAcquistion()");
@@ -340,7 +343,7 @@ namespace icl{
         //s = xiStartAcquisition(m_data->xiH);
         //Data::handle_result(s,"xiStartAcquistion()");
       }else if(prop.name == str(XI_PRM_GAIN)){
-        float value = prop(prop.name).value;
+        float value = prop.as<float>();
         XI_RETURN s = xiSetParamFloat(m_data->xiH, XI_PRM_GAIN, value);
         Data::handle_result(s,"setPaxiSetParamInt(gain)");
 
@@ -348,7 +351,7 @@ namespace icl{
                ( prop.name.length() > 4 && prop.name.substr(0,4) == "roi.")){
         XI_RETURN s,s2;
 
-        std::string sbinning = prop("pixel binning").value;
+        std::string sbinning = this->prop("pixel binning").value;
         int binning = (sbinning == "no binning" ? 1 :
                        sbinning == "2x2 to 1" ? 2 :
                        sbinning == "4x4 to 1" ? 4 : 0);
@@ -365,11 +368,11 @@ namespace icl{
         int x=0, y=0, w=m_data->imageSize.width, h=m_data->imageSize.height;
 
 
-        if(prop("roi.enabled").value){
-          x = prop("roi.x").value;
-          y = prop("roi.y").value;
-          w = prop("roi.width").value;
-          h = prop("roi.height").value;
+        if(this->prop("roi.enabled").value){
+          x = this->prop("roi.x").value;
+          y = this->prop("roi.y").value;
+          w = this->prop("roi.width").value;
+          h = this->prop("roi.height").value;
         }
 
         x /= binning;

@@ -538,12 +538,12 @@ namespace icl::markers {
     data->lastBinImage = 0;
 
     // set some default values ...
-    //setPropertyValue("css.angle-threshold", 180);
-    //setPropertyValue("css.curvature-cutoff", 66);
-    //setPropertyValue("css.rc-coefficient", 1);
+    //prop("css.angle-threshold").value = 180;
+    //prop("css.curvature-cutoff").value = 66;
+    //prop("css.rc-coefficient").value = 1;
 
-    //setPropertyValue("thresh.global threshold", -10);
-    //setPropertyValue("thresh.mask size", 30);
+    //prop("thresh.global threshold").value = -10;
+    //prop("thresh.mask size").value = 30;
   }
 
   QuadDetector::~QuadDetector() {

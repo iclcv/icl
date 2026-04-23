@@ -343,8 +343,8 @@ namespace icl::filter {
 
 
   void CannyOp::setThresholds(icl32f lo, icl32f hi){
-    setPropertyValue("low threshold", lo);
-    setPropertyValue("high threshold", hi);
+    prop("low threshold").value = lo;
+    prop("high threshold").value = hi;
   }
 
   icl32f CannyOp::getLowThreshold()const {

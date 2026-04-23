@@ -84,10 +84,10 @@ namespace icl{
   void UndistortionUtil::setParamVector(const float k[7]){
     std::copy(k,k+7, this->k);
     for(int i=0;i<5;++i){
-      setPropertyValue("k"+str(i), k[i]);
+      prop("k"+str(i)).value = k[i];
     }
-    setPropertyValue("ix-offset",k[5]-imageSize.width/2.0f);
-    setPropertyValue("iy-offset",k[6]-imageSize.height/2.0f);
+    prop("ix-offset").value = k[5]-imageSize.width/2.0f;
+    prop("iy-offset").value = k[6]-imageSize.height/2.0f;
   }
 
   void UndistortionUtil::init(const utils::Size &imageSize,
@@ -108,10 +108,10 @@ namespace icl{
       updateWarpMap();
     }
     for(int i=0;i<5;++i){
-      setPropertyValue("k"+str(i), k[i]);
+      prop("k"+str(i)).value = k[i];
     }
-    setPropertyValue("ix-offset",coffset.x);
-    setPropertyValue("ix-offset",coffset.y);
+    prop("ix-offset").value = coffset.x;
+    prop("ix-offset").value = coffset.y;
 
     inInit = false;
     warpMapDirty = true;

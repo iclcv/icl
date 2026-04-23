@@ -70,7 +70,7 @@ namespace icl::filter {
   }
 
   void WarpOp::setScaleMode(scalemode scaleMode){
-    setPropertyValue("interpolation", warpInterpName(scaleMode));
+    prop("interpolation").value = warpInterpName(scaleMode);
   }
 
   void WarpOp::setWarpMap(const Img32f &warpMap){
