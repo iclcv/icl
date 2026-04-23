@@ -8,6 +8,7 @@ if _build_demos
     'configurable-gui': [],
     'define-rects': [],
     'dynamic-child-props': [],
+    'grabber-backend-swap': [],
     'game-of-life': [],
     'interactive-filter': [],
     'mandelbrot': [],
