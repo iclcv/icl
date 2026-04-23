@@ -286,7 +286,7 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_range_float",
 
   ICL_TEST_EQ(c.getPropertyType("gain"),  std::string("range:slider"));
   ICL_TEST_EQ(c.getPropertyInfo("gain"),  std::string("[0,500]"));
-  ICL_TEST_NEAR(c.getPropertyValue("gain").as<float>(), 250.f, 1e-5f);
+  ICL_TEST_NEAR(c.prop("gain").as<float>(), 250.f, 1e-5f);
 
   // constraint payload is recoverable and matches what we passed
   const auto &p = c.prop("gain");
@@ -307,7 +307,7 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_range_spinbox",
 
   ICL_TEST_EQ(c.getPropertyType("ksize"), std::string("range:spinbox"));
   ICL_TEST_EQ(c.getPropertyInfo("ksize"), std::string("[1,31]:2"));
-  ICL_TEST_EQ(c.getPropertyValue("ksize").as<int>(), 3);
+  ICL_TEST_EQ(c.prop("ksize").as<int>(), 3);
 
   const auto &r = std::any_cast<const prop::Range<int> &>(c.prop("ksize").constraint);
   ICL_TEST_EQ(r.step, 2);
@@ -322,7 +322,7 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_menu_string",
 
   ICL_TEST_EQ(c.getPropertyType("mode"), std::string("menu"));
   ICL_TEST_EQ(c.getPropertyInfo("mode"), std::string(",fast,slow,auto"));
-  ICL_TEST_EQ(c.getPropertyValue("mode").str(), std::string("slow"));
+  ICL_TEST_EQ(c.prop("mode").value.str(), std::string("slow"));
 
   const auto &m = std::any_cast<const Menu<std::string> &>(c.prop("mode").constraint);
   ICL_TEST_EQ(m.choices.size(), 3u);
@@ -338,8 +338,8 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_flag",
   ICL_TEST_EQ(c.getPropertyType("enabled"), std::string("flag"));
   ICL_TEST_EQ(c.getPropertyInfo("enabled"), std::string(""));
   // Typed extraction — the idiomatic read path.
-  ICL_TEST_TRUE(bool(c.getPropertyValue("enabled")));
-  ICL_TEST_EQ(c.getPropertyValue("enabled").as<bool>(), true);
+  ICL_TEST_TRUE(bool(c.prop("enabled").value));
+  ICL_TEST_EQ(c.prop("enabled").as<bool>(), true);
   // Property::value string field retired in step 9 commit 4 —
   // typed_value is the sole storage.  Round-trip through the adapter
   // produces the legacy "on" format on demand.
@@ -359,7 +359,7 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_command",
   // Consumers that iterate all properties (e.g. icl-configurable-info)
   // must guard per-row.
   bool threw = false;
-  try { (void)c.getPropertyValue("save").str(); } catch (...) { threw = true; }
+  try { (void)c.prop("save").value.str(); } catch (...) { threw = true; }
   ICL_TEST_TRUE(threw);
   // The typed payload is the monostate sentinel.
   ICL_TEST_TRUE(c.prop("save").typed_value.type() == typeid(std::monostate));
@@ -372,7 +372,7 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_info",
   c.addProperty("version", Info{}, std::string("v1.0.0"));
 
   ICL_TEST_EQ(c.getPropertyType("version"),  std::string("info"));
-  ICL_TEST_EQ(c.getPropertyValue("version").str(), std::string("v1.0.0"));
+  ICL_TEST_EQ(c.prop("version").value.str(), std::string("v1.0.0"));
 }
 
 ICL_REGISTER_TEST("utils.prop.configurable.addProperty_text",
@@ -383,7 +383,7 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_text",
 
   ICL_TEST_EQ(c.getPropertyType("weights"), std::string("string"));
   ICL_TEST_EQ(c.getPropertyInfo("weights"), std::string("128"));
-  ICL_TEST_EQ(c.getPropertyValue("weights").str(), std::string("1,2,3"));
+  ICL_TEST_EQ(c.prop("weights").value.str(), std::string("1,2,3"));
 }
 
 ICL_REGISTER_TEST("utils.prop.configurable.legacy_dispatch_to_typed",

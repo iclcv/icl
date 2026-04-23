@@ -47,7 +47,7 @@ void init(){
   fd.setConfigurableID("fd");
 
   if(!pa("-nosync").as<bool>()){
-    fd.setPropertyValue("thresh.global threshold",4.8);
+    fd.prop("thresh.global threshold").value = 4.8;
   }
   gui << Canvas3D().handle("draw").minSize(16,12)
       << (VBox().maxSize(15,99).minSize(15,1)

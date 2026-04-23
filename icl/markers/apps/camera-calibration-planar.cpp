@@ -181,8 +181,8 @@ void init(){
     }else{
       v.detector.init(d);
       fd = v.detector.getFiducialDetector();
-      fd->setPropertyValue("thresh.mask size", 15);
-      fd->setPropertyValue("thresh.global threshold", -10);
+      fd->prop("thresh.mask size").value = 15;
+      fd->prop("thresh.global threshold").value = -10;
       fd->setConfigurableID("fd-cam"+str(id));
       v.poseEst.setConfigurableID("poseEst-cam"+str(id));
     }
@@ -252,16 +252,16 @@ void init(){
   gui["3D"].install(scene.getMouseHandler(views.size()));
 
   static PlotHandle plot = gui["variancePlot"];
-  plot->setPropertyValue("tics.x-distance",10);
-  plot->setPropertyValue("tics.y-distance",0.00001);
-  plot->setPropertyValue("labels.x-precision",0);
-  plot->setPropertyValue("labels.y-precision",6);
-  plot->setPropertyValue("borders.left", 60);
-  plot->setPropertyValue("borders.bottom", 60);
-  plot->setPropertyValue("legend.y", -34);
-  plot->setPropertyValue("legend.width", -44);
-  plot->setPropertyValue("legend.x", 1);
-  plot->setPropertyValue("legend.height", 30);
+  plot->prop("tics.x-distance").value = 10;
+  plot->prop("tics.y-distance").value = 0.00001;
+  plot->prop("labels.x-precision").value = 0;
+  plot->prop("labels.y-precision").value = 6;
+  plot->prop("borders.left").value = 60;
+  plot->prop("borders.bottom").value = 60;
+  plot->prop("legend.y").value = -34;
+  plot->prop("legend.width").value = -44;
+  plot->prop("legend.x").value = 1;
+  plot->prop("legend.height").value = 30;
 
   relGUI << ( VBox().label("rel-transformation")
            << ( HBox()
@@ -515,7 +515,7 @@ void run(){
 
   }
 
-  scene.setPropertyValue("visualize cameras", gui["vis cams"].as<bool>());
+  scene.prop("visualize cameras").value = gui["vis cams"].as<bool>();
 
   static ButtonHandle sync = gui["sync"];
   if(sync.wasTriggered()){

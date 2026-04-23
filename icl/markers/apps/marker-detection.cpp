@@ -65,10 +65,10 @@ void init(){
 
   //fid->loadMarkers("[0,10]",ParamMap("size",Size(96,96)));
   try{
-    fid->setPropertyValue("quads.minimum region size",400);
-    fid->setPropertyValue("thresh.global threshold",-11);
-    fid->setPropertyValue("thresh.mask size",45);
-    fid->setPropertyValue("thresh.algorithm","tiled linear");
+    fid->prop("quads.minimum region size").value = 400;
+    fid->prop("thresh.global threshold").value = -11;
+    fid->prop("thresh.mask size").value = 45;
+    fid->prop("thresh.algorithm").value = "tiled linear";
   }catch(ICLException &e){
     WARNING_LOG("exception caught while setting initial parameters: " << e.what());
   }

@@ -18,7 +18,7 @@ namespace icl::io {
       (see below). Consumers use the registry directly:
       \code
         auto p = compressionRegistry().getOrThrow("jpeg").payload();
-        p->setPropertyValue("quality", "80");
+        p->prop("quality").value = "80";
         auto bytes = p->compress(image);
 
         for (const auto &name : compressionRegistry().keys()) { ... }

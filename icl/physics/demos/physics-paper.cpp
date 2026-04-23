@@ -89,9 +89,9 @@ void init(){
   l.setSpecular(GeomColor(0,100,255,255));
   l.setDiffuse(GeomColor(255,100,0,30));
 
-  scene.setPropertyValue("shadows.use improved shading",true);
-  scene.setPropertyValue("shadows.resolution",2048);
-  scene.setPropertyValue("shadows.bias",10);
+  scene.prop("shadows.use improved shading").value = true;
+  scene.prop("shadows.resolution").value = 2048;
+  scene.prop("shadows.bias").value = 10;
 
 
   //static const int W=20,H=13,DIM=W*H;

@@ -35,14 +35,13 @@ namespace icl{
       struct ParamSet{
         ParamSet() : scoreType(-1){}
         ParamSet(Configurable &c){
-          // External caller — prop() is protected; stay on the public API.
-          scoreType = c.getPropertyValue("score type").as<int>();
-          maxFeatures = c.getPropertyValue("max features").as<int>();
-          patchSize = c.getPropertyValue("patch size").as<int>();
-          WTA_K = c.getPropertyValue("WTA_K").as<int>();
-          pyLevels = c.getPropertyValue("pyramid.levels").as<int>();
-          pyScale = c.getPropertyValue("pyramid.scale factor").as<float>();
-          pyLevel0 = c.getPropertyValue("pyramid.first level").as<int>();
+          scoreType = c.prop("score type").as<int>();
+          maxFeatures = c.prop("max features").as<int>();
+          patchSize = c.prop("patch size").as<int>();
+          WTA_K = c.prop("WTA_K").as<int>();
+          pyLevels = c.prop("pyramid.levels").as<int>();
+          pyScale = c.prop("pyramid.scale factor").as<float>();
+          pyLevel0 = c.prop("pyramid.first level").as<int>();
         }
         int scoreType;
         int maxFeatures;

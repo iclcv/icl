@@ -41,7 +41,7 @@ void stream_pos(){
 
 void init(){
   grabber.init(type,type+"="+filename);
-  int len = parse<int>(grabber.getPropertyValue("len"));
+  int len = parse<int>(grabber.prop("len").value);
   gui << Display().minSize(32,24).handle("image")
       << Slider(0,len,0).label("stream position in "+unit).handle("pos").maxSize(1000,2)
       << ( HBox().maxSize(1000,3)
@@ -84,16 +84,16 @@ void run(){
   int p = parse<int>(grabber.getPropertyValue(::pos));
   if(pos.getValue() != p) pos.setValue(p);
 #ifndef ICL_HAVE_OPENCV
-  if(parse<int>(grabber.getPropertyValue("speed")) != speed){
+  if(parse<int>(grabber.prop("speed").value) != speed){
     if(speed == 50){
-      grabber.setPropertyValue("speed-mode","auto");
+      grabber.prop("speed-mode").value = "auto";
     }else{
-      grabber.setPropertyValue("speed-mode","manual");
-      grabber.setPropertyValue("speed",str(speed));
+      grabber.prop("speed-mode").value = "manual";
+      grabber.prop("speed").value = str(speed);
     }
   }
-  if(volume != parse<int>(grabber.getPropertyValue("volume"))){
-    grabber.setPropertyValue("volume",str(volume));
+  if(volume != parse<int>(grabber.prop("volume").value)){
+    grabber.prop("volume").value = str(volume);
   }
 #endif
 

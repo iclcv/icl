@@ -40,8 +40,8 @@ void init(){
 
   detector.init(g);
   detector.setConfigurableID("fd");
-  detector.setPropertyValue("thresh.global threshold", 21);
-  detector.setPropertyValue("thresh.mask size", 30);
+  detector.prop("thresh.global threshold").value = 21;
+  detector.prop("thresh.mask size").value = 30;
 
   const Size imageSize = grabber.grabImage().getSize();
   udist.reset(new UndistortionUtil(imageSize));
@@ -49,7 +49,7 @@ void init(){
 
 
   FiducialDetector *fd = detector.getFiducialDetector();
-  fd->setPropertyValue("max bch errors",1);
+  fd->prop("max bch errors").value = 1;
 
   gui << ( Tab("distorted input,undistorted image,"
                "difference image,undistortion map").handle("tab").minSize(32,24)

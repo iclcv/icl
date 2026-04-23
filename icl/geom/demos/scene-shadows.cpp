@@ -33,7 +33,7 @@ void init(){
       << Show();
 
 
-  scene.setPropertyValue("shadows.use improved shading", true);
+  scene.prop("shadows.use improved shading").value = true;
 
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-10), // position

@@ -116,8 +116,8 @@ namespace icl::qt {
       \code
       LowLevelPlotWidget pw;
       static std::vector<float> sinData(100); // fill it
-      pw.setPropertyValue("tics.y-distance",0.25);
-      pw.setPropertyValue("enable fill",true);
+      pw.prop("tics.y-distance").value = 0.25;
+      pw.prop("enable fill").value = true;
       pw.addSeriesData(sinData.data(), sinData.size(),
                        new AbstractPlotWidget::Pen(QColor(255,0,0),Qt::NoPen,' ',5, QColor(255,0,0,100)),
                        "sin(x)");
@@ -128,7 +128,7 @@ namespace icl::qt {
       \subsection _EX_2_ Series Data 2 (no fill)
       \code
       static std::vector<float> tanData(100); // fill it!
-      pw.setPropertyValue("tics.y-distance",0.25);
+      pw.prop("tics.y-distance").value = 0.25;
       pw.addSeriesData(tanData.data(), tanData.size(),
                        new AbstractPlotWidget::Pen(QColor(0,100,255),Qt::NoPen,' ',2, QColor(0,100,255,100)),
                        "tan(x)");
@@ -139,7 +139,7 @@ namespace icl::qt {
       \subsection _EX_3_ Series Data 3 (symbols)
       \code
       static std::vector<float> cosData(100); // fill it!
-      pw.setPropertyValue("tics.y-distance",0.25);
+      pw.prop("tics.y-distance").value = 0.25;
       // we use symbols of radius 2, the 'o' selects circles
       pw.addSeriesData(cosData.data(), cosData.size(),
                        new AbstractPlotWidget::Pen(QColor(0,255,0),QColor(0,255,0),'o',2, QColor(0,255,0,100)),
@@ -151,7 +151,7 @@ namespace icl::qt {
       \subsection _EX_4_ Series Data 4 (multiple functions)
       \code
       // use sin, cos and tan data from above
-      pw.setPropertyValue("tics.y-distance",0.25);
+      pw.prop("tics.y-distance").value = 0.25;
       pw.addSeriesData(sinData.data(), sinData.size(),
                        new AbstractPlotWidget::Pen(QColor(255,0,0)),
                        "sin(x)");
@@ -173,8 +173,8 @@ namespace icl::qt {
       /// planar data order
       static std::vector<float> scatterData2(20000); // fill it!
 
-      pw.setPropertyValue("tics.x-distance",3);
-      pw.setPropertyValue("tics.y-distance",3);
+      pw.prop("tics.x-distance").value = 3;
+      pw.prop("tics.y-distance").value = 3;
       /// for interleaved data, the x- and y-stride is 2
       /// the data is static, so we use shallow copy instead of deep copy
       pw.addScatterData('.',&scatterData1[0].x,&scatterData1[0].y,scatterData1.size(),

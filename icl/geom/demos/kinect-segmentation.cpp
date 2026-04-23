@@ -60,7 +60,7 @@ void init(){
   grabDepth.init(pa("-di"));
   if(grabDepth.supportsProperty("depth-image-unit")){
     // settings for kinect grabber
-    grabDepth.setPropertyValue("depth-image-unit","raw");
+    grabDepth.prop("depth-image-unit").value = "raw";
     depthImageMode = PointCloudCreator::KinectRAW11Bit;
     depthNanValue = 2047;
     depthMaxValue = 2046;

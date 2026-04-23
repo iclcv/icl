@@ -294,10 +294,10 @@ namespace icl{
               //std::cout << "--> creation successful" << std::endl;
               all.push_back(GrabberDeviceDescription("optris",s,
                                                      "IR-IMAGER (serial: " +s+
-                                                     " @ " + g.getPropertyValue("v4l device") +")"));
+                                                     " @ " + g.prop("v4l device").value +")"));
               all.push_back(GrabberDeviceDescription("optrisv",s,
                                                      "IR-IMAGER (serial: " +s+
-                                                     " @ " + g.getPropertyValue("v4l device") +")"));
+                                                     " @ " + g.prop("v4l device").value +")"));
 
             }catch(std::exception &ex){ /* Combination did not work*/
               //std::cout << "--> creation threw exception ex:-" << ex.what() << "-" << std::endl;

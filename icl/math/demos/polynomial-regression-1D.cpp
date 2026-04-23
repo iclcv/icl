@@ -87,8 +87,8 @@ void run(){
   PlotHandle plot = gui["plot"];
   plot->clear();
   plot->setDataViewPort(Rect32f(-3.5, -2, 7, 4));
-  plot->setPropertyValue("tics.x-distance", 1);
-  plot->setPropertyValue("tics.y-distance", 0.5);
+  plot->prop("tics.x-distance").value = 1;
+  plot->prop("tics.y-distance").value = 0.5;
 
   plot->color(255, 80, 80);
   plot->sym('o');

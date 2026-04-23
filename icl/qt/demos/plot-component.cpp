@@ -180,20 +180,20 @@ void run(){
     }
 
     if(i < 4){
-      plot->setPropertyValue("tics.y-distance",0.25);
+      plot->prop("tics.y-distance").value = 0.25;
     }else if(i<6 || i>=8){
-      plot->setPropertyValue("tics.y-distance",3);
-      plot->setPropertyValue("tics.x-distance",3);
+      plot->prop("tics.y-distance").value = 3;
+      plot->prop("tics.x-distance").value = 3;
     }else{
-      plot->setPropertyValue("tics.y-distance",0.5);
-      plot->setPropertyValue("tics.x-distance",1);
+      plot->prop("tics.y-distance").value = 0.5;
+      plot->prop("tics.x-distance").value = 1;
     }
     if(i==0 || i==3){
       plot->linewidth(1);
       plot->color(255,0,0);
       if(i==0){
         plot->fill(255,0,0,100);
-        plot->setPropertyValue("enable fill",true);
+        plot->prop("enable fill").value = true;
       }
       plot->label("sin(x)");
       plot->series(sinData);
@@ -276,27 +276,27 @@ void run(){
       plot->linestrip(scatterData3);
       plot->color(0,0,0);
       plot->title("shape drawn as linestrip");
-      plot->setPropertyValue("borders.top",18);
+      plot->prop("borders.top").value = 18;
     }
     if(i == 9){
       plot->color(255,0,0);
       plot->grid(grid);
       plot->setDataViewPort(rxGrid,ryGrid);
-      plot->setPropertyValue("labels.x-precision",0);
-      plot->setPropertyValue("labels.y-precision",0);
+      plot->prop("labels.x-precision").value = 0;
+      plot->prop("labels.y-precision").value = 0;
       plot->title("some distorted grid");
-      plot->setPropertyValue("borders.top",18);
+      plot->prop("borders.top").value = 18;
 
       plot->setBackgroundFunction(f_sin_cos);
     }
     if(i == 10){
       plot->fill(255,0,0,100);
       plot->setDataViewPort(Range32f(0,1),Range32f(-50,50));
-      plot->setPropertyValue("enable fill",true);
-      plot->setPropertyValue("tics.x-distance",0.2);
-      plot->setPropertyValue("tics.y-distance",5);
-      plot->setPropertyValue("labels.x-precision",1);
-      plot->setPropertyValue("labels.y-precision",0);
+      plot->prop("enable fill").value = true;
+      plot->prop("tics.x-distance").value = 0.2;
+      plot->prop("tics.y-distance").value = 5;
+      plot->prop("labels.x-precision").value = 1;
+      plot->prop("labels.y-precision").value = 0;
       plot->label("orig. function");
       plot->series(fData);
 
@@ -313,7 +313,7 @@ void run(){
       plot->series(fApprox);
     }
     if(i==11){
-      plot->setPropertyValue("enable fill",true);
+      plot->prop("enable fill").value = true;
       plot->setDataViewPort(Range32f(0,2*M_PI),Range32f(-1,1));
       plot->nocolor();
       plot->label("sin");

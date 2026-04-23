@@ -202,6 +202,13 @@ namespace icl::utils {
     template<class T>
     T as() const { return static_cast<T>(*this); }
 
+    /// Stringify the stored value.  Mirrors `AutoParse<std::any>::str()`
+    /// — equivalent to `as<std::string>()` but named for parity with
+    /// the pre-proxy `getPropertyValue(name).str()` idiom.  Throws the
+    /// same exception as `as<std::string>()` on non-stringifiable
+    /// property kinds (e.g. `prop::Command`).
+    std::string str() const { return static_cast<std::string>(*this); }
+
     /// Equality sugar for the common `prop("x").value == "on"` idiom.
     bool operator==(std::string_view s) const;
     bool operator==(const char* s) const;

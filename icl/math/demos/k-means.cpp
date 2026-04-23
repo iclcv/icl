@@ -61,8 +61,8 @@ void init(){
   }
 
   PlotHandle plot = gui["plot"];
-  plot->setPropertyValue("tics.y-distance",2);
-  plot->setPropertyValue("tics.x-distance",2);
+  plot->prop("tics.y-distance").value = 2;
+  plot->prop("tics.x-distance").value = 2;
 
   plot->label("data");
   plot->symsize(3);

@@ -63,8 +63,8 @@ void compute(){
   std::string what = gui["what"].as<std::string>();
   if(what == "line"){
     plot->setDataViewPort(Range32f(-1.1,1.1), Range32f(-60,20));
-    plot->setPropertyValue("tics.x-distance",0.25);
-    plot->setPropertyValue("tics.y-distance",10);
+    plot->prop("tics.x-distance").value = 0.25;
+    plot->prop("tics.y-distance").value = 10;
 
 
     const float line[] = {6,0.2,5}; // ax + by + c = 0
@@ -90,8 +90,8 @@ void compute(){
     }
   }else if(what == "circle"){
     plot->setDataViewPort(Range32f(0,9),Range32f(-3,6));
-    plot->setPropertyValue("tics.x-distance",1);
-    plot->setPropertyValue("tics.y-distance",1);
+    plot->prop("tics.x-distance").value = 1;
+    plot->prop("tics.y-distance").value = 1;
 
     // a (x*x + y*y) + bx +cy +d = 0;
     std::vector<Point32f> ptsOrig = gen_circle_points();
@@ -141,7 +141,7 @@ void init(){
   gui["ransac"].registerCallback(compute);
 
   PlotHandle plot = gui["plot"];
-  plot->setPropertyValue("borders.left",50);
+  plot->prop("borders.left").value = 50;
   plot->setDataViewPort(Range32f(-1.1,1.1), Range32f(-60,20));
 
   compute();

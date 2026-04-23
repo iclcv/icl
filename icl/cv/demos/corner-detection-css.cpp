@@ -32,7 +32,7 @@ void init(){
   }
 
   css.setConfigurableID("css");
-  css.setPropertyValue("debug-mode","on");
+  css.prop("debug-mode").value = "on";
 
   gui << ( VBox()
            << ( HBox()

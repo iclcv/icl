@@ -41,6 +41,18 @@ namespace icl::utils {
         getInternalConfigurable() -> setPropertyValue(propertyName, value);
       }
 
+      /// Handle-based property access — forwards to the wrapped
+      /// Configurable's public prop() so callers can write
+      /// `grabber.prop("x").value = v` uniformly with a direct
+      /// Configurable.
+      Configurable::Handle prop(const std::string &propertyName){
+        return getInternalConfigurable()->prop(propertyName);
+      }
+
+      Configurable::Handle prop(const std::string &propertyName) const{
+        return getInternalConfigurable()->prop(propertyName);
+      }
+
       /// returns a list of All properties, that can be set using setProperty
       std::vector<std::string> getPropertyList() const{
         return getInternalConfigurable() -> getPropertyList();

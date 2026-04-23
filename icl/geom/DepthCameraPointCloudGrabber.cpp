@@ -125,7 +125,7 @@ namespace icl::geom {
     m_data->depthGrabber.useDesired(depthCam.getResolution());
 
     if(depthDeviceType == "kinectd" && needsKinectRawDepthInput){
-      m_data->depthGrabber.setPropertyValue("depth-image-unit","raw");
+      m_data->depthGrabber.prop("depth-image-unit").value = "raw";
     }
 
     addChildConfigurable(m_data->depthGrabber.getGrabber(),"Depth Source");

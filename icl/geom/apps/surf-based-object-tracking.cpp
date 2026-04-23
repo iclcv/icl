@@ -53,11 +53,11 @@ void init(){
   pe->adaptProperty("min points for good model", "range", "[4,100]:1", "");
 
 
-  pe->setPropertyValue("iterations",200);
-  pe->setPropertyValue("max error",30);
-  pe->setPropertyValue("min points",4);
-  pe->setPropertyValue("min points for good model",20);
-  pe->setPropertyValue("store last consensus set",true);
+  pe->prop("iterations").value = 200;
+  pe->prop("max error").value = 30;
+  pe->prop("min points").value = 4;
+  pe->prop("min points for good model").value = 20;
+  pe->prop("store last consensus set").value = true;
 
   ransacOptions << Prop("pe") << Create();
 

@@ -224,7 +224,7 @@ namespace icl::geom {
                                              const utils::Point32f &pCurrentMousePosition,
                                              const utils::Point32f &pDeltaMousePosition,
                                              Camera &pCamera, Scene &pScene, void *pData){
-    bool useCursor = true; //pScene.getPropertyValue("visualize cursor");
+    bool useCursor = true; //pScene.prop("visualize cursor").value;
     // sensitivities given by additional data pointer
     MouseSensitivities* tMouseSensitivities = static_cast<MouseSensitivities*>(pData);
     ICLASSERT( tMouseSensitivities );

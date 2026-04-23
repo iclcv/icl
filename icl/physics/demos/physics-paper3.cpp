@@ -81,8 +81,8 @@ void init(){
 
   //  scene.getLight(0).setOn(false);
   scene.getLight(0).setDiffuse(GeomColor(255,255,255,50));
-  scene.setPropertyValue("shadows.use improved shading", true);
-  scene.setPropertyValue("shadows.resolution", 2048);
+  scene.prop("shadows.use improved shading").value = true;
+  scene.prop("shadows.resolution").value = 2048;
 
   SceneLight &l = scene.getLight(1);
   l.setOn();

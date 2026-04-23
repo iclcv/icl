@@ -1750,12 +1750,12 @@ namespace icl{
         std::string yAxisLabel = def.numParams()>=7 ? def.param(6) : str("");
 
         if(xAxisLabel.length() && xAxisLabel != "-"){
-          m_plot->setPropertyValue("labels.x-axis",xAxisLabel);
-          m_plot->setPropertyValue("borders.bottom",55);
+          m_plot->prop("labels.x-axis").value = xAxisLabel;
+          m_plot->prop("borders.bottom").value = 55;
         }
         if(yAxisLabel.length() && yAxisLabel != "-"){
-          m_plot->setPropertyValue("labels.y-axis",yAxisLabel);
-          m_plot->setPropertyValue("borders.left",55);
+          m_plot->prop("labels.y-axis").value = yAxisLabel;
+          m_plot->prop("borders.left").value = 55;
         }
 
 

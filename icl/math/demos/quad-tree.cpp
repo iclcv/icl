@@ -42,8 +42,8 @@ void init(){
   plot->rect(r);
   plot->scatter(qresult.data(), qresult.size());
   plot->setDataViewPort(Rect32f(0, 0, 640, 480));
-  plot->setPropertyValue("tics.x-distance", 50);
-  plot->setPropertyValue("tics.y-distance", 50);
+  plot->prop("tics.x-distance").value = 50;
+  plot->prop("tics.y-distance").value = 50;
 
   // visualize quad-tree structure
   plot->nofill();

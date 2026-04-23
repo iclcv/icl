@@ -90,14 +90,14 @@ namespace icl::markers {
       fd->setConfigurableID(ts[t]);
       configurables.push_back(ts[t]);
       iin = fd->getIntermediateImageNames();
-      fd->setPropertyValue("css.angle-threshold",180);
-      fd->setPropertyValue("css.curvature-cutoff",66);
-      fd->setPropertyValue("css.rc-coefficient",1);
-      fd->setPropertyValue("thresh.global threshold",-10);
-      fd->setPropertyValue("thresh.mask size",30);
+      fd->prop("css.angle-threshold").value = 180;
+      fd->prop("css.curvature-cutoff").value = 66;
+      fd->prop("css.rc-coefficient").value = 1;
+      fd->prop("thresh.global threshold").value = -10;
+      fd->prop("thresh.mask size").value = 30;
 
       if(size && size->getDim() <= utils::Size::QVGA.getDim()){
-        fd->setPropertyValue("pp.filter","none");
+        fd->prop("pp.filter").value = "none";
       }
       return fd;
     }
