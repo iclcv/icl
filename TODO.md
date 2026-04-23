@@ -32,6 +32,24 @@ Applied per `module-audit-checklist.md`.
 
 ## Qt GUI component plumbing
 
+- [ ] **Designated-init GUI component syntax.**  Current builder uses
+  stream-insertion + chained setters:
+  ```cpp
+  gui << Slider(0, 255, 1).handle("gain").minSize(10, 3).label("Gain");
+  ```
+  Target shape — aggregate-init with named fields, same spirit as
+  `prop::Range{.min=..., .max=..., .ui=...}`:
+  ```cpp
+  gui << ui::Slider{.min=0, .max=255, .val=1,
+                    .minSize={10,3}, .handle="gain", .label="Gain"};
+  ```
+  Reads more cleanly, self-documents each arg, and lets the author
+  skip fields they don't want to set (no more `.tooltip("")` noise).
+  Pairs naturally with the `GUIComponent` rework below (typed component
+  structs instead of string round-trip), and with C++20 designated
+  init + aggregate CTAD that Apple Clang 21 now handles.  Likely a
+  follow-up to that rework.
+
 - [ ] **Rework `GUIComponent` internal representation.**  Today every
   component is serialized to a `type(params)[@handle=X@label=L@...]`
   string in `GUIComponent::toString()`, parsed back by
