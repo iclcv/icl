@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom2/Scene2.h>
+#include <icl/core/prop/Constraints.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/GroupNode.h>
 #include <icl/geom2/GeometryNode.h>
@@ -92,7 +93,7 @@ namespace icl::geom2 {
   void Scene2::unlock() { m_data->mutex.unlock(); }
 
   Scene2::Scene2() : m_data(std::make_unique<Data>()) {
-    addProperty("background color","color","",core::Color(0,0,0));
+    addProperty("background color", core::prop::Color{}, core::Color(0,0,0));
     addProperty("wireframe","flag","",false);
     addProperty("enable lighting","flag","",true);
     addProperty("point size","range","[1,20]",3);

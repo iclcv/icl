@@ -258,17 +258,15 @@ namespace icl::utils {
   }
 
   void Configurable::setPropertyPayload(const std::string &propertyName, std::any payload){
+    // Thin wrapper over typed_value — the separate Property::payload
+    // field retired in step 4c.  Kept as an API entry point for
+    // non-stringifiable property updates (images, etc.) that can't
+    // round-trip through setPropertyValue's AutoParse<std::string>.
     Property &p = prop(propertyName);
     if(p.configurable != this){
       p.configurable->setPropertyPayload(propertyName.substr(p.childPrefix.length()), std::move(payload));
     }else{
       std::scoped_lock<std::recursive_mutex> lock(m_mutex);
-      // Mirror into typed_value so consumers reading through the typed
-      // path (getPropertyValue + ap.type() == typeid(T)) find the update
-      // without needing a separate getPropertyPayload call.  Both fields
-      // hold the same std::any; step 4c retires the `payload` field and
-      // the set/getPropertyPayload API once all callers migrate.
-      p.payload     = payload;
       p.typed_value = std::move(payload);
     }
     call_callbacks(propertyName, this);
@@ -280,7 +278,7 @@ namespace icl::utils {
       return p.configurable->getPropertyPayload(propertyName.substr(p.childPrefix.length()));
     }
     std::scoped_lock<std::recursive_mutex> lock(m_mutex);
-    return p.payload;
+    return p.typed_value;
   }
 
   std::vector<std::string> remove_by_filter(const std::vector<std::string> &ps,

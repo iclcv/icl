@@ -186,11 +186,6 @@ namespace icl::utils {
       int volatileness;  //!< volatileness of a this property (0= no-volatileness, X=expected update every X msec)
       std::string tooltip; //!< property description, that is also used as tooltip
       std::string childPrefix;
-      /// Type-erased payload for properties whose value doesn't fit in the
-      /// `value` string — primarily the "image" property type, whose payload
-      /// holds a core::Image. The Prop GUI widget renders an embedded Display
-      /// that polls getPropertyPayload() on the volatileness timer.
-      std::any payload;
       /// Structured constraint payload (`prop::Range<T>`, `prop::Menu<T>`,
       /// `prop::Flag`, ...).  Populated by the typed `addProperty<C>`
       /// overload; empty for properties that were registered via the legacy

@@ -5,6 +5,7 @@
 #include <icl/filter/GaborOp.h>
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/core/Image.h>
+#include <icl/core/prop/Constraints.h>
 #include <cmath>
 
 using namespace icl::utils;
@@ -49,7 +50,7 @@ namespace icl::filter {
                 str(m_vecSigmas.empty() ? 5.f : m_vecSigmas.front()));
     addProperty("gamma","range:slider","[0.01,10]:0.01",
                 str(m_vecGammas.empty() ? 0.5f : m_vecGammas.front()));
-    addProperty("kernel preview","image","", "", /*volatileness=*/100);
+    addProperty("kernel preview", core::prop::ImageView{}, core::Image{}, /*volatileness=*/100);
     registerCallback([this](const Property &p){
       static const std::string knobs[] =
         {"size.w","size.h","lambda","theta","psi","sigma","gamma"};

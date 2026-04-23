@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Erik Weitnauer, Daniel Dornbusch
 
 #include <icl/geom/Scene.h>
+#include <icl/core/prop/Constraints.h>
 #include <icl/geom/GltfLoader.h>
 #include <icl/qt/GLFragmentShader.h>
 #include <icl/geom/SceneLightObject.h>
@@ -358,7 +359,7 @@ namespace icl::geom {
     addProperty("object frame size","float","[0,100000000]",100);
     addProperty("world frame size","float","[0,100000000]",100);
     addProperty("light object size","float","[0,100000000]",30);
-    addProperty("background color","color","",Color(0,0,0));
+    addProperty("background color", core::prop::Color{}, Color(0,0,0));
     addProperty("line smoothing","menu","default,force off,force on","default");
     addProperty("point smoothing","menu","default,force off,force on","default");
     addProperty("polygon smoothing","menu","default,force off,force on","default");
