@@ -103,7 +103,7 @@ namespace icl::filter {
     setPropertyValue("kernel", fixedTypeName(kernel.getFixedType()));
   }
 
-  void ConvolutionOp::setForceUnsignedOutput(bool v){ setPropertyValue("force unsigned output", v); }
+  void ConvolutionOp::setForceUnsignedOutput(bool v){ prop("force unsigned output").value = v; }
 
   bool ConvolutionOp::getForceUnsignedOutput() const {
     return prop("force unsigned output").as<bool>();

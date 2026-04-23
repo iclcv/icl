@@ -53,7 +53,7 @@ namespace icl::filter {
   GradientOp::~GradientOp(){ delete m_data; }
 
   void GradientOp::setMode(Mode m){ setPropertyValue("mode", modeName(m)); }
-  void GradientOp::setNormalize(bool n){ setPropertyValue("normalize", n); }
+  void GradientOp::setNormalize(bool n){ prop("normalize").value = n; }
 
   // ConvolutionOp on an 8u source with forceUnsignedOutput=false produces 16s.
   // For other depths ConvolutionOp preserves the source depth — we coerce to

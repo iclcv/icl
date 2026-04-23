@@ -41,10 +41,10 @@ BilateralFilterOp::BilateralFilterOp(int radius, float sigma_s, float sigma_r, b
   });
 }
 
-void BilateralFilterOp::setRadius(int r){ setPropertyValue("radius", r); }
-void BilateralFilterOp::setSigmaS(float s){ setPropertyValue("sigma_s", s); }
-void BilateralFilterOp::setSigmaR(float r){ setPropertyValue("sigma_r", r); }
-void BilateralFilterOp::setUseLAB(bool b){ setPropertyValue("use LAB", b); }
+void BilateralFilterOp::setRadius(int r){ prop("radius").value = r; }
+void BilateralFilterOp::setSigmaS(float s){ prop("sigma_s").value = s; }
+void BilateralFilterOp::setSigmaR(float r){ prop("sigma_r").value = r; }
+void BilateralFilterOp::setUseLAB(bool b){ prop("use LAB").value = b; }
 
 void BilateralFilterOp::apply(const Image &src, Image &dst) {
   if(!prepare(dst, src)) return;

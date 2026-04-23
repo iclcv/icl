@@ -80,7 +80,7 @@ namespace icl::filter {
   }
 
   void WarpOp::setAllowWarpMapScaling(bool allow){
-    setPropertyValue("allow warp map scaling", allow);
+    prop("allow warp map scaling").value = allow;
   }
 
   REGISTER_CONFIGURABLE_DEFAULT(WarpOp);

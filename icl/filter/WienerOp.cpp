@@ -46,7 +46,7 @@ namespace icl::filter {
     });
   }
 
-  void WienerOp::setNoise(icl32f noise){ setPropertyValue("noise", noise); }
+  void WienerOp::setNoise(icl32f noise){ prop("noise").value = noise; }
 
   void WienerOp::apply(const Image &src, Image &dst) {
     // Reader-side lock covers prepare() + getMaskSize/Anchor/ROIOffset +

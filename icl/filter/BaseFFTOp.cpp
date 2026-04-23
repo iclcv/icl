@@ -125,10 +125,10 @@ namespace icl::filter {
   }
   BaseFFTOp::SizeAdaptionMode BaseFFTOp::getSizeAdaptionMode() const { return m_data->m_sam; }
 
-  void BaseFFTOp::setForceDFT(bool f) { setPropertyValue("force DFT", f); }
+  void BaseFFTOp::setForceDFT(bool f) { prop("force DFT").value = f; }
   bool BaseFFTOp::getForceDFT() const { return m_data->m_forceDFT; }
 
-  void BaseFFTOp::setShift(bool s) { setPropertyValue("fft shift", s); }
+  void BaseFFTOp::setShift(bool s) { prop("fft shift").value = s; }
   bool BaseFFTOp::getShift() const { return m_data->m_shift; }
 
   bool BaseFFTOp::isInverse() const { return m_data->m_inverse; }

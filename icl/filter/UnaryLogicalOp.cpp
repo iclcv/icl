@@ -58,7 +58,7 @@ namespace icl::filter {
   }
 
   void UnaryLogicalOp::setOpType(optype t){ setPropertyValue("op", logicName(t)); }
-  void UnaryLogicalOp::setValue(icl32s v){ setPropertyValue("value", v); }
+  void UnaryLogicalOp::setValue(icl32s v){ prop("value").value = v; }
 
   REGISTER_CONFIGURABLE(UnaryLogicalOp,
                         return new UnaryLogicalOp(UnaryLogicalOp::andOp, 255));

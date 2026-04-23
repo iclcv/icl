@@ -355,7 +355,7 @@ namespace icl::filter {
     return prop("high threshold").as<icl32f>();
   }
 
-  void CannyOp::setPreBlurRadius(int r){ setPropertyValue("pre-blur radius", r); }
+  void CannyOp::setPreBlurRadius(int r){ prop("pre-blur radius").value = r; }
 
   bool CannyOp::getPreBlurRadius() const {
     // name retained for ABI — semantic is "pre-blur feature active"

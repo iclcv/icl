@@ -201,7 +201,7 @@ if (d == depth32f) {
 }
 
 void MotionSensitiveTemporalSmoothing::setUseCL(bool use) {
-  setPropertyValue("use CL", use);
+  prop("use CL").value = use;
 }
 
 bool MotionSensitiveTemporalSmoothing::isCLActive() const {
@@ -209,11 +209,11 @@ return m_useCL;
 }
 
 void MotionSensitiveTemporalSmoothing::setFilterSize(int filterSize) {
-  setPropertyValue("filter size", std::clamp(filterSize, 1, m_maxFilterSize));
+  prop("filter size").value = std::clamp(filterSize, 1, m_maxFilterSize);
 }
 
 void MotionSensitiveTemporalSmoothing::setDifference(int difference) {
-  setPropertyValue("difference", difference);
+  prop("difference").value = difference;
 }
 
 Img32f MotionSensitiveTemporalSmoothing::getMotionImage() const {

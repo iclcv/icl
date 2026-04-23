@@ -64,7 +64,7 @@ namespace icl::filter {
     m_ucQuantizationLevels = 0;
   }
   void LUTOp::setQuantizationLevels(int levels){
-    setPropertyValue("quantization levels", levels);
+    prop("quantization levels").value = levels;
   }
 
   REGISTER_CONFIGURABLE_DEFAULT(LUTOp);
