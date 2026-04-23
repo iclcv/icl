@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom2/Scene2.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/prop/Constraints.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/GroupNode.h>
@@ -94,11 +95,11 @@ namespace icl::geom2 {
 
   Scene2::Scene2() : m_data(std::make_unique<Data>()) {
     addProperty("background color", core::prop::Color{}, core::Color(0,0,0));
-    addProperty("wireframe","flag","",false);
-    addProperty("enable lighting","flag","",true);
-    addProperty("point size","range","[1,20]",3);
-    addProperty("info.Nodes","info","",0);
-    addProperty("info.Lights","info","",0);
+    addProperty("wireframe",utils::prop::Flag{}, false);
+    addProperty("enable lighting",utils::prop::Flag{}, true);
+    addProperty("point size",utils::prop::Range{.min=1, .max=20}, 3);
+    addProperty("info.Nodes",utils::prop::Info{}, utils::str(0));
+    addProperty("info.Lights",utils::prop::Info{}, utils::str(0));
   }
   Scene2::~Scene2() = default;
 

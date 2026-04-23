@@ -29,6 +29,7 @@
  ***********************************************************************/
 
 #include <icl/geom/ConfigurableDepthImageSegmenter.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/geom/FeatureGraphSegmenter.h>
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/geom/ObjectEdgeDetector.h>
@@ -96,64 +97,64 @@ namespace icl::geom {
   }
 
   void ConfigurableDepthImageSegmenter::initProperties() {
-      addProperty("general.enable segmentation","flag","",true);
-      addProperty("general.stabelize segmentation","flag","",true);
-      addProperty("general.depth scaling","range","[0.9,1.1]",1.05);
-      addProperty("general.use ROI","flag","",false);
-      addProperty("general.ROI min x","range","[-1500,500]",-1200);
-      addProperty("general.ROI max x","range","[-500,1500]",1200);
-      addProperty("general.ROI min y","range","[-1500,800]",-100);
-      addProperty("general.ROI max y","range","[-500,1500]",1050);
-      addProperty("general.ROI min z","range","[-500,500]",0);
-      addProperty("general.ROI max z","range","[0,1500]",1050);
+      addProperty("general.enable segmentation",utils::prop::Flag{}, true);
+      addProperty("general.stabelize segmentation",utils::prop::Flag{}, true);
+      addProperty("general.depth scaling",utils::prop::Range{.min=0.9f, .max=1.1f}, 1.05);
+      addProperty("general.use ROI",utils::prop::Flag{}, false);
+      addProperty("general.ROI min x",utils::prop::Range{.min=-1500, .max=500}, -1200);
+      addProperty("general.ROI max x",utils::prop::Range{.min=-500, .max=1500}, 1200);
+      addProperty("general.ROI min y",utils::prop::Range{.min=-1500, .max=800}, -100);
+      addProperty("general.ROI max y",utils::prop::Range{.min=-500, .max=1500}, 1050);
+      addProperty("general.ROI min z",utils::prop::Range{.min=-500, .max=500}, 0);
+      addProperty("general.ROI max z",utils::prop::Range{.min=0, .max=1500}, 1050);
 
-      addProperty("pre.enable temporal smoothing","flag","",true);
-      addProperty("pre.temporal smoothing size","range","[1,15]:1",6);
-      addProperty("pre.temporal smoothing diff","range","[1,22]:1",10);
-      addProperty("pre.filter","menu","unfiltered,median3x3,median5x5","median3x3");
-      addProperty("pre.normal range","range","[1,15]:1",1);
-      addProperty("pre.averaging","flag","",true);
-      addProperty("pre.averaging range","range","[1,15]:1",2);
-      addProperty("pre.smoothing","menu","linear,gaussian","linear");
-      addProperty("pre.edge threshold","range","[0.7,1]",0.89);
-      addProperty("pre.edge angle method","menu","max,mean","mean");
-      addProperty("pre.edge neighborhood","range","[1,15]",1);
+      addProperty("pre.enable temporal smoothing",utils::prop::Flag{}, true);
+      addProperty("pre.temporal smoothing size",utils::prop::Range{.min=1, .max=15, .step=1}, 6);
+      addProperty("pre.temporal smoothing diff",utils::prop::Range{.min=1, .max=22, .step=1}, 10);
+      addProperty("pre.filter",utils::prop::Menu{"unfiltered", "median3x3", "median5x5"}, "median3x3");
+      addProperty("pre.normal range",utils::prop::Range{.min=1, .max=15, .step=1}, 1);
+      addProperty("pre.averaging",utils::prop::Flag{}, true);
+      addProperty("pre.averaging range",utils::prop::Range{.min=1, .max=15, .step=1}, 2);
+      addProperty("pre.smoothing",utils::prop::Menu{"linear", "gaussian"}, "linear");
+      addProperty("pre.edge threshold",utils::prop::Range{.min=0.7f, .max=1.f}, 0.89);
+      addProperty("pre.edge angle method",utils::prop::Menu{"max", "mean"}, "mean");
+      addProperty("pre.edge neighborhood",utils::prop::Range{.min=1, .max=15}, 1);
 
-      addProperty("surfaces.min surface size","range","[5,75]:1",50);
-      addProperty("surfaces.assignment radius","range","[2,15]:1",7);
-      addProperty("surfaces.assignment distance","range","[3.0,25.0]",15.0);
+      addProperty("surfaces.min surface size",utils::prop::Range{.min=5, .max=75, .step=1}, 50);
+      addProperty("surfaces.assignment radius",utils::prop::Range{.min=2, .max=15, .step=1}, 7);
+      addProperty("surfaces.assignment distance",utils::prop::Range{.min=3.0f, .max=25.0f}, 15.0);
 
-      addProperty("cutfree.enable cutfree adjacency feature","flag","",true);
-      addProperty("cutfree.ransac euclidean distance","range","[2.0,20.0]",8.0);
-      addProperty("cutfree.ransac passes","range","[5,50]:1",20);
-      addProperty("cutfree.ransac tolerance","range","[5,50]:1",30);
-      addProperty("cutfree.min angle","range","[0.0,70.0]",30.0);
+      addProperty("cutfree.enable cutfree adjacency feature",utils::prop::Flag{}, true);
+      addProperty("cutfree.ransac euclidean distance",utils::prop::Range{.min=2.0f, .max=20.0f}, 8.0);
+      addProperty("cutfree.ransac passes",utils::prop::Range{.min=5, .max=50, .step=1}, 20);
+      addProperty("cutfree.ransac tolerance",utils::prop::Range{.min=5, .max=50, .step=1}, 30);
+      addProperty("cutfree.min angle",utils::prop::Range{.min=0.0f, .max=70.0f}, 30.0);
 
-      addProperty("coplanarity.enable coplanarity feature","flag","",true);
-      addProperty("coplanarity.max angle","range","[0.0, 60.0]",30.0);
-      addProperty("coplanarity.distance tolerance","range","[1.0,10.0]",3.0);
-      addProperty("coplanarity.outlier tolerance","range","[1.0,10.0]",5.0);
-      addProperty("coplanarity.num triangles","range","[10,50]:1",20);
-      addProperty("coplanarity.num scanlines","range","[1,20]:1",9);
+      addProperty("coplanarity.enable coplanarity feature",utils::prop::Flag{}, true);
+      addProperty("coplanarity.max angle",utils::prop::Range{.min=0.0f, .max=60.0f}, 30.0);
+      addProperty("coplanarity.distance tolerance",utils::prop::Range{.min=1.0f, .max=10.0f}, 3.0);
+      addProperty("coplanarity.outlier tolerance",utils::prop::Range{.min=1.0f, .max=10.0f}, 5.0);
+      addProperty("coplanarity.num triangles",utils::prop::Range{.min=10, .max=50, .step=1}, 20);
+      addProperty("coplanarity.num scanlines",utils::prop::Range{.min=1, .max=20, .step=1}, 9);
 
-      addProperty("curvature.enable curvature feature","flag","",true);
-      addProperty("curvature.histogram similarity","range","[0.1,1.0]",0.5);
-      addProperty("curvature.enable open objects","flag","",true);
-      addProperty("curvature.max distance","range","[1,20]:1",10);
-      addProperty("curvature.enable occluded objects","flag","",true);
-      addProperty("curvature.max error","range","[1.0,20.0]",10.0);
-      addProperty("curvature.ransac passes","range","[5,50]:1",20);
-      addProperty("curvature.distance tolerance","range","[1.0,10.0]",3.0);
-      addProperty("curvature.outlier tolerance","range","[1.0,10.0]",5.0);
+      addProperty("curvature.enable curvature feature",utils::prop::Flag{}, true);
+      addProperty("curvature.histogram similarity",utils::prop::Range{.min=0.1f, .max=1.0f}, 0.5);
+      addProperty("curvature.enable open objects",utils::prop::Flag{}, true);
+      addProperty("curvature.max distance",utils::prop::Range{.min=1, .max=20, .step=1}, 10);
+      addProperty("curvature.enable occluded objects",utils::prop::Flag{}, true);
+      addProperty("curvature.max error",utils::prop::Range{.min=1.0f, .max=20.0f}, 10.0);
+      addProperty("curvature.ransac passes",utils::prop::Range{.min=5, .max=50, .step=1}, 20);
+      addProperty("curvature.distance tolerance",utils::prop::Range{.min=1.0f, .max=10.0f}, 3.0);
+      addProperty("curvature.outlier tolerance",utils::prop::Range{.min=1.0f, .max=10.0f}, 5.0);
 
-      addProperty("remaining.enable remaining points feature","flag","",true);
-      addProperty("remaining.min size","range","[5,50]:1",10);
-      addProperty("remaining.euclidean distance","range","[2.0,20.0]",10.0);
-      addProperty("remaining.radius","range","[0,10]:1",0);
-      addProperty("remaining.assign euclidean distance","range","[2.0,20.0]",10.0);
-      addProperty("remaining.support tolerance","range","[0,30]:1",9);
+      addProperty("remaining.enable remaining points feature",utils::prop::Flag{}, true);
+      addProperty("remaining.min size",utils::prop::Range{.min=5, .max=50, .step=1}, 10);
+      addProperty("remaining.euclidean distance",utils::prop::Range{.min=2.0f, .max=20.0f}, 10.0);
+      addProperty("remaining.radius",utils::prop::Range{.min=0, .max=10, .step=1}, 0);
+      addProperty("remaining.assign euclidean distance",utils::prop::Range{.min=2.0f, .max=20.0f}, 10.0);
+      addProperty("remaining.support tolerance",utils::prop::Range{.min=0, .max=30, .step=1}, 9);
 
-      addProperty("graphcut.threshold","range","[0.0, 1.1]",0.5);
+      addProperty("graphcut.threshold",utils::prop::Range{.min=0.0f, .max=1.1f}, 0.5);
 
       setConfigurableID("segmentation");
   }

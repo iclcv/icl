@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom/RansacBasedPoseEstimator.h>
+#include <icl/utils/prop/Constraints.h>
 
 #include <icl/utils/StringUtils.h>
 
@@ -122,12 +123,12 @@ namespace icl::geom {
                                                        float minPointsForGoodModel,
                                                        bool storeLastConsensusSet){
       m_data = new Data;
-      addProperty("iterations","range","[1,1000000]:1",str(iterations));
-      addProperty("min points","range","[1,1000000]:1",str(minPoints));
-      addProperty("max error","range","[0,10e30]",str(maxErr));
-      addProperty("min points for good model", "range", "[0,10000000]:1",str(minPointsForGoodModel));
-      addProperty("debug output","flag","",false);
-      addProperty("store last consensus set","flag","",storeLastConsensusSet);
+      addProperty("iterations",utils::prop::Range{.min=1, .max=1000000, .step=1}, iterations);
+      addProperty("min points",utils::prop::Range{.min=1, .max=1000000, .step=1}, minPoints);
+      addProperty("max error",utils::prop::Range{.min=0.f, .max=10e30f}, maxErr);
+      addProperty("min points for good model", utils::prop::Range{.min=0, .max=10000000, .step=1}, minPointsForGoodModel);
+      addProperty("debug output",utils::prop::Flag{}, false);
+      addProperty("store last consensus set",utils::prop::Flag{}, storeLastConsensusSet);
 
       addChildConfigurable(&m_data->pe,"pose estimator");
 

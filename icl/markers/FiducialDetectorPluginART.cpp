@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/FileGrabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/FileList.h>
 #include <icl/utils/File.h>
 
@@ -250,19 +251,19 @@ namespace icl::markers {
 
 
   FiducialDetectorPluginART::FiducialDetectorPluginART():data(new Data){
-    addProperty("matching algorithm","menu","binary hamming,gray sqrdist,gray ncc","binary hamming",0,
+    addProperty("matching algorithm",prop::Menu{"binary hamming", "gray sqrdist", "gray ncc"}, "binary hamming",0,
                 "Algorithm for comparing the rectified marker center with\n"
                 "the internal representation:\n"
                 "binary hamming: binary hamming distance\n"
                 "gray sqrdist: square distance of the gray images\n"
                 "gray ncc: normalized cross correlation coefficient\n");
-    addProperty("matching max error","range","[0,1]",0.1,0,
+    addProperty("matching max error",prop::Range{.min=0, .max=1}, 0.1,0,
                 "Matching accuracy value:\n"
                 "0: no matches\n"
                 "1: everything matches\n");
-    addProperty("matching dim","range","[4,256]:1",32,0,
+    addProperty("matching dim",prop::Range{.min=4, .max=256, .step=1}, 32,0,
                 "Marker patch rectification size.");
-    addProperty("border ratio","range","[0,1]",0.4,0,
+    addProperty("border ratio",prop::Range{.min=0, .max=1}, 0.4,0,
                 "Ratio of marker border pixels and marker dimension.");
   }
 

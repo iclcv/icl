@@ -29,6 +29,7 @@
  ********************************************************************/
 
 #include <icl/markers/QuadDetector.h>
+#include <icl/utils/prop/Constraints.h>
 
 #include <icl/cv/RegionDetector.h>
 #include <icl/filter/LocalThresholdOp.h>
@@ -489,7 +490,7 @@ namespace icl::markers {
     addProperty("pp.filter", "menu",
                 "none,median,erosion,dilatation,opening,closing", "none", 0,
                 "Post processing filter.");
-    addProperty("pp.mask size", "menu", "3x3,5x5", "3x3", 0,
+    addProperty("pp.mask size", prop::Menu{"3x3", "5x5"}, "3x3", 0,
                 "Mask size for post processing.");
 
     if (dynamic) {
@@ -502,18 +503,18 @@ namespace icl::markers {
                 "CSS,RDP", "RDP", 0,
                 "Algorithm for approximating contours.");
 
-    addProperty("optimize edges", "flag", "", "true", 0,
+    addProperty("optimize edges", prop::Flag{}, "true", 0,
                 "Flag for optimized marker corner detection");
 
-    addProperty("min-rating", "range:slider", "[0, 1]",
-                str(minRating));
+    addProperty("min-rating", prop::Range{.min=0, .max=1}, 
+                minRating);
 
-    addProperty("intersection heuristic", "flag", "", "true", 0,
+    addProperty("intersection heuristic", prop::Flag{}, "true", 0,
                 "Flag for reconstruct distorted quads by the intersection heuristic");
 
-    addProperty("perpendicular heuristic", "flag", "", "true", 0,
+    addProperty("perpendicular heuristic", prop::Flag{}, "true", 0,
                 "Flag for reconstruct distorted quads by the perpendicular heuristic");
-    addProperty("mirror heuristic", "flag", "", "true", 0,
+    addProperty("mirror heuristic", prop::Flag{}, "true", 0,
                 "Flag for reconstruct distorted quads by the perpendicular heuristic");
 
     data->rd.reset(new RegionDetector(40, 2 << 20, RD_VALS[static_cast<int>(c)],

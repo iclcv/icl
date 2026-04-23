@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/cv/SurfFeatureDetector.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
@@ -46,10 +47,10 @@ void init(){
       << Show();
 
   pe->setConfigurableID("pe");
-  pe->adaptProperty("iterations","range","[1,5000]:1","");
-  pe->adaptProperty("max error","range","[1,100]","");
-  pe->adaptProperty("min points","range","[4,10]:1","");
-  pe->adaptProperty("min points for good model","range","[4,100]:1","");
+  pe->adaptProperty("iterations", "range", "[1,5000]:1", "");
+  pe->adaptProperty("max error", "range", "[1,100]", "");
+  pe->adaptProperty("min points", "range", "[4,10]:1", "");
+  pe->adaptProperty("min points for good model", "range", "[4,100]:1", "");
 
 
   pe->setPropertyValue("iterations",200);

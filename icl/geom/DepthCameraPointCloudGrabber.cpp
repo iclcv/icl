@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Patrick Nobou
 
 #include <icl/geom/DepthCameraPointCloudGrabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/geom/PointCloudCreator.h>
 
 #include <icl/io/GenericGrabber.h>
@@ -146,18 +147,18 @@ namespace icl::geom {
     }
 
     addProperty("focal length factor","range","[0.8:1.2]",1);
-    addProperty("positioning fix","range","[-50,50]",0);
-    addProperty("re-use exisiting images","flag","",false, 0,
+    addProperty("positioning fix",prop::Range{.min=-50, .max=50}, 0);
+    addProperty("re-use exisiting images",prop::Flag{}, false, 0,
                 "if set, the grabber will re-create the point-cloud without grabbing new images");
 
-    addProperty("pp.enable median","flag","",false);
-    addProperty("pp.enable temporal smoothing","flag","",false);
-    addProperty("pp.enable gaussian","flag","",false);
+    addProperty("pp.enable median",prop::Flag{}, false);
+    addProperty("pp.enable temporal smoothing",prop::Flag{}, false);
+    addProperty("pp.enable gaussian",prop::Flag{}, false);
 
     addProperty("pp.temporal smoothing frames","range","[2:20]:1",10);
-    addProperty("pp.temporal smoothing null","menu","0,-1,2047",0);
+    addProperty("pp.temporal smoothing null",prop::Menu{0, -1, 2047}, 0);
     addProperty("pp.temporal smoothing threshold","range","[1:100]:1",5);
-    addProperty("pp.spacial filter size","menu","3,5,7,9,11,13,15,17,19,21",5);
+    addProperty("pp.spacial filter size",prop::Menu{3, 5, 7, 9, 11, 13, 15, 17, 19, 21}, 5);
 
     m_data->temporalSmoothing.reset(new MotionSensitiveTemporalSmoothing(0,5));
     m_data->lastNullValue = 0;

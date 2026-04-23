@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/physics/SoftObject.h>
+#include <icl/utils/prop/Constraints.h>
 #include <BulletSoftBody/btSoftBody.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <icl/utils/StringUtils.h>
@@ -70,29 +71,29 @@ namespace physics{
 
     cfg->kSRHR_CL = 0.7;
 
-    addProperty("general.aeromodel","menu","V_Point,V_OneSided,V_TwoSided,F_OneSided,F_TwoSided,END",cfg->aeromodel);
-    addProperty("general.use volume conversion","flag","",false);
-    addProperty("general.use pose matching","flag","",true);
+    addProperty("general.aeromodel",utils::prop::Menu{"V_Point", "V_OneSided", "V_TwoSided", "F_OneSided", "F_TwoSided", "END"}, str(cfg->aeromodel));
+    addProperty("general.use volume conversion",utils::prop::Flag{}, false);
+    addProperty("general.use pose matching",utils::prop::Flag{}, true);
 
-    addProperty("coefficients.velocity correction","range:slider","[0.1,10]",cfg->kVCF);
-    addProperty("coefficients.damping","range:slider","[0,1]",cfg->kDP);
-    addProperty("coefficients.drag","range:slider","[0,10]",cfg->kDG);
-    addProperty("coefficients.lift","range:slider","[0,10]",cfg->kLF);
-    addProperty("coefficients.pressure","range:slider","[-100,100]",cfg->kPR);
-    addProperty("coefficients.volume conversion","range:slider","[0,10]",cfg->kVC);
-    addProperty("coefficients.dynamic friction","range:slider","[0,1]",cfg->kDF);
-    addProperty("coefficients.pose matching","range:slider","[0,1]",cfg->kMT);
-    addProperty("hardness.rigid contact","range:slider","[0,1]",cfg->kCHR);
-    addProperty("hardness.kinetic contact","range:slider","[0,1]",cfg->kKHR);
-    addProperty("hardness.soft contact","range:slider","[0,1]",cfg->kSHR);
-    addProperty("hardness.anchors","range:slider","[0,1]",cfg->kAHR);
-    addProperty("hardness.soft vs rigid","range:slider","[0,1]",cfg->kSRHR_CL);
-    addProperty("hardness.soft vs kinetic","range:slider","[0,1]",cfg->kSKHR_CL);
-    addProperty("hardness.soft vs soft","range:slider","[0,1]",cfg->kSSHR_CL);
-    addProperty("stiffness.linear","range:slider","[0,1]",mat->m_kLST);
-    addProperty("stiffness.angular","range:slider","[0,1]",mat->m_kAST);
-    addProperty("stiffness.volume","range:slider","[0,1]",mat->m_kVST);
-    addProperty("general.collision type","menu","default,soft+rigid","default");
+    addProperty("coefficients.velocity correction",utils::prop::Range{.min=0.1f, .max=10.f}, cfg->kVCF);
+    addProperty("coefficients.damping",utils::prop::Range{.min=0, .max=1}, cfg->kDP);
+    addProperty("coefficients.drag",utils::prop::Range{.min=0, .max=10}, cfg->kDG);
+    addProperty("coefficients.lift",utils::prop::Range{.min=0, .max=10}, cfg->kLF);
+    addProperty("coefficients.pressure",utils::prop::Range{.min=-100, .max=100}, cfg->kPR);
+    addProperty("coefficients.volume conversion",utils::prop::Range{.min=0, .max=10}, cfg->kVC);
+    addProperty("coefficients.dynamic friction",utils::prop::Range{.min=0, .max=1}, cfg->kDF);
+    addProperty("coefficients.pose matching",utils::prop::Range{.min=0, .max=1}, cfg->kMT);
+    addProperty("hardness.rigid contact",utils::prop::Range{.min=0, .max=1}, cfg->kCHR);
+    addProperty("hardness.kinetic contact",utils::prop::Range{.min=0, .max=1}, cfg->kKHR);
+    addProperty("hardness.soft contact",utils::prop::Range{.min=0, .max=1}, cfg->kSHR);
+    addProperty("hardness.anchors",utils::prop::Range{.min=0, .max=1}, cfg->kAHR);
+    addProperty("hardness.soft vs rigid",utils::prop::Range{.min=0, .max=1}, cfg->kSRHR_CL);
+    addProperty("hardness.soft vs kinetic",utils::prop::Range{.min=0, .max=1}, cfg->kSKHR_CL);
+    addProperty("hardness.soft vs soft",utils::prop::Range{.min=0, .max=1}, cfg->kSSHR_CL);
+    addProperty("stiffness.linear",utils::prop::Range{.min=0, .max=1}, mat->m_kLST);
+    addProperty("stiffness.angular",utils::prop::Range{.min=0, .max=1}, mat->m_kAST);
+    addProperty("stiffness.volume",utils::prop::Range{.min=0, .max=1}, mat->m_kVST);
+    addProperty("general.collision type",utils::prop::Menu{"default", "soft+rigid"}, "default");
   }
 
   void SoftObject::propertyChanged(const Configurable::Property &prop){

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Erik Weitnauer, Daniel Dornbusch
 
 #include <icl/geom/Scene.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/prop/Constraints.h>
 #include <icl/geom/GltfLoader.h>
 #include <icl/qt/GLFragmentShader.h>
@@ -350,30 +351,30 @@ namespace icl::geom {
     m_cursor->setMaterial(Material::fromColor(GeomColor(255,0,255,255)));
     m_cursor->addChild(new CoordinateFrameSceneObject(5,0.5),true);
 
-    addProperty("visualize cameras","flag","",false);
-    addProperty("visualize cursor","flag","",false);
-    addProperty("visualize world frame","flag","",false);
-    addProperty("visualize object frames","flag","",false);
-    addProperty("visualize lights","flag","",false);
-    addProperty("enable lighting","flag","",true);
-    addProperty("object frame size","float","[0,100000000]",100);
-    addProperty("world frame size","float","[0,100000000]",100);
-    addProperty("light object size","float","[0,100000000]",30);
+    addProperty("visualize cameras",utils::prop::Flag{}, false);
+    addProperty("visualize cursor",utils::prop::Flag{}, false);
+    addProperty("visualize world frame",utils::prop::Flag{}, false);
+    addProperty("visualize object frames",utils::prop::Flag{}, false);
+    addProperty("visualize lights",utils::prop::Flag{}, false);
+    addProperty("enable lighting",utils::prop::Flag{}, true);
+    addProperty("object frame size",utils::prop::Range{.min=0.f, .max=100000000.f}, 100);
+    addProperty("world frame size",utils::prop::Range{.min=0.f, .max=100000000.f}, 100);
+    addProperty("light object size",utils::prop::Range{.min=0.f, .max=100000000.f}, 30);
     addProperty("background color", core::prop::Color{}, Color(0,0,0));
-    addProperty("line smoothing","menu","default,force off,force on","default");
-    addProperty("point smoothing","menu","default,force off,force on","default");
-    addProperty("polygon smoothing","menu","default,force off,force on","default");
-    addProperty("wireframe","flag","",false);
-    addProperty("shadows.use improved shading","flag","",false);
-    addProperty("shadows.cull object front for shadows","flag","",true);
-    addProperty("shadows.resolution","menu","64,256,512,1024,2048",512);
-    addProperty("shadows.bias","float","[-100,100]",1.0);
-    addProperty("info.FPS","info","",0);
-    addProperty("info.Objects in the Scene","info","",0);
-    addProperty("info.Primitives in the Scene","info","",0);
-    addProperty("info.Vertices in the Scene","info","",0);
-    addProperty("point cloud grabber cam","range:spinbox","[0,10000]",0);
-    addProperty("grab depth feature","flag","",false);
+    addProperty("line smoothing",utils::prop::Menu{"default", "force off", "force on"}, "default");
+    addProperty("point smoothing",utils::prop::Menu{"default", "force off", "force on"}, "default");
+    addProperty("polygon smoothing",utils::prop::Menu{"default", "force off", "force on"}, "default");
+    addProperty("wireframe",utils::prop::Flag{}, false);
+    addProperty("shadows.use improved shading",utils::prop::Flag{}, false);
+    addProperty("shadows.cull object front for shadows",utils::prop::Flag{}, true);
+    addProperty("shadows.resolution",utils::prop::Menu{64, 256, 512, 1024, 2048}, 512);
+    addProperty("shadows.bias",utils::prop::Range{.min=-100.f, .max=100.f}, 1.0);
+    addProperty("info.FPS",utils::prop::Info{}, str(0));
+    addProperty("info.Objects in the Scene",utils::prop::Info{}, str(0));
+    addProperty("info.Primitives in the Scene",utils::prop::Info{}, str(0));
+    addProperty("info.Vertices in the Scene",utils::prop::Info{}, str(0));
+    addProperty("point cloud grabber cam",utils::prop::Range{.min=0, .max=10000, .ui=utils::prop::UI::Spinbox}, 0);
+    addProperty("grab depth feature",utils::prop::Flag{}, false);
   }
   Scene::~Scene(){
 #ifdef ICL_HAVE_QT

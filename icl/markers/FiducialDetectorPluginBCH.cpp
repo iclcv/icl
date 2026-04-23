@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/markers/FiducialDetectorPluginBCH.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/markers/BCHCode.h>
 #include <icl/markers/Fiducial.h>
 
@@ -67,21 +68,21 @@ namespace icl::markers {
     data->maxLoaded = -1;
     data->sizes.resize(4096);
 
-    addProperty("max bch errors","range","[0,4]:1",3,0,
+    addProperty("max bch errors",prop::Range{.min=0, .max=4, .step=1}, 3,0,
                 "Maximum amount of binary BCH code error\n");
-    addProperty("match factor","range","[1,10]:1",2,0,
+    addProperty("match factor",prop::Range{.min=1, .max=10, .step=1}, 2,0,
                 "Internal subsampling for matching (usually 2 is perfect)");
-    addProperty("border width","range","[1,10]:1",2,0,
+    addProperty("border width",prop::Range{.min=1, .max=10, .step=1}, 2,0,
                 "Number of marker pixel units for the markers border width\n"
                 "The marker center (the bch code consits of 6x6 pixels)");
-    addProperty("binarize.threshold","range","[1,254]:1",127,0,
+    addProperty("binarize.threshold",prop::Range{.min=1, .max=254, .step=1}, 127,0,
                 "(Only used if 'binarize.mode' is 'threshold')\n"
                 "Threshold for static pattern binarization.");
     addProperty("binarize.k-means steps","range","[1:5]:1",1,0,
                 "(Only used if 'binarize.mode' is 'k-means')\n"
                 "Number of k-means steps for finding an optimal split\n"
                 "between black and white marker pixels");
-    addProperty("binarize.mode","menu","k-means,threshold","k-means",0,
+    addProperty("binarize.mode",prop::Menu{"k-means", "threshold"}, "k-means",0,
                 "Marker patch binarization method. For decoding the BCH-code\n"
                 "pattern, black and white marker pixels need to be distinguished.\n"
                 "This property defines the algorithm that is used for this:\n"

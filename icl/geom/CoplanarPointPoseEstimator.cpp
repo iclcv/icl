@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Sergius Gaulik
 
 #include <icl/geom/CoplanarPointPoseEstimator.h>
+#include <icl/utils/prop/Constraints.h>
 
 #include <icl/geom/Camera.h>
 #include <icl/geom/GeomDefs.h>
@@ -119,38 +120,38 @@ namespace icl::geom {
                   "                 result and is still much faster than exhaustive\n"
                   "                 sampling");
     }
-    addProperty("sampling interval","float","[-3.14,3.14]",data->samplingInterval,0,
+    addProperty("sampling interval",prop::Range{.min=-3.14f, .max=3.14f}, data->samplingInterval,0,
                 "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
                 "Defines the angle search range for exhaustive search");
     addProperty("sampling steps","int","[1,100000]:1",data->samplingSteps,0,
                 "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
                 "Defines the number of coarse steps for exhaustive sampling.");
-    addProperty("sampling substeps","int","[1,100]",data->samplingSubSteps,0,
+    addProperty("sampling substeps",prop::Range{.min=1, .max=100, .ui=prop::UI::Spinbox}, data->samplingSubSteps,0,
                 "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
                 "Defines the number of fine steps for exhaustive sampling.");
-    addProperty("decrease factor","float","[0,1]",data->decreaseFactor,0,
+    addProperty("decrease factor",prop::Range{.min=0.f, .max=1.f}, data->decreaseFactor,0,
                 "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
                 "Defines the factor, which is used to reduce the step-width after\n"
                 "every coarse step");
-    addProperty("position multiplier","float","[1,5000]",data->positionMultiplier,0,
+    addProperty("position multiplier",prop::Range{.min=1.f, .max=5000.f}, data->positionMultiplier,0,
                 "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
                 "Defines the ratio between angle and position values");
-    addProperty("time monitoring","flag","",data->timeMonitoring,0,
+    addProperty("time monitoring",prop::Flag{}, data->timeMonitoring,0,
                 "If set to true, benchmarking is enabled");
 #if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
-    addProperty("pose correction","flag","",data->poseCorrection,0,
+    addProperty("pose correction",prop::Flag{}, data->poseCorrection,0,
                 "If set to true, the pose is corrected using robust pose estimation algorithm");
 #endif
-    addProperty("RANSAC.enable", "flag", "", data->ransacSpec.useRANSAC, 0,
+    addProperty("RANSAC.enable", prop::Flag{}, data->ransacSpec.useRANSAC, 0,
                 "Enable RANSAC sampling. This is only needed when more than 5 points are "
                 "used and when these points are prone to outliers");
-    addProperty("RANSAC.num points for model","range","[4,100]:1",
+    addProperty("RANSAC.num points for model",prop::Range{.min=4, .max=100, .step=1}, 
                 data->ransacSpec.numPointsForModel, 0,
                 "Number of points used for generating models during RANSAC sampling");
-    addProperty("RANSAC.number of cycles","range","[10,10000]:1",
+    addProperty("RANSAC.number of cycles",prop::Range{.min=10, .max=10000, .step=1}, 
                 data->ransacSpec.numRandomCycles, 0,
                 "Number of RANSAC cycles performed");
-    addProperty("RANSAC.max projection distance","range","[0,300]",
+    addProperty("RANSAC.max projection distance",prop::Range{.min=0, .max=300}, 
                 data->ransacSpec.maxPointProjectionDistance, 0,
                 "Maximum projection error for points to be classified as inlier");
 

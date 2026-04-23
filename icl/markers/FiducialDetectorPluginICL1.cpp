@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/markers/FiducialDetectorPluginICL1.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/markers/MarkerMetricsICL1.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/Point.h>
@@ -53,7 +54,7 @@ namespace icl::markers {
       //std::cout << existing[i].id << "  ";
     }
     //std::cout << "\n\n";
-    addProperty("max form factor","range","[2,20]",20);
+    addProperty("max form factor",prop::Range{.min=2, .max=20}, 20);
   }
 
   FiducialDetectorPluginICL1::~FiducialDetectorPluginICL1(){
