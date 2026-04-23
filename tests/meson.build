@@ -5,6 +5,7 @@ test_sources = files(
   'test-assign.cpp',
   'test-auto-parse.cpp',
   'test-plugin-registry.cpp',
+  'test-prop-constraints.cpp',
   'test-math.cpp',
   'test-core.cpp',
   'test-filter.cpp',

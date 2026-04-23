@@ -24,11 +24,11 @@ configure_file(
 )
 
 utils_headers = files(
-  'Any.h',
   'AnyMap.h',
   'Array2D.h',
   'Assign.h',
   'AssignRegistry.h',
+  'AutoParse.h',
   'BackendDispatching.h',
   'BasicTypes.h',
   'ClippedCast.h',
@@ -45,6 +45,7 @@ utils_headers = files(
   'FixedArray.h',
   'Lockable.h',
   'Macros.h',
+  'ParamMap.h',
   'PluginRegistry.h',
   'Point.h',
   'ProcessMonitor.h',
@@ -70,6 +71,11 @@ utils_headers = files(
 # OpenCL wrappers — conditionally compiled; always-installed public
 # headers so dependent headers (PointCloudCreatorCL, Segmentation3D, …)
 # keep working when OpenCL is on.
+utils_prop_headers = files(
+  'prop/Adapter.h',
+  'prop/Constraints.h',
+)
+
 utils_cl_headers = files(
   'cl/CLBuffer.h',
   'cl/CLDeviceContext.h',
@@ -89,6 +95,7 @@ utils_sources = files(
   'cl/CLKernel.cpp',
   'cl/CLMemoryAssistant.cpp',
   'cl/CLProgram.cpp',
+  'prop/Adapter.cpp',
   'AssignRegistry.cpp',
   'ConfigFile.cpp',
   'Configurable.cpp',
@@ -138,6 +145,10 @@ install_headers(utils_headers,
 
 install_headers(utils_cl_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'cl',
+)
+
+install_headers(utils_prop_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'prop',
 )
 
 # Vendored pugixml lives under detail/pugi/ — genuinely private.  No
