@@ -182,6 +182,12 @@ From Session 48 deferrals:
 
 ---
 
+## Core — latent Image.h include dependency
+
+- [ ] **`core/Image.h` should include `core/Img.h`.**  `Image::as<T>()` (inline template) does `static_cast<Img<T>*>(ImgBase*)`; Clang 21 rejects this unless `Img<T>`'s derivation from `ImgBase` is visible at the cast site.  Today `Image.h` only forward-declares `Img<T>` / `ImgBase` — it compiles only because every current consumer happens to include `Img.h` through some other path.  The TU compiling `test-prop-constraints.cpp` surfaced this when it reached `core/Image.h` through `core/prop/Constraints.h` without pulling in `Img.h`.  Fix: add `#include <icl/core/Img.h>` at the bottom of `Image.h`.  Incrementally cheaper than asking every new consumer to remember to add the include manually.
+
+---
+
 ## C++17 source modernization (Sessions 27–28 residue)
 
 - [ ] Any deferred source-code fixes from the C++17 migration.  See `project_cpp17.md`.

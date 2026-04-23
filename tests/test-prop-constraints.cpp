@@ -7,6 +7,14 @@
 #include <icl/utils/Configurable.h>
 #include <icl/utils/prop/Adapter.h>
 #include <icl/utils/prop/Constraints.h>
+#include <icl/core/prop/Constraints.h>
+// `core/prop/Constraints.h` includes `core/Image.h`, which contains an
+// inline `as<T>()` template that static_casts `ImgBase*` → `Img<T>*`.
+// Clang 21 requires the inheritance relationship to be visible at the
+// cast site — forward declarations in Types.h aren't enough.  Pulling
+// in Img.h here makes Img<T>'s derivation from ImgBase visible.  See
+// TODO.md for the Image.h-side fix.
+#include <icl/core/Img.h>
 
 #include <any>
 #include <string>
@@ -15,7 +23,20 @@
 #include <variant>
 
 using namespace icl::utils;
-using namespace icl::utils::prop;
+namespace prop = icl::utils::prop;
+// `utils::Range<T>` (numeric range) pre-dates `prop::Range<T>` and is
+// transitively visible through core/ includes, so we explicitly
+// qualify the constraint version as `prop::Range`.  Non-clashing
+// constraint names (`Menu`, `Flag`, ...) stay unqualified via the
+// targeted using-declarations below.
+using prop::Menu;
+using prop::Flag;
+using prop::Command;
+using prop::Info;
+using prop::Text;
+using prop::UI;
+using prop::constraintRegistry;
+using prop::lookupAdapter;
 
 namespace {
   /// Minimal concrete Configurable for tests.  Exposes the protected
@@ -32,10 +53,10 @@ namespace {
 // ---------------------------------------------------------------------------
 
 ICL_REGISTER_TEST("utils.prop.range.ctad_designated_float",
-                  "Range{.min=0.f,.max=500.f} deduces Range<float>")
+                  "prop::Range{.min=0.f,.max=500.f} deduces prop::Range<float>")
 {
-  auto r = Range{.min = 0.f, .max = 500.f};
-  static_assert(std::is_same_v<decltype(r), Range<float>>);
+  auto r = prop::Range{.min = 0.f, .max = 500.f};
+  static_assert(std::is_same_v<decltype(r), prop::Range<float>>);
   ICL_TEST_TRUE(r.ui == UI::Slider);   // default
   ICL_TEST_EQ(r.min, 0.f);
   ICL_TEST_EQ(r.max, 500.f);
@@ -43,34 +64,34 @@ ICL_REGISTER_TEST("utils.prop.range.ctad_designated_float",
 }
 
 ICL_REGISTER_TEST("utils.prop.range.ctad_designated_int",
-                  "Range{.min=0,.max=100,.ui=Spinbox} deduces Range<int>")
+                  "prop::Range{.min=0,.max=100,.ui=Spinbox} deduces prop::Range<int>")
 {
-  auto r = Range{.min = 0, .max = 100, .ui = UI::Spinbox};
-  static_assert(std::is_same_v<decltype(r), Range<int>>);
+  auto r = prop::Range{.min = 0, .max = 100, .ui = UI::Spinbox};
+  static_assert(std::is_same_v<decltype(r), prop::Range<int>>);
   ICL_TEST_TRUE(r.ui == UI::Spinbox);
   ICL_TEST_EQ(r.step, 0);
 }
 
 ICL_REGISTER_TEST("utils.prop.range.ctad_designated_with_step",
-                  "Range{.min=1,.max=31,.step=2,.ui=Spinbox} deduces Range<int>")
+                  "prop::Range{.min=1,.max=31,.step=2,.ui=Spinbox} deduces prop::Range<int>")
 {
-  auto r = Range{.min = 1, .max = 31, .step = 2, .ui = UI::Spinbox};
-  static_assert(std::is_same_v<decltype(r), Range<int>>);
+  auto r = prop::Range{.min = 1, .max = 31, .step = 2, .ui = UI::Spinbox};
+  static_assert(std::is_same_v<decltype(r), prop::Range<int>>);
   ICL_TEST_EQ(r.step, 2);
 }
 
 ICL_REGISTER_TEST("utils.prop.range.ctad_positional",
-                  "Range{0.f, 500.f} also deduces via positional aggregate init")
+                  "prop::Range{0.f, 500.f} also deduces via positional aggregate init")
 {
-  auto r = Range{0.f, 500.f};
-  static_assert(std::is_same_v<decltype(r), Range<float>>);
+  auto r = prop::Range{0.f, 500.f};
+  static_assert(std::is_same_v<decltype(r), prop::Range<float>>);
   ICL_TEST_EQ(r.min, 0.f);
   ICL_TEST_EQ(r.max, 500.f);
 }
 
 ICL_REGISTER_TEST("utils.prop.range.positional", "positional aggregate init also works")
 {
-  Range<float> r{0.f, 1.f};
+  prop::Range<float> r{0.f, 1.f};
   ICL_TEST_EQ(r.min, 0.f);
   ICL_TEST_EQ(r.max, 1.f);
   ICL_TEST_EQ(r.step, 0.f);
@@ -95,8 +116,8 @@ ICL_REGISTER_TEST("utils.prop.menu.ctad_int", "Menu{1,2,4} deduces Menu<int>")
 
 ICL_REGISTER_TEST("utils.prop.value_types", "value_type aliases expose storage types")
 {
-  static_assert(std::is_same_v<Range<float>::value_type, float>);
-  static_assert(std::is_same_v<Range<int>::value_type,   int>);
+  static_assert(std::is_same_v<prop::Range<float>::value_type, float>);
+  static_assert(std::is_same_v<prop::Range<int>::value_type,   int>);
   static_assert(std::is_same_v<Menu<std::string>::value_type, std::string>);
   static_assert(std::is_same_v<Flag::value_type,    bool>);
   static_assert(std::is_same_v<Command::value_type, std::monostate>);
@@ -112,8 +133,8 @@ ICL_REGISTER_TEST("utils.prop.registry.has_builtin_adapters",
                   "all 9 utils-side adapters are registered at static-init time")
 {
   const auto &reg = constraintRegistry();
-  ICL_TEST_TRUE(reg.has(std::type_index(typeid(Range<int>))));
-  ICL_TEST_TRUE(reg.has(std::type_index(typeid(Range<float>))));
+  ICL_TEST_TRUE(reg.has(std::type_index(typeid(prop::Range<int>))));
+  ICL_TEST_TRUE(reg.has(std::type_index(typeid(prop::Range<float>))));
   ICL_TEST_TRUE(reg.has(std::type_index(typeid(Menu<int>))));
   ICL_TEST_TRUE(reg.has(std::type_index(typeid(Menu<float>))));
   ICL_TEST_TRUE(reg.has(std::type_index(typeid(Menu<std::string>))));
@@ -137,39 +158,39 @@ ICL_REGISTER_TEST("utils.prop.registry.lookup_throws_on_unknown",
 }
 
 // ---------------------------------------------------------------------------
-// Range adapter — value round-trip + legacy typeId/infoString
+// prop::Range adapter — value round-trip + legacy typeId/infoString
 // ---------------------------------------------------------------------------
 
 ICL_REGISTER_TEST("utils.prop.adapter.range_float.round_trip",
-                  "Range<float> value serializes and parses back through adapter")
+                  "prop::Range<float> value serializes and parses back through adapter")
 {
-  const auto &a = lookupAdapter(std::type_index(typeid(Range<float>)));
-  std::any constraint = Range{.min = 0.f, .max = 500.f};
+  const auto &a = lookupAdapter(std::type_index(typeid(prop::Range<float>)));
+  std::any constraint = prop::Range{.min = 0.f, .max = 500.f};
   std::string s = a.toString(std::any(123.5f));
   std::any back = a.fromString(constraint, s);
   ICL_TEST_NEAR(std::any_cast<float>(back), 123.5f, 1e-5f);
 }
 
 ICL_REGISTER_TEST("utils.prop.adapter.range_float.type_and_info",
-                  "Range<float> typeId reflects UI; infoString encodes [min,max]:step")
+                  "prop::Range<float> typeId reflects UI; infoString encodes [min,max]:step")
 {
-  const auto &a = lookupAdapter(std::type_index(typeid(Range<float>)));
+  const auto &a = lookupAdapter(std::type_index(typeid(prop::Range<float>)));
 
-  std::any slider = Range{.min = 0.f, .max = 500.f};
+  std::any slider = prop::Range{.min = 0.f, .max = 500.f};
   ICL_TEST_EQ(a.typeId(slider),     std::string("range:slider"));
   ICL_TEST_EQ(a.infoString(slider), std::string("[0,500]"));
 
-  std::any steppedSpin = Range{.min = 1.f, .max = 31.f, .step = 2.f,
+  std::any steppedSpin = prop::Range{.min = 1.f, .max = 31.f, .step = 2.f,
                                .ui = UI::Spinbox};
   ICL_TEST_EQ(a.typeId(steppedSpin),     std::string("range:spinbox"));
   ICL_TEST_EQ(a.infoString(steppedSpin), std::string("[1,31]:2"));
 }
 
 ICL_REGISTER_TEST("utils.prop.adapter.range_int.round_trip",
-                  "Range<int> value round-trips via adapter")
+                  "prop::Range<int> value round-trips via adapter")
 {
-  const auto &a = lookupAdapter(std::type_index(typeid(Range<int>)));
-  std::any constraint = Range{.min = 0, .max = 100, .ui = UI::Spinbox};
+  const auto &a = lookupAdapter(std::type_index(typeid(prop::Range<int>)));
+  std::any constraint = prop::Range{.min = 0, .max = 100, .ui = UI::Spinbox};
   std::any back = a.fromString(constraint, a.toString(std::any(42)));
   ICL_TEST_EQ(std::any_cast<int>(back), 42);
 }
@@ -258,10 +279,10 @@ ICL_REGISTER_TEST("utils.prop.adapter.text.maxlength",
 // ---------------------------------------------------------------------------
 
 ICL_REGISTER_TEST("utils.prop.configurable.addProperty_range_float",
-                  "addProperty<Range<float>> populates legacy strings and constraint payload")
+                  "addProperty<prop::Range<float>> populates legacy strings and constraint payload")
 {
   TestConf c;
-  c.addProperty("gain", Range{.min = 0.f, .max = 500.f}, 250.f);
+  c.addProperty("gain", prop::Range{.min = 0.f, .max = 500.f}, 250.f);
 
   ICL_TEST_EQ(c.getPropertyType("gain"),  std::string("range:slider"));
   ICL_TEST_EQ(c.getPropertyInfo("gain"),  std::string("[0,500]"));
@@ -270,25 +291,25 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_range_float",
   // constraint payload is recoverable and matches what we passed
   const auto &p = c.prop("gain");
   ICL_TEST_TRUE(p.constraint.has_value());
-  const auto &r = std::any_cast<const Range<float> &>(p.constraint);
+  const auto &r = std::any_cast<const prop::Range<float> &>(p.constraint);
   ICL_TEST_EQ(r.min, 0.f);
   ICL_TEST_EQ(r.max, 500.f);
   ICL_TEST_TRUE(r.ui == UI::Slider);
 }
 
 ICL_REGISTER_TEST("utils.prop.configurable.addProperty_range_spinbox",
-                  "addProperty<Range<int>> with Spinbox UI synthesizes range:spinbox + stepped info")
+                  "addProperty<prop::Range<int>> with Spinbox UI synthesizes range:spinbox + stepped info")
 {
   TestConf c;
   c.addProperty("ksize",
-                Range{.min = 1, .max = 31, .step = 2, .ui = UI::Spinbox},
+                prop::Range{.min = 1, .max = 31, .step = 2, .ui = UI::Spinbox},
                 3);
 
   ICL_TEST_EQ(c.getPropertyType("ksize"), std::string("range:spinbox"));
   ICL_TEST_EQ(c.getPropertyInfo("ksize"), std::string("[1,31]:2"));
   ICL_TEST_EQ(c.getPropertyValue("ksize").as<int>(), 3);
 
-  const auto &r = std::any_cast<const Range<int> &>(c.prop("ksize").constraint);
+  const auto &r = std::any_cast<const prop::Range<int> &>(c.prop("ksize").constraint);
   ICL_TEST_EQ(r.step, 2);
   ICL_TEST_TRUE(r.ui == UI::Spinbox);
 }
@@ -376,4 +397,60 @@ ICL_REGISTER_TEST("utils.prop.configurable.legacy_leaves_constraint_empty",
   // By design: legacy path leaves constraint unset.  qt::Prop's transitional
   // dispatch falls back to type/info string parsing when constraint is empty.
   ICL_TEST_FALSE(c.prop("legacy.prop").constraint.has_value());
+}
+
+// ---------------------------------------------------------------------------
+// core::prop constraints — cross-module extensibility (step 4a)
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("core.prop.registry.has_builtin_adapters",
+                  "core::prop::Color and ImageView are registered at static-init time")
+{
+  const auto &reg = constraintRegistry();
+  ICL_TEST_TRUE(reg.has(std::type_index(typeid(icl::core::prop::Color))));
+  ICL_TEST_TRUE(reg.has(std::type_index(typeid(icl::core::prop::ImageView))));
+}
+
+ICL_REGISTER_TEST("core.prop.adapter.color.round_trip",
+                  "Color adapter typeId reports \"color\" and round-trips core::Color")
+{
+  const auto &a = lookupAdapter(std::type_index(typeid(icl::core::prop::Color)));
+  ICL_TEST_EQ(a.typeId(std::any(icl::core::prop::Color{})),     std::string("color"));
+  ICL_TEST_EQ(a.infoString(std::any(icl::core::prop::Color{})), std::string(""));
+
+  const icl::core::Color src(10, 128, 255);
+  std::string s = a.toString(std::any(src));
+  std::any back = a.fromString(std::any(icl::core::prop::Color{}), s);
+  const auto recovered = std::any_cast<icl::core::Color>(back);
+  ICL_TEST_EQ(recovered[0], src[0]);
+  ICL_TEST_EQ(recovered[1], src[1]);
+  ICL_TEST_EQ(recovered[2], src[2]);
+}
+
+ICL_REGISTER_TEST("core.prop.adapter.imageview.nonserializable",
+                  "ImageView adapter typeId reports \"image\"; toString is empty by design")
+{
+  const auto &a = lookupAdapter(std::type_index(typeid(icl::core::prop::ImageView)));
+  ICL_TEST_EQ(a.typeId(std::any(icl::core::prop::ImageView{})), std::string("image"));
+  ICL_TEST_EQ(a.infoString(std::any(icl::core::prop::ImageView{})), std::string(""));
+  // Images don't round-trip through XML — toString returns "" rather
+  // than throw, so saveProperties / configurable-info can iterate
+  // without guarding.
+  ICL_TEST_EQ(a.toString(std::any(icl::core::Image{})), std::string(""));
+}
+
+ICL_REGISTER_TEST("core.prop.configurable.addProperty_color",
+                  "addProperty<core::prop::Color> stores typed Color and synthesizes type=\"color\"")
+{
+  TestConf c;
+  const icl::core::Color bg(32, 64, 96);
+  c.addProperty("bg", icl::core::prop::Color{}, bg);
+
+  ICL_TEST_EQ(c.getPropertyType("bg"), std::string("color"));
+  // Typed access — the fast path.
+  const auto &stored = std::any_cast<const icl::core::Color &>(
+      c.prop("bg").typed_value);
+  ICL_TEST_EQ(stored[0], bg[0]);
+  ICL_TEST_EQ(stored[1], bg[1]);
+  ICL_TEST_EQ(stored[2], bg[2]);
 }

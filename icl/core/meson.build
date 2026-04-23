@@ -1,5 +1,9 @@
 # ICL Core module
 
+core_prop_headers = files(
+  'prop/Constraints.h',
+)
+
 core_headers = files(
   'BayerConverter.h',
   'CCFunctions.h',
@@ -40,6 +44,7 @@ core_headers = files(
 )
 
 core_sources = files(
+  'prop/Adapter.cpp',
   'BayerConverter.cpp',
   'CCFunctions.cpp',
   'CCLUT.cpp',
@@ -97,6 +102,10 @@ icl_core_dep = declare_dependency(
 
 install_headers(core_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'core',
+)
+
+install_headers(core_prop_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'prop',
 )
 
 pkg.generate(icl_core_lib,
