@@ -177,10 +177,7 @@ namespace icl::utils {
 
     /// returns a singelton instance of type Maps as reference
     static Maps &getMapsInstanceRef() { return *getMapsInstance(); }
-#if 0
-    static std::map<std::string,std::string, std::less<>> s_typeMap;
-    static std::map<std::string,std::string, std::less<>> s_typeMapReverse;
-#endif
+
 
     /// internally used utitlity function
     template<class T>
@@ -253,10 +250,6 @@ namespace icl::utils {
       std::string rtti = get_rtti_type_id<T>();
       maps.typeMap[rtti] = id;
       maps.typeMapReverse[id] = rtti;
-#if 0
-      s_typeMap[get_rtti_type_id<T>()] = id;
-      s_typeMapReverse[id] = get_rtti_type_id<T>();
-#endif
     }
 
     /// Default constructor creating an empty ConfigFile instance

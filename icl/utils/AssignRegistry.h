@@ -16,11 +16,6 @@
 #include <utility>
 #include <vector>
 
-// Dispatch is std::any-based end-to-end.  The transitional
-// `void* + RTTI-name` paths that bridged DataStore's old
-// MultiTypeMap storage during the migration are gone now that
-// DataStore stores values directly as `std::any` in an AnyMap.
-
 namespace icl::utils {
 
   /// Runtime, type-erased dispatcher for `dst = src` assignments when
