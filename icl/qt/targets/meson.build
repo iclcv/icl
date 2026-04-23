@@ -6,6 +6,7 @@ if _build_demos
     'chromaticity-space': [],
     'configurable-gui': [],
     'define-rects': [],
+    'dynamic-child-props': [],
     'game-of-life': [],
     'interactive-filter': [],
     'mandelbrot': [],
