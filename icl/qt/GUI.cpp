@@ -358,112 +358,118 @@ namespace icl{
         }
       }
 
-      std::string get_combo_list(const std::string &pfull){
-        std::vector<std::string> l = tok(conf->getPropertyInfo(pfull),",");
-        const std::string c = conf->getPropertyValue(pfull);
-        for(unsigned int i=0;i<l.size();++i){
-          if(l[i] == c) l[i] = '!'+l[i];
-        }
-        return cat(l,",");
+      // Build the comma-separated Combo entry list from a Menu's choices,
+      // marking the current value with a leading '!'.  Choices of types
+      // other than std::string are stringified.
+      template<class T>
+      static std::string build_combo_list(const std::vector<T> &choices,
+                                          const std::string &current){
+        std::vector<std::string> l;
+        l.reserve(choices.size());
+        for(const T &x : choices) l.push_back(utils::str(x));
+        for(std::string &s : l) if(s == current) s = '!' + s;
+        return utils::cat(l,",");
       }
 
+      // Dispatch off the property's structured constraint.  Shares the
+      // handle-prefix scheme with update_all_components /
+      // propertyChanged.
       void add_component(GUI &gui,const StSt &p, std::ostringstream &ostr, GUI &timerGUI){
-        std::string t = conf->getPropertyType(p.full);
+        namespace up = utils::prop;
+        namespace cp = core::prop;
+        std::any c  = conf->getPropertyConstraint(p.full);
         std::string tt = conf->getPropertyToolTip(p.full);
-        std::string ttt = tt.length() ? "@tooltip="+tt : str("");
 
-        if(t == "range" || t == "range:slider"){
-          // todo check stepping ...
-          std::string handle="#r#"+p.full;
-          SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p.full));
-          std::string c = conf->getPropertyValue(p.full);
-          if(r.stepping >= 1){
-            gui << Slider(r.minVal,r.maxVal,parse<int>(c),false,r.stepping).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+        if(auto *r = std::any_cast<up::Range<float>>(&c)){
+          float v = conf->getPropertyValue(p.full).as<float>();
+          if(r->ui == up::UI::Spinbox){
+            // Rare: float-valued spinbox — no QSpinBox equivalent, so
+            // use the Float widget (QLineEdit + double validator) which
+            // preserves the "free-form entry" feel.
+            std::string handle = "#F#"+p.full;
+            ostr << '\1' << handle;
+            gui << Float(r->min, r->max, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
           }else{
-            //            if(r.stepping){
-            //  WARNING_LOG("the prop-GUI compoment is not able to adjust a slider stepping that is not 1");
-            //  WARNING_LOG("component was " << p.full);
-            //}
-            gui << FSlider(r,parse<float>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+            std::string handle = "#r#"+p.full;
+            ostr << '\1' << handle;
+            gui << FSlider(r->min, r->max, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
           }
+        }else if(auto *r = std::any_cast<up::Range<int>>(&c)){
+          int v = conf->getPropertyValue(p.full).as<int>();
+          if(r->ui == up::UI::Spinbox){
+            std::string handle = "#R#"+p.full;
+            ostr << '\1' << handle;
+            gui << Spinner(r->min, r->max, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          }else{
+            std::string handle = "#r#"+p.full;
+            ostr << '\1' << handle;
+            int step = (r->step == 0) ? 1 : r->step;
+            gui << Slider(r->min, r->max, v, false, step).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          }
+        }else if(auto *m = std::any_cast<up::Menu<std::string>>(&c)){
+          std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-        }else if( t == "range:spinbox"){
-          std::string handle="#R#"+p.full;
-          Range32s r = parse<Range32s>(conf->getPropertyInfo(p.full));
-          std::string c = conf->getPropertyValue(p.full);
-          gui << Spinner(r.minVal, r.maxVal, parse<int>(c)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          gui << Combo(build_combo_list(m->choices, conf->getPropertyValue(p.full).as<std::string>()))
+                    .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+        }else if(auto *m = std::any_cast<up::Menu<int>>(&c)){
+          std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-        }else if(t == "menu" || t == "value-list" || t == "valueList"){
-          std::string handle = (t == "menu" ? "#m#" : "#v#")+p.full;
-          gui << Combo(get_combo_list(p.full)).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          gui << Combo(build_combo_list(m->choices, conf->getPropertyValue(p.full).as<std::string>()))
+                    .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+        }else if(auto *m = std::any_cast<up::Menu<float>>(&c)){
+          std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-        }else if(t == "command"){
+          gui << Combo(build_combo_list(m->choices, conf->getPropertyValue(p.full).as<std::string>()))
+                    .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+        }else if(std::any_cast<up::Command>(&c)){
           std::string handle = "#c#"+p.full;
           ostr << '\1' << handle;
           gui << Button(p.half).tooltip(tt).handle(handle).minSize(12,2);
-        }else if(t == "info"){
+        }else if(std::any_cast<up::Info>(&c)){
           std::string handle = "#i#"+p.full;
           ostr << '\1' << handle;
-          gui << Label(conf->getPropertyValue(p.full).as<std::string>()).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
-
+          gui << Label(conf->getPropertyValue(p.full).as<std::string>())
+                    .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
           int volatileness = conf->getPropertyVolatileness(p.full);
           if(volatileness){
             timers.push_back(std::make_shared<VolatileUpdater>(volatileness,p.full,timerGUI,*conf));
           }
-        }else if(t == "image"){
-          // Volatile read-only image preview. The Op writes the payload via
-          // setPropertyPayload(name, std::any(core::Image)); the
-          // VolatileImageUpdater polls it on the property's volatileness timer
-          // (defaults to 100ms if the Op didn't set one). Intentionally NOT
-          // added to the callback list (ostr) — ImageHandle is output-only
-          // and rejects GUI::ComplexCallback registrations.
+        }else if(std::any_cast<up::Flag>(&c)){
+          std::string handle = "#f#"+p.full;
+          ostr << '\1' << handle;
+          gui << CheckBox(p.half, conf->getPropertyValue(p.full).as<bool>())
+                    .tooltip(tt).handle(handle).minSize(12,2);
+        }else if(auto *t = std::any_cast<up::Text>(&c)){
+          std::string handle = "#S#"+p.full;
+          ostr << '\1' << handle;
+          int max_len = t->maxLength ? t->maxLength : 100;
+          std::string value = conf->getPropertyValue(p.full).as<std::string>();
+          if(!value.length()) value = " ";
+          gui << String(value, max_len).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+        }else if(std::any_cast<cp::Color>(&c)){
+          std::string handle = "#C#"+p.full;
+          ostr << '\1' << handle;
+          Color col = conf->getPropertyValue(p.full).as<Color>();
+          gui << ColorSelect(col[0],col[1],col[2]).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+        }else if(std::any_cast<cp::ImageView>(&c)){
+          // Volatile read-only image preview.  Op writes
+          // typed_value (core::Image) via setPropertyValueTyped; the
+          // VolatileImageUpdater polls it on the volatileness timer
+          // (defaults to 100ms if the Op didn't set one).
+          // Intentionally NOT added to the callback list — ImageHandle
+          // is output-only and rejects GUI::ComplexCallback
+          // registrations.
           std::string handle = "#img#"+p.full;
           gui << Display().tooltip(tt).handle(handle).minSize(12,8).label(p.half);
           int volatileness = conf->getPropertyVolatileness(p.full);
           if(!volatileness) volatileness = 100;
           timers.push_back(std::make_shared<VolatileImageUpdater>(volatileness,p.full,timerGUI,*conf));
-        }else if(t == "flag"){
-          std::string handle = "#f#"+p.full;
-          ostr << '\1' << handle;
-          gui << CheckBox(p.half, conf->getPropertyValue(p.full)).tooltip(tt).handle(handle).minSize(12,2);
-        }else if(t == "float"){
-          std::string handle = "#F#"+p.full;
-          ostr << '\1' << handle;
-          Range32f mm = parse<Range32f>(conf->getPropertyInfo(p.full));
-          float v = conf->getPropertyValue(p.full);
-          gui << Float(mm.minVal, mm.maxVal, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
-
-        }else if(t == "int"){
-          std::string handle = "#I#"+p.full;
-          ostr << '\1' << handle;
-          Range32s mm = parse<Range32s>(conf->getPropertyInfo(p.full));
-          int v = conf->getPropertyValue(p.full);
-          gui << Int(mm.minVal,mm.maxVal,v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
-        }else if(t == "string"){
-          std::string handle = "#S#"+p.full;
-          ostr << '\1' << handle;
-          int max_len = parse<int>(conf->getPropertyInfo(p.full));
-          std::string value = conf->getPropertyValue(p.full);
-          if(!value.length()) value = " ";
-          gui << String(value, max_len).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
-        }else if(t =="color"){
-          std::string handle = "#C#"+p.full;
-          ostr << '\1' << handle;
-          Color c = parse<Color>(conf->getPropertyValue(p.full));
-          gui << ColorSelect(c[0],c[1],c[2]).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
-        }else if(t == "Point32f"){
-          std::string handle = "#p#"+p.full;
-          ostr << '\1' << handle;
-          Point32f pt = conf->getPropertyValue(p.full);
-          deferredAssignList[handle] = str(pt);
-          gui << String(" ",100).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+        }else{
+          ERROR_LOG("unable to create GUI-component for property \"" << p.full
+                    << "\" (no constraint recognised; legacy type=\""
+                    << conf->getPropertyType(p.full) << "\")");
         }
-
-
-        else{
-          ERROR_LOG("unable to create GUI-component for property \"" << p.full << "\" (unsupported property type: \"" + t+ "\")");
-        }
-       }
+      }
 
       bool isSpecialGrabberGrabberProperty(Configurable* c, const std::string &prop){
         if(dynamic_cast<io::Grabber*>(conf)){
