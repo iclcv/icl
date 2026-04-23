@@ -15,6 +15,7 @@
 #include <cstring>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 // ----------------------------------------------------------------------
@@ -204,6 +205,18 @@ namespace icl::io {
     std::unique_ptr<CompressionPlugin> decodePlugin;  // dispatched per-message; cached if
                                                      // the codec didn't change between calls
     std::string                        decodePluginName;
+
+    // Serializes compress / uncompress / installPlugin.  A GUI thread
+    // flipping the `mode` combo invokes installPlugin synchronously
+    // from the property callback; if a worker thread is in compress()
+    // at that moment, reading m_data->plugin (raw unique_ptr) races
+    // with the pointer swap.  Without this lock the worker can read
+    // the new plugin's name() after encoding with the old plugin's
+    // compress() — envelope records "jpeg" while payload is raw rlen
+    // bytes — and the subsequent uncompress() faithfully tries to
+    // libjpeg-decode raw bytes.  Recursive so setCompression() (which
+    // calls installPlugin() internally) doesn't deadlock.
+    mutable std::recursive_mutex       mutex;
   };
 
   // -------------------------------------------------------- public --
@@ -245,6 +258,7 @@ namespace icl::io {
 
   void ImageCompressor::installPlugin(const std::string &mode,
                                       const std::string &params) {
+    std::scoped_lock lk(m_data->mutex);
     if (m_data->plugin) {
       removeChildConfigurable(m_data->plugin.get());
     }
@@ -276,6 +290,10 @@ namespace icl::io {
       throw ICLException("ImageCompressor::compress: image is null");
     }
 
+    // Pin the plugin across the whole encode+envelope sequence so a
+    // concurrent installPlugin() can't swap it mid-way.  See Data::mutex.
+    std::scoped_lock lk(m_data->mutex);
+
     // Encode payload via the active plugin.
     const CompressionPlugin::Bytes payload = m_data->plugin->compress(img);
 
@@ -306,6 +324,10 @@ namespace icl::io {
   }
 
   Image ImageCompressor::uncompress(const icl8u *bytes, int len) {
+    // Lock against concurrent installPlugin() and against ourselves
+    // (decodePlugin cache state).
+    std::scoped_lock lk(m_data->mutex);
+
     EnvelopeFields f;
     const int payloadOffset = parseEnvelope(bytes, len, f);
 
