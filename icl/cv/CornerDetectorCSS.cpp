@@ -5,6 +5,7 @@
 #include <icl/cv/CornerDetectorCSS.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Point.h>
+#include <icl/utils/prop/Constraints.h>
 #include <cstring>
 
 #ifdef ICL_HAVE_OPENCL
@@ -85,6 +86,49 @@ namespace icl::cv {
       curvature_cutoff(curvature_cutoff),
       straight_line_thresh(straight_line_thresh),
       accurate(accurate), clcurvature(0), useOpenCL(false){
+      addProperty("angle-threshold", prop::Range{.min=0.f, .max=180.f}, angle_thresh, 0,
+                  "denotes the maximum obtuse angle that a corner\n"
+                  "can have when it is detected as a true corner,\n"
+                  "default value is 162.");
+      addProperty("rc-coefficient", prop::Range{.min=0.f, .max=10.f}, rc_coeff, 0,
+                  "denotes the minimum ratio of major axis to minor\n"
+                  "axis of an ellipse, whose vertex could be detected\n"
+                  "as a corner by proposed detector. The default\n"
+                  "value is 1.5.");
+      addProperty("sigma", prop::Range{.min=1.f, .max=20.f}, sigma, 0,
+                  "denotes the standard deviation of the Gaussian\n"
+                  "filter when computeing curvature. The default sig is 3");
+      addProperty("curvature-cutoff", prop::Range{.min=0.f, .max=1000.f}, curvature_cutoff, 0,
+                  "cutoff for curvature values");
+      addProperty("straight-line-threshold", prop::Range{.min=0.f, .max=180.f}, straight_line_thresh, 0,
+                  "In order to estimate the angle of a corner, either a\n"
+                  "circle or a straight line approximation of the left and\n"
+                  "right surrounding is used. The straight line\n"
+                  "approximation is used, if the angle between the\n"
+                  "left neigbour, corner candidate and  and the point\n"
+                  "on the contour half way between them is smaller than\n"
+                  "straight_line_thresh. A value of 0 leads to circle \n"
+                  "approximation only, 180 to straight line approximation\n"
+                  "only.");
+      addProperty("accurate", prop::Flag{}, accurate, 0,
+                  "Choose between using more complex sampling of the \n"
+                  "boundary or using fast approximations.");
+      addProperty("use opencl", prop::Flag{}, useOpenCL, 0,
+                  "Choose whether to use opencl to compute curvature \n"
+                  "(if opencl is not supported, this has no effect");
+
+      // Keep cached data members in sync with external property writes.
+      // Fires from setPropertyValue / setPropertyValueTyped /
+      // prop(name).value = v uniformly.
+      registerCallback([this](const Configurable::Property &p){
+        if      (p.name == "angle-threshold")         this->angle_thresh         = p.as<float>();
+        else if (p.name == "rc-coefficient")          this->rc_coeff             = p.as<float>();
+        else if (p.name == "sigma")                   this->sigma                = p.as<float>();
+        else if (p.name == "curvature-cutoff")        this->curvature_cutoff     = p.as<float>();
+        else if (p.name == "straight-line-threshold") this->straight_line_thresh = p.as<float>();
+        else if (p.name == "accurate")                this->accurate             = p.as<bool>();
+        else if (p.name == "use opencl")              this->useOpenCL            = p.as<bool>();
+      });
     }
 
     int CornerDetectorCSS::gauss_radius(float sigma, float cutoff) {
@@ -577,91 +621,6 @@ namespace icl::cv {
     template ICLCV_API const std::vector<std::vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const std::vector<std::vector<Point32f> > &boundaries, const std::vector<icl32f> &sigmas);
     template ICLCV_API const std::vector<std::vector<utils::Point32f> > &CornerDetectorCSS::detectCorners(const std::vector<std::vector<Point> > &boundaries, const std::vector<icl32f> &sigmas);
 
-
-    void CornerDetectorCSS::setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value){
-      if(propertyName == "angle-threshold") angle_thresh = parse<float>(value);
-      else if(propertyName == "rc-coefficient") rc_coeff = parse<float>(value);
-      else if(propertyName == "sigma") sigma = parse<float>(value);
-      else if(propertyName == "curvature-cutoff") curvature_cutoff = parse<float>(value);
-      else if(propertyName == "straight-line-threshold") straight_line_thresh = parse<float>(value);
-      else if(propertyName == "accurate") accurate = value == "on";
-      else if(propertyName == "use opencl") useOpenCL = value == "on";
-      else {
-        ERROR_LOG("invalid property name " << propertyName);
-      }
-    }
-
-    std::vector<std::string> CornerDetectorCSS::getPropertyList() const{
-      static const std::vector<std::string> l = tok("angle-threshold,rc-coefficient,sigma,"
-                                                    "curvature-cutoff,straight-line-threshold,"
-                                                    "accurate,use opencl",",");
-      return l;
-    }
-
-    std::string CornerDetectorCSS::getPropertyType(const std::string &propertyName) const{
-      if(propertyName == "accurate" || propertyName == "use opencl") return "flag";
-      return "range";
-    }
-
-    std::string CornerDetectorCSS::getPropertyInfo(const std::string &propertyName) const{
-      if(propertyName == "angle-threshold") return "[0,180]";
-      else if(propertyName == "rc-coefficient") return "[0,10]";
-      else if(propertyName == "sigma") return "[1,20]";
-      else if(propertyName == "curvature-cutoff") return "[0,1000]";
-      else if(propertyName == "straight-line-threshold") return "[0,180]";
-      else if(propertyName == "accurate" || propertyName == "use opencl") return "off,on";
-      else return "undefined";
-    }
-
-    AutoParse<std::any> CornerDetectorCSS::getPropertyValue(const std::string &propertyName) const{
-      // Return values wrapped in std::any of their declared C++ types so
-      // callers reading `T x = d.prop(...).value` hit the fast path
-      // (exact any_cast / numeric widen) without a string round-trip.
-      if(propertyName == "angle-threshold")         return AutoParse<std::any>(std::any(angle_thresh));
-      else if(propertyName == "rc-coefficient")     return AutoParse<std::any>(std::any(rc_coeff));
-      else if(propertyName == "sigma")              return AutoParse<std::any>(std::any(sigma));
-      else if(propertyName == "curvature-cutoff")   return AutoParse<std::any>(std::any(curvature_cutoff));
-      else if(propertyName == "straight-line-threshold") return AutoParse<std::any>(std::any(straight_line_thresh));
-      else if(propertyName == "accurate")           return AutoParse<std::any>(std::any(accurate));
-      else if(propertyName == "use opencl")         return AutoParse<std::any>(std::any(useOpenCL));
-      else                                          return AutoParse<std::any>(std::any(std::string("undefined")));
-    }
-
-    std::string CornerDetectorCSS::getPropertyToolTip(const std::string &propertyName) const{
-      if(propertyName == "angle-threshold"){
-        return str( "denotes the maximum obtuse angle that a corner\n"
-                    "can have when it is detected as a true corner,\n"
-                    "default value is 162." );
-      }else if(propertyName == "rc-coefficient"){
-        return str( "denotes the minimum ratio of major axis to minor\n"
-                    "axis of an ellipse, whose vertex could be detected\n"
-                    "as a corner by proposed detector. The default\n"
-                    "value is 1.5." );
-      }else if(propertyName == "sigma"){
-        return str( "denotes the standard deviation of the Gaussian\n"
-                    "filter when computeing curvature. The default sig is 3");
-      }else if(propertyName == "curvature-cutoff") {
-        return str("cutoff for curvature values");
-      }else if(propertyName == "straight-line-threshold"){
-        return str("In order to estimate the angle of a corner, either a\n"
-                   "circle or a straight line approximation of the left and\n"
-                   "right surrounding is used. The straight line\n"
-                   "approximation is used, if the angle between the\n"
-                   "left neigbour, corner candidate and  and the point\n"
-                   "on the contour half way between them is smaller than\n"
-                   "straight_line_thresh. A value of 0 leads to circle \n"
-                   "approximation only, 180 to straight line approximation\n"
-                   "only.");
-      }else if(propertyName == "accurate"){
-        return str("Choose between using more complex sampling of the \n"
-                   "boundary or using fast approximations.");
-      }else if(propertyName == "use opencl"){
-        return str("Choose whether to use opencl to compute curvature \n"
-                   "(if opencl is not supported, this has no effect");
-      }
-
-      return "";
-    }
 
     REGISTER_CONFIGURABLE_DEFAULT(CornerDetectorCSS);
   }

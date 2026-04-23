@@ -82,27 +82,13 @@ namespace icl::cv {
       /// Destructor
       ~CornerDetectorCSS();
 
-      /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
-      virtual void setPropertyValue(const std::string &propertyName,
-                                    const utils::AutoParse<std::string> &value);
-
-      /// returns Configurable property list
-      virtual std::vector<std::string> getPropertyList() const;
-
-      /// returns type of given property
-      virtual std::string getPropertyType(const std::string &propertyName) const;
-
-      /// returns info for given property
-      virtual std::string getPropertyInfo(const std::string &propertyName) const;
-
-      /// returns value for given property
-      virtual utils::AutoParse<std::any> getPropertyValue(const std::string &propertyName) const;
-
-      /// returns volatileness for given property
-      virtual inline int getPropertyVolatileness(const std::string &propertyName) const { return 0; }
-
-      /// returns property descriptions
-      virtual std::string getPropertyToolTip(const std::string &propertyName) const;
+      // Configurable surface is provided entirely through addProperty<C> +
+      // registerCallback in the ctor.  No per-method overrides are needed —
+      // the base reads / writes through Property::typed_value and the
+      // callback keeps the cached data members (angle_thresh, rc_coeff,
+      // sigma, curvature_cutoff, straight_line_thresh, accurate, useOpenCL)
+      // in sync with external writes through setPropertyValue /
+      // setPropertyValueTyped / prop().value = v.
 
       /// calculates a normalized 1d gaussian std::vector
       /**
