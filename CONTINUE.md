@@ -2,20 +2,194 @@
 
 ## Next Step
 
-**Configurable internal storage → typed `std::any`.**  Session 52
-retired `utils::Any` and flipped Configurable's *public API* to
-`AutoParse<std::string>`, but properties are still string-backed
-internally (`Property::value` is `std::string`).  The next pass
-moves storage to `std::any` of the declared property type, with
-`str`/`parse` only at config-file I/O boundaries.  Full scope in
-`TODO.md` under "Next: Configurable internal storage → typed
-`std::any`".  Plugin `setPropertyValue` overrides that manually
-parse floats/ints simplify; `qt::Prop`'s dual string/payload read
-collapses to a single typed one.  No on-disk format change.
+**qt::Prop constraint-driven dispatch (step 5 from Session 53 plan).**
+Every property in the tree now has `Property::constraint` (a
+`std::any` holding a `prop::Range<T>` / `prop::Menu<T>` / `prop::Flag`
+/ ... value) and `Property::typed_value` populated.  qt::Prop still
+dispatches widget creation / updates by string-matching the legacy
+`type` field and parsing `info` strings for each branch.  Rewrite
+to variant-visit on `constraint.type()`: eliminates the
+`parse<SteppingRange<float>>(info)` boilerplate and lets each
+branch access constraint fields directly (`.min` / `.max` / `.step`
+/ `.ui` / `.choices`).  Three dispatch sites: `add_component`,
+`update_all_components`, `propertyChanged`.  Bigger blast radius
+than the step-9 commits because there's no automated coverage for
+widget rendering — needs manual GUI testing per dispatch site.
+
+See `TODO.md` "Designated-init GUI component syntax" for the
+follow-on (aggregate-init GUI builders), plus step 7 (retire legacy
+string-taking `addProperty`) and step 8 (synthesize
+`getPropertyType` / `getPropertyInfo` from constraint, drop
+`Property::type` / `Property::info` fields).
 
 ---
 
-## Current State (Session 52 — `utils::Any` retired; AutoParse<Backend> landed; plugin APIs split into overloads)
+## Current State (Session 53 — Configurable typed-storage migration + proxy)
+
+### Session 53 Summary
+
+23 commits across a single multi-step arc.  Closed out the typed-
+std::any migration for Configurable property storage, queued at
+end of Session 52.  End state: every ICL property has a structured
+`prop::*` constraint + typed value; `Property::value` (std::string)
+retired; `prop("x").value = v` preserved as an ergonomic syntax via
+a write-through proxy that routes through a new typed setter.
+
+#### 1. `prop::` constraint framework (commits 12ea853e0 .. 4d27d8453)
+
+New `icl/utils/prop/Constraints.h` introduces first-class C++ types
+that replace the legacy stringly-typed `addProperty(name, type,
+info, value)` grammar:
+
+    prop::Range<T>{.min, .max, .step, .ui}   // Slider / Spinbox
+    prop::Menu<T>{choices...}                // categorical pick-one
+    prop::Flag{}                             // bool
+    prop::Command{}                          // button, no value
+    prop::Info{}                             // read-only string
+    prop::Text{.maxLength}                   // free-form string
+    prop::menuFromCsv(csv)                   // runtime-parsed Menu<string>
+
+Plus `core::prop::Color` (RGB triplet) and `core::prop::ImageView`
+(volatile image readback) in `icl/core/prop/` for constraints that
+need core-module types.
+
+Each constraint has a `ConstraintAdapter` (toString / fromString /
+typeId / infoString function table) enrolled at static-init time in
+a `PluginRegistry<std::type_index, ConstraintAdapter>`.  Adapters
+synthesize the legacy type + info + value strings for backward
+compat — ConfigFile save and qt::Prop's string-matching dispatcher
+keep working through the migration.  Apple Clang 21 (Xcode CLT 26.4)
+aggregate CTAD + designated-init supports
+`prop::Range{.min=0.f, .max=500.f}` without spelling the template
+argument.
+
+#### 2. Typed addProperty<C> + migration (commits 69767fa82 .. 434a0f0a3)
+
+Configurable gains a templated `addProperty<C>` overload:
+
+    addProperty("gain",    prop::Range{.min=0.f, .max=500.f},  250.f);
+    addProperty("mode",    prop::Menu{"fast","slow","auto"},   "fast");
+    addProperty("enabled", prop::Flag{},                       true);
+    addProperty("save",    prop::Command{});
+    addProperty("bg",      core::prop::Color{},                core::Color(0,0,0));
+
+`Property::constraint` (std::any) + `Property::typed_value` (std::any
+of declared C++ type) added alongside existing `value` (std::string)
+for transitional coexistence.
+
+Step-6 bulk migration: ~500 `addProperty` call sites across
+filter/io/cv/qt/geom/geom2/markers/physics migrated from the legacy
+string form to typed overloads via `scripts/migrate-addProperty.py`
+— 80-90% automated, manual cleanup for concat'd info strings,
+menu-with-named-constant, and a few dynamic-registration sites.
+
+#### 3. Storage + API flip (commit 8c40415c7)
+
+`Configurable::getPropertyValue` return type flipped from
+`AutoParse<std::string>` to `AutoParse<std::any>`.  Callers writing
+`T x = c.getPropertyValue(name)` continue working via the cascade;
+string-specific sites use `.str()` / `.as<std::string>()`.
+
+#### 4. `payload` folded into typed_value (commits f3bb77ae6 .. 0f8c54c05)
+
+`Property::payload` (std::any, used only for "image") retires.
+`typed_value` absorbs its role.  qt::Prop's `VolatileImageUpdater`
+reads through `getPropertyValue` (typed fast path) before falling
+back to `getPropertyPayload` for unmigrated callers.  GaborOp's
+"kernel preview" migrates to `core::prop::ImageView`; Scene/Scene2
+background color migrate to `core::prop::Color`.
+
+#### 5. Regression fix (commit 83d7155de)
+
+Direct `prop("x").value = v` writes bypassed `setPropertyValue` →
+stale `typed_value` → broken sliders (LocalThresholdOp et al).
+Migrated 13 such sites to `setPropertyValue`.  Also caught an
+infinite recursion in `UnaryOp::setClipToROI`: its override of
+`setPropertyValue` re-dispatches to `setClipToROI`; changing
+`setClipToROI` to call `setPropertyValue` looped.  Fixed by
+explicit `Configurable::setPropertyValue(...)` (non-virtual
+dispatch).
+
+#### 6. Step 9 — retire Property::value, add proxy (commits f789b934e .. 533ec1cd7)
+
+Six commits:
+
+  1. **Unify legacy addProperty dispatch** — the string-taking
+     `addProperty(name, "type", "info", value)` overload internally
+     builds a typed constraint via `buildConstraintFromLegacy` and
+     populates `constraint` + `typed_value` just like the typed
+     overload.  After this, every property has both fields.
+  2. **Property::as<T>()** — typed read helper off typed_value
+     through `AutoParse<any>`'s cascade.
+  3. **Bulk-migrate ~155 callback reads** — `parse<T>(prop.value)`
+     → `prop.as<T>()`, `prop.value == "x"` → `prop.as<std::string>() == "x"`.
+     Perl-scripted across filter/io/cv/geom/markers/physics.
+  4. **Retire `Property::value` field** — `typed_value` becomes
+     sole storage.  getPropertyValue always wraps typed_value;
+     setPropertyValue parses into typed_value via constraint adapter.
+  5. **`setPropertyValueTyped(name, std::any)`** — new public
+     setter that writes typed_value directly.  No stringify.
+  6. **`PropertyHandle` + `PropertyValueRef` proxy** —
+     `Configurable::prop(name)` returns a short-lived handle with a
+     `PropertyValueRef value` proxy (operator= → setPropertyValueTyped)
+     + reference members for name/type/info/constraint/typed_value/
+     volatileness/etc.  Ergonomic end state:
+
+         prop("gain").value = 0.5f;        // typed, no string
+         float g = prop("gain").value;     // typed read, no parse
+         if (prop("enabled").value == "on") { ... }
+         std::any_cast<const prop::Range<float>&>(prop("x").constraint);
+
+  Internal storage accessor renamed to `prop_storage(name)` — used
+  by Configurable.cpp setters/getters and the inline
+  `addProperty<C>` template that pokes Property fields directly.
+
+#### 7. Verification
+
+- `tests/icl-tests -j 1`: 658/658 pass at every commit of this
+  session (626 pre-session + 32 new `utils.prop.*` + `core.prop.*`
+  cases).
+- Full tree builds clean at every commit under `meson compile -j16`
+  (CCACHE_DISABLE=1 in this sandbox — ~/.ccache isn't in the allow
+  list; unrelated to the session).
+
+#### 8. Toolchain bump
+
+Apple Clang 15 → 21 (Xcode CLT 26.4).  Enabled C++20 aggregate CTAD
+with designated initializers (P2082R1) — core ergonomic win for the
+`prop::Range{.min=..., .max=...}` call-site style.  No code change
+required; `sudo xcode-select -s /Library/Developer/CommandLineTools`
+picked up the new toolchain.
+
+#### 9. Documentation artifacts
+
+- `scripts/migrate-addProperty.py` — reusable tool for migrating
+  legacy addProperty call sites in future Configurable subclasses.
+  Handles flag / info / command / string / menu / range{,:slider,
+  :spinbox} / float / int / value-list; `:`-as-separator oddity;
+  `str()` wrapper stripping for numeric value args.
+- TODO entries added: step-9 follow-ups (proxy-or-retire for
+  Property::value — closed by this session), designated-init GUI
+  component syntax, lock_guard/scoped_lock CTAD cleanup,
+  `core/Image.h` include-Img.h fix.
+
+#### 10. What's deferred
+
+- **Step 5** — qt::Prop variant-visit dispatch on constraint type.
+  See "Next Step" above.
+- **Step 7** — retire legacy string-taking `addProperty` overload.
+  Blocked on dynamic-registration sites (PylonCameraOptions etc.)
+  that supply type/info as runtime strings; need a typed
+  equivalent or keep the overload as the dynamic-registration
+  entry point.
+- **Step 8** — synthesize `getPropertyType`/`getPropertyInfo` from
+  constraint on demand; drop `Property::type` and `Property::info`
+  fields.  Pattern matches step-9's `Property::value` retirement.
+- **Step 10** — this file.  Done.
+
+---
+
+## Previous State (Session 52 — `utils::Any` retired; AutoParse<Backend> landed; plugin APIs split into overloads)
 
 ### Session 52 Summary
 

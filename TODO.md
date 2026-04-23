@@ -66,16 +66,25 @@ Applied per `module-audit-checklist.md`.
 
 ---
 
-## Next: Configurable internal storage → typed `std::any`
+## Configurable typed-storage migration — LANDED Session 53
 
-- [ ] **Move `Configurable::Property::value` from `std::string` to `std::any`.**  Session 52 retired `utils::Any` and flipped Configurable's *API surface* to `AutoParse<std::string>`, but the *internal storage* is still a serialized string.  Next step: store property values as typed `std::any` (matching the declared property type), with `str(v)` / `parse<T>(s)` only at config-file I/O boundaries.  Affects:
-  - `Configurable.h`: `Property::value` (`std::string` → `std::any`), `Property::payload` (already `std::any` — may fold together).
-  - `Configurable.cpp`: `addProperty` constructs the `std::any` from the initial value using the declared type; `setPropertyValue(AutoParse<string>)` parses incoming strings into the declared type; `getPropertyValue()` returns `AutoParse<std::any>` so callers keep `T x = c.getPropertyValue(name)` ergonomics.
-  - `ConfigFile`: serialize with declared type on save, parse on load.  No on-disk format change.
-  - `qt::Prop`: already reads both string (`getPropertyValue`) and any (`getPropertyPayload`) — reconcile into a single typed read.
-  - Existing plugin `setPropertyValue` overrides (`UnaryOp`, `CornerDetectorCSS`, etc.) that manually `parse<float>(value)` simplify — they can take the typed value directly.
-  - Reading: 33 subclasses, ~524 `addProperty` call sites, ~557 `set/getPropertyValue` reads.  Most call sites are unaffected because `AutoParse<std::any>` extraction is drop-in for `AutoParse<std::string>` extraction (same `T x = ap` spelling).
-  Open question: what to declare as the type for `"menu"` / `"flag"` properties (strings vs bools)?  Probably a map from property-type-string to `std::type_info` at `addProperty` time.
+Done in Session 53 across ~23 commits:
+
+- Typed `prop::` constraint family (`Range<T>`, `Menu<T>`, `Flag`, `Command`, `Info`, `Text`, `core::prop::Color`, `core::prop::ImageView`).
+- Typed `addProperty<C>` overload; all ~500 in-tree call sites migrated.
+- `Property::value` string field retired; `typed_value` is sole storage.
+- `setPropertyValueTyped(name, std::any)` — direct typed writes.
+- `PropertyHandle` / `PropertyValueRef` proxy; `prop("x").value = v` routes through `setPropertyValueTyped`.
+- `Property::as<T>()` for typed reads off `typed_value`.
+- `getPropertyValue` returns `AutoParse<std::any>` — zero-parse fast path for typed-matching reads.
+
+See `CONTINUE.md` Session 53 Summary for the full arc.
+
+### Step 9 follow-ups still open
+
+- [ ] **Step 5 — qt::Prop constraint-driven dispatch.**  Replace the three string-matching dispatch sites in `icl/qt/GUI.cpp` (`add_component`, `update_all_components`, `propertyChanged`) with `constraint.type()` variant-visit.  Kills the `parse<SteppingRange<float>>(info)` boilerplate in each branch; each constraint's fields accessible directly.  No automated coverage — needs GUI testing per site.
+- [ ] **Step 7 — retire legacy string-taking `addProperty` overload.**  Blocked on dynamic-registration callers (PylonCameraOptions, openni, dc device features) that pass runtime type/info strings from hardware introspection.  Either provide a typed `addPropertyFromStrings(name, type, info, value, ...)` entry point and migrate those, or keep the legacy overload specifically as the dynamic-registration entry point.
+- [ ] **Step 8 — drop `Property::type` / `Property::info` fields; synthesize on demand.**  `getPropertyType` / `getPropertyInfo` call `adapter.typeId(constraint)` / `adapter.infoString(constraint)`.  Pattern matches the step-9 retirement of `Property::value`.  Edge case: unconstrained properties (external callers with unknown type strings) — need a `prop::Generic` catch-all constraint or a fallback storage map.
 
 ---
 
@@ -197,16 +206,6 @@ From Session 48 deferrals:
 - [ ] **OpenCL on macOS** — C++ bindings work deferred.  See `project_opencl_mac.md`.
 - [ ] **NEON** as SSE replacement on ARM — investigate sse2neon coverage.  See `project_neon.md`.
 - [ ] **Eigen** — brew's 5.0.1 has an Apple Clang bug; pin to 3.4.x.  See `project_eigen5.md`.
-
----
-
-## Property::value — retire or proxy (step 9 territory)
-
-- [ ] **Make `Property::value` a write-through proxy, or retire it entirely.**  The bare `std::string value` field is a footgun: writing `prop("x").value = y` bypasses `setPropertyValue`, which means `typed_value` goes stale and callbacks don't fire.  Session 53 cleaned up the 13 in-tree sites that relied on the pre-typed-storage idiom (`p.value = str(x); call_callbacks(name, this);`), but the field is still accessible.  Options:
-  - **Proxy**: replace `value` with a `PropertyValueRef` that holds `Configurable* + name`, offers `operator std::string() const` for reads and `operator=(T)` → `setPropertyValue(name, v)` for writes.  Preserves the terse `prop("x").value = y` idiom while channeling through the setter.  Wrinkle: Property is stored in `std::map<string, Property>`, so the back-reference must survive moves/copies.
-  - **Retire**: delete the field; force all access through `setPropertyValue` / `getPropertyValue`.  Loses the ergonomic direct-assign syntax.
-  - **Intermediate**: rename `value` → something ugly (`_raw_serialized` etc.) so accidental direct writes stand out in review; provide a `prop("x").set(v)` method for the intended path.
-  See Session 53 commits for the migration precedent; ties in with the broader step-9 "delete the string field" work in iclquick-plan.md.
 
 ---
 
