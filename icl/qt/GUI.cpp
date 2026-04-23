@@ -113,8 +113,8 @@ namespace icl{
     // VolatileUpdater / VolatileImageUpdater retired — Info and ImageView
     // properties update through the unified callback push channel
     // (enqueuePropertyUpdate → flushPendingPropertyUpdates → applyPropertyToWidget).
-    // Writers that don't want to fire callbacks (high-frequency info
-    // updates from grab paths) use Configurable::setPropertyValueSilent.
+    // Rapid writes coalesce to one widget flush per GUI event-loop
+    // tick, so even per-frame updates from a grab path are bounded.
 
     static const std::string &gen_params(){
 
@@ -373,9 +373,8 @@ namespace icl{
           ostr << '\1' << handle;
           gui << Label(h.as<std::string>())
                     .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
-          // Refreshed through the callback push channel — writers that
-          // don't want to fire callbacks on every update use
-          // setPropertyValueSilent instead.
+          // Refreshed through the callback push channel on every
+          // write; coalesced to one widget flush per GUI tick.
         }else if(std::any_cast<up::Flag>(&c)){
           std::string handle = "#f#"+p.full;
           ostr << '\1' << handle;
