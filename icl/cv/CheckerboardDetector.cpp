@@ -100,13 +100,13 @@ namespace icl{
       m_data->cb.found = ::cv::findChessboardCorners(*m_data->mat, s, corners,
                                                      ::cv::CALIB_CB_ADAPTIVE_THRESH | ::cv::CALIB_CB_FILTER_QUADS);
 
-      bool optSubPix = getPropertyValue("subpixel opt.enabled");
-      int radius = getPropertyValue("subpixel opt.radius");
-      int innerR = getPropertyValue("subpixel opt.inner radius");
+      bool optSubPix = prop("subpixel opt.enabled").value;
+      int radius = prop("subpixel opt.radius").value;
+      int innerR = prop("subpixel opt.inner radius").value;
       if(innerR >= radius) innerR = radius -1;
       if(innerR == 0) innerR = -1;
-      int maxIter = getPropertyValue("subpixel opt.max iterations");
-      float minErr = getPropertyValue("subpixel opt.min error");
+      int maxIter = prop("subpixel opt.max iterations").value;
+      float minErr = prop("subpixel opt.min error").value;
 
       if(m_data->cb.found && optSubPix){
         ::cv::cornerSubPix(*m_data->mat, corners, ::cv::Size(radius,radius),

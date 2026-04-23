@@ -58,15 +58,15 @@ namespace icl::cv {
   }
 
   void HoughLineDetector::prepare_all(){
-    prepare(getPropertyValue("delta.angle"),
-            getPropertyValue("delta.radius"),
-            Range32f(getPropertyValue("range.min radius"),
-                     getPropertyValue("range.max radius")),
-            getPropertyValue("inhibition.radius-axis"),
-            getPropertyValue("inhibition.angle-axis"),
-            getPropertyValue("adding.blur hough space"),
-            getPropertyValue("adding.dilate entries"),
-            getPropertyValue("adding.blur hough space"));
+    prepare(prop("delta.angle").value,
+            prop("delta.radius").value,
+            Range32f(prop("range.min radius").value,
+                     prop("range.max radius").value),
+            prop("inhibition.radius-axis").value,
+            prop("inhibition.angle-axis").value,
+            prop("adding.blur hough space").value,
+            prop("adding.dilate entries").value,
+            prop("adding.blur hough space").value);
   }
 
   void HoughLineDetector::prepare(float dRho, float dR, const utils::Range32f &rRange,

@@ -144,10 +144,10 @@ namespace icl{
       const int Y = last.pos.y;
       const int lutSize = static_cast<int>(data->lut.size());
       const int angleIndex = angle / (2*M_PI) * (lutSize-1);
-      const int ROI = getPropertyValue("tracking.position range");
-      const float rotationRange = getPropertyValue("tracking.rotation range");
-      const int step1 = getPropertyValue("tracking.coarse steps");
-      //const int step2 = getPropertyValue("tracking.fine steps");
+      const int ROI = prop("tracking.position range").value;
+      const float rotationRange = prop("tracking.rotation range").value;
+      const int step1 = prop("tracking.coarse steps").value;
+      //const int step2 = prop("tracking.fine steps").value;
       //const float angleStepSize = 360./lutSize;
 
       const Rect roi(X - ROI/2, Y-ROI/2, ROI, ROI);

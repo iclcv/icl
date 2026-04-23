@@ -35,6 +35,7 @@ namespace icl{
       struct ParamSet{
         ParamSet() : scoreType(-1){}
         ParamSet(Configurable &c){
+          // External caller — prop() is protected; stay on the public API.
           scoreType = c.getPropertyValue("score type").as<int>();
           maxFeatures = c.getPropertyValue("max features").as<int>();
           patchSize = c.getPropertyValue("patch size").as<int>();
@@ -183,7 +184,7 @@ namespace icl{
     }
 
     ORBFeatureDetector::FeatureSet ORBFeatureDetector::detect(const core::Img8u &image){
-      bool bench = getPropertyValue("bench.enable");
+      bool bench = prop("bench.enable").value;
 
       m_data->updateORB(Data::ParamSet(*this));
 
@@ -197,10 +198,10 @@ namespace icl{
         m_data->grayInputBuffer = image;
       }
 
-      if(getPropertyValue("contrast adjustment.on")){
-        float slope = getPropertyValue("contrast adjustment.slope");
-        int maskSize = getPropertyValue("contrast adjustment.mask size");
-        float threshold = getPropertyValue("contrast adjustment.threshold");
+      if(prop("contrast adjustment.on").value){
+        float slope = prop("contrast adjustment.slope").value;
+        int maskSize = prop("contrast adjustment.mask size").value;
+        float threshold = prop("contrast adjustment.threshold").value;
         m_data->lt.setMaskSize(maskSize);
         m_data->lt.setGammaSlope(slope);
         m_data->lt.setGlobalThreshold(threshold);
@@ -243,7 +244,7 @@ namespace icl{
     ORBFeatureDetector::match(const ORBFeatureDetector::FeatureSet &a,
                               const ORBFeatureDetector::FeatureSet &b){
 
-      bool bench = getPropertyValue("bench.enable");
+      bool bench = prop("bench.enable").value;
       Time t = Time::now();
 
       std::vector<ocv::DMatch> matches;

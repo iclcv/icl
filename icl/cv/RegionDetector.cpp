@@ -108,7 +108,7 @@ namespace icl::cv {
   }
 
   void RegionDetector::setCreateGraph(bool on){
-    setPropertyValue("create region graph", on ? "on" : "off");
+    prop("create region graph").value = (on ? "on" : "off");
   }
 
   RegionDetector::~RegionDetector(){
@@ -126,10 +126,10 @@ namespace icl::cv {
   }
 
   void RegionDetector::setConstraints(int minSize, int maxSize, int minVal, int maxVal){
-    setPropertyValue("minimum region size",str(minSize));
-    setPropertyValue("maximum region size",str(maxSize));
-    setPropertyValue("minimum value",str(minVal));
-    setPropertyValue("maximum value",str(maxVal));
+    prop("minimum region size").value = minSize;
+    prop("maximum region size").value = maxSize;
+    prop("minimum value").value        = minVal;
+    prop("maximum value").value        = maxVal;
   }
 
   void RegionDetector::setCSSParams(float angle_thresh,
@@ -210,7 +210,7 @@ namespace icl::cv {
     }
     m_data->regionData.clear();
 
-    bool crg = getPropertyValue("create region graph");
+    bool crg = prop("create region graph").value;
 
     int nextID = -1;
     ImageRegionPart *parts = m_data->parts.data();
@@ -307,10 +307,10 @@ namespace icl::cv {
     m_data->filteredRegions.clear();
     region_detector_tools::copy_if(m_data->regions.begin(), m_data->regions.end(),
             std::back_inserter(m_data->filteredRegions),
-            SimpleRegionFilter(parse<int>(getPropertyValue("minimum value")),
-                               parse<int>(getPropertyValue("maximum value")),
-                               parse<int>(getPropertyValue("minimum region size")),
-                               parse<int>(getPropertyValue("maximum region size"))
+            SimpleRegionFilter(prop("minimum value").as<int>(),
+                               prop("maximum value").as<int>(),
+                               prop("minimum region size").as<int>(),
+                               prop("maximum region size").as<int>()
                                ));
   }
 
@@ -324,7 +324,7 @@ namespace icl::cv {
   }
 
   const std::vector<ImageRegion> &RegionDetector::detect(const ImgBase *image){
-    bool trackTimes = getPropertyValue("track times.on");
+    bool trackTimes = prop("track times.on").value;
 
     Time t,tTotal;
 
@@ -342,14 +342,14 @@ namespace icl::cv {
     m_data->rle.encode(image);
 
     if(trackTimes){
-      setPropertyValue("track times.rle", msec_string_and_reset(t));
+      prop("track times.rle").value = msec_string_and_reset(t);
     }
 
     // find all image region parts
     analyseRegions();
 
     if(trackTimes){
-      setPropertyValue("track times.analyse regions", msec_string_and_reset(t));
+      prop("track times.analyse regions").value = msec_string_and_reset(t);
     }
 
 
@@ -357,11 +357,11 @@ namespace icl::cv {
     joinRegions();
 
     if(trackTimes){
-      setPropertyValue("track times.join regions", msec_string_and_reset(t));
+      prop("track times.join regions").value = msec_string_and_reset(t);
     }
 
 
-    if(getPropertyValue("create region graph")){
+    if(prop("create region graph").value){
       // create connectivity graph
       linkRegions();
 
@@ -370,7 +370,7 @@ namespace icl::cv {
 
 
       if(trackTimes){
-        setPropertyValue("track times.create graph", msec_string_and_reset(t));
+        prop("track times.create graph").value = msec_string_and_reset(t);
       }
 
     }
@@ -380,8 +380,8 @@ namespace icl::cv {
 
 
     if(trackTimes){
-      setPropertyValue("track times.filter regions", msec_string_and_reset(t));
-      setPropertyValue("track times.total", msec_string_and_reset(tTotal));
+      prop("track times.filter regions").value = msec_string_and_reset(t);
+      prop("track times.total").value = msec_string_and_reset(tTotal);
     }
 
 
