@@ -33,7 +33,7 @@ namespace icl::io {
                     "0 = lossy depth-mapping (Kinect Z formula). "
                     "1 = lossless 11-bit bit-pack (default; clamps >2047).");
         Configurable::registerCallback([this](const Property &p){
-          if (p.name == "quality") m_quality = parse<int>(p.value);
+          if (p.name == "quality") m_quality = p.as<int>();
         });
       }
 

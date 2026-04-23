@@ -33,7 +33,7 @@ namespace icl::io {
 
   void CreateGrabber::processPropertyChange(const utils::Configurable::Property &prop){
     if(prop.name == "update timestamp") {
-      m_updateTimeStamp = parse<bool>(prop.value);
+      m_updateTimeStamp = prop.as<bool>();
     }
   }
 

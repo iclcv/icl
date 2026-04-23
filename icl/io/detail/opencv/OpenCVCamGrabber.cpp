@@ -69,13 +69,13 @@ namespace icl::io {
           setDesiredSize(s);
       */
     }else if(prop.name == "brightness"){
-      cvc->set(cv::CAP_PROP_BRIGHTNESS,parse<double>(prop.value)*0.01);
+      cvc->set(cv::CAP_PROP_BRIGHTNESS,prop.as<double>()*0.01);
     }else if(prop.name == "contrast"){
-      cvc->set(cv::CAP_PROP_CONTRAST,parse<double>(prop.value)*0.01);
+      cvc->set(cv::CAP_PROP_CONTRAST,prop.as<double>()*0.01);
     }else if(prop.name == "saturation"){
-      cvc->set(cv::CAP_PROP_SATURATION,parse<double>(prop.value)*0.01);
+      cvc->set(cv::CAP_PROP_SATURATION,prop.as<double>()*0.01);
     }else if(prop.name == "hue"){
-      cvc->set(cv::CAP_PROP_HUE,parse<double>(prop.value)*0.01);
+      cvc->set(cv::CAP_PROP_HUE,prop.as<double>()*0.01);
     }
   }
 

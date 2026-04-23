@@ -190,7 +190,7 @@ namespace icl::io {
   void DCGrabber::processPropertyChange(const utils::Configurable::Property &prop){
     if(m_oDev.isNull()) return;
     if(prop.name == "omit-doubled-frames"){
-      m_oOptions.suppressDoubledImages = utils::parse<bool>(prop.value);
+      m_oOptions.suppressDoubledImages = prop.as<bool>();
     }else if(prop.name == "bayer-quality"){
       m_oOptions.bayermethod = bayermethod_from_string(prop.value);
     }else if(prop.name == "format"){
@@ -205,19 +205,19 @@ namespace icl::io {
     }else if(prop.name == "size"){
       // this is adjusted with the format
     }else if(prop.name == "iso-speed"){
-      if(prop.value == "800"){
+      if(prop.as<std::string>() == "800"){
         dc::set_iso_speed(m_oDev.getCam(),800);
         m_oOptions.isoMBits = 800;
       }
-      else if(prop.value == "400"){
+      else if(prop.as<std::string>() == "400"){
         dc::set_iso_speed(m_oDev.getCam(),400);
         m_oOptions.isoMBits = 400;
       }
     }else if(prop.name == "enable-image-labeling"){
-      m_oOptions.enable_image_labeling = utils::parse<bool>(prop.value);
+      m_oOptions.enable_image_labeling = prop.as<bool>();
     }else if(prop.name == "bayer-layout"){
       if(static_cast<int>(m_oDev.getBayerFilterLayout()) == 1){
-        if(prop.value == "RGGB" || prop.value == "GBRG" || prop.value == "GRBG" || prop.value == "BGGR" || prop.value == "NONE"){
+        if(prop.as<std::string>() == "RGGB" || prop.as<std::string>() == "GBRG" || prop.as<std::string>() == "GRBG" || prop.as<std::string>() == "BGGR" || prop.as<std::string>() == "NONE"){
           m_sUserDefinedBayerPattern = prop.value;
         }else{
           ERROR_LOG("parameter bayer layout does only support this values:\n"

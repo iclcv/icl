@@ -56,7 +56,7 @@ void PylonCameraOptions::processPropertyChange(const utils::Configurable::Proper
   } else if(prop.name == "format"){
     setPropertyValue("PixelFormat", prop.value);
   } else if(prop.name == "OmitDoubleFrames"){
-    m_OmitDoubleFrames = parse<bool>(prop.value);
+    m_OmitDoubleFrames = prop.as<bool>();
   } else {
     GenApi::CValuePtr node = getNode(prop.name);
     if (!node) return;

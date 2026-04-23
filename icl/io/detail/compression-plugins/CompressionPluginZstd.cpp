@@ -58,7 +58,7 @@ namespace icl::io {
                     "zstd compression level (1=fastest, 22=smallest). "
                     "Default 3 matches libzstd's ZSTD_CLEVEL_DEFAULT.");
         Configurable::registerCallback([this](const Property &p){
-          if (p.name == "level") m_level = parse<int>(p.value);
+          if (p.name == "level") m_level = p.as<int>();
         });
       }
 

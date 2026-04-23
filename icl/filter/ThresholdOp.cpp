@@ -53,10 +53,10 @@ namespace icl::filter {
 
   void ThresholdOp::property_callback(const Property &p){
     if(p.name == "type")                m_eType          = parseType(p.value);
-    else if(p.name == "low threshold")  m_fLowThreshold  = parse<float>(p.value);
-    else if(p.name == "high threshold") m_fHighThreshold = parse<float>(p.value);
-    else if(p.name == "low val")        m_fLowVal        = parse<float>(p.value);
-    else if(p.name == "high val")       m_fHighVal       = parse<float>(p.value);
+    else if(p.name == "low threshold")  m_fLowThreshold  = p.as<float>();
+    else if(p.name == "high threshold") m_fHighThreshold = p.as<float>();
+    else if(p.name == "low val")        m_fLowVal        = p.as<float>();
+    else if(p.name == "high val")       m_fHighVal       = p.as<float>();
   }
 
   // Constructor — clones selectors from the class prototype

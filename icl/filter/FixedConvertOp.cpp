@@ -45,8 +45,8 @@ namespace icl::filter {
     addProperty("output depth",utils::prop::menuFromCsv(FC_DEPTH_MENU), fcDepthName(d));
     addProperty("output format",utils::prop::menuFromCsv(FC_FORMAT_MENU), fcFormatName(p.getFormat()));
     registerCallback([this](const Property &prop){
-      if(prop.name == "output depth")       m_depth = parse<depth>(prop.value);
-      else if(prop.name == "output format") m_params.setFormat(parse<format>(prop.value));
+      if(prop.name == "output depth")       m_depth = prop.as<depth>();
+      else if(prop.name == "output format") m_params.setFormat(prop.as<format>());
     });
   }
 

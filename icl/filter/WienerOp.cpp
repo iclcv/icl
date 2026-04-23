@@ -38,7 +38,7 @@ namespace icl::filter {
     addProperty("mask size.h",utils::prop::Range{.min=1, .max=51, .ui=utils::prop::UI::Spinbox}, maskSize.height);
     registerCallback([this](const Property &p){
       // Callback side is auto-locked by UnaryOp::registerCallback.
-      if(p.name == "noise") m_fNoise = parse<icl32f>(p.value);
+      if(p.name == "noise") m_fNoise = p.as<icl32f>();
       else if(p.name == "mask size.w" || p.name == "mask size.h"){
         setMask(Size(parse<int>(prop("mask size.w").value),
                      parse<int>(prop("mask size.h").value)));

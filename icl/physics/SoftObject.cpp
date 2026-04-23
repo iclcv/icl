@@ -103,21 +103,21 @@ namespace physics{
 
     std::string section = "coefficients.";
     if(prop.name == "general.collision type"){
-      if(prop.value == "default"){
+      if(prop.as<std::string>() == "default"){
         cfg->collisions = btSoftBody::fCollision::Default;
       }else{
         cfg->collisions = btSoftBody::fCollision::Default | btSoftBody::fCollision::CL_SELF;
       }
     } else if(prop.name == "general.aeromodel") {
-      cfg->aeromodel = parse<btSoftBody::eAeroModel::_>(prop.value);
+      cfg->aeromodel = prop.as<btSoftBody::eAeroModel::_>();
     } else if(prop.name == "general.use volume conversion") {
-      m_useVolumeConversion = parse<bool>(prop.value);
+      m_useVolumeConversion = prop.as<bool>();
       sb->setPose(m_useVolumeConversion,m_usePoseMatching);
     }else if(prop.name == "general.use pose matching"){
-      m_usePoseMatching = parse<bool>(prop.value);
+      m_usePoseMatching = prop.as<bool>();
       sb->setPose(m_useVolumeConversion,m_usePoseMatching);
     }
-#define CASE(X,Y) if(prop.name == (section+X)) { Y = parse<float>(prop.value); }
+#define CASE(X,Y) if(prop.name == (section+X)) { Y = prop.as<float>(); }
 
     else CASE("velocity correction",cfg->kVCF)
     else CASE("damping",cfg->kDP)
@@ -142,18 +142,18 @@ namespace physics{
 
     else if(prop.name == "stiffness.linear"){
       for(int i=0;i<sb->m_materials.size();++i){
-        sb->m_materials[i]->m_kLST = parse<float>(prop.value);
+        sb->m_materials[i]->m_kLST = prop.as<float>();
       }
     }
     else if(prop.name == "stiffness.angular"){
       for(int i=0;i<sb->m_materials.size();++i){
-        sb->m_materials[i]->m_kAST = parse<float>(prop.value);
+        sb->m_materials[i]->m_kAST = prop.as<float>();
       }
     }
 
     else if(prop.name == "stiffness.volume"){
       for(int i=0;i<sb->m_materials.size();++i){
-        sb->m_materials[i]->m_kVST = parse<float>(prop.value);
+        sb->m_materials[i]->m_kVST = prop.as<float>();
       }
     }
 

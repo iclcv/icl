@@ -167,13 +167,13 @@ namespace icl::io {
       return;
     }
     if(prop.name == "blob-red"){
-      m_color[0] = parse<int>(prop.value);
+      m_color[0] = prop.as<int>();
     }else if(prop.name == "blob-green"){
-      m_color[1] = parse<int>(prop.value);
+      m_color[1] = prop.as<int>();
     }else if(prop.name == "blob-blue"){
-      m_color[2] = parse<int>(prop.value);
+      m_color[2] = prop.as<int>();
     }else if(prop.name == "blob-size"){
-      int percent = parse<int>(prop.value);
+      int percent = prop.as<int>();
       m_size = Size32f(percent/100.,percent/100.);
     }else if(prop.name == "format"){
       std::vector<std::string> x = tok(prop.value,"-");
@@ -184,9 +184,9 @@ namespace icl::io {
         m_drawDepth = parse<depth>(x[1]);
       }
     }else if(prop.name == "size"){
-      m_drawSize = parse<Size>(prop.value);
+      m_drawSize = prop.as<Size>();
     }else if(prop.name == "max-speed"){
-      float m = parse<float>(prop.value);
+      float m = prop.as<float>();
       m_maxV.x = m_maxV.y = m;
     }else if(prop.name == "set-to-center"){
       m_x.x = 0.5;

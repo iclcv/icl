@@ -387,9 +387,9 @@ namespace icl::io {
   void SwissRangerGrabber::processPropertyChange(const utils::Configurable::Property &prop){
     std::scoped_lock<std::recursive_mutex> l(m_mutex);
     if(prop.name == "intensity-image-mode"){
-      if(prop.value == "minus one") m_sr->iim = iimUnknownPixelsMinusOne;
-      else if(prop.value == "zero") m_sr->iim = iimUnknownPixelsZero;
-      else if(prop.value == "unchanged") m_sr->iim = iimUnknownPixelsUnchanged;
+      if(prop.as<std::string>() == "minus one") m_sr->iim = iimUnknownPixelsMinusOne;
+      else if(prop.as<std::string>() == "zero") m_sr->iim = iimUnknownPixelsZero;
+      else if(prop.as<std::string>() == "unchanged") m_sr->iim = iimUnknownPixelsUnchanged;
       else ERROR_LOG("invalid value \"" << prop.value << "\" for property \"" << prop.name << "\"");
     }else if(prop.name == "modulation-frequency"){
       try{
@@ -398,20 +398,20 @@ namespace icl::io {
         ERROR_LOG("undefined modulation frequency value :" << prop.value);
       }
     }else if(prop.name == "depth-map-unit"){
-      if(prop.value != "16Bit" &&
-         prop.value != "mm" &&
-         prop.value != "cm" &&
-         prop.value != "m"){
+      if(prop.as<std::string>() != "16Bit" &&
+         prop.as<std::string>() != "mm" &&
+         prop.as<std::string>() != "cm" &&
+         prop.as<std::string>() != "m"){
         ERROR_LOG("Unknown unit for depth map :" << prop.value);
       }else{
         m_sr->depthMapUnit = prop.value;
       }
     }else if(prop.name == "create-xyz-channels"){
-      m_sr->createXYZ = parse<bool>(prop.value);
+      m_sr->createXYZ = prop.as<bool>();
     } else {
       int curMode = SR_GetMode(m_sr->cam);
       int id = propNr(prop.name);
-      if(parse<bool>(prop.value)){
+      if(prop.as<bool>()){
         SR_SetMode(m_sr->cam, id | curMode);
       }else{
         SR_SetMode(m_sr->cam, curMode&~id);

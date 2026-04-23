@@ -109,13 +109,13 @@ namespace icl::io {
     std::scoped_lock<std::recursive_mutex> l(mutex);
     if(updating) return;
     if(prop.name == "pos_msec"){
-      data->cvc->set(cv::CAP_PROP_POS_MSEC,parse<double>(prop.value));
+      data->cvc->set(cv::CAP_PROP_POS_MSEC,prop.as<double>());
     }else if(prop.name == "pos_frames"){
-      data->cvc->set(cv::CAP_PROP_POS_FRAMES,parse<double>(prop.value));
+      data->cvc->set(cv::CAP_PROP_POS_FRAMES,prop.as<double>());
     }else if(prop.name == "pos_avi_ratio"){
-      data->cvc->set(cv::CAP_PROP_POS_AVI_RATIO,parse<double>(prop.value));
+      data->cvc->set(cv::CAP_PROP_POS_AVI_RATIO,prop.as<double>());
     }else if(prop.name  == "use_video_fps"){
-      data->use_video_fps = parse<bool>(prop.value);
+      data->use_video_fps = prop.as<bool>();
     }
   }
 

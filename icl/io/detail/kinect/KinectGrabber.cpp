@@ -687,7 +687,7 @@ namespace icl::io {
     std::scoped_lock<std::recursive_mutex> lock(m_impl->mutex);
 
     if(prop.name == "Avoid double frames"){
-      m_impl->avoidDoubleFrames = parse<bool>(prop.value);
+      m_impl->avoidDoubleFrames = prop.as<bool>();
       return;
     }
 
@@ -716,45 +716,45 @@ namespace icl::io {
           }
           */
     }else if(prop.name == "LED"){
-      if(prop.value == "off"){
+      if(prop.as<std::string>() == "off"){
         m_impl->getDevice()->used->setLed((freenect_led_options)0);
-      }else if(prop.value == "green"){
+      }else if(prop.as<std::string>() == "green"){
         m_impl->getDevice()->used->setLed((freenect_led_options)1);
-      }else if(prop.value == "red"){
+      }else if(prop.as<std::string>() == "red"){
         m_impl->getDevice()->used->setLed((freenect_led_options)2);
-      }else if(prop.value == "yellow"){
+      }else if(prop.as<std::string>() == "yellow"){
         m_impl->getDevice()->used->setLed((freenect_led_options)3);
-      }else if(prop.value == "blink yellow"){
+      }else if(prop.as<std::string>() == "blink yellow"){
         m_impl->getDevice()->used->setLed((freenect_led_options)4);
-      }else if(prop.value == "blink green"){
+      }else if(prop.as<std::string>() == "blink green"){
         m_impl->getDevice()->used->setLed((freenect_led_options)5);
-      }else if(prop.value == "blink red/yellow"){
+      }else if(prop.as<std::string>() == "blink red/yellow"){
         m_impl->getDevice()->used->setLed((freenect_led_options)6);
       }else{
         ERROR_LOG("invalid property value for property 'LED'" << prop.value);
       }
     }else if(prop.name == "Desired-Tilt-Angle"){
-      m_impl->getDevice()->used->setTiltDegrees(parse<double>(prop.value));
+      m_impl->getDevice()->used->setTiltDegrees(prop.as<double>());
     }else if(prop.name == "shift-IR-image"){
-      if(prop.value == "off"){
+      if(prop.as<std::string>() == "off"){
         m_impl->getDevice()->used->irShift = FreenectDevice::Used::Off;
-      }else if(prop.value == "fast"){
+      }else if(prop.as<std::string>() == "fast"){
         m_impl->getDevice()->used->irShift = FreenectDevice::Used::Fast;
-      }else if(prop.value == "accurate"){
+      }else if(prop.as<std::string>() == "accurate"){
         m_impl->getDevice()->used->irShift = FreenectDevice::Used::Accurate;
       }else{
         ERROR_LOG("invalid property value for property 'shift-IR-image':" << prop.value);
       }
     }else if(prop.name == "depth-image-unit"){
-      if(prop.value == "mm") m_impl->getDevice()->used->depthImageUnitMM = true;
-      else if(prop.value == "raw") m_impl->getDevice()->used->depthImageUnitMM = false;
+      if(prop.as<std::string>() == "mm") m_impl->getDevice()->used->depthImageUnitMM = true;
+      else if(prop.as<std::string>() == "raw") m_impl->getDevice()->used->depthImageUnitMM = false;
       else{
         ERROR_LOG("invalid property value for property 'depth-image-unit':" << prop.value);
       }
     }else if(prop.name == "depth-image-post-processing"){
-      if(prop.value == "off") m_impl->getDevice()->used->depthImagePostProcessingMedianRadius = 0;
-      else if(prop.value == "median 3x3") m_impl->getDevice()->used->depthImagePostProcessingMedianRadius = 3;
-      else if(prop.value == "median 5x5") m_impl->getDevice()->used->depthImagePostProcessingMedianRadius = 5;
+      if(prop.as<std::string>() == "off") m_impl->getDevice()->used->depthImagePostProcessingMedianRadius = 0;
+      else if(prop.as<std::string>() == "median 3x3") m_impl->getDevice()->used->depthImagePostProcessingMedianRadius = 3;
+      else if(prop.as<std::string>() == "median 5x5") m_impl->getDevice()->used->depthImagePostProcessingMedianRadius = 5;
       else{
         ERROR_LOG("invalid property value for property 'depth-image-post-processing':" << prop.value);
       }

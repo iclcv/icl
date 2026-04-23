@@ -160,18 +160,18 @@ namespace icl::geom {
 
   void CoplanarPointPoseEstimator::propertyChangedCallback(const Property &p){
     if(p.name == "algorithm") data->algorithm = string_to_algorithm(p.value);
-    else if(p.name == "sampling interval") data->samplingInterval = parse<float>(p.value);
-    else if(p.name == "sampling steps") data->samplingSteps = parse<int>(p.value);
-    else if(p.name == "sampling substeps") data->samplingSubSteps = parse<int>(p.value);
-    else if(p.name == "decrease factor") data->decreaseFactor = parse<float>(p.value);
-    else if(p.name == "position multiplier") data->positionMultiplier = parse<float>(p.value);
-    else if(p.name == "time monitoring") data->timeMonitoring = parse<bool>(p.value);
-    else if(p.name == "pose correction") data->poseCorrection = parse<bool>(p.value);
+    else if(p.name == "sampling interval") data->samplingInterval = p.as<float>();
+    else if(p.name == "sampling steps") data->samplingSteps = p.as<int>();
+    else if(p.name == "sampling substeps") data->samplingSubSteps = p.as<int>();
+    else if(p.name == "decrease factor") data->decreaseFactor = p.as<float>();
+    else if(p.name == "position multiplier") data->positionMultiplier = p.as<float>();
+    else if(p.name == "time monitoring") data->timeMonitoring = p.as<bool>();
+    else if(p.name == "pose correction") data->poseCorrection = p.as<bool>();
     else if(p.name == "RANSAC.algorithm") data->ransacSpec.poseEstimationDuringSampling = string_to_algorithm(p.value);
-    else if(p.name == "RANSAC.enable") data->ransacSpec.useRANSAC = parse<bool>(p.value);
-    else if(p.name == "RANSAC.num points for model") data->ransacSpec.numPointsForModel = parse<int>(p.value);
-    else if(p.name == "RANSAC.number of cycles") data->ransacSpec.numRandomCycles = parse<int>(p.value);
-    else if(p.name == "RANSAC.max projection distance") data->ransacSpec.maxPointProjectionDistance = parse<float>(p.value);
+    else if(p.name == "RANSAC.enable") data->ransacSpec.useRANSAC = p.as<bool>();
+    else if(p.name == "RANSAC.num points for model") data->ransacSpec.numPointsForModel = p.as<int>();
+    else if(p.name == "RANSAC.number of cycles") data->ransacSpec.numRandomCycles = p.as<int>();
+    else if(p.name == "RANSAC.max projection distance") data->ransacSpec.maxPointProjectionDistance = p.as<float>();
     else {
       WARNING_LOG("invalid property name: " << p.name);
     }

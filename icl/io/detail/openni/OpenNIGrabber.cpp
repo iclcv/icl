@@ -153,7 +153,7 @@ void OpenNIGrabber::processPropertyChange(const utils::Configurable::Property &p
     setPropertyValue("map output mode", prop.value);
   }
   if (prop.name == "omit double frames"){
-    m_OmitDoubleFrames = parse<bool>(prop.value);
+    m_OmitDoubleFrames = prop.as<bool>();
     return;
   }
   // "size" is ignored

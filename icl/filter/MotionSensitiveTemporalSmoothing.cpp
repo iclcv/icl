@@ -113,14 +113,14 @@ MotionSensitiveTemporalSmoothing::MotionSensitiveTemporalSmoothing(
   addProperty("use CL",utils::prop::Flag{}, true);
   registerCallback([this](const Property &p){
     if(p.name == "filter size"){
-      int v = std::clamp(parse<int>(p.value), 1, m_maxFilterSize);
+      int v = std::clamp(p.as<int>(), 1, m_maxFilterSize);
       if(v != m_filterSize){
         m_filterSize = v;
         for(auto &ch : m_channels) ch.imgCount = 0;
       }
     }
-    else if(p.name == "difference")   m_difference = parse<int>(p.value);
-    else if(p.name == "use CL")       m_useCL = parse<bool>(p.value);
+    else if(p.name == "difference")   m_difference = p.as<int>();
+    else if(p.name == "use CL")       m_useCL = p.as<bool>();
   });
 }
 

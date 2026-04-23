@@ -146,7 +146,7 @@ namespace icl::io {
                     "low-noise binary masks); 4/6 = lossy quantization; "
                     "8 = lossless byte-level RLE.");
         Configurable::registerCallback([this](const Property &p){
-          if (p.name == "quality") m_quality = parse<int>(p.value);
+          if (p.name == "quality") m_quality = p.as<int>();
         });
       }
 

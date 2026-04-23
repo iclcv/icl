@@ -53,7 +53,7 @@ namespace icl::filter {
     addProperty("value",utils::prop::Range{.min=0, .max=255, .ui=utils::prop::UI::Spinbox}, val);
     registerCallback([this](const Property &p){
       if(p.name == "op")        m_eOpType = parseLogic(p.value);
-      else if(p.name == "value") m_dValue = parse<icl32s>(p.value);
+      else if(p.name == "value") m_dValue = p.as<icl32s>();
     });
   }
 

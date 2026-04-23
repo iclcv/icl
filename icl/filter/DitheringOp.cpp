@@ -18,7 +18,7 @@ namespace icl{
       addProperty("levels",utils::prop::Range{.min=2, .max=128, .ui=utils::prop::UI::Spinbox}, m_levels);
       registerCallback([this](const Property &p){
         if(p.name == "levels"){
-          m_levels = std::clamp(parse<int>(p.value), 2, 128);
+          m_levels = std::clamp(p.as<int>(), 2, 128);
         }
       });
     }

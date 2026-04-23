@@ -337,9 +337,9 @@ namespace icl::io {
   /// callback for changed configurable properties
   void Kinect2Grabber::processPropertyChange(const utils::Configurable::Property &prop){
     if(prop.name == "Avoid double frames"){
-      m_impl->avoidDoubledFrames = parse<bool>(prop.value);
+      m_impl->avoidDoubledFrames = prop.as<bool>();
     }else if(prop.name == "Unflip X-Axis"){
-      m_impl->unflipXAxis = parse<bool>(prop.value);
+      m_impl->unflipXAxis = prop.as<bool>();
     }
   }
 

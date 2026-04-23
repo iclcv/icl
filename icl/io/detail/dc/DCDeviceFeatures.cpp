@@ -265,9 +265,9 @@ namespace icl::io{
         ICLASSERT_RETURN(info);
 
         dc1394feature_mode_t newMode;
-        if(prop.value=="auto") {
+        if(prop.as<std::string>() == "auto") {
           newMode = DC1394_FEATURE_MODE_AUTO;
-        } else if(prop.value=="manual") {
+        } else if(prop.as<std::string>() == "manual") {
           newMode = DC1394_FEATURE_MODE_MANUAL;
         } else {
           newMode = DC1394_FEATURE_MODE_ONE_PUSH_AUTO;
@@ -277,17 +277,17 @@ namespace icl::io{
       }else if(prop.name == "WHITE_BALANCE_BU"){
         dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
         ICLASSERT_RETURN(info);
-        info->BU_value = parse<int>(prop.value);
+        info->BU_value = prop.as<int>();
         dc1394_feature_whitebalance_set_value(dev.getCam(),info->BU_value,info->RV_value);
       }else if(prop.name == "WHITE_BALANCE_RV"){
         dc1394feature_info_t *info = getInfoPtr("WHITE_BALANCE");
         ICLASSERT_RETURN(info);
-        info->RV_value = parse<int>(prop.value);
+        info->RV_value = prop.as<int>();
         dc1394_feature_whitebalance_set_value(dev.getCam(),info->BU_value,info->RV_value);
       }else{
         dc1394feature_info_t *info = getInfoPtr(prop.name);
         ICLASSERT_RETURN(info);
-        info->value = parse<int>(prop.value);
+        info->value = prop.as<int>();
         dc1394_feature_set_value(dev.getCam(),info->id,info->value);
       }
     }

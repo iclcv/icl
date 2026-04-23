@@ -908,7 +908,7 @@ void MapGeneratorOptions::processPropertyChange(
   } else if (prop.name == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
     alternativeViewPiontCapabilitySet(m_Generator, prop.value, m_ProductionNodeMap);
   } else if (prop.name == XN_CAPABILITY_MIRROR){
-    m_Generator -> GetMirrorCap().SetMirror(parse<bool>(prop.value));
+    m_Generator -> GetMirrorCap().SetMirror(prop.as<bool>());
   } else if (setGeneralIntCapability(m_Generator, prop.name, prop.value)){
     // nothing to do setting is done in condition
   } else if (prop.name == "map output mode"){
@@ -967,7 +967,7 @@ DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator)
 // callback for changed configurable properties
 void DepthGeneratorOptions::processPropertyChange(const utils::Configurable::Property &prop){
   if(prop.name == "GmcMode"){
-    if (prop.value == "false"){
+    if (prop.as<std::string>() == "false"){
         assertStatus(m_DepthGenerator->SetIntProperty("GmcMode", 0));
     } else {
         assertStatus(m_DepthGenerator->SetIntProperty("GmcMode", 1));
@@ -1034,27 +1034,27 @@ ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator)
 // callback for changed configurable properties
 void ImageGeneratorOptions::processPropertyChange(const utils::Configurable::Property &prop){
   if(prop.name == "Pixel Format"){
-    if (prop.value == "rgb24"){
+    if (prop.as<std::string>() == "rgb24"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_RGB24)){
         assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_RGB24),false);
       }
     }
-    if (prop.value == "yuv422"){
+    if (prop.as<std::string>() == "yuv422"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_YUV422)){
         assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_YUV422),false);
       }
     }
-    if (prop.value == "grayscale8"){
+    if (prop.as<std::string>() == "grayscale8"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT)){
         assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_8_BIT),false);
       }
     }
-    if (prop.value == "grayscale16"){
+    if (prop.as<std::string>() == "grayscale16"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT)){
         assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_GRAYSCALE_16_BIT),false);
       }
     }
-    if (prop.value == "mjpeg"){
+    if (prop.as<std::string>() == "mjpeg"){
       if (m_ImageGenerator -> IsPixelFormatSupported(XN_PIXEL_FORMAT_MJPEG)){
         assertStatus(m_ImageGenerator -> SetPixelFormat(XN_PIXEL_FORMAT_MJPEG),false);
       }

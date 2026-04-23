@@ -239,7 +239,7 @@ namespace icl::io {
     // `compression.*` properties live on the inner ImageCompressor child
     // and are handled there — we only see local properties here.
     if (p.name == "max message size MB") {
-      const qint64 mb = parse<int>(p.value);
+      const qint64 mb = p.as<int>();
       m_data->maxMessageSizeBytes = mb * 1024 * 1024;
       // Apply to existing+future clients on the WS thread
       if (m_data->server) {

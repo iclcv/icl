@@ -38,16 +38,16 @@ namespace icl{
       init(imageSize,std::vector<float>(5,0));
     }
     if(p.name == "interpolation"){
-      if(p.value == "linear"){
+      if(p.as<std::string>() == "linear"){
         warpOp.setScaleMode(interpolateLIN);
       }else{
         warpOp.setScaleMode(interpolateNN);
       }
     }else if(p.name[0] == 'k'){
-      k[parse<int>(p.name.substr(1))] = parse<float>(p.value);
+      k[parse<int>(p.name.substr(1))] = p.as<float>();
       warpMapDirty = true;
     }else if(p.name[0] == 'i'){
-      float v = parse<float>(p.value);
+      float v = p.as<float>();
       if(p.name[1] == 'x') k[5] = imageSize.width/2.0 + v;
       else if(p.name[1] == 'y') k[6] = imageSize.height/2.0 + v;
       warpMapDirty = true;

@@ -34,10 +34,10 @@ BilateralFilterOp::BilateralFilterOp(int radius, float sigma_s, float sigma_r, b
   addProperty("sigma_r",utils::prop::Range{.min=0.1f, .max=200.f, .step=0.1f}, sigma_r);
   addProperty("use LAB",utils::prop::Flag{}, use_lab);
   registerCallback([this](const Property &p){
-    if(p.name == "radius")        m_radius = parse<int>(p.value);
-    else if(p.name == "sigma_s")  m_sigmaS = parse<float>(p.value);
-    else if(p.name == "sigma_r")  m_sigmaR = parse<float>(p.value);
-    else if(p.name == "use LAB")  m_useLAB = parse<bool>(p.value);
+    if(p.name == "radius")        m_radius = p.as<int>();
+    else if(p.name == "sigma_s")  m_sigmaS = p.as<float>();
+    else if(p.name == "sigma_r")  m_sigmaR = p.as<float>();
+    else if(p.name == "use LAB")  m_useLAB = p.as<bool>();
   });
 }
 

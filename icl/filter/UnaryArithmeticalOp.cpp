@@ -63,7 +63,7 @@ namespace icl::filter {
     addProperty("value",utils::prop::Range{.min=-255, .max=512}, val);
     registerCallback([this](const Property &p){
       if(p.name == "op")        m_eOpType = parseArith(p.value);
-      else if(p.name == "value") m_dValue = parse<icl64f>(p.value);
+      else if(p.name == "value") m_dValue = p.as<icl64f>();
     });
   }
 

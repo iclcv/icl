@@ -195,10 +195,10 @@ namespace icl::filter {
     addProperty("scale factor",utils::prop::Range{.min=1, .max=16, .ui=utils::prop::UI::Spinbox}, scaleFactor);
     addProperty("scale up result",utils::prop::Flag{}, scaleUpResult);
     registerCallback([this](const Property &p){
-      if(p.name == "hv distance")         m_iHorizontalAndVerticalNeighbourDistance = parse<icl32s>(p.value);
-      else if(p.name == "diag distance")  m_iDiagonalNeighborDistance = parse<icl32s>(p.value);
-      else if(p.name == "scale factor")   m_iScaleFactor = parse<int>(p.value);
-      else if(p.name == "scale up result") m_bScaleUpResult = parse<bool>(p.value);
+      if(p.name == "hv distance")         m_iHorizontalAndVerticalNeighbourDistance = p.as<icl32s>();
+      else if(p.name == "diag distance")  m_iDiagonalNeighborDistance = p.as<icl32s>();
+      else if(p.name == "scale factor")   m_iScaleFactor = p.as<int>();
+      else if(p.name == "scale up result") m_bScaleUpResult = p.as<bool>();
     });
   }
 

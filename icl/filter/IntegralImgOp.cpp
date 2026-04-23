@@ -29,7 +29,7 @@ namespace icl::filter {
     addProperty("integral image depth",utils::prop::menuFromCsv(INTEGRAL_DEPTH_MENU), depthName(d));
     registerCallback([this](const Property &p){
       if(p.name == "integral image depth")
-        m_integralImageDepth = parse<depth>(p.value);
+        m_integralImageDepth = p.as<depth>();
     });
   }
 

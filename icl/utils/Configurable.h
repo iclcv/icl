@@ -216,7 +216,7 @@ namespace icl::utils {
       /// arithmetic `T`, `parse<T>` if stored as string, stringify on
       /// `T = std::string` request.
       ///
-      /// Preferred over `parse<T>(p.value)` in callback bodies — zero
+      /// Preferred over `p.as<T>()` in callback bodies — zero
       /// string round-trip in the common case where the stored type
       /// matches the requested T (which it does for every typed- or
       /// legacy-dispatched property after step 9 commit 1).

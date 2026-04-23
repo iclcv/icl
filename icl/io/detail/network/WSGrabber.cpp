@@ -257,20 +257,20 @@ namespace icl::io {
     registerCallback([this](const Property &p){
       if (!m_data || !m_data->client) return;
       if (p.name == "block timeout ms") {
-        m_data->blockTimeoutMs = parse<int>(p.value);
+        m_data->blockTimeoutMs = p.as<int>();
       } else if (p.name == "replay last on timeout") {
-        m_data->replayLastOnTimeout = (p.value == "true");
+        m_data->replayLastOnTimeout = (p.as<std::string>() == "true");
       } else if (p.name == "queue size") {
-        const int q = parse<int>(p.value);
+        const int q = p.as<int>();
         QMetaObject::invokeMethod(m_data->client, [c = m_data->client, q]{
           std::scoped_lock lk(c->qMutex);
           c->queueCap = std::max(1, q);
         }, Qt::QueuedConnection);
       } else if (p.name == "reconnect backoff initial ms") {
-        const int v = parse<int>(p.value);
+        const int v = p.as<int>();
         m_data->client->backoffInitialMs = v;
       } else if (p.name == "reconnect backoff max ms") {
-        const int v = parse<int>(p.value);
+        const int v = p.as<int>();
         m_data->client->backoffMaxMs = v;
       }
     });

@@ -39,7 +39,7 @@ namespace icl::io {
                     "Defaults to 90; values around 70 are typically a good "
                     "size/quality tradeoff for natural images.");
         Configurable::registerCallback([this](const Property &p){
-          if (p.name == "quality") m_quality = parse<int>(p.value);
+          if (p.name == "quality") m_quality = p.as<int>();
         });
       }
 

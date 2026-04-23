@@ -46,7 +46,7 @@ namespace icl::filter {
     addProperty("normalize",utils::prop::Flag{}, m_normalize);
     registerCallback([this](const Property &p){
       if(p.name == "mode")           m_mode = parseMode(p.value);
-      else if(p.name == "normalize") m_normalize = parse<bool>(p.value);
+      else if(p.name == "normalize") m_normalize = p.as<bool>();
     });
   }
 

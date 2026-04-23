@@ -130,11 +130,11 @@ namespace icl::filter {
     addProperty("max value",utils::prop::Range{.min=1, .max=65535, .ui=utils::prop::UI::Spinbox}, maxValue);
     registerCallback([this](const Property &p){
       if(p.name == "mode"){
-        if(p.value == "Default"){
+        if(p.as<std::string>() == "Default"){
           m_data->setDefault(m_data->maxVal);
         }
       }else if(p.name == "max value"){
-        const int v = parse<int>(p.value);
+        const int v = p.as<int>();
         if(m_data->mode == Default)    m_data->setDefault(v);
         else                           m_data->setCustom(m_data->stops, v);
       }
@@ -148,9 +148,9 @@ namespace icl::filter {
     addProperty("max value",utils::prop::Range{.min=1, .max=65535, .ui=utils::prop::UI::Spinbox}, maxValue);
     registerCallback([this](const Property &p){
       if(p.name == "mode"){
-        if(p.value == "Default")       m_data->setDefault(m_data->maxVal);
+        if(p.as<std::string>() == "Default")       m_data->setDefault(m_data->maxVal);
       }else if(p.name == "max value"){
-        const int v = parse<int>(p.value);
+        const int v = p.as<int>();
         if(m_data->mode == Default)    m_data->setDefault(v);
         else                           m_data->setCustom(m_data->stops, v);
       }

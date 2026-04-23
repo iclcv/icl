@@ -295,37 +295,37 @@ namespace icl::io {
 
   void Grabber::processPropertyChange(const utils::Configurable::Property &prop){
     if(prop.name == "desired size"){
-      if(prop.value == "not used"){
+      if(prop.as<std::string>() == "not used"){
         ignoreDesired<Size>();
       } else {
-        useDesired<Size>(parse<Size>(prop.value));
+        useDesired<Size>(prop.as<Size>());
       }
     } else if (prop.name == "desired depth"){
-      if(prop.value == "not used"){
+      if(prop.as<std::string>() == "not used"){
         ignoreDesired<depth>();
       } else {
-        useDesired<depth>(parse<depth>(prop.value));
+        useDesired<depth>(prop.as<depth>());
       }
     } else if (prop.name == "desired format"){
-      if(prop.value == "not used"){
+      if(prop.as<std::string>() == "not used"){
         ignoreDesired<format>();
       } else {
-        useDesired<format>(parse<format>(prop.value));
+        useDesired<format>(prop.as<format>());
       }
     }else if (prop.name == "undistortion.enable"){
-      data->undistortionEnabled = parse<bool>(prop.value);
+      data->undistortionEnabled = prop.as<bool>();
     }else if (prop.name == "undistortion.interpolation"){
-      if(prop.value == "nearest"){
+      if(prop.as<std::string>() == "nearest"){
         data->undistortionInterpolationMode = interpolateNN;
-      }else if(prop.value == "linear"){
+      }else if(prop.as<std::string>() == "linear"){
         data->undistortionInterpolationMode = interpolateLIN;
-      }else if(prop.value == "multisampling"){
+      }else if(prop.as<std::string>() == "multisampling"){
         data->undistortionInterpolationMode = interpolateRA;
       }else{
         ERROR_LOG("invalid value for property undistortion.multisampling");
       }
     }else if(prop.name == "undistortion.use OpenCL"){
-      data->undistortionUseOpenCL = parse<bool>(prop.value);
+      data->undistortionUseOpenCL = prop.as<bool>();
     }
   }
 

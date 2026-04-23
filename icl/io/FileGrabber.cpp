@@ -387,9 +387,9 @@ namespace icl::io {
       }else if(prop.name == "prev"){
         prev();
       }else if(prop.name == "loop"){
-        m_data->loop = parse<bool>(prop.value);
+        m_data->loop = prop.as<bool>();
       }else if(prop.name == "use-time-stamps"){
-        bool val = parse<bool>(prop.value);
+        bool val = prop.as<bool>();
         if(val != m_data->useTimeStamps){
           m_data->useTimeStamps = val;
           m_data->referenceTime = Time(0);
@@ -398,12 +398,12 @@ namespace icl::io {
       }else if(prop.name == "jump-to-start"){
         m_data->iCurrIdx = 0;
       }else if(prop.name == "auto-next"){
-        m_data->bAutoNext = parse<bool>(prop.value);
+        m_data->bAutoNext = prop.as<bool>();
       }else if(prop.name ==  "frame-index"){
         if(m_data->bAutoNext){
           WARNING_LOG("the \"frame-index\" property cannot be set if \"auto-next\" is on");
         }else{
-          int idx = parse<int>(prop.value);
+          int idx = prop.as<int>();
           if(idx < 0 || idx >= m_data->oFileList.size()){
             if(idx < 0){
               idx = 0;
@@ -412,7 +412,7 @@ namespace icl::io {
             }
             WARNING_LOG("given frame-index was not within the valid range (given value was clipped)");
           }
-          m_data->iCurrIdx = parse<int>(prop.value) % (m_data->oFileList.size()-1);
+          m_data->iCurrIdx = prop.as<int>() % (m_data->oFileList.size()-1);
           Thread::sleep(0.2);
         }
       }else{

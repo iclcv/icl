@@ -16,11 +16,11 @@ namespace icl::filter {
   void CannyOp::property_callback(const Property &p){
     // Keep inner-loop caches in sync with the property store.
     if(p.name == "low threshold"){
-      m_lowT = parse<icl32f>(p.value);
+      m_lowT = p.as<icl32f>();
     }else if(p.name == "high threshold"){
-      m_highT = parse<icl32f>(p.value);
+      m_highT = p.as<icl32f>();
     }else if(p.name == "pre-blur radius"){
-      m_preBlurRadius = parse<int>(p.value);
+      m_preBlurRadius = p.as<int>();
       ICL_DELETE(m_preBlurOp);
       setUpPreBlurOp();
     }

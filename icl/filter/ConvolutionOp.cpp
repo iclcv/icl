@@ -74,7 +74,7 @@ namespace icl::filter {
       }
       // else: "custom" — leave m_kernel alone (was set explicitly via setKernel)
     }else if(p.name == "force unsigned output"){
-      m_forceUnsignedOutput = parse<bool>(p.value);
+      m_forceUnsignedOutput = p.as<bool>();
     }
   }
 

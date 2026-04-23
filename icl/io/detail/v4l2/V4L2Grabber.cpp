@@ -754,7 +754,7 @@ namespace icl::io {
     }else if(prop.name == "size"){
       // this is adjusted by the format
     }else if(prop.name == "avoid doubled frames"){
-      impl->avoidDoubleFrames = parse<bool>(prop.value);
+      impl->avoidDoubleFrames = prop.as<bool>();
     }else{
       Impl::SupportedPropertyPtr p = impl->findProperty(prop.name);
       if (p.get()) p -> setValue(prop.value);

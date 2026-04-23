@@ -95,18 +95,18 @@ struct ConfigurableUDist : public Configurable{
       DEBUG_LOG("before: " << *udist);
       std::vector<double> ps = udist->getParams();
       if(p.name == "fx"){
-        ps[0] = parse<double>(p.value);
+        ps[0] = p.as<double>();
       }else if(p.name == "fy"){
-        ps[1] = parse<double>(p.value);
+        ps[1] = p.as<double>();
       }else if(p.name == "ix"){
-        ps[2] = parse<double>(p.value);
+        ps[2] = p.as<double>();
       }else if(p.name == "iy"){
-        ps[3] = parse<double>(p.value);
+        ps[3] = p.as<double>();
       }else if(p.name == "skew"){
-        ps[4] = parse<double>(p.value);
+        ps[4] = p.as<double>();
       }else{
         int idx = parse<int>(p.name.substr(1));
-        ps[idx+4] = parse<double>(p.value);
+        ps[idx+4] = p.as<double>();
       }
       udist->setParams(ps);
       DEBUG_LOG("after: " << *udist);

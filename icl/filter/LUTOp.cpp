@@ -37,7 +37,7 @@ namespace icl::filter {
     addProperty("quantization levels",utils::prop::Range{.min=2, .max=255, .ui=utils::prop::UI::Spinbox}, (int)quantizationLevels);
     registerCallback([this](const Property &p){
       if(p.name == "quantization levels"){
-        m_ucQuantizationLevels = parse<int>(p.value);
+        m_ucQuantizationLevels = p.as<int>();
         m_vecLUT.clear();
         m_bLutSet = false;
         m_bLevelsSet = true;
