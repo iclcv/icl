@@ -346,7 +346,7 @@ namespace icl::utils {
     if(p.typed_value.has_value()){
       return AutoParse<std::any>(p.typed_value);
     }
-    return AutoParse<std::any>(std::any(p.value));
+    return AutoParse<std::any>(std::any(p.as<std::string>()));
   }
 
   bool Configurable::supportsProperty(const std::string &propertyName) const{

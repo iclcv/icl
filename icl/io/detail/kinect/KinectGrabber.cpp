@@ -699,7 +699,7 @@ namespace icl::io {
         "IR Image {8Bit}",
         "IR Image {10Bit}"
       };
-      int idx = static_cast<int>(std::find(formats, formats+5, prop.value) - formats);
+      int idx = static_cast<int>(std::find(formats, formats+5, prop.as<std::string>()) - formats);
       if(idx == 5){
         ERROR_LOG("invalid property value for property 'format'");
         return;
@@ -731,7 +731,7 @@ namespace icl::io {
       }else if(prop.as<std::string>() == "blink red/yellow"){
         m_impl->getDevice()->used->setLed((freenect_led_options)6);
       }else{
-        ERROR_LOG("invalid property value for property 'LED'" << prop.value);
+        ERROR_LOG("invalid property value for property 'LED'" << prop.as<std::string>());
       }
     }else if(prop.name == "Desired-Tilt-Angle"){
       m_impl->getDevice()->used->setTiltDegrees(prop.as<double>());
@@ -743,20 +743,20 @@ namespace icl::io {
       }else if(prop.as<std::string>() == "accurate"){
         m_impl->getDevice()->used->irShift = FreenectDevice::Used::Accurate;
       }else{
-        ERROR_LOG("invalid property value for property 'shift-IR-image':" << prop.value);
+        ERROR_LOG("invalid property value for property 'shift-IR-image':" << prop.as<std::string>());
       }
     }else if(prop.name == "depth-image-unit"){
       if(prop.as<std::string>() == "mm") m_impl->getDevice()->used->depthImageUnitMM = true;
       else if(prop.as<std::string>() == "raw") m_impl->getDevice()->used->depthImageUnitMM = false;
       else{
-        ERROR_LOG("invalid property value for property 'depth-image-unit':" << prop.value);
+        ERROR_LOG("invalid property value for property 'depth-image-unit':" << prop.as<std::string>());
       }
     }else if(prop.name == "depth-image-post-processing"){
       if(prop.as<std::string>() == "off") m_impl->getDevice()->used->depthImagePostProcessingMedianRadius = 0;
       else if(prop.as<std::string>() == "median 3x3") m_impl->getDevice()->used->depthImagePostProcessingMedianRadius = 3;
       else if(prop.as<std::string>() == "median 5x5") m_impl->getDevice()->used->depthImagePostProcessingMedianRadius = 5;
       else{
-        ERROR_LOG("invalid property value for property 'depth-image-post-processing':" << prop.value);
+        ERROR_LOG("invalid property value for property 'depth-image-post-processing':" << prop.as<std::string>());
       }
     }
   }

@@ -58,7 +58,7 @@ namespace icl::filter {
     addProperty("interpolation",utils::prop::menuFromCsv(WARP_INTERP_MENU), warpInterpName(mode));
     addProperty("allow warp map scaling",utils::prop::Flag{}, allowWarpMapScaling);
     registerCallback([this](const Property &p){
-      if(p.name == "interpolation")               m_scaleMode = parseWarpInterp(p.value);
+      if(p.name == "interpolation")               m_scaleMode = parseWarpInterp(p.as<std::string>());
       else if(p.name == "allow warp map scaling") m_allowWarpMapScaling = p.as<bool>();
     });
     // No file-path prop: filter lib can't depend on ICLIO for image loading,

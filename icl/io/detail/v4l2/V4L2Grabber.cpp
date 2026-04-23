@@ -744,7 +744,7 @@ namespace icl::io {
       std::string oldDeviceName = impl->deviceName;
       impl->stop();
       delete impl;
-      impl = new Impl(oldDeviceName,addBraces(prop.value));
+      impl = new Impl(oldDeviceName,addBraces(prop.as<std::string>()));
       setPropertyValue("avoid doubled frames",impl->avoidDoubleFrames);
       for(Impl::PMap::const_iterator it=impl->supportedProperties.begin();
           it != impl->supportedProperties.end();++it){
@@ -757,7 +757,7 @@ namespace icl::io {
       impl->avoidDoubleFrames = prop.as<bool>();
     }else{
       Impl::SupportedPropertyPtr p = impl->findProperty(prop.name);
-      if (p.get()) p -> setValue(prop.value);
+      if (p.get()) p -> setValue(prop.as<std::string>());
     }
   }
 

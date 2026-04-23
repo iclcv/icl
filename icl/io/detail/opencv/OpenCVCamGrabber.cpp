@@ -59,7 +59,7 @@ namespace icl::io {
     if(prop.name == "size"){
       cvc.reset(new cv::VideoCapture());
       cvc->open(device);
-      Size s(prop.value);
+      Size s(prop.as<std::string>());
       cvc->set(cv::CAP_PROP_FRAME_WIDTH,double(s.width));
       cvc->set(cv::CAP_PROP_FRAME_HEIGHT,double(s.height));
 

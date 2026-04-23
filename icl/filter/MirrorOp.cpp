@@ -31,7 +31,7 @@ namespace icl::filter {
    {
      addProperty("axis", utils::prop::menuFromCsv(AXIS_MENU), axisName(eAxis));
      registerCallback([this](const Property &p){
-       if(p.name == "axis") m_eAxis = parseAxis(p.value);
+       if(p.name == "axis") m_eAxis = parseAxis(p.as<std::string>());
      });
    }
 

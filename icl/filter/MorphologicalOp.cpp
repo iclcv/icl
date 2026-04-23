@@ -65,7 +65,7 @@ namespace icl::filter {
     addProperty("mask size.h",utils::prop::Range{.min=1, .max=51, .ui=utils::prop::UI::Spinbox}, m_oMaskSizeMorphOp.height);
     registerCallback([this](const Property &p){
       if(p.name == "optype"){
-        setOptype(parseOptype(p.value));
+        setOptype(parseOptype(p.as<std::string>()));
       }else if(p.name == "mask size.w" || p.name == "mask size.h"){
         const Size s(parse<int>(prop("mask size.w").value),
                      parse<int>(prop("mask size.h").value));

@@ -76,7 +76,7 @@ namespace icl::filter {
     addProperty("interpolation",utils::prop::menuFromCsv(INTERP_MENU), interpName(eInterpolate));
     registerCallback([this](const Property &p){
       if(p.name == "interpolation"){
-        m_eInterpolate = parseInterp(p.value);
+        m_eInterpolate = parseInterp(p.as<std::string>());
       }else if(p.name == "scale.x"     || p.name == "scale.y" ||
                p.name == "rotate.deg"  ||
                p.name == "translate.x" || p.name == "translate.y"){

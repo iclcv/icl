@@ -902,17 +902,17 @@ void MapGeneratorOptions::processPropertyChange(
     const utils::Configurable::Property &prop)
 {
   if(isCropping(prop.name)){
-    setCropping(m_Generator, prop.name, prop.value);
+    setCropping(m_Generator, prop.name, prop.as<std::string>());
   } else if (prop.name == XN_CAPABILITY_ANTI_FLICKER){
-    antiFlickerCapabilitySet(m_Generator, prop.value);
+    antiFlickerCapabilitySet(m_Generator, prop.as<std::string>());
   } else if (prop.name == XN_CAPABILITY_ALTERNATIVE_VIEW_POINT){
-    alternativeViewPiontCapabilitySet(m_Generator, prop.value, m_ProductionNodeMap);
+    alternativeViewPiontCapabilitySet(m_Generator, prop.as<std::string>(), m_ProductionNodeMap);
   } else if (prop.name == XN_CAPABILITY_MIRROR){
     m_Generator -> GetMirrorCap().SetMirror(prop.as<bool>());
-  } else if (setGeneralIntCapability(m_Generator, prop.name, prop.value)){
+  } else if (setGeneralIntCapability(m_Generator, prop.name, prop.as<std::string>())){
     // nothing to do setting is done in condition
   } else if (prop.name == "map output mode"){
-    setCurrentMapOutputmode(m_Generator, prop.value);
+    setCurrentMapOutputmode(m_Generator, prop.as<std::string>());
   }
 }
 

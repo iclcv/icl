@@ -62,7 +62,7 @@ namespace icl::filter {
     addProperty("op",utils::prop::menuFromCsv(ARITH_MENU), arithName(t));
     addProperty("value",utils::prop::Range{.min=-255, .max=512}, val);
     registerCallback([this](const Property &p){
-      if(p.name == "op")        m_eOpType = parseArith(p.value);
+      if(p.name == "op")        m_eOpType = parseArith(p.as<std::string>());
       else if(p.name == "value") m_dValue = p.as<icl64f>();
     });
   }

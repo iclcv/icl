@@ -259,7 +259,7 @@ namespace icl::io{
           }
         }
       }else if(is_trigger_name(prop.name,true)){
-        set_trigger_feature_value(dev.getCam(),prop.name,prop.value);
+        set_trigger_feature_value(dev.getCam(),prop.name,prop.as<std::string>());
       }else if(prop.name.length() > 5 && prop.name.substr(prop.name.length()-5)=="-mode"){
         dc1394feature_info_t *info = getInfoPtr(prop.name);
         ICLASSERT_RETURN(info);

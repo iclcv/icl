@@ -67,7 +67,7 @@ namespace icl::filter {
   void ConvolutionOp::property_callback(const Property &p){
     if(p.name == "kernel"){
       ConvolutionKernel::fixedType t;
-      if(parseFixedType(p.value, t)){
+      if(parseFixedType(p.as<std::string>(), t)){
         // Replace kernel + update NeighborhoodOp's mask size.
         m_kernel = ConvolutionKernel(t);
         setMask(m_kernel.getSize());

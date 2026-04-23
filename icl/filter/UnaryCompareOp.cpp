@@ -42,7 +42,7 @@ namespace icl::filter {
   }
 
   void UnaryCompareOp::property_callback(const Property &p){
-    if(p.name == "op")             m_eOpType    = translate_op_type(p.value);
+    if(p.name == "op")             m_eOpType    = translate_op_type(p.as<std::string>());
     else if(p.name == "value")     m_dValue     = p.as<icl64f>();
     else if(p.name == "tolerance") m_dTolerance = p.as<icl64f>();
   }

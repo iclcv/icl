@@ -234,7 +234,7 @@ namespace icl::io {
                 "Each codec exposes its own tunables as sibling properties; "
                 "the set of siblings changes when `mode` changes.");
     Configurable::registerCallback([this](const Property &p){
-      if (p.name == "mode") installPlugin(p.value, "");
+      if (p.name == "mode") installPlugin(p.as<std::string>(), "");
     });
     installPlugin(spec.mode, spec.quality);
   }

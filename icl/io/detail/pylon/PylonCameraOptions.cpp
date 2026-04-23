@@ -48,13 +48,13 @@ PylonCameraOptions::~PylonCameraOptions(){
 
 // callback for changed configurable properties
 void PylonCameraOptions::processPropertyChange(const utils::Configurable::Property &prop){
-  //DEBUG_LOG(prop.name << " = " << prop.value);
+  //DEBUG_LOG(prop.name << " = " << prop.as<std::string>());
   if(prop.name == "size"){
-    Size size(prop.value);
+    Size size(prop.as<std::string>());
     setPropertyValue("Width", size.width);
     setPropertyValue("Height", size.height);
   } else if(prop.name == "format"){
-    setPropertyValue("PixelFormat", prop.value);
+    setPropertyValue("PixelFormat", prop.as<std::string>());
   } else if(prop.name == "OmitDoubleFrames"){
     m_OmitDoubleFrames = prop.as<bool>();
   } else {
@@ -67,7 +67,7 @@ void PylonCameraOptions::processPropertyChange(const utils::Configurable::Proper
       return;
     }
     try {
-      node -> FromString(prop.value.c_str(), true);
+      node -> FromString(prop.as<std::string>().c_str(), true);
     } catch (GenICam::GenericException &e) {
       DEBUG_LOG("catched exception: " << e.what());
     }

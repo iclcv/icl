@@ -102,8 +102,8 @@ namespace icl::filter {
     addProperty("fft shift",utils::prop::Flag{}, shift);
     addProperty("force DFT",utils::prop::Flag{}, forceDFT);
     registerCallback([this](const Property &p){
-      if(p.name == "result mode")        m_data->m_rm       = parseResultMode(p.value);
-      else if(p.name == "size adaption") m_data->m_sam      = parseSizeAdaption(p.value);
+      if(p.name == "result mode")        m_data->m_rm       = parseResultMode(p.as<std::string>());
+      else if(p.name == "size adaption") m_data->m_sam      = parseSizeAdaption(p.as<std::string>());
       else if(p.name == "fft shift")     m_data->m_shift    = p.as<bool>();
       else if(p.name == "force DFT")     m_data->m_forceDFT = p.as<bool>();
     });

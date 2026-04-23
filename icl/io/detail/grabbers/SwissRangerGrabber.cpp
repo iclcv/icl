@@ -390,21 +390,21 @@ namespace icl::io {
       if(prop.as<std::string>() == "minus one") m_sr->iim = iimUnknownPixelsMinusOne;
       else if(prop.as<std::string>() == "zero") m_sr->iim = iimUnknownPixelsZero;
       else if(prop.as<std::string>() == "unchanged") m_sr->iim = iimUnknownPixelsUnchanged;
-      else ERROR_LOG("invalid value \"" << prop.value << "\" for property \"" << prop.name << "\"");
+      else ERROR_LOG("invalid value \"" << prop.as<std::string>() << "\" for property \"" << prop.name << "\"");
     }else if(prop.name == "modulation-frequency"){
       try{
-        SR_SetModulationFrequency(m_sr->cam, translate_modulation_freq(prop.value));
+        SR_SetModulationFrequency(m_sr->cam, translate_modulation_freq(prop.as<std::string>()));
       }catch(...){
-        ERROR_LOG("undefined modulation frequency value :" << prop.value);
+        ERROR_LOG("undefined modulation frequency value :" << prop.as<std::string>());
       }
     }else if(prop.name == "depth-map-unit"){
       if(prop.as<std::string>() != "16Bit" &&
          prop.as<std::string>() != "mm" &&
          prop.as<std::string>() != "cm" &&
          prop.as<std::string>() != "m"){
-        ERROR_LOG("Unknown unit for depth map :" << prop.value);
+        ERROR_LOG("Unknown unit for depth map :" << prop.as<std::string>());
       }else{
-        m_sr->depthMapUnit = prop.value;
+        m_sr->depthMapUnit = prop.as<std::string>();
       }
     }else if(prop.name == "create-xyz-channels"){
       m_sr->createXYZ = prop.as<bool>();

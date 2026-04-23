@@ -52,7 +52,7 @@ namespace icl::filter {
   }
 
   void ThresholdOp::property_callback(const Property &p){
-    if(p.name == "type")                m_eType          = parseType(p.value);
+    if(p.name == "type")                m_eType          = parseType(p.as<std::string>());
     else if(p.name == "low threshold")  m_fLowThreshold  = p.as<float>();
     else if(p.name == "high threshold") m_fHighThreshold = p.as<float>();
     else if(p.name == "low val")        m_fLowVal        = p.as<float>();

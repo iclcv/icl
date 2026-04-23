@@ -192,9 +192,9 @@ namespace icl::io {
     if(prop.name == "omit-doubled-frames"){
       m_oOptions.suppressDoubledImages = prop.as<bool>();
     }else if(prop.name == "bayer-quality"){
-      m_oOptions.bayermethod = bayermethod_from_string(prop.value);
+      m_oOptions.bayermethod = bayermethod_from_string(prop.as<std::string>());
     }else if(prop.name == "format"){
-      DCDevice::Mode m(prop.value);
+      DCDevice::Mode m(prop.as<std::string>());
       if(m_oDev.getMode() != m && m_oDev.supports(m)){
         m_oOptions.framerate = m.framerate;
         m_oOptions.videomode = m.videomode;
@@ -218,11 +218,11 @@ namespace icl::io {
     }else if(prop.name == "bayer-layout"){
       if(static_cast<int>(m_oDev.getBayerFilterLayout()) == 1){
         if(prop.as<std::string>() == "RGGB" || prop.as<std::string>() == "GBRG" || prop.as<std::string>() == "GRBG" || prop.as<std::string>() == "BGGR" || prop.as<std::string>() == "NONE"){
-          m_sUserDefinedBayerPattern = prop.value;
+          m_sUserDefinedBayerPattern = prop.as<std::string>();
         }else{
           ERROR_LOG("parameter bayer layout does only support this values:\n"
                     " \"RGGB\",\"GBRG\", \"GRBG\", \"BGGR\" and \"NONE\",\""
-                    " nothing known about \"" << prop.value << "\"");
+                    " nothing known about \"" << prop.as<std::string>() << "\"");
         }
       }else{
         ERROR_LOG("This device does not support \"bayer-layout\" as user defined property\n"

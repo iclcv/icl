@@ -52,7 +52,7 @@ namespace icl::filter {
     addProperty("op",utils::prop::menuFromCsv(LOGIC_MENU), logicName(t));
     addProperty("value",utils::prop::Range{.min=0, .max=255, .ui=utils::prop::UI::Spinbox}, val);
     registerCallback([this](const Property &p){
-      if(p.name == "op")        m_eOpType = parseLogic(p.value);
+      if(p.name == "op")        m_eOpType = parseLogic(p.as<std::string>());
       else if(p.name == "value") m_dValue = p.as<icl32s>();
     });
   }

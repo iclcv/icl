@@ -159,7 +159,7 @@ namespace icl::geom {
   }
 
   void CoplanarPointPoseEstimator::propertyChangedCallback(const Property &p){
-    if(p.name == "algorithm") data->algorithm = string_to_algorithm(p.value);
+    if(p.name == "algorithm") data->algorithm = string_to_algorithm(p.as<std::string>());
     else if(p.name == "sampling interval") data->samplingInterval = p.as<float>();
     else if(p.name == "sampling steps") data->samplingSteps = p.as<int>();
     else if(p.name == "sampling substeps") data->samplingSubSteps = p.as<int>();
@@ -167,7 +167,7 @@ namespace icl::geom {
     else if(p.name == "position multiplier") data->positionMultiplier = p.as<float>();
     else if(p.name == "time monitoring") data->timeMonitoring = p.as<bool>();
     else if(p.name == "pose correction") data->poseCorrection = p.as<bool>();
-    else if(p.name == "RANSAC.algorithm") data->ransacSpec.poseEstimationDuringSampling = string_to_algorithm(p.value);
+    else if(p.name == "RANSAC.algorithm") data->ransacSpec.poseEstimationDuringSampling = string_to_algorithm(p.as<std::string>());
     else if(p.name == "RANSAC.enable") data->ransacSpec.useRANSAC = p.as<bool>();
     else if(p.name == "RANSAC.num points for model") data->ransacSpec.numPointsForModel = p.as<int>();
     else if(p.name == "RANSAC.number of cycles") data->ransacSpec.numRandomCycles = p.as<int>();

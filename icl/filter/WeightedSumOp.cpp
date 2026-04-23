@@ -30,7 +30,7 @@ namespace icl::filter {
   WeightedSumOp::WeightedSumOp(){
     addProperty("weights",utils::prop::Text{.maxLength=128}, WEIGHTED_SUM_DEFAULT);
     registerCallback([this](const Property &p){
-      if(p.name == "weights") m_vecWeights = parseW(p.value);
+      if(p.name == "weights") m_vecWeights = parseW(p.as<std::string>());
     });
     m_vecWeights = parseW(WEIGHTED_SUM_DEFAULT);
   }
@@ -38,7 +38,7 @@ namespace icl::filter {
     : m_vecWeights(weights){
     addProperty("weights",utils::prop::Text{.maxLength=128}, joinW(weights));
     registerCallback([this](const Property &p){
-      if(p.name == "weights") m_vecWeights = parseW(p.value);
+      if(p.name == "weights") m_vecWeights = parseW(p.as<std::string>());
     });
   }
   void WeightedSumOp::setWeights(const std::vector<icl64f> &weights){

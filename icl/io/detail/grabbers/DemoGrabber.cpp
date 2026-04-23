@@ -176,9 +176,9 @@ namespace icl::io {
       int percent = prop.as<int>();
       m_size = Size32f(percent/100.,percent/100.);
     }else if(prop.name == "format"){
-      std::vector<std::string> x = tok(prop.value,"-");
+      std::vector<std::string> x = tok(prop.as<std::string>(),"-");
       if(x.size() != 2){
-        ERROR_LOG("invalid value for prorerty \"format\"" << prop.value);
+        ERROR_LOG("invalid value for prorerty \"format\"" << prop.as<std::string>());
       }else{
         m_drawFormat = parse<format>(x[0]);
         m_drawDepth = parse<depth>(x[1]);

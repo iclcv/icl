@@ -38,7 +38,7 @@ namespace icl::filter {
   WeightChannelsOp::WeightChannelsOp(){
     addProperty("weights",utils::prop::Text{.maxLength=128}, WEIGHT_STRING_DEFAULT);
     registerCallback([this](const Property &p){
-      if(p.name == "weights") m_vecWeights = parseWeights(p.value);
+      if(p.name == "weights") m_vecWeights = parseWeights(p.as<std::string>());
     });
     m_vecWeights = parseWeights(WEIGHT_STRING_DEFAULT);
   }
@@ -47,7 +47,7 @@ namespace icl::filter {
     : m_vecWeights(weights){
     addProperty("weights",utils::prop::Text{.maxLength=128}, joinWeights(weights));
     registerCallback([this](const Property &p){
-      if(p.name == "weights") m_vecWeights = parseWeights(p.value);
+      if(p.name == "weights") m_vecWeights = parseWeights(p.as<std::string>());
     });
   }
 
