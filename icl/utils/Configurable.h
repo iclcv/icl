@@ -512,9 +512,28 @@ namespace icl::utils {
     /** Please take care to not create cyclic dependency graphs */
     void syncChangesTo(Configurable *others, int num=1);
 
+    /// Function type for observing the child-Configurable set.
+    /** Fires after addChildConfigurable / removeChildConfigurable has
+        finished mutating m_childConfigurables and m_properties — the
+        observer can safely re-read the current property list. */
+    using ChildSetCallback = std::function<void()>;
+
+    /// add a callback invoked when the child-Configurable set changes at runtime
+    /** Primary consumer: qt::Prop's ConfigurableGUIWidget, which rebuilds
+        its widget tree so codec swaps on ImageCompressor or backend swaps
+        on GenericGrabber are visible live.  Callbacks should not synchronously
+        call addChildConfigurable / removeChildConfigurable on the same
+        Configurable — the fire site is not re-entrancy-protected. */
+    void onChildSetChanged(const ChildSetCallback &cb){
+      m_childSetCallbacks.push_back(cb);
+    }
+
     protected:
     /// internally managed list of callbacks
     std::vector<Callback> callbacks;
+
+    /// internally managed list of child-set observers
+    std::vector<ChildSetCallback> m_childSetCallbacks;
 
     /// calls all registered callbacks
     /**
@@ -522,6 +541,9 @@ namespace icl::utils {
     @param caller the instance calling the function
     **/
     void call_callbacks(const std::string &propertyName,const Configurable* caller) const;
+
+    /// fires every registered onChildSetChanged callback
+    void fire_child_set_changed() const;
 
     public:
 

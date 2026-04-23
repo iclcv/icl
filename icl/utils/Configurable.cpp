@@ -169,6 +169,7 @@ namespace icl::utils {
       if(m_isOrdered) m_ordering[m_properties.size()] = p.name;
     }
     configurable -> m_elderConfigurable = this;
+    fire_child_set_changed();
   }
 
   void Configurable::removeChildConfigurable(Configurable *configurable){
@@ -195,6 +196,16 @@ namespace icl::utils {
     }
     m_childConfigurables.erase(cit);
     configurable->m_elderConfigurable = nullptr;
+    fire_child_set_changed();
+  }
+
+  void Configurable::fire_child_set_changed() const {
+    // Iterate by index — a callback may mutate observers' state but must
+    // not call addChildConfigurable / removeChildConfigurable on *this*
+    // synchronously (documented precondition on onChildSetChanged).
+    for (size_t i = 0; i < m_childSetCallbacks.size(); ++i) {
+      m_childSetCallbacks[i]();
+    }
   }
 
   const Configurable::Property &Configurable::prop_storage(const std::string &propertyName) const{
