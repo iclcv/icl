@@ -325,32 +325,32 @@ namespace icl{
         namespace up = utils::prop;
         namespace cp = core::prop;
         for(const std::string &p : conf->getPropertyListWithoutDeactivated()){
-          std::any c = conf->getPropertyConstraint(p);
+          auto h = conf->prop(p);
+          const std::any &c = h.constraint;
           if(auto *r = std::any_cast<up::Range<float>>(&c)){
             if(r->ui == up::UI::Spinbox){
-              gui["#F#"+p] = conf->getPropertyValue(p).as<float>();
+              gui["#F#"+p] = h.as<float>();
             }else{
-              gui.get<FSliderHandle>("#r#"+p).setValue( conf->getPropertyValue(p).as<float>() );
+              gui["#r#"+p] = h.as<float>();       // FSliderHandle::operator=(float)
             }
           }else if(auto *r = std::any_cast<up::Range<int>>(&c)){
             if(r->ui == up::UI::Spinbox){
-              gui.get<SpinnerHandle>("#R#"+p).setValue( conf->getPropertyValue(p).as<int>() );
+              gui["#R#"+p] = h.as<int>();          // SpinnerHandle::operator=(int)
             }else{
-              gui.get<SliderHandle>("#r#"+p).setValue( conf->getPropertyValue(p).as<int>() );
+              gui["#r#"+p] = h.as<int>();          // SliderHandle::operator=(int)
             }
           }else if(std::any_cast<up::Menu<std::string>>(&c) ||
                    std::any_cast<up::Menu<int>>(&c) ||
                    std::any_cast<up::Menu<float>>(&c)){
-            gui.get<ComboHandle>("#m#"+p).setSelectedItem(
-                conf->getPropertyValue(p).as<std::string>() );
+            gui["#m#"+p] = h.as<std::string>();    // ComboHandle::operator=(string)
           }else if(std::any_cast<up::Flag>(&c)){
-            gui["#f#"+p] = conf->getPropertyValue(p).as<bool>();
+            gui["#f#"+p] = h.as<bool>();
           }else if(std::any_cast<up::Info>(&c)){
-            gui["#i#"+p] = conf->getPropertyValue(p).as<std::string>();
+            gui["#i#"+p] = h.as<std::string>();
           }else if(std::any_cast<up::Text>(&c)){
-            gui["#S#"+p] = conf->getPropertyValue(p).as<std::string>();
+            gui["#S#"+p] = h.as<std::string>();
           }else if(std::any_cast<cp::Color>(&c)){
-            gui["#C#"+p] = conf->getPropertyValue(p).as<Color>();
+            gui["#C#"+p] = h.as<Color>();
           }
           // up::Command — fire-and-forget, no value to restore.
           // cp::ImageView — refreshed by VolatileImageUpdater timer.
@@ -377,11 +377,12 @@ namespace icl{
       void add_component(GUI &gui,const StSt &p, std::ostringstream &ostr, GUI &timerGUI){
         namespace up = utils::prop;
         namespace cp = core::prop;
-        std::any c  = conf->getPropertyConstraint(p.full);
-        std::string tt = conf->getPropertyToolTip(p.full);
+        auto h  = conf->prop(p.full);
+        const std::any    &c  = h.constraint;
+        const std::string &tt = h.tooltip;
 
         if(auto *r = std::any_cast<up::Range<float>>(&c)){
-          float v = conf->getPropertyValue(p.full).as<float>();
+          float v = h.as<float>();
           if(r->ui == up::UI::Spinbox){
             // Rare: float-valued spinbox — no QSpinBox equivalent, so
             // use the Float widget (QLineEdit + double validator) which
@@ -395,7 +396,7 @@ namespace icl{
             gui << FSlider(r->min, r->max, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
           }
         }else if(auto *r = std::any_cast<up::Range<int>>(&c)){
-          int v = conf->getPropertyValue(p.full).as<int>();
+          int v = h.as<int>();
           if(r->ui == up::UI::Spinbox){
             std::string handle = "#R#"+p.full;
             ostr << '\1' << handle;
@@ -409,17 +410,17 @@ namespace icl{
         }else if(auto *m = std::any_cast<up::Menu<std::string>>(&c)){
           std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-          gui << Combo(build_combo_list(m->choices, conf->getPropertyValue(p.full).as<std::string>()))
+          gui << Combo(build_combo_list(m->choices, h.as<std::string>()))
                     .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }else if(auto *m = std::any_cast<up::Menu<int>>(&c)){
           std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-          gui << Combo(build_combo_list(m->choices, conf->getPropertyValue(p.full).as<std::string>()))
+          gui << Combo(build_combo_list(m->choices, h.as<std::string>()))
                     .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }else if(auto *m = std::any_cast<up::Menu<float>>(&c)){
           std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-          gui << Combo(build_combo_list(m->choices, conf->getPropertyValue(p.full).as<std::string>()))
+          gui << Combo(build_combo_list(m->choices, h.as<std::string>()))
                     .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }else if(std::any_cast<up::Command>(&c)){
           std::string handle = "#c#"+p.full;
@@ -428,28 +429,27 @@ namespace icl{
         }else if(std::any_cast<up::Info>(&c)){
           std::string handle = "#i#"+p.full;
           ostr << '\1' << handle;
-          gui << Label(conf->getPropertyValue(p.full).as<std::string>())
+          gui << Label(h.as<std::string>())
                     .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
-          int volatileness = conf->getPropertyVolatileness(p.full);
-          if(volatileness){
-            timers.push_back(std::make_shared<VolatileUpdater>(volatileness,p.full,timerGUI,*conf));
+          if(h.volatileness){
+            timers.push_back(std::make_shared<VolatileUpdater>(h.volatileness,p.full,timerGUI,*conf));
           }
         }else if(std::any_cast<up::Flag>(&c)){
           std::string handle = "#f#"+p.full;
           ostr << '\1' << handle;
-          gui << CheckBox(p.half, conf->getPropertyValue(p.full).as<bool>())
+          gui << CheckBox(p.half, h.as<bool>())
                     .tooltip(tt).handle(handle).minSize(12,2);
         }else if(auto *t = std::any_cast<up::Text>(&c)){
           std::string handle = "#S#"+p.full;
           ostr << '\1' << handle;
           int max_len = t->maxLength ? t->maxLength : 100;
-          std::string value = conf->getPropertyValue(p.full).as<std::string>();
+          std::string value = h.as<std::string>();
           if(!value.length()) value = " ";
           gui << String(value, max_len).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }else if(std::any_cast<cp::Color>(&c)){
           std::string handle = "#C#"+p.full;
           ostr << '\1' << handle;
-          Color col = conf->getPropertyValue(p.full).as<Color>();
+          Color col = h.as<Color>();
           gui << ColorSelect(col[0],col[1],col[2]).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }else if(std::any_cast<cp::ImageView>(&c)){
           // Volatile read-only image preview.  Op writes
@@ -461,13 +461,12 @@ namespace icl{
           // registrations.
           std::string handle = "#img#"+p.full;
           gui << Display().tooltip(tt).handle(handle).minSize(12,8).label(p.half);
-          int volatileness = conf->getPropertyVolatileness(p.full);
-          if(!volatileness) volatileness = 100;
+          int volatileness = h.volatileness ? h.volatileness : 100;
           timers.push_back(std::make_shared<VolatileImageUpdater>(volatileness,p.full,timerGUI,*conf));
         }else{
           ERROR_LOG("unable to create GUI-component for property \"" << p.full
                     << "\" (no constraint recognised; legacy type=\""
-                    << conf->getPropertyType(p.full) << "\")");
+                    << h.type() << "\")");
         }
       }
 
@@ -676,37 +675,36 @@ namespace icl{
 
         if(auto *r = std::any_cast<up::Range<float>>(&c)){
           if(r->ui == up::UI::Spinbox){
-            gui["#F#"+name] = conf->getPropertyValue(name).as<float>();
+            gui["#F#"+name] = p.as<float>();
           }else{
-            gui.get<FSliderHandle>("#r#"+name).setValue( conf->getPropertyValue(name).as<float>() );
+            gui["#r#"+name] = p.as<float>();
           }
         }else if(auto *r = std::any_cast<up::Range<int>>(&c)){
           if(r->ui == up::UI::Spinbox){
-            gui.get<SpinnerHandle>("#R#"+name).setValue( conf->getPropertyValue(name).as<int>() );
+            gui["#R#"+name] = p.as<int>();
           }else{
             // Snap the incoming value to the constraint's stepping so a
             // slider with step=N reflects the model's N-aligned grid
             // (matches the pre-session behavior — the user can't notice
             // sub-step moves, but an external writer could otherwise
             // push the widget off-grid).
-            int val = conf->getPropertyValue(name).as<int>();
+            int val = p.as<int>();
             int step = (r->step == 0) ? 1 : r->step;
             val = (val/step)*step;
-            gui.get<SliderHandle>("#r#"+name).setValue( val );
+            gui["#r#"+name] = val;
           }
         }else if(std::any_cast<up::Menu<std::string>>(&c) ||
                  std::any_cast<up::Menu<int>>(&c) ||
                  std::any_cast<up::Menu<float>>(&c)){
-          gui.get<ComboHandle>("#m#"+name).setSelectedItem(
-              conf->getPropertyValue(name).as<std::string>() );
+          gui["#m#"+name] = p.as<std::string>();
         }else if(std::any_cast<up::Flag>(&c)){
-          gui["#f#"+name] = conf->getPropertyValue(name).as<bool>();
+          gui["#f#"+name] = p.as<bool>();
         }else if(std::any_cast<up::Info>(&c)){
-          gui["#i#"+name] = conf->getPropertyValue(name).as<std::string>();
+          gui["#i#"+name] = p.as<std::string>();
         }else if(std::any_cast<up::Text>(&c)){
-          gui["#S#"+name] = conf->getPropertyValue(name).as<std::string>();
+          gui["#S#"+name] = p.as<std::string>();
         }else if(std::any_cast<cp::Color>(&c)){
-          gui["#C#"+name] = conf->getPropertyValue(name).as<Color>();
+          gui["#C#"+name] = p.as<Color>();
         }
         // up::Command — nothing to push; fires without value.
         // cp::ImageView — refreshed by VolatileImageUpdater timer.
