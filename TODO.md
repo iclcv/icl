@@ -66,25 +66,28 @@ Applied per `module-audit-checklist.md`.
 
 ---
 
-## Configurable typed-storage migration — LANDED Session 53
+## Configurable typed-storage migration — LANDED Sessions 53–54
 
-Done in Session 53 across ~23 commits:
+Session 53 (~23 commits) + Session 54 follow-ups (6 commits) on the same arc:
 
-- Typed `prop::` constraint family (`Range<T>`, `Menu<T>`, `Flag`, `Command`, `Info`, `Text`, `core::prop::Color`, `core::prop::ImageView`).
+- Typed `prop::` constraint family (`Range<T>`, `Menu<T>`, `Flag`, `Command`, `Info`, `Text`, `Generic`, `core::prop::Color`, `core::prop::ImageView`).
 - Typed `addProperty<C>` overload; all ~500 in-tree call sites migrated.
 - `Property::value` string field retired; `typed_value` is sole storage.
+- `Property::type` / `Property::info` string fields retired; synthesized on demand from `constraint` via adapter (Session 54 step 8).
 - `setPropertyValueTyped(name, std::any)` — direct typed writes.
 - `PropertyHandle` / `PropertyValueRef` proxy; `prop("x").value = v` routes through `setPropertyValueTyped`.
 - `Property::as<T>()` for typed reads off `typed_value`.
 - `getPropertyValue` returns `AutoParse<std::any>` — zero-parse fast path for typed-matching reads.
+- `getPropertyConstraint(name)` — public getter for the structured constraint.
+- qt::Prop widget dispatch keyed on `constraint.type()` via `std::any_cast` chain (Session 54 step 5), not legacy type strings.
 
 See `CONTINUE.md` Session 53 Summary for the full arc.
 
-### Step 9 follow-ups still open
+### Step 9 follow-ups
 
-- [ ] **Step 5 — qt::Prop constraint-driven dispatch.**  Replace the three string-matching dispatch sites in `icl/qt/GUI.cpp` (`add_component`, `update_all_components`, `propertyChanged`) with `constraint.type()` variant-visit.  Kills the `parse<SteppingRange<float>>(info)` boilerplate in each branch; each constraint's fields accessible directly.  No automated coverage — needs GUI testing per site.
-- [ ] **Step 7 — retire legacy string-taking `addProperty` overload.**  Blocked on dynamic-registration callers (PylonCameraOptions, openni, dc device features) that pass runtime type/info strings from hardware introspection.  Either provide a typed `addPropertyFromStrings(name, type, info, value, ...)` entry point and migrate those, or keep the legacy overload specifically as the dynamic-registration entry point.
-- [ ] **Step 8 — drop `Property::type` / `Property::info` fields; synthesize on demand.**  `getPropertyType` / `getPropertyInfo` call `adapter.typeId(constraint)` / `adapter.infoString(constraint)`.  Pattern matches the step-9 retirement of `Property::value`.  Edge case: unconstrained properties (external callers with unknown type strings) — need a `prop::Generic` catch-all constraint or a fallback storage map.
+- [x] **Step 5 — qt::Prop constraint-driven dispatch.**  Landed — four commits (`7a460df84` `ee2296433` `c9145c3bb` `6a424250b`).  All three dispatch sites in `icl/qt/GUI.cpp` now `std::any_cast` on `Property::constraint`; `getPropertyType` / `getPropertyInfo` no longer consumed by qt::Prop.
+- [~] **Step 7 — retire legacy string-taking `addProperty` overload.**  Skipped intentionally (2026-04-22).  The overload serves as the dynamic-registration entry point for PylonCameraOptions / OpenNI / dc that pass hardware-introspected type+info strings; renaming has low value and removing would force a typed API those callers can't easily construct.
+- [x] **Step 8 — drop `Property::type` / `Property::info` fields; synthesize on demand.**  Landed — two commits (`c90055b37` `7312e5385`).  Added `prop::Generic` catch-all constraint (echoes legacy type/info strings verbatim) so `buildConstraintFromLegacy` always returns a populated constraint; retired the two stored fields; getters synthesize via `prop::lookupAdapter(constraint.type())`.
 
 ---
 
@@ -156,6 +159,14 @@ See `project_image_migration.md`.
 - [ ] **Backend split for legacy Ops** — `X.cpp / X_Cpp.cpp / X_Ipp.cpp / X_SSE.cpp / X_OpenCL.cpp` layout, pair with `filter/detail/` placement.  See `project_filter_dispatch_arch.md` and `project_module_subdirs.md`.
 - [ ] **IPP cross-check** — verify non-IPP filter impls against IPP in a Linux container.  See `project_ipp_crosscheck.md`.
 - [ ] **`BackendProxy::backends(Backend b)`** proxy for terser multi-registration.  See `project_backends_proxy.md`.
+- [ ] **LocalThresholdOp collapses multi-channel input.**  Surfaced
+  2026-04-22 during Step 5 GUI verification — output of
+  `icl-filter-playground -i create lena` with LocalThresholdOp selected
+  is red-black, i.e. only channel 0 is processed and the other channels
+  come out empty.  Expected: per-channel thresholding (or at minimum
+  grayscale-convert then broadcast).  Investigate
+  `icl/filter/LocalThresholdOp.cpp` — likely an `apply()` path that
+  hardcodes channel 0 or skips the multi-channel loop.
 
 ---
 
