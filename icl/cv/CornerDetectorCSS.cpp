@@ -613,15 +613,18 @@ namespace icl::cv {
       else return "undefined";
     }
 
-    AutoParse<std::string> CornerDetectorCSS::getPropertyValue(const std::string &propertyName) const{
-      if(propertyName == "angle-threshold") return str(angle_thresh);
-      else if(propertyName == "rc-coefficient") return str(rc_coeff);
-      else if(propertyName == "sigma") return str(sigma);
-      else if(propertyName == "curvature-cutoff") return str(curvature_cutoff);
-      else if(propertyName == "straight-line-threshold") return str(straight_line_thresh);
-      else if(propertyName == "accurate") return accurate ? "on" : "off";
-      else if(propertyName == "use opencl") return useOpenCL ? "on" : "off";
-      else return "undefined";
+    AutoParse<std::any> CornerDetectorCSS::getPropertyValue(const std::string &propertyName) const{
+      // Return values wrapped in std::any of their declared C++ types so
+      // callers reading `T x = d.getPropertyValue(...)` hit the fast path
+      // (exact any_cast / numeric widen) without a string round-trip.
+      if(propertyName == "angle-threshold")         return AutoParse<std::any>(std::any(angle_thresh));
+      else if(propertyName == "rc-coefficient")     return AutoParse<std::any>(std::any(rc_coeff));
+      else if(propertyName == "sigma")              return AutoParse<std::any>(std::any(sigma));
+      else if(propertyName == "curvature-cutoff")   return AutoParse<std::any>(std::any(curvature_cutoff));
+      else if(propertyName == "straight-line-threshold") return AutoParse<std::any>(std::any(straight_line_thresh));
+      else if(propertyName == "accurate")           return AutoParse<std::any>(std::any(accurate));
+      else if(propertyName == "use opencl")         return AutoParse<std::any>(std::any(useOpenCL));
+      else                                          return AutoParse<std::any>(std::any(std::string("undefined")));
     }
 
     std::string CornerDetectorCSS::getPropertyToolTip(const std::string &propertyName) const{

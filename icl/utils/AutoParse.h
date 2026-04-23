@@ -149,7 +149,9 @@ namespace icl::utils {
     template<class U>
     bool try_stringify(std::string &out) const {
       if (auto *p = std::any_cast<U>(&m_value)) {
-        out = str(*p);
+        // Fully qualified — the member `str()` we define below would
+        // otherwise shadow the free `icl::utils::str(T)` here.
+        out = ::icl::utils::str(*p);
         return true;
       }
       return false;
@@ -227,6 +229,15 @@ namespace icl::utils {
     /// Explicit conversion — avoids implicit-operator ambiguity.
     template<class T>
     T as() const { return static_cast<T>(*this); }
+
+    /// Stringified view of the payload, mirroring
+    /// `AutoParse<std::string>::str()`.  Shim for callers who previously
+    /// bound `getPropertyValue` results to `const std::string&` or
+    /// `.c_str()`-chained them.  Routes through the implicit-conversion
+    /// cascade (exact `std::string` cast → numeric-stringify → parse of
+    /// stored string) so it works for any payload that the implicit
+    /// `operator std::string()` would.
+    std::string str() const { return as<std::string>(); }
   };
 
 }  // namespace icl::utils

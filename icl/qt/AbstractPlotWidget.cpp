@@ -684,7 +684,7 @@ namespace icl::qt {
       drawLegend(p,Rect((lx<0) ? (w+lx) : lx,
                         (ly<0) ? (h+ly) : ly,
                         (lw<0) ? (w+lw) : lw,
-                        (lh<0) ? (h+lh) : lh), getPropertyValue("legend.orientation")[0] == 'h');
+                        (lh<0) ? (h+lh) : lh), getPropertyValue("legend.orientation").str()[0] == 'h');
     }
 
     std::string title = getPropertyValue("labels.diagramm");

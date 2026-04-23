@@ -96,7 +96,7 @@ namespace icl::cv {
       virtual std::string getPropertyInfo(const std::string &propertyName) const;
 
       /// returns value for given property
-      virtual utils::AutoParse<std::string> getPropertyValue(const std::string &propertyName) const;
+      virtual utils::AutoParse<std::any> getPropertyValue(const std::string &propertyName) const;
 
       /// returns volatileness for given property
       virtual inline int getPropertyVolatileness(const std::string &propertyName) const { return 0; }

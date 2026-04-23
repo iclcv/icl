@@ -209,7 +209,7 @@ namespace icl::cv {
     }
     m_data->regionData.clear();
 
-    bool crg = getPropertyValue("create region graph") == "on";
+    bool crg = getPropertyValue("create region graph");
 
     int nextID = -1;
     ImageRegionPart *parts = m_data->parts.data();
@@ -360,7 +360,7 @@ namespace icl::cv {
     }
 
 
-    if(getPropertyValue("create region graph") == "on"){
+    if(getPropertyValue("create region graph")){
       // create connectivity graph
       linkRegions();
 

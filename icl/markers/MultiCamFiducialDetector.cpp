@@ -35,9 +35,13 @@ namespace icl::markers {
 
 
   void MultiCamFiducialDetector::property_callback(const Configurable::Property &p){
-    AutoParse<std::string> value = getPropertyValue(p.name);
+    // The callback already carries the changed Property — its legacy
+    // string form is in `p.value`.  Forward that directly instead of
+    // re-reading via getPropertyValue + .str(): no cascade, no
+    // Command-monostate exception risk, siblings' own constraint-aware
+    // parsing kicks in on their setPropertyValue side.
     for(unsigned int i=1;i<m_data->detectors.size();++i){
-      m_data->detectors[i]->setPropertyValue(p.name, value);
+      m_data->detectors[i]->setPropertyValue(p.name, p.value);
     }
   }
 

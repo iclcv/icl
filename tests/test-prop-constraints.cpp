@@ -309,26 +309,39 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_menu_string",
 }
 
 ICL_REGISTER_TEST("utils.prop.configurable.addProperty_flag",
-                  "addProperty<Flag> stores bool and serializes as on/off")
+                  "addProperty<Flag> stores typed bool; callers extract via implicit bool cast")
 {
   TestConf c;
   c.addProperty("enabled", Flag{}, true);
 
   ICL_TEST_EQ(c.getPropertyType("enabled"), std::string("flag"));
   ICL_TEST_EQ(c.getPropertyInfo("enabled"), std::string(""));
-  ICL_TEST_EQ(c.getPropertyValue("enabled").str(), std::string("on"));
+  // Typed extraction — the idiomatic read path.
+  ICL_TEST_TRUE(bool(c.getPropertyValue("enabled")));
+  ICL_TEST_EQ(c.getPropertyValue("enabled").as<bool>(), true);
+  // The legacy string form on-disk is still "on" (adapter's toString);
+  // the typed_value held in memory is the raw bool.
+  ICL_TEST_EQ(c.prop("enabled").value, std::string("on"));
   ICL_TEST_TRUE(c.prop("enabled").constraint.has_value());
+  ICL_TEST_TRUE(std::any_cast<bool>(c.prop("enabled").typed_value));
 }
 
 ICL_REGISTER_TEST("utils.prop.configurable.addProperty_command",
-                  "addProperty<Command> registers with no value")
+                  "addProperty<Command> registers with no value; .str() throws by design")
 {
   TestConf c;
   c.addProperty("save", Command{});
 
   ICL_TEST_EQ(c.getPropertyType("save"), std::string("command"));
   ICL_TEST_EQ(c.getPropertyInfo("save"), std::string(""));
-  ICL_TEST_EQ(c.getPropertyValue("save").str(), std::string(""));
+  // Command stores std::monostate — intentionally not stringifiable.
+  // Consumers that iterate all properties (e.g. icl-configurable-info)
+  // must guard per-row.
+  bool threw = false;
+  try { (void)c.getPropertyValue("save").str(); } catch (...) { threw = true; }
+  ICL_TEST_TRUE(threw);
+  // The typed payload is the monostate sentinel.
+  ICL_TEST_TRUE(c.prop("save").typed_value.type() == typeid(std::monostate));
 }
 
 ICL_REGISTER_TEST("utils.prop.configurable.addProperty_info",

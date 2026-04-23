@@ -46,7 +46,12 @@ int main(int n, char **ppc){
       std::string pj = props[j];
       std::cout << "   \"" << pj << "\"" << std::endl;
       std::cout << "      type        : " << p->getPropertyType(pj) << std::endl;
-      std::cout << "      def. value  : " << p->getPropertyValue(pj) << std::endl;
+      // Some kinds (command / monostate) aren't meaningfully stringifiable
+      // under typed storage — catch and print empty rather than aborting
+      // the whole listing on the first such property.
+      std::cout << "      def. value  : ";
+      try { std::cout << p->getPropertyValue(pj).str(); } catch(...) {}
+      std::cout << std::endl;
       std::cout << "      info        : " << p->getPropertyInfo(pj) << std::endl;
       std::cout << "      volatileness: " << p->getPropertyVolatileness(pj) << std::endl;
       std::cout << "      tooltip     : ";

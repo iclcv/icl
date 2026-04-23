@@ -121,7 +121,7 @@ namespace icl{
           if(!l){
             l = &gui.get<LabelHandle>("#i#"+prop);
           }
-          (***l).setText(conf.getPropertyValue(prop).c_str());
+          (***l).setText(conf.getPropertyValue(prop).str().c_str());
           (***l).update();
           QApplication::processEvents();
         }

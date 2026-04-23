@@ -202,6 +202,19 @@ namespace icl::utils {
       /// parsing the `type` + `info` strings.  During the transition qt::Prop
       /// falls back to the string path when `constraint` is empty.
       std::any constraint;
+      /// Typed current value, stored as `std::any` of the declared C++
+      /// type (e.g. `float` for `prop::Range<float>`, `std::string` for
+      /// `prop::Menu<std::string>`).  Populated by:
+      ///   (1) the typed `addProperty<C>` overload at registration time;
+      ///   (2) `setPropertyValue` when the property has a known `constraint`
+      ///       (the adapter's `fromString` parses the incoming string into
+      ///       the declared type).
+      /// `getPropertyValue` prefers this field over the legacy `value`
+      /// string: `AutoParse<std::any>` wraps it directly, giving callers
+      /// a fast path with no string round-trip.  When empty, `value`
+      /// (still populated by every setter) is wrapped as
+      /// `std::any(std::string)` instead.
+      std::any typed_value;
       /// for more efficient find
       bool operator==(const std::string &name) const { return this->name == name; }
     };
@@ -281,9 +294,10 @@ namespace icl::utils {
                      const std::string &tooltip = std::string()) {
       const auto &a = prop::lookupAdapter(std::type_index(typeid(C)));
       std::any constraintAny(std::move(constraint));
+      std::any valueAny(std::move(initial));
       const std::string type  = a.typeId(constraintAny);
       const std::string info  = a.infoString(constraintAny);
-      const std::string value = a.toString(std::any(std::move(initial)));
+      const std::string value = a.toString(valueAny);
 
       // Register through the string path — this populates the legacy
       // type/info/value on Property and flows through the existing
@@ -291,8 +305,13 @@ namespace icl::utils {
       addProperty(name, type, info, AutoParse<std::string>(value),
                   volatileness, tooltip);
 
-      // Attach the structured payload for step-5+ dispatch.
-      prop(name).constraint = std::move(constraintAny);
+      // Attach the structured payload + typed value.  Typed storage
+      // is the fast path for getPropertyValue; the legacy string in
+      // `value` is kept in sync for ConfigFile save and for any
+      // callers that haven't migrated yet.
+      auto &p = prop(name);
+      p.constraint  = std::move(constraintAny);
+      p.typed_value = std::move(valueAny);
     }
 
     /// This adds another configurable as child
@@ -510,8 +529,17 @@ namespace icl::utils {
 
     /// returns the current value of a property or a parameter
     /** If the property is actually owned by a child-configurable,
-        the function forwards to that configurable */
-    virtual AutoParse<std::string> getPropertyValue(const std::string &propertyName) const;
+        the function forwards to that configurable.
+        Returns an `AutoParse<std::any>` backed either by the typed
+        value (when set via `addProperty<C>` or when `setPropertyValue`
+        could parse into the declared type) or — as a fallback — by the
+        legacy string value wrapped as `std::any(std::string)`.
+        Callers writing `T x = c.getPropertyValue(name)` continue to
+        work via `AutoParse<std::any>`'s extraction cascade (exact cast
+        → numeric widen → parse-if-string → stringify-if-numeric).
+        Callers that specifically need a string can use
+        `.str()` / `.as<std::string>()`. */
+    virtual AutoParse<std::any> getPropertyValue(const std::string &propertyName) const;
 
     /// returns the tooltip description for a given property
     virtual std::string getPropertyToolTip(const std::string &propertyName) const{

@@ -204,14 +204,32 @@ namespace icl::utils {
     // this method was never functional (empty body) and is retained
     // only for ABI compatibility.
   }
-  AutoParse<std::string> Configurable::getPropertyValue(const std::string &propertyName) const{
+  AutoParse<std::any> Configurable::getPropertyValue(const std::string &propertyName) const{
     const Property &p = prop(propertyName);
     if(p.configurable != this){
       return p.configurable->getPropertyValue(propertyName.substr(p.childPrefix.length()));
-    }else{
-      std::scoped_lock<std::recursive_mutex> lock(m_mutex);
-      return p.value;
     }
+    std::scoped_lock<std::recursive_mutex> lock(m_mutex);
+    // Prefer the typed payload: `T x = c.getPropertyValue(name)` then
+    // hits `AutoParse<any>`'s exact any_cast (or numeric-widen) fast
+    // path with no parse.  Legacy-registered properties (those that
+    // went through the string-taking addProperty and whose constraint
+    // is therefore empty) have typed_value empty too — fall back to
+    // wrapping the string value in std::any.  The cascade still handles
+    // those: parse<T>(string) for numeric T, identity for std::string.
+    //
+    // Per-kind string formatting conventions (e.g. Flag's legacy
+    // "on"/"off" vs AutoParse's generic `str(bool)` "true"/"false") are
+    // not preserved through `.str()` on typed-registered properties.
+    // Callers that compared the result to "on"/"off" should migrate to
+    // typed reads (`if (c.getPropertyValue("flag"))` via implicit
+    // bool cast).  Command properties hold `std::monostate`, which is
+    // intentionally not stringifiable — `.str()` throws, which is
+    // semantically correct for a button-style property.
+    if(p.typed_value.has_value()){
+      return AutoParse<std::any>(p.typed_value);
+    }
+    return AutoParse<std::any>(std::any(p.value));
   }
 
   bool Configurable::supportsProperty(const std::string &propertyName) const{
@@ -226,6 +244,15 @@ namespace icl::utils {
     }else{
       std::scoped_lock<std::recursive_mutex> lock(m_mutex);
       p.value = value;
+      // If the property was registered with a structured constraint,
+      // parse the incoming string into the declared type and update
+      // the typed payload in lockstep with the string value.  Legacy
+      // properties (constraint empty) skip this — their typed_value
+      // stays empty and getPropertyValue falls back to the string.
+      if(p.constraint.has_value()){
+        const auto &a = prop::lookupAdapter(p.constraint.type());
+        p.typed_value = a.fromString(p.constraint, value.str());
+      }
     }
     call_callbacks(propertyName, this);
   }
@@ -467,7 +494,11 @@ namespace icl::utils {
   void Configurable::syncChangesTo(Configurable *others, int num){
     Configurable *src = this;
     registerCallback([src, others, num](const Configurable::Property &p){
-      AutoParse<std::string> val = src->getPropertyValue(p.name);
+      // Read into a string-backed AutoParse for the downstream setters;
+      // getPropertyValue now returns AutoParse<std::any>, so go through
+      // its .str() shim (stringifies via the cascade when the payload
+      // is non-string, identity when it is).
+      AutoParse<std::string> val(src->getPropertyValue(p.name).str());
       for(int i=0;i<num;++i){
         others[i].setPropertyValue(p.name,val);
       }
