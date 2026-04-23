@@ -143,6 +143,27 @@ namespace icl{
           if(!h){
             h = &gui.get<ImageHandle>("#img#"+prop);
           }
+          // Typed path: properties registered via
+          // `addProperty<core::prop::ImageView>(...)` keep the live
+          // core::Image in Property::typed_value, accessible through
+          // getPropertyValue's AutoParse<any>.  Try this first.
+          try{
+            auto ap = conf.getPropertyValue(prop);
+            if(ap.type() == typeid(core::Image)){
+              core::Image img = ap.as<core::Image>();
+              if(!img.isNull()){
+                *h = img;
+                h->render();
+              }
+              return;
+            }
+          }catch(...){
+            // Fall through to legacy payload channel below.
+          }
+          // Legacy payload channel — properties registered via the
+          // string-taking addProperty + updated via setPropertyPayload.
+          // Step 4c retires this path once every caller migrates to
+          // addProperty<ImageView>.
           std::any payload = conf.getPropertyPayload(prop);
           if(!payload.has_value()) return;
           try{

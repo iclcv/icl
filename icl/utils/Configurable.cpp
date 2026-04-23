@@ -263,7 +263,13 @@ namespace icl::utils {
       p.configurable->setPropertyPayload(propertyName.substr(p.childPrefix.length()), std::move(payload));
     }else{
       std::scoped_lock<std::recursive_mutex> lock(m_mutex);
-      p.payload = std::move(payload);
+      // Mirror into typed_value so consumers reading through the typed
+      // path (getPropertyValue + ap.type() == typeid(T)) find the update
+      // without needing a separate getPropertyPayload call.  Both fields
+      // hold the same std::any; step 4c retires the `payload` field and
+      // the set/getPropertyPayload API once all callers migrate.
+      p.payload     = payload;
+      p.typed_value = std::move(payload);
     }
     call_callbacks(propertyName, this);
   }
