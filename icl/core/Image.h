@@ -381,3 +381,8 @@ namespace icl::core {
   ICLCore_API std::ostream& operator<<(std::ostream &s, const Image &img);
 
   } // namespace icl::core
+
+// Image::as<T>() needs Img<T>'s derivation from ImgBase visible at the
+// static_cast site (Clang 21 is strict).  Pulled in here so every consumer
+// of Image.h gets it transitively — no per-TU opt-in required.
+#include <icl/core/Img.h>
