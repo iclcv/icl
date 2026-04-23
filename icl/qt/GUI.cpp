@@ -6,6 +6,8 @@
 #include <icl/utils/SteppingRange.h>
 #include <icl/utils/ProcessMonitor.h>
 #include <icl/utils/Size.h>
+#include <icl/utils/prop/Constraints.h>
+#include <icl/core/prop/Constraints.h>
 #include <icl/io/GenericGrabber.h>
 
 #include <icl/qt/GUI.h>
@@ -314,43 +316,45 @@ namespace icl{
         StSt(const std::string &full, const std::string &half):full(full),half(half){}
       };
 
+      // Dispatch off the property's structured constraint
+      // (prop::Range<T>, prop::Menu<T>, prop::Flag, ...).  Kept in sync
+      // with add_component / propertyChanged — all three sites share
+      // the same handle-prefix scheme ("#r#" for slider, "#R#" for
+      // spinbox, ...).
       void update_all_components(){
-        std::vector<std::string> props = conf->getPropertyListWithoutDeactivated();
-        for(unsigned int i=0;i<props.size();++i){
-          const std::string &p = props[i];
-          std::string t = conf->getPropertyType(p);
-          if(t == "range" || t == "range:slider"){
-            SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(p));
-            if(r.stepping == 1){
-              gui.get<SliderHandle>("#r#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
+        namespace up = utils::prop;
+        namespace cp = core::prop;
+        for(const std::string &p : conf->getPropertyListWithoutDeactivated()){
+          std::any c = conf->getPropertyConstraint(p);
+          if(auto *r = std::any_cast<up::Range<float>>(&c)){
+            if(r->ui == up::UI::Spinbox){
+              gui["#F#"+p] = conf->getPropertyValue(p).as<float>();
             }else{
-              gui.get<FSliderHandle>("#r#"+p).setValue( parse<icl32f>(conf->getPropertyValue(p)) );
+              gui.get<FSliderHandle>("#r#"+p).setValue( conf->getPropertyValue(p).as<float>() );
             }
-          }else if( t == "range:spinbox"){
-            gui.get<SpinnerHandle>("#R#"+p).setValue( parse<icl32s>(conf->getPropertyValue(p)) );
-          }else if( t == "menu" || t == "value-list" || t == "valueList"){
-            std::string handle = (t == "menu" ? "#m#" : "#v#")+p;
-            gui.get<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(p));
-          }else if( t == "info"){
-            gui["#i#"+p] = conf->getPropertyValue(p);
-          }else if( t == "flag"){
+          }else if(auto *r = std::any_cast<up::Range<int>>(&c)){
+            if(r->ui == up::UI::Spinbox){
+              gui.get<SpinnerHandle>("#R#"+p).setValue( conf->getPropertyValue(p).as<int>() );
+            }else{
+              gui.get<SliderHandle>("#r#"+p).setValue( conf->getPropertyValue(p).as<int>() );
+            }
+          }else if(std::any_cast<up::Menu<std::string>>(&c) ||
+                   std::any_cast<up::Menu<int>>(&c) ||
+                   std::any_cast<up::Menu<float>>(&c)){
+            gui.get<ComboHandle>("#m#"+p).setSelectedItem(
+                conf->getPropertyValue(p).as<std::string>() );
+          }else if(std::any_cast<up::Flag>(&c)){
             gui["#f#"+p] = conf->getPropertyValue(p).as<bool>();
-          }else if( t == "image"){
-            // Image properties are refreshed by a VolatileImageUpdater on the
-            // property's volatileness timer; no work to do on the aggregate
-            // snapshot path.
-          }else if( t == "int"){
-            gui["#I#"+p] = parse<int>(conf->getPropertyValue(p));
-          }else if( t == "float"){
-            gui["#F#"+p] = parse<float>(conf->getPropertyValue(p));
-          }else if( t == "string"){
-            gui["#S#"+p] = conf->getPropertyValue(p);
-          }else if( t == "color"){
-            gui["#C#"+p] = parse<Color>(conf->getPropertyValue(p));
-          }else if( t == "Point32f"){
-            gui["#p#"+p] = conf->getPropertyValue(p);
+          }else if(std::any_cast<up::Info>(&c)){
+            gui["#i#"+p] = conf->getPropertyValue(p).as<std::string>();
+          }else if(std::any_cast<up::Text>(&c)){
+            gui["#S#"+p] = conf->getPropertyValue(p).as<std::string>();
+          }else if(std::any_cast<cp::Color>(&c)){
+            gui["#C#"+p] = conf->getPropertyValue(p).as<Color>();
           }
-
+          // up::Command — fire-and-forget, no value to restore.
+          // cp::ImageView — refreshed by VolatileImageUpdater timer.
+          // Empty constraint — unknown/malformed legacy property; skip.
         }
       }
 
