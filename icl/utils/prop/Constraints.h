@@ -116,4 +116,29 @@ namespace icl::utils::prop {
     int maxLength = 0;
   };
 
+  /// Catch-all constraint for legacy / dynamic-registration properties
+  /// whose type + info strings don't map to any of the structured
+  /// `prop::*` / `core::prop::*` kinds.
+  ///
+  /// Populated by `Configurable::buildConstraintFromLegacy` as a
+  /// fallback when the (type, info) pair is unrecognised or malformed
+  /// (e.g. Pylon/OpenNI pass hardware-introspected strings that ICL
+  /// doesn't know about).  Stored value is `std::string` — the raw
+  /// legacy value survives unchanged.
+  ///
+  /// Guarantees that every `Property::constraint` is populated: the
+  /// `getPropertyType` / `getPropertyInfo` synthesizers can lookup the
+  /// Generic adapter which returns the cached strings verbatim, so
+  /// external Configurable introspection (icl-configurable-info etc.)
+  /// still reports the original tags.
+  ///
+  /// qt::Prop doesn't render Generic — the dispatch chain falls through
+  /// to an ERROR_LOG.  That matches pre-session behaviour for unknown
+  /// types.
+  struct Generic {
+    using value_type = std::string;
+    std::string type_string;
+    std::string info_string;
+  };
+
 } // namespace icl::utils::prop

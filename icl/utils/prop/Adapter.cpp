@@ -177,6 +177,30 @@ namespace icl::utils::prop {
       };
     }
 
+    // ------------------------------------------------------------------
+    // Generic
+    //
+    // Catch-all that echoes the legacy (type, info) strings it was built
+    // from.  Stores the property's current value as an unparsed string.
+    // ------------------------------------------------------------------
+
+    ConstraintAdapter makeGenericAdapter() {
+      return {
+        [](const std::any &value) {
+          return std::any_cast<std::string>(value);
+        },
+        [](const std::any &, const std::string &text) {
+          return std::any(text);
+        },
+        [](const std::any &constraint) -> std::string {
+          return std::any_cast<const Generic &>(constraint).type_string;
+        },
+        [](const std::any &constraint) -> std::string {
+          return std::any_cast<const Generic &>(constraint).info_string;
+        },
+      };
+    }
+
   } // anonymous namespace
 
   // Static-init enrollments for the utils-side constraint kinds.
@@ -194,5 +218,6 @@ namespace icl::utils::prop {
   REGISTER_PROPERTY_CONSTRAINT(Command,             makeCommandAdapter());
   REGISTER_PROPERTY_CONSTRAINT(Info,                makeInfoAdapter());
   REGISTER_PROPERTY_CONSTRAINT(Text,                makeTextAdapter());
+  REGISTER_PROPERTY_CONSTRAINT(Generic,             makeGenericAdapter());
 
 } // namespace icl::utils::prop

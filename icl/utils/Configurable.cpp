@@ -15,10 +15,10 @@ namespace icl::utils {
 
     // Build a typed constraint + initial typed_value from the legacy
     // (type, info, value) string triple.  Covers every utils-level
-    // property kind; leaves constraint + typed_value empty for types
-    // that depend on non-utils modules ("color", "image") or for
-    // malformed input.  The caller falls back to the pre-session
-    // string-only path in those cases.
+    // property kind; unknown types ("color", "image" pre-typed-migration,
+    // Pylon/OpenNI hardware-introspected strings, malformed input) fall
+    // through to a `prop::Generic` that echoes the original type / info
+    // verbatim.
     //
     // Post-step-6 all in-tree call sites use the typed addProperty
     // overload, so this dispatch is only exercised by:
@@ -26,93 +26,103 @@ namespace icl::utils {
     //   - the dynamic registration path (PylonCameraOptions etc.)
     //     that receives type/info/value as runtime strings
     //
-    // Returns {constraint, typed_value}.
+    // Returns {constraint, typed_value} — both always populated.
     std::pair<std::any, std::any> buildConstraintFromLegacy(
         std::string_view type, std::string_view info,
         std::string_view value_str)
-    try {
+    {
       using namespace prop;
 
-      if (type == "flag") {
-        bool v = value_str.empty() ? false : parse<bool>(value_str);
-        return {std::any(Flag{}), std::any(v)};
-      }
-      if (type == "info") {
-        return {std::any(Info{}), std::any(std::string(value_str))};
-      }
-      if (type == "command") {
-        return {std::any(Command{}), std::any(std::monostate{})};
-      }
-      if (type == "string") {
-        int maxlen = info.empty() ? 0 : parse<int>(info);
-        return {std::any(Text{.maxLength = maxlen}),
+      // Generic fallback used by every non-structured path below.
+      auto fallbackGeneric = [&]() -> std::pair<std::any, std::any> {
+        return {std::any(Generic{.type_string = std::string(type),
+                                 .info_string = std::string(info)}),
                 std::any(std::string(value_str))};
-      }
-      if (type == "menu" || type == "value-list") {
-        // Numeric "value-list" also goes through Menu<string>; qt::Prop
-        // renders either as a dropdown.  The stored value is kept as a
-        // std::string in typed_value, matching historical behaviour.
-        return {std::any(menuFromCsv(info)),
-                std::any(std::string(value_str))};
-      }
-
-      // Numeric range family — "range", "range:slider", "range:spinbox",
-      // "float", "int".  info is `[A,B]` or `[A,B]:S`; tolerate ':' as
-      // min/max separator too (legacy typo in a handful of sites).
-      const bool is_spinbox =
-          (type == "range:spinbox" || type == "int");
-      const bool is_range =
-          (type == "range" || type == "range:slider" || type == "float" ||
-           is_spinbox);
-
-      if (!is_range) return {};  // "color", "image", unknown — caller falls back
-
-      auto lb = info.find('[');
-      auto rb = info.find(']');
-      if (lb == std::string_view::npos || rb == std::string_view::npos) return {};
-
-      std::string_view core = info.substr(lb + 1, rb - lb - 1);
-      std::string_view step_str;
-      if (rb + 1 < info.size() && info[rb + 1] == ':') {
-        step_str = info.substr(rb + 2);
-      }
-      auto sep = core.find(',');
-      if (sep == std::string_view::npos) sep = core.find(':');
-      if (sep == std::string_view::npos) return {};
-
-      std::string_view min_s = core.substr(0, sep);
-      std::string_view max_s = core.substr(sep + 1);
-
-      // Int vs float heuristic: spinbox/int forces int; otherwise
-      // inspect literals for decimal/exponent suffixes.
-      auto looks_float = [](std::string_view s) {
-        for (char c : s) if (c == '.' || c == 'e' || c == 'E' || c == 'f') return true;
-        return false;
       };
-      bool is_float = !is_spinbox && (looks_float(min_s) || looks_float(max_s) || looks_float(step_str));
 
-      UI ui = is_spinbox ? UI::Spinbox : UI::Slider;
+      try {
+        if (type == "flag") {
+          bool v = value_str.empty() ? false : parse<bool>(value_str);
+          return {std::any(Flag{}), std::any(v)};
+        }
+        if (type == "info") {
+          return {std::any(Info{}), std::any(std::string(value_str))};
+        }
+        if (type == "command") {
+          return {std::any(Command{}), std::any(std::monostate{})};
+        }
+        if (type == "string") {
+          int maxlen = info.empty() ? 0 : parse<int>(info);
+          return {std::any(Text{.maxLength = maxlen}),
+                  std::any(std::string(value_str))};
+        }
+        if (type == "menu" || type == "value-list") {
+          // Numeric "value-list" also goes through Menu<string>; qt::Prop
+          // renders either as a dropdown.  The stored value is kept as a
+          // std::string in typed_value, matching historical behaviour.
+          return {std::any(menuFromCsv(info)),
+                  std::any(std::string(value_str))};
+        }
 
-      if (is_float) {
-        float mn = parse<float>(min_s);
-        float mx = parse<float>(max_s);
-        float st = step_str.empty() ? 0.f : parse<float>(step_str);
-        float v  = value_str.empty() ? mn : parse<float>(value_str);
-        return {std::any(Range<float>{.min = mn, .max = mx, .step = st, .ui = ui}),
-                std::any(v)};
-      } else {
-        int mn = parse<int>(min_s);
-        int mx = parse<int>(max_s);
-        int st = step_str.empty() ? 0 : parse<int>(step_str);
-        int v  = value_str.empty() ? mn : parse<int>(value_str);
-        return {std::any(Range<int>{.min = mn, .max = mx, .step = st, .ui = ui}),
-                std::any(v)};
+        // Numeric range family — "range", "range:slider", "range:spinbox",
+        // "float", "int".  info is `[A,B]` or `[A,B]:S`; tolerate ':' as
+        // min/max separator too (legacy typo in a handful of sites).
+        const bool is_spinbox =
+            (type == "range:spinbox" || type == "int");
+        const bool is_range =
+            (type == "range" || type == "range:slider" || type == "float" ||
+             is_spinbox);
+
+        if (!is_range) return fallbackGeneric();
+
+        auto lb = info.find('[');
+        auto rb = info.find(']');
+        if (lb == std::string_view::npos || rb == std::string_view::npos)
+          return fallbackGeneric();
+
+        std::string_view core = info.substr(lb + 1, rb - lb - 1);
+        std::string_view step_str;
+        if (rb + 1 < info.size() && info[rb + 1] == ':') {
+          step_str = info.substr(rb + 2);
+        }
+        auto sep = core.find(',');
+        if (sep == std::string_view::npos) sep = core.find(':');
+        if (sep == std::string_view::npos) return fallbackGeneric();
+
+        std::string_view min_s = core.substr(0, sep);
+        std::string_view max_s = core.substr(sep + 1);
+
+        // Int vs float heuristic: spinbox/int forces int; otherwise
+        // inspect literals for decimal/exponent suffixes.
+        auto looks_float = [](std::string_view s) {
+          for (char c : s) if (c == '.' || c == 'e' || c == 'E' || c == 'f') return true;
+          return false;
+        };
+        bool is_float = !is_spinbox && (looks_float(min_s) || looks_float(max_s) || looks_float(step_str));
+
+        UI ui = is_spinbox ? UI::Spinbox : UI::Slider;
+
+        if (is_float) {
+          float mn = parse<float>(min_s);
+          float mx = parse<float>(max_s);
+          float st = step_str.empty() ? 0.f : parse<float>(step_str);
+          float v  = value_str.empty() ? mn : parse<float>(value_str);
+          return {std::any(Range<float>{.min = mn, .max = mx, .step = st, .ui = ui}),
+                  std::any(v)};
+        } else {
+          int mn = parse<int>(min_s);
+          int mx = parse<int>(max_s);
+          int st = step_str.empty() ? 0 : parse<int>(step_str);
+          int v  = value_str.empty() ? mn : parse<int>(value_str);
+          return {std::any(Range<int>{.min = mn, .max = mx, .step = st, .ui = ui}),
+                  std::any(v)};
+        }
+      } catch (...) {
+        // Malformed numeric literals, etc. — preserve the legacy strings
+        // through a Generic constraint so external introspection still
+        // sees the original type/info.
+        return fallbackGeneric();
       }
-    } catch (...) {
-      // Malformed info / unparseable value → fall back to legacy
-      // string-only storage.  Callers still get a working property;
-      // just constraint-less.
-      return {};
     }
 
     struct DefInt{
@@ -234,14 +244,13 @@ namespace icl::utils {
       // Unify with the typed path: derive constraint + typed_value from
       // the legacy string triple so downstream consumers (qt::Prop,
       // getPropertyValue, ConfigFile) see identical state regardless of
-      // which addProperty overload registered the property.  For
-      // utils-level kinds the helper populates both; for core-level
-      // ("color", "image") or unknown kinds it returns empty anys and
-      // the typed_value falls back to holding the raw string below.
+      // which addProperty overload registered the property.  Unknown
+      // type strings fall through to prop::Generic which echoes the
+      // legacy (type, info) verbatim, so every Property has a populated
+      // constraint.
       auto [constraint, typed] = buildConstraintFromLegacy(type, info, value.str());
       p.constraint  = std::move(constraint);
-      p.typed_value = typed.has_value() ? std::move(typed)
-                                        : std::any(value.str());
+      p.typed_value = std::move(typed);
       m_properties[name] = std::move(p);
       if(m_isOrdered) m_ordering[m_properties.size()] = name;
     }
