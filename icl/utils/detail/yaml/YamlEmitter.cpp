@@ -90,10 +90,17 @@ namespace icl::utils::yaml::detail {
       return false;
     }
 
+    // Effective scalar bytes: prefer the self-owned string (populated
+    // by operator= / setOwnedScalar) over the view.
+    std::string_view effectiveView(const Node::ScalarData &sd){
+      return !sd.owned.empty() ? std::string_view(sd.owned) : sd.sv;
+    }
+
     // Emit a scalar respecting its style hint (round-tripping), and
     // falling back to a safe quoting if the hinted plain form is unsafe
     // or would change the inferred kind.
     void emitScalar(const Node::ScalarData &sd, std::string &out){
+      const std::string_view body = effectiveView(sd);
       // Explicit tag prefix — re-emit `!!name ` so round-trip preserves
       // the forced type.  Tag names must match the parser's vocabulary.
       if(sd.explicitTag){
@@ -107,19 +114,19 @@ namespace icl::utils::yaml::detail {
       }
       switch(sd.style){
         case ScalarStyle::DoubleQuoted:
-          emitDoubleQuoted(sd.sv, out);
+          emitDoubleQuoted(body, out);
           return;
         case ScalarStyle::SingleQuoted:
           // single-quoted can't carry control chars; re-promote to double if needed
-          if(hasControlChars(sd.sv)) emitDoubleQuoted(sd.sv, out);
-          else                        emitSingleQuoted(sd.sv, out);
+          if(hasControlChars(body)) emitDoubleQuoted(body, out);
+          else                      emitSingleQuoted(body, out);
           return;
         case ScalarStyle::Literal:
         case ScalarStyle::Folded:
           // Block-scalar round-trip is not supported for emission in
           // Phase 1 — we re-emit them double-quoted (safe, unambiguous).
           // A proper `|` / `>` emitter can be added later if needed.
-          emitDoubleQuoted(sd.sv, out);
+          emitDoubleQuoted(body, out);
           return;
         case ScalarStyle::Plain:
         default:
@@ -130,19 +137,13 @@ namespace icl::utils::yaml::detail {
       // (b) it re-resolves to the same kind.  Otherwise single- or
       // double-quote.  Example: the value "42" as an intended string
       // must be quoted, else it would re-parse as Int.
-      if(isPlainSafe(sd.sv)){
-        const ScalarKind plainKind = resolveScalarKind(sd.sv, ScalarStyle::Plain);
-        // If the scalar was created with plain style, its cachedKind is
-        // already the plain kind — safe to emit plain.  If it was stored
-        // plain but the caller wanted it to round-trip as a string (e.g.
-        // setScalar("42") with style=Plain), we trust the caller.
-        (void)plainKind;
-        out += sd.sv;
+      if(isPlainSafe(body)){
+        out += body;
         return;
       }
 
-      if(hasControlChars(sd.sv)) emitDoubleQuoted(sd.sv, out);
-      else                       emitSingleQuoted(sd.sv, out);
+      if(hasControlChars(body)) emitDoubleQuoted(body, out);
+      else                      emitSingleQuoted(body, out);
     }
 
     void appendIndent(std::string &out, int spaces){

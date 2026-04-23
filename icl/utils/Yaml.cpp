@@ -42,7 +42,10 @@ namespace icl::utils::yaml {
       return *s->explicitTag;
     }
     if(!s->kindResolved){
-      s->cachedKind   = detail::resolveScalarKind(s->sv, s->style);
+      // Use the effective view so self-owned scalars (from operator= /
+      // setOwnedScalar) resolve their kind from the right bytes.
+      const std::string_view body = !s->owned.empty() ? std::string_view(s->owned) : s->sv;
+      s->cachedKind   = detail::resolveScalarKind(body, s->style);
       s->kindResolved = true;
     }
     return s->cachedKind;
@@ -63,7 +66,10 @@ namespace icl::utils::yaml {
   std::string_view Node::scalarView() const {
     const auto *s = std::get_if<ScalarData>(&m_value);
     if(!s) throw TypeError("scalarView: node is not a scalar");
-    return s->sv;
+    // Self-owned scalars (from operator= / setOwnedScalar) take
+    // precedence over the view.  This is re-derived each call so
+    // moves of ScalarData never leave a dangling view.
+    return !s->owned.empty() ? std::string_view(s->owned) : s->sv;
   }
 
   const Node& Node::at(std::size_t i) const {
@@ -154,6 +160,22 @@ namespace icl::utils::yaml {
     sd.style = style;
     m_value = std::move(sd);
   }
+
+  void Node::setOwnedScalar(std::string s, ScalarStyle style){
+    ScalarData sd;
+    sd.style = style;
+    // An empty owned string would collide with the "view-mode" sentinel,
+    // so represent explicit empty as the empty view instead.
+    if(!s.empty()) sd.owned = std::move(s);
+    m_value = std::move(sd);
+  }
+
+  // Assignment operators — all owning, always safe.
+  Node& Node::operator=(const char *s){         setOwnedScalar(std::string(s ? s : "")); return *this; }
+  Node& Node::operator=(const std::string &s){  setOwnedScalar(s);               return *this; }
+  Node& Node::operator=(std::string &&s){       setOwnedScalar(std::move(s));    return *this; }
+  Node& Node::operator=(std::string_view sv){   setOwnedScalar(std::string(sv)); return *this; }
+  Node& Node::operator=(bool b){                setOwnedScalar(b ? "true" : "false"); return *this; }
 
   // ---------------------------------------------------------------------
   // Document

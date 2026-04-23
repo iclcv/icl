@@ -765,6 +765,124 @@ ICL_REGISTER_TEST("utils.yaml.emit.deep_nesting", "3-level nested mapping emits 
 }
 
 // ---------------------------------------------------------------------------
+// operator= / setOwnedScalar — crisper syntax for programmatic building
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.assign.cstr", "node = \"literal\"")
+{
+  Node n;
+  n = "hello";
+  ICL_TEST_TRUE(n.isScalar());
+  ICL_TEST_EQ(std::string(n.scalarView()), std::string("hello"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.string", "node = std::string")
+{
+  Node n;
+  n = std::string("world");
+  ICL_TEST_EQ(std::string(n.scalarView()), std::string("world"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.string_view", "node = string_view (copies)")
+{
+  Node n;
+  // Deliberately use a temporary std::string — its view would dangle
+  // with setScalar, but operator= copies into owned storage.
+  std::string tmp = "from_view";
+  std::string_view sv(tmp);
+  n = sv;
+  tmp.clear();                                  // kill the original buffer
+  ICL_TEST_EQ(std::string(n.scalarView()), std::string("from_view"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.bool", "node = true / false")
+{
+  Node yes, no;
+  yes = true;
+  no  = false;
+  ICL_TEST_EQ(std::string(yes.scalarView()), std::string("true"));
+  ICL_TEST_EQ(std::string(no.scalarView()),  std::string("false"));
+  ICL_TEST_TRUE(yes.scalarKind() == ScalarKind::Bool);
+  ICL_TEST_TRUE(yes.asStrict<bool>());
+  ICL_TEST_FALSE(no.asStrict<bool>());
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.int", "node = 42")
+{
+  Node n;
+  n = 42;
+  ICL_TEST_EQ(std::string(n.scalarView()), std::string("42"));
+  ICL_TEST_TRUE(n.scalarKind() == ScalarKind::Int);
+  ICL_TEST_EQ(n.asStrict<int>(), 42);
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.double", "node = 3.14")
+{
+  Node n;
+  n = 3.14;
+  ICL_TEST_TRUE(n.scalarKind() == ScalarKind::Float);
+  ICL_TEST_NEAR(n.asStrict<double>(), 3.14, 1e-9);
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.registered_type_Size",
+                  "node = Size(640, 480) via str(T)")
+{
+  Node n;
+  n = Size(640, 480);
+  ICL_TEST_EQ(std::string(n.scalarView()), std::string("640x480"));
+  ICL_TEST_EQ(n.asStrict<Size>(), Size(640, 480));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.mapping_then_scalar",
+                  "fluid: d[\"x\"] = 42; d[\"y\"] = \"hi\"")
+{
+  Document d = Document::empty();
+  d.root()["x"] = 42;
+  d.root()["y"] = "hi";
+  d.root()["f"] = 1.5;
+  d.root()["b"] = true;
+  const std::string out = d.emit();
+  ICL_TEST_EQ(out, std::string("x: 42\ny: hi\nf: 1.5\nb: true\n"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.temporary_survives_scope",
+                  "owned scalars don't dangle when source dies")
+{
+  auto makeNode = []{
+    Node n;
+    std::string tmp = "transient";
+    n = tmp;
+    tmp = "gone";                                 // kill source buffer
+    return n;                                     // n's ScalarData carries owned string
+  };
+  Node n = makeNode();
+  ICL_TEST_EQ(std::string(n.scalarView()), std::string("transient"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.roundtrip", "assigned mapping round-trips via emit/parse")
+{
+  Document d = Document::empty();
+  d.root()["name"] = "icl";
+  d.root()["port"] = 8080;
+  d.root()["size"] = Size(640, 480);
+  const std::string yamlText = d.emit();
+  Document d2 = Document::own(std::string(yamlText));
+  ICL_TEST_EQ(std::string(d2.root()["name"].scalarView()), std::string("icl"));
+  ICL_TEST_EQ(d2.root()["port"].as<int>(), 8080);
+  ICL_TEST_EQ(d2.root()["size"].as<Size>(), Size(640, 480));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.setOwnedScalar_explicit",
+                  "setOwnedScalar keeps style hint")
+{
+  Node n;
+  n.setOwnedScalar("42", ScalarStyle::DoubleQuoted);
+  ICL_TEST_TRUE(n.scalarStyle() == ScalarStyle::DoubleQuoted);
+  // Quoted forces String kind
+  ICL_TEST_TRUE(n.scalarKind() == ScalarKind::String);
+}
+
+// ---------------------------------------------------------------------------
 // A1: Block scalar chomping indicators
 // ---------------------------------------------------------------------------
 

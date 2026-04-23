@@ -7,6 +7,7 @@
 #include <icl/utils/AutoParse.h>
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Exception.h>
+#include <icl/utils/StringUtils.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -101,6 +102,12 @@ namespace icl::utils::yaml {
       // / `!!float` / `!!null`.  When set, scalarKind() returns this
       // directly, bypassing content-based resolution.
       std::optional<ScalarKind> explicitTag;
+      // Self-owned content for Node::operator=(T) and setOwnedScalar().
+      // When non-empty, scalarView() returns a view into this; `sv` is
+      // unused.  Copying / moving this ScalarData moves the owned bytes
+      // with it, so the derived view is always valid for the current
+      // Node's lifetime.
+      std::string owned;
     };
     using Sequence = std::vector<Node>;
     using Mapping  = std::vector<std::pair<std::string_view, Node>>;
@@ -157,9 +164,41 @@ namespace icl::utils::yaml {
 
     // --- mutation ---
     void setNull()     noexcept { m_value = std::monostate{}; }
+    // View-based — caller must keep `sv` alive.  Used by the parser.
     void setScalar(std::string_view sv, ScalarStyle style = ScalarStyle::Plain);
+    // Owning — Node stores `s` internally; always safe.
+    void setOwnedScalar(std::string s, ScalarStyle style = ScalarStyle::Plain);
     void setMapping()  { m_value = Mapping{};  }
     void setSequence() { m_value = Sequence{}; }
+
+    // --- assignment from scalar-ish types (owning) ---
+    //
+    // All `operator=` overloads below take ownership of the resulting
+    // string, so the assigned value is always safe regardless of the
+    // lifetime of the argument.  For explicit view-based assignment,
+    // use `setScalar(sv, style)`.
+    //
+    // Auto-generated `operator=(const Node&)` / `operator=(Node&&)`
+    // still exist for node-to-node assignment.
+    Node& operator=(const char *s);
+    Node& operator=(const std::string &s);
+    Node& operator=(std::string &&s);
+    Node& operator=(std::string_view sv);   // copies into owned — safe
+    Node& operator=(bool b);
+
+    // Generic catch-all for any T with a `utils::str(T)` specialization
+    // (arithmetic types, ICL geometry types, vectors, ...).  SFINAE-
+    // excluded for types already handled by the explicit overloads and
+    // for Node itself.
+    template<class T,
+             class = std::enable_if_t<
+               !std::is_same_v<std::decay_t<T>, Node> &&
+               !std::is_same_v<std::decay_t<T>, std::string> &&
+               !std::is_same_v<std::decay_t<T>, std::string_view> &&
+               !std::is_same_v<std::decay_t<T>, bool> &&
+               !std::is_convertible_v<T, const char *>
+             >>
+    Node& operator=(const T &t);
 
     // --- internals ---
     const auto& value() const noexcept { return m_value; }
@@ -259,6 +298,12 @@ namespace icl::utils::yaml {
   template<class T>
   std::optional<T> Node::tryAs() const noexcept {
     try { return asStrict<T>(); } catch (...) { return std::nullopt; }
+  }
+
+  template<class T, class E>
+  Node& Node::operator=(const T &t){
+    setOwnedScalar(::icl::utils::str(t));
+    return *this;
   }
 
 }  // namespace icl::utils::yaml
