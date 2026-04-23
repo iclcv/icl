@@ -660,43 +660,58 @@ namespace icl{
         conf->registerCallback([this](const Configurable::Property &p) { propertyChanged(p); });
       }
 
-      /// Called if a property is changed from somewhere else
+      /// Called when a property is changed from somewhere other than the
+      /// GUI — e.g. the owning Op mutates it, or another Configurable
+      /// consumer of syncChangesTo fires.  Pushes the new value into the
+      /// matching widget.  Dispatch mirrors update_all_components /
+      /// add_component.
       void propertyChanged(const Configurable::Property &p){
+        namespace up = utils::prop;
+        namespace cp = core::prop;
         std::scoped_lock<std::recursive_mutex> l(execMutex);
         const std::string &name = p.name;
-        const std::string &type = p.type;
+        const std::any    &c    = p.constraint;
         deactivateExec = true;
-        processingProperty = p.name;
-        if(type == "range" || type == "range:slider"){
-          SteppingRange<float> r = parse<SteppingRange<float> >(conf->getPropertyInfo(name));
-          if(r.stepping >= 1){
-            int val = parse<icl32s>(conf->getPropertyValue(name));
-            int s = static_cast<int>(r.stepping);
-            val = (val/s)*s;
-            gui.get<SliderHandle>("#r#"+name).setValue( val );
+        processingProperty = name;
+
+        if(auto *r = std::any_cast<up::Range<float>>(&c)){
+          if(r->ui == up::UI::Spinbox){
+            gui["#F#"+name] = conf->getPropertyValue(name).as<float>();
           }else{
-            gui.get<FSliderHandle>("#r#"+name).setValue( parse<icl32f>(conf->getPropertyValue(name)) );
+            gui.get<FSliderHandle>("#r#"+name).setValue( conf->getPropertyValue(name).as<float>() );
           }
-        }else if (type == "range:spinbox"){
-          gui.get<SpinnerHandle>("#R#"+name).setValue( parse<icl32s>(conf->getPropertyValue(name)) );
-        }else if( type == "menu" || type == "value-list" || type == "valueList"){
-          std::string handle = (type == "menu" ? "#m#" : "#v#")+name;
-          gui.get<ComboHandle>(handle).setSelectedItem(conf->getPropertyValue(name));
-        }else if( type == "info"){
-          gui["#i#"+name] = conf->getPropertyValue(name);
-        }else if( type == "flag"){
+        }else if(auto *r = std::any_cast<up::Range<int>>(&c)){
+          if(r->ui == up::UI::Spinbox){
+            gui.get<SpinnerHandle>("#R#"+name).setValue( conf->getPropertyValue(name).as<int>() );
+          }else{
+            // Snap the incoming value to the constraint's stepping so a
+            // slider with step=N reflects the model's N-aligned grid
+            // (matches the pre-session behavior — the user can't notice
+            // sub-step moves, but an external writer could otherwise
+            // push the widget off-grid).
+            int val = conf->getPropertyValue(name).as<int>();
+            int step = (r->step == 0) ? 1 : r->step;
+            val = (val/step)*step;
+            gui.get<SliderHandle>("#r#"+name).setValue( val );
+          }
+        }else if(std::any_cast<up::Menu<std::string>>(&c) ||
+                 std::any_cast<up::Menu<int>>(&c) ||
+                 std::any_cast<up::Menu<float>>(&c)){
+          gui.get<ComboHandle>("#m#"+name).setSelectedItem(
+              conf->getPropertyValue(name).as<std::string>() );
+        }else if(std::any_cast<up::Flag>(&c)){
           gui["#f#"+name] = conf->getPropertyValue(name).as<bool>();
-        }else if(type == "int"){
-          gui["#I#"+name] = conf->getPropertyValue(name).as<int>();
-        }else if(type == "float"){
-          gui["#F#"+name] = conf->getPropertyValue(name).as<float>();
-        }else if(type == "string"){
+        }else if(std::any_cast<up::Info>(&c)){
+          gui["#i#"+name] = conf->getPropertyValue(name).as<std::string>();
+        }else if(std::any_cast<up::Text>(&c)){
           gui["#S#"+name] = conf->getPropertyValue(name).as<std::string>();
-        }else if(type == "color"){
+        }else if(std::any_cast<cp::Color>(&c)){
           gui["#C#"+name] = conf->getPropertyValue(name).as<Color>();
-        }else if(type == "Point32f"){
-          gui["#p#"+name] = conf->getPropertyValue(name).as<Point32f>();
         }
+        // up::Command — nothing to push; fires without value.
+        // cp::ImageView — refreshed by VolatileImageUpdater timer.
+        // Empty constraint — unknown/malformed; drop silently (logged
+        // on the add_component path where the miss is visible).
 
         deactivateExec = false;
         processingProperty = "";
