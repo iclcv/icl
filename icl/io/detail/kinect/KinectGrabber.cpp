@@ -675,8 +675,8 @@ namespace icl::io {
     double a[3]={0,0,0};
     m_impl->getDevice()->used->getState().getAccelerometers(a,a+1,a+2);
     std::string accelval = str(a[0]) + "-" + str(a[1]) + "-" + str(a[2]);
-    prop("Current-Tilt-Angle").value = angleval;
-    prop("Accelerometers").value = accelval;
+    setPropertyValue("Current-Tilt-Angle", angleval);
+    setPropertyValue("Accelerometers", accelval);
     m_impl -> lastupdate = Time::now();
   }
 

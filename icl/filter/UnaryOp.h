@@ -60,8 +60,12 @@ namespace icl::filter {
     */
     void setClipToROI (bool bClipToROI) {
       m_oROIHandler.setClipToROI(bClipToROI);
-      prop("UnaryOp.clip to ROI").value = bClipToROI ? "on" : "off";
-      call_callbacks("UnaryOp.clip to ROI",this);
+      // Bypass UnaryOp::setPropertyValue — its override re-dispatches
+      // property writes for "UnaryOp.clip to ROI" back through
+      // setClipToROI to keep the ROI handler in sync.  Calling it here
+      // would recurse forever.  Go straight to the base writer, which
+      // updates Property::value + typed_value + fires callbacks.
+      Configurable::setPropertyValue("UnaryOp.clip to ROI", bClipToROI ? "on" : "off");
     }
 
     /// sets if the destination image should be adapted to the source, or if it is only checked if it can be adapted.
@@ -70,8 +74,8 @@ namespace icl::filter {
     */
     void setCheckOnly (bool bCheckOnly) {
       m_oROIHandler.setCheckOnly(bCheckOnly);
-      prop("UnaryOp.check only").value = bCheckOnly ? "on" : "off";
-      call_callbacks("UnaryOp.check only",this);
+      // See setClipToROI — same recursion hazard via UnaryOp::setPropertyValue.
+      Configurable::setPropertyValue("UnaryOp.check only", bCheckOnly ? "on" : "off");
     }
 
     /// returns the ClipToROI status

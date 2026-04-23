@@ -54,8 +54,8 @@ namespace icl::filter {
   UnaryOp &UnaryOp::operator=(const UnaryOp &other){
     m_oROIHandler = other.m_oROIHandler;
 
-    prop("UnaryOp.clip to ROI").value = other.prop("UnaryOp.clip to ROI").value;
-    prop("UnaryOp.check only").value = other.prop("UnaryOp.check only").value;
+    setPropertyValue("UnaryOp.clip to ROI", other.prop("UnaryOp.clip to ROI").value);
+    setPropertyValue("UnaryOp.check only",  other.prop("UnaryOp.check only").value);
 
     return *this;
   }

@@ -96,20 +96,20 @@ namespace icl::filter {
 
 
   void LocalThresholdOp::setMaskSize(unsigned int maskSize){
-    prop("mask size").value = str(maskSize);
-    call_callbacks("mask size",this);
+    // Route through setPropertyValue so typed_value + value stay in sync.
+    // Callbacks fire from setPropertyValue — no need for an explicit
+    // call_callbacks here.
+    setPropertyValue("mask size", str(maskSize));
   }
 
 
   void LocalThresholdOp::setGlobalThreshold(float globalThreshold){
-    prop("global threshold").value = str(globalThreshold);
-    call_callbacks("global threshold",this);
+    setPropertyValue("global threshold", str(globalThreshold));
   }
 
 
   void LocalThresholdOp::setGammaSlope(float gammaSlope){
-    prop("gamma slope").value = str(gammaSlope);
-    call_callbacks("gamma slope",this);
+    setPropertyValue("gamma slope", str(gammaSlope));
   }
 
 
@@ -148,8 +148,10 @@ namespace icl::filter {
 
   /// sets internally used algorithm
   void LocalThresholdOp::setAlgorithm(algorithm a){
-    prop("algorithm").value = (a==regionMean?"region mean":a==tiledNN?"tiledNN": a == global ? "global" : "tiled linear");
-    call_callbacks("algorithm",this);
+    setPropertyValue("algorithm",
+                     a==regionMean ? "region mean" :
+                     a==tiledNN    ? "tiledNN"     :
+                     a==global     ? "global"      : "tiled linear");
   }
 
 

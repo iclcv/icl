@@ -30,10 +30,9 @@ struct B : public Configurable, public Thread{
   virtual void run(){
     while(true){
       Thread::msleep(100);
-      // this only sets the configurables property value without calling
-      // callbacks. The gui should update the value because of the propertys
-      // volatilenes-value. This only works with 'info' properties
-      prop("time").value = Time::now().toString();
+      // Update the info-typed property.  The GUI picks this up via the
+      // VolatileUpdater timer based on the property's volatileness.
+      setPropertyValue("time", Time::now().toString());
       int val =  getPropertyValue("general.x");
       val = (val+1) % 100;
       // this way not only the configurables property value is set but

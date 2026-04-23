@@ -153,8 +153,9 @@ namespace icl::io {
     m_drawBuffer->setTime(now);
     m_lastTime = now;
 
-    prop("current-pos").value = "x:" + str(m_x.x*m_drawSize.width) + " y:"
-                     + str(m_x.y*m_drawSize.height);
+    setPropertyValue("current-pos",
+                     "x:" + str(m_x.x*m_drawSize.width) + " y:"
+                     + str(m_x.y*m_drawSize.height));
 
     return m_drawBuffer;
   }
