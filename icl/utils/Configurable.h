@@ -210,6 +210,21 @@ namespace icl::utils {
       /// (still populated by every setter) is wrapped as
       /// `std::any(std::string)` instead.
       std::any typed_value;
+
+      /// Typed read of `typed_value` through `AutoParse<std::any>`'s
+      /// cascade: exact `any_cast<T>` fast path, numeric widening for
+      /// arithmetic `T`, `parse<T>` if stored as string, stringify on
+      /// `T = std::string` request.
+      ///
+      /// Preferred over `parse<T>(p.value)` in callback bodies — zero
+      /// string round-trip in the common case where the stored type
+      /// matches the requested T (which it does for every typed- or
+      /// legacy-dispatched property after step 9 commit 1).
+      template<class T>
+      T as() const {
+        return AutoParse<std::any>(typed_value).template as<T>();
+      }
+
       /// for more efficient find
       bool operator==(const std::string &name) const { return this->name == name; }
     };
