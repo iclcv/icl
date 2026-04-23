@@ -722,9 +722,17 @@ namespace icl::utils {
     std::string type() const;
     std::string info() const;
 
-    /// Typed read — forwards to `Property::as<T>`.
+    /// Typed read.
+    /** Routes through `Configurable::getPropertyValue(name)` rather
+        than reading the Property's own `typed_value` directly — for a
+        facade Property imported via `addChildConfigurable` the owning
+        storage lives on the child and the facade's `typed_value` stays
+        empty.  `getPropertyValue` follows the `p.configurable != this`
+        hop so reads see the current value on the child. */
     template<class T>
-    T as() const { return m_p->template as<T>(); }
+    T as() const {
+      return m_conf->getPropertyValue(m_p->name).template as<T>();
+    }
   };
 
   // PropertyValueRef inline definitions — need Configurable's complete
