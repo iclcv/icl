@@ -120,7 +120,7 @@ namespace icl::geom {
                                                          int iterations,
                                                          int minPoints,
                                                          float maxErr,
-                                                       float minPointsForGoodModel,
+                                                       int minPointsForGoodModel,
                                                        bool storeLastConsensusSet){
       m_data = new Data;
       addProperty("iterations",utils::prop::Range{.min=1, .max=1000000, .step=1}, iterations);
@@ -164,10 +164,7 @@ namespace icl::geom {
       prop("max error").value = maxError;
     }
 
-    void RansacBasedPoseEstimator::setMinPointsForGoodModel(float f){
-      // min points property is Range<int>; the API historically takes
-      // float and the legacy path stringified-then-reparsed to int.
-      // Stay on the public string setter until the API is tightened.
+    void RansacBasedPoseEstimator::setMinPointsForGoodModel(int f){
       prop("min points for good model").value = f;
     }
 

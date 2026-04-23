@@ -53,8 +53,8 @@ namespace icl::filter {
       m_eOpType(ot), m_dValue(value), m_dTolerance(tolerance)
   {
     addProperty("op",utils::prop::menuFromCsv(OP_MENU), opName(ot));
-    addProperty("value",utils::prop::Range{.min=-255, .max=512}, value);
-    addProperty("tolerance",utils::prop::Range{.min=0, .max=512}, tolerance);
+    addProperty("value",utils::prop::Range{.min=-255.f, .max=512.f}, static_cast<float>(value));
+    addProperty("tolerance",utils::prop::Range{.min=0.f, .max=512.f}, static_cast<float>(tolerance));
     registerCallback([this](const Property &p){ property_callback(p); });
   }
 
@@ -62,8 +62,10 @@ namespace icl::filter {
     : UnaryCompareOp(translate_op_type(op), value, tolerance) {}
 
   void UnaryCompareOp::setOpType(optype ot){ prop("op").value = opName(ot); }
-  void UnaryCompareOp::setValue(icl64f v){ prop("value").value = v; }
-  void UnaryCompareOp::setTolerance(icl64f t){ prop("tolerance").value = t; }
+  // Properties are Range<float> (only int/float adapters registered); setter API
+  // stays icl64f, so narrow explicitly to match the stored type.
+  void UnaryCompareOp::setValue(icl64f v){ prop("value").value = static_cast<float>(v); }
+  void UnaryCompareOp::setTolerance(icl64f t){ prop("tolerance").value = static_cast<float>(t); }
 
   // ================================================================
   // apply()

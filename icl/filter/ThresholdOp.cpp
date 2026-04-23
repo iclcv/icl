@@ -67,10 +67,10 @@ namespace icl::filter {
       m_fHighThreshold(highThreshold), m_fLowVal(lowVal), m_fHighVal(highVal)
   {
     addProperty("type",utils::prop::menuFromCsv(TYPE_MENU), typeName(ttype));
-    addProperty("low threshold",utils::prop::Range{.min=-255, .max=255}, lowThreshold);
-    addProperty("high threshold",utils::prop::Range{.min=-255, .max=255}, highThreshold);
-    addProperty("low val",utils::prop::Range{.min=0, .max=255}, lowVal);
-    addProperty("high val",utils::prop::Range{.min=0, .max=255}, highVal);
+    addProperty("low threshold",utils::prop::Range{.min=-255.f, .max=255.f}, lowThreshold);
+    addProperty("high threshold",utils::prop::Range{.min=-255.f, .max=255.f}, highThreshold);
+    addProperty("low val",utils::prop::Range{.min=0.f, .max=255.f}, lowVal);
+    addProperty("high val",utils::prop::Range{.min=0.f, .max=255.f}, highVal);
     registerCallback([this](const Property &p){ property_callback(p); });
   }
 

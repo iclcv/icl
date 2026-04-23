@@ -27,8 +27,8 @@ namespace icl::filter {
   }
 
   void CannyOp::addCannyProperties(icl32f lowThresh, icl32f highThresh, int preBlurRadius){
-    addProperty("low threshold",utils::prop::Range{.min=0, .max=2000}, lowThresh);
-    addProperty("high threshold",utils::prop::Range{.min=0, .max=2000}, highThresh);
+    addProperty("low threshold",utils::prop::Range{.min=0.f, .max=2000.f}, lowThresh);
+    addProperty("high threshold",utils::prop::Range{.min=0.f, .max=2000.f}, highThresh);
     addProperty("pre-blur radius",utils::prop::Range{.min=0, .max=10, .ui=utils::prop::UI::Spinbox}, preBlurRadius);
   }
 

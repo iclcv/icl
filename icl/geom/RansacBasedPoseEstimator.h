@@ -29,7 +29,7 @@ namespace icl::geom {
                                 int iterations=200,
                                 int minPoints=4,
                                 float maxErr=5,
-                               float minPointsForGoodModel=12,
+                               int minPointsForGoodModel=12,
                                bool storeLastConsensusSet=false);
 
       ~RansacBasedPoseEstimator();
@@ -40,7 +40,7 @@ namespace icl::geom {
 
       void setMaxError(float maxError);
 
-      void setMinPointsForGoodModel(float f);
+      void setMinPointsForGoodModel(int f);
 
       void setStoreLastConsensusSet(bool);
 

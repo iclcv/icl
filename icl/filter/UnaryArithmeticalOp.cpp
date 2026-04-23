@@ -60,7 +60,7 @@ namespace icl::filter {
       m_eOpType(t), m_dValue(val)
   {
     addProperty("op",utils::prop::menuFromCsv(ARITH_MENU), arithName(t));
-    addProperty("value",utils::prop::Range{.min=-255, .max=512}, val);
+    addProperty("value",utils::prop::Range{.min=-255.f, .max=512.f}, static_cast<float>(val));
     registerCallback([this](const Property &p){
       if(p.name == "op")        m_eOpType = parseArith(p.as<std::string>());
       else if(p.name == "value") m_dValue = p.as<icl64f>();
@@ -68,7 +68,9 @@ namespace icl::filter {
   }
 
   void UnaryArithmeticalOp::setOpType(optype t){ prop("op").value = arithName(t); }
-  void UnaryArithmeticalOp::setValue(icl64f v){ prop("value").value = v; }
+  // Property is Range<float> (only int/float adapters registered); setter API is
+  // icl64f historically, so we narrow here to match the stored type.
+  void UnaryArithmeticalOp::setValue(icl64f v){ prop("value").value = static_cast<float>(v); }
 
   REGISTER_CONFIGURABLE_DEFAULT(UnaryArithmeticalOp);
 
