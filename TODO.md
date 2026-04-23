@@ -30,19 +30,30 @@ Applied per `module-audit-checklist.md`.
   ID-based registration on both or a token-returning pattern so
   unregister is cheap.
 
-- [ ] **Wire ImageCompressor codec swap to the new rebuild channel.**
-  The original motivation for `onChildSetChanged`.  ImageCompressor
-  already reinstalls its codec child on `mode` writes
-  (`io/ImageCompressor.cpp` ~236–259); the Prop widget will now
-  rebuild automatically since this landed.  But we haven't built an
-  interactive demo exercising the real consumer end-to-end — just the
-  synthetic `dynamic-child-props` demo.  An `icl-compressor-playground`
-  or similar would surface any codec-specific surprises.
+- [x] **Wire ImageCompressor codec swap to the new rebuild channel.**
+  Landed as `icl-compressor-playground-demo` (commit `614d4fbdd`).
+  Flipping `mode` swaps the codec child, Prop rebuilds, codec-specific
+  tunables appear/disappear.  Surfaced a pre-existing race on
+  `m_data->plugin` — a GUI-thread `installPlugin()` vs. a worker-thread
+  `compress()`; fixed with a recursive_mutex in the pimpl
+  (commit `87b70f544`).
 
-- [ ] **Same for GenericGrabber backend swap.**  GenericGrabber does
-  `removeChildConfigurable(m_poGrabber)` / `addChildConfigurable(...)`
-  in its init path when the backend changes.  Now covered by the
-  rebuild mechanism but untested interactively.
+- [x] **Same for GenericGrabber backend swap.**  Landed as
+  `icl-grabber-backend-swap-demo` (commit `403f2a897`).  Four buttons
+  drive `GenericGrabber::init()` with different `(type, id)` pairs;
+  Prop on the grabber rebuilds as the backend child swaps.  Minor
+  gotcha: `init(type, params)` expects params in `"type=id"` parse
+  shape, not the bare id — documented in the demo's `swapBackend`
+  helper.
+
+- [ ] **Capability flags for compression codecs.**  Surfaced by
+  compressor-playground: `1611` throws on RGB input ("only
+  single-channel icl16s supported").  The demo catches + reports in
+  the ratio label, but a cleaner UX would have the codec advertise
+  its supported (format, depth, channel) matrix so the UI can gray
+  out incompatible choices.  Dovetails with the Session 48 "auto
+  codec mode" deferral — both want a capability surface on
+  `CompressionPlugin`.
 
 ---
 

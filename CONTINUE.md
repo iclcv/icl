@@ -2,54 +2,144 @@
 
 ## Next Step
 
-Session 54–55 closed a huge arc of Configurable/property work:
-typed-storage migration completed (step 5 + step 8 of Session 53
-plan), `Configurable::prop()` proxy promoted to public API, every
-in-tree subclass migrated off virtual `setPropertyValue`/
-`getPropertyX` overrides onto `addProperty<C> + registerCallback`,
-then the GUI refresh mechanism replaced: `qt::Prop::propertyChanged`
-now dispatches through `QMetaObject::invokeMethod(Qt::QueuedConnection)`
-with a coalescing dirty-flag (one widget flush per GUI event-loop
-tick).  `VolatileUpdater` / `VolatileImageUpdater` QTimers,
-`Property::volatileness`, `ConfigurableProxy`, `setPropertyValueSilent`,
-`getPropertyConstraint`, `getPropertyToolTip`,
-`getPropertyVolatileness`, `setPropertyPayload`, `getPropertyPayload`
-all retired.  All ~500 `addProperty` call sites swept to drop the
-volatileness arg.  `GenericGrabber` now inherits `Configurable`
-directly, with the backend as `addChildConfigurable`.
+Session 55 closed the dynamic child-configurable arc and swept the
+residual polish items from Session 54's "Next Step" list.  Highlights:
 
-Also fixed: the `LocalThresholdOp::regionMean` multi-channel
-collapse (`aa196d084` — channels 1+2 of a 3-channel input were
-being skipped, producing red-black output in playground).
+- `Configurable::onChildSetChanged` observer API + qt::Prop rebuild
+  (landed).  `ConfigurableGUIWidget::buildFromConf()` extracted from
+  the ctor; rebuild coalesces via `QMetaObject::invokeMethod(Qt::QueuedConnection)`.
+  Two real-world consumer demos land alongside: `icl-compressor-playground-demo`
+  (ImageCompressor codec swap) and `icl-grabber-backend-swap-demo`
+  (GenericGrabber::init re-entry).
+- `Configurable::Handle::as<T>()` facade-read fix — reads now forward
+  via `getPropertyValue`, matching the write-path protocol.  Latent
+  bug; every `Prop(...)` on a Configurable with children was hitting it.
+- `ImageCompressor` compress/uncompress/installPlugin now serialized
+  by a recursive_mutex.  Pre-existing race surfaced by the new demo
+  (GUI-thread `mode` flip vs. worker `compress`).
+- `configurable-gui-demo` thread finally stops cleanly on exit
+  (`~B() { stop(); }` + `while(running())`).  Pre-existing exit crash.
+- Float-setter / int-property audit (5 Ops), `core/Image.h` pulls
+  `Img.h` transitively, CTAD sweep for `lock_guard` / `scoped_lock` /
+  `unique_lock` (~278 sites, 71 files).  All mechanical.
 
 Concrete work items remaining (in suggested order):
 
-- **Float-setter / int-property audit** (TODO.md "Op API" section).
-  ~5 Ops expose `setFoo(float)` that writes to a `Range<int>`
-  property — legacy path truncates via stringify.  Each needs
-  either property widen to `Range<float>` or setter narrow to int,
-  then migrate to `prop().value = v`.  Mechanical per Op.
-- **Dynamic child-configurable UI refresh** —
-  `project_dynamic_child_configurables.md`.  qt::Prop still builds
-  widget tree once; doesn't rebuild on runtime `addChildConfigurable`/
-  `removeChildConfigurable`.  Affects ImageCompressor codec swap
-  and now GenericGrabber backend swap.  Proposed fix:
-  `Configurable::onChildSetChanged` callback list, Prop subscribes
-  and rebuilds.  Pairs nicely with the callback-push channel that
-  just landed.
+- **`removeChildSetCallback` API.**  Subscribers can't unregister
+  today — if a ConfigurableGUIWidget dies while its Configurable
+  survives, the captured `this` is dangling and the next
+  add/removeChildConfigurable segfaults.  Same shape as the
+  long-standing `removedCallback` gap on the property-change
+  channel.  Either ID-based registration on both, or a token-
+  returning pattern.
+
+- **Compression-codec capability flags.**  Surfaced by the
+  compressor demo: `1611` only handles single-channel icl16s and
+  throws on RGB input.  Today the demo try/catches and reports
+  in the ratio label; proper fix is to put a capability matrix
+  (format / depth / channels) on `CompressionPlugin` and gray out
+  incompatible choices in the UI.  Dovetails with the Session 48
+  "auto codec" deferral.
+
 - **ICLWidget OSD scale-range button misbehaves** (2026-04-21
-  report).  User-visible, small scope.
-- **Designated-init GUI component syntax** — next natural step
-  after qt::Prop cleanup; `gui << Slider{.min=..., .max=...}`.
-  Pairs with `GUIComponent` string-round-trip rework.
-- **`core/Image.h` should include `core/Img.h`** — latent
-  dependency (Clang 21 surfaced); mechanical one-line fix.
-- **`std::lock_guard`/`scoped_lock` CTAD cleanup** — ~281 sites,
-  `perl -pi -e`.
-- **Fun: icl-edit image editor demo** (new TODO section).  Needs
-  new filter Ops first: `BrillianceOp`, `VibranceOp`, `ClarityOp`,
-  `CurvesOp`, interactive crop/rotate.  Good exercise of the push-
-  callback refresh, filter chaining, ConfigFile round-trip.
+  report).  User-visible; needs a proper repro session.
+
+- **Designated-init GUI component syntax** — `gui << Slider{.min=0,
+  .max=255}`.  Bigger arc; pairs with retiring `GUIComponent::toString()`'s
+  string round-trip.
+
+- **Fun: icl-edit image editor demo.**  Needs new filter Ops
+  (`BrillianceOp`, `VibranceOp`, `ClarityOp`, `CurvesOp`, interactive
+  crop/rotate).  Good exercise of the push-callback refresh +
+  filter chaining + ConfigFile round-trip.
+
+---
+
+## Current State (Session 55 — dynamic child-configurable + polish)
+
+### Session 55 Summary
+
+15 commits.  Two logical arcs: (1) clear the Session 54 "Next Step"
+polish list (float-setters, Image.h include, CTAD sweep); (2) land
+the dynamic child-configurable refresh and two real-world consumer
+demos.
+
+#### Polish items (mechanical)
+
+- `177624b10` **core: `Image.h` pulls in `Img.h` transitively.**
+  `Image::as<T>()`'s inline `static_cast<Img<T>*>` needs the
+  derivation visible under Clang 21; every consumer now gets it
+  automatically.
+- `268e36225` **filter+geom: align Op property constraint value_types
+  with setter args.**  Five Ops (ThresholdOp, CannyOp,
+  UnaryArithmeticalOp, UnaryCompareOp, RansacBasedPoseEstimator).
+  Range<int> widened to Range<float> where the setter was float/icl32f;
+  icl64f setters cast explicitly to float at the write site (only
+  Range<int>/Range<float> adapters are registered); Ransac's
+  integer-count setter was narrowed from float to int instead.
+- `11b5eeb7c` **tree-wide: CTAD sweep for lock_guard / scoped_lock /
+  unique_lock.**  ~278 sites, 71 files.  `lock_guard<std::mutex>` →
+  `scoped_lock` (and similarly for `recursive_mutex`); `scoped_lock`
+  is the C++17+ default and handles multi-mutex for free.
+- `289db2d2e` **utils: drop stale dead code in AssignRegistry.h /
+  ConfigFile.h.**  #if-0 blocks + stale transitional comments.
+
+#### Dynamic child-configurable refresh
+
+- `8532471f7` **Handle::as<T>() forwards through getPropertyValue.**
+  Latent facade-read bug: facades carry a constraint but no
+  `typed_value` (owning storage lives on the child).  Writes already
+  forwarded; reads now match.
+- `be71b2b54` **Configurable::onChildSetChanged** — observer API.
+  Fires from the end of `addChildConfigurable` / `removeChildConfigurable`.
+- `51b2ec0a6` **qt: ConfigurableGUIWidget rebuilds on child-set
+  change.**  Constructor body extracted into `buildFromConf()`;
+  `clearWidgets()` tears the Qt child tree down; `rebuild()` =
+  clear + rebuild; `enqueueRebuild()` coalesces via
+  `QMetaObject::invokeMethod(Qt::QueuedConnection)` + a
+  rebuildScheduled flag (same pattern as the property-change push
+  channel from Session 54).
+- `2491c3aa4` **qt: dynamic-child-props demo.**  Host with
+  add/remove Command buttons — simplest visual proof that the
+  mechanism works.
+- `23b637b2d` **configurable-gui demo stops thread cleanly on exit.**
+  Pre-existing `while(true)` + no `stop()` led to "recursive_mutex
+  lock failed" or "Property not supported" on exit depending on
+  destruction-order roulette.  Two-line fix.
+
+#### Real-world consumers
+
+- `87b70f544` **io: ImageCompressor serializes
+  compress/uncompress/installPlugin.**  Latent race: GUI-thread
+  `mode` flip destroys the old plugin while a worker thread is
+  partway through `compress()`; worker reads the new plugin's
+  `name()` after encoding with the old plugin → envelope lies
+  about the payload → `uncompress` aborts with codec-specific
+  errors ("Not a JPEG file: starts with 0xff 0xd9").  recursive_mutex
+  in the pimpl; pair with the onChildSetChanged demo work since
+  the demo is what surfaced it.
+- `614d4fbdd` **qt: compressor-playground demo.**  Grabber → compress
+  → uncompress side-by-side.  Flipping `mode` swaps the codec child,
+  the widget rebuilds, codec-specific knobs (`quality`, `level`)
+  appear/disappear.  Catches incompatible combos (e.g. `1611` on
+  RGB) and surfaces them in the ratio label.
+- `403f2a897` **qt: grabber-backend-swap demo.**  Four buttons drive
+  `GenericGrabber::init()` with different (type, id) pairs;
+  Prop on the grabber rebuilds as the backend child swaps.
+  Documents the init() params shape gotcha (`"type=id"`, not
+  bare id) in the `swapBackend` helper.
+
+#### Docs + follow-ups
+
+- `8fedcd7f5` / `deb8035df` — TODO entries for the polish checkoffs
+  + the three follow-ups (`removeChildSetCallback`, ImageCompressor
+  demo, GenericGrabber demo — the latter two now checked off in
+  this session).
+
+#### Verification
+
+Full test suite: 659/659 passing at every commit under
+`meson compile -j16` (CCACHE_DISABLE=1 in this sandbox).
 
 ---
 
