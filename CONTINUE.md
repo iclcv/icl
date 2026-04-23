@@ -2,25 +2,26 @@
 
 ## Next Step
 
-**qt::Prop constraint-driven dispatch (step 5 from Session 53 plan).**
-Every property in the tree now has `Property::constraint` (a
-`std::any` holding a `prop::Range<T>` / `prop::Menu<T>` / `prop::Flag`
-/ ... value) and `Property::typed_value` populated.  qt::Prop still
-dispatches widget creation / updates by string-matching the legacy
-`type` field and parsing `info` strings for each branch.  Rewrite
-to variant-visit on `constraint.type()`: eliminates the
-`parse<SteppingRange<float>>(info)` boilerplate and lets each
-branch access constraint fields directly (`.min` / `.max` / `.step`
-/ `.ui` / `.choices`).  Three dispatch sites: `add_component`,
-`update_all_components`, `propertyChanged`.  Bigger blast radius
-than the step-9 commits because there's no automated coverage for
-widget rendering — needs manual GUI testing per dispatch site.
+Session 54 closed the Configurable typed-storage arc — steps 5
+and 8 landed, step 7 skipped deliberately (dynamic-registration
+entry point).  Pick from `TODO.md`:
 
-See `TODO.md` "Designated-init GUI component syntax" for the
-follow-on (aggregate-init GUI builders), plus step 7 (retire legacy
-string-taking `addProperty`) and step 8 (synthesize
-`getPropertyType` / `getPropertyInfo` from constraint, drop
-`Property::type` / `Property::info` fields).
+- **ICLWidget OSD scale-range button** — misbehaves (surfaced
+  2026-04-21 in `icl-region-inspector -i create cameraman`).
+  Concrete user-visible bug, small scope.
+- **LocalThresholdOp multi-channel collapse** — surfaced
+  2026-04-22 during step 5 GUI verification; only channel 0 is
+  processed, output is red-black.  Isolated to
+  `icl/filter/LocalThresholdOp.cpp::apply()`.
+- **Designated-init GUI component syntax** — next natural step
+  after the step-5 qt::Prop cleanup; `gui << Slider{.min=..., .max=...}`
+  aggregate-init + typed component descriptors, pairs with the
+  `GUIComponent` string-round-trip rework.
+- **`core/Image.h` should include `core/Img.h`** — latent
+  dependency fix (Clang 21 surfaced it); mechanical single-line
+  change.
+- **`std::lock_guard`/`scoped_lock` CTAD cleanup** — ~281 sites,
+  mechanical `perl -pi -e`, useful C++17 modernization.
 
 ---
 
