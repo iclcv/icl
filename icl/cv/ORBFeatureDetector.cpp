@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/cv/ORBFeatureDetector.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/OpenCV.h>
 
 #include <icl/filter/LocalThresholdOp.h>
@@ -98,30 +99,30 @@ namespace icl{
 
       m_data->matcher = ocv::DescriptorMatcher::create("BruteForce");
 
-      addProperty("contrast adjustment.on","flag","",false);
-      addProperty("contrast adjustment.slope","range","[0.05,20]",1);
-      addProperty("contrast adjustment.mask size","range","[3,100]:1",10);
-      addProperty("contrast adjustment.threshold","range", "[-50,50]", 0);
+      addProperty("contrast adjustment.on",utils::prop::Flag{}, false);
+      addProperty("contrast adjustment.slope",utils::prop::Range{.min=0.05f, .max=20.f}, 1);
+      addProperty("contrast adjustment.mask size",utils::prop::Range{.min=3, .max=100, .step=1}, 10);
+      addProperty("contrast adjustment.threshold",utils::prop::Range{.min=-50, .max=50}, 0);
 
-      addProperty("score type","menu","fast,harris","harris",0, "Score type o use: harris is slightly slower but more accurate");
-      addProperty("max features","range:spinbox","[1,100000]:1","500",0, "Maximum number of features to detect");
-      addProperty("patch size","range","[1,1001]:1","31",0,
+      addProperty("score type",utils::prop::Menu{"fast", "harris"}, "harris",0, "Score type o use: harris is slightly slower but more accurate");
+      addProperty("max features",utils::prop::Range{.min=1, .max=100000, .step=1, .ui=utils::prop::UI::Spinbox}, 500,0, "Maximum number of features to detect");
+      addProperty("patch size",utils::prop::Range{.min=1, .max=1001, .step=1}, 31,0,
                   "Minimum patch size that is used compute BRIF discriptors on. Since\n"
                   "the logical patch size is larger in smaller pyramid layers, the\n"
                   "maximum feature size is distinguished by 'patch size', the pyramid\n"
                   "scale factor and the number of pyramid levels. Note that features\n"
                   "will only be detected at positions, where the full patch fits into\n"
                   "the image.");
-      addProperty("WTA_K","menu","2,3,4","2",0,"Number of random points used for computing elements of the ORB descriptors");
-      addProperty("pyramid.levels","range","[1,100]:1","8",0, "Number of pyramid levels to use for key-point detection");
-      addProperty("pyramid.scale factor","range","[1,4]","1.4",0,"Scale down factor between consecutive pyramid layers");
-      addProperty("pyramid.first level","menu","0","0",0,"First pyramid level to actually use (non-0 values are not supported yet");
+      addProperty("WTA_K",utils::prop::Menu{"2", "3", "4"}, "2",0,"Number of random points used for computing elements of the ORB descriptors");
+      addProperty("pyramid.levels",utils::prop::Range{.min=1, .max=100, .step=1}, 8,0, "Number of pyramid levels to use for key-point detection");
+      addProperty("pyramid.scale factor",utils::prop::Range{.min=1, .max=4}, 1.4,0,"Scale down factor between consecutive pyramid layers");
+      addProperty("pyramid.first level",utils::prop::Menu{"0"}, "0",0,"First pyramid level to actually use (non-0 values are not supported yet");
 
-      addProperty("bench.enable","flag","",false,0,"Enable/Disable time benchmarks");
-      addProperty("bench.preprocessing time","info","","??? ms",0,"Last time for preprocessing");
-      addProperty("bench.ORB extraction time","info","","??? ms",0,"Time for the last time ORB features were detecdted");
-      addProperty("bench.detection time","info","","??? ms",0,"Time for the whole last detection cycle");
-      addProperty("bench.matching time","info","","??? ms",0,"Last feature matching step");
+      addProperty("bench.enable",utils::prop::Flag{}, false,0,"Enable/Disable time benchmarks");
+      addProperty("bench.preprocessing time",utils::prop::Info{}, "??? ms",0,"Last time for preprocessing");
+      addProperty("bench.ORB extraction time",utils::prop::Info{}, "??? ms",0,"Time for the last time ORB features were detecdted");
+      addProperty("bench.detection time",utils::prop::Info{}, "??? ms",0,"Time for the whole last detection cycle");
+      addProperty("bench.matching time",utils::prop::Info{}, "??? ms",0,"Last feature matching step");
 
       m_data->updateORB(Data::ParamSet(*this));
 

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <icl/io/detail/dc/DCGrabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/dc/DCGrabberThread.h>
 #include <icl/utils/SignalHandler.h>
 #include <icl/core/Image.h>
@@ -153,13 +154,13 @@ namespace icl::io {
     addProperty("format", "menu", m_oDev.getModesInfo(),
                 m_oDev.getMode().toString(), 0,
                 "Sets the cameras image size and format");
-    addProperty("size", "menu", "adjusted by format",
+    addProperty("size", prop::Menu{"adjusted by format"}, 
                 "adjusted by format", 0,
                 "this is set by format");
-    addProperty("omit-doubled-frames", "flag", "",
+    addProperty("omit-doubled-frames", prop::Flag{}, 
                 m_oOptions.suppressDoubledImages, 0,
                 "Prevents the grabber from returning the same image multiple times.");
-    addProperty("enable-image-labeling", "flag", "",
+    addProperty("enable-image-labeling", prop::Flag{}, 
                 m_oOptions.enable_image_labeling, 0, ""); //TODO: tooltip
     addProperty("iso-speed", "menu",
                 (dc::is_dc800_capable(m_oDev.getCam())) ? "400,800" : "400", //m_oDev.getCam()->bmode_capable == DC1394_TRUE ? "400,800" : "400",

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Eckard Riedenklau, Christof Elbrechter
 
 #include <icl/cv/TemplateTracker.h>
+#include <icl/utils/prop/Constraints.h>
 
 #include <icl/filter/ProximityOp.h>
 #include <icl/filter/RotateOp.h>
@@ -37,21 +38,21 @@ namespace icl{
       data->prox.reset(new ProximityOp(ProximityOp::crossCorrCoeff));
       data->lastResult = initialResult;
 
-      addProperty("tracking.position range","range","[1,1000]:1",positionTrackingRangePix,0,
+      addProperty("tracking.position range",utils::prop::Range{.min=1, .max=1000, .step=1}, positionTrackingRangePix,0,
                   "Search window size in positive and negative\n"
                   "x- and y-direction in pixels. The tracker searches\n"
                   "for the best-matching new position within a squared\n"
                   "region that is centered at the current postion.");
-      addProperty("tracking.rotation range","range","[0,360]",rotationTrackingRangeDegree,0,
+      addProperty("tracking.rotation range",utils::prop::Range{.min=0, .max=360}, rotationTrackingRangeDegree,0,
                   "Sets the rotation search window radius in deg.\n"
                   "The rotation search window is centered at the\n"
                   "current rotation.");
-      addProperty("tracking.coarse steps","range:spinbox","[1,100000]:1",coarseSteps,0,
+      addProperty("tracking.coarse steps",utils::prop::Range{.min=1, .max=100000, .step=1, .ui=utils::prop::UI::Spinbox}, coarseSteps,0,
                   "Number of rotation tracking steps. The rotation\n"
                   "search window size is partitioned into the given\n"
                   "step count. The rotation search window size devided\n"
                   "the amount of steps define the angle resolution.");
-      addProperty("tracking.fine steps","range:spinbox","[1,100000]:1",fineSteps,0,
+      addProperty("tracking.fine steps",utils::prop::Range{.min=1, .max=100000, .step=1, .ui=utils::prop::UI::Spinbox}, fineSteps,0,
                   "Parameter for coarse to fine search\n"
                   "(not supported yet)");
 

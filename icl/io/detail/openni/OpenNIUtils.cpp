@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
 
 #include <icl/utils/Exception.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/ImgBase.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Macros.h>
@@ -828,7 +829,7 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
     XnCropping crop;
     m_Generator -> GetCroppingCap().GetCropping(crop);
 
-    addProperty("Cropping Enabled", "flag", "", crop.bEnabled, 0,
+    addProperty("Cropping Enabled", utils::prop::Flag{}, crop.bEnabled, 0,
                 "Whether cropping should be used."
                 );
     addProperty("Cropping offset X", "range", str(SteppingRange<int>(0, x, 1)),
@@ -862,7 +863,7 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
                 );
   }
   if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_MIRROR)){
-    addProperty(XN_CAPABILITY_MIRROR, "flag", "",
+    addProperty(XN_CAPABILITY_MIRROR, utils::prop::Flag{}, 
                 m_Generator -> GetMirrorCap().IsMirrored(), 0,
                 "Flips the image vertically."
                 );
@@ -919,7 +920,7 @@ void MapGeneratorOptions::addGeneralIntProperty(const std::string name) {
   if(isGeneralIntAutoSupported(cap)){
     std::ostringstream tmp;
     tmp << "Auto" << name;
-    addProperty(tmp.str(),"flag", "", generalIntCapabilityValue(cap),
+    addProperty(tmp.str(),utils::prop::Flag{}, generalIntCapabilityValue(cap),
                 0, "Automaticly set corresponding porperty.");
   }
   // get info
@@ -939,18 +940,18 @@ void MapGeneratorOptions::addGeneralIntProperty(const std::string name) {
 DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator)
   : MapGeneratorOptions(generator), m_DepthGenerator(generator)
 {
-  addProperty("max depth", "info", "", m_DepthGenerator -> GetDeviceMaxDepth(),
+  addProperty("max depth", utils::prop::Info{}, m_DepthGenerator -> GetDeviceMaxDepth(),
               0, "The maximum depth value of this grabber.");
   // field of view
   XnFieldOfView fov;
   m_DepthGenerator -> GetFieldOfView(fov);
-  addProperty("field of view X", "info", "", fov.fHFOV, 0,
+  addProperty("field of view X", utils::prop::Info{}, fov.fHFOV, 0,
               "Horizontal field of view.");
-  addProperty("field of view Y", "info", "", fov.fVFOV, 0,
+  addProperty("field of view Y", utils::prop::Info{}, fov.fVFOV, 0,
               "Vertical field of view.");
   XnUInt64 gmcMode = 0;
   m_DepthGenerator->GetIntProperty("GmcMode", gmcMode);
-  addProperty("GmcMode", "flag", "", gmcMode, 0,
+  addProperty("GmcMode", utils::prop::Flag{}, gmcMode, 0,
               "GmcMode");
   Configurable::registerCallback(
         [this](const utils::Configurable::Property &p){ processPropertyChange(p); });

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <set>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/GenericGrabber.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exception.h>
@@ -229,13 +230,13 @@ namespace icl::io {
       m_poGrabber -> setConfigurableID(m_poDesc.name());
       DEBUG_LOG("set configurable name :" << m_poDesc.name());
       // add internal grabber as child-configurable
-      m_poGrabber -> addProperty("desired size", "menu", "not used,QQVGA,QVGA,VGA,SVGA,XGA,XGAP,UXGA", "not used", 0, "");
-      m_poGrabber -> addProperty("desired depth", "menu", "not used,depth8u,depth16s,depth32s,depth32f,depth64f", "not used", 0, "");
-      m_poGrabber -> addProperty("desired format", "menu", "not used,formatGray,formatRGB,formatHLS,formatYUV,formatLAB,formatChroma,formatMatrix", "not used", 0, "");
-      m_poGrabber -> addProperty("undistortion.enable","flag","",true,0,"forces to not use undistortion (eve if given)");
-      m_poGrabber -> addProperty("undistortion.interpolation","menu","nearest,linear","nearest",0,"sets the interpolation mode for image undistortion");
+      m_poGrabber -> addProperty("desired size", prop::Menu{"not used", "QQVGA", "QVGA", "VGA", "SVGA", "XGA", "XGAP", "UXGA"}, "not used", 0, "");
+      m_poGrabber -> addProperty("desired depth", prop::Menu{"not used", "depth8u", "depth16s", "depth32s", "depth32f", "depth64f"}, "not used", 0, "");
+      m_poGrabber -> addProperty("desired format", prop::Menu{"not used", "formatGray", "formatRGB", "formatHLS", "formatYUV", "formatLAB", "formatChroma", "formatMatrix"}, "not used", 0, "");
+      m_poGrabber -> addProperty("undistortion.enable",prop::Flag{}, true,0,"forces to not use undistortion (eve if given)");
+      m_poGrabber -> addProperty("undistortion.interpolation",prop::Menu{"nearest", "linear"}, "nearest",0,"sets the interpolation mode for image undistortion");
 #ifdef ICL_HAVE_OPENCL
-      m_poGrabber -> addProperty("undistortion.use OpenCL","flag","",false, 0,"trys to use OpenCL for the Warping operation (if possible, please note that OpenCL-based image warping is not neccessarily faster)");
+      m_poGrabber -> addProperty("undistortion.use OpenCL",prop::Flag{}, false, 0,"trys to use OpenCL for the Warping operation (if possible, please note that OpenCL-based image warping is not neccessarily faster)");
 #endif
 
       m_poGrabber -> registerCallback([this](const utils::Configurable::Property &p){ m_poGrabber->processPropertyChange(p); });

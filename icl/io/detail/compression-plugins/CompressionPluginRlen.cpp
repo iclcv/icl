@@ -7,6 +7,7 @@
 // ImageCompressor.h for the historical description. Always built.
 
 #include <icl/io/detail/compression-plugins/CompressionPlugin.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/Img.h>
@@ -140,7 +141,7 @@ namespace icl::io {
 
     public:
       RlenPlugin() {
-        addProperty("quality", "menu", "1,4,6,8", "1", 0,
+        addProperty("quality", prop::Menu{"1", "4", "6", "8"}, "1", 0,
                     "Bits-per-value for the RLE token. 1 = binary (best for "
                     "low-noise binary masks); 4/6 = lossy quantization; "
                     "8 = lossless byte-level RLE.");

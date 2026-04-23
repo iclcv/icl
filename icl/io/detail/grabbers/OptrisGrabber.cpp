@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/detail/grabbers/OptrisGrabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <libirimager/IRImager.h>
 #include <icl/utils/File.h>
 #include <icl/utils/Thread.h>
@@ -254,16 +255,16 @@ namespace icl{
     OptrisGrabber::OptrisGrabber(const std::string &serialPattern, bool testOnly,
                                  Mode mode) : m_data(new Data){
       std::string v4lDev = m_data->init(serialPattern,mode);
-      addProperty("v4l device","info","",v4lDev);
+      addProperty("v4l device",utils::prop::Info{}, v4lDev);
       if(mode == IR_IMAGE){
-        addProperty("format","menu","Temperature celsius [32f],Pseudo Color [RGB8],Pseudo Color + Temp. [RGBT 32f]","Temperature celsius [32f]");
+        addProperty("format",utils::prop::Menu{"Temperature celsius [32f]", "Pseudo Color [RGB8]", "Pseudo Color + Temp. [RGBT 32f]"}, "Temperature celsius [32f]");
         addProperty("size","menu",str(m_data->getSize()),m_data->getSize());
       }else{
         addProperty("format","menu","RGB 8");
-        addProperty("size","menu","640x480",Size::VGA);
+        addProperty("size",utils::prop::Menu{"640x480"}, Size::VGA);
       }
-      addProperty("omit doubled frames","flag","",true);
-      addProperty("threshold output","flag","",false);
+      addProperty("omit doubled frames",utils::prop::Flag{}, true);
+      addProperty("threshold output",utils::prop::Flag{}, false);
       addChildConfigurable(&m_data->lt,"thresh");
       if(!testOnly){
         m_data->start_capturing();

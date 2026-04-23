@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <icl/io/detail/grabbers/SwissRangerGrabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/CoreFunctions.h>
 
 /** why this is now defined */
@@ -364,17 +365,17 @@ namespace icl::io {
       if(id == -1){
         continue;
       }
-      addProperty(props[i], "flag", "", (id & curMode) ? true : false, 0, "");
+      addProperty(props[i], prop::Flag{}, (id & curMode) ? true : false, 0, "");
     }
-    addProperty("intensity-image-mode", "menu", "zero,minus one,unchanged", imgmode, 0, "");
+    addProperty("intensity-image-mode", prop::Menu{"zero", "minus one", "unchanged"}, imgmode, 0, "");
     //TODO in current lib version, there is no possibility to find out camera type ??
     addProperty("modulation-frequency", "menu", "40Mhz,30MHz,21MHz,20MHz,19"
                 "MHz,60MHz,15MHz,10MHz,29MHz,31MHz,14_5MHz,15_5MHz", modfreq, 0, "");
-    addProperty("depth-map-unit", "menu", "16Bit,mm,cm,m", m_sr->depthMapUnit, 0, "");
-    addProperty("current-range", "info", "", currentrange, 0, "");
-    addProperty("create-xyz-channels", "flag", "", m_sr->createXYZ, 0, "");
-    addProperty("format", "info", "", "not used", 0, "");
-    addProperty("size", "info", "", "not used", 0, "");
+    addProperty("depth-map-unit", prop::Menu{"16Bit", "mm", "cm", "m"}, m_sr->depthMapUnit, 0, "");
+    addProperty("current-range", prop::Info{}, currentrange, 0, "");
+    addProperty("create-xyz-channels", prop::Flag{}, m_sr->createXYZ, 0, "");
+    addProperty("format", prop::Info{}, "not used", 0, "");
+    addProperty("size", prop::Info{}, "not used", 0, "");
 
     registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }

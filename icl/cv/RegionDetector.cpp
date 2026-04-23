@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Erik Weitnauer
 
 #include <icl/cv/RegionDetector.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/cv/RegionDetectorTools.h>
 #include <icl/cv/ImageRegionData.h>
 
@@ -68,15 +69,15 @@ namespace icl::cv {
   RegionDetector::RegionDetector(bool createRegionGraph, const std::string &configurableID):Configurable(configurableID){
     m_data = new Data;
 
-    addProperty("minimum region size","range:spinbox","[0,100000]","0",0,
+    addProperty("minimum region size",prop::Range{.min=0, .max=100000, .ui=prop::UI::Spinbox}, 0,0,
                 "Minimum amount of pixels, detection regions must have.");
-    addProperty("maximum region size","range:spinbox","[0,100000]","1000000",0,
+    addProperty("maximum region size",prop::Range{.min=0, .max=100000, .ui=prop::UI::Spinbox}, 1000000,0,
                 "Maximum amount of pixels, detected regions must have.");
-    addProperty("minimum value","range:slider","[0,255]","0",0,
+    addProperty("minimum value",prop::Range{.min=0, .max=255}, 0,0,
                 "Minimum pixel value for detected regions.");
-    addProperty("maximum value","range:slider","[0,255]","255",0,
+    addProperty("maximum value",prop::Range{.min=0, .max=255}, 255,0,
                 "Maximum pixel value for detected regions.");
-    addProperty("create region graph","menu","off,on",createRegionGraph ? "on" : "off", 0,
+    addProperty("create region graph",prop::Menu{"off", "on"}, createRegionGraph ? "on" : "off", 0,
                 "If this property is set to 'on', a region\n"
                 "conectivity graph is created in the region\n"
                 "detection step. This graph is used to find\n"
@@ -90,18 +91,18 @@ namespace icl::cv {
                                  const std::string &configurableID):Configurable(configurableID){
     m_data = new Data;
 
-    addProperty("minimum region size","range:spinbox","[0,100000]",str(minSize));
-    addProperty("maximum region size","range:spinbox","[0,100000]",str(maxSize));
-    addProperty("minimum value","range:slider","[0,255]",str(minVal));
-    addProperty("maximum value","range:slider","[0,255]",str(maxVal));
-    addProperty("create region graph","menu","off,on",createRegionGraph ? "on" : "off");
-    addProperty("track times.on","flag","",false);
-    addProperty("track times.rle","info","","-");
-    addProperty("track times.analyse regions","info","","-");
-    addProperty("track times.join regions","info","","-");
-    addProperty("track times.create graph","info","","-");
-    addProperty("track times.filter regions","info","","-");
-    addProperty("track times.total","info","","-");
+    addProperty("minimum region size",prop::Range{.min=0, .max=100000, .ui=prop::UI::Spinbox}, minSize);
+    addProperty("maximum region size",prop::Range{.min=0, .max=100000, .ui=prop::UI::Spinbox}, maxSize);
+    addProperty("minimum value",prop::Range{.min=0, .max=255}, minVal);
+    addProperty("maximum value",prop::Range{.min=0, .max=255}, maxVal);
+    addProperty("create region graph",prop::Menu{"off", "on"}, createRegionGraph ? "on" : "off");
+    addProperty("track times.on",prop::Flag{}, false);
+    addProperty("track times.rle",prop::Info{}, "-");
+    addProperty("track times.analyse regions",prop::Info{}, "-");
+    addProperty("track times.join regions",prop::Info{}, "-");
+    addProperty("track times.create graph",prop::Info{}, "-");
+    addProperty("track times.filter regions",prop::Info{}, "-");
+    addProperty("track times.total",prop::Info{}, "-");
 
     addChildConfigurable(&m_data->css,"CSS");
   }

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter, V. Richter
 
 #include <icl/io/detail/opencv/OpenCVCamGrabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <mutex>
 
 using namespace icl::utils;
@@ -22,15 +23,15 @@ namespace icl::io {
                 "1600x1050,1600x1200",
                 str(cvc->get(cv::CAP_PROP_FRAME_WIDTH))+"x"
                 +str(cvc->get(cv::CAP_PROP_FRAME_HEIGHT)), 0, "");
-    addProperty("brightness", "range", "[0,100]:1",
+    addProperty("brightness", prop::Range{.min=0, .max=100, .step=1}, 
                 cvc->get(cv::CAP_PROP_BRIGHTNESS), 0, "");
-    addProperty("contrast", "range", "[0,100]:1",
+    addProperty("contrast", prop::Range{.min=0, .max=100, .step=1}, 
                 cvc->get(cv::CAP_PROP_CONTRAST), 0, "");
-    addProperty("saturation", "range", "[0,100]:1",
+    addProperty("saturation", prop::Range{.min=0, .max=100, .step=1}, 
                 cvc->get(cv::CAP_PROP_SATURATION), 0, "");
-    addProperty("hue", "range", "[0,100]:1",
+    addProperty("hue", prop::Range{.min=0, .max=100, .step=1}, 
                 cvc->get(cv::CAP_PROP_HUE), 0, "");
-    addProperty("format", "menu", "RGB", "RGB", 0, "");
+    addProperty("format", prop::Menu{"RGB"}, "RGB", 0, "");
     registerCallback(
           [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }

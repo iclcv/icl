@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
 
 #include <icl/utils/Exception.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/pylon/PylonCameraOptions.h>
 #include <icl/utils/StringUtils.h>
 
@@ -28,7 +29,7 @@ PylonCameraOptions::PylonCameraOptions(
   // Configurable
   addProperty("size", "menu", default_sizes, getValue("Width") + "x" + getValue("Height"), 0, "");
   addProperty("format", getType("PixelFormat"), getInfo("PixelFormat"), getValue("PixelFormat"), 0, "");
-  addProperty("OmitDoubleFrames", "flag", "", m_OmitDoubleFrames, 0, "");
+  addProperty("OmitDoubleFrames", prop::Flag{}, m_OmitDoubleFrames, 0, "");
 
   // Cameras default options
   std::vector<std::string> ps;

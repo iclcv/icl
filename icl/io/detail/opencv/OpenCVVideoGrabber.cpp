@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christian Groszewski, Viktor Richter, Christof Elbrechter
 
 #include <icl/io/detail/opencv/OpenCVVideoGrabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <opencv2/videoio/videoio_c.h>
 
 #include <memory>
@@ -69,17 +70,25 @@ namespace icl::io {
     data->size.height =  data->cvc->get(cv::CAP_PROP_FRAME_HEIGHT);
 
     // Configurable
-    addProperty("pos_msec_current", "info", "", data->cvc->get(cv::CAP_PROP_POS_MSEC), 0, "");
-    addProperty("pos_msec", "range", "[0," + str(1000*(( data->cvc->get(cv::CAP_PROP_FRAME_COUNT) /  data->cvc->get(cv::CAP_PROP_FPS))) ) + "]:1", data->cvc->get(cv::CAP_PROP_POS_MSEC), 0, "");
-    addProperty("pos_frames_current", "info", "", data->cvc->get(cv::CAP_PROP_POS_FRAMES), 0, "");
-    addProperty("pos_frames", "range", "[0,"+str(data->cvc->get(cv::CAP_PROP_FRAME_COUNT))+"]:1", data->cvc->get(cv::CAP_PROP_POS_FRAMES), 0, "");
+    addProperty("pos_msec_current", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_POS_MSEC)), 0, "");
+    addProperty("pos_msec",
+                prop::Range{.min=0.f,
+                                   .max=(float)(1000*(data->cvc->get(cv::CAP_PROP_FRAME_COUNT) / data->cvc->get(cv::CAP_PROP_FPS))),
+                                   .step=1.f},
+                (float)data->cvc->get(cv::CAP_PROP_POS_MSEC), 0, "");
+    addProperty("pos_frames_current", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_POS_FRAMES)), 0, "");
+    addProperty("pos_frames",
+                prop::Range{.min=0.f,
+                                   .max=(float)data->cvc->get(cv::CAP_PROP_FRAME_COUNT),
+                                   .step=1.f},
+                (float)data->cvc->get(cv::CAP_PROP_POS_FRAMES), 0, "");
     addProperty("pos_avi_ratio", "info", "[0,1]:"+str(data->cvc->get(cv::CAP_PROP_FRAME_COUNT) / data->cvc->get(cv::CAP_PROP_FPS)), data->cvc->get(cv::CAP_PROP_POS_AVI_RATIO), 100, "");
-    addProperty("size", "info", "", str(data->size), 0, "");
-    addProperty("format", "info", "", "RGB", 0, "");
-    addProperty("fourcc", "info", "", fourCCStringFromDouble(data->cvc->get(cv::CAP_PROP_FOURCC)), 0, "");
-    addProperty("frame_count", "info", "", str(data->cvc->get(cv::CAP_PROP_FRAME_COUNT)), 0, "");
-    addProperty("use_video_fps", "flag", "", data->use_video_fps, 0, "");
-    addProperty("video_fps", "info", "", str(data->cvc->get(cv::CAP_PROP_FPS)), 0, "");
+    addProperty("size", prop::Info{}, str(data->size), 0, "");
+    addProperty("format", prop::Info{}, "RGB", 0, "");
+    addProperty("fourcc", prop::Info{}, fourCCStringFromDouble(data->cvc->get(cv::CAP_PROP_FOURCC)), 0, "");
+    addProperty("frame_count", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_FRAME_COUNT)), 0, "");
+    addProperty("use_video_fps", prop::Flag{}, data->use_video_fps, 0, "");
+    addProperty("video_fps", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_FPS)), 0, "");
 
     registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }

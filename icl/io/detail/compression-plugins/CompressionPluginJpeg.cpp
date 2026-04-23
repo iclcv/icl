@@ -11,6 +11,7 @@
 #ifdef ICL_HAVE_LIBJPEG
 
 #include <icl/io/detail/compression-plugins/CompressionPlugin.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #include <icl/io/detail/file-plugins/JPEGEncoder.h>
 #include <icl/io/detail/file-plugins/JPEGDecoder.h>
@@ -33,7 +34,7 @@ namespace icl::io {
 
     public:
       JpegPlugin() {
-        addProperty("quality", "range", "[1,100]:1", "90", 0,
+        addProperty("quality", prop::Range{.min=1, .max=100, .step=1}, 90, 0,
                     "JPEG quality (1=worst/smallest, 100=best/largest). "
                     "Defaults to 90; values around 70 are typically a good "
                     "size/quality tradeoff for natural images.");

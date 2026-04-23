@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/utils/Configurable.h>
 
 HBox gui;
@@ -10,9 +11,9 @@ HBox gui;
 
 struct C : public Configurable{
   C(){
-    addProperty("general.x","range:slider","[0,100]",50);
-    addProperty("general.y","range:spinbox","[0,10]",4);
-    addProperty("general.z","command","");
+    addProperty("general.x",utils::prop::Range{.min=0, .max=100}, 50);
+    addProperty("general.y",utils::prop::Range{.min=0, .max=10, .ui=utils::prop::UI::Spinbox}, 4);
+    addProperty("general.z",utils::prop::Command{});
     setConfigurableID("c");
   }
 };
@@ -20,8 +21,8 @@ struct C : public Configurable{
 struct B : public Configurable, public Thread{
   C c;
   B(){
-    addProperty("time","info","",Time::now().toString(),100);
-    addProperty("general.f","flag","",true);
+    addProperty("time",utils::prop::Info{}, Time::now().toString(),100);
+    addProperty("general.f",utils::prop::Flag{}, true);
     addChildConfigurable(&c);
     start();
   }
@@ -48,10 +49,10 @@ struct B : public Configurable, public Thread{
 struct A : public Configurable{
   B b;
   A(){
-    addProperty("general.my range","range:slider","[0,100]",50);
-    addProperty("general.spinner-property","range:spinbox","[0,10]",4);
-    addProperty("general.some menu property","menu","a,b,c,d","a");
-    addProperty("general.hey its a flag","flag","",true);
+    addProperty("general.my range",utils::prop::Range{.min=0, .max=100}, 50);
+    addProperty("general.spinner-property",utils::prop::Range{.min=0, .max=10, .ui=utils::prop::UI::Spinbox}, 4);
+    addProperty("general.some menu property",utils::prop::Menu{"a", "b", "c", "d"}, "a");
+    addProperty("general.hey its a flag",utils::prop::Flag{}, true);
 
     setConfigurableID("a");
 

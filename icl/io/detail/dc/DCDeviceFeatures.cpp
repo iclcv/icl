@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <icl/io/detail/dc/DCDeviceFeatures.h>
+#include <icl/utils/prop/Constraints.h>
 #include <map>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/SteppingRange.h>
@@ -200,7 +201,7 @@ namespace icl::io{
       featureMap["trigger-from-software"] = getSpecialInfo();
 
       // Configurtable
-      addProperty("all manual", "command", "", "", 0, "Sets all auto adjustment-supporting options to manual adjustment.");
+      addProperty("all manual", prop::Command{}, {}, 0, "Sets all auto adjustment-supporting options to manual adjustment.");
       for(std::map<std::string,dc1394feature_info_t*, std::less<>>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
         std::string name = it->first;
         dc1394feature_info_t* info = it->second;
@@ -239,7 +240,7 @@ namespace icl::io{
                 value = "one-push-auto";
               }
               //TODO: one-push-auto could be implememted as well.
-              addProperty(name+"-mode", "menu", "auto,manual", value, 0, "");
+              addProperty(name+"-mode", prop::Menu{"auto", "manual"}, value, 0, "");
             }
           }
         }

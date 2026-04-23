@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <icl/utils/Thread.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Random.h>
@@ -60,17 +61,17 @@ namespace icl::io {
     addProperty("blob-size", "menu",
                 "5% of image size,10% of image size,20% of image size",
                 blobvalue, 0, "The size of the blob.");
-    addProperty("blob-red", "range", "[0,255]:1", m_color[0], 0,
+    addProperty("blob-red", prop::Range{.min=0, .max=255, .step=1}, m_color[0], 0,
                 "The amount of red color in the blob.");
-    addProperty("blob-green", "range", "[0,255]:1", m_color[1], 0,
+    addProperty("blob-green", prop::Range{.min=0, .max=255, .step=1}, m_color[1], 0,
                 "The amount of green color in the blob.");
-    addProperty("blob-blue", "range", "[0,255]:1", m_color[2], 0,
+    addProperty("blob-blue", prop::Range{.min=0, .max=255, .step=1}, m_color[2], 0,
                 "The amount of blue color in the blob.");
     addProperty("max-speed", "value-list", "0.1,0.2,0.3,0.4", m_maxV.x, 0,
                 "The blobs maximum speed.");
-    addProperty("set-to-center", "command", "", "", 0,
+    addProperty("set-to-center", prop::Command{}, {}, 0,
                 "Resets the blob to the image center.");
-    addProperty("current-pos", "info", "",
+    addProperty("current-pos", prop::Info{}, 
                 "x:" + str(m_x.x*m_drawSize.width) + " y:"
                 + str(m_x.y*m_drawSize.height),
                 10, "The current position of the blob.");
@@ -79,7 +80,7 @@ namespace icl::io {
                 "formatGray-depth32f,formatYUV-depth8u",
                 str(m_drawFormat) + "-" + str(m_drawDepth), 0,
                 "The image format.");
-    addProperty("size", "menu", "VGA,SVGA,QVGA", sizevalue, 0,
+    addProperty("size", prop::Menu{"VGA", "SVGA", "QVGA"}, sizevalue, 0,
                 "The image size.");
     registerCallback(
           [this](const utils::Configurable::Property &p){ processPropertyChange(p); });

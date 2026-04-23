@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "lens-undistortion-calibration-UndistortionUtil.h"
+#include <icl/utils/prop/Constraints.h>
 #include <icl/math/QuadTree.h>
 #include <icl/utils/ConfigFile.h>
 #include <icl/qt/Quick2.h>
@@ -14,17 +15,17 @@ namespace icl{
 
   UndistortionUtil::UndistortionUtil(const Size &imageSize, bool inverted):
     inInit(false),warpMapDirty(true),inverted(inverted){
-    addProperty("interpolation","menu","nearest,linear","linear");
+    addProperty("interpolation",utils::prop::Menu{"nearest", "linear"}, "linear");
     for(int i=0;i<5;++i){
       if(i < 4){
-        addProperty("k"+str(i),"range","[-0.3,0.3]",0);
+        addProperty("k"+str(i),utils::prop::Range{.min=-0.3f, .max=0.3f}, 0);
       }else{
-        addProperty("k"+str(i),"range","[-0.1,0.1]",0);
+        addProperty("k"+str(i),utils::prop::Range{.min=-0.1f, .max=0.1f}, 0);
       }
     }
-    addProperty("ix-offset","range","[-100,100]", 0);
-    addProperty("iy-offset","range","[-100,100]", 0);
-    addProperty("reset","command","","");
+    addProperty("ix-offset",utils::prop::Range{.min=-100, .max=100}, 0);
+    addProperty("iy-offset",utils::prop::Range{.min=-100, .max=100}, 0);
+    addProperty("reset",utils::prop::Command{});
 
     init(imageSize, std::vector<float>(5,0), Point32f::null, true);
 

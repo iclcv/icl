@@ -10,6 +10,7 @@
 #ifdef ICL_HAVE_ZSTD
 
 #include <icl/io/detail/compression-plugins/CompressionPlugin.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/Img.h>
@@ -53,7 +54,7 @@ namespace icl::io {
 
     public:
       ZstdPlugin() {
-        addProperty("level", "range", "[1,22]:1", "3", 0,
+        addProperty("level", prop::Range{.min=1, .max=22, .step=1}, 3, 0,
                     "zstd compression level (1=fastest, 22=smallest). "
                     "Default 3 matches libzstd's ZSTD_CLEVEL_DEFAULT.");
         Configurable::registerCallback([this](const Property &p){

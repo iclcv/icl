@@ -4,6 +4,7 @@
 
 #define GLEW_MX
 #include <string>
+#include <icl/utils/prop/Constraints.h>
 //#include <libfreenect2/opengl.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -249,23 +250,23 @@ namespace icl::io {
       m_impl = 0;
     }
 
-    addProperty("Avoid double frames","flag","",1,0,"whether to avoid returning the same frame multiple times");
-    addProperty("Unflip X-Axis","flag","",1,1,"The driver's output images are flipped. Decide whether to un-flip it");
+    addProperty("Avoid double frames",prop::Flag{}, 1,0,"whether to avoid returning the same frame multiple times");
+    addProperty("Unflip X-Axis",prop::Flag{}, 1,1,"The driver's output images are flipped. Decide whether to un-flip it");
 
     switch(mode){
       case GRAB_RGB_IMAGE:
-        addProperty("format","menu","RGB-8u","RGB (8u)");
-        addProperty("size","menu","FullHD - 1080p 1920x1080","FullHD - 1080p 1920x1080");
+        addProperty("format",prop::Menu{"RGB-8u"}, "RGB (8u)");
+        addProperty("size",prop::Menu{"FullHD - 1080p 1920x1080"}, "FullHD - 1080p 1920x1080");
         break;
       case GRAB_IR_IMAGE:
-        addProperty("format","menu","1 channdel float","1 channel float");
-        addProperty("size","menu","512x424","512x424");
+        addProperty("format",prop::Menu{"1 channdel float"}, "1 channel float");
+        addProperty("size",prop::Menu{"512x424"}, "512x424");
         break;
       case GRAB_DEPTH_IMAGE:
-        addProperty("format","menu","1 channdel float","1 channel float");
-        addProperty("size","menu","512x424","512x424");
-        addProperty("Flying pixels.remove","flag","",0,0,"Enable/Disable automatic removal of flying pixels");
-        addProperty("Flying pixels.dist threshold","range","[0.1,50]",10,0,"Threshold for removing flying pixels");
+        addProperty("format",prop::Menu{"1 channdel float"}, "1 channel float");
+        addProperty("size",prop::Menu{"512x424"}, "512x424");
+        addProperty("Flying pixels.remove",prop::Flag{}, 0,0,"Enable/Disable automatic removal of flying pixels");
+        addProperty("Flying pixels.dist threshold",prop::Range{.min=0.1f, .max=50.f}, 10,0,"Threshold for removing flying pixels");
         break;
       default:
         break;

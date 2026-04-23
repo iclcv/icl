@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <icl/io/Grabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/kinect/KinectGrabber.h>
 #include <icl/core/CCFunctions.h>
 #include <icl/utils/StringUtils.h>
@@ -635,16 +636,16 @@ namespace icl::io {
     const int r  = m_impl->getDevice()->used->depthImagePostProcessingMedianRadius;
     std::string ppvalue = (r == 3) ? "median 3x3" : ((r == 5) ? "median 5x4" : "off");
 
-    addProperty("Avoid double frames","flag","",m_impl->avoidDoubleFrames,0,"whether to avoid returning the same frame multiple times");
-    addProperty("format", "menu", "Color Image {24Bit RGB},Depth Image {float},IR Image {8Bit},IR Image {10Bit}", formats[m_impl->getDevice()->mode], 0, "");
-    addProperty("size", "menu", "VGA {640x480}", "VGA {640x480}", 0, "");
-    addProperty("LED", "menu", "off,green,red,yellow,blink yellow,blink green,blink red/yellow", m_impl->ledColor, 0, "");
-    addProperty("Desired-Tilt-Angle", "range", "[-35,25]", m_impl->desiredTiltDegrees, 0, "");
-    addProperty("Current-Tilt-Angle", "info", "", angleval, 100, "");
-    addProperty("Accelerometers", "info", "", accelval, 100, "");
-    addProperty("shift-IR-image", "menu", "off,fast,accurate", values[static_cast<int>(m_impl->getDevice()->used->irShift)], 0, "");
-    addProperty("depth-image-unit", "menu", "raw,mm", diunit, 0, "");
-    addProperty("depth-image-post-processing", "menu", "off,median 3x3,median 5x5", ppvalue, 0, "");
+    addProperty("Avoid double frames",prop::Flag{}, m_impl->avoidDoubleFrames,0,"whether to avoid returning the same frame multiple times");
+    addProperty("format", prop::Menu{"Color Image {24Bit RGB}", "Depth Image {float}", "IR Image {8Bit}", "IR Image {10Bit}"}, formats[m_impl->getDevice()->mode], 0, "");
+    addProperty("size", prop::Menu{"VGA {640x480}"}, "VGA {640x480}", 0, "");
+    addProperty("LED", prop::Menu{"off", "green", "red", "yellow", "blink yellow", "blink green", "blink red/yellow"}, m_impl->ledColor, 0, "");
+    addProperty("Desired-Tilt-Angle", prop::Range{.min=-35, .max=25}, m_impl->desiredTiltDegrees, 0, "");
+    addProperty("Current-Tilt-Angle", prop::Info{}, angleval, 100, "");
+    addProperty("Accelerometers", prop::Info{}, accelval, 100, "");
+    addProperty("shift-IR-image", prop::Menu{"off", "fast", "accurate"}, values[static_cast<int>(m_impl->getDevice()->used->irShift)], 0, "");
+    addProperty("depth-image-unit", prop::Menu{"raw", "mm"}, diunit, 0, "");
+    addProperty("depth-image-post-processing", prop::Menu{"off", "median 3x3", "median 5x5"}, ppvalue, 0, "");
 
     registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }

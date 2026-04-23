@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/core/CCFunctions.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/utils/Thread.h>
 #include <icl/utils/Time.h>
 #include <icl/io/detail/grabbers/XiGrabber.h>
@@ -219,10 +220,10 @@ namespace icl{
       if(m_data) delete m_data;
       m_data = new Data(deviceID);
 
-      addProperty("format", "menu", "RGB 24Bit,Gray 8Bit", "RGB 24Bit", 0, "");
-      addProperty("size", "info", "", "", 0, "");
+      addProperty("format", utils::prop::Menu{"RGB 24Bit", "Gray 8Bit"}, "RGB 24Bit", 0, "");
+      addProperty("size", utils::prop::Info{}, "", 0, "");
 
-      addProperty("roi.enabled","flag","",false);
+      addProperty("roi.enabled",utils::prop::Flag{}, false);
 
       int maxw=0, maxh=0, xstep=0, ystep=0;
       xiGetParamInt(m_data->xiH, XI_PRM_WIDTH XI_PRM_INFO_MAX, &maxw);
@@ -235,7 +236,7 @@ namespace icl{
       m_data->addRangeProperty("int",this, XI_PRM_WIDTH, "roi.width");
       m_data->addRangeProperty("int",this, XI_PRM_HEIGHT, "roi.height");
 
-      addProperty("pixel binning","menu","no binning,2x2 to 1,4x4 to 1","no binning");
+      addProperty("pixel binning",utils::prop::Menu{"no binning", "2x2 to 1", "4x4 to 1"}, "no binning");
 
       m_data->addRangeProperty("int", this, XI_PRM_EXPOSURE);
       m_data->addRangeProperty("float", this, XI_PRM_GAIN);

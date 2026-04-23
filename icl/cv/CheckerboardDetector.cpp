@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/cv/CheckerboardDetector.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/OpenCV.h>
 #include <icl/core/CCFunctions.h>
 #include <icl/core/Color.h>
@@ -39,11 +40,11 @@ namespace icl{
     }
 
     void CheckerboardDetector::init_properties(){
-      addProperty("subpixel opt.enabled","flag","",true);
-      addProperty("subpixel opt.radius","range","[1,15]:1",3);
-      addProperty("subpixel opt.inner radius","range","[-1,15]:1",-1);
-      addProperty("subpixel opt.max iterations","range","[10,100]:1",30);
-      addProperty("subpixel opt.min error","range","[0.0001,1]",0.1);
+      addProperty("subpixel opt.enabled",utils::prop::Flag{}, true);
+      addProperty("subpixel opt.radius",utils::prop::Range{.min=1, .max=15, .step=1}, 3);
+      addProperty("subpixel opt.inner radius",utils::prop::Range{.min=-1, .max=15, .step=1}, -1);
+      addProperty("subpixel opt.max iterations",utils::prop::Range{.min=10, .max=100, .step=1}, 30);
+      addProperty("subpixel opt.min error",utils::prop::Range{.min=0.0001f, .max=1.f}, 0.1);
     }
 
     CheckerboardDetector::~CheckerboardDetector(){

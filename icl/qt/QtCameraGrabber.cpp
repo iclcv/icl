@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #include <icl/qt/QtCameraGrabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <QtMultimedia/QMediaDevices>
 #include <QtMultimedia/QCameraDevice>
 #include <icl/utils/StringUtils.h>
@@ -78,8 +79,8 @@ namespace icl::qt {
 
       cam->start();
 
-      addProperty("format", "menu", "{default},","default",0,"Sets the cameras image size and format");
-      addProperty("size", "menu", "adjusted by format","adjusted by format", 0,"this is set by format");
+      addProperty("format", prop::Menu{"{default}"}, "default",0,"Sets the cameras image size and format");
+      addProperty("size", prop::Menu{"adjusted by format"}, "adjusted by format", 0,"this is set by format");
     }
 
     QtCameraGrabber::~QtCameraGrabber() {

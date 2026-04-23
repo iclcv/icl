@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <fcntl.h>
+#include <icl/utils/prop/Constraints.h>
 #include <errno.h>
 #include <fstream>
 
@@ -584,7 +585,7 @@ namespace icl::io {
 
                 int value = get_property(queryctrl.id);
                 SupportedPropertyPtr &p = supportedProperties[controlName];
-                p = new SupportedProperty(this,controlName,"menu","",value, queryctrl.id);
+                p = new SupportedProperty(this,controlName,prop::Menu{}, value, queryctrl.id);
 
                 for(querymenu.index = queryctrl.minimum; static_cast<int>(querymenu.index) <= queryctrl.maximum; querymenu.index++) {
                   if(xioctl(VIDIOC_QUERYMENU,&querymenu)){
@@ -604,12 +605,12 @@ namespace icl::io {
                                                                          queryctrl.id);
                 break;
               case V4L2_CTRL_TYPE_BOOLEAN:
-                supportedProperties[controlName] = new SupportedProperty(this,controlName,"flag","",
+                supportedProperties[controlName] = new SupportedProperty(this,controlName,prop::Flag{}, 
                                                                          get_property(queryctrl.id),
                                                                          queryctrl.id);
                 break;
               case V4L2_CTRL_TYPE_BUTTON :
-                supportedProperties[controlName] = new SupportedProperty(this,controlName,"command","",
+                supportedProperties[controlName] = new SupportedProperty(this,controlName,prop::Command{},
                                                                          get_property(queryctrl.id),
                                                                          queryctrl.id);
                 break;
@@ -722,10 +723,10 @@ namespace icl::io {
 
   // adds properties to Configurable
   void V4L2Grabber::addProperties(){
-    addProperty("device name","info","",impl->deviceNameInfo);
-    addProperty("avoid doubled frames", "flag", "", impl->avoidDoubleFrames, 0, "");
+    addProperty("device name",prop::Info{}, impl->deviceNameInfo);
+    addProperty("avoid doubled frames", prop::Flag{}, impl->avoidDoubleFrames, 0, "");
     addProperty("format", "menu", clearFormatString(impl->getSupportedFormats()), impl->get_current_format(), 0, "The image format.");
-    addProperty("size", "menu", "ajusted by format", "", 0, "This is set by the format-property.");
+    addProperty("size", prop::Menu{"ajusted by format"}, "", 0, "This is set by the format-property.");
     for(Impl::PMap::const_iterator it=impl->supportedProperties.begin();
         it != impl->supportedProperties.end();++it){
       Impl::SupportedPropertyPtr p = it -> second;

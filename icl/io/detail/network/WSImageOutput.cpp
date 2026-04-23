@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/detail/network/WSImageOutput.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/ImageCompressor.h>
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #include <icl/utils/StringUtils.h>
@@ -169,15 +170,15 @@ namespace icl::io {
     // every registered codec) plus the active codec's own tunables
     // (`compression.quality` / `compression.level` / …) which appear
     // and disappear with the active codec selection.
-    addProperty("max message size MB", "range", "[1,4096]:1", "256", 0,
+    addProperty("max message size MB", prop::Range{.min=1, .max=4096, .step=1}, 256, 0,
                 "Per-frame WebSocket message size cap. Default 256 MB.");
-    addProperty("bind address", "info", "", bindAddress, 0,
+    addProperty("bind address", prop::Info{}, bindAddress, 0,
                 "Interface the server is bound to.");
-    addProperty("port", "info", "", str(port), 0,
+    addProperty("port", prop::Info{}, str(port), 0,
                 "Bound TCP port (resolved at construction time).");
-    addProperty("clients", "info", "", "0", 200, "Live connected client count.");
-    addProperty("bytes sent", "info", "", "0", 200, "Lifetime bytes broadcast.");
-    addProperty("frames sent", "info", "", "0", 200, "Lifetime frames broadcast.");
+    addProperty("clients", prop::Info{}, "0", 200, "Live connected client count.");
+    addProperty("bytes sent", prop::Info{}, "0", 200, "Lifetime bytes broadcast.");
+    addProperty("frames sent", prop::Info{}, "0", 200, "Lifetime frames broadcast.");
     Configurable::registerCallback([this](const Property &p){ onPropertyChange(p); });
 
     m_data = new Data(bindAddress, port);

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/cv/HoughLineDetector.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/math/DynMatrixUtils.h>
 #include <icl/filter/ConvolutionOp.h>
 
@@ -38,16 +39,16 @@ namespace icl::cv {
   HoughLineDetector::HoughLineDetector(float dRho, float dR, const Range32f &rRange, float rInhibitionRange, float rhoInhibitionRange,
                                        bool gaussianInhib, bool blurHoughSpace,bool dilateEntries,bool blurredSampling) :m_data(new Data){
 
-    addProperty("delta.angle","range","[0.01,1]",dRho,0,"line angle increment");
-    addProperty("delta.radius","range","[1,1000]:1",dR,0,"line radius increament");
-    addProperty("range.min radius","range:spinbox","[0,10000]:1",rRange.minVal,0,"minimum line radius");
-    addProperty("range.max radius","range:spinbox","[0,10000]:1",rRange.maxVal,0,"maximum line radius");
-    addProperty("inhibition.radius-axis","range","[0,10000]:1",rInhibitionRange,0,"inhibition window size along radius-axis");
-    addProperty("inhibition.angle-axis","range","[0,6.28]",rhoInhibitionRange,0,"inhibition window size along angle-axis");
-    addProperty("inhibition.gaussian","flag","",gaussianInhib,0,"fade out inhibition using gaussian kernel");
-    addProperty("adding.blur hough space","flag","",blurHoughSpace,0,"blur the whole hough space before line extraction");
-    addProperty("adding.dilate entries","flag","",dilateEntries,0,"apply dilation on entries when adding");
-    addProperty("adding.blurred sampling","flag","",blurredSampling,0,"sample the houghspace in a blurred fashion");
+    addProperty("delta.angle",prop::Range{.min=0.01f, .max=1.f}, dRho,0,"line angle increment");
+    addProperty("delta.radius",prop::Range{.min=1, .max=1000, .step=1}, dR,0,"line radius increament");
+    addProperty("range.min radius",prop::Range{.min=0, .max=10000, .step=1, .ui=prop::UI::Spinbox}, rRange.minVal,0,"minimum line radius");
+    addProperty("range.max radius",prop::Range{.min=0, .max=10000, .step=1, .ui=prop::UI::Spinbox}, rRange.maxVal,0,"maximum line radius");
+    addProperty("inhibition.radius-axis",prop::Range{.min=0, .max=10000, .step=1}, rInhibitionRange,0,"inhibition window size along radius-axis");
+    addProperty("inhibition.angle-axis",prop::Range{.min=0.f, .max=6.28f}, rhoInhibitionRange,0,"inhibition window size along angle-axis");
+    addProperty("inhibition.gaussian",prop::Flag{}, gaussianInhib,0,"fade out inhibition using gaussian kernel");
+    addProperty("adding.blur hough space",prop::Flag{}, blurHoughSpace,0,"blur the whole hough space before line extraction");
+    addProperty("adding.dilate entries",prop::Flag{}, dilateEntries,0,"apply dilation on entries when adding");
+    addProperty("adding.blurred sampling",prop::Flag{}, blurredSampling,0,"sample the houghspace in a blurred fashion");
 
     reset();
   }

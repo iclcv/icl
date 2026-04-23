@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <string>
+#include <icl/utils/prop/Constraints.h>
 #include <map>
 #include <icl/io/FileGrabber.h>
 #include <icl/io/FileList.h>
@@ -355,23 +356,25 @@ namespace icl::io {
     }
 
     void FileGrabber::addProperties(){
-      addProperty("format","info","","unknown",0,"");
-      addProperty("size","info","","unknown",0,"");
-      addProperty("next","command","","",0,"Increments the file counter for the grabber");
-      addProperty("prev","command","","",0,"Decrements the file counter for the grabber");
-      addProperty("use-time-stamps","flag","",m_data->useTimeStamps,0,"Whether to use timestamps"); //TODO: what is this?
-      addProperty("next filename","info","",getNextFileName(),0,"Name of the next file to grab");
-      addProperty("current filename","info","",m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)],0,"Name of the last grabbed file");
-      addProperty("jump-to-start","command","","",0,"Reset the file counter to 0");
-      addProperty("relative progress","info","",str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %",0,"The relative progress through the files in percent");
-      addProperty("absolute progress","info","",str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()),0,"The absolute progress through the files. 'current nunmber/total number'");
-      addProperty("auto-next","flag","",m_data->bAutoNext,0,"Whether to automatically grab the next file for every frame");
-      addProperty("loop","flag","",m_data->loop,0,"Whether to reset the file counter to zero after reaching the last");
-      addProperty("file-count","info","",str(m_data->oFileList.size()),0,"Total count of files the grabber will show");
+      addProperty("format",prop::Info{}, "unknown",0,"");
+      addProperty("size",prop::Info{}, "unknown",0,"");
+      addProperty("next",prop::Command{}, {},0,"Increments the file counter for the grabber");
+      addProperty("prev",prop::Command{}, {},0,"Decrements the file counter for the grabber");
+      addProperty("use-time-stamps",prop::Flag{}, m_data->useTimeStamps,0,"Whether to use timestamps"); //TODO: what is this?
+      addProperty("next filename",prop::Info{}, getNextFileName(),0,"Name of the next file to grab");
+      addProperty("current filename",prop::Info{}, m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)],0,"Name of the last grabbed file");
+      addProperty("jump-to-start",prop::Command{}, {},0,"Reset the file counter to 0");
+      addProperty("relative progress",prop::Info{}, str((100* (m_data->iCurrIdx+1)) / float(m_data->oFileList.size()))+" %",0,"The relative progress through the files in percent");
+      addProperty("absolute progress",prop::Info{}, str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()),0,"The absolute progress through the files. 'current nunmber/total number'");
+      addProperty("auto-next",prop::Flag{}, m_data->bAutoNext,0,"Whether to automatically grab the next file for every frame");
+      addProperty("loop",prop::Flag{}, m_data->loop,0,"Whether to reset the file counter to zero after reaching the last");
+      addProperty("file-count",prop::Info{}, str(m_data->oFileList.size()),0,"Total count of files the grabber will show");
       //addProperty("frame-index","range","[0," + str(m_data->oFileList.size()-1) + "]1",m_data->iCurrIdx,20,"Currently grabbed frame");
-      addProperty("frame-index","range:spinbox","[0," + str(m_data->oFileList.size()-1) + "]",m_data->iCurrIdx,20,"Currently grabbed frame");
-      addProperty("print meta-data","menu","disregard,to std::out,to meta-data label","disregard");
-      addProperty("meta-data","info","","",0,"current image meta-data. Depends on mode set in print meta-data.");
+      addProperty("frame-index",
+                  prop::Range{.min=0, .max=(int)(m_data->oFileList.size()-1), .step=1, .ui=prop::UI::Spinbox},
+                  m_data->iCurrIdx, 20, "Currently grabbed frame");
+      addProperty("print meta-data",prop::Menu{"disregard", "to std::out", "to meta-data label"}, "disregard");
+      addProperty("meta-data",prop::Info{}, "",0,"current image meta-data. Depends on mode set in print meta-data.");
 
       registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
     }

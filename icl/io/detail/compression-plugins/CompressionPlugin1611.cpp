@@ -9,6 +9,7 @@
 // Always built (no external dep beyond ICLIO itself).
 
 #include <icl/io/detail/compression-plugins/CompressionPlugin.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #include <icl/io/detail/kinect/Kinect11BitCompressor.h>
 #include <icl/core/Img.h>
@@ -28,7 +29,7 @@ namespace icl::io {
 
     public:
       Plugin1611() {
-        addProperty("quality", "menu", "0,1", "1", 0,
+        addProperty("quality", prop::Menu{"0", "1"}, "1", 0,
                     "0 = lossy depth-mapping (Kinect Z formula). "
                     "1 = lossless 11-bit bit-pack (default; clamps >2047).");
         Configurable::registerCallback([this](const Property &p){

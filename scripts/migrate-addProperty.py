@@ -86,7 +86,17 @@ def rewrite_line(line: str, counts: dict) -> str:
         lambda m: (counts.__setitem__('flag', counts.get('flag', 0) + 1), f'{Q}Flag{{}}, ')[1],
         line
     )
-    # command: "command", ""  — usually followed by ) but sometimes followed by arg
+    # command: handle both legacy forms:
+    #   "command","",""[, vol, tip]  — info=="" + explicit value==""
+    #      → `Command{}, {}` (explicit monostate initial so trailing
+    #         positional args line up with addProperty's signature)
+    #   "command",""[, vol, tip]     — info=="" alone (value defaulted)
+    #      → `Command{}` (template default initial picks up)
+    line = re.sub(
+        r'"command"\s*,\s*""\s*,\s*""\s*(?=,)',
+        lambda m: (counts.__setitem__('command', counts.get('command', 0) + 1), f'{Q}Command{{}}, {{}}')[1],
+        line
+    )
     line = re.sub(
         r'"command"\s*,\s*""\s*(?=[,)])',
         lambda m: (counts.__setitem__('command', counts.get('command', 0) + 1), f'{Q}Command{{}}')[1],
@@ -228,9 +238,11 @@ def strip_str_wrap(text: str) -> tuple[str, int]:
     out = []
     i = 0
     count = 0
-    # Regex to find the anchor: constraint brace-init, comma, optional ws, 'str('
-    # Use DOTALL so \s matches newlines.
-    pat = re.compile(r'utils::prop::\w+\{[^}]*\}\s*,\s*str\(', re.DOTALL)
+    # Anchor only on Range constraints (numeric value_type).  Stripping
+    # str() around Info/Text/Menu values would be wrong — those have
+    # value_type = std::string, and str(...) is doing a real conversion
+    # (e.g. size_t → string).
+    pat = re.compile(r'utils::prop::Range\{[^}]*\}\s*,\s*str\(', re.DOTALL)
     while i < len(text):
         m = pat.search(text, i)
         if not m:
@@ -267,14 +279,14 @@ def ensure_include(text: str) -> str:
     if INCLUDE_LINE in text:
         return text
     lines = text.split('\n')
-    last_inc = -1
+    # Insert after the FIRST unconditional #include, not the last —
+    # later #includes may be inside #ifdef blocks, where placing our
+    # unconditionally-needed include would make it conditional.
     for i, line in enumerate(lines):
         if re.match(r'\s*#\s*include\b', line):
-            last_inc = i
-    if last_inc < 0:
-        return INCLUDE_LINE + '\n' + text
-    lines.insert(last_inc + 1, INCLUDE_LINE)
-    return '\n'.join(lines)
+            lines.insert(i + 1, INCLUDE_LINE)
+            return '\n'.join(lines)
+    return INCLUDE_LINE + '\n' + text
 
 def needs_using(text: str) -> bool:
     """Detect if this rewrite introduced any utils::prop:: references."""

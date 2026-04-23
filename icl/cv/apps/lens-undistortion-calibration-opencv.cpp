@@ -6,6 +6,7 @@
 
 
 #include "DisplacementMap.h"
+#include <icl/utils/prop/Constraints.h>
 #include <icl/utils/ConfigFile.h>
 #include <icl/utils/Configurable.h>
 #include <mutex>
@@ -125,7 +126,7 @@ struct ConfigurableUDist : public Configurable{
 
   void init(const Size &size, bool addProperties=true){
 #define add(X,MIN,MAX,CUR) \
-    addProperty(#X,"range","[" +str(MIN)+ "," +str(MAX)+ "]",CUR);     \
+    addProperty(#X,prop::Range{.min=" +str(MIN)+ ", .max=" +str(MAX)+ "}, CUR);     \
     defaultValues.push_back(CUR);
 
     if(addProperties){
@@ -144,7 +145,7 @@ struct ConfigurableUDist : public Configurable{
 
     udist = new ImageUndistortion("MatlabModel5Params", defaultValues, size);
     paramChanged = true;
-    addProperty("activated","flag","",false,0,"Activate this to manually adapt values.<b>Please note</b> that the "
+    addProperty("activated",prop::Flag{}, false,0,"Activate this to manually adapt values.<b>Please note</b> that the "
                 "slider-based setting of the parameters doesn't allow all parameter to be set as accurate as it would "
                 "be needed. Therefore, this flag is automatically disabled when the automatic calibration is performed");
   }

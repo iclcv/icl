@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Eckard Riedenklau, Christof Elbrechter
 
 #include <icl/io/detail/grabbers/PixelSenseGrabber.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/utils/Thread.h>
 #include <icl/utils/StringUtils.h>
 #ifdef WIN32
@@ -154,10 +155,10 @@ namespace icl::io {
     m_data->image = Img8u(Size(VIDEO_RES_X,VIDEO_RES_Y),1);
     m_data->blobs.resize(256);
 
-    addProperty("format", "menu","formatGray-depth8u","formatGray-depth8u",0,"image format can't be changed");
-    addProperty("size", "menu","QHD","QHD",0,"image size can't be changed");
-    addProperty("blobs found", "info","",0,0,"number of blobs, found in the current frame");
-    addProperty("visualize blobs","flag","",false,0,"if true, blobs are visualized in the output image");
+    addProperty("format", prop::Menu{"formatGray-depth8u"}, "formatGray-depth8u",0,"image format can't be changed");
+    addProperty("size", prop::Menu{"QHD"}, "QHD",0,"image size can't be changed");
+    addProperty("blobs found", prop::Info{}, 0,0,"number of blobs, found in the current frame");
+    addProperty("visualize blobs",prop::Flag{}, false,0,"if true, blobs are visualized in the output image");
   }
 
   PixelSenseGrabber::~PixelSenseGrabber(){
