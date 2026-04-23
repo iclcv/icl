@@ -154,6 +154,29 @@ See `project_image_migration.md`.
 
 ---
 
+## Op API — float setter on int-typed property
+
+- [ ] **Tighten setter arg types to match constraint value_type.**
+  Several Ops expose `setFoo(float)` / `setFoo(icl32f)` / ... setters
+  that write to properties registered as `prop::Range<int>` — legacy
+  path stringified-then-parsed-into-int (truncating the fraction);
+  post-proxy these stay on `setPropertyValue` to preserve the
+  truncation (otherwise the proxy would store a float in typed_value
+  and ConfigFile's adapter `any_cast<int>` would fail).  Known cases
+  (surfaced during the Option-1 prop-proxy migration):
+
+  - `ThresholdOp::setLowThreshold / setHighThreshold / setLowVal /
+    setHighVal` — `float` → `Range<int>{-255, 255}` / `Range<int>{0, 255}`.
+  - `CannyOp::setThresholds(icl32f, icl32f)` — `Range<int>{0, 2000}`.
+  - `UnaryArithmeticalOp::setValue(icl64f)` / `UnaryCompareOp::setValue(icl64f) /
+    setTolerance(icl64f)` — `Range<int>{-255, 512}` / `Range<int>{0, 512}`.
+  - `RansacBasedPoseEstimator::setMinPointsForGoodModel(float f)` — `Range<int>{0, 10000000}`.
+
+  Two fixes per Op: either widen the property to `Range<float>` (matches
+  the API, keeps precision, usually the right call — grab ranges are
+  already wide) or narrow the setter to `int` (matches the property,
+  sheds an odd API).  Then migrate the setter onto `prop(...).value = v`.
+
 ## Filter module
 
 - [ ] **Backend split for legacy Ops** — `X.cpp / X_Cpp.cpp / X_Ipp.cpp / X_SSE.cpp / X_OpenCL.cpp` layout, pair with `filter/detail/` placement.  See `project_filter_dispatch_arch.md` and `project_module_subdirs.md`.
