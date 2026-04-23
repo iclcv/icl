@@ -386,17 +386,22 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_text",
   ICL_TEST_EQ(c.getPropertyValue("weights").str(), std::string("1,2,3"));
 }
 
-ICL_REGISTER_TEST("utils.prop.configurable.legacy_leaves_constraint_empty",
-                  "legacy string-taking addProperty leaves Property::constraint empty during transition")
+ICL_REGISTER_TEST("utils.prop.configurable.legacy_dispatch_to_typed",
+                  "legacy string-taking addProperty builds the typed constraint internally")
 {
   TestConf c;
   c.addProperty("legacy.prop", "range:slider", "[0,100]", AutoParse<std::string>(50));
 
   ICL_TEST_EQ(c.getPropertyType("legacy.prop"), std::string("range:slider"));
   ICL_TEST_EQ(c.getPropertyInfo("legacy.prop"), std::string("[0,100]"));
-  // By design: legacy path leaves constraint unset.  qt::Prop's transitional
-  // dispatch falls back to type/info string parsing when constraint is empty.
-  ICL_TEST_FALSE(c.prop("legacy.prop").constraint.has_value());
+  // Step 9 commit 1: the legacy overload now dispatches internally to
+  // the typed path, so every registered property has both constraint
+  // and typed_value populated — even through the string-taking API.
+  ICL_TEST_TRUE(c.prop("legacy.prop").constraint.has_value());
+  const auto &r = std::any_cast<const prop::Range<int>&>(c.prop("legacy.prop").constraint);
+  ICL_TEST_EQ(r.min, 0);
+  ICL_TEST_EQ(r.max, 100);
+  ICL_TEST_EQ(std::any_cast<int>(c.prop("legacy.prop").typed_value), 50);
 }
 
 // ---------------------------------------------------------------------------
