@@ -5,6 +5,7 @@
 #include <icl/math/LLM.h>
 #include <icl/utils/Random.h>
 #include <icl/utils/StringUtils.h>
+#include <icl/utils/prop/Constraints.h>
 #include <cstring>
 #include <cstdio>
 
@@ -183,11 +184,12 @@ namespace icl::math {
         m_epsilonSigma = 0.001;
     */
 
-    addProperty("epsilon In","range","[0,0.1]",0.01,0,"input weight learning rate");
-    addProperty("epsilon Out","range","[0,0.5]",0.01,0,"output weight learning rate");
-    addProperty("epsilon A","range","[0,0.1]",0.001,0,"slope matrix learning rate");
-    addProperty("epsilon Sigma","range","[0,0.1]",0.0,0,"kernel variance learning rate");
-    addProperty("soft max enabled","flag","",true,0,"enables the soft-max interpolation");
+    using namespace icl::utils::prop;
+    addProperty("epsilon In",      Range{.min=0.f, .max=0.1f},  0.01f, 0, "input weight learning rate");
+    addProperty("epsilon Out",     Range{.min=0.f, .max=0.5f},  0.01f, 0, "output weight learning rate");
+    addProperty("epsilon A",       Range{.min=0.f, .max=0.1f},  0.001f,0, "slope matrix learning rate");
+    addProperty("epsilon Sigma",   Range{.min=0.f, .max=0.1f},  0.0f,  0, "kernel variance learning rate");
+    addProperty("soft max enabled", Flag{},                      true,  0, "enables the soft-max interpolation");
   }
 
   LLM::LLM(unsigned int inputDim, unsigned int outputDim){
