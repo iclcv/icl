@@ -665,25 +665,9 @@ namespace icl::utils {
       return prop_storage(propertyName).tooltip;
     }
 
-    /// Structured constraint payload for a property (`prop::Range<T>`,
-    /// `prop::Menu<T>`, `prop::Flag`, `core::prop::Color`, ...).
-    ///
-    /// Empty `std::any` only for the rare edge case where a legacy
-    /// `addProperty(name, "type", "info", value)` registration used a
-    /// type string that `buildConstraintFromLegacy` didn't recognise
-    /// (or whose info string failed to parse).  Every in-tree property
-    /// has a populated constraint; every dynamic-registration caller
-    /// goes through the same buildConstraintFromLegacy path.
-    ///
-    /// qt::Prop dispatches widget creation off this field (via
-    /// `std::any_cast<Constraint>` chains).  Prefer this over
-    /// `getPropertyType` / `getPropertyInfo` in new code — those two
-    /// exist for ConfigFile on-disk compatibility and will retire as
-    /// synthesizers over the constraint (step 8 of the Session 53
-    /// migration arc).
-    virtual std::any getPropertyConstraint(const std::string &propertyName) const{
-      return prop_storage(propertyName).constraint;
-    }
+    // getPropertyConstraint retired — use `prop(name).constraint` which
+    // returns the std::any by const reference (no copy).  Equivalent to
+    // the two-liner it replaced.
 
     /// Returns whether this property may be changed internally
     /** For example a video grabber's current stream position. This can be changed

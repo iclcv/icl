@@ -164,7 +164,7 @@ namespace icl::utils {
                  configurable->getPropertyVolatileness(ps[i]),
                  configurable->getPropertyToolTip(ps[i]));
       p.childPrefix = pfx;
-      p.constraint  = configurable->getPropertyConstraint(ps[i]);
+      p.constraint  = configurable->prop(ps[i]).constraint;
       if(auto it = m_properties.find(p.name); it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
       m_properties[p.name] = p;
       if(m_isOrdered) m_ordering[m_properties.size()] = p.name;
