@@ -27,8 +27,13 @@ struct B : public Configurable, public Thread{
     start();
   }
 
+  // Stop the run() loop before member `c` (and our own Configurable
+  // base) gets destructed — otherwise the still-running thread races
+  // on destroyed m_properties / m_mutex and aborts on exit.
+  ~B(){ stop(); }
+
   virtual void run(){
-    while(true){
+    while(running()){
       Thread::msleep(100);
       // Update the info-typed property.  qt::Prop picks it up through
       // its callback push channel on every write; rapid updates
