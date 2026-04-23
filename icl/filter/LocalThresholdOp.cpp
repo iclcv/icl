@@ -162,61 +162,57 @@ namespace icl::filter {
   void apply_local_threshold_six(const Img<S> &src,const Img<I> &ii, ImgBase *dst, float tf, int m, float gs){
     typename ThreshType<S>::T t = (typename ThreshType<S>::T)(tf);
     int w = src.getWidth(), h = src.getHeight();
-    const S *psrc = src.begin(0);
-    const I *pii = ii.begin(0);
+    // NB: the src/ii pointers must advance per-channel.  The previous
+    // implementation captured psrc=src.begin(0)/pii=ii.begin(0) before
+    // the loop and never indexed per channel — so every iteration
+    // recomputed the threshold from channel 0 of both src and the
+    // integral image, and wrote into channel 0 of dst.  For a 3-channel
+    // input the visual effect was a binary channel 0 with channels 1+2
+    // left at whatever ensureCompatible initialized them to (usually
+    // zero) — classic "red-only" display artifact.
     switch(dst->getDepth()){
       case depth8u:
-        if(gs!=0.0f){
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl8u,typename ThreshType<S>::T,true>(psrc,pii,dst->asImg<icl8u>()->begin(0),w,h,m,t,gs,c);
-          }
-        }else{
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl8u,typename ThreshType<S>::T,false>(psrc,pii,dst->asImg<icl8u>()->begin(0),w,h,m,t,gs,c);
+        for(int c=0;c<src.getChannels();++c){
+          if(gs!=0.0f){
+            fast_lt<S,I,icl8u,typename ThreshType<S>::T,true>(src.begin(c),ii.begin(c),dst->asImg<icl8u>()->begin(c),w,h,m,t,gs,c);
+          }else{
+            fast_lt<S,I,icl8u,typename ThreshType<S>::T,false>(src.begin(c),ii.begin(c),dst->asImg<icl8u>()->begin(c),w,h,m,t,gs,c);
           }
         }
         break;
       case depth16s:
-        if(gs!=0.0f){
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl16s,typename ThreshType<S>::T,true>(psrc,pii,dst->asImg<icl16s>()->begin(0),w,h,m,t,gs,c);
-          }
-        }else{
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl16s,typename ThreshType<S>::T,false>(psrc,pii,dst->asImg<icl16s>()->begin(0),w,h,m,t,gs,c);
+        for(int c=0;c<src.getChannels();++c){
+          if(gs!=0.0f){
+            fast_lt<S,I,icl16s,typename ThreshType<S>::T,true>(src.begin(c),ii.begin(c),dst->asImg<icl16s>()->begin(c),w,h,m,t,gs,c);
+          }else{
+            fast_lt<S,I,icl16s,typename ThreshType<S>::T,false>(src.begin(c),ii.begin(c),dst->asImg<icl16s>()->begin(c),w,h,m,t,gs,c);
           }
         }
         break;
       case depth32s:
-        if(gs!=0.0f){
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl32s,typename ThreshType<S>::T,true>(psrc,pii,dst->asImg<icl32s>()->begin(0),w,h,m,t,gs,c);
-          }
-        }else{
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl32s,typename ThreshType<S>::T,false>(psrc,pii,dst->asImg<icl32s>()->begin(0),w,h,m,t,gs,c);
+        for(int c=0;c<src.getChannels();++c){
+          if(gs!=0.0f){
+            fast_lt<S,I,icl32s,typename ThreshType<S>::T,true>(src.begin(c),ii.begin(c),dst->asImg<icl32s>()->begin(c),w,h,m,t,gs,c);
+          }else{
+            fast_lt<S,I,icl32s,typename ThreshType<S>::T,false>(src.begin(c),ii.begin(c),dst->asImg<icl32s>()->begin(c),w,h,m,t,gs,c);
           }
         }
         break;
       case depth32f:
-        if(gs!=0.0f){
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl32f,typename ThreshType<S>::T,true>(psrc,pii,dst->asImg<icl32f>()->begin(0),w,h,m,t,gs,c);
-          }
-        }else{
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl32f,typename ThreshType<S>::T,false>(psrc,pii,dst->asImg<icl32f>()->begin(0),w,h,m,t,gs,c);
+        for(int c=0;c<src.getChannels();++c){
+          if(gs!=0.0f){
+            fast_lt<S,I,icl32f,typename ThreshType<S>::T,true>(src.begin(c),ii.begin(c),dst->asImg<icl32f>()->begin(c),w,h,m,t,gs,c);
+          }else{
+            fast_lt<S,I,icl32f,typename ThreshType<S>::T,false>(src.begin(c),ii.begin(c),dst->asImg<icl32f>()->begin(c),w,h,m,t,gs,c);
           }
         }
         break;
       case depth64f:
-        if(gs!=0.0f){
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl64f,typename ThreshType<S>::T,true>(psrc,pii,dst->asImg<icl64f>()->begin(0),w,h,m,t,gs,c);
-          }
-        }else{
-          for(int c=0;c<src.getChannels();++c){
-            fast_lt<S,I,icl64f,typename ThreshType<S>::T,false>(psrc,pii,dst->asImg<icl64f>()->begin(0),w,h,m,t,gs,c);
+        for(int c=0;c<src.getChannels();++c){
+          if(gs!=0.0f){
+            fast_lt<S,I,icl64f,typename ThreshType<S>::T,true>(src.begin(c),ii.begin(c),dst->asImg<icl64f>()->begin(c),w,h,m,t,gs,c);
+          }else{
+            fast_lt<S,I,icl64f,typename ThreshType<S>::T,false>(src.begin(c),ii.begin(c),dst->asImg<icl64f>()->begin(c),w,h,m,t,gs,c);
           }
         }
         break;
@@ -224,8 +220,6 @@ namespace icl::filter {
         // this may not happen
         ICL_INVALID_DEPTH;
     }
-
-
   }
 
 
@@ -592,10 +586,14 @@ namespace icl::filter {
     dst = core::Image(*dstPtr);
 
     if(dstDepth == depth8u && prop("invert output").as<bool>()){
-      Channel8u c = (*dst.ptr()->as8u())[0];
-      const int dim = c.getDim();
-      for(int i=0;i<dim;++i){
-        c[i] = 255-c[i];
+      Img8u *dst8u = dst.ptr()->as8u();
+      const int channels = dst8u->getChannels();
+      for(int ch=0; ch<channels; ++ch){
+        Channel8u c = (*dst8u)[ch];
+        const int dim = c.getDim();
+        for(int i=0;i<dim;++i){
+          c[i] = 255-c[i];
+        }
       }
     }
   }

@@ -1206,6 +1206,48 @@ ICL_REGISTER_TEST("Filter.LocalThreshold.global", "global algorithm delegates to
   ICL_TEST_EQ(dst.as8u()(0, 0, 0), (icl8u)0);  // 0 <= 100
 }
 
+ICL_REGISTER_TEST("Filter.LocalThreshold.regionMean_multichannel",
+                  "regionMean thresholds each channel independently (regression guard: "
+                  "all channels were collapsing to channel 0's result)") {
+  // 3-channel image with distinct gradient patterns per channel.  The
+  // per-channel threshold result depends on the local mean of THAT channel,
+  // so if the algorithm correctly indexes per channel, the three output
+  // channels should differ from each other.  If the pre-fix bug is present
+  // (all writes land on channel 0), channel 1 and channel 2 of the dst
+  // stay at their ensureCompatible-initialized value (usually 0).
+  auto src = Img8u::from(40, 40, 3, [](int x, int y, int c) -> icl8u {
+    if (c == 0) return static_cast<icl8u>((x * 6) % 256);
+    if (c == 1) return static_cast<icl8u>((y * 6) % 256);
+    return static_cast<icl8u>(((x + y) * 6) % 256);
+  });
+  LocalThresholdOp op(LocalThresholdOp::regionMean, 5, 0);
+  Image dst = op.apply(Image(src));
+  ICL_TEST_EQ(dst.getChannels(), 3);
+  // Regression guard: channels 1 and 2 must have some non-zero pixels.
+  // Pre-fix, they stayed at ensureCompatible's zero initialization.
+  auto has_nonzero = [](const Channel8u &c){
+    for(int i=0;i<c.getDim();++i) if(c[i] != 0) return true;
+    return false;
+  };
+  const Img8u &d = dst.as8u();
+  ICL_TEST_TRUE(has_nonzero(d[1]));
+  ICL_TEST_TRUE(has_nonzero(d[2]));
+  // Channels 1 and 2 should produce distinct patterns (derived from
+  // y-gradient and (x+y)-gradient respectively), not identical copies of
+  // channel 0's x-gradient threshold.
+  const Channel8u c0 = d[0];
+  const Channel8u c1 = d[1];
+  const Channel8u c2 = d[2];
+  bool c0_c1_differ = false, c1_c2_differ = false;
+  for(int i=0;i<c0.getDim();++i){
+    if(c0[i] != c1[i]) c0_c1_differ = true;
+    if(c1[i] != c2[i]) c1_c2_differ = true;
+    if(c0_c1_differ && c1_c2_differ) break;
+  }
+  ICL_TEST_TRUE(c0_c1_differ);
+  ICL_TEST_TRUE(c1_c2_differ);
+}
+
 // ============================================================
 // ConvolutionOp tests
 // ============================================================
