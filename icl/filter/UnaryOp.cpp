@@ -40,6 +40,14 @@ namespace icl::filter {
                 "method are not adapted. Instead the given result images are checked\n"
                 "for their compatibility. In case of uncompatible result images,\n"
                 "an exception is thrown.");
+    // Keep the ROIHandler in sync with external property writes.
+    // Registered through Configurable::registerCallback (not UnaryOp's
+    // m_applyMutex-wrapping overload) — the bool writes are fast and don't
+    // conflict with apply()'s reader path.
+    Configurable::registerCallback([this](const Property &p){
+      if      (p.name == "UnaryOp.clip to ROI") m_oROIHandler.setClipToROI(p.as<std::string>() == "on");
+      else if (p.name == "UnaryOp.check only")  m_oROIHandler.setCheckOnly(p.as<std::string>() == "on");
+    });
   }
 
   UnaryOp::UnaryOp(){
@@ -141,15 +149,9 @@ namespace icl::filter {
 
   // applyMT removed — only NeighborhoodOp provides it now
 
-
-
-
-  void UnaryOp::setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value){
-    if(propertyName == "UnaryOp.clip to ROI") setClipToROI(value == "on");
-    else if(propertyName == "UnaryOp.check only") setCheckOnly(value == "on");
-    Configurable::setPropertyValue(propertyName,value);
-  }
-
+  // setPropertyValue override retired — the callback registered in
+  // initConfigurable() keeps m_oROIHandler in sync with external writes
+  // through setPropertyValue / setPropertyValueTyped / prop().value = v.
 
   struct UnaryOp_VIRTUAL : public UnaryOp{
     void apply(const core::Image &, core::Image &) override {}

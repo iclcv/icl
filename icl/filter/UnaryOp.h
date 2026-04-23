@@ -59,13 +59,9 @@ namespace icl::filter {
       @param bClipToROI true=yes, false=no
     */
     void setClipToROI (bool bClipToROI) {
-      m_oROIHandler.setClipToROI(bClipToROI);
-      // Bypass UnaryOp::setPropertyValue — its override re-dispatches
-      // property writes for "UnaryOp.clip to ROI" back through
-      // setClipToROI to keep the ROI handler in sync.  Calling it here
-      // would recurse forever.  Go straight to the base writer, which
-      // updates Property::value + typed_value + fires callbacks.
-      Configurable::setPropertyValue("UnaryOp.clip to ROI", bClipToROI ? "on" : "off");
+      // The callback registered in initConfigurable() mirrors the property
+      // write back into m_oROIHandler — single source of truth.
+      prop("UnaryOp.clip to ROI").value = bClipToROI ? "on" : "off";
     }
 
     /// sets if the destination image should be adapted to the source, or if it is only checked if it can be adapted.
@@ -73,9 +69,7 @@ namespace icl::filter {
       @param bCheckOnly true = destination image is only checked, false = destination image will be checked and adapted.
     */
     void setCheckOnly (bool bCheckOnly) {
-      m_oROIHandler.setCheckOnly(bCheckOnly);
-      // See setClipToROI — same recursion hazard via UnaryOp::setPropertyValue.
-      Configurable::setPropertyValue("UnaryOp.check only", bCheckOnly ? "on" : "off");
+      prop("UnaryOp.check only").value = bCheckOnly ? "on" : "off";
     }
 
     /// returns the ClipToROI status
@@ -91,8 +85,9 @@ namespace icl::filter {
     bool getCheckOnly() const { return m_oROIHandler.getCheckOnly(); }
 
 
-    /// sets value of a property (always call call_callbacks(propertyName) or Configurable::setPropertyValue)
-    virtual void setPropertyValue(const std::string &propertyName, const utils::AutoParse<std::string> &value);
+    // setPropertyValue override retired.  The callback registered in
+    // initConfigurable() handles the "UnaryOp.clip to ROI" / "UnaryOp.check
+    // only" side effects for all write paths uniformly.
 
     // Note: the old fromString() / listFromStringOps() / getFromStringSyntax() /
     // applyFromString() registry was retired — `utils::Configurable::
