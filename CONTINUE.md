@@ -4,7 +4,27 @@
 
 Session 54 closed the Configurable typed-storage arc — steps 5
 and 8 landed, step 7 skipped deliberately (dynamic-registration
-entry point).  Pick from `TODO.md`:
+entry point).  Also migrated ~200 subclass-internal setPropertyValue
+/ getPropertyValue call sites onto the `prop(name).value` proxy
+(option 1), and promoted `Configurable::prop()` to public API +
+added `Handle::type()` / `Handle::info()` accessors (option 2),
+then migrated qt::Prop's ConfigurableGUIWidget off the individual
+public getters onto the unified Handle.
+
+Option-1 + option-2 call-site cleanups still open if you want to
+finish the sweep:
+
+- External callers (apps / demos / tests / icl-configurable-info)
+  that now *could* use `cfg->prop(name).value` but still call
+  `cfg->getPropertyValue(name)` — roughly 120 sites.  Pure
+  cosmetic; the public getters stay as thin wrappers.
+- `getPropertyConstraint` / `getPropertyToolTip` /
+  `getPropertyVolatileness` could be dropped from the public API
+  now that Handle exposes them — keep as protected thin wrappers
+  for back-compat, or delete outright.  Low value, small blast
+  radius.
+
+Other concrete work items from `TODO.md`:
 
 - **ICLWidget OSD scale-range button** — misbehaves (surfaced
   2026-04-21 in `icl-region-inspector -i create cameraman`).
