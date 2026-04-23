@@ -82,31 +82,8 @@ namespace icl::utils {
         getInternalConfigurable() -> registerCallback(cb);
       }
 
-      /// get type of property
-      std::string getPropertyType(const std::string &propertyName) const{
-        return getInternalConfigurable() -> getPropertyType(propertyName);
-      }
-
-      /// get information of a properties valid values
-      std::string getPropertyInfo(const std::string &propertyName) const{
-        return getInternalConfigurable() -> getPropertyInfo(propertyName);
-
-      }
-
-      /// returns the current value of a property or a parameter
-      AutoParse<std::string> getPropertyValue(const std::string &propertyName) const{
-        return getInternalConfigurable() -> getPropertyValue(propertyName);
-      }
-
-      /// returns the tooltip description for a given property
-      std::string getPropertyToolTip(const std::string &propertyName) const{
-        return getInternalConfigurable() -> getPropertyToolTip(propertyName);
-      }
-
-      /// Returns whether this property may be changed internally
-      int getPropertyVolatileness(const std::string &propertyName) const{
-        return getInternalConfigurable() -> getPropertyVolatileness(propertyName);
-      }
+      // Property read forwarders retired — callers go through
+      // prop(name).{type(), info(), value, tooltip, volatileness}.
 
       /// syncronzies all property changes to the given configurable
       void syncChangesTo(Configurable *configurables, int num=1) {

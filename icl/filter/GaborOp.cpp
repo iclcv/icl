@@ -20,7 +20,7 @@ namespace icl::filter {
     if(m_vecKernels.empty()) return;
     Img32f k = m_vecKernels[0].detached();
     k.normalizeAllChannels(Range<float>(0, 255));
-    setPropertyPayload("kernel preview", std::any(core::Image(k)));
+    prop("kernel preview").value = core::Image(k);
   }
 
   // Rebuild kernel bank from the scalar properties — collapses the 5

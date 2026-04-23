@@ -71,12 +71,13 @@ int main(int n, char **ppc){
 
     for(unsigned int i=0;i<l.size();++i){
       const std::string &s = l[i];
-      std::string v = grabber.prop(s).value;
+      auto h = grabber.prop(s);
+      std::string v = h.value;
       std::cout << s;
       write_spaces(w-s.length());
       std::cout << v;
       write_spaces(w-v.length());
-      std::cout << grabber.getPropertyInfo(s) << std::endl;
+      std::cout << h.info() << std::endl;
     }
   }
 }

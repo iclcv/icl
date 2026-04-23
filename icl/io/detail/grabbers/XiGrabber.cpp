@@ -380,10 +380,10 @@ namespace icl{
         w /= binning;
         h /= binning;
 
-        SteppingRange32s ix = parse<SteppingRange32s>(getPropertyInfo("roi.x"));
-        SteppingRange32s iy = parse<SteppingRange32s>(getPropertyInfo("roi.y"));
-        SteppingRange32s iw = parse<SteppingRange32s>(getPropertyInfo("roi.width"));
-        SteppingRange32s ih = parse<SteppingRange32s>(getPropertyInfo("roi.height"));
+        SteppingRange32s ix = parse<SteppingRange32s>(this->prop("roi.x").info());
+        SteppingRange32s iy = parse<SteppingRange32s>(this->prop("roi.y").info());
+        SteppingRange32s iw = parse<SteppingRange32s>(this->prop("roi.width").info());
+        SteppingRange32s ih = parse<SteppingRange32s>(this->prop("roi.height").info());
 
         x = x/(ix.stepping) * ix.stepping;
         y = y/(iy.stepping) * iy.stepping;

@@ -145,10 +145,9 @@ namespace icl{
           if(!h){
             h = &gui.get<ImageHandle>("#img#"+prop);
           }
-          // Typed path: properties registered via
-          // `addProperty<core::prop::ImageView>(...)` keep the live
-          // core::Image in Property::typed_value.  Inspect the any's
-          // type_info directly to avoid the AutoParse cascade.
+          // Properties registered via `addProperty<core::prop::ImageView>(...)`
+          // keep the live core::Image in Property::typed_value.  Inspect the
+          // any's type_info directly to avoid the AutoParse cascade.
           try{
             auto handle = conf.prop(prop);
             if(handle.typed_value.type() == typeid(core::Image)){
@@ -157,26 +156,10 @@ namespace icl{
                 *h = img;
                 h->render();
               }
-              return;
             }
           }catch(...){
-            // Fall through to legacy payload channel below.
-          }
-          // Legacy payload channel — properties registered via the
-          // string-taking addProperty + updated via setPropertyPayload.
-          // Step 4c retires this path once every caller migrates to
-          // addProperty<ImageView>.
-          std::any payload = conf.getPropertyPayload(prop);
-          if(!payload.has_value()) return;
-          try{
-            core::Image img = std::any_cast<core::Image>(payload);
-            if(!img.isNull()){
-              *h = img;
-              h->render();
-            }
-          }catch(const std::bad_any_cast&){
-            // payload type mismatch — skip silently; the Op is responsible for
-            // matching the payload type to the property's declared type.
+            // prop() threw (missing property) or any_cast mismatch — skip silently;
+            // the Op is responsible for matching typed_value to core::Image.
           }
         }
       };

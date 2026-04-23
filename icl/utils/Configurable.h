@@ -492,8 +492,8 @@ namespace icl::utils {
         A range property can e.g. be adapted to a menu property, which then again restricts possible values.
         You can also set a properties type from range:spinbox to range:slider
         */
-    virtual void adaptProperty(const std::string &name, const std::string &newType,
-                               const std::string &newInfo, const std::string &newToolTip);
+    void adaptProperty(const std::string &name, const std::string &newType,
+                       const std::string &newInfo, const std::string &newToolTip);
 
 
     /// this function can be used in subclasses to create a default ID
@@ -539,11 +539,12 @@ namespace icl::utils {
 
 
     /// sets a property value
-    /** If this method is specialized in subclasses, the parent method shold be called at the end in order to
-        call all registered callbacks.
-        If the property is actually owned by a child-configurable,
-        the function forwards to that configurable */
-    virtual void setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value);
+    /** If the property is actually owned by a child-configurable, the
+        function forwards to that configurable.  Non-virtual: property
+        side-effects belong in a registerCallback() lambda, not in a
+        subclass override of this function.  ConfigFile save/load and
+        syncChangesTo callers use this entry point. */
+    void setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value);
 
     /// Typed setter — stores `v` directly into Property::typed_value,
     /// fires callbacks.  Bypasses the string round-trip that
@@ -563,36 +564,32 @@ namespace icl::utils {
     /// directly in that case — zero parse.  For unconstrained
     /// properties (rare edge case), any std::any is accepted and
     /// downstream reads go through the cascade.
-    virtual void setPropertyValueTyped(const std::string &propertyName, std::any v);
+    void setPropertyValueTyped(const std::string &propertyName, std::any v);
 
-    /// sets the type-erased payload for a property (for non-string types like "image")
-    /** Fires all registered callbacks, same as setPropertyValue. The caller is
-        responsible for matching the payload's concrete type to the property's
-        declared type — e.g. an "image" property expects a core::Image. */
-    virtual void setPropertyPayload(const std::string &propertyName, std::any payload);
-
-    /// returns the type-erased payload for a property (empty std::any if never set)
-    virtual std::any getPropertyPayload(const std::string &propertyName) const;
+    // setPropertyPayload / getPropertyPayload retired — typed_value itself
+    // carries the image/non-string payload now that addProperty<ImageView>
+    // stores live core::Image directly.  Use
+    //   prop(name).value = img;         // writer
+    //   auto img = prop(name).typed_value  // reader (std::any holding Image)
+    // instead.
 
     /// returns a list of All properties, that can be set using setProperty
     /** This function should usually not be used. Instead, you should call getPropertyListWithoutDeactivated
         @return list of supported property names **/
-    virtual std::vector<std::string> getPropertyList() const;
+    std::vector<std::string> getPropertyList() const;
 
     /// base implementation for property check (seaches in the property list)
-    /** This function may be reimplemented in an optimized way in
-        particular subclasses.**/
-    virtual bool supportsProperty(const std::string &propertyName) const;
+    bool supportsProperty(const std::string &propertyName) const;
 
     /// writes all available properties into a file
     /** @param filename destination xml-filename
         @param propertiesToSkip some common grabber parameters e.g. trigger-settings cause problems when
         they are read from configuration files, hence these parameters are skipped at default*/
-    virtual void saveProperties(const std::string &filename, const std::vector<std::string> &propertiesToSkip=EMPTY_VEC) const;
+    void saveProperties(const std::string &filename, const std::vector<std::string> &propertiesToSkip=EMPTY_VEC) const;
 
     /// reads a camera config file from disc
     /** @ see saveProperties */
-    virtual void loadProperties(const std::string &filename,const std::vector<std::string> &propertiesToSkip=EMPTY_VEC);
+    void loadProperties(const std::string &filename,const std::vector<std::string> &propertiesToSkip=EMPTY_VEC);
 
     /// get type of property
     /** This is a new minimal configuration interface: When implementing generic
@@ -619,7 +616,7 @@ namespace icl::utils {
         - "info" the property is an unchangable internal value (it cannot be set actively)
         - ... (propably some other types are defined later on)
         */
-    virtual std::string getPropertyType(const std::string &propertyName) const{
+    std::string getPropertyType(const std::string &propertyName) const{
       const Property &p = prop_storage(propertyName);
       if(!p.constraint.has_value()) return "";
       return prop::lookupAdapter(p.constraint.type()).typeId(p.constraint);
@@ -640,7 +637,7 @@ namespace icl::utils {
         <b>Note:</b> The received string can be translated into C++ data
         with some static utility function in this Grabber class.
         */
-    virtual std::string getPropertyInfo(const std::string &propertyName) const{
+    std::string getPropertyInfo(const std::string &propertyName) const{
       const Property &p = prop_storage(propertyName);
       if(!p.constraint.has_value()) return "";
       return prop::lookupAdapter(p.constraint.type()).infoString(p.constraint);
@@ -658,29 +655,12 @@ namespace icl::utils {
         → numeric widen → parse-if-string → stringify-if-numeric).
         Callers that specifically need a string can use
         `.str()` / `.as<std::string>()`. */
-    virtual AutoParse<std::any> getPropertyValue(const std::string &propertyName) const;
+    AutoParse<std::any> getPropertyValue(const std::string &propertyName) const;
 
-    /// returns the tooltip description for a given property
-    virtual std::string getPropertyToolTip(const std::string &propertyName) const{
-      return prop_storage(propertyName).tooltip;
-    }
-
-    // getPropertyConstraint retired — use `prop(name).constraint` which
-    // returns the std::any by const reference (no copy).  Equivalent to
-    // the two-liner it replaced.
-
-    /// Returns whether this property may be changed internally
-    /** For example a video grabber's current stream position. This can be changed
-        from outside, but it is changed when the stream is played. The isVolatile
-        function should return a msec-value that describes how often the corresponding
-        feature might be updated internally or just 0, if the corresponding
-        feature is not volatile at all. The default implementation of isVolatile
-        returns 0 for all features. So if there is no such feature in your grabber,
-        this function must not be adapted at all. "info"-typed Properties might be
-        volatile as well */
-    virtual int getPropertyVolatileness(const std::string &propertyName) const{
-      return prop_storage(propertyName).volatileness;
-    }
+    // getPropertyConstraint / getPropertyToolTip / getPropertyVolatileness
+    // retired — the Handle returned from prop(name) exposes them as const
+    // references to Property::{constraint, tooltip, volatileness} (no copy,
+    // no virtual dispatch).
 
     /// registers a configurable type
     /** @see \ref REG */

@@ -160,11 +160,10 @@ namespace icl::utils {
       // constraint here so the parent's getPropertyType / getPropertyInfo
       // / qt::Prop dispatch can read the structured constraint locally
       // without chasing the configurable pointer.
-      Property p(configurable, pfx+ps[i],
-                 configurable->getPropertyVolatileness(ps[i]),
-                 configurable->getPropertyToolTip(ps[i]));
+      auto ch       = configurable->prop(ps[i]);
+      Property p(configurable, pfx+ps[i], ch.volatileness, ch.tooltip);
       p.childPrefix = pfx;
-      p.constraint  = configurable->prop(ps[i]).constraint;
+      p.constraint  = ch.constraint;
       if(auto it = m_properties.find(p.name); it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
       m_properties[p.name] = p;
       if(m_isOrdered) m_ordering[m_properties.size()] = p.name;
@@ -434,30 +433,6 @@ namespace icl::utils {
       p.typed_value = std::move(v);
     }
     call_callbacks(propertyName, this);
-  }
-
-  void Configurable::setPropertyPayload(const std::string &propertyName, std::any payload){
-    // Thin wrapper over typed_value — the separate Property::payload
-    // field retired in step 4c.  Kept as an API entry point for
-    // non-stringifiable property updates (images, etc.) that can't
-    // round-trip through setPropertyValue's AutoParse<std::string>.
-    Property &p = prop_storage(propertyName);
-    if(p.configurable != this){
-      p.configurable->setPropertyPayload(propertyName.substr(p.childPrefix.length()), std::move(payload));
-    }else{
-      std::scoped_lock<std::recursive_mutex> lock(m_mutex);
-      p.typed_value = std::move(payload);
-    }
-    call_callbacks(propertyName, this);
-  }
-
-  std::any Configurable::getPropertyPayload(const std::string &propertyName) const{
-    const Property &p = prop_storage(propertyName);
-    if(p.configurable != this){
-      return p.configurable->getPropertyPayload(propertyName.substr(p.childPrefix.length()));
-    }
-    std::scoped_lock<std::recursive_mutex> lock(m_mutex);
-    return p.typed_value;
   }
 
   std::vector<std::string> remove_by_filter(const std::vector<std::string> &ps,

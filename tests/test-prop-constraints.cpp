@@ -284,8 +284,8 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_range_float",
   TestConf c;
   c.addProperty("gain", prop::Range{.min = 0.f, .max = 500.f}, 250.f);
 
-  ICL_TEST_EQ(c.getPropertyType("gain"),  std::string("range:slider"));
-  ICL_TEST_EQ(c.getPropertyInfo("gain"),  std::string("[0,500]"));
+  ICL_TEST_EQ(c.prop("gain").type(),  std::string("range:slider"));
+  ICL_TEST_EQ(c.prop("gain").info(),  std::string("[0,500]"));
   ICL_TEST_NEAR(c.prop("gain").as<float>(), 250.f, 1e-5f);
 
   // constraint payload is recoverable and matches what we passed
@@ -305,8 +305,8 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_range_spinbox",
                 prop::Range{.min = 1, .max = 31, .step = 2, .ui = UI::Spinbox},
                 3);
 
-  ICL_TEST_EQ(c.getPropertyType("ksize"), std::string("range:spinbox"));
-  ICL_TEST_EQ(c.getPropertyInfo("ksize"), std::string("[1,31]:2"));
+  ICL_TEST_EQ(c.prop("ksize").type(), std::string("range:spinbox"));
+  ICL_TEST_EQ(c.prop("ksize").info(), std::string("[1,31]:2"));
   ICL_TEST_EQ(c.prop("ksize").as<int>(), 3);
 
   const auto &r = std::any_cast<const prop::Range<int> &>(c.prop("ksize").constraint);
@@ -320,8 +320,8 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_menu_string",
   TestConf c;
   c.addProperty("mode", Menu{"fast", "slow", "auto"}, std::string("slow"));
 
-  ICL_TEST_EQ(c.getPropertyType("mode"), std::string("menu"));
-  ICL_TEST_EQ(c.getPropertyInfo("mode"), std::string(",fast,slow,auto"));
+  ICL_TEST_EQ(c.prop("mode").type(), std::string("menu"));
+  ICL_TEST_EQ(c.prop("mode").info(), std::string(",fast,slow,auto"));
   ICL_TEST_EQ(c.prop("mode").value.str(), std::string("slow"));
 
   const auto &m = std::any_cast<const Menu<std::string> &>(c.prop("mode").constraint);
@@ -335,8 +335,8 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_flag",
   TestConf c;
   c.addProperty("enabled", Flag{}, true);
 
-  ICL_TEST_EQ(c.getPropertyType("enabled"), std::string("flag"));
-  ICL_TEST_EQ(c.getPropertyInfo("enabled"), std::string(""));
+  ICL_TEST_EQ(c.prop("enabled").type(), std::string("flag"));
+  ICL_TEST_EQ(c.prop("enabled").info(), std::string(""));
   // Typed extraction — the idiomatic read path.
   ICL_TEST_TRUE(bool(c.prop("enabled").value));
   ICL_TEST_EQ(c.prop("enabled").as<bool>(), true);
@@ -353,8 +353,8 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_command",
   TestConf c;
   c.addProperty("save", Command{});
 
-  ICL_TEST_EQ(c.getPropertyType("save"), std::string("command"));
-  ICL_TEST_EQ(c.getPropertyInfo("save"), std::string(""));
+  ICL_TEST_EQ(c.prop("save").type(), std::string("command"));
+  ICL_TEST_EQ(c.prop("save").info(), std::string(""));
   // Command stores std::monostate — intentionally not stringifiable.
   // Consumers that iterate all properties (e.g. icl-configurable-info)
   // must guard per-row.
@@ -371,7 +371,7 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_info",
   TestConf c;
   c.addProperty("version", Info{}, std::string("v1.0.0"));
 
-  ICL_TEST_EQ(c.getPropertyType("version"),  std::string("info"));
+  ICL_TEST_EQ(c.prop("version").type(),  std::string("info"));
   ICL_TEST_EQ(c.prop("version").value.str(), std::string("v1.0.0"));
 }
 
@@ -381,8 +381,8 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_text",
   TestConf c;
   c.addProperty("weights", Text{.maxLength = 128}, std::string("1,2,3"));
 
-  ICL_TEST_EQ(c.getPropertyType("weights"), std::string("string"));
-  ICL_TEST_EQ(c.getPropertyInfo("weights"), std::string("128"));
+  ICL_TEST_EQ(c.prop("weights").type(), std::string("string"));
+  ICL_TEST_EQ(c.prop("weights").info(), std::string("128"));
   ICL_TEST_EQ(c.prop("weights").value.str(), std::string("1,2,3"));
 }
 
@@ -392,8 +392,8 @@ ICL_REGISTER_TEST("utils.prop.configurable.legacy_dispatch_to_typed",
   TestConf c;
   c.addProperty("legacy.prop", "range:slider", "[0,100]", AutoParse<std::string>(50));
 
-  ICL_TEST_EQ(c.getPropertyType("legacy.prop"), std::string("range:slider"));
-  ICL_TEST_EQ(c.getPropertyInfo("legacy.prop"), std::string("[0,100]"));
+  ICL_TEST_EQ(c.prop("legacy.prop").type(), std::string("range:slider"));
+  ICL_TEST_EQ(c.prop("legacy.prop").info(), std::string("[0,100]"));
   // Step 9 commit 1: the legacy overload now dispatches internally to
   // the typed path, so every registered property has both constraint
   // and typed_value populated — even through the string-taking API.
@@ -451,7 +451,7 @@ ICL_REGISTER_TEST("core.prop.configurable.addProperty_color",
   const icl::core::Color bg(32, 64, 96);
   c.addProperty("bg", icl::core::prop::Color{}, bg);
 
-  ICL_TEST_EQ(c.getPropertyType("bg"), std::string("color"));
+  ICL_TEST_EQ(c.prop("bg").type(), std::string("color"));
   // Typed access — the fast path.
   const auto &stored = std::any_cast<const icl::core::Color &>(
       c.prop("bg").typed_value);

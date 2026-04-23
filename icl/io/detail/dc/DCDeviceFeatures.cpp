@@ -255,7 +255,8 @@ namespace icl::io{
         for(unsigned int i=0;i<l.size();++i){
           if(l.at(i).length() > 5 && l.at(i).substr(l.at(i).length()-5)=="-mode"
              && l.at(i) != "trigger-mode"){
-            Configurable::setPropertyValue(l.at(i),"manual");
+            // `prop` parameter shadows Configurable::prop — spell out `this->`.
+            this->prop(l.at(i)).value = "manual";
           }
         }
       }else if(is_trigger_name(prop.name,true)){

@@ -256,14 +256,15 @@ namespace icl::io {
           t[0] = tok("property,type,allowed values,current value",",");
           for(unsigned int j=0;j<ps.size();++j){
             const std::string &p2 = ps[j];
-            const std::string ty = m_poGrabber->getPropertyType(p2);
+            auto h = m_poGrabber->prop(p2);
+            const std::string ty = h.type();
             const bool isCommand = ty == "command";
             const bool isInfo = ty == "info";
 
             t(0,j+1) = p2;
             t(1,j+1) = ty;
-            t(2,j+1) = (isInfo||isCommand) ? str("-") : m_poGrabber->getPropertyInfo(p2);
-            t(3,j+1) = isCommand ? "-" : m_poGrabber->prop(p2).value;
+            t(2,j+1) = (isInfo||isCommand) ? str("-") : h.info();
+            t(3,j+1) = isCommand ? "-" : h.value;
           }
 
           t(0,ps.size()+1) = str("udist");
