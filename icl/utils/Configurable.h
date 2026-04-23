@@ -8,9 +8,11 @@
 #include <icl/utils/Exception.h>
 #include <icl/utils/AutoParse.h>
 #include <icl/utils/UncopiedInstance.h>
+#include <icl/utils/prop/Adapter.h>
 
 #include <any>
 #include <functional>
+#include <typeindex>
 
 #include <vector>
 #include <string>
@@ -189,6 +191,17 @@ namespace icl::utils {
       /// holds a core::Image. The Prop GUI widget renders an embedded Display
       /// that polls getPropertyPayload() on the volatileness timer.
       std::any payload;
+      /// Structured constraint payload (`prop::Range<T>`, `prop::Menu<T>`,
+      /// `prop::Flag`, ...).  Populated by the typed `addProperty<C>`
+      /// overload; empty for properties that were registered via the legacy
+      /// string-taking `addProperty(name, "type", "info", value)` path.
+      ///
+      /// Once all call sites migrate to the typed overload, qt::Prop will
+      /// drive its widget dispatch off this field (via
+      /// `prop::lookupAdapter` / constraint-type introspection) instead of
+      /// parsing the `type` + `info` strings.  During the transition qt::Prop
+      /// falls back to the string path when `constraint` is empty.
+      std::any constraint;
       /// for more efficient find
       bool operator==(const std::string &name) const { return this->name == name; }
     };
@@ -237,6 +250,50 @@ namespace icl::utils {
                      const std::string &info,
                      const AutoParse<std::string> &value=AutoParse<std::string>(),
                      const int volatileness=0, const std::string &tooltip=std::string());
+
+    /// Typed addProperty — registers a property using a structured
+    /// `prop::Range<T>` / `prop::Menu<T>` / `prop::Flag` / ... constraint
+    /// instead of the legacy `(type, info)` string pair.
+    ///
+    /// Call sites read uniformly:
+    /// \code
+    ///   addProperty("gain",    prop::Range{.min=0.f, .max=500.f},        250.f);
+    ///   addProperty("gamma",   prop::Range{.min=0, .max=100, .ui=UI::Spinbox}, 50);
+    ///   addProperty("mode",    prop::Menu{"fast", "slow", "auto"},       "fast");
+    ///   addProperty("enabled", prop::Flag{},                             true);
+    ///   addProperty("save",    prop::Command{});
+    /// \endcode
+    ///
+    /// Under the hood this looks up the constraint's adapter via
+    /// `prop::lookupAdapter` and calls the legacy string-based overload
+    /// with synthesized `type` / `info` / `value` strings, then stores the
+    /// structured constraint on the resulting `Property` so downstream
+    /// code (qt::Prop) can dispatch off the typed constraint.
+    ///
+    /// Until qt::Prop flips to constraint-driven dispatch (step 5 of the
+    /// migration), both the stringly-typed legacy data and the `std::any`
+    /// constraint payload are maintained — no behavioural change.
+    template<class C>
+    void addProperty(const std::string &name,
+                     C constraint,
+                     typename C::value_type initial = {},
+                     const int volatileness = 0,
+                     const std::string &tooltip = std::string()) {
+      const auto &a = prop::lookupAdapter(std::type_index(typeid(C)));
+      std::any constraintAny(std::move(constraint));
+      const std::string type  = a.typeId(constraintAny);
+      const std::string info  = a.infoString(constraintAny);
+      const std::string value = a.toString(std::any(std::move(initial)));
+
+      // Register through the string path — this populates the legacy
+      // type/info/value on Property and flows through the existing
+      // ordered-properties / child-configurable / duplicate-name logic.
+      addProperty(name, type, info, AutoParse<std::string>(value),
+                  volatileness, tooltip);
+
+      // Attach the structured payload for step-5+ dispatch.
+      prop(name).constraint = std::move(constraintAny);
+    }
 
     /// This adds another configurable as child
     /** Child configurables can be added with a given prefix. If this prefix is not "",
