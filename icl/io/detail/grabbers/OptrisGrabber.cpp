@@ -258,9 +258,9 @@ namespace icl{
       addProperty("v4l device",utils::prop::Info{}, v4lDev);
       if(mode == IR_IMAGE){
         addProperty("format",utils::prop::Menu{"Temperature celsius [32f]", "Pseudo Color [RGB8]", "Pseudo Color + Temp. [RGBT 32f]"}, "Temperature celsius [32f]");
-        addProperty("size","menu",str(m_data->getSize()),m_data->getSize());
+        addProperty("size", utils::prop::menuFromCsv(str(m_data->getSize())), str(m_data->getSize()));
       }else{
-        addProperty("format","menu","RGB 8");
+        addProperty("format", utils::prop::Menu{"RGB 8"}, std::string("RGB 8"));
         addProperty("size",utils::prop::Menu{"640x480"}, Size::VGA);
       }
       addProperty("omit doubled frames",utils::prop::Flag{}, true);

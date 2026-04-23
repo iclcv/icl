@@ -369,8 +369,11 @@ namespace icl::io {
     }
     addProperty("intensity-image-mode", prop::Menu{"zero", "minus one", "unchanged"}, imgmode, 0, "");
     //TODO in current lib version, there is no possibility to find out camera type ??
-    addProperty("modulation-frequency", "menu", "40Mhz,30MHz,21MHz,20MHz,19"
-                "MHz,60MHz,15MHz,10MHz,29MHz,31MHz,14_5MHz,15_5MHz", modfreq, 0, "");
+    addProperty("modulation-frequency",
+                prop::Menu{"40Mhz", "30MHz", "21MHz", "20MHz", "19MHz",
+                           "60MHz", "15MHz", "10MHz", "29MHz", "31MHz",
+                           "14_5MHz", "15_5MHz"},
+                modfreq, 0, "");
     addProperty("depth-map-unit", prop::Menu{"16Bit", "mm", "cm", "m"}, m_sr->depthMapUnit, 0, "");
     addProperty("current-range", prop::Info{}, currentrange, 0, "");
     addProperty("create-xyz-channels", prop::Flag{}, m_sr->createXYZ, 0, "");

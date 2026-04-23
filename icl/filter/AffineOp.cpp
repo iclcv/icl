@@ -73,7 +73,7 @@ namespace icl::filter {
     addProperty("rotate.deg",utils::prop::Range{.min=-360.f, .max=360.f, .step=0.1f}, 0);
     addProperty("translate.x",utils::prop::Range{.min=-500, .max=500}, 0);
     addProperty("translate.y",utils::prop::Range{.min=-500, .max=500}, 0);
-    addProperty("interpolation","menu",INTERP_MENU,interpName(eInterpolate));
+    addProperty("interpolation",utils::prop::menuFromCsv(INTERP_MENU), interpName(eInterpolate));
     registerCallback([this](const Property &p){
       if(p.name == "interpolation"){
         m_eInterpolate = parseInterp(p.value);

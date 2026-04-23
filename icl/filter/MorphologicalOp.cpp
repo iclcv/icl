@@ -60,7 +60,7 @@ namespace icl::filter {
   }
 
   void MorphologicalOp::addMorphProperties(){
-    addProperty("optype","menu",OPTYPE_MENU,optypeName(m_eType));
+    addProperty("optype",utils::prop::menuFromCsv(OPTYPE_MENU), optypeName(m_eType));
     addProperty("mask size.w",utils::prop::Range{.min=1, .max=51, .ui=utils::prop::UI::Spinbox}, m_oMaskSizeMorphOp.width);
     addProperty("mask size.h",utils::prop::Range{.min=1, .max=51, .ui=utils::prop::UI::Spinbox}, m_oMaskSizeMorphOp.height);
     registerCallback([this](const Property &p){

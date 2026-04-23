@@ -78,7 +78,7 @@ namespace icl::markers {
     addProperty("binarize.threshold",prop::Range{.min=1, .max=254, .step=1}, 127,0,
                 "(Only used if 'binarize.mode' is 'threshold')\n"
                 "Threshold for static pattern binarization.");
-    addProperty("binarize.k-means steps","range","[1:5]:1",1,0,
+    addProperty("binarize.k-means steps",utils::prop::Range{.min=1, .max=5, .step=1}, 1,0,
                 "(Only used if 'binarize.mode' is 'k-means')\n"
                 "Number of k-means steps for finding an optimal split\n"
                 "between black and white marker pixels");

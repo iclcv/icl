@@ -151,7 +151,7 @@ namespace icl::io {
   }
 
   void DCGrabber::addProperties(){
-    addProperty("format", "menu", m_oDev.getModesInfo(),
+    addProperty("format", utils::prop::menuFromCsv(m_oDev.getModesInfo()), 
                 m_oDev.getMode().toString(), 0,
                 "Sets the cameras image size and format");
     addProperty("size", prop::Menu{"adjusted by format"}, 
@@ -162,14 +162,14 @@ namespace icl::io {
                 "Prevents the grabber from returning the same image multiple times.");
     addProperty("enable-image-labeling", prop::Flag{}, 
                 m_oOptions.enable_image_labeling, 0, ""); //TODO: tooltip
-    addProperty("iso-speed", "menu",
-                (dc::is_dc800_capable(m_oDev.getCam())) ? "400,800" : "400", //m_oDev.getCam()->bmode_capable == DC1394_TRUE ? "400,800" : "400",
-                m_oOptions.isoMBits == 400 ? "400" : "800" , 0,
+    addProperty("iso-speed",
+                prop::menuFromCsv(dc::is_dc800_capable(m_oDev.getCam()) ? "400,800" : "400"),
+                m_oOptions.isoMBits == 400 ? std::string("400") : std::string("800"), 0,
                 "Switches the cameraas iso-speed between 400 and 800.");
     if(static_cast<int>(m_oDev.getBayerFilterLayout()) == 1){
-      addProperty("bayer-layout", "menu",
-                  "RGGB,GBRG,GRBG,BGGR,NONE"
-                  , m_sUserDefinedBayerPattern, 0,
+      addProperty("bayer-layout",
+                  prop::Menu{"RGGB","GBRG","GRBG","BGGR","NONE"},
+                  m_sUserDefinedBayerPattern, 0,
                   "Sets the used bayer filter layout.");
       addProperty("bayer-quality",
                   "menu",

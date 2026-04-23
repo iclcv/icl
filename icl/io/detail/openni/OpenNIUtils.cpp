@@ -811,7 +811,8 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
 {
   fillProductionNodeMap(m_ProductionNodeMap);
   //Configurable
-  addProperty("map output mode", "menu", OpenNIMapGenerator::getMapOutputModeInfo(m_Generator),
+  addProperty("map output mode",
+              prop::menuFromCsv(OpenNIMapGenerator::getMapOutputModeInfo(m_Generator)),
               OpenNIMapGenerator::getCurrentMapOutputMode(m_Generator), 0,
               "The map output mode of the used MapGenerator");
   //fillProductionNodeMap(m_Generator -> GetContext(), m_ProductionNodeMap);
@@ -832,32 +833,38 @@ MapGeneratorOptions::MapGeneratorOptions(xn::MapGenerator* generator)
     addProperty("Cropping Enabled", utils::prop::Flag{}, crop.bEnabled, 0,
                 "Whether cropping should be used."
                 );
-    addProperty("Cropping offset X", "range", str(SteppingRange<int>(0, x, 1)),
-                crop.nXOffset, 0, "The X offset of the cropping from (0,0)."
+    addProperty("Cropping offset X",
+                utils::prop::Range{.min=0, .max=(int)x, .step=1},
+                (int)crop.nXOffset, 0, "The X offset of the cropping from (0,0)."
                 "Needs to be set regarding cropping size and image size."
                 );
-    addProperty("Cropping offset Y", "range", str(SteppingRange<int>(0, y, 1)),
-                crop.nYOffset, 0, "The Y offset of the cropping from (0,0). "
+    addProperty("Cropping offset Y",
+                utils::prop::Range{.min=0, .max=(int)y, .step=1},
+                (int)crop.nYOffset, 0, "The Y offset of the cropping from (0,0). "
                 "Needs to be set regarding cropping size and image size."
                 );
-    addProperty("Cropping size X", "range", str(SteppingRange<int>(0, x, 1)),
-                crop.nXSize, 0, "The X size cropped image. Needs to be set "
+    addProperty("Cropping size X",
+                utils::prop::Range{.min=0, .max=(int)x, .step=1},
+                (int)crop.nXSize, 0, "The X size cropped image. Needs to be set "
                 "regarding cropping size and image size."
                 );
-    addProperty("Cropping size Y", "range", str(SteppingRange<int>(0, y, 1)),
-                crop.nYSize, 0, "The Y size cropped image. Needs to be set "
+    addProperty("Cropping size Y",
+                utils::prop::Range{.min=0, .max=(int)y, .step=1},
+                (int)crop.nYSize, 0, "The Y size cropped image. Needs to be set "
                 "regarding cropping size and image size."
                 );
   }
   if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_ANTI_FLICKER)){
-    addProperty(XN_CAPABILITY_ANTI_FLICKER, "menu", "Power line frequency OFF,"
-                "Power line frequency 50Hz,Power line frequency 60Hz",
+    addProperty(XN_CAPABILITY_ANTI_FLICKER,
+                prop::Menu{"Power line frequency OFF",
+                           "Power line frequency 50Hz",
+                           "Power line frequency 60Hz"},
                 antiFlickerCapabilityValue(m_Generator), 0, ""
                 );
   }
   if(m_Generator -> IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT)){
-    addProperty(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT, "menu",
-                alternativeViewPiontCapabilityInfo(m_Generator, m_ProductionNodeMap),
+    addProperty(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT,
+                prop::menuFromCsv(alternativeViewPiontCapabilityInfo(m_Generator, m_ProductionNodeMap)),
                 alternativeViewPiontCapabilityValue(m_Generator, m_ProductionNodeMap),
                 0, ""
                 );
@@ -927,9 +934,9 @@ void MapGeneratorOptions::addGeneralIntProperty(const std::string name) {
   XnInt32 min, max, step, def;
   XnBool sauto;
   cap.GetRange(min, max, step, def, sauto);
-  std::ostringstream inf;
-  inf << "[" << min << "," << max << "]:" << step;
-  addProperty(name, "range", inf.str(), cap.Get(), 0, "");
+  addProperty(name,
+              utils::prop::Range{.min=(int)min, .max=(int)max, .step=(int)step},
+              (int)cap.Get(), 0, "");
 }
 
 //##############################################################################
@@ -1017,7 +1024,7 @@ ImageGeneratorOptions::ImageGeneratorOptions(xn::ImageGenerator* generator)
       value = "rgb24";
   }
 
-  addProperty("Pixel Format", "menu", format.str(), value,
+  addProperty("Pixel Format", utils::prop::menuFromCsv(format.str()), value,
               0, "The pixel format of the aquired image.");
 
   Configurable::registerCallback(

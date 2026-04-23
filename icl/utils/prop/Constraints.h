@@ -68,6 +68,35 @@ namespace icl::utils::prop {
   /// the ill-behaved `Menu<const char*>`.
   Menu(std::initializer_list<const char*>) -> Menu<std::string>;
 
+  /// Build a `Menu<std::string>` from a comma-separated runtime string.
+  ///
+  /// Used to migrate legacy call sites where the menu's choice list was
+  /// a named constant (`const char* ARITH_MENU = "add,sub,mul,div"`) or
+  /// computed at runtime (grabber enumerating supported formats):
+  ///
+  /// ```
+  ///   addProperty("op", prop::menuFromCsv(ARITH_MENU), arithName(t));
+  ///   addProperty("format", prop::menuFromCsv(grabber.getFormats()), cur);
+  /// ```
+  ///
+  /// Empty tokens (leading / trailing / doubled separators) are dropped;
+  /// whitespace around each token is trimmed.
+  inline Menu<std::string> menuFromCsv(std::string_view csv, char sep = ',') {
+    std::vector<std::string> v;
+    auto is_space = [](unsigned char c) { return c == ' ' || c == '\t' || c == '\n' || c == '\r'; };
+    std::size_t start = 0;
+    for (std::size_t i = 0; i <= csv.size(); ++i) {
+      if (i == csv.size() || csv[i] == sep) {
+        std::string piece(csv.substr(start, i - start));
+        while (!piece.empty() && is_space(static_cast<unsigned char>(piece.front()))) piece.erase(0, 1);
+        while (!piece.empty() && is_space(static_cast<unsigned char>(piece.back())))  piece.pop_back();
+        if (!piece.empty()) v.push_back(std::move(piece));
+        start = i + 1;
+      }
+    }
+    return Menu<std::string>(std::move(v));
+  }
+
   /// Boolean flag (checkbox).  Stored value is `bool`.
   struct Flag { using value_type = bool; };
 

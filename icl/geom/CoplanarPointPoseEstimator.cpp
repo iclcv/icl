@@ -104,7 +104,7 @@ namespace icl::geom {
     for(int i=0;i<2;++i){
       std::string pfx = i ? "RANSAC." : "";
       PoseEstimationAlgorithm ua = i ? spec.poseEstimationDuringSampling : a;
-      addProperty(pfx+"algorithm","menu",get_all_algorithms(),algorithm_to_string(ua),0,
+      addProperty(pfx+"algorithm", prop::menuFromCsv(get_all_algorithms()), algorithm_to_string(ua), 0,
                   "Specifies the used algorithm:\n"
                   "HomographyBasedOnly: straight forward least-square based\n"
                   "SamplingCoarse:  Use exhaustive sampling around the result\n"
@@ -123,7 +123,7 @@ namespace icl::geom {
     addProperty("sampling interval",prop::Range{.min=-3.14f, .max=3.14f}, data->samplingInterval,0,
                 "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
                 "Defines the angle search range for exhaustive search");
-    addProperty("sampling steps","int","[1,100000]:1",data->samplingSteps,0,
+    addProperty("sampling steps",utils::prop::Range{.min=1, .max=100000, .step=1, .ui=utils::prop::UI::Spinbox}, data->samplingSteps,0,
                 "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
                 "Defines the number of coarse steps for exhaustive sampling.");
     addProperty("sampling substeps",prop::Range{.min=1, .max=100, .ui=prop::UI::Spinbox}, data->samplingSubSteps,0,

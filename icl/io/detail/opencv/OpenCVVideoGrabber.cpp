@@ -82,7 +82,12 @@ namespace icl::io {
                                    .max=(float)data->cvc->get(cv::CAP_PROP_FRAME_COUNT),
                                    .step=1.f},
                 (float)data->cvc->get(cv::CAP_PROP_POS_FRAMES), 0, "");
-    addProperty("pos_avi_ratio", "info", "[0,1]:"+str(data->cvc->get(cv::CAP_PROP_FRAME_COUNT) / data->cvc->get(cv::CAP_PROP_FPS)), data->cvc->get(cv::CAP_PROP_POS_AVI_RATIO), 100, "");
+    // NB: legacy call had a non-empty "info" string ("[0,1]:<float>") —
+    // that extra info grammar isn't representable with prop::Info{} (which
+    // carries no info payload).  The info text was not meaningfully read
+    // by qt::Prop for "info" type anyway, so drop it.
+    addProperty("pos_avi_ratio", prop::Info{},
+                str(data->cvc->get(cv::CAP_PROP_POS_AVI_RATIO)), 100, "");
     addProperty("size", prop::Info{}, str(data->size), 0, "");
     addProperty("format", prop::Info{}, "RGB", 0, "");
     addProperty("fourcc", prop::Info{}, fourCCStringFromDouble(data->cvc->get(cv::CAP_PROP_FOURCC)), 0, "");

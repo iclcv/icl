@@ -97,8 +97,8 @@ namespace icl::filter {
   BaseFFTOp::BaseFFTOp(bool inverse, ResultMode rm, SizeAdaptionMode sam,
                        bool shift, bool forceDFT)
     : m_data(new Data(inverse, rm, sam, shift, forceDFT)) {
-    addProperty("result mode","menu",RESULT_MODE_MENU,resultModeName(rm));
-    addProperty("size adaption","menu",SIZE_ADAPTION_MENU,sizeAdaptionName(sam));
+    addProperty("result mode",utils::prop::menuFromCsv(RESULT_MODE_MENU), resultModeName(rm));
+    addProperty("size adaption",utils::prop::menuFromCsv(SIZE_ADAPTION_MENU), sizeAdaptionName(sam));
     addProperty("fft shift",utils::prop::Flag{}, shift);
     addProperty("force DFT",utils::prop::Flag{}, forceDFT);
     registerCallback([this](const Property &p){

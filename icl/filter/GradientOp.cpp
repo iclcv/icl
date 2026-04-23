@@ -42,7 +42,7 @@ namespace icl::filter {
 
   GradientOp::GradientOp(Mode mode)
     : m_mode(mode), m_normalize(true), m_data(new Data){
-    addProperty("mode","menu",MODE_MENU,modeName(mode));
+    addProperty("mode",utils::prop::menuFromCsv(MODE_MENU), modeName(mode));
     addProperty("normalize",utils::prop::Flag{}, m_normalize);
     registerCallback([this](const Property &p){
       if(p.name == "mode")           m_mode = parseMode(p.value);

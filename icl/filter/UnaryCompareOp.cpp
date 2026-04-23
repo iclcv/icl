@@ -52,7 +52,7 @@ namespace icl::filter {
     : ImageBackendDispatching(prototype()),
       m_eOpType(ot), m_dValue(value), m_dTolerance(tolerance)
   {
-    addProperty("op","menu",OP_MENU,opName(ot));
+    addProperty("op",utils::prop::menuFromCsv(OP_MENU), opName(ot));
     addProperty("value",utils::prop::Range{.min=-255, .max=512}, value);
     addProperty("tolerance",utils::prop::Range{.min=0, .max=512}, tolerance);
     registerCallback([this](const Property &p){ property_callback(p); });

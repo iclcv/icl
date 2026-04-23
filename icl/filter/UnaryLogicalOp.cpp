@@ -49,7 +49,7 @@ namespace icl::filter {
     : ImageBackendDispatching(prototype()),
       m_eOpType(t), m_dValue(val)
   {
-    addProperty("op","menu",LOGIC_MENU,logicName(t));
+    addProperty("op",utils::prop::menuFromCsv(LOGIC_MENU), logicName(t));
     addProperty("value",utils::prop::Range{.min=0, .max=255, .ui=utils::prop::UI::Spinbox}, val);
     registerCallback([this](const Property &p){
       if(p.name == "op")        m_eOpType = parseLogic(p.value);

@@ -27,7 +27,7 @@ PylonCameraOptions::PylonCameraOptions(
   m_OmitDoubleFrames = true;
 
   // Configurable
-  addProperty("size", "menu", default_sizes, getValue("Width") + "x" + getValue("Height"), 0, "");
+  addProperty("size", utils::prop::menuFromCsv(default_sizes), getValue("Width") + "x" + getValue("Height"), 0, "");
   addProperty("format", getType("PixelFormat"), getInfo("PixelFormat"), getValue("PixelFormat"), 0, "");
   addProperty("OmitDoubleFrames", prop::Flag{}, m_OmitDoubleFrames, 0, "");
 

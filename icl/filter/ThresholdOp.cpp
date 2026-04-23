@@ -66,7 +66,7 @@ namespace icl::filter {
       m_eType(ttype), m_fLowThreshold(lowThreshold),
       m_fHighThreshold(highThreshold), m_fLowVal(lowVal), m_fHighVal(highVal)
   {
-    addProperty("type","menu",TYPE_MENU,typeName(ttype));
+    addProperty("type",utils::prop::menuFromCsv(TYPE_MENU), typeName(ttype));
     addProperty("low threshold",utils::prop::Range{.min=-255, .max=255}, lowThreshold);
     addProperty("high threshold",utils::prop::Range{.min=-255, .max=255}, highThreshold);
     addProperty("low val",utils::prop::Range{.min=0, .max=255}, lowVal);

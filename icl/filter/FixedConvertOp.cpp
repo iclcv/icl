@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/filter/FixedConvertOp.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/CoreFunctions.h>
 
 using namespace icl::utils;
@@ -41,8 +42,8 @@ namespace icl::filter {
     : m_params(p), m_depth(d), m_converter(applyToROIOnly) {
     // Expose the depth and format knobs — size/channels is driven by the
     // constructor and playground's source controls already cover those axes.
-    addProperty("output depth","menu",FC_DEPTH_MENU,fcDepthName(d));
-    addProperty("output format","menu",FC_FORMAT_MENU,fcFormatName(p.getFormat()));
+    addProperty("output depth",utils::prop::menuFromCsv(FC_DEPTH_MENU), fcDepthName(d));
+    addProperty("output format",utils::prop::menuFromCsv(FC_FORMAT_MENU), fcFormatName(p.getFormat()));
     registerCallback([this](const Property &prop){
       if(prop.name == "output depth")       m_depth = parse<depth>(prop.value);
       else if(prop.name == "output format") m_params.setFormat(parse<format>(prop.value));

@@ -725,7 +725,9 @@ namespace icl::io {
   void V4L2Grabber::addProperties(){
     addProperty("device name",prop::Info{}, impl->deviceNameInfo);
     addProperty("avoid doubled frames", prop::Flag{}, impl->avoidDoubleFrames, 0, "");
-    addProperty("format", "menu", clearFormatString(impl->getSupportedFormats()), impl->get_current_format(), 0, "The image format.");
+    addProperty("format",
+                prop::menuFromCsv(clearFormatString(impl->getSupportedFormats())),
+                impl->get_current_format(), 0, "The image format.");
     addProperty("size", prop::Menu{"ajusted by format"}, "", 0, "This is set by the format-property.");
     for(Impl::PMap::const_iterator it=impl->supportedProperties.begin();
         it != impl->supportedProperties.end();++it){

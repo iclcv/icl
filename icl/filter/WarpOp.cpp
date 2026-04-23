@@ -55,7 +55,7 @@ namespace icl::filter {
     m_allowWarpMapScaling(allowWarpMapScaling), m_scaleMode(mode) {
     warpMap.deepCopy(&m_warpMap);
     prepare_warp_table_inplace(m_warpMap);
-    addProperty("interpolation","menu",WARP_INTERP_MENU,warpInterpName(mode));
+    addProperty("interpolation",utils::prop::menuFromCsv(WARP_INTERP_MENU), warpInterpName(mode));
     addProperty("allow warp map scaling",utils::prop::Flag{}, allowWarpMapScaling);
     registerCallback([this](const Property &p){
       if(p.name == "interpolation")               m_scaleMode = parseWarpInterp(p.value);

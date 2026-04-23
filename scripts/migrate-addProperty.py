@@ -80,6 +80,12 @@ def normalize_range(min_s: str, max_s: str, step_s: str | None):
 def rewrite_line(line: str, counts: dict) -> str:
     orig = line
 
+    # Skip adaptProperty() calls: they use the same type/info grammar
+    # as addProperty but take 4 strings (no typed-constraint overload),
+    # so rewriting breaks the build.
+    if 'adaptProperty(' in line:
+        return line
+
     # flag: "flag", ""
     line = re.sub(
         r'"flag"\s*,\s*""\s*,\s*',
@@ -131,13 +137,31 @@ def rewrite_line(line: str, counts: dict) -> str:
         _menu,
         line
     )
+    # menu with named constant or computed choice list:
+    #   "menu", IDENTIFIER_or_expr, val
+    # Route through menuFromCsv at runtime.  The expression can be any
+    # sequence of tokens not containing an opening-comma at depth 0;
+    # approximated here as a call/name/member-access without commas.
+    # Conservative: match only simple `IDENT` or `IDENT(...)` / `IDENT.method()`
+    # so we don't accidentally break something.
+    def _menu_ident(m):
+        counts['menu-ident'] = counts.get('menu-ident', 0) + 1
+        return f'{Q}menuFromCsv({m.group(1)}), '
+    line = re.sub(
+        r'"menu"\s*,\s*([A-Za-z_]\w*(?:\s*->\s*\w+\(\s*\))?(?:\s*\.\s*\w+\(\s*\))?)\s*,\s*',
+        _menu_ident,
+        line
+    )
     # range / range:slider with step: "range[:slider]", "[A,B]:S"
+    # Separator tolerant: accept either comma or colon between min/max.
+    # (Some legacy sites used ":" — likely copy-paste from the step suffix
+    # grammar `[A,B]:S` — even though "," is the intended separator.)
     def _range_step_slider(m):
         counts['range:slider+step'] = counts.get('range:slider+step', 0) + 1
         mn, mx, st = normalize_range(m.group(1), m.group(2), m.group(3))
         return f'{Q}Range{{.min={mn}, .max={mx}, .step={st}}}, '
     line = re.sub(
-        r'"range(?::slider)?"\s*,\s*"\[\s*([^,\]]+?)\s*,\s*([^,\]]+?)\s*\]\s*:\s*([^"\]]+?)\s*"\s*,\s*',
+        r'"range(?::slider)?"\s*,\s*"\[\s*([^,:\]]+?)\s*[,:]\s*([^,:\]]+?)\s*\]\s*:\s*([^"\]]+?)\s*"\s*,\s*',
         _range_step_slider,
         line
     )
@@ -147,7 +171,7 @@ def rewrite_line(line: str, counts: dict) -> str:
         mn, mx, _ = normalize_range(m.group(1), m.group(2), None)
         return f'{Q}Range{{.min={mn}, .max={mx}}}, '
     line = re.sub(
-        r'"range(?::slider)?"\s*,\s*"\[\s*([^,\]]+?)\s*,\s*([^,\]]+?)\s*\]"\s*,\s*',
+        r'"range(?::slider)?"\s*,\s*"\[\s*([^,:\]]+?)\s*[,:]\s*([^,:\]]+?)\s*\]"\s*,\s*',
         _range_slider,
         line
     )
@@ -180,6 +204,18 @@ def rewrite_line(line: str, counts: dict) -> str:
     line = re.sub(
         r'"float"\s*,\s*"\[\s*([^,\]]+?)\s*,\s*([^,\]]+?)\s*\]"\s*,\s*',
         _float,
+        line
+    )
+    # int with step: "int", "[A,B]:S"
+    def _int_step(m):
+        counts['int+step'] = counts.get('int+step', 0) + 1
+        mn = m.group(1).strip()
+        mx = m.group(2).strip()
+        st = m.group(3).strip()
+        return f'{Q}Range{{.min={mn}, .max={mx}, .step={st}, .ui={Q}UI::Spinbox}}, '
+    line = re.sub(
+        r'"int"\s*,\s*"\[\s*([^,:\]]+?)\s*,\s*([^,:\]]+?)\s*\]\s*:\s*([^"\]]+?)\s*"\s*,\s*',
+        _int_step,
         line
     )
     # int: same shape as range:spinbox, no step

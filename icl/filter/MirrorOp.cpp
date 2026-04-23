@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/filter/MirrorOp.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 
@@ -28,7 +29,7 @@ namespace icl::filter {
    MirrorOp::MirrorOp (axis eAxis) :
       m_eAxis (eAxis)
    {
-     addProperty("axis", "menu", AXIS_MENU, axisName(eAxis));
+     addProperty("axis", utils::prop::menuFromCsv(AXIS_MENU), axisName(eAxis));
      registerCallback([this](const Property &p){
        if(p.name == "axis") m_eAxis = parseAxis(p.value);
      });

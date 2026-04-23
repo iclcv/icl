@@ -58,8 +58,8 @@ namespace icl::io {
     if(m_drawSize == Size::QVGA) sizevalue = "QVGA";
     if(m_drawSize == Size::VGA) sizevalue = "VGA";
     if(m_drawSize == Size::SVGA) sizevalue = "SVGA";
-    addProperty("blob-size", "menu",
-                "5% of image size,10% of image size,20% of image size",
+    addProperty("blob-size",
+                prop::Menu{"5% of image size", "10% of image size", "20% of image size"},
                 blobvalue, 0, "The size of the blob.");
     addProperty("blob-red", prop::Range{.min=0, .max=255, .step=1}, m_color[0], 0,
                 "The amount of red color in the blob.");
@@ -67,7 +67,7 @@ namespace icl::io {
                 "The amount of green color in the blob.");
     addProperty("blob-blue", prop::Range{.min=0, .max=255, .step=1}, m_color[2], 0,
                 "The amount of blue color in the blob.");
-    addProperty("max-speed", "value-list", "0.1,0.2,0.3,0.4", m_maxV.x, 0,
+    addProperty("max-speed", prop::Menu{0.1f, 0.2f, 0.3f, 0.4f}, m_maxV.x, 0,
                 "The blobs maximum speed.");
     addProperty("set-to-center", prop::Command{}, {}, 0,
                 "Resets the blob to the image center.");
@@ -75,9 +75,10 @@ namespace icl::io {
                 "x:" + str(m_x.x*m_drawSize.width) + " y:"
                 + str(m_x.y*m_drawSize.height),
                 10, "The current position of the blob.");
-    addProperty("format", "menu",
-                "formatRGB-depth8u,formatRGB-depth32f,formatGray-depth8u,"
-                "formatGray-depth32f,formatYUV-depth8u",
+    addProperty("format",
+                prop::Menu{"formatRGB-depth8u", "formatRGB-depth32f",
+                           "formatGray-depth8u", "formatGray-depth32f",
+                           "formatYUV-depth8u"},
                 str(m_drawFormat) + "-" + str(m_drawDepth), 0,
                 "The image format.");
     addProperty("size", prop::Menu{"VGA", "SVGA", "QVGA"}, sizevalue, 0,

@@ -17,10 +17,12 @@ namespace icl::io {
       throw ICLException("unable to create OpenCVCamGrabberImpl with device index "
                          + str(dev) + ": invalid device ID");
     }
-    addProperty("size", "menu", "160x120,320x200,320x240,480x320,640x350,"
-                "640x480,800x480,800x600,960x540,960x640,1024x768,1152x864,1200x800"
-                ",1280x720,1280x800,1440x900,1280x960,1280x1024,1600x900,1400x1050,"
-                "1600x1050,1600x1200",
+    addProperty("size",
+                prop::Menu{"160x120","320x200","320x240","480x320","640x350",
+                           "640x480","800x480","800x600","960x540","960x640",
+                           "1024x768","1152x864","1200x800","1280x720","1280x800",
+                           "1440x900","1280x960","1280x1024","1600x900","1400x1050",
+                           "1600x1050","1600x1200"},
                 str(cvc->get(cv::CAP_PROP_FRAME_WIDTH))+"x"
                 +str(cvc->get(cv::CAP_PROP_FRAME_HEIGHT)), 0, "");
     addProperty("brightness", prop::Range{.min=0, .max=100, .step=1}, 

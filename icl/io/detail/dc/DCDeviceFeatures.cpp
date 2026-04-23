@@ -213,22 +213,22 @@ namespace icl::io{
           } else {
             value = str(info->value);
           }
-          addProperty(name, "menu", getSpecialInfoString(name), value, 0, "");
+          addProperty(name, prop::menuFromCsv(getSpecialInfoString(name)), value, 0, "");
         }else{
           dc1394feature_modes_t &modes = info->modes;
           for(unsigned int i=0;i<modes.num;++i){
             if(modes.modes[i] == DC1394_FEATURE_MODE_MANUAL){
               if(name == "WHITE_BALANCE"){
-                addProperty(name+"_BU", "range",
-                            str(SteppingRange<int>(info->min, info->max,1)),
-                            info->BU_value, 0, "");
-                addProperty(name+"_RV", "range",
-                            str(SteppingRange<int>(info->min, info->max,1)),
-                            info->RV_value, 0, "");
+                addProperty(name+"_BU",
+                            prop::Range{.min=(int)info->min, .max=(int)info->max, .step=1},
+                            (int)info->BU_value, 0, "");
+                addProperty(name+"_RV",
+                            prop::Range{.min=(int)info->min, .max=(int)info->max, .step=1},
+                            (int)info->RV_value, 0, "");
               } else {
-                addProperty(name, "range",
-                            str(SteppingRange<int>(info->min, info->max,1)),
-                            info->value, 0, "");
+                addProperty(name,
+                            prop::Range{.min=(int)info->min, .max=(int)info->max, .step=1},
+                            (int)info->value, 0, "");
               }
             } else if(modes.modes[i] == DC1394_FEATURE_MODE_AUTO){
               std::string value;

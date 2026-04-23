@@ -59,7 +59,7 @@ namespace icl::filter {
     : ImageBackendDispatching(prototype()),
       m_eOpType(t), m_dValue(val)
   {
-    addProperty("op","menu",ARITH_MENU,arithName(t));
+    addProperty("op",utils::prop::menuFromCsv(ARITH_MENU), arithName(t));
     addProperty("value",utils::prop::Range{.min=-255, .max=512}, val);
     registerCallback([this](const Property &p){
       if(p.name == "op")        m_eOpType = parseArith(p.value);

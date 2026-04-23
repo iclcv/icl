@@ -146,7 +146,7 @@ namespace icl::geom {
                            PointCloudCreator::DistanceToCamPlane);
     }
 
-    addProperty("focal length factor","range","[0.8:1.2]",1);
+    addProperty("focal length factor",utils::prop::Range{.min=0.8f, .max=1.2f}, 1);
     addProperty("positioning fix",prop::Range{.min=-50, .max=50}, 0);
     addProperty("re-use exisiting images",prop::Flag{}, false, 0,
                 "if set, the grabber will re-create the point-cloud without grabbing new images");
@@ -155,9 +155,9 @@ namespace icl::geom {
     addProperty("pp.enable temporal smoothing",prop::Flag{}, false);
     addProperty("pp.enable gaussian",prop::Flag{}, false);
 
-    addProperty("pp.temporal smoothing frames","range","[2:20]:1",10);
+    addProperty("pp.temporal smoothing frames",utils::prop::Range{.min=2, .max=20, .step=1}, 10);
     addProperty("pp.temporal smoothing null",prop::Menu{0, -1, 2047}, 0);
-    addProperty("pp.temporal smoothing threshold","range","[1:100]:1",5);
+    addProperty("pp.temporal smoothing threshold",utils::prop::Range{.min=1, .max=100, .step=1}, 5);
     addProperty("pp.spacial filter size",prop::Menu{3, 5, 7, 9, 11, 13, 15, 17, 19, 21}, 5);
 
     m_data->temporalSmoothing.reset(new MotionSensitiveTemporalSmoothing(0,5));

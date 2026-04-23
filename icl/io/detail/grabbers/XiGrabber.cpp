@@ -230,8 +230,8 @@ namespace icl{
       xiGetParamInt(m_data->xiH, XI_PRM_HEIGHT XI_PRM_INFO_MAX, &maxh);
       xiGetParamInt(m_data->xiH, XI_PRM_OFFSET_X XI_PRM_INFO_INCREMENT, &xstep);
       xiGetParamInt(m_data->xiH, XI_PRM_OFFSET_Y XI_PRM_INFO_INCREMENT, &ystep);
-      addProperty("roi.x","range",str("[0,")+str(maxw)+"]:"+str(xstep),0);
-      addProperty("roi.y","range",str("[0,")+str(maxh)+"]:"+str(ystep),0);
+      addProperty("roi.x", utils::prop::Range{.min=0, .max=maxw, .step=xstep}, 0);
+      addProperty("roi.y", utils::prop::Range{.min=0, .max=maxh, .step=ystep}, 0);
 
       m_data->addRangeProperty("int",this, XI_PRM_WIDTH, "roi.width");
       m_data->addRangeProperty("int",this, XI_PRM_HEIGHT, "roi.height");

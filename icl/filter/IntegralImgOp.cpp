@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/filter/IntegralImgOp.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/Image.h>
 
@@ -25,7 +26,7 @@ namespace icl::filter {
 
   IntegralImgOp::IntegralImgOp(depth d):
     m_integralImageDepth(d),m_buf(0){
-    addProperty("integral image depth","menu",INTEGRAL_DEPTH_MENU,depthName(d));
+    addProperty("integral image depth",utils::prop::menuFromCsv(INTEGRAL_DEPTH_MENU), depthName(d));
     registerCallback([this](const Property &p){
       if(p.name == "integral image depth")
         m_integralImageDepth = parse<depth>(p.value);

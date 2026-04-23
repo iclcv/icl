@@ -487,20 +487,20 @@ namespace icl::markers {
     data(new Data) {
     data->dynamicQuadColor = dynamic;
 
-    addProperty("pp.filter", "menu",
-                "none,median,erosion,dilatation,opening,closing", "none", 0,
-                "Post processing filter.");
+    addProperty("pp.filter",
+                prop::Menu{"none", "median", "erosion", "dilatation", "opening", "closing"},
+                std::string("none"), 0, "Post processing filter.");
     addProperty("pp.mask size", prop::Menu{"3x3", "5x5"}, "3x3", 0,
                 "Mask size for post processing.");
 
     if (dynamic) {
-      addProperty("quad value", "menu",
-                  str(BlackOnly) + "," + str(WhiteOnly) + ","
-                  + str(BlackAndWhite), str(c), 0,
+      addProperty("quad value",
+                  prop::menuFromCsv(str(BlackOnly) + "," + str(WhiteOnly) + "," + str(BlackAndWhite)),
+                  str(c), 0,
                   "Defines whether the marker borders are black, white or mixed");
     }
-    addProperty("contour approximation algorithm", "menu",
-                "CSS,RDP", "RDP", 0,
+    addProperty("contour approximation algorithm", prop::Menu{"CSS", "RDP"},
+                std::string("RDP"), 0,
                 "Algorithm for approximating contours.");
 
     addProperty("optimize edges", prop::Flag{}, "true", 0,

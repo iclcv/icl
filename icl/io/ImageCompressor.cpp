@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/ImageCompressor.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/compression-plugins/CompressionPlugin.h>
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 
@@ -227,7 +228,7 @@ namespace icl::io {
       menu += n;
       first = false;
     }
-    addProperty("mode", "menu", menu, spec.mode, 0,
+    addProperty("mode", utils::prop::menuFromCsv(menu), spec.mode, 0,
                 "Active codec. The receiver auto-detects the codec from "
                 "the envelope, so it does NOT need to match this setting. "
                 "Each codec exposes its own tunables as sibling properties; "

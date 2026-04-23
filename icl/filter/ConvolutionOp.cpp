@@ -60,7 +60,7 @@ namespace icl::filter {
   }
 
   void ConvolutionOp::addConvProperties(const ConvolutionKernel &kernel, bool forceUnsignedOutput){
-    addProperty("kernel","menu",KERNEL_MENU,fixedTypeName(kernel.getFixedType()));
+    addProperty("kernel",utils::prop::menuFromCsv(KERNEL_MENU), fixedTypeName(kernel.getFixedType()));
     addProperty("force unsigned output",utils::prop::Flag{}, forceUnsignedOutput);
   }
 
