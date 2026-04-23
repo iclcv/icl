@@ -110,61 +110,11 @@ using namespace icl::core;
 
 namespace icl{
   namespace qt{
-    namespace{
-      struct VolatileUpdater : public QTimer{
-        std::string prop;
-        GUI &gui;
-        Configurable &conf;
-        LabelHandle *l;
-        VolatileUpdater(int msec, const std::string &prop, GUI &gui, Configurable &conf):
-          prop(prop),gui(gui),conf(conf),l(0){
-          setInterval(msec);
-        }
-        virtual void timerEvent(QTimerEvent * e){
-          if(!l){
-            l = &gui.get<LabelHandle>("#i#"+prop);
-          }
-          (***l).setText(conf.prop(prop).value.str().c_str());
-          (***l).update();
-          QApplication::processEvents();
-        }
-      };
-
-      /// Polls a Configurable's "image" property payload and pushes it into
-      /// the Prop widget's embedded ImageHandle. Mirrors VolatileUpdater but
-      /// for the "image" property type instead of "info" labels.
-      struct VolatileImageUpdater : public QTimer{
-        std::string prop;
-        GUI &gui;
-        Configurable &conf;
-        ImageHandle *h;
-        VolatileImageUpdater(int msec, const std::string &prop, GUI &gui, Configurable &conf):
-          prop(prop),gui(gui),conf(conf),h(0){
-          setInterval(msec);
-        }
-        virtual void timerEvent(QTimerEvent * e){
-          if(!h){
-            h = &gui.get<ImageHandle>("#img#"+prop);
-          }
-          // Properties registered via `addProperty<core::prop::ImageView>(...)`
-          // keep the live core::Image in Property::typed_value.  Inspect the
-          // any's type_info directly to avoid the AutoParse cascade.
-          try{
-            auto handle = conf.prop(prop);
-            if(handle.typed_value.type() == typeid(core::Image)){
-              core::Image img = std::any_cast<core::Image>(handle.typed_value);
-              if(!img.isNull()){
-                *h = img;
-                h->render();
-              }
-            }
-          }catch(...){
-            // prop() threw (missing property) or any_cast mismatch — skip silently;
-            // the Op is responsible for matching typed_value to core::Image.
-          }
-        }
-      };
-    }
+    // VolatileUpdater / VolatileImageUpdater retired — Info and ImageView
+    // properties update through the unified callback push channel
+    // (enqueuePropertyUpdate → flushPendingPropertyUpdates → applyPropertyToWidget).
+    // Writers that don't want to fire callbacks (high-frequency info
+    // updates from grab paths) use Configurable::setPropertyValueSilent.
 
     static const std::string &gen_params(){
 
@@ -284,9 +234,6 @@ namespace icl{
     // quite complex component for embedded property component 'prop'
     struct ConfigurableGUIWidget : public GUIWidget{
 
-      // Holds both VolatileUpdater (info labels) and VolatileImageUpdater
-      // (image previews) polymorphically through the QTimer base.
-      std::vector<std::shared_ptr<QTimer> > timers;
       Configurable *conf;
       GUI gui;
       GUI sub_gui;
@@ -426,9 +373,9 @@ namespace icl{
           ostr << '\1' << handle;
           gui << Label(h.as<std::string>())
                     .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
-          if(h.volatileness){
-            timers.push_back(std::make_shared<VolatileUpdater>(h.volatileness,p.full,timerGUI,*conf));
-          }
+          // Refreshed through the callback push channel — writers that
+          // don't want to fire callbacks on every update use
+          // setPropertyValueSilent instead.
         }else if(std::any_cast<up::Flag>(&c)){
           std::string handle = "#f#"+p.full;
           ostr << '\1' << handle;
@@ -447,17 +394,15 @@ namespace icl{
           Color col = h.as<Color>();
           gui << ColorSelect(col[0],col[1],col[2]).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
         }else if(std::any_cast<cp::ImageView>(&c)){
-          // Volatile read-only image preview.  Op writes
-          // typed_value (core::Image) via setPropertyValueTyped; the
-          // VolatileImageUpdater polls it on the volatileness timer
-          // (defaults to 100ms if the Op didn't set one).
-          // Intentionally NOT added to the callback list — ImageHandle
-          // is output-only and rejects GUI::ComplexCallback
-          // registrations.
+          // Read-only image preview.  Op writes the live core::Image
+          // into typed_value via setPropertyValueTyped (or the
+          // prop(name).value = img proxy); our property-change
+          // callback posts a GUI-thread update that pushes the
+          // Image into the ImageHandle.  Intentionally NOT added to
+          // the callback-exec list — ImageHandle is output-only and
+          // rejects GUI::ComplexCallback registrations.
           std::string handle = "#img#"+p.full;
           gui << Display().tooltip(tt).handle(handle).minSize(12,8).label(p.half);
-          int volatileness = h.volatileness ? h.volatileness : 100;
-          timers.push_back(std::make_shared<VolatileImageUpdater>(volatileness,p.full,timerGUI,*conf));
         }else{
           ERROR_LOG("unable to create GUI-component for property \"" << p.full
                     << "\" (no constraint recognised; legacy type=\""
@@ -645,9 +590,6 @@ namespace icl{
         if(cblist.size() > 1){
           gui.registerCallback([this](const std::string &handle) { exec(handle); },cblist.substr(1),'\1');
         }
-        for(unsigned int i=0;i<timers.size();++i){
-          timers[i]->start();
-        }
 
         // Property-change callback: any thread may fire this.  Coalesce
         // updates in `pendingPropertyUpdates`; schedule at most one
@@ -738,10 +680,22 @@ namespace icl{
           gui["#S#"+name] = h.as<std::string>();
         }else if(std::any_cast<cp::Color>(&c)){
           gui["#C#"+name] = h.as<Color>();
+        }else if(std::any_cast<cp::ImageView>(&c)){
+          // Op wrote a core::Image into typed_value.  Push it into the
+          // Display / ImageHandle.  Inspect the any's type_info rather
+          // than going through AutoParse — avoids the string cascade
+          // and silently skips if the writer stored something that
+          // isn't a core::Image.
+          if(h.typed_value.type() == typeid(core::Image)){
+            core::Image img = std::any_cast<core::Image>(h.typed_value);
+            if(!img.isNull()){
+              auto &imgHandle = gui.get<ImageHandle>("#img#"+name);
+              imgHandle = img;
+              imgHandle.render();
+            }
+          }
         }
         // up::Command — nothing to push.
-        // cp::ImageView — separate path (VolatileImageUpdater, will
-        // migrate to the push channel in a follow-up commit).
 
         deactivateExec = false;
         processingProperty = "";
