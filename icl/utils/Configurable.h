@@ -462,6 +462,26 @@ namespace icl::utils {
         the function forwards to that configurable */
     virtual void setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value);
 
+    /// Typed setter — stores `v` directly into Property::typed_value,
+    /// fires callbacks.  Bypasses the string round-trip that
+    /// `setPropertyValue(name, AutoParse<std::string>)` pays (stringify
+    /// caller's T → parse via adapter back to declared type).
+    ///
+    /// Prefer this over the string setter when you already have the
+    /// typed value in hand:
+    /// ```
+    ///   c.setPropertyValueTyped("gain", std::any(0.5f));    // direct
+    ///   c.setPropertyValue("gain", str(0.5f));              // string round-trip
+    /// ```
+    ///
+    /// For properties with a known `constraint`, the stored any is
+    /// expected to match the constraint's value_type.  Downstream
+    /// readers (AutoParse<std::any>) will any_cast<T> off typed_value
+    /// directly in that case — zero parse.  For unconstrained
+    /// properties (rare edge case), any std::any is accepted and
+    /// downstream reads go through the cascade.
+    virtual void setPropertyValueTyped(const std::string &propertyName, std::any v);
+
     /// sets the type-erased payload for a property (for non-string types like "image")
     /** Fires all registered callbacks, same as setPropertyValue. The caller is
         responsible for matching the payload's concrete type to the property's

@@ -383,6 +383,24 @@ namespace icl::utils {
     call_callbacks(propertyName, this);
   }
 
+  void Configurable::setPropertyValueTyped(const std::string &propertyName, std::any v){
+    Property &p = prop(propertyName);
+    if(p.configurable != this){
+      p.configurable->setPropertyValueTyped(propertyName.substr(p.childPrefix.length()),
+                                            std::move(v));
+    }else{
+      std::scoped_lock<std::recursive_mutex> lock(m_mutex);
+      // Stores the caller's typed value directly; no serialize/parse
+      // round-trip.  For properties with a constraint, the caller is
+      // expected to provide a value matching value_type so downstream
+      // reads any_cast<T> cleanly.  Mismatched types still work via
+      // AutoParse<any>'s cascade on the read side (numeric widen /
+      // parse-if-string), just with a slow path.
+      p.typed_value = std::move(v);
+    }
+    call_callbacks(propertyName, this);
+  }
+
   void Configurable::setPropertyPayload(const std::string &propertyName, std::any payload){
     // Thin wrapper over typed_value — the separate Property::payload
     // field retired in step 4c.  Kept as an API entry point for
