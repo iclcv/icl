@@ -254,7 +254,7 @@ namespace icl::io {
         const ImgBase* img = grabDisplay();
         updateProperties(img);
 
-        std::string print = getPropertyValue("print meta-data");
+        std::string print = prop("print meta-data").value;
         if(print != "disregard"){
           if(print == "to std::out"){
             std::cout << "image meta data: [" << img->getMetaData() << "]" << std::endl;

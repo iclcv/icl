@@ -289,8 +289,8 @@ namespace icl::io {
     case GRAB_DEPTH_IMAGE:{
         //m_impl->waitToAvoidDoubledFrames();
         Img32f &im = *m_impl->copyOutput(m_impl->dev->depthImage,m_impl->depthImage);
-        if(getPropertyValue("Flying pixels.remove")){
-          const float t = sqr(getPropertyValue("Flying pixels.dist threshold").as<float>());
+        if(prop("Flying pixels.remove").value){
+          const float t = sqr(prop("Flying pixels.dist threshold").as<float>());
           Channel32f c = im[0];
           const int w = c.getWidth()-1, h = c.getHeight()-1;
           for(int y=1;y<h;++y){

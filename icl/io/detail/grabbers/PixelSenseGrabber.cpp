@@ -174,7 +174,7 @@ namespace icl::io {
     ps_get_image( m_data->s40, m_data->image.begin(0) );
     int bc = ps_get_blobs( m_data->s40, m_data->blobs.data() );
     setPropertyValue("blobs found",bc);
-    if(getPropertyValue("visualize blobs")){
+    if(prop("visualize blobs").value){
 	Channel8u c = m_data->image[0];
 	for(int i=0;i<bc;++i){
 	  vis_bounding_box(c, m_data->blobs[i].bb_pos_x/2, m_data->blobs[i].bb_pos_y/2,

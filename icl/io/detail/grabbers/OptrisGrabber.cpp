@@ -309,7 +309,7 @@ namespace icl{
     }
 
     const core::ImgBase* OptrisGrabber::acquireDisplay(){
-      bool omitDoubledFrames = getPropertyValue("omit doubled frames");
+      bool omitDoubledFrames = prop("omit doubled frames").value;
 
       std::scoped_lock<std::recursive_mutex> lock(m_data->buffer.mutex);
       if(omitDoubledFrames){
@@ -325,12 +325,12 @@ namespace icl{
       const ImgBase *cvt = 0;
       if(m_data->buffer.mode == IR_IMAGE){
         cvt = m_data->convert_output(m_data->buffer.outBuf,
-                                     getPropertyValue("format"));
+                                     prop("format").value);
       }else{
         cvt = &m_data->buffer.visibleOutBuf;
       }
 
-      if(getPropertyValue("threshold output")){
+      if(prop("threshold output").value){
         static ImgBase *ltBuf = 0;
         m_data->lt.apply(cvt, &ltBuf);
         cvt = ltBuf;

@@ -50,7 +50,7 @@ namespace icl::io {
 
     dc1394color_filter_t bayerLayout = m_oDev.getBayerFilterLayout();
     if(static_cast<int>(bayerLayout) == 1){
-      std::string s = getPropertyValue("bayer-layout");
+      std::string s = prop("bayer-layout").value;
       if(s == "RGGB") bayerLayout = DC1394_COLOR_FILTER_RGGB;
       else if(s == "GBRG") bayerLayout = DC1394_COLOR_FILTER_GBRG;
       else if(s == "GRBG") bayerLayout = DC1394_COLOR_FILTER_GRBG;
