@@ -65,6 +65,7 @@ utils_headers = files(
   'UncopiedInstance.h',
   'Utils.h',
   'VisualizationDescription.h',
+  'Yaml.h',
 )
 
 # OpenCL wrappers — conditionally compiled; always-installed public
@@ -118,6 +119,10 @@ utils_sources = files(
   'Thread.cpp',
   'Time.cpp',
   'Timer.cpp',
+  'Yaml.cpp',
+  'detail/yaml/YamlEmitter.cpp',
+  'detail/yaml/YamlParser.cpp',
+  'detail/yaml/YamlScalar.cpp',
 )
 
 utils_deps = [thread_dep, zlib_dep, jpeg_dep, png_dep, dl_dep, m_dep, opencl_dep, glew_dep, openmp_dep]

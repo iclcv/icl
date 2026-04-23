@@ -4,6 +4,7 @@ test_sources = files(
   'test-any-map.cpp',
   'test-assign.cpp',
   'test-auto-parse.cpp',
+  'test-yaml.cpp',
   'test-plugin-registry.cpp',
   'test-prop-constraints.cpp',
   'test-math.cpp',
@@ -31,6 +32,7 @@ icl_tests_exe = executable('icl-tests',
   test_sources,
   dependencies: test_deps,
   include_directories: [root_inc, gen_inc],
+  cpp_args: ['-DICL_TEST_DATA_DIR="' + meson.current_source_dir() + '"'],
 )
 
 test('icl-tests', icl_tests_exe, timeout: 120)
