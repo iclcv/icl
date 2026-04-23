@@ -253,6 +253,14 @@ namespace icl{
       std::set<std::string> pendingPropertyUpdates;
       bool updateScheduled = false;
 
+      // Parallel coalescing for child-set rebuilds.  Fires from
+      // Configurable::onChildSetChanged when add/removeChildConfigurable
+      // happens at runtime (codec swap on ImageCompressor, backend
+      // swap on GenericGrabber, ...).  Rebuild tears the widget tree
+      // down and walks the property list again — always on the GUI
+      // thread, at most once per event-loop tick.
+      bool rebuildScheduled = false;
+
       struct StSt{
         std::string full,half;
         StSt(const std::string &full, const std::string &half):full(full),half(half){}
@@ -446,13 +454,37 @@ namespace icl{
         }
         if(!conf) throw GUISyntaxErrorException(def.defString(),"No Configurable with ID "+def.param(0)+" registered");
 
-        std::vector<std::string> props = conf->getPropertyListWithoutDeactivated();
-        std::map<std::string,std::vector<StSt>, std::less<>> sections;
-        std::map<int,std::string> sections_ordering;
-
         if(def.hasToolTip()){
           WARNING_LOG("tooltip is not supported for the Configurable GUI component!");
         }
+
+        buildFromConf();
+
+        // Property-change callback: any thread may fire this.  Coalesce
+        // updates in `pendingPropertyUpdates`; schedule at most one
+        // GUI-thread flush at a time via QMetaObject::invokeMethod
+        // with Qt::QueuedConnection.
+        conf->registerCallback([this](const Configurable::Property &p){
+          enqueuePropertyUpdate(p.name);
+        });
+
+        // Child-set callback: fires when addChildConfigurable /
+        // removeChildConfigurable runs after the Configurable is
+        // already wired to this widget.  Trigger a full rebuild so
+        // the newly added / removed child's properties appear /
+        // disappear live.  Coalesced to one rebuild per event-loop
+        // tick.
+        conf->onChildSetChanged([this]{ enqueueRebuild(); });
+      }
+
+      // Build the widget tree from conf's current property list.
+      // Called from the constructor and on rebuild after a child-set
+      // change.  Kept as a member so we can walk the exact property
+      // list `conf` exposes *now*, not a snapshot.
+      void buildFromConf(){
+        std::vector<std::string> props = conf->getPropertyListWithoutDeactivated();
+        std::map<std::string,std::vector<StSt>, std::less<>> sections;
+        std::map<int,std::string> sections_ordering;
 
         for(unsigned int i=0;i<props.size();++i){
           const std::string &p = props[i];
@@ -589,14 +621,63 @@ namespace icl{
         if(cblist.size() > 1){
           gui.registerCallback([this](const std::string &handle) { exec(handle); },cblist.substr(1),'\1');
         }
+      }
 
-        // Property-change callback: any thread may fire this.  Coalesce
-        // updates in `pendingPropertyUpdates`; schedule at most one
-        // GUI-thread flush at a time via QMetaObject::invokeMethod
-        // with Qt::QueuedConnection.
-        conf->registerCallback([this](const Configurable::Property &p){
-          enqueuePropertyUpdate(p.name);
-        });
+      /// Tear the widget tree down so buildFromConf() can rebuild it.
+      /// Runs on the GUI thread.  Keeps the ConfigurableGUIWidget itself
+      /// intact so external handles pointing to *this* stay valid.
+      void clearWidgets(){
+        // Drop all Qt children of this GUIWidget — everything built by
+        // buildFromConf() is parented under here through `gui = HSplit(this)`.
+        QLayout *l = this->layout();
+        if(l){
+          while(QLayoutItem *item = l->takeAt(0)){
+            if(QWidget *w = item->widget()){
+              w->setParent(nullptr);
+              w->deleteLater();
+            }
+            delete item;
+          }
+        }
+        // Reset GUI state so re-creation doesn't duplicate handles.
+        gui = GUI();
+        sub_gui = GUI();
+        // Pending property updates may reference properties that no
+        // longer exist — drop them; fresh subscriptions will be set
+        // up by the rebuild.
+        std::scoped_lock lk(pendingMutex);
+        pendingPropertyUpdates.clear();
+        updateScheduled = false;
+      }
+
+      /// Runs on the GUI thread (scheduled via invokeMethod).  Fully
+      /// rebuilds the widget tree from conf's current property list.
+      void rebuild(){
+        clearWidgets();
+        buildFromConf();
+      }
+
+      /// Coalesced scheduler for rebuild().  Safe to call from any
+      /// thread — add/removeChildConfigurable may fire from inside a
+      /// Configurable property-change callback on a worker thread.
+      void enqueueRebuild(){
+        bool needSchedule = false;
+        {
+          std::scoped_lock lk(pendingMutex);
+          if(!rebuildScheduled){
+            rebuildScheduled = true;
+            needSchedule = true;
+          }
+        }
+        if(needSchedule){
+          QMetaObject::invokeMethod(this, [this]{
+            {
+              std::scoped_lock lk(pendingMutex);
+              rebuildScheduled = false;
+            }
+            rebuild();
+          }, Qt::QueuedConnection);
+        }
       }
 
       /// Add `name` to the pending-update set and schedule a single
