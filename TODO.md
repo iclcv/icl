@@ -182,6 +182,16 @@ From Session 48 deferrals:
 
 ---
 
+## Property::value — retire or proxy (step 9 territory)
+
+- [ ] **Make `Property::value` a write-through proxy, or retire it entirely.**  The bare `std::string value` field is a footgun: writing `prop("x").value = y` bypasses `setPropertyValue`, which means `typed_value` goes stale and callbacks don't fire.  Session 53 cleaned up the 13 in-tree sites that relied on the pre-typed-storage idiom (`p.value = str(x); call_callbacks(name, this);`), but the field is still accessible.  Options:
+  - **Proxy**: replace `value` with a `PropertyValueRef` that holds `Configurable* + name`, offers `operator std::string() const` for reads and `operator=(T)` → `setPropertyValue(name, v)` for writes.  Preserves the terse `prop("x").value = y` idiom while channeling through the setter.  Wrinkle: Property is stored in `std::map<string, Property>`, so the back-reference must survive moves/copies.
+  - **Retire**: delete the field; force all access through `setPropertyValue` / `getPropertyValue`.  Loses the ergonomic direct-assign syntax.
+  - **Intermediate**: rename `value` → something ugly (`_raw_serialized` etc.) so accidental direct writes stand out in review; provide a `prop("x").set(v)` method for the intended path.
+  See Session 53 commits for the migration precedent; ties in with the broader step-9 "delete the string field" work in iclquick-plan.md.
+
+---
+
 ## Core — latent Image.h include dependency
 
 - [ ] **`core/Image.h` should include `core/Img.h`.**  `Image::as<T>()` (inline template) does `static_cast<Img<T>*>(ImgBase*)`; Clang 21 rejects this unless `Img<T>`'s derivation from `ImgBase` is visible at the cast site.  Today `Image.h` only forward-declares `Img<T>` / `ImgBase` — it compiles only because every current consumer happens to include `Img.h` through some other path.  The TU compiling `test-prop-constraints.cpp` surfaced this when it reached `core/Image.h` through `core/prop/Constraints.h` without pulling in `Img.h`.  Fix: add `#include <icl/core/Img.h>` at the bottom of `Image.h`.  Incrementally cheaper than asking every new consumer to remember to add the include manually.
