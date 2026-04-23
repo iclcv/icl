@@ -61,7 +61,7 @@ namespace icl::filter {
     void setClipToROI (bool bClipToROI) {
       // The callback registered in initConfigurable() mirrors the property
       // write back into m_oROIHandler — single source of truth.
-      prop("UnaryOp.clip to ROI").value = bClipToROI ? "on" : "off";
+      prop("UnaryOp.clip to ROI").value = bClipToROI;
     }
 
     /// sets if the destination image should be adapted to the source, or if it is only checked if it can be adapted.
@@ -69,7 +69,7 @@ namespace icl::filter {
       @param bCheckOnly true = destination image is only checked, false = destination image will be checked and adapted.
     */
     void setCheckOnly (bool bCheckOnly) {
-      prop("UnaryOp.check only").value = bCheckOnly ? "on" : "off";
+      prop("UnaryOp.check only").value = bCheckOnly;
     }
 
     /// returns the ClipToROI status

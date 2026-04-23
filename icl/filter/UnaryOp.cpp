@@ -29,13 +29,13 @@ using namespace icl::core;
 
 namespace icl::filter {
   void UnaryOp::initConfigurable(){
-    addProperty("UnaryOp.clip to ROI",utils::prop::Menu{"on", "off"}, m_oROIHandler.getClipToROI() ? "on" : "off",0,
+    addProperty("UnaryOp.clip to ROI",utils::prop::Flag{}, m_oROIHandler.getClipToROI(),0,
                 "If this option is set to true, the result images are always adapted\n"
                 "to contain the computed result pixels only. If it is set to false,\n"
                 "and the source image did have a ROI set, the result image will become\n"
                 "as large as the source image, it's ROI will also be the same and\n"
                 "only ROI pixels will be processed");
-    addProperty("UnaryOp.check only",utils::prop::Menu{"on", "off"}, m_oROIHandler.getCheckOnly() ? "on" : "off",0,
+    addProperty("UnaryOp.check only",utils::prop::Flag{}, m_oROIHandler.getCheckOnly(),0,
                 "If check only is set to true, images, that are passed to the apply\n"
                 "method are not adapted. Instead the given result images are checked\n"
                 "for their compatibility. In case of uncompatible result images,\n"
@@ -45,8 +45,8 @@ namespace icl::filter {
     // m_applyMutex-wrapping overload) — the bool writes are fast and don't
     // conflict with apply()'s reader path.
     Configurable::registerCallback([this](const Property &p){
-      if      (p.name == "UnaryOp.clip to ROI") m_oROIHandler.setClipToROI(p.as<std::string>() == "on");
-      else if (p.name == "UnaryOp.check only")  m_oROIHandler.setCheckOnly(p.as<std::string>() == "on");
+      if      (p.name == "UnaryOp.clip to ROI") m_oROIHandler.setClipToROI(p.as<bool>());
+      else if (p.name == "UnaryOp.check only")  m_oROIHandler.setCheckOnly(p.as<bool>());
     });
   }
 
@@ -62,8 +62,8 @@ namespace icl::filter {
   UnaryOp &UnaryOp::operator=(const UnaryOp &other){
     m_oROIHandler = other.m_oROIHandler;
 
-    prop("UnaryOp.clip to ROI").value = other.prop("UnaryOp.clip to ROI").as<std::string>();
-    prop("UnaryOp.check only").value = other.prop("UnaryOp.check only").as<std::string>();
+    prop("UnaryOp.clip to ROI").value = other.prop("UnaryOp.clip to ROI").as<bool>();
+    prop("UnaryOp.check only").value = other.prop("UnaryOp.check only").as<bool>();
 
     return *this;
   }
