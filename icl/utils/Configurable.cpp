@@ -156,14 +156,15 @@ namespace icl::utils {
     for(unsigned int i=0;i<ps.size();++i){
       // The imported Property is a facade — actual storage lives on the
       // child; prop lookups with the prefix'd name are forwarded to it
-      // via Property::configurable.  No need to materialize a local
-      // typed_value copy.
+      // via Property::configurable.  We still cache the child's
+      // constraint here so the parent's getPropertyType / getPropertyInfo
+      // / qt::Prop dispatch can read the structured constraint locally
+      // without chasing the configurable pointer.
       Property p(configurable, pfx+ps[i],
-                 configurable->getPropertyType(ps[i]),
-                 configurable->getPropertyInfo(ps[i]),
                  configurable->getPropertyVolatileness(ps[i]),
                  configurable->getPropertyToolTip(ps[i]));
       p.childPrefix = pfx;
+      p.constraint  = configurable->getPropertyConstraint(ps[i]);
       if(auto it = m_properties.find(p.name); it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
       m_properties[p.name] = p;
       if(m_isOrdered) m_ordering[m_properties.size()] = p.name;
@@ -240,14 +241,15 @@ namespace icl::utils {
       prop_storage(name);
       throw ICLException("Unable to add property " + name + " because it is already used");
     }catch(ICLException &){
-      Property p(this, name, type, info, volatileness, tooltip);
-      // Unify with the typed path: derive constraint + typed_value from
-      // the legacy string triple so downstream consumers (qt::Prop,
+      Property p(this, name, volatileness, tooltip);
+      // Derive constraint + typed_value from the legacy string triple
+      // so downstream consumers (qt::Prop, getPropertyType, getPropertyInfo,
       // getPropertyValue, ConfigFile) see identical state regardless of
       // which addProperty overload registered the property.  Unknown
       // type strings fall through to prop::Generic which echoes the
-      // legacy (type, info) verbatim, so every Property has a populated
-      // constraint.
+      // legacy (type, info) verbatim — every Property has a populated
+      // constraint, so the synthesizers in Configurable.h always
+      // succeed.
       auto [constraint, typed] = buildConstraintFromLegacy(type, info, value.str());
       p.constraint  = std::move(constraint);
       p.typed_value = std::move(typed);
@@ -623,8 +625,16 @@ namespace icl::utils {
     if(p.configurable != this){
       p.configurable->adaptProperty(name.substr(p.childPrefix.length()),newType,newInfo, newToolTip);
     }else{
-      p.type = newType;
-      p.info = newInfo;
+      // Rebuild the constraint from the new (type, info) strings.
+      // typed_value is left alone — adapters are expected to be called
+      // for range-tightening, not kind-changing.  If a caller does flip
+      // the kind (e.g. "range" → "menu") the stored typed_value may no
+      // longer match the new constraint's value_type; downstream reads
+      // fall through AutoParse<any>'s cascade (parse-if-string,
+      // stringify-if-numeric) which is the same behavior as before
+      // step 8 (p.value was the string, read-back went via parse<T>).
+      auto [constraint, _] = buildConstraintFromLegacy(newType, newInfo, "");
+      p.constraint = std::move(constraint);
       p.tooltip = newToolTip;
     }
   }

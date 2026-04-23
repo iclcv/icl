@@ -218,16 +218,12 @@ namespace icl::utils {
     struct Property{
       Property():configurable(0),volatileness(0){}
       Property(Configurable *parent,
-               const std::string &name, const std::string &type, const std::string &info,
+               const std::string &name,
                int volatileness, const std::string &tooltip)
-        : configurable(parent), name(name), type(type), info(info),
+        : configurable(parent), name(name),
           volatileness(volatileness), tooltip(tooltip){}
       Configurable *configurable; //!< corresponding Configurable
       std::string name;  //!< property-ID
-      std::string type;  //!< property-type (menu, range,....); synthesized from
-                         //!< constraint for migrated properties
-      std::string info;  //!< property-information (depends on type); synthesized
-                         //!< from constraint for migrated properties
       int volatileness;  //!< volatileness of a this property (0= no-volatileness, X=expected update every X msec)
       std::string tooltip; //!< property description, that is also used as tooltip
       std::string childPrefix;
@@ -602,7 +598,9 @@ namespace icl::utils {
         - ... (propably some other types are defined later on)
         */
     virtual std::string getPropertyType(const std::string &propertyName) const{
-      return prop_storage(propertyName).type;
+      const Property &p = prop_storage(propertyName);
+      if(!p.constraint.has_value()) return "";
+      return prop::lookupAdapter(p.constraint.type()).typeId(p.constraint);
     }
 
     /// get information of a properties valid values
@@ -621,7 +619,9 @@ namespace icl::utils {
         with some static utility function in this Grabber class.
         */
     virtual std::string getPropertyInfo(const std::string &propertyName) const{
-      return prop_storage(propertyName).info;
+      const Property &p = prop_storage(propertyName);
+      if(!p.constraint.has_value()) return "";
+      return prop::lookupAdapter(p.constraint.type()).infoString(p.constraint);
     }
 
     /// returns the current value of a property or a parameter
@@ -710,7 +710,7 @@ namespace icl::utils {
     Handle(Configurable *c, Property &p)
       : m_conf(c), m_p(&p),
         value{c, p.name},
-        name(p.name), type(p.type), info(p.info),
+        name(p.name),
         tooltip(p.tooltip), childPrefix(p.childPrefix),
         constraint(p.constraint), typed_value(p.typed_value),
         volatileness(p.volatileness) {}
@@ -723,10 +723,12 @@ namespace icl::utils {
     PropertyValueRef value;
 
     /// Reference members — read access to Property fields with
-    /// identical syntax to the pre-step-9 `Property&` era.
+    /// identical syntax to the pre-step-9 `Property&` era.  Note
+    /// `type` / `info` are no longer stored on Property; callers
+    /// that need the legacy strings go through
+    /// `getPropertyType(name)` / `getPropertyInfo(name)`, which
+    /// synthesize via the constraint adapter.
     const std::string &name;
-    const std::string &type;
-    const std::string &info;
     const std::string &tooltip;
     const std::string &childPrefix;
     const std::any    &constraint;
