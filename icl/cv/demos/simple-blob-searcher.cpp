@@ -16,7 +16,7 @@ void mouse(const MouseEvent &e){
     int minSize = gui["minSize"];
     int maxSize = gui["maxSize"];
     float thresh = gui["thresh"];
-    std::scoped_lock<std::recursive_mutex> lock(mtex);
+    std::scoped_lock lock(mtex);
     int idx = e.isMiddle() ? 1 : e.isRight() ? 2 : 0;
     std::vector<double> color = e.getColor();
     ICLASSERT_RETURN(color.size() == 3);

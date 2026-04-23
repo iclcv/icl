@@ -57,7 +57,7 @@ namespace icl::geom2 {
 
   PointCloud::PointCloud(const PointCloud &other)
     : m_data(std::make_unique<Data>()) {
-    std::lock_guard<std::recursive_mutex> g(other.m_data->mutex);
+    std::scoped_lock g(other.m_data->mutex);
     m_data->positions = other.m_data->positions;
     m_data->normals = other.m_data->normals;
     m_data->colors = other.m_data->colors;

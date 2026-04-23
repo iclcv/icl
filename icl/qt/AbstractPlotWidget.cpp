@@ -106,7 +106,7 @@ namespace icl::qt {
     std::vector<MouseHandler*> mouseHandlers;
 
     void call_mouse_handlers(const MouseEvent &e){
-      std::scoped_lock<std::recursive_mutex> locker(mouseHandlerMutex);
+      std::scoped_lock locker(mouseHandlerMutex);
       for(size_t i=0;i<mouseHandlers.size();++i){
         mouseHandlers[i]->process(e);
       }
@@ -1147,7 +1147,7 @@ namespace icl::qt {
   }
 
   void AbstractPlotWidget::install(MouseHandler *h){
-    std::scoped_lock<std::recursive_mutex> locker(data->mouseHandlerMutex);
+    std::scoped_lock locker(data->mouseHandlerMutex);
     data->mouseHandlers.push_back(h);
   }
 

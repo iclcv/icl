@@ -64,7 +64,7 @@ public:
     // overwrite what the GL thread is currently reading.
     int front;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       front = m_frontIdx;
     }
     m_writeIdx = 1 - front;
@@ -80,7 +80,7 @@ public:
 
     // Publish: make the write buffer the new front buffer.
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       m_frontIdx = m_writeIdx;
     }
 
@@ -99,7 +99,7 @@ public:
   /// should take an Image shallow copy — the shared_ptr keeps the channel
   /// data alive even after the front buffer index swaps.
   const core::Img8u &getImage() const {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     return m_buf[m_frontIdx];
   }
 
@@ -313,7 +313,7 @@ struct CyclesRenderer::Impl {
   /// session lifecycle exclusively via reset() which cancels internally.
   void markDirty() {
     {
-      std::lock_guard<std::mutex> lock(cvMutex);
+      std::scoped_lock lock(cvMutex);
       dirty = true;
     }
     cv.notify_one();
@@ -340,7 +340,7 @@ struct CyclesRenderer::Impl {
     // Wire the OutputDriver's batch-done signal into our CV.
     outputDriver->setBatchDoneCallback([this]() {
       {
-        std::lock_guard<std::mutex> lock(cvMutex);
+        std::scoped_lock lock(cvMutex);
         batchReady = true;
       }
       cv.notify_one();
@@ -349,7 +349,7 @@ struct CyclesRenderer::Impl {
     while (running) {
       // Wait for dirty signal or shutdown.
       {
-        std::unique_lock<std::mutex> lock(cvMutex);
+        std::unique_lock lock(cvMutex);
         cv.wait(lock, [&] { return dirty || !running.load(); });
         if (!running) break;
         dirty = false;
@@ -389,7 +389,7 @@ struct CyclesRenderer::Impl {
       // batch is only 1 sample, so the wait is brief.
       session->reset(sp, bp);
       {
-        std::lock_guard<std::mutex> lock(cvMutex);
+        std::scoped_lock lock(cvMutex);
         batchReady = false;
       }
 
@@ -406,7 +406,7 @@ struct CyclesRenderer::Impl {
       // we extend samples and the image progressively refines.
       while (running) {
         {
-          std::unique_lock<std::mutex> lock(cvMutex);
+          std::unique_lock lock(cvMutex);
           cv.wait(lock, [&] { return batchReady || !running.load(); });
           if (!running) break;
           batchReady = false;
@@ -417,7 +417,7 @@ struct CyclesRenderer::Impl {
 
         // Check if scene changed during this batch.
         {
-          std::lock_guard<std::mutex> lock(cvMutex);
+          std::scoped_lock lock(cvMutex);
           if (dirty) break;  // outer loop picks up dirty immediately
         }
 
@@ -456,7 +456,7 @@ void CyclesRenderer::start(int camIndex) {
   m_impl->activeCamIndex = camIndex;
   m_impl->running = true;
   {
-    std::lock_guard<std::mutex> lock(m_impl->cvMutex);
+    std::scoped_lock lock(m_impl->cvMutex);
     m_impl->dirty = true;  // ensure first render fires
   }
 
@@ -483,7 +483,7 @@ void CyclesRenderer::stop() {
 // each call either advances state or returns immediately.
 
 void CyclesRenderer::render(int camIndex) {
-  std::lock_guard<std::recursive_mutex> lock(m_impl->renderMutex);
+  std::scoped_lock lock(m_impl->renderMutex);
   m_impl->ensureInitialized();
 
   // --- Detect changes → set dirty ---

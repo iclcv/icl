@@ -27,7 +27,7 @@ enum SliderEventType { press,release };
 
 template<SliderEventType t>
 void stream_pos(){
-  std::scoped_lock<std::recursive_mutex> lock(mtex);
+  std::scoped_lock lock(mtex);
   int posVal = gui["pos"];
   switch(t){
     case press: paused = true; break;
@@ -70,7 +70,7 @@ void run(){
   int volume = gui["volume"];
 #endif
 
-  std::scoped_lock<std::recursive_mutex> lock(mtex);
+  std::scoped_lock lock(mtex);
 
   while(paused || pause){
     mtex.unlock();

@@ -292,7 +292,7 @@ static void mouseHandler(const MouseEvent &event){
   if(!event.isLeft() && !event.isRight()) return;
   if(!event.isPressEvent() && !event.isDragEvent()) return;
 
-  std::scoped_lock<std::mutex> lock(gridMutex);
+  std::scoped_lock lock(gridMutex);
   int x = static_cast<int>(event.getPos32f().x);
   int y = static_cast<int>(event.getPos32f().y);
   if(x < 0 || x >= gridW || y < 0 || y >= gridH) return;
@@ -373,7 +373,7 @@ void run(){
   int newSizeIdx = gui["size"].as<ComboHandle>().getSelectedIndex();
   if(newSizeIdx != curSizeIdx){
     curSizeIdx = newSizeIdx;
-    std::scoped_lock<std::mutex> lock(gridMutex);
+    std::scoped_lock lock(gridMutex);
     gridW = SIZES[curSizeIdx][0];
     gridH = SIZES[curSizeIdx][1];
     resetGrid();
@@ -381,7 +381,7 @@ void run(){
   }
 
   {
-    std::scoped_lock<std::mutex> lock(gridMutex);
+    std::scoped_lock lock(gridMutex);
     if(doClear) resetGrid();
     if(doRandom) randomizeGrid(0.25f);
   }
@@ -394,7 +394,7 @@ void run(){
   if(doStep || (running && elapsed >= interval)){
     Time t = Time::now();
     {
-      std::scoped_lock<std::mutex> lock(gridMutex);
+      std::scoped_lock lock(gridMutex);
 #ifdef ICL_HAVE_OPENCL
       if(useGPU && clProg){
         stepGPU();
@@ -412,7 +412,7 @@ void run(){
 
   // Only re-render and recount when grid changed
   {
-    std::scoped_lock<std::mutex> lock(gridMutex);
+    std::scoped_lock lock(gridMutex);
     if(gridDirty){
 #ifdef ICL_HAVE_OPENCL
       if(useGPU && clProg){

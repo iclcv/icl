@@ -22,7 +22,7 @@ namespace icl::io {
   FileWriterPluginBICL::~FileWriterPluginBICL() = default;
 
   void FileWriterPluginBICL::write(File &file, const ImgBase *image){
-    std::scoped_lock<std::recursive_mutex> lock(mutex);
+    std::scoped_lock lock(mutex);
     if (!compressor) {
       // Lazy build — this runs after main(), so the
       // CompressionRegister is guaranteed populated.

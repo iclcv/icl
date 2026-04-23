@@ -298,15 +298,15 @@ static int lastFractalType = -1;
 static void mouseHandler(const MouseEvent &event){
   if(event.isLeft()){
     if(event.isPressEvent()){
-      std::scoped_lock<std::mutex> lock(dragMutex);
+      std::scoped_lock lock(dragMutex);
       dragging = true;
       dragStart = event.getPos32f();
       dragEnd = dragStart;
     } else if(event.isDragEvent()){
-      std::scoped_lock<std::mutex> lock(dragMutex);
+      std::scoped_lock lock(dragMutex);
       dragEnd = event.getPos32f();
     } else if(event.isReleaseEvent()){
-      std::scoped_lock<std::mutex> lock(dragMutex);
+      std::scoped_lock lock(dragMutex);
       dragging = false;
       dragEnd = event.getPos32f();
 
@@ -316,7 +316,7 @@ static void mouseHandler(const MouseEvent &event){
       float y2 = std::max(dragStart.y, dragEnd.y);
 
       if(x2 - x1 > 5 && y2 - y1 > 5){
-        std::scoped_lock<std::mutex> slock(stateMutex);
+        std::scoped_lock slock(stateMutex);
         tickAnimation();
         int w = image.getWidth();
         int h = image.getHeight();
@@ -331,7 +331,7 @@ static void mouseHandler(const MouseEvent &event){
       }
     }
   } else if(event.isRight() && event.isPressEvent()){
-    std::scoped_lock<std::mutex> lock(stateMutex);
+    std::scoped_lock lock(stateMutex);
     tickAnimation();
     if(!zoomHistory.empty()){
       auto [ocx, ocy, ospan] = zoomHistory.back();
@@ -381,7 +381,7 @@ void run(){
   // Fractal type changed → reset view to that fractal's default
   if(fractalType != lastFractalType){
     if(lastFractalType >= 0){
-      std::scoped_lock<std::mutex> lock(stateMutex);
+      std::scoped_lock lock(stateMutex);
       tickAnimation();
       zoomHistory.clear();
       double dcx, dcy, dspan;
@@ -395,7 +395,7 @@ void run(){
   }
 
   if(reset){
-    std::scoped_lock<std::mutex> lock(stateMutex);
+    std::scoped_lock lock(stateMutex);
     tickAnimation();
     zoomHistory.clear();
     double dcx, dcy, dspan;
@@ -415,7 +415,7 @@ void run(){
 
   double lcx, lcy, lspan;
   {
-    std::scoped_lock<std::mutex> lock(stateMutex);
+    std::scoped_lock lock(stateMutex);
     tickAnimation();
     lcx = cx; lcy = cy; lspan = span;
   }
@@ -439,7 +439,7 @@ void run(){
 
   // Draw selection rectangle
   {
-    std::scoped_lock<std::mutex> lock(dragMutex);
+    std::scoped_lock lock(dragMutex);
     if(dragging){
       draw->color(255, 255, 255, 200);
       draw->nofill();

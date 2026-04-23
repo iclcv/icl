@@ -256,7 +256,7 @@ namespace icl::geom {
       static LinkMap current_links;
       static std::recursive_mutex mutex;
 
-      std::scoped_lock<std::recursive_mutex> lock(mutex);
+      std::scoped_lock lock(mutex);
       if(auto it = current_links.find(parent); it != current_links.end()){
         std::vector<ICLDrawWidget*> &ws = it->second;
         if(std::find(ws.begin(),ws.end(), widget) != ws.end()){
@@ -820,7 +820,7 @@ namespace icl::geom {
 
  void Scene::renderScene(int camIndex, ICLDrawWidget3D *widget) const{
     glewInit();
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     //update Sceneinfo
     (const_cast<Scene*>(this))->prop("info.FPS").value = m_fps.getFPSString();
 

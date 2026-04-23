@@ -380,7 +380,7 @@ namespace icl::io {
     }
 
     void FileGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      std::scoped_lock<std::recursive_mutex> l(m_propertyMutex);
+      std::scoped_lock l(m_propertyMutex);
       if (m_updatingProperties) return;
       if(prop.name == "next") {
         next();
@@ -421,7 +421,7 @@ namespace icl::io {
     }
 
     void FileGrabber::updateProperties(const ImgBase* img){
-      std::scoped_lock<std::recursive_mutex> l(m_propertyMutex);
+      std::scoped_lock l(m_propertyMutex);
       m_updatingProperties = true;
       int s = m_data->oFileList.size();
       int usedIdx = m_data->iCurrIdx - (m_data->bAutoNext ? 1 : 0);

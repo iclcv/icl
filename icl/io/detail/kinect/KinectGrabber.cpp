@@ -47,7 +47,7 @@ namespace icl::io {
     FreenectContext() : started(0), errors(0) {
       static std::recursive_mutex cMutex;
       static freenect_context *ctx = nullptr;
-      std::scoped_lock<std::recursive_mutex> l(cMutex);
+      std::scoped_lock l(cMutex);
       if(!ctx && freenect_init(&ctx, nullptr) < 0){
         throw ICLException("unable to create freenect_context");
       }
@@ -83,7 +83,7 @@ namespace icl::io {
     }
 
     int processEvents(){
-      std::scoped_lock<std::recursive_mutex> l(*ctx_mutex);
+      std::scoped_lock l(*ctx_mutex);
       //DEBUG_LOG("calling freenect_process_events");
       int x = freenect_process_events(ctx_ptr);
       //DEBUG_LOG("calling freenect_process_events done");
@@ -91,24 +91,24 @@ namespace icl::io {
     }
 
     int openDevice(freenect_device **dev, int index){
-      std::scoped_lock<std::recursive_mutex> l(*ctx_mutex);
+      std::scoped_lock l(*ctx_mutex);
       return freenect_open_device(ctx_ptr, dev, index);
     }
 
     int numDevices(){
-      std::scoped_lock<std::recursive_mutex> l(*ctx_mutex);
+      std::scoped_lock l(*ctx_mutex);
       return freenect_num_devices(ctx_ptr);
     }
 
     void start(){
-      std::scoped_lock<std::recursive_mutex> l(startMutex);
+      std::scoped_lock l(startMutex);
       if(!started++){
         Thread::start();
       }
     }
 
     void stop(){
-      std::scoped_lock<std::recursive_mutex> l(startMutex);
+      std::scoped_lock l(startMutex);
       if(!--started){
         Thread::stop();
       }
@@ -184,7 +184,7 @@ namespace icl::io {
 
 
       void depth_cb(void *data, uint32_t timestamp){
-        std::scoped_lock<std::recursive_mutex> lock(depthMutex);
+        std::scoped_lock lock(depthMutex);
         const int r = depthImagePostProcessingMedianRadius;
         MedianOp *pp = (r == 3) ? &postProcessor3x3 : r == 5 ? &postProcessor5x5 : static_cast<MedianOp*>(nullptr);
 
@@ -221,7 +221,7 @@ namespace icl::io {
         }
       }
       void color_cb(void *data, uint32_t timestamp){
-        std::scoped_lock<std::recursive_mutex> lock(colorMutex);
+        std::scoped_lock lock(colorMutex);
         switch(currentColorMode){
           case KinectGrabber::GRAB_RGB_IMAGE:
             colorImage.setTime(Time::now());
@@ -249,7 +249,7 @@ namespace icl::io {
       }
 
       const Img32f &getLastDepthImage(bool avoidDoubleFrames){
-        std::scoped_lock<std::recursive_mutex> lock(depthMutex);
+        std::scoped_lock lock(depthMutex);
         if(avoidDoubleFrames){
           while(lastDepthTime == depthImage.getTime()){
             depthMutex.unlock();
@@ -271,7 +271,7 @@ namespace icl::io {
         return depthImageOut;
       }
       const ImgBase &getLastColorImage(bool avoidDoubleFrames){
-        std::scoped_lock<std::recursive_mutex> lock(colorMutex);
+        std::scoped_lock lock(colorMutex);
         ImgBase &src = ( currentColorMode == KinectGrabber::GRAB_RGB_IMAGE ? (ImgBase&)colorImage :
                          currentColorMode == KinectGrabber::GRAB_IR_IMAGE_8BIT ? (ImgBase&)irImage :
                          (ImgBase&)irImage16s);
@@ -656,7 +656,7 @@ namespace icl::io {
   }
 
   const ImgBase* KinectGrabber::acquireDisplay(){
-    std::scoped_lock<std::recursive_mutex> lock(m_impl->mutex);
+    std::scoped_lock lock(m_impl->mutex);
     // update current angle and accelometers every 200ms
     if(m_impl -> lastupdate.age() > 200000){
       updateState();
@@ -684,7 +684,7 @@ namespace icl::io {
 
   /// callback for changed configurable properties
   void KinectGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-    std::scoped_lock<std::recursive_mutex> lock(m_impl->mutex);
+    std::scoped_lock lock(m_impl->mutex);
 
     if(prop.name == "Avoid double frames"){
       m_impl->avoidDoubleFrames = prop.as<bool>();

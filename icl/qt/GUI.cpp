@@ -605,7 +605,7 @@ namespace icl{
       void enqueuePropertyUpdate(const std::string &name){
         bool needSchedule = false;
         {
-          std::scoped_lock<std::mutex> lk(pendingMutex);
+          std::scoped_lock lk(pendingMutex);
           pendingPropertyUpdates.insert(name);
           if(!updateScheduled){
             updateScheduled = true;
@@ -625,7 +625,7 @@ namespace icl{
       void flushPendingPropertyUpdates(){
         std::set<std::string> batch;
         {
-          std::scoped_lock<std::mutex> lk(pendingMutex);
+          std::scoped_lock lk(pendingMutex);
           batch.swap(pendingPropertyUpdates);
           updateScheduled = false;
         }

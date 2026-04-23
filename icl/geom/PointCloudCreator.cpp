@@ -121,7 +121,7 @@ namespace icl::geom {
     }
 
     void reinitIfNecessary(float focalLengthMultiplier, float positionOffsetAlongNorm){
-      std::scoped_lock<std::recursive_mutex> lock(mutex);
+      std::scoped_lock lock(mutex);
       if(this->focalLengthMultiplier == focalLengthMultiplier &&
          this->positionOffsetAlongNorm == positionOffsetAlongNorm) return;
 
@@ -289,7 +289,7 @@ namespace icl::geom {
 
   void PointCloudCreator::create(const Img32f &depthImageMM, PointCloudObjectBase &destination,
                                  const Img8u *rgbImage, float depthScaling, bool addDepthFeature){
-    std::scoped_lock<std::recursive_mutex> lock(m_data->mutex);
+    std::scoped_lock lock(m_data->mutex);
     m_data->lastDepthImageMM = &depthImageMM;
 
     static_cam  = m_data->colorCamera.get();
@@ -534,7 +534,7 @@ namespace icl::geom {
   }
 
   void PointCloudCreator::mapImage(const core::ImgBase *src, core::ImgBase **dst, const core::Img32f *depthImageMM){
-    std::scoped_lock<std::recursive_mutex> lock(m_data->mutex);
+    std::scoped_lock lock(m_data->mutex);
     if(!depthImageMM) depthImageMM = m_data->lastDepthImageMM;
     if(!depthImageMM) throw ICLException("PointCloudCreator::mapImage: no depthImage given and not depth image "
                                          "from preceding 'create' method call available");

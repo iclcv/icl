@@ -63,7 +63,7 @@ namespace icl::io {
           libfreenect2::Frame *ir = (*frames)[libfreenect2::Frame::Ir];
           libfreenect2::Frame *depth = (*frames)[libfreenect2::Frame::Depth];
 
-          std::scoped_lock<std::recursive_mutex> lock(getMutex());
+          std::scoped_lock lock(getMutex());
           rgbImage.setChannels(4);
           interleavedToPlanar(rgb->data, &rgbImage);
           rgbImage.swapChannels(0,2);
@@ -109,7 +109,7 @@ namespace icl::io {
   public:
 
     Device *openDevice(int idx){
-      std::scoped_lock<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock lock(getMutex());
       if(!connectedDevices.count(idx)){
         throw ICLException("cannot open Kinect2 device " + str(idx) + " (device not found!)");
         return 0;
@@ -145,7 +145,7 @@ namespace icl::io {
     }
 
     void freeDevice(Device *dev){
-      std::scoped_lock<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock lock(getMutex());
       if(!dev){
         ERROR_LOG("cannot free null-device ??");
         return;
@@ -168,7 +168,7 @@ namespace icl::io {
     }
 
     std::vector<int> getConnectedDeviceList() const{
-      std::scoped_lock<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock lock(getMutex());
       return std::vector<int>(connectedDevices.begin(),connectedDevices.end());
     }
   };
@@ -284,7 +284,7 @@ namespace icl::io {
   }
 
   const ImgBase* Kinect2Grabber::acquireDisplay(){
-    std::scoped_lock<std::recursive_mutex> lock(m_impl->dev);
+    std::scoped_lock lock(m_impl->dev);
     switch(m_impl->mode){
     case GRAB_DEPTH_IMAGE:{
         //m_impl->waitToAvoidDoubledFrames();

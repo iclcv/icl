@@ -190,7 +190,7 @@ void highlight_regions(int classID){
 }
 
 void mouse_image(const MouseEvent &e){
-  std::scoped_lock<std::recursive_mutex> lock(mtex);
+  std::scoped_lock lock(mtex);
   if(!currLUT.getDim()) return;
   if(e.isLeaveEvent()){ highlight_regions(-1); return; }
 
@@ -212,7 +212,7 @@ void mouse_image(const MouseEvent &e){
 }
 
 void mouse_lut(const MouseEvent &e){
-  std::scoped_lock<std::recursive_mutex> lock(mtex);
+  std::scoped_lock lock(mtex);
   if(!currLUT.getDim()) return;
 
   if(e.isLeaveEvent()){
@@ -229,7 +229,7 @@ void mouse_lut(const MouseEvent &e){
 }
 
 void mouse_seg(const MouseEvent &e){
-  std::scoped_lock<std::recursive_mutex> lock(mtex);
+  std::scoped_lock lock(mtex);
   if(!currLUT.getDim()) return;
 
   if(e.isLeaveEvent()){
@@ -258,7 +258,7 @@ void save_dialog(){
 }
 
 void clear_lut(){
-  std::scoped_lock<std::recursive_mutex> lock(mtex);
+  std::scoped_lock lock(mtex);
   segmenter->clearLUT(0);
 }
 
@@ -422,7 +422,7 @@ void run(){
 
   Image filtered = inputImage;
 
-  std::scoped_lock<std::recursive_mutex> lock(mtex);
+  std::scoped_lock lock(mtex);
 
   if(preMedian){
     static MedianOp m(Size(3,3));

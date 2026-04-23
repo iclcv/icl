@@ -74,7 +74,7 @@ void OpenNIGrabberThread::run(){
 OpenNIGrabber::OpenNIGrabber(std::string args)
   : m_Id(args), m_OmitDoubleFrames(true)
 {
-  std::scoped_lock<std::recursive_mutex> lock(m_Mutex);
+  std::scoped_lock lock(m_Mutex);
   oniGrabberThread.stop();
 
   DEBUG_LOG("init " << m_Id);
@@ -105,7 +105,7 @@ OpenNIGrabber::~OpenNIGrabber(){
   oniGrabberThread.removeGrabber(this);
   oniGrabberThread.start();
 
-  std::scoped_lock<std::recursive_mutex> lock(m_Mutex);
+  std::scoped_lock lock(m_Mutex);
   // free all
   ICL_DELETE(m_Generator);
   ICL_DELETE(m_Buffer);
@@ -132,7 +132,7 @@ void* OpenNIGrabber::getHandle(){
 
 // grabs an image from ImageGenerator
 void OpenNIGrabber::grabNextDisplay(){
-  std::scoped_lock<std::recursive_mutex> l(m_Mutex);
+  std::scoped_lock l(m_Mutex);
   // check whether a new frame is available
   if(m_Generator->newFrameAvailable()){
     // make ImageGenerator grab an image.

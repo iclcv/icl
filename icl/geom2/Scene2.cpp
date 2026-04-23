@@ -164,7 +164,7 @@ namespace icl::geom2 {
   Renderer &Scene2::getRenderer() { return m_data->renderer; }
 
   void Scene2::render(int cameraIndex) {
-    std::lock_guard<std::recursive_mutex> guard(m_data->mutex);
+    std::scoped_lock guard(m_data->mutex);
     if (cameraIndex < 0 || cameraIndex >= (int)m_data->cameras.size()) return;
 
     const auto &cam = m_data->cameras[cameraIndex];

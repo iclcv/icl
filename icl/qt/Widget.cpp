@@ -731,12 +731,12 @@ namespace icl::qt {
 
     void registerRecordingCallback(std::function<void(const ImgBase*)> cb,
                                    const std::string &handle){
-      std::scoped_lock<std::recursive_mutex> l(mutex);
+      std::scoped_lock l(mutex);
       recordingCallbacks[handle] = cb;
     }
 
     void unregisterRecordingCallback(const std::string &handle){
-      std::scoped_lock<std::recursive_mutex> l(mutex);
+      std::scoped_lock l(mutex);
       if(auto it = recordingCallbacks.find(handle); it != recordingCallbacks.end()){
         recordingCallbacks.erase(it);
       }else{
@@ -748,7 +748,7 @@ namespace icl::qt {
 
     bool startRecording(CaptureTarget t, const std::string &device, std::string params, int frameSkip,
                         bool forceParams, const Size &dstSize, core::format dstFmt,  core::depth dstDepth){
-      std::scoped_lock<std::recursive_mutex> l(mutex);
+      std::scoped_lock l(mutex);
 
       ICL_DELETE(converter);
       if(forceParams){
@@ -798,19 +798,19 @@ namespace icl::qt {
       return true;
     }
     bool setPaused(bool val){
-      std::scoped_lock<std::recursive_mutex> l(mutex);
+      std::scoped_lock l(mutex);
       paused = val;
       return paused;
     }
     bool stopRecording(){
-      std::scoped_lock<std::recursive_mutex> l(mutex);
+      std::scoped_lock l(mutex);
       imageOutput.release();
       recording = false;
       return recording;
     }
 
     void captureImageHook(){
-      std::scoped_lock<std::recursive_mutex> l(mutex);
+      std::scoped_lock l(mutex);
       if(!recording || paused || (target != SET_IMAGES) ) return;
       ICLASSERT_RETURN(!imageOutput.isNull());
       if(frameIdx < frameSkip){
@@ -836,7 +836,7 @@ namespace icl::qt {
     }
 
     void captureFrameBufferHook(){
-      std::scoped_lock<std::recursive_mutex> l(mutex);
+      std::scoped_lock l(mutex);
 
       if(!recording || paused || (target != FRAME_BUFFER)) return;
       ICLASSERT_RETURN(!imageOutput.isNull());

@@ -197,7 +197,7 @@ namespace icl::qt {
 
 
   void DefineRectanglesMouseHandler::process(const MouseEvent &e){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
 
     struct CallCallbacksAtEnd{
       std::function<void()> f;
@@ -269,7 +269,7 @@ namespace icl::qt {
   }
 
   void DefineRectanglesMouseHandler::visualize(ICLDrawWidget &w){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     for(unsigned int i=0;i<rects.size();++i){
       rects[i].visualize(w);
     }
@@ -288,14 +288,14 @@ namespace icl::qt {
   }
 
   void DefineRectanglesMouseHandler::clearAllRects(){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     if(rects.size()){
       rects.clear();
     }
   }
 
   void DefineRectanglesMouseHandler::clearRectAt(int x, int y, bool all){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
 
     bool anyChanged = false;
     for(unsigned int i=0;i<rects.size();++i){
@@ -310,14 +310,14 @@ namespace icl::qt {
   }
 
   void DefineRectanglesMouseHandler::addRect(const Rect &rect){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     if(static_cast<int>(rects.size()) < maxRects && rect.getDim() >= minDim){
       rects.push_back(DefinedRect(rect,&options));
     }
   }
 
   void DefineRectanglesMouseHandler::setMaxRects(int maxRects){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     this->maxRects = maxRects;
     if(static_cast<int>(rects.size()) > maxRects){
       rects.resize(maxRects);
@@ -334,12 +334,12 @@ namespace icl::qt {
   }
 
   void DefineRectanglesMouseHandler::registerCallback(const std::string &id, Callback cb){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     callbacks[id] = cb;
   }
 
   void DefineRectanglesMouseHandler::unregisterCallback(const std::string &id){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     if(auto it = callbacks.find(id); it != callbacks.end()){
       callbacks.erase(it);
     }else{
@@ -349,7 +349,7 @@ namespace icl::qt {
 
 
   void DefineRectanglesMouseHandler::setMinDim(int minDim){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     this->minDim = minDim;
     for(unsigned int i=0;i<rects.size();++i){
       if(rects[i].getDim() < minDim){
@@ -360,12 +360,12 @@ namespace icl::qt {
 
 
   std::vector<Rect> DefineRectanglesMouseHandler::getRects() const{
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     return std::vector<Rect>(rects.begin(),rects.end());
   }
 
   Rect DefineRectanglesMouseHandler::getRectAt(int x, int y) const{
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     for(unsigned int i=0;i<rects.size();++i){
       if(rects[i].contains(x,y)){
         return rects[i];
@@ -375,7 +375,7 @@ namespace icl::qt {
   }
 
   std::vector<Rect> DefineRectanglesMouseHandler::getAllRectsAt(int x, int y) const{
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     std::vector<Rect> rs;
     for(unsigned int i=0;i<rects.size();++i){
       if(rects[i].contains(x,y)){
@@ -394,31 +394,31 @@ namespace icl::qt {
   }
 
   int  DefineRectanglesMouseHandler::getNumRects() const{
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     return static_cast<int>(rects.size());
   }
 
   Rect  DefineRectanglesMouseHandler::getRectAtIndex(int index) const{
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     if(index < 0 || index >= static_cast<int>(rects.size())) return Rect::null;
     return rects[index];
   }
 
   const std::any &DefineRectanglesMouseHandler::getMetaData(int index) const{
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     static std::any null;
     if(index < 0 || index >= static_cast<int>(rects.size())) return null;
     return rects[index].meta;
   }
 
   void DefineRectanglesMouseHandler::setMetaData(int index, const std::any &data){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     ICLASSERT_RETURN(index >= 0 && index < static_cast<int>(rects.size()));
     rects[index].meta = data;
   }
 
   const std::any &DefineRectanglesMouseHandler::getMetaDataAt(int x, int y) const{
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     for(unsigned int i=0;i<rects.size();++i){
       if(rects[i].contains(x,y)){
         return rects[i].meta;
@@ -429,7 +429,7 @@ namespace icl::qt {
   }
 
   void DefineRectanglesMouseHandler::setMetaDataAt(int x, int y, const std::any &meta){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     for(unsigned int i=0;i<rects.size();++i){
       if(rects[i].contains(x,y)){
         rects[i].meta = meta;
@@ -439,7 +439,7 @@ namespace icl::qt {
   }
 
   void DefineRectanglesMouseHandler::bringToFront(int idx){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     ICLASSERT_RETURN(idx >= 0 && idx < static_cast<int>(rects.size()));
     DefinedRect r = rects[idx];
     rects.erase(rects.begin()+idx);
@@ -447,7 +447,7 @@ namespace icl::qt {
   }
 
   void DefineRectanglesMouseHandler::bringToBack(int idx){
-    std::scoped_lock<std::recursive_mutex> l(getMutex());
+    std::scoped_lock l(getMutex());
     ICLASSERT_RETURN(idx >= 0 && idx < static_cast<int>(rects.size()));
     DefinedRect r = rects[idx];
     rects.erase(rects.begin()+idx);

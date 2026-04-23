@@ -43,7 +43,7 @@ OpenNIContext::OpenNIContext()
 {}
 
 OpenNIContext::~OpenNIContext(){
-  std::scoped_lock<std::recursive_mutex> l(m_Lock);
+  std::scoped_lock l(m_Lock);
   if(m_Initialized){
     m_Context.Release();
     m_Initialized = false;
@@ -53,7 +53,7 @@ OpenNIContext::~OpenNIContext(){
 
 OpenNIContext* OpenNIContext::getInst(){
   static OpenNIContext inst;
-  std::scoped_lock<std::recursive_mutex> l(inst.m_Lock);
+  std::scoped_lock l(inst.m_Lock);
   if(!inst.m_Initialized){
     XnStatus xn = inst.m_Context.Init();
     assertStatus(xn);

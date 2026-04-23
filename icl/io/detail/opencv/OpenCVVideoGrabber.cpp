@@ -35,7 +35,7 @@ namespace icl::io {
   }
 
   const ImgBase *OpenCVVideoGrabber::acquireDisplay(){
-    std::scoped_lock<std::recursive_mutex> l(mutex);
+    std::scoped_lock l(mutex);
     ICLASSERT_RETURN_VAL( !(data->cvc==nullptr), 0);
     cv::Mat frame;
     data->cvc->read(frame);
@@ -106,7 +106,7 @@ namespace icl::io {
 
   // callback for changed configurable properties
   void OpenCVVideoGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-    std::scoped_lock<std::recursive_mutex> l(mutex);
+    std::scoped_lock l(mutex);
     if(updating) return;
     if(prop.name == "pos_msec"){
       data->cvc->set(cv::CAP_PROP_POS_MSEC,prop.as<double>());

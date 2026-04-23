@@ -45,7 +45,7 @@ namespace icl::io {
       }
 
       Grabber* createGrabber(const GrabberDeviceDescription &desc){
-        std::scoped_lock<std::recursive_mutex> l(mutex);
+        std::scoped_lock l(mutex);
 
         if(auto it = gpm.find(desc.name()); it != gpm.end()){
           // increment instance counter
@@ -62,7 +62,7 @@ namespace icl::io {
       }
 
       void deleteGrabber(const GrabberDeviceDescription &desc){
-        std::scoped_lock<std::recursive_mutex> l(mutex);
+        std::scoped_lock l(mutex);
         DEBUG_LOG("called delete grabber");
         if(auto it = gpm.find(desc.name()); it == gpm.end()){
           ERROR_LOG("Grabber with name '" << desc.name() << "' was not existent.");
@@ -160,7 +160,7 @@ namespace icl::io {
                             bool notifyErrors)
   {
     // get lock and grabber information
-    std::scoped_lock<std::recursive_mutex> __lock(m_mutex);
+    std::scoped_lock __lock(m_mutex);
     GrabberRegistry *grabberReg = GrabberRegistry::getInstance();
 
     // (re)set GenericGrabber to default values

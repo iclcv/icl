@@ -127,7 +127,7 @@ namespace physics{
       }else if(e.isModifierActive(ShiftModifier)){
         if(e.isPressEvent()){
           if(e.isLeft()){
-            std::scoped_lock<std::recursive_mutex> lock2(mutex);
+            std::scoped_lock lock2(mutex);
             //TODO Implement locker PhysicsWorld::Locker lock(*world);
 #ifdef USE_OLD_INTERACTION_STYLE
             Hit h = scene->findObject(0,e.getX(),e.getY());
@@ -157,7 +157,7 @@ namespace physics{
         }else if(paper && e.isDragEvent()){
           viewRay = scene->getCamera(cameraIndex).getViewRay(e.getPos());
         }else if(paper && e.isReleaseEvent()){
-          std::scoped_lock<std::recursive_mutex> lock(mutex);
+          std::scoped_lock lock(mutex);
 #ifdef USE_OLD_INTERACTION_STYLE
           paper->setDraggedNode(Point(-1,-1));
 #else
@@ -166,7 +166,7 @@ namespace physics{
           paper = 0;
         }
       }else{
-        std::scoped_lock<std::recursive_mutex> lock(mutex);
+        std::scoped_lock lock(mutex);
         if(paper && e.isReleaseEvent()){
           paper->setDraggedNode(Point(-1,-1));
           paper = 0;
@@ -183,7 +183,7 @@ namespace physics{
 
       lastTime = now;
 
-      std::scoped_lock<std::recursive_mutex> lock(mutex);
+      std::scoped_lock lock(mutex);
       if(paper){
         paper->lock();
 #ifdef USE_OLD_INTERACTION_STYLE
@@ -251,7 +251,7 @@ namespace physics{
   }
 
   void ManipulatablePaper::addAttractor(Point coords, bool oscillating){
-    std::scoped_lock<std::recursive_mutex> lock(attractorMutex);
+    std::scoped_lock lock(attractorMutex);
     std::string hash = str(coords);
     AttractorMap::iterator it = attractors.find(hash);
     if(it != attractors.end()){
@@ -265,7 +265,7 @@ namespace physics{
   }
 
   void ManipulatablePaper::removeAttractor(Point coords){
-    std::scoped_lock<std::recursive_mutex> lock(attractorMutex);
+    std::scoped_lock lock(attractorMutex);
     std::string hash = str(coords);
     AttractorMap::iterator it = attractors.find(hash);
     if(it != attractors.end()){
@@ -276,7 +276,7 @@ namespace physics{
   }
 
   void ManipulatablePaper::removeAllAttractors(){
-    std::scoped_lock<std::recursive_mutex> lock(attractorMutex);
+    std::scoped_lock lock(attractorMutex);
     for(AttractorMap::iterator it = attractors.begin(); it != attractors.end(); ++it){
       delete it->second;
       attractors.erase(it);
@@ -287,7 +287,7 @@ namespace physics{
   }
 
   void ManipulatablePaper::applyAllForces(float attractorForce, float mouseForce){
-    std::scoped_lock<std::recursive_mutex> lock(attractorMutex);
+    std::scoped_lock lock(attractorMutex);
     for(const auto& [id, attractor] : attractors){
       attractor->apply(attractorForce);
     }

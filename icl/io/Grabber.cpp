@@ -144,7 +144,7 @@ namespace icl::io {
     // Single funnel for every backend's acquireImage() + adaptGrabResult
     // + warp; serializes against property-change callbacks routed through
     // the wrapped registerCallback overload below.
-    std::scoped_lock<std::recursive_mutex> lock(m_grabMutex);
+    std::scoped_lock lock(m_grabMutex);
     const ImgBase *acquired = acquireImage();
     if(!acquired) return acquired;
     // todo, on which image is the warping applied ?
@@ -267,7 +267,7 @@ namespace icl::io {
 
 
   void Grabber::registerCallback(Grabber::callback cb){
-    std::scoped_lock<std::recursive_mutex> lock(data->callbackMutex);
+    std::scoped_lock lock(data->callbackMutex);
     data->callbacks.push_back(cb);
   }
 
@@ -276,18 +276,18 @@ namespace icl::io {
     // against grab() via m_grabMutex. Matches the reader-side scoped_lock at
     // the top of Grabber::grab(). Mirror of UnaryOp::registerCallback.
     Configurable::registerCallback([this, cb](const Property &p){
-      std::scoped_lock<std::recursive_mutex> lock(m_grabMutex);
+      std::scoped_lock lock(m_grabMutex);
       cb(p);
     });
   }
 
   void Grabber::removeAllCallbacks(){
-    std::scoped_lock<std::recursive_mutex> lock(data->callbackMutex);
+    std::scoped_lock lock(data->callbackMutex);
     data->callbacks.clear();
   }
 
   void Grabber::notifyNewImageAvailable(const ImgBase *image){
-    std::scoped_lock<std::recursive_mutex> lock(data->callbackMutex);
+    std::scoped_lock lock(data->callbackMutex);
     for(size_t i=0;i<data->callbacks.size();++i){
       data->callbacks[i](image);
     }
@@ -346,14 +346,14 @@ namespace icl::io {
                                             DeviceListFn device_list)
   {
     m_factories.registerPlugin(grabberid, std::move(creator));
-    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    std::scoped_lock l(m_mutex);
     m_deviceLists[grabberid] = std::move(device_list);
   }
 
   void GrabberRegistry::registerGrabberBusReset(const std::string &grabberid,
                                                 BusResetFn reset_function)
   {
-    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    std::scoped_lock l(m_mutex);
     if(auto it = m_busResets.find(grabberid); it != m_busResets.end())
       throw ICLException("unable to register grabber bus reset function for "
           + grabberid + ": only one per grabber can be registered");
@@ -362,7 +362,7 @@ namespace icl::io {
 
   void GrabberRegistry::addGrabberDescription(const std::string &grabber_description)
   {
-    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    std::scoped_lock l(m_mutex);
     if(auto it = m_descriptions.find(grabber_description); it != m_descriptions.end())
       throw ICLException("unable to add grabber description: \n"
           + grabber_description + "\n description already exists");
@@ -381,13 +381,13 @@ namespace icl::io {
   }
 
   std::vector<std::string> GrabberRegistry::getGrabberInfos(){
-    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    std::scoped_lock l(m_mutex);
     return std::vector<std::string>(m_descriptions.begin(), m_descriptions.end());
   }
 
   const std::vector<GrabberDeviceDescription>&
   GrabberRegistry::getDeviceList(std::string id, std::string hint, bool rescan){
-    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    std::scoped_lock l(m_mutex);
     if(auto it = m_deviceLists.find(id); it != m_deviceLists.end()){
       return (it->second)(hint, rescan);
     }
@@ -396,7 +396,7 @@ namespace icl::io {
   }
 
   void GrabberRegistry::resetGrabberBus(const std::string &id, bool verbose){
-    std::scoped_lock<std::recursive_mutex> l(m_mutex);
+    std::scoped_lock l(m_mutex);
     if(auto it = m_busResets.find(id); it != m_busResets.end()){
       return (it->second)(verbose);
     }

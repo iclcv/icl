@@ -22,7 +22,7 @@ namespace icl::qt {
   }
 
   void ICLDrawWidget3D::customPaintEvent(PaintEngine *e){
-    std::scoped_lock<std::recursive_mutex> lock(m_linkMutex);
+    std::scoped_lock lock(m_linkMutex);
 
     GLint profileMask = 0;
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
@@ -79,7 +79,7 @@ namespace icl::qt {
   }
 
   void ICLDrawWidget3D::link(ICLDrawWidget3D::GLCallback *cb){
-    std::scoped_lock<std::recursive_mutex> lock(m_linkMutex);
+    std::scoped_lock lock(m_linkMutex);
 
     if(cb == m_linkedCallback) return;
 

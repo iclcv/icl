@@ -365,7 +365,7 @@ namespace icl::utils {
     if(p.configurable != this){
       return p.configurable->getPropertyValue(propertyName.substr(p.childPrefix.length()));
     }
-    std::scoped_lock<std::recursive_mutex> lock(m_mutex);
+    std::scoped_lock lock(m_mutex);
     // Prefer the typed payload: `T x = c.getPropertyValue(name)` then
     // hits `AutoParse<any>`'s exact any_cast (or numeric-widen) fast
     // path with no parse.  Legacy-registered properties (those that
@@ -401,7 +401,7 @@ namespace icl::utils {
     if(p.configurable != this){
       p.configurable->setPropertyValue(propertyName.substr(p.childPrefix.length()),value);
     }else{
-      std::scoped_lock<std::recursive_mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       // Parse the incoming string into the declared C++ type via the
       // constraint's adapter.  Properties without a constraint
       // (core-level types like "color"/"image" registered via the
@@ -423,7 +423,7 @@ namespace icl::utils {
       p.configurable->setPropertyValueTyped(propertyName.substr(p.childPrefix.length()),
                                             std::move(v));
     }else{
-      std::scoped_lock<std::recursive_mutex> lock(m_mutex);
+      std::scoped_lock lock(m_mutex);
       // Stores the caller's typed value directly; no serialize/parse
       // round-trip.  For properties with a constraint, the caller is
       // expected to provide a value matching value_type so downstream

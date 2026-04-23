@@ -71,7 +71,7 @@ namespace icl::utils {
     }
 
     void handle(int signal){
-      std::scoped_lock<std::recursive_mutex> lock(getMutex());
+      std::scoped_lock lock(getMutex());
       std::string name = t(signal);
       std::vector<Handler*> ordered;
 
@@ -112,7 +112,7 @@ namespace icl::utils {
 
 
   static void register_low_level_handler(void (*handler)(int, siginfo_t*, void*), int signal){
-    std::scoped_lock<std::recursive_mutex> lock(ctx().getMutex());
+    std::scoped_lock lock(ctx().getMutex());
 
     struct sigaction action;
     memset(&action, 0, sizeof(action));
@@ -141,7 +141,7 @@ namespace icl::utils {
                               const std::string &signals, int order){
 
     SignalHandlerContext &c = ctx();
-    std::scoped_lock<std::recursive_mutex> lock(c.getMutex());
+    std::scoped_lock lock(c.getMutex());
 
     if(c.handlers.find(id) != c.handlers.end()){
       throw ICLException("SingnalHandler with id " + id
@@ -170,7 +170,7 @@ namespace icl::utils {
 
   void SignalHandler::uninstall(const std::string &id){
     SignalHandlerContext &c = ctx();
-    std::scoped_lock<std::recursive_mutex> lock(c.getMutex());
+    std::scoped_lock lock(c.getMutex());
 
     if(c.handlers.find(id) != c.handlers.end()){
       throw ICLException("SingnalHandler with id " + id

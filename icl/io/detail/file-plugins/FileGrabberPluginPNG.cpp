@@ -17,7 +17,7 @@ using namespace icl::core;
 
 namespace icl::io {
   void FileGrabberPluginPNG::grab(File &file, ImgBase **dest){
-    std::scoped_lock<std::recursive_mutex> lock(mutex);
+    std::scoped_lock lock(mutex);
     png_byte header[8];
 
     FILE *cfile = fopen(file.getName().c_str(), "rb");
