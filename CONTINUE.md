@@ -2,46 +2,54 @@
 
 ## Next Step
 
-Session 54 closed the Configurable typed-storage arc — steps 5
-and 8 landed, step 7 skipped deliberately (dynamic-registration
-entry point).  Also migrated ~200 subclass-internal setPropertyValue
-/ getPropertyValue call sites onto the `prop(name).value` proxy
-(option 1), and promoted `Configurable::prop()` to public API +
-added `Handle::type()` / `Handle::info()` accessors (option 2),
-then migrated qt::Prop's ConfigurableGUIWidget off the individual
-public getters onto the unified Handle.
+Session 54–55 closed a huge arc of Configurable/property work:
+typed-storage migration completed (step 5 + step 8 of Session 53
+plan), `Configurable::prop()` proxy promoted to public API, every
+in-tree subclass migrated off virtual `setPropertyValue`/
+`getPropertyX` overrides onto `addProperty<C> + registerCallback`,
+then the GUI refresh mechanism replaced: `qt::Prop::propertyChanged`
+now dispatches through `QMetaObject::invokeMethod(Qt::QueuedConnection)`
+with a coalescing dirty-flag (one widget flush per GUI event-loop
+tick).  `VolatileUpdater` / `VolatileImageUpdater` QTimers,
+`Property::volatileness`, `ConfigurableProxy`, `setPropertyValueSilent`,
+`getPropertyConstraint`, `getPropertyToolTip`,
+`getPropertyVolatileness`, `setPropertyPayload`, `getPropertyPayload`
+all retired.  All ~500 `addProperty` call sites swept to drop the
+volatileness arg.  `GenericGrabber` now inherits `Configurable`
+directly, with the backend as `addChildConfigurable`.
 
-Option-1 + option-2 call-site cleanups still open if you want to
-finish the sweep:
+Also fixed: the `LocalThresholdOp::regionMean` multi-channel
+collapse (`aa196d084` — channels 1+2 of a 3-channel input were
+being skipped, producing red-black output in playground).
 
-- External callers (apps / demos / tests / icl-configurable-info)
-  that now *could* use `cfg->prop(name).value` but still call
-  `cfg->getPropertyValue(name)` — roughly 120 sites.  Pure
-  cosmetic; the public getters stay as thin wrappers.
-- `getPropertyConstraint` / `getPropertyToolTip` /
-  `getPropertyVolatileness` could be dropped from the public API
-  now that Handle exposes them — keep as protected thin wrappers
-  for back-compat, or delete outright.  Low value, small blast
-  radius.
+Concrete work items remaining (in suggested order):
 
-Other concrete work items from `TODO.md`:
-
-- **ICLWidget OSD scale-range button** — misbehaves (surfaced
-  2026-04-21 in `icl-region-inspector -i create cameraman`).
-  Concrete user-visible bug, small scope.
-- **LocalThresholdOp multi-channel collapse** — surfaced
-  2026-04-22 during step 5 GUI verification; only channel 0 is
-  processed, output is red-black.  Isolated to
-  `icl/filter/LocalThresholdOp.cpp::apply()`.
+- **Float-setter / int-property audit** (TODO.md "Op API" section).
+  ~5 Ops expose `setFoo(float)` that writes to a `Range<int>`
+  property — legacy path truncates via stringify.  Each needs
+  either property widen to `Range<float>` or setter narrow to int,
+  then migrate to `prop().value = v`.  Mechanical per Op.
+- **Dynamic child-configurable UI refresh** —
+  `project_dynamic_child_configurables.md`.  qt::Prop still builds
+  widget tree once; doesn't rebuild on runtime `addChildConfigurable`/
+  `removeChildConfigurable`.  Affects ImageCompressor codec swap
+  and now GenericGrabber backend swap.  Proposed fix:
+  `Configurable::onChildSetChanged` callback list, Prop subscribes
+  and rebuilds.  Pairs nicely with the callback-push channel that
+  just landed.
+- **ICLWidget OSD scale-range button misbehaves** (2026-04-21
+  report).  User-visible, small scope.
 - **Designated-init GUI component syntax** — next natural step
-  after the step-5 qt::Prop cleanup; `gui << Slider{.min=..., .max=...}`
-  aggregate-init + typed component descriptors, pairs with the
-  `GUIComponent` string-round-trip rework.
+  after qt::Prop cleanup; `gui << Slider{.min=..., .max=...}`.
+  Pairs with `GUIComponent` string-round-trip rework.
 - **`core/Image.h` should include `core/Img.h`** — latent
-  dependency fix (Clang 21 surfaced it); mechanical single-line
-  change.
+  dependency (Clang 21 surfaced); mechanical one-line fix.
 - **`std::lock_guard`/`scoped_lock` CTAD cleanup** — ~281 sites,
-  mechanical `perl -pi -e`, useful C++17 modernization.
+  `perl -pi -e`.
+- **Fun: icl-edit image editor demo** (new TODO section).  Needs
+  new filter Ops first: `BrillianceOp`, `VibranceOp`, `ClarityOp`,
+  `CurvesOp`, interactive crop/rotate.  Good exercise of the push-
+  callback refresh, filter chaining, ConfigFile round-trip.
 
 ---
 

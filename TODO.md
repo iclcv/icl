@@ -182,14 +182,53 @@ See `project_image_migration.md`.
 - [ ] **Backend split for legacy Ops** — `X.cpp / X_Cpp.cpp / X_Ipp.cpp / X_SSE.cpp / X_OpenCL.cpp` layout, pair with `filter/detail/` placement.  See `project_filter_dispatch_arch.md` and `project_module_subdirs.md`.
 - [ ] **IPP cross-check** — verify non-IPP filter impls against IPP in a Linux container.  See `project_ipp_crosscheck.md`.
 - [ ] **`BackendProxy::backends(Backend b)`** proxy for terser multi-registration.  See `project_backends_proxy.md`.
-- [ ] **LocalThresholdOp collapses multi-channel input.**  Surfaced
-  2026-04-22 during Step 5 GUI verification — output of
-  `icl-filter-playground -i create lena` with LocalThresholdOp selected
-  is red-black, i.e. only channel 0 is processed and the other channels
-  come out empty.  Expected: per-channel thresholding (or at minimum
-  grayscale-convert then broadcast).  Investigate
-  `icl/filter/LocalThresholdOp.cpp` — likely an `apply()` path that
-  hardcodes channel 0 or skips the multi-channel loop.
+- [x] **LocalThresholdOp collapses multi-channel input.**  Landed `aa196d084`.
+  Root cause: `apply_local_threshold_six` hoisted `src.begin(0)` / `ii.begin(0)`
+  outside the per-channel loop, so every iteration recomputed thresholds from
+  channel 0 of both src and the integral image and wrote into channel 0 of dst
+  (channels 1+2 stayed at ensureCompatible's zero init → red-black display
+  for a 3-channel input via formatMatrix).  Moved `begin(c)` into the loop;
+  also fixed the "invert output" post-pass that only inverted channel 0.
+  Added `Filter.LocalThreshold.regionMean_multichannel` regression test.
+
+---
+
+## Fun — image-editor demo ("icl-edit"?)
+
+- [ ] **Build a mini photo-editor app on top of ICL.**  Fun target that
+  doubles as a stress test for the Op framework + qt::Prop +
+  GenericGrabber (file) + the callback-push GUI channel that just
+  landed.  Needs some new filters first:
+  - **`BrillianceOp`** — Apple-Photos-style tone lift: shadow raise +
+    midtone contrast S-curve + highlight rolloff.  Drives luminance
+    (Y in YUV or V in HSV), blends back into RGB.  LUT-driven for
+    speed.  Expose `amount` (range), `shadow-lift`, `highlight-keep`.
+  - **`VibranceOp`** — saturation boost that spares already-saturated
+    pixels and protects skin tones.  Operates on HSV S with a
+    protection mask keyed off H band.  Expose `amount`, `skin-protect`.
+  - **`ClarityOp`** / `StructureOp` — local mid-tone contrast via
+    unsharp-mask on luminance with an edge-aware kernel
+    (bilateral-weighted).  Expose `amount`, `radius`, `threshold`.
+  - **Curves** — user-tunable tone curve over RGB or per-channel.
+    Probably a new GUI component (draggable control points) — pairs
+    with the "designated-init GUI components" TODO.
+  - **Crop / rotate / straighten** — interactive geometry ops on the
+    canvas.  Probably uses `AffineOp` + a `CropOp` (maybe just
+    `setROI` + `clip-to-ROI`).
+  - **Histogram display** — reuse `qt::HistogrammWidget`.
+
+  App structure: `Display` as canvas, a vertical stack of `Prop(op)`
+  for each filter in a pipeline, drag-to-reorder, preview-debounced
+  render.  Save/load pipeline as a ConfigFile (XML for now, YAML
+  when `project_yaml_config.md` lands).  Exportable recipes.
+
+  Out-of-scope but related: nondestructive editing (layer stack),
+  RAW loading (needs libraw integration).  Keep v1 to "load JPEG,
+  tweak, save JPEG."
+
+  Good validation of: filter chaining ergonomics, the push-callback
+  GUI refresh at interactive rates, per-property clamping on
+  sliders with gamma-style non-linear scales, ConfigFile round-trip.
 
 ---
 
