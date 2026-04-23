@@ -147,6 +147,34 @@ namespace icl::utils {
     return icl8u(t);
   }
 
+  namespace {
+    // Whitespace-trim + from_chars.  Accepts a leading '+' (from_chars rejects
+    // it for integral types).  Throws on parse failure or trailing garbage.
+    template<class T>
+    T parse_integral_sv(std::string_view s){
+      while(!s.empty() && std::isspace(static_cast<unsigned char>(s.front()))) s.remove_prefix(1);
+      while(!s.empty() && std::isspace(static_cast<unsigned char>(s.back())))  s.remove_suffix(1);
+      const char *first = s.data();
+      const char *last  = first + s.size();
+      if(first != last && *first == '+') ++first;
+      T out{};
+      auto [ptr, ec] = std::from_chars(first, last, out);
+      if(ec != std::errc() || ptr != last){
+        throw ICLException(std::string("parse: could not parse '") + std::string(s) + "' as integral");
+      }
+      return out;
+    }
+  }
+
+  short              parse_short     (std::string_view s){ return parse_integral_sv<short>(s); }
+  unsigned short     parse_ushort    (std::string_view s){ return parse_integral_sv<unsigned short>(s); }
+  int                parse_int       (std::string_view s){ return parse_integral_sv<int>(s); }
+  unsigned int       parse_uint      (std::string_view s){ return parse_integral_sv<unsigned int>(s); }
+  long               parse_long      (std::string_view s){ return parse_integral_sv<long>(s); }
+  unsigned long      parse_ulong     (std::string_view s){ return parse_integral_sv<unsigned long>(s); }
+  long long          parse_long_long (std::string_view s){ return parse_integral_sv<long long>(s); }
+  unsigned long long parse_ulong_long(std::string_view s){ return parse_integral_sv<unsigned long long>(s); }
+
   icl32f parse_icl32f(std::string_view s){
     if(s == "inf") return std::numeric_limits<icl32f>::infinity();
     if(s == "-inf") return -std::numeric_limits<icl32f>::infinity();

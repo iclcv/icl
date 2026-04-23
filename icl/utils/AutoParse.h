@@ -19,11 +19,17 @@ namespace icl::utils {
   /// Short-lived conversion proxy returned from index-style accessors
   /// like `ProgArg::operator[]` or `DataStore::operator[]`.
   ///
-  /// Two specializations:
+  /// Three specializations:
   ///
   ///   - `AutoParse<std::string>` — string-backed.  `operator T()` calls
   ///     `parse<T>(payload)` for any stream-extractable T.  This is what
   ///     `ProgArg::operator[](int)` returns: `int x = pa[0]` parses.
+  ///
+  ///   - `AutoParse<std::string_view>` — view-backed.  Same shape as the
+  ///     string backend, but the payload is a non-owning view.  Used by
+  ///     `yaml::Node::as<T>()` to avoid materializing a `std::string` per
+  ///     scalar access.  Cannot be constructed from an arbitrary T (a view
+  ///     cannot own formatted bytes) — for that, use `AutoParse<std::string>`.
   ///
   ///   - `AutoParse<std::any>` — any-backed.  `operator T()` tries an
   ///     exact `std::any_cast<T>` first, then numeric widening (if both
@@ -34,8 +40,8 @@ namespace icl::utils {
   /// Discipline: AutoParse is a *conversion proxy*, not a storage type.
   /// It is meant to be consumed immediately as `T x = ap` or `ap.as<T>()`.
   /// Do not store, do not put into containers, do not use as a function
-  /// parameter type.  Use `std::string` / `std::any` directly for those
-  /// roles.
+  /// parameter type.  Use `std::string` / `std::string_view` / `std::any`
+  /// directly for those roles.
   template<class Backend>
   class AutoParse;
 
@@ -106,6 +112,57 @@ namespace icl::utils {
     /// the `std::string` base; exists for symmetry with the `any`
     /// specialization.
     const std::string &str() const { return *this; }
+  };
+
+
+  /// View-backed specialization.  See `AutoParse` for overview.
+  ///
+  /// Publicly inherits `std::string_view`, same slicing trick as the
+  /// string backend.  The discipline rule (never stored, never in a
+  /// container, never a parameter type) guarantees the view's lifetime
+  /// is bounded by the full-expression that produced it, so reading
+  /// through the proxy is safe.
+  ///
+  /// Unlike `AutoParse<std::string>`, there is no `AutoParse(const T&)`
+  /// formatting ctor — a view cannot own formatted bytes.  Callers that
+  /// need "T -> stringish" should use `AutoParse<std::string>` or
+  /// `str(t)` directly.
+  template<>
+  class AutoParse<std::string_view> : public std::string_view {
+    // Exclude types reachable through the std::string_view base from
+    // the templated `operator T()` so they don't compete with the
+    // base's own conversions.
+    template<class T>
+    static constexpr bool is_parse_target =
+        !std::is_same_v<T, char> &&
+        !std::is_same_v<T, signed char> &&
+        !std::is_same_v<T, unsigned char> &&
+        !std::is_same_v<T, char*> &&
+        !std::is_same_v<T, const char*> &&
+        !std::is_same_v<T, std::string> &&
+        !std::is_same_v<T, std::string_view>;
+
+  public:
+    AutoParse() = default;
+
+    AutoParse(std::string_view v) : std::string_view(v) {}
+    AutoParse(const std::string &v) : std::string_view(v) {}
+    AutoParse(const char *s) : std::string_view(s) {}
+
+    /// Implicit conversion to T via `parse<T>`, for types *other than*
+    /// the string-like ones that the std::string_view base already
+    /// handles.
+    template<class T, class = std::enable_if_t<is_parse_target<T>>>
+    operator T() const { return parse<T>(*this); }
+
+    /// Explicit conversion — avoids implicit-operator ambiguity.
+    template<class T>
+    T as() const { return parse<T>(*this); }
+
+    /// Access the underlying view directly.  Equivalent to slicing to
+    /// the `std::string_view` base; exists for symmetry with the
+    /// other specializations.
+    std::string_view str() const { return *this; }
   };
 
 

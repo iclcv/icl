@@ -190,6 +190,17 @@ namespace icl::utils {
   ICLUtils_API icl64f parse_icl64f(std::string_view s);
   ICLUtils_API bool parse_bool(std::string_view s);
 
+  // from_chars-backed integral fast paths — avoid the istringstream{string{sv}}
+  // round-trip the generic fallback would incur.
+  ICLUtils_API short              parse_short     (std::string_view s);
+  ICLUtils_API unsigned short     parse_ushort    (std::string_view s);
+  ICLUtils_API int                parse_int       (std::string_view s);
+  ICLUtils_API unsigned int       parse_uint      (std::string_view s);
+  ICLUtils_API long               parse_long      (std::string_view s);
+  ICLUtils_API unsigned long      parse_ulong     (std::string_view s);
+  ICLUtils_API long long          parse_long_long (std::string_view s);
+  ICLUtils_API unsigned long long parse_ulong_long(std::string_view s);
+
   template<>
   inline icl8u parse<icl8u>(std::string_view s){
     return parse_icl8u(s);
@@ -206,9 +217,21 @@ namespace icl::utils {
   inline bool parse<bool>(std::string_view s){
     return parse_bool(s);
   }
+  template<> inline short              parse<short>             (std::string_view s){ return parse_short(s); }
+  template<> inline unsigned short     parse<unsigned short>    (std::string_view s){ return parse_ushort(s); }
+  template<> inline int                parse<int>               (std::string_view s){ return parse_int(s); }
+  template<> inline unsigned int       parse<unsigned int>      (std::string_view s){ return parse_uint(s); }
+  template<> inline long               parse<long>              (std::string_view s){ return parse_long(s); }
+  template<> inline unsigned long      parse<unsigned long>     (std::string_view s){ return parse_ulong(s); }
+  template<> inline long long          parse<long long>         (std::string_view s){ return parse_long_long(s); }
+  template<> inline unsigned long long parse<unsigned long long>(std::string_view s){ return parse_ulong_long(s); }
   template<>
   inline std::string parse<std::string>(std::string_view s){
     return std::string(s);
+  }
+  template<>
+  inline std::string_view parse<std::string_view>(std::string_view s){
+    return s;
   }
 
   /** \endcond */

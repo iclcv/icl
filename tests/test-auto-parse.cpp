@@ -6,7 +6,9 @@
 #include <icl/utils/AutoParse.h>
 
 #include <any>
+#include <limits>
 #include <string>
+#include <string_view>
 
 using namespace icl::utils;
 
@@ -52,6 +54,123 @@ ICL_REGISTER_TEST("utils.autoparse.string.as_explicit", "as<T>() avoids ambiguit
   AutoParse<std::string> ap("17");
   ICL_TEST_EQ(ap.as<int>(), 17);
   ICL_TEST_NEAR(ap.as<float>(), 17.0f, 1e-6f);
+}
+
+// ---------------------------------------------------------------------------
+// AutoParse<std::string_view> — view backend
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.autoparse.view.to_int", "view-backend parses int")
+{
+  AutoParse<std::string_view> ap(std::string_view("42"));
+  int i = ap;
+  ICL_TEST_EQ(i, 42);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.to_long", "view-backend parses long")
+{
+  AutoParse<std::string_view> ap(std::string_view("12345678"));
+  long l = ap;
+  ICL_TEST_EQ(l, 12345678L);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.to_unsigned", "view-backend parses unsigned")
+{
+  AutoParse<std::string_view> ap(std::string_view("4000000000"));
+  unsigned u = ap;
+  ICL_TEST_EQ(u, 4000000000u);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.signed_negative", "view-backend parses negative int")
+{
+  AutoParse<std::string_view> ap(std::string_view("-17"));
+  int i = ap;
+  ICL_TEST_EQ(i, -17);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.leading_plus", "view-backend accepts leading '+'")
+{
+  AutoParse<std::string_view> ap(std::string_view("+42"));
+  int i = ap;
+  ICL_TEST_EQ(i, 42);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.whitespace_trim", "view-backend trims whitespace")
+{
+  AutoParse<std::string_view> ap(std::string_view("  99  "));
+  int i = ap;
+  ICL_TEST_EQ(i, 99);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.to_double", "view-backend parses double")
+{
+  AutoParse<std::string_view> ap(std::string_view("3.14"));
+  double d = ap;
+  ICL_TEST_NEAR(d, 3.14, 1e-9);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.to_bool", "view-backend parses bool")
+{
+  ICL_TEST_TRUE (static_cast<bool>(AutoParse<std::string_view>(std::string_view("true"))));
+  ICL_TEST_FALSE(static_cast<bool>(AutoParse<std::string_view>(std::string_view("false"))));
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.str_accessor", "str() returns the view")
+{
+  AutoParse<std::string_view> ap(std::string_view("xyz"));
+  ICL_TEST_EQ(std::string(ap.str()), std::string("xyz"));
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.as_explicit", "as<T>() avoids ambiguity")
+{
+  AutoParse<std::string_view> ap(std::string_view("17"));
+  ICL_TEST_EQ(ap.as<int>(), 17);
+  ICL_TEST_NEAR(ap.as<float>(), 17.0f, 1e-6f);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.from_string", "view-backend ctor from std::string")
+{
+  std::string owned = "77";
+  AutoParse<std::string_view> ap(owned);
+  int i = ap;
+  ICL_TEST_EQ(i, 77);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.from_cstr", "view-backend ctor from const char*")
+{
+  AutoParse<std::string_view> ap("88");
+  int i = ap;
+  ICL_TEST_EQ(i, 88);
+}
+
+ICL_REGISTER_TEST("utils.autoparse.view.parse_throws_on_garbage", "parse<int>(sv) throws on bad input")
+{
+  AutoParse<std::string_view> ap(std::string_view("not_a_number"));
+  ICL_TEST_THROW(ap.as<int>(), ICLException);
+}
+
+// ---------------------------------------------------------------------------
+// parse<T>(std::string_view) fast-path coverage
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.parse.view.int_family", "from_chars fast paths cover the int family")
+{
+  ICL_TEST_EQ(parse<short>             (std::string_view("-1")),            static_cast<short>(-1));
+  ICL_TEST_EQ(parse<unsigned short>    (std::string_view("65535")),         static_cast<unsigned short>(65535));
+  ICL_TEST_EQ(parse<int>               (std::string_view("-2147483648")),   std::numeric_limits<int>::min());
+  ICL_TEST_EQ(parse<unsigned int>      (std::string_view("4294967295")),    4294967295u);
+  ICL_TEST_EQ(parse<long>              (std::string_view("-100")),          -100L);
+  ICL_TEST_EQ(parse<unsigned long>     (std::string_view("100")),           100UL);
+  ICL_TEST_EQ(parse<long long>         (std::string_view("-9223372036854775807")), -9223372036854775807LL);
+  ICL_TEST_EQ(parse<unsigned long long>(std::string_view("18446744073709551615")), 18446744073709551615ULL);
+}
+
+ICL_REGISTER_TEST("utils.parse.view.string_view_identity", "parse<string_view>(sv) is identity")
+{
+  std::string_view in("hello");
+  std::string_view out = parse<std::string_view>(in);
+  ICL_TEST_TRUE(in.data() == out.data());
+  ICL_TEST_EQ(in.size(), out.size());
 }
 
 // ---------------------------------------------------------------------------
