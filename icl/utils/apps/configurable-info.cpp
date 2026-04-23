@@ -44,18 +44,19 @@ int main(int n, char **ppc){
     std::vector<std::string> props = p->getPropertyList();
     for(unsigned int j=0;j<props.size();++j){
       std::string pj = props[j];
+      auto h = p->prop(pj);
       std::cout << "   \"" << pj << "\"" << std::endl;
-      std::cout << "      type        : " << p->getPropertyType(pj) << std::endl;
+      std::cout << "      type        : " << h.type() << std::endl;
       // Some kinds (command / monostate) aren't meaningfully stringifiable
       // under typed storage — catch and print empty rather than aborting
       // the whole listing on the first such property.
       std::cout << "      def. value  : ";
-      try { std::cout << p->getPropertyValue(pj).str(); } catch(...) {}
+      try { std::cout << h.value.str(); } catch(...) {}
       std::cout << std::endl;
-      std::cout << "      info        : " << p->getPropertyInfo(pj) << std::endl;
-      std::cout << "      volatileness: " << p->getPropertyVolatileness(pj) << std::endl;
+      std::cout << "      info        : " << h.info() << std::endl;
+      std::cout << "      volatileness: " << h.volatileness << std::endl;
       std::cout << "      tooltip     : ";
-      std::vector<std::string> lines = tok(p->getPropertyToolTip(pj), "\n");
+      std::vector<std::string> lines = tok(h.tooltip, "\n");
       for(unsigned int k=0;k<lines.size();++k){
         std::cout << (k?"                    ":"") << lines[k] << std::endl;
       }
