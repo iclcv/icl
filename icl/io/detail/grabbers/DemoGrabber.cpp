@@ -153,8 +153,15 @@ namespace icl::io {
     m_drawBuffer->setTime(now);
     m_lastTime = now;
 
-    prop("current-pos").value = "x:" + str(m_x.x*m_drawSize.width) + " y:"
-                              + str(m_x.y*m_drawSize.height);
+    // Silent update — avoids firing callbacks from inside grab()'s
+    // m_grabMutex scope (those can reach qt::Prop's propertyChanged
+    // on a different thread that holds execMutex and is waiting for
+    // m_grabMutex, a classic lock inversion).  The "current-pos" info
+    // property is polled by qt::Prop's VolatileUpdater every 10ms
+    // (volatileness=10) — callbacks are redundant.
+    setPropertyValueSilent("current-pos",
+                           std::string("x:" + str(m_x.x*m_drawSize.width) + " y:"
+                                       + str(m_x.y*m_drawSize.height)));
 
     return m_drawBuffer;
   }

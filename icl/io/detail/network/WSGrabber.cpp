@@ -293,19 +293,23 @@ namespace icl::io {
     auto *c = m_data->client;
 
     // Refresh live-info properties cheaply — these are atomics, no locking.
-    prop("connection state").value =
+    // Silent updates: called from acquireImage() under m_grabMutex; firing
+    // callbacks here would deadlock against a GUI thread changing another
+    // property (qt::Prop holds execMutex, wants m_grabMutex).  GUI polls
+    // these Info properties via VolatileUpdater.
+    setPropertyValueSilent("connection state",
         str(connStateName(c->state.load())) +
         (c->state == ConnState::Disconnected
            ? str(" (next retry in ~") + str(c->currentBackoffMs) + "ms)"
-           : str(""));
-    prop("reconnect attempts").value = str(static_cast<long long>(c->reconnectAttempts));
-    prop("frames received").value = str(static_cast<long long>(c->framesReceived));
-    prop("frames dropped").value = str(static_cast<long long>(c->framesDropped));
-    prop("bytes received").value = str(static_cast<long long>(c->bytesReceived));
+           : str("")));
+    setPropertyValueSilent("reconnect attempts", str(static_cast<long long>(c->reconnectAttempts)));
+    setPropertyValueSilent("frames received",    str(static_cast<long long>(c->framesReceived)));
+    setPropertyValueSilent("frames dropped",     str(static_cast<long long>(c->framesDropped)));
+    setPropertyValueSilent("bytes received",     str(static_cast<long long>(c->bytesReceived)));
     if (c->lastConnectedUsec > 0) {
-      prop("last connected").value =
+      setPropertyValueSilent("last connected",
           Time(static_cast<Time::value_type>(c->lastConnectedUsec))
-            .toStringFormated("%H:%M:%S");
+            .toStringFormated("%H:%M:%S"));
     }
 
     // Wait for a fresh frame, with the timeout configured by the user.

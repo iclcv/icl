@@ -429,12 +429,15 @@ namespace icl::io {
 
       //DEBUG_LOG("in update properties: use idx = " << usedIdx);
       //std::cout << "--" << std::endl;
-      prop("next filename").value = m_data->oFileList[usedIdx == s-1 ? 0 : usedIdx+1];
-      prop("current filename").value = m_data->oFileList[usedIdx];
-      prop("relative progress").value = str((100* (usedIdx+1)) / float(s))+" %";
-      prop("absolute progress").value = str(usedIdx+1) + " / " + str(s);
-      prop("format").value = img -> getFormat();
-      prop("size").value = img -> getSize();
+      // Silent updates — called from grab() path; avoids lock inversion
+      // between m_grabMutex (held by caller) and execMutex (held by
+      // qt::Prop during slider changes) through the callback chain.
+      setPropertyValueSilent("next filename",   std::string(m_data->oFileList[usedIdx == s-1 ? 0 : usedIdx+1]));
+      setPropertyValueSilent("current filename",std::string(m_data->oFileList[usedIdx]));
+      setPropertyValueSilent("relative progress", str((100* (usedIdx+1)) / float(s))+" %");
+      setPropertyValueSilent("absolute progress", str(usedIdx+1) + " / " + str(s));
+      setPropertyValueSilent("format",           str(img -> getFormat()));
+      setPropertyValueSilent("size",             str(img -> getSize()));
       //prop("frame-index").value = m_data->iCurrIdx;
       m_updatingProperties = false;
     }
