@@ -185,6 +185,7 @@ From Session 48 deferrals:
 ## C++17 source modernization (Sessions 27–28 residue)
 
 - [ ] Any deferred source-code fixes from the C++17 migration.  See `project_cpp17.md`.
+- [ ] **Drop explicit template args on `std::lock_guard` / `std::scoped_lock` / `std::unique_lock`.**  CTAD has been available for these since C++17, and the toolchain bump to Apple Clang 21 (Session 53) removed any remaining compiler gap.  ~281 sites across ICL currently write `std::lock_guard<std::mutex> g(m)` or `std::lock_guard<std::recursive_mutex> g(m)` — CTAD lets these drop to `std::lock_guard g(m)`.  Consider flipping `lock_guard` → `scoped_lock` at the same time (scoped_lock is the C++17+ default, handles multi-mutex, zero cost for the single-mutex case).  Mechanical with `perl -pi -e`; verify with a single clean rebuild.
 
 ---
 
