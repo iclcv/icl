@@ -127,7 +127,7 @@ namespace icl::utils {
     return prefix+str(i.value++);
   }
 
-   Configurable::Property &Configurable::prop(const std::string &propertyName){
+   Configurable::Property &Configurable::prop_storage(const std::string &propertyName){
     if(auto it = m_properties.find(propertyName); it == m_properties.end()){
       throw ICLException("Property " + str(propertyName) + " is not supported");
     } else {
@@ -187,8 +187,22 @@ namespace icl::utils {
     configurable->m_elderConfigurable = nullptr;
   }
 
-  const Configurable::Property &Configurable::prop(const std::string &propertyName) const{
-    return const_cast<Configurable*>(this)->prop(propertyName);
+  const Configurable::Property &Configurable::prop_storage(const std::string &propertyName) const{
+    return const_cast<Configurable*>(this)->prop_storage(propertyName);
+  }
+
+  Configurable::Handle Configurable::prop(const std::string &propertyName){
+    return Handle{this, prop_storage(propertyName)};
+  }
+
+  Configurable::Handle Configurable::prop(const std::string &propertyName) const{
+    // Const overload — Handle has const reference members already; the
+    // const-correctness of writes is enforced by PropertyValueRef's
+    // m_conf being non-const: calling `handle.value = v` on a handle
+    // produced from a const Configurable is a const-violation that
+    // the compiler catches here via const_cast at the one-line bridge.
+    return Handle{const_cast<Configurable*>(this),
+                  const_cast<Property&>(prop_storage(propertyName))};
   }
 
   std::vector<std::string> Configurable::getPropertyList() const{
@@ -213,7 +227,7 @@ namespace icl::utils {
                                  const std::string &info, const AutoParse<std::string> &value,
                                  int volatileness, const std::string &tooltip){
     try{
-      prop(name);
+      prop_storage(name);
       throw ICLException("Unable to add property " + name + " because it is already used");
     }catch(ICLException &){
       Property p(this, name, type, info, volatileness, tooltip);
@@ -306,7 +320,7 @@ namespace icl::utils {
   }
   try{
     if(callbacks.size()){
-      const Property &p = prop(propname);
+      const Property &p = prop_storage(propname);
       std::vector<Callback>::const_iterator it;
       for(it=callbacks.begin();it!=callbacks.end();++it){
         (*it)(p);
@@ -327,7 +341,7 @@ namespace icl::utils {
     // only for ABI compatibility.
   }
   AutoParse<std::any> Configurable::getPropertyValue(const std::string &propertyName) const{
-    const Property &p = prop(propertyName);
+    const Property &p = prop_storage(propertyName);
     if(p.configurable != this){
       return p.configurable->getPropertyValue(propertyName.substr(p.childPrefix.length()));
     }
@@ -363,7 +377,7 @@ namespace icl::utils {
   }
 
   void Configurable::setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value){
-    Property &p = prop(propertyName);
+    Property &p = prop_storage(propertyName);
     if(p.configurable != this){
       p.configurable->setPropertyValue(propertyName.substr(p.childPrefix.length()),value);
     }else{
@@ -384,7 +398,7 @@ namespace icl::utils {
   }
 
   void Configurable::setPropertyValueTyped(const std::string &propertyName, std::any v){
-    Property &p = prop(propertyName);
+    Property &p = prop_storage(propertyName);
     if(p.configurable != this){
       p.configurable->setPropertyValueTyped(propertyName.substr(p.childPrefix.length()),
                                             std::move(v));
@@ -406,7 +420,7 @@ namespace icl::utils {
     // field retired in step 4c.  Kept as an API entry point for
     // non-stringifiable property updates (images, etc.) that can't
     // round-trip through setPropertyValue's AutoParse<std::string>.
-    Property &p = prop(propertyName);
+    Property &p = prop_storage(propertyName);
     if(p.configurable != this){
       p.configurable->setPropertyPayload(propertyName.substr(p.childPrefix.length()), std::move(payload));
     }else{
@@ -417,7 +431,7 @@ namespace icl::utils {
   }
 
   std::any Configurable::getPropertyPayload(const std::string &propertyName) const{
-    const Property &p = prop(propertyName);
+    const Property &p = prop_storage(propertyName);
     if(p.configurable != this){
       return p.configurable->getPropertyPayload(propertyName.substr(p.childPrefix.length()));
     }
@@ -596,7 +610,7 @@ namespace icl::utils {
 
   void Configurable::adaptProperty(const std::string &name,const std::string &newType,
                                    const std::string &newInfo, const std::string &newToolTip){
-    Property &p = prop(name);
+    Property &p = prop_storage(name);
     if(p.configurable != this){
       p.configurable->adaptProperty(name.substr(p.childPrefix.length()),newType,newInfo, newToolTip);
     }else{

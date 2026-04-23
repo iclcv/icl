@@ -166,6 +166,49 @@ namespace icl::utils {
       obtain a list of all Configurable implementations and their
       supported properties.
   */
+  class Configurable;  // fwd for the refs below
+
+  /// Proxy over a property's value.  Created short-term by
+  /// `Configurable::prop(name).value`.  All operations route through
+  /// `setPropertyValueTyped` / `getPropertyValue`, keeping invariants
+  /// (typed_value up to date, callbacks fired) automatically.
+  ///
+  /// Holds a pointer to the owning Configurable and a pointer to the
+  /// name string.  Safe for the lifetime of the `PropertyHandle` the
+  /// ref was constructed from.
+  class PropertyValueRef {
+    Configurable      *m_conf;
+    const std::string *m_name;
+   public:
+    PropertyValueRef(Configurable *c, const std::string &n) : m_conf(c), m_name(&n) {}
+
+    /// Typed write — stores std::any(v) via setPropertyValueTyped,
+    /// no stringify/parse round-trip.  Accepts any T.
+    template<class T>
+    PropertyValueRef& operator=(T&& v);  // defined after Configurable
+
+    /// Explicit const char* overload — the templated one would deduce
+    /// T = const char* and store a pointer into std::any.  Forwards
+    /// to the std::string path so downstream readers cast cleanly.
+    PropertyValueRef& operator=(const char* s);
+
+    /// Templated implicit read — AutoParse<std::any> cascade over
+    /// typed_value: exact any_cast fast path, numeric widening, parse
+    /// of stored string, stringify-numeric on T=std::string.
+    template<class T>
+    operator T() const;  // defined after Configurable
+
+    /// Explicit read.
+    template<class T>
+    T as() const { return static_cast<T>(*this); }
+
+    /// Equality sugar for the common `prop("x").value == "on"` idiom.
+    bool operator==(std::string_view s) const;
+    bool operator==(const char* s) const;
+    template<class T>
+    bool operator==(const T& t) const { return static_cast<T>(*this) == t; }
+  };
+
   class ICLUtils_API Configurable{
 
     friend class ConfigurableProxy;
@@ -317,11 +360,11 @@ namespace icl::utils {
       addProperty(name, type, info, AutoParse<std::string>(value),
                   volatileness, tooltip);
 
-      // Attach the structured payload + typed value.  Typed storage
-      // is the fast path for getPropertyValue; the legacy string in
-      // `value` is kept in sync for ConfigFile save and for any
-      // callers that haven't migrated yet.
-      auto &p = prop(name);
+      // Attach the structured payload + typed value.  prop_storage
+      // returns the underlying Property& for direct-field access;
+      // external callers use prop(name) which returns the handle
+      // proxy instead.
+      auto &p = prop_storage(name);
       p.constraint  = std::move(constraintAny);
       p.typed_value = std::move(valueAny);
     }
@@ -337,13 +380,35 @@ namespace icl::utils {
     /// removes the given child configurable
     void removeChildConfigurable(Configurable *configurable);
 
-    /// this CAN be used e.g. to store a property value in internal property-list
-    /** Throws an exception if the given propertyName is not supported */
-    Property &prop(const std::string &propertyName);
+    /// Structured handle for a property — value proxy + field refs.
+    /// Returned from `prop(name)` below.  Defined after Configurable so
+    /// it can delegate to Configurable methods.
+    class Handle;
 
-    /// this CAN be used e.g. to store a property value in internal property-list
-    /** Throws an exception if the given propertyName is not supported */
-    const Property &prop(const std::string &propertyName) const;
+    /// Look up a property by name and return a short-lived handle with
+    /// a write-through value proxy + reference members to the Property
+    /// fields (name, type, info, constraint, typed_value, ...).
+    ///
+    /// Replaces the pre-step-9 `Property&` return.  Subclasses keep
+    /// using the same `prop("x").value = v` syntax; writes now route
+    /// through setPropertyValueTyped so typed_value + callbacks stay
+    /// consistent.
+    Handle prop(const std::string &propertyName);
+
+    /// Const overload — returns by value; all accessors are read-only.
+    Handle prop(const std::string &propertyName) const;
+
+    private:
+    /// Internal Property& accessor — used by Configurable's own .cpp
+    /// setters/getters and by the inline addProperty<C> template to
+    /// poke the typed_value / constraint fields directly.  Subclasses
+    /// should not touch Property's fields directly; they go through
+    /// prop(name).* or set/getPropertyValue{,Typed}.
+    /// Throws `ICLException` if the property is not registered.
+    Property &prop_storage(const std::string &propertyName);
+    const Property &prop_storage(const std::string &propertyName) const;
+
+    protected:
 
     /// create this configurable with given ID
     /** all instantiated configurables are globally accessible by static getter functions
@@ -537,7 +602,7 @@ namespace icl::utils {
         - ... (propably some other types are defined later on)
         */
     virtual std::string getPropertyType(const std::string &propertyName) const{
-      return prop(propertyName).type;
+      return prop_storage(propertyName).type;
     }
 
     /// get information of a properties valid values
@@ -556,7 +621,7 @@ namespace icl::utils {
         with some static utility function in this Grabber class.
         */
     virtual std::string getPropertyInfo(const std::string &propertyName) const{
-      return prop(propertyName).info;
+      return prop_storage(propertyName).info;
     }
 
     /// returns the current value of a property or a parameter
@@ -575,7 +640,7 @@ namespace icl::utils {
 
     /// returns the tooltip description for a given property
     virtual std::string getPropertyToolTip(const std::string &propertyName) const{
-      return prop(propertyName).tooltip;
+      return prop_storage(propertyName).tooltip;
     }
 
     /// Returns whether this property may be changed internally
@@ -588,7 +653,7 @@ namespace icl::utils {
         this function must not be adapted at all. "info"-typed Properties might be
         volatile as well */
     virtual int getPropertyVolatileness(const std::string &propertyName) const{
-      return prop(propertyName).volatileness;
+      return prop_storage(propertyName).volatileness;
     }
 
     /// registers a configurable type
@@ -603,6 +668,76 @@ namespace icl::utils {
     /** @see \ref REG */
     static Configurable *create_configurable(const std::string &classname);
   };
+
+  /// Short-lived handle returned from `Configurable::prop(name)`.
+  ///
+  /// Bundles:
+  ///   - a `PropertyValueRef value` — write-through proxy
+  ///   - reference members for the Property's const-readable fields
+  ///     (name, type, info, tooltip, childPrefix, constraint,
+  ///      typed_value, volatileness)
+  ///   - a templated `.as<T>()` for typed reads
+  ///
+  /// Intentionally non-assignable (reference members); valid only for
+  /// the expression in which prop() was called.  Don't bind an
+  /// `auto &h = c.prop("x")` across statements — the handle's refs
+  /// stay pointing at the stored Property, but the idiom is for
+  /// line-local use.
+  class Configurable::Handle {
+    Configurable *m_conf;
+    Property     *m_p;
+   public:
+    Handle(Configurable *c, Property &p)
+      : m_conf(c), m_p(&p),
+        value{c, p.name},
+        name(p.name), type(p.type), info(p.info),
+        tooltip(p.tooltip), childPrefix(p.childPrefix),
+        constraint(p.constraint), typed_value(p.typed_value),
+        volatileness(p.volatileness) {}
+
+    Handle(const Handle&) = default;
+    Handle& operator=(const Handle&) = delete;  // refs can't rebind
+
+    /// Write-through value proxy — `h.value = v` calls
+    /// `Configurable::setPropertyValueTyped(name, std::any(v))`.
+    PropertyValueRef value;
+
+    /// Reference members — read access to Property fields with
+    /// identical syntax to the pre-step-9 `Property&` era.
+    const std::string &name;
+    const std::string &type;
+    const std::string &info;
+    const std::string &tooltip;
+    const std::string &childPrefix;
+    const std::any    &constraint;
+    const std::any    &typed_value;
+    const int         &volatileness;
+
+    /// Typed read — forwards to `Property::as<T>`.
+    template<class T>
+    T as() const { return m_p->template as<T>(); }
+  };
+
+  // PropertyValueRef inline definitions — need Configurable's complete
+  // type (setPropertyValueTyped / getPropertyValue) visible.
+  template<class T>
+  PropertyValueRef& PropertyValueRef::operator=(T&& v) {
+    m_conf->setPropertyValueTyped(*m_name, std::any(std::forward<T>(v)));
+    return *this;
+  }
+  inline PropertyValueRef& PropertyValueRef::operator=(const char* s) {
+    return *this = std::string(s);
+  }
+  template<class T>
+  PropertyValueRef::operator T() const {
+    return m_conf->getPropertyValue(*m_name).template as<T>();
+  }
+  inline bool PropertyValueRef::operator==(std::string_view s) const {
+    return static_cast<std::string>(*this) == s;
+  }
+  inline bool PropertyValueRef::operator==(const char* s) const {
+    return static_cast<std::string>(*this) == s;
+  }
 
   /// registration macro for configurables
   /** @see \ref REG */
