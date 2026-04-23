@@ -491,38 +491,28 @@ namespace icl::utils {
     f.save(filename);
   }
 
+  // Loads properties from `f` into `conf`, dispatching on the property's
+  // legacy type tag (synthesized from its constraint).  Kept as a
+  // file-local helper (called twice from loadProperties below — once
+  // before and once after the load pass).
   void setOptions(Configurable* conf, ConfigFile &f, const std::vector<std::string> &supported){
     for(unsigned int i=0;i<supported.size();++i){
-      const std::string &prop = supported[i];
-      std::string type = conf -> getPropertyType(prop);
-      if(type == "info") continue;
-      if(type == "command") continue;
-
-      if(type == "range" || type == "value-list" || type == "range:slider" || type == "range:spinbox" || type == "float"){
-        try{
-          conf -> setPropertyValue(prop,str(f[prop].as<float>()));
-        }catch(...){}
-      }else if(type == "int"){
-        try{
-          conf -> setPropertyValue(prop,str(f[prop].as<int>()));
-        }catch(...){}
-      }else if(type == "string"){
-        try{
-          conf -> setPropertyValue(prop,f[prop].as<std::string>());
-        }catch(...){}
-      }else if(type == "menu"){
-        try{
-          conf -> setPropertyValue(prop,f[prop].as<std::string>());
-        }catch(...){}
-      }else if(type == "flag"){
-        try{
-          conf -> setPropertyValue(prop,f[prop].as<bool>());
-        }catch(...){}
-      }else if(type == "color"){
-        try{
-          conf -> setPropertyValue(prop,f[prop].as<std::string>());
-        }catch(...){}
-      }
+      const std::string &propName = supported[i];
+      auto h = conf->prop(propName);
+      std::string type = h.type();
+      if(type == "info" || type == "command") continue;
+      try{
+        if(type == "range" || type == "value-list" || type == "range:slider" ||
+           type == "range:spinbox" || type == "float"){
+          h.value = f[propName].as<float>();
+        }else if(type == "int"){
+          h.value = f[propName].as<int>();
+        }else if(type == "string" || type == "menu" || type == "color"){
+          h.value = f[propName].as<std::string>();
+        }else if(type == "flag"){
+          h.value = f[propName].as<bool>();
+        }
+      }catch(...){}
     }
   }
 
@@ -664,9 +654,9 @@ namespace icl::utils {
       // getPropertyValue now returns AutoParse<std::any>, so go through
       // its .str() shim (stringifies via the cascade when the payload
       // is non-string, identity when it is).
-      AutoParse<std::string> val(src->getPropertyValue(p.name).str());
+      std::string val = src->prop(p.name).value.str();
       for(int i=0;i<num;++i){
-        others[i].setPropertyValue(p.name,val);
+        others[i].prop(p.name).value = val;
       }
     });
   }
