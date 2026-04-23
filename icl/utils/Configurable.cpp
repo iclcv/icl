@@ -207,13 +207,23 @@ namespace icl::utils {
   }
 
   Configurable::Handle Configurable::prop(const std::string &propertyName) const{
-    // Const overload — Handle has const reference members already; the
-    // const-correctness of writes is enforced by PropertyValueRef's
-    // m_conf being non-const: calling `handle.value = v` on a handle
-    // produced from a const Configurable is a const-violation that
-    // the compiler catches here via const_cast at the one-line bridge.
+    // Const overload — writes through the resulting handle's PropertyValueRef
+    // still flow through setPropertyValueTyped on a non-const *this (via the
+    // const_cast below).  Matches the existing semantic where const-ness of a
+    // Configurable doesn't gate property writes.
     return Handle{const_cast<Configurable*>(this),
                   const_cast<Property&>(prop_storage(propertyName))};
+  }
+
+  std::string Configurable::Handle::type() const {
+    // Delegate to the virtual getter so subclasses that override
+    // getPropertyType see their override.  Default impl synthesizes via
+    // the constraint adapter.
+    return m_conf->getPropertyType(name);
+  }
+
+  std::string Configurable::Handle::info() const {
+    return m_conf->getPropertyInfo(name);
   }
 
   std::vector<std::string> Configurable::getPropertyList() const{

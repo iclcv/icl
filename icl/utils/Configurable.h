@@ -381,18 +381,33 @@ namespace icl::utils {
     /// it can delegate to Configurable methods.
     class Handle;
 
+    public:
+
     /// Look up a property by name and return a short-lived handle with
     /// a write-through value proxy + reference members to the Property
-    /// fields (name, type, info, constraint, typed_value, ...).
+    /// fields (name, tooltip, constraint, typed_value, volatileness,
+    /// childPrefix) and computed accessors (type(), info()).
     ///
-    /// Replaces the pre-step-9 `Property&` return.  Subclasses keep
-    /// using the same `prop("x").value = v` syntax; writes now route
-    /// through setPropertyValueTyped so typed_value + callbacks stay
-    /// consistent.
+    /// Public so both subclass-internal code (`prop("gain").value = 0.5f`)
+    /// and external callers (`conf->prop("x").constraint`, apps, tests)
+    /// share one entry point — the Handle is the designed API surface,
+    /// not an internal subclass convenience.  The public
+    /// `getPropertyValue` / `setPropertyValue` / `getPropertyConstraint`
+    /// / `getPropertyToolTip` / `getPropertyVolatileness` stay as thin
+    /// wrappers for back-compat.
     Handle prop(const std::string &propertyName);
 
-    /// Const overload — returns by value; all accessors are read-only.
+    /// Const overload — writes through PropertyValueRef are still
+    /// possible via internal const_cast; this matches the existing
+    /// semantic where const-ness of the Configurable doesn't gate
+    /// property writes (setPropertyValue is public and non-const on
+    /// non-const `this`, but external writers routinely const_cast or
+    /// hold by non-const pointer).  A separate pass could split out a
+    /// read-only ConstHandle if tightening const-correctness becomes
+    /// worth the API churn.
     Handle prop(const std::string &propertyName) const;
+
+    protected:
 
     private:
     /// Internal Property& accessor — used by Configurable's own .cpp
@@ -723,17 +738,22 @@ namespace icl::utils {
     PropertyValueRef value;
 
     /// Reference members — read access to Property fields with
-    /// identical syntax to the pre-step-9 `Property&` era.  Note
-    /// `type` / `info` are no longer stored on Property; callers
-    /// that need the legacy strings go through
-    /// `getPropertyType(name)` / `getPropertyInfo(name)`, which
-    /// synthesize via the constraint adapter.
+    /// identical syntax to the pre-step-9 `Property&` era.
     const std::string &name;
     const std::string &tooltip;
     const std::string &childPrefix;
     const std::any    &constraint;
     const std::any    &typed_value;
     const int         &volatileness;
+
+    /// Legacy type / info strings — synthesized on demand via the
+    /// constraint adapter.  `type` / `info` are no longer stored on
+    /// Property (retired step 8 of the Session 53 arc), so these
+    /// return by value rather than as reference members.  Equivalent
+    /// to `configurable->getPropertyType(name)` / `...Info(name)` but
+    /// reachable through the handle for one-stop introspection.
+    std::string type() const;
+    std::string info() const;
 
     /// Typed read — forwards to `Property::as<T>`.
     template<class T>
