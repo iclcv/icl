@@ -156,26 +156,18 @@ See `project_image_migration.md`.
 
 ## Op API — float setter on int-typed property
 
-- [ ] **Tighten setter arg types to match constraint value_type.**
-  Several Ops expose `setFoo(float)` / `setFoo(icl32f)` / ... setters
-  that write to properties registered as `prop::Range<int>` — legacy
-  path stringified-then-parsed-into-int (truncating the fraction);
-  post-proxy these stay on `setPropertyValue` to preserve the
-  truncation (otherwise the proxy would store a float in typed_value
-  and ConfigFile's adapter `any_cast<int>` would fail).  Known cases
-  (surfaced during the Option-1 prop-proxy migration):
-
-  - `ThresholdOp::setLowThreshold / setHighThreshold / setLowVal /
-    setHighVal` — `float` → `Range<int>{-255, 255}` / `Range<int>{0, 255}`.
-  - `CannyOp::setThresholds(icl32f, icl32f)` — `Range<int>{0, 2000}`.
-  - `UnaryArithmeticalOp::setValue(icl64f)` / `UnaryCompareOp::setValue(icl64f) /
-    setTolerance(icl64f)` — `Range<int>{-255, 512}` / `Range<int>{0, 512}`.
-  - `RansacBasedPoseEstimator::setMinPointsForGoodModel(float f)` — `Range<int>{0, 10000000}`.
-
-  Two fixes per Op: either widen the property to `Range<float>` (matches
-  the API, keeps precision, usually the right call — grab ranges are
-  already wide) or narrow the setter to `int` (matches the property,
-  sheds an odd API).  Then migrate the setter onto `prop(...).value = v`.
+- [x] **Tighten setter arg types to match constraint value_type.**  Landed
+  (Session 55 follow-up).  Per-Op resolution:
+  - `ThresholdOp` — widened props to `Range<float>` (internal storage is float).
+  - `CannyOp` — widened thresholds to `Range<float>` (internal storage is `icl32f`).
+  - `UnaryArithmeticalOp::setValue(icl64f)` — widened prop to `Range<float>`;
+    setter casts the `icl64f` arg to float at the write site to match the
+    stored type (only `Range<int>` / `Range<float>` adapters are registered).
+  - `UnaryCompareOp::setValue / setTolerance(icl64f)` — same treatment as
+    UnaryArithmeticalOp.
+  - `RansacBasedPoseEstimator::setMinPointsForGoodModel(float)` — narrowed to
+    `setMinPointsForGoodModel(int)` (the value is semantically an integer
+    count); ctor param narrowed to match.
 
 ## Filter module
 
@@ -284,14 +276,23 @@ From Session 48 deferrals:
 
 ## Core — latent Image.h include dependency
 
-- [ ] **`core/Image.h` should include `core/Img.h`.**  `Image::as<T>()` (inline template) does `static_cast<Img<T>*>(ImgBase*)`; Clang 21 rejects this unless `Img<T>`'s derivation from `ImgBase` is visible at the cast site.  Today `Image.h` only forward-declares `Img<T>` / `ImgBase` — it compiles only because every current consumer happens to include `Img.h` through some other path.  The TU compiling `test-prop-constraints.cpp` surfaced this when it reached `core/Image.h` through `core/prop/Constraints.h` without pulling in `Img.h`.  Fix: add `#include <icl/core/Img.h>` at the bottom of `Image.h`.  Incrementally cheaper than asking every new consumer to remember to add the include manually.
+- [x] **`core/Image.h` includes `core/Img.h`.**  Landed.  `Image::as<T>()`
+  needs `Img<T>`'s derivation from `ImgBase` visible at the `static_cast`
+  site under Clang 21; `Image.h` now pulls `Img.h` at the bottom so every
+  consumer of `Image.h` gets it transitively, no per-TU opt-in needed.
 
 ---
 
 ## C++17 source modernization (Sessions 27–28 residue)
 
 - [ ] Any deferred source-code fixes from the C++17 migration.  See `project_cpp17.md`.
-- [ ] **Drop explicit template args on `std::lock_guard` / `std::scoped_lock` / `std::unique_lock`.**  CTAD has been available for these since C++17, and the toolchain bump to Apple Clang 21 (Session 53) removed any remaining compiler gap.  ~281 sites across ICL currently write `std::lock_guard<std::mutex> g(m)` or `std::lock_guard<std::recursive_mutex> g(m)` — CTAD lets these drop to `std::lock_guard g(m)`.  Consider flipping `lock_guard` → `scoped_lock` at the same time (scoped_lock is the C++17+ default, handles multi-mutex, zero cost for the single-mutex case).  Mechanical with `perl -pi -e`; verify with a single clean rebuild.
+- [x] **Drop explicit template args on `std::lock_guard` / `std::scoped_lock` / `std::unique_lock`.**  Landed.  Sweep flipped `lock_guard<std::mutex>` /
+  `lock_guard<std::recursive_mutex>` to CTAD-deduced `scoped_lock`,
+  `scoped_lock<std::mutex>` to plain `scoped_lock`, and
+  `unique_lock<std::mutex>` to CTAD `unique_lock` (kept as `unique_lock`
+  — distinct semantics vs. `scoped_lock`).  ~278 sites across 73 files.
+  Remaining `std::lock_guard<Scene2>` occurrences are custom-lockable uses
+  (not `std::mutex`) and stay explicit.
 
 ---
 
