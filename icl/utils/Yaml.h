@@ -97,6 +97,10 @@ namespace icl::utils::yaml {
       ScalarStyle         style        = ScalarStyle::Plain;
       mutable ScalarKind  cachedKind   = ScalarKind::String;
       mutable bool        kindResolved = false;
+      // Optional explicit tag override from `!!str` / `!!int` / `!!bool`
+      // / `!!float` / `!!null`.  When set, scalarKind() returns this
+      // directly, bypassing content-based resolution.
+      std::optional<ScalarKind> explicitTag;
     };
     using Sequence = std::vector<Node>;
     using Mapping  = std::vector<std::pair<std::string_view, Node>>;

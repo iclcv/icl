@@ -37,6 +37,10 @@ namespace icl::utils::yaml {
   ScalarKind Node::scalarKind() const {
     const auto *s = std::get_if<ScalarData>(&m_value);
     if(!s) throw TypeError("scalarKind: node is not a scalar");
+    if(s->explicitTag){
+      // Explicit tag overrides content-based resolution.
+      return *s->explicitTag;
+    }
     if(!s->kindResolved){
       s->cachedKind   = detail::resolveScalarKind(s->sv, s->style);
       s->kindResolved = true;

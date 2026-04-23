@@ -6,6 +6,7 @@
 #include <icl/utils/Yaml.h>
 #include <icl/utils/Size.h>
 
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -741,17 +742,19 @@ ICL_REGISTER_TEST("utils.yaml.parse.error_line_col_reported", "ParseError carrie
 // Extra strict-mode + edge case coverage
 // ---------------------------------------------------------------------------
 
-ICL_REGISTER_TEST("utils.yaml.parse.integer_hex_oct_parse_to_int", "plain hex/oct resolve as Int")
+ICL_REGISTER_TEST("utils.yaml.parse.integer_hex_oct_parse_to_int",
+                  "plain hex/oct resolve as Int AND parse to int via from_chars")
 {
-  Document d = Document::view("h: 0x1F\no: 0o17\n");
-  // Kind is Int per core schema
-  ICL_TEST_TRUE(d.root()["h"].scalarKind() == ScalarKind::Int);
-  ICL_TEST_TRUE(d.root()["o"].scalarKind() == ScalarKind::Int);
-  // Permissive as<int> uses decimal-only from_chars → throws on hex.
-  // Document the behavior: hex/oct resolution is the user's responsibility
-  // via a manual strtol if needed.  asStrict<int> would pass the kind
-  // check but then the parse underneath fails.
-  ICL_TEST_THROW(d.root()["h"].as<int>(), ICLException);
+  Document d = Document::view("h: 0x1F\no: 0o17\nneg: -0xFF\n");
+  // Kind resolves as Int per core schema.
+  ICL_TEST_TRUE(d.root()["h"].scalarKind()   == ScalarKind::Int);
+  ICL_TEST_TRUE(d.root()["o"].scalarKind()   == ScalarKind::Int);
+  ICL_TEST_TRUE(d.root()["neg"].scalarKind() == ScalarKind::Int);
+  // parse<int> detects the 0x / 0o prefix and uses base 16 / 8.
+  ICL_TEST_EQ(d.root()["h"].as<int>(),   31);
+  ICL_TEST_EQ(d.root()["o"].as<int>(),   15);
+  ICL_TEST_EQ(d.root()["neg"].as<int>(), -255);
+  ICL_TEST_EQ(d.root()["h"].asStrict<int>(), 31);
 }
 
 ICL_REGISTER_TEST("utils.yaml.emit.deep_nesting", "3-level nested mapping emits correctly")
@@ -759,6 +762,189 @@ ICL_REGISTER_TEST("utils.yaml.emit.deep_nesting", "3-level nested mapping emits 
   Document d = Document::empty();
   d.root()["a"]["b"]["c"].setScalar("leaf");
   ICL_TEST_EQ(d.emit(), std::string("a:\n  b:\n    c: leaf\n"));
+}
+
+// ---------------------------------------------------------------------------
+// A1: Block scalar chomping indicators
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.parse.block_scalar_clip_default", "| default = clip (one trailing \\n)")
+{
+  Document d = Document::view("k: |\n  a\n  b\n");
+  ICL_TEST_EQ(std::string(d.root()["k"].scalarView()), std::string("a\nb\n"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.parse.block_scalar_strip", "|- strips all trailing newlines")
+{
+  Document d = Document::view("k: |-\n  a\n  b\n");
+  ICL_TEST_EQ(std::string(d.root()["k"].scalarView()), std::string("a\nb"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.parse.block_scalar_keep", "|+ keeps all trailing newlines")
+{
+  Document d = Document::view("k: |+\n  a\n  b\n\n\nnext: 1\n");
+  // Keep preserves both blank lines between the block and `next:`.
+  const std::string &v = std::string(d.root()["k"].scalarView());
+  ICL_TEST_TRUE(v.size() >= 6);
+  ICL_TEST_EQ(v.substr(0, 4), std::string("a\nb\n"));
+  ICL_TEST_EQ(d.root()["next"].as<int>(), 1);
+}
+
+ICL_REGISTER_TEST("utils.yaml.parse.folded_scalar_strip", ">- strips trailing newlines from folded")
+{
+  Document d = Document::view("k: >-\n  a\n  b\n");
+  ICL_TEST_EQ(std::string(d.root()["k"].scalarView()), std::string("a b"));
+}
+
+// ---------------------------------------------------------------------------
+// A2: Hex / octal integer parsing
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.parse.hex_integer", "parse<int>('0x1F') = 31")
+{
+  ICL_TEST_EQ(parse<int>(std::string_view("0x1F")),  31);
+  ICL_TEST_EQ(parse<int>(std::string_view("0X1f")),  31);
+  ICL_TEST_EQ(parse<int>(std::string_view("-0xFF")), -255);
+  ICL_TEST_EQ(parse<unsigned>(std::string_view("0xFFFF")), 65535u);
+  ICL_TEST_EQ(parse<long long>(std::string_view("0x7FFFFFFFFFFFFFFF")),
+              9223372036854775807LL);
+}
+
+ICL_REGISTER_TEST("utils.parse.oct_integer", "parse<int>('0o17') = 15")
+{
+  ICL_TEST_EQ(parse<int>(std::string_view("0o17")), 15);
+  ICL_TEST_EQ(parse<int>(std::string_view("0O7")),  7);
+  ICL_TEST_EQ(parse<int>(std::string_view("-0o10")), -8);
+}
+
+ICL_REGISTER_TEST("utils.parse.hex_edge_cases", "decimal INT_MIN still works, hex + unsigned negative errors")
+{
+  // Decimal edge: INT_MIN as a literal must still parse.  (Our hex/oct
+  // path strip-then-negate would fail here; decimal path defers to
+  // from_chars which handles signed min natively.)
+  ICL_TEST_EQ(parse<int>(std::string_view("-2147483648")), std::numeric_limits<int>::min());
+  // Negative into unsigned for hex rejects.
+  ICL_TEST_THROW(parse<unsigned>(std::string_view("-0xFF")), ICLException);
+}
+
+// ---------------------------------------------------------------------------
+// A3: .inf / .nan floats
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.parse.float_inf_nan", ".inf / -.inf / .nan parse correctly")
+{
+  ICL_TEST_TRUE(std::isinf(parse<double>(std::string_view(".inf"))));
+  ICL_TEST_TRUE(parse<double>(std::string_view(".inf")) > 0);
+  ICL_TEST_TRUE(parse<double>(std::string_view("-.inf")) < 0);
+  ICL_TEST_TRUE(std::isnan(parse<double>(std::string_view(".nan"))));
+  ICL_TEST_TRUE(std::isinf(parse<float>(std::string_view(".Inf"))));
+}
+
+ICL_REGISTER_TEST("utils.yaml.asStrict.float_inf", "asStrict<double> on plain .inf")
+{
+  Document d = Document::view("pi: .inf\nx: -.inf\n");
+  ICL_TEST_TRUE(d.root()["pi"].scalarKind() == ScalarKind::Float);
+  ICL_TEST_TRUE(std::isinf(d.root()["pi"].asStrict<double>()));
+  ICL_TEST_TRUE(d.root()["x"].asStrict<double>() < 0);
+}
+
+// ---------------------------------------------------------------------------
+// A4: sortKeys in emitter
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.emit.sort_keys_false_preserves_order", "default preserves insertion order")
+{
+  Document d = Document::empty();
+  d.root()["z"].setScalar("1");
+  d.root()["a"].setScalar("2");
+  d.root()["m"].setScalar("3");
+  ICL_TEST_EQ(d.emit(), std::string("z: 1\na: 2\nm: 3\n"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.emit.sort_keys_true_sorts", "sortKeys=true sorts lexicographically")
+{
+  Document d = Document::empty();
+  d.root()["z"].setScalar("1");
+  d.root()["a"].setScalar("2");
+  d.root()["m"].setScalar("3");
+  EmitOptions opts; opts.sortKeys = true;
+  ICL_TEST_EQ(d.emit(opts), std::string("a: 2\nm: 3\nz: 1\n"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.emit.sort_keys_nested", "sortKeys applies recursively")
+{
+  Document d = Document::empty();
+  d.root()["outer"]["z"].setScalar("1");
+  d.root()["outer"]["a"].setScalar("2");
+  EmitOptions opts; opts.sortKeys = true;
+  ICL_TEST_EQ(d.emit(opts), std::string("outer:\n  a: 2\n  z: 1\n"));
+}
+
+// ---------------------------------------------------------------------------
+// A5: Same-indent block sequence as mapping value
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.parse.same_indent_sequence_value",
+                  "YAML idiom: key followed by `-` at same indent")
+{
+  Document d = Document::view("items:\n- a\n- b\n- c\n");
+  ICL_TEST_TRUE(d.root()["items"].isSequence());
+  ICL_TEST_EQ(d.root()["items"].size(), size_t(3));
+  ICL_TEST_EQ(std::string(d.root()["items"][size_t(1)].scalarView()), std::string("b"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.parse.same_indent_sequence_then_sibling",
+                  "same-indent seq value followed by sibling key")
+{
+  Document d = Document::view("items:\n- a\n- b\nnext: done\n");
+  ICL_TEST_EQ(d.root()["items"].size(), size_t(2));
+  ICL_TEST_EQ(std::string(d.root()["next"].scalarView()), std::string("done"));
+}
+
+// ---------------------------------------------------------------------------
+// A6: Explicit scalar tags (!!str, !!int, !!bool, !!float, !!null)
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.parse.tag_str_forces_string", "!!str forces String even on int-looking bytes")
+{
+  Document d = Document::view("x: !!str 42\n");
+  ICL_TEST_TRUE(d.root()["x"].scalarKind() == ScalarKind::String);
+  ICL_TEST_THROW(d.root()["x"].asStrict<int>(), TypeError);
+  ICL_TEST_EQ(d.root()["x"].as<std::string>(), std::string("42"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.parse.tag_int_overrides_resolution", "!!int overrides kind to Int")
+{
+  // Plain "hello" would resolve as String; explicit !!int overrides.
+  // asStrict<int> passes the kind check but then parse<int>("hello")
+  // throws — documenting that user is responsible for consistent tags.
+  Document d = Document::view("x: !!int 99\n");
+  ICL_TEST_TRUE(d.root()["x"].scalarKind() == ScalarKind::Int);
+  ICL_TEST_EQ(d.root()["x"].asStrict<int>(), 99);
+}
+
+ICL_REGISTER_TEST("utils.yaml.parse.tag_bool_null_float", "!!bool, !!null, !!float all recognized")
+{
+  Document d = Document::view("a: !!bool yes\nb: !!null anything\nc: !!float 3\n");
+  ICL_TEST_TRUE(d.root()["a"].scalarKind() == ScalarKind::Bool);
+  ICL_TEST_TRUE(d.root()["b"].scalarKind() == ScalarKind::Null);
+  ICL_TEST_TRUE(d.root()["c"].scalarKind() == ScalarKind::Float);
+  ICL_TEST_NEAR(d.root()["c"].asStrict<double>(), 3.0, 1e-9);
+}
+
+ICL_REGISTER_TEST("utils.yaml.parse.tag_unknown_throws", "unknown tag errors")
+{
+  ICL_TEST_THROW(Document::view("x: !!bogus 1\n"), ParseError);
+}
+
+ICL_REGISTER_TEST("utils.yaml.emit.tag_roundtrip", "explicit tag preserved through emit")
+{
+  Document d = Document::view("x: !!str 42\n");
+  const std::string out = d.emit();
+  ICL_TEST_TRUE(out.find("!!str") != std::string::npos);
+  // Reparse the emitted form and confirm the kind is still String.
+  Document d2 = Document::own(std::string(out));
+  ICL_TEST_TRUE(d2.root()["x"].scalarKind() == ScalarKind::String);
 }
 
 ICL_REGISTER_TEST("utils.yaml.emit.block_seq_of_mappings", "block seq where items are mappings")

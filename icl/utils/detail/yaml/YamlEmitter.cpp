@@ -94,6 +94,17 @@ namespace icl::utils::yaml::detail {
     // falling back to a safe quoting if the hinted plain form is unsafe
     // or would change the inferred kind.
     void emitScalar(const Node::ScalarData &sd, std::string &out){
+      // Explicit tag prefix — re-emit `!!name ` so round-trip preserves
+      // the forced type.  Tag names must match the parser's vocabulary.
+      if(sd.explicitTag){
+        switch(*sd.explicitTag){
+          case ScalarKind::String: out += "!!str ";   break;
+          case ScalarKind::Int:    out += "!!int ";   break;
+          case ScalarKind::Float:  out += "!!float "; break;
+          case ScalarKind::Bool:   out += "!!bool ";  break;
+          case ScalarKind::Null:   out += "!!null ";  break;
+        }
+      }
       switch(sd.style){
         case ScalarStyle::DoubleQuoted:
           emitDoubleQuoted(sd.sv, out);
@@ -178,8 +189,20 @@ namespace icl::utils::yaml::detail {
 
     void emitMappingBlock(const Node::Mapping &map, std::string &out, int level, const EmitOptions &opts){
       if(map.empty()){ out += "{}"; return; }
-      for(std::size_t i = 0; i < map.size(); ++i){
-        if(i) out.push_back('\n');  // separator between entries; caller owns any leading newline
+
+      // Build an iteration order — insertion-order by default, sorted
+      // lexicographically by key when `opts.sortKeys` is set.
+      std::vector<std::size_t> order;
+      order.reserve(map.size());
+      for(std::size_t i = 0; i < map.size(); ++i) order.push_back(i);
+      if(opts.sortKeys){
+        std::sort(order.begin(), order.end(),
+                  [&](std::size_t a, std::size_t b){ return map[a].first < map[b].first; });
+      }
+
+      for(std::size_t ii = 0; ii < order.size(); ++ii){
+        const std::size_t i = order[ii];
+        if(ii) out.push_back('\n');  // separator between entries; caller owns any leading newline
         appendIndent(out, level * opts.indent);
         // Keys: we require keys to be string-ish and plain-safe.  If a
         // key contains `:`/`#`/etc. we single-quote it.

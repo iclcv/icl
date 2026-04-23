@@ -6,6 +6,7 @@
 
 #include <cctype>
 #include <cstdio>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -155,6 +156,61 @@ namespace icl::utils::yaml::detail {
       // block structure (mapping/sequence), used as the "must-exceed"
       // threshold for block-scalar content; -1 means no containing block.
       Node parseNode(int indent, bool inFlow, int ownerIndent){
+        // Optional YAML 1.2 core-schema tag prefix (`!!str` / `!!int` /
+        // `!!bool` / `!!float` / `!!null`).  Applied to the scalar that
+        // follows; silently ignored on non-scalar results.
+        std::optional<ScalarKind> explicitTag = parseTagPrefix();
+
+        Node result = parseNodeInner(indent, inFlow, ownerIndent);
+
+        if(explicitTag && result.isScalar()){
+          auto &sd = std::get<Node::ScalarData>(result.value());
+          sd.explicitTag = explicitTag;
+        }
+        return result;
+      }
+
+      // Try to consume a `!!name ` prefix at current position.  Returns
+      // the resolved ScalarKind on success (and leaves the cursor past
+      // the trailing inline whitespace).  Returns nullopt and leaves the
+      // cursor untouched otherwise.  Throws on unknown tag name.
+      std::optional<ScalarKind> parseTagPrefix(){
+        if(m_pos + 2 > m_src.size()) return std::nullopt;
+        if(peek() != '!' || peek(1) != '!') return std::nullopt;
+        const std::size_t save_pos = m_pos;
+        const std::size_t save_line = m_line;
+        const std::size_t save_col  = m_col;
+        advance(); advance();  // consume `!!`
+        const std::size_t nameStart = m_pos;
+        while(!eof()){
+          char h = peek();
+          if((h >= 'a' && h <= 'z') || (h >= 'A' && h <= 'Z') ||
+             (h >= '0' && h <= '9') || h == '_') advance();
+          else break;
+        }
+        const std::string_view tagName = m_src.substr(nameStart, m_pos - nameStart);
+        if(tagName.empty()){
+          m_pos = save_pos; m_line = save_line; m_col = save_col;
+          return std::nullopt;
+        }
+        // Must be followed by whitespace / EOL / EOF.
+        if(!eof() && peek() != ' ' && peek() != '\t' && peek() != '\n'){
+          m_pos = save_pos; m_line = save_line; m_col = save_col;
+          return std::nullopt;
+        }
+        while(!eof() && (peek() == ' ' || peek() == '\t')) advance();
+
+        if(tagName == "str")   return ScalarKind::String;
+        if(tagName == "int")   return ScalarKind::Int;
+        if(tagName == "float") return ScalarKind::Float;
+        if(tagName == "bool")  return ScalarKind::Bool;
+        if(tagName == "null")  return ScalarKind::Null;
+        error("unknown tag: !!" + std::string(tagName));
+      }
+
+      // Original parseNode body, now parameterized by tag handling in
+      // parseNode above.
+      Node parseNodeInner(int indent, bool inFlow, int ownerIndent){
         if(eof()) return Node{};
         const char c = peek();
 
@@ -301,6 +357,13 @@ namespace icl::utils::yaml::detail {
                 skipInlineWsAndComment();
                 if(!eof() && peek() == '\n') advance();
                 skipBomAndBlanks();
+              } else if(childIndent == indent && peek() == '-' &&
+                        (peek(1) == ' ' || peek(1) == '\t' || isLineEnd(peek(1)))){
+                // YAML idiom: block sequence as mapping value at the
+                // same indent as the key.  Disambiguated by the `-`
+                // indicator.
+                value = parseBlockSequence(indent);
+                // parseBlockSequence already consumed trailing blanks.
               } else {
                 value.setNull();  // empty value, sibling/parent level follows
               }
@@ -607,14 +670,25 @@ namespace icl::utils::yaml::detail {
       }
 
       // Block scalar (| or >) — newlines preserved (|) or folded (>).
-      // Default chomping (clip: strip trailing blank lines, keep one \n).
-      // Simplified: no chomping indicators or explicit indent indicator.
+      // Chomping:
+      //   `-`  strip: trim all trailing newlines
+      //   `+`  keep : preserve all trailing newlines
+      //   (none) clip: preserve exactly one trailing newline
+      // Numeric indent indicator is tolerated but ignored (auto-detected).
       Node parseBlockScalar(char kind, int parentIndent){
         advance();  // consume | or >
-        // Only default chomping / indent supported here (Phase 1).
-        // Tolerate but don't interpret `-` / `+` / digit indicators.
-        while(!eof() && peek() != '\n' && peek() != '\r'){
-          advance();  // skip indicators / ws / comment chars (best-effort)
+        enum class Chomp { Clip, Strip, Keep };
+        Chomp chomp = Chomp::Clip;
+        while(!eof() && peek() != '\n' && peek() != '\r' && peek() != '#'){
+          char h = peek();
+          if(h == '-'){ chomp = Chomp::Strip; advance(); }
+          else if(h == '+'){ chomp = Chomp::Keep;  advance(); }
+          else if(h >= '0' && h <= '9'){ advance(); }   // indent indicator — ignored
+          else if(h == ' ' || h == '\t'){ advance(); }
+          else break;
+        }
+        if(!eof() && peek() == '#'){
+          while(!eof() && peek() != '\n') advance();
         }
         if(!eof() && peek() == '\n') advance();
 
@@ -670,12 +744,17 @@ namespace icl::utils::yaml::detail {
         }
         (void)lineIndent;
 
-        // Clip chomping: collapse trailing newlines to a single \n.
-        while(body.size() >= 2 && body[body.size()-1] == '\n' && body[body.size()-2] == '\n'){
-          body.pop_back();
+        // Apply chomping on the trailing newlines of `body`.
+        if(chomp == Chomp::Strip){
+          while(!body.empty() && body.back() == '\n') body.pop_back();
+        } else if(chomp == Chomp::Clip){
+          // Collapse trailing newlines to exactly one.
+          while(body.size() >= 2 && body[body.size()-1] == '\n' && body[body.size()-2] == '\n'){
+            body.pop_back();
+          }
+          if(body.size() == 1 && body[0] == '\n') body.clear();
         }
-        // For empty body, keep as empty.
-        if(body.size() == 1 && body[0] == '\n') body.clear();
+        // Chomp::Keep: leave all trailing newlines as-is.
 
         if(kind == '>'){
           // Folded: replace single internal \n with space; double \n stays

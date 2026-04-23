@@ -148,19 +148,51 @@ namespace icl::utils {
   }
 
   namespace {
-    // Whitespace-trim + from_chars.  Accepts a leading '+' (from_chars rejects
-    // it for integral types).  Throws on parse failure or trailing garbage.
+    // Whitespace-trim + from_chars.  Accepts a leading '+' or '-'; for
+    // base-10 input, lets from_chars handle signed natively (so edge
+    // values like INT_MIN parse correctly).  For 0x / 0X / 0o / 0O
+    // prefixes (YAML 1.2 core-schema hex + octal literals), strips the
+    // sign + prefix and calls from_chars with an explicit base.
     template<class T>
     T parse_integral_sv(std::string_view s){
       while(!s.empty() && std::isspace(static_cast<unsigned char>(s.front()))) s.remove_prefix(1);
       while(!s.empty() && std::isspace(static_cast<unsigned char>(s.back())))  s.remove_suffix(1);
       const char *first = s.data();
       const char *last  = first + s.size();
-      if(first != last && *first == '+') ++first;
+
+      // Peek for hex/oct prefix — scan past an optional sign first.
+      const char *scan = first;
+      if(scan != last && (*scan == '+' || *scan == '-')) ++scan;
+      int base = 10;
+      if(last - scan >= 2 && scan[0] == '0' && (scan[1] == 'x' || scan[1] == 'X')) base = 16;
+      else if(last - scan >= 2 && scan[0] == '0' && (scan[1] == 'o' || scan[1] == 'O')) base = 8;
+
       T out{};
-      auto [ptr, ec] = std::from_chars(first, last, out);
+      if(base == 10){
+        // Let from_chars handle signs natively.
+        if(first != last && *first == '+') ++first;
+        auto [ptr, ec] = std::from_chars(first, last, out);
+        if(ec != std::errc() || ptr != last){
+          throw ICLException(std::string("parse: could not parse '") + std::string(s) + "' as integral");
+        }
+        return out;
+      }
+
+      // Hex / Oct: strip sign + prefix, parse absolute value, re-sign.
+      bool neg = false;
+      if(first != last && *first == '-'){ neg = true; ++first; }
+      else if(first != last && *first == '+'){ ++first; }
+      first += 2;  // skip 0x / 0o (already validated by peek above)
+      auto [ptr, ec] = std::from_chars(first, last, out, base);
       if(ec != std::errc() || ptr != last){
         throw ICLException(std::string("parse: could not parse '") + std::string(s) + "' as integral");
+      }
+      if(neg){
+        if constexpr (std::is_signed_v<T>){
+          out = static_cast<T>(-out);
+        } else {
+          throw ICLException("parse<unsigned>: negative value '" + std::string(s) + "'");
+        }
       }
       return out;
     }
@@ -175,15 +207,43 @@ namespace icl::utils {
   long long          parse_long_long (std::string_view s){ return parse_integral_sv<long long>(s); }
   unsigned long long parse_ulong_long(std::string_view s){ return parse_integral_sv<unsigned long long>(s); }
 
+  namespace {
+    // YAML 1.2 core-schema float sentinels.  Accept all documented
+    // case variants so `parse<double>` agrees with `scalarKind`.
+    template<class T>
+    bool try_float_sentinel(std::string_view s, T &out){
+      // strip optional sign
+      bool neg = false;
+      std::string_view body = s;
+      if(!body.empty() && (body.front() == '+' || body.front() == '-')){
+        neg = (body.front() == '-');
+        body.remove_prefix(1);
+      }
+      auto eq_any = [&](std::string_view a, std::initializer_list<std::string_view> ls){
+        for(auto v : ls) if(a == v) return true;
+        return false;
+      };
+      if(eq_any(body, {"inf", "Inf", "INF", ".inf", ".Inf", ".INF"})){
+        out = neg ? -std::numeric_limits<T>::infinity() : std::numeric_limits<T>::infinity();
+        return true;
+      }
+      if(eq_any(body, {"nan", "NaN", "NAN", ".nan", ".NaN", ".NAN"})){
+        out = std::numeric_limits<T>::quiet_NaN();
+        return true;
+      }
+      return false;
+    }
+  }
+
   icl32f parse_icl32f(std::string_view s){
-    if(s == "inf") return std::numeric_limits<icl32f>::infinity();
-    if(s == "-inf") return -std::numeric_limits<icl32f>::infinity();
+    icl32f f;
+    if(try_float_sentinel(s, f)) return f;
     std::string tmp(s);
     return std::strtof(tmp.c_str(), nullptr);
   }
   icl64f parse_icl64f(std::string_view s){
-    if(s == "inf") return std::numeric_limits<icl64f>::infinity();
-    if(s == "-inf") return -std::numeric_limits<icl64f>::infinity();
+    icl64f f;
+    if(try_float_sentinel(s, f)) return f;
     std::string tmp(s);
     return std::strtod(tmp.c_str(), nullptr);
   }
