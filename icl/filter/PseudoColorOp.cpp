@@ -7,6 +7,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/ConfigFile.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -125,8 +126,8 @@ namespace icl::filter {
   // to Custom through the property without stops is a no-op.
   PseudoColorOp::PseudoColorOp(int maxValue) : m_data(new Data) {
     m_data->setDefault(maxValue);
-    addProperty("mode","menu","Default,Custom","Default");
-    addProperty("max value","range:spinbox","[1,65535]",str(maxValue));
+    addProperty("mode",utils::prop::Menu{"Default", "Custom"}, "Default");
+    addProperty("max value",utils::prop::Range{.min=1, .max=65535, .ui=utils::prop::UI::Spinbox}, maxValue);
     registerCallback([this](const Property &p){
       if(p.name == "mode"){
         if(p.value == "Default"){
@@ -143,8 +144,8 @@ namespace icl::filter {
   PseudoColorOp::PseudoColorOp(const std::vector<Stop> &stops, int maxValue)
     : m_data(new Data) {
     m_data->setCustom(stops, maxValue);
-    addProperty("mode","menu","Default,Custom","Custom");
-    addProperty("max value","range:spinbox","[1,65535]",str(maxValue));
+    addProperty("mode",utils::prop::Menu{"Default", "Custom"}, "Custom");
+    addProperty("max value",utils::prop::Range{.min=1, .max=65535, .ui=utils::prop::UI::Spinbox}, maxValue);
     registerCallback([this](const Property &p){
       if(p.name == "mode"){
         if(p.value == "Default")       m_data->setDefault(m_data->maxVal);

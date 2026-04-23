@@ -4,6 +4,7 @@
 
 #include <icl/filter/BaseFFTOp.h>
 #include <icl/core/CoreFunctions.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -98,8 +99,8 @@ namespace icl::filter {
     : m_data(new Data(inverse, rm, sam, shift, forceDFT)) {
     addProperty("result mode","menu",RESULT_MODE_MENU,resultModeName(rm));
     addProperty("size adaption","menu",SIZE_ADAPTION_MENU,sizeAdaptionName(sam));
-    addProperty("fft shift","flag","",shift);
-    addProperty("force DFT","flag","",forceDFT);
+    addProperty("fft shift",utils::prop::Flag{}, shift);
+    addProperty("force DFT",utils::prop::Flag{}, forceDFT);
     registerCallback([this](const Property &p){
       if(p.name == "result mode")        m_data->m_rm       = parseResultMode(p.value);
       else if(p.name == "size adaption") m_data->m_sam      = parseSizeAdaption(p.value);

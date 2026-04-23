@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/filter/UnaryCompareOp.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -52,8 +53,8 @@ namespace icl::filter {
       m_eOpType(ot), m_dValue(value), m_dTolerance(tolerance)
   {
     addProperty("op","menu",OP_MENU,opName(ot));
-    addProperty("value","range:slider","[-255,512]",str(value));
-    addProperty("tolerance","range:slider","[0,512]",str(tolerance));
+    addProperty("value",utils::prop::Range{.min=-255, .max=512}, value);
+    addProperty("tolerance",utils::prop::Range{.min=0, .max=512}, tolerance);
     registerCallback([this](const Property &p){ property_callback(p); });
   }
 

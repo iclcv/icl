@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Tobias Roehlig, Christof Elbrechter
 
 #include <icl/filter/BilateralFilterOp.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -28,10 +29,10 @@ BilateralFilterOp::BilateralFilterOp(int radius, float sigma_s, float sigma_r, b
   : ImageBackendDispatching(prototype()),
     m_radius(radius), m_sigmaS(sigma_s), m_sigmaR(sigma_r), m_useLAB(use_lab)
 {
-  addProperty("radius","range:spinbox","[1,24]",str(radius));
-  addProperty("sigma_s","range:slider","[0.1,200]:0.1",str(sigma_s));
-  addProperty("sigma_r","range:slider","[0.1,200]:0.1",str(sigma_r));
-  addProperty("use LAB","flag","",use_lab);
+  addProperty("radius",utils::prop::Range{.min=1, .max=24, .ui=utils::prop::UI::Spinbox}, radius);
+  addProperty("sigma_s",utils::prop::Range{.min=0.1f, .max=200.f, .step=0.1f}, sigma_s);
+  addProperty("sigma_r",utils::prop::Range{.min=0.1f, .max=200.f, .step=0.1f}, sigma_r);
+  addProperty("use LAB",utils::prop::Flag{}, use_lab);
   registerCallback([this](const Property &p){
     if(p.name == "radius")        m_radius = parse<int>(p.value);
     else if(p.name == "sigma_s")  m_sigmaS = parse<float>(p.value);

@@ -7,6 +7,7 @@
 #include <icl/core/Image.h>
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/utils/detail/simd/SSEUtils.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -26,9 +27,9 @@ namespace icl::filter {
   }
 
   void CannyOp::addCannyProperties(icl32f lowThresh, icl32f highThresh, int preBlurRadius){
-    addProperty("low threshold","range:slider","[0,2000]",str(lowThresh));
-    addProperty("high threshold","range:slider","[0,2000]",str(highThresh));
-    addProperty("pre-blur radius","range:spinbox","[0,10]",str(preBlurRadius));
+    addProperty("low threshold",utils::prop::Range{.min=0, .max=2000}, lowThresh);
+    addProperty("high threshold",utils::prop::Range{.min=0, .max=2000}, highThresh);
+    addProperty("pre-blur radius",utils::prop::Range{.min=0, .max=10, .ui=utils::prop::UI::Spinbox}, preBlurRadius);
   }
 
   CannyOp::CannyOp(icl32f lowThresh, icl32f highThresh,int preBlurRadius):

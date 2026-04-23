@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <cstring>
 #include <limits>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -107,9 +108,9 @@ MotionSensitiveTemporalSmoothing::MotionSensitiveTemporalSmoothing(
   , m_difference(10)
   , m_useCL(true)
 {
-  addProperty("filter size","range:spinbox","[1,"+str(maxFilterSize)+"]",str(m_filterSize));
-  addProperty("difference","range:slider","[1,50]",str(m_difference));
-  addProperty("use CL","flag","",true);
+  addProperty("filter size",utils::prop::Range{.min=1, .max=maxFilterSize, .ui=utils::prop::UI::Spinbox}, m_filterSize);
+  addProperty("difference",utils::prop::Range{.min=1, .max=50}, m_difference);
+  addProperty("use CL",utils::prop::Flag{}, true);
   registerCallback([this](const Property &p){
     if(p.name == "filter size"){
       int v = std::clamp(parse<int>(p.value), 1, m_maxFilterSize);

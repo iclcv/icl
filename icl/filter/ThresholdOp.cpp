@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/filter/ThresholdOp.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -66,10 +67,10 @@ namespace icl::filter {
       m_fHighThreshold(highThreshold), m_fLowVal(lowVal), m_fHighVal(highVal)
   {
     addProperty("type","menu",TYPE_MENU,typeName(ttype));
-    addProperty("low threshold","range:slider","[-255,255]",str(lowThreshold));
-    addProperty("high threshold","range:slider","[-255,255]",str(highThreshold));
-    addProperty("low val","range:slider","[0,255]",str(lowVal));
-    addProperty("high val","range:slider","[0,255]",str(highVal));
+    addProperty("low threshold",utils::prop::Range{.min=-255, .max=255}, lowThreshold);
+    addProperty("high threshold",utils::prop::Range{.min=-255, .max=255}, highThreshold);
+    addProperty("low val",utils::prop::Range{.min=0, .max=255}, lowVal);
+    addProperty("high val",utils::prop::Range{.min=0, .max=255}, highVal);
     registerCallback([this](const Property &p){ property_callback(p); });
   }
 

@@ -5,6 +5,7 @@
 #include <icl/filter/DitheringOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
+#include <icl/utils/prop/Constraints.h>
 
 namespace icl{
   using namespace utils;
@@ -14,7 +15,7 @@ namespace icl{
     DitheringOp::DitheringOp (Algorithm a, int l){
       m_algorithm = a;
       m_levels = std::clamp(l, 2, 128);
-      addProperty("levels","range:spinbox","[2,128]",str(m_levels));
+      addProperty("levels",utils::prop::Range{.min=2, .max=128, .ui=utils::prop::UI::Spinbox}, m_levels);
       registerCallback([this](const Property &p){
         if(p.name == "levels"){
           m_levels = std::clamp(parse<int>(p.value), 2, 128);

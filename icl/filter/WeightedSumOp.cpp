@@ -5,6 +5,7 @@
 #include <icl/filter/WeightedSumOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -27,7 +28,7 @@ namespace icl::filter {
   }
 
   WeightedSumOp::WeightedSumOp(){
-    addProperty("weights","string","128",WEIGHTED_SUM_DEFAULT);
+    addProperty("weights",utils::prop::Text{.maxLength=128}, WEIGHTED_SUM_DEFAULT);
     registerCallback([this](const Property &p){
       if(p.name == "weights") m_vecWeights = parseW(p.value);
     });
@@ -35,7 +36,7 @@ namespace icl::filter {
   }
   WeightedSumOp::WeightedSumOp(const std::vector<icl64f> &weights)
     : m_vecWeights(weights){
-    addProperty("weights","string","128",joinW(weights));
+    addProperty("weights",utils::prop::Text{.maxLength=128}, joinW(weights));
     registerCallback([this](const Property &p){
       if(p.name == "weights") m_vecWeights = parseW(p.value);
     });

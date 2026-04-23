@@ -6,6 +6,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/Img.h>
 #include <icl/utils/StringUtils.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -17,9 +18,9 @@ namespace icl::filter {
 
   ProximityOp::ProximityOp(optype ot, applymode am):
     m_poImageBuffer(0),m_poTemplateBuffer(0){
-    addProperty("operation type","menu","sqrDistance,crossCorr,crossCorrCoeff",ot,0,
+    addProperty("operation type",utils::prop::Menu{"sqrDistance", "crossCorr", "crossCorrCoeff"}, ot,0,
                 "Proximity measurement type");
-    addProperty("apply mode","menu","full,valid,same",am,0,
+    addProperty("apply mode",utils::prop::Menu{"full", "valid", "same"}, am,0,
                 "Proximity apply mode");
   }
 

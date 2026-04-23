@@ -7,6 +7,7 @@
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <cstring>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -67,11 +68,11 @@ namespace icl::filter {
       m_eInterpolate(eInterpolate),
       m_adaptResultImage(true) {
     reset();
-    addProperty("scale.x","range:slider","[0.1,5]:0.01","1.0");
-    addProperty("scale.y","range:slider","[0.1,5]:0.01","1.0");
-    addProperty("rotate.deg","range:slider","[-360,360]:0.1","0");
-    addProperty("translate.x","range:slider","[-500,500]","0");
-    addProperty("translate.y","range:slider","[-500,500]","0");
+    addProperty("scale.x",utils::prop::Range{.min=0.1f, .max=5.f, .step=0.01f}, 1.0);
+    addProperty("scale.y",utils::prop::Range{.min=0.1f, .max=5.f, .step=0.01f}, 1.0);
+    addProperty("rotate.deg",utils::prop::Range{.min=-360.f, .max=360.f, .step=0.1f}, 0);
+    addProperty("translate.x",utils::prop::Range{.min=-500, .max=500}, 0);
+    addProperty("translate.y",utils::prop::Range{.min=-500, .max=500}, 0);
     addProperty("interpolation","menu",INTERP_MENU,interpName(eInterpolate));
     registerCallback([this](const Property &p){
       if(p.name == "interpolation"){

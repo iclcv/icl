@@ -7,6 +7,7 @@
 #include <icl/core/Image.h>
 #include <icl/core/prop/Constraints.h>
 #include <cmath>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -38,18 +39,18 @@ namespace icl::filter {
   }
 
   void GaborOp::addGaborProperties(){
-    addProperty("size.w","range:spinbox","[3,50]",str(m_oKernelSize.width  > 0 ? m_oKernelSize.width  : 10));
-    addProperty("size.h","range:spinbox","[3,50]",str(m_oKernelSize.height > 0 ? m_oKernelSize.height : 10));
-    addProperty("lambda","range:slider","[0.1,100]:0.1",
-                str(m_vecLambdas.empty() ? 20.f : m_vecLambdas.front()));
-    addProperty("theta","range:slider","[0,3.15]:0.01",
-                str(m_vecThetas.empty() ? 0.f : m_vecThetas.front()));
-    addProperty("psi","range:slider","[0,50]:0.1",
-                str(m_vecPsis.empty() ? 0.f : m_vecPsis.front()));
-    addProperty("sigma","range:slider","[0.1,30]:0.1",
-                str(m_vecSigmas.empty() ? 5.f : m_vecSigmas.front()));
-    addProperty("gamma","range:slider","[0.01,10]:0.01",
-                str(m_vecGammas.empty() ? 0.5f : m_vecGammas.front()));
+    addProperty("size.w",utils::prop::Range{.min=3, .max=50, .ui=utils::prop::UI::Spinbox}, m_oKernelSize.width  > 0 ? m_oKernelSize.width  : 10);
+    addProperty("size.h",utils::prop::Range{.min=3, .max=50, .ui=utils::prop::UI::Spinbox}, m_oKernelSize.height > 0 ? m_oKernelSize.height : 10);
+    addProperty("lambda",utils::prop::Range{.min=0.1f, .max=100.f, .step=0.1f}, 
+                m_vecLambdas.empty() ? 20.f : m_vecLambdas.front());
+    addProperty("theta",utils::prop::Range{.min=0.f, .max=3.15f, .step=0.01f}, 
+                m_vecThetas.empty() ? 0.f : m_vecThetas.front());
+    addProperty("psi",utils::prop::Range{.min=0.f, .max=50.f, .step=0.1f}, 
+                m_vecPsis.empty() ? 0.f : m_vecPsis.front());
+    addProperty("sigma",utils::prop::Range{.min=0.1f, .max=30.f, .step=0.1f}, 
+                m_vecSigmas.empty() ? 5.f : m_vecSigmas.front());
+    addProperty("gamma",utils::prop::Range{.min=0.01f, .max=10.f, .step=0.01f}, 
+                m_vecGammas.empty() ? 0.5f : m_vecGammas.front());
     addProperty("kernel preview", core::prop::ImageView{}, core::Image{}, /*volatileness=*/100);
     registerCallback([this](const Property &p){
       static const std::string knobs[] =

@@ -6,6 +6,7 @@
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/core/Img.h>
 #include <cmath>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -42,7 +43,7 @@ namespace icl::filter {
   GradientOp::GradientOp(Mode mode)
     : m_mode(mode), m_normalize(true), m_data(new Data){
     addProperty("mode","menu",MODE_MENU,modeName(mode));
-    addProperty("normalize","flag","",m_normalize);
+    addProperty("normalize",utils::prop::Flag{}, m_normalize);
     registerCallback([this](const Property &p){
       if(p.name == "mode")           m_mode = parseMode(p.value);
       else if(p.name == "normalize") m_normalize = parse<bool>(p.value);

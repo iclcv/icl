@@ -4,6 +4,7 @@
 
 #include <icl/filter/LUTOp.h>
 #include <icl/core/Image.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -33,7 +34,7 @@ namespace icl::filter {
   {
     // Only the Levels mode has a GUI-tunable knob; LUT mode takes an entire
     // 256-element table from code and can't meaningfully be a slider.
-    addProperty("quantization levels","range:spinbox","[2,255]",str((int)quantizationLevels));
+    addProperty("quantization levels",utils::prop::Range{.min=2, .max=255, .ui=utils::prop::UI::Spinbox}, (int)quantizationLevels);
     registerCallback([this](const Property &p){
       if(p.name == "quantization levels"){
         m_ucQuantizationLevels = parse<int>(p.value);
@@ -52,7 +53,7 @@ namespace icl::filter {
     m_poBuffer(new Img8u())
   {
     // Same property for interop, but deactivated since we're in LUT mode.
-    addProperty("quantization levels","range:spinbox","[2,255]","0");
+    addProperty("quantization levels",utils::prop::Range{.min=2, .max=255, .ui=utils::prop::UI::Spinbox}, 0);
     deactivateProperty("quantization levels");
   }
 

@@ -5,6 +5,7 @@
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -60,7 +61,7 @@ namespace icl::filter {
 
   void ConvolutionOp::addConvProperties(const ConvolutionKernel &kernel, bool forceUnsignedOutput){
     addProperty("kernel","menu",KERNEL_MENU,fixedTypeName(kernel.getFixedType()));
-    addProperty("force unsigned output","flag","",forceUnsignedOutput);
+    addProperty("force unsigned output",utils::prop::Flag{}, forceUnsignedOutput);
   }
 
   void ConvolutionOp::property_callback(const Property &p){

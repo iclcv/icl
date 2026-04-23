@@ -4,6 +4,7 @@
 
 #include <icl/filter/WarpOp.h>
 #include <icl/core/Image.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -55,7 +56,7 @@ namespace icl::filter {
     warpMap.deepCopy(&m_warpMap);
     prepare_warp_table_inplace(m_warpMap);
     addProperty("interpolation","menu",WARP_INTERP_MENU,warpInterpName(mode));
-    addProperty("allow warp map scaling","flag","",allowWarpMapScaling);
+    addProperty("allow warp map scaling",utils::prop::Flag{}, allowWarpMapScaling);
     registerCallback([this](const Property &p){
       if(p.name == "interpolation")               m_scaleMode = parseWarpInterp(p.value);
       else if(p.name == "allow warp map scaling") m_allowWarpMapScaling = parse<bool>(p.value);

@@ -12,6 +12,7 @@
 #include <limits>
 #include <cmath>
 #include <vector>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -189,10 +190,10 @@ namespace icl::filter {
      m_iScaleFactor(scaleFactor),
      m_bScaleUpResult(scaleUpResult){
     setClipToROI(false);
-    addProperty("hv distance","range:spinbox","[1,10000]",str(horizontalAndVerticalNeighbourDistance));
-    addProperty("diag distance","range:spinbox","[1,10000]",str(diagonalNeighborDistance));
-    addProperty("scale factor","range:spinbox","[1,16]",str(scaleFactor));
-    addProperty("scale up result","flag","",scaleUpResult);
+    addProperty("hv distance",utils::prop::Range{.min=1, .max=10000, .ui=utils::prop::UI::Spinbox}, horizontalAndVerticalNeighbourDistance);
+    addProperty("diag distance",utils::prop::Range{.min=1, .max=10000, .ui=utils::prop::UI::Spinbox}, diagonalNeighborDistance);
+    addProperty("scale factor",utils::prop::Range{.min=1, .max=16, .ui=utils::prop::UI::Spinbox}, scaleFactor);
+    addProperty("scale up result",utils::prop::Flag{}, scaleUpResult);
     registerCallback([this](const Property &p){
       if(p.name == "hv distance")         m_iHorizontalAndVerticalNeighbourDistance = parse<icl32s>(p.value);
       else if(p.name == "diag distance")  m_iDiagonalNeighborDistance = parse<icl32s>(p.value);

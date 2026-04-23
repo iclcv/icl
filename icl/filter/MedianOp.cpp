@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke, Andre Justus
 
 #include <icl/filter/MedianOp.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -32,8 +33,8 @@ namespace icl::filter {
       ImageBackendDispatching(prototype())
   {
     const Size adapted = adaptSize(maskSize);
-    addProperty("mask size.w","range:spinbox","[1,51]",str(adapted.width));
-    addProperty("mask size.h","range:spinbox","[1,51]",str(adapted.height));
+    addProperty("mask size.w",utils::prop::Range{.min=1, .max=51, .ui=utils::prop::UI::Spinbox}, adapted.width);
+    addProperty("mask size.h",utils::prop::Range{.min=1, .max=51, .ui=utils::prop::UI::Spinbox}, adapted.height);
     registerCallback([this](const Property &p){
       if(p.name != "mask size.w" && p.name != "mask size.h") return;
       const Size raw(parse<int>(prop("mask size.w").value),

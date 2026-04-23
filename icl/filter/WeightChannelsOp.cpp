@@ -6,6 +6,7 @@
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <icl/core/Visitors.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -35,7 +36,7 @@ namespace icl::filter {
   }
 
   WeightChannelsOp::WeightChannelsOp(){
-    addProperty("weights","string","128",WEIGHT_STRING_DEFAULT);
+    addProperty("weights",utils::prop::Text{.maxLength=128}, WEIGHT_STRING_DEFAULT);
     registerCallback([this](const Property &p){
       if(p.name == "weights") m_vecWeights = parseWeights(p.value);
     });
@@ -44,7 +45,7 @@ namespace icl::filter {
 
   WeightChannelsOp::WeightChannelsOp(const std::vector<icl64f> &weights)
     : m_vecWeights(weights){
-    addProperty("weights","string","128",joinWeights(weights));
+    addProperty("weights",utils::prop::Text{.maxLength=128}, joinWeights(weights));
     registerCallback([this](const Property &p){
       if(p.name == "weights") m_vecWeights = parseWeights(p.value);
     });

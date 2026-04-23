@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/filter/UnaryLogicalOp.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -49,7 +50,7 @@ namespace icl::filter {
       m_eOpType(t), m_dValue(val)
   {
     addProperty("op","menu",LOGIC_MENU,logicName(t));
-    addProperty("value","range:spinbox","[0,255]",str(val));
+    addProperty("value",utils::prop::Range{.min=0, .max=255, .ui=utils::prop::UI::Spinbox}, val);
     registerCallback([this](const Property &p){
       if(p.name == "op")        m_eOpType = parseLogic(p.value);
       else if(p.name == "value") m_dValue = parse<icl32s>(p.value);

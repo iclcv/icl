@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/filter/UnaryArithmeticalOp.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -59,7 +60,7 @@ namespace icl::filter {
       m_eOpType(t), m_dValue(val)
   {
     addProperty("op","menu",ARITH_MENU,arithName(t));
-    addProperty("value","range:slider","[-255,512]",str(val));
+    addProperty("value",utils::prop::Range{.min=-255, .max=512}, val);
     registerCallback([this](const Property &p){
       if(p.name == "op")        m_eOpType = parseArith(p.value);
       else if(p.name == "value") m_dValue = parse<icl64f>(p.value);

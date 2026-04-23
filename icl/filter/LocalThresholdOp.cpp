@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <icl/core/Image.h>
+#include <icl/utils/prop/Constraints.h>
 
 template<class T>
 inline unsigned char myclip(T x){
@@ -60,12 +61,12 @@ namespace icl::filter {
         - gamma slope (range:slider(-10,10)
         - algorithm (menu, region mean, tiled lin, tiled NN)
         */
-    addProperty("mask size","range:slider","[1,100]:1",str(maskSize));
-    addProperty("global threshold","range:slider","[-255,255]",str(globalThreshold));
-    addProperty("gamma slope","range:slider","[-255,255]",str(gammaSlope));
-    addProperty("algorithm","menu","region mean,tiled linear,tiled NN,global","region mean");
-    addProperty("actually used mask size","info","","0");
-    addProperty("invert output","flag","",false);
+    addProperty("mask size",utils::prop::Range{.min=1, .max=100, .step=1}, maskSize);
+    addProperty("global threshold",utils::prop::Range{.min=-255, .max=255}, globalThreshold);
+    addProperty("gamma slope",utils::prop::Range{.min=-255, .max=255}, gammaSlope);
+    addProperty("algorithm",utils::prop::Menu{"region mean", "tiled linear", "tiled NN", "global"}, "region mean");
+    addProperty("actually used mask size",utils::prop::Info{}, "0");
+    addProperty("invert output",utils::prop::Flag{}, false);
   }
 
 
@@ -75,12 +76,12 @@ namespace icl::filter {
     m_cmp(new BinaryCompareOp(BinaryCompareOp::gt)),
     m_tiledBuf1(0),m_tiledBuf2(0){
 
-    addProperty("mask size","range:slider","[1,100]",str(maskSize));
-    addProperty("global threshold","range:slider","[-255,255]",str(globalThreshold));
-    addProperty("gamma slope","range:slider","[-10,10]",str(gammaSlope));
-    addProperty("algorithm","menu","region mean,tiled linear,tiled NN,global",a==regionMean?"region mean":a==tiledNN?"tiled NN":a==global?"global":"tiled linear");
-    addProperty("actually used mask size","info","","0");
-    addProperty("invert output","flag","",false);
+    addProperty("mask size",utils::prop::Range{.min=1, .max=100}, maskSize);
+    addProperty("global threshold",utils::prop::Range{.min=-255, .max=255}, globalThreshold);
+    addProperty("gamma slope",utils::prop::Range{.min=-10, .max=10}, gammaSlope);
+    addProperty("algorithm",utils::prop::Menu{"region mean", "tiled linear", "tiled NN", "global"}, a==regionMean?"region mean":a==tiledNN?"tiled NN":a==global?"global":"tiled linear");
+    addProperty("actually used mask size",utils::prop::Info{}, "0");
+    addProperty("invert output",utils::prop::Flag{}, false);
   }
 
 

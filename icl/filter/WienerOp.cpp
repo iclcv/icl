@@ -4,6 +4,7 @@
 
 #include <icl/filter/WienerOp.h>
 #include <icl/core/Image.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -32,9 +33,9 @@ namespace icl::filter {
     // Default range covers the useful span for 8u-gray inputs: 0 is a no-op
     // (textbook Wiener with "no noise expected" returns src unchanged), ~100
     // is moderate smoothing (σ≈10 gray levels), ~1000 is aggressive.
-    addProperty("noise","range:slider","[0,1000]:0.1",str(noise));
-    addProperty("mask size.w","range:spinbox","[1,51]",str(maskSize.width));
-    addProperty("mask size.h","range:spinbox","[1,51]",str(maskSize.height));
+    addProperty("noise",utils::prop::Range{.min=0.f, .max=1000.f, .step=0.1f}, noise);
+    addProperty("mask size.w",utils::prop::Range{.min=1, .max=51, .ui=utils::prop::UI::Spinbox}, maskSize.width);
+    addProperty("mask size.h",utils::prop::Range{.min=1, .max=51, .ui=utils::prop::UI::Spinbox}, maskSize.height);
     registerCallback([this](const Property &p){
       // Callback side is auto-locked by UnaryOp::registerCallback.
       if(p.name == "noise") m_fNoise = parse<icl32f>(p.value);
