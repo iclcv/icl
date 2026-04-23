@@ -561,20 +561,6 @@ namespace icl::utils {
     /// downstream reads go through the cascade.
     void setPropertyValueTyped(const std::string &propertyName, std::any v);
 
-    /// Silent typed write — updates `Property::typed_value` but does
-    /// NOT fire callbacks.
-    ///
-    /// Intended for display-only Info properties that an owner updates
-    /// from a latency-sensitive path (e.g. a Grabber's acquireImage()
-    /// under `m_grabMutex`) where firing per-write callbacks would
-    /// flood the GUI event queue with redundant coalescing events.
-    /// qt::Prop's callback-driven refresh still sees the latest value
-    /// whenever some other (non-silent) write fires a callback, and
-    /// any explicit getPropertyValue / Handle::value / ConfigFile save
-    /// reads the up-to-date value immediately — so silent writes stay
-    /// visible, they just don't push.
-    void setPropertyValueSilent(const std::string &propertyName, std::any v);
-
     // setPropertyPayload / getPropertyPayload retired — typed_value itself
     // carries the image/non-string payload now that addProperty<ImageView>
     // stores live core::Image directly.  Use

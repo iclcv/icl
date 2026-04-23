@@ -435,22 +435,6 @@ namespace icl::utils {
     call_callbacks(propertyName, this);
   }
 
-  void Configurable::setPropertyValueSilent(const std::string &propertyName, std::any v){
-    // Mirror of setPropertyValueTyped minus the call_callbacks() tail.
-    // See the declaration in Configurable.h for rationale (volatile
-    // Info properties polled by VolatileUpdater don't need callbacks,
-    // and firing them from a Grabber's acquireImage() under
-    // m_grabMutex risks lock inversion with qt::Prop's execMutex).
-    Property &p = prop_storage(propertyName);
-    if(p.configurable != this){
-      p.configurable->setPropertyValueSilent(propertyName.substr(p.childPrefix.length()),
-                                             std::move(v));
-    }else{
-      std::scoped_lock<std::recursive_mutex> lock(m_mutex);
-      p.typed_value = std::move(v);
-    }
-  }
-
   std::vector<std::string> remove_by_filter(const std::vector<std::string> &ps,
                                             const std::vector<std::string> &filter){
     std::vector<std::string> ps2;

@@ -145,12 +145,8 @@ namespace icl::io {
     m_drawBuffer->setTime(now);
     m_lastTime = now;
 
-    // Silent update — don't queue a per-frame GUI flush for a pure
-    // display value.  qt::Prop still picks up the current value on
-    // the next flush triggered by any non-silent write.
-    setPropertyValueSilent("current-pos",
-                           std::string("x:" + str(m_x.x*m_drawSize.width) + " y:"
-                                       + str(m_x.y*m_drawSize.height)));
+    prop("current-pos").value = "x:" + str(m_x.x*m_drawSize.width) + " y:"
+                              + str(m_x.y*m_drawSize.height);
 
     return m_drawBuffer;
   }
