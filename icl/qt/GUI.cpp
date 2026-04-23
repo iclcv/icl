@@ -76,6 +76,7 @@
 #include <icl/qt/Quick2.h>
 #include <QCheckBox>
 #include <QtCore/QTimer>
+#include <QtCore/QMetaObject>
 
 #include <QFileDialog>
 
@@ -291,8 +292,19 @@ namespace icl{
       GUI sub_gui;
       bool deactivateExec;
       std::string processingProperty;
-      std::recursive_mutex execMutex;
       std::map<std::string,std::string, std::less<>> deferredAssignList;
+
+      // Coalescing queue for async widget updates.  Writer threads
+      // (anyone firing a Configurable callback) add property names
+      // here and schedule a single GUI-thread flush via
+      // QMetaObject::invokeMethod(Qt::QueuedConnection).  The flush
+      // reads the latest value for each pending property from the
+      // Configurable and updates the matching widget — all on the
+      // GUI thread, so no cross-thread widget mutation and no lock
+      // inversion against writer-side mutexes (m_grabMutex, etc.).
+      std::mutex pendingMutex;
+      std::set<std::string> pendingPropertyUpdates;
+      bool updateScheduled = false;
 
       struct StSt{
         std::string full,half;
@@ -479,9 +491,7 @@ namespace icl{
 
       ConfigurableGUIWidget(const GUIDefinition &def)
         : GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),
-          deactivateExec(false), processingProperty(""),
-          execMutex()
-
+          deactivateExec(false), processingProperty("")
       {
         static const std::string pointer_prefix = "@pointer@:";
         if(def.param(0).length() > pointer_prefix.length() &&
@@ -639,39 +649,79 @@ namespace icl{
           timers[i]->start();
         }
 
-        conf->registerCallback([this](const Configurable::Property &p) { propertyChanged(p); });
+        // Property-change callback: any thread may fire this.  Coalesce
+        // updates in `pendingPropertyUpdates`; schedule at most one
+        // GUI-thread flush at a time via QMetaObject::invokeMethod
+        // with Qt::QueuedConnection.
+        conf->registerCallback([this](const Configurable::Property &p){
+          enqueuePropertyUpdate(p.name);
+        });
       }
 
-      /// Called when a property is changed from somewhere other than the
-      /// GUI — e.g. the owning Op mutates it, or another Configurable
-      /// consumer of syncChangesTo fires.  Pushes the new value into the
-      /// matching widget.  Dispatch mirrors update_all_components /
-      /// add_component.
-      void propertyChanged(const Configurable::Property &p){
+      /// Add `name` to the pending-update set and schedule a single
+      /// GUI-thread flush if not already scheduled.  Thread-safe: may
+      /// be called from any thread firing a Configurable callback.
+      void enqueuePropertyUpdate(const std::string &name){
+        bool needSchedule = false;
+        {
+          std::scoped_lock<std::mutex> lk(pendingMutex);
+          pendingPropertyUpdates.insert(name);
+          if(!updateScheduled){
+            updateScheduled = true;
+            needSchedule = true;
+          }
+        }
+        if(needSchedule){
+          QMetaObject::invokeMethod(this, [this]{ flushPendingPropertyUpdates(); },
+                                    Qt::QueuedConnection);
+        }
+      }
+
+      /// Runs on the GUI thread (scheduled via invokeMethod).  Reads the
+      /// *current* value of each pending property and pushes it into the
+      /// matching widget — multiple rapid writes coalesce to one widget
+      /// update per property per GUI tick.
+      void flushPendingPropertyUpdates(){
+        std::set<std::string> batch;
+        {
+          std::scoped_lock<std::mutex> lk(pendingMutex);
+          batch.swap(pendingPropertyUpdates);
+          updateScheduled = false;
+        }
+        for(const std::string &name : batch){
+          try{
+            applyPropertyToWidget(conf->prop(name));
+          }catch(const ICLException &){
+            // Property vanished between the enqueue and the flush
+            // (e.g. child configurable removed) — skip silently.
+          }
+        }
+      }
+
+      /// Updates the matching widget for a single property.  Runs on
+      /// GUI thread.  Dispatch mirrors update_all_components /
+      /// add_component's handle-prefix scheme.
+      void applyPropertyToWidget(Configurable::Handle h){
         namespace up = utils::prop;
         namespace cp = core::prop;
-        std::scoped_lock<std::recursive_mutex> l(execMutex);
-        const std::string &name = p.name;
-        const std::any    &c    = p.constraint;
+        const std::string &name = h.name;
+        const std::any    &c    = h.constraint;
         deactivateExec = true;
         processingProperty = name;
 
         if(auto *r = std::any_cast<up::Range<float>>(&c)){
           if(r->ui == up::UI::Spinbox){
-            gui["#F#"+name] = p.as<float>();
+            gui["#F#"+name] = h.as<float>();
           }else{
-            gui["#r#"+name] = p.as<float>();
+            gui["#r#"+name] = h.as<float>();
           }
         }else if(auto *r = std::any_cast<up::Range<int>>(&c)){
           if(r->ui == up::UI::Spinbox){
-            gui["#R#"+name] = p.as<int>();
+            gui["#R#"+name] = h.as<int>();
           }else{
             // Snap the incoming value to the constraint's stepping so a
-            // slider with step=N reflects the model's N-aligned grid
-            // (matches the pre-session behavior — the user can't notice
-            // sub-step moves, but an external writer could otherwise
-            // push the widget off-grid).
-            int val = p.as<int>();
+            // slider with step=N reflects the model's N-aligned grid.
+            int val = h.as<int>();
             int step = (r->step == 0) ? 1 : r->step;
             val = (val/step)*step;
             gui["#r#"+name] = val;
@@ -679,27 +729,31 @@ namespace icl{
         }else if(std::any_cast<up::Menu<std::string>>(&c) ||
                  std::any_cast<up::Menu<int>>(&c) ||
                  std::any_cast<up::Menu<float>>(&c)){
-          gui["#m#"+name] = p.as<std::string>();
+          gui["#m#"+name] = h.as<std::string>();
         }else if(std::any_cast<up::Flag>(&c)){
-          gui["#f#"+name] = p.as<bool>();
+          gui["#f#"+name] = h.as<bool>();
         }else if(std::any_cast<up::Info>(&c)){
-          gui["#i#"+name] = p.as<std::string>();
+          gui["#i#"+name] = h.as<std::string>();
         }else if(std::any_cast<up::Text>(&c)){
-          gui["#S#"+name] = p.as<std::string>();
+          gui["#S#"+name] = h.as<std::string>();
         }else if(std::any_cast<cp::Color>(&c)){
-          gui["#C#"+name] = p.as<Color>();
+          gui["#C#"+name] = h.as<Color>();
         }
-        // up::Command — nothing to push; fires without value.
-        // cp::ImageView — refreshed by VolatileImageUpdater timer.
-        // Empty constraint — unknown/malformed; drop silently (logged
-        // on the add_component path where the miss is visible).
+        // up::Command — nothing to push.
+        // cp::ImageView — separate path (VolatileImageUpdater, will
+        // migrate to the push channel in a follow-up commit).
 
         deactivateExec = false;
         processingProperty = "";
       }
 
       void exec(const std::string &handle){
-        std::scoped_lock<std::recursive_mutex> l(execMutex);
+        // exec() runs on the GUI thread (Qt callback dispatch).
+        // flushPendingPropertyUpdates — the only other mutator of
+        // deactivateExec / processingProperty — also runs on the GUI
+        // thread (posted via QMetaObject::invokeMethod), so the two
+        // serialize on the event loop without needing an explicit
+        // mutex.
         if(handle.length()<3 || handle[0] != '#') throw ICLException("invalid callback (this should not happen)");
         std::string prop = handle.substr(3);
         if(deactivateExec || processingProperty == prop){

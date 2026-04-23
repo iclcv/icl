@@ -383,12 +383,12 @@ namespace icl::utils {
     /// removes the given child configurable
     void removeChildConfigurable(Configurable *configurable);
 
+    public:
+
     /// Structured handle for a property — value proxy + field refs.
     /// Returned from `prop(name)` below.  Defined after Configurable so
     /// it can delegate to Configurable methods.
     class Handle;
-
-    public:
 
     /// Look up a property by name and return a short-lived handle with
     /// a write-through value proxy + reference members to the Property
