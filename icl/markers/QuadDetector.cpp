@@ -559,11 +559,11 @@ namespace icl::markers {
     ICLASSERT_THROW(image,
                     ICLException("QuadDetector::detect: input image was NULL"));
     if (data->dynamicQuadColor) {
-      QuadColor c = getPropertyValue("quad value");
+      QuadColor c = prop("quad value").value;
       if (c >= 0 && c <= 3) {
         data->rd->setConstraints(
-                                 getPropertyValue("region detector.minimum size"),
-                                 getPropertyValue("region detector.maximum size"),
+                                 prop("region detector.minimum size").value,
+                                 prop("region detector.maximum size").value,
                                  RD_VALS[static_cast<int>(c)], RD_VALS[static_cast<int>(c) + 3]);
       } else {
         ERROR_LOG(
@@ -575,8 +575,8 @@ namespace icl::markers {
     data->cameraForQuadRating.setResolution(image->getSize());
     data->cameraForQuadRatingProjectionMatrix = data->cameraForQuadRating.getProjectionMatrix();
 
-    std::string kernelType = getPropertyValue("pp.filter");
-    Size kernelSize = getPropertyValue("pp.mask size");
+    std::string kernelType = prop("pp.filter").value;
+    Size kernelSize = prop("pp.mask size").value;
 
     if (data->lastPPType != kernelType || data->lastPPSize != kernelSize) {
       data->lastPPType = kernelType;
@@ -623,12 +623,12 @@ namespace icl::markers {
 
     const std::vector<ImageRegion> &rs = data->rd->detect(data->lastBinImage);
 
-    std::string approxAlgorithm = getPropertyValue("contour approximation algorithm");
-    const bool optEdges = getPropertyValue("optimize edges");
-    const float minRating = getPropertyValue("min-rating");
-    const bool useIntersectionHeuristic = getPropertyValue("intersection heuristic");
-    const bool usePerpendicularHeuristic = getPropertyValue("perpendicular heuristic");
-    const bool useMirrorHeuristic = getPropertyValue("mirror heuristic");
+    std::string approxAlgorithm = prop("contour approximation algorithm").value;
+    const bool optEdges = prop("optimize edges").value;
+    const float minRating = prop("min-rating").value;
+    const bool useIntersectionHeuristic = prop("intersection heuristic").value;
+    const bool usePerpendicularHeuristic = prop("perpendicular heuristic").value;
+    const bool useMirrorHeuristic = prop("mirror heuristic").value;
     const bool useAnyHeuristic = useIntersectionHeuristic || usePerpendicularHeuristic || useMirrorHeuristic;
 
     data->approxAlgorithm = Data::APPROX_CSS;

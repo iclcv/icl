@@ -132,14 +132,14 @@ namespace icl::markers {
     }
     data->impls.clear();
 
-    int m = getPropertyValue("max tilt");
-    bool returnRejected = getPropertyValue("return rejected quads");
+    int m = prop("max tilt").value;
+    bool returnRejected = prop("return rejected quads").value;
     data->quads = &data->quadd.detect(&image);
 
 
 #if 0
-    int f = getPropertyValue("match factor");
-    int b = getPropertyValue("border width");
+    int f = prop("match factor").value;
+    int b = prop("border width").value;
 
     const Size s(f*(6+2*b),f*(6+2*b));
     const Rect roi(f*b,f*b,f*6,f*6);

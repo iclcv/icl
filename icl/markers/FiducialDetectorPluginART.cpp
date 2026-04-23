@@ -307,8 +307,8 @@ namespace icl::markers {
 
     }
 
-    std::string a = getPropertyValue("matching algorithm");
-    int matchDim = getPropertyValue("matching dim");
+    std::string a = prop("matching algorithm").value;
+    int matchDim = prop("matching dim").value;
     Size matchSize(matchDim,matchDim);
     data->updateMatching(a,matchSize);
   }
@@ -317,13 +317,13 @@ namespace icl::markers {
 
   FiducialImpl *FiducialDetectorPluginART::classifyPatch(const Img8u &image, int *rot,
                                                          bool returnRejectedQuads, ImageRegion r){
-    std::string a = getPropertyValue("matching algorithm");
-    int matchDim = getPropertyValue("matching dim");
+    std::string a = prop("matching algorithm").value;
+    int matchDim = prop("matching dim").value;
     Size matchSize(matchDim,matchDim);
     if(data->lastMatching != a || data->lastMatchingSize != matchSize){
       data->updateMatching(a,matchSize);
     }
-    const float e = getPropertyValue("matching max error");
+    const float e = prop("matching max error").value;
 
     float err;
     NamedImage *n = data->matching->match(image, rot, &err) ;
@@ -352,8 +352,8 @@ namespace icl::markers {
 
   void FiducialDetectorPluginART::getQuadRectificationParameters(Size &markerSizeWithBorder,
                                                                  Size &markerSizeWithoutBorder){
-    float r = getPropertyValue("border ratio");
-    int d = getPropertyValue("matching dim");
+    float r = prop("border ratio").value;
+    int d = prop("matching dim").value;
     markerSizeWithBorder = Size((1+r)*d, (1+r)*d);
     markerSizeWithoutBorder = Size(d,d);
   }

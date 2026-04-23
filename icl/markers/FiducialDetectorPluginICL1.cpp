@@ -192,7 +192,7 @@ namespace icl::markers {
       delete data->impls[i];
     }
     data->impls.clear();
-    float maxFF = getPropertyValue("max form factor");
+    float maxFF = prop("max form factor").value;
     for(unsigned int i=0;i<regions.size();++i){
       ImageRegion r = regions[i];
 

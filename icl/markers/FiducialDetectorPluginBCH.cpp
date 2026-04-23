@@ -123,12 +123,12 @@ namespace icl::markers {
 
 
   void FiducialDetectorPluginBCH::prepareForPatchClassification(){
-    data->maxBCHErr = getPropertyValue("max bch errors");
-    std::string mode = getPropertyValue("binarize.mode");
+    data->maxBCHErr = prop("max bch errors").value;
+    std::string mode = prop("binarize.mode").value;
     if(mode == "threshold"){
-      data->bin.reset(new PatternBinarizationThresh(getPropertyValue("binarize.threshold").as<int>()));
+      data->bin.reset(new PatternBinarizationThresh(prop("binarize.threshold").as<int>()));
     }else{
-      data->bin.reset(new PatternBinarizationKMeans(getPropertyValue("binarize.k-means steps").as<int>()));
+      data->bin.reset(new PatternBinarizationKMeans(prop("binarize.k-means steps").as<int>()));
     }
   }
 
@@ -164,8 +164,8 @@ namespace icl::markers {
 
   void FiducialDetectorPluginBCH::getQuadRectificationParameters(Size &markerSizeWithBorder,
                                                                  Size &markerSizeWithoutBorder){
-    int f = getPropertyValue("match factor");
-    int b = getPropertyValue("border width");
+    int f = prop("match factor").value;
+    int b = prop("border width").value;
     markerSizeWithBorder = Size(f*(2*b+6), f*(2*b+6));
     markerSizeWithoutBorder = Size(f*6,f*6);
   }
