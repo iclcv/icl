@@ -40,8 +40,8 @@ namespace icl::filter {
       // Callback side is auto-locked by UnaryOp::registerCallback.
       if(p.name == "noise") m_fNoise = p.as<icl32f>();
       else if(p.name == "mask size.w" || p.name == "mask size.h"){
-        setMask(Size(parse<int>(prop("mask size.w").value),
-                     parse<int>(prop("mask size.h").value)));
+        setMask(Size(prop("mask size.w").as<int>(),
+                     prop("mask size.h").as<int>()));
       }
     });
   }

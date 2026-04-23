@@ -348,18 +348,18 @@ namespace icl::filter {
   }
 
   icl32f CannyOp::getLowThreshold()const {
-    return parse<icl32f>(prop("low threshold").value);
+    return prop("low threshold").as<icl32f>();
   }
 
   icl32f CannyOp::getHighThreshold()const {
-    return parse<icl32f>(prop("high threshold").value);
+    return prop("high threshold").as<icl32f>();
   }
 
   void CannyOp::setPreBlurRadius(int r){ setPropertyValue("pre-blur radius", r); }
 
   bool CannyOp::getPreBlurRadius() const {
     // name retained for ABI — semantic is "pre-blur feature active"
-    return parse<int>(prop("pre-blur radius").value) > 0;
+    return prop("pre-blur radius").as<int>() > 0;
   }
 
   REGISTER_CONFIGURABLE_DEFAULT(CannyOp);

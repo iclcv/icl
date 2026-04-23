@@ -340,9 +340,9 @@ ICL_REGISTER_TEST("utils.prop.configurable.addProperty_flag",
   // Typed extraction — the idiomatic read path.
   ICL_TEST_TRUE(bool(c.getPropertyValue("enabled")));
   ICL_TEST_EQ(c.getPropertyValue("enabled").as<bool>(), true);
-  // The legacy string form on-disk is still "on" (adapter's toString);
-  // the typed_value held in memory is the raw bool.
-  ICL_TEST_EQ(c.prop("enabled").value, std::string("on"));
+  // Property::value string field retired in step 9 commit 4 —
+  // typed_value is the sole storage.  Round-trip through the adapter
+  // produces the legacy "on" format on demand.
   ICL_TEST_TRUE(c.prop("enabled").constraint.has_value());
   ICL_TEST_TRUE(std::any_cast<bool>(c.prop("enabled").typed_value));
 }

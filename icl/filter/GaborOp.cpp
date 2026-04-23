@@ -28,13 +28,13 @@ namespace icl::filter {
   // shows one kernel per knob-set. The multi-value bank API (addLambda/
   // addTheta/...) still exists for direct users.
   void GaborOp::rebuildFromProperties(){
-    m_oKernelSize = Size(parse<int>(prop("size.w").value),
-                         parse<int>(prop("size.h").value));
-    m_vecLambdas = {parse<float>(prop("lambda").value)};
-    m_vecThetas  = {parse<float>(prop("theta").value)};
-    m_vecPsis    = {parse<float>(prop("psi").value)};
-    m_vecSigmas  = {parse<float>(prop("sigma").value)};
-    m_vecGammas  = {parse<float>(prop("gamma").value)};
+    m_oKernelSize = Size(prop("size.w").as<int>(),
+                         prop("size.h").as<int>());
+    m_vecLambdas = {prop("lambda").as<float>()};
+    m_vecThetas  = {prop("theta").as<float>()};
+    m_vecPsis    = {prop("psi").as<float>()};
+    m_vecSigmas  = {prop("sigma").as<float>()};
+    m_vecGammas  = {prop("gamma").as<float>()};
     updateKernels();
   }
 

@@ -106,7 +106,7 @@ namespace icl::filter {
   void ConvolutionOp::setForceUnsignedOutput(bool v){ setPropertyValue("force unsigned output", v); }
 
   bool ConvolutionOp::getForceUnsignedOutput() const {
-    return parse<bool>(prop("force unsigned output").value);
+    return prop("force unsigned output").as<bool>();
   }
 
   void ConvolutionOp::apply(const core::Image &src, core::Image &dst) {

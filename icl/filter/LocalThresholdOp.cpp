@@ -114,17 +114,17 @@ namespace icl::filter {
 
 
   unsigned int LocalThresholdOp::getMaskSize() const{
-    return parse<int>(prop("mask size").value);
+    return prop("mask size").as<int>();
   }
 
 
   float LocalThresholdOp::getGlobalThreshold() const{
-    return parse<float>(prop("global threshold").value);
+    return prop("global threshold").as<float>();
   }
 
 
   float LocalThresholdOp::getGammaSlope() const{
-    return parse<float>(prop("gamma slope").value);
+    return prop("gamma slope").as<float>();
   }
 
 
@@ -139,7 +139,7 @@ namespace icl::filter {
 
   /// returns currently used algorithm type
   LocalThresholdOp::algorithm LocalThresholdOp::getAlgorithm() const{
-    const std::string &a = prop("algorithm").value;
+    const std::string &a = prop("algorithm").as<std::string>();
     return ( a == "region mean" ? regionMean :
              a =="tiled NN" ? tiledNN :
              a == "global" ? global : tiledLIN );

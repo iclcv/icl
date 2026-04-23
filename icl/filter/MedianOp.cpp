@@ -37,8 +37,8 @@ namespace icl::filter {
     addProperty("mask size.h",utils::prop::Range{.min=1, .max=51, .ui=utils::prop::UI::Spinbox}, adapted.height);
     registerCallback([this](const Property &p){
       if(p.name != "mask size.w" && p.name != "mask size.h") return;
-      const Size raw(parse<int>(prop("mask size.w").value),
-                     parse<int>(prop("mask size.h").value));
+      const Size raw(prop("mask size.w").as<int>(),
+                     prop("mask size.h").as<int>());
       setMask(adaptSize(raw));
     });
   }

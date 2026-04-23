@@ -52,11 +52,11 @@ namespace icl::filter {
   // the next property-driven rebuild — the property knobs are the authoritative
   // source of truth for property-consumer code (e.g. filter-playground).
   void AffineOp::rebuildFromProperties(){
-    const double sx = parse<double>(prop("scale.x").value);
-    const double sy = parse<double>(prop("scale.y").value);
-    const double deg = parse<double>(prop("rotate.deg").value);
-    const double tx = parse<double>(prop("translate.x").value);
-    const double ty = parse<double>(prop("translate.y").value);
+    const double sx = prop("scale.x").as<double>();
+    const double sy = prop("scale.y").as<double>();
+    const double deg = prop("rotate.deg").as<double>();
+    const double tx = prop("translate.x").as<double>();
+    const double ty = prop("translate.y").as<double>();
     reset();
     scale(sx, sy);
     rotate(deg);

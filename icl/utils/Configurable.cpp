@@ -144,10 +144,15 @@ namespace icl::utils {
     m_childConfigurables[configurable] = pfx;
     const std::vector<std::string> ps = configurable->getPropertyListWithoutDeactivated();//getPropertyList();
     for(unsigned int i=0;i<ps.size();++i){
-      Property p = Property(configurable, pfx+ps[i],configurable->getPropertyType(ps[i]),
-                            configurable->getPropertyInfo(ps[i]),configurable->getPropertyValue(ps[i]),
-                            configurable->getPropertyVolatileness(ps[i]),
-                            configurable->getPropertyToolTip(ps[i]));
+      // The imported Property is a facade — actual storage lives on the
+      // child; prop lookups with the prefix'd name are forwarded to it
+      // via Property::configurable.  No need to materialize a local
+      // typed_value copy.
+      Property p(configurable, pfx+ps[i],
+                 configurable->getPropertyType(ps[i]),
+                 configurable->getPropertyInfo(ps[i]),
+                 configurable->getPropertyVolatileness(ps[i]),
+                 configurable->getPropertyToolTip(ps[i]));
       p.childPrefix = pfx;
       if(auto it = m_properties.find(p.name); it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
       m_properties[p.name] = p;
@@ -211,18 +216,18 @@ namespace icl::utils {
       prop(name);
       throw ICLException("Unable to add property " + name + " because it is already used");
     }catch(ICLException &){
-      Property p(this, name, type, info, value, volatileness, tooltip);
+      Property p(this, name, type, info, volatileness, tooltip);
       // Unify with the typed path: derive constraint + typed_value from
       // the legacy string triple so downstream consumers (qt::Prop,
       // getPropertyValue, ConfigFile) see identical state regardless of
       // which addProperty overload registered the property.  For
       // utils-level kinds the helper populates both; for core-level
       // ("color", "image") or unknown kinds it returns empty anys and
-      // we leave the constraint unset — the caller must have migrated
-      // to the typed addProperty<C> overload for those.
+      // the typed_value falls back to holding the raw string below.
       auto [constraint, typed] = buildConstraintFromLegacy(type, info, value.str());
       p.constraint  = std::move(constraint);
-      p.typed_value = std::move(typed);
+      p.typed_value = typed.has_value() ? std::move(typed)
+                                        : std::any(value.str());
       m_properties[name] = std::move(p);
       if(m_isOrdered) m_ordering[m_properties.size()] = name;
     }
@@ -343,10 +348,13 @@ namespace icl::utils {
     // bool cast).  Command properties hold `std::monostate`, which is
     // intentionally not stringifiable — `.str()` throws, which is
     // semantically correct for a button-style property.
-    if(p.typed_value.has_value()){
-      return AutoParse<std::any>(p.typed_value);
-    }
-    return AutoParse<std::any>(std::any(p.as<std::string>()));
+    // Property::value retired in step 9 commit 4 — typed_value is the
+    // sole storage.  For every property registered via either the
+    // typed addProperty<C> overload or the legacy string-taking
+    // overload (which unifies through buildConstraintFromLegacy),
+    // typed_value is populated at registration time and maintained by
+    // setPropertyValue / setPropertyValueTyped.
+    return AutoParse<std::any>(p.typed_value);
   }
 
   bool Configurable::supportsProperty(const std::string &propertyName) const{
@@ -360,15 +368,16 @@ namespace icl::utils {
       p.configurable->setPropertyValue(propertyName.substr(p.childPrefix.length()),value);
     }else{
       std::scoped_lock<std::recursive_mutex> lock(m_mutex);
-      p.value = value;
-      // If the property was registered with a structured constraint,
-      // parse the incoming string into the declared type and update
-      // the typed payload in lockstep with the string value.  Legacy
-      // properties (constraint empty) skip this — their typed_value
-      // stays empty and getPropertyValue falls back to the string.
+      // Parse the incoming string into the declared C++ type via the
+      // constraint's adapter.  Properties without a constraint
+      // (core-level types like "color"/"image" registered via the
+      // legacy overload, or unknown types) store the raw string in
+      // typed_value.
       if(p.constraint.has_value()){
         const auto &a = prop::lookupAdapter(p.constraint.type());
         p.typed_value = a.fromString(p.constraint, value.str());
+      }else{
+        p.typed_value = std::any(value.str());
       }
     }
     call_callbacks(propertyName, this);

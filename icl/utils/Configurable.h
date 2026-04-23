@@ -175,14 +175,16 @@ namespace icl::utils {
     struct Property{
       Property():configurable(0),volatileness(0){}
       Property(Configurable *parent,
-               const std::string &name, const std::string &type, const std::string &info, const std::string &value,
-               int volatileness, const std::string &tooltip):configurable(parent),name(name),type(type),info(info),value(value),
-        volatileness(volatileness), tooltip(tooltip){}
+               const std::string &name, const std::string &type, const std::string &info,
+               int volatileness, const std::string &tooltip)
+        : configurable(parent), name(name), type(type), info(info),
+          volatileness(volatileness), tooltip(tooltip){}
       Configurable *configurable; //!< corresponding Configurable
       std::string name;  //!< property-ID
-      std::string type;  //!< property-type (menu, range,....);
-      std::string info;  //!< property-information (depends on type)
-      std::string value; //!< (optional) property-value this can be use to store current property value
+      std::string type;  //!< property-type (menu, range,....); synthesized from
+                         //!< constraint for migrated properties
+      std::string info;  //!< property-information (depends on type); synthesized
+                         //!< from constraint for migrated properties
       int volatileness;  //!< volatileness of a this property (0= no-volatileness, X=expected update every X msec)
       std::string tooltip; //!< property description, that is also used as tooltip
       std::string childPrefix;

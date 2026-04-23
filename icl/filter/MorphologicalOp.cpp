@@ -67,8 +67,8 @@ namespace icl::filter {
       if(p.name == "optype"){
         setOptype(parseOptype(p.as<std::string>()));
       }else if(p.name == "mask size.w" || p.name == "mask size.h"){
-        const Size s(parse<int>(prop("mask size.w").value),
-                     parse<int>(prop("mask size.h").value));
+        const Size s(prop("mask size.w").as<int>(),
+                     prop("mask size.h").as<int>());
         setMask(s, m_pcMask);
       }
     });
