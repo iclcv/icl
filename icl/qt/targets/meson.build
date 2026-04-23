@@ -4,6 +4,7 @@
 if _build_demos
   _qt_demos = {
     'chromaticity-space': [],
+    'compressor-playground': [],
     'configurable-gui': [],
     'define-rects': [],
     'dynamic-child-props': [],
