@@ -35,7 +35,6 @@ utils_headers = files(
   'CompatMacros.h',
   'ConfigFile.h',
   'Configurable.h',
-  'ConfigurableProxy.h',
   'ConsoleProgress.h',
   'EnumDispatch.h',
   'Exception.h',

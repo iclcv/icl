@@ -93,6 +93,7 @@ namespace icl::io {
 
   GenericGrabber::~GenericGrabber(){
     if(m_poGrabber){
+      removeChildConfigurable(m_poGrabber);
       GrabberInstanceTable::get() -> deleteGrabber(m_poDesc);
     }
   }
@@ -164,12 +165,13 @@ namespace icl::io {
 
     // (re)set GenericGrabber to default values
     if(m_poGrabber){
-      // delete old grabber
+      // Detach previous backend from this Configurable's child set
+      // before dropping the instance.
+      removeChildConfigurable(m_poGrabber);
       GrabberInstanceTable::get()->deleteGrabber(m_poDesc);
     }
     m_poDesc = GrabberDeviceDescription();
     m_poGrabber = nullptr;
-    setInternalConfigurable(nullptr);
 
     // create param map
     ParamMap pmap = create_param_map(params);
@@ -240,7 +242,12 @@ namespace icl::io {
 #endif
 
       m_poGrabber -> registerCallback([this](const utils::Configurable::Property &p){ m_poGrabber->processPropertyChange(p); });
-      setInternalConfigurable(m_poGrabber);
+      // Surface the backend's properties (both backend-specific
+      // camera controls and the "desired size" / "undistortion.*"
+      // pseudo-props we just added) as siblings on this
+      // GenericGrabber.  Empty prefix — no extra namespacing;
+      // properties land flat.
+      addChildConfigurable(m_poGrabber);
 
       const std::vector<std::string> &options = pmap[m_poDesc.type].options;
       // setting extra properties ...

@@ -8,7 +8,7 @@
 #include <icl/utils/Exception.h>
 #include <icl/utils/Lockable.h>
 #include <icl/utils/ProgArg.h>
-#include <icl/utils/ConfigurableProxy.h>
+#include <icl/utils/Configurable.h>
 #include <icl/io/Grabber.h>
 #include <icl/core/Image.h>
 #include <string>
@@ -18,11 +18,14 @@ namespace icl::io {
   /// Common interface class for all grabbers \ingroup GRABBER_G
   /** The generic grabber provides an interface for a multi-platform
       compatible grabber.
-      Image processing applications should use this Grabber
-      class. The GenericGrabber also provides camera
-      configuration via ConfigurableProxy interface.
+      Image processing applications should use this Grabber class.
+      The wrapped backend Grabber is surfaced through the Configurable
+      child-configurable mechanism — all of its properties (backend-
+      specific camera controls + the "desired size" / "undistortion.*"
+      pseudo-properties that GenericGrabber installs post-creation)
+      appear as siblings on this GenericGrabber instance.
   */
-  class ICLIO_API GenericGrabber : public utils::ConfigurableProxy{
+  class ICLIO_API GenericGrabber : public utils::Configurable{
 
       Grabber *m_poGrabber; //!< internally wrapped grabber instance
 
@@ -34,7 +37,7 @@ namespace icl::io {
       GenericGrabber(const GenericGrabber&) = delete;
       GenericGrabber& operator=(const GenericGrabber&) = delete;
 
-      using utils::ConfigurableProxy::registerCallback;
+      using utils::Configurable::registerCallback;
 
       /// Initialized the grabber from given prog-arg
       /** The progarg needs two sub-parameters */

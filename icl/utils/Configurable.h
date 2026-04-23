@@ -218,8 +218,6 @@ namespace icl::utils {
 
   class ICLUtils_API Configurable{
 
-    friend class ConfigurableProxy;
-
     public:
     /// Represents a single property
     struct Property{
