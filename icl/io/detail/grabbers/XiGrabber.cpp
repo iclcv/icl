@@ -220,8 +220,8 @@ namespace icl{
       if(m_data) delete m_data;
       m_data = new Data(deviceID);
 
-      addProperty("format", utils::prop::Menu{"RGB 24Bit", "Gray 8Bit"}, "RGB 24Bit", 0, "");
-      addProperty("size", utils::prop::Info{}, "", 0, "");
+      addProperty("format", utils::prop::Menu{"RGB 24Bit", "Gray 8Bit"}, "RGB 24Bit", "");
+      addProperty("size", utils::prop::Info{}, "", "");
 
       addProperty("roi.enabled",utils::prop::Flag{}, false);
 

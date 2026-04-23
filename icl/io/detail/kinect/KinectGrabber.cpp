@@ -636,16 +636,16 @@ namespace icl::io {
     const int r  = m_impl->getDevice()->used->depthImagePostProcessingMedianRadius;
     std::string ppvalue = (r == 3) ? "median 3x3" : ((r == 5) ? "median 5x4" : "off");
 
-    addProperty("Avoid double frames",prop::Flag{}, m_impl->avoidDoubleFrames,0,"whether to avoid returning the same frame multiple times");
-    addProperty("format", prop::Menu{"Color Image {24Bit RGB}", "Depth Image {float}", "IR Image {8Bit}", "IR Image {10Bit}"}, formats[m_impl->getDevice()->mode], 0, "");
-    addProperty("size", prop::Menu{"VGA {640x480}"}, "VGA {640x480}", 0, "");
-    addProperty("LED", prop::Menu{"off", "green", "red", "yellow", "blink yellow", "blink green", "blink red/yellow"}, m_impl->ledColor, 0, "");
-    addProperty("Desired-Tilt-Angle", prop::Range{.min=-35, .max=25}, m_impl->desiredTiltDegrees, 0, "");
-    addProperty("Current-Tilt-Angle", prop::Info{}, angleval, 100, "");
-    addProperty("Accelerometers", prop::Info{}, accelval, 100, "");
-    addProperty("shift-IR-image", prop::Menu{"off", "fast", "accurate"}, values[static_cast<int>(m_impl->getDevice()->used->irShift)], 0, "");
-    addProperty("depth-image-unit", prop::Menu{"raw", "mm"}, diunit, 0, "");
-    addProperty("depth-image-post-processing", prop::Menu{"off", "median 3x3", "median 5x5"}, ppvalue, 0, "");
+    addProperty("Avoid double frames",prop::Flag{}, m_impl->avoidDoubleFrames, "whether to avoid returning the same frame multiple times");
+    addProperty("format", prop::Menu{"Color Image {24Bit RGB}", "Depth Image {float}", "IR Image {8Bit}", "IR Image {10Bit}"}, formats[m_impl->getDevice()->mode], "");
+    addProperty("size", prop::Menu{"VGA {640x480}"}, "VGA {640x480}", "");
+    addProperty("LED", prop::Menu{"off", "green", "red", "yellow", "blink yellow", "blink green", "blink red/yellow"}, m_impl->ledColor, "");
+    addProperty("Desired-Tilt-Angle", prop::Range{.min=-35, .max=25}, m_impl->desiredTiltDegrees, "");
+    addProperty("Current-Tilt-Angle", prop::Info{}, angleval, "");
+    addProperty("Accelerometers", prop::Info{}, accelval, "");
+    addProperty("shift-IR-image", prop::Menu{"off", "fast", "accurate"}, values[static_cast<int>(m_impl->getDevice()->used->irShift)], "");
+    addProperty("depth-image-unit", prop::Menu{"raw", "mm"}, diunit, "");
+    addProperty("depth-image-post-processing", prop::Menu{"off", "median 3x3", "median 5x5"}, ppvalue, "");
 
     registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }

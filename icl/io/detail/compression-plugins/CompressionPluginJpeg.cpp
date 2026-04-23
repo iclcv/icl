@@ -34,8 +34,7 @@ namespace icl::io {
 
     public:
       JpegPlugin() {
-        addProperty("quality", prop::Range{.min=1, .max=100, .step=1}, 90, 0,
-                    "JPEG quality (1=worst/smallest, 100=best/largest). "
+        addProperty("quality", prop::Range{.min=1, .max=100, .step=1}, 90, "JPEG quality (1=worst/smallest, 100=best/largest). "
                     "Defaults to 90; values around 70 are typically a good "
                     "size/quality tradeoff for natural images.");
         Configurable::registerCallback([this](const Property &p){

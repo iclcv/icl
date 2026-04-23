@@ -15,7 +15,8 @@ using namespace icl::core;
 namespace icl::filter {
   // Refresh the "kernel preview" image property payload from the currently
   // configured kernels. Called at the end of updateKernels(); the Prop GUI
-  // widget polls the payload via its volatileness timer.
+  // widget refreshes through qt::Prop's callback push channel on
+  // every write to typed_value.
   void GaborOp::updatePreview(){
     if(m_vecKernels.empty()) return;
     Img32f k = m_vecKernels[0].detached();
@@ -51,7 +52,7 @@ namespace icl::filter {
                 m_vecSigmas.empty() ? 5.f : m_vecSigmas.front());
     addProperty("gamma",utils::prop::Range{.min=0.01f, .max=10.f, .step=0.01f}, 
                 m_vecGammas.empty() ? 0.5f : m_vecGammas.front());
-    addProperty("kernel preview", core::prop::ImageView{}, core::Image{}, /*volatileness=*/100);
+    addProperty("kernel preview", core::prop::ImageView{}, core::Image{});
     registerCallback([this](const Property &p){
       static const std::string knobs[] =
         {"size.w","size.h","lambda","theta","psi","sigma","gamma"};

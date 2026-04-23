@@ -228,8 +228,7 @@ namespace icl::io {
       menu += n;
       first = false;
     }
-    addProperty("mode", utils::prop::menuFromCsv(menu), spec.mode, 0,
-                "Active codec. The receiver auto-detects the codec from "
+    addProperty("mode", utils::prop::menuFromCsv(menu), spec.mode, "Active codec. The receiver auto-detects the codec from "
                 "the envelope, so it does NOT need to match this setting. "
                 "Each codec exposes its own tunables as sibling properties; "
                 "the set of siblings changes when `mode` changes.");

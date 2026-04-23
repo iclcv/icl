@@ -251,20 +251,16 @@ namespace icl::markers {
 
 
   FiducialDetectorPluginART::FiducialDetectorPluginART():data(new Data){
-    addProperty("matching algorithm",prop::Menu{"binary hamming", "gray sqrdist", "gray ncc"}, "binary hamming",0,
-                "Algorithm for comparing the rectified marker center with\n"
+    addProperty("matching algorithm",prop::Menu{"binary hamming", "gray sqrdist", "gray ncc"}, "binary hamming", "Algorithm for comparing the rectified marker center with\n"
                 "the internal representation:\n"
                 "binary hamming: binary hamming distance\n"
                 "gray sqrdist: square distance of the gray images\n"
                 "gray ncc: normalized cross correlation coefficient\n");
-    addProperty("matching max error",prop::Range{.min=0, .max=1}, 0.1,0,
-                "Matching accuracy value:\n"
+    addProperty("matching max error",prop::Range{.min=0, .max=1}, 0.1, "Matching accuracy value:\n"
                 "0: no matches\n"
                 "1: everything matches\n");
-    addProperty("matching dim",prop::Range{.min=4, .max=256, .step=1}, 32,0,
-                "Marker patch rectification size.");
-    addProperty("border ratio",prop::Range{.min=0, .max=1}, 0.4,0,
-                "Ratio of marker border pixels and marker dimension.");
+    addProperty("matching dim",prop::Range{.min=4, .max=256, .step=1}, 32, "Marker patch rectification size.");
+    addProperty("border ratio",prop::Range{.min=0, .max=1}, 0.4, "Ratio of marker border pixels and marker dimension.");
   }
 
   FiducialDetectorPluginART::~FiducialDetectorPluginART(){

@@ -84,12 +84,11 @@ OpenNIGrabber::OpenNIGrabber(std::string args)
   m_Buffer = new ReadWriteBuffer<ImgBase>(m_Generator);
   m_Generator -> getMapGenerator()->StartGenerating();
 
-  addProperty("omit double frames", utils::prop::Flag{}, m_OmitDoubleFrames, 0, "");
+  addProperty("omit double frames", utils::prop::Flag{}, m_OmitDoubleFrames, "");
   addProperty("format",
               utils::prop::menuFromCsv(m_Generator->getMapOutputModeInfo(m_Generator->getMapGenerator())),
-              m_Generator->getCurrentMapOutputMode(m_Generator->getMapGenerator()),
-              0, "The image format.");
-  addProperty("size", utils::prop::Info{}, "adjusted by format", 0, "This is set by the format-property.");
+              m_Generator->getCurrentMapOutputMode(m_Generator->getMapGenerator()), "The image format.");
+  addProperty("size", utils::prop::Info{}, "adjusted by format", "This is set by the format-property.");
   addChildConfigurable(m_Generator -> getMapGeneratorOptions());
   registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
 

@@ -235,24 +235,19 @@ namespace icl::io {
     ensureQCoreApplication();
     const std::string normalized = normalizeWSUrl(url);
     setConfigurableID(str("ws:")+normalized);
-    addProperty("connection state",            prop::Info{}, "disconnected", 200);
-    addProperty("reconnect attempts",          prop::Info{}, "0",            200);
-    addProperty("last connected",              prop::Info{}, "never",        200);
-    addProperty("reconnect backoff initial ms",prop::Range{.min=10, .max=60000, .step=1}, 250, 0,
-                "Initial delay before retrying after a disconnect.");
-    addProperty("reconnect backoff max ms",    prop::Range{.min=10, .max=300000, .step=1}, 5000, 0,
-                "Cap on the exponential backoff between reconnect attempts.");
-    addProperty("block timeout ms",            prop::Range{.min=0, .max=60000, .step=1}, 1000, 0,
-                "Max time acquireImage() blocks for a fresh frame "
+    addProperty("connection state",            prop::Info{}, "disconnected");
+    addProperty("reconnect attempts",          prop::Info{}, "0");
+    addProperty("last connected",              prop::Info{}, "never");
+    addProperty("reconnect backoff initial ms",prop::Range{.min=10, .max=60000, .step=1}, 250, "Initial delay before retrying after a disconnect.");
+    addProperty("reconnect backoff max ms",    prop::Range{.min=10, .max=300000, .step=1}, 5000, "Cap on the exponential backoff between reconnect attempts.");
+    addProperty("block timeout ms",            prop::Range{.min=0, .max=60000, .step=1}, 1000, "Max time acquireImage() blocks for a fresh frame "
                 "before falling back to the last known frame.");
-    addProperty("replay last on timeout",      prop::Flag{}, "true",        0,
-                "If true, return the last successfully received frame "
+    addProperty("replay last on timeout",      prop::Flag{}, "true", "If true, return the last successfully received frame "
                 "when block timeout expires; if false, return null.");
-    addProperty("queue size",                  prop::Range{.min=1, .max=64, .step=1}, 2,  0,
-                "Max frames buffered. Drop-oldest policy when exceeded.");
-    addProperty("frames dropped",              prop::Info{}, "0",            200);
-    addProperty("frames received",             prop::Info{}, "0",            200);
-    addProperty("bytes received",              prop::Info{}, "0",            200);
+    addProperty("queue size",                  prop::Range{.min=1, .max=64, .step=1}, 2, "Max frames buffered. Drop-oldest policy when exceeded.");
+    addProperty("frames dropped",              prop::Info{}, "0");
+    addProperty("frames received",             prop::Info{}, "0");
+    addProperty("bytes received",              prop::Info{}, "0");
 
     registerCallback([this](const Property &p){
       if (!m_data || !m_data->client) return;

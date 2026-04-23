@@ -152,25 +152,20 @@ namespace icl::io {
 
   void DCGrabber::addProperties(){
     addProperty("format", utils::prop::menuFromCsv(m_oDev.getModesInfo()), 
-                m_oDev.getMode().toString(), 0,
-                "Sets the cameras image size and format");
+                m_oDev.getMode().toString(), "Sets the cameras image size and format");
     addProperty("size", prop::Menu{"adjusted by format"}, 
-                "adjusted by format", 0,
-                "this is set by format");
+                "adjusted by format", "this is set by format");
     addProperty("omit-doubled-frames", prop::Flag{}, 
-                m_oOptions.suppressDoubledImages, 0,
-                "Prevents the grabber from returning the same image multiple times.");
+                m_oOptions.suppressDoubledImages, "Prevents the grabber from returning the same image multiple times.");
     addProperty("enable-image-labeling", prop::Flag{}, 
-                m_oOptions.enable_image_labeling, 0, ""); //TODO: tooltip
+                m_oOptions.enable_image_labeling, ""); //TODO: tooltip
     addProperty("iso-speed",
                 prop::menuFromCsv(dc::is_dc800_capable(m_oDev.getCam()) ? "400,800" : "400"),
-                m_oOptions.isoMBits == 400 ? std::string("400") : std::string("800"), 0,
-                "Switches the cameraas iso-speed between 400 and 800.");
+                m_oOptions.isoMBits == 400 ? std::string("400") : std::string("800"), "Switches the cameraas iso-speed between 400 and 800.");
     if(static_cast<int>(m_oDev.getBayerFilterLayout()) == 1){
       addProperty("bayer-layout",
                   prop::Menu{"RGGB","GBRG","GRBG","BGGR","NONE"},
-                  m_sUserDefinedBayerPattern, 0,
-                  "Sets the used bayer filter layout.");
+                  m_sUserDefinedBayerPattern, "Sets the used bayer filter layout.");
       addProperty("bayer-quality",
                   "menu",
                   "DC1394_BAYER_METHOD_NEAREST,"
@@ -180,8 +175,7 @@ namespace icl::io {
                   "DC1394_BAYER_METHOD_EDGESENSE,"
                   "DC1394_BAYER_METHOD_VNG,"
                   "DC1394_BAYER_METHOD_AHD",
-                  to_string(m_oOptions.bayermethod), 0,
-                  "Sets the color interpolation method used for the bayer->color conversion.");
+                  to_string(m_oOptions.bayermethod), "Sets the color interpolation method used for the bayer->color conversion.");
     }
     addChildConfigurable(&m_oDeviceFeatures);
     registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });

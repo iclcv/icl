@@ -70,30 +70,30 @@ namespace icl::io {
     data->size.height =  data->cvc->get(cv::CAP_PROP_FRAME_HEIGHT);
 
     // Configurable
-    addProperty("pos_msec_current", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_POS_MSEC)), 0, "");
+    addProperty("pos_msec_current", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_POS_MSEC)), "");
     addProperty("pos_msec",
                 prop::Range{.min=0.f,
                                    .max=(float)(1000*(data->cvc->get(cv::CAP_PROP_FRAME_COUNT) / data->cvc->get(cv::CAP_PROP_FPS))),
                                    .step=1.f},
-                (float)data->cvc->get(cv::CAP_PROP_POS_MSEC), 0, "");
-    addProperty("pos_frames_current", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_POS_FRAMES)), 0, "");
+                (float)data->cvc->get(cv::CAP_PROP_POS_MSEC), "");
+    addProperty("pos_frames_current", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_POS_FRAMES)), "");
     addProperty("pos_frames",
                 prop::Range{.min=0.f,
                                    .max=(float)data->cvc->get(cv::CAP_PROP_FRAME_COUNT),
                                    .step=1.f},
-                (float)data->cvc->get(cv::CAP_PROP_POS_FRAMES), 0, "");
+                (float)data->cvc->get(cv::CAP_PROP_POS_FRAMES), "");
     // NB: legacy call had a non-empty "info" string ("[0,1]:<float>") —
     // that extra info grammar isn't representable with prop::Info{} (which
     // carries no info payload).  The info text was not meaningfully read
     // by qt::Prop for "info" type anyway, so drop it.
     addProperty("pos_avi_ratio", prop::Info{},
-                str(data->cvc->get(cv::CAP_PROP_POS_AVI_RATIO)), 100, "");
-    addProperty("size", prop::Info{}, str(data->size), 0, "");
-    addProperty("format", prop::Info{}, "RGB", 0, "");
-    addProperty("fourcc", prop::Info{}, fourCCStringFromDouble(data->cvc->get(cv::CAP_PROP_FOURCC)), 0, "");
-    addProperty("frame_count", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_FRAME_COUNT)), 0, "");
-    addProperty("use_video_fps", prop::Flag{}, data->use_video_fps, 0, "");
-    addProperty("video_fps", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_FPS)), 0, "");
+                str(data->cvc->get(cv::CAP_PROP_POS_AVI_RATIO)), "");
+    addProperty("size", prop::Info{}, str(data->size), "");
+    addProperty("format", prop::Info{}, "RGB", "");
+    addProperty("fourcc", prop::Info{}, fourCCStringFromDouble(data->cvc->get(cv::CAP_PROP_FOURCC)), "");
+    addProperty("frame_count", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_FRAME_COUNT)), "");
+    addProperty("use_video_fps", prop::Flag{}, data->use_video_fps, "");
+    addProperty("video_fps", prop::Info{}, str(data->cvc->get(cv::CAP_PROP_FPS)), "");
 
     registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }

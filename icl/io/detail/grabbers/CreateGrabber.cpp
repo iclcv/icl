@@ -21,9 +21,9 @@ namespace icl::io {
     m_updateTimeStamp = true;
     m_image = TestImages::create(what);
     if(!m_image) throw ICLException("unable to create a 'CreateGrabber' from given description '"+what+"'");
-    addProperty("format", prop::Info{}, "RGB", 0, "");
-    addProperty("size", prop::Info{}, "512x512", 0, "");
-    addProperty("update timestamp", prop::Flag{}, m_updateTimeStamp, 0, "Whether the timestamp of the image should be set everytime an the image is grabbed.");
+    addProperty("format", prop::Info{}, "RGB", "");
+    addProperty("size", prop::Info{}, "512x512", "");
+    addProperty("update timestamp", prop::Flag{}, m_updateTimeStamp, "Whether the timestamp of the image should be set everytime an the image is grabbed.");
     registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 

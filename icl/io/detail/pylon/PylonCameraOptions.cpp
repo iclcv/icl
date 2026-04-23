@@ -27,16 +27,16 @@ PylonCameraOptions::PylonCameraOptions(
   m_OmitDoubleFrames = true;
 
   // Configurable
-  addProperty("size", utils::prop::menuFromCsv(default_sizes), getValue("Width") + "x" + getValue("Height"), 0, "");
-  addProperty("format", getType("PixelFormat"), getInfo("PixelFormat"), getValue("PixelFormat"), 0, "");
-  addProperty("OmitDoubleFrames", prop::Flag{}, m_OmitDoubleFrames, 0, "");
+  addProperty("size", utils::prop::menuFromCsv(default_sizes), getValue("Width") + "x" + getValue("Height"), "");
+  addProperty("format", getType("PixelFormat"), getInfo("PixelFormat"), getValue("PixelFormat"), "");
+  addProperty("OmitDoubleFrames", prop::Flag{}, m_OmitDoubleFrames, "");
 
   // Cameras default options
   std::vector<std::string> ps;
   std::vector<std::string>::iterator it;
   addToPropertyList(ps, getNode("Root"));
   for(it = ps.begin(); it != ps.end(); ++it){
-    addProperty(*it, getType(*it), getInfo(*it), getValue(*it), isVolatile(*it), ""); //TODO getTooltip
+    addProperty(*it, getType(*it), getInfo(*it), getValue(*it), ""); //TODO getTooltip
   }
 
   Configurable::registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
@@ -240,12 +240,6 @@ std::string PylonCameraOptions::getInfo(const std::string &name){
 // returns the current value of a property or a parameter
 std::string PylonCameraOptions::getValue(const std::string &name){
   return getParameterValueString(m_Camera, name);
-}
-
-// Returns whether this property may be changed internally.
-int PylonCameraOptions::isVolatile(const std::string &propertyName){
-  // can't guarantee anything, sorry.
-  return 0;
 }
 
 // whether double frames should be omitted.

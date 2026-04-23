@@ -21,7 +21,7 @@ struct C : public Configurable{
 struct B : public Configurable, public Thread{
   C c;
   B(){
-    addProperty("time",utils::prop::Info{}, Time::now().toString(),100);
+    addProperty("time",utils::prop::Info{}, Time::now().toString());
     addProperty("general.f",utils::prop::Flag{}, true);
     addChildConfigurable(&c);
     start();
@@ -30,16 +30,12 @@ struct B : public Configurable, public Thread{
   virtual void run(){
     while(true){
       Thread::msleep(100);
-      // Update the info-typed property.  The GUI picks this up via the
-      // VolatileUpdater timer based on the property's volatileness.
+      // Update the info-typed property.  qt::Prop picks it up through
+      // its callback push channel on every write; rapid updates
+      // coalesce to one flush per GUI tick.
       prop("time").value = Time::now().toString();
       int val =  prop("general.x").value;
       val = (val+1) % 100;
-      // this way not only the configurables property value is set but
-      // all registered callbacks are called too. this way the gui will
-      // get a qt-signal to process the new property value.
-      // this is slower than using volatileness and should not be done
-      // with a high frequency.
       prop("general.x").value = val;
     }
   }

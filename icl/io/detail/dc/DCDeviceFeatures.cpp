@@ -201,7 +201,7 @@ namespace icl::io{
       featureMap["trigger-from-software"] = getSpecialInfo();
 
       // Configurtable
-      addProperty("all manual", prop::Command{}, {}, 0, "Sets all auto adjustment-supporting options to manual adjustment.");
+      addProperty("all manual", prop::Command{}, {}, "Sets all auto adjustment-supporting options to manual adjustment.");
       for(std::map<std::string,dc1394feature_info_t*, std::less<>>::iterator it = featureMap.begin(); it != featureMap.end(); ++it){
         std::string name = it->first;
         dc1394feature_info_t* info = it->second;
@@ -213,7 +213,7 @@ namespace icl::io{
           } else {
             value = str(info->value);
           }
-          addProperty(name, prop::menuFromCsv(getSpecialInfoString(name)), value, 0, "");
+          addProperty(name, prop::menuFromCsv(getSpecialInfoString(name)), value, "");
         }else{
           dc1394feature_modes_t &modes = info->modes;
           for(unsigned int i=0;i<modes.num;++i){
@@ -221,14 +221,14 @@ namespace icl::io{
               if(name == "WHITE_BALANCE"){
                 addProperty(name+"_BU",
                             prop::Range{.min=(int)info->min, .max=(int)info->max, .step=1},
-                            (int)info->BU_value, 0, "");
+                            (int)info->BU_value, "");
                 addProperty(name+"_RV",
                             prop::Range{.min=(int)info->min, .max=(int)info->max, .step=1},
-                            (int)info->RV_value, 0, "");
+                            (int)info->RV_value, "");
               } else {
                 addProperty(name,
                             prop::Range{.min=(int)info->min, .max=(int)info->max, .step=1},
-                            (int)info->value, 0, "");
+                            (int)info->value, "");
               }
             } else if(modes.modes[i] == DC1394_FEATURE_MODE_AUTO){
               std::string value;
@@ -240,7 +240,7 @@ namespace icl::io{
                 value = "one-push-auto";
               }
               //TODO: one-push-auto could be implememted as well.
-              addProperty(name+"-mode", prop::Menu{"auto", "manual"}, value, 0, "");
+              addProperty(name+"-mode", prop::Menu{"auto", "manual"}, value, "");
             }
           }
         }

@@ -170,15 +170,12 @@ namespace icl::io {
     // every registered codec) plus the active codec's own tunables
     // (`compression.quality` / `compression.level` / …) which appear
     // and disappear with the active codec selection.
-    addProperty("max message size MB", prop::Range{.min=1, .max=4096, .step=1}, 256, 0,
-                "Per-frame WebSocket message size cap. Default 256 MB.");
-    addProperty("bind address", prop::Info{}, bindAddress, 0,
-                "Interface the server is bound to.");
-    addProperty("port", prop::Info{}, str(port), 0,
-                "Bound TCP port (resolved at construction time).");
-    addProperty("clients", prop::Info{}, "0", 200, "Live connected client count.");
-    addProperty("bytes sent", prop::Info{}, "0", 200, "Lifetime bytes broadcast.");
-    addProperty("frames sent", prop::Info{}, "0", 200, "Lifetime frames broadcast.");
+    addProperty("max message size MB", prop::Range{.min=1, .max=4096, .step=1}, 256, "Per-frame WebSocket message size cap. Default 256 MB.");
+    addProperty("bind address", prop::Info{}, bindAddress, "Interface the server is bound to.");
+    addProperty("port", prop::Info{}, str(port), "Bound TCP port (resolved at construction time).");
+    addProperty("clients", prop::Info{}, "0", "Live connected client count.");
+    addProperty("bytes sent", prop::Info{}, "0", "Lifetime bytes broadcast.");
+    addProperty("frames sent", prop::Info{}, "0", "Lifetime frames broadcast.");
     Configurable::registerCallback([this](const Property &p){ onPropertyChange(p); });
 
     m_data = new Data(bindAddress, port);

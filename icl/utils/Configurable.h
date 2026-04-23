@@ -26,8 +26,8 @@ namespace icl::utils {
       parameters/properties that shall be changed at runtime. The
       Configurable-subclasses can define properties that can be
       accessed by string identifiers. Each property has a type, a
-      type-dependend description of possible values, a current value
-      and a so called volatileness. Please see class interface and
+      type-dependend description of possible values, and a current
+      value. Please see class interface and
       it's function descriptions for more details. A list of
       supported property types is provided in the documentation of
       the method icl::Configurable::getPropertyType
@@ -223,15 +223,14 @@ namespace icl::utils {
     public:
     /// Represents a single property
     struct Property{
-      Property():configurable(0),volatileness(0){}
+      Property():configurable(0){}
       Property(Configurable *parent,
                const std::string &name,
-               int volatileness, const std::string &tooltip)
+               const std::string &tooltip)
         : configurable(parent), name(name),
-          volatileness(volatileness), tooltip(tooltip){}
+          tooltip(tooltip){}
       Configurable *configurable; //!< corresponding Configurable
       std::string name;  //!< property-ID
-      int volatileness;  //!< volatileness of a this property (0= no-volatileness, X=expected update every X msec)
       std::string tooltip; //!< property description, that is also used as tooltip
       std::string childPrefix;
       /// Structured constraint payload (`prop::Range<T>`, `prop::Menu<T>`,
@@ -320,7 +319,7 @@ namespace icl::utils {
     void addProperty(const std::string &name, const std::string &type,
                      const std::string &info,
                      const AutoParse<std::string> &value=AutoParse<std::string>(),
-                     const int volatileness=0, const std::string &tooltip=std::string());
+                     const std::string &tooltip=std::string());
 
     /// Typed addProperty — registers a property using a structured
     /// `prop::Range<T>` / `prop::Menu<T>` / `prop::Flag` / ... constraint
@@ -348,7 +347,6 @@ namespace icl::utils {
     void addProperty(const std::string &name,
                      C constraint,
                      typename C::value_type initial = {},
-                     const int volatileness = 0,
                      const std::string &tooltip = std::string()) {
       const auto &a = prop::lookupAdapter(std::type_index(typeid(C)));
       std::any constraintAny(std::move(constraint));
@@ -360,8 +358,7 @@ namespace icl::utils {
       // Register through the string path — this populates the legacy
       // type/info/value on Property and flows through the existing
       // ordered-properties / child-configurable / duplicate-name logic.
-      addProperty(name, type, info, AutoParse<std::string>(value),
-                  volatileness, tooltip);
+      addProperty(name, type, info, AutoParse<std::string>(value), tooltip);
 
       // Attach the structured payload + typed value.  prop_storage
       // returns the underlying Property& for direct-field access;
@@ -392,8 +389,8 @@ namespace icl::utils {
 
     /// Look up a property by name and return a short-lived handle with
     /// a write-through value proxy + reference members to the Property
-    /// fields (name, tooltip, constraint, typed_value, volatileness,
-    /// childPrefix) and computed accessors (type(), info()).
+    /// fields (name, tooltip, constraint, typed_value, childPrefix)
+    /// and computed accessors (type(), info()).
     ///
     /// Public so both subclass-internal code (`prop("gain").value = 0.5f`)
     /// and external callers (`conf->prop("x").constraint`, apps, tests)
@@ -569,23 +566,15 @@ namespace icl::utils {
     /// Silent typed write — updates `Property::typed_value` but does
     /// NOT fire callbacks.
     ///
-    /// Intended for volatile `prop::Info` or similar display-only
-    /// properties that an owner updates from a latency-sensitive path
-    /// (e.g. a Grabber's acquireImage() under `m_grabMutex`): the
-    /// qt::Prop GUI already polls such properties via its volatileness
-    /// timer, so firing callbacks on every update is redundant and can
-    /// produce lock inversions when a callback reaches for a lock that
-    /// the writer's context already depends on (seen in practice with
-    /// DemoGrabber updating "current-pos" under m_grabMutex while the
-    /// qt::Prop callback wants execMutex, and a GUI slider drag
-    /// holding execMutex wants m_grabMutex through the Grabber-wrapped
-    /// property-change callback).
-    ///
-    /// Semantically equivalent to `setPropertyValueTyped` minus the
-    /// `call_callbacks()` tail — all other consumers of the property
-    /// (getPropertyValue, Handle::value, ConfigFile save) see the new
-    /// value immediately.  The GUI polls via VolatileUpdater and
-    /// notices the change on its next tick.
+    /// Intended for display-only Info properties that an owner updates
+    /// from a latency-sensitive path (e.g. a Grabber's acquireImage()
+    /// under `m_grabMutex`) where firing per-write callbacks would
+    /// flood the GUI event queue with redundant coalescing events.
+    /// qt::Prop's callback-driven refresh still sees the latest value
+    /// whenever some other (non-silent) write fires a callback, and
+    /// any explicit getPropertyValue / Handle::value / ConfigFile save
+    /// reads the up-to-date value immediately — so silent writes stay
+    /// visible, they just don't push.
     void setPropertyValueSilent(const std::string &propertyName, std::any v);
 
     // setPropertyPayload / getPropertyPayload retired — typed_value itself
@@ -681,8 +670,10 @@ namespace icl::utils {
 
     // getPropertyConstraint / getPropertyToolTip / getPropertyVolatileness
     // retired — the Handle returned from prop(name) exposes them as const
-    // references to Property::{constraint, tooltip, volatileness} (no copy,
-    // no virtual dispatch).
+    // references to Property::{constraint, tooltip} (no copy, no virtual
+    // dispatch).  volatileness itself was dropped along with the
+    // VolatileUpdater polling path — Info / ImageView properties update
+    // through the unified callback push channel instead.
 
     /// registers a configurable type
     /** @see \ref REG */
@@ -702,8 +693,9 @@ namespace icl::utils {
   /// Bundles:
   ///   - a `PropertyValueRef value` — write-through proxy
   ///   - reference members for the Property's const-readable fields
-  ///     (name, type, info, tooltip, childPrefix, constraint,
-  ///      typed_value, volatileness)
+  ///     (name, tooltip, childPrefix, constraint, typed_value)
+  ///   - computed accessors `type()` / `info()` that synthesize the
+  ///     legacy type / info strings via the constraint adapter
   ///   - a templated `.as<T>()` for typed reads
   ///
   /// Intentionally non-assignable (reference members); valid only for
@@ -720,8 +712,7 @@ namespace icl::utils {
         value{c, p.name},
         name(p.name),
         tooltip(p.tooltip), childPrefix(p.childPrefix),
-        constraint(p.constraint), typed_value(p.typed_value),
-        volatileness(p.volatileness) {}
+        constraint(p.constraint), typed_value(p.typed_value) {}
 
     Handle(const Handle&) = default;
     Handle& operator=(const Handle&) = delete;  // refs can't rebind
@@ -737,7 +728,6 @@ namespace icl::utils {
     const std::string &childPrefix;
     const std::any    &constraint;
     const std::any    &typed_value;
-    const int         &volatileness;
 
     /// Legacy type / info strings — synthesized on demand via the
     /// constraint adapter.  `type` / `info` are no longer stored on

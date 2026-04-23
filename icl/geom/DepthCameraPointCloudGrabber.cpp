@@ -148,8 +148,7 @@ namespace icl::geom {
 
     addProperty("focal length factor",utils::prop::Range{.min=0.8f, .max=1.2f}, 1);
     addProperty("positioning fix",prop::Range{.min=-50, .max=50}, 0);
-    addProperty("re-use exisiting images",prop::Flag{}, false, 0,
-                "if set, the grabber will re-create the point-cloud without grabbing new images");
+    addProperty("re-use exisiting images",prop::Flag{}, false, "if set, the grabber will re-create the point-cloud without grabbing new images");
 
     addProperty("pp.enable median",prop::Flag{}, false);
     addProperty("pp.enable temporal smoothing",prop::Flag{}, false);

@@ -185,11 +185,11 @@ namespace icl::math {
     */
 
     using namespace icl::utils::prop;
-    addProperty("epsilon In",      Range{.min=0.f, .max=0.1f},  0.01f, 0, "input weight learning rate");
-    addProperty("epsilon Out",     Range{.min=0.f, .max=0.5f},  0.01f, 0, "output weight learning rate");
-    addProperty("epsilon A",       Range{.min=0.f, .max=0.1f},  0.001f,0, "slope matrix learning rate");
-    addProperty("epsilon Sigma",   Range{.min=0.f, .max=0.1f},  0.0f,  0, "kernel variance learning rate");
-    addProperty("soft max enabled", Flag{},                      true,  0, "enables the soft-max interpolation");
+    addProperty("epsilon In",      Range{.min=0.f, .max=0.1f},  0.01f, "input weight learning rate");
+    addProperty("epsilon Out",     Range{.min=0.f, .max=0.5f},  0.01f, "output weight learning rate");
+    addProperty("epsilon A",       Range{.min=0.f, .max=0.1f},  0.001f, "slope matrix learning rate");
+    addProperty("epsilon Sigma",   Range{.min=0.f, .max=0.1f},  0.0f, "kernel variance learning rate");
+    addProperty("soft max enabled", Flag{},                      true, "enables the soft-max interpolation");
   }
 
   LLM::LLM(unsigned int inputDim, unsigned int outputDim){

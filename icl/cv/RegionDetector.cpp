@@ -69,16 +69,11 @@ namespace icl::cv {
   RegionDetector::RegionDetector(bool createRegionGraph, const std::string &configurableID):Configurable(configurableID){
     m_data = new Data;
 
-    addProperty("minimum region size",prop::Range{.min=0, .max=100000, .ui=prop::UI::Spinbox}, 0,0,
-                "Minimum amount of pixels, detection regions must have.");
-    addProperty("maximum region size",prop::Range{.min=0, .max=100000, .ui=prop::UI::Spinbox}, 1000000,0,
-                "Maximum amount of pixels, detected regions must have.");
-    addProperty("minimum value",prop::Range{.min=0, .max=255}, 0,0,
-                "Minimum pixel value for detected regions.");
-    addProperty("maximum value",prop::Range{.min=0, .max=255}, 255,0,
-                "Maximum pixel value for detected regions.");
-    addProperty("create region graph",prop::Menu{"off", "on"}, createRegionGraph ? "on" : "off", 0,
-                "If this property is set to 'on', a region\n"
+    addProperty("minimum region size",prop::Range{.min=0, .max=100000, .ui=prop::UI::Spinbox}, 0, "Minimum amount of pixels, detection regions must have.");
+    addProperty("maximum region size",prop::Range{.min=0, .max=100000, .ui=prop::UI::Spinbox}, 1000000, "Maximum amount of pixels, detected regions must have.");
+    addProperty("minimum value",prop::Range{.min=0, .max=255}, 0, "Minimum pixel value for detected regions.");
+    addProperty("maximum value",prop::Range{.min=0, .max=255}, 255, "Maximum pixel value for detected regions.");
+    addProperty("create region graph",prop::Menu{"off", "on"}, createRegionGraph ? "on" : "off", "If this property is set to 'on', a region\n"
                 "conectivity graph is created in the region\n"
                 "detection step. This graph is used to find\n"
                 "region neighbours, children (fully contained\n"

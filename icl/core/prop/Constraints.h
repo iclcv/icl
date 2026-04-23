@@ -22,9 +22,10 @@ namespace icl::core::prop {
     using value_type = core::Color;
   };
 
-  /// Volatile image readback (legacy XML tag `"image"`).  The property's
-  /// value is a `core::Image` — typically a cached preview / output that
-  /// the GUI polls on a volatileness timer.
+  /// Image readback (legacy XML tag `"image"`).  The property's value
+  /// is a `core::Image` — typically a cached preview / output.  The
+  /// GUI refreshes through qt::Prop's callback push channel whenever
+  /// typed_value is written.
   ///
   /// Images don't round-trip through XML, so the adapter's `toString` /
   /// `fromString` are intentionally lossy no-ops (see

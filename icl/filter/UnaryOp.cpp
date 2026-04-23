@@ -29,14 +29,12 @@ using namespace icl::core;
 
 namespace icl::filter {
   void UnaryOp::initConfigurable(){
-    addProperty("UnaryOp.clip to ROI",utils::prop::Flag{}, m_oROIHandler.getClipToROI(),0,
-                "If this option is set to true, the result images are always adapted\n"
+    addProperty("UnaryOp.clip to ROI",utils::prop::Flag{}, m_oROIHandler.getClipToROI(), "If this option is set to true, the result images are always adapted\n"
                 "to contain the computed result pixels only. If it is set to false,\n"
                 "and the source image did have a ROI set, the result image will become\n"
                 "as large as the source image, it's ROI will also be the same and\n"
                 "only ROI pixels will be processed");
-    addProperty("UnaryOp.check only",utils::prop::Flag{}, m_oROIHandler.getCheckOnly(),0,
-                "If check only is set to true, images, that are passed to the apply\n"
+    addProperty("UnaryOp.check only",utils::prop::Flag{}, m_oROIHandler.getCheckOnly(), "If check only is set to true, images, that are passed to the apply\n"
                 "method are not adapted. Instead the given result images are checked\n"
                 "for their compatibility. In case of uncompatible result images,\n"
                 "an exception is thrown.");

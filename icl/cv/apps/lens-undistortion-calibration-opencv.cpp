@@ -145,7 +145,7 @@ struct ConfigurableUDist : public Configurable{
 
     udist = new ImageUndistortion("MatlabModel5Params", defaultValues, size);
     paramChanged = true;
-    addProperty("activated",prop::Flag{}, false,0,"Activate this to manually adapt values.<b>Please note</b> that the "
+    addProperty("activated",prop::Flag{}, false, "Activate this to manually adapt values.<b>Please note</b> that the "
                 "slider-based setting of the parameters doesn't allow all parameter to be set as accurate as it would "
                 "be needed. Therefore, this flag is automatically disabled when the automatic calibration is performed");
   }

@@ -18,10 +18,8 @@ namespace icl::filter {
 
   ProximityOp::ProximityOp(optype ot, applymode am):
     m_poImageBuffer(0),m_poTemplateBuffer(0){
-    addProperty("operation type",utils::prop::Menu{"sqrDistance", "crossCorr", "crossCorrCoeff"}, ot,0,
-                "Proximity measurement type");
-    addProperty("apply mode",utils::prop::Menu{"full", "valid", "same"}, am,0,
-                "Proximity apply mode");
+    addProperty("operation type",utils::prop::Menu{"sqrDistance", "crossCorr", "crossCorrCoeff"}, ot, "Proximity measurement type");
+    addProperty("apply mode",utils::prop::Menu{"full", "valid", "same"}, am, "Proximity apply mode");
   }
 
   ProximityOp::~ProximityOp(){

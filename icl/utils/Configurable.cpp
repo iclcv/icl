@@ -161,7 +161,7 @@ namespace icl::utils {
       // / qt::Prop dispatch can read the structured constraint locally
       // without chasing the configurable pointer.
       auto ch       = configurable->prop(ps[i]);
-      Property p(configurable, pfx+ps[i], ch.volatileness, ch.tooltip);
+      Property p(configurable, pfx+ps[i], ch.tooltip);
       p.childPrefix = pfx;
       p.constraint  = ch.constraint;
       if(auto it = m_properties.find(p.name); it != m_properties.end()) throw ICLException("Property " + str(p.name) + "cannot be added from child configurable due to name conflicts");
@@ -245,12 +245,12 @@ namespace icl::utils {
 
   void Configurable::addProperty(const std::string &name, const std::string &type,
                                  const std::string &info, const AutoParse<std::string> &value,
-                                 int volatileness, const std::string &tooltip){
+                                 const std::string &tooltip){
     try{
       prop_storage(name);
       throw ICLException("Unable to add property " + name + " because it is already used");
     }catch(ICLException &){
-      Property p(this, name, volatileness, tooltip);
+      Property p(this, name, tooltip);
       // Derive constraint + typed_value from the legacy string triple
       // so downstream consumers (qt::Prop, getPropertyType, getPropertyInfo,
       // getPropertyValue, ConfigFile) see identical state regardless of

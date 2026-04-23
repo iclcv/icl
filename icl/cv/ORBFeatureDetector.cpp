@@ -104,25 +104,24 @@ namespace icl{
       addProperty("contrast adjustment.mask size",utils::prop::Range{.min=3, .max=100, .step=1}, 10);
       addProperty("contrast adjustment.threshold",utils::prop::Range{.min=-50, .max=50}, 0);
 
-      addProperty("score type",utils::prop::Menu{"fast", "harris"}, "harris",0, "Score type o use: harris is slightly slower but more accurate");
-      addProperty("max features",utils::prop::Range{.min=1, .max=100000, .step=1, .ui=utils::prop::UI::Spinbox}, 500,0, "Maximum number of features to detect");
-      addProperty("patch size",utils::prop::Range{.min=1, .max=1001, .step=1}, 31,0,
-                  "Minimum patch size that is used compute BRIF discriptors on. Since\n"
+      addProperty("score type",utils::prop::Menu{"fast", "harris"}, "harris", "Score type o use: harris is slightly slower but more accurate");
+      addProperty("max features",utils::prop::Range{.min=1, .max=100000, .step=1, .ui=utils::prop::UI::Spinbox}, 500, "Maximum number of features to detect");
+      addProperty("patch size",utils::prop::Range{.min=1, .max=1001, .step=1}, 31, "Minimum patch size that is used compute BRIF discriptors on. Since\n"
                   "the logical patch size is larger in smaller pyramid layers, the\n"
                   "maximum feature size is distinguished by 'patch size', the pyramid\n"
                   "scale factor and the number of pyramid levels. Note that features\n"
                   "will only be detected at positions, where the full patch fits into\n"
                   "the image.");
-      addProperty("WTA_K",utils::prop::Menu{"2", "3", "4"}, "2",0,"Number of random points used for computing elements of the ORB descriptors");
-      addProperty("pyramid.levels",utils::prop::Range{.min=1, .max=100, .step=1}, 8,0, "Number of pyramid levels to use for key-point detection");
-      addProperty("pyramid.scale factor",utils::prop::Range{.min=1, .max=4}, 1.4,0,"Scale down factor between consecutive pyramid layers");
-      addProperty("pyramid.first level",utils::prop::Menu{"0"}, "0",0,"First pyramid level to actually use (non-0 values are not supported yet");
+      addProperty("WTA_K",utils::prop::Menu{"2", "3", "4"}, "2", "Number of random points used for computing elements of the ORB descriptors");
+      addProperty("pyramid.levels",utils::prop::Range{.min=1, .max=100, .step=1}, 8, "Number of pyramid levels to use for key-point detection");
+      addProperty("pyramid.scale factor",utils::prop::Range{.min=1, .max=4}, 1.4, "Scale down factor between consecutive pyramid layers");
+      addProperty("pyramid.first level",utils::prop::Menu{"0"}, "0", "First pyramid level to actually use (non-0 values are not supported yet");
 
-      addProperty("bench.enable",utils::prop::Flag{}, false,0,"Enable/Disable time benchmarks");
-      addProperty("bench.preprocessing time",utils::prop::Info{}, "??? ms",0,"Last time for preprocessing");
-      addProperty("bench.ORB extraction time",utils::prop::Info{}, "??? ms",0,"Time for the last time ORB features were detecdted");
-      addProperty("bench.detection time",utils::prop::Info{}, "??? ms",0,"Time for the whole last detection cycle");
-      addProperty("bench.matching time",utils::prop::Info{}, "??? ms",0,"Last feature matching step");
+      addProperty("bench.enable",utils::prop::Flag{}, false, "Enable/Disable time benchmarks");
+      addProperty("bench.preprocessing time",utils::prop::Info{}, "??? ms", "Last time for preprocessing");
+      addProperty("bench.ORB extraction time",utils::prop::Info{}, "??? ms", "Time for the last time ORB features were detecdted");
+      addProperty("bench.detection time",utils::prop::Info{}, "??? ms", "Time for the whole last detection cycle");
+      addProperty("bench.matching time",utils::prop::Info{}, "??? ms", "Last feature matching step");
 
       m_data->updateORB(Data::ParamSet(*this));
 

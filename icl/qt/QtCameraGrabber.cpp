@@ -79,8 +79,8 @@ namespace icl::qt {
 
       cam->start();
 
-      addProperty("format", prop::Menu{"{default}"}, "default",0,"Sets the cameras image size and format");
-      addProperty("size", prop::Menu{"adjusted by format"}, "adjusted by format", 0,"this is set by format");
+      addProperty("format", prop::Menu{"{default}"}, "default", "Sets the cameras image size and format");
+      addProperty("size", prop::Menu{"adjusted by format"}, "adjusted by format", "this is set by format");
     }
 
     QtCameraGrabber::~QtCameraGrabber() {

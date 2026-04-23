@@ -141,8 +141,7 @@ namespace icl::io {
 
     public:
       RlenPlugin() {
-        addProperty("quality", prop::Menu{"1", "4", "6", "8"}, "1", 0,
-                    "Bits-per-value for the RLE token. 1 = binary (best for "
+        addProperty("quality", prop::Menu{"1", "4", "6", "8"}, "1", "Bits-per-value for the RLE token. 1 = binary (best for "
                     "low-noise binary masks); 4/6 = lossy quantization; "
                     "8 = lossless byte-level RLE.");
         Configurable::registerCallback([this](const Property &p){

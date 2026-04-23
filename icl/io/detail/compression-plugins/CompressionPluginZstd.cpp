@@ -54,8 +54,7 @@ namespace icl::io {
 
     public:
       ZstdPlugin() {
-        addProperty("level", prop::Range{.min=1, .max=22, .step=1}, 3, 0,
-                    "zstd compression level (1=fastest, 22=smallest). "
+        addProperty("level", prop::Range{.min=1, .max=22, .step=1}, 3, "zstd compression level (1=fastest, 22=smallest). "
                     "Default 3 matches libzstd's ZSTD_CLEVEL_DEFAULT.");
         Configurable::registerCallback([this](const Property &p){
           if (p.name == "level") m_level = p.as<int>();

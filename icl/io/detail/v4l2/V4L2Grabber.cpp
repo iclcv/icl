@@ -724,15 +724,15 @@ namespace icl::io {
   // adds properties to Configurable
   void V4L2Grabber::addProperties(){
     addProperty("device name",prop::Info{}, impl->deviceNameInfo);
-    addProperty("avoid doubled frames", prop::Flag{}, impl->avoidDoubleFrames, 0, "");
+    addProperty("avoid doubled frames", prop::Flag{}, impl->avoidDoubleFrames, "");
     addProperty("format",
                 prop::menuFromCsv(clearFormatString(impl->getSupportedFormats())),
-                impl->get_current_format(), 0, "The image format.");
-    addProperty("size", prop::Menu{"ajusted by format"}, "", 0, "This is set by the format-property.");
+                impl->get_current_format(), "The image format.");
+    addProperty("size", prop::Menu{"ajusted by format"}, "", "This is set by the format-property.");
     for(Impl::PMap::const_iterator it=impl->supportedProperties.begin();
         it != impl->supportedProperties.end();++it){
       Impl::SupportedPropertyPtr p = it -> second;
-      addProperty(it->first,p -> getType(), p -> getInfo(), p -> getValue(), 0,"");
+      addProperty(it->first,p -> getType(), p -> getInfo(), p -> getValue(), "");
     }
     registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }

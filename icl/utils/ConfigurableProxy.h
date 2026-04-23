@@ -83,7 +83,7 @@ namespace icl::utils {
       }
 
       // Property read forwarders retired — callers go through
-      // prop(name).{type(), info(), value, tooltip, volatileness}.
+      // prop(name).{type(), info(), value, tooltip}.
 
       /// syncronzies all property changes to the given configurable
       void syncChangesTo(Configurable *configurables, int num=1) {

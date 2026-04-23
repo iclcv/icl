@@ -24,16 +24,16 @@ namespace icl::io {
                            "1440x900","1280x960","1280x1024","1600x900","1400x1050",
                            "1600x1050","1600x1200"},
                 str(cvc->get(cv::CAP_PROP_FRAME_WIDTH))+"x"
-                +str(cvc->get(cv::CAP_PROP_FRAME_HEIGHT)), 0, "");
+                +str(cvc->get(cv::CAP_PROP_FRAME_HEIGHT)), "");
     addProperty("brightness", prop::Range{.min=0, .max=100, .step=1}, 
-                cvc->get(cv::CAP_PROP_BRIGHTNESS), 0, "");
+                cvc->get(cv::CAP_PROP_BRIGHTNESS), "");
     addProperty("contrast", prop::Range{.min=0, .max=100, .step=1}, 
-                cvc->get(cv::CAP_PROP_CONTRAST), 0, "");
+                cvc->get(cv::CAP_PROP_CONTRAST), "");
     addProperty("saturation", prop::Range{.min=0, .max=100, .step=1}, 
-                cvc->get(cv::CAP_PROP_SATURATION), 0, "");
+                cvc->get(cv::CAP_PROP_SATURATION), "");
     addProperty("hue", prop::Range{.min=0, .max=100, .step=1}, 
-                cvc->get(cv::CAP_PROP_HUE), 0, "");
-    addProperty("format", prop::Menu{"RGB"}, "RGB", 0, "");
+                cvc->get(cv::CAP_PROP_HUE), "");
+    addProperty("format", prop::Menu{"RGB"}, "RGB", "");
     registerCallback(
           [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }

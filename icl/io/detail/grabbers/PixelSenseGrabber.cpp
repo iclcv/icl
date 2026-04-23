@@ -155,10 +155,10 @@ namespace icl::io {
     m_data->image = Img8u(Size(VIDEO_RES_X,VIDEO_RES_Y),1);
     m_data->blobs.resize(256);
 
-    addProperty("format", prop::Menu{"formatGray-depth8u"}, "formatGray-depth8u",0,"image format can't be changed");
-    addProperty("size", prop::Menu{"QHD"}, "QHD",0,"image size can't be changed");
-    addProperty("blobs found", prop::Info{}, 0,0,"number of blobs, found in the current frame");
-    addProperty("visualize blobs",prop::Flag{}, false,0,"if true, blobs are visualized in the output image");
+    addProperty("format", prop::Menu{"formatGray-depth8u"}, "formatGray-depth8u", "image format can't be changed");
+    addProperty("size", prop::Menu{"QHD"}, "QHD", "image size can't be changed");
+    addProperty("blobs found", prop::Info{}, 0, "number of blobs, found in the current frame");
+    addProperty("visualize blobs",prop::Flag{}, false, "if true, blobs are visualized in the output image");
   }
 
   PixelSenseGrabber::~PixelSenseGrabber(){

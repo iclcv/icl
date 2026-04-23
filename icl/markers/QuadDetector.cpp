@@ -489,33 +489,26 @@ namespace icl::markers {
 
     addProperty("pp.filter",
                 prop::Menu{"none", "median", "erosion", "dilatation", "opening", "closing"},
-                std::string("none"), 0, "Post processing filter.");
-    addProperty("pp.mask size", prop::Menu{"3x3", "5x5"}, "3x3", 0,
-                "Mask size for post processing.");
+                std::string("none"), "Post processing filter.");
+    addProperty("pp.mask size", prop::Menu{"3x3", "5x5"}, "3x3", "Mask size for post processing.");
 
     if (dynamic) {
       addProperty("quad value",
                   prop::menuFromCsv(str(BlackOnly) + "," + str(WhiteOnly) + "," + str(BlackAndWhite)),
-                  str(c), 0,
-                  "Defines whether the marker borders are black, white or mixed");
+                  str(c), "Defines whether the marker borders are black, white or mixed");
     }
     addProperty("contour approximation algorithm", prop::Menu{"CSS", "RDP"},
-                std::string("RDP"), 0,
-                "Algorithm for approximating contours.");
+                std::string("RDP"), "Algorithm for approximating contours.");
 
-    addProperty("optimize edges", prop::Flag{}, "true", 0,
-                "Flag for optimized marker corner detection");
+    addProperty("optimize edges", prop::Flag{}, "true", "Flag for optimized marker corner detection");
 
     addProperty("min-rating", prop::Range{.min=0, .max=1}, 
                 minRating);
 
-    addProperty("intersection heuristic", prop::Flag{}, "true", 0,
-                "Flag for reconstruct distorted quads by the intersection heuristic");
+    addProperty("intersection heuristic", prop::Flag{}, "true", "Flag for reconstruct distorted quads by the intersection heuristic");
 
-    addProperty("perpendicular heuristic", prop::Flag{}, "true", 0,
-                "Flag for reconstruct distorted quads by the perpendicular heuristic");
-    addProperty("mirror heuristic", prop::Flag{}, "true", 0,
-                "Flag for reconstruct distorted quads by the perpendicular heuristic");
+    addProperty("perpendicular heuristic", prop::Flag{}, "true", "Flag for reconstruct distorted quads by the perpendicular heuristic");
+    addProperty("mirror heuristic", prop::Flag{}, "true", "Flag for reconstruct distorted quads by the perpendicular heuristic");
 
     data->rd.reset(new RegionDetector(40, 2 << 20, RD_VALS[static_cast<int>(c)],
                                   RD_VALS[static_cast<int>(c) + 3]));

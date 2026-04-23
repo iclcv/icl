@@ -60,29 +60,21 @@ namespace icl::io {
     if(m_drawSize == Size::SVGA) sizevalue = "SVGA";
     addProperty("blob-size",
                 prop::Menu{"5% of image size", "10% of image size", "20% of image size"},
-                blobvalue, 0, "The size of the blob.");
-    addProperty("blob-red", prop::Range{.min=0, .max=255, .step=1}, m_color[0], 0,
-                "The amount of red color in the blob.");
-    addProperty("blob-green", prop::Range{.min=0, .max=255, .step=1}, m_color[1], 0,
-                "The amount of green color in the blob.");
-    addProperty("blob-blue", prop::Range{.min=0, .max=255, .step=1}, m_color[2], 0,
-                "The amount of blue color in the blob.");
-    addProperty("max-speed", prop::Menu{0.1f, 0.2f, 0.3f, 0.4f}, m_maxV.x, 0,
-                "The blobs maximum speed.");
-    addProperty("set-to-center", prop::Command{}, {}, 0,
-                "Resets the blob to the image center.");
+                blobvalue, "The size of the blob.");
+    addProperty("blob-red", prop::Range{.min=0, .max=255, .step=1}, m_color[0], "The amount of red color in the blob.");
+    addProperty("blob-green", prop::Range{.min=0, .max=255, .step=1}, m_color[1], "The amount of green color in the blob.");
+    addProperty("blob-blue", prop::Range{.min=0, .max=255, .step=1}, m_color[2], "The amount of blue color in the blob.");
+    addProperty("max-speed", prop::Menu{0.1f, 0.2f, 0.3f, 0.4f}, m_maxV.x, "The blobs maximum speed.");
+    addProperty("set-to-center", prop::Command{}, {}, "Resets the blob to the image center.");
     addProperty("current-pos", prop::Info{}, 
                 "x:" + str(m_x.x*m_drawSize.width) + " y:"
-                + str(m_x.y*m_drawSize.height),
-                10, "The current position of the blob.");
+                + str(m_x.y*m_drawSize.height), "The current position of the blob.");
     addProperty("format",
                 prop::Menu{"formatRGB-depth8u", "formatRGB-depth32f",
                            "formatGray-depth8u", "formatGray-depth32f",
                            "formatYUV-depth8u"},
-                str(m_drawFormat) + "-" + str(m_drawDepth), 0,
-                "The image format.");
-    addProperty("size", prop::Menu{"VGA", "SVGA", "QVGA"}, sizevalue, 0,
-                "The image size.");
+                str(m_drawFormat) + "-" + str(m_drawDepth), "The image format.");
+    addProperty("size", prop::Menu{"VGA", "SVGA", "QVGA"}, sizevalue, "The image size.");
     registerCallback(
           [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
@@ -153,12 +145,9 @@ namespace icl::io {
     m_drawBuffer->setTime(now);
     m_lastTime = now;
 
-    // Silent update — avoids firing callbacks from inside grab()'s
-    // m_grabMutex scope (those can reach qt::Prop's propertyChanged
-    // on a different thread that holds execMutex and is waiting for
-    // m_grabMutex, a classic lock inversion).  The "current-pos" info
-    // property is polled by qt::Prop's VolatileUpdater every 10ms
-    // (volatileness=10) — callbacks are redundant.
+    // Silent update — don't queue a per-frame GUI flush for a pure
+    // display value.  qt::Prop still picks up the current value on
+    // the next flush triggered by any non-silent write.
     setPropertyValueSilent("current-pos",
                            std::string("x:" + str(m_x.x*m_drawSize.width) + " y:"
                                        + str(m_x.y*m_drawSize.height)));

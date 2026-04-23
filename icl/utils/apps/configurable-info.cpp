@@ -54,7 +54,6 @@ int main(int n, char **ppc){
       try { std::cout << h.value.str(); } catch(...) {}
       std::cout << std::endl;
       std::cout << "      info        : " << h.info() << std::endl;
-      std::cout << "      volatileness: " << h.volatileness << std::endl;
       std::cout << "      tooltip     : ";
       std::vector<std::string> lines = tok(h.tooltip, "\n");
       for(unsigned int k=0;k<lines.size();++k){

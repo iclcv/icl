@@ -250,8 +250,8 @@ namespace icl::io {
       m_impl = 0;
     }
 
-    addProperty("Avoid double frames",prop::Flag{}, 1,0,"whether to avoid returning the same frame multiple times");
-    addProperty("Unflip X-Axis",prop::Flag{}, 1,1,"The driver's output images are flipped. Decide whether to un-flip it");
+    addProperty("Avoid double frames",prop::Flag{}, 1, "whether to avoid returning the same frame multiple times");
+    addProperty("Unflip X-Axis",prop::Flag{}, 1, "The driver's output images are flipped. Decide whether to un-flip it");
 
     switch(mode){
       case GRAB_RGB_IMAGE:
@@ -265,8 +265,8 @@ namespace icl::io {
       case GRAB_DEPTH_IMAGE:
         addProperty("format",prop::Menu{"1 channdel float"}, "1 channel float");
         addProperty("size",prop::Menu{"512x424"}, "512x424");
-        addProperty("Flying pixels.remove",prop::Flag{}, 0,0,"Enable/Disable automatic removal of flying pixels");
-        addProperty("Flying pixels.dist threshold",prop::Range{.min=0.1f, .max=50.f}, 10,0,"Threshold for removing flying pixels");
+        addProperty("Flying pixels.remove",prop::Flag{}, 0, "Enable/Disable automatic removal of flying pixels");
+        addProperty("Flying pixels.dist threshold",prop::Range{.min=0.1f, .max=50.f}, 10, "Threshold for removing flying pixels");
         break;
       default:
         break;

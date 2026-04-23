@@ -62,8 +62,10 @@ namespace icl::io {
         std::string getInfo(const std::string &name);
         /// returns the current value of a property or a parameter.
         std::string getValue(const std::string &name);
-        /// Returns whether this property may be changed internally.
-        int isVolatile(const std::string &propertyName);
+        // isVolatile retired along with Property::volatileness — the
+        // Configurable GUI refresh now pushes on every property write
+        // through the callback channel.
+
         /// callback for changed configurable properties
         void processPropertyChange(const utils::Configurable::Property &prop);
         /// helper function for getPropertyList.

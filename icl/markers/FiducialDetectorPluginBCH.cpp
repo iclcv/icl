@@ -68,22 +68,16 @@ namespace icl::markers {
     data->maxLoaded = -1;
     data->sizes.resize(4096);
 
-    addProperty("max bch errors",prop::Range{.min=0, .max=4, .step=1}, 3,0,
-                "Maximum amount of binary BCH code error\n");
-    addProperty("match factor",prop::Range{.min=1, .max=10, .step=1}, 2,0,
-                "Internal subsampling for matching (usually 2 is perfect)");
-    addProperty("border width",prop::Range{.min=1, .max=10, .step=1}, 2,0,
-                "Number of marker pixel units for the markers border width\n"
+    addProperty("max bch errors",prop::Range{.min=0, .max=4, .step=1}, 3, "Maximum amount of binary BCH code error\n");
+    addProperty("match factor",prop::Range{.min=1, .max=10, .step=1}, 2, "Internal subsampling for matching (usually 2 is perfect)");
+    addProperty("border width",prop::Range{.min=1, .max=10, .step=1}, 2, "Number of marker pixel units for the markers border width\n"
                 "The marker center (the bch code consits of 6x6 pixels)");
-    addProperty("binarize.threshold",prop::Range{.min=1, .max=254, .step=1}, 127,0,
-                "(Only used if 'binarize.mode' is 'threshold')\n"
+    addProperty("binarize.threshold",prop::Range{.min=1, .max=254, .step=1}, 127, "(Only used if 'binarize.mode' is 'threshold')\n"
                 "Threshold for static pattern binarization.");
-    addProperty("binarize.k-means steps",utils::prop::Range{.min=1, .max=5, .step=1}, 1,0,
-                "(Only used if 'binarize.mode' is 'k-means')\n"
+    addProperty("binarize.k-means steps",utils::prop::Range{.min=1, .max=5, .step=1}, 1, "(Only used if 'binarize.mode' is 'k-means')\n"
                 "Number of k-means steps for finding an optimal split\n"
                 "between black and white marker pixels");
-    addProperty("binarize.mode",prop::Menu{"k-means", "threshold"}, "k-means",0,
-                "Marker patch binarization method. For decoding the BCH-code\n"
+    addProperty("binarize.mode",prop::Menu{"k-means", "threshold"}, "k-means", "Marker patch binarization method. For decoding the BCH-code\n"
                 "pattern, black and white marker pixels need to be distinguished.\n"
                 "This property defines the algorithm that is used for this:\n"
                 "k-means: the default method, that should usually be superior\n"
