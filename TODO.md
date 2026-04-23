@@ -19,6 +19,33 @@ Applied per `module-audit-checklist.md`.
 
 ---
 
+## Configurable — onChildSetChanged follow-ups
+
+- [ ] **`removeChildSetCallback` API.**  Subscribers (qt::Prop's
+  ConfigurableGUIWidget) can't unregister today — if a subscriber is
+  destroyed while the Configurable survives, the captured `this` is
+  dangling and the next add/removeChildConfigurable fire segfaults.
+  Same shape as the long-standing `removedCallback` gap on the
+  property-change channel (also non-functional today).  Either ship
+  ID-based registration on both or a token-returning pattern so
+  unregister is cheap.
+
+- [ ] **Wire ImageCompressor codec swap to the new rebuild channel.**
+  The original motivation for `onChildSetChanged`.  ImageCompressor
+  already reinstalls its codec child on `mode` writes
+  (`io/ImageCompressor.cpp` ~236–259); the Prop widget will now
+  rebuild automatically since this landed.  But we haven't built an
+  interactive demo exercising the real consumer end-to-end — just the
+  synthetic `dynamic-child-props` demo.  An `icl-compressor-playground`
+  or similar would surface any codec-specific surprises.
+
+- [ ] **Same for GenericGrabber backend swap.**  GenericGrabber does
+  `removeChildConfigurable(m_poGrabber)` / `addChildConfigurable(...)`
+  in its init path when the backend changes.  Now covered by the
+  rebuild mechanism but untested interactively.
+
+---
+
 ## ICLWidget OSD
 
 - [ ] **Scale-range (zoom/fit) button behaves strangely.**  Surfaced
