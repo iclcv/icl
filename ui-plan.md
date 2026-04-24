@@ -163,14 +163,23 @@ struct; handy symmetry to keep them in `ui::`.
 - `ui-syntax-demo` showing legacy + ui:: side-by-side in an HBox.
 - meson wiring.
 
-### Phase 2 — Core numeric + text inputs + buttons
+### Phase 2 — Core numeric + text inputs + buttons — ✅ LANDED (session 59)
 
-Five + four + four = 13 components.  Mostly mechanical.  Open question
-to resolve here: `ui::Button` toggle semantics — legacy lets you pass
-`toggledText` to auto-make it a toggle.  In Opts: `.toggledText=""`
-defaults to "push button"; non-empty → toggle.  Matches legacy.
+12 components landed in one commit (Slider was the spike):
 
-Deliverable: one commit per ~5 components for easy review.
+- **Numeric:** `FSlider`, `Int`, `Float`, `Spinner`
+- **Text:** `String`, `Label`, `State`
+- **Buttons / selections:** `Button`, `CheckBox`, `ButtonGroup`, `Combo`
+
+Resolved open question: `ui::Button` toggle semantics — empty
+`.toggledText` → push button; non-empty → toggle.  Matches legacy.
+
+`ui::Label` case that motivated the mixed-syntax decision: positional
+`text` is the displayed content, `.label` field inside LabelOpts is
+the separate border label.  Disambiguation works cleanly.
+
+Demo `ui-syntax-demo` expanded to exercise all 12 components in a
+VBox-of-HBoxes layout.  871/871 green.
 
 ### Phase 3 — Display / canvas / introspection
 
@@ -227,7 +236,7 @@ fall away.
 ## Checkboxes
 
 - [x] Phase 1 — Slider spike
-- [ ] Phase 2 — numeric + text + buttons (13 components)
+- [x] Phase 2 — numeric + text + buttons (13 components)
 - [ ] Phase 3 — display + canvas + introspection (11 components)
 - [ ] Phase 4 — containers + child-streaming (8 components)
 - [ ] Phase 5 — finalizers (3 components)

@@ -105,6 +105,310 @@ namespace icl::qt::ui {
     }
   };
 
+  // --- Phase 2 components -------------------------------------------------
+  //
+  // Numeric + text inputs + buttons.  Each component follows the spike
+  // pattern: `XxxOpts` at namespace scope with component-specific tuning
+  // up top + the shared 7-field metadata block; the primary struct has
+  // positional data args + a trailing `XxxOpts opts = {}`.
+  //
+  // The 7-line shared-metadata block is duplicated verbatim across every
+  // Opts (decision (a) from ui-plan.md Phase 1).  `applyCommon` picks
+  // the fields up via `if constexpr(requires{...})`, so Opts that add
+  // component-specific fields above the block work with no extra wiring.
+
+  /// Options for ui::FSlider.
+  struct FSliderOpts {
+    bool vertical = false;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Float-valued slider.
+  struct FSlider {
+    float       min;
+    float       max;
+    float       val;
+    FSliderOpts opts;
+
+    FSlider(float min, float max, float val, FSliderOpts opts = {})
+      : min(min), max(max), val(val), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::FSlider(min, max, val, opts.vertical), opts);
+    }
+  };
+
+  /// Options for ui::Int.
+  struct IntOpts {
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Integer text input (spinbox-like).
+  struct Int {
+    int     min;
+    int     max;
+    int     val;
+    IntOpts opts;
+
+    Int(int min, int max, int val, IntOpts opts = {})
+      : min(min), max(max), val(val), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Int(min, max, val), opts);
+    }
+  };
+
+  /// Options for ui::Float.
+  struct FloatOpts {
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Float text input.
+  struct Float {
+    float     min;
+    float     max;
+    float     val;
+    FloatOpts opts;
+
+    Float(float min, float max, float val, FloatOpts opts = {})
+      : min(min), max(max), val(val), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Float(min, max, val), opts);
+    }
+  };
+
+  /// Options for ui::Spinner.
+  struct SpinnerOpts {
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Integer spinbox.
+  struct Spinner {
+    int         min;
+    int         max;
+    int         val;
+    SpinnerOpts opts;
+
+    Spinner(int min, int max, int val, SpinnerOpts opts = {})
+      : min(min), max(max), val(val), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Spinner(min, max, val), opts);
+    }
+  };
+
+  /// Options for ui::String.
+  struct StringOpts {
+    int         maxLen = 100;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Single-line text input.
+  struct String {
+    std::string text;
+    StringOpts  opts;
+
+    String(std::string text, StringOpts opts = {})
+      : text(std::move(text)), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::String(text, opts.maxLen), opts);
+    }
+  };
+
+  /// Options for ui::Label.
+  struct LabelOpts {
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Read-only text label (for displaying status, values, etc.).
+  /** The positional `text` is the label's displayed content.  The
+      `.label` field inside LabelOpts is the separate border label —
+      the two are deliberately distinct despite the name clash.  This
+      is why the mixed syntax works better than a fully-aggregate form
+      would have (where `ui::Label{.label="x"}` would be ambiguous). */
+  struct Label {
+    std::string text;
+    LabelOpts   opts;
+
+    Label(std::string text = "", LabelOpts opts = {})
+      : text(std::move(text)), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Label(text), opts);
+    }
+  };
+
+  /// Options for ui::State.
+  struct StateOpts {
+    int         maxLines = 100;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Scrolling log-style state panel.
+  struct State {
+    StateOpts opts;
+
+    State(StateOpts opts = {}) : opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::State(opts.maxLines), opts);
+    }
+  };
+
+  /// Options for ui::Button.
+  struct ButtonOpts {
+    /// Non-empty → toggle button that alternates between `text` and
+    /// this string.  Empty → plain push button.
+    std::string toggledText;
+    bool        initiallyToggled = false;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Push or toggle button.
+  /**
+      \code
+      gui << ui::Button("Run", {.handle="go"});
+      gui << ui::Button("Play", {.toggledText="Pause", .handle="pp"});
+      \endcode
+  */
+  struct Button {
+    std::string text;
+    ButtonOpts  opts;
+
+    Button(std::string text, ButtonOpts opts = {})
+      : text(std::move(text)), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(
+        qt::Button(text, opts.toggledText, opts.initiallyToggled), opts);
+    }
+  };
+
+  /// Options for ui::CheckBox.
+  struct CheckBoxOpts {
+    bool        checked = false;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Check box with a text label.
+  struct CheckBox {
+    std::string text;
+    CheckBoxOpts opts;
+
+    CheckBox(std::string text, CheckBoxOpts opts = {})
+      : text(std::move(text)), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::CheckBox(text, opts.checked), opts);
+    }
+  };
+
+  /// Options for ui::ButtonGroup.
+  struct ButtonGroupOpts {
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Vertical radio-button group (comma-separated entries).
+  struct ButtonGroup {
+    std::string entries;
+    ButtonGroupOpts opts;
+
+    ButtonGroup(std::string commaSepEntries, ButtonGroupOpts opts = {})
+      : entries(std::move(commaSepEntries)), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::ButtonGroup(entries), opts);
+    }
+  };
+
+  /// Options for ui::Combo.
+  struct ComboOpts {
+    /// Index into the CSV entries list that starts out selected.
+    int         initialIndex = 0;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Drop-down combo box (comma-separated entries).
+  struct Combo {
+    std::string entries;
+    ComboOpts   opts;
+
+    Combo(std::string commaSepEntries, ComboOpts opts = {})
+      : entries(std::move(commaSepEntries)), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Combo(entries, opts.initialIndex), opts);
+    }
+  };
+
 } // namespace icl::qt::ui
 
 namespace icl::qt {

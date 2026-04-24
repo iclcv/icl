@@ -2,11 +2,11 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// Spike demo for the new designated-init GUI component syntax
-// (`icl::qt::ui::`).  Shows two sliders side by side — one built the old
-// way (stream-insertion + chained setters), one built with the new
-// designated-init aggregate.  Both route into the same
-// SliderGUIWidget factory; the LCDs should track identically.
+// Demo for the mixed positional + designated-init GUI syntax
+// (`icl::qt::ui::`).  Exercises Phase-1 Slider + Phase-2 numeric /
+// text / button / checkbox / combo components side-by-side with
+// their legacy counterparts.  Both paths route through the same
+// widget factories.
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
@@ -14,19 +14,35 @@
 GUI gui;
 
 void init(){
-  gui << ( HBox()
-           // New mixed syntax: positional data args + designated-init
-           // Common{} pack for UI metadata.
-           << ui::Slider(0, 255, 42,
-                         {.handle="typed", .label="typed",
-                          .minSize={10,3}})
-           // Legacy stream-insertion syntax.
-           << Slider(0, 255, 42).handle("legacy").label("legacy").minSize(10,3) )
+  gui << ( VBox()
+           << ( HBox().label("numeric inputs")
+                << ui::Slider(0, 255, 42,
+                              {.handle="slider", .minSize={10,3}})
+                << ui::FSlider(0.f, 1.f, 0.5f,
+                               {.handle="fslider", .minSize={10,3}})
+                << ui::Int(0, 100, 10,       {.handle="int"})
+                << ui::Float(0.f, 10.f, 1.f, {.handle="float"})
+                << ui::Spinner(0, 9, 3,      {.handle="spin"}) )
+
+           << ( HBox().label("text + buttons")
+                << ui::String("hello",         {.handle="text", .maxLen=50})
+                << ui::Label("status: idle",   {.handle="status"})
+                << ui::Button("Run",           {.handle="run"})
+                << ui::Button("Play",          {.toggledText="Pause",
+                                                .handle="pp"})
+                << ui::CheckBox("enabled",     {.checked=true,
+                                                .handle="chk"}) )
+
+           << ( HBox().label("selections")
+                << ui::ButtonGroup("alpha,beta,gamma",
+                                   {.handle="radio"})
+                << ui::Combo("red,green,blue",
+                             {.initialIndex=1, .handle="color"}) ) )
       << Show();
 
   gui.registerCallback([](const std::string &h){
-    std::cout << h << " = " << gui[h].as<int>() << std::endl;
-  }, "legacy,typed");
+    std::cout << h << " changed" << std::endl;
+  }, "slider,fslider,int,float,spin,text,run,pp,chk,radio,color");
 }
 
 int main(int n, char **ppc){
