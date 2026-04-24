@@ -3,12 +3,18 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "harness/Test.h"
-#include <icl/utils/Size.h>
+#include <icl/utils/ConfigFile.h>
 #include <icl/utils/Point.h>
-#include <icl/utils/Rect.h>
-#include <icl/utils/Range.h>
-#include <icl/utils/StringUtils.h>
 #include <icl/utils/Random.h>
+#include <icl/utils/Range.h>
+#include <icl/utils/Rect.h>
+#include <icl/utils/Size.h>
+#include <icl/utils/StringUtils.h>
+
+#include <cstdio>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 using namespace icl::utils;
 
@@ -165,4 +171,166 @@ ICL_REGISTER_TEST("utils.clipped_cast.int_to_int", "integer narrowing clamps")
   ICL_TEST_EQ(f8(42), (icl8u)42);
   auto fs = [](icl16s v){ return clipped_cast<icl16s,icl8u>(v); };
   ICL_TEST_EQ(fs(-1), (icl8u)0);
+}
+
+// ---------------------------------------------------------------------------
+// ConfigFile — YAML-backed hierarchical key/value store
+// ---------------------------------------------------------------------------
+
+namespace {
+
+  // Writes `cfg` to a unique temp file path, returns the path.  The file
+  // is deleted by TempCfgPath's dtor.
+  struct TempCfgPath {
+    std::filesystem::path path;
+    TempCfgPath() {
+      path = std::filesystem::temp_directory_path() /
+             ("icl-test-configfile-" + std::to_string(std::random_device{}()) + ".yaml");
+    }
+    ~TempCfgPath() { std::error_code ec; std::filesystem::remove(path, ec); }
+    std::string str() const { return path.string(); }
+  };
+
+}
+
+ICL_REGISTER_TEST("utils.configfile.basic_set_get", "set / get round-trip in memory")
+{
+  ConfigFile cfg;
+  cfg.set<int>("general.params.threshold", 7);
+  cfg.set<double>("general.params.value", 6.45);
+  cfg.set<std::string>("general.params.filename", "hallo.txt");
+  cfg.set<bool>("debug", true);
+
+  ICL_TEST_EQ(cfg.get<int>("general.params.threshold"), 7);
+  ICL_TEST_NEAR(cfg.get<double>("general.params.value"), 6.45, 1e-9);
+  ICL_TEST_EQ(cfg.get<std::string>("general.params.filename"), std::string("hallo.txt"));
+  ICL_TEST_TRUE(cfg.get<bool>("debug"));
+}
+
+ICL_REGISTER_TEST("utils.configfile.missing_key_throws", "get<T> throws EntryNotFoundException")
+{
+  ConfigFile cfg;
+  ICL_TEST_THROW(cfg.get<int>("not.there"), ConfigFile::EntryNotFoundException);
+}
+
+ICL_REGISTER_TEST("utils.configfile.get_default", "get with fallback returns default on missing key")
+{
+  ConfigFile cfg;
+  cfg.set<int>("present", 42);
+  ICL_TEST_EQ(cfg.get<int>("present", 99), 42);
+  ICL_TEST_EQ(cfg.get<int>("absent",  99), 99);
+}
+
+ICL_REGISTER_TEST("utils.configfile.registered_types_roundtrip",
+                  "Size / Point / Rect / Range32f round-trip through set+get")
+{
+  ConfigFile cfg;
+  cfg.set<Size>   ("res",   Size(640, 480));
+  cfg.set<Point>  ("pos",   Point(10, 20));
+  cfg.set<Rect>   ("roi",   Rect(5, 5, 100, 200));
+  cfg.set<Range32f>("range", Range32f(0.0f, 1.0f));
+  ICL_TEST_EQ(cfg.get<Size>("res"),     Size(640, 480));
+  ICL_TEST_EQ(cfg.get<Point>("pos"),    Point(10, 20));
+  ICL_TEST_EQ(cfg.get<Rect>("roi"),     Rect(5, 5, 100, 200));
+  Range32f r = cfg.get<Range32f>("range");
+  ICL_TEST_NEAR(r.minVal, 0.0f, 1e-6f);
+  ICL_TEST_NEAR(r.maxVal, 1.0f, 1e-6f);
+}
+
+ICL_REGISTER_TEST("utils.configfile.save_load_roundtrip",
+                  "save to file, reload into a second instance, values match")
+{
+  TempCfgPath p;
+  {
+    ConfigFile cfg;
+    cfg.set<int>("general.params.threshold", 7);
+    cfg.set<double>("general.params.value", 6.45);
+    cfg.set<std::string>("general.params.filename", "hallo.txt");
+    cfg.set<Size>("cam.res", Size(640, 480));
+    cfg.save(p.str());
+  }
+  ConfigFile cfg2(p.str());
+  ICL_TEST_EQ(cfg2.get<int>("general.params.threshold"), 7);
+  ICL_TEST_NEAR(cfg2.get<double>("general.params.value"), 6.45, 1e-9);
+  ICL_TEST_EQ(cfg2.get<std::string>("general.params.filename"), std::string("hallo.txt"));
+  ICL_TEST_EQ(cfg2.get<Size>("cam.res"), Size(640, 480));
+}
+
+ICL_REGISTER_TEST("utils.configfile.save_emits_nested_yaml",
+                  "dotted-path keys serialize to nested YAML mappings")
+{
+  TempCfgPath p;
+  {
+    ConfigFile cfg;
+    cfg.set<int>("a.b.c", 42);
+    cfg.save(p.str());
+  }
+  std::ifstream f(p.str());
+  std::ostringstream ss; ss << f.rdbuf();
+  const std::string content = ss.str();
+  // Expect nested, not flat "a.b.c: 42".
+  ICL_TEST_TRUE(content.find("a:") != std::string::npos);
+  ICL_TEST_TRUE(content.find("  b:") != std::string::npos);
+  ICL_TEST_TRUE(content.find("    c: 42") != std::string::npos);
+}
+
+ICL_REGISTER_TEST("utils.configfile.contains_and_find",
+                  "contains + regex find work on dotted-path keys")
+{
+  ConfigFile cfg;
+  cfg.set<int>("a.b.x", 1);
+  cfg.set<int>("a.b.y", 2);
+  cfg.set<int>("a.c.z", 3);
+  ICL_TEST_TRUE (cfg.contains("a.b.x"));
+  ICL_TEST_FALSE(cfg.contains("a.b.z"));
+  auto matches = cfg.find("^a\\.b\\..*");
+  ICL_TEST_EQ(matches.size(), size_t(2));
+}
+
+ICL_REGISTER_TEST("utils.configfile.set_prefix",
+                  "setPrefix transparently scopes subsequent get/set")
+{
+  ConfigFile cfg;
+  cfg.setPrefix("section.");
+  cfg.set<int>("x", 10);
+  cfg.set<int>("y", 20);
+  ICL_TEST_EQ(cfg.get<int>("x"), 10);
+  ICL_TEST_EQ(cfg.get<int>("y"), 20);
+  // Prefix cleared: the full dotted path is the canonical key.
+  cfg.setPrefix("");
+  ICL_TEST_EQ(cfg.get<int>("section.x"), 10);
+  ICL_TEST_TRUE(cfg.contains("section.y"));
+}
+
+ICL_REGISTER_TEST("utils.configfile.data_proxy_assign_and_cast",
+                  "operator[] returns Data proxy that assigns and casts")
+{
+  ConfigFile cfg;
+  cfg["k.v"] = 99;                              // Data::operator=<int>
+  cfg["k.s"] = std::string("hello");            // string overload
+  int         v = cfg["k.v"];                   // Data::operator int()
+  std::string s = cfg["k.s"];
+  ICL_TEST_EQ(v, 99);
+  ICL_TEST_EQ(s, std::string("hello"));
+}
+
+ICL_REGISTER_TEST("utils.configfile.restriction_in_memory",
+                  "setRestriction / getRestriction stored in-memory, not persisted")
+{
+  TempCfgPath p;
+  {
+    ConfigFile cfg;
+    cfg.set<int>("threshold", 128);
+    cfg.setRestriction("threshold", ConfigFile::KeyRestriction(0.0, 255.0));
+    const auto *r = cfg.getRestriction("threshold");
+    ICL_TEST_TRUE(r != nullptr);
+    ICL_TEST_TRUE(r->hasRange);
+    ICL_TEST_NEAR(r->max, 255.0, 1e-9);
+    cfg.save(p.str());
+  }
+  // Reload — restriction is NOT in the YAML file, so the reloaded
+  // entry has the scalar value but no restriction attached.
+  ConfigFile cfg2(p.str());
+  ICL_TEST_EQ(cfg2.get<int>("threshold"), 128);
+  ICL_TEST_TRUE(cfg2.getRestriction("threshold") == nullptr);
 }

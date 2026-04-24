@@ -4,7 +4,6 @@
 
 #include <icl/math/FixedMatrix.h>
 #include <icl/math/FixedVector.h>
-#include <icl/utils/ConfigFile.h>
 #include <cmath>
 #include <string>
 #include <limits>
@@ -402,40 +401,10 @@ float scalar(FixedMatrix<T,1,3> &v1,FixedMatrix<T,1,3> &v2) { return v1[0]*v2[0]
 
 
 
-  struct FixedMatrixConfigFileStaticRegistration{
-    FixedMatrixConfigFileStaticRegistration(){
-      // todo:: move this to core!
-      // copied from ICLCore/Color.h
-      typedef FixedColVector<icl8u,3> Color;
-      typedef FixedColVector<icl32f,3> Color32f;
-      typedef FixedColVector<icl8u,4> Color4D;
-      typedef FixedColVector<icl32f,4> Color4D32f;
+  // Note: a static ConfigFile type-registration struct used to live
+  // here for the XML wire format.  With ConfigFile's migration to
+  // YAML, typed wire tagging is gone — the type-registry machinery
+  // was deleted from ConfigFile entirely, so this code had no
+  // audience and has been removed.
 
-      REGISTER_CONFIG_FILE_TYPE(Color);
-      REGISTER_CONFIG_FILE_TYPE(Color32f);
-      REGISTER_CONFIG_FILE_TYPE(Color4D);
-      REGISTER_CONFIG_FILE_TYPE(Color4D32f);
-
-      typedef  FixedRowVector<float,3> RVec3;
-      typedef  FixedRowVector<float,4> RVec;
-
-      REGISTER_CONFIG_FILE_TYPE(RVec3);
-      REGISTER_CONFIG_FILE_TYPE(RVec);
-
-      typedef  FixedMatrix<float,3,3> Mat3x3;
-      typedef  FixedMatrix<float,3,4> Mat3x4;
-      typedef  FixedMatrix<float,4,3> Mat4x3;
-      typedef  FixedMatrix<float,4,4> Mat;
-
-      REGISTER_CONFIG_FILE_TYPE(Mat3x3);
-      REGISTER_CONFIG_FILE_TYPE(Mat3x4);
-      REGISTER_CONFIG_FILE_TYPE(Mat4x3);
-      REGISTER_CONFIG_FILE_TYPE(Mat);
-
-      typedef  FixedColVector<float,3> Vec3;
-      typedef  FixedColVector<float,4> Vec;
-      REGISTER_CONFIG_FILE_TYPE(Vec3);
-      REGISTER_CONFIG_FILE_TYPE(Vec);
-    }
-  } FixedMatrixConfigFileStaticRegistration__Instance;
   } // namespace icl::math

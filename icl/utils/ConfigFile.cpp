@@ -4,385 +4,180 @@
 
 #include <icl/utils/ConfigFile.h>
 #include <icl/utils/Macros.h>
+#include <icl/utils/Range.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/detail/pugi/PugiXML.h>
+#include <icl/utils/Yaml.h>
 
 #include <fstream>
-#include <list>
-#include <vector>
-
-#include <icl/utils/Size.h>
-#include <icl/utils/Size.h>
-
-#include <icl/utils/Point.h>
-
-#include <icl/utils/Rect.h>
-#include <icl/utils/Rect.h>
-
-#include <icl/utils/Range.h>
-#include <icl/utils/SteppingRange.h>
+#include <sstream>
 
 namespace icl::utils {
 
-  /// Pimpl: owns the underlying pugi document.  Kept out of the public
-  /// header so pugi never surfaces through ConfigFile.h.
-  struct ConfigFile::Impl {
-    pugi::xml_document doc;
-  };
+  // Singleton shared across the process.
+  ConfigFile ConfigFile::s_oConfig;
 
-  ConfigFile::Maps *ConfigFile::getMapsInstance(){
-    static std::shared_ptr<Maps> typeMap(new Maps);
-    return typeMap.get();
-  }
-  //    std::map<std::string,std::string> ConfigFile::s_typeMap;
-  //std::map<std::string,std::string> ConfigFile::s_typeMapReverse;
-
-
-  namespace{
-
-    struct StaticConfigFileTypeRegistering{
-
-      StaticConfigFileTypeRegistering(){
-        REGISTER_CONFIG_FILE_TYPE(char);
-        REGISTER_CONFIG_FILE_TYPE(unsigned char);
-        REGISTER_CONFIG_FILE_TYPE(short);
-        REGISTER_CONFIG_FILE_TYPE(unsigned short);
-        REGISTER_CONFIG_FILE_TYPE(int);
-        REGISTER_CONFIG_FILE_TYPE(unsigned int);
-        REGISTER_CONFIG_FILE_TYPE(float);
-        REGISTER_CONFIG_FILE_TYPE(double);
-        ::icl::utils::ConfigFile::register_type<std::string>("string");
-        REGISTER_CONFIG_FILE_TYPE(long int);
-        REGISTER_CONFIG_FILE_TYPE(bool);
-
-        REGISTER_CONFIG_FILE_TYPE(Size);
-        REGISTER_CONFIG_FILE_TYPE(Point);
-        REGISTER_CONFIG_FILE_TYPE(Rect);
-        REGISTER_CONFIG_FILE_TYPE(Size32f);
-        REGISTER_CONFIG_FILE_TYPE(Point32f);
-        REGISTER_CONFIG_FILE_TYPE(Rect32f);
-        REGISTER_CONFIG_FILE_TYPE(Range32s);
-        REGISTER_CONFIG_FILE_TYPE(Range32f);
-        REGISTER_CONFIG_FILE_TYPE(SteppingRange32s);
-        REGISTER_CONFIG_FILE_TYPE(SteppingRange32f);
-        //            REGISTER_CONFIG_FILE_TYPE(Color);
-
-        // todo: this needs to be done in static initialization of the ICLMath library
-        // we need to use a real singelton typemap then
-        /*
-        //typedef  FixedMatrix<float,3,3> Mat3x3;
-        //typedef  FixedMatrix<float,3,4> Mat3x4;
-        //typedef  FixedMatrix<float,4,3> Mat4x3;
-        typedef  FixedMatrix<float,4,4> Mat4x4;
-
-        REGISTER_CONFIG_FILE_TYPE(Mat3x3);
-        REGISTER_CONFIG_FILE_TYPE(Mat3x4);
-        REGISTER_CONFIG_FILE_TYPE(Mat4x3);
-        REGISTER_CONFIG_FILE_TYPE(Mat4x4);
-
-        typedef  FixedColVector<float,3> ColVec3;
-        typedef  FixedColVector<float,4> ColVec4;
-
-        typedef  FixedRowVector<float,3> RowVec3;
-        typedef  FixedRowVector<float,4> RowVec4;
-
-        REGISTER_CONFIG_FILE_TYPE(ColVec3);
-        REGISTER_CONFIG_FILE_TYPE(ColVec4);
-        REGISTER_CONFIG_FILE_TYPE(RowVec3);
-        REGISTER_CONFIG_FILE_TYPE(RowVec4);
-       */
-      }
-    } StaticConfigFileTypeRegisteringIntance;
+  std::string ConfigFile::KeyRestriction::toString() const {
+    if(hasRange)  return str(Range32f(min, max));
+    if(hasValues) return "[" + values + "]";
+    return "invalid key restriction";
   }
 
-  std::string ConfigFile::KeyRestriction::toString() const{
-    if(hasRange){
-      return str(Range32f(min,max));
-    }else if (hasValues){
-      return "["+values+"]";
-    }else{
-      return "invalid key restriction";
-    }
-  }
+  // ---------------------------------------------------------------------
+  // Load / save — YAML is the wire format, m_entries is canonical.
+  // ---------------------------------------------------------------------
 
   namespace {
-    inline bool is_text_node(const pugi::xml_node &node){
-      return node && node.type() == pugi::node_pcdata;
-    }
 
-    void add_to_doc(pugi::xml_document &doc,
-                    const std::string &name,
-                    const std::string &type,
-                    const std::string &value,
-                    const ConfigFile::KeyRestriction *restr = nullptr){
-      std::vector<std::string> t = tok(name,".");
-      ICLASSERT_RETURN(t.size()>1);
-      ICLASSERT_RETURN(t[0]=="config");
-
-      pugi::xml_node n = doc.document_element();
-
-      for(unsigned int i=1;i<t.size()-1;++i){
-        pugi::xml_node sn = n.find_child_by_attribute("section","id",t[i].c_str());
-        if(!sn){
-          n = n.append_child("section");
-          pugi::xml_attribute id = n.append_attribute("id");
-          id.set_value(t[i].c_str());
-        }else{
-          n = sn;
+    // Walks `n`, joining each path segment with '.', and inserts a leaf
+    // entry for every scalar reached.  Sequences inside mappings are
+    // rejected (ConfigFile has always been a dotted-path flat model; a
+    // synthetic `.0` / `.1` index would be a semantic invention).
+    void flatten_into(const yaml::Node &n, std::string prefix,
+                      std::map<std::string, ConfigFile::Entry, std::less<>> &out,
+                      ConfigFile *parent){
+      if(n.isScalar()){
+        ConfigFile::Entry e;
+        e.id     = prefix;
+        e.value  = std::string(n.scalarView());
+        e.parent = parent;
+        out[prefix] = std::move(e);
+      } else if(n.isMapping()){
+        for(const auto &kv : n.mapping()){
+          std::string child = prefix.empty()
+              ? std::string(kv.first)
+              : prefix + "." + std::string(kv.first);
+          flatten_into(kv.second, std::move(child), out, parent);
         }
+      } else if(n.isSequence()){
+        throw InvalidFileFormatException(
+          "ConfigFile: YAML sequences at '" + prefix + "' are not supported");
       }
-
-      pugi::xml_node data = n.find_child_by_attribute("data","id",t.back().c_str());
-      if(!data){
-        data = n.append_child("data");
-        pugi::xml_attribute id = data.append_attribute("id");
-        id.set_value(t.back().c_str());
-      }
-
-      pugi::xml_attribute typeAtt = data.attribute("type");
-      if(!typeAtt){
-        typeAtt = data.append_attribute("type");
-      }
-      typeAtt.set_value(type.c_str());
-
-      pugi::xml_node text;
-      if( (text = data.find_child(is_text_node)) ){
-        text.set_value(value.c_str());
-      }else{
-        data.append_child(pugi::node_pcdata).set_value(value.c_str());
-      }
-
-      if(restr){
-        pugi::xml_attribute rangeAtt = data.attribute("range");
-        pugi::xml_attribute valuesAtt = data.attribute("values");
-        if(restr->hasRange){
-          if(valuesAtt){
-            data.remove_attribute(valuesAtt);
-          }
-          if(!rangeAtt) rangeAtt = data.append_attribute("range");
-          rangeAtt.set_value(restr->toString().c_str());
-        }else if(restr->hasValues){
-          if(rangeAtt){
-            data.remove_attribute(rangeAtt);
-          }
-          if(!valuesAtt) valuesAtt = data.append_attribute("values");
-          valuesAtt.set_value(restr->toString().c_str());
-        }else{
-          WARNING_LOG("NULL KeyRestriction detected (this is ignored)");
-        }
-      }
+      // Null nodes are silently skipped (e.g. an empty mapping value).
     }
 
-    std::string get_id_path(pugi::xml_node n){
-      std::list<std::string> l;
-
-      while(n.parent()){
-        l.push_front(n.attribute("id").value());
-        n = n.parent();
+    // Splits `id` on '.' and walks / auto-vivifies nested mappings,
+    // returning a reference to the leaf node where the scalar goes.
+    yaml::Node &walk_and_create(yaml::Document &d, const std::string &id){
+      yaml::Node *cur = &d.root();
+      std::size_t start = 0;
+      while(start < id.size()){
+        std::size_t dot = id.find('.', start);
+        std::string seg = (dot == std::string::npos)
+            ? id.substr(start)
+            : id.substr(start, dot - start);
+        cur = &(*cur)[seg];
+        if(dot == std::string::npos) break;
+        start = dot + 1;
       }
-
-      std::ostringstream str;
-      str << "config";
-      std::copy(l.begin(),--l.end(),std::ostream_iterator<std::string>(str,"."));
-      str << l.back();
-      return str.str();
-    }
-  } // anonymous namespace
-
-  void ConfigFile::load_internal(){
-    //m_impl->removeAllComments();
-    m_entries.clear();
-
-
-    static const pugi::xpath_query query("//data[@id and @type]");
-    pugi::xpath_node_set ds = m_impl->doc.document_element().select_nodes(query);
-
-    std::string pfx = m_sDefaultPrefix;
-    if(pfx.length() && pfx[pfx.length()-1] != '.') pfx+='.';
-
-    for(pugi::xpath_node_set::const_iterator it = ds.begin(); it != ds.end(); ++it){
-      pugi::xml_node n = it->node();
-      if(!n) throw ICLException("XML node expected, but attribute found??");
-
-      const std::string key = pfx+get_id_path(n);
-
-      //      DEBUG_LOG("adding key " << key);
-
-      if(contains(key)) throw InvalidFileFormatException("Key: '" + key + "' was found at least twice!");
-
-      Entry &e = m_entries[key];
-      e.parent = this;
-      e.id = key;
-      e.value = n.first_child().value();
-      Maps &maps  = getMapsInstanceRef();
-      if(auto jt = maps.typeMapReverse.find(n.attribute("type").value()); jt == maps.typeMapReverse.end()){
-        throw UnregisteredTypeException(n.attribute("type").value());
-      } else {
-        e.rttiType = jt->second;
-      }
-
-      pugi::xml_attribute rangeAtt = n.attribute("range");
-
-      if(rangeAtt){
-        std::string mm = rangeAtt.value();
-        if(mm.size()<5 || mm[0]!='[' || mm[mm.length()-1] != ']'){
-          throw InvalidFileFormatException("unable to parse range attribute: syntax [min,max]");
-        }
-        std::vector<double> mmv = parseVecStr<double>(mm.substr(1,mm.size()-2),",");
-        if(mmv.size() != 2){
-          throw InvalidFileFormatException("unable to parse range attribute: syntax [min,max]");
-        }
-        setRestriction(key,KeyRestriction(mmv[0],mmv[1]));
-        continue;
-      }
-
-      pugi::xml_attribute valuesAtt = n.attribute("values");
-      if(valuesAtt){
-        std::string vl = valuesAtt.value();
-        setRestriction(key,vl.substr(1,vl.size()-2));
-      }
-    }
-  }
-
-  void ConfigFile::load(const std::string &filename){
-
-    m_impl = std::make_shared<Impl>();
-    pugi::xml_parse_result res = m_impl->doc.load_file(filename.c_str());
-    if(res.status != pugi::status_ok){
-      if(res.status == pugi::status_file_not_found){
-        throw FileNotFoundException(filename);
-      }else{
-        throw InvalidFileFormatException(res.description());
-      }
+      return *cur;
     }
 
+  }  // anonymous
 
-    load_internal();
-  }
-
-
-
-  ConfigFile::ConfigFile(){
-
-    m_impl = std::make_shared<Impl>();
-
-    m_impl->doc.load_string("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-                           "<config>\n"
-                           "</config>\n");
-  }
-
-
-  ConfigFile::ConfigFile(std::istream &stream){
-
-    m_impl = std::make_shared<Impl>();
-    m_impl->doc.load(stream);
-    load_internal();
-  }
-
-
-  void ConfigFile::setRestriction(const std::string &id, const ConfigFile::KeyRestriction &r){
-    get_entry_internal(m_sDefaultPrefix+id).restr = std::make_shared<KeyRestriction>(r);
-
-    // Search the corresponding node ...
-  }
-
-
-  const ConfigFile::KeyRestriction *ConfigFile::getRestriction(const std::string &id) const{
-    return get_entry_internal(m_sDefaultPrefix+id).restr.get();
-  }
-
-
+  ConfigFile::ConfigFile() = default;
 
   ConfigFile::ConfigFile(const std::string &filename){
     load(filename);
   }
 
-  void ConfigFile::loadConfig(const std::string &filename){
+  ConfigFile::ConfigFile(std::istream &stream){
+    std::ostringstream oss;
+    oss << stream.rdbuf();
+    auto doc = yaml::Document::own(oss.str());
+    m_entries.clear();
+    flatten_into(doc.root(), "", m_entries, this);
+  }
 
+  void ConfigFile::load(const std::string &filename){
+    auto doc = yaml::Document::file(filename);
+    m_entries.clear();
+    flatten_into(doc.root(), "", m_entries, this);
+  }
+
+  void ConfigFile::save(const std::string &filename) const {
+    auto doc = yaml::Document::empty();
+    for(const auto &[id, e] : m_entries){
+      walk_and_create(doc, id) = e.value;
+    }
+    doc.emitToFile(filename);
+  }
+
+  std::ostream &operator<<(std::ostream &s, const ConfigFile &cf){
+    auto doc = yaml::Document::empty();
+    for(const auto &[id, e] : cf.m_entries){
+      walk_and_create(doc, id) = e.value;
+    }
+    s << doc.emit();
+    return s;
+  }
+
+  // ---------------------------------------------------------------------
+  // Static singleton helpers
+  // ---------------------------------------------------------------------
+
+  void ConfigFile::loadConfig(const std::string &filename){
     s_oConfig.load(filename);
   }
 
-
   void ConfigFile::loadConfig(const ConfigFile &configFile){
-
     s_oConfig = configFile;
   }
 
+  // ---------------------------------------------------------------------
+  // Entry mutation / query
+  // ---------------------------------------------------------------------
 
-
-
-  void ConfigFile::save(const std::string &filename) const{
-	  if (!m_impl->doc.save_file(filename.c_str())) {
-		  throw ICLException("failed to open file");
-	  }
-  }
-
-
-  void ConfigFile::clear(){
-    *this = ConfigFile();
-  }
-
-  bool ConfigFile::check_type_internal(const std::string &id, const std::string &rttiTypeID) const{
-    const Entry &e = get_entry_internal(m_sDefaultPrefix+id);
-    return e.rttiType == rttiTypeID;
-    /*
-        DEBUG_LOG("rtti type is " << rttiTypeID << "#registered types:" << s_typeMap.size());
-        std::map<std::string,std::string, std::less<>>::const_iterator it=s_typeMap.find(rttiTypeID);
-        if(it == s_typeMap.end()) throw UnregisteredTypeException(rttiTypeID);
-        return (it->second == e.rttiType);
-    */
+  void ConfigFile::set_internal(const std::string &idIn, const std::string &val){
+    const std::string id = m_sDefaultPrefix + idIn;
+    Entry &e = m_entries[id];
+    e.parent = this;
+    e.id     = id;
+    e.value  = val;
   }
 
   ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id){
-    if(auto it = m_entries.find(id); it == m_entries.end()){
-      throw EntryNotFoundException(id);
-    } else {
-      return it->second;
-    }
-  }
-  const ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id) const{
-    return const_cast<ConfigFile*>(this)->get_entry_internal(id);
+    auto it = m_entries.find(id);
+    if(it == m_entries.end()) throw EntryNotFoundException(id);
+    return it->second;
   }
 
-
-
-  void ConfigFile::set_internal(const std::string &idIn, const std::string &val, const std::string &type){
-    Maps &maps = getMapsInstanceRef();
-    if(auto it = maps.typeMap.find(type); it == maps.typeMap.end()){
-      throw UnregisteredTypeException(type);
-    } else {
-      std::string id=m_sDefaultPrefix + idIn;
-      Entry &e = m_entries[id];
-      e.parent = this;
-      e.id = id;
-      e.rttiType = type;
-      e.value = val;
-      add_to_doc(m_impl->doc,id,it->second,val);
-    }
+  const ConfigFile::Entry &ConfigFile::get_entry_internal(const std::string &id) const {
+    auto it = m_entries.find(id);
+    if(it == m_entries.end()) throw EntryNotFoundException(id);
+    return it->second;
   }
 
-  void ConfigFile::listContents() const{
-    std::cout << "config file entries:" << std::endl;
-    for(const auto& [key, entry] : m_entries){
-      std::cout << entry.id << "\t" << entry.value << "\t" << entry.rttiType << "\t";
-      if(entry.restr) std::cout << "(restriction: " << entry.restr->toString() << ")" <<  std::endl;
-      else std::cout << "(no restriction)" << std::endl;
-    }
+  void ConfigFile::setRestriction(const std::string &id, const KeyRestriction &r){
+    get_entry_internal(m_sDefaultPrefix + id).restr = std::make_shared<KeyRestriction>(r);
   }
 
-  bool ConfigFile::contains(const std::string &id) const{
-    if(m_sDefaultPrefix.length()){
-      return m_entries.contains(m_sDefaultPrefix+id);
-    }else{
-      return m_entries.contains(id);
+  const ConfigFile::KeyRestriction *ConfigFile::getRestriction(const std::string &id) const {
+    return get_entry_internal(m_sDefaultPrefix + id).restr.get();
+  }
+
+  bool ConfigFile::contains(const std::string &id) const {
+    return m_entries.contains(m_sDefaultPrefix + id);
+  }
+
+  void ConfigFile::clear(){
+    m_entries.clear();
+    m_sDefaultPrefix.clear();
+  }
+
+  void ConfigFile::listContents() const {
+    std::cout << "config file entries:\n";
+    for(const auto &[key, e] : m_entries){
+      std::cout << e.id << "\t" << e.value;
+      if(e.restr) std::cout << "\t(restriction: " << e.restr->toString() << ")";
+      std::cout << "\n";
     }
   }
 
-  ConfigFile::Data::Data(const std::string &id, ConfigFile &cf):
-    id(id),cf(&cf){}
+  // ---------------------------------------------------------------------
+  // Prefix + operator[] + Data proxy + find
+  // ---------------------------------------------------------------------
 
-
-  void ConfigFile::setPrefix(const std::string &defaultPrefix) const{
+  void ConfigFile::setPrefix(const std::string &defaultPrefix) const {
     m_sDefaultPrefix = defaultPrefix;
   }
 
@@ -390,35 +185,23 @@ namespace icl::utils {
     return m_sDefaultPrefix;
   }
 
-  ConfigFile::Data ConfigFile::operator [](const std::string &id){
-    return Data(id,*this);
+  ConfigFile::Data::Data(const std::string &id, ConfigFile &cf) : id(id), cf(&cf) {}
+
+  ConfigFile::Data ConfigFile::operator[](const std::string &id){
+    return Data(id, *this);
   }
 
-  const ConfigFile::Data ConfigFile::operator[](const std::string &id) const{
-    if(!contains(id)){
-      throw EntryNotFoundException(m_sDefaultPrefix+id);
-    }
-    return Data(id,const_cast<ConfigFile&>(*this));
+  const ConfigFile::Data ConfigFile::operator[](const std::string &id) const {
+    if(!contains(id)) throw EntryNotFoundException(m_sDefaultPrefix + id);
+    return Data(id, const_cast<ConfigFile &>(*this));
   }
-
-
-
-  std::ostream &operator<<(std::ostream &s, const ConfigFile &cf){
-    cf.m_impl->doc.save(s);
-    return s;
-  }
-
-  /// Singelton object
-  ConfigFile ConfigFile::s_oConfig;
-
 
   std::vector<ConfigFile::Data> ConfigFile::find(const std::string &regex){
     std::vector<Data> ret;
-    for(const auto& [key, entry] : m_entries){
-      if(match(key, regex)){
-        ret.push_back(Data(key,*this));
-      }
+    for(const auto &[key, _] : m_entries){
+      if(match(key, regex)) ret.push_back(Data(key, *this));
     }
     return ret;
   }
-  } // namespace icl::utils
+
+}  // namespace icl::utils
