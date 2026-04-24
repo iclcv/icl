@@ -20,18 +20,26 @@
 ///   Benchmark                  icl::utils::xml    pugixml
 ///   ----------------------------------------------------------------------
 ///   parse   ~500 B                 2.0 us            0.5 us
-///   parse   ~50 KB               174.0 us           49.5 us
+///   parse   ~50 KB               167.0 us           49.5 us
 ///   traverse (parse + walk)        2.0 us            1.0 us
 ///   xpath (predicate union)        1.0 us            1.0 us
 ///   emit (round-trip)              1.0 us              —
 ///
+/// The content-text scan in parseElement uses a 16-byte SIMD
+/// find-first-'<' (via sse2neon on arm64); that's the only spot
+/// where SIMD was a measured net win.  SIMD-ified skipWs and
+/// attr-value scans both regressed — whitespace runs and
+/// attribute values are typically too short (<16 bytes) for
+/// 128-bit compares to amortise their setup cost.
+///
 /// Caveat: pugixml is a decades-tuned C library with SSE-assisted
-/// bulk scans; we're a first-pass hand-written C++ parser, ~3.5x
-/// behind pugi on raw throughput.  Traversal and XPath are
-/// competitive.  Absolute numbers are microseconds for config-
-/// sized inputs — comfortably below any realistic config-load
-/// budget.  Squeezing the parser further is a future optimisation
-/// if anyone ever hits the ceiling.
+/// bulk scans AND a carefully-tuned node-pool allocator; we're
+/// ~3.4x behind pugi on raw parse throughput, and the remaining
+/// gap is structural (allocation patterns, string_view wrappers,
+/// per-byte branches in parseName / skipWs / the inner-loop
+/// startsWith probes).  Traversal and XPath are competitive.
+/// Absolute numbers are microseconds for config-sized inputs —
+/// comfortably below any realistic config-load budget.
 ///
 /// Accepted subset:
 ///   * Elements (start, end, self-closing) with attributes.
