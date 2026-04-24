@@ -115,6 +115,7 @@ qt_module_headers = files(
   'ToggleButton.h',
   'Widget.h',
   'WidgetCaptureMode.h',
+  'ui.h',
 )
 
 qt_sources = files(

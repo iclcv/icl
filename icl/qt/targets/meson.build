@@ -14,6 +14,7 @@ if _build_demos
     'mandelbrot': [],
     'onscreen-button': [],
     'plot-component': [],
+    'ui-syntax': [],
   }
   foreach name, extra_deps : _qt_demos
     executable(name + '-demo',
