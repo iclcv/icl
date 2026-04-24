@@ -2,13 +2,17 @@
 
 ## Next Step
 
-Session 58 landed the token-based callback-unregister API on
-`Configurable` — the long-standing gap on both the property-change and
-child-set channels is closed.  `registerCallback` / `onChildSetChanged`
-return a `CallbackToken`; `removeCallback` / `removeChildSetCallback`
-unregister.  `qt::Prop`'s `ConfigurableGUIWidget` now unregisters in its
-dtor so a Configurable outliving the widget can't fire into a dangling
-`this`.  871/871 tests (+5 new).  Summary below.
+Session 59 shipped `qt::ui::` — the designated-init GUI component
+syntax TODO item.  All 33 components (19 leaves + 7 containers + 3
+finalizers + 4 misc) are available under `icl::qt::ui::` with a mixed
+positional+designated-init shape:
+`gui << ui::Slider(0, 255, 42, {.vertical=true, .handle="gain"})`.
+Legacy stream-insertion builder unchanged; both routes converge on
+the same widget factory through the existing `GUIComponent`
+toString()→parse pipeline.  `ui-syntax-demo` exercises every
+component in a VBox/HBox/Tab nested layout — interactively verified
+(callbacks fire correctly on all component types).  `ui-plan.md`
+at repo root documents the design.  871/871 tests.  Summary below.
 
 Concrete work items remaining (in suggested order):
 
@@ -30,6 +34,84 @@ Concrete work items remaining (in suggested order):
   pugi's per-byte scanners are decades-tuned in C with zero wrapper
   overhead.  Config-sized inputs are microseconds regardless; chase only
   if a real workload demands it.
+
+---
+
+## Current State (Session 59 — qt::ui:: designated-init syntax)
+
+Single arc across 5 commits: introduce a modern `qt::ui::` namespace
+that gives every GUI component a mixed positional+designated-init
+shape, on top of the existing widget factory.  The legacy
+`qt::Slider(0,255,42).handle(...)` builder is unchanged — both
+routes converge.
+
+### Design decisions (documented in `ui-plan.md`)
+
+1. **Mixed shape.**  Primary data args positional (min/max/val for a
+   slider, text for a button), trailing `XxxOpts{}` pack for
+   everything else via designated init.  Avoids the C++ no-mix-rule
+   inside one call: the designators all live inside the Opts literal.
+2. **Per-component Opts** hoisted to namespace scope (`ui::SliderOpts`,
+   not `ui::Slider::Opts`).  Nested types' default member initializers
+   aren't visible from the enclosing class's own default argument, so
+   `Slider(..., SliderOpts={})` only works with Opts at namespace scope.
+3. **Shared-metadata block duplicated** across every XxxOpts (8 lines
+   of handle/label/tooltip/size/minSize/maxSize/hide).  Rejected
+   inheritance (wrecks flat designated-init — caller would need
+   `{.CommonOpts={...}}` spelling) and macros (magic for little win).
+4. **`applyCommon` uses `if constexpr(requires{o.field;})`** so each
+   Opts can freely add or drop metadata fields.  Containers skip
+   `tooltip`/`hide`, scrolls add `margin`/`spacing`.
+5. **Leaves are plain structs with `toComponent()`; containers
+   inherit from their legacy `qt::` counterparts.**  Leaves are data;
+   containers are accumulators.  Inheriting means container
+   `<<`-chaining of children works through the existing
+   `ContainerGUIComponent::operator<<` plumbing for free, and
+   top-level `gui << ui::HBox({...})` routes through the existing
+   `GUI::operator<<(const GUI&)` overload — no new dispatch.
+6. **Free `operator<<(GUI&, T)` + `operator<<(GUI&&, T)`** templates
+   in `icl::qt`, guarded on a `ui::Component` concept (requires a
+   `toComponent()` member).  Rvalue overload mirrors the
+   const-member pattern on `ContainerGUIComponent::operator<<` so
+   `ui::HBox({...}) << ui::Slider(...)` chains from a temporary.
+
+### Commits
+
+- `103e9316f` — **Phase 1 spike.**  `icl/qt/ui.h` with `applyCommon`,
+  `Component` concept, lvalue+rvalue stream overloads, `ui::Slider` +
+  `ui::SliderOpts`.  `ui-syntax-demo` showing legacy + ui:: side by
+  side.  meson wiring.  Validates the design before expanding.
+- `fbafa28a9` — **Phase 2.**  12 leaves: FSlider, Int, Float, Spinner,
+  String, Label, State, Button, CheckBox, ButtonGroup, Combo.
+  `ui::Label` case-study validates the mixed-syntax decision —
+  positional text + `.label` for border disambiguates cleanly.
+  `ui::Button` toggle semantics match legacy (empty `.toggledText`
+  → push, non-empty → toggle).
+- `b3ccf13d8` — **Phase 3.**  10 components: Display, Canvas, Canvas3D,
+  Disp, Plot, Fps, ColorSelect, CamCfg, Ps, Prop.  `Prop` preserves
+  the dual-ctor shape (live `Configurable*`/`&` via pointer-encoding
+  trick, plus string ID).  `Plot` adopts a flat four-float form
+  rather than Range32f wrappers — more readable under designated init.
+- `8891274e2` — **Phase 4+5.**  7 containers (HBox/VBox/HScroll/
+  VScroll/HSplit/VSplit/Tab) + 3 finalizers (Show/Create/Dummy).
+  Single `BoxOpts` shared by all box-style containers (margin,
+  spacing + common metadata).  `Border` dropped — qt::Border's ctor is
+  friend-only; any container's `.label` gives the same visual effect.
+  Demo converted to 100% ui:: end-to-end.
+- `9ffa376c7` — **`ui-plan.md`** roadmap at repo root.  Inventory of
+  all 33 components grouped by positional-arg shape, design
+  decisions, 6 phases with checkboxes.
+
+### Landmarks
+
+- 33/33 components covered.
+- Interactively verified: `ui-syntax-demo` fires callbacks on all
+  component types (slider, fslider, int, float, spin, text, run, pp,
+  chk, radio, color).
+- 871/871 tests green throughout every commit.
+- String round-trip inside GUIComponent preserved as-is — Phase 7 of
+  `ui-plan.md` (separate multi-session arc) will retire it.
+- `TODO.md` "Designated-init GUI component syntax" item checked off.
 
 ---
 

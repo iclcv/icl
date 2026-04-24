@@ -75,23 +75,24 @@ Applied per `module-audit-checklist.md`.
 
 ## Qt GUI component plumbing
 
-- [ ] **Designated-init GUI component syntax.**  Current builder uses
-  stream-insertion + chained setters:
+- [x] **Designated-init GUI component syntax.**  Landed Session 59 —
+  all 33 components available under `qt::ui::` with a mixed
+  positional+designated-init shape:
   ```cpp
-  gui << Slider(0, 255, 1).handle("gain").minSize(10, 3).label("Gain");
+  gui << ui::Slider(0, 255, 42, {.vertical=true, .step=2,
+                                 .handle="gain", .label="Gain"});
   ```
-  Target shape — aggregate-init with named fields, same spirit as
-  `prop::Range{.min=..., .max=..., .ui=...}`:
-  ```cpp
-  gui << ui::Slider{.min=0, .max=255, .val=1,
-                    .minSize={10,3}, .handle="gain", .label="Gain"};
-  ```
-  Reads more cleanly, self-documents each arg, and lets the author
-  skip fields they don't want to set (no more `.tooltip("")` noise).
-  Pairs naturally with the `GUIComponent` rework below (typed component
-  structs instead of string round-trip), and with C++20 designated
-  init + aggregate CTAD that Apple Clang 21 now handles.  Likely a
-  follow-up to that rework.
+  Primary "obvious" data args stay positional; everything else moves
+  into a trailing `XxxOpts{}` pack via C++20 designated init.  See
+  `ui-plan.md` for the design rationale (per-component Opts, shared
+  metadata duplicated across Opts, `if constexpr(requires{...})` in
+  `applyCommon`, containers-via-inheritance).  Legacy
+  `Slider(0,255,42).handle(...)` stream-insertion builder unchanged —
+  both routes converge on the same widget factory.  Commits
+  `103e9316f` (spike), `fbafa28a9` (Phase 2: 12 leaves), `b3ccf13d8`
+  (Phase 3: 10 leaves), `8891274e2` (Phase 4+5: 7 containers + 3
+  finalizers), plus `9ffa376c7` for `ui-plan.md`.  `ui-syntax-demo`
+  exercises every component interactively.
 
 - [ ] **Rework `GUIComponent` internal representation.**  Today every
   component is serialized to a `type(params)[@handle=X@label=L@...]`
