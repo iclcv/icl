@@ -964,7 +964,7 @@ ICL_REGISTER_TEST("utils.yaml.ctor.initlist_mapping",
 {
   // Mapping init-list works at ctor level.  (Sequence form is
   // deliberately not supported as a ctor — see Yaml.h — use the
-  // two-line form `Node n; n = {1,2,3};` or yaml::sequence{...}.)
+  // two-line form `Node n; n = {1,2,3};` or yaml::seq{...}.)
   Node n = {{"k", 1}, {"j", 2}};
   ICL_TEST_TRUE(n.isMapping());
   ICL_TEST_EQ(n.size(), size_t(2));
@@ -973,12 +973,12 @@ ICL_REGISTER_TEST("utils.yaml.ctor.initlist_mapping",
 }
 
 // ---------------------------------------------------------------------------
-// yaml::sequence / yaml::mapping tag-type helpers for ctor-level init-lists
+// yaml::seq / yaml::map tag-type helpers for ctor-level init-lists
 // ---------------------------------------------------------------------------
 
-ICL_REGISTER_TEST("utils.yaml.ctor.sequence_tag", "Node n = yaml::sequence{1, 2, 3}")
+ICL_REGISTER_TEST("utils.yaml.ctor.sequence_tag", "Node n = yaml::seq{1, 2, 3}")
 {
-  Node n = yaml::sequence{1, 2, 3};
+  Node n = yaml::seq{1, 2, 3};
   ICL_TEST_TRUE(n.isSequence());
   ICL_TEST_EQ(n.size(), size_t(3));
   ICL_TEST_EQ(n[0].as<int>(), 1);
@@ -986,9 +986,9 @@ ICL_REGISTER_TEST("utils.yaml.ctor.sequence_tag", "Node n = yaml::sequence{1, 2,
 }
 
 ICL_REGISTER_TEST("utils.yaml.ctor.sequence_tag_mixed",
-                  "yaml::sequence holds heterogeneous types")
+                  "yaml::seq holds heterogeneous types")
 {
-  Node n = yaml::sequence{"text", 42, 3.14, true};
+  Node n = yaml::seq{"text", 42, 3.14, true};
   ICL_TEST_EQ(n.size(), size_t(4));
   ICL_TEST_EQ(std::string(n[0].scalarView()), std::string("text"));
   ICL_TEST_EQ(n[1].as<int>(), 42);
@@ -997,9 +997,9 @@ ICL_REGISTER_TEST("utils.yaml.ctor.sequence_tag_mixed",
 }
 
 ICL_REGISTER_TEST("utils.yaml.ctor.mapping_tag",
-                  "Node n = yaml::mapping{{\"k\", 1}, {\"j\", 2}}")
+                  "Node n = yaml::map{{\"k\", 1}, {\"j\", 2}}")
 {
-  Node n = yaml::mapping{{"k", 1}, {"j", 2}};
+  Node n = yaml::map{{"k", 1}, {"j", 2}};
   ICL_TEST_TRUE(n.isMapping());
   ICL_TEST_EQ(n["k"].as<int>(), 1);
   ICL_TEST_EQ(n["j"].as<int>(), 2);
@@ -1008,9 +1008,9 @@ ICL_REGISTER_TEST("utils.yaml.ctor.mapping_tag",
 ICL_REGISTER_TEST("utils.yaml.ctor.tag_nested",
                   "mapping of mixed values including a nested sequence")
 {
-  Node n = yaml::mapping{
+  Node n = yaml::map{
     {"name",  "config"},
-    {"ports", yaml::sequence{80, 443, 8080}},
+    {"ports", yaml::seq{80, 443, 8080}},
     {"dbg",   true},
   };
   ICL_TEST_TRUE(n.isMapping());
@@ -1022,12 +1022,12 @@ ICL_REGISTER_TEST("utils.yaml.ctor.tag_nested",
 }
 
 ICL_REGISTER_TEST("utils.yaml.ctor.tag_survives_temporary_keys",
-                  "yaml::mapping copies keys — temporaries in the init-list are OK")
+                  "yaml::map copies keys — temporaries in the init-list are OK")
 {
   auto build = []{
     std::string k1 = "dyn_one";
     std::string k2 = "dyn_two";
-    return yaml::mapping{{k1, 1}, {k2, 2}};
+    return yaml::map{{k1, 1}, {k2, 2}};
   };
   Node n = build();
   ICL_TEST_EQ(n["dyn_one"].as<int>(), 1);

@@ -27,8 +27,8 @@
 namespace icl::utils::yaml {
 
   class Document;
-  struct sequence;   // tag-type helper, defined below
-  struct mapping;    // tag-type helper, defined below
+  struct seq;   // tag-type helper, defined below
+  struct map;    // tag-type helper, defined below
   namespace detail {
     ICLUtils_API void parseInto(std::string_view src, Document &doc);
   }
@@ -299,8 +299,8 @@ namespace icl::utils::yaml {
              class = std::enable_if_t<
                !std::is_same_v<std::decay_t<T>, Node> &&
                !std::is_same_v<std::decay_t<T>, ScalarData> &&
-               !std::is_same_v<std::decay_t<T>, ::icl::utils::yaml::sequence> &&
-               !std::is_same_v<std::decay_t<T>, ::icl::utils::yaml::mapping>
+               !std::is_same_v<std::decay_t<T>, ::icl::utils::yaml::seq> &&
+               !std::is_same_v<std::decay_t<T>, ::icl::utils::yaml::map>
              >>
     Node(T &&t) : Node() { *this = std::forward<T>(t); }
 
@@ -381,18 +381,18 @@ namespace icl::utils::yaml {
   };
 
   // ---------------------------------------------------------------------
-  // Tag-type helpers — `yaml::sequence{...}` / `yaml::mapping{...}`
+  // Tag-type helpers — `yaml::seq{...}` / `yaml::map{...}`
   //
   // Distinct types with distinct init-list signatures, so each is
   // unambiguous at the call site.  Implicitly convertible to Node via
   // the operator below, so:
   //
-  //     Node n = yaml::sequence{1, 2, 3};
-  //     Node n = yaml::sequence{"a", "b", "c"};
-  //     Node n = yaml::mapping{{"k", 1}, {"j", "hi"}};
-  //     Node n = yaml::mapping{                        // heterogeneous
+  //     Node n = yaml::seq{1, 2, 3};
+  //     Node n = yaml::seq{"a", "b", "c"};
+  //     Node n = yaml::map{{"k", 1}, {"j", "hi"}};
+  //     Node n = yaml::map{                        // heterogeneous
   //       {"name",  "config"},
-  //       {"ports", yaml::sequence{80, 443, 8080}},
+  //       {"ports", yaml::seq{80, 443, 8080}},
   //       {"dbg",   true},
   //     };
   //
@@ -400,13 +400,13 @@ namespace icl::utils::yaml {
   // a direct `Node(std::initializer_list<Node>)` ctor from coexisting
   // with the mapping init-list ctor.  Both tag types *copy* their
   // contents into an owned vector during construction, so passing
-  // temporaries (e.g. `yaml::mapping{{std::string("k"), 1}}`) is safe
+  // temporaries (e.g. `yaml::map{{std::string("k"), 1}}`) is safe
   // across any lifetime of the tag object.
   // ---------------------------------------------------------------------
 
-  struct sequence {
+  struct seq {
     std::vector<Node> items;
-    sequence(std::initializer_list<Node> il) : items(il.begin(), il.end()) {}
+    seq(std::initializer_list<Node> il) : items(il.begin(), il.end()) {}
     operator Node() const {
       Node n;
       n.setSequence();
@@ -417,13 +417,13 @@ namespace icl::utils::yaml {
     }
   };
 
-  struct mapping {
+  struct map {
     // Owned keys — we copy out of the init-list's `string_view` at ctor
     // time so the tag type survives any lifetime, and the implicit
     // conversion to Node intrns those owned strings into the Node's
     // own Mapping arena.
     std::vector<std::pair<std::string, Node>> items;
-    mapping(std::initializer_list<std::pair<std::string_view, Node>> il){
+    map(std::initializer_list<std::pair<std::string_view, Node>> il){
       items.reserve(il.size());
       for(const auto &kv : il) items.emplace_back(std::string(kv.first), kv.second);
     }
@@ -437,13 +437,13 @@ namespace icl::utils::yaml {
   };
 
   // Opt the tag types out of the generic `str(T)` assignment path —
-  // otherwise `Node n = yaml::sequence{...}` would pick the generic
+  // otherwise `Node n = yaml::seq{...}` would pick the generic
   // `operator=(const T&)` and try to stream-format the tag object,
   // which has no operator<<.  The implicit `operator Node()` conversion
   // in the tag types is the intended path; the copy-assign of the
   // resulting Node value picks it up.
-  template<> struct Node::_is_generic_scalar_assignable<sequence> : std::false_type {};
-  template<> struct Node::_is_generic_scalar_assignable<mapping>  : std::false_type {};
+  template<> struct Node::_is_generic_scalar_assignable<seq> : std::false_type {};
+  template<> struct Node::_is_generic_scalar_assignable<map> : std::false_type {};
 
   // ---------------------------------------------------------------------
   // Inline template methods
