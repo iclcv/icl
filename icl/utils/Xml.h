@@ -19,27 +19,29 @@
 ///
 ///   Benchmark                  icl::utils::xml    pugixml
 ///   ----------------------------------------------------------------------
-///   parse   ~500 B                 2.0 us            0.5 us
-///   parse   ~50 KB               167.0 us           49.5 us
-///   traverse (parse + walk)        2.0 us            1.0 us
+///   parse   ~500 B                 1.0 us            0.5 us
+///   parse   ~50 KB               108.0 us           49.5 us
+///   traverse (parse + walk)        1.0 us            1.0 us
 ///   xpath (predicate union)        1.0 us            1.0 us
 ///   emit (round-trip)              1.0 us              —
 ///
-/// The content-text scan in parseElement uses a 16-byte SIMD
-/// find-first-'<' (via sse2neon on arm64); that's the only spot
-/// where SIMD was a measured net win.  SIMD-ified skipWs and
-/// attr-value scans both regressed — whitespace runs and
-/// attribute values are typically too short (<16 bytes) for
-/// 128-bit compares to amortise their setup cost.
+/// Notes on the perf path:
+///  * `parseElement`'s content-text scan uses a 16-byte SIMD
+///    find-first-'<' (sse2neon on arm64).  This was the only
+///    inner-loop spot where SIMD was a measured net win — SIMD-
+///    ified skipWs and attr-value scans both regressed because
+///    typical runs are <16 bytes.
+///  * Node storage is a page-backed bump allocator (`NodeArena`,
+///    64 KB pages) — replacing the initial `std::deque<ElementNode>`
+///    cut parse_large from 167 us to 108 us.  Attributes hang off
+///    each element as a singly-linked list (head + tail pointers),
+///    not a `std::vector`, so no per-element vector growth / relocation.
 ///
-/// Caveat: pugixml is a decades-tuned C library with SSE-assisted
-/// bulk scans AND a carefully-tuned node-pool allocator; we're
-/// ~3.4x behind pugi on raw parse throughput, and the remaining
-/// gap is structural (allocation patterns, string_view wrappers,
-/// per-byte branches in parseName / skipWs / the inner-loop
-/// startsWith probes).  Traversal and XPath are competitive.
-/// Absolute numbers are microseconds for config-sized inputs —
-/// comfortably below any realistic config-load budget.
+/// Remaining ~2x gap vs pugi on raw parse is down to pugi's
+/// decades-tuned per-byte scanners + `const char*` walks (no
+/// string_view wrappers in the hot path).  Traversal and XPath
+/// are tied.  Absolute numbers are microseconds for config-sized
+/// inputs — well below any realistic config-load budget.
 ///
 /// Accepted subset:
 ///   * Elements (start, end, self-closing) with attributes.
@@ -90,20 +92,26 @@ namespace icl::utils::xml {
     /// One attribute on an element.  `name` and `valueRaw` are views
     /// into the Document's source buffer (parse path) or string
     /// arena (mutation path) — the AttributeNode owns no bytes.
+    /// Attributes hang off their owning element as a singly-linked
+    /// list (head + tail on the element), so appending is O(1) and
+    /// no per-element std::vector is paid for.  Both this struct and
+    /// `ElementNode` are trivially destructible — the NodeArena
+    /// frees their backing pages without running dtors.
     struct AttributeNode {
       std::string_view name;
       std::string_view valueRaw;
       /// Lazy entity-decoded cache — filled on first `value()` call.
       mutable std::string_view valueDecodedCache;
       mutable bool             valueDecodedResolved = false;
+      AttributeNode           *next = nullptr;
     };
 
     /// One element in the tree.  Allocated from the Document's
-    /// `m_elementArena` (deque → stable addresses) so the linked-list
-    /// pointers stay valid for the Document's lifetime.
+    /// `NodeArena` (page-backed bump allocator → stable addresses)
+    /// so the linked-list pointers stay valid for the Document's
+    /// lifetime.
     struct ElementNode {
       std::string_view           name;
-      std::vector<AttributeNode> attributes;
 
       /// Direct text content; see the `mixed content` note in the
       /// file-level comment for edge-case semantics.
@@ -111,11 +119,49 @@ namespace icl::utils::xml {
       mutable std::string_view   textDecodedCache;
       mutable bool               textDecodedResolved = false;
 
+      /// Singly-linked attribute list.  `lastAttribute` enables O(1)
+      /// append during parse / setAttribute; iteration is via
+      /// `firstAttribute`'s next-chain.
+      AttributeNode             *firstAttribute = nullptr;
+      AttributeNode             *lastAttribute  = nullptr;
+
       /// Element-only linked-list of children.
       ElementNode               *parent      = nullptr;
       ElementNode               *firstChild  = nullptr;
       ElementNode               *lastChild   = nullptr;
       ElementNode               *nextSibling = nullptr;
+    };
+
+    /// Page-based bump allocator for ElementNode + AttributeNode.
+    /// Pages are never reclaimed until the Document is destroyed —
+    /// `free()` is a no-op, only page-wholesale release on dtor.
+    /// Both node types are trivially destructible, so no dtor
+    /// dispatch is needed on release.  Size tuned so a ~50 KB
+    /// XML config (the scaled benchmark) fits in a handful of pages.
+    class ICLUtils_API NodeArena {
+    public:
+      NodeArena();
+      ~NodeArena();
+      NodeArena(NodeArena&&) noexcept;
+      NodeArena& operator=(NodeArena&&) noexcept;
+      NodeArena(const NodeArena&) = delete;
+      NodeArena& operator=(const NodeArena&) = delete;
+
+      ElementNode  *allocElement();
+      AttributeNode *allocAttribute();
+
+    private:
+      static constexpr std::size_t kPageBytes = 64 * 1024;
+      struct Page {
+        std::unique_ptr<char[]> buf;
+        std::size_t             used = 0;
+      };
+      std::vector<Page>          m_pages;
+      char                      *m_cur = nullptr;   // bump pointer into current page
+      char                      *m_end = nullptr;   // one-past-end of current page
+
+      void *alloc(std::size_t bytes, std::size_t align);
+      void  newPage(std::size_t atLeast);
     };
 
     ICLUtils_API void parseInto(std::string_view src, Document &doc);
@@ -362,7 +408,11 @@ namespace icl::utils::xml {
     /// Allocate a fresh ElementNode in the node arena and return a
     /// pointer to it.  Internal API — public because the parser /
     /// mutators live outside this class.
-    detail::ElementNode* allocElement();
+    detail::ElementNode*  allocElement();
+
+    /// Allocate a fresh AttributeNode.  Used by the parser and by
+    /// `Element::setAttribute` to append to the linked attribute list.
+    detail::AttributeNode* allocAttribute();
 
     /// Install `root` as the document root.  Internal API — called
     /// by the parser once it finishes the top-level element.
@@ -377,7 +427,7 @@ namespace icl::utils::xml {
     std::unique_ptr<std::string>          m_source;       // stable bytes for `parseOwned`
     std::string_view                      m_view;         // view into m_source or caller buf
     std::deque<std::string>               m_stringArena;  // interned strings (mutation / decode)
-    std::deque<detail::ElementNode>       m_elementArena; // node pool (stable addresses)
+    detail::NodeArena                     m_nodeArena;    // page-backed node pool
     detail::ElementNode                  *m_root = nullptr;
   };
 

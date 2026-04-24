@@ -48,11 +48,11 @@ namespace icl::utils::xml::detail {
       appendIndent(out, depth, opts.indent);
       out.push_back('<');
       out.append(el->name.data(), el->name.size());
-      for(const auto &a : el->attributes){
+      for(const auto *a = el->firstAttribute; a; a = a->next){
         out.push_back(' ');
-        out.append(a.name.data(), a.name.size());
+        out.append(a->name.data(), a->name.size());
         out.append("=\"");
-        appendEscaped(out, a.valueRaw, /*isAttr=*/true);
+        appendEscaped(out, a->valueRaw, /*isAttr=*/true);
         out.push_back('"');
       }
       const bool hasChildren = el->firstChild != nullptr;

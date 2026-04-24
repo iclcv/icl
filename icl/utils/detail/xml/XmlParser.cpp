@@ -340,10 +340,16 @@ namespace icl::utils::xml::detail {
           if(eof()) error("unterminated attribute value");
           std::string_view valueRaw = m_src.substr(vstart, m_pos - vstart);
           advance();                        // consume close quote
-          AttributeNode a;
-          a.name     = name;
-          a.valueRaw = valueRaw;
-          el->attributes.push_back(std::move(a));
+          AttributeNode *a = m_doc.allocAttribute();
+          a->name     = name;
+          a->valueRaw = valueRaw;
+          if(!el->firstAttribute){
+            el->firstAttribute = a;
+            el->lastAttribute  = a;
+          } else {
+            el->lastAttribute->next = a;
+            el->lastAttribute       = a;
+          }
         }
       }
 

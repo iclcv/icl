@@ -177,19 +177,26 @@ namespace icl::utils::xml {
 
   Attribute Element::attribute(std::string_view n) const noexcept {
     if(!m_node) return {};
-    for(const auto &a : m_node->attributes){
-      if(a.name == n) return Attribute(&a, m_doc);
+    for(auto *a = m_node->firstAttribute; a; a = a->next){
+      if(a->name == n) return Attribute(a, m_doc);
     }
     return {};
   }
 
   std::size_t Element::attributeCount() const noexcept {
-    return m_node ? m_node->attributes.size() : 0;
+    if(!m_node) return 0;
+    std::size_t n = 0;
+    for(auto *a = m_node->firstAttribute; a; a = a->next) ++n;
+    return n;
   }
 
   Attribute Element::attributeAt(std::size_t i) const noexcept {
-    if(!m_node || i >= m_node->attributes.size()) return {};
-    return Attribute(&m_node->attributes[i], m_doc);
+    if(!m_node) return {};
+    std::size_t k = 0;
+    for(auto *a = m_node->firstAttribute; a; a = a->next, ++k){
+      if(k == i) return Attribute(a, m_doc);
+    }
+    return {};
   }
 
   std::string_view Element::text() const noexcept {
@@ -240,18 +247,26 @@ namespace icl::utils::xml {
     if(!m_node) return;
     auto *ncDoc = const_cast<Document*>(m_doc);
     std::string_view internedValue = ncDoc->intern(std::string(v));
-    for(auto &a : m_node->attributes){
-      if(a.name == n){
-        a.valueRaw               = internedValue;
-        a.valueDecodedResolved   = false;
-        a.valueDecodedCache      = {};
+    // Update in place if the attribute already exists.
+    for(auto *a = m_node->firstAttribute; a; a = a->next){
+      if(a->name == n){
+        a->valueRaw              = internedValue;
+        a->valueDecodedResolved  = false;
+        a->valueDecodedCache     = {};
         return;
       }
     }
-    detail::AttributeNode a;
-    a.name     = ncDoc->intern(std::string(n));
-    a.valueRaw = internedValue;
-    m_node->attributes.push_back(std::move(a));
+    // Append a fresh node.
+    detail::AttributeNode *a = ncDoc->allocAttribute();
+    a->name     = ncDoc->intern(std::string(n));
+    a->valueRaw = internedValue;
+    if(!m_node->firstAttribute){
+      m_node->firstAttribute = a;
+      m_node->lastAttribute  = a;
+    } else {
+      m_node->lastAttribute->next = a;
+      m_node->lastAttribute       = a;
+    }
   }
 
   void Element::setText(std::string_view v){
@@ -348,12 +363,67 @@ namespace icl::utils::xml {
   }
 
   detail::ElementNode* Document::allocElement(){
-    m_elementArena.emplace_back();
-    return &m_elementArena.back();
+    return m_nodeArena.allocElement();
+  }
+
+  detail::AttributeNode* Document::allocAttribute(){
+    return m_nodeArena.allocAttribute();
   }
 
   void Document::setRootNode(detail::ElementNode *root) noexcept {
     m_root = root;
   }
+
+  // ---------------------------------------------------------------------
+  // NodeArena — page-backed bump allocator.
+  // ---------------------------------------------------------------------
+
+  namespace detail {
+
+    NodeArena::NodeArena(){
+      m_pages.reserve(4);
+    }
+    NodeArena::~NodeArena() = default;
+    NodeArena::NodeArena(NodeArena&&) noexcept = default;
+    NodeArena& NodeArena::operator=(NodeArena&&) noexcept = default;
+
+    void NodeArena::newPage(std::size_t atLeast){
+      std::size_t sz = kPageBytes;
+      if(atLeast > sz) sz = atLeast;
+      Page p;
+      p.buf.reset(new char[sz]);
+      p.used = sz;
+      m_pages.push_back(std::move(p));
+      m_cur = m_pages.back().buf.get();
+      m_end = m_cur + sz;
+    }
+
+    void *NodeArena::alloc(std::size_t bytes, std::size_t align){
+      // Align the bump pointer.
+      std::uintptr_t p = reinterpret_cast<std::uintptr_t>(m_cur);
+      std::uintptr_t a = static_cast<std::uintptr_t>(align);
+      std::uintptr_t aligned = (p + a - 1) & ~(a - 1);
+      char *slot = reinterpret_cast<char *>(aligned);
+      if(slot + bytes > m_end){
+        newPage(bytes + align);
+        p = reinterpret_cast<std::uintptr_t>(m_cur);
+        aligned = (p + a - 1) & ~(a - 1);
+        slot = reinterpret_cast<char *>(aligned);
+      }
+      m_cur = slot + bytes;
+      return slot;
+    }
+
+    ElementNode *NodeArena::allocElement(){
+      void *mem = alloc(sizeof(ElementNode), alignof(ElementNode));
+      return new (mem) ElementNode();       // placement-new, trivially dtor
+    }
+
+    AttributeNode *NodeArena::allocAttribute(){
+      void *mem = alloc(sizeof(AttributeNode), alignof(AttributeNode));
+      return new (mem) AttributeNode();
+    }
+
+  }  // namespace detail
 
 }  // namespace icl::utils::xml
