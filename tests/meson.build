@@ -4,6 +4,7 @@ test_sources = files(
   'test-any-map.cpp',
   'test-assign.cpp',
   'test-auto-parse.cpp',
+  'test-xml.cpp',
   'test-yaml.cpp',
   'test-plugin-registry.cpp',
   'test-prop-constraints.cpp',

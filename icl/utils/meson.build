@@ -65,6 +65,7 @@ utils_headers = files(
   'UncopiedInstance.h',
   'Utils.h',
   'VisualizationDescription.h',
+  'Xml.h',
   'Yaml.h',
 )
 
@@ -119,7 +120,11 @@ utils_sources = files(
   'Thread.cpp',
   'Time.cpp',
   'Timer.cpp',
+  'Xml.cpp',
   'Yaml.cpp',
+  'detail/xml/XPath.cpp',
+  'detail/xml/XmlEmitter.cpp',
+  'detail/xml/XmlParser.cpp',
   'detail/yaml/YamlEmitter.cpp',
   'detail/yaml/YamlParser.cpp',
   'detail/yaml/YamlScalar.cpp',
