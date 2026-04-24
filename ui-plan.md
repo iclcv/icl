@@ -201,19 +201,36 @@ the zero-default matches legacy's "derive range from data" behavior.
 Demo picked up a fourth HBox exercising `Display`, `Disp`, `Fps`,
 `ColorSelect`.  871/871 green.
 
-### Phase 4 — Containers
+### Phase 4 — Containers — ✅ LANDED (session 59)
 
-8 containers + the child-streaming question (approach ii above).  Most
-involved phase.  Containers are where the `gui << (HBox() << a << b)`
-nesting pattern happens, so the child-streaming overload must compose
-cleanly.
+7 containers landed (Border dropped — its qt:: ctor is friend-only,
+and any container's `.label` opts field produces an equivalent titled
+border):
 
-Deliverable: one commit for the overload design, then containers in
-1-2 follow-up commits.
+- `HBox`, `VBox`, `HScroll`, `VScroll`, `HSplit`, `VSplit`, `Tab`.
 
-### Phase 5 — Finalizers
+Approach picked: **inherit from the legacy `qt::` container**, apply
+a `BoxOpts{}` pack in the ctor body via the existing `.margin()` /
+`.spacing()` / `.label()` / ... setters.  Rationale captured in-header:
+containers are accumulators, not values; inheriting means
+`<<`-chaining of children keeps working through
+`ContainerGUIComponent::operator<<` for free, and top-level
+`gui << ui::HBox({...})` routes through the existing
+`GUI::operator<<(const GUI&)` overload — no new dispatch needed.
+Leaf children inside a container are picked up by the free
+`operator<<(GUI&&, ui::Component)` template established in Phase 1.
 
-`ui::Show`, `ui::Create`, `ui::Dummy`.  Trivial.
+All 6 box-style containers share a single `BoxOpts` struct (margin,
+spacing + common metadata) — unlike leaves, where per-component Opts
+was needed to accommodate per-component tuning (`.vertical`, `.step`,
+etc.).  Tab uses the same BoxOpts since its only tuning is the
+positional CSV.
+
+### Phase 5 — Finalizers — ✅ LANDED (session 59)
+
+`ui::Show` / `ui::Create` / `ui::Dummy` — trivial wrappers around
+`qt::Show()` / `qt::Create()` / `qt::Dummy()`.  Routed through the
+existing `ui::Component` concept since they expose `toComponent()`.
 
 ### Phase 6 — Docs + migration exemplar
 
@@ -249,7 +266,7 @@ fall away.
 - [x] Phase 1 — Slider spike
 - [x] Phase 2 — numeric + text + buttons (13 components)
 - [x] Phase 3 — display + canvas + introspection (11 components)
-- [ ] Phase 4 — containers + child-streaming (8 components)
-- [ ] Phase 5 — finalizers (3 components)
+- [x] Phase 4 — containers + child-streaming (7 containers; Border dropped)
+- [x] Phase 5 — finalizers (3 components)
 - [ ] Phase 6 — docs + exemplar demo migration
 - [ ] Phase 7 — (separate arc) string round-trip retirement

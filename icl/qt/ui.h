@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <icl/qt/ContainerGUIComponents.h>
 #include <icl/qt/GUI.h>
 #include <icl/qt/GUIComponent.h>
 #include <icl/qt/GUIComponents.h>
@@ -670,6 +671,125 @@ namespace icl::qt::ui {
     GUIComponent toComponent() const {
       return applyCommon(cfg ? qt::Prop(cfg) : qt::Prop(cfgID), opts);
     }
+  };
+
+  // --- Phase 4 containers -------------------------------------------------
+  //
+  // Containers diverge from the leaf-component pattern: they inherit from
+  // their legacy `qt::` counterparts (which are `ContainerGUIComponent ->
+  // GUI`) rather than being plain structs with `toComponent()`.
+  //
+  // Why inheritance here: containers are accumulators, not values.
+  // `ui::HBox({...}) << ui::Slider(...) << ui::Button(...)` needs the
+  // `<<` chain to push children into the container.  Legacy containers
+  // already do this via `ContainerGUIComponent::operator<<(const
+  // GUIComponent&) const`; inheriting means we keep that plumbing for
+  // free and get the top-level `gui << ui::HBox({...})` to route through
+  // the existing `GUI::operator<<(const GUI&)` overload — no new
+  // dispatch needed.  Leaf children going into a container are picked
+  // up by the free `operator<<(GUI&&, ui::Component)` template further
+  // down.
+  //
+  // (ui::Border is intentionally not provided — qt::Border's ctor is
+  //  private friend-only.  Any container's `.label` opts field produces
+  //  an equivalent titled border.)
+
+  /// Options for ui::HBox / ui::VBox / ui::HScroll / ui::VScroll /
+  /// ui::HSplit / ui::VSplit.  All layout containers share the same
+  /// knobs (margin, spacing, plus the metadata block).
+  struct BoxOpts {
+    /// -1 → use qt default; 0+ → explicit pixel margin.
+    int margin  = -1;
+    /// -1 → use qt default; 0+ → explicit pixel spacing.
+    int spacing = -1;
+    std::string handle;
+    std::string label;   //!< non-empty → titled border around the container
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Helper that applies a BoxOpts pack to a live ContainerGUIComponent.
+  /** Called from every container ctor below.  Mutates through the
+      legacy const-qualified setters (which use mutable internals). */
+  inline void applyBoxOpts(ContainerGUIComponent &c, const BoxOpts &o){
+    if(o.margin  >= 0) c.margin(o.margin);
+    if(o.spacing >= 0) c.spacing(o.spacing);
+    if(!o.handle.empty())  c.handle(o.handle);
+    if(!o.label.empty())   c.label(o.label);
+    if(o.size    != utils::Size::null) c.size(o.size);
+    if(o.minSize != utils::Size::null) c.minSize(o.minSize);
+    if(o.maxSize != utils::Size::null) c.maxSize(o.maxSize);
+    // ContainerGUIComponent has no tooltip/hide — skip silently.
+    (void)o.tooltip; (void)o.hide;
+  }
+
+  /// Horizontal layout container.
+  struct HBox : public qt::HBox {
+    HBox(BoxOpts opts = {}) : qt::HBox() { applyBoxOpts(*this, opts); }
+  };
+
+  /// Vertical layout container.
+  struct VBox : public qt::VBox {
+    VBox(BoxOpts opts = {}) : qt::VBox() { applyBoxOpts(*this, opts); }
+  };
+
+  /// Horizontal scroll area.
+  struct HScroll : public qt::HScroll {
+    HScroll(BoxOpts opts = {}) : qt::HScroll() { applyBoxOpts(*this, opts); }
+  };
+
+  /// Vertical scroll area.
+  struct VScroll : public qt::VScroll {
+    VScroll(BoxOpts opts = {}) : qt::VScroll() { applyBoxOpts(*this, opts); }
+  };
+
+  /// Horizontal splitter (draggable pane divider).
+  struct HSplit : public qt::HSplit {
+    HSplit(BoxOpts opts = {}) : qt::HSplit() { applyBoxOpts(*this, opts); }
+  };
+
+  /// Vertical splitter.
+  struct VSplit : public qt::VSplit {
+    VSplit(BoxOpts opts = {}) : qt::VSplit() { applyBoxOpts(*this, opts); }
+  };
+
+  /// Tab container — positional CSV of tab titles + BoxOpts.
+  /**
+      \code
+      gui << ( ui::Tab("Signal,Plot,Log", {.handle="tabs"})
+               << ui::Display({.handle="sig"})
+               << ui::Plot({.handle="plt"})
+               << ui::State({.handle="log"}) );
+      \endcode
+  */
+  struct Tab : public qt::Tab {
+    Tab(const std::string &commaSepTitles, BoxOpts opts = {})
+      : qt::Tab(commaSepTitles) { applyBoxOpts(*this, opts); }
+  };
+
+  // --- Phase 5 finalizers -------------------------------------------------
+  //
+  // Trivial markers.  Legacy shapes emit the magic `"!show"` / `"!create"`
+  // strings / empty component name (Dummy), which GUI::operator<<(string)
+  // special-cases.  ui:: wrappers just forward.
+
+  /// Finalize GUI creation and show the window.
+  struct Show {
+    GUIComponent toComponent() const { return qt::Show(); }
+  };
+
+  /// Finalize GUI creation but keep the window hidden.
+  struct Create {
+    GUIComponent toComponent() const { return qt::Create(); }
+  };
+
+  /// No-op placeholder (pairs with `.hide` on other components to make
+  /// conditional layout readable).
+  struct Dummy {
+    GUIComponent toComponent() const { return qt::Dummy(); }
   };
 
 } // namespace icl::qt::ui
