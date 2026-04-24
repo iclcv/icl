@@ -2,21 +2,15 @@
 
 ## Next Step
 
-Session 57 closed the pugi arc.  User directive was "let's implement our
-own parser similar to our YAML layer" — answered with a full in-house
-`icl::utils::xml` library (parser + DOM + emitter + XPath subset), both
-remaining consumers migrated, the 15,218-LOC vendored pugixml deleted,
-and two rounds of perf work (SIMD content scan, page-backed node arena,
-raw-ptr cursor, tag dispatch) that took parse_large from 174 µs to 97 µs.
-The `Arena<>` primitive lives in shared `icl/utils/detail/Arena.h` and
-is ready for any future consumer.  Full session summary below.
+Session 58 landed the token-based callback-unregister API on
+`Configurable` — the long-standing gap on both the property-change and
+child-set channels is closed.  `registerCallback` / `onChildSetChanged`
+return a `CallbackToken`; `removeCallback` / `removeChildSetCallback`
+unregister.  `qt::Prop`'s `ConfigurableGUIWidget` now unregisters in its
+dtor so a Configurable outliving the widget can't fire into a dangling
+`this`.  871/871 tests (+5 new).  Summary below.
 
 Concrete work items remaining (in suggested order):
-
-- **`removeChildSetCallback` API** (carried from Sessions 55–56).
-  Subscribers can't unregister today; same shape as the long-standing
-  `removedCallback` gap on the property-change channel.  ID-based
-  registration or token pattern.
 
 - **Compression-codec capability flags** (carried from Sessions 55–56).
   `1611` throws on RGB input; proper fix is a capability matrix on
@@ -36,6 +30,53 @@ Concrete work items remaining (in suggested order):
   pugi's per-byte scanners are decades-tuned in C with zero wrapper
   overhead.  Config-sized inputs are microseconds regardless; chase only
   if a real workload demands it.
+
+---
+
+## Current State (Session 58 — token-based callback unregister)
+
+Single arc: closed the long-standing `removedCallback` gap on both
+Configurable callback channels.
+
+- **`Configurable::CallbackToken`** (opaque `std::uint64_t`, `0` reserved
+  as "invalid / never registered").  Monotonic counter per instance;
+  single ID space across property-change and child-set channels so
+  callers can't accidentally cross-unregister (the two `remove*` methods
+  only look at their own vector).
+- **`registerCallback(Callback)` → `CallbackToken`** (was
+  `void registerCallback(const Callback &)`).  Taking by value lets the
+  impl `std::move` into the storage pair; existing call sites that pass
+  lambdas are unaffected.  Discard the return when subscribing for life.
+- **`onChildSetChanged(ChildSetCallback)` → `CallbackToken`** — same
+  shape.
+- **`removeCallback(CallbackToken)` / `removeChildSetCallback(CallbackToken)`**
+  — linear-scan erase; `token == 0` and not-found are both no-ops so
+  default-init tokens + double-remove are safe.
+- Storage flipped from `vector<Callback>` to
+  `vector<pair<CallbackToken, Callback>>`; fire sites iterate `.second`.
+- Dead `removedCallback` stub deleted (was retained "for ABI
+  compatibility" with an empty body since std::function has no `operator==`
+  — unreachable now that we have a real token API).
+- **`UnaryOp::registerCallback`** and **`Grabber::registerCallback`** —
+  both widened to match the new base signature (`CallbackToken` return,
+  `Callback` by value).  Their `using Configurable::registerCallback;`
+  clauses are removed: now that the shadow and the base share a signature,
+  the using-declaration is redundant (and would collide).  Callers that
+  want the unwrapped base version still reach it via `Configurable::
+  registerCallback(...)` qualified-name.  Also removed the dead
+  `using utils::Configurable::registerCallback;` in `GenericGrabber.h`.
+- **`qt::Prop`'s ConfigurableGUIWidget** — two new `CallbackToken`
+  members (`propChangeToken`, `childSetToken`), return values captured
+  at registration, new dtor unregisters both.  Closes the documented
+  segfault window where a Configurable outliving the widget fires into
+  a dangling `this`.
+- 5 new tests in `tests/test-utils.cpp` — fire, distinct-nonzero
+  tokens, unregister-stops-firing, zero + stale + double-remove no-op,
+  `onChildSetChanged` add+remove round-trip.  871/871 green (-j 1).
+
+Files touched: `icl/utils/Configurable.{h,cpp}`, `icl/filter/UnaryOp.{h,cpp}`,
+`icl/io/Grabber.{h,cpp}`, `icl/io/GenericGrabber.h`, `icl/qt/GUI.cpp`,
+`tests/test-utils.cpp`.
 
 ---
 

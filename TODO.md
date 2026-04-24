@@ -21,14 +21,19 @@ Applied per `module-audit-checklist.md`.
 
 ## Configurable — onChildSetChanged follow-ups
 
-- [ ] **`removeChildSetCallback` API.**  Subscribers (qt::Prop's
-  ConfigurableGUIWidget) can't unregister today — if a subscriber is
-  destroyed while the Configurable survives, the captured `this` is
-  dangling and the next add/removeChildConfigurable fire segfaults.
-  Same shape as the long-standing `removedCallback` gap on the
-  property-change channel (also non-functional today).  Either ship
-  ID-based registration on both or a token-returning pattern so
-  unregister is cheap.
+- [x] **`removeChildSetCallback` API.**  Landed.  Introduced
+  `Configurable::CallbackToken` (opaque `std::uint64_t`, `0` = invalid).
+  `registerCallback` / `onChildSetChanged` now return a token;
+  `removeCallback(CallbackToken)` / `removeChildSetCallback(CallbackToken)`
+  unregister.  Storage flipped to `vector<pair<CallbackToken, Callback>>`;
+  dead `removedCallback` stub deleted.  `UnaryOp::registerCallback` and
+  `Grabber::registerCallback` overloads widened to the same token-returning
+  shape (their `using Configurable::registerCallback;` clauses removed — they
+  were redundant after the signature match).  `ConfigurableGUIWidget` now
+  captures both tokens and unregisters them in a new destructor so a
+  Configurable outliving the widget can't fire into a dangling `this`.  5
+  new tests in `tests/test-utils.cpp` (fire, distinct-nonzero tokens,
+  unregister, stale/zero no-op, child-set add+remove round-trip).  871/871.
 
 - [x] **Wire ImageCompressor codec swap to the new rebuild channel.**
   Landed as `icl-compressor-playground-demo` (commit `614d4fbdd`).
