@@ -959,6 +959,39 @@ ICL_REGISTER_TEST("utils.yaml.ctor.converting",
   ICL_TEST_EQ(c.as<Size>(), Size(1, 2));
 }
 
+ICL_REGISTER_TEST("utils.yaml.ctor.initlist_mapping",
+                  "Node n = {{\"k\", 1}, {\"j\", 2}}")
+{
+  // Mapping init-list works at ctor level.  (Sequence form is
+  // deliberately not supported as a ctor — see Yaml.h — use the
+  // two-line form `Node n; n = {1,2,3};` or an explicit vector<T>.)
+  Node n = {{"k", 1}, {"j", 2}};
+  ICL_TEST_TRUE(n.isMapping());
+  ICL_TEST_EQ(n.size(), size_t(2));
+  ICL_TEST_EQ(n["k"].as<int>(), 1);
+  ICL_TEST_EQ(n["j"].as<int>(), 2);
+}
+
+// ---------------------------------------------------------------------------
+// operator[] — crisp integer index without size_t cast
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.index.int_literal", "n[0], n[2] without size_t cast")
+{
+  Node n;
+  n = {10, 20, 30};
+  ICL_TEST_EQ(n[0].as<int>(), 10);
+  ICL_TEST_EQ(n[1].as<int>(), 20);
+  ICL_TEST_EQ(n[2].as<int>(), 30);
+}
+
+ICL_REGISTER_TEST("utils.yaml.index.mixed", "string key and int index both work")
+{
+  Node n;
+  n["items"] = {1, 2, 3};
+  ICL_TEST_EQ(n["items"][1].as<int>(), 2);
+}
+
 // ---------------------------------------------------------------------------
 // Level 2 — container assignment
 // ---------------------------------------------------------------------------

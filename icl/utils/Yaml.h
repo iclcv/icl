@@ -188,9 +188,25 @@ namespace icl::utils::yaml {
     Node&       get(std::string_view key);
     Node&       getOrInsert(std::string_view key); // auto-converts Null -> Mapping
 
-    // operator[] dispatches: size_t → sequence, string_view → mapping
-    const Node& operator[](std::size_t i)        const { return at(i); }
-    Node&       operator[](std::size_t i)              { return at(i); }
+    // operator[] dispatches: integral → sequence index, string_view →
+    // mapping key.  The integral overload is templated over any integral
+    // type (excluding bool and char-likes) so plain `n[2]` works without
+    // an explicit size_t cast, and literal `n[0]` disambiguates cleanly
+    // from the const-char*-nullptr path.
+    template<class I, class = std::enable_if_t<
+               std::is_integral_v<I> &&
+               !std::is_same_v<I, bool> &&
+               !std::is_same_v<I, char> &&
+               !std::is_same_v<I, signed char> &&
+               !std::is_same_v<I, unsigned char>>>
+    const Node& operator[](I i) const { return at(static_cast<std::size_t>(i)); }
+    template<class I, class = std::enable_if_t<
+               std::is_integral_v<I> &&
+               !std::is_same_v<I, bool> &&
+               !std::is_same_v<I, char> &&
+               !std::is_same_v<I, signed char> &&
+               !std::is_same_v<I, unsigned char>>>
+    Node&       operator[](I i)       { return at(static_cast<std::size_t>(i)); }
     const Node& operator[](std::string_view key) const { return get(key); }
     Node&       operator[](std::string_view key)       { return getOrInsert(key); }
     const Node& operator[](const char *key)      const { return get(std::string_view(key)); }
@@ -265,21 +281,32 @@ namespace icl::utils::yaml {
              class = std::enable_if_t<_is_generic_scalar_assignable<std::decay_t<T>>::value>>
     Node& operator=(const T &t);
 
-    // --- converting ctor ---
+    // --- converting ctors ---
     //
-    // Any T that operator= accepts also constructs a Node, so
+    // Any T that operator= accepts also constructs a Node:
     //     Node n = 42;
     //     Node s = "hello";
     //     Node m = Size(640, 480);
-    // and initializer-list element conversions all work.  SFINAE-excluded
-    // for Node / ScalarData so the compiler-generated copy/move ctors
-    // stay in play.
+    // SFINAE-excluded for Node / ScalarData so the compiler-generated
+    // copy/move ctors stay in play.
     template<class T,
              class = std::enable_if_t<
                !std::is_same_v<std::decay_t<T>, Node> &&
                !std::is_same_v<std::decay_t<T>, ScalarData>
              >>
     Node(T &&t) : Node() { *this = std::forward<T>(t); }
+
+    // Mapping from ctor-level init-list:
+    //     Node n = {{"k", 1}, {"j", 2}};
+    // The sequence form is deliberately NOT provided as a ctor — adding
+    // `Node(std::initializer_list<Node>)` would make `Node n = {{"k",1}}`
+    // ambiguous between "1-element sequence containing a 2-element
+    // sub-sequence" and "1-element mapping".  For sequence init use the
+    // two-line form:
+    //     Node n;  n = {1, 2, 3};
+    // or explicit containers:
+    //     Node n = std::vector<int>{1, 2, 3};
+    Node(std::initializer_list<std::pair<std::string_view, Node>> map) : Node() { *this = map; }
 
     // --- internals ---
     const auto& value() const noexcept { return m_value; }
