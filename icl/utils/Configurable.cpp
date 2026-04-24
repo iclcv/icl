@@ -204,7 +204,7 @@ namespace icl::utils {
     // not call addChildConfigurable / removeChildConfigurable on *this*
     // synchronously (documented precondition on onChildSetChanged).
     for (size_t i = 0; i < m_childSetCallbacks.size(); ++i) {
-      m_childSetCallbacks[i]();
+      m_childSetCallbacks[i].second();
     }
   }
 
@@ -352,9 +352,12 @@ namespace icl::utils {
   try{
     if(callbacks.size()){
       const Property &p = prop_storage(propname);
-      std::vector<Callback>::const_iterator it;
-      for(it=callbacks.begin();it!=callbacks.end();++it){
-        (*it)(p);
+      // Iterate by index so a callback adding a new subscriber during
+      // fire sees it skipped this round (vector may reallocate).  A
+      // callback removing itself mid-fire is a documented precondition
+      // violation — see removeCallback().
+      for(size_t i = 0; i < callbacks.size(); ++i){
+        callbacks[i].second(p);
       }
     }
   }catch (ICLException &e){
@@ -366,10 +369,30 @@ namespace icl::utils {
   }
   }
 
-  void Configurable::removedCallback(const Callback &){
-    // std::function does not support equality comparison;
-    // this method was never functional (empty body) and is retained
-    // only for ABI compatibility.
+  Configurable::CallbackToken Configurable::registerCallback(Callback cb){
+    const CallbackToken tok = m_nextCallbackId++;
+    callbacks.emplace_back(tok, std::move(cb));
+    return tok;
+  }
+
+  void Configurable::removeCallback(CallbackToken token){
+    if(!token) return;
+    for(auto it = callbacks.begin(); it != callbacks.end(); ++it){
+      if(it->first == token){ callbacks.erase(it); return; }
+    }
+  }
+
+  Configurable::CallbackToken Configurable::onChildSetChanged(ChildSetCallback cb){
+    const CallbackToken tok = m_nextCallbackId++;
+    m_childSetCallbacks.emplace_back(tok, std::move(cb));
+    return tok;
+  }
+
+  void Configurable::removeChildSetCallback(CallbackToken token){
+    if(!token) return;
+    for(auto it = m_childSetCallbacks.begin(); it != m_childSetCallbacks.end(); ++it){
+      if(it->first == token){ m_childSetCallbacks.erase(it); return; }
+    }
   }
   AutoParse<std::any> Configurable::getPropertyValue(const std::string &propertyName) const{
     const Property &p = prop_storage(propertyName);

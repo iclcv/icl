@@ -261,6 +261,13 @@ namespace icl{
       // thread, at most once per event-loop tick.
       bool rebuildScheduled = false;
 
+      // Callback tokens for unregistering in the dtor.  The Configurable
+      // may outlive this widget (e.g. a GenericGrabber wired to a Prop
+      // that gets torn down when the GUI closes) — without unregistering,
+      // the captured `this` dangles and the next fire segfaults.
+      Configurable::CallbackToken propChangeToken = 0;
+      Configurable::CallbackToken childSetToken   = 0;
+
       struct StSt{
         std::string full,half;
         StSt(const std::string &full, const std::string &half):full(full),half(half){}
@@ -464,7 +471,7 @@ namespace icl{
         // updates in `pendingPropertyUpdates`; schedule at most one
         // GUI-thread flush at a time via QMetaObject::invokeMethod
         // with Qt::QueuedConnection.
-        conf->registerCallback([this](const Configurable::Property &p){
+        propChangeToken = conf->registerCallback([this](const Configurable::Property &p){
           enqueuePropertyUpdate(p.name);
         });
 
@@ -474,7 +481,16 @@ namespace icl{
         // the newly added / removed child's properties appear /
         // disappear live.  Coalesced to one rebuild per event-loop
         // tick.
-        conf->onChildSetChanged([this]{ enqueueRebuild(); });
+        childSetToken = conf->onChildSetChanged([this]{ enqueueRebuild(); });
+      }
+
+      ~ConfigurableGUIWidget() override {
+        // Unregister both callbacks so the Configurable (which may
+        // outlive this widget) won't fire into a dangling `this`.
+        if(conf){
+          conf->removeCallback(propChangeToken);
+          conf->removeChildSetCallback(childSetToken);
+        }
       }
 
       // Build the widget tree from conf's current property list.

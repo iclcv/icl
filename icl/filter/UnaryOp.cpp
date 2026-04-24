@@ -68,11 +68,11 @@ namespace icl::filter {
   UnaryOp::~UnaryOp(){
   }
 
-  void UnaryOp::registerCallback(const Callback &cb){
+  UnaryOp::CallbackToken UnaryOp::registerCallback(Callback cb){
     // Every UnaryOp-level registered callback implicitly serializes against
     // apply() via m_applyMutex. Matches the reader-side std::scoped_lock
     // that subclasses install at the top of apply().
-    Configurable::registerCallback([this, cb](const Property &p){
+    return Configurable::registerCallback([this, cb = std::move(cb)](const Property &p){
       std::scoped_lock lock(m_applyMutex);
       cb(p);
     });

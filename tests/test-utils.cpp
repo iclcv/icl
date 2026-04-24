@@ -4,6 +4,8 @@
 
 #include "harness/Test.h"
 #include <icl/utils/ConfigFile.h>
+#include <icl/utils/Configurable.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Random.h>
 #include <icl/utils/Range.h>
@@ -333,4 +335,87 @@ ICL_REGISTER_TEST("utils.configfile.restriction_in_memory",
   ConfigFile cfg2(p.str());
   ICL_TEST_EQ(cfg2.get<int>("threshold"), 128);
   ICL_TEST_TRUE(cfg2.getRestriction("threshold") == nullptr);
+}
+
+// --- Configurable: callback registration / removal ---
+
+namespace {
+  struct TestConf : public Configurable {
+    TestConf(){
+      addProperty("gain", prop::Range{.min=0, .max=100}, 0);
+    }
+    // Expose add/removeChild so the child-set tests can fire the channel.
+    using Configurable::addChildConfigurable;
+    using Configurable::removeChildConfigurable;
+  };
+}
+
+ICL_REGISTER_TEST("utils.configurable.registerCallback.fires", "callback fires on setPropertyValue")
+{
+  TestConf c;
+  int hits = 0;
+  c.registerCallback([&](const Configurable::Property &){ ++hits; });
+  c.setPropertyValue("gain", 42);
+  ICL_TEST_EQ(hits, 1);
+}
+
+ICL_REGISTER_TEST("utils.configurable.registerCallback.returns_distinct_tokens", "each registration yields a fresh non-zero token")
+{
+  TestConf c;
+  auto t1 = c.registerCallback([](const Configurable::Property &){});
+  auto t2 = c.registerCallback([](const Configurable::Property &){});
+  auto t3 = c.onChildSetChanged([]{});
+  ICL_TEST_TRUE(t1 != 0);
+  ICL_TEST_TRUE(t2 != 0);
+  ICL_TEST_TRUE(t3 != 0);
+  ICL_TEST_TRUE(t1 != t2);
+  ICL_TEST_TRUE(t2 != t3);
+}
+
+ICL_REGISTER_TEST("utils.configurable.removeCallback.unregisters", "removed callback no longer fires")
+{
+  TestConf c;
+  int a = 0, b = 0;
+  auto tokA = c.registerCallback([&](const Configurable::Property &){ ++a; });
+  c.registerCallback([&](const Configurable::Property &){ ++b; });
+
+  c.setPropertyValue("gain", 10);
+  ICL_TEST_EQ(a, 1);
+  ICL_TEST_EQ(b, 1);
+
+  c.removeCallback(tokA);
+  c.setPropertyValue("gain", 20);
+  ICL_TEST_EQ(a, 1);   // stayed — callback removed
+  ICL_TEST_EQ(b, 2);   // fired again
+}
+
+ICL_REGISTER_TEST("utils.configurable.removeCallback.zero_and_stale_are_noop", "remove(0) and remove(stale) don't throw")
+{
+  TestConf c;
+  c.removeCallback(0);                    // never registered
+  auto tok = c.registerCallback([](const Configurable::Property &){});
+  c.removeCallback(tok);
+  c.removeCallback(tok);                  // second remove with same token: no-op
+  c.removeCallback(Configurable::CallbackToken{99999});  // never-issued token
+  // If we got here without crashing, the test passes.
+  ICL_TEST_TRUE(true);
+}
+
+ICL_REGISTER_TEST("utils.configurable.onChildSetChanged.fires_and_removes", "child-set callback fires on add/remove and can be removed")
+{
+  TestConf parent;
+  TestConf child;
+  int fires = 0;
+  auto tok = parent.onChildSetChanged([&]{ ++fires; });
+
+  parent.addChildConfigurable(&child, "child");
+  ICL_TEST_EQ(fires, 1);
+
+  parent.removeChildConfigurable(&child);
+  ICL_TEST_EQ(fires, 2);
+
+  parent.removeChildSetCallback(tok);
+  parent.addChildConfigurable(&child, "child");
+  ICL_TEST_EQ(fires, 2);   // stayed — callback removed
+  parent.removeChildConfigurable(&child);
 }

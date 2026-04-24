@@ -11,6 +11,7 @@
 #include <icl/utils/prop/Adapter.h>
 
 #include <any>
+#include <cstdint>
 #include <functional>
 #include <typeindex>
 
@@ -500,13 +501,24 @@ namespace icl::utils {
     /// Function type for changed properties
     using Callback = std::function<void(const Property&)>;
 
-    /// add a callback for changed properties
-    void registerCallback(const Callback &cb){
-      callbacks.push_back(cb);
-    }
+    /// Opaque handle identifying a registered callback.
+    /** Returned by registerCallback / onChildSetChanged; pass back to the
+        matching remove* function to unregister.  Value 0 is reserved as
+        "invalid / never registered" so callers may default-init tokens and
+        treat remove(0) as a no-op. */
+    using CallbackToken = std::uint64_t;
 
-    /// removes a callback that was registered before
-    void removedCallback(const Callback &cb);
+    /// add a callback for changed properties
+    /** Returns a token that can be passed to removeCallback to unregister.
+        Holding the token is optional — a subscriber that lives for the
+        Configurable's entire lifetime may discard it. */
+    CallbackToken registerCallback(Callback cb);
+
+    /// unregister a callback previously registered via registerCallback
+    /** No-op if the token is 0 or was already removed.  Must not be called
+        synchronously from inside a firing callback (would invalidate the
+        fire-site iteration over this Configurable). */
+    void removeCallback(CallbackToken token);
 
     /// this can be used to let this instance also apply property changes to others
     /** Please take care to not create cyclic dependency graphs */
@@ -523,17 +535,24 @@ namespace icl::utils {
         its widget tree so codec swaps on ImageCompressor or backend swaps
         on GenericGrabber are visible live.  Callbacks should not synchronously
         call addChildConfigurable / removeChildConfigurable on the same
-        Configurable — the fire site is not re-entrancy-protected. */
-    void onChildSetChanged(const ChildSetCallback &cb){
-      m_childSetCallbacks.push_back(cb);
-    }
+        Configurable — the fire site is not re-entrancy-protected.
+        Returns a token that can be passed to removeChildSetCallback to
+        unregister. */
+    CallbackToken onChildSetChanged(ChildSetCallback cb);
+
+    /// unregister a callback previously registered via onChildSetChanged
+    /** Same semantics as removeCallback but on the child-set channel. */
+    void removeChildSetCallback(CallbackToken token);
 
     protected:
-    /// internally managed list of callbacks
-    std::vector<Callback> callbacks;
+    /// internally managed list of callbacks (token + function pair)
+    std::vector<std::pair<CallbackToken, Callback>> callbacks;
 
-    /// internally managed list of child-set observers
-    std::vector<ChildSetCallback> m_childSetCallbacks;
+    /// internally managed list of child-set observers (token + function pair)
+    std::vector<std::pair<CallbackToken, ChildSetCallback>> m_childSetCallbacks;
+
+    /// monotonic counter for both callback channels (token 0 reserved)
+    CallbackToken m_nextCallbackId = 1;
 
     /// calls all registered callbacks
     /**

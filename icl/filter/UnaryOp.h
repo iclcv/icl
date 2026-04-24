@@ -102,9 +102,9 @@ namespace icl::filter {
     /// callback-side lock; they still need to acquire `m_applyMutex` at the
     /// top of apply() to close the race (reader-side). Shadows the base's
     /// non-virtual registerCallback — call sites on a UnaryOp-or-derived
-    /// object resolve to this overload via static dispatch.
-    void registerCallback(const Callback &cb);
-    using utils::Configurable::registerCallback;
+    /// object resolve to this overload via static dispatch.  Returns a
+    /// token that can be passed to Configurable::removeCallback.
+    CallbackToken registerCallback(Callback cb);
 
     protected:
 

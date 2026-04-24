@@ -271,9 +271,9 @@ virtual void removeAllCallbacks();
 /// internal state from a property change (typically via
 /// processPropertyChange) rely on the base for the callback-side lock
 /// against the grab() reader path. Mirrors UnaryOp::registerCallback —
-/// see project_configurable_op_threadsafety.md for rationale.
-void registerCallback(const utils::Configurable::Callback &cb);
-using utils::Configurable::registerCallback;
+/// see project_configurable_op_threadsafety.md for rationale.  Returns
+/// a token that can be passed to Configurable::removeCallback.
+utils::Configurable::CallbackToken registerCallback(utils::Configurable::Callback cb);
 
 /// this function can be implemented by subclasses in order to notify, that a new image is available
 /** When this function is called, it will automatically call all callbacks with the given image. */

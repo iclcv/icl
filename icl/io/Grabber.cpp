@@ -271,11 +271,11 @@ namespace icl::io {
     data->callbacks.push_back(cb);
   }
 
-  void Grabber::registerCallback(const utils::Configurable::Callback &cb){
+  utils::Configurable::CallbackToken Grabber::registerCallback(utils::Configurable::Callback cb){
     // Every Grabber-level registered property callback implicitly serializes
     // against grab() via m_grabMutex. Matches the reader-side scoped_lock at
     // the top of Grabber::grab(). Mirror of UnaryOp::registerCallback.
-    Configurable::registerCallback([this, cb](const Property &p){
+    return Configurable::registerCallback([this, cb = std::move(cb)](const Property &p){
       std::scoped_lock lock(m_grabMutex);
       cb(p);
     });

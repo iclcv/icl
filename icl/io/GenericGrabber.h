@@ -37,8 +37,6 @@ namespace icl::io {
       GenericGrabber(const GenericGrabber&) = delete;
       GenericGrabber& operator=(const GenericGrabber&) = delete;
 
-      using utils::Configurable::registerCallback;
-
       /// Initialized the grabber from given prog-arg
       /** The progarg needs two sub-parameters */
       GenericGrabber(const utils::ProgArg &pa):m_poGrabber(0){
