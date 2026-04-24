@@ -27,6 +27,8 @@
 namespace icl::utils::yaml {
 
   class Document;
+  struct sequence;   // tag-type helper, defined below
+  struct mapping;    // tag-type helper, defined below
   namespace detail {
     ICLUtils_API void parseInto(std::string_view src, Document &doc);
   }
@@ -271,8 +273,10 @@ namespace icl::utils::yaml {
         !std::is_same_v<std::decay_t<T>, bool> &&
         !std::is_convertible_v<T, const char *>
     > {};
-    // std::vector<T> / std::map<K,V> / std::unordered_map<K,V> are
-    // covered by explicit overloads above — opt out here.
+    // Containers + tag types are covered by dedicated paths (operator=
+    // for the containers, operator Node() conversion for the tags) — opt
+    // out here so the generic `str(T)` template isn't instantiated for
+    // them (which would fail to compile).
     template<class T>              struct _is_generic_scalar_assignable<std::vector<T>>              : std::false_type {};
     template<class K, class V>     struct _is_generic_scalar_assignable<std::map<K, V>>             : std::false_type {};
     template<class K, class V>     struct _is_generic_scalar_assignable<std::unordered_map<K, V>>   : std::false_type {};
@@ -287,12 +291,16 @@ namespace icl::utils::yaml {
     //     Node n = 42;
     //     Node s = "hello";
     //     Node m = Size(640, 480);
-    // SFINAE-excluded for Node / ScalarData so the compiler-generated
-    // copy/move ctors stay in play.
+    // SFINAE-excluded for Node / ScalarData / tag-type forwards so the
+    // compiler-generated copy/move ctors stay in play, and the tag
+    // types reach Node through their own `operator Node()` conversions
+    // rather than a recursive converting-ctor-plus-operator= round-trip.
     template<class T,
              class = std::enable_if_t<
                !std::is_same_v<std::decay_t<T>, Node> &&
-               !std::is_same_v<std::decay_t<T>, ScalarData>
+               !std::is_same_v<std::decay_t<T>, ScalarData> &&
+               !std::is_same_v<std::decay_t<T>, ::icl::utils::yaml::sequence> &&
+               !std::is_same_v<std::decay_t<T>, ::icl::utils::yaml::mapping>
              >>
     Node(T &&t) : Node() { *this = std::forward<T>(t); }
 
@@ -371,6 +379,71 @@ namespace icl::utils::yaml {
     std::deque<std::string>       m_arena;
     Node                          m_root;
   };
+
+  // ---------------------------------------------------------------------
+  // Tag-type helpers — `yaml::sequence{...}` / `yaml::mapping{...}`
+  //
+  // Distinct types with distinct init-list signatures, so each is
+  // unambiguous at the call site.  Implicitly convertible to Node via
+  // the operator below, so:
+  //
+  //     Node n = yaml::sequence{1, 2, 3};
+  //     Node n = yaml::sequence{"a", "b", "c"};
+  //     Node n = yaml::mapping{{"k", 1}, {"j", "hi"}};
+  //     Node n = yaml::mapping{                        // heterogeneous
+  //       {"name",  "config"},
+  //       {"ports", yaml::sequence{80, 443, 8080}},
+  //       {"dbg",   true},
+  //     };
+  //
+  // These sidestep the C++ overload-resolution ambiguity that prevents
+  // a direct `Node(std::initializer_list<Node>)` ctor from coexisting
+  // with the mapping init-list ctor.  Both tag types *copy* their
+  // contents into an owned vector during construction, so passing
+  // temporaries (e.g. `yaml::mapping{{std::string("k"), 1}}`) is safe
+  // across any lifetime of the tag object.
+  // ---------------------------------------------------------------------
+
+  struct sequence {
+    std::vector<Node> items;
+    sequence(std::initializer_list<Node> il) : items(il.begin(), il.end()) {}
+    operator Node() const {
+      Node n;
+      n.setSequence();
+      auto &s = n.sequence();
+      s.reserve(items.size());
+      for(const auto &e : items) s.emplace_back(e);
+      return n;
+    }
+  };
+
+  struct mapping {
+    // Owned keys — we copy out of the init-list's `string_view` at ctor
+    // time so the tag type survives any lifetime, and the implicit
+    // conversion to Node intrns those owned strings into the Node's
+    // own Mapping arena.
+    std::vector<std::pair<std::string, Node>> items;
+    mapping(std::initializer_list<std::pair<std::string_view, Node>> il){
+      items.reserve(il.size());
+      for(const auto &kv : il) items.emplace_back(std::string(kv.first), kv.second);
+    }
+    operator Node() const {
+      Node n;
+      n.setMapping();
+      auto &m = n.mapping();
+      for(const auto &kv : items) m.emplaceOwned(kv.first, kv.second);
+      return n;
+    }
+  };
+
+  // Opt the tag types out of the generic `str(T)` assignment path —
+  // otherwise `Node n = yaml::sequence{...}` would pick the generic
+  // `operator=(const T&)` and try to stream-format the tag object,
+  // which has no operator<<.  The implicit `operator Node()` conversion
+  // in the tag types is the intended path; the copy-assign of the
+  // resulting Node value picks it up.
+  template<> struct Node::_is_generic_scalar_assignable<sequence> : std::false_type {};
+  template<> struct Node::_is_generic_scalar_assignable<mapping>  : std::false_type {};
 
   // ---------------------------------------------------------------------
   // Inline template methods
