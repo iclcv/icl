@@ -37,7 +37,15 @@ void init(){
                 << ui::ButtonGroup("alpha,beta,gamma",
                                    {.handle="radio"})
                 << ui::Combo("red,green,blue",
-                             {.initialIndex=1, .handle="color"}) ) )
+                             {.initialIndex=1, .handle="color"}) )
+
+           << ( HBox().label("display + misc")
+                << ui::Display({.handle="img",    .minSize={16,12}})
+                << ui::Disp(3, 2,                 {.handle="grid"})
+                << ui::Fps(                       {.timeWindow=30,
+                                                   .handle="fps"})
+                << ui::ColorSelect(255, 128, 0,   {.alpha=200,
+                                                   .handle="col"}) ) )
       << Show();
 
   gui.registerCallback([](const std::string &h){

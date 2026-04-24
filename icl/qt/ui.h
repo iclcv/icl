@@ -409,6 +409,269 @@ namespace icl::qt::ui {
     }
   };
 
+  // --- Phase 3 components -------------------------------------------------
+  //
+  // Display / canvas / introspection.  Same pattern as Phase 2.  Notable:
+  // `Prop` has two ctors to preserve the legacy Configurable* vs string-id
+  // dispatch (the pointer-encoding trick at GUIComponents.h:309).
+
+  /// Options for ui::Display.
+  struct DisplayOpts {
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Image visualization widget (ICLWidget).
+  struct Display {
+    DisplayOpts opts;
+    Display(DisplayOpts opts = {}) : opts(std::move(opts)) {}
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Display(), opts);
+    }
+  };
+
+  /// Options for ui::Canvas.
+  struct CanvasOpts {
+    utils::Size viewport = utils::Size::VGA;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// 2D drawing canvas (ICLDrawWidget).
+  struct Canvas {
+    CanvasOpts opts;
+    Canvas(CanvasOpts opts = {}) : opts(std::move(opts)) {}
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Canvas(opts.viewport), opts);
+    }
+  };
+
+  /// Options for ui::Canvas3D.
+  struct Canvas3DOpts {
+    utils::Size viewport = utils::Size::VGA;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// 3D-capable drawing canvas (ICLDrawWidget3D).
+  struct Canvas3D {
+    Canvas3DOpts opts;
+    Canvas3D(Canvas3DOpts opts = {}) : opts(std::move(opts)) {}
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Canvas3D(opts.viewport), opts);
+    }
+  };
+
+  /// Options for ui::Disp.
+  struct DispOpts {
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// 2D grid of labels (nx × ny cells).
+  struct Disp {
+    int      nx;
+    int      ny;
+    DispOpts opts;
+
+    Disp(int nx, int ny, DispOpts opts = {})
+      : nx(nx), ny(ny), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Disp(nx, ny), opts);
+    }
+  };
+
+  /// Options for ui::Plot.
+  /** The four range fields default to 0 — matches legacy `Plot()`'s
+      "derive range from data" behavior. */
+  struct PlotOpts {
+    float       minX = 0, maxX = 0;
+    float       minY = 0, maxY = 0;
+    bool        openGL = false;
+    std::string xLabel;
+    std::string yLabel;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// 2D function / data plotter.
+  /**
+      \code
+      gui << ui::Plot({.handle="p"});                       // auto-ranged
+      gui << ui::Plot({.minX=-3.14f, .maxX=3.14f,
+                       .minY=-1.f,   .maxY=1.f,
+                       .handle="p", .xLabel="rad"});
+      \endcode
+  */
+  struct Plot {
+    PlotOpts opts;
+    Plot(PlotOpts opts = {}) : opts(std::move(opts)) {}
+    GUIComponent toComponent() const {
+      return applyCommon(
+        qt::Plot(opts.minX, opts.maxX, opts.minY, opts.maxY,
+                 opts.openGL, opts.xLabel, opts.yLabel), opts);
+    }
+  };
+
+  /// Options for ui::Fps.
+  struct FpsOpts {
+    int         timeWindow = 10;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Running-average FPS monitor.
+  struct Fps {
+    FpsOpts opts;
+    Fps(FpsOpts opts = {}) : opts(std::move(opts)) {}
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Fps(opts.timeWindow), opts);
+    }
+  };
+
+  /// Options for ui::ColorSelect.
+  /** `alpha == -1` means "no alpha channel exposed" (matches legacy). */
+  struct ColorSelectOpts {
+    int         alpha = -1;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// RGB(+A) color picker.
+  struct ColorSelect {
+    int r, g, b;
+    ColorSelectOpts opts;
+
+    ColorSelect(int r, int g, int b, ColorSelectOpts opts = {})
+      : r(r), g(g), b(b), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(qt::ColorSelect(r, g, b, opts.alpha), opts);
+    }
+  };
+
+  /// Options for ui::CamCfg.
+  struct CamCfgOpts {
+    std::string deviceType;
+    std::string deviceID;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Camera-configuration dialog button.
+  struct CamCfg {
+    CamCfgOpts opts;
+    CamCfg(CamCfgOpts opts = {}) : opts(std::move(opts)) {}
+    GUIComponent toComponent() const {
+      return applyCommon(qt::CamCfg(opts.deviceType, opts.deviceID), opts);
+    }
+  };
+
+  /// Options for ui::Ps.
+  struct PsOpts {
+    int         updateFPS = 10;
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Process-monitor component (CPU / memory / thread count).
+  struct Ps {
+    PsOpts opts;
+    Ps(PsOpts opts = {}) : opts(std::move(opts)) {}
+    GUIComponent toComponent() const {
+      return applyCommon(qt::Ps(opts.updateFPS), opts);
+    }
+  };
+
+  /// Options for ui::Prop.
+  struct PropOpts {
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Configurable-property inspector.
+  /**
+      Two ctors mirror the legacy `Prop`: one takes a live
+      `Configurable*` (pointer survives via GUIComponents.h's
+      `encode_pointer` trick), the other takes a string ID for
+      Configurables previously registered with `Configurable::register`.
+
+      \code
+      MyConf conf;
+      gui << ui::Prop(&conf, {.handle="p"});
+      gui << ui::Prop("registered_id", {.handle="p"});
+      \endcode
+  */
+  struct Prop {
+    const utils::Configurable *cfg = nullptr;  // non-null → pointer ctor
+    std::string                cfgID;          // used when cfg == nullptr
+    PropOpts                   opts;
+
+    Prop(const utils::Configurable *cfg, PropOpts opts = {})
+      : cfg(cfg), opts(std::move(opts)) {}
+
+    Prop(const utils::Configurable &cfg, PropOpts opts = {})
+      : cfg(&cfg), opts(std::move(opts)) {}
+
+    Prop(std::string id, PropOpts opts = {})
+      : cfgID(std::move(id)), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(cfg ? qt::Prop(cfg) : qt::Prop(cfgID), opts);
+    }
+  };
+
 } // namespace icl::qt::ui
 
 namespace icl::qt {

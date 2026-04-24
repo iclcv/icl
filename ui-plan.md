@@ -181,14 +181,25 @@ the separate border label.  Disambiguation works cleanly.
 Demo `ui-syntax-demo` expanded to exercise all 12 components in a
 VBox-of-HBoxes layout.  871/871 green.
 
-### Phase 3 — Display / canvas / introspection
+### Phase 3 — Display / canvas / introspection — ✅ LANDED (session 59)
 
-Display, Canvas, Canvas3D, Disp, Plot, Fps, ColorSelect, Prop, CamCfg,
-Ps, State = 11 components.
+10 components landed (State was already covered in Phase 2):
 
-`Prop(Configurable*)` needs the pointer-encoding trick preserved.
-`ui::PropOpts` has no Configurable field — the target goes positional
-(`ui::Prop(&conf, {.handle="p"})` / `ui::Prop("conf_id", {.handle="p"})`).
+- **Display / canvases:** `Display`, `Canvas`, `Canvas3D`, `Disp`, `Plot`
+- **Monitors:** `Fps`, `Ps`
+- **Introspection:** `ColorSelect`, `CamCfg`, `Prop`
+
+`Prop` preserved the dual-ctor shape (live `Configurable*` / `&` vs
+string ID).  The legacy pointer-encoding trick in GUIComponents.h:309
+(`encode_pointer` → `"@pointer@:" + binary`) lives untouched inside
+`qt::Prop`; `ui::Prop` just forwards.
+
+`Plot` adopted the four-float (`.minX/.maxX/.minY/.maxY`) form rather
+than `Range32f` wrappers — flat designated-init is more readable, and
+the zero-default matches legacy's "derive range from data" behavior.
+
+Demo picked up a fourth HBox exercising `Display`, `Disp`, `Fps`,
+`ColorSelect`.  871/871 green.
 
 ### Phase 4 — Containers
 
@@ -237,7 +248,7 @@ fall away.
 
 - [x] Phase 1 — Slider spike
 - [x] Phase 2 — numeric + text + buttons (13 components)
-- [ ] Phase 3 — display + canvas + introspection (11 components)
+- [x] Phase 3 — display + canvas + introspection (11 components)
 - [ ] Phase 4 — containers + child-streaming (8 components)
 - [ ] Phase 5 — finalizers (3 components)
 - [ ] Phase 6 — docs + exemplar demo migration
