@@ -6,6 +6,7 @@ bench_sources = files(
   # bench-fixedmatrix.cpp is a standalone file with its own main()
   # (compiled ad-hoc per the comment at its top); excluded here so it
   # doesn't collide with icl-benchmarks.cpp's main.
+  'bench-xml.cpp',
   'bench-yaml.cpp',
 )
 
