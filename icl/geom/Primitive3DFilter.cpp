@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Lukas Twardon, Christof Elbrechter
 
 #include <icl/geom/Primitive3DFilter.h>
-#include <icl/utils/detail/pugi/PugiXML.h>
+#include <icl/utils/Xml.h>
 #include <icl/utils/StringUtils.h>
 
 namespace icl::geom {
@@ -255,27 +255,35 @@ namespace icl::geom {
 
       Primitive3DFilter::FilterConfig::FilterConfig(const std::string &filename) {
 
+          namespace xml = ::icl::utils::xml;
+
           // parse XML document
-          pugi::xml_document doc;
-          pugi::xml_parse_result result = doc.load_file(filename.c_str());
-          if(!result) throw utils::ParseException("Could not parse XML config.");
-          pugi::xml_node rootNode = doc.child("pointcloudfilter");
-          if(rootNode.empty()) throw utils::ParseException("No pointcloudfilter root node.");
+          xml::Document doc;
+          try {
+              doc = xml::Document::parseFile(filename);
+          } catch(const xml::ParseError &) {
+              throw utils::ParseException("Could not parse XML config.");
+          } catch(const utils::ICLException &) {
+              throw utils::ParseException("Could not parse XML config.");
+          }
+          xml::Element rootNode = doc.root();
+          if(rootNode.empty() || rootNode.name() != "pointcloudfilter")
+              throw utils::ParseException("No pointcloudfilter root node.");
 
           // parse primitivegroups
           unsigned char currentBit = 0;
-          for(pugi::xml_node primitivegroupNode = rootNode.child("primitivegroup"); primitivegroupNode; primitivegroupNode = primitivegroupNode.next_sibling("primitivegroup")) {
+          for(xml::Element primitivegroupNode = rootNode.child("primitivegroup"); primitivegroupNode; primitivegroupNode = primitivegroupNode.nextSibling("primitivegroup")) {
               if(currentBit >= 8) throw utils::ParseException("Too many (more than 8) primitive groups.");
-              pugi::xml_attribute idAttr = primitivegroupNode.attribute("id");
+              xml::Attribute idAttr = primitivegroupNode.attribute("id");
               if(idAttr.empty()) throw utils::ParseException("Primitivegroup has no id attribute.");
-              std::string id = idAttr.value();
-              pugi::xml_attribute regexAttr = primitivegroupNode.attribute("regex");
+              std::string id(idAttr.value());
+              xml::Attribute regexAttr = primitivegroupNode.attribute("regex");
               if(regexAttr.empty()) throw utils::ParseException("Primitivegroup has no regex attribute.");
-              std::string regex = regexAttr.value();
-              pugi::xml_attribute paddingAttr = primitivegroupNode.attribute("padding");
+              std::string regex(regexAttr.value());
+              xml::Attribute paddingAttr = primitivegroupNode.attribute("padding");
               float padding = 0.0;
               if(!paddingAttr.empty()) {
-                  padding = paddingAttr.as_float();
+                  padding = paddingAttr.asFloat();
               }
               mapGroupIdToBit[id] = currentBit;
               mapRegexToBit[regex] = currentBit;
@@ -283,25 +291,24 @@ namespace icl::geom {
               currentBit++;
           }
 
-          // parse unions
-          pugi::xpath_node_set actionNodes = doc.select_nodes("/pointcloudfilter/*[self::remove or self::setpos or self::color or self::label or self::intensity or self::filterdepthimg]");
-          for(pugi::xpath_node_set::const_iterator it = actionNodes.begin(); it != actionNodes.end(); ++it) {
-
-              pugi::xml_node actionNode = it->node();
+          // parse unions — single XPath matches the six action tags directly
+          xml::NodeSet actionNodes = doc.root().selectAll(
+              "/pointcloudfilter/*[self::remove or self::setpos or self::color or self::label or self::intensity or self::filterdepthimg]");
+          for(xml::Element actionNode : actionNodes) {
 
               std::vector<unsigned char> formula;
 
               // parse groups (one element intersections)
-              for(pugi::xml_node groupNode = actionNode.child("group"); groupNode; groupNode = groupNode.next_sibling("group")) {
+              for(xml::Element groupNode = actionNode.child("group"); groupNode; groupNode = groupNode.nextSibling("group")) {
                   unsigned char newIntersection = 1;
                   unsigned char inner;
                   unsigned char groupBit;
-                  pugi::xml_attribute partAttr = groupNode.attribute("part");
+                  xml::Attribute partAttr = groupNode.attribute("part");
                   if(partAttr.empty()) throw utils::ParseException("Group has no part attribute.");
-                  std::string part = partAttr.value();
-                  pugi::xml_attribute idAttr = groupNode.attribute("id");
+                  std::string part(partAttr.value());
+                  xml::Attribute idAttr = groupNode.attribute("id");
                   if(idAttr.empty()) throw utils::ParseException("Group has no id attribute.");
-                  std::string id = idAttr.value();
+                  std::string id(idAttr.value());
                   if(part == "inner")
                       inner = 1;
                   else if(part == "outer")
@@ -319,17 +326,17 @@ namespace icl::geom {
               }
 
               // parse intersections of groups
-              for(pugi::xml_node intersectionNode = actionNode.child("intersection"); intersectionNode; intersectionNode = intersectionNode.next_sibling("intersection")) {
+              for(xml::Element intersectionNode = actionNode.child("intersection"); intersectionNode; intersectionNode = intersectionNode.nextSibling("intersection")) {
                   unsigned char newIntersection = 1;
-                  for(pugi::xml_node groupNode = intersectionNode.child("group"); groupNode; groupNode = groupNode.next_sibling("group")) {
+                  for(xml::Element groupNode = intersectionNode.child("group"); groupNode; groupNode = groupNode.nextSibling("group")) {
                       unsigned char inner;
                       unsigned char groupBit;
-                      pugi::xml_attribute partAttr = groupNode.attribute("part");
+                      xml::Attribute partAttr = groupNode.attribute("part");
                       if(partAttr.empty()) throw utils::ParseException("Group has no part attribute.");
-                      std::string part = partAttr.value();
-                      pugi::xml_attribute idAttr = groupNode.attribute("id");
+                      std::string part(partAttr.value());
+                      xml::Attribute idAttr = groupNode.attribute("id");
                       if(idAttr.empty()) throw utils::ParseException("Group has no id attribute.");
-                      std::string id = idAttr.value();
+                      std::string id(idAttr.value());
                       if(part == "inner")
                           inner = true;
                       else if(part == "outer")
@@ -350,44 +357,44 @@ namespace icl::geom {
 
               // parse remove/setpos/color/label/intensity parameters
               if(formula.size() > 0) {
-                  std::string actionName = actionNode.name();
+                  std::string_view actionName = actionNode.name();
                   if(actionName == "remove") {
                       std::shared_ptr<RemoveAction> removeActionPtr(new RemoveAction(formula));
                       filterActions.push_back(removeActionPtr);
                   } else if(actionName == "setpos") {
-                      pugi::xml_attribute xAttr = actionNode.attribute("x");
+                      xml::Attribute xAttr = actionNode.attribute("x");
                       if(xAttr.empty()) throw utils::ParseException("Setpos has no x attribute.");
-                      pugi::xml_attribute yAttr = actionNode.attribute("y");
+                      xml::Attribute yAttr = actionNode.attribute("y");
                       if(yAttr.empty()) throw utils::ParseException("Setpos has no y attribute.");
-                      pugi::xml_attribute zAttr = actionNode.attribute("z");
+                      xml::Attribute zAttr = actionNode.attribute("z");
                       if(zAttr.empty()) throw utils::ParseException("Setpos has no z attribute.");
-                      std::shared_ptr<SetposAction> setposActionPtr(new SetposAction(formula, xAttr.as_float(), yAttr.as_float(), zAttr.as_float()));
+                      std::shared_ptr<SetposAction> setposActionPtr(new SetposAction(formula, xAttr.asFloat(), yAttr.asFloat(), zAttr.asFloat()));
                       filterActions.push_back(setposActionPtr);
                   } else if(actionName == "color") {
-                      pugi::xml_attribute rAttr = actionNode.attribute("r");
+                      xml::Attribute rAttr = actionNode.attribute("r");
                       if(rAttr.empty()) throw utils::ParseException("Color has no r attribute.");
-                      pugi::xml_attribute gAttr = actionNode.attribute("g");
+                      xml::Attribute gAttr = actionNode.attribute("g");
                       if(gAttr.empty()) throw utils::ParseException("Color has no g attribute.");
-                      pugi::xml_attribute bAttr = actionNode.attribute("b");
+                      xml::Attribute bAttr = actionNode.attribute("b");
                       if(bAttr.empty()) throw utils::ParseException("Color has no b attribute.");
-                      pugi::xml_attribute aAttr = actionNode.attribute("a");
+                      xml::Attribute aAttr = actionNode.attribute("a");
                       if(aAttr.empty()) throw utils::ParseException("Color has no a attribute.");
-                      std::shared_ptr<ColorAction> colorActionPtr(new ColorAction(formula, rAttr.as_float(), gAttr.as_float(), bAttr.as_float(), aAttr.as_float()));
+                      std::shared_ptr<ColorAction> colorActionPtr(new ColorAction(formula, rAttr.asFloat(), gAttr.asFloat(), bAttr.asFloat(), aAttr.asFloat()));
                       filterActions.push_back(colorActionPtr);
                   } else if(actionName == "label") {
-                      pugi::xml_attribute valueAttr = actionNode.attribute("value");
+                      xml::Attribute valueAttr = actionNode.attribute("value");
                       if(valueAttr.empty()) throw utils::ParseException("Label has no value attribute.");
-                      std::shared_ptr<LabelAction> labelActionPtr(new LabelAction(formula, valueAttr.as_int()));
+                      std::shared_ptr<LabelAction> labelActionPtr(new LabelAction(formula, valueAttr.asInt()));
                       filterActions.push_back(labelActionPtr);
                   } else if(actionName == "intensity") {
-                      pugi::xml_attribute valueAttr = actionNode.attribute("value");
+                      xml::Attribute valueAttr = actionNode.attribute("value");
                       if(valueAttr.empty()) throw utils::ParseException("Intensity has no value attribute.");
-                      std::shared_ptr<IntensityAction> intensityActionPtr(new IntensityAction(formula, valueAttr.as_float()));
+                      std::shared_ptr<IntensityAction> intensityActionPtr(new IntensityAction(formula, valueAttr.asFloat()));
                       filterActions.push_back(intensityActionPtr);
                   } else if(actionName == "filterdepthimg") {
-                      pugi::xml_attribute valueAttr = actionNode.attribute("value");
+                      xml::Attribute valueAttr = actionNode.attribute("value");
                       if(valueAttr.empty()) throw utils::ParseException("Filterdepthimg has no value attribute.");
-                      std::shared_ptr<FilterDepthImgAction> filterDepthImgActionPtr(new FilterDepthImgAction(formula, valueAttr.as_float()));
+                      std::shared_ptr<FilterDepthImgAction> filterDepthImgActionPtr(new FilterDepthImgAction(formula, valueAttr.asFloat()));
                       filterActions.push_back(filterDepthImgActionPtr);
                   }
               }

@@ -8,7 +8,7 @@
 #include <icl/utils/File.h>
 #include <icl/utils/Thread.h>
 #include <icl/core/Img.h>
-#include <icl/utils/detail/pugi/PugiXML.h>
+#include <icl/utils/Xml.h>
 #include <icl/io/FileList.h>
 #include <icl/filter/PseudoColorOp.h>
 #include <icl/filter/LocalThresholdOp.h>
@@ -160,13 +160,11 @@ namespace icl{
         if(!f.exists()){
           throw ICLException("missing calibration file:" + fn);
         }
-        pugi::xml_document doc;
-        doc.load_file(fn.c_str());
-        pugi::xpath_node xn = doc.select_single_node("/CaliData/Temperature/Optics/OpticsDef/FOV");
+        auto doc = utils::xml::Document::parseFile(fn);
+        auto fovEl = doc.root().selectOne("/CaliData/Temperature/Optics/OpticsDef/FOV");
         int fov = 72;
-
-        if(xn && xn.node() && xn.node().first_child()){
-          fov = parse<int>(xn.node().first_child().value());
+        if(fovEl){
+          fov = parse<int>(std::string(fovEl.text()));
         }else{
           throw ICLException("could not parse calibration file " + fn +
                              " missing entry /CaliData/Temperature/Optics/OpticsDef/FOV");
