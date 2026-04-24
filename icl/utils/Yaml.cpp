@@ -10,6 +10,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
 
 namespace icl::utils::yaml {
 
@@ -23,6 +24,44 @@ namespace icl::utils::yaml {
 
   TypeError::TypeError(const std::string &what)
     : ICLException("yaml::TypeError: " + what) {}
+
+  // ---------------------------------------------------------------------
+  // Node::Mapping — deep-copy with view rebinding
+  // ---------------------------------------------------------------------
+
+  Node::Mapping::Mapping(const Node::Mapping &other)
+    : ownedKeys(other.ownedKeys)
+  {
+    // Build: old_ownedKey_data_ptr → new_ownedKey_data_ptr.  Entries
+    // whose `first.data()` matches an old pointer are rebound to the
+    // corresponding new string; other entries (views into Document
+    // source) are kept as-is.  Source outlives all its Nodes, so those
+    // views remain valid across a copy.
+    std::unordered_map<const char *, const char *> remap;
+    remap.reserve(ownedKeys.size());
+    auto itA = other.ownedKeys.begin();
+    auto itB = ownedKeys.begin();
+    for(; itA != other.ownedKeys.end(); ++itA, ++itB){
+      remap.emplace(itA->data(), itB->data());
+    }
+
+    entries.reserve(other.entries.size());
+    for(const auto &kv : other.entries){
+      auto it = remap.find(kv.first.data());
+      if(it != remap.end()){
+        entries.emplace_back(std::string_view(it->second, kv.first.size()), kv.second);
+      } else {
+        entries.emplace_back(kv.first, kv.second);
+      }
+    }
+  }
+
+  Node::Mapping& Node::Mapping::operator=(const Node::Mapping &other){
+    if(this == &other) return *this;
+    Mapping tmp(other);
+    *this = std::move(tmp);
+    return *this;
+  }
 
   // ---------------------------------------------------------------------
   // Node
@@ -129,8 +168,9 @@ namespace icl::utils::yaml {
     auto *m = std::get_if<Mapping>(&m_value);
     if(!m) throw TypeError("operator[](key): node is not a mapping");
     for(auto &kv : *m) if(kv.first == key) return kv.second;
-    m->emplace_back(key, Node{});
-    return m->back().second;
+    // Caller's `key` sv lifetime is unknown — always intern for safety.
+    m->emplaceOwned(std::string(key), Node{});
+    return m->entries.back().second;
   }
 
   const Node::Mapping& Node::mapping() const {
@@ -176,6 +216,25 @@ namespace icl::utils::yaml {
   Node& Node::operator=(std::string &&s){       setOwnedScalar(std::move(s));    return *this; }
   Node& Node::operator=(std::string_view sv){   setOwnedScalar(std::string(sv)); return *this; }
   Node& Node::operator=(bool b){                setOwnedScalar(b ? "true" : "false"); return *this; }
+
+  // Initializer-list assignment (Level 1).
+  Node& Node::operator=(std::initializer_list<Node> seq){
+    setSequence();
+    auto &s = sequence();
+    s.reserve(seq.size());
+    // init_list elements are const Node&, so copy.
+    for(const auto &e : seq) s.emplace_back(e);
+    return *this;
+  }
+
+  Node& Node::operator=(std::initializer_list<std::pair<std::string_view, Node>> map){
+    setMapping();
+    auto &m = mapping();
+    for(const auto &kv : map){
+      m.emplaceOwned(std::string(kv.first), kv.second);
+    }
+    return *this;
+  }
 
   // ---------------------------------------------------------------------
   // Document

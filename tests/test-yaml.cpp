@@ -9,10 +9,13 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <unordered_map>
+#include <vector>
 
 using namespace icl::utils;
 using namespace icl::utils::yaml;
@@ -880,6 +883,215 @@ ICL_REGISTER_TEST("utils.yaml.assign.setOwnedScalar_explicit",
   ICL_TEST_TRUE(n.scalarStyle() == ScalarStyle::DoubleQuoted);
   // Quoted forces String kind
   ICL_TEST_TRUE(n.scalarKind() == ScalarKind::String);
+}
+
+// ---------------------------------------------------------------------------
+// Level 1 — initializer-list assignment + converting ctor
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.assign.initlist_sequence_ints",
+                  "node = {1, 2, 3}")
+{
+  Node n;
+  n = {1, 2, 3};
+  ICL_TEST_TRUE(n.isSequence());
+  ICL_TEST_EQ(n.size(), size_t(3));
+  ICL_TEST_EQ(n[size_t(0)].as<int>(), 1);
+  ICL_TEST_EQ(n[size_t(2)].as<int>(), 3);
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.initlist_sequence_strings",
+                  "node = {\"a\", \"b\", \"c\"}")
+{
+  Node n;
+  n = {"a", "b", "c"};
+  ICL_TEST_TRUE(n.isSequence());
+  ICL_TEST_EQ(std::string(n[size_t(1)].scalarView()), std::string("b"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.initlist_mapping",
+                  "node = {{\"k\", 1}, {\"j\", \"hi\"}}")
+{
+  Node n;
+  n = {{"k", 1}, {"j", std::string("hi")}};
+  ICL_TEST_TRUE(n.isMapping());
+  ICL_TEST_EQ(n.size(), size_t(2));
+  ICL_TEST_EQ(n["k"].as<int>(), 1);
+  ICL_TEST_EQ(std::string(n["j"].scalarView()), std::string("hi"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.initlist_mapping_preserves_order",
+                  "init-list mapping preserves user's declaration order")
+{
+  Node n;
+  n = {{"z", 1}, {"a", 2}, {"m", 3}};
+  const auto &map = n.mapping();
+  ICL_TEST_EQ(std::string(map[0].first), std::string("z"));
+  ICL_TEST_EQ(std::string(map[1].first), std::string("a"));
+  ICL_TEST_EQ(std::string(map[2].first), std::string("m"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.initlist_owns_keys",
+                  "init-list mapping keys are owned, not view-dependent")
+{
+  auto make = []{
+    Node n;
+    // Use non-literal keys to prove interning — the std::string source
+    // dies at return, but the Mapping's ownedKeys spill preserves them.
+    std::string k1 = "dyn_key_one";
+    std::string k2 = "dyn_key_two";
+    n = {{k1, 1}, {k2, 2}};
+    return n;
+  };
+  Node n = make();
+  ICL_TEST_EQ(n["dyn_key_one"].as<int>(), 1);
+  ICL_TEST_EQ(n["dyn_key_two"].as<int>(), 2);
+}
+
+ICL_REGISTER_TEST("utils.yaml.ctor.converting",
+                  "Node n = 42; Node s = \"foo\"; Node z = Size(1,2)")
+{
+  Node a = 42;
+  Node b = "foo";
+  Node c = Size(1, 2);
+  ICL_TEST_EQ(a.as<int>(), 42);
+  ICL_TEST_EQ(std::string(b.scalarView()), std::string("foo"));
+  ICL_TEST_EQ(c.as<Size>(), Size(1, 2));
+}
+
+// ---------------------------------------------------------------------------
+// Level 2 — container assignment
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.assign.vector_int", "node = std::vector<int>")
+{
+  std::vector<int> v = {10, 20, 30};
+  Node n;
+  n = v;
+  ICL_TEST_TRUE(n.isSequence());
+  ICL_TEST_EQ(n.size(), size_t(3));
+  ICL_TEST_EQ(n[size_t(1)].as<int>(), 20);
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.vector_string", "node = std::vector<std::string>")
+{
+  std::vector<std::string> v = {"alpha", "beta"};
+  Node n;
+  n = v;
+  v.clear();  // source vector dies — Node must have copied
+  ICL_TEST_EQ(std::string(n[size_t(0)].scalarView()), std::string("alpha"));
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.map_string_int", "node = std::map<string, int>")
+{
+  std::map<std::string, int> m = {{"a", 1}, {"b", 2}, {"c", 3}};
+  Node n;
+  n = m;
+  m.clear();  // source map dies — keys must be interned in Node
+  ICL_TEST_TRUE(n.isMapping());
+  ICL_TEST_EQ(n.size(), size_t(3));
+  ICL_TEST_EQ(n["a"].as<int>(), 1);
+  ICL_TEST_EQ(n["c"].as<int>(), 3);
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.unordered_map", "node = std::unordered_map")
+{
+  std::unordered_map<std::string, double> m = {{"pi", 3.14}, {"e", 2.71}};
+  Node n;
+  n = m;
+  ICL_TEST_TRUE(n.isMapping());
+  ICL_TEST_EQ(n.size(), size_t(2));
+  ICL_TEST_NEAR(n["pi"].as<double>(), 3.14, 1e-9);
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.nested_container",
+                  "mapping with vector and map values")
+{
+  std::map<std::string, std::vector<int>> data = {
+    {"primes", {2, 3, 5, 7}},
+    {"evens",  {2, 4, 6, 8}},
+  };
+  Node n;
+  n = data;
+  ICL_TEST_EQ(n["primes"].size(), size_t(4));
+  ICL_TEST_EQ(n["primes"][size_t(2)].as<int>(), 5);
+  ICL_TEST_EQ(n["evens"][size_t(3)].as<int>(), 8);
+}
+
+ICL_REGISTER_TEST("utils.yaml.assign.nested_initlist",
+                  "mapping with nested sequence via init-list")
+{
+  Node n;
+  n = {
+    {"name",  "config"},
+    {"ports", std::vector<int>{80, 443, 8080}},
+    {"dbg",   true},
+  };
+  ICL_TEST_EQ(std::string(n["name"].scalarView()), std::string("config"));
+  ICL_TEST_EQ(n["ports"].size(), size_t(3));
+  ICL_TEST_EQ(n["ports"][size_t(2)].as<int>(), 8080);
+  ICL_TEST_TRUE(n["dbg"].asStrict<bool>());
+}
+
+// ---------------------------------------------------------------------------
+// Mapping copy — source-views + owned-keys rebind
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.mapping.copy_preserves_owned_keys",
+                  "deep-copying a Mapping re-binds owned-key views")
+{
+  Node src;
+  src["a"] = 1;
+  src["b"] = 2;
+  // Force a copy via Node copy-ctor, then outlive the original.
+  Node copy = src;
+  // Mutate the original to prove independence.
+  src["a"] = 999;
+  ICL_TEST_EQ(copy["a"].as<int>(), 1);
+  ICL_TEST_EQ(copy["b"].as<int>(), 2);
+}
+
+ICL_REGISTER_TEST("utils.yaml.mapping.copy_preserves_source_views",
+                  "parsed Mapping copied: source views still valid")
+{
+  const std::string src_text = "a: 1\nb: 2\n";
+  Document d = Document::own(std::string(src_text));
+  // Copy the root mapping.
+  Node copy = d.root();
+  // Document still alive → source views in `copy` still valid.
+  ICL_TEST_EQ(copy["a"].as<int>(), 1);
+  ICL_TEST_EQ(copy["b"].as<int>(), 2);
+}
+
+ICL_REGISTER_TEST("utils.yaml.mapping.copy_mixed",
+                  "Mapping with both source-viewed and owned keys copies cleanly")
+{
+  Document d = Document::own(std::string("a: 1\n"));
+  // `a` is a source-view key.  Add an owned key programmatically.
+  d.root()["b"] = 2;
+  Node copy = d.root();
+  ICL_TEST_EQ(copy["a"].as<int>(), 1);
+  ICL_TEST_EQ(copy["b"].as<int>(), 2);
+}
+
+// ---------------------------------------------------------------------------
+// Round-trip through emit — every assignment path round-trips via YAML text
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("utils.yaml.assign.container_roundtrip",
+                  "container-built tree emits + reparses identically")
+{
+  std::map<std::string, int> m = {{"x", 1}, {"y", 2}};
+  Node n;
+  n = m;
+  const std::string yaml_text = [&]{
+    Document d = Document::empty();
+    d.root() = std::move(n);
+    return d.emit();
+  }();
+  Document d2 = Document::own(std::string(yaml_text));
+  ICL_TEST_EQ(d2.root()["x"].as<int>(), 1);
+  ICL_TEST_EQ(d2.root()["y"].as<int>(), 2);
 }
 
 // ---------------------------------------------------------------------------

@@ -12,11 +12,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <initializer_list>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -110,7 +113,46 @@ namespace icl::utils::yaml {
       std::string owned;
     };
     using Sequence = std::vector<Node>;
-    using Mapping  = std::vector<std::pair<std::string_view, Node>>;
+
+    /// Ordered key/value map with a side-arena for keys whose storage
+    /// lifetime must be managed by the Node itself (programmatic inserts,
+    /// container assignments).  Parser-emitted entries keep their keys
+    /// as views into the Document source — zero copies.
+    struct Mapping {
+      // `first` may view either into the Document's source buffer OR
+      // into one of `ownedKeys`'s stable-address strings, depending on
+      // how the entry was inserted.
+      std::vector<std::pair<std::string_view, Node>> entries;
+      std::deque<std::string>                         ownedKeys;
+
+      Mapping() = default;
+      Mapping(Mapping &&) noexcept = default;
+      Mapping& operator=(Mapping &&) noexcept = default;
+      Mapping(const Mapping &other);           // rebinds owned-key views
+      Mapping& operator=(const Mapping &other);
+
+      // Parser / trusted-lifetime path — caller guarantees `key` outlives
+      // this Mapping (typically a view into the Document source).
+      void emplace_back(std::string_view key, Node value){
+        entries.emplace_back(key, std::move(value));
+      }
+      // Programmatic path — key bytes are copied into `ownedKeys` and the
+      // entry's view points at the stable-address copy.
+      void emplaceOwned(std::string key, Node value){
+        ownedKeys.emplace_back(std::move(key));
+        entries.emplace_back(std::string_view(ownedKeys.back()), std::move(value));
+      }
+
+      // Iteration + size + indexing, forwarded to `entries`.
+      auto        begin()        noexcept { return entries.begin(); }
+      auto        end()          noexcept { return entries.end();   }
+      auto        begin()  const noexcept { return entries.begin(); }
+      auto        end()    const noexcept { return entries.end();   }
+      std::size_t size()   const noexcept { return entries.size(); }
+      bool        empty()  const noexcept { return entries.empty(); }
+      auto&       operator[](std::size_t i)       noexcept { return entries[i]; }
+      const auto& operator[](std::size_t i) const noexcept { return entries[i]; }
+    };
 
     Node() = default;                            // Null
     explicit Node(ScalarData s) : m_value(std::move(s)) {}
@@ -186,19 +228,58 @@ namespace icl::utils::yaml {
     Node& operator=(std::string_view sv);   // copies into owned — safe
     Node& operator=(bool b);
 
+    // --- initializer-list assignment (Level 1) ---
+    //
+    // Sequence: `node = {1, 2, "three"}` — each element must be
+    // constructible-as-Node (uses the converting ctor below).
+    Node& operator=(std::initializer_list<Node> seq);
+    // Mapping: `node = {{"k", 1}, {"j", "hi"}}` — keys are interned via
+    // Mapping::emplaceOwned so lifetime is self-contained.
+    Node& operator=(std::initializer_list<std::pair<std::string_view, Node>> map);
+
+    // --- container assignment (Level 2) ---
+    template<class T> Node& operator=(const std::vector<T> &v);
+    template<class K, class V> Node& operator=(const std::map<K, V> &m);
+    template<class K, class V> Node& operator=(const std::unordered_map<K, V> &m);
+
     // Generic catch-all for any T with a `utils::str(T)` specialization
-    // (arithmetic types, ICL geometry types, vectors, ...).  SFINAE-
-    // excluded for types already handled by the explicit overloads and
-    // for Node itself.
+    // (arithmetic types, ICL geometry types, ...).  SFINAE-excluded for
+    // types handled by the explicit overloads and for Node itself, so
+    // `node = std::vector<int>{1,2,3}` picks the sequence overload
+    // rather than stringifying via CSV.
+    template<class T>
+    struct _is_generic_scalar_assignable : std::bool_constant<
+        !std::is_same_v<std::decay_t<T>, Node> &&
+        !std::is_same_v<std::decay_t<T>, std::string> &&
+        !std::is_same_v<std::decay_t<T>, std::string_view> &&
+        !std::is_same_v<std::decay_t<T>, bool> &&
+        !std::is_convertible_v<T, const char *>
+    > {};
+    // std::vector<T> / std::map<K,V> / std::unordered_map<K,V> are
+    // covered by explicit overloads above — opt out here.
+    template<class T>              struct _is_generic_scalar_assignable<std::vector<T>>              : std::false_type {};
+    template<class K, class V>     struct _is_generic_scalar_assignable<std::map<K, V>>             : std::false_type {};
+    template<class K, class V>     struct _is_generic_scalar_assignable<std::unordered_map<K, V>>   : std::false_type {};
+
+    template<class T,
+             class = std::enable_if_t<_is_generic_scalar_assignable<std::decay_t<T>>::value>>
+    Node& operator=(const T &t);
+
+    // --- converting ctor ---
+    //
+    // Any T that operator= accepts also constructs a Node, so
+    //     Node n = 42;
+    //     Node s = "hello";
+    //     Node m = Size(640, 480);
+    // and initializer-list element conversions all work.  SFINAE-excluded
+    // for Node / ScalarData so the compiler-generated copy/move ctors
+    // stay in play.
     template<class T,
              class = std::enable_if_t<
                !std::is_same_v<std::decay_t<T>, Node> &&
-               !std::is_same_v<std::decay_t<T>, std::string> &&
-               !std::is_same_v<std::decay_t<T>, std::string_view> &&
-               !std::is_same_v<std::decay_t<T>, bool> &&
-               !std::is_convertible_v<T, const char *>
+               !std::is_same_v<std::decay_t<T>, ScalarData>
              >>
-    Node& operator=(const T &t);
+    Node(T &&t) : Node() { *this = std::forward<T>(t); }
 
     // --- internals ---
     const auto& value() const noexcept { return m_value; }
@@ -303,6 +384,35 @@ namespace icl::utils::yaml {
   template<class T, class E>
   Node& Node::operator=(const T &t){
     setOwnedScalar(::icl::utils::str(t));
+    return *this;
+  }
+
+  template<class T>
+  Node& Node::operator=(const std::vector<T> &v){
+    setSequence();
+    auto &seq = sequence();
+    seq.reserve(v.size());
+    for(const auto &e : v) seq.emplace_back(Node(e));
+    return *this;
+  }
+
+  template<class K, class V>
+  Node& Node::operator=(const std::map<K, V> &m){
+    setMapping();
+    auto &map = mapping();
+    for(const auto &kv : m){
+      map.emplaceOwned(::icl::utils::str(kv.first), Node(kv.second));
+    }
+    return *this;
+  }
+
+  template<class K, class V>
+  Node& Node::operator=(const std::unordered_map<K, V> &m){
+    setMapping();
+    auto &map = mapping();
+    for(const auto &kv : m){
+      map.emplaceOwned(::icl::utils::str(kv.first), Node(kv.second));
+    }
     return *this;
   }
 
