@@ -296,7 +296,10 @@ From Session 48 deferrals:
 
 ## Configuration format
 
-- [ ] **Replace XML with YAML for `ConfigFile`.**  Current implementation (`icl/utils/ConfigFile.{h,cpp}` + `icl/utils/detail/pugi/`) serializes property trees as XML via a bundled pugixml.  YAML reads better for humans, nests naturally for ICL's dotted-key layout, and would let us drop pugi from the dependency surface entirely.  Pick a YAML lib (yaml-cpp is the obvious candidate; consider rapidyaml for zero-alloc reads), keep the ConfigFile public API stable (load/save/register_type still string-backed), migrate on-disk format.  Open questions: migration path for existing `.xml` configs (auto-detect + one-way convert? separate tool?), behavior for mixed-format trees during transition.  See `project_yaml_config.md` once drafted.
+- [x] **Replace XML with YAML for `ConfigFile`.**  Session 56: landed in two phases.
+  - Phase 1 — in-house `icl::utils::yaml` parser / emitter under `icl/utils/Yaml.{h,cpp}` + `icl/utils/detail/yaml/`.  Zero-copy for parse (views into source buffer), arena-backed `Mapping` for programmatic insertion.  Benchmarks beat yaml-cpp by 20-40× and tie rapidyaml on config-shaped inputs.  112 tests + 117 corpus cases from yaml-test-suite / JSONTestSuite.  See `project_yaml_config.md` for subset details.
+  - Phase 2 — `ConfigFile` migrated to YAML backend.  Wire format switched to nested YAML (typeless, caller's `get<T>` is authoritative), `register_type` / `Maps` / RTTI machinery deleted (408-line net deletion).  Restrictions demoted to in-memory-only.  824/824 tests green.
+- [ ] **Phase 3 — pugi retirement.**  Two non-ConfigFile consumers of `icl/utils/detail/pugi/` remain: `icl/geom/Primitive3DFilter.cpp` (ICL-authored pointcloud-filter XML — migrate to YAML) and `icl/io/detail/grabbers/OptrisGrabber.cpp` (external Optris calibration XML — probably keep pugi vendored local to it OR write a ~50-line tag-soup parser).  Once both are off, delete `icl/utils/detail/pugi/` entirely.  See `project_yaml_config.md`.
 
 ---
 

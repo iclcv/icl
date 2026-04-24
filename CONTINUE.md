@@ -2,6 +2,145 @@
 
 ## Next Step
 
+Session 56 delivered the full YAML arc — two of the three phases from
+`project_yaml_config.md` landed in one session.  Highlights:
+
+- **In-house `icl::utils::yaml` parser + emitter** (Phase 1).  Zero-copy
+  scalar views into the source buffer, arena-backed `Mapping` keys for
+  programmatic insertion, explicit `yaml::seq{}` / `yaml::map{}` tag-type
+  helpers for ctor-level init-lists, `AutoParse<std::string_view>` as a
+  third backend specialization.  Subset is YAML 1.2-minus (no anchors /
+  aliases / multi-doc / multi-line plain scalars).  112 handwritten tests
+  + 117 external corpus cases (yaml-test-suite + JSONTestSuite).
+  Benchmarks record **~20× faster than yaml-cpp and tied with rapidyaml**
+  on typical config-shaped input — numbers pinned in `icl/utils/Yaml.h`.
+- **`ConfigFile` migrated from pugixml to YAML** (Phase 2).  Per user
+  directive "no backwards compat": wire format switched to nested YAML,
+  typeless on wire, the entire RTTI-based `register_type` / `Maps` /
+  `check_type` machinery deleted (as well as the matching
+  `StaticConfigFileTypeRegistering` in `icl/math/FixedMatrix.cpp`).
+  Restrictions demoted to in-memory-only.  Header shrank from 568 → 243
+  lines; `.cpp` from 424 → 206.  10 new `utils.configfile.*` tests.
+- **Full suite**: 824/824 green post-migration (up from 760 pre-session).
+  All 20 ConfigFile callers across icl/ compile and pass unchanged.
+
+Concrete work items remaining (in suggested order):
+
+- **Phase 3 — pugi retirement.**  Two non-ConfigFile pugi consumers left:
+  `icl/geom/Primitive3DFilter.cpp` (ICL-authored pointcloud-filter XML,
+  migrate to YAML) and `icl/io/detail/grabbers/OptrisGrabber.cpp` (external
+  Optris calibration XML — probably keep pugi local to it OR write a tiny
+  tag-soup parser for its ~4-attribute schema).  Once both are off,
+  `icl/utils/detail/pugi/` can be deleted entirely.
+
+- **`removeChildSetCallback` API** (carried from Session 55).  Subscribers
+  can't unregister today; same shape as the long-standing `removedCallback`
+  gap on the property-change channel.  ID-based registration or token
+  pattern.
+
+- **Compression-codec capability flags** (carried from Session 55).
+  `1611` throws on RGB input; proper fix is a capability matrix on
+  `CompressionPlugin`.
+
+- **ICLWidget OSD scale-range button misbehaves** (2026-04-21 report).
+
+- **Designated-init GUI component syntax** — `gui << Slider{.min=0,
+  .max=255}`.  Pairs with retiring `GUIComponent::toString()`.
+
+- **Fun: icl-edit image editor demo.**  Needs new filter Ops
+  (`BrillianceOp`, `VibranceOp`, `ClarityOp`, `CurvesOp`).  Good exercise
+  of push-callback refresh + filter chaining + now-YAML ConfigFile round-trip.
+
+---
+
+## Current State (Session 56 — YAML library + ConfigFile migration)
+
+### Session 56 Summary
+
+13 commits.  Single arc: the in-house YAML library and its immediate
+consumer (ConfigFile).  Milestone-heavy: the entire pugixml dependency
+surface for ConfigFile is gone.
+
+#### Phase 1 — YAML library
+
+- `2ffb43439` **utils: `AutoParse<std::string_view>` backend + `from_chars`
+  `parse<T>(sv)` fast paths.**  Third specialization alongside the
+  string / any backends.  Trim-and-from_chars for integral family; no
+  allocation.  Base-10 defers to from_chars native signed handling so
+  edge values like INT_MIN still parse.  14 new autoparse tests.
+- `1aea0ec36` **utils: slim YAML parser — `icl::utils::yaml`, Phase 1.**
+  Single-pass recursive-descent, indentation-aware, scalar views into
+  source.  Node = `variant<monostate, ScalarData, Sequence, Mapping>`;
+  `Document::view(sv)` / `::own(string)` / `::file(path)` / `::empty()`.
+  `AutoParse<string_view>` drives `Node::as<T>()`.  Strict-mode kind
+  matrix.  `detail::yaml/Yaml{Parser,Emitter,Scalar}.{h,cpp}` private.
+  Corpus harness loads 22 curated yaml-test-suite cases + 95 JSON y_*.json
+  files at runtime via `-DICL_TEST_DATA_DIR`.  SSO lifetime hazard found
+  and fixed during corpus work — `Document::m_source` is a
+  `unique_ptr<std::string>` so moves don't relocate parsed view bytes.
+- `6432e6705` **utils: YAML subset expansion — chomping, tags, hex/oct,
+  sortKeys, same-indent seqs.**  Six A-features in one commit: `|-` /
+  `|+` / `>-` / `>+` chomping indicators, `0x1F` / `0o17` parse paths
+  via from_chars with base, `.inf` / `-.inf` / `.nan` in float parse,
+  `EmitOptions::sortKeys` actually honored, same-indent block sequences
+  as mapping values (`key:\n- a\n- b`), and explicit `!!str` / `!!int` /
+  `!!bool` / `!!float` / `!!null` tag prefixes with emitter round-trip.
+- `bc5c96393` **utils: `Node::operator=` for scalar-ish types — crisper
+  programmatic building.**  `ScalarData` gains optional `owned` string
+  for self-contained scalars.  Overloads for const char*, string,
+  string_view (copies), bool, plus a SFINAE template via `str(T)` for
+  arithmetic / ICL geometry types.  `scalarView()` / emitter /
+  kind-resolver all use `effectiveView(sd)` so move-safety is preserved.
+- `e8c040985` **utils: init-list + container assignment; `Mapping` gets
+  a spill arena.**  `Mapping` is no longer a bare `vector<pair<sv,
+  Node>>` — it's a struct with `entries` + `ownedKeys` deque spill for
+  programmatic keys.  Parser keeps zero-copy `emplace_back(sv, Node)`;
+  `operator[]`, `operator=(initializer_list<...>)`, container assigns use
+  `emplaceOwned(string, Node)`.  Custom copy-ctor rebinds owned-key
+  views via an old→new data-ptr remap.  Operator= adds init-list
+  sequence, init-list mapping, `vector<T>`, `map<K,V>`, `unordered_map<K,V>`.
+- `b59335891` **utils: crisp int indexing + mapping init-list ctor.**
+  Template `operator[](I)` over integrals so `n[2]` works without
+  `size_t(...)`.  Ctor-level `Node n = {{"k", 1}, {"j", 2}}` mapping
+  init-list works; sequence init-list ctor deliberately not added
+  (would be ambiguous).
+- `fb8bb1d2b` **tests: drop `size_t(N)` casts in YAML indexing.**
+  17-site mechanical cleanup now that `n[int]` works.
+- `b93ed7611` / `dc31ba2df` **`yaml::sequence` / `yaml::mapping` tag-type
+  helpers → renamed `yaml::seq` / `yaml::map`.**  Sidesteps the ctor
+  init-list ambiguity for sequences via distinct type signature +
+  implicit `operator Node()` conversion.  Both tags copy contents into
+  owned storage so temporaries are safe.  Required two SFINAE touch-ups
+  (converting-ctor and generic-scalar-assign exclusion) to route calls
+  through the implicit conversion rather than recursive operator=.
+- `78d8c371b` / `73a25bbd9` **benchmarks + pin numbers in Yaml.h.**
+  Five `utils.yaml.*` benchmarks covering parse_small / parse_large /
+  emit / build / traverse.  Initial run included yaml-cpp and rapidyaml
+  competitors (via probe-and-conditional meson); measured numbers
+  recorded in the `\file` doc block at the top of `Yaml.h`, competitor
+  deps removed from the build surface to keep the benchmark
+  dependency-free.  Results: **~20× faster than yaml-cpp, tied with
+  rapidyaml** on typical inputs.
+
+#### Phase 2 — ConfigFile migration
+
+- `80ae880ac` **utils: ConfigFile migrated from pugixml to
+  `icl::utils::yaml`.**  Aggressive cleanup per user directive: `type=`
+  / `range=` / `values=` wire attributes gone, entire RTTI /
+  register_type machinery deleted, `Impl` PIMPL removed (yaml is our own
+  type so no hiding needed), restrictions demoted to in-memory-only.
+  Deleted `StaticConfigFileTypeRegistering` from `FixedMatrix.cpp` as
+  dead code.  `m_entries` stays as canonical flat store;
+  `yaml::Document` is only an IO transient at `load`/`save`.  Dotted-
+  path keys map to nested YAML.  Header shrank 568 → 243, source 424 →
+  206.  +10 new `utils.configfile.*` tests covering basic I/O,
+  registered types, file round-trip, nested-YAML emission, prefix
+  semantics, Data-proxy usage, in-memory restriction handling.
+
+---
+
+## Session 55 recap (dynamic child-configurable arc)
+
 Session 55 closed the dynamic child-configurable arc and swept the
 residual polish items from Session 54's "Next Step" list.  Highlights:
 
