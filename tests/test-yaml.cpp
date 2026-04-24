@@ -516,8 +516,8 @@ ICL_REGISTER_TEST("utils.yaml.parse.block_sequence_of_scalars", "`- a\\n- b\\n- 
   Document d = Document::view("- a\n- b\n- c\n");
   ICL_TEST_TRUE(d.root().isSequence());
   ICL_TEST_EQ(d.root().size(), size_t(3));
-  ICL_TEST_EQ(std::string(d.root()[size_t(0)].scalarView()), std::string("a"));
-  ICL_TEST_EQ(std::string(d.root()[size_t(2)].scalarView()), std::string("c"));
+  ICL_TEST_EQ(std::string(d.root()[0].scalarView()), std::string("a"));
+  ICL_TEST_EQ(std::string(d.root()[2].scalarView()), std::string("c"));
 }
 
 ICL_REGISTER_TEST("utils.yaml.parse.mapping_with_block_sequence_value", "mapping key → block seq value")
@@ -525,7 +525,7 @@ ICL_REGISTER_TEST("utils.yaml.parse.mapping_with_block_sequence_value", "mapping
   Document d = Document::view("items:\n  - x\n  - y\n  - z\n");
   ICL_TEST_TRUE(d.root()["items"].isSequence());
   ICL_TEST_EQ(d.root()["items"].size(), size_t(3));
-  ICL_TEST_EQ(std::string(d.root()["items"][size_t(1)].scalarView()), std::string("y"));
+  ICL_TEST_EQ(std::string(d.root()["items"][1].scalarView()), std::string("y"));
 }
 
 // ---------------------------------------------------------------------------
@@ -537,8 +537,8 @@ ICL_REGISTER_TEST("utils.yaml.parse.flow_sequence", "`[1, 2, 3]`")
   Document d = Document::view("[1, 2, 3]");
   ICL_TEST_TRUE(d.root().isSequence());
   ICL_TEST_EQ(d.root().size(), size_t(3));
-  ICL_TEST_EQ(d.root()[size_t(0)].as<int>(), 1);
-  ICL_TEST_EQ(d.root()[size_t(2)].as<int>(), 3);
+  ICL_TEST_EQ(d.root()[0].as<int>(), 1);
+  ICL_TEST_EQ(d.root()[2].as<int>(), 3);
 }
 
 ICL_REGISTER_TEST("utils.yaml.parse.flow_mapping", "`{a: 1, b: 2}`")
@@ -559,7 +559,7 @@ ICL_REGISTER_TEST("utils.yaml.parse.flow_multiline", "flow spanning multiple lin
 {
   Document d = Document::view("[\n  1,\n  2,\n  3\n]\n");
   ICL_TEST_EQ(d.root().size(), size_t(3));
-  ICL_TEST_EQ(d.root()[size_t(1)].as<int>(), 2);
+  ICL_TEST_EQ(d.root()[1].as<int>(), 2);
 }
 
 ICL_REGISTER_TEST("utils.yaml.parse.nested_flow", "flow mapping inside flow sequence")
@@ -567,8 +567,8 @@ ICL_REGISTER_TEST("utils.yaml.parse.nested_flow", "flow mapping inside flow sequ
   Document d = Document::view("[{a: 1}, {b: 2}]");
   ICL_TEST_TRUE(d.root().isSequence());
   ICL_TEST_EQ(d.root().size(), size_t(2));
-  ICL_TEST_EQ(d.root()[size_t(0)]["a"].as<int>(), 1);
-  ICL_TEST_EQ(d.root()[size_t(1)]["b"].as<int>(), 2);
+  ICL_TEST_EQ(d.root()[0]["a"].as<int>(), 1);
+  ICL_TEST_EQ(d.root()[1]["b"].as<int>(), 2);
 }
 
 // ---------------------------------------------------------------------------
@@ -896,8 +896,8 @@ ICL_REGISTER_TEST("utils.yaml.assign.initlist_sequence_ints",
   n = {1, 2, 3};
   ICL_TEST_TRUE(n.isSequence());
   ICL_TEST_EQ(n.size(), size_t(3));
-  ICL_TEST_EQ(n[size_t(0)].as<int>(), 1);
-  ICL_TEST_EQ(n[size_t(2)].as<int>(), 3);
+  ICL_TEST_EQ(n[0].as<int>(), 1);
+  ICL_TEST_EQ(n[2].as<int>(), 3);
 }
 
 ICL_REGISTER_TEST("utils.yaml.assign.initlist_sequence_strings",
@@ -906,7 +906,7 @@ ICL_REGISTER_TEST("utils.yaml.assign.initlist_sequence_strings",
   Node n;
   n = {"a", "b", "c"};
   ICL_TEST_TRUE(n.isSequence());
-  ICL_TEST_EQ(std::string(n[size_t(1)].scalarView()), std::string("b"));
+  ICL_TEST_EQ(std::string(n[1].scalarView()), std::string("b"));
 }
 
 ICL_REGISTER_TEST("utils.yaml.assign.initlist_mapping",
@@ -1003,7 +1003,7 @@ ICL_REGISTER_TEST("utils.yaml.assign.vector_int", "node = std::vector<int>")
   n = v;
   ICL_TEST_TRUE(n.isSequence());
   ICL_TEST_EQ(n.size(), size_t(3));
-  ICL_TEST_EQ(n[size_t(1)].as<int>(), 20);
+  ICL_TEST_EQ(n[1].as<int>(), 20);
 }
 
 ICL_REGISTER_TEST("utils.yaml.assign.vector_string", "node = std::vector<std::string>")
@@ -1012,7 +1012,7 @@ ICL_REGISTER_TEST("utils.yaml.assign.vector_string", "node = std::vector<std::st
   Node n;
   n = v;
   v.clear();  // source vector dies — Node must have copied
-  ICL_TEST_EQ(std::string(n[size_t(0)].scalarView()), std::string("alpha"));
+  ICL_TEST_EQ(std::string(n[0].scalarView()), std::string("alpha"));
 }
 
 ICL_REGISTER_TEST("utils.yaml.assign.map_string_int", "node = std::map<string, int>")
@@ -1047,8 +1047,8 @@ ICL_REGISTER_TEST("utils.yaml.assign.nested_container",
   Node n;
   n = data;
   ICL_TEST_EQ(n["primes"].size(), size_t(4));
-  ICL_TEST_EQ(n["primes"][size_t(2)].as<int>(), 5);
-  ICL_TEST_EQ(n["evens"][size_t(3)].as<int>(), 8);
+  ICL_TEST_EQ(n["primes"][2].as<int>(), 5);
+  ICL_TEST_EQ(n["evens"][3].as<int>(), 8);
 }
 
 ICL_REGISTER_TEST("utils.yaml.assign.nested_initlist",
@@ -1062,7 +1062,7 @@ ICL_REGISTER_TEST("utils.yaml.assign.nested_initlist",
   };
   ICL_TEST_EQ(std::string(n["name"].scalarView()), std::string("config"));
   ICL_TEST_EQ(n["ports"].size(), size_t(3));
-  ICL_TEST_EQ(n["ports"][size_t(2)].as<int>(), 8080);
+  ICL_TEST_EQ(n["ports"][2].as<int>(), 8080);
   ICL_TEST_TRUE(n["dbg"].asStrict<bool>());
 }
 
@@ -1253,7 +1253,7 @@ ICL_REGISTER_TEST("utils.yaml.parse.same_indent_sequence_value",
   Document d = Document::view("items:\n- a\n- b\n- c\n");
   ICL_TEST_TRUE(d.root()["items"].isSequence());
   ICL_TEST_EQ(d.root()["items"].size(), size_t(3));
-  ICL_TEST_EQ(std::string(d.root()["items"][size_t(1)].scalarView()), std::string("b"));
+  ICL_TEST_EQ(std::string(d.root()["items"][1].scalarView()), std::string("b"));
 }
 
 ICL_REGISTER_TEST("utils.yaml.parse.same_indent_sequence_then_sibling",
