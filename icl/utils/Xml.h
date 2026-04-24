@@ -76,6 +76,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Exception.h>
+#include <icl/utils/detail/Arena.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -135,38 +136,6 @@ namespace icl::utils::xml {
       ElementNode               *firstChild  = nullptr;
       ElementNode               *lastChild   = nullptr;
       ElementNode               *nextSibling = nullptr;
-    };
-
-    /// Page-based bump allocator for ElementNode + AttributeNode.
-    /// Pages are never reclaimed until the Document is destroyed —
-    /// `free()` is a no-op, only page-wholesale release on dtor.
-    /// Both node types are trivially destructible, so no dtor
-    /// dispatch is needed on release.  Size tuned so a ~50 KB
-    /// XML config (the scaled benchmark) fits in a handful of pages.
-    class ICLUtils_API NodeArena {
-    public:
-      NodeArena();
-      ~NodeArena();
-      NodeArena(NodeArena&&) noexcept;
-      NodeArena& operator=(NodeArena&&) noexcept;
-      NodeArena(const NodeArena&) = delete;
-      NodeArena& operator=(const NodeArena&) = delete;
-
-      ElementNode  *allocElement();
-      AttributeNode *allocAttribute();
-
-    private:
-      static constexpr std::size_t kPageBytes = 64 * 1024;
-      struct Page {
-        std::unique_ptr<char[]> buf;
-        std::size_t             used = 0;
-      };
-      std::vector<Page>          m_pages;
-      char                      *m_cur = nullptr;   // bump pointer into current page
-      char                      *m_end = nullptr;   // one-past-end of current page
-
-      void *alloc(std::size_t bytes, std::size_t align);
-      void  newPage(std::size_t atLeast);
     };
 
     ICLUtils_API void parseInto(std::string_view src, Document &doc);
@@ -432,7 +401,7 @@ namespace icl::utils::xml {
     std::unique_ptr<std::string>          m_source;       // stable bytes for `parseOwned`
     std::string_view                      m_view;         // view into m_source or caller buf
     std::deque<std::string>               m_stringArena;  // interned strings (mutation / decode)
-    detail::NodeArena                     m_nodeArena;    // page-backed node pool
+    ::icl::utils::detail::Arena<>         m_nodeArena;    // page-backed ElementNode/AttributeNode pool
     detail::ElementNode                  *m_root = nullptr;
   };
 

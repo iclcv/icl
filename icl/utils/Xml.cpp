@@ -363,67 +363,15 @@ namespace icl::utils::xml {
   }
 
   detail::ElementNode* Document::allocElement(){
-    return m_nodeArena.allocElement();
+    return m_nodeArena.alloc<detail::ElementNode>();
   }
 
   detail::AttributeNode* Document::allocAttribute(){
-    return m_nodeArena.allocAttribute();
+    return m_nodeArena.alloc<detail::AttributeNode>();
   }
 
   void Document::setRootNode(detail::ElementNode *root) noexcept {
     m_root = root;
   }
-
-  // ---------------------------------------------------------------------
-  // NodeArena — page-backed bump allocator.
-  // ---------------------------------------------------------------------
-
-  namespace detail {
-
-    NodeArena::NodeArena(){
-      m_pages.reserve(4);
-    }
-    NodeArena::~NodeArena() = default;
-    NodeArena::NodeArena(NodeArena&&) noexcept = default;
-    NodeArena& NodeArena::operator=(NodeArena&&) noexcept = default;
-
-    void NodeArena::newPage(std::size_t atLeast){
-      std::size_t sz = kPageBytes;
-      if(atLeast > sz) sz = atLeast;
-      Page p;
-      p.buf.reset(new char[sz]);
-      p.used = sz;
-      m_pages.push_back(std::move(p));
-      m_cur = m_pages.back().buf.get();
-      m_end = m_cur + sz;
-    }
-
-    void *NodeArena::alloc(std::size_t bytes, std::size_t align){
-      // Align the bump pointer.
-      std::uintptr_t p = reinterpret_cast<std::uintptr_t>(m_cur);
-      std::uintptr_t a = static_cast<std::uintptr_t>(align);
-      std::uintptr_t aligned = (p + a - 1) & ~(a - 1);
-      char *slot = reinterpret_cast<char *>(aligned);
-      if(slot + bytes > m_end){
-        newPage(bytes + align);
-        p = reinterpret_cast<std::uintptr_t>(m_cur);
-        aligned = (p + a - 1) & ~(a - 1);
-        slot = reinterpret_cast<char *>(aligned);
-      }
-      m_cur = slot + bytes;
-      return slot;
-    }
-
-    ElementNode *NodeArena::allocElement(){
-      void *mem = alloc(sizeof(ElementNode), alignof(ElementNode));
-      return new (mem) ElementNode();       // placement-new, trivially dtor
-    }
-
-    AttributeNode *NodeArena::allocAttribute(){
-      void *mem = alloc(sizeof(AttributeNode), alignof(AttributeNode));
-      return new (mem) AttributeNode();
-    }
-
-  }  // namespace detail
 
 }  // namespace icl::utils::xml
