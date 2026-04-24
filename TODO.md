@@ -299,7 +299,15 @@ From Session 48 deferrals:
 - [x] **Replace XML with YAML for `ConfigFile`.**  Session 56: landed in two phases.
   - Phase 1 — in-house `icl::utils::yaml` parser / emitter under `icl/utils/Yaml.{h,cpp}` + `icl/utils/detail/yaml/`.  Zero-copy for parse (views into source buffer), arena-backed `Mapping` for programmatic insertion.  Benchmarks beat yaml-cpp by 20-40× and tie rapidyaml on config-shaped inputs.  112 tests + 117 corpus cases from yaml-test-suite / JSONTestSuite.  See `project_yaml_config.md` for subset details.
   - Phase 2 — `ConfigFile` migrated to YAML backend.  Wire format switched to nested YAML (typeless, caller's `get<T>` is authoritative), `register_type` / `Maps` / RTTI machinery deleted (408-line net deletion).  Restrictions demoted to in-memory-only.  824/824 tests green.
-- [ ] **Phase 3 — pugi retirement.**  Two non-ConfigFile consumers of `icl/utils/detail/pugi/` remain: `icl/geom/Primitive3DFilter.cpp` (ICL-authored pointcloud-filter XML — migrate to YAML) and `icl/io/detail/grabbers/OptrisGrabber.cpp` (external Optris calibration XML — probably keep pugi vendored local to it OR write a ~50-line tag-soup parser).  Once both are off, delete `icl/utils/detail/pugi/` entirely.  See `project_yaml_config.md`.
+- [x] **Phase 3 — pugi retirement.**  LANDED.  Replaced by
+  Session 57: in-house `icl::utils::xml` (parser + DOM + emitter
+  + XPath subset) replaced pugi end-to-end.  Primitive3DFilter and
+  OptrisGrabber migrated; `icl/utils/detail/pugi/` deleted
+  (~15,218 LOC gone).  866/866 tests green.  See
+  `xml-config-plan.md` and `project_xml_config.md` memory.  Open
+  follow-up: deferred SIMD perf pass for the parser's per-byte
+  character-class scans (~4× gap vs pugi on raw parse; tied on
+  XPath/traverse).
 
 ---
 

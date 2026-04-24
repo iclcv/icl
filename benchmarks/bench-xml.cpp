@@ -4,14 +4,15 @@
 
 #include "harness/Benchmark.h"
 #include <icl/utils/Xml.h>
-#include <icl/utils/detail/pugi/PugiXML.h>
 
 #include <string>
 
-// Reference numbers (vs vendored pugixml, release -O3 on Apple-Silicon
-// arm64) are pinned in icl/utils/Xml.h.  Pugi stays vendored for
-// this benchmark only — the follow-up commit retires the vendored
-// parser and strips the `utils.xml.pugi.*` entries below.
+// Reference numbers are pinned in icl/utils/Xml.h (vs the formerly
+// vendored pugixml, release -O3 on Apple-Silicon arm64).  The pugi
+// probes that produced those numbers were removed together with the
+// vendored parser.  To re-measure against a modern pugixml,
+// temporarily vendor it under a local 3rdparty path and reinstate
+// the `utils.xml.pugi.*` entries that lived here in the prior commit.
 
 using namespace icl::utils;
 
@@ -133,68 +134,6 @@ namespace {
       static auto d = xml::Document::parseOwned(kSmallXml);
       volatile auto s = d.emit();
       (void)s;
-    }
-  });
-
-  // ---------------------------------------------------------------------
-  // pugi — vendored reference, same inputs, same measurement shape.
-  // These probes are deleted together with the vendored parser in the
-  // follow-up commit.
-  // ---------------------------------------------------------------------
-
-  static BenchmarkRegistrar bench_pugi_parse_small({"utils.xml.pugi.parse_small",
-    "parse ~500 B config (pugixml, reference)",
-    {},
-    [](const BenchParams &){
-      pugi::xml_document doc;
-      doc.load_buffer(kSmallXml.data(), kSmallXml.size());
-      (void)doc.first_child();
-    }
-  });
-
-  static BenchmarkRegistrar bench_pugi_parse_large({"utils.xml.pugi.parse_large",
-    "parse ~50 KB config (100x repetition) — pugixml",
-    {BenchParamDef::Int("repeats", 100, 10, 1000)},
-    [](const BenchParams &p){
-      static std::string src = makeLargeXml(p.getInt("repeats"));
-      pugi::xml_document doc;
-      doc.load_buffer(src.data(), src.size());
-      (void)doc.first_child();
-    }
-  });
-
-  static BenchmarkRegistrar bench_pugi_traverse({"utils.xml.pugi.traverse",
-    "parse + named child walk + attribute-typed reads — pugixml",
-    {},
-    [](const BenchParams &){
-      pugi::xml_document doc;
-      doc.load_buffer(kSmallXml.data(), kSmallXml.size());
-      auto root = doc.child("pointcloudfilter");
-      volatile int count = 0;
-      for(auto pg = root.child("primitivegroup"); pg; pg = pg.next_sibling("primitivegroup")){
-        volatile float pad = pg.attribute("padding").as_float();
-        (void)pad;
-        ++count;
-      }
-      volatile int lbl = root.child("label").attribute("value").as_int();
-      (void)lbl; (void)count;
-    }
-  });
-
-  static BenchmarkRegistrar bench_pugi_xpath({"utils.xml.pugi.xpath",
-    "XPath predicate-union dispatch — pugixml",
-    {},
-    [](const BenchParams &){
-      static pugi::xml_document doc = [](){
-        pugi::xml_document d;
-        d.load_buffer(kSmallXml.data(), kSmallXml.size());
-        return d;
-      }();
-      auto ns = doc.select_nodes(
-          "/pointcloudfilter/*[self::remove or self::setpos or self::color "
-          "or self::label or self::intensity or self::filterdepthimg]");
-      volatile std::size_t n = ns.size();
-      (void)n;
     }
   });
 
