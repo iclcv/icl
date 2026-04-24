@@ -403,6 +403,13 @@ namespace icl::utils::yaml {
     // is returned by value and the compiler doesn't apply NRVO.
     std::unique_ptr<std::string>  m_source;
     std::string_view              m_view;
+    // Kept as std::deque<std::string> — tried swapping to
+    // detail::Arena<> (byte pool) and measured essentially no change
+    // (~276 us on parse_large either way, within noise).  Reason:
+    // `intern` is rarely called for plain-scalar configs (the hot
+    // path returns zero-copy views into source), and when it IS
+    // hit, the arena's memcpy is extra work vs the deque's in-place
+    // `emplace_back(move(s))`.  Keeping the simpler primitive.
     std::deque<std::string>       m_arena;
     Node                          m_root;
   };

@@ -27,8 +27,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 #include <new>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -46,7 +48,11 @@ namespace icl::utils::detail {
   template<std::size_t PageBytes = 64 * 1024>
   class Arena {
   public:
-    Arena(){ m_pages.reserve(4); }
+    // No `m_pages.reserve()` in the ctor — consumers that construct
+    // many short-lived arenas (per-parse Documents) would pay a small
+    // heap alloc per ctor for a reserve that's rarely exercised.
+    // `m_pages.push_back` in newPage() does the first growth on demand.
+    Arena() = default;
     ~Arena() = default;
     Arena(Arena&&) noexcept = default;
     Arena& operator=(Arena&&) noexcept = default;
@@ -63,6 +69,25 @@ namespace icl::utils::detail {
                     "destructible types (no dtors are run on release)");
       void *mem = rawAlloc(sizeof(T), alignof(T));
       return ::new (mem) T();
+    }
+
+    /// Byte-pool path: allocate `n` bytes with 1-byte alignment,
+    /// useful for variable-length blobs (interned strings).
+    /// Contents are uninitialised; caller fills via memcpy / stream.
+    char *allocBytes(std::size_t n){
+      return static_cast<char *>(rawAlloc(n, 1));
+    }
+
+    /// Copy `sv`'s bytes into the arena and return a stable view
+    /// into the arena-resident copy.  Suitable for interning
+    /// short strings in hot paths — replaces `std::deque<std::string>`
+    /// + `emplace_back` + `back()` with a single bump + memcpy.
+    /// Returned view is valid for the lifetime of this Arena.
+    std::string_view internString(std::string_view sv){
+      if(sv.empty()) return {};
+      char *dst = allocBytes(sv.size());
+      std::memcpy(dst, sv.data(), sv.size());
+      return std::string_view(dst, sv.size());
     }
 
     /// Total bytes reserved across all live pages (not bytes
