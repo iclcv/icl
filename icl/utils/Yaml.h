@@ -2,6 +2,33 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
+/// \file
+/// Slim YAML 1.2-subset parser, emitter, and tree representation.
+///
+/// Parse is zero-copy for scalars (views point directly into the
+/// source buffer); programmatic construction owns its own bytes via
+/// Mapping's spill arena and ScalarData's `owned` field.  The
+/// accepted subset excludes anchors, aliases, custom tags, multi-doc
+/// streams, and multi-line plain scalars — see the README for the
+/// full list of in / out features.
+///
+/// Performance (Apple-Silicon arm64, release -O3, small ~500 B
+/// config + scaled 50 KB config, median of 50 runs):
+///
+///   Benchmark                  icl::utils::yaml   rapidyaml    yaml-cpp
+///   ----------------------------------------------------------------------
+///   parse   ~500 B                 3.0 us            3.0 us      56.0 us
+///   parse   ~50 KB               267.5 us          290.0 us    6054.0 us
+///   emit (round-trip)              1.0 us            2.0 us      39.0 us
+///   parse + deep lookups           3.0 us            3.0 us      55.0 us
+///
+/// Caveat: these numbers compare a YAML-1.2-subset parser against
+/// full-spec ones, so some of the speed comes from features we
+/// deliberately don't implement.  Still, matching rapidyaml — the
+/// fastest full-spec YAML parser in wide use — on config-shaped
+/// inputs is the intended outcome for a library whose defining
+/// constraint is "slim".
+
 #pragma once
 
 #include <icl/utils/AutoParse.h>

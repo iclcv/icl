@@ -8,14 +8,10 @@
 
 #include <string>
 
-#ifdef ICL_HAVE_YAMLCPP
-#  include <yaml-cpp/yaml.h>
-#endif
-
-#ifdef ICL_HAVE_RAPIDYAML
-#  include <ryml.hpp>
-#  include <ryml_std.hpp>
-#endif
+// Reference numbers (vs yaml-cpp 0.9.0 and rapidyaml 0.11.1, release
+// -O3 on Apple-Silicon arm64) are recorded in icl/utils/Yaml.h.  The
+// competitor probes were removed from meson.build to keep the build
+// dependency-free; re-add them temporarily when re-measuring.
 
 using namespace icl::utils;
 
@@ -87,8 +83,8 @@ logging:
   // icl::utils::yaml
   // ---------------------------------------------------------------------
 
-  static BenchmarkRegistrar bench_icl_parse_small({"utils.yaml.icl.parse_small",
-    "icl::utils::yaml: parse ~500 B config",
+  static BenchmarkRegistrar bench_icl_parse_small({"utils.yaml.parse_small",
+    "parse ~500 B config",
     {},
     [](const BenchParams &){
       auto d = yaml::Document::view(std::string_view(kSmallYaml));
@@ -96,8 +92,8 @@ logging:
     }
   });
 
-  static BenchmarkRegistrar bench_icl_parse_large({"utils.yaml.icl.parse_large",
-    "icl::utils::yaml: parse ~50 KB config (100x repetition)",
+  static BenchmarkRegistrar bench_icl_parse_large({"utils.yaml.parse_large",
+    "parse ~50 KB config (100x repetition)",
     {BenchParamDef::Int("repeats", 100, 10, 1000)},
     [](const BenchParams &p){
       static std::string src = makeLargeYaml(p.getInt("repeats"));
@@ -106,8 +102,8 @@ logging:
     }
   });
 
-  static BenchmarkRegistrar bench_icl_emit({"utils.yaml.icl.emit",
-    "icl::utils::yaml: emit a built tree back to YAML text",
+  static BenchmarkRegistrar bench_icl_emit({"utils.yaml.emit",
+    "emit a built tree back to YAML text",
     {},
     [](const BenchParams &){
       // Pre-parse once; benchmark only the emit path.
@@ -117,8 +113,8 @@ logging:
     }
   });
 
-  static BenchmarkRegistrar bench_icl_build({"utils.yaml.icl.build",
-    "icl::utils::yaml: programmatic build of a ~20-key config tree",
+  static BenchmarkRegistrar bench_icl_build({"utils.yaml.build",
+    "programmatic build of a ~20-key config tree",
     {},
     [](const BenchParams &){
       auto d = yaml::Document::empty();
@@ -140,8 +136,8 @@ logging:
     }
   });
 
-  static BenchmarkRegistrar bench_icl_traverse({"utils.yaml.icl.traverse",
-    "icl::utils::yaml: parse + deep lookup + typed conversions",
+  static BenchmarkRegistrar bench_icl_traverse({"utils.yaml.traverse",
+    "parse + deep lookup + typed conversions",
     {},
     [](const BenchParams &){
       auto d = yaml::Document::view(std::string_view(kSmallYaml));
@@ -153,109 +149,5 @@ logging:
       (void)port; (void)to; (void)cpu; (void)fps;
     }
   });
-
-  // ---------------------------------------------------------------------
-  // yaml-cpp — enabled when ICL_HAVE_YAMLCPP is defined at build time.
-  // ---------------------------------------------------------------------
-
-#ifdef ICL_HAVE_YAMLCPP
-  static BenchmarkRegistrar bench_yamlcpp_parse_small({"utils.yaml.yamlcpp.parse_small",
-    "yaml-cpp: parse ~500 B config",
-    {},
-    [](const BenchParams &){
-      YAML::Node n = YAML::Load(kSmallYaml);
-      (void)n;
-    }
-  });
-
-  static BenchmarkRegistrar bench_yamlcpp_parse_large({"utils.yaml.yamlcpp.parse_large",
-    "yaml-cpp: parse ~50 KB config",
-    {BenchParamDef::Int("repeats", 100, 10, 1000)},
-    [](const BenchParams &p){
-      static std::string src = makeLargeYaml(p.getInt("repeats"));
-      YAML::Node n = YAML::Load(src);
-      (void)n;
-    }
-  });
-
-  static BenchmarkRegistrar bench_yamlcpp_emit({"utils.yaml.yamlcpp.emit",
-    "yaml-cpp: emit a tree",
-    {},
-    [](const BenchParams &){
-      static YAML::Node n = YAML::Load(kSmallYaml);
-      YAML::Emitter em;
-      em << n;
-      volatile auto s = std::string(em.c_str());
-      (void)s;
-    }
-  });
-
-  static BenchmarkRegistrar bench_yamlcpp_traverse({"utils.yaml.yamlcpp.traverse",
-    "yaml-cpp: parse + deep lookup + typed conversions",
-    {},
-    [](const BenchParams &){
-      YAML::Node n      = YAML::Load(kSmallYaml);
-      volatile int port = n["server"]["port"].as<int>();
-      volatile double to= n["server"]["timeout"].as<double>();
-      volatile int cpu  = n["server"]["workers"][1]["cpu"].as<int>();
-      volatile int fps  = n["cameras"][0]["fps"].as<int>();
-      (void)port; (void)to; (void)cpu; (void)fps;
-    }
-  });
-#endif  // ICL_HAVE_YAMLCPP
-
-  // ---------------------------------------------------------------------
-  // rapidyaml — enabled when ICL_HAVE_RAPIDYAML is defined at build time.
-  // ---------------------------------------------------------------------
-
-#ifdef ICL_HAVE_RAPIDYAML
-  static BenchmarkRegistrar bench_ryml_parse_small({"utils.yaml.rapidyaml.parse_small",
-    "rapidyaml: parse ~500 B config (in-place, zero-copy)",
-    {},
-    [](const BenchParams &){
-      // Copy to a mutable buffer — rapidyaml parses in-place.
-      std::string buf = kSmallYaml;
-      ryml::Tree t = ryml::parse_in_place(ryml::substr(buf.data(), buf.size()));
-      (void)t;
-    }
-  });
-
-  static BenchmarkRegistrar bench_ryml_parse_large({"utils.yaml.rapidyaml.parse_large",
-    "rapidyaml: parse ~50 KB config",
-    {BenchParamDef::Int("repeats", 100, 10, 1000)},
-    [](const BenchParams &p){
-      static std::string src = makeLargeYaml(p.getInt("repeats"));
-      std::string buf = src;  // parse_in_place mutates
-      ryml::Tree t = ryml::parse_in_place(ryml::substr(buf.data(), buf.size()));
-      (void)t;
-    }
-  });
-
-  static BenchmarkRegistrar bench_ryml_emit({"utils.yaml.rapidyaml.emit",
-    "rapidyaml: emit a tree",
-    {},
-    [](const BenchParams &){
-      static std::string buf = kSmallYaml;
-      static ryml::Tree t = ryml::parse_in_place(ryml::substr(buf.data(), buf.size()));
-      volatile auto s = ryml::emitrs<std::string>(t);
-      (void)s;
-    }
-  });
-
-  static BenchmarkRegistrar bench_ryml_traverse({"utils.yaml.rapidyaml.traverse",
-    "rapidyaml: parse + deep lookup + typed conversions",
-    {},
-    [](const BenchParams &){
-      std::string buf = kSmallYaml;
-      ryml::Tree t    = ryml::parse_in_place(ryml::substr(buf.data(), buf.size()));
-      auto r = t.rootref();
-      int port; r["server"]["port"] >> port;
-      double to; r["server"]["timeout"] >> to;
-      int cpu; r["server"]["workers"][1]["cpu"] >> cpu;
-      int fps; r["cameras"][0]["fps"] >> fps;
-      volatile int s = port + cpu + fps; (void)s; (void)to;
-    }
-  });
-#endif  // ICL_HAVE_RAPIDYAML
 
 }  // anonymous namespace
