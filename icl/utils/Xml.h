@@ -20,7 +20,7 @@
 ///   Benchmark                  icl::utils::xml    pugixml
 ///   ----------------------------------------------------------------------
 ///   parse   ~500 B                 1.0 us            0.5 us
-///   parse   ~50 KB               108.0 us           49.5 us
+///   parse   ~50 KB                97.0 us           49.5 us
 ///   traverse (parse + walk)        1.0 us            1.0 us
 ///   xpath (predicate union)        1.0 us            1.0 us
 ///   emit (round-trip)              1.0 us              —
@@ -32,16 +32,21 @@
 ///    ified skipWs and attr-value scans both regressed because
 ///    typical runs are <16 bytes.
 ///  * Node storage is a page-backed bump allocator (`NodeArena`,
-///    64 KB pages) — replacing the initial `std::deque<ElementNode>`
-///    cut parse_large from 167 us to 108 us.  Attributes hang off
-///    each element as a singly-linked list (head + tail pointers),
-///    not a `std::vector`, so no per-element vector growth / relocation.
+///    64 KB pages).  Attributes hang off each element as a singly-
+///    linked list (head + tail pointers), not a `std::vector`, so
+///    no per-element vector growth / relocation.
+///  * Parser cursor is a raw `const char *` triple (begin/cur/end)
+///    — hot loops walk `m_cur` directly in a register, no
+///    `string_view` indirection per byte.
+///  * parseElement's content-loop dispatches on `m_cur[0]` + `m_cur[1]`
+///    (single-byte probe) instead of four sequential `memcmp`
+///    `startsWith` checks for CDATA / comment / PI / end-tag.
 ///
 /// Remaining ~2x gap vs pugi on raw parse is down to pugi's
-/// decades-tuned per-byte scanners + `const char*` walks (no
-/// string_view wrappers in the hot path).  Traversal and XPath
-/// are tied.  Absolute numbers are microseconds for config-sized
-/// inputs — well below any realistic config-load budget.
+/// per-byte scanners being decades-tuned in C (no C++ wrapper
+/// costs at all).  Traversal and XPath are tied.  Absolute numbers
+/// are microseconds for config-sized inputs — well below any
+/// realistic config-load budget.
 ///
 /// Accepted subset:
 ///   * Elements (start, end, self-closing) with attributes.

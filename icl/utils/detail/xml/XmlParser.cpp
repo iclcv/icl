@@ -106,7 +106,11 @@ namespace icl::utils::xml::detail {
 
     class Parser {
     public:
-      Parser(std::string_view src, Document &doc) : m_src(src), m_doc(doc) {}
+      Parser(std::string_view src, Document &doc)
+        : m_doc(doc),
+          m_begin(src.data()),
+          m_cur(src.data()),
+          m_end(src.data() + src.size()) {}
 
       void parse(){
         skipBom();
@@ -121,26 +125,30 @@ namespace icl::utils::xml::detail {
       }
 
     private:
-      std::string_view  m_src;
       Document&         m_doc;
-      std::size_t       m_pos  = 0;
+      // Raw-pointer cursor — hot inner loops walk `m_cur` directly
+      // rather than round-tripping through a std::string_view.  The
+      // compiler keeps m_cur in a register; no per-byte reload of
+      // base/size members.
+      const char       *m_begin;
+      const char       *m_cur;
+      const char       *m_end;
       std::size_t       m_line = 1;
       std::size_t       m_col  = 1;
 
       // --------------------------- cursor ---------------------------
-      bool eof() const { return m_pos >= m_src.size(); }
+      bool eof() const { return m_cur >= m_end; }
       char peek(std::size_t off = 0) const {
-        return (m_pos + off < m_src.size()) ? m_src[m_pos + off] : '\0';
+        return (m_cur + off < m_end) ? m_cur[off] : '\0';
       }
-      std::string_view rest() const { return m_src.substr(m_pos); }
       char advance(){
-        char c = m_src[m_pos++];
+        char c = *m_cur++;
         if(c == '\n'){ ++m_line; m_col = 1; } else { ++m_col; }
         return c;
       }
       bool startsWith(std::string_view lit) const {
-        return m_pos + lit.size() <= m_src.size() &&
-               m_src.substr(m_pos, lit.size()) == lit;
+        return static_cast<std::size_t>(m_end - m_cur) >= lit.size() &&
+               std::memcmp(m_cur, lit.data(), lit.size()) == 0;
       }
       bool consume(std::string_view lit){
         if(!startsWith(lit)) return false;
@@ -154,11 +162,11 @@ namespace icl::utils::xml::detail {
 
       // --------------------------- utilities ------------------------
       void skipBom(){
-        if(m_src.size() >= 3 &&
-           static_cast<unsigned char>(m_src[0]) == 0xEF &&
-           static_cast<unsigned char>(m_src[1]) == 0xBB &&
-           static_cast<unsigned char>(m_src[2]) == 0xBF){
-          m_pos = 3; m_col = 1;
+        if((m_end - m_begin) >= 3 &&
+           static_cast<unsigned char>(m_begin[0]) == 0xEF &&
+           static_cast<unsigned char>(m_begin[1]) == 0xBB &&
+           static_cast<unsigned char>(m_begin[2]) == 0xBF){
+          m_cur = m_begin + 3; m_col = 1;
         }
       }
 
@@ -179,7 +187,7 @@ namespace icl::utils::xml::detail {
       // ----------------------------------------------------------
       // SIMD-accelerated content-text scan.
       //
-      // Advances m_pos until it hits '<' or EOF, updating m_line /
+      // Advances m_cur until it hits '<' or EOF, updating m_line /
       // m_col in bulk from the count+position of '\n' in the
       // skipped range.  Returns a view of the consumed run.
       //
@@ -189,21 +197,21 @@ namespace icl::utils::xml::detail {
       // slower on the `parse_large` benchmark (measured).
       // ----------------------------------------------------------
       std::string_view scanTextUntilLT(){
-        const char       *src       = m_src.data();
-        const std::size_t n         = m_src.size();
-        std::size_t       i         = m_pos;
+        const char *const start     = m_cur;
+        const char       *p         = m_cur;
+        const char *const end       = m_end;
         std::size_t       lineDelta = 0;
-        // Offset (absolute in src) of the last '\n' seen during the
-        // scan.  Used to recompute m_col after a multi-line bulk
-        // advance.  SIZE_MAX means "no newline seen yet".
-        std::size_t       lastNL    = static_cast<std::size_t>(-1);
+        // Pointer to the last '\n' seen during the scan.  Used to
+        // recompute m_col after a multi-line bulk advance.  null
+        // means "no newline seen yet".
+        const char       *lastNL    = nullptr;
 
 #if defined(ICL_HAVE_SSE2)
         const __m128i vlt = _mm_set1_epi8('<');
         const __m128i vnl = _mm_set1_epi8('\n');
-        while(i + 16 <= n){
+        while(p + 16 <= end){
           __m128i chunk = _mm_loadu_si128(
-              reinterpret_cast<const __m128i *>(src + i));
+              reinterpret_cast<const __m128i *>(p));
           int mlt = _mm_movemask_epi8(_mm_cmpeq_epi8(chunk, vlt));
           int mnl = _mm_movemask_epi8(_mm_cmpeq_epi8(chunk, vnl));
           if(mlt){
@@ -214,9 +222,9 @@ namespace icl::utils::xml::detail {
                   __builtin_popcount(static_cast<unsigned>(nlMask)));
               int lastNlBit = 31 - __builtin_clz(
                   static_cast<unsigned>(nlMask));
-              lastNL = i + static_cast<std::size_t>(lastNlBit);
+              lastNL = p + lastNlBit;
             }
-            i += static_cast<std::size_t>(ltOff);
+            p += ltOff;
             goto finish;
           }
           if(mnl){
@@ -224,32 +232,28 @@ namespace icl::utils::xml::detail {
                 __builtin_popcount(static_cast<unsigned>(mnl)));
             int lastNlBit = 31 - __builtin_clz(
                 static_cast<unsigned>(mnl));
-            lastNL = i + static_cast<std::size_t>(lastNlBit);
+            lastNL = p + lastNlBit;
           }
-          i += 16;
+          p += 16;
         }
 #endif
         // Scalar tail / non-SSE fallback.
-        while(i < n && src[i] != '<'){
-          if(src[i] == '\n'){ ++lineDelta; lastNL = i; }
-          ++i;
+        while(p < end && *p != '<'){
+          if(*p == '\n'){ ++lineDelta; lastNL = p; }
+          ++p;
         }
 #if defined(ICL_HAVE_SSE2)
       finish:
 #endif
-        std::string_view run(src + m_pos, i - m_pos);
-        // Update cursor state in bulk.
+        std::string_view run(start, static_cast<std::size_t>(p - start));
         if(lineDelta){
           m_line += lineDelta;
-          // m_col = 1 + chars since last '\n'.  `i` is the position
-          // *past* the '\n', so `i - lastNL` counts the '\n' itself
-          // plus any chars after it; `m_col = i - lastNL` puts us
-          // at column (chars-after-newline + 1), 1-based.
-          m_col = i - lastNL;
+          // m_col = 1 + chars since last '\n' (1-based).
+          m_col = static_cast<std::size_t>(p - lastNL);
         } else {
-          m_col += (i - m_pos);
+          m_col += static_cast<std::size_t>(p - start);
         }
-        m_pos = i;
+        m_cur = p;
         return run;
       }
 
@@ -309,10 +313,14 @@ namespace icl::utils::xml::detail {
 
       // --------------------------- names ----------------------------
       std::string_view parseName(){
-        if(eof() || !isNameStart(peek())) error("expected XML name");
-        std::size_t start = m_pos;
-        while(!eof() && isNameChar(peek())) advance();
-        return m_src.substr(start, m_pos - start);
+        if(m_cur >= m_end || !isNameStart(*m_cur)) error("expected XML name");
+        const char *start = m_cur;
+        // Tight local loop; no peek/advance indirection, no line/col
+        // work (names are single-line by construction).
+        while(m_cur < m_end && isNameChar(*m_cur)) ++m_cur;
+        std::size_t n = static_cast<std::size_t>(m_cur - start);
+        m_col += n;
+        return std::string_view(start, n);
       }
 
       // --------------------------- attributes -----------------------
@@ -332,13 +340,16 @@ namespace icl::utils::xml::detail {
           char q = peek();
           if(q != '"' && q != '\'') error("expected quoted attribute value");
           advance();                        // consume open quote
-          std::size_t vstart = m_pos;
-          while(!eof() && peek() != q){
-            if(peek() == '<') error("'<' not allowed in attribute value");
-            advance();
+          const char *vstart = m_cur;
+          // Tight raw-pointer loop for attribute value body.
+          while(m_cur < m_end && *m_cur != q){
+            char vc = *m_cur;
+            if(vc == '<') error("'<' not allowed in attribute value");
+            if(vc == '\n'){ ++m_line; m_col = 1; } else { ++m_col; }
+            ++m_cur;
           }
-          if(eof()) error("unterminated attribute value");
-          std::string_view valueRaw = m_src.substr(vstart, m_pos - vstart);
+          if(m_cur >= m_end) error("unterminated attribute value");
+          std::string_view valueRaw(vstart, static_cast<std::size_t>(m_cur - vstart));
           advance();                        // consume close quote
           AttributeNode *a = m_doc.allocAttribute();
           a->name     = name;
@@ -380,48 +391,52 @@ namespace icl::utils::xml::detail {
                                             // copy.
         std::string_view firstTextView;
 
-        while(!eof()){
-          if(startsWith("<![CDATA[")){
-            consume("<![CDATA[");
-            std::size_t cs = m_pos;
-            while(!eof() && !startsWith("]]>")) advance();
-            if(eof()) error("unterminated CDATA section");
-            std::string_view chunk = m_src.substr(cs, m_pos - cs);
-            consume("]]>");
-            appendText(textBuf, firstTextView, textFromSingleView, chunk,
-                       /*hasEntities=*/false, /*preserveRaw=*/true);
-            continue;
-          }
-          if(startsWith("<!--")){
-            skipComment();
-            continue;
-          }
-          if(startsWith("<?")){
-            skipPI();
-            continue;
-          }
-          if(startsWith("</")){
-            // End tag.
-            consume("</");
-            std::string_view endName = parseName();
-            skipWs();
-            if(!consume(">")) error("expected '>' after end tag name");
-            if(endName != name){
-              error("mismatched end tag (expected '</" + std::string(name) +
-                    ">', got '</" + std::string(endName) + ">')");
+        while(m_cur < m_end){
+          // Tag-dispatch on the first two bytes after an encountered
+          // '<'.  Avoids the old four-way startsWith / memcmp probe
+          // chain in the common nested-element and text cases.
+          if(*m_cur == '<'){
+            const char c1 = (m_cur + 1 < m_end) ? m_cur[1] : '\0';
+            if(c1 == '/'){
+              // End tag.
+              consume("</");
+              std::string_view endName = parseName();
+              skipWs();
+              if(!consume(">")) error("expected '>' after end tag name");
+              if(endName != name){
+                error("mismatched end tag (expected '</" + std::string(name) +
+                      ">', got '</" + std::string(endName) + ">')");
+              }
+              if(textFromSingleView){
+                el->text = firstTextView;
+              } else if(!textBuf.empty()){
+                el->text = m_doc.intern(std::move(textBuf));
+              }
+              return el;
             }
-            // Finalise text: if we collected into textBuf, intern it.
-            if(textFromSingleView){
-              el->text = firstTextView;
-            } else if(!textBuf.empty()){
-              el->text = m_doc.intern(std::move(textBuf));
+            if(c1 == '?'){
+              skipPI();
+              continue;
             }
-            return el;
-          }
-          if(peek() == '<'){
-            // (Any leading text run was already consumed below via
-            // scanTextUntilLT; reaching '<' here means we're at a
-            // child-element boundary.)
+            if(c1 == '!'){
+              // `<!-- ... -->` or `<![CDATA[ ... ]]>`.
+              if(startsWith("<!--")){
+                skipComment();
+                continue;
+              }
+              if(startsWith("<![CDATA[")){
+                consume("<![CDATA[");
+                const char *cs = m_cur;
+                while(!eof() && !startsWith("]]>")) advance();
+                if(eof()) error("unterminated CDATA section");
+                std::string_view chunk(cs, static_cast<std::size_t>(m_cur - cs));
+                consume("]]>");
+                appendText(textBuf, firstTextView, textFromSingleView, chunk,
+                           /*hasEntities=*/false, /*preserveRaw=*/true);
+                continue;
+              }
+              error("expected '<!--' or '<![CDATA['");
+            }
             // Nested element.
             ElementNode *child = parseElement(el);
             if(!el->firstChild){
