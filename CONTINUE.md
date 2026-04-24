@@ -2,43 +2,23 @@
 
 ## Next Step
 
-Session 56 delivered the full YAML arc — two of the three phases from
-`project_yaml_config.md` landed in one session.  Highlights:
-
-- **In-house `icl::utils::yaml` parser + emitter** (Phase 1).  Zero-copy
-  scalar views into the source buffer, arena-backed `Mapping` keys for
-  programmatic insertion, explicit `yaml::seq{}` / `yaml::map{}` tag-type
-  helpers for ctor-level init-lists, `AutoParse<std::string_view>` as a
-  third backend specialization.  Subset is YAML 1.2-minus (no anchors /
-  aliases / multi-doc / multi-line plain scalars).  112 handwritten tests
-  + 117 external corpus cases (yaml-test-suite + JSONTestSuite).
-  Benchmarks record **~20× faster than yaml-cpp and tied with rapidyaml**
-  on typical config-shaped input — numbers pinned in `icl/utils/Yaml.h`.
-- **`ConfigFile` migrated from pugixml to YAML** (Phase 2).  Per user
-  directive "no backwards compat": wire format switched to nested YAML,
-  typeless on wire, the entire RTTI-based `register_type` / `Maps` /
-  `check_type` machinery deleted (as well as the matching
-  `StaticConfigFileTypeRegistering` in `icl/math/FixedMatrix.cpp`).
-  Restrictions demoted to in-memory-only.  Header shrank from 568 → 243
-  lines; `.cpp` from 424 → 206.  10 new `utils.configfile.*` tests.
-- **Full suite**: 824/824 green post-migration (up from 760 pre-session).
-  All 20 ConfigFile callers across icl/ compile and pass unchanged.
+Session 57 closed the pugi arc.  User directive was "let's implement our
+own parser similar to our YAML layer" — answered with a full in-house
+`icl::utils::xml` library (parser + DOM + emitter + XPath subset), both
+remaining consumers migrated, the 15,218-LOC vendored pugixml deleted,
+and two rounds of perf work (SIMD content scan, page-backed node arena,
+raw-ptr cursor, tag dispatch) that took parse_large from 174 µs to 97 µs.
+The `Arena<>` primitive lives in shared `icl/utils/detail/Arena.h` and
+is ready for any future consumer.  Full session summary below.
 
 Concrete work items remaining (in suggested order):
 
-- **Phase 3 — pugi retirement.**  Two non-ConfigFile pugi consumers left:
-  `icl/geom/Primitive3DFilter.cpp` (ICL-authored pointcloud-filter XML,
-  migrate to YAML) and `icl/io/detail/grabbers/OptrisGrabber.cpp` (external
-  Optris calibration XML — probably keep pugi local to it OR write a tiny
-  tag-soup parser for its ~4-attribute schema).  Once both are off,
-  `icl/utils/detail/pugi/` can be deleted entirely.
+- **`removeChildSetCallback` API** (carried from Sessions 55–56).
+  Subscribers can't unregister today; same shape as the long-standing
+  `removedCallback` gap on the property-change channel.  ID-based
+  registration or token pattern.
 
-- **`removeChildSetCallback` API** (carried from Session 55).  Subscribers
-  can't unregister today; same shape as the long-standing `removedCallback`
-  gap on the property-change channel.  ID-based registration or token
-  pattern.
-
-- **Compression-codec capability flags** (carried from Session 55).
+- **Compression-codec capability flags** (carried from Sessions 55–56).
   `1611` throws on RGB input; proper fix is a capability matrix on
   `CompressionPlugin`.
 
@@ -49,7 +29,132 @@ Concrete work items remaining (in suggested order):
 
 - **Fun: icl-edit image editor demo.**  Needs new filter Ops
   (`BrillianceOp`, `VibranceOp`, `ClarityOp`, `CurvesOp`).  Good exercise
-  of push-callback refresh + filter chaining + now-YAML ConfigFile round-trip.
+  of push-callback refresh + filter chaining + ConfigFile round-trip.
+
+- **Deferred optional perf pass for `icl::utils::xml`**: remaining 2×
+  gap vs pugi on raw parse throughput (97 µs vs 49.5 µs) is structural —
+  pugi's per-byte scanners are decades-tuned in C with zero wrapper
+  overhead.  Config-sized inputs are microseconds regardless; chase only
+  if a real workload demands it.
+
+---
+
+## Current State (Session 57 — pugi retirement + in-house XML library)
+
+### Session 57 Summary
+
+9 commits.  Single arc: the in-house XML library, both consumer
+migrations, pugi deletion, and follow-up perf work.  Milestone: the
+entire pugixml dependency surface is gone from the ICL source tree.
+
+#### Phase 1 — XML library
+
+- `786e71c05` **utils: `icl::utils::xml` — parser + DOM + emitter +
+  XPath subset.**  Single-pass recursive-descent parser modelled on the
+  YAML lib's shape.  Zero-copy for element names, attribute names, and
+  raw attribute / text content (views into the source buffer); entity-
+  decoded values materialise lazily into the Document's string arena.
+  DOM is linked-list children + linked-list attributes (head + tail
+  pointers), all allocated from a page-backed `NodeArena`.  Emitter is
+  deterministic and escape-aware with a round-trip fixpoint test.
+  XPath subset covers absolute/relative paths, wildcard step, descendant
+  axis, self-predicate + attr-eq + attr-exists + index + or/and inside
+  predicates, attribute-axis terminal step — ~900 LOC vs pugi's ~5000-LOC
+  XPath engine.  42 tests (parse shapes, attrs, entities / CDATA /
+  comments / PI / DOCTYPE / BOM, error line:col, emit round-trip,
+  mutation, XPath axes + predicate combos + the exact Primitive3DFilter
+  and Optris queries).  Plan document at repo root: `xml-config-plan.md`.
+
+#### Phase 2 — consumer migrations
+
+- `d9d99d622` **io/geom: migrate Primitive3DFilter + OptrisGrabber from
+  pugixml to icl::utils::xml.**  Primitive3DFilter's XPath
+  `doc.select_nodes("/pointcloudfilter/*[self::remove or self::setpos
+  or ...]")` maps 1-to-1 onto `doc.root().selectAll(...)`; everything
+  else is a mechanical `s/pugi::/xml::/` with `.next_sibling` →
+  `.nextSibling`, `.as_float` → `.asFloat`, and `std::string(a.value())`
+  at sites that consumed pugi's `const char*`.  OptrisGrabber's single
+  XPath collapses to `doc.root().selectOne("/CaliData/Temperature/
+  Optics/OpticsDef/FOV")`.
+
+#### Phase 3 — benchmarks + pugi retirement
+
+- `1051ca9e2` **benchmarks: bench-xml vs pugi; pin numbers in Xml.h.**
+  Shape mirrors `bench-yaml.cpp`: parse small / parse large / traverse /
+  xpath / emit, plus matching `utils.xml.pugi.*` probes running the same
+  inputs through the vendored pugi for side-by-side.  Numbers recorded
+  in `Xml.h`'s `\file` doc comment.
+- `aef6466ab` **utils: retire vendored pugixml (−15,218 LOC).**  Once
+  benchmark numbers were pinned, `icl/utils/detail/pugi/` was deleted
+  wholesale; `detail/pugi/PugiXML.cpp` dropped from meson, the
+  "pugixml lives under detail/pugi/" comment block removed, and the
+  `utils.xml.pugi.*` benchmark probes deleted.  Cycles' own vendored
+  pugixml under `3rdparty/cycles/.../pugixml/` is untouched (that's
+  for the raytracing engine, not ICL).
+
+#### Phase 4 — XML parser perf work
+
+The remaining four commits progressively closed the gap to pugi on raw
+parse throughput: 174 µs → 167 → 108 → 101 → 97 µs (parse_large, median
+of 50, Apple-Silicon arm64 -O3).  Cumulative −44%; gap vs pugi narrowed
+from 3.5× to 1.96×.
+
+- `8c0b906e2` **utils: SIMD content-text scan in XmlParser (+4%).**
+  The `while(peek() != '<') advance()` in `parseElement`'s content loop
+  becomes a 16-byte SIMD scan via sse2neon: one `_mm_cmpeq_epi8` against
+  `'<'` + a parallel `'\n'` compare for bulk line/col bookkeeping.
+  Also tried SIMD-ifying `skipWs` and the attribute-value scan — both
+  regressed (whitespace runs and attr values are typically <16 bytes,
+  SIMD setup dominates).  Reverted those; kept only the content scan.
+- `9c5419cd4` **utils: page-backed NodeArena (−35%).**  Swap
+  `std::deque<ElementNode>` + per-element `std::vector<AttributeNode>`
+  for a page-backed bump allocator (64 KB pages) with attributes as a
+  singly-linked list (head + tail pointers).  Pages are never reclaimed
+  during Document life; both node types are trivially destructible, so
+  release is page-wholesale.  This was the single biggest win — node
+  allocation was by far the dominant overhead, not any parsing inner
+  loop.
+- `50a297afe` **utils: raw-ptr parser cursor + tag dispatch (−10%).**
+  Parser cursor reshape: `std::string_view m_src` + `std::size_t m_pos`
+  become `const char *m_begin / m_cur / m_end`.  Hot inner loops walk
+  `m_cur` as a raw pointer in a register instead of indirecting through
+  a string_view member per byte.  Content-loop tag dispatch: four
+  sequential `startsWith` / `memcmp` probes (`<![CDATA[`, `<!--`, `<?`,
+  `</`) become a single switch on `m_cur[1]` after checking
+  `*m_cur == '<'`.
+- `badadf48d` **utils: extract page-backed Arena<> into shared
+  detail/Arena.h.**  Generalise the ad-hoc `xml::NodeArena` into a
+  header-only template `icl::utils::detail::Arena<PageBytes>`; `alloc<T>()`
+  placement-news a default-constructed T (trivially destructible,
+  static_asserted).  `xml::Document` swaps to `Arena<> m_nodeArena`
+  with `alloc<detail::ElementNode>()` / `alloc<detail::AttributeNode>()`
+  call sites.  No behavioural change.
+- `fcfc2a4f6` **utils: extend Arena<> with byte-pool methods; YAML intern
+  experiment (no win).**  Added `allocBytes(n)` + `internString(sv)` to
+  the shared Arena template.  Tried swapping `yaml::Document::m_arena`
+  from `std::deque<std::string>` to `Arena<>` + the new byte-pool API:
+  measured essentially no change on parse_large (~276 µs either way,
+  within noise).  Two reasons documented inline in Yaml.h: (1) `intern`
+  is rarely hit for plain-scalar configs — the fast path returns zero-
+  copy views; (2) when intern IS called, the arena's memcpy is extra
+  work vs the deque's in-place `emplace_back(move(s))`.  Takeaway:
+  arenas win on data models with many small pointer-linked allocations
+  (XML's ElementNode / AttributeNode), not on by-value containers with
+  SSO.  The byte-pool primitive stays in place for future consumers.
+
+### Session 57 landmarks
+
+- 866/866 tests green throughout every commit.
+- `icl/utils/detail/pugi/` wholly deleted from the tree (15,218 LOC).
+  Only remaining pugi presence is Cycles' own vendored copy under
+  `3rdparty/cycles/…/pugixml/include` — third-party raytracing engine,
+  not ICL.
+- `xml-config-plan.md` at repo root lists all phases with checkboxes
+  (all ticked post-session) + the deferred "optional SIMD perf pass"
+  item kept for the record.
+- `project_xml_config.md` memory updated to "ALL PHASES LANDED".
+- `TODO.md` Phase 3 entry (YAML-arc follow-up) checked off with
+  pointers to the xml-config-plan + memory.
 
 ---
 
