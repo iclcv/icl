@@ -125,6 +125,19 @@ struct GLImageRenderer::Data {
   // Texture upload flag
   bool textureDirty = true;
 
+  // Persistent staging buffer for the planar→RGBA8 conversion done in
+  // uploadTexture().  MUST outlive each glTexSubImage2D call: macOS
+  // Metal-OpenGL is a deferred backend (uploads queued onto Metal
+  // command buffers, executed later by com.Metal.CompletionQueueDispatch),
+  // so a stack-local std::vector destructed before the GPU consumed the
+  // bytes leaves the driver reading freed memory — observed as a
+  // SIGBUS at a clean page-aligned address (e.g. 0x200000000) on M-series
+  // Macs.  Keeping the storage on the renderer instance fixes that, and
+  // an explicit glFlush() at the end of uploadTexture() ensures the
+  // command stream is at least kicked into the driver before we touch
+  // the buffer again on the next frame.
+  std::vector<icl8u> rgba;
+
   void initGL() {
     if (glReady) return;
     glReady = true;
@@ -219,8 +232,9 @@ struct GLImageRenderer::Data {
     const ImgBase *src = storedImage;
     int w = src->getWidth(), h = src->getHeight(), ch = src->getChannels();
 
-    // Convert planar ICL image to interleaved RGBA uint8
-    std::vector<icl8u> rgba(w * h * 4);
+    // Convert planar ICL image to interleaved RGBA uint8 in the
+    // persistent `rgba` member (see comment on the field for why).
+    rgba.resize(static_cast<std::size_t>(w) * h * 4);
     if (src->getDepth() == depth8u) {
       const Img<icl8u> *img8u = src->as8u();
       for (int i = 0; i < w * h; i++) {
@@ -268,6 +282,11 @@ struct GLImageRenderer::Data {
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
     }
+    // Kick the command stream so the deferred Metal-OpenGL backend
+    // starts consuming the upload before the next frame potentially
+    // resizes / overwrites `rgba`.  glFlush is non-blocking; pairs with
+    // the persistent buffer to close the post-free SIGBUS on Apple M*.
+    glFlush();
   }
 
   void drawQuadWithCrop(float cx, float cy, float cw, float ch) {
