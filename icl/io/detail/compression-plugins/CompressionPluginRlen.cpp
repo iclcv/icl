@@ -160,13 +160,22 @@ namespace icl::io {
         if (p->getDepth() != depth8u) {
           throw ICLException("rlen: only icl8u images are supported");
         }
+        // Snapshot m_quality once.  The Configurable callback that
+        // writes m_quality runs on whichever thread mutated the
+        // property (typically the GUI thread via qt::Prop), while
+        // compress() runs on a worker thread.  If `quality` flipped
+        // 6 → 8 between the worst-case-sizing read and the
+        // encodeChannel calls, the buffer would be sized for q≤6
+        // (1 byte/pixel) but the encoder would emit up to 2 bytes/pixel
+        // — a heap overflow.  Reading once into a local closes the race.
+        const int q     = m_quality;
         const int dim   = p->getDim();
         const int nChan = p->getChannels();
         // Worst-case: q=8 emits 2 bytes per pixel; everyone else <= 1.
-        m_buf.resize(static_cast<std::size_t>(nChan) * dim * (m_quality == 8 ? 2 : 1));
+        m_buf.resize(static_cast<std::size_t>(nChan) * dim * (q == 8 ? 2 : 1));
         icl8u *out = m_buf.data();
         for (int c = 0; c < nChan; ++c) {
-          out = encodeChannel(p->as8u()->getData(c), dim, out, m_quality);
+          out = encodeChannel(p->as8u()->getData(c), dim, out, q);
         }
         m_buf.resize(static_cast<std::size_t>(out - m_buf.data()));
         return {m_buf.data(), m_buf.size()};
@@ -176,13 +185,18 @@ namespace icl::io {
         if (d != depth8u) {
           throw ICLException("rlen: only icl8u images are supported");
         }
+        // Snapshot m_quality for the same reason as compress() — the
+        // wire envelope's setCodecParamsString writes this field, and
+        // a concurrent decompress on the cached decode plugin must not
+        // observe a half-updated value mid-loop.
+        const int q  = m_quality;
         Image out(params.getSize(), depth8u, params.getChannels(),
                   params.getFormat());
         out.ptr()->setROI(params.getROI());
         const int dim = out.getDim();
         const icl8u *src = bytes.data;
         for (int c = 0; c < out.getChannels(); ++c) {
-          src = decodeChannel(out.ptr()->as8u()->getData(c), dim, src, m_quality);
+          src = decodeChannel(out.ptr()->as8u()->getData(c), dim, src, q);
         }
         return out;
       }
