@@ -46,6 +46,10 @@ namespace icl::io {
 
       std::string name() const override { return "jpeg"; }
 
+      Capabilities capabilities() const override {
+        return { .depths={depth8u}, .minChannels=1, .maxChannels=3 };
+      }
+
       Bytes compress(const Image &src) override {
         const ImgBase *p = src.ptr();
         if (p->getDepth() != depth8u) {

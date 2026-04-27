@@ -216,6 +216,53 @@ ICL_REGISTER_TEST("ImageCompressor.1611.clamps_above_11bit",
   }
 }
 
+// ---- Codec capability flags ---------------------------------------
+// Each codec declares a `Capabilities` struct (depth + channel-range +
+// format whitelists).  The facade pre-validates input against the
+// active codec's capabilities and throws a uniform, codec-named error
+// before delegating, so users / UI get a consistent message instead of
+// plugin-specific wording.
+
+ICL_REGISTER_TEST(
+    "ImageCompressor.capabilities.1611_rejects_rgb",
+    "ImageCompressor::compress throws cleanly when the active codec's "
+    "capabilities reject the input (1611 needs single-channel icl16s; "
+    "an 8u/3ch RGB image must be refused at the facade boundary).") {
+  Img8u rgb(Size(4, 4), formatRGB);
+  ImageCompressor c(ImageCompressor::CompressionSpec("1611", "1"));
+  bool threw = false;
+  std::string msg;
+  try {
+    (void)c.compress(Image(rgb), false);
+  } catch (const ICLException &e) {
+    threw = true;
+    msg = e.what();
+  }
+  ICL_TEST_TRUE(threw);
+  // Error must name the codec and at minimum reference the codec's
+  // declared shape — clear enough for a UI to surface.
+  ICL_TEST_TRUE(msg.find("1611") != std::string::npos);
+  ICL_TEST_TRUE(msg.find("depth16s") != std::string::npos);
+}
+
+ICL_REGISTER_TEST(
+    "ImageCompressor.capabilities.raw_accepts_any",
+    "Codecs with no declared constraints (raw) accept any reasonable "
+    "image — no false positives from the new validation.") {
+  // Try a few shapes that 1611/jpeg would reject; raw must roundtrip
+  // them without error.
+  ImageCompressor c(ImageCompressor::CompressionSpec("raw"));
+  // 8u / 3ch RGB (would fail 1611)
+  ICL_TEST_NO_THROW(
+      (void)c.compress(Image(Img8u(Size(4, 4), formatRGB)), false));
+  // 16s / 1ch (would pass 1611)
+  ICL_TEST_NO_THROW(
+      (void)c.compress(Image(Img16s(Size(4, 4), 1)), false));
+  // 32f / 4ch (would fail jpeg + 1611 both)
+  ICL_TEST_NO_THROW(
+      (void)c.compress(Image(Img32f(Size(4, 4), 4)), false));
+}
+
 #ifdef ICL_HAVE_QT_WEBSOCKETS
 // ---- WebSocket Grabber/Output (Qt6 WebSockets) -------------------------
 //

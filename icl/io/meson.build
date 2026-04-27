@@ -33,6 +33,7 @@ io_sources = files(
 
 # Compression plugins (built-ins always compiled; zstd gated further down).
 io_sources += files(
+  'detail/compression-plugins/CompressionPlugin.cpp',
   'detail/compression-plugins/CompressionRegistry.cpp',
   'detail/compression-plugins/CompressionPlugin1611.cpp',
   'detail/compression-plugins/CompressionPluginJpeg.cpp',

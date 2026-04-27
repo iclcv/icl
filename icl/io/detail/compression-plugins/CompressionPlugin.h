@@ -11,6 +11,7 @@
 #include <icl/core/Types.h>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 namespace icl::io {
   /// Pluggable image-compression backend
@@ -78,5 +79,42 @@ namespace icl::io {
     /// hook exists for codecs whose decode path actually needs them
     /// (e.g. rlen quality picks a different unpack routine).
     virtual void setCodecParamsString(const std::string &/*params*/) {}
+
+    /// Declarative shape constraints for a codec.
+    /** Each field is a whitelist; an empty whitelist means "no
+        constraint on this dimension" (i.e. accept anything).  This
+        lets the facade (`ImageCompressor::compress`) pre-validate input
+        and emit a uniform error message before delegating to the
+        plugin, and lets the UI gray out incompatible codec choices
+        given the current source image.
+
+        - `depths`: allowed `core::depth` values.  Empty = any depth.
+        - `[minChannels, maxChannels]`: inclusive channel range.  Both
+          zero = "no channel constraint".  Set min==max for an exact
+          count.
+        - `formats`: allowed `core::format` values.  Empty = any format.
+
+        Plugins overriding `capabilities()` typically set just the
+        relevant fields, e.g. JPEG declares
+        `{.depths={depth8u}, .minChannels=1, .maxChannels=3}`. */
+    struct Capabilities {
+      std::vector<core::depth>  depths;
+      int                       minChannels = 0;
+      int                       maxChannels = 0;
+      std::vector<core::format> formats;
+
+      /// True if `(d, channels, f)` satisfies every declared whitelist.
+      bool accepts(core::depth d, int channels, core::format f) const;
+      /// Human-readable summary, e.g. "depth16s, 1 channel".  Used by
+      /// the facade to compose a clear error when a codec rejects an
+      /// image.
+      std::string describe() const;
+    };
+
+    /// Return this codec's image shape constraints.  Default: empty
+    /// `Capabilities{}` — accepts any image.  Codecs with real
+    /// constraints (`jpeg` = depth8u + 1/3 ch, `1611` = depth16s + 1ch,
+    /// `rlen` = depth8u) override.
+    virtual Capabilities capabilities() const { return {}; }
   };
 } // namespace icl::io

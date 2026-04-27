@@ -38,6 +38,10 @@ namespace icl::io {
 
       std::string name() const override { return "1611"; }
 
+      Capabilities capabilities() const override {
+        return { .depths={depth16s}, .minChannels=1, .maxChannels=1 };
+      }
+
       Bytes compress(const Image &src) override {
         const ImgBase *p = src.ptr();
         if (p->getDepth() != depth16s || p->getChannels() != 1) {

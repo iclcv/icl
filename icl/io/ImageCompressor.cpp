@@ -294,6 +294,23 @@ namespace icl::io {
     // concurrent installPlugin() can't swap it mid-way.  See Data::mutex.
     std::scoped_lock lk(m_data->mutex);
 
+    // Pre-validate the input shape against the codec's declared
+    // capabilities() before delegating.  Plugins still throw their own
+    // detail-level exceptions as a safety net, but this gives users a
+    // uniform, codec-named error message at the facade boundary —
+    // consumed by qt::Prop / the compressor demo to surface cleanly in
+    // the UI rather than letting plugin-specific wording bleed through.
+    {
+      const auto caps = m_data->plugin->capabilities();
+      if (!caps.accepts(img.getDepth(), img.getChannels(),
+                        img.ptr()->getFormat())) {
+        throw ICLException(
+            "ImageCompressor: codec '" + m_data->plugin->name()
+            + "' does not accept this image (codec accepts: "
+            + caps.describe() + ")");
+      }
+    }
+
     // Encode payload via the active plugin.
     const CompressionPlugin::Bytes payload = m_data->plugin->compress(img);
 

@@ -151,6 +151,10 @@ namespace icl::io {
 
       std::string name() const override { return "rlen"; }
 
+      Capabilities capabilities() const override {
+        return { .depths={depth8u} };
+      }
+
       Bytes compress(const Image &src) override {
         const ImgBase *p = src.ptr();
         if (p->getDepth() != depth8u) {
