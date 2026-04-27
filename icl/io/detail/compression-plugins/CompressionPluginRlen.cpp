@@ -3,8 +3,23 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // `rlen` codec: per-channel run-length encoding for icl8u images.
-// Quality 1/4/6/8 maps to bits-per-value (the rest is run-length); see
-// ImageCompressor.h for the historical description. Always built.
+//
+// `quality` selects the number of value-bits per RLE token; the
+// remainder of the token byte holds (run_len - 1) so a single run of
+// up to (1 << len_bits) like-valued pixels packs into one byte.  q=8
+// is the only lossless variant — it spends a full byte on the value
+// and a separate byte on the length.  Lower qualities quantise the
+// byte to fewer bits before run-finding (q=1 binarises around the 127
+// threshold; q=4/q=6 mask off the low nibble / two bits respectively),
+// trading reconstruction fidelity for shorter tokens.
+//
+// Implementation: a single `RlenCodec<VAL_BITS>` template parameterises
+// the four cases.  The encode/decode loops are written once and
+// instantiated for VAL_BITS ∈ {1, 4, 6, 8}; per-quality differences
+// (mask vs threshold quantisation, single- vs two-byte tokens, value
+// expansion on decode) live inside the codec's tiny `quantize`,
+// `emit`, and `decodeOne` helpers — no OOB reads, no run-tail
+// re-seeds.  Always built (no external dependency).
 
 #include <icl/io/detail/compression-plugins/CompressionPlugin.h>
 #include <icl/utils/prop/Constraints.h>
@@ -13,6 +28,8 @@
 #include <icl/core/Img.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exception.h>
+#include <algorithm>
+#include <cstdint>
 #include <vector>
 
 namespace icl::io {
@@ -20,140 +37,151 @@ namespace icl::io {
   using namespace icl::utils;
 
   namespace {
-    static const icl8u *find_first_not_binarized(const icl8u *curr,
-                                                 const icl8u *end,
-                                                 icl8u val) {
-      if (val) for (; curr < end; ++curr) { if (*curr <  127) return curr; }
-      else     for (; curr < end; ++curr) { if (*curr >= 127) return curr; }
-      return end;
-    }
-
-    // Encode one channel of `imageData` (length `dim` bytes) at `quality`
-    // bits-per-value. Returns the new write head into `out`.
+    // ---- Codec policy -----------------------------------------------
     //
-    // All four cases were rewritten to read the run's seed value AFTER
-    // the bounds check, inside the loop body.  The previous structure
-    // initialised `currVal` from `imageData[0]` BEFORE the loop and
-    // re-seeded it from `*imageData` at the END of each iteration —
-    // both reads are out-of-bounds when `dim == 0` (initial) or when a
-    // run ends exactly at `imageDataEnd` (tail).  ICL channel buffers
-    // are heap-allocated so the read is usually masked by allocator
-    // padding, but a tight chunk that ends on a page boundary (large
-    // channels, certain malloc paths on macOS) trips a bus error
-    // straight inside encodeChannel — which is exactly the user-
-    // reported crash in `RlenPlugin::compress` after switching the
-    // quality knob from 6 to 8 in compressor-playground.
-    static icl8u *encodeChannel(const icl8u *imageData, int dim,
-                                icl8u *out, int quality) {
-      const icl8u *imageDataEnd = imageData + dim;
-      switch (quality) {
-        case 1: {
-          while (imageData < imageDataEnd) {
-            // `find_first_not_binarized` uses >=127 as the binarization
-            // threshold; we MUST match it here, otherwise a byte in
-            // [1, 126] seeds currVal=1 but the find function reports the
-            // same byte as not-binarized → 0-length run → infinite loop.
-            // (The original code papered over the mismatch by seeding
-            // once before the loop and toggling currVal at the tail of
-            // each iteration; restructuring to re-seed inside the loop
-            // requires the threshold to be self-consistent.)
-            icl8u currVal = (*imageData >= 127) ? 1 : 0;
-            const icl8u *other = find_first_not_binarized(imageData, imageDataEnd, currVal);
-            std::size_t len = static_cast<std::size_t>(other - imageData);
-            while (len >= 128) { *out++ = 0xff >> int(!currVal); len -= 128; }
-            if (len)            *out++ = (len - 1) | (currVal << 7);
-            imageData = other;
-          }
-          break;
+    // VAL_BITS = bits spent on the quantised value in each token.
+    // For q=1/4/6 the token is a single byte split into (value | length-1);
+    // for q=8 the token is two bytes (value, length-1).  Run-length is
+    // the remaining capacity, so MAX_LEN = 1 << LEN_BITS.
+
+    template <int VAL_BITS>
+    struct RlenCodec {
+      static_assert(VAL_BITS == 1 || VAL_BITS == 4
+                 || VAL_BITS == 6 || VAL_BITS == 8,
+                    "rlen: only q=1/4/6/8 are supported");
+
+      static constexpr bool TWO_BYTE_TOKEN = (VAL_BITS == 8);
+      static constexpr int  LEN_BITS = TWO_BYTE_TOKEN ? 8 : (8 - VAL_BITS);
+      static constexpr int  MAX_LEN  = 1 << LEN_BITS;
+      static constexpr int  LEN_MASK = MAX_LEN - 1;
+      static constexpr int  VAL_MASK = TWO_BYTE_TOKEN
+                                       ? 0xff
+                                       : (0xff & ~LEN_MASK);
+      static constexpr int  TOKEN_BYTES = TWO_BYTE_TOKEN ? 2 : 1;
+
+      // Map a pixel to the run-comparison key.  q=4/6/8 are mask-based
+      // (low bits dropped); q=1 is a threshold (>=127) producing the
+      // same MSB-set vs MSB-clear pattern as the encoded token, so the
+      // emit/decode helpers don't need to special-case binarisation.
+      static int quantize(icl8u px) {
+        if constexpr (VAL_BITS == 1) {
+          return (px >= 127) ? VAL_MASK : 0;  // VAL_MASK == 0x80 here
+        } else {
+          return px & VAL_MASK;
         }
-        case 4: {
-          while (imageData < imageDataEnd) {
-            int currVal = *imageData & 0xf0;
-            int currLen = 0;
-            while (imageData < imageDataEnd && (*imageData & 0xf0) == currVal) {
-              ++currLen; ++imageData;
-            }
-            while (currLen >= 16) { *out++ = currVal | 0xf; currLen -= 16; }
-            if (currLen)            *out++ = currVal | (currLen - 1);
-          }
-          break;
+      }
+
+      // Append a token for a run of `len` (1..MAX_LEN) pixels with
+      // quantised value `v` to `out`.  Returns the new write head.
+      static icl8u *emit(icl8u *out, int v, int len) {
+        if constexpr (TWO_BYTE_TOKEN) {
+          *out++ = static_cast<icl8u>(v);
+          *out++ = static_cast<icl8u>(len - 1);
+        } else {
+          *out++ = static_cast<icl8u>(v | (len - 1));
         }
-        case 6: {
-          static const int VAL_MASK = 0xFC, LEN_MASK = 0x3, MAX_LEN = 4;
-          while (imageData < imageDataEnd) {
-            int currVal = *imageData & VAL_MASK;
-            int currLen = 0;
-            while (imageData < imageDataEnd && (*imageData & VAL_MASK) == currVal) {
-              ++currLen; ++imageData;
-            }
-            while (currLen >= MAX_LEN) { *out++ = currVal | LEN_MASK; currLen -= MAX_LEN; }
-            if (currLen)                *out++ = currVal | (currLen - 1);
+        return out;
+      }
+
+      // Decode one token from `src`, expanding it into `dst` (advanced
+      // by the run length).  Returns the new read head.  q=1's
+      // single-bit value is expanded back to {0, 255} for display
+      // fidelity.
+      static const icl8u *decodeOne(icl8u *&dst, const icl8u *src) {
+        if constexpr (TWO_BYTE_TOKEN) {
+          const icl8u v   = src[0];
+          const int   len = src[1] + 1;
+          std::fill(dst, dst + len, v);
+          dst += len;
+          return src + 2;
+        } else {
+          const int t   = *src;
+          const int len = (t & LEN_MASK) + 1;
+          icl8u v;
+          if constexpr (VAL_BITS == 1) {
+            v = (t & VAL_MASK) ? 255 : 0;
+          } else {
+            v = static_cast<icl8u>(t & VAL_MASK);
           }
-          break;
+          std::fill(dst, dst + len, v);
+          dst += len;
+          return src + 1;
         }
-        case 8: {
-          static const int MAX_LEN = 256;
-          while (imageData < imageDataEnd) {
-            int currVal = *imageData;
-            int currLen = 0;
-            while (imageData < imageDataEnd && *imageData == currVal) {
-              ++currLen; ++imageData;
-            }
-            while (currLen >= MAX_LEN) {
-              *out++ = currVal; *out++ = MAX_LEN - 1; currLen -= MAX_LEN;
-            }
-            if (currLen) {
-              *out++ = currVal; *out++ = currLen - 1;
-            }
-          }
-          break;
+      }
+    };
+
+    // ---- Encode / decode loops --------------------------------------
+    //
+    // A single read of `src[0]` per outer iteration, gated by the
+    // `src < end` bounds check at the top of the loop — no OOB on tail
+    // (the previous monolithic switch re-seeded `currVal = *src` at
+    // the END of each iteration, which read one byte past `end`).
+
+    template <int VAL_BITS>
+    static icl8u *encodeChannelT(const icl8u *src, int dim, icl8u *out) {
+      using C = RlenCodec<VAL_BITS>;
+      const icl8u *end = src + dim;
+      while (src < end) {
+        const int v = C::quantize(*src);
+        int len = 0;
+        while (src < end && C::quantize(*src) == v) {
+          ++len; ++src;
         }
-        default:
-          throw ICLException("rlen: unsupported quality (" + str(quality) + "); allowed: 1, 4, 6, 8");
+        while (len >= C::MAX_LEN) {
+          out = C::emit(out, v, C::MAX_LEN);
+          len -= C::MAX_LEN;
+        }
+        if (len) {
+          out = C::emit(out, v, len);
+        }
       }
       return out;
     }
 
-    // Decode one channel; advances `src` past its consumed bytes.
-    static const icl8u *decodeChannel(icl8u *imageData, int dim,
-                                      const icl8u *src, int quality) {
-      icl8u *pc = imageData, *pcEnd = imageData + dim;
-      switch (quality) {
-        case 1:
-          for (; pc < pcEnd; ++src) {
-            const int l = ((*src) & 127) + 1;
-            std::fill(pc, pc + l, ((*src) >> 7) * 255);
-            pc += l;
-          }
-          break;
-        case 4:
-          for (; pc < pcEnd; ++src) {
-            const int l = ((*src) & 0xf) + 1;
-            std::fill(pc, pc + l, ((*src) & 0xf0));
-            pc += l;
-          }
-          break;
-        case 6: {
-          static const int VAL_MASK = 0xFC, LEN_MASK = 0x3;
-          for (; pc < pcEnd; ++src) {
-            const int l = ((*src) & LEN_MASK) + 1;
-            std::fill(pc, pc + l, ((*src) & VAL_MASK));
-            pc += l;
-          }
-          break;
-        }
-        case 8:
-          for (; pc < pcEnd; src += 2) {
-            const int l = src[1] + 1;
-            std::fill(pc, pc + l, src[0]);
-            pc += l;
-          }
-          break;
-        default:
-          throw ICLException("rlen: unsupported quality (" + str(quality) + ")");
+    template <int VAL_BITS>
+    static const icl8u *decodeChannelT(icl8u *dst, int dim, const icl8u *src) {
+      using C = RlenCodec<VAL_BITS>;
+      icl8u *const end = dst + dim;
+      while (dst < end) {
+        src = C::decodeOne(dst, src);
       }
       return src;
     }
+
+    // Quality-keyed dispatch.  Each branch instantiates the template
+    // for one VAL_BITS value; the compiler resolves the inner switch
+    // away at template-instantiation time.
+    static icl8u *encodeChannel(const icl8u *src, int dim,
+                                icl8u *out, int q) {
+      switch (q) {
+        case 1: return encodeChannelT<1>(src, dim, out);
+        case 4: return encodeChannelT<4>(src, dim, out);
+        case 6: return encodeChannelT<6>(src, dim, out);
+        case 8: return encodeChannelT<8>(src, dim, out);
+      }
+      throw ICLException("rlen: unsupported quality (" + str(q)
+                         + "); allowed: 1, 4, 6, 8");
+    }
+
+    static const icl8u *decodeChannel(icl8u *dst, int dim,
+                                      const icl8u *src, int q) {
+      switch (q) {
+        case 1: return decodeChannelT<1>(dst, dim, src);
+        case 4: return decodeChannelT<4>(dst, dim, src);
+        case 6: return decodeChannelT<6>(dst, dim, src);
+        case 8: return decodeChannelT<8>(dst, dim, src);
+      }
+      throw ICLException("rlen: unsupported quality (" + str(q) + ")");
+    }
+
+    // Worst-case bytes-per-pixel for each quality (drives the encoder's
+    // pre-allocation).  q=1/4/6 emit a single token byte per maximally-
+    // fragmented pixel; q=8 emits two (value + length).
+    constexpr int worstBytesPerPixel(int q) {
+      return q == 8 ? 2 : 1;
+    }
+
+    // ---- Plugin -----------------------------------------------------
 
     class RlenPlugin : public CompressionPlugin {
       std::vector<icl8u> m_buf;
@@ -161,9 +189,10 @@ namespace icl::io {
 
     public:
       RlenPlugin() {
-        addProperty("quality", prop::Menu{"1", "4", "6", "8"}, "1", "Bits-per-value for the RLE token. 1 = binary (best for "
-                    "low-noise binary masks); 4/6 = lossy quantization; "
-                    "8 = lossless byte-level RLE.");
+        addProperty("quality", prop::Menu{"1", "4", "6", "8"}, "1",
+                    "Bits-per-value for the RLE token. 1 = binary "
+                    "(best for low-noise binary masks); 4/6 = lossy "
+                    "quantization; 8 = lossless byte-level RLE.");
         Configurable::registerCallback([this](const Property &p){
           if (p.name == "quality") m_quality = p.as<int>();
         });
@@ -182,17 +211,15 @@ namespace icl::io {
         }
         // Snapshot m_quality once.  The Configurable callback that
         // writes m_quality runs on whichever thread mutated the
-        // property (typically the GUI thread via qt::Prop), while
-        // compress() runs on a worker thread.  If `quality` flipped
-        // 6 → 8 between the worst-case-sizing read and the
-        // encodeChannel calls, the buffer would be sized for q≤6
-        // (1 byte/pixel) but the encoder would emit up to 2 bytes/pixel
-        // — a heap overflow.  Reading once into a local closes the race.
+        // property (typically the GUI thread via qt::Prop) while
+        // compress() runs on a worker thread; reading the field twice
+        // would let a 6→8 flip slip past the buffer-size pick and
+        // overflow the heap.
         const int q     = m_quality;
         const int dim   = p->getDim();
         const int nChan = p->getChannels();
-        // Worst-case: q=8 emits 2 bytes per pixel; everyone else <= 1.
-        m_buf.resize(static_cast<std::size_t>(nChan) * dim * (q == 8 ? 2 : 1));
+        m_buf.resize(static_cast<std::size_t>(nChan) * dim
+                     * worstBytesPerPixel(q));
         icl8u *out = m_buf.data();
         for (int c = 0; c < nChan; ++c) {
           out = encodeChannel(p->as8u()->getData(c), dim, out, q);
@@ -201,15 +228,15 @@ namespace icl::io {
         return {m_buf.data(), m_buf.size()};
       }
 
-      Image decompress(Bytes bytes, const ImgParams &params, depth d) override {
+      Image decompress(Bytes bytes, const ImgParams &params,
+                       depth d) override {
         if (d != depth8u) {
           throw ICLException("rlen: only icl8u images are supported");
         }
         // Snapshot m_quality for the same reason as compress() — the
-        // wire envelope's setCodecParamsString writes this field, and
-        // a concurrent decompress on the cached decode plugin must not
-        // observe a half-updated value mid-loop.
-        const int q  = m_quality;
+        // wire envelope's setCodecParamsString writes this field on
+        // the cached decode plugin.
+        const int q = m_quality;
         Image out(params.getSize(), depth8u, params.getChannels(),
                   params.getFormat());
         out.ptr()->setROI(params.getROI());
@@ -221,7 +248,9 @@ namespace icl::io {
         return out;
       }
 
-      std::string getCodecParamsString() const override { return str(m_quality); }
+      std::string getCodecParamsString() const override {
+        return str(m_quality);
+      }
       void setCodecParamsString(const std::string &p) override {
         if (!p.empty()) m_quality = parse<int>(p);
       }
