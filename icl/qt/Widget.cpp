@@ -140,6 +140,14 @@ namespace icl::qt {
     std::function<void()> vcb;
     std::function<void(bool)> bcb;
 
+    /// Optional live state provider for toggable buttons.  When set, the
+    /// displayed icon (toggled vs untoggled) is derived from `stateFn()`
+    /// each paint, and click presses pass `!stateFn()` to `bcb` rather
+    /// than flipping the cached `toggled` flag.  Lets the icon stay in
+    /// sync with state owned outside the button (e.g. a Configurable
+    /// property changed via a menu combo).
+    std::function<bool()> stateFn;
+
     std::string toolTipText;
 
     bool isToolTipVisible() const{
@@ -230,18 +238,20 @@ namespace icl::qt {
     }
 
 
+    bool effectiveToggled() const { return stateFn ? stateFn() : toggled; }
+
     void drawGL(const Size &windowSize){
       if(!visible) return;
       tmImage.setBCI(over*20,down*20,0);
       tmImage.setScaleMode(interpolateLIN);
-      const Img8u &im = toggled ? downIcon : icon;
+      const Img8u &im = effectiveToggled() ? downIcon : icon;
       tmImage.update(&im);
 
       tmImage.draw2D(bounds,windowSize);
     }
     void drawWithPaintEngine(PaintEngine *pe) {
       if(!visible || !pe) return;
-      const Img8u &im = toggled ? downIcon : icon;
+      const Img8u &im = effectiveToggled() ? downIcon : icon;
       pe->image(Rect32f(bounds.x, bounds.y, bounds.width, bounds.height),
                 const_cast<Img8u*>(&im));
     }
@@ -256,9 +266,12 @@ namespace icl::qt {
       if(bounds.contains(x,y)){
         down = true;
         if(toggable){
-          toggled = !toggled;
-          if(bcb) bcb(toggled);//(parent->*bcb)(toggled);
-          if(id != "") emit parent->specialButtonToggled(id,toggled);
+          // With a live `stateFn`, don't cache `toggled` locally — the
+          // icon comes from `stateFn()` next paint.  Just request a flip.
+          const bool wasOn = effectiveToggled();
+          if(!stateFn) toggled = !wasOn;
+          if(bcb) bcb(!wasOn);
+          if(id != "") emit parent->specialButtonToggled(id,!wasOn);
         }else{
           if(vcb) vcb(); // (parent->*vcb)();
           if(id != "") emit parent->specialButtonClicked(id);
@@ -439,7 +452,7 @@ namespace icl::qt {
     Data(ICLWidget *parent):
       parent(parent),channelSelBuf(0),
       qimageConv(0),qimage(0),fm(fmHoldAR),fmSave(fmHoldAR),
-      rm(rmOff),
+      rm(rmOff),rmLastNonOff(rmAuto),
       mouseX(-1),mouseY(-1),selChannel(-1),showNoImageWarnings(true),
       outputCap(0),menuOn(true),menuptr(0),zoomAdjuster(0),
       qic(0),menuEnabled(true),infoTab(0),histoWidget(0),
@@ -480,6 +493,12 @@ namespace icl::qt {
     fitmode fm;
     fitmode fmSave;
     rangemode rm;
+    /// Last non-off range mode the user picked (rmAuto or rmOn).  Lets
+    /// the OSD scale-range button round-trip through rmOff without
+    /// clobbering a manual-BCI ("custom") configuration: clicking the
+    /// button to disable scaling and then clicking again restores the
+    /// previous mode rather than always landing on rmAuto.
+    rangemode rmLastNonOff;
     int bci[3];
     // Live-read closures over the Button handles.  Nullable (empty
     // before init); call-operator returns the current toggle state.
@@ -1212,6 +1231,23 @@ namespace icl::qt {
   static void create_menu(ICLWidget *widget,ICLWidget::Data *data){
     QMutexLocker locker(&data->menuMutex);
 
+    // Snapshot the previous menu's toggle state BEFORE reassigning
+    // data->menu — the `bciUpdateAuto` / `channelUpdateAuto` lambdas
+    // capture `data` and resolve `data->menu[<handle>]` against the
+    // *current* menu.  Once data->menu is overwritten with a fresh Tab
+    // below, the lambdas would look into the new (in-progress) menu
+    // where the handles haven't been re-registered yet, throwing
+    // `KeyNotFoundException`.  This is the recreate path
+    // (setMenuEmbedded) — first-time create harmlessly snapshots `false`
+    // because both lambdas start empty.
+    const bool bciAuto = data->bciUpdateAuto && data->bciUpdateAuto();
+    // Replace the captured-data lambdas with safe stubs for the rebuild
+    // window (signal slots like `bciModeChanged` can fire during widget
+    // construction and would otherwise hit the exception above).  The
+    // real lambdas are re-installed at the end of create_menu().
+    data->bciUpdateAuto = []{ return false; };
+    data->channelUpdateAuto = []{ return false; };
+
     // OK, we need to extract default values for all gui elements if gui is already defined!
     data->menu = Tab("bci,scale,channel,capture,grid,info,license,help",widget).handle("root").minSize(5,7);
 
@@ -1219,7 +1255,6 @@ namespace icl::qt {
 
     std::string bcis[3]={"custom,","off,","auto"};
     bcis[(static_cast<int>(data->rm))-1] = str("!")+bcis[(static_cast<int>(data->rm))-1];
-    bool bciAuto = data->bciUpdateAuto && data->bciUpdateAuto();
     bciGUI << ( HBox()
                 << Combo(bcis[0]+bcis[1]+bcis[2]).label("bci-mode").handle("bci-mode")
                 << Button("manual","auto",bciAuto).label("update mode").handle("bci-update-mode")
@@ -1531,6 +1566,9 @@ namespace icl::qt {
     x+=GL_BUTTON_X_INC;
     m_data->glbuttons.push_back(new OSDGLButton(this,"scale value range","",x,y,w,h,OSDGLButton::RangeNormal,OSDGLButton::RangeScaled,
                                                 [this](bool b) { setRangeModeNormalOrScaled(b); },false));
+    // Live state read: icon mirrors the actual rangemode regardless of
+    // which UI surface (OSD button or `bci-mode` combo) last touched it.
+    m_data->glbuttons.back()->stateFn = [this]{ return m_data->rm != rmOff; };
     x+=GL_BUTTON_X_INC;
     m_data->glbuttons.push_back(new OSDGLButton(this,"enter/leave fullscreen (F11)","",x,y,w,h,OSDGLButton::EnterFullScreen,
                                                 OSDGLButton::LeaveFullScreen,
@@ -1620,6 +1658,9 @@ namespace icl::qt {
       case 2: m_data->rm = rmAuto; break;
       default: ERROR_LOG("invalid range mode index");
     }
+    // Remember any non-off mode so the OSD scale-range button can round-
+    // trip through rmOff and restore the user's choice (rmOn or rmAuto).
+    if(m_data->rm != rmOff) m_data->rmLastNonOff = m_data->rm;
     if(m_data->bciUpdateAuto()){
       rebufferImageInternal();
     }
@@ -1945,9 +1986,25 @@ namespace icl::qt {
 
 
   void ICLWidget::rebufferImageInternal(){
-    // for rebuffering here!
-    m_data->image.setBCI(m_data->bci[0], m_data->bci[1],m_data->bci[2]+1);
-    m_data->image.setBCI(m_data->bci[0], m_data->bci[1],m_data->bci[2]);
+    // Mirror the rm-aware BCI selection from setImage() so a range-mode
+    // change takes effect immediately on the currently displayed image,
+    // not only on the next frame.  Previously this method always pushed
+    // the manual sliders, so flipping the OSD scale-range button (or the
+    // bci-mode combo) didn't update the GL display until setImage() was
+    // called again.
+    int b, c, i;
+    if(m_data->rm == rmAuto){
+      b = c = i = -1;            // sentinel: GLImageRenderer auto-scale
+    }else if(m_data->rm == rmOn){
+      b = m_data->bci[0]; c = m_data->bci[1]; i = m_data->bci[2];
+    }else{                        // rmOff
+      b = c = i = 0;
+    }
+    // The double-set is a deliberate cache-invalidation kick — the
+    // renderer compares against its previous BCI and skips re-uploads on
+    // an exact match.  Setting an off-by-one value first forces dirty.
+    m_data->image.setBCI(b, c, i+1);
+    m_data->image.setBCI(b, c, i);
     update();
   }
 
@@ -2550,14 +2607,29 @@ namespace icl::qt {
 
 
   void ICLWidget::setRangeModeNormalOrScaled(bool enabled){
-    setRangeMode(enabled?rmAuto:rmOff);
-    if(!m_data->menuptr){
-      create_menu(this,m_data);
-      showHideMenu();
-      showHideMenu();
+    if(enabled){
+      // Going scaled: restore the user's last non-off mode so manual BCI
+      // ("custom"/rmOn) survives a round-trip through the OSD button.
+      setRangeMode(m_data->rmLastNonOff);
+    }else{
+      // Going off: remember whatever scaled mode we were in, so the next
+      // click can restore it.
+      if(m_data->rm != rmOff) m_data->rmLastNonOff = m_data->rm;
+      setRangeMode(rmOff);
     }
-    ComboHandle ch = m_data->menu.get<ComboHandle>("bci-mode");
-    ch.setSelectedIndex(enabled?2:1);
+    // Sync the bci-mode combo only if the menu has already been built.
+    // The old code force-created the menu just to poke this combo, then
+    // double-toggled `showHideMenu()` to leave it hidden — that briefly
+    // flashed the menu visible on the very first OSD-button click.
+    // create_menu() already reads `m_data->rm` to set the combo's default
+    // index, so first-time menu opening will reflect the right state.
+    if(m_data->menuptr){
+      ComboHandle ch = m_data->menu.get<ComboHandle>("bci-mode");
+      // bci-mode combo: 0=custom(rmOn), 1=off(rmOff), 2=auto(rmAuto)
+      const int idx = (m_data->rm == rmOn) ? 0
+                    : (m_data->rm == rmOff) ? 1 : 2;
+      ch.setSelectedIndex(idx);
+    }
   }
 
 

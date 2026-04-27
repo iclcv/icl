@@ -16,6 +16,7 @@
 #include <icl/utils/SignalHandler.h>
 #include <mutex>
 #include <cstdlib>
+#include <iostream>
 
 using namespace icl::utils;
 
@@ -265,8 +266,22 @@ void ICLApplication::addFinalization(callback cb){
 	}
 
 int ICLApplication::exec(){
+  // Wrap each init() in a try/catch so that user-supplied init code
+  // (typically GenericGrabber::init / file-loading / etc.) can fail with
+  // a readable message instead of letting an unhandled exception escape
+  // through Qt's half-built event loop and turn into SIGSEGV/SIGABRT
+  // during teardown.  Prints to stderr and returns a non-zero exit code
+  // so shell users see a clean, scriptable error.
   for(unsigned int i=0;i<s_inits.size();++i){
-    s_inits[i]();
+    try {
+      s_inits[i]();
+    } catch (const std::exception &e) {
+      std::cerr << "icl: initialization failed: " << e.what() << std::endl;
+      return 2;
+    } catch (...) {
+      std::cerr << "icl: initialization failed: unknown exception" << std::endl;
+      return 2;
+    }
   }
   for(unsigned int i=0;i<s_callbacks.size();++i){
     s_threads.push_back(new ExecThread(s_callbacks[i]));

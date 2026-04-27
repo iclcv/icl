@@ -15,33 +15,32 @@ ICL (Image Component Library) is a C++ computer vision framework (v10.0.2) devel
 
 ## Build Commands
 
+The project builds with **meson + ninja** (the legacy CMake build was retired). Build dir is `builddir/`.
+
 ```bash
-# Configure (out-of-source build required)
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
+# Configure (one-time)
+meson setup builddir
 
-# Build
-cmake --build build
+# Build everything (always -j 16 — see feedback_build_threads memory)
+ninja -C builddir -j 16
 
-# Configure with tests (requires CMake 3.10+, downloads GTest automatically)
-cmake .. -DBUILD_TESTS=ON
-
-# Build only tests
-cmake --build build --target tests
-
-# Run tests
-cd build && ctest
-
-# Build with examples/demos/apps
-cmake .. -DBUILD_EXAMPLES=ON -DBUILD_DEMOS=ON -DBUILD_APPS=ON
-
-# Build documentation
-cmake --build build --target pages
+# Run tests — use the binary directly; ctest is NOT wired up in this project
+builddir/bin/icl-tests
+builddir/bin/icl-tests -j 1   # serial; flaky parallel discoveries (see project_test_parallel_flakiness)
 ```
 
-Key CMake options: `ENABLE_NATIVE_BUILD_OPTION`, `ENABLE_OPENMP_BUILD_OPTION`, `BUILD_REDIST=DEB|WIX`.
+## Running GUI apps in this sandbox
 
-When `BUILD_TESTS=ON` and no build type is specified, CMake defaults to Debug; otherwise it defaults to Release.
+The macOS Cocoa Qt platform is broken inside the sandbox (`QOpenGLWidget` ctor crashes). To run any
+Qt app non-interactively here, use **`QT_QPA_PLATFORM=offscreen`**:
+
+```bash
+QT_QPA_PLATFORM=offscreen builddir/bin/icl-viewer -i create cameraman
+```
+
+OpenGL widgets fail to create a context under offscreen, but enough of the app initialises that
+error paths (e.g. invalid `-i` arguments, exception-during-`init()`) print correctly to stderr and
+exit with the expected code. Use this whenever you need to verify a non-GUI code path in a Qt app.
 
 ## Pre-commit
 
@@ -156,29 +155,23 @@ Wraps the Bullet physics engine. Object classes derive from `geom::SceneObject` 
 
 ## Module Structure Convention
 
-Every module follows the same layout:
+Every module follows the same layout (under `icl/<module>/`):
 
 ```
-ModuleName/
-  CMakeLists.txt
-  src/ModuleName/    ← headers (.h) and source files (.cpp)
-  examples/          ← example programs (BUILD_EXAMPLE macro)
-  demos/             ← demo applications (BUILD_DEMO macro)
-  apps/              ← end-user tools (BUILD_APP macro, select modules only)
-  test/test-*.cpp    ← GTest files (one per module, discovered via CONFIGURE_GTEST)
+icl/<module>/
+  meson.build         ← module + targets wiring
+  *.h, *.cpp          ← headers and source files
+  apps/               ← end-user tools (built when -Dapps=true)
+  demos/              ← demo applications (built when -Ddemos=true)
+  examples/           ← example programs (built when -Dexamples=true)
+  detail/             ← non-installed implementation files (strict invariant)
 ```
 
 ## Test Structure
 
-Each module has a single test file at `ModuleName/test/test-*.cpp` using Google Test. The `CONFIGURE_GTEST` macro in `cmake/Modules/ICLHelperMacros.cmake` auto-discovers `test/test-*.cpp` files and links against `gtest_main` + the module library. Test executables are named `tests_<modulename>` (lowercase).
-
-## CMake Build System Internals
-
-- `cmake/Modules/ICLHelperMacros.cmake` — defines `BUILD_EXAMPLE`, `BUILD_DEMO`, `BUILD_APP`, `CONFIGURE_GTEST` macros
-- `cmake/Modules/ICLFindPackage.cmake` — custom dependency detection
-- `cmake/Modules/CheckArchitecture.cmake` — 32/64-bit detection
-- Each module's CMakeLists.txt assembles sources via `FILE(GLOB ...)` and registers examples/demos/apps using the helper macros
-- Optional dependencies use `BUILD_WITH_*` cache variables set by ICLFindPackage
+All tests live in `tests/test-*.cpp` and link into a single `bin/icl-tests` executable
+(GTest-based). Run it directly — there is no `ctest` / `make test` target. Pass `-j 1`
+to avoid the parallel-test flakiness documented in `project_test_parallel_flakiness`.
 
 ## CI
 
