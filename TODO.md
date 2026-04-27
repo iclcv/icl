@@ -51,27 +51,70 @@ Applied per `module-audit-checklist.md`.
   shape, not the bare id — documented in the demo's `swapBackend`
   helper.
 
-- [ ] **Capability flags for compression codecs.**  Surfaced by
-  compressor-playground: `1611` throws on RGB input ("only
-  single-channel icl16s supported").  The demo catches + reports in
-  the ratio label, but a cleaner UX would have the codec advertise
-  its supported (format, depth, channel) matrix so the UI can gray
-  out incompatible choices.  Dovetails with the Session 48 "auto
-  codec mode" deferral — both want a capability surface on
-  `CompressionPlugin`.
+- [x] **Capability flags for compression codecs.**  Landed
+  Session 60 (commit `d99753476`).  `CompressionPlugin::Capabilities`
+  declares `(depths, [minChannels, maxChannels], formats)` whitelists
+  per codec (empty = no constraint); `ImageCompressor::compress()`
+  pre-validates and emits a uniform codec-named error.  Codec
+  declarations: raw / zstd accept anything; rlen requires depth8u;
+  jpeg requires depth8u + 1/3 channels; 1611 requires depth16s + 1
+  channel.  Two new tests (`capabilities.1611_rejects_rgb`,
+  `capabilities.raw_accepts_any`).  Plugin-internal throws kept as
+  defense-in-depth.
+
+- [ ] **qt::Prop UI integration of capability flags.**  Data layer
+  is ready (`plugin->capabilities()`); only the `mode` menu greying-
+  out for incompatible codecs given the current source image
+  remains.  Closes the Session 48 "auto codec" deferral when paired.
 
 ---
 
 ## ICLWidget OSD
 
-- [ ] **Scale-range (zoom/fit) button behaves strangely.**  Surfaced
-  with `icl-region-inspector -i create cameraman` 2026-04-21 — the
-  scale-range OSD button in the image-viewer panel responds
-  oddly.  Symptom not yet characterized in detail; worth reproducing
-  and capturing before digging.  Possibly connected to signal /
-  state caching around `bciUpdateAuto` / `channelUpdateAuto` after
-  the `.out()`-retirement handle-pointer-to-std::function<bool()>
-  conversion in `icl/qt/Widget.cpp`, but could be independent.
+- [x] **Scale-range (zoom/fit) button behaves strangely.**  Landed
+  Session 60 (commit `3a37f9184`).  Three layered fixes in
+  `icl/qt/Widget.cpp`: (1) **root cause** — `rebufferImageInternal`
+  pushed manual BCI sliders unconditionally, so `setRangeMode` only
+  took effect on the *next* `setImage` call rather than the current
+  frame; now mirrors the rm-aware branch from `setImage`.
+  (2) **`OSDGLButton::stateFn`** — new live-state callback so the
+  icon derives from the actual `m_data->rm` each paint, not from a
+  cached `toggled` flag.  (3) **`setRangeModeNormalOrScaled`
+  round-trips through `rmOff`** via `Data::rmLastNonOff`,
+  preserving the user's manual-BCI ("custom"/`rmOn`) configuration.
+  Also dropped the `create_menu` + double-`showHideMenu` hack and
+  added a `bciAuto` snapshot in `create_menu` to fix a separate
+  `KeyNotFoundException: bci-update-mode` on `setMenuEmbedded` rebuild.
+
+- [ ] **OSDGLButton drift audit on the other toggle buttons.**  Now
+  that `stateFn` exists, the same caching-vs-truth drift as the
+  scale-range button likely affects the other OSD toggles
+  (interpolation NN/LIN, embedded-zoom, fullscreen,
+  detach/attach).  Wire each one's `stateFn` to its underlying
+  state owner so all OSD toggles always reflect truth.  Quick
+  polish (~30 min).
+
+## Qt / GL stability
+
+- [x] **`GLImageRenderer` post-free SIGBUS in deferred Metal-OpenGL
+  upload.**  Landed Session 60 (commit `a2f446392`).  The RGBA
+  staging buffer in `uploadTexture()` was a stack-local
+  `std::vector<icl8u>` whose data pointer was passed to
+  `glTexSubImage2D`.  macOS's OpenGL-on-Metal layer is deferred
+  (texture uploads queue onto Metal command buffers consumed on
+  `com.Metal.CompletionQueueDispatch`), so the GPU read freed
+  memory after the function returned — observed as `SIGBUS` at
+  page-aligned `0x200000000`.  Fixed with a persistent member
+  buffer + `glFlush()` after upload.
+
+- [ ] **Verify Metal-OpenGL completion crash is gone outside the
+  sandbox.**  User reported the same `0x200000000` post-free
+  signature on `com.Metal.CompletionQueueDispatch` even after the
+  GLImageRenderer + rlen-rewrite fixes landed.  Likely either (a)
+  another upstream source of heap corruption we haven't found, or
+  (b) a Qt6 QRhi-on-Metal stability issue we can't fix from inside
+  ICL.  Needs a re-test against the new build before either path
+  is decidable.
 
 ## Qt GUI component plumbing
 
@@ -272,7 +315,12 @@ See `project_image_migration.md`.
 
 From Session 48 deferrals:
 
-- [ ] **Capability-flag codec classification** (lossy vs lossless; supported depths) → enables `auto` codec mode via the PluginRegistry's applicability machinery.
+- [x] **Capability-flag codec classification** (lossy vs lossless;
+  supported depths) → enables `auto` codec mode via the
+  PluginRegistry's applicability machinery.  Landed Session 60
+  (commit `d99753476`) — see "Capability flags for compression
+  codecs" under the onChildSetChanged section.  `auto` codec mode
+  is the obvious follow-up that uses this surface.
 - [ ] **Additional codecs**: `webp`, `jxl`, `lz4`, `deflate`/`zlib`.
 - [ ] **`Configurable` events on child-set change** — so `qt::Prop` auto-rebuilds when `ImageCompressor` swaps codec.  See `project_dynamic_child_configurables.md`.
 - [ ] **Browser viewer for WSGrabber** (JS-side envelope parser).  See `reference_websocket.md`.

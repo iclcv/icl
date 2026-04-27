@@ -2,28 +2,53 @@
 
 ## Next Step
 
-Session 59 shipped `qt::ui::` — the designated-init GUI component
-syntax TODO item.  All 33 components (19 leaves + 7 containers + 3
-finalizers + 4 misc) are available under `icl::qt::ui::` with a mixed
-positional+designated-init shape:
-`gui << ui::Slider(0, 255, 42, {.vertical=true, .handle="gain"})`.
-Legacy stream-insertion builder unchanged; both routes converge on
-the same widget factory through the existing `GUIComponent`
-toString()→parse pipeline.  `ui-syntax-demo` exercises every
-component in a VBox/HBox/Tab nested layout — interactively verified
-(callbacks fire correctly on all component types).  `ui-plan.md`
-at repo root documents the design.  871/871 tests.  Summary below.
+Session 60 was a hardening sweep on items from the previous "next
+step" list plus three crash-class bugs the user surfaced while
+exercising compressor-playground.  Seven commits:
+
+- `3a37f9184` — ICLWidget OSD scale-range button (rm-aware
+  `rebufferImageInternal`, `OSDGLButton::stateFn` callback,
+  round-trip via `rmLastNonOff`); graceful `init()` exception
+  handling in `ICLApplication::exec`; CLAUDE.md cleaned up
+  (CMake/ctest → meson/ninja, permanent `QT_QPA_PLATFORM=offscreen`
+  note for sandbox testing).
+- `d99753476` — Compression-codec **capability flags** —
+  `CompressionPlugin::Capabilities` (depths/channels/formats
+  whitelists), facade pre-validates with a uniform codec-named
+  error.  Closes the "1611 throws on RGB" rough edge.
+- `a2f446392` — `GLImageRenderer` post-free SIGBUS — the
+  `rgba` staging buffer was stack-local; macOS Metal-OpenGL is a
+  deferred backend (`com.Metal.CompletionQueueDispatch`), so the
+  GPU read freed memory.  Fixed with a persistent member buffer +
+  `glFlush()` after upload.
+- `4c6654416` `c36ed6215` `92ca9afe4` `462100e87` — **rlen
+  rewrite arc**: snapshot `m_quality` (heap-overflow race);
+  eliminate end-of-buffer OOB read; collapse the four switch cases
+  into a single `RlenCodec<VAL_BITS>` template; add q=2 (4-level
+  quantization).  Two new regression tests: `rlen.roundtrip_all_qualities`
+  and `rlen.quality_flip_mid_session`.
+
+875/875 tests green at HEAD.  Summary below.
 
 Concrete work items remaining (in suggested order):
 
-- **Compression-codec capability flags** (carried from Sessions 55–56).
-  `1611` throws on RGB input; proper fix is a capability matrix on
-  `CompressionPlugin`.
+- **Verify the Metal-OpenGL completion crash is gone outside the
+  sandbox.**  User reported the same `0x200000000` post-free signature
+  on the `com.Metal.CompletionQueueDispatch` queue even after the
+  GLImageRenderer + rlen fixes landed.  If it persists with the new
+  build, the corruption source is upstream of both — likely a Qt6
+  QRhi-on-Metal stability issue we can't fix from inside ICL.
 
-- **ICLWidget OSD scale-range button misbehaves** (2026-04-21 report).
+- **OSDGLButton drift audit** — same `toggled`-cache pattern exists
+  on the other toggle buttons (interpolation NN/LIN, embedded-zoom,
+  fullscreen, detach/attach).  Now that `stateFn` exists, wire it
+  for those too so all OSD toggles always reflect the underlying
+  state.  Quick polish (~30 min).
 
-- **Designated-init GUI component syntax** — `gui << Slider{.min=0,
-  .max=255}`.  Pairs with retiring `GUIComponent::toString()`.
+- **qt::Prop UI integration of capability flags.**  Data layer is
+  ready (`plugin->capabilities()`); only the `mode` menu greying-out
+  for incompatible codecs given the current source image remains.
+  Dovetails with the Session 48 "auto codec" deferral.
 
 - **Fun: icl-edit image editor demo.**  Needs new filter Ops
   (`BrillianceOp`, `VibranceOp`, `ClarityOp`, `CurvesOp`).  Good exercise
@@ -34,6 +59,194 @@ Concrete work items remaining (in suggested order):
   pugi's per-byte scanners are decades-tuned in C with zero wrapper
   overhead.  Config-sized inputs are microseconds regardless; chase only
   if a real workload demands it.
+
+---
+
+## Current State (Session 60 — codec caps + GL post-free + rlen rewrite + OSD scale-range)
+
+A hardening session, no single arc.  Three threads ran in parallel:
+the user's CONTINUE.md "next step" list (capability flags + OSD
+button), a memory-safety chase that started inside the GL renderer
+and ended inside rlen, and finally a clean template rewrite of the
+RLE plugin.
+
+### ICLWidget OSD scale-range button (`3a37f9184`)
+
+Long-standing "button does nothing visible" bug.  Three layered
+fixes in `icl/qt/Widget.cpp`:
+
+1. **Root cause: `rebufferImageInternal` ignored `m_data->rm`.**
+   The function pushed the manual BCI sliders into `GLImageRenderer`
+   unconditionally, so flipping `rm` between `rmOff`/`rmAuto`/`rmOn`
+   only took effect on the *next* `setImage()` call, not the current
+   frame.  Now mirrors the rm-aware branch from `setImage()`.
+2. **`OSDGLButton::stateFn` callback** (new field).  When set, the
+   icon (toggled vs untoggled) is derived live from the callback
+   each paint, instead of caching an internal `toggled` flag.  The
+   scale-range button reads `m_data->rm != rmOff` so its icon stays
+   in sync regardless of which UI surface (OSD button or `bci-mode`
+   combo) last touched the mode.  `update_mouse_press` routes
+   `bcb(!stateFn())` so external state ownership works without drift.
+3. **`setRangeModeNormalOrScaled` round-trips through `rmOff`** via
+   a new `Data::rmLastNonOff` field (default `rmAuto`).  Click off →
+   `rmOff` and remember; click on → restore the previous non-off
+   mode, preserving manual-BCI ("custom"/`rmOn`) configuration.
+   `bciModeChanged` keeps `rmLastNonOff` updated when the user picks
+   a mode via the combo.  Dropped the `create_menu` +
+   double-`showHideMenu()` hack that flashed the menu on first OSD
+   click.
+
+Same commit also fixes:
+
+- **Graceful init failure** — `ICLApplication::exec` wraps each
+  user-supplied `init()` callback in a try/catch.  `icl-viewer -i
+  crate cameraman` (typo'd backend) now prints a clean stderr message
+  and exits 2 instead of letting `GenericGrabber::init`'s
+  `ICLException` escape Qt's half-built event loop and SIGSEGV during
+  teardown.
+- **`create_menu` rebuild guard** — snapshot `bciAuto` from the old
+  menu BEFORE reassigning `data->menu`, then drop both
+  `bciUpdateAuto` / `channelUpdateAuto` to safe-stub lambdas during
+  the build window.  Prevents `KeyNotFoundException: bci-update-mode`
+  on `setMenuEmbedded` recreate.
+- **CLAUDE.md** — replaced the obsolete CMake/ctest section with the
+  actual meson/ninja workflow + `bin/icl-tests`, and added a
+  permanent note about `QT_QPA_PLATFORM=offscreen` for non-interactive
+  Qt-app testing in this sandbox.
+
+### Codec capability flags (`d99753476`)
+
+Closes the carryover from Sessions 55–56.  Each
+`CompressionPlugin` declares its accepted shapes via a virtual
+`capabilities()` returning a `Capabilities` struct with three
+whitelists (each empty = no constraint):
+
+```cpp
+struct Capabilities {
+  std::vector<core::depth>  depths;
+  int                       minChannels = 0;   // both 0 = any
+  int                       maxChannels = 0;
+  std::vector<core::format> formats;
+
+  bool        accepts(core::depth, int channels, core::format) const;
+  std::string describe() const;
+};
+```
+
+Codec declarations:
+
+| codec | depths        | channels | formats |
+|-------|---------------|----------|---------|
+| raw   | any           | any      | any     |
+| zstd  | any           | any      | any     |
+| rlen  | depth8u       | any      | any     |
+| jpeg  | depth8u       | 1 or 3   | any     |
+| 1611  | depth16s      | exactly 1| any     |
+
+`ImageCompressor::compress()` validates against the active plugin's
+capabilities and throws a uniform error before delegating:
+
+```
+ImageCompressor: codec '1611' does not accept this image
+(codec accepts: depth depth16s, 1ch)
+```
+
+Plugin-internal throws remain as defense-in-depth.  Two new tests
+(`capabilities.1611_rejects_rgb`, `capabilities.raw_accepts_any`).
+
+UI greying for incompatible codecs in `qt::Prop` is the obvious
+follow-up — left as a separate item.
+
+### GLImageRenderer post-free SIGBUS (`a2f446392`)
+
+User reported a Mac crash dump from compressor-playground with the
+rlen codec: `SIGBUS` at exactly `0x0000000200000000` inside
+`agxsTwiddleAddressCommon` on the `com.Metal.CompletionQueueDispatch`
+queue.
+
+Root cause: `GLImageRenderer::uploadTexture()` built the planar→RGBA8
+staging buffer as a stack-local `std::vector<icl8u> rgba(w*h*4)` and
+passed `rgba.data()` to `glTexSubImage2D`.  On Apple Silicon, OpenGL
+is implemented atop Metal as a *deferred* backend — `texSubImage2D`
+queues the upload onto a Metal command buffer that completes on a
+separate dispatch queue, **after** `uploadTexture()` has already
+returned.  The stack-local vector destructed before the GPU consumed
+the bytes; the allocator returned the page to the kernel by the time
+the GPU twiddled the source pointer.
+
+Fix: promote `rgba` to a `Data` member so its storage outlives any
+individual upload, plus an explicit `glFlush()` at the end of
+`uploadTexture()` to push the queued command into the driver before
+the next frame can re-resize the buffer.  Affects all codecs, not
+just rlen — rlen just had the most reliable timing window.
+
+### rlen rewrite arc (`4c6654416` → `462100e87`)
+
+Four commits, each peeled a layer off a stack of memory-safety bugs
+in the RLE plugin that were corrupting the heap and surfacing as
+seemingly-random crashes (sometimes inside `compress`, sometimes
+much later inside Metal's command-buffer machinery).
+
+1. **`4c6654416` — quality-flip heap overflow.**  `m_quality` was
+   read twice in `compress()`: once for the worst-case buffer sizing
+   (`q == 8 ? 2 : 1` bytes/pixel), once per `encodeChannel` call.
+   The Configurable property callback writes `m_quality` from the
+   GUI thread (qt::Prop), `compress()` reads it on a worker thread,
+   nothing serialised them — a 6→8 flip between reads sized the
+   buffer for `dim` bytes but encoded at q=8's `2*dim` worst case.
+   Snapshot `m_quality` once at the top of each call into a local.
+2. **`c36ed6215` — end-of-buffer OOB read** in q=4/6/8.  Each case
+   re-seeded `currVal = *imageData` at the END of every iteration
+   to prep the next run; with `imageData == imageDataEnd` after the
+   last run, that's a 1-byte read past the channel buffer.  Heap
+   padding masked it for small allocations, but a tight chunk on a
+   page boundary (large channels, certain malloc paths) tripped a
+   bus error straight inside `RlenPlugin::compress`.  Restructured
+   all four cases to read the run's seed AFTER the bounds check.
+   Two regression tests added (`rlen.roundtrip_all_qualities` on a
+   640×480×3 image to stress the allocator into mmap territory,
+   `rlen.quality_flip_mid_session` to exercise every transition).
+
+   **My own infinite loop** also fixed in this commit: when
+   restructuring q=1 to remove the OOB-at-tail, the seed
+   (`!!*imageData`) and `find_first_not_binarized`'s threshold
+   (`>=127`) disagreed for bytes in `[1, 126]` — same byte
+   re-seeded the same wrong boolean, find returned the same position,
+   0-length run, no progress, infinite loop.  Fixed by using
+   `(*imageData >= 127) ? 1 : 0` to match find's threshold.
+3. **`92ca9afe4` — template rewrite.**  The four quality levels
+   share one pattern: each pixel reduced to a "compare key" (mask
+   for q=4/6/8, threshold for q=1), runs of equal key collapsed,
+   token packs (key, length-1) into one byte (q≤6) or two (q=8).
+   Collapsed to a single `RlenCodec<VAL_BITS>` policy struct + two
+   templated loops (`encodeChannelT` / `decodeChannelT`).  Per-quality
+   differences live in tiny `if constexpr` branches inside
+   `quantize` / `emit` / `decodeOne`.  The four switch cases that
+   were the source of every bug above are gone — each is now a
+   single line in a quality-keyed dispatch.
+4. **`462100e87` — q=2.**  With the template, adding a fifth
+   quality level was three lines (one extra dispatch case in
+   each of encode/decode, one extra entry in the property menu).
+   Fills the natural gap between q=1 (binary) and q=4 (16-level):
+   2 value bits, 6 length bits, MAX_LEN=64.  Useful for coarse
+   4-level masks/icons.
+
+After all four commits the algorithmic core of rlen is roughly
+**~25 LOC of templated loops** + the ~50 LOC `RlenCodec` policy
+(comments included), down from ~80 LOC of switch cases.  Five
+quality levels supported (1/2/4/6/8) instead of four.
+
+### Landmarks
+
+- 875/875 tests green at HEAD (873 baseline + 4 new tests:
+  `capabilities.1611_rejects_rgb`, `capabilities.raw_accepts_any`,
+  `rlen.roundtrip_all_qualities`, `rlen.quality_flip_mid_session`).
+- Three TODO items closed: capability flags, OSD scale-range
+  button, capability-flag codec classification (the same item under
+  two TODO sections).
+- Crash class eliminated from rlen by construction (no OOB reads,
+  no run-tail re-seeds, single source of truth for `m_quality`).
+- Q=2 rlen quality available for coarse 4-level encode.
 
 ---
 
