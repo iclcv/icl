@@ -30,51 +30,72 @@ namespace icl::io {
 
     // Encode one channel of `imageData` (length `dim` bytes) at `quality`
     // bits-per-value. Returns the new write head into `out`.
+    //
+    // All four cases were rewritten to read the run's seed value AFTER
+    // the bounds check, inside the loop body.  The previous structure
+    // initialised `currVal` from `imageData[0]` BEFORE the loop and
+    // re-seeded it from `*imageData` at the END of each iteration —
+    // both reads are out-of-bounds when `dim == 0` (initial) or when a
+    // run ends exactly at `imageDataEnd` (tail).  ICL channel buffers
+    // are heap-allocated so the read is usually masked by allocator
+    // padding, but a tight chunk that ends on a page boundary (large
+    // channels, certain malloc paths on macOS) trips a bus error
+    // straight inside encodeChannel — which is exactly the user-
+    // reported crash in `RlenPlugin::compress` after switching the
+    // quality knob from 6 to 8 in compressor-playground.
     static icl8u *encodeChannel(const icl8u *imageData, int dim,
                                 icl8u *out, int quality) {
       const icl8u *imageDataEnd = imageData + dim;
       switch (quality) {
         case 1: {
-          icl8u currVal = !!*imageData;
           while (imageData < imageDataEnd) {
+            // `find_first_not_binarized` uses >=127 as the binarization
+            // threshold; we MUST match it here, otherwise a byte in
+            // [1, 126] seeds currVal=1 but the find function reports the
+            // same byte as not-binarized → 0-length run → infinite loop.
+            // (The original code papered over the mismatch by seeding
+            // once before the loop and toggling currVal at the tail of
+            // each iteration; restructuring to re-seed inside the loop
+            // requires the threshold to be self-consistent.)
+            icl8u currVal = (*imageData >= 127) ? 1 : 0;
             const icl8u *other = find_first_not_binarized(imageData, imageDataEnd, currVal);
             std::size_t len = static_cast<std::size_t>(other - imageData);
             while (len >= 128) { *out++ = 0xff >> int(!currVal); len -= 128; }
             if (len)            *out++ = (len - 1) | (currVal << 7);
-            currVal = !currVal;
             imageData = other;
           }
           break;
         }
         case 4: {
-          int currVal = *imageData & 0xf0, currLen = 0;
           while (imageData < imageDataEnd) {
+            int currVal = *imageData & 0xf0;
+            int currLen = 0;
             while (imageData < imageDataEnd && (*imageData & 0xf0) == currVal) {
               ++currLen; ++imageData;
             }
             while (currLen >= 16) { *out++ = currVal | 0xf; currLen -= 16; }
             if (currLen)            *out++ = currVal | (currLen - 1);
-            currVal = *imageData & 0xf0; currLen = 0;
           }
           break;
         }
         case 6: {
           static const int VAL_MASK = 0xFC, LEN_MASK = 0x3, MAX_LEN = 4;
-          int currVal = *imageData & VAL_MASK, currLen = 0;
           while (imageData < imageDataEnd) {
+            int currVal = *imageData & VAL_MASK;
+            int currLen = 0;
             while (imageData < imageDataEnd && (*imageData & VAL_MASK) == currVal) {
               ++currLen; ++imageData;
             }
             while (currLen >= MAX_LEN) { *out++ = currVal | LEN_MASK; currLen -= MAX_LEN; }
             if (currLen)                *out++ = currVal | (currLen - 1);
-            currVal = *imageData & VAL_MASK; currLen = 0;
           }
           break;
         }
         case 8: {
           static const int MAX_LEN = 256;
-          int currVal = *imageData, currLen = 0;
           while (imageData < imageDataEnd) {
+            int currVal = *imageData;
+            int currLen = 0;
             while (imageData < imageDataEnd && *imageData == currVal) {
               ++currLen; ++imageData;
             }
@@ -84,7 +105,6 @@ namespace icl::io {
             if (currLen) {
               *out++ = currVal; *out++ = currLen - 1;
             }
-            currVal = *imageData; currLen = 0;
           }
           break;
         }

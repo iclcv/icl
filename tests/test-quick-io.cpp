@@ -122,6 +122,75 @@ ICL_REGISTER_TEST("ImageCompressor.raw.roundtrip",
   ICL_TEST_TRUE(dec.uncompress(data.bytes, data.len) == Image(src));
 }
 
+ICL_REGISTER_TEST("ImageCompressor.rlen.roundtrip_all_qualities",
+                  "rlen roundtrip at every supported quality (1/4/6/8); "
+                  "the inner encoder used to read one byte past the channel "
+                  "buffer at the tail of each run, masked by allocator "
+                  "padding for small heap chunks but tripping a bus error "
+                  "on tight macOS-malloc allocations.") {
+  // Use a multi-channel image with varied data so each quality exercises
+  // its run-find / bit-pack path against real content (not a trivial
+  // single-run input).  640x480 puts each channel above the small-bin
+  // allocator threshold, so the post-end byte is more likely to land on
+  // an unmapped page if anyone ever reintroduces the OOB read.
+  Img8u src(Size(640, 480), 3);
+  for (int c = 0; c < 3; ++c) {
+    icl8u *p = src.getData(c);
+    for (int i = 0; i < src.getDim(); ++i) {
+      p[i] = static_cast<icl8u>((i * 7 + c * 31) & 0xff);
+    }
+  }
+
+  for (const std::string &q : {"1", "4", "6", "8"}) {
+    io::ImageCompressor c(io::ImageCompressor::CompressionSpec("rlen", q));
+    io::ImageCompressor::CompressedData data = c.compress(Image(src));
+    Image got = c.uncompress(data.bytes, data.len);
+    ICL_TEST_EQ(got.getSize(), src.getSize());
+    ICL_TEST_EQ(got.getChannels(), 3);
+    ICL_TEST_EQ(got.getDepth(), depth8u);
+    if (q == "8") {
+      // q=8 is the only lossless rlen quality — bytes must match
+      // exactly (q=1/4/6 quantise the value bits and lose information).
+      const Img8u *back = got.ptr()->as8u();
+      for (int ch = 0; ch < 3; ++ch) {
+        const icl8u *p = src.getData(ch);
+        const icl8u *q2 = back->getData(ch);
+        for (int i = 0; i < src.getDim(); ++i) {
+          if (p[i] != q2[i]) {
+            ICL_TEST_EQ(static_cast<int>(q2[i]), static_cast<int>(p[i]));
+            return;
+          }
+        }
+      }
+    }
+  }
+}
+
+ICL_REGISTER_TEST("ImageCompressor.rlen.quality_flip_mid_session",
+                  "Switching `quality` between calls — same compressor "
+                  "instance, no torn buffer-size vs encoder mismatch.  "
+                  "Used to be a heap overflow when the GUI thread "
+                  "flipped 6→8 between worst-case-sizing and the "
+                  "encodeChannel calls.") {
+  Img8u src(Size(128, 96), 3);
+  for (int c = 0; c < 3; ++c) {
+    icl8u *p = src.getData(c);
+    for (int i = 0; i < src.getDim(); ++i) {
+      p[i] = static_cast<icl8u>((i * 11 + c * 17) & 0xff);
+    }
+  }
+
+  io::ImageCompressor c(io::ImageCompressor::CompressionSpec("rlen", "1"));
+  // Sequence covers every transition (worst-case-buffer ↔ q=8 path).
+  for (const std::string &q : {"1", "4", "6", "8", "6", "1", "8", "4", "1"}) {
+    c.prop("quality").value = q;
+    io::ImageCompressor::CompressedData data = c.compress(Image(src));
+    Image got = c.uncompress(data.bytes, data.len);
+    ICL_TEST_EQ(got.getSize(), src.getSize());
+    ICL_TEST_EQ(got.getChannels(), 3);
+  }
+}
+
 ICL_REGISTER_TEST("ImageCompressor.auto_detect_codec",
                   "receiver decodes regardless of its current setCompression") {
   // Sender uses raw, receiver is configured for 1611 — the envelope
