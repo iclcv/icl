@@ -141,7 +141,7 @@ ICL_REGISTER_TEST("ImageCompressor.rlen.roundtrip_all_qualities",
     }
   }
 
-  for (const std::string &q : {"1", "4", "6", "8"}) {
+  for (const std::string &q : {"1", "2", "4", "6", "8"}) {
     io::ImageCompressor c(io::ImageCompressor::CompressionSpec("rlen", q));
     io::ImageCompressor::CompressedData data = c.compress(Image(src));
     Image got = c.uncompress(data.bytes, data.len);
@@ -181,8 +181,10 @@ ICL_REGISTER_TEST("ImageCompressor.rlen.quality_flip_mid_session",
   }
 
   io::ImageCompressor c(io::ImageCompressor::CompressionSpec("rlen", "1"));
-  // Sequence covers every transition (worst-case-buffer ↔ q=8 path).
-  for (const std::string &q : {"1", "4", "6", "8", "6", "1", "8", "4", "1"}) {
+  // Sequence covers every transition (worst-case-buffer ↔ q=8 path)
+  // and every adjacent pair of qualities at least once.
+  for (const std::string &q :
+       {"1", "2", "4", "6", "8", "6", "2", "1", "8", "4", "2", "1"}) {
     c.prop("quality").value = q;
     io::ImageCompressor::CompressedData data = c.compress(Image(src));
     Image got = c.uncompress(data.bytes, data.len);

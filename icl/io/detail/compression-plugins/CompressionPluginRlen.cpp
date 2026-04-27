@@ -46,9 +46,9 @@ namespace icl::io {
 
     template <int VAL_BITS>
     struct RlenCodec {
-      static_assert(VAL_BITS == 1 || VAL_BITS == 4
+      static_assert(VAL_BITS == 1 || VAL_BITS == 2 || VAL_BITS == 4
                  || VAL_BITS == 6 || VAL_BITS == 8,
-                    "rlen: only q=1/4/6/8 are supported");
+                    "rlen: only q=1/2/4/6/8 are supported");
 
       static constexpr bool TWO_BYTE_TOKEN = (VAL_BITS == 8);
       static constexpr int  LEN_BITS = TWO_BYTE_TOKEN ? 8 : (8 - VAL_BITS);
@@ -155,18 +155,20 @@ namespace icl::io {
                                 icl8u *out, int q) {
       switch (q) {
         case 1: return encodeChannelT<1>(src, dim, out);
+        case 2: return encodeChannelT<2>(src, dim, out);
         case 4: return encodeChannelT<4>(src, dim, out);
         case 6: return encodeChannelT<6>(src, dim, out);
         case 8: return encodeChannelT<8>(src, dim, out);
       }
       throw ICLException("rlen: unsupported quality (" + str(q)
-                         + "); allowed: 1, 4, 6, 8");
+                         + "); allowed: 1, 2, 4, 6, 8");
     }
 
     static const icl8u *decodeChannel(icl8u *dst, int dim,
                                       const icl8u *src, int q) {
       switch (q) {
         case 1: return decodeChannelT<1>(dst, dim, src);
+        case 2: return decodeChannelT<2>(dst, dim, src);
         case 4: return decodeChannelT<4>(dst, dim, src);
         case 6: return decodeChannelT<6>(dst, dim, src);
         case 8: return decodeChannelT<8>(dst, dim, src);
@@ -189,10 +191,12 @@ namespace icl::io {
 
     public:
       RlenPlugin() {
-        addProperty("quality", prop::Menu{"1", "4", "6", "8"}, "1",
+        addProperty("quality", prop::Menu{"1", "2", "4", "6", "8"}, "1",
                     "Bits-per-value for the RLE token. 1 = binary "
-                    "(best for low-noise binary masks); 4/6 = lossy "
-                    "quantization; 8 = lossless byte-level RLE.");
+                    "(best for low-noise binary masks); 2 = 4-level "
+                    "quantization (coarse 4-tone masks/icons); "
+                    "4/6 = finer lossy quantization; 8 = lossless "
+                    "byte-level RLE.");
         Configurable::registerCallback([this](const Property &p){
           if (p.name == "quality") m_quality = p.as<int>();
         });
