@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/filter/BaseFFTOp.h>
+#include <icl/filter/fft/BaseFFTOp.h>
 
 namespace icl::filter {
   /// Forward 2D FFT/DFT operator

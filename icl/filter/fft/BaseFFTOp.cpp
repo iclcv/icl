@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
-#include <icl/filter/BaseFFTOp.h>
+#include <icl/filter/fft/BaseFFTOp.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/prop/Constraints.h>
 

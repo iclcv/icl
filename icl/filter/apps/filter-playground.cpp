@@ -21,7 +21,7 @@
 #include <icl/filter/ChamferOp.h>
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/DitheringOp.h>
-#include <icl/filter/FFTOp.h>
+#include <icl/filter/fft/FFTOp.h>
 #include <icl/filter/lut/FixedConvertOp.h>
 #include <icl/filter/GaborOp.h>
 #include <icl/filter/GradientOp.h>

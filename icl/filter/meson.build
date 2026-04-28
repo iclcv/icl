@@ -3,7 +3,6 @@
 filter_headers = files(
   'AffineOp.h',
   'BaseAffineOp.h',
-  'BaseFFTOp.h',
   'BilateralFilterOp.h',
   'BinaryOp.h',
   'CannyOp.h',
@@ -14,10 +13,8 @@ filter_headers = files(
   'ConvolutionOp.h',
   'DitheringOp.h',
   'DynamicConvolutionOp.h',
-  'FFTOp.h',
   'Filter.h',
   'GaborOp.h',
-  'IFFTOp.h',
   'ImageRectification.h',
   'ImageSplitter.h',
   'ImageUndistortion.h',
@@ -75,11 +72,17 @@ filter_threshold_headers = files(
   'threshold/ThresholdOp.h',
 )
 
+filter_fft_headers = files(
+  'fft/BaseFFTOp.h',
+  'fft/FFTOp.h',
+  'fft/IFFTOp.h',
+)
+
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
   'AffineWrappers.cpp',
-  'BaseFFTOp.cpp',
+  'fft/BaseFFTOp.cpp',
   'BilateralFilterOp.cpp',
   'BilateralFilterOp_Cpp.cpp',
   'arith/BinaryArithmeticalOp.cpp',
@@ -101,7 +104,7 @@ filter_sources = files(
   'ConvolutionOp_Cpp.cpp',
   'DitheringOp.cpp',
   'DynamicConvolutionOp.cpp',
-  'FFTOp.cpp',
+  'fft/FFTOp.cpp',
   'lut/FixedConvertOp.cpp',
   'GaborOp.cpp',
   'GradientOp.cpp',
@@ -238,6 +241,10 @@ install_headers(filter_lut_headers,
 
 install_headers(filter_threshold_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'threshold',
+)
+
+install_headers(filter_fft_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'fft',
 )
 
 pkg.generate(icl_filter_lib,

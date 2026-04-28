@@ -27,8 +27,8 @@
 #include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/filter/WarpOp.h>
 #include <icl/filter/BilateralFilterOp.h>
-#include <icl/filter/FFTOp.h>
-#include <icl/filter/IFFTOp.h>
+#include <icl/filter/fft/FFTOp.h>
+#include <icl/filter/fft/IFFTOp.h>
 #include <icl/filter/MotionSensitiveTemporalSmoothing.h>
 
 using namespace icl;
