@@ -1,7 +1,7 @@
 #include <icl/filter/UnaryArithmeticalOp.h>
 #include <icl/core/Visitors.h>
 #include <icl/utils/ClippedCast.h>
-#include <icl/utils/EnumDispatch.h>
+#include <icl/utils/plugin/EnumDispatch.h>
 #include <cmath>
 
 using namespace icl;

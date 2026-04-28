@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/File.h>
-#include <icl/utils/PluginRegistry.h>
+#include <icl/utils/plugin/PluginRegistry.h>
 #include <icl/utils/Rect.h>
 #include <icl/utils/Size.h>
 #include <icl/utils/Time.h>

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/BackendDispatching.h>
+#include <icl/utils/plugin/BackendDispatching.h>
 #include <icl/utils/CompatMacros.h>
 #include <vector>
 

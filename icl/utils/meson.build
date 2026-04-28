@@ -29,14 +29,12 @@ utils_headers = files(
   'Assign.h',
   'AssignRegistry.h',
   'AutoParse.h',
-  'BackendDispatching.h',
   'BasicTypes.h',
   'ClippedCast.h',
   'CompatMacros.h',
   'ConfigFile.h',
   'Configurable.h',
   'ConsoleProgress.h',
-  'EnumDispatch.h',
   'Exception.h',
   'FPSEstimator.h',
   'FPSLimiter.h',
@@ -44,7 +42,6 @@ utils_headers = files(
   'FixedArray.h',
   'Macros.h',
   'ParamMap.h',
-  'PluginRegistry.h',
   'Point.h',
   'ProcessMonitor.h',
   'ProgArg.h',
@@ -78,6 +75,12 @@ utils_prop_headers = files(
 utils_thread_headers = files(
   'thread/Lockable.h',
   'thread/Thread.h',
+)
+
+utils_plugin_headers = files(
+  'plugin/BackendDispatching.h',
+  'plugin/EnumDispatch.h',
+  'plugin/PluginRegistry.h',
 )
 
 utils_cl_headers = files(
@@ -160,6 +163,10 @@ install_headers(utils_cl_headers,
 
 install_headers(utils_thread_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'thread',
+)
+
+install_headers(utils_plugin_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'plugin',
 )
 
 install_headers(utils_prop_headers,

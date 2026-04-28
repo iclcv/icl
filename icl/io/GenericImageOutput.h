@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/PluginRegistry.h>
+#include <icl/utils/plugin/PluginRegistry.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/core/Image.h>
 

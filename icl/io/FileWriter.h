@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/File.h>
-#include <icl/utils/PluginRegistry.h>
+#include <icl/utils/plugin/PluginRegistry.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
 #include <icl/io/FilenameGenerator.h>
