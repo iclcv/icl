@@ -35,7 +35,6 @@ filter_headers = files(
   'PseudoColorOp.h',
   'RotateOp.h',
   'ScaleOp.h',
-  'ThresholdOp.h',
   'TranslateOp.h',
   'UnaryOp.h',
   'UnaryOpPipe.h',
@@ -70,6 +69,12 @@ filter_lut_headers = files(
   'lut/LUT2D.h',
   'lut/LUTOp.h',
   'lut/LUTOp3Channel.h',
+)
+
+filter_threshold_headers = files(
+  'threshold/LocalThresholdOp.h',
+  'threshold/LocalThresholdOpHelpers.h',
+  'threshold/ThresholdOp.h',
 )
 
 filter_sources = files(
@@ -111,7 +116,7 @@ filter_sources = files(
   'lut/LUTOp.cpp',
   'lut/LUTOp3Channel.cpp',
   'LUTOp_Cpp.cpp',
-  'LocalThresholdOp.cpp',
+  'threshold/LocalThresholdOp.cpp',
   'LocalThresholdOpHelpers_8u_false.cpp',
   'LocalThresholdOpHelpers_8u_true.cpp',
   'LocalThresholdOpHelpers_16s_false.cpp',
@@ -231,6 +236,10 @@ install_headers(filter_arith_headers,
 
 install_headers(filter_lut_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'lut',
+)
+
+install_headers(filter_threshold_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'threshold',
 )
 
 pkg.generate(icl_filter_lib,
