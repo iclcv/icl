@@ -22,12 +22,12 @@
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/DitheringOp.h>
 #include <icl/filter/FFTOp.h>
-#include <icl/filter/FixedConvertOp.h>
+#include <icl/filter/lut/FixedConvertOp.h>
 #include <icl/filter/GaborOp.h>
 #include <icl/filter/GradientOp.h>
 #include <icl/filter/IntegralImgOp.h>
 #include <icl/filter/LocalThresholdOp.h>
-#include <icl/filter/LUTOp.h>
+#include <icl/filter/lut/LUTOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/MorphologicalOp.h>

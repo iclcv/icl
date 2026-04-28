@@ -19,7 +19,7 @@
 #include <icl/filter/arith/UnaryArithmeticalOp.h>
 #include <icl/io/FileWriter.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
-#include <icl/filter/LUTOp.h>
+#include <icl/filter/lut/LUTOp.h>
 #include <icl/utils/time/Timer.h>
 
 #ifdef ICL_HAVE_QT

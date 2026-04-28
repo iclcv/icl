@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/LUTOp.h>
+#include <icl/filter/lut/LUTOp.h>
 #include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
 

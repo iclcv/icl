@@ -16,7 +16,6 @@ filter_headers = files(
   'DynamicConvolutionOp.h',
   'FFTOp.h',
   'Filter.h',
-  'FixedConvertOp.h',
   'GaborOp.h',
   'IFFTOp.h',
   'ImageRectification.h',
@@ -24,9 +23,6 @@ filter_headers = files(
   'ImageUndistortion.h',
   'InplaceOp.h',
   'IntegralImgOp.h',
-  'LUT2D.h',
-  'LUTOp.h',
-  'LUTOp3Channel.h',
   'LocalThresholdOp.h',
   'LocalThresholdOpHelpers.h',
   'MedianOp.h',
@@ -69,6 +65,13 @@ filter_arith_headers = files(
   'arith/UnaryArithmeticalOp.h',
 )
 
+filter_lut_headers = files(
+  'lut/FixedConvertOp.h',
+  'lut/LUT2D.h',
+  'lut/LUTOp.h',
+  'lut/LUTOp3Channel.h',
+)
+
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
@@ -96,7 +99,7 @@ filter_sources = files(
   'DitheringOp.cpp',
   'DynamicConvolutionOp.cpp',
   'FFTOp.cpp',
-  'FixedConvertOp.cpp',
+  'lut/FixedConvertOp.cpp',
   'GaborOp.cpp',
   'GradientOp.cpp',
   'ImageRectification.cpp',
@@ -105,8 +108,8 @@ filter_sources = files(
   'arith/InplaceArithmeticalOp.cpp',
   'logical/InplaceLogicalOp.cpp',
   'IntegralImgOp.cpp',
-  'LUTOp.cpp',
-  'LUTOp3Channel.cpp',
+  'lut/LUTOp.cpp',
+  'lut/LUTOp3Channel.cpp',
   'LUTOp_Cpp.cpp',
   'LocalThresholdOp.cpp',
   'LocalThresholdOpHelpers_8u_false.cpp',
@@ -224,6 +227,10 @@ install_headers(filter_logical_headers,
 
 install_headers(filter_arith_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'arith',
+)
+
+install_headers(filter_lut_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'lut',
 )
 
 pkg.generate(icl_filter_lib,

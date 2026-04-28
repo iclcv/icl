@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/FixedConvertOp.h>
+#include <icl/filter/lut/FixedConvertOp.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/CoreFunctions.h>
 

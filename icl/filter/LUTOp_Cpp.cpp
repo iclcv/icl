@@ -1,4 +1,4 @@
-#include <icl/filter/LUTOp.h>
+#include <icl/filter/lut/LUTOp.h>
 #include <icl/core/Img.h>
 #include <vector>
 

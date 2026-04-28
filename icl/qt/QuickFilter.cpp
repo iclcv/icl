@@ -11,10 +11,10 @@
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MorphologicalOp.h>
-#include <icl/filter/LUTOp.h>
+#include <icl/filter/lut/LUTOp.h>
 #include <icl/filter/RotateOp.h>
 #include <icl/filter/MirrorOp.h>
-#include <icl/filter/FixedConvertOp.h>
+#include <icl/filter/lut/FixedConvertOp.h>
 #include <icl/filter/PseudoColorOp.h>
 
 #include <map>

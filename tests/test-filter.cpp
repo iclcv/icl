@@ -12,7 +12,7 @@
 #include <icl/filter/channel/WeightedSumOp.h>
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/DitheringOp.h>
-#include <icl/filter/LUTOp.h>
+#include <icl/filter/lut/LUTOp.h>
 #include <icl/filter/WienerOp.h>
 #include <icl/filter/IntegralImgOp.h>
 #include <icl/filter/ColorDistanceOp.h>
