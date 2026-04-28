@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Matthias Schroeder
 
-#include <icl/math/HomogeneousMath.h>
+#include <icl/math/transform/HomogeneousMath.h>
 
 #ifdef ICL_SYSTEM_WINDOWS
 #ifdef min

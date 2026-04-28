@@ -31,7 +31,7 @@
 // #include <icl/geom/IterativeClosestPoint.h>
 // #include <icl/geom/IterativeClosestPointCLCode.h>
 // #include <cfloat>
-// #include <icl/math/HomogeneousMath.h>
+// #include <icl/math/transform/HomogeneousMath.h>
 
 
 // #ifdef ICL_HAVE_OPENCL

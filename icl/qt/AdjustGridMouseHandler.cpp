@@ -6,7 +6,7 @@
 #include <icl/core/ConvexHull.h>
 #include <icl/core/Line.h>
 #include <icl/core/Color.h>
-#include <icl/math/Projective4PointTransform.h>
+#include <icl/math/transform/Projective4PointTransform.h>
 #include <icl/utils/CompatMacros.h>
 #include <mutex>
 

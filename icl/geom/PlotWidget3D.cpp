@@ -6,7 +6,7 @@
 #include <icl/geom/PlotHandle3D.h>
 #include <icl/geom/GridSceneObject.h>
 #include <icl/qt/GUIDefinition.h>
-#include <icl/math/LinearTransform1D.h>
+#include <icl/math/transform/LinearTransform1D.h>
 #include <icl/utils/dispatch/AssignRegistry.h>
 
 namespace icl{

@@ -4,7 +4,7 @@
 
 #pragma once
 #include <string>
-#include <icl/math/HomogeneousMath.h>
+#include <icl/math/transform/HomogeneousMath.h>
 namespace icl::geom {
   void subVec4(const char * a, const char *b, char *c) {
     struct Vec4{

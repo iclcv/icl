@@ -15,7 +15,7 @@
 
 #include <icl/io/detail/v4l2/V4L2Grabber.h>
 #include <icl/io/detail/grabbers/ColorFormatDecoder.h>
-#include <icl/math/LinearTransform1D.h>
+#include <icl/math/transform/LinearTransform1D.h>
 #include <fstream>
 #include <mutex>
 

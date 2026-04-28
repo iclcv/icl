@@ -21,7 +21,7 @@
 #include <icl/utils/time/StackTimer.h>
 #include <icl/utils/SteppingRange.h>
 #include <icl/math/StochasticOptimizer.h>
-#include <icl/math/StraightLine2D.h>
+#include <icl/math/transform/StraightLine2D.h>
 #include <icl/utils/StrTok.h>
 
 /**

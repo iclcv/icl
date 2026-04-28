@@ -4,7 +4,7 @@
 
 #include <icl/geom/ViewRay.h>
 #include <icl/geom/Camera.h>
-#include <icl/math/HomogeneousMath.h>
+#include <icl/math/transform/HomogeneousMath.h>
 
 using namespace icl::utils;
 using namespace icl::core;

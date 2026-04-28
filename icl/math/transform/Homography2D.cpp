@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/Homography2D.h>
+#include <icl/math/transform/Homography2D.h>
 #include <icl/math/DynMatrix.h>
 
 #include <icl/math/FixedVector.h>

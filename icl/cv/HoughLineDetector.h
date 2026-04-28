@@ -11,7 +11,7 @@
 #include <icl/utils/Range.h>
 #include <icl/utils/Point.h>
 #include <icl/math/DynMatrix.h>
-#include <icl/math/StraightLine2D.h>
+#include <icl/math/transform/StraightLine2D.h>
 #include <icl/core/Img.h>
 #include <icl/utils/config/Configurable.h>
 

@@ -5,7 +5,7 @@
 #include <icl/math/FixedMatrix.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/utils/time/Time.h>
-#include <icl/math/LinearTransform1D.h>
+#include <icl/math/transform/LinearTransform1D.h>
 
 #include <icl/qt/AbstractPlotWidget.h>
 #include <icl/qt/GUIWidget.h>

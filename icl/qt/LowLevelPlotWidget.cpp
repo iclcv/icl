@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/LowLevelPlotWidget.h>
-#include <icl/math/LinearTransform1D.h>
+#include <icl/math/transform/LinearTransform1D.h>
 #include <memory>
 #include <icl/utils/Macros.h>
 

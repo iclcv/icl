@@ -37,7 +37,7 @@
 #include <icl/filter/MedianOp.h>
 #include <icl/cv/CornerDetectorCSS.h>
 #include <icl/cv/RDPApproximation.h>
-#include <icl/math/StraightLine2D.h>
+#include <icl/math/transform/StraightLine2D.h>
 
 #include <icl/io/FileWriter.h>
 #include <float.h>

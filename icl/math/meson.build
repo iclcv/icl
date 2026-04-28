@@ -13,20 +13,16 @@ math_headers = files(
   'FixedMatrix.h',
   'FixedVector.h',
   'GraphCutter.h',
-  'HomogeneousMath.h',
-  'Homography2D.h',
   'KMeans.h',
   'LLM.h',
   'LeastSquareModelFitting.h',
   'LeastSquareModelFitting2D.h',
   'LevenbergMarquardtFitter.h',
-  'LinearTransform1D.h',
   'Math.h',
   'MathFunctions.h',
   'MatrixSubRectIterator.h',
   'PolynomialRegression.h',
   'PolynomialSolver.h',
-  'Projective4PointTransform.h',
   'RansacFitter.h',
   'SOM.h',
   'SOM2D.h',
@@ -49,6 +45,14 @@ math_tree_headers = files(
   'tree/QuadTree.h',
 )
 
+math_transform_headers = files(
+  'transform/HomogeneousMath.h',
+  'transform/Homography2D.h',
+  'transform/LinearTransform1D.h',
+  'transform/Projective4PointTransform.h',
+  'transform/StraightLine2D.h',
+)
+
 # Always-compiled sources (root-level public API impls).
 math_sources = files(
   'DynMatrix.cpp',
@@ -57,17 +61,17 @@ math_sources = files(
   'fft/FFTUtils.cpp',
   'FixedMatrix.cpp',
   'GraphCutter.cpp',
-  'HomogeneousMath.cpp',
-  'Homography2D.cpp',
+  'transform/HomogeneousMath.cpp',
+  'transform/Homography2D.cpp',
   'tree/KDTree.cpp',
   'LLM.cpp',
   'LevenbergMarquardtFitter.cpp',
   'PolynomialRegression.cpp',
-  'Projective4PointTransform.cpp',
+  'transform/Projective4PointTransform.cpp',
   'SOM.cpp',
   'SimplexOptimizer.cpp',
   'StochasticOptimizer.cpp',
-  'StraightLine2D.cpp',
+  'transform/StraightLine2D.cpp',
 )
 
 # Backend-dispatch facades (private to libicl-math).  Each family has a
@@ -135,6 +139,10 @@ install_headers(math_fft_headers,
 
 install_headers(math_tree_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'tree',
+)
+
+install_headers(math_transform_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'transform',
 )
 
 pkg.generate(icl_math_lib,

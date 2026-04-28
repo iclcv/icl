@@ -7,7 +7,7 @@
 
 #include <icl/geom/Camera.h>
 #include <icl/geom/GeomDefs.h>
-#include <icl/math/Homography2D.h>
+#include <icl/math/transform/Homography2D.h>
 #include <icl/utils/Random.h>
 #include <algorithm>
 #include <random>

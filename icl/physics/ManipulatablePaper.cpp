@@ -10,7 +10,7 @@
 
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
-#include <icl/math/StraightLine2D.h>
+#include <icl/math/transform/StraightLine2D.h>
 #include <icl/utils/config/ConfigFile.h>
 
 #include <QtWidgets/QMenu>

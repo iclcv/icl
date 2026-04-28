@@ -7,7 +7,7 @@
 #include <icl/math/FixedVector.h>
 #include <icl/core/Img.h>
 #include <icl/core/DataSegment.h>
-#include <icl/math/HomogeneousMath.h>
+#include <icl/math/transform/HomogeneousMath.h>
 #include <icl/utils/Exception.h>
 
 namespace icl::cv {

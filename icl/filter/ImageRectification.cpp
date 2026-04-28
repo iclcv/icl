@@ -4,7 +4,7 @@
 
 #include <icl/filter/ImageRectification.h>
 #include <icl/utils/detail/simd/SSEUtils.h>
-#include <icl/math/Homography2D.h>
+#include <icl/math/transform/Homography2D.h>
 #include <icl/core/ConvexHull.h>
 
 #include <deque>

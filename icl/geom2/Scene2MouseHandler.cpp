@@ -9,7 +9,7 @@
 #include <icl/geom2/Scene2.h>
 #include <icl/geom/Camera.h>
 #include <icl/geom/ViewRay.h>
-#include <icl/math/HomogeneousMath.h>
+#include <icl/math/transform/HomogeneousMath.h>
 #include <icl/qt/MouseEvent.h>
 #include <cstring>
 

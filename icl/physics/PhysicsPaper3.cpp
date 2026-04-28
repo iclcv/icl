@@ -8,7 +8,7 @@
 #include <icl/physics/PhysicsWorld.h>
 #include <icl/physics/PhysicsDefs.h>
 #include <icl/utils/ConsoleProgress.h>
-#include <icl/math/StraightLine2D.h>
+#include <icl/math/transform/StraightLine2D.h>
 #include <icl/geom/ShaderUtil.h>
 
 #ifdef ICL_SYSTEM_APPLE

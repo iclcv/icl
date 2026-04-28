@@ -8,7 +8,7 @@
 #include <icl/core/Types.h>
 #include <icl/math/FixedMatrix.h>
 #include <icl/math/FixedVector.h>
-#include <icl/math/HomogeneousMath.h>
+#include <icl/math/transform/HomogeneousMath.h>
 #include <vector>
 #include <icl/core/Color.h>
 #include <icl/utils/Point.h>

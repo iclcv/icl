@@ -4,7 +4,7 @@
 
 #pragma once
 #include <icl/geom/Geom.h>
-#include <icl/math/HomogeneousMath.h>
+#include <icl/math/transform/HomogeneousMath.h>
 namespace icl::geom {
   struct Vec8{
     math::Vec4 pos;
