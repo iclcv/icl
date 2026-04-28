@@ -4,8 +4,9 @@
 
 #pragma once
 
+#include <icl/utils/CompatMacros.h>
 #include <icl/utils/Macros.h>
-#include <icl/core/PixelOps.h>
+#include <icl/core/Types.h>
 #include <icl/core/ImgParams.h>
 
 #include <string>
@@ -135,8 +136,19 @@ namespace icl::core {
   **/
   ICLCore_API ImgBase *ensureCompatible(ImgBase **dst, const ImgBase *src);
 
-  // Note: getDepth<T>(), getChannelsOfFormat(), getSizeOf(), copy<T>(),
-  // and convert<S,D>() have moved to Types.h and PixelOps.h respectively.
+  /// copies data from source to destination array (memcpy) \ingroup GENERAL
+  /** Explicitly instantiated for all 5 ICL depth types.
+      For performance-critical inner loops, consider using memcpy directly. */
+  template<class T>
+  ICLCore_API void copy(const T *src, const T *srcEnd, T *dst);
+
+  /// converts data from source to destination array with type casting \ingroup GENERAL
+  /** Explicitly instantiated for all 25 source/destination type pairs.
+      IPP-optimized or SSE2-optimized specializations are used where available. */
+  template<class srcT, class dstT>
+  ICLCore_API void convert(const srcT *poSrcStart, const srcT *poSrcEnd, dstT *poDst);
+
+  // Note: getDepth<T>(), getChannelsOfFormat(), getSizeOf() have moved to Types.h.
 
   /// puts a string representation of format into the given stream
   ICLCore_API std::ostream &operator<<(std::ostream &s, const format &f);

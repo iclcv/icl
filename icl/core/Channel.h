@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Types.h>
-#include <icl/core/PixelOps.h>
+#include <icl/core/CoreFunctions.h>
 #include <icl/utils/Size.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Rect.h>

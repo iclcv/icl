@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/io/detail/pylon/PylonIncludes.h>
 #include <icl/utils/Exception.h>
-#include <icl/core/PixelOps.h>
+#include <icl/core/CoreFunctions.h>
 #include <icl/core/Img.h>
 #include <mutex>
 

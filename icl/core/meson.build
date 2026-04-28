@@ -33,7 +33,6 @@ core_headers = files(
   'ImgIterator.h',
   'ImgOps.h',
   'ImgParams.h',
-  'PixelOps.h',
   'PixelRef.h',
   'Types.h',
   'Visitors.h',
@@ -68,7 +67,6 @@ core_sources = files(
   'detail/img/Img_Cpp.cpp',
   'line/Line.cpp',
   'line/LineSampler.cpp',
-  'PixelOps.cpp',
 )
 
 # Conditional backend sources
