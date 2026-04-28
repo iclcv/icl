@@ -7,7 +7,6 @@
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
-#include <icl/core/ImgBorder.h>
 #include <icl/filter/MorphologicalOp.h>
 #include <icl/filter/BinaryArithmeticalOp.h>
 #include <limits>
@@ -189,9 +188,9 @@ namespace {
 
     if(!op.getClipToROI() && (ot == MOp::erodeBorderReplicate || ot == MOp::dilateBorderReplicate)) {
       if(src.getDepth() == depth8u) {
-        ImgBorder::copy(&dst.as8u());
+        dst.as8u().fillBorder(false);
       } else {
-        ImgBorder::copy(&dst.as32f());
+        dst.as32f().fillBorder(false);
       }
     }
     if(ot == MOp::dilate3x3 || ot == MOp::erode3x3) {

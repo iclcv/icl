@@ -1,7 +1,6 @@
 #include <icl/filter/MorphologicalOp.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Range.h>
-#include <icl/core/ImgBorder.h>
 #include <icl/filter/BinaryArithmeticalOp.h>
 #include <icl/core/Image.h>
 #include <functional>
@@ -64,7 +63,7 @@ namespace {
   static void rep_border(Img<T> image, const Size &maskSize){
     Rect roi = shrink_roi(image.getImageRect(),maskSize);
     image.setROI(roi);
-    ImgBorder::copy(&image);
+    image.fillBorder(false);
   }
 
   // ================================================================

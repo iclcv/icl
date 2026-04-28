@@ -1237,67 +1237,12 @@ namespace icl::core {
   template<class Type>
   void Img<Type>::fillBorder(bool setFullROI){
     ICLASSERT_RETURN( !hasFullROI() );
-    Rect im = getImageRect();
-    Rect roi = getROI();
-
-    Rect rs[4] = {
-      Rect(0,            0,             roi.x+1               ,roi.y+1),                  // upper left
-      Rect(roi.right()-1,0,             im.width-roi.right()+1,roi.y+1),                  // upper right
-      Rect(roi.right()-1,roi.bottom()-1,im.width-roi.right()+1,im.height-roi.bottom()+1), // lower right
-      Rect(0,            roi.bottom()-1,roi.x+1,               im.height-roi.bottom()+1)  // lower left
-    };
-
-
-    for(int c=0;c<getChannels();c++){
-      Type ps[4]={
-        (*this)(roi.x,         roi.y,          c),// = 255; // upper left
-        (*this)(roi.right()-1, roi.y,          c),// = 255; // upper right
-        (*this)(roi.right()-1, roi.bottom()-1, c),// = 255; // lower right
-        (*this)(roi.x,         roi.bottom()-1, c)// = 255; // lower left
-      };
-      // clear the corners
-      for(int i=0;i<4;i++){
-        clearChannelROI<Type>(this,c,ps[i],rs[i].ul(),rs[i].getSize());
-      }
-      // left
-      Point srcOffs = Point(roi.x,roi.y+1);
-      Size srcDstSize = Size(1,roi.height-2);
-      if(roi.x>0){
-        for(Point p(0,roi.y+1);p.x!=roi.x;p.x++){
-          deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
-        }
-      }
-      // right
-      srcOffs.x=roi.right()-1;
-      if(roi.right() < im.right()){
-        for(Point p(srcOffs.x+1,srcOffs.y);p.x<im.width;p.x++){
-          deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
-        }
-      }
-      // top
-      srcOffs = Point(roi.x+1,roi.y);
-      srcDstSize = Size(roi.width-2,1);
-      if(roi.y>0){
-        for(Point p(srcOffs.x,roi.y+1);p.y>=0;p.y--){
-          deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
-        }
-      }
-      // bottom
-      //      if(roi.bottom()<im.bottom()){
-      //  srcOffs.y = roi.bottom();
-      //  for(Point p(srcOffs.x,roi.bottom()+1);p.y<im.height;p.y++){
-      //    deepCopyChannelROI(this,c, srcOffs, srcDstSize, this,c,p,srcDstSize);
-      //  }
-      //}
-      // bottom
-      if(roi.bottom()<im.bottom()){
-        srcOffs.y = roi.bottom()-1;
-        for(Point p(srcOffs.x,roi.bottom());p.y<im.height;p.y++){
-          deepCopyChannelROI(this,c, srcOffs, srcDstSize,this,c,p,srcDstSize);
-        }
-      }
-
-    }
+    // Routes through ImgOps so the IPP-optimized variant (Img_Ipp.cpp)
+    // can replace the C++ default (detail/img/Img_Border.cpp) when IPP
+    // is available.
+    auto& sel = ImgOps::instance().getSelector<ImgOps::ReplicateBorderSig>(
+        ImgOps::Op::replicateBorder);
+    sel.resolveOrThrow(this)->apply(*this);
     if(setFullROI) this->setFullROI();
   }
 

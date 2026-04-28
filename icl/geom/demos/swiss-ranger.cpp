@@ -7,7 +7,6 @@
 
 #include <icl/geom/Scene.h>
 #include <icl/filter/MedianOp.h>
-#include <icl/core/ImgBorder.h>
 #include <mutex>
 
 GenericGrabber *grabber = 0;
@@ -237,8 +236,7 @@ void run(){
       static ImgBase *moBuf = 0;
       mo.apply(image.ptr(), &moBuf);
       IMAGE=Image(*moBuf).as32f();
-      ImgBorder::copy(&IMAGE);
-      IMAGE.setFullROI();
+      IMAGE.fillBorder(true);
     }else{
       IMAGE=Image(*image.ptr()).as32f();
     }

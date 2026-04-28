@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/core/Img.h>
-#include <icl/core/ImgBorder.h>
 #include <icl/core/line/Line.h>
 #include <icl/core/line/LineSampler.h>
 #include <icl/utils/Random.h>
