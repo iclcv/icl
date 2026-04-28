@@ -9,7 +9,7 @@
 #include <icl/qt/DrawHandle3D.h>
 #include <icl/geom/SceneObject.h>
 #include <icl/utils/thread/Lockable.h>
-#include <icl/core/Line.h>
+#include <icl/core/line/Line.h>
 #include <QtCore/QObject>
 #include <icl/qt/GUI.h>
 

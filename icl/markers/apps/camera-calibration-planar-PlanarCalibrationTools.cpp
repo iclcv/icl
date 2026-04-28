@@ -8,7 +8,7 @@
 #include <icl/markers/MarkerGridEvaluater.h>
 
 #include <icl/filter/ImageUndistortion.h>
-#include <icl/core/Line.h>
+#include <icl/core/line/Line.h>
 
 #include <deque>
 

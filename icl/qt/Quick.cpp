@@ -48,7 +48,7 @@
 #include <QPushButton>
 #endif
 
-#include <icl/core/LineSampler.h>
+#include <icl/core/line/LineSampler.h>
 #include <icl/utils/Point.h>
 #include <icl/core/detail/ImgBuffer.h>
 

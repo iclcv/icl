@@ -4,7 +4,7 @@
 
 #include <icl/physics/FoldMap.h>
 #include <icl/utils/Point.h>
-#include <icl/core/LineSampler.h>
+#include <icl/core/line/LineSampler.h>
 
 
 namespace icl::physics {

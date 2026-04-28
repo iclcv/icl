@@ -6,7 +6,7 @@
 #include <icl/qt/Widget.h>
 #include <vector>
 #include <icl/math/transform/ConvexHull.h>
-#include <icl/core/Line.h>
+#include <icl/core/line/Line.h>
 #include <mutex>
 
 namespace icl::qt {

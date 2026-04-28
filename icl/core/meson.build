@@ -9,6 +9,11 @@ core_convert_headers = files(
   'convert/FixedConverter.h',
 )
 
+core_line_headers = files(
+  'line/Line.h',
+  'line/LineSampler.h',
+)
+
 core_headers = files(
   'BayerConverter.h',
   'CCFunctions.h',
@@ -29,8 +34,6 @@ core_headers = files(
   'ImgIterator.h',
   'ImgOps.h',
   'ImgParams.h',
-  'Line.h',
-  'LineSampler.h',
   'OpenCV.h',
   'Parable.h',
   'PixelOps.h',
@@ -57,8 +60,8 @@ core_sources = files(
   'ImgOps.cpp',
   'ImgParams.cpp',
   'detail/img/Img_Cpp.cpp',
-  'Line.cpp',
-  'LineSampler.cpp',
+  'line/Line.cpp',
+  'line/LineSampler.cpp',
   'PixelOps.cpp',
 )
 
@@ -103,6 +106,10 @@ install_headers(core_prop_headers,
 
 install_headers(core_convert_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'convert',
+)
+
+install_headers(core_line_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'line',
 )
 
 pkg.generate(icl_core_lib,

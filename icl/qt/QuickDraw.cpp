@@ -6,7 +6,7 @@
 #include <icl/qt/QuickContext.h>
 #include <icl/qt/QuickFilter.h>
 #include <icl/core/Img.h>
-#include <icl/core/LineSampler.h>
+#include <icl/core/line/LineSampler.h>
 #include <icl/utils/Point.h>
 
 #ifdef ICL_HAVE_QT

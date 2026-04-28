@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/Line.h>
-#include <icl/core/LineSampler.h>
+#include <icl/core/line/Line.h>
+#include <icl/core/line/LineSampler.h>
 #include <algorithm>
 #include <cmath>
 #include <istream>

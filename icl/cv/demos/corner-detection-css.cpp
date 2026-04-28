@@ -5,7 +5,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/core/Color.h>
 #include <icl/cv/RegionDetector.h>
-#include <icl/core/Line.h>
+#include <icl/core/line/Line.h>
 #include <icl/cv/CornerDetectorCSS.h>
 #include <mutex>
 
