@@ -4,6 +4,11 @@ core_prop_headers = files(
   'prop/Constraints.h',
 )
 
+core_convert_headers = files(
+  'convert/Converter.h',
+  'convert/FixedConverter.h',
+)
+
 core_headers = files(
   'BayerConverter.h',
   'CCFunctions.h',
@@ -11,14 +16,12 @@ core_headers = files(
   'ChromaAndRGBClassifier.h',
   'ChromaClassifier.h',
   'Color.h',
-  'Converter.h',
   'ConvexHull.h',
   'Core.h',
   'CoreFunctions.h',
   'DataSegment.h',
   'DataSegmentBase.h',
   'DoxygenMainPage.h',
-  'FixedConverter.h',
   'Image.h',
   'ImageBackendDispatching.h',
   'Img.h',
@@ -44,10 +47,10 @@ core_sources = files(
   'CCFunctions.cpp',
   'CCLUT.cpp',
   'Color.cpp',
-  'Converter.cpp',
+  'convert/Converter.cpp',
   'ConvexHull.cpp',
   'CoreFunctions.cpp',
-  'FixedConverter.cpp',
+  'convert/FixedConverter.cpp',
   'Image.cpp',
   'Img.cpp',
   'ImgBase.cpp',
@@ -98,6 +101,10 @@ install_headers(core_headers,
 
 install_headers(core_prop_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'prop',
+)
+
+install_headers(core_convert_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'convert',
 )
 
 pkg.generate(icl_core_lib,

@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/core/Converter.h>
+#include <icl/core/convert/Converter.h>
 
 namespace icl::core {
   /// Special converter "producing" images with fixed parameters

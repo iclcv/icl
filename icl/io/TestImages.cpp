@@ -4,7 +4,7 @@
 
 #include <icl/io/TestImages.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/core/Converter.h>
+#include <icl/core/convert/Converter.h>
 #include <vector>
 #include <string>
 #include <map>

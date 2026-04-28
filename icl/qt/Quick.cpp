@@ -5,7 +5,7 @@
 #include <icl/qt/Quick.h>
 #include <icl/io/FileGrabber.h>
 #include <icl/io/TestImages.h>
-#include <icl/core/Converter.h>
+#include <icl/core/convert/Converter.h>
 
 #include <icl/io/GenericGrabber.h>
 

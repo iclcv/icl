@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/FixedConverter.h>
+#include <icl/core/convert/FixedConverter.h>
 #include <icl/core/CoreFunctions.h>
 
 

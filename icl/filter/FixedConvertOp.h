@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/filter/UnaryOp.h>
-#include <icl/core/Converter.h>
+#include <icl/core/convert/Converter.h>
 
 namespace icl::filter {
 

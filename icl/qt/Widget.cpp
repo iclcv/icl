@@ -19,7 +19,7 @@
 #include <icl/utils/time/Time.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/qt/QImageConverter.h>
-#include <icl/core/FixedConverter.h>
+#include <icl/core/convert/FixedConverter.h>
 #include <icl/qt/Application.h>
 #include <QImage>
 
