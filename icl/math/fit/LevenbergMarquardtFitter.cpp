@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Sergius Gaulik
 
 #include <icl/math/fit/LevenbergMarquardtFitter.h>
-#include <icl/math/DynMatrixUtils.h>
+#include <icl/math/la/DynMatrixUtils.h>
 #include <icl/utils/Random.h>
 
 

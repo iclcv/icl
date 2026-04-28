@@ -12,7 +12,7 @@
 #include <fstream>
 #include <icl/utils/File.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 
  std::ostream &operator<<(std::ostream &stream, btSoftBody::eAeroModel::_ m){
     switch(m){

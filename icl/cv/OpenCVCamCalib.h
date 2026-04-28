@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/ImgBase.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 
 namespace icl::cv {
     /// Cameracalibration using OpenCV functions.

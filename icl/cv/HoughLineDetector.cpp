@@ -4,7 +4,7 @@
 
 #include <icl/cv/HoughLineDetector.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/math/DynMatrixUtils.h>
+#include <icl/math/la/DynMatrixUtils.h>
 #include <icl/filter/ConvolutionOp.h>
 
 using namespace icl::utils;

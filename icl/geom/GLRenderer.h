@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/GeomDefs.h>
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 #include <icl/core/Image.h>
 
 #include <memory>

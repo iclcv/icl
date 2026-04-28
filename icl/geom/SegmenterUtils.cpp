@@ -8,7 +8,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Img.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 
 #ifdef ICL_HAVE_OPENCL
 #include <icl/utils/cl/CLProgram.h>

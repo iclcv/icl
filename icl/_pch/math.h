@@ -14,4 +14,4 @@
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Macros.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>

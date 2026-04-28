@@ -6,7 +6,7 @@
 #include <icl/cv/Extrapolator.h>
 #include <icl/cv/HungarianAlgorithm.h>
 #include <icl/utils/Exception.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 
 #include <set>
 #include <limits>

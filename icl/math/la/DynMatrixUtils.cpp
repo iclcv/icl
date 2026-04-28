@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Daniel Dornbusch
 
 #include <icl/utils/Macros.h>
-#include <icl/math/DynMatrixUtils.h>
+#include <icl/math/la/DynMatrixUtils.h>
 #include <icl/math/detail/mathops/MathOps.h>
 #include <icl/utils/StringUtils.h>
 #include <cmath>

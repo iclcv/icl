@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/FixedMatrix.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedMatrix.h>
+#include <icl/math/la/FixedVector.h>
 #include <cmath>
 #include <string>
 #include <limits>

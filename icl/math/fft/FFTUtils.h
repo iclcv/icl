@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/BasicTypes.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 #include <icl/math/fft/FFTException.h>
 #include <cstring>
 #include <complex>

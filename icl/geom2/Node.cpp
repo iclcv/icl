@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom2/Node.h>
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 #include <mutex>
 #include <cmath>
 

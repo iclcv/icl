@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/DynVector.h>
+#include <icl/math/la/DynVector.h>
 #include <functional>
 
 namespace icl::math {
@@ -193,7 +193,7 @@ namespace icl::math {
 
       \code
       #include <icl/math/fit/LevenbergMarquardtFitter.h>
-      #include <icl/math/FixedVector.h>
+      #include <icl/math/la/FixedVector.h>
 
       using namespace icl::utils;
       using namespace icl::math;

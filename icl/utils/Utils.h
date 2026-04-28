@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/ConsoleProgress.h>
-#include <icl/math/DynMatrixUtils.h>
-#include <icl/math/DynVector.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/DynMatrixUtils.h>
+#include <icl/math/la/DynVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/utils/time/FPSLimiter.h>
 #include <icl/utils/time/Timer.h>
 #include <icl/utils/dispatch/AnyMap.h>

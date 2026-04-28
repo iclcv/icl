@@ -9,7 +9,7 @@
 #include <memory>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Macros.h>
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 #include <icl/utils/ClippedCast.h>
 
 namespace icl::core {

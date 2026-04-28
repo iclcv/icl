@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/PointCloudObjectBase.h>
 #include <icl/core/Img.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 
 #ifdef ICL_HAVE_OPENCL
 #include <icl/utils/cl/CLProgram.h>

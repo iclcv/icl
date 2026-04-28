@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <icl/utils/Exception.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <mutex>
 
 #include <icl/markers/BCHCode.h>

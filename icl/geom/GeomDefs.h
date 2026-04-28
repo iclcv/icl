@@ -6,8 +6,8 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Types.h>
-#include <icl/math/FixedMatrix.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedMatrix.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/math/transform/HomogeneousMath.h>
 #include <vector>
 #include <icl/core/Color.h>

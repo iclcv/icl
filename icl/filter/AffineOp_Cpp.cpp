@@ -1,7 +1,7 @@
 #include <icl/filter/AffineOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 
 using namespace icl;
 using namespace icl::utils;

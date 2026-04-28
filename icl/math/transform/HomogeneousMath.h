@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <icl/math/FixedMatrix.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedMatrix.h>
+#include <icl/math/la/FixedVector.h>
 
 namespace icl::math {
     /// another shortcut for 3D vectors

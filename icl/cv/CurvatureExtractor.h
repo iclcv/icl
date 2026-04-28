@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/core/Core.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 #include <icl/cv/ImageRegion.h>
 #include <stdint.h>
 

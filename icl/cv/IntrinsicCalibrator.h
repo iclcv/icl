@@ -9,8 +9,8 @@
 #include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/time/StackTimer.h>
 #include <icl/utils/Array2D.h>
-#include <icl/math/DynMatrix.h>
-#include <icl/math/DynMatrixUtils.h>
+#include <icl/math/la/DynMatrix.h>
+#include <icl/math/la/DynMatrixUtils.h>
 #include <icl/core/Img.h>
 #include <icl/filter/ImageUndistortion.h>
 

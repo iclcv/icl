@@ -6,7 +6,7 @@
 
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/utils/VisualizationDescription.h>
 #include <icl/utils/Rect.h>
 #include <icl/utils/Range.h>

@@ -6,16 +6,19 @@
 # DynMatrix / DynMatrixUtils / FFTUtils / FixedMatrix etc., which dispatch
 # internally.
 math_headers = files(
-  'DynMatrix.h',
-  'DynMatrixBase.h',
-  'DynMatrixUtils.h',
-  'DynVector.h',
-  'FixedMatrix.h',
-  'FixedVector.h',
   'Math.h',
   'MathFunctions.h',
-  'MatrixSubRectIterator.h',
   'SimdCompat.h',
+)
+
+math_la_headers = files(
+  'la/DynMatrix.h',
+  'la/DynMatrixBase.h',
+  'la/DynMatrixUtils.h',
+  'la/DynVector.h',
+  'la/FixedMatrix.h',
+  'la/FixedVector.h',
+  'la/MatrixSubRectIterator.h',
 )
 
 math_fft_headers = files(
@@ -60,11 +63,11 @@ math_ml_headers = files(
 
 # Always-compiled sources (root-level public API impls).
 math_sources = files(
-  'DynMatrix.cpp',
-  'DynMatrixUtils.cpp',
-  'DynVector.cpp',
+  'la/DynMatrix.cpp',
+  'la/DynMatrixUtils.cpp',
+  'la/DynVector.cpp',
   'fft/FFTUtils.cpp',
-  'FixedMatrix.cpp',
+  'la/FixedMatrix.cpp',
   'ml/GraphCutter.cpp',
   'transform/HomogeneousMath.cpp',
   'transform/Homography2D.cpp',
@@ -136,6 +139,10 @@ icl_math_dep = declare_dependency(
 
 install_headers(math_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'math',
+)
+
+install_headers(math_la_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'la',
 )
 
 install_headers(math_fft_headers,

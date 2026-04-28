@@ -8,8 +8,8 @@
 #include <icl/utils/Exception.h>
 #include <icl/utils/ClippedCast.h>
 #include <icl/utils/FixedArray.h>
-#include <icl/math/DynMatrix.h>
-#include <icl/math/MatrixSubRectIterator.h>
+#include <icl/math/la/DynMatrix.h>
+#include <icl/math/la/MatrixSubRectIterator.h>
 
 #include <iterator>
 #include <icl/math/SimdCompat.h>

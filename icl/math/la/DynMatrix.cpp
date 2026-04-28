@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 #include <stdint.h>
 #include <complex>
 #include <algorithm>
@@ -13,7 +13,7 @@
 #include <icl/math/detail/blas/BlasOps.h>
 #include <icl/math/detail/lapack/LapackOps.h>
 
-#include <icl/math/DynMatrixUtils.h>
+#include <icl/math/la/DynMatrixUtils.h>
 #include <icl/utils/StringUtils.h>
 
 using namespace icl::utils;

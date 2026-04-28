@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Array2D.h>
 #include <icl/utils/VisualizationDescription.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/qt/LowLevelPlotWidget.h>
 
 namespace icl::qt {

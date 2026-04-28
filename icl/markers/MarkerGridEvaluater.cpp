@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/markers/MarkerGridEvaluater.h>
-#include <icl/math/FixedMatrix.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedMatrix.h>
+#include <icl/math/la/FixedVector.h>
 
 namespace icl::markers {
     using namespace utils;

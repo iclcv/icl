@@ -6,7 +6,7 @@
 
 #include <icl/geom2/Node.h>
 #include <icl/geom2/Primitive.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/utils/Point.h>
 #include <vector>
 #include <memory>

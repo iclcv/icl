@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/MatrixSubRectIterator.h>
+#include <icl/math/la/MatrixSubRectIterator.h>
 
 namespace icl::core {
 

@@ -8,7 +8,7 @@
 #include <icl/utils/Range.h>
 #include <icl/utils/Point.h>
 #include <functional>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/core/ImgBase.h>
 #include <icl/qt/ImageStatistics.h>
 

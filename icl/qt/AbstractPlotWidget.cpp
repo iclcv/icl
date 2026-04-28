@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/utils/time/Time.h>
 #include <icl/math/transform/LinearTransform1D.h>

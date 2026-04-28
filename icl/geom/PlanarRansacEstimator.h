@@ -6,7 +6,7 @@
 
 #include <icl/geom/GeomDefs.h>
 #include <icl/core/DataSegment.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 
 namespace icl::geom {
   /// class for planar RANSAC estimation on poincloud data (xyzh).

@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/markers/AdvancedMarkerGridDetector.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 
 namespace icl::markers {
 	  struct ICLMarkers_API MarkerGridEvaluater{

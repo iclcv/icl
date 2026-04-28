@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/GeomDefs.h>
 #include <icl/core/Img.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/utils/Array2D.h>
 #include <icl/qt/GLImg.h>
 #include <memory>

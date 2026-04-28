@@ -10,7 +10,7 @@
 #include <icl/core/ImgIterator.h>
 #include <icl/core/Channel.h>
 #include <icl/core/PixelRef.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 #include <cmath>
 #include <algorithm>
 #include <initializer_list>

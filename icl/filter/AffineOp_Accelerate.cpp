@@ -8,7 +8,7 @@
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <icl/filter/AffineOp.h>
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 
 namespace {
 

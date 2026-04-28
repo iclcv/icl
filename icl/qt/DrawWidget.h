@@ -8,7 +8,7 @@
 #include <icl/utils/VisualizationDescription.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Rect.h>
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 #include <icl/qt/Widget.h>
 #include <QtCore/QMutex>
 

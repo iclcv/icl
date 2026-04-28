@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/core/Img.h>
 #include <icl/core/DataSegment.h>
 #include <icl/math/transform/HomogeneousMath.h>

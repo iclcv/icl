@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Erik Weitnauer, Christof Elbrechter
 
 #include <icl/utils/config/ConfigFile.h>
-#include <icl/math/DynMatrixUtils.h>
+#include <icl/math/la/DynMatrixUtils.h>
 #include <icl/math/fit/LevenbergMarquardtFitter.h>
 #include <icl/filter/ImageUndistortion.h>
 #include <icl/utils/File.h>

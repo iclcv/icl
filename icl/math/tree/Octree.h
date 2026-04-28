@@ -10,7 +10,7 @@
 #include <icl/utils/Rect.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 
 #include <algorithm>
 #include <set>

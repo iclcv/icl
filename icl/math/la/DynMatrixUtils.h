@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 #include <icl/utils/BasicTypes.h>
 #include <algorithm>
 
@@ -15,7 +15,7 @@ namespace icl::math {
   /// Matrix initialization template \ingroup LINALG
   /** This function can e.g. be used to initialize a matrix with random values
       \code
-      #include <icl/math/DynMatrixUtils.h>
+      #include <icl/math/la/DynMatrixUtils.h>
       #include <icl/utils/Random.h>
 
       int main(){

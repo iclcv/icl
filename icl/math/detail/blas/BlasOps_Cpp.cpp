@@ -6,7 +6,7 @@
 // Contains naive GEMM and Golub-Kahan bidiagonalization SVD.
 
 #include <icl/math/detail/blas/BlasOps.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 
 #include <vector>
 #include <algorithm>

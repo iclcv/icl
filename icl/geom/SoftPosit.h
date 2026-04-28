@@ -5,8 +5,8 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/DynMatrix.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/DynMatrix.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/thread/Thread.h>
 #include <icl/utils/Point.h>

@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Exception.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 
 namespace icl::math {
   /// A straight line is parameterized in offset/direction form

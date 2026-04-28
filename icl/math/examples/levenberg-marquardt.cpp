@@ -4,7 +4,7 @@
 
 #include <icl/math/fit/LevenbergMarquardtFitter.h>
 #include <icl/utils/ProgArg.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 
 using namespace icl::utils;
 using namespace icl::math;

@@ -8,7 +8,7 @@
 #include <icl/geom2/Renderer.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/BVH.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/qt/GLCallback.h>
 #include <icl/utils/config/Configurable.h>
 #include <memory>

@@ -5,7 +5,7 @@
 #include <icl/cv/HoughLine.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Range.h>
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 #include <icl/core/Img.h>
 #include <cmath>
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/Macros.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 #include <icl/math/tree/KDTree.h>
 #include <icl/geom/PoseEstimator.h>
 

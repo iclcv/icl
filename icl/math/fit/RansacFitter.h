@@ -6,8 +6,8 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Random.h>
-#include <icl/math/DynVector.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/DynVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <functional>
 
 namespace icl::math {

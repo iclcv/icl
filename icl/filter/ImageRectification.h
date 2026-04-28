@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Img.h>
-#include <icl/math/FixedMatrix.h>
+#include <icl/math/la/FixedMatrix.h>
 
 namespace icl::filter {
     /// The ImageRectification class can be use to rectify an image quadrangle (IPP accellerated)

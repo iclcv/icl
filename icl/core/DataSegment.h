@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/core/Types.h>
 #include <icl/core/DataSegmentBase.h>
 #include <icl/utils/ClippedCast.h>

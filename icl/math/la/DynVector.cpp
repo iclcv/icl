@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/DynVector.h>
+#include <icl/math/la/DynVector.h>
 
 namespace icl::math {
   // ---- DynColVector ----

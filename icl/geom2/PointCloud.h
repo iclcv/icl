@@ -8,7 +8,7 @@
 #include <icl/utils/Size.h>
 #include <icl/core/DataSegment.h>
 #include <icl/core/Types.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/geom2/Primitive.h>  // for GeomColor
 #include <memory>
 #include <mutex>

@@ -7,10 +7,10 @@
 
 #include <cmath>
 #include <vector>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/Point.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 #include <icl/math/transform/StraightLine2D.h>
 #include <icl/core/Img.h>
 #include <icl/utils/config/Configurable.h>

@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/math/ml/KMeans.h>
-#include <icl/math/FixedVector.h>
+#include <icl/math/la/FixedVector.h>
 
 VBox gui;
 

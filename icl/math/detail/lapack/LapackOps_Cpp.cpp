@@ -6,7 +6,7 @@
 
 #include <icl/math/detail/lapack/LapackOps.h>
 #include <icl/math/detail/blas/BlasOps.h>
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 #include <icl/utils/BasicTypes.h>
 
 #include <vector>

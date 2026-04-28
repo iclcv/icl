@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/math/DynMatrixBase.h>
+#include <icl/math/la/DynMatrixBase.h>
 #include <icl/utils/CompatMacros.h>
 #include <iterator>
 

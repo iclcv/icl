@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/math/DynMatrix.h>
+#include <icl/math/la/DynMatrix.h>
 #include <icl/geom/SurfaceFeatureExtractor.h>
 
 namespace icl::geom {
