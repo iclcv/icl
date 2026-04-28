@@ -29,7 +29,6 @@ math_headers = files(
   'SimdCompat.h',
   'SimplexOptimizer.h',
   'StochasticOptimizer.h',
-  'StraightLine2D.h',
 )
 
 math_fft_headers = files(
