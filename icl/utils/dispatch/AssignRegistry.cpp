@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 
 #include <algorithm>
 

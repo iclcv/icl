@@ -5,9 +5,9 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/AnyMap.h>
-#include <icl/utils/AssignRegistry.h>
-#include <icl/utils/AutoParse.h>
+#include <icl/utils/dispatch/AnyMap.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
+#include <icl/utils/dispatch/AutoParse.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/qt/GLCallback.h>

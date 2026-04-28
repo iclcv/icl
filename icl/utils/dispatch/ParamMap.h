@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/AutoParse.h>
+#include <icl/utils/dispatch/AutoParse.h>
 
 #include <functional>
 #include <map>

@@ -4,7 +4,7 @@
 
 #include <icl/qt/DataStore.h>
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 
 namespace icl::qt {
 

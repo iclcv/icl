@@ -4,7 +4,7 @@
 
 #include <icl/qt/LabelHandle.h>
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 
 #include <QPainter>
 #include <QLabel>

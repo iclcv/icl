@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Exception.h>
-#include <icl/utils/AutoParse.h>
+#include <icl/utils/dispatch/AutoParse.h>
 #include <icl/utils/UncopiedInstance.h>
 #include <icl/utils/prop/Adapter.h>
 

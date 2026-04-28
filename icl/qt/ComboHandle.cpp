@@ -4,7 +4,7 @@
 
 #include <icl/qt/ComboHandle.h>
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 
 #include <QComboBox>
 

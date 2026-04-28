@@ -4,7 +4,7 @@
 
 #include <icl/qt/IntHandle.h>
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 #include <icl/utils/StringUtils.h>
 
 #include <string>

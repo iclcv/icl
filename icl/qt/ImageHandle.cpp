@@ -5,7 +5,7 @@
 #include <icl/qt/ImageHandle.h>
 #include <icl/qt/Widget.h>
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 #include <icl/core/Img.h>
 
 using namespace icl::utils;

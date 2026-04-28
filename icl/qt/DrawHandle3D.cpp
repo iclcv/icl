@@ -5,7 +5,7 @@
 #include <icl/qt/DrawHandle3D.h>
 #include <icl/qt/DrawWidget3D.h>
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 #include <icl/core/Img.h>
 
 using namespace icl::utils;

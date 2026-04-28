@@ -4,7 +4,7 @@
 
 #include <icl/qt/ButtonGroupHandle.h>
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 #include <icl/utils/Macros.h>
 
 #include <QRadioButton>

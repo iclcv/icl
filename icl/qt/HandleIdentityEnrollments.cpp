@@ -9,7 +9,7 @@
 // `HandleType h = gui["name"]` dispatch through the runtime registry
 // via DataStore's `as<T>()` path.
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 
 #include <icl/qt/BorderHandle.h>
 #include <icl/qt/BoxHandle.h>

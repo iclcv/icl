@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Assign.h>
+#include <icl/utils/dispatch/Assign.h>
 
 #include <any>
 #include <cstddef>

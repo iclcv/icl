@@ -13,7 +13,7 @@
 
 #include <icl/qt/ColorHandle.h>
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 
 namespace {
   using icl::utils::AssignRegistry;

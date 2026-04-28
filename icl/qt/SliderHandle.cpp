@@ -5,7 +5,7 @@
 #include <icl/qt/SliderHandle.h>
 #include <icl/qt/ThreadedUpdatableSlider.h>
 
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 #include <icl/utils/StringUtils.h>
 
 namespace icl::qt {

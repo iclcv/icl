@@ -13,7 +13,7 @@
 #include <icl/math/FixedVector.h>
 #include <icl/utils/time/FPSLimiter.h>
 #include <icl/utils/time/Timer.h>
-#include <icl/utils/AnyMap.h>
+#include <icl/utils/dispatch/AnyMap.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/Rect.h>

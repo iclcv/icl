@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/AutoParse.h>
+#include <icl/utils/dispatch/AutoParse.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Macros.h>
 

@@ -24,11 +24,7 @@ configure_file(
 )
 
 utils_headers = files(
-  'AnyMap.h',
   'Array2D.h',
-  'Assign.h',
-  'AssignRegistry.h',
-  'AutoParse.h',
   'BasicTypes.h',
   'ClippedCast.h',
   'CompatMacros.h',
@@ -37,7 +33,6 @@ utils_headers = files(
   'File.h',
   'FixedArray.h',
   'Macros.h',
-  'ParamMap.h',
   'Point.h',
   'ProcessMonitor.h',
   'ProgArg.h',
@@ -81,6 +76,14 @@ utils_config_headers = files(
   'config/Configurable.h',
 )
 
+utils_dispatch_headers = files(
+  'dispatch/AnyMap.h',
+  'dispatch/Assign.h',
+  'dispatch/AssignRegistry.h',
+  'dispatch/AutoParse.h',
+  'dispatch/ParamMap.h',
+)
+
 utils_time_headers = files(
   'time/FPSEstimator.h',
   'time/FPSLimiter.h',
@@ -109,7 +112,7 @@ utils_sources = files(
   'cl/CLMemoryAssistant.cpp',
   'cl/CLProgram.cpp',
   'prop/Adapter.cpp',
-  'AssignRegistry.cpp',
+  'dispatch/AssignRegistry.cpp',
   'config/ConfigFile.cpp',
   'config/Configurable.cpp',
   'ConsoleProgress.cpp',
@@ -181,6 +184,10 @@ install_headers(utils_time_headers,
 
 install_headers(utils_config_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'config',
+)
+
+install_headers(utils_dispatch_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'dispatch',
 )
 
 install_headers(utils_prop_headers,

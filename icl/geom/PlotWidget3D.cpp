@@ -7,7 +7,7 @@
 #include <icl/geom/GridSceneObject.h>
 #include <icl/qt/GUIDefinition.h>
 #include <icl/math/LinearTransform1D.h>
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 
 namespace icl{
 
