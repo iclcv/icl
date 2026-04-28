@@ -137,7 +137,7 @@ filter_sources = files(
   'NeighborhoodOp.cpp',
   'OpROIHandler.cpp',
   'PseudoColorOp.cpp',
-  'ThresholdOp.cpp',
+  'threshold/ThresholdOp.cpp',
   'ThresholdOp_Cpp.cpp',
   'ThresholdOp_Simd.cpp',
   'arith/UnaryArithmeticalOp.cpp',
