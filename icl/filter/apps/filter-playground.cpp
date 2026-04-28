@@ -20,7 +20,7 @@
 #include <icl/filter/CannyOp.h>
 #include <icl/filter/ChamferOp.h>
 #include <icl/filter/ConvolutionOp.h>
-#include <icl/filter/DitheringOp.h>
+#include <icl/filter/color/DitheringOp.h>
 #include <icl/filter/fft/FFTOp.h>
 #include <icl/filter/lut/FixedConvertOp.h>
 #include <icl/filter/GaborOp.h>
@@ -32,7 +32,7 @@
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/MorphologicalOp.h>
 #include <icl/filter/MotionSensitiveTemporalSmoothing.h>
-#include <icl/filter/PseudoColorOp.h>
+#include <icl/filter/color/PseudoColorOp.h>
 #include <icl/filter/RotateOp.h>
 #include <icl/filter/ScaleOp.h>
 #include <icl/filter/threshold/ThresholdOp.h>

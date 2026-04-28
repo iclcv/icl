@@ -7,11 +7,8 @@ filter_headers = files(
   'BinaryOp.h',
   'CannyOp.h',
   'ChamferOp.h',
-  'ColorDistanceOp.h',
-  'ColorSegmentationOp.h',
   'ConvolutionKernel.h',
   'ConvolutionOp.h',
-  'DitheringOp.h',
   'DynamicConvolutionOp.h',
   'Filter.h',
   'GaborOp.h',
@@ -27,7 +24,6 @@ filter_headers = files(
   'NeighborhoodOp.h',
   'OpROIHandler.h',
   'ProximityOp.h',
-  'PseudoColorOp.h',
   'RotateOp.h',
   'ScaleOp.h',
   'TranslateOp.h',
@@ -78,6 +74,13 @@ filter_fft_headers = files(
   'fft/IFFTOp.h',
 )
 
+filter_color_headers = files(
+  'color/ColorDistanceOp.h',
+  'color/ColorSegmentationOp.h',
+  'color/DitheringOp.h',
+  'color/PseudoColorOp.h',
+)
+
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
@@ -97,12 +100,12 @@ filter_sources = files(
   'BinaryOp.cpp',
   'CannyOp.cpp',
   'ChamferOp.cpp',
-  'ColorDistanceOp.cpp',
-  'ColorSegmentationOp.cpp',
+  'color/ColorDistanceOp.cpp',
+  'color/ColorSegmentationOp.cpp',
   'ConvolutionKernel.cpp',
   'ConvolutionOp.cpp',
   'ConvolutionOp_Cpp.cpp',
-  'DitheringOp.cpp',
+  'color/DitheringOp.cpp',
   'DynamicConvolutionOp.cpp',
   'fft/FFTOp.cpp',
   'lut/FixedConvertOp.cpp',
@@ -137,7 +140,7 @@ filter_sources = files(
   'MotionSensitiveTemporalSmoothing.cpp',
   'NeighborhoodOp.cpp',
   'OpROIHandler.cpp',
-  'PseudoColorOp.cpp',
+  'color/PseudoColorOp.cpp',
   'threshold/ThresholdOp.cpp',
   'ThresholdOp_Cpp.cpp',
   'ThresholdOp_Simd.cpp',
@@ -245,6 +248,10 @@ install_headers(filter_threshold_headers,
 
 install_headers(filter_fft_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'fft',
+)
+
+install_headers(filter_color_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'color',
 )
 
 pkg.generate(icl_filter_lib,

@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/core/Img.h>
-#include <icl/filter/PseudoColorOp.h>
+#include <icl/filter/color/PseudoColorOp.h>
 #include <icl/qt/DrawHandle.h>
 #include <icl/qt/DrawWidget.h>
 #include <icl/cv/RegionDetector.h>

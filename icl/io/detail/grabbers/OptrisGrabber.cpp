@@ -10,7 +10,7 @@
 #include <icl/core/Img.h>
 #include <icl/utils/Xml.h>
 #include <icl/io/FileList.h>
-#include <icl/filter/PseudoColorOp.h>
+#include <icl/filter/color/PseudoColorOp.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
 
 #include <icl/io/detail/v4l2/V4L2Grabber.h>

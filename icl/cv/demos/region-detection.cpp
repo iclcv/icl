@@ -5,7 +5,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/core/Image.h>
 #include <icl/cv/RegionDetector.h>
-#include <icl/filter/ColorDistanceOp.h>
+#include <icl/filter/color/ColorDistanceOp.h>
 
 VBox gui;
 GenericGrabber grabber;

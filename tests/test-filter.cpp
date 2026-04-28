@@ -11,12 +11,12 @@
 #include <icl/filter/channel/WeightChannelsOp.h>
 #include <icl/filter/channel/WeightedSumOp.h>
 #include <icl/filter/MirrorOp.h>
-#include <icl/filter/DitheringOp.h>
+#include <icl/filter/color/DitheringOp.h>
 #include <icl/filter/lut/LUTOp.h>
 #include <icl/filter/WienerOp.h>
 #include <icl/filter/IntegralImgOp.h>
-#include <icl/filter/ColorDistanceOp.h>
-#include <icl/filter/ColorSegmentationOp.h>
+#include <icl/filter/color/ColorDistanceOp.h>
+#include <icl/filter/color/ColorSegmentationOp.h>
 #include <icl/filter/GaborOp.h>
 #include <icl/filter/ChamferOp.h>
 #include <icl/filter/AffineOp.h>

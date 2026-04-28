@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/ColorDistanceOp.h>
+#include <icl/filter/color/ColorDistanceOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <icl/core/VisitorsN.h>

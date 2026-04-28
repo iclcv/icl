@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
 #include <icl/geom/ConfigurableDepthImageSegmenter.h>
-#include <icl/filter/PseudoColorOp.h>
+#include <icl/filter/color/PseudoColorOp.h>
 #include <icl/geom/Scene.h>
 #include <icl/qt/Common2.h>
 #include <mutex>

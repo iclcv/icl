@@ -8,7 +8,7 @@
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/geom/PointCloudObject.h>
 #include <icl/geom/PointCloudNormalEstimator.h>
-#include <icl/filter/PseudoColorOp.h>
+#include <icl/filter/color/PseudoColorOp.h>
 #include <icl/filter/MotionSensitiveTemporalSmoothing.h>
 
 #include <icl/geom/Segmentation3D.h>

@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/markers/FiducialDetector.h>
-#include <icl/filter/PseudoColorOp.h>
+#include <icl/filter/color/PseudoColorOp.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/markers/MarkerGridEvaluater.h>

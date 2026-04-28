@@ -10,7 +10,7 @@
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/geom/PointCloudObject.h>
 #include <icl/geom/ObjectEdgeDetector.h>
-#include <icl/filter/PseudoColorOp.h>
+#include <icl/filter/color/PseudoColorOp.h>
 #include <icl/filter/MotionSensitiveTemporalSmoothing.h>
 #include <mutex>
 

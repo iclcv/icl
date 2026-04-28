@@ -109,7 +109,7 @@
     \code
 #include <icl/qt/Common.h>
 #include <icl/cv/RegionDetector.h>
-#include <icl/filter/ColorDistanceOp.h>
+#include <icl/filter/color/ColorDistanceOp.h>
 
 icl::qt::GUI gui;
 GenericGrabber grabber;

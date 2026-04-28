@@ -15,7 +15,7 @@
 #include <icl/filter/RotateOp.h>
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/lut/FixedConvertOp.h>
-#include <icl/filter/PseudoColorOp.h>
+#include <icl/filter/color/PseudoColorOp.h>
 
 #include <map>
 #include <cmath>

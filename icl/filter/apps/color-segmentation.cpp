@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/filter/ColorSegmentationOp.h>
+#include <icl/filter/color/ColorSegmentationOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MorphologicalOp.h>
 #include <icl/core/cc/CCFunctions.h>

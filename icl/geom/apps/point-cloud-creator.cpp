@@ -3,7 +3,7 @@
 #include <icl/io/GenericGrabber.h>
 #include <icl/io/GenericImageOutput.h>
 
-#include <icl/filter/ColorDistanceOp.h>
+#include <icl/filter/color/ColorDistanceOp.h>
 
 #include <icl/geom/GenericPointCloudOutput.h>
 #include <icl/geom/PointCloudCreator.h>
