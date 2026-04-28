@@ -12,14 +12,6 @@
 #include <icl/utils/cl/CLProgram.h>
 #endif
 
-#ifdef ICL_HAVE_OPENCV
-#include <icl/core/OpenCV.h>
-#if CV_MAJOR_VERSION < 4
-#define ICL_HAVE_OPENSURF
-#include <icl/cv/OpenSurfLib.h>
-#endif
-#endif
-
 namespace icl::cv {
     using namespace core;
     using namespace utils;
@@ -28,12 +20,6 @@ namespace icl::cv {
       std::vector<SurfFeature> refFeatures;
       std::vector<SurfFeature> currFeatures;
       std::vector<SurfMatch> currMatches;
-
-#ifdef ICL_HAVE_OPENSURF
-      bool opensurf_backend;
-      IplImage *opensurf_refimage;
-      IplImage *opensurf_imagebuffer;
-#endif
 
 #ifdef ICL_HAVE_OPENCL
       bool clsurf_backend;
@@ -66,13 +52,6 @@ namespace icl::cv {
       float threshold;
 
       Data(){
-#ifdef ICL_HAVE_OPENSURF
-        opensurf_refimage = 0;
-        opensurf_imagebuffer = 0;
-        opensurf_backend = false;
-
-#endif
-
 #ifdef ICL_HAVE_OPENCL
         clsurf_backend = false;
         clsurf_curimage_backend = 0;
@@ -89,15 +68,6 @@ namespace icl::cv {
       }
 
       void updateReferenceFeatures(){
-#ifdef ICL_HAVE_OPENSURF
-        if(opensurf_backend && opensurf_refimage){
-          refFeatures.clear();
-          static const bool upright = false;
-          opensurf::surfDetDes(opensurf_refimage, refFeatures, upright,
-                               octaves, intervals, sampleStep,threshold);
-        }
-#endif
-
 #ifdef ICL_HAVE_OPENCL
         if(clsurf_backend){
           ICL_DELETE(clsurf_refimage_backend);
@@ -118,25 +88,15 @@ namespace icl::cv {
 
     SurfFeatureDetector::SurfFeatureDetector(int octaves, int intervals, int sampleStep,
                                              float threshold, const std::string &plugin){
-#if !defined(ICL_HAVE_OPENSURF) && !defined(ICL_HAVE_OPENCL)
-      throw ICLException("Unable to create SurfFeatureDetector: no backend available");
-#endif
-
-      if(plugin != "clsurf" && plugin != "opensurf" && plugin != "best"){
-        throw ICLException("Unable to create SurfFeatureDetector: invalid plugin name (allowed is clsurf, opensurf and best)");
-      }
-
-#ifndef ICL_HAVE_OPENSURF
-      if(plugin == "opensurf"){
-        throw ICLException("Unable to create SurfFeatureDetector with opensurf-backend (OpenCV dependency is missing)");
-      }
-#endif
-
 #ifndef ICL_HAVE_OPENCL
-      if(plugin == "clsurf"){
-        throw ICLException("Unable to create SurfFeatureDetector with clsurf-backend (OpenCL dependency is missing)");
-      }
+      throw ICLException("Unable to create SurfFeatureDetector: no backend available "
+                         "(only clsurf is supported and OpenCL is missing)");
 #endif
+
+      if(plugin != "clsurf" && plugin != "best"){
+        throw ICLException("Unable to create SurfFeatureDetector: invalid plugin name "
+                           "(allowed is 'clsurf' or 'best')");
+      }
 
       m_data = new Data;
       m_data->octaves = octaves;
@@ -145,21 +105,7 @@ namespace icl::cv {
       m_data->threshold = threshold;
 
 #ifdef ICL_HAVE_OPENCL
-      if(plugin == "clsurf" || plugin == "best"){
-        m_data->clsurf_backend = true;
-      }
-#endif
-
-
-#ifdef ICL_HAVE_OPENSURF
-
-#ifdef ICL_HAVE_OPENCL
-      if(!m_data->clsurf_backend){
-        m_data->opensurf_backend = true;
-      }
-#else
-      m_data->opensurf_backend = true;
-#endif
+      m_data->clsurf_backend = true;
 #endif
 
 
@@ -222,19 +168,7 @@ namespace icl::cv {
           m_data->matchKernel = m_data->matchProgram.createKernel("match");
         }catch(ICLException &e){
           static_cast<void>(e);
-          if(plugin == "best"){
-#ifdef ICL_HAVE_OPENSURF
-            DEBUG_LOG("detected an error while initializing OpenCL backend [" + str(e.what()) + "]: using CPU-fallback");
-		    m_data->opensurf_backend = true;
-            m_data->clsurf_backend = false;
-#else
-			  throw ICLException("Error creating Surf-feature detector: could "
-								 "neither instantiate OpenCL-backend nor use "
-								 "OpenCV-based opensurf-backend");
-#endif
-          }else{
-            throw;
-          }
+          throw;
         }
       }
 #endif
@@ -273,19 +207,6 @@ namespace icl::cv {
 
     const std::vector<SurfFeature> &SurfFeatureDetector::detect(const core::ImgBase *image){
       ICLASSERT_THROW(image,ICLException("SurfFeatureDetector::detect: given image was null"));
-#ifdef ICL_HAVE_OPENSURF
-      if(m_data->opensurf_backend){
-        core::img_to_ipl(image,&m_data->opensurf_imagebuffer);
-        m_data->currFeatures.clear();
-
-        static const bool upright = false;
-        opensurf::surfDetDes(m_data->opensurf_imagebuffer,m_data->currFeatures, upright,
-                             m_data->octaves, m_data->intervals,
-                             m_data->sampleStep, m_data->threshold);
-        return m_data->currFeatures;
-      }
-#endif
-
 #ifdef ICL_HAVE_OPENCL
       if(m_data->clsurf_backend){
         if(!m_data->clsurf_curimage_backend ||
@@ -305,13 +226,6 @@ namespace icl::cv {
 
     void SurfFeatureDetector::setReferenceImage(const core::ImgBase *image){
       ICLASSERT_THROW(image,ICLException("SurfFeatureDetector::setReferenceImage: given image was null"));
-#ifdef ICL_HAVE_OPENSURF
-      if(m_data->opensurf_backend){
-        core::img_to_ipl(image,&m_data->opensurf_refimage);
-        m_data->updateReferenceFeatures();
-      }
-#endif
-
 #ifdef ICL_HAVE_OPENCL
       if(m_data->clsurf_backend){
         cc(image, &m_data->clsurf_refimage);
@@ -417,31 +331,6 @@ namespace icl::cv {
       }
 #endif
 
-#ifdef ICL_HAVE_OPENSURF
-      if(m_data->opensurf_backend){
-        for(size_t j=0;j<cur.size();++j){
-          float ds[2] = { Range32f::limits().maxVal, Range32f::limits().maxVal };
-          const SurfFeature &c = cur[j];
-          const SurfFeature *match  = 0;
-          for(size_t i=0;i<ref.size();++i){
-            const SurfFeature &r = ref[i];
-            float d = r - c;
-            if(d < ds[0]){
-              ds[1] = ds[0];
-              ds[0] = d;
-              match = &r;
-            }else if(d < ds[1]){
-              ds[1] = d;
-            }
-          }
-          if(ds[0]/ds[1] < significance){
-            matches.push_back(std::make_pair(c,*match));
-            matches.back().first.dx = match->x - c.x;
-            matches.back().first.dy = match->y - c.y;
-          }
-        }
-      }
-#endif
       return matches;
     }
   }

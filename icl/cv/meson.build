@@ -18,11 +18,8 @@ cv_headers = files(
   'ImageRegionData.h',
   'ImageRegionPart.h',
   'IntrinsicCalibrator.h',
-  'LensUndistortionCalibrator.h',
   'LineSegment.h',
   'MeanShiftTracker.h',
-  'OpenCVCamCalib.h',
-  'OpenSurfLib.h',
   'PositionTracker.h',
   'QuickDocumentation.h',
   'RDPApproximation.h',
@@ -89,11 +86,6 @@ if have_opencv_features2d
   cv_headers += files('ORBFeatureDetector.h')
   cv_sources += files('ORBFeatureDetector.cpp')
 endif
-
-# OpenCV (legacy C API files — disabled, need rewrite for OpenCV 4+)
-# if opencv_dep.found()
-#   cv_sources += files('OpenCVCamCalib.cpp', 'LensUndistortionCalibrator.cpp', 'OpenSurfLib.cpp')
-# endif
 
 cv_deps = [icl_io_dep, icl_filter_dep, opencv_dep] + cv_extra_deps
 

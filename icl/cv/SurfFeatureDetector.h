@@ -14,12 +14,10 @@ namespace icl{
   namespace core{ class Image; }
   namespace cv{
 
-      /// ICL's *New* Generic Surf Feature detection class
-      /** Internally, the class either uses the opensurf-based implementation
-          or an OpenCL-based implementation based on the clsurf library.
-          The OpenSurf backend needs OpenCV, while the clsurf-backend
-          builds on mandatory OpenCL support.
-      */
+      /// ICL's Generic Surf Feature detection class
+      /** OpenCL-based implementation built on the clsurf library.  The
+          OpenCV-based opensurf backend was retired alongside OpenCV's
+          legacy C API. */
       class ICLCV_API SurfFeatureDetector {
         struct Data;  //!< hidden implementation
         Data *m_data; //!< hidden data pointer
@@ -27,8 +25,8 @@ namespace icl{
         public:
 
         /// Constructor with given SURF detection parameters
-        /** plugin can be either "opensurf" or "clsurf" or "best",
-            which will prefer "clsurf" if possible */
+        /** plugin can be either "clsurf" or "best" (an alias for clsurf
+            kept for backward-compatibility). */
         SurfFeatureDetector(int octaves=5, int intervals=4, int sampleStep=2,
                             float threshold = 0.00005f,
                             const std::string &plugin="best");

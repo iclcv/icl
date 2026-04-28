@@ -48,11 +48,6 @@ if _build_apps and qt_found
     install: true,
   )
 
-  # lens-undistortion-calibration-opencv: disabled, needs OpenCV C API rewrite
-  # if opencv_dep.found()
-  #   executable('icl-lens-undistortion-calibration-opencv', ...)
-  # endif
-
   executable('icl-region-inspector',
     files('../apps/region-inspector.cpp'),
     dependencies: [icl_qt_dep, icl_cv_dep],
