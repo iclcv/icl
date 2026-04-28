@@ -1,7 +1,7 @@
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Image.h>
 #include <icl/core/Visitors.h>
-#include <icl/filter/UnaryLogicalOp.h>
+#include <icl/filter/logical/UnaryLogicalOp.h>
 
 #ifdef ICL_HAVE_SSE2
 #include <icl/utils/detail/simd/SSETypes.h>

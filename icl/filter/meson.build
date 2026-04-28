@@ -6,7 +6,6 @@ filter_headers = files(
   'BaseFFTOp.h',
   'BilateralFilterOp.h',
   'BinaryArithmeticalOp.h',
-  'BinaryLogicalOp.h',
   'BinaryOp.h',
   'CannyOp.h',
   'ChamferOp.h',
@@ -25,7 +24,6 @@ filter_headers = files(
   'ImageSplitter.h',
   'ImageUndistortion.h',
   'InplaceArithmeticalOp.h',
-  'InplaceLogicalOp.h',
   'InplaceOp.h',
   'IntegralImgOp.h',
   'LUT2D.h',
@@ -46,7 +44,6 @@ filter_headers = files(
   'ThresholdOp.h',
   'TranslateOp.h',
   'UnaryArithmeticalOp.h',
-  'UnaryLogicalOp.h',
   'UnaryOp.h',
   'UnaryOpPipe.h',
   'WarpOp.h',
@@ -63,6 +60,12 @@ filter_compare_headers = files(
   'compare/UnaryCompareOp.h',
 )
 
+filter_logical_headers = files(
+  'logical/BinaryLogicalOp.h',
+  'logical/InplaceLogicalOp.h',
+  'logical/UnaryLogicalOp.h',
+)
+
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
@@ -76,7 +79,7 @@ filter_sources = files(
   'compare/BinaryCompareOp.cpp',
   'BinaryCompareOp_Cpp.cpp',
   'BinaryCompareOp_Simd.cpp',
-  'BinaryLogicalOp.cpp',
+  'logical/BinaryLogicalOp.cpp',
   'BinaryLogicalOp_Cpp.cpp',
   'BinaryLogicalOp_Simd.cpp',
   'BinaryOp.cpp',
@@ -97,7 +100,7 @@ filter_sources = files(
   'ImageSplitter.cpp',
   'ImageUndistortion.cpp',
   'InplaceArithmeticalOp.cpp',
-  'InplaceLogicalOp.cpp',
+  'logical/InplaceLogicalOp.cpp',
   'IntegralImgOp.cpp',
   'LUTOp.cpp',
   'LUTOp3Channel.cpp',
@@ -132,7 +135,7 @@ filter_sources = files(
   'compare/UnaryCompareOp.cpp',
   'UnaryCompareOp_Cpp.cpp',
   'UnaryCompareOp_Simd.cpp',
-  'UnaryLogicalOp.cpp',
+  'logical/UnaryLogicalOp.cpp',
   'UnaryLogicalOp_Cpp.cpp',
   'UnaryLogicalOp_Simd.cpp',
   'UnaryOp.cpp',
@@ -210,6 +213,10 @@ install_headers(filter_channel_headers,
 
 install_headers(filter_compare_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'compare',
+)
+
+install_headers(filter_logical_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'logical',
 )
 
 pkg.generate(icl_filter_lib,

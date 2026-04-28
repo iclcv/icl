@@ -1,4 +1,4 @@
-#include <icl/filter/BinaryLogicalOp.h>
+#include <icl/filter/logical/BinaryLogicalOp.h>
 #include <icl/core/Visitors.h>
 #include <icl/utils/plugin/EnumDispatch.h>
 

@@ -5,7 +5,7 @@
 #include <icl/io/FileList.h>
 #include <icl/filter/ProximityOp.h>
 #include <icl/cv/CV.h>
-#include <icl/filter/BinaryLogicalOp.h>
+#include <icl/filter/logical/BinaryLogicalOp.h>
 #include <icl/core/Img.h>
 
 namespace icl{

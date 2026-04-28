@@ -39,7 +39,7 @@
 #include <icl/filter/TranslateOp.h>
 #include <icl/filter/UnaryArithmeticalOp.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
-#include <icl/filter/UnaryLogicalOp.h>
+#include <icl/filter/logical/UnaryLogicalOp.h>
 #include <icl/filter/WarpOp.h>
 #include <icl/filter/channel/WeightChannelsOp.h>
 #include <icl/filter/channel/WeightedSumOp.h>

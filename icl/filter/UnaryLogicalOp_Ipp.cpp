@@ -2,7 +2,7 @@
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
 #include <icl/core/Visitors.h>
-#include <icl/filter/UnaryLogicalOp.h>
+#include <icl/filter/logical/UnaryLogicalOp.h>
 
 using namespace icl;
 using namespace icl::utils;

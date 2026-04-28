@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/UnaryLogicalOp.h>
+#include <icl/filter/logical/UnaryLogicalOp.h>
 #include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
