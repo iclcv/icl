@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
-#include <icl/math/GraphCutter.h>
+#include <icl/math/ml/GraphCutter.h>
 
 namespace icl::math {
     float GraphCutter::minCut(DynMatrix<float> &adjacencyMatrix, std::vector<int> &subset1, std::vector<int> &subset2){

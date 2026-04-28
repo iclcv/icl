@@ -37,7 +37,7 @@
 #include <icl/geom/CurvatureFeatureExtractor.h>
 #include <icl/geom/RemainingPointsFeatureExtractor.h>
 #include <icl/geom/SegmenterUtils.h>
-#include <icl/math/GraphCutter.h>
+#include <icl/math/ml/GraphCutter.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/geom/PlanarRansacEstimator.h>
 

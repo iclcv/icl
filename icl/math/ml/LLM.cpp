@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/LLM.h>
+#include <icl/math/ml/LLM.h>
 #include <icl/utils/Random.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/prop/Constraints.h>

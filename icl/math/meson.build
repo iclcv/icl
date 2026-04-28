@@ -12,14 +12,9 @@ math_headers = files(
   'DynVector.h',
   'FixedMatrix.h',
   'FixedVector.h',
-  'GraphCutter.h',
-  'KMeans.h',
-  'LLM.h',
   'Math.h',
   'MathFunctions.h',
   'MatrixSubRectIterator.h',
-  'SOM.h',
-  'SOM2D.h',
   'SimdCompat.h',
 )
 
@@ -55,6 +50,14 @@ math_fit_headers = files(
   'fit/StochasticOptimizer.h',
 )
 
+math_ml_headers = files(
+  'ml/GraphCutter.h',
+  'ml/KMeans.h',
+  'ml/LLM.h',
+  'ml/SOM.h',
+  'ml/SOM2D.h',
+)
+
 # Always-compiled sources (root-level public API impls).
 math_sources = files(
   'DynMatrix.cpp',
@@ -62,15 +65,15 @@ math_sources = files(
   'DynVector.cpp',
   'fft/FFTUtils.cpp',
   'FixedMatrix.cpp',
-  'GraphCutter.cpp',
+  'ml/GraphCutter.cpp',
   'transform/HomogeneousMath.cpp',
   'transform/Homography2D.cpp',
   'tree/KDTree.cpp',
-  'LLM.cpp',
+  'ml/LLM.cpp',
   'fit/LevenbergMarquardtFitter.cpp',
   'fit/PolynomialRegression.cpp',
   'transform/Projective4PointTransform.cpp',
-  'SOM.cpp',
+  'ml/SOM.cpp',
   'fit/SimplexOptimizer.cpp',
   'fit/StochasticOptimizer.cpp',
   'transform/StraightLine2D.cpp',
@@ -149,6 +152,10 @@ install_headers(math_transform_headers,
 
 install_headers(math_fit_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'fit',
+)
+
+install_headers(math_ml_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'ml',
 )
 
 pkg.generate(icl_math_lib,

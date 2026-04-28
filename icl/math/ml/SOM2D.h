@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/SOM.h>
+#include <icl/math/ml/SOM.h>
 
 namespace icl::math {
   /// Simple Wrapper class of the generic SOM Implementation for 2D SOMs

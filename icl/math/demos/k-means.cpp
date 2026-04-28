@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/math/KMeans.h>
+#include <icl/math/ml/KMeans.h>
 #include <icl/math/FixedVector.h>
 
 VBox gui;
