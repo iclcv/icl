@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/core/Img.h>
-#include <icl/filter/LocalThresholdOp.h>
+#include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/core/cc/CCFunctions.h>
 
 #include <icl/markers/FiducialDetector.h>

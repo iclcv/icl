@@ -6,7 +6,7 @@
 #include <icl/core/Image.h>
 #include <icl/core/Visitors.h>
 #include <icl/utils/ClippedCast.h>
-#include <icl/filter/ThresholdOp.h>
+#include <icl/filter/threshold/ThresholdOp.h>
 #include <ipp.h>
 
 using namespace icl;

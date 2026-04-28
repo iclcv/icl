@@ -6,7 +6,7 @@
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/compat/OpenCV.h>
 
-#include <icl/filter/LocalThresholdOp.h>
+#include <icl/filter/threshold/LocalThresholdOp.h>
 
 #include <opencv2/features2d.hpp>
 

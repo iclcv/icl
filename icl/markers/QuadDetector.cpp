@@ -32,7 +32,7 @@
 #include <icl/utils/prop/Constraints.h>
 
 #include <icl/cv/RegionDetector.h>
-#include <icl/filter/LocalThresholdOp.h>
+#include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/filter/MorphologicalOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/cv/CornerDetectorCSS.h>

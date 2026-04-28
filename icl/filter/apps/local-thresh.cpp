@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
-#include <icl/filter/LocalThresholdOp.h>
+#include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/utils/config/ConfigFile.h>
 #include <icl/qt/Common2.h>
 

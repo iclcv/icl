@@ -5,7 +5,7 @@
 #include "harness/Benchmark.h"
 #include <icl/core/Img.h>
 #include <icl/io/TestImages.h>
-#include <icl/filter/ThresholdOp.h>
+#include <icl/filter/threshold/ThresholdOp.h>
 #include <icl/cv/RunLengthEncoder.h>
 
 using namespace icl::utils;

@@ -11,7 +11,7 @@
 #include <icl/utils/Xml.h>
 #include <icl/io/FileList.h>
 #include <icl/filter/PseudoColorOp.h>
-#include <icl/filter/LocalThresholdOp.h>
+#include <icl/filter/threshold/LocalThresholdOp.h>
 
 #include <icl/io/detail/v4l2/V4L2Grabber.h>
 #include <icl/io/detail/grabbers/ColorFormatDecoder.h>

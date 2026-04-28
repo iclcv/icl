@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/ThresholdOp.h>
+#include <icl/filter/threshold/ThresholdOp.h>
 #include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;

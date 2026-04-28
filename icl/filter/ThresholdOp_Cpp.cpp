@@ -1,4 +1,4 @@
-#include <icl/filter/ThresholdOp.h>
+#include <icl/filter/threshold/ThresholdOp.h>
 #include <icl/core/Visitors.h>
 #include <icl/utils/ClippedCast.h>
 

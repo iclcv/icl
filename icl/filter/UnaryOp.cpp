@@ -21,7 +21,7 @@
 #include <icl/filter/ChamferOp.h>
 #include <icl/filter/GaborOp.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
-#include <icl/filter/LocalThresholdOp.h>
+#include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;

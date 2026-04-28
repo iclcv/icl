@@ -26,7 +26,7 @@
 #include <icl/filter/GaborOp.h>
 #include <icl/filter/GradientOp.h>
 #include <icl/filter/IntegralImgOp.h>
-#include <icl/filter/LocalThresholdOp.h>
+#include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/filter/lut/LUTOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MirrorOp.h>
@@ -35,7 +35,7 @@
 #include <icl/filter/PseudoColorOp.h>
 #include <icl/filter/RotateOp.h>
 #include <icl/filter/ScaleOp.h>
-#include <icl/filter/ThresholdOp.h>
+#include <icl/filter/threshold/ThresholdOp.h>
 #include <icl/filter/TranslateOp.h>
 #include <icl/filter/arith/UnaryArithmeticalOp.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
