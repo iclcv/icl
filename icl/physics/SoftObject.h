@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/physics/PhysicsObject.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <BulletSoftBody/btSoftBody.h>
 

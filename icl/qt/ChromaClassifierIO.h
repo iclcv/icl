@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/core/Parable.h>
 #include <icl/core/ChromaClassifier.h>

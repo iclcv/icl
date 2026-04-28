@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/Rect.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/math/DynMatrix.h>
 #include <icl/qt/MouseEvent.h>
 #include <icl/qt/MouseHandler.h>

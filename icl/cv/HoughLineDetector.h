@@ -13,7 +13,7 @@
 #include <icl/math/DynMatrix.h>
 #include <icl/math/StraightLine2D.h>
 #include <icl/core/Img.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 
 namespace icl::cv {
   /** LineDetection class using hough-space line detection

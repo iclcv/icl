@@ -4,7 +4,7 @@
 
 #include <icl/filter/ImageUndistortion.h>
 #include <icl/utils/Point.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <fstream>
 
 using namespace icl::utils;

@@ -8,7 +8,7 @@
 
 #include <icl/utils/Macros.h>
 #include <icl/io/detail/pylon/PylonUtils.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 
 namespace icl::io {
   namespace pylon {

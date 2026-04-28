@@ -8,7 +8,7 @@
 #include <icl/geom/Material.h>
 
 #include <icl/utils/ProgArg.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/math/LevenbergMarquardtFitter.h>
 #include <icl/qt/Common2.h>
 #include <fstream>

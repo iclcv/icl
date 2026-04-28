@@ -32,8 +32,6 @@ utils_headers = files(
   'BasicTypes.h',
   'ClippedCast.h',
   'CompatMacros.h',
-  'ConfigFile.h',
-  'Configurable.h',
   'ConsoleProgress.h',
   'Exception.h',
   'File.h',
@@ -78,6 +76,11 @@ utils_plugin_headers = files(
   'plugin/PluginRegistry.h',
 )
 
+utils_config_headers = files(
+  'config/ConfigFile.h',
+  'config/Configurable.h',
+)
+
 utils_time_headers = files(
   'time/FPSEstimator.h',
   'time/FPSLimiter.h',
@@ -107,8 +110,8 @@ utils_sources = files(
   'cl/CLProgram.cpp',
   'prop/Adapter.cpp',
   'AssignRegistry.cpp',
-  'ConfigFile.cpp',
-  'Configurable.cpp',
+  'config/ConfigFile.cpp',
+  'config/Configurable.cpp',
   'ConsoleProgress.cpp',
   'Exception.cpp',
   'File.cpp',
@@ -174,6 +177,10 @@ install_headers(utils_plugin_headers,
 
 install_headers(utils_time_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'time',
+)
+
+install_headers(utils_config_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'config',
 )
 
 install_headers(utils_prop_headers,

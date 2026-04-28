@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/utils/Point.h>
 #include <icl/core/Img.h>
 namespace icl::cv {

@@ -6,7 +6,7 @@
 #include <icl/core/Img.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;

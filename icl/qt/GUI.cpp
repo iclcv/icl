@@ -92,7 +92,7 @@
 #include <icl/qt/ThreadedUpdatableSlider.h>
 #include <icl/qt/ThreadedUpdatableTextView.h>
 #include <icl/qt/ColorLabel.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/core/Color.h>
 #include <QProgressBar>
 

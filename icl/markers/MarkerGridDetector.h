@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/utils/Array2D.h>
 #include <icl/utils/ParamMap.h>
 #include <icl/markers/FiducialDetector.h>

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/utils/ProgArg.h>
 
 #include <icl/markers/FiducialDetector.h>

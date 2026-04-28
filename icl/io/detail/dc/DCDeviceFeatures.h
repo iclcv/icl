@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/io/detail/dc/DCDevice.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <memory>
 
 

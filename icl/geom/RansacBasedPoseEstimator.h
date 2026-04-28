@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/utils/Exception.h>
 #include <icl/geom/GeomDefs.h>
 #include <icl/geom/Camera.h>

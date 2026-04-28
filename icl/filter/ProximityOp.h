@@ -7,7 +7,7 @@
 #include <icl/filter/BinaryOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 
 namespace icl::filter {
   /// Class for computing proximity measures  \ingroup BINARY

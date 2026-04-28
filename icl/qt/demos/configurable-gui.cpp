@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 
 HBox gui;
 

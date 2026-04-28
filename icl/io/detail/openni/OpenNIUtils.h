@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/thread/Thread.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/core/CCFunctions.h>
 
 #include <icl/io/detail/openni/OpenNIIncludes.h>

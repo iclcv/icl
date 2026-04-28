@@ -14,7 +14,7 @@
 
 #include <QMessageBox>
 #include <fstream>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 
 typedef CameraCalibrationUtils CCU;
 typedef CCU::PossibleMarker PossibleMarker;

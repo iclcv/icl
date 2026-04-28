@@ -2,10 +2,10 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/prop/Constraints.h>
 #include <mutex>
 #include <variant>

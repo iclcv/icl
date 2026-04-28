@@ -7,7 +7,7 @@
 #include <icl/geom/FeatureGraphSegmenter.h>
 #include <icl/geom/PointCloudObject.h>
 #include <icl/geom/PointCloudCreator.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/core/DataSegment.h>
 #include <icl/geom/Camera.h>
 

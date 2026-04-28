@@ -8,7 +8,7 @@
 #include <icl/utils/Exception.h>
 #include <icl/utils/thread/Lockable.h>
 #include <icl/utils/ProgArg.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/io/Grabber.h>
 #include <icl/core/Image.h>
 #include <string>

@@ -6,7 +6,7 @@
 
 #include <icl/utils/BasicTypes.h>
 #include <icl/utils/Macros.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/time/StackTimer.h>
 #include <icl/utils/Array2D.h>
 #include <icl/math/DynMatrix.h>

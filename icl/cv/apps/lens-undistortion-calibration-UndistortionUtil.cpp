@@ -5,7 +5,7 @@
 #include "lens-undistortion-calibration-UndistortionUtil.h"
 #include <icl/utils/prop/Constraints.h>
 #include <icl/math/QuadTree.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/qt/Quick2.h>
 
 namespace icl{

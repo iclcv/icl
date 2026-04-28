@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/FixedMatrix.h>
 #include <icl/utils/Point.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 
 namespace icl::geom {
   /** \cond */

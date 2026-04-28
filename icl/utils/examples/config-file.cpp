@@ -4,7 +4,7 @@
 
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 
 using namespace icl::utils;
 

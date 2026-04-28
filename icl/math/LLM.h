@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Range.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <vector>
 
 namespace icl::math {

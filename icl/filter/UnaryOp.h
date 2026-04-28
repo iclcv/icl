@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImgParams.h>
 #include <icl/filter/OpROIHandler.h>

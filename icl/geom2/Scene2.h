@@ -10,7 +10,7 @@
 #include <icl/geom2/BVH.h>
 #include <icl/math/FixedVector.h>
 #include <icl/qt/GLCallback.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <memory>
 #include <mutex>
 #include <vector>

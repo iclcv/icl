@@ -6,7 +6,7 @@
 
 #include <icl/geom/PointCloudGrabber.h>
 #include <icl/utils/ProgArg.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 
 namespace icl::geom {
   /// Generic interface for PointCloud sources

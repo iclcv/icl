@@ -6,7 +6,7 @@
 
 #include <icl/core/Img.h>
 #include <icl/utils/VisualizationDescription.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/core/Image.h>
 
 namespace icl{

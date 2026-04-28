@@ -8,7 +8,7 @@
 #include <icl/io/FileWriter.h>
 #include <icl/io/FileList.h>
 #include <icl/filter/LocalThresholdOp.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/ProgArg.h>
 #include <iostream>
 

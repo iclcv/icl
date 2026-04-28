@@ -29,7 +29,7 @@
 #endif
 
 #include <icl/utils/thread/Lockable.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <memory>
 #include <map>
 #include <icl/geom/ShaderUtil.h>

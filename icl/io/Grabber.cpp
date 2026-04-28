@@ -9,7 +9,7 @@
 #include <icl/utils/ProgArg.h>
 #include <icl/filter/WarpOp.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/core/Converter.h>
 #include <mutex>
 using namespace icl::utils;

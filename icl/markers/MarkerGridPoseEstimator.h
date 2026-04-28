@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/markers/AdvancedMarkerGridDetector.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 
 #include <icl/geom/Camera.h>
 

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Erik Weitnauer, Christof Elbrechter
 
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/math/DynMatrixUtils.h>
 #include <icl/math/LevenbergMarquardtFitter.h>
 #include <icl/filter/ImageUndistortion.h>

@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/markers/MultiCamFiducial.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 
 
 namespace icl::markers {

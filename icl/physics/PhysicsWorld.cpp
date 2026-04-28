@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/physics/PhysicsWorld.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 
 #include <BulletSoftBody/btSoftBody.h>
 #include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>

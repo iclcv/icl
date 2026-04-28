@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/plugin/PluginRegistry.h>
 #include <icl/utils/SteppingRange.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/core/ImgBase.h>
 #include <icl/io/GrabberDeviceDescription.h>
 

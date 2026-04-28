@@ -6,7 +6,7 @@
 
 #include <icl/math/FixedMatrix.h>
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/ConsoleProgress.h>
 #include <icl/math/DynMatrixUtils.h>
 #include <icl/math/DynVector.h>

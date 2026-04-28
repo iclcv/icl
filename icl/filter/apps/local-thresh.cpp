@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
 #include <icl/filter/LocalThresholdOp.h>
-#include <icl/utils/ConfigFile.h>
+#include <icl/utils/config/ConfigFile.h>
 #include <icl/qt/Common2.h>
 
 #include <QInputDialog>
