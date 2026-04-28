@@ -2,8 +2,9 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/CCLUT.h>
+#include <icl/core/detail/CCLUT.h>
 #include <icl/core/CCFunctions.h>
+#include <icl/utils/ConsoleProgress.h>
 
 using namespace icl::utils;
 using namespace icl::core;

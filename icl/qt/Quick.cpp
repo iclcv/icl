@@ -50,7 +50,7 @@
 
 #include <icl/core/LineSampler.h>
 #include <icl/utils/Point.h>
-#include <icl/core/ImgBuffer.h>
+#include <icl/core/detail/ImgBuffer.h>
 
 #include <fstream>
 #include <cstdio>

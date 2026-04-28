@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/ImgBuffer.h>
+#include <icl/core/detail/ImgBuffer.h>
 
 using namespace icl::utils;
 using namespace icl::math;
