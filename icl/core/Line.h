@@ -7,98 +7,124 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Rect.h>
+#include <iosfwd>
+#include <type_traits>
 #include <vector>
 
 namespace icl::core {
-  /// The ICLs abstract line class describing a line from Point "start" to Point "end" \ingroup TYPES
-  /** This Line class provides basic abilities for the description of an abstract line.
-      A line is defined by two Points "start" and "end" where each of this points is
-      a 2D integer vector. Lines can be translated by using the "+"- and "-"-operators.
-      In addition it is possible to sample a line into the discrete grid. Internally this
-      sampling procedure is highly optimized by an implementation of Bresenhams line-
-      algorithm, which draws lines without any floating point operation at all.
-  */
-  class ICLCore_API Line{
+
+  /// Templated 2D line described by a start and end PointT<T>.
+  /** ICL provides two instantiations as typedefs:
+      - `Line`    (aka `LineT<int>`)   — integer pixel-coordinate lines,
+                                          Bresenham-sampled without floating-point
+      - `Line32f` (aka `LineT<float>`) — sub-pixel float-coordinate lines
+
+      The arithmetic, comparison, and method bodies are shared; methods that
+      only make sense for one specialization are constrained via
+      `requires std::is_integral_v<T>` / `std::is_floating_point_v<T>`. */
+  template<typename T>
+  class ICLCore_API LineT {
     public:
-    /// Null line of length 0 with and and end point 0
-    static const Line null;
+    /// element point type (PointT<T>)
+    using point_type = utils::PointT<T>;
 
-    /// Creates a new line from point "start" to point "end"
-    /** @param start start point
-        @param end end point
-    */
-    Line(utils::Point start=utils::Point::null,
-         utils::Point end=utils::Point::null):
-    start(start),end(end){}
+    /// rebind helper for cross-type construction
+    template<typename U> using rebind = LineT<U>;
 
-    /// Creates a new line by given polar coordinates
-    /** @param start start point of the line
-        @param angle angle of the line
-        @param length length of the line
-    */
-    Line(utils::Point start, float angle, float length);
+    /// null line (start == end == PointT<T>::null)
+    inline static const LineT null{};
 
-    /// translates a line by a given vector
-    /** @param p translation vector
-        @return the translated line
-    */
-    Line operator+(const utils::Point &p) const { return Line(start+p,end+p); }
+    /// start point
+    point_type start{};
+    /// end point
+    point_type end{};
 
-    /// translates a line by a given vector (negative direction)
-    /** @param p translation vector
-        @return the translated line
-    */
-    Line operator-(const utils::Point &p) const { return Line(start-p,end-p); }
+    /// default ctor (null line)
+    constexpr LineT() = default;
 
-    /// calculates the euclidean norm of this line
-    /** @return length of the line */
+    /// ctor from start and end point
+    constexpr LineT(point_type start, point_type end) : start(start), end(end) {}
+
+    /// ctor from start, angle (radians), and length
+    LineT(point_type start, float angle, float length);
+
+    /// implicit widening from integer-coord line to float-coord line (lossless)
+    template<typename U>
+      requires (!std::is_same_v<U, T>
+                && std::is_integral_v<U>
+                && std::is_floating_point_v<T>)
+    constexpr LineT(const LineT<U> &o) : start(o.start), end(o.end) {}
+
+    /// explicit cross-type construction for anything lossy (truncates)
+    template<typename U>
+      requires (!std::is_same_v<U, T>
+                && !(std::is_integral_v<U> && std::is_floating_point_v<T>))
+    explicit constexpr LineT(const LineT<U> &o) : start(o.start), end(o.end) {}
+
+    /// translate this line by a vector
+    constexpr LineT operator+(const point_type &p) const { return {start + p, end + p}; }
+    constexpr LineT operator-(const point_type &p) const { return {start - p, end - p}; }
+
+    /// euclidean length
     float length() const;
 
-    /// returns the point on the line closest to the given point
-    utils::Point findClosestPoint(const utils::Point &p) const;
+    /// swap start and end in place
+    void swap() { auto tmp = start; start = end; end = tmp; }
 
-    /// returns the minimum distance of the line to a given point
-    /** The distance can never be longer then the max-distance
-        to start and end of the line */
-    inline float getMinDist(const utils::Point &p) const{
+    /// sample this line as a sequence of integer-pixel Points (Bresenham)
+    /** @param limits bounding rect; line points outside are clipped.
+                      A null/empty Rect means no clipping.
+
+        For integer lines this is the most efficient sampling path; for float
+        lines the endpoints are rounded to int before Bresenham. */
+    std::vector<utils::Point> sample(const utils::Rect &limits = utils::Rect::null) const;
+
+    /// returns true iff this line intersects `other`
+    /** Optionally writes the float intersection point into `*p` and the
+        interpolation factors into `*dstr` / `*dsts`. */
+    bool intersects(const LineT &other, utils::Point32f *p = nullptr,
+                    float *dstr = nullptr, float *dsts = nullptr) const;
+
+    // ---------- integer-only ----------
+
+    /// closest point on this line to `p` (integer-pixel result)
+    utils::Point findClosestPoint(const utils::Point &p) const
+      requires std::is_integral_v<T>;
+
+    /// minimum distance from this line to `p`
+    inline float getMinDist(const utils::Point &p) const
+      requires std::is_integral_v<T> {
       return findClosestPoint(p).distanceTo(p);
     }
 
-    /// return whether the line intersects with the given other line
-    /** Optionally, the actual intersection point can be calculated and
-        stored into a non-null p argument. dstr and dsts are filled
-        with the interpolation factors between start and end for
-        the actual intersection point if not null.
-        If there is no intersection, p, dstr and dsts are not used */
-    bool intersects(const core::Line &other, utils::Point32f *p=0,
-                    float *dstr=0, float *dsts=0) const;
+    // ---------- float-only ----------
 
+    /// line angle in radians: atan2(start.y - end.y, start.x - end.x)
+    float getAngle() const requires std::is_floating_point_v<T>;
 
-    /// samples this line from start to end point regarding the given limiting rect
-    /** @param limits each line point is check for being inside of this rect
-                      the eases working e.g. on image planes, that have an finite
-                      extend. If the limits rect has width*height == 0, the limits
-                      are not regarded.
-        @return vector of line Points
+    /// center point: (start + end) / 2
+    utils::Point32f getCenter() const requires std::is_floating_point_v<T>;
 
-        Please note: for more efficient line sampling, the core::LineSampler class can be used!
-    */
-    std::vector<utils::Point> sample( const utils::Rect &limits=utils::Rect::null ) const;
-
-    /// swaps the lines start and end point internally
-    void swap() { utils::Point x=start; start=end; end=x; }
-
-    /// start point of this line
-    utils::Point start;
-
-    /// end point of this line
-    utils::Point end;
+    /// sample appending into pre-allocated x/y vectors (no allocation)
+    void sample(std::vector<int> &xs, std::vector<int> &ys,
+                const utils::Rect &limits = utils::Rect::null) const
+      requires std::is_floating_point_v<T>;
   };
 
-  /// ostream operator (start-x,start-y)(end-x,end-y)
-  ICLCore_API std::ostream &operator<<(std::ostream &s, const Line &l);
+  /// ostream operator: formats as "(start)(end)"
+  template<typename T>
+  std::ostream &operator<<(std::ostream &s, const LineT<T> &l);
 
   /// istream operator
-  ICLCore_API std::istream &operator>>(std::istream &s, Line &l);
+  template<typename T>
+  std::istream &operator>>(std::istream &s, LineT<T> &l);
+
+  // ---------- established ICL type aliases ----------
+
+  /// integer-coordinate 2D line (pixel coordinates, Bresenham-friendly)
+  using Line = LineT<int>;
+
+  /// single-precision floating-point 2D line (sub-pixel coordinates)
+  using Line32f = LineT<float>;
 
   } // namespace icl::core

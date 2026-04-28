@@ -1,7 +1,7 @@
 #pragma once
 
 #include <icl/core/Img.h>
-#include <icl/core/Line32f.h>
+#include <icl/core/Line.h>
 
 #include <icl/geom/SceneObject.h>
 #include <icl/geom/PlaneEquation.h>

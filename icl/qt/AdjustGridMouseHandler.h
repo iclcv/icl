@@ -7,7 +7,7 @@
 #include <icl/utils/Lockable.h>
 #include <icl/utils/VisualizationDescription.h>
 #include <icl/qt/MouseHandler.h>
-#include <icl/core/Line32f.h>
+#include <icl/core/Line.h>
 #include <vector>
 
 namespace icl::qt {

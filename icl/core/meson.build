@@ -28,7 +28,6 @@ core_headers = files(
   'ImgOps.h',
   'ImgParams.h',
   'Line.h',
-  'Line32f.h',
   'LineSampler.h',
   'OpenCV.h',
   'Parable.h',
@@ -58,7 +57,6 @@ core_sources = files(
   'ImgParams.cpp',
   'Img_Cpp.cpp',
   'Line.cpp',
-  'Line32f.cpp',
   'LineSampler.cpp',
   'PixelOps.cpp',
 )
