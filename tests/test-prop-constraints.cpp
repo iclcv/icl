@@ -4,7 +4,7 @@
 
 #include "harness/Test.h"
 
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/utils/prop/Adapter.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/prop/Constraints.h>

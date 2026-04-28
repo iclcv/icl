@@ -4,7 +4,7 @@
 
 #include "harness/Benchmark.h"
 #include <icl/core/Img.h>
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/filter/ThresholdOp.h>
 #include <icl/filter/UnaryArithmeticalOp.h>
 #include <icl/filter/UnaryCompareOp.h>

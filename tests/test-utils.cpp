@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "harness/Test.h"
-#include <icl/utils/ConfigFile.h>
-#include <icl/utils/Configurable.h>
+#include <icl/utils/config/ConfigFile.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Random.h>

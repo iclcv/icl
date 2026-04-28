@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "harness/Test.h"
-#include <icl/utils/Assign.h>
-#include <icl/utils/AssignRegistry.h>
+#include <icl/utils/dispatch/Assign.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
 
 #include <any>
 #include <stdexcept>

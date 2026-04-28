@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <string>
 #include <vector>
 #include <map>

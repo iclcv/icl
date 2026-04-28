@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "harness/Test.h"
-#include <icl/utils/AnyMap.h>
+#include <icl/utils/dispatch/AnyMap.h>
 
 #include <string>
 #include <typeinfo>

@@ -3,9 +3,9 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "harness/Test.h"
-#include <icl/math/FixedMatrix.h>
-#include <icl/math/DynMatrix.h>
-#include <icl/math/Homography2D.h>
+#include <icl/math/la/FixedMatrix.h>
+#include <icl/math/la/DynMatrix.h>
+#include <icl/math/transform/Homography2D.h>
 
 using namespace icl::utils;
 using namespace icl::math;

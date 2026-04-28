@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "harness/Test.h"
-#include <icl/utils/AutoParse.h>
+#include <icl/utils/dispatch/AutoParse.h>
 
 #include <any>
 #include <limits>

@@ -467,7 +467,7 @@ ICL_REGISTER_TEST("Img.visitPixels_full", "visitPixels roiOnly=false ignores ROI
 
 // ---- Color conversion (cc) ----
 
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 ICL_REGISTER_TEST("core.cc.rgb_to_yuv_1x1", "cc() works for 1x1 images") {
   Img8u src(utils::Size(1,1), formatRGB);
