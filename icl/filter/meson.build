@@ -23,8 +23,6 @@ filter_headers = files(
   'ImageUndistortion.h',
   'InplaceOp.h',
   'IntegralImgOp.h',
-  'LocalThresholdOp.h',
-  'LocalThresholdOpHelpers.h',
   'MedianOp.h',
   'MirrorOp.h',
   'MorphologicalOp.h',
