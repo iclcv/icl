@@ -6,7 +6,7 @@
 #include <icl/utils/prop/Constraints.h>
 #include <libirimager/IRImager.h>
 #include <icl/utils/File.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Xml.h>
 #include <icl/io/FileList.h>

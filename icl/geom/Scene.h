@@ -28,7 +28,7 @@
 #include <icl/geom/SceneMouseHandler.h>
 #endif
 
-#include <icl/utils/Lockable.h>
+#include <icl/utils/thread/Lockable.h>
 #include <icl/utils/Configurable.h>
 #include <memory>
 #include <map>

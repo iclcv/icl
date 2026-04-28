@@ -42,7 +42,6 @@ utils_headers = files(
   'FPSLimiter.h',
   'File.h',
   'FixedArray.h',
-  'Lockable.h',
   'Macros.h',
   'ParamMap.h',
   'PluginRegistry.h',
@@ -59,7 +58,6 @@ utils_headers = files(
   'StrTok.h',
   'StringUtils.h',
   'TextTable.h',
-  'Thread.h',
   'Time.h',
   'Timer.h',
   'UncopiedInstance.h',
@@ -75,6 +73,11 @@ utils_headers = files(
 utils_prop_headers = files(
   'prop/Adapter.h',
   'prop/Constraints.h',
+)
+
+utils_thread_headers = files(
+  'thread/Lockable.h',
+  'thread/Thread.h',
 )
 
 utils_cl_headers = files(
@@ -116,7 +119,7 @@ utils_sources = files(
   'StrTok.cpp',
   'StringUtils.cpp',
   'TextTable.cpp',
-  'Thread.cpp',
+  'thread/Thread.cpp',
   'Time.cpp',
   'Timer.cpp',
   'Xml.cpp',
@@ -153,6 +156,10 @@ install_headers(utils_headers,
 
 install_headers(utils_cl_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'cl',
+)
+
+install_headers(utils_thread_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'thread',
 )
 
 install_headers(utils_prop_headers,

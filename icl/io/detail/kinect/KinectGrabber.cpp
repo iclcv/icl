@@ -8,7 +8,7 @@
 #include <icl/core/CCFunctions.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/core/Img.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/filter/TranslateOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/utils/Time.h>

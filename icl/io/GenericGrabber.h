@@ -6,7 +6,7 @@
 
 #include <icl/utils/Macros.h>
 #include <icl/utils/Exception.h>
-#include <icl/utils/Lockable.h>
+#include <icl/utils/thread/Lockable.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/Configurable.h>
 #include <icl/io/Grabber.h>

@@ -22,7 +22,7 @@
 #include <libv4lconvert.h>
 #endif
 
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/io/FileList.h>
 #include <icl/io/detail/grabbers/ColorFormatDecoder.h>
 #include <icl/io/detail/v4l2/V4L2Grabber.h>

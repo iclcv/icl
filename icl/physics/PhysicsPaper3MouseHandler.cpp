@@ -5,7 +5,7 @@
 #include <icl/physics/PhysicsPaper3MouseHandler.h>
 #include <icl/physics/PhysicsPaper3.h>
 //#include <icl/physics/PhysicsPaper.h>
-#include <icl/utils/Lockable.h>
+#include <icl/utils/thread/Lockable.h>
 #include <icl/physics/PhysicsPaper3ContextMenu.h>
 #include <mutex>
 

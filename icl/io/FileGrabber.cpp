@@ -10,7 +10,7 @@
 #include <icl/io/FilenameGenerator.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/utils/File.h>
 // plugins
 #include <icl/io/detail/file-plugins/FileGrabberPluginPNM.h>

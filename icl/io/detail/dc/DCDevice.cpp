@@ -8,7 +8,7 @@
 #include <icl/io/detail/dc/DC.h>
 #include <icl/io/Grabber.h>
 #include <stdio.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 
 #include <algorithm>
 #include <icl/utils/StringUtils.h>

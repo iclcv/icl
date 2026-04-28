@@ -8,7 +8,7 @@
 #ifdef ICL_HAVE_QT_WEBSOCKETS
 #include <icl/io/detail/network/WSImageOutput.h>
 #include <icl/io/detail/network/WSGrabber.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <chrono>
 #include <thread>
 #endif

@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exception.h>
-#include <icl/utils/Lockable.h>
+#include <icl/utils/thread/Lockable.h>
 
 #include <functional>
 #include <map>

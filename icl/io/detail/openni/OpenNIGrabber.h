@@ -7,7 +7,7 @@
 #include <icl/io/Grabber.h>
 #include <icl/utils/Time.h>
 #include <icl/io/detail/openni/OpenNIUtils.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/io/detail/openni/OpenNIIncludes.h>
 #include <mutex>
 

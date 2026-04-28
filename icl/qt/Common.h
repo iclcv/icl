@@ -10,7 +10,7 @@
 #include <icl/qt/Quick.h>
 #endif
 
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/io/GenericGrabber.h>
 #include <icl/utils/ProgArg.h>

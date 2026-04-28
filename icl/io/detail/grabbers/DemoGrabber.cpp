@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/StringUtils.h>

@@ -6,7 +6,7 @@
 #include <icl/utils/FPSEstimator.h>
 #include <icl/utils/Random.h>
 #include <icl/cv/RegionDetector.h>
-#include <icl/utils/Lockable.h>
+#include <icl/utils/thread/Lockable.h>
 #include <icl/cv/VectorTracker.h>
 #include <mutex>
 

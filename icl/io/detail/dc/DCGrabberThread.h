@@ -6,7 +6,7 @@
 
 #include <icl/io/detail/dc/DC.h>
 #include <icl/io/detail/dc/DCDeviceOptions.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/core/Types.h>
 #include <icl/utils/Time.h>
 

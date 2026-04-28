@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/Lockable.h>
+#include <icl/utils/thread/Lockable.h>
 #include <icl/math/DynMatrix.h>
 #include <icl/geom/Geom.h>
 #include <icl/physics/PhysicsDefs.h>

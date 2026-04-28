@@ -13,7 +13,7 @@
 #include <icl/qt/CheckBoxHandle.h>
 #include <icl/qt/ButtonHandle.h>
 #include <icl/utils/FPSLimiter.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 
 #include <QComboBox>
 #include <QCheckBox>

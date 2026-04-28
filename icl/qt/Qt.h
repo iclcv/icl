@@ -11,7 +11,7 @@
 #include <icl/qt/MouseHandler.h>
 
 #include <QApplication>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <mutex>
 
 #include <icl/qt/ButtonHandle.h>

@@ -16,7 +16,7 @@
 
 #include <icl/utils/Array2D.h>
 #include <icl/utils/Rect.h>
-#include <icl/utils/Lockable.h>
+#include <icl/utils/thread/Lockable.h>
 #include <map>
 
 #ifdef ICL_HAVE_QT

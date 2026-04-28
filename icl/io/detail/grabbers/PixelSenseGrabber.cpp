@@ -4,7 +4,7 @@
 
 #include <icl/io/detail/grabbers/PixelSenseGrabber.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/utils/StringUtils.h>
 #ifdef WIN32
   #include <lusb0_usb.h>

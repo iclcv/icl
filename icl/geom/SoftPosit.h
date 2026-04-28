@@ -8,7 +8,7 @@
 #include <icl/math/DynMatrix.h>
 #include <icl/math/FixedVector.h>
 #include <icl/utils/Macros.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/BasicTypes.h>
 

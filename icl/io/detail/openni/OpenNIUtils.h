@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/utils/Configurable.h>
 #include <icl/core/CCFunctions.h>
 

@@ -25,7 +25,7 @@
 
 
 #include <icl/qt/IconFactory.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 
 #include <QPainter>
 #include <QLabel>

@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <charconv>
 #include <icl/utils/Time.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 
 #ifndef ICL_SYSTEM_WINDOWS
   #include <unistd.h>

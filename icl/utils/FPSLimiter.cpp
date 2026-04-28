@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/utils/FPSLimiter.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 
 namespace icl::utils {
   namespace{

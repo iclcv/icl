@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/core/CCFunctions.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <mutex>
 
 VBox gui;

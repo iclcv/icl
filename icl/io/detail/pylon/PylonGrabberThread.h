@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/io/detail/pylon/PylonUtils.h>
 #include <icl/io/detail/pylon/PylonColorConverter.h>
 #include <icl/io/detail/pylon/PylonCameraOptions.h>

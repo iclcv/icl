@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Lockable.h>
+#include <icl/utils/thread/Lockable.h>
 #include <any>
 #include <icl/core/Color.h>
 #include <functional>

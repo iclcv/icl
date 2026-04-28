@@ -12,7 +12,7 @@
 #include <QStyleFactory>
 #include <QSurfaceFormat>
 #include <icl/utils/ProgArg.h>
-#include <icl/utils/Thread.h>
+#include <icl/utils/thread/Thread.h>
 #include <icl/utils/SignalHandler.h>
 #include <mutex>
 #include <cstdlib>

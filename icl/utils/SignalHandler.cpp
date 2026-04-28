@@ -20,7 +20,7 @@ namespace icl::utils {
 #include <set>
 #include <signal.h>
 #include <icl/utils/Macros.h>
-#include <icl/utils/Lockable.h>
+#include <icl/utils/thread/Lockable.h>
 #include <icl/utils/StringUtils.h>
 #include <sys/types.h>
 #include <unistd.h>
