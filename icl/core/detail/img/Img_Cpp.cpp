@@ -1,4 +1,4 @@
-#include <icl/core/ImgOps.h>
+#include <icl/core/dispatch/ImgOps.h>
 #include <icl/core/Img.h>
 #include <icl/utils/ClippedCast.h>
 #include <icl/math/MathFunctions.h>

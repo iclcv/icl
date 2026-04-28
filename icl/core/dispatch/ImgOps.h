@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Types.h>
 
 namespace icl::core {

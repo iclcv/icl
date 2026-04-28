@@ -9,7 +9,7 @@
 #include <icl/filter/UnaryOp.h>
 #include <vector>
 #include <icl/core/Image.h>
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 
 namespace icl::filter {
   /// class for applying table lookup transformation to Img8u images \ingroup UNARY

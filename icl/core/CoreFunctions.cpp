@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting, Robert Haschke
 
 #include <icl/core/CoreFunctions.h>
-#include <icl/core/ImgOps.h>
+#include <icl/core/dispatch/ImgOps.h>
 #include <icl/math/MathFunctions.h>
 #include <icl/utils/ClippedCast.h>
 #include <icl/utils/Exception.h>

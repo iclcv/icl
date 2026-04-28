@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/filter/UnaryOp.h>
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Image.h>
 
 namespace icl::filter {

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/ImgOps.h>
+#include <icl/core/dispatch/ImgOps.h>
 
 namespace icl::core {
   ImgOps& ImgOps::instance() {

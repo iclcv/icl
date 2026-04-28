@@ -6,7 +6,7 @@
 // between macOS MacTypes.h and icl::utils.
 #include <Accelerate/Accelerate.h>
 
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <icl/filter/ConvolutionOp.h>

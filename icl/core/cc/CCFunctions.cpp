@@ -5,7 +5,7 @@
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/core/Img.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/core/ImgOps.h>
+#include <icl/core/dispatch/ImgOps.h>
 #include <map>
 #include <icl/core/detail/CCLUT.h>
 #include <icl/utils/detail/simd/SSEUtils.h>

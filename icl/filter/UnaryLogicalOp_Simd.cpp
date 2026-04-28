@@ -1,4 +1,4 @@
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Image.h>
 #include <icl/core/Visitors.h>
 #include <icl/filter/UnaryLogicalOp.h>

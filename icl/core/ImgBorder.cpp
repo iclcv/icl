@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
 #include <icl/core/ImgBorder.h>
-#include <icl/core/ImgOps.h>
+#include <icl/core/dispatch/ImgOps.h>
 
 using namespace icl::utils;
 using namespace icl::math;

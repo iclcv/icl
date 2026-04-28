@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/filter/NeighborhoodOp.h>
 #include <icl/core/Image.h>
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 
 namespace icl::filter {
   /// Class that provides median filter abilities \ingroup UNARY \ingroup NBH

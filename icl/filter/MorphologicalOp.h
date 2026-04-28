@@ -8,7 +8,7 @@
 #include <icl/core/Img.h>
 #include <icl/filter/NeighborhoodOp.h>
 #include <icl/core/Image.h>
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 
 
 namespace icl::filter {

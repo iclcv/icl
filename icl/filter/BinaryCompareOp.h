@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/filter/BinaryOp.h>
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 
 namespace icl::filter {
   /// Class for comparing two images pixel-wise \ingroup BINARY

@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/filter/BaseAffineOp.h>
 #include <icl/core/Image.h>
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 
 namespace icl::filter {
   /// Class to apply an arbitrary series of affine transformations \ingroup AFFINE \ingroup UNARY

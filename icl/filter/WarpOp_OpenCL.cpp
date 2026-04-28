@@ -7,7 +7,7 @@
 #include <icl/filter/WarpOp.h>
 #include <icl/utils/cl/CLProgram.h>
 #include <icl/utils/cl/CLIncludes.h>
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 
 using namespace icl::utils;
 using namespace icl::core;

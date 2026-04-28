@@ -9,7 +9,7 @@
 // (Accelerate defines Point, Size which collide with icl::utils::Point/Size).
 
 #include <Accelerate/Accelerate.h>
-#include <icl/core/ImgOps.h>
+#include <icl/core/dispatch/ImgOps.h>
 #include <icl/core/Img.h>
 #include <icl/utils/ClippedCast.h>
 

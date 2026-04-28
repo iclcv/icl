@@ -7,7 +7,7 @@
 #include <icl/filter/BilateralFilterOp.h>
 #include <icl/utils/cl/CLProgram.h>
 #include <icl/utils/cl/CLIncludes.h>
-#include <icl/core/ImageBackendDispatching.h>
+#include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/filter/OpenCL/BilateralFilterOpKernel.h>
 
 using namespace icl::utils;

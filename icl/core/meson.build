@@ -18,6 +18,11 @@ core_compat_headers = files(
   'compat/OpenCV.h',
 )
 
+core_dispatch_headers = files(
+  'dispatch/ImageBackendDispatching.h',
+  'dispatch/ImgOps.h',
+)
+
 core_headers = files(
   'Channel.h',
   'Core.h',
@@ -25,12 +30,10 @@ core_headers = files(
   'DataSegment.h',
   'DataSegmentBase.h',
   'Image.h',
-  'ImageBackendDispatching.h',
   'Img.h',
   'ImgBase.h',
   'ImgBorder.h',
   'ImgIterator.h',
-  'ImgOps.h',
   'ImgParams.h',
   'PixelRef.h',
   'Types.h',
@@ -61,7 +64,7 @@ core_sources = files(
   'ImgBase.cpp',
   'ImgBorder.cpp',
   'detail/ImgBuffer.cpp',
-  'ImgOps.cpp',
+  'dispatch/ImgOps.cpp',
   'ImgParams.cpp',
   'detail/img/Img_Cpp.cpp',
   'line/Line.cpp',
@@ -121,6 +124,10 @@ install_headers(core_cc_headers,
 
 install_headers(core_compat_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'compat',
+)
+
+install_headers(core_dispatch_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'dispatch',
 )
 
 pkg.generate(icl_core_lib,
