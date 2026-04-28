@@ -24,7 +24,6 @@ core_headers = files(
   'CoreFunctions.h',
   'DataSegment.h',
   'DataSegmentBase.h',
-  'DoxygenMainPage.h',
   'Image.h',
   'ImageBackendDispatching.h',
   'Img.h',
