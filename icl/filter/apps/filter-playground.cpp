@@ -37,7 +37,7 @@
 #include <icl/filter/ScaleOp.h>
 #include <icl/filter/ThresholdOp.h>
 #include <icl/filter/TranslateOp.h>
-#include <icl/filter/UnaryArithmeticalOp.h>
+#include <icl/filter/arith/UnaryArithmeticalOp.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/logical/UnaryLogicalOp.h>
 #include <icl/filter/WarpOp.h>

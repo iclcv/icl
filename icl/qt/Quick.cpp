@@ -15,8 +15,8 @@
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MorphologicalOp.h>
-#include <icl/filter/BinaryArithmeticalOp.h>
-#include <icl/filter/UnaryArithmeticalOp.h>
+#include <icl/filter/arith/BinaryArithmeticalOp.h>
+#include <icl/filter/arith/UnaryArithmeticalOp.h>
 #include <icl/io/FileWriter.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/LUTOp.h>

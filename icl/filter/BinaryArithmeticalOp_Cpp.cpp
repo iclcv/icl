@@ -1,4 +1,4 @@
-#include <icl/filter/BinaryArithmeticalOp.h>
+#include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/core/Visitors.h>
 #include <icl/utils/plugin/EnumDispatch.h>
 #include <cmath>

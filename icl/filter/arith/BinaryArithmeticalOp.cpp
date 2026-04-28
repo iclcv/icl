@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/BinaryArithmeticalOp.h>
+#include <icl/filter/arith/BinaryArithmeticalOp.h>
 
 using namespace icl::utils;
 using namespace icl::core;

@@ -6,13 +6,13 @@
 #include <icl/core/Img.h>
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/filter/ThresholdOp.h>
-#include <icl/filter/UnaryArithmeticalOp.h>
+#include <icl/filter/arith/UnaryArithmeticalOp.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/logical/UnaryLogicalOp.h>
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MorphologicalOp.h>
-#include <icl/filter/BinaryArithmeticalOp.h>
+#include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/filter/compare/BinaryCompareOp.h>
 #include <icl/filter/logical/BinaryLogicalOp.h>
 #include <icl/filter/WarpOp.h>

@@ -5,7 +5,7 @@
 #include <icl/qt/QuickMath.h>
 #include <icl/qt/QuickDraw.h>
 #include <icl/core/Img.h>
-#include <icl/filter/UnaryArithmeticalOp.h>
+#include <icl/filter/arith/UnaryArithmeticalOp.h>
 
 #include <thread>
 #include <vector>

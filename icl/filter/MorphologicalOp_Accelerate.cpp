@@ -8,7 +8,7 @@
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <icl/filter/MorphologicalOp.h>
-#include <icl/filter/BinaryArithmeticalOp.h>
+#include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <limits>
 #include <vector>
 

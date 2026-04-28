@@ -6,8 +6,8 @@
 #include <icl/qt/QuickContext.h>
 #include <icl/core/Img.h>
 #include <icl/core/ImgBase.h>
-#include <icl/filter/BinaryArithmeticalOp.h>
-#include <icl/filter/UnaryArithmeticalOp.h>
+#include <icl/filter/arith/BinaryArithmeticalOp.h>
+#include <icl/filter/arith/UnaryArithmeticalOp.h>
 
 using namespace icl::core;
 using namespace icl::utils;

@@ -4,7 +4,7 @@
 
 #include <Accelerate/Accelerate.h>
 
-#include <icl/filter/UnaryArithmeticalOp.h>
+#include <icl/filter/arith/UnaryArithmeticalOp.h>
 #include <icl/core/Visitors.h>
 
 namespace {

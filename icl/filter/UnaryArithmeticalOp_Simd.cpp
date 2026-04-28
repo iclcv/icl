@@ -5,7 +5,7 @@
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Image.h>
 #include <icl/core/Visitors.h>
-#include <icl/filter/UnaryArithmeticalOp.h>
+#include <icl/filter/arith/UnaryArithmeticalOp.h>
 #include <icl/utils/ClippedCast.h>
 #include <cmath>
 

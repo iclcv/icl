@@ -1,7 +1,7 @@
 #include <icl/filter/MorphologicalOp.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Range.h>
-#include <icl/filter/BinaryArithmeticalOp.h>
+#include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/core/Image.h>
 #include <functional>
 

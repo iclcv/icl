@@ -4,7 +4,7 @@
 
 #include <Accelerate/Accelerate.h>
 
-#include <icl/filter/BinaryArithmeticalOp.h>
+#include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/core/Visitors.h>
 
 namespace {

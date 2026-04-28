@@ -5,7 +5,6 @@ filter_headers = files(
   'BaseAffineOp.h',
   'BaseFFTOp.h',
   'BilateralFilterOp.h',
-  'BinaryArithmeticalOp.h',
   'BinaryOp.h',
   'CannyOp.h',
   'ChamferOp.h',
@@ -23,7 +22,6 @@ filter_headers = files(
   'ImageRectification.h',
   'ImageSplitter.h',
   'ImageUndistortion.h',
-  'InplaceArithmeticalOp.h',
   'InplaceOp.h',
   'IntegralImgOp.h',
   'LUT2D.h',
@@ -43,7 +41,6 @@ filter_headers = files(
   'ScaleOp.h',
   'ThresholdOp.h',
   'TranslateOp.h',
-  'UnaryArithmeticalOp.h',
   'UnaryOp.h',
   'UnaryOpPipe.h',
   'WarpOp.h',
@@ -66,6 +63,12 @@ filter_logical_headers = files(
   'logical/UnaryLogicalOp.h',
 )
 
+filter_arith_headers = files(
+  'arith/BinaryArithmeticalOp.h',
+  'arith/InplaceArithmeticalOp.h',
+  'arith/UnaryArithmeticalOp.h',
+)
+
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
@@ -73,7 +76,7 @@ filter_sources = files(
   'BaseFFTOp.cpp',
   'BilateralFilterOp.cpp',
   'BilateralFilterOp_Cpp.cpp',
-  'BinaryArithmeticalOp.cpp',
+  'arith/BinaryArithmeticalOp.cpp',
   'BinaryArithmeticalOp_Cpp.cpp',
   'BinaryArithmeticalOp_Simd.cpp',
   'compare/BinaryCompareOp.cpp',
@@ -99,7 +102,7 @@ filter_sources = files(
   'ImageRectification.cpp',
   'ImageSplitter.cpp',
   'ImageUndistortion.cpp',
-  'InplaceArithmeticalOp.cpp',
+  'arith/InplaceArithmeticalOp.cpp',
   'logical/InplaceLogicalOp.cpp',
   'IntegralImgOp.cpp',
   'LUTOp.cpp',
@@ -129,7 +132,7 @@ filter_sources = files(
   'ThresholdOp.cpp',
   'ThresholdOp_Cpp.cpp',
   'ThresholdOp_Simd.cpp',
-  'UnaryArithmeticalOp.cpp',
+  'arith/UnaryArithmeticalOp.cpp',
   'UnaryArithmeticalOp_Cpp.cpp',
   'UnaryArithmeticalOp_Simd.cpp',
   'compare/UnaryCompareOp.cpp',
@@ -217,6 +220,10 @@ install_headers(filter_compare_headers,
 
 install_headers(filter_logical_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'logical',
+)
+
+install_headers(filter_arith_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'arith',
 )
 
 pkg.generate(icl_filter_lib,

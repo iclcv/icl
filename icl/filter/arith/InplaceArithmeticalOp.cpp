@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/InplaceArithmeticalOp.h>
+#include <icl/filter/arith/InplaceArithmeticalOp.h>
 #include <icl/core/Img.h>
 #include <cmath>
 
