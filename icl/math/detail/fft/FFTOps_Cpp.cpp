@@ -6,7 +6,7 @@
 // Delegates to existing fft2D_cpp / ifft2D_cpp via non-owning DynMatrix wrappers.
 
 #include <icl/math/detail/fft/FFTOps.h>
-#include <icl/math/FFTUtils.h>
+#include <icl/math/fft/FFTUtils.h>
 
 using namespace icl::utils;
 

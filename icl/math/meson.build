@@ -10,8 +10,6 @@ math_headers = files(
   'DynMatrixBase.h',
   'DynMatrixUtils.h',
   'DynVector.h',
-  'FFTException.h',
-  'FFTUtils.h',
   'FixedMatrix.h',
   'FixedVector.h',
   'GraphCutter.h',
@@ -43,12 +41,17 @@ math_headers = files(
   'StraightLine2D.h',
 )
 
+math_fft_headers = files(
+  'fft/FFTException.h',
+  'fft/FFTUtils.h',
+)
+
 # Always-compiled sources (root-level public API impls).
 math_sources = files(
   'DynMatrix.cpp',
   'DynMatrixUtils.cpp',
   'DynVector.cpp',
-  'FFTUtils.cpp',
+  'fft/FFTUtils.cpp',
   'FixedMatrix.cpp',
   'GraphCutter.cpp',
   'HomogeneousMath.cpp',
@@ -121,6 +124,10 @@ icl_math_dep = declare_dependency(
 
 install_headers(math_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'math',
+)
+
+install_headers(math_fft_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'fft',
 )
 
 pkg.generate(icl_math_lib,

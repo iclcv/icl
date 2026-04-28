@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #include <icl/cv/HeartrateDetector.h>
-#include <icl/math/FFTUtils.h>
+#include <icl/math/fft/FFTUtils.h>
 #include <climits>
 
 namespace icl::cv {

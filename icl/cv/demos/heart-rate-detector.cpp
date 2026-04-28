@@ -8,7 +8,7 @@
 
 #include <icl/utils/Random.h>
 #include <deque>
-#include <icl/math/FFTUtils.h>
+#include <icl/math/fft/FFTUtils.h>
 #include <icl/core/OpenCV.h>
 
 #include "opencv2/objdetect.hpp"

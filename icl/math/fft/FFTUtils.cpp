@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
-#include <icl/math/FFTUtils.h>
+#include <icl/math/fft/FFTUtils.h>
 #include <icl/math/detail/fft/FFTOps.h>
 #include <limits>
 #include <type_traits>
