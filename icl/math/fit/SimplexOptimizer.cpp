@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/utils/StringUtils.h>
-#include <icl/math/SimplexOptimizer.h>
+#include <icl/math/fit/SimplexOptimizer.h>
 #include <vector>
 #include <limits>
 #include <algorithm>

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/LevenbergMarquardtFitter.h>
+#include <icl/math/fit/LevenbergMarquardtFitter.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/math/FixedVector.h>
 

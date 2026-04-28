@@ -12,8 +12,8 @@
 #include <algorithm>
 #include <random>
 #include <icl/utils/ProgArg.h>
-#include <icl/math/SimplexOptimizer.h>
-#include <icl/math/PolynomialSolver.h>
+#include <icl/math/fit/SimplexOptimizer.h>
+#include <icl/math/fit/PolynomialSolver.h>
 
 #include <algorithm>
 #include <iostream>

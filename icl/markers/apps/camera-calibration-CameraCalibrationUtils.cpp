@@ -9,7 +9,7 @@
 
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/config/ConfigFile.h>
-#include <icl/math/LevenbergMarquardtFitter.h>
+#include <icl/math/fit/LevenbergMarquardtFitter.h>
 #include <icl/qt/Common2.h>
 #include <fstream>
 

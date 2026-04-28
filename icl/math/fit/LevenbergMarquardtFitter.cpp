@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Sergius Gaulik
 
-#include <icl/math/LevenbergMarquardtFitter.h>
+#include <icl/math/fit/LevenbergMarquardtFitter.h>
 #include <icl/math/DynMatrixUtils.h>
 #include <icl/utils/Random.h>
 

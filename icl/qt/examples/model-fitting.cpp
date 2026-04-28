@@ -3,10 +3,10 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/math/RansacFitter.h>
+#include <icl/math/fit/RansacFitter.h>
 #include <icl/utils/Random.h>
 #include <icl/utils/Point.h>
-#include <icl/math/LeastSquareModelFitting2D.h>
+#include <icl/math/fit/LeastSquareModelFitting2D.h>
 #include <mutex>
 
 typedef LeastSquareModelFitting2D LS;

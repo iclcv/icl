@@ -7,7 +7,7 @@
 
 #include <icl/utils/StringUtils.h>
 
-#include <icl/math/RansacFitter.h>
+#include <icl/math/fit/RansacFitter.h>
 #include <icl/geom/CoplanarPointPoseEstimator.h>
 
 namespace icl::geom {

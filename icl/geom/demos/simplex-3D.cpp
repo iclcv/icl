@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/math/SimplexOptimizer.h>
+#include <icl/math/fit/SimplexOptimizer.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/CoordinateFrameSceneObject.h>
 #include <icl/utils/Random.h>

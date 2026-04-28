@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/LeastSquareModelFitting.h>
+#include <icl/math/fit/LeastSquareModelFitting.h>
 #include <icl/utils/Point.h>
 
 namespace icl::math {

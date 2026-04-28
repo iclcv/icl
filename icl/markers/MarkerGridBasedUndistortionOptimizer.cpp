@@ -6,7 +6,7 @@
 #include <icl/markers/MarkerGridEvaluater.h>
 #include <memory>
 #include <icl/markers/InverseUndistortionProcessor.h>
-#include <icl/math/SimplexOptimizer.h>
+#include <icl/math/fit/SimplexOptimizer.h>
 #include <icl/utils/Random.h>
 
 

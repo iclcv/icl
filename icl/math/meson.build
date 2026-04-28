@@ -15,20 +15,12 @@ math_headers = files(
   'GraphCutter.h',
   'KMeans.h',
   'LLM.h',
-  'LeastSquareModelFitting.h',
-  'LeastSquareModelFitting2D.h',
-  'LevenbergMarquardtFitter.h',
   'Math.h',
   'MathFunctions.h',
   'MatrixSubRectIterator.h',
-  'PolynomialRegression.h',
-  'PolynomialSolver.h',
-  'RansacFitter.h',
   'SOM.h',
   'SOM2D.h',
   'SimdCompat.h',
-  'SimplexOptimizer.h',
-  'StochasticOptimizer.h',
 )
 
 math_fft_headers = files(
@@ -52,6 +44,17 @@ math_transform_headers = files(
   'transform/StraightLine2D.h',
 )
 
+math_fit_headers = files(
+  'fit/LeastSquareModelFitting.h',
+  'fit/LeastSquareModelFitting2D.h',
+  'fit/LevenbergMarquardtFitter.h',
+  'fit/PolynomialRegression.h',
+  'fit/PolynomialSolver.h',
+  'fit/RansacFitter.h',
+  'fit/SimplexOptimizer.h',
+  'fit/StochasticOptimizer.h',
+)
+
 # Always-compiled sources (root-level public API impls).
 math_sources = files(
   'DynMatrix.cpp',
@@ -64,12 +67,12 @@ math_sources = files(
   'transform/Homography2D.cpp',
   'tree/KDTree.cpp',
   'LLM.cpp',
-  'LevenbergMarquardtFitter.cpp',
-  'PolynomialRegression.cpp',
+  'fit/LevenbergMarquardtFitter.cpp',
+  'fit/PolynomialRegression.cpp',
   'transform/Projective4PointTransform.cpp',
   'SOM.cpp',
-  'SimplexOptimizer.cpp',
-  'StochasticOptimizer.cpp',
+  'fit/SimplexOptimizer.cpp',
+  'fit/StochasticOptimizer.cpp',
   'transform/StraightLine2D.cpp',
 )
 
@@ -142,6 +145,10 @@ install_headers(math_tree_headers,
 
 install_headers(math_transform_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'transform',
+)
+
+install_headers(math_fit_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'fit',
 )
 
 pkg.generate(icl_math_lib,

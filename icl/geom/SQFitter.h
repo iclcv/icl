@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/FixedMatrix.h>
-#include <icl/math/LevenbergMarquardtFitter.h>
+#include <icl/math/fit/LevenbergMarquardtFitter.h>
 #include <icl/geom/PointCloudObject.h>
 #include <vector>
 

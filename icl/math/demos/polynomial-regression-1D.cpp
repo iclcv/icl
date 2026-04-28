@@ -5,7 +5,7 @@
 // 1D polynomial regression: fit y = f(x) to noisy data, visualize in 2D plot
 
 #include <icl/qt/Common2.h>
-#include <icl/math/PolynomialRegression.h>
+#include <icl/math/fit/PolynomialRegression.h>
 #include <icl/utils/Random.h>
 
 using Scalar = float;

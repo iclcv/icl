@@ -6,7 +6,7 @@
 // is independently approximated by a polynomial in (x,y) → (r,g,b).
 
 #include <icl/qt/Common2.h>
-#include <icl/math/PolynomialRegression.h>
+#include <icl/math/fit/PolynomialRegression.h>
 
 using Scalar = float;
 using Matrix = DynMatrix<Scalar>;

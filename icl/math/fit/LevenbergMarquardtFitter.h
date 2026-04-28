@@ -81,7 +81,7 @@ namespace icl::math {
       \f[ ( 1, x, x^2, x^3 ) \f]
 
       \code
-      #include <icl/math/LevenbergMarquardtFitter.h>
+      #include <icl/math/fit/LevenbergMarquardtFitter.h>
 
       using namespace icl::utils;
       using namespace icl::math;
@@ -143,7 +143,7 @@ namespace icl::math {
 
     \code
 
-      #include <icl/math/LevenbergMarquardtFitter.h>
+      #include <icl/math/fit/LevenbergMarquardtFitter.h>
 
       using namespace icl::utils;
       using namespace icl::math;
@@ -192,7 +192,7 @@ namespace icl::math {
       jacobian so we use the numerical default jacobian here
 
       \code
-      #include <icl/math/LevenbergMarquardtFitter.h>
+      #include <icl/math/fit/LevenbergMarquardtFitter.h>
       #include <icl/math/FixedVector.h>
 
       using namespace icl::utils;

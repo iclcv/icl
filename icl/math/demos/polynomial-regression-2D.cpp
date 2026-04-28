@@ -5,7 +5,7 @@
 // 2D polynomial regression: fit z = f(x,y) to noisy data, visualize as 3D surface
 
 #include <icl/qt/Common2.h>
-#include <icl/math/PolynomialRegression.h>
+#include <icl/math/fit/PolynomialRegression.h>
 #include <icl/geom2/Scene2.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/MeshNode.h>

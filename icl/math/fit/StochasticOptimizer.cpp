@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/utils/Macros.h>
-#include <icl/math/StochasticOptimizer.h>
+#include <icl/math/fit/StochasticOptimizer.h>
 #include <algorithm>
 #include <numeric>
 #include <vector>
