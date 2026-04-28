@@ -18,7 +18,7 @@
 #include <icl/filter/BinaryArithmeticalOp.h>
 #include <icl/filter/UnaryArithmeticalOp.h>
 #include <icl/io/FileWriter.h>
-#include <icl/filter/UnaryCompareOp.h>
+#include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/LUTOp.h>
 #include <icl/utils/time/Timer.h>
 

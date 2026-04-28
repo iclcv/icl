@@ -4,7 +4,7 @@
 
 #include <icl/filter/LocalThresholdOp.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/filter/BinaryCompareOp.h>
+#include <icl/filter/compare/BinaryCompareOp.h>
 #include <icl/utils/Size.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/time/StackTimer.h>
@@ -12,7 +12,7 @@
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/time/Time.h>
 #include <icl/filter/LocalThresholdOpHelpers.h>
-#include <icl/filter/UnaryCompareOp.h>
+#include <icl/filter/compare/UnaryCompareOp.h>
 
 #include <stdio.h>
 #include <algorithm>

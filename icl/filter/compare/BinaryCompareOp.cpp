@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/BinaryCompareOp.h>
+#include <icl/filter/compare/BinaryCompareOp.h>
 
 using namespace icl::utils;
 using namespace icl::core;

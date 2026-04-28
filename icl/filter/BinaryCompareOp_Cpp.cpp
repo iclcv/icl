@@ -1,4 +1,4 @@
-#include <icl/filter/BinaryCompareOp.h>
+#include <icl/filter/compare/BinaryCompareOp.h>
 #include <icl/core/Visitors.h>
 #include <icl/utils/ClippedCast.h>
 #include <icl/utils/plugin/EnumDispatch.h>

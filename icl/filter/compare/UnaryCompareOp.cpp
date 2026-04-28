@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/UnaryCompareOp.h>
+#include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;

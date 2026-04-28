@@ -5,7 +5,7 @@
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Image.h>
 #include <icl/core/Visitors.h>
-#include <icl/filter/UnaryCompareOp.h>
+#include <icl/filter/compare/UnaryCompareOp.h>
 #include <ipp.h>
 
 using namespace icl;

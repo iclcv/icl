@@ -37,7 +37,7 @@ namespace icl{
         #include <icl/filter/UnaryOpPipe.h>
         #include <icl/filter/ScaleOp.h>
         #include <icl/filter/channel/WeightedSumOp.h>
-        #include <icl/filter/UnaryCompareOp.h>
+        #include <icl/filter/compare/UnaryCompareOp.h>
         #include <icl/filter/MorphologicalOp.h>
 #include <icl/core/Image.h>
 

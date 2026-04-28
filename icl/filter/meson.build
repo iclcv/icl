@@ -6,7 +6,6 @@ filter_headers = files(
   'BaseFFTOp.h',
   'BilateralFilterOp.h',
   'BinaryArithmeticalOp.h',
-  'BinaryCompareOp.h',
   'BinaryLogicalOp.h',
   'BinaryOp.h',
   'CannyOp.h',
@@ -47,7 +46,6 @@ filter_headers = files(
   'ThresholdOp.h',
   'TranslateOp.h',
   'UnaryArithmeticalOp.h',
-  'UnaryCompareOp.h',
   'UnaryLogicalOp.h',
   'UnaryOp.h',
   'UnaryOpPipe.h',
@@ -60,6 +58,11 @@ filter_channel_headers = files(
   'channel/WeightedSumOp.h',
 )
 
+filter_compare_headers = files(
+  'compare/BinaryCompareOp.h',
+  'compare/UnaryCompareOp.h',
+)
+
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
@@ -70,7 +73,7 @@ filter_sources = files(
   'BinaryArithmeticalOp.cpp',
   'BinaryArithmeticalOp_Cpp.cpp',
   'BinaryArithmeticalOp_Simd.cpp',
-  'BinaryCompareOp.cpp',
+  'compare/BinaryCompareOp.cpp',
   'BinaryCompareOp_Cpp.cpp',
   'BinaryCompareOp_Simd.cpp',
   'BinaryLogicalOp.cpp',
@@ -126,7 +129,7 @@ filter_sources = files(
   'UnaryArithmeticalOp.cpp',
   'UnaryArithmeticalOp_Cpp.cpp',
   'UnaryArithmeticalOp_Simd.cpp',
-  'UnaryCompareOp.cpp',
+  'compare/UnaryCompareOp.cpp',
   'UnaryCompareOp_Cpp.cpp',
   'UnaryCompareOp_Simd.cpp',
   'UnaryLogicalOp.cpp',
@@ -203,6 +206,10 @@ install_headers(filter_headers,
 
 install_headers(filter_channel_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'channel',
+)
+
+install_headers(filter_compare_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'compare',
 )
 
 pkg.generate(icl_filter_lib,

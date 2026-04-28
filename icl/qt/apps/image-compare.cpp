@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/filter/BinaryArithmeticalOp.h>
-#include <icl/filter/BinaryCompareOp.h>
+#include <icl/filter/compare/BinaryCompareOp.h>
 
 int main(int n, char **ppc){
   pa_init(n,ppc,"[m]-input-1|-1|-a(device,device-params) "

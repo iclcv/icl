@@ -3,13 +3,13 @@
 #include <icl/core/Img.h>
 #include <icl/filter/ThresholdOp.h>
 #include <icl/filter/BinaryArithmeticalOp.h>
-#include <icl/filter/BinaryCompareOp.h>
+#include <icl/filter/compare/BinaryCompareOp.h>
 #include <icl/filter/BinaryLogicalOp.h>
 #include <icl/filter/UnaryArithmeticalOp.h>
-#include <icl/filter/UnaryCompareOp.h>
+#include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/UnaryLogicalOp.h>
-#include <icl/filter/WeightChannelsOp.h>
-#include <icl/filter/WeightedSumOp.h>
+#include <icl/filter/channel/WeightChannelsOp.h>
+#include <icl/filter/channel/WeightedSumOp.h>
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/DitheringOp.h>
 #include <icl/filter/LUTOp.h>
