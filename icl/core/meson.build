@@ -55,7 +55,7 @@ core_sources = files(
   'ImgBuffer.cpp',
   'ImgOps.cpp',
   'ImgParams.cpp',
-  'Img_Cpp.cpp',
+  'detail/img/Img_Cpp.cpp',
   'Line.cpp',
   'LineSampler.cpp',
   'PixelOps.cpp',
@@ -63,11 +63,11 @@ core_sources = files(
 
 # Conditional backend sources
 if ipp_dep.found()
-  core_sources += files('Img_Ipp.cpp')
+  core_sources += files('detail/img/Img_Ipp.cpp')
 endif
 
 if accelerate_dep.found()
-  core_sources += files('Img_Accelerate.cpp')
+  core_sources += files('detail/img/Img_Accelerate.cpp')
 endif
 
 if opencv_dep.found()
