@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/AdjustGridMouseHandler.h>
-#include <icl/core/ConvexHull.h>
+#include <icl/math/transform/ConvexHull.h>
 #include <icl/core/Line.h>
 #include <icl/core/Color.h>
 #include <icl/math/transform/Projective4PointTransform.h>
@@ -14,6 +14,7 @@
 
 namespace icl::qt {
     using namespace utils;
+    using namespace math;
     using namespace core;
 
     struct AdjustGridMouseHandler::Data{

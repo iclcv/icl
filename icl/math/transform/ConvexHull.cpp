@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/ConvexHull.h>
+#include <icl/math/transform/ConvexHull.h>
 #include <algorithm>
 #include <vector>
 
@@ -24,7 +24,7 @@ namespace icl::utils {
   }
 } // namespace icl::utils
 
-namespace icl::core {
+namespace icl::math {
   // Implementation was found here: http://www.algorithmist.com/index.php/Monotone_Chain_Convex_Hull.cpp
   // 2D cross product.
   // Return a positive value, if OAB makes a counter-clockwise turn,
@@ -78,4 +78,4 @@ namespace icl::core {
     H.resize(k);
     return H;
   }
-} // namespace icl::core
+} // namespace icl::math

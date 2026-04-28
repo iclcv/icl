@@ -5,12 +5,13 @@
 #include <icl/qt/DefineQuadrangleMouseHandler.h>
 #include <icl/qt/Widget.h>
 #include <vector>
-#include <icl/core/ConvexHull.h>
+#include <icl/math/transform/ConvexHull.h>
 #include <icl/core/Line.h>
 #include <mutex>
 
 namespace icl::qt {
     using namespace utils;
+    using namespace math;
     using namespace core;
 
     struct DefineQuadrangleMouseHandler::Data{
