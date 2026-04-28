@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/ClippedCast.h>

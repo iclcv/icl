@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/cv/RegionDetector.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/filter/MedianOp.h>
 
 HSplit gui;

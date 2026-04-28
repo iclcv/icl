@@ -41,7 +41,7 @@
 
 #include <icl/io/FileWriter.h>
 #include <float.h>
-#include <icl/utils/StackTimer.h>
+#include <icl/utils/time/StackTimer.h>
 #include <icl/geom/Camera.h>
 #include <icl/geom/CoplanarPointPoseEstimator.h>
 

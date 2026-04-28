@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/Macros.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <vector>
 #include <string>
 

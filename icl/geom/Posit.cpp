@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom/Posit.h>
-#include <icl/utils/StackTimer.h>
+#include <icl/utils/time/StackTimer.h>
 #include <icl/geom/Camera.h>
 
 using namespace icl::utils;

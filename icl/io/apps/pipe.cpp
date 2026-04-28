@@ -5,7 +5,7 @@
 #include <icl/io/GenericImageOutput.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/qt/Common2.h>
-#include <icl/utils/FPSEstimator.h>
+#include <icl/utils/time/FPSEstimator.h>
 #include <icl/utils/ConsoleProgress.h>
 
 #include <icl/filter/MedianOp.h>

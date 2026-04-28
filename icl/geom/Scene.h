@@ -20,7 +20,7 @@
 #include <icl/geom/Sky.h>
 #include <icl/geom/PointCloudGrabber.h>
 #include <icl/core/Img.h>
-#include <icl/utils/FPSEstimator.h>
+#include <icl/utils/time/FPSEstimator.h>
 
 #ifdef ICL_HAVE_QT
 #include <icl/qt/MouseHandler.h>
@@ -55,7 +55,7 @@ namespace icl::geom {
     \code
 #include <icl/qt/Common.h>
 #include <icl/geom/Geom.h>
-#include <icl/utils/FPSLimiter.h>
+#include <icl/utils/time/FPSLimiter.h>
 
 // global data
 icl::qt::GUI gui;

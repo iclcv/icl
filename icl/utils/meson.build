@@ -36,8 +36,6 @@ utils_headers = files(
   'Configurable.h',
   'ConsoleProgress.h',
   'Exception.h',
-  'FPSEstimator.h',
-  'FPSLimiter.h',
   'File.h',
   'FixedArray.h',
   'Macros.h',
@@ -50,13 +48,10 @@ utils_headers = files(
   'Rect.h',
   'SignalHandler.h',
   'Size.h',
-  'StackTimer.h',
   'SteppingRange.h',
   'StrTok.h',
   'StringUtils.h',
   'TextTable.h',
-  'Time.h',
-  'Timer.h',
   'UncopiedInstance.h',
   'Utils.h',
   'VisualizationDescription.h',
@@ -81,6 +76,14 @@ utils_plugin_headers = files(
   'plugin/BackendDispatching.h',
   'plugin/EnumDispatch.h',
   'plugin/PluginRegistry.h',
+)
+
+utils_time_headers = files(
+  'time/FPSEstimator.h',
+  'time/FPSLimiter.h',
+  'time/StackTimer.h',
+  'time/Time.h',
+  'time/Timer.h',
 )
 
 utils_cl_headers = files(
@@ -108,8 +111,6 @@ utils_sources = files(
   'Configurable.cpp',
   'ConsoleProgress.cpp',
   'Exception.cpp',
-  'FPSEstimator.cpp',
-  'FPSLimiter.cpp',
   'File.cpp',
   'Point.cpp',
   'ProcessMonitor.cpp',
@@ -123,8 +124,10 @@ utils_sources = files(
   'StringUtils.cpp',
   'TextTable.cpp',
   'thread/Thread.cpp',
-  'Time.cpp',
-  'Timer.cpp',
+  'time/FPSEstimator.cpp',
+  'time/FPSLimiter.cpp',
+  'time/Time.cpp',
+  'time/Timer.cpp',
   'Xml.cpp',
   'Yaml.cpp',
   'detail/xml/XPath.cpp',
@@ -167,6 +170,10 @@ install_headers(utils_thread_headers,
 
 install_headers(utils_plugin_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'plugin',
+)
+
+install_headers(utils_time_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'utils' / 'time',
 )
 
 install_headers(utils_prop_headers,

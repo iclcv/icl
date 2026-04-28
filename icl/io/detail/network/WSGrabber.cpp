@@ -8,7 +8,7 @@
 #include <icl/core/Image.h>
 #include <icl/core/ImgBase.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/utils/Macros.h>
 
 #include <QtCore/QCoreApplication>

@@ -12,7 +12,7 @@
 #include <icl/qt/LabelHandle.h>
 #include <icl/qt/CheckBoxHandle.h>
 #include <icl/qt/ButtonHandle.h>
-#include <icl/utils/FPSLimiter.h>
+#include <icl/utils/time/FPSLimiter.h>
 #include <icl/utils/thread/Thread.h>
 
 #include <QComboBox>

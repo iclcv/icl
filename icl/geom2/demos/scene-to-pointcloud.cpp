@@ -19,7 +19,7 @@
 #include <icl/geom2/PointCloudNode.h>
 #include <icl/geom/Camera.h>
 #include <icl/geom/Material.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 
 using namespace icl::geom2;
 using namespace icl::geom;

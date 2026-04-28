@@ -4,7 +4,7 @@
 
 #include <icl/io/detail/pylon/PylonColorConverter.h>
 #include <icl/core/CCFunctions.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <mutex>
 
 #define CONCAT(x) (std::ostringstream << x).str()

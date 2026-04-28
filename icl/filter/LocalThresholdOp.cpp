@@ -7,10 +7,10 @@
 #include <icl/filter/BinaryCompareOp.h>
 #include <icl/utils/Size.h>
 #include <icl/utils/Macros.h>
-#include <icl/utils/StackTimer.h>
+#include <icl/utils/time/StackTimer.h>
 #include <icl/filter/IntegralImgOp.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/filter/LocalThresholdOpHelpers.h>
 #include <icl/filter/UnaryCompareOp.h>
 

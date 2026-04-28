@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Configurable.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
 #include <string>

@@ -17,7 +17,7 @@
 
 #include <algorithm>
 
-#include <icl/utils/StackTimer.h>
+#include <icl/utils/time/StackTimer.h>
 
 using namespace icl::utils;
 using namespace icl::core;

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include <icl/core/CCFunctions.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/utils/StringUtils.h>
 using namespace icl::utils;
 using namespace icl::core;

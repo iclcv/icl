@@ -20,7 +20,7 @@
 #include <icl/io/FileWriter.h>
 #include <icl/filter/UnaryCompareOp.h>
 #include <icl/filter/LUTOp.h>
-#include <icl/utils/Timer.h>
+#include <icl/utils/time/Timer.h>
 
 #ifdef ICL_HAVE_QT
 #include <icl/qt/QImageConverter.h>

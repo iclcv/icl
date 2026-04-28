@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/FPSEstimator.h>
+#include <icl/utils/time/FPSEstimator.h>
 #include <icl/qt/GUIHandle.h>
 #include <icl/qt/CompabilityLabel.h>
 #include <QtCore/QString>

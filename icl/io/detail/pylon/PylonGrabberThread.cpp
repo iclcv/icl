@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
 
 #include <icl/io/detail/pylon/PylonGrabberThread.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 
 using namespace icl;
 using namespace icl::io::pylon;

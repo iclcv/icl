@@ -9,7 +9,7 @@
 #include <icl/utils/plugin/PluginRegistry.h>
 #include <icl/utils/Rect.h>
 #include <icl/utils/Size.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/core/Img.h>
 #include <icl/io/Grabber.h>
 

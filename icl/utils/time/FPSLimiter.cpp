@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/utils/FPSLimiter.h>
+#include <icl/utils/time/FPSLimiter.h>
 #include <icl/utils/thread/Thread.h>
 
 namespace icl::utils {

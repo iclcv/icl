@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/Macros.h>
-#include <icl/utils/Timer.h>
+#include <icl/utils/time/Timer.h>
 #include <string>
 #include <cstdio>
 

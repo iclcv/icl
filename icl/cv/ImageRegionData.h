@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/StackTimer.h>
+#include <icl/utils/time/StackTimer.h>
 #include <icl/core/Img.h>
 #include <icl/cv/ImageRegionPart.h>
 #include <icl/cv/ImageRegion.h>

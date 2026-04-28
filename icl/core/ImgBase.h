@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/PixelOps.h>
 #include <icl/core/ImgParams.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/utils/Range.h>
 #include <vector>
 #include <string>

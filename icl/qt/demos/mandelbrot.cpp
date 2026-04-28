@@ -5,7 +5,7 @@
 #include <icl/qt/Common2.h>
 #include <iomanip>
 #include <icl/core/Img.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 
 #ifdef ICL_HAVE_OPENCL
 #include <icl/utils/cl/CLProgram.h>

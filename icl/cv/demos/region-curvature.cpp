@@ -7,7 +7,7 @@
 
 #include <icl/cv/RegionDetector.h>
 
-#include <icl/utils/StackTimer.h>
+#include <icl/utils/time/StackTimer.h>
 
 #include "icl/cv/CurvatureExtractor.h"
 

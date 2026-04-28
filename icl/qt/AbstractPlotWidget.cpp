@@ -4,7 +4,7 @@
 
 #include <icl/math/FixedMatrix.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/math/LinearTransform1D.h>
 
 #include <icl/qt/AbstractPlotWidget.h>

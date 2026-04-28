@@ -16,7 +16,7 @@
 #include <icl/qt/ContainerGUIComponents.h>
 #include <string>
 #include <vector>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/qt/QImageConverter.h>
 #include <icl/core/FixedConverter.h>

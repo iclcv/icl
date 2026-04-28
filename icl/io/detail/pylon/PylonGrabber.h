@@ -12,7 +12,7 @@
 #include <icl/io/detail/pylon/PylonCameraOptions.h>
 #include <icl/io/detail/pylon/PylonGrabberThread.h>
 #include <icl/io/detail/pylon/PylonColorConverter.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <mutex>
 
 namespace icl::io {

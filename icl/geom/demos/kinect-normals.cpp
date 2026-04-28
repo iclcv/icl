@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/geom/ObjectEdgeDetector.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 
 HSplit gui;
 GenericGrabber grabDepth, grabColor;

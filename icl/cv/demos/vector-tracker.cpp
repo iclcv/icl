@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/utils/FPSEstimator.h>
+#include <icl/utils/time/FPSEstimator.h>
 #include <icl/utils/Random.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/utils/thread/Lockable.h>

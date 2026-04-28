@@ -4,7 +4,7 @@
 
 #include <icl/filter/AffineOp.h>
 #include <icl/qt/Common2.h>
-#include <icl/utils/StackTimer.h>
+#include <icl/utils/time/StackTimer.h>
 
 GUI gui = HSplit().minSize(32,24);
 Image baseImage;   // pristine source, untouched

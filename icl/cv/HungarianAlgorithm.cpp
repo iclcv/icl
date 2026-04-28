@@ -5,8 +5,8 @@
 #include <icl/core/Types.h>
 #include <icl/utils/Point.h>
 #include <icl/cv/HungarianAlgorithm.h>
-#include <icl/utils/Timer.h>
-#include <icl/utils/StackTimer.h>
+#include <icl/utils/time/Timer.h>
+#include <icl/utils/time/StackTimer.h>
 #include <list>
 
 using namespace icl::utils;

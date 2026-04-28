@@ -46,7 +46,7 @@
 
    // ++++++++++++ black and white example ++++++++++++ //
     #include <icl/utils/detail/simd/SSETypes.h>
-    #include <icl/utils/Time.h>
+    #include <icl/utils/time/Time.h>
     using namespace icl;
     using namespace icl::utils;
 
@@ -114,7 +114,7 @@
    // ++++++++++++ rgb to gray ++++++++++++ //
    #include <icl/utils/detail/simd/SSETypes.h>
    #include <icl/utils/ClippedCast.h>
-   #include <icl/utils/Time.h>
+   #include <icl/utils/time/Time.h>
    using namespace icl;
    using namespace icl::utils;
 

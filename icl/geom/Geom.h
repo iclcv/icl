@@ -66,7 +66,7 @@
     \code
 #include <icl/qt/Common.h>
 #include <icl/geom/Geom.h>
-#include <icl/utils/FPSLimiter.h>
+#include <icl/utils/time/FPSLimiter.h>
 
 icl::qt::GUI gui;
 Scene scene;

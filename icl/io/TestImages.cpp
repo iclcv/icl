@@ -13,7 +13,7 @@
 #include <icl/io/FileWriter.h>
 #include <stdlib.h>
 #include <charconv>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/utils/thread/Thread.h>
 
 #ifndef ICL_SYSTEM_WINDOWS

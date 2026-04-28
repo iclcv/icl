@@ -13,7 +13,7 @@
 #include <icl/geom/GeomDefs.h>
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/utils/File.h>
 #include <icl/geom/PointCloudGrabberRegistry.h>
 

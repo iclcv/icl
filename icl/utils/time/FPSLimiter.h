@@ -5,8 +5,8 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/Time.h>
-#include <icl/utils/FPSEstimator.h>
+#include <icl/utils/time/Time.h>
+#include <icl/utils/time/FPSEstimator.h>
 
 namespace icl::utils {
   /// An fps limiter can be used to limit online applications FPS \ingroup TIME

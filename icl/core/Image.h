@@ -8,7 +8,7 @@
 #include <icl/core/Types.h>
 #include <icl/utils/Size.h>
 #include <icl/utils/Rect.h>
-#include <icl/utils/Time.h>
+#include <icl/utils/time/Time.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/Exception.h>
 

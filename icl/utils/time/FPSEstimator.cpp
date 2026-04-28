@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/utils/FPSEstimator.h>
+#include <icl/utils/time/FPSEstimator.h>
 #include <icl/utils/Macros.h>
 #include <cstdio>
 #include <cstdarg>
