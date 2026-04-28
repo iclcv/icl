@@ -6,7 +6,6 @@ filter_headers = files(
   'BilateralFilterOp.h',
   'BinaryOp.h',
   'CannyOp.h',
-  'ChamferOp.h',
   'ConvolutionKernel.h',
   'ConvolutionOp.h',
   'DynamicConvolutionOp.h',
@@ -17,9 +16,7 @@ filter_headers = files(
   'ImageUndistortion.h',
   'InplaceOp.h',
   'IntegralImgOp.h',
-  'MedianOp.h',
   'MirrorOp.h',
-  'MorphologicalOp.h',
   'MotionSensitiveTemporalSmoothing.h',
   'NeighborhoodOp.h',
   'OpROIHandler.h',
@@ -81,6 +78,13 @@ filter_color_headers = files(
   'color/PseudoColorOp.h',
 )
 
+filter_morph_headers = files(
+  'morph/ChamferOp.h',
+  'morph/GradientOp.h',
+  'morph/MedianOp.h',
+  'morph/MorphologicalOp.h',
+)
+
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
@@ -99,7 +103,7 @@ filter_sources = files(
   'BinaryLogicalOp_Simd.cpp',
   'BinaryOp.cpp',
   'CannyOp.cpp',
-  'ChamferOp.cpp',
+  'morph/ChamferOp.cpp',
   'color/ColorDistanceOp.cpp',
   'color/ColorSegmentationOp.cpp',
   'ConvolutionKernel.cpp',
@@ -110,7 +114,7 @@ filter_sources = files(
   'fft/FFTOp.cpp',
   'lut/FixedConvertOp.cpp',
   'GaborOp.cpp',
-  'GradientOp.cpp',
+  'morph/GradientOp.cpp',
   'ImageRectification.cpp',
   'ImageSplitter.cpp',
   'ImageUndistortion.cpp',
@@ -131,11 +135,11 @@ filter_sources = files(
   'LocalThresholdOpHelpers_32f_true.cpp',
   'LocalThresholdOpHelpers_64f_false.cpp',
   'LocalThresholdOpHelpers_64f_true.cpp',
-  'MedianOp.cpp',
+  'morph/MedianOp.cpp',
   'MedianOp_Cpp.cpp',
   'MedianOp_Simd.cpp',
   'MirrorOp.cpp',
-  'MorphologicalOp.cpp',
+  'morph/MorphologicalOp.cpp',
   'MorphologicalOp_Cpp.cpp',
   'MotionSensitiveTemporalSmoothing.cpp',
   'NeighborhoodOp.cpp',
@@ -252,6 +256,10 @@ install_headers(filter_fft_headers,
 
 install_headers(filter_color_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'color',
+)
+
+install_headers(filter_morph_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'morph',
 )
 
 pkg.generate(icl_filter_lib,

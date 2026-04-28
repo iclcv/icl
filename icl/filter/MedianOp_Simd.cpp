@@ -3,7 +3,7 @@
 #include <icl/core/Image.h>
 #include <icl/utils/detail/simd/SSEUtils.h>
 #include <icl/utils/Exception.h>
-#include <icl/filter/MedianOp.h>
+#include <icl/filter/morph/MedianOp.h>
 
 #ifdef ICL_HAVE_SSE2
 

@@ -11,14 +11,14 @@
 #include <future>
 #include <vector>
 #include <icl/filter/ConvolutionOp.h>
-#include <icl/filter/MorphologicalOp.h>
-#include <icl/filter/MedianOp.h>
+#include <icl/filter/morph/MorphologicalOp.h>
+#include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/RotateOp.h>
 #include <icl/filter/ScaleOp.h>
 #include <map>
 
 #include <icl/filter/CannyOp.h>
-#include <icl/filter/ChamferOp.h>
+#include <icl/filter/morph/ChamferOp.h>
 #include <icl/filter/GaborOp.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>

@@ -18,12 +18,12 @@
 #include <icl/filter/color/ColorDistanceOp.h>
 #include <icl/filter/color/ColorSegmentationOp.h>
 #include <icl/filter/GaborOp.h>
-#include <icl/filter/ChamferOp.h>
+#include <icl/filter/morph/ChamferOp.h>
 #include <icl/filter/AffineOp.h>
 #include <icl/filter/CannyOp.h>
-#include <icl/filter/MedianOp.h>
+#include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/ConvolutionOp.h>
-#include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/filter/WarpOp.h>
 #include <icl/filter/BilateralFilterOp.h>

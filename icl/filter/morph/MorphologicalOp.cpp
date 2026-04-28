@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Andre Justus
 
-#include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
 

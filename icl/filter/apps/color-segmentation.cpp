@@ -4,8 +4,8 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/filter/color/ColorSegmentationOp.h>
-#include <icl/filter/MedianOp.h>
-#include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/morph/MedianOp.h>
+#include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/core/cc/Color.h>
 #include <icl/cv/RegionDetector.h>

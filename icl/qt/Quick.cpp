@@ -13,8 +13,8 @@
 #include <map>
 #include <list>
 #include <icl/filter/ConvolutionOp.h>
-#include <icl/filter/MedianOp.h>
-#include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/morph/MedianOp.h>
+#include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/filter/arith/UnaryArithmeticalOp.h>
 #include <icl/io/FileWriter.h>

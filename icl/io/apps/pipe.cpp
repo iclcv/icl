@@ -8,7 +8,7 @@
 #include <icl/utils/time/FPSEstimator.h>
 #include <icl/utils/ConsoleProgress.h>
 
-#include <icl/filter/MedianOp.h>
+#include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/ConvolutionOp.h>
 
 #include <functional>

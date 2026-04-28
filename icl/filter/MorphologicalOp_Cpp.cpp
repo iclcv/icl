@@ -1,4 +1,4 @@
-#include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Range.h>
 #include <icl/filter/arith/BinaryArithmeticalOp.h>

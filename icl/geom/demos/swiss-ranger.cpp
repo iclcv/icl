@@ -6,7 +6,7 @@
 #include <icl/geom/Camera.h>
 
 #include <icl/geom/Scene.h>
-#include <icl/filter/MedianOp.h>
+#include <icl/filter/morph/MedianOp.h>
 #include <mutex>
 
 GenericGrabber *grabber = 0;

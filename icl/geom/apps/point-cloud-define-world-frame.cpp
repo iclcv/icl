@@ -12,7 +12,7 @@
 
 #include <icl/geom/ObjectEdgeDetector.h>
 #include <icl/cv/RegionDetector.h>
-#include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/morph/MorphologicalOp.h>
 
 #include <fstream>
 #include <mutex>

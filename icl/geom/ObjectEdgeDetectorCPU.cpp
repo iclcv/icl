@@ -32,7 +32,7 @@
 #include <icl/geom/ObjectEdgeDetectorCPU.h>
 #include <icl/geom/ObjectEdgeDetectorData.h>
 
-#include <icl/filter/MedianOp.h>
+#include <icl/filter/morph/MedianOp.h>
 
 namespace icl {
 

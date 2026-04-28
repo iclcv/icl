@@ -9,7 +9,7 @@
 #include <icl/io/GenericGrabber.h>
 #include <icl/geom/PointCloudGrabberRegistry.h>
 #include <icl/filter/MotionSensitiveTemporalSmoothing.h>
-#include <icl/filter/MedianOp.h>
+#include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/ConvolutionOp.h>
 
 

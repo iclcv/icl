@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/GradientOp.h>
+#include <icl/filter/morph/GradientOp.h>
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/core/Img.h>
 #include <cmath>

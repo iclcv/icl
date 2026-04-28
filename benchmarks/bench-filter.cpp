@@ -10,8 +10,8 @@
 #include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/logical/UnaryLogicalOp.h>
 #include <icl/filter/ConvolutionOp.h>
-#include <icl/filter/MedianOp.h>
-#include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/morph/MedianOp.h>
+#include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/filter/compare/BinaryCompareOp.h>
 #include <icl/filter/logical/BinaryLogicalOp.h>

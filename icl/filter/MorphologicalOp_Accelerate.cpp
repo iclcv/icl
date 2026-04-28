@@ -7,7 +7,7 @@
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
-#include <icl/filter/MorphologicalOp.h>
+#include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <limits>
 #include <vector>

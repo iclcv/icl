@@ -4,7 +4,7 @@
 
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Image.h>
-#include <icl/filter/MedianOp.h>
+#include <icl/filter/morph/MedianOp.h>
 #include <ipp.h>
 #include <vector>
 

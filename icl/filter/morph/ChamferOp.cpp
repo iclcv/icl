@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/ChamferOp.h>
+#include <icl/filter/morph/ChamferOp.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>

@@ -1,4 +1,4 @@
-#include <icl/filter/MedianOp.h>
+#include <icl/filter/morph/MedianOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <vector>
