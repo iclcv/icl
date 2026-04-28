@@ -11,7 +11,7 @@
 #include <icl/filter/IntegralImgOp.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/time/Time.h>
-#include <icl/filter/LocalThresholdOpHelpers.h>
+#include <icl/filter/threshold/LocalThresholdOpHelpers.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
 
 #include <stdio.h>
