@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/Octree.h>
+#include <icl/math/tree/Octree.h>
 #include <icl/geom/SceneObject.h>
 #include <icl/geom/PointCloudObjectBase.h>
 #include <icl/geom/Camera.h>

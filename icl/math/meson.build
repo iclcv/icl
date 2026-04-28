@@ -15,7 +15,6 @@ math_headers = files(
   'GraphCutter.h',
   'HomogeneousMath.h',
   'Homography2D.h',
-  'KDTree.h',
   'KMeans.h',
   'LLM.h',
   'LeastSquareModelFitting.h',
@@ -25,13 +24,9 @@ math_headers = files(
   'Math.h',
   'MathFunctions.h',
   'MatrixSubRectIterator.h',
-  'Octree.h',
-  'PCLKdtree.h',
-  'PCLOctree.h',
   'PolynomialRegression.h',
   'PolynomialSolver.h',
   'Projective4PointTransform.h',
-  'QuadTree.h',
   'RansacFitter.h',
   'SOM.h',
   'SOM2D.h',
@@ -46,6 +41,14 @@ math_fft_headers = files(
   'fft/FFTUtils.h',
 )
 
+math_tree_headers = files(
+  'tree/KDTree.h',
+  'tree/Octree.h',
+  'tree/PCLKdtree.h',
+  'tree/PCLOctree.h',
+  'tree/QuadTree.h',
+)
+
 # Always-compiled sources (root-level public API impls).
 math_sources = files(
   'DynMatrix.cpp',
@@ -56,7 +59,7 @@ math_sources = files(
   'GraphCutter.cpp',
   'HomogeneousMath.cpp',
   'Homography2D.cpp',
-  'KDTree.cpp',
+  'tree/KDTree.cpp',
   'LLM.cpp',
   'LevenbergMarquardtFitter.cpp',
   'PolynomialRegression.cpp',
@@ -128,6 +131,10 @@ install_headers(math_headers,
 
 install_headers(math_fft_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'fft',
+)
+
+install_headers(math_tree_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'math' / 'tree',
 )
 
 pkg.generate(icl_math_lib,

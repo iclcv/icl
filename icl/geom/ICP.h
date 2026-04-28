@@ -6,7 +6,7 @@
 
 #include <icl/utils/Macros.h>
 #include <icl/math/DynMatrix.h>
-#include <icl/math/KDTree.h>
+#include <icl/math/tree/KDTree.h>
 #include <icl/geom/PoseEstimator.h>
 
 namespace icl::geom {

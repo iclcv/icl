@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/utils/Random.h>
-#include <icl/math/QuadTree.h>
+#include <icl/math/tree/QuadTree.h>
 
 GUI gui;
 

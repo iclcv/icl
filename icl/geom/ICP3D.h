@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/math/Octree.h>
+#include <icl/math/tree/Octree.h>
 #include <icl/math/HomogeneousMath.h>
 
 namespace icl::geom {

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
-#include <icl/math/KDTree.h>
+#include <icl/math/tree/KDTree.h>
 
 namespace icl::math {
   KDTree::KDTree(std::vector<DynMatrix<icl64f> > &list){
