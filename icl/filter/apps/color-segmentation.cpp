@@ -6,8 +6,8 @@
 #include <icl/filter/ColorSegmentationOp.h>
 #include <icl/filter/MedianOp.h>
 #include <icl/filter/MorphologicalOp.h>
-#include <icl/core/CCFunctions.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/CCFunctions.h>
+#include <icl/core/cc/Color.h>
 #include <icl/cv/RegionDetector.h>
 
 #include <icl/geom2/Scene2.h>

@@ -5,7 +5,7 @@
 #include <icl/qt/IconFactory.h>
 #include <icl/core/Img.h>
 #include <icl/qt/QImageConverter.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 #include <map>
 using namespace icl::utils;

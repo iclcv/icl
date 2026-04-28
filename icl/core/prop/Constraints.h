@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <icl/core/Image.h>
 
 /// Property-constraint types that depend on `core/` types and therefore

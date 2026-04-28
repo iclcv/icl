@@ -8,7 +8,7 @@
 #include <icl/io/GenericGrabber.h>
 #include <icl/io/TestImages.h>
 #include <icl/core/ImgBase.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/core/Img.h>
 
 #include <memory>

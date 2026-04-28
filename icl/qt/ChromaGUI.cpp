@@ -11,7 +11,7 @@
 
 #include <icl/qt/ChromaGUI.h>
 
-#include <icl/core/Parable.h>
+#include <icl/core/cc/Parable.h>
 #include <icl/core/Img.h>
 
 #include <icl/qt/ContainerGUIComponents.h>

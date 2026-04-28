@@ -93,7 +93,7 @@
 #include <icl/qt/ThreadedUpdatableTextView.h>
 #include <icl/qt/ColorLabel.h>
 #include <icl/utils/config/Configurable.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <QProgressBar>
 
 #include <map>

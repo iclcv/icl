@@ -4,7 +4,7 @@
 
 #include <icl/cv/SurfFeatureDetector.h>
 #include <icl/core/Img.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/Range.h>
 
 #ifdef ICL_HAVE_OPENCL

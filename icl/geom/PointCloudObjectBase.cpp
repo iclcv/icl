@@ -6,7 +6,7 @@
 #include <icl/geom/PointCloudObjectBase.h>
 #include <icl/qt/GLFragmentShader.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 using namespace icl::utils;
 using namespace icl::math;

@@ -5,7 +5,7 @@
 #include <icl/qt/AdjustGridMouseHandler.h>
 #include <icl/math/transform/ConvexHull.h>
 #include <icl/core/line/Line.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <icl/math/transform/Projective4PointTransform.h>
 #include <icl/utils/CompatMacros.h>
 #include <mutex>

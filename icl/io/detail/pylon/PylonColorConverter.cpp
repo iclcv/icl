@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
 
 #include <icl/io/detail/pylon/PylonColorConverter.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/time/Time.h>
 #include <mutex>
 

@@ -13,8 +13,8 @@
 
 #include <functional>
 #include <icl/filter/UnaryOp.h>
-#include <icl/core/BayerConverter.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/BayerConverter.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <memory>
 
 using namespace icl;

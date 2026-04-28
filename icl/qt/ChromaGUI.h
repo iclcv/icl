@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <icl/core/ChromaClassifier.h>
-#include <icl/core/ChromaAndRGBClassifier.h>
+#include <icl/core/cc/ChromaClassifier.h>
+#include <icl/core/cc/ChromaAndRGBClassifier.h>
 #include <icl/qt/SliderHandle.h>
 namespace icl::qt {
   /** \cond */

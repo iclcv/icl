@@ -5,8 +5,8 @@
 #include <icl/cv/CheckerboardDetector.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/OpenCV.h>
-#include <icl/core/CCFunctions.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/CCFunctions.h>
+#include <icl/core/cc/Color.h>
 
 #include <opencv2/calib3d.hpp>
 

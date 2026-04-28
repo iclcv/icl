@@ -9,7 +9,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Img.h>
 #include <icl/io/detail/pylon/PylonUtils.h>
-#include <icl/core/BayerConverter.h>
+#include <icl/core/cc/BayerConverter.h>
 #include <mutex>
 
 namespace icl::io {

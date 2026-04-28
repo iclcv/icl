@@ -6,7 +6,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/qt/GLImg.h>
 #include <icl/qt/Application.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 #ifdef ICL_SYSTEM_APPLE
 #include <OpenGL/gl.h>

@@ -4,7 +4,7 @@
 
 #include <icl/core/Img.h>
 #include <icl/filter/LocalThresholdOp.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPlugin.h>

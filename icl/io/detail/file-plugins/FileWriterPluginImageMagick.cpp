@@ -17,7 +17,7 @@
 #include <Magick++.h>
 #endif
 
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/core/convert/Converter.h>
 #include <icl/utils/Exception.h>
 

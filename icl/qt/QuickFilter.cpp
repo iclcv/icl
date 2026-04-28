@@ -6,7 +6,7 @@
 #include <icl/qt/QuickContext.h>
 #include <icl/core/Img.h>
 #include <icl/core/ImgBase.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/MedianOp.h>

@@ -35,7 +35,7 @@
 #include "kernel/types.h"
 
 #include <icl/core/Img.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 #include <cmath>
 #include <cstring>

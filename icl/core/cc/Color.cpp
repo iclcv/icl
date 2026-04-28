@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <map>
 #include <ctype.h>
 #include <icl/utils/StringUtils.h>

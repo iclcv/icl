@@ -8,7 +8,7 @@
 #include <QtMultimedia/QVideoSink>
 #include <QtMultimedia/QVideoFrame>
 #include <icl/qt/Common.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <QtCore/QMutex>
 #include <QtCore/QWaitCondition>
 #include <QtCore/QAtomicInt>

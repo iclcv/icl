@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
 #include <icl/core/CoreFunctions.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/io/GenericGrabber.h>
 #include <icl/io/FileWriter.h>
 #include <icl/io/FileList.h>

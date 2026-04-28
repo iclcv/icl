@@ -4,7 +4,7 @@
 
 #include <icl/qt/QPainterPaintEngine.h>
 #include <icl/core/Img.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <QPainter>
 #include <QOpenGLWidget>
 #include <QFontMetrics>

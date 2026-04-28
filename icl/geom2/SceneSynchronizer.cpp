@@ -18,7 +18,7 @@
 #undef ERROR
 #undef LOG_LEVEL
 
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 #include "scene/scene.h"
 #include "scene/mesh.h"

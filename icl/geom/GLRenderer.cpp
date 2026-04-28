@@ -11,7 +11,7 @@
 #include <icl/geom/Material.h>
 #include <icl/geom/Primitive.h>
 #include <icl/core/Img.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <algorithm>
 #include <vector>
 #ifdef ICL_SYSTEM_APPLE

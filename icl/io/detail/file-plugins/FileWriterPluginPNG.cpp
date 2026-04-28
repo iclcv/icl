@@ -5,7 +5,7 @@
 #include <icl/io/detail/file-plugins/FileWriterPluginPNG.h>
 #include <icl/core/Types.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 #include <png.h>
 #include <cstdio>

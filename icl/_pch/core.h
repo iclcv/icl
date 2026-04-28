@@ -18,4 +18,4 @@
 #include <icl/core/Img.h>
 #include <icl/core/ImgBase.h>
 #include <icl/core/Types.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>

@@ -30,7 +30,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
 #include <QOffscreenSurface>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 #ifdef ICL_HAVE_CYCLES
 #include <icl/geom/CyclesRenderer.h>

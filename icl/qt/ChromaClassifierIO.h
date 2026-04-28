@@ -7,9 +7,9 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/core/Parable.h>
-#include <icl/core/ChromaClassifier.h>
-#include <icl/core/ChromaAndRGBClassifier.h>
+#include <icl/core/cc/Parable.h>
+#include <icl/core/cc/ChromaClassifier.h>
+#include <icl/core/cc/ChromaAndRGBClassifier.h>
 
 namespace icl::qt {
   class ICLQt_API ChromaClassifierIO{

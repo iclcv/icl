@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/core/ChromaClassifier.h>
+#include <icl/core/cc/ChromaClassifier.h>
 
 namespace icl::core {
   /// Combination classifier using RG-chroma. as well as RGB-thresholded reference color classifiation \ingroup COMMON

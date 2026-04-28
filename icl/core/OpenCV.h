@@ -11,7 +11,7 @@
   #error ICL requires OpenCV >= 4.0
 #endif
 
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/core/Img.h>
 #include <icl/core/ImgBase.h>
 

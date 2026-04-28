@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/filter/UnaryOp.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 
 namespace icl::filter {
 

@@ -6,7 +6,7 @@
 
 #include <icl/io/detail/libav/LibAVVideoWriter.h>
 #include <icl/utils/File.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 extern "C" {
 #include <libavutil/opt.h>

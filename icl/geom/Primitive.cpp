@@ -8,7 +8,7 @@
 #include <QtGui/QImage>
 #include <QtGui/QPainter>
 #include <QtGui/QFont>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #endif
 
 #ifdef ICL_SYSTEM_APPLE

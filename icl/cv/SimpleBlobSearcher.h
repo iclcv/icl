@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Range.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <icl/cv/ImageRegion.h>
 
 namespace icl::cv {

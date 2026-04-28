@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <vector>
 
 namespace icl::geom2 {

@@ -17,5 +17,5 @@
 #include <icl/utils/time/FPSLimiter.h>
 #include <mutex>
 #include <icl/io/FileWriter.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <icl/core/Image.h>

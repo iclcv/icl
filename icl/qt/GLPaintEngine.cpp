@@ -7,7 +7,7 @@
 #include <icl/core/Img.h>
 #include <QFontMetrics>
 #include <QPainter>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/qt/GLImg.h>
 
 using namespace icl::utils;

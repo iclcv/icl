@@ -9,7 +9,7 @@
 
 #include <icl/io/GenericGrabber.h>
 
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <map>
 #include <list>
 #include <icl/filter/ConvolutionOp.h>

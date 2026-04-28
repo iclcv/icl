@@ -2,12 +2,12 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/core/VisitorsN.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/File.h>
 #include <icl/filter/ColorSegmentationOp.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <icl/core/Image.h>
 
 using namespace icl::utils;

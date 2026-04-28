@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting, Robert Haschke
 
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/core/Img.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/ImgOps.h>

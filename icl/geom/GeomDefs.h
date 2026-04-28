@@ -10,7 +10,7 @@
 #include <icl/math/la/FixedVector.h>
 #include <icl/math/transform/HomogeneousMath.h>
 #include <vector>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <icl/utils/Point.h>
 
 namespace icl::geom {

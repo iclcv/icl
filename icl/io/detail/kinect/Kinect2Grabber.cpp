@@ -14,7 +14,7 @@
 
 #include <icl/io/Grabber.h>
 #include <icl/io/detail/kinect/Kinect2Grabber.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/core/Img.h>
 #include <icl/utils/thread/Thread.h>

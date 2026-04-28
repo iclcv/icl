@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/detail/v4l2/V4L2LoopBackOutput.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/StringUtils.h>
 
 #include <linux/videodev2.h>

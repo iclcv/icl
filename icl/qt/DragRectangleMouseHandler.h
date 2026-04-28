@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/thread/Lockable.h>
 #include <icl/utils/Rect.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <icl/qt/MouseHandler.h>
 
 namespace icl::qt {

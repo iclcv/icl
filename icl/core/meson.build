@@ -15,12 +15,7 @@ core_line_headers = files(
 )
 
 core_headers = files(
-  'BayerConverter.h',
-  'CCFunctions.h',
   'Channel.h',
-  'ChromaAndRGBClassifier.h',
-  'ChromaClassifier.h',
-  'Color.h',
   'Core.h',
   'CoreFunctions.h',
   'DataSegment.h',
@@ -35,7 +30,6 @@ core_headers = files(
   'ImgOps.h',
   'ImgParams.h',
   'OpenCV.h',
-  'Parable.h',
   'PixelOps.h',
   'PixelRef.h',
   'Types.h',
@@ -43,12 +37,21 @@ core_headers = files(
   'VisitorsN.h',
 )
 
+core_cc_headers = files(
+  'cc/BayerConverter.h',
+  'cc/CCFunctions.h',
+  'cc/ChromaAndRGBClassifier.h',
+  'cc/ChromaClassifier.h',
+  'cc/Color.h',
+  'cc/Parable.h',
+)
+
 core_sources = files(
   'prop/Adapter.cpp',
-  'BayerConverter.cpp',
-  'CCFunctions.cpp',
+  'cc/BayerConverter.cpp',
+  'cc/CCFunctions.cpp',
   'CCLUT.cpp',
-  'Color.cpp',
+  'cc/Color.cpp',
   'convert/Converter.cpp',
   'CoreFunctions.cpp',
   'convert/FixedConverter.cpp',
@@ -110,6 +113,10 @@ install_headers(core_convert_headers,
 
 install_headers(core_line_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'line',
+)
+
+install_headers(core_cc_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'cc',
 )
 
 pkg.generate(icl_core_lib,

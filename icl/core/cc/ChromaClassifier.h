@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Types.h>
-#include <icl/core/Parable.h>
+#include <icl/core/cc/Parable.h>
 
 namespace icl::core {
   /// Classifier interface using RG-chromaticity space and two parables \ingroup COMMON

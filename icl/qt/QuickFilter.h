@@ -8,7 +8,7 @@
 #include <icl/core/Image.h>
 #include <icl/core/Types.h>
 #include <icl/core/ImgParams.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 
 #include <string>
 #include <utility>

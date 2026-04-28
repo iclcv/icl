@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Tobias Roehlig, Christof Elbrechter
 
 #include <icl/filter/BilateralFilterOp.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/core/Img.h>
 
 #include <vector>

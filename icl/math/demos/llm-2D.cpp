@@ -5,7 +5,7 @@
 #include <icl/math/ml/LLM.h>
 #include <icl/qt/Common2.h>
 #include <icl/utils/Random.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 static LLM llm(2,3);
 HBox gui;

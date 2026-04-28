@@ -4,7 +4,7 @@
 
 #include <icl/io/detail/file-plugins/FileGrabberPluginImageMagick.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/io/detail/file-plugins/FileWriterPluginImageMagick.h>
 
 #ifdef ICL_HAVE_IMAGEMAGICK

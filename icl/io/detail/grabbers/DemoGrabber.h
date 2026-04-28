@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/time/Time.h>
 #include <icl/utils/Size.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 
 #include <icl/io/Grabber.h>
 #include <mutex>

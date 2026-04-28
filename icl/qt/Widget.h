@@ -12,7 +12,7 @@
 #include <icl/qt/MouseHandler.h>
 #include <icl/qt/WidgetCaptureMode.h>
 #include <icl/qt/GUI.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 #include <functional>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 

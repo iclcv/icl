@@ -2,9 +2,9 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Michael Goetting, Felix Reinhard, Christof Elbrechter
 
-#include <icl/core/BayerConverter.h>
+#include <icl/core/cc/BayerConverter.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/Exception.h>
 
 using namespace icl::utils;

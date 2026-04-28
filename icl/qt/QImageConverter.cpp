@@ -6,7 +6,7 @@
 #include <QImage>
 #include <QtCore/QVector>
 #include <icl/core/Img.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 using namespace icl::utils;
 using namespace icl::core;

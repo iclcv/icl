@@ -8,7 +8,7 @@
 #include <dc1394/conversions.h>
 
 #include <icl/core/Img.h>
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/SignalHandler.h>
 #include <icl/io/detail/dc/DCGrabberThread.h>
 #include <icl/io/detail/dc/DCDevice.h>

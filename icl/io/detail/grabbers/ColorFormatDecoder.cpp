@@ -2,14 +2,14 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/io/detail/grabbers/ColorFormatDecoder.h>
 #include <icl/io/detail/file-plugins/JPEGDecoder.h>
 #include <icl/utils/StringUtils.h>
 
 #include <icl/io/detail/grabbers/MyrmexDecoder.h>
-#include <icl/core/BayerConverter.h>
+#include <icl/core/cc/BayerConverter.h>
 
 using namespace icl::utils;
 using namespace icl::core;

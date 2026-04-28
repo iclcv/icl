@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/cv/FloodFiller.h>
-#include <icl/core/Color.h>
+#include <icl/core/cc/Color.h>
 //TODO: crashes in the destructor
 
 GUI gui;

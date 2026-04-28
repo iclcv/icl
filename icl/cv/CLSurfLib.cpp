@@ -82,7 +82,7 @@
 #include <icl/cv/CLSurfLib.h>
 #include <icl/cv/CLSurfLibKernels.h>
 
-#include <icl/core/CCFunctions.h>
+#include <icl/core/cc/CCFunctions.h>
 
 #include <icl/utils/cl/CLIncludes.h>
 
