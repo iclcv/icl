@@ -64,7 +64,6 @@ core_sources = files(
   'detail/ImgBuffer.cpp',
   'dispatch/ImgOps.cpp',
   'ImgParams.cpp',
-  'detail/img/Img_Border.cpp',
   'detail/img/Img_Cpp.cpp',
   'line/Line.cpp',
   'line/LineSampler.cpp',
