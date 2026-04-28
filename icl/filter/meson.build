@@ -52,9 +52,12 @@ filter_headers = files(
   'UnaryOp.h',
   'UnaryOpPipe.h',
   'WarpOp.h',
-  'WeightChannelsOp.h',
-  'WeightedSumOp.h',
   'WienerOp.h',
+)
+
+filter_channel_headers = files(
+  'channel/WeightChannelsOp.h',
+  'channel/WeightedSumOp.h',
 )
 
 filter_sources = files(
@@ -133,8 +136,8 @@ filter_sources = files(
   'UnaryOpPipe.cpp',
   'WarpOp.cpp',
   'WarpOp_Cpp.cpp',
-  'WeightChannelsOp.cpp',
-  'WeightedSumOp.cpp',
+  'channel/WeightChannelsOp.cpp',
+  'channel/WeightedSumOp.cpp',
   'WienerOp.cpp',
   'WienerOp_Cpp.cpp',
 )
@@ -196,6 +199,10 @@ icl_filter_dep = declare_dependency(
 
 install_headers(filter_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter',
+)
+
+install_headers(filter_channel_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'channel',
 )
 
 pkg.generate(icl_filter_lib,

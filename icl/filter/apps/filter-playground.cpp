@@ -41,8 +41,8 @@
 #include <icl/filter/UnaryCompareOp.h>
 #include <icl/filter/UnaryLogicalOp.h>
 #include <icl/filter/WarpOp.h>
-#include <icl/filter/WeightChannelsOp.h>
-#include <icl/filter/WeightedSumOp.h>
+#include <icl/filter/channel/WeightChannelsOp.h>
+#include <icl/filter/channel/WeightedSumOp.h>
 #include <icl/filter/WienerOp.h>
 
 #include <memory>

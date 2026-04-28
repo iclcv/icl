@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/WeightChannelsOp.h>
+#include <icl/filter/channel/WeightChannelsOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <icl/core/Visitors.h>

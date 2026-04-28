@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke, Andre Justus
 
-#include <icl/filter/WeightedSumOp.h>
+#include <icl/filter/channel/WeightedSumOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
