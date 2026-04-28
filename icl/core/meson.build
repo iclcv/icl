@@ -14,6 +14,10 @@ core_line_headers = files(
   'line/LineSampler.h',
 )
 
+core_compat_headers = files(
+  'compat/OpenCV.h',
+)
+
 core_headers = files(
   'Channel.h',
   'Core.h',
@@ -29,7 +33,6 @@ core_headers = files(
   'ImgIterator.h',
   'ImgOps.h',
   'ImgParams.h',
-  'OpenCV.h',
   'PixelOps.h',
   'PixelRef.h',
   'Types.h',
@@ -78,7 +81,7 @@ if accelerate_dep.found()
 endif
 
 if opencv_dep.found()
-  core_sources += files('OpenCV.cpp')
+  core_sources += files('compat/OpenCV.cpp')
 endif
 
 core_deps = [icl_math_dep, opencv_dep, accelerate_dep, ipp_dep]
@@ -117,6 +120,10 @@ install_headers(core_line_headers,
 
 install_headers(core_cc_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'cc',
+)
+
+install_headers(core_compat_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'core' / 'compat',
 )
 
 pkg.generate(icl_core_lib,

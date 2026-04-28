@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/core/OpenCV.h>
+#include <icl/core/compat/OpenCV.h>
 #include <icl/io/Grabber.h>
 #include <icl/utils/time/FPSLimiter.h>
 #include <icl/utils/Exception.h>

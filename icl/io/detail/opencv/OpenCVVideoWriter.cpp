@@ -4,7 +4,7 @@
 
 #include <icl/io/detail/opencv/OpenCVVideoWriter.h>
 #include <icl/utils/File.h>
-#include <icl/core/OpenCV.h>
+#include <icl/core/compat/OpenCV.h>
 
 using namespace icl::utils;
 using namespace icl::core;

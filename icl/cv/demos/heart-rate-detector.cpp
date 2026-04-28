@@ -9,7 +9,7 @@
 #include <icl/utils/Random.h>
 #include <deque>
 #include <icl/math/fft/FFTUtils.h>
-#include <icl/core/OpenCV.h>
+#include <icl/core/compat/OpenCV.h>
 
 #include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"

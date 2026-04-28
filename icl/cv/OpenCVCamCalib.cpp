@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
 #include <icl/cv/OpenCVCamCalib.h>
-#include <icl/core/OpenCV.h>
+#include <icl/core/compat/OpenCV.h>
 
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgproc.hpp>

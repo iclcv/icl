@@ -4,7 +4,7 @@
 
 #include <icl/cv/ORBFeatureDetector.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/core/OpenCV.h>
+#include <icl/core/compat/OpenCV.h>
 
 #include <icl/filter/LocalThresholdOp.h>
 

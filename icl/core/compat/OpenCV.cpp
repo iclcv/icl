@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Christian Groszewski
 
-#include <icl/core/OpenCV.h>
+#include <icl/core/compat/OpenCV.h>
 #include <icl/core/CoreFunctions.h>
 
 using namespace icl::utils;

@@ -6,7 +6,7 @@
 #include <memory>
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/core/OpenCV.h>
+#include <icl/core/compat/OpenCV.h>
 #include <icl/io/Grabber.h>
 #include <icl/utils/Exception.h>
 
