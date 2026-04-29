@@ -12,7 +12,7 @@
 #include <icl/core/cc/CCFunctions.h>
 #include <map>
 #include <list>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/arith/BinaryArithmeticalOp.h>

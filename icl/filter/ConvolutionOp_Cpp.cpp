@@ -1,4 +1,4 @@
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 

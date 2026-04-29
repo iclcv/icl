@@ -5,7 +5,7 @@
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 #include <ipp.h>
 #include <vector>
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 
 namespace icl::filter {
   /// Convolution using the ROI of an ICL image as its kernel \ingroup UNARY \ingroup NBH

@@ -9,7 +9,7 @@
 #include <icl/utils/ConsoleProgress.h>
 
 #include <icl/filter/morph/MedianOp.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 
 #include <functional>
 #include <icl/filter/UnaryOp.h>

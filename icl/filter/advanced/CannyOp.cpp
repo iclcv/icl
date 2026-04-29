@@ -5,7 +5,7 @@
 #include <icl/filter/advanced/CannyOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/utils/detail/simd/SSEUtils.h>
 #include <icl/utils/prop/Constraints.h>
 

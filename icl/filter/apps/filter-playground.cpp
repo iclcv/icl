@@ -19,11 +19,11 @@
 #include <icl/filter/advanced/BilateralFilterOp.h>
 #include <icl/filter/advanced/CannyOp.h>
 #include <icl/filter/morph/ChamferOp.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/filter/color/DitheringOp.h>
 #include <icl/filter/fft/FFTOp.h>
 #include <icl/filter/lut/FixedConvertOp.h>
-#include <icl/filter/GaborOp.h>
+#include <icl/filter/conv/GaborOp.h>
 #include <icl/filter/morph/GradientOp.h>
 #include <icl/filter/IntegralImgOp.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>

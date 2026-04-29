@@ -9,7 +9,7 @@
 #include <icl/filter/arith/UnaryArithmeticalOp.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/logical/UnaryLogicalOp.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/arith/BinaryArithmeticalOp.h>

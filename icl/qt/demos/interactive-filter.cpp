@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
 #include <icl/qt/Common2.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 
 
 GUI gui;

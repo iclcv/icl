@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/filter/morph/GradientOp.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/core/Img.h>
 #include <cmath>
 #include <icl/utils/prop/Constraints.h>

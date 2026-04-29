@@ -10,7 +10,7 @@
 #include <icl/geom/PointCloudGrabberRegistry.h>
 #include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 #include <icl/filter/morph/MedianOp.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 
 
 using namespace icl::utils;

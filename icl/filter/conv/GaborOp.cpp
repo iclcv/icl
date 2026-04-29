@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/GaborOp.h>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/GaborOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/prop/Constraints.h>
 #include <cmath>

@@ -10,7 +10,7 @@
 #include <icl/filter/ImageSplitter.h>
 #include <future>
 #include <vector>
-#include <icl/filter/ConvolutionOp.h>
+#include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/RotateOp.h>
@@ -19,7 +19,7 @@
 
 #include <icl/filter/advanced/CannyOp.h>
 #include <icl/filter/morph/ChamferOp.h>
-#include <icl/filter/GaborOp.h>
+#include <icl/filter/conv/GaborOp.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/utils/prop/Constraints.h>

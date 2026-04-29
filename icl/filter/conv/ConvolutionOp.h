@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/filter/NeighborhoodOp.h>
-#include <icl/filter/ConvolutionKernel.h>
+#include <icl/filter/conv/ConvolutionKernel.h>
 #include <icl/core/Image.h>
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 

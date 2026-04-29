@@ -4,11 +4,7 @@ filter_headers = files(
   'AffineOp.h',
   'BaseAffineOp.h',
   'BinaryOp.h',
-  'ConvolutionKernel.h',
-  'ConvolutionOp.h',
-  'DynamicConvolutionOp.h',
   'Filter.h',
-  'GaborOp.h',
   'ImageRectification.h',
   'ImageSplitter.h',
   'ImageUndistortion.h',
@@ -17,7 +13,6 @@ filter_headers = files(
   'MirrorOp.h',
   'NeighborhoodOp.h',
   'OpROIHandler.h',
-  'ProximityOp.h',
   'RotateOp.h',
   'ScaleOp.h',
   'TranslateOp.h',
@@ -88,6 +83,14 @@ filter_advanced_headers = files(
   'advanced/WienerOp.h',
 )
 
+filter_conv_headers = files(
+  'conv/ConvolutionKernel.h',
+  'conv/ConvolutionOp.h',
+  'conv/DynamicConvolutionOp.h',
+  'conv/GaborOp.h',
+  'conv/ProximityOp.h',
+)
+
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
@@ -109,14 +112,14 @@ filter_sources = files(
   'morph/ChamferOp.cpp',
   'color/ColorDistanceOp.cpp',
   'color/ColorSegmentationOp.cpp',
-  'ConvolutionKernel.cpp',
-  'ConvolutionOp.cpp',
+  'conv/ConvolutionKernel.cpp',
+  'conv/ConvolutionOp.cpp',
   'ConvolutionOp_Cpp.cpp',
   'color/DitheringOp.cpp',
-  'DynamicConvolutionOp.cpp',
+  'conv/DynamicConvolutionOp.cpp',
   'fft/FFTOp.cpp',
   'lut/FixedConvertOp.cpp',
-  'GaborOp.cpp',
+  'conv/GaborOp.cpp',
   'morph/GradientOp.cpp',
   'ImageRectification.cpp',
   'ImageSplitter.cpp',
@@ -178,7 +181,7 @@ if ipp_dep.found()
     'LUTOp_Ipp.cpp',
     'MedianOp_Ipp.cpp',
     'MorphologicalOp_Ipp.cpp',
-    'ProximityOp.cpp',
+    'conv/ProximityOp.cpp',
     'ThresholdOp_Ipp.cpp',
     'UnaryArithmeticalOp_Ipp.cpp',
     'UnaryCompareOp_Ipp.cpp',
@@ -267,6 +270,10 @@ install_headers(filter_morph_headers,
 
 install_headers(filter_advanced_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'advanced',
+)
+
+install_headers(filter_conv_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'conv',
 )
 
 pkg.generate(icl_filter_lib,
