@@ -10,7 +10,7 @@
 #include <icl/filter/logical/UnaryLogicalOp.h>
 #include <icl/filter/channel/WeightChannelsOp.h>
 #include <icl/filter/channel/WeightedSumOp.h>
-#include <icl/filter/MirrorOp.h>
+#include <icl/filter/affine/MirrorOp.h>
 #include <icl/filter/color/DitheringOp.h>
 #include <icl/filter/lut/LUTOp.h>
 #include <icl/filter/advanced/WienerOp.h>
@@ -19,13 +19,13 @@
 #include <icl/filter/color/ColorSegmentationOp.h>
 #include <icl/filter/conv/GaborOp.h>
 #include <icl/filter/morph/ChamferOp.h>
-#include <icl/filter/AffineOp.h>
+#include <icl/filter/affine/AffineOp.h>
 #include <icl/filter/advanced/CannyOp.h>
 #include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
-#include <icl/filter/WarpOp.h>
+#include <icl/filter/affine/WarpOp.h>
 #include <icl/filter/advanced/BilateralFilterOp.h>
 #include <icl/filter/fft/FFTOp.h>
 #include <icl/filter/fft/IFFTOp.h>

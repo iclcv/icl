@@ -1,4 +1,4 @@
-#include <icl/filter/AffineOp.h>
+#include <icl/filter/affine/AffineOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
 #include <icl/math/la/FixedMatrix.h>

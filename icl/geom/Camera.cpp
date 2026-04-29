@@ -5,7 +5,7 @@
 #include <icl/utils/config/ConfigFile.h>
 #include <icl/math/la/DynMatrixUtils.h>
 #include <icl/math/fit/LevenbergMarquardtFitter.h>
-#include <icl/filter/ImageUndistortion.h>
+#include <icl/filter/affine/ImageUndistortion.h>
 #include <icl/utils/File.h>
 #include <icl/geom/Camera.h>
 #include <fstream>

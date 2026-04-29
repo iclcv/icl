@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Sergius Gaulik
 
-#include <icl/filter/ImageRectification.h>
+#include <icl/filter/affine/ImageRectification.h>
 #include <icl/utils/detail/simd/SSEUtils.h>
 #include <icl/math/transform/Homography2D.h>
 #include <icl/math/transform/ConvexHull.h>

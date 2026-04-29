@@ -7,7 +7,7 @@
 #include <icl/geom/CoplanarPointPoseEstimator.h>
 #include <icl/markers/MarkerGridEvaluater.h>
 
-#include <icl/filter/ImageUndistortion.h>
+#include <icl/filter/affine/ImageUndistortion.h>
 #include <icl/core/line/Line.h>
 
 #include <deque>

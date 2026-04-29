@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/AffineOp.h>
+#include <icl/filter/affine/AffineOp.h>
 #include <icl/qt/Common2.h>
 #include <icl/utils/time/StackTimer.h>
 

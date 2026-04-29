@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
-#include <icl/filter/ImageUndistortion.h>
+#include <icl/filter/affine/ImageUndistortion.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/config/ConfigFile.h>
 #include <fstream>

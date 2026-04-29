@@ -9,7 +9,7 @@
 #include <icl/utils/StringUtils.h>
 #include <icl/core/Img.h>
 #include <icl/utils/thread/Thread.h>
-#include <icl/filter/TranslateOp.h>
+#include <icl/filter/affine/TranslateOp.h>
 #include <icl/filter/morph/MedianOp.h>
 #include <icl/utils/time/Time.h>
 

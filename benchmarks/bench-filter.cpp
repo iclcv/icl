@@ -15,7 +15,7 @@
 #include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/filter/compare/BinaryCompareOp.h>
 #include <icl/filter/logical/BinaryLogicalOp.h>
-#include <icl/filter/WarpOp.h>
+#include <icl/filter/affine/WarpOp.h>
 #include <icl/filter/advanced/BilateralFilterOp.h>
 
 using namespace icl::utils;

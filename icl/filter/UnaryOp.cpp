@@ -13,8 +13,8 @@
 #include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/morph/MedianOp.h>
-#include <icl/filter/RotateOp.h>
-#include <icl/filter/ScaleOp.h>
+#include <icl/filter/affine/RotateOp.h>
+#include <icl/filter/affine/ScaleOp.h>
 #include <map>
 
 #include <icl/filter/advanced/CannyOp.h>

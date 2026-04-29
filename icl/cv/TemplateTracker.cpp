@@ -6,7 +6,7 @@
 #include <icl/utils/prop/Constraints.h>
 
 #include <icl/filter/conv/ProximityOp.h>
-#include <icl/filter/RotateOp.h>
+#include <icl/filter/affine/RotateOp.h>
 //#include <icl/qt/Quick2.h>
 #include <icl/io/TestImages.h>
 

@@ -8,7 +8,7 @@
 #include <icl/utils/FixedArray.h>
 #include <icl/utils/Size.h>
 #include <icl/core/Img.h>
-#include <icl/filter/WarpOp.h>
+#include <icl/filter/affine/WarpOp.h>
 
 namespace icl{
 

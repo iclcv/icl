@@ -12,7 +12,7 @@
 #include <icl/math/la/DynMatrix.h>
 #include <icl/math/la/DynMatrixUtils.h>
 #include <icl/core/Img.h>
-#include <icl/filter/ImageUndistortion.h>
+#include <icl/filter/affine/ImageUndistortion.h>
 
 namespace icl::cv {
   /**

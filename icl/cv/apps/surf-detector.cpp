@@ -4,8 +4,8 @@
 
 #include <icl/cv/SurfFeatureDetector.h>
 #include <icl/qt/Common2.h>
-#include <icl/filter/ImageRectification.h>
-#include <icl/filter/RotateOp.h>
+#include <icl/filter/affine/ImageRectification.h>
+#include <icl/filter/affine/RotateOp.h>
 
 GenericGrabber grabber;
 std::shared_ptr<SurfFeatureDetector> surf;

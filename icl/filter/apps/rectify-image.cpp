@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/DefineQuadrangleMouseHandler.h>
-#include <icl/filter/ImageRectification.h>
+#include <icl/filter/affine/ImageRectification.h>
 
 HSplit gui;
 GenericGrabber grabber;

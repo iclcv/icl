@@ -5,7 +5,7 @@
 #include <icl/math/transform/StraightLine2D.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/math/transform/Homography2D.h>
-#include <icl/filter/ImageRectification.h>
+#include <icl/filter/affine/ImageRectification.h>
 
 #include <icl/markers/FiducialDetectorPluginForQuads.h>
 #include <icl/markers/QuadDetector.h>

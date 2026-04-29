@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke, Andre Justus
 
-#include <icl/filter/AffineOp.h>
+#include <icl/filter/affine/AffineOp.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>

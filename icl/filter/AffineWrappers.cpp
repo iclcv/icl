@@ -6,9 +6,9 @@
 // so they show up in icl-configurable-info / filter-playground. Each hides
 // the AffineOp knobs it doesn't use via deactivateProperty() in its ctor.
 
-#include <icl/filter/RotateOp.h>
-#include <icl/filter/ScaleOp.h>
-#include <icl/filter/TranslateOp.h>
+#include <icl/filter/affine/RotateOp.h>
+#include <icl/filter/affine/ScaleOp.h>
+#include <icl/filter/affine/TranslateOp.h>
 
 using namespace icl::utils;
 

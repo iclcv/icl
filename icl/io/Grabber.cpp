@@ -5,9 +5,9 @@
 #include <icl/io/Grabber.h>
 #include <icl/core/Image.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/filter/ImageUndistortion.h>
+#include <icl/filter/affine/ImageUndistortion.h>
 #include <icl/utils/ProgArg.h>
-#include <icl/filter/WarpOp.h>
+#include <icl/filter/affine/WarpOp.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/config/ConfigFile.h>
 #include <icl/core/convert/Converter.h>

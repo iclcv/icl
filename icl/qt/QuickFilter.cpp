@@ -12,8 +12,8 @@
 #include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/lut/LUTOp.h>
-#include <icl/filter/RotateOp.h>
-#include <icl/filter/MirrorOp.h>
+#include <icl/filter/affine/RotateOp.h>
+#include <icl/filter/affine/MirrorOp.h>
 #include <icl/filter/lut/FixedConvertOp.h>
 #include <icl/filter/color/PseudoColorOp.h>
 

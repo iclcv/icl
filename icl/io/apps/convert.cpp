@@ -7,7 +7,7 @@
 #include <icl/core/convert/FixedConverter.h>
 #include <icl/qt/Common2.h>
 #include <icl/utils/Size.h>
-#include <icl/filter/RotateOp.h>
+#include <icl/filter/affine/RotateOp.h>
 
 using namespace icl;
 using namespace icl::utils;

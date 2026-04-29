@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/filter/AffineOp.h>
+#include <icl/filter/affine/AffineOp.h>
 
 namespace icl::filter {
   /// Class to scale images \ingroup UNARY \ingroup AFFINE

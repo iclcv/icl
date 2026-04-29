@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/filter/ImageRectification.h>
-#include <icl/filter/RotateOp.h>
+#include <icl/filter/affine/ImageRectification.h>
+#include <icl/filter/affine/RotateOp.h>
 #include <icl/qt/DefineRectanglesMouseHandler.h>
 #include <icl/io/GenericImageOutput.h>
 #include <icl/io/FileList.h>

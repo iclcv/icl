@@ -35,7 +35,7 @@ namespace icl{
         \code
         #include <icl/qt/Quick.h>
         #include <icl/filter/UnaryOpPipe.h>
-        #include <icl/filter/ScaleOp.h>
+        #include <icl/filter/affine/ScaleOp.h>
         #include <icl/filter/channel/WeightedSumOp.h>
         #include <icl/filter/compare/UnaryCompareOp.h>
         #include <icl/filter/morph/MorphologicalOp.h>
