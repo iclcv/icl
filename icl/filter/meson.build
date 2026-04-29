@@ -3,9 +3,7 @@
 filter_headers = files(
   'AffineOp.h',
   'BaseAffineOp.h',
-  'BilateralFilterOp.h',
   'BinaryOp.h',
-  'CannyOp.h',
   'ConvolutionKernel.h',
   'ConvolutionOp.h',
   'DynamicConvolutionOp.h',
@@ -17,7 +15,6 @@ filter_headers = files(
   'InplaceOp.h',
   'IntegralImgOp.h',
   'MirrorOp.h',
-  'MotionSensitiveTemporalSmoothing.h',
   'NeighborhoodOp.h',
   'OpROIHandler.h',
   'ProximityOp.h',
@@ -27,7 +24,6 @@ filter_headers = files(
   'UnaryOp.h',
   'UnaryOpPipe.h',
   'WarpOp.h',
-  'WienerOp.h',
 )
 
 filter_channel_headers = files(
@@ -85,12 +81,19 @@ filter_morph_headers = files(
   'morph/MorphologicalOp.h',
 )
 
+filter_advanced_headers = files(
+  'advanced/BilateralFilterOp.h',
+  'advanced/CannyOp.h',
+  'advanced/MotionSensitiveTemporalSmoothing.h',
+  'advanced/WienerOp.h',
+)
+
 filter_sources = files(
   'AffineOp.cpp',
   'AffineOp_Cpp.cpp',
   'AffineWrappers.cpp',
   'fft/BaseFFTOp.cpp',
-  'BilateralFilterOp.cpp',
+  'advanced/BilateralFilterOp.cpp',
   'BilateralFilterOp_Cpp.cpp',
   'arith/BinaryArithmeticalOp.cpp',
   'BinaryArithmeticalOp_Cpp.cpp',
@@ -102,7 +105,7 @@ filter_sources = files(
   'BinaryLogicalOp_Cpp.cpp',
   'BinaryLogicalOp_Simd.cpp',
   'BinaryOp.cpp',
-  'CannyOp.cpp',
+  'advanced/CannyOp.cpp',
   'morph/ChamferOp.cpp',
   'color/ColorDistanceOp.cpp',
   'color/ColorSegmentationOp.cpp',
@@ -141,7 +144,7 @@ filter_sources = files(
   'MirrorOp.cpp',
   'morph/MorphologicalOp.cpp',
   'MorphologicalOp_Cpp.cpp',
-  'MotionSensitiveTemporalSmoothing.cpp',
+  'advanced/MotionSensitiveTemporalSmoothing.cpp',
   'NeighborhoodOp.cpp',
   'OpROIHandler.cpp',
   'color/PseudoColorOp.cpp',
@@ -163,7 +166,7 @@ filter_sources = files(
   'WarpOp_Cpp.cpp',
   'channel/WeightChannelsOp.cpp',
   'channel/WeightedSumOp.cpp',
-  'WienerOp.cpp',
+  'advanced/WienerOp.cpp',
   'WienerOp_Cpp.cpp',
 )
 
@@ -260,6 +263,10 @@ install_headers(filter_color_headers,
 
 install_headers(filter_morph_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'morph',
+)
+
+install_headers(filter_advanced_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'advanced',
 )
 
 pkg.generate(icl_filter_lib,

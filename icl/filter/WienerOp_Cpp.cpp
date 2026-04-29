@@ -1,4 +1,4 @@
-#include <icl/filter/WienerOp.h>
+#include <icl/filter/advanced/WienerOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
 #include <icl/utils/ClippedCast.h>

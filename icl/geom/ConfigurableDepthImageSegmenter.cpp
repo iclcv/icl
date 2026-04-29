@@ -33,7 +33,7 @@
 #include <icl/geom/FeatureGraphSegmenter.h>
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/geom/ObjectEdgeDetector.h>
-#include <icl/filter/MotionSensitiveTemporalSmoothing.h>
+#include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 
 namespace icl::geom {
   struct ConfigurableDepthImageSegmenter::Data {

@@ -16,8 +16,8 @@
 #include <icl/qt/MouseHandler.h>
 #include <icl/filter/UnaryOp.h>
 #include <icl/filter/AffineOp.h>
-#include <icl/filter/BilateralFilterOp.h>
-#include <icl/filter/CannyOp.h>
+#include <icl/filter/advanced/BilateralFilterOp.h>
+#include <icl/filter/advanced/CannyOp.h>
 #include <icl/filter/morph/ChamferOp.h>
 #include <icl/filter/ConvolutionOp.h>
 #include <icl/filter/color/DitheringOp.h>
@@ -31,7 +31,7 @@
 #include <icl/filter/morph/MedianOp.h>
 #include <icl/filter/MirrorOp.h>
 #include <icl/filter/morph/MorphologicalOp.h>
-#include <icl/filter/MotionSensitiveTemporalSmoothing.h>
+#include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 #include <icl/filter/color/PseudoColorOp.h>
 #include <icl/filter/RotateOp.h>
 #include <icl/filter/ScaleOp.h>
@@ -43,7 +43,7 @@
 #include <icl/filter/WarpOp.h>
 #include <icl/filter/channel/WeightChannelsOp.h>
 #include <icl/filter/channel/WeightedSumOp.h>
-#include <icl/filter/WienerOp.h>
+#include <icl/filter/advanced/WienerOp.h>
 
 #include <memory>
 #include <mutex>

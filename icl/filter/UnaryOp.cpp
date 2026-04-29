@@ -17,7 +17,7 @@
 #include <icl/filter/ScaleOp.h>
 #include <map>
 
-#include <icl/filter/CannyOp.h>
+#include <icl/filter/advanced/CannyOp.h>
 #include <icl/filter/morph/ChamferOp.h>
 #include <icl/filter/GaborOp.h>
 #include <icl/filter/compare/UnaryCompareOp.h>

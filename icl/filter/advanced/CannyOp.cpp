@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Andre Justus, Sergius Gaulik
 
-#include <icl/filter/CannyOp.h>
+#include <icl/filter/advanced/CannyOp.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>
 #include <icl/filter/ConvolutionOp.h>

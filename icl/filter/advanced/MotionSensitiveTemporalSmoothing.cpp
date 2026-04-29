@@ -29,7 +29,7 @@
  **                                                                 **
  ********************************************************************/
 
-#include <icl/filter/MotionSensitiveTemporalSmoothing.h>
+#include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 #include <algorithm>
 #include <cstring>
 #include <limits>

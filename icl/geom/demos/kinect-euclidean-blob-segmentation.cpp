@@ -11,7 +11,7 @@
 #include <icl/geom/PointCloudObject.h>
 #include <icl/geom/ObjectEdgeDetector.h>
 #include <icl/filter/color/PseudoColorOp.h>
-#include <icl/filter/MotionSensitiveTemporalSmoothing.h>
+#include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 #include <mutex>
 
 using namespace icl::core;

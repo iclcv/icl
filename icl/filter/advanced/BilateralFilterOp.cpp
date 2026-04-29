@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Tobias Roehlig, Christof Elbrechter
 
-#include <icl/filter/BilateralFilterOp.h>
+#include <icl/filter/advanced/BilateralFilterOp.h>
 #include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;

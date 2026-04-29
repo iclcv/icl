@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
-#include <icl/filter/WienerOp.h>
+#include <icl/filter/advanced/WienerOp.h>
 #include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
 
