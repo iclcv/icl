@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/BinaryOp.h>
+#include <icl/filter/base/BinaryOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImgBase.h>
 

@@ -4,8 +4,8 @@
 
 #include <icl/qt/QuickContext.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/filter/UnaryOp.h>
-#include <icl/filter/BinaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
+#include <icl/filter/base/BinaryOp.h>
 #include <icl/io/GenericGrabber.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/Exception.h>

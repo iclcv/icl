@@ -8,7 +8,7 @@
 #include <icl/utils/Size.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/time/StackTimer.h>
-#include <icl/filter/IntegralImgOp.h>
+#include <icl/filter/base/IntegralImgOp.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/time/Time.h>
 #include <icl/filter/threshold/LocalThresholdOpHelpers.h>

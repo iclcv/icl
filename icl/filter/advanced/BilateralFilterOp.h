@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 

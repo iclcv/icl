@@ -8,7 +8,7 @@
 #include <icl/utils/config/Configurable.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImgParams.h>
-#include <icl/filter/OpROIHandler.h>
+#include <icl/filter/base/OpROIHandler.h>
 #include <mutex>
 
 namespace icl::filter {

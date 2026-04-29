@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
 
 namespace icl::filter {
   /// Abtract base class for arbitrary affine operation classes \ingroup AFFINE \ingroup UNARY

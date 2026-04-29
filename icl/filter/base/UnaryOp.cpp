@@ -4,10 +4,10 @@
 
 #include <icl/utils/Macros.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImgBase.h>
-#include <icl/filter/ImageSplitter.h>
+#include <icl/filter/base/ImageSplitter.h>
 #include <future>
 #include <vector>
 #include <icl/filter/conv/ConvolutionOp.h>

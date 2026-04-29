@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImgParams.h>
-#include <icl/filter/OpROIHandler.h>
+#include <icl/filter/base/OpROIHandler.h>
 
 namespace icl::filter {
   /// Abstract base class for binary image operations \ingroup BINARY

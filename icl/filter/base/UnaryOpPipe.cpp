@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/UnaryOpPipe.h>
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOpPipe.h>
+#include <icl/filter/base/UnaryOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImgBase.h>
 #include <icl/core/Img.h>

@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Img.h>
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 

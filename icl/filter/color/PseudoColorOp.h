@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
 #include <icl/core/cc/Color.h>
 
 namespace icl::filter {

@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/fft/FFTUtils.h>
 #include <icl/core/Img.h>
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
 #include <icl/core/Image.h>
 
 namespace icl::filter {

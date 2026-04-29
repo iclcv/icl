@@ -14,7 +14,7 @@
 #include <icl/filter/color/DitheringOp.h>
 #include <icl/filter/lut/LUTOp.h>
 #include <icl/filter/advanced/WienerOp.h>
-#include <icl/filter/IntegralImgOp.h>
+#include <icl/filter/base/IntegralImgOp.h>
 #include <icl/filter/color/ColorDistanceOp.h>
 #include <icl/filter/color/ColorSegmentationOp.h>
 #include <icl/filter/conv/GaborOp.h>

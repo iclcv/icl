@@ -2,10 +2,10 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/NeighborhoodOp.h>
+#include <icl/filter/base/NeighborhoodOp.h>
 #include <icl/core/Image.h>
 #include <icl/utils/Macros.h>
-#include <icl/filter/ImageSplitter.h>
+#include <icl/filter/base/ImageSplitter.h>
 #include <future>
 #include <vector>
 

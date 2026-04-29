@@ -1,16 +1,19 @@
 # ICL Filter module
 
 filter_headers = files(
-  'BaseAffineOp.h',
-  'BinaryOp.h',
   'Filter.h',
-  'ImageSplitter.h',
-  'InplaceOp.h',
-  'IntegralImgOp.h',
-  'NeighborhoodOp.h',
-  'OpROIHandler.h',
-  'UnaryOp.h',
-  'UnaryOpPipe.h',
+)
+
+filter_base_headers = files(
+  'base/BaseAffineOp.h',
+  'base/BinaryOp.h',
+  'base/ImageSplitter.h',
+  'base/InplaceOp.h',
+  'base/IntegralImgOp.h',
+  'base/NeighborhoodOp.h',
+  'base/OpROIHandler.h',
+  'base/UnaryOp.h',
+  'base/UnaryOpPipe.h',
 )
 
 filter_channel_headers = files(
@@ -110,7 +113,7 @@ filter_sources = files(
   'logical/BinaryLogicalOp.cpp',
   'BinaryLogicalOp_Cpp.cpp',
   'BinaryLogicalOp_Simd.cpp',
-  'BinaryOp.cpp',
+  'base/BinaryOp.cpp',
   'advanced/CannyOp.cpp',
   'morph/ChamferOp.cpp',
   'color/ColorDistanceOp.cpp',
@@ -125,11 +128,11 @@ filter_sources = files(
   'conv/GaborOp.cpp',
   'morph/GradientOp.cpp',
   'affine/ImageRectification.cpp',
-  'ImageSplitter.cpp',
+  'base/ImageSplitter.cpp',
   'affine/ImageUndistortion.cpp',
   'arith/InplaceArithmeticalOp.cpp',
   'logical/InplaceLogicalOp.cpp',
-  'IntegralImgOp.cpp',
+  'base/IntegralImgOp.cpp',
   'lut/LUTOp.cpp',
   'lut/LUTOp3Channel.cpp',
   'LUTOp_Cpp.cpp',
@@ -151,8 +154,8 @@ filter_sources = files(
   'morph/MorphologicalOp.cpp',
   'MorphologicalOp_Cpp.cpp',
   'advanced/MotionSensitiveTemporalSmoothing.cpp',
-  'NeighborhoodOp.cpp',
-  'OpROIHandler.cpp',
+  'base/NeighborhoodOp.cpp',
+  'base/OpROIHandler.cpp',
   'color/PseudoColorOp.cpp',
   'threshold/ThresholdOp.cpp',
   'ThresholdOp_Cpp.cpp',
@@ -166,8 +169,8 @@ filter_sources = files(
   'logical/UnaryLogicalOp.cpp',
   'UnaryLogicalOp_Cpp.cpp',
   'UnaryLogicalOp_Simd.cpp',
-  'UnaryOp.cpp',
-  'UnaryOpPipe.cpp',
+  'base/UnaryOp.cpp',
+  'base/UnaryOpPipe.cpp',
   'affine/WarpOp.cpp',
   'WarpOp_Cpp.cpp',
   'channel/WeightChannelsOp.cpp',
@@ -281,6 +284,10 @@ install_headers(filter_conv_headers,
 
 install_headers(filter_affine_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'affine',
+)
+
+install_headers(filter_base_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'filter' / 'base',
 )
 
 pkg.generate(icl_filter_lib,

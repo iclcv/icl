@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/filter/InplaceOp.h>
+#include <icl/filter/base/InplaceOp.h>
 
 namespace icl::filter {
   /// Inplace implementation for arithmetical operations  \ingroup INPLACE

@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/filter/BaseAffineOp.h>
+#include <icl/filter/base/BaseAffineOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 

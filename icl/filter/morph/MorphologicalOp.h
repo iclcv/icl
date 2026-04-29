@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Img.h>
-#include <icl/filter/NeighborhoodOp.h>
+#include <icl/filter/base/NeighborhoodOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 

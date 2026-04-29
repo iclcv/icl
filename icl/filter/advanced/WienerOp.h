@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/filter/NeighborhoodOp.h>
+#include <icl/filter/base/NeighborhoodOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 

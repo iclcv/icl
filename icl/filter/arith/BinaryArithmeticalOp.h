@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/filter/BinaryOp.h>
+#include <icl/filter/base/BinaryOp.h>
 #include <icl/core/dispatch/ImageBackendDispatching.h>
 
 namespace icl::filter {

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/filter/ImageSplitter.h>
+#include <icl/filter/base/ImageSplitter.h>
 #include <cmath>
 
 using namespace icl::utils;

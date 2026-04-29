@@ -4,7 +4,7 @@
 
 #include <icl/utils/Macros.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/filter/OpROIHandler.h>
+#include <icl/filter/base/OpROIHandler.h>
 
 using namespace icl::utils;
 using namespace icl::core;

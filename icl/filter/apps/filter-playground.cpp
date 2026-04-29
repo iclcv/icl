@@ -14,7 +14,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/BoxHandle.h>
 #include <icl/qt/MouseHandler.h>
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
 #include <icl/filter/affine/AffineOp.h>
 #include <icl/filter/advanced/BilateralFilterOp.h>
 #include <icl/filter/advanced/CannyOp.h>
@@ -25,7 +25,7 @@
 #include <icl/filter/lut/FixedConvertOp.h>
 #include <icl/filter/conv/GaborOp.h>
 #include <icl/filter/morph/GradientOp.h>
-#include <icl/filter/IntegralImgOp.h>
+#include <icl/filter/base/IntegralImgOp.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/filter/lut/LUTOp.h>
 #include <icl/filter/morph/MedianOp.h>

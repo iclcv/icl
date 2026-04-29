@@ -12,7 +12,7 @@
 #include <icl/filter/conv/ConvolutionOp.h>
 
 #include <functional>
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
 #include <icl/core/cc/BayerConverter.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <memory>

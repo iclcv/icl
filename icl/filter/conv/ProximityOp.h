@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/filter/BinaryOp.h>
+#include <icl/filter/base/BinaryOp.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
 #include <icl/utils/config/Configurable.h>

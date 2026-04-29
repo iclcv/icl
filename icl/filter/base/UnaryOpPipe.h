@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/filter/UnaryOp.h>
+#include <icl/filter/base/UnaryOp.h>
 #include <vector>
 
 namespace icl{
@@ -34,7 +34,7 @@ namespace icl{
         Take a look on the following example:
         \code
         #include <icl/qt/Quick.h>
-        #include <icl/filter/UnaryOpPipe.h>
+        #include <icl/filter/base/UnaryOpPipe.h>
         #include <icl/filter/affine/ScaleOp.h>
         #include <icl/filter/channel/WeightedSumOp.h>
         #include <icl/filter/compare/UnaryCompareOp.h>
