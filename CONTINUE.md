@@ -2,63 +2,190 @@
 
 ## Next Step
 
-Session 60 was a hardening sweep on items from the previous "next
-step" list plus three crash-class bugs the user surfaced while
-exercising compressor-playground.  Seven commits:
-
-- `3a37f9184` — ICLWidget OSD scale-range button (rm-aware
-  `rebufferImageInternal`, `OSDGLButton::stateFn` callback,
-  round-trip via `rmLastNonOff`); graceful `init()` exception
-  handling in `ICLApplication::exec`; CLAUDE.md cleaned up
-  (CMake/ctest → meson/ninja, permanent `QT_QPA_PLATFORM=offscreen`
-  note for sandbox testing).
-- `d99753476` — Compression-codec **capability flags** —
-  `CompressionPlugin::Capabilities` (depths/channels/formats
-  whitelists), facade pre-validates with a uniform codec-named
-  error.  Closes the "1611 throws on RGB" rough edge.
-- `a2f446392` — `GLImageRenderer` post-free SIGBUS — the
-  `rgba` staging buffer was stack-local; macOS Metal-OpenGL is a
-  deferred backend (`com.Metal.CompletionQueueDispatch`), so the
-  GPU read freed memory.  Fixed with a persistent member buffer +
-  `glFlush()` after upload.
-- `4c6654416` `c36ed6215` `92ca9afe4` `462100e87` — **rlen
-  rewrite arc**: snapshot `m_quality` (heap-overflow race);
-  eliminate end-of-buffer OOB read; collapse the four switch cases
-  into a single `RlenCodec<VAL_BITS>` template; add q=2 (4-level
-  quantization).  Two new regression tests: `rlen.roundtrip_all_qualities`
-  and `rlen.quality_flip_mid_session`.
-
-875/875 tests green at HEAD.  Summary below.
+Session 61 was an end-to-end module-audit + subdir-reorganization
+sweep covering **utils, math, core, and filter** — the bottom four
+layers of the dep chain.  48 commits, ~−4500 LOC of dead-code retire
++ comprehensive subdir reorg, all 875/875 tests green throughout.
 
 Concrete work items remaining (in suggested order):
 
-- **Verify the Metal-OpenGL completion crash is gone outside the
-  sandbox.**  User reported the same `0x200000000` post-free signature
-  on the `com.Metal.CompletionQueueDispatch` queue even after the
-  GLImageRenderer + rlen fixes landed.  If it persists with the new
-  build, the corruption source is upstream of both — likely a Qt6
-  QRhi-on-Metal stability issue we can't fix from inside ICL.
+- **Continue the subdir-reorg pass with `icl/io/`** (next in the dep
+  chain).  IO already has some subdirs but most public headers still
+  sit at module-top.  Same protocol as core/filter: per-cluster
+  public subdirs, all `*_<backend>.cpp` files in flat `io/detail/`.
 
-- **OSDGLButton drift audit** — same `toggled`-cache pattern exists
-  on the other toggle buttons (interpolation NN/LIN, embedded-zoom,
-  fullscreen, detach/attach).  Now that `stateFn` exists, wire it
-  for those too so all OSD toggles always reflect the underlying
-  state.  Quick polish (~30 min).
+- **Namespace alignment for the moved subdirs.**  Every reorg in this
+  session left files in their original `icl::utils` / `icl::math` /
+  `icl::core` / `icl::filter` namespace despite the new
+  `<module>/<topic>/` location — `utils::cl/` and `utils::prop/` are
+  the only existing examples of path/namespace symmetry, and the new
+  subdirs don't follow.  User wants this done as a separate pass with
+  automated tooling (clang-rewrite or scripted) to avoid burning
+  tokens on the hundreds of mechanical call-site updates.
 
-- **qt::Prop UI integration of capability flags.**  Data layer is
-  ready (`plugin->capabilities()`); only the `mode` menu greying-out
-  for incompatible codecs given the current source image remains.
-  Dovetails with the Session 48 "auto codec" deferral.
+- **Filter session housekeeping.**  Several open follow-ups from
+  earlier sessions still apply: backend-split proposal in
+  `project_filter_dispatch_arch.md`, IPP cross-check, BackendProxy
+  `backends(Backend b)` shorthand.
 
-- **Fun: icl-edit image editor demo.**  Needs new filter Ops
-  (`BrillianceOp`, `VibranceOp`, `ClarityOp`, `CurvesOp`).  Good exercise
-  of push-callback refresh + filter chaining + ConfigFile round-trip.
+- Carryovers from Session 60: Metal-OpenGL completion crash verify,
+  OSDGLButton drift audit on the other toggle buttons, qt::Prop UI
+  integration of compression capability flags, icl-edit demo Op
+  prerequisites.
 
-- **Deferred optional perf pass for `icl::utils::xml`**: remaining 2×
-  gap vs pugi on raw parse throughput (97 µs vs 49.5 µs) is structural —
-  pugi's per-byte scanners are decades-tuned in C with zero wrapper
-  overhead.  Config-sized inputs are microseconds regardless; chase only
-  if a real workload demands it.
+---
+
+## Current State (Session 61 — utils/math/core/filter audit + subdir reorg)
+
+A multi-week-equivalent reorg sweep across the four foundation
+modules.  No single arc; instead a connected programme of audit
+cleanup + topical clustering + backend-split consolidation.  Output
+is dramatically cleaner module trees (filter top-level: 55 → 1
+header; math top-level: 35 → 3; utils top-level: 43 → 26; core
+top-level: 36 → 17), zero dead code in the audited modules, and one
+consistent layout convention.
+
+### utils/ (5 subdirs, 5 commits)
+
+  utils/thread/    Thread, Lockable
+  utils/plugin/    PluginRegistry, BackendDispatching, EnumDispatch
+  utils/time/      Time, Timer, FPSEstimator, FPSLimiter, StackTimer
+  utils/config/    Configurable, ConfigFile  (ConfigurableProxy
+                   was retired in an earlier session)
+  utils/dispatch/  AnyMap, Assign, AssignRegistry, AutoParse, ParamMap
+
+Stays at top level: BasicTypes, CompatMacros, Macros, Exception,
+Point, Size, Rect, Range, SteppingRange, Random, ClippedCast, File,
+StringUtils, StrTok, TextTable, ConsoleProgress, VisualizationDescription,
+FixedArray, Array2D, ProgArg, ProcessMonitor, SignalHandler,
+UncopiedInstance, Yaml, Xml, Utils.h umbrella.
+
+### math/ (6 subdirs, 7 commits + 1 cross-module relocation)
+
+  math/fft/        FFTException, FFTUtils
+  math/tree/       KDTree, Octree, QuadTree, PCLKdtree, PCLOctree
+  math/transform/  HomogeneousMath, Homography2D, LinearTransform1D,
+                   Projective4PointTransform, StraightLine2D,
+                   ConvexHull (relocated from core/)
+  math/fit/        LeastSquareModelFitting/2D, LevenbergMarquardtFitter,
+                   PolynomialRegression, PolynomialSolver, RansacFitter,
+                   SimplexOptimizer, StochasticOptimizer
+  math/ml/         LLM, SOM, SOM2D, KMeans, GraphCutter
+  math/la/         DynMatrix, DynMatrixBase, DynMatrixUtils, DynVector,
+                   FixedMatrix, FixedVector, MatrixSubRectIterator
+
+Top level: Math.h, MathFunctions.h, SimdCompat.h.
+
+ConvexHull was a cross-module move with namespace change
+(`icl::core::convexHull` → `icl::math::convexHull`); 4 consumer
+sites + 2 `using namespace math;` adds.
+
+### core/ (7 subdirs, ~10 commits, plus audit cleanup)
+
+#### Audit cleanups (4 commits)
+
+  - Retired `ImageRenderer.{h,cpp}` (zero consumers anywhere)
+  - Retired `ImageSerializer.{h,cpp}` (BICL plugins use ImageCompressor)
+  - Privatized `ImgBuffer.{h,cpp}` to `core/detail/` (only consumer:
+    `qt/Quick.cpp`; iclquick-plan.md flags eventual replacement)
+  - Privatized `CCLUT.{h,cpp}` to `core/detail/` (only consumer:
+    sibling `CCFunctions.cpp`)
+
+#### Subdir reorg
+
+  core/cc/         CCFunctions, Color, Parable, ChromaClassifier,
+                   ChromaAndRGBClassifier, BayerConverter
+  core/convert/    Converter, FixedConverter
+  core/line/       Line, LineSampler  (Line templated as LineT<T>;
+                   Line32f.{h,cpp} retired)
+  core/compat/     OpenCV (cv::Mat ↔ ICL interop)
+  core/dispatch/   ImgOps, ImageBackendDispatching
+  core/detail/     CCLUT, ImgBuffer (privatized), Img backend cpps
+                   (Img_Cpp, Img_Ipp, Img_Accelerate)
+  core/prop/       (existing) Constraints
+
+Top level: Image, Img, ImgBase, ImgBorder→retired, ImgIterator,
+ImgParams, Channel, PixelRef, Types, Visitors, VisitorsN,
+DataSegment, DataSegmentBase, CoreFunctions (now also hosts the
+former PixelOps API after merge), Core.h umbrella.
+
+`DoxygenMainPage.h` relocated to `icl/` root (it documents the whole
+framework, not core specifically).
+
+#### Other core landmarks
+
+  - `Line` templatized as `LineT<T>` (mirrors PointT/SizeT/RectT
+    pattern from Session 48); `Line = LineT<int>`,
+    `Line32f = LineT<float>`.  Line32f.{h,cpp} retired.
+  - `ImgIterator.h` polish: deleted dead `inRegionSubROI`, trimmed
+    ~200 lines of Core-2-Duo-era benchmark doxygen.
+  - `OpenCV<4` support dropped: hard `#error` on cv<4, retired
+    OpenSurfLib + LensUndistortionCalibrator + 1 app, modernized
+    OpenCVCamCalib to the OpenCV 4 C++ API (cv::Mat / FileStorage).
+    Net −3462 LOC.
+  - `PixelOps.h/.cpp` merged into CoreFunctions (~270 lines of SSE2
+    convert specializations + `copy`/`convert` templates).
+  - `ImgBorder.{h,cpp}` retired; `Img<T>::fillBorder()` (existing
+    4-overload API) now routes through ImgOps dispatch so the
+    IPP-optimized `ipp_replicateBorder` path activates automatically
+    for all callers (previously reachable only via the deleted
+    facade).  `cpp_replicateBorder` lives in `detail/img/Img_Cpp.cpp`.
+
+### filter/ (13 subdirs + flat detail/, ~17 commits)
+
+Largest module so far — 55 top-level headers reduced to **just
+`Filter.h` umbrella**.
+
+  filter/morph/     MorphologicalOp, GradientOp, ChamferOp, MedianOp
+  filter/arith/     {Unary,Binary,Inplace}ArithmeticalOp
+  filter/logical/   {Unary,Binary,Inplace}LogicalOp
+  filter/compare/   {Unary,Binary}CompareOp
+  filter/affine/    AffineOp, RotateOp, ScaleOp, TranslateOp,
+                    MirrorOp, WarpOp, ImageRectification,
+                    ImageUndistortion, AffineWrappers.cpp
+  filter/conv/      ConvolutionOp, ConvolutionKernel,
+                    DynamicConvolutionOp, GaborOp, ProximityOp
+                    (relocated — correlation = convolution)
+  filter/fft/       FFTOp, IFFTOp, BaseFFTOp
+  filter/threshold/ ThresholdOp, LocalThresholdOp,
+                    LocalThresholdOpHelpers
+  filter/color/     ColorDistanceOp, ColorSegmentationOp,
+                    PseudoColorOp, DitheringOp (color-reduction op)
+  filter/lut/       LUTOp, LUTOp3Channel, LUT2D, FixedConvertOp
+  filter/advanced/  BilateralFilterOp, WienerOp,
+                    MotionSensitiveTemporalSmoothing, CannyOp
+  filter/base/      UnaryOp, BinaryOp, InplaceOp, NeighborhoodOp,
+                    BaseAffineOp, OpROIHandler, UnaryOpPipe,
+                    ImageSplitter, IntegralImgOp
+  filter/channel/   WeightChannelsOp, WeightedSumOp
+  filter/detail/    ALL backend cpps (~40 `*_Cpp/Simd/Ipp/Accelerate
+                    /OpenCL.cpp` files), 10 `LocalThresholdOpHelpers
+                    _<depth>_<bool>.cpp` template specialization
+                    splits, `BilateralFilterOp.cl` + matching
+                    `BilateralFilterOpKernel.h` (former `OpenCL/`
+                    subdir absorbed)
+
+The filter pass had three mid-stream fixup commits during the
+threshold/ migration (a typo'd Edit parameter name caused a
+meson-build incomplete edit; perl regex pass missed a few backend
+cpps that included the public ThresholdOp / LocalThresholdOp
+headers).  Final state clean.
+
+### Convention recorded
+
+  - Each module's public headers cluster under topical subdirs.
+  - Backend dispatch impls (`*_<backend>.cpp`) all live under flat
+    `<module>/detail/` (no hierarchy).
+  - When a public header has a `*_<topic>` impl that's NOT a backend
+    variant (e.g. `AffineWrappers.cpp` registers Configurable
+    metadata), it stays alongside the public header in its subdir.
+  - Cross-module relocations (e.g. ConvexHull, OpenCV interop) update
+    the namespace to match the new owning module.
+  - Namespace updates for the new subdirs themselves (e.g.
+    `utils::time::Time`) are deferred — to be done in a follow-up
+    pass with automated tooling.
+
+875/875 tests green at HEAD.  48 commits in the session.
 
 ---
 

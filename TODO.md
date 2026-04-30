@@ -11,10 +11,10 @@ session log, and `module-audit-checklist.md` for the audit protocol.
 Applied per `module-audit-checklist.md`.
 
 - [x] `icl/utils/` — audit run Session 49+.  Small/medium cleanups landed.  Long-term items migrated into this TODO (below).
-- [ ] `icl/core/` — pending.  Probably few `detail/` candidates (mostly foundational types).
-- [ ] `icl/math/` — facade reorg done; remaining public headers haven't had a full audit pass.
-- [ ] `icl/filter/` — pair with backend-split proposal (see `project_filter_dispatch_arch.md`).
-- [ ] `icl/io/` — subdirs landed; remaining public headers worth an audit pass.
+- [x] `icl/core/` — audited Session 61.  Retired ImageRenderer + ImageSerializer + ImgBorder; privatized ImgBuffer + CCLUT to detail/; templatized Line; dropped OpenCV<4.  See Session 61 in `CONTINUE.md`.
+- [x] `icl/math/` — audited Session 61.  Subdir reorg into 6 logical clusters (la, fft, tree, transform, fit, ml).  ConvexHull cross-module-relocated to math/transform/.
+- [x] `icl/filter/` — audited Session 61.  13-subdir reorg (advanced, affine, arith, base, channel, color, compare, conv, fft, logical, lut, morph, threshold) + flat detail/ for all backend cpps + OpenCL kernel files.  Top-level shrunk from 55 hdrs to 1 (Filter.h umbrella).
+- [ ] `icl/io/` — subdirs landed earlier; full subdir-reorg pass pending — next in dep chain.
 - [ ] `icl/cv/`, `icl/geom/`, `icl/geom2/`, `icl/qt/`, `icl/markers/`, `icl/physics/` — never audited.
 
 ---
