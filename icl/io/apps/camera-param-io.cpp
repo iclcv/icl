@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/utils/ProgArg.h>
-#include <icl/io/GenericGrabber.h>
+#include <icl/io/grabber/GenericGrabber.h>
 
 using namespace icl::utils;
 using namespace icl::io;

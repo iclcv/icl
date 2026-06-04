@@ -9,7 +9,7 @@
 #include <icl/utils/Size.h>
 #include <icl/core/cc/Color.h>
 
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 
 namespace icl::io {
   /// Create Grabber class that provides an image from ICL's create function

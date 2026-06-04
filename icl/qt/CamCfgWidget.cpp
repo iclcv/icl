@@ -4,7 +4,7 @@
 
 #include <icl/qt/CamCfgWidget.h>
 
-#include <icl/io/GenericGrabber.h>
+#include <icl/io/grabber/GenericGrabber.h>
 #include <icl/qt/ContainerGUIComponents.h>
 #include <icl/qt/GUIWidget.h>
 #include <icl/qt/ComboHandle.h>

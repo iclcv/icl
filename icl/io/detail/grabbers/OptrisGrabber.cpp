@@ -9,7 +9,7 @@
 #include <icl/utils/thread/Thread.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Xml.h>
-#include <icl/io/FileList.h>
+#include <icl/io/file/FileList.h>
 #include <icl/filter/color/PseudoColorOp.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
 

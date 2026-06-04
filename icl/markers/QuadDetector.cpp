@@ -39,7 +39,7 @@
 #include <icl/cv/RDPApproximation.h>
 #include <icl/math/transform/StraightLine2D.h>
 
-#include <icl/io/FileWriter.h>
+#include <icl/io/file/FileWriter.h>
 #include <float.h>
 #include <icl/utils/time/StackTimer.h>
 #include <icl/geom/Camera.h>

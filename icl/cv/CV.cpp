@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/FileList.h>
+#include <icl/io/file/FileList.h>
 #include <icl/filter/conv/ProximityOp.h>
 #include <icl/cv/CV.h>
 #include <icl/filter/logical/BinaryLogicalOp.h>

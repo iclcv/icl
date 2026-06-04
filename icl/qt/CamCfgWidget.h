@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 // forward declaration (was #include <icl/core/ImgBase.h>)
-#include <icl/io/GenericGrabber.h>
+#include <icl/io/grabber/GenericGrabber.h>
 #include <icl/qt/ContainerGUIComponents.h>
 #include <QSplitter>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }

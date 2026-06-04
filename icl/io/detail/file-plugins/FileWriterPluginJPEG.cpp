@@ -183,7 +183,7 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_LIBJPEG
-#include <icl/io/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
+#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
 namespace { using icl::io::FileWriterPluginJPEG; }
 #define ICL_JPEG_REG(TAG, EXT)                                                \
   REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \

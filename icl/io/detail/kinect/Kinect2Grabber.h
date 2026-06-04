@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Andre Ueckermann
 
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 #include <icl/utils/Exception.h>
 
 namespace icl::io {

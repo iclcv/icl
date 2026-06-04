@@ -8,7 +8,7 @@
 #include <icl/utils/Size.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/prop/Constraints.h>
-#include <icl/io/GenericGrabber.h>
+#include <icl/io/grabber/GenericGrabber.h>
 
 #include <icl/qt/GUI.h>
 #include <icl/qt/GUIWidget.h>

@@ -1,33 +1,47 @@
 # ICL IO module
 
-# Public headers (installed).  Per-backend / per-plugin headers live under
+# Public headers (installed).  Clustered into topical subdirs (grabber/,
+# output/, file/, compress/); the umbrella IO.h and the standalone TestImages
+# API stay at module-top.  Per-backend / per-plugin headers live under
 # detail/<group>/ and are intentionally NOT installed — they are implementation
 # details.  Extension authors adding a new codec / grabber / output backend work
 # from inside the source tree.
 io_public_headers = files(
-  'FileGrabber.h',
-  'FileList.h',
-  'FileWriter.h',
-  'FilenameGenerator.h',
-  'GenericGrabber.h',
-  'GenericImageOutput.h',
-  'Grabber.h',
-  'GrabberDeviceDescription.h',
   'IO.h',
-  'ImageCompressor.h',
   'TestImages.h',
 )
 
-# Always-compiled sources (root-level public API impls).
+io_grabber_headers = files(
+  'grabber/GenericGrabber.h',
+  'grabber/Grabber.h',
+  'grabber/GrabberDeviceDescription.h',
+)
+
+io_output_headers = files(
+  'output/GenericImageOutput.h',
+)
+
+io_file_headers = files(
+  'file/FileGrabber.h',
+  'file/FileList.h',
+  'file/FileWriter.h',
+  'file/FilenameGenerator.h',
+)
+
+io_compress_headers = files(
+  'compress/ImageCompressor.h',
+)
+
+# Always-compiled sources (public API impls, mirroring the header clustering).
 io_sources = files(
-  'FileGrabber.cpp',
-  'FileList.cpp',
-  'FileWriter.cpp',
-  'FilenameGenerator.cpp',
-  'GenericGrabber.cpp',
-  'GenericImageOutput.cpp',
-  'Grabber.cpp',
-  'ImageCompressor.cpp',
+  'grabber/GenericGrabber.cpp',
+  'grabber/Grabber.cpp',
+  'output/GenericImageOutput.cpp',
+  'file/FileGrabber.cpp',
+  'file/FileList.cpp',
+  'file/FileWriter.cpp',
+  'file/FilenameGenerator.cpp',
+  'compress/ImageCompressor.cpp',
   'TestImages.cpp',
 )
 
@@ -194,6 +208,22 @@ icl_io_dep = declare_dependency(
 
 install_headers(io_public_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'io',
+)
+
+install_headers(io_grabber_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'io' / 'grabber',
+)
+
+install_headers(io_output_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'io' / 'output',
+)
+
+install_headers(io_file_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'io' / 'file',
+)
+
+install_headers(io_compress_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'io' / 'compress',
 )
 
 pkg.generate(icl_io_lib,

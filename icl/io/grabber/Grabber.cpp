@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 #include <icl/core/Image.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/filter/affine/ImageUndistortion.h>

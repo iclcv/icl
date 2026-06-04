@@ -12,10 +12,10 @@
 
 #include <icl/utils/thread/Thread.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/io/GenericGrabber.h>
+#include <icl/io/grabber/GenericGrabber.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/time/FPSLimiter.h>
 #include <mutex>
-#include <icl/io/FileWriter.h>
+#include <icl/io/file/FileWriter.h>
 #include <icl/core/cc/Color.h>
 #include <icl/core/Image.h>

@@ -9,7 +9,7 @@
 #include <icl/utils/SteppingRange.h>
 #include <icl/utils/config/Configurable.h>
 #include <icl/core/ImgBase.h>
-#include <icl/io/GrabberDeviceDescription.h>
+#include <icl/io/grabber/GrabberDeviceDescription.h>
 
 namespace icl::core { class Image; }
 namespace icl::utils { class ProgArg; }

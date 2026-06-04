@@ -2,29 +2,53 @@
 
 ## Next Step
 
-Session 61 was an end-to-end module-audit + subdir-reorganization
-sweep covering **utils, math, core, and filter** — the bottom four
-layers of the dep chain.  48 commits, ~−4500 LOC of dead-code retire
-+ comprehensive subdir reorg, all 875/875 tests green throughout.
+**Session 62 is IN PROGRESS and UNCOMMITTED.**  The `icl/io/` subdir
+reorg is done on disk (see below) but not yet committed, and the
+build could not be fully verified because the local Qt environment
+drifted.  When you restart (with `~/Qt` access now whitelisted):
 
-Concrete work items remaining (in suggested order):
+1. **Reconfigure meson against `~/Qt`.**  The existing `builddir/` is
+   stale — it was configured against **homebrew Qt**
+   (`/opt/homebrew/lib/Qt*.framework`, baked into `build.ninja`), and
+   homebrew's `QtMultimedia.framework` has since been removed.  The
+   user switched to a manually-installed Qt in `~/Qt`.  Likely cleanest:
+   wipe `builddir/` and `meson setup builddir` with `~/Qt`'s qmake /
+   pkg-config on PATH so QtMultimedia resolves again.
+2. **Build + run tests** to confirm the io reorg: `CCACHE_DISABLE=1
+   ninja -C builddir -j 16` then `builddir/bin/icl-tests -j 1`
+   (expect 875/875).  Build gotchas hit this session:
+   - **ccache is blocked in the sandbox** → always prefix
+     `CCACHE_DISABLE=1` (already in feedback memory, re-confirmed).
+   - **Stale-PCH SDK-mtime fatal errors** after a toolchain bump:
+     `find builddir -name '*.pch' -delete` then rebuild.
+3. **Commit the io reorg** (it is verified-clean except for the Qt-env
+   blocker — the ONLY build failures were 3 QtMultimedia TUs, none
+   from the reorg).
+4. **Remove `icl/io/proto/`** — user: "RSB is gone long from our
+   dependency list, io/proto can go too."  (Not started yet.)
 
-- **Continue the subdir-reorg pass with `icl/io/`** (next in the dep
-  chain).  IO already has some subdirs but most public headers still
-  sit at module-top.  Same protocol as core/filter: per-cluster
-  public subdirs, all `*_<backend>.cpp` files in flat `io/detail/`.
+### QtMultimedia status — NOT an API problem (memory was stale)
 
-- **Namespace alignment for the moved subdirs.**  Every reorg in this
-  session left files in their original `icl::utils` / `icl::math` /
-  `icl::core` / `icl::filter` namespace despite the new
-  `<module>/<topic>/` location — `utils::cl/` and `utils::prop/` are
-  the only existing examples of path/namespace symmetry, and the new
-  subdirs don't follow.  User wants this done as a separate pass with
-  automated tooling (clang-rewrite or scripted) to avoid burning
-  tokens on the hundreds of mechanical call-site updates.
+`project_qt6_multimedia.md` claimed the 3 multimedia files are disabled
+behind a `QT_VERSION < 6` guard needing a QVideoSink rewrite.  **That
+is outdated.**  `ICLVideoSurface.{h,cpp}`, `QtCameraGrabber.{h,cpp}`,
+`QtVideoGrabber.{h,cpp}` have ALREADY been rewritten to the modern Qt6
+API (`QVideoSink`, `QVideoFrame`, `QMediaCaptureSession`).  They fail
+only with `'QtMultimedia/QVideoSink' file not found` etc. because
+homebrew QtMultimedia is uninstalled and the builddir points at it.
+With `~/Qt` (which has Multimedia) they should just compile.  Update
+`project_qt6_multimedia.md` once confirmed.
 
-- **Filter session housekeeping.**  Several open follow-ups from
-  earlier sessions still apply: backend-split proposal in
+### Then, the remaining Session-61 carryovers (suggested order):
+
+- **Namespace alignment for the moved subdirs.**  utils/math/core/
+  filter + now io were reorganized into `<module>/<topic>/` dirs but
+  files keep their original `icl::utils` / `icl::math` / … namespace.
+  `utils::cl/` and `utils::prop/` are the only path/namespace-symmetric
+  examples.  User wants this as a separate scripted/clang-rewrite pass
+  to avoid burning tokens on hundreds of mechanical call-site updates.
+
+- **Filter session housekeeping.**  Backend-split proposal in
   `project_filter_dispatch_arch.md`, IPP cross-check, BackendProxy
   `backends(Backend b)` shorthand.
 
@@ -32,6 +56,56 @@ Concrete work items remaining (in suggested order):
   OSDGLButton drift audit on the other toggle buttons, qt::Prop UI
   integration of compression capability flags, icl-edit demo Op
   prerequisites.
+
+---
+
+## Current State (Session 62 — io/ subdir reorg, UNCOMMITTED)
+
+The `icl/io/` public surface was clustered into topical subdirs,
+matching the core/filter protocol from Session 61.  All work is on
+disk but **not committed**; full build verification is blocked on the
+Qt-env reconfigure described in "Next Step".
+
+### What moved (via `git mv`, history preserved)
+
+  io/grabber/   GenericGrabber.{h,cpp}, Grabber.{h,cpp},
+                GrabberDeviceDescription.h
+  io/output/    GenericImageOutput.{h,cpp}
+  io/file/      FileGrabber.{h,cpp}, FileWriter.{h,cpp},
+                FileList.{h,cpp}, FilenameGenerator.{h,cpp}
+  io/compress/  ImageCompressor.{h,cpp}
+
+Stays at module-top: `IO.h` (umbrella) + `TestImages.{h,cpp}`
+(standalone utility).  `io/detail/` was already organized into
+per-backend subdirs (dc/, file-plugins/, grabbers/, kinect/, pylon/,
+opencv/, openni/, network/, v4l2/, libav/, compression-plugins/,
+builtin-images/) and was left as-is — those are whole backends, not
+the `*_<backend>.cpp` dispatch variants that the flat-detail rule
+targets.
+
+### Mechanics done
+
+- ~139 include sites rewritten tree-wide via a per-file `perl`
+  loop (`#include <icl/io/X.h>` → `#include <icl/io/<sub>/X.h>`).
+  NOTE: bulk `perl -pi -e $FILES` and `grep -rlZ | xargs -0 perl`
+  BOTH failed in this sandbox (whole file-list arrived as one
+  ENAMETOOLONG arg).  The reliable pattern was
+  `while IFS= read -r f; do perl -pi -e '…' "$f"; done < list`.
+- `icl/io/meson.build` updated: split `io_public_headers` into
+  `io_{grabber,output,file,compress}_headers` file() lists, updated
+  `io_sources` paths, added per-subdir `install_headers(...,
+  install_dir: .../icl/io/<sub>)` blocks (mirrors filter/meson.build).
+- libicl-io.dylib compiles clean; all io-consuming TUs across qt /
+  geom / cv / markers / physics / tests compile clean.  The only 4
+  FAILED objects in a full `-k 0` build are the 3 QtMultimedia files
+  (ICLVideoSurface.cpp + its moc, QtCameraGrabber.cpp,
+  QtVideoGrabber.cpp) — pure missing-dependency, unrelated to io.
+
+### Pending in this arc
+
+- Reconfigure against `~/Qt`, build, run tests, commit (steps 1–3 above).
+- `rm -r icl/io/proto/` + drop any meson refs (step 4).  Verify
+  nothing else references the RSB proto sources first.
 
 ---
 

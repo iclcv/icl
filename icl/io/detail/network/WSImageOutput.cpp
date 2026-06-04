@@ -4,7 +4,7 @@
 
 #include <icl/io/detail/network/WSImageOutput.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/io/ImageCompressor.h>
+#include <icl/io/compress/ImageCompressor.h>
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Macros.h>
@@ -254,7 +254,7 @@ namespace icl::io {
 } // namespace icl::io
 
 // ----- registration with GenericImageOutput -----------------------------
-#include <icl/io/GenericImageOutput.h>
+#include <icl/io/output/GenericImageOutput.h>
 REGISTER_IMAGE_OUTPUT(ws, "ws",
   ([](const std::string &params) -> icl::io::ImageOutputFn {
     // params form: "PORT" (bind 0.0.0.0) or "BIND:PORT"

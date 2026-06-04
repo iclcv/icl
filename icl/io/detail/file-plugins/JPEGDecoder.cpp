@@ -6,7 +6,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/io/detail/file-plugins/JPEGHandle.h>
 #include <icl/utils/Macros.h>
-#include <icl/io/FileGrabber.h>  // for HeaderInfo
+#include <icl/io/file/FileGrabber.h>  // for HeaderInfo
 #include <icl/utils/StrTok.h>
 #include <charconv>
 

@@ -9,7 +9,7 @@
 #include <icl/utils/Size.h>
 #include <icl/core/cc/Color.h>
 
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 #include <mutex>
 
 namespace icl::io {

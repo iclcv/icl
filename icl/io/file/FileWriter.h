@@ -9,7 +9,7 @@
 #include <icl/utils/plugin/PluginRegistry.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
-#include <icl/io/FilenameGenerator.h>
+#include <icl/io/file/FilenameGenerator.h>
 
 #include <functional>
 #include <string>

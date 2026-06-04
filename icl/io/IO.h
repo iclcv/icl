@@ -8,12 +8,12 @@
 // (DCGrabber, PylonGrabber, WSGrabber, …) are implementation details and
 // are deliberately not pulled in here — applications should go through
 // GenericGrabber / GenericImageOutput instead.
-#include <icl/io/FileGrabber.h>
-#include <icl/io/FileList.h>
-#include <icl/io/FilenameGenerator.h>
-#include <icl/io/FileWriter.h>
-#include <icl/io/GenericGrabber.h>
-#include <icl/io/GenericImageOutput.h>
+#include <icl/io/file/FileGrabber.h>
+#include <icl/io/file/FileList.h>
+#include <icl/io/file/FilenameGenerator.h>
+#include <icl/io/file/FileWriter.h>
+#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/output/GenericImageOutput.h>
 #include <icl/io/TestImages.h>
 
 

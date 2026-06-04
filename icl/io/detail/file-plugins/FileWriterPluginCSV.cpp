@@ -76,7 +76,7 @@ namespace icl::io {
   }
   } // namespace icl::io
 
-#include <icl/io/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
+#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
 namespace { using icl::io::FileWriterPluginCSV; }
 #define ICL_CSV_REG(TAG, EXT)                                                 \
   REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \

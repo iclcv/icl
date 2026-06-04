@@ -73,7 +73,7 @@ int main(int n, char **ppc){
   std::string arrayName = std::string("aauc_Data_")+imageName;
   std::string extraArrayName = std::string("auc_ExtraData_")+imageName;
 
-  printf("#include <icl/io/FileGrabber.h>\n");
+  printf("#include <icl/io/file/FileGrabber.h>\n");
   printf("#include <icl/core/Img.h>\n");
 
 

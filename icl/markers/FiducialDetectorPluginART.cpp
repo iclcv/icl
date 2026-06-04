@@ -2,9 +2,9 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/FileGrabber.h>
+#include <icl/io/file/FileGrabber.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/io/FileList.h>
+#include <icl/io/file/FileList.h>
 #include <icl/utils/File.h>
 
 #include <icl/markers/FiducialDetectorPluginART.h>

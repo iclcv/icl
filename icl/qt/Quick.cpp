@@ -3,11 +3,11 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting
 
 #include <icl/qt/Quick.h>
-#include <icl/io/FileGrabber.h>
+#include <icl/io/file/FileGrabber.h>
 #include <icl/io/TestImages.h>
 #include <icl/core/convert/Converter.h>
 
-#include <icl/io/GenericGrabber.h>
+#include <icl/io/grabber/GenericGrabber.h>
 
 #include <icl/core/cc/CCFunctions.h>
 #include <map>
@@ -17,7 +17,7 @@
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/filter/arith/UnaryArithmeticalOp.h>
-#include <icl/io/FileWriter.h>
+#include <icl/io/file/FileWriter.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/lut/LUTOp.h>
 #include <icl/utils/time/Timer.h>

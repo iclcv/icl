@@ -5,9 +5,9 @@
 #include <string>
 #include <icl/utils/prop/Constraints.h>
 #include <map>
-#include <icl/io/FileGrabber.h>
-#include <icl/io/FileList.h>
-#include <icl/io/FilenameGenerator.h>
+#include <icl/io/file/FileGrabber.h>
+#include <icl/io/file/FileList.h>
+#include <icl/io/file/FilenameGenerator.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/thread/Thread.h>
@@ -31,7 +31,7 @@
 
 #include <string>
 #include <map>
-#include <icl/io/FileList.h>
+#include <icl/io/file/FileList.h>
 
 #if defined(ICL_SYSTEM_WINDOWS) && defined(ICL_HAVE_QT)
 #include <QtCore/QDir>

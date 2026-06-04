@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 #include <icl/utils/time/Time.h>
 #include <icl/io/detail/openni/OpenNIUtils.h>
 #include <icl/utils/thread/Thread.h>

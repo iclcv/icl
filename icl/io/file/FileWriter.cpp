@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/FileWriter.h>
+#include <icl/io/file/FileWriter.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exception.h>
 

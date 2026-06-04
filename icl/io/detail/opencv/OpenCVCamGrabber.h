@@ -7,7 +7,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/compat/OpenCV.h>
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 #include <icl/utils/Exception.h>
 
 #include <opencv2/videoio.hpp>

@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/detail/file-plugins/FileGrabberPluginCSV.h>
-#include <icl/io/FileGrabber.h>  // for HeaderInfo
+#include <icl/io/file/FileGrabber.h>  // for HeaderInfo
 #include <icl/core/CoreFunctions.h>
 #include <mutex>
 #include <icl/utils/StrTok.h>
@@ -189,7 +189,7 @@ namespace icl::io {
 
   } // namespace icl::io
 
-#include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
+#include <icl/io/file/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
 namespace { using icl::io::FileGrabberPluginCSV; }
 #define ICL_CSV_REG(TAG, EXT)                                                 \
   REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \

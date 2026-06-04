@@ -264,7 +264,7 @@ namespace icl::io {
   } // namespace icl::io
 
 // ----- registration with GenericImageOutput -----------------------------
-#include <icl/io/GenericImageOutput.h>
+#include <icl/io/output/GenericImageOutput.h>
 #include <icl/utils/StringUtils.h>
 REGISTER_IMAGE_OUTPUT(video_libav, "video",
   ([](const std::string &params) -> icl::io::ImageOutputFn {

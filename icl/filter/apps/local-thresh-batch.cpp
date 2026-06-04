@@ -4,9 +4,9 @@
 
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/cc/CCFunctions.h>
-#include <icl/io/GenericGrabber.h>
-#include <icl/io/FileWriter.h>
-#include <icl/io/FileList.h>
+#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/file/FileWriter.h>
+#include <icl/io/file/FileList.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/utils/config/ConfigFile.h>
 #include <icl/utils/ProgArg.h>

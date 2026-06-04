@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/geom/Scene.h>
-#include <icl/io/GenericImageOutput.h>
+#include <icl/io/output/GenericImageOutput.h>
 
 namespace icl::physics {
     class SceneMultiCamCapturer {

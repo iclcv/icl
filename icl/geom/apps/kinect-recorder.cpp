@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/io/GenericImageOutput.h>
+#include <icl/io/output/GenericImageOutput.h>
 
 HBox gui;
 GenericGrabber c_in;

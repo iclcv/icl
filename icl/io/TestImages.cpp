@@ -10,7 +10,7 @@
 #include <map>
 #include <icl/core/Img.h>
 #include <icl/utils/Size.h>
-#include <icl/io/FileWriter.h>
+#include <icl/io/file/FileWriter.h>
 #include <stdlib.h>
 #include <charconv>
 #include <icl/utils/time/Time.h>

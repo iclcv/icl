@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <iterator>
-#include <icl/io/FileGrabber.h>
+#include <icl/io/file/FileGrabber.h>
 #include <icl/qt/Common2.h>
 #include <QScreen>
 

@@ -12,7 +12,7 @@
 #include <icl/qt/GLImageRenderer.h>
 #include <icl/qt/GLPaintEngine.h>
 #include <icl/qt/QPainterPaintEngine.h>
-#include <icl/io/GenericImageOutput.h>
+#include <icl/io/output/GenericImageOutput.h>
 #include <icl/qt/ContainerGUIComponents.h>
 #include <string>
 #include <vector>
@@ -63,7 +63,7 @@
 
 #include <icl/utils/Rect.h>
 #include <icl/utils/File.h>
-#include <icl/io/FileWriter.h>
+#include <icl/io/file/FileWriter.h>
 #include <icl/utils/Range.h>
 #include <icl/core/Types.h>
 

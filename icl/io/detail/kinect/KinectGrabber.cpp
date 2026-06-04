@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/kinect/KinectGrabber.h>
 #include <icl/core/cc/CCFunctions.h>

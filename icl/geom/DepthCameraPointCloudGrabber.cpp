@@ -6,7 +6,7 @@
 #include <icl/utils/prop/Constraints.h>
 #include <icl/geom/PointCloudCreator.h>
 
-#include <icl/io/GenericGrabber.h>
+#include <icl/io/grabber/GenericGrabber.h>
 #include <icl/geom/PointCloudGrabberRegistry.h>
 #include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 #include <icl/filter/morph/MedianOp.h>

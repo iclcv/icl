@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/ImageCompressor.h>
+#include <icl/io/compress/ImageCompressor.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/compression-plugins/CompressionPlugin.h>
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>

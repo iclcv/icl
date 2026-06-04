@@ -20,7 +20,7 @@
 // Launch: icl-compressor-playground -i create lena
 
 #include <icl/qt/Common2.h>
-#include <icl/io/ImageCompressor.h>
+#include <icl/io/compress/ImageCompressor.h>
 
 HSplit gui;
 GenericGrabber grabber;

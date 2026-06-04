@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/QuickIO.h>
-#include <icl/io/FileWriter.h>
+#include <icl/io/file/FileWriter.h>
 #include <icl/io/TestImages.h>
 
 using namespace icl::core;

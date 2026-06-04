@@ -4,7 +4,7 @@
 
 #include <set>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/io/GenericGrabber.h>
+#include <icl/io/grabber/GenericGrabber.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/TextTable.h>

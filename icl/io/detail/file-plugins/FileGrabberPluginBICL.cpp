@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/detail/file-plugins/FileGrabberPluginBICL.h>
-#include <icl/io/ImageCompressor.h>
+#include <icl/io/compress/ImageCompressor.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -24,7 +24,7 @@ namespace icl::io {
 
   } // namespace icl::io
 
-#include <icl/io/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
+#include <icl/io/file/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
 namespace { using icl::io::FileGrabberPluginBICL; }
 #define ICL_BICL_REG(TAG, EXT)                                                \
   REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \

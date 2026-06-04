@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 
 namespace icl::io {
   /// Grabber class that grabs images using the XiAPI (extension of the M3API)

@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/GenericImageOutput.h>
-#include <icl/io/FileWriter.h>  // built-in "file" backend registration
+#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/file/FileWriter.h>  // built-in "file" backend registration
 
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/TextTable.h>

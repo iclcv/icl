@@ -11,7 +11,7 @@
 #include <icl/utils/Size.h>
 #include <icl/utils/time/Time.h>
 #include <icl/core/Img.h>
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 
 #include <functional>
 #include <mutex>

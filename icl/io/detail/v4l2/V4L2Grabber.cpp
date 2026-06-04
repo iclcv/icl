@@ -23,7 +23,7 @@
 #endif
 
 #include <icl/utils/thread/Thread.h>
-#include <icl/io/FileList.h>
+#include <icl/io/file/FileList.h>
 #include <icl/io/detail/grabbers/ColorFormatDecoder.h>
 #include <icl/io/detail/v4l2/V4L2Grabber.h>
 #include <icl/utils/File.h>

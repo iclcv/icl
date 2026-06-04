@@ -2,7 +2,7 @@
 #include <icl/qt/QuickIO.h>
 #include <icl/qt/QuickCreate.h>
 #include <icl/core/Img.h>
-#include <icl/io/ImageCompressor.h>
+#include <icl/io/compress/ImageCompressor.h>
 
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #ifdef ICL_HAVE_QT_WEBSOCKETS

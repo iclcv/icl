@@ -7,7 +7,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/Application.h>
 #include <icl/utils/ProgArg.h>
-#include <icl/io/GenericGrabber.h>
+#include <icl/io/grabber/GenericGrabber.h>
 
 #include <sstream>
 #include <mutex>

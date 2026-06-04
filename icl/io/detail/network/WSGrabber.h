@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 #include <string>
 #include <vector>
 

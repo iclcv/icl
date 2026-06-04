@@ -179,7 +179,7 @@ namespace icl{
   } // namespace io
 }
 
-#include <icl/io/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
+#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
 namespace {
   using icl::io::FileWriterPluginPNM;
 }

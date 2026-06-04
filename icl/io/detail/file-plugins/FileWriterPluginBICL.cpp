@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/detail/file-plugins/FileWriterPluginBICL.h>
-#include <icl/io/FileWriter.h>      // for REGISTER_FILE_WRITER_PLUGIN macro
-#include <icl/io/ImageCompressor.h>
+#include <icl/io/file/FileWriter.h>      // for REGISTER_FILE_WRITER_PLUGIN macro
+#include <icl/io/compress/ImageCompressor.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImgBase.h>
 #include <mutex>

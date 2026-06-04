@@ -4,7 +4,7 @@
 
 #include <icl/io/detail/network/WSGrabber.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/io/ImageCompressor.h>
+#include <icl/io/compress/ImageCompressor.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImgBase.h>
 #include <icl/utils/StringUtils.h>

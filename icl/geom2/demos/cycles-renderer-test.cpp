@@ -12,7 +12,7 @@
 #include <icl/geom2/LightNode.h>
 #include <icl/geom/Camera.h>
 #include <icl/geom/Material.h>
-#include <icl/io/FileWriter.h>
+#include <icl/io/file/FileWriter.h>
 
 #include <cstdio>
 #include <memory>

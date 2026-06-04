@@ -6,7 +6,7 @@
 #include <icl/utils/StrTok.h>
 #include <icl/utils/Macros.h>
 #include <icl/io/detail/dc/DC.h>
-#include <icl/io/Grabber.h>
+#include <icl/io/grabber/Grabber.h>
 #include <stdio.h>
 #include <icl/utils/thread/Thread.h>
 

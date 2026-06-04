@@ -188,7 +188,7 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_IMAGEMAGICK
-#include <icl/io/FileWriter.h>  // fileWriterRegistry
+#include <icl/io/file/FileWriter.h>  // fileWriterRegistry
 namespace {
   using icl::io::FileWriterPluginImageMagick;
   using icl::io::fileWriterRegistry;
