@@ -51,7 +51,7 @@ void run(){
   static ButtonHandle load = gui["load"];
   if(load.wasTriggered()){
     try{
-      edgeImage = icl::qt::load(openFileDialog()).as8u();
+      edgeImage = icl::io::load(openFileDialog()).as8u();
     }catch(...){}
   }
 

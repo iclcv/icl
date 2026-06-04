@@ -4,9 +4,9 @@
 
 #include <icl/qt/QuickCreate.h>
 #include <icl/qt/QuickContext.h>
-#include <icl/io/file/FileGrabber.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/SaveLoad.h>
 #include <icl/io/TestImages.h>
+#include <icl/io/grabber/GenericGrabber.h>
 #include <icl/core/ImgBase.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/core/Img.h>
@@ -31,18 +31,14 @@ namespace icl::qt {
     return img;
   }
 
-  Image load(const std::string &filename) {
-    FileGrabber g(filename);
+  Image load(const std::string &filename, format fmt) {
+    Image img;
     try {
-      return g.grabImage();
+      img = icl::io::load(filename);
     } catch(const ICLException &ex) {
       ERROR_LOG("exception: " << ex.what());
       return Image();
     }
-  }
-
-  Image load(const std::string &filename, format fmt) {
-    Image img = load(filename);
     if(img.isNull()) return img;
 
     Image dst = activeContext().getBuffer(img.getDepth(),

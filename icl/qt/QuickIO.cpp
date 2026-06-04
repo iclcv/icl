@@ -3,18 +3,12 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/QuickIO.h>
-#include <icl/io/file/FileWriter.h>
 #include <icl/io/TestImages.h>
 
 using namespace icl::core;
 using namespace icl::io;
 
 namespace icl::qt {
-
-  void save(const Image &image, const std::string &filename) {
-    if(image.isNull()) return;
-    FileWriter(filename).write(image.ptr());
-  }
 
   void show(const Image &image) {
     if(image.isNull()) return;

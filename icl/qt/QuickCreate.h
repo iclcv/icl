@@ -24,10 +24,8 @@ namespace icl::qt {
   ICLQt_API core::Image ones(int width, int height, int channels = 1,
                               core::depth d = core::depth32f);
 
-  /// Loads an image file, returning native depth from the file
-  ICLQt_API core::Image load(const std::string &filename);
-
   /// Loads an image file and converts to the given format
+  /** For loading without conversion, use icl::io::load. */
   ICLQt_API core::Image load(const std::string &filename, core::format fmt);
 
   /// Creates a test image (parrot, lena, cameraman, mandril, etc.)

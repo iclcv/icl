@@ -96,8 +96,8 @@ void init(){
 
   //static const int W=20,H=13,DIM=W*H;
   static const int W=pa("-paper-dim",0), H=pa("-paper-dim",1);
-  static Img8u frontFace = icl::qt::load(*pa("-ff")).as8u();
-  static Img8u backFace = icl::qt::load(*pa("-bf")).as8u();
+  static Img8u frontFace = icl::io::load(*pa("-ff")).as8u();
+  static Img8u backFace = icl::io::load(*pa("-bf")).as8u();
 
   const Size s(210,297);
   const Vec corners[4] = {

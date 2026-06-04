@@ -33,7 +33,7 @@ void init(){
   scene.addObject(obj);
 
   surf.reset(new SurfFeatureDetector(5,4,2,0.00005,"opensurf"));
-  Img8u templ = icl::qt::load(pa("-t")).as8u();
+  Img8u templ = icl::io::load(pa("-t")).as8u();
   surf->setReferenceImage(&templ);
 
   ts = Size32f(t.width/templ.getWidth(), t.height/templ.getHeight());

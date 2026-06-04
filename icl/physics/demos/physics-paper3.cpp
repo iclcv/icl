@@ -27,8 +27,8 @@ void fold_map_changed(const Img32f &image){
 
 void init(){
   if(pa("-textures")){
-    Img8u ft = icl::qt::load(*pa("-textures",0)).as8u();
-    Img8u bt = icl::qt::load(*pa("-textures",1)).as8u();
+    Img8u ft = icl::io::load(*pa("-textures",0)).as8u();
+    Img8u bt = icl::io::load(*pa("-textures",1)).as8u();
     model = new PhysicsPaper3(&scene,pa("-self"),pa("-dim"), 0, &ft, &bt, pa("-it"), pa("-id"));
   }else{
     model = new PhysicsPaper3(&scene,pa("-self"),pa("-dim"),0,0,0, pa("-it"), pa("-id"));

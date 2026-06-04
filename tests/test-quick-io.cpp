@@ -1,6 +1,7 @@
 #include "harness/Test.h"
 #include <icl/qt/QuickIO.h>
 #include <icl/qt/QuickCreate.h>
+#include <icl/io/SaveLoad.h>
 #include <icl/core/Img.h>
 #include <icl/io/compress/ImageCompressor.h>
 

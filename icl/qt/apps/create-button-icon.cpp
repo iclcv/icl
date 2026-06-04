@@ -12,7 +12,7 @@ int main(int n, char **a){
   pa_init(n,a,"-icon-name|-i(iconname=empty) -output|-o(2) -image-file-to-c++-array|-ita(input-file-name)");
 
   if(pa("-ita")){
-    Img8u image = icl::qt::load(pa("-ita")).as8u();
+    Img8u image = icl::io::load(pa("-ita")).as8u();
     const int w=image.getWidth(), h = image.getHeight(), c = image.getChannels();
     std::cout << "static icl8u data_XYZ["<<w<<"]["<<h<<"]["<<c<<"]={" << std::endl;
     for(int y=0;y<h;++y){

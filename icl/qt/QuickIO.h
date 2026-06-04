@@ -14,9 +14,6 @@ namespace icl::qt {
 
   /** @{ @name Image I/O (Quick2) */
 
-  /// Write an image to disk
-  ICLQt_API void save(const core::Image &image, const std::string &filename);
-
   /// Show an image using an external viewer
   ICLQt_API void show(const core::Image &image);
 

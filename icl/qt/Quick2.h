@@ -12,6 +12,7 @@
 #include <icl/qt/QuickDraw.h>
 #include <icl/qt/QuickIO.h>
 
+#include <icl/io/SaveLoad.h>
 #include <icl/core/Img.h>
 #include <icl/core/CoreFunctions.h>
 

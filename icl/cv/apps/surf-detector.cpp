@@ -175,7 +175,7 @@ void rotate_template(){
 void load(){
   try{
     std::string fn = openFileDialog();
-    Img8u image = icl::qt::load(fn).as8u();
+    Img8u image = icl::io::load(fn).as8u();
     if(image.getWidth() > iW ||
        image.getHeight() > iH){
       ERROR_LOG("template width and height must not be larger that the image width and height");

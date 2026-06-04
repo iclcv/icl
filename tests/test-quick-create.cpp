@@ -1,11 +1,13 @@
 #include "harness/Test.h"
 #include <icl/qt/QuickCreate.h>
+#include <icl/io/SaveLoad.h>
 #include <icl/core/Img.h>
 
 using namespace icl;
 using namespace icl::qt;
 using namespace icl::core;
 using namespace icl::utils;
+using namespace icl::io;
 
 // ---- zeros ----
 
