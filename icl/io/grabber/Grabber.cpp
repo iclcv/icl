@@ -62,9 +62,9 @@ namespace icl::io {
     useDesired(d); useDesired(size);useDesired(fmt);
   }
   void Grabber::ignoreDesired(){
-    ignoreDesired<depth>();
-    ignoreDesired<Size>();
-    ignoreDesired<format>();
+    ignoreDesiredDepth();
+    ignoreDesiredSize();
+    ignoreDesiredFormat();
   }
 
   void Grabber::setDesiredFormatInternal(format fmt){
@@ -219,17 +219,17 @@ namespace icl::io {
 
 
   const ImgBase *Grabber::adaptGrabResult(const ImgBase *src, ImgBase **dst){
-    bool adaptDepth = desiredUsed<depth>() && (getDesired<depth>() != src->getDepth());
-    bool adaptSize = desiredUsed<Size>() && (getDesired<Size>() != src->getSize());
-    bool adaptFormat = desiredUsed<format>() && (getDesired<format>() != src->getFormat());
+    bool adaptDepth = desiredDepthUsed() && (getDesiredDepth() != src->getDepth());
+    bool adaptSize = desiredSizeUsed() && (getDesiredSize() != src->getSize());
+    bool adaptFormat = desiredFormatUsed() && (getDesiredFormat() != src->getFormat());
     if(adaptDepth || adaptSize || adaptFormat){
       if(!dst){
         dst = &data->image;
       }
       ensureCompatible(dst,
-                       adaptDepth ? getDesired<depth>() : src->getDepth(),
-                       adaptSize ? getDesired<Size>() : src->getSize(),
-                       adaptFormat ? getDesired<format>() : src->getFormat());
+                       adaptDepth ? getDesiredDepth() : src->getDepth(),
+                       adaptSize ? getDesiredSize() : src->getSize(),
+                       adaptFormat ? getDesiredFormat() : src->getFormat());
       data->converter.apply(src,*dst);
       return *dst;
     }else{
@@ -296,21 +296,21 @@ namespace icl::io {
   void Grabber::processPropertyChange(const utils::Configurable::Property &prop){
     if(prop.name == "desired size"){
       if(prop.as<std::string>() == "not used"){
-        ignoreDesired<Size>();
+        ignoreDesiredSize();
       } else {
-        useDesired<Size>(prop.as<Size>());
+        useDesired(prop.as<Size>());
       }
     } else if (prop.name == "desired depth"){
       if(prop.as<std::string>() == "not used"){
-        ignoreDesired<depth>();
+        ignoreDesiredDepth();
       } else {
-        useDesired<depth>(prop.as<depth>());
+        useDesired(prop.as<depth>());
       }
     } else if (prop.name == "desired format"){
       if(prop.as<std::string>() == "not used"){
-        ignoreDesired<format>();
+        ignoreDesiredFormat();
       } else {
-        useDesired<format>(prop.as<format>());
+        useDesired(prop.as<format>());
       }
     }else if (prop.name == "undistortion.enable"){
       data->undistortionEnabled = prop.as<bool>();

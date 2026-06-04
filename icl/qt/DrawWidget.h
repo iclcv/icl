@@ -74,7 +74,7 @@ void init(){
 
 void run(){
   static GenericGrabber g(pa("-input"));
-  g.setDesiredSizeInternal(utils::Size::VGA);
+  g.useDesired(utils::Size::VGA);
 
   // DrawHandle object draw provides direct access to the underlying
   // ICLDrawWidget by the 'operator->' i.e., it behaves like

@@ -41,7 +41,7 @@ void init(){
   grabber -> init(pa("-i"));
   grabber->useDesired(depth32f);
   grabber->useDesired(formatRGB);
-  grabber->useDesired<Size>(pa("-size"));
+  grabber->useDesired(utils::Size(pa("-size")));
 
   gui << Canvas().handle("image").minSize(32,24).label("image stream ")
       << ( VBox()

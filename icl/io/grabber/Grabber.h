@@ -24,20 +24,6 @@ namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
 namespace icl::io {
 /** \cond */
-namespace{
-template <class T> inline T grabber_get_null(){ return 0; }
-template <> inline core::format grabber_get_null<core::format>(){ return (core::format)-1; }
-template <> inline core::depth grabber_get_null<core::depth>(){ return (core::depth)-1; }
-template <> inline icl::utils::Size grabber_get_null<icl::utils::Size>(){ return icl::utils::Size::null; }
-
-struct grabber_get_xxx_dummy{
-  grabber_get_xxx_dummy(){
-    grabber_get_null<core::format>();
-    grabber_get_null<core::depth>();
-    grabber_get_null<icl::utils::Size>();
-  }
-};
-}
 template <class T> class GrabberHandle;
 class GenericGrabber;
 /** \endcond */
@@ -171,32 +157,42 @@ virtual ~Grabber();
 /// Grabs the next image and returns it as an Image value
 core::Image grabImage();
 
-/// returns whether the desired parameter for the given type is used
-/** This method is only available for the type core::depth,icl::utils::Size and core::format*/
-template<class T>
-bool desiredUsed() const{ return false; }
+/// @{ @name desired image parameters
 
-/// sets desired parameters (only available for core::depth,utils::Size and core::format)
-template<class T>
-void useDesired([[maybe_unused]] const T &t){}
-
-/// sets up the grabber to use all given desired parameters
+/// Override the depth that grab() returns; reset with ignoreDesiredDepth().
+void useDesired(core::depth d)             { setDesiredDepthInternal(d); }
+/// Override the size that grab() returns; reset with ignoreDesiredSize().
+void useDesired(const utils::Size &size)   { setDesiredSizeInternal(size); }
+/// Override the format that grab() returns; reset with ignoreDesiredFormat().
+void useDesired(core::format fmt)          { setDesiredFormatInternal(fmt); }
+/// Override all three params at once.
 void useDesired(core::depth d, const utils::Size &size, core::format fmt);
 
-/// set the grabber to ignore the desired param of type T
-/** This method is only available for core::depth,utils::Size and core::format */
-template<class T>
-void ignoreDesired() {
-  useDesired<T>(grabber_get_null<T>());
-}
+/// Returns the current desired depth (depth(-1) if not overridden).
+core::depth  getDesiredDepth()  const { return getDesiredDepthInternal();  }
+/// Returns the current desired size (Size::null if not overridden).
+utils::Size  getDesiredSize()   const { return getDesiredSizeInternal();   }
+/// Returns the current desired format (format(-1) if not overridden).
+core::format getDesiredFormat() const { return getDesiredFormatInternal(); }
 
-/// sets up the grabber to ignore all desired parameters
+/// True iff a desired depth has been set (i.e. not the sentinel).
+bool desiredDepthUsed()  const { return static_cast<int>(getDesiredDepth())  != -1; }
+/// True iff a desired size has been set.
+bool desiredSizeUsed()   const { return getDesiredSize() != utils::Size::null; }
+/// True iff a desired format has been set.
+bool desiredFormatUsed() const { return static_cast<int>(getDesiredFormat()) != -1; }
+
+/// Reset the depth override (subsequent grabs use the backend's native depth).
+void ignoreDesiredDepth()  { setDesiredDepthInternal(static_cast<core::depth>(-1)); }
+/// Reset the size override.
+void ignoreDesiredSize()   { setDesiredSizeInternal(utils::Size::null); }
+/// Reset the format override.
+void ignoreDesiredFormat() { setDesiredFormatInternal(static_cast<core::format>(-1)); }
+
+/// Reset all three overrides.
 void ignoreDesired();
 
-/// returns the desired value for the given type T
-/** This method is only available for core::depth,utils::Size and core::format */
-template<class T>
-T getDesired() const { return T(); }
+/// @}
 
 /// @}
 /// @{ @name static string conversion functions
@@ -311,19 +307,6 @@ private:
 void processPropertyChange(const utils::Configurable::Property &prop);
 
 };
-
-/** \cond */
-template<> inline void Grabber::useDesired<core::format>(const core::format &t) { setDesiredFormatInternal(t); }
-template<> inline void Grabber::useDesired<core::depth>(const core::depth &t) { setDesiredDepthInternal(t); }
-template<> inline void Grabber::useDesired<utils::Size>(const utils::Size &t) { setDesiredSizeInternal(t); }
-
-template<> inline core::depth Grabber::getDesired<core::depth>() const { return getDesiredDepthInternal(); }
-template<> inline utils::Size Grabber::getDesired<utils::Size>() const { return getDesiredSizeInternal(); }
-template<> inline core::format Grabber::getDesired<core::format>() const { return getDesiredFormatInternal(); }
-
-template<> inline bool Grabber::desiredUsed<core::format>() const{ return static_cast<int>(getDesired<core::format>()) != -1; }
-template<> inline bool Grabber::desiredUsed<core::depth>() const{ return static_cast<int>(getDesired<core::depth>()) != -1; }
-template<> inline bool Grabber::desiredUsed<utils::Size>() const{ return getDesired<utils::Size>() != utils::Size::null; }
 
 class ICLIO_API GrabberRegistry {
 public:

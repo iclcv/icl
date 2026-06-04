@@ -58,7 +58,7 @@ void init(){
   // grabber
   grabber = new GenericGrabber();
   grabber -> init(pa("-i"));
-  grabber->useDesired<Size>(pa("-size"));
+  grabber->useDesired(utils::Size(pa("-size")));
   grabber->useDesired(depth8u);
 }
 

@@ -68,7 +68,7 @@ void init(){
       << Show();
 
   grabber.init(pa("-i"));
-  grabber.useDesired<Size>(pa("-s"));
+  grabber.useDesired(utils::Size(pa("-s")));
   grabber.useDesired(formatGray);
 
 

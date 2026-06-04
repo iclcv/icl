@@ -47,10 +47,10 @@ std::vector<std::string> remove_size(const std::vector<std::string> &v){
 void init_grabber(){
   grabber.init(pa("-i"));
   if(pa("-depth")){
-    grabber.useDesired<depth>(pa("-depth"));
+    grabber.useDesired(core::depth(pa("-depth")));
   }
   if(pa("-format")){
-    grabber.useDesired<format>(pa("-format"));
+    grabber.useDesired(core::format(pa("-format")));
   }
   if(pa("-camera-config")){
     grabber.loadProperties(pa("-camera-config"));

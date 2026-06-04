@@ -235,54 +235,48 @@ namespace icl::io {
         m_poGrabber->removeAllCallbacks();
       }
 
-      /// returns whether the desired parameter for the given type is used
-      /** This method is only available for the type core::depth,icl::utils::Size and core::format*/
-      template<class T>
-      bool desiredUsed() const{
-        ICLASSERT_RETURN_VAL(!isNull(),false);
-        std::scoped_lock l(m_mutex);
-        return m_poGrabber->desiredUsed<T>();
-      }
+      /// @{ @name desired image parameters (forward to the wrapped backend)
 
-      /// sets desired parameters (only available for core::depth,utils::Size and core::format)
-      template<class T>
-      void useDesired(const T &t){
+      void useDesired(core::depth d) {
         ICLASSERT_RETURN(!isNull());
         std::scoped_lock l(m_mutex);
-        m_poGrabber->useDesired<T>(t);
+        m_poGrabber->useDesired(d);
       }
-
-      /// sets up the grabber to use all given desired parameters
+      void useDesired(const utils::Size &size) {
+        ICLASSERT_RETURN(!isNull());
+        std::scoped_lock l(m_mutex);
+        m_poGrabber->useDesired(size);
+      }
+      void useDesired(core::format fmt) {
+        ICLASSERT_RETURN(!isNull());
+        std::scoped_lock l(m_mutex);
+        m_poGrabber->useDesired(fmt);
+      }
       void useDesired(core::depth d, const utils::Size &size, core::format fmt){
         ICLASSERT_RETURN(!isNull());
         std::scoped_lock l(m_mutex);
         m_poGrabber->useDesired(d, size, fmt);
       }
 
-      /// set the grabber to ignore the desired param of type T
-      /** This method is only available for core::depth,utils::Size and core::format */
-      template<class T>
-      void ignoreDesired() {
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->ignoreDesired<T>();
-      }
+      core::depth  getDesiredDepth()  const { ICLASSERT_RETURN_VAL(!isNull(), core::depth(-1));   std::scoped_lock l(m_mutex); return m_poGrabber->getDesiredDepth();  }
+      utils::Size  getDesiredSize()   const { ICLASSERT_RETURN_VAL(!isNull(), utils::Size::null); std::scoped_lock l(m_mutex); return m_poGrabber->getDesiredSize();   }
+      core::format getDesiredFormat() const { ICLASSERT_RETURN_VAL(!isNull(), core::format(-1));  std::scoped_lock l(m_mutex); return m_poGrabber->getDesiredFormat(); }
 
-      /// sets up the grabber to ignore all desired parameters
+      bool desiredDepthUsed()  const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_mutex); return m_poGrabber->desiredDepthUsed();  }
+      bool desiredSizeUsed()   const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_mutex); return m_poGrabber->desiredSizeUsed();   }
+      bool desiredFormatUsed() const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_mutex); return m_poGrabber->desiredFormatUsed(); }
+
+      void ignoreDesiredDepth()  { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_mutex); m_poGrabber->ignoreDesiredDepth();  }
+      void ignoreDesiredSize()   { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_mutex); m_poGrabber->ignoreDesiredSize();   }
+      void ignoreDesiredFormat() { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_mutex); m_poGrabber->ignoreDesiredFormat(); }
+
       void ignoreDesired(){
         ICLASSERT_RETURN(!isNull());
         std::scoped_lock l(m_mutex);
         m_poGrabber->ignoreDesired();
       }
 
-      /// returns the desired value for the given type T
-      /** This method is only available for core::depth,utils::Size and core::format */
-      template<class T>
-      T getDesired() const {
-        ICLASSERT_RETURN_VAL(!isNull(), T());
-        std::scoped_lock l(m_mutex);
-        return m_poGrabber->getDesired<T>();
-      }
+      /// @}
 
       /// enables the undistorion
       void enableUndistortion(const std::string &filename){

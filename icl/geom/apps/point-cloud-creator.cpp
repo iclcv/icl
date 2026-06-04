@@ -62,8 +62,8 @@ void init_icl() {
              unit == "distToCamCenter" ? PointCloudCreator::DistanceToCamCenter :
              PointCloudCreator::DistanceToCamPlane) );
 
-  grabber_c.setDesiredSizeInternal(c_cam.getResolution());
-  grabber_d.setDesiredSizeInternal(d_cam.getResolution());
+  grabber_c.useDesired(c_cam.getResolution());
+  grabber_d.useDesired(d_cam.getResolution());
 
   // GUI
   gui << ( HBox()

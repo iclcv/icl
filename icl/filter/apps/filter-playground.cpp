@@ -237,12 +237,12 @@ void init(){
 }
 
 void run(){
-  grabber.useDesired<depth>(parse<depth>(gui["ddepth"]));
-  grabber.useDesired<format>(parse<format>(gui["dformat"]));
+  grabber.useDesired(core::depth(parse<depth>(gui["ddepth"])));
+  grabber.useDesired(core::format(parse<format>(gui["dformat"])));
   if(gui["dsize"].as<std::string>() == "1:1"){
     grabber.useDesired(Size::null);
   }else{
-    grabber.useDesired<Size>(parse<Size>(gui["dsize"]));
+    grabber.useDesired(utils::Size(parse<Size>(gui["dsize"])));
   }
 
   Image src = grabber.grabImage();

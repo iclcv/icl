@@ -144,7 +144,7 @@ void init(){
 
   grabber.init(pa("-i"));
   if(grabber.getType() != "file"){
-    grabber.useDesired<Size>(pa("-s"));
+    grabber.useDesired(utils::Size(pa("-s")));
     if(!pa("-color")){
       grabber.useDesired(formatGray);
     }else{

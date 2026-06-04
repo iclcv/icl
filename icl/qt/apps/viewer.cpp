@@ -26,7 +26,7 @@ void init(){
 
   grabber.init(pa("-i"));
   if(pa("-size")){
-    grabber.useDesired<Size>(pa("-size"));
+    grabber.useDesired(utils::Size(pa("-size")));
   }
 
 }

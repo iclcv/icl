@@ -33,7 +33,7 @@ void init(){
   canShowRegionCorners = (*pa("-m") == "bch" || *pa("-m") == "art");
 
   grabber.init(pa("-input"));
-  if(pa("-size")) grabber.useDesired<Size>(pa("-size"));
+  if(pa("-size")) grabber.useDesired(utils::Size(pa("-size")));
   grabber.useDesired(formatGray);
 
   gui << Canvas3D(pa("-size").as<Size>()).handle("draw").minSize(16,12)

@@ -247,10 +247,10 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
 
   virtual const ImgBase *acquireDisplay(){
     std::scoped_lock l(getMutex());
-    ICLASSERT_RETURN_VAL(getDesired<depth>() == depth8u,0);
+    ICLASSERT_RETURN_VAL(getDesiredDepth() == depth8u,0);
 
-    image.setSize(getDesired<Size>());
-    image.setFormat(getDesired<format>());
+    image.setSize(getDesiredSize());
+    image.setFormat(getDesiredFormat());
 
     image.clear();
 
