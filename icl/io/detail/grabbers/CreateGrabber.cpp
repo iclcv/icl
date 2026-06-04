@@ -12,24 +12,22 @@ using namespace icl::core;
 namespace icl::io {
   const ImgBase* CreateGrabber::acquireDisplay(){
     if(m_updateTimeStamp){
-      m_image -> setTime();
+      m_image.ptr()->setTime();
     }
-    return m_image;
+    return m_image.ptr();
   }
 
   CreateGrabber::CreateGrabber(const std::string &what){
     m_updateTimeStamp = true;
     m_image = TestImages::create(what);
-    if(!m_image) throw ICLException("unable to create a 'CreateGrabber' from given description '"+what+"'");
+    if(m_image.isNull()) throw ICLException("unable to create a 'CreateGrabber' from given description '"+what+"'");
     addProperty("format", prop::Info{}, "RGB", "");
     addProperty("size", prop::Info{}, "512x512", "");
     addProperty("update timestamp", prop::Flag{}, m_updateTimeStamp, "Whether the timestamp of the image should be set everytime an the image is grabbed.");
     registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
-  CreateGrabber::~CreateGrabber(){
-    ICL_DELETE(m_image);
-  }
+  CreateGrabber::~CreateGrabber() = default;
 
   void CreateGrabber::processPropertyChange(const utils::Configurable::Property &prop){
     if(prop.name == "update timestamp") {

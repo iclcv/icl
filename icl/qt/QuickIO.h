@@ -14,9 +14,6 @@ namespace icl::qt {
 
   /** @{ @name Image I/O (Quick2) */
 
-  /// Show an image using an external viewer
-  ICLQt_API void show(const core::Image &image);
-
   /// Print image parameters to stdout
   ICLQt_API void print(const core::Image &image);
 

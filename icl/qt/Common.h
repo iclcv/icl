@@ -17,5 +17,6 @@
 #include <mutex>
 #include <icl/io/file/FileWriter.h>
 #include <icl/io/SaveLoad.h>
+#include <icl/io/ExternalViewer.h>
 #include <icl/core/cc/Color.h>
 #include <icl/core/Image.h>

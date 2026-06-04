@@ -6,18 +6,17 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/plugin/PluginRegistry.h>
-#include <icl/core/Img.h>
+#include <icl/core/Image.h>
 #include <string>
 
 namespace icl::io {
   /// Process-wide registry of test-image factories keyed by name.
-  /** Each factory returns a freshly-allocated `Img8u*` owned by the
-      caller.  The built-in images (lena, parrot, cameraman, …) self-
-      register at static-init time via `REGISTER_TEST_IMAGE` — new
-      images drop in the same way, and `TestImages::create` /
-      `CreateGrabber` pick them up automatically with no edits to
-      either. */
-  using TestImageRegistry = utils::FunctionPluginRegistry<core::Img8u*()>;
+  /** Each factory returns a freshly-created `core::Image`.  The built-in
+      images (lena, parrot, cameraman, …) self-register at static-init
+      time via `REGISTER_TEST_IMAGE` — new images drop in the same way,
+      and `TestImages::create` / `CreateGrabber` pick them up
+      automatically with no edits to either. */
+  using TestImageRegistry = utils::FunctionPluginRegistry<core::Image()>;
   ICLIO_API TestImageRegistry& testImageRegistry();
 
   /// Utility class for creating test images \ingroup UTILS_G
@@ -26,87 +25,48 @@ namespace icl::io {
       tree and house. */
   class ICLIO_API TestImages{
     public:
-    /// creates a new testimage instance
+    /// Creates a test image at the given size, format and depth.
     /** @param name name identifier of the image (see testImageRegistry().keys())
         @param size destination size of the image
         @param f core::format of the image
         @param d core::depth of the image
-        @return new image (ownership is passed to the caller!)
-    */
-    static core::ImgBase* create(const std::string& name,
-                                 const utils::Size &size,
-                                 core::format f=core::formatRGB,
-                                 core::depth d=core::depth8u);
+        @return new Image (null on unknown name) */
+    static core::Image create(const std::string& name,
+                              const utils::Size &size,
+                              core::format f = core::formatRGB,
+                              core::depth d = core::depth8u);
 
-    /// creats testimages in original size
+    /// Creates a test image at its native size.
     /** @param name name identifier of the image
         @param f core::format of the image
         @param d core::depth of the image
-        @return new image (ownership is passed to the caller!)
-    **/
-    static core::ImgBase *create(const std::string& name,
-                                 core::format f=core::formatRGB,
-                                 core::depth d=core::depth8u);
+        @return new Image (null on unknown name) */
+    static core::Image create(const std::string& name,
+                              core::format f = core::formatRGB,
+                              core::depth d = core::depth8u);
 
-    /// writes the image to the disc an shows it using xv.
-    /** @param image image to write and to show
-        @param tmpName temporary filename for this image
-        @param msec_to_rm_call this time in msec is waited for
-                               xv to come up and to read the tmp image
-    **/
-    static void xv(const core::ImgBase *image,
-                   const std::string& tmpName="./tmp_image.ppm",
-                   long msec_to_rm_call=1000);
-
-    /// writes the image to the hard disk and show it using the given shell command
-    /** @param image image to show
-        @param showCommand command to visualize the image. As default, the iclxv
-                           viewer of the ICLQt package is used. Enshure, that
-                           at least a link to this viewer is available in your path
-                           variable. A temporarily created filename (composed of
-                           a prefix, a current-system-time-body and a file name
-                           postfix is inserted where the %s token is found
-        @param msec_to_rm_call when showing images using other image viewers,
-                               the temporarily created image must be deleted when
-                               the extern editor has read the image. This value
-                               determines how many milliseconds should be waited
-                               before the rmCommand is called.
-        @param rmCommand command to remove the temporary image (something like
-                         "rm -rf %s" */
-    static void show(const core::ImgBase *image,
-                     const std::string &showCommand="icl-xv -input %s -delete",
-                     long msec_to_rm_call=0,
-                     const std::string &rmCommand="");
     private:
-    /// internal creation funtion for image
-    static core::Img8u *internalCreate(const std::string &name);
+    /// internal factory lookup, returns a null Image on miss
+    static core::Image internalCreate(const std::string &name);
   };
 
-  /// shortcurt function to create the "parrot"-image
-  /** @return new image (ownership is passed to the caller!) */
-  ICLIO_API core::ImgBase *createImage_parrot();
+  /// shortcut function to create the "parrot"-image
+  ICLIO_API core::Image createImage_parrot();
 
-  /// shortcurt function to create the "windows"-image
-  /** @return new image (ownership is passed to the caller!) */
-  ICLIO_API core::ImgBase *createImage_windows();
+  /// shortcut function to create the "windows"-image
+  ICLIO_API core::Image createImage_windows();
 
-  /// shortcurt function to create the "flowers"-image
-  /** @return new image (ownership is passed to the caller!) */
-  ICLIO_API core::ImgBase *createImage_flowers();
+  /// shortcut function to create the "flowers"-image
+  ICLIO_API core::Image createImage_flowers();
 
-  /// shortcurt function to create the famous "lena"-image
-  /** @return new image (ownership is passed to the caller!) */
-  ICLIO_API core::ImgBase *createImage_lena();
+  /// shortcut function to create the famous "lena"-image
+  ICLIO_API core::Image createImage_lena();
 
-  /// shortcurt function to create the famous "cameraman"-image
-  /** @return new image (ownership is passed to the caller!) */
-  ICLIO_API core::ImgBase *createImage_cameraman();
+  /// shortcut function to create the famous "cameraman"-image
+  ICLIO_API core::Image createImage_cameraman();
 
-  /// shortcurt function to create the "mandril"-image
-  /** @return new image (ownership is passed to the caller!) */
-  ICLIO_API core::ImgBase *createImage_mandril();
-
-
+  /// shortcut function to create the "mandril"-image
+  ICLIO_API core::Image createImage_mandril();
 
   } // namespace icl::io
 
@@ -114,10 +74,9 @@ namespace icl::io {
 /** Use exactly once per name, at the bottom of a .cpp that defines the
     factory body:
     \code
-      REGISTER_TEST_IMAGE(lena, []{
-        return createImage_lena()->asImg<icl::icl8u>();
-      });
-    \endcode */
-#define REGISTER_TEST_IMAGE(NAME, FACTORY_LAMBDA)                              \
+      REGISTER_TEST_IMAGE(lena, createImage_lena);
+    \endcode
+    The factory must be invocable as `core::Image()`. */
+#define REGISTER_TEST_IMAGE(NAME, FACTORY)                                     \
   ICL_REGISTER_PLUGIN(::icl::io::testImageRegistry(),                          \
-                      NAME, #NAME, FACTORY_LAMBDA)
+                      NAME, #NAME, FACTORY)

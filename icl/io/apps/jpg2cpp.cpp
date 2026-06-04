@@ -106,13 +106,13 @@ int main(int n, char **ppc){
   }
   printf("\n};\n// }}}\n\n}//end namespace\n");
 
-  printf("ImgBase* createImage_%s(){\n",imageName.c_str());
+  printf("core::Image createImage_%s(){\n",imageName.c_str());
   printf("  // {{{ open\n");
-  printf("  static ImgBase *image = 0;\n"
-         "  if(image) return image->deepCopy();\n"
+  printf("  static core::Image cached;\n"
+         "  if(!cached.isNull()) return cached.deepCopy();\n"
          "  FILE *f = fopen(\"./.tmp_image_buffer.jpg\",\"wb\");\n"
          "  const int DIM = NROWS*NCOLS+NEXTRA;\n"
-         "  char *buf= new char[DIM];\n"
+         "  char *buf = new char[DIM];\n"
          "  int j=0;\n"
          "  for(int i=0;i<NROWS;++i){\n"
          "     for(int k=0;k<NCOLS;k++,j++){\n"
@@ -125,17 +125,17 @@ int main(int n, char **ppc){
          "  fwrite(buf,1,DIM,f);\n"
          "  fclose(f);\n"
          "  delete [] buf;\n"
-         "  image = FileGrabber(\"./.tmp_image_buffer.jpg\",false,true).grabImage().ptr();\n"
+         "  cached = FileGrabber(\"./.tmp_image_buffer.jpg\",false,true).grabImage();\n"
          "  remove(\"./.tmp_image_buffer.jpg\");\n"
-         "  return image->deepCopy();\n"
+         "  return cached.deepCopy();\n"
          "}\n// }}}\n\n",arrayName.c_str(),extraArrayName.c_str());
 
   printf("} // end namespace icl\n\n\n");
 
   printf("!!! put this into the header file:\n"
-         "namespace icl{\n"
+         "namespace icl::io{\n"
          "  /// Create the image named %s\n"
-         "  ImgBase *createImage_%s();\n"
+         "  core::Image createImage_%s();\n"
          "}\n\n",imageName.c_str(),imageName.c_str());
 
 }

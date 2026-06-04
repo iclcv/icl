@@ -5164,9 +5164,9 @@ namespace icl::io {
     };
 
   }//end namespace
-  ImgBase* createImage_lena(){
-    static ImgBase *image = 0;
-    if(image) return image->deepCopy();
+  core::Image createImage_lena(){
+    static core::Image cached;
+    if(!cached.isNull()) return cached.deepCopy();
     const int DIM = NROWS*NCOLS+NEXTRA;
     std::vector<unsigned char> buf(DIM);
     int j=0;
@@ -5178,9 +5178,11 @@ namespace icl::io {
     for(int i=0;i<NEXTRA;i++,j++){
       buf[j] = auc_ExtraData_lena[i];
     }
-    JPEGDecoder::decode(buf.data(), DIM, &image);
-    return image->deepCopy();
+    core::ImgBase *raw = 0;
+    JPEGDecoder::decode(buf.data(), DIM, &raw);
+    cached = core::Image(raw);
+    return cached.deepCopy();
   }
 
-  REGISTER_TEST_IMAGE(lena, []{ return createImage_lena()->asImg<icl8u>(); })
+  REGISTER_TEST_IMAGE(lena, createImage_lena)
   } // namespace icl::io

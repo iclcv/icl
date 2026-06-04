@@ -1127,9 +1127,9 @@ namespace icl::io {
     };
 
   }//end namespace
-  ImgBase* createImage_parrot(){
-    static ImgBase *image = 0;
-    if(image) return image->deepCopy();
+  core::Image createImage_parrot(){
+    static core::Image cached;
+    if(!cached.isNull()) return cached.deepCopy();
     const int DIM = NROWS*NCOLS+NEXTRA;
     std::vector<unsigned char> buf(DIM);
     int j=0;
@@ -1141,9 +1141,11 @@ namespace icl::io {
     for(int i=0;i<NEXTRA;i++,j++){
       buf[j] = auc_ExtraData_parrot[i];
     }
-    JPEGDecoder::decode(buf.data(), DIM, &image);
-    return image->deepCopy();
+    core::ImgBase *raw = 0;
+    JPEGDecoder::decode(buf.data(), DIM, &raw);
+    cached = core::Image(raw);
+    return cached.deepCopy();
   }
 
-  REGISTER_TEST_IMAGE(parrot, []{ return createImage_parrot()->asImg<icl8u>(); })
+  REGISTER_TEST_IMAGE(parrot, createImage_parrot)
   } // namespace icl::io

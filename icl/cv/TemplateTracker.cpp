@@ -8,7 +8,7 @@
 #include <icl/filter/conv/ProximityOp.h>
 #include <icl/filter/affine/RotateOp.h>
 //#include <icl/qt/Quick2.h>
-#include <icl/io/TestImages.h>
+#include <icl/io/ExternalViewer.h>
 
 
 namespace icl{
@@ -117,7 +117,7 @@ namespace icl{
         }
       }
       r.setFullROI();
-      io::TestImages::show(&r);
+      io::show(r);
 
     }
 

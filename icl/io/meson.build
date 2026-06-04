@@ -8,6 +8,7 @@
 # from inside the source tree.
 io_public_headers = files(
   'IO.h',
+  'ExternalViewer.h',
   'SaveLoad.h',
   'TestImages.h',
 )
@@ -43,6 +44,7 @@ io_sources = files(
   'file/FileWriter.cpp',
   'file/FilenameGenerator.cpp',
   'compress/ImageCompressor.cpp',
+  'ExternalViewer.cpp',
   'SaveLoad.cpp',
   'TestImages.cpp',
 )

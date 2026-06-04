@@ -10,15 +10,7 @@
 #include <map>
 #include <icl/core/Img.h>
 #include <icl/utils/Size.h>
-#include <icl/io/file/FileWriter.h>
-#include <stdlib.h>
 #include <charconv>
-#include <icl/utils/time/Time.h>
-#include <icl/utils/thread/Thread.h>
-
-#ifndef ICL_SYSTEM_WINDOWS
-  #include <unistd.h>
-#endif
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -419,7 +411,7 @@ namespace {
     return oTokens;
   }
 
-  Img8u *read_xpm(const char **p){
+  icl::core::Image read_xpm(const char **p){
 
   // header
   strvec headA = tokenize(*p++," ");
@@ -444,10 +436,10 @@ namespace {
   }
 
   // creating image
-  Img8u *image = new Img8u(Size(w,h),formatRGB);
-  Img8u::iterator it[3] = {  image->begin(0),
-                             image->begin(1),
-                             image->begin(2)  };
+  icl::core::Image image(Size(w,h), depth8u, 3);
+  image.ptr()->setFormat(formatRGB);
+  Img8u &im = image.as8u();
+  Img8u::iterator it[3] = { im.begin(0), im.begin(1), im.begin(2) };
 
   // paring image content
   for(int y=0;y<h;y++){
@@ -469,17 +461,17 @@ namespace icl::io {
     return r;
   }
 
-  Img8u *TestImages::internalCreate(const std::string &name){
+  Image TestImages::internalCreate(const std::string &name){
     try{
       const auto *entry = testImageRegistry().get(name);
       if(!entry){
         ERROR_LOG("TestImage " << name << " not found!");
-        return 0;
+        return Image();
       }
       return entry->payload();
     }catch(ICLException &ex){
       ERROR_LOG("an exception occured while creating image: \""<< ex.what() << "\"");
-      return 0;
+      return Image();
     }
   }
 
@@ -489,122 +481,31 @@ namespace icl::io {
   REGISTER_TEST_IMAGE(tree,  []{ return read_xpm(ppc_tree_xpm);  })
   REGISTER_TEST_IMAGE(house, []{ return read_xpm(ppc_house_xpm); })
 
-  ImgBase* TestImages::create(const std::string& name, format f, depth d){
+  Image TestImages::create(const std::string& name, format f, depth d){
+    Image src = internalCreate(name);
+    if(src.isNull()) return src;
 
-    Img8u *src = internalCreate(name);
-    if(!src) return 0;
+    src.ptr()->setTime();
 
-    src -> setTime();
+    if(src.getDepth() == d && src.getFormat() == f) return src;
 
-    if(src->getDepth() != d || src->getFormat() != f){
-      ImgBase *dst = imgNew(d,src->getSize(),f);
-      Converter(src,dst);
-      delete src;
-      return dst;
-    }else{
-      return src;
-    }
+    Image dst(src.getSize(), d, getChannelsOfFormat(f));
+    dst.ptr()->setFormat(f);
+    Converter(src.ptr(), dst.ptr());
+    return dst;
   }
 
+  Image TestImages::create(const std::string& name, const Size& size, format f, depth d){
+    Image src = internalCreate(name);
+    if(src.isNull()) return src;
+    src.ptr()->setFullROI();
 
+    if(src.getDepth() == d && src.getFormat() == f && src.getSize() == size) return src;
 
-  ImgBase* TestImages::create(const std::string& name, const Size& size,format f, depth d){
-
-    Img8u *src = internalCreate(name);
-    src->setFullROI();
-    if(!src) return 0;
-
-    if(src->getDepth() != d || src->getFormat() != f || src->getSize() != size ){
-      ImgBase *dst = imgNew(d,size,f);
-      Converter(src,dst);
-      delete src;
-      return dst;
-    }else{
-      return src;
-    }
+    Image dst(size, d, getChannelsOfFormat(f));
+    dst.ptr()->setFormat(f);
+    Converter(src.ptr(), dst.ptr());
+    return dst;
   }
-
-
-
-  void TestImages::show(const ImgBase *image,
-                        const std::string &showCommand,
-                        long msec_to_rm_call,
-                        const std::string &rmCommand){
-
-    ICLASSERT_RETURN(image);
-
-    std::string timeStr = Time::now().toString();
-    for(unsigned int i=0;i<timeStr.length();i++){
-      if(timeStr[i]=='/') timeStr[i]='_';
-      if(timeStr[i]==' ') timeStr[i]='_';
-      if(timeStr[i]==':') timeStr[i]='_';
-    }
-
-    std::string postfix = ".bicl"; // NO-NO-NO! ppm is 8Bit only image->getChannels() == 3 ? ".ppm" : ".pgm";
-    std::string name = std::string(".tmpImage.")+timeStr+postfix;
-    try{
-      FileWriter(name).write(image);
-    }catch(FileOpenException &){
-      ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
-      ERROR_LOG("                      image file in the current working directory)");
-      return;
-    }catch(ICLException &){
-      ERROR_LOG("unable to show image (image could not be written to a temporary file)");
-      return;
-    }
-
-    char showCommandStr[500];
-    snprintf(showCommandStr,sizeof(showCommandStr),showCommand.c_str(),name.c_str());
-
-    char rmCommandStr[500];
-    snprintf(rmCommandStr,sizeof(rmCommandStr),rmCommand.c_str(),name.c_str());
-
-    int errorCode = system((std::string(showCommandStr)+" &").c_str());
-    if ( errorCode != 0 )
-      WARNING_LOG( "Error code of system call unequal 0!" );
-
-    if(std::string(rmCommand).length()){
-      #ifndef ICL_SYSTEM_WINDOWS
-      usleep(1000*msec_to_rm_call);
-      #else
-      //TODO where is this function located
-      //sleep(1000*msec_to_rm_call);
-      #endif
-      errorCode = system((std::string(rmCommandStr)+" &").c_str());
-      if ( errorCode != 0 )
-        WARNING_LOG( "Error code of system call unequal 0!" );
-    }
-  }
-
-void TestImages::xv(const ImgBase *image, const std::string& nameIn, long msec){
-    std::string name = nameIn;
-    if(image->getChannels() != 3){
-      name+=".pgm";
-    }
-    try{
-      FileWriter(name).write(image);
-    }catch(FileOpenException &){
-      ERROR_LOG("unable to show image (invalid permissions to write a temporary\n");
-      ERROR_LOG("                      image file in the current working directory)");
-      return;
-    }catch(ICLException &){
-      ERROR_LOG("unable to show image (image could not be written to a temporary file)");
-      return;
-    }
-
-    int errorCode = system(std::string("xv ").append(name).append(" &").c_str());
-    if ( errorCode != 0 )
-      WARNING_LOG( "Error code of system call unequal 0!" );
-    //#ifndef ICL_SYSTEM_WINDOWS
-    Thread::msleep(msec);
-    //#else
-    //TODO where is this function located
-    //sleep(msec*10000);
-    //#endif
-    errorCode = system(std::string(ICL_SYSTEMCALL_RM).append(name).c_str());
-    if ( errorCode != 0 )
-      WARNING_LOG( "Error code of system call unequal 0!" );
-  }
-
 
   } // namespace icl::io

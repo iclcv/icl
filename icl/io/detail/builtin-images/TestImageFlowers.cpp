@@ -1563,9 +1563,9 @@ namespace icl::io {
   };
 
   }//end namespace
-  ImgBase* createImage_flowers(){
-    static ImgBase *image = 0;
-    if(image) return image->deepCopy();
+  core::Image createImage_flowers(){
+    static core::Image cached;
+    if(!cached.isNull()) return cached.deepCopy();
     const int DIM = NROWS*NCOLS+NEXTRA;
     std::vector<unsigned char> buf(DIM);
     int j=0;
@@ -1577,9 +1577,11 @@ namespace icl::io {
     for(int i=0;i<NEXTRA;i++,j++){
       buf[j] = auc_ExtraData_flowers[i];
     }
-    JPEGDecoder::decode(buf.data(), DIM, &image);
-    return image->deepCopy();
+    core::ImgBase *raw = 0;
+    JPEGDecoder::decode(buf.data(), DIM, &raw);
+    cached = core::Image(raw);
+    return cached.deepCopy();
   }
 
-  REGISTER_TEST_IMAGE(flowers, []{ return createImage_flowers()->asImg<icl8u>(); })
+  REGISTER_TEST_IMAGE(flowers, createImage_flowers)
   } // namespace icl::io

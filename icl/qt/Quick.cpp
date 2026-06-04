@@ -5,6 +5,7 @@
 #include <icl/qt/Quick.h>
 #include <icl/io/file/FileGrabber.h>
 #include <icl/io/TestImages.h>
+#include <icl/io/ExternalViewer.h>
 #include <icl/core/convert/Converter.h>
 
 #include <icl/io/grabber/GenericGrabber.h>
@@ -562,13 +563,12 @@ namespace icl::qt {
     template<class T>
     Img<T> create(const std::string &name, format fmt){
       depth d = getDepth<T>();
-      Img<T> *image = TestImages::create(name,fmt,d)->asImg<T>();
-      if(!image){
+      Image image = TestImages::create(name,fmt,d);
+      if(image.isNull()){
         ERROR_LOG("unable to create test image: \"" << name << "\"");
         return Img<T>();
       }
-      Img<T> im = *image;
-      delete image;
+      Img<T> im = image.as<T>();
       return im;
     }
 
@@ -847,14 +847,14 @@ namespace icl::qt {
         if(image.getFormat()==formatMatrix && image.getChannels()==1){
           Img<T> tmp = image;
           tmp.setFormat(formatGray);
-          TestImages::show(&tmp,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+          io::show(Image(tmp),g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
         }else if(image.getFormat() == formatMatrix && image.getChannels()==3){
           Img<T> tmp = image;
           tmp.setFormat(formatRGB);
 
-          TestImages::show(&tmp,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+          io::show(Image(tmp),g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
         }else{
-          TestImages::show(&image,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+          io::show(Image(image),g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
         }
       }else{
         Img<T> Ti = copy(image);
@@ -875,7 +875,7 @@ namespace icl::qt {
         restoreColorAndFill();
         Ti.setFullROI();
 
-        TestImages::show(&Ti,g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
+        io::show(Image(Ti),g_sShowCommand, g_iMsecBeforeDelete,g_sRmCommand);
       }
     }
 

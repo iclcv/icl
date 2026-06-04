@@ -8,6 +8,7 @@
 #include <icl/utils/time/Time.h>
 #include <icl/utils/Size.h>
 #include <icl/core/cc/Color.h>
+#include <icl/core/Image.h>
 
 #include <icl/io/grabber/Grabber.h>
 
@@ -31,7 +32,7 @@ namespace icl::io {
     private:
 
       /// internal image
-      core::ImgBase *m_image;
+      core::Image m_image;
       /// tells whether timestamp is actualized on each grab
       bool m_updateTimeStamp;
 

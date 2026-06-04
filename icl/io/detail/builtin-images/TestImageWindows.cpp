@@ -236,9 +236,9 @@ namespace icl::io {
     };
 
   }//end namespace
-  ImgBase* createImage_windows(){
-    static ImgBase *image = 0;
-    if(image) return image->deepCopy();
+  core::Image createImage_windows(){
+    static core::Image cached;
+    if(!cached.isNull()) return cached.deepCopy();
     const int DIM = NROWS*NCOLS+NEXTRA;
     std::vector<unsigned char> buf(DIM);
     int j=0;
@@ -250,9 +250,11 @@ namespace icl::io {
     for(int i=0;i<NEXTRA;i++,j++){
       buf[j] = auc_ExtraData_windows[i];
     }
-    JPEGDecoder::decode(buf.data(), DIM, &image);
-    return image->deepCopy();
+    core::ImgBase *raw = 0;
+    JPEGDecoder::decode(buf.data(), DIM, &raw);
+    cached = core::Image(raw);
+    return cached.deepCopy();
   }
 
-  REGISTER_TEST_IMAGE(windows, []{ return createImage_windows()->asImg<icl8u>(); })
+  REGISTER_TEST_IMAGE(windows, createImage_windows)
   } // namespace icl::io

@@ -2209,9 +2209,9 @@ unsigned char auc_ExtraData_cameraman[NEXTRA] = {
 };
 
 }//end namespace
-  ImgBase* createImage_cameraman(){
-    static ImgBase *image = 0;
-    if(image) return image->deepCopy();
+  core::Image createImage_cameraman(){
+    static core::Image cached;
+    if(!cached.isNull()) return cached.deepCopy();
     const int DIM = NROWS*NCOLS+NEXTRA;
     std::vector<unsigned char> buf(DIM);
     int j=0;
@@ -2223,9 +2223,11 @@ unsigned char auc_ExtraData_cameraman[NEXTRA] = {
     for(int i=0;i<NEXTRA;i++,j++){
       buf[j] = auc_ExtraData_cameraman[i];
     }
-    JPEGDecoder::decode(buf.data(), DIM, &image);
-    return image->deepCopy();
+    core::ImgBase *raw = 0;
+    JPEGDecoder::decode(buf.data(), DIM, &raw);
+    cached = core::Image(raw);
+    return cached.deepCopy();
   }
 
-  REGISTER_TEST_IMAGE(cameraman, []{ return createImage_cameraman()->asImg<icl8u>(); })
+  REGISTER_TEST_IMAGE(cameraman, createImage_cameraman)
   } // namespace icl::io
