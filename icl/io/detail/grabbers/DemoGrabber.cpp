@@ -89,7 +89,7 @@ namespace icl::io {
     t.transform([](float v){ return v * 0.99f; },t);
   }
 
-  const ImgBase* DemoGrabber::acquireDisplay(){
+  const ImgBase* DemoGrabber::acquireImage(){
     std::scoped_lock __lock(m_mutex);
     ensureCompatible(&m_drawBuffer,m_drawDepth,m_drawSize,m_drawFormat);
 

@@ -156,7 +156,7 @@ void PylonGrabber::cameraDefaultSettings(){
   //(m_Camera, "GevSCPSPacketSize", 8192);
 }
 
-const core::ImgBase* PylonGrabber::acquireDisplay(){
+const core::ImgBase* PylonGrabber::acquireImage(){
   core::ImgBase* ret = nullptr;
   int counter = 0;
   while(1){

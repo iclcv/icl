@@ -168,7 +168,7 @@ namespace icl::io {
 
 
 
-  const ImgBase* PixelSenseGrabber::acquireDisplay(){
+  const ImgBase* PixelSenseGrabber::acquireImage(){
     std::scoped_lock __lock(m_data->mutex);
 
     ps_get_image( m_data->s40, m_data->image.begin(0) );

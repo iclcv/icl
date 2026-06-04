@@ -34,7 +34,7 @@ namespace icl::io {
     return ret;
   }
 
-  const ImgBase *OpenCVVideoGrabber::acquireDisplay(){
+  const ImgBase *OpenCVVideoGrabber::acquireImage(){
     std::scoped_lock l(mutex);
     ICLASSERT_RETURN_VAL( !(data->cvc==nullptr), 0);
     cv::Mat frame;

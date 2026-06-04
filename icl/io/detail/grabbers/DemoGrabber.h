@@ -20,7 +20,7 @@ namespace icl::io {
   class ICLIO_API DemoGrabber : public Grabber{
     public:
       /// default grab function
-      virtual const core::ImgBase* acquireDisplay();
+      virtual const core::ImgBase* acquireImage();
 
       /// Create a DemoGrabber with given max. fps count
       DemoGrabber(float maxFPS=30);

@@ -33,7 +33,7 @@ namespace icl::io {
       ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
 
       /// grab an undistorted image
-      ICLIO_API const core::ImgBase *acquireDisplay();
+      ICLIO_API const core::ImgBase *acquireImage();
 
       /// Internally used utility function, that might be interesting elsewhere
       ICLIO_API static float getMaxRangeMM(const std::string &modulationFreq);

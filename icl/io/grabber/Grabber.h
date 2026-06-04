@@ -278,13 +278,11 @@ virtual void notifyNewImageAvailable(const core::ImgBase *image);
 protected:
 
 
-/// main interface method, that is implemented by the actual grabber instances
-/** This method is defined in the grabber implementation. It acquires a new image
-   using the grabbers specific image acquisition back-end */
-virtual const core::ImgBase *acquireImage(){ return acquireDisplay(); }
-
-/// Legacy name for acquireImage (override this OR acquireImage in subclasses)
-virtual const core::ImgBase *acquireDisplay(){ return nullptr; }
+/// Main interface method, implemented by every Grabber backend.
+/** Acquires a new image using the backend's image acquisition path.
+    Called by grab() under m_grabMutex; backends may return an internal
+    buffer whose lifetime extends until the next acquireImage() call. */
+virtual const core::ImgBase *acquireImage() = 0;
 
 /// Utility function that allows for much easier implementation of grabUD
 /** called by the grabbers grab() method **/

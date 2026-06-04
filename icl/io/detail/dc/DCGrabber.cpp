@@ -41,7 +41,7 @@ namespace icl::io {
   }
 
 
-  const ImgBase *DCGrabber::acquireDisplay(){
+  const ImgBase *DCGrabber::acquireImage(){
     ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
     std::scoped_lock l(m_GrabberThreadMutex);
     if(!m_poGT){

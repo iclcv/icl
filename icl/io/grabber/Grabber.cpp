@@ -329,7 +329,12 @@ namespace icl::io {
     }
   }
 
-  REGISTER_CONFIGURABLE_DEFAULT(Grabber);
+  // Grabber is abstract (acquireImage() is pure); register a thin dummy
+  // subclass so the Configurable type list still has an entry.
+  struct Grabber_VIRTUAL : public Grabber {
+    const ImgBase *acquireImage() override { return nullptr; }
+  };
+  REGISTER_CONFIGURABLE_DEFAULT(Grabber_VIRTUAL);
 
   GrabberRegistry* GrabberRegistry::getInstance(){
     static GrabberRegistry inst;

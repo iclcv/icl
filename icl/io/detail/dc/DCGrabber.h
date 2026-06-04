@@ -82,7 +82,7 @@ namespace icl::io {
 
       /// grab function grabs an image (destination image is adapted on demand)
       /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
-      ICLIO_API virtual const core::ImgBase *acquireDisplay();
+      ICLIO_API virtual const core::ImgBase *acquireImage();
 
       /// Returns a list of all connected DCDevices
       ICLIO_API static std::vector<DCDevice> getDCDeviceList(bool resetBusFirst=false);

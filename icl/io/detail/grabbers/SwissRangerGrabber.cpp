@@ -432,7 +432,7 @@ namespace icl::io {
     return unitFactor * maxRange;
   }
 
-  const ImgBase *SwissRangerGrabber::acquireDisplay(){
+  const ImgBase *SwissRangerGrabber::acquireImage(){
     std::scoped_lock l(m_mutex);
     SR_Acquire(m_sr->cam);
     Time captureTime = Time::now();

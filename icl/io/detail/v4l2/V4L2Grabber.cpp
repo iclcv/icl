@@ -457,7 +457,7 @@ namespace icl::io {
         if(image) image->setTime(t);
       }
 
-      const ImgBase *acquireDisplay(){
+      const ImgBase *acquireImage(){
         std::scoped_lock lock(mutex);
         while(!image || (avoidDoubleFrames && lastTime == image->getTime())){
           mutex.unlock();
@@ -680,10 +680,10 @@ namespace icl::io {
     delete impl;
   }
 
-  const ImgBase *V4L2Grabber::acquireDisplay(){
+  const ImgBase *V4L2Grabber::acquireImage(){
     std::scoped_lock lock(implMutex);
     const ImgBase *image = 0;
-    do{ image = impl->acquireDisplay(); } while(!image || !image->getDim() );
+    do{ image = impl->acquireImage(); } while(!image || !image->getDim() );
     return image;
   }
 

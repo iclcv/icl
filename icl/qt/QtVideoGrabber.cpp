@@ -26,7 +26,7 @@ namespace icl::qt {
       delete surface;
     }
 
-    const core::ImgBase *QtVideoGrabber::acquireDisplay() {
+    const core::ImgBase *QtVideoGrabber::acquireImage() {
       return surface->getDisplay();
     }
 

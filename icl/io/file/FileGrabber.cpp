@@ -249,7 +249,7 @@ namespace icl::io {
     }
 
 
-    const ImgBase *FileGrabber::acquireDisplay(){
+    const ImgBase *FileGrabber::acquireImage(){
       try{
         const ImgBase* img = grabDisplay();
         updateProperties(img);

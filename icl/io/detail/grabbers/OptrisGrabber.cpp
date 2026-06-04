@@ -306,7 +306,7 @@ namespace icl{
       return all;
     }
 
-    const core::ImgBase* OptrisGrabber::acquireDisplay(){
+    const core::ImgBase* OptrisGrabber::acquireImage(){
       bool omitDoubledFrames = prop("omit doubled frames").value;
 
       std::scoped_lock lock(m_data->buffer.mutex);

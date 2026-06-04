@@ -21,7 +21,7 @@ namespace icl::io {
     public:
 
       /// default grab function
-      virtual const core::ImgBase* acquireDisplay();
+      virtual const core::ImgBase* acquireImage();
 
       /// Create a CreateGrabber with given max. fps count
       CreateGrabber(const std::string &what);

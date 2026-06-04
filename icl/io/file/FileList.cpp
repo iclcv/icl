@@ -20,7 +20,6 @@ using namespace icl::utils;
 namespace icl::io {
   namespace{
     inline void replace_newline (std::string::value_type& c) {
-
       if (c == '\n') c = ' ';
     }
 

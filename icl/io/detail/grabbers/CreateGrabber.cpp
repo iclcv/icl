@@ -10,7 +10,7 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  const ImgBase* CreateGrabber::acquireDisplay(){
+  const ImgBase* CreateGrabber::acquireImage(){
     if(m_updateTimeStamp){
       m_image.ptr()->setTime();
     }

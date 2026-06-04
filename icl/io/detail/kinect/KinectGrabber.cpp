@@ -655,7 +655,7 @@ namespace icl::io {
     FreenectContext::getFreenectContext().stop();
   }
 
-  const ImgBase* KinectGrabber::acquireDisplay(){
+  const ImgBase* KinectGrabber::acquireImage(){
     std::scoped_lock lock(m_impl->mutex);
     // update current angle and accelometers every 200ms
     if(m_impl -> lastupdate.age() > 200000){

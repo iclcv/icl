@@ -42,7 +42,7 @@ namespace icl::io {
     ICL_DELETE(m_buffer);
   }
 
-  const ImgBase *OpenCVCamGrabber::acquireDisplay(){
+  const ImgBase *OpenCVCamGrabber::acquireImage(){
     ICLASSERT_RETURN_VAL( !(cvc==0), 0);
     cv::Mat frame;
     cvc->read(frame);

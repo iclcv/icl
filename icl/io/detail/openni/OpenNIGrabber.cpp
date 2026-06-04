@@ -111,7 +111,7 @@ OpenNIGrabber::~OpenNIGrabber(){
   ICL_DELETE(m_Buffer);
 }
 
-const ImgBase* OpenNIGrabber::acquireDisplay(){
+const ImgBase* OpenNIGrabber::acquireImage(){
   Time t = Time::now();
   // get image from buffer
   ImgBase* img = nullptr;

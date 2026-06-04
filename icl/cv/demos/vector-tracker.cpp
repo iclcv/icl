@@ -245,7 +245,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
     }
   }
 
-  virtual const ImgBase *acquireDisplay(){
+  virtual const ImgBase *acquireImage(){
     std::scoped_lock l(getMutex());
     ICLASSERT_RETURN_VAL(getDesiredDepth() == depth8u,0);
 
