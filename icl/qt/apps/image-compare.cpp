@@ -12,10 +12,8 @@ int main(int n, char **ppc){
           "-seclect-channel-a|-ca(int) "
           "-select-channel-b|-cb(int)");
 
-  GenericGrabber ga;
-  GenericGrabber gb;
-  ga.init(pa("-a"));
-  gb.init(pa("-b"));
+  GenericGrabber ga(pa("-a"));
+  GenericGrabber gb(pa("-b"));
 
   Image imgA = ga.grabImage();
   Image imgB = gb.grabImage();

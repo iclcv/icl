@@ -41,8 +41,7 @@ int main(int n, char **ppc){
     exit(-1);
   }
 
-  GenericGrabber grabber;
-  grabber.init(pa("-i"));
+  GenericGrabber grabber(pa("-i"));
 
   if(s){
     std::string val = pa("-s", 1).as<std::string>();

@@ -34,8 +34,7 @@ int main(int argc, char **argv) {
   int thresh = f["config.threshold"];
   float gamma = f["config.gammaslope"];
 
-  GenericGrabber grabber;
-  grabber.init(pa("-i"));
+  GenericGrabber grabber(pa("-i"));
 
   FileList fl;
   int maxSteps = -1;
