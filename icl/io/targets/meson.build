@@ -26,11 +26,6 @@ if _build_apps
       dependencies: [icl_io_dep],
       install: true,
     )
-    executable('icl-reset-dc-bus',
-      files('../apps/reset-dc-bus.cpp'),
-      dependencies: [icl_io_dep],
-      install: true,
-    )
   endif
 
   # Apps needing Qt
