@@ -52,6 +52,12 @@ endif
 # ---- Platform definitions ----
 if host_machine.system() == 'darwin'
   add_project_arguments('-DICL_SYSTEM_APPLE', language: 'cpp')
+  if host_machine.cpu_family() == 'aarch64'
+    # Qt 6.11.0 qyieldcpu.h calls __yield() without including <arm_acle.h>;
+    # Clang treats the implicit decl as an error. Force-include the header so
+    # the prototype is visible before any Qt header chain reaches it.
+    add_project_arguments('-include', 'arm_acle.h', language: 'cpp')
+  endif
 elif host_machine.system() == 'linux'
   add_project_arguments('-DICL_SYSTEM_LINUX', language: 'cpp')
 elif host_machine.system() == 'windows'
@@ -93,6 +99,10 @@ if qt_found
   add_project_arguments('-DICL_HAVE_QT', '-DICL_HAVE_OPENGL', language: 'cpp')
   opengl_dep = dependency('gl')
   glew_dep = dependency('glew', required: true)
+  # Bake the Qt frameworks dir as an rpath so binaries find QtCore.framework
+  # without needing DYLD_FRAMEWORK_PATH at runtime.
+  qt_libdir = qt_dep.get_variable(pkgconfig: 'libdir')
+  add_project_link_arguments('-Wl,-rpath,' + qt_libdir, language: 'cpp')
 else
   opengl_dep = dependency('', required: false)
   glew_dep = dependency('', required: false)
