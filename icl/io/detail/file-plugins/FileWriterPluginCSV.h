@@ -6,25 +6,27 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/File.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/core/Img.h>
 
 namespace icl::io {
   /// Writer backend for ".csv" (Comma-Separated Values) \ingroup FILEIO_G
-  class ICLIO_API FileWriterPluginCSV {
+  /** Singleton plugin.  Inherits Configurable; registered with FileWriter
+      under the "csv" prefix, so callers do
+      `writer.setPropertyValue("csv.extend-file-name", true)`. */
+  class ICLIO_API FileWriterPluginCSV : public utils::Configurable {
     public:
+    FileWriterPluginCSV();
+
+    /// process-wide singleton accessor
+    static FileWriterPluginCSV &instance();
 
     /// write implementation
     void write(utils::File &file, const core::ImgBase *image);
 
-    /// static feature adaption function
-    /** if the flag is set to true, the writer will encode image
-        properties by extending the given filename
-        @see FileGrabberPluginCSV
-    **/
-    static void setExtendFileName(bool value);
-
     private:
-    /// static flag
-    static bool s_bExtendFileName;
+    /// when true, encode image params by extending the file name
+    /// (paired with FileGrabberPluginCSV's decoder)
+    bool m_extendFileName = false;
   };
-  } // namespace icl::io
+} // namespace icl::io

@@ -5,15 +5,25 @@
 #include <icl/io/detail/file-plugins/FileWriterPluginCSV.h>
 #include <icl/core/Types.h>
 #include <icl/utils/StringUtils.h>
+#include <icl/utils/prop/Constraints.h>
 
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  bool FileWriterPluginCSV::s_bExtendFileName = false;
 
-  void FileWriterPluginCSV::setExtendFileName(bool value){
-    s_bExtendFileName = value;
+  FileWriterPluginCSV::FileWriterPluginCSV() {
+    addProperty("extend-file-name", utils::prop::Flag{}, m_extendFileName,
+                "If true, encode image params into the file name (paired "
+                "with the CSV reader plugin's decoder).");
+    registerCallback([this](const utils::Configurable::Property &p) {
+      if (p.name == "extend-file-name") m_extendFileName = p.as<bool>();
+    });
+  }
+
+  FileWriterPluginCSV &FileWriterPluginCSV::instance() {
+    static FileWriterPluginCSV inst;
+    return inst;
   }
 
   void FileWriterPluginCSV::write(File &file, const ImgBase *image){
@@ -22,26 +32,17 @@ namespace icl::io {
     /// WRITE HEADER DATA DEPENDEND ON THE CURRENT EXTEND-FLAG-VALUE  ////
     //////////////////////////////////////////////////////////////////////
 
-    if(s_bExtendFileName){
+    if(m_extendFileName){
       std::ostringstream os;
       os << file.getDir() << file.getBaseName() << "-ICL:" << image->getSize() << 'x'
          << image->getChannels() << ':' <<image->getDepth() << ':' <<image->getFormat()
          << file.getSuffix();
-      /*
-          std::string newFileName = file.getDir()+
-          file.getBaseName()+
-          "-ICL:"+translateSize(image->getSize())+
-          "x"+toStr(image->getChannels())+
-          ":"+translateDepth(image->getDepth())+
-          ":"+translateFormat(image->getFormat())+
-          file.getSuffix();
-      */
       file = File(os.str());
     }
 
     file.open(File::writeText);
 
-    if(!s_bExtendFileName){
+    if(!m_extendFileName){
       std::ostringstream os;
       static const std::string H = "# ";
       Rect roi = image->getROI();
@@ -76,15 +77,18 @@ namespace icl::io {
   }
   } // namespace icl::io
 
-#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
+#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN / REGISTER_FILE_WRITER_CONFIG
 namespace { using icl::io::FileWriterPluginCSV; }
 #define ICL_CSV_REG(TAG, EXT)                                                 \
   REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \
     [](icl::utils::File &f, const icl::core::ImgBase *img) {                  \
-      static FileWriterPluginCSV impl; impl.write(f, img);                    \
+      FileWriterPluginCSV::instance().write(f, img);                          \
     })
 ICL_CSV_REG(csv, ".csv");
 #ifdef ICL_HAVE_LIBZ
 ICL_CSV_REG(csv_gz, ".csv.gz");
 #endif
 #undef ICL_CSV_REG
+
+REGISTER_FILE_WRITER_CONFIG(csv, "csv",
+  []() -> icl::utils::Configurable* { return &FileWriterPluginCSV::instance(); });

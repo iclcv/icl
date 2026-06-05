@@ -28,7 +28,7 @@ namespace icl::io {
 
     const std::string name = std::string(".tmpImage.") + timeStr + ".bicl";
     try {
-      FileWriter(name).write(image.ptr());
+      FileWriter(name).write(image);
     } catch(utils::FileOpenException &) {
       ERROR_LOG("unable to show image (invalid permissions to write a temporary\n"
                 "                      image file in the current working directory)");
@@ -64,7 +64,7 @@ namespace icl::io {
     if(image.getChannels() != 3) name += ".pgm";
 
     try {
-      FileWriter(name).write(image.ptr());
+      FileWriter(name).write(image);
     } catch(utils::FileOpenException &) {
       ERROR_LOG("unable to show image (invalid permissions to write a temporary\n"
                 "                      image file in the current working directory)");

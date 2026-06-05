@@ -1947,7 +1947,7 @@ namespace icl::qt {
       std::string filename = getImageCaptureFileName();
       if(filename != ""){
         try{
-          FileWriter(filename).write(buf);
+          FileWriter(filename).write(*buf);
         }catch(const ICLException &ex){
           ERROR_LOG("unable to capture current image: " << ex.what());
         }
@@ -1977,7 +1977,7 @@ namespace icl::qt {
     }
 
     try{
-      FileWriter(filename).write(&fb);
+      FileWriter(filename).write(fb);
     }catch(ICLException &ex){
       ERROR_LOG("error capturing frame buffer: " << ex.what());
     }

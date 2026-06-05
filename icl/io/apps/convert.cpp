@@ -148,6 +148,6 @@ int main(int n, char **ppc){
     dst = Image(cropped);
   }
 
-  FileWriter(outFileName).write(dst.ptr());
+  FileWriter(outFileName).write(dst);
   return 0;
 }

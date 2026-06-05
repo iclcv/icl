@@ -94,7 +94,7 @@ int main(int argc, const char **argv) {
   const auto &image = renderer.getImage();
   if (image.getWidth() > 0) {
     io::FileWriter writer(output);
-    writer.write(&image);
+    writer.write(image);
     printf("Saved %dx%d image to %s\n", image.getWidth(), image.getHeight(), output.c_str());
   } else {
     fprintf(stderr, "ERROR: No image received!\n");

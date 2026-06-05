@@ -10,7 +10,7 @@ namespace icl::io {
 
   void save(const core::Image &image, const std::string &filename) {
     if(image.isNull()) return;
-    FileWriter(filename).write(image.ptr());
+    FileWriter(filename).write(image);
   }
 
   core::Image load(const std::string &filename) {

@@ -108,6 +108,6 @@ REGISTER_IMAGE_OUTPUT(null_sink, "null",
 REGISTER_IMAGE_OUTPUT(file_sink, "file",
   ([](const std::string &params) -> icl::io::ImageOutputFn {
     auto w = std::make_shared<icl::io::FileWriter>(params);
-    return [w](const icl::core::Image &img) { w->write(img.ptr()); };
+    return [w](const icl::core::Image &img) { w->write(img); };
   }),
   "File Pattern~File Writer (suffix dispatches to the appropriate file-writer plugin)")

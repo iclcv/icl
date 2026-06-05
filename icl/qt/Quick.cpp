@@ -824,7 +824,7 @@ namespace icl::qt {
 
 
     void save(const ImgBase &image,const std::string &filename){
-      FileWriter(filename).write(&image);
+      FileWriter(filename).write(image);
     }
 
 

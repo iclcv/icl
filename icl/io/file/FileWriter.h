@@ -6,14 +6,13 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/File.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/utils/plugin/PluginRegistry.h>
 #include <icl/core/Image.h>
-#include <icl/core/Img.h>
 #include <icl/io/file/FilenameGenerator.h>
 
 #include <functional>
 #include <string>
-#include <vector>
 
 namespace icl::io {
   ///  File Writer implementation writing images to the hard disc \ingroup FILEIO_G
@@ -38,9 +37,12 @@ namespace icl::io {
 
       \section EX Example
       \code
-        icl::core::Img8u a = cvt8u(scale(create("parrot"),640,480));
+        icl::core::Image a = ...;
         icl::io::FileWriter writer("image_####.jpg");
-        writer.write(&a);
+        writer.write(a);
+
+        // Per-plugin tunables hang off the FileWriter as named children:
+        writer.setPropertyValue("jpeg.quality", 85);
       \endcode
   **/
   /// Callable type stored in the file-writer registry: `(file, image)`.
@@ -62,7 +64,16 @@ namespace icl::io {
   /// Singleton accessor for the process-wide file-writer registry.
   ICLIO_API FileWriterRegistry& fileWriterRegistry();
 
-  class ICLIO_API FileWriter {
+  /// Returns a pointer to a singleton plugin Configurable, or nullptr if
+  /// the plugin doesn't expose tunable properties.  Each FileWriter
+  /// instance walks this registry at ctor time and adds the non-null
+  /// entries as named child Configurables.
+  using FileWriterConfigFn = std::function<utils::Configurable*()>;
+  using FileWriterConfigRegistry =
+      utils::FunctionPluginRegistry<utils::Configurable*()>;
+  ICLIO_API FileWriterConfigRegistry& fileWriterConfigRegistry();
+
+  class ICLIO_API FileWriter : public utils::Configurable {
     public:
     /// creates an empty file writer
     FileWriter();
@@ -73,33 +84,19 @@ namespace icl::io {
     /// Creates a new FileWriter with given FilenameGenerator
     FileWriter(const FilenameGenerator &gen);
 
-    /// Destructor
-    ~FileWriter();
-
     /// returns the wrapped filename generator reference
-    const FilenameGenerator &getFilenameGenerator() const;
+    const FilenameGenerator &getFilenameGenerator() const { return m_oGen; }
 
-    /// writes the next image
-    void write(const core::ImgBase *image);
-
-    /// convenience: accept a value-type Image (matches the former
-    /// ImageOutput contract). Kept for direct callers; the GenericImageOutput
-    /// registry uses `write(image.ptr())` internally.
-    void send(const core::Image &image) { write(image.ptr()); }
-
-    /// as write but in stream manner
-    FileWriter &operator<<(const core::ImgBase *image);
-
-    /// sets a core::format specific option
-    /** currently allowed options are:
-        - "jpg:quality"  values of type int in range [0,100]
-        - "csv:extend-file-name" value of type bool ("true" or "false")
-    **/
-    void setOption(const std::string &option, const std::string &value);
+    /// Writes the image to the next filename in the generator's sequence.
+    /** Extension of the generated filename dispatches into
+        fileWriterRegistry() to select the matching plugin. */
+    void write(const core::Image &image);
 
     private:
     /// internal generator for new filenames
     FilenameGenerator m_oGen;
+
+    void attachPluginConfigurables();
   };
 
   } // namespace icl::io
@@ -121,3 +118,11 @@ namespace icl::io {
     distinct ctor args. */
 #define REGISTER_FILE_WRITER_PLUGIN(TAG, EXTENSION, ...)                       \
   ICL_REGISTER_PLUGIN(::icl::io::fileWriterRegistry(), TAG, EXTENSION, __VA_ARGS__)
+
+/// Self-register the singleton Configurable of a file-writer plugin.
+/** Each registered factory is invoked once per FileWriter ctor and the
+    returned Configurable* is added as a named child under PREFIX.  Used
+    to surface per-plugin tunables (jpeg quality, csv extend-file-name)
+    on every FileWriter instance — `writer.setPropertyValue("jpeg.quality", 85)`. */
+#define REGISTER_FILE_WRITER_CONFIG(TAG, PREFIX, FACTORY)                      \
+  ICL_REGISTER_PLUGIN(::icl::io::fileWriterConfigRegistry(), TAG, PREFIX, FACTORY)

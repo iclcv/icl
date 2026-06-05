@@ -5,6 +5,7 @@
 #include <icl/io/detail/file-plugins/FileWriterPluginJPEG.h>
 #include <icl/core/Types.h>
 #include <icl/utils/StringUtils.h>
+#include <icl/utils/prop/Constraints.h>
 #include <cstring>
 
 #ifdef ICL_HAVE_LIBJPEG
@@ -15,14 +16,19 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  void FileWriterPluginJPEG::setQuality(int value){
-    s_iQuality = value;
+
+  FileWriterPluginJPEG::FileWriterPluginJPEG() {
+    addProperty("quality", utils::prop::Range<int>{.min=0, .max=100}, m_quality,
+                "JPEG compression quality (0=worst, 100=best, default 90).");
+    registerCallback([this](const utils::Configurable::Property &p) {
+      if (p.name == "quality") m_quality = p.as<int>();
+    });
   }
-  int FileWriterPluginJPEG::s_iQuality = 90;
 
-  Img8u FileWriterPluginJPEG::s_oBufferImage;
-
-  std::recursive_mutex FileWriterPluginJPEG::s_oBufferImageMutex;
+  FileWriterPluginJPEG &FileWriterPluginJPEG::instance() {
+    static FileWriterPluginJPEG inst;
+    return inst;
+  }
 
 
 #ifdef ICL_HAVE_LIBJPEG
@@ -34,12 +40,12 @@ namespace icl::io {
       throw ICLException (str(fmt)+" not supported by jpeg");
     }
 
-    std::scoped_lock _locker(s_oBufferImageMutex);
+    std::scoped_lock _locker(m_bufferMutex);
 
     const Img8u *poSrc = 0;
     if(image->getDepth()!= depth8u){
-      image->convert<icl8u>(&s_oBufferImage);
-      poSrc = &s_oBufferImage;
+      image->convert<icl8u>(&m_bufferImage);
+      poSrc = &m_bufferImage;
     }else{
       poSrc = image->asImg<icl8u>();
     }
@@ -97,7 +103,7 @@ namespace icl::io {
 
     /* Now you can std::set any non-default parameters you wish to.
         * Here we just illustrate the use of quality (quantization table) scaling: */
-    jpeg_set_quality(&jpgCinfo, s_iQuality, TRUE /* limit to baseline-JPEG values */);
+    jpeg_set_quality(&jpgCinfo, m_quality, TRUE /* limit to baseline-JPEG values */);
 
     /* Step 4: Start compressor */
     /* TRUE ensures that we will write a complete interchange-JPEG file.
@@ -183,14 +189,17 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_LIBJPEG
-#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
+#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN / REGISTER_FILE_WRITER_CONFIG
 namespace { using icl::io::FileWriterPluginJPEG; }
 #define ICL_JPEG_REG(TAG, EXT)                                                \
   REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \
     [](icl::utils::File &f, const icl::core::ImgBase *img) {                  \
-      static FileWriterPluginJPEG impl; impl.write(f, img);                   \
+      FileWriterPluginJPEG::instance().write(f, img);                         \
     })
 ICL_JPEG_REG(jpeg, ".jpeg");
 ICL_JPEG_REG(jpg,  ".jpg");
 #undef ICL_JPEG_REG
+
+REGISTER_FILE_WRITER_CONFIG(jpeg, "jpeg",
+  []() -> icl::utils::Configurable* { return &FileWriterPluginJPEG::instance(); });
 #endif

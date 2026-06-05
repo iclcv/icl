@@ -777,7 +777,7 @@ static void offscreen_render(const std::string &output) {
   const auto &img = renderer.getImage();
   if (img.getWidth() > 0) {
     icl::io::FileWriter writer(output);
-    writer.write(&img);
+    writer.write(img);
     fprintf(stderr, "Saved %dx%d → %s\n", img.getWidth(), img.getHeight(), output.c_str());
   } else {
     fprintf(stderr, "ERROR: No image produced\n");

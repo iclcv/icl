@@ -5,13 +5,7 @@
 #include <icl/io/file/FileWriter.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exception.h>
-
-#ifdef ICL_HAVE_LIBJPEG
-#include <icl/io/detail/file-plugins/FileWriterPluginJPEG.h>
-#endif
-#include <icl/io/detail/file-plugins/FileWriterPluginCSV.h>
-
-#include <algorithm>
+#include <icl/utils/Macros.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -27,37 +21,38 @@ namespace icl::io {
     return inst;
   }
 
-
-  FileWriter::FileWriter(){
-
+  FileWriterConfigRegistry& fileWriterConfigRegistry() {
+    static FileWriterConfigRegistry inst(utils::OnDuplicate::KeepFirst);
+    return inst;
   }
 
-
-  FileWriter::FileWriter(const std::string &filepattern):
-
-    m_oGen(filepattern){}
-
-
-  FileWriter::FileWriter(const FilenameGenerator &gen):
-
-    m_oGen(gen){}
-
-
-  FileWriter::~FileWriter(){
-
+  // Pull in every plugin-registered Configurable singleton as a named
+  // child Configurable on this FileWriter instance.  Singletons survive
+  // process lifetime; multiple FileWriters share the same children
+  // (property writes go to the underlying singletons, so changing
+  // "jpeg.quality" on one writer affects all future .jpg writes).
+  void FileWriter::attachPluginConfigurables() {
+    for (const auto &e : fileWriterConfigRegistry().entries()) {
+      if (auto *cfg = e.payload()) {
+        addChildConfigurable(cfg, e.description);
+      }
+    }
   }
 
-
-  const FilenameGenerator &FileWriter::getFilenameGenerator() const{
-
-    return m_oGen;
+  FileWriter::FileWriter() {
+    attachPluginConfigurables();
+  }
+  FileWriter::FileWriter(const std::string &filepattern) : m_oGen(filepattern) {
+    attachPluginConfigurables();
+  }
+  FileWriter::FileWriter(const FilenameGenerator &gen)   : m_oGen(gen) {
+    attachPluginConfigurables();
   }
 
-
-  void FileWriter::write(const ImgBase *image){
-    ICLASSERT_RETURN(image);
-    ICLASSERT_RETURN(image->getDim());
-    ICLASSERT_RETURN(image->getChannels());
+  void FileWriter::write(const Image &image){
+    ICLASSERT_RETURN(!image.isNull());
+    ICLASSERT_RETURN(image.getDim());
+    ICLASSERT_RETURN(image.getChannels());
     ICLASSERT_RETURN(!m_oGen.isNull());
     ICLASSERT_RETURN(m_oGen.filesLeft());
 
@@ -68,37 +63,7 @@ namespace icl::io {
       ERROR_LOG("No Plugin to write files with suffix " << file.getSuffix() << " available");
       return;
     }
-    e->payload(file, image);
+    e->payload(file, image.ptr());
   }
-
-
-  FileWriter &FileWriter::operator<<(const ImgBase *image){
-
-    write(image);
-    return *this;
-  }
-
-
-  void FileWriter::setOption(const std::string &option, const std::string &value){
-    if(option == "csv:extend-file-name"){
-      if(toLower(value) == "true"){
-        FileWriterPluginCSV::setExtendFileName(true);
-      }else if(toLower(value) == "false"){
-        FileWriterPluginCSV::setExtendFileName(false);
-      }else{
-        ERROR_LOG("Undefined value \"" << value <<"\" for option \"" << option << "\"");
-      }
-    }else if(option == "jpg:quality"){
-#ifdef WITH_JPEG_SUPPORT
-      FileWriterPluginJPEG::setQuality(parse<int>(value));
-#else
-      ERROR_LOG("Unable to std::set option \"jpg:quality\" (JPEG support is currently disabled!)");
-#endif
-    }else{
-      ERROR_LOG("Unsupported Option \"" << option << "\" (value: \"" << value << "\")");
-    }
-
-  }
-
 
   } // namespace icl::io

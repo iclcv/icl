@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
     Image dst;
     t.apply(image, dst);
-    w.write(dst.ptr());
+    w.write(dst);
     std::cout << " done → " << w.getFilenameGenerator().showNext() << std::endl;
   }
 }
