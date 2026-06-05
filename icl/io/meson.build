@@ -17,6 +17,7 @@ io_grabber_headers = files(
   'grabber/GenericGrabber.h',
   'grabber/Grabber.h',
   'grabber/GrabberDeviceDescription.h',
+  'grabber/GrabberRegistry.h',
 )
 
 io_output_headers = files(
@@ -38,6 +39,7 @@ io_compress_headers = files(
 io_sources = files(
   'grabber/GenericGrabber.cpp',
   'grabber/Grabber.cpp',
+  'grabber/GrabberRegistry.cpp',
   'output/GenericImageOutput.cpp',
   'file/FileGrabber.cpp',
   'file/FileList.cpp',

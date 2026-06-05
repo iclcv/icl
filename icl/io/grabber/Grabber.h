@@ -5,7 +5,6 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/utils/plugin/PluginRegistry.h>
 #include <icl/utils/SteppingRange.h>
 #include <icl/utils/config/Configurable.h>
 #include <icl/core/ImgBase.h>
@@ -15,10 +14,8 @@ namespace icl::core { class Image; }
 namespace icl::utils { class ProgArg; }
 namespace icl::filter { class ImageUndistortion; }
 
-#include <functional>
 #include <string>
 #include <vector>
-#include <set>
 #include <mutex>
 
 namespace icl::io {
@@ -247,68 +244,9 @@ void processPropertyChange(const utils::Configurable::Property &prop);
 
 };
 
-class ICLIO_API GrabberRegistry {
-public:
-  GrabberRegistry(const GrabberRegistry&) = delete;
-  GrabberRegistry &operator=(const GrabberRegistry&) = delete;
-
-  using CreateFn     = std::function<Grabber*(const std::string&)>;
-  using DeviceListFn = std::function<const std::vector<GrabberDeviceDescription>&(std::string, bool)>;
-  using BusResetFn   = std::function<void(bool)>;
-
-  /// Underlying primitive for the factory map. Device lists, bus resets
-  /// and description strings are per-backend side concerns kept on the
-  /// class itself.
-  using Registry = utils::PluginRegistry<std::string, CreateFn>;
-
-  static GrabberRegistry* getInstance();
-
-  void registerGrabberType(const std::string &grabberid,
-                           CreateFn creator,
-                           DeviceListFn device_list);
-
-  void registerGrabberBusReset(const std::string &grabberid,
-                               BusResetFn reset_function);
-
-  void addGrabberDescription(const std::string &grabber_description);
-
-  Grabber* createGrabber(const std::string &grabberid, const std::string &param);
-
-  std::vector<std::string> getRegisteredGrabbers();
-
-  std::vector<std::string> getGrabberInfos();
-
-  const std::vector<GrabberDeviceDescription>& getDeviceList(std::string id, std::string hint="", bool rescan=true);
-
-  void resetGrabberBus(const std::string &id, bool verbose);
-
-private:
-  GrabberRegistry() : m_factories(utils::OnDuplicate::Throw) {}
-
-  Registry m_factories;                                                     //!< id → CreateFn
-  std::recursive_mutex m_mutex;                                             //!< guards the side maps below
-  std::map<std::string, DeviceListFn, std::less<>> m_deviceLists;           //!< id → listing function
-  std::map<std::string, BusResetFn,   std::less<>> m_busResets;             //!< id → bus reset function
-  std::set<std::string>                            m_descriptions;          //!< verbatim strings, for getGrabberInfos()
-};
-
-/** \endcond */
-
-/// registration macro for grabbers
-/** @see \ref REG */
-#define REGISTER_GRABBER(NAME,CREATE_FUNC,DEVICE_LIST_FUNC,DESCRIPTION)        \
-  extern "C" __attribute__((constructor, used)) void                           \
-  iclRegisterGrabber_##NAME() {                                                \
-    auto *_inst = ::icl::io::GrabberRegistry::getInstance();                   \
-    _inst->registerGrabberType(#NAME, CREATE_FUNC, DEVICE_LIST_FUNC);          \
-    _inst->addGrabberDescription(DESCRIPTION);                                 \
-  }
-
-#define REGISTER_GRABBER_BUS_RESET_FUNCTION(NAME,BUS_RESET_FUNC)               \
-  extern "C" __attribute__((constructor, used)) void                           \
-  iclRegisterGrabberBusReset_##NAME() {                                        \
-    ::icl::io::GrabberRegistry::getInstance()                                  \
-        ->registerGrabberBusReset(#NAME, BUS_RESET_FUNC);                      \
-  }
-
   } // namespace icl::io
+
+// GrabberRegistry + REGISTER_GRABBER macros live in their own header;
+// included here for backward compatibility so backends don't have to add
+// a second include just to use the macro.
+#include <icl/io/grabber/GrabberRegistry.h>
