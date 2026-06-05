@@ -138,7 +138,7 @@ Grabber();
 virtual ~Grabber();
 
 /// Grabs the next image and returns it as an Image value
-core::Image grabImage();
+core::Image grab();
 
 /// @{ @name desired image parameters
 
@@ -221,7 +221,7 @@ protected:
 
 /// Main interface method, implemented by every Grabber backend.
 /** Acquires a new image using the backend's image-acquisition path.
-    Called by grabImage() under m_grabMutex.
+    Called by grab() under m_grabMutex.
 
     **Lifetime contract**: backends typically return an `Image` that
     shallow-shares a backend-owned internal buffer.  The returned Image
@@ -229,10 +229,10 @@ protected:
     callers who need to retain it longer must deep-copy explicitly. */
 virtual core::Image acquireImage() = 0;
 
-/// Serializes the grabImage() reader path against property callbacks
+/// Serializes the grab() reader path against property callbacks
 /// that mutate backend state.  Recursive so a property change firing
 /// during adaptGrabResult / undistortion doesn't deadlock.  Acquired
-/// at the top of grabImage() and inside the wrapped registerCallback
+/// at the top of grab() and inside the wrapped registerCallback
 /// overload above.  Mirrors UnaryOp::m_applyMutex.
 mutable std::recursive_mutex m_grabMutex;
 

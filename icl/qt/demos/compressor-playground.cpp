@@ -41,7 +41,7 @@ void init(){
 }
 
 void run(){
-  Image img = grabber.grabImage();
+  Image img = grabber.grab();
   gui["orig"] = img;
 
   // A codec may reject the input — e.g. `1611` only handles

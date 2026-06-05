@@ -167,7 +167,7 @@ void init(){
     v.lastImage = Image();
     v.grabber.init(pai[i], pai[i] + "=" + pai[i+1]);
     inputIDs += "input-" + str(id) + ",";
-    Image grabImg = v.grabber.grabImage();
+    Image grabImg = v.grabber.grab();
     const ImgBase  *image = grabImg.ptr();
     if(!i) imageSize0 = image->getSize();
     v.camera = extract_camera_from_udist_file(pai[i+2]);
@@ -341,7 +341,7 @@ void run(){
 
   for(size_t i=0;i<views.size();++i){
     View &v = *views[i];
-    if(acquisition) v.lastImage = v.grabber.grabImage();
+    if(acquisition) v.lastImage = v.grabber.grab();
     const ImgBase *image = v.lastImage.ptr();
 
     Camera cam = v.camera;

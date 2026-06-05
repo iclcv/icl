@@ -81,7 +81,7 @@ namespace icl::qt {
       g.useDesired(fmt);
     }
 
-    Image img = g.grabImage();
+    Image img = g.grab();
 
     if(img.getFormat() != fmt) {
       Image dst = ctx.getBuffer(img.getDepth(),

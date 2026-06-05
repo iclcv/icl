@@ -125,7 +125,7 @@ void run(){
   int ms = medianSize;
   bool rdUpdated = false;
   if(grabNextHandle.wasTriggered() || !useImage || grabButtonDown){
-    grabbedImageHolder = grabber.grabImage();
+    grabbedImageHolder = grabber.grab();
     grabbedImage = &grabbedImageHolder.as8u();
     useImage = grabbedImage;
 

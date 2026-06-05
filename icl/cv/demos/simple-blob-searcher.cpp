@@ -46,7 +46,7 @@ void init(){
 void run(){
   static DrawHandle draw = gui["draw"];
   static FPSLimiter fps(20);
-  Image image = grabber.grabImage();
+  Image image = grabber.grab();
   const Img8u &image8u = image.as8u();
 
   const std::vector<SimpleBlobSearcher::Blob> &blobs = S.detect(image8u);

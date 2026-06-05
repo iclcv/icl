@@ -72,7 +72,7 @@ void init(){
 }
 
 void run(){
-  Image grabbedImage = grabber.grabImage();
+  Image grabbedImage = grabber.grab();
   Img8u *image = grabbedImage.as8u().deepCopy();
 
   if(faceCounter > detector->getFramerate()) {

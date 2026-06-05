@@ -415,7 +415,7 @@ void run(){
 
   static Image inputImage;
   if(!inputImage || !gui["paused"].as<bool>()){
-    inputImage = grabber.grabImage();
+    inputImage = grabber.grab();
   }else{
     Thread::msleep(50);
   }

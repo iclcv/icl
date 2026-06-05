@@ -125,7 +125,7 @@ int main(int n, char **ppc){
          "  fwrite(buf,1,DIM,f);\n"
          "  fclose(f);\n"
          "  delete [] buf;\n"
-         "  cached = FileGrabber(\"./.tmp_image_buffer.jpg\",false,true).grabImage();\n"
+         "  cached = FileGrabber(\"./.tmp_image_buffer.jpg\",false,true).grab();\n"
          "  remove(\"./.tmp_image_buffer.jpg\");\n"
          "  return cached.deepCopy();\n"
          "}\n// }}}\n\n",arrayName.c_str(),extraArrayName.c_str());

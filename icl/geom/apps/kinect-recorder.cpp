@@ -90,8 +90,8 @@ void run(){
   }
 
   Image c, d;
-  if(!c_in.isNull()) c = c_in.grabImage();
-  if(!d_in.isNull()) d = d_in.grabImage();
+  if(!c_in.isNull()) c = c_in.grab();
+  if(!d_in.isNull()) d = d_in.grab();
 
   if(nDrop){
     --nDrop;

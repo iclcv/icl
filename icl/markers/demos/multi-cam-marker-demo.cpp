@@ -65,7 +65,7 @@ void run(){
   std::vector<Image> grabbedImages(grabbers.size());
   std::vector<const ImgBase*> images(grabbers.size());
   for(unsigned int i=0;i<grabbers.size();++i){
-    grabbedImages[i] = grabbers[i]->grabImage();
+    grabbedImages[i] = grabbers[i]->grab();
     images[i] = grabbedImages[i].ptr();
   }
 

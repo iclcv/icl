@@ -84,7 +84,7 @@ void run() {
   static DrawHandle &hImgHeuristics = gui.get<DrawHandle>("heuristicsImg");
   static DrawHandle &hImgQuad = gui.get<DrawHandle>("quadImg");
 
-  Image image = grabber.grabImage();
+  Image image = grabber.grab();
   static Img8u imgRegions(image.getSize(), 1);
   imgRegions.clear(0, 255);
 

@@ -17,7 +17,7 @@ void init(){
 }
 
 void run(){
-  Image image = grabber.grabImage();  
+  Image image = grabber.grab();  
   gui["image"] = cc(image, gui["fmt"]);
 }
 

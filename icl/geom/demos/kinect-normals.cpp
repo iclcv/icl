@@ -85,8 +85,8 @@ void run(){
 
   Size size = pa("-size");
 
-  Image colorImg = grabColor.grabImage();
-  Image depthImg = grabDepth.grabImage();
+  Image colorImg = grabColor.grab();
+  Image depthImg = grabDepth.grab();
   const Img8u &colorImage = colorImg.as8u();
   const Img32f &depthImage = depthImg.as32f();
 

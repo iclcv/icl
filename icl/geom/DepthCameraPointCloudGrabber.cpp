@@ -257,7 +257,7 @@ namespace icl::geom {
     bool useNewImages = !prop("re-use exisiting images").as<bool>();
     Img32f *depthImage = 0;
     if(useNewImages || !m_data->lastDepthImage){
-      m_data->depthHolder = m_data->depthGrabber.grabImage();
+      m_data->depthHolder = m_data->depthGrabber.grab();
       depthImage = &m_data->depthHolder.as32f();
       if(prop("pp.enable gaussian").value){
         int s = prop("pp.spacial filter size").value;
@@ -312,7 +312,7 @@ namespace icl::geom {
     Img8u *rgbImage = 0;
     if(useNewImages || !m_data->lastColorImage){
       if(!m_data->colorGrabber.isNull()){
-        m_data->colorHolder = m_data->colorGrabber.grabImage();
+        m_data->colorHolder = m_data->colorGrabber.grab();
         rgbImage = &m_data->colorHolder.as8u();
       }
       if(rgbImage && m_data->colorMask){

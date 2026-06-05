@@ -324,7 +324,7 @@ void run(){
   static ICLDrawWidget *w = *gui.get<DrawHandle>("image");
 
   static Image grabbed;
-  grabbed = grabber->grabImage();
+  grabbed = grabber->grab();
 
   std::vector<std::vector<float> > vVT = getCentersAndSizes(grabbed.as8u());
 

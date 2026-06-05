@@ -52,7 +52,7 @@ void run(){
 
     static DrawHandle3D draw = gui["3d"];
 
-    image = grabber.grabImage().as32f();
+    image = grabber.grab().as32f();
 
     static Img8u newImage(image.getSize(),1);
     //newImage.setFormat(formatGray);

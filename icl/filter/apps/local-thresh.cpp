@@ -76,7 +76,7 @@ void step(){
   static Image image;
   if(!image || loop || next.wasTriggered()){
     bool init = !image;
-    image = grabber.grabImage();
+    image = grabber.grab();
     if(init){
       draggedRoi=fullImageRoi=image.getImageRect();
     }

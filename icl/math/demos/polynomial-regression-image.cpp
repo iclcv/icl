@@ -77,7 +77,7 @@ void init(){
 }
 
 void run(){
-  Img32f image = grabber.grabImage().convert(depth32f).as32f();
+  Img32f image = grabber.grab().convert(depth32f).as32f();
 
   int polyIdx = gui["poly"].as<int>();
   int cellsize = gui["cellsize"];

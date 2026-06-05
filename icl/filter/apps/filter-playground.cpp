@@ -245,7 +245,7 @@ void run(){
     grabber.useDesired(utils::Size(parse<Size>(gui["dsize"])));
   }
 
-  Image src = grabber.grabImage();
+  Image src = grabber.grab();
   if(!src) return;
 
   // Apply source-ROI mode before any filter sees the image.

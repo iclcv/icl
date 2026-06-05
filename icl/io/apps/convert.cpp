@@ -58,7 +58,7 @@ int main(int n, char **ppc){
 
   Image image;
   try{
-    image = fg.grabImage();
+    image = fg.grab();
   }catch(ICLException &ex){
     ERROR_LOG("unable to grab file:" << ex.what());
     exit(-1);

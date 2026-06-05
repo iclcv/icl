@@ -82,9 +82,9 @@ struct Grid : public SceneObject{
 
 
 void run(){
-  grabber.grabImage().ptr()->convert(&image);
+  grabber.grab().ptr()->convert(&image);
   if(pa("-b")){
-    backFaceGrabber.grabImage().ptr()->convert(&backImage);
+    backFaceGrabber.grab().ptr()->convert(&backImage);
   }
   gui["draw"].render();
 #if 0
@@ -107,9 +107,9 @@ void init(){
       << FSlider(0,1,0.2,true).handle("freq").label("frequence")
       << Show();
 
-  grabber.grabImage();
-  grabber.grabImage();
-  grabber.grabImage().ptr()->convert(&image);
+  grabber.grab();
+  grabber.grab();
+  grabber.grab().ptr()->convert(&image);
   obj = new Grid(&image);
 
   scene.addObject(obj);

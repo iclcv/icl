@@ -175,7 +175,7 @@ void run(){
   static DrawHandle &h2 = gui.get<DrawHandle>("img2");
   static DrawHandle &h3 = gui.get<DrawHandle>("img3");
 	// images: get camera input and apply threshold
-  const Img8u &image = grabber->grabImage().as8u();
+  const Img8u &image = grabber->grab().as8u();
   static Img8u threshedImage;
   static Img8u bgImage1(image.getSize(), 1); bgImage1.clear(0,255);
   static Img8u bgImage2(image.getSize(), 1); bgImage2.clear(0,255);

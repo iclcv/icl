@@ -30,7 +30,7 @@ void init(){
          )
       << Show();
 
-  mouse.init(grabber.grabImage().getSize());
+  mouse.init(grabber.grab().getSize());
 
   gui["draw"].install(&mouse);
 }
@@ -40,7 +40,7 @@ void run(){
   ButtonHandle now = gui["now"];
   bool automatic = gui["auto"];
 
-  const Img8u image = grabber.grabImage().as8u();
+  const Img8u image = grabber.grab().as8u();
   draw = image;
 
   if(now.wasTriggered() || automatic){

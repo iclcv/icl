@@ -52,14 +52,14 @@ void init(){
 
 void run(){
   // Poll backend-swap buttons on the run thread.  init() holds the
-  // grabber's internal mutex; grabImage() takes it too, so the two
+  // grabber's internal mutex; grab() takes it too, so the two
   // serialize cleanly even if a swap lands mid-frame.
   if(gui["lena"].as<ButtonHandle>().wasTriggered())       swapBackend("create", "lena");
   if(gui["parrot"].as<ButtonHandle>().wasTriggered())     swapBackend("create", "parrot");
   if(gui["cameraman"].as<ButtonHandle>().wasTriggered())  swapBackend("create", "cameraman");
   if(gui["demo"].as<ButtonHandle>().wasTriggered())       swapBackend("demo", "");
 
-  gui["img"] = grabber.grabImage();
+  gui["img"] = grabber.grab();
 }
 
 int main(int n, char **ppc){

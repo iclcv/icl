@@ -78,7 +78,7 @@ void run(){
     mtex.lock();
   }
 
-  image = grabber.grabImage();
+  image = grabber.grab();
   gui["fps"].render();
 
   int p = parse<int>(grabber.prop(::pos).value);

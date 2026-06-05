@@ -32,7 +32,7 @@ struct Mouse : public MouseHandler{
 } mouse;
 
 void run(){
-  static Img8u image = grabber.grabImage().as8u();
+  static Img8u image = grabber.grab().as8u();
   mouse.lastImageRect = image.getImageRect();
 
   if(mouse.wasPressed()){

@@ -109,7 +109,7 @@ void run(){
 
   while(1){
     mutex.lock();
-    currImage = g.grabImage().as8u();
+    currImage = g.grab().as8u();
     if(!dragging){
       currImage.setROI(currROI.normalized() & currImage.getImageRect());
     }

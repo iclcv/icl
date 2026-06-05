@@ -80,7 +80,7 @@ const Img32f &create_weight_image(const Img32f &image, const std::vector<double>
 
 void run(){
   static Image grabbed;
-  grabbed = grabber->grabImage();
+  grabbed = grabber->grab();
   const Img32f *image = &grabbed.as32f();
 
   m.lock();

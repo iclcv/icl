@@ -47,7 +47,7 @@ struct Obj : public SceneObject{
 void init(){
 
   grabber.init(pa("-i"));
-  image = grabber.grabImage();
+  image = grabber.grab();
   scene.addCamera(Camera());
 
   obj = new Obj;
@@ -61,7 +61,7 @@ void init(){
 }
 
 void run(){
-  image = grabber.grabImage();
+  image = grabber.grab();
   gui["draw"].render();
 }
 

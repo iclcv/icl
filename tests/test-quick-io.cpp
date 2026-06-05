@@ -392,7 +392,7 @@ ICL_REGISTER_TEST("WS.loopback.roundtrip",
   Img8u src = makeKnownImage();
   out.send(Image(src));
 
-  Image got = grab.grabImage();
+  Image got = grab.grab();
   ICL_TEST_TRUE(!got.isNull());
   ICL_TEST_TRUE(imagesEqual(got, Image(src)));
 }
@@ -409,8 +409,8 @@ ICL_REGISTER_TEST("WS.multi_client.broadcast",
   Img8u src = makeKnownImage(8, 8);
   out.send(Image(src));
 
-  Image ga = a.grabImage();
-  Image gb = b.grabImage();
+  Image ga = a.grab();
+  Image gb = b.grab();
   ICL_TEST_TRUE(!ga.isNull() && !gb.isNull());
   ICL_TEST_TRUE(imagesEqual(ga, Image(src)));
   ICL_TEST_TRUE(imagesEqual(gb, Image(src)));
@@ -433,9 +433,9 @@ ICL_REGISTER_TEST("WS.url_shorthands_accepted",
   Img8u src = makeKnownImage(8, 8);
   out.send(Image(src));
 
-  ICL_TEST_TRUE(imagesEqual(a.grabImage(), Image(src)));
-  ICL_TEST_TRUE(imagesEqual(b.grabImage(), Image(src)));
-  ICL_TEST_TRUE(imagesEqual(c.grabImage(), Image(src)));
+  ICL_TEST_TRUE(imagesEqual(a.grab(), Image(src)));
+  ICL_TEST_TRUE(imagesEqual(b.grab(), Image(src)));
+  ICL_TEST_TRUE(imagesEqual(c.grab(), Image(src)));
 }
 
 ICL_REGISTER_TEST("WS.client_survives_server_restart",
@@ -455,7 +455,7 @@ ICL_REGISTER_TEST("WS.client_survives_server_restart",
     ICL_TEST_TRUE(waitFor([&]{ return out.connectedClients() >= 1; }));
     out.send(Image(src1));
 
-    Image got = grab.grabImage();
+    Image got = grab.grab();
     ICL_TEST_TRUE(imagesEqual(got, Image(src1)));
 
     // Phase 2: tear down the server (out goes out of scope here).
@@ -477,7 +477,7 @@ ICL_REGISTER_TEST("WS.client_survives_server_restart",
   // for a real frame.
   Image got;
   waitFor([&]{
-    got = grab.grabImage();
+    got = grab.grab();
     return !got.isNull() && imagesEqual(got, Image(src2));
   }, /*timeoutMs=*/3000);
   ICL_TEST_TRUE(!got.isNull());

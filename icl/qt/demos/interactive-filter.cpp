@@ -42,7 +42,7 @@ void mouse(const MouseEvent &event){
 void run(){
   static DrawHandle draw = gui["draw"];
 
-  Image grabbedImage = grabber.grabImage();
+  Image grabbedImage = grabber.grab();
   draw = grabbedImage;
 
   if(x>0){ // else no mouse event has been recognized yet

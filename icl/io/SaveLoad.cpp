@@ -15,7 +15,7 @@ namespace icl::io {
 
   core::Image load(const std::string &filename) {
     try {
-      return FileGrabber(filename).grabImage();
+      return FileGrabber(filename).grab();
     } catch(const utils::ICLException &ex) {
       ERROR_LOG("exception: " << ex.what());
       return core::Image();

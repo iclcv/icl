@@ -278,7 +278,7 @@ namespace icl::markers {
         FileGrabber g(l[i]);
         g.useDesired(formatGray);
         g.useDesired(depth8u);
-        data->loaded.push_back(std::shared_ptr<NamedImage>(new NamedImage( g.grabImage().as8u(),
+        data->loaded.push_back(std::shared_ptr<NamedImage>(new NamedImage( g.grab().as8u(),
                                                File(l[i]).getBaseName(),
                                                size, data->loaded.size())));
       }
@@ -358,7 +358,7 @@ namespace icl::markers {
     FileGrabber g(whichOne);
     g.useDesired(formatGray);
     g.useDesired(depth8u);
-    Image grabbed = g.grabImage();
+    Image grabbed = g.grab();
     const Img8u &l = grabbed.as8u();
     float b = params.at("border ratio");
     Size s(l.getWidth()*(1+b), l.getHeight()*(1+b));

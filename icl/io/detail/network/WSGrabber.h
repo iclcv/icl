@@ -12,7 +12,7 @@ namespace icl::io {
   /// WebSocket-based grabber (client side, with auto-reconnect)
   /** Connects to a remote `WSImageOutput` (or any WebSocket publisher
       that emits `ImageCompressor`-encoded binary frames) and exposes the
-      received frames through the standard `Grabber::grabImage()` API.
+      received frames through the standard `Grabber::grab()` API.
 
       \section HIST History
       `WSGrabber` (Session 46) replaced the retired `SharedMemoryGrabber`

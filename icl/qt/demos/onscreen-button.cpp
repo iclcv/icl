@@ -41,7 +41,7 @@ void init(){
 
 void run(){
   mtex.lock();
-  image = grabber.grabImage();
+  image = grabber.grab();
   mtex.unlock();
   gui["image"] = image;
 }

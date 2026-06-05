@@ -71,7 +71,7 @@ void init(){
 
 void run(){
   DrawHandle3D draw = gui["draw"];
-  Image image = grabber.grabImage();
+  Image image = grabber.grab();
   draw = image.ptr();
 
   float tExp = gui["t"];

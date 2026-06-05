@@ -191,7 +191,7 @@ namespace icl::io {
         buf.reserve(m_data->oFileList.size());
         for(int i=0;i<m_data->oFileList.size();i++){
           try{
-            core::Image img = grabImage().deepCopy();
+            core::Image img = grab().deepCopy();
             buf.push_back(std::move(img));
             correctNames.push_back(m_data->oFileList[i]);
           }catch([[maybe_unused]] ICLException &ex){

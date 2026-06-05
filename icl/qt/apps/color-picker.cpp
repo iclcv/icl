@@ -126,7 +126,7 @@ void run(){
   while(!gui["running"].as<bool>()){
     Thread::sleep(0.1);
   }
-  gui["image"] = grabber.grabImage();
+  gui["image"] = grabber.grab();
 }
 
 

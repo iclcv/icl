@@ -274,7 +274,7 @@ void init(){
   gui["showRelTransGUI"].registerCallback([]{ relTransGUI.switchVisibility(); });
 
   scene.addCamera(Camera());
-  scene.getCamera(0).setResolution(grabber.grabImage().getSize());
+  scene.getCamera(0).setResolution(grabber.grab().getSize());
 
   planeOptionGUI["planeOffset"].disable();
   planeOptionGUI["planeRadius"].disable();
@@ -338,7 +338,7 @@ void run(){
     }
   }
 
-  Image grabImg = grabber.grabImage();
+  Image grabImg = grabber.grab();
   const ImgBase *image = CCU::preprocess(grabImg.ptr());
 
   std::vector<FoundMarker> markers;

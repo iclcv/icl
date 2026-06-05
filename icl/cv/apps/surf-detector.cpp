@@ -130,7 +130,7 @@ void init(){
               )
          )
       << Show();
-  grabber.grabImage().ptr()->convert(&templ);
+  grabber.grab().ptr()->convert(&templ);
   surf.reset(new SurfFeatureDetector(5,4,2,0.00005,*pa("-p")));
   surf->setReferenceImage(&templ);
 
@@ -201,7 +201,7 @@ void run(){
   ButtonHandle rotate = gui["rotate"];
   ButtonHandle load = gui["load"];
 
-  core::Image grabImg = grabber.grabImage();
+  core::Image grabImg = grabber.grab();
   const Img8u &image = grabImg.as8u();
   iW = image.getWidth();
   iH = image.getHeight();

@@ -75,7 +75,7 @@ void run(){
   static DrawHandle3D draw = gui["draw"];
 
   if(grabber){
-    Image image = grabber.grabImage();
+    Image image = grabber.grab();
     static Img8u black(image.getSize(),1);
     if(gui["grab"]){
       draw = image.ptr();

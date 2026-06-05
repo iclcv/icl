@@ -241,8 +241,8 @@ void run(){
   }
 
   //grab images
-  Image colorImage = grabColor.grabImage();
-  Image depthImage = grabDepth.grabImage();
+  Image colorImage = grabColor.grab();
+  Image depthImage = grabDepth.grab();
 
   static ImgBase *heatmapImage = 0;
 

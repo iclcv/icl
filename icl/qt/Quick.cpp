@@ -524,7 +524,7 @@ namespace icl::qt {
       FileGrabber g(filename);
       Image grabbedImage;
       try{
-        grabbedImage = g.grabImage();
+        grabbedImage = g.grab();
       }catch(const ICLException &ex){
         ERROR_LOG("exception: "  << ex.what());
       }
@@ -544,7 +544,7 @@ namespace icl::qt {
       FileGrabber g(filename);
       Image gi;
       try{
-        gi = g.grabImage();
+        gi = g.grab();
       }catch(const ICLException &ex){
         ERROR_LOG("exception: "  << ex.what());
       }
@@ -704,9 +704,9 @@ namespace icl::qt {
         g->useDesired(size);
         g->useDesired(fmt);
         g->useDesired(getDepth<T>());
-        back = g->grabImage().as<T>();
+        back = g->grab().as<T>();
       }else{
-        Image image = g->grabImage();
+        Image image = g->grab();
         back.setSize(image.getSize());
         back.setFormat(fmt);
         cc(image.ptr(),&back);

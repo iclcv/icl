@@ -11,7 +11,7 @@ GenericGrabber grabber;
 void run(){
   static FPSLimiter fps(pa("-maxfps"),10);
 
-  gui["image"] = grabber.grabImage();
+  gui["image"] = grabber.grab();
   gui["fps"].render();
   fps.wait();
 }

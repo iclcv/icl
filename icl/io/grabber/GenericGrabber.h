@@ -166,10 +166,10 @@ namespace icl::io {
       virtual ~GenericGrabber();
 
       /// Grabs the next image and returns it as an Image value
-      core::Image grabImage(){
+      core::Image grab(){
         std::scoped_lock __lock(m_mutex);
         ICLASSERT_RETURN_VAL(!isNull(), core::Image());
-        return m_poGrabber->grabImage();
+        return m_poGrabber->grab();
       }
 
       /// returns wheter an underlying grabber could be created

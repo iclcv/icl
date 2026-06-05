@@ -45,15 +45,15 @@ int main(int n, char **ppc){
 
   if(s){
     std::string val = pa("-s", 1).as<std::string>();
-    if(pa("-go")) grabber.grabImage();
+    if(pa("-go")) grabber.grab();
     grabber.prop(pa("-s",0)).value = val;
-    if(pa("-go")) grabber.grabImage();
+    if(pa("-go")) grabber.grab();
   }else if(g){
     std::cout << grabber.prop(pa("-g")).value.str() << std::endl;
   }else if(p){
-    if(pa("-go")) grabber.grabImage();
+    if(pa("-go")) grabber.grab();
     grabber.loadProperties(pa("-p"));
-    if(pa("-go")) grabber.grabImage();
+    if(pa("-go")) grabber.grab();
   }else if(o){
     grabber.saveProperties(pa("-o"));
   }else{

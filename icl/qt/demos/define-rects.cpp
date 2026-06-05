@@ -22,7 +22,7 @@ void init(){
 
 void run(){
   DrawHandle draw = gui["draw"];
-  draw = grabber.grabImage();
+  draw = grabber.grab();
   mouse.visualize(**draw);
   draw.render();
 }

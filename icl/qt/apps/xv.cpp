@@ -45,7 +45,7 @@ int main (int n, char **ppc){
 
     try{
       static FileGrabber w(imageName);
-      imageHolder = w.grabImage();
+      imageHolder = w.grab();
       image = imageHolder.ptr();
       if(pa("-delete")){
         if(imageName.length()){
@@ -89,7 +89,7 @@ int main (int n, char **ppc){
       std::string s = pa(i).as<std::string>();
       try{
         FileGrabber grabber(s,false,true);
-        Image image = grabber.grabImage();
+        Image image = grabber.grab();
         if(!image) throw ICLException("");
         maxSize.width = iclMax(image.getWidth(),maxSize.width);
         maxSize.height = iclMax(image.getHeight(),maxSize.height);

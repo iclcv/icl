@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     if(fl.size()){
       std::cout << "processing " << fl[i++] << " ...";
     }
-    Image image = grabber.grabImage();
+    Image image = grabber.grab();
     if(!pa("-color") && image.getFormat() != formatGray){
       Img8u tmp(image.getSize(), formatGray);
       cc(image.ptr(), &tmp);

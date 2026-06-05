@@ -12,7 +12,7 @@ ChromaGUI *cg;
 GenericGrabber grabber;
 
 void run(){
-  Image grabImg = grabber.grabImage();
+  Image grabImg = grabber.grab();
   const Img8u &image = grabImg.as8u();
   static Img8u segImage(image.getSize(),1);
 

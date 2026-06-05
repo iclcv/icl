@@ -14,7 +14,7 @@ struct Input{
   Image lastImage;
   std::string id;
   void operator()(){
-    lastImage = grabber.grabImage();
+    lastImage = grabber.grab();
     handle = lastImage;
   }
   void save(){

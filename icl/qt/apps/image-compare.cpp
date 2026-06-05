@@ -15,8 +15,8 @@ int main(int n, char **ppc){
   GenericGrabber ga(pa("-a"));
   GenericGrabber gb(pa("-b"));
 
-  Image imgA = ga.grabImage();
-  Image imgB = gb.grabImage();
+  Image imgA = ga.grab();
+  Image imgB = gb.grab();
   const ImgBase *a = imgA.ptr();
   const ImgBase *b = imgB.ptr();
 

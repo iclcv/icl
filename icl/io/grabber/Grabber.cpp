@@ -79,7 +79,7 @@ namespace icl::io {
     return data->desiredSize;
   }
 
-  core::Image Grabber::grabImage(){
+  core::Image Grabber::grab(){
     // Reader-side of the m_grabMutex pattern (mirrors UnaryOp::apply()).
     // Single funnel for every backend's acquireImage() + adaptGrabResult
     // + warp; serializes against property-change callbacks routed through

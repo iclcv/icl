@@ -60,9 +60,9 @@ void init_grabber(){
 static Image grabImageHolder;
 const ImgBase *grab_image(){
   const ImgBase *img = 0;
-  //  const ImgBase *image = grabber.grabImage();
+  //  const ImgBase *image = grabber.grab();
 
-  grabImageHolder = grabber.grabImage();
+  grabImageHolder = grabber.grab();
   if (!(bool)pa("-flip")){
     img = grabImageHolder.ptr();
   }else{

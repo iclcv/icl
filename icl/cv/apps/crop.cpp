@@ -152,7 +152,7 @@ void batch_pattern_changed(){
         ImgBase *dst = 0;
         if(performCrop){
           GenericGrabber g("file","file="+f[i]);
-          const ImgBase *image = g.grabImage().ptr()->shallowCopy(r);
+          const ImgBase *image = g.grab().ptr()->shallowCopy(r);
           image->deepCopyROI(&dst);
           out.send(*dst);
           std::cout << "converted file " << f[i] << " successfully" << std::endl;
@@ -211,7 +211,7 @@ void init(){
   if(!c_arg){
     gui["batch"].registerCallback(batch_crop);
   }
-  Image image = grabber.grabImage();
+  Image image = grabber.grab();
   if(!c_arg){
     mouse_1 = new Mouse1(image.getSize());
     gui["draw"].install(mouse_1);
@@ -241,7 +241,7 @@ void run(){
   static FPSLimiter fpsLimit(30);
   fpsLimit.wait();
 
-  Image imageHolder = grabber.grabImage();
+  Image imageHolder = grabber.grab();
   const ImgBase *image = imageHolder.ptr();
   DrawHandle draw = gui["draw"];
   ImageHandle cropped = gui["cropped"];
@@ -310,7 +310,7 @@ int main(int n, char **args){
           "-compute-optimal-scaling-size(target-width) -compute-optimal-scaling-size-input-size(Size=0x0)");
   if(pa("-estimate-image-size-only").as<bool>() || pa("-estimate-image-ar-only").as<bool>() || pa("-compute-optimal-scaling-size").as<bool>()){
     GenericGrabber g(pa("-input"));
-    Size s = g.grabImage().getSize();
+    Size s = g.grab().getSize();
     if(pa("-estimate-image-size-only")){
       std::cout << s << std::endl;
     }

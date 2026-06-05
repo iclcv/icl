@@ -41,7 +41,7 @@
     }
 
     void run(){
-      gui["image"] = grabber.grabImage();
+      gui["image"] = grabber.grab();
     }
 
     int main(int n, char **args){

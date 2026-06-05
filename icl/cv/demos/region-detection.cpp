@@ -27,7 +27,7 @@ void init(){
 
 void run(){
   DrawHandle draw = gui["image"];
-  Image I = grabber.grabImage();
+  Image I = grabber.grab();
 
   draw = I;
 
