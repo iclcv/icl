@@ -31,11 +31,16 @@ namespace icl::io {
 
       \section BACK Supported Backends
 
-      Currently:
-        - "file" (description=filepattern)
-        - "video" (description=output-video-filename,CODEC-FOURCC=DIV3,VideoSize=VGA,FPS=24)
-        - "ws"   (WebSocket server, description=PORT or BIND:PORT)
-        - "v4l"  (V4L2 loopback device name)
+      Built-ins (always registered):
+        - "null" — discards every frame
+        - "file" (description=filepattern) — extension dispatches to the
+                                              matching file-writer plugin
+
+      Built conditionally on optional dependencies:
+        - "ws"    (description=PORT or BIND:PORT) — WebSocket server
+                                                    (needs Qt6WebSockets)
+        - "video" (description=file,FOURCC=DIV3,size=VGA,fps=24) — libav
+                                                                   video writer
 
       Pass `-o list` (or type=="list") to auto-print the up-to-date
       table from the process-wide registry.

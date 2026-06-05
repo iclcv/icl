@@ -74,7 +74,7 @@ namespace icl::io {
         ++i;
       }
       std::cout << "Supported Image Output Devices:\n\n" << t << std::endl;
-      std::terminate();
+      std::exit(0);
     }
 
     const auto *entry = imageOutputRegistry().get(type);
