@@ -93,22 +93,6 @@ are handled in a special way by the automatically created Grabber-
 property-GUIs available in the ICLQt package.
 
 
-\section CB Callback Based Image Akquisition
-
-As a very new experimental features, ICL's Grabber interface provides
-methods to register callback functions to the grabber that are
-then called automatically whenever a new image is available. This
-feature needs to be implemented explicitly for each grabber backend and
-does sometimes not even make sense. Furthermore, it' could lead to
-some strange behaviour of the whole application, because the internal
-image akquisition process is suddenly linked to the further image
-processing steps directly. This feature should not be used for
-writing applications that are scheduled by the speed of the internal
-image aquisition loop. Therefore, images should never be processed
-in the callback functions that are registred.
-
-So far only a few grabbers provide this feature at all. If it
-is not provided, the registered callbacks will never be called.
 */
 class ICLIO_API Grabber : public utils::Configurable{
 /// internal data class
@@ -248,20 +232,6 @@ bool isUndistortionEnabled() const;
 const core::Img32f *getUndistortionWarpMap() const;
 /// @}
 
-/// new image callback type
-using callback = std::function<void(const core::ImgBase*)>;
-
-/// registers a callback that is called each time, a new image is available
-/** This feature must not be implemented by specific grabber implementations. And
-   it is up to the implementation whether the image that is passed to the
-   callback has the "desired parameters" or not. Most likely, an internal
-   image buffer is passed, which does not have the desired paremters. The output image
-   is also usually not undistorted. */
-virtual void registerCallback(callback cb);
-
-/// removes all registered image callbacks
-virtual void removeAllCallbacks();
-
 /// Same as Configurable::registerCallback, but wraps the callback so it
 /// acquires `m_grabMutex` before firing. Lets backends that mutate
 /// internal state from a property change (typically via
@@ -270,10 +240,6 @@ virtual void removeAllCallbacks();
 /// see project_configurable_op_threadsafety.md for rationale.  Returns
 /// a token that can be passed to Configurable::removeCallback.
 utils::Configurable::CallbackToken registerCallback(utils::Configurable::Callback cb);
-
-/// this function can be implemented by subclasses in order to notify, that a new image is available
-/** When this function is called, it will automatically call all callbacks with the given image. */
-virtual void notifyNewImageAvailable(const core::ImgBase *image);
 
 protected:
 

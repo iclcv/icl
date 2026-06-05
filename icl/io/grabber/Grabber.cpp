@@ -33,8 +33,6 @@ namespace icl::io {
     scalemode undistortionInterpolationMode;
     bool undistortionUseOpenCL;
 
-    std::recursive_mutex callbackMutex;
-    std::vector<Grabber::callback> callbacks;
   };
 
 
@@ -266,11 +264,6 @@ namespace icl::io {
   }
 
 
-  void Grabber::registerCallback(Grabber::callback cb){
-    std::scoped_lock lock(data->callbackMutex);
-    data->callbacks.push_back(cb);
-  }
-
   utils::Configurable::CallbackToken Grabber::registerCallback(utils::Configurable::Callback cb){
     // Every Grabber-level registered property callback implicitly serializes
     // against grab() via m_grabMutex. Matches the reader-side scoped_lock at
@@ -279,18 +272,6 @@ namespace icl::io {
       std::scoped_lock lock(m_grabMutex);
       cb(p);
     });
-  }
-
-  void Grabber::removeAllCallbacks(){
-    std::scoped_lock lock(data->callbackMutex);
-    data->callbacks.clear();
-  }
-
-  void Grabber::notifyNewImageAvailable(const ImgBase *image){
-    std::scoped_lock lock(data->callbackMutex);
-    for(size_t i=0;i<data->callbacks.size();++i){
-      data->callbacks[i](image);
-    }
   }
 
   void Grabber::processPropertyChange(const utils::Configurable::Property &prop){

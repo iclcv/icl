@@ -221,20 +221,6 @@ namespace icl::io {
         return m_poGrabber->getDesiredSizeInternal();
       }
 
-      /// passes registered callback to the internal pointer
-      void registerCallback(Grabber::callback cb){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->registerCallback(cb);
-      }
-
-      /// passes registered callback to the internal pointer
-      void removeAllCallbacks(){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->removeAllCallbacks();
-      }
-
       /// @{ @name desired image parameters (forward to the wrapped backend)
 
       void useDesired(core::depth d) {
