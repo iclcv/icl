@@ -469,6 +469,33 @@ namespace icl::utils {
     call_callbacks(propertyName, this);
   }
 
+  void Configurable::setPropertyValueSilently(const std::string &propertyName,
+                                              const AutoParse<std::string> &value){
+    Property &p = prop_storage(propertyName);
+    if(p.configurable != this){
+      p.configurable->setPropertyValueSilently(propertyName.substr(p.childPrefix.length()), value);
+      return;
+    }
+    std::scoped_lock lock(m_mutex);
+    if(p.constraint.has_value()){
+      const auto &a = prop::lookupAdapter(p.constraint.type());
+      p.typed_value = a.fromString(p.constraint, value.str());
+    }else{
+      p.typed_value = std::any(value.str());
+    }
+  }
+
+  void Configurable::setPropertyValueTypedSilently(const std::string &propertyName, std::any v){
+    Property &p = prop_storage(propertyName);
+    if(p.configurable != this){
+      p.configurable->setPropertyValueTypedSilently(propertyName.substr(p.childPrefix.length()),
+                                                    std::move(v));
+      return;
+    }
+    std::scoped_lock lock(m_mutex);
+    p.typed_value = std::move(v);
+  }
+
   std::vector<std::string> remove_by_filter(const std::vector<std::string> &ps,
                                             const std::vector<std::string> &filter){
     std::vector<std::string> ps2;

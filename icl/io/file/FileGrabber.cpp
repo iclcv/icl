@@ -71,9 +71,6 @@ namespace icl::io {
       /// A special buffer image
       ImgBase *poBufferImage;
 
-      /// forced plugin name
-      std::string forcedPluginType;
-
       /// for time stamp based image acquisition
       bool useTimeStamps;
 
@@ -103,7 +100,7 @@ namespace icl::io {
   }
 
   FileGrabber::FileGrabber()
-    :  m_data(new Data), m_propertyMutex(), m_updatingProperties(false)
+    :  m_data(new Data)
   {
     m_data->iCurrIdx  = 0;
     m_data->bBufferImages = false;
@@ -117,7 +114,7 @@ namespace icl::io {
   FileGrabber::FileGrabber(const std::string &pattern,
                                    bool buffer,
                                    bool ignoreDesired)
-    : m_data(new Data), m_propertyMutex(), m_updatingProperties(false)
+    : m_data(new Data)
   {
 
     if(File(pattern).isDirectory()){
@@ -296,7 +293,7 @@ namespace icl::io {
         //DEBUG_LOG("updating curr idx to " << m_data->iCurrIdx);
       }
 
-      const auto *fn = find_plugin(m_data->forcedPluginType == "" ? f.getSuffix() : m_data->forcedPluginType);
+      const auto *fn = find_plugin(f.getSuffix());
       if(!fn){
         throw InvalidFileException(str("file type (filename was \"")+f.getName()+"\")");
         return 0;
@@ -343,10 +340,6 @@ namespace icl::io {
     }
 
 
-    void FileGrabber::forcePluginType(const std::string &suffix){
-      m_data->forcedPluginType = suffix;
-    }
-
     void FileGrabber::addProperties(){
       addProperty("format",prop::Info{}, "unknown", "");
       addProperty("size",prop::Info{}, "unknown", "");
@@ -372,8 +365,6 @@ namespace icl::io {
     }
 
     void FileGrabber::processPropertyChange(const utils::Configurable::Property &prop){
-      std::scoped_lock l(m_propertyMutex);
-      if (m_updatingProperties) return;
       if(prop.name == "next") {
         next();
       }else if(prop.name == "prev"){
@@ -395,40 +386,33 @@ namespace icl::io {
         if(m_data->bAutoNext){
           WARNING_LOG("the \"frame-index\" property cannot be set if \"auto-next\" is on");
         }else{
+          const int size = m_data->oFileList.size();
           int idx = prop.as<int>();
-          if(idx < 0 || idx >= m_data->oFileList.size()){
-            if(idx < 0){
-              idx = 0;
-            }else{
-              idx = m_data->oFileList.size()-1;
-            }
+          if(idx < 0 || idx >= size){
+            idx = (idx < 0) ? 0 : size - 1;
             WARNING_LOG("given frame-index was not within the valid range (given value was clipped)");
           }
-          m_data->iCurrIdx = prop.as<int>() % (m_data->oFileList.size()-1);
-          Thread::sleep(0.2);
+          m_data->iCurrIdx = idx;
         }
-      }else{
-        ERROR_LOG("property \"" << prop.name << "\" is not available of cannot be set");
       }
+      // Info-only properties (format, size, *filename, *progress) are
+      // updated from updateProperties() via setPropertyValueSilently,
+      // so they never reach this callback — no need to filter them here.
     }
 
     void FileGrabber::updateProperties(const ImgBase* img){
-      std::scoped_lock l(m_propertyMutex);
-      m_updatingProperties = true;
       int s = m_data->oFileList.size();
       int usedIdx = m_data->iCurrIdx - (m_data->bAutoNext ? 1 : 0);
       if(usedIdx < 0) usedIdx = s-1;
 
-      //DEBUG_LOG("in update properties: use idx = " << usedIdx);
-      //std::cout << "--" << std::endl;
-      prop("next filename").value    = m_data->oFileList[usedIdx == s-1 ? 0 : usedIdx+1];
-      prop("current filename").value = m_data->oFileList[usedIdx];
-      prop("relative progress").value = str((100* (usedIdx+1)) / float(s))+" %";
-      prop("absolute progress").value = str(usedIdx+1) + " / " + str(s);
-      prop("format").value           = str(img -> getFormat());
-      prop("size").value             = str(img -> getSize());
-      //prop("frame-index").value = m_data->iCurrIdx;
-      m_updatingProperties = false;
+      // Silent setters: these are derived/Info properties — no callback
+      // re-entry needed.
+      setPropertyValueSilently("next filename",     m_data->oFileList[usedIdx == s-1 ? 0 : usedIdx+1]);
+      setPropertyValueSilently("current filename",  m_data->oFileList[usedIdx]);
+      setPropertyValueSilently("relative progress", str((100 * (usedIdx + 1)) / float(s)) + " %");
+      setPropertyValueSilently("absolute progress", str(usedIdx + 1) + " / " + str(s));
+      setPropertyValueSilently("format",            str(img->getFormat()));
+      setPropertyValueSilently("size",              str(img->getSize()));
     }
 
     REGISTER_CONFIGURABLE(FileGrabber, return new FileGrabber("*", false, false));

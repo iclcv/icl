@@ -582,6 +582,13 @@ namespace icl::utils {
         syncChangesTo callers use this entry point. */
     void setPropertyValue(const std::string &propertyName, const AutoParse<std::string> &value);
 
+    /// Like setPropertyValue but skips firing property-change callbacks.
+    /** Used when an internal computation needs to publish a derived value
+        into a property (typically an Info-typed display field) without
+        re-entering the user's change handler.  Eliminates the
+        recursion-guard antipattern. */
+    void setPropertyValueSilently(const std::string &propertyName, const AutoParse<std::string> &value);
+
     /// Typed setter — stores `v` directly into Property::typed_value,
     /// fires callbacks.  Bypasses the string round-trip that
     /// `setPropertyValue(name, AutoParse<std::string>)` pays (stringify
@@ -601,6 +608,10 @@ namespace icl::utils {
     /// properties (rare edge case), any std::any is accepted and
     /// downstream reads go through the cascade.
     void setPropertyValueTyped(const std::string &propertyName, std::any v);
+
+    /// Like setPropertyValueTyped but skips firing property-change callbacks.
+    /** See setPropertyValueSilently — same pattern for the typed entry point. */
+    void setPropertyValueTypedSilently(const std::string &propertyName, std::any v);
 
     // setPropertyPayload / getPropertyPayload retired — typed_value itself
     // carries the image/non-string payload now that addProperty<ImageView>

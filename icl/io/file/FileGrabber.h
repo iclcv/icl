@@ -14,7 +14,6 @@
 #include <icl/io/grabber/Grabber.h>
 
 #include <functional>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -81,9 +80,6 @@ namespace icl::io {
       /// internally sets the next-image pointer back
       void prev();
 
-      /// forces the filegrabber to use a plugin for the given suffix
-      void forcePluginType(const std::string &suffix);
-
     private:
       const core::ImgBase *grabDisplay();
       void addProperties();
@@ -92,8 +88,6 @@ namespace icl::io {
 
       struct Data;
       Data *m_data;
-      std::recursive_mutex m_propertyMutex;
-      bool m_updatingProperties;
   };
 
   } // namespace icl::io
