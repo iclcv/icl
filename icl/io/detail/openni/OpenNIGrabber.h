@@ -63,7 +63,7 @@ namespace icl::io {
       ~OpenNIGrabber();
 
       /// grab function grabs an image (destination image is adapted on demand)
-      /** @copydoc icl::io::Grabber::grab(core::ImgBase**) **/
+      /** \copydoc icl::io::Grabber::acquireImage() **/
       virtual const core::ImgBase* acquireImage();
 
       /**

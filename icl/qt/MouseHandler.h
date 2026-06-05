@@ -52,7 +52,7 @@ namespace icl::qt {
         widget->install(&mouse);
       }
       void run(){
-        widget->setImage(grabber->grab());
+        widget->setImage(grabber->grabImage());
         widget->update();
       }
 

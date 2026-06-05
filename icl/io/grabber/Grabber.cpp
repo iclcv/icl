@@ -84,59 +84,6 @@ namespace icl::io {
     return data->desiredSize;
   }
 
-  std::string Grabber::translateSteppingRange(const SteppingRange<double>& range){
-    return str(range);
-  }
-
-  SteppingRange<double> Grabber::translateSteppingRange(const std::string &rangeStr){
-    return parse<SteppingRange<double> >(rangeStr);
-  }
-
-  template <class T> static std::string translate_any_vec(const std::vector<T> &v){
-    std::ostringstream s;
-    s << "{";
-    for(unsigned int i=0;i<v.size();++i){
-      s << '"' << v[i] << '"' << (i<v.size()-1 ? ',' : '}');
-    }
-    return s.str();
-  }
-
-  static std::string strip_quotes(std::string s){
-    if(!s.length()) return s;
-    if(s[0] == '"') s = s.substr(1);
-    if(!s.length()) return s;
-    if(s[s.length()-1] == '"') return s.substr(0,s.length()-1);
-    return s;
-  }
-
-  template <class T> static std::vector<T> translate_any_string(const std::string &v){
-    std::vector<std::string> vs = tok(v,",");
-    std::vector<T> ts(vs.size());
-    for(unsigned int i=0; i<vs.size();++i){
-      if(i==0 && vs[i].length() && vs[i][0] == '{'){
-        vs[i] = vs[i].substr(1);
-      }else if(i==vs.size()-1 && vs[i].length() && vs[i][vs[i].length()-1] == '}'){
-        vs[i] = vs[i].substr(0,vs[i].length()-1);
-      }
-      ts[i] = parse<T>(strip_quotes(vs[i]));
-    }
-    return ts;
-  }
-
-
-  std::string Grabber::translateDoubleVec(const std::vector<double> &v){
-    return translate_any_vec(v);
-  }
-  std::vector<double> Grabber::translateDoubleVec(const std::string &s){
-    return translate_any_string<double>(s);
-  }
-  std::string Grabber::translateStringVec(const std::vector<std::string> &v){
-    return translate_any_vec(v);
-  }
-  std::vector<std::string> Grabber::translateStringVec(const std::string &v){
-    return translate_any_string<std::string>(v);
-  }
-
   const ImgBase *Grabber::grab(ImgBase **ppoDst){
     // Reader-side of the m_grabMutex pattern (mirrors UnaryOp::apply()).
     // Single funnel for every backend's acquireImage() + adaptGrabResult

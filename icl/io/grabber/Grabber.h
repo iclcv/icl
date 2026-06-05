@@ -20,7 +20,6 @@ namespace icl::filter { class ImageUndistortion; }
 #include <vector>
 #include <set>
 #include <mutex>
-namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
 
 namespace icl::io {
 /** \cond */
@@ -178,29 +177,6 @@ void ignoreDesired();
 
 /// @}
 
-/// @}
-/// @{ @name static string conversion functions
-
-/// translates a SteppingRange into a string representation
-static std::string translateSteppingRange(const utils::SteppingRange<double>& range);
-
-/// creates a SteppingRange out of a string representation
-static utils::SteppingRange<double> translateSteppingRange(const std::string &rangeStr);
-
-/// translates a vector of doubles into a string representation
-static std::string translateDoubleVec(const std::vector<double> &doubleVec);
-
-/// creates a vector of doubles out of a string representation
-static std::vector<double> translateDoubleVec(const std::string &doubleVecStr);
-
-/// translates a vector of strings into a single string representation
-static std::string translateStringVec(const std::vector<std::string> &stringVec);
-
-/// creates a vector of strins out of a single string representation
-static std::vector<std::string> translateStringVec(const std::string &stringVecStr);
-
-/// @}
-
 /// @{ @name distortion functions
 
 /// enables the undistorion
@@ -263,7 +239,10 @@ const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **d
 mutable std::recursive_mutex m_grabMutex;
 
 protected:
-/// Internal grab using legacy ImgBase** mechanism (not public — use grabImage())
+/// Internal funnel: locks m_grabMutex, calls acquireImage(), runs the
+/// adaptGrabResult + warp pipeline.  Subclasses implement acquireImage()
+/// instead of overriding this; FileGrabber uses it from bufferImages()
+/// to pre-load into ImgBase* slots (eventually a vector<Image>).
 const core::ImgBase *grab(core::ImgBase **dst=0);
 
 private:

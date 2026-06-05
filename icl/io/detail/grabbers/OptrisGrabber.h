@@ -37,7 +37,7 @@ namespace icl::io {
       static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
 
       /// grabbing function
-      /** \copydoc icl::io::Grabber::grab(core::ImgBase**)  **/
+      /** \copydoc icl::io::Grabber::acquireImage()  **/
       virtual const core::ImgBase* acquireImage();
 
       /// callback for changed configurable properties
