@@ -20,8 +20,7 @@ namespace icl::io {
   class ICLIO_API CreateGrabber : public Grabber{
     public:
 
-      /// default grab function
-      virtual const core::ImgBase* acquireImage();
+      core::Image acquireImage() override;
 
       /// Create a CreateGrabber with given max. fps count
       CreateGrabber(const std::string &what);

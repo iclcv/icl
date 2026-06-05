@@ -70,6 +70,6 @@ namespace icl::io {
     /// Pop the latest frame from the queue, blocking up to
     /// `block timeout ms` for a fresh frame; on timeout, optionally
     /// replays the last-known frame.
-    virtual const core::ImgBase *acquireImage() override;
+    core::Image acquireImage() override;
   };
 } // namespace icl::io

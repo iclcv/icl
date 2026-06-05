@@ -283,8 +283,8 @@ namespace icl::io {
     return empty;
   }
 
-  const core::ImgBase *WSGrabber::acquireImage() {
-    if (!m_data || !m_data->client) return nullptr;
+  core::Image WSGrabber::acquireImage() {
+    if (!m_data || !m_data->client) return core::Image();
     auto *c = m_data->client;
 
     // Refresh live-info properties cheaply — these are atomics, no locking.
@@ -323,9 +323,9 @@ namespace icl::io {
     if (bytes.isEmpty()) {
       // No fresh frame — replay last if allowed.
       if (m_data->replayLastOnTimeout && !m_data->lastFrame.isNull()) {
-        return m_data->lastFrame.ptr();
+        return m_data->lastFrame;
       }
-      return nullptr;
+      return core::Image();
     }
 
     const qint64 nowUs = QDateTime::currentMSecsSinceEpoch() * 1000;
@@ -342,15 +342,15 @@ namespace icl::io {
     if (decoded.isNull()) {
       // Bad frame; keep last known if any.
       return m_data->replayLastOnTimeout && !m_data->lastFrame.isNull()
-             ? m_data->lastFrame.ptr() : nullptr;
+             ? m_data->lastFrame : core::Image();
     }
 
     // ImageCompressor returns an Image whose backing buffer it also keeps
     // a reference to (for next decompress() reuse). Deep-copy here so the
-    // pointer we return to the consumer stays valid past the next
+    // Image we return to the consumer stays valid past the next
     // acquireImage() call.
     m_data->lastFrame = Image(decoded.ptr()->deepCopy());
-    return m_data->lastFrame.ptr();
+    return m_data->lastFrame;
   }
 
   // ----- registration with GenericGrabber ---------------------------------

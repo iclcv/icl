@@ -245,9 +245,9 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
     }
   }
 
-  virtual const ImgBase *acquireImage(){
+  core::Image acquireImage() override {
     std::scoped_lock l(getMutex());
-    ICLASSERT_RETURN_VAL(getDesiredDepth() == depth8u,0);
+    ICLASSERT_RETURN_VAL(getDesiredDepth() == depth8u, core::Image());
 
     image.setSize(getDesiredSize());
     image.setFormat(getDesiredFormat());
@@ -268,7 +268,7 @@ struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
       ERROR_LOG("invalid channel count! (allowed is 1 or 3 but found " << image.getChannels() << ")");
     }
 
-    return &image;
+    return core::Image(image.deepCopy());
   }
 private:
   Img8u image;

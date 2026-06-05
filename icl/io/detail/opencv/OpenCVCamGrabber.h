@@ -7,6 +7,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/compat/OpenCV.h>
+#include <icl/core/Image.h>
 #include <icl/io/grabber/Grabber.h>
 #include <icl/utils/Exception.h>
 
@@ -24,12 +25,12 @@ namespace icl::io {
       ///
       std::recursive_mutex m_mutex;
       ///Buffer for imagescaling
-      core::ImgBase *m_buffer;
+      core::Image m_buffer;
     public:
 
       /// grab function grabs an image (destination image is adapted on demand)
       /** \copydoc icl::io::Grabber::acquireImage() **/
-      virtual const core::ImgBase *acquireImage();
+      core::Image acquireImage();
 
       /// callback for changed configurable properties
       void processPropertyChange(const utils::Configurable::Property &prop);

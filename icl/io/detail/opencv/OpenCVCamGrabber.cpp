@@ -38,18 +38,18 @@ namespace icl::io {
           [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
-  OpenCVCamGrabber::~OpenCVCamGrabber(){
-    ICL_DELETE(m_buffer);
-  }
+  OpenCVCamGrabber::~OpenCVCamGrabber() = default;
 
-  const ImgBase *OpenCVCamGrabber::acquireImage(){
-    ICLASSERT_RETURN_VAL( !(cvc==0), 0);
+  Image OpenCVCamGrabber::acquireImage(){
+    ICLASSERT_RETURN_VAL( !(cvc==0), Image());
     cv::Mat frame;
     cvc->read(frame);
     // OpenCV captures in BGR; convert to RGB for ICL
     cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
     std::scoped_lock lock(m_mutex);
-    core::mat_to_img(&frame,&m_buffer);
+    ImgBase *raw = m_buffer.ptr();
+    core::mat_to_img(&frame, &raw);
+    if(raw != m_buffer.ptr()) m_buffer = Image(raw);
     return m_buffer;
   }
 

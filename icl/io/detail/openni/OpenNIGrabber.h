@@ -64,7 +64,7 @@ namespace icl::io {
 
       /// grab function grabs an image (destination image is adapted on demand)
       /** \copydoc icl::io::Grabber::acquireImage() **/
-      virtual const core::ImgBase* acquireImage();
+      core::Image acquireImage();
 
       /**
           returns the underlying handle of the grabber.

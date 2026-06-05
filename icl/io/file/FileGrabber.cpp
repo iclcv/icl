@@ -6,6 +6,7 @@
 #include <icl/utils/prop/Constraints.h>
 #include <map>
 #include <icl/io/file/FileGrabber.h>
+#include <icl/core/Image.h>
 #include <icl/io/file/FileList.h>
 #include <icl/io/file/FilenameGenerator.h>
 #include <icl/utils/Exception.h>
@@ -56,7 +57,7 @@ namespace icl::io {
       int iCurrIdx;
 
       /// buffer for buffered mode
-      std::vector<ImgBase*> vecImageBuffer;
+      std::vector<core::Image> vecImageBuffer;
 
       /// flag whether to pre-buffer images or not
       bool bBufferImages;
@@ -177,11 +178,7 @@ namespace icl::io {
 
 
     FileGrabber::~FileGrabber(){
-
       ICL_DELETE(m_data->poBufferImage);
-      for(unsigned int i=0;i<m_data->vecImageBuffer.size();i++){
-        ICL_DELETE(m_data->vecImageBuffer[i]);
-      }
       delete(m_data);
     }
 
@@ -190,29 +187,20 @@ namespace icl::io {
 
       if(!m_data->vecImageBuffer.size()){
         std::vector<std::string> correctNames;
-        m_data->vecImageBuffer.resize(m_data->oFileList.size());
-        std::fill(m_data->vecImageBuffer.begin(),m_data->vecImageBuffer.end(),(ImgBase*)0);
+        std::vector<core::Image> buf;
+        buf.reserve(m_data->oFileList.size());
         for(int i=0;i<m_data->oFileList.size();i++){
-          if(omitExceptions){
-            try{
-              grab(&m_data->vecImageBuffer[i]);
-              correctNames.push_back(m_data->oFileList[i]);
-            }catch([[maybe_unused]] ICLException &ex){
-            }
-          }else{
-            grab(&m_data->vecImageBuffer[i]);
+          try{
+            core::Image img = grabImage().deepCopy();
+            buf.push_back(std::move(img));
             correctNames.push_back(m_data->oFileList[i]);
+          }catch([[maybe_unused]] ICLException &ex){
+            if(!omitExceptions) throw;
           }
         }
-        std::vector<ImgBase*> buf;
-        for(unsigned int i=0;i<m_data->vecImageBuffer.size();++i){
-          if(m_data->vecImageBuffer[i]){
-            buf.push_back(m_data->vecImageBuffer[i]);
-          }
-        }
-        m_data->vecImageBuffer = buf;
+        m_data->vecImageBuffer = std::move(buf);
         m_data->oFileList = FileList(correctNames);
-        if(!buf.size()){
+        if(m_data->vecImageBuffer.empty()){
           throw FileNotFoundException("...");
         }
       }
@@ -249,9 +237,10 @@ namespace icl::io {
     }
 
 
-    const ImgBase *FileGrabber::acquireImage(){
+    core::Image FileGrabber::acquireImage(){
       try{
         const ImgBase* img = grabDisplay();
+        if(!img) return core::Image();
         updateProperties(img);
 
         std::string print = prop("print meta-data").value;
@@ -263,14 +252,17 @@ namespace icl::io {
           }
         }
 
-        return img;
+        // The plugin-owned poBufferImage (and the cache slots' underlying
+        // ImgBase) are mutated by FileGrabber on subsequent calls — hand
+        // the caller an independent Image to keep the contract clean.
+        return core::Image(img->deepCopy());
       } catch(FileListEndedException &ex){
         throw;
       } catch (ICLException &e){
         DEBUG_LOG("could not grab image. Name: "
                   << m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)]
                   << " Error: " << e.what());
-        return nullptr;
+        return core::Image();
       }
     }
 
@@ -281,7 +273,7 @@ namespace icl::io {
           m_data->useTimeStamps = false;
         }
         ICLASSERT_RETURN_VAL(m_data->vecImageBuffer.size(),nullptr);
-        ImgBase *p = m_data->vecImageBuffer[m_data->iCurrIdx];
+        ImgBase *p = m_data->vecImageBuffer[m_data->iCurrIdx].ptr();
         if(m_data->bAutoNext) ++m_data->iCurrIdx;
         if(m_data->iCurrIdx >= static_cast<int>(m_data->vecImageBuffer.size())) m_data->iCurrIdx = 0;
         return p;

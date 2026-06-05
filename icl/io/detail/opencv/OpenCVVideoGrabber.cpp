@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christian Groszewski, Viktor Richter, Christof Elbrechter
 
 #include <icl/io/detail/opencv/OpenCVVideoGrabber.h>
+#include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
 #include <opencv2/videoio/videoio_c.h>
 
@@ -21,7 +22,7 @@ namespace icl::io {
       ///Ensures the desired framerate
       FPSLimiter *fpslimiter;
       ///Buffer for scaling if necessary
-      ImgBase *m_buffer;
+      Image m_buffer;
       ///
       bool use_video_fps;
 
@@ -34,13 +35,15 @@ namespace icl::io {
     return ret;
   }
 
-  const ImgBase *OpenCVVideoGrabber::acquireImage(){
+  Image OpenCVVideoGrabber::acquireImage(){
     std::scoped_lock l(mutex);
-    ICLASSERT_RETURN_VAL( !(data->cvc==nullptr), 0);
+    ICLASSERT_RETURN_VAL( !(data->cvc==nullptr), Image());
     cv::Mat frame;
     data->cvc->read(frame);
-    core::mat_to_img(&frame, &data->m_buffer);
-    if(data->m_buffer->getChannels() == 3) data->m_buffer->setFormat(formatRGB);
+    ImgBase *raw = data->m_buffer.ptr();
+    core::mat_to_img(&frame, &raw);
+    if(raw != data->m_buffer.ptr()) data->m_buffer = Image(raw);
+    if(data->m_buffer.getChannels() == 3) data->m_buffer.ptr()->setFormat(formatRGB);
     if (data->use_video_fps){
       data->fpslimiter->wait();
     }
@@ -54,7 +57,6 @@ namespace icl::io {
   }
 
   OpenCVVideoGrabber::OpenCVVideoGrabber(const std::string &fileName) : data(new Data), mutex(), updating(false){
-    data->m_buffer = 0;
     data->use_video_fps = true;
     data->filename = fileName;
 
@@ -100,7 +102,6 @@ namespace icl::io {
 
   OpenCVVideoGrabber::~OpenCVVideoGrabber(){
     delete data->fpslimiter;
-    ICL_DELETE(data->m_buffer);
     delete data;
   }
 

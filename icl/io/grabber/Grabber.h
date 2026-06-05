@@ -219,33 +219,29 @@ utils::Configurable::CallbackToken registerCallback(utils::Configurable::Callbac
 
 protected:
 
-
 /// Main interface method, implemented by every Grabber backend.
-/** Acquires a new image using the backend's image acquisition path.
-    Called by grab() under m_grabMutex; backends may return an internal
-    buffer whose lifetime extends until the next acquireImage() call. */
-virtual const core::ImgBase *acquireImage() = 0;
+/** Acquires a new image using the backend's image-acquisition path.
+    Called by grabImage() under m_grabMutex.
 
-/// Utility function that allows for much easier implementation of grabUD
-/** called by the grabbers grab() method **/
-const core::ImgBase *adaptGrabResult(const core::ImgBase *src, core::ImgBase **dst);
+    **Lifetime contract**: backends typically return an `Image` that
+    shallow-shares a backend-owned internal buffer.  The returned Image
+    is valid until the next acquireImage() call on the same Grabber —
+    callers who need to retain it longer must deep-copy explicitly. */
+virtual core::Image acquireImage() = 0;
 
-/// Serializes the grab() reader against property callbacks that mutate
-/// backend state. Recursive so a property change firing during
-/// adaptGrabResult / undistortion (which uses internal WarpOp etc.)
-/// doesn't deadlock. Acquired at the top of Grabber::grab() and
-/// inside the wrapped registerCallback overload above. Mirrors
-/// UnaryOp::m_applyMutex.
+/// Serializes the grabImage() reader path against property callbacks
+/// that mutate backend state.  Recursive so a property change firing
+/// during adaptGrabResult / undistortion doesn't deadlock.  Acquired
+/// at the top of grabImage() and inside the wrapped registerCallback
+/// overload above.  Mirrors UnaryOp::m_applyMutex.
 mutable std::recursive_mutex m_grabMutex;
 
-protected:
-/// Internal funnel: locks m_grabMutex, calls acquireImage(), runs the
-/// adaptGrabResult + warp pipeline.  Subclasses implement acquireImage()
-/// instead of overriding this; FileGrabber uses it from bufferImages()
-/// to pre-load into ImgBase* slots (eventually a vector<Image>).
-const core::ImgBase *grab(core::ImgBase **dst=0);
-
 private:
+/// Converts src to the active "desired" depth/size/format if any are
+/// set, using data->converter into data->adaptBuffer.  Returns src
+/// unchanged (shallow share) if no conversion is needed.
+core::Image adaptGrabResult(const core::Image &src);
+
 /// callback for changed configurable properties
 void processPropertyChange(const utils::Configurable::Property &prop);
 

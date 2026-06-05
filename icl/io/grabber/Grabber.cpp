@@ -27,23 +27,19 @@ namespace icl::io {
     format desiredFormat;
     depth desiredDepth;
     Converter converter;
-    ImgBase  *image;
+    Image adaptBuffer;          //!< holds converted output of adaptGrabResult
+    Image warpBuffer;           //!< holds undistortion output
     filter::WarpOp *warp;
     bool undistortionEnabled;
     scalemode undistortionInterpolationMode;
     bool undistortionUseOpenCL;
-
   };
-
-
-
 
   Grabber::Grabber():
     data(new Data){
     data->desiredSize = Size::null;
     data->desiredFormat = (format)-1;
     data->desiredDepth = (depth)-1;
-    data->image = 0;
     data->warp = 0;
     data->undistortionEnabled = true;
     data->undistortionInterpolationMode = interpolateNN;
@@ -51,7 +47,6 @@ namespace icl::io {
   }
 
   Grabber::~Grabber() {
-    ICL_DELETE( data->image );
     ICL_DELETE( data->warp );
     ICL_DELETE( data );
   }
@@ -84,45 +79,30 @@ namespace icl::io {
     return data->desiredSize;
   }
 
-  const ImgBase *Grabber::grab(ImgBase **ppoDst){
+  core::Image Grabber::grabImage(){
     // Reader-side of the m_grabMutex pattern (mirrors UnaryOp::apply()).
     // Single funnel for every backend's acquireImage() + adaptGrabResult
     // + warp; serializes against property-change callbacks routed through
     // the wrapped registerCallback overload below.
     std::scoped_lock lock(m_grabMutex);
-    const ImgBase *acquired = acquireImage();
-    if(!acquired) return acquired;
-    // todo, on which image is the warping applied ?
-    // on the aqcuired image or on the adapte image?
-    // for now, we use the adapted which seem to make
-    // much more sence
 
-    bool useWarp = !!data->warp && data->undistortionEnabled;
+    Image acquired = acquireImage();
+    if(acquired.isNull()) return acquired;
 
-    const ImgBase *adapted = adaptGrabResult(acquired,useWarp ? 0 : ppoDst);
-    if(useWarp){
+    Image adapted = adaptGrabResult(acquired);
+
+    if(data->warp && data->undistortionEnabled){
       data->warp->setScaleMode(data->undistortionInterpolationMode);
-      if(data->undistortionUseOpenCL) {
-        data->warp->unforceAll();
-      } else {
-        data->warp->forceAll(core::Backend::Cpp);
-      }
-      if(ppoDst){
-        data->warp->apply(adapted, ppoDst);
-        return *ppoDst;
-      }else{
-        data->warp->apply(adapted, &data->image);
-        return data->image;
-      }
-    }else{
-      return adapted;
+      if(data->undistortionUseOpenCL) data->warp->unforceAll();
+      else                            data->warp->forceAll(core::Backend::Cpp);
+      // WarpOp::apply uses the legacy ImgBase** mechanism — borrow our
+      // own buffer, then re-adopt if it reallocated.
+      ImgBase *raw = data->warpBuffer.ptr();
+      data->warp->apply(adapted.ptr(), &raw);
+      if(raw != data->warpBuffer.ptr()) data->warpBuffer = Image(raw);
+      return data->warpBuffer;
     }
-  }
-
-  core::Image Grabber::grabImage(){
-    const ImgBase *result = grab();
-    if(!result) return core::Image();
-    return core::Image(result->deepCopy());
+    return adapted;
   }
 
   void Grabber::enableUndistortion(const filter::ImageUndistortion &udist){
@@ -163,28 +143,18 @@ namespace icl::io {
   }
 
 
-  const ImgBase *Grabber::adaptGrabResult(const ImgBase *src, ImgBase **dst){
-    bool adaptDepth = desiredDepthUsed() && (getDesiredDepth() != src->getDepth());
-    bool adaptSize = desiredSizeUsed() && (getDesiredSize() != src->getSize());
-    bool adaptFormat = desiredFormatUsed() && (getDesiredFormat() != src->getFormat());
-    if(adaptDepth || adaptSize || adaptFormat){
-      if(!dst){
-        dst = &data->image;
-      }
-      ensureCompatible(dst,
-                       adaptDepth ? getDesiredDepth() : src->getDepth(),
-                       adaptSize ? getDesiredSize() : src->getSize(),
-                       adaptFormat ? getDesiredFormat() : src->getFormat());
-      data->converter.apply(src,*dst);
-      return *dst;
-    }else{
-      if(dst){
-        src->deepCopy(dst);
-        return *dst;
-      }else{
-        return src;
-      }
-    }
+  core::Image Grabber::adaptGrabResult(const Image &src){
+    bool adaptDepth  = desiredDepthUsed()  && (getDesiredDepth()  != src.getDepth());
+    bool adaptSize   = desiredSizeUsed()   && (getDesiredSize()   != src.getSize());
+    bool adaptFormat = desiredFormatUsed() && (getDesiredFormat() != src.getFormat());
+    if(!(adaptDepth || adaptSize || adaptFormat)) return src;
+
+    format f = adaptFormat ? getDesiredFormat() : src.getFormat();
+    data->adaptBuffer.ensureCompatible(adaptDepth ? getDesiredDepth() : src.getDepth(),
+                                       adaptSize  ? getDesiredSize()  : src.getSize(),
+                                       getChannelsOfFormat(f), f);
+    data->converter.apply(src.ptr(), data->adaptBuffer.ptr());
+    return data->adaptBuffer;
   }
 
   /*static std::vector<std::string> filter_unstable_params(const std::vector<std::string> ps){
@@ -260,7 +230,7 @@ namespace icl::io {
   // Grabber is abstract (acquireImage() is pure); register a thin dummy
   // subclass so the Configurable type list still has an entry.
   struct Grabber_VIRTUAL : public Grabber {
-    const ImgBase *acquireImage() override { return nullptr; }
+    Image acquireImage() override { return Image(); }
   };
   REGISTER_CONFIGURABLE_DEFAULT(Grabber_VIRTUAL);
 

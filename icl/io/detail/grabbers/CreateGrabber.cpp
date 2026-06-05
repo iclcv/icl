@@ -10,11 +10,11 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  const ImgBase* CreateGrabber::acquireImage(){
+  Image CreateGrabber::acquireImage(){
     if(m_updateTimeStamp){
       m_image.ptr()->setTime();
     }
-    return m_image.ptr();
+    return m_image;
   }
 
   CreateGrabber::CreateGrabber(const std::string &what){

@@ -36,7 +36,7 @@ namespace icl::io {
       ICLIO_API ~KinectGrabber();
 
       /// grabs a new image
-      ICLIO_API virtual const core::ImgBase* acquireImage();
+      ICLIO_API core::Image acquireImage();
 
       /// callback for changed configurable properties
       ICLIO_API void processPropertyChange(const utils::Configurable::Property &prop);

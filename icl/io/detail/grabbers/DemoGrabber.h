@@ -10,6 +10,7 @@
 #include <icl/core/cc/Color.h>
 
 #include <icl/io/grabber/Grabber.h>
+#include <icl/core/Image.h>
 #include <mutex>
 
 namespace icl::io {
@@ -19,8 +20,7 @@ namespace icl::io {
       some real unexpected behaviour */
   class ICLIO_API DemoGrabber : public Grabber{
     public:
-      /// default grab function
-      virtual const core::ImgBase* acquireImage();
+      core::Image acquireImage() override;
 
       /// Create a DemoGrabber with given max. fps count
       DemoGrabber(float maxFPS=30);
@@ -52,7 +52,7 @@ namespace icl::io {
       utils::Time m_lastTime;
 
       /// extra buffer for the output image
-      core::ImgBase *m_drawBuffer;
+      core::Image m_drawBuffer;
 
       /// current output format
       core::format m_drawFormat;

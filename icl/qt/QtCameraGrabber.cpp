@@ -92,8 +92,9 @@ namespace icl::qt {
       delete surface;
     }
 
-    const core::ImgBase *QtCameraGrabber::acquireImage() {
-      return surface->getDisplay();
+    core::Image QtCameraGrabber::acquireImage() {
+      const core::ImgBase *p = surface->getDisplay();
+      return p ? core::Image(p->deepCopy()) : core::Image();
     }
 
     Grabber* createQtCameraGrabber(const std::string &param){

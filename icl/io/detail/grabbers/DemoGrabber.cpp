@@ -40,7 +40,6 @@ namespace icl::io {
     m_maxV = Point32f(0.2,0.2);
     m_lastTime = Time::now();
 
-    m_drawBuffer = 0;
     m_drawFormat = formatRGB;
     m_drawSize = Size::VGA;
     m_drawDepth = depth8u;
@@ -79,9 +78,7 @@ namespace icl::io {
           [this](const utils::Configurable::Property &p){ processPropertyChange(p); });
   }
 
-  DemoGrabber::~DemoGrabber(){
-    ICL_DELETE(m_drawBuffer);
-  }
+  DemoGrabber::~DemoGrabber() = default;
 
 
   template<class T>
@@ -89,9 +86,12 @@ namespace icl::io {
     t.transform([](float v){ return v * 0.99f; },t);
   }
 
-  const ImgBase* DemoGrabber::acquireImage(){
+  Image DemoGrabber::acquireImage(){
     std::scoped_lock __lock(m_mutex);
-    ensureCompatible(&m_drawBuffer,m_drawDepth,m_drawSize,m_drawFormat);
+    m_drawBuffer.ensureCompatible(m_drawDepth, m_drawSize,
+                                  getChannelsOfFormat(m_drawFormat),
+                                  m_drawFormat);
+    ImgBase *buf = m_drawBuffer.ptr();
 
     m_v += Point32f(utils::random(-0.001, 0.001),utils::random(-0.001, 0.001));
 
@@ -116,23 +116,23 @@ namespace icl::io {
       }
 
     }
-    Size s = m_drawBuffer->getSize();
+    Size s = buf->getSize();
     Rect r(static_cast<int>((m_x.x-m_size.width)*s.width),
            static_cast<int>((m_x.y-m_size.height)*s.height),
            static_cast<int>(m_size.width*s.width),
            static_cast<int>(m_size.height*s.height));
-    r &= m_drawBuffer->getImageRect();
+    r &= buf->getImageRect();
 
-    if(m_drawBuffer->getDepth() == depth8u){
-      rect(*m_drawBuffer->asImg<icl8u>(),m_color,r);
+    if(buf->getDepth() == depth8u){
+      rect(*buf->asImg<icl8u>(),m_color,r);
     }else{
-      rect(*m_drawBuffer->asImg<icl32f>(),m_color,r);
+      rect(*buf->asImg<icl32f>(),m_color,r);
     }
 
-    if(m_drawBuffer->getDepth() == depth8u){
-      erode_buffer(*m_drawBuffer->asImg<icl8u>());;
+    if(buf->getDepth() == depth8u){
+      erode_buffer(*buf->asImg<icl8u>());;
     }else{
-      erode_buffer(*m_drawBuffer->asImg<icl32f>());;
+      erode_buffer(*buf->asImg<icl32f>());;
     }
 
     Time now = Time::now();
@@ -142,7 +142,7 @@ namespace icl::io {
       Thread::msleep(restSleepTime.toMilliSeconds());
     }
 
-    m_drawBuffer->setTime(now);
+    buf->setTime(now);
     m_lastTime = now;
 
     prop("current-pos").value = "x:" + str(m_x.x*m_drawSize.width) + " y:"

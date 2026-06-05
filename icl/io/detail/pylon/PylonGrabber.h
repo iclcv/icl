@@ -72,7 +72,7 @@ namespace icl::io {
 
         /// grab function grabs an image (destination image is adapted on demand)
         /** \copydoc icl::io::Grabber::acquireImage() **/
-        ICLIO_API virtual const core::ImgBase* acquireImage();
+        ICLIO_API core::Image acquireImage();
 
         /// Uses args to choose a pylon device
         /**

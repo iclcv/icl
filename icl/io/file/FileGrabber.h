@@ -64,7 +64,7 @@ namespace icl::io {
       virtual ~FileGrabber();
 
       /// grab implementation
-      virtual const core::ImgBase *acquireImage();
+      core::Image acquireImage() override;
 
       /// returns the count of files that are available
       unsigned int getFileCount() const;

@@ -370,10 +370,8 @@ namespace {
     return img;
   }
 
-  // Pointer-friendly wrapper: WSGrabber::acquireImage() returns
-  // const ImgBase*; lift to Image and use its operator==.
-  bool imagesEqual(const ImgBase *a, const ImgBase *b) {
-    return a && b && Image(*a) == Image(*b);
+  bool imagesEqual(const Image &a, const Image &b) {
+    return !a.isNull() && !b.isNull() && a == b;
   }
 }
 
@@ -394,9 +392,9 @@ ICL_REGISTER_TEST("WS.loopback.roundtrip",
   Img8u src = makeKnownImage();
   out.send(Image(src));
 
-  const ImgBase *got = grab.acquireImage();
-  ICL_TEST_TRUE(got != nullptr);
-  ICL_TEST_TRUE(imagesEqual(got, &src));
+  Image got = grab.grabImage();
+  ICL_TEST_TRUE(!got.isNull());
+  ICL_TEST_TRUE(imagesEqual(got, Image(src)));
 }
 
 ICL_REGISTER_TEST("WS.multi_client.broadcast",
@@ -411,11 +409,11 @@ ICL_REGISTER_TEST("WS.multi_client.broadcast",
   Img8u src = makeKnownImage(8, 8);
   out.send(Image(src));
 
-  const ImgBase *ga = a.acquireImage();
-  const ImgBase *gb = b.acquireImage();
-  ICL_TEST_TRUE(ga != nullptr && gb != nullptr);
-  ICL_TEST_TRUE(imagesEqual(ga, &src));
-  ICL_TEST_TRUE(imagesEqual(gb, &src));
+  Image ga = a.grabImage();
+  Image gb = b.grabImage();
+  ICL_TEST_TRUE(!ga.isNull() && !gb.isNull());
+  ICL_TEST_TRUE(imagesEqual(ga, Image(src)));
+  ICL_TEST_TRUE(imagesEqual(gb, Image(src)));
 }
 
 ICL_REGISTER_TEST("WS.url_shorthands_accepted",
@@ -435,9 +433,9 @@ ICL_REGISTER_TEST("WS.url_shorthands_accepted",
   Img8u src = makeKnownImage(8, 8);
   out.send(Image(src));
 
-  ICL_TEST_TRUE(imagesEqual(a.acquireImage(), &src));
-  ICL_TEST_TRUE(imagesEqual(b.acquireImage(), &src));
-  ICL_TEST_TRUE(imagesEqual(c.acquireImage(), &src));
+  ICL_TEST_TRUE(imagesEqual(a.grabImage(), Image(src)));
+  ICL_TEST_TRUE(imagesEqual(b.grabImage(), Image(src)));
+  ICL_TEST_TRUE(imagesEqual(c.grabImage(), Image(src)));
 }
 
 ICL_REGISTER_TEST("WS.client_survives_server_restart",
@@ -457,8 +455,8 @@ ICL_REGISTER_TEST("WS.client_survives_server_restart",
     ICL_TEST_TRUE(waitFor([&]{ return out.connectedClients() >= 1; }));
     out.send(Image(src1));
 
-    const ImgBase *got = grab.acquireImage();
-    ICL_TEST_TRUE(imagesEqual(got, &src1));
+    Image got = grab.grabImage();
+    ICL_TEST_TRUE(imagesEqual(got, Image(src1)));
 
     // Phase 2: tear down the server (out goes out of scope here).
     // Phase 3: bring it back up on the same port and prove the SAME
@@ -477,12 +475,12 @@ ICL_REGISTER_TEST("WS.client_survives_server_restart",
 
   // Drop replays of last-known (zero, since this grabber is new) — wait
   // for a real frame.
-  const ImgBase *got = nullptr;
+  Image got;
   waitFor([&]{
-    got = grab.acquireImage();
-    return got != nullptr && imagesEqual(got, &src2);
+    got = grab.grabImage();
+    return !got.isNull() && imagesEqual(got, Image(src2));
   }, /*timeoutMs=*/3000);
-  ICL_TEST_TRUE(got != nullptr);
-  ICL_TEST_TRUE(imagesEqual(got, &src2));
+  ICL_TEST_TRUE(!got.isNull());
+  ICL_TEST_TRUE(imagesEqual(got, Image(src2)));
 }
 #endif // ICL_HAVE_QT_WEBSOCKETS
