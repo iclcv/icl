@@ -18,38 +18,12 @@
 #include <mutex>
 #include <vector>
 
-// ----------------------------------------------------------------------
-// Force-link the built-in compression plugins. The plugins self-register
-// via `__attribute__((constructor))` functions, but on macOS the linker
-// drops the plugin .o entirely if NOTHING in the .o is externally
-// referenced — its constructor function never makes it into the dylib's
-// `__init_offsets` section, so dyld never calls it. Taking the address
-// of each plugin's registration function below adds an external
-// reference, so the .o stays linked and its constructor fires at
-// dlopen-time as intended. Adding a new plugin = one extra entry here
-// (until we move to a meson static-archive `link_whole` setup).
-// ----------------------------------------------------------------------
-extern "C" {
-  void iclRegisterCompressionPlugin_raw();
-  void iclRegisterCompressionPlugin_rlen();
-  void iclRegisterCompressionPlugin_jpeg();
-  void iclRegisterCompressionPlugin_1611();
-#ifdef ICL_HAVE_ZSTD
-  void iclRegisterCompressionPlugin_zstd();
-#endif
-}
-
-namespace {
-  [[maybe_unused]] void (*const iclForceLinkCompressionPlugins[])() = {
-    &iclRegisterCompressionPlugin_raw,
-    &iclRegisterCompressionPlugin_rlen,
-    &iclRegisterCompressionPlugin_jpeg,
-    &iclRegisterCompressionPlugin_1611,
-#ifdef ICL_HAVE_ZSTD
-    &iclRegisterCompressionPlugin_zstd,
-#endif
-  };
-}
+// The built-in compression plugins (raw, rlen, jpeg, 1611, zstd) live in
+// a separate static_library that's linked into libicl-io via meson's
+// link_whole.  That keeps every plugin .o alive regardless of external
+// references — necessary because the plugins self-register via
+// `__attribute__((constructor))` functions and nothing in this TU
+// references their symbols.  See icl/io/meson.build.
 
 namespace icl::io {
   using namespace icl::utils;
@@ -200,8 +174,6 @@ namespace icl::io {
     std::unique_ptr<CompressionPlugin> plugin;
     std::vector<icl8u>                 envelopeBuf;  // full envelope + payload concatenated
 
-    Image                              decoded;       // last successful decode (kept alive
-                                                     // for caller's pointer stability)
     std::unique_ptr<CompressionPlugin> decodePlugin;  // dispatched per-message; cached if
                                                      // the codec didn't change between calls
     std::string                        decodePluginName;
@@ -277,7 +249,12 @@ namespace icl::io {
 
   void ImageCompressor::setCompression(const CompressionSpec &spec) {
     installPlugin(spec.mode, spec.quality);
-    if (prop("mode").as<std::string>() != spec.mode) prop("mode").value = spec.mode;
+    // Update the "mode" property silently: writing through the property
+    // handle would re-fire the mode-change callback, which re-enters
+    // installPlugin(mode, "") and clobbers spec.quality with the empty
+    // default.  setPropertyValueSilently keeps the property tree in sync
+    // without that re-entry.
+    setPropertyValueSilently("mode", spec.mode);
   }
 
   ImageCompressor::CompressionSpec ImageCompressor::getCompression() const {
@@ -366,7 +343,6 @@ namespace icl::io {
     if (!f.meta.empty()) out.ptr()->getMetaData() = f.meta;
     out.ptr()->setTime(f.timestamp);
 
-    m_data->decoded = out;
     return out;
   }
 

@@ -52,7 +52,14 @@ io_sources = files(
 )
 
 # Compression plugins (built-ins always compiled; zstd gated further down).
-io_sources += files(
+#
+# These TUs self-register via __attribute__((constructor)) at dyld time —
+# nothing in libicl-io references their symbols.  On macOS that means the
+# linker dead-strips the entire .o (no __init_offsets entry → dyld never
+# calls the ctor).  Building them as a static_library and linking it with
+# link_whole into libicl-io forces every .o to be retained regardless of
+# external references, so the ctors fire reliably.
+io_compression_plugin_sources = files(
   'detail/compression-plugins/CompressionPlugin.cpp',
   'detail/compression-plugins/CompressionRegistry.cpp',
   'detail/compression-plugins/CompressionPlugin1611.cpp',
@@ -176,7 +183,7 @@ endif
 
 # zstd compression plugin (optional)
 if zstd_dep.found()
-  io_sources += files('detail/compression-plugins/CompressionPluginZstd.cpp')
+  io_compression_plugin_sources += files('detail/compression-plugins/CompressionPluginZstd.cpp')
   io_extra_deps += zstd_dep
 endif
 
@@ -196,8 +203,20 @@ endif
 
 io_deps = [icl_filter_dep, opencv_dep] + io_extra_deps
 
+# Compression plugins are bundled as a static archive linked with
+# link_whole so the linker can't dead-strip the self-registering TUs
+# (see comment on io_compression_plugin_sources).
+io_compression_plugins_lib = static_library('icl-io-compression-plugins',
+  io_compression_plugin_sources,
+  include_directories: [root_inc, gen_inc, sse2neon_inc],
+  dependencies: io_deps,
+  implicit_include_directories: false,
+  cpp_pch: '../_pch/io.h',
+)
+
 icl_io_lib = shared_library('icl-io',
   io_sources,
+  link_whole: io_compression_plugins_lib,
   include_directories: [root_inc, gen_inc, sse2neon_inc],
   dependencies: io_deps,
   version: so_version,
