@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/file-plugins/FileWriterPluginBICL.h>
-#include <icl/io/file/FileWriter.h>      // for REGISTER_FILE_WRITER_PLUGIN macro
+#include <icl/io/detail/file-plugins/FileSinkPluginBICL.h>
+#include <icl/io/detail/FileWriter.h>      // for REGISTER_FILE_SINK_PLUGIN macro
 #include <icl/io/compress/ImageCompressor.h>
 #include <icl/core/Image.h>
 #include <icl/core/ImgBase.h>
@@ -13,15 +13,15 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  FileWriterPluginBICL::FileWriterPluginBICL(const std::string &compressionType,
+  FileSinkPluginBICL::FileSinkPluginBICL(const std::string &compressionType,
                                              const std::string &quality):
     compressionType(compressionType), compressionQuality(quality) {}
 
   // Out-of-line so the unique_ptr's deleter sees the complete
   // ImageCompressor type (forward-declared in the header).
-  FileWriterPluginBICL::~FileWriterPluginBICL() = default;
+  FileSinkPluginBICL::~FileSinkPluginBICL() = default;
 
-  void FileWriterPluginBICL::write(File &file, const ImgBase *image){
+  void FileSinkPluginBICL::write(File &file, const ImgBase *image){
     std::scoped_lock lock(mutex);
     if (!compressor) {
       // Lazy build — this runs after main(), so the
@@ -41,11 +41,11 @@ namespace icl::io {
 // ----- registrations: BICL handles its own ext + the rle1/4/6/8/jicl
 // pseudo-extensions that just instantiate BICL with different codec specs.
 // Each lambda has its own per-type static impl with distinct ctor args.
-namespace { using icl::io::FileWriterPluginBICL; }
+namespace { using icl::io::FileSinkPluginBICL; }
 #define ICL_BICL_REG(TAG, EXT, ...)                                           \
-  REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \
+  REGISTER_FILE_SINK_PLUGIN(TAG, EXT,                                       \
     [](icl::utils::File &f, const icl::core::ImgBase *img) {                  \
-      static FileWriterPluginBICL impl{__VA_ARGS__}; impl.write(f, img);      \
+      static FileSinkPluginBICL impl{__VA_ARGS__}; impl.write(f, img);      \
     })
 ICL_BICL_REG(bicl, ".bicl");
 ICL_BICL_REG(rle1, ".rle1", "rlen", "1");

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/file/FileWriter.h>
+#include <icl/io/detail/FileWriter.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Macros.h>
@@ -11,13 +11,13 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  // Plugins self-register via REGISTER_FILE_WRITER_PLUGIN at static-init
+  // Plugins self-register via REGISTER_FILE_SINK_PLUGIN at static-init
   // time. Each registered callable carries its own state (per-lambda
   // function-local statics initialized on first call), so no external
   // per-extension cache is needed.
 
-  FileWriterRegistry& fileWriterRegistry() {
-    static FileWriterRegistry inst(utils::OnDuplicate::KeepHighestPriority);
+  FileSinkRegistry& fileSinkRegistry() {
+    static FileSinkRegistry inst(utils::OnDuplicate::KeepHighestPriority);
     return inst;
   }
 
@@ -58,7 +58,7 @@ namespace icl::io {
 
     File file(m_oGen.next());
 
-    const auto *e = fileWriterRegistry().get(toLower(file.getSuffix()));
+    const auto *e = fileSinkRegistry().get(toLower(file.getSuffix()));
     if (!e) {
       ERROR_LOG("No Plugin to write files with suffix " << file.getSuffix() << " available");
       return;

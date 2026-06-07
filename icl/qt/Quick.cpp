@@ -3,9 +3,11 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting
 
 #include <icl/qt/Quick.h>
-#include <icl/io/file/FileSource.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/io/source/TestImages.h>
 #include <icl/io/ExternalViewer.h>
+#include <icl/io/SaveLoad.h>
+#include <icl/utils/File.h>
 #include <icl/core/convert/Converter.h>
 
 #include <icl/io/source/ImageSource.h>
@@ -18,7 +20,7 @@
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/filter/arith/UnaryArithmeticalOp.h>
-#include <icl/io/file/FileWriter.h>
+#include <icl/io/SaveLoad.h>
 #include <icl/filter/compare/UnaryCompareOp.h>
 #include <icl/filter/lut/LUTOp.h>
 #include <icl/utils/time/Timer.h>
@@ -521,7 +523,7 @@ namespace icl::qt {
 
     template<class T>
     Img<T> load(const std::string &filename){
-      FileSource g(filename);
+      ImageSource g("file", filename);
       Image grabbedImage;
       try{
         grabbedImage = g.grab();
@@ -541,7 +543,7 @@ namespace icl::qt {
     template<class T>
     Img<T> load(const std::string &filename, format fmt){
 
-      FileSource g(filename);
+      ImageSource g("file", filename);
       Image gi;
       try{
         gi = g.grab();
@@ -824,7 +826,7 @@ namespace icl::qt {
 
 
     void save(const ImgBase &image,const std::string &filename){
-      FileWriter(filename).write(image);
+      icl::io::save(image, filename);
     }
 
 

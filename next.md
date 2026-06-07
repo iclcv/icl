@@ -2,46 +2,51 @@
 
 ## Next Step
 
-Session 65 started the **ImageSource/ImageSink rework**
-(`image-source-sink-plan.md`).  Stages 1 + 2 landed plus several
-follow-ups.  Branch is 254 commits ahead of origin; 877/877 tests green;
-build clean.
+The **ImageSource/ImageSink rework is COMPLETE** (Session 66 finished
+Stages 2c + 3 + 4; `image-source-sink-plan.md` marked done; as-built
+summary in memory `reference_image_source_sink.md`).  877/877 tests green;
+build clean (`CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C
+builddir -j 16`).
 
-### Where the source/sink rework stands
+**The immediate next task** is the `icl-pipe` arg-parse regression the
+rework surfaced (see below + TODO.md).
 
-- **Stage 1 (sink symmetrization) — DONE.**  `SinkBackend` base +
-  `ImageSink` master (holds `shared_ptr<SinkBackend>`, forwards backend
-  properties — fixes the old can't-set-output-properties gap).
-- **Stage 2a/2b (rename) — DONE.**  `GenericGrabber`→`ImageSource`,
-  `Grabber`→`SourceBackend`, registry/device-desc/macros renamed, dir
-  `io/grabber/`→`io/source/`, all 18 concrete `*Grabber`→`*Source`.
-- **Stage 2 follow-ups — DONE.**  ImageSource is a real PIMPL (all
-  methods out-of-line, header forward-declares `SourceBackend`);
-  `getGrabber()`→`getBackend()` (sink `backend()`→`getBackend()` too);
-  priority-list collapsed to single device + bare spec
-  (`init("dc","0")`, no re-tag); `utils::exit()` app-aware exit hook
-  (clean `-i list`/`-o list`, no QThreadStorage spam); TextTable polish
-  (separator-aware wrap, header-only rule, left-align, Unicode borders).
+### What landed this session (Session 66)
 
-### Remaining for the rework (next session)
+- **Stage 2c — internal residue swept.**  `SourceBackendRegistry` methods
+  (`registerType`/`registerBusReset`/`addDescription`/`create`/
+  `getRegistered`/`getInfos`/`resetBus`), `BackendInstanceTable` +
+  `BackendInstance` + `m_data->backend` in ImageSource.cpp,
+  `SourceBackend_VIRTUAL`, dead `GrabberHandle` removed, `GRABBER_G`→
+  `SOURCE_G` doxygen group, backend factory fns `createGrabber*`→
+  `createSource*`, macro internal fn names.
+- **File-plugin symmetry.**  `FileGrabberPlugin*`→`FileSourcePlugin*`,
+  `FileWriterPlugin*`→`FileSinkPlugin*` (24 files) + `fileSourceRegistry`/
+  `fileSinkRegistry` + `REGISTER_FILE_SOURCE_PLUGIN`/`REGISTER_FILE_SINK_PLUGIN`.
+- **Sink concrete.**  `WSImageOutput`→`WSSink` (file+class), `createWSGrabber`
+  →`createWSSource`.  (`LibAVVideoWriter`→`LibAVSink` deferred to the FFmpeg
+  rewrite — unbuilt.)
+- **Stage 3 — backends hidden.**  `FileSource`/`FileWriter`/
+  `FilenameGenerator` moved `io/file/`→`io/detail/` (off the public set +
+  IO.h umbrella).  `FileList` + `SourceBackend` stay public (cross-module:
+  qt's qtcam/qtvideo subclass SourceBackend; cv/geom use FileList).
+  `SinkBackend` stays detail/ (no external subclassers).  External call
+  sites redirected to `io::save()`/`io::load()`/`ImageSource`/`ImageSink`;
+  qt `Common.h`/`Common2.h` lost the FileWriter include and gained
+  `utils/File.h`.  FileSource typed extras have no external users → kept
+  internal, not property-mapped.
+- **Stage 4 — docs/memory.**  CLAUDE.md section + plugin table rewritten;
+  `reference_websocket.md` updated; new `reference_image_source_sink.md`.
 
-- **Stage 2c — internal "grabber" residue rename.**  `io/source/` still
-  has internal grabber-named symbols: `GrabberInstanceTable` (helper in
-  ImageSource.cpp), `SourceBackendRegistry` methods
-  (`getRegisteredGrabbers`, `getGrabberInfos`, `resetGrabberBus`,
-  `registerGrabberType`, `registerGrabberBusReset`,
-  `addGrabberDescription`), `m_data->grabber` member, `Grabber_VIRTUAL`
-  dummy, `\ingroup GRABBER_G` (8 refs).  `SourceBackendRegistry` is a
-  public header, so its method names are semi-public — coherent sweep,
-  do deliberately (touches the REGISTER_SOURCE_BACKEND macro body + the
-  ~20 backend regs via the macro, plus ImageSource.cpp callers).
-- **Stage 3 — hide remaining public backends.**  Move `SourceBackend`
-  (and `SinkBackend` is already in detail/) + `FileSource`/`FileWriter`
-  into `detail/`; map FileSource's typed extras (getFileCount/next/prev/
-  bufferImages) onto properties; keep `getBackend()` as the escape hatch.
-  (PIMPL already unblocks moving SourceBackend to detail/.)
-- **Stage 4 — docs/memory.**  CLAUDE.md "Grabber Framework" section,
-  demos, `reference_websocket.md`, etc. → ImageSource/ImageSink.
+### Rework follow-ups (NOT done — tracked in TODO.md)
+
+- **`icl-pipe` arg-parse regression.**  `-i list` now wants 2 sub-args
+  (ImageSource::init takes device+spec) so bare `-i list` fails; and
+  `-i create cameraman -o file ...` aborts with "could not parse '15.0'
+  as integral".  Investigate icl-pipe's ProgArg use + restore `list`.
+- **`LibAVVideoWriter`→`LibAVSink`** — fold into FFmpeg 6/7 rewrite.
+- **Generic `ImagePipeline`** (exploratory) — Source→Filter→Sink graph
+  (Display as a Sink?), DAG not strictly linear (BinaryOps).
 
 ### Pre-existing io/ Next Step (Session 64, still open)
 

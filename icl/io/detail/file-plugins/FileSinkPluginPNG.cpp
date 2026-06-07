@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/file-plugins/FileWriterPluginPNG.h>
+#include <icl/io/detail/file-plugins/FileSinkPluginPNG.h>
 #include <icl/core/Types.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/prop/Constraints.h>
@@ -18,7 +18,7 @@ using namespace icl::core;
 
 namespace icl::io {
 
-  FileWriterPluginPNG::FileWriterPluginPNG() {
+  FileSinkPluginPNG::FileSinkPluginPNG() {
     addProperty("compression-level", utils::prop::Range<int>{.min=0, .max=9}, m_compressionLevel,
                 "zlib compression level (0=none/fastest, 9=max/slowest, "
                 "default 4 — levels 3-6 usually match 9's ratio for far less work).");
@@ -27,12 +27,12 @@ namespace icl::io {
     });
   }
 
-  FileWriterPluginPNG &FileWriterPluginPNG::instance() {
-    static FileWriterPluginPNG inst;
+  FileSinkPluginPNG &FileSinkPluginPNG::instance() {
+    static FileSinkPluginPNG inst;
     return inst;
   }
 
-  void FileWriterPluginPNG::write(File &file, const ImgBase *image){
+  void FileSinkPluginPNG::write(File &file, const ImgBase *image){
     std::scoped_lock lock(mutex);
     ICLASSERT_RETURN(image);
     FILE *cfile = fopen(file.getName().c_str(), "wb");
@@ -166,13 +166,13 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_LIBPNG
-#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN / REGISTER_FILE_WRITER_CONFIG
-namespace { using icl::io::FileWriterPluginPNG; }
-REGISTER_FILE_WRITER_PLUGIN(png, ".png",
+#include <icl/io/detail/FileWriter.h>  // REGISTER_FILE_SINK_PLUGIN / REGISTER_FILE_SINK_CONFIG
+namespace { using icl::io::FileSinkPluginPNG; }
+REGISTER_FILE_SINK_PLUGIN(png, ".png",
   [](icl::utils::File &f, const icl::core::ImgBase *img) {
-    FileWriterPluginPNG::instance().write(f, img);
+    FileSinkPluginPNG::instance().write(f, img);
   })
 
-REGISTER_FILE_WRITER_CONFIG(png, "png",
-  []() -> icl::utils::Configurable* { return &FileWriterPluginPNG::instance(); });
+REGISTER_FILE_SINK_CONFIG(png, "png",
+  []() -> icl::utils::Configurable* { return &FileSinkPluginPNG::instance(); });
 #endif

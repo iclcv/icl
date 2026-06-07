@@ -21,7 +21,7 @@ namespace icl::io {
   /** \endcond */
 
 
-  /// SourceBackend implementation for handling DC-Devices using libdc1394 (Version >= 2.0.rc9) \ingroup GRABBER_G \ingroup DC_G
+  /// SourceBackend implementation for handling DC-Devices using libdc1394 (Version >= 2.0.rc9) \ingroup SOURCE_G \ingroup DC_G
   /** The DCSource class implements the ICL's SourceBackend interface for
       providing libdc1395.so.2 based camera device access. Internally it
       wraps some additional classes with name prefix "DC". \n

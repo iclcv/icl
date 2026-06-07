@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/file-plugins/FileWriterPluginCSV.h>
+#include <icl/io/detail/file-plugins/FileSinkPluginCSV.h>
 #include <icl/core/Types.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/prop/Constraints.h>
@@ -12,7 +12,7 @@ using namespace icl::core;
 
 namespace icl::io {
 
-  FileWriterPluginCSV::FileWriterPluginCSV() {
+  FileSinkPluginCSV::FileSinkPluginCSV() {
     addProperty("extend-file-name", utils::prop::Flag{}, m_extendFileName,
                 "If true, encode image params into the file name (paired "
                 "with the CSV reader plugin's decoder).");
@@ -21,12 +21,12 @@ namespace icl::io {
     });
   }
 
-  FileWriterPluginCSV &FileWriterPluginCSV::instance() {
-    static FileWriterPluginCSV inst;
+  FileSinkPluginCSV &FileSinkPluginCSV::instance() {
+    static FileSinkPluginCSV inst;
     return inst;
   }
 
-  void FileWriterPluginCSV::write(File &file, const ImgBase *image){
+  void FileSinkPluginCSV::write(File &file, const ImgBase *image){
 
     //////////////////////////////////////////////////////////////////////
     /// WRITE HEADER DATA DEPENDEND ON THE CURRENT EXTEND-FLAG-VALUE  ////
@@ -77,12 +77,12 @@ namespace icl::io {
   }
   } // namespace icl::io
 
-#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN / REGISTER_FILE_WRITER_CONFIG
-namespace { using icl::io::FileWriterPluginCSV; }
+#include <icl/io/detail/FileWriter.h>  // REGISTER_FILE_SINK_PLUGIN / REGISTER_FILE_SINK_CONFIG
+namespace { using icl::io::FileSinkPluginCSV; }
 #define ICL_CSV_REG(TAG, EXT)                                                 \
-  REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \
+  REGISTER_FILE_SINK_PLUGIN(TAG, EXT,                                       \
     [](icl::utils::File &f, const icl::core::ImgBase *img) {                  \
-      FileWriterPluginCSV::instance().write(f, img);                          \
+      FileSinkPluginCSV::instance().write(f, img);                          \
     })
 ICL_CSV_REG(csv, ".csv");
 #ifdef ICL_HAVE_LIBZ
@@ -90,5 +90,5 @@ ICL_CSV_REG(csv_gz, ".csv.gz");
 #endif
 #undef ICL_CSV_REG
 
-REGISTER_FILE_WRITER_CONFIG(csv, "csv",
-  []() -> icl::utils::Configurable* { return &FileWriterPluginCSV::instance(); });
+REGISTER_FILE_SINK_CONFIG(csv, "csv",
+  []() -> icl::utils::Configurable* { return &FileSinkPluginCSV::instance(); });

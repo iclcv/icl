@@ -20,12 +20,12 @@ namespace icl::io {
       `ImageCompressor` is built lazily on first write so that this
       plugin can be constructed at static-init time without touching
       the (still-empty) CompressionRegister. */
-  class ICLIO_API FileWriterPluginBICL {
+  class ICLIO_API FileSinkPluginBICL {
     public:
 
-    FileWriterPluginBICL(const std::string &compressionType="raw",
+    FileSinkPluginBICL(const std::string &compressionType="raw",
                          const std::string &quality="");
-    ~FileWriterPluginBICL();
+    ~FileSinkPluginBICL();
 
     /// write implementation
     void write(utils::File &file, const core::ImgBase *image);

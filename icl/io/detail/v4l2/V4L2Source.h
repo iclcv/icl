@@ -8,7 +8,7 @@
 #include <mutex>
 
 namespace icl::io {
-  /// The Video for Linux 2 SourceBackend uses the v4l2-api to access video capturing devices \ingroup GRABBER_G \ingroup V4L_G
+  /// The Video for Linux 2 SourceBackend uses the v4l2-api to access video capturing devices \ingroup SOURCE_G \ingroup V4L_G
   /** This grabber backend is usually used for USB-Webcams as well as for SourceBackend cards */
   class V4L2Source : public SourceBackend{
       class Impl; //!< internal implementation

@@ -9,7 +9,7 @@
 #include <mutex>
 
 namespace icl::io {
-  /// SourceBackend-Implementation for the SwissRanger time-of-flight camera using the libMesaSR library \ingroup GRABBER_G
+  /// SourceBackend-Implementation for the SwissRanger time-of-flight camera using the libMesaSR library \ingroup SOURCE_G
   class SwissRangerSource : public SourceBackend{
     public:
       /// Internally used data-class

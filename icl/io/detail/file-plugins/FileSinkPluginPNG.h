@@ -7,28 +7,31 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/File.h>
 #include <icl/utils/config/Configurable.h>
-#include <icl/core/Types.h>
+#include <icl/core/Img.h>
+
+#include <mutex>
+#include <vector>
 
 namespace icl::io {
-  /// Writer backend for ".jpeg" and ".jpg" images \ingroup FILEIO_G
+  /// Writer backend for ".png" images \ingroup FILEIO_G
   /** Singleton plugin (function-local static, accessible via instance()).
       Inherits Configurable; the singleton is registered with FileWriter as
-      a child under the "jpeg" prefix, so callers can do
-      `writer.setPropertyValue("jpeg.quality", 85)`.
-
-      The actual JPEG compression is delegated to JPEGEncoder — this class
-      is just the FileWriter-facing facade + the "quality" tunable. */
-  class ICLIO_API FileWriterPluginJPEG : public utils::Configurable {
+      a child under the "png" prefix, so callers can do
+      `writer.setPropertyValue("png.compression-level", 9)`. */
+  class ICLIO_API FileSinkPluginPNG : public utils::Configurable {
     public:
-    FileWriterPluginJPEG();
+    FileSinkPluginPNG();
 
     /// process-wide singleton accessor
-    static FileWriterPluginJPEG &instance();
+    static FileSinkPluginPNG &instance();
 
     /// write implementation
     void write(utils::File &file, const core::ImgBase *image);
 
     private:
-    int m_quality = 90;   //!< JPEG quality, 0-100, set via property "quality"
+    int m_compressionLevel = 4;          //!< zlib level 0-9, set via property "compression-level"
+    std::recursive_mutex mutex;
+    std::vector<unsigned char> data;
+    std::vector<unsigned char*> rows;
   };
-} // namespace icl::io
+  } // namespace icl::io

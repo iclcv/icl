@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/file-plugins/FileGrabberPluginPNG.h>
+#include <icl/io/detail/file-plugins/FileSourcePluginPNG.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/core/cc/CCFunctions.h>
@@ -16,7 +16,7 @@ using namespace icl::core;
 
 
 namespace icl::io {
-  void FileGrabberPluginPNG::grab(File &file, ImgBase **dest){
+  void FileSourcePluginPNG::grab(File &file, ImgBase **dest){
     std::scoped_lock lock(mutex);
     png_byte header[8];
 
@@ -141,10 +141,10 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_LIBPNG
-#include <icl/io/file/FileSource.h>  // REGISTER_FILE_GRABBER_PLUGIN
-namespace { using icl::io::FileGrabberPluginPNG; }
-REGISTER_FILE_GRABBER_PLUGIN(png, ".png",
+#include <icl/io/detail/FileSource.h>  // REGISTER_FILE_SOURCE_PLUGIN
+namespace { using icl::io::FileSourcePluginPNG; }
+REGISTER_FILE_SOURCE_PLUGIN(png, ".png",
   [](icl::utils::File &f, icl::core::ImgBase **dst) {
-    static FileGrabberPluginPNG impl; impl.grab(f, dst);
+    static FileSourcePluginPNG impl; impl.grab(f, dst);
   })
 #endif

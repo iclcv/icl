@@ -22,7 +22,7 @@ namespace icl::io {
   /// Collection of image parameters decoded from a file header. Used by
   /// file-grabber plugins (CSV, PNM, JPEG decoder) to communicate
   /// per-file metadata to their callers. Formerly nested as
-  /// `FileGrabberPlugin::HeaderInfo`; hoisted to namespace scope in the
+  /// `FileSourcePlugin::HeaderInfo`; hoisted to namespace scope in the
   /// Phase-4c function-plugin conversion.
   struct HeaderInfo {
     core::format imageFormat;
@@ -36,20 +36,20 @@ namespace icl::io {
 
   /// Callable type stored in the file-grabber registry: `(file, dest)`
   /// → void. Allocates / updates `*dest`.
-  using FileGrabberFn = std::function<void(utils::File&, core::ImgBase**)>;
+  using FileSourceFn = std::function<void(utils::File&, core::ImgBase**)>;
 
   /// Process-wide registry of file-extension → grab callable.
   /** Uses `OnDuplicate::KeepHighestPriority`: strictly-higher priority
       wins, ties fall back to first-wins. Used so libpng (prio 0) beats
       ImageMagick (prio -10) for `.png` deterministically regardless of
       dyld static-init order. */
-  using FileGrabberRegistry =
+  using FileSourceRegistry =
       utils::FunctionPluginRegistry<void(utils::File&, core::ImgBase**)>;
 
   /// Singleton accessor for the process-wide file-grabber registry.
-  ICLIO_API FileGrabberRegistry& fileGrabberRegistry();
+  ICLIO_API FileSourceRegistry& fileSourceRegistry();
 
-  /// SourceBackend implementation to grab from files \ingroup FILEIO_G \ingroup GRABBER_G
+  /// SourceBackend implementation to grab from files \ingroup FILEIO_G \ingroup SOURCE_G
   class ICLIO_API FileSource : public SourceBackend {
     public:
 
@@ -93,8 +93,8 @@ namespace icl::io {
   } // namespace icl::io
 
 /// Self-register a grab callable for a given file extension.
-/** Mirror of `REGISTER_FILE_WRITER_PLUGIN`. FACTORY is a callable of
+/** Mirror of `REGISTER_FILE_SINK_PLUGIN`. FACTORY is a callable of
     signature `void(utils::File&, core::ImgBase**)` — typically a lambda
     with a function-local static impl instance. */
-#define REGISTER_FILE_GRABBER_PLUGIN(TAG, EXTENSION, ...)                       \
-  ICL_REGISTER_PLUGIN(::icl::io::fileGrabberRegistry(), TAG, EXTENSION, __VA_ARGS__)
+#define REGISTER_FILE_SOURCE_PLUGIN(TAG, EXTENSION, ...)                       \
+  ICL_REGISTER_PLUGIN(::icl::io::fileSourceRegistry(), TAG, EXTENSION, __VA_ARGS__)

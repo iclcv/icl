@@ -5,7 +5,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/io/source/ImageSource.h>
-#include <icl/io/file/FileWriter.h>
+#include <icl/io/output/ImageSink.h>
 #include <icl/io/file/FileList.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/utils/config/ConfigFile.h>
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
     maxSteps = fl.size();
   }
 
-  FileWriter w(*pa("-output"));
+  ImageSink w("file", *pa("-output"));
   LocalThresholdOp t;
   t.setMaskSize(masksize);
   t.setGlobalThreshold(thresh);
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
     Image dst;
     t.apply(image, dst);
-    w.write(dst);
-    std::cout << " done → " << w.getFilenameGenerator().showNext() << std::endl;
+    w.send(dst);
+    std::cout << " done" << std::endl;
   }
 }

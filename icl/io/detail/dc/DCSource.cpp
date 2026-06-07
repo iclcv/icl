@@ -227,7 +227,7 @@ namespace icl::io {
   }
   REGISTER_CONFIGURABLE(DCSource, return new DCSource(DCDevice::null,0));
 
-  SourceBackend* createGrabberDC(int bandwidth, const std::string &param){
+  SourceBackend* createSourceDC(int bandwidth, const std::string &param){
     std::vector<DCDevice> devs = DCSource::getDCDeviceList(false);
     if(!param.length()) throw ICLException("ImageSource::init: got dc with empty sub-arg!");
     std::vector<std::string> ts = tok(param,"|||",false);
@@ -257,12 +257,12 @@ namespace icl::io {
     }
   }
 
-  SourceBackend* createGrabberDC400(const std::string &param){
-    return createGrabberDC(400, param);
+  SourceBackend* createSourceDC400(const std::string &param){
+    return createSourceDC(400, param);
   }
 
-  SourceBackend* createGrabberDC800(const std::string &param){
-    return createGrabberDC(800, param);
+  SourceBackend* createSourceDC800(const std::string &param){
+    return createSourceDC(800, param);
   }
 
   const std::vector<DeviceDescription>& getDC400DeviceList(std::string hint, bool rescan){
@@ -295,8 +295,8 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(dc,createGrabberDC400, getDC400DeviceList, "dc:camera ID or unique ID:IEEE-1394a based camera source (FireWire 400)");
-  REGISTER_SOURCE_BACKEND(dc800,createGrabberDC800, getDC800DeviceList,"dc:camera ID or unique ID:IEEE-1394b based camera source (FireWire 800)");
+  REGISTER_SOURCE_BACKEND(dc,createSourceDC400, getDC400DeviceList, "dc:camera ID or unique ID:IEEE-1394a based camera source (FireWire 400)");
+  REGISTER_SOURCE_BACKEND(dc800,createSourceDC800, getDC800DeviceList,"dc:camera ID or unique ID:IEEE-1394b based camera source (FireWire 800)");
   REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(dc,DCSource::dc1394_reset_bus);
   REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(dc800,DCSource::dc1394_reset_bus);
 

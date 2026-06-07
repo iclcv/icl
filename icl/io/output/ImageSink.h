@@ -101,7 +101,7 @@ namespace icl::io {
     \code
       REGISTER_SINK_BACKEND(ws, "ws",
         [](const std::string& p) -> std::shared_ptr<icl::io::SinkBackend> {
-          return std::make_shared<WSImageOutput>(parsePort(p));
+          return std::make_shared<WSSink>(parsePort(p));
         },
         "PORT or BIND:PORT~WebSocket server")
     \endcode */

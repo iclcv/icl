@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/file/FileSource.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/file/FileList.h>
 #include <icl/utils/File.h>
@@ -275,7 +275,7 @@ namespace icl::markers {
 
     if(add){
       for(int i=0;i<l.size();++i){
-        FileSource g(l[i]);
+        ImageSource g("file", l[i]);
         g.useDesired(formatGray);
         g.useDesired(depth8u);
         data->loaded.push_back(std::shared_ptr<NamedImage>(new NamedImage( g.grab().as8u(),
@@ -355,7 +355,7 @@ namespace icl::markers {
   }
 
   Img8u FiducialDetectorPluginART::createMarker(const std::string &whichOne,const Size &size, const ParamMap &params){
-    FileSource g(whichOne);
+    ImageSource g("file", whichOne);
     g.useDesired(formatGray);
     g.useDesired(depth8u);
     Image grabbed = g.grab();

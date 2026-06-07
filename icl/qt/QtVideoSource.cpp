@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #include <icl/qt/QtVideoSource.h>
+#include <icl/utils/File.h>
 
 using namespace icl::utils;
 using namespace icl::io;

@@ -8,9 +8,16 @@
 #include <icl/utils/File.h>
 #include <icl/core/Img.h>
 
+#include <mutex>
+#include <vector>
+
 namespace icl::io {
-  /// Plugin to read ".jpeg" and ".jpg" images \ingroup FILEIO_G
-  class ICLIO_API FileGrabberPluginJPEG {
+  /// Plugin to read ".png" images \ingroup FILEIO_G
+  class ICLIO_API FileSourcePluginPNG {
+    std::vector<unsigned char> data;
+    std::vector<unsigned char*> rows;
+    std::recursive_mutex mutex;
+
     public:
     /// grab implementation
     void grab(utils::File &file, core::ImgBase **dest);

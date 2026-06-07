@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/network/WSImageOutput.h>
+#include <icl/io/detail/network/WSSink.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/compress/ImageCompressor.h>
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
@@ -48,7 +48,7 @@ namespace icl::io {
   // function-pointer + lambda connect() works just fine on a plain
   // QObject. Keeps the file moc-free.
   // -----------------------------------------------------------------------
-  class WSImageOutputServer : public QObject {
+  class WSSinkServer : public QObject {
   public:
     QWebSocketServer *server = nullptr;
     QList<QWebSocket*> clients;
@@ -78,7 +78,7 @@ namespace icl::io {
         }
       });
       if (!server->listen(addr, port)) {
-        ERROR_LOG("WSImageOutput: failed to bind " << addr.toString().toStdString()
+        ERROR_LOG("WSSink: failed to bind " << addr.toString().toStdString()
                   << ":" << port << " (" << server->errorString().toStdString() << ")");
       }
     }
@@ -113,10 +113,10 @@ namespace icl::io {
   };
 
   // ------------------------------------------------------------- pimpl --
-  struct WSImageOutput::Data {
+  struct WSSink::Data {
     ImageCompressor compressor;
     QThread *thread = nullptr;
-    WSImageOutputServer *server = nullptr;
+    WSSinkServer *server = nullptr;
     QString bindAddress;
     quint16 requestedPort = 0;
     std::atomic<int> actualPort{-1};
@@ -130,7 +130,7 @@ namespace icl::io {
       : bindAddress(QString::fromStdString(bind)),
         requestedPort(static_cast<quint16>(port)) {
       thread = new QThread;
-      server = new WSImageOutputServer;
+      server = new WSSinkServer;
       server->moveToThread(thread);
       thread->start();
       // Schedule bind on the WS thread, then publish the actual port.
@@ -160,7 +160,7 @@ namespace icl::io {
   };
 
   // -------------------------------------------------------- public API --
-  WSImageOutput::WSImageOutput(int port, const std::string &bindAddress)
+  WSSink::WSSink(int port, const std::string &bindAddress)
     : m_data(nullptr) {
     ensureQCoreApplication();
     setConfigurableID(str("ws:")+bindAddress+":"+str(port));
@@ -186,21 +186,21 @@ namespace icl::io {
     if (m_data->actualPort < 0) {
       // bind failed — leave m_data alive (with isNull-like state we can't
       // express cleanly without a flag), but flip the property and warn.
-      ERROR_LOG("WSImageOutput: server failed to bind, output is non-functional");
+      ERROR_LOG("WSSink: server failed to bind, output is non-functional");
     } else {
       prop("port").value = str(static_cast<int>(m_data->actualPort));
     }
   }
 
-  WSImageOutput::~WSImageOutput() {
+  WSSink::~WSSink() {
     delete m_data;
   }
 
-  int WSImageOutput::actualPort() const {
+  int WSSink::actualPort() const {
     return m_data ? static_cast<int>(m_data->actualPort) : -1;
   }
 
-  int WSImageOutput::connectedClients() const {
+  int WSSink::connectedClients() const {
     if (!m_data || !m_data->server) return 0;
     int n = 0;
     QMetaObject::invokeMethod(m_data->server, [this, &n]{
@@ -209,7 +209,7 @@ namespace icl::io {
     return n;
   }
 
-  void WSImageOutput::send(const core::Image &image) {
+  void WSSink::send(const core::Image &image) {
     if (!m_data || !m_data->server || image.isNull()) return;
 
     // The compressor is a child Configurable owned by us — its codec
@@ -232,7 +232,7 @@ namespace icl::io {
     prop("frames sent").value = str(static_cast<long long>(m_data->server->framesSent));
   }
 
-  void WSImageOutput::onPropertyChange(const Property &p) {
+  void WSSink::onPropertyChange(const Property &p) {
     // `compression.*` properties live on the inner ImageCompressor child
     // and are handled there — we only see local properties here.
     if (p.name == "max message size MB") {
@@ -265,7 +265,7 @@ REGISTER_SINK_BACKEND(ws, "ws",
       bind = params.substr(0, colon);
       portStr = params.substr(colon + 1);
     }
-    return std::make_shared<icl::io::WSImageOutput>(
+    return std::make_shared<icl::io::WSSink>(
         icl::utils::parse<int>(portStr), bind);
   }),
   "PORT or BIND:PORT~WebSocket server (broadcasts ImageCompressor envelopes to all clients)")

@@ -8,10 +8,7 @@
 // (DCSource, PylonSource, WSSource, …) are implementation details and
 // are deliberately not pulled in here — applications should go through
 // ImageSource / ImageSink instead.
-#include <icl/io/file/FileSource.h>
 #include <icl/io/file/FileList.h>
-#include <icl/io/file/FilenameGenerator.h>
-#include <icl/io/file/FileWriter.h>
 #include <icl/io/source/ImageSource.h>
 #include <icl/io/output/ImageSink.h>
 #include <icl/io/SaveLoad.h>
@@ -21,7 +18,7 @@
 /** \defgroup DC_G LibDC1394-2 based IEEE-1394 Camera SourceBackend and Control API
     \defgroup UTILS_G Common File-I/O Utility Functions and Classes
     \defgroup FILEIO_G Plugin-based File-Writer and File-SourceBackend implementation
-    \defgroup GRABBER_G List of all provided SourceBackend implementations
+    \defgroup SOURCE_G List of all provided SourceBackend implementations
     \defgroup MOVIE_FILE_G grabbers for movie file sources
     \defgroup V4L_G Video 4 Linux based grabbesr
     \defgroup GIGE_G Gigabit Ethernet (GIG-E) based grabber
@@ -37,10 +34,10 @@
     -# \ref MOVIE_FILE_G
     -# \ref V4L_G
     -# \ref GIGE_G
-    -# <b>\ref GRABBER_G</b>
+    -# <b>\ref SOURCE_G</b>
 
 
-    \section GRABBERS Grabbers
+    \section GRABBERS Image Sources
 
     However, a large set of SourceBackend implementations is available, <b>we recommend to use
     instances of the icl::ImageSource class</b>. Instances of the ImageSource class can
@@ -176,7 +173,7 @@
     - <b>icl::PylonSource</b> SourceBackend using Baslers Pylon-Libraries for grabbing from Gigabit Ethernet (GIG-E) cameras
     - <b>icl::SwissRangerSource</b> SourceBackend for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
     - <b>icl::OpenCVVideoSource</b> OpenCV based video grabber (needs OpenCV)
-    - <b>icl::WSSource</b> WebSocket-based grabber for receiving images from a icl::WSImageOutput publisher (needs Qt6Websockets) — replaced the retired SharedMemory backend
+    - <b>icl::WSSource</b> WebSocket-based grabber for receiving images from a icl::WSSink publisher (needs Qt6Websockets) — replaced the retired SharedMemory backend
     - <b>icl::OpenCVCamSource</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
     - <b>icl::KinectSource</b> libfreenect based SourceBackend for Microsoft's Kinect Camera (supports color-, core::depth and IR-camera)
 

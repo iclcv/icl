@@ -17,13 +17,13 @@ namespace icl::io {
       -# <b>As comment block</b>
       -# <b>Interpret a csv file as matrix data</b>
       */
-  class ICLIO_API FileGrabberPluginCSV {
+  class ICLIO_API FileSourcePluginCSV {
     public:
     /// Create a new Plugin
-    FileGrabberPluginCSV();
+    FileSourcePluginCSV();
 
     /// Destructor
-    ~FileGrabberPluginCSV();
+    ~FileSourcePluginCSV();
 
     /// grab implementation
     void grab(utils::File &file, core::ImgBase **dest);

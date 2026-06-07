@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting
 
-#include <icl/io/detail/file-plugins/FileGrabberPluginPNM.h>
-#include <icl/io/file/FileSource.h>  // for HeaderInfo
+#include <icl/io/detail/file-plugins/FileSourcePluginPNM.h>
+#include <icl/io/detail/FileSource.h>  // for HeaderInfo
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
@@ -18,7 +18,7 @@ namespace icl::io {
     return std::vector<int>(abc,abc+3);
   }
 
-  void FileGrabberPluginPNM::grab(File &file, ImgBase **dest){
+  void FileSourcePluginPNM::grab(File &file, ImgBase **dest){
     ICLASSERT_RETURN(dest);
     file.open(File::readBinary);
 
@@ -133,12 +133,12 @@ namespace icl::io {
 
   } // namespace icl::io
 
-#include <icl/io/file/FileSource.h>  // REGISTER_FILE_GRABBER_PLUGIN
-namespace { using icl::io::FileGrabberPluginPNM; }
+#include <icl/io/detail/FileSource.h>  // REGISTER_FILE_SOURCE_PLUGIN
+namespace { using icl::io::FileSourcePluginPNM; }
 #define ICL_PNM_REG(TAG, EXT)                                                 \
-  REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \
+  REGISTER_FILE_SOURCE_PLUGIN(TAG, EXT,                                      \
     [](icl::utils::File &f, icl::core::ImgBase **dst) {                       \
-      static FileGrabberPluginPNM impl; impl.grab(f, dst);                    \
+      static FileSourcePluginPNM impl; impl.grab(f, dst);                    \
     })
 ICL_PNM_REG(ppm, ".ppm");
 ICL_PNM_REG(pgm, ".pgm");

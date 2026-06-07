@@ -18,7 +18,7 @@ namespace icl::io {
   class SourceBackend;       // detail contract (io/source/SourceBackend.h)
   struct DeviceDescription;  // io/source/DeviceDescription.h
 
-  /// User-facing image source: string-configurable acquisition front-end. \ingroup GRABBER_G
+  /// User-facing image source: string-configurable acquisition front-end. \ingroup SOURCE_G
   /** ImageSource is the recommended entry point for image acquisition in
       application code.  It selects a backend (file, camera, network, …)
       from a string device spec, owns it behind a PIMPL, and forwards

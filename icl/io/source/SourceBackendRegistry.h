@@ -19,8 +19,8 @@ namespace icl::io {
 
   class SourceBackend;
 
-  /// Process-wide registry of grabber factories keyed by `id` (e.g. "dc",
-  /// "v4l", "ws", "file", "create", …).
+  /// Process-wide registry of source-backend factories keyed by `id` (e.g.
+  /// "dc", "v4l", "ws", "file", "create", …).
   /** Façade over `utils::PluginRegistry<std::string, CreateFn>` for the
       core factory map, plus three side maps for the orthogonal per-backend
       concerns that don't fit a generic registry's Entry shape:
@@ -45,25 +45,25 @@ namespace icl::io {
 
     static SourceBackendRegistry* getInstance();
 
-    void registerGrabberType(const std::string &grabberid,
-                             CreateFn creator,
-                             DeviceListFn device_list);
+    void registerType(const std::string &id,
+                      CreateFn creator,
+                      DeviceListFn device_list);
 
-    void registerGrabberBusReset(const std::string &grabberid,
-                                 BusResetFn reset_function);
+    void registerBusReset(const std::string &id,
+                          BusResetFn reset_function);
 
-    void addGrabberDescription(const std::string &grabber_description);
+    void addDescription(const std::string &description);
 
-    SourceBackend* createGrabber(const std::string &grabberid, const std::string &param);
+    SourceBackend* create(const std::string &id, const std::string &param);
 
-    std::vector<std::string> getRegisteredGrabbers();
+    std::vector<std::string> getRegistered();
 
-    std::vector<std::string> getGrabberInfos();
+    std::vector<std::string> getInfos();
 
     const std::vector<DeviceDescription>&
     getDeviceList(std::string id, std::string hint="", bool rescan=true);
 
-    void resetGrabberBus(const std::string &id, bool verbose);
+    void resetBus(const std::string &id, bool verbose);
 
   private:
     SourceBackendRegistry() : m_factories(utils::OnDuplicate::Throw) {}
@@ -72,15 +72,15 @@ namespace icl::io {
     std::recursive_mutex m_mutex;                                             //!< guards the side maps below
     std::map<std::string, DeviceListFn, std::less<>> m_deviceLists;           //!< id → listing function
     std::map<std::string, BusResetFn,   std::less<>> m_busResets;             //!< id → bus reset function
-    std::set<std::string>                            m_descriptions;          //!< verbatim strings, for getGrabberInfos()
+    std::set<std::string>                            m_descriptions;          //!< verbatim strings, for getInfos()
   };
 
 } // namespace icl::io
 
-/// Self-register a grabber backend at static-init time.
+/// Self-register a source backend at static-init time.
 /** Use exactly once per backend, typically at the bottom of its .cpp:
     \code
-      REGISTER_SOURCE_BACKEND(dc, createDCGrabber, getDCDeviceList,
+      REGISTER_SOURCE_BACKEND(dc, createDCSource, getDCDeviceList,
                        "dc:1394 device id|: libdc1394_2 FireWire camera");
     \endcode
     `__attribute__((constructor, used))` is required for macOS — dyld
@@ -88,15 +88,15 @@ namespace icl::io {
     even when its `__GLOBAL__sub_I_*` symbol survives in `nm`. */
 #define REGISTER_SOURCE_BACKEND(NAME,CREATE_FUNC,DEVICE_LIST_FUNC,DESCRIPTION)        \
   extern "C" __attribute__((constructor, used)) void                           \
-  iclRegisterGrabber_##NAME() {                                                \
+  iclRegisterSourceBackend_##NAME() {                                          \
     auto *_inst = ::icl::io::SourceBackendRegistry::getInstance();                   \
-    _inst->registerGrabberType(#NAME, CREATE_FUNC, DEVICE_LIST_FUNC);          \
-    _inst->addGrabberDescription(DESCRIPTION);                                 \
+    _inst->registerType(#NAME, CREATE_FUNC, DEVICE_LIST_FUNC);                 \
+    _inst->addDescription(DESCRIPTION);                                        \
   }
 
 #define REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(NAME,BUS_RESET_FUNC)               \
   extern "C" __attribute__((constructor, used)) void                           \
-  iclRegisterGrabberBusReset_##NAME() {                                        \
+  iclRegisterSourceBackendBusReset_##NAME() {                                  \
     ::icl::io::SourceBackendRegistry::getInstance()                                  \
-        ->registerGrabberBusReset(#NAME, BUS_RESET_FUNC);                      \
+        ->registerBusReset(#NAME, BUS_RESET_FUNC);                             \
   }

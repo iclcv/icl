@@ -1,7 +1,8 @@
 # ImageSource / ImageSink — io/ user-facing API rework (Plan B)
 
-Status: **approved, not started.** Naming locked: `icl::io::ImageSource`
-and `icl::io::ImageSink`.
+Status: **COMPLETE** (all 4 stages landed). Naming locked & shipped:
+`icl::io::ImageSource` and `icl::io::ImageSink`. See
+memory `reference_image_source_sink.md` for the as-built summary.
 
 ## Motivation
 
@@ -103,37 +104,53 @@ Resolution (so no public backend types survive):
 - [x] Migrated ~20 files; 877/877 green; runtime-verified file + ws
       property forwarding; regression test added.
 
-### Stage 2 — Rename grabber → source (mechanical, atomic)
-- [ ] `Grabber` → `SourceBackend`, move `Grabber.{h,cpp}` to
-      `io/detail/` (it becomes the internal contract).
-- [ ] `GenericGrabber` → `ImageSource` (`io/grabber/` → keep, or rename
-      dir to `io/source/`? decide; lean: rename dir `io/grabber/`→`io/source/`).
-- [ ] `GrabberRegistry`/`REGISTER_GRABBER` → `sourceBackendRegistry()`/
+### Stage 2 — Rename grabber → source (mechanical, atomic) — DONE
+- [x] `Grabber` → `SourceBackend` (`SourceBackend` kept **public** in
+      `io/source/`, not moved to detail/ — it is a cross-module extension
+      point: `qt`'s `qtcam`/`qtvideo` subclass it).
+- [x] `GenericGrabber` → `ImageSource`; dir `io/grabber/` → `io/source/`.
+- [x] `GrabberRegistry`/`REGISTER_GRABBER` → `SourceBackendRegistry`/
       `REGISTER_SOURCE_BACKEND`; `GrabberDeviceDescription` →
       `DeviceDescription`.
-- [ ] Concrete backends drop suffix: `*Grabber` → `*Source` (22 backends,
-      incl. the 4 orphans + the qt-registered `qtcam`/`qtvideo`).
-- [ ] perl tree-wide rename across 89 files / 168 refs; tests green.
+- [x] Concrete backends drop suffix: `*Grabber` → `*Source` (all 22).
+- [x] **Stage 2c** — internal residue swept: `SourceBackendRegistry`
+      methods (`registerType`/`create`/`getRegistered`/`getInfos`/`resetBus`/
+      …), `BackendInstanceTable` in ImageSource.cpp, `SourceBackend_VIRTUAL`,
+      dead `GrabberHandle` removed, `GRABBER_G`→`SOURCE_G` doxygen group,
+      backend factory fns `createGrabber*`→`createSource*`.
+- [x] **File-plugin symmetry** — `FileGrabberPlugin*`→`FileSourcePlugin*`,
+      `FileWriterPlugin*`→`FileSinkPlugin*` (+ registries/macros).
+- [x] **Sink concrete** — `WSImageOutput`→`WSSink`, `createWSGrabber`→
+      `createWSSource`. (`LibAVVideoWriter`→`LibAVSink` left for the pending
+      FFmpeg rewrite; unbuilt.)
 
-### Stage 3 — Hide remaining public backends
-- [ ] `FileGrabber` → `FileSource` into `io/detail/`; apply the
-      "Key decision" mapping (properties + spec options); remove the
-      public header.
-- [ ] `FileWriter` → `FileSink` into `io/detail/` (already covered if
-      Stage 1 converted its output role; here retire the public header).
-- [ ] Replace direct constructions in demos/tests with
-      `ImageSource("file ...")` / `ImageSink("file ...")`.
-- [ ] Add `ImageSource::backend()` / `ImageSink::backend()` escape hatch;
-      retire `getGrabber()`.
+### Stage 3 — Hide remaining public backends — DONE
+- [x] `FileSource`/`FileWriter`/`FilenameGenerator` moved to `io/detail/`,
+      removed from public install_headers + IO.h umbrella. `FileList` stays
+      public (used by cv/geom). Typed extras (getFileCount/next/prev/
+      bufferImages) have no external consumers → kept internal, not mapped
+      to properties.
+- [x] External call sites redirected to public API: `FileWriter(f).write()`
+      → `io::save()`; `FileSource(f)` reads → `ImageSource("file", f)` or
+      `io::load()`; `local-thresh-batch` uses `ImageSink`. Dropped the
+      `FileWriter.h` include from qt `Common.h`/`Common2.h` (added
+      `utils/File.h` there to keep transitive `File` available).
+- [x] `getGrabber()` → `getBackend()` (done in Stage 2 follow-ups).
 
-### Stage 4 — Docs, umbrella, memory
-- [ ] `IO.h` umbrella + install_headers groups updated; remove now-private
-      headers from the public set.
-- [ ] CLAUDE.md "Grabber Framework" / "Application Pattern" sections
-      rewritten to ImageSource/ImageSink.
-- [ ] Update memories referencing Grabber/GenericGrabber
-      (`reference_websocket.md`, others) + add a convention memory.
-- [ ] next.md session entry.
+### Stage 4 — Docs, umbrella, memory — DONE
+- [x] `IO.h` umbrella + install_headers groups updated; now-private headers
+      removed from the public set.
+- [x] CLAUDE.md "Grabber Framework" → "ImageSource / ImageSink Framework";
+      plugin-registration table updated.
+- [x] Memories: `reference_websocket.md` updated; new
+      `reference_image_source_sink.md` convention memory added.
+- [x] next.md session entry.
+
+### Follow-ups (not part of the rework)
+- `icl-pipe` arg-parse regression (`-i list` 2-subarg, `'15.0' as integral`).
+- `LibAVVideoWriter`→`LibAVSink` rename, folded into the FFmpeg 6/7 rewrite.
+- Generic `ImagePipeline` idea: compose Source→Filter→Sink (Display as a
+  Sink?), non-linear via BinaryOps. Future architecture exploration.
 
 ## Risks / notes
 

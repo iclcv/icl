@@ -31,7 +31,7 @@ namespace icl::io {
   using namespace icl::utils;
   using namespace icl::core;
 
-  // See WSImageOutput.cpp for rationale: WS classes need a QCoreApplication
+  // See WSSink.cpp for rationale: WS classes need a QCoreApplication
   // in headless contexts (e.g. `icl-pipe -no-gui`).
   static void ensureQCoreApplication() {
     if (QCoreApplication::instance() != nullptr) return;
@@ -357,7 +357,7 @@ namespace icl::io {
   REGISTER_CONFIGURABLE(WSSource,
                         return new WSSource("ws://localhost:9090"));
 
-  static SourceBackend* createWSGrabber(const std::string &param) {
+  static SourceBackend* createWSSource(const std::string &param) {
     // Pass straight through — WSSource::WSSource handles all the
     // accepted shorthand forms (PORT / HOST:PORT / ws://HOST:PORT).
     return new WSSource(param);
@@ -374,7 +374,7 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(ws, createWSGrabber, getWSDeviceList,
+  REGISTER_SOURCE_BACKEND(ws, createWSSource, getWSDeviceList,
                    "ws:ws\\://host\\:port (URL of the publishing server) "
                    ":WebSocket-based network grabber")
 

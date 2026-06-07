@@ -4,7 +4,7 @@
 
 #include <icl/io/output/ImageSink.h>
 #include <icl/io/detail/SinkBackend.h>
-#include <icl/io/file/FileWriter.h>  // built-in "file" backend
+#include <icl/io/detail/FileWriter.h>  // built-in "file" backend
 
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exit.h>

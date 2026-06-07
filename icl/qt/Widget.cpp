@@ -63,7 +63,7 @@
 
 #include <icl/utils/Rect.h>
 #include <icl/utils/File.h>
-#include <icl/io/file/FileWriter.h>
+#include <icl/io/SaveLoad.h>
 #include <icl/utils/Range.h>
 #include <icl/core/Types.h>
 
@@ -1947,7 +1947,7 @@ namespace icl::qt {
       std::string filename = getImageCaptureFileName();
       if(filename != ""){
         try{
-          FileWriter(filename).write(*buf);
+          save(*buf, filename);
         }catch(const ICLException &ex){
           ERROR_LOG("unable to capture current image: " << ex.what());
         }
@@ -1977,7 +1977,7 @@ namespace icl::qt {
     }
 
     try{
-      FileWriter(filename).write(fb);
+      save(fb, filename);
     }catch(ICLException &ex){
       ERROR_LOG("error capturing frame buffer: " << ex.what());
     }

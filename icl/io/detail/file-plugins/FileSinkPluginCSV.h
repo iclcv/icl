@@ -14,19 +14,19 @@ namespace icl::io {
   /** Singleton plugin.  Inherits Configurable; registered with FileWriter
       under the "csv" prefix, so callers do
       `writer.setPropertyValue("csv.extend-file-name", true)`. */
-  class ICLIO_API FileWriterPluginCSV : public utils::Configurable {
+  class ICLIO_API FileSinkPluginCSV : public utils::Configurable {
     public:
-    FileWriterPluginCSV();
+    FileSinkPluginCSV();
 
     /// process-wide singleton accessor
-    static FileWriterPluginCSV &instance();
+    static FileSinkPluginCSV &instance();
 
     /// write implementation
     void write(utils::File &file, const core::ImgBase *image);
 
     private:
     /// when true, encode image params by extending the file name
-    /// (paired with FileGrabberPluginCSV's decoder)
+    /// (paired with FileSourcePluginCSV's decoder)
     bool m_extendFileName = false;
   };
 } // namespace icl::io

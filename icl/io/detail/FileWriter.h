@@ -9,7 +9,7 @@
 #include <icl/utils/config/Configurable.h>
 #include <icl/utils/plugin/PluginRegistry.h>
 #include <icl/core/Image.h>
-#include <icl/io/file/FilenameGenerator.h>
+#include <icl/io/detail/FilenameGenerator.h>
 
 #include <functional>
 #include <string>
@@ -48,7 +48,7 @@ namespace icl::io {
   /// Callable type stored in the file-writer registry: `(file, image)`.
   /// Thread-safety is the callable's own responsibility (plugin backends
   /// use static per-lambda state with their own mutexes).
-  using FileWriterFn = std::function<void(utils::File&, const core::ImgBase*)>;
+  using FileSinkFn = std::function<void(utils::File&, const core::ImgBase*)>;
 
   /// Process-wide registry of file-extension → write-callable.
   /** Uses `OnDuplicate::KeepHighestPriority`: whoever registers with the
@@ -58,11 +58,11 @@ namespace icl::io {
 
       The stored callable carries its own state (per-lambda function-local
       statics), so no external per-extension cache is needed. */
-  using FileWriterRegistry =
+  using FileSinkRegistry =
       utils::FunctionPluginRegistry<void(utils::File&, const core::ImgBase*)>;
 
   /// Singleton accessor for the process-wide file-writer registry.
-  ICLIO_API FileWriterRegistry& fileWriterRegistry();
+  ICLIO_API FileSinkRegistry& fileSinkRegistry();
 
   /// Returns a pointer to a singleton plugin Configurable, or nullptr if
   /// the plugin doesn't expose tunable properties.  Each FileWriter
@@ -89,7 +89,7 @@ namespace icl::io {
 
     /// Writes the image to the next filename in the generator's sequence.
     /** Extension of the generated filename dispatches into
-        fileWriterRegistry() to select the matching plugin. */
+        fileSinkRegistry() to select the matching plugin. */
     void write(const core::Image &image);
 
     private:
@@ -106,9 +106,9 @@ namespace icl::io {
     `void(utils::File&, const core::ImgBase*)`. Typically a lambda with
     a function-local static implementation object:
     \code
-      REGISTER_FILE_WRITER_PLUGIN(ppm, ".ppm",
+      REGISTER_FILE_SINK_PLUGIN(ppm, ".ppm",
         [](utils::File& f, const core::ImgBase* img) {
-          static FileWriterPluginPNM impl;
+          static FileSinkPluginPNM impl;
           impl.write(f, img);
         })
     \endcode
@@ -116,13 +116,13 @@ namespace icl::io {
     multiple extensions handled by the same backend (e.g. BICL's
     .rle1/.rle4/.jicl variants) each get their own instance with
     distinct ctor args. */
-#define REGISTER_FILE_WRITER_PLUGIN(TAG, EXTENSION, ...)                       \
-  ICL_REGISTER_PLUGIN(::icl::io::fileWriterRegistry(), TAG, EXTENSION, __VA_ARGS__)
+#define REGISTER_FILE_SINK_PLUGIN(TAG, EXTENSION, ...)                       \
+  ICL_REGISTER_PLUGIN(::icl::io::fileSinkRegistry(), TAG, EXTENSION, __VA_ARGS__)
 
 /// Self-register the singleton Configurable of a file-writer plugin.
 /** Each registered factory is invoked once per FileWriter ctor and the
     returned Configurable* is added as a named child under PREFIX.  Used
     to surface per-plugin tunables (jpeg quality, csv extend-file-name)
     on every FileWriter instance — `writer.setPropertyValue("jpeg.quality", 85)`. */
-#define REGISTER_FILE_WRITER_CONFIG(TAG, PREFIX, FACTORY)                      \
+#define REGISTER_FILE_SINK_CONFIG(TAG, PREFIX, FACTORY)                      \
   ICL_REGISTER_PLUGIN(::icl::io::fileWriterConfigRegistry(), TAG, PREFIX, FACTORY)

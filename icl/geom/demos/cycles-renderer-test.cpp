@@ -7,7 +7,7 @@
 #include <icl/geom/SceneLight.h>
 #include <icl/geom/Camera.h>
 #include <icl/geom/Material.h>
-#include <icl/io/file/FileWriter.h>
+#include <icl/io/SaveLoad.h>
 
 #include <cstdio>
 #include <memory>
@@ -93,8 +93,7 @@ int main(int argc, const char **argv) {
   // Save
   const auto &image = renderer.getImage();
   if (image.getWidth() > 0) {
-    io::FileWriter writer(output);
-    writer.write(image);
+        io::save(image, output);
     printf("Saved %dx%d image to %s\n", image.getWidth(), image.getHeight(), output.c_str());
   } else {
     fprintf(stderr, "ERROR: No image received!\n");

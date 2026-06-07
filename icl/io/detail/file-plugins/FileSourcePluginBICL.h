@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 // ICL - Image Component Library (https://github.com/iclcv/icl)
-// Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting
+// Copyright (C) 2006-2026 Christof Elbrechter
 
 #pragma once
 
@@ -9,8 +9,8 @@
 #include <icl/core/Img.h>
 
 namespace icl::io {
-  /// Plugin to grab ".ppm", ".pgm", ".pnm" and ".icl" images \ingroup FILEIO_G
-  class ICLIO_API FileGrabberPluginPNM {
+  /// Plugin to grab binary icl image (.bicl or .bicl.gz) \ingroup SOURCE_G
+  class ICLIO_API FileSourcePluginBICL {
     public:
     /// grab implementation
     void grab(utils::File &file, core::ImgBase **dest);

@@ -25,10 +25,7 @@ io_output_headers = files(
 )
 
 io_file_headers = files(
-  'file/FileSource.h',
   'file/FileList.h',
-  'file/FileWriter.h',
-  'file/FilenameGenerator.h',
 )
 
 io_compress_headers = files(
@@ -42,10 +39,10 @@ io_sources = files(
   'source/SourceBackendRegistry.cpp',
   'source/TestImages.cpp',
   'output/ImageSink.cpp',
-  'file/FileSource.cpp',
   'file/FileList.cpp',
-  'file/FileWriter.cpp',
-  'file/FilenameGenerator.cpp',
+  'detail/FileSource.cpp',
+  'detail/FileWriter.cpp',
+  'detail/FilenameGenerator.cpp',
   'compress/ImageCompressor.cpp',
   'ExternalViewer.cpp',
   'SaveLoad.cpp',
@@ -72,16 +69,16 @@ io_compression_plugin_sources = files(
 # down).  JPEG{Decoder,Encoder,Handle} live here because the JPEG plugins own
 # them and the CompressionPluginJpeg codec shares them.
 io_sources += files(
-  'detail/file-plugins/FileGrabberPluginBICL.cpp',
-  'detail/file-plugins/FileGrabberPluginCSV.cpp',
-  'detail/file-plugins/FileGrabberPluginJPEG.cpp',
-  'detail/file-plugins/FileGrabberPluginPNG.cpp',
-  'detail/file-plugins/FileGrabberPluginPNM.cpp',
-  'detail/file-plugins/FileWriterPluginBICL.cpp',
-  'detail/file-plugins/FileWriterPluginCSV.cpp',
-  'detail/file-plugins/FileWriterPluginJPEG.cpp',
-  'detail/file-plugins/FileWriterPluginPNG.cpp',
-  'detail/file-plugins/FileWriterPluginPNM.cpp',
+  'detail/file-plugins/FileSourcePluginBICL.cpp',
+  'detail/file-plugins/FileSourcePluginCSV.cpp',
+  'detail/file-plugins/FileSourcePluginJPEG.cpp',
+  'detail/file-plugins/FileSourcePluginPNG.cpp',
+  'detail/file-plugins/FileSourcePluginPNM.cpp',
+  'detail/file-plugins/FileSinkPluginBICL.cpp',
+  'detail/file-plugins/FileSinkPluginCSV.cpp',
+  'detail/file-plugins/FileSinkPluginJPEG.cpp',
+  'detail/file-plugins/FileSinkPluginPNG.cpp',
+  'detail/file-plugins/FileSinkPluginPNM.cpp',
   'detail/file-plugins/JPEGDecoder.cpp',
   'detail/file-plugins/JPEGEncoder.cpp',
   'detail/file-plugins/JPEGHandle.cpp',
@@ -169,8 +166,8 @@ endif
 # ImageMagick
 if imagemagick_dep.found()
   io_sources += files(
-    'detail/file-plugins/FileGrabberPluginImageMagick.cpp',
-    'detail/file-plugins/FileWriterPluginImageMagick.cpp',
+    'detail/file-plugins/FileSourcePluginImageMagick.cpp',
+    'detail/file-plugins/FileSinkPluginImageMagick.cpp',
   )
   io_extra_deps += imagemagick_dep
 endif
@@ -187,14 +184,14 @@ if zstd_dep.found()
   io_extra_deps += zstd_dep
 endif
 
-# Qt6 WebSockets (WSImageOutput + WSSource). Self-gating: only built
+# Qt6 WebSockets (WSSink + WSSource). Self-gating: only built
 # when both Qt and the WebSockets module are available. WS replaces the
 # legacy SharedMemoryGrabber/Publisher pair retired in Session 47 — the
 # loopback path covers the same loose-coupling-between-processes use
 # case with auto-reconnect resilience and cross-host as a free bonus.
 if qt_found and qt_websockets_dep.found()
   io_sources += files(
-    'detail/network/WSImageOutput.cpp',
+    'detail/network/WSSink.cpp',
     'detail/network/WSSource.cpp',
   )
   io_extra_deps += qt_websockets_dep

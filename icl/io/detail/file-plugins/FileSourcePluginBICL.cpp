@@ -2,14 +2,14 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/file-plugins/FileGrabberPluginBICL.h>
+#include <icl/io/detail/file-plugins/FileSourcePluginBICL.h>
 #include <icl/io/compress/ImageCompressor.h>
 
 using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
-  void FileGrabberPluginBICL::grab(File &file, ImgBase **dest){
+  void FileSourcePluginBICL::grab(File &file, ImgBase **dest){
     ICLASSERT_RETURN(dest);
     file.open(File::readBinary);
 
@@ -17,19 +17,19 @@ namespace icl::io {
 
     ImageCompressor cmp;
     Image img = cmp.uncompress(data.data(), data.size());
-    // The legacy FileGrabberPlugin API takes an `ImgBase **` outparam; the
+    // The legacy FileSourcePlugin API takes an `ImgBase **` outparam; the
     // new ImageCompressor returns an Image. Deep-copy across the boundary.
     img.ptr()->deepCopy(dest);
   }
 
   } // namespace icl::io
 
-#include <icl/io/file/FileSource.h>  // REGISTER_FILE_GRABBER_PLUGIN
-namespace { using icl::io::FileGrabberPluginBICL; }
+#include <icl/io/detail/FileSource.h>  // REGISTER_FILE_SOURCE_PLUGIN
+namespace { using icl::io::FileSourcePluginBICL; }
 #define ICL_BICL_REG(TAG, EXT)                                                \
-  REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \
+  REGISTER_FILE_SOURCE_PLUGIN(TAG, EXT,                                      \
     [](icl::utils::File &f, icl::core::ImgBase **dst) {                       \
-      static FileGrabberPluginBICL impl; impl.grab(f, dst);                   \
+      static FileSourcePluginBICL impl; impl.grab(f, dst);                   \
     })
 ICL_BICL_REG(bicl, ".bicl");
 ICL_BICL_REG(rle1, ".rle1");

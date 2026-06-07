@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/file-plugins/FileGrabberPluginCSV.h>
-#include <icl/io/file/FileSource.h>  // for HeaderInfo
+#include <icl/io/detail/file-plugins/FileSourcePluginCSV.h>
+#include <icl/io/detail/FileSource.h>  // for HeaderInfo
 #include <icl/core/CoreFunctions.h>
 #include <mutex>
 #include <icl/utils/StrTok.h>
@@ -48,20 +48,20 @@ namespace icl::io {
 
   }
 
-  FileGrabberPluginCSV::FileGrabberPluginCSV(){
+  FileSourcePluginCSV::FileSourcePluginCSV(){
 
     m_poReadBuffer = new Img64f;
     m_poReadBufferMutex = new std::recursive_mutex;
   }
 
-  FileGrabberPluginCSV::~FileGrabberPluginCSV(){
+  FileSourcePluginCSV::~FileSourcePluginCSV(){
 
     ICL_DELETE( m_poReadBuffer );
     ICL_DELETE( m_poReadBufferMutex );
   }
 
 
-  void FileGrabberPluginCSV::grab(File &file, ImgBase **dest){
+  void FileSourcePluginCSV::grab(File &file, ImgBase **dest){
 
     ICLASSERT_RETURN(dest);
     file.open(File::readText);
@@ -189,12 +189,12 @@ namespace icl::io {
 
   } // namespace icl::io
 
-#include <icl/io/file/FileSource.h>  // REGISTER_FILE_GRABBER_PLUGIN
-namespace { using icl::io::FileGrabberPluginCSV; }
+#include <icl/io/detail/FileSource.h>  // REGISTER_FILE_SOURCE_PLUGIN
+namespace { using icl::io::FileSourcePluginCSV; }
 #define ICL_CSV_REG(TAG, EXT)                                                 \
-  REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \
+  REGISTER_FILE_SOURCE_PLUGIN(TAG, EXT,                                      \
     [](icl::utils::File &f, icl::core::ImgBase **dst) {                       \
-      static FileGrabberPluginCSV impl; impl.grab(f, dst);                    \
+      static FileSourcePluginCSV impl; impl.grab(f, dst);                    \
     })
 ICL_CSV_REG(csv, ".csv");
 #ifdef ICL_HAVE_LIBZ

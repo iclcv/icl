@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/ExternalViewer.h>
-#include <icl/io/file/FileWriter.h>
+#include <icl/io/detail/FileWriter.h>
 #include <icl/utils/time/Time.h>
 #include <icl/utils/thread/Thread.h>
 #include <icl/utils/Exception.h>

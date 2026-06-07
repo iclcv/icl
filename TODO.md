@@ -323,10 +323,31 @@ From Session 48 deferrals:
   is the obvious follow-up that uses this surface.
 - [ ] **Additional codecs**: `webp`, `jxl`, `lz4`, `deflate`/`zlib`.
 - [ ] **`Configurable` events on child-set change** — so `qt::Prop` auto-rebuilds when `ImageCompressor` swaps codec.  See `project_dynamic_child_configurables.md`.
-- [ ] **Browser viewer for WSGrabber** (JS-side envelope parser).  See `reference_websocket.md`.
+- [ ] **Browser viewer for WSSource** (JS-side envelope parser).  See `reference_websocket.md`.
 - [ ] **`wss://` (TLS)** for WS transport.
-- [ ] **WSGrabber server mode** (push-source workflow).
+- [ ] **WSSource server mode** (push-source workflow).
 - [ ] **Path-based multi-stream** on one WS server (`/cam0`, `/cam1`).
+
+### ImageSource/ImageSink rework follow-ups (the rework itself is COMPLETE — `image-source-sink-plan.md`, memory `reference_image_source_sink.md`)
+
+- [ ] **Fix `icl-pipe` arg-parse regression.**  After the rework, `-i list`
+  now demands 2 sub-arguments (`ImageSource::init` takes device+spec), so the
+  bare `-i list` affordance fails ("argument '-input' expected 2
+  sub-arguments").  Also `icl-pipe -i create cameraman -o file ...` aborts at
+  init with "could not parse '15.0' as integral" (a default/fps arg).
+  Investigate `icl-pipe`'s ProgArg handling + restore the `list` affordance.
+  Related: `project_progarg_rework.md`.
+- [ ] **`LibAVVideoWriter` → `LibAVSink`** rename — fold into the pending
+  FFmpeg 6/7 rewrite (`project_ffmpeg.md`); currently unbuilt so left as-is.
+- [ ] **Generic `ImagePipeline`** (idea, exploratory).  With symmetric
+  `SourceBackend` / `UnaryOp`(Filter) / `SinkBackend`, compose a generic
+  Source→Filter→Sink pipeline — and maybe make `Display` a `Sink` too.  Not
+  necessarily purely linear: ICL also has `BinaryOp`s, so a DAG (multiple
+  inputs merging) is the more general shape.  Would unify acquisition,
+  processing, and output under one declarative graph.  Build syntax via
+  stream operators: `source >> filter >> filter >> sink` (mirrors the
+  existing `gui << ... << Show()` style); `BinaryOp` nodes take two
+  upstreams, so `>>` chains compose into the DAG rather than a strict line.
 
 ---
 

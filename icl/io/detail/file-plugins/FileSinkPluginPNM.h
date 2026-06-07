@@ -13,7 +13,7 @@
 
 namespace icl::io {
   /// Writer backend for ".ppm", ".pgm", ".pnm" and ".icl" \ingroup FILEIO_G
-  class ICLIO_API FileWriterPluginPNM {
+  class ICLIO_API FileSinkPluginPNM {
     public:
     /// write implementation
     void write(utils::File &file, const core::ImgBase *image);

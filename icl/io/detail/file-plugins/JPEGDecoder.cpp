@@ -6,7 +6,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/io/detail/file-plugins/JPEGHandle.h>
 #include <icl/utils/Macros.h>
-#include <icl/io/file/FileSource.h>  // for HeaderInfo
+#include <icl/io/detail/FileSource.h>  // for HeaderInfo
 
 using namespace icl::utils;
 using namespace icl::core;

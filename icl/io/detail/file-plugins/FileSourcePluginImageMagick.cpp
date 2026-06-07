@@ -2,10 +2,10 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/file-plugins/FileGrabberPluginImageMagick.h>
+#include <icl/io/detail/file-plugins/FileSourcePluginImageMagick.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/cc/CCFunctions.h>
-#include <icl/io/detail/file-plugins/FileWriterPluginImageMagick.h>
+#include <icl/io/detail/file-plugins/FileSinkPluginImageMagick.h>
 
 #ifdef ICL_HAVE_IMAGEMAGICK
 // default value which would be set otherwise in Magic++.h as of May 2019
@@ -24,22 +24,22 @@ using namespace icl::core;
 
 namespace icl::io {
 #ifdef ICL_HAVE_IMAGEMAGICK
-  struct FileGrabberPluginImageMagick::InternalData{
+  struct FileSourcePluginImageMagick::InternalData{
     std::vector<icl8u> buffer;
 
 
   };
 
-  FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
-    m_data(new FileGrabberPluginImageMagick::InternalData){
-    // from FileWriterPluginImageMagick.h
+  FileSourcePluginImageMagick::FileSourcePluginImageMagick():
+    m_data(new FileSourcePluginImageMagick::InternalData){
+    // from FileSinkPluginImageMagick.h
   }
 
-  FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){
+  FileSourcePluginImageMagick::~FileSourcePluginImageMagick(){
     delete m_data;
   }
 
-  void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
+  void FileSourcePluginImageMagick::grab(File &file, ImgBase **dest){
     icl_initialize_image_magick_context();
 
     Magick::Image image;
@@ -61,14 +61,14 @@ namespace icl::io {
   }
 
 #else
-  struct FileGrabberPluginImageMagick::InternalData{};
+  struct FileSourcePluginImageMagick::InternalData{};
 
-  FileGrabberPluginImageMagick::FileGrabberPluginImageMagick():
+  FileSourcePluginImageMagick::FileSourcePluginImageMagick():
     m_data(0){}
 
-  FileGrabberPluginImageMagick::~FileGrabberPluginImageMagick(){}
+  FileSourcePluginImageMagick::~FileSourcePluginImageMagick(){}
 
-  void FileGrabberPluginImageMagick::grab(File &file, ImgBase **dest){
+  void FileSourcePluginImageMagick::grab(File &file, ImgBase **dest){
     ERROR_LOG("grabbing images of this format is not supported without libImageMagic++");
     throw InvalidFileException(file.getName());
   }
@@ -76,10 +76,10 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_IMAGEMAGICK
-#include <icl/io/file/FileSource.h>  // fileGrabberRegistry
+#include <icl/io/detail/FileSource.h>  // fileSourceRegistry
 namespace {
-  using icl::io::FileGrabberPluginImageMagick;
-  using icl::io::fileGrabberRegistry;
+  using icl::io::FileSourcePluginImageMagick;
+  using icl::io::fileSourceRegistry;
 
   static const char *imageMagickFormats[] = {
     "png","jpeg","jpg",
@@ -98,20 +98,20 @@ namespace {
 // One shared IM grabber impl across all extensions, mutex-protected.
 static void iclImageMagickGrab(icl::utils::File &f, icl::core::ImgBase **dst) {
   static std::mutex m;
-  static FileGrabberPluginImageMagick impl;
+  static FileSourcePluginImageMagick impl;
   std::scoped_lock lock(m);
   impl.grab(f, dst);
 }
 
 extern "C" __attribute__((constructor, used)) void
-iclRegisterFileGrabberPluginsImageMagick() {
+iclRegisterFileSourcePluginsImageMagick() {
   // Register at low priority so libpng / libjpeg (priority 0) win for
   // extensions they also claim. Formats libpng/libjpeg don't read (tiff,
   // gif, bmp, svg, …) have no competing registration — ImageMagick wins
   // there unopposed.
   constexpr int kImageMagickPriority = -10;
   for (const char **pc = imageMagickFormats; *pc; ++pc) {
-    fileGrabberRegistry().registerPlugin(std::string(".") + *pc,
+    fileSourceRegistry().registerPlugin(std::string(".") + *pc,
                                          &iclImageMagickGrab,
                                          /*description*/ {},
                                          kImageMagickPriority);

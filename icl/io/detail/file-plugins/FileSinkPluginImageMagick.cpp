@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/file-plugins/FileWriterPluginImageMagick.h>
+#include <icl/io/detail/file-plugins/FileSinkPluginImageMagick.h>
 #include <icl/core/CoreFunctions.h>
 
 #ifdef ICL_HAVE_IMAGEMAGICK
@@ -29,7 +29,7 @@ namespace icl::io {
 
 
 
-  class FileWriterPluginImageMagick::InternalData{
+  class FileSinkPluginImageMagick::InternalData{
   public:
     InternalData(){
       buffer = 0;
@@ -42,9 +42,9 @@ namespace icl::io {
     std::vector<icl8u> interleavedBuffer;
 
   };
-  FileWriterPluginImageMagick::FileWriterPluginImageMagick():m_data(new FileWriterPluginImageMagick::InternalData){
+  FileSinkPluginImageMagick::FileSinkPluginImageMagick():m_data(new FileSinkPluginImageMagick::InternalData){
   }
-  FileWriterPluginImageMagick::~FileWriterPluginImageMagick(){
+  FileSinkPluginImageMagick::~FileSinkPluginImageMagick(){
     ICL_DELETE(m_data);
   }
 
@@ -62,7 +62,7 @@ namespace icl::io {
     }
   }
 #endif
-  void FileWriterPluginImageMagick::write(File &file, const ImgBase *image){
+  void FileSinkPluginImageMagick::write(File &file, const ImgBase *image){
     icl_initialize_image_magick_context();
 
     switch(image->getChannels()){
@@ -163,8 +163,8 @@ namespace icl::io {
         break;
       }
       default:
-        ERROR_LOG("Yet ImageMagick FileWriterPlugin supports only 1, 3 and 4 channel data");
-        throw ICLException("Unable to write image using FileWriterPluginImageMagick");
+        ERROR_LOG("Yet ImageMagick FileSinkPlugin supports only 1, 3 and 4 channel data");
+        throw ICLException("Unable to write image using FileSinkPluginImageMagick");
     }
 
   }
@@ -178,20 +178,20 @@ namespace icl::io {
 
 #else
   void icl_initialize_image_magick_context(){}
-  class FileWriterPluginImageMagick::InternalData{};
-  FileWriterPluginImageMagick::FileWriterPluginImageMagick():m_data(0){}
-  FileWriterPluginImageMagick::~FileWriterPluginImageMagick(){}
+  class FileSinkPluginImageMagick::InternalData{};
+  FileSinkPluginImageMagick::FileSinkPluginImageMagick():m_data(0){}
+  FileSinkPluginImageMagick::~FileSinkPluginImageMagick(){}
 
-  void FileWriterPluginImageMagick::write(File&, const ImgBase*){}
+  void FileSinkPluginImageMagick::write(File&, const ImgBase*){}
 #endif
 
   } // namespace icl::io
 
 #ifdef ICL_HAVE_IMAGEMAGICK
-#include <icl/io/file/FileWriter.h>  // fileWriterRegistry
+#include <icl/io/detail/FileWriter.h>  // fileSinkRegistry
 namespace {
-  using icl::io::FileWriterPluginImageMagick;
-  using icl::io::fileWriterRegistry;
+  using icl::io::FileSinkPluginImageMagick;
+  using icl::io::fileSinkRegistry;
 
   // ImageMagick claims a *lot* of formats. Register them all under one
   // factory. JPEG/PNG slots are also wired here as a fallback for builds
@@ -218,20 +218,20 @@ namespace {
 // buffers, so concurrent writes already raced — now they're serialized).
 static void iclImageMagickWrite(icl::utils::File &f, const icl::core::ImgBase *img) {
   static std::mutex m;
-  static FileWriterPluginImageMagick impl;
+  static FileSinkPluginImageMagick impl;
   std::scoped_lock lock(m);
   impl.write(f, img);
 }
 
 extern "C" __attribute__((constructor, used)) void
-iclRegisterFileWriterPluginsImageMagick() {
+iclRegisterFileSinkPluginsImageMagick() {
   // Register at low priority so libpng / libjpeg (priority 0) win for
   // extensions they also claim. For formats libpng/libjpeg don't handle
   // (tiff, gif, bmp, svg, …), ImageMagick's registration is unopposed
   // and wins by default.
   constexpr int kImageMagickPriority = -10;
   for (const char **pc = imageMagickFormats; *pc; ++pc) {
-    fileWriterRegistry().registerPlugin(std::string(".") + *pc,
+    fileSinkRegistry().registerPlugin(std::string(".") + *pc,
                                         &iclImageMagickWrite,
                                         /*description*/ {},
                                         kImageMagickPriority);

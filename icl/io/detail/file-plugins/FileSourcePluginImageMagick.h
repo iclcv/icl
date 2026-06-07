@@ -10,15 +10,15 @@
 
 namespace icl::io {
   /// Reader using an ImageMagick++ wrapper \ingroup FILEIO_G
-  /** @copydoc icl::io::FileWriterPluginImageMagick
+  /** @copydoc icl::io::FileSinkPluginImageMagick
   */
-  class ICLIO_API FileGrabberPluginImageMagick {
+  class ICLIO_API FileSourcePluginImageMagick {
     public:
     /// Create a new Plugin
-    FileGrabberPluginImageMagick();
+    FileSourcePluginImageMagick();
 
     /// Destructor
-    ~FileGrabberPluginImageMagick();
+    ~FileSourcePluginImageMagick();
 
     /// grab implementation
     void grab(utils::File &file, core::ImgBase **dest);

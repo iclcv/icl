@@ -181,7 +181,7 @@ const core::ImgBase* PylonSource::acquireImage(){
   return ret;
 }
 
-icl::io::SourceBackend* createGrabber(const std::string &param){
+icl::io::SourceBackend* createSource(const std::string &param){
   Pylon::CDeviceInfo dev = getDeviceFromArgs(param);
   return new io::pylon::PylonSource(dev, param);
 }
@@ -204,4 +204,4 @@ const std::vector<io::DeviceDescription>& getPylDeviceList(std::string hint, boo
   return deviceList;
 }
 
-REGISTER_SOURCE_BACKEND(pylon,createGrabber,getPylDeviceList, "pylon:camera ID or IP-address:Basler Pylon based gigabit-ethernet (GIG-E) camera source");
+REGISTER_SOURCE_BACKEND(pylon,createSource,getPylDeviceList, "pylon:camera ID or IP-address:Basler Pylon based gigabit-ethernet (GIG-E) camera source");

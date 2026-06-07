@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting
 
-#include <icl/io/detail/file-plugins/FileWriterPluginPNM.h>
+#include <icl/io/detail/file-plugins/FileSinkPluginPNM.h>
 #include <string>
 #include <vector>
 #include <icl/core/cc/CCFunctions.h>
@@ -90,7 +90,7 @@ namespace icl{
       }
     }
 
-    void FileWriterPluginPNM::write(File &file, const ImgBase *poSrc){
+    void FileSinkPluginPNM::write(File &file, const ImgBase *poSrc){
       ICLASSERT_RETURN(poSrc);
       file.open(File::writeText);
 
@@ -179,14 +179,14 @@ namespace icl{
   } // namespace io
 }
 
-#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
+#include <icl/io/detail/FileWriter.h>  // REGISTER_FILE_SINK_PLUGIN
 namespace {
-  using icl::io::FileWriterPluginPNM;
+  using icl::io::FileSinkPluginPNM;
 }
 #define ICL_PNM_REG(TAG, EXT)                                                 \
-  REGISTER_FILE_WRITER_PLUGIN(TAG, EXT,                                       \
+  REGISTER_FILE_SINK_PLUGIN(TAG, EXT,                                       \
     [](icl::utils::File &f, const icl::core::ImgBase *img) {                  \
-      static FileWriterPluginPNM impl; impl.write(f, img);                    \
+      static FileSinkPluginPNM impl; impl.write(f, img);                    \
     })
 ICL_PNM_REG(ppm, ".ppm");
 ICL_PNM_REG(pgm, ".pgm");
@@ -201,7 +201,7 @@ ICL_PNM_REG(icl_gz, ".icl.gz");
 #undef ICL_PNM_REG
 
 /*
-      void FileWriterPluginPNM::write(File &file, const ImgBase *poSrc){
+      void FileSinkPluginPNM::write(File &file, const ImgBase *poSrc){
 
     ICLASSERT_RETURN(poSrc);
     file.open(File::writeText);

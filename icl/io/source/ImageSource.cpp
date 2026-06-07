@@ -22,74 +22,74 @@ namespace icl::io {
 
   /// PIMPL: the owned backend, its device description, and the re-init lock.
   struct ImageSource::Data {
-    SourceBackend                *grabber = nullptr;
+    SourceBackend                *backend = nullptr;
     DeviceDescription             desc;
     mutable std::recursive_mutex  mutex;
   };
 
-  class GrabberInstanceTable {
+  class BackendInstanceTable {
     public:
-      GrabberInstanceTable(const GrabberInstanceTable&) = delete;
-      GrabberInstanceTable &operator=(const GrabberInstanceTable&) = delete;
+      BackendInstanceTable(const BackendInstanceTable&) = delete;
+      BackendInstanceTable &operator=(const BackendInstanceTable&) = delete;
 
     private:
-      static GrabberInstanceTable inst;
+      static BackendInstanceTable inst;
       std::recursive_mutex mutex;
-      // grabber pointer with init counter
-      struct GrabberInstance{
-        SourceBackend* grabber;
+      // backend pointer with init counter
+      struct BackendInstance{
+        SourceBackend* backend;
         DeviceDescription  description;
         int count;
 
-        GrabberInstance() : grabber(nullptr), count(0) {}
-        GrabberInstance(SourceBackend* g, DeviceDescription  d, int c = 1)
-         : grabber(g), description(d), count(c) {}
+        BackendInstance() : backend(nullptr), count(0) {}
+        BackendInstance(SourceBackend* g, DeviceDescription  d, int c = 1)
+         : backend(g), description(d), count(c) {}
       };
 
-      // map of grabber instances
-      typedef std::map<std::string, GrabberInstance, std::less<>> GPM;
+      // map of backend instances
+      typedef std::map<std::string, BackendInstance, std::less<>> GPM;
       GPM gpm;
 
       // private constructor
-      GrabberInstanceTable(){}
+      BackendInstanceTable(){}
 
     public:
       // overall instance
-      static GrabberInstanceTable* get(){
+      static BackendInstanceTable* get(){
         return &inst;
       }
 
-      SourceBackend* createGrabber(const DeviceDescription &desc){
+      SourceBackend* createBackend(const DeviceDescription &desc){
         std::scoped_lock l(mutex);
 
         if(auto it = gpm.find(desc.name()); it != gpm.end()){
           // increment instance counter
-          DEBUG_LOG("return old grabber" << desc.name());
+          DEBUG_LOG("return old backend" << desc.name());
           ++(it -> second).count;
-          return (it->second).grabber;
+          return (it->second).backend;
         } else {
-          DEBUG_LOG("create new grabber " << desc.name());
-          // init grabber
-          SourceBackend* gPtr = SourceBackendRegistry::getInstance() -> createGrabber(desc.type, desc.id);
-          gpm[desc.name()] = GrabberInstance(gPtr,desc,1);
+          DEBUG_LOG("create new backend " << desc.name());
+          // init backend
+          SourceBackend* gPtr = SourceBackendRegistry::getInstance() -> create(desc.type, desc.id);
+          gpm[desc.name()] = BackendInstance(gPtr,desc,1);
           return gPtr;
         }
       }
 
-      void deleteGrabber(const DeviceDescription &desc){
+      void deleteBackend(const DeviceDescription &desc){
         std::scoped_lock l(mutex);
-        DEBUG_LOG("called delete grabber");
+        DEBUG_LOG("called delete backend");
         if(auto it = gpm.find(desc.name()); it == gpm.end()){
           ERROR_LOG("SourceBackend with name '" << desc.name() << "' was not existent.");
           return;
         } else {
-          GrabberInstance &g = (it -> second);
+          BackendInstance &g = (it -> second);
           // decrease instance number
           --g.count;
-          // delete grabber if no more instances
+          // delete backend if no more instances
           if(!g.count){
             DEBUG_LOG("Last instance gone. Deleting SourceBackend " << g.description.name());
-            ICL_DELETE(g.grabber);
+            ICL_DELETE(g.backend);
             gpm.erase(it -> first);
           }
         }
@@ -103,7 +103,7 @@ namespace icl::io {
         return list;
       }
   };
-  GrabberInstanceTable GrabberInstanceTable::inst;
+  BackendInstanceTable BackendInstanceTable::inst;
 
 
   // ---- construction / destruction ---------------------------------------
@@ -121,9 +121,9 @@ namespace icl::io {
   }
 
   ImageSource::~ImageSource(){
-    if(m_data->grabber){
-      removeChildConfigurable(m_data->grabber);
-      GrabberInstanceTable::get() -> deleteGrabber(m_data->desc);
+    if(m_data->backend){
+      removeChildConfigurable(m_data->backend);
+      BackendInstanceTable::get()->deleteBackend(m_data->desc);
     }
     delete m_data;
   }
@@ -161,7 +161,7 @@ namespace icl::io {
 
     ParamMap pmap;
     static SourceBackendRegistry* reg = SourceBackendRegistry::getInstance();
-    static std::vector<std::string> plugins = reg -> getRegisteredGrabbers();
+    static std::vector<std::string> plugins = reg -> getRegistered();
     for(unsigned int i=0;i<ts.size();++i){
       auto [deviceSpec, optionStr] = split_at_first('@',ts[i]);
 
@@ -191,19 +191,19 @@ namespace icl::io {
     std::scoped_lock __lock(m_data->mutex);
 
     // (re)set ImageSource to a null instance
-    if(m_data->grabber){
+    if(m_data->backend){
       // Detach previous backend from this Configurable's child set
       // before dropping the instance.
-      removeChildConfigurable(m_data->grabber);
-      GrabberInstanceTable::get()->deleteGrabber(m_data->desc);
+      removeChildConfigurable(m_data->backend);
+      BackendInstanceTable::get()->deleteBackend(m_data->desc);
     }
     m_data->desc = DeviceDescription();
-    m_data->grabber = nullptr;
+    m_data->backend = nullptr;
 
     // "list" — print the available-backend table and exit
     if(device == "list"){
       std::vector<std::string> supportedDevices =
-          SourceBackendRegistry::getInstance()->getGrabberInfos();
+          SourceBackendRegistry::getInstance()->getInfos();
       std::cout << "the following image source backends are available:" << std::endl;
       TextTable t(4,supportedDevices.size()+1,28);
       t[0] = tok("index,ID,parameter,description",",");
@@ -246,7 +246,7 @@ namespace icl::io {
     }
 
     try{
-      m_data->grabber = GrabberInstanceTable::get()->createGrabber(devs.at(0));
+      m_data->backend = BackendInstanceTable::get()->createBackend(devs.at(0));
       m_data->desc    = devs.at(0);
     }catch(ICLException &e){
       if(notifyErrors){
@@ -256,7 +256,7 @@ namespace icl::io {
       return;
     }
 
-    SourceBackend *g = m_data->grabber;
+    SourceBackend *g = m_data->backend;
     g->setConfigurableID(m_data->desc.name());
     DEBUG_LOG("set configurable name :" << m_data->desc.name());
 
@@ -324,17 +324,17 @@ namespace icl::io {
 
   SourceBackend *ImageSource::getBackend() const {
     std::scoped_lock __lock(m_data->mutex);
-    return m_data->grabber;
+    return m_data->backend;
   }
 
-  bool ImageSource::isNull() const { return m_data->grabber == nullptr; }
+  bool ImageSource::isNull() const { return m_data->backend == nullptr; }
 
   ImageSource::operator bool() const { return !isNull(); }
 
   core::Image ImageSource::grab(){
     std::scoped_lock __lock(m_data->mutex);
     ICLASSERT_RETURN_VAL(!isNull(), core::Image());
-    return m_data->grabber->grab();
+    return m_data->backend->grab();
   }
 
   // ---- desired params (forward to backend) ------------------------------
@@ -342,71 +342,71 @@ namespace icl::io {
   void ImageSource::setDesiredFormatInternal(core::format fmt){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->setDesiredFormatInternal(fmt);
+    m_data->backend->setDesiredFormatInternal(fmt);
   }
   void ImageSource::setDesiredSizeInternal(const utils::Size &size){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->setDesiredSizeInternal(size);
+    m_data->backend->setDesiredSizeInternal(size);
   }
   void ImageSource::setDesiredDepthInternal(core::depth d){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->setDesiredDepthInternal(d);
+    m_data->backend->setDesiredDepthInternal(d);
   }
   core::format ImageSource::getDesiredFormatInternal() const{
     ICLASSERT_RETURN_VAL(!isNull(),(core::format)-1);
     std::scoped_lock l(m_data->mutex);
-    return m_data->grabber->getDesiredFormatInternal();
+    return m_data->backend->getDesiredFormatInternal();
   }
   core::depth ImageSource::getDesiredDepthInternal() const{
     ICLASSERT_RETURN_VAL(!isNull(),(core::depth)-1);
     std::scoped_lock l(m_data->mutex);
-    return m_data->grabber->getDesiredDepthInternal();
+    return m_data->backend->getDesiredDepthInternal();
   }
   utils::Size ImageSource::getDesiredSizeInternal() const{
     ICLASSERT_RETURN_VAL(!isNull(),utils::Size::null);
     std::scoped_lock l(m_data->mutex);
-    return m_data->grabber->getDesiredSizeInternal();
+    return m_data->backend->getDesiredSizeInternal();
   }
 
   void ImageSource::useDesired(core::depth d) {
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->useDesired(d);
+    m_data->backend->useDesired(d);
   }
   void ImageSource::useDesired(const utils::Size &size) {
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->useDesired(size);
+    m_data->backend->useDesired(size);
   }
   void ImageSource::useDesired(core::format fmt) {
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->useDesired(fmt);
+    m_data->backend->useDesired(fmt);
   }
   void ImageSource::useDesired(core::depth d, const utils::Size &size, core::format fmt){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->useDesired(d, size, fmt);
+    m_data->backend->useDesired(d, size, fmt);
   }
 
-  core::depth  ImageSource::getDesiredDepth()  const { ICLASSERT_RETURN_VAL(!isNull(), core::depth(-1));   std::scoped_lock l(m_data->mutex); return m_data->grabber->getDesiredDepth();  }
-  utils::Size  ImageSource::getDesiredSize()   const { ICLASSERT_RETURN_VAL(!isNull(), utils::Size::null); std::scoped_lock l(m_data->mutex); return m_data->grabber->getDesiredSize();   }
-  core::format ImageSource::getDesiredFormat() const { ICLASSERT_RETURN_VAL(!isNull(), core::format(-1));  std::scoped_lock l(m_data->mutex); return m_data->grabber->getDesiredFormat(); }
+  core::depth  ImageSource::getDesiredDepth()  const { ICLASSERT_RETURN_VAL(!isNull(), core::depth(-1));   std::scoped_lock l(m_data->mutex); return m_data->backend->getDesiredDepth();  }
+  utils::Size  ImageSource::getDesiredSize()   const { ICLASSERT_RETURN_VAL(!isNull(), utils::Size::null); std::scoped_lock l(m_data->mutex); return m_data->backend->getDesiredSize();   }
+  core::format ImageSource::getDesiredFormat() const { ICLASSERT_RETURN_VAL(!isNull(), core::format(-1));  std::scoped_lock l(m_data->mutex); return m_data->backend->getDesiredFormat(); }
 
-  bool ImageSource::desiredDepthUsed()  const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_data->mutex); return m_data->grabber->desiredDepthUsed();  }
-  bool ImageSource::desiredSizeUsed()   const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_data->mutex); return m_data->grabber->desiredSizeUsed();   }
-  bool ImageSource::desiredFormatUsed() const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_data->mutex); return m_data->grabber->desiredFormatUsed(); }
+  bool ImageSource::desiredDepthUsed()  const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_data->mutex); return m_data->backend->desiredDepthUsed();  }
+  bool ImageSource::desiredSizeUsed()   const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_data->mutex); return m_data->backend->desiredSizeUsed();   }
+  bool ImageSource::desiredFormatUsed() const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_data->mutex); return m_data->backend->desiredFormatUsed(); }
 
-  void ImageSource::ignoreDesiredDepth()  { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_data->mutex); m_data->grabber->ignoreDesiredDepth();  }
-  void ImageSource::ignoreDesiredSize()   { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_data->mutex); m_data->grabber->ignoreDesiredSize();   }
-  void ImageSource::ignoreDesiredFormat() { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_data->mutex); m_data->grabber->ignoreDesiredFormat(); }
+  void ImageSource::ignoreDesiredDepth()  { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_data->mutex); m_data->backend->ignoreDesiredDepth();  }
+  void ImageSource::ignoreDesiredSize()   { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_data->mutex); m_data->backend->ignoreDesiredSize();   }
+  void ImageSource::ignoreDesiredFormat() { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_data->mutex); m_data->backend->ignoreDesiredFormat(); }
 
   void ImageSource::ignoreDesired(){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->ignoreDesired();
+    m_data->backend->ignoreDesired();
   }
 
   // ---- undistortion (forward to backend) --------------------------------
@@ -414,42 +414,42 @@ namespace icl::io {
   void ImageSource::enableUndistortion(const std::string &filename){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->enableUndistortion(filename);
+    m_data->backend->enableUndistortion(filename);
   }
   void ImageSource::enableUndistortion(const filter::ImageUndistortion &udist){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->enableUndistortion(udist);
+    m_data->backend->enableUndistortion(udist);
   }
   void ImageSource::enableUndistortion(const utils::ProgArg &pa){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->enableUndistortion(pa);
+    m_data->backend->enableUndistortion(pa);
   }
   void ImageSource::enableUndistortion(const core::Img32f &warpMap){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->enableUndistortion(warpMap);
+    m_data->backend->enableUndistortion(warpMap);
   }
   void ImageSource::setUndistortionInterpolationMode(core::scalemode mode){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->setUndistortionInterpolationMode(mode);
+    m_data->backend->setUndistortionInterpolationMode(mode);
   }
   void ImageSource::disableUndistortion(){
     ICLASSERT_RETURN(!isNull());
     std::scoped_lock l(m_data->mutex);
-    m_data->grabber->disableUndistortion();
+    m_data->backend->disableUndistortion();
   }
   bool ImageSource::isUndistortionEnabled() const{
     ICLASSERT_RETURN_VAL(!isNull(),false);
     std::scoped_lock l(m_data->mutex);
-    return m_data->grabber->isUndistortionEnabled();
+    return m_data->backend->isUndistortionEnabled();
   }
   const core::Img32f *ImageSource::getUndistortionWarpMap() const{
     ICLASSERT_RETURN_VAL(!isNull(),0);
     std::scoped_lock l(m_data->mutex);
-    return m_data->grabber->getUndistortionWarpMap();
+    return m_data->backend->getUndistortionWarpMap();
   }
 
   // ---- static helpers ---------------------------------------------------
@@ -459,7 +459,7 @@ namespace icl::io {
     for(unsigned int i=0;i<ts.size();++i){
       const std::string &t = ts[i];
       try{
-        SourceBackendRegistry::getInstance() ->resetGrabberBus(t.substr(0,t.find('=')),verbose);
+        SourceBackendRegistry::getInstance() ->resetBus(t.substr(0,t.find('=')),verbose);
       } catch (ICLException &e){
         DEBUG_LOG(e.what());
       } catch (...){
@@ -489,7 +489,7 @@ namespace icl::io {
   const std::vector<DeviceDescription> &ImageSource::getDeviceList(const std::string &filter, bool rescan){
     static std::vector<DeviceDescription> deviceList;
     if(!rescan){
-      deviceList = GrabberInstanceTable::get() -> getInstanceList();
+      deviceList = BackendInstanceTable::get() -> getInstanceList();
       return deviceList;
     }
 
@@ -500,31 +500,31 @@ namespace icl::io {
     if(useFilter){
       pmap = create_param_map(filter);
     }
-    std::vector<std::string> grabberList =
-        SourceBackendRegistry::getInstance() -> getRegisteredGrabbers();
+    std::vector<std::string> backendList =
+        SourceBackendRegistry::getInstance() -> getRegistered();
 
     std::vector<std::string>::iterator it;
-    for(it = grabberList.begin(); it != grabberList.end(); ++it){
-      std::string grabber = *it;
-      if(!useFilter || contains(pmap,grabber)){
-        // get descriptions for this grabber
+    for(it = backendList.begin(); it != backendList.end(); ++it){
+      std::string backend = *it;
+      if(!useFilter || contains(pmap,backend)){
+        // get descriptions for this backend
         std::vector<DeviceDescription> ds;
         if(!useFilter){
-          ds = SourceBackendRegistry::getInstance() -> getDeviceList(grabber);
-        } else if (contains(pmap,grabber)) {
-          ds  = SourceBackendRegistry::getInstance() -> getDeviceList(grabber,pmap[grabber].id);
+          ds = SourceBackendRegistry::getInstance() -> getDeviceList(backend);
+        } else if (contains(pmap,backend)) {
+          ds  = SourceBackendRegistry::getInstance() -> getDeviceList(backend,pmap[backend].id);
         }
-        DEBUG_LOG(grabber << " found " << ds.size() << " grabbers");
-        if(useFilter && contains(pmap,grabber) && pmap[grabber].id.length()){
-          const DeviceDescription *d = find_description(ds,pmap[grabber].id);
+        DEBUG_LOG(backend << " found " << ds.size() << " devices");
+        if(useFilter && contains(pmap,backend) && pmap[backend].id.length()){
+          const DeviceDescription *d = find_description(ds,pmap[backend].id);
           if(d){
             deviceList.push_back(*d);
-          }else if(grabber == "v4l"){ // hack for v4l devices here!
-            d = find_description(ds,"/dev/video"+pmap[grabber].id);
+          }else if(backend == "v4l"){ // hack for v4l devices here!
+            d = find_description(ds,"/dev/video"+pmap[backend].id);
             if(d){
               deviceList.push_back(*d);
             }else{
-              d = find_description(ds,"/dev/video/"+pmap[grabber].id);
+              d = find_description(ds,"/dev/video/"+pmap[backend].id);
               if(d){
                 deviceList.push_back(*d);
               }

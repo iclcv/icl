@@ -20,19 +20,18 @@ namespace icl::filter { class ImageUndistortion; }
 
 namespace icl::io {
 /** \cond */
-template <class T> class GrabberHandle;
 class ImageSource;
 /** \endcond */
 
-/// Common interface class for all grabbers \ingroup GRABBER_G
+/// Common interface class for all image source backends \ingroup SOURCE_G
 /** The SourceBackend is ICL's common interface for image acquisition
-tools. A large set of Grabbers is available and wrapped
+tools. A large set of source backends is available and wrapped
 by the ImageSource class. We strongly recommend to
 use the ImageSource class for image acquisition within
 applications.
 
 The SourceBackend itself has a very short interface for the user:
-usually, a grabber is instantiated and its grab() method is
+usually, a backend is instantiated and its grab() method is
 called to aquire the next available image.
 
 
@@ -51,7 +50,7 @@ SourceBackend::setDesired-template.\n
 Currently, the image parameters 'core::depth', 'size' and 'core::format'
 can be adapted seperately by setting desired parameters. Once
 desired parameters are set, the can be reset to the grabber's
-default by calling grabber::ignoreDesired<T> where one of the
+default by calling SourceBackend::ignoreDesired<T> where one of the
 types core::depth, core::format or icl::utils::Size is used as type T.
 
 
@@ -66,7 +65,7 @@ grabbed images, which lets the user then work with
 undistored images.
 
 
-\section IM Implementing Grabbers
+\section IM Implementing source backends
 
 In order to implement a new SourceBackend class, some steps are necessary.
 First, the new SourceBackend needs to be implemented. This must
@@ -74,10 +73,6 @@ implement the SourceBackend::acquireImage method, that uses an underlying
 image source to acquire a single new image. This can have any
 parameters and core::depth (usually, the image parameters are somehow
 related to the output of the underlying image source).
-If the grabber is available, one should think about adapting
-the grabber to inherit the icl::GrabberHandle class that adds
-the ability of instantiating one SourceBackend several times without
-having to handle double device accesses explicitly.
 
 
 \section PROP Properties
@@ -121,9 +116,6 @@ virtual core::depth getDesiredDepthInternal() const;
 virtual utils::Size getDesiredSizeInternal() const;
 
 public:
-
-/// grant private method access to the grabber handle template
-template<class X> friend class GrabberHandle;
 
 /// grant private method access to the ImageSource class
 friend class ImageSource;

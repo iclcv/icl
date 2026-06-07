@@ -2,8 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/file/FileSource.h>
-#include <icl/io/file/FileWriter.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/core/convert/FixedConverter.h>
 #include <icl/qt/Common2.h>
 #include <icl/utils/Size.h>
@@ -54,7 +53,7 @@ int main(int n, char **ppc){
   }
 
 
-  FileSource fg(inFileName);
+  ImageSource fg("file", inFileName);
 
   Image image;
   try{
@@ -148,6 +147,6 @@ int main(int n, char **ppc){
     dst = Image(cropped);
   }
 
-  FileWriter(outFileName).write(dst);
+  save(dst, outFileName);
   return 0;
 }

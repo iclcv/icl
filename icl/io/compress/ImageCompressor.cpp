@@ -194,7 +194,7 @@ namespace icl::io {
   // -------------------------------------------------------- public --
   // The ctor installs the active plugin eagerly. This is safe because
   // FileWriter and FileSource are now factory-based (Session 47): no
-  // FileWriterPluginBICL / FileGrabberPluginBICL instances are
+  // FileSinkPluginBICL / FileSourcePluginBICL instances are
   // constructed during static init — they're built lazily on first
   // use, after main() is running and the compressionRegistry() has been
   // fully populated. Anyone constructing an ImageCompressor outside of
@@ -238,7 +238,7 @@ namespace icl::io {
     if (!params.empty()) m_data->plugin->setCodecParamsString(params);
     // Add as child with empty prefix so the plugin's own properties
     // (`quality`, `level`, …) surface as siblings of `mode`. When this
-    // ImageCompressor is itself a child of (e.g.) WSImageOutput under
+    // ImageCompressor is itself a child of (e.g.) WSSink under
     // the prefix `compression.`, the user sees `compression.mode` plus
     // `compression.quality` / `compression.level` etc. — the codec's
     // tunables appear and disappear with the active codec selection.

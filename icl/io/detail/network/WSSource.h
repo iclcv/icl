@@ -10,13 +10,13 @@
 
 namespace icl::io {
   /// WebSocket-based grabber (client side, with auto-reconnect)
-  /** Connects to a remote `WSImageOutput` (or any WebSocket publisher
+  /** Connects to a remote `WSSink` (or any WebSocket publisher
       that emits `ImageCompressor`-encoded binary frames) and exposes the
       received frames through the standard `SourceBackend::grab()` API.
 
       \section HIST History
       `WSSource` (Session 46) replaced the retired `SharedMemoryGrabber`
-      (Session 47). See `WSImageOutput.h` for the rationale.
+      (Session 47). See `WSSink.h` for the rationale.
 
       \section URL  URL form (via ImageSource / `-i ws ...`)
       \code

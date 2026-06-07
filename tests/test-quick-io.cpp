@@ -2,14 +2,14 @@
 #include <icl/qt/QuickIO.h>
 #include <icl/qt/QuickCreate.h>
 #include <icl/io/SaveLoad.h>
-#include <icl/io/file/FileWriter.h>
+#include <icl/io/detail/FileWriter.h>
 #include <icl/io/output/ImageSink.h>
 #include <icl/core/Img.h>
 #include <icl/io/compress/ImageCompressor.h>
 
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #ifdef ICL_HAVE_QT_WEBSOCKETS
-#include <icl/io/detail/network/WSImageOutput.h>
+#include <icl/io/detail/network/WSSink.h>
 #include <icl/io/detail/network/WSSource.h>
 #include <icl/utils/thread/Thread.h>
 #include <chrono>
@@ -370,7 +370,7 @@ ICL_REGISTER_TEST(
 #ifdef ICL_HAVE_QT_WEBSOCKETS
 // ---- WebSocket SourceBackend/Output (Qt6 WebSockets) -------------------------
 //
-// Loopback tests: spin a WSImageOutput on 127.0.0.1 + an OS-assigned
+// Loopback tests: spin a WSSink on 127.0.0.1 + an OS-assigned
 // port, connect a WSSource to it, send a known image, verify roundtrip.
 // Each test uses port 0 to avoid collisions with parallel test runs.
 
@@ -408,8 +408,8 @@ namespace {
 }
 
 ICL_REGISTER_TEST("WS.loopback.roundtrip",
-                  "WSImageOutput → WSSource: byte-identical recovery") {
-  WSImageOutput out(0, "127.0.0.1");
+                  "WSSink → WSSource: byte-identical recovery") {
+  WSSink out(0, "127.0.0.1");
   ICL_TEST_TRUE(out);
   const int port = out.actualPort();
   ICL_TEST_TRUE(port > 0);
@@ -431,7 +431,7 @@ ICL_REGISTER_TEST("WS.loopback.roundtrip",
 
 ICL_REGISTER_TEST("WS.multi_client.broadcast",
                   "Two grabbers attached to one output both see every frame") {
-  WSImageOutput out(0, "127.0.0.1");
+  WSSink out(0, "127.0.0.1");
   const int port = out.actualPort();
   const std::string url = "ws://127.0.0.1:" + str(port);
 
@@ -450,7 +450,7 @@ ICL_REGISTER_TEST("WS.multi_client.broadcast",
 
 ICL_REGISTER_TEST("WS.url_shorthands_accepted",
                   "PORT, HOST:PORT and ws://HOST:PORT are all valid grabber URLs") {
-  WSImageOutput out(0, "127.0.0.1");
+  WSSink out(0, "127.0.0.1");
   const int port = out.actualPort();
   ICL_TEST_TRUE(port > 0);
 
@@ -479,7 +479,7 @@ ICL_REGISTER_TEST("WS.client_survives_server_restart",
 
   int port = 0;
   {
-    WSImageOutput out(0, "127.0.0.1");
+    WSSink out(0, "127.0.0.1");
     port = out.actualPort();
     ICL_TEST_TRUE(port > 0);
 
@@ -500,7 +500,7 @@ ICL_REGISTER_TEST("WS.client_survives_server_restart",
 
   WSSource grab("ws://127.0.0.1:" + str(port));
   // Bring the server back on the same port.
-  WSImageOutput out2(port, "127.0.0.1");
+  WSSink out2(port, "127.0.0.1");
   ICL_TEST_TRUE(waitFor([&]{ return out2.connectedClients() >= 1; },
                         /*timeoutMs=*/8000));
   out2.send(Image(src2));

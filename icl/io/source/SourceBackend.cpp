@@ -229,10 +229,10 @@ namespace icl::io {
 
   // SourceBackend is abstract (acquireImage() is pure); register a thin dummy
   // subclass so the Configurable type list still has an entry.
-  struct Grabber_VIRTUAL : public SourceBackend {
+  struct SourceBackend_VIRTUAL : public SourceBackend {
     Image acquireImage() override { return Image(); }
   };
-  REGISTER_CONFIGURABLE_DEFAULT(Grabber_VIRTUAL);
+  REGISTER_CONFIGURABLE_DEFAULT(SourceBackend_VIRTUAL);
 
   // SourceBackendRegistry impls live in SourceBackendRegistry.cpp.
 

@@ -9,8 +9,8 @@
 #include <icl/core/Img.h>
 
 namespace icl::io {
-  /// Plugin to grab binary icl image (.bicl or .bicl.gz) \ingroup GRABBER_G
-  class ICLIO_API FileGrabberPluginBICL {
+  /// Plugin to read ".jpeg" and ".jpg" images \ingroup FILEIO_G
+  class ICLIO_API FileSourcePluginJPEG {
     public:
     /// grab implementation
     void grab(utils::File &file, core::ImgBase **dest);

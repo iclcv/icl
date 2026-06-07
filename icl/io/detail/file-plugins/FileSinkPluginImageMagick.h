@@ -14,13 +14,13 @@ namespace icl::io {
       formats (png, gif, pdf, bmp, tiff, svg, and dozens more). Use the
       linux shell command `identify -list format` for the full list
       supported by your ImageMagick build. */
-  class FileWriterPluginImageMagick {
+  class FileSinkPluginImageMagick {
     public:
     /// creates a plugin
-    ICLIO_API FileWriterPluginImageMagick();
+    ICLIO_API FileSinkPluginImageMagick();
 
     /// Destructor
-    ICLIO_API ~FileWriterPluginImageMagick();
+    ICLIO_API ~FileSinkPluginImageMagick();
 
     /// write implementation
     ICLIO_API void write(utils::File &file, const core::ImgBase *image);

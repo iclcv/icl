@@ -5,29 +5,29 @@
 #include <string>
 #include <icl/utils/prop/Constraints.h>
 #include <map>
-#include <icl/io/file/FileSource.h>
+#include <icl/io/detail/FileSource.h>
 #include <icl/core/Image.h>
 #include <icl/io/file/FileList.h>
-#include <icl/io/file/FilenameGenerator.h>
+#include <icl/io/detail/FilenameGenerator.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/thread/Thread.h>
 #include <icl/utils/File.h>
 // plugins
-#include <icl/io/detail/file-plugins/FileGrabberPluginPNM.h>
-#include <icl/io/detail/file-plugins/FileGrabberPluginBICL.h>
-#include <icl/io/detail/file-plugins/FileGrabberPluginCSV.h>
+#include <icl/io/detail/file-plugins/FileSourcePluginPNM.h>
+#include <icl/io/detail/file-plugins/FileSourcePluginBICL.h>
+#include <icl/io/detail/file-plugins/FileSourcePluginCSV.h>
 
 #ifdef ICL_HAVE_LIBJPEG
-#include <icl/io/detail/file-plugins/FileGrabberPluginJPEG.h>
+#include <icl/io/detail/file-plugins/FileSourcePluginJPEG.h>
 #endif
 
 #ifdef ICL_HAVE_LIBPNG
-#include <icl/io/detail/file-plugins/FileGrabberPluginPNG.h>
+#include <icl/io/detail/file-plugins/FileSourcePluginPNG.h>
 #endif
 
 #ifdef ICL_HAVE_IMAGEMAGICK
-#include <icl/io/detail/file-plugins/FileGrabberPluginImageMagick.h>
+#include <icl/io/detail/file-plugins/FileSourcePluginImageMagick.h>
 #endif
 
 #include <string>
@@ -82,20 +82,20 @@ namespace icl::io {
 
   };
 
-  // Plugins self-register via REGISTER_FILE_GRABBER_PLUGIN at static-init
+  // Plugins self-register via REGISTER_FILE_SOURCE_PLUGIN at static-init
   // time. Each registered callable carries its own state; no external cache.
 
-  FileGrabberRegistry& fileGrabberRegistry() {
-    static FileGrabberRegistry inst(utils::OnDuplicate::KeepHighestPriority);
+  FileSourceRegistry& fileSourceRegistry() {
+    static FileSourceRegistry inst(utils::OnDuplicate::KeepHighestPriority);
     return inst;
   }
 
-  static const FileGrabberFn *find_plugin(const std::string &type){
+  static const FileSourceFn *find_plugin(const std::string &type){
     std::string lowerType = type;
     for (unsigned int i = 0; i < lowerType.length(); ++i) {
       lowerType[i] = tolower(lowerType[i]);
     }
-    const auto *e = fileGrabberRegistry().get(lowerType);
+    const auto *e = fileSourceRegistry().get(lowerType);
     return e ? &e->payload : nullptr;
   }
 
@@ -417,7 +417,7 @@ namespace icl::io {
 
     REGISTER_CONFIGURABLE(FileSource, return new FileSource("*", false, false));
 
-    SourceBackend* createGrabber(const std::string &param){
+    SourceBackend* createSource(const std::string &param){
       if(FileList::glob(param).size()){
         return new FileSource(param);
       }else{
@@ -432,13 +432,13 @@ namespace icl::io {
       if(!rescan) return deviceList;
 
       deviceList.clear();
-      // if filter exists, add grabber with filter
+      // if filter exists, add source for filter
       if(filter.size()) deviceList.push_back(
-        DeviceDescription("file", filter, "A grabber for image files.")
+        DeviceDescription("file", filter, "A source for image files.")
         );
       return deviceList;
     }
 
-    REGISTER_SOURCE_BACKEND(file,createGrabber,getFileDeviceList,"file:file name or file-pattern (in ''):image source for single or a list of image files");
+    REGISTER_SOURCE_BACKEND(file,createSource,getFileDeviceList,"file:file name or file-pattern (in ''):image source for single or a list of image files");
 
   } // namespace icl::io

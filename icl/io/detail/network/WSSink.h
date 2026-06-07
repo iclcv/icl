@@ -19,7 +19,7 @@ namespace icl::io {
       matters. Counterpart on the receiving side: `WSSource`.
 
       \section HIST History
-      `WSImageOutput` (Session 46) replaced the retired `SharedMemoryPublisher`
+      `WSSink` (Session 46) replaced the retired `SharedMemoryPublisher`
       (Session 47). For same-machine pipelines the loopback path costs ~100 µs
       of latency vs the previous shared-memory mechanism — invisible at
       typical 30 fps image-processing workloads. In exchange the WS pair
@@ -49,8 +49,8 @@ namespace icl::io {
         - `bytes sent`          info (lifetime)
         - `frames sent`         info (lifetime)
    */
-  class ICLIO_API WSImageOutput : public SinkBackend {
-    // WSImageOutput is a SinkBackend (and thus a Configurable): it exposes
+  class ICLIO_API WSSink : public SinkBackend {
+    // WSSink is a SinkBackend (and thus a Configurable): it exposes
     // its own properties (port, clients, bytes sent, …) and surfaces the
     // active codec's tunables as a child Configurable under the
     // `compression.` prefix (the inner `m_data->compressor` — an
@@ -63,11 +63,11 @@ namespace icl::io {
     public:
 
     /// Construct + bind. Pass port=0 to let the OS pick a free port
-    WSImageOutput(int port = 9090,
+    WSSink(int port = 9090,
                   const std::string &bindAddress = "0.0.0.0");
 
     /// Destructor (closes the server, drops every client)
-    ~WSImageOutput();
+    ~WSSink();
 
     /// Broadcast an image to all connected clients.
     void send(const core::Image &image) override;

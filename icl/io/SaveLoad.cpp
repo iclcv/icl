@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/SaveLoad.h>
-#include <icl/io/file/FileSource.h>
-#include <icl/io/file/FileWriter.h>
+#include <icl/io/detail/FileSource.h>
+#include <icl/io/detail/FileWriter.h>
 
 namespace icl::io {
 
