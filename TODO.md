@@ -386,6 +386,22 @@ From Session 48 deferrals:
 
 ---
 
+## ProgArg framework rethink/rework
+
+- [ ] **Rethink/rework `icl::utils::ProgArg`.**  Arg specs are declared
+  per-app as init strings (`-input|-i(2)`, `-i(device,device-params)`, …)
+  with the sub-arg *arity baked in at ~51 call sites* — there is no single
+  definition of common args like `-i`.  Consequences seen during the
+  ImageSource/ImageSink rework: a tiny ergonomic change (allow bare
+  `-i list` instead of the dummy `-i list all`) is impossible without
+  touching every declaration or reworking the parser.  Goals to consider:
+  optional/variadic trailing sub-args without `(...)` boilerplate; shared
+  reusable arg definitions (so `-i` is declared once); cleaner spec syntax;
+  maybe a typed/builder API instead of stringly-typed init strings.  See
+  `project_progarg_rework.md`.
+
+---
+
 ## C++17 source modernization (Sessions 27–28 residue)
 
 - [ ] Any deferred source-code fixes from the C++17 migration.  See `project_cpp17.md`.
