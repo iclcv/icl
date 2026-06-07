@@ -2,69 +2,252 @@
 
 ## Next Step
 
-**Session 62 is IN PROGRESS and UNCOMMITTED.**  The `icl/io/` subdir
-reorg is done on disk (see below) but not yet committed, and the
-build could not be fully verified because the local Qt environment
-drifted.  When you restart (with `~/Qt` access now whitelisted):
+Session 63 was a deep audit + modernization sweep across the public
+io/ surface (`Grabber`, `GenericImageOutput`, `FileWriter`,
+`FileGrabber`, `ImageCompressor`).  18 io commits + 1 build-env
+commit landed; 875/875 tests green throughout.  Branch is 21
+commits ahead of origin.
 
-1. **Reconfigure meson against `~/Qt`.**  The existing `builddir/` is
-   stale — it was configured against **homebrew Qt**
-   (`/opt/homebrew/lib/Qt*.framework`, baked into `build.ninja`), and
-   homebrew's `QtMultimedia.framework` has since been removed.  The
-   user switched to a manually-installed Qt in `~/Qt`.  Likely cleanest:
-   wipe `builddir/` and `meson setup builddir` with `~/Qt`'s qmake /
-   pkg-config on PATH so QtMultimedia resolves again.
-2. **Build + run tests** to confirm the io reorg: `CCACHE_DISABLE=1
-   ninja -C builddir -j 16` then `builddir/bin/icl-tests -j 1`
-   (expect 875/875).  Build gotchas hit this session:
-   - **ccache is blocked in the sandbox** → always prefix
-     `CCACHE_DISABLE=1` (already in feedback memory, re-confirmed).
-   - **Stale-PCH SDK-mtime fatal errors** after a toolchain bump:
-     `find builddir -name '*.pch' -delete` then rebuild.
-3. **Commit the io reorg** (it is verified-clean except for the Qt-env
-   blocker — the ONLY build failures were 3 QtMultimedia TUs, none
-   from the reorg).
-4. **Remove `icl/io/proto/`** — user: "RSB is gone long from our
-   dependency list, io/proto can go too."  (Not started yet.)
+### Remaining io subsystems (not yet audited)
 
-### QtMultimedia status — NOT an API problem (memory was stale)
+In `icl/io/detail/`, in roughly descending value:
 
-`project_qt6_multimedia.md` claimed the 3 multimedia files are disabled
-behind a `QT_VERSION < 6` guard needing a QVideoSink rewrite.  **That
-is outdated.**  `ICLVideoSurface.{h,cpp}`, `QtCameraGrabber.{h,cpp}`,
-`QtVideoGrabber.{h,cpp}` have ALREADY been rewritten to the modern Qt6
-API (`QVideoSink`, `QVideoFrame`, `QMediaCaptureSession`).  They fail
-only with `'QtMultimedia/QVideoSink' file not found` etc. because
-homebrew QtMultimedia is uninstalled and the builddir points at it.
-With `~/Qt` (which has Multimedia) they should just compile.  Update
-`project_qt6_multimedia.md` once confirmed.
+- **`detail/file-plugins/`** — PNM, BICL, PNG, JPEG (decoder/encoder/
+  handle), ImageMagick, CSV plugins.  Likely candidates for the same
+  Configurable-singleton treatment FileWriterPluginJPEG / CSV got
+  this session, if any of them have similar tunables.  Also: audit
+  the JPEG decoder/encoder/handle split (3 files for one codec is
+  unusual).
+- **`detail/network/`** — WSGrabber + WSImageOutput.  Recently
+  rewritten; expected to be clean but worth a pass for symmetry now
+  that GenericGrabber/Output have been cleaned up.
+- **`detail/grabbers/`** — CreateGrabber, DemoGrabber are clean (used
+  as smoke tests this session); the orphan unbuilt ones (OptrisGrabber,
+  PixelSenseGrabber, SwissRangerGrabber, XiGrabber) had their
+  `acquireImage()` declarations updated for signature compatibility
+  but the .cpp implementations are still on the legacy ImgBase*
+  pattern — they'll need migration the next time their build deps
+  are enabled.
+- **`detail/libav/`** — LibAVVideoWriter; per memory `project_ffmpeg.md`
+  this still needs the FFmpeg 6+/7+ API rewrite.  Not new.
+- **`detail/compression-plugins/`** — newly structured as a static_library
+  (link_whole'd into libicl-io).  Internals could be audited for the
+  same Image-typed-buffer + Configurable patterns the file-plugins use.
 
-### Then, the remaining Session-61 carryovers (suggested order):
+### Session-62/63 carryovers (suggested order)
 
-- **Namespace alignment for the moved subdirs.**  utils/math/core/
-  filter + now io were reorganized into `<module>/<topic>/` dirs but
-  files keep their original `icl::utils` / `icl::math` / … namespace.
-  `utils::cl/` and `utils::prop/` are the only path/namespace-symmetric
-  examples.  User wants this as a separate scripted/clang-rewrite pass
-  to avoid burning tokens on hundreds of mechanical call-site updates.
+- **Namespace alignment for moved subdirs.**  Sessions 61–62 reorganised
+  utils/math/core/filter/io into `<module>/<topic>/` subdirs but files
+  keep their original `icl::utils` / `icl::math` / … namespace.
+  `utils::cl/` and `utils::prop/` remain the only path/namespace-
+  symmetric examples.  User wants this as a separate scripted/clang-
+  rewrite pass.
 
 - **Filter session housekeeping.**  Backend-split proposal in
   `project_filter_dispatch_arch.md`, IPP cross-check, BackendProxy
   `backends(Backend b)` shorthand.
 
-- Carryovers from Session 60: Metal-OpenGL completion crash verify,
-  OSDGLButton drift audit on the other toggle buttons, qt::Prop UI
-  integration of compression capability flags, icl-edit demo Op
-  prerequisites.
+- **Carryovers from Session 60.**  Metal-OpenGL completion crash
+  verify, OSDGLButton drift audit on the other toggle buttons,
+  qt::Prop UI integration of compression capability flags, icl-edit
+  demo Op prerequisites.
+
+### Build environment (Qt 6.11 + sandbox notes)
+
+- **Qt is now `~/Qt/6.11.0/macos`**, not homebrew.  meson is configured
+  via `PATH=~/Qt/6.11.0/macos/bin:$PATH PKG_CONFIG_PATH=~/Qt/6.11.0/
+  macos/lib/pkgconfig CCACHE_DISABLE=1 meson setup builddir`.  The
+  `-Wl,-rpath,<qt_libdir>` is baked into every link via the project's
+  `add_project_link_arguments` so binaries find Qt without
+  `DYLD_FRAMEWORK_PATH`.
+- **Qt 6.11.0 `qyieldcpu.h` bug**: the header calls `__yield()` under
+  `__has_builtin(__yield)` without including `<arm_acle.h>`.  meson.build
+  force-includes `<arm_acle.h>` on `darwin/aarch64` to make the prototype
+  visible.  Drop this when Qt 6.11.1+ lands a fix.
+- **ccache is blocked in the sandbox** → always prefix `CCACHE_DISABLE=1`.
+- **Stale-PCH SDK-mtime fatal errors** after a toolchain bump:
+  `find builddir -name '*.pch' -delete` then rebuild.
+- **Build options enabled this session**:
+  `-Dtests=true -Dapps=true -Ddemos=true`.  Tests live at
+  `builddir/tests/icl-tests` (not in `bin/`); run with `-j 1` per
+  `project_test_parallel_flakiness`.
 
 ---
 
-## Current State (Session 62 — io/ subdir reorg, UNCOMMITTED)
+## Current State (Session 63 — io/ audit + Qt 6.11 env)
+
+A deep audit + modernization sweep across the public io/ surface.
+21 commits, mostly mechanical at call sites but each one fixing a
+real concrete issue (dead surface area, ImgBase*→Image migration,
+template gymnastics → named methods, broken setOption,
+plugin-Configurable lifting, force-link → link_whole).
+875/875 tests green throughout.
+
+### Build environment work (2 commits)
+
+- `267364b7c` (carried over from Session 62 — io subdir reorg, finally
+  built+verified+committed after the Qt environment was reconfigured).
+- `d1d8e7cb5` **meson: Qt 6.11 darwin arm64 — arm_acle force-include +
+  Qt libdir rpath.**  See "Build environment" in Next Step.
+
+### io top-level cleanup (6 commits)
+
+- `58a4ea9a1` **`io/proto/` removed** — RSB long gone from deps.
+- `387f16d94` **`reset-dc-bus` app retired** — `reset-bus -t dc` is the
+  generic equivalent that already chains into `DCDevice::dc1394_reset_bus`.
+- `35b3a5739` **GenericGrabber ctor pattern at fn scope** — 3 sites
+  collapsed `GenericGrabber g; g.init(pa("-i"));` → `GenericGrabber
+  g(pa("-i"));`.  Globals deliberately left alone (pa() not callable
+  at static-init time).
+- `b14cb2849` **`icl::io::save` / `icl::io::load` introduced via thin
+  SaveLoad.h.**  Out-of-line so the header costs only `<icl/core/
+  Image.h>` + `<string>`.  Retires the qt-side duplicates (`qt::save`
+  deleted, `qt::load(string)` deleted; `qt::load(string, format)`
+  stays — format-converting variant — and forwards to `icl::io::load`).
+- `3f2b8ddc1` **TestImages modernized to Image; show/xv extracted to
+  ExternalViewer.h/.cpp.**  Registry factory type `Img8u*()` →
+  `core::Image()`; 6 built-in JPEG generators flipped to `Image
+  cached` pattern; jpg2cpp codegen template updated.
+- `cea487213` **Grabber static translate helpers (SteppingRange /
+  DoubleVec / StringVec) deleted** — zero callers tree-wide.  Backend
+  `\copydoc` refs pointing at the soon-to-be-private `grab(ImgBase**)`
+  funnel redirected to `acquireImage()`.
+
+### Grabber audit (5 commits)
+
+- `43a7b4b9c` **Grabber desired-params templates retired.**  4 parallel
+  function templates with explicit specializations outside the class
+  body + `grabber_get_null<T>` sentinel template + `grabber_get_xxx
+  _dummy` force-instantiate hack collapse to 3+3+3+3 named methods
+  (`useDesired(format/depth/Size)`, `getDesiredFormat/Depth/Size`,
+  `desiredFormatUsed/Depth/Size`, `ignoreDesired{Format,Depth,Size}`
+  + the all-axes `ignoreDesired()`).  ~14 explicit-template call sites
+  migrated; ~30 overload-resolution sites unchanged.  3 external
+  callers of `setDesiredSizeInternal` routed through `useDesired(Size)`.
+- `20ef3b388` **`Grabber::acquireDisplay` retired.**  Renamed to
+  `acquireImage`, made pure-virtual.  16 backends + the Qt
+  Camera/Video grabbers + an in-tree InputGrabber in vector-tracker
+  demo migrated.  `REGISTER_CONFIGURABLE_DEFAULT(Grabber)` replaced
+  with a `Grabber_VIRTUAL` dummy subclass per the Configurable docs.
+- `9c4110800` **Dead image-callback chain deleted.**  `using callback`,
+  `registerCallback(callback)`, `removeAllCallbacks`,
+  `notifyNewImageAvailable`, the callbacks vector + mutex in Data,
+  the GenericGrabber forwarders, and the "very new experimental
+  feature" doc-chapter — all unused tree-wide.  ~50 LOC.
+- `a136a3c9a` **Grabber funnel collapsed; ImgBase* gone from public
+  surface.**  `acquireImage()` returns `Image` (view of a backend-
+  owned buffer, valid until next acquireImage — same lifetime
+  contract as the old `const ImgBase*`, just typed nicer).
+  `grab(ImgBase**)` deleted.  `adaptGrabResult` made private + Image-
+  typed.  `Data::image` warp-output ImgBase* member → `Image
+  warpBuffer`.  Backends migrated to either `Image m_buffer` directly
+  or the borrow-ptr/re-adopt pattern around APIs that still want
+  `ImgBase**` (mat_to_img, JPEGDecoder, WarpOp).  FileGrabber's
+  vector<ImgBase*> bufferImages cache → vector<Image>.
+- `ce04bc8ad` **`grabImage()` renamed to `grab()`.**  The name is free
+  again now that the legacy ImgBase** overload is gone, and reads
+  more naturally.  74 call sites migrated.
+
+### Registry extraction (1 commit)
+
+- `ebf0ac6da` **GrabberRegistry extracted to its own header/source
+  pair.**  Was 60 lines glued onto the end of Grabber.h + 70 lines of
+  impl on Grabber.cpp.  GrabberRegistry has no class-level coupling
+  to Grabber (only a forward-declared `Grabber*` in CreateFn), and the
+  split drops `<functional>`/`<set>`/PluginRegistry.h from Grabber.h's
+  include footprint.  Grabber.h re-#includes GrabberRegistry.h at the
+  bottom for backward compat.
+
+### Output / FileWriter / FileGrabber (3 commits)
+
+- `7a96c3a25` **GenericImageOutput**: `std::terminate()` after `-o list`
+  → `std::exit(0)` (clean exit); BACK doc-comment refreshed to drop the
+  stale "v4l" backend claim (V4L2LoopBackOutput.cpp doesn't actually
+  invoke REGISTER_IMAGE_OUTPUT).
+- `946684e3f` **FileWriter modernization** — three things at once:
+  - FileWriter inherits `Configurable`, with each tunable plugin
+    (FileWriterPluginJPEG, FileWriterPluginCSV) becoming a
+    Configurable singleton and self-registering via the new
+    `REGISTER_FILE_WRITER_CONFIG` macro.  FileWriter ctor walks
+    `fileWriterConfigRegistry()` and addChildConfigurable for each
+    under a named prefix.  Callers can now do
+    `writer.setPropertyValue("jpeg.quality", 85)` — the broken
+    `setOption("jpg:quality", ...)` (guarded on a never-defined
+    `WITH_JPEG_SUPPORT` macro) is gone, along with the unused
+    `send(Image)` shim and `operator<<(ImgBase*)`.
+  - `write(const ImgBase*)` → `write(const Image&)`.  ~12 caller sites
+    migrated.
+  - Plugin singletons (function-local statics) — formerly the
+    per-class statics `s_iQuality` / `s_bExtendFileName` /
+    `s_oBufferImage` collapse to instance members.
+- `eeac78474` **FileGrabber cleanup + `Configurable::
+  setPropertyValueSilently`** — four things:
+  - New utils API: `Configurable::setPropertyValueSilently` and
+    `setPropertyValueTypedSilently` skip firing change callbacks.
+    Solves the recursion-guard antipattern.
+  - FileGrabber `updateProperties` uses the silent setter for the 6
+    derived Info props; recursion-guard members
+    (m_propertyMutex + m_updatingProperties) and the early-return
+    in processPropertyChange dropped.
+  - `frame-index` property setter had 3 latent bugs (read prop.as<int>
+    twice, modulo against size-1 instead of size making the last file
+    unreachable, a bare `Thread::sleep(0.2)` with no comment) —
+    all fixed.
+  - `forcePluginType(suffix)` had zero callers — deleted along with the
+    `forcedPluginType` member and the conditional in `find_plugin`.
+
+### ImageCompressor (1 commit)
+
+- `ec1314cd9` **ImageCompressor — setCompression bug fix +
+  link_whole + dead state.**  Three things:
+  - **Bug fix**: `setCompression(spec)` was installing the codec
+    twice.  The first install applied spec.quality; writing
+    `prop("mode").value = spec.mode` fired the mode-change callback,
+    which re-entered `installPlugin(mode, "")` — clobbering the
+    codec-specific params with empty.  Net effect was that
+    `setCompression({jpeg, "85"})` silently dropped to jpeg's default
+    quality.  Fix uses the new `setPropertyValueSilently`.
+  - **Force-link block removed (~30 LOC)**.  The
+    `extern "C" { void iclRegisterCompressionPlugin_…(); }` block plus
+    the `iclForceLinkCompressionPlugins[]` reference array existed
+    solely to prevent macOS dyld from dead-stripping self-registering
+    plugin .o files.  Move the 6 plugin TUs into a dedicated
+    `static_library` (`icl-io-compression-plugins`) linked into
+    libicl-io via meson's `link_whole`, which forces every .o to be
+    retained regardless of external references.  Adding a new
+    compression plugin no longer requires editing this file.
+  - **`Data::decoded` dead member** dropped.  Comment claimed "kept
+    alive for caller's pointer stability" but uncompress returns
+    Image by value and nothing reads decoded back.
+
+### Conventions / patterns established this session
+
+- **Configurable plugin tunables on facades**: when a facade class
+  (FileWriter, ImageCompressor) wraps a set of plugins that have
+  per-plugin tunables, each plugin singleton inherits Configurable,
+  self-registers a factory in a sibling registry, and the facade ctor
+  iterates the registry to `addChildConfigurable` each under a named
+  prefix.  See FileWriter.cpp for the pattern.
+- **`setPropertyValueSilently`** for "I'm publishing a derived/Info
+  value, don't re-enter the user's callback" cases.  Replaces the old
+  m_updatingProperties / m_propertyMutex recursion-guard idiom.
+- **`link_whole` for self-registering plugin .o's** — preferred over
+  the force-link extern "C" boilerplate.  Use when adding a new
+  always-built plugin family.
+- **Rung 1 lifetime contract for `Image`-returning hooks**: the
+  returned Image shallow-shares a backend-owned buffer, valid until
+  the next call to the same hook.  Callers who need to retain it
+  longer deepCopy explicitly.  Matches the documented contract
+  Grabber::acquireImage() has now.
+
+---
+
+## Current State (Session 62 — io/ subdir reorg)
 
 The `icl/io/` public surface was clustered into topical subdirs,
-matching the core/filter protocol from Session 61.  All work is on
-disk but **not committed**; full build verification is blocked on the
-Qt-env reconfigure described in "Next Step".
+matching the core/filter protocol from Session 61.  Committed early
+in Session 63 (`267364b7c`) after the Qt environment was
+reconfigured against `~/Qt/6.11.0` and the build verified clean.
 
 ### What moved (via `git mv`, history preserved)
 
@@ -103,9 +286,9 @@ targets.
 
 ### Pending in this arc
 
-- Reconfigure against `~/Qt`, build, run tests, commit (steps 1–3 above).
-- `rm -r icl/io/proto/` + drop any meson refs (step 4).  Verify
-  nothing else references the RSB proto sources first.
+All landed in Session 63 — Qt env reconfigured against `~/Qt/6.11.0`,
+875/875 tests green, io reorg committed (`267364b7c`), io/proto/
+removed (`58a4ea9a1`).
 
 ---
 
