@@ -12,7 +12,7 @@
 using namespace icl;
 using namespace icl::io::pylon;
 
-// Constructor of PylonGrabberImpl
+// Constructor of PylonSourceImpl
 PylonSource::PylonSource(
     const Pylon::CDeviceInfo &dev, const std::string args)
   : m_ImgMutex(), m_PylonEnv(), m_LastBuffer(nullptr)
@@ -24,7 +24,7 @@ PylonSource::PylonSource(
 
   unsigned int channel = channelFromArgs(args);
   if(m_Camera -> GetNumStreamGrabberChannels() == 0){
-    throw utils::ICLException("No stream grabber channels avaliable.");
+    throw utils::ICLException("No stream source channels avaliable.");
   } else if(m_Camera -> GetNumStreamGrabberChannels() < channel){
     DEBUG_LOG("From args='" << args << "' demanded channel=" << channel <<
               "but available=" << m_Camera -> GetNumStreamGrabberChannels());
@@ -34,19 +34,19 @@ PylonSource::PylonSource(
   m_Camera -> Open();
   cameraDefaultSettings();
   // getting first SourceBackend
-  m_Grabber = m_Camera -> GetStreamGrabber(channel);
-  m_Grabber -> Open();
+  m_Source = m_Camera -> GetStreamGrabber(channel);
+  m_Source -> Open();
 
   m_CameraOptions = new PylonCameraOptions(m_Camera, this);
   Configurable::addChildConfigurable(m_CameraOptions);
   m_ColorConverter = new PylonColorConverter();
-  m_GrabberThread = new PylonGrabberThread(
-        m_Grabber, m_ColorConverter, m_CameraOptions);
+  m_SourceThread = new PylonSourceThread(
+        m_Source, m_ColorConverter, m_CameraOptions);
   // prepare grabbing
   grabbingStart();
   // Let the camera acquire images
   m_CameraOptions -> acquisitionStart();
-  m_GrabberThread -> start();
+  m_SourceThread -> start();
 }
 
 PylonSource::~PylonSource(){
@@ -55,13 +55,13 @@ PylonSource::~PylonSource(){
   acquisitionStop();
   // deregister buffers
   grabbingStop();
-  // Close stream grabber
-  m_Grabber -> Close();
+  // Close stream source
+  m_Source -> Close();
   // Close camera
   m_Camera -> Close();
   ICL_DELETE(m_ColorConverter);
   ICL_DELETE(m_CameraOptions);
-  ICL_DELETE(m_GrabberThread);
+  ICL_DELETE(m_SourceThread);
   // Free resources allocated by the pylon runtime system automated.
 }
 
@@ -74,31 +74,31 @@ void PylonSource::grabbingStart(){
 
   // We won't use image buffers greater than imageSize
   setParameterValueOf<Pylon::IStreamGrabber, GenApi::IInteger, int>
-      (m_Grabber, "MaxBufferSize", imageSize);
+      (m_Source, "MaxBufferSize", imageSize);
 
   // We won't queue more than m_NumBuffers image buffers at a time
   setParameterValueOf<Pylon::IStreamGrabber, GenApi::IInteger, int>
-      (m_Grabber, "MaxNumBuffer", m_NumBuffers);
+      (m_Source, "MaxNumBuffer", m_NumBuffers);
 
   // Allocate all resources for grabbing. Critical parameters like image
   // size now must not be changed until finishGrab() is called.
-  m_Grabber -> PrepareGrab();
-  // Buffers used for grabbing must be registered at the stream grabber ->
+  m_Source -> PrepareGrab();
+  // Buffers used for grabbing must be registered at the stream source ->
   // The registration returns a handle to be used for queuing the buffer.
   for (int i = 0; i < m_NumBuffers; ++i){
-    PylonGrabberBuffer<uint16_t> *pGrabBuffer =
-        new PylonGrabberBuffer<uint16_t>(imageSize);
+    PylonSourceBuffer<uint16_t> *pGrabBuffer =
+        new PylonSourceBuffer<uint16_t>(imageSize);
     Pylon::StreamBufferHandle handle =
-        m_Grabber -> RegisterBuffer(pGrabBuffer -> getBufferPointer(), imageSize);
+        m_Source -> RegisterBuffer(pGrabBuffer -> getBufferPointer(), imageSize);
     pGrabBuffer -> setBufferHandle(handle);
 
     // Put the grab buffer object into the buffer list
     m_BufferList.push_back(pGrabBuffer);
 
     // Put buffer into the grab queue for grabbing
-    m_Grabber -> QueueBuffer(handle);
+    m_Source -> QueueBuffer(handle);
   }
-  m_GrabberThread -> resetBuffer();
+  m_SourceThread -> resetBuffer();
   m_ColorConverter -> resetConversion(
         m_CameraOptions -> getWidth(),
         m_CameraOptions -> getHeight(),
@@ -111,35 +111,35 @@ void PylonSource::grabbingStart(){
 
 void PylonSource::grabbingStop(){
   FUNCTION_LOG("");
-  m_Grabber -> CancelGrab();
+  m_Source -> CancelGrab();
   Pylon::GrabResult result;
-  while (m_Grabber -> GetWaitObject().Wait(0)) {
-    if (!m_Grabber -> RetrieveResult(result)) {
+  while (m_Source -> GetWaitObject().Wait(0)) {
+    if (!m_Source -> RetrieveResult(result)) {
       DEBUG_LOG("Failed to retrieve item from output queue");
     }
   }
   // deregister the buffers before freeing the memory
   while (!m_BufferList.empty()){
-    m_Grabber -> DeregisterBuffer(m_BufferList.back() -> getBufferHandle());
-    PylonGrabberBuffer<uint16_t>* tmp = m_BufferList.back();
+    m_Source -> DeregisterBuffer(m_BufferList.back() -> getBufferHandle());
+    PylonSourceBuffer<uint16_t>* tmp = m_BufferList.back();
     delete tmp;
     m_BufferList.pop_back();
   }
   // Free all resources used for grabbing
-  m_Grabber -> FinishGrab();
+  m_Source -> FinishGrab();
 }
 
 void PylonSource::acquisitionStart(){
   FUNCTION_LOG("");
   m_CameraOptions -> acquisitionStart();
-  m_GrabberThread -> start();
+  m_SourceThread -> start();
   m_ImgMutex.unlock();
 }
 
 void PylonSource::acquisitionStop(){
   FUNCTION_LOG("");
   m_ImgMutex.lock();
-  m_GrabberThread -> stop();
+  m_SourceThread -> stop();
   m_CameraOptions -> acquisitionStop();
 }
 
@@ -162,8 +162,8 @@ const core::ImgBase* PylonSource::acquireImage(){
   while(1){
     // lock image lock so buffers are safe till release.
     m_ImgMutex.lock();
-    // Get the image from the grabber thread
-    ret = m_GrabberThread -> getCurrentDisplay();
+    // Get the image from the source thread
+    ret = m_SourceThread -> getCurrentDisplay();
     if(m_CameraOptions-> omitDoubleFrames() && ret == m_LastBuffer
        && counter <= 1000)
     {

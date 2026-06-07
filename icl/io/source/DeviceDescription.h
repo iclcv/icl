@@ -9,7 +9,7 @@
 #include <iostream>
 
 namespace icl::io {
-  /// defines and explains an available grabber device
+  /// defines and explains an available source device
   struct ICLIO_API DeviceDescription{
     /// Constructor
     DeviceDescription(const std::string &deviceType, const std::string &deviceID, const std::string &description):

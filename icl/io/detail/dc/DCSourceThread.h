@@ -26,9 +26,9 @@ namespace icl::io {
     /** \endcond */
 
     /// Internally spawned thread class to provide continuous grabbing without drop frames \ingroup DC_G
-    /** Each DCSource instance uses a DCGrabberThread, which continuously dequeues and
+    /** Each DCSource instance uses a DCSourceThread, which continuously dequeues and
         enqueus frames. Each frame can either be inside of the DMA queue or inside of the
-        DCGrabberThreads wrapped DCFrameQueue at on time. The following ASCII art should
+        DCSourceThreads wrapped DCFrameQueue at on time. The following ASCII art should
         illustrate this:
         <pre>
 
@@ -50,46 +50,46 @@ namespace icl::io {
 
         </pre>
 
-        The DCGrabberThread continuously pops the oldest frame from its internal DCFrameQueue,
+        The DCSourceThread continuously pops the oldest frame from its internal DCFrameQueue,
         and enques this frame into the DMA-Queue immediately. Then, it waits for the next frame
         that was filled by the DMA-Thread by calling dc1394_capture_deque(..,POLICY_WAIT). When
         this function call returns, the Thread will push the new frame into its internal
         DCFrameQueue, where it can be accessed by the application by calling the getCurrentDisplay()
         function.\n
-        <b>Note:</b> As it is strongly recommended <b>not</b> to create an own DCGrabberThread, but
-        to use an instance of the DCSource instead, the DCGrabberThread has no public constructor.
+        <b>Note:</b> As it is strongly recommended <b>not</b> to create an own DCSourceThread, but
+        to use an instance of the DCSource instead, the DCSourceThread has no public constructor.
     */
-    class DCGrabberThread : public utils::Thread{
+    class DCSourceThread : public utils::Thread{
       public:
-      /// A DCGrabberThread can only be instantiated by a DCSource
+      /// A DCSourceThread can only be instantiated by a DCSource
       friend class icl::io::DCSource;
 
       /// the thread function (moved frames)
       ICLIO_API virtual void run();
 
-      /// called by the signal handler to stop all grabber threads
-      ICLIO_API static void stopAllGrabberThreads();
+      /// called by the signal handler to stop all source threads
+      ICLIO_API static void stopAllSourceThreads();
 
       /// internally calls dc1394_reset_bus (not save!)
       ICLIO_API void resetBus();
 
       private:
       /// private constructor )can only be called by icl::DCSource
-      DCGrabberThread(dc1394camera_t* c, DCDeviceOptions *options);
+      DCSourceThread(dc1394camera_t* c, DCDeviceOptions *options);
 
       /// Destructor
-      ~DCGrabberThread();
+      ~DCSourceThread();
 
       /// private image access function
       //void getCurrentImage(core::ImgBase **ppoDst,dc1394color_filter_t bayerLayout);
 
       /// complex function to get the next image
-      /** The function gets all desired params from the top level grabber, which it
+      /** The function gets all desired params from the top level source, which it
           should fullfill. But in some cases it's not possible to satisfy all
           desired params constraints. In this case, this function will use the
           second given core::ImgBase** (ppoDstTmp) as destination image and it will set
           the boolean reference named desiredParamsFullfilled to false. The parent
-          grabber can check this variable, to decide whether to use the original
+          source can check this variable, to decide whether to use the original
           destination pointer (ppoDst) or to use the ppoDstTmp pointer temporarily
           and convert is into ppoDst by itself, using the desired params for ppoDst.
           <b>TODO: some more text here !</b>
@@ -120,7 +120,7 @@ namespace icl::io {
       /// internally used buffer for RGB-Bayer image conversion
       std::vector<icl8u> m_oRGBInterleavedBuffer;
 
-      /// Parents DCGrabbers options pointer
+      /// Parents DCSources options pointer
       DCDeviceOptions *m_poOptions;
 
       /// to remember the time stamp of the last frame grabbed

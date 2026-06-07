@@ -20,7 +20,7 @@
 namespace icl::io {
 
   /// Collection of image parameters decoded from a file header. Used by
-  /// file-grabber plugins (CSV, PNM, JPEG decoder) to communicate
+  /// file-source plugins (CSV, PNM, JPEG decoder) to communicate
   /// per-file metadata to their callers. Formerly nested as
   /// `FileSourcePlugin::HeaderInfo`; hoisted to namespace scope in the
   /// Phase-4c function-plugin conversion.
@@ -34,7 +34,7 @@ namespace icl::io {
     int          imageCount;
   };
 
-  /// Callable type stored in the file-grabber registry: `(file, dest)`
+  /// Callable type stored in the file-source registry: `(file, dest)`
   /// → void. Allocates / updates `*dest`.
   using FileSourceFn = std::function<void(utils::File&, core::ImgBase**)>;
 
@@ -46,7 +46,7 @@ namespace icl::io {
   using FileSourceRegistry =
       utils::FunctionPluginRegistry<void(utils::File&, core::ImgBase**)>;
 
-  /// Singleton accessor for the process-wide file-grabber registry.
+  /// Singleton accessor for the process-wide file-source registry.
   ICLIO_API FileSourceRegistry& fileSourceRegistry();
 
   /// SourceBackend implementation to grab from files \ingroup FILEIO_G \ingroup SOURCE_G
@@ -56,7 +56,7 @@ namespace icl::io {
       /// Create a NULL FileSource
       FileSource();
 
-      /// Create a file grabber with given pattern and parameters
+      /// Create a file source with given pattern and parameters
       FileSource(const std::string &pattern, bool buffer=false, bool ignoreDesiredParams=false);
 
       /// Destructor

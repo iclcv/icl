@@ -7,7 +7,7 @@
 
 VSplit gui;
 std::string filename;
-ImageSource grabber;
+ImageSource source;
 std::recursive_mutex mtex;
 bool paused=false;
 
@@ -33,15 +33,15 @@ void stream_pos(){
     case press: paused = true; break;
     case release:{
       paused = false;
-      grabber.prop(pos).value = str(posVal);
+      source.prop(pos).value = str(posVal);
       break;
     }
   }
 }
 
 void init(){
-  grabber.init(type,type+"="+filename);
-  int len = parse<int>(grabber.prop("len").value);
+  source.init(type,type+"="+filename);
+  int len = parse<int>(source.prop("len").value);
   gui << Display().minSize(32,24).handle("image")
       << Slider(0,len,0).label("stream position in "+unit).handle("pos").maxSize(1000,2)
       << ( HBox().maxSize(1000,3)
@@ -78,22 +78,22 @@ void run(){
     mtex.lock();
   }
 
-  image = grabber.grab();
+  image = source.grab();
   gui["fps"].render();
 
-  int p = parse<int>(grabber.prop(::pos).value);
+  int p = parse<int>(source.prop(::pos).value);
   if(pos.getValue() != p) pos.setValue(p);
 #ifndef ICL_HAVE_OPENCV
-  if(parse<int>(grabber.prop("speed").value) != speed){
+  if(parse<int>(source.prop("speed").value) != speed){
     if(speed == 50){
-      grabber.prop("speed-mode").value = "auto";
+      source.prop("speed-mode").value = "auto";
     }else{
-      grabber.prop("speed-mode").value = "manual";
-      grabber.prop("speed").value = str(speed);
+      source.prop("speed-mode").value = "manual";
+      source.prop("speed").value = str(speed);
     }
   }
-  if(volume != parse<int>(grabber.prop("volume").value)){
-    grabber.prop("volume").value = str(volume);
+  if(volume != parse<int>(source.prop("volume").value)){
+    source.prop("volume").value = str(volume);
   }
 #endif
 

@@ -65,7 +65,7 @@ namespace icl::io {
       /// indicates whether to jump to next frame automatically
       bool bAutoNext;
 
-      /// if true, the grabber grabs all given images in a loop, otherwise it ends with an execption
+      /// if true, the source grabs all given images in a loop, otherwise it ends with an execption
       bool loop;
 
       /// A special buffer image
@@ -343,8 +343,8 @@ namespace icl::io {
     void FileSource::addProperties(){
       addProperty("format",prop::Info{}, "unknown", "");
       addProperty("size",prop::Info{}, "unknown", "");
-      addProperty("next",prop::Command{}, {}, "Increments the file counter for the grabber");
-      addProperty("prev",prop::Command{}, {}, "Decrements the file counter for the grabber");
+      addProperty("next",prop::Command{}, {}, "Increments the file counter for the source");
+      addProperty("prev",prop::Command{}, {}, "Decrements the file counter for the source");
       addProperty("use-time-stamps",prop::Flag{}, m_data->useTimeStamps, "Whether to use timestamps"); //TODO: what is this?
       addProperty("next filename",prop::Info{}, getNextFileName(), "Name of the next file to grab");
       addProperty("current filename",prop::Info{}, m_data->oFileList[iclMax(m_data->iCurrIdx-1,0)], "Name of the last grabbed file");
@@ -353,7 +353,7 @@ namespace icl::io {
       addProperty("absolute progress",prop::Info{}, str(m_data->iCurrIdx+1) + " / " + str(m_data->oFileList.size()), "The absolute progress through the files. 'current nunmber/total number'");
       addProperty("auto-next",prop::Flag{}, m_data->bAutoNext, "Whether to automatically grab the next file for every frame");
       addProperty("loop",prop::Flag{}, m_data->loop, "Whether to reset the file counter to zero after reaching the last");
-      addProperty("file-count",prop::Info{}, str(m_data->oFileList.size()), "Total count of files the grabber will show");
+      addProperty("file-count",prop::Info{}, str(m_data->oFileList.size()), "Total count of files the source will show");
       //addProperty("frame-index","range","[0," + str(m_data->oFileList.size()-1) + "]1",m_data->iCurrIdx, "Currently grabbed frame");
       addProperty("frame-index",
                   prop::Range{.min=0, .max=(int)(m_data->oFileList.size()-1), .step=1, .ui=prop::UI::Spinbox},

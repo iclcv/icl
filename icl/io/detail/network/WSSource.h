@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace icl::io {
-  /// WebSocket-based grabber (client side, with auto-reconnect)
+  /// WebSocket-based source (client side, with auto-reconnect)
   /** Connects to a remote `WSSink` (or any WebSocket publisher
       that emits `ImageCompressor`-encoded binary frames) and exposes the
       received frames through the standard `SourceBackend::grab()` API.
@@ -28,7 +28,7 @@ namespace icl::io {
       \section RES  Resilience
       The client owns a private state machine (`Disconnected → Connecting
       → Connected → Disconnected …`). On a server vanish or transport
-      error the grabber transparently retries with exponential backoff
+      error the source transparently retries with exponential backoff
       (`reconnect backoff initial ms`, doubled per failed attempt up to
       `reconnect backoff max ms`). The application loop never observes a
       "dead" state — `acquireImage()` blocks for up to `block timeout ms`

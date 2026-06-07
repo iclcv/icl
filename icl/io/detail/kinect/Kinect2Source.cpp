@@ -139,7 +139,7 @@ namespace icl::io {
       dev->dev->setColorFrameListener(dev->listener);
       dev->dev->setIrAndDepthFrameListener(dev->listener);
       dev->dev->start();
-      dev->start(); // grabber thread (grabs ir, depth and rgb in parallel)
+      dev->start(); // source thread (grabs ir, depth and rgb in parallel)
 
       return dev;
     }
@@ -362,15 +362,15 @@ namespace icl::io {
 
 
 
-  SourceBackend* createDepth2Grabber(const std::string &param){
+  SourceBackend* createDepth2Source(const std::string &param){
     return new Kinect2Source(Kinect2Source::GRAB_DEPTH_IMAGE,to32s(param));
   }
 
-  SourceBackend* createRGB2Grabber(const std::string &param){
+  SourceBackend* createRGB2Source(const std::string &param){
     return new Kinect2Source(Kinect2Source::GRAB_RGB_IMAGE,to32s(param));
   }
 
-  SourceBackend* createIR2Grabber(const std::string &param){
+  SourceBackend* createIR2Source(const std::string &param){
     return new Kinect2Source(Kinect2Source::GRAB_IR_IMAGE,to32s(param));
   }
 
@@ -410,8 +410,8 @@ namespace icl::io {
     return devices;
   }
 
-  REGISTER_SOURCE_BACKEND(kinect2d,createDepth2Grabber, getKinect2DDeviceList, "device ID~kinect2 depth camera source");
-  REGISTER_SOURCE_BACKEND(kinect2c,createRGB2Grabber, getKinect2CDeviceList,"device ID~kinect2 color camera source");
-  REGISTER_SOURCE_BACKEND(kinect2i,createIR2Grabber, getKinect2IDeviceList,"devide ID~kinect2 IR camera source");
+  REGISTER_SOURCE_BACKEND(kinect2d,createDepth2Source, getKinect2DDeviceList, "device ID~kinect2 depth camera source");
+  REGISTER_SOURCE_BACKEND(kinect2c,createRGB2Source, getKinect2CDeviceList,"device ID~kinect2 color camera source");
+  REGISTER_SOURCE_BACKEND(kinect2i,createIR2Source, getKinect2IDeviceList,"devide ID~kinect2 IR camera source");
 
   } // namespace icl::io

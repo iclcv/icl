@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Img.h>
-#include <icl/io/detail/grabbers/FourCC.h>
+#include <icl/io/detail/sources/FourCC.h>
 
 #include <map>
 

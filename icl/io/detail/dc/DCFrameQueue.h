@@ -20,7 +20,7 @@ namespace icl::io {
         (given by the 3rd constructor argument nQueuedBuffers which is set to 2
         by default) into the DMA-queue. This buffers are filled continuously with new frame data
         by the DMA-Thread.
-        After this initialization, the Queue is used by the DCGrabberThread
+        After this initialization, the Queue is used by the DCSourceThread
         to buffer grabbed image data as fast a possible, and to offer the newest frame
         safely at any time to other threads.
     **/

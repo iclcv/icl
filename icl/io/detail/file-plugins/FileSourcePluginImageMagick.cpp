@@ -95,7 +95,7 @@ namespace {
   };
 }
 
-// One shared IM grabber impl across all extensions, mutex-protected.
+// One shared IM source impl across all extensions, mutex-protected.
 static void iclImageMagickGrab(icl::utils::File &f, icl::core::ImgBase **dst) {
   static std::mutex m;
   static FileSourcePluginImageMagick impl;

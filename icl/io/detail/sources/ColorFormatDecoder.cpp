@@ -4,11 +4,11 @@
 
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/core/CoreFunctions.h>
-#include <icl/io/detail/grabbers/ColorFormatDecoder.h>
+#include <icl/io/detail/sources/ColorFormatDecoder.h>
 #include <icl/io/detail/file-plugins/JPEGDecoder.h>
 #include <icl/utils/StringUtils.h>
 
-#include <icl/io/detail/grabbers/MyrmexDecoder.h>
+#include <icl/io/detail/sources/MyrmexDecoder.h>
 #include <icl/core/cc/BayerConverter.h>
 
 using namespace icl::utils;

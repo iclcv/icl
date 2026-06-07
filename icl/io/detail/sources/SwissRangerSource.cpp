@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
-#include <icl/io/detail/grabbers/SwissRangerSource.h>
+#include <icl/io/detail/sources/SwissRangerSource.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/CoreFunctions.h>
 
@@ -550,7 +550,7 @@ m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
   REGISTER_CONFIGURABLE(SwissRangerSource, return new SwissRangerSource(0, core::depth32f, -1));
 
 
-  SourceBackend* createSRGrabber(const std::string &param){
+  SourceBackend* createSRSource(const std::string &param){
     std::vector<std::string> srts = tok(param,"c");
     int device = 0;
     int channel = -1;
@@ -563,6 +563,6 @@ m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
     return new SwissRangerSource(device,depth32f,channel);
   }
 
-  REGISTER_SOURCE_BACKEND(sr,createSRGrabber, SwissRangerSource::getDeviceList, "device Index or -1 for auto select~Mesa Imaging SwissRanger depth camera source");
+  REGISTER_SOURCE_BACKEND(sr,createSRSource, SwissRangerSource::getDeviceList, "device Index or -1 for auto select~Mesa Imaging SwissRanger depth camera source");
 
   } // namespace icl::io

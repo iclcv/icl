@@ -21,11 +21,11 @@ int main(int n, char **ppc){
      ("-s","set feature to value (e.g. -s gain 100). Incompatible to all others except -i.")
      ("-g","get a value. Incompatible to all others except -i.")
      ("-l","list features of device. Incompatible to all others except -i.")
-     ("-i","grabber type and id (e.g. -i dc 0, -i unicap 0, -i pwc)")
+     ("-i","source type and id (e.g. -i dc 0, -i unicap 0, -i pwc)")
      ("-p","use input xml-file to setup a list of parameters together. "
       "Incompatible to all others except -i.")
      ("-o","writes all parameters to given output xml file. Incompatible to all others except -i.")
-     ("-go","makes the grabber to grab an image before and after loading all properties\n"
+     ("-go","makes the source to grab an image before and after loading all properties\n"
       "for some devices (in particular some dc cameras), this is necessary to actually\n"
       "store the new parameters on the device");
 
@@ -41,24 +41,24 @@ int main(int n, char **ppc){
     exit(-1);
   }
 
-  ImageSource grabber(pa("-i"));
+  ImageSource source(pa("-i"));
 
   if(s){
     std::string val = pa("-s", 1).as<std::string>();
-    if(pa("-go")) grabber.grab();
-    grabber.prop(pa("-s",0)).value = val;
-    if(pa("-go")) grabber.grab();
+    if(pa("-go")) source.grab();
+    source.prop(pa("-s",0)).value = val;
+    if(pa("-go")) source.grab();
   }else if(g){
-    std::cout << grabber.prop(pa("-g")).value.str() << std::endl;
+    std::cout << source.prop(pa("-g")).value.str() << std::endl;
   }else if(p){
-    if(pa("-go")) grabber.grab();
-    grabber.loadProperties(pa("-p"));
-    if(pa("-go")) grabber.grab();
+    if(pa("-go")) source.grab();
+    source.loadProperties(pa("-p"));
+    if(pa("-go")) source.grab();
   }else if(o){
-    grabber.saveProperties(pa("-o"));
+    source.saveProperties(pa("-o"));
   }else{
     static const int w = 35;
-    std::vector<std::string> l = grabber.getPropertyList();
+    std::vector<std::string> l = source.getPropertyList();
     std::cout << "camera interface provides " << l.size() << " features" << std::endl;
     std::cout << "feature";
     write_spaces(w-strlen("feature"));
@@ -70,7 +70,7 @@ int main(int n, char **ppc){
 
     for(unsigned int i=0;i<l.size();++i){
       const std::string &s = l[i];
-      auto h = grabber.prop(s);
+      auto h = source.prop(s);
       std::string v = h.value;
       std::cout << s;
       write_spaces(w-s.length());

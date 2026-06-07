@@ -10,7 +10,7 @@
 #include <icl/core/Img.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/SignalHandler.h>
-#include <icl/io/detail/dc/DCGrabberThread.h>
+#include <icl/io/detail/dc/DCSourceThread.h>
 #include <icl/io/detail/dc/DCDevice.h>
 #include <map>
 #include <signal.h>
@@ -270,7 +270,7 @@ namespace icl::io {
         std::cout << "DC signal handler caught first " << signal << ", next time a bus reset will be forced" << std::endl;
       }else{
         std::cout << "DC signal handler caught signal " << signal << " forcing bus reset" << std::endl;
-        DCGrabberThread::stopAllGrabberThreads();
+        DCSourceThread::stopAllSourceThreads();
       }
     }
 

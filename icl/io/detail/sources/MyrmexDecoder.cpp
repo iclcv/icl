@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Carsten Schürmann, Christof Elbrechter
 
-#include <icl/io/detail/grabbers/MyrmexDecoder.h>
+#include <icl/io/detail/sources/MyrmexDecoder.h>
 #include <icl/core/CoreFunctions.h>
 
 using namespace icl::utils;

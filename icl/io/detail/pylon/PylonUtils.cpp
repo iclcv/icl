@@ -45,7 +45,7 @@ void ConvBuffers::free(){
 }
 
 // Constructor creates and initializes resources.
-ConcGrabberBuffer::ConcGrabberBuffer() :
+ConcSourceBuffer::ConcSourceBuffer() :
 m_Mutex(), m_Write(0), m_Next(1), m_Read(2) {
   std::scoped_lock l(m_Mutex);
   m_Buffers[0] = new ConvBuffers();
@@ -54,7 +54,7 @@ m_Mutex(), m_Write(0), m_Next(1), m_Read(2) {
 }
 
 // Destructor frees memory
-ConcGrabberBuffer::~ConcGrabberBuffer() {
+ConcSourceBuffer::~ConcSourceBuffer() {
   std::scoped_lock l(m_Mutex);
   ICL_DELETE(m_Buffers[0]);
   ICL_DELETE(m_Buffers[1]);
@@ -62,7 +62,7 @@ ConcGrabberBuffer::~ConcGrabberBuffer() {
 }
 
 // returns a pointer to the most recent actualized ConvBuffers.
-ConvBuffers* ConcGrabberBuffer::getNextReadBuffer(){
+ConvBuffers* ConcSourceBuffer::getNextReadBuffer(){
   std::scoped_lock l(m_Mutex);
   if(m_Avail){
     // new buffer is available.
@@ -73,7 +73,7 @@ ConvBuffers* ConcGrabberBuffer::getNextReadBuffer(){
 }
 
 // returns a pointer to the next write ConvBuffers.
-ConvBuffers* ConcGrabberBuffer::getNextWriteBuffer(){
+ConvBuffers* ConcSourceBuffer::getNextWriteBuffer(){
   std::scoped_lock l(m_Mutex);
   // swap write buffer and next buffer.
   std::swap(m_Next, m_Write);
@@ -84,7 +84,7 @@ ConvBuffers* ConcGrabberBuffer::getNextWriteBuffer(){
 }
 
 // mark ConvBuffers to be reset on next write-access.
-void ConcGrabberBuffer::setReset(){
+void ConcSourceBuffer::setReset(){
   std::scoped_lock l(m_Mutex);
   m_Buffers[0] -> m_Reset = true;
   m_Buffers[1] -> m_Reset = true;
@@ -92,7 +92,7 @@ void ConcGrabberBuffer::setReset(){
 }
 
 // tells whether a new image is available
-bool ConcGrabberBuffer::newAvailable(){
+bool ConcSourceBuffer::newAvailable(){
   std::scoped_lock l(m_Mutex);
   return m_Avail;
 }
@@ -186,10 +186,10 @@ GrabbingInterruptor::~GrabbingInterruptor(){
 
 void icl::io::pylon::printHelp(){
   std::cout << std::endl;
-  std::cout << "The pylon grabber can be called with" << std::endl;
+  std::cout << "The pylon source can be called with" << std::endl;
   std::cout << "     -i pylon [CAM]:[BUFFER]" << std::endl << std::endl;
   std::cout << "  [CAM] can be a positive integer value telling" << std::endl;
-  std::cout << "        the grabber to choose the corresponding " << std::endl;
+  std::cout << "        the source to choose the corresponding " << std::endl;
   std::cout << "        device from its known devices." << std::endl;
   std::cout << std::endl;
 
@@ -198,7 +198,7 @@ void icl::io::pylon::printHelp(){
   std::cout << std::endl;
 
   std::cout << "  [BUFFER] is an optional, positive integer telling" << std::endl;
-  std::cout << "           the grabber to choose the corresponding" << std::endl;
+  std::cout << "           the source to choose the corresponding" << std::endl;
   std::cout << "           Framebuffer." << std::endl;
   std::cout << std::endl;
 

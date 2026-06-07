@@ -7,7 +7,7 @@
 #include <icl/utils/prop/Constraints.h>
 #include <icl/utils/thread/Thread.h>
 #include <icl/utils/time/Time.h>
-#include <icl/io/detail/grabbers/XiSource.h>
+#include <icl/io/detail/sources/XiSource.h>
 #include <m3api/xiApi.h>
 #include <memory.h>
 #include <libusb-1.0/libusb.h>
@@ -430,7 +430,7 @@ namespace icl{
       }
     }
 
-    static SourceBackend *create_xi_grabber(const std::string &param){
+    static SourceBackend *create_xi_source(const std::string &param){
       return new XiSource(parse<int>(param));
     }
 
@@ -486,7 +486,7 @@ namespace icl{
       Thread::msleep(1000);
     }
 
-    REGISTER_SOURCE_BACKEND(xi,create_xi_grabber, XiSource::getDeviceList, "device index~M3API/XiApi based camera grabber source");
+    REGISTER_SOURCE_BACKEND(xi,create_xi_source, XiSource::getDeviceList, "device index~M3API/XiApi based camera source source");
     REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io
 }

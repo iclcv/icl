@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/grabbers/OptrisSource.h>
+#include <icl/io/detail/sources/OptrisSource.h>
 #include <icl/utils/prop/Constraints.h>
 #include <libirimager/IRImager.h>
 #include <icl/utils/File.h>
@@ -15,7 +15,7 @@
 #include <icl/filter/threshold/LocalThresholdOp.h>
 
 #include <icl/io/detail/v4l2/V4L2Source.h>
-#include <icl/io/detail/grabbers/ColorFormatDecoder.h>
+#include <icl/io/detail/sources/ColorFormatDecoder.h>
 #include <icl/math/transform/LinearTransform1D.h>
 #include <fstream>
 #include <mutex>
@@ -288,7 +288,7 @@ namespace icl{
           if(r && r.submatches.size() == 2){
             try{
               std::string s = r.submatches[1];
-              //              std::cout << "trying to create grabber " << s << std::endl;
+              //              std::cout << "trying to create source " << s << std::endl;
               OptrisSource g(s,true);
               //std::cout << "--> creation successful" << std::endl;
               all.push_back(DeviceDescription("optris",s,
@@ -344,12 +344,12 @@ namespace icl{
     }
 
     template<OptrisSource::Mode M>
-    static SourceBackend *create_optris_grabber(const std::string &param){
+    static SourceBackend *create_optris_source(const std::string &param){
       return new OptrisSource(param,false,M);
     }
 
     template<OptrisSource::Mode M>
-    const std::vector<DeviceDescription> &create_optris_grabber_device_list(std::string hint, bool rescan){
+    const std::vector<DeviceDescription> &create_optris_source_device_list(std::string hint, bool rescan){
       static std::vector<DeviceDescription> devices;
       if(!devices.size() || rescan){
         const std::vector<DeviceDescription> &get = OptrisSource::getDeviceList(hint,rescan);
@@ -362,13 +362,13 @@ namespace icl{
       return devices;
     }
 
-    REGISTER_SOURCE_BACKEND(optris,create_optris_grabber<OptrisSource::IR_IMAGE>,
-                     create_optris_grabber_device_list<OptrisSource::IR_IMAGE>,
-                     "camera serial ID or pattern~LibImager-based camera grabber source (ir camera)");
+    REGISTER_SOURCE_BACKEND(optris,create_optris_source<OptrisSource::IR_IMAGE>,
+                     create_optris_source_device_list<OptrisSource::IR_IMAGE>,
+                     "camera serial ID or pattern~LibImager-based camera source source (ir camera)");
 
-    REGISTER_SOURCE_BACKEND(optrisv,create_optris_grabber<OptrisSource::VISIBLE_IMAGE>,
-                     create_optris_grabber_device_list<OptrisSource::VISIBLE_IMAGE>,
-                     "camera serial ID or pattern~LibImager-based camera grabber source (color camera)");
+    REGISTER_SOURCE_BACKEND(optrisv,create_optris_source<OptrisSource::VISIBLE_IMAGE>,
+                     create_optris_source_device_list<OptrisSource::VISIBLE_IMAGE>,
+                     "camera serial ID or pattern~LibImager-based camera source source (color camera)");
 
     //REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io

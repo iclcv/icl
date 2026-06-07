@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/dc/DCGrabberThread.h>
+#include <icl/io/detail/dc/DCSourceThread.h>
 #include <icl/io/detail/dc/DCFrameQueue.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/SignalHandler.h>
@@ -17,31 +17,31 @@ using namespace icl::core;
 namespace icl::io {
   namespace dc{
 
-    /// mutex protected list of all currently running grabber threads
-    std::recursive_mutex g_oGrabberThreadMutex;
-    vector<DCGrabberThread*> g_vecAllThreads;
-    bool g_bStopAllGrabberThreadsCalled = false;
+    /// mutex protected list of all currently running source threads
+    std::recursive_mutex g_oSourceThreadMutex;
+    vector<DCSourceThread*> g_vecAllThreads;
+    bool g_bStopAllSourceThreadsCalled = false;
 
-    DCGrabberThread::~DCGrabberThread(){
+    DCSourceThread::~DCSourceThread(){
       stop();
       ICL_DELETE(m_poFrameQueue);
 
-      if(!g_bStopAllGrabberThreadsCalled){
-        /// remove from the grabber thread list to
-        g_oGrabberThreadMutex.lock();
-        vector<DCGrabberThread*>::iterator it = find(g_vecAllThreads.begin(),g_vecAllThreads.end(),this);
+      if(!g_bStopAllSourceThreadsCalled){
+        /// remove from the source thread list to
+        g_oSourceThreadMutex.lock();
+        vector<DCSourceThread*>::iterator it = find(g_vecAllThreads.begin(),g_vecAllThreads.end(),this);
         if(it != g_vecAllThreads.end()){
           g_vecAllThreads.erase(it);
         }
-        g_oGrabberThreadMutex.unlock();
+        g_oSourceThreadMutex.unlock();
       }
 
     }
-    void DCGrabberThread::resetBus(){
+    void DCSourceThread::resetBus(){
       dc1394_reset_bus(m_poCam);
     }
 
-    void DCGrabberThread::stopAllGrabberThreads(){
+    void DCSourceThread::stopAllSourceThreads(){
 
       /* Why ???
           for(unsigned int i=0; i<g_vecAllThreads.size();++i){
@@ -50,36 +50,36 @@ namespace icl::io {
           }
       */
 
-      g_oGrabberThreadMutex.lock();
-      g_bStopAllGrabberThreadsCalled = true;
+      g_oSourceThreadMutex.lock();
+      g_bStopAllSourceThreadsCalled = true;
 
       for(unsigned int i=0;i<g_vecAllThreads.size();i++){
-        std::cout << "> stopping grabber thread for camera " << i << std::endl;
+        std::cout << "> stopping source thread for camera " << i << std::endl;
         g_vecAllThreads[i]->stop();
       }
       g_vecAllThreads.clear();
-      g_bStopAllGrabberThreadsCalled = false;
-      g_oGrabberThreadMutex.unlock();
+      g_bStopAllSourceThreadsCalled = false;
+      g_oSourceThreadMutex.unlock();
 
       std::cout << "> resetting firewire bus" << std::endl;
       DCSource::dc1394_reset_bus(false);
     }
 
 
-    DCGrabberThread::DCGrabberThread(dc1394camera_t* c,
+    DCSourceThread::DCSourceThread(dc1394camera_t* c,
                                      DCDeviceOptions *options):
 
       m_poFrameQueue(0),m_poCam(c),m_poOptions(options),
       m_lastFramesTimeStamp(0){
-      g_oGrabberThreadMutex.lock();
+      g_oSourceThreadMutex.lock();
       g_vecAllThreads.push_back(this);
-      g_oGrabberThreadMutex.unlock();
+      g_oSourceThreadMutex.unlock();
 
       m_poFrameQueue = new DCFrameQueue(c,options);
     }
 
 
-    void DCGrabberThread::run(){
+    void DCSourceThread::run(){
 
       // I moved this to the constructor (why was it placed here?)
       //if(!m_poFrameQueue){
@@ -98,7 +98,7 @@ namespace icl::io {
 
 
 
-    dc1394video_frame_t *DCGrabberThread::waitForNextImageFrame(){
+    dc1394video_frame_t *DCSourceThread::waitForNextImageFrame(){
       Time &lastTime = m_lastFramesTimeStamp;
       dc1394video_frame_t *frame = m_poFrameQueue->back();
 
@@ -115,7 +115,7 @@ namespace icl::io {
     }
 
     /// returns the current image directly (if no desried parameters are set)
-    void DCGrabberThread::getCurrentImage(ImgBase **ppoDst,
+    void DCSourceThread::getCurrentImage(ImgBase **ppoDst,
                                           dc1394color_filter_t bayerLayout,
                                           dc1394bayer_method_t bayerMethod){
 
@@ -131,7 +131,7 @@ namespace icl::io {
     }
 
 
-    void DCGrabberThread::getCurrentImage(ImgBase **ppoDst,
+    void DCSourceThread::getCurrentImage(ImgBase **ppoDst,
                                           ImgBase **ppoDstTmp,
                                           bool &desiredParamsFullfilled,
                                           const Size &desiredSizeHint,

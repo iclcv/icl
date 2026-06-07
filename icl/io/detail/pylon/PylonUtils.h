@@ -16,18 +16,18 @@ namespace icl::io {
 
     /// Buffer, registered to the Pylon-drivers StreamGrabber \ingroup GIGE_G
     template <typename T>
-    class PylonGrabberBuffer {
+    class PylonSourceBuffer {
       private:
         T *m_pBuffer;
         Pylon::StreamBufferHandle m_hBuffer;
 
       public:
-        PylonGrabberBuffer(size_t size) : m_pBuffer(nullptr) {
+        PylonSourceBuffer(size_t size) : m_pBuffer(nullptr) {
           m_pBuffer = new T[size];
           if (!m_pBuffer)
             throw utils::ICLException("Not enough memory to allocate image buffer");
         }
-        ~PylonGrabberBuffer(){
+        ~PylonSourceBuffer(){
           if (m_pBuffer)
             delete[] m_pBuffer;
           }
@@ -106,12 +106,12 @@ namespace icl::io {
         This class holds three pointers to ConvBuffers of which one is the
         currently read and the other two are alternately written to.
     **/
-    class ConcGrabberBuffer {
+    class ConcSourceBuffer {
       public:
         /// Constructor creates and initializes resources.
-        ICLIO_API ConcGrabberBuffer();
+        ICLIO_API ConcSourceBuffer();
         /// Destructor frees allocated memory.
-        ICLIO_API ~ConcGrabberBuffer();
+        ICLIO_API ~ConcSourceBuffer();
 
         /// returns a pointer to the most recent actualized ConvBuffers.
         /**
@@ -192,7 +192,7 @@ namespace icl::io {
     */
     struct AcquisitionInterruptor{
       private:
-        /// A pointer to the PylonGrabberImpl that is to be stopped.
+        /// A pointer to the PylonSourceImpl that is to be stopped.
         Interruptable* m_Interu;
 
       public:

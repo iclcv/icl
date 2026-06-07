@@ -21,8 +21,8 @@ const std::string default_sizes =
     "1600x900,1400x1050,1600x1050,1600x1200,1920x1080,3840x2160";
 
 PylonCameraOptions::PylonCameraOptions(
-    Pylon::IPylonDevice* camera, Interruptable* grabber){
-  m_Interu = grabber;
+    Pylon::IPylonDevice* camera, Interruptable* source){
+  m_Interu = source;
   m_Camera = camera;
   m_OmitDoubleFrames = true;
 

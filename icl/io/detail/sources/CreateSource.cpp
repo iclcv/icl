@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
-#include <icl/io/detail/grabbers/CreateSource.h>
+#include <icl/io/detail/sources/CreateSource.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/source/TestImages.h>
 
@@ -37,7 +37,7 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(CreateSource, return new CreateSource("parrot"));
 
-  SourceBackend* createCreateGrabber(const std::string &param){
+  SourceBackend* createCreateSource(const std::string &param){
     return new CreateSource(param);
   }
 
@@ -54,7 +54,7 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(create, createCreateGrabber, getCreateDeviceList,
+  REGISTER_SOURCE_BACKEND(create, createCreateSource, getCreateDeviceList,
                    "parrot|lena|cameraman|mandril|flowers|windows|women|tree|house~built-in test image");
 
   } // namespace icl::io

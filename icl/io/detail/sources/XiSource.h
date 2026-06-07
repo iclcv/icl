@@ -10,7 +10,7 @@
 namespace icl::io {
   /// SourceBackend class that grabs images using the XiAPI (extension of the M3API)
   /** The XiSource can be used e.g. for cameras from Ximea. Use device type 'xi'
-      with the generic grabber for this.
+      with the generic source for this.
   */
   class ICLIO_API XiSource : public SourceBackend {
       /// Internal Data storage class

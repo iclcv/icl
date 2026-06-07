@@ -14,7 +14,7 @@ namespace icl::io {
   /** \cond */
   class DCSource;
   namespace dc{
-    class DCGrabberThread;
+    class DCSourceThread;
   }
   /** \endcond */
 
@@ -35,11 +35,11 @@ namespace icl::io {
     /// static null device (m_poCam is null)
     static const DCDevice null;
 
-    /// DCDevices may only be created by the DCGrabbers private function
+    /// DCDevices may only be created by the DCSources private function
     friend class icl::io::DCSource;
 
-    /// DCDevices may only be created by the DCGrabbers private function
-    friend class icl::io::dc::DCGrabberThread;
+    /// DCDevices may only be created by the DCSources private function
+    friend class icl::io::dc::DCSourceThread;
 
     /// save version to call dc1394_reset_bus (after call all other cams become useless)
     static void dc1394_reset_bus(bool verbose=false);

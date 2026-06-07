@@ -83,12 +83,12 @@ io_sources += files(
   'detail/file-plugins/JPEGHandle.cpp',
 )
 
-# Always-built grabbers + small decoders (no external deps).
+# Always-built sources + small decoders (no external deps).
 io_sources += files(
-  'detail/grabbers/ColorFormatDecoder.cpp',
-  'detail/grabbers/CreateSource.cpp',
-  'detail/grabbers/DemoSource.cpp',
-  'detail/grabbers/MyrmexDecoder.cpp',
+  'detail/sources/ColorFormatDecoder.cpp',
+  'detail/sources/CreateSource.cpp',
+  'detail/sources/DemoSource.cpp',
+  'detail/sources/MyrmexDecoder.cpp',
 )
 
 # Built-in test images: raw JPEG/XPM blobs + factory lambdas that
@@ -102,7 +102,7 @@ io_sources += files(
   'detail/builtin-images/TestImageWindows.cpp',
 )
 
-# 11-bit compressor — shared between Kinect grabber and CompressionPlugin1611.
+# 11-bit compressor — shared between Kinect source and CompressionPlugin1611.
 io_sources += files('detail/kinect/Kinect11BitCompressor.cpp')
 
 io_extra_deps = []
@@ -115,7 +115,7 @@ if libdc_dep.found()
     'detail/dc/DCDeviceFeatures.cpp',
     'detail/dc/DCFrameQueue.cpp',
     'detail/dc/DCSource.cpp',
-    'detail/dc/DCGrabberThread.cpp',
+    'detail/dc/DCSourceThread.cpp',
   )
   io_extra_deps += libdc_dep
 endif
@@ -147,7 +147,7 @@ if pylon_dep.found()
     'detail/pylon/PylonCameraOptions.cpp',
     'detail/pylon/PylonColorConverter.cpp',
     'detail/pylon/PylonSource.cpp',
-    'detail/pylon/PylonGrabberThread.cpp',
+    'detail/pylon/PylonSourceThread.cpp',
     'detail/pylon/PylonUtils.cpp',
   )
   io_extra_deps += pylon_dep

@@ -43,13 +43,13 @@ image parameters that are used by the underlying implementation.
 A FileSource e.g. will by default return images that have
 the same parameter that the grabbed image file provides. However,
 in some situations, the user might want to adapt these parameters
-E.g. if the image parameters that are provided by the grabber
+E.g. if the image parameters that are provided by the source
 are not suitable for an algorithm. If this is the case, the
 SourceBackend's desired parameters can be set using the
 SourceBackend::setDesired-template.\n
 Currently, the image parameters 'core::depth', 'size' and 'core::format'
 can be adapted seperately by setting desired parameters. Once
-desired parameters are set, the can be reset to the grabber's
+desired parameters are set, the can be reset to the source's
 default by calling SourceBackend::ignoreDesired<T> where one of the
 types core::depth, core::format or icl::utils::Size is used as type T.
 
@@ -171,7 +171,7 @@ void ignoreDesired();
 /// enables the undistorion
 void enableUndistortion(const std::string &filename);
 
-/// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
+/// enables the undistortion plugin for the source using radial and tangential distortion parameters
 void enableUndistortion(const filter::ImageUndistortion &udist);
 
 /// enables undistortion from given programm argument.

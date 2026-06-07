@@ -19,9 +19,9 @@
     \defgroup UTILS_G Common File-I/O Utility Functions and Classes
     \defgroup FILEIO_G Plugin-based File-Writer and File-SourceBackend implementation
     \defgroup SOURCE_G List of all provided SourceBackend implementations
-    \defgroup MOVIE_FILE_G grabbers for movie file sources
-    \defgroup V4L_G Video 4 Linux based grabbesr
-    \defgroup GIGE_G Gigabit Ethernet (GIG-E) based grabber
+    \defgroup MOVIE_FILE_G Sources for movie files
+    \defgroup V4L_G Video for Linux based sources
+    \defgroup GIGE_G Gigabit Ethernet (GIG-E) based source
 
     \section Overview
     The ICLIO Package encloses a wide range of images sources that are all
@@ -47,7 +47,7 @@
     means, you can simply write applications that are able to acquire images from
     all available sources without having to check which of all possible back-ends manually.
     furthermore, your application will also benefit from ICL-updates, which provide further
-    grabber-implementations automatically.
+    source backends automatically.
 
     Here is a small example for a dynamic-source grab example
 
@@ -56,15 +56,15 @@
     #include <icl/qt/Common.h>
 
     icl::qt::GUI gui;
-    ImageSource grabber;
+    ImageSource source;
 
     void init(){
-      grabber.init(pa("-i"));
+      source.init(pa("-i"));
       gui << Display().handle("image") << Show();
     }
 
     void run(){
-      gui["image"] = grabber.grab();
+      gui["image"] = source.grab();
     }
 
     int main(int n, char **args){
@@ -116,7 +116,7 @@
     # list all possible properties and their allowed values and ranges
     icl-camviewer -input dc 0\@info
 
-    # instantiate a grabber and directly load a property configuration file
+    # instantiate a source and directly load a property configuration file
     # note: these files can be created interactively with the camera-configuration tool icl-camcfg
     # or by reading a devices properties using e.g. 'icl-camera-param-io -d dc 0 -o my-file.xml'
     icl-camviewer -input dc 0\@load=my-file.xml
@@ -137,7 +137,7 @@
     with ICL's programm argument evaluation toolbox, nearly all ICL applications can be set up
     to grab the source images from an arbitrary image source. In this context, the example-
     application 'icl-pipe' might be very useful: icl-pipe does not only have a generic image
-    souce, but is does also use the icl::ImageSink to stream the grabber images
+    souce, but is does also use the icl::ImageSink to stream the source images
     somewhere else. Here are some examples:
 
     <pre>
@@ -172,8 +172,8 @@
     - <b>icl::DemoSource</b> Creates images with a moving red rectangle (no dependencies)
     - <b>icl::PylonSource</b> SourceBackend using Baslers Pylon-Libraries for grabbing from Gigabit Ethernet (GIG-E) cameras
     - <b>icl::SwissRangerSource</b> SourceBackend for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
-    - <b>icl::OpenCVVideoSource</b> OpenCV based video grabber (needs OpenCV)
-    - <b>icl::WSSource</b> WebSocket-based grabber for receiving images from a icl::WSSink publisher (needs Qt6Websockets) — replaced the retired SharedMemory backend
+    - <b>icl::OpenCVVideoSource</b> OpenCV based video source (needs OpenCV)
+    - <b>icl::WSSource</b> WebSocket-based source for receiving images from a icl::WSSink publisher (needs Qt6Websockets) — replaced the retired SharedMemory backend
     - <b>icl::OpenCVCamSource</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
     - <b>icl::KinectSource</b> libfreenect based SourceBackend for Microsoft's Kinect Camera (supports color-, core::depth and IR-camera)
 

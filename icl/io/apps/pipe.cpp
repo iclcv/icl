@@ -34,7 +34,7 @@ bool first = true;
 // a fixed yes/no in non-GUI modes).
 std::function<bool()> ppEnabled;
 
-ImageSource grabber;
+ImageSource source;
 
 std::vector<std::string> remove_size(const std::vector<std::string> &v){
   std::vector<std::string> r;
@@ -44,25 +44,25 @@ std::vector<std::string> remove_size(const std::vector<std::string> &v){
   return r;
 }
 
-void init_grabber(){
-  grabber.init(pa("-i"));
+void init_source(){
+  source.init(pa("-i"));
   if(pa("-depth")){
-    grabber.useDesired(core::depth(pa("-depth")));
+    source.useDesired(core::depth(pa("-depth")));
   }
   if(pa("-format")){
-    grabber.useDesired(core::format(pa("-format")));
+    source.useDesired(core::format(pa("-format")));
   }
   if(pa("-camera-config")){
-    grabber.loadProperties(pa("-camera-config"));
+    source.loadProperties(pa("-camera-config"));
   }
 }
 
 static Image grabImageHolder;
 const ImgBase *grab_image(){
   const ImgBase *img = 0;
-  //  const ImgBase *image = grabber.grab();
+  //  const ImgBase *image = source.grab();
 
-  grabImageHolder = grabber.grab();
+  grabImageHolder = source.grab();
   if (!(bool)pa("-flip")){
     img = grabImageHolder.ptr();
   }else{
@@ -327,13 +327,13 @@ int main(int n, char **ppc){
    " input specification e.g. -input pwc 0 or -input file bla/*.ppm")
   ("-single-shot","no loop application")
   ("-size","output image size (sending only, default: VGA)"
-   "[please note that -format, -size and -depth use the grabbers desired params."
+   "[please note that -format, -size and -depth use the sources desired params."
    " I.e. usually none or all of these three parameters have to be given]")
   ("-depth","output image size (sending only, default: depth8u)"
-   "[please note that -format, -size and -depth use the grabbers desired params."
+   "[please note that -format, -size and -depth use the sources desired params."
    " I.e. usually none or all of these three parameters have to be given]")
   ("-format","if given the source image is converted into this format"
-   "[please note that -format, -size and -depth use the grabbers desired params."
+   "[please note that -format, -size and -depth use the sources desired params."
    " I.e. usually none or all of these three parameters have to be given]")
   ("-o","analog to -input , this can be used to specify the output device and parameters\n"
    " output specification e.g. -output file image_###.ppm or -o sm MySharedMem")
@@ -363,9 +363,9 @@ int main(int n, char **ppc){
   ("-crop-and-rescale","crops the outer pixels of the image (hcrop_pix on the left and on the "
    "right image border and vcrop_pix on the top and bottom image border). The resulting smaller image "
    "is then scaled up to the target image size given by target_width and target_height.")
-  ("-camera-config","if a valid xml-camera configuration file was given here, the grabber is set up "
+  ("-camera-config","if a valid xml-camera configuration file was given here, the source is set up "
    "with this parameters internally. Valid parameter files can be created with icl-camera-param-io or with "
-   "the icl-camcfg tool. Please note: some grabber parameters might cause an internal grabber crash, "
+   "the icl-camcfg tool. Please note: some source parameters might cause an internal source crash, "
    "so e.g. trigger setup parameters or the isospeed parameters must be removed from this file");
 
   pa_init(n,ppc,"[m]-output|-o(output-type-string,output-parameters) "
@@ -383,7 +383,7 @@ int main(int n, char **ppc){
     ImageSource::resetBus();
   }
 
-  init_grabber();
+  init_source();
 
 #ifdef ICL_HAVE_QT
   if(!pa("-no-gui")){

@@ -9,7 +9,7 @@
 
 namespace icl::io {
   /// PixelSense SourceBackend class
-  /** This grabber can be used to interface with devices implementing the
+  /** This source can be used to interface with devices implementing the
       Microsoft PixelSense technology, such as the Samsung SUR40 device.
 
       The grabbed images will contain meta data which describes the

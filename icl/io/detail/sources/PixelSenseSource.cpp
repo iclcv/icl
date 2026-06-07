@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Eckard Riedenklau, Christof Elbrechter
 
-#include <icl/io/detail/grabbers/PixelSenseSource.h>
+#include <icl/io/detail/sources/PixelSenseSource.h>
 #include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/utils/thread/Thread.h>
@@ -342,7 +342,7 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(PixelSenseSource, return new PixelSenseSource(30));
 
-  SourceBackend* createPixelSenseGrabber(const std::string &param){
+  SourceBackend* createPixelSenseSource(const std::string &param){
     return new PixelSenseSource(to32f(param));
   }
 
@@ -363,6 +363,6 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(ps,createPixelSenseGrabber, getPixelSenseDeviceList,"0~pixelsense image source");
+  REGISTER_SOURCE_BACKEND(ps,createPixelSenseSource, getPixelSenseDeviceList,"0~pixelsense image source");
 
   } // namespace icl::io

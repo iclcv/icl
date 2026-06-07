@@ -10,12 +10,12 @@ VSplit gui;
 
 struct Input{
   std::string a,b;
-  ImageSource grabber;
+  ImageSource source;
   ImageHandle handle;
   Image lastImage;
   std::string id;
   void operator()(){
-    lastImage = grabber.grab();
+    lastImage = source.grab();
     handle = lastImage;
   }
   void save(){
@@ -98,11 +98,11 @@ void init(){
     in.a = p[2*i];
     in.b = p[2*i+1];
 
-    in.grabber.init(in.a,in.a+"="+in.b);
+    in.source.init(in.a,in.a+"="+in.b);
 
-    if(pa("-s")) in.grabber.useDesired(pa("-s").as<Size>());
-    if(pa("-f")) in.grabber.useDesired(pa("-f").as<format>());
-    if(pa("-d")) in.grabber.useDesired(pa("-d").as<depth>());
+    if(pa("-s")) in.source.useDesired(pa("-s").as<Size>());
+    if(pa("-f")) in.source.useDesired(pa("-f").as<format>());
+    if(pa("-d")) in.source.useDesired(pa("-d").as<depth>());
 
     rows[i/layout.width] << Display().label(in.id + ": "+in.a+" "+fix_at_stuff(in.b)).handle(in.id);
 
@@ -124,10 +124,10 @@ void init(){
   if(pa("-sync")){
     for(int i=1;i<nInputs;++i){
       if(inputs[i].a != inputs[0].a) {
-        throw ICLException("option -s to synchronize all grabbers can "
+        throw ICLException("option -s to synchronize all sources can "
                            "only be used, if all input types are identical");
       }
-      inputs[0].grabber.syncChangesTo(&inputs[i].grabber);
+      inputs[0].source.syncChangesTo(&inputs[i].source);
     }
     camcfg << CamCfg();//inputs[0].a+","+inputs[0].b);
   }else{
@@ -203,7 +203,7 @@ int main(int n, char **ppc){
           "-layout|-l(size) "
           "-asynchronous|-a "
           "-output|-o(...) "
-					"-sync-all-grabbers|-sync "
+					"-sync-all-sources|-sync "
           "-i(...)");
   ICLApp app(n,ppc,"",init);
 

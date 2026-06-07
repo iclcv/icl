@@ -113,7 +113,7 @@ namespace icl::io {
       return;
     }
 
-    /// set the value of a parameter of a specific type on a specific source (camera/grabber)
+    /// set the value of a parameter of a specific type on a specific source (camera/source)
     template <typename OBJ, typename NODE, typename VAL>
     bool setParameterValueOf(OBJ* object, std::string parameter, VAL value){
       GenApi::INode* node = object -> GetNodeMap() -> GetNode(parameter.c_str());
@@ -144,7 +144,7 @@ namespace icl::io {
       }
     }
 
-    /// get the value of a parameter of a specific type from a spec. source (camera/grabber)
+    /// get the value of a parameter of a specific type from a spec. source (camera/source)
     template <typename SOURCE, typename NODE, typename RET>
     RET getParameterValueOf(SOURCE* source, std::string param){
       GenApi::INode* node = source -> GetNodeMap() -> GetNode(param.c_str());

@@ -117,10 +117,10 @@ namespace icl::io {
     virtual void run(){
       usleep(1000);
       while(running()){
-        //DEBUG_LOG("kinect grabber running");
+        //DEBUG_LOG("kinect source running");
         usleep(1);
         if(!trylock()){
-          //DEBUG_LOG("kinect grabber got lock");
+          //DEBUG_LOG("kinect source got lock");
           if(processEvents() < 0){
             errors++;
           }
@@ -129,7 +129,7 @@ namespace icl::io {
             throw ICLException("detected 100th error in freenect event processing");
           }
           unlock();
-          //DEBUG_LOG("kinect grabber unlocked");
+          //DEBUG_LOG("kinect source unlocked");
         }
       }
     }
@@ -236,9 +236,9 @@ namespace icl::io {
             std::copy((const icl16s*)data,(const icl16s*)data +  (size==Size::VGA ? 640*480 : 320*240), irImage16s.begin(0));
             break;
           default:
-            // actually, this happens sometimes, when the grabbers 'format' is switched frequently
+            // actually, this happens sometimes, when the sources 'format' is switched frequently
             // at runtime. This is why, we avoid to throw an exception here!
-            // throw ICLException("processed color callback for depth grabber (this should not happen)");
+            // throw ICLException("processed color callback for depth source (this should not happen)");
             break;
         }
 
@@ -476,7 +476,7 @@ namespace icl::io {
           }else{
             if(used->currentColorMode != mode){
               WARNING_LOG("the mode cannot be changed to " << mode
-                          << " because another grabber instance with mode "
+                          << " because another source instance with mode "
                           << used->currentColorMode << " does already exist");
             }
           }
@@ -790,15 +790,15 @@ namespace icl::io {
     return devices;
   }
 
-  SourceBackend* createDepthGrabber(const std::string &param){
+  SourceBackend* createDepthSource(const std::string &param){
     return new KinectSource(KinectSource::GRAB_DEPTH_IMAGE,param);
   }
 
-  SourceBackend* createRGBGrabber(const std::string &param){
+  SourceBackend* createRGBSource(const std::string &param){
     return new KinectSource(KinectSource::GRAB_RGB_IMAGE,param);
   }
 
-  SourceBackend* createIRGrabber(const std::string &param){
+  SourceBackend* createIRSource(const std::string &param){
     return new KinectSource(KinectSource::GRAB_IR_IMAGE_8BIT,param);
   }
 
@@ -856,8 +856,8 @@ namespace icl::io {
     return devices;
   }
 
-  REGISTER_SOURCE_BACKEND(kinectd,createDepthGrabber, getKinectDDeviceList, "device ID~kinect depth camera source");
-  REGISTER_SOURCE_BACKEND(kinectc,createRGBGrabber, getKinectCDeviceList,"device ID~kinect color camera source");
-  REGISTER_SOURCE_BACKEND(kinecti,createIRGrabber, getKinectIDeviceList,"devide ID~kinect IR camera source");
+  REGISTER_SOURCE_BACKEND(kinectd,createDepthSource, getKinectDDeviceList, "device ID~kinect depth camera source");
+  REGISTER_SOURCE_BACKEND(kinectc,createRGBSource, getKinectCDeviceList,"device ID~kinect color camera source");
+  REGISTER_SOURCE_BACKEND(kinecti,createIRSource, getKinectIDeviceList,"devide ID~kinect IR camera source");
 
   } // namespace icl::io

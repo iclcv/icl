@@ -12,46 +12,46 @@
 #include <mutex>
 
 namespace icl::io {
-  // Forward declaration of OpenNIGrabberImpl
+  // Forward declaration of OpenNISourceImpl
   class OpenNISource;
 
   /// Internally spawned thread class for continuous grabbing. Only one instance needed.
-  class OpenNIGrabberThread : public utils::Thread {
+  class OpenNISourceThread : public utils::Thread {
     public:
 
-      /// Constructor set up GrabberThread
-      OpenNIGrabberThread();
+      /// Constructor set up SourceThread
+      OpenNISourceThread();
 
       /// Destructor stops thread and releases all resources.
-      ~OpenNIGrabberThread();
+      ~OpenNISourceThread();
 
-      /// adds a grabber to be updated every frame.
+      /// adds a source to be updated every frame.
       /**
       * The thread should be stopped beforehand and restarted afterwards.
       */
-      void addGrabber(OpenNISource* grabber);
+      void addSource(OpenNISource* source);
 
-      /// removes a grabber so it no longer will be updated.
+      /// removes a source so it no longer will be updated.
       /**
       * The thread should be stopped beforehand and restarted afterwards.
       */
-      void removeGrabber(OpenNISource* grabber);
+      void removeSource(OpenNISource* source);
 
     private:
-      /// constantly calls update on OpenNI context and updates image buffers. While grabbers are registered.
+      /// constantly calls update on OpenNI context and updates image buffers. While sources are registered.
       void run();
 
-      /// internally used set of grabber pointers
-      std::set<OpenNISource*> m_Grabber;
+      /// internally used set of source pointers
+      std::set<OpenNISource*> m_Source;
 
-      /// guards m_Grabber and run()'s update loop
+      /// guards m_Source and run()'s update loop
       std::recursive_mutex m_mutex;
   };
 
   /// SourceBackend implementation for OpenNI based camera access.
   class OpenNISource : public SourceBackend {
     public:
-      friend class OpenNIGrabberThread;
+      friend class OpenNISourceThread;
 
       /// The constructor
       /**
@@ -67,7 +67,7 @@ namespace icl::io {
       core::Image acquireImage();
 
       /**
-          returns the underlying handle of the grabber.
+          returns the underlying handle of the source.
           In this case the corresponding MapGenerator.
       **/
       virtual void* getHandle();
@@ -91,7 +91,7 @@ namespace icl::io {
 
       /// Mutex used for concurrency issues.
       std::recursive_mutex m_Mutex;
-      /// a grabber id
+      /// a source id
       std::string m_Id;
       /// pointer to the currently used image generator
       icl_openni::OpenNIMapGenerator* m_Generator;

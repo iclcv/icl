@@ -24,7 +24,7 @@
 
 #include <icl/utils/thread/Thread.h>
 #include <icl/io/file/FileList.h>
-#include <icl/io/detail/grabbers/ColorFormatDecoder.h>
+#include <icl/io/detail/sources/ColorFormatDecoder.h>
 #include <icl/io/detail/v4l2/V4L2Source.h>
 #include <icl/utils/File.h>
 #include <mutex>
@@ -771,10 +771,10 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(V4L2Source, return new V4L2Source("/dev/video0"));
 
-  SourceBackend* createVlGrabber(const std::string &param){
+  SourceBackend* createVlSource(const std::string &param){
     return new V4L2Source(param);
   }
 
-  REGISTER_SOURCE_BACKEND(v4l,createVlGrabber, V4L2Source::getDeviceList, "/dev/videoX index or device-file~V4l2 based camera source");
+  REGISTER_SOURCE_BACKEND(v4l,createVlSource, V4L2Source::getDeviceList, "/dev/videoX index or device-file~V4l2 based camera source");
 
   } // namespace icl::io

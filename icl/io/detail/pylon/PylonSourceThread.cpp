@@ -2,34 +2,34 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Viktor Richter, Christof Elbrechter
 
-#include <icl/io/detail/pylon/PylonGrabberThread.h>
+#include <icl/io/detail/pylon/PylonSourceThread.h>
 #include <icl/utils/time/Time.h>
 
 using namespace icl;
 using namespace icl::io::pylon;
 
 // Constructor sets all internal fields and allocates memory
-PylonGrabberThread::PylonGrabberThread(Pylon::IStreamGrabber* grabber,
+PylonSourceThread::PylonSourceThread(Pylon::IStreamGrabber* source,
                                 PylonColorConverter* converter,
                                 PylonCameraOptions* options) :
-m_Grabber(grabber), m_Buffers(),
+m_Source(source), m_Buffers(),
     m_Error(0), m_Timeout(0), m_Acquired(0)
 {
   m_Converter = converter;
   m_Options = options;
 }
 
-PylonGrabberThread::~PylonGrabberThread(){
+PylonSourceThread::~PylonSourceThread(){
   // free all allocated memory
   DEBUG_LOG("Images aquired: " << m_Acquired << " Errors: " << m_Error
             << " Timesouts: " << m_Timeout)
 }
 
-void PylonGrabberThread::resetBuffer(){
+void PylonSourceThread::resetBuffer(){
   m_Buffers.setReset();
 }
 
-void PylonGrabberThread::run(){
+void PylonSourceThread::run(){
   while(running()){
     msleep(1);
     // locking thread
@@ -44,17 +44,17 @@ void PylonGrabberThread::run(){
   }
 }
 
-void PylonGrabberThread::grab(){
+void PylonSourceThread::grab(){
   // Wait for the grabbed image with timeout of 2 seconds
-  if (!m_Grabber -> GetWaitObject().Wait(1000)){
+  if (!m_Source -> GetWaitObject().Wait(1000)){
     // Timeout
     DEBUG_LOG("Timeout occurred!")
     ++m_Timeout;
     return;
   }
-  // Get the grab result from the grabber's result queue
+  // Get the grab result from the source's result queue
   Pylon::GrabResult result;
-  if(!m_Grabber -> RetrieveResult(result)){
+  if(!m_Source -> RetrieveResult(result)){
       //This should not happen, but seems to do on camemu.
       DEBUG_LOG("Wait object came back but no result available.")
       ++m_Error;
@@ -71,7 +71,7 @@ void PylonGrabberThread::grab(){
       write -> m_Image -> setTime();
     }
     // Reuse buffer for grabbing the next image
-    m_Grabber -> QueueBuffer(result.Handle(), nullptr);
+    m_Source -> QueueBuffer(result.Handle(), nullptr);
   } else {
     ++m_Error;
     // Error handling
@@ -79,11 +79,11 @@ void PylonGrabberThread::grab(){
               << result.GetErrorDescription())
 
     // Reuse the buffer for grabbing the next image
-    m_Grabber -> QueueBuffer(result.Handle(), nullptr);
+    m_Source -> QueueBuffer(result.Handle(), nullptr);
   }
 }
 
-core::ImgBase* PylonGrabberThread::getCurrentDisplay(){
+core::ImgBase* PylonSourceThread::getCurrentDisplay(){
   // just return the buffered readimage.
   return m_Buffers.getNextReadBuffer() -> m_Image;
 }

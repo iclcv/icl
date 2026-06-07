@@ -35,7 +35,7 @@ namespace icl::io {
       /// callback for changed configurable properties
       void processPropertyChange(const utils::Configurable::Property &prop);
 
-      /// Creates new OpenCV based grabber
+      /// Creates new OpenCV based source
       /** @param dev specifies the device index
            (0 chooses any available device automatically)
         you can also use
@@ -56,7 +56,7 @@ namespace icl::io {
 
               // returns a list of all valid device IDs
       /** Internally, for each device index i=0,1,2,...,
-        a grabber-instance is created. If any of these creation trys returns an error,
+        a source-instance is created. If any of these creation trys returns an error,
         no further devices are tested.
         @param rescan if this params is a positive or zero integer, it defines the
         last device ID that is tried internally */

@@ -8,7 +8,7 @@
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Random.h>
 #include <icl/utils/Point.h>
-#include <icl/io/detail/grabbers/DemoSource.h>
+#include <icl/io/detail/sources/DemoSource.h>
 #include <mutex>
 
 using namespace icl::utils;
@@ -187,7 +187,7 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(DemoSource, return new DemoSource(30));
 
-  SourceBackend* createDemoGrabber(const std::string &param){
+  SourceBackend* createDemoSource(const std::string &param){
     float fps = to32f(param);
     return new DemoSource(fps > 0 ? fps : 30);
   }
@@ -209,6 +209,6 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(demo,createDemoGrabber, getDemoDeviceList,"0~demo image source");
+  REGISTER_SOURCE_BACKEND(demo,createDemoSource, getDemoDeviceList,"0~demo image source");
 
   } // namespace icl::io

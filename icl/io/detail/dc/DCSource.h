@@ -16,7 +16,7 @@
 namespace icl::io {
   /** \cond */
   namespace dc{
-    class DCGrabberThread;
+    class DCSourceThread;
   }
   /** \endcond */
 
@@ -27,23 +27,23 @@ namespace icl::io {
       wraps some additional classes with name prefix "DC". \n
 
       The first time the "grab(..)"-function of the DCSource is invoked,
-      it internally creates a so called DCGrabberThread. This thread
+      it internally creates a so called DCSourceThread. This thread
       then will create a so called DCFrameQueue internally. This queue
       is used to handle dma-image-frames, owned by the libdc which have
       been temporarily de-queued from the dma ring buffer queue into
       the user space. Here, the user has read-only access to these frames.
-      The DCGrabberThread runs as fast as the current camera-settings allow
+      The DCSourceThread runs as fast as the current camera-settings allow
       and de-queues dma-frames from the system space into the user space
       DCFrameQueue and it en-queues old user space frames from this
       DCFrameQueue back into the dma ring buffer. At each time, the newest
       frame is available at the back of the DCFrameQueue whereas the oldest
       frame is located at the front of this queue.
-      When the DCGrabbers grab-function is called, it will internally lock
+      When the DCSources grab-function is called, it will internally lock
       the current DCFrameQueue and convert the current frame into another
       buffer before the DCFrameQueue is unlocked again.\n
       Internally the DCSource wraps an instance of type DCDeviceOptions,
       which is a container for all currently implemented options. The
-      wrapped classes DCGrabberThread and DCFrameQueue get a pointer to
+      wrapped classes DCSourceThread and DCFrameQueue get a pointer to
       this option-struct at construction time, so these objects are able
       to work with the options currently set inside the parent DCSource
       instance.\n
@@ -56,7 +56,7 @@ namespace icl::io {
       be included <b>here!</b>.\n
       As in other SourceBackend implementations, a static function
       "getDeviceList()" can be used to detect currently supported cameras.
-      @see DCDevice, DCDeviceOptions, DCGrabberThread, DCFrameQueue
+      @see DCDevice, DCDeviceOptions, DCSourceThread, DCFrameQueue
   */
   class DCSource : public SourceBackend{
     public:
@@ -65,7 +65,7 @@ namespace icl::io {
       /** @param dev DCDevice to use (this device can only be created by the
                    static function getDeviceList()
         @param isoMBits give the initializer a hint to set instantiated
-                        grabber to a specific iso mode by default
+                        source to a specific iso mode by default
                         allowed values are
                         - 400 -> IEEE-1394-A (400MBit)
                         - 800 -> IEEE-1394-B (800MBit)
@@ -96,12 +96,12 @@ namespace icl::io {
       ICLIO_API virtual std::vector<std::string> get_io_property_list();
 
     private:
-      /// internally used function to restart the DCGrabberThread
-      /** useful if the grabber thread must have been deleted
+      /// internally used function to restart the DCSourceThread
+      /** useful if the source thread must have been deleted
         to update some internal properties
     */
-      void restartGrabberThread();
-      /// adds DCGrabbers properties to Configurable.
+      void restartSourceThread();
+      /// adds DCSources properties to Configurable.
       void addProperties();
       /// callback function for property changes.
       void processPropertyChange(const utils::Configurable::Property &p);
@@ -112,17 +112,17 @@ namespace icl::io {
       /// Features corrsponding to m_oDev
       DCDeviceFeatures m_oDeviceFeatures;
 
-      /// Wrapped DCGrabberThread struct
-      dc::DCGrabberThread *m_poGT;
+      /// Wrapped DCSourceThread struct
+      dc::DCSourceThread *m_poGT;
 
-      /// Mutex for clean restarting of GrabberThread
-      std::recursive_mutex m_GrabberThreadMutex;
+      /// Mutex for clean restarting of SourceThread
+      std::recursive_mutex m_SourceThreadMutex;
 
       /// Internally used buffer images
       core::ImgBase *m_poImage, *m_poImageTmp;
 
       /// Internally used image converter
-      /** This converter is used, if the wrapped DCGrabberThread
+      /** This converter is used, if the wrapped DCSourceThread
         was not able to satisfy all desired parameter claims.*/
       core::Converter m_oConverter;
 

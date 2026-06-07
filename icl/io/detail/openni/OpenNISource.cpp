@@ -18,33 +18,33 @@ using namespace io;
 using namespace icl_openni;
 
 //##############################################################################
-//############################# OpenNIGrabberThread ############################
+//############################# OpenNISourceThread ############################
 //##############################################################################
 
-// a singleton instance of the grabber thread
-static OpenNIGrabberThread oniGrabberThread;
+// a singleton instance of the source thread
+static OpenNISourceThread oniSourceThread;
 
-// Constructor sets used grabber
-OpenNIGrabberThread::OpenNIGrabberThread() { /* nothing to do */ }
+// Constructor sets used source
+OpenNISourceThread::OpenNISourceThread() { /* nothing to do */ }
 
-OpenNIGrabberThread::~OpenNIGrabberThread(){
-  if(oniGrabberThread.running()) oniGrabberThread.stop();
+OpenNISourceThread::~OpenNISourceThread(){
+  if(oniSourceThread.running()) oniSourceThread.stop();
 }
 
-void OpenNIGrabberThread::addGrabber(OpenNISource* grabber){
-  std::scoped_lock lk(oniGrabberThread.m_mutex);
-  oniGrabberThread.m_Grabber.insert(grabber);
+void OpenNISourceThread::addSource(OpenNISource* source){
+  std::scoped_lock lk(oniSourceThread.m_mutex);
+  oniSourceThread.m_Source.insert(source);
 }
 
-void OpenNIGrabberThread::removeGrabber(OpenNISource* grabber){
-  std::scoped_lock lk(oniGrabberThread.m_mutex);
-  oniGrabberThread.m_Grabber.erase(grabber);
+void OpenNISourceThread::removeSource(OpenNISource* source){
+  std::scoped_lock lk(oniSourceThread.m_mutex);
+  oniSourceThread.m_Source.erase(source);
 }
 
 // constantly calls grabNextImage.
-void OpenNIGrabberThread::run(){
-  // run as long as grabber list is not empty
-  while(!m_Grabber.empty()){
+void OpenNISourceThread::run(){
+  // run as long as source list is not empty
+  while(!m_Source.empty()){
     msleep(1);
     // locking thread
     if(!m_mutex.try_lock()) {
@@ -57,7 +57,7 @@ void OpenNIGrabberThread::run(){
     {
       DEBUG_LOG("Read failed: " << xnGetStatusString(rc));
     } else {
-      for(std::set<OpenNISource*>::iterator it = m_Grabber.begin(); it != m_Grabber.end(); ++it){
+      for(std::set<OpenNISource*>::iterator it = m_Source.begin(); it != m_Source.end(); ++it){
         (*it) -> grabNextDisplay();
       }
     }
@@ -70,12 +70,12 @@ void OpenNIGrabberThread::run(){
 //############################# OpenNISource ##################################
 //##############################################################################
 
-// Constructor of OpenNIGrabberImpl
+// Constructor of OpenNISourceImpl
 OpenNISource::OpenNISource(std::string args)
   : m_Id(args), m_OmitDoubleFrames(true)
 {
   std::scoped_lock lock(m_Mutex);
-  oniGrabberThread.stop();
+  oniSourceThread.stop();
 
   DEBUG_LOG("init " << m_Id);
 
@@ -92,18 +92,18 @@ OpenNISource::OpenNISource(std::string args)
   addChildConfigurable(m_Generator -> getMapGeneratorOptions());
   registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
 
-  // register to grabber thread
-  oniGrabberThread.addGrabber(this);
-  oniGrabberThread.start();
+  // register to source thread
+  oniSourceThread.addSource(this);
+  oniSourceThread.start();
   DEBUG_LOG("init done");
 }
 
 OpenNISource::~OpenNISource(){
   DEBUG_LOG("");
   // stop grabbing
-  oniGrabberThread.stop();
-  oniGrabberThread.removeGrabber(this);
-  oniGrabberThread.start();
+  oniSourceThread.stop();
+  oniSourceThread.removeSource(this);
+  oniSourceThread.start();
 
   std::scoped_lock lock(m_Mutex);
   // free all
@@ -118,14 +118,14 @@ const ImgBase* OpenNISource::acquireImage(){
   while(!img || !(img -> getDim())){ // catch null and empty images
     img = m_Buffer -> getNextReadBuffer(m_OmitDoubleFrames);
     if((Time::now() - t).toSecondsDouble() >= 1.){
-      ERROR_LOG("OpenNiGrabber could not grab an image for more than 1 Second");
+      ERROR_LOG("OpenNiSource could not grab an image for more than 1 Second");
       return nullptr;
     }
   }
   return img;
 }
 
-// returns the underlying handle of the grabber. In this case the corresponding MapGenerator.
+// returns the underlying handle of the source. In this case the corresponding MapGenerator.
 void* OpenNISource::getHandle(){
   return m_Generator -> getMapGenerator();
 }
@@ -162,15 +162,15 @@ void OpenNISource::processPropertyChange(const utils::Configurable::Property &pr
 REGISTER_CONFIGURABLE(OpenNISource, return new OpenNISource(""));
 
 
-static SourceBackend* createNIGrabberDepth(const std::string &param){
+static SourceBackend* createNISourceDepth(const std::string &param){
   return new OpenNISource("depth" + param);
 }
 
-static SourceBackend* createNIGrabberColor(const std::string &param){
+static SourceBackend* createNISourceColor(const std::string &param){
   return new OpenNISource("rgb" + param);
 }
 
-static SourceBackend* createNIGrabberIr(const std::string &param){
+static SourceBackend* createNISourceIr(const std::string &param){
   return new OpenNISource("ir" + param);
 }
 
@@ -215,6 +215,6 @@ static const std::vector<DeviceDescription>& getNIDeviceListIr(std::string hint,
   return deviceList;
 }
 
-REGISTER_SOURCE_BACKEND(onid,createNIGrabberDepth, getNIDeviceListDepth, "index 0 opens the first depth source~OpenNI based image source.");
-REGISTER_SOURCE_BACKEND(onic,createNIGrabberColor, getNIDeviceListColor, "index 0 opens the first color source~OpenNI based image source.");
-REGISTER_SOURCE_BACKEND(onii,createNIGrabberIr, getNIDeviceListIr, "index 0 opens the first ir source~OpenNI based image source.");
+REGISTER_SOURCE_BACKEND(onid,createNISourceDepth, getNIDeviceListDepth, "index 0 opens the first depth source~OpenNI based image source.");
+REGISTER_SOURCE_BACKEND(onic,createNISourceColor, getNIDeviceListColor, "index 0 opens the first color source~OpenNI based image source.");
+REGISTER_SOURCE_BACKEND(onii,createNISourceIr, getNIDeviceListIr, "index 0 opens the first ir source~OpenNI based image source.");

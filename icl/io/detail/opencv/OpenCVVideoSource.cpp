@@ -122,7 +122,7 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(OpenCVVideoSource, return new OpenCVVideoSource(""));
 
-  SourceBackend* createCVVGrabber(const std::string &param){
+  SourceBackend* createCVVSource(const std::string &param){
     return new OpenCVVideoSource(param);
   }
 
@@ -131,13 +131,13 @@ namespace icl::io {
     if(!rescan) return deviceList;
 
     deviceList.clear();
-    // if filter exists, add grabber with filter
+    // if filter exists, add source with filter
     if(hint.size()) deviceList.push_back(
-      DeviceDescription("cvvideo", hint, "A grabber for opencv-videos.")
+      DeviceDescription("cvvideo", hint, "A source for opencv-videos.")
       );
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(cvvideo,createCVVGrabber, getOCVVDeviceList, "video filename~OpenCV based video file source");
+  REGISTER_SOURCE_BACKEND(cvvideo,createCVVSource, getOCVVDeviceList, "video filename~OpenCV based video file source");
 
   } // namespace icl::io

@@ -16,7 +16,7 @@
 #include <icl/utils/File.h>
 #include <mutex>
 namespace icl::io {
-  /// opencv base grabber implementation for movie files \ingroup MOVIE_FILE_G
+  /// opencv base source implementation for movie files \ingroup MOVIE_FILE_G
   class ICLIO_API OpenCVVideoSource : public SourceBackend{
       struct Data; //!< pimpl type
       Data *data; //!< pimpl pointer

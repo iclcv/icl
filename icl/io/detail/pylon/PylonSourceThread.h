@@ -17,19 +17,19 @@ namespace icl::io {
   namespace pylon {
 
     /// Internally spawned thread class for continuous grabbing \ingroup GIGE_G
-    class PylonGrabberThread : public utils::Thread {
+    class PylonSourceThread : public utils::Thread {
       public:
         /// Constructor sets all internal fields and allocates memory
         /**
-        * @param grabber The IStreamGrabber providing the images.
+        * @param source The IStreamGrabber providing the images.
         * @param converter
         * @param options
         */
-        ICLIO_API PylonGrabberThread(Pylon::IStreamGrabber* grabber,
+        ICLIO_API PylonSourceThread(Pylon::IStreamGrabber* source,
                                 PylonColorConverter* converter,
                                 PylonCameraOptions* options);
         /// Destructor frees all allocated memory
-        ICLIO_API ~PylonGrabberThread();
+        ICLIO_API ~PylonSourceThread();
         /// acquires images and writes them into an internal queue
         ICLIO_API void run();
         /// reinitializes buffer
@@ -43,13 +43,13 @@ namespace icl::io {
         ICLIO_API core::ImgBase* getCurrentDisplay();
       private:
         /// A pointer to the image-providing StreamGrabber.
-        Pylon::IStreamGrabber* m_Grabber;
+        Pylon::IStreamGrabber* m_Source;
         /// A pointer to the ColorConverter.
         PylonColorConverter* m_Converter;
         /// A pointer to the CameraOptions.
         PylonCameraOptions* m_Options;
         /// A buffer holding read and write buffers
-        ConcGrabberBuffer m_Buffers;
+        ConcSourceBuffer m_Buffers;
         /// A counter for acquisition errors.
         int m_Error;
         /// A counter for acquisition timeouts.

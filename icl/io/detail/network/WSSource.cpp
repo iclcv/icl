@@ -60,7 +60,7 @@ namespace icl::io {
     return "unknown";
   }
 
-  class WSGrabberClient : public QObject {
+  class WSSourceClient : public QObject {
   public:
     QWebSocket *ws = nullptr;
     QUrl url;
@@ -168,7 +168,7 @@ namespace icl::io {
   struct WSSource::Data {
     ImageCompressor compressor;          // consumer-thread side
     QThread *thread = nullptr;
-    WSGrabberClient *client = nullptr;
+    WSSourceClient *client = nullptr;
     QUrl url;
 
     // Consumer-side knobs (mirrored from properties; read on consumer thread)
@@ -183,7 +183,7 @@ namespace icl::io {
     Data(const std::string &u) : url(QString::fromStdString(u)) {
       // (URL is normalized in WSSource::WSSource before reaching here)
       thread = new QThread;
-      client = new WSGrabberClient;
+      client = new WSSourceClient;
       client->moveToThread(thread);
       thread->start();
       QMetaObject::invokeMethod(client, [this]{ client->start(url); },
@@ -369,12 +369,12 @@ namespace icl::io {
     deviceList.clear();
     if (filter.size()) {
       deviceList.emplace_back(DeviceDescription(
-        "ws", filter, "WebSocket-based network grabber"));
+        "ws", filter, "WebSocket-based network source"));
     }
     return deviceList;
   }
 
   REGISTER_SOURCE_BACKEND(ws, createWSSource, getWSDeviceList,
-                   "ws://host:port (URL of the publishing server)~WebSocket-based network grabber")
+                   "ws://host:port (URL of the publishing server)~WebSocket-based network source")
 
 } // namespace icl::io

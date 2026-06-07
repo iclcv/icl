@@ -14,7 +14,18 @@ Applied per `module-audit-checklist.md`.
 - [x] `icl/core/` — audited Session 61.  Retired ImageRenderer + ImageSerializer + ImgBorder; privatized ImgBuffer + CCLUT to detail/; templatized Line; dropped OpenCV<4.  See Session 61 in `CONTINUE.md`.
 - [x] `icl/math/` — audited Session 61.  Subdir reorg into 6 logical clusters (la, fft, tree, transform, fit, ml).  ConvexHull cross-module-relocated to math/transform/.
 - [x] `icl/filter/` — audited Session 61.  13-subdir reorg (advanced, affine, arith, base, channel, color, compare, conv, fft, logical, lut, morph, threshold) + flat detail/ for all backend cpps + OpenCL kernel files.  Top-level shrunk from 55 hdrs to 1 (Filter.h umbrella).
-- [ ] `icl/io/` — subdirs landed earlier; full subdir-reorg pass pending — next in dep chain.
+- [x] `icl/io/` — audited / modernized across Sessions 47–66.  Public side
+  clustered into `source/`, `sink/`, `file/`, `compress/` (+ umbrella `IO.h`);
+  `detail/` grouped by backend family (`dc/`, `pylon/`, `kinect/`, `openni/`,
+  `opencv/`, `v4l2/`, `network/`, `libav/`, `sources/`, `file-plugins/`,
+  `compression-plugins/`, `builtin-images/`).  ImageSource/ImageSink rework
+  complete; full grabber→source naming sweep done (vendor Pylon `IStreamGrabber`
+  family + the retired `SharedMemoryGrabber` proper noun deliberately kept).
+  Residual (not blocking): `LibAVVideoWriter` FFmpeg 6/7 rewrite
+  (`project_ffmpeg.md`); orphan SDK backends (optris/xi/sr/ps + pylon/openni/
+  dc/kinect) renamed but compile-unverified here (no SDKs); cross-module
+  namespace-alignment pass (files keep `icl::io`, not `icl::io::source`) is a
+  separate scripted job tracked under the Session 62 carryover.
 - [ ] `icl/cv/`, `icl/geom/`, `icl/geom2/`, `icl/qt/`, `icl/markers/`, `icl/physics/` — never audited.
 
 ---
@@ -155,13 +166,23 @@ Applied per `module-audit-checklist.md`.
   `icl/qt/ui.h` component set (all 33 components, Session 59) lives
   side-by-side with the legacy fluent builder
   (`Slider(0,255,42).handle("x")`) — both converge on the same widget
-  factory, so existing apps still compile unchanged. No app/demo has been
-  migrated yet. This is a cosmetic/consistency sweep (low risk, high churn):
-  rewrite `gui << Component(...).handle(...).label(...)` call sites to
-  `gui << ui::Component(..., {.handle="...", .label="..."})`. Do it module by
-  module; `ui-syntax-demo` is the reference. Lower priority than the
-  GUIComponent internal-representation rework above (which is the real
-  payoff). Decide whether it's worth the diff noise before starting.
+  factory, so existing apps still compile unchanged. Only the purpose-built
+  `ui-syntax` demo uses the new syntax; no production app/demo migrated
+  (deliberate — `ui-plan.md` Phase 6: "leave the ~155 call sites on legacy,
+  migration is opt-in"). This is a cosmetic/consistency sweep (low risk,
+  high churn).
+  **Approach (agreed): write a converter SCRIPT, don't hand-migrate.**
+  Hand-migrating ~155 call sites burns tokens for zero reasoning value.
+  Plan: (1) do a handful of exemplary hand-conversions first to nail the
+  transform rules + edge cases (Label's positional-text vs `.label`,
+  toggle `Button`, container `<<`-chains, pointer-encoded `Prop`); (2) then
+  codify those rules in a script (Python, regex/AST-ish over the fluent
+  `Component(...).handle(...).label(...)...` chains → `ui::Component(...,
+  {.handle=..., .label=...})`); (3) run module-by-module, compile-verify.
+  The script can run at ANY time, so this is decoupled from Phase 7.
+  Still lower priority than the GUIComponent internal-representation rework
+  above (the real payoff); the migration is most valuable *after* Phase 7
+  makes `ui::Xxx` the storage type. See `ui-plan.md` Phase 6.
 
 ---
 

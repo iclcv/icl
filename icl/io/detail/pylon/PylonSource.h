@@ -10,7 +10,7 @@
 #include <icl/io/detail/SourceBackend.h>
 #include <icl/io/detail/pylon/PylonUtils.h>
 #include <icl/io/detail/pylon/PylonCameraOptions.h>
-#include <icl/io/detail/pylon/PylonGrabberThread.h>
+#include <icl/io/detail/pylon/PylonSourceThread.h>
 #include <icl/io/detail/pylon/PylonColorConverter.h>
 #include <icl/utils/time/Time.h>
 #include <mutex>
@@ -20,7 +20,7 @@ namespace icl::io {
 
     /// SourceBackend implementation for a Basler Pylon-based GIG-E SourceBackend \ingroup GIGE_G
     /**
-        This is just a wrapper class of the underlying PylonGrabberImpl class
+        This is just a wrapper class of the underlying PylonSourceImpl class
 
         Some useful hints to increase GigE camera output:
 
@@ -63,7 +63,7 @@ namespace icl::io {
         /// The constructor
         /**
         * @param dev The PylonDevice that should be used for image acquisition.
-        * @param args The arguments provided to this grabber.
+        * @param args The arguments provided to this source.
         */
         ICLIO_API PylonSource(const Pylon::CDeviceInfo &dev, const std::string args);
 
@@ -76,7 +76,7 @@ namespace icl::io {
 
         /// Uses args to choose a pylon device
         /**
-        * @param args The arguments provided to this grabber.
+        * @param args The arguments provided to this source.
         * @throw ICLException when no suitable device exists.
         */
         ICLIO_API static Pylon::CDeviceInfo getDeviceFromArgs(std::string args);
@@ -91,15 +91,15 @@ namespace icl::io {
         /// The camera interface.
         Pylon::IPylonDevice* m_Camera;
         /// The streamGrabber of the camera.
-        Pylon::IStreamGrabber* m_Grabber;
+        Pylon::IStreamGrabber* m_Source;
         /// PylonCameraOptions used to get and set camera settings.
         PylonCameraOptions* m_CameraOptions;
         /// PylonColorConverter used for color conversion.
         PylonColorConverter* m_ColorConverter;
-        /// PylonGrabberThread used for continous image acquisition.
-        PylonGrabberThread* m_GrabberThread;
+        /// PylonSourceThread used for continous image acquisition.
+        PylonSourceThread* m_SourceThread;
         /// A list of used buffers.
-        std::vector<PylonGrabberBuffer<uint16_t>*> m_BufferList;
+        std::vector<PylonSourceBuffer<uint16_t>*> m_BufferList;
         /// A pointer to the last used buffer.
         core::ImgBase* m_LastBuffer;
 
@@ -107,9 +107,9 @@ namespace icl::io {
         void acquisitionStart();
         /// stops the acquisition of pictures by the camera
         void acquisitionStop();
-        /// creates buffers and registers them at the grabber
+        /// creates buffers and registers them at the source
         void grabbingStart();
-        /// deregisters buffers from grabber and deletes them
+        /// deregisters buffers from source and deletes them
         void grabbingStop();
 
         /// Prints information about the startup argument options

@@ -14,7 +14,7 @@
 
 namespace icl::io {
   /// Create SourceBackend class that provides an image from ICL's create function
-  /** This grabber can be used as placeholder whenever no senseful SourceBackend
+  /** This source can be used as placeholder whenever no senseful SourceBackend
       is available. It provides an instance of an image that is created with
       the icl::io::TestImages::create function */
   class ICLIO_API CreateSource : public SourceBackend{

@@ -14,7 +14,7 @@ namespace icl::io {
     cvc.reset(new cv::VideoCapture());
     cvc->open(dev);
     if(!cvc->isOpened()){
-      throw ICLException("unable to create OpenCVCamGrabberImpl with device index "
+      throw ICLException("unable to create OpenCVCamSourceImpl with device index "
                          + str(dev) + ": invalid device ID");
     }
     addProperty("size",
@@ -97,10 +97,10 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(OpenCVCamSource, return new OpenCVCamSource(0));
 
-  SourceBackend* createCVCGrabber(const std::string &param){
+  SourceBackend* createCVCSource(const std::string &param){
     return new OpenCVCamSource(to32s(param));
   }
 
-  REGISTER_SOURCE_BACKEND(cvcam,createCVCGrabber, OpenCVCamSource::getDeviceList, "camera ID~OpenCV based camera source");
+  REGISTER_SOURCE_BACKEND(cvcam,createCVCSource, OpenCVCamSource::getDeviceList, "camera ID~OpenCV based camera source");
 
   } // namespace icl::io

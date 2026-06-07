@@ -33,7 +33,7 @@ namespace icl::io {
   private:
     char attachedPosition; //store position of central unit
     int bigtarget[16*16]; //table which maps module orientation
-    std::vector<char> conversionTable;  //table which maps usb input texel position to grabber output texel position
+    std::vector<char> conversionTable;  //table which maps usb input texel position to source output texel position
     std::vector<unsigned int> flat; //table which maps pixel order from per-module style to per-frame-line style
     unsigned int image_width; //store converted width
     unsigned int image_height; //store converted height

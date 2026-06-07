@@ -942,7 +942,7 @@ void MapGeneratorOptions::addGeneralIntProperty(const std::string name) {
 DepthGeneratorOptions::DepthGeneratorOptions(xn::DepthGenerator* generator)
   : MapGeneratorOptions(generator), m_DepthGenerator(generator)
 {
-  addProperty("max depth", utils::prop::Info{}, m_DepthGenerator -> GetDeviceMaxDepth(), "The maximum depth value of this grabber.");
+  addProperty("max depth", utils::prop::Info{}, m_DepthGenerator -> GetDeviceMaxDepth(), "The maximum depth value of this source.");
   // field of view
   XnFieldOfView fov;
   m_DepthGenerator -> GetFieldOfView(fov);

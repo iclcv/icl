@@ -15,7 +15,7 @@
 
 namespace icl::io {
   /// Demo SourceBackend class providing am image with a moving rect
-  /** This grabber can be used as placeholder whenever no senseful SourceBackend
+  /** This source can be used as placeholder whenever no senseful SourceBackend
       is available. It can be set up to work at a certain fps to avoid
       some real unexpected behaviour */
   class ICLIO_API DemoSource : public SourceBackend{
@@ -45,7 +45,7 @@ namespace icl::io {
       /// Color of the rect (light red)
       core::Color m_color;
 
-      /// max. fpsCount for this grabber instance
+      /// max. fpsCount for this source instance
       float m_maxFPS;
 
       /// time variable to ensure max. fpsCount

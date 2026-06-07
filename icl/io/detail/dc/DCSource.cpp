@@ -4,7 +4,7 @@
 
 #include <icl/io/detail/dc/DCSource.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/io/detail/dc/DCGrabberThread.h>
+#include <icl/io/detail/dc/DCSourceThread.h>
 #include <icl/utils/SignalHandler.h>
 #include <icl/core/Image.h>
 #include <dc1394/iso.h>
@@ -18,7 +18,7 @@ namespace icl::io {
 
   DCSource::DCSource(const DCDevice &dev, int isoMBits):
 
-    m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_GrabberThreadMutex(),m_poImage(0),
+    m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_SourceThreadMutex(),m_poImage(0),
     m_poImageTmp(0)
   {
     dc::install_signal_handler();
@@ -43,9 +43,9 @@ namespace icl::io {
 
   const ImgBase *DCSource::acquireImage(){
     ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
-    std::scoped_lock l(m_GrabberThreadMutex);
+    std::scoped_lock l(m_SourceThreadMutex);
     if(!m_poGT){
-      restartGrabberThread();
+      restartSourceThread();
     }
 
     dc1394color_filter_t bayerLayout = m_oDev.getBayerFilterLayout();
@@ -123,14 +123,14 @@ namespace icl::io {
   }
 
 
-  void DCSource::restartGrabberThread(){
-    std::scoped_lock l(m_GrabberThreadMutex);
+  void DCSource::restartSourceThread(){
+    std::scoped_lock l(m_SourceThreadMutex);
     if(m_poGT){
       m_poGT->stop();
       //      m_poGT->waitFor();
       delete m_poGT;
     }
-    m_poGT = new DCGrabberThread(m_oDev.getCam(),&m_oOptions);
+    m_poGT = new DCSourceThread(m_oDev.getCam(),&m_oOptions);
     m_poGT->start();
     usleep(10*1000);
   }
@@ -156,7 +156,7 @@ namespace icl::io {
     addProperty("size", prop::Menu{"adjusted by format"}, 
                 "adjusted by format", "this is set by format");
     addProperty("omit-doubled-frames", prop::Flag{}, 
-                m_oOptions.suppressDoubledImages, "Prevents the grabber from returning the same image multiple times.");
+                m_oOptions.suppressDoubledImages, "Prevents the source from returning the same image multiple times.");
     addProperty("enable-image-labeling", prop::Flag{}, 
                 m_oOptions.enable_image_labeling, ""); //TODO: tooltip
     addProperty("iso-speed",
@@ -193,7 +193,7 @@ namespace icl::io {
         m_oOptions.framerate = m.framerate;
         m_oOptions.videomode = m.videomode;
         if(m_poGT){
-          restartGrabberThread();
+          restartSourceThread();
         }
       }
     }else if(prop.name == "size"){
