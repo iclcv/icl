@@ -246,15 +246,15 @@ void send_app(){
 
     bool useGUI = false;
 #ifdef ICL_HAVE_QT
-    int fpsLimit = 0;
+    float fpsLimit = 0;
     if(!(bool)pa("-no-gui")){
       fpsLimit = gui["fpsLimit"];
       useGUI = true;
     }else{
-      fpsLimit = pa("-fps").as<int>();
+      fpsLimit = pa("-fps").as<float>();
     }
 #else
-    int fpsLimit = pa("-fps");
+    float fpsLimit = pa("-fps").as<float>();
 #endif
 
     if(!useGUI){
@@ -290,7 +290,7 @@ void init_gui(){
         << ( VBox().maxSize(100,8)
              <<  ( HBox()
                    << CamCfg().maxSize(5,2)
-                   << Spinner(1,100,pa("-fps").as<int>()).handle("fpsLimit").label("max fps")
+                   << Spinner(1,100,(int)pa("-fps").as<float>()).handle("fpsLimit").label("max fps")
                    << Fps(10).handle("fps")
                    )
              <<  ( HBox()
@@ -306,7 +306,7 @@ void init_gui(){
         << ( VBox().maxSize(100,8)
              <<  ( HBox()
                    << CamCfg().maxSize(5,2)
-                   << Spinner(1,100,pa("-fps").as<int>()).handle("fpsLimit").label("max fps")
+                   << Spinner(1,100,(int)pa("-fps").as<float>()).handle("fpsLimit").label("max fps")
                    )
              <<  ( HBox()
                    << Fps(10).handle("fps")
