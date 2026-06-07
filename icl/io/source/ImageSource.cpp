@@ -4,6 +4,7 @@
 
 #include <set>
 #include <mutex>
+#include <cstdlib>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/source/ImageSource.h>
 #include <icl/io/source/SourceBackend.h>
@@ -222,7 +223,7 @@ namespace icl::io {
         t[k+1] = tok(str(k)+":"+supportedDevices[k],":",true,'\\');
       }
       std::cout << t << std::endl;
-      std::terminate();
+      std::exit(0);
     }
 
     // create grabber
@@ -311,7 +312,7 @@ namespace icl::io {
           t(3,ps.size()+1) = str("-");
 
           std::cout << t << std::endl;
-          std::terminate();
+          std::exit(0);
         }else if(propName == "udist"){
           g -> enableUndistortion(propVal);
         }else{
