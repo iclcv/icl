@@ -2,51 +2,77 @@
 
 ## Next Step
 
-The **ImageSource/ImageSink rework is COMPLETE** (Session 66 finished
-Stages 2c + 3 + 4; `image-source-sink-plan.md` marked done; as-built
-summary in memory `reference_image_source_sink.md`).  877/877 tests green;
-build clean (`CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C
-builddir -j 16`).
+**io modernization is DONE.**  The immediate next task is the **qt::ui::
+migration** (Phase 6 of `ui-plan.md`) — port existing GUI call sites from the
+legacy fluent builder to the `qt::ui::` designated-init syntax **via a
+converter script**, not by hand.
 
-**The immediate next task** is the `icl-pipe` arg-parse regression the
-rework surfaced (see below + TODO.md).
+Branch `further-restructuring-and-cleanup`; 877/877 tests green; build clean
+(`CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C builddir -j 16`).
+Note: SSH/git push is blocked in this sandbox — the user pushes themselves.
 
-### What landed this session (Session 66)
+### ui migration — agreed plan (start here next session)
 
-- **Stage 2c — internal residue swept.**  `SourceBackendRegistry` methods
-  (`registerType`/`registerBusReset`/`addDescription`/`create`/
-  `getRegistered`/`getInfos`/`resetBus`), `BackendInstanceTable` +
-  `BackendInstance` + `m_data->backend` in ImageSource.cpp,
-  `SourceBackend_VIRTUAL`, dead `GrabberHandle` removed, `GRABBER_G`→
-  `SOURCE_G` doxygen group, backend factory fns `createGrabber*`→
-  `createSource*`, macro internal fn names.
-- **File-plugin symmetry.**  `FileGrabberPlugin*`→`FileSourcePlugin*`,
-  `FileWriterPlugin*`→`FileSinkPlugin*` (24 files) + `fileSourceRegistry`/
-  `fileSinkRegistry` + `REGISTER_FILE_SOURCE_PLUGIN`/`REGISTER_FILE_SINK_PLUGIN`.
-- **Sink concrete.**  `WSImageOutput`→`WSSink` (file+class), `createWSGrabber`
-  →`createWSSource`.  (`LibAVVideoWriter`→`LibAVSink` deferred to the FFmpeg
-  rewrite — unbuilt.)
-- **Stage 3 — backends hidden.**  `FileSource`/`FileWriter`/
-  `FilenameGenerator` moved `io/file/`→`io/detail/` (off the public set +
-  IO.h umbrella).  `FileList` + `SourceBackend` stay public (cross-module:
-  qt's qtcam/qtvideo subclass SourceBackend; cv/geom use FileList).
-  `SinkBackend` stays detail/ (no external subclassers).  External call
-  sites redirected to `io::save()`/`io::load()`/`ImageSource`/`ImageSink`;
-  qt `Common.h`/`Common2.h` lost the FileWriter include and gained
-  `utils/File.h`.  FileSource typed extras have no external users → kept
-  internal, not property-mapped.
-- **Stage 4 — docs/memory.**  CLAUDE.md section + plugin table rewritten;
-  `reference_websocket.md` updated; new `reference_image_source_sink.md`.
+Landscape: ~**1290** legacy `.handle()`/`.label()` fluent-chain occurrences.
+Heaviest: `qt/GUI.cpp` (85, framework-internal), `qt/Widget.cpp` (48), then
+apps/demos (`camera-calibration` 39, `kinect-segmentation` 37, …). Far too
+much to hand-migrate (token cost, zero reasoning value) → **script it**.
 
-### Rework follow-ups (NOT done — tracked in TODO.md)
+- **Stage 0 (do first): exemplary hand-conversions.**  Pick ~4 apps covering
+  every tricky transform, hand-convert + compile + run, harvest the exact
+  rules: (1) a plain Slider/Button/Display + `.handle/.label`; (2) **Label**
+  (positional text vs the `.label` *border* field); (3) **containers**
+  (`gui << (VBox() << a << b)`, `Tab`/`Border`); (4) **Prop/CamCfg** incl.
+  the pointer-encoded `Prop(&cfg)` form; plus a **toggle Button**
+  (`Button("off","on")` → `.toggledText`).
+- **Stage 1: build the converter script** (Python).  `Component(posargs)
+  .setterA(x).setterB(y)…` (multi-line, inside `<<` streams) →
+  `ui::Component(posargs, {.A=x,.B=y,…})`.  Per-component setter→Opts maps;
+  shared common setters (handle/label/tooltip/size/minSize/maxSize/hide).
+  **Be conservative**: only rewrite chains it fully understands (balanced
+  parens, comma-bearing string args); *emit a report of skipped sites* for
+  manual follow-up.  Compile-verify each file.
+- **Stage 2: rollout** module by module (qt → cv → geom → markers → filter →
+  physics → io-apps), compile + run one app per module per batch.  Legacy and
+  `ui::` coexist, so every intermediate state stays green.
 
-- **`icl-pipe` arg-parse regression.**  `-i list` now wants 2 sub-args
-  (ImageSource::init takes device+spec) so bare `-i list` fails; and
-  `-i create cameraman -o file ...` aborts with "could not parse '15.0'
-  as integral".  Investigate icl-pipe's ProgArg use + restore `list`.
-- **`LibAVVideoWriter`→`LibAVSink`** — fold into FFmpeg 6/7 rewrite.
-- **Generic `ImagePipeline`** (exploratory) — Source→Filter→Sink graph
-  (Display as a Sink?), DAG not strictly linear (BinaryOps).
+**Two open decisions (ask the user):**
+1. *Sequencing vs Phase 7* (GUIComponent string-round-trip → typed-dispatch
+   rework, TODO.md:~140).  Migration is decoupled and can run anytime, but its
+   payoff compounds *after* Phase 7 (when `ui::Xxx` becomes the storage type).
+   Lean: do Stage 0 now (validates the script design), then decide whether to
+   run the full script now or park until Phase 7.
+2. *Scope of `GUI.cpp`/`Widget.cpp`* — framework internals, not apps. In or out?
+
+Refs: `ui-plan.md` (Phases 1–5 LANDED Session 59; only the `ui-syntax` demo
+uses the new syntax today), TODO.md "Port apps/demos to the qt::ui::" item.
+
+### What landed in the io modernization (Sessions 65–67)
+
+- **ImageSource/ImageSink rework COMPLETE** (`image-source-sink-plan.md`):
+  Grabber→ImageSource/ImageSink; concrete backends + both contracts
+  (`SourceBackend`+`SinkBackend`) in `io/detail/`; registries +
+  `DeviceDescription` stay public.  `-i list`/`-o list` harmonized through one
+  shared printer (`io/detail/BackendListing.h`); descriptions live in the
+  `PluginRegistry` Entry as `"paramHint~explanation"`.
+- **io subdir rename**: `output/`→`sink/`, `detail/grabbers/`→`detail/sources/`,
+  `DC/PylonGrabberThread`→`*SourceThread`; empty `grabber/` removed.
+- **Full internal grabber→source token sweep** across io.  Protected: Basler
+  Pylon vendor `IStreamGrabber`/`StreamGrabber`/… family + retired
+  `SharedMemoryGrabber` proper noun.
+- **icl-pipe `-fps` crash fixed** (declared `float=15.0`, was read `.as<int>()`).
+- As-built summary: memory `reference_image_source_sink.md`.
+
+### io follow-ups (NOT done — tracked in TODO.md, none blocking)
+
+- **`icl-pipe` `-i list`** still needs a dummy 2nd sub-arg (ProgArg arity;
+  `project_progarg_rework.md`).
+- **`LibAVVideoWriter`→`LibAVSink`** — fold into the FFmpeg 6/7 rewrite
+  (`project_ffmpeg.md`; unbuilt).
+- **SDK-gated source backends** (pylon/openni/dc/kinect/optris/xi/sr/ps)
+  renamed but compile-unverified here — build when a dep is enabled.
+- **Generic `ImagePipeline`** (exploratory) — `source >> filter >> sink`
+  stream-operator DAG (Display as a Sink?); BinaryOps → not strictly linear.
 
 ### Pre-existing io/ Next Step (Session 64, still open)
 
