@@ -5,12 +5,12 @@
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 Scene scene;
 HSplit gui;
 GUI prevGUI = HBox();
 
-GenericImageOutput colorOut, depthOut;
+ImageSink colorOut, depthOut;
 SceneObject *obj = 0;
 
 std::shared_ptr<Mat> relTM;

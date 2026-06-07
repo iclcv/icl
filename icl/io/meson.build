@@ -21,7 +21,7 @@ io_grabber_headers = files(
 )
 
 io_output_headers = files(
-  'output/GenericImageOutput.h',
+  'output/ImageSink.h',
 )
 
 io_file_headers = files(
@@ -41,7 +41,7 @@ io_sources = files(
   'grabber/Grabber.cpp',
   'grabber/GrabberRegistry.cpp',
   'grabber/TestImages.cpp',
-  'output/GenericImageOutput.cpp',
+  'output/ImageSink.cpp',
   'file/FileGrabber.cpp',
   'file/FileList.cpp',
   'file/FileWriter.cpp',

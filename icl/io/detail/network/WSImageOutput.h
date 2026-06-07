@@ -6,6 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/Configurable.h>
+#include <icl/io/detail/SinkBackend.h>
 #include <icl/core/Image.h>
 #include <string>
 
@@ -25,7 +26,7 @@ namespace icl::io {
       brings auto-reconnect resilience, cross-host as a free bonus, and
       ~1274 fewer lines of QSharedMemory/QSystemSemaphore plumbing to maintain.
 
-      \section URL  URL form (via GenericImageOutput / `-o ws ...`)
+      \section URL  URL form (via ImageSink / `-o ws ...`)
       \code
         -o ws PORT                    # bind 0.0.0.0:PORT, broadcast
         -o ws BIND:PORT               # bind a specific interface
@@ -48,14 +49,13 @@ namespace icl::io {
         - `bytes sent`          info (lifetime)
         - `frames sent`         info (lifetime)
    */
-  class ICLIO_API WSImageOutput : public utils::Configurable {
-    // Note: WSImageOutput inherits Configurable directly to expose its
-    // own properties (port, clients, bytes sent, …); the active codec's
-    // tunables surface separately as a child Configurable under the
-    // `compression.` prefix (the inner `m_data->compressor` —
-    // an ImageCompressor — is itself a Configurable). See WSImageOutput.cpp.
-    // Pre-4a this also inherited `ImageOutput`; that base class is gone
-    // now, but the `send(Image)` method remains intact for direct callers.
+  class ICLIO_API WSImageOutput : public SinkBackend {
+    // WSImageOutput is a SinkBackend (and thus a Configurable): it exposes
+    // its own properties (port, clients, bytes sent, …) and surfaces the
+    // active codec's tunables as a child Configurable under the
+    // `compression.` prefix (the inner `m_data->compressor` — an
+    // ImageCompressor). ImageSink forwards all of these up so they are
+    // reachable as sink properties.
     /// pimpl
     struct Data;
     Data *m_data;
@@ -69,9 +69,8 @@ namespace icl::io {
     /// Destructor (closes the server, drops every client)
     ~WSImageOutput();
 
-    /// Broadcast an image to all connected clients (was virtual
-    /// ImageOutput::send pre-4a).
-    void send(const core::Image &image);
+    /// Broadcast an image to all connected clients.
+    void send(const core::Image &image) override;
 
     /// The actually bound port (useful when port=0 was requested)
     int actualPort() const;

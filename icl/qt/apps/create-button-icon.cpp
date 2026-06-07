@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/IconFactory.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 
 int main(int n, char **a){
   pa_explain("-o","output filename (should be some format, that supports alpha channel such as png)\n"
@@ -40,7 +40,7 @@ int main(int n, char **a){
     const Img8u &image = IconFactory::create_image(pa("-i"));
 
     if(pa("-o")){
-      GenericImageOutput out(pa("-o"));
+      ImageSink out(pa("-o"));
       out.send(image);
     }else{
       show(image);

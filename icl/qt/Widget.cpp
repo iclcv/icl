@@ -12,7 +12,7 @@
 #include <icl/qt/GLImageRenderer.h>
 #include <icl/qt/GLPaintEngine.h>
 #include <icl/qt/QPainterPaintEngine.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 #include <icl/qt/ContainerGUIComponents.h>
 #include <string>
 #include <vector>
@@ -708,7 +708,7 @@ namespace icl::qt {
     enum CaptureTarget { SET_IMAGES, FRAME_BUFFER };
     CaptureTarget target;
     std::recursive_mutex mutex;
-    GenericImageOutput imageOutput;
+    ImageSink imageOutput;
     std::string deviceType;
     std::string deviceInfo;
     int frameSkip;

@@ -6,12 +6,13 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/Size.h>
+#include <icl/io/detail/SinkBackend.h>
 #include <icl/core/Image.h>
 
 #include <string>
 
 namespace icl::io {
-  class ICLIO_API LibAVVideoWriter {
+  class ICLIO_API LibAVVideoWriter : public SinkBackend {
     struct Data;
     Data *m_data;
 
@@ -43,8 +44,8 @@ namespace icl::io {
 	/// Destructor
   ~LibAVVideoWriter();
 
-  /// write an image (value semantics; was virtual ImageOutput::send pre-4a)
-  void send(const core::Image &image);
+  /// write an image
+  void send(const core::Image &image) override;
 
 	/// as write but in stream manner
   LibAVVideoWriter &operator<<(const core::ImgBase *image);

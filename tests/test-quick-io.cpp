@@ -3,6 +3,7 @@
 #include <icl/qt/QuickCreate.h>
 #include <icl/io/SaveLoad.h>
 #include <icl/io/file/FileWriter.h>
+#include <icl/io/output/ImageSink.h>
 #include <icl/core/Img.h>
 #include <icl/io/compress/ImageCompressor.h>
 
@@ -95,6 +96,21 @@ ICL_REGISTER_TEST("FileWriter.plugin_prefix.tunables_resolve",
   // round-trip a value through the prefixed property
   w.setPropertyValue("png.compression-level", 7);
   ICL_TEST_EQ(w.getPropertyValue("png.compression-level").as<int>(), 7);
+}
+
+// ---- ImageSink forwards its backend's tunables as properties ----
+
+ICL_REGISTER_TEST("ImageSink.file_backend.forwards_writer_properties",
+                  "ImageSink('file') surfaces the FileWriter's plugin tunables") {
+  io::ImageSink sink("file", "/tmp/icl_test_imagesink_##.png");
+  ICL_TEST_TRUE(!sink.isNull());
+  ICL_TEST_TRUE(sink.backend() != nullptr);
+  // The wrapped FileWriter's per-plugin tunables forward up to the sink —
+  // the std::function-based predecessor could not expose these at all.
+  ICL_TEST_TRUE(sink.supportsProperty("png.compression-level"));
+  ICL_TEST_TRUE(sink.supportsProperty("jpeg.quality"));
+  sink.setPropertyValue("png.compression-level", 9);
+  ICL_TEST_EQ(sink.getPropertyValue("png.compression-level").as<int>(), 9);
 }
 
 // ---- Save null image does not crash ----

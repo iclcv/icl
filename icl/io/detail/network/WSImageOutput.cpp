@@ -253,10 +253,10 @@ namespace icl::io {
 
 } // namespace icl::io
 
-// ----- registration with GenericImageOutput -----------------------------
-#include <icl/io/output/GenericImageOutput.h>
-REGISTER_IMAGE_OUTPUT(ws, "ws",
-  ([](const std::string &params) -> icl::io::ImageOutputFn {
+// ----- registration with ImageSink --------------------------------------
+#include <icl/io/output/ImageSink.h>
+REGISTER_SINK_BACKEND(ws, "ws",
+  ([](const std::string &params) -> std::shared_ptr<icl::io::SinkBackend> {
     // params form: "PORT" (bind 0.0.0.0) or "BIND:PORT"
     std::string bind = "0.0.0.0";
     std::string portStr = params;
@@ -265,8 +265,7 @@ REGISTER_IMAGE_OUTPUT(ws, "ws",
       bind = params.substr(0, colon);
       portStr = params.substr(colon + 1);
     }
-    auto impl = std::make_shared<icl::io::WSImageOutput>(
+    return std::make_shared<icl::io::WSImageOutput>(
         icl::utils::parse<int>(portStr), bind);
-    return [impl](const icl::core::Image &img) { impl->send(img); };
   }),
   "PORT or BIND:PORT~WebSocket server (broadcasts ImageCompressor envelopes to all clients)")

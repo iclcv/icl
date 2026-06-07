@@ -34,7 +34,7 @@
     - <b>Core</b> icl::core::ImgBase, icl::core::ImgBase, icl::core::Converter, icl::core::Line,
       icl::core::Line32f, icl::core::LineSampler, icl::core::cc
     - <b>Filter</b> icl::filter::UnaryOp, icl::filter::BinaryOp, icl::filter::PseudoColorOp
-    - <b>Io</b> icl::io::GenericGrabber, icl::io::GenericImageOutput
+    - <b>Io</b> icl::io::GenericGrabber, icl::io::ImageSink
     - <b>Qt</b> icl::qt::GUI, icl::qt::ICLApplication, icl::qt::ICLWidget,
       icl::qt::ICLDrawWidget, icl::qt::ICLDrawWidget3D, icl::qt::PlotWidget, icl::qt::QImageConverter
     - <b>Cv</b> icl::cv::FloodFiller, icl::cv::GenericSurfDetector, icl::cv::HoughLineDetector

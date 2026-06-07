@@ -3,12 +3,12 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 
 HBox gui;
 GenericGrabber c_in;
 GenericGrabber d_in;
-GenericImageOutput c_out,d_out,both_out;
+ImageSink c_out,d_out,both_out;
 
 
 void init(){

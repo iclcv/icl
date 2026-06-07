@@ -29,7 +29,7 @@ namespace icl::io {
         sudo modprobe -r v4l2loopback && sleep 1 && sudo modprobe v4l2loopback devices=1 && sleep 1 && v4l2loopback-ctl set-caps 'any' /dev/video1
         </pre>
 
-        Please don't use the V4L2LoopBackOutput directly, but the GenericImageOutput with
+        Please don't use the V4L2LoopBackOutput directly, but the ImageSink with
         the output-specifier 'v4l'
 
         More information can be found at https://github.com/umlaeute/v4l2loopback

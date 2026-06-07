@@ -5,13 +5,13 @@
 #pragma once
 
 #include <icl/geom/Scene.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 
 namespace icl::physics {
     class SceneMultiCamCapturer {
       std::vector<int> camIndices;
       geom::Scene *scene;
-      std::vector<std::shared_ptr<io::GenericImageOutput> > outputs;
+      std::vector<std::shared_ptr<io::ImageSink> > outputs;
 
       public:
       /// Dummy constructor

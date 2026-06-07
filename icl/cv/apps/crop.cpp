@@ -6,7 +6,7 @@
 #include <icl/filter/affine/ImageRectification.h>
 #include <icl/filter/affine/RotateOp.h>
 #include <icl/qt/DefineRectanglesMouseHandler.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 #include <icl/io/file/FileList.h>
 
 #include <QtWidgets/QScrollArea>
@@ -143,7 +143,7 @@ void batch_pattern_changed(){
     StringHandle shi = (*batchGUI)["ipat"];
     StringHandle sho = (*batchGUI)["opat"];
     FileList f = FileList::glob(shi.getValue());
-    GenericImageOutput out("file","file="+sho.getValue());
+    ImageSink out("file","file="+sho.getValue());
     for(int i=0;i<f.size();++i){
       try{
         Image image = load(f[i]);

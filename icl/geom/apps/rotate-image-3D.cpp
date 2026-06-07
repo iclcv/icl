@@ -4,11 +4,11 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 #include <mutex>
 GUI gui;
 Scene scene;
-GenericImageOutput output;
+ImageSink output;
 GenericGrabber grabber;
 Img8u image;
 

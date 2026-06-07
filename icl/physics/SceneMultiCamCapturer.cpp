@@ -39,7 +39,7 @@ namespace icl{
           this->scene->addCamera(cams2[i]);
           // Each camera publishes on a distinct WS port (9090, 9091, …).
           // Receivers attach via `-i ws ws://localhost:909N`.
-          outputs[i].reset(new GenericImageOutput("ws","ws="+str(9090+i)));
+          outputs[i].reset(new ImageSink("ws","ws="+str(9090+i)));
         }
       }else{
         outputs.resize(cams.size());
@@ -49,7 +49,7 @@ namespace icl{
           this->scene->addCamera(cams[i]);
           // Each camera publishes on a distinct WS port (9090, 9091, …).
           // Receivers attach via `-i ws ws://localhost:909N`.
-          outputs[i].reset(new GenericImageOutput("ws","ws="+str(9090+i)));
+          outputs[i].reset(new ImageSink("ws","ws="+str(9090+i)));
         }
 
       }
@@ -74,7 +74,7 @@ namespace icl{
 
       outputs.resize(num);
       for(int i=0;i<num;++i){
-        outputs[i].reset(new GenericImageOutput(outputType,outputType+"="+defs[i]));
+        outputs[i].reset(new ImageSink(outputType,outputType+"="+defs[i]));
       }
     }
 

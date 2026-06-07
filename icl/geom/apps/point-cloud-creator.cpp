@@ -1,7 +1,7 @@
 #include <icl/qt/Common2.h>
 
 #include <icl/io/grabber/GenericGrabber.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 
 #include <icl/filter/color/ColorDistanceOp.h>
 

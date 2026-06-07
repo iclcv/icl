@@ -263,11 +263,11 @@ namespace icl::io {
 
   } // namespace icl::io
 
-// ----- registration with GenericImageOutput -----------------------------
-#include <icl/io/output/GenericImageOutput.h>
+// ----- registration with ImageSink --------------------------------------
+#include <icl/io/output/ImageSink.h>
 #include <icl/utils/StringUtils.h>
-REGISTER_IMAGE_OUTPUT(video_libav, "video",
-  ([](const std::string &params) -> icl::io::ImageOutputFn {
+REGISTER_SINK_BACKEND(video_libav, "video",
+  ([](const std::string &params) -> std::shared_ptr<icl::io::SinkBackend> {
     // params form: filename[,fourcc[,size[,fps]]]
     auto t = icl::utils::tok(params, ",");
     if (t.empty())
@@ -276,7 +276,6 @@ REGISTER_IMAGE_OUTPUT(video_libav, "video",
     icl::utils::Size size = t.size() > 2 ? icl::utils::parse<icl::utils::Size>(t[2])
                                          : icl::utils::Size::VGA;
     double fps = t.size() > 3 ? icl::utils::parse<double>(t[3]) : 24.0;
-    auto impl = std::make_shared<icl::io::LibAVVideoWriter>(t[0], fourcc, fps, size);
-    return [impl](const icl::core::Image &img) { impl->send(img); };
+    return std::make_shared<icl::io::LibAVVideoWriter>(t[0], fourcc, fps, size);
   }),
   "filename[,fourcc[,WxH[,fps]]]~libav-based video file writer")

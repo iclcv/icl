@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 
 VSplit gui;
 
@@ -20,7 +20,7 @@ struct Input{
   void save(){
     if(out) out->send(lastImage);
   }
-  std::shared_ptr<GenericImageOutput> out;
+  std::shared_ptr<ImageSink> out;
 };
 
 int nInputs = -1;
@@ -112,7 +112,7 @@ void init(){
         throw ICLException("less outputs were given to -o "
                            "then inputs were given to -i");
       }
-      in.out.reset(new GenericImageOutput(o[2*i], o[2*i+1]));
+      in.out.reset(new ImageSink(o[2*i], o[2*i+1]));
     }
   }
 

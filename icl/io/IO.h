@@ -7,13 +7,13 @@
 // Umbrella header for the public ICLIO consumer API.  Per-backend headers
 // (DCGrabber, PylonGrabber, WSGrabber, …) are implementation details and
 // are deliberately not pulled in here — applications should go through
-// GenericGrabber / GenericImageOutput instead.
+// GenericGrabber / ImageSink instead.
 #include <icl/io/file/FileGrabber.h>
 #include <icl/io/file/FileList.h>
 #include <icl/io/file/FilenameGenerator.h>
 #include <icl/io/file/FileWriter.h>
 #include <icl/io/grabber/GenericGrabber.h>
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 #include <icl/io/SaveLoad.h>
 #include <icl/io/grabber/TestImages.h>
 
@@ -140,7 +140,7 @@
     with ICL's programm argument evaluation toolbox, nearly all ICL applications can be set up
     to grab the source images from an arbitrary image source. In this context, the example-
     application 'icl-pipe' might be very useful: icl-pipe does not only have a generic image
-    souce, but is does also use the icl::GenericImageOutput to stream the grabber images
+    souce, but is does also use the icl::ImageSink to stream the grabber images
     somewhere else. Here are some examples:
 
     <pre>
@@ -162,7 +162,7 @@
     </pre>
 
     For further details and a complete list of possible Grabber-backends,
-    please refer to the icl::GenericGrabber and icl::GenericImageOutput documentation.
+    please refer to the icl::GenericGrabber and icl::ImageSink documentation.
 
 
     \subsection GRABBER_BACKENDS Grabber Backends and Corresponding 3rd Party Libraries

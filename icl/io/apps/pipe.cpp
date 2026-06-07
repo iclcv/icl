@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/output/GenericImageOutput.h>
+#include <icl/io/output/ImageSink.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/qt/Common2.h>
 #include <icl/utils/time/FPSEstimator.h>
@@ -168,7 +168,7 @@ const ImgBase *grab_image(){
   }
   return img;
 }
-GenericImageOutput output;
+ImageSink output;
 
 void send_app(){
 #ifdef ICL_HAVE_QT
