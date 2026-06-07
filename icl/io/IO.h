@@ -10,7 +10,7 @@
 // ImageSource / ImageSink instead.
 #include <icl/io/file/FileList.h>
 #include <icl/io/source/ImageSource.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 #include <icl/io/SaveLoad.h>
 #include <icl/io/source/TestImages.h>
 

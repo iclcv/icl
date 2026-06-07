@@ -254,7 +254,7 @@ namespace icl::io {
 } // namespace icl::io
 
 // ----- registration with ImageSink --------------------------------------
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 REGISTER_SINK_BACKEND(ws, "ws",
   ([](const std::string &params) -> std::shared_ptr<icl::io::SinkBackend> {
     // params form: "PORT" (bind 0.0.0.0) or "BIND:PORT"

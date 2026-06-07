@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/IconFactory.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 
 int main(int n, char **a){
   pa_explain("-o","output filename (should be some format, that supports alpha channel such as png)\n"

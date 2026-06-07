@@ -1,7 +1,7 @@
 # ICL IO module
 
 # Public headers (installed).  Clustered into topical subdirs (source/,
-# output/, file/, compress/); only the umbrella IO.h + the small free-function
+# sink/, file/, compress/); only the umbrella IO.h + the small free-function
 # helpers (ExternalViewer, SaveLoad) stay at module-top.  Per-backend /
 # per-plugin headers live under detail/<group>/ and are intentionally NOT
 # installed — they are implementation details.  Extension authors adding a new
@@ -20,8 +20,8 @@ io_source_headers = files(
   'source/TestImages.h',
 )
 
-io_output_headers = files(
-  'output/ImageSink.h',
+io_sink_headers = files(
+  'sink/ImageSink.h',
 )
 
 io_file_headers = files(
@@ -38,7 +38,7 @@ io_sources = files(
   'source/SourceBackend.cpp',
   'source/SourceBackendRegistry.cpp',
   'source/TestImages.cpp',
-  'output/ImageSink.cpp',
+  'sink/ImageSink.cpp',
   'file/FileList.cpp',
   'detail/FileSource.cpp',
   'detail/FileWriter.cpp',
@@ -236,8 +236,8 @@ install_headers(io_source_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'io' / 'source',
 )
 
-install_headers(io_output_headers,
-  install_dir: get_option('includedir') / install_prefix / 'icl' / 'io' / 'output',
+install_headers(io_sink_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'io' / 'sink',
 )
 
 install_headers(io_file_headers,

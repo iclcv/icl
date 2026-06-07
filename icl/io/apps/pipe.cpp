@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/qt/Common2.h>
 #include <icl/utils/time/FPSEstimator.h>

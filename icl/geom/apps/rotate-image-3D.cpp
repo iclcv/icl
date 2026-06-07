@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 #include <mutex>
 GUI gui;
 Scene scene;

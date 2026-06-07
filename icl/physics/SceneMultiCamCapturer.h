@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/geom/Scene.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 
 namespace icl::physics {
     class SceneMultiCamCapturer {

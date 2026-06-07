@@ -1,7 +1,7 @@
 #include <icl/qt/Common2.h>
 
 #include <icl/io/source/ImageSource.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 
 #include <icl/filter/color/ColorDistanceOp.h>
 

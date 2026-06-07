@@ -6,7 +6,7 @@
 #define ICL_SCENE_MULTICAM_CAPTURER_H
 
 #include <icl/geom/Scene.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 
 namespace icl{
   class SceneMultiCamCapturer {

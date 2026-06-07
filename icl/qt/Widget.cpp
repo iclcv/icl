@@ -12,7 +12,7 @@
 #include <icl/qt/GLImageRenderer.h>
 #include <icl/qt/GLPaintEngine.h>
 #include <icl/qt/QPainterPaintEngine.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 #include <icl/qt/ContainerGUIComponents.h>
 #include <string>
 #include <vector>

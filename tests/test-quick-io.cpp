@@ -3,7 +3,7 @@
 #include <icl/qt/QuickCreate.h>
 #include <icl/io/SaveLoad.h>
 #include <icl/io/detail/FileWriter.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 #include <icl/core/Img.h>
 #include <icl/io/compress/ImageCompressor.h>
 

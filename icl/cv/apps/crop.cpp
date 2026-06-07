@@ -6,7 +6,7 @@
 #include <icl/filter/affine/ImageRectification.h>
 #include <icl/filter/affine/RotateOp.h>
 #include <icl/qt/DefineRectanglesMouseHandler.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 #include <icl/io/file/FileList.h>
 
 #include <QtWidgets/QScrollArea>

@@ -5,7 +5,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 Scene scene;
 HSplit gui;
 GUI prevGUI = HBox();

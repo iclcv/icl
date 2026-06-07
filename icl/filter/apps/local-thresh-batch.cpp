@@ -5,7 +5,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/io/source/ImageSource.h>
-#include <icl/io/output/ImageSink.h>
+#include <icl/io/sink/ImageSink.h>
 #include <icl/io/file/FileList.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/utils/config/ConfigFile.h>
