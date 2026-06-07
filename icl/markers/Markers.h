@@ -95,7 +95,7 @@
 // static application data
 HSplit hsplit;
 GUI gui(hsplit);
-GenericGrabber grabber;
+ImageSource grabber;
 
 // the global detector class
 // here, using the first 100 "bch"-markers

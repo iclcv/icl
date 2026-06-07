@@ -7,28 +7,28 @@
 // Umbrella header for the public ICLIO consumer API.  Per-backend headers
 // (DCGrabber, PylonGrabber, WSGrabber, …) are implementation details and
 // are deliberately not pulled in here — applications should go through
-// GenericGrabber / ImageSink instead.
+// ImageSource / ImageSink instead.
 #include <icl/io/file/FileGrabber.h>
 #include <icl/io/file/FileList.h>
 #include <icl/io/file/FilenameGenerator.h>
 #include <icl/io/file/FileWriter.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/io/output/ImageSink.h>
 #include <icl/io/SaveLoad.h>
-#include <icl/io/grabber/TestImages.h>
+#include <icl/io/source/TestImages.h>
 
 
-/** \defgroup DC_G LibDC1394-2 based IEEE-1394 Camera Grabber and Control API
+/** \defgroup DC_G LibDC1394-2 based IEEE-1394 Camera SourceBackend and Control API
     \defgroup UTILS_G Common File-I/O Utility Functions and Classes
-    \defgroup FILEIO_G Plugin-based File-Writer and File-Grabber implementation
-    \defgroup GRABBER_G List of all provided Grabber implementations
+    \defgroup FILEIO_G Plugin-based File-Writer and File-SourceBackend implementation
+    \defgroup GRABBER_G List of all provided SourceBackend implementations
     \defgroup MOVIE_FILE_G grabbers for movie file sources
     \defgroup V4L_G Video 4 Linux based grabbesr
     \defgroup GIGE_G Gigabit Ethernet (GIG-E) based grabber
 
     \section Overview
     The ICLIO Package encloses a wide range of images sources that are all
-    derived from the abstract icl::Grabber interface. Furthermore some utility functions
+    derived from the abstract icl::SourceBackend interface. Furthermore some utility functions
     and classes for File handling and management are provided. The functionalities
     can be grouped into the following modules:
     -# \ref DC_G
@@ -42,10 +42,10 @@
 
     \section GRABBERS Grabbers
 
-    However, a large set of Grabber implementations is available, <b>we recommend to use
-    instances of the icl::GenericGrabber class</b>. Instances of the GenericGrabber class can
-    wrap all other supported Grabber implementations internally. At construction time,
-    the GenericGrabber is set up with a pair of string parameters (usually specified on the
+    However, a large set of SourceBackend implementations is available, <b>we recommend to use
+    instances of the icl::ImageSource class</b>. Instances of the ImageSource class can
+    wrap all other supported SourceBackend implementations internally. At construction time,
+    the ImageSource is set up with a pair of string parameters (usually specified on the
     application's command line) that specify which device has to be used internally. By these
     means, you can simply write applications that are able to acquire images from
     all available sources without having to check which of all possible back-ends manually.
@@ -59,7 +59,7 @@
     #include <icl/qt/Common.h>
 
     icl::qt::GUI gui;
-    GenericGrabber grabber;
+    ImageSource grabber;
 
     void init(){
       grabber.init(pa("-i"));
@@ -81,7 +81,7 @@
 
     A slightly adapted version of this application is available as an example application
     called 'icl-camviewer' (ICL/ICLQt/examples/camviewer.cpp). Here, you can check to power
-    of the combination of ICL's program argument evaluation toolbox and the icl::GenericGrabber.
+    of the combination of ICL's program argument evaluation toolbox and the icl::ImageSource.
     Here are some examples:
 
     <pre>
@@ -136,7 +136,7 @@
     # be setup to write the calibration results in the correct file format
     </pre>
 
-    Furthermore, since almost all ICL-applications use the icl::GenericGrabber in combination
+    Furthermore, since almost all ICL-applications use the icl::ImageSource in combination
     with ICL's programm argument evaluation toolbox, nearly all ICL applications can be set up
     to grab the source images from an arbitrary image source. In this context, the example-
     application 'icl-pipe' might be very useful: icl-pipe does not only have a generic image
@@ -161,23 +161,23 @@
     icl-pipe -input dc 0 -o video my-video.avi,DIVX,VGA,24
     </pre>
 
-    For further details and a complete list of possible Grabber-backends,
-    please refer to the icl::GenericGrabber and icl::ImageSink documentation.
+    For further details and a complete list of possible SourceBackend-backends,
+    please refer to the icl::ImageSource and icl::ImageSink documentation.
 
 
-    \subsection GRABBER_BACKENDS Grabber Backends and Corresponding 3rd Party Libraries
+    \subsection GRABBER_BACKENDS SourceBackend Backends and Corresponding 3rd Party Libraries
 
-    - <b>icl::DCGrabber</b> Grabber for FireWire 400 and 800 Cameras (using libdc1394_2)
-    - <b>icl::FileGrabber</b> Grabber for image file sources (.pgm, .ppm and .pnm .icl formats are supported natively,
+    - <b>icl::DCGrabber</b> SourceBackend for FireWire 400 and 800 Cameras (using libdc1394_2)
+    - <b>icl::FileGrabber</b> SourceBackend for image file sources (.pgm, .ppm and .pnm .icl formats are supported natively,
       .jpeg files needs libjpeg, .png-files needs libpng, zipped file like e.g. .pgm.gz needs libz, and all other formats needs
       libMagick++)
     - <b>icl::CreateGrabber</b> Creates one of 8 demo images (e.g. the famous 'lena' or the 'camera man'-image)
     - <b>icl::DemoGrabber</b> Creates images with a moving red rectangle (no dependencies)
-    - <b>icl::PylonGrabber</b> Grabber using Baslers Pylon-Libraries for grabbing from Gigabit Ethernet (GIG-E) cameras
-    - <b>icl::SwissRangerGrabber</b> Grabber for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
+    - <b>icl::PylonGrabber</b> SourceBackend using Baslers Pylon-Libraries for grabbing from Gigabit Ethernet (GIG-E) cameras
+    - <b>icl::SwissRangerGrabber</b> SourceBackend for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
     - <b>icl::OpenCVVideoGrabber</b> OpenCV based video grabber (needs OpenCV)
     - <b>icl::WSGrabber</b> WebSocket-based grabber for receiving images from a icl::WSImageOutput publisher (needs Qt6Websockets) — replaced the retired SharedMemory backend
     - <b>icl::OpenCVCamGrabber</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
-    - <b>icl::KinectGrabber</b> libfreenect based Grabber for Microsoft's Kinect Camera (supports color-, core::depth and IR-camera)
+    - <b>icl::KinectGrabber</b> libfreenect based SourceBackend for Microsoft's Kinect Camera (supports color-, core::depth and IR-camera)
 
 */

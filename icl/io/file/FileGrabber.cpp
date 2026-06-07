@@ -417,7 +417,7 @@ namespace icl::io {
 
     REGISTER_CONFIGURABLE(FileGrabber, return new FileGrabber("*", false, false));
 
-    Grabber* createGrabber(const std::string &param){
+    SourceBackend* createGrabber(const std::string &param){
       if(FileList::glob(param).size()){
         return new FileGrabber(param);
       }else{
@@ -427,18 +427,18 @@ namespace icl::io {
       }
     }
 
-    const std::vector<GrabberDeviceDescription>& getFileDeviceList(std::string filter, bool rescan){
-      static std::vector<GrabberDeviceDescription> deviceList;
+    const std::vector<DeviceDescription>& getFileDeviceList(std::string filter, bool rescan){
+      static std::vector<DeviceDescription> deviceList;
       if(!rescan) return deviceList;
 
       deviceList.clear();
       // if filter exists, add grabber with filter
       if(filter.size()) deviceList.push_back(
-        GrabberDeviceDescription("file", filter, "A grabber for image files.")
+        DeviceDescription("file", filter, "A grabber for image files.")
         );
       return deviceList;
     }
 
-    REGISTER_GRABBER(file,createGrabber,getFileDeviceList,"file:file name or file-pattern (in ''):image source for single or a list of image files");
+    REGISTER_SOURCE_BACKEND(file,createGrabber,getFileDeviceList,"file:file name or file-pattern (in ''):image source for single or a list of image files");
 
   } // namespace icl::io

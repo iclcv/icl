@@ -9,7 +9,7 @@
 #include <icl/geom/Material.h>
 #include <icl/geom/RansacBasedPoseEstimator.h>
 
-GenericGrabber grabber;
+ImageSource grabber;
 std::shared_ptr<SurfFeatureDetector> surf;
 RansacBasedPoseEstimator *pe = 0;
 

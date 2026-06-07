@@ -10,7 +10,7 @@
 #include <icl/qt/ICLVideoSurface.h>
 
 namespace icl::qt {
-    class ICLQt_API QtCameraGrabber: public icl::io::Grabber{
+    class ICLQt_API QtCameraGrabber: public icl::io::SourceBackend{
       public:
 
         /// Create Camera grabber with given device id or name

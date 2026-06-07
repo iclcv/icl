@@ -6,8 +6,8 @@
 #include <icl/io/output/ImageSink.h>
 
 HBox gui;
-GenericGrabber c_in;
-GenericGrabber d_in;
+ImageSource c_in;
+ImageSource d_in;
 ImageSink c_out,d_out,both_out;
 
 

@@ -1,6 +1,6 @@
 #include <icl/qt/Common2.h>
 
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/io/output/ImageSink.h>
 
 #include <icl/filter/color/ColorDistanceOp.h>
@@ -24,8 +24,8 @@ Camera c_cam;
 Camera d_cam;
 
 // IO
-GenericGrabber grabber_c;
-GenericGrabber grabber_d;
+ImageSource grabber_c;
+ImageSource grabber_d;
 GenericPointCloudOutput cloud_out;
 
 PointCloudCreator pcc;

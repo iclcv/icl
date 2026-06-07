@@ -7,7 +7,7 @@
 
 VSplit gui;
 std::string filename;
-GenericGrabber grabber;
+ImageSource grabber;
 std::recursive_mutex mtex;
 bool paused=false;
 

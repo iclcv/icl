@@ -10,7 +10,7 @@
 #include <icl/qt/ICLVideoSurface.h>
 
 namespace icl::qt {
-    class ICLQt_API QtVideoGrabber: public icl::io::Grabber{
+    class ICLQt_API QtVideoGrabber: public icl::io::SourceBackend{
       public:
 
         /// Create video grabber with given video-file name

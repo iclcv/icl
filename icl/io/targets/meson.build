@@ -4,8 +4,8 @@
 # png_write_test, undistortion) were retired in Session 45 — the depth
 # 11-bit roundtrip moved to tests/test-quick-io.cpp, png writing is
 # already covered by Quick2.IO.save.load.png, and undistortion is
-# accessible from every GenericGrabber-based app via the `@udist=file.xml`
-# qualifier (see GenericGrabber.cpp ~line 273).
+# accessible from every ImageSource-based app via the `@udist=file.xml`
+# qualifier (see ImageSource.cpp ~line 273).
 
 # ---- Apps ----
 if _build_apps
@@ -18,7 +18,7 @@ if _build_apps
 
   # Apps needing libdc
   # icl-dcdeviceinfo retired Session 45 — `icl-pipe -i dc 0@info`
-  # (or any GenericGrabber-driven app with the same qualifier) prints the
+  # (or any ImageSource-driven app with the same qualifier) prints the
   # same property table on demand.
   if libdc_dep.found()
     executable('icl-dcclearisochannels',
@@ -49,7 +49,7 @@ if _build_apps
 
     # icl-k2 retired Session 45 — bypassed Kinect2Grabber by talking to
     # libfreenect2 directly. Use `icl-pipe -i kinect2 0` (or any
-    # GenericGrabber-driven app) instead, which goes through ICL's own
+    # ImageSource-driven app) instead, which goes through ICL's own
     # Kinect2Grabber backend.
   endif
 endif

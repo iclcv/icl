@@ -4,11 +4,11 @@
 
 #include <icl/qt/Quick.h>
 #include <icl/io/file/FileGrabber.h>
-#include <icl/io/grabber/TestImages.h>
+#include <icl/io/source/TestImages.h>
 #include <icl/io/ExternalViewer.h>
 #include <icl/core/convert/Converter.h>
 
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 
 #include <icl/core/cc/CCFunctions.h>
 #include <map>
@@ -681,9 +681,9 @@ namespace icl::qt {
     template<class T>
     Img<T> grab(const std::string &dev, const std::string &devSpec,
               const Size &size, format fmt, bool releaseGrabber){
-      static std::map<std::string,std::shared_ptr<GenericGrabber>, std::less<>> grabbers;
+      static std::map<std::string,std::shared_ptr<ImageSource>, std::less<>> grabbers;
 
-      std::shared_ptr<GenericGrabber> g;
+      std::shared_ptr<ImageSource> g;
       std::string id;
       if(devSpec.substr(0,dev.length()) != (dev+"=")){
         id = dev+dev+"="+devSpec;
@@ -693,7 +693,7 @@ namespace icl::qt {
       if(auto it = grabbers.find(id); it != grabbers.end()){
         g = it->second;
       }else{
-        g.reset(new GenericGrabber());
+        g.reset(new ImageSource());
         g -> init(dev,devSpec);
         if(!releaseGrabber){
           grabbers[id] = g;

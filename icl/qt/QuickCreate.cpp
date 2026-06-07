@@ -5,8 +5,8 @@
 #include <icl/qt/QuickCreate.h>
 #include <icl/qt/QuickContext.h>
 #include <icl/io/SaveLoad.h>
-#include <icl/io/grabber/TestImages.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/TestImages.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/core/ImgBase.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/core/Img.h>
@@ -69,9 +69,9 @@ namespace icl::qt {
     auto &ctx = activeContext();
 
     // releaseGrabber=true: one-shot, don't cache the device connection
-    std::shared_ptr<GenericGrabber> tmp;
+    std::shared_ptr<ImageSource> tmp;
     if(releaseGrabber) {
-      tmp = std::make_shared<GenericGrabber>();
+      tmp = std::make_shared<ImageSource>();
       tmp->init(dev, devSpec);
     }
     auto &g = releaseGrabber ? *tmp : *ctx.getGrabber(dev, devSpec);

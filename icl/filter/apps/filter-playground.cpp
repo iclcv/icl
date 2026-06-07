@@ -49,7 +49,7 @@
 #include <mutex>
 
 HSplit gui;
-GenericGrabber grabber;
+ImageSource grabber;
 
 // One per pipeline stage. Written on the GUI thread by the filter-combo
 // callback and read on the exec thread by run(); serialized by `mutex`

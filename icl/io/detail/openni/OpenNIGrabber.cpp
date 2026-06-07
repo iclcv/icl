@@ -162,19 +162,19 @@ void OpenNIGrabber::processPropertyChange(const utils::Configurable::Property &p
 REGISTER_CONFIGURABLE(OpenNIGrabber, return new OpenNIGrabber(""));
 
 
-static Grabber* createNIGrabberDepth(const std::string &param){
+static SourceBackend* createNIGrabberDepth(const std::string &param){
   return new OpenNIGrabber("depth" + param);
 }
 
-static Grabber* createNIGrabberColor(const std::string &param){
+static SourceBackend* createNIGrabberColor(const std::string &param){
   return new OpenNIGrabber("rgb" + param);
 }
 
-static Grabber* createNIGrabberIr(const std::string &param){
+static SourceBackend* createNIGrabberIr(const std::string &param){
   return new OpenNIGrabber("ir" + param);
 }
 
-static void getNIDeviceList(std::vector<GrabberDeviceDescription>& deviceList,
+static void getNIDeviceList(std::vector<DeviceDescription>& deviceList,
                             XnPredefinedProductionNodeType type,
                             std::string postfix, std::string desc)
 {
@@ -183,13 +183,13 @@ static void getNIDeviceList(std::vector<GrabberDeviceDescription>& deviceList,
   int i = 0;
   for (xn::NodeInfoList::Iterator it = nodes.Begin(); it != nodes.End(); ++it, ++i){
     deviceList.push_back(
-          GrabberDeviceDescription("oni"+postfix, utils::str(i), desc)
+          DeviceDescription("oni"+postfix, utils::str(i), desc)
           );
   }
 }
 
-static const std::vector<GrabberDeviceDescription>& getNIDeviceListDepth(std::string hint, bool rescan){
-  static std::vector<GrabberDeviceDescription> deviceList;
+static const std::vector<DeviceDescription>& getNIDeviceListDepth(std::string hint, bool rescan){
+  static std::vector<DeviceDescription> deviceList;
   if(rescan){
     deviceList.clear();
     getNIDeviceList(deviceList, XN_NODE_TYPE_DEPTH, "d", "An OpenNI Depth data generator.");
@@ -197,8 +197,8 @@ static const std::vector<GrabberDeviceDescription>& getNIDeviceListDepth(std::st
   return deviceList;
 }
 
-static const std::vector<GrabberDeviceDescription>& getNIDeviceListColor(std::string hint, bool rescan){
-  static std::vector<GrabberDeviceDescription> deviceList;
+static const std::vector<DeviceDescription>& getNIDeviceListColor(std::string hint, bool rescan){
+  static std::vector<DeviceDescription> deviceList;
   if(rescan){
     deviceList.clear();
     getNIDeviceList(deviceList, XN_NODE_TYPE_IMAGE, "c", "An OpenNI rgb-image data generator.");
@@ -206,8 +206,8 @@ static const std::vector<GrabberDeviceDescription>& getNIDeviceListColor(std::st
   return deviceList;
 }
 
-static const std::vector<GrabberDeviceDescription>& getNIDeviceListIr(std::string hint, bool rescan){
-  static std::vector<GrabberDeviceDescription> deviceList;
+static const std::vector<DeviceDescription>& getNIDeviceListIr(std::string hint, bool rescan){
+  static std::vector<DeviceDescription> deviceList;
   if(rescan){
     deviceList.clear();
     getNIDeviceList(deviceList, XN_NODE_TYPE_IR, "i", "An OpenNI IR data generator.");
@@ -215,6 +215,6 @@ static const std::vector<GrabberDeviceDescription>& getNIDeviceListIr(std::strin
   return deviceList;
 }
 
-REGISTER_GRABBER(onid,createNIGrabberDepth, getNIDeviceListDepth, "onid:index 0 opens the first depth source:OpenNI based image source.");
-REGISTER_GRABBER(onic,createNIGrabberColor, getNIDeviceListColor, "onic:index 0 opens the first color source:OpenNI based image source.");
-REGISTER_GRABBER(onii,createNIGrabberIr, getNIDeviceListIr, "onii:index 0 opens the first ir source:OpenNI based image source.");
+REGISTER_SOURCE_BACKEND(onid,createNIGrabberDepth, getNIDeviceListDepth, "onid:index 0 opens the first depth source:OpenNI based image source.");
+REGISTER_SOURCE_BACKEND(onic,createNIGrabberColor, getNIDeviceListColor, "onic:index 0 opens the first color source:OpenNI based image source.");
+REGISTER_SOURCE_BACKEND(onii,createNIGrabberIr, getNIDeviceListIr, "onii:index 0 opens the first ir source:OpenNI based image source.");

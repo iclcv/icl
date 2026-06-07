@@ -5,14 +5,14 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 
 namespace icl::io {
-  /// Grabber class that grabs images using the libImager library from Optris
+  /// SourceBackend class that grabs images using the libImager library from Optris
   /** Optris provides IR-Cameras, such as the TIM 160 which yields IR-temperature
       images of 160x120 resolution at 120 Hz.
   */
-  class ICLIO_API OptrisGrabber : public Grabber {
+  class ICLIO_API OptrisGrabber : public SourceBackend {
       /// Internal Data storage class
       struct Data;
 
@@ -27,17 +27,17 @@ namespace icl::io {
         IR_IMAGE, VISIBLE_IMAGE
       };
 
-      /// Creates a new OptrisGrabber instance (please use the GenericGrabber instead)
+      /// Creates a new OptrisGrabber instance (please use the ImageSource instead)
       OptrisGrabber(const std::string &serialPattern, bool testOnly=false, Mode mode=IR_IMAGE);
 
       /// Destructor
       ~OptrisGrabber();
 
       /// returns a list of all available devices
-      static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
+      static const std::vector<DeviceDescription> &getDeviceList(std::string hint, bool rescan);
 
       /// grabbing function
-      /** \copydoc icl::io::Grabber::acquireImage()  **/
+      /** \copydoc icl::io::SourceBackend::acquireImage()  **/
       core::Image acquireImage() override;
 
       /// callback for changed configurable properties

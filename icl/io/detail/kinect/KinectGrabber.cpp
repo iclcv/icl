@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/kinect/KinectGrabber.h>
 #include <icl/core/cc/CCFunctions.h>
@@ -764,8 +764,8 @@ namespace icl::io {
   REGISTER_CONFIGURABLE(KinectGrabber, return new KinectGrabber(KinectGrabber::GRAB_DEPTH_IMAGE, 0, utils::Size::VGA));
 
   /// returns a list of attached kinect devices
-  const std::vector<GrabberDeviceDescription> &KinectGrabber::getDeviceList(bool rescan){
-    static std::vector<GrabberDeviceDescription> devices;
+  const std::vector<DeviceDescription> &KinectGrabber::getDeviceList(bool rescan){
+    static std::vector<DeviceDescription> devices;
     if(rescan){
       devices.clear();
       FreenectContext &ctx = FreenectContext::getFreenectContext();
@@ -779,9 +779,9 @@ namespace icl::io {
           if(serial != "null"){
             s += "|||" + serial;
           }
-          devices.push_back(GrabberDeviceDescription("kinectd",s,"Kinect Depth Camera (ID "+str(i)+")"));
-          devices.push_back(GrabberDeviceDescription("kinectc",s,"Kinect Color Camera RGB (ID "+str(i)+")"));
-          devices.push_back(GrabberDeviceDescription("kinecti",s,"Kinect Color Camera IR (ID "+str(i)+")"));
+          devices.push_back(DeviceDescription("kinectd",s,"Kinect Depth Camera (ID "+str(i)+")"));
+          devices.push_back(DeviceDescription("kinectc",s,"Kinect Color Camera RGB (ID "+str(i)+")"));
+          devices.push_back(DeviceDescription("kinecti",s,"Kinect Color Camera IR (ID "+str(i)+")"));
         }catch([[maybe_unused]] ICLException &e){ //SHOW(e.what());
           break;
         }
@@ -790,20 +790,20 @@ namespace icl::io {
     return devices;
   }
 
-  Grabber* createDepthGrabber(const std::string &param){
+  SourceBackend* createDepthGrabber(const std::string &param){
     return new KinectGrabber(KinectGrabber::GRAB_DEPTH_IMAGE,param);
   }
 
-  Grabber* createRGBGrabber(const std::string &param){
+  SourceBackend* createRGBGrabber(const std::string &param){
     return new KinectGrabber(KinectGrabber::GRAB_RGB_IMAGE,param);
   }
 
-  Grabber* createIRGrabber(const std::string &param){
+  SourceBackend* createIRGrabber(const std::string &param){
     return new KinectGrabber(KinectGrabber::GRAB_IR_IMAGE_8BIT,param);
   }
 
-  const std::vector<GrabberDeviceDescription>& getKinectDDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> devices;
+  const std::vector<DeviceDescription>& getKinectDDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> devices;
     if(rescan){
       FreenectContext &ctx = FreenectContext::getFreenectContext();
       devices.clear();
@@ -814,14 +814,14 @@ namespace icl::io {
         if(serial != "null"){
           s += "|||" + serial;
         }
-        devices.push_back(GrabberDeviceDescription("kinectd",s,"Kinect Depth Camera (ID "+str(i)+")"));
+        devices.push_back(DeviceDescription("kinectd",s,"Kinect Depth Camera (ID "+str(i)+")"));
       }
     }
     return devices;
   }
 
-  const std::vector<GrabberDeviceDescription>& getKinectCDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> devices;
+  const std::vector<DeviceDescription>& getKinectCDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> devices;
     if(rescan){
       FreenectContext &ctx = FreenectContext::getFreenectContext();
       devices.clear();
@@ -832,14 +832,14 @@ namespace icl::io {
         if(serial != "null"){
           s += "|||" + serial;
         }
-        devices.push_back(GrabberDeviceDescription("kinectc",s,"Kinect Color Camera RGB (ID "+str(i)+")"));
+        devices.push_back(DeviceDescription("kinectc",s,"Kinect Color Camera RGB (ID "+str(i)+")"));
       }
     }
     return devices;
   }
 
-  const std::vector<GrabberDeviceDescription>& getKinectIDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> devices;
+  const std::vector<DeviceDescription>& getKinectIDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> devices;
     if(rescan){
       FreenectContext &ctx = FreenectContext::getFreenectContext();
       devices.clear();
@@ -850,14 +850,14 @@ namespace icl::io {
         if(serial != "null"){
           s += "|||" + serial;
         }
-        devices.push_back(GrabberDeviceDescription("kinecti",s,"Kinect Color Camera IR (ID "+str(i)+")"));
+        devices.push_back(DeviceDescription("kinecti",s,"Kinect Color Camera IR (ID "+str(i)+")"));
       }
     }
     return devices;
   }
 
-  REGISTER_GRABBER(kinectd,createDepthGrabber, getKinectDDeviceList, "kinectd:device ID:kinect depth camera source:");
-  REGISTER_GRABBER(kinectc,createRGBGrabber, getKinectCDeviceList,"kinectc:device ID:kinect color camera source");
-  REGISTER_GRABBER(kinecti,createIRGrabber, getKinectIDeviceList,"kinecti:devide ID:kinect IR camera source");
+  REGISTER_SOURCE_BACKEND(kinectd,createDepthGrabber, getKinectDDeviceList, "kinectd:device ID:kinect depth camera source:");
+  REGISTER_SOURCE_BACKEND(kinectc,createRGBGrabber, getKinectCDeviceList,"kinectc:device ID:kinect color camera source");
+  REGISTER_SOURCE_BACKEND(kinecti,createIRGrabber, getKinectIDeviceList,"kinecti:devide ID:kinect IR camera source");
 
   } // namespace icl::io

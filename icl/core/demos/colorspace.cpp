@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 GUI gui;
-GenericGrabber grabber;
+ImageSource grabber;
 
 void init(){
 

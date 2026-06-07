@@ -533,7 +533,7 @@ namespace icl::utils {
     /// add a callback invoked when the child-Configurable set changes at runtime
     /** Primary consumer: qt::Prop's ConfigurableGUIWidget, which rebuilds
         its widget tree so codec swaps on ImageCompressor or backend swaps
-        on GenericGrabber are visible live.  Callbacks should not synchronously
+        on ImageSource are visible live.  Callbacks should not synchronously
         call addChildConfigurable / removeChildConfigurable on the same
         Configurable — the fire site is not re-entrancy-protected.
         Returns a token that can be passed to removeChildSetCallback to
@@ -682,7 +682,7 @@ namespace icl::utils {
         - MAX_LENGTH for string typed properties
         - flag-properties always have the possible values "on|1|true" or "off|0|false"
         <b>Note:</b> The received string can be translated into C++ data
-        with some static utility function in this Grabber class.
+        with some static utility function in this SourceBackend class.
         */
     std::string getPropertyInfo(const std::string &propertyName) const{
       const Property &p = prop_storage(propertyName);

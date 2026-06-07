@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/utils/time/Time.h>
 #include <icl/io/detail/openni/OpenNIUtils.h>
 #include <icl/utils/thread/Thread.h>
@@ -48,8 +48,8 @@ namespace icl::io {
       std::recursive_mutex m_mutex;
   };
 
-  /// Grabber implementation for OpenNI based camera access.
-  class OpenNIGrabber : public Grabber {
+  /// SourceBackend implementation for OpenNI based camera access.
+  class OpenNIGrabber : public SourceBackend {
     public:
       friend class OpenNIGrabberThread;
 
@@ -63,7 +63,7 @@ namespace icl::io {
       ~OpenNIGrabber();
 
       /// grab function grabs an image (destination image is adapted on demand)
-      /** \copydoc icl::io::Grabber::acquireImage() **/
+      /** \copydoc icl::io::SourceBackend::acquireImage() **/
       core::Image acquireImage();
 
       /**

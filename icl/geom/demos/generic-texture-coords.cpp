@@ -5,7 +5,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 
-GenericGrabber  grabber;
+ImageSource  grabber;
 Scene scene;
 GUI gui;
 Image image;

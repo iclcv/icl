@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 // forward declaration (was #include <icl/core/ImgBase.h>)
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/qt/ContainerGUIComponents.h>
 #include <QSplitter>
 namespace icl { namespace core { class ImgBase; template<class T> class Img; } }
@@ -15,9 +15,9 @@ namespace icl::qt {
   /// Special QWidget implementation for configuring grabber properties
   /** \section GEN General Information
       The CamCfgWidget can be used if an application needs to configure
-      the properties of an ICL Grabber instance. It automatically connects
-      to the corresponding Grabber instance (it uses an instance of type
-      ICLIO/GenericGrabber) and provides an interface for it's properties.
+      the properties of an ICL SourceBackend instance. It automatically connects
+      to the corresponding SourceBackend instance (it uses an instance of type
+      ICLIO/ImageSource) and provides an interface for it's properties.
       The CamCfgWidget can be created in two modes:
 
       \section MODES Widget Modes
@@ -31,7 +31,7 @@ namespace icl::qt {
           gets "" and "" as it's first two arguments, then the widget will
           also create a combo-box for selecting <em>available</em> devices.
           Devices are <em>available</em> a grabber for this device is already
-          instantiated, or if The GenericGrabber::getDeviceList(..) function
+          instantiated, or if The ImageSource::getDeviceList(..) function
           found this device.\n
           This mode is used if a icl::GUI-compoment "camcfg()" or e.g.
           "camcfg(dc,0)" is created.

@@ -9,7 +9,7 @@
 #include <icl/filter/morph/MedianOp.h>
 #include <mutex>
 
-GenericGrabber *grabber = 0;
+ImageSource *grabber = 0;
 
 HSplit gui;
 Img32f IMAGE;
@@ -192,7 +192,7 @@ void init(){
 
   gui["draw"].install(mouse);
 
-  grabber = new GenericGrabber();
+  grabber = new ImageSource();
   grabber -> init(pa("-i"));
 
   CAM = Camera(*pa("-input",2));

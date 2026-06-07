@@ -8,8 +8,8 @@
 #include <mutex>
 HBox gui;
 Scene scene;
-GenericGrabber grabber;
-GenericGrabber backFaceGrabber;
+ImageSource grabber;
+ImageSource backFaceGrabber;
 Img8u image;
 Img8u backImage;
 

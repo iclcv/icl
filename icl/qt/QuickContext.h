@@ -16,7 +16,7 @@ namespace icl::filter {
   class BinaryOp;
 }
 namespace icl::io {
-  class GenericGrabber;
+  class ImageSource;
 }
 
 namespace icl::qt {
@@ -116,11 +116,11 @@ namespace icl::qt {
     }
 
     /// @}
-    /// @name Grabber Management
+    /// @name SourceBackend Management
     /// @{
 
     /// Returns a cached grabber for the given device, creating one if needed
-    std::shared_ptr<io::GenericGrabber> getGrabber(const std::string &dev,
+    std::shared_ptr<io::ImageSource> getGrabber(const std::string &dev,
                                                     const std::string &devSpec);
 
     /// Releases (uncaches) a grabber for the given device

@@ -25,7 +25,7 @@ static const char *polyNames[] = {
 static constexpr int NUM_POLY = sizeof(polyFuncs) / sizeof(polyFuncs[0]);
 
 HSplit gui;
-GenericGrabber grabber;
+ImageSource grabber;
 Reg *reg = nullptr;
 int lastPolyIdx = -1;
 

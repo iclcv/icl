@@ -108,7 +108,7 @@ namespace icl::utils {
 
 
         GUI gui;
-        GenericGrabber grabber;
+        ImageSource grabber;
 
         void init(){
           grabber.init(pa("-i"));
@@ -198,7 +198,7 @@ namespace icl::utils {
 
 
         GUI gui;
-        GenericGrabber grabber;
+        ImageSource grabber;
 
         void init(){
           grabber.init(pa("-i"));

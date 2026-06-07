@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <string>
 #include <vector>
 
@@ -12,13 +12,13 @@ namespace icl::io {
   /// WebSocket-based grabber (client side, with auto-reconnect)
   /** Connects to a remote `WSImageOutput` (or any WebSocket publisher
       that emits `ImageCompressor`-encoded binary frames) and exposes the
-      received frames through the standard `Grabber::grab()` API.
+      received frames through the standard `SourceBackend::grab()` API.
 
       \section HIST History
       `WSGrabber` (Session 46) replaced the retired `SharedMemoryGrabber`
       (Session 47). See `WSImageOutput.h` for the rationale.
 
-      \section URL  URL form (via GenericGrabber / `-i ws ...`)
+      \section URL  URL form (via ImageSource / `-i ws ...`)
       \code
         -i ws ws://host:port           # connect to a publisher
       \endcode
@@ -49,7 +49,7 @@ namespace icl::io {
         - `frames received`               info (lifetime)
         - `bytes received`                info (lifetime)
    */
-  class ICLIO_API WSGrabber : public Grabber {
+  class ICLIO_API WSGrabber : public SourceBackend {
     /// pimpl
     struct Data;
     Data *m_data;
@@ -64,7 +64,7 @@ namespace icl::io {
 
     /// device discovery — currently empty (WS endpoints can't be
     /// auto-enumerated; user must specify the URL).
-    static const std::vector<GrabberDeviceDescription> &
+    static const std::vector<DeviceDescription> &
     getDeviceList(bool rescan);
 
     /// Pop the latest frame from the queue, blocking up to

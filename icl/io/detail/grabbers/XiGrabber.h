@@ -5,14 +5,14 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 
 namespace icl::io {
-  /// Grabber class that grabs images using the XiAPI (extension of the M3API)
+  /// SourceBackend class that grabs images using the XiAPI (extension of the M3API)
   /** The XiGrabber can be used e.g. for cameras from Ximea. Use device type 'xi'
       with the generic grabber for this.
   */
-  class ICLIO_API XiGrabber : public Grabber {
+  class ICLIO_API XiGrabber : public SourceBackend {
       /// Internal Data storage class
       struct Data;
 
@@ -26,17 +26,17 @@ namespace icl::io {
       friend class Data;
     public:
 
-      /// Creates a new XiGrabber instance (please use the GenericGrabber instead)
+      /// Creates a new XiGrabber instance (please use the ImageSource instead)
       XiGrabber(int deviceID);
 
       /// Destructor
       ~XiGrabber();
 
       /// returns a list of all connected devices
-      static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
+      static const std::vector<DeviceDescription> &getDeviceList(std::string hint, bool rescan);
 
       /// grabbing function
-      /** \copydoc icl::io::Grabber::acquireImage()  **/
+      /** \copydoc icl::io::SourceBackend::acquireImage()  **/
       core::Image acquireImage() override;
 
       /// callback for changed configurable properties

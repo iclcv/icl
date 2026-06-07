@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/utils/Exception.h>
 #include <mutex>
 
 namespace icl::io {
-  /// Grabber-Implementation for the SwissRanger time-of-flight camera using the libMesaSR library \ingroup GRABBER_G
-  class SwissRangerGrabber : public Grabber{
+  /// SourceBackend-Implementation for the SwissRanger time-of-flight camera using the libMesaSR library \ingroup GRABBER_G
+  class SwissRangerGrabber : public SourceBackend{
     public:
       /// Internally used data-class
       class SwissRanger;
@@ -30,7 +30,7 @@ namespace icl::io {
       ICLIO_API ~SwissRangerGrabber();
 
       /// returns a list of all found devices
-      ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
+      ICLIO_API static const std::vector<DeviceDescription> &getDeviceList(std::string hint, bool rescan);
 
       /// grab an undistorted image
       ICLIO_API core::Image acquireImage() override;

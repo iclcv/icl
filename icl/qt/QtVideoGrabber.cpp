@@ -43,20 +43,20 @@ namespace icl::qt {
       player->setPosition(0);
     }
 
-    Grabber* createQtVideoGrabber(const std::string &param){
+    SourceBackend* createQtVideoGrabber(const std::string &param){
       return new QtVideoGrabber(param);
     }
 
-    const std::vector<GrabberDeviceDescription>& getQtVideoDeviceList(std::string hint, bool rescan){
-      static std::vector<GrabberDeviceDescription> deviceList;
+    const std::vector<DeviceDescription>& getQtVideoDeviceList(std::string hint, bool rescan){
+      static std::vector<DeviceDescription> deviceList;
       if(!rescan) return deviceList;
 
       deviceList.clear();
       if(hint.size()) deviceList.push_back(
-        GrabberDeviceDescription("qtvideo", hint, "A grabber video files.")
+        DeviceDescription("qtvideo", hint, "A grabber video files.")
         );
       return deviceList;
     }
 
-    REGISTER_GRABBER(qtvideo,createQtVideoGrabber, getQtVideoDeviceList,"qtvideo:video filename:Qt based video file source");
+    REGISTER_SOURCE_BACKEND(qtvideo,createQtVideoGrabber, getQtVideoDeviceList,"qtvideo:video filename:Qt based video file source");
   }

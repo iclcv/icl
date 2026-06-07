@@ -7,7 +7,7 @@
 
 
 GUI gui;
-GenericGrabber grabber;
+ImageSource grabber;
 int x,y;
 int r,g,b;
 ConvolutionKernel::fixedType k;

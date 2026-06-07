@@ -4,7 +4,7 @@
 
 #include <icl/io/detail/grabbers/CreateGrabber.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/io/grabber/TestImages.h>
+#include <icl/io/source/TestImages.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -37,24 +37,24 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(CreateGrabber, return new CreateGrabber("parrot"));
 
-  Grabber* createCreateGrabber(const std::string &param){
+  SourceBackend* createCreateGrabber(const std::string &param){
     return new CreateGrabber(param);
   }
 
-  const std::vector<GrabberDeviceDescription>& getCreateDeviceList(std::string hint, bool rescan){
+  const std::vector<DeviceDescription>& getCreateDeviceList(std::string hint, bool rescan){
     // Rebuilt on each call: the test-image registry is populated by
     // static-init-time REGISTER_TEST_IMAGE(...) invocations in sibling
     // TUs, and new backends may register after the first call here.
-    static std::vector<GrabberDeviceDescription> deviceList;
+    static std::vector<DeviceDescription> deviceList;
     deviceList.clear();
     for(const std::string &name : testImageRegistry().keys()){
-      deviceList.push_back(GrabberDeviceDescription("create", name,
+      deviceList.push_back(DeviceDescription("create", name,
                   std::string("built-in test image '") + name + "'"));
     }
     return deviceList;
   }
 
-  REGISTER_GRABBER(create, createCreateGrabber, getCreateDeviceList,
+  REGISTER_SOURCE_BACKEND(create, createCreateGrabber, getCreateDeviceList,
                    "create:parrot|lena|cameraman|mandril|flowers|windows|women|tree|house:built-in test image");
 
   } // namespace icl::io

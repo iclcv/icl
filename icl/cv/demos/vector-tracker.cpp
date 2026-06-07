@@ -26,7 +26,7 @@ void update_error_frames_B(){
 }
 
 
-struct InputGrabber : public MouseHandler, public Grabber, public Lockable {
+struct InputGrabber : public MouseHandler, public SourceBackend, public Lockable {
   struct Blob{
     unsigned int x;
     unsigned int y;

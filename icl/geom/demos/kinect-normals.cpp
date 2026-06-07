@@ -7,7 +7,7 @@
 #include <icl/utils/time/Time.h>
 
 HSplit gui;
-GenericGrabber grabDepth, grabColor;
+ImageSource grabDepth, grabColor;
 
 ObjectEdgeDetector *objectEdgeDetector;
 

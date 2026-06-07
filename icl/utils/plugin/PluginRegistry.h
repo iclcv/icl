@@ -287,7 +287,7 @@ namespace icl::utils {
 
   /// Payload is a factory that produces a fresh std::unique_ptr<T>.
   /// Use for plugins that are multi-method objects (e.g. CompressionPlugin,
-  /// Grabber, PointCloudGrabber).
+  /// SourceBackend, PointCloudGrabber).
   template <class T, class... CtorArgs>
   using ClassPluginRegistry =
       PluginRegistry<std::string,

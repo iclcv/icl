@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/compat/OpenCV.h>
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/utils/time/FPSLimiter.h>
 #include <icl/utils/Exception.h>
 
@@ -17,7 +17,7 @@
 #include <mutex>
 namespace icl::io {
   /// opencv base grabber implementation for movie files \ingroup MOVIE_FILE_G
-  class ICLIO_API OpenCVVideoGrabber : public Grabber{
+  class ICLIO_API OpenCVVideoGrabber : public SourceBackend{
       struct Data; //!< pimpl type
       Data *data; //!< pimpl pointer
       std::recursive_mutex mutex; //! locking
@@ -28,7 +28,7 @@ namespace icl::io {
 
     public:
       /// grab function grabs an image (destination image is adapted on demand)
-      /** \copydoc icl::io::Grabber::acquireImage() **/
+      /** \copydoc icl::io::SourceBackend::acquireImage() **/
       core::Image acquireImage();
 
       /// Constructor creates a new OpenCVVideoGrabber instance

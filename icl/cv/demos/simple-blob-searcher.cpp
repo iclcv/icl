@@ -7,7 +7,7 @@
 #include <mutex>
 
 GUI gui;
-GenericGrabber grabber;
+ImageSource grabber;
 SimpleBlobSearcher S;
 std::recursive_mutex mtex;
 

@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/utils/ProgArg.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 
 using namespace icl::utils;
 using namespace icl::io;
@@ -41,7 +41,7 @@ int main(int n, char **ppc){
     exit(-1);
   }
 
-  GenericGrabber grabber(pa("-i"));
+  ImageSource grabber(pa("-i"));
 
   if(s){
     std::string val = pa("-s", 1).as<std::string>();

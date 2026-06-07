@@ -6,5 +6,5 @@
 
 int main(int n, char **ppc){
   pa_init(n,ppc,"-device-type|-t(type) -verbose");
-  GenericGrabber::resetBus(pa("-t"), pa("-verbose"));
+  ImageSource::resetBus(pa("-t"), pa("-verbose"));
 }

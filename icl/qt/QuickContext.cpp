@@ -6,7 +6,7 @@
 #include <icl/core/CoreFunctions.h>
 #include <icl/filter/base/UnaryOp.h>
 #include <icl/filter/base/BinaryOp.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/Exception.h>
 
@@ -76,7 +76,7 @@ namespace icl::qt {
     // spinning up worker threads.
     bool throwOnCapExceeded = false;
     std::vector<ColorState> colorStack;
-    std::map<std::string, std::shared_ptr<io::GenericGrabber>, std::less<>> grabbers;
+    std::map<std::string, std::shared_ptr<io::ImageSource>, std::less<>> grabbers;
 
     explicit Data(size_t cap) : memoryCap(cap) {}
   };
@@ -269,7 +269,7 @@ namespace icl::qt {
     m_data->colorStack.pop_back();
   }
 
-  // ---- Grabber management ----
+  // ---- SourceBackend management ----
 
   static std::string grabberKey(const std::string &dev, const std::string &devSpec) {
     if(devSpec.substr(0, dev.length()) != (dev + "=")) {
@@ -278,14 +278,14 @@ namespace icl::qt {
     return dev + devSpec;
   }
 
-  std::shared_ptr<io::GenericGrabber>
+  std::shared_ptr<io::ImageSource>
   QuickContext::getGrabber(const std::string &dev, const std::string &devSpec) {
     std::string id = grabberKey(dev, devSpec);
     auto &grabbers = m_data->grabbers;
     if(auto it = grabbers.find(id); it != grabbers.end()) {
       return it->second;
     }
-    auto g = std::make_shared<io::GenericGrabber>();
+    auto g = std::make_shared<io::ImageSource>();
     g->init(dev, devSpec);
     grabbers[id] = g;
     return g;

@@ -34,7 +34,7 @@
 #include <icl/markers/FiducialDetectorPluginBCH.h>
 
 HSplit gui;
-GenericGrabber grabber;
+ImageSource grabber;
 FiducialDetector fid("bch", "[0-100]", ParamMap{{"size", Size(30, 30)}});
 
 void init() {

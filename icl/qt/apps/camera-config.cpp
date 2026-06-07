@@ -7,7 +7,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/Application.h>
 #include <icl/utils/ProgArg.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 
 #include <sstream>
 #include <mutex>
@@ -83,10 +83,10 @@ int main(int n, char **ppc){
     devlist = devlist.substr(1); // removes the trailing comma!
   }
 
-  if(pa("r")) GenericGrabber::resetBus(devlist);
+  if(pa("r")) ImageSource::resetBus(devlist);
 
   if(pa("-l")){
-    std::vector<GrabberDeviceDescription> gds = GenericGrabber::getDeviceList(devlist);
+    std::vector<DeviceDescription> gds = ImageSource::getDeviceList(devlist);
     std::string lastType = "";
     for(unsigned int i=0;i<gds.size();++i){
       if(gds[i].type != lastType){

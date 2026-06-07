@@ -20,7 +20,7 @@ namespace icl::qt {
       #include <icl/qt/Common.h>
       #include <iterator>
 
-      GenericGrabber *grabber;
+      ImageSource *grabber;
       ICLWidget *widget;
 
       class Mouse : public MouseHandler{
@@ -48,7 +48,7 @@ namespace icl::qt {
         widget = new ICLWidget(0);
         widget->setGeometry(200,200,640,480);
         widget->show();
-        grabber = new GenericGrabber;
+        grabber = new ImageSource;
         widget->install(&mouse);
       }
       void run(){

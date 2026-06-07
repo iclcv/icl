@@ -6,7 +6,7 @@
 #include <icl/utils/prop/Constraints.h>
 #include <icl/geom/PointCloudCreator.h>
 
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/geom/PointCloudGrabberRegistry.h>
 #include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 #include <icl/filter/morph/MedianOp.h>
@@ -83,8 +83,8 @@ namespace icl::geom {
   } // anonymous namespace
 
   struct DepthCameraPointCloudGrabber::Data{
-    GenericGrabber depthGrabber;
-    GenericGrabber colorGrabber;
+    ImageSource depthGrabber;
+    ImageSource colorGrabber;
     PointCloudCreator creator;
     const Img32f *lastDepthImage;
     const Img8u *lastColorImage;
@@ -233,7 +233,7 @@ namespace icl::geom {
   void DepthCameraPointCloudGrabber::setColorImageMask(const Img8u *mask, bool passOwnerShip){
     if(m_data->colorGrabber.isNull()){
       throw ICLException("DepthCameraPointCloudGrabber::setColorImageMask: "
-                         "cannot be used of the Grabber has no color image source set");
+                         "cannot be used of the SourceBackend has no color image source set");
     }
     if(passOwnerShip){
       m_data->colorMask.reset(mask);

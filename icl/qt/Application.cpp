@@ -267,7 +267,7 @@ void ICLApplication::addFinalization(callback cb){
 
 int ICLApplication::exec(){
   // Wrap each init() in a try/catch so that user-supplied init code
-  // (typically GenericGrabber::init / file-loading / etc.) can fail with
+  // (typically ImageSource::init / file-loading / etc.) can fail with
   // a readable message instead of letting an unhandled exception escape
   // through Qt's half-built event loop and turn into SIGSEGV/SIGABRT
   // during teardown.  Prints to stderr and returns a non-zero exit code

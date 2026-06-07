@@ -108,7 +108,7 @@ namespace icl{
       Size imageSize;
 
       Data(int deviceID){
-        DEBUG_LOG("Generic Grabber created");
+        DEBUG_LOG("Generic SourceBackend created");
         xiH = nullptr;
         memset(&image,0,sizeof(image));
         image.size = sizeof(XI_IMG);
@@ -254,9 +254,9 @@ namespace icl{
       if(m_data) delete m_data;
     }
 
-    const std::vector<GrabberDeviceDescription> &XiGrabber::getDeviceList(std::string, bool rescan){
+    const std::vector<DeviceDescription> &XiGrabber::getDeviceList(std::string, bool rescan){
       //DEBUG_LOG("get device list called !");
-      static std::vector<GrabberDeviceDescription> all;
+      static std::vector<DeviceDescription> all;
       if(rescan){
         all.clear();
         unsigned int n = 0;
@@ -267,7 +267,7 @@ namespace icl{
           char buf[10000];
           s =  xiGetDeviceInfoString(i, XI_PRM_DEVICE_NAME, buf, 10000);
           Data::handle_result(s, "xiGetDeviceInfoString");
-          all.push_back(GrabberDeviceDescription("xi",str(i), buf));
+          all.push_back(DeviceDescription("xi",str(i), buf));
         }
         /** this is even worse!
         for(int i=0;true;++i){
@@ -277,7 +277,7 @@ namespace icl{
             DEBUG_LOG("opened device " << i);
             if(s != XI_OK) break;
             DEBUG_LOG("device opening was successful");
-            all.push_back(GrabberDeviceDescription("xi",str(i),"Ximea Device ID " + str(i)));
+            all.push_back(DeviceDescription("xi",str(i),"Ximea Device ID " + str(i)));
             s = xiCloseDevice(h);
             Data::handle_result(s,"xiCloseDevice");
             }
@@ -430,7 +430,7 @@ namespace icl{
       }
     }
 
-    static Grabber *create_xi_grabber(const std::string &param){
+    static SourceBackend *create_xi_grabber(const std::string &param){
       return new XiGrabber(parse<int>(param));
     }
 
@@ -486,7 +486,7 @@ namespace icl{
       Thread::msleep(1000);
     }
 
-    REGISTER_GRABBER(xi,create_xi_grabber, XiGrabber::getDeviceList, "xi:device index:M3API/XiApi based camera grabber source");
-    REGISTER_GRABBER_BUS_RESET_FUNCTION(xi,reset_xi_bus);
+    REGISTER_SOURCE_BACKEND(xi,create_xi_grabber, XiGrabber::getDeviceList, "xi:device index:M3API/XiApi based camera grabber source");
+    REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io
 }

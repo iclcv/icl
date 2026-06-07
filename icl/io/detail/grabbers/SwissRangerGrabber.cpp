@@ -272,7 +272,7 @@ namespace icl::io {
   static int g_swissranger_instance_count = 0;
 
 
-  SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel):Grabber(){
+  SwissRangerGrabber::SwissRangerGrabber(int serialNumber, depth bufferDepth, int pickChannel):SourceBackend(){
     g_swissranger_instance_count++;
 
     if(g_swissranger_instance_count == 1){
@@ -525,8 +525,8 @@ m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
     return core::Image(result);
   }
 
-  const std::vector<GrabberDeviceDescription> &SwissRangerGrabber::getDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
+  const std::vector<DeviceDescription> &SwissRangerGrabber::getDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> deviceList;
     if(rescan){
       SRCAM cams[100] = { 0 }; // 800.000 euros!
       DWORD inAddr = 0; // what is this ?
@@ -540,7 +540,7 @@ m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
           //DEBUG_LOG("setting single serial to " << serial);
         }
         //DEBUG_LOG("found cam with serial " << serial);
-        deviceList.push_back(GrabberDeviceDescription("sr",str(serial)+"|||-1|||0","SwissRanger Device "+str(i)+" (serial "+str(serial)+")"));
+        deviceList.push_back(DeviceDescription("sr",str(serial)+"|||-1|||0","SwissRanger Device "+str(i)+" (serial "+str(serial)+")"));
         SR_Close(cams[i]);
       }
     }
@@ -550,7 +550,7 @@ m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
   REGISTER_CONFIGURABLE(SwissRangerGrabber, return new SwissRangerGrabber(0, core::depth32f, -1));
 
 
-  Grabber* createSRGrabber(const std::string &param){
+  SourceBackend* createSRGrabber(const std::string &param){
     std::vector<std::string> srts = tok(param,"c");
     int device = 0;
     int channel = -1;
@@ -563,6 +563,6 @@ m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
     return new SwissRangerGrabber(device,depth32f,channel);
   }
 
-  REGISTER_GRABBER(sr,createSRGrabber, SwissRangerGrabber::getDeviceList, "sr:device Index or -1 for auto select:Mesa Imaging SwissRanger depth camera source");
+  REGISTER_SOURCE_BACKEND(sr,createSRGrabber, SwissRangerGrabber::getDeviceList, "sr:device Index or -1 for auto select:Mesa Imaging SwissRanger depth camera source");
 
   } // namespace icl::io

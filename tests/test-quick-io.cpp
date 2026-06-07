@@ -368,7 +368,7 @@ ICL_REGISTER_TEST(
 }
 
 #ifdef ICL_HAVE_QT_WEBSOCKETS
-// ---- WebSocket Grabber/Output (Qt6 WebSockets) -------------------------
+// ---- WebSocket SourceBackend/Output (Qt6 WebSockets) -------------------------
 //
 // Loopback tests: spin a WSImageOutput on 127.0.0.1 + an OS-assigned
 // port, connect a WSGrabber to it, send a known image, verify roundtrip.
@@ -471,7 +471,7 @@ ICL_REGISTER_TEST("WS.url_shorthands_accepted",
 }
 
 ICL_REGISTER_TEST("WS.client_survives_server_restart",
-                  "Grabber transparently reconnects when server restarts on same port") {
+                  "SourceBackend transparently reconnects when server restarts on same port") {
   // Phase 1: bring up server, attach client, prove a frame flows.
   Img8u src1 = makeKnownImage(8, 8);
   Img8u src2 = makeKnownImage(8, 8);

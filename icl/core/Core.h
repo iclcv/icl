@@ -33,7 +33,7 @@
     #include <icl/qt/Common.h>
 
     GUI gui;
-    GenericGrabber grabber;
+    ImageSource grabber;
 
     void init(){
       grabber.init(pa("-i"));

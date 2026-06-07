@@ -77,7 +77,7 @@ int main(int n, char **ppc){
   printf("#include <icl/io/detail/file-plugins/JPEGDecoder.h>\n");
   printf("#include <icl/core/Image.h>\n");
   printf("#include <icl/core/Img.h>\n");
-  printf("#include <icl/io/grabber/TestImages.h>\n");
+  printf("#include <icl/io/source/TestImages.h>\n");
   printf("#include <vector>\n");
 
 

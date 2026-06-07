@@ -5,7 +5,7 @@
 // Interactive demo exercising the ImageCompressor codec-swap path
 // against the qt::Prop runtime rebuild that landed with Session 55.
 //
-// Grab frames from any Grabber backend, compress+decompress through an
+// Grab frames from any SourceBackend backend, compress+decompress through an
 // ImageCompressor, and show the original alongside the decoded image.
 // The Prop widget bound to the ImageCompressor lets the user flip the
 // `mode` combo at runtime (raw / rlen / jpeg / 1611 / zstd — whichever
@@ -23,7 +23,7 @@
 #include <icl/io/compress/ImageCompressor.h>
 
 HSplit gui;
-GenericGrabber grabber;
+ImageSource grabber;
 ImageCompressor compressor;
 
 void init(){

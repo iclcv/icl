@@ -11,7 +11,7 @@
 #include <icl/utils/Size.h>
 #include <icl/utils/time/Time.h>
 #include <icl/core/Img.h>
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 
 #include <functional>
 #include <string>
@@ -49,8 +49,8 @@ namespace icl::io {
   /// Singleton accessor for the process-wide file-grabber registry.
   ICLIO_API FileGrabberRegistry& fileGrabberRegistry();
 
-  /// Grabber implementation to grab from files \ingroup FILEIO_G \ingroup GRABBER_G
-  class ICLIO_API FileGrabber : public Grabber {
+  /// SourceBackend implementation to grab from files \ingroup FILEIO_G \ingroup GRABBER_G
+  class ICLIO_API FileGrabber : public SourceBackend {
     public:
 
       /// Create a NULL FileGrabber

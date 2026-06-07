@@ -1,23 +1,23 @@
 # ICL IO module
 
-# Public headers (installed).  Clustered into topical subdirs (grabber/,
+# Public headers (installed).  Clustered into topical subdirs (source/,
 # output/, file/, compress/); only the umbrella IO.h + the small free-function
 # helpers (ExternalViewer, SaveLoad) stay at module-top.  Per-backend /
 # per-plugin headers live under detail/<group>/ and are intentionally NOT
 # installed — they are implementation details.  Extension authors adding a new
-# codec / grabber / output backend work from inside the source tree.
+# codec / source / sink backend work from inside the source tree.
 io_public_headers = files(
   'IO.h',
   'ExternalViewer.h',
   'SaveLoad.h',
 )
 
-io_grabber_headers = files(
-  'grabber/GenericGrabber.h',
-  'grabber/Grabber.h',
-  'grabber/GrabberDeviceDescription.h',
-  'grabber/GrabberRegistry.h',
-  'grabber/TestImages.h',
+io_source_headers = files(
+  'source/ImageSource.h',
+  'source/SourceBackend.h',
+  'source/DeviceDescription.h',
+  'source/SourceBackendRegistry.h',
+  'source/TestImages.h',
 )
 
 io_output_headers = files(
@@ -37,10 +37,10 @@ io_compress_headers = files(
 
 # Always-compiled sources (public API impls, mirroring the header clustering).
 io_sources = files(
-  'grabber/GenericGrabber.cpp',
-  'grabber/Grabber.cpp',
-  'grabber/GrabberRegistry.cpp',
-  'grabber/TestImages.cpp',
+  'source/ImageSource.cpp',
+  'source/SourceBackend.cpp',
+  'source/SourceBackendRegistry.cpp',
+  'source/TestImages.cpp',
   'output/ImageSink.cpp',
   'file/FileGrabber.cpp',
   'file/FileList.cpp',
@@ -235,8 +235,8 @@ install_headers(io_public_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'io',
 )
 
-install_headers(io_grabber_headers,
-  install_dir: get_option('includedir') / install_prefix / 'icl' / 'io' / 'grabber',
+install_headers(io_source_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'io' / 'source',
 )
 
 install_headers(io_output_headers,

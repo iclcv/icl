@@ -276,8 +276,8 @@ namespace icl{
     }
 
 
-    const std::vector<GrabberDeviceDescription> &OptrisGrabber::getDeviceList(std::string hint, bool rescan){
-      static std::vector<GrabberDeviceDescription> all;
+    const std::vector<DeviceDescription> &OptrisGrabber::getDeviceList(std::string hint, bool rescan){
+      static std::vector<DeviceDescription> all;
       if(rescan){
         all.clear();
         FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
@@ -291,10 +291,10 @@ namespace icl{
               //              std::cout << "trying to create grabber " << s << std::endl;
               OptrisGrabber g(s,true);
               //std::cout << "--> creation successful" << std::endl;
-              all.push_back(GrabberDeviceDescription("optris",s,
+              all.push_back(DeviceDescription("optris",s,
                                                      "IR-IMAGER (serial: " +s+
                                                      " @ " + g.prop("v4l device").value +")"));
-              all.push_back(GrabberDeviceDescription("optrisv",s,
+              all.push_back(DeviceDescription("optrisv",s,
                                                      "IR-IMAGER (serial: " +s+
                                                      " @ " + g.prop("v4l device").value +")"));
 
@@ -344,15 +344,15 @@ namespace icl{
     }
 
     template<OptrisGrabber::Mode M>
-    static Grabber *create_optris_grabber(const std::string &param){
+    static SourceBackend *create_optris_grabber(const std::string &param){
       return new OptrisGrabber(param,false,M);
     }
 
     template<OptrisGrabber::Mode M>
-    const std::vector<GrabberDeviceDescription> &create_optris_grabber_device_list(std::string hint, bool rescan){
-      static std::vector<GrabberDeviceDescription> devices;
+    const std::vector<DeviceDescription> &create_optris_grabber_device_list(std::string hint, bool rescan){
+      static std::vector<DeviceDescription> devices;
       if(!devices.size() || rescan){
-        const std::vector<GrabberDeviceDescription> &get = OptrisGrabber::getDeviceList(hint,rescan);
+        const std::vector<DeviceDescription> &get = OptrisGrabber::getDeviceList(hint,rescan);
         std::string s = str("optris") + (M == OptrisGrabber::IR_IMAGE ? "" : "v");
         for(size_t i=0;i<get.size();++i){
           if(get[i].type == s) devices.push_back(get[i]);
@@ -362,14 +362,14 @@ namespace icl{
       return devices;
     }
 
-    REGISTER_GRABBER(optris,create_optris_grabber<OptrisGrabber::IR_IMAGE>,
+    REGISTER_SOURCE_BACKEND(optris,create_optris_grabber<OptrisGrabber::IR_IMAGE>,
                      create_optris_grabber_device_list<OptrisGrabber::IR_IMAGE>,
                      "optris:camera serial ID or pattern:LibImager-based camera grabber source (ir camera)");
 
-    REGISTER_GRABBER(optrisv,create_optris_grabber<OptrisGrabber::VISIBLE_IMAGE>,
+    REGISTER_SOURCE_BACKEND(optrisv,create_optris_grabber<OptrisGrabber::VISIBLE_IMAGE>,
                      create_optris_grabber_device_list<OptrisGrabber::VISIBLE_IMAGE>,
                      "optrisv:camera serial ID or pattern:LibImager-based camera grabber source (color camera)");
 
-    //REGISTER_GRABBER_BUS_RESET_FUNCTION(xi,reset_xi_bus);
+    //REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io
 }

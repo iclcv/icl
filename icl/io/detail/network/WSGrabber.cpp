@@ -276,9 +276,9 @@ namespace icl::io {
     delete m_data;
   }
 
-  const std::vector<GrabberDeviceDescription>&
+  const std::vector<DeviceDescription>&
   WSGrabber::getDeviceList([[maybe_unused]] bool rescan) {
-    static std::vector<GrabberDeviceDescription> empty;
+    static std::vector<DeviceDescription> empty;
     return empty;
   }
 
@@ -352,29 +352,29 @@ namespace icl::io {
     return m_data->lastFrame;
   }
 
-  // ----- registration with GenericGrabber ---------------------------------
+  // ----- registration with ImageSource ---------------------------------
 
   REGISTER_CONFIGURABLE(WSGrabber,
                         return new WSGrabber("ws://localhost:9090"));
 
-  static Grabber* createWSGrabber(const std::string &param) {
+  static SourceBackend* createWSGrabber(const std::string &param) {
     // Pass straight through — WSGrabber::WSGrabber handles all the
     // accepted shorthand forms (PORT / HOST:PORT / ws://HOST:PORT).
     return new WSGrabber(param);
   }
 
-  static const std::vector<GrabberDeviceDescription>&
+  static const std::vector<DeviceDescription>&
   getWSDeviceList(std::string filter, bool /*rescan*/) {
-    static std::vector<GrabberDeviceDescription> deviceList;
+    static std::vector<DeviceDescription> deviceList;
     deviceList.clear();
     if (filter.size()) {
-      deviceList.emplace_back(GrabberDeviceDescription(
+      deviceList.emplace_back(DeviceDescription(
         "ws", filter, "WebSocket-based network grabber"));
     }
     return deviceList;
   }
 
-  REGISTER_GRABBER(ws, createWSGrabber, getWSDeviceList,
+  REGISTER_SOURCE_BACKEND(ws, createWSGrabber, getWSDeviceList,
                    "ws:ws\\://host\\:port (URL of the publishing server) "
                    ":WebSocket-based network grabber")
 

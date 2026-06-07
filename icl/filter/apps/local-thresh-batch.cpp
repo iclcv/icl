@@ -4,7 +4,7 @@
 
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/cc/CCFunctions.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/io/file/FileWriter.h>
 #include <icl/io/file/FileList.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   int thresh = f["config.threshold"];
   float gamma = f["config.gammaslope"];
 
-  GenericGrabber grabber(pa("-i"));
+  ImageSource grabber(pa("-i"));
 
   FileList fl;
   int maxSteps = -1;

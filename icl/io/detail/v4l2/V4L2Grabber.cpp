@@ -651,15 +651,15 @@ namespace icl::io {
         return control.value;
       }
 
-      static std::vector<GrabberDeviceDescription> getDeviceList() {
+      static std::vector<DeviceDescription> getDeviceList() {
         FileList l("/dev/video*");
-        std::vector<GrabberDeviceDescription> all;
+        std::vector<DeviceDescription> all;
         for(int i=0;i<l.size();++i){
           const std::string &deviceName = l[i];
           std::shared_ptr<Impl> test;
           try{
             test = new Impl(deviceName,"",false);
-            all.push_back(GrabberDeviceDescription("v4l",deviceName,test->deviceNameInfo + " (" + deviceName + ")"));
+            all.push_back(DeviceDescription("v4l",deviceName,test->deviceNameInfo + " (" + deviceName + ")"));
           }catch(...){}
         }
         return all;
@@ -761,8 +761,8 @@ namespace icl::io {
     }
   }
 
-  const std::vector<GrabberDeviceDescription> &V4L2Grabber::getDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> last;
+  const std::vector<DeviceDescription> &V4L2Grabber::getDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> last;
     if(!last.size() || rescan){
       last = Impl::getDeviceList();
     }
@@ -771,10 +771,10 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(V4L2Grabber, return new V4L2Grabber("/dev/video0"));
 
-  Grabber* createVlGrabber(const std::string &param){
+  SourceBackend* createVlGrabber(const std::string &param){
     return new V4L2Grabber(param);
   }
 
-  REGISTER_GRABBER(v4l,createVlGrabber, V4L2Grabber::getDeviceList, "v4l:/dev/videoX index or device-file:V4l2 based camera source");
+  REGISTER_SOURCE_BACKEND(v4l,createVlGrabber, V4L2Grabber::getDeviceList, "v4l:/dev/videoX index or device-file:V4l2 based camera source");
 
   } // namespace icl::io

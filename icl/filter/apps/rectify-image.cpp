@@ -7,7 +7,7 @@
 #include <icl/filter/affine/ImageRectification.h>
 
 HSplit gui;
-GenericGrabber grabber;
+ImageSource grabber;
 DefineQuadrangleMouseHandler mouse;
 ImageRectification<icl8u> ir;
 

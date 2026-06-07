@@ -5,10 +5,10 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 
 namespace icl::io {
-  /// PixelSense Grabber class
+  /// PixelSense SourceBackend class
   /** This grabber can be used to interface with devices implementing the
       Microsoft PixelSense technology, such as the Samsung SUR40 device.
 
@@ -16,7 +16,7 @@ namespace icl::io {
       natively detected blobs. To extract the meta-data as a vector of Blobs,
       the static PixelSenseGrabber::extractBlobMetaData method can be used
       */
-  class PixelSenseGrabber : public Grabber{
+  class PixelSenseGrabber : public SourceBackend{
     struct Data;   //!< internal data structure
     Data *m_data;  //!< internal data pointer
 

@@ -12,7 +12,7 @@
 
 #include <icl/utils/thread/Thread.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/time/FPSLimiter.h>
 #include <mutex>

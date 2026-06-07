@@ -1889,7 +1889,7 @@ namespace icl::geom {
   }
 
   REGISTER_POINT_CLOUD_GRABBER(scene,create_scene_point_cloud_grabber,
-                  "Simulation based Grabber that renders a point cloud in a virtual scene",
+                  "Simulation based SourceBackend that renders a point cloud in a virtual scene",
                   "creation-string: {shape|object-file}[:camera-file] (shape can be sphere or cube)");
 
   } // namespace icl::geom

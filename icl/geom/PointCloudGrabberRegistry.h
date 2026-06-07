@@ -43,7 +43,7 @@ namespace icl::geom {
     (raw — caller takes ownership via the internal factory adapter).
     \code
       REGISTER_POINT_CLOUD_GRABBER(pcd, create_pcd_file_grabber,
-                                   "Grabber for .pcd file patterns",
+                                   "SourceBackend for .pcd file patterns",
                                    "creation-string: filepattern[@loop=off]");
     \endcode */
 #define REGISTER_POINT_CLOUD_GRABBER(NAME, CREATE_FUNC, DESC, SYNTAX)           \

@@ -22,7 +22,7 @@ using namespace icl::io;
 using namespace icl::qt;
 
 HSplit gui;
-GenericGrabber grabDepth, grabColor;
+ImageSource grabDepth, grabColor;
 int KINECT_CAM=0,VIEW_CAM=1;
 
 Camera depthCam, colorCam;

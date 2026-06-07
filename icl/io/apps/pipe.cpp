@@ -34,7 +34,7 @@ bool first = true;
 // a fixed yes/no in non-GUI modes).
 std::function<bool()> ppEnabled;
 
-GenericGrabber grabber;
+ImageSource grabber;
 
 std::vector<std::string> remove_size(const std::vector<std::string> &v){
   std::vector<std::string> r;
@@ -380,7 +380,7 @@ int main(int n, char **ppc){
          "-initially-disable-image-updates|-idu");
 
   if (pa("-reset")){
-    GenericGrabber::resetBus();
+    ImageSource::resetBus();
   }
 
   init_grabber();

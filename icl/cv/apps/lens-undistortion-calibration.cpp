@@ -13,7 +13,7 @@
 
 HBox gui;
 //std::shared_ptr<FiducialDetector> fd;
-GenericGrabber grabber;
+ImageSource grabber;
 
 typedef AdvancedMarkerGridDetector Detector;
 typedef Detector::MarkerGrid MarkerGrid;

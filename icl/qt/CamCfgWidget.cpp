@@ -4,7 +4,7 @@
 
 #include <icl/qt/CamCfgWidget.h>
 
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/qt/ContainerGUIComponents.h>
 #include <icl/qt/GUIWidget.h>
 #include <icl/qt/ComboHandle.h>
@@ -36,8 +36,8 @@ namespace icl::qt {
     std::string deviceFilter;
     GUI gui;
     GUI properties;
-    GenericGrabber grabber;
-    std::vector<GrabberDeviceDescription> foundDevices;
+    ImageSource grabber;
+    std::vector<DeviceDescription> foundDevices;
     bool scanScope;
     bool settingUpDevice;
     bool grabbing;
@@ -176,7 +176,7 @@ namespace icl::qt {
 
     ComboHandle &devices = data->gui.get<ComboHandle>("device");
     devices.clear();
-    data->foundDevices = GenericGrabber::getDeviceList(data->deviceFilter);
+    data->foundDevices = ImageSource::getDeviceList(data->deviceFilter);
 
     if(data->foundDevices.size()){
       for(unsigned int i=0;i<data->foundDevices.size();++i){

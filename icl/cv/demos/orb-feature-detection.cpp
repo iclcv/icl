@@ -12,11 +12,11 @@ using namespace icl::qt;
 using icl::utils::pa;
 using icl::core::Img8u;
 using icl::core::Image;
-using icl::io::GenericGrabber;
+using icl::io::ImageSource;
 using icl::cv::ORBFeatureDetector;
 
 HSplit gui;
-GenericGrabber grabber;
+ImageSource grabber;
 ORBFeatureDetector orb;
 
 void init(){

@@ -8,15 +8,15 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/compat/OpenCV.h>
 #include <icl/core/Image.h>
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/utils/Exception.h>
 
 #include <opencv2/videoio.hpp>
 #include <mutex>
 
 namespace icl::io {
-  /// Grabber class that uses OpenCV's grabbing function to grab camera images
-  class ICLIO_API OpenCVCamGrabber : public Grabber{
+  /// SourceBackend class that uses OpenCV's grabbing function to grab camera images
+  class ICLIO_API OpenCVCamGrabber : public SourceBackend{
     private:
       /// Wrapped Device struct
       std::unique_ptr<cv::VideoCapture> cvc;
@@ -29,7 +29,7 @@ namespace icl::io {
     public:
 
       /// grab function grabs an image (destination image is adapted on demand)
-      /** \copydoc icl::io::Grabber::acquireImage() **/
+      /** \copydoc icl::io::SourceBackend::acquireImage() **/
       core::Image acquireImage();
 
       /// callback for changed configurable properties
@@ -62,7 +62,7 @@ namespace icl::io {
         last device ID that is tried internally */
 
       /// simpler version of getDeviceListN detecting a maxinum of 100 devices
-      static const std::vector<GrabberDeviceDescription> &getDeviceList(std::string hint, bool rescan);
+      static const std::vector<DeviceDescription> &getDeviceList(std::string hint, bool rescan);
   };
 
   } // namespace icl::io

@@ -6,7 +6,7 @@
 #include <icl/core/Image.h>
 
 GUI gui;
-GenericGrabber grabber;
+ImageSource grabber;
 
 void run(){
   static FPSLimiter fps(pa("-maxfps"),10);

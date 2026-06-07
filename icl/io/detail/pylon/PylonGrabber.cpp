@@ -33,7 +33,7 @@ PylonGrabber::PylonGrabber(
 
   m_Camera -> Open();
   cameraDefaultSettings();
-  // getting first Grabber
+  // getting first SourceBackend
   m_Grabber = m_Camera -> GetStreamGrabber(channel);
   m_Grabber -> Open();
 
@@ -181,19 +181,19 @@ const core::ImgBase* PylonGrabber::acquireImage(){
   return ret;
 }
 
-icl::io::Grabber* createGrabber(const std::string &param){
+icl::io::SourceBackend* createGrabber(const std::string &param){
   Pylon::CDeviceInfo dev = getDeviceFromArgs(param);
   return new io::pylon::PylonGrabber(dev, param);
 }
 
-const std::vector<io::GrabberDeviceDescription>& getPylDeviceList(std::string hint, bool rescan){
-  static std::vector<io::GrabberDeviceDescription> deviceList;
+const std::vector<io::DeviceDescription>& getPylDeviceList(std::string hint, bool rescan){
+  static std::vector<io::DeviceDescription> deviceList;
   if(rescan){
     deviceList.clear();
     Pylon::DeviceInfoList_t devs = getPylonDeviceList();
     for(unsigned int i = 0 ; i < devs.size() ; ++i){
       deviceList.push_back(
-            io::GrabberDeviceDescription(
+            io::DeviceDescription(
               "pylon",
               utils::str(i), // + "|||" + devs.at(i).GetFullName().c_str(),
               devs.at(i).GetFullName().c_str()
@@ -204,4 +204,4 @@ const std::vector<io::GrabberDeviceDescription>& getPylDeviceList(std::string hi
   return deviceList;
 }
 
-REGISTER_GRABBER(pylon,createGrabber,getPylDeviceList, "pylon:camera ID or IP-address:Basler Pylon based gigabit-ethernet (GIG-E) camera source");
+REGISTER_SOURCE_BACKEND(pylon,createGrabber,getPylDeviceList, "pylon:camera ID or IP-address:Basler Pylon based gigabit-ethernet (GIG-E) camera source");

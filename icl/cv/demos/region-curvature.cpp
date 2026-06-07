@@ -17,7 +17,7 @@ using namespace icl::cv;
 
 GUI gui;
 
-GenericGrabber grabber;
+ImageSource grabber;
 
 Img32f image;
 

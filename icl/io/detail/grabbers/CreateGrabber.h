@@ -10,14 +10,14 @@
 #include <icl/core/cc/Color.h>
 #include <icl/core/Image.h>
 
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 
 namespace icl::io {
-  /// Create Grabber class that provides an image from ICL's create function
-  /** This grabber can be used as placeholder whenever no senseful Grabber
+  /// Create SourceBackend class that provides an image from ICL's create function
+  /** This grabber can be used as placeholder whenever no senseful SourceBackend
       is available. It provides an instance of an image that is created with
       the icl::io::TestImages::create function */
-  class ICLIO_API CreateGrabber : public Grabber{
+  class ICLIO_API CreateGrabber : public SourceBackend{
     public:
 
       core::Image acquireImage() override;

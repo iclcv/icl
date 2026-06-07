@@ -65,7 +65,7 @@ void mouse(const MouseEvent &e){
   }
 }
 
-GenericGrabber g;
+ImageSource g;
 
 
 void init(){

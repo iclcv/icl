@@ -150,7 +150,7 @@ namespace icl::io {
   PixelSenseGrabber::PixelSenseGrabber(float maxFPS):m_data(new Data){
     m_data->s40 = usb_get_device_handle( ID_MICROSOFT, ID_SURFACE );
 
-    if(!m_data->s40) throw ICLException("unable to initializte Surface Grabber (the crazy one)");
+    if(!m_data->s40) throw ICLException("unable to initializte Surface SourceBackend (the crazy one)");
     ps_init( m_data->s40 );
 
     m_data->image = Img8u(Size(VIDEO_RES_X,VIDEO_RES_Y),1);
@@ -342,20 +342,20 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(PixelSenseGrabber, return new PixelSenseGrabber(30));
 
-  Grabber* createPixelSenseGrabber(const std::string &param){
+  SourceBackend* createPixelSenseGrabber(const std::string &param){
     return new PixelSenseGrabber(to32f(param));
   }
 
-  const std::vector<GrabberDeviceDescription>& getPixelSenseDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
+  const std::vector<DeviceDescription>& getPixelSenseDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> deviceList;
     if(rescan){
     deviceList.clear();
       if(hint.size()){
-        deviceList.push_back(GrabberDeviceDescription("ps",
+        deviceList.push_back(DeviceDescription("ps",
             hint,
             "a pixelsense image source"));
       } else {
-        deviceList.push_back(GrabberDeviceDescription("ps",
+        deviceList.push_back(DeviceDescription("ps",
             "0",
             "a pixelsense image source"));
       }
@@ -363,6 +363,6 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_GRABBER(ps,createPixelSenseGrabber, getPixelSenseDeviceList,"ps:0:pixelsense image source");
+  REGISTER_SOURCE_BACKEND(ps,createPixelSenseGrabber, getPixelSenseDeviceList,"ps:0:pixelsense image source");
 
   } // namespace icl::io

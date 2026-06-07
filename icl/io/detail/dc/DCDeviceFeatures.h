@@ -41,7 +41,7 @@ namespace icl::io {
       - frame rate, zoom, pan, tilt
       - optical filter, capture size, capture quality
 
-      The class interface is adapted to the get/set Property interface of the ICL Grabber interface.
+      The class interface is adapted to the get/set Property interface of the ICL SourceBackend interface.
       Uses shared_ptr for cheap copying.
   */
   class DCDeviceFeatures : public utils::Configurable {

@@ -9,7 +9,7 @@
 #include <icl/io/detail/dc/DCDevice.h>
 #include <icl/io/detail/dc/DCDeviceFeatures.h>
 #include <icl/io/detail/dc/DCDeviceOptions.h>
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/core/convert/Converter.h>
 #include <mutex>
 
@@ -21,8 +21,8 @@ namespace icl::io {
   /** \endcond */
 
 
-  /// Grabber implementation for handling DC-Devices using libdc1394 (Version >= 2.0.rc9) \ingroup GRABBER_G \ingroup DC_G
-  /** The DCGrabber class implements the ICL's Grabber interface for
+  /// SourceBackend implementation for handling DC-Devices using libdc1394 (Version >= 2.0.rc9) \ingroup GRABBER_G \ingroup DC_G
+  /** The DCGrabber class implements the ICL's SourceBackend interface for
       providing libdc1395.so.2 based camera device access. Internally it
       wraps some additional classes with name prefix "DC". \n
 
@@ -54,11 +54,11 @@ namespace icl::io {
       camera-model specific information about the bayer-filter layout and
       so on. <b>Note:</b> New cameras, which should be supported must
       be included <b>here!</b>.\n
-      As in other Grabber implementations, a static function
+      As in other SourceBackend implementations, a static function
       "getDeviceList()" can be used to detect currently supported cameras.
       @see DCDevice, DCDeviceOptions, DCGrabberThread, DCFrameQueue
   */
-  class DCGrabber : public Grabber{
+  class DCGrabber : public SourceBackend{
     public:
 
       /// Constructor creates a new DCGrabber instance from a given DCDevice
@@ -81,7 +81,7 @@ namespace icl::io {
       ICLIO_API ~DCGrabber();
 
       /// grab function grabs an image (destination image is adapted on demand)
-      /** \copydoc icl::io::Grabber::acquireImage() **/
+      /** \copydoc icl::io::SourceBackend::acquireImage() **/
       ICLIO_API core::Image acquireImage();
 
       /// Returns a list of all connected DCDevices

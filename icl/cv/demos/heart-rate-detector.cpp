@@ -24,7 +24,7 @@ using namespace icl::io;
 using namespace icl::qt;
 
 GUI gui;
-GenericGrabber grabber;
+ImageSource grabber;
 Rect face;
 int faceCounter = 0;
 icl::cv::HeartrateDetector *detector = 0;

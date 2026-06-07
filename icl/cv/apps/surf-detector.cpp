@@ -7,7 +7,7 @@
 #include <icl/filter/affine/ImageRectification.h>
 #include <icl/filter/affine/RotateOp.h>
 
-GenericGrabber grabber;
+ImageSource grabber;
 std::shared_ptr<SurfFeatureDetector> surf;
 HSplit gui;
 Img8u templ,vis(Size(1,1),formatRGB);

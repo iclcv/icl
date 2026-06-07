@@ -14,7 +14,7 @@ HBox gui;
 std::recursive_mutex mutex;
 Color refColor = Color(255,255,255);
 CornerDetectorCSS css;
-GenericGrabber *grabber = 0;
+ImageSource *grabber = 0;
 
 void mouse(const MouseEvent &event){
   if(event.isPressEvent()){
@@ -28,7 +28,7 @@ void mouse(const MouseEvent &event){
 
 void init(){
   if(pa("-r")){
-    GenericGrabber::resetBus();
+    ImageSource::resetBus();
   }
 
   css.setConfigurableID("css");
@@ -56,7 +56,7 @@ void init(){
 
 
   // grabber
-  grabber = new GenericGrabber();
+  grabber = new ImageSource();
   grabber -> init(pa("-i"));
   grabber->useDesired(utils::Size(pa("-size")));
   grabber->useDesired(depth8u);

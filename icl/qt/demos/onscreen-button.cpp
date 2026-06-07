@@ -7,7 +7,7 @@
 #include <mutex>
 
 GUI gui;
-GenericGrabber grabber;
+ImageSource grabber;
 std::recursive_mutex mtex;
 Image image;
 

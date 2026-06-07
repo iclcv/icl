@@ -9,7 +9,7 @@
 
 HSplit gui;
 RegionDetector rd;
-GenericGrabber grabber;
+ImageSource grabber;
 Point mousePos;
 
 void mouse(const MouseEvent &evt){

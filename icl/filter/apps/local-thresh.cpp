@@ -10,7 +10,7 @@
 #include <mutex>
 
 HBox gui;
-GenericGrabber grabber;
+ImageSource grabber;
 LocalThresholdOp ltop;
 std::recursive_mutex mtex;
 Rect draggedRoi, usedRoi, fullImageRoi;

@@ -4,7 +4,7 @@
 
 #include <set>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/TextTable.h>
@@ -22,12 +22,12 @@ namespace icl::io {
       std::recursive_mutex mutex;
       // grabber pointer with init counter
       struct GrabberInstance{
-        Grabber* grabber;
-        GrabberDeviceDescription  description;
+        SourceBackend* grabber;
+        DeviceDescription  description;
         int count;
 
         GrabberInstance() : grabber(nullptr), count(0) {}
-        GrabberInstance(Grabber* g, GrabberDeviceDescription  d, int c = 1)
+        GrabberInstance(SourceBackend* g, DeviceDescription  d, int c = 1)
          : grabber(g), description(d), count(c) {}
       };
 
@@ -44,7 +44,7 @@ namespace icl::io {
         return &inst;
       }
 
-      Grabber* createGrabber(const GrabberDeviceDescription &desc){
+      SourceBackend* createGrabber(const DeviceDescription &desc){
         std::scoped_lock l(mutex);
 
         if(auto it = gpm.find(desc.name()); it != gpm.end()){
@@ -55,17 +55,17 @@ namespace icl::io {
         } else {
           DEBUG_LOG("create new grabber " << desc.name());
           // init grabber
-          Grabber* gPtr = GrabberRegistry::getInstance() -> createGrabber(desc.type, desc.id);
+          SourceBackend* gPtr = SourceBackendRegistry::getInstance() -> createGrabber(desc.type, desc.id);
           gpm[desc.name()] = GrabberInstance(gPtr,desc,1);
           return gPtr;
         }
       }
 
-      void deleteGrabber(const GrabberDeviceDescription &desc){
+      void deleteGrabber(const DeviceDescription &desc){
         std::scoped_lock l(mutex);
         DEBUG_LOG("called delete grabber");
         if(auto it = gpm.find(desc.name()); it == gpm.end()){
-          ERROR_LOG("Grabber with name '" << desc.name() << "' was not existent.");
+          ERROR_LOG("SourceBackend with name '" << desc.name() << "' was not existent.");
           return;
         } else {
           GrabberInstance &g = (it -> second);
@@ -73,15 +73,15 @@ namespace icl::io {
           --g.count;
           // delete grabber if no more instances
           if(!g.count){
-            DEBUG_LOG("Last instance gone. Deleting Grabber " << g.description.name());
+            DEBUG_LOG("Last instance gone. Deleting SourceBackend " << g.description.name());
             ICL_DELETE(g.grabber);
             gpm.erase(it -> first);
           }
         }
       }
 
-      std::vector<GrabberDeviceDescription> getInstanceList(){
-        std::vector<GrabberDeviceDescription> list;
+      std::vector<DeviceDescription> getInstanceList(){
+        std::vector<DeviceDescription> list;
         for(const auto& [name, instance] : gpm){
           list.push_back(instance.description);
         }
@@ -91,14 +91,14 @@ namespace icl::io {
   GrabberInstanceTable GrabberInstanceTable::inst;
 
 
-  GenericGrabber::~GenericGrabber(){
+  ImageSource::~ImageSource(){
     if(m_poGrabber){
       removeChildConfigurable(m_poGrabber);
       GrabberInstanceTable::get() -> deleteGrabber(m_poDesc);
     }
   }
 
-  void GenericGrabber::init(const ProgArg &pa){
+  void ImageSource::init(const ProgArg &pa){
     init(*pa,(*pa) + "=" + *utils::pa(pa.getID(),1));
   }
 
@@ -123,7 +123,7 @@ namespace icl::io {
     std::vector<std::string> ts = tok(filter,",");
 
     ParamMap pmap;
-    static GrabberRegistry* reg = GrabberRegistry::getInstance();
+    static SourceBackendRegistry* reg = SourceBackendRegistry::getInstance();
     static std::vector<std::string> plugins = reg -> getRegisteredGrabbers();
     for(unsigned int i=0;i<ts.size();++i){
       auto [deviceSpec, optionStr] = split_at_first('@',ts[i]);
@@ -138,11 +138,11 @@ namespace icl::io {
             pmap[ab[0]] = s;
             //DEBUG_LOG("setting pmap[" << ab[0] << "] to '" << (pmap[ab[0]])<< '\'');
           }else{
-            ERROR_LOG("GenericGrabber: unsupported device: ["<< ab[0] << "] (skipping)");
+            ERROR_LOG("ImageSource: unsupported device: ["<< ab[0] << "] (skipping)");
           }
           break;
         default:
-          ERROR_LOG("GenericGrabber: invalid device filter token: [" << ts[i] << "] (skipping)");
+          ERROR_LOG("ImageSource: invalid device filter token: [" << ts[i] << "] (skipping)");
       }
     }
     return pmap;
@@ -155,22 +155,22 @@ namespace icl::io {
     str += "[error message: " + error + "]";
   }
 
-  void GenericGrabber::init(const std::string &desiredAPIOrder,
+  void ImageSource::init(const std::string &desiredAPIOrder,
                             const std::string &params,
                             bool notifyErrors)
   {
     // get lock and grabber information
     std::scoped_lock __lock(m_mutex);
-    GrabberRegistry *grabberReg = GrabberRegistry::getInstance();
+    SourceBackendRegistry *grabberReg = SourceBackendRegistry::getInstance();
 
-    // (re)set GenericGrabber to default values
+    // (re)set ImageSource to default values
     if(m_poGrabber){
       // Detach previous backend from this Configurable's child set
       // before dropping the instance.
       removeChildConfigurable(m_poGrabber);
       GrabberInstanceTable::get()->deleteGrabber(m_poDesc);
     }
-    m_poDesc = GrabberDeviceDescription();
+    m_poDesc = DeviceDescription();
     m_poGrabber = nullptr;
 
     // create param map
@@ -196,7 +196,7 @@ namespace icl::io {
     // create grabber
     unsigned int i;
     std::string errStr;
-    std::vector<GrabberDeviceDescription> grabbers;
+    std::vector<DeviceDescription> grabbers;
     for(i = 0; i < l.size(); ++i){
       std::string id = l[i];
       std::string param = pmap[l[i]].id;
@@ -245,7 +245,7 @@ namespace icl::io {
       // Surface the backend's properties (both backend-specific
       // camera controls and the "desired size" / "undistortion.*"
       // pseudo-props we just added) as siblings on this
-      // GenericGrabber.  Empty prefix — no extra namespacing;
+      // ImageSource.  Empty prefix — no extra namespacing;
       // properties land flat.
       addChildConfigurable(m_poGrabber);
 
@@ -291,12 +291,12 @@ namespace icl::io {
     }
   }
 
-  void GenericGrabber::resetBus(const std::string &deviceList, bool verbose){
+  void ImageSource::resetBus(const std::string &deviceList, bool verbose){
     std::vector<std::string> ts = tok(deviceList,",");
     for(unsigned int i=0;i<ts.size();++i){
       const std::string &t = ts[i];
       try{
-        GrabberRegistry::getInstance() ->resetGrabberBus(t.substr(0,t.find('=')),verbose);
+        SourceBackendRegistry::getInstance() ->resetGrabberBus(t.substr(0,t.find('=')),verbose);
       } catch (ICLException &e){
         DEBUG_LOG(e.what());
       } catch (...){
@@ -310,7 +310,7 @@ namespace icl::io {
     return m.contains(t);
   }
 
-  static const GrabberDeviceDescription *find_description(const std::vector<GrabberDeviceDescription> &ds, const std::string &id){
+  static const DeviceDescription *find_description(const std::vector<DeviceDescription> &ds, const std::string &id){
     for(unsigned int i=0;i<ds.size();++i){
       if(ds[i].id == id){
         return &ds[i];
@@ -323,8 +323,8 @@ namespace icl::io {
     return 0;
   }
 
-  const std::vector<GrabberDeviceDescription> &GenericGrabber::getDeviceList(const std::string &filter, bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
+  const std::vector<DeviceDescription> &ImageSource::getDeviceList(const std::string &filter, bool rescan){
+    static std::vector<DeviceDescription> deviceList;
     if(!rescan){
       deviceList = GrabberInstanceTable::get() -> getInstanceList();
       return deviceList;
@@ -338,22 +338,22 @@ namespace icl::io {
       pmap = create_param_map(filter);
     }
     std::vector<std::string> grabberList =
-        GrabberRegistry::getInstance() -> getRegisteredGrabbers();
+        SourceBackendRegistry::getInstance() -> getRegisteredGrabbers();
 
     std::vector<std::string>::iterator it;
     for(it = grabberList.begin(); it != grabberList.end(); ++it){
       std::string grabber = *it;
       if(!useFilter || contains(pmap,grabber)){
         // get descriptions for this grabber
-        std::vector<GrabberDeviceDescription> ds;
+        std::vector<DeviceDescription> ds;
         if(!useFilter){
-          ds = GrabberRegistry::getInstance() -> getDeviceList(grabber);
+          ds = SourceBackendRegistry::getInstance() -> getDeviceList(grabber);
         } else if (contains(pmap,grabber)) {
-          ds  = GrabberRegistry::getInstance() -> getDeviceList(grabber,pmap[grabber].id);
+          ds  = SourceBackendRegistry::getInstance() -> getDeviceList(grabber,pmap[grabber].id);
         }
         DEBUG_LOG(grabber << " found " << ds.size() << " grabbers");
         if(useFilter && contains(pmap,grabber) && pmap[grabber].id.length()){
-          const GrabberDeviceDescription *d = find_description(ds,pmap[grabber].id);
+          const DeviceDescription *d = find_description(ds,pmap[grabber].id);
           if(d){
             deviceList.push_back(*d);
           }else if(grabber == "v4l"){ // hack for v4l devices here!

@@ -13,7 +13,7 @@
 #include <QtWidgets/QLabel>
 #include <mutex>
 
-GenericGrabber grabber;
+ImageSource grabber;
 HSplit gui;
 Img8u curr;
 std::recursive_mutex currMutex;
@@ -151,7 +151,7 @@ void batch_pattern_changed(){
         box.add(new QLabel(f[i].c_str()));
         ImgBase *dst = 0;
         if(performCrop){
-          GenericGrabber g("file","file="+f[i]);
+          ImageSource g("file","file="+f[i]);
           const ImgBase *image = g.grab().ptr()->shallowCopy(r);
           image->deepCopyROI(&dst);
           out.send(*dst);
@@ -309,7 +309,7 @@ int main(int n, char **args){
           "-estimate-image-size-only -estimate-image-ar-only "
           "-compute-optimal-scaling-size(target-width) -compute-optimal-scaling-size-input-size(Size=0x0)");
   if(pa("-estimate-image-size-only").as<bool>() || pa("-estimate-image-ar-only").as<bool>() || pa("-compute-optimal-scaling-size").as<bool>()){
-    GenericGrabber g(pa("-input"));
+    ImageSource g(pa("-input"));
     Size s = g.grab().getSize();
     if(pa("-estimate-image-size-only")){
       std::cout << s << std::endl;

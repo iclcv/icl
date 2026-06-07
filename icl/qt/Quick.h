@@ -144,7 +144,7 @@ namespace icl::qt{
     /** \endcond */
 
     /// grabs a new image from given device (affinity for floats)
-    /** @param dev device driver type (see Generic Grabber for more details)
+    /** @param dev device driver type (see Generic SourceBackend for more details)
         @param devSpec device specifier
         @param size output image size (grabbers size if utils::Size::null)
         @param fmt output format

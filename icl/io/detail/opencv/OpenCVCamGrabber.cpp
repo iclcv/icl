@@ -79,14 +79,14 @@ namespace icl::io {
     }
   }
 
-  const std::vector<GrabberDeviceDescription> &OpenCVCamGrabber::getDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
+  const std::vector<DeviceDescription> &OpenCVCamGrabber::getDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> deviceList;
     if(rescan){
       deviceList.clear();
       for(int i=0;i<100;++i){
         try{
           OpenCVCamGrabber g(i);
-          deviceList.push_back(GrabberDeviceDescription("cvcam",str(i),"OpenCV Grabber Device "+str(i)));
+          deviceList.push_back(DeviceDescription("cvcam",str(i),"OpenCV SourceBackend Device "+str(i)));
         }catch(ICLException &e){
           break;
         }
@@ -97,10 +97,10 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(OpenCVCamGrabber, return new OpenCVCamGrabber(0));
 
-  Grabber* createCVCGrabber(const std::string &param){
+  SourceBackend* createCVCGrabber(const std::string &param){
     return new OpenCVCamGrabber(to32s(param));
   }
 
-  REGISTER_GRABBER(cvcam,createCVCGrabber, OpenCVCamGrabber::getDeviceList, "cvcam:camera ID:OpenCV based camera source");
+  REGISTER_SOURCE_BACKEND(cvcam,createCVCGrabber, OpenCVCamGrabber::getDeviceList, "cvcam:camera ID:OpenCV based camera source");
 
   } // namespace icl::io

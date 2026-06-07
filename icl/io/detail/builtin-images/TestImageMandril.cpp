@@ -5,7 +5,7 @@
 #include <icl/io/detail/file-plugins/JPEGDecoder.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
-#include <icl/io/grabber/TestImages.h>
+#include <icl/io/source/TestImages.h>
 #include <vector>
 
 using namespace icl::utils;

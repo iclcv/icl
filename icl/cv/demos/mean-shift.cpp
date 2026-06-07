@@ -10,7 +10,7 @@
 
 std::recursive_mutex m;
 HSplit gui;
-GenericGrabber *grabber = 0;
+ImageSource *grabber = 0;
 Point32f *newPos = 0;
 Point32f pos;
 std::vector<double> COLOR(3,255);
@@ -37,7 +37,7 @@ void mouse(const MouseEvent &evt){
 }
 
 void init(){
-  grabber = new GenericGrabber();
+  grabber = new ImageSource();
   grabber -> init(pa("-i"));
   grabber->useDesired(depth32f);
   grabber->useDesired(formatRGB);

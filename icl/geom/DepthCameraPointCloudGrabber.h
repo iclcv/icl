@@ -15,7 +15,7 @@ namespace icl::geom {
   /** \endcond */
 
   /// PointCloudGrabber implementation for 2D core::depth-image based creation of point clouds
-  /** This Grabber implementation can be used for all point-cloud sources,
+  /** This SourceBackend implementation can be used for all point-cloud sources,
       where the point cloud must still be created from a given core::depth images.
       Internally an instance of PointCloudCreator is used. */
   class ICLGeom_API DepthCameraPointCloudGrabber : public PointCloudGrabber{

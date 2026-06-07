@@ -2,14 +2,14 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Andre Ueckermann
 
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/utils/Exception.h>
 
 namespace icl::io {
-  /// Special Grabber implementation for Microsoft's Kinect2 Device
-  /** This class implements ICL's Grabber interface for Microsofts Kinect2
+  /// Special SourceBackend implementation for Microsoft's Kinect2 Device
+  /** This class implements ICL's SourceBackend interface for Microsofts Kinect2
       Device. Internally, it uses libfreenect to access the device. */
-  struct Kinect2Grabber : public Grabber{
+  struct Kinect2Grabber : public SourceBackend{
       enum Mode{
         GRAB_RGB_IMAGE,       //!< grabs rgb images form the kinects rgb camera
         GRAB_DEPTH_IMAGE,     //!< grabs the core::depth image from kinect
@@ -18,7 +18,7 @@ namespace icl::io {
       };
 
       /// returns a list of attached kinect devices
-      ICLIO_API static const std::vector<GrabberDeviceDescription> &getDeviceList(bool rescan);
+      ICLIO_API static const std::vector<DeviceDescription> &getDeviceList(bool rescan);
 
       ICLIO_API Kinect2Grabber(Mode mode = GRAB_DEPTH_IMAGE, int deviceID=0);
 

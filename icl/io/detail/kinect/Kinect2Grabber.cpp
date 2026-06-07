@@ -12,7 +12,7 @@
 #include <libfreenect2/frame_listener_impl.h>
 #undef GLEW_MX
 
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/io/detail/kinect/Kinect2Grabber.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/StringUtils.h>
@@ -346,15 +346,15 @@ namespace icl::io {
   REGISTER_CONFIGURABLE(Kinect2Grabber, return new Kinect2Grabber(Kinect2Grabber::DUMMY_MODE));
 
   /// returns a list of attached kinect devices
-  const std::vector<GrabberDeviceDescription> &Kinect2Grabber::getDeviceList(bool rescan){
-    static std::vector<GrabberDeviceDescription> devices;
+  const std::vector<DeviceDescription> &Kinect2Grabber::getDeviceList(bool rescan){
+    static std::vector<DeviceDescription> devices;
     if(rescan){
       std::vector<int> ds = LibFreenect2Context::instance().getConnectedDeviceList();
       devices.clear();
       for(size_t i=0;i<ds.size();++i){
-        devices.push_back(GrabberDeviceDescription("kinect2d",str(ds[i]),"Kinect2 Depth Camera (ID "+str(ds[i])+")"));
-        devices.push_back(GrabberDeviceDescription("kinect2c",str(ds[i]),"Kinect2 Color Camera RGB (ID "+str(ds[i])+")"));
-        devices.push_back(GrabberDeviceDescription("kinect2i",str(ds[i]),"Kinect2 Color Camera IR (ID "+str(ds[i])+")"));
+        devices.push_back(DeviceDescription("kinect2d",str(ds[i]),"Kinect2 Depth Camera (ID "+str(ds[i])+")"));
+        devices.push_back(DeviceDescription("kinect2c",str(ds[i]),"Kinect2 Color Camera RGB (ID "+str(ds[i])+")"));
+        devices.push_back(DeviceDescription("kinect2i",str(ds[i]),"Kinect2 Color Camera IR (ID "+str(ds[i])+")"));
       }
     }
     return devices;
@@ -362,56 +362,56 @@ namespace icl::io {
 
 
 
-  Grabber* createDepth2Grabber(const std::string &param){
+  SourceBackend* createDepth2Grabber(const std::string &param){
     return new Kinect2Grabber(Kinect2Grabber::GRAB_DEPTH_IMAGE,to32s(param));
   }
 
-  Grabber* createRGB2Grabber(const std::string &param){
+  SourceBackend* createRGB2Grabber(const std::string &param){
     return new Kinect2Grabber(Kinect2Grabber::GRAB_RGB_IMAGE,to32s(param));
   }
 
-  Grabber* createIR2Grabber(const std::string &param){
+  SourceBackend* createIR2Grabber(const std::string &param){
     return new Kinect2Grabber(Kinect2Grabber::GRAB_IR_IMAGE,to32s(param));
   }
 
-  const std::vector<GrabberDeviceDescription>& getKinect2DDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> devices;
+  const std::vector<DeviceDescription>& getKinect2DDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> devices;
     if(rescan){
       std::vector<int> ds = LibFreenect2Context::instance().getConnectedDeviceList();
       devices.clear();
       for(size_t i=0;i<ds.size();++i){
-        devices.push_back(GrabberDeviceDescription("kinect2d",str(ds[i]),"Kinect2 Depth Camera (ID "+str(ds[i])+")"));
+        devices.push_back(DeviceDescription("kinect2d",str(ds[i]),"Kinect2 Depth Camera (ID "+str(ds[i])+")"));
       }
     }
     return devices;
   }
 
-  const std::vector<GrabberDeviceDescription>& getKinect2CDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> devices;
+  const std::vector<DeviceDescription>& getKinect2CDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> devices;
     if(rescan){
       std::vector<int> ds = LibFreenect2Context::instance().getConnectedDeviceList();
       devices.clear();
       for(size_t i=0;i<ds.size();++i){
-        devices.push_back(GrabberDeviceDescription("kinect2c",str(ds[i]),"Kinect2 Color Camera (ID "+str(ds[i])+")"));
+        devices.push_back(DeviceDescription("kinect2c",str(ds[i]),"Kinect2 Color Camera (ID "+str(ds[i])+")"));
       }
     }
     return devices;
   }
 
-  const std::vector<GrabberDeviceDescription>& getKinect2IDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> devices;
+  const std::vector<DeviceDescription>& getKinect2IDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> devices;
     if(rescan){
       std::vector<int> ds = LibFreenect2Context::instance().getConnectedDeviceList();
       devices.clear();
       for(size_t i=0;i<ds.size();++i){
-        devices.push_back(GrabberDeviceDescription("kinect2i",str(ds[i]),"Kinect2 IR Camera (ID "+str(ds[i])+")"));
+        devices.push_back(DeviceDescription("kinect2i",str(ds[i]),"Kinect2 IR Camera (ID "+str(ds[i])+")"));
       }
     }
     return devices;
   }
 
-  REGISTER_GRABBER(kinect2d,createDepth2Grabber, getKinect2DDeviceList, "kinect2d:device ID:kinect2 depth camera source:");
-  REGISTER_GRABBER(kinect2c,createRGB2Grabber, getKinect2CDeviceList,"kinect2c:device ID:kinect2 color camera source");
-  REGISTER_GRABBER(kinect2i,createIR2Grabber, getKinect2IDeviceList,"kinect2i:devide ID:kinect2 IR camera source");
+  REGISTER_SOURCE_BACKEND(kinect2d,createDepth2Grabber, getKinect2DDeviceList, "kinect2d:device ID:kinect2 depth camera source:");
+  REGISTER_SOURCE_BACKEND(kinect2c,createRGB2Grabber, getKinect2CDeviceList,"kinect2c:device ID:kinect2 color camera source");
+  REGISTER_SOURCE_BACKEND(kinect2i,createIR2Grabber, getKinect2IDeviceList,"kinect2i:devide ID:kinect2 IR camera source");
 
   } // namespace icl::io

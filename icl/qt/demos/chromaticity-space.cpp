@@ -9,7 +9,7 @@ using namespace icl;
 
 HBox gui;
 ChromaGUI *cg;
-GenericGrabber grabber;
+ImageSource grabber;
 
 void run(){
   Image grabImg = grabber.grab();

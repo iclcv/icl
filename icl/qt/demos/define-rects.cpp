@@ -8,7 +8,7 @@
 #include <QActionEvent>
 #include <icl/qt/DefineRectanglesMouseHandler.h>
 GUI gui;
-GenericGrabber grabber;
+ImageSource grabber;
 DefineRectanglesMouseHandler mouse;
 
 void init(){

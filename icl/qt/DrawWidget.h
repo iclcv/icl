@@ -73,7 +73,7 @@ void init(){
 }
 
 void run(){
-  static GenericGrabber g(pa("-input"));
+  static ImageSource g(pa("-input"));
   g.useDesired(utils::Size::VGA);
 
   // DrawHandle object draw provides direct access to the underlying

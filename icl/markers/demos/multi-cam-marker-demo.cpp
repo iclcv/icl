@@ -9,9 +9,9 @@
 #include <mutex>
 
 HSplit gui;
-GenericGrabber grabber;
+ImageSource grabber;
 MultiCamFiducialDetector fd;
-std::vector<std::shared_ptr<GenericGrabber> > grabbers;
+std::vector<std::shared_ptr<ImageSource> > grabbers;
 Scene scene;
 
 std::map<int,SceneObject*> cubes;
@@ -36,7 +36,7 @@ void init(){
   if(pa("-c").n() != n) throw ICLException("camera count and grabber count must be equal");
   grabbers.resize(n);
   for(int i=0;i<n;++i){
-    grabbers[i].reset(new GenericGrabber());
+    grabbers[i].reset(new ImageSource());
     grabbers[i] -> init(*pa("-i",2*i), *pa("-i",2*i) + "=" + *pa("-i",2*i+1));
     grabbers[i] -> useDesired(formatGray);
     scene.addCamera(Camera(*pa("-c",i)));

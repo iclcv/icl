@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/core/Image.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/filter/affine/ImageUndistortion.h>
@@ -22,7 +22,7 @@ namespace icl::io {
     }
   }
 
-  struct Grabber::Data{
+  struct SourceBackend::Data{
     Size desiredSize;
     format desiredFormat;
     depth desiredDepth;
@@ -35,7 +35,7 @@ namespace icl::io {
     bool undistortionUseOpenCL;
   };
 
-  Grabber::Grabber():
+  SourceBackend::SourceBackend():
     data(new Data){
     data->desiredSize = Size::null;
     data->desiredFormat = (format)-1;
@@ -46,40 +46,40 @@ namespace icl::io {
     data->undistortionUseOpenCL = false;
   }
 
-  Grabber::~Grabber() {
+  SourceBackend::~SourceBackend() {
     ICL_DELETE( data->warp );
     ICL_DELETE( data );
   }
 
-  void Grabber::useDesired(depth d, const Size &size, format fmt){
+  void SourceBackend::useDesired(depth d, const Size &size, format fmt){
     useDesired(d); useDesired(size);useDesired(fmt);
   }
-  void Grabber::ignoreDesired(){
+  void SourceBackend::ignoreDesired(){
     ignoreDesiredDepth();
     ignoreDesiredSize();
     ignoreDesiredFormat();
   }
 
-  void Grabber::setDesiredFormatInternal(format fmt){
+  void SourceBackend::setDesiredFormatInternal(format fmt){
     data->desiredFormat = fmt;
   }
-  void Grabber::setDesiredSizeInternal(const Size &size){
+  void SourceBackend::setDesiredSizeInternal(const Size &size){
     data->desiredSize = size;
   }
-  void Grabber::setDesiredDepthInternal(depth d){
+  void SourceBackend::setDesiredDepthInternal(depth d){
     data->desiredDepth = d;
   }
-  format Grabber::getDesiredFormatInternal() const{
+  format SourceBackend::getDesiredFormatInternal() const{
     return data->desiredFormat;
   }
-  depth Grabber::getDesiredDepthInternal() const{
+  depth SourceBackend::getDesiredDepthInternal() const{
     return data->desiredDepth;
   }
-  Size Grabber::getDesiredSizeInternal() const{
+  Size SourceBackend::getDesiredSizeInternal() const{
     return data->desiredSize;
   }
 
-  core::Image Grabber::grab(){
+  core::Image SourceBackend::grab(){
     // Reader-side of the m_grabMutex pattern (mirrors UnaryOp::apply()).
     // Single funnel for every backend's acquireImage() + adaptGrabResult
     // + warp; serializes against property-change callbacks routed through
@@ -105,19 +105,19 @@ namespace icl::io {
     return adapted;
   }
 
-  void Grabber::enableUndistortion(const filter::ImageUndistortion &udist){
+  void SourceBackend::enableUndistortion(const filter::ImageUndistortion &udist){
     enableUndistortion(udist.createWarpMap());//warpMap);
   }
 
-  void Grabber::enableUndistortion(const std::string &filename){
+  void SourceBackend::enableUndistortion(const std::string &filename){
     enableUndistortion(filter::ImageUndistortion(filename));
   }
 
-  void Grabber::enableUndistortion(const ProgArg &pa){
+  void SourceBackend::enableUndistortion(const ProgArg &pa){
     enableUndistortion(utils::pa(pa.getID(),0).as<std::string>());
   }
 
-  void Grabber::setUndistortionInterpolationMode(scalemode mode){
+  void SourceBackend::setUndistortionInterpolationMode(scalemode mode){
     if(data->warp){
       data->warp->setScaleMode(mode);
     }else {
@@ -126,11 +126,11 @@ namespace icl::io {
   }
 
 
-  bool Grabber::isUndistortionEnabled() const{
+  bool SourceBackend::isUndistortionEnabled() const{
     return data->warp;
   }
 
-  void Grabber::enableUndistortion(const Img32f &warpMap){
+  void SourceBackend::enableUndistortion(const Img32f &warpMap){
     if(!data->warp){
       data->warp = new filter::WarpOp;
     }
@@ -138,12 +138,12 @@ namespace icl::io {
     data->warp->setScaleMode(interpolateLIN);
   }
 
-  void Grabber::disableUndistortion(){
+  void SourceBackend::disableUndistortion(){
     ICL_DELETE(data->warp);
   }
 
 
-  core::Image Grabber::adaptGrabResult(const Image &src){
+  core::Image SourceBackend::adaptGrabResult(const Image &src){
     bool adaptDepth  = desiredDepthUsed()  && (getDesiredDepth()  != src.getDepth());
     bool adaptSize   = desiredSizeUsed()   && (getDesiredSize()   != src.getSize());
     bool adaptFormat = desiredFormatUsed() && (getDesiredFormat() != src.getFormat());
@@ -176,22 +176,22 @@ namespace icl::io {
     return fs;
   }*/
 
-  const Img32f *Grabber::getUndistortionWarpMap() const{
+  const Img32f *SourceBackend::getUndistortionWarpMap() const{
     return data->warp ? &data->warp->getWarpMap() : 0;
   }
 
 
-  utils::Configurable::CallbackToken Grabber::registerCallback(utils::Configurable::Callback cb){
-    // Every Grabber-level registered property callback implicitly serializes
+  utils::Configurable::CallbackToken SourceBackend::registerCallback(utils::Configurable::Callback cb){
+    // Every SourceBackend-level registered property callback implicitly serializes
     // against grab() via m_grabMutex. Matches the reader-side scoped_lock at
-    // the top of Grabber::grab(). Mirror of UnaryOp::registerCallback.
+    // the top of SourceBackend::grab(). Mirror of UnaryOp::registerCallback.
     return Configurable::registerCallback([this, cb = std::move(cb)](const Property &p){
       std::scoped_lock lock(m_grabMutex);
       cb(p);
     });
   }
 
-  void Grabber::processPropertyChange(const utils::Configurable::Property &prop){
+  void SourceBackend::processPropertyChange(const utils::Configurable::Property &prop){
     if(prop.name == "desired size"){
       if(prop.as<std::string>() == "not used"){
         ignoreDesiredSize();
@@ -227,13 +227,13 @@ namespace icl::io {
     }
   }
 
-  // Grabber is abstract (acquireImage() is pure); register a thin dummy
+  // SourceBackend is abstract (acquireImage() is pure); register a thin dummy
   // subclass so the Configurable type list still has an entry.
-  struct Grabber_VIRTUAL : public Grabber {
+  struct Grabber_VIRTUAL : public SourceBackend {
     Image acquireImage() override { return Image(); }
   };
   REGISTER_CONFIGURABLE_DEFAULT(Grabber_VIRTUAL);
 
-  // GrabberRegistry impls live in GrabberRegistry.cpp.
+  // SourceBackendRegistry impls live in SourceBackendRegistry.cpp.
 
   } // namespace icl::io

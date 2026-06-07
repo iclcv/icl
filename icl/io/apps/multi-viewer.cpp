@@ -9,7 +9,7 @@ VSplit gui;
 
 struct Input{
   std::string a,b;
-  GenericGrabber grabber;
+  ImageSource grabber;
   ImageHandle handle;
   Image lastImage;
   std::string id;
@@ -78,7 +78,7 @@ std::string fix_at_stuff(const std::string &s){
 }
 
 void init(){
-  if(pa("-r")) GenericGrabber::resetBus("dc");
+  if(pa("-r")) ImageSource::resetBus("dc");
 
   ProgArg p = pa("-i");
   Size layout = pa("-l") ? pa("-l").as<Size>() : Size(ceil(nInputs*0.5),2);

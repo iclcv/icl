@@ -9,7 +9,7 @@ GUI gui;
 std::vector<Point32f> grid;
 int Nx,Ny;
 Camera cam;
-GenericGrabber *grabber = 0;
+ImageSource *grabber = 0;
 
 void init(){
 
@@ -17,7 +17,7 @@ void init(){
   gui << Canvas().handle("draw").minSize(16,12) << Show();
 
   cam = Camera(*pa("-input",2));
-  grabber = new GenericGrabber();
+  grabber = new ImageSource();
   grabber -> init(pa("-i"));
   grabber->useDesired(cam.getRenderParams().viewport.getSize());
 

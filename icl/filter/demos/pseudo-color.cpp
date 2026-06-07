@@ -9,7 +9,7 @@
 using icl::filter::PseudoColorOp;
 
 HSplit gui;
-GenericGrabber grabber;
+ImageSource grabber;
 PseudoColorOp pcc;
 Image input_img;
 Image color_img;

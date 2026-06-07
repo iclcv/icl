@@ -11,7 +11,7 @@
 
 HSplit gui;
 
-GenericGrabber grabber;
+ImageSource grabber;
 FiducialDetector *fid = 0;
 Scene scene;
 bool canShowRegionCorners = false;

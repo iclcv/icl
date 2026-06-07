@@ -27,7 +27,7 @@ GUI markerDetectionOptionGUI;
 GUI planeOptionGUI;
 
 Scene scene;
-GenericGrabber grabber;
+ImageSource grabber;
 Point32f currentMousePos;
 bool haveAnyCalibration = false;
 CCU::CalibFileData calibFileData;

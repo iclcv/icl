@@ -187,21 +187,21 @@ namespace icl::io {
 
   REGISTER_CONFIGURABLE(DemoGrabber, return new DemoGrabber(30));
 
-  Grabber* createDemoGrabber(const std::string &param){
+  SourceBackend* createDemoGrabber(const std::string &param){
     float fps = to32f(param);
     return new DemoGrabber(fps > 0 ? fps : 30);
   }
 
-  const std::vector<GrabberDeviceDescription>& getDemoDeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
+  const std::vector<DeviceDescription>& getDemoDeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> deviceList;
     if(rescan){
     deviceList.clear();
       if(hint.size()){
-        deviceList.push_back(GrabberDeviceDescription("demo",
+        deviceList.push_back(DeviceDescription("demo",
             hint,
             "a demo image source"));
       } else {
-        deviceList.push_back(GrabberDeviceDescription("demo",
+        deviceList.push_back(DeviceDescription("demo",
             "0",
             "a demo image source"));
       }
@@ -209,6 +209,6 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_GRABBER(demo,createDemoGrabber, getDemoDeviceList,"demo:0:demo image source");
+  REGISTER_SOURCE_BACKEND(demo,createDemoGrabber, getDemoDeviceList,"demo:0:demo image source");
 
   } // namespace icl::io

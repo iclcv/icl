@@ -8,7 +8,7 @@
 #include <icl/utils/Size.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/prop/Constraints.h>
-#include <icl/io/grabber/GenericGrabber.h>
+#include <icl/io/source/ImageSource.h>
 
 #include <icl/qt/GUI.h>
 #include <icl/qt/GUIWidget.h>
@@ -256,13 +256,13 @@ namespace icl{
       // Parallel coalescing for child-set rebuilds.  Fires from
       // Configurable::onChildSetChanged when add/removeChildConfigurable
       // happens at runtime (codec swap on ImageCompressor, backend
-      // swap on GenericGrabber, ...).  Rebuild tears the widget tree
+      // swap on ImageSource, ...).  Rebuild tears the widget tree
       // down and walks the property list again — always on the GUI
       // thread, at most once per event-loop tick.
       bool rebuildScheduled = false;
 
       // Callback tokens for unregistering in the dtor.  The Configurable
-      // may outlive this widget (e.g. a GenericGrabber wired to a Prop
+      // may outlive this widget (e.g. a ImageSource wired to a Prop
       // that gets torn down when the GUI closes) — without unregistering,
       // the captured `this` dangles and the next fire segfaults.
       Configurable::CallbackToken propChangeToken = 0;
@@ -425,7 +425,7 @@ namespace icl{
       }
 
       bool isSpecialGrabberGrabberProperty(Configurable* c, const std::string &prop){
-        if(dynamic_cast<io::Grabber*>(conf)){
+        if(dynamic_cast<io::SourceBackend*>(conf)){
           const unsigned int propcount = 5;
           const std::string properties[propcount] = {"format", "size", "desired format", "desired size", "desired depth"};
           for (unsigned int i = 0; i < propcount; ++i){
@@ -556,7 +556,7 @@ namespace icl{
         std::ostringstream ostr;
 
         // special treatment of grabbers
-        if(dynamic_cast<io::Grabber*>(conf)){
+        if(dynamic_cast<io::SourceBackend*>(conf)){
           GUI general_box = VBox(this).handle("__the_box__");
           add_component(general_box,getStSt(sections, "format"),ostr,gui);
           add_component(general_box,getStSt(sections, "size"),ostr,gui);
@@ -873,8 +873,8 @@ namespace icl{
     struct CamPropertyWidget : public Tab {
 
       static std::string create_tab_list(){
-         const std::vector<io::GrabberDeviceDescription> devs =
-                            io::GenericGrabber::getDeviceList("",false);
+         const std::vector<io::DeviceDescription> devs =
+                            io::ImageSource::getDeviceList("",false);
          std::ostringstream ret;
          for(unsigned int i = 0; i < devs.size(); ++i){
             ret << "[" << devs.at(i).type << "] " << i << ",";
@@ -886,7 +886,7 @@ namespace icl{
         : Tab(create_tab_list())
       {
         minSize(32,24);
-        std::vector<io::GrabberDeviceDescription> devs = io::GenericGrabber::getDeviceList("",false);
+        std::vector<io::DeviceDescription> devs = io::ImageSource::getDeviceList("",false);
         for(unsigned int i = 0; i < devs.size(); ++i){
           *this << Prop(devs.at(i).name()).label(devs.at(i).name());
         }

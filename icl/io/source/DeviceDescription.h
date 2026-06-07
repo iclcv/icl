@@ -10,13 +10,13 @@
 
 namespace icl::io {
   /// defines and explains an available grabber device
-  struct ICLIO_API GrabberDeviceDescription{
+  struct ICLIO_API DeviceDescription{
     /// Constructor
-    GrabberDeviceDescription(const std::string &deviceType, const std::string &deviceID, const std::string &description):
+    DeviceDescription(const std::string &deviceType, const std::string &deviceID, const std::string &description):
       type(deviceType),id(deviceID),description(description){}
 
     /// Empty constructor
-    GrabberDeviceDescription(){}
+    DeviceDescription(){}
 
     /// type of the device (e.g. dc, pwc, sr or dc800)
     std::string type;
@@ -31,7 +31,7 @@ namespace icl::io {
       return "[" + type + "]:" +  id;
     }
 
-    bool equals(const GrabberDeviceDescription other){
+    bool equals(const DeviceDescription other){
       return (type == other.type) && (id == other.id);
     }
 
@@ -41,8 +41,8 @@ namespace icl::io {
 
   };
 
-  /// ostream operator for GenericGrabber::FoundDevice instances
-  inline std::ostream &operator<<(std::ostream &s, const GrabberDeviceDescription &d){
+  /// ostream operator for ImageSource::FoundDevice instances
+  inline std::ostream &operator<<(std::ostream &s, const DeviceDescription &d){
     return s << "FoundDevice(" << d.type << "," << d.id << "," << d.description << ")";
   }
 

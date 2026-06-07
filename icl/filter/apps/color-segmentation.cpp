@@ -27,7 +27,7 @@ VSplit gui;
 
 constexpr int MAX_LUT_3D_DIM = 10000000;
 
-GenericGrabber grabber;
+ImageSource grabber;
 std::shared_ptr<ColorSegmentationOp> segmenter;
 std::recursive_mutex mtex;
 
@@ -270,7 +270,7 @@ void init(){
   }
 
   if(pa("-r")){
-    GenericGrabber::resetBus();
+    ImageSource::resetBus();
   }
 
   grabber.init(pa("-i"));

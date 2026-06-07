@@ -8,7 +8,7 @@
 #include <icl/filter/color/ColorDistanceOp.h>
 
 VBox gui;
-GenericGrabber grabber;
+ImageSource grabber;
 RegionDetector rd(100,1E9,255,255);
 ColorDistanceOp cd(Color(0,120,240),100);
 

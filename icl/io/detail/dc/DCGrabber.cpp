@@ -227,9 +227,9 @@ namespace icl::io {
   }
   REGISTER_CONFIGURABLE(DCGrabber, return new DCGrabber(DCDevice::null,0));
 
-  Grabber* createGrabberDC(int bandwidth, const std::string &param){
+  SourceBackend* createGrabberDC(int bandwidth, const std::string &param){
     std::vector<DCDevice> devs = DCGrabber::getDCDeviceList(false);
-    if(!param.length()) throw ICLException("GenericGrabber::init: got dc with empty sub-arg!");
+    if(!param.length()) throw ICLException("ImageSource::init: got dc with empty sub-arg!");
     std::vector<std::string> ts = tok(param,"|||",false);
     std::string singlepar = "";
     if(ts.size() > 1){
@@ -257,21 +257,21 @@ namespace icl::io {
     }
   }
 
-  Grabber* createGrabberDC400(const std::string &param){
+  SourceBackend* createGrabberDC400(const std::string &param){
     return createGrabberDC(400, param);
   }
 
-  Grabber* createGrabberDC800(const std::string &param){
+  SourceBackend* createGrabberDC800(const std::string &param){
     return createGrabberDC(800, param);
   }
 
-  const std::vector<GrabberDeviceDescription>& getDC400DeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
+  const std::vector<DeviceDescription>& getDC400DeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> deviceList;
     if(rescan){
       deviceList.clear();
       std::vector<DCDevice> devs = DCGrabber::getDCDeviceList(false);
       for(unsigned int i=0;i<devs.size();++i){
-        deviceList.push_back(GrabberDeviceDescription("dc",
+        deviceList.push_back(DeviceDescription("dc",
                                                       str(i)+"|||"+devs[i].getUniqueStringIdentifier(),
                                                       devs[i].getUniqueStringIdentifier()));
       }
@@ -279,14 +279,14 @@ namespace icl::io {
     return deviceList;
   }
 
-  const std::vector<GrabberDeviceDescription>& getDC800DeviceList(std::string hint, bool rescan){
-    static std::vector<GrabberDeviceDescription> deviceList;
+  const std::vector<DeviceDescription>& getDC800DeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> deviceList;
     if(rescan){
       deviceList.clear();
       std::vector<DCDevice> devs = DCGrabber::getDCDeviceList(false);
       for(unsigned int i=0;i<devs.size();++i){
         if(devs[i].supportsDC800()){
-          deviceList.push_back(GrabberDeviceDescription("dc800",
+          deviceList.push_back(DeviceDescription("dc800",
                                                         str(i)+"|||"+devs[i].getUniqueStringIdentifier(),
                                                         devs[i].getUniqueStringIdentifier()));
         }
@@ -295,9 +295,9 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_GRABBER(dc,createGrabberDC400, getDC400DeviceList, "dc:camera ID or unique ID:IEEE-1394a based camera source (FireWire 400)");
-  REGISTER_GRABBER(dc800,createGrabberDC800, getDC800DeviceList,"dc:camera ID or unique ID:IEEE-1394b based camera source (FireWire 800)");
-  REGISTER_GRABBER_BUS_RESET_FUNCTION(dc,DCGrabber::dc1394_reset_bus);
-  REGISTER_GRABBER_BUS_RESET_FUNCTION(dc800,DCGrabber::dc1394_reset_bus);
+  REGISTER_SOURCE_BACKEND(dc,createGrabberDC400, getDC400DeviceList, "dc:camera ID or unique ID:IEEE-1394a based camera source (FireWire 400)");
+  REGISTER_SOURCE_BACKEND(dc800,createGrabberDC800, getDC800DeviceList,"dc:camera ID or unique ID:IEEE-1394b based camera source (FireWire 800)");
+  REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(dc,DCGrabber::dc1394_reset_bus);
+  REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(dc800,DCGrabber::dc1394_reset_bus);
 
   } // namespace icl::io

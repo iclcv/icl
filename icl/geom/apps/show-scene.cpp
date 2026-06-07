@@ -8,7 +8,7 @@
 // global data
 HSplit gui;
 Scene scene;
-GenericGrabber grabber;
+ImageSource grabber;
 int nCams = 0;
 
 

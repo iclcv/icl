@@ -7,7 +7,7 @@
 #include <icl/io/detail/pylon/PylonIncludes.h>
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/io/detail/pylon/PylonUtils.h>
 #include <icl/io/detail/pylon/PylonCameraOptions.h>
 #include <icl/io/detail/pylon/PylonGrabberThread.h>
@@ -18,7 +18,7 @@
 namespace icl::io {
   namespace pylon {
 
-    /// Grabber implementation for a Basler Pylon-based GIG-E Grabber \ingroup GIGE_G
+    /// SourceBackend implementation for a Basler Pylon-based GIG-E SourceBackend \ingroup GIGE_G
     /**
         This is just a wrapper class of the underlying PylonGrabberImpl class
 
@@ -58,7 +58,7 @@ namespace icl::io {
           when working with other.
 
     **/
-    class PylonGrabber : public Grabber, public Interruptable {
+    class PylonGrabber : public SourceBackend, public Interruptable {
       public:
         /// The constructor
         /**
@@ -71,7 +71,7 @@ namespace icl::io {
         ICLIO_API ~PylonGrabber();
 
         /// grab function grabs an image (destination image is adapted on demand)
-        /** \copydoc icl::io::Grabber::acquireImage() **/
+        /** \copydoc icl::io::SourceBackend::acquireImage() **/
         ICLIO_API core::Image acquireImage();
 
         /// Uses args to choose a pylon device

@@ -9,7 +9,7 @@
 #include <icl/utils/thread/Lockable.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/config/Configurable.h>
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/core/Image.h>
 #include <string>
 #include <mutex>
@@ -18,34 +18,34 @@ namespace icl::io {
   /// Common interface class for all grabbers \ingroup GRABBER_G
   /** The generic grabber provides an interface for a multi-platform
       compatible grabber.
-      Image processing applications should use this Grabber class.
-      The wrapped backend Grabber is surfaced through the Configurable
+      Image processing applications should use this SourceBackend class.
+      The wrapped backend SourceBackend is surfaced through the Configurable
       child-configurable mechanism — all of its properties (backend-
       specific camera controls + the "desired size" / "undistortion.*"
-      pseudo-properties that GenericGrabber installs post-creation)
-      appear as siblings on this GenericGrabber instance.
+      pseudo-properties that ImageSource installs post-creation)
+      appear as siblings on this ImageSource instance.
   */
-  class ICLIO_API GenericGrabber : public utils::Configurable{
+  class ICLIO_API ImageSource : public utils::Configurable{
 
-      Grabber *m_poGrabber; //!< internally wrapped grabber instance
+      SourceBackend *m_poGrabber; //!< internally wrapped grabber instance
 
-      GrabberDeviceDescription m_poDesc; //!< description of current Grabber
+      DeviceDescription m_poDesc; //!< description of current SourceBackend
 
       mutable std::recursive_mutex m_mutex; //! << internal protection for re-initialization
 
     public:
-      GenericGrabber(const GenericGrabber&) = delete;
-      GenericGrabber& operator=(const GenericGrabber&) = delete;
+      ImageSource(const ImageSource&) = delete;
+      ImageSource& operator=(const ImageSource&) = delete;
 
       /// Initialized the grabber from given prog-arg
       /** The progarg needs two sub-parameters */
-      GenericGrabber(const utils::ProgArg &pa):m_poGrabber(0){
+      ImageSource(const utils::ProgArg &pa):m_poGrabber(0){
         init(pa);
       }
 
       /// Create a generic grabber instance with given device priority list
       /** internally this function calls the init function immediately*/
-      GenericGrabber(const std::string &devicePriorityList,
+      ImageSource(const std::string &devicePriorityList,
                      const std::string &params,
                      bool notifyErrors = true):m_poGrabber(0){
         init(devicePriorityList,params,notifyErrors);
@@ -54,7 +54,7 @@ namespace icl::io {
 
       /// Empty default constructor, which creates a null-instance
       /** null instances of grabbers can be adapted using the init-function*/
-    GenericGrabber():m_poGrabber(0){}
+    ImageSource():m_poGrabber(0){}
 
       /// initialization function to change/initialize the grabber back-end
       /** @param devicePriorityList Comma separated list of device tokens (no white spaces).
@@ -99,8 +99,8 @@ namespace icl::io {
                                   icl-intrinsic-camera-calibration and icl-intrinsic-calibrator-demo.
                                   On the C++-level, this is only a minor advantage, since all these things can
                                   also be achieved via function calls, however if you use the most recommended way
-                                  for ICL-Grabber instantiation using ICL's program-argument evaluation framework,
-                                  The GenericGrabber is instantiated using grabber.init(pa("-i")) which then allows
+                                  for ICL-SourceBackend instantiation using ICL's program-argument evaluation framework,
+                                  The ImageSource is instantiated using grabber.init(pa("-i")) which then allows
                                   the application user to set grabber parameters via addiation \@-options on the
                                   command line: e.g.: "icl-camviewer -input dc 0\@size=VGA"
 
@@ -157,13 +157,13 @@ namespace icl::io {
       }
 
       /// returns the wrapped grabber itself
-      Grabber *getGrabber() const {
+      SourceBackend *getGrabber() const {
         std::scoped_lock __lock(m_mutex);
         return m_poGrabber;
       }
 
       /// Destructor
-      virtual ~GenericGrabber();
+      virtual ~ImageSource();
 
       /// Grabs the next image and returns it as an Image value
       core::Image grab(){
@@ -295,8 +295,8 @@ namespace icl::io {
 
       /// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
       /** Please note, that this method has no effect if the undistortion was not enabled before
-         using one of the Grabber::enableUndistortion methods. Furthermore, the setting is lost
-         if the undistortion is deactivated using Grabber::disableUndistortion */
+         using one of the SourceBackend::enableUndistortion methods. Furthermore, the setting is lost
+         if the undistortion is deactivated using SourceBackend::disableUndistortion */
       void setUndistortionInterpolationMode(core::scalemode mode){
         ICLASSERT_RETURN(!isNull());
         std::scoped_lock l(m_mutex);
@@ -332,11 +332,11 @@ namespace icl::io {
          a token has the core::format deviceType, then all possible devices for this device type are
          listed.
      */
-      static const std::vector<GrabberDeviceDescription> &getDeviceList(const std::string &filter, bool rescan=true);
+      static const std::vector<DeviceDescription> &getDeviceList(const std::string &filter, bool rescan=true);
 
       /// initializes the grabber from given FoundDevice instance
       /** calls 'init(dev.type,dev.type+"="+dev.id,false)' */
-      inline void init(const GrabberDeviceDescription &dev){
+      inline void init(const DeviceDescription &dev){
         init(dev.type,dev.type+"="+dev.id,false);
       }
   };

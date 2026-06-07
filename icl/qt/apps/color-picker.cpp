@@ -8,7 +8,7 @@
 #include <mutex>
 
 VBox gui;
-GenericGrabber grabber;
+ImageSource grabber;
 std::recursive_mutex mtex;
 
 

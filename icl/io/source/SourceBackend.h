@@ -8,7 +8,7 @@
 #include <icl/utils/SteppingRange.h>
 #include <icl/utils/config/Configurable.h>
 #include <icl/core/ImgBase.h>
-#include <icl/io/grabber/GrabberDeviceDescription.h>
+#include <icl/io/source/DeviceDescription.h>
 
 namespace icl::core { class Image; }
 namespace icl::utils { class ProgArg; }
@@ -21,24 +21,24 @@ namespace icl::filter { class ImageUndistortion; }
 namespace icl::io {
 /** \cond */
 template <class T> class GrabberHandle;
-class GenericGrabber;
+class ImageSource;
 /** \endcond */
 
 /// Common interface class for all grabbers \ingroup GRABBER_G
-/** The Grabber is ICL's common interface for image acquisition
+/** The SourceBackend is ICL's common interface for image acquisition
 tools. A large set of Grabbers is available and wrapped
-by the GenericGrabber class. We strongly recommend to
-use the GenericGrabber class for image acquisition within
+by the ImageSource class. We strongly recommend to
+use the ImageSource class for image acquisition within
 applications.
 
-The Grabber itself has a very short interface for the user:
+The SourceBackend itself has a very short interface for the user:
 usually, a grabber is instantiated and its grab() method is
 called to aquire the next available image.
 
 
 \section DES Desired parameters
 
-In addition, the Grabber supports a set of so called
+In addition, the SourceBackend supports a set of so called
 'desired-parameters'. These can be set to overwrite the
 image parameters that are used by the underlying implementation.
 A FileGrabber e.g. will by default return images that have
@@ -46,8 +46,8 @@ the same parameter that the grabbed image file provides. However,
 in some situations, the user might want to adapt these parameters
 E.g. if the image parameters that are provided by the grabber
 are not suitable for an algorithm. If this is the case, the
-Grabber's desired parameters can be set using the
-Grabber::setDesired-template.\n
+SourceBackend's desired parameters can be set using the
+SourceBackend::setDesired-template.\n
 Currently, the image parameters 'core::depth', 'size' and 'core::format'
 can be adapted seperately by setting desired parameters. Once
 desired parameters are set, the can be reset to the grabber's
@@ -57,7 +57,7 @@ types core::depth, core::format or icl::utils::Size is used as type T.
 
 \section UND Image Undistortion
 
-The Grabber does also provide an interface to set up
+The SourceBackend does also provide an interface to set up
 image undistortion parameters. The can be estimated
 with ICL's distortion calibration tool. The undistortion
 operation is accelerated using an internal warp-table.
@@ -68,29 +68,29 @@ undistored images.
 
 \section IM Implementing Grabbers
 
-In order to implement a new Grabber class, some steps are necessary.
-First, the new Grabber needs to be implemented. This must
-implement the Grabber::acquireImage method, that uses an underlying
+In order to implement a new SourceBackend class, some steps are necessary.
+First, the new SourceBackend needs to be implemented. This must
+implement the SourceBackend::acquireImage method, that uses an underlying
 image source to acquire a single new image. This can have any
 parameters and core::depth (usually, the image parameters are somehow
 related to the output of the underlying image source).
 If the grabber is available, one should think about adapting
 the grabber to inherit the icl::GrabberHandle class that adds
-the ability of instantiating one Grabber several times without
+the ability of instantiating one SourceBackend several times without
 having to handle double device accesses explicitly.
 
 
 \section PROP Properties
 
-The Grabber implements the Configurable interface that is used
-to implement dynamically settable properties. Each Grabber
+The SourceBackend implements the Configurable interface that is used
+to implement dynamically settable properties. Each SourceBackend
 must have at least the two properties 'core::format' and 'size'. These
-are handled in a special way by the automatically created Grabber-
+are handled in a special way by the automatically created SourceBackend-
 property-GUIs available in the ICLQt package.
 
 
 */
-class ICLIO_API Grabber : public utils::Configurable{
+class ICLIO_API SourceBackend : public utils::Configurable{
 /// internal data class
 struct Data;
 
@@ -98,8 +98,8 @@ struct Data;
 Data *data;
 
 public:
-Grabber(const Grabber&) = delete;
-Grabber& operator=(const Grabber&) = delete;
+SourceBackend(const SourceBackend&) = delete;
+SourceBackend& operator=(const SourceBackend&) = delete;
 
 protected:
 /// internally set a desired format
@@ -125,14 +125,14 @@ public:
 /// grant private method access to the grabber handle template
 template<class X> friend class GrabberHandle;
 
-/// grant private method access to the GenericGrabber class
-friend class GenericGrabber;
+/// grant private method access to the ImageSource class
+friend class ImageSource;
 
 ///
-Grabber();
+SourceBackend();
 
 /// Destructor
-virtual ~Grabber();
+virtual ~SourceBackend();
 
 /// Grabs the next image and returns it as an Image value
 core::Image grab();
@@ -191,8 +191,8 @@ void enableUndistortion(const core::Img32f &warpMap);
 
 /// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
 /** Please note, that this method has no effect if the undistortion was not enabled before
-   using one of the Grabber::enableUndistortion methods. Furthermore, the setting is lost
-   if the undistortion is deactivated using Grabber::disableUndistortion */
+   using one of the SourceBackend::enableUndistortion methods. Furthermore, the setting is lost
+   if the undistortion is deactivated using SourceBackend::disableUndistortion */
 void setUndistortionInterpolationMode(core::scalemode mode);
 
 /// disables distortion
@@ -216,13 +216,13 @@ utils::Configurable::CallbackToken registerCallback(utils::Configurable::Callbac
 
 protected:
 
-/// Main interface method, implemented by every Grabber backend.
+/// Main interface method, implemented by every SourceBackend backend.
 /** Acquires a new image using the backend's image-acquisition path.
     Called by grab() under m_grabMutex.
 
     **Lifetime contract**: backends typically return an `Image` that
     shallow-shares a backend-owned internal buffer.  The returned Image
-    is valid until the next acquireImage() call on the same Grabber —
+    is valid until the next acquireImage() call on the same SourceBackend —
     callers who need to retain it longer must deep-copy explicitly. */
 virtual core::Image acquireImage() = 0;
 
@@ -246,7 +246,7 @@ void processPropertyChange(const utils::Configurable::Property &prop);
 
   } // namespace icl::io
 
-// GrabberRegistry + REGISTER_GRABBER macros live in their own header;
+// SourceBackendRegistry + REGISTER_SOURCE_BACKEND macros live in their own header;
 // included here for backward compatibility so backends don't have to add
 // a second include just to use the macro.
-#include <icl/io/grabber/GrabberRegistry.h>
+#include <icl/io/source/SourceBackendRegistry.h>

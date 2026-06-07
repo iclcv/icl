@@ -35,7 +35,7 @@ namespace icl::qt {
                                 std::optional<core::depth> d = std::nullopt);
 
   /// Grabs a new image from a device, returning native depth
-  /** @param dev device driver type (see GenericGrabber)
+  /** @param dev device driver type (see ImageSource)
       @param devSpec device specifier
       @param size output image size (grabber's size if Size::null)
       @param fmt output format

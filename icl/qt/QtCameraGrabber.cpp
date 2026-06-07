@@ -97,17 +97,17 @@ namespace icl::qt {
       return p ? core::Image(p->deepCopy()) : core::Image();
     }
 
-    Grabber* createQtCameraGrabber(const std::string &param){
+    SourceBackend* createQtCameraGrabber(const std::string &param){
       return new QtCameraGrabber(param);
     }
 
-    const std::vector<GrabberDeviceDescription>& getQtCameraDeviceList(std::string hint, bool rescan){
-      static std::vector<GrabberDeviceDescription> deviceList;
+    const std::vector<DeviceDescription>& getQtCameraDeviceList(std::string hint, bool rescan){
+      static std::vector<DeviceDescription> deviceList;
       if(rescan){
         deviceList.clear();
         QList<QCameraDevice> cameras = QMediaDevices::videoInputs();
         for(int i = 0; i < cameras.size(); ++i){
-          deviceList.push_back(GrabberDeviceDescription("qtcam",
+          deviceList.push_back(DeviceDescription("qtcam",
             str(i) + "|||" + cameras[i].id().constData(),
             str("Qt camera source ") + cameras[i].description().toLatin1().data()));
         }
@@ -115,5 +115,5 @@ namespace icl::qt {
       return deviceList;
     }
 
-    REGISTER_GRABBER(qtcam,createQtCameraGrabber, getQtCameraDeviceList,"qtcam:device index or name:Qt based Camera source");
+    REGISTER_SOURCE_BACKEND(qtcam,createQtCameraGrabber, getQtCameraDeviceList,"qtcam:device index or name:Qt based Camera source");
   }

@@ -8,7 +8,7 @@
 //TODO: crashes in the destructor
 
 GUI gui;
-GenericGrabber grabber;
+ImageSource grabber;
 FloodFiller ff;
 
 struct Mouse : public MouseHandler{

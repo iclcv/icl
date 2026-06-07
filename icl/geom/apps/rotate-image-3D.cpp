@@ -9,7 +9,7 @@
 GUI gui;
 Scene scene;
 ImageSink output;
-GenericGrabber grabber;
+ImageSource grabber;
 Img8u image;
 
 

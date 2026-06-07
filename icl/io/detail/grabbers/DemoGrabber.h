@@ -9,16 +9,16 @@
 #include <icl/utils/Size.h>
 #include <icl/core/cc/Color.h>
 
-#include <icl/io/grabber/Grabber.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/core/Image.h>
 #include <mutex>
 
 namespace icl::io {
-  /// Demo Grabber class providing am image with a moving rect
-  /** This grabber can be used as placeholder whenever no senseful Grabber
+  /// Demo SourceBackend class providing am image with a moving rect
+  /** This grabber can be used as placeholder whenever no senseful SourceBackend
       is available. It can be set up to work at a certain fps to avoid
       some real unexpected behaviour */
-  class ICLIO_API DemoGrabber : public Grabber{
+  class ICLIO_API DemoGrabber : public SourceBackend{
     public:
       core::Image acquireImage() override;
 

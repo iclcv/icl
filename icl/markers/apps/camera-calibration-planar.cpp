@@ -80,7 +80,7 @@ ComplexCoordinateFrameSceneObject *cs = 0;
 GridIndicatorObject *gridIndicator;
 
 struct View{
-  GenericGrabber grabber;
+  ImageSource grabber;
   Detector detector;
   CheckerboardDetector cbDetector;
   MarkerGridPoseEstimator poseEst;

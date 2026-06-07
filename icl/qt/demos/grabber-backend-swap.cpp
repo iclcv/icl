@@ -2,10 +2,10 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// Interactive demo exercising GenericGrabber's backend-swap path
+// Interactive demo exercising ImageSource's backend-swap path
 // against the qt::Prop runtime rebuild that landed with Session 55.
 //
-// GenericGrabber is itself a Configurable (Session 54 flip), and its
+// ImageSource is itself a Configurable (Session 54 flip), and its
 // init() call destroys the current backend, fires
 // removeChildConfigurable, builds a new backend, and re-attaches via
 // addChildConfigurable with empty prefix.  qt::Prop subscribes to
@@ -22,7 +22,7 @@
 #include <icl/qt/Common2.h>
 
 HSplit gui;
-GenericGrabber grabber;
+ImageSource grabber;
 
 void swapBackend(const std::string &type, const std::string &id){
   // init() is re-entrant; destroys the current backend, fires
@@ -32,7 +32,7 @@ void swapBackend(const std::string &type, const std::string &id){
   //
   // The second arg is a param-map, parsed as "type=id[,type=id,...]" —
   // same shape the ProgArg form (init(pa)) feeds in: see
-  // GenericGrabber.cpp:101.  Not just the raw id.
+  // ImageSource.cpp:101.  Not just the raw id.
   grabber.init(type, id.empty() ? type : (type + "=" + id));
 }
 
