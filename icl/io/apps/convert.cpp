@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/file/FileGrabber.h>
+#include <icl/io/file/FileSource.h>
 #include <icl/io/file/FileWriter.h>
 #include <icl/core/convert/FixedConverter.h>
 #include <icl/qt/Common2.h>
@@ -54,7 +54,7 @@ int main(int n, char **ppc){
   }
 
 
-  FileGrabber fg(inFileName);
+  FileSource fg(inFileName);
 
   Image image;
   try{

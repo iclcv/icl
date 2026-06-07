@@ -63,7 +63,7 @@ namespace icl::utils {
     Replace,              //!< overwrite the existing entry
     KeepHighestPriority,  //!< keep whichever entry has the strictly-higher
                           //!< priority; on ties behaves like KeepFirst. Used
-                          //!< by FileWriter/FileGrabber to let libpng (prio 0)
+                          //!< by FileWriter/FileSource to let libpng (prio 0)
                           //!< take precedence over ImageMagick (prio -10) for
                           //!< overlapping extensions, deterministically across
                           //!< dyld static-init orderings.

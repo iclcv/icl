@@ -14,7 +14,7 @@ namespace icl::io {
   /** Each factory returns a freshly-created `core::Image`.  The built-in
       images (lena, parrot, cameraman, …) self-register at static-init
       time via `REGISTER_TEST_IMAGE` — new images drop in the same way,
-      and `TestImages::create` / `CreateGrabber` pick them up
+      and `TestImages::create` / `CreateSource` pick them up
       automatically with no edits to either. */
   using TestImageRegistry = utils::FunctionPluginRegistry<core::Image()>;
   ICLIO_API TestImageRegistry& testImageRegistry();

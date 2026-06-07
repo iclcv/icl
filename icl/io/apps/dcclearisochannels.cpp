@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/io/detail/dc/DCGrabber.h>
+#include <icl/io/detail/dc/DCSource.h>
 #include <icl/io/detail/dc/DC.h>
 #include <map>
 #include <vector>
@@ -13,7 +13,7 @@ typedef std::map<int,std::vector<dc1394camera_t*> > cammap;
 int main(int n, char **ppc){
   cammap m;
 
-  std::vector<DCDevice> devs = DCGrabber::getDCDeviceList();
+  std::vector<DCDevice> devs = DCSource::getDCDeviceList();
   printf("found %d cameras \n",(unsigned int)devs.size());
 
 

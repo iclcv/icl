@@ -1,0 +1,303 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
+
+#include <icl/io/detail/dc/DCSource.h>
+#include <icl/utils/prop/Constraints.h>
+#include <icl/io/detail/dc/DCGrabberThread.h>
+#include <icl/utils/SignalHandler.h>
+#include <icl/core/Image.h>
+#include <dc1394/iso.h>
+#include <unistd.h>
+#include <mutex>
+
+namespace icl::io {
+  using namespace icl::io::dc;
+  using namespace icl::utils;
+  using namespace icl::core;
+
+  DCSource::DCSource(const DCDevice &dev, int isoMBits):
+
+    m_oDev(dev),m_oDeviceFeatures(dev),m_poGT(0),m_GrabberThreadMutex(),m_poImage(0),
+    m_poImageTmp(0)
+  {
+    dc::install_signal_handler();
+
+    m_oOptions.bayermethod = DC1394_BAYER_METHOD_BILINEAR;
+
+    m_oOptions.framerate = static_cast<dc1394framerate_t>(-1); // use default
+
+    m_oOptions.videomode = static_cast<dc1394video_mode_t>(-1); // use default
+
+    m_oOptions.enable_image_labeling = false;
+
+    m_oOptions.isoMBits = isoMBits;
+
+    m_oOptions.suppressDoubledImages = true;
+
+    m_sUserDefinedBayerPattern = "NONE"; // by default, unknown devices do not need bayer pattern
+
+    addProperties();
+  }
+
+
+  const ImgBase *DCSource::acquireImage(){
+    ICLASSERT_RETURN_VAL( !m_oDev.isNull(), 0);
+    std::scoped_lock l(m_GrabberThreadMutex);
+    if(!m_poGT){
+      restartGrabberThread();
+    }
+
+    dc1394color_filter_t bayerLayout = m_oDev.getBayerFilterLayout();
+    if(static_cast<int>(bayerLayout) == 1){
+      std::string s = prop("bayer-layout").value;
+      if(s == "RGGB") bayerLayout = DC1394_COLOR_FILTER_RGGB;
+      else if(s == "GBRG") bayerLayout = DC1394_COLOR_FILTER_GBRG;
+      else if(s == "GRBG") bayerLayout = DC1394_COLOR_FILTER_GRBG;
+      else if(s == "BGGR") bayerLayout = DC1394_COLOR_FILTER_BGGR;
+      else if(s == "NONE") bayerLayout = static_cast<dc1394color_filter_t>(0);
+      else bayerLayout = static_cast<dc1394color_filter_t>(0);
+    }
+
+    m_poGT->getCurrentImage(&m_poImage,bayerLayout,bayermethod_from_string(to_string(m_oOptions.bayermethod)));
+
+    if(m_oOptions.enable_image_labeling){
+      Image(*m_poImage).addLabel(m_oDev.getModelID());
+    }
+
+    return m_poImage;
+  }
+
+
+  DCSource::~DCSource(){
+    if(m_poGT){
+      m_poGT->stop();
+      ICL_DELETE(m_poGT);
+    }
+    ICL_DELETE(m_poImage);
+    ICL_DELETE(m_poImageTmp);
+    release_dc_cam(m_oDev.getCam());
+  }
+
+
+
+  std::vector<DCDevice> DCSource::getDCDeviceList(bool resetBusFirst){
+    if(resetBusFirst){
+      DCSource::dc1394_reset_bus(false);
+    }
+    std::vector<DCDevice> v;
+
+    dc1394_t *context = get_static_context();
+    dc1394camera_list_t *list = 0;
+    dc1394error_t err = dc1394_camera_enumerate(context,&list);
+    if(err != DC1394_SUCCESS){
+      if(list){
+        dc1394_camera_free_list(list);
+      }
+      // ERROR_LOG("Unable to create device list: returning empty list!");
+      return v;
+    }
+    if(!list){
+      //ERROR_LOG("no dc device found!");
+      return v;
+    }
+
+    for(uint32_t i=0;i<list->num;++i){
+      v.push_back(DCDevice(dc1394_camera_new_unit(context,list->ids[i].guid,list->ids[i].unit)));
+
+      //std::cout << "trying to release all former iso data flow for camera " << v.back().getCam() << std::endl;
+      //dc1394_iso_release_all(v.back().getCam());
+
+      if(!i){
+        // This is very hard so when an icl application is started,
+        // it will reset the bus first ??
+        //dc1394_reset_bus(v.back().getCam());
+      }
+
+    }
+
+    if(list){
+      dc1394_camera_free_list(list);
+    }
+    return v;
+  }
+
+
+  void DCSource::restartGrabberThread(){
+    std::scoped_lock l(m_GrabberThreadMutex);
+    if(m_poGT){
+      m_poGT->stop();
+      //      m_poGT->waitFor();
+      delete m_poGT;
+    }
+    m_poGT = new DCGrabberThread(m_oDev.getCam(),&m_oOptions);
+    m_poGT->start();
+    usleep(10*1000);
+  }
+
+  std::vector<std::string> DCSource::get_io_property_list(){
+    std::vector<std::string> v = getPropertyList();
+    vector<string> r;
+    for(unsigned int i=0;i<v.size();++i){
+      if(v[i] != "size") r.push_back(v[i]);
+    }
+    return r;
+  }
+
+  std::string clean(std::string original){
+    std::string ret = original.substr(1,original.size()-2);
+    DEBUG_LOG(ret);
+    return ret;
+  }
+
+  void DCSource::addProperties(){
+    addProperty("format", utils::prop::menuFromCsv(m_oDev.getModesInfo()), 
+                m_oDev.getMode().toString(), "Sets the cameras image size and format");
+    addProperty("size", prop::Menu{"adjusted by format"}, 
+                "adjusted by format", "this is set by format");
+    addProperty("omit-doubled-frames", prop::Flag{}, 
+                m_oOptions.suppressDoubledImages, "Prevents the grabber from returning the same image multiple times.");
+    addProperty("enable-image-labeling", prop::Flag{}, 
+                m_oOptions.enable_image_labeling, ""); //TODO: tooltip
+    addProperty("iso-speed",
+                prop::menuFromCsv(dc::is_dc800_capable(m_oDev.getCam()) ? "400,800" : "400"),
+                m_oOptions.isoMBits == 400 ? std::string("400") : std::string("800"), "Switches the cameraas iso-speed between 400 and 800.");
+    if(static_cast<int>(m_oDev.getBayerFilterLayout()) == 1){
+      addProperty("bayer-layout",
+                  prop::Menu{"RGGB","GBRG","GRBG","BGGR","NONE"},
+                  m_sUserDefinedBayerPattern, "Sets the used bayer filter layout.");
+      addProperty("bayer-quality",
+                  "menu",
+                  "DC1394_BAYER_METHOD_NEAREST,"
+                  "DC1394_BAYER_METHOD_BILINEAR,"
+                  "DC1394_BAYER_METHOD_HQLINEAR,"
+                  "DC1394_BAYER_METHOD_DOWNSAMPLE,"
+                  "DC1394_BAYER_METHOD_EDGESENSE,"
+                  "DC1394_BAYER_METHOD_VNG,"
+                  "DC1394_BAYER_METHOD_AHD",
+                  to_string(m_oOptions.bayermethod), "Sets the color interpolation method used for the bayer->color conversion.");
+    }
+    addChildConfigurable(&m_oDeviceFeatures);
+    registerCallback([this](const utils::Configurable::Property &p){ processPropertyChange(p); });
+  }
+
+  void DCSource::processPropertyChange(const utils::Configurable::Property &prop){
+    if(m_oDev.isNull()) return;
+    if(prop.name == "omit-doubled-frames"){
+      m_oOptions.suppressDoubledImages = prop.as<bool>();
+    }else if(prop.name == "bayer-quality"){
+      m_oOptions.bayermethod = bayermethod_from_string(prop.as<std::string>());
+    }else if(prop.name == "format"){
+      DCDevice::Mode m(prop.as<std::string>());
+      if(m_oDev.getMode() != m && m_oDev.supports(m)){
+        m_oOptions.framerate = m.framerate;
+        m_oOptions.videomode = m.videomode;
+        if(m_poGT){
+          restartGrabberThread();
+        }
+      }
+    }else if(prop.name == "size"){
+      // this is adjusted with the format
+    }else if(prop.name == "iso-speed"){
+      if(prop.as<std::string>() == "800"){
+        dc::set_iso_speed(m_oDev.getCam(),800);
+        m_oOptions.isoMBits = 800;
+      }
+      else if(prop.as<std::string>() == "400"){
+        dc::set_iso_speed(m_oDev.getCam(),400);
+        m_oOptions.isoMBits = 400;
+      }
+    }else if(prop.name == "enable-image-labeling"){
+      m_oOptions.enable_image_labeling = prop.as<bool>();
+    }else if(prop.name == "bayer-layout"){
+      if(static_cast<int>(m_oDev.getBayerFilterLayout()) == 1){
+        if(prop.as<std::string>() == "RGGB" || prop.as<std::string>() == "GBRG" || prop.as<std::string>() == "GRBG" || prop.as<std::string>() == "BGGR" || prop.as<std::string>() == "NONE"){
+          m_sUserDefinedBayerPattern = prop.as<std::string>();
+        }else{
+          ERROR_LOG("parameter bayer layout does only support this values:\n"
+                    " \"RGGB\",\"GBRG\", \"GRBG\", \"BGGR\" and \"NONE\",\""
+                    " nothing known about \"" << prop.as<std::string>() << "\"");
+        }
+      }else{
+        ERROR_LOG("This device does not support \"bayer-layout\" as user defined property\n"
+                  "Either no bayer filter is necessary or it is a builtin camera with a\n"
+                  "fixed bayer filter layout");
+      }
+    }
+  }
+  REGISTER_CONFIGURABLE(DCSource, return new DCSource(DCDevice::null,0));
+
+  SourceBackend* createGrabberDC(int bandwidth, const std::string &param){
+    std::vector<DCDevice> devs = DCSource::getDCDeviceList(false);
+    if(!param.length()) throw ICLException("ImageSource::init: got dc with empty sub-arg!");
+    std::vector<std::string> ts = tok(param,"|||",false);
+    std::string singlepar = "";
+    if(ts.size() > 1){
+      // we take the first one here, because usually no one defines both ...
+      singlepar = ts[0];
+    }
+    if(singlepar.size() < 4){
+      //"0-999" -> very short string -> this is an index then
+      int index = to32s(singlepar);
+      if(index >= static_cast<int>(devs.size())){
+        std::ostringstream error("Demanded device does not exist. Only ");
+        error << static_cast<int>(devs.size()) << " devices available.";
+        throw ICLException(error.str());
+      } else {
+        return new DCSource(devs[index], bandwidth);
+      }
+    }else{
+      //"something very long" -> this is a unique ID then
+      for(unsigned int j=0;j<devs.size();++j){
+        if(devs[j].getUniqueStringIdentifier() == singlepar){
+          return new DCSource(devs[j], bandwidth);
+        }
+      }
+      throw ICLException("Could not initialize DCSource with parameter: " + param);
+    }
+  }
+
+  SourceBackend* createGrabberDC400(const std::string &param){
+    return createGrabberDC(400, param);
+  }
+
+  SourceBackend* createGrabberDC800(const std::string &param){
+    return createGrabberDC(800, param);
+  }
+
+  const std::vector<DeviceDescription>& getDC400DeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> deviceList;
+    if(rescan){
+      deviceList.clear();
+      std::vector<DCDevice> devs = DCSource::getDCDeviceList(false);
+      for(unsigned int i=0;i<devs.size();++i){
+        deviceList.push_back(DeviceDescription("dc",
+                                                      str(i)+"|||"+devs[i].getUniqueStringIdentifier(),
+                                                      devs[i].getUniqueStringIdentifier()));
+      }
+    }
+    return deviceList;
+  }
+
+  const std::vector<DeviceDescription>& getDC800DeviceList(std::string hint, bool rescan){
+    static std::vector<DeviceDescription> deviceList;
+    if(rescan){
+      deviceList.clear();
+      std::vector<DCDevice> devs = DCSource::getDCDeviceList(false);
+      for(unsigned int i=0;i<devs.size();++i){
+        if(devs[i].supportsDC800()){
+          deviceList.push_back(DeviceDescription("dc800",
+                                                        str(i)+"|||"+devs[i].getUniqueStringIdentifier(),
+                                                        devs[i].getUniqueStringIdentifier()));
+        }
+      }
+    }
+    return deviceList;
+  }
+
+  REGISTER_SOURCE_BACKEND(dc,createGrabberDC400, getDC400DeviceList, "dc:camera ID or unique ID:IEEE-1394a based camera source (FireWire 400)");
+  REGISTER_SOURCE_BACKEND(dc800,createGrabberDC800, getDC800DeviceList,"dc:camera ID or unique ID:IEEE-1394b based camera source (FireWire 800)");
+  REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(dc,DCSource::dc1394_reset_bus);
+  REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(dc800,DCSource::dc1394_reset_bus);
+
+  } // namespace icl::io

@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <iterator>
-#include <icl/io/file/FileGrabber.h>
+#include <icl/io/file/FileSource.h>
 #include <icl/qt/Common2.h>
 #include <QScreen>
 
@@ -44,7 +44,7 @@ int main (int n, char **ppc){
     std::string imageName = pa("-input").as<std::string>();
 
     try{
-      static FileGrabber w(imageName);
+      static FileSource w(imageName);
       imageHolder = w.grab();
       image = imageHolder.ptr();
       if(pa("-delete")){
@@ -88,7 +88,7 @@ int main (int n, char **ppc){
     for(unsigned int i=0;i<pa_get_count();++i){
       std::string s = pa(i).as<std::string>();
       try{
-        FileGrabber grabber(s,false,true);
+        FileSource grabber(s,false,true);
         Image image = grabber.grab();
         if(!image) throw ICLException("");
         maxSize.width = iclMax(image.getWidth(),maxSize.width);

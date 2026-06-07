@@ -12,13 +12,13 @@
 
 namespace icl::io {
   /** \cond */
-  class DCGrabber;
+  class DCSource;
   namespace dc{
     class DCGrabberThread;
   }
   /** \endcond */
 
-  /// Device struct, used by the DCGrabber class to identify devices \ingroup DC_G
+  /// Device struct, used by the DCSource class to identify devices \ingroup DC_G
   class ICLIO_API DCDevice{
     public:
 
@@ -36,7 +36,7 @@ namespace icl::io {
     static const DCDevice null;
 
     /// DCDevices may only be created by the DCGrabbers private function
-    friend class icl::io::DCGrabber;
+    friend class icl::io::DCSource;
 
     /// DCDevices may only be created by the DCGrabbers private function
     friend class icl::io::dc::DCGrabberThread;
@@ -133,18 +133,18 @@ namespace icl::io {
     bool supportsDC800();
 
     private:
-    /// Creates a new device (pivate; called by DCGrabber::getDeviceList())
+    /// Creates a new device (pivate; called by DCSource::getDeviceList())
     DCDevice(dc1394camera_t *cam):
     m_poCam(cam){//,m_eCameraTypeID(estimateCameraType(cam)){
       estimateBayerFilterMode();
     }
 
     /// sets the current mode of this device
-    /** This function may only be called by the DCGrabber*/
+    /** This function may only be called by the DCSource*/
     void setMode(const Mode &mode);
 
     /// resets the camera internally
-    /** This function may only be called by the DCGrabber*/
+    /** This function may only be called by the DCSource*/
     void reset() { if(!isNull()) dc1394_camera_reset(m_poCam); }
 
 

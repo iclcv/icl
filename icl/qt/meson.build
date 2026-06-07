@@ -90,8 +90,8 @@ qt_module_headers = files(
   'QImageConverter.h',
   'QPainterPaintEngine.h',
   'Qt.h',
-  'QtCameraGrabber.h',
-  'QtVideoGrabber.h',
+  'QtCameraSource.h',
+  'QtVideoSource.h',
   'Quick.h',
   'QuickContext.h',
   'QuickCreate.h',
@@ -192,8 +192,8 @@ qt_sources = files(
 if qt_multimedia_dep.found()
   qt_sources += files(
     'ICLVideoSurface.cpp',
-    'QtCameraGrabber.cpp',
-    'QtVideoGrabber.cpp',
+    'QtCameraSource.cpp',
+    'QtVideoSource.cpp',
   )
 
   qt_moc_multimedia = qt6.compile_moc(

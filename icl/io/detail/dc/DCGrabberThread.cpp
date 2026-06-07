@@ -9,7 +9,7 @@
 #include <icl/io/detail/dc/DCDevice.h>
 #include <algorithm>
 #include <vector>
-#include <icl/io/detail/dc/DCGrabber.h>
+#include <icl/io/detail/dc/DCSource.h>
 #include <mutex>
 
 using namespace icl::utils;
@@ -62,7 +62,7 @@ namespace icl::io {
       g_oGrabberThreadMutex.unlock();
 
       std::cout << "> resetting firewire bus" << std::endl;
-      DCGrabber::dc1394_reset_bus(false);
+      DCSource::dc1394_reset_bus(false);
     }
 
 

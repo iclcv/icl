@@ -41,7 +41,7 @@ called to aquire the next available image.
 In addition, the SourceBackend supports a set of so called
 'desired-parameters'. These can be set to overwrite the
 image parameters that are used by the underlying implementation.
-A FileGrabber e.g. will by default return images that have
+A FileSource e.g. will by default return images that have
 the same parameter that the grabbed image file provides. However,
 in some situations, the user might want to adapt these parameters
 E.g. if the image parameters that are provided by the grabber

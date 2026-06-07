@@ -25,7 +25,7 @@ io_output_headers = files(
 )
 
 io_file_headers = files(
-  'file/FileGrabber.h',
+  'file/FileSource.h',
   'file/FileList.h',
   'file/FileWriter.h',
   'file/FilenameGenerator.h',
@@ -42,7 +42,7 @@ io_sources = files(
   'source/SourceBackendRegistry.cpp',
   'source/TestImages.cpp',
   'output/ImageSink.cpp',
-  'file/FileGrabber.cpp',
+  'file/FileSource.cpp',
   'file/FileList.cpp',
   'file/FileWriter.cpp',
   'file/FilenameGenerator.cpp',
@@ -90,8 +90,8 @@ io_sources += files(
 # Always-built grabbers + small decoders (no external deps).
 io_sources += files(
   'detail/grabbers/ColorFormatDecoder.cpp',
-  'detail/grabbers/CreateGrabber.cpp',
-  'detail/grabbers/DemoGrabber.cpp',
+  'detail/grabbers/CreateSource.cpp',
+  'detail/grabbers/DemoSource.cpp',
   'detail/grabbers/MyrmexDecoder.cpp',
 )
 
@@ -118,7 +118,7 @@ if libdc_dep.found()
     'detail/dc/DCDevice.cpp',
     'detail/dc/DCDeviceFeatures.cpp',
     'detail/dc/DCFrameQueue.cpp',
-    'detail/dc/DCGrabber.cpp',
+    'detail/dc/DCSource.cpp',
     'detail/dc/DCGrabberThread.cpp',
   )
   io_extra_deps += libdc_dep
@@ -127,7 +127,7 @@ endif
 # V4L2
 if v4l_dep.found()
   io_sources += files(
-    'detail/v4l2/V4L2Grabber.cpp',
+    'detail/v4l2/V4L2Source.cpp',
     'detail/v4l2/V4L2LoopBackOutput.cpp',
   )
   io_extra_deps += v4l_dep
@@ -135,13 +135,13 @@ endif
 
 # libfreenect
 if freenect_dep.found()
-  io_sources += files('detail/kinect/KinectGrabber.cpp')
+  io_sources += files('detail/kinect/KinectSource.cpp')
   io_extra_deps += freenect_dep
 endif
 
 # libfreenect2
 if freenect2_dep.found()
-  io_sources += files('detail/kinect/Kinect2Grabber.cpp')
+  io_sources += files('detail/kinect/Kinect2Source.cpp')
   io_extra_deps += freenect2_dep
 endif
 
@@ -150,7 +150,7 @@ if pylon_dep.found()
   io_sources += files(
     'detail/pylon/PylonCameraOptions.cpp',
     'detail/pylon/PylonColorConverter.cpp',
-    'detail/pylon/PylonGrabber.cpp',
+    'detail/pylon/PylonSource.cpp',
     'detail/pylon/PylonGrabberThread.cpp',
     'detail/pylon/PylonUtils.cpp',
   )
@@ -160,8 +160,8 @@ endif
 # OpenCV
 if opencv_dep.found()
   io_sources += files(
-    'detail/opencv/OpenCVCamGrabber.cpp',
-    'detail/opencv/OpenCVVideoGrabber.cpp',
+    'detail/opencv/OpenCVCamSource.cpp',
+    'detail/opencv/OpenCVVideoSource.cpp',
     'detail/opencv/OpenCVVideoWriter.cpp',
   )
 endif
@@ -187,7 +187,7 @@ if zstd_dep.found()
   io_extra_deps += zstd_dep
 endif
 
-# Qt6 WebSockets (WSImageOutput + WSGrabber). Self-gating: only built
+# Qt6 WebSockets (WSImageOutput + WSSource). Self-gating: only built
 # when both Qt and the WebSockets module are available. WS replaces the
 # legacy SharedMemoryGrabber/Publisher pair retired in Session 47 — the
 # loopback path covers the same loose-coupling-between-processes use
@@ -195,7 +195,7 @@ endif
 if qt_found and qt_websockets_dep.found()
   io_sources += files(
     'detail/network/WSImageOutput.cpp',
-    'detail/network/WSGrabber.cpp',
+    'detail/network/WSSource.cpp',
   )
   io_extra_deps += qt_websockets_dep
   io_extra_deps += qt_dep

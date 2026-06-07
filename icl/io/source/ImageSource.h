@@ -136,7 +136,7 @@ namespace icl::io {
                                   - kinecti=device-index (int)
                                   - optris=camera-serial
                                   - ws=ws://host:port (connects to a WSImageOutput publisher;
-                                    auto-reconnects on server vanish — see WSGrabber.h)
+                                    auto-reconnects on server vanish — see WSSource.h)
 
         @param notifyErrors if set to false, no exception is thrown if no suitable device was found
     **/

@@ -47,7 +47,7 @@ int main(int n, char **ppc){
   ("b","scan for Basler-Pylon-based devices")
   ("a","scan for all devices (experimental)")
   ("q","scan for Qt-Multimedia devices")
-  ("-demo","add a DemoGrabber device")
+  ("-demo","add a DemoSource device")
   ("-i","ICL's default device specification")
   ("-l","if this flag is passed, no GUI is created, "
    "but all available devices are listed on stdout");

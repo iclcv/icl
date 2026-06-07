@@ -5,10 +5,10 @@
 #pragma once
 
 // Umbrella header for the public ICLIO consumer API.  Per-backend headers
-// (DCGrabber, PylonGrabber, WSGrabber, …) are implementation details and
+// (DCSource, PylonSource, WSSource, …) are implementation details and
 // are deliberately not pulled in here — applications should go through
 // ImageSource / ImageSink instead.
-#include <icl/io/file/FileGrabber.h>
+#include <icl/io/file/FileSource.h>
 #include <icl/io/file/FileList.h>
 #include <icl/io/file/FilenameGenerator.h>
 #include <icl/io/file/FileWriter.h>
@@ -167,17 +167,17 @@
 
     \subsection GRABBER_BACKENDS SourceBackend Backends and Corresponding 3rd Party Libraries
 
-    - <b>icl::DCGrabber</b> SourceBackend for FireWire 400 and 800 Cameras (using libdc1394_2)
-    - <b>icl::FileGrabber</b> SourceBackend for image file sources (.pgm, .ppm and .pnm .icl formats are supported natively,
+    - <b>icl::DCSource</b> SourceBackend for FireWire 400 and 800 Cameras (using libdc1394_2)
+    - <b>icl::FileSource</b> SourceBackend for image file sources (.pgm, .ppm and .pnm .icl formats are supported natively,
       .jpeg files needs libjpeg, .png-files needs libpng, zipped file like e.g. .pgm.gz needs libz, and all other formats needs
       libMagick++)
-    - <b>icl::CreateGrabber</b> Creates one of 8 demo images (e.g. the famous 'lena' or the 'camera man'-image)
-    - <b>icl::DemoGrabber</b> Creates images with a moving red rectangle (no dependencies)
-    - <b>icl::PylonGrabber</b> SourceBackend using Baslers Pylon-Libraries for grabbing from Gigabit Ethernet (GIG-E) cameras
-    - <b>icl::SwissRangerGrabber</b> SourceBackend for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
-    - <b>icl::OpenCVVideoGrabber</b> OpenCV based video grabber (needs OpenCV)
-    - <b>icl::WSGrabber</b> WebSocket-based grabber for receiving images from a icl::WSImageOutput publisher (needs Qt6Websockets) — replaced the retired SharedMemory backend
-    - <b>icl::OpenCVCamGrabber</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
-    - <b>icl::KinectGrabber</b> libfreenect based SourceBackend for Microsoft's Kinect Camera (supports color-, core::depth and IR-camera)
+    - <b>icl::CreateSource</b> Creates one of 8 demo images (e.g. the famous 'lena' or the 'camera man'-image)
+    - <b>icl::DemoSource</b> Creates images with a moving red rectangle (no dependencies)
+    - <b>icl::PylonSource</b> SourceBackend using Baslers Pylon-Libraries for grabbing from Gigabit Ethernet (GIG-E) cameras
+    - <b>icl::SwissRangerSource</b> SourceBackend for SwissRanger camera from Mesa-Imaging company. (nees libmesasr)
+    - <b>icl::OpenCVVideoSource</b> OpenCV based video grabber (needs OpenCV)
+    - <b>icl::WSSource</b> WebSocket-based grabber for receiving images from a icl::WSImageOutput publisher (needs Qt6Websockets) — replaced the retired SharedMemory backend
+    - <b>icl::OpenCVCamSource</b> OpenCV based camera grab that grabs image using an opencv backend (needs OpenCV)
+    - <b>icl::KinectSource</b> libfreenect based SourceBackend for Microsoft's Kinect Camera (supports color-, core::depth and IR-camera)
 
 */

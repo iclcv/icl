@@ -332,7 +332,7 @@ ICL_REGISTER_TEST("utils.xml.integration.primitive3dfilter_shape",
 }
 
 // ---------------------------------------------------------------------
-// Integration-shape — OptrisGrabber style nested path query
+// Integration-shape — OptrisSource style nested path query
 // ---------------------------------------------------------------------
 
 ICL_REGISTER_TEST("utils.xml.integration.optris_shape",
@@ -485,7 +485,7 @@ ICL_REGISTER_TEST("utils.xml.xpath.primitive3dfilter_exact",
 }
 
 ICL_REGISTER_TEST("utils.xml.xpath.optris_exact",
-                  "the exact query OptrisGrabber used with pugi")
+                  "the exact query OptrisSource used with pugi")
 {
   const char *src =
     "<CaliData>"

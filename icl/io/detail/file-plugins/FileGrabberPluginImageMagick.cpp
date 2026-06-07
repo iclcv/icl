@@ -76,7 +76,7 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_IMAGEMAGICK
-#include <icl/io/file/FileGrabber.h>  // fileGrabberRegistry
+#include <icl/io/file/FileSource.h>  // fileGrabberRegistry
 namespace {
   using icl::io::FileGrabberPluginImageMagick;
   using icl::io::fileGrabberRegistry;

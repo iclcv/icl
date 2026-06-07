@@ -16,7 +16,7 @@ namespace icl::io {
       every `send()`-ed image to every connected WebSocket client. The
       payload is an `ImageCompressor` envelope (default mode `none` —
       raw bytes); switch via the `compression` property when bandwidth
-      matters. Counterpart on the receiving side: `WSGrabber`.
+      matters. Counterpart on the receiving side: `WSSource`.
 
       \section HIST History
       `WSImageOutput` (Session 46) replaced the retired `SharedMemoryPublisher`

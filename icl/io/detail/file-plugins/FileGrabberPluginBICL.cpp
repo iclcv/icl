@@ -24,7 +24,7 @@ namespace icl::io {
 
   } // namespace icl::io
 
-#include <icl/io/file/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
+#include <icl/io/file/FileSource.h>  // REGISTER_FILE_GRABBER_PLUGIN
 namespace { using icl::io::FileGrabberPluginBICL; }
 #define ICL_BICL_REG(TAG, EXT)                                                \
   REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \

@@ -29,7 +29,7 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_LIBJPEG
-#include <icl/io/file/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
+#include <icl/io/file/FileSource.h>  // REGISTER_FILE_GRABBER_PLUGIN
 namespace { using icl::io::FileGrabberPluginJPEG; }
 #define ICL_JPEG_REG(TAG, EXT)                                                \
   REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \

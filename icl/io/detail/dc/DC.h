@@ -67,7 +67,7 @@ namespace icl{
       /// gets the newest frame from a given camera \ingroup DC_G
       /** Internally this function flushes the ring buffer, queues a brand new
           frame, and then waits for it to be filled with the newest frame.
-          <b>NOTE:</b>This is not the procedure that is used by the DCGrabber!
+          <b>NOTE:</b>This is not the procedure that is used by the DCSource!
       */
       dc1394video_frame_t *get_newest_frame(dc1394camera_t* c);
 
@@ -119,7 +119,7 @@ namespace icl{
 
       /// (since rc 9 of libdc) releases the static dc-context \ingroup DC_G
       /** E.g. when when trying to access a dc-devices using unicap, after the
-          device was opened by a DCGrabber (note, that getDeviceList must be called)
+          device was opened by a DCSource (note, that getDeviceList must be called)
       **/
       void free_static_context();
 

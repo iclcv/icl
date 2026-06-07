@@ -10,7 +10,7 @@
 #include <icl/io/detail/compression-plugins/CompressionRegistry.h>
 #ifdef ICL_HAVE_QT_WEBSOCKETS
 #include <icl/io/detail/network/WSImageOutput.h>
-#include <icl/io/detail/network/WSGrabber.h>
+#include <icl/io/detail/network/WSSource.h>
 #include <icl/utils/thread/Thread.h>
 #include <chrono>
 #include <thread>
@@ -371,7 +371,7 @@ ICL_REGISTER_TEST(
 // ---- WebSocket SourceBackend/Output (Qt6 WebSockets) -------------------------
 //
 // Loopback tests: spin a WSImageOutput on 127.0.0.1 + an OS-assigned
-// port, connect a WSGrabber to it, send a known image, verify roundtrip.
+// port, connect a WSSource to it, send a known image, verify roundtrip.
 // Each test uses port 0 to avoid collisions with parallel test runs.
 
 namespace {
@@ -408,16 +408,16 @@ namespace {
 }
 
 ICL_REGISTER_TEST("WS.loopback.roundtrip",
-                  "WSImageOutput → WSGrabber: byte-identical recovery") {
+                  "WSImageOutput → WSSource: byte-identical recovery") {
   WSImageOutput out(0, "127.0.0.1");
   ICL_TEST_TRUE(out);
   const int port = out.actualPort();
   ICL_TEST_TRUE(port > 0);
 
-  WSGrabber grab("ws://127.0.0.1:" + str(port));
+  WSSource grab("ws://127.0.0.1:" + str(port));
 
   // Wait for the client to actually connect before sending — the property
-  // surface tells us when (set every acquireImage call by WSGrabber, but
+  // surface tells us when (set every acquireImage call by WSSource, but
   // also via the connectedClients() server-side getter).
   ICL_TEST_TRUE(waitFor([&]{ return out.connectedClients() >= 1; }));
 
@@ -435,7 +435,7 @@ ICL_REGISTER_TEST("WS.multi_client.broadcast",
   const int port = out.actualPort();
   const std::string url = "ws://127.0.0.1:" + str(port);
 
-  WSGrabber a(url), b(url);
+  WSSource a(url), b(url);
   ICL_TEST_TRUE(waitFor([&]{ return out.connectedClients() >= 2; }));
 
   Img8u src = makeKnownImage(8, 8);
@@ -455,11 +455,11 @@ ICL_REGISTER_TEST("WS.url_shorthands_accepted",
   ICL_TEST_TRUE(port > 0);
 
   // Bare port → resolves to localhost:PORT
-  WSGrabber a(str(port));
+  WSSource a(str(port));
   // host:port form
-  WSGrabber b("127.0.0.1:" + str(port));
+  WSSource b("127.0.0.1:" + str(port));
   // Full URL form
-  WSGrabber c("ws://127.0.0.1:" + str(port));
+  WSSource c("ws://127.0.0.1:" + str(port));
   ICL_TEST_TRUE(waitFor([&]{ return out.connectedClients() >= 3; }));
 
   Img8u src = makeKnownImage(8, 8);
@@ -483,7 +483,7 @@ ICL_REGISTER_TEST("WS.client_survives_server_restart",
     port = out.actualPort();
     ICL_TEST_TRUE(port > 0);
 
-    WSGrabber grab("ws://127.0.0.1:" + str(port));
+    WSSource grab("ws://127.0.0.1:" + str(port));
     ICL_TEST_TRUE(waitFor([&]{ return out.connectedClients() >= 1; }));
     out.send(Image(src1));
 
@@ -498,7 +498,7 @@ ICL_REGISTER_TEST("WS.client_survives_server_restart",
   // exponential backoff (initial 250ms).
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
-  WSGrabber grab("ws://127.0.0.1:" + str(port));
+  WSSource grab("ws://127.0.0.1:" + str(port));
   // Bring the server back on the same port.
   WSImageOutput out2(port, "127.0.0.1");
   ICL_TEST_TRUE(waitFor([&]{ return out2.connectedClients() >= 1; },

@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/SaveLoad.h>
-#include <icl/io/file/FileGrabber.h>
+#include <icl/io/file/FileSource.h>
 #include <icl/io/file/FileWriter.h>
 
 namespace icl::io {
@@ -15,7 +15,7 @@ namespace icl::io {
 
   core::Image load(const std::string &filename) {
     try {
-      return FileGrabber(filename).grab();
+      return FileSource(filename).grab();
     } catch(const utils::ICLException &ex) {
       ERROR_LOG("exception: " << ex.what());
       return core::Image();

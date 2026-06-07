@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting
 
 #include <icl/qt/Quick.h>
-#include <icl/io/file/FileGrabber.h>
+#include <icl/io/file/FileSource.h>
 #include <icl/io/source/TestImages.h>
 #include <icl/io/ExternalViewer.h>
 #include <icl/core/convert/Converter.h>
@@ -521,7 +521,7 @@ namespace icl::qt {
 
     template<class T>
     Img<T> load(const std::string &filename){
-      FileGrabber g(filename);
+      FileSource g(filename);
       Image grabbedImage;
       try{
         grabbedImage = g.grab();
@@ -541,7 +541,7 @@ namespace icl::qt {
     template<class T>
     Img<T> load(const std::string &filename, format fmt){
 
-      FileGrabber g(filename);
+      FileSource g(filename);
       Image gi;
       try{
         gi = g.grab();

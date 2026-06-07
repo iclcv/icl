@@ -31,7 +31,7 @@ namespace icl::io {
       * <b>Y10B</b> packed 10 bit gray-scale format (result is put into a 16bit (Img16s) image
       * <b>MYRM</b> Special non standard format used for the Myrmex Tactile Sensor
       * <b>RGGB, GBRG, GRBG, BGGR</b> Bayer filter formats, uncommonly used for webcams
-        (note that bayer filters are often used with Firewire cameras, but in the DCGrabber
+        (note that bayer filters are often used with Firewire cameras, but in the DCSource
         backend, the core::BayerConverter is used automatically)
       * <b>MJPG</b> Motion jpeg. Here, each image frame actually contains binary encoded
         jpeg data

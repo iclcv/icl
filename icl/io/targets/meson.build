@@ -47,9 +47,9 @@ if _build_apps
       )
     endforeach
 
-    # icl-k2 retired Session 45 — bypassed Kinect2Grabber by talking to
+    # icl-k2 retired Session 45 — bypassed Kinect2Source by talking to
     # libfreenect2 directly. Use `icl-pipe -i kinect2 0` (or any
     # ImageSource-driven app) instead, which goes through ICL's own
-    # Kinect2Grabber backend.
+    # Kinect2Source backend.
   endif
 endif

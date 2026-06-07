@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Michael Goetting
 
 #include <icl/io/detail/file-plugins/FileGrabberPluginPNM.h>
-#include <icl/io/file/FileGrabber.h>  // for HeaderInfo
+#include <icl/io/file/FileSource.h>  // for HeaderInfo
 #include <icl/core/CoreFunctions.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/StringUtils.h>
@@ -133,7 +133,7 @@ namespace icl::io {
 
   } // namespace icl::io
 
-#include <icl/io/file/FileGrabber.h>  // REGISTER_FILE_GRABBER_PLUGIN
+#include <icl/io/file/FileSource.h>  // REGISTER_FILE_GRABBER_PLUGIN
 namespace { using icl::io::FileGrabberPluginPNM; }
 #define ICL_PNM_REG(TAG, EXT)                                                 \
   REGISTER_FILE_GRABBER_PLUGIN(TAG, EXT,                                      \

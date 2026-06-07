@@ -181,7 +181,7 @@ namespace icl::io {
     m_data = new Data(bindAddress, port);
     // The compressor is fully initialized in its ctor (codec, mode prop,
     // active plugin) — safe because no ImageCompressor is constructed
-    // during static init (FileWriter/FileGrabber are factory-based).
+    // during static init (FileWriter/FileSource are factory-based).
     addChildConfigurable(&m_data->compressor, "compression");
     if (m_data->actualPort < 0) {
       // bind failed — leave m_data alive (with isNull-like state we can't

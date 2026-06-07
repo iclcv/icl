@@ -16,7 +16,7 @@
 
 namespace icl::io {
   /** \cond */
-  class DCGrabber;
+  class DCSource;
   /** \endcond */
 
   namespace dc{
@@ -26,7 +26,7 @@ namespace icl::io {
     /** \endcond */
 
     /// Internally spawned thread class to provide continuous grabbing without drop frames \ingroup DC_G
-    /** Each DCGrabber instance uses a DCGrabberThread, which continuously dequeues and
+    /** Each DCSource instance uses a DCGrabberThread, which continuously dequeues and
         enqueus frames. Each frame can either be inside of the DMA queue or inside of the
         DCGrabberThreads wrapped DCFrameQueue at on time. The following ASCII art should
         illustrate this:
@@ -57,12 +57,12 @@ namespace icl::io {
         DCFrameQueue, where it can be accessed by the application by calling the getCurrentDisplay()
         function.\n
         <b>Note:</b> As it is strongly recommended <b>not</b> to create an own DCGrabberThread, but
-        to use an instance of the DCGrabber instead, the DCGrabberThread has no public constructor.
+        to use an instance of the DCSource instead, the DCGrabberThread has no public constructor.
     */
     class DCGrabberThread : public utils::Thread{
       public:
-      /// A DCGrabberThread can only be instantiated by a DCGrabber
-      friend class icl::io::DCGrabber;
+      /// A DCGrabberThread can only be instantiated by a DCSource
+      friend class icl::io::DCSource;
 
       /// the thread function (moved frames)
       ICLIO_API virtual void run();
@@ -74,7 +74,7 @@ namespace icl::io {
       ICLIO_API void resetBus();
 
       private:
-      /// private constructor )can only be called by icl::DCGrabber
+      /// private constructor )can only be called by icl::DCSource
       DCGrabberThread(dc1394camera_t* c, DCDeviceOptions *options);
 
       /// Destructor

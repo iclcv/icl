@@ -193,7 +193,7 @@ namespace icl::io {
 
   // -------------------------------------------------------- public --
   // The ctor installs the active plugin eagerly. This is safe because
-  // FileWriter and FileGrabber are now factory-based (Session 47): no
+  // FileWriter and FileSource are now factory-based (Session 47): no
   // FileWriterPluginBICL / FileGrabberPluginBICL instances are
   // constructed during static init — they're built lazily on first
   // use, after main() is running and the compressionRegistry() has been

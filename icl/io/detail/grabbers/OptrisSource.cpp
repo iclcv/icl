@@ -1,0 +1,375 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#include <icl/io/detail/grabbers/OptrisSource.h>
+#include <icl/utils/prop/Constraints.h>
+#include <libirimager/IRImager.h>
+#include <icl/utils/File.h>
+#include <icl/utils/thread/Thread.h>
+#include <icl/core/Img.h>
+#include <icl/core/Image.h>
+#include <icl/utils/Xml.h>
+#include <icl/io/file/FileList.h>
+#include <icl/filter/color/PseudoColorOp.h>
+#include <icl/filter/threshold/LocalThresholdOp.h>
+
+#include <icl/io/detail/v4l2/V4L2Source.h>
+#include <icl/io/detail/grabbers/ColorFormatDecoder.h>
+#include <icl/math/transform/LinearTransform1D.h>
+#include <fstream>
+#include <mutex>
+
+namespace optris {}
+namespace evo {}
+
+namespace icl{
+  using namespace utils;
+  using namespace math;
+  using namespace core;
+
+  namespace io{
+    using namespace optris;
+    using namespace evo;
+
+#ifdef ICL_HAVE_LIBIRIMAGER_EVO
+#endif
+
+
+
+    namespace{
+      struct Buffer{
+        ColorFormatDecoder decoder;
+        std::vector<unsigned char> buf;
+        Img32f image;
+        Img32f outBuf;
+        std::recursive_mutex mutex;
+        Time lastTimeAcquired;
+
+        Img8u visibleFrame;
+        Img8u visibleOutBuf;
+        OptrisSource::Mode mode;
+
+        ImgBase &getDisplay() { return mode == OptrisSource::IR_IMAGE ? (ImgBase&)image :  (ImgBase&)visibleFrame; }
+        ImgBase &getOutBuf() { return mode == OptrisSource::IR_IMAGE ?  (ImgBase&)outBuf : (ImgBase&)visibleOutBuf; }
+        void deepCopy(){
+          if(mode == OptrisSource::IR_IMAGE){
+            image.deepCopy(&outBuf);
+          }else{
+            visibleFrame.deepCopy(&visibleOutBuf);
+          }
+        }
+        Buffer(){
+          image = Img32f(Size(1,1),1);
+          visibleFrame = Img8u(Size::VGA,formatRGB);
+        }
+      };
+    }
+
+
+    void frame_callback(unsigned short* data, unsigned int w, unsigned int h, long long timestamp, void *arg){
+      Buffer &b = *reinterpret_cast<Buffer*>(arg);
+      b.image.setChannels(1);
+      b.image.setSize(Size(w,h));
+      //      b.image.setTime(Time(timestamp));
+      b.image.setTime(Time::now()); // the timestamp has some other meaning!
+      Channel32f c = b.image[0];
+      for(size_t i=0;i<w*h;++i){
+        c[i] = 0.1*(float(data[i])-1000.f);
+      }
+    }
+
+    void visible_frame_callback(unsigned char* data, unsigned int w, unsigned int h, long long timestamp, void *arg){
+      Buffer &b = *reinterpret_cast<Buffer*>(arg);
+      b.decoder.decode("YUYV", data, Size(w,h), bpp(b.visibleFrame));
+      b.visibleFrame.setTime(Time::now());
+    }
+
+    struct OptrisSource::Data : public utils::Thread{
+      std::shared_ptr<IRImager> imager;
+      Buffer buffer;
+      filter::PseudoColorOp pcc;
+      Img8u pccSrc;
+      Img8u pccOutNull;
+      Img32f pccOutNull32f;
+      Img32f combinedImage;
+      filter::LocalThresholdOp lt;
+
+      const ImgBase *convert_output(const Img32f &s, const std::string &fmt){
+        if(fmt == "Temperature celsius [32f]"){
+          return &s;
+        }
+        // find min and max
+        Range32f r = s.getMinMax();
+
+        const Img8u *pcImage = 0;
+
+        pccSrc.setChannels(1);
+        pccSrc.setSize(s.getSize());
+        pccOutNull.setFormat(formatRGB);
+        pccOutNull.setSize(s.getSize());
+        pccOutNull32f.setChannels(4);
+        pccOutNull32f.setSize(s.getSize());
+
+        if(!r.getLength()){
+          if(fmt == "Pseudo Color + Temp. [RGBT 32f]"){
+            pccOutNull32f.fill(0);
+            pccOutNull32f.setTime(s.getTime());
+            return &pccOutNull32f;
+          }else{
+            pccOutNull.fill(0);
+            pccOutNull.setTime(s.getTime());
+            return &pccOutNull;
+          }
+        }
+        LinearTransform1D t(r, Range32f(0,255));
+        const Channel32f cs = s[0];
+        Channel8u d = pccSrc[0];
+        for(int i=0;i<d.getDim();++i){
+          d[i] = (icl8u)t(cs[i]);
+        }
+
+        pcImage =  &pcc.apply(pccSrc);
+
+        if(fmt == "Pseudo Color + Temp. [RGBT 32f]"){
+          combinedImage.setChannels(4);
+          combinedImage.setSize(s.getSize());
+          for(int c=0;c<3;++c){
+            convertChannel(pcImage, c, &combinedImage, c);
+          }
+          deepCopyChannel(&s,0,&combinedImage,3);
+
+          return &combinedImage;
+        }else{
+          return pcImage;
+        }
+      }
+
+
+      std::string  init(const std::string &serialPattern, OptrisSource::Mode mode){
+        buffer.mode = mode;
+
+        FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
+        if(cfgs.size() > 2){
+          WARNING_LOG("note: if you face problem instantiating your camera, please consider moving unused "
+                      "calibration files /usr/share/libirimager/cali/Cali-*.xml to somewhere else");
+        }
+        int64_t serial = parse<int64_t>(serialPattern);
+
+        std::string fn = "/usr/share/libirimager/cali/Cali-"+str(serial)+".xml";
+        File f(fn);
+        if(!f.exists()){
+          throw ICLException("missing calibration file:" + fn);
+        }
+        auto doc = utils::xml::Document::parseFile(fn);
+        auto fovEl = doc.root().selectOne("/CaliData/Temperature/Optics/OpticsDef/FOV");
+        int fov = 72;
+        if(fovEl){
+          fov = parse<int>(std::string(fovEl.text()));
+        }else{
+          throw ICLException("could not parse calibration file " + fn +
+                             " missing entry /CaliData/Temperature/Optics/OpticsDef/FOV");
+        }
+
+        std::string v4lDev;
+        FileList ds("/dev/video*");
+        for(int d=0;d<ds.size();++d){
+          std::string deviceName = V4L2Source(ds[d]).prop("device name").value;
+          DEBUG_LOG("Devicename for " + ds[d] + ": " + deviceName);
+          if(match(ds[d], "/dev/video([0-9]+)",2) && match(deviceName, ".*PI-IMAGER.*",2)){
+            v4lDev = ds[d];
+          }else{
+            continue;
+          }
+
+          const int framerate = (mode == VISIBLE_IMAGE) ? 32 : 120;
+          static const int videoformatindex = 0;
+
+          bool verbose = false;
+          imager = new IRImager(verbose);
+
+          std::cout << "initializing IRImager device " << v4lDev << std::endl;
+          imager->init(v4lDev.c_str(), 0, videoformatindex, HIDController,
+                       fov, TM20_100, framerate, Temperature, mode == VISIBLE_IMAGE ? 1 : 0);
+
+          if(!imager->hasBispectralTechnology() && mode == VISIBLE_IMAGE){
+            throw ICLException("the device does not supoort bispectral technology, so color images cannot be aquired!");
+          }
+
+          if((int64_t)imager->getSerial() != serial){
+            DEBUG_LOG("serials do not match! trying next v4l device (if there is any)");
+            v4lDev = "";
+            continue;
+          }
+        }
+        if(!v4lDev.length()){
+          throw ICLException("could not find any v4l device for serial " + str(serial));
+        }
+        if(!imager->isOpen()){
+          throw ICLException("could not open device /dev/video" + str(v4lDev) +
+                             " with serial " + str(serial));
+        }
+        return v4lDev;
+      }
+
+      void start_capturing(){
+        buffer.buf.resize(imager->getRawBufferSize());
+
+        if(buffer.mode == VISIBLE_IMAGE){
+          imager->setVisibleFrameCallback(visible_frame_callback);
+          //imager->setFrameCallback(frame_callback);
+        }else{
+          imager->setFrameCallback(frame_callback);
+        }
+        if(imager->startStreaming() == IRIMAGER_DISCONNECTED){
+          throw ICLException("could not connect to camera: please re-connect device");
+        }else{
+          //DEBUG_LOG("IRImages started steaming");
+        }
+        start();
+      }
+
+      Size getSize() {
+        return Size(imager->getWidth(), imager->getHeight());
+      }
+
+
+      virtual void run(){
+        while(true){
+          {
+            std::scoped_lock lock(buffer.mutex);
+            if(imager->getFrame(buffer.buf.data()) == IRIMAGER_SUCCESS){
+              imager->process(buffer.buf.data(), &buffer);
+              imager->releaseFrame();
+            }
+          }
+          Thread::msleep(5);
+        }
+      }
+
+    };
+
+
+
+    OptrisSource::OptrisSource(const std::string &serialPattern, bool testOnly,
+                                 Mode mode) : m_data(new Data){
+      std::string v4lDev = m_data->init(serialPattern,mode);
+      addProperty("v4l device",utils::prop::Info{}, v4lDev);
+      if(mode == IR_IMAGE){
+        addProperty("format",utils::prop::Menu{"Temperature celsius [32f]", "Pseudo Color [RGB8]", "Pseudo Color + Temp. [RGBT 32f]"}, "Temperature celsius [32f]");
+        addProperty("size", utils::prop::menuFromCsv(str(m_data->getSize())), str(m_data->getSize()));
+      }else{
+        addProperty("format", utils::prop::Menu{"RGB 8"}, std::string("RGB 8"));
+        addProperty("size",utils::prop::Menu{"640x480"}, Size::VGA);
+      }
+      addProperty("omit doubled frames",utils::prop::Flag{}, true);
+      addProperty("threshold output",utils::prop::Flag{}, false);
+      addChildConfigurable(&m_data->lt,"thresh");
+      if(!testOnly){
+        m_data->start_capturing();
+      }
+    }
+
+    OptrisSource::~OptrisSource() {
+      m_data->stop();
+      delete m_data;
+    }
+
+
+    const std::vector<DeviceDescription> &OptrisSource::getDeviceList(std::string hint, bool rescan){
+      static std::vector<DeviceDescription> all;
+      if(rescan){
+        all.clear();
+        FileList cfgs("/usr/share/libirimager/cali/Cali-*.xml");
+
+        for(int c=0;c<cfgs.size();++c){
+          //std::cout << "processing cali file " << cfgs[c] << std::endl;
+          MatchResult r = match(cfgs[c], "Cali-([0-9]+).xml",2);
+          if(r && r.submatches.size() == 2){
+            try{
+              std::string s = r.submatches[1];
+              //              std::cout << "trying to create grabber " << s << std::endl;
+              OptrisSource g(s,true);
+              //std::cout << "--> creation successful" << std::endl;
+              all.push_back(DeviceDescription("optris",s,
+                                                     "IR-IMAGER (serial: " +s+
+                                                     " @ " + g.prop("v4l device").value +")"));
+              all.push_back(DeviceDescription("optrisv",s,
+                                                     "IR-IMAGER (serial: " +s+
+                                                     " @ " + g.prop("v4l device").value +")"));
+
+            }catch(std::exception &ex){ /* Combination did not work*/
+              //std::cout << "--> creation threw exception ex:-" << ex.what() << "-" << std::endl;
+            }
+          }
+        }
+      }
+      return all;
+    }
+
+    core::Image OptrisSource::acquireImage(){
+      bool omitDoubledFrames = prop("omit doubled frames").value;
+
+      std::scoped_lock lock(m_data->buffer.mutex);
+      if(omitDoubledFrames){
+        while(m_data->buffer.getDisplay().getTime() == m_data->buffer.lastTimeAcquired){
+          m_data->buffer.mutex.unlock();
+          Thread::msleep(1);
+          m_data->buffer.mutex.lock();
+        }
+      }
+      m_data->buffer.lastTimeAcquired = m_data->buffer.getDisplay().getTime();
+      m_data->buffer.deepCopy();
+
+      const ImgBase *cvt = 0;
+      if(m_data->buffer.mode == IR_IMAGE){
+        cvt = m_data->convert_output(m_data->buffer.outBuf,
+                                     prop("format").value);
+      }else{
+        cvt = &m_data->buffer.visibleOutBuf;
+      }
+
+      if(prop("threshold output").value){
+        static ImgBase *ltBuf = 0;
+        m_data->lt.apply(cvt, &ltBuf);
+        cvt = ltBuf;
+      }
+
+      // View of a backend-owned buffer, valid until the next acquireImage.
+      return cvt ? core::Image(*cvt) : core::Image();
+    }
+
+    void OptrisSource::processPropertyChange(const utils::Configurable::Property &prop){
+
+    }
+
+    template<OptrisSource::Mode M>
+    static SourceBackend *create_optris_grabber(const std::string &param){
+      return new OptrisSource(param,false,M);
+    }
+
+    template<OptrisSource::Mode M>
+    const std::vector<DeviceDescription> &create_optris_grabber_device_list(std::string hint, bool rescan){
+      static std::vector<DeviceDescription> devices;
+      if(!devices.size() || rescan){
+        const std::vector<DeviceDescription> &get = OptrisSource::getDeviceList(hint,rescan);
+        std::string s = str("optris") + (M == OptrisSource::IR_IMAGE ? "" : "v");
+        for(size_t i=0;i<get.size();++i){
+          if(get[i].type == s) devices.push_back(get[i]);
+          //std::cout << "XXX device list[" << i << "] := " << get[i].type << " id: " << get[i].id << std::endl;
+        }
+      }
+      return devices;
+    }
+
+    REGISTER_SOURCE_BACKEND(optris,create_optris_grabber<OptrisSource::IR_IMAGE>,
+                     create_optris_grabber_device_list<OptrisSource::IR_IMAGE>,
+                     "optris:camera serial ID or pattern:LibImager-based camera grabber source (ir camera)");
+
+    REGISTER_SOURCE_BACKEND(optrisv,create_optris_grabber<OptrisSource::VISIBLE_IMAGE>,
+                     create_optris_grabber_device_list<OptrisSource::VISIBLE_IMAGE>,
+                     "optrisv:camera serial ID or pattern:LibImager-based camera grabber source (color camera)");
+
+    //REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(xi,reset_xi_bus);
+  } // namespace io
+}
