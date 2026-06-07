@@ -151,6 +151,18 @@ Applied per `module-audit-checklist.md`.
   can remain as a legacy entry point for callers that still pass
   raw definitions.
 
+- [ ] **Port apps/demos to the `qt::ui::` designated-init syntax.**  The new
+  `icl/qt/ui.h` component set (all 33 components, Session 59) lives
+  side-by-side with the legacy fluent builder
+  (`Slider(0,255,42).handle("x")`) — both converge on the same widget
+  factory, so existing apps still compile unchanged. No app/demo has been
+  migrated yet. This is a cosmetic/consistency sweep (low risk, high churn):
+  rewrite `gui << Component(...).handle(...).label(...)` call sites to
+  `gui << ui::Component(..., {.handle="...", .label="..."})`. Do it module by
+  module; `ui-syntax-demo` is the reference. Lower priority than the
+  GUIComponent internal-representation rework above (which is the real
+  payoff). Decide whether it's worth the diff noise before starting.
+
 ---
 
 ## Configurable typed-storage migration — LANDED Sessions 53–54
@@ -339,6 +351,26 @@ From Session 48 deferrals:
   Related: `project_progarg_rework.md`.
 - [ ] **`LibAVVideoWriter` → `LibAVSink`** rename — fold into the pending
   FFmpeg 6/7 rewrite (`project_ffmpeg.md`); currently unbuilt so left as-is.
+- [ ] **Harmonize source-vs-sink backend listing.**  The `-i list` and
+  `-o list` paths are gratuitously asymmetric:
+  - *Sink* (`ImageSink::init`) lists `sinkBackendRegistry().entries()` —
+    help travels in the `Entry.description` (`paramHint~explanation`), id =
+    `Entry.key`. Clean.
+  - *Source* (`ImageSource::init`) lists via
+    `SourceBackendRegistry::getInfos()`, a separate free-text
+    `std::set<std::string> m_descriptions` decoupled from the factory map,
+    colon-delimited (`id:param:description`) and the id is *re-parsed* from
+    the string rather than read from the registry key. Legacy from before
+    the PluginRegistry unification.
+  - Table headers differ too (`index/ID/parameter/description` vs
+    `nr/id/parameter/explanation`).
+  Fix: move source descriptions into the `PluginRegistry` Entry like the
+  sink (drop `m_descriptions`/`getInfos`, switch REGISTER_SOURCE_BACKEND to
+  the `~`-delimited hint convention), and share one TextTable list-printer
+  between `ImageSource`/`ImageSink`. Keep the source-only side-maps
+  (per-backend device enumeration + bus-reset) — sink genuinely has no
+  equivalent, so *that* part of the asymmetry is legitimate. Touches the
+  public `SourceBackendRegistry` + the ~20 backend REGISTER strings.
 - [ ] **Generic `ImagePipeline`** (idea, exploratory).  With symmetric
   `SourceBackend` / `UnaryOp`(Filter) / `SinkBackend`, compose a generic
   Source→Filter→Sink pipeline — and maybe make `Display` a `Sink` too.  Not
