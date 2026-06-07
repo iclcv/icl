@@ -3,8 +3,13 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
 #include <set>
+#include <mutex>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/source/ImageSource.h>
+#include <icl/io/source/SourceBackend.h>
+#include <icl/io/source/SourceBackendRegistry.h>
+#include <icl/io/source/DeviceDescription.h>
+#include <icl/utils/ProgArg.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/TextTable.h>
@@ -12,6 +17,14 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
+
+  /// PIMPL: the owned backend, its device description, and the re-init lock.
+  struct ImageSource::Data {
+    SourceBackend                *grabber = nullptr;
+    DeviceDescription             desc;
+    mutable std::recursive_mutex  mutex;
+  };
+
   class GrabberInstanceTable {
     public:
       GrabberInstanceTable(const GrabberInstanceTable&) = delete;
@@ -91,15 +104,36 @@ namespace icl::io {
   GrabberInstanceTable GrabberInstanceTable::inst;
 
 
-  ImageSource::~ImageSource(){
-    if(m_poGrabber){
-      removeChildConfigurable(m_poGrabber);
-      GrabberInstanceTable::get() -> deleteGrabber(m_poDesc);
-    }
+  // ---- construction / destruction ---------------------------------------
+
+  ImageSource::ImageSource() : m_data(new Data) {}
+
+  ImageSource::ImageSource(const ProgArg &pa) : m_data(new Data) {
+    init(pa);
   }
+
+  ImageSource::ImageSource(const std::string &devicePriorityList,
+                           const std::string &params,
+                           bool notifyErrors) : m_data(new Data) {
+    init(devicePriorityList, params, notifyErrors);
+  }
+
+  ImageSource::~ImageSource(){
+    if(m_data->grabber){
+      removeChildConfigurable(m_data->grabber);
+      GrabberInstanceTable::get() -> deleteGrabber(m_data->desc);
+    }
+    delete m_data;
+  }
+
+  // ---- init -------------------------------------------------------------
 
   void ImageSource::init(const ProgArg &pa){
     init(*pa,(*pa) + "=" + *utils::pa(pa.getID(),1));
+  }
+
+  void ImageSource::init(const DeviceDescription &dev){
+    init(dev.type, dev.type + "=" + dev.id, false);
   }
 
   struct SpecifiedDevice{
@@ -136,7 +170,6 @@ namespace icl::io {
           if(!(std::find(plugins.begin(), plugins.end(), ab[0]) == plugins.end())){
             SpecifiedDevice s = { ab[0], (S==2 ? ab[1] : std::string("")), tok(optionStr,"@") };
             pmap[ab[0]] = s;
-            //DEBUG_LOG("setting pmap[" << ab[0] << "] to '" << (pmap[ab[0]])<< '\'');
           }else{
             ERROR_LOG("ImageSource: unsupported device: ["<< ab[0] << "] (skipping)");
           }
@@ -148,30 +181,29 @@ namespace icl::io {
     return pmap;
   }
 
-  void addError(std::string &str, std::string id, std::string param, std::string error){
-    //#define ADD_ERR(P) errStr += errStr.size() ? std::string(",") : ""; errStr += std::string(P)+"("+pmap[P].id+")"
+  static void addError(std::string &str, std::string id, std::string param, std::string error){
     str += str.size() ? "," : "";
     str += id + "(" + param + ")";
     str += "[error message: " + error + "]";
   }
 
   void ImageSource::init(const std::string &desiredAPIOrder,
-                            const std::string &params,
-                            bool notifyErrors)
+                         const std::string &params,
+                         bool notifyErrors)
   {
     // get lock and grabber information
-    std::scoped_lock __lock(m_mutex);
+    std::scoped_lock __lock(m_data->mutex);
     SourceBackendRegistry *grabberReg = SourceBackendRegistry::getInstance();
 
     // (re)set ImageSource to default values
-    if(m_poGrabber){
+    if(m_data->grabber){
       // Detach previous backend from this Configurable's child set
       // before dropping the instance.
-      removeChildConfigurable(m_poGrabber);
-      GrabberInstanceTable::get()->deleteGrabber(m_poDesc);
+      removeChildConfigurable(m_data->grabber);
+      GrabberInstanceTable::get()->deleteGrabber(m_data->desc);
     }
-    m_poDesc = DeviceDescription();
-    m_poGrabber = nullptr;
+    m_data->desc = DeviceDescription();
+    m_data->grabber = nullptr;
 
     // create param map
     ParamMap pmap = create_param_map(params);
@@ -211,8 +243,8 @@ namespace icl::io {
       }
       try{
         // init grabber
-        m_poGrabber = GrabberInstanceTable::get()->createGrabber(grabbers.at(0));
-        m_poDesc = grabbers.at(0);
+        m_data->grabber = GrabberInstanceTable::get()->createGrabber(grabbers.at(0));
+        m_data->desc = grabbers.at(0);
         break;
       }
       catch (ICLException &e){
@@ -222,48 +254,47 @@ namespace icl::io {
       }
     }
 
-    if(!m_poGrabber && notifyErrors){
+    if(!m_data->grabber && notifyErrors){
       std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
       ERROR_LOG("unable to instantiate grabber " << errMsg+errStr);
       throw ICLException(errMsg+errStr);
-    } else if(!m_poGrabber){
+    } else if(!m_data->grabber){
       return;
     } else {
-      m_poGrabber -> setConfigurableID(m_poDesc.name());
-      DEBUG_LOG("set configurable name :" << m_poDesc.name());
+      SourceBackend *g = m_data->grabber;
+      g -> setConfigurableID(m_data->desc.name());
+      DEBUG_LOG("set configurable name :" << m_data->desc.name());
       // add internal grabber as child-configurable
-      m_poGrabber -> addProperty("desired size", prop::Menu{"not used", "QQVGA", "QVGA", "VGA", "SVGA", "XGA", "XGAP", "UXGA"}, "not used", "");
-      m_poGrabber -> addProperty("desired depth", prop::Menu{"not used", "depth8u", "depth16s", "depth32s", "depth32f", "depth64f"}, "not used", "");
-      m_poGrabber -> addProperty("desired format", prop::Menu{"not used", "formatGray", "formatRGB", "formatHLS", "formatYUV", "formatLAB", "formatChroma", "formatMatrix"}, "not used", "");
-      m_poGrabber -> addProperty("undistortion.enable",prop::Flag{}, true, "forces to not use undistortion (eve if given)");
-      m_poGrabber -> addProperty("undistortion.interpolation",prop::Menu{"nearest", "linear"}, "nearest", "sets the interpolation mode for image undistortion");
+      g -> addProperty("desired size", prop::Menu{"not used", "QQVGA", "QVGA", "VGA", "SVGA", "XGA", "XGAP", "UXGA"}, "not used", "");
+      g -> addProperty("desired depth", prop::Menu{"not used", "depth8u", "depth16s", "depth32s", "depth32f", "depth64f"}, "not used", "");
+      g -> addProperty("desired format", prop::Menu{"not used", "formatGray", "formatRGB", "formatHLS", "formatYUV", "formatLAB", "formatChroma", "formatMatrix"}, "not used", "");
+      g -> addProperty("undistortion.enable",prop::Flag{}, true, "forces to not use undistortion (eve if given)");
+      g -> addProperty("undistortion.interpolation",prop::Menu{"nearest", "linear"}, "nearest", "sets the interpolation mode for image undistortion");
 #ifdef ICL_HAVE_OPENCL
-      m_poGrabber -> addProperty("undistortion.use OpenCL",prop::Flag{}, false, "trys to use OpenCL for the Warping operation (if possible, please note that OpenCL-based image warping is not neccessarily faster)");
+      g -> addProperty("undistortion.use OpenCL",prop::Flag{}, false, "trys to use OpenCL for the Warping operation (if possible, please note that OpenCL-based image warping is not neccessarily faster)");
 #endif
 
-      m_poGrabber -> registerCallback([this](const utils::Configurable::Property &p){ m_poGrabber->processPropertyChange(p); });
-      // Surface the backend's properties (both backend-specific
-      // camera controls and the "desired size" / "undistortion.*"
-      // pseudo-props we just added) as siblings on this
-      // ImageSource.  Empty prefix — no extra namespacing;
-      // properties land flat.
-      addChildConfigurable(m_poGrabber);
+      g -> registerCallback([g](const utils::Configurable::Property &p){ g->processPropertyChange(p); });
+      // Surface the backend's properties (both backend-specific camera
+      // controls and the "desired size" / "undistortion.*" pseudo-props we
+      // just added) as siblings on this ImageSource.  Empty prefix — flat.
+      addChildConfigurable(g);
 
-      const std::vector<std::string> &options = pmap[m_poDesc.type].options;
+      const std::vector<std::string> &options = pmap[m_data->desc.type].options;
       // setting extra properties ...
       for(unsigned int i=0;i<options.size();++i){
         auto [propName, propVal] = split_at_first('=',options[i]);
         if(propVal.length()) propVal = propVal.substr(1);
         if(propName == "load"){
-          m_poGrabber->loadProperties(propVal);
+          g->loadProperties(propVal);
         }else if(propName == "info"){
-          std::cout << "Property list for " << m_poDesc << std::endl;
-          std::vector<std::string> ps = m_poGrabber->getPropertyList();
+          std::cout << "Property list for " << m_data->desc << std::endl;
+          std::vector<std::string> ps = g->getPropertyList();
           TextTable t(4,ps.size()+4,35);
           t[0] = tok("property,type,allowed values,current value",",");
           for(unsigned int j=0;j<ps.size();++j){
             const std::string &p2 = ps[j];
-            auto h = m_poGrabber->prop(p2);
+            auto h = g->prop(p2);
             const std::string ty = h.type();
             const bool isCommand = ty == "command";
             const bool isInfo = ty == "info";
@@ -279,17 +310,155 @@ namespace icl::io {
           t(2,ps.size()+1) = str("camera undistortion parameter file (to be created with icl-lens-undistortion-calibration)");
           t(3,ps.size()+1) = str("-");
 
-
           std::cout << t << std::endl;
           std::terminate();
         }else if(propName == "udist"){
-          m_poGrabber -> enableUndistortion(propVal);
+          g -> enableUndistortion(propVal);
         }else{
-          m_poGrabber->prop(propName).value = propVal;
+          g->prop(propName).value = propVal;
         }
       }
     }
   }
+
+  // ---- trivial accessors ------------------------------------------------
+
+  std::string ImageSource::getType() const {
+    std::scoped_lock __lock(m_data->mutex);
+    return m_data->desc.type;
+  }
+
+  SourceBackend *ImageSource::getBackend() const {
+    std::scoped_lock __lock(m_data->mutex);
+    return m_data->grabber;
+  }
+
+  bool ImageSource::isNull() const { return m_data->grabber == nullptr; }
+
+  ImageSource::operator bool() const { return !isNull(); }
+
+  core::Image ImageSource::grab(){
+    std::scoped_lock __lock(m_data->mutex);
+    ICLASSERT_RETURN_VAL(!isNull(), core::Image());
+    return m_data->grabber->grab();
+  }
+
+  // ---- desired params (forward to backend) ------------------------------
+
+  void ImageSource::setDesiredFormatInternal(core::format fmt){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->setDesiredFormatInternal(fmt);
+  }
+  void ImageSource::setDesiredSizeInternal(const utils::Size &size){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->setDesiredSizeInternal(size);
+  }
+  void ImageSource::setDesiredDepthInternal(core::depth d){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->setDesiredDepthInternal(d);
+  }
+  core::format ImageSource::getDesiredFormatInternal() const{
+    ICLASSERT_RETURN_VAL(!isNull(),(core::format)-1);
+    std::scoped_lock l(m_data->mutex);
+    return m_data->grabber->getDesiredFormatInternal();
+  }
+  core::depth ImageSource::getDesiredDepthInternal() const{
+    ICLASSERT_RETURN_VAL(!isNull(),(core::depth)-1);
+    std::scoped_lock l(m_data->mutex);
+    return m_data->grabber->getDesiredDepthInternal();
+  }
+  utils::Size ImageSource::getDesiredSizeInternal() const{
+    ICLASSERT_RETURN_VAL(!isNull(),utils::Size::null);
+    std::scoped_lock l(m_data->mutex);
+    return m_data->grabber->getDesiredSizeInternal();
+  }
+
+  void ImageSource::useDesired(core::depth d) {
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->useDesired(d);
+  }
+  void ImageSource::useDesired(const utils::Size &size) {
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->useDesired(size);
+  }
+  void ImageSource::useDesired(core::format fmt) {
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->useDesired(fmt);
+  }
+  void ImageSource::useDesired(core::depth d, const utils::Size &size, core::format fmt){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->useDesired(d, size, fmt);
+  }
+
+  core::depth  ImageSource::getDesiredDepth()  const { ICLASSERT_RETURN_VAL(!isNull(), core::depth(-1));   std::scoped_lock l(m_data->mutex); return m_data->grabber->getDesiredDepth();  }
+  utils::Size  ImageSource::getDesiredSize()   const { ICLASSERT_RETURN_VAL(!isNull(), utils::Size::null); std::scoped_lock l(m_data->mutex); return m_data->grabber->getDesiredSize();   }
+  core::format ImageSource::getDesiredFormat() const { ICLASSERT_RETURN_VAL(!isNull(), core::format(-1));  std::scoped_lock l(m_data->mutex); return m_data->grabber->getDesiredFormat(); }
+
+  bool ImageSource::desiredDepthUsed()  const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_data->mutex); return m_data->grabber->desiredDepthUsed();  }
+  bool ImageSource::desiredSizeUsed()   const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_data->mutex); return m_data->grabber->desiredSizeUsed();   }
+  bool ImageSource::desiredFormatUsed() const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_data->mutex); return m_data->grabber->desiredFormatUsed(); }
+
+  void ImageSource::ignoreDesiredDepth()  { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_data->mutex); m_data->grabber->ignoreDesiredDepth();  }
+  void ImageSource::ignoreDesiredSize()   { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_data->mutex); m_data->grabber->ignoreDesiredSize();   }
+  void ImageSource::ignoreDesiredFormat() { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_data->mutex); m_data->grabber->ignoreDesiredFormat(); }
+
+  void ImageSource::ignoreDesired(){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->ignoreDesired();
+  }
+
+  // ---- undistortion (forward to backend) --------------------------------
+
+  void ImageSource::enableUndistortion(const std::string &filename){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->enableUndistortion(filename);
+  }
+  void ImageSource::enableUndistortion(const filter::ImageUndistortion &udist){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->enableUndistortion(udist);
+  }
+  void ImageSource::enableUndistortion(const utils::ProgArg &pa){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->enableUndistortion(pa);
+  }
+  void ImageSource::enableUndistortion(const core::Img32f &warpMap){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->enableUndistortion(warpMap);
+  }
+  void ImageSource::setUndistortionInterpolationMode(core::scalemode mode){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->setUndistortionInterpolationMode(mode);
+  }
+  void ImageSource::disableUndistortion(){
+    ICLASSERT_RETURN(!isNull());
+    std::scoped_lock l(m_data->mutex);
+    m_data->grabber->disableUndistortion();
+  }
+  bool ImageSource::isUndistortionEnabled() const{
+    ICLASSERT_RETURN_VAL(!isNull(),false);
+    std::scoped_lock l(m_data->mutex);
+    return m_data->grabber->isUndistortionEnabled();
+  }
+  const core::Img32f *ImageSource::getUndistortionWarpMap() const{
+    ICLASSERT_RETURN_VAL(!isNull(),0);
+    std::scoped_lock l(m_data->mutex);
+    return m_data->grabber->getUndistortionWarpMap();
+  }
+
+  // ---- static helpers ---------------------------------------------------
 
   void ImageSource::resetBus(const std::string &deviceList, bool verbose){
     std::vector<std::string> ts = tok(deviceList,",");

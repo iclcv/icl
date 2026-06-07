@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <icl/qt/Common.h>
 #include <icl/qt/ICLVideoSurface.h>
+#include <icl/io/source/SourceBackend.h>
 
 namespace icl::qt {
     class ICLQt_API QtVideoSource: public icl::io::SourceBackend{

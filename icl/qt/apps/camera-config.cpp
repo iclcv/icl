@@ -8,6 +8,7 @@
 #include <icl/qt/Application.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/io/source/ImageSource.h>
+#include <icl/io/source/DeviceDescription.h>
 
 #include <sstream>
 #include <mutex>

@@ -104,7 +104,7 @@ ICL_REGISTER_TEST("ImageSink.file_backend.forwards_writer_properties",
                   "ImageSink('file') surfaces the FileWriter's plugin tunables") {
   io::ImageSink sink("file", "/tmp/icl_test_imagesink_##.png");
   ICL_TEST_TRUE(!sink.isNull());
-  ICL_TEST_TRUE(sink.backend() != nullptr);
+  ICL_TEST_TRUE(sink.getBackend() != nullptr);
   // The wrapped FileWriter's per-plugin tunables forward up to the sink —
   // the std::function-based predecessor could not expose these at all.
   ICL_TEST_TRUE(sink.supportsProperty("png.compression-level"));

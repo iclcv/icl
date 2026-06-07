@@ -7,6 +7,7 @@
 #include <icl/geom/PointCloudCreator.h>
 
 #include <icl/io/source/ImageSource.h>
+#include <icl/io/source/SourceBackend.h>
 #include <icl/geom/PointCloudGrabberRegistry.h>
 #include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 #include <icl/filter/morph/MedianOp.h>
@@ -128,7 +129,7 @@ namespace icl::geom {
       m_data->depthGrabber.prop("depth-image-unit").value = "raw";
     }
 
-    addChildConfigurable(m_data->depthGrabber.getGrabber(),"Depth Source");
+    addChildConfigurable(m_data->depthGrabber.getBackend(),"Depth Source");
 
     if(&colorCam != &get_null_color_cam()){
       m_data->creator.init(depthCam, colorCam,
@@ -139,7 +140,7 @@ namespace icl::geom {
       m_data->colorGrabber.useDesired(formatRGB);
       m_data->colorGrabber.useDesired(depth8u);
       m_data->colorGrabber.useDesired(colorCam.getResolution());
-      addChildConfigurable(m_data->colorGrabber.getGrabber(),"Color Source");
+      addChildConfigurable(m_data->colorGrabber.getBackend(),"Color Source");
     }else{
       m_data->creator.init(depthCam,  needsKinectRawDepthInput ?
                            PointCloudCreator::KinectRAW11Bit :

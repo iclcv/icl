@@ -4,341 +4,142 @@
 
 #pragma once
 
-#include <icl/utils/Macros.h>
-#include <icl/utils/Exception.h>
-#include <icl/utils/thread/Lockable.h>
-#include <icl/utils/ProgArg.h>
+#include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/Configurable.h>
-#include <icl/io/source/SourceBackend.h>
 #include <icl/core/Image.h>
+
 #include <string>
-#include <mutex>
+#include <vector>
+
+namespace icl::utils { class ProgArg; }
+namespace icl::filter { class ImageUndistortion; }
 
 namespace icl::io {
-  /// Common interface class for all grabbers \ingroup GRABBER_G
-  /** The generic grabber provides an interface for a multi-platform
-      compatible grabber.
-      Image processing applications should use this SourceBackend class.
-      The wrapped backend SourceBackend is surfaced through the Configurable
-      child-configurable mechanism — all of its properties (backend-
-      specific camera controls + the "desired size" / "undistortion.*"
-      pseudo-properties that ImageSource installs post-creation)
-      appear as siblings on this ImageSource instance.
-  */
-  class ICLIO_API ImageSource : public utils::Configurable{
+  class SourceBackend;       // detail contract (io/source/SourceBackend.h)
+  struct DeviceDescription;  // io/source/DeviceDescription.h
 
-      SourceBackend *m_poGrabber; //!< internally wrapped grabber instance
+  /// User-facing image source: string-configurable acquisition front-end. \ingroup GRABBER_G
+  /** ImageSource is the recommended entry point for image acquisition in
+      application code.  It selects a backend (file, camera, network, …)
+      from a string device spec, owns it behind a PIMPL, and forwards
+      grab() plus the "desired params" / undistortion controls to it.  The
+      wrapped backend's properties (camera controls + the "desired size" /
+      "undistortion.*" pseudo-properties ImageSource installs) surface as
+      siblings on this ImageSource via the Configurable child mechanism.
 
-      DeviceDescription m_poDesc; //!< description of current SourceBackend
-
-      mutable std::recursive_mutex m_mutex; //! << internal protection for re-initialization
+      The set of available backends is **not** documented here — it depends
+      on which optional dependencies were compiled in.  Query it at runtime:
+      \code
+        icl-viewer -i list      # prints every registered backend + its
+                                # parameter syntax and description
+      \endcode
+      (programmatically: construct with device order "list", or read
+      SourceBackendRegistry).  Backends self-register a description string
+      via REGISTER_SOURCE_BACKEND, so the list is always in sync. */
+  class ICLIO_API ImageSource : public utils::Configurable {
+      struct Data;     //!< PIMPL
+      Data *m_data;    //!< owned backend + device description + lock
 
     public:
       ImageSource(const ImageSource&) = delete;
       ImageSource& operator=(const ImageSource&) = delete;
 
-      /// Initialized the grabber from given prog-arg
-      /** The progarg needs two sub-parameters */
-      ImageSource(const utils::ProgArg &pa):m_poGrabber(0){
-        init(pa);
-      }
+      /// Empty default constructor — creates a null instance (adapt via init()).
+      ImageSource();
 
-      /// Create a generic grabber instance with given device priority list
-      /** internally this function calls the init function immediately*/
+      /// Construct from a program argument (two sub-parameters: device + spec).
+      explicit ImageSource(const utils::ProgArg &pa);
+
+      /// Construct with a device priority list + params (calls init()).
       ImageSource(const std::string &devicePriorityList,
-                     const std::string &params,
-                     bool notifyErrors = true):m_poGrabber(0){
-        init(devicePriorityList,params,notifyErrors);
-      }
-
-
-      /// Empty default constructor, which creates a null-instance
-      /** null instances of grabbers can be adapted using the init-function*/
-    ImageSource():m_poGrabber(0){}
-
-      /// initialization function to change/initialize the grabber back-end
-      /** @param devicePriorityList Comma separated list of device tokens (no white spaces).
-                                  something like "dc,pwc,file,unicap" with arbitrary order
-                                  undesired devices can be left out. In particular you can
-                                  also give only a single desired device type e.g. "pwc".
-                                  The following device types are supported:
-                                  - <b>v4l</b> Video for Linux 2 based grabber
-                                  - <b>dc</b> dc grabber
-                                  - <b>dc800</b> dc grabber but with 800MBit iso-speed
-                                  - <b>file</b> file grabber
-                                  - <b>demo</b> demo grabber (moving red spot)
-                                  - <b>create</b> create grabber (create an image using ICL's create function)
-                                  - <b>sr</b> SwissRanger camera (mesa-imaging)
-                                  - <b>video</b> Xine based video grabber (grabbing videos frame by frame)
-                                  - <b>cvcam</b> OpenCV based camera grabber (supporting video 4 linux devices)
-                                  - <b>cvvideo</b> OpenCV based video grabber
-                                  - <b>sm</b> Qt-based Shared-Memory grabber (using QSharedMemoryInstance)
-                                  - <b>myr</b> Uses Myrmex tactile input device as image source
-                                  - <b>kinectd</b> Uses libfreenect to grab Microsoft-Kinect's core::depth images
-                                  - <b>kinectc</b> Uses libfreenect to grab Microsoft-Kinect's rgb color images
-                                  - <b>kinecti</b> Uses libfreenect to grab Microsoft-Kinect's IR images
-                                  - <b>optris</b> For Optris' IR-Cameras
-
-
-
-        @param params comma separated device depend parameter list: e.g.
-                                  "v4l=0,file=images//image*.ppm,dc=0" with self-explaining syntax\n
-                                  Additionally, each token a=b can be extended by device property that are directly
-                                  set after device instantiation. E.g. demo=0\@size=QVGA\@blob-red=128, instantiates
-                                  a demo-grabber, where the two additionally given properties (size and blob-red)
-                                  are set immediately after grabber instantiation. By these means particularly a
-                                  grabber's core::format can be set in the grabber instantiation call. Furthermore, three
-                                  special \@-tokens are possible: \@info (e.g. dc=0\@info) lists the 0th dc device's
-                                  available properties. \@load=filename loads a given property filename directly.
-          \@udist=filename loads a given undistortion parameter filename directly and therefore
-                                  makes the grabber grab undistorted images according to the undistortion parameters
-                                  and model type (either 3 or 5 parameters) that is found in the given xml-file.
-                                  <b>todo fix this sentence according to the fixed application names</b>
-                                  Please note, that valid xml-undistortion files can be created using the
-                                  undistortion-calibration tools icl-opencvcamcalib-demo,
-                                  icl-intrinsic-camera-calibration and icl-intrinsic-calibrator-demo.
-                                  On the C++-level, this is only a minor advantage, since all these things can
-                                  also be achieved via function calls, however if you use the most recommended way
-                                  for ICL-SourceBackend instantiation using ICL's program-argument evaluation framework,
-                                  The ImageSource is instantiated using grabber.init(pa("-i")) which then allows
-                                  the application user to set grabber parameters via addiation \@-options on the
-                                  command line: e.g.: "icl-camviewer -input dc 0\@size=VGA"
-
-                                  Semantics:\n
-                                  - v4l=device-name (e.g. "/dev/video0")
-                                  - dc=device-index (int) or dc=UniqueID (string)
-                                    (the unique ID can be found with 'icl-cam-cfg d -list-devices-only')
-                                  - dc800=device-index (int)
-                                  - file=pattern (string)
-                                  - demo=anything (not regarded)
-                                  - create=image name (see also icl::TestImages::create)
-                                  - mv=device-name (string)
-                                  - sr=device-serial-number (-1 -> menu, 0 -> auto-select)
-                                    <b>or</b>
-                                    sr=NcC where N is the device numer as above, c is the character 'c' and C is
-                                    the channel index to pick (0: core::depth-map, 1: confidence map, 2: intensity image
-                                  - video=video-filename (string)
-                                  - cvcam=camera index (0=first device,1=2nd device, ...) here, you can also use
-                                    opencv's so called 'domain offsets': current values are:
-                                    - 100 MIL-drivers (proprietary)
-                                    - 200 V4L,V4L2 and VFW,
-                                    - 300 Firewire,
-                                    - 400 TXYZ (proprietary)
-                                    - 500 QuickTime
-                                    - 600 Unicap
-                                    - 700 Direct Show Video Input
-                                    (e.g. device ID 301 selects the 2nd firewire device)
-                                  - cvvideo=video-filename (string)
-                                  // (sm=…  retired in Session 47 — use ws=ws://… instead)
-                                  - myr=deviceIndex (int) (the device index is used to create the /dev/videoX device)
-                                  - kinectd=device-index (int)
-                                  - kinectc=device-index (int)
-                                  - kinecti=device-index (int)
-                                  - optris=camera-serial
-                                  - ws=ws://host:port (connects to a WSImageOutput publisher;
-                                    auto-reconnects on server vanish — see WSSource.h)
-
-        @param notifyErrors if set to false, no exception is thrown if no suitable device was found
-    **/
-      void init(const std::string &devicePriorityList,
-                const std::string &params,
-                bool notifyErrors = true);
-
-      /// this method works just like the other init method
-      void init(const utils::ProgArg &pa);
-
-      /// resets resource on given devices (e.g. firewire bus)
-      static void resetBus(const std::string &deviceList="dc", bool verbose=false);
-
-      /// return the actual grabber type
-      std::string getType() const {
-        std::scoped_lock __lock(m_mutex);
-        return m_poDesc.type;
-      }
-
-      /// returns the wrapped grabber itself
-      SourceBackend *getGrabber() const {
-        std::scoped_lock __lock(m_mutex);
-        return m_poGrabber;
-      }
+                  const std::string &params,
+                  bool notifyErrors = true);
 
       /// Destructor
       virtual ~ImageSource();
 
-      /// Grabs the next image and returns it as an Image value
-      core::Image grab(){
-        std::scoped_lock __lock(m_mutex);
-        ICLASSERT_RETURN_VAL(!isNull(), core::Image());
-        return m_poGrabber->grab();
-      }
+      /// (Re)initialize the backend.
+      /** @param devicePriorityList comma-separated device tokens, tried in
+                 order (e.g. "dc,file"); the first that yields a device wins.
+                 The special token "list" prints the available-backend table
+                 (see class doc) and terminates.
+          @param params comma-separated per-device params, each optionally
+                 extended with `\@prop=value` settings applied right after
+                 instantiation, plus the special `\@info`, `\@load=file`,
+                 `\@udist=file` tokens (e.g. "dc=0\@size=VGA").
+          @param notifyErrors if false, no exception is thrown when no
+                 suitable device is found. */
+      void init(const std::string &devicePriorityList,
+                const std::string &params,
+                bool notifyErrors = true);
 
-      /// returns wheter an underlying grabber could be created
-      bool isNull() const { return m_poGrabber == 0; }
+      /// init() from a program argument
+      void init(const utils::ProgArg &pa);
 
-      /// simpler interface for isNull() (returns !isNull()
-      operator bool() const { return !isNull(); }
+      /// init() from a DeviceDescription (calls init(dev.type, dev.type+"="+dev.id, false))
+      void init(const DeviceDescription &dev);
 
+      /// resets resources on given devices (e.g. firewire bus)
+      static void resetBus(const std::string &deviceList="dc", bool verbose=false);
 
-      /// internally set a desired format
-      void setDesiredFormatInternal(core::format fmt){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->setDesiredFormatInternal(fmt);
-      }
+      /// the active backend type string (empty if null)
+      std::string getType() const;
 
-      /// internally set a desired format
-      void setDesiredSizeInternal(const utils::Size &size){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->setDesiredSizeInternal(size);
-      }
+      /// the wrapped backend (nullptr if null).  Prefer the forwarded
+      /// properties (setPropertyValue) over reaching in through this.
+      SourceBackend *getBackend() const;
 
-      /// internally set a desired format
-      void setDesiredDepthInternal(core::depth d){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->setDesiredDepthInternal(d);
-      }
+      /// grabs the next image
+      core::Image grab();
 
-      /// returns the desired format
-      core::format getDesiredFormatInternal() const{
-        ICLASSERT_RETURN_VAL(!isNull(),(core::format)-1);
-        std::scoped_lock l(m_mutex);
-        return m_poGrabber->getDesiredFormatInternal();
-      }
+      /// whether an underlying backend could be created
+      bool isNull() const;
 
-      /// returns the desired format
-      core::depth getDesiredDepthInternal() const{
-        ICLASSERT_RETURN_VAL(!isNull(),(core::depth)-1);
-        std::scoped_lock l(m_mutex);
-        return m_poGrabber->getDesiredDepthInternal();
-      }
-
-      /// returns the desired format
-      utils::Size getDesiredSizeInternal() const{
-        ICLASSERT_RETURN_VAL(!isNull(),utils::Size::null);
-        std::scoped_lock l(m_mutex);
-        return m_poGrabber->getDesiredSizeInternal();
-      }
+      /// shorthand for !isNull()
+      operator bool() const;
 
       /// @{ @name desired image parameters (forward to the wrapped backend)
+      void setDesiredFormatInternal(core::format fmt);
+      void setDesiredSizeInternal(const utils::Size &size);
+      void setDesiredDepthInternal(core::depth d);
+      core::format getDesiredFormatInternal() const;
+      core::depth  getDesiredDepthInternal() const;
+      utils::Size  getDesiredSizeInternal() const;
 
-      void useDesired(core::depth d) {
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->useDesired(d);
-      }
-      void useDesired(const utils::Size &size) {
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->useDesired(size);
-      }
-      void useDesired(core::format fmt) {
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->useDesired(fmt);
-      }
-      void useDesired(core::depth d, const utils::Size &size, core::format fmt){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->useDesired(d, size, fmt);
-      }
+      void useDesired(core::depth d);
+      void useDesired(const utils::Size &size);
+      void useDesired(core::format fmt);
+      void useDesired(core::depth d, const utils::Size &size, core::format fmt);
 
-      core::depth  getDesiredDepth()  const { ICLASSERT_RETURN_VAL(!isNull(), core::depth(-1));   std::scoped_lock l(m_mutex); return m_poGrabber->getDesiredDepth();  }
-      utils::Size  getDesiredSize()   const { ICLASSERT_RETURN_VAL(!isNull(), utils::Size::null); std::scoped_lock l(m_mutex); return m_poGrabber->getDesiredSize();   }
-      core::format getDesiredFormat() const { ICLASSERT_RETURN_VAL(!isNull(), core::format(-1));  std::scoped_lock l(m_mutex); return m_poGrabber->getDesiredFormat(); }
+      core::depth  getDesiredDepth()  const;
+      utils::Size  getDesiredSize()   const;
+      core::format getDesiredFormat() const;
 
-      bool desiredDepthUsed()  const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_mutex); return m_poGrabber->desiredDepthUsed();  }
-      bool desiredSizeUsed()   const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_mutex); return m_poGrabber->desiredSizeUsed();   }
-      bool desiredFormatUsed() const { ICLASSERT_RETURN_VAL(!isNull(), false); std::scoped_lock l(m_mutex); return m_poGrabber->desiredFormatUsed(); }
+      bool desiredDepthUsed()  const;
+      bool desiredSizeUsed()   const;
+      bool desiredFormatUsed() const;
 
-      void ignoreDesiredDepth()  { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_mutex); m_poGrabber->ignoreDesiredDepth();  }
-      void ignoreDesiredSize()   { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_mutex); m_poGrabber->ignoreDesiredSize();   }
-      void ignoreDesiredFormat() { ICLASSERT_RETURN(!isNull()); std::scoped_lock l(m_mutex); m_poGrabber->ignoreDesiredFormat(); }
-
-      void ignoreDesired(){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->ignoreDesired();
-      }
-
+      void ignoreDesiredDepth();
+      void ignoreDesiredSize();
+      void ignoreDesiredFormat();
+      void ignoreDesired();
       /// @}
 
-      /// enables the undistorion
-      void enableUndistortion(const std::string &filename){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->enableUndistortion(filename);
-      }
+      /// @{ @name undistortion (forward to the wrapped backend)
+      void enableUndistortion(const std::string &filename);
+      void enableUndistortion(const filter::ImageUndistortion &udist);
+      void enableUndistortion(const utils::ProgArg &pa);
+      void enableUndistortion(const core::Img32f &warpMap);
+      void setUndistortionInterpolationMode(core::scalemode mode);
+      void disableUndistortion();
+      bool isUndistortionEnabled() const;
+      const core::Img32f *getUndistortionWarpMap() const;
+      /// @}
 
-      /// enables the undistortion plugin for the grabber using radial and tangential distortion parameters
-      void enableUndistortion(const filter::ImageUndistortion &udist){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->enableUndistortion(udist);
-      }
-
-      /// enables undistortion from given programm argument.
-      /** where first argument is the filename of the xml file and second is the size of picture*/
-      void enableUndistortion(const utils::ProgArg &pa){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->enableUndistortion(pa);
-      }
-
-      /// enables undistortion for given warp map
-      void enableUndistortion(const core::Img32f &warpMap){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->enableUndistortion(warpMap);
-      }
-
-      /// sets how undistortion is interpolated (supported modes are interpolateNN and interpolateLIN)
-      /** Please note, that this method has no effect if the undistortion was not enabled before
-         using one of the SourceBackend::enableUndistortion methods. Furthermore, the setting is lost
-         if the undistortion is deactivated using SourceBackend::disableUndistortion */
-      void setUndistortionInterpolationMode(core::scalemode mode){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->setUndistortionInterpolationMode(mode);
-      }
-
-      /// disables distortion
-      void disableUndistortion(){
-        ICLASSERT_RETURN(!isNull());
-        std::scoped_lock l(m_mutex);
-        m_poGrabber->disableUndistortion();
-      }
-
-      /// returns whether distortion is currently enabled
-      bool isUndistortionEnabled() const{
-        ICLASSERT_RETURN_VAL(!isNull(),false);
-        std::scoped_lock l(m_mutex);
-        return m_poGrabber->isUndistortionEnabled();
-      }
-
-      /// returns the internal warp map or NULL if undistortion is not enabled
-      const core::Img32f *getUndistortionWarpMap() const{
-        ICLASSERT_RETURN_VAL(!isNull(),0);
-        std::scoped_lock l(m_mutex);
-        return m_poGrabber->getUndistortionWarpMap();
-      }
-
-      /// returns a list of all currently available devices (according to the filter-string)
-      /** The filter-string is a comma separated list of single filters like
-         <pre> dc=0,unicap </pre>
-         If a single token has the core::format deviceType=deviceID, then only not only the
-         device type but also a specific ID is used for the filtering operation. If, otherwise,
-         a token has the core::format deviceType, then all possible devices for this device type are
-         listed.
-     */
+      /// list of currently available devices matching the filter string
+      /** Filter is a comma-separated list of `deviceType` or
+          `deviceType=deviceID` tokens. */
       static const std::vector<DeviceDescription> &getDeviceList(const std::string &filter, bool rescan=true);
-
-      /// initializes the grabber from given FoundDevice instance
-      /** calls 'init(dev.type,dev.type+"="+dev.id,false)' */
-      inline void init(const DeviceDescription &dev){
-        init(dev.type,dev.type+"="+dev.id,false);
-      }
   };
 
   } // namespace icl::io

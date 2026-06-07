@@ -5,6 +5,7 @@
 #include <icl/qt/CamCfgWidget.h>
 
 #include <icl/io/source/ImageSource.h>
+#include <icl/io/source/DeviceDescription.h>
 #include <icl/qt/ContainerGUIComponents.h>
 #include <icl/qt/GUIWidget.h>
 #include <icl/qt/ComboHandle.h>

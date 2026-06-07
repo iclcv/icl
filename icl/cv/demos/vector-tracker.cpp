@@ -8,6 +8,7 @@
 #include <icl/cv/RegionDetector.h>
 #include <icl/utils/thread/Lockable.h>
 #include <icl/cv/VectorTracker.h>
+#include <icl/io/source/SourceBackend.h>
 #include <mutex>
 
 int error_counter = 0;

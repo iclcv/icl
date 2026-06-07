@@ -89,7 +89,7 @@ namespace icl::io {
     /// Escape hatch: the active backend as a Configurable (nullptr if none).
     /** Prefer the forwarded properties (setPropertyValue) over reaching in
         through this. */
-    SinkBackend *backend() const { return m_backend.get(); }
+    SinkBackend *getBackend() const { return m_backend.get(); }
   };
   } // namespace icl::io
 
