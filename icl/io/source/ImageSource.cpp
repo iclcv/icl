@@ -131,7 +131,8 @@ namespace icl::io {
   // ---- init -------------------------------------------------------------
 
   void ImageSource::init(const ProgArg &pa){
-    init(*pa,(*pa) + "=" + *utils::pa(pa.getID(),1));
+    // -i TYPE SPEC : two sub-args, used directly (no "TYPE=" re-tagging)
+    init(*pa, *utils::pa(pa.getID(),1));
   }
 
   void ImageSource::init(const DeviceDescription &dev){
@@ -183,21 +184,13 @@ namespace icl::io {
     return pmap;
   }
 
-  static void addError(std::string &str, std::string id, std::string param, std::string error){
-    str += str.size() ? "," : "";
-    str += id + "(" + param + ")";
-    str += "[error message: " + error + "]";
-  }
-
-  void ImageSource::init(const std::string &desiredAPIOrder,
-                         const std::string &params,
+  void ImageSource::init(const std::string &device,
+                         const std::string &spec,
                          bool notifyErrors)
   {
-    // get lock and grabber information
     std::scoped_lock __lock(m_data->mutex);
-    SourceBackendRegistry *grabberReg = SourceBackendRegistry::getInstance();
 
-    // (re)set ImageSource to default values
+    // (re)set ImageSource to a null instance
     if(m_data->grabber){
       // Detach previous backend from this Configurable's child set
       // before dropping the instance.
@@ -207,19 +200,13 @@ namespace icl::io {
     m_data->desc = DeviceDescription();
     m_data->grabber = nullptr;
 
-    // create param map
-    ParamMap pmap = create_param_map(params);
-    std::vector<std::string> l = tok(desiredAPIOrder,",");
-
-    // if 'list' parameter is given only create device list and terminate
-    if(std::find(l.begin(),l.end(),"list") != l.end()){
+    // "list" — print the available-backend table and exit
+    if(device == "list"){
       std::vector<std::string> supportedDevices =
-          grabberReg -> getGrabberInfos();
-      std::cout << "the following generic grabber plugins are available:" << std::endl;
-
+          SourceBackendRegistry::getInstance()->getGrabberInfos();
+      std::cout << "the following image source backends are available:" << std::endl;
       TextTable t(4,supportedDevices.size()+1,28);
       t[0] = tok("index,ID,parameter,description",",");
-
       for(size_t k=0;k<supportedDevices.size();++k){
         t[k+1] = tok(str(k)+":"+supportedDevices[k],":",true,'\\');
       }
@@ -227,98 +214,103 @@ namespace icl::io {
       utils::exit(0);
     }
 
-    // create grabber
-    unsigned int i;
-    std::string errStr;
-    std::vector<DeviceDescription> grabbers;
-    for(i = 0; i < l.size(); ++i){
-      std::string id = l[i];
-      std::string param = pmap[l[i]].id;
-      DEBUG_LOG("Searching for grabbers with " << id << "=" << param);
-      grabbers = getDeviceList(id + "=" + param,true);
-      if(grabbers.size() == 0) {
-        addError(errStr, id, param, "no device found");
-        continue;
-      }
-      if(grabbers.size() > 1) {
-        WARNING_LOG("found multiple devices for " << id << "=" << param);
-      }
-      try{
-        // init grabber
-        m_data->grabber = GrabberInstanceTable::get()->createGrabber(grabbers.at(0));
-        m_data->desc = grabbers.at(0);
-        break;
-      }
-      catch (ICLException &e){
-        addError(errStr, id, param, str(e.what()));
-      } catch(...){
-        addError(errStr, id, param, "unknown exception catched");
-      }
+    // split spec into the device id ("0", a filename, …) + trailing
+    // "@key=value" options
+    auto [id, optionStr] = split_at_first('@', spec);
+    std::vector<std::string> options = tok(optionStr, "@");
+
+    // locate the device.  An empty / "auto" device token scans every
+    // backend and takes the first available device — the rare "just give
+    // me any source" case that replaces the old comma priority-list.
+    std::vector<DeviceDescription> devs;
+    const bool autoScan = device.empty() || device == "auto";
+    if(autoScan){
+      devs = getDeviceList("", true);
+    }else{
+      devs = getDeviceList(device + "=" + id, true);
     }
 
-    if(!m_data->grabber && notifyErrors){
-      std::string errMsg("generic grabber was not able to find any suitable device\ntried:");
-      ERROR_LOG("unable to instantiate grabber " << errMsg+errStr);
-      throw ICLException(errMsg+errStr);
-    } else if(!m_data->grabber){
+    if(devs.empty()){
+      const std::string what = autoScan
+        ? std::string("no image source device found")
+        : ("no '" + device + "' device found" + (id.size() ? (" for '" + id + "'") : std::string()));
+      if(notifyErrors){
+        ERROR_LOG("unable to instantiate image source: " << what);
+        throw ICLException("ImageSource: " + what);
+      }
       return;
-    } else {
-      SourceBackend *g = m_data->grabber;
-      g -> setConfigurableID(m_data->desc.name());
-      DEBUG_LOG("set configurable name :" << m_data->desc.name());
-      // add internal grabber as child-configurable
-      g -> addProperty("desired size", prop::Menu{"not used", "QQVGA", "QVGA", "VGA", "SVGA", "XGA", "XGAP", "UXGA"}, "not used", "");
-      g -> addProperty("desired depth", prop::Menu{"not used", "depth8u", "depth16s", "depth32s", "depth32f", "depth64f"}, "not used", "");
-      g -> addProperty("desired format", prop::Menu{"not used", "formatGray", "formatRGB", "formatHLS", "formatYUV", "formatLAB", "formatChroma", "formatMatrix"}, "not used", "");
-      g -> addProperty("undistortion.enable",prop::Flag{}, true, "forces to not use undistortion (eve if given)");
-      g -> addProperty("undistortion.interpolation",prop::Menu{"nearest", "linear"}, "nearest", "sets the interpolation mode for image undistortion");
+    }
+    if(devs.size() > 1){
+      WARNING_LOG("found multiple devices for '" << device
+                  << (id.size() ? ("=" + id) : "") << "' — using the first");
+    }
+
+    try{
+      m_data->grabber = GrabberInstanceTable::get()->createGrabber(devs.at(0));
+      m_data->desc    = devs.at(0);
+    }catch(ICLException &e){
+      if(notifyErrors){
+        ERROR_LOG("unable to instantiate image source '" << device << "': " << e.what());
+        throw;
+      }
+      return;
+    }
+
+    SourceBackend *g = m_data->grabber;
+    g->setConfigurableID(m_data->desc.name());
+    DEBUG_LOG("set configurable name :" << m_data->desc.name());
+
+    // pseudo-properties surfaced on every backend (desired params + undistortion)
+    g->addProperty("desired size", prop::Menu{"not used", "QQVGA", "QVGA", "VGA", "SVGA", "XGA", "XGAP", "UXGA"}, "not used", "");
+    g->addProperty("desired depth", prop::Menu{"not used", "depth8u", "depth16s", "depth32s", "depth32f", "depth64f"}, "not used", "");
+    g->addProperty("desired format", prop::Menu{"not used", "formatGray", "formatRGB", "formatHLS", "formatYUV", "formatLAB", "formatChroma", "formatMatrix"}, "not used", "");
+    g->addProperty("undistortion.enable",prop::Flag{}, true, "forces to not use undistortion (eve if given)");
+    g->addProperty("undistortion.interpolation",prop::Menu{"nearest", "linear"}, "nearest", "sets the interpolation mode for image undistortion");
 #ifdef ICL_HAVE_OPENCL
-      g -> addProperty("undistortion.use OpenCL",prop::Flag{}, false, "trys to use OpenCL for the Warping operation (if possible, please note that OpenCL-based image warping is not neccessarily faster)");
+    g->addProperty("undistortion.use OpenCL",prop::Flag{}, false, "trys to use OpenCL for the Warping operation (if possible, please note that OpenCL-based image warping is not neccessarily faster)");
 #endif
 
-      g -> registerCallback([g](const utils::Configurable::Property &p){ g->processPropertyChange(p); });
-      // Surface the backend's properties (both backend-specific camera
-      // controls and the "desired size" / "undistortion.*" pseudo-props we
-      // just added) as siblings on this ImageSource.  Empty prefix — flat.
-      addChildConfigurable(g);
+    g->registerCallback([g](const utils::Configurable::Property &p){ g->processPropertyChange(p); });
+    // Surface the backend's properties (both backend-specific camera
+    // controls and the "desired size" / "undistortion.*" pseudo-props we
+    // just added) as siblings on this ImageSource.  Empty prefix — flat.
+    addChildConfigurable(g);
 
-      const std::vector<std::string> &options = pmap[m_data->desc.type].options;
-      // setting extra properties ...
-      for(unsigned int i=0;i<options.size();++i){
-        auto [propName, propVal] = split_at_first('=',options[i]);
-        if(propVal.length()) propVal = propVal.substr(1);
-        if(propName == "load"){
-          g->loadProperties(propVal);
-        }else if(propName == "info"){
-          std::cout << "Property list for " << m_data->desc << std::endl;
-          std::vector<std::string> ps = g->getPropertyList();
-          TextTable t(4,ps.size()+4,35);
-          t[0] = tok("property,type,allowed values,current value",",");
-          for(unsigned int j=0;j<ps.size();++j){
-            const std::string &p2 = ps[j];
-            auto h = g->prop(p2);
-            const std::string ty = h.type();
-            const bool isCommand = ty == "command";
-            const bool isInfo = ty == "info";
+    // apply the @-options
+    for(const std::string &opt : options){
+      auto [propName, propVal] = split_at_first('=',opt);
+      if(propVal.length()) propVal = propVal.substr(1);
+      if(propName == "load"){
+        g->loadProperties(propVal);
+      }else if(propName == "info"){
+        std::cout << "Property list for " << m_data->desc << std::endl;
+        std::vector<std::string> ps = g->getPropertyList();
+        TextTable t(4,ps.size()+4,35);
+        t[0] = tok("property,type,allowed values,current value",",");
+        for(unsigned int j=0;j<ps.size();++j){
+          const std::string &p2 = ps[j];
+          auto h = g->prop(p2);
+          const std::string ty = h.type();
+          const bool isCommand = ty == "command";
+          const bool isInfo = ty == "info";
 
-            t(0,j+1) = p2;
-            t(1,j+1) = ty;
-            t(2,j+1) = (isInfo||isCommand) ? str("-") : h.info();
-            t(3,j+1) = isCommand ? "-" : h.value;
-          }
-
-          t(0,ps.size()+1) = str("udist");
-          t(1,ps.size()+1) = str("special");
-          t(2,ps.size()+1) = str("camera undistortion parameter file (to be created with icl-lens-undistortion-calibration)");
-          t(3,ps.size()+1) = str("-");
-
-          std::cout << t << std::endl;
-          utils::exit(0);
-        }else if(propName == "udist"){
-          g -> enableUndistortion(propVal);
-        }else{
-          g->prop(propName).value = propVal;
+          t(0,j+1) = p2;
+          t(1,j+1) = ty;
+          t(2,j+1) = (isInfo||isCommand) ? str("-") : h.info();
+          t(3,j+1) = isCommand ? "-" : h.value;
         }
+
+        t(0,ps.size()+1) = str("udist");
+        t(1,ps.size()+1) = str("special");
+        t(2,ps.size()+1) = str("camera undistortion parameter file (to be created with icl-lens-undistortion-calibration)");
+        t(3,ps.size()+1) = str("-");
+
+        std::cout << t << std::endl;
+        utils::exit(0);
+      }else if(propName == "udist"){
+        g->enableUndistortion(propVal);
+      }else if(!propName.empty()){
+        g->prop(propName).value = propVal;
       }
     }
   }

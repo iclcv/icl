@@ -38,9 +38,9 @@ void init(){
     std::cout<<"use best"<<std::endl;
   }
 
-  grabDepth.init("kinectd","kinectd=0");
+  grabDepth.init("kinectd","0");
   grabDepth.prop("depth-image-unit").value = "raw";
-  grabColor.init("kinectc","kinectc=0");
+  grabColor.init("kinectc","0");
   grabDepth.useDesired(depth32f, size, formatMatrix);
   grabColor.useDesired(depth8u, size, formatRGB);
   GUI controls = VBox().minSize(12,2);

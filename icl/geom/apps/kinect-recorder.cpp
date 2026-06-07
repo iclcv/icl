@@ -17,13 +17,13 @@ void init(){
     if(pa("-c")){
       c_in.init(pa("-c"));
     }else{
-      c_in.init("kinectc","kinectc=0");
+      c_in.init("kinectc","0");
     }
 
     if(pa("-d")){
       d_in.init(pa("-d"));
     }else{
-      d_in.init("kinectd","kinectd=0");
+      d_in.init("kinectd","0");
     }
     c_out.init("file",*pa("-s")+"/color-######.bicl");
     d_out.init("file",*pa("-s")+"/depth-######.bicl");

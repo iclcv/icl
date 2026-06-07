@@ -151,7 +151,7 @@ void batch_pattern_changed(){
         box.add(new QLabel(f[i].c_str()));
         ImgBase *dst = 0;
         if(performCrop){
-          ImageSource g("file","file="+f[i]);
+          ImageSource g("file",f[i]);
           const ImgBase *image = g.grab().ptr()->shallowCopy(r);
           image->deepCopyROI(&dst);
           out.send(*dst);

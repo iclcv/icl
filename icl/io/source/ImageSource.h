@@ -50,27 +50,31 @@ namespace icl::io {
       /// Construct from a program argument (two sub-parameters: device + spec).
       explicit ImageSource(const utils::ProgArg &pa);
 
-      /// Construct with a device priority list + params (calls init()).
-      ImageSource(const std::string &devicePriorityList,
-                  const std::string &params,
+      /// Construct for a single device + spec (calls init()).
+      ImageSource(const std::string &device,
+                  const std::string &spec,
                   bool notifyErrors = true);
 
       /// Destructor
       virtual ~ImageSource();
 
       /// (Re)initialize the backend.
-      /** @param devicePriorityList comma-separated device tokens, tried in
-                 order (e.g. "dc,file"); the first that yields a device wins.
+      /** @param device a single backend token (e.g. "dc", "file", "create").
                  The special token "list" prints the available-backend table
-                 (see class doc) and terminates.
-          @param params comma-separated per-device params, each optionally
-                 extended with `\@prop=value` settings applied right after
-                 instantiation, plus the special `\@info`, `\@load=file`,
-                 `\@udist=file` tokens (e.g. "dc=0\@size=VGA").
+                 (see class doc) and terminates.  An empty string or "auto"
+                 scans every backend and takes the first available device.
+          @param spec the device id / parameter (e.g. "0", a file pattern),
+                 optionally followed by `\@key=value` settings applied right
+                 after instantiation, plus the special `\@info`, `\@load=file`,
+                 `\@udist=file` tokens (e.g. "0\@size=VGA").  Note there is no
+                 "device=" prefix — the device is the first argument.
           @param notifyErrors if false, no exception is thrown when no
-                 suitable device is found. */
-      void init(const std::string &devicePriorityList,
-                const std::string &params,
+                 suitable device is found.
+
+          Maps directly onto the `-i TYPE SPEC` program-argument form, e.g.
+          `-i dc 0\@size=VGA` → init("dc", "0\@size=VGA"). */
+      void init(const std::string &device,
+                const std::string &spec,
                 bool notifyErrors = true);
 
       /// init() from a program argument
