@@ -87,18 +87,21 @@ Resolution (so no public backend types survive):
 
 ## Staged execution (sink-first — weakest part, lowest churn)
 
-### Stage 1 — Sink-side symmetrization (introduce `SinkBackend` + `ImageSink`)
-- [ ] Add abstract `SinkBackend : utils::Configurable` in `io/detail/`
+### Stage 1 — Sink-side symmetrization (introduce `SinkBackend` + `ImageSink`) — DONE (`597458046`)
+- [x] Add abstract `SinkBackend : utils::Configurable` in `io/detail/`
       with `virtual void send(const core::Image&) = 0`.
-- [ ] Convert `WSImageOutput` → `WSSink`, `FileWriter`'s output role →
-      `FileSink`, `LibAVVideoWriter` → `LibAVSink`, inline `null`/`file`
-      → `NullSink`/`FileSink`, each deriving `SinkBackend`.
-- [ ] `sinkBackendRegistry()` returns `shared_ptr<SinkBackend>` (object),
+- [x] Backends derive `SinkBackend`: `WSImageOutput`, `LibAVVideoWriter`,
+      plus new in-file `NullSink` + `FileSink` (FileSink wraps `FileWriter`
+      so its jpeg/png/csv tunables surface as sink properties).
+      **Concrete-class renames (`WSImageOutput`→`WSSink` etc.) deferred to
+      the rename stage** — keeps Stage 1 focused on the structural change.
+- [x] `sinkBackendRegistry()` returns `shared_ptr<SinkBackend>` (object),
       not a callable; `REGISTER_SINK_BACKEND` macro.
-- [ ] `GenericImageOutput` → `ImageSink`: holds a `shared_ptr<SinkBackend>`,
+- [x] `GenericImageOutput` → `ImageSink`: holds a `shared_ptr<SinkBackend>`,
       `send()` delegates, **forwards the backend as a child Configurable**
       (fixes the property-access gap), adds `backend()`.
-- [ ] Migrate ~22 files / 57 refs; tests green.
+- [x] Migrated ~20 files; 877/877 green; runtime-verified file + ws
+      property forwarding; regression test added.
 
 ### Stage 2 — Rename grabber → source (mechanical, atomic)
 - [ ] `Grabber` → `SourceBackend`, move `Grabber.{h,cpp}` to
