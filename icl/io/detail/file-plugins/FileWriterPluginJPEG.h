@@ -7,16 +7,17 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/File.h>
 #include <icl/utils/config/Configurable.h>
-#include <icl/core/Img.h>
-
-#include <mutex>
+#include <icl/core/Types.h>
 
 namespace icl::io {
   /// Writer backend for ".jpeg" and ".jpg" images \ingroup FILEIO_G
   /** Singleton plugin (function-local static, accessible via instance()).
       Inherits Configurable; the singleton is registered with FileWriter as
       a child under the "jpeg" prefix, so callers can do
-      `writer.setPropertyValue("jpeg.quality", 85)`. */
+      `writer.setPropertyValue("jpeg.quality", 85)`.
+
+      The actual JPEG compression is delegated to JPEGEncoder — this class
+      is just the FileWriter-facing facade + the "quality" tunable. */
   class ICLIO_API FileWriterPluginJPEG : public utils::Configurable {
     public:
     FileWriterPluginJPEG();
@@ -28,8 +29,6 @@ namespace icl::io {
     void write(utils::File &file, const core::ImgBase *image);
 
     private:
-    int m_quality = 90;                    //!< JPEG quality, 0-100, set via property "quality"
-    core::Img8u m_bufferImage;             //!< Any-to-icl8u staging buffer
-    std::recursive_mutex m_bufferMutex;    //!< serializes write() across threads
+    int m_quality = 90;   //!< JPEG quality, 0-100, set via property "quality"
   };
 } // namespace icl::io
