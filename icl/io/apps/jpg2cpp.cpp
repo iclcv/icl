@@ -10,8 +10,8 @@
 int usage(){
   printf("jpg2cpp converts jpeg images into a c++ compatible data format.\n"
          "usage: jpg2cpp <FILE> > <DESTINATIONFILE> \n"
-         "  <FILE> must be something like myImage.jpg without any \"./foo\"-\n "
-         "  or \"../../foo/bar/\"-prefix.\n"
+         "  <FILE> is the input jpeg (a path prefix like ./foo or ../bar is\n"
+         "  fine — the C++ identifier is derived from the filename stem).\n"
          "  <DESTINATIONFILE> is something like \"ICL/ICLIO/src/demoImageMyImage.cpp\"\n"
          "  The destination file is created in 4 blocks:\n"
          "     - main data block containing most of the binary data of the image\n"
@@ -50,7 +50,7 @@ void writeLine(std::vector<unsigned char>::iterator &it, int len, bool isLastRow
 int main(int n, char **ppc){
 
 
-  if(n!=3) return usage();
+  if(n!=2) return usage();
 
   FILE *f = fopen(ppc[1],"rb");
   if(!f) return fileNotFound(ppc[1]);
