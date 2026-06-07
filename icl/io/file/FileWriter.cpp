@@ -34,7 +34,7 @@ namespace icl::io {
   void FileWriter::attachPluginConfigurables() {
     for (const auto &e : fileWriterConfigRegistry().entries()) {
       if (auto *cfg = e.payload()) {
-        addChildConfigurable(cfg, e.description);
+        addChildConfigurable(cfg, e.key);  // key is the "jpeg"/"csv"/"png" prefix
       }
     }
   }

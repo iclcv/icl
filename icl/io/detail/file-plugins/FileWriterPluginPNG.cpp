@@ -5,6 +5,7 @@
 #include <icl/io/detail/file-plugins/FileWriterPluginPNG.h>
 #include <icl/core/Types.h>
 #include <icl/utils/StringUtils.h>
+#include <icl/utils/prop/Constraints.h>
 #include <icl/core/cc/CCFunctions.h>
 
 #include <png.h>
@@ -16,6 +17,21 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::io {
+
+  FileWriterPluginPNG::FileWriterPluginPNG() {
+    addProperty("compression-level", utils::prop::Range<int>{.min=0, .max=9}, m_compressionLevel,
+                "zlib compression level (0=none/fastest, 9=max/slowest, "
+                "default 4 — levels 3-6 usually match 9's ratio for far less work).");
+    registerCallback([this](const utils::Configurable::Property &p) {
+      if (p.name == "compression-level") m_compressionLevel = p.as<int>();
+    });
+  }
+
+  FileWriterPluginPNG &FileWriterPluginPNG::instance() {
+    static FileWriterPluginPNG inst;
+    return inst;
+  }
+
   void FileWriterPluginPNG::write(File &file, const ImgBase *image){
     std::scoped_lock lock(mutex);
     ICLASSERT_RETURN(image);
@@ -69,10 +85,7 @@ namespace icl::io {
       num_bytes = 2;
     }
 
-    // Note that tests have 0: no compression, 9: max
-    // shown that zlib compression levels 3-6 usually perform as well as level 9
-    // for PNG images, and do considerably fewer caclulations.
-    png_set_compression_level(writer, 4);
+    png_set_compression_level(writer, m_compressionLevel);
 
     png_set_IHDR(writer,info,w,h,
                  bits, // bits for now: later you will be able to select this
@@ -153,10 +166,13 @@ namespace icl::io {
   } // namespace icl::io
 
 #ifdef ICL_HAVE_LIBPNG
-#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN
+#include <icl/io/file/FileWriter.h>  // REGISTER_FILE_WRITER_PLUGIN / REGISTER_FILE_WRITER_CONFIG
 namespace { using icl::io::FileWriterPluginPNG; }
 REGISTER_FILE_WRITER_PLUGIN(png, ".png",
   [](icl::utils::File &f, const icl::core::ImgBase *img) {
-    static FileWriterPluginPNG impl; impl.write(f, img);
+    FileWriterPluginPNG::instance().write(f, img);
   })
+
+REGISTER_FILE_WRITER_CONFIG(png, "png",
+  []() -> icl::utils::Configurable* { return &FileWriterPluginPNG::instance(); });
 #endif

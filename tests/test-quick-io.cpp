@@ -2,6 +2,7 @@
 #include <icl/qt/QuickIO.h>
 #include <icl/qt/QuickCreate.h>
 #include <icl/io/SaveLoad.h>
+#include <icl/io/file/FileWriter.h>
 #include <icl/core/Img.h>
 #include <icl/io/compress/ImageCompressor.h>
 
@@ -79,6 +80,21 @@ ICL_REGISTER_TEST("Quick2.IO.save.load.png", "save then load PNG preserves data"
   });
 
   std::remove(tmpFile.c_str());
+}
+
+// ---- FileWriter plugin tunables surface under their codec prefix ----
+
+ICL_REGISTER_TEST("FileWriter.plugin_prefix.tunables_resolve",
+                  "per-plugin Configurable tunables resolve under codec prefix") {
+  io::FileWriter w("/tmp/icl_test_filewriter_##.png");
+  // Each tunable plugin attaches as a child Configurable keyed by its
+  // codec prefix (see FileWriter::attachPluginConfigurables).
+  ICL_TEST_TRUE(w.supportsProperty("png.compression-level"));
+  ICL_TEST_TRUE(w.supportsProperty("jpeg.quality"));
+  ICL_TEST_TRUE(w.supportsProperty("csv.extend-file-name"));
+  // round-trip a value through the prefixed property
+  w.setPropertyValue("png.compression-level", 7);
+  ICL_TEST_EQ(w.getPropertyValue("png.compression-level").as<int>(), 7);
 }
 
 // ---- Save null image does not crash ----

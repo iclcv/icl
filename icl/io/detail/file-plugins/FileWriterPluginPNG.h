@@ -6,6 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/File.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/core/Img.h>
 
 #include <mutex>
@@ -13,16 +14,24 @@
 
 namespace icl::io {
   /// Writer backend for ".png" images \ingroup FILEIO_G
-  /** Registered as a function-plugin via `REGISTER_FILE_WRITER_PLUGIN`
-      (see FileWriter.h). Instance state is held via a per-registration
-      function-local static inside the registration lambda. */
-  class FileWriterPluginPNG {
+  /** Singleton plugin (function-local static, accessible via instance()).
+      Inherits Configurable; the singleton is registered with FileWriter as
+      a child under the "png" prefix, so callers can do
+      `writer.setPropertyValue("png.compression-level", 9)`. */
+  class ICLIO_API FileWriterPluginPNG : public utils::Configurable {
+    public:
+    FileWriterPluginPNG();
+
+    /// process-wide singleton accessor
+    static FileWriterPluginPNG &instance();
+
+    /// write implementation
+    void write(utils::File &file, const core::ImgBase *image);
+
+    private:
+    int m_compressionLevel = 4;          //!< zlib level 0-9, set via property "compression-level"
     std::recursive_mutex mutex;
     std::vector<unsigned char> data;
     std::vector<unsigned char*> rows;
-
-    public:
-    /// write implementation
-    ICLIO_API void write(utils::File &file, const core::ImgBase *image);
   };
   } // namespace icl::io
