@@ -4,7 +4,7 @@
 
 #include "harness/Benchmark.h"
 #include <icl/core/Img.h>
-#include <icl/io/TestImages.h>
+#include <icl/io/grabber/TestImages.h>
 #include <icl/filter/threshold/ThresholdOp.h>
 #include <icl/cv/RunLengthEncoder.h>
 

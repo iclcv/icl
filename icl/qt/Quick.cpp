@@ -4,7 +4,7 @@
 
 #include <icl/qt/Quick.h>
 #include <icl/io/file/FileGrabber.h>
-#include <icl/io/TestImages.h>
+#include <icl/io/grabber/TestImages.h>
 #include <icl/io/ExternalViewer.h>
 #include <icl/core/convert/Converter.h>
 

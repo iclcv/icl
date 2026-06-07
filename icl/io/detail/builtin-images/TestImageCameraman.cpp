@@ -5,7 +5,7 @@
 #include <icl/io/detail/file-plugins/JPEGDecoder.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
-#include <icl/io/TestImages.h>
+#include <icl/io/grabber/TestImages.h>
 #include <vector>
 
 using namespace icl::utils;
@@ -2209,7 +2209,7 @@ unsigned char auc_ExtraData_cameraman[NEXTRA] = {
 };
 
 }//end namespace
-  core::Image createImage_cameraman(){
+  static core::Image createImage_cameraman(){
     static core::Image cached;
     if(!cached.isNull()) return cached.deepCopy();
     const int DIM = NROWS*NCOLS+NEXTRA;

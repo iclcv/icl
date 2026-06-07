@@ -5,7 +5,7 @@
 #include <icl/qt/QuickCreate.h>
 #include <icl/qt/QuickContext.h>
 #include <icl/io/SaveLoad.h>
-#include <icl/io/TestImages.h>
+#include <icl/io/grabber/TestImages.h>
 #include <icl/io/grabber/GenericGrabber.h>
 #include <icl/core/ImgBase.h>
 #include <icl/core/cc/CCFunctions.h>

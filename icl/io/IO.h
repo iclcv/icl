@@ -15,7 +15,7 @@
 #include <icl/io/grabber/GenericGrabber.h>
 #include <icl/io/output/GenericImageOutput.h>
 #include <icl/io/SaveLoad.h>
-#include <icl/io/TestImages.h>
+#include <icl/io/grabber/TestImages.h>
 
 
 /** \defgroup DC_G LibDC1394-2 based IEEE-1394 Camera Grabber and Control API

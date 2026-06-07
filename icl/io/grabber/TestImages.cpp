@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
-#include <icl/io/TestImages.h>
+#include <icl/io/grabber/TestImages.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/core/convert/Converter.h>
 #include <vector>

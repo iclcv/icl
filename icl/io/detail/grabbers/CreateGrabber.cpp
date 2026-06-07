@@ -4,7 +4,7 @@
 
 #include <icl/io/detail/grabbers/CreateGrabber.h>
 #include <icl/utils/prop/Constraints.h>
-#include <icl/io/TestImages.h>
+#include <icl/io/grabber/TestImages.h>
 
 using namespace icl::utils;
 using namespace icl::core;

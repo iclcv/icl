@@ -50,24 +50,6 @@ namespace icl::io {
     static core::Image internalCreate(const std::string &name);
   };
 
-  /// shortcut function to create the "parrot"-image
-  ICLIO_API core::Image createImage_parrot();
-
-  /// shortcut function to create the "windows"-image
-  ICLIO_API core::Image createImage_windows();
-
-  /// shortcut function to create the "flowers"-image
-  ICLIO_API core::Image createImage_flowers();
-
-  /// shortcut function to create the famous "lena"-image
-  ICLIO_API core::Image createImage_lena();
-
-  /// shortcut function to create the famous "cameraman"-image
-  ICLIO_API core::Image createImage_cameraman();
-
-  /// shortcut function to create the "mandril"-image
-  ICLIO_API core::Image createImage_mandril();
-
   } // namespace icl::io
 
 /// Self-register a test-image factory at static-init time.

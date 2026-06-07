@@ -1,16 +1,15 @@
 # ICL IO module
 
 # Public headers (installed).  Clustered into topical subdirs (grabber/,
-# output/, file/, compress/); the umbrella IO.h and the standalone TestImages
-# API stay at module-top.  Per-backend / per-plugin headers live under
-# detail/<group>/ and are intentionally NOT installed — they are implementation
-# details.  Extension authors adding a new codec / grabber / output backend work
-# from inside the source tree.
+# output/, file/, compress/); only the umbrella IO.h + the small free-function
+# helpers (ExternalViewer, SaveLoad) stay at module-top.  Per-backend /
+# per-plugin headers live under detail/<group>/ and are intentionally NOT
+# installed — they are implementation details.  Extension authors adding a new
+# codec / grabber / output backend work from inside the source tree.
 io_public_headers = files(
   'IO.h',
   'ExternalViewer.h',
   'SaveLoad.h',
-  'TestImages.h',
 )
 
 io_grabber_headers = files(
@@ -18,6 +17,7 @@ io_grabber_headers = files(
   'grabber/Grabber.h',
   'grabber/GrabberDeviceDescription.h',
   'grabber/GrabberRegistry.h',
+  'grabber/TestImages.h',
 )
 
 io_output_headers = files(
@@ -40,6 +40,7 @@ io_sources = files(
   'grabber/GenericGrabber.cpp',
   'grabber/Grabber.cpp',
   'grabber/GrabberRegistry.cpp',
+  'grabber/TestImages.cpp',
   'output/GenericImageOutput.cpp',
   'file/FileGrabber.cpp',
   'file/FileList.cpp',
@@ -48,7 +49,6 @@ io_sources = files(
   'compress/ImageCompressor.cpp',
   'ExternalViewer.cpp',
   'SaveLoad.cpp',
-  'TestImages.cpp',
 )
 
 # Compression plugins (built-ins always compiled; zstd gated further down).

@@ -17,11 +17,12 @@ int usage(){
          "     - main data block containing most of the binary data of the image\n"
          "     - extra data block containing some additional bytes for the image\n"
          "     - the createImage_xxx() -function block. This is the implementation of\n"
-         "       a function, that converts the data- and the extraData-block into an\n"
-         "       appropriate ImgBase object. The image is created by using a temporary\n"
-         "       jpg file on the hard-disk, which is read using a FileReader object.\n"
-         "     - the header information block containing the function declaration for\n"
-         "       the according header file\n\n" );
+         "       a TU-local (static) function that converts the data- and extraData-\n"
+         "       block into a core::Image.\n"
+         "     - the REGISTER_TEST_IMAGE(...) line that wires the factory into\n"
+         "       testImageRegistry() so TestImages::create(\"xxx\") finds it.  The\n"
+         "       function is intentionally NOT declared in any header — users call\n"
+         "       TestImages::create(name, ...) instead.\n\n" );
 
   return 1;
 }
@@ -106,7 +107,7 @@ int main(int n, char **ppc){
   }
   printf("\n};\n// }}}\n\n}//end namespace\n");
 
-  printf("core::Image createImage_%s(){\n",imageName.c_str());
+  printf("static core::Image createImage_%s(){\n",imageName.c_str());
   printf("  // {{{ open\n");
   printf("  static core::Image cached;\n"
          "  if(!cached.isNull()) return cached.deepCopy();\n"
@@ -130,12 +131,7 @@ int main(int n, char **ppc){
          "  return cached.deepCopy();\n"
          "}\n// }}}\n\n",arrayName.c_str(),extraArrayName.c_str());
 
+  printf("  REGISTER_TEST_IMAGE(%s, createImage_%s)\n",imageName.c_str(),imageName.c_str());
   printf("} // end namespace icl\n\n\n");
-
-  printf("!!! put this into the header file:\n"
-         "namespace icl::io{\n"
-         "  /// Create the image named %s\n"
-         "  core::Image createImage_%s();\n"
-         "}\n\n",imageName.c_str(),imageName.c_str());
 
 }
