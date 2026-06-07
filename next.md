@@ -3,9 +3,10 @@
 ## Next Step
 
 Session 64 finished the `io/detail/` audit (the four subsystems the
-Session 63 Next Step queued up).  6 commits; 876/876 tests green
-(875 baseline + 1 new regression test).  Branch is 235 commits
-ahead of origin.
+Session 63 Next Step queued up), then did a round of follow-up io/
+cleanup (JPEGDecoder dead-code, TestImages relocation, jpg2cpp
+modernization).  9 commits; 876/876 tests green (875 baseline + 1 new
+regression test).  Branch is 239 commits ahead of origin.
 
 ### Remaining io subsystems (post Session-64)
 
@@ -30,14 +31,18 @@ In `icl/io/detail/`:
 - **`detail/libav/`** — LibAVVideoWriter; per memory `project_ffmpeg.md`
   still needs the FFmpeg 6+/7+ API rewrite.  Not new, not yet touched.
 
-### Latent JPEG-decoder dead code (spotted Session 64)
+### Image metadata persistence (reference — established Session 64)
 
-`JPEGDecoder.cpp` has a TimeStamp/ROI marker-reading loop (~lines
-124-142) that is unreachable: `jpeg_save_markers` is commented out
-(line 117), so `marker_list` is always empty.  Either re-enable
-`jpeg_save_markers` (and have the encoder write markers again) or
-delete the dead reader loop.  Low priority — markers were never
-round-tripped, so nothing depends on them.
+ROI + timestamp round-trip is format-dependent:
+- **ICL container formats** carry it: PNM/PGM/PPM/ICL (header `# ROI` /
+  `# TimeStamp` comment lines, parsed back by the PNM reader); BICL/rle/
+  jicl + the WS transport (the ImageCompressor wire envelope encodes
+  full ImgParams incl. ROI + timestamp_us).
+- **Foreign/lossy formats** store pixels only: JPEG, PNG, ImageMagick.
+  JPEG never round-tripped ROI/time even before Session 64 — the writer's
+  JPEG_COM markers were never read back (decoder's `jpeg_save_markers`
+  was disabled).  To add JPEG metadata you'd re-enable `jpeg_save_markers`
+  in JPEGDecoder AND re-add marker writes in JPEGEncoder — both halves.
 
 ### Session-62/63 carryovers (suggested order)
 
@@ -149,6 +154,31 @@ jpeg plugin; Zstd/Raw planar memcpy helpers), not legacy ownership.
   the change is mechanical and follows the built-backend idiom but could
   NOT be compile-verified — see Next Step.**
 
+### Follow-up io/ cleanup (3 commits)
+
+- `19274ba8b` **JPEGDecoder — delete dead TimeStamp/ROI marker loop.**
+  The reader walked `marker_list`, but `jpeg_save_markers` was commented
+  out so the list was always empty — dead since forever.  Removed the
+  loop + the commented call + now-unused StrTok.h / `<charconv>`.  No
+  behavioural change.  (See "Image metadata persistence" in Next Step.)
+- `5706e50a2` **Move TestImages to `grabber/` + hide createImage_xxx().**
+  TestImages is the shared test-image factory; CreateGrabber is its only
+  grabber-shaped consumer, but qt::create() + benchmarks also use it and
+  it's public API — so it stays public, just relocated out of the
+  too-prominent module top into `io/grabber/` (alongside the grabber it
+  feeds).  The six `createImage_{parrot,windows,flowers,lena,cameraman,
+  mandril}()` free functions are no longer declared in any header; their
+  defs in `detail/builtin-images/*.cpp` became `static` (only ever used
+  in-TU as the REGISTER_TEST_IMAGE factory).  Public surface is now just
+  `TestImages::create(name, ...)`.
+- `c7221f5ce` **jpg2cpp codegen modernized + qt::show doc fix.**  The
+  generator now emits the exact shape the hand-maintained builtins use
+  (`namespace icl::io {`, JPEGDecoder::decode into a vector +
+  `core::Image(raw)`, trailing REGISTER_TEST_IMAGE) instead of the old
+  FileGrabber-temp-file-on-disk form — verified the generated .cpp
+  compiles.  Also fixed qt::show's doc comment (referenced the removed
+  TestImages::show; it's io::show / ExternalViewer now).
+
 ### Conventions reinforced
 
 - **Plugin-prefix on a façade**: the registry KEY is the prefix.
@@ -158,6 +188,9 @@ jpeg plugin; Zstd/Raw planar memcpy helpers), not legacy ownership.
 - **Image-returning grabber hooks**: `return Image(*backendOwnedImgBase)`
   — `Image(const ImgBase&)` shallow-copies (shares pixel data), giving
   the "view valid until next call" contract for free.
+- **Hidden plugin factories**: a self-registering factory (REGISTER_*)
+  used only in its own TU should be `static` + undeclared in any header.
+  Users reach it through the façade (`TestImages::create`), not by name.
 
 ---
 
