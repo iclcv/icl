@@ -8,7 +8,7 @@
 #include <QtMultimedia/QMediaCaptureSession>
 #include <icl/qt/Common.h>
 #include <icl/qt/ICLVideoSurface.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 
 namespace icl::qt {
     class ICLQt_API QtCameraSource: public icl::io::SourceBackend{

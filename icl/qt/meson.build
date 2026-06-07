@@ -90,8 +90,6 @@ qt_module_headers = files(
   'QImageConverter.h',
   'QPainterPaintEngine.h',
   'Qt.h',
-  'QtCameraSource.h',
-  'QtVideoSource.h',
   'Quick.h',
   'QuickContext.h',
   'QuickCreate.h',

@@ -14,7 +14,6 @@ io_public_headers = files(
 
 io_source_headers = files(
   'source/ImageSource.h',
-  'source/SourceBackend.h',
   'source/DeviceDescription.h',
   'source/SourceBackendRegistry.h',
   'source/TestImages.h',
@@ -35,7 +34,7 @@ io_compress_headers = files(
 # Always-compiled sources (public API impls, mirroring the header clustering).
 io_sources = files(
   'source/ImageSource.cpp',
-  'source/SourceBackend.cpp',
+  'detail/SourceBackend.cpp',
   'source/SourceBackendRegistry.cpp',
   'source/TestImages.cpp',
   'sink/ImageSink.cpp',

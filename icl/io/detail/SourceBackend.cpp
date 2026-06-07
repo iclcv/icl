@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/core/Image.h>
 #include <icl/core/CoreFunctions.h>
 #include <icl/filter/affine/ImageUndistortion.h>

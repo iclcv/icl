@@ -375,7 +375,6 @@ namespace icl::io {
   }
 
   REGISTER_SOURCE_BACKEND(ws, createWSSource, getWSDeviceList,
-                   "ws:ws\\://host\\:port (URL of the publishing server) "
-                   ":WebSocket-based network grabber")
+                   "ws://host:port (URL of the publishing server)~WebSocket-based network grabber")
 
 } // namespace icl::io

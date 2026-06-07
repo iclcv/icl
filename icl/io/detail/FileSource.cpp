@@ -439,6 +439,6 @@ namespace icl::io {
       return deviceList;
     }
 
-    REGISTER_SOURCE_BACKEND(file,createSource,getFileDeviceList,"file:file name or file-pattern (in ''):image source for single or a list of image files");
+    REGISTER_SOURCE_BACKEND(file,createSource,getFileDeviceList,"file name or file-pattern (in '')~image source for single or a list of image files");
 
   } // namespace icl::io

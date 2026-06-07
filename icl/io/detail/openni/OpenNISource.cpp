@@ -215,6 +215,6 @@ static const std::vector<DeviceDescription>& getNIDeviceListIr(std::string hint,
   return deviceList;
 }
 
-REGISTER_SOURCE_BACKEND(onid,createNIGrabberDepth, getNIDeviceListDepth, "onid:index 0 opens the first depth source:OpenNI based image source.");
-REGISTER_SOURCE_BACKEND(onic,createNIGrabberColor, getNIDeviceListColor, "onic:index 0 opens the first color source:OpenNI based image source.");
-REGISTER_SOURCE_BACKEND(onii,createNIGrabberIr, getNIDeviceListIr, "onii:index 0 opens the first ir source:OpenNI based image source.");
+REGISTER_SOURCE_BACKEND(onid,createNIGrabberDepth, getNIDeviceListDepth, "index 0 opens the first depth source~OpenNI based image source.");
+REGISTER_SOURCE_BACKEND(onic,createNIGrabberColor, getNIDeviceListColor, "index 0 opens the first color source~OpenNI based image source.");
+REGISTER_SOURCE_BACKEND(onii,createNIGrabberIr, getNIDeviceListIr, "index 0 opens the first ir source~OpenNI based image source.");

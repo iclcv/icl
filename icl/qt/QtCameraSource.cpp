@@ -115,5 +115,5 @@ namespace icl::qt {
       return deviceList;
     }
 
-    REGISTER_SOURCE_BACKEND(qtcam,createQtCameraGrabber, getQtCameraDeviceList,"qtcam:device index or name:Qt based Camera source");
+    REGISTER_SOURCE_BACKEND(qtcam,createQtCameraGrabber, getQtCameraDeviceList,"device index or name~Qt based Camera source");
   }

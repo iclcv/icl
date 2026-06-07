@@ -364,11 +364,11 @@ namespace icl{
 
     REGISTER_SOURCE_BACKEND(optris,create_optris_grabber<OptrisSource::IR_IMAGE>,
                      create_optris_grabber_device_list<OptrisSource::IR_IMAGE>,
-                     "optris:camera serial ID or pattern:LibImager-based camera grabber source (ir camera)");
+                     "camera serial ID or pattern~LibImager-based camera grabber source (ir camera)");
 
     REGISTER_SOURCE_BACKEND(optrisv,create_optris_grabber<OptrisSource::VISIBLE_IMAGE>,
                      create_optris_grabber_device_list<OptrisSource::VISIBLE_IMAGE>,
-                     "optrisv:camera serial ID or pattern:LibImager-based camera grabber source (color camera)");
+                     "camera serial ID or pattern~LibImager-based camera grabber source (color camera)");
 
     //REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io

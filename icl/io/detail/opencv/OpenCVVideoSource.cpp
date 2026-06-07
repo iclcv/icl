@@ -138,6 +138,6 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(cvvideo,createCVVGrabber, getOCVVDeviceList, "cvvideo:video filename:OpenCV based video file source");
+  REGISTER_SOURCE_BACKEND(cvvideo,createCVVGrabber, getOCVVDeviceList, "video filename~OpenCV based video file source");
 
   } // namespace icl::io

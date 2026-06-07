@@ -7,9 +7,10 @@
 #include <cstdlib>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/source/ImageSource.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/io/source/SourceBackendRegistry.h>
 #include <icl/io/source/DeviceDescription.h>
+#include <icl/io/detail/BackendListing.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exit.h>
@@ -202,15 +203,8 @@ namespace icl::io {
 
     // "list" — print the available-backend table and exit
     if(device == "list"){
-      std::vector<std::string> supportedDevices =
-          SourceBackendRegistry::getInstance()->getInfos();
-      std::cout << "the following image source backends are available:" << std::endl;
-      TextTable t(4,supportedDevices.size()+1,28);
-      t[0] = tok("index,ID,parameter,description",",");
-      for(size_t k=0;k<supportedDevices.size();++k){
-        t[k+1] = tok(str(k)+":"+supportedDevices[k],":",true,'\\');
-      }
-      std::cout << t << std::endl;
+      detail::printBackendTable("the following image source backends are available:",
+                                SourceBackendRegistry::getInstance()->getInfos());
       utils::exit(0);
     }
 

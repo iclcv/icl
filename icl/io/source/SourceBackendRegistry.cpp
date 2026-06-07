@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/io/source/SourceBackendRegistry.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Macros.h>
 
@@ -18,9 +18,10 @@ namespace icl::io {
 
   void SourceBackendRegistry::registerType(const std::string &id,
                                            CreateFn creator,
-                                           DeviceListFn device_list)
+                                           DeviceListFn device_list,
+                                           const std::string &description)
   {
-    m_factories.registerPlugin(id, std::move(creator));
+    m_factories.registerPlugin(id, std::move(creator), description);
     std::scoped_lock l(m_mutex);
     m_deviceLists[id] = std::move(device_list);
   }
@@ -35,15 +36,6 @@ namespace icl::io {
     m_busResets[id] = std::move(reset_function);
   }
 
-  void SourceBackendRegistry::addDescription(const std::string &description)
-  {
-    std::scoped_lock l(m_mutex);
-    if(auto it = m_descriptions.find(description); it != m_descriptions.end())
-      throw utils::ICLException("unable to add source-backend description: \n"
-          + description + "\n description already exists");
-    m_descriptions.insert(description);
-  }
-
   SourceBackend* SourceBackendRegistry::create(const std::string &id, const std::string &param){
     const auto *e = m_factories.get(id);
     if(!e) throw utils::ICLException("unknown source-backend id '"
@@ -55,9 +47,12 @@ namespace icl::io {
     return m_factories.keys();
   }
 
-  std::vector<std::string> SourceBackendRegistry::getInfos(){
-    std::scoped_lock l(m_mutex);
-    return std::vector<std::string>(m_descriptions.begin(), m_descriptions.end());
+  std::vector<std::pair<std::string,std::string>> SourceBackendRegistry::getInfos(){
+    std::vector<std::pair<std::string,std::string>> out;
+    for(const auto &e : m_factories.entries()){
+      out.emplace_back(e.key, e.description);
+    }
+    return out;
   }
 
   const std::vector<DeviceDescription>&

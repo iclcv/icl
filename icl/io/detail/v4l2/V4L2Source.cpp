@@ -775,6 +775,6 @@ namespace icl::io {
     return new V4L2Source(param);
   }
 
-  REGISTER_SOURCE_BACKEND(v4l,createVlGrabber, V4L2Source::getDeviceList, "v4l:/dev/videoX index or device-file:V4l2 based camera source");
+  REGISTER_SOURCE_BACKEND(v4l,createVlGrabber, V4L2Source::getDeviceList, "/dev/videoX index or device-file~V4l2 based camera source");
 
   } // namespace icl::io

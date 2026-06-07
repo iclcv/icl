@@ -101,6 +101,6 @@ namespace icl::io {
     return new OpenCVCamSource(to32s(param));
   }
 
-  REGISTER_SOURCE_BACKEND(cvcam,createCVCGrabber, OpenCVCamSource::getDeviceList, "cvcam:camera ID:OpenCV based camera source");
+  REGISTER_SOURCE_BACKEND(cvcam,createCVCGrabber, OpenCVCamSource::getDeviceList, "camera ID~OpenCV based camera source");
 
   } // namespace icl::io

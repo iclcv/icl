@@ -295,8 +295,8 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(dc,createSourceDC400, getDC400DeviceList, "dc:camera ID or unique ID:IEEE-1394a based camera source (FireWire 400)");
-  REGISTER_SOURCE_BACKEND(dc800,createSourceDC800, getDC800DeviceList,"dc:camera ID or unique ID:IEEE-1394b based camera source (FireWire 800)");
+  REGISTER_SOURCE_BACKEND(dc,createSourceDC400, getDC400DeviceList, "camera ID or unique ID~IEEE-1394a based camera source (FireWire 400)");
+  REGISTER_SOURCE_BACKEND(dc800,createSourceDC800, getDC800DeviceList,"camera ID or unique ID~IEEE-1394b based camera source (FireWire 800)");
   REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(dc,DCSource::dc1394_reset_bus);
   REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(dc800,DCSource::dc1394_reset_bus);
 

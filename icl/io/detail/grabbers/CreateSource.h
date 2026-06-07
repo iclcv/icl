@@ -10,7 +10,7 @@
 #include <icl/core/cc/Color.h>
 #include <icl/core/Image.h>
 
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 
 namespace icl::io {
   /// Create SourceBackend class that provides an image from ICL's create function

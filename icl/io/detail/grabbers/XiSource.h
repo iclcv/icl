@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 
 namespace icl::io {
   /// SourceBackend class that grabs images using the XiAPI (extension of the M3API)

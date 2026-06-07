@@ -9,7 +9,7 @@
 #include <icl/io/detail/dc/DCDevice.h>
 #include <icl/io/detail/dc/DCDeviceFeatures.h>
 #include <icl/io/detail/dc/DCDeviceOptions.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/core/convert/Converter.h>
 #include <mutex>
 

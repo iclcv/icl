@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <string>
 #include <vector>
 

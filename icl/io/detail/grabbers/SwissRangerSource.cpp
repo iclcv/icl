@@ -563,6 +563,6 @@ m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
     return new SwissRangerSource(device,depth32f,channel);
   }
 
-  REGISTER_SOURCE_BACKEND(sr,createSRGrabber, SwissRangerSource::getDeviceList, "sr:device Index or -1 for auto select:Mesa Imaging SwissRanger depth camera source");
+  REGISTER_SOURCE_BACKEND(sr,createSRGrabber, SwissRangerSource::getDeviceList, "device Index or -1 for auto select~Mesa Imaging SwissRanger depth camera source");
 
   } // namespace icl::io

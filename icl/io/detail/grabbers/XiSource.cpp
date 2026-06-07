@@ -486,7 +486,7 @@ namespace icl{
       Thread::msleep(1000);
     }
 
-    REGISTER_SOURCE_BACKEND(xi,create_xi_grabber, XiSource::getDeviceList, "xi:device index:M3API/XiApi based camera grabber source");
+    REGISTER_SOURCE_BACKEND(xi,create_xi_grabber, XiSource::getDeviceList, "device index~M3API/XiApi based camera grabber source");
     REGISTER_SOURCE_BACKEND_BUS_RESET_FUNCTION(xi,reset_xi_bus);
   } // namespace io
 }

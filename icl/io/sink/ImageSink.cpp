@@ -5,14 +5,16 @@
 #include <icl/io/sink/ImageSink.h>
 #include <icl/io/detail/SinkBackend.h>
 #include <icl/io/detail/FileWriter.h>  // built-in "file" backend
+#include <icl/io/detail/BackendListing.h>
 
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Exit.h>
-#include <icl/utils/TextTable.h>
 
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <utility>
+#include <vector>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -61,22 +63,11 @@ namespace icl::io {
     }
 
     if (type == "list") {
-      const auto entries = sinkBackendRegistry().entries();
-      TextTable t(4, static_cast<int>(entries.size()) + 1, 28);
-      t(0,0) = "nr";
-      t(1,0) = "id";
-      t(2,0) = "parameter";
-      t(3,0) = "explanation";
-      int i = 1;
-      for (const auto &e : entries) {
-        auto parts = tok(e.description, "~");
-        t(0,i) = str(i - 1);
-        t(1,i) = e.key;
-        t(2,i) = parts.size() > 0 ? parts[0] : std::string();
-        t(3,i) = parts.size() > 1 ? parts[1] : std::string();
-        ++i;
+      std::vector<std::pair<std::string,std::string>> entries;
+      for (const auto &e : sinkBackendRegistry().entries()) {
+        entries.emplace_back(e.key, e.description);
       }
-      std::cout << "Supported Image Output Devices:\n\n" << t << std::endl;
+      detail::printBackendTable("Supported Image Output Devices:", entries);
       utils::exit(0);
     }
 

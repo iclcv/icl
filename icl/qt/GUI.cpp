@@ -9,7 +9,7 @@
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/prop/Constraints.h>
 #include <icl/io/source/ImageSource.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/io/source/DeviceDescription.h>
 
 #include <icl/qt/GUI.h>

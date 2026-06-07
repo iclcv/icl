@@ -204,4 +204,4 @@ const std::vector<io::DeviceDescription>& getPylDeviceList(std::string hint, boo
   return deviceList;
 }
 
-REGISTER_SOURCE_BACKEND(pylon,createSource,getPylDeviceList, "pylon:camera ID or IP-address:Basler Pylon based gigabit-ethernet (GIG-E) camera source");
+REGISTER_SOURCE_BACKEND(pylon,createSource,getPylDeviceList, "camera ID or IP-address~Basler Pylon based gigabit-ethernet (GIG-E) camera source");

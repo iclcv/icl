@@ -55,6 +55,6 @@ namespace icl::io {
   }
 
   REGISTER_SOURCE_BACKEND(create, createCreateGrabber, getCreateDeviceList,
-                   "create:parrot|lena|cameraman|mandril|flowers|windows|women|tree|house:built-in test image");
+                   "parrot|lena|cameraman|mandril|flowers|windows|women|tree|house~built-in test image");
 
   } // namespace icl::io

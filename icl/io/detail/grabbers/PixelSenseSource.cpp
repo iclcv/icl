@@ -363,6 +363,6 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(ps,createPixelSenseGrabber, getPixelSenseDeviceList,"ps:0:pixelsense image source");
+  REGISTER_SOURCE_BACKEND(ps,createPixelSenseGrabber, getPixelSenseDeviceList,"0~pixelsense image source");
 
   } // namespace icl::io

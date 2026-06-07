@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Viktor Richter
 
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/io/detail/kinect/KinectSource.h>
 #include <icl/core/cc/CCFunctions.h>
@@ -856,8 +856,8 @@ namespace icl::io {
     return devices;
   }
 
-  REGISTER_SOURCE_BACKEND(kinectd,createDepthGrabber, getKinectDDeviceList, "kinectd:device ID:kinect depth camera source:");
-  REGISTER_SOURCE_BACKEND(kinectc,createRGBGrabber, getKinectCDeviceList,"kinectc:device ID:kinect color camera source");
-  REGISTER_SOURCE_BACKEND(kinecti,createIRGrabber, getKinectIDeviceList,"kinecti:devide ID:kinect IR camera source");
+  REGISTER_SOURCE_BACKEND(kinectd,createDepthGrabber, getKinectDDeviceList, "device ID~kinect depth camera source");
+  REGISTER_SOURCE_BACKEND(kinectc,createRGBGrabber, getKinectCDeviceList,"device ID~kinect color camera source");
+  REGISTER_SOURCE_BACKEND(kinecti,createIRGrabber, getKinectIDeviceList,"devide ID~kinect IR camera source");
 
   } // namespace icl::io

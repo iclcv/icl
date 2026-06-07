@@ -11,7 +11,7 @@
 #include <icl/utils/Size.h>
 #include <icl/utils/time/Time.h>
 #include <icl/core/Img.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 
 #include <functional>
 #include <string>

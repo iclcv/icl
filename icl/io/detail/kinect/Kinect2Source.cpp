@@ -12,7 +12,7 @@
 #include <libfreenect2/frame_listener_impl.h>
 #undef GLEW_MX
 
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/io/detail/kinect/Kinect2Source.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/StringUtils.h>
@@ -410,8 +410,8 @@ namespace icl::io {
     return devices;
   }
 
-  REGISTER_SOURCE_BACKEND(kinect2d,createDepth2Grabber, getKinect2DDeviceList, "kinect2d:device ID:kinect2 depth camera source:");
-  REGISTER_SOURCE_BACKEND(kinect2c,createRGB2Grabber, getKinect2CDeviceList,"kinect2c:device ID:kinect2 color camera source");
-  REGISTER_SOURCE_BACKEND(kinect2i,createIR2Grabber, getKinect2IDeviceList,"kinect2i:devide ID:kinect2 IR camera source");
+  REGISTER_SOURCE_BACKEND(kinect2d,createDepth2Grabber, getKinect2DDeviceList, "device ID~kinect2 depth camera source");
+  REGISTER_SOURCE_BACKEND(kinect2c,createRGB2Grabber, getKinect2CDeviceList,"device ID~kinect2 color camera source");
+  REGISTER_SOURCE_BACKEND(kinect2i,createIR2Grabber, getKinect2IDeviceList,"devide ID~kinect2 IR camera source");
 
   } // namespace icl::io

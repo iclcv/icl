@@ -351,26 +351,18 @@ From Session 48 deferrals:
   Related: `project_progarg_rework.md`.
 - [ ] **`LibAVVideoWriter` → `LibAVSink`** rename — fold into the pending
   FFmpeg 6/7 rewrite (`project_ffmpeg.md`); currently unbuilt so left as-is.
-- [ ] **Harmonize source-vs-sink backend listing.**  The `-i list` and
-  `-o list` paths are gratuitously asymmetric:
-  - *Sink* (`ImageSink::init`) lists `sinkBackendRegistry().entries()` —
-    help travels in the `Entry.description` (`paramHint~explanation`), id =
-    `Entry.key`. Clean.
-  - *Source* (`ImageSource::init`) lists via
-    `SourceBackendRegistry::getInfos()`, a separate free-text
-    `std::set<std::string> m_descriptions` decoupled from the factory map,
-    colon-delimited (`id:param:description`) and the id is *re-parsed* from
-    the string rather than read from the registry key. Legacy from before
-    the PluginRegistry unification.
-  - Table headers differ too (`index/ID/parameter/description` vs
-    `nr/id/parameter/explanation`).
-  Fix: move source descriptions into the `PluginRegistry` Entry like the
-  sink (drop `m_descriptions`/`getInfos`, switch REGISTER_SOURCE_BACKEND to
-  the `~`-delimited hint convention), and share one TextTable list-printer
-  between `ImageSource`/`ImageSink`. Keep the source-only side-maps
-  (per-backend device enumeration + bus-reset) — sink genuinely has no
-  equivalent, so *that* part of the asymmetry is legitimate. Touches the
-  public `SourceBackendRegistry` + the ~20 backend REGISTER strings.
+- [x] **Harmonize source-vs-sink backend listing.**  DONE.  Source
+  descriptions now live in the `PluginRegistry` Entry (`registerType` takes a
+  description, passed to `registerPlugin`); the free-text `m_descriptions`
+  side-set + `addDescription` are gone, and all ~22 REGISTER_SOURCE_BACKEND
+  strings converted from `"id:param:desc"` to the sink-style `"param~expl"`
+  (id now read from the registry key — fixes the old `dc800`-shows-`dc`
+  quirk).  Both `-i list` and `-o list` render through one shared printer
+  `io/detail/BackendListing.h::printBackendTable`.  Source keeps its
+  legitimately source-only side-maps (per-backend device enumeration +
+  bus-reset).  Also moved `SourceBackend` into `io/detail/` (de-installing
+  `QtCameraSource.h`/`QtVideoSource.h`) so both backend contracts are now
+  symmetric in `detail/`.
 - [ ] **Generic `ImagePipeline`** (idea, exploratory).  With symmetric
   `SourceBackend` / `UnaryOp`(Filter) / `SinkBackend`, compose a generic
   Source→Filter→Sink pipeline — and maybe make `Display` a `Sink` too.  Not

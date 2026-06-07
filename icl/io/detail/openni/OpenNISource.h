@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/utils/time/Time.h>
 #include <icl/io/detail/openni/OpenNIUtils.h>
 #include <icl/utils/thread/Thread.h>

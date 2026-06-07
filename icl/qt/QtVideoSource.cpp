@@ -59,5 +59,5 @@ namespace icl::qt {
       return deviceList;
     }
 
-    REGISTER_SOURCE_BACKEND(qtvideo,createQtVideoGrabber, getQtVideoDeviceList,"qtvideo:video filename:Qt based video file source");
+    REGISTER_SOURCE_BACKEND(qtvideo,createQtVideoGrabber, getQtVideoDeviceList,"video filename~Qt based video file source");
   }

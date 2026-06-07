@@ -8,7 +8,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/compat/OpenCV.h>
 #include <icl/core/Image.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/utils/Exception.h>
 
 #include <opencv2/videoio.hpp>

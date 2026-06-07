@@ -7,7 +7,7 @@
 #include <icl/geom/PointCloudCreator.h>
 
 #include <icl/io/source/ImageSource.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/geom/PointCloudGrabberRegistry.h>
 #include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 #include <icl/filter/morph/MedianOp.h>

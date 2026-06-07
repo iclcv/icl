@@ -7,7 +7,7 @@
 #include <icl/io/detail/pylon/PylonIncludes.h>
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/io/detail/pylon/PylonUtils.h>
 #include <icl/io/detail/pylon/PylonCameraOptions.h>
 #include <icl/io/detail/pylon/PylonGrabberThread.h>

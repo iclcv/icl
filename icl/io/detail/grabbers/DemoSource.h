@@ -9,7 +9,7 @@
 #include <icl/utils/Size.h>
 #include <icl/core/cc/Color.h>
 
-#include <icl/io/source/SourceBackend.h>
+#include <icl/io/detail/SourceBackend.h>
 #include <icl/core/Image.h>
 #include <mutex>
 

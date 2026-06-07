@@ -209,6 +209,6 @@ namespace icl::io {
     return deviceList;
   }
 
-  REGISTER_SOURCE_BACKEND(demo,createDemoGrabber, getDemoDeviceList,"demo:0:demo image source");
+  REGISTER_SOURCE_BACKEND(demo,createDemoGrabber, getDemoDeviceList,"0~demo image source");
 
   } // namespace icl::io
