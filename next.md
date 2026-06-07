@@ -2,11 +2,55 @@
 
 ## Next Step
 
-Session 64 finished the `io/detail/` audit (the four subsystems the
-Session 63 Next Step queued up), then did a round of follow-up io/
-cleanup (JPEGDecoder dead-code, TestImages relocation, jpg2cpp
-modernization).  9 commits; 876/876 tests green (875 baseline + 1 new
-regression test).  Branch is 239 commits ahead of origin.
+Session 65 started the **ImageSource/ImageSink rework**
+(`image-source-sink-plan.md`).  Stages 1 + 2 landed plus several
+follow-ups.  Branch is 254 commits ahead of origin; 877/877 tests green;
+build clean.
+
+### Where the source/sink rework stands
+
+- **Stage 1 (sink symmetrization) — DONE.**  `SinkBackend` base +
+  `ImageSink` master (holds `shared_ptr<SinkBackend>`, forwards backend
+  properties — fixes the old can't-set-output-properties gap).
+- **Stage 2a/2b (rename) — DONE.**  `GenericGrabber`→`ImageSource`,
+  `Grabber`→`SourceBackend`, registry/device-desc/macros renamed, dir
+  `io/grabber/`→`io/source/`, all 18 concrete `*Grabber`→`*Source`.
+- **Stage 2 follow-ups — DONE.**  ImageSource is a real PIMPL (all
+  methods out-of-line, header forward-declares `SourceBackend`);
+  `getGrabber()`→`getBackend()` (sink `backend()`→`getBackend()` too);
+  priority-list collapsed to single device + bare spec
+  (`init("dc","0")`, no re-tag); `utils::exit()` app-aware exit hook
+  (clean `-i list`/`-o list`, no QThreadStorage spam); TextTable polish
+  (separator-aware wrap, header-only rule, left-align, Unicode borders).
+
+### Remaining for the rework (next session)
+
+- **Stage 2c — internal "grabber" residue rename.**  `io/source/` still
+  has internal grabber-named symbols: `GrabberInstanceTable` (helper in
+  ImageSource.cpp), `SourceBackendRegistry` methods
+  (`getRegisteredGrabbers`, `getGrabberInfos`, `resetGrabberBus`,
+  `registerGrabberType`, `registerGrabberBusReset`,
+  `addGrabberDescription`), `m_data->grabber` member, `Grabber_VIRTUAL`
+  dummy, `\ingroup GRABBER_G` (8 refs).  `SourceBackendRegistry` is a
+  public header, so its method names are semi-public — coherent sweep,
+  do deliberately (touches the REGISTER_SOURCE_BACKEND macro body + the
+  ~20 backend regs via the macro, plus ImageSource.cpp callers).
+- **Stage 3 — hide remaining public backends.**  Move `SourceBackend`
+  (and `SinkBackend` is already in detail/) + `FileSource`/`FileWriter`
+  into `detail/`; map FileSource's typed extras (getFileCount/next/prev/
+  bufferImages) onto properties; keep `getBackend()` as the escape hatch.
+  (PIMPL already unblocks moving SourceBackend to detail/.)
+- **Stage 4 — docs/memory.**  CLAUDE.md "Grabber Framework" section,
+  demos, `reference_websocket.md`, etc. → ImageSource/ImageSink.
+
+### Pre-existing io/ Next Step (Session 64, still open)
+
+Session 64 finished the `io/detail/` audit (file-plugins,
+compression-plugins, network, orphan grabbers).  Branch was 239 commits
+ahead then; the orphan source backends (Optris/PixelSense/SwissRanger/Xi)
+remain compile-unverified (no SDK deps) — build them when a dep is
+enabled.  Latent `LibAVVideoWriter` FFmpeg 6/7 rewrite still pending
+(`project_ffmpeg.md`).
 
 ### Remaining io subsystems (post Session-64)
 
@@ -81,6 +125,52 @@ ROI + timestamp round-trip is format-dependent:
   `-Dtests=true -Dapps=true -Ddemos=true`.  Tests live at
   `builddir/tests/icl-tests` (not in `bin/`); run with `-j 1` per
   `project_test_parallel_flakiness`.
+
+---
+
+## Current State (Session 65 — ImageSource/ImageSink rework, Stages 1–2)
+
+Started the io/ acquisition+output API rework (`image-source-sink-plan.md`):
+rename the camera-jargon "Grabber" surface to symmetric ImageSource /
+ImageSink, hide backends, fix the output property-access gap.  877/877
+tests green throughout; 254 commits ahead of origin.
+
+### Commits
+
+- `41423a9b5` plan doc; `597458046` **Stage 1** — `SinkBackend` base +
+  `ImageSink` (was GenericImageOutput): holds `shared_ptr<SinkBackend>`,
+  inherits Configurable, forwards backend tunables (so
+  `sink.setPropertyValue("compression.mode",…)` works — the
+  std::function-based predecessor couldn't).  Backends derive SinkBackend;
+  registry returns objects via `REGISTER_SINK_BACKEND`.
+- `731a19d1a` **Stage 2a** — GenericGrabber→ImageSource,
+  Grabber→SourceBackend, GrabberRegistry→SourceBackendRegistry,
+  GrabberDeviceDescription→DeviceDescription, REGISTER_GRABBER→
+  REGISTER_SOURCE_BACKEND, dir `io/grabber/`→`io/source/`.  ~196 files.
+- `29051e1cd` **Stage 2b** — 18 concrete `*Grabber`→`*Source`.
+- `8eadd53e0` **PIMPL** — ImageSource all-out-of-line, forward-declares
+  SourceBackend; `getGrabber()`→`getBackend()` (+ sink symmetry); header
+  doc points at `-i list` instead of a hand-synced backend list.
+- `d10c9a651` `-i list`/`@info` `std::terminate()`→clean exit.
+- `7825aad1a` TextTable: separator-aware wrap + header-only rule;
+  `523c1879a` left-align; `61db15227` Unicode box-drawing borders.
+- `7e63c05c5` **utils::exit()** app-aware exit hook — ICLApplication
+  installs a handler (flush + std::_Exit) so `-i list` doesn't spew
+  QThreadStorage teardown warnings; non-GUI keeps std::exit.
+- `dced6b5b8` **priority-list collapse** — `init(device, spec)` single
+  token + bare spec (no "TYPE=" re-tag); empty/"auto" scans all backends.
+- `4c9661cf1` TODO: ProgArg framework rethink (per-app stringly-typed arg
+  specs, arity baked in at ~51 sites — see `project_progarg_rework`).
+
+### Conventions established
+
+- **Master/backend/contract split**: user type `ImageSource`/`ImageSink`;
+  contract `SourceBackend`/`SinkBackend`; concrete backends `*Source`/
+  `*Sink` (mostly `detail/`).  `getBackend()` is the escape hatch.
+- **Master is a PIMPL** forward-declaring its backend — keeps the public
+  header thin and decoupled from the backend's full definition.
+- **utils::exit()** for library code that terminates after a one-shot
+  diagnostic; the app front-end intercepts it.
 
 ---
 
