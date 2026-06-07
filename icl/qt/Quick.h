@@ -371,13 +371,12 @@ namespace icl::qt{
     **/
     ICLQt_API void save(const core::ImgBase &image, const std::string &filename);
 
-    /// shows an image using TestImages::show
-    /** The image is wrote to disk into a temporary file. Then it
-        is shown using a specifi show command, which can be set, using
-        the the showSetup function, which is also available in this
-        package.
+    /// shows an image using io::show (ExternalViewer)
+    /** The image is written to disk into a temporary file. Then it
+        is shown using a specific show command, which can be set using
+        the showSetup function, also available in this package.
         @param image image to show
-        @see showSetput(const string&, const stirng&, int)
+        @see showSetup(const string&, const string&, int)
     **/
     ICLQt_API void show(const icl::core::ImgBase &image);
 

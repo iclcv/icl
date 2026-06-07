@@ -74,14 +74,17 @@ int main(int n, char **ppc){
   std::string arrayName = std::string("aauc_Data_")+imageName;
   std::string extraArrayName = std::string("auc_ExtraData_")+imageName;
 
-  printf("#include <icl/io/file/FileGrabber.h>\n");
+  printf("#include <icl/io/detail/file-plugins/JPEGDecoder.h>\n");
+  printf("#include <icl/core/Image.h>\n");
   printf("#include <icl/core/Img.h>\n");
+  printf("#include <icl/io/grabber/TestImages.h>\n");
+  printf("#include <vector>\n");
 
 
   //-------------------------------------------
-  printf("using namespace icl;\n");
-  printf("using namespace std;\n");
-  printf("namespace icl{\n");
+  printf("using namespace icl::utils;\n");
+  printf("using namespace icl::core;\n");
+  printf("namespace icl::io {\n");
   printf("namespace{\n");
   const int COLS = 30;
   const int ROWS = nBytesRead/COLS;
@@ -111,27 +114,24 @@ int main(int n, char **ppc){
   printf("  // {{{ open\n");
   printf("  static core::Image cached;\n"
          "  if(!cached.isNull()) return cached.deepCopy();\n"
-         "  FILE *f = fopen(\"./.tmp_image_buffer.jpg\",\"wb\");\n"
          "  const int DIM = NROWS*NCOLS+NEXTRA;\n"
-         "  char *buf = new char[DIM];\n"
+         "  std::vector<unsigned char> buf(DIM);\n"
          "  int j=0;\n"
          "  for(int i=0;i<NROWS;++i){\n"
-         "     for(int k=0;k<NCOLS;k++,j++){\n"
-         "        buf[j] = %s[i][k];\n"
-         "     }\n"
+         "    for(int k=0;k<NCOLS;k++,j++){\n"
+         "      buf[j] = %s[i][k];\n"
+         "    }\n"
          "  }\n"
          "  for(int i=0;i<NEXTRA;i++,j++){\n"
-         "     buf[j] = %s[i];\n"
+         "    buf[j] = %s[i];\n"
          "  }\n"
-         "  fwrite(buf,1,DIM,f);\n"
-         "  fclose(f);\n"
-         "  delete [] buf;\n"
-         "  cached = FileGrabber(\"./.tmp_image_buffer.jpg\",false,true).grab();\n"
-         "  remove(\"./.tmp_image_buffer.jpg\");\n"
+         "  core::ImgBase *raw = 0;\n"
+         "  JPEGDecoder::decode(buf.data(), DIM, &raw);\n"
+         "  cached = core::Image(raw);\n"
          "  return cached.deepCopy();\n"
          "}\n// }}}\n\n",arrayName.c_str(),extraArrayName.c_str());
 
   printf("  REGISTER_TEST_IMAGE(%s, createImage_%s)\n",imageName.c_str(),imageName.c_str());
-  printf("} // end namespace icl\n\n\n");
+  printf("  } // namespace icl::io\n\n\n");
 
 }
