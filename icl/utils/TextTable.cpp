@@ -4,6 +4,9 @@
 
 #include <icl/utils/TextTable.h>
 #include <icl/utils/Macros.h>
+#include <vector>
+#include <sstream>
+#include <string>
 namespace icl::utils {
   void TextTable::ensureSize(int width, int height){
     width = iclMax(getSize().width,width);     //2
@@ -32,78 +35,95 @@ namespace icl::utils {
     }
   }
 
-  static inline std::string save_substr_justified(const std::string &s, int a, int l, int ll){
-    int sl = static_cast<int>(s.length());
-    if(a>=sl) return std::string(ll,' ');
-    if(a+l > sl) l=sl-a;
-    std::string tmp = s.substr(a,l);
-    sl = tmp.length();
-    if(sl == ll) return tmp;
-    int difL = (ll-sl)/2;
-    tmp = std::string(difL,' ') + tmp + std::string(ll-(difL+sl),' ');
-    //    SHOW( (ll-tmp.length()));
-    return tmp;
+  /// Wrap a cell into lines no wider than `width`, breaking preferentially
+  /// at separator characters (space, '|', ',', '/') and keeping the
+  /// separator attached to the preceding chunk.  Tokens longer than the
+  /// width are hard-cut as a fallback.
+  static std::vector<std::string> wrap_cell(const std::string &s, int width){
+    if(width < 1) width = 1;
+    auto isBreak = [](char c){ return c==' '||c=='|'||c==','||c=='/'; };
+    std::vector<std::string> lines;
+    std::string cur;
+    size_t i = 0, n = s.size();
+    while(i < n){
+      // next token = run of non-break chars + the following run of breaks
+      size_t j = i;
+      while(j < n && !isBreak(s[j])) ++j;
+      while(j < n &&  isBreak(s[j])) ++j;
+      std::string token = s.substr(i, j - i);
+      i = j;
+      // hard-cut a token that can never fit
+      while(static_cast<int>(token.size()) > width){
+        if(!cur.empty()){ lines.push_back(cur); cur.clear(); }
+        lines.push_back(token.substr(0, width));
+        token = token.substr(width);
+      }
+      if(!cur.empty() && static_cast<int>(cur.size() + token.size()) > width){
+        lines.push_back(cur);
+        cur.clear();
+      }
+      cur += token;
+    }
+    if(!cur.empty() || lines.empty()) lines.push_back(cur);
+    // drop trailing spaces so centering stays symmetric (keep '|' etc.)
+    for(std::string &l : lines){
+      size_t e = l.find_last_not_of(' ');
+      l = (e == std::string::npos) ? std::string() : l.substr(0, e + 1);
+    }
+    return lines;
+  }
+
+  static inline std::string justify_center(const std::string &s, int ll){
+    int sl = static_cast<int>(s.size());
+    if(sl >= ll) return s;
+    int difL = (ll - sl) / 2;
+    return std::string(difL,' ') + s + std::string(ll - (difL + sl),' ');
   }
 
   std::string TextTable::toString() const{
-    std::vector<int> rowHeights(getSize().height,0);
-    std::vector<int> columnWidths(getSize().width,0);
+    const int W = getSize().width, H = getSize().height;
+    std::vector<std::vector<std::string>> wrapped(W * H);
+    std::vector<int> rowHeights(H, 1);
+    std::vector<int> columnWidths(W, 0);
 
-    for(int x=0;x<getSize().width;++x){
-      for(int y=0;y<getSize().height;++y){
-        const std::string &s = m_texts[x + getSize().width*y ];
-        int l = static_cast<int>(s.length());
-        int cellWidth = iclMin(l,m_maxCellWidth);
-        int cellHeight = iclMax(1,static_cast<int>(ceil(static_cast<float>(l) / m_maxCellWidth)));
-        //        std::cout << "s: -"<< s << "- l:" << l << " cellH:" << cellHeight <<  " y:"<<  y << std::endl;
-
-        if(cellWidth > columnWidths[x]) columnWidths[x] = cellWidth;
-        if(cellHeight > rowHeights[y]) rowHeights[y] = cellHeight;
+    for(int x=0;x<W;++x){
+      for(int y=0;y<H;++y){
+        std::vector<std::string> lines = wrap_cell(m_texts[x + W*y], m_maxCellWidth);
+        int w = 0;
+        for(const std::string &l : lines) w = iclMax(w, static_cast<int>(l.size()));
+        if(w > columnWidths[x]) columnWidths[x] = w;
+        if(static_cast<int>(lines.size()) > rowHeights[y]) rowHeights[y] = static_cast<int>(lines.size());
+        wrapped[x + W*y] = std::move(lines);
       }
     }
-#if 0
-    std::cout << "rowHeights:";
-    for(unsigned int i=0;i<rowHeights.size();++i) std::cout << rowHeights[i] << " ";
-    std::cout << std::endl;
 
-    std::cout << "columnWidths:";
-    for(unsigned int i=0;i<columnWidths.size();++i) std::cout << columnWidths[i] << " ";
-    std::cout << std::endl;
-#endif
-
-    /*
-     a  |  b   |    c    |
-    ----+------+---------+
-      e |  f   |     g   |
-     e2 |      |         |
-    ----+------+---------+
-    */
-
-    std::ostringstream stream;
-    stream << '+';
-    for(int x=0;x<getSize().width;++x){
-      for(int i=0;i<columnWidths[x]+2;++i) stream << '-';
+    auto hline = [&](std::ostringstream &stream){
       stream << '+';
-    }
-    stream << std::endl;
-
-    for(int y=0;y<getSize().height;++y){
-      for(int h=0;h<rowHeights[y];++h){
-        stream << '|' << ' ';
-        for(int x=0;x<getSize().width;++x){
-          const std::string &s = m_texts[x + getSize().width*y ];
-          stream << save_substr_justified(s,h*m_maxCellWidth,m_maxCellWidth,columnWidths[x]);
-          stream << ' ' << '|' << ' ';
-        }
-        stream << std::endl;
-      }
-      stream << '+';
-      for(int x=0;x<getSize().width;++x){
+      for(int x=0;x<W;++x){
         for(int i=0;i<columnWidths[x]+2;++i) stream << '-';
         stream << '+';
       }
       stream << std::endl;
+    };
+
+    // Horizontal rules only frame the table and separate the header row
+    // (row 0) from the body — no rule between every data row (less clutter).
+    std::ostringstream stream;
+    hline(stream);                       // top border
+    for(int y=0;y<H;++y){
+      for(int h=0;h<rowHeights[y];++h){
+        stream << '|' << ' ';
+        for(int x=0;x<W;++x){
+          const std::vector<std::string> &lines = wrapped[x + W*y];
+          const std::string &line = (h < static_cast<int>(lines.size())) ? lines[h] : std::string();
+          stream << justify_center(line, columnWidths[x]);
+          stream << ' ' << '|' << ' ';
+        }
+        stream << std::endl;
+      }
+      if(y == 0 && H > 1) hline(stream); // separator under the header only
     }
+    hline(stream);                       // bottom border
 
     return stream.str();
   }

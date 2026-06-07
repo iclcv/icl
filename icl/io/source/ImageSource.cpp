@@ -216,7 +216,7 @@ namespace icl::io {
           grabberReg -> getGrabberInfos();
       std::cout << "the following generic grabber plugins are available:" << std::endl;
 
-      TextTable t(4,supportedDevices.size()+1,80);
+      TextTable t(4,supportedDevices.size()+1,28);
       t[0] = tok("index,ID,parameter,description",",");
 
       for(size_t k=0;k<supportedDevices.size();++k){

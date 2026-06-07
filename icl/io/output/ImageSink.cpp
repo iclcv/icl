@@ -61,7 +61,7 @@ namespace icl::io {
 
     if (type == "list") {
       const auto entries = sinkBackendRegistry().entries();
-      TextTable t(4, static_cast<int>(entries.size()) + 1, 50);
+      TextTable t(4, static_cast<int>(entries.size()) + 1, 28);
       t(0,0) = "nr";
       t(1,0) = "id";
       t(2,0) = "parameter";
