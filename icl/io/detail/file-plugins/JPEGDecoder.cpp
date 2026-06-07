@@ -7,8 +7,6 @@
 #include <icl/io/detail/file-plugins/JPEGHandle.h>
 #include <icl/utils/Macros.h>
 #include <icl/io/file/FileGrabber.h>  // for HeaderInfo
-#include <icl/utils/StrTok.h>
-#include <charconv>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -113,41 +111,10 @@ namespace icl::io {
       }
     } ensure_data_source_manager_deletion(file ? 0 : (DataSourceManager*)jpegHandle.info.src);
 
-    /* request to save comments */
-    //jpeg_save_markers (&jpegHandle.info, JPEG_COM, 1024);
-
     /* Step 3: read file parameters with jpeg_read_header() */
     jpeg_read_header(&jpegHandle.info, TRUE);
 
     HeaderInfo oInfo;
-
-    /* evaluate markers, i.e. comments */
-    for (jpeg_saved_marker_ptr m = jpegHandle.info.marker_list; m; m = m->next){
-
-      if (m->marker != JPEG_COM) continue;
-      std::vector<std::string> ts = StrTok(std::string(reinterpret_cast<char*>(m->data),reinterpret_cast<char*>(m->data)+m->data_length)," ").allTokens();
-      if(ts.size() < 2) continue;
-      //      char acBuf[1025] = "";
-      //memcpy (acBuf, m->data, m->data_length);
-      //acBuf[m->data_length] = '\0'; // terminating null
-
-      //  istringstream iss (acBuf);
-      // string sKey, sValue;
-      // iss >> sKey;
-
-       if (ts[0] == "TimeStamp") {
-         int tsVal = 0;
-         std::from_chars(ts[1].data(), ts[1].data() + ts[1].size(), tsVal);
-         oInfo.time = Time::microSeconds(tsVal);
-       } else if (ts[0] == "ROI") {
-         int r0 = 0, r1 = 0, r2 = 0, r3 = 0;
-         std::from_chars(ts[1].data(), ts[1].data() + ts[1].size(), r0);
-         std::from_chars(ts[2].data(), ts[2].data() + ts[2].size(), r1);
-         std::from_chars(ts[3].data(), ts[3].data() + ts[3].size(), r2);
-         std::from_chars(ts[4].data(), ts[4].data() + ts[4].size(), r3);
-         oInfo.roi = Rect(r0, r1, r2, r3);
-       }
-    }
 
     /* Step 4: set parameters for decompression */
 
