@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/core/cc/CCFunctions.h>
+#include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/utils/thread/Thread.h>
 #include <icl/utils/time/Time.h>
@@ -285,7 +286,7 @@ namespace icl{
       return all;
     }
 
-    const core::ImgBase* XiGrabber::acquireImage(){
+    core::Image XiGrabber::acquireImage(){
       //DEBUG_LOG("acquire image called!");
       XI_RETURN s = XI_TIMEOUT;
       Time timestamp;
@@ -316,7 +317,8 @@ namespace icl{
         std::copy(s, s+dim, m_data->buf.begin(0));
       }
       m_data->buf.setTime(timestamp);
-      return &m_data->buf;
+      // View of the backend-owned buffer, valid until the next acquireImage.
+      return core::Image(m_data->buf);
     }
 
     void XiGrabber::processPropertyChange(const utils::Configurable::Property &prop){

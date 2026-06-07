@@ -45,7 +45,7 @@ namespace icl::io {
     };
 
     /// default grab function
-    ICLIO_API core::Image acquireImage();
+    ICLIO_API core::Image acquireImage() override;
 
     /// Create a PixelSenseGrabber with given max. fps count
     ICLIO_API PixelSenseGrabber(float maxFPS = 30);

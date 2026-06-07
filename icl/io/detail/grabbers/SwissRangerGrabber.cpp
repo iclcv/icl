@@ -14,6 +14,7 @@
 #include <libMesaSR.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/core/Img.h>
+#include <icl/core/Image.h>
 #include <map>
 #include <string>
 
@@ -432,7 +433,7 @@ namespace icl::io {
     return unitFactor * maxRange;
   }
 
-  const ImgBase *SwissRangerGrabber::acquireImage(){
+  core::Image SwissRangerGrabber::acquireImage(){
     std::scoped_lock l(m_mutex);
     SR_Acquire(m_sr->cam);
     Time captureTime = Time::now();
@@ -520,7 +521,8 @@ m_sr->iim == iimUnknownPixelsZero ? 0 : -1); break;
     }
 
     result.setTime(captureTime);
-    return &result;
+    // View of the backend-owned buffer, valid until the next acquireImage.
+    return core::Image(result);
   }
 
   const std::vector<GrabberDeviceDescription> &SwissRangerGrabber::getDeviceList(std::string hint, bool rescan){

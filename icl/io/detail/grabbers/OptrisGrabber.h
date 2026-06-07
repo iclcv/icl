@@ -38,7 +38,7 @@ namespace icl::io {
 
       /// grabbing function
       /** \copydoc icl::io::Grabber::acquireImage()  **/
-      core::Image acquireImage();
+      core::Image acquireImage() override;
 
       /// callback for changed configurable properties
       void processPropertyChange(const utils::Configurable::Property &prop);

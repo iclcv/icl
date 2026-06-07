@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Eckard Riedenklau, Christof Elbrechter
 
 #include <icl/io/detail/grabbers/PixelSenseGrabber.h>
+#include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/utils/thread/Thread.h>
 #include <icl/utils/StringUtils.h>
@@ -168,7 +169,7 @@ namespace icl::io {
 
 
 
-  const ImgBase* PixelSenseGrabber::acquireImage(){
+  core::Image PixelSenseGrabber::acquireImage(){
     std::scoped_lock __lock(m_data->mutex);
 
     ps_get_image( m_data->s40, m_data->image.begin(0) );
@@ -184,7 +185,8 @@ namespace icl::io {
 
     std::string meta = cat( std::vector<ps_blob>(m_data->blobs.begin(), m_data->blobs.begin()+bc), ",");
     m_data->image.setMetaData(meta);
-    return &m_data->image;
+    // View of the backend-owned buffer, valid until the next acquireImage.
+    return core::Image(m_data->image);
   }
 
 

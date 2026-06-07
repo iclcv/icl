@@ -8,6 +8,7 @@
 #include <icl/utils/File.h>
 #include <icl/utils/thread/Thread.h>
 #include <icl/core/Img.h>
+#include <icl/core/Image.h>
 #include <icl/utils/Xml.h>
 #include <icl/io/file/FileList.h>
 #include <icl/filter/color/PseudoColorOp.h>
@@ -306,7 +307,7 @@ namespace icl{
       return all;
     }
 
-    const core::ImgBase* OptrisGrabber::acquireImage(){
+    core::Image OptrisGrabber::acquireImage(){
       bool omitDoubledFrames = prop("omit doubled frames").value;
 
       std::scoped_lock lock(m_data->buffer.mutex);
@@ -334,7 +335,8 @@ namespace icl{
         cvt = ltBuf;
       }
 
-      return cvt;
+      // View of a backend-owned buffer, valid until the next acquireImage.
+      return cvt ? core::Image(*cvt) : core::Image();
     }
 
     void OptrisGrabber::processPropertyChange(const utils::Configurable::Property &prop){
