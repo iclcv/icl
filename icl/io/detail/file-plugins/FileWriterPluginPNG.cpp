@@ -88,7 +88,7 @@ namespace icl::io {
     png_set_compression_level(writer, m_compressionLevel);
 
     png_set_IHDR(writer,info,w,h,
-                 bits, // bits for now: later you will be able to select this
+                 bits, // derived from image depth: 16 for single-channel depth16s, else 8
                  c==1 ? PNG_COLOR_TYPE_GRAY :
                  c==2 ? PNG_COLOR_TYPE_GRAY_ALPHA :
                  c==3 ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGB_ALPHA,
