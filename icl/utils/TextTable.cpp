@@ -96,33 +96,35 @@ namespace icl::utils {
       }
     }
 
-    auto hline = [&](std::ostringstream &stream){
-      stream << '+';
+    // Unicode box-drawing rule with the given left / junction / right
+    // corner glyphs (UTF-8; narrow string literals carry the source bytes).
+    auto rule = [&](std::ostringstream &stream, const char *l, const char *m, const char *r){
+      stream << l;
       for(int x=0;x<W;++x){
-        for(int i=0;i<columnWidths[x]+2;++i) stream << '-';
-        stream << '+';
+        for(int i=0;i<columnWidths[x]+2;++i) stream << "─";  // ─
+        stream << (x+1 < W ? m : r);
       }
       stream << std::endl;
     };
 
-    // Horizontal rules only frame the table and separate the header row
-    // (row 0) from the body — no rule between every data row (less clutter).
+    // Rules only frame the table and separate the header row (row 0) from
+    // the body — no rule between every data row (less clutter).
     std::ostringstream stream;
-    hline(stream);                       // top border
+    rule(stream, "┌", "┬", "┐");   // ┌ ┬ ┐  top
     for(int y=0;y<H;++y){
       for(int h=0;h<rowHeights[y];++h){
-        stream << '|' << ' ';
+        stream << "│" << ' ';                 // │
         for(int x=0;x<W;++x){
           const std::vector<std::string> &lines = wrapped[x + W*y];
           const std::string &line = (h < static_cast<int>(lines.size())) ? lines[h] : std::string();
           stream << justify_left(line, columnWidths[x]);
-          stream << ' ' << '|' << ' ';
+          stream << ' ' << "│" << ' ';        // │
         }
         stream << std::endl;
       }
-      if(y == 0 && H > 1) hline(stream); // separator under the header only
+      if(y == 0 && H > 1) rule(stream, "├", "┼", "┤");  // ├ ┼ ┤  header sep
     }
-    hline(stream);                       // bottom border
+    rule(stream, "└", "┴", "┘");   // └ ┴ ┘  bottom
 
     return stream.str();
   }
