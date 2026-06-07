@@ -41,15 +41,15 @@ namespace icl::utils {
       }
 
 
-      //  output  (cells wrap at word/separator boundaries; horizontal
-      //           rules frame the table + separate the header row only)
+      //  output  (left-aligned; cells wrap at word/separator boundaries;
+      //           horizontal rules frame the table + separate the header)
       //  +------------+----------+-----+----------------------+
-      //  |    name    | forename | age |       address        |
+      //  | name       | forename | age | address              |
       //  +------------+----------+-----+----------------------+
-      //  | elbrechter | christof | 34  |    Some Street in    |
-      //  |            |          |     |    Oerlinghausen     |
+      //  | elbrechter | christof | 34  | Some Street in       |
+      //  |            |          |     | Oerlinghausen        |
       //  |            |          |     | (close to Bielefeld) |
-      //  |  gotting   | michael  | ??  |    Somewhere else    |
+      //  | gotting    | michael  | ??  | Somewhere else       |
       //  +------------+----------+-----+----------------------+
 
     \endcode

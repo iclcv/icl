@@ -73,11 +73,10 @@ namespace icl::utils {
     return lines;
   }
 
-  static inline std::string justify_center(const std::string &s, int ll){
+  static inline std::string justify_left(const std::string &s, int ll){
     int sl = static_cast<int>(s.size());
     if(sl >= ll) return s;
-    int difL = (ll - sl) / 2;
-    return std::string(difL,' ') + s + std::string(ll - (difL + sl),' ');
+    return s + std::string(ll - sl,' ');
   }
 
   std::string TextTable::toString() const{
@@ -116,7 +115,7 @@ namespace icl::utils {
         for(int x=0;x<W;++x){
           const std::vector<std::string> &lines = wrapped[x + W*y];
           const std::string &line = (h < static_cast<int>(lines.size())) ? lines[h] : std::string();
-          stream << justify_center(line, columnWidths[x]);
+          stream << justify_left(line, columnWidths[x]);
           stream << ' ' << '|' << ' ';
         }
         stream << std::endl;
