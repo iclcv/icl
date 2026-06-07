@@ -2,37 +2,42 @@
 
 ## Next Step
 
-Session 63 was a deep audit + modernization sweep across the public
-io/ surface (`Grabber`, `GenericImageOutput`, `FileWriter`,
-`FileGrabber`, `ImageCompressor`).  18 io commits + 1 build-env
-commit landed; 875/875 tests green throughout.  Branch is 21
-commits ahead of origin.
+Session 64 finished the `io/detail/` audit (the four subsystems the
+Session 63 Next Step queued up).  6 commits; 876/876 tests green
+(875 baseline + 1 new regression test).  Branch is 235 commits
+ahead of origin.
 
-### Remaining io subsystems (not yet audited)
+### Remaining io subsystems (post Session-64)
 
-In `icl/io/detail/`, in roughly descending value:
+In `icl/io/detail/`:
 
-- **`detail/file-plugins/`** — PNM, BICL, PNG, JPEG (decoder/encoder/
-  handle), ImageMagick, CSV plugins.  Likely candidates for the same
-  Configurable-singleton treatment FileWriterPluginJPEG / CSV got
-  this session, if any of them have similar tunables.  Also: audit
-  the JPEG decoder/encoder/handle split (3 files for one codec is
-  unusual).
-- **`detail/network/`** — WSGrabber + WSImageOutput.  Recently
-  rewritten; expected to be clean but worth a pass for symmetry now
-  that GenericGrabber/Output have been cleaned up.
-- **`detail/grabbers/`** — CreateGrabber, DemoGrabber are clean (used
-  as smoke tests this session); the orphan unbuilt ones (OptrisGrabber,
-  PixelSenseGrabber, SwissRangerGrabber, XiGrabber) had their
-  `acquireImage()` declarations updated for signature compatibility
-  but the .cpp implementations are still on the legacy ImgBase*
-  pattern — they'll need migration the next time their build deps
-  are enabled.
+- **`detail/file-plugins/`** — DONE (Session 64).  PNG writer got a
+  `png.compression-level` tunable; JPEG writer now delegates to
+  JPEGEncoder (the 3-file JPEG split carries zero duplication now);
+  ImageMagick writer deliberately left without a quality knob (no-op
+  for ~all its formats).  Fixed the broken plugin-prefix wiring.
+- **`detail/compression-plugins/`** — DONE (Session 64).  Audited,
+  already modern (Configurable tunables + capabilities + codec-params,
+  Image-typed); no changes needed.
+- **`detail/network/`** — DONE (Session 64).  Clean apart from one dead
+  `ImgBase.h` include in WSGrabber.cpp (removed).
+- **`detail/grabbers/`** — orphan backends (Optris/PixelSense/
+  SwissRanger/Xi) migrated to `Image acquireImage()` (Session 64), BUT
+  these are NOT in meson.build (proprietary SDK deps unavailable), so
+  the migration is mechanical/unverified-by-compile.  **First thing to
+  do when any of these deps is enabled: build that backend and confirm
+  the acquireImage() shallow-wrap idiom compiles.**
 - **`detail/libav/`** — LibAVVideoWriter; per memory `project_ffmpeg.md`
-  this still needs the FFmpeg 6+/7+ API rewrite.  Not new.
-- **`detail/compression-plugins/`** — newly structured as a static_library
-  (link_whole'd into libicl-io).  Internals could be audited for the
-  same Image-typed-buffer + Configurable patterns the file-plugins use.
+  still needs the FFmpeg 6+/7+ API rewrite.  Not new, not yet touched.
+
+### Latent JPEG-decoder dead code (spotted Session 64)
+
+`JPEGDecoder.cpp` has a TimeStamp/ROI marker-reading loop (~lines
+124-142) that is unreachable: `jpeg_save_markers` is commented out
+(line 117), so `marker_list` is always empty.  Either re-enable
+`jpeg_save_markers` (and have the encoder write markers again) or
+delete the dead reader loop.  Low priority — markers were never
+round-tripped, so nothing depends on them.
 
 ### Session-62/63 carryovers (suggested order)
 
@@ -71,6 +76,88 @@ In `icl/io/detail/`, in roughly descending value:
   `-Dtests=true -Dapps=true -Ddemos=true`.  Tests live at
   `builddir/tests/icl-tests` (not in `bin/`); run with `-j 1` per
   `project_test_parallel_flakiness`.
+
+---
+
+## Current State (Session 64 — io/detail audit completion)
+
+Closed the four `io/detail/` subsystems the Session 63 Next Step
+queued (file-plugins, compression-plugins, network, orphan grabbers).
+6 commits, mostly small but each fixing a concrete issue.  876/876
+tests green throughout (875 baseline + 1 new regression test).
+
+### file-plugins (4 commits)
+
+- `49d58851a` **PNG writer compression-level tunable + fix broken
+  plugin-prefix wiring.**  Two things in one commit:
+  - FileWriterPluginPNG becomes a Configurable singleton exposing
+    `compression-level` (zlib 0-9, default 4), replacing the hardcoded
+    `png_set_compression_level(writer, 4)` and its "later you will be
+    able to select this" TODO.  Verified: level 0 → 2.26 MB, level 9 →
+    787 KB on the parrot test image, roundtrips.
+  - **Bug fix**: the plugin-prefix feature shipped *broken* in Session
+    63.  `REGISTER_FILE_WRITER_CONFIG(jpeg, "jpeg", FACTORY)` expands to
+    `registerPlugin("jpeg", FACTORY)` — so "jpeg" is the registry KEY
+    and `description` defaults to empty.  But
+    `FileWriter::attachPluginConfigurables` prefixed children with
+    `e.description` (empty), so `jpeg.quality` / `csv.extend-file-name`
+    never resolved — they were added unprefixed.  Fixed by reading
+    `e.key`.  New regression test `FileWriter.plugin_prefix.tunables_resolve`.
+- `e95cb3b60` **FileWriterPluginJPEG delegates to JPEGEncoder.**  The
+  writer reimplemented ~140 lines of jpeg_compress logic that
+  JPEGEncoder already does.  Delegate, so there's one JPEG-compress impl
+  in the tree.  Safe because the writer's TimeStamp/ROI JPEG_COM markers
+  were write-only dead bytes — JPEGDecoder never calls jpeg_save_markers
+  (commented out), so marker_list is always empty on read.  Drops the
+  writer's m_bufferImage/m_bufferMutex + JPEGHandle.h dependency.  The
+  3-file JPEG split (Encoder/Decoder/Handle) now has zero duplication —
+  the clean answer to "3 files for one codec is unusual".
+- `6fc164459` **PNG bit-depth comment cleanup** — bit depth is correctly
+  derived from image depth (16 for single-channel depth16s, else 8);
+  dropped the misleading "later you will be able to select this".
+
+ImageMagick writer: considered a `quality` tunable, declined — it would
+be a no-op for ~all of IM's formats (lossless tiff/gif/bmp; libjpeg/
+libpng win the lossy ones by priority).
+
+### compression-plugins (audit only, no commit)
+
+Already modern: CompressionPlugin base is Image-typed (compress takes
+`const Image&`, decompress returns `Image`), inherits Configurable, has
+`capabilities()` + codec-params string.  All 6 plugins (raw/rlen/jpeg/
+1611/zstd + base) clean, no TODOs, no dead code.  Remaining `ImgBase*`
+uses are legitimate raw-data access (JPEGDecoder borrow pattern in the
+jpeg plugin; Zstd/Raw planar memcpy helpers), not legacy ownership.
+
+### network (1 commit)
+
+- `bd3700b0f` **WSGrabber — drop dead ImgBase.h include.**  WSGrabber is
+  fully Image-typed; the include was its only ImgBase reference.
+  WSImageOutput already clean.  The pair is symmetric.
+
+### orphan grabbers (1 commit)
+
+- `fe8c4da0a` **Optris/PixelSense/SwissRanger/Xi acquireImage → Image.**
+  Session 63 updated their *headers* to `Image acquireImage()` but left
+  the .cpp on `const ImgBase* acquireImage()` — a signature mismatch.
+  Finished: .cpp return type → `core::Image`; the single return site
+  wraps the backend-owned buffer via `Image(const ImgBase&)` (shallow,
+  shares pixel data, valid until next acquireImage — the documented
+  Grabber contract); `override` on decls; each .cpp now includes
+  `<icl/core/Image.h>` (Grabber.h only forward-declares core::Image).
+  **These are not in meson.build (proprietary SDK deps unavailable), so
+  the change is mechanical and follows the built-backend idiom but could
+  NOT be compile-verified — see Next Step.**
+
+### Conventions reinforced
+
+- **Plugin-prefix on a façade**: the registry KEY is the prefix.
+  `attachPluginConfigurables` must `addChildConfigurable(cfg, e.key)`.
+- **One codec impl**: file-writer plugins that have an in-memory codec
+  twin (JPEG) should delegate to it, not re-inline the compress loop.
+- **Image-returning grabber hooks**: `return Image(*backendOwnedImgBase)`
+  — `Image(const ImgBase&)` shallow-copies (shares pixel data), giving
+  the "view valid until next call" contract for free.
 
 ---
 
