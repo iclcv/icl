@@ -12,6 +12,7 @@
 #include <icl/io/source/DeviceDescription.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/StringUtils.h>
+#include <icl/utils/Exit.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/TextTable.h>
 using namespace icl::utils;
@@ -223,7 +224,7 @@ namespace icl::io {
         t[k+1] = tok(str(k)+":"+supportedDevices[k],":",true,'\\');
       }
       std::cout << t << std::endl;
-      std::exit(0);
+      utils::exit(0);
     }
 
     // create grabber
@@ -312,7 +313,7 @@ namespace icl::io {
           t(3,ps.size()+1) = str("-");
 
           std::cout << t << std::endl;
-          std::exit(0);
+          utils::exit(0);
         }else if(propName == "udist"){
           g -> enableUndistortion(propVal);
         }else{

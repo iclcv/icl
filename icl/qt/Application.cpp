@@ -12,6 +12,7 @@
 #include <QStyleFactory>
 #include <QSurfaceFormat>
 #include <icl/utils/ProgArg.h>
+#include <icl/utils/Exit.h>
 #include <icl/utils/thread/Thread.h>
 #include <icl/utils/SignalHandler.h>
 #include <mutex>
@@ -69,7 +70,7 @@ namespace icl::qt {
                 << "(next signal will force an immediate exit)" << std::endl;
       QApplication::quit();
     }else{
-      exit(EXIT_FAILURE);
+      std::exit(EXIT_FAILURE);
     }
 
   }
@@ -111,6 +112,19 @@ ICLApplication::ICLApplication(int n, char **ppc,
                                callback run2, callback run3,
                                callback run4, callback run5){
   if(s_app) throw SecondSingeltonException("only one instance is allowed!");
+
+  // Route utils::exit (used by `-i list`, `-o list`, `@info` diagnostics)
+  // to an immediate, warning-free termination.  Those run during init(),
+  // i.e. after QApplication + its worker threads exist; a plain std::exit
+  // would tear those down mid-flight and Qt would spew "QThreadStorage:
+  // entry N destroyed before end of thread" noise.  std::_Exit skips the
+  // partial teardown entirely (we flush the streams the diagnostic wrote).
+  utils::setExitHandler([](int code){
+    std::cout.flush();
+    std::cerr.flush();
+    std::_Exit(code);
+  });
+
   if(paInitString != ""){
     pa_init(n,ppc,paInitString);
   }

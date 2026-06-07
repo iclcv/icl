@@ -7,6 +7,7 @@
 #include <icl/io/file/FileWriter.h>  // built-in "file" backend
 
 #include <icl/utils/StringUtils.h>
+#include <icl/utils/Exit.h>
 #include <icl/utils/TextTable.h>
 
 #include <cstdlib>
@@ -76,7 +77,7 @@ namespace icl::io {
         ++i;
       }
       std::cout << "Supported Image Output Devices:\n\n" << t << std::endl;
-      std::exit(0);
+      utils::exit(0);
     }
 
     const auto *entry = sinkBackendRegistry().get(type);
