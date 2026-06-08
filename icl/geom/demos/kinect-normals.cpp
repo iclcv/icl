@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/ObjectEdgeDetector.h>
 #include <icl/utils/time/Time.h>
 
@@ -44,23 +45,23 @@ void init(){
   grabDepth.useDesired(depth32f, size, formatMatrix);
   grabColor.useDesired(depth8u, size, formatRGB);
   GUI controls = VBox().minSize(12,2);
-  controls << Fps(10).handle("fps")
-           << FSlider(0.7,1.0,0.89).handle("threshold").label("threshold")
-           << ButtonGroup("unfiltered,median3x3,median5x5").handle("usedFilter")
-           << Slider(1,15,2).handle("normalrange").label("normal range")
-           << Button("disable averaging","enable averaging").handle("disableAveraging")
-           << ButtonGroup("linear,gauss").handle("usedSmoothing")
-           << Slider(1,15,1).handle("avgrange").label("averaging range")
-           << ButtonGroup("max,mean").handle("usedAngle")
-           << Slider(1,15,3).handle("neighbrange").label("neighborhood range");
+  controls << ui::Fps(10, {.handle="fps"})
+           << ui::FSlider(0.7, 1.0, 0.89, {.handle="threshold", .label="threshold"})
+           << ui::ButtonGroup("unfiltered,median3x3,median5x5", {.handle="usedFilter"})
+           << ui::Slider(1, 15, 2, {.handle="normalrange", .label="normal range"})
+           << ui::ToggleButton("disable averaging", "enable averaging", false, {.handle="disableAveraging"})
+           << ui::ButtonGroup("linear,gauss", {.handle="usedSmoothing"})
+           << ui::Slider(1, 15, 1, {.handle="avgrange", .label="averaging range"})
+           << ui::ButtonGroup("max,mean", {.handle="usedAngle"})
+           << ui::Slider(1, 15, 3, {.handle="neighbrange", .label="neighborhood range"});
 
-  gui << Display().handle("depth").minSize(16,12)
-      << Display().handle("color").minSize(16,12)
-      << Display().handle("angle").minSize(16,12)
-      << Display().handle("edge").minSize(16,12)
-      << Display().handle("normal").minSize(16,12)
+  gui << ui::Display({.handle="depth", .minSize={16, 12}})
+      << ui::Display({.handle="color", .minSize={16, 12}})
+      << ui::Display({.handle="angle", .minSize={16, 12}})
+      << ui::Display({.handle="edge", .minSize={16, 12}})
+      << ui::Display({.handle="normal", .minSize={16, 12}})
       << controls
-      << Show();
+      << ui::Show();
 
   if(pa("-cam")){
     std::string camname = pa("-cam").as<std::string>();

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/math/fit/SimplexOptimizer.h>
 
 
@@ -15,7 +16,7 @@ float error_function(const Pos &p){
 }
 
 void init(){
-  gui << Canvas().minSize(20,20).handle("draw") << Show();
+  gui << ui::Canvas({.handle="draw", .minSize={20, 20}}) << ui::Show();
 
   Img32f bg(Size(1000,1000),1);
   Channel32f bgc = bg[0];

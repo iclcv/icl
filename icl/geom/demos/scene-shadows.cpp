@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Erik Weitnauer, Matthias Esau
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 
@@ -24,13 +25,13 @@ unsigned int lights;
 void init(){
   // create graphical user interface
 
-  gui << Canvas3D().minSize(16,12).handle("draw").label("scene view")
-      << ( HBox().maxSize(99,3)
-           << FSlider(0.5,20,3).handle("f").label("focal length").maxSize(100,3)
-           << FSlider(1,100,15).handle("r").label("light radius").maxSize(100,3)
-           << Button("reload").handle("reload").hideIf(!(bool)pa("-o"))
+  gui << ui::Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}})
+      << ( ui::HBox({.maxSize={99, 3}})
+           << ui::FSlider(0.5, 20, 3, {.handle="f", .label="focal length", .maxSize={100, 3}})
+           << ui::FSlider(1, 100, 15, {.handle="r", .label="light radius", .maxSize={100, 3}})
+           << ui::Button("reload", {.handle="reload", .hide=!(bool)pa("-o")})
          )
-      << Show();
+      << ui::Show();
 
 
   scene.prop("shadows.use improved shading").value = true;

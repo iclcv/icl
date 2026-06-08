@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 #include <icl/utils/Random.h>
 #include <mutex>
@@ -58,9 +59,9 @@ struct OSRCube : public SceneObject{
 void init(){
   // create graphical user interface
 
-  gui << Canvas3D(Size(300,300)).label("3D scene").minSize(16,16).handle("draw")
-      << Canvas().minSize(16,16).handle("image").label("offscreen rendered image")
-      << Show();
+  gui << ui::Canvas3D(Size(300,300), {.handle="draw", .label="3D scene", .minSize={16, 16}})
+      << ui::Canvas({.handle="image", .label="offscreen rendered image", .minSize={16, 16}})
+      << ui::Show();
 
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-13), // position

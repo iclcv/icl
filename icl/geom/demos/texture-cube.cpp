@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Erik Weitnauer
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 
@@ -56,7 +57,7 @@ struct Light : public SceneObject{
 
 
 void init(){
-  gui << Canvas3D().minSize(16,12).handle("draw").label("scene view") << Show();
+  gui << ui::Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}}) << ui::Show();
 
   scene.addCamera(Camera(Vec(0,-10,-10),
                          Vec(0,0.707,0.707),

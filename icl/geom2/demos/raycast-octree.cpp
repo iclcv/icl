@@ -7,6 +7,7 @@
 // and highlight hit points as large red dots in the cloud scene.
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom2/Scene2.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/DemoScene2.h>
@@ -133,14 +134,14 @@ void init() {
 
   rebuildCloud();
 
-  gui << (HBox()
-    << Canvas3D(Size(640, 480)).handle("world").label("Scene")
-    << Canvas3D(Size(640, 480)).handle("cloud").label("Point Cloud"))
-    << (HBox().maxSize(99, 2)
-      << Button("Rebuild Cloud").handle("rebuild")
-      << Label("--").handle("build-time").label("Build")
-      << Label("--").handle("raycast-time").label("Raycast"))
-    << Show();
+  gui << (ui::HBox()
+    << ui::Canvas3D(Size(640, 480), {.handle="world", .label="Scene"})
+    << ui::Canvas3D(Size(640, 480), {.handle="cloud", .label="Point Cloud"}))
+    << (ui::HBox({.maxSize={99, 2}})
+      << ui::Button("Rebuild Cloud", {.handle="rebuild"})
+      << ui::Label("--", {.handle="build-time", .label="Build"})
+      << ui::Label("--", {.handle="raycast-time", .label="Raycast"}))
+    << ui::Show();
 
   gui["world"].link(worldScene.getGLCallback(0).get());
   gui["world"].install(worldScene.getMouseHandler(0));

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 #include <icl/io/sink/ImageSink.h>
 #include <mutex>
@@ -85,7 +86,7 @@ void init(){
     scene.getCamera(0).setResolution(pa("-r"));
   }
 
-  gui << Canvas3D(scene.getCamera(0).getResolution()).handle("draw").minSize(20,15) << Show();
+  gui << ui::Canvas3D(scene.getCamera(0).getResolution(), {.handle="draw", .minSize={20, 15}}) << ui::Show();
 
   scene.getLight(0).setAmbientEnabled(true);
   scene.getLight(0).setAmbient(GeomColor(255,255,255,150));

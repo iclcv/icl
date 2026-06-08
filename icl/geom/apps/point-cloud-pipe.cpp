@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 
 #include <icl/geom/PointCloudObject.h>
@@ -27,8 +28,8 @@ void init(){
     cam = Camera(*pa("-c"));
   }
 
-  gui << Canvas3D().minSize(32,24).handle("scene")
-      << Show();
+  gui << ui::Canvas3D({.handle="scene", .minSize={32, 24}})
+      << ui::Show();
 
 
   // kinect camera

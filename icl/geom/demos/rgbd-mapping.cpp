@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Patrick Nobou
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 
 #undef ICL_HAVE_PCL
@@ -40,18 +41,18 @@ void init(){
     grabber->setUseCL(false);
   }
 
-  gui << ( VBox()
-           << Display().handle("color").label("color image")
-           << Display().handle("depth").label("depth image")
+  gui << ( ui::VBox()
+           << ui::Display({.handle="color", .label="color image"})
+           << ui::Display({.handle="depth", .label="depth image"})
            )
-      <<( VBox()
-          << Canvas3D().handle("overlay").label("mapped color image overlay")
-          << Canvas3D().handle("scene").label("interactive scene")
+      <<( ui::VBox()
+          << ui::Canvas3D({.handle="overlay", .label="mapped color image overlay"})
+          << ui::Canvas3D({.handle="scene", .label="interactive scene"})
           )
-      <<( VBox()
-          << CheckBox("show overlay",true).handle("showOverlay")
+      <<( ui::VBox()
+          << ui::CheckBox("show overlay", {.checked=true, .handle="showOverlay"})
           )
-      << Show();
+      << ui::Show();
 
 
   // kinect camera

@@ -6,6 +6,7 @@
 #include <icl/geom/Scene.h>
 #include <icl/geom/Camera.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Primitive.h>
 
 HSplit gui;
@@ -13,19 +14,19 @@ Scene scene;
 
 void init(){
 
-  gui << Canvas3D().minSize(16,12).handle("w1").label("Rendered into GL-Context")
-      << Canvas3D().minSize(16,12).handle("w2").label("Rendered into GL-Context")
-      << ( VBox().minSize(12,1)
-           << FSlider(0.1,10,1.7).label("focal length left").handle("fl")
-           << FSlider(0.1,10,1.7).label("focal length right").handle("fr")
-           << FSlider(60,660,360).label("principal point offset x").handle("px")
-           << FSlider(40,440,240).label("principal point offset y").handle("py")
-           << FSlider(100,300,200).label("sampling resolution x").handle("sx")
-           << FSlider(100,300,200).label("sampling resolution y").handle("sy")
-           << FSlider(-100,100,0).label("skew").handle("skew")
-           << Fps(10).handle("fps")
+  gui << ui::Canvas3D({.handle="w1", .label="Rendered into GL-Context", .minSize={16, 12}})
+      << ui::Canvas3D({.handle="w2", .label="Rendered into GL-Context", .minSize={16, 12}})
+      << ( ui::VBox({.minSize={12, 1}})
+           << ui::FSlider(0.1, 10, 1.7, {.handle="fl", .label="focal length left"})
+           << ui::FSlider(0.1, 10, 1.7, {.handle="fr", .label="focal length right"})
+           << ui::FSlider(60, 660, 360, {.handle="px", .label="principal point offset x"})
+           << ui::FSlider(40, 440, 240, {.handle="py", .label="principal point offset y"})
+           << ui::FSlider(100, 300, 200, {.handle="sx", .label="sampling resolution x"})
+           << ui::FSlider(100, 300, 200, {.handle="sy", .label="sampling resolution y"})
+           << ui::FSlider(-100, 100, 0, {.handle="skew", .label="skew"})
+           << ui::Fps(10, {.handle="fps"})
            )
-      << Show();
+      << ui::Show();
 
   scene.addCamera(Camera(Vec(-250,0,1000,1),Vec(0,0,-1,1),Vec(0,1,0,1)));
   scene.addCamera(Camera(Vec(200,0,200,1),Vec(-1,0,0,1),Vec(0,1,0,1)));

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/math/fit/SimplexOptimizer.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/CoordinateFrameSceneObject.h>
@@ -18,7 +19,7 @@ float error_function(const Pos &p){
 }
 
 void init(){
-  gui << Canvas3D().minSize(20,20).handle("draw") << Show();
+  gui << ui::Canvas3D({.handle="draw", .minSize={20, 20}}) << ui::Show();
   Camera cam;
   cam.setPosition(Vec(-611.637,-332.427,-814.748,1));
   cam.setNorm(Vec(0.331055,0.486567,0.808489,1));

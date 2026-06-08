@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 #include <icl/geom/ComplexCoordinateFrameSceneObject.h>
@@ -94,13 +95,13 @@ void mouse_2(const MouseEvent &evt){
 void init(){
   //  Scene::enableSharedOffscreenRendering();
 
-  gui << Canvas3D().handle("view")
-      << Canvas().handle("image")
-      << (VBox()
-          << Combo("none,rgb,depth").handle("capture").label("offscreen rendering")
-          << Combo("raw,dist. to z0,dist to cam center").handle("dmode").label("depth map mode")
+  gui << ui::Canvas3D({.handle="view"})
+      << ui::Canvas({.handle="image"})
+      << (ui::VBox()
+          << ui::Combo("none,rgb,depth", {.handle="capture", .label="offscreen rendering"})
+          << ui::Combo("raw,dist. to z0,dist to cam center", {.handle="dmode", .label="depth map mode"})
           )
-      << Show();
+      << ui::Show();
 
   //gui["capture"].registerCallback(new GUI::Callback(capture));
 

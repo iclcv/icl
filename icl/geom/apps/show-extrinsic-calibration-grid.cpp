@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Camera.h>
 
 GUI gui;
@@ -14,7 +15,7 @@ ImageSource *grabber = 0;
 void init(){
 
 
-  gui << Canvas().handle("draw").minSize(16,12) << Show();
+  gui << ui::Canvas({.handle="draw", .minSize={16, 12}}) << ui::Show();
 
   cam = Camera(*pa("-input",2));
   grabber = new ImageSource();

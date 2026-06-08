@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/RayCastOctreeObject.h>
 #include <icl/geom/GenericPointCloudGrabber.h>
 #include <icl/geom/Geom.h>
@@ -140,7 +141,7 @@ void init(){
   octree.setRenderPoints(true);
   octree.setLockingEnabled(true);
 
-  gui << Canvas3D(scene.getCamera(0).getResolution()).handle("plot") << Show();
+  gui << ui::Canvas3D(scene.getCamera(0).getResolution(), {.handle="plot"}) << ui::Show();
 
 
   if(pa("-pci")){

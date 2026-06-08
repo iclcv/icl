@@ -5,6 +5,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/qt/GLFragmentShader.h>
+#include <icl/qt/ui.h>
 #include <mutex>
 HBox gui;
 Scene scene;
@@ -101,11 +102,11 @@ void init(){
   if(pa("-b")){
     backFaceGrabber.init(pa("-b"));
   }
-  gui << Canvas3D().handle("draw").minSize(20,15).label("interaction area")
-      << Display().handle("offscreen0").label("offscreen rendered cam 0")
-      << Display().handle("offscreen1").label("offscreen rendered cam 1")
-      << FSlider(0,1,0.2,true).handle("freq").label("frequence")
-      << Show();
+  gui << ui::Canvas3D({.handle="draw", .label="interaction area", .minSize={20, 15}})
+      << ui::Display({.handle="offscreen0", .label="offscreen rendered cam 0"})
+      << ui::Display({.handle="offscreen1", .label="offscreen rendered cam 1"})
+      << ui::FSlider(0, 1, 0.2, {.vertical=true, .handle="freq", .label="frequence"})
+      << ui::Show();
 
   grabber.grab();
   grabber.grab();

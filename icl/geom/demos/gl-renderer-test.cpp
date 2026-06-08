@@ -1,5 +1,6 @@
 // Minimal test for GLRenderer: coordinate frame (X=red, Y=green, Z=blue)
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Camera.h>
 #include <icl/geom/Scene.h>
 #include <icl/geom/SceneObject.h>
@@ -80,10 +81,10 @@ void init() {
 
   glRenderer = std::make_unique<GLRenderer>();
 
-  gui << (HSplit()
-         << Canvas3D().handle("modern").minSize(32, 24).label("Modern GL")
-         << Canvas3D().handle("legacy").minSize(32, 24).label("Legacy GL"))
-      << Show();
+  gui << (ui::HSplit()
+         << ui::Canvas3D({.handle="modern", .label="Modern GL", .minSize={32, 24}})
+         << ui::Canvas3D({.handle="legacy", .label="Legacy GL", .minSize={32, 24}}))
+      << ui::Show();
 
   // Link modern renderer
   struct ModernCB : public ICLDrawWidget3D::GLCallback {

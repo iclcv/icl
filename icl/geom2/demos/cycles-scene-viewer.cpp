@@ -9,6 +9,7 @@
 //                       [-size 1280x960] [-samples 512]
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom2/DemoScene2.h>
 #include <icl/geom2/CyclesRenderer.h>
 #include <icl/geom2/Renderer.h>
@@ -42,15 +43,14 @@ void init() {
   scene.setup(files, viewSize);
 
   // GUI: left = GL preview, right = Cycles raytrace, debug controls below
-  gui << (VSplit()
-       << (HSplit()
-          << Canvas3D(viewSize).handle("gl").minSize(16, 12)
-          << Display().handle("rt").minSize(16, 12))
-       << (HBox()
-          << Combo("shaded,normals,albedo,UVs,lighting,NdotL,"
-                   "SSR confidence,depth,SSR only").handle("glDebug")
-                   .label("GL Debug")))
-      << Show();
+  gui << (ui::VSplit()
+       << (ui::HSplit()
+          << ui::Canvas3D(viewSize, {.handle="gl", .minSize={16, 12}})
+          << ui::Display({.handle="rt", .minSize={16, 12}}))
+       << (ui::HBox()
+          << ui::Combo("shaded,normals,albedo,UVs,lighting,NdotL,"
+                   "SSR confidence,depth,SSR only", {.handle="glDebug", .label="GL Debug"})))
+      << ui::Show();
 
   gui["gl"].link(scene.getGLCallback(0).get());
   gui["gl"].install(handleMouse);

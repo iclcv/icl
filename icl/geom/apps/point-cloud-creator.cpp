@@ -1,4 +1,5 @@
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 
 #include <icl/io/source/ImageSource.h>
 #include <icl/io/sink/ImageSink.h>
@@ -66,12 +67,12 @@ void init_icl() {
   grabber_d.useDesired(d_cam.getResolution());
 
   // GUI
-  gui << ( HBox()
-           << Canvas().handle("depth-view").label("Depth Image")
-           << Canvas().handle("color-view").label("Color Image")
-           << Canvas3D().handle("main-view").label("Main View")
+  gui << ( ui::HBox()
+           << ui::Canvas({.handle="depth-view", .label="Depth Image"})
+           << ui::Canvas({.handle="color-view", .label="Color Image"})
+           << ui::Canvas3D({.handle="main-view", .label="Main View"})
            );
-  gui << Show();
+  gui << ui::Show();
 
   // scene
   gui["main-view"].install(scene.getMouseHandler(camera_index));

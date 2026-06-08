@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 
 #include <icl/geom/PointCloudObject.h>
@@ -173,14 +174,14 @@ void init(){
 
   Camera cam(*pa("-d"));
 
-  gui << Canvas3D(obj.getSize()).minSize(32,24).handle("scene")
-      << (VBox().minSize(16,1)
-          << Prop("grabber").hideIf(!pa("-tune"))
-          << Label("Use \"SHIF-click\" in the 3D view to define\n"
-                   "world frame and \"CTRL-click\" to also save it").minSize(15,2)
-          << Display().handle("seg")
+  gui << ui::Canvas3D(obj.getSize(), {.handle="scene", .minSize={32, 24}})
+      << (ui::VBox({.minSize={16, 1}})
+          << ui::Prop("grabber", {.hide=!pa("-tune")})
+          << ui::Label("Use \"SHIF-click\" in the 3D view to define\n"
+                   "world frame and \"CTRL-click\" to also save it", {.minSize={15, 2}})
+          << ui::Display({.handle="seg"})
         )
-      << Show();
+      << ui::Show();
 
 
   // kinect camera

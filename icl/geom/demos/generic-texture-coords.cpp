@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 
 ImageSource  grabber;
@@ -54,7 +55,7 @@ void init(){
   scene.addObject(obj);
   scene.addObject(SceneObject::cube(0,0,0,100));
 
-  gui << Canvas3D().handle("draw") << Show();
+  gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
 
   gui["draw"].link(scene.getGLCallback(0));
   gui["draw"].install(scene.getMouseHandler(0));

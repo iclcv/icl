@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Scene.h>
 #include <icl/geom/PointCloudObject.h>
 #include <icl/geom/GenericPointCloudGrabber.h>
@@ -17,9 +18,9 @@ void init(){
   scene.addCamera(grabber.getDepthCamera());
   scene.setBounds(1000);
   scene.addObject(&obj,false);
-  gui << Canvas3D().minSize(32,24).handle("scene")
-      << FSlider(0.5,10,2).handle("ps").label("point size").maxSize(99,2)
-      << Show();
+  gui << ui::Canvas3D({.handle="scene", .minSize={32, 24}})
+      << ui::FSlider(0.5, 10, 2, {.handle="ps", .label="point size", .maxSize={99, 2}})
+      << ui::Show();
 
 
   gui["scene"].link(scene.getGLCallback(0));

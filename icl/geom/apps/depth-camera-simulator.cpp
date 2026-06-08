@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 #include <icl/io/sink/ImageSink.h>
@@ -29,24 +30,24 @@ void init(){
   if(cOut || dOut){
     prevGUI << (cOut ? Display().handle("color") : Dummy())
             << (dOut ? Display().handle("depth") : Dummy())
-            << Create();
+            << ui::Create();
   }
 
-  gui << Canvas3D().handle("draw")
-      << ( VBox().minSize(10,2)
-           << FSlider(-10,10,0).handle("x").label("translate x")
-           << FSlider(-10,10,0).handle("y").label("translate y")
-           << FSlider(1.5,10,0).handle("z").label("translate z")
+  gui << ui::Canvas3D({.handle="draw"})
+      << ( ui::VBox({.minSize={10, 2}})
+           << ui::FSlider(-10, 10, 0, {.handle="x", .label="translate x"})
+           << ui::FSlider(-10, 10, 0, {.handle="y", .label="translate y"})
+           << ui::FSlider(1.5, 10, 0, {.handle="z", .label="translate z"})
 
-           << FSlider(-4,4,0).handle("rx").label("rotate x")
-           << FSlider(-4,4,0).handle("ry").label("rotate y")
-           << FSlider(-4,4,0).handle("rz").label("rotate z")
+           << ui::FSlider(-4, 4, 0, {.handle="rx", .label="rotate x"})
+           << ui::FSlider(-4, 4, 0, {.handle="ry", .label="rotate y"})
+           << ui::FSlider(-4, 4, 0, {.handle="rz", .label="rotate z"})
 
            << ((cOut||dOut) ? (const GUIComponent&)Button("show","hide").label("preview").handle("preview")
                : (const GUIComponent&)Dummy() )
-           << Button("reset view").handle("resetView")
+           << ui::Button("reset view", {.handle="resetView"})
          )
-      << Show();
+      << ui::Show();
 
 
   if(cOut || dOut){

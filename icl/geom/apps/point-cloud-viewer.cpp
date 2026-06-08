@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 
 #include <icl/geom/PointCloudObject.h>
@@ -57,14 +58,14 @@ void init(){
     cam = Camera(*pa("-c"));
   }
 
-  gui << Canvas3D().minSize(32,24).handle("scene")
-      << Prop("grabber").hideIf(!pa("-tune")).minSize(16,1).maxSize(16,99)
-      << Prop("grabber").hideIf(!pa("-tune") || !pa("-pci2")).minSize(16,1).maxSize(16,99)
-      << ( HBox().label("show objects")
-           << CheckBox("object 1",true).handle("o1").hideIf(!pa("-pci2"))
-           << CheckBox("object 2",true).handle("o2").hideIf(!pa("-pci2"))
+  gui << ui::Canvas3D({.handle="scene", .minSize={32, 24}})
+      << ui::Prop("grabber", {.minSize={16, 1}, .maxSize={16, 99}, .hide=!pa("-tune")})
+      << ui::Prop("grabber", {.minSize={16, 1}, .maxSize={16, 99}, .hide=!pa("-tune") || !pa("-pci2")})
+      << ( ui::HBox({.label="show objects"})
+           << ui::CheckBox("object 1", {.checked=true, .handle="o1", .hide=!pa("-pci2")})
+           << ui::CheckBox("object 2", {.checked=true, .handle="o2", .hide=!pa("-pci2")})
          )
-      << Show();
+      << ui::Show();
 
 
   // kinect camera

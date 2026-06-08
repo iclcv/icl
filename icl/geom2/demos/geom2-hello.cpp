@@ -2,6 +2,7 @@
 // ICL geom2 demo: minimal scene with parametric shapes + lighting
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom2/Scene2.h>
 #include <icl/geom2/GroupNode.h>
 #include <icl/geom2/SphereNode.h>
@@ -99,7 +100,7 @@ void init() {
   scene.setBounds(400);
 
   // GUI
-  gui << Canvas3D(Size(800, 600)).handle("canvas") << Show();
+  gui << ui::Canvas3D(Size(800, 600), {.handle="canvas"}) << ui::Show();
   gui["canvas"].link(scene.getGLCallback(0).get());
   gui["canvas"].install(scene.getMouseHandler(0));
 }

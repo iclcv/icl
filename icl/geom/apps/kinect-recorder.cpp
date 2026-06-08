@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/io/sink/ImageSink.h>
 
 HBox gui;
@@ -28,24 +29,24 @@ void init(){
     c_out.init("file",*pa("-s")+"/color-######.bicl");
     d_out.init("file",*pa("-s")+"/depth-######.bicl");
 
-    gui << Display().handle("depth").minSize(16,12).label("depth image")
-        << Display().handle("color").minSize(16,12).label("color image");
+    gui << ui::Display({.handle="depth", .label="depth image", .minSize={16, 12}})
+        << ui::Display({.handle="color", .label="color image", .minSize={16, 12}});
   }else{
     if(!pa("-d") && !pa("-c")) throw ICLException("no input given");
     if(pa("-d")){
       d_in.init(pa("-d"));
 
-      gui << Display().handle("depth").minSize(16,12).label("depth image");
+      gui << ui::Display({.handle="depth", .label="depth image", .minSize={16, 12}});
     }else if(pa("-do")) throw ICLException("depth output given, but no input!");
     if(pa("-c")){
       c_in.init(pa("-c"));
-      gui << Display().handle("color").minSize(16,12).label("color image");
+      gui << ui::Display({.handle="color", .label="color image", .minSize={16, 12}});
     }else if(pa("-co")) throw ICLException("color output given, but no input!");
 
     if(pa("-do")) d_out.init(pa("-do"));
     if(pa("-co")) c_out.init(pa("-co"));
   }
-  gui << CamCfg("");
+  gui << ui::CamCfg();
 
   if(pa("-man")){
     if(!pa("-co") && !pa("-do")){
@@ -57,15 +58,13 @@ void init(){
       throw std::logic_error("naumal mode '-man' and inital drop "
                              "frames '-drop' cannot be combined");
     }
-    gui << (VBox()
-            << Button("start","stop",false).handle("man").label("manual recording")
-            .tooltip("icl-kinect-recorder was started in 'manual' mode. Here"
-                     "data is only recorded if this button is pressed")
-            << CheckBox("re-init at start",false).handle("reinit")
-            .tooltip("if this is checked, each time, the start/stop button is"
+    gui << (ui::VBox()
+            << ui::ToggleButton("start", "stop", false, {.handle="man", .label="manual recording", .tooltip="icl-kinect-recorder was started in 'manual' mode. Here"
+                     "data is only recorded if this button is pressed"})
+            << ui::CheckBox("re-init at start", {.checked=false, .handle="reinit", .tooltip="if this is checked, each time, the start/stop button is"
                      "toggled, both image outputs are reinitialized. In this"
-                     "case, already recorded frame might be overwritten")
-            << Label("0").handle("nRecorded").label("num recorded frames")
+                     "case, already recorded frame might be overwritten"})
+            << ui::Label("0", {.handle="nRecorded", .label="num recorded frames"})
             );
   }
 
@@ -79,7 +78,7 @@ void init(){
     if(!c_in.isNull()) c_in.useDesired(s);
   }
 
-  gui << Show();
+  gui << ui::Show();
 }
 
 

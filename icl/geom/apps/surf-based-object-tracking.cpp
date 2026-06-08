@@ -5,6 +5,7 @@
 #include <icl/cv/SurfFeatureDetector.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 #include <icl/geom/RansacBasedPoseEstimator.h>
@@ -38,13 +39,13 @@ void init(){
 
   ts = Size32f(t.width/templ.getWidth(), t.height/templ.getHeight());
 
-  gui << Canvas3D().handle("draw").minSize(32,24)
-      << (HBox()
-          << FSlider(-7,-1,-3).handle("t").maxSize(99,3).label("threshold exponent")
-          << Button("ransac ...").handle("ransac options").maxSize(6,3)
-          << CheckBox("vis error").handle("vise").maxSize(5,3)
+  gui << ui::Canvas3D({.handle="draw", .minSize={32, 24}})
+      << (ui::HBox()
+          << ui::FSlider(-7, -1, -3, {.handle="t", .label="threshold exponent", .maxSize={99, 3}})
+          << ui::Button("ransac ...", {.handle="ransac options", .maxSize={6, 3}})
+          << ui::CheckBox("vis error", {.handle="vise", .maxSize={5, 3}})
           )
-      << Show();
+      << ui::Show();
 
   pe->setConfigurableID("pe");
   pe->adaptProperty("iterations", "range", "[1,5000]:1", "");
@@ -59,7 +60,7 @@ void init(){
   pe->prop("min points for good model").value = 20;
   pe->prop("store last consensus set").value = true;
 
-  ransacOptions << Prop("pe") << Create();
+  ransacOptions << ui::Prop("pe") << ui::Create();
 
   gui["ransac options"].registerCallback([]{ ransacOptions.switchVisibility(); });
 

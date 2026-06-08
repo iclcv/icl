@@ -6,6 +6,7 @@
 #include <icl/filter/color/PseudoColorOp.h>
 #include <icl/geom/Scene.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <mutex>
 
 using namespace icl;
@@ -82,25 +83,25 @@ void init(){
 
   GUI controls = HBox().minSize(12,12);
 
-  controls << ( VBox()
-                << Button("reset view").handle("resetView")
-                << Fps(10).handle("fps")
-                << Prop("segmentation").minSize(10,8)
+  controls << ( ui::VBox()
+                << ui::Button("reset view", {.handle="resetView"})
+                << ui::Fps(10, {.handle="fps"})
+                << ui::Prop("segmentation", {.minSize={10, 8}})
               );
 
-  gui << ( VBox()
-           << Canvas3D().handle("hdepth").minSize(10,8)
-           << Canvas3D().handle("hcolor").minSize(10,8)
+  gui << ( ui::VBox()
+           << ui::Canvas3D({.handle="hdepth", .minSize={10, 8}})
+           << ui::Canvas3D({.handle="hcolor", .minSize={10, 8}})
          )
-      << ( VBox()
-           << Canvas3D().handle("hedge").minSize(10,8)
-           << Canvas3D().handle("hnormal").minSize(10,8)
+      << ( ui::VBox()
+           << ui::Canvas3D({.handle="hedge", .minSize={10, 8}})
+           << ui::Canvas3D({.handle="hnormal", .minSize={10, 8}})
          )
-      << ( HSplit()
-           << Canvas3D().handle("draw3D").minSize(40,30)
+      << ( ui::HSplit()
+           << ui::Canvas3D({.handle="draw3D", .minSize={40, 30}})
            << controls
          )
-      << Show();
+      << ui::Show();
 
   // kinect camera
   scene.addCamera(depthCam);
