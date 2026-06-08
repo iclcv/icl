@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Scene.h>
 #include <icl/geom/ComplexCoordinateFrameSceneObject.h>
 
@@ -36,32 +37,40 @@ void init(){
   if(pa("-size")) grabber.useDesired(utils::Size(pa("-size")));
   grabber.useDesired(formatGray);
 
-  gui << Canvas3D(pa("-size").as<Size>()).handle("draw").minSize(16,12)
-      << (VBox().maxSize(16,100)
-          << FSlider(1,10,2).handle("label-size-factor").label("label size factor")
-          << Combo(fid->getIntermediateImageNames()).maxSize(100,2).handle("vis").label("visualization")
-          << Prop("fid")
-          << (HBox()
-              << Fps().handle("fps")
-              << Label("no markers found yet").label("detected markers").handle("count")
+  gui << ui::Canvas3D(pa("-size").as<Size>(),
+                      {.handle="draw", .minSize={16,12}})
+      << (ui::VBox({.maxSize={16,100}})
+          << ui::FSlider(1, 10, 2, {.handle="label-size-factor",
+                                    .label="label size factor"})
+          << ui::Combo(fid->getIntermediateImageNames(),
+                       {.handle="vis", .label="visualization",
+                        .maxSize={100,2}})
+          << ui::Prop("fid")
+          << (ui::HBox()
+              << ui::Fps({.handle="fps"})
+              << ui::Label("no markers found yet",
+                           {.handle="count", .label="detected markers"})
               )
-          << (HBox().label("show")
-              << ( VBox()
-                   << CheckBox("IDs",true).handle("showIDs")
-                   << CheckBox("markers",true).handle("showMarkerCorners")
+          << (ui::HBox({.label="show"})
+              << ( ui::VBox()
+                   << ui::CheckBox("IDs",     {.checked=true, .handle="showIDs"})
+                   << ui::CheckBox("markers", {.checked=true,
+                                               .handle="showMarkerCorners"})
                    )
-              << (VBox()
-                  << CheckBox("regions",false).handle("showRegionCorners").hideIf(!canShowRegionCorners)
-                  << CheckBox("angles",true).handle("showAngles")
+              << (ui::VBox()
+                  << ui::CheckBox("regions", {.checked=false,
+                                              .handle="showRegionCorners",
+                                              .hide=!canShowRegionCorners})
+                  << ui::CheckBox("angles",  {.checked=true, .handle="showAngles"})
                   )
               )
-          << Label("-- ms").handle("ms").label("detection time")
-          << (HBox()
-              << Button("running","pause").handle("pause")
-              << CamCfg("")
+          << ui::Label("-- ms", {.handle="ms", .label="detection time"})
+          << (ui::HBox()
+              << ui::ToggleButton("running", "pause", false, {.handle="pause"})
+              << ui::CamCfg()
               )
          )
-      << Show();
+      << ui::Show();
 
   //fid->loadMarkers("[0,10]",ParamMap("size",Size(96,96)));
   try{

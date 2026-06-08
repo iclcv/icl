@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <mutex>
 
 VSplit gui;
@@ -42,18 +43,21 @@ void stream_pos(){
 void init(){
   source.init(type,type+"="+filename);
   int len = parse<int>(source.prop("len").value);
-  gui << Display().minSize(32,24).handle("image")
-      << Slider(0,len,0).label("stream position in "+unit).handle("pos").maxSize(1000,2)
-      << ( HBox().maxSize(1000,3)
+  gui << ui::Display({.handle="image", .minSize={32,24}})
+      << ui::Slider(0, len, 0, {.handle="pos",
+                                .label="stream position in "+unit,
+                                .maxSize={1000,2}})
+      << ( ui::HBox({.maxSize={1000,3}})
 #ifndef ICL_HAVE_OPENCV
-           << Slider(0,100,50).handle("speed").label("playback speed")
-           << Slider(0,100,50).handle("volume").label("audio volume")
+           << ui::Slider(0, 100, 50, {.handle="speed",  .label="playback speed"})
+           << ui::Slider(0, 100, 50, {.handle="volume", .label="audio volume"})
 #endif
-           << Fps(100).handle("fps").maxSize(5,2).minSize(5,2)
-           << Button("play","pause").handle("pause").maxSize(4,2)
-           << CamCfg()
+           << ui::Fps(100, {.handle="fps", .minSize={5,2}, .maxSize={5,2}})
+           << ui::ToggleButton("play", "pause", false,
+                               {.handle="pause", .maxSize={4,2}})
+           << ui::CamCfg()
          )
-      << Show();
+      << ui::Show();
 
 
   SliderHandle slider = gui["pos"];

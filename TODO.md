@@ -244,6 +244,21 @@ templated `operator=(T)` / `operator T() const`, so
   find any in-tree, but worth a second pass as part of the Event
   retirement above.
 
+- [ ] **`LabelHandle = <numeric>` assign gap (runtime throw).**
+  `icl-marker-detection` aborts in its run loop:
+  `DataStore::UnassignableTypesException: Unable to assign LabelHandle = m`
+  (`m` = Itanium mangling for `unsigned long`).  Trigger is
+  `gui["count"] = fids.size()` (marker-detection.cpp:114) — a `size_t`
+  assigned to a Label handle.  **Confirmed pre-existing on master**
+  (not the qt::ui:: migration; reproduced on the unmodified file
+  Session 68).  The AssignRegistry has no numeric→`LabelHandle`
+  enrollment, whereas legacy `AssignSpecial<>` evidently stringified
+  arbitrary scalars into a Label.  Fix: enroll `Assign<LabelHandle, T>`
+  for the arithmetic types (via `str(v)`), or a generic
+  `Assign<LabelHandle, ostream-able>` path.  Likely affects any app
+  that pushes a raw number into a Label handle — grep `gui\[".*"\] = `
+  feeding Labels for the blast radius.
+
 ## Utils — long-term migrations (from Session 49+ audit)
 
 These duplicate / predate modern stdlib features.  Migrating them is a

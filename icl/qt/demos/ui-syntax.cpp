@@ -44,7 +44,7 @@ void init(){
                      << ui::Display({.handle="img", .minSize={16,12}})
                      << ui::Disp(3, 2, {.handle="grid"}) )
                 << ( ui::HBox({.margin=4})
-                     << ui::Fps({.timeWindow=30, .handle="fps"})
+                     << ui::Fps(30, {.handle="fps"})
                      << ui::ColorSelect(255, 128, 0,
                                         {.alpha=200, .handle="col"}) ) ) )
       << ui::Show();

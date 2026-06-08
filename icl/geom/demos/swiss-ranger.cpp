@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Camera.h>
 
 #include <icl/geom/Scene.h>
@@ -171,24 +172,24 @@ void mouse(const MouseEvent &evt){
 
 void init(){
 
-  gui << ( Tab("2D,3D").handle("tab")
-           << Canvas().handle("draw").minSize(32,24)
-           << Canvas3D().handle("draw3D").minSize(32,24)
+  gui << ( ui::Tab("2D,3D", {.handle="tab"})
+           << ui::Canvas({.handle="draw",     .minSize={32,24}})
+           << ui::Canvas3D({.handle="draw3D", .minSize={32,24}})
          )
-      << ( VBox().maxSize(12,100)
-           << Button("off","!on").handle("grab").label("grab loop")
-           << Button("off","!on").handle("pp").label("median")
-           << ( VBox().label("3D vis ")
-                << CheckBox("points",true).handle("points")
-                << CheckBox("lines").handle("lines")
-                << CheckBox("fill").handle("fill")
-                << CheckBox("image").handle("imageOn")
-                << Spinner(1,10,2).handle("pointSize").label("point size")
-                << Combo("solid,depth,intensity,confidence").handle("visColor")
-                << Button("reset pos").handle("resPos")
+      << ( ui::VBox({.maxSize={12,100}})
+           << ui::ToggleButton("off", "on", true, {.handle="grab", .label="grab loop"})
+           << ui::ToggleButton("off", "on", true, {.handle="pp",   .label="median"})
+           << ( ui::VBox({.label="3D vis "})
+                << ui::CheckBox("points", {.checked=true, .handle="points"})
+                << ui::CheckBox("lines",  {.handle="lines"})
+                << ui::CheckBox("fill",   {.handle="fill"})
+                << ui::CheckBox("image",  {.handle="imageOn"})
+                << ui::Spinner(1, 10, 2,  {.handle="pointSize", .label="point size"})
+                << ui::Combo("solid,depth,intensity,confidence", {.handle="visColor"})
+                << ui::Button("reset pos", {.handle="resPos"})
                 )
            )
-      << Show();
+      << ui::Show();
 
   gui["draw"].install(mouse);
 

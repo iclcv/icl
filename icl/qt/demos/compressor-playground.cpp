@@ -20,6 +20,7 @@
 // Launch: icl-compressor-playground -i create lena
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/io/compress/ImageCompressor.h>
 
 HSplit gui;
@@ -29,15 +30,16 @@ ImageCompressor compressor;
 void init(){
   grabber.init(pa("-i"));
 
-  gui << Display().handle("orig").label("original").minSize(16, 12)
-      << Display().handle("decoded").label("decode(compress(img))").minSize(16, 12)
-      << ( VBox().maxSize(22, 99)
-           << Prop(&compressor).label("compressor")
-           << Label("-").handle("ratio").label("compression ratio")
-           << Label("-").handle("enc_time").label("encode (ms)")
-           << Label("-").handle("dec_time").label("decode (ms)")
+  gui << ui::Display({.handle="orig", .label="original", .minSize={16, 12}})
+      << ui::Display({.handle="decoded", .label="decode(compress(img))",
+                      .minSize={16, 12}})
+      << ( ui::VBox({.maxSize={22, 99}})
+           << ui::Prop(&compressor, {.label="compressor"})
+           << ui::Label("-", {.handle="ratio",    .label="compression ratio"})
+           << ui::Label("-", {.handle="enc_time", .label="encode (ms)"})
+           << ui::Label("-", {.handle="dec_time", .label="decode (ms)"})
          )
-      << Show();
+      << ui::Show();
 }
 
 void run(){

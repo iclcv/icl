@@ -277,9 +277,9 @@ namespace icl::qt::ui {
     }
   };
 
-  /// Options for ui::State.
+  /// Options for ui::State (maxLines is a primary positional arg, not
+  /// an Opts field).
   struct StateOpts {
-    int         maxLines = 100;
     std::string handle;
     std::string label;
     std::string tooltip;
@@ -290,13 +290,20 @@ namespace icl::qt::ui {
   };
 
   /// Scrolling log-style state panel.
+  /** `maxLines` (the scrollback line count) is the conventional primary
+      arg, so it stays positional: `ui::State(50)` rather than
+      `ui::State({.maxLines=50})`.  The opts-only ctor keeps the
+      default. */
   struct State {
+    int       maxLines;
     StateOpts opts;
 
-    State(StateOpts opts = {}) : opts(std::move(opts)) {}
+    State(StateOpts opts = {}) : maxLines(100), opts(std::move(opts)) {}
+    State(int maxLines, StateOpts opts = {})
+      : maxLines(maxLines), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::State(opts.maxLines), opts);
+      return applyCommon(qt::State(maxLines), opts);
     }
   };
 
@@ -332,6 +339,45 @@ namespace icl::qt::ui {
     GUIComponent toComponent() const {
       return applyCommon(
         qt::Button(text, opts.toggledText, opts.initiallyToggled), opts);
+    }
+  };
+
+  /// Options for ui::ToggleButton (no toggle-specific fields — the
+  /// toggle texts and initial state are mandatory positional args).
+  struct ToggleButtonOpts {
+    std::string handle;
+    std::string label;
+    std::string tooltip;
+    utils::Size size{};
+    utils::Size minSize{};
+    utils::Size maxSize{};
+    bool        hide = false;
+  };
+
+  /// Two-state toggle button.
+  /** Spells out the toggle texts and initial state as required
+      positional args, so call sites read self-documentingly instead of
+      the `ui::Button("a", {.toggledText="b"})` form:
+      \code
+      gui << ui::ToggleButton("play", "pause", false, {.handle="pp"});
+      \endcode
+      `untoggledText` is shown while the button is up, `toggledText`
+      while it is down; `initiallyToggled` picks the starting state. */
+  struct ToggleButton {
+    std::string      untoggledText;
+    std::string      toggledText;
+    bool             initiallyToggled;
+    ToggleButtonOpts opts;
+
+    ToggleButton(std::string untoggledText, std::string toggledText,
+                 bool initiallyToggled, ToggleButtonOpts opts = {})
+      : untoggledText(std::move(untoggledText)),
+        toggledText(std::move(toggledText)),
+        initiallyToggled(initiallyToggled), opts(std::move(opts)) {}
+
+    GUIComponent toComponent() const {
+      return applyCommon(
+        qt::Button(untoggledText, toggledText, initiallyToggled), opts);
     }
   };
 
@@ -436,9 +482,9 @@ namespace icl::qt::ui {
     }
   };
 
-  /// Options for ui::Canvas.
+  /// Options for ui::Canvas (viewport is a primary positional arg, not
+  /// an Opts field).
   struct CanvasOpts {
-    utils::Size viewport = utils::Size::VGA;
     std::string handle;
     std::string label;
     std::string tooltip;
@@ -449,17 +495,25 @@ namespace icl::qt::ui {
   };
 
   /// 2D drawing canvas (ICLDrawWidget).
+  /** `viewport` (the canvas's logical resolution) is the conventional
+      primary arg, so it stays positional: `ui::Canvas({640,480})`
+      rather than `ui::Canvas({.viewport={640,480}})`.  The opts-only
+      ctor keeps the VGA default. */
   struct Canvas {
-    CanvasOpts opts;
-    Canvas(CanvasOpts opts = {}) : opts(std::move(opts)) {}
+    utils::Size viewport;
+    CanvasOpts  opts;
+    Canvas(CanvasOpts opts = {})
+      : viewport(utils::Size::VGA), opts(std::move(opts)) {}
+    Canvas(utils::Size viewport, CanvasOpts opts = {})
+      : viewport(viewport), opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::Canvas(opts.viewport), opts);
+      return applyCommon(qt::Canvas(viewport), opts);
     }
   };
 
-  /// Options for ui::Canvas3D.
+  /// Options for ui::Canvas3D (viewport is a primary positional arg,
+  /// not an Opts field).
   struct Canvas3DOpts {
-    utils::Size viewport = utils::Size::VGA;
     std::string handle;
     std::string label;
     std::string tooltip;
@@ -470,11 +524,17 @@ namespace icl::qt::ui {
   };
 
   /// 3D-capable drawing canvas (ICLDrawWidget3D).
+  /** `viewport` is positional, mirroring ui::Canvas: `ui::Canvas3D({640,480})`.
+      The opts-only ctor keeps the VGA default. */
   struct Canvas3D {
+    utils::Size  viewport;
     Canvas3DOpts opts;
-    Canvas3D(Canvas3DOpts opts = {}) : opts(std::move(opts)) {}
+    Canvas3D(Canvas3DOpts opts = {})
+      : viewport(utils::Size::VGA), opts(std::move(opts)) {}
+    Canvas3D(utils::Size viewport, Canvas3DOpts opts = {})
+      : viewport(viewport), opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::Canvas3D(opts.viewport), opts);
+      return applyCommon(qt::Canvas3D(viewport), opts);
     }
   };
 
@@ -540,9 +600,9 @@ namespace icl::qt::ui {
     }
   };
 
-  /// Options for ui::Fps.
+  /// Options for ui::Fps (timeWindow is a primary positional arg, not
+  /// an Opts field).
   struct FpsOpts {
-    int         timeWindow = 10;
     std::string handle;
     std::string label;
     std::string tooltip;
@@ -553,11 +613,18 @@ namespace icl::qt::ui {
   };
 
   /// Running-average FPS monitor.
+  /** `timeWindow` (the averaging window in frames) is the conventional
+      primary arg, so it stays positional: `ui::Fps(100)` rather than
+      `ui::Fps({.timeWindow=100})`.  The opts-only ctor keeps the
+      default window. */
   struct Fps {
+    int     timeWindow;
     FpsOpts opts;
-    Fps(FpsOpts opts = {}) : opts(std::move(opts)) {}
+    Fps(FpsOpts opts = {}) : timeWindow(10), opts(std::move(opts)) {}
+    Fps(int timeWindow, FpsOpts opts = {})
+      : timeWindow(timeWindow), opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::Fps(opts.timeWindow), opts);
+      return applyCommon(qt::Fps(timeWindow), opts);
     }
   };
 
@@ -609,9 +676,9 @@ namespace icl::qt::ui {
     }
   };
 
-  /// Options for ui::Ps.
+  /// Options for ui::Ps (updateFPS is a primary positional arg, not an
+  /// Opts field).
   struct PsOpts {
-    int         updateFPS = 10;
     std::string handle;
     std::string label;
     std::string tooltip;
@@ -622,11 +689,17 @@ namespace icl::qt::ui {
   };
 
   /// Process-monitor component (CPU / memory / thread count).
+  /** `updateFPS` (the refresh rate) is the conventional primary arg, so
+      it stays positional: `ui::Ps(10)` rather than
+      `ui::Ps({.updateFPS=10})`.  The opts-only ctor keeps the default. */
   struct Ps {
+    int    updateFPS;
     PsOpts opts;
-    Ps(PsOpts opts = {}) : opts(std::move(opts)) {}
+    Ps(PsOpts opts = {}) : updateFPS(10), opts(std::move(opts)) {}
+    Ps(int updateFPS, PsOpts opts = {})
+      : updateFPS(updateFPS), opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::Ps(opts.updateFPS), opts);
+      return applyCommon(qt::Ps(updateFPS), opts);
     }
   };
 
