@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/filter/arith/BinaryArithmeticalOp.h>
 #include <icl/filter/compare/BinaryCompareOp.h>
 
@@ -56,9 +57,9 @@ int main(int n, char **ppc){
 
   QApplication app(n,ppc);
   HBox gui;
-  gui << Display().handle("sub").label("A-B")
-      << Display().handle("eq").label("A==B")
-      << Show();
+  gui << ui::Display({.handle="sub", .label="A-B"})
+      << ui::Display({.handle="eq", .label="A==B"})
+      << ui::Show();
 
   gui["sub"] = subImage;
   gui["eq"] = cmpImage;

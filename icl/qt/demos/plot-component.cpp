@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 
 #include <icl/utils/Random.h>
 #include <deque>
@@ -22,28 +23,28 @@ void mouse(const MouseEvent &e){
 
 void init(){
   bool gl = pa("-gl");
-  gui << ( VBox()
+  gui << ( ui::VBox()
            << Plot(0,6.5,-1,1,gl).handle("plot1").minSize(15,12)
            << Plot(0,6.5,-1,1,gl).handle("plot2").minSize(15,12)
            << Plot(-5,5,-5,5,gl).handle("plot9").minSize(15,12)
            )
-      << ( VBox()
+      << ( ui::VBox()
            << Plot(0,6.5,-1,1,gl).handle("plot3").minSize(15,12)
            << Plot(0,6.5,-1,1,gl).handle("plot4").minSize(15,12)
            << Plot(0,0,0,0,gl).handle("plot10").minSize(15,12)
            )
-      << (VBox()
+      << (ui::VBox()
           << Plot(-9,9,-9,9,gl).handle("plot5").minSize(15,12)
           << Plot(0,0,0,0,gl).handle("plot6").minSize(15,12)
           << Plot(0,0,0,0,gl).handle("plot11").minSize(15,12)
           )
-      << (VBox()
+      << (ui::VBox()
           << Plot(0,0,0,0,gl,"something [pi]").handle("plot7").minSize(15,12)
           << Plot(0,0,0,0,gl).handle("plot8").minSize(15,12)
           << Plot(0,0,0,0,gl).handle("plot12").minSize(15,12)
-          << CheckBox("animate",true).handle("run")
+          << ui::CheckBox("animate", {.checked=true, .handle="run"})
           )
-      << Show();
+      << ui::Show();
 
 
 

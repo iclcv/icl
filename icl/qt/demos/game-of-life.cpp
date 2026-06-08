@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <iomanip>
 #include <icl/core/Img.h>
 #include <icl/utils/time/Time.h>
@@ -330,22 +331,20 @@ void init(){
   gridBuf.assign(gridW * gridH, 0);
   randomizeGrid(0.2f);
 
-  gui << Canvas().handle("draw").minSize(40,30)
-      << ( VBox().maxSize(15,99)
-           << CheckBox("Running", true).handle("running").maxSize(15,2)
-           << Button("Step").handle("step").maxSize(15,2)
-           << Combo("1,2,5,10,!30,60,120").handle("speed").label("speed (gen/s)").maxSize(15,3)
-           << Combo("!Draw,Glider,LWSS,R-pentomino,Acorn,Gun,Pulsar,Diehard")
-              .handle("tool").label("tool").maxSize(15,3)
-           << Button("Random").handle("random").maxSize(15,2)
-           << Button("Clear").handle("clear").maxSize(15,2)
-           << Combo("128x96,!256x192,512x384,1024x768,1920x1080,3840x2160")
-              .handle("size").label("grid size").maxSize(15,3)
-           << CheckBox("Use GPU", true).handle("gpu").maxSize(15,2)
-           << Label("---").handle("info").label("info").maxSize(15,2)
-           << Label("---").handle("info2").label("info2")
+  gui << ui::Canvas({.handle="draw", .minSize={40, 30}})
+      << ( ui::VBox({.maxSize={15, 99}})
+           << ui::CheckBox("Running", {.checked=true, .handle="running", .maxSize={15, 2}})
+           << ui::Button("Step", {.handle="step", .maxSize={15, 2}})
+           << ui::Combo("1,2,5,10,!30,60,120", {.handle="speed", .label="speed (gen/s)", .maxSize={15, 3}})
+           << ui::Combo("!Draw,Glider,LWSS,R-pentomino,Acorn,Gun,Pulsar,Diehard", {.handle="tool", .label="tool", .maxSize={15, 3}})
+           << ui::Button("Random", {.handle="random", .maxSize={15, 2}})
+           << ui::Button("Clear", {.handle="clear", .maxSize={15, 2}})
+           << ui::Combo("128x96,!256x192,512x384,1024x768,1920x1080,3840x2160", {.handle="size", .label="grid size", .maxSize={15, 3}})
+           << ui::CheckBox("Use GPU", {.checked=true, .handle="gpu", .maxSize={15, 2}})
+           << ui::Label("---", {.handle="info", .label="info", .maxSize={15, 2}})
+           << ui::Label("---", {.handle="info2", .label="info2"})
          )
-      << Show();
+      << ui::Show();
 
   gui["draw"].install(mouseHandler);
 

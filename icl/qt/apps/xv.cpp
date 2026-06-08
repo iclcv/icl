@@ -6,6 +6,7 @@
 #include <iterator>
 #include <icl/io/source/ImageSource.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <QScreen>
 
 GUI gui;
@@ -65,7 +66,7 @@ int main (int n, char **ppc){
     }
 
     Size size = compute_image_size(std::vector<const ImgBase*>(1,image),QApplication::primaryScreen());
-    gui << Canvas().handle("draw").size(size/20);
+    gui << ui::Canvas({.handle="draw", .size=size/20});
     gui.show();
 
     DrawHandle draw = gui["draw"];
@@ -107,10 +108,10 @@ int main (int n, char **ppc){
     Tab t(imageList);
 
     for(size_t i=0;i<imageVecStrs.size();++i){
-      t << Display().handle("image-"+str(i)).size(size/20);
+      t << ui::Display({.handle="image-"+str(i), .size=size/20});
     }
 
-    gui << t << Show();
+    gui << t << ui::Show();
 
     for(size_t i=0;i<imageVecStrs.size();++i){
       gui["image-"+str(i)] = imageVec[i];

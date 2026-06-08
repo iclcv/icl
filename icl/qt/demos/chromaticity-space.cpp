@@ -4,6 +4,7 @@
 
 #include <icl/qt/ChromaGUI.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 
 using namespace icl;
 
@@ -33,12 +34,12 @@ void run(){
 void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
-  gui << ( VBox()
-           << Display().minSize(16,12).handle("image").label("Camera Image")
-           << Display().minSize(16,12).handle("segimage").label("Semented Image")
+  gui << ( ui::VBox()
+           << ui::Display({.handle="image", .label="Camera Image", .minSize={16, 12}})
+           << ui::Display({.handle="segimage", .label="Semented Image", .minSize={16, 12}})
            )
-      << HBox().handle("box")
-      << Show();
+      << ui::HBox({.handle="box"})
+      << ui::Show();
 
 
   cg = new ChromaGUI(*gui.get<BoxHandle>("box"));

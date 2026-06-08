@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/core/Image.h>
 
 GUI gui;
@@ -17,12 +18,12 @@ void run(){
 }
 
 void init(){
-  gui << Display().handle("image").minSize(16,12);
-  gui << ( HBox().maxSize(100,2)
-           << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)
-           << CamCfg("")
+  gui << ui::Display({.handle="image", .minSize={16, 12}});
+  gui << ( ui::HBox({.maxSize={100, 2}})
+           << ui::Fps(10, {.handle="fps", .minSize={5, 2}, .maxSize={100, 2}})
+           << ui::CamCfg()
            )
-      << Show();
+      << ui::Show();
 
   grabber.init(pa("-i"));
   if(pa("-size")){

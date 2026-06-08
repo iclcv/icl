@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/utils/config/Configurable.h>
 
@@ -62,10 +63,10 @@ struct A : public Configurable{
 
 
 void init(){
-  gui << Prop("a").label("properties of a")
-      << Prop("a").label("also properties of a")
-      << Prop("c").label("properties of c only")
-      << Show();
+  gui << ui::Prop("a", {.label="properties of a"})
+      << ui::Prop("a", {.label="also properties of a"})
+      << ui::Prop("c", {.label="properties of c only"})
+      << ui::Show();
 }
 
 

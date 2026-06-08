@@ -7,6 +7,7 @@
 #include <QMenu>
 #include <QActionEvent>
 #include <icl/qt/DefineRectanglesMouseHandler.h>
+#include <icl/qt/ui.h>
 GUI gui;
 ImageSource grabber;
 DefineRectanglesMouseHandler mouse;
@@ -15,7 +16,7 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(Size::VGA);
 
-  gui << Canvas().minSize(32,24).handle("draw") << Show();
+  gui << ui::Canvas({.handle="draw", .minSize={32, 24}}) << ui::Show();
 
   gui["draw"].install(&mouse);
 }

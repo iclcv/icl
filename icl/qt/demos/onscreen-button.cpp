@@ -4,6 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/IconFactory.h>
+#include <icl/qt/ui.h>
 #include <mutex>
 
 GUI gui;
@@ -22,7 +23,7 @@ void capture(){
 void init(){
   grabber.init(pa("-i"));
 
-  gui << Display().handle("image") << Show();
+  gui << ui::Display({.handle="image"}) << ui::Show();
 
   ICLWidget *w = gui["image"];
 

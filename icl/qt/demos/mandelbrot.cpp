@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <iomanip>
 #include <icl/core/Img.h>
 #include <icl/utils/time/Time.h>
@@ -344,18 +345,17 @@ static void mouseHandler(const MouseEvent &event){
 void init(){
   initPalette();
 
-  gui << Canvas().handle("draw").minSize(40, 30)
-      << ( VBox()
-           << Combo("!Mandelbrot,Julia,Burning Ship,Tricorn")
-              .handle("fractal").label("fractal type")
-           << Slider(32, 4096, 512).handle("maxiter").label("max iterations")
-           << FSlider(-2.0, 2.0, -0.7269).handle("julia_cr").label("Julia c (real)")
-           << FSlider(-2.0, 2.0, 0.1889).handle("julia_ci").label("Julia c (imag)")
-           << CheckBox("Use GPU", true).handle("gpu")
-           << Label("---").handle("info")
-           << Button("Reset View").handle("reset")
+  gui << ui::Canvas({.handle="draw", .minSize={40, 30}})
+      << ( ui::VBox()
+           << ui::Combo("!Mandelbrot,Julia,Burning Ship,Tricorn", {.handle="fractal", .label="fractal type"})
+           << ui::Slider(32, 4096, 512, {.handle="maxiter", .label="max iterations"})
+           << ui::FSlider(-2.0, 2.0, -0.7269, {.handle="julia_cr", .label="Julia c (real)"})
+           << ui::FSlider(-2.0, 2.0, 0.1889, {.handle="julia_ci", .label="Julia c (imag)"})
+           << ui::CheckBox("Use GPU", {.checked=true, .handle="gpu"})
+           << ui::Label("---", {.handle="info"})
+           << ui::Button("Reset View", {.handle="reset"})
          )
-      << Show();
+      << ui::Show();
 
   gui["draw"].install(mouseHandler);
 

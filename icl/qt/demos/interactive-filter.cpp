@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter, Robert Haschke
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/filter/conv/ConvolutionOp.h>
 
 
@@ -87,7 +88,7 @@ void run(){
 void init(){
   grabber.init(pa("-i"));
 
-  gui << Canvas().handle("draw").minSize(16,12) << Show();
+  gui << ui::Canvas({.handle="draw", .minSize={16, 12}}) << ui::Show();
 
   gui["draw"].install(new MouseHandler(mouse));
 }

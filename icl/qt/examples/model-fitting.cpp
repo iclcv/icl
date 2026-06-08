@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/math/fit/RansacFitter.h>
 #include <icl/utils/Random.h>
 #include <icl/utils/Point.h>
@@ -123,17 +124,17 @@ void compute(){
 
 void init(){
   gui << Plot().handle("plot").minSize(30,30)
-      << (VBox()
-          << Combo("line,circle").handle("what")
-          << CheckBox("ransac").handle("ransac")
-          << Button("new data").handle("new")
-          << Button("stopped","running").handle("run")
-          << ( HBox()
-               << FSlider(0.01,1,0.2,true).handle("noise").label("noise").tooltip("noise factor")
-               << Slider(0,100,30,true).handle("random").label("good %").tooltip("percentage of non-random points")
+      << (ui::VBox()
+          << ui::Combo("line,circle", {.handle="what"})
+          << ui::CheckBox("ransac", {.handle="ransac"})
+          << ui::Button("new data", {.handle="new"})
+          << ui::ToggleButton("stopped", "running", false, {.handle="run"})
+          << ( ui::HBox()
+               << ui::FSlider(0.01, 1, 0.2, {.vertical=true, .handle="noise", .label="noise", .tooltip="noise factor"})
+               << ui::Slider(0, 100, 30, {.vertical=true, .handle="random", .label="good %", .tooltip="percentage of non-random points"})
               )
           )
-      << Show();
+      << ui::Show();
 
 
   gui["what"].registerCallback(compute);

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/core/cc/CCFunctions.h>
 #include <icl/utils/thread/Thread.h>
 #include <mutex>
@@ -105,12 +106,12 @@ void init(){
   grabber.init(pa("-i"));
 
 
-  gui << Display().label("image").handle("image").size(32,24);
-  gui << Button("Run!","Stop!",true).handle("running");
-  gui << ( HBox()
-              << Combo("!rgb,hls,gray,yuv").handle("colormode").label("colormode")
-              << Button("Reset List").handle("reset")
-              << Button("Calculate Mean").handle("calc")
+  gui << ui::Display({.handle="image", .label="image", .size={32, 24}});
+  gui << ui::ToggleButton("Run!", "Stop!", true, {.handle="running"});
+  gui << ( ui::HBox()
+              << ui::Combo("!rgb,hls,gray,yuv", {.handle="colormode", .label="colormode"})
+              << ui::Button("Reset List", {.handle="reset"})
+              << ui::Button("Calculate Mean", {.handle="calc"})
               );
 
   gui.show();

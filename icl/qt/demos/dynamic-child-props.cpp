@@ -12,6 +12,7 @@
 // currently-attached children appear and disappear live.
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/utils/config/Configurable.h>
 
@@ -58,7 +59,7 @@ struct Host : public Configurable{
 } host;
 
 void init(){
-  gui << Prop("host").label("Host (live child set)") << Show();
+  gui << ui::Prop("host", {.label="Host (live child set)"}) << ui::Show();
 }
 
 int main(int n, char **ppc){
