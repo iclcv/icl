@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/filter/color/PseudoColorOp.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
@@ -51,40 +52,40 @@ void init(){
   FiducialDetector *fd = detector.getFiducialDetector();
   fd->prop("max bch errors").value = 1;
 
-  gui << ( Tab("distorted input,undistorted image,"
-               "difference image,undistortion map").handle("tab").minSize(32,24)
-           << Canvas().handle("image")
-           << Canvas().handle("uimage")
-           << Display().handle("diff")
-           << Canvas(imageSize).handle("map")
+  gui << ( ui::Tab("distorted input,undistorted image,"
+               "difference image,undistortion map", {.handle="tab", .minSize={32, 24}})
+           << ui::Canvas({.handle="image"})
+           << ui::Canvas({.handle="uimage"})
+           << ui::Display({.handle="diff"})
+           << ui::Canvas(imageSize, {.handle="map"})
          )
-      << ( VBox().maxSize(14,99).minSize(14,1)
-           << Fps(10).handle("fps").maxSize(99,2).minSize(1,2)
-           << ( HBox()
-                << Label("--").label("src error").handle("error").maxSize(99,2).minSize(1,2)
-                << Label("--").label("fixed error").handle("uerror").maxSize(99,2).minSize(1,2)
+      << ( ui::VBox({.minSize={14, 1}, .maxSize={14, 99}})
+           << ui::Fps(10, {.handle="fps", .minSize={1, 2}, .maxSize={99, 2}})
+           << ( ui::HBox()
+                << ui::Label("--", {.handle="error", .label="src error", .minSize={1, 2}, .maxSize={99, 2}})
+                << ui::Label("--", {.handle="uerror", .label="fixed error", .minSize={1, 2}, .maxSize={99, 2}})
                 )
-           << ( HBox()
-                << CamCfg().maxSize(99,2).minSize(1,2)
-                << Combo(fd->getIntermediateImageNames()).handle("vis").maxSize(99,2)
+           << ( ui::HBox()
+                << ui::CamCfg({.minSize={1, 2}, .maxSize={99, 2}})
+                << ui::Combo(fd->getIntermediateImageNames(), {.handle="vis", .maxSize={99, 2}})
               )
-           << CheckBox("show detection overlay",true).handle("overlay")
-           << ( Tab("udist,markers,optimize")
-                << Prop("udist")
-                << Prop("fd")
-                << (VBox()
-                    << Button("capture frame").handle("capture")
-                    << Button("clear frames").handle("clear")
-                    << CheckBox("Use OpenCL",true).handle("use opencl")
-                    << Label("--").handle("ncap").label("num captured")
-                    << Label("--").handle("caperr").label("base error")
-                    << Combo("simplex,sampling").handle("calibmode").label("calibration mode")
-                    << Button("optimize").handle("optimize")
-                    << Button("save").handle("save")
+           << ui::CheckBox("show detection overlay", {.checked=true, .handle="overlay"})
+           << ( ui::Tab("udist,markers,optimize")
+                << ui::Prop("udist")
+                << ui::Prop("fd")
+                << (ui::VBox()
+                    << ui::Button("capture frame", {.handle="capture"})
+                    << ui::Button("clear frames", {.handle="clear"})
+                    << ui::CheckBox("Use OpenCL", {.checked=true, .handle="use opencl"})
+                    << ui::Label("--", {.handle="ncap", .label="num captured"})
+                    << ui::Label("--", {.handle="caperr", .label="base error"})
+                    << ui::Combo("simplex,sampling", {.handle="calibmode", .label="calibration mode"})
+                    << ui::Button("optimize", {.handle="optimize"})
+                    << ui::Button("save", {.handle="save"})
                     )
                 )
            )
-      << Show();
+      << ui::Show();
 
   gridEval.setGrid(detector.getMarkerGrid());
 }

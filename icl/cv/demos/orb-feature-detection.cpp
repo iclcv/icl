@@ -6,6 +6,7 @@
 
 #include <icl/core/compat/OpenCV.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/cv/ORBFeatureDetector.h>
 
 using namespace icl::qt;
@@ -23,12 +24,12 @@ void init(){
    orb.setConfigurableID("orb");
 
    grabber.init(pa("-i"));
-   gui << Canvas().handle("image")
-       << ( VBox().minSize(16,1).maxSize(16,99)
-            << Combo("input,gray,contrast enhanced").handle("vis")
-            << Prop("orb").label("orb properties")
+   gui << ui::Canvas({.handle="image"})
+       << ( ui::VBox({.minSize={16, 1}, .maxSize={16, 99}})
+            << ui::Combo("input,gray,contrast enhanced", {.handle="vis"})
+            << ui::Prop("orb", {.label="orb properties"})
           )
-       << Show();
+       << ui::Show();
 
 
 }

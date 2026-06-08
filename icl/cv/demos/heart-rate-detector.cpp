@@ -5,6 +5,7 @@
 #define ICL_NO_USING_NAMESPACES
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 
 #include <icl/utils/Random.h>
 #include <deque>
@@ -50,15 +51,15 @@ Rect detectFace(Img8u *image)
 
 void init(){
   bool gl = pa("-gl");
-  gui << Display().handle("image").minSize(16,12)
-      << ( HBox().maxSize(100,2)
-           << Fps(10).handle("fps").maxSize(100,2).minSize(5,2)
+  gui << ui::Display({.handle="image", .minSize={16, 12}})
+      << ( ui::HBox({.maxSize={100, 2}})
+           << ui::Fps(10, {.handle="fps", .minSize={5, 2}, .maxSize={100, 2}})
           )
 
-      << (HBox()
+      << (ui::HBox()
           <<Plot(0,pa("-historydepth"),0,1,gl).handle("plot1").minSize(15,12)
           )
-      << Show();
+      << ui::Show();
 
   grabber.init(pa("-i"));
   detector = new icl::cv::HeartrateDetector(pa("-maxfps"), pa("-historydepth"));

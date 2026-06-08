@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/core/Image.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/filter/color/ColorDistanceOp.h>
@@ -20,7 +21,7 @@ void mouse(const MouseEvent &e){
 
 void init(){
   grabber.init(pa("-i"));
-  gui << Canvas().handle("image") << Show();
+  gui << ui::Canvas({.handle="image"}) << ui::Show();
 
   gui["image"].install(mouse);
 }

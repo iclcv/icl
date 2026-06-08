@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/cv/CV.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/cv/ViewBasedTemplateMatcher.h>
@@ -72,19 +73,19 @@ void init(){
   g.init(pa("-input"));
   g.useDesired(depth8u);
 
-  gui << Canvas().label("image").minSize(32,24).handle("image")
-      << ( VBox()
-           << Canvas().label("template").minSize(10,6).handle("templ")
-           << Canvas().label("buffer").minSize(10,6).handle("buf")
+  gui << ui::Canvas({.handle="image", .label="image", .minSize={32, 24}})
+      << ( ui::VBox()
+           << ui::Canvas({.handle="templ", .label="template", .minSize={10, 6}})
+           << ui::Canvas({.handle="buf", .label="buffer", .minSize={10, 6}})
            )
-      << (VBox().minSize(7,7)
-          << FSlider(0,1,0.9).label("significance").handle("significance")
-          << Fps(50).handle("fps").minSize(5,5)
-          << Button("no masks"," with masks").handle("use-masks")
-          << Button("dont clip buffers","clip buffers").handle("clip-buffers")
-          << Button("square distance","norm. cross corr").handle("mode")
+      << (ui::VBox({.minSize={7, 7}})
+          << ui::FSlider(0, 1, 0.9, {.handle="significance", .label="significance"})
+          << ui::Fps(50, {.handle="fps", .minSize={5, 5}})
+          << ui::ToggleButton("no masks", " with masks", false, {.handle="use-masks"})
+          << ui::ToggleButton("dont clip buffers", "clip buffers", false, {.handle="clip-buffers"})
+          << ui::ToggleButton("square distance", "norm. cross corr", false, {.handle="mode"})
           )
-      << Show();
+      << ui::Show();
 
   gui["image"].install(mouse);
 }

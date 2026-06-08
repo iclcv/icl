@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/cv/FloodFiller.h>
 #include <icl/core/cc/Color.h>
 //TODO: crashes in the destructor
@@ -73,13 +74,13 @@ void init(){
     selector = ColorSelect(255,0,0).handle("fill").label("fill");
   }
 
-  gui << Display().handle("image").minSize(16,12)
-      << ( HBox().maxSize(100,3)
-           << Slider(0,255,10).handle("thresh").label("threshold")
+  gui << ui::Display({.handle="image", .minSize={16, 12}})
+      << ( ui::HBox({.maxSize={100, 3}})
+           << ui::Slider(0, 255, 10, {.handle="thresh", .label="threshold"})
            << selector
-           << Label(0).handle("dt").label("dt")
+           << ui::Label(0, {.handle="dt", .label="dt"})
            )
-      << Show();
+      << ui::Show();
 
 
   grabber.init(pa("-i"));

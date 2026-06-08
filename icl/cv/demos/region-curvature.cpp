@@ -4,6 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/FPSHandle.h>
+#include <icl/qt/ui.h>
 
 #include <icl/cv/RegionDetector.h>
 
@@ -29,14 +30,14 @@ void init(){
 
     grabber.init(pa("-i"));
 
-    gui << Canvas3D().label("3d view").handle("3d")
-           << ( VBox()
-                << Slider(1,20,3).handle("steps_handle").label("steps")
-                << Slider(10,100,20).handle("radius_handle").label("radius")
-                << FSlider(1.f,100.f,35.f).label("Threshold").handle("th_handle")
-                << CheckBox("Thinned Contour",true).handle("useThinned_handle")
-                << Fps(10).handle("fps").label("fps") );
-    gui << Show();
+    gui << ui::Canvas3D({.handle="3d", .label="3d view"})
+           << ( ui::VBox()
+                << ui::Slider(1, 20, 3, {.handle="steps_handle", .label="steps"})
+                << ui::Slider(10, 100, 20, {.handle="radius_handle", .label="radius"})
+                << ui::FSlider(1.f, 100.f, 35.f, {.handle="th_handle", .label="Threshold"})
+                << ui::CheckBox("Thinned Contour", {.checked=true, .handle="useThinned_handle"})
+                << ui::Fps(10, {.handle="fps", .label="fps"}) );
+    gui << ui::Show();
 
     detector = new RegionDetector(200,50000,100,250);
 }

@@ -5,6 +5,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/cv/MeanShiftTracker.h>
 #include <icl/qt/MouseHandler.h>
+#include <icl/qt/ui.h>
 #include <mutex>
 
 
@@ -43,17 +44,17 @@ void init(){
   grabber->useDesired(formatRGB);
   grabber->useDesired(utils::Size(pa("-size")));
 
-  gui << Canvas().handle("image").minSize(32,24).label("image stream ")
-      << ( VBox()
-           << Display().handle("kernel").minSize(8,6).label("kernel image")
-           << Display().handle("color").minSize(8,6).label("current color")
-           << Slider(1,1000,20).handle("maxCycles").label("max cycles")
-           << FSlider(0.1,5,1.0).handle("convergence").label("conv. crit.")
-           << Slider(4,200,50).handle("bandwidth").label("kernel bandwidth")
-           << Combo("epanechnikov,gaussian").handle("kernel-type").label("kernel type")
-           << Combo("color image,weight image").handle("vis").label("shown image")
+  gui << ui::Canvas({.handle="image", .label="image stream ", .minSize={32, 24}})
+      << ( ui::VBox()
+           << ui::Display({.handle="kernel", .label="kernel image", .minSize={8, 6}})
+           << ui::Display({.handle="color", .label="current color", .minSize={8, 6}})
+           << ui::Slider(1, 1000, 20, {.handle="maxCycles", .label="max cycles"})
+           << ui::FSlider(0.1, 5, 1.0, {.handle="convergence", .label="conv. crit."})
+           << ui::Slider(4, 200, 50, {.handle="bandwidth", .label="kernel bandwidth"})
+           << ui::Combo("epanechnikov,gaussian", {.handle="kernel-type", .label="kernel type"})
+           << ui::Combo("color image,weight image", {.handle="vis", .label="shown image"})
            )
-      << Show();
+      << ui::Show();
 
   gui["image"].install(mouse);
   gui.get<ImageHandle>("kernel")->setRangeMode(ICLWidget::rmAuto);

@@ -269,7 +269,11 @@ namespace icl::qt::ui {
     std::string text;
     LabelOpts   opts;
 
-    Label(std::string text = "", LabelOpts opts = {})
+    /// opts-only ctor (text defaults to empty) — needed so
+    /// `ui::Label({.handle="x"})` resolves; the positional ctor has no
+    /// default on `text`, else the two would be ambiguous for Label().
+    Label(LabelOpts opts = {}) : text(), opts(std::move(opts)) {}
+    Label(std::string text, LabelOpts opts = {})
       : text(std::move(text)), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {

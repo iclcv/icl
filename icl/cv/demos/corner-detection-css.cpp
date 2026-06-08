@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Erik Weitnauer, Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/core/cc/Color.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/core/line/Line.h>
@@ -34,23 +35,23 @@ void init(){
   css.setConfigurableID("css");
   css.prop("debug-mode").value = "on";
 
-  gui << ( VBox()
-           << ( HBox()
-                << CamCfg("")
-                <<  Combo("color image,binary image").handle("vis")
+  gui << ( ui::VBox()
+           << ( ui::HBox()
+                << ui::CamCfg()
+                <<  ui::Combo("color image,binary image", {.handle="vis"})
               )
-           << FSlider(0,1,0.03).handle("t").label("threshold")
+           << ui::FSlider(0, 1, 0.03, {.handle="t", .label="threshold"})
          )
-      << ( VSplit()
-           << ( HBox()
-                << Canvas().handle("img_in").minSize(16,12)
-                << Canvas().handle("img1").minSize(16,12)
-                << Canvas().handle("img2").minSize(16,12)
+      << ( ui::VSplit()
+           << ( ui::HBox()
+                << ui::Canvas({.handle="img_in", .minSize={16, 12}})
+                << ui::Canvas({.handle="img1", .minSize={16, 12}})
+                << ui::Canvas({.handle="img2", .minSize={16, 12}})
                 )
-           << Canvas().handle("img3").minSize(16,12)
+           << ui::Canvas({.handle="img3", .minSize={16, 12}})
           )
-      << Prop("css").label("CSS Params").minSize(14,12)
-      << Show();
+      << ui::Prop("css", {.label="CSS Params", .minSize={14, 12}})
+      << ui::Show();
 
   gui["img_in"].install(mouse);
 

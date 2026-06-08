@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/cv/HoughLineDetector.h>
 
 typedef FixedColVector<float,2> Pos;
@@ -25,16 +26,16 @@ void init(){
 
   hld.setConfigurableID("hld");
 
-  gui << Canvas().handle("view").minSize(32,24)
-      << ( VSplit()
-           << Display().handle("lut").label("hough space").minSize(16,12)
-           << ( VBox()
-                << Button("load image").handle("load")
-                << Spinner(0,100,1).handle("maxlines").label("max lines")
-                << Prop("hld")
+  gui << ui::Canvas({.handle="view", .minSize={32, 24}})
+      << ( ui::VSplit()
+           << ui::Display({.handle="lut", .label="hough space", .minSize={16, 12}})
+           << ( ui::VBox()
+                << ui::Button("load image", {.handle="load"})
+                << ui::Spinner(0, 100, 1, {.handle="maxlines", .label="max lines"})
+                << ui::Prop("hld")
                 )
            )
-      << Show();
+      << ui::Show();
 
   gui["view"].install(new Mouse);
   gui["view"] = Img8u(Size::VGA,1);

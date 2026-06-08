@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/utils/time/FPSEstimator.h>
 #include <icl/utils/Random.h>
 #include <icl/cv/RegionDetector.h>
@@ -311,12 +312,12 @@ void init(){
   grabber->useDesired(Size::VGA);
   grabber->useDesired(depth8u);
   grabber->useDesired(formatGray);
-  gui << Canvas().handle("image").minSize(32,24);
-  gui << ( HBox()
-           << Slider(0,100,pa("-sleeptime")).handle("Vsl").label("sleeptime")
-           << Button("off","on",true).handle("Vlo").label("Show labels")
+  gui << ui::Canvas({.handle="image", .minSize={32, 24}});
+  gui << ( ui::HBox()
+           << ui::Slider(0, 100, pa("-sleeptime"), {.handle="Vsl", .label="sleeptime"})
+           << ui::ToggleButton("off", "on", true, {.handle="Vlo", .label="Show labels"})
            )
-      << Show();
+      << ui::Show();
 
   gui["image"].install(grabber);
 }
