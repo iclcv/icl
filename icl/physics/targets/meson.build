@@ -27,6 +27,12 @@ if _build_demos
     install: false,
   )
 
+  executable('physics-water-rocket-demo',
+    files('../demos/physics-water-rocket.cpp'),
+    dependencies: [icl_physics_dep, icl_geom2_dep],
+    install: false,
+  )
+
   # physics-maze is multi-file
   executable('physics-maze-demo',
     files(
