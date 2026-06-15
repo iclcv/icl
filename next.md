@@ -2,14 +2,31 @@
 
 ## Next Step
 
-**io modernization is DONE.  qt::ui:: app/demo migration is DONE** (Session 68;
-`ui-plan.md` Phases 1–6 all landed).  Every legacy fluent GUI chain in
-`apps/`/`demos/`/`examples/` is now on the `qt::ui::` designated-init syntax
-— the converter dry-run reports `0 chains, 0 skips` across all 111 GUI files.
+**Next focus: phase out `geom` → `geom2` (see the TODO section just below).**
+The legacy `geom::Scene` GL path is dead (Core-Profile default routes everything
+to the incomplete `geom::GLRenderer`); `geom2`/`Scene2` is the live renderer.
+Biggest item: port ICLPhysics visualization to `geom2` so the physics demos
+render again (the `physics-water-rocket` demo shows the bridge pattern).
+
+**This session (69):** built `physics-water-rocket` (geom2-rendered water-rocket
++ Bullet soft-body parachute) and, in the process, fixed several framework bugs:
+- `fa57da1c8` RigidConvexHullObject vertices-only ctor wasn't delegating (null body)
+- `305bbdc03` Scene2 background-color type mismatch (crashed every geom2 render)
+- `5622db449` PhysicsWorld soft-body air-density units (1000× too dense)
+- `e11c56d8b` the demo; `590a1e5a6` next.md notes
+Surfaced geom2 gaps (now noted below): `MeshNode` dynamic geometry doesn't
+auto-invalidate the render cache; offscreen `Scene::render()` unimplemented in
+the core-profile pipeline.
+
+**Earlier:** io modernization DONE; qt::ui:: app/demo migration DONE (Session 68;
+`ui-plan.md` Phases 1–6 landed) — converter dry-run `0 chains, 0 skips` across
+all 111 GUI files.
 
 Branch `further-restructuring-and-cleanup`; 877/877 tests green; build clean
 (`CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C builddir -j 16`).
 Note: SSH/git push is blocked in this sandbox — the user pushes themselves.
+Note: the compiler was upgraded to Apple clang 21 mid-session, which forced a
+full rebuild (stale PCHs); rebuild with `CCACHE_DISABLE=1` if ccache errors.
 
 ### TODO: phase out `geom` → `geom2` (new rendering pipeline)
 
