@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/PoseEstimator.h>
 #include <icl/geom/CoplanarPointPoseEstimator.h>
@@ -192,48 +193,48 @@ void init(){
   inputIDs = inputIDs.substr(0,inputIDs.length()-1);
   VBox controls;
   controls.label("controls").maxSize(17,99).minSize(17,1);
-  controls << Combo(inputIDs).handle("visinput").label("input index");
+  controls << ui::Combo(inputIDs, {.handle="visinput", .label="input index"});
   if(fd){
-    controls << Combo(fd->getIntermediateImageNames()).handle("visualization").label("visualization").handle("vis");
+    controls << ui::Combo(fd->getIntermediateImageNames(), {.handle="vis", .label="visualization"});
   }
-  controls << ( HBox()
-                << CamCfg()
-                << CheckBox("image acquition",true).handle("acquisition").tooltip("if checked, new images are grabbed")
+  controls << ( ui::HBox()
+                << ui::CamCfg()
+                << ui::CheckBox("image acquition", {.checked=true, .handle="acquisition", .tooltip="if checked, new images are grabbed"})
                 )
-           << ( HBox()
-                << CheckBox("use grid center",pa("-ugc")).handle("cen").tooltip("Use the grid center as world center")
-                << CheckBox("show world CS",true).handle("show CS").tooltip("Show a world coordinate frame")
+           << ( ui::HBox()
+                << ui::CheckBox("use grid center", {.checked=pa("-ugc"), .handle="cen", .tooltip="Use the grid center as world center"})
+                << ui::CheckBox("show world CS", {.checked=true, .handle="show CS", .tooltip="Show a world coordinate frame"})
                 )
-           << CheckBox("show grid CSs",true).handle("show grid CSs").tooltip("Show a coordinate frame attached to a grid")
+           << ui::CheckBox("show grid CSs", {.checked=true, .handle="show grid CSs", .tooltip="Show a coordinate frame attached to a grid"})
 
-           << Button("define relative transform ...").handle("rel")
-           << Button("pose estimation options ...").handle("poseEst")
-           << Button("detection options ...").handle("fid")
-           << (HBox()
-               << Button("accumulate frames ...").handle("cap").tooltip("allows a set of frames to be accumulated to get a better relative result")
-               << Label("0").handle("ncap").maxSize(3,2).tooltip("Number of currenly captured frames. <b>Please note:</b> if this number is larger than 0, the internally captured frames are used for calibration (and not the current frame)")
+           << ui::Button("define relative transform ...", {.handle="rel"})
+           << ui::Button("pose estimation options ...", {.handle="poseEst"})
+           << ui::Button("detection options ...", {.handle="fid"})
+           << (ui::HBox()
+               << ui::Button("accumulate frames ...", {.handle="cap", .tooltip="allows a set of frames to be accumulated to get a better relative result"})
+               << ui::Label("0", {.handle="ncap", .tooltip="Number of currenly captured frames. <b>Please note:</b> if this number is larger than 0, the internally captured frames are used for calibration (and not the current frame)", .maxSize={3, 2}})
                )
            << Plot().handle("variancePlot").label("10-frame pose std-deviation")
-           << Button("save calibration").handle("save").tooltip("saves the calibration file of the current view's camera")
-           << Button("save relative calibration").handle("saveRel").tooltip("saves the calibration file of the current view's "
+           << ui::Button("save calibration", {.handle="save", .tooltip="saves the calibration file of the current view's camera"})
+           << ui::Button("save relative calibration", {.handle="saveRel", .tooltip="saves the calibration file of the current view's "
                                                                             "camera <b>and</b> the relative calibrations of all "
-                                                                            "other views wrt. the current view camera").hideIf(pai.n() < 6);
+                                                                            "other views wrt. the current view camera", .hide=pai.n() < 6});
 
-  gui << (HSplit()
-          << (Tab("input view,3D scene view")
-              << Canvas3D(imageSize0).handle("draw").minSize(32,24)
-              << (VBox()
-                  << (HBox().maxSize(99,2)
-                      << Button("sync cam").handle("sync")
-                      << CheckBox("visualize cameras",false).handle("vis cams")
-                      << CheckBox("show 10mm camera coordinate frames",false).handle("show ccs")
+  gui << (ui::HSplit()
+          << (ui::Tab("input view,3D scene view")
+              << ui::Canvas3D(imageSize0, {.handle="draw", .minSize={32, 24}})
+              << (ui::VBox()
+                  << (ui::HBox({.maxSize={99, 2}})
+                      << ui::Button("sync cam", {.handle="sync"})
+                      << ui::CheckBox("visualize cameras", {.checked=false, .handle="vis cams"})
+                      << ui::CheckBox("show 10mm camera coordinate frames", {.checked=false, .handle="show ccs"})
                       )
-                  << Canvas3D(imageSize0).handle("3D").minSize(32,24)
+                  << ui::Canvas3D(imageSize0, {.handle="3D", .minSize={32, 24}})
                   )
              )
           << controls
           )
-      << Show();
+      << ui::Show();
 
 
   scene.addCamera(scene.getCamera(0));
@@ -263,34 +264,34 @@ void init(){
   plot->prop("legend.x").value = 1;
   plot->prop("legend.height").value = 30;
 
-  relGUI << ( VBox().label("rel-transformation")
-           << ( HBox()
-                << Spinner(0,8,pa("-t",0)).label("x-rotation *pi/4").handle("rx")
-                << Spinner(0,8,pa("-t",1)).label("y-rotation *pi/4").handle("ry")
-                << Spinner(0,8,pa("-t",2)).label("z-rotation *pi/4").handle("rz")
+  relGUI << ( ui::VBox({.label="rel-transformation"})
+           << ( ui::HBox()
+                << ui::Spinner(0, 8, pa("-t",0), {.handle="rx", .label="x-rotation *pi/4"})
+                << ui::Spinner(0, 8, pa("-t",1), {.handle="ry", .label="y-rotation *pi/4"})
+                << ui::Spinner(0, 8, pa("-t",2), {.handle="rz", .label="z-rotation *pi/4"})
                 )
-           << ( HBox()
-                << Float(-100000,100000,pa("-t",3)).label("x-offset").handle("tx")
-                << Float(-100000,100000,pa("-t",4)).label("y-offset").handle("ty")
-                << Float(-100000,100000,pa("-t",5)).label("z-offset").handle("tz")
+           << ( ui::HBox()
+                << ui::Float(-100000, 100000, pa("-t",3), {.handle="tx", .label="x-offset"})
+                << ui::Float(-100000, 100000, pa("-t",4), {.handle="ty", .label="y-offset"})
+                << ui::Float(-100000, 100000, pa("-t",5), {.handle="tz", .label="z-offset"})
                 )
            )
-      << Create();
+      << ui::Create();
 
   Tab poseEstTab(inputIDs), fidTab(inputIDs);
   for(size_t i=0;i<views.size();++i){
     if(cbDef.used){
-      fidTab << Prop("cbd-cam"+str(i));
-      poseEstTab << Prop("cbPoseEst-cam"+str(i));
+      fidTab << ui::Prop("cbd-cam"+str(i));
+      poseEstTab << ui::Prop("cbPoseEst-cam"+str(i));
     }else{
-      fidTab << Prop("fd-cam"+str(i));
-      poseEstTab << Prop("poseEst-cam"+str(i));
+      fidTab << ui::Prop("fd-cam"+str(i));
+      poseEstTab << ui::Prop("poseEst-cam"+str(i));
     }
 
   }
 
-  poseEstGUI << poseEstTab << Create();
-  fidGUI << fidTab << Create();
+  poseEstGUI << poseEstTab << ui::Create();
+  fidGUI << fidTab << ui::Create();
 
 
   gui["rel"].registerCallback([]{ relGUI.switchVisibility(); });
@@ -302,13 +303,13 @@ void init(){
   scene.addObject(cs,true);
 
 
-  captureFramesGUI << Button("capture current frame").handle("capture")
-                   << Label("--").label("num captured frames").handle("n")
-                   << (HBox()
-                       << Button("undo last").handle("undo")
-                       << Button("reset").handle("reset")
+  captureFramesGUI << ui::Button("capture current frame", {.handle="capture"})
+                   << ui::Label("--", {.handle="n", .label="num captured frames"})
+                   << (ui::HBox()
+                       << ui::Button("undo last", {.handle="undo"})
+                       << ui::Button("reset", {.handle="reset"})
                        )
-                   << Create();
+                   << ui::Create();
 
   gui["cap"].registerCallback([]{ captureFramesGUI.switchVisibility(); });
 }

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/markers/MultiCamFiducialDetector.h>
 #include <icl/geom/Geom.h>
 #include <icl/geom/ComplexCoordinateFrameSceneObject.h>
@@ -49,12 +50,12 @@ void init(){
   if(!pa("-nosync").as<bool>()){
     fd.prop("thresh.global threshold").value = 4.8;
   }
-  gui << Canvas3D().handle("draw").minSize(16,12)
-      << (VBox().maxSize(15,99).minSize(15,1)
-          << Combo(fd.getIntermediateImageNames()).handle("vis").label("visualized image")
-          << Prop("fd")
+  gui << ui::Canvas3D({.handle="draw", .minSize={16, 12}})
+      << (ui::VBox({.minSize={15, 1}, .maxSize={15, 99}})
+          << ui::Combo(fd.getIntermediateImageNames(), {.handle="vis", .label="visualized image"})
+          << ui::Prop("fd")
           )
-      <<Show();
+      <<ui::Show();
 }
 
 

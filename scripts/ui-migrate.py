@@ -204,7 +204,8 @@ def convert_chain(text, name_start, name, skips, lineno):
             k += 1
         if k >= len(text) or text[k] != '.':
             break
-        m = re.match(r'\.([A-Za-z_]\w*)\s*\(', text[k:])
+        # allow the access dot to trail the previous line: `foo.\n  bar(`
+        m = re.match(r'\.\s*([A-Za-z_]\w*)\s*\(', text[k:])
         if not m:
             break
         sname = m.group(1)

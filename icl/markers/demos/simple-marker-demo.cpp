@@ -30,6 +30,7 @@
  ********************************************************************/
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPluginBCH.h>
 
@@ -41,13 +42,12 @@ void init() {
 
   fid.setConfigurableID("fid");
   gui
-      << (VSplit()
-          << (HBox() << CamCfg("") << Canvas().handle("draw").minSize(16, 12)
-              << Canvas().handle("regionsImg").minSize(16, 12))
-          << (HBox() << Canvas().handle("heuristicsImg").minSize(16, 12)
-              << Canvas().handle("quadImg").minSize(16, 12)))
-      << Prop("fid").label("detection properties").maxSize(18, 100).minSize(14,
-          1) << Show();
+      << (ui::VSplit()
+          << (ui::HBox() << ui::CamCfg() << ui::Canvas({.handle="draw", .minSize={16, 12}})
+              << ui::Canvas({.handle="regionsImg", .minSize={16, 12}}))
+          << (ui::HBox() << ui::Canvas({.handle="heuristicsImg", .minSize={16, 12}})
+              << ui::Canvas({.handle="quadImg", .minSize={16, 12}})))
+      << ui::Prop("fid", {.label="detection properties", .minSize={14, 1}, .maxSize={18, 100}}) << ui::Show();
 
   grabber.init(pa("-input"));
 }

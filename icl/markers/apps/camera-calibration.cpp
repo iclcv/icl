@@ -10,6 +10,7 @@
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
 #include <icl/qt/AdjustGridMouseHandler.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/CoplanarPointPoseEstimator.h>
 
 #include <QMessageBox>
@@ -153,58 +154,57 @@ void init(){
   grabber.init(pa("-i"));
   if(pa("-s")) grabber.useDesired(pa("-s").as<Size>());
 
-  gui << Canvas3D().handle("draw").minSize(32,24);
+  gui << ui::Canvas3D({.handle="draw", .minSize={32, 24}});
 
   markerDetectionOptionGUI = Tab(cat(calibFileData.configurables,","));
 
   for(unsigned int i=0;i<calibFileData.configurables.size();++i){
-    markerDetectionOptionGUI << Prop(calibFileData.configurables[i]);
+    markerDetectionOptionGUI << ui::Prop(calibFileData.configurables[i]);
   }
 
-  gui << ( VBox().minSize(14,28).maxSize(14,100)
-           << (VBox().label("visualization").minSize(1,5)
-               << ( HBox().maxSize(100,3).minSize(1,3)
-                    << Combo(calibFileData.iin).handle("iin").label("visualized image")
-                    << Slider(0,255,128).handle("objAlpha").label("object-alpha")
+  gui << ( ui::VBox({.minSize={14, 28}, .maxSize={14, 100}})
+           << (ui::VBox({.label="visualization", .minSize={1, 5}})
+               << ( ui::HBox({.minSize={1, 3}, .maxSize={100, 3}})
+                    << ui::Combo(calibFileData.iin, {.handle="iin", .label="visualized image"})
+                    << ui::Slider(0, 255, 128, {.handle="objAlpha", .label="object-alpha"})
                     )
-               << ( HBox().maxSize(100,3)
-                    << CheckBox("use corners",true).handle("useCorners")
-                    << CheckBox("show CS",false).handle("showCS")
+               << ( ui::HBox({.maxSize={100, 3}})
+                    << ui::CheckBox("use corners", {.checked=true, .handle="useCorners"})
+                    << ui::CheckBox("show CS", {.checked=false, .handle="showCS"})
                     )
                )
-           << ( VBox().label("more options").minSize(1,6).maxSize(100,6)
-                << ( HBox().maxSize(99,2)
-                     << Button("plane").handle("show-plane-options")
-                     << Button("markers").handle("show-marker-detection-options")
+           << ( ui::VBox({.label="more options", .minSize={1, 6}, .maxSize={100, 6}})
+                << ( ui::HBox({.maxSize={99, 2}})
+                     << ui::Button("plane", {.handle="show-plane-options"})
+                     << ui::Button("markers", {.handle="show-marker-detection-options"})
                      )
-                << ( HBox().maxSize(99,2)
-                     << Button("rel. Transf.").handle("showRelTransGUI")
-                     << CamCfg()
+                << ( ui::HBox({.maxSize={99, 2}})
+                     << ui::Button("rel. Transf.", {.handle="showRelTransGUI"})
+                     << ui::CamCfg()
                      )
-                << CheckBox("manually define marker grids").handle("manual mode")
+                << ui::CheckBox("manually define marker grids", {.handle="manual mode"})
                 )
-           << (VScroll().label("calibration objects")
+           << (ui::VScroll({.label="calibration objects"})
                << calibFileData.objGUI
                )
-           << (HBox().maxSize(100,4)
-               << ( VBox()
-                    << CheckBox("nomalized error",true).handle("errNormalized").tooltip("if checked, the total calibration error\n"
+           << (ui::HBox({.maxSize={100, 4}})
+               << ( ui::VBox()
+                    << ui::CheckBox("nomalized error", {.checked=true, .handle="errNormalized", .tooltip="if checked, the total calibration error\n"
                                                                                      "is not devided by the number of calibration points N,\n"
                                                                                      "but by N^2 in order to avoid favoring frames where\n"
-                                                                                     "only few markers were found.")
+                                                                                     "only few markers were found."})
 
-                    << Label().handle("error").label("error").tooltip("The error is given by the mean square distance\n"
+                    << ui::Label({.handle="error", .label="error", .tooltip="The error is given by the mean square distance\n"
                                                                       "of the actually detected points and the points\n"
                                                                       "that are projected into the scene using the\n"
                                                                       "current camera calibration result\n"
                                                                       "If 'normalized error' is checked, the sum of the\n"
                                                                       "is not normalized by the number of points N\n"
                                                                       "but by N^2. To make the error comparable, it is\n"
-                                                                      "also mutiplied by 100 in this case.")
+                                                                      "also mutiplied by 100 in this case."})
                     )
-               << (VBox()
-                   << Combo("default,!extr").label("opt. mode").
-                      handle("extr").hideIf(!knownIntrinsicCameraParams).tooltip("in case you passed the program argument "
+               << (ui::VBox()
+                   << ui::Combo("default,!extr", {.handle="extr", .label="opt. mode", .tooltip="in case you passed the program argument "
                                                                                  "<i>\"-intr FILENAME\"</i> to the "
                                                                                  "icl-camera-calibration application, "
                                                                                  "you can here define whether to perform "
@@ -213,57 +213,57 @@ void init(){
                                                                                  "to obtain more optimized extrinsic "
                                                                                  "calibration results. The lma mode will add an "
                                                                                  "additional levenberg-marquardt base "
-                                                                                 "optimization step.")
-                   << CheckBox("use lma",true).handle("lma").tooltip("perform 2nd tier LMA-based optrimization to minimize projection error.")
+                                                                                 "optimization step.", .hide=!knownIntrinsicCameraParams})
+                   << ui::CheckBox("use lma", {.checked=true, .handle="lma", .tooltip="perform 2nd tier LMA-based optrimization to minimize projection error."})
                    )
                )
-           << Label("ready..").minSize(1,2).maxSize(100,2).label("detection status").handle("status")
-           << ( VBox().maxSize(100,6).minSize(1,6)
-                << ( HBox()
-                     << Spinner(1,10000,10).handle("save_num_frames").label("# frames").tooltip("When you press save, "
+           << ui::Label("ready..", {.handle="status", .label="detection status", .minSize={1, 2}, .maxSize={100, 2}})
+           << ( ui::VBox({.minSize={1, 6}, .maxSize={100, 6}})
+                << ( ui::HBox()
+                     << ui::Spinner(1, 10000, 10, {.handle="save_num_frames", .label="# frames", .tooltip="When you press save, "
                                                                                              "the system will\ncapture "
                                                                                              "that many frames to find\nan "
-                                                                                             "optimal calibration result")
-                     << Button("save").handle("save")
-                     << Button("stop").handle("save_stop")
+                                                                                             "optimal calibration result"})
+                     << ui::Button("save", {.handle="save"})
+                     << ui::Button("stop", {.handle="save_stop"})
                      )
-                << ( HBox()
-                     << Label("10").handle("save_remaining_frames").label("remaining")
-                     << Label().handle("save_best_error").label("best error")
+                << ( ui::HBox()
+                     << ui::Label("10", {.handle="save_remaining_frames", .label="remaining"})
+                     << ui::Label({.handle="save_best_error", .label="best error"})
                    )
                )
            )
-      << Show();
+      << ui::Show();
 
-  planeOptionGUI << ( HBox()
-                      << Combo("none,x,y,z").label("normal").handle("planeDim")
-                      << Float(-10000,10000,0).label("offset mm").handle("planeOffset")
+  planeOptionGUI << ( ui::HBox()
+                      << ui::Combo("none,x,y,z", {.handle="planeDim", .label="normal"})
+                      << ui::Float(-10000, 10000, 0, {.handle="planeOffset", .label="offset mm"})
                       )
-                 << ( HBox()
-                      << Combo("100,200,500,!1000,2000,3000,5000,10000").label("radius mm").handle("planeRadius")
-                      << Float(1,1000,10).label("tic distance mm").handle("planeTicDist")
+                 << ( ui::HBox()
+                      << ui::Combo("100,200,500,!1000,2000,3000,5000,10000", {.handle="planeRadius", .label="radius mm"})
+                      << ui::Float(1, 1000, 10, {.handle="planeTicDist", .label="tic distance mm"})
                       )
-                 << ( HBox()
-                      << Label().handle("planeStatus").label("status")
-                      << ColorSelect(40,40,40,255).handle("planeColor").label("color")
+                 << ( ui::HBox()
+                      << ui::Label({.handle="planeStatus", .label="status"})
+                      << ui::ColorSelect(40, 40, 40, {.alpha=255, .handle="planeColor", .label="color"})
                       )
-                 << Create();
+                 << ui::Create();
 
 
-  relTransGUI << ( VBox().label("rel-transformation")
-                   << ( HBox()
-                        << Spinner(0,8,0).label("x-rotation *pi/4").handle("rx")
-                        << Spinner(0,8,0).label("y-rotation *pi/4").handle("ry")
-                        << Spinner(0,8,0).label("z-rotation *pi/4").handle("rz")
+  relTransGUI << ( ui::VBox({.label="rel-transformation"})
+                   << ( ui::HBox()
+                        << ui::Spinner(0, 8, 0, {.handle="rx", .label="x-rotation *pi/4"})
+                        << ui::Spinner(0, 8, 0, {.handle="ry", .label="y-rotation *pi/4"})
+                        << ui::Spinner(0, 8, 0, {.handle="rz", .label="z-rotation *pi/4"})
                         )
-                   << ( HBox()
-                        << Float(-100000,100000,0).label("x-offset").handle("tx")
-                        << Float(-100000,100000,0).label("y-offset").handle("ty")
-                        << Float(-100000,100000,0).label("z-offset").handle("tz")
+                   << ( ui::HBox()
+                        << ui::Float(-100000, 100000, 0, {.handle="tx", .label="x-offset"})
+                        << ui::Float(-100000, 100000, 0, {.handle="ty", .label="y-offset"})
+                        << ui::Float(-100000, 100000, 0, {.handle="tz", .label="z-offset"})
                         )
                    )
-              << Button("show transformation matrix").handle("showRelTrans")
-              << Create();
+              << ui::Button("show transformation matrix", {.handle="showRelTrans"})
+              << ui::Create();
 
 
   markerDetectionOptionGUI.create();
