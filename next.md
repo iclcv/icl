@@ -2,50 +2,58 @@
 
 ## Next Step
 
-**io modernization is DONE.**  The immediate next task is the **qt::ui::
-migration** (Phase 6 of `ui-plan.md`) — port existing GUI call sites from the
-legacy fluent builder to the `qt::ui::` designated-init syntax **via a
-converter script**, not by hand.
+**io modernization is DONE.  qt::ui:: app/demo migration is DONE** (Session 68;
+`ui-plan.md` Phases 1–6 all landed).  Every legacy fluent GUI chain in
+`apps/`/`demos/`/`examples/` is now on the `qt::ui::` designated-init syntax
+— the converter dry-run reports `0 chains, 0 skips` across all 111 GUI files.
 
 Branch `further-restructuring-and-cleanup`; 877/877 tests green; build clean
 (`CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C builddir -j 16`).
 Note: SSH/git push is blocked in this sandbox — the user pushes themselves.
 
-### ui migration — agreed plan (start here next session)
+### What landed in the ui:: migration (Session 68)
 
-Landscape: ~**1290** legacy `.handle()`/`.label()` fluent-chain occurrences.
-Heaviest: `qt/GUI.cpp` (85, framework-internal), `qt/Widget.cpp` (48), then
-apps/demos (`camera-calibration` 39, `kinect-segmentation` 37, …). Far too
-much to hand-migrate (token cost, zero reasoning value) → **script it**.
+9 commits (`65ca7b04c`…`5e8d173c6`), ~**1005 fluent chains** converted:
+- **Stage 0** (`65ca7b04c`): 4 hand-converted exemplars (compressor-playground,
+  video-player, marker-detection, swiss-ranger) to harvest the rules.  Added
+  **`ui::ToggleButton(untoggled, toggled, initiallyToggled, {opts})`** (replaces
+  the awkward `ui::Button(..,{.toggledText=..})` form; the legacy `"!"`-prefix
+  initially-toggled marker folds into the explicit bool).  Restored **primary
+  args to positional** for `Fps`/`State`/`Ps`/`Canvas`/`Canvas3D` (timeWindow /
+  maxLines / updateFPS / viewport) via the two-ctor pattern — only optional
+  tuning belongs in the `{.foo=bar}` pack.  See `project_ui_namespace_endgame`.
+- **Stage 1** (`325da3297`): `scripts/ui-migrate.py` — conservative,
+  spec-driven converter.  Per-component positional arity + trailing-ctor-arg →
+  Opts maps + struct-field order (avoids `-Wreorder-init-list`).  Default
+  dry-run; `--apply` writes + adds the `ui.h` include.  Only `Plot` is
+  intentionally unsupported (opts-only, two overloads).
+- **Stage 2** (6 module batches, `2da8219d4`…`341ab1bbc`): qt 80, cv 186,
+  geom+geom2 359, markers 124, filter+math+core 163, io+physics 75.
+  Two gaps the rollout surfaced + fixed: `ui::Label` needed an opts-only ctor
+  (`Label().handle("x")` → `ui::Label({.handle="x"})`); converter setter-scan
+  now tolerates the access dot trailing a line (`x.label("..").`⏎`handle("..")`).
+- **Plot finish** (`5e8d173c6`): the 18 `Plot` sites hand-converted (float
+  ranges → `.minX/.maxX/.minY/.maxY`, all-zero range omitted, `gl`→`.openGL`).
+  Two braced-init narrowing fixes (`pa(..).as<float>()`, `utils::Size(..)`).
 
-- **Stage 0 (do first): exemplary hand-conversions.**  Pick ~4 apps covering
-  every tricky transform, hand-convert + compile + run, harvest the exact
-  rules: (1) a plain Slider/Button/Display + `.handle/.label`; (2) **Label**
-  (positional text vs the `.label` *border* field); (3) **containers**
-  (`gui << (VBox() << a << b)`, `Tab`/`Border`); (4) **Prop/CamCfg** incl.
-  the pointer-encoded `Prop(&cfg)` form; plus a **toggle Button**
-  (`Button("off","on")` → `.toggledText`).
-- **Stage 1: build the converter script** (Python).  `Component(posargs)
-  .setterA(x).setterB(y)…` (multi-line, inside `<<` streams) →
-  `ui::Component(posargs, {.A=x,.B=y,…})`.  Per-component setter→Opts maps;
-  shared common setters (handle/label/tooltip/size/minSize/maxSize/hide).
-  **Be conservative**: only rewrite chains it fully understands (balanced
-  parens, comma-bearing string args); *emit a report of skipped sites* for
-  manual follow-up.  Compile-verify each file.
-- **Stage 2: rollout** module by module (qt → cv → geom → markers → filter →
-  physics → io-apps), compile + run one app per module per batch.  Legacy and
-  `ui::` coexist, so every intermediate state stays green.
+### ui:: follow-ups (NOT done)
 
-**Two open decisions (ask the user):**
-1. *Sequencing vs Phase 7* (GUIComponent string-round-trip → typed-dispatch
-   rework, TODO.md:~140).  Migration is decoupled and can run anytime, but its
-   payoff compounds *after* Phase 7 (when `ui::Xxx` becomes the storage type).
-   Lean: do Stage 0 now (validates the script design), then decide whether to
-   run the full script now or park until Phase 7.
-2. *Scope of `GUI.cpp`/`Widget.cpp`* — framework internals, not apps. In or out?
+- **Framework internals still on legacy** — `qt/GUI.cpp` (~85) and
+  `qt/Widget.cpp` (~48) build the GUI machinery the `ui::` layer sits on; the
+  converter targets only `apps/`/`demos/`/`examples/`.  User said internals are
+  in-scope eventually; they're the natural lead-in to Phase 7.
+- **Phase 7 — string round-trip retirement** (separate arc, TODO.md "Rework
+  GUIComponent internal representation").  Once `ui::Xxx` becomes the storage
+  type and `qt::Xxx`/`toString()`/`GUIDefinition` parsing fall away, the
+  endgame (memory `project_ui_namespace_endgame`) is to **promote `ui::Xxx`
+  into `icl::qt`** and strip the `ui::` qualifier — call sites write plain
+  `Slider(...)` again.  MUST come after legacy retirement (else name clash).
+- **`ui::Plot` ergonomics** — opts-only today; if `Plot` gets used a lot,
+  consider a positional `(minX,maxX,minY,maxY)` form, but four bare floats read
+  worse than designators, so probably leave it.
 
-Refs: `ui-plan.md` (Phases 1–5 LANDED Session 59; only the `ui-syntax` demo
-uses the new syntax today), TODO.md "Port apps/demos to the qt::ui::" item.
+Refs: `ui-plan.md` (Phases 1–6 LANDED), `scripts/ui-migrate.py`,
+memory `project_ui_namespace_endgame`.
 
 ### What landed in the io modernization (Sessions 65–67)
 

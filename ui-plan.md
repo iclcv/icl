@@ -232,11 +232,30 @@ positional CSV.
 `qt::Show()` / `qt::Create()` / `qt::Dummy()`.  Routed through the
 existing `ui::Component` concept since they expose `toComponent()`.
 
-### Phase 6 — Docs + migration exemplar
+### Phase 6 — Migration — ✅ LANDED (Session 68)
 
-- Update the ICL manual's GUI chapter with the new syntax.
-- Port *one* demo end-to-end from legacy to `ui::` as an exemplar.
-- Leave the 155 existing call sites on legacy — migration is opt-in.
+Went well beyond the original "one exemplar" plan: **all** app/demo/example
+call sites migrated via a scripted rollout (the legacy fluent builder is no
+longer used anywhere outside framework internals).
+
+- **Stage 0** — 4 hand-converted exemplars (compressor-playground,
+  video-player, marker-detection, swiss-ranger) to harvest the transform
+  rules.  Two `ui.h` refinements fell out: added **`ui::ToggleButton`**
+  (self-documenting two-state button; legacy `"!"`-prefix folds into the
+  explicit `initiallyToggled` bool), and restored **primary args to
+  positional** for `Fps`/`State`/`Ps`/`Canvas`/`Canvas3D` (two-ctor pattern:
+  opts-only ctor + positional ctor with no default on the primary arg).
+- **Stage 1** — `scripts/ui-migrate.py`, a conservative spec-driven converter
+  (per-component positional arity + trailing-ctor-arg/setter → Opts, emitted
+  in struct-field order).  Only `Plot` is intentionally skipped.
+- **Stage 2** — 6 module batches (qt/cv/geom/markers/filter+math+core/
+  io+physics), ~987 chains; the 18 `Plot` sites then hand-converted.  Two
+  gaps surfaced + fixed: `ui::Label` opts-only ctor; converter now tolerates
+  the access dot trailing a line.
+- ~1005 chains total, 877/877 tests green.  Manual GUI-chapter update still
+  pending (low priority).
+
+Still legacy (by scope): `qt/GUI.cpp` + `qt/Widget.cpp` framework internals.
 
 ### Phase 7 — (optional, much later) String round-trip retirement
 
@@ -268,5 +287,8 @@ fall away.
 - [x] Phase 3 — display + canvas + introspection (11 components)
 - [x] Phase 4 — containers + child-streaming (7 containers; Border dropped)
 - [x] Phase 5 — finalizers (3 components)
-- [ ] Phase 6 — docs + exemplar demo migration
-- [ ] Phase 7 — (separate arc) string round-trip retirement
+- [x] Phase 6 — full scripted migration of all apps/demos/examples (Session 68;
+      ToggleButton + positional-primary-arg refinements; only GUI.cpp/Widget.cpp
+      internals remain on legacy; manual GUI chapter still TODO)
+- [ ] Phase 7 — (separate arc) string round-trip retirement → then promote
+      `ui::Xxx` into `icl::qt` + strip the qualifier (`project_ui_namespace_endgame`)
