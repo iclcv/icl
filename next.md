@@ -11,6 +11,59 @@ Branch `further-restructuring-and-cleanup`; 877/877 tests green; build clean
 (`CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C builddir -j 16`).
 Note: SSH/git push is blocked in this sandbox — the user pushes themselves.
 
+### TODO: phase out `geom` → `geom2` (new rendering pipeline)
+
+`geom2` (clean scene-graph: `Scene2`/`Node`/`GroupNode`/`GeometryNode`/`MeshNode`
++ GL 4.1 Core `Renderer`) is now the canonical rendering pipeline. The legacy
+`geom::Scene`/`SceneObject` GL path is effectively dead: `Application.cpp` forces
+a Core-Profile default `QSurfaceFormat`, so `Scene::getGLCallback` always
+dispatches to the (incomplete) `geom::GLRenderer` — legacy `renderScene` never
+runs, and offscreen `Scene::render()` is unimplemented in the new pipeline.
+Net effect: anything still rendering through `geom::Scene` shows only the sky
+gradient (objects don't draw). Surfaced while building `physics-water-rocket`
+(now rendered via `geom2`, mirroring Bullet poses into geom2 nodes each frame).
+
+Work to do:
+- **Port ICLPhysics visualization to geom2.** `PhysicsScene : geom::Scene +
+  PhysicsWorld` renders through the dead `geom::Scene` path, so all physics demos
+  currently draw blank. Provide a `geom2`-based render path for physics — either a
+  new `Physics`-aware `Scene2` integration, or formalize the "simulate in
+  `PhysicsWorld`, render in `Scene2`, sync each rigid body's Bullet pose into a
+  geom2 node (and soft-body nodes into a `MeshNode`) per frame" bridge that
+  `physics-water-rocket.cpp` demonstrates. Migrate the other physics demos onto it.
+- Port the remaining `geom::Scene`-based modules/demos/apps to `geom2`
+  (markers + geom demos still use `geom::Scene`).
+- Decide the fate of `geom::Scene`/`SceneObject`/`GLRenderer`: either finish the
+  core-profile `GLRenderer` or delete the legacy scene layer once `geom2` covers
+  all call sites.
+- Until ported, `geom::Scene` demos render blank — track which demos are affected.
+
+geom2 gaps surfaced while building `physics-water-rocket`:
+- **`MeshNode` dynamic geometry doesn't auto-invalidate the render cache.** The
+  `Renderer` caches each `GeometryNode`'s GL buffers on first build and only
+  rebuilds on a global `Renderer::invalidateCache()`. Mutating `MeshNode`
+  vertices per frame (cloth, soft bodies, point clouds) changes the data but the
+  canopy draws frozen until you call the global invalidate (which rebuilds *all*
+  nodes). Add a per-node dirty flag / `MeshNode::markGeometryDirty()` (or bump a
+  geometry version the cache compares) so dynamic meshes re-upload only themselves.
+- **`Scene::render()` (offscreen pbuffer) is unimplemented in the core-profile
+  pipeline** — port it onto `geom2`/`GLRenderer` so headless render-to-`Img`
+  works again (needed for tests/CI and offscreen tools).
+
+### Future: parachute / soft-body deployment in `physics-water-rocket`
+
+The demo renders a real Bullet soft-body canopy (round, vented, soft-body shroud
+lines) that billows and descends well — but it deploys **already open**. True
+*airstream self-inflation from a packed bundle* is **not feasible with Bullet's
+soft-body aero** (`V_TwoSided` is a crude per-face drag/lift approximation — no
+pressure field, no air actually entering the canopy). Doing it properly needs
+soft-body **self-collision** (so folds don't tunnel; expensive/unstable in
+Bullet) or real **fluid-structure interaction / CFD coupling**. Pragmatic middle
+ground if a deployment *animation* is ever wanted: scripted assist (rest-length
+release or a packed→open position blend over ~1–2 s) — reads convincingly but is
+not emergent. See the Session notes; the soft-body bridge pattern lives in
+`icl/physics/demos/physics-water-rocket.cpp`.
+
 ### What landed in the ui:: migration (Session 68)
 
 9 commits (`65ca7b04c`…`5e8d173c6`), ~**1005 fluent chains** converted:
