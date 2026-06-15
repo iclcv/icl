@@ -5,6 +5,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/geom/Geom.h>
 #include <icl/qt/GLFragmentShader.h>
+#include <icl/qt/ui.h>
 #include <icl/physics/PhysicsPaper3MouseHandler.h>
 #include <icl/physics/PhysicsPaper3.h>
 #include "physics-paper-DefaultGroundObject.h"
@@ -56,23 +57,23 @@ void init(){
                                                  0,1)));
   scene.setBounds(1000);
 
-  gui << Canvas3D().handle("draw3D").minSize(32,24)
-      << (VBox().minSize(12,1).maxSize(12,99)
-          << CheckBox("physics on",true).handle("physics on")
-          << CheckBox("gravity on",true).handle("gravity on")
-          << CheckBox("vis lines",true).handle("vis lines")
-          << CheckBox("vis drag",false).handle("vis drag")
-          << CheckBox("vis 2nd order links",false).handle("vis links")
-          << Button("pos interp. test").handle("test")
-          << Button("hit  test").handle("hit test")
-          << Button("link add test").handle("link test")
-          << Button("view ray test").handle("vr")
-          << Button("reset model").handle("reset")
-          << FSlider(1,20,10).handle("f").label("move force")
-          << FSlider(0.01,1,0.25).handle("r").label("move radius")
-          << Display().label("fold map").handle("fm").minSize(8,8)
+  gui << ui::Canvas3D({.handle="draw3D", .minSize={32, 24}})
+      << (ui::VBox({.minSize={12, 1}, .maxSize={12, 99}})
+          << ui::CheckBox("physics on", {.checked=true, .handle="physics on"})
+          << ui::CheckBox("gravity on", {.checked=true, .handle="gravity on"})
+          << ui::CheckBox("vis lines", {.checked=true, .handle="vis lines"})
+          << ui::CheckBox("vis drag", {.checked=false, .handle="vis drag"})
+          << ui::CheckBox("vis 2nd order links", {.checked=false, .handle="vis links"})
+          << ui::Button("pos interp. test", {.handle="test"})
+          << ui::Button("hit  test", {.handle="hit test"})
+          << ui::Button("link add test", {.handle="link test"})
+          << ui::Button("view ray test", {.handle="vr"})
+          << ui::Button("reset model", {.handle="reset"})
+          << ui::FSlider(1, 20, 10, {.handle="f", .label="move force"})
+          << ui::FSlider(0.01, 1, 0.25, {.handle="r", .label="move radius"})
+          << ui::Display({.handle="fm", .label="fold map", .minSize={8, 8}})
          )
-      << Show();
+      << ui::Show();
 
   mouse = new PhysicsPaper3MouseHandler(model,&scene);
 

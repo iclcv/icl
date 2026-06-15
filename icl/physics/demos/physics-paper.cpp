@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
 
 #include <icl/physics/PhysicsDefs.h>
@@ -122,40 +123,40 @@ void init(){
     scene.setDrawCamerasEnabled(false);
   }
 
-  gui << Canvas3D(Size::VGA).minSize(32,24).handle("draw")
-      << (VBox().maxSize(12,100).minSize(12,1)
-          << ( HBox()
-               << Fps(10).handle("fps")
-               << Button("add clutter").handle("add")
+  gui << ui::Canvas3D(Size::VGA, {.handle="draw", .minSize={32, 24}})
+      << (ui::VBox({.minSize={12, 1}, .maxSize={12, 100}})
+          << ( ui::HBox()
+               << ui::Fps(10, {.handle="fps"})
+               << ui::Button("add clutter", {.handle="add"})
                )
-          << ( HBox()
-               << Button("stopped","running",true).handle("run")
-               << Button("paper ...").handle("props")
+          << ( ui::HBox()
+               << ui::ToggleButton("stopped", "running", true, {.handle="run"})
+               << ui::Button("paper ...", {.handle="props"})
                )
-          << ( HBox()
-               << CheckBox("show cubes").handle("showCubes")
-               << CheckBox("show texture",false).handle("showTexture")
-               << CheckBox("show links",false).handle("showLinks")
+          << ( ui::HBox()
+               << ui::CheckBox("show cubes", {.handle="showCubes"})
+               << ui::CheckBox("show texture", {.checked=false, .handle="showTexture"})
+               << ui::CheckBox("show links", {.checked=false, .handle="showLinks"})
              )
-          << FSlider(0,1,0.5).handle("vertexMoveFactor").label("manual force")
-          << FSlider(1,100,10).handle("attractorStreangth").label("attractor force")
-          << FSlider(0.0001,0.9999,0.9).handle("globalStiffness").label("global paper stiffness")
-          << ( HBox()
-               << Button("reset paper").handle("resetPaper")
-               << Combo("1,5,10,25,!200,300,500").handle("maxFPS").label("max FPS")
+          << ui::FSlider(0, 1, 0.5, {.handle="vertexMoveFactor", .label="manual force"})
+          << ui::FSlider(1, 100, 10, {.handle="attractorStreangth", .label="attractor force"})
+          << ui::FSlider(0.0001, 0.9999, 0.9, {.handle="globalStiffness", .label="global paper stiffness"})
+          << ( ui::HBox()
+               << ui::Button("reset paper", {.handle="resetPaper"})
+               << ui::Combo("1,5,10,25,!200,300,500", {.handle="maxFPS", .label="max FPS"})
                )
-          << FSlider(0.1,20,2).handle("cm").label("collision margin")
+          << ui::FSlider(0.1, 20, 2, {.handle="cm", .label="collision margin"})
 
-          << ( HBox()
-               << Button("memorize").handle("mem")
-               << CheckBox("soften with mouse",true).handle("soften")
-               << Button("test").handle("pct")
+          << ( ui::HBox()
+               << ui::Button("memorize", {.handle="mem"})
+               << ui::CheckBox("soften with mouse", {.checked=true, .handle="soften"})
+               << ui::Button("test", {.handle="pct"})
              )
           )
 
-      << Show();
+      << ui::Show();
 
-  propGUI << Prop("paper").minSize(16,1).maxSize(16,100) << Create();
+  propGUI << ui::Prop("paper", {.minSize={16, 1}, .maxSize={16, 100}}) << ui::Create();
 
   gui["pct"].registerCallback(paper_coords_test);
   gui["props"].registerCallback([]{ propGUI.switchVisibility(); });

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/io/sink/ImageSink.h>
 #include <icl/utils/File.h>
 
@@ -104,7 +105,7 @@ void init(){
     if(pa("-f")) in.source.useDesired(pa("-f").as<format>());
     if(pa("-d")) in.source.useDesired(pa("-d").as<depth>());
 
-    rows[i/layout.width] << Display().label(in.id + ": "+in.a+" "+fix_at_stuff(in.b)).handle(in.id);
+    rows[i/layout.width] << ui::Display({.handle=in.id, .label=in.id + ": "+in.a+" "+fix_at_stuff(in.b)});
 
     if(pa("-o")){
       ProgArg o = pa("-o");
@@ -129,19 +130,19 @@ void init(){
       }
       inputs[0].source.syncChangesTo(&inputs[i].source);
     }
-    camcfg << CamCfg();//inputs[0].a+","+inputs[0].b);
+    camcfg << ui::CamCfg();//inputs[0].a+","+inputs[0].b);
   }else{
-    camcfg << CamCfg();
+    camcfg << ui::CamCfg();
   }
 
 
-  gui << ( HBox().minSize(0,2).maxSize(99,2)
-           << Button("stopped","running",true).handle("on")
+  gui << ( ui::HBox({.minSize={0, 2}, .maxSize={99, 2}})
+           << ui::ToggleButton("stopped", "running", true, {.handle="on"})
            << camcfg
-           << Fps(10).handle("fps")
-           << Button("save").handle("save")
+           << ui::Fps(10, {.handle="fps"})
+           << ui::Button("save", {.handle="save"})
          )
-      <<   Show();
+      <<   ui::Show();
 
   for(int i=0;i<nInputs;++i){
     Input &in = inputs[i];

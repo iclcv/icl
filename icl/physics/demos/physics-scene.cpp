@@ -5,6 +5,7 @@
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 
 #include <icl/physics/PhysicsScene.h>
 #include <icl/physics/RigidBoxObject.h>
@@ -28,7 +29,7 @@ PhysicsScene scene;
 PhysicsMouseHandler handler(0,&scene);
 
 void init(){
-  gui << Canvas3D().handle("draw") << Show();
+  gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
   scene.addCamera(cam);
 
   table.setMaterial(Material::fromColor(geom_red()));

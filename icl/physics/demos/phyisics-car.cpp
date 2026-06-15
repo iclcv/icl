@@ -5,6 +5,7 @@
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 
 #include <icl/physics/PhysicsScene.h>
 #include <icl/physics/RigidBoxObject.h>
@@ -26,7 +27,7 @@ PhysicsScene scene;
 PhysicsMouseHandler handler(0,&scene);
 
 void init(){
-  gui << Canvas3D().handle("draw") << Show();
+  gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
   scene.addCamera(cam);
   RigidBoxObject *ground = new RigidBoxObject(0,0,-200, 5000, 5000, 200, 0);
   Vec car_size(100,200,70);

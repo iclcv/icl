@@ -1,5 +1,6 @@
 #include <icl/geom/Geom.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <algorithm>
 #include <icl/physics/PhysicsScene.h>
 #include <icl/physics/RigidBoxObject.h>
@@ -22,7 +23,7 @@ void init(){
   scene.addCamera(cam);
   maze = new MazeObject();
   maze->addToWorld(&scene);
-  gui << Canvas3D().handle("draw") << Show();
+  gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
   gui["draw"].install(&handler);
   gui["draw"].link(scene.getGLCallback(0));
   scene.setGravity(Vec(0,0,-10000));

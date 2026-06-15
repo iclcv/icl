@@ -5,6 +5,7 @@
 #include <icl/geom/Geom.h>
 #include <icl/geom/Material.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 
 #include <icl/physics/PhysicsScene.h>
 #include <icl/physics/RigidBoxObject.h>
@@ -25,7 +26,7 @@ PhysicsScene scene;
 PhysicsMouseHandler handler(0,&scene);
 
 void init(){
-  gui << Canvas3D().handle("draw") << Show();
+  gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
   scene.addCamera(cam);
 
   RigidBoxObject *door = new RigidBoxObject(0,115,200, 20, 200, 390, 0.1);
