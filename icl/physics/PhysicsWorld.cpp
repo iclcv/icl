@@ -71,7 +71,12 @@ namespace icl::physics {
 
       const bool DISPATCHER_ENABLE_SPU = true;
 
-      const float WORLD_AIR_DENSITY = 1.2;
+      // 1.2 kg/m^3, converted to Bullet's internal length unit (a length of
+      // METER_TO_BULLET_UNIT meters). Density is mass/length^3, so it scales by
+      // METER_TO_BULLET_UNIT^3 — without this the soft-body aerodynamic drag is
+      // ~1000x too strong (parachutes hover instead of descending).
+      const float WORLD_AIR_DENSITY =
+          1.2 * METER_TO_BULLET_UNIT * METER_TO_BULLET_UNIT * METER_TO_BULLET_UNIT;
 
 			data->timeDelta = 0.0;
 
