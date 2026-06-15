@@ -214,7 +214,7 @@ void init(){
                << ui::Button("accumulate frames ...", {.handle="cap", .tooltip="allows a set of frames to be accumulated to get a better relative result"})
                << ui::Label("0", {.handle="ncap", .tooltip="Number of currenly captured frames. <b>Please note:</b> if this number is larger than 0, the internally captured frames are used for calibration (and not the current frame)", .maxSize={3, 2}})
                )
-           << Plot().handle("variancePlot").label("10-frame pose std-deviation")
+           << ui::Plot({.handle="variancePlot", .label="10-frame pose std-deviation"})
            << ui::Button("save calibration", {.handle="save", .tooltip="saves the calibration file of the current view's camera"})
            << ui::Button("save relative calibration", {.handle="saveRel", .tooltip="saves the calibration file of the current view's "
                                                                             "camera <b>and</b> the relative calibrations of all "

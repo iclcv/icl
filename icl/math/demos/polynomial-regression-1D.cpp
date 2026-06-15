@@ -29,7 +29,7 @@ std::string polyFunc(int degree) {
 }
 
 void init(){
-  gui << Plot().handle("plot").minSize(50,35)
+  gui << ui::Plot({.handle="plot", .minSize={50,35}})
       << ( ui::VBox({.minSize={14, 1}})
            << ui::Slider(1, 7, 3, {.handle="degree", .label="polynomial degree"})
            << ui::Label("--", {.handle="fused", .label="function"})

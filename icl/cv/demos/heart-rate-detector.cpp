@@ -57,7 +57,7 @@ void init(){
           )
 
       << (ui::HBox()
-          <<Plot(0,pa("-historydepth"),0,1,gl).handle("plot1").minSize(15,12)
+          << ui::Plot({.minX=0, .maxX=pa("-historydepth").as<float>(), .minY=0, .maxY=1, .openGL=gl, .handle="plot1", .minSize={15,12}})
           )
       << ui::Show();
 

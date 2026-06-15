@@ -10,7 +10,7 @@
 GUI gui;
 
 void init(){
-  gui << Plot().handle("plot").minSize(64*0.7,48*0.7) << ui::Show();
+  gui << ui::Plot({.handle="plot", .minSize=utils::Size(64*0.7,48*0.7)}) << ui::Show();
 
   PlotHandle plot = gui["plot"];
 

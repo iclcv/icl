@@ -123,7 +123,7 @@ void compute(){
 }
 
 void init(){
-  gui << Plot().handle("plot").minSize(30,30)
+  gui << ui::Plot({.handle="plot", .minSize={30,30}})
       << (ui::VBox()
           << ui::Combo("line,circle", {.handle="what"})
           << ui::CheckBox("ransac", {.handle="ransac"})

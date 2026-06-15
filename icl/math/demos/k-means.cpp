@@ -44,7 +44,7 @@ void run(){
 }
 
 void init(){
-  gui << Plot().handle("plot").minSize(40,30)
+  gui << ui::Plot({.handle="plot", .minSize={40,30}})
       << ui::Button("run", {.handle="run"})
       << ui::Show();
 
