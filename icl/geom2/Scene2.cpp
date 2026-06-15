@@ -170,7 +170,9 @@ namespace icl::geom2 {
     const auto &cam = m_data->cameras[cameraIndex];
 
     // Apply configurable properties
-    core::Color4D bg = prop("background color").value;
+    // (the property is registered as a 3-component core::Color, see the ctor;
+    //  reading it into a Color4D makes AutoParse throw on the 3->4 mismatch)
+    core::Color bg = prop("background color").value;
     glClearColor(bg[0]/255.f, bg[1]/255.f, bg[2]/255.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
