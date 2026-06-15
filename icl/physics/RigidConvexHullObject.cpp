@@ -10,8 +10,18 @@
 #include <LinearMath/btDefaultMotionState.h>
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <icl/physics/MotionState.h>
+#include <numeric>
 
 namespace icl::physics {
+    namespace {
+      /// 0,1,...,n-1 — used to delegate the vertices-only ctor to the indexed one
+      std::vector<int> iotaIndices(size_t n){
+        std::vector<int> idx(n);
+        std::iota(idx.begin(), idx.end(), 0);
+        return idx;
+      }
+    }
+
     RigidConvexHullObject::RigidConvexHullObject(float x, float y, float z,
                                                                const std::vector<int> &indices, const std::vector<geom::Vec> &vertices,
                                                                geom::Vec offset,
@@ -37,12 +47,6 @@ namespace icl::physics {
     RigidConvexHullObject::RigidConvexHullObject(float x, float y, float z,
                                                                const std::vector<geom::Vec> &vertices,
                                                                geom::Vec offset,
-                                                               float mass){
-      std::vector<int> indices;
-      indices.reserve(vertices.size());
-      for(unsigned int i = 0; i < vertices.size(); i++){
-        indices.push_back(i);
-      }
-      RigidConvexHullObject(x, y, z, indices, vertices, offset, mass);
-    }
+                                                               float mass)
+      : RigidConvexHullObject(x, y, z, iotaIndices(vertices.size()), vertices, offset, mass) {}
   }
