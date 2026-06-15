@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/filter/color/PseudoColorOp.h>
 #include <mutex>
 
@@ -59,10 +60,10 @@ void step(const std::string &handle){
 
 void stop_chooser(GUI &dst, int idx, float pos, float r, float g, float b){
   std::string si = str(idx);
-  dst << ( HBox()
-           << CheckBox("use",true).handle("use"+si)
-           << FSlider(0,1,pos).handle("relPos"+si)
-           << ColorSelect(r,g,b).handle("color"+si)
+  dst << ( ui::HBox()
+           << ui::CheckBox("use", {.checked=true, .handle="use"+si})
+           << ui::FSlider(0, 1, pos, {.handle="relPos"+si})
+           << ui::ColorSelect(r, g, b, {.handle="color"+si})
          );
 }
 
@@ -72,8 +73,8 @@ void init(){
   grabber.useDesired(depth8u);
   input_img = grabber.grab();
 
-  GUI colors = ( VBox().minSize(18,1)
-                 << CheckBox("use custom gradient below").handle("custom")
+  GUI colors = ( ui::VBox({.minSize={18, 1}})
+                 << ui::CheckBox("use custom gradient below", {.handle="custom"})
                );
   stop_chooser(colors,0,0.1,0,0,0);
   stop_chooser(colors,1,0.2,0,255,0);
@@ -82,19 +83,19 @@ void init(){
   stop_chooser(colors,4,0.5,255,0,255);
   stop_chooser(colors,5,0.6,255,255,255);
 
-  colors << ( HBox()
-              << Button("load").handle("load")
-              << Button("save").handle("save")
+  colors << ( ui::HBox()
+              << ui::Button("load", {.handle="load"})
+              << ui::Button("save", {.handle="save"})
             )
-         << FSlider(0.1,10,1).handle("mult").label("range multiplier")
-         << Label("--").handle("dt").label("time");
+         << ui::FSlider(0.1, 10, 1, {.handle="mult", .label="range multiplier"})
+         << ui::Label("--", {.handle="dt", .label="time"});
 
-  gui << ( VBox()
-           << Display().handle("color").minSize(32,10)
-           << Display().handle("image").minSize(32,24)
+  gui << ( ui::VBox()
+           << ui::Display({.handle="color", .minSize={32, 10}})
+           << ui::Display({.handle="image", .minSize={32, 24}})
          )
       << colors
-      << Show();
+      << ui::Show();
 
   gui.registerCallback(step,"customH,load,save");
   for(int i=0;i<6;++i){

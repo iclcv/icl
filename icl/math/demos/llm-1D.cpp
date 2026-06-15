@@ -4,6 +4,7 @@
 
 #include <icl/math/ml/LLM.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/utils/Random.h>
 
 static LLM llm(1,1);
@@ -22,17 +23,17 @@ float func(float x){
 void init(){
   llm.setConfigurableID("llm");
 
-  gui << Canvas().minSize(40,30).label("View").handle("draw")
-      << ( VBox().minSize(15,0)
-           << Button("Train Step").handle("train")
-           << Button("Train Off","Train On").handle("train-loop")
-           << Label("NAN").handle("mse").label("mse")
-           << Prop("llm")
-           << Button("Show Kernels").handle("show-k")
-           << Button("Reset").handle("reset")
-           << Int(1,1000,10).handle("kernel-count").label("Kernel Count")
+  gui << ui::Canvas({.handle="draw", .label="View", .minSize={40, 30}})
+      << ( ui::VBox({.minSize={15, 0}})
+           << ui::Button("Train Step", {.handle="train"})
+           << ui::ToggleButton("Train Off", "Train On", false, {.handle="train-loop"})
+           << ui::Label("NAN", {.handle="mse", .label="mse"})
+           << ui::Prop("llm")
+           << ui::Button("Show Kernels", {.handle="show-k"})
+           << ui::Button("Reset", {.handle="reset"})
+           << ui::Int(1, 1000, 10, {.handle="kernel-count", .label="Kernel Count"})
          )
-      << Show();
+      << ui::Show();
 
   llm.init(10, {Range<icl32f>(MINX,MAXX)}, {5});
 }

@@ -3,13 +3,14 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/utils/Random.h>
 #include <icl/math/tree/QuadTree.h>
 
 GUI gui;
 
 void init(){
-  gui << Plot().handle("plot").minSize(64*0.7,48*0.7) << Show();
+  gui << Plot().handle("plot").minSize(64*0.7,48*0.7) << ui::Show();
 
   PlotHandle plot = gui["plot"];
 

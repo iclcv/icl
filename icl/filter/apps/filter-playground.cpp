@@ -14,6 +14,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/BoxHandle.h>
 #include <icl/qt/MouseHandler.h>
+#include <icl/qt/ui.h>
 #include <icl/filter/base/UnaryOp.h>
 #include <icl/filter/affine/AffineOp.h>
 #include <icl/filter/advanced/BilateralFilterOp.h>
@@ -135,8 +136,8 @@ static void rebuildStage(int idx, const std::string &name){
   if(st.propGUI.hasBeenCreated()){
     st.propGUI.hide();
   }
-  st.propGUI = GUI(VBox().handle("propBox_" + str(idx)));
-  st.propGUI << Prop(st.op.get()).label(name);
+  st.propGUI = GUI(ui::VBox({.handle="propBox_" + str(idx)}));
+  st.propGUI << ui::Prop(st.op.get(), {.label=name});
   st.propGUI.create();
   props.add(st.propGUI.getRootWidget());
   st.currentFilter = name;
@@ -180,11 +181,11 @@ static void onSourceMouse(const MouseEvent &e){
 // per-stage preview Display, per-stage apply-time label.
 static GUI stageColumn(int idx){
   const std::string is = str(idx);
-  return ( VBox().label("stage " + is).minSize(14, 1)
-           << Combo(filterCombo()).handle("filter_" + is).maxSize(99,2)
-           << VBox().handle("props_" + is).minSize(14,10)
-           << Display().handle("preview_" + is).minSize(14,10)
-           << Label("--").handle("dt_" + is).label("apply time").maxSize(99,2)
+  return ( ui::VBox({.label="stage " + is, .minSize={14, 1}})
+           << ui::Combo(filterCombo(), {.handle="filter_" + is, .maxSize={99, 2}})
+           << ui::VBox({.handle="props_" + is, .minSize={14, 10}})
+           << ui::Display({.handle="preview_" + is, .minSize={14, 10}})
+           << ui::Label("--", {.handle="dt_" + is, .label="apply time", .maxSize={99, 2}})
          );
 }
 
@@ -198,21 +199,21 @@ void init(){
   GUI stagesBox = HBox();
   for(int i = 0; i < N; ++i) stagesBox << stageColumn(i);
 
-  gui << ( VBox().minSize(24,14)
-           << Canvas().handle("src").minSize(24,20).label("source")
-           << ( VBox().label("source")
-                << Combo("1:1,QVGA,!VGA,SVGA,XGA,WXGA,UXGA").handle("dsize").label("size")
-                << Combo("!depth8u,depth16s,depth32s,depth32f,depth64f").handle("ddepth").label("depth")
-                << Combo("gray,!rgb,hls,lab,yuv").handle("dformat").label("format")
-                << Combo("!none,UL,UR,LL,LR,center,interactive").handle("roi").label("source ROI")
+  gui << ( ui::VBox({.minSize={24, 14}})
+           << ui::Canvas({.handle="src", .label="source", .minSize={24, 20}})
+           << ( ui::VBox({.label="source"})
+                << ui::Combo("1:1,QVGA,!VGA,SVGA,XGA,WXGA,UXGA", {.handle="dsize", .label="size"})
+                << ui::Combo("!depth8u,depth16s,depth32s,depth32f,depth64f", {.handle="ddepth", .label="depth"})
+                << ui::Combo("gray,!rgb,hls,lab,yuv", {.handle="dformat", .label="format"})
+                << ui::Combo("!none,UL,UR,LL,LR,center,interactive", {.handle="roi", .label="source ROI"})
               )
-           << ( HBox().maxSize(99,2)
-                << Fps(10).handle("fps").label("fps")
-                << Label("ok").handle("status").label("status")
+           << ( ui::HBox({.maxSize={99, 2}})
+                << ui::Fps(10, {.handle="fps", .label="fps"})
+                << ui::Label("ok", {.handle="status", .label="status"})
               )
          )
       << stagesBox
-      << Show();
+      << ui::Show();
 
   // One callback per stage combo. Needs the index captured — bind a handle
   // list per stage so the callback knows which one fired.

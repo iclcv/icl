@@ -4,6 +4,7 @@
 
 #include <icl/filter/affine/AffineOp.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/utils/time/StackTimer.h>
 
 GUI gui = HSplit().minSize(32,24);
@@ -70,16 +71,16 @@ void bench(){
 }
 
 void init(){
-  gui << Display().handle("draw").minSize(32,24)
-      << ( VBox().minSize(20,1)
-           << FSlider(0.1,5,1).handle("scale").label("scale")
-           << FSlider(0,6.3,0).handle("angle").label("angle")
-           << CheckBox("source image has ROI", false).handle("hasROI")
-           << CheckBox("clipToROI", false).handle("clipToROI")
-           << Button("lin","nn").label("interp.").handle("interp")
-           << Button("bench").handle("bench")
+  gui << ui::Display({.handle="draw", .minSize={32, 24}})
+      << ( ui::VBox({.minSize={20, 1}})
+           << ui::FSlider(0.1, 5, 1, {.handle="scale", .label="scale"})
+           << ui::FSlider(0, 6.3, 0, {.handle="angle", .label="angle"})
+           << ui::CheckBox("source image has ROI", {.checked=false, .handle="hasROI"})
+           << ui::CheckBox("clipToROI", {.checked=false, .handle="clipToROI"})
+           << ui::ToggleButton("lin", "nn", false, {.handle="interp", .label="interp."})
+           << ui::Button("bench", {.handle="bench"})
           )
-      << Show();
+      << ui::Show();
 
   baseImage = scale(create("parrot"), 0.4).as8u();
   updateSource();

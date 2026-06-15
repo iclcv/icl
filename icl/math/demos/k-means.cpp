@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/math/ml/KMeans.h>
 #include <icl/math/la/FixedVector.h>
 
@@ -44,8 +45,8 @@ void run(){
 
 void init(){
   gui << Plot().handle("plot").minSize(40,30)
-      << Button("run").handle("run")
-      << Show();
+      << ui::Button("run", {.handle="run"})
+      << ui::Show();
 
   vq.init(pa("-n"));
 

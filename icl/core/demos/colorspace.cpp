@@ -3,14 +3,15 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 GUI gui;
 ImageSource grabber;
 
 void init(){
 
-  gui << Display().handle("image")
-      << Combo("Gray,RGB,HLS,YUV,LAB,Chroma,Matrix").handle("fmt").maxSize(100,3)
-      << Show();
+  gui << ui::Display({.handle="image"})
+      << ui::Combo("Gray,RGB,HLS,YUV,LAB,Chroma,Matrix", {.handle="fmt", .maxSize={100, 3}})
+      << ui::Show();
 
   grabber.init(pa("-i"));
 

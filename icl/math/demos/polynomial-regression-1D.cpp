@@ -5,6 +5,7 @@
 // 1D polynomial regression: fit y = f(x) to noisy data, visualize in 2D plot
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/math/fit/PolynomialRegression.h>
 #include <icl/utils/Random.h>
 
@@ -29,14 +30,14 @@ std::string polyFunc(int degree) {
 
 void init(){
   gui << Plot().handle("plot").minSize(50,35)
-      << ( VBox().minSize(14,1)
-           << Slider(1,7,3).handle("degree").label("polynomial degree")
-           << Label("--").handle("fused").label("function")
-           << Slider(10,500,100).handle("n").label("samples")
-           << FSlider(0,2,0.3).handle("noise").label("noise")
-           << Button("Refit").handle("refit")
+      << ( ui::VBox({.minSize={14, 1}})
+           << ui::Slider(1, 7, 3, {.handle="degree", .label="polynomial degree"})
+           << ui::Label("--", {.handle="fused", .label="function"})
+           << ui::Slider(10, 500, 100, {.handle="n", .label="samples"})
+           << ui::FSlider(0, 2, 0.3, {.handle="noise", .label="noise"})
+           << ui::Button("Refit", {.handle="refit"})
          )
-      << Show();
+      << ui::Show();
 }
 
 void run(){

@@ -4,6 +4,7 @@
 
 #include <icl/math/ml/LLM.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/utils/Random.h>
 #include <icl/core/cc/CCFunctions.h>
 
@@ -39,24 +40,24 @@ void init(){
   Img32f src = scale(create("parrot", formatRGB, depth32f), W, H).as32f();
   planarToInterleaved(&src, planar_image);
 
-  gui << Display().minSize(20,15).label("Original").handle("orig-image")
-      << Display().minSize(20,15).label("Net Output").handle("net-image")
-      << ( VBox().minSize(15,0)
-           << Button("Train Step").handle("train")
-           << Button("Train Off","Train On").handle("train-loop")
-           << Button("NO Soft-Max","Soft-Max").handle("use-soft-max")
-           << Slider(1,10000,1000).handle("steps").label("Steps per Cycle")
-           << Disp(3,1).handle("mse").label("MSE").minSize(5,2)
-           << FSlider(0,0.1,0.01).handle("e-in").label("Epsilon In")
-           << FSlider(0,0.1,0.01).handle("e-out").label("Epsilon Out")
-           << FSlider(0,0.5,0.1).handle("e-a").label("Epsilon A")
-           << FSlider(0,0.0001,0.0).handle("e-sigma").label("Epsilon Sigma")
-           << FSlider(1,100,10).handle("init-sigma").label("Initial Sigma")
-           << Button("Show Kernels").handle("show-k")
-           << Button("Reset").handle("reset")
-           << Int(1,1000,20).handle("kc").label("Kernel Count")
+  gui << ui::Display({.handle="orig-image", .label="Original", .minSize={20, 15}})
+      << ui::Display({.handle="net-image", .label="Net Output", .minSize={20, 15}})
+      << ( ui::VBox({.minSize={15, 0}})
+           << ui::Button("Train Step", {.handle="train"})
+           << ui::ToggleButton("Train Off", "Train On", false, {.handle="train-loop"})
+           << ui::ToggleButton("NO Soft-Max", "Soft-Max", false, {.handle="use-soft-max"})
+           << ui::Slider(1, 10000, 1000, {.handle="steps", .label="Steps per Cycle"})
+           << ui::Disp(3, 1, {.handle="mse", .label="MSE", .minSize={5, 2}})
+           << ui::FSlider(0, 0.1, 0.01, {.handle="e-in", .label="Epsilon In"})
+           << ui::FSlider(0, 0.1, 0.01, {.handle="e-out", .label="Epsilon Out"})
+           << ui::FSlider(0, 0.5, 0.1, {.handle="e-a", .label="Epsilon A"})
+           << ui::FSlider(0, 0.0001, 0.0, {.handle="e-sigma", .label="Epsilon Sigma"})
+           << ui::FSlider(1, 100, 10, {.handle="init-sigma", .label="Initial Sigma"})
+           << ui::Button("Show Kernels", {.handle="show-k"})
+           << ui::Button("Reset", {.handle="reset"})
+           << ui::Int(1, 1000, 20, {.handle="kc", .label="Kernel Count"})
          )
-      << Show();
+      << ui::Show();
 
   gui["orig-image"] = scale(create("parrot"), W, H);
   resetLLM();

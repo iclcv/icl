@@ -6,6 +6,7 @@
 // is independently approximated by a polynomial in (x,y) → (r,g,b).
 
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 #include <icl/math/fit/PolynomialRegression.h>
 
 using Scalar = float;
@@ -64,16 +65,16 @@ void init(){
   grabber.useDesired(depth32f);
   grabber.useDesired(Size::QVGA);
 
-  gui << Display().handle("input").minSize(16, 12)
-      << Display().handle("result").minSize(16, 12)
-      << ( VBox().minSize(14, 1)
-           << Combo(polyComboStr(), 3).handle("poly").label("polynomial basis")
-           << Slider(2, 64, 16).handle("cellsize").label("cell size")
-           << Label("--").handle("fused").label("basis functions")
-           << Label("--").handle("status").label("status")
-           << Label("--").handle("compression").label("compression")
+  gui << ui::Display({.handle="input", .minSize={16, 12}})
+      << ui::Display({.handle="result", .minSize={16, 12}})
+      << ( ui::VBox({.minSize={14, 1}})
+           << ui::Combo(polyComboStr(), {.initialIndex=3, .handle="poly", .label="polynomial basis"})
+           << ui::Slider(2, 64, 16, {.handle="cellsize", .label="cell size"})
+           << ui::Label("--", {.handle="fused", .label="basis functions"})
+           << ui::Label("--", {.handle="status", .label="status"})
+           << ui::Label("--", {.handle="compression", .label="compression"})
          )
-      << Show();
+      << ui::Show();
 }
 
 void run(){

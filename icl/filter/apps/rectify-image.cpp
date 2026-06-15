@@ -4,6 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/DefineQuadrangleMouseHandler.h>
+#include <icl/qt/ui.h>
 #include <icl/filter/affine/ImageRectification.h>
 
 HSplit gui;
@@ -15,20 +16,20 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
 
-  gui << Canvas().handle("draw")
-      << (VBox()
-          << Display().handle("rectified")
-          << (HBox().label("target size").maxSize(99,3)
-              << Spinner(2,2000,512).handle("width")
-              << Label("x")
-              << Spinner(2,2000,512).handle("height")
+  gui << ui::Canvas({.handle="draw"})
+      << (ui::VBox()
+          << ui::Display({.handle="rectified"})
+          << (ui::HBox({.label="target size", .maxSize={99, 3}})
+              << ui::Spinner(2, 2000, 512, {.handle="width"})
+              << ui::Label("x")
+              << ui::Spinner(2, 2000, 512, {.handle="height"})
              )
-          << (HBox().label("rectify").maxSize(99,3)
-              << Button("now").handle("now")
-              << CheckBox("auto",true).handle("auto")
+          << (ui::HBox({.label="rectify", .maxSize={99, 3}})
+              << ui::Button("now", {.handle="now"})
+              << ui::CheckBox("auto", {.checked=true, .handle="auto"})
              )
          )
-      << Show();
+      << ui::Show();
 
   mouse.init(grabber.grab().getSize());
 

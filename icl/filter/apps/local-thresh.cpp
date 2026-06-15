@@ -5,6 +5,7 @@
 #include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/utils/config/ConfigFile.h>
 #include <icl/qt/Common2.h>
+#include <icl/qt/ui.h>
 
 #include <QInputDialog>
 #include <mutex>
@@ -124,23 +125,23 @@ void init(){
     gamma = f["config.gammaslope"];
   }
 
-  gui << Canvas().minSize(16,12).handle("orig").label("original image")
-      << Display().minSize(16,12).handle("prev").label("preview image")
-      << ( VBox().label("controls")
-           << Slider(2,200,masksize).label("mask size").handle("masksize").minSize(15,2)
-           << FSlider(-30,40,thresh).label("threshold").handle("threshold").minSize(15,2)
-           << FSlider(0,15,gamma).label("gamma slope").handle("gamma").minSize(15,2)
-           << Button("next image").handle("next")
-           << Button("stopped","running").handle("loop")
-           << Button("no clip","clip to roi").handle("clipToROI")
-           << Button("save params").handle("save")
-           << Combo("region mean,tiledNN,tiledLIN").handle("algorithm").label("algorithm")
-           << ( HBox()
-                << Label("..ms").handle("time").label("apply time").minSize(2,3)
-                << Fps(10).handle("fps").minSize(4,3).label("fps")
+  gui << ui::Canvas({.handle="orig", .label="original image", .minSize={16, 12}})
+      << ui::Display({.handle="prev", .label="preview image", .minSize={16, 12}})
+      << ( ui::VBox({.label="controls"})
+           << ui::Slider(2, 200, masksize, {.handle="masksize", .label="mask size", .minSize={15, 2}})
+           << ui::FSlider(-30, 40, thresh, {.handle="threshold", .label="threshold", .minSize={15, 2}})
+           << ui::FSlider(0, 15, gamma, {.handle="gamma", .label="gamma slope", .minSize={15, 2}})
+           << ui::Button("next image", {.handle="next"})
+           << ui::ToggleButton("stopped", "running", false, {.handle="loop"})
+           << ui::ToggleButton("no clip", "clip to roi", false, {.handle="clipToROI"})
+           << ui::Button("save params", {.handle="save"})
+           << ui::Combo("region mean,tiledNN,tiledLIN", {.handle="algorithm", .label="algorithm"})
+           << ( ui::HBox()
+                << ui::Label("..ms", {.handle="time", .label="apply time", .minSize={2, 3}})
+                << ui::Fps(10, {.handle="fps", .label="fps", .minSize={4, 3}})
                 )
            )
-      << Show();
+      << ui::Show();
 
   grabber.init(pa("-i"));
   if(grabber.getType() != "file"){
