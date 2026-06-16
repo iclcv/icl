@@ -14,7 +14,7 @@ namespace icl::physics {
       int timer;
 
       HoleObject(float x, float y, float z):
-        RigidCylinderObject(x, y, z, 1, 3, 0) {  // static sensor (mass 0, no constraint)
+        RigidCylinderObject(x, y, z, 1, 3, 1) {  // dynamic sensor, slaved to the (kinematic) maze
           timer = 0;
           setVisible(geom::Primitive::all,false);
           addCylinder(0, 0, 0, 11, 11, 1, 16);

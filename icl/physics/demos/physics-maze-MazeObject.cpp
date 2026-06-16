@@ -461,12 +461,17 @@ namespace icl{
       setActivationMode(RigidObject::ACTIVE_FOREVER);
       setCollisionFlags(2 /* btCollisionObject::CF_KINEMATIC_OBJECT */);
       scene->addObject(mazeBall);
-      // Holes are static, no-contact-response sensors. They were pinned to the
-      // maze with the same SixDOFConstraint that blew the floor up to NaN (one
-      // NaN constraint corrupts the whole solver), so drop it — at the demo's
-      // small tilt the fixed positions are close enough for detection.
+      // Holes are no-contact-response sensors pinned to the maze so they tilt
+      // with it (the green marks must follow the maze CS-frame). This is stable
+      // now that the maze is kinematic; it diverged to NaN while the maze was a
+      // moved-but-not-kinematic mass-0 body.
       for(int i = 0; i < NUM_HOLES; i++) {
         scene->addObject(m_holes[i]);
+        SixDOFConstraint *c = new SixDOFConstraint(m_holes[i],
+                                 this,
+                                 Mat::id(),
+                                 m_holes[i]->getTransformation());
+        scene->addConstraint(c,true,true);
       }
     }
 
