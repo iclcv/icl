@@ -34,6 +34,17 @@ is acceptable but not required.
   - **Still deferred**: `physics-paper`/`-paper3` (deeply coupled to geom::Scene
     shadows/lights + offscreen `scene.render(0)` [blocked on 0c] +
     ManipulatablePaper soft-body picking). `PhysicsScene` retirement waits on them.
+- **Live-demo polish (user feedback on physics-scene/maze/car):** converter
+  colour double-scaling fix (`60f4599fa`); object appearance opaque/no-wireframe
+  (`1633f63b7`); shadow frustum (`ebf8ac25e`); camera dolly scaling (`b93185b4b`);
+  car reset button + torque + maze camera/exposure (`2035a4bb8`, `c5e8ec84a`);
+  **maze ball fixed** — kinematic maze + stable colliders (`aa279114e`); maze
+  made an interactive tilt-maze (mouse-drag tilt, gravity along view axis, holes
+  re-attached) (`4a038c03d`).
+- **CAR is a separate physics TODO (not rendering):** the hinge-constraint wheels
+  settle twisted and the car barely drives / drifts. Pre-existing demo physics,
+  newly visible. Fix later via `btRaycastVehicle` or corrected hinge frames
+  (needs visual iteration). Rendering + reset button already work.
 - All commits build clean and keep 877/877 tests green. GUI render correctness
   is unverifiable in-sandbox (GL context creation fails); needs a real display.
 
