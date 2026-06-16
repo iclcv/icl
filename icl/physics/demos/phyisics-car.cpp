@@ -7,12 +7,12 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 
-#include <icl/physics/PhysicsScene.h>
+#include <icl/physics/PhysicsScene2.h>
 #include <icl/physics/RigidBoxObject.h>
 #include <icl/physics/RigidCylinderObject.h>
 #include <icl/physics/RigidSphereObject.h>
 #include <icl/physics/HingeConstraint.h>
-#include <icl/physics/PhysicsMouseHandler.h>
+#include <icl/physics/PhysicsMouseHandler2.h>
 
 using namespace geom;
 using namespace physics;
@@ -22,9 +22,9 @@ FPSLimiter fps(60);
 Camera cam(Vec(800,0,50), Vec(-1,0.3,0), Vec(0,0,-1));
 
 
-PhysicsScene scene;
+PhysicsScene2 scene;
 
-PhysicsMouseHandler handler(0,&scene);
+PhysicsMouseHandler2 handler(0, &scene.getScene2(), &scene);
 
 void init(){
   gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
@@ -111,7 +111,7 @@ void init(){
   gui["draw"].install(&handler);
 
   //link the visualization
-  gui["draw"].link(scene.getGLCallback(0));
+  gui["draw"].link(scene.getGLCallback(0).get());
 }
 
 int delay = 0;
@@ -123,6 +123,7 @@ void run()
   } else {
     scene.step();//0.0016);
   }
+  scene.syncSceneFromPhysics();
   gui["draw"].render();
   fps.wait();
 }

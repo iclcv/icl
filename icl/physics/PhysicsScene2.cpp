@@ -20,12 +20,18 @@ namespace icl::physics {
     auto light = std::make_shared<geom2::LightNode>(geom2::LightNode::Point);
     light->setIntensity(0.9f);
     light->translate(2000, 1000, 4000);
+    light->setShadowEnabled(true);
+    light->setSoftShadowRadius(3.0f);
     m_scene.addLight(light);
   }
 
-  PhysicsScene2::~PhysicsScene2() = default;
+  PhysicsScene2::~PhysicsScene2() {
+    for (Mirror &m : m_mirrors) {
+      if (m.owned) { PhysicsWorld::removeObject(m.obj); delete m.obj; }
+    }
+  }
 
-  void PhysicsScene2::addObject(PhysicsObject *obj) {
+  void PhysicsScene2::addObject(PhysicsObject *obj, bool passOwnership) {
     if (!obj) return;
     PhysicsWorld::addObject(obj);
     obj->prepareForRendering();  // initial Bullet→SceneObject sync
@@ -38,6 +44,7 @@ namespace icl::physics {
     m.node = node;
     m.deformable = (dynamic_cast<SoftObject *>(obj) != nullptr);
     if (m.deformable) m.mesh = std::dynamic_pointer_cast<geom2::MeshNode>(node);
+    m.owned = passOwnership;
     m_mirrors.push_back(std::move(m));
   }
 
@@ -47,7 +54,10 @@ namespace icl::physics {
                            [obj](const Mirror &m) { return m.obj == obj; });
     if (it != m_mirrors.end()) {
       m_scene.removeNode(it->node.get());
+      bool owned = it->owned;
+      PhysicsObject *o = it->obj;
       m_mirrors.erase(it);
+      if (owned) delete o;
     }
   }
 

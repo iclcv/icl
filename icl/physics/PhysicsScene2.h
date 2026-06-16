@@ -42,10 +42,12 @@ namespace icl::physics {
     ~PhysicsScene2();
 
     /// add a physics object (to the world) and its geom2 mirror node (to the scene)
-    /** Ownership of the object is not taken (matches PhysicsWorld::addObject). */
-    void addObject(PhysicsObject *obj);
+    /** By default the object's memory is managed externally; pass
+        passOwnership=true to have the scene delete it on removal/destruction
+        (matches the legacy PhysicsScene::addObject). */
+    void addObject(PhysicsObject *obj, bool passOwnership = false);
 
-    /// remove a physics object and its mirror node
+    /// remove a physics object and its mirror node (deletes it if owned)
     void removeObject(PhysicsObject *obj);
 
     /// per-frame Bullet→SceneObject→geom2 sync; call after step(), before render
@@ -70,6 +72,7 @@ namespace icl::physics {
       std::shared_ptr<geom2::Node> node;
       std::shared_ptr<geom2::MeshNode> mesh;  // non-null iff deformable leaf
       bool deformable;
+      bool owned;  // scene deletes the object on removal/destruction
     };
     geom2::Scene2 m_scene;
     std::vector<Mirror> m_mirrors;
