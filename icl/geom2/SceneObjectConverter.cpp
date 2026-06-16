@@ -10,12 +10,11 @@
 
 namespace icl::geom2 {
 
-  namespace {
-    // Legacy geom colours live in [0,255]; geom2 stores/renders in [0,1].
-    inline GeomColor scale01(const geom::GeomColor &c) {
-      return GeomColor(c[0] / 255.f, c[1] / 255.f, c[2] / 255.f, c[3] / 255.f);
-    }
-  }
+  // NOTE on colour ranges: geom::SceneObject already stores ALL colours in
+  // [0,1] — addVertex/addLine/addTriangle/addQuad/addPolygon multiply the
+  // caller's [0,255] argument by 1/255 on the way in. geom2 likewise stores and
+  // renders in [0,1]. So the converter copies colours straight through; the
+  // legacy [0,255] convention only appears at the geom add* API, not in storage.
 
   std::shared_ptr<MeshNode> meshFromSceneObject(const geom::SceneObject &so) {
     auto mesh = std::make_shared<MeshNode>();
@@ -36,11 +35,7 @@ namespace icl::geom2 {
     }
     {
       const std::vector<geom::GeomColor> &C = so.getVertexColors();
-      if (!C.empty()) {
-        std::vector<GeomColor> cc(C.size());
-        for (size_t i = 0; i < C.size(); ++i) cc[i] = scale01(C[i]);
-        data.colors = std::move(cc);
-      }
+      if (!C.empty()) data.colors = C;  // already [0,1], same element type
     }
 
     std::vector<TrianglePrimitive> tris;
@@ -48,7 +43,8 @@ namespace icl::geom2 {
     std::vector<LinePrimitive> lines;
 
     // Representative face appearance (geom2 shades faces by node material).
-    geom::GeomColor faceColor(204, 204, 204, 255);
+    // faceColor is captured from a face primitive's colour, which is [0,1].
+    geom::GeomColor faceColor(0.8f, 0.8f, 0.8f, 1.f);
     std::shared_ptr<geom::Material> faceMat;
     bool haveFace = false;
     auto captureFace = [&](const geom::Primitive *p) {
@@ -63,7 +59,7 @@ namespace icl::geom2 {
       switch (p->type) {
         case geom::Primitive::line: {
           auto *l = static_cast<const geom::LinePrimitive *>(p);
-          lines.push_back(LinePrimitive{l->i(0), l->i(1), scale01(l->color)});
+          lines.push_back(LinePrimitive{l->i(0), l->i(1), l->color});  // [0,1]
           break;
         }
         case geom::Primitive::triangle: {
@@ -132,9 +128,11 @@ namespace icl::geom2 {
     } else if (auto objMat = so.getMaterial()) {
       mesh->setMaterial(objMat->deepCopy());
     } else if (hasFaces) {
-      geom::GeomColor opaque = faceColor;
-      opaque[3] = 255.f;
-      mesh->setMaterial(geom::Material::fromColor(opaque));
+      // faceColor is already [0,1]; Material::fromColor expects [0,255], so
+      // scale back up. Force opaque (legacy debug styling is semi-transparent).
+      geom::GeomColor c255 = faceColor * 255.f;
+      c255[3] = 255.f;
+      mesh->setMaterial(geom::Material::fromColor(c255));
     }
 
     // Solid objects: hide the legacy per-vertex points (faces carry the look).
