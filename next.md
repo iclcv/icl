@@ -2,8 +2,19 @@
 
 ## Next Step
 
-**In progress: phase out `geom` → `geom2`** (see `geom2-migration-plan.md` for
-the full phased plan + live status). The legacy `geom::Scene` GL path is dead
+**PAUSED to redesign the geom2 ↔ Bullet integration** (Session 70). The physics
+demos render via geom2 now, but the bridge feels wrong: pose lives in multiple
+out-of-sync places (SceneObject / Bullet body / MotionState / geom2 mirror node)
+and geometry is duplicated (legacy `geom::SceneObject` + a synced geom2 copy).
+The tilt-maze made it concrete — it renders the tilt but the ball doesn't roll
+(collision vs render driven by different transforms). **Before continuing the
+migration, read `physics-geom2-integration-notes.md` and turn it into an
+improvement plan** (single source of truth for pose; physics object owns a geom2
+node; clean kinematic/controlled-body abstraction; unit/scale policy; unified
+picking). Then resume.
+
+**Also in progress: phase out `geom` → `geom2`** (see `geom2-migration-plan.md`
+for the full phased plan + live status). The legacy `geom::Scene` GL path is dead
 (Core-Profile default routes everything to the incomplete `geom::GLRenderer`);
 `geom2`/`Scene2` is the live renderer.
 
