@@ -36,8 +36,10 @@ static void addDyn(RigidObject *o){
 }
 
 static void applyMotors(){
-  // (motor axis, enable, target angular velocity, max motor force)
-  for(int i=0;i<4;++i) wheel_cons[i]->setAngularMotor(0, true, 150.f, 6000.f);
+  // (motor axis, enable, target angular velocity, max motor force).
+  // Middle ground: 500 (original) barely drove, 6000 spun the wheels enough to
+  // slip the car into a circular drift (it has no differential / steering).
+  for(int i=0;i<4;++i) wheel_cons[i]->setAngularMotor(0, true, 150.f, 2500.f);
 }
 
 void reset(){

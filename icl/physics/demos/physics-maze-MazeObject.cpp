@@ -310,7 +310,9 @@ namespace icl{
 
         //add ball
 
-        mazeBall = new RigidSphereObject(15,0,0,7,0.008);
+        // spawn above the wall tops (z=0) so the ball drops cleanly into a
+        // cell instead of spawning penetrating a wall (which ejects it).
+        mazeBall = new RigidSphereObject(15,0,25,7,0.008);
         mazeBall->setRestitution(0.1f);
         mazeBall->setFriction(0.5f);
         mazeBall->setRollingFriction(0.0f);
