@@ -10,7 +10,7 @@
 #include <icl/physics/RigidCompoundObject.h>
 #include <icl/physics/RigidBoxObject.h>
 #include <icl/physics/RigidSphereObject.h>
-#include <icl/physics/PhysicsScene.h>
+#include <icl/physics/PhysicsScene2.h>
 #include "physics-maze-HoleObject.h"
 
 // #include "maze_utils.h"
@@ -176,7 +176,7 @@ namespace icl{
 
     void transformForMazeVis(geom::Vec &val);
 
-    void addToWorld(physics::PhysicsScene *scene);
+    void addToWorld(physics::PhysicsScene2 *scene);
 
     void ballCallback(PhysicsObject* self, PhysicsObject* other, geom::Vec pos);
 

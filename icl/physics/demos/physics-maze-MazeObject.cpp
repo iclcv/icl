@@ -436,7 +436,7 @@ namespace icl{
 	return 0;
     }
 
-    void MazeObject::addToWorld(PhysicsScene *scene) {
+    void MazeObject::addToWorld(PhysicsScene2 *scene) {
       scene->addObject(this);
       scene->addObject(mazeBall);
       scene->addObject(mazeGround);
