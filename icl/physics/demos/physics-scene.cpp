@@ -7,11 +7,11 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 
-#include <icl/physics/PhysicsScene.h>
+#include <icl/physics/PhysicsScene2.h>
+#include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/physics/RigidBoxObject.h>
 #include <icl/physics/RigidCylinderObject.h>
 #include <icl/physics/RigidSphereObject.h>
-#include <icl/physics/PhysicsMouseHandler.h>
 
 using namespace geom;
 using namespace physics;
@@ -24,9 +24,7 @@ RigidBoxObject box(0,0,500, 100, 100, 100, 0.1);
 RigidCylinderObject cylinder(0,-20,700.0, 100, 100 , 0.1);
 RigidSphereObject sphere(-200,0,90,100,0.1);
 RigidBoxObject table(0,0,-200.0, 10000, 10000, 200, 0);
-PhysicsScene scene;
-
-PhysicsMouseHandler handler(0,&scene);
+PhysicsScene2 scene;  // simulates in a PhysicsWorld, renders via geom2
 
 void init(){
   gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
@@ -54,15 +52,17 @@ void init(){
   scene.addObject(&box);
   scene.addObject(&table);
 
-  gui["draw"].install(&handler);
-
-  //link the visualization
-  gui["draw"].link(scene.getGLCallback(0));
+  // camera navigation via the geom2 scene mouse handler.
+  // TODO(geom2 migration, Phase 2): port PhysicsMouseHandler so physics
+  // objects can again be dragged with the mouse (it is tied to geom::Scene).
+  gui["draw"].link(scene.getGLCallback(0).get());
+  gui["draw"].install(scene.getScene2().getMouseHandler(0));
 }
 
 void run()
 {
   scene.step();
+  scene.syncSceneFromPhysics();
   gui["draw"].render();
   fps.wait();
 }

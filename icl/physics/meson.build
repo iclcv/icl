@@ -18,6 +18,7 @@ physics_headers = files(
   'PhysicsPaper3ContextMenu.h',
   'PhysicsPaper3MouseHandler.h',
   'PhysicsScene.h',
+  'PhysicsScene2.h',
   'PhysicsUtils.h',
   'PhysicsWorld.h',
   'RigidBoxObject.h',
@@ -50,6 +51,7 @@ physics_sources = files(
   'PhysicsPaper3ContextMenu.cpp',
   'PhysicsPaper3MouseHandler.cpp',
   'PhysicsScene.cpp',
+  'PhysicsScene2.cpp',
   'PhysicsUtils.cpp',
   'PhysicsWorld.cpp',
   'RigidBoxObject.cpp',
@@ -65,7 +67,7 @@ physics_sources = files(
   'TriangleIntersectionEstimator.cpp',
 )
 
-physics_deps = [icl_markers_dep, icl_geom_dep, bullet_dep]
+physics_deps = [icl_markers_dep, icl_geom_dep, icl_geom2_dep, bullet_dep]
 
 icl_physics_lib = shared_library('icl-physics',
   physics_sources,
