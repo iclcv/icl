@@ -25,6 +25,7 @@ geom2_headers = files(
   'RayCastOctree.h',
   'TextNode.h',
   'DemoScene2.h',
+  'SceneObjectConverter.h',
 )
 
 geom2_sources = files(
@@ -48,6 +49,7 @@ geom2_sources = files(
   'RayCastOctree.cpp',
   'TextNode.cpp',
   'DemoScene2.cpp',
+  'SceneObjectConverter.cpp',
 )
 
 # Cycles renderer (reuses include/link config computed in icl/geom/meson.build)
