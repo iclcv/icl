@@ -109,18 +109,36 @@ namespace icl::geom2 {
       }
     }
 
+    const bool hasFaces = haveFace;  // a triangle/quad/polygon was seen
+
     if (!tris.empty()) data.triangles = std::move(tris);
     if (!quads.empty()) data.quads = std::move(quads);
-    if (!lines.empty()) data.lines = std::move(lines);
+    // Legacy primitive shapes (cuboid/sphere/…) carry edge lines + per-vertex
+    // points as debug styling on top of their faces. For a solid object that
+    // reads as an unwanted wireframe, so keep lines only for pure wire objects
+    // (coordinate frames, trajectories — no faces).
+    if (!hasFaces && !lines.empty()) data.lines = std::move(lines);
 
     mesh->ingest(std::move(data));
 
     // Appearance precedence mirrors the legacy renderer: a per-primitive
     // material overrides the object's default material, which overrides the
-    // legacy per-primitive colour.
-    if (faceMat) mesh->setMaterial(faceMat->deepCopy());
-    else if (auto objMat = so.getMaterial()) mesh->setMaterial(objMat->deepCopy());
-    else if (haveFace) mesh->setMaterial(geom::Material::fromColor(faceColor));
+    // legacy per-primitive colour. Explicit Material objects are respected
+    // as-is; the legacy per-primitive colour is forced opaque (its default
+    // semi-transparent debug styling renders poorly under geom2's naive,
+    // depth-unsorted blending).
+    if (faceMat) {
+      mesh->setMaterial(faceMat->deepCopy());
+    } else if (auto objMat = so.getMaterial()) {
+      mesh->setMaterial(objMat->deepCopy());
+    } else if (hasFaces) {
+      geom::GeomColor opaque = faceColor;
+      opaque[3] = 255.f;
+      mesh->setMaterial(geom::Material::fromColor(opaque));
+    }
+
+    // Solid objects: hide the legacy per-vertex points (faces carry the look).
+    if (hasFaces) mesh->setPrimitiveVisible(PrimVertex, false);
 
     return mesh;
   }
