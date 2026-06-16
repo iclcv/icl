@@ -24,16 +24,16 @@ is acceptable but not required.
   the converter was double-scaling → objects rendered black. Fixed (verified by
   CPU dump: RigidBoxObject → baseColor (0,0.392,1,1)). User confirmed objects
   now render correctly coloured.
-- **Phase 2 IN PROGRESS** (`00d641f1f`): `PhysicsMouseHandler2` (camera nav +
-  Shift-drag grab), `PhysicsScene2` default light now casts soft shadows +
-  `addObject(obj, passOwnership)`. Migrated `physics-scene`, `physics-constraints`,
-  `physics-car`.
-  - **Deferred within Phase 2**: `physics-maze` (custom RigidCompoundObject
-    MazeObject with geom::Scene-typed `addToWorld` + vis-only coord frame) and
-    `physics-paper`/`-paper3` (deeply coupled to geom::Scene shadows/lights +
-    offscreen `scene.render(0)` [blocked on 0c] + ManipulatablePaper picking).
-  - Then retire `PhysicsScene` once `maze` migrates (paper uses
-    `DefaultPhysicsScene`/PhysicsWorld directly).
+- **Phase 2 MOSTLY DONE**: `PhysicsMouseHandler2` (camera nav + Shift-drag
+  grab), `PhysicsScene2` soft-shadow default light + `addObject(obj, passOwnership)`.
+  Migrated `physics-scene`, `physics-constraints`, `physics-car` (`00d641f1f`)
+  and `physics-maze` (`64372b95e`). Also fixed, from user feedback on the live
+  demo: lighting/shadows missing → scene-scaled shadow frustum (`ebf8ac25e`);
+  camera dolly/pan imperceptible in large scenes → scale translation by scene
+  bounds (`b93185b4b`).
+  - **Still deferred**: `physics-paper`/`-paper3` (deeply coupled to geom::Scene
+    shadows/lights + offscreen `scene.render(0)` [blocked on 0c] +
+    ManipulatablePaper soft-body picking). `PhysicsScene` retirement waits on them.
 - All commits build clean and keep 877/877 tests green. GUI render correctness
   is unverifiable in-sandbox (GL context creation fails); needs a real display.
 
