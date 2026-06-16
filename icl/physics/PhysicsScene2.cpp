@@ -13,12 +13,14 @@ namespace icl::physics {
   PhysicsScene2::PhysicsScene2(PhysicsWorld::BulletSolverType type)
       : PhysicsWorld(type) {
     // The legacy geom::Scene provided default lighting; geom2::Scene2 does not.
-    // Add a sensible default so migrated demos are lit out of the box (point
-    // lights here don't attenuate with distance, so one high light + a raised
-    // ambient gives broad illumination). Override via getScene2() if needed.
-    m_scene.getRenderer().setAmbient(0.35f);
+    // Add a sensible default so migrated demos are lit out of the box. The PBR
+    // ambient comes from a fairly bright hard-coded sky (~0.6·albedo), leaving
+    // little headroom, so keep the key light moderate and pull exposure below 1
+    // to stop lighter surfaces blowing out. Point lights here don't attenuate
+    // with distance. Override any of this via getScene2().
+    m_scene.getRenderer().setExposure(0.75f);
     auto light = std::make_shared<geom2::LightNode>(geom2::LightNode::Point);
-    light->setIntensity(0.9f);
+    light->setIntensity(0.6f);
     light->translate(2000, 1000, 4000);
     light->setShadowEnabled(true);
     light->setSoftShadowRadius(3.0f);

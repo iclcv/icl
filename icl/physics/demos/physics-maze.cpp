@@ -14,7 +14,8 @@ using namespace geom;
 using namespace physics;
 GUI gui;
 FPSLimiter fps(60);
-Camera cam(Vec(200,0,70,1), Vec(-1,0,0,1), Vec(0,0,-1,1));
+// maze lies in the xy-plane (~170x150), walls ~12 tall in +z — view from above
+Camera cam(Vec(0,0,230,1), Vec(0,0,-1,1), Vec(0,1,0,1));
 PhysicsScene2 scene;
 PhysicsMouseHandler2 handler(0, &scene.getScene2(), &scene);
 MazeObject* maze;

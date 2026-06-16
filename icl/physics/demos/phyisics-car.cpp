@@ -13,6 +13,7 @@
 #include <icl/physics/RigidSphereObject.h>
 #include <icl/physics/HingeConstraint.h>
 #include <icl/physics/PhysicsMouseHandler2.h>
+#include <vector>
 
 using namespace geom;
 using namespace physics;
@@ -21,13 +22,40 @@ GUI gui;
 FPSLimiter fps(60);
 Camera cam(Vec(800,0,50), Vec(-1,0.3,0), Vec(0,0,-1));
 
-
 PhysicsScene2 scene;
-
 PhysicsMouseHandler2 handler(0, &scene.getScene2(), &scene);
 
+// dynamic objects + their initial transforms, for the reset button
+std::vector<RigidObject*> dynObjs;
+std::vector<Mat> initXforms;
+HingeConstraint *wheel_cons[4];
+
+static void addDyn(RigidObject *o){
+  dynObjs.push_back(o);
+  initXforms.push_back(o->getTransformation());
+}
+
+static void applyMotors(){
+  // (motor axis, enable, target angular velocity, max motor force)
+  for(int i=0;i<4;++i) wheel_cons[i]->setAngularMotor(0, true, 150.f, 6000.f);
+}
+
+void reset(){
+  scene.lock();
+  for(size_t i=0;i<dynObjs.size();++i){
+    dynObjs[i]->setTransformation(initXforms[i]);
+    dynObjs[i]->setLinearVelocity(Vec(0,0,0,0));
+    dynObjs[i]->setAngularVelocity(Vec(0,0,0,0));
+    dynObjs[i]->activate(true);
+  }
+  applyMotors();
+  scene.unlock();
+}
+
 void init(){
-  gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
+  gui << ui::Canvas3D({.handle="draw", .minSize={40,30}})
+      << ui::Button("reset", {.handle="reset"})
+      << ui::Show();
   scene.addCamera(cam);
   scene.setBounds(2000);  // calibrates camera dolly/pan speed to the scene
   RigidBoxObject *ground = new RigidBoxObject(0,0,-200, 5000, 5000, 200, 0);
@@ -45,20 +73,20 @@ void init(){
     wheels[i]->setDamping(0.1f,0.2f);
     wheels[i]->setRollingFriction(0.1f);
     scene.addObject(wheels[i],true);
+    addDyn(wheels[i]);
   }
 
-  //add the bricks to the scene
+  //add the bricks to the scene — a wall the car drives into
   for(int x = 0; x < 5; x++) {
-    for(int z = 0; z < 10; z++) {
-      RigidBoxObject *brick = new RigidBoxObject(x*100-450+z%2*20,500,z*40-80, 100, 100, 40, 0.1);
-      brick->setFriction(0.5f);
+    for(int z = 0; z < 6; z++) {
+      RigidBoxObject *brick = new RigidBoxObject(x*100-450+z%2*20,500,z*40-80, 100, 100, 40, 0.3);
+      brick->setFriction(0.8f);
       brick->setDamping(0.1,0.1);
       brick->setRestitution(0.f);
       scene.addObject(brick,true);
+      addDyn(brick);
     }
   }
-
-  HingeConstraint* wheel_cons[4];
 
   Mat frameB(0,0,-1,0,
              0,1,0,0,
@@ -95,12 +123,10 @@ void init(){
 
   scene.addObject(ground,true);
   scene.addObject(chasis,true);
+  addDyn(chasis);
 
   //make the wheels spin
-  wheel_cons[0]->setAngularMotor(0,true,150.f,500.f);
-  wheel_cons[1]->setAngularMotor(0,true,150.f,500.f);
-  wheel_cons[2]->setAngularMotor(0,true,150.f,500.f);
-  wheel_cons[3]->setAngularMotor(0,true,150.f,500.f);
+  applyMotors();
 
   scene.addConstraint(wheel_cons[0],true,true);
   scene.addConstraint(wheel_cons[1],true,true);
@@ -110,6 +136,7 @@ void init(){
   scene.setGravity(Vec(0,0,-9810));
 
   gui["draw"].install(&handler);
+  gui["reset"].registerCallback(reset);
 
   //link the visualization
   gui["draw"].link(scene.getGLCallback(0).get());
@@ -118,11 +145,11 @@ void init(){
 int delay = 0;
 void run()
 {
-  //delay the simulation for a second
-  if(delay++ < fps.getMaxFPS()*2){
+  //let the car settle on its wheels for ~1s, then drive
+  if(delay++ < fps.getMaxFPS()){
     scene.step(0.f);
   } else {
-    scene.step();//0.0016);
+    scene.step();
   }
   scene.syncSceneFromPhysics();
   gui["draw"].render();
