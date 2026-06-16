@@ -214,8 +214,9 @@ namespace icl{
         if(a[0] == b[0]) { // vertical
 //            addCuboid(a[0] - cx, (a[1]+b[1])/2-cy , -h,
 //                    2*m, ::abs(a[1]-b[1])+2*m, 2*h);
-            addChild(new RigidBoxObject(a[0] - cx, (a[1]+b[1])/2-cy , -h,
-                    2*m, ::abs(a[1]-b[1])+2*m, 2*h,0));
+            { RigidBoxObject *w = new RigidBoxObject(a[0] - cx, (a[1]+b[1])/2-cy , -h,
+                    2*m, ::abs(a[1]-b[1])+2*m, 2*h,0);
+              w->setCollisionMargin(0.2); addChild(w); }
 
             TopEdge e1 = { Point32f(a[0] - cx-m,a[1]-cy),
                          Point32f(b[0] - cx-m,b[1]-cy) };
@@ -242,8 +243,9 @@ namespace icl{
         }else{ // horizontal
 //            addCuboid((a[0]+b[0])/2 - cx,a[1] -cy, -h,
 //                    ::abs(a[0]-b[0])+2*m,2*m, 2*h);
-            addChild(new RigidBoxObject((a[0]+b[0])/2 - cx,a[1] -cy, -h,
-                    ::abs(a[0]-b[0])+2*m,2*m, 2*h,0));
+            { RigidBoxObject *w = new RigidBoxObject((a[0]+b[0])/2 - cx,a[1] -cy, -h,
+                    ::abs(a[0]-b[0])+2*m,2*m, 2*h,0);
+              w->setCollisionMargin(0.2); addChild(w); }
             TopEdge e1 = { Point32f(a[0] - cx,a[1]-cy-m),
                            Point32f(b[0] - cx,b[1]-cy-m) };
             e1.a.y *=-1;
@@ -300,8 +302,18 @@ namespace icl{
         setFriction(0.8f);
         setRollingFriction(0.0f);
         //add mazeGround
-        mazeGround = new RigidBoxObject(85-2.5 - cx, 75-2.5 - cy, -13.5, 170, 150, 3,1);
+        // The floor is part of the maze compound (like the walls), so it tilts
+        // with the maze and collides with the ball. Making it a separate
+        // dynamic body pinned by a SixDOFConstraint was numerically unstable
+        // (the constraint blew up to NaN, the floor vanished and the ball fell
+        // straight through).
+        mazeGround = new RigidBoxObject(85-2.5 - cx, 75-2.5 - cy, -13.5, 170, 150, 3, 0);
         mazeGround->setMaterial(Material::fromColor(geom_white()));
+        // The maze is tiny in Bullet units (ICL mm * 0.01): the 3mm floor is
+        // 0.03 < Bullet's default 0.04 collision margin, which makes contact
+        // resolution blow up to NaN. Shrink the margin to suit the small scale.
+        mazeGround->setCollisionMargin(0.2);
+        addChild(mazeGround);
 
         //add holes
         for(int i = 0; i < NUM_HOLES; i++) {
@@ -310,9 +322,11 @@ namespace icl{
 
         //add ball
 
-        // spawn above the wall tops (z=0) so the ball drops cleanly into a
-        // cell instead of spawning penetrating a wall (which ejects it).
-        mazeBall = new RigidSphereObject(15,0,25,7,0.008);
+        // spawn just above the floor (floor top z=-12, ball radius 7) in an
+        // open cell — dropping from high up would tunnel through the thin floor.
+        // mass kept sane (0.008 was so light that contact forces blew up to NaN).
+        mazeBall = new RigidSphereObject(15,0,-3,7,1.0);
+        mazeBall->setCollisionMargin(0.2);
         mazeBall->setRestitution(0.1f);
         mazeBall->setFriction(0.5f);
         mazeBall->setRollingFriction(0.0f);
@@ -439,21 +453,20 @@ namespace icl{
     }
 
     void MazeObject::addToWorld(PhysicsScene2 *scene) {
-      scene->addObject(this);
+      scene->addObject(this);       // compound: walls + floor, moved kinematically
+      // The maze is a mass-0 body that the run loop MOVES every frame (tilt).
+      // In Bullet such a body must be flagged KINEMATIC, otherwise the solver
+      // writes back to it on contact and the whole compound (and anything
+      // resting on it, i.e. the ball) explodes to NaN.
+      setActivationMode(RigidObject::ACTIVE_FOREVER);
+      setCollisionFlags(2 /* btCollisionObject::CF_KINEMATIC_OBJECT */);
       scene->addObject(mazeBall);
-      scene->addObject(mazeGround);
-      SixDOFConstraint *c = new SixDOFConstraint(mazeGround,
-                                                 this,
-                                                 Mat::id(),
-                                                 mazeGround->getTransformation());
-      scene->addConstraint(c,true,true);
+      // Holes are static, no-contact-response sensors. They were pinned to the
+      // maze with the same SixDOFConstraint that blew the floor up to NaN (one
+      // NaN constraint corrupts the whole solver), so drop it — at the demo's
+      // small tilt the fixed positions are close enough for detection.
       for(int i = 0; i < NUM_HOLES; i++) {
         scene->addObject(m_holes[i]);
-        c = new SixDOFConstraint(m_holes[i],
-                                 this,
-                                 Mat::id(),
-                                 m_holes[i]->getTransformation());
-        scene->addConstraint(c,true,true);
       }
     }
 
