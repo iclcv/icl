@@ -29,6 +29,7 @@ PhysicsMouseHandler2 handler(0, &scene.getScene2(), &scene);
 void init(){
   gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
   scene.addCamera(cam);
+  scene.setBounds(2000);  // calibrates camera dolly/pan speed to the scene
   RigidBoxObject *ground = new RigidBoxObject(0,0,-200, 5000, 5000, 200, 0);
   Vec car_size(100,200,70);
   int wheel_radius = 50;

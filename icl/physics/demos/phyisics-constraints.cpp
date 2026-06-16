@@ -28,6 +28,7 @@ PhysicsMouseHandler2 handler(0, &scene.getScene2(), &scene);
 void init(){
   gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
   scene.addCamera(cam);
+  scene.setBounds(1500);  // calibrates camera dolly/pan speed to the scene
 
   RigidBoxObject *door = new RigidBoxObject(0,115,200, 20, 200, 390, 0.1);
   RigidCylinderObject *hinge = new RigidCylinderObject(0,0,200,20,400, 0.0);

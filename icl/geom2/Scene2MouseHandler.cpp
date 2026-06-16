@@ -52,7 +52,10 @@ namespace icl::geom2 {
   static void strafe(const MouseEvent &e, const Point32f &pos,
                      const Point32f &delta, Camera &cam, Scene2 &scene, void *data) {
     auto *s = static_cast<Sens*>(data);
-    float tf = s->translation;
+    // Translation must scale with scene size, else a fixed step is
+    // imperceptible in large scenes and huge in tiny ones. The default
+    // translation sensitivity is 10, normalised here so effective step == bounds.
+    float tf = s->translation * 0.1f * scene.getBounds();
     float df = e.isWheelEvent() ? s->wheel : s->mouse;
 
     Vec t = cam.getUp() * (-tf * df * delta.y) + cam.getHoriz() * (-tf * df * delta.x);
@@ -87,7 +90,7 @@ namespace icl::geom2 {
                               const Point32f &delta, Camera &cam, Scene2 &scene, void *data) {
     auto *s = static_cast<Sens*>(data);
     float rf = s->rotation;
-    float tf = s->translation;
+    float tf = s->translation * 0.1f * scene.getBounds();  // dolly scales with scene
     float df = e.isWheelEvent() ? s->wheel : -s->mouse;
 
     Vec up = rotate_vector(cam.getNorm(), rf * df * delta.x, cam.getUp());
