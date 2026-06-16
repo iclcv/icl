@@ -49,12 +49,18 @@ void init(){
 void run()
 {
   scene.lock();
+  // tilt the (kinematic) maze: this drives the COLLISION so the ball rolls
   maze->setTransformation(Mat::id());
   maze->rotate(tiltX, 0, 0);
   maze->rotate(0, tiltY, 0);
   scene.step(-1,50,1/120.);
   scene.unlock();
   scene.syncSceneFromPhysics();
+  // ...but a kinematic body's transform doesn't read back (Bullet repositions
+  // it from the MotionState), so the maze node would render flat. Drive it from
+  // the tilt we know. Ball + holes follow via their normal (dynamic) read-back.
+  Mat tilt = create_hom_4x4<float>(0,tiltY,0, 0,0,0) * create_hom_4x4<float>(tiltX,0,0, 0,0,0);
+  if(auto n = scene.getMirrorNode(maze)) n->setTransformation(tilt);
   gui["draw"].render();
   fps.wait();
 }

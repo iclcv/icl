@@ -78,6 +78,12 @@ namespace icl::physics {
     }
   }
 
+  std::shared_ptr<geom2::Node> PhysicsScene2::getMirrorNode(PhysicsObject *obj) const {
+    for (const Mirror &m : m_mirrors)
+      if (m.obj == obj) return m.node;
+    return nullptr;
+  }
+
   geom2::Scene2 &PhysicsScene2::getScene2() { return m_scene; }
   const geom2::Scene2 &PhysicsScene2::getScene2() const { return m_scene; }
 

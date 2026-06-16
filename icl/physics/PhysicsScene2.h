@@ -53,6 +53,13 @@ namespace icl::physics {
     /// per-frame Bullet→SceneObject→geom2 sync; call after step(), before render
     void syncSceneFromPhysics();
 
+    /// the geom2 mirror node for a physics object (or null). Lets callers
+    /// override the render transform for objects whose physics read-back is
+    /// unreliable — e.g. a kinematic body positioned via setTransformation,
+    /// where Bullet repositions from the MotionState and the body transform
+    /// reads back as identity.
+    std::shared_ptr<geom2::Node> getMirrorNode(PhysicsObject *obj) const;
+
     // --- geom2 scene access ---
     geom2::Scene2 &getScene2();
     const geom2::Scene2 &getScene2() const;
