@@ -10,6 +10,7 @@
 #include <icl/utils/Point.h>
 #include <vector>
 #include <memory>
+#include <cstdint>
 
 namespace icl::geom {
   class Material;
@@ -57,6 +58,19 @@ namespace icl::geom2 {
 
     // --- Normals ---
     void createAutoNormals(bool smooth = true);
+
+    // --- Dirty tracking (per-node renderer cache invalidation) ---
+    /// Monotonic counter bumped on every geometry mutation. The renderer
+    /// caches GL buffers per node and re-uploads only when this changes —
+    /// so a single dynamic mesh (soft body, cloth) no longer forces a
+    /// full-scene rebuild via Renderer::invalidateCache().
+    uint64_t getGeometryVersion() const;
+    /// Force a version bump. Mutations through the sanctioned mutable API
+    /// (the protected accessors, clearGeometryData, createAutoNormals, and
+    /// MeshNode's builders) bump automatically; call this after editing
+    /// geometry in place via a non-const accessor such as
+    /// MeshNode::getVertices().
+    void markGeometryDirty();
 
   protected:
     GeometryNode();

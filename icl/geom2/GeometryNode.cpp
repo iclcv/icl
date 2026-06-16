@@ -25,6 +25,10 @@ namespace icl::geom2 {
     float pointSize = 3.0f;
     float lineWidth = 1.0f;
     bool smoothShading = true;
+
+    // Bumped on every geometry mutation; the renderer compares it against
+    // its per-node cached value to re-upload only changed nodes.
+    uint64_t geometryVersion = 1;
   };
 
   GeometryNode::GeometryNode() : m_data(std::make_unique<Data>()) {}
@@ -56,14 +60,19 @@ namespace icl::geom2 {
   const std::vector<TrianglePrimitive> &GeometryNode::getTriangles() const { return m_data->triangles; }
   const std::vector<QuadPrimitive> &GeometryNode::getQuads() const { return m_data->quads; }
 
-  // Protected mutable accessors
-  std::vector<Vec> &GeometryNode::vertices() { return m_data->vertices; }
-  std::vector<Vec> &GeometryNode::normals() { return m_data->normals; }
-  std::vector<GeomColor> &GeometryNode::vertexColors() { return m_data->vertexColors; }
-  std::vector<utils::Point32f> &GeometryNode::texCoords() { return m_data->texCoords; }
-  std::vector<LinePrimitive> &GeometryNode::lines() { return m_data->lines; }
-  std::vector<TrianglePrimitive> &GeometryNode::triangles() { return m_data->triangles; }
-  std::vector<QuadPrimitive> &GeometryNode::quads() { return m_data->quads; }
+  // Dirty tracking
+  uint64_t GeometryNode::getGeometryVersion() const { return m_data->geometryVersion; }
+  void GeometryNode::markGeometryDirty() { ++m_data->geometryVersion; }
+
+  // Protected mutable accessors — every handout bumps the version, since the
+  // caller is about to mutate (the renderer reads through the const getters).
+  std::vector<Vec> &GeometryNode::vertices() { ++m_data->geometryVersion; return m_data->vertices; }
+  std::vector<Vec> &GeometryNode::normals() { ++m_data->geometryVersion; return m_data->normals; }
+  std::vector<GeomColor> &GeometryNode::vertexColors() { ++m_data->geometryVersion; return m_data->vertexColors; }
+  std::vector<utils::Point32f> &GeometryNode::texCoords() { ++m_data->geometryVersion; return m_data->texCoords; }
+  std::vector<LinePrimitive> &GeometryNode::lines() { ++m_data->geometryVersion; return m_data->lines; }
+  std::vector<TrianglePrimitive> &GeometryNode::triangles() { ++m_data->geometryVersion; return m_data->triangles; }
+  std::vector<QuadPrimitive> &GeometryNode::quads() { ++m_data->geometryVersion; return m_data->quads; }
 
   void GeometryNode::clearGeometryData() {
     m_data->vertices.clear();
@@ -73,6 +82,7 @@ namespace icl::geom2 {
     m_data->lines.clear();
     m_data->triangles.clear();
     m_data->quads.clear();
+    ++m_data->geometryVersion;
   }
 
   // Material
@@ -95,6 +105,7 @@ namespace icl::geom2 {
   bool GeometryNode::getSmoothShading() const { return m_data->smoothShading; }
 
   void GeometryNode::createAutoNormals(bool smooth) {
+    ++m_data->geometryVersion;
     auto &V = m_data->vertices;
     auto &N = m_data->normals;
     N.resize(V.size(), Vec(0, 0, 0, 0));

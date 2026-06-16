@@ -488,6 +488,17 @@ void main() { }
     GLuint pointVao = 0, pointVbo = 0;
     int numPointVerts = 0;
 
+    // Geometry version this cache was last built from (0 = never built).
+    uint64_t builtVersion = 0;
+
+    /// Build only if the node's geometry changed since the last upload.
+    /// Reuses the existing VAOs/VBOs (build() re-uploads in place), so a
+    /// dynamic mesh re-uploads only itself, not the whole scene.
+    void ensureBuilt(const GeometryNode *node) {
+      uint64_t v = node->getGeometryVersion();
+      if (builtVersion != v) { build(node); builtVersion = v; }
+    }
+
     ~GeomCache() {
       if (triVao) glDeleteVertexArrays(1, &triVao);
       if (triVbo) glDeleteBuffers(1, &triVbo);
@@ -499,6 +510,10 @@ void main() { }
     }
 
     void build(const GeometryNode *node) {
+      // Reset draw counts up front so a rebuild to fewer/no primitives
+      // doesn't keep drawing stale ranges (VAOs/VBOs are reused below).
+      numTriIndices = numLineVerts = numPointVerts = 0;
+
       const auto &verts = node->getVertices();
       const auto &norms = node->getNormals();
       const auto &uvs = node->getTexCoords();
@@ -1199,10 +1214,8 @@ void main() { }
     }
     else if (auto *geom = dynamic_cast<GeometryNode*>(node)) {
       auto &cache = m_data->cache[geom];
-      if (!cache) {
-        cache = std::make_unique<GeomCache>();
-        cache->build(geom);
-      }
+      if (!cache) cache = std::make_unique<GeomCache>();
+      cache->ensureBuilt(geom);
       if (cache->numTriIndices > 0) {
         Mat modelMatrix = node->getTransformation(true);
         setUniformMat4(m_data->shadowLocModelMatrix, modelMatrix);
@@ -1478,10 +1491,8 @@ void main() { }
     }
     else if (auto *geom = dynamic_cast<GeometryNode*>(node)) {
       auto &cache = m_data->cache[geom];
-      if (!cache) {
-        cache = std::make_unique<GeomCache>();
-        cache->build(geom);
-      }
+      if (!cache) cache = std::make_unique<GeomCache>();
+      cache->ensureBuilt(geom);
 
       // Billboard: cancel view rotation so quad always faces camera
       if (auto *text = dynamic_cast<TextNode*>(node); text && text->isBillboard()) {

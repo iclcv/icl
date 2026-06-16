@@ -353,9 +353,9 @@ static void syncRender() {
   rocketNode->setTransformation(bullet2icl(rocket->getRigidBody()->getWorldTransform()));
   tipNode->setTransformation(bullet2icl(tip->getRigidBody()->getWorldTransform()));
   if (chute) {
-    // the renderer caches each node's geometry; the canopy mesh changes every
-    // frame, so its cache must be invalidated or it draws frozen at deploy shape
-    scene.getRenderer().invalidateCache();
+    // canopy + shroud meshes change every frame; mutating them through the
+    // MeshNode API bumps each node's geometry version, so the renderer
+    // re-uploads only these nodes (no global invalidateCache needed).
     chute->getSoftBody()->m_cfg.kDG = gui["drag"].as<int>() / 100.f;  // live-tunable drag
     const btSoftBody *s = chute->getSoftBody();
     auto &verts = chuteMesh->getVertices();
