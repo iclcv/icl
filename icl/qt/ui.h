@@ -806,31 +806,37 @@ namespace icl::qt::ui {
   /// Horizontal layout container.
   struct HBox : public qt::HBox {
     HBox(BoxOpts opts = {}) : qt::HBox() { applyBoxOpts(*this, opts); }
+    explicit HBox(QWidget *parent, BoxOpts opts = {}) : qt::HBox(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Vertical layout container.
   struct VBox : public qt::VBox {
     VBox(BoxOpts opts = {}) : qt::VBox() { applyBoxOpts(*this, opts); }
+    explicit VBox(QWidget *parent, BoxOpts opts = {}) : qt::VBox(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Horizontal scroll area.
   struct HScroll : public qt::HScroll {
     HScroll(BoxOpts opts = {}) : qt::HScroll() { applyBoxOpts(*this, opts); }
+    explicit HScroll(QWidget *parent, BoxOpts opts = {}) : qt::HScroll(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Vertical scroll area.
   struct VScroll : public qt::VScroll {
     VScroll(BoxOpts opts = {}) : qt::VScroll() { applyBoxOpts(*this, opts); }
+    explicit VScroll(QWidget *parent, BoxOpts opts = {}) : qt::VScroll(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Horizontal splitter (draggable pane divider).
   struct HSplit : public qt::HSplit {
     HSplit(BoxOpts opts = {}) : qt::HSplit() { applyBoxOpts(*this, opts); }
+    explicit HSplit(QWidget *parent, BoxOpts opts = {}) : qt::HSplit(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Vertical splitter.
   struct VSplit : public qt::VSplit {
     VSplit(BoxOpts opts = {}) : qt::VSplit() { applyBoxOpts(*this, opts); }
+    explicit VSplit(QWidget *parent, BoxOpts opts = {}) : qt::VSplit(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Tab container — positional CSV of tab titles + BoxOpts.
@@ -845,6 +851,8 @@ namespace icl::qt::ui {
   struct Tab : public qt::Tab {
     Tab(const std::string &commaSepTitles, BoxOpts opts = {})
       : qt::Tab(commaSepTitles) { applyBoxOpts(*this, opts); }
+    Tab(const std::string &commaSepTitles, QWidget *parent, BoxOpts opts = {})
+      : qt::Tab(commaSepTitles, parent) { applyBoxOpts(*this, opts); }
   };
 
   // --- Phase 5 finalizers -------------------------------------------------

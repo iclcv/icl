@@ -20,7 +20,16 @@ the core-profile pipeline.
 
 **Earlier:** io modernization DONE; qt::ui:: app/demo migration DONE (Session 68;
 `ui-plan.md` Phases 1–6 landed) — converter dry-run `0 chains, 0 skips` across
-all 111 GUI files.
+all 111 GUI files. qt:: **framework internals** migration DONE too
+(`ui-internals-plan.md`): `GUI.cpp`/`Widget.cpp` converted — 74 auto-chains +
+the hand-converted parent-taking/decl sites; added a `QWidget*` parent-ctor
+overload to the 7 `ui::` containers in `ui.h`. Only GUI.cpp:884
+`CamPropertyWidget : public Tab` base-ctor left as `qt::Tab` (case 2c).
+877/877 green; icl-viewer smoke (offscreen) builds the migrated ICLWidget menu
+cleanly (only the GL context fails, as expected). **Phase 7 promotion
+(make `ui::Xxx` the storage type, retire `toString()`/GUIDefinition parsing,
+then promote `ui::Xxx` into `icl::qt` and strip the qualifier) is now the sole
+ui:: remainder.**
 
 Branch `further-restructuring-and-cleanup`; 877/877 tests green; build clean
 (`CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C builddir -j 16`).

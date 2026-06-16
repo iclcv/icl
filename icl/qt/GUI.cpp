@@ -94,6 +94,7 @@
 #include <icl/qt/ThreadedUpdatableSlider.h>
 #include <icl/qt/ThreadedUpdatableTextView.h>
 #include <icl/qt/ColorLabel.h>
+#include <icl/qt/ui.h>
 #include <icl/utils/config/Configurable.h>
 #include <icl/core/cc/Color.h>
 #include <QProgressBar>
@@ -348,67 +349,62 @@ namespace icl{
             // preserves the "free-form entry" feel.
             std::string handle = "#F#"+p.full;
             ostr << '\1' << handle;
-            gui << Float(r->min, r->max, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+            gui << ui::Float(r->min, r->max, v, {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           }else{
             std::string handle = "#r#"+p.full;
             ostr << '\1' << handle;
-            gui << FSlider(r->min, r->max, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+            gui << ui::FSlider(r->min, r->max, v, {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           }
         }else if(auto *r = std::any_cast<up::Range<int>>(&c)){
           int v = h.as<int>();
           if(r->ui == up::UI::Spinbox){
             std::string handle = "#R#"+p.full;
             ostr << '\1' << handle;
-            gui << Spinner(r->min, r->max, v).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+            gui << ui::Spinner(r->min, r->max, v, {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           }else{
             std::string handle = "#r#"+p.full;
             ostr << '\1' << handle;
             int step = (r->step == 0) ? 1 : r->step;
-            gui << Slider(r->min, r->max, v, false, step).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+            gui << ui::Slider(r->min, r->max, v, {.vertical=false, .step=step, .handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           }
         }else if(auto *m = std::any_cast<up::Menu<std::string>>(&c)){
           std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-          gui << Combo(build_combo_list(m->choices, h.as<std::string>()))
-                    .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          gui << ui::Combo(build_combo_list(m->choices, h.as<std::string>()), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(auto *m = std::any_cast<up::Menu<int>>(&c)){
           std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-          gui << Combo(build_combo_list(m->choices, h.as<std::string>()))
-                    .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          gui << ui::Combo(build_combo_list(m->choices, h.as<std::string>()), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(auto *m = std::any_cast<up::Menu<float>>(&c)){
           std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-          gui << Combo(build_combo_list(m->choices, h.as<std::string>()))
-                    .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          gui << ui::Combo(build_combo_list(m->choices, h.as<std::string>()), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(std::any_cast<up::Command>(&c)){
           std::string handle = "#c#"+p.full;
           ostr << '\1' << handle;
-          gui << Button(p.half).tooltip(tt).handle(handle).minSize(12,2);
+          gui << ui::Button(p.half, {.handle=handle, .tooltip=tt, .minSize={12, 2}});
         }else if(std::any_cast<up::Info>(&c)){
           std::string handle = "#i#"+p.full;
           ostr << '\1' << handle;
-          gui << Label(h.as<std::string>())
-                    .tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          gui << ui::Label(h.as<std::string>(), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           // Refreshed through the callback push channel on every
           // write; coalesced to one widget flush per GUI tick.
         }else if(std::any_cast<up::Flag>(&c)){
           std::string handle = "#f#"+p.full;
           ostr << '\1' << handle;
-          gui << CheckBox(p.half, h.as<bool>())
-                    .tooltip(tt).handle(handle).minSize(12,2);
+          gui << ui::CheckBox(p.half, {.checked=h.as<bool>(), .handle=handle, .tooltip=tt, .minSize={12, 2}});
         }else if(auto *t = std::any_cast<up::Text>(&c)){
           std::string handle = "#S#"+p.full;
           ostr << '\1' << handle;
           int max_len = t->maxLength ? t->maxLength : 100;
           std::string value = h.as<std::string>();
           if(!value.length()) value = " ";
-          gui << String(value, max_len).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          gui << ui::String(value, {.maxLen=max_len, .handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(std::any_cast<cp::Color>(&c)){
           std::string handle = "#C#"+p.full;
           ostr << '\1' << handle;
           Color col = h.as<Color>();
-          gui << ColorSelect(col[0],col[1],col[2]).tooltip(tt).handle(handle).minSize(12,2).label(p.half);
+          gui << ui::ColorSelect(col[0], col[1], col[2], {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(std::any_cast<cp::ImageView>(&c)){
           // Read-only image preview.  Op writes the live core::Image
           // into typed_value via setPropertyValueTyped (or the
@@ -418,7 +414,7 @@ namespace icl{
           // the callback-exec list — ImageHandle is output-only and
           // rejects GUI::ComplexCallback registrations.
           std::string handle = "#img#"+p.full;
-          gui << Display().tooltip(tt).handle(handle).minSize(12,8).label(p.half);
+          gui << ui::Display({.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 8}});
         }else{
           ERROR_LOG("unable to create GUI-component for property \"" << p.full
                     << "\" (no constraint recognised; legacy type=\""
@@ -543,23 +539,23 @@ namespace icl{
             ++i;
           }
         }
-        gui = HSplit(this).handle("__the_root__");
+        gui = ui::HSplit(this, {.handle="__the_root__"});
         bool use_tabs = sections.size() > 1 || (sections.size() == 1 && sections.begin()->first != "general");
         if(use_tabs){
           if(!sections.contains("general")){
             tablist += ",general";
             generalIdx = tablist.size()-1;
           }
-          sub_gui = Tab(tablist,this).handle("__the_tab__");
+          sub_gui = ui::Tab(tablist, this, {.handle="__the_tab__"});
         } else {
-          sub_gui = VBox(this).handle("__the_tab__");
+          sub_gui = ui::VBox(this, {.handle="__the_tab__"});
         }
 
         std::ostringstream ostr;
 
         // special treatment of grabbers
         if(dynamic_cast<io::SourceBackend*>(conf)){
-          GUI general_box = VBox(this).handle("__the_box__");
+          GUI general_box = ui::VBox(this, {.handle="__the_box__"});
           add_component(general_box,getStSt(sections, "format"),ostr,gui);
           add_component(general_box,getStSt(sections, "size"),ostr,gui);
           add_component(general_box,getStSt(sections, "desired format"),ostr,gui);
@@ -571,7 +567,7 @@ namespace icl{
         bool haveGeneral = false;
         if(!conf->isOrderedFlagSet()) {
           for(const auto& [section, entries] : sections){
-            GUI tab = VScroll();
+            GUI tab = ui::VScroll();
             for(unsigned int i=0;i<entries.size();++i){
               if(!isSpecialGrabberGrabberProperty(conf,entries[i].full)){
                 add_component(tab,entries[i],ostr,gui);
@@ -579,9 +575,9 @@ namespace icl{
             }
             if(section == "general"){
               haveGeneral = true;
-              tab << ( HBox()
-                       << Button("load").handle("#X#load")
-                       << Button("save").handle("#X#save")
+              tab << ( ui::HBox()
+                       << ui::Button("load", {.handle="#X#load"})
+                       << ui::Button("save", {.handle="#X#save"})
                      );
 
               ostr <<  '\1' << "#X#load";
@@ -592,7 +588,7 @@ namespace icl{
         } else {
             for(const auto& [order, section] : sections_ordering){
               std::vector<StSt>& entries = sections[section];
-              GUI tab = VScroll();
+              GUI tab = ui::VScroll();
               for(unsigned int i=0;i<entries.size();++i){
                 if(!isSpecialGrabberGrabberProperty(conf,entries[i].full)){
                   add_component(tab,entries[i],ostr,gui);
@@ -600,9 +596,9 @@ namespace icl{
               }
               if(section == "general"){
                 haveGeneral = true;
-                tab << ( HBox()
-                         << Button("load").handle("#X#load")
-                         << Button("save").handle("#X#save")
+                tab << ( ui::HBox()
+                         << ui::Button("load", {.handle="#X#load"})
+                         << ui::Button("save", {.handle="#X#save"})
                        );
 
                 ostr <<  '\1' << "#X#load";
@@ -613,10 +609,10 @@ namespace icl{
         }
 
         if(!haveGeneral){
-          GUI tab = VScroll();
-            tab << ( HBox()
-                     << Button("load").handle("#X#load")
-                     << Button("save").handle("#X#save")
+          GUI tab = ui::VScroll();
+            tab << ( ui::HBox()
+                     << ui::Button("load", {.handle="#X#load"})
+                     << ui::Button("save", {.handle="#X#save"})
                      );
 
             ostr <<  '\1' << "#X#load";
@@ -890,9 +886,9 @@ namespace icl{
         minSize(32,24);
         std::vector<io::DeviceDescription> devs = io::ImageSource::getDeviceList("",false);
         for(unsigned int i = 0; i < devs.size(); ++i){
-          *this << Prop(devs.at(i).name()).label(devs.at(i).name());
+          *this << ui::Prop(devs.at(i).name(), {.label=devs.at(i).name()});
         }
-        *this << Create();
+        *this << ui::Create();
       }
     };
 
