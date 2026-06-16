@@ -10,6 +10,21 @@ mirrors physics/scene objects into geom2 nodes automatically. geom2 fully
 replaces the geom *rendering* layer eventually; interim `geom`→`geom_old` rename
 is acceptable but not required.
 
+## Status (updated 2026-06-16)
+- **Phase 0a DONE** (`c46a38f93`): build reorder geom→geom2→markers→physics.
+- **Phase 0b DONE** (`3270c29ef`): per-node geometry dirty flag; water-rocket
+  drops per-frame global invalidateCache.
+- **Phase 0c DEFERRED**: offscreen render is untestable in this sandbox (no GL
+  context), non-blocking, and the Renderer's GL objects are context-bound.
+  Revisit on a working-GL machine.
+- **Phase 1a DONE** (`ef25cdb25`): `geom2::fromSceneObject` universal converter.
+- **Phase 1b DONE** (`6f27ce1ac`): `PhysicsScene2` bridge; `physics-scene`
+  migrated as proof. Follow-up: port `PhysicsMouseHandler` to geom2.
+- **Phase 2 NEXT**: migrate the remaining physics demos + port the physics
+  mouse handlers; retire `PhysicsScene`.
+- All commits build clean and keep 877/877 tests green. GUI render correctness
+  is unverifiable in-sandbox (GL context creation fails); needs a real display.
+
 ## Scope clarification — what "get rid of geom" actually means
 
 `geom` is two things fused together:

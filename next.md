@@ -2,11 +2,32 @@
 
 ## Next Step
 
-**Next focus: phase out `geom` → `geom2` (see the TODO section just below).**
-The legacy `geom::Scene` GL path is dead (Core-Profile default routes everything
-to the incomplete `geom::GLRenderer`); `geom2`/`Scene2` is the live renderer.
-Biggest item: port ICLPhysics visualization to `geom2` so the physics demos
-render again (the `physics-water-rocket` demo shows the bridge pattern).
+**In progress: phase out `geom` → `geom2`** (see `geom2-migration-plan.md` for
+the full phased plan + live status). The legacy `geom::Scene` GL path is dead
+(Core-Profile default routes everything to the incomplete `geom::GLRenderer`);
+`geom2`/`Scene2` is the live renderer.
+
+**Landed (Session 70):** Phase 0+1 of the migration:
+- `c46a38f93` build reorder (geom→geom2→markers→physics) so physics can dep geom2
+- `3270c29ef` per-node geometry dirty flag (`GeometryNode::markGeometryDirty`,
+  version-keyed `GeomCache`) — dynamic meshes re-upload only themselves; dropped
+  water-rocket's per-frame global `invalidateCache`
+- `ef25cdb25` `geom2::fromSceneObject` — universal geom::SceneObject→node tree
+  converter (vertices + polymorphic primitives + recursing children)
+- `6f27ce1ac` `physics::PhysicsScene2` auto-mirroring bridge (owns Scene2,
+  mirrors each PhysicsObject, `syncSceneFromPhysics()` per frame) + migrated
+  `physics-scene` as the proof
+- **Deferred:** Phase 0c offscreen `Scene2::render()→Img` — untestable in
+  sandbox (no GL context), non-blocking; revisit on a working-GL machine.
+
+**Next (Phase 2):** migrate the remaining physics demos onto `PhysicsScene2`
+(`physics-maze/-paper/-paper3/-car/-constraints`), port `PhysicsMouseHandler` /
+`PhysicsPaper3MouseHandler` to a geom2/`Scene2` equivalent, retire
+`PhysicsScene`. Then Phase 3 (geom + markers demos), Phase 4 (delete legacy
+scene layer), Phase 5 (optional rename). NOTE: GUI render correctness is
+unverifiable in this sandbox (GL context creation fails) — needs a real display.
+
+The original detailed TODO notes below remain valid background.
 
 **This session (69):** built `physics-water-rocket` (geom2-rendered water-rocket
 + Bullet soft-body parachute) and, in the process, fixed several framework bugs:
