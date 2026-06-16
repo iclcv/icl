@@ -1192,8 +1192,13 @@ void main() { }
              zx, zy, zz, -(zx*ex + zy*ey + zz*ez),
              0,  0,  0,  1);
 
-    // Perspective projection: 90° FOV, 1:1 aspect, near=10mm, far=50000mm
-    float n = 10.0f, f = 50000.0f;
+    // Perspective projection: 90° FOV, 1:1 aspect. Near/far track the
+    // light-to-target distance so depth precision concentrates where the
+    // geometry actually is — a fixed far (e.g. 50000) pushes mid-/large-scale
+    // scenes into the compressed far region, where the depth-compare bias
+    // over-biases everything to "lit" and shadows vanish.
+    float n = std::max(1.0f, dist * 0.05f);
+    float f = dist * 5.0f + 1.0f;
     float t = 1.0f;  // tan(45°) = 1
     Mat proj(1/t, 0,   0,            0,
              0,   1/t, 0,            0,
