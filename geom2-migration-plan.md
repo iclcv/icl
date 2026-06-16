@@ -19,9 +19,21 @@ is acceptable but not required.
   Revisit on a working-GL machine.
 - **Phase 1a DONE** (`ef25cdb25`): `geom2::fromSceneObject` universal converter.
 - **Phase 1b DONE** (`6f27ce1ac`): `PhysicsScene2` bridge; `physics-scene`
-  migrated as proof. Follow-up: port `PhysicsMouseHandler` to geom2.
-- **Phase 2 NEXT**: migrate the remaining physics demos + port the physics
-  mouse handlers; retire `PhysicsScene`.
+  migrated as proof.
+- **Converter colour fix** (`60f4599fa`): geom stores colours in [0,1] already;
+  the converter was double-scaling → objects rendered black. Fixed (verified by
+  CPU dump: RigidBoxObject → baseColor (0,0.392,1,1)). User confirmed objects
+  now render correctly coloured.
+- **Phase 2 IN PROGRESS** (`00d641f1f`): `PhysicsMouseHandler2` (camera nav +
+  Shift-drag grab), `PhysicsScene2` default light now casts soft shadows +
+  `addObject(obj, passOwnership)`. Migrated `physics-scene`, `physics-constraints`,
+  `physics-car`.
+  - **Deferred within Phase 2**: `physics-maze` (custom RigidCompoundObject
+    MazeObject with geom::Scene-typed `addToWorld` + vis-only coord frame) and
+    `physics-paper`/`-paper3` (deeply coupled to geom::Scene shadows/lights +
+    offscreen `scene.render(0)` [blocked on 0c] + ManipulatablePaper picking).
+  - Then retire `PhysicsScene` once `maze` migrates (paper uses
+    `DefaultPhysicsScene`/PhysicsWorld directly).
 - All commits build clean and keep 877/877 tests green. GUI render correctness
   is unverifiable in-sandbox (GL context creation fails); needs a real display.
 
