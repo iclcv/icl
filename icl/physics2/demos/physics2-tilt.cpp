@@ -13,6 +13,7 @@
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/Scene2MouseHandler.h>
+#include <icl/geom2/DefaultScene.h>
 #include <icl/physics2/PhysicsScene.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/PhysicsMouseHandler.h>
@@ -34,16 +35,9 @@ static Mat rotY(float t){ Mat m=Mat::id(); m(0,0)=cosf(t);m(0,2)=sinf(t);m(2,0)=
 static Mat rotX(float t){ Mat m=Mat::id(); m(1,1)=cosf(t);m(1,2)=-sinf(t);m(2,1)=sinf(t);m(2,2)=cosf(t); return m; }
 
 void init() {
-  scene.addCamera(Camera::lookAt(Vec(1600, 1100, 1300, 1), Vec(0,0,0,1), Vec(0,0,1,1),
-                                 Size(800,600), 50));
-  scene.setBounds(2500);
-
-  // catch floor far below (static) — place the node BEFORE add (the static
-  // body reads its initial pose from the node at attach time)
-  auto floor = CuboidNode::create(0,0,0, 8000,8000,40);
-  floor->setMaterial(Material::fromColor(GeomColor(120,120,120,255)));
-  floor->translate(0,0,-800);
-  scene.add(std::static_pointer_cast<Node>(floor), 0.0f);
+  // Default environment + ground collider — the catch floor for balls that
+  // roll off the platform.
+  scene.setupDefault(DefaultScene::SceneType::Studio, 2000.f);
 
   // kinematic tilting platform
   auto plat = CuboidNode::create(0,0,0, 1200,1200,30);
@@ -62,12 +56,6 @@ void init() {
     d->setRollingFriction(0.02f);
     d->setFriction(0.6f);
   }
-
-  auto light = std::make_shared<LightNode>(LightNode::Point);
-  light->setIntensity(0.9f);
-  light->translate(800, 600, 1500);
-  light->setShadowEnabled(true);
-  scene.addLight(light);
 
   scene.start(120);
 

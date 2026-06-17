@@ -9,7 +9,7 @@
 #include <icl/physics2/SoftBodyDriver.h>
 #include <icl/physics2/SensorDriver.h>
 #include <icl/physics2/Units.h>
-#include <icl/geom2/Scene2.h>
+#include <icl/geom2/DefaultScene.h>
 #include <memory>
 
 #ifndef ICLPhysics2_API
@@ -58,6 +58,17 @@ namespace icl::physics2 {
     /// any collision response. Set the node invisible for an invisible trigger.
     SensorDriver *addSensor(std::shared_ptr<geom2::Node> node);
 
+    /// Furnish the scene with a default environment (camera, lamp rig, ground)
+    /// plus a matching static ground collider, ready to add() bodies onto.
+    /** Z-up (physics convention, matching the default gravity). The visual
+        ground is DefaultScene's checkerboard; the collider is an invisible box
+        whose top is coincident with it, so bodies rest exactly on what's drawn.
+        \a extent is the characteristic scene size (mm) — drives ground/lights/
+        camera and the ground level (top at -extent/2 - 2%). */
+    void setupDefault(geom2::DefaultScene::SceneType type =
+                          geom2::DefaultScene::SceneType::Studio,
+                      float extent = 1000.f);
+
     /// Add a non-physical node (decoration, coordinate frame, ...).
     void addNode(std::shared_ptr<geom2::Node> node);
     void addLight(std::shared_ptr<geom2::LightNode> light);
@@ -86,8 +97,8 @@ namespace icl::physics2 {
     PhysicsWorld &world();
 
   private:
-    PhysicsWorld m_world;     // declared first  -> destroyed last
-    geom2::Scene2 m_scene;    // declared second -> destroyed first
+    PhysicsWorld m_world;        // declared first  -> destroyed last
+    geom2::DefaultScene m_scene; // declared second -> destroyed first (is-a Scene2)
     std::shared_ptr<geom2::MeshNode> m_debugNode;
     bool m_debugEnabled = false;
   };

@@ -19,6 +19,9 @@
 #include <icl/geom2/CuboidNode.h>
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/MeshNode.h>
+#include <icl/geom2/DefaultScene.h>
+#include <icl/physics2/SoftBodyDriver.h>
+#include <BulletSoftBody/btSoftBody.h>
 
 #include <algorithm>
 #include <cmath>
@@ -73,6 +76,25 @@ ICL_REGISTER_TEST("physics2.box_falls_and_rests", "a dynamic box drops onto a st
   ICL_TEST_TRUE(z < 150.0f);
   // the static ground never moved
   ICL_TEST_NEAR(zOf(gd->getPose()), 0.0f, 1.0f);
+}
+
+ICL_REGISTER_TEST("physics2.setup_default_ground", "setupDefault's collider is coincident with the drawn ground")
+{
+  PhysicsScene scene;
+  scene.setupDefault(DefaultScene::SceneType::Studio, 1000.f);
+  // ext=1000 -> visual + collider ground top at z = -500 - 2% = -520
+
+  auto ball = SphereNode::create(0,0,0, 50, 16, 16);
+  ball->translate(0, 0, 200);
+  auto bd = scene.add(std::static_pointer_cast<Node>(ball), 1.0f);
+  ICL_TEST_NEAR(zOf(bd->getPose()), 200.0f, 1e-2);   // starts above the ground
+
+  for (int i = 0; i < 700; i++) scene.stepOnce(1.f/120.f);
+
+  // rests at groundLevel(-520) + radius(50) = -470, within collision margins —
+  // proves the invisible collider lines up with DefaultScene's checkerboard.
+  float z = zOf(bd->getPose());
+  ICL_TEST_TRUE(z > -490.0f && z < -445.0f);
 }
 
 ICL_REGISTER_TEST("physics2.sync_writes_node", "scene.sync() pushes the simulated pose into the node")
@@ -351,4 +373,23 @@ ICL_REGISTER_TEST("physics2.static_unit_scale", "a custom unit scale still lets 
   for (int i = 0; i < 600; i++) scene.stepOnce(1.f/120.f);
   float z = zOf(bd->getPose());
   ICL_TEST_TRUE(z > 45.0f && z < 85.0f);   // still rests near 60 regardless of scale
+}
+
+ICL_REGISTER_TEST("physics2.cloth_resolution_rebuild", "changing node density rebuilds the soft body live")
+{
+  PhysicsScene scene;
+  auto *cloth = scene.addCloth(Vec(-100,-100,200,1), Vec(100,-100,200,1),
+                               Vec(-100, 100,200,1), Vec(100, 100,200,1),
+                               12, 12, /*pin*/ 0, 1.0f);
+  ICL_TEST_TRUE(cloth->softBody() != nullptr);
+  ICL_TEST_EQ(cloth->softBody()->m_nodes.size(), 12 * 12);
+
+  // Live density change → structural rebuild at the new resolution.
+  cloth->setPropertyValue("node density", 20);
+  ICL_TEST_EQ(cloth->softBody()->m_nodes.size(), 20 * 20);
+
+  // Still simulates after the rebuild (no dangling body / capture).
+  for (int i = 0; i < 120; i++) scene.stepOnce(1.f/120.f);
+  ICL_TEST_TRUE(cloth->softBody() != nullptr);
+  ICL_TEST_EQ(cloth->softBody()->m_nodes.size(), 20 * 20);
 }

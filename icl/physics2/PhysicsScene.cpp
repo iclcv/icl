@@ -6,6 +6,7 @@
 #include <icl/geom2/Node.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/MeshNode.h>
+#include <icl/geom2/CuboidNode.h>
 #include <icl/geom2/Primitive.h>
 
 namespace icl::physics2 {
@@ -37,6 +38,27 @@ namespace icl::physics2 {
   SensorDriver *PhysicsScene::addSensor(std::shared_ptr<geom2::Node> node) {
     m_scene.addNode(node);
     return m_world.addDriver<SensorDriver>(std::move(node));
+  }
+
+  void PhysicsScene::setupDefault(geom2::DefaultScene::SceneType type, float extent) {
+    // Z-up to match the default gravity (0,0,-9810); preset furnishes camera,
+    // lamp rig and the checkerboard ground (scaled to extent).
+    m_scene.setUpAxis('Z');
+    m_scene.setExtent(extent);
+    m_scene.setSceneType(type);
+
+    // Static ground collider, top coincident with DefaultScene's visual ground
+    // (which sits at z = -extent/2 - 2% along the up axis). Created at the origin
+    // then translated (the static body reads its pose from the node), invisible
+    // so only the checkerboard is drawn.
+    const float half = extent * 0.5f;
+    const float groundLevel = -half - extent * 0.02f;
+    const float gs = extent * 6.0f;       // match the visual ground half-size
+    const float thick = extent * 0.5f;
+    auto collider = geom2::CuboidNode::create(0, 0, 0, 2 * gs, 2 * gs, thick);
+    collider->translate(0, 0, groundLevel - thick * 0.5f);
+    collider->setVisible(false);
+    add(std::static_pointer_cast<geom2::Node>(collider), 0.0f);  // static; scene keeps it alive
   }
 
   void PhysicsScene::addNode(std::shared_ptr<geom2::Node> node) {

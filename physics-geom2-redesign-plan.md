@@ -400,6 +400,41 @@ Establish *standards* instead of tuning constants:
    solver iterations, self-collision (CL_SELF/VF_SS), cluster vs SDF. Same
    parameter-standards work; no longer a stability blocker.
 
+**Progress (Session 72).** `SoftBodyDriver` is now a `utils::Configurable` —
+stiffness / friction / damping / contact-hardness / position-iterations /
+collision-margin / collision-mode (SDF vs Clusters) / self-collision / size /
+node-density exposed as **live properties** (applied to the running body via the
+sim-thread command queue; `ui::Prop(clothDriver)` renders the panel in
+`physics2-cloth`, with reset / size / density sliders). Scale-aware default
+margin; clusters generated up front in `buildBody()` (fast mode switching).
+Fought a "drapes fine, rests, then explodes in ~1 ms" instability with: a
+post-step **velocity clamp** safety net, softer contact defaults (kCHR 0.6,
+damping 0.12), and cluster hardness following kCHR instead of pinned at 1. This
+*tames* it but is a band-aid — see the solver note below.
+
+### Soft-body solver alternatives (deferred — the real fix)
+
+`btSoftBody` is a mass-spring system with semi-explicit integration and
+impulse-based cluster/SDF contacts, so energy accumulates at rest until it
+diverges (our explosion). The driver-based design makes the solver swappable
+behind `SoftBodyDriver` / `PhysicsScene::addCloth` without touching the rigid
+side or the geom2 mesh sync — so this is a contained future swap, ranked by cost:
+1. **Bullet `btDeformableMultiBodyDynamicsWorld` (FEM)** — *already present in our
+   Bullet 3.25* (`BulletSoftBody/btDeformable*`). Corotational FEM + backward-
+   Euler **implicit** integration → stable at rest / large timesteps. Cheapest
+   meaningful upgrade (stays in Bullet) but is a *different world type* than the
+   `btSoftRigidDynamicsWorld` we use, so `PhysicsWorld` needs a deformable
+   variant. **Try this first.**
+2. **XPBD (Extended Position-Based Dynamics)** — modern industry standard for
+   cloth (Müller et al.; Unreal Chaos Cloth / Unity / NVIDIA). Unconditionally
+   stable, stiffness decoupled from iteration count, ~a few hundred lines, zero
+   external deps → best fit for ICL's self-containment. The "proper" long-term
+   answer: a small owned `XpbdClothDriver`.
+3. **PhysX 5 deformables** (now BSD open source) — excellent FEM cloth, CPU+GPU,
+   but a whole new physics backend → only if physics gets a big push.
+4. **Projective Dynamics / ADMM** — robust implicit cloth at large steps; more
+   involved than XPBD for similar payoff.
+
 ## Cross-cutting TODO — `DefaultScene` (SceneType presets) + default physics scene
 
 *(Sketch — Session 71. Design agreed; not yet implemented. Decisions baked in:
@@ -536,8 +571,17 @@ of "render vs collision disagree" bug can't recur here).
    (+ `loadAndFit` for the viewer job) and `setupNatureScene` as `Landscape`;
    then **delete `DemoScene2`** and repoint its users (`scene-to-pointcloud`,
    `raycast-octree`, any `-i` viewer) at `DefaultScene`. Add `Room` + flowers.
-3. **TODO** — Upgrade `PhysicsScene::m_scene` to `DefaultScene`, add
-   `setupDefault`; migrate `physics2-scene/-tilt/-cloth` to it.
+3. **DONE (Session 72)** — `PhysicsScene::m_scene` is now a `DefaultScene`;
+   `setupDefault(SceneType, extent)` sets Z-up + preset + extent and adds an
+   **invisible static box collider** whose top is coincident with the visual
+   checkerboard ground (so bodies rest on exactly what's drawn). Migrated
+   `physics2-scene/-tilt/-cloth` onto it (dropped their hand-rolled camera /
+   light / ground). Headless `physics2.setup_default_ground` test proves the
+   collider/visual alignment (a dropped ball rests at groundLevel+radius).
+   NOTE: `DefaultScene`'s ground sits at `-0.52*extent`; content that must rest
+   on it (the cloth's drape box) had to be shifted down to that level — a sign
+   the ground-depth-vs-extent coupling may want revisiting (e.g. ground at z=0
+   with content above) if it keeps biting.
 
 NOTE: GUI render correctness is unverifiable in this sandbox (GL context creation
 fails) — the sky pass + faded edges + lamp rig all need a real display to confirm.

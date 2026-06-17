@@ -13,6 +13,7 @@
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/Scene2MouseHandler.h>
+#include <icl/geom2/DefaultScene.h>
 #include <icl/physics2/PhysicsScene.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/PhysicsMouseHandler.h>
@@ -35,14 +36,9 @@ static std::shared_ptr<Node> at(std::shared_ptr<Node> n, float x, float y, float
 }
 
 void init() {
-  scene.addCamera(Camera(Vec(2000, 0, 500, 1), Vec(-1, 0, 0, 1), Vec(0, 0, -1, 1)));
-  scene.setBounds(3000);
-
-  // --- table (static, mass 0): big flat box, top at z = -100 ---
-  auto table = CuboidNode::create(0,0,0, 10000,10000,200);
-  table->setMaterial(Material::fromColor(geom_red()));
-  auto td = scene.add(at(std::static_pointer_cast<Node>(table), 0,0,-200), 0.0f);
-  td->setRestitution(0.9f); td->setFriction(0.5f);
+  // Default environment (camera, lamp rig, checkerboard ground) + a matching
+  // static ground collider; bodies dropped below rest on the drawn ground.
+  scene.setupDefault(DefaultScene::SceneType::Studio, 1000.f);
 
   // --- falling box ---
   auto box = CuboidNode::create(0,0,0, 100,100,100);
@@ -61,12 +57,6 @@ void init() {
   sph->setMaterial(Material::fromColor(GeomColor(220,60,60,255)));
   auto sd = scene.add(at(std::static_pointer_cast<Node>(sph), -200,0,300), 0.1f);
   sd->setRestitution(0.5f); sd->setFriction(0.5f); sd->setRollingFriction(0.1f);
-
-  auto light = std::make_shared<LightNode>(LightNode::Point);
-  light->setIntensity(0.85f);
-  light->translate(600, 400, 1200);
-  light->setShadowEnabled(true);
-  scene.addLight(light);
 
   scene.start(120);   // physics on its own thread at 120 Hz
 

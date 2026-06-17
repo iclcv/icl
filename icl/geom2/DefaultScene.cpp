@@ -228,9 +228,16 @@ namespace icl::geom2 {
     }
 
     // --- Camera (create once; update in place on later rebuilds) ---
+    // Aim at where content actually sits: just above the ground for Studio
+    // (origin is ~half an extent ABOVE the floor, which read as "too high"),
+    // or the origin for Void. Eye is a modest height above that target.
     const float dist = ext * 1.5f;
-    Camera cam = Camera::lookAt(P(dist * 0.5f, -dist * 0.7f, dist * 0.3f),
-                                Vec(0, 0, 0, 1), upVec, Size(640, 480), 55.0f);
+    const float groundLvl = -half - ext * 0.02f;
+    const float tgtH = (m_type == SceneType::Studio) ? groundLvl + ext * 0.12f : 0.0f;
+    const float eyeH = tgtH + ext * 0.40f;
+    const Vec target(upVec[0] * tgtH, upVec[1] * tgtH, upVec[2] * tgtH, 1);
+    Camera cam = Camera::lookAt(P(dist * 0.5f, -dist * 0.7f, eyeH),
+                                target, upVec, Size(640, 480), 55.0f);
     cam.getRenderParams().clipZNear = ext * 0.05f;
     cam.getRenderParams().clipZFar  = ext * 16.0f;
     if (getCameraCount() == 0) addCamera(cam);
@@ -239,7 +246,7 @@ namespace icl::geom2 {
     // Neutral backdrop for when the sky is disabled
     setPropertyValueSilently("background color", core::Color(30, 34, 40));
 
-    setCursor(Vec(0, 0, 0, 1));
+    setCursor(target);   // rotation centre = look-at target
     setBounds(ext);
 
     applyRenderFlags();
