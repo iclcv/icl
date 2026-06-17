@@ -72,6 +72,7 @@ namespace icl::geom {
       core::Image metallicRoughnessMap;  ///< G=roughness, B=metallic (glTF convention)
       core::Image emissiveMap;           ///< emission texture (RGB)
       core::Image occlusionMap;          ///< ambient occlusion (R channel, 1=fully lit)
+      core::Image reflectivityMap;       ///< per-texel reflectivity (R channel), scales `reflectivity`
     };
     std::shared_ptr<TextureMaps> textures;
 

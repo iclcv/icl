@@ -71,6 +71,8 @@ uniform int uHasNormalMap;
 uniform sampler2D uNormalMap;
 uniform int uHasMetallicRoughnessMap;
 uniform sampler2D uMetallicRoughnessMap;
+uniform int uHasReflectivityMap;
+uniform sampler2D uReflectivityMap;
 uniform int uHasEmissiveMap;
 uniform sampler2D uEmissiveMap;
 uniform int uHasOcclusionMap;
@@ -88,6 +90,7 @@ uniform vec2 uScreenSize;
 
 uniform int uDebugMode;
 uniform int uUnlit;
+uniform int uLightingEnabled;
 
 // Per-light shadow: slot index into shadow map array (-1 = no shadow)
 uniform int uLightShadowSlot[MAX_LIGHTS];
@@ -265,8 +268,8 @@ void main() {
         baseCol *= texture(uBaseColorMap, vTexCoord);
     }
 
-    // Unlit mode: output baseColor directly (used for billboard text)
-    if (uUnlit != 0) {
+    // Unlit: output baseColor directly (billboard text, or lighting disabled)
+    if (uUnlit != 0 || uLightingEnabled == 0) {
         if (baseCol.a < 0.01) discard;
         FragColor = vec4(baseCol.rgb, baseCol.a * uOverlayAlpha);
         return;
@@ -284,6 +287,12 @@ void main() {
         roughness = mr.g * uRoughness;
     }
 
+    // Reflectivity: scalar by default, or per-texel from the reflectivity map
+    // (R channel) — lets a single surface vary how mirror-like it is.
+    float reflectivity = uReflectivity;
+    if (uHasReflectivityMap != 0)
+        reflectivity = texture(uReflectivityMap, vTexCoord).r * uReflectivity;
+
     float shininess = 2.0 / (roughness * roughness + 0.0001) - 2.0;
     shininess = clamp(shininess, 1.0, 512.0);
 
@@ -298,7 +307,7 @@ void main() {
     // SSR: blend with screen-space reflection where available
     // Skip SSR for non-reflective surfaces (saves 4 ray marches)
     vec4 ssrResult = vec4(0.0);
-    if (uReflectivity > 0.01 || metallic > 0.5)
+    if (reflectivity > 0.01 || metallic > 0.5)
         ssrResult = traceSSR(vWorldPos, N, R, roughness);
     envReflection = mix(envReflection, ssrResult.rgb, ssrResult.a);
 
@@ -346,7 +355,7 @@ void main() {
 
     // Reflectivity: scales the specular reflection (Fresnel is the minimum)
     // At reflectivity=0, only Fresnel contributes; at 1.0, full mirror.
-    vec3 reflFactor = max(envFresnel, vec3(uReflectivity));
+    vec3 reflFactor = max(envFresnel, vec3(reflectivity));
 
     // Energy-conserving ambient
     vec3 kD = (vec3(1.0) - reflFactor) * (1.0 - metallic);
@@ -456,6 +465,42 @@ out vec4 FragColor;
 void main() {
     vec4 c = texture(uBlitTex, vUV);
     FragColor = vec4(c.rgb, c.a * uAlpha);
+}
+)";
+
+  // ---- Sky background shader (fullscreen gradient behind the scene) ----
+  // Reconstructs the world-space view ray per pixel and evaluates the same
+  // gradient sampleSky() uses for reflections, so backdrop and reflections match.
+
+  static const char *SKY_VERT = R"(
+#version 410 core
+layout(location = 0) in vec2 aPos;
+out vec2 vNdc;
+void main() {
+    vNdc = aPos;
+    gl_Position = vec4(aPos, 0.0, 1.0);
+}
+)";
+
+  static const char *SKY_FRAG = R"(
+#version 410 core
+in vec2 vNdc;
+uniform mat4 uInvView;   // view -> world (rotation part used for direction)
+uniform mat4 uInvProj;   // clip -> view
+uniform vec3 uSkyUp;     // world up the gradient is oriented along
+out vec4 FragColor;
+vec3 sampleSky(vec3 dir) {
+    vec3 zenith  = vec3(0.55, 0.65, 0.85);
+    vec3 horizon = vec3(0.95, 0.93, 0.90);
+    vec3 ground  = vec3(0.30, 0.27, 0.25);
+    float h = dot(dir, normalize(uSkyUp));
+    if (h > 0.0) return mix(horizon, zenith, pow(h, 0.4));
+    else         return mix(horizon, ground, min(-h * 3.0, 1.0));
+}
+void main() {
+    vec4 vp = uInvProj * vec4(vNdc, 1.0, 1.0);   // far point, view space
+    vec3 dir = normalize(mat3(uInvView) * (vp.xyz / vp.w));
+    FragColor = vec4(sampleSky(dir), 1.0);
 }
 )";
 
@@ -743,6 +788,7 @@ void main() { }
     GLint locBaseColorMap = -1, locHasBaseColorMap = -1;
     GLint locNormalMap = -1, locHasNormalMap = -1;
     GLint locMetallicRoughnessMap = -1, locHasMetallicRoughnessMap = -1;
+    GLint locReflectivityMap = -1, locHasReflectivityMap = -1;
     GLint locEmissiveMap = -1, locHasEmissiveMap = -1;
     GLint locOcclusionMap = -1, locHasOcclusionMap = -1;
 
@@ -773,6 +819,8 @@ void main() { }
     int debugMode = 0;
     GLint locDebugMode = -1;
     GLint locUnlit = -1;
+    GLint locLightingEnabled = -1;
+    bool lightingEnabled = true;
 
     // Unlit uniform locations
     GLint locUnlitMVP = -1, locUnlitPointSize = -1;
@@ -780,6 +828,12 @@ void main() { }
     // Blit shader
     GLuint blitProgram = 0;
     GLint blitLocTex = -1, blitLocAlpha = -1;
+
+    // Sky background shader
+    GLuint skyProgram = 0;
+    GLint skyLocInvView = -1, skyLocInvProj = -1, skyLocUp = -1;
+    bool skyEnabled = false;
+    float skyUp[3] = {0.0f, 1.0f, 0.0f};
 
     // SSR ping-pong buffers
     GLuint ssrFBO[2] = {};
@@ -797,7 +851,7 @@ void main() { }
     // Per-material texture cache
     struct MatTextures {
       GLuint baseColor = 0, normalMap = 0, metallicRoughness = 0;
-      GLuint emissive = 0, occlusion = 0;
+      GLuint emissive = 0, occlusion = 0, reflectivity = 0;
     };
     std::unordered_map<const geom::Material*, MatTextures> texCache;
 
@@ -903,6 +957,7 @@ void main() { }
     if (m_data->pbrProgram) glDeleteProgram(m_data->pbrProgram);
     if (m_data->unlitProgram) glDeleteProgram(m_data->unlitProgram);
     if (m_data->blitProgram) glDeleteProgram(m_data->blitProgram);
+    if (m_data->skyProgram) glDeleteProgram(m_data->skyProgram);
     if (m_data->shadowProgram) glDeleteProgram(m_data->shadowProgram);
     for (int i = 0; i < Data::MAX_SHADOWS; i++) {
       if (m_data->shadowFBO[i]) glDeleteFramebuffers(1, &m_data->shadowFBO[i]);
@@ -919,6 +974,7 @@ void main() { }
     m_data->pbrProgram = 0;
     m_data->unlitProgram = 0;
     m_data->blitProgram = 0;
+    m_data->skyProgram = 0;
     m_data->shadowProgram = 0;
   }
 
@@ -927,6 +983,11 @@ void main() { }
   void Renderer::setOverlayAlpha(float a) { m_data->overlayAlpha = a; }
   void Renderer::setSSREnabled(bool e) { m_data->ssrEnabled = e; }
   void Renderer::setShadowsEnabled(bool e) { m_data->shadowsEnabled = e; }
+  void Renderer::setLightingEnabled(bool e) { m_data->lightingEnabled = e; }
+  void Renderer::setSkyEnabled(bool e) { m_data->skyEnabled = e; }
+  void Renderer::setSkyUp(float x, float y, float z) {
+    m_data->skyUp[0] = x; m_data->skyUp[1] = y; m_data->skyUp[2] = z;
+  }
   void Renderer::setDebugMode(int mode) { m_data->debugMode = mode; }
   void Renderer::invalidateCache() {
     m_data->cacheInvalid = true;
@@ -937,7 +998,7 @@ void main() { }
     m_data->cache.clear();
     m_data->pcCache.clear();
     for (auto &[_, mt] : m_data->texCache) {
-      GLuint texs[] = {mt.baseColor, mt.normalMap, mt.metallicRoughness, mt.emissive, mt.occlusion};
+      GLuint texs[] = {mt.baseColor, mt.normalMap, mt.metallicRoughness, mt.emissive, mt.occlusion, mt.reflectivity};
       for (auto t : texs) if (t) glDeleteTextures(1, &t);
     }
     m_data->texCache.clear();
@@ -971,6 +1032,8 @@ void main() { }
       m_data->locHasNormalMap = glGetUniformLocation(m_data->pbrProgram, "uHasNormalMap");
       m_data->locMetallicRoughnessMap = glGetUniformLocation(m_data->pbrProgram, "uMetallicRoughnessMap");
       m_data->locHasMetallicRoughnessMap = glGetUniformLocation(m_data->pbrProgram, "uHasMetallicRoughnessMap");
+      m_data->locReflectivityMap = glGetUniformLocation(m_data->pbrProgram, "uReflectivityMap");
+      m_data->locHasReflectivityMap = glGetUniformLocation(m_data->pbrProgram, "uHasReflectivityMap");
       m_data->locEmissiveMap = glGetUniformLocation(m_data->pbrProgram, "uEmissiveMap");
       m_data->locHasEmissiveMap = glGetUniformLocation(m_data->pbrProgram, "uHasEmissiveMap");
       m_data->locOcclusionMap = glGetUniformLocation(m_data->pbrProgram, "uOcclusionMap");
@@ -985,6 +1048,7 @@ void main() { }
       m_data->locScreenSize = glGetUniformLocation(m_data->pbrProgram, "uScreenSize");
       m_data->locDebugMode = glGetUniformLocation(m_data->pbrProgram, "uDebugMode");
       m_data->locUnlit = glGetUniformLocation(m_data->pbrProgram, "uUnlit");
+      m_data->locLightingEnabled = glGetUniformLocation(m_data->pbrProgram, "uLightingEnabled");
       for (int i = 0; i < 8; i++) {
         char buf[64];
         snprintf(buf, sizeof(buf), "uLightPos[%d]", i);
@@ -1014,6 +1078,18 @@ void main() { }
       m_data->blitProgram = linkProgram(vs, fs);
       m_data->blitLocTex = glGetUniformLocation(m_data->blitProgram, "uBlitTex");
       m_data->blitLocAlpha = glGetUniformLocation(m_data->blitProgram, "uAlpha");
+    }
+    if (vs) glDeleteShader(vs);
+    if (fs) glDeleteShader(fs);
+
+    // Sky background shader
+    vs = compileShader(GL_VERTEX_SHADER, SKY_VERT);
+    fs = compileShader(GL_FRAGMENT_SHADER, SKY_FRAG);
+    if (vs && fs) {
+      m_data->skyProgram = linkProgram(vs, fs);
+      m_data->skyLocInvView = glGetUniformLocation(m_data->skyProgram, "uInvView");
+      m_data->skyLocInvProj = glGetUniformLocation(m_data->skyProgram, "uInvProj");
+      m_data->skyLocUp = glGetUniformLocation(m_data->skyProgram, "uSkyUp");
     }
     if (vs) glDeleteShader(vs);
     if (fs) glDeleteShader(fs);
@@ -1328,6 +1404,25 @@ void main() { }
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    // ---- Sky background: fill the active color target behind the scene ----
+    // Drawn into whichever FBO the scene pass writes (ssrFBO when ssrWrite,
+    // else the main FBO), so empty pixels read sky and SSR reflects it too.
+    if (m_data->skyEnabled && m_data->skyProgram) {
+      m_data->ensureQuadVAO();
+      glDisable(GL_DEPTH_TEST);
+      glDepthMask(GL_FALSE);
+      glDisable(GL_BLEND);
+      glDisable(GL_CULL_FACE);
+      glUseProgram(m_data->skyProgram);
+      setUniformMat4(m_data->skyLocInvView, viewMatrix.inv());
+      setUniformMat4(m_data->skyLocInvProj, projectionMatrix.inv());
+      glUniform3fv(m_data->skyLocUp, 1, m_data->skyUp);
+      glBindVertexArray(m_data->quadVAO);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+      glBindVertexArray(0);
+      glDepthMask(GL_TRUE);
+    }
+
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_BLEND);
@@ -1338,6 +1433,7 @@ void main() { }
     setUniformMat4(m_data->locView, viewMatrix);
     glUniform1f(m_data->locAmbient, m_data->ambient);
     glUniform1f(m_data->locExposure, m_data->exposure);
+    glUniform1i(m_data->locLightingEnabled, m_data->lightingEnabled ? 1 : 0);
     glUniform1f(m_data->locOverlayAlpha, ssrWrite ? 1.0f : m_data->overlayAlpha);
     glUniform1i(m_data->locDebugMode, m_data->debugMode);
 
@@ -1545,6 +1641,8 @@ void main() { }
             mt.emissive = uploadTexture(mat->textures->emissiveMap);
           if (!mt.occlusion && !mat->textures->occlusionMap.isNull())
             mt.occlusion = uploadTexture(mat->textures->occlusionMap);
+          if (!mt.reflectivity && !mat->textures->reflectivityMap.isNull())
+            mt.reflectivity = uploadTexture(mat->textures->reflectivityMap);
         }
 
         // Bind textures to texture units
@@ -1561,6 +1659,7 @@ void main() { }
         bindTex(m_data->locHasMetallicRoughnessMap, m_data->locMetallicRoughnessMap, 2, mt.metallicRoughness);
         bindTex(m_data->locHasEmissiveMap, m_data->locEmissiveMap, 3, mt.emissive);
         bindTex(m_data->locHasOcclusionMap, m_data->locOcclusionMap, 4, mt.occlusion);
+        bindTex(m_data->locHasReflectivityMap, m_data->locReflectivityMap, 11, mt.reflectivity);
 
         // Billboard text: render unlit so text color comes through directly
         if (auto *text = dynamic_cast<TextNode*>(geom); text && text->isBillboard())
@@ -1576,6 +1675,7 @@ void main() { }
         glUniform1i(m_data->locHasMetallicRoughnessMap, 0);
         glUniform1i(m_data->locHasEmissiveMap, 0);
         glUniform1i(m_data->locHasOcclusionMap, 0);
+        glUniform1i(m_data->locHasReflectivityMap, 0);
       }
 
       // Draw triangles

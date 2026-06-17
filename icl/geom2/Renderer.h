@@ -42,6 +42,20 @@ namespace icl::geom2 {
     /// Enable/disable shadow mapping (default: true)
     void setShadowsEnabled(bool enabled);
 
+    /// Enable/disable lighting (default: true). When off, geometry renders as
+    /// flat unlit base color (the "enable lighting" scene property).
+    void setLightingEnabled(bool enabled);
+
+    /// Enable/disable the procedural sky background (default: false)
+    /** When enabled, a full-screen gradient (matching the sky model used for
+        environment reflections) is drawn behind the scene, so the backdrop and
+        reflections agree. Disabled → the flat clear color shows through. */
+    void setSkyEnabled(bool enabled);
+
+    /// Set the world "up" direction the sky gradient is oriented along
+    /** Default (0,1,0). Physics scenes are Z-up → pass (0,0,1). */
+    void setSkyUp(float x, float y, float z);
+
     /// Set debug visualization mode
     /** 0=shaded (default), 1=normals, 2=albedo, 3=UVs, 4=lighting only,
         5=NdotL, 6=SSR confidence, 7=depth buffer, 8=SSR only */

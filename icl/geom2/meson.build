@@ -26,6 +26,7 @@ geom2_headers = files(
   'RayCastOctree.h',
   'TextNode.h',
   'DemoScene2.h',
+  'DefaultScene.h',
   'SceneObjectConverter.h',
 )
 
@@ -51,6 +52,7 @@ geom2_sources = files(
   'RayCastOctree.cpp',
   'TextNode.cpp',
   'DemoScene2.cpp',
+  'DefaultScene.cpp',
   'SceneObjectConverter.cpp',
 )
 

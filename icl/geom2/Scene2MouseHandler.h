@@ -34,7 +34,7 @@ namespace icl::geom2 {
     ~Scene2MouseHandler();
 
     void setSensitivities(float translation, float rotation = 1.0f,
-                          float mouse = 1.0f, float wheel = 0.001f,
+                          float mouse = 1.0f, float wheel = 0.0004f,
                           float modifier = 10.0f);
 
     void process(const qt::MouseEvent &e) override;

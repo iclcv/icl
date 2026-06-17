@@ -25,6 +25,10 @@ namespace icl::geom2 {
     float translation, rotation, mouse, wheel;
   };
 
+  // Shared scale for the translation gestures (pan + dolly): camera moves by
+  // translation * TRANSLATE_FACTOR * bounds per unit of pointer delta.
+  static constexpr float TRANSLATE_FACTOR = 0.04f;
+
   enum SensLevel { Low = 0, Normal = 1, High = 2, NUM_SENS = 3 };
 
   // --- Action function signature ---
@@ -53,9 +57,8 @@ namespace icl::geom2 {
                      const Point32f &delta, Camera &cam, Scene2 &scene, void *data) {
     auto *s = static_cast<Sens*>(data);
     // Translation must scale with scene size, else a fixed step is
-    // imperceptible in large scenes and huge in tiny ones. The default
-    // translation sensitivity is 10, normalised here so effective step == bounds.
-    float tf = s->translation * 0.1f * scene.getBounds();
+    // imperceptible in large scenes and huge in tiny ones.
+    float tf = s->translation * TRANSLATE_FACTOR * scene.getBounds();
     float df = e.isWheelEvent() ? s->wheel : s->mouse;
 
     Vec t = cam.getUp() * (-tf * df * delta.y) + cam.getHoriz() * (-tf * df * delta.x);
@@ -90,7 +93,7 @@ namespace icl::geom2 {
                               const Point32f &delta, Camera &cam, Scene2 &scene, void *data) {
     auto *s = static_cast<Sens*>(data);
     float rf = s->rotation;
-    float tf = s->translation * 0.1f * scene.getBounds();  // dolly scales with scene
+    float tf = s->translation * TRANSLATE_FACTOR * scene.getBounds();  // dolly scales with scene
     float df = e.isWheelEvent() ? s->wheel : -s->mouse;
 
     Vec up = rotate_vector(cam.getNorm(), rf * df * delta.x, cam.getUp());

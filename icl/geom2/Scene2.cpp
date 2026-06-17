@@ -98,6 +98,8 @@ namespace icl::geom2 {
     addProperty("background color", core::prop::Color{}, core::Color(0,0,0));
     addProperty("wireframe",utils::prop::Flag{}, false);
     addProperty("enable lighting",utils::prop::Flag{}, true);
+    addProperty("debug", utils::prop::Menu{"shaded", "normals", "albedo", "UVs",
+                "lighting", "NdotL", "SSR confidence", "depth", "SSR only"}, "shaded");
     addProperty("point size",utils::prop::Range{.min=1, .max=20}, 3);
     addProperty("info.Nodes",utils::prop::Info{}, utils::str(0));
     addProperty("info.Lights",utils::prop::Info{}, utils::str(0));
@@ -118,13 +120,22 @@ namespace icl::geom2 {
 
   int Scene2::getNodeCount() const { return (int)m_data->objects.size(); }
 
+  // A node may also be a light (lights live in both vectors); drop it from the
+  // light list too so removal can't leave a dangling light still shining.
+  static void eraseLight(std::vector<std::shared_ptr<LightNode>> &lights, Node *node) {
+    lights.erase(std::remove_if(lights.begin(), lights.end(),
+                 [node](const auto &p) { return p.get() == node; }), lights.end());
+  }
+
   void Scene2::removeNode(int i) {
     if (i >= 0 && i < (int)m_data->objects.size()) {
+      eraseLight(m_data->lights, m_data->objects[i].get());
       m_data->objects.erase(m_data->objects.begin() + i);
     }
   }
 
   void Scene2::removeNode(Node *node) {
+    eraseLight(m_data->lights, node);
     auto &o = m_data->objects;
     o.erase(std::remove_if(o.begin(), o.end(),
             [node](const auto &p) { return p.get() == node; }), o.end());
@@ -199,6 +210,16 @@ namespace icl::geom2 {
 
     bool wireframe = prop("wireframe").value;
     if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    m_data->renderer.setLightingEnabled((bool)prop("enable lighting").value);
+
+    // Debug visualization mode (menu order matches Renderer::setDebugMode codes)
+    static const char *kDebugModes[] = {"shaded", "normals", "albedo", "UVs",
+        "lighting", "NdotL", "SSR confidence", "depth", "SSR only"};
+    std::string dbg = prop("debug").value;
+    int dbgMode = 0;
+    for (int i = 0; i < 9; i++) if (dbg == kDebugModes[i]) { dbgMode = i; break; }
+    m_data->renderer.setDebugMode(dbgMode);
 
     // Update info properties (Info stores std::string — explicit str()
     // keeps the adapter's toString happy; direct int write would put an

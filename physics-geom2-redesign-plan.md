@@ -400,26 +400,148 @@ Establish *standards* instead of tuning constants:
    solver iterations, self-collision (CL_SELF/VF_SS), cluster vs SDF. Same
    parameter-standards work; no longer a stability blocker.
 
-## Cross-cutting TODO — a configurable default scene (+ default physics scene)
+## Cross-cutting TODO — `DefaultScene` (SceneType presets) + default physics scene
 
-Most demos hand-roll the same furniture (ground, lights, camera). Provide a
-reusable, **Configurable** default-scene primitive so common setups are one call,
-and nicer than a bare plane:
-- **Default geom2 scene:** checkerboard ground with *nicer edges* (bordered/beveled
-  rim, or a fade-out so it doesn't read as a hard square), a proper **lamp**-style
-  light (warm key + cool fill, optionally a visible lamp object + soft shadows),
-  a sensible camera, optional coordinate frame, sky/gradient background.
-  Configurable knobs (ground size/checker on-off/colors, light rig, show-frame,
-  up-axis). Z-up aware (physics convention), unlike the current `DemoScene2`.
-- **Default physics scene:** the above + a matching **static ground collider**,
-  gravity, sensible `setBounds`, ready to `add()` bodies — e.g.
-  `PhysicsScene::setupDefault(...)` or a `DefaultPhysicsScene`.
-- Refactor: lift the existing `geom2::DemoScene2` furniture (it already builds a
-  checkerboard ground + 3-point lights) into this reusable primitive instead of
-  duplicating; `DemoScene2` (model-file viewer) then builds on it.
+*(Sketch — Session 71. Design agreed; not yet implemented. Decisions baked in:
+preset-driven Configurable (not a flat knob soup); sky-as-background is in scope;
+**it's a `Scene2` subclass that replaces `DemoScene2`**, not a decorator.)*
+
+### Problem
+
+Every demo hand-rolls the same furniture (ground + lights + camera), each slightly
+differently and usually worse than `DemoScene2`. The physics2 demos in particular
+ship a single light, **no ground/wall, black clear color**
+(`physics2-scene.cpp:39`) — objects float in a void. We want one type that *is* a
+**nice-looking, coherent world** out of the box, picked from a small set of
+high-level *scene types*, with only a few global knobs exposed.
+
+### Shape — a `Scene2` subclass that replaces `DemoScene2`
+
+`geom2::DemoScene2` already builds the good furniture (checkerboard ground + back
+wall, 4-point soft-shadow rig, framed camera) and is itself a `Scene2` subclass —
+but it's welded to the model-*viewer* job (file-load + auto-scale-to-400mm, Y-up).
+`DefaultScene` generalises it and **takes its place**:
+
+```cpp
+namespace icl::geom2 {
+  /// A Scene2 that furnishes itself: ground, walls, props, lights, camera, sky,
+  /// chosen by a high-level SceneType preset. Configurable (extends Scene2's own
+  /// Configurable) → preset + a few global knobs surface in the Prop UI and
+  /// rebuild the furniture live. Up-axis aware (Y for viewers, Z for physics).
+  /// Replaces DemoScene2 (whose viewer behaviour becomes SceneType::Studio +
+  /// an optional loadAndFit(files) helper).
+  class DefaultScene : public Scene2 {
+   public:
+    enum class SceneType {
+      Void,       ///< nothing but a camera (content brings its own world)
+      Studio,     ///< neutral checkerboard ground + back wall, lamp rig (the DemoScene2 look)
+      Landscape,  ///< green ground, scattered rocks / trees / flowers, sun + sky
+      Room,       ///< floor + 4 walls + ceiling, ceiling lamp, a tabletop to place things on
+    };
+    explicit DefaultScene(SceneType = SceneType::Studio);
+    void setSceneType(SceneType);              // also a "scene type" Configurable property
+    /// optional viewer convenience: load model files, auto-fit, keep the preset furniture
+    void loadAndFit(const std::vector<std::string> &files, const std::string &rotation = "");
+   private:
+    void rebuildEnvironment();  // clears m_furniture, repopulates per current preset + knobs
+    std::vector<std::shared_ptr<Node>> m_furniture;  // only the furniture it owns (not user content)
+  };
+}
+```
+
+Why subclass (the earlier "decorator" worry was unfounded): `physics2::PhysicsScene`
+composes its scene **by value** (`Scene2 m_scene`, `PhysicsScene.h:90`). Upgrade
+that member to `DefaultScene` and physics inherits the entire preset/furniture API
+through `scene()` for free — no decorator indirection, and the type *is* a scene so
+the name reads right. `m_furniture` is tracked separately from user-added nodes so
+`rebuildEnvironment()` can swap presets without touching content.
+
+**Exposed Configurable properties (deliberately small — "live, but not everything"):**
+- `scene type` (menu: Void / Studio / Landscape / Room) — the main knob; rebuilds.
+- `up axis` (Y / Z) — Z is the physics convention; flips ground plane + sky + camera.
+- `extent` (characteristic world size, mm) — drives ground size, light radius, camera dist.
+- `ground` (on/off), `shadows` (on/off), `sky background` (on/off), `coordinate frame` (on/off).
+
+Per-preset internals (tree count, wall color, checker palette, tabletop height…)
+are **chosen by the preset**, *not* surfaced as flat properties. A preset is just a
+private builder method (`buildStudio()`, `buildLandscape()`, `buildRoom()`,
+`buildVoid()`) that appends nodes to `m_owned` and adds lights/camera.
+
+### SceneType presets (initial set)
+
+| Preset | Ground / container | Props | Lights | Camera | Use |
+|---|---|---|---|---|---|
+| `Void` | none | none | 1 key + soft fill | framed to bounds | content owns the world; cleanest |
+| `Studio` | checkerboard ground (faded edges) + back wall | none | warm key + cool fill + rim + top, soft shadows | 3/4 view | the current `DemoScene2` look; default for viewers |
+| `Landscape` | green ground (large, fading) | rocks, trees (trunk+cone), flowers | sun (warm, shadowed) + sky fill | eye-level 3/4 | nature / point-cloud / octree demos |
+| `Room` | floor + 4 walls + ceiling (open front); **floor is the play surface** | a table as a prop (not the spawn surface) | ceiling lamp (visible fixture) + soft fill | looking in through open wall | indoor physics play area |
+
+Reuse what exists: `Studio` ≈ today's `DemoScene2::setup` furniture;
+`Landscape` ≈ `DemoScene2::setupNatureScene` (already builds green ground + gray
+rocks + cylinder/cone trees — lift it in, add flowers). `Room`/`Void` are new.
+
+### Edge polish (the "problems" you're seeing)
+
+- **Ground edges:** the current hard square reads badly. Add a radial **alpha
+  fade-out** toward the rim (or a beveled border) so it dissolves instead of
+  ending in a sharp line. Applies to Studio + Landscape grounds.
+- **Sky background:** the GL renderer *already has* a procedural sky —
+  `sampleSky(dir)` (`Renderer.cpp:139`, zenith→horizon→ground gradient) — but it's
+  only sampled for **reflections + diffuse ambient**; the visible background is a
+  flat `glClearColor` (`Scene2.cpp:196`). Wire the **same** model as a fullscreen
+  background pass (a Renderer change: draw a screen-filling gradient from per-pixel
+  view rays *before* the scene). One model → backdrop and reflections match. Must
+  be **up-axis aware** (it's currently `dir.y` only). Toggle falls back to flat clear.
+- **Lamp rig:** Studio/Room get warm key + cool fill (+ rim/top) with soft shadows
+  — `DemoScene2` already does this; just parameterize off `extent` and up-axis.
+
+### Default physics scene
+
+`PhysicsScene` composes a `DefaultScene` (upgrade `m_scene`'s type from `Scene2`).
+`physics2::PhysicsScene::setupDefault(SceneType, opts)`:
+- selects the preset on the internal `DefaultScene` (`m_scene.setSceneType(...)`), **and**
+- adds **matching static colliders** for whatever the preset's "solid" furniture is
+  — Studio/Landscape → a ground-plane collider coincident with the visual ground;
+  Room → floor + walls colliders (bodies drop onto the **floor**; the table is a
+  static collider prop, not where `add()`ed bodies spawn);
+  Void → just a ground plane (or nothing).
+- sets gravity along the chosen up-axis, a sensible `setBounds(extent)`, and leaves
+  the scene **ready to `scene.add(node, mass)`**.
+
+This is the key payoff: the visual furniture and the physics colliders come from
+**one source**, so what you see is what bodies actually rest on (the maze-tilt class
+of "render vs collision disagree" bug can't recur here).
+
+### Refactor / sequencing
+
+1. **DONE (Session 71)** — Landed `DefaultScene : Scene2` with `Studio` + `Void`,
+   the sky-as-background pass, and faded ground edges:
+   - `Renderer::setSkyEnabled/setSkyUp` + a fullscreen sky pass reusing the
+     existing `sampleSky` model (up-axis aware), drawn into the active color
+     target so SSR reflects the backdrop (`Renderer.cpp`).
+   - `geom2::DefaultScene` — `SceneType{Void,Studio}`, up-axis aware (Y/Z),
+     Configurable knobs `scene type / up axis / ground / sky background /
+     shadows / SSR` (all the nice features **on by default**), `setExtent`.
+     Furniture tracked in `m_furniture`, rebuilt live without touching user content.
+   - Faded-edge checkerboard ground (`makeFadedChecker`) + back wall, 4-light
+     lamp rig (Studio) / key+fill (Void), framed camera (created once, updated
+     in place on rebuild).
+   - `Scene2::removeNode` now also purges the lights vector (a removed light
+     must stop shining) — prerequisite for clean live rebuilds.
+   - Demo `geom2-default-scene` (live Prop panel) + 6 headless tests
+     (`test-geom2-default-scene.cpp`, structure + no-leak round-trip). Suite green.
+   - **Unverified (needs real display):** the sky pass, faded edges, lamp rig —
+     sandbox has no GL context. Construction/structure/threading are verified.
+2. **TODO** — Fold the existing `DemoScene2` furniture in as `Studio`
+   (+ `loadAndFit` for the viewer job) and `setupNatureScene` as `Landscape`;
+   then **delete `DemoScene2`** and repoint its users (`scene-to-pointcloud`,
+   `raycast-octree`, any `-i` viewer) at `DefaultScene`. Add `Room` + flowers.
+3. **TODO** — Upgrade `PhysicsScene::m_scene` to `DefaultScene`, add
+   `setupDefault`; migrate `physics2-scene/-tilt/-cloth` to it.
 
 NOTE: GUI render correctness is unverifiable in this sandbox (GL context creation
-fails). Logic/units/threading/sync are verifiable via `stepOnce` (deterministic,
-no render thread) + tests; visual confirmation needs a real display.
+fails) — the sky pass + faded edges + lamp rig all need a real display to confirm.
+Logic/units/threading/sync are verifiable via `stepOnce` (deterministic, no render
+thread) + tests; the collider/visual coincidence is checkable headless.
 
 Branch `further-restructuring-and-cleanup`.
