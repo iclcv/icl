@@ -2,43 +2,52 @@
 
 ## Next Step
 
-**PAUSED to redesign the geom2 ↔ Bullet integration** (Session 70). The physics
-demos render via geom2 now, but the bridge feels wrong: pose lives in multiple
-out-of-sync places (SceneObject / Bullet body / MotionState / geom2 mirror node)
-and geometry is duplicated (legacy `geom::SceneObject` + a synced geom2 copy).
-The tilt-maze made it concrete — it renders the tilt but the ball doesn't roll
-(collision vs render driven by different transforms). **Before continuing the
-migration, read `physics-geom2-integration-notes.md` and turn it into an
-improvement plan** (single source of truth for pose; physics object owns a geom2
-node; clean kinematic/controlled-body abstraction; unit/scale policy; unified
-picking). Then resume.
+**`DefaultScene` + default physics scene + live-tunable soft bodies LANDED +
+pushed** (Session 72, commits `cec2b26e5` + `1fd0808ad` on
+`further-restructuring-and-cleanup`). Continues the geom→geom2 + physics2 work.
+**Full plan + live phase status: `physics-geom2-redesign-plan.md`** (read first).
 
-**Also in progress: phase out `geom` → `geom2`** (see `geom2-migration-plan.md`
-for the full phased plan + live status). The legacy `geom::Scene` GL path is dead
-(Core-Profile default routes everything to the incomplete `geom::GLRenderer`);
-`geom2`/`Scene2` is the live renderer.
+**What's done this session (suite green; geom2 14 + physics2 18 tests):**
+- **`geom2::DefaultScene : Scene2`** — self-furnishing scene, `SceneType{Void,
+  Studio}`, up-axis aware (`setUpAxis`, Y viewer / Z physics). Live Configurable
+  knobs (scene type / ground / coordinate frame / sky / shadows / SSR); toggles
+  flip node visibility (no rebuild → camera preserved). Big checkerboard floor
+  (GL_REPEAT tiling), lamp rig, camera aimed at content (not origin).
+- **Renderer**: procedural **sky-as-background** pass (`setSkyEnabled/Up`); honor
+  `enable lighting` + a `debug` viz menu (normals/albedo/…); **per-texel
+  reflectivity map** on `geom::Material`. `Scene2MouseHandler` pan/dolly/wheel
+  speeds retuned.
+- **`PhysicsScene::setupDefault(SceneType, extent)`** — composes a `DefaultScene`
+  + invisible static ground collider coincident with the drawn ground; migrated
+  `physics2-scene/-tilt/-cloth`.
+- **`SoftBodyDriver` is now `Configurable`** — live cloth params (stiffness via
+  `updateLinkConstants`, friction, damping, contact hardness, iterations, margin,
+  collision mode SDF/Clusters, self-collision, **size**, **node density**) +
+  reset button. Anti-explosion band-aid (velocity clamp + softer contact
+  defaults).
 
-**Landed (Session 70):** Phase 0+1 of the migration:
-- `c46a38f93` build reorder (geom→geom2→markers→physics) so physics can dep geom2
-- `3270c29ef` per-node geometry dirty flag (`GeometryNode::markGeometryDirty`,
-  version-keyed `GeomCache`) — dynamic meshes re-upload only themselves; dropped
-  water-rocket's per-frame global `invalidateCache`
-- `ef25cdb25` `geom2::fromSceneObject` — universal geom::SceneObject→node tree
-  converter (vertices + polymorphic primitives + recursing children)
-- `6f27ce1ac` `physics::PhysicsScene2` auto-mirroring bridge (owns Scene2,
-  mirrors each PhysicsObject, `syncSceneFromPhysics()` per frame) + migrated
-  `physics-scene` as the proof
-- **Deferred:** Phase 0c offscreen `Scene2::render()→Img` — untestable in
-  sandbox (no GL context), non-blocking; revisit on a working-GL machine.
+**Next session — remaining work (see plan doc):**
+- **Soft-body solver is the real cloth blocker.** `btSoftBody` explodes at rest
+  (band-aided, not fixed). Plan doc "Soft-body solver alternatives": try Bullet
+  **`btDeformable` FEM** first (already in our Bullet 3.25), or own an **XPBD**
+  cloth driver (best long-term). Until then cloth-on-box drape stays mediocre.
+- **DefaultScene** plan step 2: add `Landscape`/`Room` presets + `loadAndFit`,
+  fold in + delete `DemoScene2`, repoint its users.
+- **Phase 3b** — fold-aware `PaperDriver` (`PhysicsPaper3` FoldMap) + water-rocket.
+- **Phase 4b** — raycast vehicle (`btRaycastVehicle`) for the car.
+- **Phase 6** — retire legacy `icl/physics`.
+- Minor: `TextNode` aborts headless (eager Qt-font raster) — `CoordinateFrameNode`
+  unusable GUI-less; defer its rasterization.
 
-**Next (Phase 2):** migrate the remaining physics demos onto `PhysicsScene2`
-(`physics-maze/-paper/-paper3/-car/-constraints`), port `PhysicsMouseHandler` /
-`PhysicsPaper3MouseHandler` to a geom2/`Scene2` equivalent, retire
-`PhysicsScene`. Then Phase 3 (geom + markers demos), Phase 4 (delete legacy
-scene layer), Phase 5 (optional rename). NOTE: GUI render correctness is
-unverifiable in this sandbox (GL context creation fails) — needs a real display.
+**Caveat:** GUI render correctness is unverifiable in this sandbox (no GL
+context). Physics validated via deterministic `stepOnce` + offscreen smoke; the
+demos need a real display. Build: `CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C builddir -j 16`
+(ccache trips the sandbox). Tests: `builddir/bin/icl-tests -f 'physics2.*' -j 1`.
 
-The original detailed TODO notes below remain valid background.
+---
+
+The notes below predate the physics2 work (Session 70 and earlier) and remain
+valid background on the broader geom→geom2 migration.
 
 **This session (69):** built `physics-water-rocket` (geom2-rendered water-rocket
 + Bullet soft-body parachute) and, in the process, fixed several framework bugs:
