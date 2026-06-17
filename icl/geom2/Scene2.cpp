@@ -8,6 +8,7 @@
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/GroupNode.h>
 #include <icl/geom2/GeometryNode.h>
+#include <icl/geom2/Driver.h>
 #include <icl/geom2/PointCloud.h>
 #include <icl/geom2/BVH.h>
 #include <icl/geom/Camera.h>
@@ -159,6 +160,26 @@ namespace icl::geom2 {
   geom::Camera &Scene2::getCamera(int i) { return m_data->cameras.at(i); }
   const geom::Camera &Scene2::getCamera(int i) const { return m_data->cameras.at(i); }
   int Scene2::getCameraCount() const { return (int)m_data->cameras.size(); }
+
+  // --- Driver update ---
+
+  // Pre-order: run a node's drivers, then recurse into group children.
+  static void syncNode(Node *node, double dt, double alpha) {
+    if (!node) return;
+    for (const auto &d : node->getDrivers()) d->sync(dt, alpha);
+    if (auto *group = dynamic_cast<GroupNode*>(node)) {
+      for (int i = 0; i < group->getChildCount(); i++) {
+        syncNode(group->getChild(i), dt, alpha);
+      }
+    }
+  }
+
+  void Scene2::sync(double dt, double alpha) {
+    std::scoped_lock guard(m_data->mutex);
+    for (auto &node : m_data->objects) {
+      syncNode(node.get(), dt, alpha);
+    }
+  }
 
   // Rendering
   Renderer &Scene2::getRenderer() { return m_data->renderer; }

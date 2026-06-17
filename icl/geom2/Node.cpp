@@ -3,7 +3,9 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom2/Node.h>
+#include <icl/geom2/Driver.h>
 #include <icl/math/la/FixedMatrix.h>
+#include <algorithm>
 #include <mutex>
 #include <cmath>
 
@@ -16,6 +18,7 @@ namespace icl::geom2 {
     bool isVisible = true;
     mutable std::recursive_mutex mutex;
     std::string name;
+    std::vector<std::shared_ptr<Driver>> drivers;
   };
 
   Node::Node() : m_data(std::make_unique<Data>()) {}
@@ -112,5 +115,31 @@ namespace icl::geom2 {
   const std::string &Node::getName() const { return m_data->name; }
 
   void Node::setParent(Node *parent) { m_data->parent = parent; }
+
+  // --- Drivers ---
+  // Note: drivers are intentionally NOT copied by the copy ctor/assignment —
+  // they are node-bound and stateful, so a deep-copied node starts driverless.
+
+  void Node::addDriver(std::shared_ptr<Driver> driver) {
+    if (!driver) return;
+    driver->m_node = this;
+    m_data->drivers.push_back(driver);
+    driver->onAttach();
+  }
+
+  const std::vector<std::shared_ptr<Driver>> &Node::getDrivers() const {
+    return m_data->drivers;
+  }
+
+  void Node::removeDriver(Driver *driver) {
+    auto &d = m_data->drivers;
+    auto it = std::find_if(d.begin(), d.end(),
+                           [driver](const auto &p) { return p.get() == driver; });
+    if (it != d.end()) {
+      (*it)->onDetach();
+      (*it)->m_node = nullptr;
+      d.erase(it);
+    }
+  }
 
 } // namespace icl::geom2

@@ -8,6 +8,8 @@
 #include <icl/math/la/FixedMatrix.h>
 #include <string>
 #include <memory>
+#include <vector>
+#include <type_traits>
 
 #ifndef ICLGeom2_API
 #define ICLGeom2_API
@@ -18,6 +20,7 @@ namespace icl::geom2 {
   using Mat = math::FixedMatrix<float, 4, 4>;
 
   class GroupNode;
+  class Driver;
 
   /// Abstract base for all scene graph nodes
   /** Provides transform, visibility, name, and locking.
@@ -44,6 +47,35 @@ namespace icl::geom2 {
     // --- Parent (set by GroupNode::addChild) ---
     Node *getParent();
     const Node *getParent() const;
+
+    // --- Drivers (attachable per-node behaviours; see Driver.h) ---
+    /// Attach an already-constructed driver (sets its node, calls onAttach())
+    void addDriver(std::shared_ptr<Driver> driver);
+
+    /// Construct + attach a driver in place, returns the typed shared_ptr
+    /** Usage: node->addDriver<SpinDriver>(rate);  (T must derive Driver) */
+    template<class T, class... A>
+    std::shared_ptr<T> addDriver(A &&... args) {
+      static_assert(std::is_base_of_v<Driver, T>, "T must derive geom2::Driver");
+      auto d = std::make_shared<T>(std::forward<A>(args)...);
+      addDriver(std::static_pointer_cast<Driver>(d));
+      return d;
+    }
+
+    /// First attached driver of type T (nullptr if none)
+    template<class T>
+    T *getDriver() const {
+      for (const auto &d : getDrivers()) {
+        if (auto *t = dynamic_cast<T*>(d.get())) return t;
+      }
+      return nullptr;
+    }
+
+    /// All attached drivers (used by Scene2::sync() traversal)
+    const std::vector<std::shared_ptr<Driver>> &getDrivers() const;
+
+    /// Detach + remove a driver (calls its onDetach())
+    void removeDriver(Driver *driver);
 
     // --- Lifecycle ---
     virtual void prepareForRendering() {}

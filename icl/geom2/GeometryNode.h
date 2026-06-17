@@ -56,6 +56,13 @@ namespace icl::geom2 {
     void setSmoothShading(bool on);
     bool getSmoothShading() const;
 
+    /// Render lines/points with depth-test disabled (always-on-top overlay).
+    /** Useful for debug/annotation geometry (e.g. collision wireframes) that
+        would otherwise z-fight with / be occluded by the solid surfaces it
+        traces. Default false. */
+    void setRenderOnTop(bool on);
+    bool getRenderOnTop() const;
+
     // --- Normals ---
     void createAutoNormals(bool smooth = true);
 

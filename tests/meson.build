@@ -25,8 +25,13 @@ if qt_dep.found()
     'test-quick-compose.cpp',
     'test-quick-draw.cpp',
     'test-quick-io.cpp',
+    'test-geom2-driver.cpp',
   )
-  test_deps += [icl_io_dep, icl_qt_dep]
+  test_deps += [icl_io_dep, icl_qt_dep, icl_geom2_dep]
+  if bullet_found
+    test_sources += files('test-physics2.cpp')
+    test_deps += [icl_physics2_dep]
+  endif
 endif
 
 icl_tests_exe = executable('icl-tests',

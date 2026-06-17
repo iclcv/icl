@@ -88,6 +88,15 @@ namespace icl::geom2 {
     const geom::Camera &getCamera(int index) const;
     int getCameraCount() const;
 
+    // --- Driver update (UI thread) ---
+    /// Advance all node drivers one render frame.
+    /** Pre-order traversal (parent before children); calls Driver::sync(dt,
+        alpha) on every driver of every node. Call once per frame on the UI
+        thread before render(). `alpha` is the interpolation fraction for
+        state-publishing drivers (physics); time-driven drivers ignore it and
+        it defaults to 1. */
+    void sync(double dt, double alpha = 1.0);
+
     // --- Rendering ---
     void render(int cameraIndex);
     Renderer &getRenderer();

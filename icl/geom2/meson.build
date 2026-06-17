@@ -2,6 +2,7 @@
 
 geom2_headers = files(
   'Node.h',
+  'Driver.h',
   'GroupNode.h',
   'GeometryNode.h',
   'MeshNode.h',
@@ -30,6 +31,7 @@ geom2_headers = files(
 
 geom2_sources = files(
   'Node.cpp',
+  'Driver.cpp',
   'GroupNode.cpp',
   'GeometryNode.cpp',
   'MeshNode.cpp',

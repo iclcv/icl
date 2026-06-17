@@ -1601,11 +1601,14 @@ void main() { }
         setUniformMat4(m_data->locUnlitMVP, mvp);
 
         if (cache->numLineVerts > 0) {
-          float lw = mat ? mat->lineWidth : 1.0f;
+          const bool onTop = geom->getRenderOnTop();
+          if (onTop) glDisable(GL_DEPTH_TEST);
+          float lw = geom->getLineWidth();
           glLineWidth(lw);
           glBindVertexArray(cache->lineVao);
           glDrawArrays(GL_LINES, 0, cache->numLineVerts);
           glBindVertexArray(0);
+          if (onTop) glEnable(GL_DEPTH_TEST);
         }
 
         if (cache->numPointVerts > 0) {

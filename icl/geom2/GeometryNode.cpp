@@ -25,6 +25,7 @@ namespace icl::geom2 {
     float pointSize = 3.0f;
     float lineWidth = 1.0f;
     bool smoothShading = true;
+    bool renderOnTop = false;
 
     // Bumped on every geometry mutation; the renderer compares it against
     // its per-node cached value to re-upload only changed nodes.
@@ -101,6 +102,8 @@ namespace icl::geom2 {
   float GeometryNode::getPointSize() const { return m_data->pointSize; }
   void GeometryNode::setLineWidth(float w) { m_data->lineWidth = w; }
   float GeometryNode::getLineWidth() const { return m_data->lineWidth; }
+  void GeometryNode::setRenderOnTop(bool on) { m_data->renderOnTop = on; }
+  bool GeometryNode::getRenderOnTop() const { return m_data->renderOnTop; }
   void GeometryNode::setSmoothShading(bool on) { m_data->smoothShading = on; }
   bool GeometryNode::getSmoothShading() const { return m_data->smoothShading; }
 
