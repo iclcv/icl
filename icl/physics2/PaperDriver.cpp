@@ -5,7 +5,6 @@
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/StateBuffer.h>
-#include <icl/physics2/detail/FoldMap.h>
 #include <icl/geom2/Node.h>
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/Primitive.h>
@@ -69,6 +68,16 @@ namespace icl::physics2 {
       return (b1 == b2) && (b2 == b3);
     }
 
+    /// True iff segments ab and cd *properly* cross (intersection strictly
+    /// interior to both) — endpoint-touching / collinear cases return false, so a
+    /// bending link merely sharing a crease node is not counted as crossing.
+    inline bool segments_cross(const Point32f &a, const Point32f &b,
+                               const Point32f &c, const Point32f &d) {
+      const float d1 = pit_sign(a, c, d), d2 = pit_sign(b, c, d);
+      const float d3 = pit_sign(c, a, b), d4 = pit_sign(d, a, b);
+      return (d1 * d2 < 0.f) && (d3 * d4 < 0.f);
+    }
+
     /// Per-link fold metadata, owned via btSoftBody::Link::m_tag (heap).
     struct LinkState {
       bool isFirstOrder, isFold, hasMemorizedRestDist, isOriginal;
@@ -107,7 +116,7 @@ namespace icl::physics2 {
     Size cells;
     Vec corners[4];
     bool enableSelfCollision;
-    float initialStiffness;     // <=0 => read stiffness from the FoldMap
+    float initialStiffness;     // <=0 => derive bending stiffness from the creases
     float maxLinkDist;          // bending-constraint range (paper units)
     float linkStiffness = 1e-5f; // crease (fold-link) softness
     bool smoothNormals = true;
@@ -126,10 +135,10 @@ namespace icl::physics2 {
     std::vector<Vec> grabOffsets;       // each node's world offset from the grab centre
     std::vector<btScalar> grabOrigIm;   // original inverse masses (restored on release)
     std::map<std::pair<int, int>, float> rlMap;
-    FoldMap fm;
+    std::vector<PaperDriver::Crease> creases;   // geometry primitives (paper space)
     PaperStateBuffer buffer;
 
-    Data(PhysicsWorld &w) : world(w), fm(Size(200, 300), 1.0f) {}
+    Data(PhysicsWorld &w) : world(w) {}
 
     void clearMemorizedRestDistances() { rlMap.clear(); }
     void addMemorizedRestDistance(int a, int b, float rl) { rlMap[{a, b}] = rl; }
@@ -188,7 +197,7 @@ namespace icl::physics2 {
         l.m_material = m;
         l.m_c0 = (l.m_n[0]->m_im + l.m_n[1]->m_im) / m->m_kLST;
         l.m_tag = state.p();
-        if (state.isFold) d.fm.addFold(ta, tb, stiffness);
+        // (the logical crease is recorded once per fold in splitInPaperCoords)
       } else if (state.isFold) {
         // link already existed: upgrade it to a fold if it isn't one yet
         const btSoftBody::Node *na = &s->m_nodes[a], *nb = &s->m_nodes[b];
@@ -199,7 +208,6 @@ namespace icl::physics2 {
             if (!LinkState::is_fold(l.m_tag)) {
               free_link_state(l.m_tag);
               l.m_tag = state.p();
-              d.fm.addFold(d.texCoords[a], d.texCoords[b], stiffness);
             }
             break;
           }
@@ -411,8 +419,19 @@ namespace icl::physics2 {
           float dd = utils::sqr(tex[i].x - tex[j].x) + utils::sqr(tex[i].y - tex[j].y);
           if (dd >= maxD2) continue;
           if (!existing.insert({i, j}).second) continue;   // already a link
-          float stiffness = (fixedStiffness > 0) ? fixedStiffness : d.fm.getFoldValue(tex[i], tex[j]);
-          addLinkI(d, i, j, std::fabs(stiffness), LinkState(false, false, stiffness < 0),
+          // Reduce links that cross a crease to the (weakest) crossed crease's
+          // stiffness — an exact segment-cross test against the crease primitives
+          // (no rasterization, so no missed long crossings).
+          float stiffness = (fixedStiffness > 0) ? fixedStiffness : 1.f;
+          bool memorized = false;
+          if (fixedStiffness <= 0) {
+            for (const auto &cr : d.creases)
+              if (segments_cross(tex[i], tex[j], cr.a, cr.b)) {
+                if (cr.stiffness < stiffness) stiffness = cr.stiffness;
+                memorized = memorized || cr.memorized;
+              }
+          }
+          addLinkI(d, i, j, stiffness, LinkState(false, false, memorized),
                    /*checkExist*/ false);
         }
       }
@@ -497,6 +516,7 @@ namespace icl::physics2 {
     }
 
     void splitInPaperCoords(PaperDriver::Data &d, Point32f a, Point32f b, bool extend) {
+      Point32f creaseA = a, creaseB = b;   // logical crease (paper space), pre-elongation
       Point32f e = (b - a) * 100;   // elongate to avoid grazing the endpoints
       b += e; a -= e;
       if (extend) {
@@ -508,10 +528,14 @@ namespace icl::physics2 {
           if (wheres.size() >= 2) break;
         }
         if (wheres.size() == 2) {
+          creaseA = wheres[0]; creaseB = wheres[1];   // edge-clipped crease for display + crossing
           a = wheres[0]; b = wheres[1];
           Point32f e2 = (b - a); b += e2; a -= e2;
         }
       }
+      // record the crease as a geometry primitive (the source of truth for the
+      // bending reduction below + the 2D paper view)
+      d.creases.push_back({creaseA, creaseB, d.linkStiffness, false});
       btSoftBody *s = d.body;
       std::vector<int> delLinks, delTriangles;
       d.projectedPoints = d.texCoords;   // hit-test in paper space
@@ -744,12 +768,17 @@ namespace icl::physics2 {
     btSoftBody *s = m_data->body;
     if (!s) return g;
     const Units &u = m_data->units;
+    // Bending links that cross a crease are reduced (by the fold-map) to at most
+    // the crease stiffness; those are effectively a hinge, so hide them from the
+    // 2nd-order overlay. Threshold = the crease (fold-link) stiffness.
+    const float creaseThresh = m_data->linkStiffness;
     for (int i = 0; i < s->m_links.size(); ++i) {
       const btSoftBody::Link &l = s->m_links[i];
       auto seg = std::make_pair(u.toIclVec(l.m_n[0]->m_x), u.toIclVec(l.m_n[1]->m_x));
       if (LinkState::is_fold(l.m_tag))             g.creases.push_back(seg);
       else if (LinkState::is_first_order(l.m_tag)) g.firstOrder.push_back(seg);
-      else                                         g.secondOrder.push_back(seg);
+      else if (!l.m_material || l.m_material->m_kLST > creaseThresh)
+        g.secondOrder.push_back(seg);            // skip crease-reduced bending links
     }
     for (int i = 0; i < s->m_faces.size(); ++i) {
       const btSoftBody::Face &f = s->m_faces[i];
@@ -806,7 +835,10 @@ namespace icl::physics2 {
 
   btSoftBody *PaperDriver::softBody() const { return m_data->body; }
   int PaperDriver::getNumNodes() const { return m_data->body ? m_data->body->m_nodes.size() : 0; }
-  const core::Img32f &PaperDriver::getFoldMap() const { return m_data->fm.getDisplay(); }
+  std::vector<PaperDriver::Crease> PaperDriver::getCreases() const {
+    std::scoped_lock<PhysicsWorld> lock(m_data->world);
+    return m_data->creases;
+  }
 
   void PaperDriver::foldAlongLine(const Point32f &a, const Point32f &b, bool autoExtendToEdges) {
     Data *d = m_data.get();
@@ -964,15 +996,19 @@ namespace icl::physics2 {
       if (!d->body) return;
       btSoftBody *s = d->body;
       math::StraightLine2D ab(a, b - a);
+      // update the crease primitive(s) along the picked line (the source of truth)
+      for (auto &cr : d->creases)
+        if (ab.distance(cr.a) < 0.05f && ab.distance(cr.b) < 0.05f) {
+          cr.stiffness = stiffness; cr.memorized = memorize;
+        }
+      // mirror the stiffness onto the realized fold links, and flag rest-length memory
       for (int i = 0; i < s->m_links.size(); ++i) {
         if (!LinkState::is_fold(s->m_links[i].m_tag)) continue;
         int ia = node_index(s, s->m_links[i].m_n[0]), ib = node_index(s, s->m_links[i].m_n[1]);
         Point32f la = d->texCoords[ia], lb = d->texCoords[ib];
         if (ab.distance(la) < 0.05f && ab.distance(lb) < 0.05f) {
           s->m_links[i].m_material->m_kLST = stiffness;
-          LinkState *st = static_cast<LinkState *>(s->m_links[i].m_tag);
-          st->hasMemorizedRestDist = memorize;
-          d->fm.addFold(la, lb, memorize ? -stiffness : stiffness);
+          static_cast<LinkState *>(s->m_links[i].m_tag)->hasMemorizedRestDist = memorize;
         }
       }
       createBendingConstraints(*d, d->maxLinkDist, d->initialStiffness);

@@ -427,6 +427,42 @@ ICL_REGISTER_TEST("physics2.paper_fold_grows_topology", "folding splits triangle
   ICL_TEST_EQ((int)mesh->getVertices().size(), paper->getNumNodes());  // and stays consistent
 }
 
+ICL_REGISTER_TEST("physics2.paper_fold_reduces_bending", "a crease reduces crossing bending links to the crease stiffness; the 2nd-order overlay hides them")
+{
+  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  auto paper = scene.addPaper(icl::utils::Size(12, 12));    // default fold softness 1e-5
+  for (int i = 0; i < 30; i++) scene.stepOnce(1.f/120.f);
+
+  const float creaseThresh = 1e-5f;   // default "fold softness" == crease stiffness
+  // count 2nd-order (bending) links that are visible vs reduced-to-the-crease.
+  auto bendingStats = [&](int &visible, int &reduced) {
+    visible = reduced = 0;
+    btSoftBody *s = paper->softBody();
+    for (int i = 0; i < s->m_links.size(); ++i) {
+      const btSoftBody::Link &l = s->m_links[i];
+      if (!l.m_bbending) continue;                          // only 2nd-order links
+      if (l.m_material && l.m_material->m_kLST <= creaseThresh) reduced++;
+      else visible++;
+    }
+  };
+
+  int vis0, red0; bendingStats(vis0, red0);
+  ICL_TEST_EQ(red0, 0);                                     // no crease yet -> nothing reduced
+  ICL_TEST_EQ((int)paper->getDebugGeometry().secondOrder.size(), vis0);
+
+  // a diagonal crease (avoid grid lines / cell-centre rows) — recreates the
+  // bending graph from the fold-map, reducing links that cross the crease.
+  paper->foldAlongLine(icl::utils::Point32f(0.17f, 0.23f), icl::utils::Point32f(0.81f, 0.74f), true);
+  for (int i = 0; i < 5; i++) scene.stepOnce(1.f/120.f);
+
+  int vis1, red1; bendingStats(vis1, red1);
+  ICL_TEST_TRUE(red1 > 0);                                  // crossing links were reduced
+  ICL_TEST_EQ((int)paper->getCreases().size(), 1);         // one crease primitive recorded
+  ICL_TEST_TRUE(paper->getDebugGeometry().creases.size() > 0);
+  // the 2nd-order overlay shows exactly the non-reduced bending links
+  ICL_TEST_EQ((int)paper->getDebugGeometry().secondOrder.size(), vis1);
+}
+
 ICL_REGISTER_TEST("physics2.paper_hit_and_interpolate", "paper-space picking: a ray hits the sheet, interpolatePosition round-trips")
 {
   PhysicsScene scene(SoftBodyMode::SoftRigid);

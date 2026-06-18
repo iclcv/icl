@@ -90,7 +90,7 @@ void init() {
                       << ui::CheckBox("creases",{.checked=true, .handle="vCreases"})
                       << ui::CheckBox("1st",    {.handle="v1st"})
                       << ui::CheckBox("2nd",    {.handle="v2nd"}))
-                  << ui::Display({.handle="foldmap", .minSize={16,12}})))
+                  << ui::Canvas(Size(210, 297), {.handle="paperview", .minSize={12,16}})))
           << ui::StatusBar())
       << ui::Show();
   // Modifier help in the status bar (handle "status" is built into StatusBar).
@@ -147,7 +147,23 @@ void run() {
   }
 
   gui["draw"].render();
-  gui["foldmap"] = paper->getFoldMap();   // creases show up as dark lines
+
+  // 2D "pseudo paper" view: the flat unit sheet + the crease primitives in paper
+  // space (independent of the deformed 3D mesh). Viewport is the paper's intrinsic
+  // A4-portrait aspect (paper-x = short edge, paper-y = long edge — PAPER_W:PAPER_H).
+  {
+    const float VW = 210.f, VH = 297.f;
+    DrawHandle pv = gui["paperview"];
+    pv->abs();
+    pv->color(0, 0, 0, 0);   pv->fill(245, 245, 235, 255);
+    pv->rect(0, 0, VW, VH);                              // the sheet
+    pv->color(120, 120, 120, 255); pv->fill(0, 0, 0, 0);
+    pv->rect(0, 0, VW, VH);                              // border
+    pv->color(255, 210, 0, 255); pv->linewidth(2);
+    for (const auto &c : paper->getCreases())
+      pv->line(c.a.x * VW, c.a.y * VH, c.b.x * VW, c.b.y * VH);
+    pv->render();
+  }
   fps.wait();
 }
 

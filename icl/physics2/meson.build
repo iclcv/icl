@@ -24,7 +24,6 @@ physics2_sources = files(
   'PaperDriver.cpp',
   'FoldDriver.cpp',
   'PaperMoverDriver.cpp',
-  'detail/FoldMap.cpp',
   'SensorDriver.cpp',
   'PhysicsWorld.cpp',
   'PhysicsScene.cpp',

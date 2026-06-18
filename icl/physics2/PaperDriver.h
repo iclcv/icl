@@ -33,7 +33,7 @@ namespace icl::physics2 {
   /** PaperDriver owns a manually-built `btSoftBody` whose dual mesh (corner grid +
       per-cell centre vertices) carries first-order structural links and a
       second-order bending graph; folding *splits* triangles along a crease line,
-      inserting weak fold links recorded in a FoldMap so the paper bends there.
+      inserting weak fold links recorded as Crease primitives so the paper bends there.
       The driver binds that soft body to a `geom2::MeshNode`: it builds the mesh
       topology, registers a post-step capture hook (the sim thread snapshots node
       positions + — when a fold changed the topology — the new triangle list into a
@@ -56,13 +56,22 @@ namespace icl::physics2 {
     using Point32f = utils::Point32f;
     using LinkCoords = std::pair<Point32f, Point32f>;
 
+    /// A crease as a geometry primitive (paper space [0,1]^2). The authoritative
+    /// record of every fold: bending links that cross a crease are reduced, and
+    /// the 2D paper view draws these. Replaces the old rasterized FoldMap.
+    struct Crease {
+      Point32f a, b;       ///< endpoints in paper coords (edge-clipped when auto-extended)
+      float stiffness;     ///< crease (hinge) stiffness — links crossing it drop to this
+      bool memorized;      ///< rest length captured from the current deformation
+    };
+
     /// Opaque PIMPL state (defined in the .cpp); public only so the file-local
     /// sim-side fold primitives can name it.
     struct Data;
 
     /// \a cells = grid resolution (corner vertices per axis). \a corners (4 in
     /// ul,ur,ll,lr order, ICL units) define the flat sheet; null = a default
-    /// A4-ish sheet. \a initialStiffness <=0 reads stiffness from the FoldMap;
+    /// A4-ish sheet. \a initialStiffness <=0 derives bending stiffness from the creases;
     /// \a maxLinkDist is the bending-constraint range in paper units.
     PaperDriver(PhysicsWorld &world, const utils::Size &cells,
                 const Vec *corners = nullptr, bool enableSelfCollision = false,
@@ -120,8 +129,9 @@ namespace icl::physics2 {
     /// current deformation as the new rest state).
     void adaptFoldStiffness(const LinkCoords &coords, float stiffness, bool memorize = false);
 
-    /// The current fold map (discretized crease stiffness) for display.
-    const core::Img32f &getFoldMap() const;
+    /// The creases (geometry primitives, paper space) recorded so far — for the
+    /// 2D paper view + crease editing. Locks the world internally (UI-thread safe).
+    std::vector<Crease> getCreases() const;
 
     /// World-space (ICL units) segments of every crease (fold) link — for drawing
     /// a crease highlight overlay. Locks the world internally (UI-thread safe).

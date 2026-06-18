@@ -238,7 +238,9 @@ namespace icl::geom2 {
     const Vec target(upVec[0] * tgtH, upVec[1] * tgtH, upVec[2] * tgtH, 1);
     Camera cam = Camera::lookAt(P(dist * 0.5f, -dist * 0.7f, eyeH),
                                 target, upVec, Size(640, 480), 55.0f);
-    cam.getRenderParams().clipZNear = ext * 0.05f;
+    // near plane close enough to zoom right up to surface detail (e.g. paper
+    // creases) — ext*0.005 keeps a ~3000:1 far/near ratio (fine for the depth buffer)
+    cam.getRenderParams().clipZNear = ext * 0.005f;
     cam.getRenderParams().clipZFar  = ext * 16.0f;
     if (getCameraCount() == 0) addCamera(cam);
     else getCamera(0) = cam;
