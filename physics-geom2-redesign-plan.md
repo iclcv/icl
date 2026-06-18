@@ -231,6 +231,50 @@ Single-world apps use the facade (`scene.add(ball, 1.0f)` = node in scene + body
 world + driver wired, one call). The advanced a/b/c case drops to a raw `Scene2` +
 several `PhysicsWorld`s and wires drivers itself.
 
+### TODO — multi-world `PhysicsScene` (the per-solver composition payoff)
+
+`SoftBodyMode` makes each `PhysicsWorld` pick its solver at construction, but a
+`PhysicsScene` currently owns *exactly one* world. The clean composition the
+threading model already calls for — **N single-solver worlds → 1 `Scene2`** — should
+be first-class, not hand-wired:
+
+- Let `PhysicsScene` own a *list* of `PhysicsWorld`s; `add(node, …, worldIndex=0)`
+  targets one. Each world runs the right solver for its content on its own thread:
+  e.g. a `Deformable` world for cloth/FEM, a `SoftRigid` world for paper
+  (cluster self-collision + folds), a rigid world for the rest — all syncing into
+  one scene. Free, because Bullet worlds never share state.
+- `setupDefault` stays; the extra worlds are opt-in. `start()/stop()/sync()` fan out
+  over all worlds; picking resolves a hit node → its owning driver regardless of
+  world. This is what makes "paper-on-legacy + cloth-on-deformable" a supported
+  path instead of an app special case.
+
+### TODO — coupled / "fused" worlds (cross-world penalty bridging)
+
+Independent worlds don't interact — but some scenes want a body in world A to *feel*
+an obstacle that only exists in world B (e.g. paper in the legacy world draping over
+a rigid prop simulated in the deformable world). Bullet can't share a collision
+object across two world *types*, so the idea is **replicate + bridge**:
+
+- **Static colliders: trivial.** The same static geometry is just *added to both
+  worlds* (it never moves, so there's nothing to synchronize) — each world sees the
+  obstacle natively. This alone covers the common "shared ground / walls / props"
+  case and should be the first step.
+- **Dynamic/rigid: penalty coupling.** Keep a copy of the body in each world and a
+  small **bridge driver** that, each step, drives one copy toward the other with a
+  **PD/spring law** — force ∝ position error + torque ∝ orientation error (+ velocity
+  damping). One side can be the master (kinematic, authoritative) and the other a
+  soft follower, or both can be soft-coupled and meet in the middle. This is exactly
+  the **marker-driven manipulation** pattern (a virtual spring pulling a body toward
+  a detected target pose) generalized to "target = the same body's pose in the other
+  world." The same primitive also cleanly handles marker/robot-driven objects and
+  teleoperation.
+- **Honest caveats:** penalty coupling is soft (some lag/penetration, gains need
+  tuning), the bodies are simulated twice (cost), and contact impulses don't
+  transfer perfectly across the seam — it's a *coupling*, not a true shared solve.
+  Good enough for "obstacle awareness" and actuation; not for stiff, exact
+  multi-body constraints spanning the seam. Build the static case first; treat the
+  dynamic penalty bridge as a `BridgeDriver` experiment once a concrete scene needs it.
+
 ---
 
 ## 7. New constituents (prioritized)
@@ -399,6 +443,40 @@ Establish *standards* instead of tuning constants:
    flat cloth draping on a box pleats into sharp folds. Tuning = soft margin,
    solver iterations, self-collision (CL_SELF/VF_SS), cluster vs SDF. Same
    parameter-standards work; no longer a stability blocker.
+
+### TODO — a material database (named presets bundling sim + render params)
+
+Instead of dialing ten sliders per object, ship a small library of **named
+materials** the user picks by name — each preset bundles *both* the physics
+parameters and the matching render look, so `cloth`, `paper`, `foil`, `tin-foil`,
+`rubber`, `silk`, `denim`, `leather`, … each "just look and behave right" out of
+the box. The values come straight out of the defaults-policy work above (areal
+density, thickness→margin, stiffness/damping, friction) plus the geom2 render
+side (base color, roughness, reflectivity, metallic, smooth vs flat shading).
+
+- **One struct, two halves.** `physics2::MaterialPreset { SoftBodyConfig sim;
+  geom::Material render; }` (or a thin descriptor that produces both). Picking
+  `Material::Paper` sets cloth stiffness/areal-density/damping *and* a matte,
+  near-white, flat-ish look; `TinFoil` → very low bend stiffness, high crinkle
+  retention (plastic deformation), high reflectivity + low roughness + metallic.
+- **Registry, not an enum.** Reuse the project's `utils::PluginRegistry` pattern
+  (name → factory) so a module/app can register its own materials without
+  touching physics2 — mirrors the source/sink/codec registries.
+- **Surface as a Configurable menu.** A `material` dropdown on `SoftBodyDriver`
+  (and later rigid/paper drivers) that loads a preset, with the existing sliders
+  still overriding individual values on top — preset = starting point, not a lock.
+- **Examples to seed it:** `paper` (stiff sheet, holds folds — pairs with the
+  fold-aware `PaperDriver`), `cloth`/`silk`/`denim` (drape, varying stiffness +
+  weight), `foil`/`tin-foil` (low stiffness, plastic crinkle, reflective),
+  `rubber`/`latex` (stretchy, FEM-volumetric once that lands), `leather` (stiff,
+  damped). Distinguishing crinkle/fold retention from elastic drape may need the
+  plastic-deformation path (XPBD / FEM) — see the solver alternatives below.
+- **Rigid too, eventually:** `steel`, `wood`, `ice`, `glass`, `concrete`
+  (restitution/friction/density + render) on the same registry.
+
+This is the user-facing payoff of the parameter-standards work: standards make
+the numbers *mean* something; the material database packages those meanings under
+names people already think in.
 
 **Progress (Session 72).** `SoftBodyDriver` is now a `utils::Configurable` —
 stiffness / friction / damping / contact-hardness / position-iterations /
