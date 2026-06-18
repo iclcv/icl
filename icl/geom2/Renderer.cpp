@@ -564,6 +564,11 @@ void main() { }
       const auto &uvs = node->getTexCoords();
       if (verts.empty()) return;
 
+      // Flat shading: ignore supplied per-vertex normals and use a per-face
+      // normal for each triangle (the VBO is non-indexed, so each triangle has
+      // its own 3 vertices — true faceting). Smooth uses the node's normals.
+      const bool smoothShade = node->getSmoothShading();
+
       // Get material colors for lines/points
       auto mat = node->getMaterial();
       GeomColor defaultLineColor(1,1,1,1);
@@ -584,7 +589,7 @@ void main() { }
         auto emitV = [&](int vi, int ni, int ti) {
           Vertex v;
           v.px = verts[vi][0]; v.py = verts[vi][1]; v.pz = verts[vi][2];
-          if (ni >= 0 && ni < (int)norms.size()) {
+          if (smoothShade && ni >= 0 && ni < (int)norms.size()) {
             v.nx = norms[ni][0]; v.ny = norms[ni][1]; v.nz = norms[ni][2];
           } else {
             // auto-normal from triangle

@@ -12,10 +12,17 @@
 #include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
 #include <BulletSoftBody/btDefaultSoftBodySolver.h>
+#include <BulletSoftBody/btDeformableMultiBodyDynamicsWorld.h>
+#include <BulletSoftBody/btDeformableBodySolver.h>
+#include <BulletSoftBody/btDeformableMultiBodyConstraintSolver.h>
+#include <BulletSoftBody/btDeformableMassSpringForce.h>
+#include <BulletSoftBody/btDeformableGravityForce.h>
+#include <BulletSoftBody/btDeformableBodySolver.h>
 
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <map>
 #include <mutex>
 #include <thread>
 #include <utility>
@@ -44,14 +51,28 @@ namespace icl::physics2 {
 namespace icl::physics2 {
 
   struct PhysicsWorld::Data {
+    SoftBodyMode mode = SoftBodyMode::Deformable;
+
+    // shared across both world types
     btSoftBodyRigidBodyCollisionConfiguration *config = nullptr;
     btCollisionDispatcher *dispatcher = nullptr;
     btBroadphaseInterface *broadphase = nullptr;
+    btGhostPairCallback *ghostCb = nullptr;    // enables ghost-object overlap tracking
+    btDiscreteDynamicsWorld *world = nullptr;  // active world (common base; rigid/step/debug ops)
+
+    // SoftRigid mode (legacy)
     btSequentialImpulseConstraintSolver *solver = nullptr;
     btDefaultSoftBodySolver *softSolver = nullptr;
-    btSoftRigidDynamicsWorld *world = nullptr;
-    btSoftBodyWorldInfo *worldInfo = nullptr;
-    btGhostPairCallback *ghostCb = nullptr;   // enables ghost-object overlap tracking
+    btSoftRigidDynamicsWorld *softWorld = nullptr;
+    btSoftBodyWorldInfo *worldInfo = nullptr;  // standalone (deformable uses world->getWorldInfo())
+
+    // Deformable mode
+    btDeformableBodySolver *deformBodySolver = nullptr;
+    btDeformableMultiBodyConstraintSolver *deformSolver = nullptr;
+    btDeformableMultiBodyDynamicsWorld *deformWorld = nullptr;
+    // per-cloth forces the world owns (freed on removeSoftBody)
+    std::map<btSoftBody *, std::pair<btDeformableMassSpringForce *,
+                                     btDeformableGravityForce *>> clothForces;
 
     Units units;
     DebugDrawCollector debugDrawer;
@@ -71,36 +92,79 @@ namespace icl::physics2 {
     int nextFieldId = 1;
   };
 
-  PhysicsWorld::PhysicsWorld() : m_data(std::make_unique<Data>()) {
+  PhysicsWorld::PhysicsWorld(SoftBodyMode mode) : m_data(std::make_unique<Data>()) {
+    m_data->mode = mode;
+    // The soft-rigid collision config registers the soft-body collision
+    // algorithms BOTH worlds need (a plain btDefaultCollisionConfiguration would
+    // silently drop every deformable contact -> cloth falls through everything).
     m_data->config = new btSoftBodyRigidBodyCollisionConfiguration();
     m_data->dispatcher = new btCollisionDispatcher(m_data->config);
     m_data->broadphase = new btDbvtBroadphase();
-    m_data->solver = new btSequentialImpulseConstraintSolver();
-    m_data->softSolver = new btDefaultSoftBodySolver();
-    m_data->world = new btSoftRigidDynamicsWorld(m_data->dispatcher, m_data->broadphase,
-                                                 m_data->solver, m_data->config,
-                                                 m_data->softSolver);
+
+    // Air density 1.2 kg/m^3 scaled to Bullet length units (= mass/length^3, so
+    // scales by meterToBullet^3); without it soft-body drag is ~1000x too strong.
+    const float meterToBullet = 0.001f / m_data->units.iclToBullet;
+    const btScalar airDensity =
+        static_cast<btScalar>(1.2 * meterToBullet * meterToBullet * meterToBullet);
+
+    if (mode == SoftBodyMode::Deformable) {
+      m_data->deformBodySolver = new btDeformableBodySolver();
+      m_data->deformSolver = new btDeformableMultiBodyConstraintSolver();
+      m_data->deformSolver->setDeformableSolver(m_data->deformBodySolver);
+      m_data->deformWorld = new btDeformableMultiBodyDynamicsWorld(
+          m_data->dispatcher, m_data->broadphase, m_data->deformSolver,
+          m_data->config, m_data->deformBodySolver);
+      m_data->world = m_data->deformWorld;
+
+      // Mass-spring cloth is integrated explicitly (implicit is FEM-only and
+      // freezes mass-spring). The solver-info block is mandatory — without it the
+      // contact projection produces no response (bodies tunnel / freeze).
+      m_data->deformWorld->setImplicit(false);
+      m_data->deformWorld->setLineSearch(false);
+      m_data->deformWorld->setUseProjection(true);
+      btContactSolverInfo &si = m_data->deformWorld->getSolverInfo();
+      si.m_deformable_erp = 0.3;
+      si.m_deformable_maxErrorReduction = btScalar(200);
+      si.m_leastSquaresResidualThreshold = btScalar(1e-3);
+      si.m_splitImpulse = true;
+      si.m_numIterations = 100;
+
+      btSoftBodyWorldInfo &wi = m_data->deformWorld->getWorldInfo();
+      wi.air_density = airDensity;
+      wi.water_density = 0;
+      wi.m_broadphase = m_data->broadphase;
+      wi.m_dispatcher = m_data->dispatcher;
+      wi.m_sparsesdf.setDefaultVoxelsz(0.25);
+      wi.m_sparsesdf.Reset();
+    } else {
+      m_data->solver = new btSequentialImpulseConstraintSolver();
+      m_data->softSolver = new btDefaultSoftBodySolver();
+      m_data->softWorld = new btSoftRigidDynamicsWorld(
+          m_data->dispatcher, m_data->broadphase, m_data->solver, m_data->config,
+          m_data->softSolver);
+      m_data->world = m_data->softWorld;
+
+      m_data->worldInfo = new btSoftBodyWorldInfo();
+      m_data->worldInfo->air_density = airDensity;
+      m_data->worldInfo->water_density = 0;
+      m_data->worldInfo->water_offset = 0;
+      m_data->worldInfo->water_normal = btVector3(0, 0, 0);
+      m_data->worldInfo->m_broadphase = m_data->broadphase;
+      m_data->worldInfo->m_dispatcher = m_data->dispatcher;
+      m_data->worldInfo->m_sparsesdf.Initialize();
+    }
+
     m_data->world->setDebugDrawer(&m_data->debugDrawer);
 
     // ghost-pair callback so btGhostObject sensors accumulate overlapping pairs
     m_data->ghostCb = new btGhostPairCallback();
     m_data->broadphase->getOverlappingPairCache()->setInternalGhostPairCallback(m_data->ghostCb);
 
-    // soft-body world info (gravity + air density for aerodynamics later).
-    // Air density 1.2 kg/m^3 scaled to Bullet length units (= mass/length^3, so
-    // scales by meterToBullet^3); without it soft-body drag is ~1000x too strong.
-    const float meterToBullet = 0.001f / m_data->units.iclToBullet;
-    m_data->worldInfo = new btSoftBodyWorldInfo();
-    m_data->worldInfo->air_density =
-        static_cast<btScalar>(1.2 * meterToBullet * meterToBullet * meterToBullet);
-    m_data->worldInfo->water_density = 0;
-    m_data->worldInfo->water_offset = 0;
-    m_data->worldInfo->water_normal = btVector3(0, 0, 0);
-    m_data->worldInfo->m_broadphase = m_data->broadphase;
-    m_data->worldInfo->m_dispatcher = m_data->dispatcher;
-    m_data->worldInfo->m_sparsesdf.Initialize();
-
     setGravity(Vec(0, 0, -9810, 1));   // 9.81 m/s^2 in ICL mm/s^2 (world + info)
+  }
+
+  bool PhysicsWorld::isDeformable() const {
+    return m_data->mode == SoftBodyMode::Deformable;
   }
 
   PhysicsWorld::~PhysicsWorld() {
@@ -109,10 +173,16 @@ namespace icl::physics2 {
     // overlapping pairs, and btHashedOverlappingPairCache::removeOverlappingPair
     // dereferences the internal ghost-pair callback — so ghostCb must outlive
     // the broadphase (delete it LAST). Deleting it early = use-after-free.
-    delete m_data->worldInfo;
-    delete m_data->world;
-    delete m_data->softSolver;
-    delete m_data->solver;
+    for (auto &kv : m_data->clothForces) {
+      delete kv.second.first;
+      delete kv.second.second;
+    }
+    delete m_data->worldInfo;        // null in Deformable mode
+    delete m_data->world;            // deletes the active world (deform or soft)
+    delete m_data->softSolver;       // null in Deformable mode
+    delete m_data->solver;           // null in Deformable mode
+    delete m_data->deformSolver;     // null in SoftRigid mode
+    delete m_data->deformBodySolver; // null in SoftRigid mode
     delete m_data->broadphase;
     delete m_data->dispatcher;
     delete m_data->config;
@@ -129,7 +199,15 @@ namespace icl::physics2 {
     std::scoped_lock lock(m_data->mutex);
     btVector3 bg = m_data->units.toBulletVec(g);
     m_data->world->setGravity(bg);
-    if (m_data->worldInfo) m_data->worldInfo->m_gravity = bg;
+    if (m_data->mode == SoftBodyMode::Deformable) {
+      m_data->deformWorld->getWorldInfo().m_gravity = bg;
+      // Deformable nodes are driven by their gravity FORCE, not world gravity, so
+      // keep any live cloth forces in sync with the new gravity.
+      for (auto &kv : m_data->clothForces)
+        if (kv.second.second) kv.second.second->m_gravity = bg;
+    } else if (m_data->worldInfo) {
+      m_data->worldInfo->m_gravity = bg;
+    }
   }
 
   void PhysicsWorld::setGravityEnabled(bool on) {
@@ -190,16 +268,80 @@ namespace icl::physics2 {
   void PhysicsWorld::addSoftBody(btSoftBody *body) {
     if (!body) return;
     std::scoped_lock lock(m_data->mutex);
-    m_data->world->addSoftBody(body);
+    if (m_data->mode == SoftBodyMode::Deformable)
+      m_data->deformWorld->addSoftBody(body);
+    else
+      m_data->softWorld->addSoftBody(body);
+  }
+
+  namespace {
+    // The deformable world's addForce() MERGES forces by getForceType() — all
+    // soft bodies of the same type end up sharing ONE force object (one global
+    // stiffness), and deleting it while another body still references it is a
+    // use-after-free. We want PER-CLOTH forces (each cloth's stiffness scales
+    // with its own node mass), so we manage the solver's force list directly,
+    // bypassing the merge. Each force owns exactly one body -> clean delete.
+    void addForceDirect(btDeformableBodySolver *solver,
+                        btDeformableLagrangianForce *f, btSoftBody *body) {
+      f->addSoftBody(body);
+      f->setIndices(solver->getIndices());
+      solver->getLagrangianForceArray()->push_back(f);
+    }
+    void removeForceDirect(btDeformableBodySolver *solver,
+                           btDeformableLagrangianForce *f, btSoftBody *body) {
+      f->removeSoftBody(body);
+      solver->getLagrangianForceArray()->remove(f);
+    }
   }
 
   void PhysicsWorld::removeSoftBody(btSoftBody *body) {
     if (!body) return;
     std::scoped_lock lock(m_data->mutex);
-    m_data->world->removeSoftBody(body);
+    if (m_data->mode == SoftBodyMode::Deformable) {
+      auto it = m_data->clothForces.find(body);
+      if (it != m_data->clothForces.end()) {
+        removeForceDirect(m_data->deformBodySolver, it->second.first, body);
+        removeForceDirect(m_data->deformBodySolver, it->second.second, body);
+        delete it->second.first;
+        delete it->second.second;
+        m_data->clothForces.erase(it);
+      }
+      m_data->deformWorld->removeSoftBody(body);
+    } else {
+      m_data->softWorld->removeSoftBody(body);
+    }
   }
 
-  btSoftBodyWorldInfo *PhysicsWorld::getSoftBodyWorldInfo() { return m_data->worldInfo; }
+  btSoftBodyWorldInfo *PhysicsWorld::getSoftBodyWorldInfo() {
+    return m_data->mode == SoftBodyMode::Deformable
+               ? &m_data->deformWorld->getWorldInfo()
+               : m_data->worldInfo;
+  }
+
+  void PhysicsWorld::addClothForces(btSoftBody *body, float stiffness, float damping) {
+    if (!body || m_data->mode != SoftBodyMode::Deformable) return;
+    std::scoped_lock lock(m_data->mutex);
+    auto *spring = new btDeformableMassSpringForce(stiffness, damping, true);
+    auto *grav = new btDeformableGravityForce(m_data->deformWorld->getWorldInfo().m_gravity);
+    addForceDirect(m_data->deformBodySolver, spring, body);
+    addForceDirect(m_data->deformBodySolver, grav, body);
+    m_data->clothForces[body] = {spring, grav};
+  }
+
+  void PhysicsWorld::setClothStiffness(btSoftBody *body, float stiffness, float damping) {
+    if (!body || m_data->mode != SoftBodyMode::Deformable) return;
+    std::scoped_lock lock(m_data->mutex);
+    auto it = m_data->clothForces.find(body);
+    if (it == m_data->clothForces.end()) return;
+    // btDeformableMassSpringForce has no stiffness setter (members private), so
+    // swap the force object. This is safe because each cloth owns its OWN force
+    // (we bypass the type-merge) — detaching + deleting touches no other body.
+    removeForceDirect(m_data->deformBodySolver, it->second.first, body);
+    delete it->second.first;
+    auto *spring = new btDeformableMassSpringForce(stiffness, damping, true);
+    addForceDirect(m_data->deformBodySolver, spring, body);
+    it->second.first = spring;
+  }
 
   void PhysicsWorld::addCapture(void *token, std::function<void()> fn) {
     std::scoped_lock lock(m_data->mutex);

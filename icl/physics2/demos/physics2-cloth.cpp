@@ -46,10 +46,11 @@ void init() {
   // drop tunnels the cloth through the box).
   cloth = scene.addCloth(Vec(-650,-450,-180,1), Vec(150,-450,-180,1),
                          Vec(-650, 450,-180,1), Vec(150, 450,-180,1),
-                         60, 60, /*pin*/ 0, 2.0f);
+                         50, 50, /*pin*/ 0, 2.0f);
   dynamic_cast<MeshNode*>(cloth->node())
-      ->setMaterial(Material::fromColor(GeomColor(70,150,220,255)));
-  cloth->setPropertyValue("size", 3.0f);   // start oversized so it drapes well
+      ->setMaterial(Material::fromColor(GeomColor(70,150,220,255), 128, 0.25f));  // 25% reflective
+  cloth->setPropertyValue("size", 1.4f);        // tuned oversize (drapes well, stays put)
+  cloth->setPropertyValue("stiffness", 0.85f);  // tuned: heavier 2.0-mass cloth holds shape
 
   // a banner hanging from two pinned corners
   banner = scene.addCloth(Vec(1000,-400,276,1), Vec(1000,400,276,1),

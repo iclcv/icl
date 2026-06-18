@@ -40,7 +40,9 @@ namespace icl::physics2 {
       driver onDetach() can safely remove its body. */
   class ICLPhysics2_API PhysicsScene {
   public:
-    PhysicsScene();
+    /// `mode` selects the soft-body pipeline (default = Deformable, the stable
+    /// one; SoftRigid is the legacy world kept for comparison).
+    explicit PhysicsScene(SoftBodyMode mode = SoftBodyMode::Deformable);
     ~PhysicsScene();
 
     /// Add a node to the scene AND give it a rigid body (shape derived from

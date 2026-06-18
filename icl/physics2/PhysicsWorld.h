@@ -30,6 +30,17 @@ namespace icl::physics2 {
   /// One collision-shape wireframe segment in ICL units (for debug draw).
   struct DebugLine { Vec a, b; };
 
+  /// Which Bullet soft-body pipeline the world runs.
+  /** `Deformable` (default) builds a `btDeformableMultiBodyDynamicsWorld`: soft
+      bodies are driven by the deformable solver whose contact *projection*
+      (split-impulse + ERP) is stable at rest. `SoftRigid` builds the legacy
+      `btSoftRigidDynamicsWorld` whose impulse contact solver pumps energy at rest
+      (cloth explodes — band-aided, not fixed). The same mass-spring cloth is
+      stable in the deformable world and unstable in the legacy one, so
+      `Deformable` is the default. Chosen at construction (it picks the world
+      type). */
+  enum class SoftBodyMode { Deformable, SoftRigid };
+
   /// A Bullet dynamics world that simulates on its own thread, decoupled from
   /// rendering.
   /** physics2's world is deliberately thin: it owns the Bullet world + the
@@ -49,8 +60,11 @@ namespace icl::physics2 {
     PhysicsWorld(const PhysicsWorld &) = delete;
     PhysicsWorld &operator=(const PhysicsWorld &) = delete;
 
-    PhysicsWorld();
+    explicit PhysicsWorld(SoftBodyMode mode = SoftBodyMode::Deformable);
     ~PhysicsWorld();
+
+    /// True if this world runs the deformable soft-body pipeline (the default).
+    bool isDeformable() const;
 
     // --- units / scale ---
     Units getUnits() const;
@@ -82,6 +96,14 @@ namespace icl::physics2 {
     void addSoftBody(btSoftBody *body);
     void removeSoftBody(btSoftBody *body);
     btSoftBodyWorldInfo *getSoftBodyWorldInfo();
+
+    // --- deformable-mode cloth forces (no-op in SoftRigid mode) ---
+    /// Attach the standard cloth forces (mass-spring + gravity) a soft body needs
+    /// to simulate in the deformable world. The world owns the force objects and
+    /// frees them on `removeSoftBody`. Must be called after `addSoftBody`.
+    void addClothForces(btSoftBody *body, float stiffness, float damping);
+    /// Live-update a deformable cloth's spring stiffness / damping (sim thread).
+    void setClothStiffness(btSoftBody *body, float stiffness, float damping);
 
     // --- collision objects (ghost sensors etc., no dynamics) ---
     void addCollisionObject(btCollisionObject *obj, int group, int mask);

@@ -104,7 +104,11 @@ namespace icl::geom2 {
   float GeometryNode::getLineWidth() const { return m_data->lineWidth; }
   void GeometryNode::setRenderOnTop(bool on) { m_data->renderOnTop = on; }
   bool GeometryNode::getRenderOnTop() const { return m_data->renderOnTop; }
-  void GeometryNode::setSmoothShading(bool on) { m_data->smoothShading = on; }
+  void GeometryNode::setSmoothShading(bool on) {
+    if (m_data->smoothShading == on) return;
+    m_data->smoothShading = on;
+    ++m_data->geometryVersion;   // shading affects the uploaded normals -> rebuild
+  }
   bool GeometryNode::getSmoothShading() const { return m_data->smoothShading; }
 
   void GeometryNode::createAutoNormals(bool smooth) {

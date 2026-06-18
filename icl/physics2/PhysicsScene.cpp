@@ -11,7 +11,7 @@
 
 namespace icl::physics2 {
 
-  PhysicsScene::PhysicsScene() = default;
+  PhysicsScene::PhysicsScene(SoftBodyMode mode) : m_world(mode) {}
 
   PhysicsScene::~PhysicsScene() {
     // Stop the sim thread before the scene (and its driver-bearing nodes) tear

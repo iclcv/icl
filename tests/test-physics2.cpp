@@ -228,6 +228,132 @@ ICL_REGISTER_TEST("physics2.cloth_rests_on_box", "cloth collides with a rigid bo
   ICL_TEST_TRUE(maxz < 450.0f);      // settled (didn't blow up upward)
 }
 
+ICL_REGISTER_TEST("physics2.cloth_stable_at_rest", "cloth on a box stays bounded over a long run (no rest-state explosion)")
+{
+  // The deformable world's contact projection must hold a settled cloth steady.
+  // The legacy btSoftBody solver pumps energy at rest and diverges within a few
+  // steps of settling — this long run is the regression guard for that.
+  PhysicsScene scene;   // default = SoftBodyMode::Deformable
+  auto box = CuboidNode::create(0,0,0, 500,500,400);
+  scene.add(std::static_pointer_cast<Node>(box), 0.0f);
+  auto cloth = scene.addCloth(Vec(-150,-150,500,1), Vec(150,-150,500,1),
+                              Vec(-150, 150,500,1), Vec(150, 150,500,1),
+                              16, 16, /*pin*/ 0, 1.0f);
+  auto *mesh = dynamic_cast<MeshNode*>(cloth->node());
+
+  // settle, then run far past where the legacy solver would have blown up
+  for (int i = 0; i < 2500; i++) scene.stepOnce(1.f/120.f);
+  scene.sync(1.0/60.0);
+
+  const auto &v = mesh->getVertices();
+  float minz = 1e9f, maxz = -1e9f, maxAbs = 0.f;
+  bool allFinite = true;
+  for (const auto &p : v) {
+    for (int k = 0; k < 3; k++) {
+      if (!std::isfinite(p[k])) allFinite = false;
+      maxAbs = std::max(maxAbs, std::fabs(p[k]));
+    }
+    minz = std::min(minz, p[2]); maxz = std::max(maxz, p[2]);
+  }
+  ICL_TEST_TRUE(allFinite);        // no NaN
+  ICL_TEST_TRUE(maxAbs < 2000.0f); // no vertex flew off — the explosion signature
+  ICL_TEST_TRUE(minz > 100.0f);    // still resting on the box top (~200), no tunnel
+  ICL_TEST_TRUE(maxz < 450.0f);    // still settled, didn't creep upward
+}
+
+ICL_REGISTER_TEST("physics2.dense_cloth_stable", "a high-resolution cloth stays stable (resolution-aware stiffness)")
+{
+  // Mirrors physics2-cloth: a dense 60x60 cloth, oversized, dropped on a box.
+  // Mass-spring stiffness must scale with node mass — a fixed stiffness makes a
+  // fine grid (tiny per-node mass) explode under explicit integration. This is
+  // the regression guard for the demo's immediate blow-up.
+  PhysicsScene scene;
+  auto box = CuboidNode::create(0,0,0, 500,500,400);   // top at z=200
+  scene.add(std::static_pointer_cast<Node>(box), 0.0f);
+  // dense 60x60 cloth (3600 nodes -> tiny per-node mass) laid just above the box
+  // top (a low drop keeps impact under the fine-grid collision margin, isolating
+  // the explosion from tunneling). With a fixed stiffness this resolution
+  // explodes within a few steps from internal spring forces; with node-mass-
+  // proportional stiffness it stays bounded and settles.
+  auto cloth = scene.addCloth(Vec(-150,-150,210,1), Vec(150,-150,210,1),
+                              Vec(-150, 150,210,1), Vec(150, 150,210,1),
+                              60, 60, /*pin*/ 0, 1.0f);
+  auto *mesh = dynamic_cast<MeshNode*>(cloth->node());
+
+  for (int i = 0; i < 1500; i++) scene.stepOnce(1.f/240.f);
+  scene.sync(1.0/60.0);
+
+  const auto &v = mesh->getVertices();
+  float minz = 1e9f, maxAbs = 0.f; bool allFinite = true;
+  for (const auto &p : v) {
+    for (int k = 0; k < 3; k++) {
+      if (!std::isfinite(p[k])) allFinite = false;
+      maxAbs = std::max(maxAbs, std::fabs(p[k]));
+    }
+    minz = std::min(minz, p[2]);
+  }
+  ICL_TEST_EQ((int)v.size(), 3600);
+  ICL_TEST_TRUE(allFinite);          // didn't explode to NaN
+  ICL_TEST_TRUE(maxAbs < 1000.0f);   // no node flew off — the explosion signature
+  ICL_TEST_TRUE(minz > 100.0f);      // rested on the box top (~200), didn't tunnel
+}
+
+ICL_REGISTER_TEST("physics2.live_stiffness_two_cloths", "changing a cloth slider with multiple cloths present doesn't corrupt forces")
+{
+  // Reproduces the physics2-cloth crash: the deformable world merges forces by
+  // type, so two cloths shared one mass-spring force; a per-body delete on a
+  // slider change freed a force still used by the other cloth (SIGSEGV). We now
+  // give each cloth its own force, so a live stiffness change is body-local.
+  PhysicsScene scene;
+  auto c1 = scene.addCloth(Vec(-200,-200,400,1), Vec(200,-200,400,1),
+                           Vec(-200, 200,400,1), Vec(200, 200,400,1),
+                           20, 20, /*pin*/ 1+2, 1.0f);
+  auto c2 = scene.addCloth(Vec(-200,-200,600,1), Vec(200,-200,600,1),
+                           Vec(-200, 200,600,1), Vec(200, 200,600,1),
+                           20, 20, /*pin*/ 1+2, 1.0f);
+
+  for (int i = 0; i < 60; i++) scene.stepOnce(1.f/120.f);
+  // change a slider on c1 (enqueues a force swap, drained on the next step)
+  c1->setPropertyValue("stiffness", 0.8f);
+  c1->setPropertyValue("friction", 0.3f);
+  for (int i = 0; i < 200; i++) scene.stepOnce(1.f/120.f);   // would crash here pre-fix
+  // and swap c2's force too, to exercise both bodies' independent forces
+  c2->setPropertyValue("stiffness", 0.2f);
+  for (int i = 0; i < 200; i++) scene.stepOnce(1.f/120.f);
+  scene.sync(1.0/60.0);
+
+  auto *m1 = dynamic_cast<MeshNode*>(c1->node());
+  auto *m2 = dynamic_cast<MeshNode*>(c2->node());
+  bool allFinite = true;
+  for (auto *m : {m1, m2})
+    for (const auto &p : m->getVertices())
+      for (int k = 0; k < 3; k++) if (!std::isfinite(p[k])) allFinite = false;
+  ICL_TEST_TRUE(allFinite);   // no corruption, no NaN — and the run didn't crash
+}
+
+ICL_REGISTER_TEST("physics2.legacy_softrigid_mode", "the legacy SoftRigid world still builds + simulates a cloth")
+{
+  // Keeps the non-default pipeline compiled + exercised (it's retained for A/B
+  // comparison against the Deformable default).
+  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  auto box = CuboidNode::create(0,0,0, 500,500,400);
+  scene.add(std::static_pointer_cast<Node>(box), 0.0f);
+  auto cloth = scene.addCloth(Vec(-150,-150,500,1), Vec(150,-150,500,1),
+                              Vec(-150, 150,500,1), Vec(150, 150,500,1),
+                              12, 12, /*pin*/ 0, 1.0f);
+  auto *mesh = dynamic_cast<MeshNode*>(cloth->node());
+
+  for (int i = 0; i < 300; i++) scene.stepOnce(1.f/120.f);
+  scene.sync(1.0/60.0);
+
+  const auto &v = mesh->getVertices();
+  bool allFinite = true;
+  for (const auto &p : v)
+    for (int k = 0; k < 3; k++) if (!std::isfinite(p[k])) allFinite = false;
+  ICL_TEST_TRUE(allFinite);
+  ICL_TEST_EQ((int)v.size(), 144);
+}
+
 ICL_REGISTER_TEST("physics2.debug_lines", "debug draw returns a non-empty collision wireframe")
 {
   PhysicsScene scene;
