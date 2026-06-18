@@ -2,12 +2,75 @@
 
 ## Next Step
 
-**`DefaultScene` + default physics scene + live-tunable soft bodies LANDED +
-pushed** (Session 72, commits `cec2b26e5` + `1fd0808ad` on
-`further-restructuring-and-cleanup`). Continues the geom→geom2 + physics2 work.
-**Full plan + live phase status: `physics-geom2-redesign-plan.md`** (read first).
+**The cloth/soft-body solver blocker is RESOLVED** (Session 73). The next target is
+**Phase 3b — paper**: bridge `PhysicsPaper3` into physics2 as a **`PaperDriver`**,
+**running in `SoftBodyMode::SoftRigid`** (its native legacy solver). Why SoftRigid,
+not the new deformable default: paper is *more* coupled to the legacy `btSoftBody`
+solver than cloth was — it uses **cluster self-collision** (`CL_SS`/`CL_SELF`, which
+the deformable pipeline has no equivalent for) and per-link solver constants
+(`m_c0..m_c3`). So keep paper on legacy (lowest risk, preserves the thesis tuning);
+deformable-paper / XPBD-paper is a *later* experiment. The `SoftBodyMode` flag added
+this session is exactly the lever — `PaperDriver`'s world is constructed `SoftRigid`.
+This also exercises the **multi-world** story (paper-world legacy + cloth-world
+deformable → one `Scene2`; see the new plan TODO). **Full plan + phase status:
+`physics-geom2-redesign-plan.md`** (read first).
 
-**What's done this session (suite green; geom2 14 + physics2 18 tests):**
+After paper: **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`), the
+**defaults policy → material database** (now that node-mass stiffness derivation is
+half-built), Phase 4b raycast vehicle, then Phase 6.
+
+**Phase 6 is now nuanced:** we can NOT delete `btSoftRigidDynamicsWorld` — paper needs
+it as a mode. Phase 6 = retire the dead `geom::Scene` physics path + the old
+`PhysicsScene`/`PhysicsObject` inheritance, while KEEPING the legacy solver behind the
+flag.
+
+---
+
+## Session 73 recap (btDeformable soft-body world + cloth fixes) — committed `a6a0c4cd5`
+
+**The flagged blocker is fixed.** `btSoftBody`-explodes-at-rest is gone: cloth now runs
+in a `btDeformableMultiBodyDynamicsWorld` whose contact projection (split-impulse + ERP)
+is stable at rest, where the legacy impulse contacts pumped energy. (The win is the
+*contact solver*, not FEM — cloth still uses mass-spring.) Started from a standalone
+Bullet spike (see memory `project_btdeformable_spike`); landed as:
+- **`PhysicsWorld` `SoftBodyMode{Deformable,SoftRigid}` ctor flag, default Deformable.**
+  Both worlds collapse to a common `btDiscreteDynamicsWorld*` so all rigid/step/sensor/
+  debug/force-field machinery is solver-agnostic; only soft-body calls branch. Full
+  deformable solver-info recipe is mandatory (without it the implicit CG solve freezes /
+  contacts tunnel). `PhysicsScene(SoftBodyMode)` passthrough.
+- **Per-cloth forces.** Bullet's `addForce` MERGES forces by type (one shared force across
+  all cloths) → a per-cloth stiffness change freed a force still in use → SIGSEGV on slider
+  change. Fix: manage the solver's force list directly (`getLagrangianForceArray()`),
+  bypassing the merge — each cloth owns its mass-spring + gravity force.
+- **`SoftBodyDriver` deformable path:** `SDF_RD|SDF_RDF` contacts, `appendDeformableAnchor`
+  (legacy `appendAnchor` is ignored by the deformable solver), no clusters.
+- **Node-mass-proportional stiffness** (`deformParams`, `kDeformBase=8000`): `k ∝ node
+  mass` keeps `ω=√(k/m)` resolution-independent, so the slider is stable at any grid
+  density (a fixed stiffness exploded the demo's 60×60 cloth while passing 16×16 tests).
+- **Smooth shading actually works now:** the core `Renderer` honors
+  `GeometryNode::getSmoothShading()` (true per-face normals when off; was ignored — only
+  the legacy `SceneSynchronizer` read it), and the cloth wires triangle normal indices so
+  its `createAutoNormals` array is used. `"smooth normals"` cloth property toggles it.
+- **Demo tuning** (from the user's `defaults.json`): stiffness 0.85 / size 1.4 / 50×50 set
+  per-cloth (0.85 is mass-2-specific, NOT a global default — it explodes light cloths);
+  blue cloth 25% reflective.
+- Tests: `cloth_stable_at_rest` (2500-step bounded), `dense_cloth_stable`,
+  `live_stiffness_two_cloths` (the crash repro), `legacy_softrigid_mode`. **913/913 green.**
+
+Also committed `ddbfcdb0b` — three plan-doc TODOs (material database, multi-world
+`PhysicsScene`, coupled/"fused" worlds via cross-world penalty bridging).
+
+**Caveat:** GUI render correctness is unverifiable in this sandbox (no GL context). The
+deformable physics is validated via deterministic `stepOnce` + the tests; the smooth/flat
+toggle, reflectivity, and drape *feel* need a real display (the user confirmed cloth looks
+great + sim is stable). Build: `CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C builddir -j 16`
+(ccache trips the sandbox). Tests: `builddir/bin/icl-tests -f 'physics2.*' -j 1`.
+
+---
+
+## Session 72 recap (`DefaultScene` + default physics scene + live-tunable soft bodies)
+
+Commits `cec2b26e5` + `1fd0808ad`.
 - **`geom2::DefaultScene : Scene2`** — self-furnishing scene, `SceneType{Void,
   Studio}`, up-axis aware (`setUpAxis`, Y viewer / Z physics). Live Configurable
   knobs (scene type / ground / coordinate frame / sky / shadows / SSR); toggles
@@ -20,29 +83,11 @@ pushed** (Session 72, commits `cec2b26e5` + `1fd0808ad` on
 - **`PhysicsScene::setupDefault(SceneType, extent)`** — composes a `DefaultScene`
   + invisible static ground collider coincident with the drawn ground; migrated
   `physics2-scene/-tilt/-cloth`.
-- **`SoftBodyDriver` is now `Configurable`** — live cloth params (stiffness via
-  `updateLinkConstants`, friction, damping, contact hardness, iterations, margin,
-  collision mode SDF/Clusters, self-collision, **size**, **node density**) +
-  reset button. Anti-explosion band-aid (velocity clamp + softer contact
-  defaults).
-
-**Next session — remaining work (see plan doc):**
-- **Soft-body solver is the real cloth blocker.** `btSoftBody` explodes at rest
-  (band-aided, not fixed). Plan doc "Soft-body solver alternatives": try Bullet
-  **`btDeformable` FEM** first (already in our Bullet 3.25), or own an **XPBD**
-  cloth driver (best long-term). Until then cloth-on-box drape stays mediocre.
-- **DefaultScene** plan step 2: add `Landscape`/`Room` presets + `loadAndFit`,
-  fold in + delete `DemoScene2`, repoint its users.
-- **Phase 3b** — fold-aware `PaperDriver` (`PhysicsPaper3` FoldMap) + water-rocket.
-- **Phase 4b** — raycast vehicle (`btRaycastVehicle`) for the car.
-- **Phase 6** — retire legacy `icl/physics`.
-- Minor: `TextNode` aborts headless (eager Qt-font raster) — `CoordinateFrameNode`
-  unusable GUI-less; defer its rasterization.
-
-**Caveat:** GUI render correctness is unverifiable in this sandbox (no GL
-context). Physics validated via deterministic `stepOnce` + offscreen smoke; the
-demos need a real display. Build: `CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/bin:$PATH ninja -C builddir -j 16`
-(ccache trips the sandbox). Tests: `builddir/bin/icl-tests -f 'physics2.*' -j 1`.
+- **`SoftBodyDriver` is now `Configurable`** — live cloth params + reset button.
+  (The S72 anti-explosion band-aid is now obsolete — superseded by the S73
+  deformable world.)
+- Minor still-open: `TextNode` aborts headless (eager Qt-font raster) —
+  `CoordinateFrameNode` unusable GUI-less; defer its rasterization.
 
 ---
 
