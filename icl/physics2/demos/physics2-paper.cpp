@@ -45,6 +45,14 @@ Time lastTick;
 void init() {
   scene.setupDefault(DefaultScene::SceneType::Studio, 1200.f);   // ground top ~ z=-624
 
+  // start the camera twice as close to the paper (halve its distance to the
+  // look-at target), keeping the viewing direction
+  {
+    auto &cam = scene.scene().getCamera(0);
+    const Vec tgt = scene.scene().getCursor();
+    cam.setPosition(cam.getPosition() + (tgt - cam.getPosition()) * 0.5f);
+  }
+
   // a wide, thin static slab the sheet rests / drapes on (5x wider+longer, 1/10
   // the height of the original 300^3 cube -> 1500 x 1500 x 30)
   auto box = CuboidNode::create(0,0,0, 1500,1500,30);
@@ -80,9 +88,12 @@ void init() {
           << (HSplit()
               << ui::Canvas3D(Size(2400,1800), {.handle="draw", .minSize={32,24}})
               << (VBox().maxSize(16,99)
-                  << ui::Prop(paper, {.label="paper"})
-                  << ui::Prop(fold,  {.label="fold"})
-                  << ui::Prop(mover, {.label="move"})
+                  // the three driver panels share one tab so they don't stack and
+                  // crowd out the paper view below (each Prop is itself scrollable)
+                  << (ui::Tab("paper,fold,move", {.minSize={16,10}})
+                      << ui::Prop(paper)
+                      << ui::Prop(fold)
+                      << ui::Prop(mover))
                   << ui::Button("reset", {.handle="reset"})
                   << ui::CheckBox("collision debug", {.handle="dbg"})
                   << (HBox().label("show")

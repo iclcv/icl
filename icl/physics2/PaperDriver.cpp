@@ -411,6 +411,22 @@ namespace icl::physics2 {
         existing.insert({std::min(node_index(s, ls[i].m_n[0]), node_index(s, ls[i].m_n[1])),
                          std::max(node_index(s, ls[i].m_n[0]), node_index(s, ls[i].m_n[1]))});
 
+      // Extend each crease segment ~1.5cm past its (edge-clipped) endpoints for the
+      // crossing test only. A crease ends exactly on the paper boundary, so a
+      // bending link near the edge can cross it right at that endpoint, where the
+      // strict sign test degenerates (≈0) and the link is wrongly kept stiff.
+      // Pushing the endpoints outside the sheet turns those into clean interior
+      // crossings. Display still uses the un-extended d.creases.
+      std::vector<std::pair<Point32f, Point32f>> extCreases;
+      extCreases.reserve(d.creases.size());
+      for (const auto &cr : d.creases) {
+        Point32f dir = cr.b - cr.a;
+        const float len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+        if (len < 1e-6f) { extCreases.emplace_back(cr.a, cr.b); continue; }
+        dir = dir * (0.05f / len);   // ~5% of paper span (>1cm on either axis)
+        extCreases.emplace_back(cr.a - dir, cr.b + dir);
+      }
+
       const float maxD2 = maxDistance * maxDistance;
       const std::vector<Point32f> &tex = d.texCoords;
       const int num = static_cast<int>(tex.size());
@@ -425,10 +441,10 @@ namespace icl::physics2 {
           float stiffness = (fixedStiffness > 0) ? fixedStiffness : 1.f;
           bool memorized = false;
           if (fixedStiffness <= 0) {
-            for (const auto &cr : d.creases)
-              if (segments_cross(tex[i], tex[j], cr.a, cr.b)) {
-                if (cr.stiffness < stiffness) stiffness = cr.stiffness;
-                memorized = memorized || cr.memorized;
+            for (size_t k = 0; k < d.creases.size(); ++k)
+              if (segments_cross(tex[i], tex[j], extCreases[k].first, extCreases[k].second)) {
+                if (d.creases[k].stiffness < stiffness) stiffness = d.creases[k].stiffness;
+                memorized = memorized || d.creases[k].memorized;
               }
           }
           addLinkI(d, i, j, stiffness, LinkState(false, false, memorized),
