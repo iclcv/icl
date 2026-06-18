@@ -1424,6 +1424,81 @@ namespace icl{
 
 
 
+    /// Status bar: a thin horizontal strip docked to the bottom of its parent.
+    /** Regardless of the parent's layout direction, the bar pins itself to the
+        bottom edge (see dockToBottom).  It is capped to STATUSBAR_HEIGHT pixels
+        and always exposes an initial, left-aligned text label under the fixed
+        handle "status".  Components streamed into the bar are packed to the
+        right of that label. */
+    struct StatusBarGUIWidget : public GUIWidget{
+      static const int STATUSBAR_HEIGHT = 24;
+
+      StatusBarGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::hboxLayout){
+        setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed));
+        setFixedHeight(STATUSBAR_HEIGHT);
+
+        QHBoxLayout *box = static_cast<QHBoxLayout*>(layout());
+        // keep an l/r (and small bottom) margin so children aren't clipped
+        // by the host window's rounded bottom corners (e.g. macOS)
+        box->setContentsMargins(12,0,12,2);
+        box->setSpacing(6);
+
+        // initial left-aligned status label, reachable as gui["status"]
+        m_label = new CompabilityLabel("",this);
+        m_label->setAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+        box->addWidget(m_label);
+        box->addStretch(1);   // later items are packed to the right of the label
+
+        getGUI()->lockData();
+        getGUI()->allocValue<LabelHandle>("status",LabelHandle(m_label,this));
+        if(def.handle() != "")
+          getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(true,this,this));
+        getGUI()->unlockData();
+
+        dockToBottom(def.parentWidget());
+      }
+
+      /// Restructure the parent so this bar sits at its bottom edge.
+      /** For a vertical-box parent the base ctor already appended the bar last,
+          so it is the bottom row — nothing to do.  For any other layout the
+          parent's existing content is moved into a holder widget and stacked
+          above the bar inside a fresh QVBoxLayout.  This rewrites the parent's
+          layout, so a StatusBar must be the last component of its container. */
+      void dockToBottom(QWidget *parent){
+        if(!parent) return;
+        QLayout *old = parent->layout();
+        if(!old || qobject_cast<QVBoxLayout*>(old)) return;
+
+        QBoxLayout *ob = qobject_cast<QBoxLayout*>(old);
+        QWidget *content = new QWidget(parent);
+        QBoxLayout *cl = new QBoxLayout(ob ? ob->direction() : QBoxLayout::LeftToRight);
+        cl->setContentsMargins(0,0,0,0);
+        if(ob) cl->setSpacing(ob->spacing());
+
+        std::vector<QWidget*> kids;
+        for(int i=0;i<old->count();++i)
+          if(QWidget *w = old->itemAt(i)->widget())
+            if(w != this) kids.push_back(w);
+        for(QWidget *w : kids) cl->addWidget(w);   // reparents into content
+        content->setLayout(cl);
+
+        old->removeWidget(this);
+        delete old;                                // detach (now empty) from parent
+        QVBoxLayout *outer = new QVBoxLayout(parent);
+        outer->setContentsMargins(0,0,0,0);
+        outer->setSpacing(0);
+        outer->addWidget(content,1);
+        outer->addWidget(this,0);
+      }
+
+      static std::string getSyntax(){
+        return std::string("statusbar()[general params]\n")+gen_params();
+      }
+    private:
+      CompabilityLabel *m_label;
+    };
+
+
     struct StateGUIWidget : public GUIWidget{
       StateGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,1)){
         m_text = new ThreadedUpdatableTextView(def.parentWidget());
@@ -2172,6 +2247,7 @@ namespace icl{
         GUI::register_widget_type("togglebutton",create_widget_template<ToggleButtonGUIWidget>);
         GUI::register_widget_type("checkbox",create_widget_template<CheckBoxGUIWidget>);
         GUI::register_widget_type("label",create_widget_template<LabelGUIWidget>);
+        GUI::register_widget_type("statusbar",create_widget_template<StatusBarGUIWidget>);
         GUI::register_widget_type("slider",create_widget_template<SliderGUIWidget>);
         GUI::register_widget_type("fslider",create_widget_template<FloatSliderGUIWidget>);
         GUI::register_widget_type("int",create_widget_template<IntGUIWidget>);

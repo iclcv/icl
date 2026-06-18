@@ -855,6 +855,31 @@ namespace icl::qt::ui {
       : qt::Tab(commaSepTitles, parent) { applyBoxOpts(*this, opts); }
   };
 
+  /// Status bar — a thin strip docked to the bottom of its container.
+  /** Unlike the other ui:: containers there is no legacy `qt::StatusBar`
+      to inherit (the component is new), so this inherits
+      `ContainerGUIComponent` directly and emits the `statusbar(...)`
+      definition itself.  Regardless of the container's layout direction
+      the bar pins to the bottom edge, is capped to ~20px tall, and always
+      carries an initial left-aligned label reachable as `gui["status"]`.
+      Components streamed in are packed to the right of that label.
+
+      \code
+      gui << ( ui::VBox()
+               << ui::Display({.handle="img"})
+               << ui::StatusBar() );           // docked at the bottom
+      // ... later, from any thread:
+      gui["status"] = str("ready");
+      \endcode
+
+      \b Note: add the StatusBar as the last component of its container. */
+  struct StatusBar : public ContainerGUIComponent {
+    StatusBar(BoxOpts opts = {})
+      : ContainerGUIComponent("statusbar","",nullptr) { applyBoxOpts(*this, opts); }
+    explicit StatusBar(QWidget *parent, BoxOpts opts = {})
+      : ContainerGUIComponent("statusbar","",parent) { applyBoxOpts(*this, opts); }
+  };
+
   // --- Phase 5 finalizers -------------------------------------------------
   //
   // Trivial markers.  Legacy shapes emit the magic `"!show"` / `"!create"`

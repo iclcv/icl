@@ -14,6 +14,8 @@ if _build_demos
     'mandelbrot': [],
     'onscreen-button': [],
     'plot-component': [],
+    'progress-context': [],
+    'statusbar': [],
     'ui-syntax': [],
   }
   foreach name, extra_deps : _qt_demos
