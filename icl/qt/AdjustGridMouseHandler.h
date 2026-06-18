@@ -31,7 +31,7 @@ namespace icl::qt {
       AdjustGridMouseHandler(const utils::Rect &bounds, bool convexOnly=true);
 
       /// MouseHandler interface
-      virtual void process(const MouseEvent &e);
+      virtual MouseResult process(const MouseEvent &e);
 
       /// destructor
       virtual ~AdjustGridMouseHandler();

@@ -170,7 +170,7 @@ namespace icl::qt {
     struct FunctionMouseHandler : public MouseHandler {
       std::function<void(const MouseEvent &)> f;
       FunctionMouseHandler(std::function<void(const MouseEvent &)> f) : f(f) {}
-      void process(const MouseEvent &e) { f(e); }
+      MouseResult process(const MouseEvent &e) { f(e); return MouseResult::Forward; }
     };
 
     install(new FunctionMouseHandler(f));

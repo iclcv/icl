@@ -7,7 +7,9 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/SoftBodyDriver.h>
+#include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/SensorDriver.h>
+#include <icl/utils/Size.h>
 #include <icl/physics2/Units.h>
 #include <icl/geom2/DefaultScene.h>
 #include <memory>
@@ -55,6 +57,15 @@ namespace icl::physics2 {
     SoftBodyDriver *addCloth(const Vec &c00, const Vec &c10,
                              const Vec &c01, const Vec &c11,
                              int resX, int resY, int fixedCornerMask, float totalMass);
+
+    /// Add a fold-aware paper sheet (the PhysicsPaper3 transplant). \a cells =
+    /// grid resolution, \a corners (4, ul/ur/ll/lr, ICL units; null = default
+    /// sheet). Creates the MeshNode + PaperDriver and adds both. Requires a
+    /// SoftRigid world. Returns the driver (attach FoldDriver / PaperMoverDriver
+    /// to its node() for interaction). Behaviour drivers compose on one node.
+    PaperDriver *addPaper(const utils::Size &cells, const Vec *corners = nullptr,
+                          bool enableSelfCollision = false,
+                          float initialStiffness = -1.f, float maxLinkDist = 0.4f);
 
     /// Add a node as a trigger zone (ghost). Detects overlapping bodies without
     /// any collision response. Set the node invisible for an invisible trigger.

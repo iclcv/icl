@@ -7,20 +7,29 @@ physics2_headers = files(
   'CollisionShapeFactory.h',
   'RigidBodyDriver.h',
   'SoftBodyDriver.h',
+  'PaperDriver.h',
+  'FoldDriver.h',
+  'PaperMoverDriver.h',
   'SensorDriver.h',
   'PhysicsWorld.h',
   'PhysicsScene.h',
   'PhysicsMouseHandler.h',
+  'PaperMouseHandler.h',
 )
 
 physics2_sources = files(
   'CollisionShapeFactory.cpp',
   'RigidBodyDriver.cpp',
   'SoftBodyDriver.cpp',
+  'PaperDriver.cpp',
+  'FoldDriver.cpp',
+  'PaperMoverDriver.cpp',
+  'detail/FoldMap.cpp',
   'SensorDriver.cpp',
   'PhysicsWorld.cpp',
   'PhysicsScene.cpp',
   'PhysicsMouseHandler.cpp',
+  'PaperMouseHandler.cpp',
 )
 
 icl_physics2_lib = shared_library('icl-physics2',

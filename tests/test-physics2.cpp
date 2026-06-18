@@ -21,6 +21,12 @@
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/DefaultScene.h>
 #include <icl/physics2/SoftBodyDriver.h>
+#include <icl/physics2/PaperDriver.h>
+#include <icl/physics2/FoldDriver.h>
+#include <icl/physics2/PaperMoverDriver.h>
+#include <icl/geom/ViewRay.h>
+#include <icl/utils/Point.h>
+#include <icl/utils/Size.h>
 #include <BulletSoftBody/btSoftBody.h>
 
 #include <algorithm>
@@ -352,6 +358,132 @@ ICL_REGISTER_TEST("physics2.legacy_softrigid_mode", "the legacy SoftRigid world 
     for (int k = 0; k < 3; k++) if (!std::isfinite(p[k])) allFinite = false;
   ICL_TEST_TRUE(allFinite);
   ICL_TEST_EQ((int)v.size(), 144);
+}
+
+ICL_REGISTER_TEST("physics2.cloth_props_are_backend_aware", "the cloth driver only exposes properties applicable to its world backend")
+{
+  // The deformable solver ignores the legacy position-iteration + cluster-collision
+  // path, so a Deformable-world cloth must not advertise those knobs (a SoftRigid one
+  // does). Same knobs that apply to both stay in both.
+  {
+    PhysicsScene def(SoftBodyMode::Deformable);
+    auto c = def.addCloth(Vec(-100,-100,300,1), Vec(100,-100,300,1),
+                          Vec(-100,100,300,1), Vec(100,100,300,1), 8, 8, 0, 1.0f);
+    ICL_TEST_TRUE(!c->supportsProperty("position iterations"));
+    ICL_TEST_TRUE(!c->supportsProperty("collision mode"));
+    ICL_TEST_TRUE(c->supportsProperty("stiffness"));
+    ICL_TEST_TRUE(c->supportsProperty("self collision"));
+  }
+  {
+    PhysicsScene sr(SoftBodyMode::SoftRigid);
+    auto c = sr.addCloth(Vec(-100,-100,300,1), Vec(100,-100,300,1),
+                         Vec(-100,100,300,1), Vec(100,100,300,1), 8, 8, 0, 1.0f);
+    ICL_TEST_TRUE(c->supportsProperty("position iterations"));
+    ICL_TEST_TRUE(c->supportsProperty("collision mode"));
+    ICL_TEST_TRUE(c->supportsProperty("stiffness"));
+  }
+}
+
+ICL_REGISTER_TEST("physics2.paper_builds_and_drapes", "the fold-aware paper substrate builds + falls under gravity, staying finite")
+{
+  // The crown-jewel transplant: a manually-built dual-mesh btSoftBody (corner grid
+  // + per-cell centre vertices) in the legacy SoftRigid world.
+  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  auto paper = scene.addPaper(icl::utils::Size(10, 10));   // default A4-ish sheet at z=40
+  auto *mesh = dynamic_cast<MeshNode*>(paper->node());
+  ICL_TEST_TRUE(mesh != nullptr);
+  ICL_TEST_EQ(paper->getNumNodes(), 181);                  // 10*10 corners + 9*9 centres
+
+  for (int i = 0; i < 200; i++) scene.stepOnce(1.f/120.f);
+  scene.sync(1.0/60.0);
+
+  const auto &v = mesh->getVertices();
+  ICL_TEST_EQ((int)v.size(), 181);
+  float minz = 1e9f; bool finite = true;
+  for (const auto &p : v) {
+    for (int k = 0; k < 3; k++) if (!std::isfinite(p[k])) finite = false;
+    minz = std::min(minz, p[2]);
+  }
+  ICL_TEST_TRUE(finite);          // it simulated without NaN
+  ICL_TEST_TRUE(minz < 40.0f);    // it fell below its start height (z=40)
+}
+
+ICL_REGISTER_TEST("physics2.paper_fold_grows_topology", "folding splits triangles -> more nodes, and the mesh rebuilds to match")
+{
+  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  auto paper = scene.addPaper(icl::utils::Size(8, 8));
+  auto *mesh = dynamic_cast<MeshNode*>(paper->node());
+  const int n0 = paper->getNumNodes();
+  const size_t v0 = mesh->getVertices().size();
+
+  // a diagonal crease across the sheet (paper coords [0,1]^2). Avoid exact grid
+  // lines / cell-centre rows (those are the degenerate fold-through-a-vertex case).
+  paper->foldAlongLine(icl::utils::Point32f(0.17f, 0.23f), icl::utils::Point32f(0.81f, 0.74f), true);
+  for (int i = 0; i < 5; i++) scene.stepOnce(1.f/120.f);   // drain the enqueued fold + step
+  scene.sync(1.0/60.0);                                    // UI rebuilds the topology
+
+  ICL_TEST_TRUE(paper->getNumNodes() > n0);                // the fold inserted vertices
+  ICL_TEST_TRUE(mesh->getVertices().size() > v0);          // the mesh grew with it
+  ICL_TEST_EQ((int)mesh->getVertices().size(), paper->getNumNodes());  // and stays consistent
+}
+
+ICL_REGISTER_TEST("physics2.paper_hit_and_interpolate", "paper-space picking: a ray hits the sheet, interpolatePosition round-trips")
+{
+  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  auto paper = scene.addPaper(icl::utils::Size(10, 10));   // flat sheet at z=40
+
+  // centre of the sheet (paper 0.5,0.5) is world ~ (0,0,40)
+  Vec c = paper->interpolatePosition(icl::utils::Point32f(0.5f, 0.5f));
+  ICL_TEST_NEAR(c[0], 0.0f, 5.0f);
+  ICL_TEST_NEAR(c[1], 0.0f, 5.0f);
+  ICL_TEST_NEAR(c[2], 40.0f, 1.0f);
+
+  // a ray straight down through the centre hits paper coord ~ (0.5,0.5)
+  icl::geom::ViewRay ray(Vec(0, 0, 400, 1), Vec(0, 0, -1, 1));
+  icl::utils::Point32f p = paper->hit(ray);
+  ICL_TEST_TRUE(p.x >= 0.f);          // a hit
+  ICL_TEST_NEAR(p.x, 0.5f, 0.1f);
+  ICL_TEST_NEAR(p.y, 0.5f, 0.1f);
+}
+
+ICL_REGISTER_TEST("physics2.paper_composed_drivers_dispatch", "substrate + behaviour drivers compose on one node and resolve by type")
+{
+  // The composition the driver model enables: one node carries the PaperDriver
+  // substrate plus two behaviour drivers, each resolved by type (the dispatch a
+  // mouse handler uses), each driving the substrate.
+  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  auto paper = scene.addPaper(icl::utils::Size(10, 10));
+  auto *node = paper->node();
+  auto *fold  = node->addDriver<FoldDriver>().get();
+  auto *mover = node->addDriver<PaperMoverDriver>().get();
+
+  // all three resolve from the single node, by type
+  ICL_TEST_TRUE(node->getDriver<PaperDriver>() == paper);
+  ICL_TEST_TRUE(node->getDriver<FoldDriver>() == fold);
+  ICL_TEST_TRUE(node->getDriver<PaperMoverDriver>() == mover);
+  ICL_TEST_TRUE(fold->paper() == paper);     // each behaviour resolved its substrate
+  ICL_TEST_TRUE(mover->paper() == paper);
+
+  // (1) fold THROUGH the FoldDriver -> the substrate's topology grows
+  const int n0 = paper->getNumNodes();
+  fold->foldAlongLine(icl::utils::Point32f(0.17f, 0.23f), icl::utils::Point32f(0.81f, 0.74f));
+  for (int i = 0; i < 5; i++) scene.stepOnce(1.f/120.f);
+  ICL_TEST_TRUE(paper->getNumNodes() > n0);
+
+  // (2) grab THROUGH the PaperMoverDriver -> the grabbed centre lifts AND HOLDS
+  // (the kinematic grab keeps it up even with no further input — unlike a one-shot
+  // velocity nudge, which would let gravity pull it back).
+  const float z0 = paper->interpolatePosition(icl::utils::Point32f(0.5f, 0.5f))[2];
+  mover->beginGrab(icl::utils::Point32f(0.5f, 0.5f));
+  mover->updateGrab(Vec(0, 0, z0 + 300, 1));        // lift the centre once
+  for (int i = 0; i < 60; i++) scene.stepOnce(1.f/120.f);   // then DON'T move it
+  const float zHold = paper->interpolatePosition(icl::utils::Point32f(0.5f, 0.5f))[2];
+  ICL_TEST_TRUE(std::isfinite(zHold));
+  ICL_TEST_TRUE(zHold > z0 + 200.f);                // held up near the target, no fall-back
+  mover->endGrab();
+  for (int i = 0; i < 60; i++) scene.stepOnce(1.f/120.f);   // released -> it drops
+  const float zDrop = paper->interpolatePosition(icl::utils::Point32f(0.5f, 0.5f))[2];
+  ICL_TEST_TRUE(zDrop < zHold - 20.f);              // let go -> falls under gravity
 }
 
 ICL_REGISTER_TEST("physics2.debug_lines", "debug draw returns a non-empty collision wireframe")

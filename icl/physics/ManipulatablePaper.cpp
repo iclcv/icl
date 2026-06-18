@@ -115,7 +115,7 @@ namespace physics{
       }
     }
 
-    virtual void process(const MouseEvent &e){
+    virtual MouseResult process(const MouseEvent &e){
       if(e.isModifierActive(ControlModifier)){
         if(e.isPressEvent()){
           applyImpulse(e);
@@ -132,7 +132,7 @@ namespace physics{
 #ifdef USE_OLD_INTERACTION_STYLE
             Hit h = scene->findObject(0,e.getX(),e.getY());
             paper = dynamic_cast<PhysicsPaper*>(h.obj);
-            if(!paper) return;
+            if(!paper) return MouseResult::Forward;
             nodeCoords = paper->getNodeIndex(h.pos);
             paper->setDraggedNode(nodeCoords);
             viewRay = scene->getCamera(0).getViewRay(e.getPos());
@@ -142,7 +142,7 @@ namespace physics{
             parent->setDraggedPosition(p); // also hides the indicator if p.x<0
             if(p.x < 0){
               paper = 0;
-              return;
+              return MouseResult::Forward;
             }
             paper=parent;
             viewRay = scene->getCamera(0).getViewRay(e.getPos());
@@ -173,6 +173,8 @@ namespace physics{
         }
         h->process(e);
       }
+    
+      return MouseResult::Forward;
     }
 
     void applyForce(float factor){

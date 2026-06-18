@@ -39,9 +39,11 @@ struct AdaptedSceneMouseHandler : public MouseHandler{
   AdaptedSceneMouseHandler(MouseHandler *h):h(h){
   }
 
-  void process(const MouseEvent &e){
+  MouseResult process(const MouseEvent &e){
     std::scoped_lock l(mutex);
       h->process(e);
+  
+    return MouseResult::Forward;
   }
 
 } *mouse = 0;

@@ -19,7 +19,7 @@ namespace icl{
 
     InteractiveFoldLine():a(Point32f::null),b(Point32f::null),done(false){}
 
-    void process(const MouseEvent &e){
+    MouseResult process(const MouseEvent &e){
       if(!e.isModifierActive(ControlModifier) || e.isRight()){
         a = b = Point32f::null;
         done = false;
@@ -34,6 +34,8 @@ namespace icl{
         b = e.getPos();
       }
       }
+    
+      return MouseResult::Forward;
     }
     void visualize(ICLDrawWidget &w){
       if(a != Point32f::null){

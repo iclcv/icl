@@ -47,7 +47,7 @@ namespace icl::qt {
       updateDrawings();
     }
 
-    virtual void process(const MouseEvent &event){
+    virtual MouseResult process(const MouseEvent &event){
 
       Point32f p = event.getRelPos(); //Point32f(info->relImageX,info->relImageY);
 
@@ -113,6 +113,8 @@ namespace icl::qt {
           break;
       }
       updateDrawings();
+    
+      return MouseResult::Forward;
     }
 
     void setBlue(icl8u blue){

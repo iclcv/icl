@@ -16,11 +16,11 @@ namespace icl::qt {
   }
 
 
-  void DragRectangleMouseHandler::process(const MouseEvent &e){
+  MouseResult DragRectangleMouseHandler::process(const MouseEvent &e){
     std::scoped_lock l(getMutex());
     if(e.isRight()){
       m_rect = Rect::null;
-      return;
+      return MouseResult::Forward;
     }
     if(e.isPressEvent()){
       m_origin  = e.getPos();
@@ -37,6 +37,8 @@ namespace icl::qt {
       }
       m_origin = m_curr =  Point::null;
     }
+  
+    return MouseResult::Forward;
   }
 
   static void vis_rect(ICLDrawWidget &w, const Rect &r, int imagew, int imageh,

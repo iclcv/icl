@@ -69,7 +69,8 @@ void init() {
 
   gui["draw"].link(scene.getGLCallback(0).get());
   static PhysicsMouseHandler handler(0, &scene.scene(), &scene.world());
-  gui["draw"].install(&handler);   // Shift+Left-drag grabs the balls
+  gui["draw"].install(&handler);                         // grab: highest priority
+  gui["draw"].install(scene.scene().getMouseHandler(0)); // camera nav: installed last
   lastTick = Time::now();
 }
 

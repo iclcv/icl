@@ -64,7 +64,7 @@ namespace icl::qt {
     DragRectangleMouseHandler(int minDim=4);
 
     /// overwritten mouse-event handler function
-    virtual void process(const MouseEvent &e);
+    virtual MouseResult process(const MouseEvent &e);
 
     /// visualization method that can be used to visualized the MouseHandlers current state
     /** This method needs an already locked instance of ICLDrawWidget */

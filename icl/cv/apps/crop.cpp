@@ -35,12 +35,12 @@ struct Mouse1 : public MouseHandler{
     std::fill(handles,handles+4,0);
     dragged = -1;
   }
-  virtual void process(const MouseEvent &e){
-    if(gui["rect"].as<bool>()) return;
+  virtual MouseResult process(const MouseEvent &e){
+    if(gui["rect"].as<bool>()) return MouseResult::Forward;
     Point p = e.getPos();
 
     if(!bounds.contains(p.x,p.y)){
-      return;
+      return MouseResult::Forward;
     }
 
     if(e.isReleaseEvent()){
@@ -68,6 +68,8 @@ struct Mouse1 : public MouseHandler{
         }
       }
     }
+  
+    return MouseResult::Forward;
   }
 
   VisualizationDescription vis() const{
@@ -93,10 +95,12 @@ struct Mouse2 : public DefineRectanglesMouseHandler{
     addRect(Rect(Point::null,size).enlarged(-5));
   }
 
-  virtual void process(const MouseEvent &e){
+  virtual MouseResult process(const MouseEvent &e){
     if(gui["rect"].as<bool>() && !e.isRight()){
       DefineRectanglesMouseHandler::process(e);
     }
+  
+    return MouseResult::Forward;
   }
 } *mouse_2 = 0;
 

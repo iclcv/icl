@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/physics2/PhysicsScene.h>
+#include <icl/geom2/Scene2.h>
 #include <icl/geom2/Node.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/MeshNode.h>
@@ -33,6 +34,16 @@ namespace icl::physics2 {
     return m_world.addDriver<SoftBodyDriver>(std::static_pointer_cast<geom2::Node>(mesh),
                                              c00, c10, c01, c11, resX, resY,
                                              fixedCornerMask, totalMass);
+  }
+
+  PaperDriver *PhysicsScene::addPaper(const utils::Size &cells, const Vec *corners,
+                                      bool enableSelfCollision, float initialStiffness,
+                                      float maxLinkDist) {
+    auto mesh = std::make_shared<geom2::MeshNode>();
+    m_scene.addNode(std::static_pointer_cast<geom2::Node>(mesh));
+    return m_world.addDriver<PaperDriver>(std::static_pointer_cast<geom2::Node>(mesh),
+                                          cells, corners, enableSelfCollision,
+                                          initialStiffness, maxLinkDist);
   }
 
   SensorDriver *PhysicsScene::addSensor(std::shared_ptr<geom2::Node> node) {
@@ -81,9 +92,12 @@ namespace icl::physics2 {
   void PhysicsScene::sync(double dt, double alpha) {
     m_scene.sync(dt, alpha);   // drivers pull body poses into their nodes
     if (m_debugEnabled && m_debugNode) {
-      auto lines = m_world.getDebugLines();
+      auto lines = m_world.getDebugLines();   // (locks the world internally)
+      // Mutate the scene node under the SCENE lock — Scene2::render() holds it on
+      // the GL thread, so an unguarded mutation here would race it (crash).
+      std::scoped_lock<geom2::Scene2> lk(m_scene);
       m_debugNode->clearGeometry();
-      const geom2::GeomColor green(0, 1, 0, 1);
+      const geom2::GeomColor green(0, 255, 0, 255);   // MeshNode colors are 0..255
       int i = 0;
       for (const auto &l : lines) {
         m_debugNode->addVertex(l.a, green);

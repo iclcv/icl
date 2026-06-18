@@ -200,7 +200,7 @@ namespace icl{
       }
     }
 
-    void PhysicsPaper3MouseHandler::process(const qt::MouseEvent &e){
+    qt::MouseResult PhysicsPaper3MouseHandler::process(const qt::MouseEvent &e){
       const Camera &cam = m_data->scene->getCamera(m_data->cameraIndex);
       try{
         if(e.isModifierActive(ControlModifier) || m_data->curr != Point32f(-1,-1)){
@@ -260,6 +260,8 @@ namespace icl{
           }
         }
       }catch(...){}
+    
+      return qt::MouseResult::Forward;
     }
 
     VisualizationDescription PhysicsPaper3MouseHandler::vis() const{

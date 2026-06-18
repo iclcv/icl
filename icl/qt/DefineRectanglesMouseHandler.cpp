@@ -196,7 +196,7 @@ namespace icl::qt {
   }
 
 
-  void DefineRectanglesMouseHandler::process(const MouseEvent &e){
+  MouseResult DefineRectanglesMouseHandler::process(const MouseEvent &e){
     std::scoped_lock l(getMutex());
 
     struct CallCallbacksAtEnd{
@@ -218,7 +218,7 @@ namespace icl::qt {
         }
         draggedRect = 0;
       }
-      return;
+      return MouseResult::Forward;
     }
 
     int x = (e.getX()/options.xStepping)*options.xStepping;
@@ -230,12 +230,12 @@ namespace icl::qt {
         if(e.isPressEvent() && rects[i].contains(x,y)){
           if(e.isRight() && options.canDeleteRects){
             rects.erase(rects.begin()+i);
-            return;
+            return MouseResult::Forward;
           }else if(e.isMiddle()){
             if(i != rects.size()-1){
               std::swap(rects[i],rects.back());
             }
-            return;
+            return MouseResult::Forward;
           }
         }
 
@@ -243,15 +243,15 @@ namespace icl::qt {
         if(state == DefinedRect::nothing) {
           continue;
         }else if(state == DefinedRect::hovered){
-          return;
+          return MouseResult::Forward;
         }else{
           draggedRect = &rects[i];
-          return;
+          return MouseResult::Forward;
         }
       }
     }
 
-    if(!e.isLeft()) return;
+    if(!e.isLeft()) return MouseResult::Forward;
 
     if(e.isPressEvent()){
       currBegin  = pos;
@@ -266,6 +266,8 @@ namespace icl::qt {
       }
       currCurr = currBegin = Point::null;
     }
+  
+    return MouseResult::Forward;
   }
 
   void DefineRectanglesMouseHandler::visualize(ICLDrawWidget &w){

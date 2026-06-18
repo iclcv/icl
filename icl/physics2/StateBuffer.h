@@ -86,4 +86,47 @@ namespace icl::physics2 {
     bool m_valid = false;
   };
 
+  /// A *fold-aware* soft body's membrane: node positions PLUS a topology snapshot.
+  /** Unlike cloth, paper grows nodes/faces when folded, so the render side cannot
+      assume a fixed mesh. The sim thread publishes node positions every step
+      (tagged with a structure *version*), and — only when a fold changed the
+      topology — a fresh triangle list (flat index triples) tagged with the same
+      version. The UI thread copies positions every frame and rebuilds the
+      MeshNode topology only when it sees a new version, so it never reads a
+      half-grown mesh (positions and the matching topology share one version). */
+  class ICLPhysics2_API PaperStateBuffer {
+  public:
+    /// sim thread, every step: latest node positions tagged with the structure version.
+    void publishPositions(std::vector<Vec> positions, int version) {
+      std::scoped_lock lock(m_mutex);
+      m_positions = std::move(positions);
+      m_version = version;
+      m_valid = true;
+    }
+    /// sim thread, on a topology change: the triangle list (3 indices per face).
+    void publishTopology(std::vector<int> faces, int version) {
+      std::scoped_lock lock(m_mutex);
+      m_faces = std::move(faces);
+      m_faceVersion = version;
+    }
+    /// UI thread: latest positions + their version. false if nothing published yet.
+    bool samplePositions(std::vector<Vec> &out, int &version) const {
+      std::scoped_lock lock(m_mutex);
+      if (!m_valid) return false;
+      out = m_positions; version = m_version; return true;
+    }
+    /// UI thread: latest topology + its version.
+    void sampleTopology(std::vector<int> &out, int &version) const {
+      std::scoped_lock lock(m_mutex);
+      out = m_faces; version = m_faceVersion;
+    }
+
+  private:
+    mutable std::mutex m_mutex;
+    std::vector<Vec> m_positions;
+    std::vector<int> m_faces;
+    int m_version = 0, m_faceVersion = -1;
+    bool m_valid = false;
+  };
+
 } // namespace icl::physics2

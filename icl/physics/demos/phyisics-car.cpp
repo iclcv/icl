@@ -13,6 +13,7 @@
 #include <icl/physics/RigidSphereObject.h>
 #include <icl/physics/HingeConstraint.h>
 #include <icl/physics/PhysicsMouseHandler2.h>
+#include <icl/geom2/Scene2MouseHandler.h>
 #include <vector>
 
 using namespace geom;
@@ -138,6 +139,7 @@ void init(){
   scene.setGravity(Vec(0,0,-9810));
 
   gui["draw"].install(&handler);
+  gui["draw"].install(scene.getScene2().getMouseHandler(0));
   gui["reset"].registerCallback(reset);
 
   //link the visualization

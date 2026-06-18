@@ -35,12 +35,12 @@ struct Mouse : public MouseHandler{
     std::fill(handles,handles+4,0);
     dragged = -1;
   }
-  virtual void process(const MouseEvent &e){
+  virtual MouseResult process(const MouseEvent &e){
     Point p = e.getPos();
     p.x -= xoffset;
 
     if(!bounds.contains(p.x,p.y)){
-      return;
+      return MouseResult::Forward;
     }
 
     if(e.isReleaseEvent()){
@@ -68,6 +68,8 @@ struct Mouse : public MouseHandler{
         }
       }
     }
+  
+    return MouseResult::Forward;
   }
   void setXOffset(int xoffset){
     this->xoffset = xoffset;

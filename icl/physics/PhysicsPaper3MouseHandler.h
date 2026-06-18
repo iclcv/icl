@@ -25,7 +25,7 @@ namespace icl::physics {
 
       PhysicsPaper3MouseHandler(PhysicsPaper3 *model, geom::Scene *scene, int camIndex=0);
 
-      virtual void process(const qt::MouseEvent &e);
+      virtual qt::MouseResult process(const qt::MouseEvent &e);
 
       utils::VisualizationDescription vis() const;
 

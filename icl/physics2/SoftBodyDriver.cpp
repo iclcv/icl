@@ -136,12 +136,19 @@ namespace icl::physics2 {
                 "velocity damping (higher = calmer at rest)");
     addProperty("contact hardness", prop::Range{.min=0.f, .max=1.f, .step=0.05f}, 0.6f,
                 "rigid-contact hardness (1 overshoots/explodes at rest, low = sinks through)");
-    addProperty("position iterations", prop::Range{.min=1, .max=30}, 10,
-                "solver iterations (higher = stabler, slower)");
     addProperty("collision margin/mm", prop::Range{.min=1.f, .max=30.f, .step=0.5f}, marginMm,
                 "soft-vs-rigid buffer (too small -> tunneling)");
-    addProperty("collision mode", prop::Menu{"SDF", "Clusters"}, "SDF",
-                "Clusters = face-group collision, smoother drape (fragile at large scale)");
+    // SoftRigid-only knobs: the deformable solver ignores the legacy position
+    // iterations and cluster-collision path (see applyDeformableCfg), so they are
+    // not exposed when this driver's world runs the deformable pipeline — the
+    // Prop UI then only shows what actually applies to the selected backend.
+    const bool deform = world.isDeformable();
+    if (!deform) {
+      addProperty("position iterations", prop::Range{.min=1, .max=30}, 10,
+                  "solver iterations (higher = stabler, slower)");
+      addProperty("collision mode", prop::Menu{"SDF", "Clusters"}, "SDF",
+                  "Clusters = face-group collision, smoother drape (fragile at large scale)");
+    }
     addProperty("self collision", prop::Flag{}, false,
                 "stops the cloth folding through itself");
     addProperty("smooth normals", prop::Flag{}, true,
@@ -312,11 +319,13 @@ namespace icl::physics2 {
     c.kDF      = (float)prop("friction").value;
     c.kDP      = (float)prop("damping").value;
     c.kCHR     = (float)prop("contact hardness").value;
-    c.piter    = (int)prop("position iterations").value;
     c.marginMm = (float)prop("collision margin/mm").value;
     c.selfCol  = (bool)prop("self collision").value;
-    c.clusters = (std::string)prop("collision mode").value == "Clusters";
     const bool deform = m_data->world.isDeformable();
+    // "position iterations" / "collision mode" only exist in SoftRigid mode (the
+    // deformable solver ignores them); default them when absent.
+    c.piter    = deform ? 10 : (int)prop("position iterations").value;
+    c.clusters = deform ? false : ((std::string)prop("collision mode").value == "Clusters");
     if (deform) {
       float nodeMass = m_data->mass / std::max(1, m_data->resX * m_data->resY);
       deformParams(c.kLST, c.kDP, nodeMass, c.ksDeform, c.kdDeform);

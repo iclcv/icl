@@ -2,27 +2,216 @@
 
 ## Next Step
 
-**The cloth/soft-body solver blocker is RESOLVED** (Session 73). The next target is
-**Phase 3b — paper**: bridge `PhysicsPaper3` into physics2 as a **`PaperDriver`**,
-**running in `SoftBodyMode::SoftRigid`** (its native legacy solver). Why SoftRigid,
-not the new deformable default: paper is *more* coupled to the legacy `btSoftBody`
-solver than cloth was — it uses **cluster self-collision** (`CL_SS`/`CL_SELF`, which
-the deformable pipeline has no equivalent for) and per-link solver constants
-(`m_c0..m_c3`). So keep paper on legacy (lowest risk, preserves the thesis tuning);
-deformable-paper / XPBD-paper is a *later* experiment. The `SoftBodyMode` flag added
-this session is exactly the lever — `PaperDriver`'s world is constructed `SoftRigid`.
-This also exercises the **multi-world** story (paper-world legacy + cloth-world
-deformable → one `Scene2`; see the new plan TODO). **Full plan + phase status:
-`physics-geom2-redesign-plan.md`** (read first).
+**Phase 3b — paper — is substantially LANDED** (Session 74): `PhysicsPaper3` is
+transplanted into physics2 as a **`PaperDriver`** (SoftRigid world) plus two
+**composable behaviour drivers** (`FoldDriver`, `PaperMoverDriver`) on one `MeshNode`,
+dispatched by a `PaperMouseHandler` — and a new **`physics2-paper`** demo. What's left
+of paper is **M3 polish (best on a real display):** front/back **texture rendering** and
+**hover + context-menu fold editing** (`adaptFoldStiffness` is wired but unexercised by
+UI; texture needs geom2 MeshNode texcoord/texture support — check before starting).
+**Fold-line preview + crease highlight DONE** (render-on-top overlay MeshNode:
+`PaperDriver::getCreaseSegments` → yellow crease lines; `FoldDriver::setPreview/getPreview`
+fed by the handler → cyan live drag line). The crease physics, picking, drag, whole-
+sheet move + the substrate-vs-behaviour composition are all headless-tested (918/918).
 
-After paper: **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`), the
+After paper polish: **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`), the
 **defaults policy → material database** (now that node-mass stiffness derivation is
-half-built), Phase 4b raycast vehicle, then Phase 6.
+half-built), Phase 4b raycast vehicle, then Phase 6. Also a natural next experiment:
+the **multi-world** story (paper SoftRigid + cloth Deformable → one `Scene2`) — the
+drivers are ready, only `PhysicsScene` owning a *list* of worlds is missing.
+**Full plan + phase status: `physics-geom2-redesign-plan.md`.**
 
 **Phase 6 is now nuanced:** we can NOT delete `btSoftRigidDynamicsWorld` — paper needs
 it as a mode. Phase 6 = retire the dead `geom::Scene` physics path + the old
 `PhysicsScene`/`PhysicsObject` inheritance, while KEEPING the legacy solver behind the
 flag.
+
+### 🔧 TODO — fold/crease bending-constraint regeneration (next paper step)
+
+After the screen-line fold landed (cut plane = eye + press/release rays → split
+every crossed face; `PaperDriver::projectScreenLine` + categorized
+`getDebugGeometry` overlay), the crease topology is updated but the **bending
+(2nd-order) constraints are not reconciled with the new crease**. Needed:
+- **Remove** every bending constraint that *crosses* the crease line (later: maybe
+  only weaken them extremely instead of deleting).
+- **Add** constraints for the **extra nodes** inserted along the crease.
+- **Easiest path:** record the crease into the **fold/crease-map**, then
+  **re-create ALL bending constraints from scratch** with the crease-map taken
+  into account (skip/soften links spanning a crease).
+- **IMPORTANT:** resting lengths must use the **flat paper-space distances** (the
+  as-if-unfolded `texCoords` metric), NOT the current deformed 3D distances — so
+  the sheet relaxes back to flat-between-creases, not to its folded shape.
+
+---
+
+## 🔴 URGENT TODO — retire the GUI-definition STRING layer (ui-plan Phase 7)
+
+Recurring, nasty class of bug: every `ui::Xxx` GUI component still **serializes to a
+stringly-typed `GUIDefinition`** (`label(TEXT)[@handle=..@maxsize=..]`) that `GUI.cpp`
+re-parses. Any payload containing the grammar's metacharacters — `,` `(` `)` `@` `=` —
+throws `"Syntax Error … Widget could not be created"` at *runtime* (e.g. a `ui::Label`
+with commas/parentheses). We already hit the cousin bug in `qt::encode_pointer`
+(ASLR-random pointer bytes colliding with the grammar; fixed by hex-encoding). The ui::
+rework (Phases 1–6, `ui-plan.md`) added the typed C++ wrappers but **did NOT** remove
+the string round-trip — that's **Phase 7** (promote `ui::Xxx` to the storage type,
+build widgets directly from typed options, retire `toString()` / `GUIDefinition`
+parsing). Until then: set such text via the **handle** at runtime (e.g.
+`gui["help"] = std::string(...)`), which bypasses the parser. See memory
+`project_ui_namespace_endgame`. **This should jump the queue — it bites repeatedly.**
+
+---
+
+## Session 74 recap (Phase 3b — paper as composable drivers) — uncommitted
+
+Transplanted the crown-jewel `PhysicsPaper3` into physics2, **not** as a monolith but
+split into a **substrate + behaviour drivers** on one `MeshNode` (the user's framing:
+"test how drivers combine and dispatch"). 918/918 green; demo runs.
+
+### ⏸️ OPEN ITEMS at break (resume here — physics2-paper demo polish)
+
+All logic/tests green (918/918, 27 physics2); these are GUI-demo issues needing a real
+display (the user is iterating live on `physics2-paper-demo`):
+
+1. **Help label text not visible.** Added a bottom `ui::Label` (handle `help`, then
+   `gui["help"] = std::string(...)` after `Show()` to dodge the GUI-string comma/paren
+   parse bug). The label widget appears but shows no text. The working pattern is
+   game-of-life `demos/game-of-life.cpp:344-345,456`: `ui::Label("---",{.handle="info2",
+   .label="info2"})` + `gui["info2"] = std::string(...)`. **Diff to try:** mine has
+   `.maxSize={100,2}` and **no `.label=`**; theirs has a `.label=` and smaller/no
+   maxSize. Next: add `.label=`, drop the width-100 maxSize, confirm the handle is a
+   LabelHandle. (Same file, `init()`.)
+2. **Confirm Fold actually creases on screen.** Interaction is now a modifier-free
+   **tool combo** (Camera/Fold/Grab/Sheet via `PaperMouseHandler::setTool`); left-drag
+   in a tool is fully consumed (never orbits), right-drag/wheel always orbit/zoom. The
+   earlier "fold works like camera" was off-paper presses delegating to the camera
+   (fixed: consume). User reported "only grab works" pre-combo — needs a fresh on-display
+   check that Fold now creases (cyan preview while dragging, yellow crease after; drop
+   **bend range** ~0.3 to see it hinge). A diagnostic ERROR_LOG was added then removed.
+3. **Overlay colors fixed** — `MeshNode::addVertex/addLine` take **0..255** colors
+   (`*1/255` internally); were passed 0..1 → transparent-black (invisible). Demo overlay
+   (crease yellow / preview cyan) + `PhysicsScene` debug wireframe now 0..255. *Should*
+   be visible now; user hadn't confirmed at break.
+4. **2D Canvas layer not ported (by choice).** Legacy `physics-paper3.cpp:161-163` drew
+   the fold highlight in **2D** via `DrawHandle3D::draw(VisualizationDescription)`
+   (screen-projected `getFoldLineHighlight`). The rework does crease/preview as **3D**
+   overlay lines (`getCreaseSegments` + a render-on-top MeshNode). The 2D layer still
+   works (`ui::Canvas3D` is a `DrawHandle3D`); decide if any 2D HUD/text is wanted.
+5. **`PaperMouseHandler.cpp`** still `#include`s `icl/utils/Macros.h` (was for the
+   removed ERROR_LOG) — harmless, can drop.
+
+Architecture note (settled this session): there is ONE installed mouse handler;
+`PaperMouseHandler : Scene2MouseHandler` IS the priority chain (paper logic first,
+delegates to camera base only when it chooses not to consume). `Scene2`'s
+`mouseHandlers` vector is only a sensitivity cache, not event-routed. A generic
+N-handler registry was discussed but deemed unnecessary.
+
+See also the 🔴 URGENT TODO above (retire the GUI-definition string layer — root cause
+of the label parse crash + the earlier `encode_pointer` crash).
+
+---
+
+
+- **`PaperDriver`** (substrate, `PaperDriver.{h,cpp}`): the Bullet-level paper logic
+  transplanted ~verbatim — manually-built **dual-mesh** `btSoftBody` (corner grid +
+  per-cell centre vertices), `LinkState` fold metadata on `Link::m_tag`, `FoldMap`
+  crease memory (copied to `physics2/detail/FoldMap.{h,cpp}`), the fold primitives
+  (`addLink`/`addTriangle`/`addVertexOrReuseOldOne`/`replaceTriangle`),
+  `createBendingConstraints`, paper-space picking (`hit`/`interpolatePosition`/
+  `getLinkCoords`), Gaussian `dragPoint`, `wholeSheetMove`, `adaptFoldStiffness`.
+  Legacy `icl2bullet*` macros → `physics2::Units`. Runs **SoftRigid only** (asserts).
+- **Dynamic topology membrane:** new `PaperStateBuffer` (in `StateBuffer.h`) carries
+  node positions + a **structure version** + a triangle-list snapshot. A fold (sim
+  thread) bumps the version + republishes topology; `sync` (UI) copies positions every
+  frame and **rebuilds the MeshNode topology only on a version change** — paper grows
+  nodes/faces, unlike cloth's fixed mesh. This is the one genuinely new piece vs.
+  `SoftBodyDriver`.
+- **Composable behaviours:** `FoldDriver` + `PaperMoverDriver` own *no* physics — they
+  attach to the same node, resolve the substrate via `node()->getDriver<PaperDriver>()`
+  in `onAttach`, hold their own Configurable tunables (auto-extend / drag strength+
+  radius), and forward to the substrate. `PaperMouseHandler` dispatches by modifier:
+  **Ctrl=fold, Shift=soft-drag, Shift+Ctrl=whole-sheet move, plain=orbit**, routing all
+  mutations through `world.enqueue` (closes the legacy `// TODO IMPLEMENT LOCKER`).
+- **Thread-safety:** all fold/drag/move ops enqueue onto the sim thread; the const
+  pickers lock the world (`std::scoped_lock<PhysicsWorld>`). The dual-mesh `appendNode`
+  reallocations are safe — Bullet re-points link/face node ptrs.
+- **Backend-aware props (M0, the user's other ask):** `SoftBodyDriver` now only
+  exposes `position iterations` / `collision mode` in SoftRigid mode (the deformable
+  solver ignores them) — `ui::Prop` shows only what applies. `PaperDriver` follows the
+  same per-mode discipline.
+- **`PhysicsScene::addPaper(cells, corners, …)`** factory; demo **`physics2-paper`**
+  (one node, 3 drivers, 3 Prop panels, fold-map display, debug toggle).
+- Tests: `paper_builds_and_drapes`, `paper_fold_grows_topology` (fold y=0.5 on an even
+  grid is the degenerate fold-through-a-vertex case — use a diagonal), `paper_hit_and_
+  interpolate`, `paper_composed_drivers_dispatch`, `cloth_props_are_backend_aware`.
+
+- **New ICLQt feature `qt::ProgressContext`** (`ProgressContext.{h,cpp}`): an RAII
+  modal progress dialog — `qt::ProgressContext p("title"); p = 42.f;` (percent), closes
+  when it leaves scope. PIMPL (no Qt in the header); all Qt work marshals to the GUI
+  thread via `ICLApplication::executeInGUIThread` (ctor/dtor block so lifetime matches
+  the object; updates are async/FIFO); an **inert no-op when there's no GUI app**
+  (headless/tests). Demo `progress-context` drives it from the ICLApp worker thread
+  (the cross-thread case). Wired into the paper rebuild: `PaperDriver::
+  setProgressCallback(fn(frac))` — the *property-driven* bending rebuild (bend range /
+  fold softness / self collision) now runs **synchronously on the GUI thread under the
+  world lock** and reports progress, so the demo drives a `ProgressContext` inline (no
+  marshal → no deadlock); fast folds don't report. `ProgressContext` gained
+  `minDurationMs` (quick rebuilds never flash) and a `modal` flag — **non-modal +
+  WA_ShowWithoutActivating** for live-widget-driven ops (a modal bar stole focus mid
+  slider-drag and killed the drag; the demo's rebuild bar is now non-modal). physics2
+  stays qt-free — the callback is `std::function<void(float)>`, the qt bar lives in the demo.
+- **Crash fixed (SIGSEGV in the paper demo):** scene `MeshNode`s were mutated off the
+  `Scene2` lock — but `Scene2::sync()` and `render()` both hold its recursive mutex, so
+  mutating a node outside it races the GL thread. Fixed the demo's per-frame overlay
+  rebuild (`std::scoped_lock<Scene2>`; gather creases first since `getCreaseSegments`
+  locks the *world*) AND the same latent bug in `PhysicsScene::sync`'s debug overlay.
+- **Interaction is now a modifier-free TOOL COMBO** (final): keyboard modifiers proved
+  unreliable here (Ctrl = camera speed; Alt silently dead on the user's setup → "only
+  grab works"). Replaced with a `PaperMouseHandler::Tool` (Camera/Fold/Grab/Sheet) set
+  from a demo `ui::Combo`; a LEFT-drag on the paper does the selected tool, right-drag +
+  wheel always orbit/zoom. `ProgressContext` was removed from the paper demo (rebuild is
+  fast — reverted to the async/enqueue rebuild for a smooth slider); the class + its
+  standalone `progress-context` demo stay.
+- **Interaction polish (earlier, superseded by the tool combo):** (a) **modifier conflicts** — the camera owns
+  Left/Shift/Ctrl (orbit speeds) + Shift+Ctrl (place cursor), so fold moved to **Alt**,
+  sheet-move to **Alt+Shift**; soft grab stays on **Shift** (intercepted on-paper). Alt
+  is free in every `Scene2MouseHandler` mapping. (b) **drag now holds** — the soft drag
+  was a one-shot velocity nudge (fell back the instant the mouse stopped); replaced with
+  a **persistent kinematic grab** (`PaperDriver::beginGrab/updateGrab/endGrab`): pin the
+  grabbed patch (inverse-mass 0, offsets preserved), follow the cursor, restore mass on
+  release. Whole-sheet move (Alt+Shift) is the *same* grab with a radius covering every
+  node (rigid carry, holds too) — `wholeSheetMove`'s one-shot translate had the same
+  fall-back bug. Test `paper_composed_drivers_dispatch` asserts lift→hold→drop.
+- **Picking-coordinate bug fixed (mouse interaction "taken by the camera"):** the
+  mouse handlers cast rays with `cam.getViewRay(e.getPos())` — raw *widget* pixels —
+  but `getViewRay`/`estimate3DPosition` expect *camera-resolution* pixels
+  (`e.getRelPos() * cam.getResolution()`, per `Scene2MouseHandler::placeCursor`).
+  They only coincide when widget size == camera res, so `paper->hit` always missed and
+  every gesture fell through to camera orbit (orbit survived because it uses *deltas*).
+  Fixed in `PaperMouseHandler` **and** `PhysicsMouseHandler` (the scene/tilt grab
+  handler had the same latent bug — interactive grab was never exercised, only a
+  manual-ray unit test). Also: accept Ctrl *or* Meta for the fold gesture (Qt remaps
+  physical Ctrl→Meta on macOS). Paper demo slab resized to 1500×1500×30 (5× wide/long,
+  1/10 height).
+- **Startup-hang fixed (the "no window" report):** `createBendingConstraints` added
+  bending links via `appendLink(checkExist=true)`, whose `checkLink` scans the whole
+  growing link list → O(n⁴) over the all-pairs build. With the demo's dense grid +
+  the legacy `maxLinkDist=0.5` (a disk covering ~78% of the sheet → hundreds of
+  thousands of links) it spun for many seconds at `init()` (no window). Fix: dedup via
+  a `std::set` (O(n²·log)) + `appendLink(checkExist=false)`. (Default `maxLinkDist` is
+  **2.5** — fully connected = max stiffness, "papery", per the user; the set-dedup keeps
+  the build feasible (~1.6s init for the 20×20 demo). The `bend range` slider lowers it
+  live if a fold rebuild feels laggy — each fold re-runs `createBendingConstraints`.)
+- **Framework bug fixed (found via the demo's 3 Prop panels):** `qt::encode_pointer`
+  (the `ui::Prop(Configurable*)` pointer-smuggling) memcpy'd the raw 8 pointer bytes
+  into the GUI definition string — if any byte collided with the grammar delimiters
+  (`(` `)` `,` `@` `=`) the tokenizer threw "Syntax Error … Widget could not be
+  created". ASLR-dependent → intermittent (one Prop usually lucky, three not). Fixed at
+  the source: `encode_pointer`/`decode_pointer` now **hex**-encode (only safe chars).
+  Benefits every `ui::Prop` user.
+
+**Caveat:** GUI/texture/fold visuals unverifiable here (no GL); physics + composition
+are deterministic-`stepOnce` tested. Build: `CCACHE_DISABLE=1 PATH=~/Qt/6.11.0/macos/
+bin:$PATH ninja -C builddir -j 16`. Tests: `builddir/bin/icl-tests -f 'physics2.*' -j 1`.
 
 ---
 

@@ -366,7 +366,7 @@ namespace icl{
 
       /// Process mouse event using mouse mapping table.
       /** @param pMouseEvent mouse event */
-      ICLGeom_API virtual void process(const qt::MouseEvent &pMouseEvent);
+      ICLGeom_API virtual qt::MouseResult process(const qt::MouseEvent &pMouseEvent);
     };
 
   } // namespace geom

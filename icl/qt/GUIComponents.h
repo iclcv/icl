@@ -8,6 +8,7 @@
 #include <icl/qt/GUIComponent.h>
 
 #include <cstring>
+#include <cstdint>
 #include <string>
 
 namespace icl{
@@ -19,23 +20,39 @@ namespace icl{
 
   namespace qt{
 
-    /// Encode a raw pointer into a fixed-size string for round-tripping
-    /// through GUIComponent's stringly-typed parameter channel.  Pair
-    /// with `decode_pointer<T>`.  Used by the Prop component to smuggle
-    /// a Configurable* to the GUI backend.
+    /// Encode a raw pointer into a hex string for round-tripping through
+    /// GUIComponent's stringly-typed parameter channel.  Pair with
+    /// `decode_pointer<T>`.  Used by the Prop component to smuggle a
+    /// Configurable* to the GUI backend.
+    /** Hex (not a raw memcpy) so the encoded bytes can never collide with the
+        GUI definition grammar's delimiters — `(`, `)`, `,`, `@`, `=`, … — which
+        the tokenizer would otherwise choke on for ~half of all real pointers. */
     template<class T>
     inline std::string encode_pointer(const T *p) {
-      std::string s(sizeof(void*), '\0');
-      std::memcpy(&s[0], &p, sizeof(void*));
+      static const char *h = "0123456789abcdef";
+      const uintptr_t v = reinterpret_cast<uintptr_t>(p);
+      std::string s(2 * sizeof(void*), '0');
+      for (size_t i = 0; i < sizeof(void*); ++i) {
+        const unsigned b = (v >> (8 * i)) & 0xffu;   // little-endian, byte i
+        s[2 * i]     = h[b >> 4];
+        s[2 * i + 1] = h[b & 0xf];
+      }
       return s;
     }
 
     /// Decode a pointer produced by `encode_pointer<T>`.
     template<class T>
     inline T *decode_pointer(const std::string &s) {
-      T *p = nullptr;
-      std::memcpy(&p, s.data(), sizeof(void*));
-      return p;
+      auto nib = [](char c) -> unsigned {
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+        return 0;
+      };
+      uintptr_t v = 0;
+      for (size_t i = 0; i < sizeof(void*) && 2 * i + 1 < s.size(); ++i)
+        v |= static_cast<uintptr_t>((nib(s[2 * i]) << 4) | nib(s[2 * i + 1])) << (8 * i);
+      return reinterpret_cast<T*>(v);
     }
 
     /// Button Component

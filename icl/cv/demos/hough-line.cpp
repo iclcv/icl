@@ -14,10 +14,12 @@ HoughLineDetector hld;
 Img8u edgeImage(Size::VGA,1);
 
 struct Mouse : public MouseHandler {
-  virtual void process(const MouseEvent &e){
+  virtual MouseResult process(const MouseEvent &e){
     if(e.isLeft() || e.isRight()){
       edgeImage(e.getX(), e.getY(), 0) = 255 * e.isLeft();
     }
+  
+    return MouseResult::Forward;
   }
 };
 

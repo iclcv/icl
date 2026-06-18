@@ -348,7 +348,7 @@ namespace icl::qt {
       return ps;
     }
 
-    void AdjustGridMouseHandler::process(const MouseEvent &e){
+    MouseResult AdjustGridMouseHandler::process(const MouseEvent &e){
       std::scoped_lock lock(getMutex());
       if(!m_data) {
         throw ICLException("AdjustGridMouseHandler::process(MouseEvent) was called before it was initialized!");
@@ -357,7 +357,7 @@ namespace icl::qt {
       Point p = e.getPos();
 
       if(!m_data->bounds.contains(p.x,p.y)){
-        return;
+        return MouseResult::Forward;
       }
 
       if(e.isReleaseEvent()){
@@ -441,6 +441,8 @@ namespace icl::qt {
         }
 
       }
+    
+      return MouseResult::Forward;
     }
 
     void AdjustGridMouseHandler::setHandleSize(float size){

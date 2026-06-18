@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/geom2/Scene2MouseHandler.h>
+#include <icl/qt/MouseHandler.h>
 #include <memory>
 
 #ifndef ICLPhysics2_API
@@ -18,18 +18,20 @@ namespace icl::physics2 {
 
   class PhysicsWorld;
 
-  /// Camera navigation + Shift+Left-drag object grabbing for physics2 scenes.
-  /** Extends geom2::Scene2MouseHandler (camera nav) with the unified picking
-      path: a Shift+Left press raycasts via Scene2::findObject, resolves the hit
-      node's RigidBodyDriver, and grabs its dynamic body with a point-to-point
-      spring; dragging moves the grab target; release lets go. All Bullet
-      mutations go through the world command queue (sim-thread safe). */
-  class ICLPhysics2_API PhysicsMouseHandler : public geom2::Scene2MouseHandler {
+  /// Shift+Left-drag object grabbing for physics2 scenes (one chain link).
+  /** A plain qt::MouseHandler implementing the unified picking path: a
+      Shift+Left press raycasts via Scene2::findObject, resolves the hit node's
+      RigidBodyDriver, and grabs its dynamic body with a point-to-point spring;
+      dragging moves the grab target; release lets go. All Bullet mutations go
+      through the world command queue (sim-thread safe). Returns Processed while
+      grabbing, Forward otherwise so the camera handler installed after this one
+      drives navigation. */
+  class ICLPhysics2_API PhysicsMouseHandler : public qt::MouseHandler {
   public:
     PhysicsMouseHandler(int cameraIndex, geom2::Scene2 *scene, PhysicsWorld *world);
     ~PhysicsMouseHandler() override;
 
-    void process(const qt::MouseEvent &e) override;
+    qt::MouseResult process(const qt::MouseEvent &e) override;
 
   private:
     void releaseGrab();

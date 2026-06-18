@@ -103,7 +103,7 @@ namespace icl::qt {
       return ps;
     }
 
-    void DefineQuadrangleMouseHandler::process(const MouseEvent &e){
+    MouseResult DefineQuadrangleMouseHandler::process(const MouseEvent &e){
       std::scoped_lock lock(getMutex());
       if(!m_data) {
         throw ICLException("DefineQuadrangleMouseHandler::process(MouseEvent) was called before it was initialized!");
@@ -114,7 +114,7 @@ namespace icl::qt {
       p.y -= m_data->yoffset;
 
       if(!m_data->bounds.contains(p.x,p.y)){
-        return;
+        return MouseResult::Forward;
       }
 
       // Click detection uses widget-pixel distance so the tolerance is
@@ -164,6 +164,8 @@ namespace icl::qt {
           m_data->handles[i] = hitsHandle(i) ? 1 : 0;
         }
       }
+    
+      return MouseResult::Forward;
     }
 
     void DefineQuadrangleMouseHandler::setHandleSize(float size){

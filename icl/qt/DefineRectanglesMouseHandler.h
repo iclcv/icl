@@ -193,7 +193,7 @@ namespace icl::qt {
     DefineRectanglesMouseHandler(int maxRects=10, int minDim=4);
 
     /// overwrittern MouseHandler method
-    void process(const MouseEvent &e);
+    MouseResult process(const MouseEvent &e);
 
     /// automatic visualiziation
     /** The given ICLDrawWidget must be locked and reset before */

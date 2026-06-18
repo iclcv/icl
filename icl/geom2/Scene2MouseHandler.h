@@ -37,7 +37,7 @@ namespace icl::geom2 {
                           float mouse = 1.0f, float wheel = 0.0004f,
                           float modifier = 10.0f);
 
-    void process(const qt::MouseEvent &e) override;
+    qt::MouseResult process(const qt::MouseEvent &e) override;
 
   private:
     struct Data;

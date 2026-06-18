@@ -24,6 +24,7 @@
 #include <icl/physics2/FoldDriver.h>
 #include <icl/physics2/PaperMoverDriver.h>
 #include <icl/physics2/PaperMouseHandler.h>
+#include <icl/geom2/Scene2MouseHandler.h>
 
 using namespace icl::geom2;
 using namespace icl::geom;
@@ -70,9 +71,10 @@ void init() {
 
   scene.start(240);   // small fixed timestep -> less soft-body tunneling
 
-  // dispatching mouse handler (resolves fold/mover from the node by type)
+  // paper-interaction handler (resolves fold/mover from the node by type);
+  // installed first in the chain, the camera handler is installed after it.
   mouse = std::make_unique<PaperMouseHandler>(0, &scene.scene(), paper);
-  mouse->setSensitivities(10.f, 3.0f);   // snappier camera rotation (default rotation=1)
+  scene.scene().getMouseHandler(0)->setSensitivities(10.f, 3.0f);   // snappier camera rotation
 
   gui << (VBox()
           << (HSplit()
@@ -83,6 +85,11 @@ void init() {
                   << ui::Prop(mover, {.label="move"})
                   << ui::Button("reset", {.handle="reset"})
                   << ui::CheckBox("collision debug", {.handle="dbg"})
+                  << (HBox().label("show")
+                      << ui::CheckBox("faces",  {.handle="vFaces"})
+                      << ui::CheckBox("creases",{.checked=true, .handle="vCreases"})
+                      << ui::CheckBox("1st",    {.handle="v1st"})
+                      << ui::CheckBox("2nd",    {.handle="v2nd"}))
                   << ui::Display({.handle="foldmap", .minSize={16,12}})))
           << ui::StatusBar())
       << ui::Show();
@@ -92,7 +99,8 @@ void init() {
       "Shift+Ctrl+drag = move sheet   |   plain/right drag = orbit, wheel = zoom   "
       "(lower 'bend range' to see creases hinge)");
   gui["draw"].link(scene.getGLCallback(0).get());
-  gui["draw"].install(mouse.get());
+  gui["draw"].install(mouse.get());                      // paper: highest priority
+  gui["draw"].install(scene.scene().getMouseHandler(0)); // camera nav: installed last
   lastTick = Time::now();
 }
 
@@ -107,24 +115,32 @@ void run() {
   scene.setDebugDrawEnabled(gui["dbg"]);
   scene.sync(dt);
 
-  // rebuild the overlay: existing creases (yellow) + the live drag preview (cyan).
-  // Gather first (getCreaseSegments locks the physics world), then mutate the node
-  // under the SCENE lock — Scene2::render() holds it, so mutating a scene node off
-  // the lock would race the GL thread (a SIGSEGV).
-  const auto segs = paper->getCreaseSegments();
+  // rebuild the overlay from the toggled debug-geometry categories + the live
+  // drag preview. Gather first (getDebugGeometry locks the physics world), then
+  // mutate the node under the SCENE lock — Scene2::render() holds it, so mutating
+  // a scene node off the lock would race the GL thread (a SIGSEGV).
+  const auto dbg = paper->getDebugGeometry();
   Vec pa, pb;
   const bool hasPreview = fold->getPreview(pa, pb);
+  const bool vFaces = gui["vFaces"], vCreases = gui["vCreases"],
+             v1st = gui["v1st"], v2nd = gui["v2nd"];
   {
     std::scoped_lock<Scene2> lk(scene.scene());
     overlay->clearGeometry();
-    // MeshNode colors are 0..255 (addVertex/addLine scale by 1/255 internally).
-    const GeomColor crease(255, 210, 0, 255), preview(0, 220, 255, 255);
     int li = 0;
-    for (const auto &s : segs) {
-      overlay->addVertex(s.first, crease); overlay->addVertex(s.second, crease);
-      overlay->addLine(li, li + 1, crease); li += 2;
-    }
+    // MeshNode colors are 0..255 (addVertex/addLine scale by 1/255 internally).
+    auto addSegs = [&](const std::vector<std::pair<Vec, Vec>> &segs, const GeomColor &c) {
+      for (const auto &s : segs) {
+        overlay->addVertex(s.first, c); overlay->addVertex(s.second, c);
+        overlay->addLine(li, li + 1, c); li += 2;
+      }
+    };
+    if (vFaces)   addSegs(dbg.faces,       GeomColor(150, 150, 150, 255));   // gray wireframe
+    if (v2nd)     addSegs(dbg.secondOrder, GeomColor(255, 140,   0, 255));   // orange bending
+    if (v1st)     addSegs(dbg.firstOrder,  GeomColor( 60, 200,  80, 255));   // green structural
+    if (vCreases) addSegs(dbg.creases,     GeomColor(255, 210,   0, 255));   // yellow creases
     if (hasPreview) {
+      const GeomColor preview(0, 220, 255, 255);
       overlay->addVertex(pa, preview); overlay->addVertex(pb, preview);
       overlay->addLine(li, li + 1, preview); li += 2;
     }

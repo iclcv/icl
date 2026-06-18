@@ -326,7 +326,7 @@ namespace icl::geom {
 
 
 
-  void SceneMouseHandler::process(const MouseEvent &pMouseEvent){
+  MouseResult SceneMouseHandler::process(const MouseEvent &pMouseEvent){
     Camera &tCamera = mParentScene->getCamera( mCameraIndex );
     int tKeyboardModifiers = pMouseEvent.getKeyboardModifiers();
 
@@ -373,6 +373,8 @@ namespace icl::geom {
 
     // save keyboard modifiers for later comparison
     mKeyboardModifiersBackup = tKeyboardModifiers;
+  
+    return MouseResult::Forward;
   }
 
 #endif

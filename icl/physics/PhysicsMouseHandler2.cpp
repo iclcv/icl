@@ -14,7 +14,7 @@ namespace icl::physics {
 
   PhysicsMouseHandler2::PhysicsMouseHandler2(int cameraIndex, geom2::Scene2 *scene,
                                              PhysicsWorld *world)
-      : geom2::Scene2MouseHandler(cameraIndex, scene),
+      : qt::MouseHandler(),
         m_scene(scene), m_world(world), m_camIndex(cameraIndex),
         m_selected(nullptr), m_constraint(nullptr) {}
 
@@ -28,11 +28,12 @@ namespace icl::physics {
     }
   }
 
-  void PhysicsMouseHandler2::process(const qt::MouseEvent &e) {
+  qt::MouseResult PhysicsMouseHandler2::process(const qt::MouseEvent &e) {
+    using qt::MouseResult;
     const geom::Camera &cam = m_scene->getCamera(m_camIndex);
 
-    // Shift+Left enters / stays in grab mode; otherwise fall through to the
-    // base camera navigation.
+    // Shift+Left enters / stays in grab mode; otherwise forward to the camera
+    // handler installed after this one.
     if ((e.isLeft() && e.isModifierActive(qt::ShiftModifier)) || m_selected) {
       if (e.isPressEvent()) {
         geom::ViewRay ray = cam.getViewRay(e.getPos());
@@ -64,9 +65,9 @@ namespace icl::physics {
         m_constraint->setPoint(p);
         m_selected->activate();
       }
-    } else {
-      geom2::Scene2MouseHandler::process(e);
+      return MouseResult::Processed;
     }
+    return MouseResult::Forward;
   }
 
 } // namespace icl::physics

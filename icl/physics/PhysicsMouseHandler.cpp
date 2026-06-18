@@ -28,7 +28,7 @@ namespace icl::physics {
     m_constraint(0),
     m_camIndex(pCameraIndex){}
 
-    void PhysicsMouseHandler::process(const qt::MouseEvent &pMouseEvent){
+    qt::MouseResult PhysicsMouseHandler::process(const qt::MouseEvent &pMouseEvent){
       const geom::Camera &cam = m_parentScene->getCamera(m_camIndex);
       //check if shift and left mouse is pressed for "grab-mode"
       if((pMouseEvent.isLeft() && pMouseEvent.isModifierActive(qt::ShiftModifier)) || m_selectedObject){
@@ -71,6 +71,8 @@ namespace icl::physics {
       }else{
         SceneMouseHandler::process(pMouseEvent);
       }
+    
+      return qt::MouseResult::Forward;
     }
 
     PhysicsMouseHandler::~PhysicsMouseHandler(){

@@ -59,7 +59,7 @@ struct PositionIndicator : public SceneObject{
 MouseHandler *sceneHandler = 0;
 
 struct Handler : public MouseHandler{
-  void process(const MouseEvent &evt){
+  MouseResult process(const MouseEvent &evt){
     if(evt.isModifierActive(ShiftModifier) ||
        evt.isModifierActive(AltModifier) ||
        evt.isModifierActive(ControlModifier)){
@@ -76,6 +76,8 @@ struct Handler : public MouseHandler{
     }else{
       sceneHandler->process(evt);
     }
+  
+    return MouseResult::Forward;
   }
 };
 

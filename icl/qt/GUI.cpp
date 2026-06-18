@@ -1443,11 +1443,14 @@ namespace icl{
         box->setContentsMargins(12,0,12,2);
         box->setSpacing(6);
 
-        // initial left-aligned status label, reachable as gui["status"]
+        // initial left-aligned status label, reachable as gui["status"].
+        // CompabilityLabel has no sizeHint, so without an expanding policy it
+        // collapses to ~0 width in the hbox and the text is clipped. Making it
+        // expand also doubles as the spacer that packs later items to the right.
         m_label = new CompabilityLabel("",this);
         m_label->setAlignment(Qt::AlignLeft|Qt::AlignVCenter);
-        box->addWidget(m_label);
-        box->addStretch(1);   // later items are packed to the right of the label
+        m_label->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred));
+        box->addWidget(m_label,1);
 
         getGUI()->lockData();
         getGUI()->allocValue<LabelHandle>("status",LabelHandle(m_label,this));

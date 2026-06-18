@@ -113,11 +113,13 @@ qt_module_headers = files(
   'ToggleButton.h',
   'Widget.h',
   'WidgetCaptureMode.h',
+  'ProgressContext.h',
   'ui.h',
 )
 
 qt_sources = files(
   'AbstractPlotWidget.cpp',
+  'ProgressContext.cpp',
   'AdjustGridMouseHandler.cpp',
   'Application.cpp',
   'BorderHandle.cpp',

@@ -108,7 +108,8 @@ namespace icl::qt {
     void call_mouse_handlers(const MouseEvent &e){
       std::scoped_lock locker(mouseHandlerMutex);
       for(size_t i=0;i<mouseHandlers.size();++i){
-        mouseHandlers[i]->process(e);
+        // stop at the first handler that consumes the event (priority = order)
+        if(mouseHandlers[i]->process(e) == MouseResult::Processed) break;
       }
     }
 

@@ -185,7 +185,7 @@ namespace icl::geom2 {
     m_data->sens[High]   = {translation, rotation, mouse * mod, wheel * mod};
   }
 
-  void Scene2MouseHandler::process(const MouseEvent &e) {
+  qt::MouseResult Scene2MouseHandler::process(const MouseEvent &e) {
     Camera &cam = m_data->scene->getCamera(m_data->camIndex);
     int mods = e.getKeyboardModifiers();
 
@@ -194,6 +194,9 @@ namespace icl::geom2 {
                            [e.isModifierActive(ShiftModifier)]
                            [e.isModifierActive(ControlModifier)]
                            [e.isModifierActive(AltModifier)];
+
+    // we own the gesture iff this button/modifier combo maps to a camera action
+    const bool acted = m.fn != nullptr;
 
     if (e.isPressEvent() || mods != m_data->modBackup) {
       m_data->anchor = e.getRelPos();
@@ -212,6 +215,7 @@ namespace icl::geom2 {
     }
 
     m_data->modBackup = mods;
+    return acted ? qt::MouseResult::Processed : qt::MouseResult::Forward;
   }
 
 } // namespace icl::geom2

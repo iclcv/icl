@@ -341,5 +341,11 @@ namespace icl::qt {
 
     /// creates internal event instance
     const MouseEvent &createMouseEvent(MouseEventType type);
+
+    /// builds the event and dispatches it down the installed-handler chain
+    /** Runs the handlers in registration order (first installed = highest
+        priority) and stops at the first one that returns
+        MouseResult::Processed. Replaces the former signal/slot broadcast. */
+    void dispatchMouseEvent(MouseEventType type);
   };
   } // namespace icl::qt

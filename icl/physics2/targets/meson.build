@@ -16,4 +16,9 @@ if _build_demos and bullet_found and qt_found
     dependencies: [icl_physics2_dep],
     install: false,
   )
+  executable('physics2-paper-demo',
+    files('../demos/physics2-paper.cpp'),
+    dependencies: [icl_physics2_dep],
+    install: false,
+  )
 endif

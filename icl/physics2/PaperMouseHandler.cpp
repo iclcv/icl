@@ -26,13 +26,12 @@ namespace icl::physics2 {
     FoldDriver *fold = nullptr;
     PaperMoverDriver *mover = nullptr;
     Mode mode = None;
-    Point32f foldStart{-1, -1};
-    geom::Vec foldStart3D{0, 0, 0, 1};
+    geom::ViewRay foldRay;        // press ray; with the release ray it spans the cut plane
     geom::PlaneEquation dragPlane;
   };
 
   PaperMouseHandler::PaperMouseHandler(int cameraIndex, geom2::Scene2 *scene, PaperDriver *paper)
-    : geom2::Scene2MouseHandler(cameraIndex, scene), m_data(std::make_unique<Data>()) {
+    : qt::MouseHandler(), m_data(std::make_unique<Data>()) {
     m_data->scene = scene;
     m_data->camIndex = cameraIndex;
     m_data->paper = paper;
@@ -45,7 +44,8 @@ namespace icl::physics2 {
 
   PaperMouseHandler::~PaperMouseHandler() = default;
 
-  void PaperMouseHandler::process(const qt::MouseEvent &e) {
+  qt::MouseResult PaperMouseHandler::process(const qt::MouseEvent &e) {
+    using qt::MouseResult;
     Data &d = *m_data;
     const geom::Camera &cam = d.scene->getCamera(d.camIndex);
     // CAMERA-resolution pixels (relative pos * resolution) — the space
@@ -54,62 +54,70 @@ namespace icl::physics2 {
                                  e.getRelPos().y * cam.getResolution().height);
     geom::ViewRay ray = cam.getViewRay(camPix);
 
-    // The wheel and the right button always drive the camera (zoom / orbit).
-    if (e.isWheelEvent() || e.isRight()) {
-      geom2::Scene2MouseHandler::process(e);
-      return;
-    }
+    // The wheel and the right button are camera gestures: forward to the camera
+    // handler installed after this one in the chain.
+    if (e.isWheelEvent() || e.isRight()) return MouseResult::Forward;
+
+    // Qt remaps physical Ctrl -> Meta on macOS (Command), so accept either as
+    // "Ctrl". A paper modifier held means the gesture is ours: we consume it even
+    // on a miss so the camera never orbits and loses orientation.
+    const bool ctrl  = e.isModifierActive(qt::ControlModifier) ||
+                       e.isModifierActive(qt::MetaModifier);
+    const bool shift = e.isModifierActive(qt::ShiftModifier);
+    const bool paperMod = ctrl || shift;
 
     if (e.isPressEvent() && e.isLeft()) {
-      // Qt remaps physical Ctrl -> Meta on macOS, so accept either as "Ctrl".
-      const bool ctrl  = e.isModifierActive(qt::ControlModifier) ||
-                         e.isModifierActive(qt::MetaModifier);
-      const bool shift = e.isModifierActive(qt::ShiftModifier);
-      if (!ctrl && !shift) {               // plain left-drag -> camera orbit
+      if (!paperMod) {                     // plain left-drag -> camera orbit
         d.mode = None;
-        geom2::Scene2MouseHandler::process(e);
-        return;
+        return MouseResult::Forward;
       }
+      if (ctrl && !shift) {                // Ctrl -> Fold (starts anywhere)
+        d.mode = FoldMode; d.foldRay = ray;   // the cut plane forms with the release ray
+        if (d.fold) d.fold->clearPreview();
+        return MouseResult::Processed;
+      }
+      // Grab / Sheet still need an actual point on the paper
       Point32f p = d.paper->hit(ray);
-      if (p.x < 0.f) {                     // modified press off the paper -> camera
-        d.mode = None;
-        geom2::Scene2MouseHandler::process(e);
-        return;
+      if (p.x < 0.f) {                     // modified press off the paper:
+        d.mode = None;                     // consume it — never orbit while a
+        return MouseResult::Processed;     // paper modifier is held
       }
-      if (ctrl && !shift) {                // Ctrl -> Fold
-        d.mode = FoldMode; d.foldStart = p;
-        d.foldStart3D = d.paper->interpolatePosition(p);
-        d.dragPlane = geom::PlaneEquation(d.foldStart3D, cam.getNorm());
-        if (d.fold) d.fold->setPreview(d.foldStart3D, d.foldStart3D);
-      } else if (d.mover) {                // Shift -> Grab, Shift+Ctrl -> Sheet
+      if (d.mover) {                       // Shift -> Grab, Shift+Ctrl -> Sheet
         d.mode = GrabMode;
         d.dragPlane = geom::PlaneEquation(d.paper->interpolatePosition(p), cam.getNorm());
         if (ctrl) d.mover->beginSheetGrab(p);   // Shift+Ctrl
         else      d.mover->beginGrab(p);         // Shift only
       }
-      return;
+      return MouseResult::Processed;
     }
     if (e.isReleaseEvent() && d.mode != None) {
       if (d.mode == FoldMode && d.fold) {
         d.fold->clearPreview();
-        Point32f p = d.paper->hit(ray);
-        if (p.x >= 0.f && p.distanceTo(d.foldStart) > 0.02f)
-          d.fold->foldAlongLine(d.foldStart, p);
+        // crease = where the (eye, press-ray, release-ray) plane cuts the paper
+        if (auto c = d.paper->projectScreenLine(d.foldRay, ray))
+          d.fold->foldAlongLine(c->first, c->second);
       } else if (d.mode == GrabMode && d.mover) {
         d.mover->endGrab();
       }
       d.mode = None;
-      return;
+      return MouseResult::Processed;
     }
     if (e.isDragEvent() && d.mode != None) {
       if (d.mode == GrabMode && d.mover)
         d.mover->updateGrab(cam.estimate3DPosition(camPix, d.dragPlane));
-      else if (d.mode == FoldMode && d.fold)   // grow the live preview line
-        d.fold->setPreview(d.foldStart3D, cam.estimate3DPosition(camPix, d.dragPlane));
-      return;
+      else if (d.mode == FoldMode && d.fold) {   // live crease preview along the cut
+        if (auto c = d.paper->projectScreenLine(d.foldRay, ray))
+          d.fold->setPreview(d.paper->interpolatePosition(c->first),
+                             d.paper->interpolatePosition(c->second));
+        else d.fold->clearPreview();
+      }
+      return MouseResult::Processed;
     }
 
-    geom2::Scene2MouseHandler::process(e);   // moves etc. -> camera
+    // Fall-through (plain moves, plain drags, a consumed modified miss, ...):
+    // consume while a paper modifier is held (the gesture is ours, never orbit),
+    // otherwise forward so the camera handler drives navigation.
+    return paperMod ? MouseResult::Processed : MouseResult::Forward;
   }
 
 } // namespace icl::physics2

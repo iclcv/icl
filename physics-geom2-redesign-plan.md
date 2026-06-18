@@ -366,13 +366,25 @@ thread-safety gaps in the paper mouse handling during Phase 5 (picking).
   factory. Demos `physics2-cloth` (cloth drapes over a box, pinned banner, debug
   toggle). Verified by `physics2.cloth_sags` (pinned cloth sags, pinned corners
   hold); 8 physics2 tests / full suite 892/892; threaded soft-body smoke clean.
-- **Phase 3b — fold-aware paper (`PhysicsPaper3`) + water-rocket. ⏳ TODO.**
-  `PaperDriver` bridging the existing `PhysicsPaper3` soft-body/FoldMap/
-  link-splitting/self-collision construction (transplant the Bullet-level logic,
-  not a rewrite); the paper-space mouse interaction; `physics-water-rocket`
-  (soft parachute + rigid rocket). Large + GUI-interactive (fold visuals,
-  drag-to-fold) → best done on a real display. Also fix the legacy `applyTorque`
-  double-scale and close the `ManipulatablePaper` locker TODOs when porting.
+- **Phase 3b — fold-aware paper (`PhysicsPaper3`). ✅ SUBSTANTIALLY LANDED (Session 74).**
+  Transplanted as a **substrate + behaviour drivers** (not a monolith): `PaperDriver`
+  (manually-built dual-mesh `btSoftBody`, `LinkState`/`FoldMap`, fold primitives,
+  `createBendingConstraints`, paper-space picking, Gaussian drag, whole-sheet move,
+  `adaptFoldStiffness`; legacy `icl2bullet*` → `physics2::Units`; SoftRigid only) +
+  `FoldDriver` + `PaperMoverDriver` (own no physics, resolve the substrate via
+  `node()->getDriver<PaperDriver>()`, hold their own Configurable tunables) +
+  `PaperMouseHandler` (modifier dispatch: Ctrl=fold / Shift=soft-drag /
+  Shift+Ctrl=sheet-move / plain=orbit, all routed through `world.enqueue` — closes the
+  legacy locker TODOs). New **`PaperStateBuffer`** carries positions + a structure
+  *version* + topology so `sync` rebuilds the MeshNode only when a fold grows it (the
+  one new piece vs. fixed-topology cloth). `PhysicsScene::addPaper`; demo
+  `physics2-paper` (one node, 3 drivers, 3 Prop panels). 5 new headless tests; 918/918.
+  **Still TODO (M3, real-display):** front/back **texture** rendering, **fold-line
+  visualization**, hover + context-menu **fold editing** (`adaptFoldStiffness` wired,
+  no UI yet) — texture needs geom2 MeshNode texcoord/texture support (verify first).
+  `physics-water-rocket` (soft parachute + rigid rocket) still unported. The legacy
+  `applyTorque` double-scale fix is moot for paper (no torque path) — fix when porting
+  rigid demos.
 - **Phase 4a — constituents (batch 1). ✅ LANDED (Session 71).**
   **CCD** (`RigidBodyDriver::setCcd`, ICL units → Ccd motion threshold + swept
   sphere); **collision filtering** (`RigidBodyDriver::setCollisionFilter(group,

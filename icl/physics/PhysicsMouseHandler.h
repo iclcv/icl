@@ -29,7 +29,7 @@ namespace icl::physics {
       /// Constructor that creates the Camera for the given PhysicsScene at the given index
       PhysicsMouseHandler(const int pCameraIndex, PhysicsScene *pPhysicsScene);
 
-      virtual void process(const qt::MouseEvent &pMouseEvent);
+      virtual qt::MouseResult process(const qt::MouseEvent &pMouseEvent);
 
       virtual ~PhysicsMouseHandler();
 

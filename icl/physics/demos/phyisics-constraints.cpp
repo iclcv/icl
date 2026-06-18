@@ -13,6 +13,7 @@
 #include <icl/physics/RigidSphereObject.h>
 #include <icl/physics/HingeConstraint.h>
 #include <icl/physics/PhysicsMouseHandler2.h>
+#include <icl/geom2/Scene2MouseHandler.h>
 using namespace geom;
 using namespace physics;
 
@@ -46,6 +47,7 @@ void init(){
   scene.addConstraint(hinge_constraint,false,true);
 
   gui["draw"].install(&handler);
+  gui["draw"].install(scene.getScene2().getMouseHandler(0));
 
   //link the visualization
   gui["draw"].link(scene.getGLCallback(0).get());

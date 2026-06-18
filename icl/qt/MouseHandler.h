@@ -13,6 +13,15 @@ namespace icl::qt {
   class ICLWidget;
   /** \endcond */
 
+  /// Result of MouseHandler::process — drives the handler-chain dispatch.
+  /** A widget dispatches a mouse event to its installed handlers in
+      registration order (first installed = highest priority) and stops at the
+      first handler that returns Processed. Return Forward to let the next
+      handler (e.g. a camera-navigation handler installed last) see the event. */
+  enum class MouseResult {
+    Processed,   //!< event consumed — stop the chain here
+    Forward      //!< not handled / observe-only — pass to the next handler
+  };
 
   /// MouseEvent Handler  \ingroup COMMON
   /** Here's a short example:
@@ -25,7 +34,7 @@ namespace icl::qt {
 
       class Mouse : public MouseHandler{
         public:
-        virtual void process(const MouseEvent &event){
+        virtual MouseResult process(const MouseEvent &event){
           std::cout << "image location: " << event.getPos() << std::endl;
           std::cout << "widget location: " << event.getWidgetPos() << std::endl;
 
@@ -41,6 +50,7 @@ namespace icl::qt {
               std::cout << "no color here!" << std::endl;
             }
           }
+          return MouseResult::Forward;
         }
       } mouse;
 
@@ -96,14 +106,14 @@ namespace icl::qt {
     void handleEvent(const MouseEvent &event);
 
     public:
-    /// this function is called automatically when the handleEvent slot is invoked
-    /** It can be reimplemented for custom mouse interaction.
-        If a mouse handling function is enough for your purpose, you can also
-        pass a function of type mouse_handler to the constructor of a
-        MouseHandler instance. The default implementation of process
-        calls the handler function if it's not null.
-        **/
-    virtual void process(const MouseEvent &event);
+    /// process a mouse event; return whether it was consumed
+    /** Reimplement for custom mouse interaction. Return MouseResult::Processed
+        when you act on the event and want to stop the handler chain, or
+        MouseResult::Forward to let the next installed handler see it.
+        If a plain function is enough, pass a mouse_handler to the constructor
+        instead; the default implementation calls it (if non-null) and returns
+        Forward (a bare callback is observe-only and never blocks the chain). */
+    virtual MouseResult process(const MouseEvent &event);
 
     private:
     /// internal mouse handler function

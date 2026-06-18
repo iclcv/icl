@@ -197,7 +197,7 @@ struct InputGrabber : public MouseHandler, public SourceBackend, public Lockable
       blobs.erase(blobs.begin()+i);
     }
   }
-  virtual void process(const MouseEvent &evt){
+  virtual MouseResult process(const MouseEvent &evt){
     if(evt.isPressEvent()){
       if(evt.isLeft()){
       add_single_blob();
@@ -205,6 +205,8 @@ struct InputGrabber : public MouseHandler, public SourceBackend, public Lockable
         remove_single_blob(evt.getX(),evt.getY());
       }
     }
+  
+    return MouseResult::Forward;
   }
 
   void iterate(){

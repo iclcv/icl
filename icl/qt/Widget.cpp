@@ -14,6 +14,7 @@
 #include <icl/qt/QPainterPaintEngine.h>
 #include <icl/io/sink/ImageSink.h>
 #include <icl/qt/ContainerGUIComponents.h>
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <icl/utils/time/Time.h>
@@ -535,7 +536,8 @@ namespace icl::qt {
     std::vector<OSDGLButton*> glbuttons;
     bool useLinInterpolation;
     int nextButtonX;
-    std::vector<MouseHandler*> callbacks;
+    std::vector<MouseHandler*> callbacks;        // owned CallbackHandlers (registerCallback)
+    std::vector<MouseHandler*> mouseHandlers;    // installed handlers, dispatched in order
     int lastMouseReleaseButton;
     float gridColor[4];
     float backgroundColor[3];
@@ -2332,7 +2334,7 @@ namespace icl::qt {
       case Qt::RightButton: m_data->downMask[2]=true; break;
       default: m_data->downMask[1] = true; break;
     }
-    emit mouseEvent(createMouseEvent(MousePressEvent));
+    dispatchMouseEvent(MousePressEvent);
     update();
   }
 
@@ -2382,7 +2384,7 @@ namespace icl::qt {
       case Qt::RightButton: m_data->downMask[2]=false; m_data->lastMouseReleaseButton = 2; break;
       default: m_data->downMask[1] = false; m_data->lastMouseReleaseButton = 1; break;
     }
-    emit mouseEvent(createMouseEvent(MouseReleaseEvent));
+    dispatchMouseEvent(MouseReleaseEvent);
     update();
   }
 
@@ -2406,9 +2408,9 @@ namespace icl::qt {
     m_data->mouseY = e->position().y();
 
     if(m_data->downMask[0] || m_data->downMask[1] || m_data->downMask[2]){
-      emit mouseEvent(createMouseEvent(MouseDragEvent));
+      dispatchMouseEvent(MouseDragEvent);
     }else{
-      emit mouseEvent(createMouseEvent(MouseMoveEvent));
+      dispatchMouseEvent(MouseMoveEvent);
     }
 
     if(m_data->imageInfoIndicatorEnabled){
@@ -2431,7 +2433,7 @@ namespace icl::qt {
     if(m_data->imageInfoIndicatorEnabled){
       m_data->imageInfoIndicator->show();
     }
-    emit mouseEvent(createMouseEvent(MouseEnterEvent));
+    dispatchMouseEvent(MouseEnterEvent);
     update();
   }
 
@@ -2449,7 +2451,7 @@ namespace icl::qt {
     }
 
     m_data->downMask[0] = m_data->downMask[1] = m_data->downMask[2] = false;
-    emit mouseEvent(createMouseEvent(MouseLeaveEvent));
+    dispatchMouseEvent(MouseLeaveEvent);
     update();
   }
 
@@ -2477,7 +2479,7 @@ namespace icl::qt {
 
     m_data->wheelDelta = Point(e->angleDelta().x(), e->angleDelta().y());
 
-    emit mouseEvent(createMouseEvent(MouseWheelEvent));
+    dispatchMouseEvent(MouseWheelEvent);
 
     update();
     //QGLWidget::wheelEvent(e);
@@ -2854,15 +2856,24 @@ namespace icl::qt {
 
 
   void ICLWidget::install(MouseHandler *h){
-    connect(this,SIGNAL(mouseEvent(const MouseEvent&)),
-            h,SLOT(handleEvent(const MouseEvent&)));
+    if(!h) return;
+    // append: first installed handler has highest dispatch priority
+    m_data->mouseHandlers.push_back(h);
   }
 
 
 
   void ICLWidget::uninstall(MouseHandler *h){
-    disconnect(this,SIGNAL(mouseEvent(const MouseEvent &)),
-               h,SLOT(handleEvent(const MouseEvent &)));
+    auto &v = m_data->mouseHandlers;
+    v.erase(std::remove(v.begin(),v.end(),h),v.end());
+  }
+
+
+  void ICLWidget::dispatchMouseEvent(MouseEventType type){
+    const MouseEvent &evt = createMouseEvent(type);
+    for(MouseHandler *h : m_data->mouseHandlers){
+      if(h && h->process(evt) == MouseResult::Processed) break;
+    }
   }
 
 
@@ -2907,18 +2918,20 @@ namespace icl::qt {
           }
         }
       }
-      virtual void process(const MouseEvent &evt){
+      // observer: always forwards so every registered callback still fires
+      virtual MouseResult process(const MouseEvent &evt){
         if(m_all){
           cb();
-          return;
+          return MouseResult::Forward;
         }
         MouseEventType t = evt.getType();
         for(unsigned int i=0;i<evts.size();++i){
           if(evts[i] == t){
             cb();
-            return;
+            break;
           }
         }
+        return MouseResult::Forward;
       }
     };
     MouseHandler *cbh = new CallbackHandler(cb,eventList);

@@ -9,6 +9,7 @@
 
 #include <icl/physics/PhysicsScene2.h>
 #include <icl/physics/PhysicsMouseHandler2.h>
+#include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/physics/RigidBoxObject.h>
 #include <icl/physics/RigidCylinderObject.h>
 #include <icl/physics/RigidSphereObject.h>
@@ -54,9 +55,10 @@ void init(){
   scene.addObject(&box);
   scene.addObject(&table);
 
-  // camera navigation + Shift+Left-drag object grabbing
+  // Shift+Left-drag object grabbing (first), then camera navigation (last)
   gui["draw"].link(scene.getGLCallback(0).get());
   gui["draw"].install(&handler);
+  gui["draw"].install(scene.getScene2().getMouseHandler(0));
 }
 
 void run()

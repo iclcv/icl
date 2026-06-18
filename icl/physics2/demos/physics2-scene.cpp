@@ -64,7 +64,8 @@ void init() {
   gui["draw"].link(scene.getGLCallback(0).get());
   // Shift+Left-drag grabs and drags dynamic bodies; otherwise camera nav.
   static PhysicsMouseHandler handler(0, &scene.scene(), &scene.world());
-  gui["draw"].install(&handler);
+  gui["draw"].install(&handler);                         // grab: highest priority
+  gui["draw"].install(scene.scene().getMouseHandler(0)); // camera nav: installed last
 
   lastTick = Time::now();
 }

@@ -36,7 +36,7 @@ std::vector<Vec> ray_cast_naive_radius(const std::vector<Vec> &points, const Vie
 
 
 struct Mouse : public MouseHandler{
-  void process(const MouseEvent &e){
+  MouseResult process(const MouseEvent &e){
     if(e.isPressEvent() && e.isModifierActive(ShiftModifier)){
       const Camera &c = scene.getCamera(0);
       ViewRay v = c.getViewRay(e.getPos());
@@ -121,6 +121,8 @@ struct Mouse : public MouseHandler{
       }
 
     }
+  
+    return MouseResult::Forward;
   }
 } mouse;
 

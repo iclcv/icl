@@ -35,7 +35,7 @@ namespace icl::qt {
       DefineQuadrangleMouseHandler(const utils::Size &maxSize, bool convexOnly=true);
 
       /// MouseHandler interface
-      virtual void process(const qt::MouseEvent &e);
+      virtual qt::MouseResult process(const qt::MouseEvent &e);
 
       /// destructor
       virtual ~DefineQuadrangleMouseHandler();

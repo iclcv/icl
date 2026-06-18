@@ -18,11 +18,13 @@ struct Mouse : public MouseHandler{
   Point pos;
   Mouse():pressed(false){}
 
-  void process(const MouseEvent &e){
+  MouseResult process(const MouseEvent &e){
     if(e.isPressEvent() && lastImageRect.contains(e.getX(),e.getY())){
       this->pressed = true;
       this->pos = e.getPos();
     }
+  
+    return MouseResult::Forward;
   }
 
   bool wasPressed(){

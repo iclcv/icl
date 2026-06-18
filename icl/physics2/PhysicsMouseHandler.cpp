@@ -32,7 +32,7 @@ namespace icl::physics2 {
 
   PhysicsMouseHandler::PhysicsMouseHandler(int cameraIndex, geom2::Scene2 *scene,
                                            PhysicsWorld *world)
-    : geom2::Scene2MouseHandler(cameraIndex, scene),
+    : qt::MouseHandler(),
       m_data(std::make_unique<Data>()) {
     m_data->scene = scene;
     m_data->world = world;
@@ -58,15 +58,23 @@ namespace icl::physics2 {
     m_data->selected = nullptr;
   }
 
-  void PhysicsMouseHandler::process(const qt::MouseEvent &e) {
+  qt::MouseResult PhysicsMouseHandler::process(const qt::MouseEvent &e) {
+    using qt::MouseResult;
     const geom::Camera &cam = m_data->scene->getCamera(m_data->camIndex);
+
+    // CAMERA-resolution pixel (relative pos * resolution) — the space
+    // getViewRay/estimate3DPosition expect, not raw widget pixels (e.getPos()).
+    const Vec camPixV(e.getRelPos().x * cam.getResolution().width,
+                      e.getRelPos().y * cam.getResolution().height, 0, 1);
+    const utils::Point32f camPix(camPixV[0], camPixV[1]);
 
     const bool grabGesture =
         (e.isLeft() && e.isModifierActive(qt::ShiftModifier)) || m_data->selected;
-    if (!grabGesture) { geom2::Scene2MouseHandler::process(e); return; }
+    // not our gesture: forward to the camera handler installed after this one
+    if (!grabGesture) return MouseResult::Forward;
 
     if (e.isPressEvent()) {
-      geom::ViewRay ray = cam.getViewRay(e.getPos());
+      geom::ViewRay ray = cam.getViewRay(camPix);
       geom2::Hit2 hit = m_data->scene->findObject(ray);
       if (hit.node) {
         RigidBodyDriver *d = hit.node->getDriver<RigidBodyDriver>();
@@ -97,7 +105,7 @@ namespace icl::physics2 {
     } else if (m_data->constraint) {
       // drag the grab target along a plane through the hit point facing the cam
       geom::Vec p = cam.estimate3DPosition(
-          e.getPos(), geom::PlaneEquation(m_data->hitPoint, cam.getNorm()));
+          camPix, geom::PlaneEquation(m_data->hitPoint, cam.getNorm()));
       btVector3 tb = m_data->units.toBulletVec(Vec(p[0], p[1], p[2], 1));
       auto *p2p = m_data->constraint;
       auto *body = m_data->grabbed;
@@ -106,6 +114,7 @@ namespace icl::physics2 {
         if (body) body->activate();
       });
     }
+    return MouseResult::Processed;   // grab gesture consumed
   }
 
 } // namespace icl::physics2
