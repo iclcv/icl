@@ -2,17 +2,21 @@
 
 ## Next Step
 
-**Phase 3b — paper — is substantially LANDED** (Session 74): `PhysicsPaper3` is
-transplanted into physics2 as a **`PaperDriver`** (SoftRigid world) plus two
-**composable behaviour drivers** (`FoldDriver`, `PaperMoverDriver`) on one `MeshNode`,
-dispatched by a `PaperMouseHandler` — and a new **`physics2-paper`** demo. What's left
-of paper is **M3 polish (best on a real display):** front/back **texture rendering** and
-**hover + context-menu fold editing** (`adaptFoldStiffness` is wired but unexercised by
-UI; texture needs geom2 MeshNode texcoord/texture support — check before starting).
-**Fold-line preview + crease highlight DONE** (render-on-top overlay MeshNode:
-`PaperDriver::getCreaseSegments` → yellow crease lines; `FoldDriver::setPreview/getPreview`
-fed by the handler → cyan live drag line). The crease physics, picking, drag, whole-
-sheet move + the substrate-vs-behaviour composition are all headless-tested (918/918).
+**Phase 3b — paper — is LANDED and polished** (Sessions 74–75). `PhysicsPaper3` is
+transplanted into physics2 as a **`PaperDriver`** (SoftRigid) + composable
+**`FoldDriver`/`PaperMoverDriver`** on one `MeshNode`, dispatched by a
+`PaperMouseHandler`, with a **`physics2-paper`** demo. Session 75 added: a
+**screen-line fold** that works anywhere (cut plane = eye + press/release rays →
+`PaperDriver::projectScreenLine`), **creases as geometry primitives** (`PaperDriver::Crease`,
+the rasterized `FoldMap` is retired) with **purely-geometric bending reduction**
+(`segments_cross`, creases extended past the edges to avoid edge tunneling), debug
+overlays (`getDebugGeometry`: faces / 1st / 2nd / creases with crease-reduced links
+hidden), and a **2D "pseudo paper" Canvas** drawing creases in A4-portrait paper space.
+
+What's left of paper is **M3 polish (best on a real display):** front/back **texture
+rendering** (needs geom2 MeshNode texcoord/texture support — check first) and **hover +
+context-menu fold editing** (`adaptFoldStiffness` now edits the `Crease` primitive but is
+still UI-unexercised). All physics/composition is headless-tested (919/919).
 
 After paper polish: **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`), the
 **defaults policy → material database** (now that node-mass stiffness derivation is
@@ -61,7 +65,49 @@ parsing). Until then: set such text via the **handle** at runtime (e.g.
 
 ---
 
-## Session 74 recap (Phase 3b — paper as composable drivers) — uncommitted
+## Session 75 recap (mouse-handler chain redesign + paper fold/crease maturation) — committed
+
+Committed across `e2c46f883`, `1af682cbb`, `fca8040a5`, `5b9788cdc` (+ the now-superseded
+`794344adf`). 919/919 green; demo runs. Big arcs:
+
+- **Mouse-handler framework redesign** (the structural one). `qt::MouseHandler::process()`
+  now returns **`MouseResult { Processed, Forward }`**; `ICLWidget` keeps an **ordered
+  handler vector** and dispatches front→back, stopping at the first `Processed` (was a Qt
+  signal/slot broadcast). install order = priority; `AbstractPlotWidget` honours it too.
+  **Camera nav (`Scene2MouseHandler`) is now an ordinary chain member installed last** —
+  `PaperMouseHandler` / physics2 `PhysicsMouseHandler` / physics `PhysicsMouseHandler2`
+  no longer *inherit* it; they return `Forward` to let the camera take over. Migrated all
+  ~22 `process()` overrides (qt/geom/cv/physics) to the enum (legacy ones return `Forward`
+  to preserve old broadcast). Demos install `[interaction, camera]`; `setSensitivities`
+  moved to the camera handler.
+- **`ui::StatusBar`** — bottom-docked thin strip (24px), built-in left-aligned `"status"`
+  label (`gui["status"] = str(...)`), L/R margins for rounded corners. Inherits
+  `ContainerGUIComponent` directly (no legacy `qt::StatusBar`). Demo `statusbar`.
+- **Paper screen-line fold (works anywhere):** the camera centre + the press/release rays
+  span a **cut plane**; `PaperDriver::projectScreenLine` returns the crease as that plane's
+  intersection with the faces, so the drag may start/end off the sheet. `PaperMouseHandler`
+  is modifier-based (Ctrl=fold, Shift=grab, Shift+Ctrl=sheet; never orbits while a modifier
+  is held).
+- **Creases as geometry primitives → `FoldMap` retired.** `PaperDriver::Crease {a,b,
+  stiffness,memorized}` is the source of truth; `createBendingConstraints` reduces bending
+  links that cross a crease via exact `segments_cross` (no raster → no missed long
+  crossings; creases extended ~1cm past the edges to avoid edge tunneling). Flat
+  paper-space rest lengths. `detail/FoldMap.{h,cpp}` deleted (legacy `physics/FoldMap.*`
+  untouched). `adaptFoldStiffness` edits the primitive.
+- **Debug viz:** `getDebugGeometry()` → faces (gray) / 1st-order (green) / 2nd-order
+  (orange, crease-reduced hidden) / creases (yellow), toggled by demo checkboxes; the
+  foldmap Display is replaced by a **2D `ui::Canvas` "pseudo paper"** drawing creases in
+  A4-portrait paper space. Three driver Props share a **Tab** so the canvas fits.
+- **Camera:** default-scene near plane dropped to `ext*0.005` (zoom right up to detail);
+  paper demo starts the camera 2× closer to the sheet.
+- **Test:** `physics2.paper_fold_reduces_bending`.
+
+Open M3 follow-ups: front/back **texture rendering**, **hover + context-menu crease
+editing** (adaptFoldStiffness UI). The 🔴 URGENT GUI-string-layer retirement still stands.
+
+---
+
+## Session 74 recap (Phase 3b — paper as composable drivers) — committed (Session 75)
 
 Transplanted the crown-jewel `PhysicsPaper3` into physics2, **not** as a monolith but
 split into a **substrate + behaviour drivers** on one `MeshNode` (the user's framing:
