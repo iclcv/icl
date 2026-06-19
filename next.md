@@ -2,17 +2,26 @@
 
 ## Next Step
 
-**ui-plan Phase 7 — the GUI string round-trip — is RETIRED** (Session 76, see recap
-below). The metachar-crash bug class is gone, the legacy fluent builders moved to
-`icl::qt::detail`, and the designated-init components were promoted out of `qt::ui::`
-into `icl::qt` with the `ui::` qualifier stripped codebase-wide. Build + 926/926 green.
+**⏸️ BREAK POINT (end of Session 76).** The entire **ICLQt GUI builder rework is DONE and
+committed** (8+ commits on `further-restructuring-and-cleanup`, build + **923/923** green):
+- ui-plan **Phase 7** — retired the GUI-definition string round-trip + parse path, promoted
+  the designated-init components out of `qt::ui::` into `icl::qt`, stripped the `ui::`
+  qualifier codebase-wide.
+- **Polymorphic re-engineering** — `GUIComponent` is now a real polymorphic interface
+  (virtual `createWidget`/`clone`, CRTP `GUIComponentT<Self>`); every component holds typed
+  fields and builds its own widget; the string-tag registry, `GUIDefinition`, comma-joined
+  param channel, `toString`/`form_args`, pointer-smuggling and the `detail::` layer are all
+  deleted. See the two Session-76 recaps below + memory `feedback_polymorphic_over_registry`.
 
-**Pick the next thread:** with the 🔴 GUI-string urgency cleared, the open fronts are the
-**physics-geom2** arcs — **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`),
-the **defaults policy → material database**, the **multi-world** experiment (paper
-SoftRigid + cloth Deformable in one `Scene2`), then Phase 6 / Phase 4b. Paper M3 polish +
-fold/crease bending regen stay **deferred** (box below). Full plan:
-`physics-geom2-redesign-plan.md`.
+**Two small GUI follow-ups deferred** (non-blocking, do whenever): refresh stale `\code`
+doc-comments still showing old fluent/`ui::` snippets; `ui.h` is now a historical filename
+(could be renamed/merged into `GUIComponents.h`); `GUISyntaxErrorException` is likely dead.
+
+**When work resumes, pick the next thread** — the open fronts are the **physics-geom2**
+arcs: **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`), the **defaults policy
+→ material database**, the **multi-world** experiment (paper SoftRigid + cloth Deformable in
+one `Scene2`), then Phase 6 / Phase 4b. Paper M3 polish + fold/crease bending regen stay
+**deferred** (box below). Full plan: `physics-geom2-redesign-plan.md`.
 
 ### ⏸️ DEFERRED — paper M3 polish + fold/crease bending regeneration
 
