@@ -2295,103 +2295,24 @@ namespace icl{
     }
 
 
-    std::string extract_label(std::string s){
-
-      std::string::size_type p = s.find('[');
-      if(p == std::string::npos) return "";
-      s = s.substr(p+1);
-      if(!s.length()) return "";
-      if(s[s.length()-1] != ']') return "";
-      StrTok t(s.substr(0,s.length()-1),"@");
-      while(t.hasMoreTokens()){
-        const std::string &s2 = t.nextToken();
-        if(s2.starts_with("label")){
-          if(s2.length() < 7) return "";
-          return s2.substr(6);
-        }
-      }
-      return "";
-    }
-
-    std::string extract_minsize(std::string s){
-
-      std::string::size_type p = s.find('[');
-      if(p == std::string::npos) return "";
-      s = s.substr(p+1);
-      if(!s.length()) return "";
-      if(s[s.length()-1] != ']') return "";
-      StrTok t(s.substr(0,s.length()-1),"@");
-      while(t.hasMoreTokens()){
-        const std::string &s2 = t.nextToken();
-        if(s2.starts_with("minsize")){
-          if(s2.length() < 9) return "";
-          return s2.substr(8);
-        }
-      }
-      return "";
-    }
-
-    std::string extract_maxsize(std::string s){
-
-      std::string::size_type p = s.find('[');
-      if(p == std::string::npos) return "";
-      s = s.substr(p+1);
-      if(!s.length()) return "";
-      if(s[s.length()-1] != ']') return "";
-      StrTok t(s.substr(0,s.length()-1),"@");
-      while(t.hasMoreTokens()){
-        const std::string &s2 = t.nextToken();
-        if(s2.starts_with("maxsize")){
-          if(s2.length() < 9) return "";
-          return s2.substr(8);
-        }
-      }
-      return "";
-    }
-
-    std::string extract_size(std::string s){
-
-      std::string::size_type p = s.find('[');
-      if(p == std::string::npos) return "";
-      s = s.substr(p+1);
-      if(!s.length()) return "";
-      if(s[s.length()-1] != ']') return "";
-      StrTok t(s.substr(0,s.length()-1),"@");
-      while(t.hasMoreTokens()){
-        const std::string &s2 = t.nextToken();
-        if(s2.starts_with("size")){
-          if(s2.length() < 6) return "";
-          return s2.substr(5);
-        }
-      }
-      return "";
-    }
-
-
-    std::string remove_label(const std::string &s, const std::string &label){
-      std::string toRemove = std::string("@label=")+label;
-      unsigned int p = s.find(toRemove);
-      return s.substr(0,p) + s.substr(p+toRemove.length());
-    }
 
 
 
     GUI::GUI(QWidget *parent):
-      m_sDefinition("vbox"),m_poWidget(0),m_bCreated(false),m_poParent(parent){
-    }
-    GUI::GUI(const std::string &definition,QWidget *parent):
-      m_sDefinition(definition),m_poWidget(0),m_bCreated(false),m_poParent(parent){
+      // a bare GUI is a vbox container; `new` (not make_shared) because
+      // GUIComponent's 2-arg ctor is protected to friends — make_shared
+      // constructs inside the allocator, where that access doesn't apply.
+      m_component(new GUIComponent("vbox","")),
+      m_poWidget(0),m_bCreated(false),m_poParent(parent){
     }
 
     GUI::GUI(const GUIComponent &component, QWidget *parent):
-      m_sDefinition(component.toString()),
       m_component(std::make_shared<GUIComponent>(component)),
       m_poWidget(0),m_bCreated(false),m_poParent(parent){
     }
 
 
     GUI::GUI(const GUI &g,QWidget *parent):
-      m_sDefinition(g.createDefinition()),
       m_component(g.getComponent() ? std::make_shared<GUIComponent>(*g.getComponent()) : nullptr),
       m_children(g.m_children),
       m_poWidget(nullptr),m_bCreated(false),
@@ -2400,7 +2321,6 @@ namespace icl{
 
 
     GUI &GUI::operator=(const GUI &other){
-      m_sDefinition = other.createDefinition();
       m_component = other.getComponent() ? std::make_shared<GUIComponent>(*other.getComponent()) : nullptr;
       m_children = other.m_children;
       m_poWidget = nullptr;
@@ -2411,10 +2331,8 @@ namespace icl{
     }
 
     bool GUI::isDummy() const{
-      if(const GUIComponent *c = getComponent()){
-        return c->m_options.hide || c->m_type.empty() || c->m_type == "dummy";
-      }
-      return m_sDefinition == "" || m_sDefinition == "dummy";
+      const GUIComponent *c = getComponent();
+      return !c || c->m_options.hide || c->m_type.empty() || c->m_type == "dummy";
     }
 
     GUI::~GUI(){
@@ -2462,62 +2380,8 @@ namespace icl{
       return *this;
     }
 
-    GUI &GUI::operator<<(const std::string &definition){
-      if(m_poWidget) { ERROR_LOG("this GUI is already visible"); return *this; }
-      if(definition.length() > 100000) {
-        throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
-      }
-      if(!definition.length() || definition == "dummy"){
-        return *this;
-      }
-
-      if(definition.size() && definition[0] == '!'){
-        if(definition == "!show"){
-          show();
-          return *this;
-        }else if(definition == "!create"){
-          create();
-          return *this;
-        }
-        throw GUISyntaxErrorException(definition,"wrong !xxx command found in GUI::operator<< : allowed are \"!show\" and \"!create\")");
-      }
-
-      /**
-          //#ifndef WIN32
-          usleep(1000*100);
-          #else
-        Sleep(100);
-          //#endif
-      **/
-
-      std::string label = extract_label(definition);
-      std::string minsize = extract_minsize(definition);
-      std::string maxsize = extract_maxsize(definition);
-      std::string size = extract_size(definition);
-
-      Size S11(1,1);
-      if(minsize.length()) minsize = std::string("@minsize=")+str(parse<Size>(minsize)+S11);
-      if(maxsize.length()) maxsize = std::string("@maxsize=")+str(parse<Size>(maxsize)+S11);
-      if(size.length()) size = std::string("@size=")+str(parse<Size>(size)+S11);
-
-      if(label.length()){
-        std::string rest = remove_label(definition,label);
-        //      return ( (*this) << ( GUI(std::string("border("+label+")["+minsize+maxsize+size+"]")) << rest ) );
-        GUI border(std::string("border(")+label+")["+minsize+maxsize+size+"]");
-        border << rest;
-        *this << border;
-        return *this;
-      }else{
-        m_children.push_back(new GUI(definition));
-        return *this;
-      }
-    }
-
     void GUI::to_string_recursive(const GUI *gui, std::ostream &str, int level){
-      const GUIComponent *comp = gui->getComponent();
-      GUIDefinition def = comp
-        ? GUIDefinition(*comp, const_cast<GUI*>(gui))
-        : GUIDefinition(gui->m_sDefinition, const_cast<GUI*>(gui));
+      GUIDefinition def(*gui->getComponent(), const_cast<GUI*>(gui));
       str << std::string(level*2,' ') << "<" << def.type();
       int nParams = def.numParams();
       std::ostringstream sparams;
@@ -2561,47 +2425,21 @@ namespace icl{
         return *this;
       }
 
-      // Structured path: when the added GUI carries a GUIComponent (every
-      // /qt:: container does), wrap-on-label without serialising.
-      if(const GUIComponent *gc = g.getComponent()){
-        if(gc->m_options.label.length()){
-          GUIComponent border = makeBorderComponent(gc->m_options.label, gc->m_options);
-          GUI *borderNode = new GUI(border);
-          GUI gNew(g);                                   // copy snapshots gc into m_component
-          if(gNew.m_component) gNew.m_component->m_options.label.clear();
-          (*borderNode) << gNew;
-          m_children.push_back(borderNode);
-          return *this;
-        }
-        m_children.push_back(new GUI(g));
+      // Every GUI carries a structured GUIComponent. A label wraps the added
+      // node in a titled border (structurally, no serialising); otherwise it is
+      // pushed as-is.
+      const GUIComponent *gc = g.getComponent();
+      if(gc && gc->m_options.label.length()){
+        GUIComponent border = makeBorderComponent(gc->m_options.label, gc->m_options);
+        GUI *borderNode = new GUI(border);
+        GUI gNew(g);                                   // copy snapshots gc into m_component
+        if(gNew.m_component) gNew.m_component->m_options.label.clear();
+        (*borderNode) << gNew;
+        m_children.push_back(borderNode);
         return *this;
       }
-
-      // Legacy fallback: g is a string-only node (no structured component).
-      std::string def = g.createDefinition();
-      std::string label = extract_label(def);
-      std::string minsize = extract_minsize(def);
-      std::string maxsize = extract_maxsize(def);
-      std::string size = extract_size(def);
-
-      Size S11(1,1);
-      if(minsize.length()) minsize = std::string("@minsize=")+str(parse<Size>(minsize)+S11);
-      if(maxsize.length()) maxsize = std::string("@maxsize=")+str(parse<Size>(maxsize)+S11);
-      if(size.length()) size = std::string("@size=")+str(parse<Size>(size)+S11);
-
-
-      if(label.length()){
-        GUI gNew(g);
-        def = gNew.createDefinition();
-        if(def.length() > 1000000) {
-          throw GUISyntaxErrorException("-- long text --","definition string was too large! (>100000 characters)");
-        }
-        gNew.m_sDefinition = remove_label(def,label);
-        return ( *this << (  GUI(std::string("border(")+label+")["+minsize+maxsize+size+"]") << gNew ) );
-      }else{
-        m_children.push_back(new GUI(g));
-        return *this;
-      }
+      m_children.push_back(new GUI(g));
+      return *this;
     }
 
 
@@ -2609,13 +2447,10 @@ namespace icl{
       if(ds) m_oDataStore = *ds;
       try{
         if(isDummy()){
-          throw ICLException("cannot create a \"dummy\"-GUI. (Dummy GUI's are GUI-instances\n"
-                             "that are created from an empty string or from the string \"dummy\") ");
+          throw ICLException("cannot create a \"dummy\"-GUI (Dummy GUIs are placeholders "
+                             "that respect .hide and are skipped by the stream operator)");
         }
-        const GUIComponent *comp = getComponent();
-        GUIDefinition def = comp
-          ? GUIDefinition(*comp, this, parentLayout, proxy, parentWidget)
-          : GUIDefinition(createDefinition(), this, parentLayout, proxy, parentWidget);
+        GUIDefinition def(*getComponent(), this, parentLayout, proxy, parentWidget);
 
         m_poWidget = create_widget(def);
 

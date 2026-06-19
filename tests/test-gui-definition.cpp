@@ -73,24 +73,21 @@ ICL_REGISTER_TEST("qt.GUIDefinition.string_leading_empty_param",
   ICL_TEST_EQ(def.param(1), std::string("50"));
 }
 
-// Faithfulness: for a payload with no metacharacters the structured ctor and
-// the legacy string ctor produce identical params / handle / sizes.  Uses the
-// legacy detail:: factory directly (it still exposes the fluent setters +
-// toString()).
-ICL_REGISTER_TEST("qt.GUIDefinition.structured_matches_legacy_string",
-                  "structured and string ctors agree on a metachar-free component") {
+// The legacy detail:: factory feeds the structured GUIDefinition directly:
+// its params and the fluent-set handle / sizes arrive intact.
+ICL_REGISTER_TEST("qt.GUIDefinition.detail_factory_to_definition",
+                  "a detail:: factory's params + options reach the definition") {
   qt::detail::Slider s(0, 255, 128);
   s.handle("gain").minSize(4, 1).maxSize(8, 2);
 
-  GUIDefinition a(s, nullptr);                 // structured (GUIComponent ctor)
-  GUIDefinition b(s.toString(), nullptr);      // legacy string round-trip
-
-  ICL_TEST_EQ(a.type(), b.type());
-  ICL_TEST_EQ(a.numParams(), b.numParams());
-  for(unsigned i = 0; i < a.numParams(); ++i) ICL_TEST_EQ(a.param(i), b.param(i));
-  ICL_TEST_EQ(a.handle(), b.handle());
-  ICL_TEST_EQ(a.minSize(), b.minSize());
-  ICL_TEST_EQ(a.maxSize(), b.maxSize());
+  GUIDefinition a(s, nullptr);
+  ICL_TEST_EQ(a.type(), std::string("slider"));
+  ICL_TEST_EQ(a.intParam(0), 0);
+  ICL_TEST_EQ(a.intParam(1), 255);
+  ICL_TEST_EQ(a.intParam(2), 128);
+  ICL_TEST_EQ(a.handle(), std::string("gain"));
+  ICL_TEST_EQ(a.minSize(), Size(4, 1));
+  ICL_TEST_EQ(a.maxSize(), Size(8, 2));
 }
 
 // End-to-end insertion (no Qt widgets): a labelled component is wrapped in a

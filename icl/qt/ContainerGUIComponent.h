@@ -16,14 +16,12 @@ namespace icl::qt {
   */
   struct ContainerGUIComponent : public GUI{
     protected:
-    /// we use these options to create the
-    /** Please note that inheritance is not possible because it leads to
-        an abiguous overload for the GUI<<-operator */
-    mutable GUIComponent component;
-
     /// protected constructor
+    /** The base GUI holds the single structured GUIComponent (a container node);
+        the chained setters below accumulate options straight into it via
+        GUI::mutableComponent() — there is no separate component copy. */
     ContainerGUIComponent(const std::string &type, const std::string &params, QWidget *parent):
-    GUI(type+'('+params+')',parent), component(type, params){}
+    GUI(GUIComponent(type, params), parent){}
 
     public:
 
@@ -39,17 +37,17 @@ namespace icl::qt {
 
     /// sets the component's handle
     const ContainerGUIComponent &handle(const std::string &handle) const{
-      component.handle(handle); return *this;
+      mutableComponent()->handle(handle); return *this;
     }
 
     /// sets the component's label
     const ContainerGUIComponent &label(const std::string &label) const{
-      component.label(label); return *this;
+      mutableComponent()->label(label); return *this;
     }
 
     /// sets the component's initial size
     const ContainerGUIComponent &size(const utils::Size &size) const {
-      component.size(size); return *this;
+      mutableComponent()->size(size); return *this;
     }
 
     /// sets the component's initial size
@@ -59,7 +57,7 @@ namespace icl::qt {
 
     /// sets the component's minimum size constraint
     const ContainerGUIComponent &minSize(const utils::Size &minSize) const {
-      component.minSize(minSize); return *this;
+      mutableComponent()->minSize(minSize); return *this;
     }
 
     /// sets the component's minimum size constraint
@@ -69,7 +67,7 @@ namespace icl::qt {
 
     /// sets the component's maximum size constraint
     const ContainerGUIComponent &maxSize(const utils::Size &maxSize) const {
-      component.maxSize(maxSize); return *this;
+      mutableComponent()->maxSize(maxSize); return *this;
     }
 
     /// sets the component's maximum size constraint
@@ -79,27 +77,27 @@ namespace icl::qt {
 
     /// sets the component's layout margin
     const ContainerGUIComponent &margin(int margin) const{
-      component.m_options.margin = margin; return *this;
+      mutableComponent()->m_options.margin = margin; return *this;
     }
 
     /// sets the component's layout spacing
     const ContainerGUIComponent &spacing(int spacing) const{
-      component.m_options.spacing = spacing; return *this;
+      mutableComponent()->m_options.spacing = spacing; return *this;
     }
 
     /// sets the component's handle
     ContainerGUIComponent &handle(const std::string &handle){
-      component.handle(handle); return *this;
+      mutableComponent()->handle(handle); return *this;
     }
 
     /// sets the component's label
     ContainerGUIComponent &label(const std::string &label){
-      component.label(label); return *this;
+      mutableComponent()->label(label); return *this;
     }
 
     /// sets the component's initial size
     ContainerGUIComponent &size(const utils::Size &size){
-      component.size(size); return *this;
+      mutableComponent()->size(size); return *this;
     }
 
     /// sets the component's initial size
@@ -109,7 +107,7 @@ namespace icl::qt {
 
     /// sets the component's minimum size constraint
     ContainerGUIComponent &minSize(const utils::Size &minSize){
-      component.minSize(minSize); return *this;
+      mutableComponent()->minSize(minSize); return *this;
     }
 
     /// sets the component's minimum size constraint
@@ -119,7 +117,7 @@ namespace icl::qt {
 
     /// sets the component's maximum size constraint
     ContainerGUIComponent &maxSize(const utils::Size &maxSize){
-      component.maxSize(maxSize); return *this;
+      mutableComponent()->maxSize(maxSize); return *this;
     }
 
     /// sets the component's maximum size constraint
@@ -129,21 +127,13 @@ namespace icl::qt {
 
     /// sets the component's layout margin
     ContainerGUIComponent &margin(int margin){
-      component.m_options.margin = margin; return *this;
+      mutableComponent()->m_options.margin = margin; return *this;
     }
 
     /// sets the component's layout spacing
     ContainerGUIComponent &spacing(int spacing){
-      component.m_options.spacing = spacing; return *this;
+      mutableComponent()->m_options.spacing = spacing; return *this;
     }
-
-    protected:
-    /// special reimplementation of the GUI::createDefinition method
-    std::string createDefinition() const override { return component.toString();  }
-
-    /// expose the accumulating component so the structured create() path
-    /// builds the container straight from it (no toString()/re-parse)
-    const GUIComponent *getComponent() const override { return &component; }
   };
 
 

@@ -30,14 +30,7 @@ namespace icl::qt {
   /// Main Class of ICL's GUI creation framework
   /** Please refer to the ICL manual for details */
   class ICLQt_API GUI{
-    private:
-    /// stream operator to add new widgets
-    /** if the given definition is "" or "dummy", this operator does nothing */
-    virtual GUI &operator<<(const std::string &definition);
-
     protected:
-    /// default constructor
-    GUI(const std::string &definition, QWidget *parent);
 
 
     public:
@@ -169,24 +162,20 @@ namespace icl::qt {
     /// returns whether this GUI has been created or not
     bool hasBeenCreated() const;
 
-    /// legacy creation method (use with care)
-    static inline GUI create_gui_from_string(const std::string &definition, QWidget *parent){
-      return GUI(definition, parent);
-    }
-
     /// creates a hierarchical xml-description of the GUI Layout
     std::string createXMLDescription() const;
 
     protected:
-    /// can be overwritten in subclasses (such as ContainerGUIComponent)
-    virtual std::string createDefinition() const { return m_sDefinition; }
-
-    /// structured payload of this node, or null for legacy string nodes
-    /** When non-null, create() builds the widget straight from this
-        GUIComponent (no toString()/re-parse), so free-text payloads carrying
-        the grammar metacharacters survive intact.  ContainerGUIComponent
-        overrides this to expose its accumulating `component` member. */
+    /// structured payload of this node (the single source of truth)
+    /** create() builds the widget straight from this GUIComponent — there is
+        no string serialisation / re-parse, so free-text payloads carrying the
+        grammar metacharacters survive intact.  ContainerGUIComponent overrides
+        this to expose its accumulating component. */
     virtual const GUIComponent *getComponent() const { return m_component.get(); }
+
+    /// mutable view of getComponent() for in-place option accumulation
+    /** Used by ContainerGUIComponent's chained setters. */
+    GUIComponent *mutableComponent() const { return m_component.get(); }
 
     private:
 
@@ -201,9 +190,7 @@ namespace icl::qt {
 
     void create(QLayout *parentLayout,ProxyLayout *proxy, QWidget *parentWidget, DataStore *ds);
 
-    /// own definition string (legacy nodes; also a best-effort fallback)
-    std::string m_sDefinition;
-    /// structured form (set for component-built nodes); null otherwise
+    /// structured form of this node (every node has one)
     std::shared_ptr<GUIComponent> m_component;
     std::vector<GUI*> m_children;
     GUIWidget *m_poWidget;

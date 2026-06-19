@@ -255,7 +255,7 @@ namespace icl::qt {
   };
 
 
-  ChromaGUI::ChromaGUI(QWidget *parent):QObject(parent),GUI("vsplit[@handle=parent]",parent){
+  ChromaGUI::ChromaGUI(QWidget *parent):QObject(parent),GUI(VSplit({.handle="parent"}),parent){
     (*this) << VBox({.handle="image", .label="Chromaticity Space", .minSize={18, 16}})
             << ( HBox()
                  << Slider(0, 255, 128, {.handle="bluedisp", .label="Disp. Blue"})
