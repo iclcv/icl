@@ -20,27 +20,17 @@ namespace icl::geom {
         Please note, that including this class will automaticall also include the
         dependent classes PlotWidget3D and PlotHandle3D for convenience reasons
         */
-    struct Plot3D : public qt::GUIComponent{
-      private:
-      /// internally used utility method
-      static std::string form_args(const utils::Range32f &xrange,
-                                   const utils::Range32f &yrange,
-                                   const utils::Range32f &zrange){
-        std::ostringstream str;
-        str << xrange.minVal << ',' << xrange.maxVal << ','
-            << yrange.minVal << ',' << yrange.maxVal << ','
-            << zrange.minVal << ',' << zrange.maxVal;
-        return str.str();
-      }
+    struct Plot3D : public qt::GUIComponentT<Plot3D> {
+      utils::Range32f xrange, yrange, zrange;
 
-      public:
-      /// create Plot3D component with given defaultViewPortsize
-      /** The given defaultViewPortsize is to create an OpenGL viewport as long as no
-          backgrond image is given. */
+      /// create Plot3D component with the given data view-port ranges.
       Plot3D(const utils::Range32f &xrange=utils::Range32f(0,0),
              const utils::Range32f &yrange=utils::Range32f(0,0),
              const utils::Range32f &zrange=utils::Range32f(0,0)):
-      qt::GUIComponent("plot3D",form_args(xrange,yrange,zrange)){}
+        qt::GUIComponentT<Plot3D>("plot3D"), xrange(xrange), yrange(yrange), zrange(zrange){}
+
+      /// defined in PlotWidget3D.cpp (next to Plot3DGUIWidget)
+      qt::GUIWidget *createWidget(const qt::CreateContext &ctx) const override;
     };
 
   }

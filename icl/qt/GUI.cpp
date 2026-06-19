@@ -1751,76 +1751,6 @@ namespace icl{
 
 
 
-    struct MultiDrawGUIWidget : public GUIWidget{
-      MultiDrawGUIWidget(const GUIDefinition &def):GUIWidget(def,1,2<<20,GUIWidget::vboxLayout){
-        m_bAll = false;
-        m_bDeep = true;
-
-        bool x[2]= {false,false};
-        bool err = false;
-        for(unsigned int i=0;i<def.numParams();++i){
-          if(def.param(i) == "!one") {
-            m_bAll = false;
-            if(x[0]) err = true;
-            x[0] = true;
-          }
-          if(def.param(i) == "!all"){
-            m_bAll = true;
-            if(x[0]) err = true;
-            x[0] = true;
-          }
-          if(def.param(i) == "!deepcopy"){
-            m_bDeep = true;
-            if(x[1]) err = true;
-            x[1] = true;
-          }
-          if(def.param(i) == "!shallowcopy"){
-            m_bDeep = false;
-            if(x[1]) err = true;
-            x[1] = true;
-          }
-        }
-        if(err){
-          throw GUISyntaxErrorException(def.defString(),"any two parameters are doubled or contradictory");
-        }
-
-        m_poTabBar = new QTabBar(def.parentWidget());
-        m_poDrawWidget = new ICLDrawWidget(def.parentWidget());
-
-        if(def.hasToolTip()) m_poDrawWidget->setToolTip(def.toolTip().c_str());
-
-
-        m_poTabBar->setMaximumHeight(25);
-        getGUIWidgetLayout()->addWidget(m_poTabBar);
-        getGUIWidgetLayout()->addWidget(m_poDrawWidget);
-
-        for(unsigned int i=0;i<def.numParams();++i){
-          std::string s = def.param(i);
-          if(s.length() && s[0] == '!') continue;
-          m_poTabBar->addTab(s.c_str());
-        }
-
-        if(def.handle() != ""){
-          getGUI()->lockData();
-          getGUI()->allocValue<MultiDrawHandle>(def.handle(),MultiDrawHandle(m_poDrawWidget,m_poTabBar,&m_vecImageBuffer,m_bAll, m_bDeep,this));
-          getGUI()->unlockData();
-        }
-        setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-      }
-      static std::string getSyntax(){
-        return std::string("multidraw(TAB-LIST)[general params] \n")+
-        gen_params();
-      }
-      private:
-
-      QTabBar *m_poTabBar;
-      ICLDrawWidget *m_poDrawWidget;
-      std::vector<ImgBase *> m_vecImageBuffer;
-
-      bool m_bAll;
-      bool m_bDeep;
-    };
-
 
   #ifdef ICL_HAVE_OPENGL
     struct DrawGUIWidget3D : public GUIWidget{
@@ -1937,63 +1867,16 @@ namespace icl{
     };
 
 
-    /// template for creating arbitrary GUIWidget's
-    template<class T>
-    GUIWidget *create_widget_template(const GUIDefinition &def){
-      T *t = 0;
-      try{
-        t = new  T(def);
-      }catch(GUISyntaxErrorException &ex){
-        printf("%s\nsyntax is: %s\n",ex.what(),T::getSyntax().c_str());
-        return 0;
-      }
-      return t;
+    // Base default: a component without an own createWidget() override has no
+    // widget (only the magic finalizers Show/Create/Dummy hit this, and they
+    // are intercepted by operator<< before create() — so this never fires in
+    // practice). Every real component overrides createWidget().
+    GUIWidget *GUIComponent::createWidget(const CreateContext &) const {
+      throw ICLException("GUIComponent::createWidget: component type '" + m_type +
+                         "' has no widget factory");
     }
 
-
-    static std::map<std::string,GUI::CreatorFunction, std::less<>> &get_registered_widget_types(){
-      static std::map<std::string,GUI::CreatorFunction, std::less<>> m;
-      return m;
-    }
-
-    void GUI::register_widget_type(const std::string &tag, GUI::CreatorFunction f){
-      get_registered_widget_types()[tag] = f;
-    }
-
-
-    struct DefaultWidgetTypeRegister{
-      DefaultWidgetTypeRegister(){
-  #ifdef ICL_HAVE_OPENGL
-  #endif
-        GUI::register_widget_type("multidraw",create_widget_template<MultiDrawGUIWidget>);
-      }
-    } defaultWidgetTypeRegisterer;
-
-    /// NEW CREATOR MAP ENTRIES HERE !!!
-    /*
-        This function is called by the GUI::create function,
-        to create arbitrary widgets. To accelerate the widget creation process
-        it build a CreatorFuncMap which uses the GUIDefinitinos type-string as
-        identifier to estimate which creation function must be called.         */
-    GUIWidget *create_widget(const GUIDefinition &def){
-      typedef std::map<std::string,GUI::CreatorFunction, std::less<>> tmap;
-      tmap &m = get_registered_widget_types();
-      if(auto it = m.find(def.type()); it == m.end()){
-        throw ICLException("unable to create GUI component with type '" + def.type() + "' (unknown type)");
-      } else {
-        return it->second(def);
-      }
-    }
-
-    // Transitional default: components that have not yet been migrated to an
-    // own createWidget() override fall back to the string-tag registry. Defined
-    // here (not in the header) so the registry + GUIWidget stay GUI.cpp-private.
-    GUIWidget *GUIComponent::createWidget(const CreateContext &ctx) const {
-      GUIDefinition def(*this, ctx.gui, ctx.parentLayout, ctx.parentProxy, ctx.parentWidget);
-      return create_widget(def);
-    }
-
-    // ---- migrated components: typed createWidget() overrides --------------
+    // ---- per-component typed createWidget() overrides ---------------------
     // Each builds its own *GUIWidget directly from the component's typed fields.
 
     GUIWidget *Slider::createWidget(const CreateContext &ctx) const {
@@ -2087,10 +1970,9 @@ namespace icl{
 
 
     GUI::GUI(QWidget *parent):
-      // a bare GUI is a vbox container; `new` (not make_shared) because
-      // GUIComponent's 2-arg ctor is protected to friends — make_shared
-      // constructs inside the allocator, where that access doesn't apply.
-      m_component(new GUIComponent("vbox","")),
+      // a bare GUI is a vbox container (a real polymorphic component, so its
+      // createWidget() dispatches without the registry).
+      m_component(new ContainerComponent(ContainerComponent::VBox)),
       m_poWidget(0),m_bCreated(false),m_poParent(parent){
     }
 

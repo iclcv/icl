@@ -3,9 +3,10 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom/PlotWidget3D.h>
+#include <icl/geom/Plot3D.h>
 #include <icl/geom/PlotHandle3D.h>
 #include <icl/geom/GridSceneObject.h>
-#include <icl/qt/GUIDefinition.h>
+#include <icl/qt/GUIWidget.h>
 #include <icl/math/transform/LinearTransform1D.h>
 #include <icl/utils/dispatch/AssignRegistry.h>
 
@@ -583,45 +584,31 @@ namespace icl{
 
       struct Plot3DGUIWidget : public GUIWidget{
         PlotWidget3D *draw;
-        Plot3DGUIWidget(const GUIDefinition &def):GUIWidget(def,6,6,GUIWidget::gridLayout,Size(16,12)){
+        Plot3DGUIWidget(const Plot3D &c, const qt::CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(16,12)){
           draw = new PlotWidget3D(this);
-          draw->setViewPort(Range32f(def.floatParam(0),def.floatParam(1)),
-                            Range32f(def.floatParam(2),def.floatParam(3)),
-                            Range32f(def.floatParam(4),def.floatParam(5)));
+          draw->setViewPort(c.xrange, c.yrange, c.zrange);
 
           addToGrid(draw);
 
-          if(def.handle() != ""){
+          if(!c.options().handle.empty()){
             getGUI()->lockData();
-            getGUI()->allocValue<PlotHandle3D>(def.handle(),PlotHandle3D(draw,this));
+            getGUI()->allocValue<PlotHandle3D>(c.options().handle,PlotHandle3D(draw,this));
             getGUI()->unlockData();
           }
         }
       };
 
-      qt::GUIWidget *create_plot_3D_widget_instance(const qt::GUIDefinition &def){
-        Plot3DGUIWidget *w = 0;
-        try{
-          w = new  Plot3DGUIWidget(def);
-        }catch(ICLException &ex){
-          std::cout << ex.what() << std::endl
-                    << "syntax is:"
-                    << "draw3D() (no parameters supported)"
-                    << std::endl;
-          return 0;
-        }
-        return w;
-      }
-
-      struct Plot3DGUIWidgetRegisterer{
-        Plot3DGUIWidgetRegisterer(){
-          qt::GUI::register_widget_type("plot3D",create_plot_3D_widget_instance);
-
+      struct Plot3DRegisterer{
+        Plot3DRegisterer(){
           // `PlotHandle3D p = gui["key"]` routes through AssignRegistry
           // via DataStore::Slot::assign.
           utils::AssignRegistry::enroll_identity<PlotHandle3D>();
         }
-      } plot3DWidgetRegisterer;
+      } plot3DRegisterer;
+    }
+
+    qt::GUIWidget *Plot3D::createWidget(const qt::CreateContext &ctx) const {
+      return new Plot3DGUIWidget(*this, ctx);
     }
   }
 }
