@@ -35,31 +35,6 @@
 /// structs — Phase 7B promoted them into `icl::qt` and retired the qualifier.
 namespace icl::qt {
 
-  /// Apply the shared metadata fields of an Opts-like struct to a
-  /// legacy GUIComponent.
-  /** Uses `if constexpr(requires{...})` so per-component Opts can
-      omit fields that don't apply (e.g. containers have no `tooltip`).
-      GUIComponent's chained setters are const-qualified and mutate
-      through `mutable Options`, so the calls below discard their
-      return values intentionally — the side effect is what matters. */
-  template<class T>
-  GUIComponent applyCommon(GUIComponent c, const T &o){
-    if constexpr(requires{ o.handle; })  if(!o.handle.empty())  c.handle(o.handle);
-    if constexpr(requires{ o.label; })   if(!o.label.empty())   c.label(o.label);
-    if constexpr(requires{ o.tooltip; }) if(!o.tooltip.empty()) c.tooltip(o.tooltip);
-    if constexpr(requires{ o.size; })    if(o.size    != utils::Size::null) c.size(o.size);
-    if constexpr(requires{ o.minSize; }) if(o.minSize != utils::Size::null) c.minSize(o.minSize);
-    if constexpr(requires{ o.maxSize; }) if(o.maxSize != utils::Size::null) c.maxSize(o.maxSize);
-    if constexpr(requires{ o.hide; })    if(o.hide)             c.hideIf(true);
-    return c;
-  }
-
-  /// Concept: types exposing `toComponent()` so the generic stream
-  /// operators below can route them into a GUI.
-  template<class T>
-  concept Component = requires(const T &t){
-    { t.toComponent() } -> std::convertible_to<GUIComponent>;
-  };
 
   /// Options pack for Slider.
   /** Hoisted out of `Slider` because C++ forbids using a nested type's

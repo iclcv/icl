@@ -24,23 +24,12 @@ namespace icl::qt {
   /** \cond */
   class GUIWidget;
   class ProxyLayout;
-  class GUIDefinition;
   /** \endcond */
 
   /// Main Class of ICL's GUI creation framework
   /** Please refer to the ICL manual for details */
   class ICLQt_API GUI{
-    protected:
-
-
     public:
-    /// registered widget type creator function
-    using CreatorFunction = std::function<GUIWidget*(const GUIDefinition&)>;
-
-    /// registers a new widget type
-    /** The registered widget can then be added using a corresponding extension
-        of the GUIComponent class */
-    static void register_widget_type(const std::string &tag, CreatorFunction f);
 
     /// cell width (all sizes are given in this unit)
     static const int CELLW = 20;

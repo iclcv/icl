@@ -10,6 +10,7 @@
 #include <icl/qt/AbstractPlotWidget.h>
 #include <icl/qt/GUIWidget.h>
 #include <icl/qt/GUI.h>
+#include <icl/qt/ui.h>
 #include <icl/qt/QImageConverter.h>
 
 #include <QtCore/QMutex>
@@ -938,7 +939,7 @@ namespace icl::qt {
           static int confiurableIdx = 0;
           std::string id = "_ICL_AbstractPlotWidget-"+str(confiurableIdx++);
           setConfigurableID(id);
-          data->menu = GUI(detail::Prop(id));
+          data->menu = GUI(Prop(id));
           data->menu.create();
           setConfigurableID(origID);
           data->menu.getRootWidget()->setWindowFlags(Qt::Popup);

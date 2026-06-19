@@ -2,110 +2,65 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// Regression coverage for the structured GUIDefinition path (ui-plan Phase 7A).
-//
-// The GUI builder used to serialise every component to a stringly-typed
-// definition (`type(params)[@handle=..@label=..]`) that GUIDefinition then
-// re-parsed.  Any free-text payload containing the grammar metacharacters
-// `, ( ) @ =` broke that round-trip and threw a syntax error at runtime.
-// GUIDefinition now also has a constructor that copies a GUIComponent's
-// structured fields directly — no grammar, so metacharacters survive.
-//
-// These tests exercise that constructor with no QApplication / GL context.
-// The public designated-init components (qt::Label, qt::Slider, ...) build a
-// GUIComponent through toComponent(); detail::Xxx are the legacy factories.
+// Coverage for the polymorphic GUIComponent design (ui-plan Phase 7 +
+// re-engineering): components are typed structs that build their own widget
+// via a virtual createWidget(); there is no stringly-typed param channel, so
+// free-text payloads — including the commas that the old comma-split mangled —
+// are carried verbatim as typed fields. These tests need no QApplication / GL.
 
 #include "harness/Test.h"
 #include <icl/qt/GUI.h>
-#include <icl/qt/GUIComponents.h>
-#include <icl/qt/GUIDefinition.h>
 #include <icl/qt/ui.h>
 
 using namespace icl;
 using namespace icl::qt;
 using namespace icl::utils;
 
-// A Label's text is its single positional param.  The grammar metacharacters
-// that used to break the envelope — `(`, `)`, `@`, `=` — must now survive
-// verbatim in a single param (comma stays the param delimiter, so it is
-// excluded here; String() is the component that escapes commas).
-ICL_REGISTER_TEST("qt.GUIDefinition.label_text_with_metachars",
-                  "parens / @ / = in a Label text no longer break parsing") {
-  const std::string nasty = "Pos: (3 4) @scale=2 (done)";
-  GUIDefinition def(qt::detail::Label(nasty), nullptr);
-  ICL_TEST_EQ(def.type(), std::string("label"));
-  ICL_TEST_EQ(def.numParams(), 1u);
-  ICL_TEST_EQ(def.param(0), nasty);
+// A component's free-text payload is a typed field: every grammar metacharacter
+// — including the comma that used to split params — survives verbatim. This is
+// the bug class the redesign eliminates structurally.
+ICL_REGISTER_TEST("qt.GUI.payload_metachars_survive",
+                  "component free-text fields carry , ( ) @ = verbatim") {
+  const std::string nasty = "a, b (c) @scale=2, done";
+  Label l(nasty, {.handle="h(0)", .label="L = a,b"});
+  ICL_TEST_EQ(l.text, nasty);
+  ICL_TEST_EQ(l.options().handle, std::string("h(0)"));
+  ICL_TEST_EQ(l.options().label,  std::string("L = a,b"));
+
+  // Combo's CSV is split at the component (not by a grammar), so its entries
+  // are exactly what the user wrote.
+  Combo c("alpha,beta,gamma", {.initialIndex=2, .handle="sel"});
+  ICL_TEST_EQ(c.entries, std::string("alpha,beta,gamma"));
+  ICL_TEST_EQ(c.opts.initialIndex, 2);
 }
 
-// handle / label / tooltip options must also carry metacharacters verbatim
-// (they used to be serialised as @handle=.. @label=.. @tooltip=..).
-ICL_REGISTER_TEST("qt.GUIDefinition.options_with_metachars",
-                  "handle/label/tooltip carry metacharacters verbatim") {
-  const std::string h = "h(0)";
-  const std::string l = "Label = a,b";
-  const std::string t = "tip@home, (really)";
-  GUIDefinition def(qt::detail::Label("x").handle(h).label(l).tooltip(t), nullptr);
-  ICL_TEST_EQ(def.handle(), h);
-  ICL_TEST_EQ(def.label(), l);
-  ICL_TEST_TRUE(def.hasToolTip());
-  ICL_TEST_EQ(def.toolTip(), t);
+// clone() is polymorphic — the GUI tree stores shared_ptr<GUIComponent> and
+// must not slice the concrete type away.
+ICL_REGISTER_TEST("qt.GUI.clone_preserves_dynamic_type",
+                  "GUIComponent::clone() keeps the concrete component type") {
+  Slider s(0, 255, 42, {.handle="gain"});
+  std::shared_ptr<GUIComponent> c = s.clone();
+  Slider *back = dynamic_cast<Slider*>(c.get());
+  ICL_TEST_TRUE(back != nullptr);
+  ICL_TEST_EQ(back->min, 0);
+  ICL_TEST_EQ(back->max, 255);
+  ICL_TEST_EQ(back->val, 42);
+  ICL_TEST_EQ(back->options().handle, std::string("gain"));
 }
 
-// Numeric params keep splitting on commas and parse as before.
-ICL_REGISTER_TEST("qt.GUIDefinition.slider_params",
-                  "Slider min/max/curr parse from the structured param list") {
-  GUIDefinition def(qt::detail::Slider(10, 200, 42), nullptr);
-  ICL_TEST_EQ(def.type(), std::string("slider"));
-  ICL_TEST_EQ(def.intParam(0), 10);
-  ICL_TEST_EQ(def.intParam(1), 200);
-  ICL_TEST_EQ(def.intParam(2), 42);
-}
-
-// The "string" type leading-empty-param special case is preserved: an empty
-// initial text yields an empty first param, not a missing one.
-ICL_REGISTER_TEST("qt.GUIDefinition.string_leading_empty_param",
-                  "empty String() init text keeps a leading empty param") {
-  GUIDefinition def(qt::detail::String("", 50), nullptr);
-  ICL_TEST_EQ(def.type(), std::string("string"));
-  ICL_TEST_EQ(def.numParams(), 2u);
-  ICL_TEST_EQ(def.param(0), std::string(""));
-  ICL_TEST_EQ(def.param(1), std::string("50"));
-}
-
-// The legacy detail:: factory feeds the structured GUIDefinition directly:
-// its params and the fluent-set handle / sizes arrive intact.
-ICL_REGISTER_TEST("qt.GUIDefinition.detail_factory_to_definition",
-                  "a detail:: factory's params + options reach the definition") {
-  qt::detail::Slider s(0, 255, 128);
-  s.handle("gain").minSize(4, 1).maxSize(8, 2);
-
-  GUIDefinition a(s, nullptr);
-  ICL_TEST_EQ(a.type(), std::string("slider"));
-  ICL_TEST_EQ(a.intParam(0), 0);
-  ICL_TEST_EQ(a.intParam(1), 255);
-  ICL_TEST_EQ(a.intParam(2), 128);
-  ICL_TEST_EQ(a.handle(), std::string("gain"));
-  ICL_TEST_EQ(a.minSize(), Size(4, 1));
-  ICL_TEST_EQ(a.maxSize(), Size(8, 2));
-}
-
-// End-to-end insertion (no Qt widgets): a labelled component is wrapped in a
-// titled border, and the whole tree streams to XML without a parse crash even
-// when the component's text carries envelope-breaking metacharacters.
-// Exercises GUI::operator<<(GUIComponent) (structured label→border wrap) and
-// to_string_recursive (structured traversal).
-ICL_REGISTER_TEST("qt.GUI.labelled_component_wraps_in_border",
+// End-to-end tree build (no Qt widgets): a labelled leaf wraps in a titled
+// border and the whole tree streams to XML; a metachar payload never throws.
+ICL_REGISTER_TEST("qt.GUI.labelled_leaf_wraps_in_border",
                   "a labelled component streams to a border-wrapped XML tree") {
   GUI g;
-  g << Label("text with (parens) @ x=1", {.handle="lab", .label="My Border"});
+  g << Slider(0, 10, 5, {.handle="s", .label="Gain, (dB)"});
   const std::string xml = g.createXMLDescription();
   ICL_TEST_TRUE(xml.find("<border") != std::string::npos);
-  ICL_TEST_TRUE(xml.find("<label") != std::string::npos);
-  ICL_TEST_TRUE(xml.find("handle=\"lab\"") != std::string::npos);
+  ICL_TEST_TRUE(xml.find("<slider") != std::string::npos);
+  ICL_TEST_TRUE(xml.find("handle=\"s\"") != std::string::npos);
 }
 
-// Containers carry the structured component too: a labelled VBox wraps in a
+// Containers carry the polymorphic component too: a labelled VBox wraps in a
 // border and its children survive the traversal.
 ICL_REGISTER_TEST("qt.GUI.labelled_container_wraps_in_border",
                   "a labelled container streams to a border-wrapped XML tree") {

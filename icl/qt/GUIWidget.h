@@ -16,7 +16,6 @@ class QLayout;
 
 namespace icl::qt {
   /** \cond */
-  class GUIDefinition;
   class GUIComponent;
   struct CreateContext;
   class ProxyLayout;
@@ -35,19 +34,6 @@ namespace icl::qt {
       vboxLayout,     // use a QVBoxLayout
       gridLayout      // use the default GridLayout
     };
-
-    /// create a new GUIWidget ( this constructor must be called by all subclasses )
-    /** @param def GUIDefinition instance
-        @param minParamCount minimum count of expected parameters
-        @param maxParamCount maximum count of expected parameters (if -1, this is also minParamCount)
-        @param lt layout-type to use
-        @param defMinSize default minimum size constraint for the widget
-    */
-    GUIWidget(const GUIDefinition &def,
-              int minParamCount,
-              int maxParamCount=-1,
-              layoutType lt=gridLayout,
-              const utils::Size &defMinSize=utils::Size(0,0));
 
     /// create a new GUIWidget from a structured component + creation context
     /** The migrated-component path: reads the shared layout Options off the

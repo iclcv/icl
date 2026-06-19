@@ -21,7 +21,6 @@ namespace icl::qt {
   class GUI;
   class GUIWidget;
   class ProxyLayout;
-  class GUIDefinition;
   /** \endcond */
 
   /// Transient context handed to GUIComponent::createWidget at create() time.
@@ -48,9 +47,6 @@ namespace icl::qt {
 
     /// friend GUI class
     friend class GUI;
-
-    /// friend GUIDefinition class (legacy registry bridge during migration)
-    friend class GUIDefinition;
 
     public:
     /// virtual: components are handed around polymorphically via shared_ptr
@@ -112,48 +108,11 @@ namespace icl::qt {
     /// all component options (mutable for C++-reasons)
     mutable Options m_options;
 
-    /// utility method to concatenate 3 values
-    template<class A, class B, class C>
-    static std::string form_args_3(const A &a, const B &b, const C &c){
-      std::ostringstream str;
-      str << a << ',' << b << ',' << c;
-      return str.str();
-    }
-
-    /// utility method to concatenate 4 values
-    template<class A, class B, class C, class D>
-    static std::string form_args_4(const A &a, const B &b, const C &c, const D &d){
-      std::ostringstream str;
-      str << a << ',' << b << ',' << c << ',' << d;
-      return str.str();
-    }
-
-    /// utility method to concatenate 5 values
-    template<class A, class B, class C, class D, class E>
-    static std::string form_args_5(const A &a, const B &b, const C &c, const D &d, const E &e){
-      std::ostringstream str;
-      str << a << ',' << b << ',' << c << ',' << d << "," << e;
-      return str.str();
-    }
-
-    /// utility method to concatenate 5 values
-    template<class A, class B, class C, class D, class E, class F>
-    static std::string form_args_6(const A &a, const B &b, const C &c, const D &d, const E &e, const F &f){
-      std::ostringstream str;
-      str << a << ',' << b << ',' << c << ',' << d << "," << e << "," << f;
-      return str.str();
-    }
-
-    /// component type
+    /// component type tag (debug / XML / finalizer dispatch only)
     std::string m_type;
 
-    /// component parameters
-    std::string m_params;
-
-    /// creates a component with given type and optionally given parameters
-    /** the params parameter is a comma-separated list of single entries */
-    GUIComponent(const std::string &type, const std::string &params=""):
-    m_type(type),m_params(params){}
+    /// creates a component with the given type tag
+    explicit GUIComponent(std::string type): m_type(std::move(type)){}
     public:
 
     /// sets the component handle
@@ -283,38 +242,6 @@ namespace icl::qt {
     GUIComponent &hideIf(bool flag)  {
       if(flag) m_options.hide = true;
       return *this;
-    }
-
-    /// creates a string representation of the component
-    std::string toString() const {
-      if(m_options.hide) return "";
-      std::ostringstream str;
-      str << m_type;
-      if(m_params.length()){
-        str << '(' << m_params << ')';
-      }
-      if(m_options.handle.length() ||
-         m_options.label.length() ||
-         m_options.in.length() ||
-         m_options.tooltip.length() ||
-         m_options.margin > 0 ||
-         m_options.spacing > 0 ||
-         m_options.minSize != utils::Size::null ||
-         m_options.maxSize != utils::Size::null ||
-         m_options.size != utils::Size::null ){
-        str << '[';
-        if(m_options.handle.length()) str << "@handle=" << m_options.handle;
-        if(m_options.in.length()) str << "@in=" << m_options.in;
-        if(m_options.label.length()) str << "@label=" << m_options.label;
-        if(m_options.tooltip.length()) str << "@tooltip=" << m_options.tooltip;
-        if(m_options.margin > 0) str << "@margin=" << m_options.margin;
-        if(m_options.spacing > 0) str << "@spacing=" << m_options.spacing;
-        if(m_options.minSize != utils::Size::null ) str << "@minsize=" << m_options.minSize;
-        if(m_options.maxSize != utils::Size::null ) str << "@maxsize=" << m_options.maxSize;
-        if(m_options.size != utils::Size::null ) str << "@size=" << m_options.size;
-        str << "]";
-      }
-      return str.str();
     }
   };
 

@@ -15,7 +15,6 @@
 #include <icl/qt/GUI.h>
 #include <icl/qt/GUIWidget.h>
 #include <icl/qt/ContainerGUIComponents.h>
-#include <icl/qt/GUIDefinition.h>
 #include <icl/qt/GUISyntaxErrorException.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Array2D.h>
@@ -2054,31 +2053,24 @@ namespace icl{
     }
 
     void GUI::to_string_recursive(const GUI *gui, std::ostream &str, int level){
-      GUIDefinition def(*gui->getComponent(), const_cast<GUI*>(gui));
-      str << std::string(level*2,' ') << "<" << def.type();
-      int nParams = def.numParams();
-      std::ostringstream sparams;
-      for(int i=0;i<nParams;++i){
-        sparams << def.param(0);
-        if(i<nParams-1) sparams << ",";
-      }
-      if(nParams){
-        str << " args=\"" << sparams.str() << "\"";
-      }
-      if(def.label().length()) str << " label=\"" <<  def.label() << "\"";
-      if(def.handle().length()) str << " handle=\"" << def.handle() << "\"";
-      if(def.size() != Size::null) str << " size=\"" << def.size() << "\"";
-      if(def.minSize() != Size::null) str << " minsize=\"" << def.minSize() << "\"";
-      if(def.maxSize() != Size::null) str << " maxsize=\"" << def.maxSize() << "\"";
-      if(def.margin() != 2) str << " margin=\"" << def.margin() << "\"";
-      if(def.spacing() != 2) str << " spacing=\"" << def.spacing() << "\"";
-      if(def.hasToolTip()) str << " tooltip=\"" << def.toolTip() << "\"";
+      const GUIComponent *c = gui->getComponent();
+      const GUIComponent::Options &o = c->options();
+      const std::string &type = c->type();
+      str << std::string(level*2,' ') << "<" << type;
+      if(o.label.length())   str << " label=\"" <<  o.label << "\"";
+      if(o.handle.length())  str << " handle=\"" << o.handle << "\"";
+      if(o.size    != Size::null) str << " size=\""    << o.size    << "\"";
+      if(o.minSize != Size::null) str << " minsize=\"" << o.minSize << "\"";
+      if(o.maxSize != Size::null) str << " maxsize=\"" << o.maxSize << "\"";
+      if(o.margin  > 0) str << " margin=\""  << o.margin  << "\"";
+      if(o.spacing > 0) str << " spacing=\"" << o.spacing << "\"";
+      if(o.tooltip.length()) str << " tooltip=\"" << o.tooltip << "\"";
       if(gui->m_children.size()){
         str << ">" << std::endl;
         for(size_t i=0;i<gui->m_children.size();++i){
           to_string_recursive(gui->m_children[i], str, level+1);
         }
-        str << std::string(level*2,' ') << "</" << def.type() << ">" << std::endl;
+        str << std::string(level*2,' ') << "</" << type << ">" << std::endl;
       }else{
         str << "/>" << std::endl;
       }

@@ -3,7 +3,6 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/GUIWidget.h>
-#include <icl/qt/GUIDefinition.h>
 #include <icl/qt/GUIComponent.h>
 #include <icl/qt/GUI.h>
 #include <icl/qt/ProxyLayout.h>
@@ -12,7 +11,6 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <icl/qt/GUISyntaxErrorException.h>
 #include <QtCore/QString>
 
 #include <icl/qt/IconFactory.h>
@@ -22,82 +20,6 @@ using namespace icl::utils;
 using namespace icl::core;
 
 namespace icl::qt {
-  GUIWidget::GUIWidget(const GUIDefinition &def,
-                       int minParamCount,
-                       int maxParamCount,
-                       layoutType lt,
-                       const Size &defMinSize):m_handle(0){
-    int minPC = minParamCount;
-    int maxPC = maxParamCount == -1 ? minPC : maxParamCount;
-
-    int nP = static_cast<int>(def.numParams());
-    if(nP > maxPC || nP < minPC){
-      throw GUISyntaxErrorException(def.defString(),"invalid parameter count! found " + str(nP) + " expected [" +str(minPC) + "-"
-                                    + str(maxPC) + "] for component type " + def.type());
-    }
-
-    m_poGridLayout = 0;
-    m_poOtherLayout = 0;
-    Size givenSize = def.size();
-    Size givenMinSize = def.minSize();
-    Size givenMaxSize = def.maxSize();
-
-    m_preferredSize = Size(0,0); // default
-
-    if(givenSize != Size::null){
-      m_preferredSize = Size(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH);
-      // setGeometry(QRect(QPoint(0,0),QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH)));
-      // setMinimumSize(QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH));
-      // setMaximumSize(QSize(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH));
-      //setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred));
-    }else if(givenMinSize != Size::null || givenMaxSize != Size::null){
-      if(givenMinSize != Size::null){
-        setMinimumSize(QSize(givenMinSize.width*GUI::CELLW,givenMinSize.height*GUI::CELLH));
-      }
-      if(givenMaxSize != Size::null){
-        setMaximumSize(QSize(givenMaxSize.width*GUI::CELLW,givenMaxSize.height*GUI::CELLH));
-      }
-    }else if(defMinSize != Size::null){
-      //resize(QSize(defMinSize.width*GUI::CELLW,defMinSize.height*GUI::CELLH));
-      setMinimumSize(QSize(defMinSize.width*GUI::CELLW,defMinSize.height*GUI::CELLH));
-      //setMaximumSize(QSize(defSize.width*GUI::CELLW,defSize.height*GUI::CELLH));
-    }
-    if(def.parentLayout()) def.parentLayout()->setContentsMargins(0,0,0,0);
-
-    if(def.parentLayout()) def.parentLayout()->addWidget(this);
-    if(def.getProxyLayout()) def.getProxyLayout()->addWidget(this);
-
-    switch(lt){
-      case noLayout:
-        break;
-      case hboxLayout:
-        m_poOtherLayout = new QHBoxLayout;
-        break;
-      case vboxLayout:
-        m_poOtherLayout = new QVBoxLayout;
-        break;
-      case gridLayout:
-        m_poGridLayout = new QGridLayout;
-        break;
-    }
-    if(m_poGridLayout){
-      m_poGridLayout->setContentsMargins(def.margin(),def.margin(),def.margin(),def.margin());
-      m_poGridLayout->setSpacing(def.spacing());
-      setLayout(m_poGridLayout);
-    }else if(m_poOtherLayout){
-      m_poOtherLayout->setContentsMargins(def.margin(),def.margin(),def.margin(),def.margin());
-      m_poOtherLayout->setSpacing(def.spacing());
-      setLayout(m_poOtherLayout);
-    }
-    m_poGUI = def.getGUI();
-
-    setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
-
-    if(def.handle() != "") m_handle = new std::string(def.handle());
-
-    if(layout()) layout()->setContentsMargins(0,0,0,0);
-    setContentsMargins(0,0,0,0);
-  }
 
   GUIWidget::GUIWidget(const GUIComponent &component,
                        const CreateContext &ctx,
