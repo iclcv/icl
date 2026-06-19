@@ -76,7 +76,7 @@ struct Handler : public MouseHandler{
     }else{
       sceneHandler->process(evt);
     }
-  
+
     return MouseResult::Forward;
   }
 };
@@ -97,13 +97,13 @@ void mouse_2(const MouseEvent &evt){
 void init(){
   //  Scene::enableSharedOffscreenRendering();
 
-  gui << ui::Canvas3D({.handle="view"})
-      << ui::Canvas({.handle="image"})
-      << (ui::VBox()
-          << ui::Combo("none,rgb,depth", {.handle="capture", .label="offscreen rendering"})
-          << ui::Combo("raw,dist. to z0,dist to cam center", {.handle="dmode", .label="depth map mode"})
+  gui << Canvas3D({.handle="view"})
+      << Canvas({.handle="image"})
+      << (VBox()
+          << Combo("none,rgb,depth", {.handle="capture", .label="offscreen rendering"})
+          << Combo("raw,dist. to z0,dist to cam center", {.handle="dmode", .label="depth map mode"})
           )
-      << ui::Show();
+      << Show();
 
   //gui["capture"].registerCallback(new GUI::Callback(capture));
 

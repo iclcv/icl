@@ -13,6 +13,7 @@
 #include <icl/qt/LabelHandle.h>
 #include <icl/qt/CheckBoxHandle.h>
 #include <icl/qt/ButtonHandle.h>
+#include <icl/qt/ui.h>
 #include <icl/utils/time/FPSLimiter.h>
 #include <icl/utils/thread/Thread.h>
 
@@ -70,21 +71,21 @@ namespace icl::qt {
 
     data->gui = VSplit(this);
     data->gui <<  (HSplit()
-                    << Display().handle("image").minSize(10,14).label("preview")
+                    << Display({.handle="image", .label="preview", .minSize={10, 14}})
                     )
-              << ( HSplit().maxSize(100,15)
-                  << ( HBox().label("devices")
-                       << Combo("no devices found").handle("device").minSize(10,2)
-                       << Button("rescan").handle("scan").maxSize(3,8)
+              << ( HSplit({.maxSize={100, 15}})
+                  << ( HBox({.label="devices"})
+                       << Combo("no devices found", {.handle="device", .minSize={10, 2}})
+                       << Button("rescan", {.handle="scan", .maxSize={3, 8}})
                      )
-                  <<  ( HBox().label("control / FPS")
-                        << Button("capture!","stop").handle("grabbing")
-                        << Combo("max 1Hz,max 5Hz,max 10Hz,max 15Hz,max 20Hz,max 25Hz,max 30Hz,max 50Hz,max 100Hz,max 120Hz,!no limit").handle("hz").minSize(5,2).maxSize(5,2)
-                        << Label("--.--").handle("fps")
+                  <<  ( HBox({.label="control / FPS"})
+                        << ToggleButton("capture!", "stop", false, {.handle="grabbing"})
+                        << Combo("max 1Hz,max 5Hz,max 10Hz,max 15Hz,max 20Hz,max 25Hz,max 30Hz,max 50Hz,max 100Hz,max 120Hz,!no limit", {.handle="hz", .minSize={5, 2}, .maxSize={5, 2}})
+                        << Label("--.--", {.handle="fps"})
                       )
                 );
 
-    data->gui << VBox().handle("props").minSize(10,18).label("Camera properties");
+    data->gui << VBox({.handle="props", .label="Camera properties", .minSize={10, 18}});
     data->gui.create();
 
     setLayout(new QBoxLayout(QBoxLayout::LeftToRight,this));
@@ -149,7 +150,7 @@ namespace icl::qt {
           }
         }
         BoxHandle b = data->gui.get<BoxHandle>("props");
-        data -> properties = Prop(data->foundDevices.at(static_cast<int>(data->gui["device"])).name()).handle("camcfg");
+        data -> properties = GUI(Prop(data->foundDevices.at(static_cast<int>(data->gui["device"])).name(), {.handle="camcfg"}).toComponent());
         data -> properties.show();
         b.add(data->properties.getRootWidget());
       } catch(const std::exception &x){

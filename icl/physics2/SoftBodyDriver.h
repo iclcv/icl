@@ -35,7 +35,7 @@ namespace icl::physics2 {
       properties (stiffness / friction / damping / contact hardness / position
       iterations / collision margin / self collision); changing one applies to
       the running soft body via the world's sim-thread command queue. Drop a
-      `ui::Prop(clothDriver)` into a GUI to dial them in interactively. */
+      `Prop(clothDriver)` into a GUI to dial them in interactively. */
   class ICLPhysics2_API SoftBodyDriver : public geom2::Driver,
                                          public utils::Configurable {
   public:

@@ -23,28 +23,28 @@ void mouse(const MouseEvent &e){
 
 void init(){
   bool gl = pa("-gl");
-  gui << ( ui::VBox()
-           << ui::Plot({.minX=0, .maxX=6.5, .minY=-1, .maxY=1, .openGL=gl, .handle="plot1", .minSize={15,12}})
-           << ui::Plot({.minX=0, .maxX=6.5, .minY=-1, .maxY=1, .openGL=gl, .handle="plot2", .minSize={15,12}})
-           << ui::Plot({.minX=-5, .maxX=5, .minY=-5, .maxY=5, .openGL=gl, .handle="plot9", .minSize={15,12}})
+  gui << ( VBox()
+           << Plot({.minX=0, .maxX=6.5, .minY=-1, .maxY=1, .openGL=gl, .handle="plot1", .minSize={15,12}})
+           << Plot({.minX=0, .maxX=6.5, .minY=-1, .maxY=1, .openGL=gl, .handle="plot2", .minSize={15,12}})
+           << Plot({.minX=-5, .maxX=5, .minY=-5, .maxY=5, .openGL=gl, .handle="plot9", .minSize={15,12}})
            )
-      << ( ui::VBox()
-           << ui::Plot({.minX=0, .maxX=6.5, .minY=-1, .maxY=1, .openGL=gl, .handle="plot3", .minSize={15,12}})
-           << ui::Plot({.minX=0, .maxX=6.5, .minY=-1, .maxY=1, .openGL=gl, .handle="plot4", .minSize={15,12}})
-           << ui::Plot({.openGL=gl, .handle="plot10", .minSize={15,12}})
+      << ( VBox()
+           << Plot({.minX=0, .maxX=6.5, .minY=-1, .maxY=1, .openGL=gl, .handle="plot3", .minSize={15,12}})
+           << Plot({.minX=0, .maxX=6.5, .minY=-1, .maxY=1, .openGL=gl, .handle="plot4", .minSize={15,12}})
+           << Plot({.openGL=gl, .handle="plot10", .minSize={15,12}})
            )
-      << (ui::VBox()
-          << ui::Plot({.minX=-9, .maxX=9, .minY=-9, .maxY=9, .openGL=gl, .handle="plot5", .minSize={15,12}})
-          << ui::Plot({.openGL=gl, .handle="plot6", .minSize={15,12}})
-          << ui::Plot({.openGL=gl, .handle="plot11", .minSize={15,12}})
+      << (VBox()
+          << Plot({.minX=-9, .maxX=9, .minY=-9, .maxY=9, .openGL=gl, .handle="plot5", .minSize={15,12}})
+          << Plot({.openGL=gl, .handle="plot6", .minSize={15,12}})
+          << Plot({.openGL=gl, .handle="plot11", .minSize={15,12}})
           )
-      << (ui::VBox()
-          << ui::Plot({.openGL=gl, .xLabel="something [pi]", .handle="plot7", .minSize={15,12}})
-          << ui::Plot({.openGL=gl, .handle="plot8", .minSize={15,12}})
-          << ui::Plot({.openGL=gl, .handle="plot12", .minSize={15,12}})
-          << ui::CheckBox("animate", {.checked=true, .handle="run"})
+      << (VBox()
+          << Plot({.openGL=gl, .xLabel="something [pi]", .handle="plot7", .minSize={15,12}})
+          << Plot({.openGL=gl, .handle="plot8", .minSize={15,12}})
+          << Plot({.openGL=gl, .handle="plot12", .minSize={15,12}})
+          << CheckBox("animate", {.checked=true, .handle="run"})
           )
-      << ui::Show();
+      << Show();
 
 
 

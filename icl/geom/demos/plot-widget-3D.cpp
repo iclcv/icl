@@ -34,7 +34,7 @@ static Range32f round_range(Range32f r){
 
 
 void init(){
-  gui << Plot3D().handle("plot").minSize(32,24) << ui::Show();
+  gui << Plot3D().handle("plot").minSize(32,24) << Show();
   if(pa("-r")){
     SHOW(round_range(Range32f(pa("-r",0),pa("-r",1))));
     ::exit(0);

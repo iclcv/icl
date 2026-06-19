@@ -51,15 +51,15 @@ static void init() {
   rt.setDenoising(false);     // off for interactive preview (fast noisy intermediates)
 
   // GUI: canvas on left, controls on right
-  gui << (ui::HSplit()
-       << ui::Canvas3D(size, {.handle="canvas", .minSize={32, 24}})
-       << (ui::VBox({.minSize={12, 0}})
-          << ui::Slider(0, 100, 50, {.handle="alpha", .label="GL Overlay %"})
-          << ui::Slider(1, 16, 4, {.handle="bounces", .label="Bounces"})
-          << ui::Slider(10, 500, 100, {.handle="exposure", .label="Exposure %"})
-          << ui::Combo(std::string("!") + Scene::getMaterialPresetNames(), {.handle="material", .label="Material"})
-          << ui::Label("--", {.handle="info"})))
-     << ui::Show();
+  gui << (HSplit()
+       << Canvas3D(size, {.handle="canvas", .minSize={32, 24}})
+       << (VBox({.minSize={12, 0}})
+          << Slider(0, 100, 50, {.handle="alpha", .label="GL Overlay %"})
+          << Slider(1, 16, 4, {.handle="bounces", .label="Bounces"})
+          << Slider(10, 500, 100, {.handle="exposure", .label="Exposure %"})
+          << Combo(std::string("!") + Scene::getMaterialPresetNames(), {.handle="material", .label="Material"})
+          << Label("--", {.handle="info"})))
+     << Show();
 
   DrawHandle3D canvas = gui["canvas"];
   canvas->install(new MouseHandler(handleMouse));

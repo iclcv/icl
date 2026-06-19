@@ -28,26 +28,26 @@ void init(){
   }
 
   if(cOut || dOut){
-    prevGUI << (cOut ? Display().handle("color") : Dummy())
-            << (dOut ? Display().handle("depth") : Dummy())
-            << ui::Create();
+    prevGUI << (cOut ? Display({.handle="color"}).toComponent() : Dummy().toComponent())
+            << (dOut ? Display({.handle="depth"}).toComponent() : Dummy().toComponent())
+            << Create();
   }
 
-  gui << ui::Canvas3D({.handle="draw"})
-      << ( ui::VBox({.minSize={10, 2}})
-           << ui::FSlider(-10, 10, 0, {.handle="x", .label="translate x"})
-           << ui::FSlider(-10, 10, 0, {.handle="y", .label="translate y"})
-           << ui::FSlider(1.5, 10, 0, {.handle="z", .label="translate z"})
+  gui << Canvas3D({.handle="draw"})
+      << ( VBox({.minSize={10, 2}})
+           << FSlider(-10, 10, 0, {.handle="x", .label="translate x"})
+           << FSlider(-10, 10, 0, {.handle="y", .label="translate y"})
+           << FSlider(1.5, 10, 0, {.handle="z", .label="translate z"})
 
-           << ui::FSlider(-4, 4, 0, {.handle="rx", .label="rotate x"})
-           << ui::FSlider(-4, 4, 0, {.handle="ry", .label="rotate y"})
-           << ui::FSlider(-4, 4, 0, {.handle="rz", .label="rotate z"})
+           << FSlider(-4, 4, 0, {.handle="rx", .label="rotate x"})
+           << FSlider(-4, 4, 0, {.handle="ry", .label="rotate y"})
+           << FSlider(-4, 4, 0, {.handle="rz", .label="rotate z"})
 
-           << ((cOut||dOut) ? (const GUIComponent&)Button("show","hide").label("preview").handle("preview")
-               : (const GUIComponent&)Dummy() )
-           << ui::Button("reset view", {.handle="resetView"})
+           << ((cOut||dOut) ? Button("show",{.toggledText="hide",.label="preview",.handle="preview"}).toComponent()
+               : Dummy().toComponent() )
+           << Button("reset view", {.handle="resetView"})
          )
-      << ui::Show();
+      << Show();
 
 
   if(cOut || dOut){

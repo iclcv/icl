@@ -30,16 +30,16 @@ ImageCompressor compressor;
 void init(){
   grabber.init(pa("-i"));
 
-  gui << ui::Display({.handle="orig", .label="original", .minSize={16, 12}})
-      << ui::Display({.handle="decoded", .label="decode(compress(img))",
+  gui << Display({.handle="orig", .label="original", .minSize={16, 12}})
+      << Display({.handle="decoded", .label="decode(compress(img))",
                       .minSize={16, 12}})
-      << ( ui::VBox({.maxSize={22, 99}})
-           << ui::Prop(&compressor, {.label="compressor"})
-           << ui::Label("-", {.handle="ratio",    .label="compression ratio"})
-           << ui::Label("-", {.handle="enc_time", .label="encode (ms)"})
-           << ui::Label("-", {.handle="dec_time", .label="decode (ms)"})
+      << ( VBox({.maxSize={22, 99}})
+           << Prop(&compressor, {.label="compressor"})
+           << Label("-", {.handle="ratio",    .label="compression ratio"})
+           << Label("-", {.handle="enc_time", .label="encode (ms)"})
+           << Label("-", {.handle="dec_time", .label="decode (ms)"})
          )
-      << ui::Show();
+      << Show();
 }
 
 void run(){

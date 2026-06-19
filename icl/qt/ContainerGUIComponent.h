@@ -139,7 +139,11 @@ namespace icl::qt {
 
     protected:
     /// special reimplementation of the GUI::createDefinition method
-    virtual std::string createDefinition() const { return component.toString();  }
+    std::string createDefinition() const override { return component.toString();  }
+
+    /// expose the accumulating component so the structured create() path
+    /// builds the container straight from it (no toString()/re-parse)
+    const GUIComponent *getComponent() const override { return &component; }
   };
 
 

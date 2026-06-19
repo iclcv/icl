@@ -53,12 +53,12 @@ void init(){
 
 
 
-  gui << ui::Canvas3D({.handle="draw", .minSize={32, 24}})
-      << ( ui::VBox({.minSize={10, 1}, .maxSize={10, 100}})
-           << ui::Combo(comboList.str(), {.handle="cams", .label="cameras"})
-           << ui::CheckBox("background image", {.checked=true, .handle="grab", .hide=!pa("-i")})
+  gui << Canvas3D({.handle="draw", .minSize={32, 24}})
+      << ( VBox({.minSize={10, 1}, .maxSize={10, 100}})
+           << Combo(comboList.str(), {.handle="cams", .label="cameras"})
+           << CheckBox("background image", {.checked=true, .handle="grab", .hide=!pa("-i")})
            )
-      << ui::Show();
+      << Show();
 
 
   gui["cams"].registerCallback(change_camera);

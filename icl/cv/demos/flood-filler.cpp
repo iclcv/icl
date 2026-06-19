@@ -23,7 +23,7 @@ struct Mouse : public MouseHandler{
       this->pressed = true;
       this->pos = e.getPos();
     }
-  
+
     return MouseResult::Forward;
   }
 
@@ -70,19 +70,19 @@ void run(){
 void init(){
   GUI selector;
   if(pa("-gray")){
-    GUI x = Slider(0,255,255).handle("fill").label("fill");
+    GUI x = GUI(Slider(0,255,255,{.handle="fill",.label="fill"}).toComponent());
     selector = x;
   }else{
-    selector = ColorSelect(255,0,0).handle("fill").label("fill");
+    selector = GUI(ColorSelect(255,0,0,{.handle="fill",.label="fill"}).toComponent());
   }
 
-  gui << ui::Display({.handle="image", .minSize={16, 12}})
-      << ( ui::HBox({.maxSize={100, 3}})
-           << ui::Slider(0, 255, 10, {.handle="thresh", .label="threshold"})
+  gui << Display({.handle="image", .minSize={16, 12}})
+      << ( HBox({.maxSize={100, 3}})
+           << Slider(0, 255, 10, {.handle="thresh", .label="threshold"})
            << selector
-           << ui::Label(0, {.handle="dt", .label="dt"})
+           << Label(0, {.handle="dt", .label="dt"})
            )
-      << ui::Show();
+      << Show();
 
 
   grabber.init(pa("-i"));

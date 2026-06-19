@@ -251,9 +251,9 @@ namespace icl::markers {
       File cff(cf.filename);
       std::string tt = "full path: " + cf.filename;
       int initIdx = pa("-it");
-      d.objGUI << ( ui::HBox({.label=cff.getBaseName()+cff.getSuffix(), .minSize={1, 3}, .maxSize={100, 3}})
-                    << ui::CheckBox("enable", {.checked=true, .handle="enable-obj-"+str(c), .tooltip=tt})
-                    << ui::Combo(transformNameList.str() + (transformGiven?"":",id"), {.initialIndex=initIdx, .handle="transform-obj-"+str(c), .tooltip=tt})
+      d.objGUI << ( HBox({.label=cff.getBaseName()+cff.getSuffix(), .minSize={1, 3}, .maxSize={100, 3}})
+                    << CheckBox("enable", {.checked=true, .handle="enable-obj-"+str(c), .tooltip=tt})
+                    << Combo(transformNameList.str() + (transformGiven?"":",id"), {.initialIndex=initIdx, .handle="transform-obj-"+str(c), .tooltip=tt})
                     );
 
 #ifdef WIN32

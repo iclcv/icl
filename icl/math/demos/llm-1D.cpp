@@ -23,17 +23,17 @@ float func(float x){
 void init(){
   llm.setConfigurableID("llm");
 
-  gui << ui::Canvas({.handle="draw", .label="View", .minSize={40, 30}})
-      << ( ui::VBox({.minSize={15, 0}})
-           << ui::Button("Train Step", {.handle="train"})
-           << ui::ToggleButton("Train Off", "Train On", false, {.handle="train-loop"})
-           << ui::Label("NAN", {.handle="mse", .label="mse"})
-           << ui::Prop("llm")
-           << ui::Button("Show Kernels", {.handle="show-k"})
-           << ui::Button("Reset", {.handle="reset"})
-           << ui::Int(1, 1000, 10, {.handle="kernel-count", .label="Kernel Count"})
+  gui << Canvas({.handle="draw", .label="View", .minSize={40, 30}})
+      << ( VBox({.minSize={15, 0}})
+           << Button("Train Step", {.handle="train"})
+           << ToggleButton("Train Off", "Train On", false, {.handle="train-loop"})
+           << Label("NAN", {.handle="mse", .label="mse"})
+           << Prop("llm")
+           << Button("Show Kernels", {.handle="show-k"})
+           << Button("Reset", {.handle="reset"})
+           << Int(1, 1000, 10, {.handle="kernel-count", .label="Kernel Count"})
          )
-      << ui::Show();
+      << Show();
 
   llm.init(10, {Range<icl32f>(MINX,MAXX)}, {5});
 }

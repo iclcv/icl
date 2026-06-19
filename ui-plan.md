@@ -257,12 +257,33 @@ longer used anywhere outside framework internals).
 
 Still legacy (by scope): `qt/GUI.cpp` + `qt/Widget.cpp` framework internals.
 
-### Phase 7 — (optional, much later) String round-trip retirement
+### Phase 7 — String round-trip retirement + promotion — ✅ LANDED (Session 76)
 
-Not part of this plan.  Separate arc per TODO.md "Rework GUIComponent
-internal representation".  Once that lands, `ui::Xxx` becomes the
-storage type and `qt::Xxx` / `toString()` / `GUIDefinition` parsing
-fall away.
+Done in three sub-steps, build + 926/926 green at each:
+
+- **7A — kill the string round-trip.** `GUIDefinition` gained a ctor straight
+  from a `GUIComponent` (copies type / param-vector / handle / label / tooltip /
+  sizes — no grammar), and `GUI` nodes now carry a structured
+  `shared_ptr<GUIComponent>` (`getComponent()`); `create()` /
+  `to_string_recursive` use it when present, falling back to the string parse
+  only for legacy `GUI(string)` nodes. `operator<<(GUIComponent)` /
+  `operator<<(GUI&)` do the label→border wrap structurally
+  (`GUI::makeBorderComponent`). Removes the whole "metachar in a payload throws
+  a Syntax Error" bug class. Headless regression test `tests/test-gui-definition.cpp`.
+- **7C — retire legacy fluent usage.** The remaining framework-internal fluent
+  sites (`Quick.cpp`, `CamCfgWidget.cpp`, `ChromaGUI.cpp`) migrated to the
+  designated-init form via `scripts/ui-migrate.py`. The legacy `qt::Xxx`
+  GUIComponent factories moved to **`icl::qt::detail`** (still the wire-param
+  encoders the public components delegate to via `toComponent()`).
+- **7B — promote + strip.** The designated-init structs moved from `qt::ui::`
+  into `icl::qt`; the `ui::` qualifier was scripted-stripped across 116 files.
+  Name collision resolved: the old `qt::ToggleButton` *widget* (a QPushButton)
+  was renamed `qt::ToggleButtonWidget` (files `ToggleButtonWidget.{h,cpp}`) to
+  free the component name. A handful of non-`<<` fluent stragglers (ternaries /
+  `GUI x = Component(...).handle(...)` assignments) hand-fixed to
+  `Component(..., {...}).toComponent()`.
+
+See memory `project_ui_namespace_endgame` (now marked complete).
 
 ## Open questions deferred
 
@@ -290,5 +311,6 @@ fall away.
 - [x] Phase 6 — full scripted migration of all apps/demos/examples (Session 68;
       ToggleButton + positional-primary-arg refinements; only GUI.cpp/Widget.cpp
       internals remain on legacy; manual GUI chapter still TODO)
-- [ ] Phase 7 — (separate arc) string round-trip retirement → then promote
-      `ui::Xxx` into `icl::qt` + strip the qualifier (`project_ui_namespace_endgame`)
+- [x] Phase 7 — string round-trip retirement (7A) + legacy retirement to
+      `detail::` (7C) + promote `ui::Xxx` into `icl::qt` & strip the qualifier
+      (7B). Session 76; build + 926/926 green (`project_ui_namespace_endgame`).

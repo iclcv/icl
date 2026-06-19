@@ -2,27 +2,43 @@
 
 ## Next Step
 
-**Phase 3b — paper — is LANDED and polished** (Sessions 74–75). `PhysicsPaper3` is
-transplanted into physics2 as a **`PaperDriver`** (SoftRigid) + composable
-**`FoldDriver`/`PaperMoverDriver`** on one `MeshNode`, dispatched by a
-`PaperMouseHandler`, with a **`physics2-paper`** demo. Session 75 added: a
-**screen-line fold** that works anywhere (cut plane = eye + press/release rays →
-`PaperDriver::projectScreenLine`), **creases as geometry primitives** (`PaperDriver::Crease`,
-the rasterized `FoldMap` is retired) with **purely-geometric bending reduction**
-(`segments_cross`, creases extended past the edges to avoid edge tunneling), debug
-overlays (`getDebugGeometry`: faces / 1st / 2nd / creases with crease-reduced links
-hidden), and a **2D "pseudo paper" Canvas** drawing creases in A4-portrait paper space.
+**ui-plan Phase 7 — the GUI string round-trip — is RETIRED** (Session 76, see recap
+below). The metachar-crash bug class is gone, the legacy fluent builders moved to
+`icl::qt::detail`, and the designated-init components were promoted out of `qt::ui::`
+into `icl::qt` with the `ui::` qualifier stripped codebase-wide. Build + 926/926 green.
 
-What's left of paper is **M3 polish (best on a real display):** front/back **texture
-rendering** (needs geom2 MeshNode texcoord/texture support — check first) and **hover +
-context-menu fold editing** (`adaptFoldStiffness` now edits the `Crease` primitive but is
-still UI-unexercised). All physics/composition is headless-tested (919/919).
+**Pick the next thread:** with the 🔴 GUI-string urgency cleared, the open fronts are the
+**physics-geom2** arcs — **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`),
+the **defaults policy → material database**, the **multi-world** experiment (paper
+SoftRigid + cloth Deformable in one `Scene2`), then Phase 6 / Phase 4b. Paper M3 polish +
+fold/crease bending regen stay **deferred** (box below). Full plan:
+`physics-geom2-redesign-plan.md`.
 
-After paper polish: **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`), the
-**defaults policy → material database** (now that node-mass stiffness derivation is
-half-built), Phase 4b raycast vehicle, then Phase 6. Also a natural next experiment:
-the **multi-world** story (paper SoftRigid + cloth Deformable → one `Scene2`) — the
-drivers are ready, only `PhysicsScene` owning a *list* of worlds is missing.
+### ⏸️ DEFERRED — paper M3 polish + fold/crease bending regeneration
+
+Pushed for possible future continuation. **Working assumption (user, Session 76):** we'll
+likely develop a *new* physics paper on top of the **new deformable (btDeformable) stack**
+rather than extend the current SoftRigid `PaperDriver` — in which case the items below are
+superseded and shouldn't be invested in against the SoftRigid implementation. Revisit only
+if we decide to keep evolving the SoftRigid paper.
+
+- **M3 polish (best on a real display):** front/back **texture rendering** (needs geom2
+  MeshNode texcoord/texture support — check first) and **hover + context-menu fold editing**
+  (`adaptFoldStiffness` now edits the `Crease` primitive but is still UI-unexercised).
+- **Fold/crease bending-constraint regeneration** (the 🔧 TODO that was here): after a
+  screen-line fold the crease topology updates but the 2nd-order (bending) constraints are
+  not reconciled — remove links crossing the crease, add constraints for inserted nodes, or
+  (easiest) re-create ALL bending constraints from scratch with the crease-map taken into
+  account, using **flat paper-space rest lengths** not deformed 3D distances. See memory
+  `project_paper_fold_bending`.
+
+All physics/composition is headless-tested (919/919).
+
+After Phase 7 + (if pursued) paper: **DefaultScene step 2** (Landscape/Room + retire
+`DemoScene2`), the **defaults policy → material database** (now that node-mass stiffness
+derivation is half-built), Phase 4b raycast vehicle, then Phase 6. Also a natural next
+experiment: the **multi-world** story (paper SoftRigid + cloth Deformable → one `Scene2`) —
+the drivers are ready, only `PhysicsScene` owning a *list* of worlds is missing.
 **Full plan + phase status: `physics-geom2-redesign-plan.md`.**
 
 **Phase 6 is now nuanced:** we can NOT delete `btSoftRigidDynamicsWorld` — paper needs
@@ -30,38 +46,40 @@ it as a mode. Phase 6 = retire the dead `geom::Scene` physics path + the old
 `PhysicsScene`/`PhysicsObject` inheritance, while KEEPING the legacy solver behind the
 flag.
 
-### 🔧 TODO — fold/crease bending-constraint regeneration (next paper step)
+## Session 76 recap (ui-plan Phase 7 — GUI string round-trip retired + ui::→qt:: promotion) — uncommitted
 
-After the screen-line fold landed (cut plane = eye + press/release rays → split
-every crossed face; `PaperDriver::projectScreenLine` + categorized
-`getDebugGeometry` overlay), the crease topology is updated but the **bending
-(2nd-order) constraints are not reconciled with the new crease**. Needed:
-- **Remove** every bending constraint that *crosses* the crease line (later: maybe
-  only weaken them extremely instead of deleting).
-- **Add** constraints for the **extra nodes** inserted along the crease.
-- **Easiest path:** record the crease into the **fold/crease-map**, then
-  **re-create ALL bending constraints from scratch** with the crease-map taken
-  into account (skip/soften links spanning a crease).
-- **IMPORTANT:** resting lengths must use the **flat paper-space distances** (the
-  as-if-unfolded `texCoords` metric), NOT the current deformed 3D distances — so
-  the sheet relaxes back to flat-between-creases, not to its folded shape.
+Full Phase 7 landed in one session (A→C→B), build + **926/926** green at each step
+(919 prior + 7 new GUI tests). Branch `further-restructuring-and-cleanup`, **not yet
+committed.** Memory `project_ui_namespace_endgame` + `ui-plan.md` Phase 7 marked done.
 
----
+- **7A — killed the string round-trip (the bug fix).** Every component used to serialize
+  to a `GUIDefinition` string (`label(TEXT)[@handle=..]`) that `GUI.cpp` re-parsed, so any
+  free-text payload with `, ( ) @ =` threw `"Syntax Error … Widget could not be created"`
+  at runtime (the `encode_pointer` hex fix was a point-patch of the same class). Now:
+  `GUIDefinition` has a ctor straight from a `GUIComponent` (copies type / param-vector /
+  handle / label / tooltip / sizes — no grammar); `GUI` carries a structured
+  `shared_ptr<GUIComponent>` (`getComponent()`); `create()` + `to_string_recursive` use it,
+  the `GUIDefinition(string)` parse path survives only for explicit legacy `GUI(string)`
+  nodes. `operator<<(GUIComponent)` / `operator<<(GUI&)` do the label→border wrap
+  structurally (`GUI::makeBorderComponent`, mirroring the old +1-cell border-size quirk).
+  Headless regression test `tests/test-gui-definition.cpp` (metachar payloads + label-wrap
+  via `createXMLDescription`, no QApplication/GL).
+- **7C — retired legacy fluent usage.** The old `qt::Xxx` GUIComponent factories
+  (`GUIComponents.h`, `ContainerGUIComponents.h`) moved to **`icl::qt::detail`** (still the
+  wire-param encoders the public components delegate to via `toComponent()`). The last
+  framework-internal fluent sites (`Quick.cpp`, `CamCfgWidget.cpp`, `ChromaGUI.cpp`)
+  migrated via `scripts/ui-migrate.py`.
+- **7B — promoted + stripped.** The designated-init structs moved `qt::ui::`→`icl::qt`;
+  the `ui::` qualifier was scripted-stripped across **116 files**. Call sites now write
+  plain `Slider(0,255,42,{.handle="x"})`. Name collision: the old `qt::ToggleButton`
+  *widget* (a QPushButton) was renamed **`qt::ToggleButtonWidget`** (files
+  `ToggleButtonWidget.{h,cpp}`) to free the component name. Non-`<<` fluent stragglers the
+  chain-only script skipped (ternaries, `GUI x = Component(...).handle(...)` in
+  flood-filler / depth-camera-simulator) hand-fixed to `Component(..., {...}).toComponent()`.
 
-## 🔴 URGENT TODO — retire the GUI-definition STRING layer (ui-plan Phase 7)
-
-Recurring, nasty class of bug: every `ui::Xxx` GUI component still **serializes to a
-stringly-typed `GUIDefinition`** (`label(TEXT)[@handle=..@maxsize=..]`) that `GUI.cpp`
-re-parses. Any payload containing the grammar's metacharacters — `,` `(` `)` `@` `=` —
-throws `"Syntax Error … Widget could not be created"` at *runtime* (e.g. a `ui::Label`
-with commas/parentheses). We already hit the cousin bug in `qt::encode_pointer`
-(ASLR-random pointer bytes colliding with the grammar; fixed by hex-encoding). The ui::
-rework (Phases 1–6, `ui-plan.md`) added the typed C++ wrappers but **did NOT** remove
-the string round-trip — that's **Phase 7** (promote `ui::Xxx` to the storage type,
-build widgets directly from typed options, retire `toString()` / `GUIDefinition`
-parsing). Until then: set such text via the **handle** at runtime (e.g.
-`gui["help"] = std::string(...)`), which bypasses the parser. See memory
-`project_ui_namespace_endgame`. **This should jump the queue — it bites repeatedly.**
+Deferred polish (non-blocking): retire the now-rarely-reached `operator<<(const string&)` +
+`GUIDefinition(string)` parse path once no `GUI(string)` caller remains; fold `ui.h` into
+`GUIComponents.h`; refresh old fluent snippets in `\code` doc-comments.
 
 ---
 

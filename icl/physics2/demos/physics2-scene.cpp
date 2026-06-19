@@ -60,7 +60,7 @@ void init() {
 
   scene.start(120);   // physics on its own thread at 120 Hz
 
-  gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
+  gui << Canvas3D({.handle="draw"}) << Show();
   gui["draw"].link(scene.getGLCallback(0).get());
   // Shift+Left-drag grabs and drags dynamic bodies; otherwise camera nav.
   static PhysicsMouseHandler handler(0, &scene.scene(), &scene.world());

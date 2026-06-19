@@ -9,16 +9,16 @@ ImageSource grabber;
 
 void init(){
 
-  gui << ui::Display({.handle="image"})
-      << ui::Combo("Gray,RGB,HLS,YUV,LAB,Chroma,Matrix", {.handle="fmt", .maxSize={100, 3}})
-      << ui::Show();
+  gui << Display({.handle="image"})
+      << Combo("Gray,RGB,HLS,YUV,LAB,Chroma,Matrix", {.handle="fmt", .maxSize={100, 3}})
+      << Show();
 
   grabber.init(pa("-i"));
 
 }
 
 void run(){
-  Image image = grabber.grab();  
+  Image image = grabber.grab();
   gui["image"] = cc(image, gui["fmt"]);
 }
 

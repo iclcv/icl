@@ -86,7 +86,7 @@ void init(){
     scene.getCamera(0).setResolution(pa("-r"));
   }
 
-  gui << ui::Canvas3D(scene.getCamera(0).getResolution(), {.handle="draw", .minSize={20, 15}}) << ui::Show();
+  gui << Canvas3D(scene.getCamera(0).getResolution(), {.handle="draw", .minSize={20, 15}}) << Show();
 
   scene.getLight(0).setAmbientEnabled(true);
   scene.getLight(0).setAmbient(GeomColor(255,255,255,150));

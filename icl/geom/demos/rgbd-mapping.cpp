@@ -41,18 +41,18 @@ void init(){
     grabber->setUseCL(false);
   }
 
-  gui << ( ui::VBox()
-           << ui::Display({.handle="color", .label="color image"})
-           << ui::Display({.handle="depth", .label="depth image"})
+  gui << ( VBox()
+           << Display({.handle="color", .label="color image"})
+           << Display({.handle="depth", .label="depth image"})
            )
-      <<( ui::VBox()
-          << ui::Canvas3D({.handle="overlay", .label="mapped color image overlay"})
-          << ui::Canvas3D({.handle="scene", .label="interactive scene"})
+      <<( VBox()
+          << Canvas3D({.handle="overlay", .label="mapped color image overlay"})
+          << Canvas3D({.handle="scene", .label="interactive scene"})
           )
-      <<( ui::VBox()
-          << ui::CheckBox("show overlay", {.checked=true, .handle="showOverlay"})
+      <<( VBox()
+          << CheckBox("show overlay", {.checked=true, .handle="showOverlay"})
           )
-      << ui::Show();
+      << Show();
 
 
   // kinect camera

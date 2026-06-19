@@ -19,7 +19,7 @@ float error_function(const Pos &p){
 }
 
 void init(){
-  gui << ui::Canvas3D({.handle="draw", .minSize={20, 20}}) << ui::Show();
+  gui << Canvas3D({.handle="draw", .minSize={20, 20}}) << Show();
   Camera cam;
   cam.setPosition(Vec(-611.637,-332.427,-814.748,1));
   cam.setNorm(Vec(0.331055,0.486567,0.808489,1));

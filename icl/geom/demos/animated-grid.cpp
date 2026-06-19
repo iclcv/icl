@@ -102,11 +102,11 @@ void init(){
   if(pa("-b")){
     backFaceGrabber.init(pa("-b"));
   }
-  gui << ui::Canvas3D({.handle="draw", .label="interaction area", .minSize={20, 15}})
-      << ui::Display({.handle="offscreen0", .label="offscreen rendered cam 0"})
-      << ui::Display({.handle="offscreen1", .label="offscreen rendered cam 1"})
-      << ui::FSlider(0, 1, 0.2, {.vertical=true, .handle="freq", .label="frequence"})
-      << ui::Show();
+  gui << Canvas3D({.handle="draw", .label="interaction area", .minSize={20, 15}})
+      << Display({.handle="offscreen0", .label="offscreen rendered cam 0"})
+      << Display({.handle="offscreen1", .label="offscreen rendered cam 1"})
+      << FSlider(0, 1, 0.2, {.vertical=true, .handle="freq", .label="frequence"})
+      << Show();
 
   grabber.grab();
   grabber.grab();

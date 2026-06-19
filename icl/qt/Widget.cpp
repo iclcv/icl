@@ -1252,39 +1252,39 @@ namespace icl::qt {
     data->channelUpdateAuto = []{ return false; };
 
     // OK, we need to extract default values for all gui elements if gui is already defined!
-    data->menu = ui::Tab("bci,scale,channel,capture,grid,info,license,help", widget, {.handle="root", .minSize={5,7}});
+    data->menu = Tab("bci,scale,channel,capture,grid,info,license,help", widget, {.handle="root", .minSize={5,7}});
 
     VBox bciGUI;
 
     std::string bcis[3]={"custom,","off,","auto"};
     bcis[(static_cast<int>(data->rm))-1] = str("!")+bcis[(static_cast<int>(data->rm))-1];
-    bciGUI << ( ui::HBox()
-                << ui::Combo(bcis[0]+bcis[1]+bcis[2], {.handle="bci-mode", .label="bci-mode"})
-                << ui::ToggleButton("manual", "auto", bciAuto, {.handle="bci-update-mode", .label="update mode"})
+    bciGUI << ( HBox()
+                << Combo(bcis[0]+bcis[1]+bcis[2], {.handle="bci-mode", .label="bci-mode"})
+                << ToggleButton("manual", "auto", bciAuto, {.handle="bci-update-mode", .label="update mode"})
               )
-           << ui::Slider(-255, 255, data->bci[0], {.handle="brightness", .label="brightness"})
-           << ui::Slider(-255, 255, data->bci[1], {.handle="contrast", .label="contrast"})
-           << ui::Slider(-255, 255, data->bci[2], {.handle="intensity", .label="intensity"});
+           << Slider(-255, 255, data->bci[0], {.handle="brightness", .label="brightness"})
+           << Slider(-255, 255, data->bci[1], {.handle="contrast", .label="contrast"})
+           << Slider(-255, 255, data->bci[2], {.handle="intensity", .label="intensity"});
 
     VBox scaleGUI;
 
     std::string em[4]={"no scale,","hold aspect ratio,","force fit,","zoom"};
     em[data->fm] = str("!")+em[data->fm];
 
-    scaleGUI << ui::Combo(em[0]+em[1]+em[2]+em[3], {.handle="fit-mode", .label="scale mode", .maxSize={100, 2}})
-             << ui::HBox({.handle="scale-widget", .minSize={4, 3}});
+    scaleGUI << Combo(em[0]+em[1]+em[2]+em[3], {.handle="fit-mode", .label="scale mode", .maxSize={100, 2}})
+             << HBox({.handle="scale-widget", .minSize={4, 3}});
 
     VBox channelGUI;
-    channelGUI << ui::Combo("all,channel #0,channel #1,channel #2,channel #3", {.handle="channel", .label="visualized channel", .maxSize={100, 2}})
-               << ui::ToggleButton("manual", "auto", false, {.handle="channel-update-mode", .label="update mode", .maxSize={100, 2}});
+    channelGUI << Combo("all,channel #0,channel #1,channel #2,channel #3", {.handle="channel", .label="visualized channel", .maxSize={100, 2}})
+               << ToggleButton("manual", "auto", false, {.handle="channel-update-mode", .label="update mode", .maxSize={100, 2}});
 
     VBox captureGUI;
-    captureGUI << ( ui::HBox()
-                    << ( ui::HBox({.label="single shot"})
-                         << ui::Button("image", {.handle="cap-image"})
-                         << ui::Button("frame buffer", {.handle="cap-fb"})
+    captureGUI << ( HBox()
+                    << ( HBox({.label="single shot"})
+                         << Button("image", {.handle="cap-image"})
+                         << Button("frame buffer", {.handle="cap-fb"})
                         )
-                    << ui::Combo("image.pnm,image_TIME.pnm,ask me", {.handle="cap-filename", .label="filename"})
+                    << Combo("image.pnm,image_TIME.pnm,ask me", {.handle="cap-filename", .label="filename"})
                    );
 
 
@@ -1307,25 +1307,25 @@ namespace icl::qt {
 
     //VBox autoCapGUI;
     //    autoCapGUI.label("automatic");
-    GUI autoCapGUI = ui::VBox({.label="automatic"});
+    GUI autoCapGUI = VBox({.label="automatic"});
 
     static const std::string sizes="160x120,320x240,!640x480,800x600,1024x768,1200x800,1600x1200,1280x720,1920x1080";
-    autoCapGUI << ( ui::HBox()
-                    << ui::Combo("image,frame buffer", {.initialIndex=!!autoCapFB, .handle="auto-cap-mode", .label="mode"})
-                    << ui::Spinner(0, 100, autoCapFS, {.handle="auto-cap-frameskip", .label="frame skip"})
-                    << ui::Combo(FILE+","+VIDEO+","+XCFP+","+WS, {.handle="auto-cap-device", .label="dest."})
-                    << ui::String(autoCapFP, {.maxLen=200, .handle="auto-cap-filepattern", .label="output params"})
+    autoCapGUI << ( HBox()
+                    << Combo("image,frame buffer", {.initialIndex=!!autoCapFB, .handle="auto-cap-mode", .label="mode"})
+                    << Spinner(0, 100, autoCapFS, {.handle="auto-cap-frameskip", .label="frame skip"})
+                    << Combo(FILE+","+VIDEO+","+XCFP+","+WS, {.handle="auto-cap-device", .label="dest."})
+                    << String(autoCapFP, {.maxLen=200, .handle="auto-cap-filepattern", .label="output params"})
                   )
-               << ( ui::HBox()
-                    << ui::CheckBox("force params", {.handle="auto-cap-force"})
-                    << ui::Combo(sizes, {.handle="auto-cap-size", .label="size"})
-                    << ui::Combo("gray,!rgb,hls,yuv,lab", {.handle="auto-cap-format", .label="color"})
-                    << ui::Combo("depth8u,depth16s,depth32s,depth32f,depth64f", {.handle="auto-cap-depth", .label="depth"})
+               << ( HBox()
+                    << CheckBox("force params", {.handle="auto-cap-force"})
+                    << Combo(sizes, {.handle="auto-cap-size", .label="size"})
+                    << Combo("gray,!rgb,hls,yuv,lab", {.handle="auto-cap-format", .label="color"})
+                    << Combo("depth8u,depth16s,depth32s,depth32f,depth64f", {.handle="auto-cap-depth", .label="depth"})
                   )
-               << ( ui::HBox()
-                    << ui::ToggleButton("record", "record", autoCapRec, {.handle="auto-cap-record"})
-                    << ui::ToggleButton("pause", "pause", !!autoCapPau, {.handle="auto-cap-pause"})
-                    << ui::Button("stop", {.handle="auto-cap-stop"})
+               << ( HBox()
+                    << ToggleButton("record", "record", autoCapRec, {.handle="auto-cap-record"})
+                    << ToggleButton("pause", "pause", !!autoCapPau, {.handle="auto-cap-pause"})
+                    << Button("stop", {.handle="auto-cap-stop"})
                   );
 
     captureGUI << autoCapGUI;
@@ -1333,35 +1333,35 @@ namespace icl::qt {
 
     VBox extraGUI;
 
-    extraGUI << ( ui::HBox({.label="background color"})
-                  << ui::Button("select color", {.handle="select-bg-color"})
-                  << ui::Button("black", {.handle="bg-black"})
-                  << ui::Button("white", {.handle="bg-white"})
-                  << ui::Button("gray", {.handle="bg-gray"}) )
-             << ( ui::HBox()
-                  << ui::ToggleButton("off", "on", false, {.handle="grid-on", .label="show grid"})
-                  << ui::Slider(0, 255, 100, {.handle="grid-alpha", .label="grid alpha"}) )
-             << ( ui::HBox({.label="grid color"})
-                  << ui::Button("select color", {.handle="select-grid-color"})
-                  << ui::Button("black", {.handle="grid-black"})
-                  << ui::Button("white", {.handle="grid-white"})
-                  << ui::Button("gray", {.handle="grid-gray"}) );
+    extraGUI << ( HBox({.label="background color"})
+                  << Button("select color", {.handle="select-bg-color"})
+                  << Button("black", {.handle="bg-black"})
+                  << Button("white", {.handle="bg-white"})
+                  << Button("gray", {.handle="bg-gray"}) )
+             << ( HBox()
+                  << ToggleButton("off", "on", false, {.handle="grid-on", .label="show grid"})
+                  << Slider(0, 255, 100, {.handle="grid-alpha", .label="grid alpha"}) )
+             << ( HBox({.label="grid color"})
+                  << Button("select color", {.handle="select-grid-color"})
+                  << Button("black", {.handle="grid-black"})
+                  << Button("white", {.handle="grid-white"})
+                  << Button("gray", {.handle="grid-gray"}) );
 
 
-    ContainerGUIComponent infoGUI = ui::VSplit({.handle="info-tab"});
-    infoGUI << ( ui::HBox()
-                 << ui::Spinner(-1, 100, -1, {.handle="histo-channel", .label="select channel", .tooltip="pick a single channel,\nchoose -1 for all"})
-                 << ui::CheckBox("median", {.handle="median-on"})
-                 << ui::CheckBox("log", {.handle="log-on"})
-                 << ui::CheckBox("blur", {.handle="blur-on"})
+    ContainerGUIComponent infoGUI = VSplit({.handle="info-tab"});
+    infoGUI << ( HBox()
+                 << Spinner(-1, 100, -1, {.handle="histo-channel", .label="select channel", .tooltip="pick a single channel,\nchoose -1 for all"})
+                 << CheckBox("median", {.handle="median-on"})
+                 << CheckBox("log", {.handle="log-on"})
+                 << CheckBox("blur", {.handle="blur-on"})
                )
-            <<  ( ui::HSplit()
-                  << ui::HBox({.handle="histo-box", .label="histogramm", .minSize={12, 10}})
-                  << ui::Label({.handle="image-info-label", .label="params"})
+            <<  ( HSplit()
+                  << HBox({.handle="histo-box", .label="histogramm", .minSize={12, 10}})
+                  << Label({.handle="image-info-label", .label="params"})
                 );
 
-    ContainerGUIComponent licGUI = ui::VBox({.handle="lic"});
-    ContainerGUIComponent helpGUI = ui::VBox({.handle="help"});
+    ContainerGUIComponent licGUI = VBox({.handle="lic"});
+    ContainerGUIComponent helpGUI = VBox({.handle="help"});
 
     data->menu << bciGUI << scaleGUI << channelGUI << captureGUI << extraGUI << infoGUI << licGUI << helpGUI;
 

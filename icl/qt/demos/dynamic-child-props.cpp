@@ -59,7 +59,7 @@ struct Host : public Configurable{
 } host;
 
 void init(){
-  gui << ui::Prop("host", {.label="Host (live child set)"}) << ui::Show();
+  gui << Prop("host", {.label="Host (live child set)"}) << Show();
 }
 
 int main(int n, char **ppc){

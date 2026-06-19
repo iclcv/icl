@@ -51,15 +51,15 @@ Rect detectFace(Img8u *image)
 
 void init(){
   bool gl = pa("-gl");
-  gui << ui::Display({.handle="image", .minSize={16, 12}})
-      << ( ui::HBox({.maxSize={100, 2}})
-           << ui::Fps(10, {.handle="fps", .minSize={5, 2}, .maxSize={100, 2}})
+  gui << Display({.handle="image", .minSize={16, 12}})
+      << ( HBox({.maxSize={100, 2}})
+           << Fps(10, {.handle="fps", .minSize={5, 2}, .maxSize={100, 2}})
           )
 
-      << (ui::HBox()
-          << ui::Plot({.minX=0, .maxX=pa("-historydepth").as<float>(), .minY=0, .maxY=1, .openGL=gl, .handle="plot1", .minSize={15,12}})
+      << (HBox()
+          << Plot({.minX=0, .maxX=pa("-historydepth").as<float>(), .minY=0, .maxY=1, .openGL=gl, .handle="plot1", .minSize={15,12}})
           )
-      << ui::Show();
+      << Show();
 
   grabber.init(pa("-i"));
   detector = new icl::cv::HeartrateDetector(pa("-maxfps"), pa("-historydepth"));

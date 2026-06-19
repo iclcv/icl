@@ -123,40 +123,40 @@ void init(){
     scene.setDrawCamerasEnabled(false);
   }
 
-  gui << ui::Canvas3D(Size::VGA, {.handle="draw", .minSize={32, 24}})
-      << (ui::VBox({.minSize={12, 1}, .maxSize={12, 100}})
-          << ( ui::HBox()
-               << ui::Fps(10, {.handle="fps"})
-               << ui::Button("add clutter", {.handle="add"})
+  gui << Canvas3D(Size::VGA, {.handle="draw", .minSize={32, 24}})
+      << (VBox({.minSize={12, 1}, .maxSize={12, 100}})
+          << ( HBox()
+               << Fps(10, {.handle="fps"})
+               << Button("add clutter", {.handle="add"})
                )
-          << ( ui::HBox()
-               << ui::ToggleButton("stopped", "running", true, {.handle="run"})
-               << ui::Button("paper ...", {.handle="props"})
+          << ( HBox()
+               << ToggleButton("stopped", "running", true, {.handle="run"})
+               << Button("paper ...", {.handle="props"})
                )
-          << ( ui::HBox()
-               << ui::CheckBox("show cubes", {.handle="showCubes"})
-               << ui::CheckBox("show texture", {.checked=false, .handle="showTexture"})
-               << ui::CheckBox("show links", {.checked=false, .handle="showLinks"})
+          << ( HBox()
+               << CheckBox("show cubes", {.handle="showCubes"})
+               << CheckBox("show texture", {.checked=false, .handle="showTexture"})
+               << CheckBox("show links", {.checked=false, .handle="showLinks"})
              )
-          << ui::FSlider(0, 1, 0.5, {.handle="vertexMoveFactor", .label="manual force"})
-          << ui::FSlider(1, 100, 10, {.handle="attractorStreangth", .label="attractor force"})
-          << ui::FSlider(0.0001, 0.9999, 0.9, {.handle="globalStiffness", .label="global paper stiffness"})
-          << ( ui::HBox()
-               << ui::Button("reset paper", {.handle="resetPaper"})
-               << ui::Combo("1,5,10,25,!200,300,500", {.handle="maxFPS", .label="max FPS"})
+          << FSlider(0, 1, 0.5, {.handle="vertexMoveFactor", .label="manual force"})
+          << FSlider(1, 100, 10, {.handle="attractorStreangth", .label="attractor force"})
+          << FSlider(0.0001, 0.9999, 0.9, {.handle="globalStiffness", .label="global paper stiffness"})
+          << ( HBox()
+               << Button("reset paper", {.handle="resetPaper"})
+               << Combo("1,5,10,25,!200,300,500", {.handle="maxFPS", .label="max FPS"})
                )
-          << ui::FSlider(0.1, 20, 2, {.handle="cm", .label="collision margin"})
+          << FSlider(0.1, 20, 2, {.handle="cm", .label="collision margin"})
 
-          << ( ui::HBox()
-               << ui::Button("memorize", {.handle="mem"})
-               << ui::CheckBox("soften with mouse", {.checked=true, .handle="soften"})
-               << ui::Button("test", {.handle="pct"})
+          << ( HBox()
+               << Button("memorize", {.handle="mem"})
+               << CheckBox("soften with mouse", {.checked=true, .handle="soften"})
+               << Button("test", {.handle="pct"})
              )
           )
 
-      << ui::Show();
+      << Show();
 
-  propGUI << ui::Prop("paper", {.minSize={16, 1}, .maxSize={16, 100}}) << ui::Create();
+  propGUI << Prop("paper", {.minSize={16, 1}, .maxSize={16, 100}}) << Create();
 
   gui["pct"].registerCallback(paper_coords_test);
   gui["props"].registerCallback([]{ propGUI.switchVisibility(); });

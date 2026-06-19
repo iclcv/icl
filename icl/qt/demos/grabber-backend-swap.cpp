@@ -40,15 +40,15 @@ void swapBackend(const std::string &type, const std::string &id){
 void init(){
   swapBackend("create", "lena");
 
-  gui << ( ui::VBox({.maxSize={15, 99}})
-           << ui::Button("create lena", {.handle="lena"})
-           << ui::Button("create parrot", {.handle="parrot"})
-           << ui::Button("create cameraman", {.handle="cameraman"})
-           << ui::Button("demo", {.handle="demo"})
+  gui << ( VBox({.maxSize={15, 99}})
+           << Button("create lena", {.handle="lena"})
+           << Button("create parrot", {.handle="parrot"})
+           << Button("create cameraman", {.handle="cameraman"})
+           << Button("demo", {.handle="demo"})
          )
-      << ui::Prop(&grabber, {.label="grabber", .minSize={24, 20}})
-      << ui::Display({.handle="img", .label="frame", .minSize={16, 12}})
-      << ui::Show();
+      << Prop(&grabber, {.label="grabber", .minSize={24, 20}})
+      << Display({.handle="img", .label="frame", .minSize={16, 12}})
+      << Show();
 }
 
 void run(){

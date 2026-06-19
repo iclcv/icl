@@ -39,7 +39,7 @@ struct AdaptedSceneMouseHandler : public MouseHandler{
   MouseResult process(const MouseEvent &e){
     std::scoped_lock l(mutex);
       h->process(e);
-  
+
     return MouseResult::Forward;
   }
 
@@ -85,25 +85,25 @@ void init(){
 
   GUI controls = HBox().minSize(12,12);
 
-  controls << ( ui::VBox()
-                << ui::Button("reset view", {.handle="resetView"})
-                << ui::Fps(10, {.handle="fps"})
-                << ui::Prop("segmentation", {.minSize={10, 8}})
+  controls << ( VBox()
+                << Button("reset view", {.handle="resetView"})
+                << Fps(10, {.handle="fps"})
+                << Prop("segmentation", {.minSize={10, 8}})
               );
 
-  gui << ( ui::VBox()
-           << ui::Canvas3D({.handle="hdepth", .minSize={10, 8}})
-           << ui::Canvas3D({.handle="hcolor", .minSize={10, 8}})
+  gui << ( VBox()
+           << Canvas3D({.handle="hdepth", .minSize={10, 8}})
+           << Canvas3D({.handle="hcolor", .minSize={10, 8}})
          )
-      << ( ui::VBox()
-           << ui::Canvas3D({.handle="hedge", .minSize={10, 8}})
-           << ui::Canvas3D({.handle="hnormal", .minSize={10, 8}})
+      << ( VBox()
+           << Canvas3D({.handle="hedge", .minSize={10, 8}})
+           << Canvas3D({.handle="hnormal", .minSize={10, 8}})
          )
-      << ( ui::HSplit()
-           << ui::Canvas3D({.handle="draw3D", .minSize={40, 30}})
+      << ( HSplit()
+           << Canvas3D({.handle="draw3D", .minSize={40, 30}})
            << controls
          )
-      << ui::Show();
+      << Show();
 
   // kinect camera
   scene.addCamera(depthCam);

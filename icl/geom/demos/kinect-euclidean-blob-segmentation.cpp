@@ -55,7 +55,7 @@ struct AdaptedSceneMouseHandler : public MouseHandler{
   MouseResult process(const MouseEvent &e){
     std::scoped_lock l(mutex);
       h->process(e);
-  
+
     return MouseResult::Forward;
   }
 
@@ -130,65 +130,65 @@ void init(){
   GUI controlsTabs = HBox().minSize(12,12);
 
   controlsGeneral
-           << ( ui::VBox()
-           << ui::Button("reset view", {.handle="resetView"})
-           << ui::Fps(10, {.handle="fps"})
-           << ui::FSlider(0.9, 1.1, 1.0, {.handle="depthScaling", .label="depth scaling"})
-           << ui::CamCfg()
-           << ui::CheckBox("enable Segmentation", {.checked=true, .handle="enableSegmentation"})
-           << ui::CheckBox("stabelize Segmentation", {.checked=true, .handle="stabelize"})
+           << ( VBox()
+           << Button("reset view", {.handle="resetView"})
+           << Fps(10, {.handle="fps"})
+           << FSlider(0.9, 1.1, 1.0, {.handle="depthScaling", .label="depth scaling"})
+           << CamCfg()
+           << CheckBox("enable Segmentation", {.checked=true, .handle="enableSegmentation"})
+           << CheckBox("stabelize Segmentation", {.checked=true, .handle="stabelize"})
           );
 
   controlsLowLevel
-           << ( ui::VBox()
-           << ui::FSlider(0.7, 1.0, 0.89, {.handle="threshold", .label="threshold"})
-           << ui::ButtonGroup("unfiltered,median3x3,median5x5", {.handle="usedFilter", .label="used filter"})
-           << ui::Slider(1, 15, 1, {.handle="normalrange", .label="normal range"})
-           << ui::ToggleButton("disable averaging", "enable averaging", false, {.handle="disableAveraging"})
-           << ui::ButtonGroup("linear,gauss", {.handle="usedSmoothing", .label="used smoothing"})
-           << ui::Slider(1, 15, 2, {.handle="avgrange", .label="averaging range"})
-           << ui::ButtonGroup("max,mean", {.handle="usedAngle", .label="used angle"})
-           << ui::Slider(1, 15, 1, {.handle="neighbrange", .label="neighborhood range"})
-           << ui::ToggleButton("enable temp. smoothing", "disable temp. smoothing", true, {.handle="enableSmoothing"})
-           << ui::Slider(1, 15, 6, {.handle="filterSize", .label="filterSize", .maxSize={100, 2}})
-           << ui::Slider(1, 22, 10, {.handle="difference", .label="difference", .maxSize={100, 2}})
+           << ( VBox()
+           << FSlider(0.7, 1.0, 0.89, {.handle="threshold", .label="threshold"})
+           << ButtonGroup("unfiltered,median3x3,median5x5", {.handle="usedFilter", .label="used filter"})
+           << Slider(1, 15, 1, {.handle="normalrange", .label="normal range"})
+           << ToggleButton("disable averaging", "enable averaging", false, {.handle="disableAveraging"})
+           << ButtonGroup("linear,gauss", {.handle="usedSmoothing", .label="used smoothing"})
+           << Slider(1, 15, 2, {.handle="avgrange", .label="averaging range"})
+           << ButtonGroup("max,mean", {.handle="usedAngle", .label="used angle"})
+           << Slider(1, 15, 1, {.handle="neighbrange", .label="neighborhood range"})
+           << ToggleButton("enable temp. smoothing", "disable temp. smoothing", true, {.handle="enableSmoothing"})
+           << Slider(1, 15, 6, {.handle="filterSize", .label="filterSize", .maxSize={100, 2}})
+           << Slider(1, 22, 10, {.handle="difference", .label="difference", .maxSize={100, 2}})
           );
 
   controlsHighLevel
-           << ( ui::VBox()
-           << ui::Slider(0, 100, 25, {.handle="minClusterSize", .label="min Cluster Size"})
-           << ui::ToggleButton("ROI", "FULL", false, {.handle="useROI"})
-           << ui::FSlider(-2000.0, 0.0, -138.0, {.handle="xMin", .label="xMin"})
-           << ui::FSlider(0.0, 2000.0, 550.0, {.handle="xMax", .label="xMax"})
-           << ui::FSlider(-2000.0, 0.0, -138.0, {.handle="yMin", .label="yMin"})
-           << ui::FSlider(0.0, 2000.0, 96.0, {.handle="yMax", .label="yMax"})
-           << ui::FSlider(0.5, 10, 5, {.handle="RANSACeuclDistance", .label="RANSAC eucl distance"})
-           << ui::Slider(1, 100, 20, {.handle="RANSACpasses", .label="RANSAC passes"})
-           << ui::Slider(1, 20, 2, {.handle="RANSACsubset", .label="RANSAC subset"})
-           << ui::Slider(5, 50, 15, {.handle="BLOBSeuclDistance", .label="BLOBS eucl distance"})
+           << ( VBox()
+           << Slider(0, 100, 25, {.handle="minClusterSize", .label="min Cluster Size"})
+           << ToggleButton("ROI", "FULL", false, {.handle="useROI"})
+           << FSlider(-2000.0, 0.0, -138.0, {.handle="xMin", .label="xMin"})
+           << FSlider(0.0, 2000.0, 550.0, {.handle="xMax", .label="xMax"})
+           << FSlider(-2000.0, 0.0, -138.0, {.handle="yMin", .label="yMin"})
+           << FSlider(0.0, 2000.0, 96.0, {.handle="yMax", .label="yMax"})
+           << FSlider(0.5, 10, 5, {.handle="RANSACeuclDistance", .label="RANSAC eucl distance"})
+           << Slider(1, 100, 20, {.handle="RANSACpasses", .label="RANSAC passes"})
+           << Slider(1, 20, 2, {.handle="RANSACsubset", .label="RANSAC subset"})
+           << Slider(5, 50, 15, {.handle="BLOBSeuclDistance", .label="BLOBS eucl distance"})
           );
 
   controlsTabs
-           << (ui::Tab("general, low level, high level")
+           << (Tab("general, low level, high level")
            << controlsGeneral
            << controlsLowLevel
            << controlsHighLevel
           );
 
-  gui << ( ui::VBox()
-           << ui::Canvas3D({.handle="hdepth", .minSize={10, 8}})
-           << ui::ToggleButton("heatmap", "gray", false, {.handle="heatmap"})
-           << ui::Canvas3D({.handle="hcolor", .minSize={10, 8}})
+  gui << ( VBox()
+           << Canvas3D({.handle="hdepth", .minSize={10, 8}})
+           << ToggleButton("heatmap", "gray", false, {.handle="heatmap"})
+           << Canvas3D({.handle="hcolor", .minSize={10, 8}})
          )
-      << ( ui::VBox()
-           << ui::Canvas3D({.handle="hedge", .minSize={10, 8}})
-           << ui::Canvas3D({.handle="hnormal", .minSize={10, 8}})
+      << ( VBox()
+           << Canvas3D({.handle="hedge", .minSize={10, 8}})
+           << Canvas3D({.handle="hnormal", .minSize={10, 8}})
          )
-      << ( ui::HSplit()
-           << ui::Canvas3D({.handle="draw3D", .minSize={40, 30}})
+      << ( HSplit()
+           << Canvas3D({.handle="draw3D", .minSize={40, 30}})
            << controlsTabs
            )
-      << ui::Show();
+      << Show();
 
 
   usedFilterHandle= gui.get<ButtonGroupHandle>("usedFilter");

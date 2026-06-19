@@ -56,9 +56,9 @@ void reset(){
 }
 
 void init(){
-  gui << ui::Canvas3D({.handle="draw", .minSize={40,30}})
-      << ui::Button("reset", {.handle="reset"})
-      << ui::Show();
+  gui << Canvas3D({.handle="draw", .minSize={40,30}})
+      << Button("reset", {.handle="reset"})
+      << Show();
   scene.addCamera(cam);
   scene.setBounds(2000);  // calibrates camera dolly/pan speed to the scene
   RigidBoxObject *ground = new RigidBoxObject(0,0,-200, 5000, 5000, 200, 0);

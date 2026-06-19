@@ -58,14 +58,14 @@ void init(){
     cam = Camera(*pa("-c"));
   }
 
-  gui << ui::Canvas3D({.handle="scene", .minSize={32, 24}})
-      << ui::Prop("grabber", {.minSize={16, 1}, .maxSize={16, 99}, .hide=!pa("-tune")})
-      << ui::Prop("grabber", {.minSize={16, 1}, .maxSize={16, 99}, .hide=!pa("-tune") || !pa("-pci2")})
-      << ( ui::HBox({.label="show objects"})
-           << ui::CheckBox("object 1", {.checked=true, .handle="o1", .hide=!pa("-pci2")})
-           << ui::CheckBox("object 2", {.checked=true, .handle="o2", .hide=!pa("-pci2")})
+  gui << Canvas3D({.handle="scene", .minSize={32, 24}})
+      << Prop("grabber", {.minSize={16, 1}, .maxSize={16, 99}, .hide=!pa("-tune")})
+      << Prop("grabber", {.minSize={16, 1}, .maxSize={16, 99}, .hide=!pa("-tune") || !pa("-pci2")})
+      << ( HBox({.label="show objects"})
+           << CheckBox("object 1", {.checked=true, .handle="o1", .hide=!pa("-pci2")})
+           << CheckBox("object 2", {.checked=true, .handle="o2", .hide=!pa("-pci2")})
          )
-      << ui::Show();
+      << Show();
 
 
   // kinect camera

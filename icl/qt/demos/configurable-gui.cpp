@@ -63,10 +63,10 @@ struct A : public Configurable{
 
 
 void init(){
-  gui << ui::Prop("a", {.label="properties of a"})
-      << ui::Prop("a", {.label="also properties of a"})
-      << ui::Prop("c", {.label="properties of c only"})
-      << ui::Show();
+  gui << Prop("a", {.label="properties of a"})
+      << Prop("a", {.label="also properties of a"})
+      << Prop("c", {.label="properties of c only"})
+      << Show();
 }
 
 

@@ -41,12 +41,12 @@ void reload_obj(){
 void init(){
   // create graphical user interface
 
-  gui << ui::Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}})
-      << ( ui::HBox()
-           << ui::FSlider(0.5, 20, 3, {.handle="f", .label="focal length", .maxSize={100, 3}})
-           << ui::Button("reload", {.handle="reload", .hide=!pa("-o")})
+  gui << Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}})
+      << ( HBox()
+           << FSlider(0.5, 20, 3, {.handle="f", .label="focal length", .maxSize={100, 3}})
+           << Button("reload", {.handle="reload", .hide=!pa("-o")})
          )
-      << ui::Show();
+      << Show();
 
 
 

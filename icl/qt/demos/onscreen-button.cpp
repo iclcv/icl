@@ -23,7 +23,7 @@ void capture(){
 void init(){
   grabber.init(pa("-i"));
 
-  gui << ui::Display({.handle="image"}) << ui::Show();
+  gui << Display({.handle="image"}) << Show();
 
   ICLWidget *w = gui["image"];
 

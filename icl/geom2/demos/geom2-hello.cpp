@@ -100,7 +100,7 @@ void init() {
   scene.setBounds(400);
 
   // GUI
-  gui << ui::Canvas3D(Size(800, 600), {.handle="canvas"}) << ui::Show();
+  gui << Canvas3D(Size(800, 600), {.handle="canvas"}) << Show();
   gui["canvas"].link(scene.getGLCallback(0).get());
   gui["canvas"].install(scene.getMouseHandler(0));
 }

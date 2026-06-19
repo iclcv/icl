@@ -21,7 +21,7 @@ void mouse(const MouseEvent &e){
 
 void init(){
   grabber.init(pa("-i"));
-  gui << ui::Canvas({.handle="image"}) << ui::Show();
+  gui << Canvas({.handle="image"}) << Show();
 
   gui["image"].install(mouse);
 }

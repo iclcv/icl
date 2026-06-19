@@ -8,6 +8,9 @@
 #include <icl/qt/ContainerGUIComponent.h>
 
 namespace icl::qt {
+  /// Legacy container factories (the building blocks the public designated-init
+  /// containers in `icl::qt` delegate to). Application code never names them.
+  namespace detail {
   /// Horizonal Box container component
   struct HBox : public ContainerGUIComponent{
     /// create HBox with optionally given parent
@@ -61,4 +64,5 @@ namespace icl::qt {
     Border(const std::string &label, QWidget *parent=0):
     ContainerGUIComponent("border",label,parent){}
   };
+  } // namespace detail
   } // namespace icl::qt

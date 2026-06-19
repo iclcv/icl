@@ -84,7 +84,7 @@
 
 #include <icl/qt/CamCfgWidget.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/qt/ToggleButton.h>
+#include <icl/qt/ToggleButtonWidget.h>
 
 #include <icl/qt/Widget.h>
 #include <icl/qt/DrawWidget.h>
@@ -349,62 +349,62 @@ namespace icl{
             // preserves the "free-form entry" feel.
             std::string handle = "#F#"+p.full;
             ostr << '\1' << handle;
-            gui << ui::Float(r->min, r->max, v, {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+            gui << Float(r->min, r->max, v, {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           }else{
             std::string handle = "#r#"+p.full;
             ostr << '\1' << handle;
-            gui << ui::FSlider(r->min, r->max, v, {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+            gui << FSlider(r->min, r->max, v, {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           }
         }else if(auto *r = std::any_cast<up::Range<int>>(&c)){
           int v = h.as<int>();
           if(r->ui == up::UI::Spinbox){
             std::string handle = "#R#"+p.full;
             ostr << '\1' << handle;
-            gui << ui::Spinner(r->min, r->max, v, {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+            gui << Spinner(r->min, r->max, v, {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           }else{
             std::string handle = "#r#"+p.full;
             ostr << '\1' << handle;
             int step = (r->step == 0) ? 1 : r->step;
-            gui << ui::Slider(r->min, r->max, v, {.vertical=false, .step=step, .handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+            gui << Slider(r->min, r->max, v, {.vertical=false, .step=step, .handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           }
         }else if(auto *m = std::any_cast<up::Menu<std::string>>(&c)){
           std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-          gui << ui::Combo(build_combo_list(m->choices, h.as<std::string>()), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+          gui << Combo(build_combo_list(m->choices, h.as<std::string>()), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(auto *m = std::any_cast<up::Menu<int>>(&c)){
           std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-          gui << ui::Combo(build_combo_list(m->choices, h.as<std::string>()), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+          gui << Combo(build_combo_list(m->choices, h.as<std::string>()), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(auto *m = std::any_cast<up::Menu<float>>(&c)){
           std::string handle = "#m#"+p.full;
           ostr << '\1' << handle;
-          gui << ui::Combo(build_combo_list(m->choices, h.as<std::string>()), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+          gui << Combo(build_combo_list(m->choices, h.as<std::string>()), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(std::any_cast<up::Command>(&c)){
           std::string handle = "#c#"+p.full;
           ostr << '\1' << handle;
-          gui << ui::Button(p.half, {.handle=handle, .tooltip=tt, .minSize={12, 2}});
+          gui << Button(p.half, {.handle=handle, .tooltip=tt, .minSize={12, 2}});
         }else if(std::any_cast<up::Info>(&c)){
           std::string handle = "#i#"+p.full;
           ostr << '\1' << handle;
-          gui << ui::Label(h.as<std::string>(), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+          gui << Label(h.as<std::string>(), {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
           // Refreshed through the callback push channel on every
           // write; coalesced to one widget flush per GUI tick.
         }else if(std::any_cast<up::Flag>(&c)){
           std::string handle = "#f#"+p.full;
           ostr << '\1' << handle;
-          gui << ui::CheckBox(p.half, {.checked=h.as<bool>(), .handle=handle, .tooltip=tt, .minSize={12, 2}});
+          gui << CheckBox(p.half, {.checked=h.as<bool>(), .handle=handle, .tooltip=tt, .minSize={12, 2}});
         }else if(auto *t = std::any_cast<up::Text>(&c)){
           std::string handle = "#S#"+p.full;
           ostr << '\1' << handle;
           int max_len = t->maxLength ? t->maxLength : 100;
           std::string value = h.as<std::string>();
           if(!value.length()) value = " ";
-          gui << ui::String(value, {.maxLen=max_len, .handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+          gui << String(value, {.maxLen=max_len, .handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(std::any_cast<cp::Color>(&c)){
           std::string handle = "#C#"+p.full;
           ostr << '\1' << handle;
           Color col = h.as<Color>();
-          gui << ui::ColorSelect(col[0], col[1], col[2], {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
+          gui << ColorSelect(col[0], col[1], col[2], {.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 2}});
         }else if(std::any_cast<cp::ImageView>(&c)){
           // Read-only image preview.  Op writes the live core::Image
           // into typed_value via setPropertyValueTyped (or the
@@ -414,7 +414,7 @@ namespace icl{
           // the callback-exec list — ImageHandle is output-only and
           // rejects GUI::ComplexCallback registrations.
           std::string handle = "#img#"+p.full;
-          gui << ui::Display({.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 8}});
+          gui << Display({.handle=handle, .label=p.half, .tooltip=tt, .minSize={12, 8}});
         }else{
           ERROR_LOG("unable to create GUI-component for property \"" << p.full
                     << "\" (no constraint recognised; legacy type=\""
@@ -539,23 +539,23 @@ namespace icl{
             ++i;
           }
         }
-        gui = ui::HSplit(this, {.handle="__the_root__"});
+        gui = HSplit(this, {.handle="__the_root__"});
         bool use_tabs = sections.size() > 1 || (sections.size() == 1 && sections.begin()->first != "general");
         if(use_tabs){
           if(!sections.contains("general")){
             tablist += ",general";
             generalIdx = tablist.size()-1;
           }
-          sub_gui = ui::Tab(tablist, this, {.handle="__the_tab__"});
+          sub_gui = Tab(tablist, this, {.handle="__the_tab__"});
         } else {
-          sub_gui = ui::VBox(this, {.handle="__the_tab__"});
+          sub_gui = VBox(this, {.handle="__the_tab__"});
         }
 
         std::ostringstream ostr;
 
         // special treatment of grabbers
         if(dynamic_cast<io::SourceBackend*>(conf)){
-          GUI general_box = ui::VBox(this, {.handle="__the_box__"});
+          GUI general_box = VBox(this, {.handle="__the_box__"});
           add_component(general_box,getStSt(sections, "format"),ostr,gui);
           add_component(general_box,getStSt(sections, "size"),ostr,gui);
           add_component(general_box,getStSt(sections, "desired format"),ostr,gui);
@@ -567,7 +567,7 @@ namespace icl{
         bool haveGeneral = false;
         if(!conf->isOrderedFlagSet()) {
           for(const auto& [section, entries] : sections){
-            GUI tab = ui::VScroll();
+            GUI tab = VScroll();
             for(unsigned int i=0;i<entries.size();++i){
               if(!isSpecialGrabberGrabberProperty(conf,entries[i].full)){
                 add_component(tab,entries[i],ostr,gui);
@@ -575,9 +575,9 @@ namespace icl{
             }
             if(section == "general"){
               haveGeneral = true;
-              tab << ( ui::HBox()
-                       << ui::Button("load", {.handle="#X#load"})
-                       << ui::Button("save", {.handle="#X#save"})
+              tab << ( HBox()
+                       << Button("load", {.handle="#X#load"})
+                       << Button("save", {.handle="#X#save"})
                      );
 
               ostr <<  '\1' << "#X#load";
@@ -588,7 +588,7 @@ namespace icl{
         } else {
             for(const auto& [order, section] : sections_ordering){
               std::vector<StSt>& entries = sections[section];
-              GUI tab = ui::VScroll();
+              GUI tab = VScroll();
               for(unsigned int i=0;i<entries.size();++i){
                 if(!isSpecialGrabberGrabberProperty(conf,entries[i].full)){
                   add_component(tab,entries[i],ostr,gui);
@@ -596,9 +596,9 @@ namespace icl{
               }
               if(section == "general"){
                 haveGeneral = true;
-                tab << ( ui::HBox()
-                         << ui::Button("load", {.handle="#X#load"})
-                         << ui::Button("save", {.handle="#X#save"})
+                tab << ( HBox()
+                         << Button("load", {.handle="#X#load"})
+                         << Button("save", {.handle="#X#save"})
                        );
 
                 ostr <<  '\1' << "#X#load";
@@ -609,10 +609,10 @@ namespace icl{
         }
 
         if(!haveGeneral){
-          GUI tab = ui::VScroll();
-            tab << ( ui::HBox()
-                     << ui::Button("load", {.handle="#X#load"})
-                     << ui::Button("save", {.handle="#X#save"})
+          GUI tab = VScroll();
+            tab << ( HBox()
+                     << Button("load", {.handle="#X#load"})
+                     << Button("save", {.handle="#X#save"})
                      );
 
             ostr <<  '\1' << "#X#load";
@@ -886,9 +886,9 @@ namespace icl{
         minSize(32,24);
         std::vector<io::DeviceDescription> devs = io::ImageSource::getDeviceList("",false);
         for(unsigned int i = 0; i < devs.size(); ++i){
-          *this << ui::Prop(devs.at(i).name(), {.label=devs.at(i).name()});
+          *this << Prop(devs.at(i).name(), {.label=devs.at(i).name()});
         }
-        *this << ui::Create();
+        *this << Create();
       }
     };
 
@@ -1304,7 +1304,7 @@ namespace icl{
         std::string t2 = def.param(1);
         if(t1.length() && t1[0]=='!') t1 = t1.substr(1);
         if(t2.length() && t2[0]=='!') t2 = t2.substr(1);
-        m_poButton = new ToggleButton(t1,t2,def.parentWidget());
+        m_poButton = new ToggleButtonWidget(t1,t2,def.parentWidget());
         if(def.hasToolTip()) m_poButton->setToolTip(def.toolTip().c_str());
 
         if(initToggled){
@@ -1339,7 +1339,7 @@ namespace icl{
         }
       }
     private:
-      ToggleButton *m_poButton;
+      ToggleButtonWidget *m_poButton;
       ButtonHandle *m_poHandle;
     };
 
@@ -2384,12 +2384,15 @@ namespace icl{
     }
 
     GUI::GUI(const GUIComponent &component, QWidget *parent):
-      m_sDefinition(component.toString()), m_poWidget(0),m_bCreated(false),m_poParent(parent){
+      m_sDefinition(component.toString()),
+      m_component(std::make_shared<GUIComponent>(component)),
+      m_poWidget(0),m_bCreated(false),m_poParent(parent){
     }
 
 
     GUI::GUI(const GUI &g,QWidget *parent):
       m_sDefinition(g.createDefinition()),
+      m_component(g.getComponent() ? std::make_shared<GUIComponent>(*g.getComponent()) : nullptr),
       m_children(g.m_children),
       m_poWidget(nullptr),m_bCreated(false),
       m_poParent(parent){
@@ -2398,6 +2401,7 @@ namespace icl{
 
     GUI &GUI::operator=(const GUI &other){
       m_sDefinition = other.createDefinition();
+      m_component = other.getComponent() ? std::make_shared<GUIComponent>(*other.getComponent()) : nullptr;
       m_children = other.m_children;
       m_poWidget = nullptr;
       m_bCreated = false;
@@ -2406,17 +2410,56 @@ namespace icl{
       return *this;
     }
 
+    bool GUI::isDummy() const{
+      if(const GUIComponent *c = getComponent()){
+        return c->m_options.hide || c->m_type.empty() || c->m_type == "dummy";
+      }
+      return m_sDefinition == "" || m_sDefinition == "dummy";
+    }
+
     GUI::~GUI(){
       // this leads to seg-faults
       //delete m_poWidget;
     }
 
+    GUIComponent GUI::makeBorderComponent(const std::string &label,
+                                          const GUIComponent::Options &innerOpts){
+      static const Size S11(1,1);
+      GUIComponent b("border", label);
+      if(innerOpts.minSize != Size::null) b.m_options.minSize = innerOpts.minSize + S11;
+      if(innerOpts.maxSize != Size::null) b.m_options.maxSize = innerOpts.maxSize + S11;
+      if(innerOpts.size    != Size::null) b.m_options.size    = innerOpts.size + S11;
+      return b;
+    }
+
     /// adds a new GUI component
+    /** Structured path — no toString()/re-parse round-trip, so free-text
+        payloads (a Label's text, a `.label`/`.tooltip`) carrying the grammar
+        metacharacters `, ( ) @ =` are carried verbatim. Replicates the legacy
+        string operator<<: dummy/hidden are dropped, "!show"/"!create" finalize,
+        a label wraps the component in a titled border (with cell-incremented
+        sizes), everything else is pushed as a structured child node. */
     GUI &GUI::operator<<(const GUIComponent &component){
-      // TODO: this is just a slow fallback right now
-      // as a first attempt, we could bypass the parsing
-      // of the serialized string version ...
-      return (*this) << component.toString();
+      if(m_poWidget) { ERROR_LOG("this GUI is already visible"); return *this; }
+
+      const GUIComponent::Options &o = component.m_options;
+      const std::string &type = component.m_type;
+
+      if(o.hide || type.empty() || type == "dummy") return *this;
+      if(type == "!show"){ show(); return *this; }
+      if(type == "!create"){ create(); return *this; }
+
+      if(o.label.length()){
+        GUIComponent inner = component;
+        inner.m_options.label.clear();
+        GUI *borderNode = new GUI(makeBorderComponent(o.label, o));
+        (*borderNode) << inner;
+        m_children.push_back(borderNode);
+        return *this;
+      }
+
+      m_children.push_back(new GUI(component));
+      return *this;
     }
 
     GUI &GUI::operator<<(const std::string &definition){
@@ -2471,7 +2514,10 @@ namespace icl{
     }
 
     void GUI::to_string_recursive(const GUI *gui, std::ostream &str, int level){
-      GUIDefinition def(gui->m_sDefinition, const_cast<GUI*>(gui));
+      const GUIComponent *comp = gui->getComponent();
+      GUIDefinition def = comp
+        ? GUIDefinition(*comp, const_cast<GUI*>(gui))
+        : GUIDefinition(gui->m_sDefinition, const_cast<GUI*>(gui));
       str << std::string(level*2,' ') << "<" << def.type();
       int nParams = def.numParams();
       std::ostringstream sparams;
@@ -2515,6 +2561,23 @@ namespace icl{
         return *this;
       }
 
+      // Structured path: when the added GUI carries a GUIComponent (every
+      // /qt:: container does), wrap-on-label without serialising.
+      if(const GUIComponent *gc = g.getComponent()){
+        if(gc->m_options.label.length()){
+          GUIComponent border = makeBorderComponent(gc->m_options.label, gc->m_options);
+          GUI *borderNode = new GUI(border);
+          GUI gNew(g);                                   // copy snapshots gc into m_component
+          if(gNew.m_component) gNew.m_component->m_options.label.clear();
+          (*borderNode) << gNew;
+          m_children.push_back(borderNode);
+          return *this;
+        }
+        m_children.push_back(new GUI(g));
+        return *this;
+      }
+
+      // Legacy fallback: g is a string-only node (no structured component).
       std::string def = g.createDefinition();
       std::string label = extract_label(def);
       std::string minsize = extract_minsize(def);
@@ -2539,10 +2602,6 @@ namespace icl{
         m_children.push_back(new GUI(g));
         return *this;
       }
-
-
-      //    m_children.push_back(new GUI(g));
-      return *this;
     }
 
 
@@ -2553,7 +2612,10 @@ namespace icl{
           throw ICLException("cannot create a \"dummy\"-GUI. (Dummy GUI's are GUI-instances\n"
                              "that are created from an empty string or from the string \"dummy\") ");
         }
-        GUIDefinition def(createDefinition(),this,parentLayout,proxy,parentWidget);
+        const GUIComponent *comp = getComponent();
+        GUIDefinition def = comp
+          ? GUIDefinition(*comp, this, parentLayout, proxy, parentWidget)
+          : GUIDefinition(createDefinition(), this, parentLayout, proxy, parentWidget);
 
         m_poWidget = create_widget(def);
 

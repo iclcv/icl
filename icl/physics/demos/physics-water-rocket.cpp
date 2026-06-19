@@ -375,19 +375,19 @@ static void syncRender() {
 }
 
 void init() {
-  gui << ( ui::HBox()
-           << ui::Canvas3D(Size(800,600), {.handle="draw", .minSize={32,24}})
-           << ( ui::VBox({.maxSize={16,99}})
-                << ui::Button("Launch", {.handle="launch"})
-                << ui::Button("Reset",  {.handle="reset"})
-                << ui::Slider(1, 10, 6,   {.handle="pressure", .label="pressure [bar]"})
-                << ui::Slider(0, 100, 60, {.handle="water",    .label="water fill [%]"})
-                << ui::Slider(0, 400, 150, {.handle="drag",    .label="chute drag x100"})
-                << ui::CheckBox("free look", {.handle="free"})
-                << ui::Label("ARMED",     {.handle="state",    .label="state"})
+  gui << ( HBox()
+           << Canvas3D(Size(800,600), {.handle="draw", .minSize={32,24}})
+           << ( VBox({.maxSize={16,99}})
+                << Button("Launch", {.handle="launch"})
+                << Button("Reset",  {.handle="reset"})
+                << Slider(1, 10, 6,   {.handle="pressure", .label="pressure [bar]"})
+                << Slider(0, 100, 60, {.handle="water",    .label="water fill [%]"})
+                << Slider(0, 400, 150, {.handle="drag",    .label="chute drag x100"})
+                << CheckBox("free look", {.handle="free"})
+                << Label("ARMED",     {.handle="state",    .label="state"})
               )
          )
-      << ui::Show();
+      << Show();
 
   scene.addCamera(Camera::lookAt(Vec(-900,-600,350,1), Vec(0,0,HEAD_Z*0.7f,1),
                                  Vec(0,0,1,1), Size::VGA, 50.f));

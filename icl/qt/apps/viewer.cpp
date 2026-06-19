@@ -18,12 +18,12 @@ void run(){
 }
 
 void init(){
-  gui << ui::Display({.handle="image", .minSize={16, 12}});
-  gui << ( ui::HBox({.maxSize={100, 2}})
-           << ui::Fps(10, {.handle="fps", .minSize={5, 2}, .maxSize={100, 2}})
-           << ui::CamCfg()
+  gui << Display({.handle="image", .minSize={16, 12}});
+  gui << ( HBox({.maxSize={100, 2}})
+           << Fps(10, {.handle="fps", .minSize={5, 2}, .maxSize={100, 2}})
+           << CamCfg()
            )
-      << ui::Show();
+      << Show();
 
   grabber.init(pa("-i"));
   if(pa("-size")){

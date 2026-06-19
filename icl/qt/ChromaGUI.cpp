@@ -22,6 +22,7 @@
 #include <icl/qt/BoxHandle.h>
 #include <icl/qt/ButtonHandle.h>
 #include <icl/qt/ChromaClassifierIO.h>
+#include <icl/qt/ui.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -113,7 +114,7 @@ namespace icl::qt {
           break;
       }
       updateDrawings();
-    
+
       return MouseResult::Forward;
     }
 
@@ -255,23 +256,23 @@ namespace icl::qt {
 
 
   ChromaGUI::ChromaGUI(QWidget *parent):QObject(parent),GUI("vsplit[@handle=parent]",parent){
-    (*this) << VBox().handle("image").label("Chromaticity Space").minSize(18,16)
+    (*this) << VBox({.handle="image", .label="Chromaticity Space", .minSize={18, 16}})
             << ( HBox()
-                 << Slider(0,255,128).label("Disp. Blue").handle("bluedisp")
-                 << Button("load").handle("load")
-                 << Button("save").handle("save")
+                 << Slider(0, 255, 128, {.handle="bluedisp", .label="Disp. Blue"})
+                 << Button("load", {.handle="load"})
+                 << Button("save", {.handle="save"})
                 )
             << ( HBox()
-                 << Slider(0,255,128).label("Red Color").handle("redval")
-                 << Slider(0,255,128).label("Red Threshold").handle("redtval")
+                 << Slider(0, 255, 128, {.handle="redval", .label="Red Color"})
+                 << Slider(0, 255, 128, {.handle="redtval", .label="Red Threshold"})
                 )
             << ( HBox()
-                 << Slider(0,255,128).label("Green Color").handle("greenval")
-                 << Slider(0,255,128).label("Green Threshold").handle("greentval")
+                 << Slider(0, 255, 128, {.handle="greenval", .label="Green Color"})
+                 << Slider(0, 255, 128, {.handle="greentval", .label="Green Threshold"})
                 )
             << ( HBox()
-                 << Slider(0,255,128).label("Blue Color").handle("blueval")
-                 << Slider(0,255,128).label("Blue Threshold").handle("bluetval")
+                 << Slider(0, 255, 128, {.handle="blueval", .label="Blue Color"})
+                 << Slider(0, 255, 128, {.handle="bluetval", .label="Blue Threshold"})
                 )
             << Show();
 

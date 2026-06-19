@@ -287,31 +287,31 @@ void init_gui(){
   bool idu = pa("-idu");
 
   if(pa("-pp")){
-    gui << ui::Display({.handle="image", .minSize={12, 8}})
-        << ( ui::VBox({.maxSize={100, 8}})
-             <<  ( ui::HBox()
-                   << ui::CamCfg({.maxSize={5, 2}})
-                   << ui::Spinner(1, 100, (int)pa("-fps").as<float>(), {.handle="fpsLimit", .label="max fps"})
-                   << ui::Fps(10, {.handle="fps"})
+    gui << Display({.handle="image", .minSize={12, 8}})
+        << ( VBox({.maxSize={100, 8}})
+             <<  ( HBox()
+                   << CamCfg({.maxSize={5, 2}})
+                   << Spinner(1, 100, (int)pa("-fps").as<float>(), {.handle="fpsLimit", .label="max fps"})
+                   << Fps(10, {.handle="fps"})
                    )
-             <<  ( ui::HBox()
-                   << ui::ToggleButton("off", "on", !idu, {.handle="updateImages", .label="update images"})
-                   << ui::ToggleButton("off", "on", true, {.handle="pp-on", .label="preprocessing", .minSize={5, 2}})
+             <<  ( HBox()
+                   << ToggleButton("off", "on", !idu, {.handle="updateImages", .label="update images"})
+                   << ToggleButton("off", "on", true, {.handle="pp-on", .label="preprocessing", .minSize={5, 2}})
                    )
              );
     gui.show();
 
     ppEnabled = []{ return (bool)gui["pp-on"]; };
   }else{
-    gui << ui::Display({.handle="image", .minSize={12, 8}})
-        << ( ui::VBox({.maxSize={100, 8}})
-             <<  ( ui::HBox()
-                   << ui::CamCfg({.maxSize={5, 2}})
-                   << ui::Spinner(1, 100, (int)pa("-fps").as<float>(), {.handle="fpsLimit", .label="max fps"})
+    gui << Display({.handle="image", .minSize={12, 8}})
+        << ( VBox({.maxSize={100, 8}})
+             <<  ( HBox()
+                   << CamCfg({.maxSize={5, 2}})
+                   << Spinner(1, 100, (int)pa("-fps").as<float>(), {.handle="fpsLimit", .label="max fps"})
                    )
-             <<  ( ui::HBox()
-                   << ui::Fps(10, {.handle="fps"})
-                   << ui::ToggleButton("off", "on", !idu, {.handle="updateImages", .label="update images"})
+             <<  ( HBox()
+                   << Fps(10, {.handle="fps"})
+                   << ToggleButton("off", "on", !idu, {.handle="updateImages", .label="update images"})
                    )
              );
     gui.show();

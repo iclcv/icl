@@ -57,9 +57,9 @@ int main(int n, char **ppc){
 
   QApplication app(n,ppc);
   HBox gui;
-  gui << ui::Display({.handle="sub", .label="A-B"})
-      << ui::Display({.handle="eq", .label="A==B"})
-      << ui::Show();
+  gui << Display({.handle="sub", .label="A-B"})
+      << Display({.handle="eq", .label="A==B"})
+      << Show();
 
   gui["sub"] = subImage;
   gui["eq"] = cmpImage;

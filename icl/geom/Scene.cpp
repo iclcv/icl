@@ -24,6 +24,7 @@
 #include <icl/qt/GLImg.h>
 #include <icl/qt/GUI.h>
 #include <icl/qt/ContainerGUIComponents.h>
+#include <icl/qt/ui.h>
 #include <icl/qt/IconFactory.h>
 #include <icl/qt/Application.h>
 #include <icl/geom/ShaderUtil.h>

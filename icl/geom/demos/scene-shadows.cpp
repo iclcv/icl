@@ -25,13 +25,13 @@ unsigned int lights;
 void init(){
   // create graphical user interface
 
-  gui << ui::Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}})
-      << ( ui::HBox({.maxSize={99, 3}})
-           << ui::FSlider(0.5, 20, 3, {.handle="f", .label="focal length", .maxSize={100, 3}})
-           << ui::FSlider(1, 100, 15, {.handle="r", .label="light radius", .maxSize={100, 3}})
-           << ui::Button("reload", {.handle="reload", .hide=!(bool)pa("-o")})
+  gui << Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}})
+      << ( HBox({.maxSize={99, 3}})
+           << FSlider(0.5, 20, 3, {.handle="f", .label="focal length", .maxSize={100, 3}})
+           << FSlider(1, 100, 15, {.handle="r", .label="light radius", .maxSize={100, 3}})
+           << Button("reload", {.handle="reload", .hide=!(bool)pa("-o")})
          )
-      << ui::Show();
+      << Show();
 
 
   scene.prop("shadows.use improved shading").value = true;

@@ -61,11 +61,11 @@ void init() {
 
   gui << (HBox()
           << (VBox().maxSize(14,99).minSize(14,1)
-              << ui::FSlider(-0.35f, 0.35f, 0.0f, {.handle="tx", .label="tilt about Y"})
-              << ui::FSlider(-0.35f, 0.35f, 0.0f, {.handle="ty", .label="tilt about X"})
-              << ui::CheckBox("collision debug", {.handle="dbg"}))
-          << ui::Canvas3D(Size(800,600), {.handle="draw"}))
-      << ui::Show();
+              << FSlider(-0.35f, 0.35f, 0.0f, {.handle="tx", .label="tilt about Y"})
+              << FSlider(-0.35f, 0.35f, 0.0f, {.handle="ty", .label="tilt about X"})
+              << CheckBox("collision debug", {.handle="dbg"}))
+          << Canvas3D(Size(800,600), {.handle="draw"}))
+      << Show();
 
   gui["draw"].link(scene.getGLCallback(0).get());
   static PhysicsMouseHandler handler(0, &scene.scene(), &scene.world());

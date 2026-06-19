@@ -73,19 +73,19 @@ void init(){
   g.init(pa("-input"));
   g.useDesired(depth8u);
 
-  gui << ui::Canvas({.handle="image", .label="image", .minSize={32, 24}})
-      << ( ui::VBox()
-           << ui::Canvas({.handle="templ", .label="template", .minSize={10, 6}})
-           << ui::Canvas({.handle="buf", .label="buffer", .minSize={10, 6}})
+  gui << Canvas({.handle="image", .label="image", .minSize={32, 24}})
+      << ( VBox()
+           << Canvas({.handle="templ", .label="template", .minSize={10, 6}})
+           << Canvas({.handle="buf", .label="buffer", .minSize={10, 6}})
            )
-      << (ui::VBox({.minSize={7, 7}})
-          << ui::FSlider(0, 1, 0.9, {.handle="significance", .label="significance"})
-          << ui::Fps(50, {.handle="fps", .minSize={5, 5}})
-          << ui::ToggleButton("no masks", " with masks", false, {.handle="use-masks"})
-          << ui::ToggleButton("dont clip buffers", "clip buffers", false, {.handle="clip-buffers"})
-          << ui::ToggleButton("square distance", "norm. cross corr", false, {.handle="mode"})
+      << (VBox({.minSize={7, 7}})
+          << FSlider(0, 1, 0.9, {.handle="significance", .label="significance"})
+          << Fps(50, {.handle="fps", .minSize={5, 5}})
+          << ToggleButton("no masks", " with masks", false, {.handle="use-masks"})
+          << ToggleButton("dont clip buffers", "clip buffers", false, {.handle="clip-buffers"})
+          << ToggleButton("square distance", "norm. cross corr", false, {.handle="mode"})
           )
-      << ui::Show();
+      << Show();
 
   gui["image"].install(mouse);
 }

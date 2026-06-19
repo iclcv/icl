@@ -64,12 +64,12 @@ void init() {
   // Live soft-body tuning panel (stiffness / friction / margin / collision mode
   // / self collision); changes apply to the running cloth via the sim queue.
   gui << (HSplit()
-          << ui::Canvas3D(Size(2400,1800), {.handle="draw", .minSize={32,24}})
+          << Canvas3D(Size(2400,1800), {.handle="draw", .minSize={32,24}})
           << (VBox().maxSize(16,99)
-              << ui::Prop(cloth, {.label="cloth"})
-              << ui::Button("reset", {.handle="reset"})
-              << ui::CheckBox("collision debug", {.handle="dbg"})))
-      << ui::Show();
+              << Prop(cloth, {.label="cloth"})
+              << Button("reset", {.handle="reset"})
+              << CheckBox("collision debug", {.handle="dbg"})))
+      << Show();
   gui["draw"].link(scene.getGLCallback(0).get());
   gui["draw"].install(scene.getMouseHandler(0));
   lastTick = Time::now();

@@ -39,13 +39,13 @@ void init(){
 
   ts = Size32f(t.width/templ.getWidth(), t.height/templ.getHeight());
 
-  gui << ui::Canvas3D({.handle="draw", .minSize={32, 24}})
-      << (ui::HBox()
-          << ui::FSlider(-7, -1, -3, {.handle="t", .label="threshold exponent", .maxSize={99, 3}})
-          << ui::Button("ransac ...", {.handle="ransac options", .maxSize={6, 3}})
-          << ui::CheckBox("vis error", {.handle="vise", .maxSize={5, 3}})
+  gui << Canvas3D({.handle="draw", .minSize={32, 24}})
+      << (HBox()
+          << FSlider(-7, -1, -3, {.handle="t", .label="threshold exponent", .maxSize={99, 3}})
+          << Button("ransac ...", {.handle="ransac options", .maxSize={6, 3}})
+          << CheckBox("vis error", {.handle="vise", .maxSize={5, 3}})
           )
-      << ui::Show();
+      << Show();
 
   pe->setConfigurableID("pe");
   pe->adaptProperty("iterations", "range", "[1,5000]:1", "");
@@ -60,7 +60,7 @@ void init(){
   pe->prop("min points for good model").value = 20;
   pe->prop("store last consensus set").value = true;
 
-  ransacOptions << ui::Prop("pe") << ui::Create();
+  ransacOptions << Prop("pe") << Create();
 
   gui["ransac options"].registerCallback([]{ ransacOptions.switchVisibility(); });
 

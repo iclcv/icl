@@ -16,20 +16,20 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
 
-  gui << ui::Canvas({.handle="draw"})
-      << (ui::VBox()
-          << ui::Display({.handle="rectified"})
-          << (ui::HBox({.label="target size", .maxSize={99, 3}})
-              << ui::Spinner(2, 2000, 512, {.handle="width"})
-              << ui::Label("x")
-              << ui::Spinner(2, 2000, 512, {.handle="height"})
+  gui << Canvas({.handle="draw"})
+      << (VBox()
+          << Display({.handle="rectified"})
+          << (HBox({.label="target size", .maxSize={99, 3}})
+              << Spinner(2, 2000, 512, {.handle="width"})
+              << Label("x")
+              << Spinner(2, 2000, 512, {.handle="height"})
              )
-          << (ui::HBox({.label="rectify", .maxSize={99, 3}})
-              << ui::Button("now", {.handle="now"})
-              << ui::CheckBox("auto", {.checked=true, .handle="auto"})
+          << (HBox({.label="rectify", .maxSize={99, 3}})
+              << Button("now", {.handle="now"})
+              << CheckBox("auto", {.checked=true, .handle="auto"})
              )
          )
-      << ui::Show();
+      << Show();
 
   mouse.init(grabber.grab().getSize());
 

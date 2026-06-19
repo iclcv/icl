@@ -68,7 +68,7 @@ struct Mouse : public MouseHandler{
         }
       }
     }
-  
+
     return MouseResult::Forward;
   }
   void setXOffset(int xoffset){
@@ -106,33 +106,33 @@ void init(){
   grabber.init(pa("-i"));
   if(pa("-r")) grabber.resetBus();
 
-  gui << ui::Canvas({.handle="draw", .minSize={48, 18}})
-      << ( ui::VBox({.minSize={14, 1}, .maxSize={14, 99}})
-           << ( ui::HBox({.label="template ..."})
-                << ui::Button("extract from image", {.handle="extract"})
-                << ui::Button("rotate", {.handle="rotate"})
-                << ui::Button("load...", {.handle="load"})
+  gui << Canvas({.handle="draw", .minSize={48, 18}})
+      << ( VBox({.minSize={14, 1}, .maxSize={14, 99}})
+           << ( HBox({.label="template ..."})
+                << Button("extract from image", {.handle="extract"})
+                << Button("rotate", {.handle="rotate"})
+                << Button("load...", {.handle="load"})
               )
-           << ( ui::HBox({.label="extract aspect ratio"})
-                << ui::Spinner(1, 32, 4, {.handle="ar1"})
-                << ui::Label(":")
-                << ui::Spinner(1, 32, 3, {.handle="ar2"})
+           << ( HBox({.label="extract aspect ratio"})
+                << Spinner(1, 32, 4, {.handle="ar1"})
+                << Label(":")
+                << Spinner(1, 32, 3, {.handle="ar2"})
                )
-           << ui::CheckBox("show matches only", {.checked=true, .handle="vis matches"})
-           << ui::CheckBox("visualize associations", {.checked=true, .handle="vis lines"})
-           << ui::CheckBox("visualize extraction quad", {.checked=true, .handle="vis quad"})
-           << ui::CheckBox("visualize at all", {.checked=true, .handle="vis at all"})
-           << ui::Slider(0, 20, 4, {.handle="octaves", .label="octaves"})
-           << ui::Slider(0, 20, 4, {.handle="intervals", .label="intervals/octavelayer"})
-           << ui::Slider(0, 10, 2, {.handle="step", .label="sample step"})
-           << ui::FSlider(0, 0.04, 0.005, {.handle="thresh", .label="threshold"})
+           << CheckBox("show matches only", {.checked=true, .handle="vis matches"})
+           << CheckBox("visualize associations", {.checked=true, .handle="vis lines"})
+           << CheckBox("visualize extraction quad", {.checked=true, .handle="vis quad"})
+           << CheckBox("visualize at all", {.checked=true, .handle="vis at all"})
+           << Slider(0, 20, 4, {.handle="octaves", .label="octaves"})
+           << Slider(0, 20, 4, {.handle="intervals", .label="intervals/octavelayer"})
+           << Slider(0, 10, 2, {.handle="step", .label="sample step"})
+           << FSlider(0, 0.04, 0.005, {.handle="thresh", .label="threshold"})
 
-           << (ui::HBox()
-               << ui::Fps({.handle="fps"})
-               << ui::CamCfg()
+           << (HBox()
+               << Fps({.handle="fps"})
+               << CamCfg()
               )
          )
-      << ui::Show();
+      << Show();
   grabber.grab().ptr()->convert(&templ);
   surf.reset(new SurfFeatureDetector(5,4,2,0.00005,*pa("-p")));
   surf->setReferenceImage(&templ);

@@ -123,18 +123,18 @@ void compute(){
 }
 
 void init(){
-  gui << ui::Plot({.handle="plot", .minSize={30,30}})
-      << (ui::VBox()
-          << ui::Combo("line,circle", {.handle="what"})
-          << ui::CheckBox("ransac", {.handle="ransac"})
-          << ui::Button("new data", {.handle="new"})
-          << ui::ToggleButton("stopped", "running", false, {.handle="run"})
-          << ( ui::HBox()
-               << ui::FSlider(0.01, 1, 0.2, {.vertical=true, .handle="noise", .label="noise", .tooltip="noise factor"})
-               << ui::Slider(0, 100, 30, {.vertical=true, .handle="random", .label="good %", .tooltip="percentage of non-random points"})
+  gui << Plot({.handle="plot", .minSize={30,30}})
+      << (VBox()
+          << Combo("line,circle", {.handle="what"})
+          << CheckBox("ransac", {.handle="ransac"})
+          << Button("new data", {.handle="new"})
+          << ToggleButton("stopped", "running", false, {.handle="run"})
+          << ( HBox()
+               << FSlider(0.01, 1, 0.2, {.vertical=true, .handle="noise", .label="noise", .tooltip="noise factor"})
+               << Slider(0, 100, 30, {.vertical=true, .handle="random", .label="good %", .tooltip="percentage of non-random points"})
               )
           )
-      << ui::Show();
+      << Show();
 
 
   gui["what"].registerCallback(compute);

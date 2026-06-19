@@ -75,23 +75,23 @@ void init(){
     cam = Camera(*pa("-c"));
   }
 
-  gui << ui::Canvas3D({.handle="scene", .minSize={32, 24}})
-      << ( ui::VBox() << ui::Fps(10, {.handle="fps", .label="FPS"})
-                  << ui::CheckBox("Filter with primitives from RSB", {.handle="filterRSBHandle"})
-                  << ui::CheckBox("Filter with primitive from GUI", {.handle="filterGUIHandle"})
-                  << ui::CheckBox("Show primitives", {.handle="showPrimitivesHandle"})
-                  << ui::Combo("Cube, Sphere, Cylinder", {.handle="primitiveTypeHandle", .label="primitive type"})
-                  << ui::Slider(-5000, 5000, 0, {.handle="posX", .label="position x"})
-                  << ui::Slider(-5000, 5000, 0, {.handle="posY", .label="position y"})
-                  << ui::Slider(-5000, 5000, 0, {.handle="posZ", .label="position z"})
-                  << ui::FSlider(-1, 1, 0, {.handle="orientX", .label="orientation x"})
-                  << ui::FSlider(-1, 1, 0, {.handle="orientY", .label="orientation y"})
-                  << ui::FSlider(-1, 1, 1, {.handle="orientZ", .label="orientation z"})
-                  << ui::FSlider(-6.28, 6.28, 0, {.handle="orientAngle", .label="orientation angle"})
-                  << ui::Slider(1, 5000, 1000, {.handle="scaleX", .label="scale x"})
-                  << ui::Slider(1, 5000, 1000, {.handle="scaleY", .label="scale y"})
-                  << ui::Slider(1, 5000, 1000, {.handle="scaleZ", .label="scale z"}))
-      << ui::Show();
+  gui << Canvas3D({.handle="scene", .minSize={32, 24}})
+      << ( VBox() << Fps(10, {.handle="fps", .label="FPS"})
+                  << CheckBox("Filter with primitives from RSB", {.handle="filterRSBHandle"})
+                  << CheckBox("Filter with primitive from GUI", {.handle="filterGUIHandle"})
+                  << CheckBox("Show primitives", {.handle="showPrimitivesHandle"})
+                  << Combo("Cube, Sphere, Cylinder", {.handle="primitiveTypeHandle", .label="primitive type"})
+                  << Slider(-5000, 5000, 0, {.handle="posX", .label="position x"})
+                  << Slider(-5000, 5000, 0, {.handle="posY", .label="position y"})
+                  << Slider(-5000, 5000, 0, {.handle="posZ", .label="position z"})
+                  << FSlider(-1, 1, 0, {.handle="orientX", .label="orientation x"})
+                  << FSlider(-1, 1, 0, {.handle="orientY", .label="orientation y"})
+                  << FSlider(-1, 1, 1, {.handle="orientZ", .label="orientation z"})
+                  << FSlider(-6.28, 6.28, 0, {.handle="orientAngle", .label="orientation angle"})
+                  << Slider(1, 5000, 1000, {.handle="scaleX", .label="scale x"})
+                  << Slider(1, 5000, 1000, {.handle="scaleY", .label="scale y"})
+                  << Slider(1, 5000, 1000, {.handle="scaleZ", .label="scale z"}))
+      << Show();
 
   // kinect camera
   scene.addCamera(cam);

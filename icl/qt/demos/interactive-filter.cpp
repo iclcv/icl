@@ -88,7 +88,7 @@ void run(){
 void init(){
   grabber.init(pa("-i"));
 
-  gui << ui::Canvas({.handle="draw", .minSize={16, 12}}) << ui::Show();
+  gui << Canvas({.handle="draw", .minSize={16, 12}}) << Show();
 
   gui["draw"].install(new MouseHandler(mouse));
 }

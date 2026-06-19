@@ -15,7 +15,7 @@ ImageSource *grabber = 0;
 void init(){
 
 
-  gui << ui::Canvas({.handle="draw", .minSize={16, 12}}) << ui::Show();
+  gui << Canvas({.handle="draw", .minSize={16, 12}}) << Show();
 
   cam = Camera(*pa("-input",2));
   grabber = new ImageSource();

@@ -67,12 +67,12 @@ void init_icl() {
   grabber_d.useDesired(d_cam.getResolution());
 
   // GUI
-  gui << ( ui::HBox()
-           << ui::Canvas({.handle="depth-view", .label="Depth Image"})
-           << ui::Canvas({.handle="color-view", .label="Color Image"})
-           << ui::Canvas3D({.handle="main-view", .label="Main View"})
+  gui << ( HBox()
+           << Canvas({.handle="depth-view", .label="Depth Image"})
+           << Canvas({.handle="color-view", .label="Color Image"})
+           << Canvas3D({.handle="main-view", .label="Main View"})
            );
-  gui << ui::Show();
+  gui << Show();
 
   // scene
   gui["main-view"].install(scene.getMouseHandler(camera_index));

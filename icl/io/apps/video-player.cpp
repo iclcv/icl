@@ -43,21 +43,21 @@ void stream_pos(){
 void init(){
   source.init(type,type+"="+filename);
   int len = parse<int>(source.prop("len").value);
-  gui << ui::Display({.handle="image", .minSize={32,24}})
-      << ui::Slider(0, len, 0, {.handle="pos",
+  gui << Display({.handle="image", .minSize={32,24}})
+      << Slider(0, len, 0, {.handle="pos",
                                 .label="stream position in "+unit,
                                 .maxSize={1000,2}})
-      << ( ui::HBox({.maxSize={1000,3}})
+      << ( HBox({.maxSize={1000,3}})
 #ifndef ICL_HAVE_OPENCV
-           << ui::Slider(0, 100, 50, {.handle="speed",  .label="playback speed"})
-           << ui::Slider(0, 100, 50, {.handle="volume", .label="audio volume"})
+           << Slider(0, 100, 50, {.handle="speed",  .label="playback speed"})
+           << Slider(0, 100, 50, {.handle="volume", .label="audio volume"})
 #endif
-           << ui::Fps(100, {.handle="fps", .minSize={5,2}, .maxSize={5,2}})
-           << ui::ToggleButton("play", "pause", false,
+           << Fps(100, {.handle="fps", .minSize={5,2}, .maxSize={5,2}})
+           << ToggleButton("play", "pause", false,
                                {.handle="pause", .maxSize={4,2}})
-           << ui::CamCfg()
+           << CamCfg()
          )
-      << ui::Show();
+      << Show();
 
 
   SliderHandle slider = gui["pos"];

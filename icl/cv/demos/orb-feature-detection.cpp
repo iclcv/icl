@@ -24,12 +24,12 @@ void init(){
    orb.setConfigurableID("orb");
 
    grabber.init(pa("-i"));
-   gui << ui::Canvas({.handle="image"})
-       << ( ui::VBox({.minSize={16, 1}, .maxSize={16, 99}})
-            << ui::Combo("input,gray,contrast enhanced", {.handle="vis"})
-            << ui::Prop("orb", {.label="orb properties"})
+   gui << Canvas({.handle="image"})
+       << ( VBox({.minSize={16, 1}, .maxSize={16, 99}})
+            << Combo("input,gray,contrast enhanced", {.handle="vis"})
+            << Prop("orb", {.label="orb properties"})
           )
-       << ui::Show();
+       << Show();
 
 
 }

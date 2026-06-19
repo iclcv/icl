@@ -81,10 +81,10 @@ void init() {
 
   glRenderer = std::make_unique<GLRenderer>();
 
-  gui << (ui::HSplit()
-         << ui::Canvas3D({.handle="modern", .label="Modern GL", .minSize={32, 24}})
-         << ui::Canvas3D({.handle="legacy", .label="Legacy GL", .minSize={32, 24}}))
-      << ui::Show();
+  gui << (HSplit()
+         << Canvas3D({.handle="modern", .label="Modern GL", .minSize={32, 24}})
+         << Canvas3D({.handle="legacy", .label="Legacy GL", .minSize={32, 24}}))
+      << Show();
 
   // Link modern renderer
   struct ModernCB : public ICLDrawWidget3D::GLCallback {

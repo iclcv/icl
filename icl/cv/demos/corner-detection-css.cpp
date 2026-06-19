@@ -35,23 +35,23 @@ void init(){
   css.setConfigurableID("css");
   css.prop("debug-mode").value = "on";
 
-  gui << ( ui::VBox()
-           << ( ui::HBox()
-                << ui::CamCfg()
-                <<  ui::Combo("color image,binary image", {.handle="vis"})
+  gui << ( VBox()
+           << ( HBox()
+                << CamCfg()
+                <<  Combo("color image,binary image", {.handle="vis"})
               )
-           << ui::FSlider(0, 1, 0.03, {.handle="t", .label="threshold"})
+           << FSlider(0, 1, 0.03, {.handle="t", .label="threshold"})
          )
-      << ( ui::VSplit()
-           << ( ui::HBox()
-                << ui::Canvas({.handle="img_in", .minSize={16, 12}})
-                << ui::Canvas({.handle="img1", .minSize={16, 12}})
-                << ui::Canvas({.handle="img2", .minSize={16, 12}})
+      << ( VSplit()
+           << ( HBox()
+                << Canvas({.handle="img_in", .minSize={16, 12}})
+                << Canvas({.handle="img1", .minSize={16, 12}})
+                << Canvas({.handle="img2", .minSize={16, 12}})
                 )
-           << ui::Canvas({.handle="img3", .minSize={16, 12}})
+           << Canvas({.handle="img3", .minSize={16, 12}})
           )
-      << ui::Prop("css", {.label="CSS Params", .minSize={14, 12}})
-      << ui::Show();
+      << Prop("css", {.label="CSS Params", .minSize={14, 12}})
+      << Show();
 
   gui["img_in"].install(mouse);
 

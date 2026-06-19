@@ -16,7 +16,7 @@ void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(Size::VGA);
 
-  gui << ui::Canvas({.handle="draw", .minSize={32, 24}}) << ui::Show();
+  gui << Canvas({.handle="draw", .minSize={32, 24}}) << Show();
 
   gui["draw"].install(&mouse);
 }

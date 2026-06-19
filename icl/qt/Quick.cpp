@@ -45,6 +45,7 @@
 #include <icl/qt/StringHandle.h>
 #include <icl/qt/ContainerGUIComponents.h>
 #include <icl/qt/GUIWidget.h>
+#include <icl/qt/ui.h>
 
 #include <QInputDialog>
 #include <QVBoxLayout>
@@ -130,7 +131,7 @@ namespace icl::qt {
           setWindowTitle(title.c_str());
           setModal(false);//true);
 
-          gui << VBox().handle("box").size(16,12);
+          gui << VBox({.handle="box", .size={16, 12}});
           VBox rest;
           std::vector<std::string> lines = tok(text,"\n");
           for(size_t i=0;i<lines.size();++i){
@@ -139,11 +140,11 @@ namespace icl::qt {
           for(size_t i = lines.size();i < 6;++i){
             rest << Label("");
           }
-          rest <<VBox().handle("stretch");
-          rest << String(initialText,1000).handle("text")
+          rest <<VBox({.handle="stretch"});
+          rest << String(initialText, {.maxLen=1000, .handle="text"})
               << ( HBox()
-                   << Button("done").handle("done")
-                   << Button("cancel").handle("cancel")
+                   << Button("done", {.handle="done"})
+                   << Button("cancel", {.handle="cancel"})
                  );
           gui << rest  << Create();
 

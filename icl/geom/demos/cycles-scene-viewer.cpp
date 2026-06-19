@@ -483,22 +483,22 @@ void init() {
   imageRenderer = std::make_unique<GLImageRenderer>();
 
   // GUI: both panes are Canvas3D (Core Profile compatible)
-  gui << (ui::VSplit()
-         << (ui::HSplit()
-            << ui::Canvas3D({.handle="draw", .label="Cycles", .minSize={32, 24}})
-            << ui::Canvas3D({.handle="gl", .label="OpenGL 4.1", .minSize={32, 24}}))
-         << (ui::HBox()
-            << ui::Combo("!Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive", {.handle="material", .label="Material", .minSize={10, 2}})
-            << ui::Combo("!1,2,4,8,16", {.handle="initSamples", .label="Steps/Frame", .minSize={8, 2}})
-            << ui::Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096", {.handle="maxIter", .label="Max Iter", .minSize={8, 2}})
-            << ui::Slider(1, 16, 4, {.handle="bounces", .label="Bounces", .minSize={10, 2}})
-            << ui::Label("--", {.handle="info", .minSize={15, 2}}))
-         << (ui::HBox()
-            << ui::Slider(10, 500, 100, {.handle="exposure", .label="Exposure %", .minSize={10, 2}})
-            << ui::Slider(0, 100, 100, {.handle="brightness", .label="BG %", .minSize={10, 2}})
-            << ui::Combo("!Shaded,Normals,Albedo,UVs,Lighting Only,NdotL,SSR Confidence", {.handle="glDebug", .label="GL Debug", .minSize={10, 2}})
-            << ui::CheckBox("SSR", {.checked=true, .handle="ssrEnabled", .minSize={4, 2}}))
-       ) << ui::Show();
+  gui << (VSplit()
+         << (HSplit()
+            << Canvas3D({.handle="draw", .label="Cycles", .minSize={32, 24}})
+            << Canvas3D({.handle="gl", .label="OpenGL 4.1", .minSize={32, 24}}))
+         << (HBox()
+            << Combo("!Original,Clay,Mirror,Gold,Copper,Chrome,Red Plastic,Green Rubber,Glass,Emissive", {.handle="material", .label="Material", .minSize={10, 2}})
+            << Combo("!1,2,4,8,16", {.handle="initSamples", .label="Steps/Frame", .minSize={8, 2}})
+            << Combo("1,2,4,8,16,32,64,!128,256,512,1024,2048,4096", {.handle="maxIter", .label="Max Iter", .minSize={8, 2}})
+            << Slider(1, 16, 4, {.handle="bounces", .label="Bounces", .minSize={10, 2}})
+            << Label("--", {.handle="info", .minSize={15, 2}}))
+         << (HBox()
+            << Slider(10, 500, 100, {.handle="exposure", .label="Exposure %", .minSize={10, 2}})
+            << Slider(0, 100, 100, {.handle="brightness", .label="BG %", .minSize={10, 2}})
+            << Combo("!Shaded,Normals,Albedo,UVs,Lighting Only,NdotL,SSR Confidence", {.handle="glDebug", .label="GL Debug", .minSize={10, 2}})
+            << CheckBox("SSR", {.checked=true, .handle="ssrEnabled", .minSize={4, 2}}))
+       ) << Show();
 
   gui["draw"].install(new MouseHandler(handleMouse));
   gui["gl"].install(new MouseHandler(handleMouse));

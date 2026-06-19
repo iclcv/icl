@@ -55,6 +55,13 @@ namespace icl{
       return reinterpret_cast<T*>(v);
     }
 
+    /// The legacy stream-insertion GUIComponent factories live in `detail`:
+    /// they encode each component's wire type + comma-joined params, and are
+    /// the building blocks the public designated-init components (below, in
+    /// `icl::qt`) delegate to via `toComponent()`.  Application code never
+    /// names them directly.
+    namespace detail {
+
     /// Button Component
     /** Buttons can either be push- or toggle buttons.
         Buttons create a ButtonHandle. If a toggle button is created, also an output of type bool is created,
@@ -367,6 +374,8 @@ namespace icl{
     struct Create : public GUIComponent{
       Create():GUIComponent("!create"){};
     };
+
+    } // namespace detail
 
   } // namespace qt
 }

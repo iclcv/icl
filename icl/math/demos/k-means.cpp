@@ -44,9 +44,9 @@ void run(){
 }
 
 void init(){
-  gui << ui::Plot({.handle="plot", .minSize={40,30}})
-      << ui::Button("run", {.handle="run"})
-      << ui::Show();
+  gui << Plot({.handle="plot", .minSize={40,30}})
+      << Button("run", {.handle="run"})
+      << Show();
 
   vq.init(pa("-n"));
 

@@ -154,47 +154,47 @@ void init(){
   grabber.init(pa("-i"));
   if(pa("-s")) grabber.useDesired(pa("-s").as<Size>());
 
-  gui << ui::Canvas3D({.handle="draw", .minSize={32, 24}});
+  gui << Canvas3D({.handle="draw", .minSize={32, 24}});
 
   markerDetectionOptionGUI = Tab(cat(calibFileData.configurables,","));
 
   for(unsigned int i=0;i<calibFileData.configurables.size();++i){
-    markerDetectionOptionGUI << ui::Prop(calibFileData.configurables[i]);
+    markerDetectionOptionGUI << Prop(calibFileData.configurables[i]);
   }
 
-  gui << ( ui::VBox({.minSize={14, 28}, .maxSize={14, 100}})
-           << (ui::VBox({.label="visualization", .minSize={1, 5}})
-               << ( ui::HBox({.minSize={1, 3}, .maxSize={100, 3}})
-                    << ui::Combo(calibFileData.iin, {.handle="iin", .label="visualized image"})
-                    << ui::Slider(0, 255, 128, {.handle="objAlpha", .label="object-alpha"})
+  gui << ( VBox({.minSize={14, 28}, .maxSize={14, 100}})
+           << (VBox({.label="visualization", .minSize={1, 5}})
+               << ( HBox({.minSize={1, 3}, .maxSize={100, 3}})
+                    << Combo(calibFileData.iin, {.handle="iin", .label="visualized image"})
+                    << Slider(0, 255, 128, {.handle="objAlpha", .label="object-alpha"})
                     )
-               << ( ui::HBox({.maxSize={100, 3}})
-                    << ui::CheckBox("use corners", {.checked=true, .handle="useCorners"})
-                    << ui::CheckBox("show CS", {.checked=false, .handle="showCS"})
+               << ( HBox({.maxSize={100, 3}})
+                    << CheckBox("use corners", {.checked=true, .handle="useCorners"})
+                    << CheckBox("show CS", {.checked=false, .handle="showCS"})
                     )
                )
-           << ( ui::VBox({.label="more options", .minSize={1, 6}, .maxSize={100, 6}})
-                << ( ui::HBox({.maxSize={99, 2}})
-                     << ui::Button("plane", {.handle="show-plane-options"})
-                     << ui::Button("markers", {.handle="show-marker-detection-options"})
+           << ( VBox({.label="more options", .minSize={1, 6}, .maxSize={100, 6}})
+                << ( HBox({.maxSize={99, 2}})
+                     << Button("plane", {.handle="show-plane-options"})
+                     << Button("markers", {.handle="show-marker-detection-options"})
                      )
-                << ( ui::HBox({.maxSize={99, 2}})
-                     << ui::Button("rel. Transf.", {.handle="showRelTransGUI"})
-                     << ui::CamCfg()
+                << ( HBox({.maxSize={99, 2}})
+                     << Button("rel. Transf.", {.handle="showRelTransGUI"})
+                     << CamCfg()
                      )
-                << ui::CheckBox("manually define marker grids", {.handle="manual mode"})
+                << CheckBox("manually define marker grids", {.handle="manual mode"})
                 )
-           << (ui::VScroll({.label="calibration objects"})
+           << (VScroll({.label="calibration objects"})
                << calibFileData.objGUI
                )
-           << (ui::HBox({.maxSize={100, 4}})
-               << ( ui::VBox()
-                    << ui::CheckBox("nomalized error", {.checked=true, .handle="errNormalized", .tooltip="if checked, the total calibration error\n"
+           << (HBox({.maxSize={100, 4}})
+               << ( VBox()
+                    << CheckBox("nomalized error", {.checked=true, .handle="errNormalized", .tooltip="if checked, the total calibration error\n"
                                                                                      "is not devided by the number of calibration points N,\n"
                                                                                      "but by N^2 in order to avoid favoring frames where\n"
                                                                                      "only few markers were found."})
 
-                    << ui::Label({.handle="error", .label="error", .tooltip="The error is given by the mean square distance\n"
+                    << Label({.handle="error", .label="error", .tooltip="The error is given by the mean square distance\n"
                                                                       "of the actually detected points and the points\n"
                                                                       "that are projected into the scene using the\n"
                                                                       "current camera calibration result\n"
@@ -203,8 +203,8 @@ void init(){
                                                                       "but by N^2. To make the error comparable, it is\n"
                                                                       "also mutiplied by 100 in this case."})
                     )
-               << (ui::VBox()
-                   << ui::Combo("default,!extr", {.handle="extr", .label="opt. mode", .tooltip="in case you passed the program argument "
+               << (VBox()
+                   << Combo("default,!extr", {.handle="extr", .label="opt. mode", .tooltip="in case you passed the program argument "
                                                                                  "<i>\"-intr FILENAME\"</i> to the "
                                                                                  "icl-camera-calibration application, "
                                                                                  "you can here define whether to perform "
@@ -214,56 +214,56 @@ void init(){
                                                                                  "calibration results. The lma mode will add an "
                                                                                  "additional levenberg-marquardt base "
                                                                                  "optimization step.", .hide=!knownIntrinsicCameraParams})
-                   << ui::CheckBox("use lma", {.checked=true, .handle="lma", .tooltip="perform 2nd tier LMA-based optrimization to minimize projection error."})
+                   << CheckBox("use lma", {.checked=true, .handle="lma", .tooltip="perform 2nd tier LMA-based optrimization to minimize projection error."})
                    )
                )
-           << ui::Label("ready..", {.handle="status", .label="detection status", .minSize={1, 2}, .maxSize={100, 2}})
-           << ( ui::VBox({.minSize={1, 6}, .maxSize={100, 6}})
-                << ( ui::HBox()
-                     << ui::Spinner(1, 10000, 10, {.handle="save_num_frames", .label="# frames", .tooltip="When you press save, "
+           << Label("ready..", {.handle="status", .label="detection status", .minSize={1, 2}, .maxSize={100, 2}})
+           << ( VBox({.minSize={1, 6}, .maxSize={100, 6}})
+                << ( HBox()
+                     << Spinner(1, 10000, 10, {.handle="save_num_frames", .label="# frames", .tooltip="When you press save, "
                                                                                              "the system will\ncapture "
                                                                                              "that many frames to find\nan "
                                                                                              "optimal calibration result"})
-                     << ui::Button("save", {.handle="save"})
-                     << ui::Button("stop", {.handle="save_stop"})
+                     << Button("save", {.handle="save"})
+                     << Button("stop", {.handle="save_stop"})
                      )
-                << ( ui::HBox()
-                     << ui::Label("10", {.handle="save_remaining_frames", .label="remaining"})
-                     << ui::Label({.handle="save_best_error", .label="best error"})
+                << ( HBox()
+                     << Label("10", {.handle="save_remaining_frames", .label="remaining"})
+                     << Label({.handle="save_best_error", .label="best error"})
                    )
                )
            )
-      << ui::Show();
+      << Show();
 
-  planeOptionGUI << ( ui::HBox()
-                      << ui::Combo("none,x,y,z", {.handle="planeDim", .label="normal"})
-                      << ui::Float(-10000, 10000, 0, {.handle="planeOffset", .label="offset mm"})
+  planeOptionGUI << ( HBox()
+                      << Combo("none,x,y,z", {.handle="planeDim", .label="normal"})
+                      << Float(-10000, 10000, 0, {.handle="planeOffset", .label="offset mm"})
                       )
-                 << ( ui::HBox()
-                      << ui::Combo("100,200,500,!1000,2000,3000,5000,10000", {.handle="planeRadius", .label="radius mm"})
-                      << ui::Float(1, 1000, 10, {.handle="planeTicDist", .label="tic distance mm"})
+                 << ( HBox()
+                      << Combo("100,200,500,!1000,2000,3000,5000,10000", {.handle="planeRadius", .label="radius mm"})
+                      << Float(1, 1000, 10, {.handle="planeTicDist", .label="tic distance mm"})
                       )
-                 << ( ui::HBox()
-                      << ui::Label({.handle="planeStatus", .label="status"})
-                      << ui::ColorSelect(40, 40, 40, {.alpha=255, .handle="planeColor", .label="color"})
+                 << ( HBox()
+                      << Label({.handle="planeStatus", .label="status"})
+                      << ColorSelect(40, 40, 40, {.alpha=255, .handle="planeColor", .label="color"})
                       )
-                 << ui::Create();
+                 << Create();
 
 
-  relTransGUI << ( ui::VBox({.label="rel-transformation"})
-                   << ( ui::HBox()
-                        << ui::Spinner(0, 8, 0, {.handle="rx", .label="x-rotation *pi/4"})
-                        << ui::Spinner(0, 8, 0, {.handle="ry", .label="y-rotation *pi/4"})
-                        << ui::Spinner(0, 8, 0, {.handle="rz", .label="z-rotation *pi/4"})
+  relTransGUI << ( VBox({.label="rel-transformation"})
+                   << ( HBox()
+                        << Spinner(0, 8, 0, {.handle="rx", .label="x-rotation *pi/4"})
+                        << Spinner(0, 8, 0, {.handle="ry", .label="y-rotation *pi/4"})
+                        << Spinner(0, 8, 0, {.handle="rz", .label="z-rotation *pi/4"})
                         )
-                   << ( ui::HBox()
-                        << ui::Float(-100000, 100000, 0, {.handle="tx", .label="x-offset"})
-                        << ui::Float(-100000, 100000, 0, {.handle="ty", .label="y-offset"})
-                        << ui::Float(-100000, 100000, 0, {.handle="tz", .label="z-offset"})
+                   << ( HBox()
+                        << Float(-100000, 100000, 0, {.handle="tx", .label="x-offset"})
+                        << Float(-100000, 100000, 0, {.handle="ty", .label="y-offset"})
+                        << Float(-100000, 100000, 0, {.handle="tz", .label="z-offset"})
                         )
                    )
-              << ui::Button("show transformation matrix", {.handle="showRelTrans"})
-              << ui::Create();
+              << Button("show transformation matrix", {.handle="showRelTrans"})
+              << Create();
 
 
   markerDetectionOptionGUI.create();

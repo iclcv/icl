@@ -49,17 +49,17 @@ void init() {
               pa("-no-checkerboard"));
 
   // GUI: single canvas with overlay controls
-  gui << (ui::HSplit()
-       << ui::Canvas3D(viewSize, {.handle="canvas", .minSize={32, 24}})
-       << (ui::VBox({.minSize={12, 0}})
-          << ui::Slider(0, 100, 50, {.handle="alpha", .label="GL Overlay %"})
-          << ui::Slider(1, 16, 4, {.handle="bounces", .label="Bounces"})
-          << ui::Slider(10, 500, 100, {.handle="exposure", .label="Exposure %"})
-          << ui::Slider(0, 20, 3, {.handle="shadowSoft", .label="Shadow Softness"})
-          << ui::Combo("shaded,normals,albedo,UVs,lighting,NdotL,"
+  gui << (HSplit()
+       << Canvas3D(viewSize, {.handle="canvas", .minSize={32, 24}})
+       << (VBox({.minSize={12, 0}})
+          << Slider(0, 100, 50, {.handle="alpha", .label="GL Overlay %"})
+          << Slider(1, 16, 4, {.handle="bounces", .label="Bounces"})
+          << Slider(10, 500, 100, {.handle="exposure", .label="Exposure %"})
+          << Slider(0, 20, 3, {.handle="shadowSoft", .label="Shadow Softness"})
+          << Combo("shaded,normals,albedo,UVs,lighting,NdotL,"
                    "SSR confidence,depth,SSR only", {.handle="glDebug", .label="GL Debug"})
-          << ui::Label("--", {.handle="info"})))
-     << ui::Show();
+          << Label("--", {.handle="info"})))
+     << Show();
 
   gui["canvas"].link(scene.getGLCallback(0).get());
   gui["canvas"].install(handleMouse);

@@ -50,12 +50,12 @@ void init(){
   if(!pa("-nosync").as<bool>()){
     fd.prop("thresh.global threshold").value = 4.8;
   }
-  gui << ui::Canvas3D({.handle="draw", .minSize={16, 12}})
-      << (ui::VBox({.minSize={15, 1}, .maxSize={15, 99}})
-          << ui::Combo(fd.getIntermediateImageNames(), {.handle="vis", .label="visualized image"})
-          << ui::Prop("fd")
+  gui << Canvas3D({.handle="draw", .minSize={16, 12}})
+      << (VBox({.minSize={15, 1}, .maxSize={15, 99}})
+          << Combo(fd.getIntermediateImageNames(), {.handle="vis", .label="visualized image"})
+          << Prop("fd")
           )
-      <<ui::Show();
+      <<Show();
 }
 
 

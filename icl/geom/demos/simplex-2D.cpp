@@ -16,7 +16,7 @@ float error_function(const Pos &p){
 }
 
 void init(){
-  gui << ui::Canvas({.handle="draw", .minSize={20, 20}}) << ui::Show();
+  gui << Canvas({.handle="draw", .minSize={20, 20}}) << Show();
 
   Img32f bg(Size(1000,1000),1);
   Channel32f bgc = bg[0];

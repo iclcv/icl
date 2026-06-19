@@ -30,14 +30,14 @@ void init(){
 
     grabber.init(pa("-i"));
 
-    gui << ui::Canvas3D({.handle="3d", .label="3d view"})
-           << ( ui::VBox()
-                << ui::Slider(1, 20, 3, {.handle="steps_handle", .label="steps"})
-                << ui::Slider(10, 100, 20, {.handle="radius_handle", .label="radius"})
-                << ui::FSlider(1.f, 100.f, 35.f, {.handle="th_handle", .label="Threshold"})
-                << ui::CheckBox("Thinned Contour", {.checked=true, .handle="useThinned_handle"})
-                << ui::Fps(10, {.handle="fps", .label="fps"}) );
-    gui << ui::Show();
+    gui << Canvas3D({.handle="3d", .label="3d view"})
+           << ( VBox()
+                << Slider(1, 20, 3, {.handle="steps_handle", .label="steps"})
+                << Slider(10, 100, 20, {.handle="radius_handle", .label="radius"})
+                << FSlider(1.f, 100.f, 35.f, {.handle="th_handle", .label="Threshold"})
+                << CheckBox("Thinned Contour", {.checked=true, .handle="useThinned_handle"})
+                << Fps(10, {.handle="fps", .label="fps"}) );
+    gui << Show();
 
     detector = new RegionDetector(200,50000,100,250);
 }

@@ -22,29 +22,29 @@ bool is_different(const float a[13],const float b[13]){
 
 
 void init(){
-  gui << ui::Canvas3D(Size::VGA, {.handle="draw", .minSize={32, 24}})
-      << ( ui::VBox({.minSize={15, 1}})
-           << ui::FSlider(-7, 7, 0, {.handle="rx", .label="x-rotation"})
-           << ui::FSlider(-7, 7, 0, {.handle="ry", .label="y-rotation"})
-           << ui::FSlider(-7, 7, 0, {.handle="rz", .label="z-rotation"})
+  gui << Canvas3D(Size::VGA, {.handle="draw", .minSize={32, 24}})
+      << ( VBox({.minSize={15, 1}})
+           << FSlider(-7, 7, 0, {.handle="rx", .label="x-rotation"})
+           << FSlider(-7, 7, 0, {.handle="ry", .label="y-rotation"})
+           << FSlider(-7, 7, 0, {.handle="rz", .label="z-rotation"})
 
-           << ui::FSlider(0.1, 10, 1, {.handle="dx", .label="x-size"})
-           << ui::FSlider(0.1, 10, 1, {.handle="dy", .label="y-size"})
-           << ui::FSlider(0.1, 10, 1, {.handle="dz", .label="z-size"})
+           << FSlider(0.1, 10, 1, {.handle="dx", .label="x-size"})
+           << FSlider(0.1, 10, 1, {.handle="dy", .label="y-size"})
+           << FSlider(0.1, 10, 1, {.handle="dz", .label="z-size"})
 
-           << ( ui::HBox({.label="e1"})
-                << ui::CheckBox("1/x", {.handle="e1x"})
-                << ui::FSlider(1, 10, 1, {.handle="e1"})
+           << ( HBox({.label="e1"})
+                << CheckBox("1/x", {.handle="e1x"})
+                << FSlider(1, 10, 1, {.handle="e1"})
                 )
-           << ( ui::HBox({.label="e1"})
-                << ui::CheckBox("1/x", {.handle="e2x"})
-                << ui::FSlider(1, 10, 1, {.handle="e2"})
+           << ( HBox({.label="e1"})
+                << CheckBox("1/x", {.handle="e2x"})
+                << FSlider(1, 10, 1, {.handle="e2"})
                 )
-           << ui::Slider(5, 100, 30, {.handle="step1", .label="x-Steps"})
-           << ui::Slider(5, 100, 30, {.handle="step2", .label="y-Steps"})
-           << ui::CheckBox("grid", {.handle="grid"})
+           << Slider(5, 100, 30, {.handle="step1", .label="x-Steps"})
+           << Slider(5, 100, 30, {.handle="step2", .label="y-Steps"})
+           << CheckBox("grid", {.handle="grid"})
            )
-      << ui::Show();
+      << Show();
 
   scene.addCamera(Camera(Vec(0,0,-10),Vec(0,0,1), Vec(1,0,0)));
   o = new SceneObject("superquadric",sq);

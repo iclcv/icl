@@ -50,37 +50,37 @@ void step(){
 void bench(){
   Image benchImage = scale(create("parrot"),1000, 1000).as8u();
   AffineOp lin(interpolateLIN);
- 
+
   Time t = Time::now();
-  for(int i=0;i<100;++i){   
-    lin.reset();    
+  for(int i=0;i<100;++i){
+    lin.reset();
     lin.scale(1.001,1.001);
-    lin.rotate(3.6*i);   
+    lin.rotate(3.6*i);
     (void)lin.apply(benchImage);
   }
   t.showAge("100 affine ops with linear interpolation");
   AffineOp nn(interpolateNN);
   t = Time::now();
   for(int i=0;i<100;++i){
-    nn.reset();    
+    nn.reset();
     nn.scale(1.001,1.001);
-    nn.rotate(3.6*i);    
+    nn.rotate(3.6*i);
     (void)nn.apply(benchImage);
   }
   t.showAge("100 affine ops with nearest neighbor interpolation");
 }
 
 void init(){
-  gui << ui::Display({.handle="draw", .minSize={32, 24}})
-      << ( ui::VBox({.minSize={20, 1}})
-           << ui::FSlider(0.1, 5, 1, {.handle="scale", .label="scale"})
-           << ui::FSlider(0, 6.3, 0, {.handle="angle", .label="angle"})
-           << ui::CheckBox("source image has ROI", {.checked=false, .handle="hasROI"})
-           << ui::CheckBox("clipToROI", {.checked=false, .handle="clipToROI"})
-           << ui::ToggleButton("lin", "nn", false, {.handle="interp", .label="interp."})
-           << ui::Button("bench", {.handle="bench"})
+  gui << Display({.handle="draw", .minSize={32, 24}})
+      << ( VBox({.minSize={20, 1}})
+           << FSlider(0.1, 5, 1, {.handle="scale", .label="scale"})
+           << FSlider(0, 6.3, 0, {.handle="angle", .label="angle"})
+           << CheckBox("source image has ROI", {.checked=false, .handle="hasROI"})
+           << CheckBox("clipToROI", {.checked=false, .handle="clipToROI"})
+           << ToggleButton("lin", "nn", false, {.handle="interp", .label="interp."})
+           << Button("bench", {.handle="bench"})
           )
-      << ui::Show();
+      << Show();
 
   baseImage = scale(create("parrot"), 0.4).as8u();
   updateSource();

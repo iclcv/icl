@@ -142,11 +142,11 @@ void init() {
   t.showAge("initial raycast");
 
   // GUI: two 3D canvases side by side
-  gui << (ui::HBox()
-    << ui::Canvas3D(Size(640, 480), {.handle="left", .label="Scene"})
-    << ui::Canvas3D(Size(640, 480), {.handle="right", .label="Point Cloud"}))
-    << ui::Fps({.handle="fps"})
-    << ui::Show();
+  gui << (HBox()
+    << Canvas3D(Size(640, 480), {.handle="left", .label="Scene"})
+    << Canvas3D(Size(640, 480), {.handle="right", .label="Point Cloud"}))
+    << Fps({.handle="fps"})
+    << Show();
 
   gui["left"].link(sceneLeft.getGLCallback(0).get());
   gui["left"].install(sceneLeft.getMouseHandler(0));

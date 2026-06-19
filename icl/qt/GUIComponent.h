@@ -21,6 +21,10 @@ namespace icl::qt {
     /// friend GUI class
     friend class GUI;
 
+    /// friend GUIDefinition class (builds a definition straight from the
+    /// structured component, bypassing the toString()/re-parse round-trip)
+    friend class GUIDefinition;
+
     public:
     /// Actual options (set using the .xxx methods)
     struct Options {

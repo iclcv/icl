@@ -18,10 +18,10 @@ GUI gui;
 
 void init() {
   gui << (VBox()
-          << ui::Label("Runs a fake long task behind a modal qt::ProgressContext.",
+          << Label("Runs a fake long task behind a modal qt::ProgressContext.",
                        {.handle = "info"})
-          << ui::Button("run long task", {.handle = "go"}))
-      << ui::Show();
+          << Button("run long task", {.handle = "go"}))
+      << Show();
 }
 
 void run() {

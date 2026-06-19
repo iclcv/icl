@@ -59,9 +59,9 @@ struct OSRCube : public SceneObject{
 void init(){
   // create graphical user interface
 
-  gui << ui::Canvas3D(Size(300,300), {.handle="draw", .label="3D scene", .minSize={16, 16}})
-      << ui::Canvas({.handle="image", .label="offscreen rendered image", .minSize={16, 16}})
-      << ui::Show();
+  gui << Canvas3D(Size(300,300), {.handle="draw", .label="3D scene", .minSize={16, 16}})
+      << Canvas({.handle="image", .label="offscreen rendered image", .minSize={16, 16}})
+      << Show();
 
   // create camera and add to scene instance
   Camera cam(Vec(0,0,-13), // position

@@ -12,7 +12,7 @@ qt_moc_headers = files(
   'MultiDrawHandle.h',
   'StringSignalButton.h',
   'ThreadedUpdatableSlider.h',
-  'ToggleButton.h',
+  'ToggleButtonWidget.h',
   'Widget.h',
 )
 
@@ -110,7 +110,7 @@ qt_module_headers = files(
   'ThreadedUpdatableSlider.h',
   'ThreadedUpdatableTextView.h',
   'ThreadedUpdatableWidget.h',
-  'ToggleButton.h',
+  'ToggleButtonWidget.h',
   'Widget.h',
   'WidgetCaptureMode.h',
   'ProgressContext.h',
@@ -184,7 +184,7 @@ qt_sources = files(
   'TabHandle.cpp',
   'ThreadedUpdatableSlider.cpp',
   'ThreadedUpdatableTextView.cpp',
-  'ToggleButton.cpp',
+  'ToggleButtonWidget.cpp',
   'Widget.cpp',
 )
 

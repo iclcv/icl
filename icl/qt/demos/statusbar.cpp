@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// Demo for the ui::StatusBar component.  A StatusBar pins itself to the
+// Demo for the StatusBar component.  A StatusBar pins itself to the
 // bottom edge of the container it is streamed into, regardless of that
 // container's layout direction.  It always carries an initial,
 // left-aligned label reachable as gui["status"], and additional
@@ -16,13 +16,13 @@ GUI gui;
 void init(){
   // Note the parent here is an HBox — the StatusBar still docks to the
   // bottom, full-width, below the two displays.
-  gui << ( ui::HBox({.minSize={32,18}})
-           << ui::Display({.handle="a"})
-           << ui::Display({.handle="b"})
-           << ( ui::StatusBar()
-                << ui::Label("frame: 0", {.handle="frame", .maxSize={12,2}})
-                << ui::Button("clear",   {.handle="clear"}) ) )
-      << ui::Show();
+  gui << ( HBox({.minSize={32,18}})
+           << Display({.handle="a"})
+           << Display({.handle="b"})
+           << ( StatusBar()
+                << Label("frame: 0", {.handle="frame", .maxSize={12,2}})
+                << Button("clear",   {.handle="clear"}) ) )
+      << Show();
 
   gui["status"] = str("ready");
   gui.registerCallback([](const std::string &){

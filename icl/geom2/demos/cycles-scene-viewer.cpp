@@ -43,14 +43,14 @@ void init() {
   scene.setup(files, viewSize);
 
   // GUI: left = GL preview, right = Cycles raytrace, debug controls below
-  gui << (ui::VSplit()
-       << (ui::HSplit()
-          << ui::Canvas3D(viewSize, {.handle="gl", .minSize={16, 12}})
-          << ui::Display({.handle="rt", .minSize={16, 12}}))
-       << (ui::HBox()
-          << ui::Combo("shaded,normals,albedo,UVs,lighting,NdotL,"
+  gui << (VSplit()
+       << (HSplit()
+          << Canvas3D(viewSize, {.handle="gl", .minSize={16, 12}})
+          << Display({.handle="rt", .minSize={16, 12}}))
+       << (HBox()
+          << Combo("shaded,normals,albedo,UVs,lighting,NdotL,"
                    "SSR confidence,depth,SSR only", {.handle="glDebug", .label="GL Debug"})))
-      << ui::Show();
+      << Show();
 
   gui["gl"].link(scene.getGLCallback(0).get());
   gui["gl"].install(handleMouse);

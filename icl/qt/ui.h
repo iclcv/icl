@@ -13,12 +13,12 @@
 #include <string>
 #include <utility>
 
-/// Mixed positional + designated-init GUI component syntax.
+/// The public, positional + designated-init GUI component syntax.
 ///
-/// Usage target:
+/// Usage:
 /// \code
-///   gui << ui::Slider(0, 255, 42, {.vertical=true, .step=2,
-///                                  .handle="gain", .label="Gain"});
+///   gui << Slider(0, 255, 42, {.vertical=true, .step=2,
+///                              .handle="gain", .label="Gain"});
 /// \endcode
 ///
 /// Shape: primary "obvious" data args (min/max/val for a slider, text
@@ -28,15 +28,12 @@
 /// `label`, `tooltip`, `size/minSize/maxSize`, `hide`).  One flat Opts
 /// per component means call sites never need nested-designator syntax.
 ///
-/// This coexists with the legacy `qt::Slider(0,255,42).handle("gain")`
-/// stream-insertion builder — both route through the same
-/// SliderGUIWidget factory.  The full retirement of GUIComponent's
-/// string round-trip is a separate, larger arc (see TODO.md "Rework
-/// GUIComponent internal representation" + the TODO comment at
-/// `GUI.cpp:2338`).  `ui::` sits on top of today's toString()/parse
-/// pipeline; once that pipeline goes, `ui::` becomes the primary
-/// storage type.
-namespace icl::qt::ui {
+/// Each component's `toComponent()` builds a `GUIComponent` through the
+/// legacy `detail::Xxx` factory (which only encodes the wire type + params);
+/// `GUI` then builds the widget straight from that GUIComponent without a
+/// string round-trip (ui-plan Phase 7A).  These were once the `qt::ui::`
+/// structs — Phase 7B promoted them into `icl::qt` and retired the qualifier.
+namespace icl::qt {
 
   /// Apply the shared metadata fields of an Opts-like struct to a
   /// legacy GUIComponent.
@@ -64,12 +61,12 @@ namespace icl::qt::ui {
     { t.toComponent() } -> std::convertible_to<GUIComponent>;
   };
 
-  /// Options pack for ui::Slider.
+  /// Options pack for Slider.
   /** Hoisted out of `Slider` because C++ forbids using a nested type's
       default member initializers as part of the enclosing class's own
       default argument (the enclosing class isn't complete yet at that
       point).  Named `SliderOpts` rather than `Slider::Opts` so the
-      default argument `ui::Slider::Slider(..., SliderOpts={})` is
+      default argument `Slider::Slider(..., SliderOpts={})` is
       well-formed. */
   struct SliderOpts {
     // Slider-specific tuning.
@@ -88,8 +85,8 @@ namespace icl::qt::ui {
   /// Integer slider.
   /**
       \code
-      gui << ui::Slider(0, 255, 42, {.handle="gain"});
-      gui << ui::Slider(0, 100, 50, {.vertical=true, .step=2, .label="Coarse"});
+      gui << Slider(0, 255, 42, {.handle="gain"});
+      gui << Slider(0, 100, 50, {.vertical=true, .step=2, .label="Coarse"});
       \endcode
   */
   struct Slider {
@@ -102,7 +99,7 @@ namespace icl::qt::ui {
       : min(min), max(max), val(val), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::Slider(min, max, val, opts.vertical, opts.step), opts);
+      return applyCommon(detail::Slider(min, max, val, opts.vertical, opts.step), opts);
     }
   };
 
@@ -118,7 +115,7 @@ namespace icl::qt::ui {
   // the fields up via `if constexpr(requires{...})`, so Opts that add
   // component-specific fields above the block work with no extra wiring.
 
-  /// Options for ui::FSlider.
+  /// Options for FSlider.
   struct FSliderOpts {
     bool vertical = false;
     std::string handle;
@@ -141,11 +138,11 @@ namespace icl::qt::ui {
       : min(min), max(max), val(val), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::FSlider(min, max, val, opts.vertical), opts);
+      return applyCommon(detail::FSlider(min, max, val, opts.vertical), opts);
     }
   };
 
-  /// Options for ui::Int.
+  /// Options for Int.
   struct IntOpts {
     std::string handle;
     std::string label;
@@ -167,11 +164,11 @@ namespace icl::qt::ui {
       : min(min), max(max), val(val), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::Int(min, max, val), opts);
+      return applyCommon(detail::Int(min, max, val), opts);
     }
   };
 
-  /// Options for ui::Float.
+  /// Options for Float.
   struct FloatOpts {
     std::string handle;
     std::string label;
@@ -193,11 +190,11 @@ namespace icl::qt::ui {
       : min(min), max(max), val(val), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::Float(min, max, val), opts);
+      return applyCommon(detail::Float(min, max, val), opts);
     }
   };
 
-  /// Options for ui::Spinner.
+  /// Options for Spinner.
   struct SpinnerOpts {
     std::string handle;
     std::string label;
@@ -219,11 +216,11 @@ namespace icl::qt::ui {
       : min(min), max(max), val(val), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::Spinner(min, max, val), opts);
+      return applyCommon(detail::Spinner(min, max, val), opts);
     }
   };
 
-  /// Options for ui::String.
+  /// Options for String.
   struct StringOpts {
     int         maxLen = 100;
     std::string handle;
@@ -244,11 +241,11 @@ namespace icl::qt::ui {
       : text(std::move(text)), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::String(text, opts.maxLen), opts);
+      return applyCommon(detail::String(text, opts.maxLen), opts);
     }
   };
 
-  /// Options for ui::Label.
+  /// Options for Label.
   struct LabelOpts {
     std::string handle;
     std::string label;
@@ -264,24 +261,24 @@ namespace icl::qt::ui {
       `.label` field inside LabelOpts is the separate border label —
       the two are deliberately distinct despite the name clash.  This
       is why the mixed syntax works better than a fully-aggregate form
-      would have (where `ui::Label{.label="x"}` would be ambiguous). */
+      would have (where `Label{.label="x"}` would be ambiguous). */
   struct Label {
     std::string text;
     LabelOpts   opts;
 
     /// opts-only ctor (text defaults to empty) — needed so
-    /// `ui::Label({.handle="x"})` resolves; the positional ctor has no
+    /// `Label({.handle="x"})` resolves; the positional ctor has no
     /// default on `text`, else the two would be ambiguous for Label().
     Label(LabelOpts opts = {}) : text(), opts(std::move(opts)) {}
     Label(std::string text, LabelOpts opts = {})
       : text(std::move(text)), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::Label(text), opts);
+      return applyCommon(detail::Label(text), opts);
     }
   };
 
-  /// Options for ui::State (maxLines is a primary positional arg, not
+  /// Options for State (maxLines is a primary positional arg, not
   /// an Opts field).
   struct StateOpts {
     std::string handle;
@@ -295,8 +292,8 @@ namespace icl::qt::ui {
 
   /// Scrolling log-style state panel.
   /** `maxLines` (the scrollback line count) is the conventional primary
-      arg, so it stays positional: `ui::State(50)` rather than
-      `ui::State({.maxLines=50})`.  The opts-only ctor keeps the
+      arg, so it stays positional: `State(50)` rather than
+      `State({.maxLines=50})`.  The opts-only ctor keeps the
       default. */
   struct State {
     int       maxLines;
@@ -307,11 +304,11 @@ namespace icl::qt::ui {
       : maxLines(maxLines), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::State(maxLines), opts);
+      return applyCommon(detail::State(maxLines), opts);
     }
   };
 
-  /// Options for ui::Button.
+  /// Options for Button.
   struct ButtonOpts {
     /// Non-empty → toggle button that alternates between `text` and
     /// this string.  Empty → plain push button.
@@ -329,8 +326,8 @@ namespace icl::qt::ui {
   /// Push or toggle button.
   /**
       \code
-      gui << ui::Button("Run", {.handle="go"});
-      gui << ui::Button("Play", {.toggledText="Pause", .handle="pp"});
+      gui << Button("Run", {.handle="go"});
+      gui << Button("Play", {.toggledText="Pause", .handle="pp"});
       \endcode
   */
   struct Button {
@@ -342,11 +339,11 @@ namespace icl::qt::ui {
 
     GUIComponent toComponent() const {
       return applyCommon(
-        qt::Button(text, opts.toggledText, opts.initiallyToggled), opts);
+        detail::Button(text, opts.toggledText, opts.initiallyToggled), opts);
     }
   };
 
-  /// Options for ui::ToggleButton (no toggle-specific fields — the
+  /// Options for ToggleButton (no toggle-specific fields — the
   /// toggle texts and initial state are mandatory positional args).
   struct ToggleButtonOpts {
     std::string handle;
@@ -361,9 +358,9 @@ namespace icl::qt::ui {
   /// Two-state toggle button.
   /** Spells out the toggle texts and initial state as required
       positional args, so call sites read self-documentingly instead of
-      the `ui::Button("a", {.toggledText="b"})` form:
+      the `Button("a", {.toggledText="b"})` form:
       \code
-      gui << ui::ToggleButton("play", "pause", false, {.handle="pp"});
+      gui << ToggleButton("play", "pause", false, {.handle="pp"});
       \endcode
       `untoggledText` is shown while the button is up, `toggledText`
       while it is down; `initiallyToggled` picks the starting state. */
@@ -381,11 +378,11 @@ namespace icl::qt::ui {
 
     GUIComponent toComponent() const {
       return applyCommon(
-        qt::Button(untoggledText, toggledText, initiallyToggled), opts);
+        detail::Button(untoggledText, toggledText, initiallyToggled), opts);
     }
   };
 
-  /// Options for ui::CheckBox.
+  /// Options for CheckBox.
   struct CheckBoxOpts {
     bool        checked = false;
     std::string handle;
@@ -406,11 +403,11 @@ namespace icl::qt::ui {
       : text(std::move(text)), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::CheckBox(text, opts.checked), opts);
+      return applyCommon(detail::CheckBox(text, opts.checked), opts);
     }
   };
 
-  /// Options for ui::ButtonGroup.
+  /// Options for ButtonGroup.
   struct ButtonGroupOpts {
     std::string handle;
     std::string label;
@@ -430,11 +427,11 @@ namespace icl::qt::ui {
       : entries(std::move(commaSepEntries)), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::ButtonGroup(entries), opts);
+      return applyCommon(detail::ButtonGroup(entries), opts);
     }
   };
 
-  /// Options for ui::Combo.
+  /// Options for Combo.
   struct ComboOpts {
     /// Index into the CSV entries list that starts out selected.
     int         initialIndex = 0;
@@ -456,7 +453,7 @@ namespace icl::qt::ui {
       : entries(std::move(commaSepEntries)), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::Combo(entries, opts.initialIndex), opts);
+      return applyCommon(detail::Combo(entries, opts.initialIndex), opts);
     }
   };
 
@@ -466,7 +463,7 @@ namespace icl::qt::ui {
   // `Prop` has two ctors to preserve the legacy Configurable* vs string-id
   // dispatch (the pointer-encoding trick at GUIComponents.h:309).
 
-  /// Options for ui::Display.
+  /// Options for Display.
   struct DisplayOpts {
     std::string handle;
     std::string label;
@@ -482,11 +479,11 @@ namespace icl::qt::ui {
     DisplayOpts opts;
     Display(DisplayOpts opts = {}) : opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::Display(), opts);
+      return applyCommon(detail::Display(), opts);
     }
   };
 
-  /// Options for ui::Canvas (viewport is a primary positional arg, not
+  /// Options for Canvas (viewport is a primary positional arg, not
   /// an Opts field).
   struct CanvasOpts {
     std::string handle;
@@ -500,8 +497,8 @@ namespace icl::qt::ui {
 
   /// 2D drawing canvas (ICLDrawWidget).
   /** `viewport` (the canvas's logical resolution) is the conventional
-      primary arg, so it stays positional: `ui::Canvas({640,480})`
-      rather than `ui::Canvas({.viewport={640,480}})`.  The opts-only
+      primary arg, so it stays positional: `Canvas({640,480})`
+      rather than `Canvas({.viewport={640,480}})`.  The opts-only
       ctor keeps the VGA default. */
   struct Canvas {
     utils::Size viewport;
@@ -511,11 +508,11 @@ namespace icl::qt::ui {
     Canvas(utils::Size viewport, CanvasOpts opts = {})
       : viewport(viewport), opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::Canvas(viewport), opts);
+      return applyCommon(detail::Canvas(viewport), opts);
     }
   };
 
-  /// Options for ui::Canvas3D (viewport is a primary positional arg,
+  /// Options for Canvas3D (viewport is a primary positional arg,
   /// not an Opts field).
   struct Canvas3DOpts {
     std::string handle;
@@ -528,7 +525,7 @@ namespace icl::qt::ui {
   };
 
   /// 3D-capable drawing canvas (ICLDrawWidget3D).
-  /** `viewport` is positional, mirroring ui::Canvas: `ui::Canvas3D({640,480})`.
+  /** `viewport` is positional, mirroring Canvas: `Canvas3D({640,480})`.
       The opts-only ctor keeps the VGA default. */
   struct Canvas3D {
     utils::Size  viewport;
@@ -538,11 +535,11 @@ namespace icl::qt::ui {
     Canvas3D(utils::Size viewport, Canvas3DOpts opts = {})
       : viewport(viewport), opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::Canvas3D(viewport), opts);
+      return applyCommon(detail::Canvas3D(viewport), opts);
     }
   };
 
-  /// Options for ui::Disp.
+  /// Options for Disp.
   struct DispOpts {
     std::string handle;
     std::string label;
@@ -563,11 +560,11 @@ namespace icl::qt::ui {
       : nx(nx), ny(ny), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::Disp(nx, ny), opts);
+      return applyCommon(detail::Disp(nx, ny), opts);
     }
   };
 
-  /// Options for ui::Plot.
+  /// Options for Plot.
   /** The four range fields default to 0 — matches legacy `Plot()`'s
       "derive range from data" behavior. */
   struct PlotOpts {
@@ -588,8 +585,8 @@ namespace icl::qt::ui {
   /// 2D function / data plotter.
   /**
       \code
-      gui << ui::Plot({.handle="p"});                       // auto-ranged
-      gui << ui::Plot({.minX=-3.14f, .maxX=3.14f,
+      gui << Plot({.handle="p"});                       // auto-ranged
+      gui << Plot({.minX=-3.14f, .maxX=3.14f,
                        .minY=-1.f,   .maxY=1.f,
                        .handle="p", .xLabel="rad"});
       \endcode
@@ -599,12 +596,12 @@ namespace icl::qt::ui {
     Plot(PlotOpts opts = {}) : opts(std::move(opts)) {}
     GUIComponent toComponent() const {
       return applyCommon(
-        qt::Plot(opts.minX, opts.maxX, opts.minY, opts.maxY,
+        detail::Plot(opts.minX, opts.maxX, opts.minY, opts.maxY,
                  opts.openGL, opts.xLabel, opts.yLabel), opts);
     }
   };
 
-  /// Options for ui::Fps (timeWindow is a primary positional arg, not
+  /// Options for Fps (timeWindow is a primary positional arg, not
   /// an Opts field).
   struct FpsOpts {
     std::string handle;
@@ -618,8 +615,8 @@ namespace icl::qt::ui {
 
   /// Running-average FPS monitor.
   /** `timeWindow` (the averaging window in frames) is the conventional
-      primary arg, so it stays positional: `ui::Fps(100)` rather than
-      `ui::Fps({.timeWindow=100})`.  The opts-only ctor keeps the
+      primary arg, so it stays positional: `Fps(100)` rather than
+      `Fps({.timeWindow=100})`.  The opts-only ctor keeps the
       default window. */
   struct Fps {
     int     timeWindow;
@@ -628,11 +625,11 @@ namespace icl::qt::ui {
     Fps(int timeWindow, FpsOpts opts = {})
       : timeWindow(timeWindow), opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::Fps(timeWindow), opts);
+      return applyCommon(detail::Fps(timeWindow), opts);
     }
   };
 
-  /// Options for ui::ColorSelect.
+  /// Options for ColorSelect.
   /** `alpha == -1` means "no alpha channel exposed" (matches legacy). */
   struct ColorSelectOpts {
     int         alpha = -1;
@@ -654,11 +651,11 @@ namespace icl::qt::ui {
       : r(r), g(g), b(b), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(qt::ColorSelect(r, g, b, opts.alpha), opts);
+      return applyCommon(detail::ColorSelect(r, g, b, opts.alpha), opts);
     }
   };
 
-  /// Options for ui::CamCfg.
+  /// Options for CamCfg.
   struct CamCfgOpts {
     std::string deviceType;
     std::string deviceID;
@@ -676,11 +673,11 @@ namespace icl::qt::ui {
     CamCfgOpts opts;
     CamCfg(CamCfgOpts opts = {}) : opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::CamCfg(opts.deviceType, opts.deviceID), opts);
+      return applyCommon(detail::CamCfg(opts.deviceType, opts.deviceID), opts);
     }
   };
 
-  /// Options for ui::Ps (updateFPS is a primary positional arg, not an
+  /// Options for Ps (updateFPS is a primary positional arg, not an
   /// Opts field).
   struct PsOpts {
     std::string handle;
@@ -694,8 +691,8 @@ namespace icl::qt::ui {
 
   /// Process-monitor component (CPU / memory / thread count).
   /** `updateFPS` (the refresh rate) is the conventional primary arg, so
-      it stays positional: `ui::Ps(10)` rather than
-      `ui::Ps({.updateFPS=10})`.  The opts-only ctor keeps the default. */
+      it stays positional: `Ps(10)` rather than
+      `Ps({.updateFPS=10})`.  The opts-only ctor keeps the default. */
   struct Ps {
     int    updateFPS;
     PsOpts opts;
@@ -703,11 +700,11 @@ namespace icl::qt::ui {
     Ps(int updateFPS, PsOpts opts = {})
       : updateFPS(updateFPS), opts(std::move(opts)) {}
     GUIComponent toComponent() const {
-      return applyCommon(qt::Ps(updateFPS), opts);
+      return applyCommon(detail::Ps(updateFPS), opts);
     }
   };
 
-  /// Options for ui::Prop.
+  /// Options for Prop.
   struct PropOpts {
     std::string handle;
     std::string label;
@@ -727,8 +724,8 @@ namespace icl::qt::ui {
 
       \code
       MyConf conf;
-      gui << ui::Prop(&conf, {.handle="p"});
-      gui << ui::Prop("registered_id", {.handle="p"});
+      gui << Prop(&conf, {.handle="p"});
+      gui << Prop("registered_id", {.handle="p"});
       \endcode
   */
   struct Prop {
@@ -746,33 +743,33 @@ namespace icl::qt::ui {
       : cfgID(std::move(id)), opts(std::move(opts)) {}
 
     GUIComponent toComponent() const {
-      return applyCommon(cfg ? qt::Prop(cfg) : qt::Prop(cfgID), opts);
+      return applyCommon(cfg ? detail::Prop(cfg) : detail::Prop(cfgID), opts);
     }
   };
 
   // --- Phase 4 containers -------------------------------------------------
   //
   // Containers diverge from the leaf-component pattern: they inherit from
-  // their legacy `qt::` counterparts (which are `ContainerGUIComponent ->
+  // their legacy `detail::` counterparts (which are `ContainerGUIComponent ->
   // GUI`) rather than being plain structs with `toComponent()`.
   //
   // Why inheritance here: containers are accumulators, not values.
-  // `ui::HBox({...}) << ui::Slider(...) << ui::Button(...)` needs the
+  // `HBox({...}) << Slider(...) << Button(...)` needs the
   // `<<` chain to push children into the container.  Legacy containers
   // already do this via `ContainerGUIComponent::operator<<(const
   // GUIComponent&) const`; inheriting means we keep that plumbing for
-  // free and get the top-level `gui << ui::HBox({...})` to route through
+  // free and get the top-level `gui << HBox({...})` to route through
   // the existing `GUI::operator<<(const GUI&)` overload — no new
   // dispatch needed.  Leaf children going into a container are picked
-  // up by the free `operator<<(GUI&&, ui::Component)` template further
+  // up by the free `operator<<(GUI&&, Component)` template further
   // down.
   //
-  // (ui::Border is intentionally not provided — qt::Border's ctor is
+  // (Border is intentionally not provided — detail::Border's ctor is
   //  private friend-only.  Any container's `.label` opts field produces
   //  an equivalent titled border.)
 
-  /// Options for ui::HBox / ui::VBox / ui::HScroll / ui::VScroll /
-  /// ui::HSplit / ui::VSplit.  All layout containers share the same
+  /// Options for HBox / VBox / HScroll / VScroll /
+  /// HSplit / VSplit.  All layout containers share the same
   /// knobs (margin, spacing, plus the metadata block).
   struct BoxOpts {
     /// -1 → use qt default; 0+ → explicit pixel margin.
@@ -804,59 +801,59 @@ namespace icl::qt::ui {
   }
 
   /// Horizontal layout container.
-  struct HBox : public qt::HBox {
-    HBox(BoxOpts opts = {}) : qt::HBox() { applyBoxOpts(*this, opts); }
-    explicit HBox(QWidget *parent, BoxOpts opts = {}) : qt::HBox(parent) { applyBoxOpts(*this, opts); }
+  struct HBox : public detail::HBox {
+    HBox(BoxOpts opts = {}) : detail::HBox() { applyBoxOpts(*this, opts); }
+    explicit HBox(QWidget *parent, BoxOpts opts = {}) : detail::HBox(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Vertical layout container.
-  struct VBox : public qt::VBox {
-    VBox(BoxOpts opts = {}) : qt::VBox() { applyBoxOpts(*this, opts); }
-    explicit VBox(QWidget *parent, BoxOpts opts = {}) : qt::VBox(parent) { applyBoxOpts(*this, opts); }
+  struct VBox : public detail::VBox {
+    VBox(BoxOpts opts = {}) : detail::VBox() { applyBoxOpts(*this, opts); }
+    explicit VBox(QWidget *parent, BoxOpts opts = {}) : detail::VBox(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Horizontal scroll area.
-  struct HScroll : public qt::HScroll {
-    HScroll(BoxOpts opts = {}) : qt::HScroll() { applyBoxOpts(*this, opts); }
-    explicit HScroll(QWidget *parent, BoxOpts opts = {}) : qt::HScroll(parent) { applyBoxOpts(*this, opts); }
+  struct HScroll : public detail::HScroll {
+    HScroll(BoxOpts opts = {}) : detail::HScroll() { applyBoxOpts(*this, opts); }
+    explicit HScroll(QWidget *parent, BoxOpts opts = {}) : detail::HScroll(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Vertical scroll area.
-  struct VScroll : public qt::VScroll {
-    VScroll(BoxOpts opts = {}) : qt::VScroll() { applyBoxOpts(*this, opts); }
-    explicit VScroll(QWidget *parent, BoxOpts opts = {}) : qt::VScroll(parent) { applyBoxOpts(*this, opts); }
+  struct VScroll : public detail::VScroll {
+    VScroll(BoxOpts opts = {}) : detail::VScroll() { applyBoxOpts(*this, opts); }
+    explicit VScroll(QWidget *parent, BoxOpts opts = {}) : detail::VScroll(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Horizontal splitter (draggable pane divider).
-  struct HSplit : public qt::HSplit {
-    HSplit(BoxOpts opts = {}) : qt::HSplit() { applyBoxOpts(*this, opts); }
-    explicit HSplit(QWidget *parent, BoxOpts opts = {}) : qt::HSplit(parent) { applyBoxOpts(*this, opts); }
+  struct HSplit : public detail::HSplit {
+    HSplit(BoxOpts opts = {}) : detail::HSplit() { applyBoxOpts(*this, opts); }
+    explicit HSplit(QWidget *parent, BoxOpts opts = {}) : detail::HSplit(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Vertical splitter.
-  struct VSplit : public qt::VSplit {
-    VSplit(BoxOpts opts = {}) : qt::VSplit() { applyBoxOpts(*this, opts); }
-    explicit VSplit(QWidget *parent, BoxOpts opts = {}) : qt::VSplit(parent) { applyBoxOpts(*this, opts); }
+  struct VSplit : public detail::VSplit {
+    VSplit(BoxOpts opts = {}) : detail::VSplit() { applyBoxOpts(*this, opts); }
+    explicit VSplit(QWidget *parent, BoxOpts opts = {}) : detail::VSplit(parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Tab container — positional CSV of tab titles + BoxOpts.
   /**
       \code
-      gui << ( ui::Tab("Signal,Plot,Log", {.handle="tabs"})
-               << ui::Display({.handle="sig"})
-               << ui::Plot({.handle="plt"})
-               << ui::State({.handle="log"}) );
+      gui << ( Tab("Signal,Plot,Log", {.handle="tabs"})
+               << Display({.handle="sig"})
+               << Plot({.handle="plt"})
+               << State({.handle="log"}) );
       \endcode
   */
-  struct Tab : public qt::Tab {
+  struct Tab : public detail::Tab {
     Tab(const std::string &commaSepTitles, BoxOpts opts = {})
-      : qt::Tab(commaSepTitles) { applyBoxOpts(*this, opts); }
+      : detail::Tab(commaSepTitles) { applyBoxOpts(*this, opts); }
     Tab(const std::string &commaSepTitles, QWidget *parent, BoxOpts opts = {})
-      : qt::Tab(commaSepTitles, parent) { applyBoxOpts(*this, opts); }
+      : detail::Tab(commaSepTitles, parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Status bar — a thin strip docked to the bottom of its container.
-  /** Unlike the other ui:: containers there is no legacy `qt::StatusBar`
+  /** Unlike the other  containers there is no legacy `detail::StatusBar`
       to inherit (the component is new), so this inherits
       `ContainerGUIComponent` directly and emits the `statusbar(...)`
       definition itself.  Regardless of the container's layout direction
@@ -865,9 +862,9 @@ namespace icl::qt::ui {
       Components streamed in are packed to the right of that label.
 
       \code
-      gui << ( ui::VBox()
-               << ui::Display({.handle="img"})
-               << ui::StatusBar() );           // docked at the bottom
+      gui << ( VBox()
+               << Display({.handle="img"})
+               << StatusBar() );           // docked at the bottom
       // ... later, from any thread:
       gui["status"] = str("ready");
       \endcode
@@ -884,41 +881,39 @@ namespace icl::qt::ui {
   //
   // Trivial markers.  Legacy shapes emit the magic `"!show"` / `"!create"`
   // strings / empty component name (Dummy), which GUI::operator<<(string)
-  // special-cases.  ui:: wrappers just forward.
+  // special-cases.   wrappers just forward.
 
   /// Finalize GUI creation and show the window.
   struct Show {
-    GUIComponent toComponent() const { return qt::Show(); }
+    GUIComponent toComponent() const { return detail::Show(); }
   };
 
   /// Finalize GUI creation but keep the window hidden.
   struct Create {
-    GUIComponent toComponent() const { return qt::Create(); }
+    GUIComponent toComponent() const { return detail::Create(); }
   };
 
   /// No-op placeholder (pairs with `.hide` on other components to make
   /// conditional layout readable).
   struct Dummy {
-    GUIComponent toComponent() const { return qt::Dummy(); }
+    GUIComponent toComponent() const { return detail::Dummy(); }
   };
 
-} // namespace icl::qt::ui
-
-namespace icl::qt {
-  /// Stream a ui::Component into a GUI.
+  /// Stream a designated-init Component into a GUI.
   /** Free-function overload in `icl::qt` so normal lookup finds it when
       the LHS is a GUI.  Delegates to the existing
       `GUI::operator<<(const GUIComponent&)` via the aggregate's
       `toComponent()`.  The rvalue overload mirrors the const-member
       pattern on `ContainerGUIComponent::operator<<` — it lets
-      `HBox() << ui::Slider(...)` chain starting from a temporary
+      `HBox() << Slider(...)` chain starting from a temporary
       container. */
-  template<ui::Component T>
+  template<Component T>
   GUI &operator<<(GUI &g, const T &t){
     return g << t.toComponent();
   }
-  template<ui::Component T>
+  template<Component T>
   GUI &operator<<(GUI &&g, const T &t){
     return g << t.toComponent();
   }
+
 } // namespace icl::qt

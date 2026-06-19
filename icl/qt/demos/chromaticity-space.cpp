@@ -34,12 +34,12 @@ void run(){
 void init(){
   grabber.init(pa("-i"));
   grabber.useDesired(depth8u);
-  gui << ( ui::VBox()
-           << ui::Display({.handle="image", .label="Camera Image", .minSize={16, 12}})
-           << ui::Display({.handle="segimage", .label="Semented Image", .minSize={16, 12}})
+  gui << ( VBox()
+           << Display({.handle="image", .label="Camera Image", .minSize={16, 12}})
+           << Display({.handle="segimage", .label="Semented Image", .minSize={16, 12}})
            )
-      << ui::HBox({.handle="box"})
-      << ui::Show();
+      << HBox({.handle="box"})
+      << Show();
 
 
   cg = new ChromaGUI(*gui.get<BoxHandle>("box"));

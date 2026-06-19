@@ -40,7 +40,7 @@ void init(){
   scene.setBounds(300);
   maze = new MazeObject();
   maze->addToWorld(&scene);
-  gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
+  gui << Canvas3D({.handle="draw"}) << Show();
   gui["draw"].install(&onMouse);             // left-drag tilts the maze
   gui["draw"].link(scene.getGLCallback(0).get());
   scene.setGravity(cam.getNorm() * 10000);   // along the camera view axis

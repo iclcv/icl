@@ -176,15 +176,15 @@ void init(){
   const char *surfNames[NUM_SURF];
   for(int i = 0; i < NUM_SURF; ++i) surfNames[i] = surfFuncs[i].name;
 
-  gui << ui::Canvas3D({.handle="draw", .minSize={32, 24}})
-      << ( ui::VBox({.minSize={14, 1}})
-           << ui::Combo(comboStr(surfNames, NUM_SURF), {.handle="surface", .label="surface function"})
-           << ui::Combo(comboStr(polyNames, NUM_POLY), {.initialIndex=3, .handle="poly", .label="polynomial basis"})
-           << ui::Slider(50, 500, 200, {.handle="n", .label="samples"})
-           << ui::FSlider(0, 2, 0.3, {.handle="noise", .label="noise"})
-           << ui::Label("--", {.handle="fused", .label="basis functions"})
+  gui << Canvas3D({.handle="draw", .minSize={32, 24}})
+      << ( VBox({.minSize={14, 1}})
+           << Combo(comboStr(surfNames, NUM_SURF), {.handle="surface", .label="surface function"})
+           << Combo(comboStr(polyNames, NUM_POLY), {.initialIndex=3, .handle="poly", .label="polynomial basis"})
+           << Slider(50, 500, 200, {.handle="n", .label="samples"})
+           << FSlider(0, 2, 0.3, {.handle="noise", .label="noise"})
+           << Label("--", {.handle="fused", .label="basis functions"})
          )
-      << ui::Show();
+      << Show();
 
   gui["draw"].link(scene.getGLCallback(0).get());
   gui["draw"].install(scene.getMouseHandler(0));

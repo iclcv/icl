@@ -47,10 +47,10 @@ void init() {
   cyl->getMaterial()->reflectivity = 0.4f;
   scene.addNode(cyl);
 
-  gui << (ui::HSplit()
-          << ui::Canvas3D(Size(1600, 1200), {.handle="canvas", .minSize={32, 24}})
-          << ui::Prop(&scene, {.label="default scene", .minSize={16, 24}}))
-      << ui::Show();
+  gui << (HSplit()
+          << Canvas3D(Size(1600, 1200), {.handle="canvas", .minSize={32, 24}})
+          << Prop(&scene, {.label="default scene", .minSize={16, 24}}))
+      << Show();
   gui["canvas"].link(scene.getGLCallback(0).get());
   gui["canvas"].install(scene.getMouseHandler(0));
 }

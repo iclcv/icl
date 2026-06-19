@@ -11,6 +11,7 @@
 #include <QLayout>
 #include <QWidget>
 #include <QApplication>
+#include <memory>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -163,7 +164,7 @@ namespace icl::qt {
         * cannot be created
         * are not added by the stream operator
     */
-    inline bool isDummy() const { return m_sDefinition == "" || m_sDefinition == "dummy"; }
+    bool isDummy() const;
 
     /// returns whether this GUI has been created or not
     bool hasBeenCreated() const;
@@ -180,14 +181,30 @@ namespace icl::qt {
     /// can be overwritten in subclasses (such as ContainerGUIComponent)
     virtual std::string createDefinition() const { return m_sDefinition; }
 
+    /// structured payload of this node, or null for legacy string nodes
+    /** When non-null, create() builds the widget straight from this
+        GUIComponent (no toString()/re-parse), so free-text payloads carrying
+        the grammar metacharacters survive intact.  ContainerGUIComponent
+        overrides this to expose its accumulating `component` member. */
+    virtual const GUIComponent *getComponent() const { return m_component.get(); }
+
     private:
+
+    /// builds a "border(label)" wrapper component carrying the (cell-incremented)
+    /// sizes of the wrapped component — the structured equivalent of the legacy
+    /// label→border string surgery. GUI is a friend of GUIComponent, so this
+    /// member can reach its protected ctor / options.
+    static GUIComponent makeBorderComponent(const std::string &label,
+                                            const GUIComponent::Options &innerOpts);
 
     static void to_string_recursive(const GUI *gui, std::ostream &str, int level);
 
     void create(QLayout *parentLayout,ProxyLayout *proxy, QWidget *parentWidget, DataStore *ds);
 
-    /// own definition string
+    /// own definition string (legacy nodes; also a best-effort fallback)
     std::string m_sDefinition;
+    /// structured form (set for component-built nodes); null otherwise
+    std::shared_ptr<GUIComponent> m_component;
     std::vector<GUI*> m_children;
     GUIWidget *m_poWidget;
     DataStore m_oDataStore;

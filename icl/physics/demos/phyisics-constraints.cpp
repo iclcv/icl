@@ -27,7 +27,7 @@ PhysicsScene2 scene;
 PhysicsMouseHandler2 handler(0, &scene.getScene2(), &scene);
 
 void init(){
-  gui << ui::Canvas3D({.handle="draw"}) << ui::Show();
+  gui << Canvas3D({.handle="draw"}) << Show();
   scene.addCamera(cam);
   scene.setBounds(1500);  // calibrates camera dolly/pan speed to the scene
 

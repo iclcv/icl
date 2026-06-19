@@ -57,7 +57,7 @@ struct Light : public SceneObject{
 
 
 void init(){
-  gui << ui::Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}}) << ui::Show();
+  gui << Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}}) << Show();
 
   scene.addCamera(Camera(Vec(0,-10,-10),
                          Vec(0,0.707,0.707),

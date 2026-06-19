@@ -68,7 +68,7 @@ struct Mouse1 : public MouseHandler{
         }
       }
     }
-  
+
     return MouseResult::Forward;
   }
 
@@ -99,7 +99,7 @@ struct Mouse2 : public DefineRectanglesMouseHandler{
     if(gui["rect"].as<bool>() && !e.isRight()){
       DefineRectanglesMouseHandler::process(e);
     }
-  
+
     return MouseResult::Forward;
   }
 } *mouse_2 = 0;
@@ -174,13 +174,13 @@ void batch_pattern_changed(){
 void batch_crop(){
   if(!batchGUI){
     batchGUI = new HSplit;
-    (*batchGUI) << ( ui::VBox()
-                     << ui::String("", {.handle="ipat", .label="input file pattern"})
-                     << ui::String("converted-####.png", {.handle="opat", .label="output file pattern"})
-                     << ui::Button("do it!", {.handle="do it"})
+    (*batchGUI) << ( VBox()
+                     << String("", {.handle="ipat", .label="input file pattern"})
+                     << String("converted-####.png", {.handle="opat", .label="output file pattern"})
+                     << Button("do it!", {.handle="do it"})
                    )
-                << ui::VScroll({.handle="matches", .label="matching files"})
-                << ui::Create();
+                << VScroll({.handle="matches", .label="matching files"})
+                << Create();
     (*batchGUI)["ipat"].registerCallback(batch_pattern_changed<false>);
     (*batchGUI)["do it"].registerCallback(batch_pattern_changed<true>);
   }
@@ -192,25 +192,25 @@ void init(){
 
   bool c_arg = pa("-c");
 
-  gui << ui::Canvas({.handle="draw", .label="input image"})
-      << ui::Display({.handle="cropped", .label="cropped"})
-      << ( ui::VBox({.minSize={c_arg ? 0 : 12, 1}, .maxSize={c_arg ? 0 : 12, 99}})
-           << ui::Button("save as ..", {.handle="saveAs"})
-           << ui::Button("overwrite input", {.handle="overwrite"})
-           << ui::Combo("0,90,180,270", {.handle="rot", .label="rotation"})
-           << ui::CheckBox("rectangular", {.checked=!pa("-r"), .handle="rect"})
-           << ui::Button("Batch crop...", {.handle="batch"})
-           << ( ui::HBox({.label="rectification size"})
-                << ui::Spinner(1, 4096, 640, {.handle="s1"})
-                << ui::Label(":")
-                << ui::Spinner(1, 4096, 480, {.handle="s2"})
+  gui << Canvas({.handle="draw", .label="input image"})
+      << Display({.handle="cropped", .label="cropped"})
+      << ( VBox({.minSize={c_arg ? 0 : 12, 1}, .maxSize={c_arg ? 0 : 12, 99}})
+           << Button("save as ..", {.handle="saveAs"})
+           << Button("overwrite input", {.handle="overwrite"})
+           << Combo("0,90,180,270", {.handle="rot", .label="rotation"})
+           << CheckBox("rectangular", {.checked=!pa("-r"), .handle="rect"})
+           << Button("Batch crop...", {.handle="batch"})
+           << ( HBox({.label="rectification size"})
+                << Spinner(1, 4096, 640, {.handle="s1"})
+                << Label(":")
+                << Spinner(1, 4096, 480, {.handle="s2"})
                 )
-           << (ui::HBox()
-               << ui::Fps({.handle="fps"})
-               << ui::CamCfg()
+           << (HBox()
+               << Fps({.handle="fps"})
+               << CamCfg()
                )
            )
-      << ui::Show();
+      << Show();
 
 
   if(!c_arg){

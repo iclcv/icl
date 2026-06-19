@@ -29,15 +29,15 @@ std::string polyFunc(int degree) {
 }
 
 void init(){
-  gui << ui::Plot({.handle="plot", .minSize={50,35}})
-      << ( ui::VBox({.minSize={14, 1}})
-           << ui::Slider(1, 7, 3, {.handle="degree", .label="polynomial degree"})
-           << ui::Label("--", {.handle="fused", .label="function"})
-           << ui::Slider(10, 500, 100, {.handle="n", .label="samples"})
-           << ui::FSlider(0, 2, 0.3, {.handle="noise", .label="noise"})
-           << ui::Button("Refit", {.handle="refit"})
+  gui << Plot({.handle="plot", .minSize={50,35}})
+      << ( VBox({.minSize={14, 1}})
+           << Slider(1, 7, 3, {.handle="degree", .label="polynomial degree"})
+           << Label("--", {.handle="fused", .label="function"})
+           << Slider(10, 500, 100, {.handle="n", .label="samples"})
+           << FSlider(0, 2, 0.3, {.handle="noise", .label="noise"})
+           << Button("Refit", {.handle="refit"})
          )
-      << ui::Show();
+      << Show();
 }
 
 void run(){

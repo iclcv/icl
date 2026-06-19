@@ -17,14 +17,27 @@ class QWidget;
 namespace icl::qt {
   /** \cond */
   class GUI;
+  class GUIComponent;
   class ProxyLayout;
   /** \endcond */
 
   /// Utilty class to simplify creation of GUI components \ingroup UNCOMMON
   class ICLQt_API GUIDefinition{
     public:
-    /// create a new GUI Definition
+    /// create a new GUI Definition (legacy: parses the stringly-typed def)
     GUIDefinition(const std::string &def, GUI *gui,
+                  QLayout *parentLayout=0,
+                  ProxyLayout *parentProxyLayout=0,
+                  QWidget *parentWidget=0);
+
+    /// create a GUI Definition straight from a structured GUIComponent
+    /** Bypasses GUIComponent::toString() + the string re-parse entirely, so
+        free-text payloads (a Label's text, a `.label`/`.tooltip`) may contain
+        the grammar metacharacters `, ( ) @ =` without throwing a syntax error.
+        Mirrors the field mapping of the string ctor exactly (same comma-split
+        of the param list, same "string"-type leading-comma special case, same
+        margin/spacing defaults). */
+    GUIDefinition(const GUIComponent &component, GUI *gui,
                   QLayout *parentLayout=0,
                   ProxyLayout *parentProxyLayout=0,
                   QWidget *parentWidget=0);

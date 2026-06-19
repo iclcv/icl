@@ -8,14 +8,14 @@
 #include <QPushButton>
 
 namespace icl::qt {
-  class ICLQt_API ToggleButton : public QPushButton{
+  class ICLQt_API ToggleButtonWidget : public QPushButton{
     Q_OBJECT;
     public:
-    ToggleButton(const std::string &untoggledText,
+    ToggleButtonWidget(const std::string &untoggledText,
                  const std::string &toggledText,
                  QWidget *parent = 0,
                  bool *stateRef=0);
-    ~ToggleButton();
+    ~ToggleButtonWidget();
 
     private Q_SLOTS:
     void toggleStateChanged(bool toggled);

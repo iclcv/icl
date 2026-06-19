@@ -18,6 +18,7 @@
 #include <icl/qt/Widget.h>
 #include <icl/qt/IconFactory.h>
 #include <icl/qt/ContainerGUIComponents.h>
+#include <icl/qt/ui.h>
 #include <icl/qt/GUIComponents.h>
 #include <icl/core/Img.h>
 

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/GUIDefinition.h>
+#include <icl/qt/GUIComponent.h>
 #include <icl/qt/GUISyntaxErrorException.h>
 #include <icl/utils/Size.h>
 #include <icl/utils/StringUtils.h>
@@ -114,6 +115,35 @@ namespace icl::qt {
         else throw GUISyntaxErrorException(def,std::string("illegal optional parameter \"")+s+"\"");
       }
     }
+  }
+
+  GUIDefinition::GUIDefinition(const GUIComponent &c, GUI *gui, QLayout *parentLayout,
+                               icl::qt::ProxyLayout *proxyLayout, QWidget *parentWidget)
+    :m_sDefinitionString("<structured:"+c.m_type+">"),m_sType(c.m_type),
+     m_iMargin(c.m_options.margin > 0 ? abs(c.m_options.margin) : 2),
+     m_iSpacing(c.m_options.spacing > 0 ? abs(c.m_options.spacing) : 2),
+     m_poGUI(gui),m_poParentLayout(parentLayout),
+     m_poParentWidget(parentWidget),m_poParentProxyLayout(proxyLayout){
+
+    // Same comma-split as the string ctor — but applied to the raw param
+    // string, never embedded in `type(...)[opts]`, so `)`/`@`/`=` inside a
+    // param can no longer terminate the envelope early.
+    const std::string &paramList = c.m_params;
+    if(paramList.length()){
+      m_vecParams = StrTok(paramList,",",true,'\\').allTokens();
+    }
+    if(m_sType == "string" && paramList.length() && paramList[0] == ','){
+      m_vecParams.insert(m_vecParams.begin(), "");
+    }
+
+    // Options come straight from the struct — no `@k=v` serialisation, so
+    // metacharacters in handle/label/tooltip are carried verbatim.
+    m_sHandle = c.m_options.handle;
+    m_sLabel  = c.m_options.label;
+    m_toolTip = c.m_options.tooltip;
+    m_oSize    = c.m_options.size;
+    m_oMinSize = c.m_options.minSize;
+    m_oMaxSize = c.m_options.maxSize;
   }
 
   const std::string &GUIDefinition::param(unsigned int idx) const {

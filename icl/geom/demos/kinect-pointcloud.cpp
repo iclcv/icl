@@ -42,7 +42,7 @@ struct AdaptedSceneMouseHandler : public MouseHandler{
   MouseResult process(const MouseEvent &e){
     std::scoped_lock l(mutex);
       h->process(e);
-  
+
     return MouseResult::Forward;
   }
 
@@ -75,42 +75,42 @@ void init(){
   GUI controls = HBox().minSize(12,12);
   GUI controls2 = HBox().minSize(12,12);
 
-  controls << ( ui::VBox()
-            << ui::Button("reset view", {.handle="resetView"})
-            << ui::Fps(10, {.handle="fps"})
-            << ui::FSlider(0.9, 1.1, 1.0, {.handle="depthScaling", .label="depth scaling"})
-            << ui::Slider(1, 10, 3, {.handle="pointSize", .label="point size"})
-            << ui::Slider(1, 10, 1, {.handle="lineWidth", .label="line width"})
-            << ui::ButtonGroup("UniColor, RGB, Depth, Normals", {.handle="usedVisualization"})
-            << ui::CamCfg()
-            << ui::ToggleButton("disable CL", " enable CL", false, {.handle="disableCL"})
-            << ui::ToggleButton("draw NormalLines", " hide normalLines", false, {.handle="drawLines"})
-            << ui::FSlider(2.0, 100.0, 40.0, {.handle="lineLength", .label="normalLineLength"})
-            << ui::Slider(1, 20, 4, {.handle="lineGranularity", .label="normalLineGranularity"})
+  controls << ( VBox()
+            << Button("reset view", {.handle="resetView"})
+            << Fps(10, {.handle="fps"})
+            << FSlider(0.9, 1.1, 1.0, {.handle="depthScaling", .label="depth scaling"})
+            << Slider(1, 10, 3, {.handle="pointSize", .label="point size"})
+            << Slider(1, 10, 1, {.handle="lineWidth", .label="line width"})
+            << ButtonGroup("UniColor, RGB, Depth, Normals", {.handle="usedVisualization"})
+            << CamCfg()
+            << ToggleButton("disable CL", " enable CL", false, {.handle="disableCL"})
+            << ToggleButton("draw NormalLines", " hide normalLines", false, {.handle="drawLines"})
+            << FSlider(2.0, 100.0, 40.0, {.handle="lineLength", .label="normalLineLength"})
+            << Slider(1, 20, 4, {.handle="lineGranularity", .label="normalLineGranularity"})
           );
-  controls2 << ( ui::VBox()
-            << ui::Slider(0, 255, 0, {.handle="unicolorR", .label="unicolor R"})
-            << ui::Slider(0, 255, 0, {.handle="unicolorG", .label="unicolor G"})
-            << ui::Slider(0, 255, 255, {.handle="unicolorB", .label="unicolor B"})
-            << ui::ButtonGroup("unfiltered, median3x3, median5x5", {.handle="usedFilter", .label="normals filter"})
-            << ui::Slider(1, 15, 2, {.handle="normalrange", .label="normal range"})
-            << ui::ToggleButton("disable averaging", " enable averaging", false, {.handle="disableAveraging"})
-            << ui::Slider(1, 15, 1, {.handle="avgrange", .label="normal averaging range"})
-            << ui::ToggleButton("enable temp. smoothing", " disable temp. smoothing", false, {.handle="enableSmoothing"})
-            << ui::Slider(1, 15, 5, {.handle="filterSize", .label="filterSize", .maxSize={100, 2}})
-            << ui::Slider(1, 22, 10, {.handle="difference", .label="difference", .maxSize={100, 2}})
+  controls2 << ( VBox()
+            << Slider(0, 255, 0, {.handle="unicolorR", .label="unicolor R"})
+            << Slider(0, 255, 0, {.handle="unicolorG", .label="unicolor G"})
+            << Slider(0, 255, 255, {.handle="unicolorB", .label="unicolor B"})
+            << ButtonGroup("unfiltered, median3x3, median5x5", {.handle="usedFilter", .label="normals filter"})
+            << Slider(1, 15, 2, {.handle="normalrange", .label="normal range"})
+            << ToggleButton("disable averaging", " enable averaging", false, {.handle="disableAveraging"})
+            << Slider(1, 15, 1, {.handle="avgrange", .label="normal averaging range"})
+            << ToggleButton("enable temp. smoothing", " disable temp. smoothing", false, {.handle="enableSmoothing"})
+            << Slider(1, 15, 5, {.handle="filterSize", .label="filterSize", .maxSize={100, 2}})
+            << Slider(1, 22, 10, {.handle="difference", .label="difference", .maxSize={100, 2}})
         );
-  gui << ( ui::VBox()
-           << ui::Canvas3D({.handle="hdepth", .minSize={10, 8}})
-           << ui::ToggleButton("heatmap", "gray", false, {.handle="heatmap"})
-           << ui::Canvas3D({.handle="hcolor", .minSize={10, 8}})
+  gui << ( VBox()
+           << Canvas3D({.handle="hdepth", .minSize={10, 8}})
+           << ToggleButton("heatmap", "gray", false, {.handle="heatmap"})
+           << Canvas3D({.handle="hcolor", .minSize={10, 8}})
          )
-      << ( ui::HSplit()
-           << ui::Canvas3D({.handle="draw3D", .minSize={40, 30}})
+      << ( HSplit()
+           << Canvas3D({.handle="draw3D", .minSize={40, 30}})
            << controls
            << controls2
            )
-      << ui::Show();
+      << Show();
 
   if(pa("-d")){//get depth cam
     std::string depthcamname = pa("-d").as<std::string>();

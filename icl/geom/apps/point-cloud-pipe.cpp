@@ -28,8 +28,8 @@ void init(){
     cam = Camera(*pa("-c"));
   }
 
-  gui << ui::Canvas3D({.handle="scene", .minSize={32, 24}})
-      << ui::Show();
+  gui << Canvas3D({.handle="scene", .minSize={32, 24}})
+      << Show();
 
 
   // kinect camera

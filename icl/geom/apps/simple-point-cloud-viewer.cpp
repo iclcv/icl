@@ -18,9 +18,9 @@ void init(){
   scene.addCamera(grabber.getDepthCamera());
   scene.setBounds(1000);
   scene.addObject(&obj,false);
-  gui << ui::Canvas3D({.handle="scene", .minSize={32, 24}})
-      << ui::FSlider(0.5, 10, 2, {.handle="ps", .label="point size", .maxSize={99, 2}})
-      << ui::Show();
+  gui << Canvas3D({.handle="scene", .minSize={32, 24}})
+      << FSlider(0.5, 10, 2, {.handle="ps", .label="point size", .maxSize={99, 2}})
+      << Show();
 
 
   gui["scene"].link(scene.getGLCallback(0));

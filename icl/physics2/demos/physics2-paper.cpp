@@ -86,24 +86,24 @@ void init() {
 
   gui << (VBox()
           << (HSplit()
-              << ui::Canvas3D(Size(2400,1800), {.handle="draw", .minSize={32,24}})
+              << Canvas3D(Size(2400,1800), {.handle="draw", .minSize={32,24}})
               << (VBox().maxSize(16,99)
                   // the three driver panels share one tab so they don't stack and
                   // crowd out the paper view below (each Prop is itself scrollable)
-                  << (ui::Tab("paper,fold,move", {.minSize={16,10}})
-                      << ui::Prop(paper)
-                      << ui::Prop(fold)
-                      << ui::Prop(mover))
-                  << ui::Button("reset", {.handle="reset"})
-                  << ui::CheckBox("collision debug", {.handle="dbg"})
+                  << (Tab("paper,fold,move", {.minSize={16,10}})
+                      << Prop(paper)
+                      << Prop(fold)
+                      << Prop(mover))
+                  << Button("reset", {.handle="reset"})
+                  << CheckBox("collision debug", {.handle="dbg"})
                   << (HBox().label("show")
-                      << ui::CheckBox("faces",  {.handle="vFaces"})
-                      << ui::CheckBox("creases",{.checked=true, .handle="vCreases"})
-                      << ui::CheckBox("1st",    {.handle="v1st"})
-                      << ui::CheckBox("2nd",    {.handle="v2nd"}))
-                  << ui::Canvas(Size(210, 297), {.handle="paperview", .minSize={12,16}})))
-          << ui::StatusBar())
-      << ui::Show();
+                      << CheckBox("faces",  {.handle="vFaces"})
+                      << CheckBox("creases",{.checked=true, .handle="vCreases"})
+                      << CheckBox("1st",    {.handle="v1st"})
+                      << CheckBox("2nd",    {.handle="v2nd"}))
+                  << Canvas(Size(210, 297), {.handle="paperview", .minSize={12,16}})))
+          << StatusBar())
+      << Show();
   // Modifier help in the status bar (handle "status" is built into StatusBar).
   gui["status"] = std::string(
       "Paper:  Ctrl+drag = fold   |   Shift+drag = grab point   |   "
