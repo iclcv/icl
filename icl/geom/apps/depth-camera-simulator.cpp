@@ -43,8 +43,7 @@ void init(){
            << FSlider(-4, 4, 0, {.handle="ry", .label="rotate y"})
            << FSlider(-4, 4, 0, {.handle="rz", .label="rotate z"})
 
-           << ((cOut||dOut) ? Button("show",{.toggledText="hide",.label="preview",.handle="preview"}).toComponent()
-               : Dummy().toComponent() )
+           << Button("show",{.toggledText="hide",.label="preview",.handle="preview"}).hideIf(!(cOut||dOut))
            << Button("reset view", {.handle="resetView"})
          )
       << Show();

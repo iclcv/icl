@@ -233,16 +233,16 @@ namespace icl::qt {
   };
 
   /// Single-line text input.
-  struct String {
+  struct String : public GUIComponentT<String> {
     std::string text;
     StringOpts  opts;
 
-    String(std::string text, StringOpts opts = {})
-      : text(std::move(text)), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(detail::String(text, opts.maxLen), opts);
+    String(std::string text, StringOpts o = {})
+      : GUIComponentT("string"), text(std::move(text)), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Label.
@@ -262,20 +262,18 @@ namespace icl::qt {
       the two are deliberately distinct despite the name clash.  This
       is why the mixed syntax works better than a fully-aggregate form
       would have (where `Label{.label="x"}` would be ambiguous). */
-  struct Label {
+  struct Label : public GUIComponentT<Label> {
     std::string text;
     LabelOpts   opts;
 
     /// opts-only ctor (text defaults to empty) — needed so
     /// `Label({.handle="x"})` resolves; the positional ctor has no
     /// default on `text`, else the two would be ambiguous for Label().
-    Label(LabelOpts opts = {}) : text(), opts(std::move(opts)) {}
-    Label(std::string text, LabelOpts opts = {})
-      : text(std::move(text)), opts(std::move(opts)) {}
+    Label(LabelOpts o = {}) : GUIComponentT("label"), text(), opts(std::move(o)) { setOptions(opts); }
+    Label(std::string text, LabelOpts o = {})
+      : GUIComponentT("label"), text(std::move(text)), opts(std::move(o)) { setOptions(opts); }
 
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Label(text), opts);
-    }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for State (maxLines is a primary positional arg, not
@@ -295,17 +293,15 @@ namespace icl::qt {
       arg, so it stays positional: `State(50)` rather than
       `State({.maxLines=50})`.  The opts-only ctor keeps the
       default. */
-  struct State {
+  struct State : public GUIComponentT<State> {
     int       maxLines;
     StateOpts opts;
 
-    State(StateOpts opts = {}) : maxLines(100), opts(std::move(opts)) {}
-    State(int maxLines, StateOpts opts = {})
-      : maxLines(maxLines), opts(std::move(opts)) {}
+    State(StateOpts o = {}) : GUIComponentT("state"), maxLines(100), opts(std::move(o)) { setOptions(opts); }
+    State(int maxLines, StateOpts o = {})
+      : GUIComponentT("state"), maxLines(maxLines), opts(std::move(o)) { setOptions(opts); }
 
-    GUIComponent toComponent() const {
-      return applyCommon(detail::State(maxLines), opts);
-    }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Button.
@@ -330,17 +326,17 @@ namespace icl::qt {
       gui << Button("Play", {.toggledText="Pause", .handle="pp"});
       \endcode
   */
-  struct Button {
+  struct Button : public GUIComponentT<Button> {
     std::string text;
     ButtonOpts  opts;
 
-    Button(std::string text, ButtonOpts opts = {})
-      : text(std::move(text)), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(
-        detail::Button(text, opts.toggledText, opts.initiallyToggled), opts);
+    Button(std::string text, ButtonOpts o = {})
+      : GUIComponentT(o.toggledText.empty() ? "button" : "togglebutton"),
+        text(std::move(text)), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for ToggleButton (no toggle-specific fields — the
@@ -364,22 +360,22 @@ namespace icl::qt {
       \endcode
       `untoggledText` is shown while the button is up, `toggledText`
       while it is down; `initiallyToggled` picks the starting state. */
-  struct ToggleButton {
+  struct ToggleButton : public GUIComponentT<ToggleButton> {
     std::string      untoggledText;
     std::string      toggledText;
     bool             initiallyToggled;
     ToggleButtonOpts opts;
 
     ToggleButton(std::string untoggledText, std::string toggledText,
-                 bool initiallyToggled, ToggleButtonOpts opts = {})
-      : untoggledText(std::move(untoggledText)),
+                 bool initiallyToggled, ToggleButtonOpts o = {})
+      : GUIComponentT("togglebutton"),
+        untoggledText(std::move(untoggledText)),
         toggledText(std::move(toggledText)),
-        initiallyToggled(initiallyToggled), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(
-        detail::Button(untoggledText, toggledText, initiallyToggled), opts);
+        initiallyToggled(initiallyToggled), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for CheckBox.
@@ -395,16 +391,16 @@ namespace icl::qt {
   };
 
   /// Check box with a text label.
-  struct CheckBox {
+  struct CheckBox : public GUIComponentT<CheckBox> {
     std::string text;
     CheckBoxOpts opts;
 
-    CheckBox(std::string text, CheckBoxOpts opts = {})
-      : text(std::move(text)), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(detail::CheckBox(text, opts.checked), opts);
+    CheckBox(std::string text, CheckBoxOpts o = {})
+      : GUIComponentT("checkbox"), text(std::move(text)), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for ButtonGroup.
@@ -419,16 +415,16 @@ namespace icl::qt {
   };
 
   /// Vertical radio-button group (comma-separated entries).
-  struct ButtonGroup {
+  struct ButtonGroup : public GUIComponentT<ButtonGroup> {
     std::string entries;
     ButtonGroupOpts opts;
 
-    ButtonGroup(std::string commaSepEntries, ButtonGroupOpts opts = {})
-      : entries(std::move(commaSepEntries)), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(detail::ButtonGroup(entries), opts);
+    ButtonGroup(std::string commaSepEntries, ButtonGroupOpts o = {})
+      : GUIComponentT("buttongroup"), entries(std::move(commaSepEntries)), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Combo.
@@ -445,16 +441,16 @@ namespace icl::qt {
   };
 
   /// Drop-down combo box (comma-separated entries).
-  struct Combo {
+  struct Combo : public GUIComponentT<Combo> {
     std::string entries;
     ComboOpts   opts;
 
-    Combo(std::string commaSepEntries, ComboOpts opts = {})
-      : entries(std::move(commaSepEntries)), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Combo(entries, opts.initialIndex), opts);
+    Combo(std::string commaSepEntries, ComboOpts o = {})
+      : GUIComponentT("combo"), entries(std::move(commaSepEntries)), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   // --- Phase 3 components -------------------------------------------------

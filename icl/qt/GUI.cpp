@@ -1208,26 +1208,21 @@ namespace icl{
 
     class ButtonGUIWidget : public GUIWidget{
     public:
-      ButtonGUIWidget(const GUIDefinition &def):GUIWidget(def,1,1,GUIWidget::gridLayout,Size(4,1)){
-        QPushButton *b = new QPushButton(def.param(0).c_str(),def.parentWidget());
+      ButtonGUIWidget(const Button &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(4,1)){
+        QPushButton *b = new QPushButton(c.text.c_str(),ctx.parentWidget);
 
-        if(def.hasToolTip()) b->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) b->setToolTip(c.options().tooltip.c_str());
 
         addToGrid(b);
         connect(b,SIGNAL(pressed()),this,SLOT(ioSlot()));
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          m_poClickedEvent = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(b,this));
+          m_poClickedEvent = &getGUI()->allocValue<ButtonHandle>(c.options().handle,ButtonHandle(b,this));
           getGUI()->unlockData();
         }else{
           m_poClickedEvent = 0;
         }
-      }
-      static std::string getSyntax(){
-        return std::string("button(TEXT)[general params] \n")+
-        std::string("\tTEXT is the button text\n")+
-        gen_params();
       }
       virtual void processIO(){
         if(m_poClickedEvent){
@@ -1240,17 +1235,18 @@ namespace icl{
 
     struct ButtonGroupGUIWidget : public GUIWidget{
 
-      ButtonGroupGUIWidget(const GUIDefinition &def):
-        GUIWidget(def,1,2<<20,GUIWidget::gridLayout,Size(4,def.numParams())), m_uiInitialIndex(0){
+      ButtonGroupGUIWidget(const ButtonGroup &c, const CreateContext &ctx):
+        GUIWidget(c,ctx,GUIWidget::gridLayout,Size(4,1)), m_uiInitialIndex(0){
 
-        for(unsigned int i=0;i<def.numParams();i++){
-          std::string text = def.param(i);
+        std::vector<std::string> entries = tok(c.entries, ",");
+        for(unsigned int i=0;i<entries.size();i++){
+          std::string text = entries[i];
           if(text.length() && text[0]=='!'){
             m_uiInitialIndex = i;
             text = text.substr(1);
           }
-          QRadioButton * b = new QRadioButton(text.c_str(),def.parentWidget());
-          if(def.hasToolTip()) b->setToolTip(def.toolTip().c_str());
+          QRadioButton * b = new QRadioButton(text.c_str(),ctx.parentWidget);
+          if(!c.options().tooltip.empty()) b->setToolTip(c.options().tooltip.c_str());
 
           m_vecButtons.push_back(b);
           addToGrid(b,0,i);
@@ -1265,21 +1261,15 @@ namespace icl{
         // cached selected index.  Qt's default per-object connection
         // order = connection order, so the lambda must be installed
         // first to fire before user callbacks.
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<ButtonGroupHandle>(def.handle(),ButtonGroupHandle(&m_vecButtons,this));
+          getGUI()->allocValue<ButtonGroupHandle>(c.options().handle,ButtonGroupHandle(&m_vecButtons,this));
           getGUI()->unlockData();
         }
 
         for(QRadioButton *b : m_vecButtons){
           connect(b,SIGNAL(clicked()),this,SLOT(ioSlot()));
         }
-      }
-      static std::string getSyntax(){
-        return std::string("buttongroup(LIST)[general params] \n")+
-        std::string("\tLIST is a comma seperated list of radio button texts to create\n")+
-        std::string("\tthe button with a '!'-prefix is selected (of index 0 by default)\n")+
-        gen_params();
       }
       virtual void processIO(){}
       //    virtual Size getDefaultSize() {
@@ -1292,20 +1282,12 @@ namespace icl{
 
     class ToggleButtonGUIWidget : public GUIWidget{
     public:
-      ToggleButtonGUIWidget(const GUIDefinition &def):
-        GUIWidget(def,2){
+      ToggleButtonGUIWidget(const GUIComponent &comp, const CreateContext &ctx,
+                            const std::string &u, const std::string &t, bool initToggled):
+        GUIWidget(comp,ctx){
 
-        bool initToggled = false;
-        if(def.param(1).length() && def.param(1)[0] == '!'){
-          initToggled = true;
-        }
-
-        std::string t1 = def.param(0);
-        std::string t2 = def.param(1);
-        if(t1.length() && t1[0]=='!') t1 = t1.substr(1);
-        if(t2.length() && t2[0]=='!') t2 = t2.substr(1);
-        m_poButton = new ToggleButtonWidget(t1,t2,def.parentWidget());
-        if(def.hasToolTip()) m_poButton->setToolTip(def.toolTip().c_str());
+        m_poButton = new ToggleButtonWidget(u,t,ctx.parentWidget);
+        if(!comp.options().tooltip.empty()) m_poButton->setToolTip(comp.options().tooltip.c_str());
 
         if(initToggled){
           m_poButton->setChecked(true);
@@ -1318,20 +1300,13 @@ namespace icl{
         // out of sync-with it's underlying value :-(
         connect(m_poButton,SIGNAL(toggled(bool)),this,SLOT(ioSlot()));
 
-        if(def.handle() != ""){
+        if(!comp.options().handle.empty()){
           getGUI()->lockData();
-          m_poHandle = &getGUI()->allocValue<ButtonHandle>(def.handle(),ButtonHandle(m_poButton,this));
+          m_poHandle = &getGUI()->allocValue<ButtonHandle>(comp.options().handle,ButtonHandle(m_poButton,this));
           getGUI()->unlockData();
         }else{
           m_poHandle = 0;
         }
-      }
-      static std::string getSyntax(){
-        return std::string("togglebutton(U,T)[general params] \n")+
-        std::string("\tU is the buttons text in untoggled state\n")+
-        std::string("\tT is the buttons text in toggled state\n")+
-        std::string("\tif one of U or T has a '!'-prefix, the button is created with this state\n")+
-        gen_params();
       }
       virtual void processIO(){
         if(m_poHandle){
@@ -1347,33 +1322,23 @@ namespace icl{
 
     struct CheckBoxGUIWidget : public GUIWidget{
     public:
-      CheckBoxGUIWidget(const GUIDefinition &def):
-        GUIWidget(def,2){
+      CheckBoxGUIWidget(const CheckBox &c, const CreateContext &ctx):
+        GUIWidget(c,ctx){
 
-        bool initChecked = false;
-        if(def.param(1)=="on" || def.param(1) == "yes" || def.param(1) == "checked"){
-          initChecked = true;
-        }
-
-        std::string t = def.param(0);
-        m_poCheckBox = new QCheckBox(def.param(0).c_str(),def.parentWidget());
+        m_poCheckBox = new QCheckBox(c.text.c_str(),ctx.parentWidget);
         m_poCheckBox->setTristate(false);
-        if(def.hasToolTip()) m_poCheckBox->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) m_poCheckBox->setToolTip(c.options().tooltip.c_str());
 
-        if(initChecked){
-          m_poCheckBox->setCheckState(Qt::Checked);
-        }else{
-          m_poCheckBox->setCheckState(Qt::Unchecked);
-        }
+        m_poCheckBox->setCheckState(c.opts.checked ? Qt::Checked : Qt::Unchecked);
 
         addToGrid(m_poCheckBox);
 
         // Handle first so CheckBoxHandle's stateChanged lambda runs
         // before the user-callback-dispatching ioSlot.  See
         // ComboGUIWidget for the full ordering rationale.
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<CheckBoxHandle>(def.handle(),CheckBoxHandle(m_poCheckBox,this));
+          getGUI()->allocValue<CheckBoxHandle>(c.options().handle,CheckBoxHandle(m_poCheckBox,this));
           getGUI()->unlockData();
         }
 
@@ -1381,12 +1346,6 @@ namespace icl{
         // the clicked()-signal is emitted BEFORE the toggled-signale, which makes the button get
         // out of sync-with it's underlying value :-(
         connect(m_poCheckBox,SIGNAL(stateChanged(int)),this,SLOT(ioSlot()));
-      }
-      static std::string getSyntax(){
-        return std::string("checkbox(TEXT,INIT>)[general params] \n")+
-        std::string("\tTEXT is the check box text\n");
-        std::string("\tINIT defines whether the checkbox is initially checked (checked|unchecked)\n")+
-        gen_params();
       }
       virtual void processIO(){}
     private:
@@ -1398,24 +1357,18 @@ namespace icl{
 
 
     struct LabelGUIWidget : public GUIWidget{
-      LabelGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,1)){
+      LabelGUIWidget(const Label &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(4,1)){
 
-        m_poLabel = new CompabilityLabel(def.numParams()==1?def.param(0).c_str():"",def.parentWidget());
-        if(def.hasToolTip()) m_poLabel->setToolTip(def.toolTip().c_str());
+        m_poLabel = new CompabilityLabel(c.text.c_str(),ctx.parentWidget);
+        if(!c.options().tooltip.empty()) m_poLabel->setToolTip(c.options().tooltip.c_str());
 
         addToGrid(m_poLabel);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<LabelHandle>(def.handle(),LabelHandle(m_poLabel,this));
+          getGUI()->allocValue<LabelHandle>(c.options().handle,LabelHandle(m_poLabel,this));
           getGUI()->unlockData();
         }
-      }
-      static std::string getSyntax(){
-        return
-        std::string("label(TEXT="")[general params] \n")+
-        std::string("\tTEXT is the initial text showed by the label")+
-        gen_params();
       }
     private:
       CompabilityLabel *m_poLabel;
@@ -1503,24 +1456,18 @@ namespace icl{
 
 
     struct StateGUIWidget : public GUIWidget{
-      StateGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(4,1)){
-        m_text = new ThreadedUpdatableTextView(def.parentWidget());
+      StateGUIWidget(const State &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(4,1)){
+        m_text = new ThreadedUpdatableTextView(ctx.parentWidget);
         m_text->setReadOnly(true);
-        if(def.hasToolTip()) m_text->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) m_text->setToolTip(c.options().tooltip.c_str());
 
         addToGrid(m_text);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<StateHandle>(def.handle(),StateHandle(m_text,this,def.numParams()?parse<int>(def.param(0)):1<<30));
+          getGUI()->allocValue<StateHandle>(c.options().handle,StateHandle(m_text,this,c.maxLines));
           getGUI()->unlockData();
         }
-      }
-      static std::string getSyntax(){
-        return
-        std::string("state(MAX_LINES)[general params] \n")+
-        std::string("\tMAX_LINES is the maximal line count of the state widget, odd lines are removed automatically");
-        gen_params();
       }
     private:
       ThreadedUpdatableTextView *m_text;
@@ -1707,30 +1654,23 @@ namespace icl{
         int iMaxLen;
       };
 
-      StringGUIWidget(const GUIDefinition &def):GUIWidget(def,1,2){
-        m_poLineEdit = new QLineEdit(def.parentWidget());
-        m_poLineEdit->setValidator(new StringLenValidator(def.numParams() == 2 ? def.intParam(1) : 100));
-        m_poLineEdit->setText(def.numParams()>=1 ? def.param(0).c_str() : "");
+      StringGUIWidget(const String &c, const CreateContext &ctx):GUIWidget(c,ctx){
+        m_poLineEdit = new QLineEdit(ctx.parentWidget);
+        m_poLineEdit->setValidator(new StringLenValidator(c.opts.maxLen));
+        m_poLineEdit->setText(c.text.c_str());
 
-        if(def.hasToolTip()) m_poLineEdit->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) m_poLineEdit->setToolTip(c.options().tooltip.c_str());
 
         QObject::connect(m_poLineEdit,SIGNAL(returnPressed ()),this,SLOT(ioSlot()));
 
         addToGrid(m_poLineEdit);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<StringHandle>(def.handle(),StringHandle(m_poLineEdit,this));
+          getGUI()->allocValue<StringHandle>(c.options().handle,StringHandle(m_poLineEdit,this));
           getGUI()->unlockData();
         }
 
-      }
-      static std::string getSyntax(){
-        return
-        std::string("string(TEXT,MAXLEN)[general params] \n")+
-        std::string("\tTEXT is the initial value of the textfield\n")+
-        std::string("\tMAXLEN is max. number of characters that might be written into the textfiled\n")+
-        gen_params();
       }
       virtual void processIO(){}
     private:
@@ -2011,28 +1951,24 @@ namespace icl{
   #endif
 
     struct ComboGUIWidget : public GUIWidget{
-      ComboGUIWidget(const GUIDefinition &def):GUIWidget(def,1,2<<20,GUIWidget::gridLayout,Size(4,1)){
-        if(def.numParams() < 1) throw GUISyntaxErrorException(def.defString(),"at least 1 param needed here!");
+      ComboGUIWidget(const Combo &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(4,1)){
+        m_poCombo = new QComboBox(ctx.parentWidget);
 
-        m_poCombo = new QComboBox(def.parentWidget());
-
-        if(def.hasToolTip()) m_poCombo->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) m_poCombo->setToolTip(c.options().tooltip.c_str());
 
         addToGrid(m_poCombo);
 
-        unsigned int selectedIndex = 0;
-        std::string sFirst = def.param(0);
-        for(unsigned int i=0;i<def.numParams();i++){
-          const std::string &s = def.param(i);
-          if(s.length() && s[0]=='!'){
-            sFirst = s.substr(1);
+        std::vector<std::string> entries = tok(c.entries, ",");
+        int selectedIndex = c.opts.initialIndex;
+        for(unsigned int i=0;i<entries.size();i++){
+          std::string s = entries[i];
+          if(s.length() && s[0]=='!'){       // explicit per-entry selection marker
+            s = s.substr(1);
             selectedIndex = i;
-            m_poCombo->addItem(s.substr(1).c_str());
-          }else{
-            m_poCombo->addItem(s.c_str());
           }
+          m_poCombo->addItem(s.c_str());
         }
-
+        if(selectedIndex < 0 || selectedIndex >= static_cast<int>(entries.size())) selectedIndex = 0;
         m_poCombo->setCurrentIndex(selectedIndex);
 
         // Order matters: ComboHandle's ctor installs a Qt connection
@@ -2041,19 +1977,13 @@ namespace icl{
         // `ioSlot()` hook (which runs registered callbacks) must be
         // connected AFTER that, so Qt fires the cache update first
         // and user callbacks see the new value via `handle.getSelectedIndex()`.
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<ComboHandle>(def.handle(),ComboHandle(m_poCombo,this));
+          getGUI()->allocValue<ComboHandle>(c.options().handle,ComboHandle(m_poCombo,this));
           getGUI()->unlockData();
         }
 
         connect(m_poCombo,SIGNAL(currentIndexChanged(int)),this,SLOT(ioSlot()));
-      }
-      static std::string getSyntax(){
-        return std::string("combo(entry1,entry2,entry3)[general params] \n")+
-        std::string("\tentryX is the the X-th entry of the combo box\n")+
-        std::string("\tif any entry has a '!'-prefix, this entry will be selected initially\n")+
-        gen_params();
       }
       virtual void processIO(){}
 
@@ -2152,22 +2082,14 @@ namespace icl{
         GUI::register_widget_type("vbox",create_widget_template<VBoxGUIWidget>);
         GUI::register_widget_type("hscroll",create_widget_template<HScrollGUIWidget>);
         GUI::register_widget_type("vscroll",create_widget_template<VScrollGUIWidget>);
-        GUI::register_widget_type("button",create_widget_template<ButtonGUIWidget>);
         GUI::register_widget_type("border",create_widget_template<BorderGUIWidget>);
-        GUI::register_widget_type("buttongroup",create_widget_template<ButtonGroupGUIWidget>);
-        GUI::register_widget_type("togglebutton",create_widget_template<ToggleButtonGUIWidget>);
-        GUI::register_widget_type("checkbox",create_widget_template<CheckBoxGUIWidget>);
-        GUI::register_widget_type("label",create_widget_template<LabelGUIWidget>);
         GUI::register_widget_type("statusbar",create_widget_template<StatusBarGUIWidget>);
-        GUI::register_widget_type("string",create_widget_template<StringGUIWidget>);
         GUI::register_widget_type("disp",create_widget_template<DispGUIWidget>);
         GUI::register_widget_type("image",create_widget_template<ImageGUIWidget>);
-        GUI::register_widget_type("state",create_widget_template<StateGUIWidget>);
         GUI::register_widget_type("draw",create_widget_template<DrawGUIWidget>);
   #ifdef ICL_HAVE_OPENGL
         GUI::register_widget_type("draw3D",create_widget_template<DrawGUIWidget3D>);
   #endif
-        GUI::register_widget_type("combo",create_widget_template<ComboGUIWidget>);
         GUI::register_widget_type("fps",create_widget_template<FPSGUIWidget>);
         GUI::register_widget_type("multidraw",create_widget_template<MultiDrawGUIWidget>);
         GUI::register_widget_type("tab",create_widget_template<TabGUIWidget>);
@@ -2220,8 +2142,33 @@ namespace icl{
     GUIWidget *Float::createWidget(const CreateContext &ctx) const {
       return new FloatGUIWidget(*this, ctx);
     }
+    GUIWidget *String::createWidget(const CreateContext &ctx) const {
+      return new StringGUIWidget(*this, ctx);
+    }
+    GUIWidget *Label::createWidget(const CreateContext &ctx) const {
+      return new LabelGUIWidget(*this, ctx);
+    }
+    GUIWidget *State::createWidget(const CreateContext &ctx) const {
+      return new StateGUIWidget(*this, ctx);
+    }
     GUIWidget *Spinner::createWidget(const CreateContext &ctx) const {
       return new SpinnerGUIWidget(*this, ctx);
+    }
+    GUIWidget *Button::createWidget(const CreateContext &ctx) const {
+      if(opts.toggledText.empty()) return new ButtonGUIWidget(*this, ctx);
+      return new ToggleButtonGUIWidget(*this, ctx, text, opts.toggledText, opts.initiallyToggled);
+    }
+    GUIWidget *ToggleButton::createWidget(const CreateContext &ctx) const {
+      return new ToggleButtonGUIWidget(*this, ctx, untoggledText, toggledText, initiallyToggled);
+    }
+    GUIWidget *CheckBox::createWidget(const CreateContext &ctx) const {
+      return new CheckBoxGUIWidget(*this, ctx);
+    }
+    GUIWidget *ButtonGroup::createWidget(const CreateContext &ctx) const {
+      return new ButtonGroupGUIWidget(*this, ctx);
+    }
+    GUIWidget *Combo::createWidget(const CreateContext &ctx) const {
+      return new ComboGUIWidget(*this, ctx);
     }
 
 
