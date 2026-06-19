@@ -46,7 +46,35 @@ it as a mode. Phase 6 = retire the dead `geom::Scene` physics path + the old
 `PhysicsScene`/`PhysicsObject` inheritance, while KEEPING the legacy solver behind the
 flag.
 
-## Session 76 recap (ui-plan Phase 7 — GUI string round-trip retired + ui::→qt:: promotion) — uncommitted
+## Session 76 recap, part 2 (GUI builder re-engineered onto a polymorphic interface) — committed
+
+After Phase 7 (below), the GUI builder was fully re-engineered per the user's call to
+"use an actual polymorphic interface" (see memory `feedback_polymorphic_over_registry`).
+8 commits, build + 923/923 green at each step. End state:
+
+- **`GUIComponent` is the polymorphic interface:** virtual `createWidget(const CreateContext&)`
+  + virtual `clone()`; CRTP `GUIComponentT<Self>` supplies clone(). Each component (Slider…
+  Prop, geom `Plot3D`) is a `GUIComponentT<Self>` holding **typed fields**; the 9 layout
+  containers share one `ContainerComponent` dispatched by a closed `Kind` enum. `GUI` stores
+  `shared_ptr<GUIComponent>`; `create()` virtual-dispatches `getComponent()->createWidget(ctx)`.
+- **PIMPL kept:** `createWidget` overrides are *declared* in public headers, *defined* in
+  `GUI.cpp`/`PlotWidget3D.cpp` next to the private `*GUIWidget` classes. `CreateContext`
+  {gui, parentLayout, parentProxy, parentWidget} replaces `GUIDefinition`.
+- **Deleted:** the `register_widget_type` string registry + `create_widget` + `GUIDefinition`
+  (.h/.cpp), `GUIComponent::m_params`/`toString()`/`form_args_*`, `encode_pointer`/
+  `decode_pointer` (Prop now carries the `Configurable*` directly), the whole `detail::`
+  factory layer, ui.h `applyCommon` + the `Component` concept, the dead `MultiDrawGUIWidget`.
+- **Net win:** no string-keyed registry, no `GUIDefinition` round-trip, no comma-joined param
+  channel — so a Label's text (commas included) is a typed field that can never be mangled.
+  `tests/test-gui-definition.cpp` rewritten to assert this (typed payloads survive, clone()
+  keeps the dynamic type, border-wrap) with no QApplication.
+
+Remaining GUI polish (deferred): refresh stale `\code` doc-comments; the `ui.h` filename is
+now a historical artifact (could be renamed/merged). `GUISyntaxErrorException` is likely dead.
+
+---
+
+## Session 76 recap, part 1 (ui-plan Phase 7 — GUI string round-trip retired + ui::→qt:: promotion) — committed
 
 Full Phase 7 landed in one session (A→C→B), build + **926/926** green at each step
 (919 prior + 7 new GUI tests). Branch `further-restructuring-and-cleanup`, **not yet
