@@ -73,7 +73,7 @@ void init(){
     GUI x = GUI(Slider(0,255,255,{.handle="fill",.label="fill"}));
     selector = x;
   }else{
-    selector = GUI(ColorSelect(255,0,0,{.handle="fill",.label="fill"}).toComponent());
+    selector = GUI(ColorSelect(255,0,0,{.handle="fill",.label="fill"}));
   }
 
   gui << Display({.handle="image", .minSize={16, 12}})

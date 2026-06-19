@@ -471,12 +471,10 @@ namespace icl::qt {
   };
 
   /// Image visualization widget (ICLWidget).
-  struct Display {
+  struct Display : public GUIComponentT<Display> {
     DisplayOpts opts;
-    Display(DisplayOpts opts = {}) : opts(std::move(opts)) {}
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Display(), opts);
-    }
+    Display(DisplayOpts o = {}) : GUIComponentT("image"), opts(std::move(o)) { setOptions(opts); }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Canvas (viewport is a primary positional arg, not
@@ -496,16 +494,14 @@ namespace icl::qt {
       primary arg, so it stays positional: `Canvas({640,480})`
       rather than `Canvas({.viewport={640,480}})`.  The opts-only
       ctor keeps the VGA default. */
-  struct Canvas {
+  struct Canvas : public GUIComponentT<Canvas> {
     utils::Size viewport;
     CanvasOpts  opts;
-    Canvas(CanvasOpts opts = {})
-      : viewport(utils::Size::VGA), opts(std::move(opts)) {}
-    Canvas(utils::Size viewport, CanvasOpts opts = {})
-      : viewport(viewport), opts(std::move(opts)) {}
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Canvas(viewport), opts);
-    }
+    Canvas(CanvasOpts o = {})
+      : GUIComponentT("draw"), viewport(utils::Size::VGA), opts(std::move(o)) { setOptions(opts); }
+    Canvas(utils::Size viewport, CanvasOpts o = {})
+      : GUIComponentT("draw"), viewport(viewport), opts(std::move(o)) { setOptions(opts); }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Canvas3D (viewport is a primary positional arg,
@@ -523,16 +519,14 @@ namespace icl::qt {
   /// 3D-capable drawing canvas (ICLDrawWidget3D).
   /** `viewport` is positional, mirroring Canvas: `Canvas3D({640,480})`.
       The opts-only ctor keeps the VGA default. */
-  struct Canvas3D {
+  struct Canvas3D : public GUIComponentT<Canvas3D> {
     utils::Size  viewport;
     Canvas3DOpts opts;
-    Canvas3D(Canvas3DOpts opts = {})
-      : viewport(utils::Size::VGA), opts(std::move(opts)) {}
-    Canvas3D(utils::Size viewport, Canvas3DOpts opts = {})
-      : viewport(viewport), opts(std::move(opts)) {}
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Canvas3D(viewport), opts);
-    }
+    Canvas3D(Canvas3DOpts o = {})
+      : GUIComponentT("draw3D"), viewport(utils::Size::VGA), opts(std::move(o)) { setOptions(opts); }
+    Canvas3D(utils::Size viewport, Canvas3DOpts o = {})
+      : GUIComponentT("draw3D"), viewport(viewport), opts(std::move(o)) { setOptions(opts); }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Disp.
@@ -547,17 +541,15 @@ namespace icl::qt {
   };
 
   /// 2D grid of labels (nx × ny cells).
-  struct Disp {
+  struct Disp : public GUIComponentT<Disp> {
     int      nx;
     int      ny;
     DispOpts opts;
 
-    Disp(int nx, int ny, DispOpts opts = {})
-      : nx(nx), ny(ny), opts(std::move(opts)) {}
+    Disp(int nx, int ny, DispOpts o = {})
+      : GUIComponentT("disp"), nx(nx), ny(ny), opts(std::move(o)) { setOptions(opts); }
 
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Disp(nx, ny), opts);
-    }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Plot.
@@ -587,14 +579,10 @@ namespace icl::qt {
                        .handle="p", .xLabel="rad"});
       \endcode
   */
-  struct Plot {
+  struct Plot : public GUIComponentT<Plot> {
     PlotOpts opts;
-    Plot(PlotOpts opts = {}) : opts(std::move(opts)) {}
-    GUIComponent toComponent() const {
-      return applyCommon(
-        detail::Plot(opts.minX, opts.maxX, opts.minY, opts.maxY,
-                 opts.openGL, opts.xLabel, opts.yLabel), opts);
-    }
+    Plot(PlotOpts o = {}) : GUIComponentT("plot"), opts(std::move(o)) { setOptions(opts); }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Fps (timeWindow is a primary positional arg, not
@@ -614,15 +602,13 @@ namespace icl::qt {
       primary arg, so it stays positional: `Fps(100)` rather than
       `Fps({.timeWindow=100})`.  The opts-only ctor keeps the
       default window. */
-  struct Fps {
+  struct Fps : public GUIComponentT<Fps> {
     int     timeWindow;
     FpsOpts opts;
-    Fps(FpsOpts opts = {}) : timeWindow(10), opts(std::move(opts)) {}
-    Fps(int timeWindow, FpsOpts opts = {})
-      : timeWindow(timeWindow), opts(std::move(opts)) {}
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Fps(timeWindow), opts);
-    }
+    Fps(FpsOpts o = {}) : GUIComponentT("fps"), timeWindow(10), opts(std::move(o)) { setOptions(opts); }
+    Fps(int timeWindow, FpsOpts o = {})
+      : GUIComponentT("fps"), timeWindow(timeWindow), opts(std::move(o)) { setOptions(opts); }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for ColorSelect.
@@ -639,16 +625,14 @@ namespace icl::qt {
   };
 
   /// RGB(+A) color picker.
-  struct ColorSelect {
+  struct ColorSelect : public GUIComponentT<ColorSelect> {
     int r, g, b;
     ColorSelectOpts opts;
 
-    ColorSelect(int r, int g, int b, ColorSelectOpts opts = {})
-      : r(r), g(g), b(b), opts(std::move(opts)) {}
+    ColorSelect(int r, int g, int b, ColorSelectOpts o = {})
+      : GUIComponentT("color"), r(r), g(g), b(b), opts(std::move(o)) { setOptions(opts); }
 
-    GUIComponent toComponent() const {
-      return applyCommon(detail::ColorSelect(r, g, b, opts.alpha), opts);
-    }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for CamCfg.
@@ -665,12 +649,10 @@ namespace icl::qt {
   };
 
   /// Camera-configuration dialog button.
-  struct CamCfg {
+  struct CamCfg : public GUIComponentT<CamCfg> {
     CamCfgOpts opts;
-    CamCfg(CamCfgOpts opts = {}) : opts(std::move(opts)) {}
-    GUIComponent toComponent() const {
-      return applyCommon(detail::CamCfg(opts.deviceType, opts.deviceID), opts);
-    }
+    CamCfg(CamCfgOpts o = {}) : GUIComponentT("camcfg"), opts(std::move(o)) { setOptions(opts); }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Ps (updateFPS is a primary positional arg, not an
@@ -689,15 +671,13 @@ namespace icl::qt {
   /** `updateFPS` (the refresh rate) is the conventional primary arg, so
       it stays positional: `Ps(10)` rather than
       `Ps({.updateFPS=10})`.  The opts-only ctor keeps the default. */
-  struct Ps {
+  struct Ps : public GUIComponentT<Ps> {
     int    updateFPS;
     PsOpts opts;
-    Ps(PsOpts opts = {}) : updateFPS(10), opts(std::move(opts)) {}
-    Ps(int updateFPS, PsOpts opts = {})
-      : updateFPS(updateFPS), opts(std::move(opts)) {}
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Ps(updateFPS), opts);
-    }
+    Ps(PsOpts o = {}) : GUIComponentT("ps"), updateFPS(10), opts(std::move(o)) { setOptions(opts); }
+    Ps(int updateFPS, PsOpts o = {})
+      : GUIComponentT("ps"), updateFPS(updateFPS), opts(std::move(o)) { setOptions(opts); }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Prop.
@@ -724,23 +704,21 @@ namespace icl::qt {
       gui << Prop("registered_id", {.handle="p"});
       \endcode
   */
-  struct Prop {
+  struct Prop : public GUIComponentT<Prop> {
     const utils::Configurable *cfg = nullptr;  // non-null → pointer ctor
     std::string                cfgID;          // used when cfg == nullptr
     PropOpts                   opts;
 
-    Prop(const utils::Configurable *cfg, PropOpts opts = {})
-      : cfg(cfg), opts(std::move(opts)) {}
+    Prop(const utils::Configurable *cfg, PropOpts o = {})
+      : GUIComponentT("prop"), cfg(cfg), opts(std::move(o)) { setOptions(opts); }
 
-    Prop(const utils::Configurable &cfg, PropOpts opts = {})
-      : cfg(&cfg), opts(std::move(opts)) {}
+    Prop(const utils::Configurable &cfg, PropOpts o = {})
+      : GUIComponentT("prop"), cfg(&cfg), opts(std::move(o)) { setOptions(opts); }
 
-    Prop(std::string id, PropOpts opts = {})
-      : cfgID(std::move(id)), opts(std::move(opts)) {}
+    Prop(std::string id, PropOpts o = {})
+      : GUIComponentT("prop"), cfgID(std::move(id)), opts(std::move(o)) { setOptions(opts); }
 
-    GUIComponent toComponent() const {
-      return applyCommon(cfg ? detail::Prop(cfg) : detail::Prop(cfgID), opts);
-    }
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   // --- Phase 4 containers -------------------------------------------------

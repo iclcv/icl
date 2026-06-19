@@ -148,13 +148,12 @@ namespace icl{
       bool rangeSet;
       QCheckBox *disabled;
 
-      ProcessMonitorGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(6,3)){
+      ProcessMonitorGUIWidget(const Ps &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(6,3)){
         rangeSet = false;
-        if(def.numParams() > 1) throw GUISyntaxErrorException(def.defString(),"0 or 1 parameters are allowed here");
-        float fps = def.numParams() ? parse<float>(def.param(0)) : 10;
-        if(fps <= 0 || fps > 10) throw GUISyntaxErrorException(def.defString(),"fps must be in range ]0,10]");
+        float fps = c.updateFPS;
+        if(fps <= 0 || fps > 10) throw ICLException("Ps: updateFPS must be in range ]0,10]");
 
-        if(def.hasToolTip()){
+        if(!c.options().tooltip.empty()){
           WARNING_LOG("tooltip is not supported for the ProcessMonitor GUI component!");
         }
 
@@ -446,20 +445,16 @@ namespace icl{
         return StSt("error", "error");
       }
 
-      ConfigurableGUIWidget(const GUIDefinition &def)
-        : GUIWidget(def,1,1,GUIWidget::gridLayout, Size(8,12)),
+      ConfigurableGUIWidget(const Prop &c, const CreateContext &ctx)
+        : GUIWidget(c,ctx,GUIWidget::gridLayout, Size(8,12)),
           deactivateExec(false), processingProperty("")
       {
-        static const std::string pointer_prefix = "@pointer@:";
-        if(def.param(0).length() > pointer_prefix.length() &&
-           def.param(0).substr(0,pointer_prefix.length()) == pointer_prefix){
-          conf = decode_pointer<Configurable>(def.param(0).substr(pointer_prefix.length()));
-        }else{
-          conf = Configurable::get(def.param(0));
-        }
-        if(!conf) throw GUISyntaxErrorException(def.defString(),"No Configurable with ID "+def.param(0)+" registered");
+        // The component carries the Configurable* directly (no pointer-in-string
+        // smuggling), or a registered string ID.
+        conf = c.cfg ? const_cast<Configurable*>(c.cfg) : Configurable::get(c.cfgID);
+        if(!conf) throw ICLException("No Configurable with ID "+c.cfgID+" registered");
 
-        if(def.hasToolTip()){
+        if(!c.options().tooltip.empty()){
           WARNING_LOG("tooltip is not supported for the Configurable GUI component!");
         }
 
@@ -895,13 +890,11 @@ namespace icl{
 
     struct CamCfgGUIWidget : public GUIWidget {
 
-      CamCfgGUIWidget(const GUIDefinition &def):
-        GUIWidget(def,0,2), m_cfg(nullptr), m_button(nullptr)
+      CamCfgGUIWidget(const CamCfg &c, const CreateContext &ctx):
+        GUIWidget(c,ctx), m_cfg(nullptr), m_button(nullptr)
       {
-        if(def.numParams() != 0  && def.numParams() != 2){
-          throw GUISyntaxErrorException(def.defString(),"camcfg can take 0 or 2 parameters");
-        }
-        if(def.numParams() == 0){
+        const bool hasDevice = !c.opts.deviceType.empty();
+        if(!hasDevice){
           m_button = new QPushButton("camcfg",this);
           connect(m_button,SIGNAL(clicked()),this,SLOT(ioSlot()));
           addToGrid(m_button);
@@ -910,7 +903,7 @@ namespace icl{
           addToGrid(m_cfg -> getRootWidget());
         }
 
-        if(def.hasToolTip()){
+        if(!c.options().tooltip.empty()){
           WARNING_LOG("tooltip is not supported for the Camera Configuration GUI component!");
         }
       }
@@ -1158,25 +1151,24 @@ namespace icl{
 
 
     struct ColorGUIWidget : public GUIWidget{
-      ColorGUIWidget(const GUIDefinition &def):GUIWidget(def,3,4,GUIWidget::gridLayout,Size(6,2)){
-        QPushButton *b = new QPushButton("select",def.parentWidget());
+      ColorGUIWidget(const ColorSelect &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(6,2)){
+        QPushButton *b = new QPushButton("select",ctx.parentWidget);
         addToGrid(b);
         connect(b,SIGNAL(clicked()),this,SLOT(ioSlot()));
 
-        m_haveAlpha = (def.numParams() == 4);
+        m_haveAlpha = (c.opts.alpha >= 0);
 
-        m_color = Color4D(def.intParam(0), def.intParam(1), def.intParam(2),
-                          m_haveAlpha ? def.intParam(3) : 0);
+        m_color = Color4D(c.r, c.g, c.b, m_haveAlpha ? c.opts.alpha : 0);
 
-        colorLabel = new ColorLabel(m_color,m_haveAlpha,def.parentWidget());
+        colorLabel = new ColorLabel(m_color,m_haveAlpha,ctx.parentWidget);
 
-        if(def.hasToolTip()) colorLabel->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) colorLabel->setToolTip(c.options().tooltip.c_str());
 
         addToGrid(colorLabel,1,0,1,1);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          handle = &getGUI()->allocValue<ColorHandle>(def.handle(),ColorHandle(colorLabel,this));
+          handle = &getGUI()->allocValue<ColorHandle>(c.options().handle,ColorHandle(colorLabel,this));
           getGUI()->unlockData();
         }else{
           handle = 0;
@@ -1679,32 +1671,22 @@ namespace icl{
 
     struct DispGUIWidget : public GUIWidget{
 
-      static Size dim(const GUIDefinition &def, int facX=1, int facY=1){
-        int nW = def.intParam(0);
-        int nH = def.intParam(1);
-        if(nW < 1) throw GUISyntaxErrorException(def.defString(),"NW must be > 0");
-        if(nH < 1) throw GUISyntaxErrorException(def.defString(),"NW must be > 0");
-        return Size(nW,nH);
-      }
-
-      DispGUIWidget(const GUIDefinition &def):GUIWidget(def,2,2,GUIWidget::gridLayout,dim(def,2,1)){
-
-        Size size = dim(def);
-        int nW = size.width;
-        int nH = size.height;
+      DispGUIWidget(const Disp &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(c.nx*2,c.ny)){
+        if(c.nx < 1 || c.ny < 1) throw ICLException("Disp: nx and ny must be > 0");
+        int nW = c.nx, nH = c.ny;
 
         m_poLabelMatrix = new LabelMatrix(nW,nH);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<DispHandle>(def.handle(),DispHandle(m_poLabelMatrix,this));
+          getGUI()->allocValue<DispHandle>(c.options().handle,DispHandle(m_poLabelMatrix,this));
           getGUI()->unlockData();
         }
 
         for(int x=0;x<nW;x++){
           for(int y=0;y<nH;y++){
-            CompabilityLabel *l = new CompabilityLabel("",def.parentWidget());
-            if(def.hasToolTip()) l->setToolTip(def.toolTip().c_str());
+            CompabilityLabel *l = new CompabilityLabel("",ctx.parentWidget);
+            if(!c.options().tooltip.empty()) l->setToolTip(c.options().tooltip.c_str());
 
             (*m_poLabelMatrix)(x,y) = LabelHandle(l,this);
             addToGrid(l,x,y);
@@ -1712,38 +1694,27 @@ namespace icl{
         }
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
       }
-      static std::string getSyntax(){
-        return
-        std::string("disp(NW,NH)[general params] \n")+
-        std::string("\tNW is width of the display label matrix (must be > 0)")+
-        std::string("\tNH is height of the display label matrix (must be > 0)")+
-        gen_params();
-      }
 
     private:
       LabelMatrix *m_poLabelMatrix;
     };
 
     struct ImageGUIWidget : public GUIWidget{
-      ImageGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::gridLayout,Size(16,12)){
+      ImageGUIWidget(const Display &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(16,12)){
 
-        m_poWidget = new ICLWidget(def.parentWidget());
-        if(def.hasToolTip()) m_poWidget->setInfoText(def.toolTip()); //.c_str());
+        m_poWidget = new ICLWidget(ctx.parentWidget);
+        if(!c.options().tooltip.empty()) m_poWidget->setInfoText(c.options().tooltip);
 
         addToGrid(m_poWidget);
 
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<ImageHandle>(def.handle(),ImageHandle(m_poWidget,this));
+          getGUI()->allocValue<ImageHandle>(c.options().handle,ImageHandle(m_poWidget,this));
           getGUI()->unlockData();
         }
 
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-      }
-      static std::string getSyntax(){
-        return std::string("image()[general params] \n")+
-        gen_params();
       }
     private:
       ICLWidget *m_poWidget;
@@ -1751,22 +1722,14 @@ namespace icl{
 
 
     struct PlotGUIWidget : public GUIWidget{
-      PlotGUIWidget(const GUIDefinition &def):GUIWidget(def,0,7,GUIWidget::gridLayout,Size(16,12)){
+      PlotGUIWidget(const Plot &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(16,12)){
 
-        m_plot = new PlotWidget(def.parentWidget());
+        m_plot = new PlotWidget(ctx.parentWidget);
 
-        if(def.hasToolTip()) m_plot->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) m_plot->setToolTip(c.options().tooltip.c_str());
 
-
-        float minX = def.numParams()>=1 ? def.floatParam(0) : 0;
-        float maxX = def.numParams()>=2 ? def.floatParam(1) : 0;
-        float minY = def.numParams()>=3 ? def.floatParam(2) : 0;
-        float maxY = def.numParams()>=4 ? def.floatParam(3) : 0;
-
-        bool useGL = def.numParams()>=5 ? (def.param(4) == "GL" || def.param(4) == "gl") : false;
-
-        std::string xAxisLabel = def.numParams()>=6 ? def.param(5) : str("");
-        std::string yAxisLabel = def.numParams()>=7 ? def.param(6) : str("");
+        const std::string &xAxisLabel = c.opts.xLabel;
+        const std::string &yAxisLabel = c.opts.yLabel;
 
         if(xAxisLabel.length() && xAxisLabel != "-"){
           m_plot->prop("labels.x-axis").value = xAxisLabel;
@@ -1777,11 +1740,10 @@ namespace icl{
           m_plot->prop("borders.left").value = 55;
         }
 
+        m_plot->setDataViewPort(Range32f(c.opts.minX,c.opts.maxX), Range32f(c.opts.minY,c.opts.maxY));
 
-        m_plot->setDataViewPort(Range32f(minX,maxX), Range32f(minY,maxY));
-
-        if(useGL){
-          QOpenGLWidget *gl = new QOpenGLWidget(def.parentWidget());
+        if(c.opts.openGL){
+          QOpenGLWidget *gl = new QOpenGLWidget(ctx.parentWidget);
           QLayout *layout = new QVBoxLayout(gl);
           layout->setSpacing(0);
           layout->setContentsMargins(0,0,0,0);
@@ -1794,26 +1756,13 @@ namespace icl{
           addToGrid(m_plot);
         }
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<PlotHandle>(def.handle(),PlotHandle(m_plot,this));
+          getGUI()->allocValue<PlotHandle>(c.options().handle,PlotHandle(m_plot,this));
           getGUI()->unlockData();
         }
 
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-      }
-      static std::string getSyntax(){
-        return
-        std::string("plot(X_VIEWPORT_MIN=0,X_VIEWPORT_MAX=0,Y_VIEWPORT_MIN=0,"
-               "Y_VIEWPORT_MAX=0,GL=noGL,X_AXIS_LABEL=\"\",Y_AXIS_LABEL=\"\")[general params]\n")+
-        std::string("\tX/Y_VIEWPORT_MIN/MAX are optionally given. The parameters define the data viewport in\n")+
-        std::string("\tcreated PlotWidget. If min and max X are zero, the PlotWidget will automatically estimate\n")+
-        std::string("\tthe X-data viewport. The same is true for the Y-data viewport. Please note, that\n")+
-        std::string("\tthe data viewport can also later be set\n")+
-        std::string("\tGL if the 5th parameter is set to GL, the widget will be embedded into an QGLWidget to enhance performance\n")+
-        std::string("\tX_AXIS_LABEL and Y_AXIS_LABEL can be given optionally use \"-\" as placeholder for no label\n");
-
-        gen_params();
       }
     private:
       PlotWidget *m_plot;
@@ -1821,26 +1770,19 @@ namespace icl{
 
 
     struct DrawGUIWidget : public GUIWidget{
-      DrawGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(16,12)){
-        m_poWidget = new ICLDrawWidget(def.parentWidget());
-        if(def.hasToolTip()) m_poWidget->setInfoText(def.toolTip());
-        //.c_str());if(def.hasToolTip()) m_poWidget->setToolTip(def.toolTip().c_str());
+      DrawGUIWidget(const Canvas &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(16,12)){
+        m_poWidget = new ICLDrawWidget(ctx.parentWidget);
+        if(!c.options().tooltip.empty()) m_poWidget->setInfoText(c.options().tooltip);
 
-        if(def.numParams() == 1) {
-          m_poWidget->setViewPort(parse<Size>(def.param(0)));
-        }
+        m_poWidget->setViewPort(c.viewport);
         addToGrid(m_poWidget);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<DrawHandle>(def.handle(),DrawHandle(m_poWidget,this));
+          getGUI()->allocValue<DrawHandle>(c.options().handle,DrawHandle(m_poWidget,this));
           getGUI()->unlockData();
         }
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-      }
-      static std::string getSyntax(){
-        return std::string("draw()[general params] \n")+
-        gen_params();
       }
     private:
       ICLDrawWidget *m_poWidget;
@@ -1921,29 +1863,20 @@ namespace icl{
 
   #ifdef ICL_HAVE_OPENGL
     struct DrawGUIWidget3D : public GUIWidget{
-      DrawGUIWidget3D(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(16,12)){
-        m_poWidget3D = new ICLDrawWidget3D(def.parentWidget());
-        if(def.numParams() == 1) {
-          m_poWidget3D->setViewPort(parse<Size>(def.param(0)));
-        }
+      DrawGUIWidget3D(const Canvas3D &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(16,12)){
+        m_poWidget3D = new ICLDrawWidget3D(ctx.parentWidget);
+        m_poWidget3D->setViewPort(c.viewport);
 
-        if(def.hasToolTip()) m_poWidget3D->setInfoText(def.toolTip());
-                //if(def.hasToolTip()) m_poWidget3D->setToolTip(def.toolTip().c_str());
-
-
+        if(!c.options().tooltip.empty()) m_poWidget3D->setInfoText(c.options().tooltip);
 
         addToGrid(m_poWidget3D);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<DrawHandle3D>(def.handle(),DrawHandle3D(m_poWidget3D,this));
+          getGUI()->allocValue<DrawHandle3D>(c.options().handle,DrawHandle3D(m_poWidget3D,this));
           getGUI()->unlockData();
         }
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-      }
-      static std::string getSyntax(){
-        return std::string("draw()[general params] \n")+
-        gen_params();
       }
     private:
       ICLDrawWidget3D *m_poWidget3D;
@@ -2022,27 +1955,18 @@ namespace icl{
 
 
     struct FPSGUIWidget : public GUIWidget{
-      FPSGUIWidget(const GUIDefinition &def):GUIWidget(def,0,1,GUIWidget::gridLayout,Size(5,2)){
-        int np = def.numParams();
-        int fpsEstimatorTimeWindow = np ? def.intParam(0) : 10;
-
-        m_poLabel = new CompabilityLabel("fps...",def.parentWidget());
-        if(def.hasToolTip()) m_poLabel->setToolTip(def.toolTip().c_str());
+      FPSGUIWidget(const Fps &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(5,2)){
+        m_poLabel = new CompabilityLabel("fps...",ctx.parentWidget);
+        if(!c.options().tooltip.empty()) m_poLabel->setToolTip(c.options().tooltip.c_str());
 
 
         addToGrid(m_poLabel);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<FPSHandle>(def.handle(),FPSHandle(fpsEstimatorTimeWindow,m_poLabel,this));
+          getGUI()->allocValue<FPSHandle>(c.options().handle,FPSHandle(c.timeWindow,m_poLabel,this));
           getGUI()->unlockData();
         }
-      }
-      static std::string getSyntax(){
-        return std::string("fps(TIME_WINDOW=10)[general params] \n"
-                      "  TIME_WINDOW is the number of timesteps, that are used as \n"
-                      "  Low-Pass-Filter for estimated fps counts\n")
-                      +gen_params();
       }
       virtual Size getDefaultSize() {
         return Size(4,1);
@@ -2084,22 +2008,12 @@ namespace icl{
         GUI::register_widget_type("vscroll",create_widget_template<VScrollGUIWidget>);
         GUI::register_widget_type("border",create_widget_template<BorderGUIWidget>);
         GUI::register_widget_type("statusbar",create_widget_template<StatusBarGUIWidget>);
-        GUI::register_widget_type("disp",create_widget_template<DispGUIWidget>);
-        GUI::register_widget_type("image",create_widget_template<ImageGUIWidget>);
-        GUI::register_widget_type("draw",create_widget_template<DrawGUIWidget>);
   #ifdef ICL_HAVE_OPENGL
-        GUI::register_widget_type("draw3D",create_widget_template<DrawGUIWidget3D>);
   #endif
-        GUI::register_widget_type("fps",create_widget_template<FPSGUIWidget>);
         GUI::register_widget_type("multidraw",create_widget_template<MultiDrawGUIWidget>);
         GUI::register_widget_type("tab",create_widget_template<TabGUIWidget>);
         GUI::register_widget_type("hsplit",create_widget_template<HSplitterGUIWidget>);
         GUI::register_widget_type("vsplit",create_widget_template<VSplitterGUIWidget>);
-        GUI::register_widget_type("camcfg",create_widget_template<CamCfgGUIWidget>);
-        GUI::register_widget_type("prop",create_widget_template<ConfigurableGUIWidget>);
-        GUI::register_widget_type("color",create_widget_template<ColorGUIWidget>);
-        GUI::register_widget_type("ps",create_widget_template<ProcessMonitorGUIWidget>);
-        GUI::register_widget_type("plot",create_widget_template<PlotGUIWidget>);
       }
     } defaultWidgetTypeRegisterer;
 
@@ -2169,6 +2083,40 @@ namespace icl{
     }
     GUIWidget *Combo::createWidget(const CreateContext &ctx) const {
       return new ComboGUIWidget(*this, ctx);
+    }
+    GUIWidget *Display::createWidget(const CreateContext &ctx) const {
+      return new ImageGUIWidget(*this, ctx);
+    }
+    GUIWidget *Canvas::createWidget(const CreateContext &ctx) const {
+      return new DrawGUIWidget(*this, ctx);
+    }
+    GUIWidget *Canvas3D::createWidget(const CreateContext &ctx) const {
+  #ifdef ICL_HAVE_OPENGL
+      return new DrawGUIWidget3D(*this, ctx);
+  #else
+      throw ICLException("Canvas3D is not available without OpenGL support");
+  #endif
+    }
+    GUIWidget *Disp::createWidget(const CreateContext &ctx) const {
+      return new DispGUIWidget(*this, ctx);
+    }
+    GUIWidget *Plot::createWidget(const CreateContext &ctx) const {
+      return new PlotGUIWidget(*this, ctx);
+    }
+    GUIWidget *Fps::createWidget(const CreateContext &ctx) const {
+      return new FPSGUIWidget(*this, ctx);
+    }
+    GUIWidget *ColorSelect::createWidget(const CreateContext &ctx) const {
+      return new ColorGUIWidget(*this, ctx);
+    }
+    GUIWidget *CamCfg::createWidget(const CreateContext &ctx) const {
+      return new CamCfgGUIWidget(*this, ctx);
+    }
+    GUIWidget *Ps::createWidget(const CreateContext &ctx) const {
+      return new ProcessMonitorGUIWidget(*this, ctx);
+    }
+    GUIWidget *Prop::createWidget(const CreateContext &ctx) const {
+      return new ConfigurableGUIWidget(*this, ctx);
     }
 
 

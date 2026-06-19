@@ -28,8 +28,8 @@ void init(){
   }
 
   if(cOut || dOut){
-    prevGUI << (cOut ? Display({.handle="color"}).toComponent() : Dummy().toComponent())
-            << (dOut ? Display({.handle="depth"}).toComponent() : Dummy().toComponent())
+    prevGUI << Display({.handle="color"}).hideIf(!cOut)
+            << Display({.handle="depth"}).hideIf(!dOut)
             << Create();
   }
 

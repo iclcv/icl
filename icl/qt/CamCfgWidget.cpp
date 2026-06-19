@@ -150,7 +150,7 @@ namespace icl::qt {
           }
         }
         BoxHandle b = data->gui.get<BoxHandle>("props");
-        data -> properties = GUI(Prop(data->foundDevices.at(static_cast<int>(data->gui["device"])).name(), {.handle="camcfg"}).toComponent());
+        data -> properties = GUI(Prop(data->foundDevices.at(static_cast<int>(data->gui["device"])).name(), {.handle="camcfg"}));
         data -> properties.show();
         b.add(data->properties.getRootWidget());
       } catch(const std::exception &x){
