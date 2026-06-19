@@ -8,6 +8,34 @@
 #include <icl/qt/GUI.h>
 
 namespace icl::qt {
+
+  /// The polymorphic component for every layout container.
+  /** One class covers all container layouts (a closed set), dispatched by
+      `kind` in createWidget() — there is no string-keyed registry. `param`
+      carries the Tab's CSV titles / the Border's label. */
+  struct ContainerComponent : public GUIComponentT<ContainerComponent> {
+    enum Kind { HBox, VBox, HScroll, VScroll, HSplit, VSplit, Tab, Border, StatusBar };
+    Kind        kind;
+    std::string param;   //!< Tab: comma-separated titles; Border: label text
+
+    ContainerComponent(Kind kind, std::string param = "")
+      : GUIComponentT(tagFor(kind)), kind(kind), param(std::move(param)) {}
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;   // GUI.cpp
+
+    /// human-readable tag (debug / XML only)
+    static const char *tagFor(Kind k){
+      switch(k){
+        case HBox: return "hbox";       case VBox: return "vbox";
+        case HScroll: return "hscroll"; case VScroll: return "vscroll";
+        case HSplit: return "hsplit";   case VSplit: return "vsplit";
+        case Tab: return "tab";         case Border: return "border";
+        case StatusBar: return "statusbar";
+      }
+      return "container";
+    }
+  };
+
   /// Special GUI extension, that mimics the GUIComponent interface
   /** The Container GUIComponent mimics the GUIComponent interface
       in order to provide a unified look and feel within a hierarchical
@@ -17,11 +45,11 @@ namespace icl::qt {
   struct ContainerGUIComponent : public GUI{
     protected:
     /// protected constructor
-    /** The base GUI holds the single structured GUIComponent (a container node);
-        the chained setters below accumulate options straight into it via
+    /** The base GUI holds the single structured ContainerComponent; the chained
+        setters below accumulate options straight into it via
         GUI::mutableComponent() — there is no separate component copy. */
-    ContainerGUIComponent(const std::string &type, const std::string &params, QWidget *parent):
-    GUI(GUIComponent(type, params), parent){}
+    ContainerGUIComponent(ContainerComponent::Kind kind, const std::string &param, QWidget *parent):
+    GUI(ContainerComponent(kind, param), parent){}
 
     public:
 

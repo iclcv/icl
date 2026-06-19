@@ -179,13 +179,6 @@ namespace icl::qt {
 
     private:
 
-    /// builds a "border(label)" wrapper component carrying the (cell-incremented)
-    /// sizes of the wrapped component — the structured equivalent of the legacy
-    /// label→border string surgery. GUI is a friend of GUIComponent, so this
-    /// member can reach its protected ctor / options.
-    static GUIComponent makeBorderComponent(const std::string &label,
-                                            const GUIComponent::Options &innerOpts);
-
     static void to_string_recursive(const GUI *gui, std::ostream &str, int level);
 
     void create(QLayout *parentLayout,ProxyLayout *proxy, QWidget *parentWidget, DataStore *ds);

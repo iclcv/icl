@@ -775,39 +775,39 @@ namespace icl::qt {
   }
 
   /// Horizontal layout container.
-  struct HBox : public detail::HBox {
-    HBox(BoxOpts opts = {}) : detail::HBox() { applyBoxOpts(*this, opts); }
-    explicit HBox(QWidget *parent, BoxOpts opts = {}) : detail::HBox(parent) { applyBoxOpts(*this, opts); }
+  struct HBox : public ContainerGUIComponent {
+    HBox(BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::HBox,"",nullptr) { applyBoxOpts(*this, opts); }
+    explicit HBox(QWidget *parent, BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::HBox,"",parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Vertical layout container.
-  struct VBox : public detail::VBox {
-    VBox(BoxOpts opts = {}) : detail::VBox() { applyBoxOpts(*this, opts); }
-    explicit VBox(QWidget *parent, BoxOpts opts = {}) : detail::VBox(parent) { applyBoxOpts(*this, opts); }
+  struct VBox : public ContainerGUIComponent {
+    VBox(BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::VBox,"",nullptr) { applyBoxOpts(*this, opts); }
+    explicit VBox(QWidget *parent, BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::VBox,"",parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Horizontal scroll area.
-  struct HScroll : public detail::HScroll {
-    HScroll(BoxOpts opts = {}) : detail::HScroll() { applyBoxOpts(*this, opts); }
-    explicit HScroll(QWidget *parent, BoxOpts opts = {}) : detail::HScroll(parent) { applyBoxOpts(*this, opts); }
+  struct HScroll : public ContainerGUIComponent {
+    HScroll(BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::HScroll,"",nullptr) { applyBoxOpts(*this, opts); }
+    explicit HScroll(QWidget *parent, BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::HScroll,"",parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Vertical scroll area.
-  struct VScroll : public detail::VScroll {
-    VScroll(BoxOpts opts = {}) : detail::VScroll() { applyBoxOpts(*this, opts); }
-    explicit VScroll(QWidget *parent, BoxOpts opts = {}) : detail::VScroll(parent) { applyBoxOpts(*this, opts); }
+  struct VScroll : public ContainerGUIComponent {
+    VScroll(BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::VScroll,"",nullptr) { applyBoxOpts(*this, opts); }
+    explicit VScroll(QWidget *parent, BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::VScroll,"",parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Horizontal splitter (draggable pane divider).
-  struct HSplit : public detail::HSplit {
-    HSplit(BoxOpts opts = {}) : detail::HSplit() { applyBoxOpts(*this, opts); }
-    explicit HSplit(QWidget *parent, BoxOpts opts = {}) : detail::HSplit(parent) { applyBoxOpts(*this, opts); }
+  struct HSplit : public ContainerGUIComponent {
+    HSplit(BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::HSplit,"",nullptr) { applyBoxOpts(*this, opts); }
+    explicit HSplit(QWidget *parent, BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::HSplit,"",parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Vertical splitter.
-  struct VSplit : public detail::VSplit {
-    VSplit(BoxOpts opts = {}) : detail::VSplit() { applyBoxOpts(*this, opts); }
-    explicit VSplit(QWidget *parent, BoxOpts opts = {}) : detail::VSplit(parent) { applyBoxOpts(*this, opts); }
+  struct VSplit : public ContainerGUIComponent {
+    VSplit(BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::VSplit,"",nullptr) { applyBoxOpts(*this, opts); }
+    explicit VSplit(QWidget *parent, BoxOpts opts = {}) : ContainerGUIComponent(ContainerComponent::VSplit,"",parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Tab container — positional CSV of tab titles + BoxOpts.
@@ -819,21 +819,18 @@ namespace icl::qt {
                << State({.handle="log"}) );
       \endcode
   */
-  struct Tab : public detail::Tab {
+  struct Tab : public ContainerGUIComponent {
     Tab(const std::string &commaSepTitles, BoxOpts opts = {})
-      : detail::Tab(commaSepTitles) { applyBoxOpts(*this, opts); }
+      : ContainerGUIComponent(ContainerComponent::Tab,commaSepTitles,nullptr) { applyBoxOpts(*this, opts); }
     Tab(const std::string &commaSepTitles, QWidget *parent, BoxOpts opts = {})
-      : detail::Tab(commaSepTitles, parent) { applyBoxOpts(*this, opts); }
+      : ContainerGUIComponent(ContainerComponent::Tab,commaSepTitles,parent) { applyBoxOpts(*this, opts); }
   };
 
   /// Status bar — a thin strip docked to the bottom of its container.
-  /** Unlike the other  containers there is no legacy `detail::StatusBar`
-      to inherit (the component is new), so this inherits
-      `ContainerGUIComponent` directly and emits the `statusbar(...)`
-      definition itself.  Regardless of the container's layout direction
-      the bar pins to the bottom edge, is capped to ~20px tall, and always
-      carries an initial left-aligned label reachable as `gui["status"]`.
-      Components streamed in are packed to the right of that label.
+  /** Regardless of the container's layout direction the bar pins to the bottom
+      edge, is capped to ~24px tall, and always carries an initial left-aligned
+      label reachable as `gui["status"]`. Components streamed in are packed to
+      the right of that label.
 
       \code
       gui << ( VBox()
@@ -846,48 +843,31 @@ namespace icl::qt {
       \b Note: add the StatusBar as the last component of its container. */
   struct StatusBar : public ContainerGUIComponent {
     StatusBar(BoxOpts opts = {})
-      : ContainerGUIComponent("statusbar","",nullptr) { applyBoxOpts(*this, opts); }
+      : ContainerGUIComponent(ContainerComponent::StatusBar,"",nullptr) { applyBoxOpts(*this, opts); }
     explicit StatusBar(QWidget *parent, BoxOpts opts = {})
-      : ContainerGUIComponent("statusbar","",parent) { applyBoxOpts(*this, opts); }
+      : ContainerGUIComponent(ContainerComponent::StatusBar,"",parent) { applyBoxOpts(*this, opts); }
   };
 
-  // --- Phase 5 finalizers -------------------------------------------------
+  // --- Finalizers ---------------------------------------------------------
   //
-  // Trivial markers.  Legacy shapes emit the magic `"!show"` / `"!create"`
-  // strings / empty component name (Dummy), which GUI::operator<<(string)
-  // special-cases.   wrappers just forward.
+  // Trivial markers carrying a magic type tag that GUI::operator<<(GUIComponent)
+  // special-cases (show()/create()/drop) before any widget is built — they
+  // never reach createWidget().
 
   /// Finalize GUI creation and show the window.
-  struct Show {
-    GUIComponent toComponent() const { return detail::Show(); }
+  struct Show : public GUIComponentT<Show> {
+    Show() : GUIComponentT("!show") {}
   };
 
   /// Finalize GUI creation but keep the window hidden.
-  struct Create {
-    GUIComponent toComponent() const { return detail::Create(); }
+  struct Create : public GUIComponentT<Create> {
+    Create() : GUIComponentT("!create") {}
   };
 
   /// No-op placeholder (pairs with `.hide` on other components to make
   /// conditional layout readable).
-  struct Dummy {
-    GUIComponent toComponent() const { return detail::Dummy(); }
+  struct Dummy : public GUIComponentT<Dummy> {
+    Dummy() : GUIComponentT("") {}
   };
-
-  /// Stream a designated-init Component into a GUI.
-  /** Free-function overload in `icl::qt` so normal lookup finds it when
-      the LHS is a GUI.  Delegates to the existing
-      `GUI::operator<<(const GUIComponent&)` via the aggregate's
-      `toComponent()`.  The rvalue overload mirrors the const-member
-      pattern on `ContainerGUIComponent::operator<<` — it lets
-      `HBox() << Slider(...)` chain starting from a temporary
-      container. */
-  template<Component T>
-  GUI &operator<<(GUI &g, const T &t){
-    return g << t.toComponent();
-  }
-  template<Component T>
-  GUI &operator<<(GUI &&g, const T &t){
-    return g << t.toComponent();
-  }
 
 } // namespace icl::qt

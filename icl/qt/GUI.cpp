@@ -923,11 +923,13 @@ namespace icl{
 
     struct ScrollGUIWidgetBase : public GUIWidget, public ProxyLayout{
 
-      ScrollGUIWidgetBase(const GUIDefinition &def, QBoxLayout::Direction d):
-        GUIWidget(def,0,-1,GUIWidget::noLayout){
-        if(def.hasToolTip()){
+      ScrollGUIWidgetBase(const ContainerComponent &c, const CreateContext &ctx, QBoxLayout::Direction d):
+        GUIWidget(c,ctx,GUIWidget::noLayout){
+        if(!c.options().tooltip.empty()){
           WARNING_LOG("tooltip is not supported for Layouting GUI components!");
         }
+        const int margin  = c.options().margin  > 0 ? c.options().margin  : 2;
+        const int spacing = c.options().spacing > 0 ? c.options().spacing : 2;
         setLayout(new QBoxLayout(d,this));
         m_poScroll = new QScrollArea(this);
         layout()->addWidget(m_poScroll);
@@ -938,14 +940,14 @@ namespace icl{
         m_poScroll->widget()->setLayout(new QBoxLayout(d,m_poScroll));
         m_poScroll->widget()->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::MinimumExpanding));
 
-        m_poScroll->widget()->layout()->setContentsMargins(def.margin(),def.margin(),def.margin(),def.margin());
-        m_poScroll->widget()->layout()->setSpacing(def.spacing());
+        m_poScroll->widget()->layout()->setContentsMargins(margin,margin,margin,margin);
+        m_poScroll->widget()->layout()->setSpacing(spacing);
 
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(d != QBoxLayout::LeftToRight,m_poScroll->widget(),this,m_poScroll));
+          getGUI()->allocValue<BoxHandle>(c.options().handle,BoxHandle(d != QBoxLayout::LeftToRight,m_poScroll->widget(),this,m_poScroll));
           getGUI()->unlockData();
         }
       }
@@ -962,74 +964,53 @@ namespace icl{
     };
 
 
-    struct HScrollGUIWidget : public ScrollGUIWidgetBase{
-      HScrollGUIWidget(const GUIDefinition &def):ScrollGUIWidgetBase(def,QBoxLayout::LeftToRight){}
-      static std::string getSyntax(){
-        return std::string("hscroll()[general params]\n")+ gen_params();
-      }
-    };
-
-    struct VScrollGUIWidget : public ScrollGUIWidgetBase{
-      VScrollGUIWidget(const GUIDefinition &def):ScrollGUIWidgetBase(def,QBoxLayout::TopToBottom){}
-      static std::string getSyntax(){
-        return std::string("vscroll()[general params]\n")+ gen_params();
-      }
-    };
-
     struct HBoxGUIWidget : public GUIWidget{
-      HBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::hboxLayout){
+      HBoxGUIWidget(const ContainerComponent &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::hboxLayout){
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-        if(def.hasToolTip()){
+        if(!c.options().tooltip.empty()){
           WARNING_LOG("tooltip is not supported for Layouting GUI components!");
         }
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(true,this,this));//def.parentWidget()));
+          getGUI()->allocValue<BoxHandle>(c.options().handle,BoxHandle(true,this,this));
           getGUI()->unlockData();
         }
-      }
-      static std::string getSyntax(){
-        return std::string("hbox()[general params]\n")+gen_params();
       }
     };
 
 
 
     struct VBoxGUIWidget : public GUIWidget{
-      VBoxGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::vboxLayout){
+      VBoxGUIWidget(const ContainerComponent &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::vboxLayout){
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-        if(def.hasToolTip()){
+        if(!c.options().tooltip.empty()){
           WARNING_LOG("tooltip is not supported for Layouting GUI components!");
         }
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(false,this,this));//def.parentWidget()));
+          getGUI()->allocValue<BoxHandle>(c.options().handle,BoxHandle(false,this,this));
           getGUI()->unlockData();
         }
-      }
-      static std::string getSyntax(){
-        return std::string("hbox()[general params]\n")+gen_params();
       }
     };
 
 
     struct SplitterGUIWidgetBase : public GUIWidget, public ProxyLayout{
-      SplitterGUIWidgetBase(const GUIDefinition &def, bool horz):GUIWidget(def,0,0,GUIWidget::noLayout){
-        if(def.hasToolTip()){
+      SplitterGUIWidgetBase(const ContainerComponent &c, const CreateContext &ctx, bool horz):GUIWidget(c,ctx,GUIWidget::noLayout){
+        if(!c.options().tooltip.empty()){
           WARNING_LOG("tooltip is not supported for Layouting GUI components!");
         }
 
         m_layout = new QGridLayout(this);
         m_splitter = new QSplitter(horz ? Qt::Horizontal:Qt::Vertical , this);
         m_layout->addWidget(m_splitter,0,0);
-        m_layout->setContentsMargins(0,0,0,0);//2,2,2,2);
-        //setContentsMargins(0,0,0,0);
+        m_layout->setContentsMargins(0,0,0,0);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<SplitterHandle>(def.handle(),SplitterHandle(m_splitter,this));
+          getGUI()->allocValue<SplitterHandle>(c.options().handle,SplitterHandle(m_splitter,this));
           getGUI()->unlockData();
         }
       }
@@ -1044,30 +1025,13 @@ namespace icl{
       // can directly return itself
       virtual ProxyLayout *getProxyLayout() { return this; }
 
-      //static string getSyntax(){
-      //  return std::string("(COMMA_SEPERATED_TAB_LIST)[general params]\n")+gen_params();
-      //}
       QSplitter *m_splitter;
       QGridLayout *m_layout;
     };
 
-    struct HSplitterGUIWidget : public SplitterGUIWidgetBase{
-      HSplitterGUIWidget(const GUIDefinition &def):SplitterGUIWidgetBase(def,true){}
-      static std::string getSyntax(){
-        return std::string("hsplit()[general params]\n")+gen_params();
-      }
-    };
-
-    struct VSplitterGUIWidget : public SplitterGUIWidgetBase{
-      VSplitterGUIWidget(const GUIDefinition &def):SplitterGUIWidgetBase(def,false){}
-      static std::string getSyntax(){
-        return std::string("vsplit()[general params]\n")+gen_params();
-      }
-    };
-
     struct TabGUIWidget : public GUIWidget, public ProxyLayout{
-      TabGUIWidget(const GUIDefinition &def):GUIWidget(def,0,2<<20,GUIWidget::noLayout){
-        if(def.hasToolTip()){
+      TabGUIWidget(const ContainerComponent &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::noLayout){
+        if(!c.options().tooltip.empty()){
           WARNING_LOG("tooltip is not supported for Layouting GUI components!");
         }
 
@@ -1077,11 +1041,11 @@ namespace icl{
 
         m_layout->setContentsMargins(0,0,0,0);
         m_nextTabIdx = 0;
-        m_tabNames = def.allParams();
+        m_tabNames = tok(c.param, ",");
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<TabHandle>(def.handle(),TabHandle(m_tabWidget,this));
+          getGUI()->allocValue<TabHandle>(c.options().handle,TabHandle(m_tabWidget,this));
           getGUI()->unlockData();
         }
       }
@@ -1116,31 +1080,28 @@ namespace icl{
 
     struct BorderGUIWidget : public GUIWidget{
 
-      BorderGUIWidget(const GUIDefinition &def):GUIWidget(def,1){
+      BorderGUIWidget(const ContainerComponent &c, const CreateContext &ctx):GUIWidget(c,ctx){
 
-        if(def.hasToolTip()){
+        if(!c.options().tooltip.empty()){
           WARNING_LOG("tooltip is not supported for Layouting GUI components!");
         }
+        const int margin  = c.options().margin  > 0 ? c.options().margin  : 2;
+        const int spacing = c.options().spacing > 0 ? c.options().spacing : 2;
 
-        m_poGroupBox = new QGroupBox((def.param(0) + "  ").c_str(),def.parentWidget());
+        m_poGroupBox = new QGroupBox((c.param + "  ").c_str(),ctx.parentWidget);
         m_poLayout = new QVBoxLayout;
-        m_poLayout->setContentsMargins(def.margin(),def.margin(),def.margin(),def.margin());
-        m_poLayout->setSpacing(def.spacing());
+        m_poLayout->setContentsMargins(margin,margin,margin,margin);
+        m_poLayout->setSpacing(spacing);
         m_poGroupBox->setLayout(m_poLayout);
         addToGrid(m_poGroupBox);
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<BorderHandle>(def.handle(),BorderHandle(m_poGroupBox,this));
+          getGUI()->allocValue<BorderHandle>(c.options().handle,BorderHandle(m_poGroupBox,this));
           getGUI()->unlockData();
         }
 
-      }
-      static std::string getSyntax(){
-        return std::string("border(LABEL)[general params]\n")+
-        std::string("\tLABEL is the border label that is shown\n")+
-        gen_params();
       }
       virtual QLayout *getGUIWidgetLayout() { return m_poLayout; }
       private:
@@ -1378,7 +1339,7 @@ namespace icl{
     struct StatusBarGUIWidget : public GUIWidget{
       static const int STATUSBAR_HEIGHT = 24;
 
-      StatusBarGUIWidget(const GUIDefinition &def):GUIWidget(def,0,0,GUIWidget::hboxLayout){
+      StatusBarGUIWidget(const ContainerComponent &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::hboxLayout){
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed));
         setFixedHeight(STATUSBAR_HEIGHT);
 
@@ -1399,11 +1360,11 @@ namespace icl{
 
         getGUI()->lockData();
         getGUI()->allocValue<LabelHandle>("status",LabelHandle(m_label,this));
-        if(def.handle() != "")
-          getGUI()->allocValue<BoxHandle>(def.handle(),BoxHandle(true,this,this));
+        if(!c.options().handle.empty())
+          getGUI()->allocValue<BoxHandle>(c.options().handle,BoxHandle(true,this,this));
         getGUI()->unlockData();
 
-        dockToBottom(def.parentWidget());
+        dockToBottom(ctx.parentWidget);
       }
 
       /// Restructure the parent so this bar sits at its bottom edge.
@@ -2002,18 +1963,9 @@ namespace icl{
 
     struct DefaultWidgetTypeRegister{
       DefaultWidgetTypeRegister(){
-        GUI::register_widget_type("hbox",create_widget_template<HBoxGUIWidget>);
-        GUI::register_widget_type("vbox",create_widget_template<VBoxGUIWidget>);
-        GUI::register_widget_type("hscroll",create_widget_template<HScrollGUIWidget>);
-        GUI::register_widget_type("vscroll",create_widget_template<VScrollGUIWidget>);
-        GUI::register_widget_type("border",create_widget_template<BorderGUIWidget>);
-        GUI::register_widget_type("statusbar",create_widget_template<StatusBarGUIWidget>);
   #ifdef ICL_HAVE_OPENGL
   #endif
         GUI::register_widget_type("multidraw",create_widget_template<MultiDrawGUIWidget>);
-        GUI::register_widget_type("tab",create_widget_template<TabGUIWidget>);
-        GUI::register_widget_type("hsplit",create_widget_template<HSplitterGUIWidget>);
-        GUI::register_widget_type("vsplit",create_widget_template<VSplitterGUIWidget>);
       }
     } defaultWidgetTypeRegisterer;
 
@@ -2118,6 +2070,20 @@ namespace icl{
     GUIWidget *Prop::createWidget(const CreateContext &ctx) const {
       return new ConfigurableGUIWidget(*this, ctx);
     }
+    GUIWidget *ContainerComponent::createWidget(const CreateContext &ctx) const {
+      switch(kind){
+        case HBox:      return new HBoxGUIWidget(*this, ctx);
+        case VBox:      return new VBoxGUIWidget(*this, ctx);
+        case HScroll:   return new ScrollGUIWidgetBase(*this, ctx, QBoxLayout::LeftToRight);
+        case VScroll:   return new ScrollGUIWidgetBase(*this, ctx, QBoxLayout::TopToBottom);
+        case HSplit:    return new SplitterGUIWidgetBase(*this, ctx, true);
+        case VSplit:    return new SplitterGUIWidgetBase(*this, ctx, false);
+        case Tab:       return new TabGUIWidget(*this, ctx);
+        case Border:    return new BorderGUIWidget(*this, ctx);
+        case StatusBar: return new StatusBarGUIWidget(*this, ctx);
+      }
+      return nullptr;
+    }
 
 
     GUI::GUI(QWidget *parent):
@@ -2162,13 +2128,16 @@ namespace icl{
       //delete m_poWidget;
     }
 
-    GUIComponent GUI::makeBorderComponent(const std::string &label,
-                                          const GUIComponent::Options &innerOpts){
+    /// builds a Border container component carrying the (cell-incremented) sizes
+    /// of the wrapped component — the structured equivalent of the legacy
+    /// label→border string surgery.
+    static ContainerComponent makeBorderComponent(const std::string &label,
+                                                  const GUIComponent::Options &innerOpts){
       static const Size S11(1,1);
-      GUIComponent b("border", label);
-      if(innerOpts.minSize != Size::null) b.m_options.minSize = innerOpts.minSize + S11;
-      if(innerOpts.maxSize != Size::null) b.m_options.maxSize = innerOpts.maxSize + S11;
-      if(innerOpts.size    != Size::null) b.m_options.size    = innerOpts.size + S11;
+      ContainerComponent b(ContainerComponent::Border, label);
+      if(innerOpts.minSize != Size::null) b.minSize(innerOpts.minSize + S11);
+      if(innerOpts.maxSize != Size::null) b.maxSize(innerOpts.maxSize + S11);
+      if(innerOpts.size    != Size::null) b.size(innerOpts.size + S11);
       return b;
     }
 
@@ -2252,7 +2221,7 @@ namespace icl{
       // pushed as-is.
       const GUIComponent *gc = g.getComponent();
       if(gc && gc->m_options.label.length()){
-        GUIComponent border = makeBorderComponent(gc->m_options.label, gc->m_options);
+        ContainerComponent border = makeBorderComponent(gc->m_options.label, gc->m_options);
         GUI *borderNode = new GUI(border);
         GUI gNew(g);                                   // copy snapshots gc into m_component
         if(gNew.m_component) gNew.m_component->m_options.label.clear();
