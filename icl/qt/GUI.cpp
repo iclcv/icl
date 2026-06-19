@@ -1530,34 +1530,21 @@ namespace icl{
 
     struct SliderGUIWidget : public GUIWidget{
 
-      static bool vertical(const GUIDefinition &def){
-        return (def.numParams() >= 4) ? (def.param(3)=="vertical") : false;
-      }
-
-      SliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,6,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
-        /// param_order = min,max,curr,step=1,orientation=("horizontal")|"vertical"
-        bool deactivateDisplay = (def.numParams() >= 5) && (def.param(4) == "off");
-
-        m_stepping = def.numParams() == 6 ? def.intParam(5) : 1;
+      SliderGUIWidget(const Slider &s, const CreateContext &ctx)
+        : GUIWidget(s, ctx, GUIWidget::gridLayout, s.opts.vertical?Size(1,4):Size(4,1)){
+        m_stepping = s.opts.step;
         if(m_stepping < 1){
           ERROR_LOG("a slider gui component with stepping < 1 is not possible (using stepping 1)");
           m_stepping = 1;
         }
-        /// min,max,curr,vertical ,"off" for no display
 
-        int iVerticalFlag = vertical(def);
-        int iMin = def.intParam(0);
-        int iMax = def.intParam(1);
-        int iCurr = def.intParam(2);
+        const bool vert = s.opts.vertical;
+        const int iMin = s.min, iMax = s.max, iCurr = s.val;
 
-        if(iVerticalFlag){
-          m_poSlider = new ThreadedUpdatableSlider(Qt::Vertical,def.parentWidget());
-        }else{
-          m_poSlider = new ThreadedUpdatableSlider(Qt::Horizontal,def.parentWidget());
-        }
+        m_poSlider = new ThreadedUpdatableSlider(vert?Qt::Vertical:Qt::Horizontal, ctx.parentWidget);
         m_poSlider->setStepping(m_stepping);
 
-        if(def.hasToolTip()) m_poSlider->setToolTip(def.toolTip().c_str());
+        if(!s.options().tooltip.empty()) m_poSlider->setToolTip(s.options().tooltip.c_str());
 
         addToGrid(m_poSlider);
 
@@ -1568,46 +1555,25 @@ namespace icl{
           m_poSlider->setSingleStep(m_stepping);
           m_poSlider->setTickInterval(m_stepping);
         }
-        if(deactivateDisplay){
-          m_poLCD = 0;
-        }else{
+        {
           int nDigits = iclMax(QString::number(iMin).length(),QString::number(iMax).length());
-          // what is this ???
-          // int iAbsMax = iMax > -iMin ? iMax : -iMin;
-          // int iAddOneForSign = iMax < -iMin;
-          // m_poLCD = new QLCDNumber(QString::number(iAbsMax).length()+iAddOneForSign,def.parentWidget());
-          m_poLCD = new QLCDNumber(nDigits,def.parentWidget());
+          m_poLCD = new QLCDNumber(nDigits, ctx.parentWidget);
           m_poLCD->display(iCurr);
-
-          if(iVerticalFlag){
-            addToGrid(m_poLCD,0,1,1,4);
-          }else{
-            addToGrid(m_poLCD,1,0,4,1);
-          }
-          //connect(m_poSlider,SIGNAL(valueChanged(int)),m_poLCD,SLOT(display(int)));
+          if(vert) addToGrid(m_poLCD,0,1,1,4);
+          else     addToGrid(m_poLCD,1,0,4,1);
         }
 
         connect(m_poSlider,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
 
-        m_bVerticalFlag = iVerticalFlag ? true : false;
+        m_bVerticalFlag = vert;
 
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
 
-        if(def.handle() != ""){
+        if(!s.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<SliderHandle>(def.handle(),SliderHandle(m_poSlider,this,m_poLCD));
+          getGUI()->allocValue<SliderHandle>(s.options().handle,SliderHandle(m_poSlider,this,m_poLCD));
           getGUI()->unlockData();
         }
-      }
-      static std::string getSyntax(){
-        return
-        std::string("slider(MIN,MAX,CURR,ORIENTATION=horizontal,DISPLAY=on)[general params] \n")+
-        std::string("\tMIN is the minimum value of the slider\n")+
-        std::string("\tMAX is the maximum value of the slider\n")+
-        std::string("\tCURR is the initializing value of the slider\n")+
-        std::string("\tORIENTATION is horizontal or vertical\n")+
-        std::string("\tDISPLAY can be \"on\" (default) or \"off\" \n")+
-        gen_params();
       }
       virtual void processIO(){
         //cb();
@@ -1626,36 +1592,19 @@ namespace icl{
 
     struct FloatSliderGUIWidget : public GUIWidget{
 
-      static bool vertical(const GUIDefinition &def){
-        return (def.numParams() >= 4) ? (def.param(3)=="vertical") : false;
-      }
-
-      FloatSliderGUIWidget(const GUIDefinition &def):GUIWidget(def,3,5,GUIWidget::gridLayout,vertical(def)?Size(1,4):Size(4,1)){
-        bool deactivateDisplay = (def.numParams() == 5) && (def.param(4) == "off");
-        //
-        // y = mx+b
-        // m =dy/dx = max-min/1000
-        // b = min
-        //float fMin, float fMax, float fCurr vertical|horizontal
-        //
-
-        /// param_order = min,max,curr,orientation=("horizontal")|"vertical"
-
-        int iVerticalFlag = vertical(def);
-        m_fMinVal = def.floatParam(0);
-        m_fMaxVal = def.floatParam(1);
-        float fCurr = def.floatParam(2);
+      FloatSliderGUIWidget(const FSlider &s, const CreateContext &ctx)
+        : GUIWidget(s, ctx, GUIWidget::gridLayout, s.opts.vertical?Size(1,4):Size(4,1)){
+        const bool vert = s.opts.vertical;
+        m_fMinVal = s.min;
+        m_fMaxVal = s.max;
+        float fCurr = s.val;
         int nDigits = 6;
 
         m_fM = (m_fMaxVal-m_fMinVal)/10000.0;
         m_fB = m_fMinVal;
 
-        if(iVerticalFlag){
-          m_poSlider = new ThreadedUpdatableSlider(Qt::Vertical,def.parentWidget());
-        }else{
-          m_poSlider = new ThreadedUpdatableSlider(Qt::Horizontal,def.parentWidget());
-        }
-        if(def.hasToolTip()) m_poSlider->setToolTip(def.toolTip().c_str());
+        m_poSlider = new ThreadedUpdatableSlider(vert?Qt::Vertical:Qt::Horizontal, ctx.parentWidget);
+        if(!s.options().tooltip.empty()) m_poSlider->setToolTip(s.options().tooltip.c_str());
 
         addToGrid(m_poSlider);
 
@@ -1663,36 +1612,19 @@ namespace icl{
         m_poSlider->setMaximum(10000);
         m_poSlider->setValue(f2i(fCurr));
 
-        if(deactivateDisplay){
-          m_poLCD = 0;
-        }else{
-          m_poLCD = new QLCDNumber(nDigits,def.parentWidget());
-          m_poLCD->display(fCurr);
+        m_poLCD = new QLCDNumber(nDigits, ctx.parentWidget);
+        m_poLCD->display(fCurr);
+        if(vert) addToGrid(m_poLCD,0,1,1,4);
+        else     addToGrid(m_poLCD,1,0,4,1);
 
-          if(iVerticalFlag){
-            addToGrid(m_poLCD,0,1,1,4);
-          }else{
-            addToGrid(m_poLCD,1,0,4,1);
-          }
-        }
         connect(m_poSlider,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
         setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
 
-        if(def.handle() != ""){
+        if(!s.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<FSliderHandle>(def.handle(),FSliderHandle(m_poSlider,&m_fMinVal,&m_fMaxVal,&m_fM,&m_fB,10000,this,m_poLCD));
+          getGUI()->allocValue<FSliderHandle>(s.options().handle,FSliderHandle(m_poSlider,&m_fMinVal,&m_fMaxVal,&m_fM,&m_fB,10000,this,m_poLCD));
           getGUI()->unlockData();
         }
-      }
-      static std::string getSyntax(){
-        return
-        std::string("fslider(MIN,MAX,CURR,ORIENTATION=horizontal)[general params] \n")+
-        std::string("\tMIN is the minimum value of the slider\n")+
-        std::string("\tMAX is the maximum value of the slider\n")+
-        std::string("\tCURR is the initializing value of the slider\n")+
-        std::string("\tORIENTATION is horizontal or vertical\n")+
-        std::string("\tDISPLAY can be \"on\" (default) or \"off\" \n")+
-        gen_params();
       }
       virtual void processIO(){
         if(m_poLCD){
@@ -1714,30 +1646,22 @@ namespace icl{
 
     struct IntGUIWidget : public GUIWidget{
   public:
-      IntGUIWidget(const GUIDefinition &def):GUIWidget(def,3){
-        m_poLineEdit = new QLineEdit(def.parentWidget());
-        m_poLineEdit->setValidator(new QIntValidator(def.intParam(0),def.intParam(1),0));
-        m_poLineEdit->setText(QString::number(def.intParam(2)));
+      IntGUIWidget(const Int &c, const CreateContext &ctx):GUIWidget(c,ctx){
+        m_poLineEdit = new QLineEdit(ctx.parentWidget);
+        m_poLineEdit->setValidator(new QIntValidator(c.min,c.max,0));
+        m_poLineEdit->setText(QString::number(c.val));
 
-        if(def.hasToolTip()) m_poLineEdit->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) m_poLineEdit->setToolTip(c.options().tooltip.c_str());
 
         QObject::connect(m_poLineEdit,SIGNAL(returnPressed ()),this,SLOT(ioSlot()));
 
         addToGrid(m_poLineEdit);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<IntHandle>(def.handle(),IntHandle(m_poLineEdit,this));
+          getGUI()->allocValue<IntHandle>(c.options().handle,IntHandle(m_poLineEdit,this));
           getGUI()->unlockData();
         }
-      }
-      static std::string getSyntax(){
-        return
-        std::string("int(MIN,MAX,CURR)[general params] \n")+
-        std::string("\tMIN is the minimum allowed input value\n")+
-        std::string("\tMAX is the maximum allowed input value\n")+
-        std::string("\tCURR is the initial value of the textfield\n")+
-        gen_params();
       }
       virtual void processIO(){}
     private:
@@ -1746,31 +1670,23 @@ namespace icl{
 
     struct FloatGUIWidget : public GUIWidget{
   public:
-      FloatGUIWidget(const GUIDefinition &def):GUIWidget(def,3){
-        m_poLineEdit = new QLineEdit(def.parentWidget());
-        m_poLineEdit->setValidator(new QDoubleValidator(def.floatParam(0),def.floatParam(1),20,0));
-        m_poLineEdit->setText(QString::number(def.floatParam(2)));
+      FloatGUIWidget(const Float &c, const CreateContext &ctx):GUIWidget(c,ctx){
+        m_poLineEdit = new QLineEdit(ctx.parentWidget);
+        m_poLineEdit->setValidator(new QDoubleValidator(c.min,c.max,20,0));
+        m_poLineEdit->setText(QString::number(c.val));
 
-        if(def.hasToolTip()) m_poLineEdit->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) m_poLineEdit->setToolTip(c.options().tooltip.c_str());
 
         QObject::connect(m_poLineEdit,SIGNAL(returnPressed ()),this,SLOT(ioSlot()));
 
         addToGrid(m_poLineEdit);
 
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<FloatHandle>(def.handle(),FloatHandle(m_poLineEdit,this));
+          getGUI()->allocValue<FloatHandle>(c.options().handle,FloatHandle(m_poLineEdit,this));
           getGUI()->unlockData();
         }
 
-      }
-      static std::string getSyntax(){
-        return
-        std::string("float(MIN,MAX,CURR)[general params] \n")+
-        std::string("\tMIN is the minimum allowed input value\n")+
-        std::string("\tMAX is the maximum allowed input value\n")+
-        std::string("\tCURR is the initial value of the textfield\n")+
-        gen_params();
       }
       virtual void processIO(){}
     private:
@@ -2147,12 +2063,12 @@ namespace icl{
 
     struct SpinnerGUIWidget : public GUIWidget{
   public:
-      SpinnerGUIWidget(const GUIDefinition &def):GUIWidget(def,3,3,GUIWidget::gridLayout,Size(4,1)){
-        m_poSpinBox = new QSpinBox(def.parentWidget());
-        m_poSpinBox->setRange(def.intParam(0),def.intParam(1));
-        m_poSpinBox->setValue(def.intParam(2));
+      SpinnerGUIWidget(const Spinner &c, const CreateContext &ctx):GUIWidget(c,ctx,GUIWidget::gridLayout,Size(4,1)){
+        m_poSpinBox = new QSpinBox(ctx.parentWidget);
+        m_poSpinBox->setRange(c.min,c.max);
+        m_poSpinBox->setValue(c.val);
 
-        if(def.hasToolTip()) m_poSpinBox->setToolTip(def.toolTip().c_str());
+        if(!c.options().tooltip.empty()) m_poSpinBox->setToolTip(c.options().tooltip.c_str());
 
         addToGrid(m_poSpinBox);
 
@@ -2160,22 +2076,14 @@ namespace icl{
         // valueChanged cache-update lambda runs before user callbacks
         // registered via the handle.  See ComboGUIWidget for the
         // same ordering rationale.
-        if(def.handle() != ""){
+        if(!c.options().handle.empty()){
           getGUI()->lockData();
-          getGUI()->allocValue<SpinnerHandle>(def.handle(),SpinnerHandle(m_poSpinBox,this));
+          getGUI()->allocValue<SpinnerHandle>(c.options().handle,SpinnerHandle(m_poSpinBox,this));
           getGUI()->unlockData();
         }
 
         QObject::connect(m_poSpinBox,SIGNAL(valueChanged(int)),this,SLOT(ioSlot()));
 
-      }
-      static std::string getSyntax(){
-        return
-        std::string("spinner(MIN,MAX,CURR)[general params] \n")+
-        std::string("\tMIN is the minimum possible value\n")+
-        std::string("\tMAX is the maximum possible value\n")+
-        std::string("\tCURR is the initial value of the spinbox\n")+
-        gen_params();
       }
       virtual void processIO(){}
     private:
@@ -2251,10 +2159,6 @@ namespace icl{
         GUI::register_widget_type("checkbox",create_widget_template<CheckBoxGUIWidget>);
         GUI::register_widget_type("label",create_widget_template<LabelGUIWidget>);
         GUI::register_widget_type("statusbar",create_widget_template<StatusBarGUIWidget>);
-        GUI::register_widget_type("slider",create_widget_template<SliderGUIWidget>);
-        GUI::register_widget_type("fslider",create_widget_template<FloatSliderGUIWidget>);
-        GUI::register_widget_type("int",create_widget_template<IntGUIWidget>);
-        GUI::register_widget_type("float",create_widget_template<FloatGUIWidget>);
         GUI::register_widget_type("string",create_widget_template<StringGUIWidget>);
         GUI::register_widget_type("disp",create_widget_template<DispGUIWidget>);
         GUI::register_widget_type("image",create_widget_template<ImageGUIWidget>);
@@ -2264,7 +2168,6 @@ namespace icl{
         GUI::register_widget_type("draw3D",create_widget_template<DrawGUIWidget3D>);
   #endif
         GUI::register_widget_type("combo",create_widget_template<ComboGUIWidget>);
-        GUI::register_widget_type("spinner",create_widget_template<SpinnerGUIWidget>);
         GUI::register_widget_type("fps",create_widget_template<FPSGUIWidget>);
         GUI::register_widget_type("multidraw",create_widget_template<MultiDrawGUIWidget>);
         GUI::register_widget_type("tab",create_widget_template<TabGUIWidget>);
@@ -2294,8 +2197,32 @@ namespace icl{
       }
     }
 
+    // Transitional default: components that have not yet been migrated to an
+    // own createWidget() override fall back to the string-tag registry. Defined
+    // here (not in the header) so the registry + GUIWidget stay GUI.cpp-private.
+    GUIWidget *GUIComponent::createWidget(const CreateContext &ctx) const {
+      GUIDefinition def(*this, ctx.gui, ctx.parentLayout, ctx.parentProxy, ctx.parentWidget);
+      return create_widget(def);
+    }
 
+    // ---- migrated components: typed createWidget() overrides --------------
+    // Each builds its own *GUIWidget directly from the component's typed fields.
 
+    GUIWidget *Slider::createWidget(const CreateContext &ctx) const {
+      return new SliderGUIWidget(*this, ctx);
+    }
+    GUIWidget *FSlider::createWidget(const CreateContext &ctx) const {
+      return new FloatSliderGUIWidget(*this, ctx);
+    }
+    GUIWidget *Int::createWidget(const CreateContext &ctx) const {
+      return new IntGUIWidget(*this, ctx);
+    }
+    GUIWidget *Float::createWidget(const CreateContext &ctx) const {
+      return new FloatGUIWidget(*this, ctx);
+    }
+    GUIWidget *Spinner::createWidget(const CreateContext &ctx) const {
+      return new SpinnerGUIWidget(*this, ctx);
+    }
 
 
     GUI::GUI(QWidget *parent):
@@ -2307,13 +2234,13 @@ namespace icl{
     }
 
     GUI::GUI(const GUIComponent &component, QWidget *parent):
-      m_component(std::make_shared<GUIComponent>(component)),
+      m_component(component.clone()),
       m_poWidget(0),m_bCreated(false),m_poParent(parent){
     }
 
 
     GUI::GUI(const GUI &g,QWidget *parent):
-      m_component(g.getComponent() ? std::make_shared<GUIComponent>(*g.getComponent()) : nullptr),
+      m_component(g.getComponent() ? g.getComponent()->clone() : nullptr),
       m_children(g.m_children),
       m_poWidget(nullptr),m_bCreated(false),
       m_poParent(parent){
@@ -2321,7 +2248,7 @@ namespace icl{
 
 
     GUI &GUI::operator=(const GUI &other){
-      m_component = other.getComponent() ? std::make_shared<GUIComponent>(*other.getComponent()) : nullptr;
+      m_component = other.getComponent() ? other.getComponent()->clone() : nullptr;
       m_children = other.m_children;
       m_poWidget = nullptr;
       m_bCreated = false;
@@ -2450,9 +2377,8 @@ namespace icl{
           throw ICLException("cannot create a \"dummy\"-GUI (Dummy GUIs are placeholders "
                              "that respect .hide and are skipped by the stream operator)");
         }
-        GUIDefinition def(*getComponent(), this, parentLayout, proxy, parentWidget);
-
-        m_poWidget = create_widget(def);
+        CreateContext ctx{this, parentLayout, proxy, parentWidget};
+        m_poWidget = getComponent()->createWidget(ctx);
 
         if(!parentWidget){
           //        std::cout << "setting window title:" << QApplication::applicationName().toLatin1().data() << std::endl;

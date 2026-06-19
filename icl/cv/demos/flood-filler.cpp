@@ -70,7 +70,7 @@ void run(){
 void init(){
   GUI selector;
   if(pa("-gray")){
-    GUI x = GUI(Slider(0,255,255,{.handle="fill",.label="fill"}).toComponent());
+    GUI x = GUI(Slider(0,255,255,{.handle="fill",.label="fill"}));
     selector = x;
   }else{
     selector = GUI(ColorSelect(255,0,0,{.handle="fill",.label="fill"}).toComponent());

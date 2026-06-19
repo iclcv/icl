@@ -89,18 +89,18 @@ namespace icl::qt {
       gui << Slider(0, 100, 50, {.vertical=true, .step=2, .label="Coarse"});
       \endcode
   */
-  struct Slider {
+  struct Slider : public GUIComponentT<Slider> {
     int        min;
     int        max;
     int        val;
     SliderOpts opts;
 
-    Slider(int min, int max, int val, SliderOpts opts = {})
-      : min(min), max(max), val(val), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Slider(min, max, val, opts.vertical, opts.step), opts);
+    Slider(int min, int max, int val, SliderOpts o = {})
+      : GUIComponentT("slider"), min(min), max(max), val(val), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   // --- Phase 2 components -------------------------------------------------
@@ -128,18 +128,18 @@ namespace icl::qt {
   };
 
   /// Float-valued slider.
-  struct FSlider {
+  struct FSlider : public GUIComponentT<FSlider> {
     float       min;
     float       max;
     float       val;
     FSliderOpts opts;
 
-    FSlider(float min, float max, float val, FSliderOpts opts = {})
-      : min(min), max(max), val(val), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(detail::FSlider(min, max, val, opts.vertical), opts);
+    FSlider(float min, float max, float val, FSliderOpts o = {})
+      : GUIComponentT("fslider"), min(min), max(max), val(val), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Int.
@@ -154,18 +154,18 @@ namespace icl::qt {
   };
 
   /// Integer text input (spinbox-like).
-  struct Int {
+  struct Int : public GUIComponentT<Int> {
     int     min;
     int     max;
     int     val;
     IntOpts opts;
 
-    Int(int min, int max, int val, IntOpts opts = {})
-      : min(min), max(max), val(val), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Int(min, max, val), opts);
+    Int(int min, int max, int val, IntOpts o = {})
+      : GUIComponentT("int"), min(min), max(max), val(val), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Float.
@@ -180,18 +180,18 @@ namespace icl::qt {
   };
 
   /// Float text input.
-  struct Float {
+  struct Float : public GUIComponentT<Float> {
     float     min;
     float     max;
     float     val;
     FloatOpts opts;
 
-    Float(float min, float max, float val, FloatOpts opts = {})
-      : min(min), max(max), val(val), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Float(min, max, val), opts);
+    Float(float min, float max, float val, FloatOpts o = {})
+      : GUIComponentT("float"), min(min), max(max), val(val), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for Spinner.
@@ -206,18 +206,18 @@ namespace icl::qt {
   };
 
   /// Integer spinbox.
-  struct Spinner {
+  struct Spinner : public GUIComponentT<Spinner> {
     int         min;
     int         max;
     int         val;
     SpinnerOpts opts;
 
-    Spinner(int min, int max, int val, SpinnerOpts opts = {})
-      : min(min), max(max), val(val), opts(std::move(opts)) {}
-
-    GUIComponent toComponent() const {
-      return applyCommon(detail::Spinner(min, max, val), opts);
+    Spinner(int min, int max, int val, SpinnerOpts o = {})
+      : GUIComponentT("spinner"), min(min), max(max), val(val), opts(std::move(o)) {
+      setOptions(opts);
     }
+
+    GUIWidget *createWidget(const CreateContext &ctx) const override;
   };
 
   /// Options for String.

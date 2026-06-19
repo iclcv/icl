@@ -8,11 +8,39 @@
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/Range.h>
 #include <icl/utils/Size.h>
+#include <memory>
+
+/** \cond */
+class QLayout;
+class QWidget;
+/** \endcond */
 
 namespace icl::qt {
-  /// The GUIComponent class servers as a generic interface for GUI definitions
+
+  /** \cond */
+  class GUI;
+  class GUIWidget;
+  class ProxyLayout;
+  class GUIDefinition;
+  /** \endcond */
+
+  /// Transient context handed to GUIComponent::createWidget at create() time.
+  /** Carries the Qt parent/layout plumbing the widget needs but the component
+      spec itself does not (it is filled in only while GUI::create() walks the
+      tree). Replaces the non-parsed half of the former GUIDefinition. */
+  struct CreateContext {
+    GUI         *gui          = nullptr;  //!< owning GUI (datastore + tree)
+    QLayout     *parentLayout = nullptr;  //!< parent widget's layout (or null)
+    ProxyLayout *parentProxy  = nullptr;  //!< parent widget's proxy layout
+    QWidget     *parentWidget = nullptr;  //!< parent widget (avoids reparenting)
+  };
+
+  /// Polymorphic base of every GUI component (Slider, Button, HBox, ...).
   /** <b>Please refer to the ICL-manual for an introduction to the GUI toolkit</b>\n
-   */
+      A component owns its typed parameters + shared layout Options and knows how
+      to build its own Qt widget via the virtual createWidget(). The owning GUI
+      tree holds components as `shared_ptr<GUIComponent>`, so polymorphism is
+      preserved end-to-end. */
   class GUIComponent{
 
     /// friend container class
@@ -21,11 +49,26 @@ namespace icl::qt {
     /// friend GUI class
     friend class GUI;
 
-    /// friend GUIDefinition class (builds a definition straight from the
-    /// structured component, bypassing the toString()/re-parse round-trip)
+    /// friend GUIDefinition class (legacy registry bridge during migration)
     friend class GUIDefinition;
 
     public:
+    /// virtual: components are handed around polymorphically via shared_ptr
+    virtual ~GUIComponent() = default;
+
+    /// builds this component's Qt widget
+    /** Overridden by each concrete component; the override is DECLARED in the
+        public header but DEFINED in GUI.cpp, next to the (private) *GUIWidget
+        classes, so Qt widget internals never leak into installed headers. The
+        base implementation delegates to the legacy string-tag registry — the
+        transitional bridge while components are migrated one by one. */
+    virtual GUIWidget *createWidget(const CreateContext &ctx) const;
+
+    /// polymorphic copy (the GUI tree stores cloned shared_ptr<GUIComponent>s)
+    virtual std::shared_ptr<GUIComponent> clone() const {
+      return std::shared_ptr<GUIComponent>(new GUIComponent(*this));
+    }
+
     /// Actual options (set using the .xxx methods)
     struct Options {
     Options():margin(-1),spacing(-1), hide(false){}
@@ -40,7 +83,31 @@ namespace icl::qt {
       utils::Size size;           //!< intial size of the component (in units of 20px)
       bool hide;           //!< if true, the component is not created at all
     };
+
+    /// the shared layout/handle options (read by GUIWidget at build time)
+    const Options &options() const { return m_options; }
+
+    /// the component's type tag (used for debug / XML only)
+    const std::string &type() const { return m_type; }
+
     protected:
+
+    /// copy the shared-metadata fields of an Opts-like struct into m_options.
+    /** Used by migrated components' ctors. `if constexpr(requires{...})` so each
+        Opts may include or omit any field (containers add margin/spacing). */
+    template<class O>
+    void setOptions(const O &o){
+      if constexpr(requires{ o.handle; })  if(!o.handle.empty())  m_options.handle = o.handle;
+      if constexpr(requires{ o.label; })   if(!o.label.empty())   m_options.label = o.label;
+      if constexpr(requires{ o.tooltip; }) if(!o.tooltip.empty()) m_options.tooltip = o.tooltip;
+      if constexpr(requires{ o.size; })    if(o.size    != utils::Size::null) m_options.size = o.size;
+      if constexpr(requires{ o.minSize; }) if(o.minSize != utils::Size::null) m_options.minSize = o.minSize;
+      if constexpr(requires{ o.maxSize; }) if(o.maxSize != utils::Size::null) m_options.maxSize = o.maxSize;
+      if constexpr(requires{ o.hide; })    if(o.hide)             m_options.hide = true;
+      if constexpr(requires{ o.margin; })  if(o.margin  >= 0)     m_options.margin = o.margin;
+      if constexpr(requires{ o.spacing; }) if(o.spacing >= 0)     m_options.spacing = o.spacing;
+    }
+
 
     /// all component options (mutable for C++-reasons)
     mutable Options m_options;
@@ -250,4 +317,20 @@ namespace icl::qt {
       return str.str();
     }
   };
+
+  /// CRTP convenience base supplying the polymorphic clone().
+  /** Concrete components derive from `GUIComponentT<Self>` and implement
+      createWidget(); clone() is provided once here so each component need not
+      repeat the `make_shared<Self>(*this)` boilerplate. The base GUIComponent
+      (type, params) ctor is inherited. */
+  template<class Derived>
+  class GUIComponentT : public GUIComponent {
+    protected:
+    using GUIComponent::GUIComponent;
+    public:
+    std::shared_ptr<GUIComponent> clone() const override {
+      return std::make_shared<Derived>(static_cast<const Derived&>(*this));
+    }
+  };
+
   } // namespace icl::qt

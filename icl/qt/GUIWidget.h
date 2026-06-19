@@ -17,6 +17,8 @@ class QLayout;
 namespace icl::qt {
   /** \cond */
   class GUIDefinition;
+  class GUIComponent;
+  struct CreateContext;
   class ProxyLayout;
   /** \endcond */
 
@@ -44,6 +46,15 @@ namespace icl::qt {
     GUIWidget(const GUIDefinition &def,
               int minParamCount,
               int maxParamCount=-1,
+              layoutType lt=gridLayout,
+              const utils::Size &defMinSize=utils::Size(0,0));
+
+    /// create a new GUIWidget from a structured component + creation context
+    /** The migrated-component path: reads the shared layout Options off the
+        component and the Qt plumbing off the context. No parameter-count
+        validation (typed components have no param array). */
+    GUIWidget(const GUIComponent &component,
+              const CreateContext &ctx,
               layoutType lt=gridLayout,
               const utils::Size &defMinSize=utils::Size(0,0));
 

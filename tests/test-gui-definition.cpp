@@ -32,7 +32,7 @@ using namespace icl::utils;
 ICL_REGISTER_TEST("qt.GUIDefinition.label_text_with_metachars",
                   "parens / @ / = in a Label text no longer break parsing") {
   const std::string nasty = "Pos: (3 4) @scale=2 (done)";
-  GUIDefinition def(Label(nasty).toComponent(), nullptr);
+  GUIDefinition def(qt::detail::Label(nasty), nullptr);
   ICL_TEST_EQ(def.type(), std::string("label"));
   ICL_TEST_EQ(def.numParams(), 1u);
   ICL_TEST_EQ(def.param(0), nasty);
@@ -45,7 +45,7 @@ ICL_REGISTER_TEST("qt.GUIDefinition.options_with_metachars",
   const std::string h = "h(0)";
   const std::string l = "Label = a,b";
   const std::string t = "tip@home, (really)";
-  GUIDefinition def(Label("x", {.handle=h, .label=l, .tooltip=t}).toComponent(), nullptr);
+  GUIDefinition def(qt::detail::Label("x").handle(h).label(l).tooltip(t), nullptr);
   ICL_TEST_EQ(def.handle(), h);
   ICL_TEST_EQ(def.label(), l);
   ICL_TEST_TRUE(def.hasToolTip());
@@ -55,7 +55,7 @@ ICL_REGISTER_TEST("qt.GUIDefinition.options_with_metachars",
 // Numeric params keep splitting on commas and parse as before.
 ICL_REGISTER_TEST("qt.GUIDefinition.slider_params",
                   "Slider min/max/curr parse from the structured param list") {
-  GUIDefinition def(Slider(10, 200, 42).toComponent(), nullptr);
+  GUIDefinition def(qt::detail::Slider(10, 200, 42), nullptr);
   ICL_TEST_EQ(def.type(), std::string("slider"));
   ICL_TEST_EQ(def.intParam(0), 10);
   ICL_TEST_EQ(def.intParam(1), 200);
@@ -66,7 +66,7 @@ ICL_REGISTER_TEST("qt.GUIDefinition.slider_params",
 // initial text yields an empty first param, not a missing one.
 ICL_REGISTER_TEST("qt.GUIDefinition.string_leading_empty_param",
                   "empty String() init text keeps a leading empty param") {
-  GUIDefinition def(String("", {.maxLen=50}).toComponent(), nullptr);
+  GUIDefinition def(qt::detail::String("", 50), nullptr);
   ICL_TEST_EQ(def.type(), std::string("string"));
   ICL_TEST_EQ(def.numParams(), 2u);
   ICL_TEST_EQ(def.param(0), std::string(""));

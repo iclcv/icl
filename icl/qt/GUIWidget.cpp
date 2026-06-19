@@ -4,6 +4,7 @@
 
 #include <icl/qt/GUIWidget.h>
 #include <icl/qt/GUIDefinition.h>
+#include <icl/qt/GUIComponent.h>
 #include <icl/qt/GUI.h>
 #include <icl/qt/ProxyLayout.h>
 
@@ -93,6 +94,64 @@ namespace icl::qt {
     setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
 
     if(def.handle() != "") m_handle = new std::string(def.handle());
+
+    if(layout()) layout()->setContentsMargins(0,0,0,0);
+    setContentsMargins(0,0,0,0);
+  }
+
+  GUIWidget::GUIWidget(const GUIComponent &component,
+                       const CreateContext &ctx,
+                       layoutType lt,
+                       const Size &defMinSize):m_handle(0){
+    const GUIComponent::Options &o = component.options();
+    const int margin  = o.margin  > 0 ? o.margin  : 2;   // matches legacy default
+    const int spacing = o.spacing > 0 ? o.spacing : 2;
+
+    m_poGridLayout = 0;
+    m_poOtherLayout = 0;
+    const Size givenSize    = o.size;
+    const Size givenMinSize = o.minSize;
+    const Size givenMaxSize = o.maxSize;
+
+    m_preferredSize = Size(0,0);
+
+    if(givenSize != Size::null){
+      m_preferredSize = Size(givenSize.width*GUI::CELLW,givenSize.height*GUI::CELLH);
+    }else if(givenMinSize != Size::null || givenMaxSize != Size::null){
+      if(givenMinSize != Size::null){
+        setMinimumSize(QSize(givenMinSize.width*GUI::CELLW,givenMinSize.height*GUI::CELLH));
+      }
+      if(givenMaxSize != Size::null){
+        setMaximumSize(QSize(givenMaxSize.width*GUI::CELLW,givenMaxSize.height*GUI::CELLH));
+      }
+    }else if(defMinSize != Size::null){
+      setMinimumSize(QSize(defMinSize.width*GUI::CELLW,defMinSize.height*GUI::CELLH));
+    }
+    if(ctx.parentLayout) ctx.parentLayout->setContentsMargins(0,0,0,0);
+
+    if(ctx.parentLayout) ctx.parentLayout->addWidget(this);
+    if(ctx.parentProxy) ctx.parentProxy->addWidget(this);
+
+    switch(lt){
+      case noLayout: break;
+      case hboxLayout: m_poOtherLayout = new QHBoxLayout; break;
+      case vboxLayout: m_poOtherLayout = new QVBoxLayout; break;
+      case gridLayout: m_poGridLayout = new QGridLayout; break;
+    }
+    if(m_poGridLayout){
+      m_poGridLayout->setContentsMargins(margin,margin,margin,margin);
+      m_poGridLayout->setSpacing(spacing);
+      setLayout(m_poGridLayout);
+    }else if(m_poOtherLayout){
+      m_poOtherLayout->setContentsMargins(margin,margin,margin,margin);
+      m_poOtherLayout->setSpacing(spacing);
+      setLayout(m_poOtherLayout);
+    }
+    m_poGUI = ctx.gui;
+
+    setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
+
+    if(o.handle != "") m_handle = new std::string(o.handle);
 
     if(layout()) layout()->setContentsMargins(0,0,0,0);
     setContentsMargins(0,0,0,0);
