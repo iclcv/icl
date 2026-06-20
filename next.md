@@ -2,26 +2,34 @@
 
 ## Next Step
 
-**⏸️ BREAK POINT (end of Session 76).** The entire **ICLQt GUI builder rework is DONE and
-committed** (8+ commits on `further-restructuring-and-cleanup`, build + **923/923** green):
-- ui-plan **Phase 7** — retired the GUI-definition string round-trip + parse path, promoted
-  the designated-init components out of `qt::ui::` into `icl::qt`, stripped the `ui::`
-  qualifier codebase-wide.
-- **Polymorphic re-engineering** — `GUIComponent` is now a real polymorphic interface
-  (virtual `createWidget`/`clone`, CRTP `GUIComponentT<Self>`); every component holds typed
-  fields and builds its own widget; the string-tag registry, `GUIDefinition`, comma-joined
-  param channel, `toString`/`form_args`, pointer-smuggling and the `detail::` layer are all
-  deleted. See the two Session-76 recaps below + memory `feedback_polymorphic_over_registry`.
+**⏸️ BREAK POINT (end of Session 77).** A **geom2 pointer-ownership cleanup** + **physics2
+Phase 4c (constraints)** are DONE and committed (3 commits on
+`further-restructuring-and-cleanup`, build + **930/930** green):
+- **geom2 ownership made coherent** — `deepCopy()` returns `NodePtr` (no more raw *owning*
+  pointers); a single rule documented on `NodePtr`: **own with `shared_ptr`/`NodePtr`,
+  observe with raw `Node*`**. New **weak cross-edge tier** (`getDriverPtr<T>()`,
+  `getNodePtr`/`getLightPtr`) for long-lived references to peers you don't own. See memory
+  `feedback_polymorphic_over_registry` and the Session-77 recap below.
+- **physics2 constraints** — `Constraint` + `SpringConstraint` (the legacy 5-class joint tree
+  is one `btGeneric6DofConstraint`); world factories `addHinge/addSlider/addBallSocket/
+  addSixDOF/addSpring`. This **unblocks one of the four Phase-6 legacy demos**
+  (`physics-constraints`).
 
-**Two small GUI follow-ups deferred** (non-blocking, do whenever): refresh stale `\code`
-doc-comments still showing old fluent/`ui::` snippets; `ui.h` is now a historical filename
-(could be renamed/merged into `GUIComponents.h`); `GUISyntaxErrorException` is likely dead.
+**When work resumes, pick the next thread.** The remaining **legacy-physics retirement**
+blockers are three self-contained demos: **Phase 4b VehicleDriver** (`btRaycastVehicle` →
+`physics-car`, the natural next one), the **full maze** (compound bodies + ghost-hole
+sensors), and **water-rocket** (a port — force-fields + soft anchors already exist). Then
+Phase 6 deletes the `geom::Scene` physics path + the `PhysicsObject`/`PhysicsScene`
+inheritance (KEEPING `btSoftRigidDynamicsWorld` behind the flag). Other open geom2-physics
+fronts: **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`), **defaults policy →
+material database**, the **multi-world** experiment. Paper M3 polish + fold/crease bending
+regen stay **deferred** (box below). Full plan: `physics-geom2-redesign-plan.md`.
 
-**When work resumes, pick the next thread** — the open fronts are the **physics-geom2**
-arcs: **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`), the **defaults policy
-→ material database**, the **multi-world** experiment (paper SoftRigid + cloth Deformable in
-one `Scene2`), then Phase 6 / Phase 4b. Paper M3 polish + fold/crease bending regen stay
-**deferred** (box below). Full plan: `physics-geom2-redesign-plan.md`.
+**Deferred geom2 follow-up (non-blocking):** the value-handle/Image-pattern rewrite (nodes
+as shallow-copyable value handles over `shared_ptr<Impl>`) was weighed and *declined* in
+favour of the targeted consistency pass — the uniformity win didn't justify a module-wide
+rewrite of a typed polymorphic hierarchy. Revisit only if the by-value ergonomics become a
+real pain point.
 
 ### ⏸️ DEFERRED — paper M3 polish + fold/crease bending regeneration
 
@@ -41,7 +49,7 @@ if we decide to keep evolving the SoftRigid paper.
   account, using **flat paper-space rest lengths** not deformed 3D distances. See memory
   `project_paper_fold_bending`.
 
-All physics/composition is headless-tested (919/919).
+All physics/composition is headless-tested (930/930).
 
 After Phase 7 + (if pursued) paper: **DefaultScene step 2** (Landscape/Room + retire
 `DemoScene2`), the **defaults policy → material database** (now that node-mass stiffness
@@ -54,6 +62,48 @@ the drivers are ready, only `PhysicsScene` owning a *list* of worlds is missing.
 it as a mode. Phase 6 = retire the dead `geom::Scene` physics path + the old
 `PhysicsScene`/`PhysicsObject` inheritance, while KEEPING the legacy solver behind the
 flag.
+
+## Session 77 recap (geom2 pointer-ownership cleanup + physics2 constraints) — committed
+
+Branch `further-restructuring-and-cleanup`, 3 commits, build + **930/930** green at each step.
+The session started as "scope the constraint drivers" and the constraint API kept tripping
+over geom2's mixed `shared_ptr<Node>` / `Node*` usage — so we fixed geom2's ownership model
+*first*, then built constraints on top of it.
+
+- **`249847f7` — geom2 NodePtr ownership pass.** `Node::deepCopy()` returned a raw *owning*
+  `Node*` (the one place ownership leaked into a bare pointer) → now returns `NodePtr`
+  (= `shared_ptr<Node>`); all overrides build via `make_shared`. Introduced
+  `NodePtr`/`ConstNodePtr`, threaded through the base-`Node` interfaces; added
+  `Scene2::getNodePtr`. Documented the rule and tagged the raw getters
+  (`getParent`/`getChild`/`getNode`/`Hit2::node`) as non-owning views. Rule-of-5 on node
+  subclasses left intact (copy feeds `deepCopy`, move feeds `addNode(T&&)` — both load-bearing).
+- **`ac0115bf` — geom2 weak cross-edge tier.** Named the third reference kind geom2 lacked.
+  The tree edges were already clean (down = `shared`/owns, up = raw/observe-owner); the gap
+  was the **cross-edge** — a long-lived reference to a peer you neither own nor are owned by.
+  Three-tier model now documented on `NodePtr`: **down = `shared_ptr`, up = raw, cross =
+  `weak_ptr`**. Added `Node::getDriverPtr<T>()` (the strong handle a cross-edge downgrades
+  from), `Scene2::getLightPtr`. (Decision: did NOT do the value-handle/Image-pattern rewrite —
+  see the deferred note at top + memory `feedback_polymorphic_over_registry`.)
+- **`c6e7bf1a` — physics2 Phase 4c constraints.** `Constraint` + `SpringConstraint` (PIMPL,
+  **no Bullet in the public surface**; ctors private + friend `PhysicsWorld`). The legacy
+  `SixDOF/Slider/Hinge/BallSocket` tree is really one `btGeneric6DofConstraint` with limit
+  presets; `Object2Point` → `SpringConstraint` (spring + phantom anchor body). World factories
+  `addHinge/addSlider/addBallSocket/addSixDOF/addSpring` take `NodePtr`, return
+  `shared_ptr<Constraint>`; `PhysicsScene` forwards. **Cross-edge lifetime:** each constraint
+  holds `weak_ptr<RigidBodyDriver>`; `removeBody` drops dependents *first* (Bullet requires a
+  joint to die before its bodies), the handle goes inert (never dangles). **Latent geom2 bug
+  fixed:** `Node::~Node` now detaches drivers, so "destroy node → body leaves world" (the RAII
+  promise the driver model rests on) is finally true. Added `RigidBodyDriver::setDamping`.
+  7 headless tests; demo `physics2-constraints` (4 joint stations + grab + debug overlay).
+- **Two Bullet gotchas (documented in `Constraint.h`, asserted by tests):** (1) joints need a
+  **`SoftRigid`** world — the deformable multibody solver injects energy into 6DOF joints
+  (door swung *up* past its start height); (2) `btGeneric6DofConstraint` gimbal-limits the
+  **middle angular axis (Y)** — hinge about X or Z, not Y.
+
+This unblocks `physics-constraints`, one of the four Phase-6 legacy-retirement demos.
+**Full plan + phase status: `physics-geom2-redesign-plan.md` (Phase 4c marked LANDED).**
+
+---
 
 ## Session 76 recap, part 2 (GUI builder re-engineered onto a polymorphic interface) — committed
 
