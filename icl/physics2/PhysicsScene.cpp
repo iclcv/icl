@@ -51,6 +51,27 @@ namespace icl::physics2 {
     return m_world.addDriver<SensorDriver>(std::move(node));
   }
 
+  std::shared_ptr<Constraint> PhysicsScene::addHinge(geom2::NodePtr a, geom2::NodePtr b,
+                                                     const Vec &pivA, const Vec &pivB, int axis) {
+    return m_world.addHinge(std::move(a), std::move(b), pivA, pivB, axis);
+  }
+  std::shared_ptr<Constraint> PhysicsScene::addSlider(geom2::NodePtr a, geom2::NodePtr b,
+                                                      const Vec &pivA, const Vec &pivB, int axis) {
+    return m_world.addSlider(std::move(a), std::move(b), pivA, pivB, axis);
+  }
+  std::shared_ptr<Constraint> PhysicsScene::addBallSocket(geom2::NodePtr a, geom2::NodePtr b,
+                                                          const Vec &pivA, const Vec &pivB) {
+    return m_world.addBallSocket(std::move(a), std::move(b), pivA, pivB);
+  }
+  std::shared_ptr<Constraint> PhysicsScene::addSixDOF(geom2::NodePtr a, geom2::NodePtr b,
+                                                      const Vec &pivA, const Vec &pivB) {
+    return m_world.addSixDOF(std::move(a), std::move(b), pivA, pivB);
+  }
+  std::shared_ptr<SpringConstraint> PhysicsScene::addSpring(geom2::NodePtr obj, const Vec &localOffset,
+                                                           const Vec &worldPoint, float stiffness, float damping) {
+    return m_world.addSpring(std::move(obj), localOffset, worldPoint, stiffness, damping);
+  }
+
   void PhysicsScene::setupDefault(geom2::DefaultScene::SceneType type, float extent) {
     // Z-up to match the default gravity (0,0,-9810); preset furnishes camera,
     // lamp rig and the checkerboard ground (scaled to extent).

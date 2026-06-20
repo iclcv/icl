@@ -7,6 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/physics2/Units.h>
 #include <icl/physics2/RigidBodyDriver.h>
+#include <icl/physics2/Constraint.h>
 #include <icl/geom2/Node.h>
 #include <functional>
 #include <memory>
@@ -147,12 +148,45 @@ namespace icl::physics2 {
       return addDriver<RigidBodyDriver>(std::move(node), mass);
     }
 
+    // --- constraints (joints) — the world is the factory; it co-owns the
+    //     returned handle and removes it automatically when a referenced body
+    //     leaves the world. \a pivA / \a pivB are the joint pivot in each body's
+    //     local space (ICL units); \a axis is 0/1/2 (x/y/z). ---
+    /// Rotation free about \a axis only; all translation locked (e.g. a door).
+    std::shared_ptr<Constraint> addHinge(geom2::NodePtr a, geom2::NodePtr b,
+                                         const Vec &pivA, const Vec &pivB, int axis);
+    /// Translation free along \a axis only; all rotation locked.
+    std::shared_ptr<Constraint> addSlider(geom2::NodePtr a, geom2::NodePtr b,
+                                          const Vec &pivA, const Vec &pivB, int axis);
+    /// All rotation free; all translation locked (a ball-and-socket joint).
+    std::shared_ptr<Constraint> addBallSocket(geom2::NodePtr a, geom2::NodePtr b,
+                                              const Vec &pivA, const Vec &pivB);
+    /// Fully configurable: all 6 axes locked by default, open with the setters.
+    std::shared_ptr<Constraint> addSixDOF(geom2::NodePtr a, geom2::NodePtr b,
+                                          const Vec &pivA, const Vec &pivB);
+    /// Spring-bind \a obj's \a localOffset point to a world-space \a worldPoint.
+    std::shared_ptr<SpringConstraint> addSpring(geom2::NodePtr obj, const Vec &localOffset,
+                                                const Vec &worldPoint, float stiffness, float damping);
+    /// Detach + delete a constraint (the handle goes inert).
+    void removeConstraint(const std::shared_ptr<Constraint> &c);
+    /// Number of live (active) constraints in the world.
+    int getConstraintCount() const;
+
     // --- escape hatch + BasicLockable (so std::scoped_lock<PhysicsWorld> works) ---
     btDynamicsWorld *getDynamicsWorld();
     void lock();
     void unlock();
 
   private:
+    /// Take co-ownership of a factory-built constraint (called by the factories).
+    void registerConstraint(std::shared_ptr<Constraint> c);
+
+    /// Shared builder for the four 6DOF presets (axis used by Hinge/Slider only).
+    enum class Joint { SixDOF, Hinge, Slider, BallSocket };
+    std::shared_ptr<Constraint> makeDof(geom2::NodePtr a, geom2::NodePtr b,
+                                        const Vec &pivA, const Vec &pivB,
+                                        Joint kind, int axis);
+
     struct Data;
     std::unique_ptr<Data> m_data;
   };

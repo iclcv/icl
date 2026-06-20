@@ -21,4 +21,9 @@ if _build_demos and bullet_found and qt_found
     dependencies: [icl_physics2_dep],
     install: false,
   )
+  executable('physics2-constraints-demo',
+    files('../demos/physics2-constraints.cpp'),
+    dependencies: [icl_physics2_dep],
+    install: false,
+  )
 endif

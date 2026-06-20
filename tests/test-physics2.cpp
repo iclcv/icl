@@ -10,6 +10,7 @@
 #include <icl/physics2/PhysicsScene.h>
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/RigidBodyDriver.h>
+#include <icl/physics2/Constraint.h>
 #include <icl/physics2/Units.h>
 #include <icl/physics2/SoftBodyDriver.h>
 #include <icl/physics2/SensorDriver.h>
@@ -686,4 +687,171 @@ ICL_REGISTER_TEST("physics2.cloth_resolution_rebuild", "changing node density re
   for (int i = 0; i < 120; i++) scene.stepOnce(1.f/120.f);
   ICL_TEST_TRUE(cloth->softBody() != nullptr);
   ICL_TEST_EQ(cloth->softBody()->m_nodes.size(), 20 * 20);
+}
+
+// ---------------------------------------------------------------------------
+// Phase 4c — constraints (joints). All on the deterministic stepOnce() path.
+// A static (mass 0) anchor body stands in for the fixed world frame.
+// ---------------------------------------------------------------------------
+
+ICL_REGISTER_TEST("physics2.hinge_swings", "a hinged door swings down about its axis, pivot held")
+{
+  PhysicsScene scene(SoftBodyMode::SoftRigid);   // rigid joints want the discrete solver
+  // Hinge about X (axis 0). NB: btGeneric6DofConstraint limits the *middle*
+  // angular axis (Y, index 1) to +/-90deg (Euler gimbal), so a free Y hinge
+  // misbehaves — use X or Z. Door extends +Y from the pivot and swings down in
+  // the YZ plane. Anchor is offset in +X, clear of the swing.
+  auto anchor = CuboidNode::create(0,0,0, 40,40,40);
+  anchor->translate(500, 0, 500);
+  scene.add(std::static_pointer_cast<Node>(anchor), 0.0f);          // static
+
+  auto door = CuboidNode::create(0,0,0, 100,400,20);
+  door->translate(0, 200, 500);                                     // -Y edge at the pivot
+  auto dd = scene.add(std::static_pointer_cast<Node>(door), 1.0f);
+  dd->setDamping(0.1f, 0.3f);                                       // settle the swing
+
+  // hinge about X at world (0,0,500): door free to rotate about X only
+  scene.addHinge(anchor, door, Vec(-500,0,0,1), Vec(0,-200,0,1), 0);
+  ICL_TEST_EQ(scene.world().getConstraintCount(), 1);
+
+  for (int i = 0; i < 1500; i++) scene.stepOnce(1.f/120.f);
+
+  // settles hanging straight down: centre swings from (0,200,500) to ~(0,0,300)
+  ICL_TEST_TRUE(std::fabs(dd->getPose()(1,3)) < 90.0f);           // Y swung in (rotated about X)
+  float z = zOf(dd->getPose());
+  ICL_TEST_TRUE(z > 260.0f && z < 360.0f);                         // hung down, pivot held (no free fall)
+}
+
+ICL_REGISTER_TEST("physics2.slider_translates", "a slider frees one translation axis and locks the rest")
+{
+  PhysicsScene scene;
+  auto anchor = CuboidNode::create(0,0,0, 40,40,40);
+  anchor->translate(0, 0, 500);
+  scene.add(std::static_pointer_cast<Node>(anchor), 0.0f);
+
+  auto body = CuboidNode::create(0,0,0, 100,100,100);
+  body->translate(0, 0, 400);
+  auto bd = scene.add(std::static_pointer_cast<Node>(body), 1.0f);
+
+  // free to slide along Z only; X/Y translation + all rotation locked
+  scene.addSlider(anchor, body, Vec(0,0,0,1), Vec(0,0,0,1), 2);
+  bd->setLinearVelocity(Vec(1000,0,0,1));                          // sideways kick — must be absorbed
+
+  for (int i = 0; i < 240; i++) scene.stepOnce(1.f/120.f);         // 2 s
+
+  ICL_TEST_TRUE(std::fabs(xOf(bd->getPose())) < 30.0f);           // X stayed locked despite the kick
+  ICL_TEST_TRUE(zOf(bd->getPose()) < 200.0f);                    // slid down the free Z axis
+}
+
+ICL_REGISTER_TEST("physics2.ballsocket_swings", "a ball-socket joint swings to hang below the pivot")
+{
+  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  auto anchor = CuboidNode::create(0,0,0, 40,40,40);
+  anchor->translate(0, 500, 500);                                  // out of the swing plane
+  scene.add(std::static_pointer_cast<Node>(anchor), 0.0f);
+
+  auto body = CuboidNode::create(0,0,0, 400,100,20);
+  body->translate(200, 0, 500);
+  auto bd = scene.add(std::static_pointer_cast<Node>(body), 1.0f);
+  bd->setDamping(0.1f, 0.3f);                                      // settle the pendulum
+
+  scene.addBallSocket(anchor, body, Vec(0,-500,0,1), Vec(-200,0,0,1));
+
+  for (int i = 0; i < 1500; i++) scene.stepOnce(1.f/120.f);
+
+  // hangs ~200 below the pivot; rotation is unconstrained, so it may settle
+  // slightly off the start plane (wider X tolerance than the hinge).
+  float z = zOf(bd->getPose());
+  ICL_TEST_TRUE(z > 260.0f && z < 360.0f);                       // pivot held, hung ~200 below
+  ICL_TEST_TRUE(std::fabs(xOf(bd->getPose())) < 90.0f);
+}
+
+ICL_REGISTER_TEST("physics2.sixdof_locks_body", "a fully-locked 6DOF welds the body to the anchor")
+{
+  PhysicsScene scene;
+  auto anchor = CuboidNode::create(0,0,0, 40,40,40);
+  anchor->translate(0, 0, 500);
+  scene.add(std::static_pointer_cast<Node>(anchor), 0.0f);
+
+  auto body = CuboidNode::create(0,0,0, 100,100,100);
+  body->translate(0, 0, 500);                                     // coincident frames
+  auto bd = scene.add(std::static_pointer_cast<Node>(body), 1.0f);
+
+  scene.addSixDOF(anchor, body, Vec(0,0,0,1), Vec(0,0,0,1));      // all 6 axes locked
+
+  for (int i = 0; i < 600; i++) scene.stepOnce(1.f/120.f);        // 5 s of gravity
+
+  // welded to the static anchor — it does not fall
+  ICL_TEST_NEAR(zOf(bd->getPose()), 500.0f, 8.0f);
+  ICL_TEST_TRUE(std::fabs(xOf(bd->getPose())) < 8.0f);
+}
+
+ICL_REGISTER_TEST("physics2.spring_pulls_to_point", "a spring constraint pulls a body toward a world point")
+{
+  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  scene.world().setGravityEnabled(false);                        // isolate the spring
+
+  auto body = CuboidNode::create(0,0,0, 60,60,60);
+  auto bd = scene.add(std::static_pointer_cast<Node>(body), 1.0f);
+  bd->setDamping(0.8f, 0.0f);                                     // bleed oscillation -> settles on target
+
+  const Vec target(500, 0, 300, 1);
+  // Bullet spring damping is a 0..1 fraction (near-critical here -> no overshoot).
+  auto spring = scene.addSpring(body, Vec(0,0,0,1), target, 2000.f, 0.9f);
+  ICL_TEST_EQ(scene.world().getConstraintCount(), 1);
+
+  auto distToTarget = [&] {
+    Mat p = bd->getPose();
+    float dx = p(0,3)-target[0], dy = p(1,3)-target[1], dz = p(2,3)-target[2];
+    return std::sqrt(dx*dx + dy*dy + dz*dz);
+  };
+  float d0 = distToTarget();
+  for (int i = 0; i < 2000; i++) scene.stepOnce(1.f/120.f);
+  float d1 = distToTarget();
+
+  ICL_TEST_TRUE(d1 < d0 * 0.3f);                                 // pulled most of the way in
+  ICL_TEST_TRUE(d1 < 150.0f);
+}
+
+ICL_REGISTER_TEST("physics2.constraint_removed_with_body", "removing a body auto-drops its constraints (no crash)")
+{
+  PhysicsScene scene;
+  auto anchor = CuboidNode::create(0,0,0, 40,40,40);
+  anchor->translate(0, 0, 500);
+  scene.add(std::static_pointer_cast<Node>(anchor), 0.0f);
+
+  auto door = CuboidNode::create(0,0,0, 400,100,20);
+  door->translate(200, 0, 500);
+  auto dd = scene.add(std::static_pointer_cast<Node>(door), 1.0f);
+
+  scene.addHinge(anchor, door, Vec(0,0,0,1), Vec(-200,0,0,1), 1);
+  ICL_TEST_EQ(scene.world().getConstraintCount(), 1);
+
+  // detach the door's rigid body — the hinge must leave the world FIRST (Bullet
+  // requires it) so this neither crashes nor leaves a dangling joint.
+  door->removeDriver(dd);
+  ICL_TEST_EQ(scene.world().getConstraintCount(), 0);
+
+  for (int i = 0; i < 120; i++) scene.stepOnce(1.f/120.f);       // still steps cleanly
+  ICL_TEST_TRUE(true);
+}
+
+ICL_REGISTER_TEST("physics2.stale_handle_inert", "a constraint handle goes inert once a body leaves")
+{
+  PhysicsScene scene;
+  auto anchor = CuboidNode::create(0,0,0, 40,40,40);
+  anchor->translate(0, 0, 500);
+  scene.add(std::static_pointer_cast<Node>(anchor), 0.0f);
+
+  auto door = CuboidNode::create(0,0,0, 400,100,20);
+  door->translate(200, 0, 500);
+  auto dd = scene.add(std::static_pointer_cast<Node>(door), 1.0f);
+
+  auto h = scene.addHinge(anchor, door, Vec(0,0,0,1), Vec(-200,0,0,1), 1);
+  ICL_TEST_TRUE(h->isActive());
+
+  door->removeDriver(dd);                                        // body gone
+  ICL_TEST_TRUE(!h->isActive());
+  h->setAngularLimits(Vec(-1,0,0,1), Vec(1,0,0,1));            // inert: no-op, must not crash
+  ICL_TEST_TRUE(true);
 }

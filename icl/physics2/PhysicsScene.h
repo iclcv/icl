@@ -71,6 +71,24 @@ namespace icl::physics2 {
     /// any collision response. Set the node invisible for an invisible trigger.
     SensorDriver *addSensor(std::shared_ptr<geom2::Node> node);
 
+    // --- constraints (joints), forwarded to the world (both nodes must already
+    //     have rigid bodies, e.g. via add()) ---
+    /// Rotation free about \a axis only; all translation locked (e.g. a door).
+    std::shared_ptr<Constraint> addHinge(geom2::NodePtr a, geom2::NodePtr b,
+                                         const Vec &pivA, const Vec &pivB, int axis);
+    /// Translation free along \a axis only; all rotation locked.
+    std::shared_ptr<Constraint> addSlider(geom2::NodePtr a, geom2::NodePtr b,
+                                          const Vec &pivA, const Vec &pivB, int axis);
+    /// All rotation free; all translation locked (a ball-and-socket joint).
+    std::shared_ptr<Constraint> addBallSocket(geom2::NodePtr a, geom2::NodePtr b,
+                                              const Vec &pivA, const Vec &pivB);
+    /// Fully configurable: all 6 axes locked by default, open with the setters.
+    std::shared_ptr<Constraint> addSixDOF(geom2::NodePtr a, geom2::NodePtr b,
+                                          const Vec &pivA, const Vec &pivB);
+    /// Spring-bind \a obj's \a localOffset point to a world-space \a worldPoint.
+    std::shared_ptr<SpringConstraint> addSpring(geom2::NodePtr obj, const Vec &localOffset,
+                                                const Vec &worldPoint, float stiffness, float damping);
+
     /// Furnish the scene with a default environment (camera, lamp rig, ground)
     /// plus a matching static ground collider, ready to add() bodies onto.
     /** Z-up (physics convention, matching the default gravity). The visual

@@ -90,6 +90,9 @@ namespace icl::physics2 {
     ContactCallback contactCb;
     std::vector<std::pair<int, ForceField>> forceFields;
     int nextFieldId = 1;
+
+    // world co-owns constraints; each removed before its bodies (Bullet rule)
+    std::vector<std::shared_ptr<Constraint>> constraints;
   };
 
   PhysicsWorld::PhysicsWorld(SoftBodyMode mode) : m_data(std::make_unique<Data>()) {
@@ -169,6 +172,10 @@ namespace icl::physics2 {
 
   PhysicsWorld::~PhysicsWorld() {
     stop();
+    // Constraints (and their phantom anchor bodies) must leave the btWorld
+    // before it is deleted — and before any rigid bodies — so drop them first.
+    for (auto &c : m_data->constraints) if (c) c->removeFromWorld();
+    m_data->constraints.clear();
     // Order matters: tearing down the world + broadphase removes remaining
     // overlapping pairs, and btHashedOverlappingPairCache::removeOverlappingPair
     // dereferences the internal ghost-pair callback — so ghostCb must outlive
@@ -223,7 +230,34 @@ namespace icl::physics2 {
   void PhysicsWorld::removeBody(btRigidBody *body) {
     if (!body) return;
     std::scoped_lock lock(m_data->mutex);
+    // Bullet requires a constraint to be removed before either of its bodies —
+    // detach (and drop) every constraint referencing this body first. At this
+    // point the body's driver is still alive, so the weak cross-edge still locks.
+    auto &cs = m_data->constraints;
+    for (auto &c : cs) if (c && c->references(body)) c->removeFromWorld();
+    cs.erase(std::remove_if(cs.begin(), cs.end(),
+                            [](const auto &c) { return !c || !c->isActive(); }), cs.end());
     m_data->world->removeRigidBody(body);
+  }
+
+  void PhysicsWorld::registerConstraint(std::shared_ptr<Constraint> c) {
+    std::scoped_lock lock(m_data->mutex);
+    m_data->constraints.push_back(std::move(c));
+  }
+
+  void PhysicsWorld::removeConstraint(const std::shared_ptr<Constraint> &c) {
+    if (!c) return;
+    std::scoped_lock lock(m_data->mutex);
+    c->removeFromWorld();
+    auto &cs = m_data->constraints;
+    cs.erase(std::remove(cs.begin(), cs.end(), c), cs.end());
+  }
+
+  int PhysicsWorld::getConstraintCount() const {
+    std::scoped_lock lock(m_data->mutex);
+    int n = 0;
+    for (const auto &c : m_data->constraints) if (c && c->isActive()) ++n;
+    return n;
   }
 
   void PhysicsWorld::addCollisionObject(btCollisionObject *obj, int group, int mask) {

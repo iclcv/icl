@@ -65,6 +65,9 @@ namespace icl::physics2 {
     void setFriction(float f);
     void setRestitution(float r);
     void setRollingFriction(float rf);
+    /// Linear + angular velocity damping (0..1); bleeds energy so e.g. a hinged
+    /// pendulum settles instead of swinging forever.
+    void setDamping(float linear, float angular);
     void setLinearVelocity(const Vec &v);
     void setAngularVelocity(const Vec &v);
     void applyCentralForce(const Vec &f);

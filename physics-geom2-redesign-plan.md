@@ -416,6 +416,76 @@ thread-safety gaps in the paper mouse handling during Phase 5 (picking).
   delete `ghostCb` LAST. `cloth_rests_on_box` test + the demo's drape-over-box
   restored; 16 physics2 tests / full suite 900/900. (Cloth *visual* quality —
   the pleating — is still the separate defaults-policy tuning matter.)
+- **Phase 4c — constraints (joints). ✅ LANDED (Session 77).** `Constraint` +
+  `SpringConstraint` (PIMPL, no Bullet in the surface), world factories
+  `addHinge`/`addSlider`/`addBallSocket`/`addSixDOF`/`addSpring` taking `NodePtr`
+  and returning `shared_ptr<Constraint>`; `PhysicsScene` forwards. Cross-edge
+  lifetime: each constraint holds `weak_ptr<RigidBodyDriver>`; `removeBody` drops
+  dependent constraints *before* the body leaves (Bullet ordering), the handle
+  goes inert. Fixed a latent geom2 bug: `Node::~Node` now detaches drivers (the
+  "destroy node → body leaves world" RAII promise was false). Added
+  `RigidBodyDriver::setDamping`. 7 headless tests (hinge/slider/ballsocket/sixdof/
+  spring/auto-remove/inert-handle); full suite **930/930**. Demo
+  `physics2-constraints` (4 joint stations + grab + debug overlay).
+  **Two Bullet gotchas documented in `Constraint.h`:** (1) joints need a
+  `SoftRigid` world — the deformable multibody solver mishandles 6DOF joints;
+  (2) `btGeneric6DofConstraint` gimbal-limits the middle angular axis (Y) — hinge
+  about X or Z, not Y. Restores the legacy `phyisics-constraints` demo and
+  unblocks one of the four Phase-6 legacy-retirement demos.
+
+  **Original scope (for reference).** **Key finding:** the legacy five-class tree
+  (SixDOF/Slider/Hinge/BallSocket) is really *one* Bullet primitive —
+  `btGeneric6DofConstraint` with different limit presets; `Object2Point` is the
+  one outlier (`btGeneric6DofSpringConstraint` + a phantom static anchor body).
+  So physics2 ships **two** classes, not five.
+
+  *Rests on the geom2 work landed this session* (`249847f77` NodePtr ownership,
+  `ac0115bf` the weak cross-edge tier). A constraint is the canonical
+  **cross-edge**: it references two bodies it must *not* keep alive.
+
+  - **API — no raw pointers, no Bullet in the surface.** Factories live on the
+    world (the honest factory) and take the `NodePtr`s the user already holds;
+    they return an owning handle:
+    ```cpp
+    shared_ptr<Constraint>       addHinge(NodePtr a, NodePtr b, const Vec &pivA, const Vec &pivB, int axis);
+    shared_ptr<Constraint>       addSlider/addBallSocket/addSixDOF(...);
+    shared_ptr<SpringConstraint> addSpring(NodePtr obj, const Vec &localOffset, const Vec &worldPoint, float k, float d);
+    void                         removeConstraint(const shared_ptr<Constraint> &c);
+    ```
+    `Constraint` / `SpringConstraint` are PIMPL value-less handles (tunables only:
+    `setLinearLimits`/`setAngularLimits`/`setLinearMotor`/`setAngularMotor`/
+    `setFrames`/`getAngle`; spring adds `setPoint`/`setLocalOffset`/`setStiffness`/
+    `setDamping`). Ctors are **private, `friend class PhysicsWorld`** — the factory
+    is the only path. **Zero `bt*` in any public signature** (unlike `addBody`,
+    which must take a `btRigidBody*` because a *driver* creates the body — here the
+    world both creates and registers, so Bullet stays fully behind the PIMPL).
+    Setters enqueue on the command queue; `getAngle` locks.
+  - **Lifetime — cross-edge + owner-driven teardown.** The world co-owns the
+    `Constraint` (`vector<shared_ptr<Constraint>>`); the constraint holds
+    `weak_ptr<RigidBodyDriver>` to each body (obtained via the new
+    `node->getDriverPtr<RigidBodyDriver>()`). A stale handle is **inert**, never
+    dangling. Bullet's "constraint must die before its bodies" rule is honored by
+    *ordering, not luck*: `RigidBodyDriver::onDetach` (node death / `removeDriver`)
+    calls into the world to drop constraints referencing it **before** the body
+    leaves — at that instant the weak ref still `.lock()`s, so the world finds them.
+    Weak gives dangle-safety; the teardown notification gives ordering; they compose.
+  - **Files:** new `Constraint.{h,cpp}` (`Constraint` + `SpringConstraint`); edit
+    `PhysicsWorld.{h,cpp}` (factories + `removeConstraint` + the removeBody
+    constraint-scan); new demo `physics2-constraints.cpp` (+ targets line) porting
+    the legacy door/hinge/ground, plus a slider + ballsocket pendulum + a
+    spring-dragged box to exercise all four, with `PhysicsMouseHandler` grabbing.
+  - **Tests (headless `stepOnce`):** `hinge_swings` (rotates only about its axis),
+    `slider_translates` (one free axis, no rotation), `ballsocket_swings` (free
+    rotation, pivot held), `spring_pulls_to_point` (converges to the anchor),
+    `sixdof_angular_limit` (clamps), `constraint_removed_with_body` (`removeBody`
+    then no crash + `getNumConstraints()==0`), and `stale_handle_inert` (drop a
+    body, the held `shared_ptr<Constraint>` reports inactive, setters no-op).
+  - **Bonus:** `SpringConstraint` *is* the marker-driven-manipulation /
+    penalty-coupling primitive §6's multi-world bridge driver already calls for.
+  - **Effort:** ~1 focused session. The Bullet wrapping transplants nearly
+    verbatim (`RigidObject*`→`RigidBodyDriver::body()`, `icl2bullet_scaled_mat`→
+    `Units::toBullet(Mat)`); the only non-mechanical bits are command-queue routing
+    and the removeBody constraint-scan.
 - **Phase 5 — unified picking. ✅ LANDED (Session 71).** `physics2::PhysicsMouseHandler`
   (extends `geom2::Scene2MouseHandler` for camera nav): Shift+Left press raycasts
   via `Scene2::findObject(ray)`, resolves the hit node's driver via

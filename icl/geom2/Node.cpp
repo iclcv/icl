@@ -23,7 +23,15 @@ namespace icl::geom2 {
 
   Node::Node() : m_data(std::make_unique<Data>()) {}
 
-  Node::~Node() = default;
+  Node::~Node() {
+    // Upholds the RAII contract "destroy the node -> its drivers release their
+    // external resources" (e.g. a physics RigidBodyDriver removes its body — and
+    // any constraints referencing it — from the world). onDetach is idempotent
+    // (guarded), so this is safe even when a driver was already removed via
+    // removeDriver. Contract: onDetach must not call back into derived-node
+    // virtuals here — the derived subobject is already destroyed.
+    if (m_data) for (auto &d : m_data->drivers) if (d) d->onDetach();
+  }
 
   Node::Node(const Node &other) : m_data(std::make_unique<Data>()) {
     m_data->transformation = other.m_data->transformation;

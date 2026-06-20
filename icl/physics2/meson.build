@@ -6,6 +6,7 @@ physics2_headers = files(
   'StateBuffer.h',
   'CollisionShapeFactory.h',
   'RigidBodyDriver.h',
+  'Constraint.h',
   'SoftBodyDriver.h',
   'PaperDriver.h',
   'FoldDriver.h',
@@ -20,6 +21,7 @@ physics2_headers = files(
 physics2_sources = files(
   'CollisionShapeFactory.cpp',
   'RigidBodyDriver.cpp',
+  'Constraint.cpp',
   'SoftBodyDriver.cpp',
   'PaperDriver.cpp',
   'FoldDriver.cpp',

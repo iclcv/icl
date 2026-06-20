@@ -148,6 +148,9 @@ namespace icl::physics2 {
   void RigidBodyDriver::setRollingFriction(float rf) {
     if (m_data->body) m_data->body->setRollingFriction(rf);
   }
+  void RigidBodyDriver::setDamping(float linear, float angular) {
+    if (m_data->body) m_data->body->setDamping(linear, angular);
+  }
   void RigidBodyDriver::setLinearVelocity(const Vec &v) {
     if (m_data->body) {
       m_data->body->setLinearVelocity(m_data->units.toBulletVec(v));
