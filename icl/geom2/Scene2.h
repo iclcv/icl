@@ -32,7 +32,7 @@ namespace icl::geom2 {
 
   /// Hit result from ray-node intersection
   struct Hit2 {
-    Node *node = nullptr;    ///< hit node (nullptr if no hit)
+    Node *node = nullptr;    ///< non-owning view of the hit node (nullptr if no hit)
     Vec pos{0,0,0,1};       ///< world-space intersection point
     float dist = -1;         ///< distance from ray origin
     operator bool() const { return node != nullptr; }
@@ -58,10 +58,11 @@ namespace icl::geom2 {
     void lock();
     void unlock();
 
-    // --- Objects (shared_ptr only, no raw pointers) ---
-    void addNode(std::shared_ptr<Node> node);
+    // --- Objects (ownership: the scene co-owns nodes via NodePtr) ---
+    /// Add (co-own) a node. The scene keeps it alive until removed.
+    void addNode(NodePtr node);
 
-    /// Move a stack-constructed node into the scene, returns shared_ptr
+    /// Move a stack-constructed node into the scene, returns the typed handle
     template<class T, class = std::enable_if_t<std::is_base_of_v<Node, T>>>
     std::shared_ptr<T> addNode(T &&node) {
       auto p = std::make_shared<T>(std::move(node));
@@ -69,10 +70,14 @@ namespace icl::geom2 {
       return p;
     }
 
+    /// Non-owning view of the node at \a index (use getNodePtr to co-own).
     Node *getNode(int index);
     const Node *getNode(int index) const;
+    /// Owning handle to the node at \a index.
+    NodePtr getNodePtr(int index);
     int getNodeCount() const;
     void removeNode(int index);
+    /// Remove a node, identified by a non-owning pointer (not deleted here).
     void removeNode(Node *node);
     void clear();
 

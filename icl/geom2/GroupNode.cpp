@@ -18,7 +18,7 @@ namespace icl::geom2 {
   GroupNode::GroupNode(const GroupNode &other) : Node(other), m_data(std::make_unique<Data>()) {
     m_data->children.resize(other.m_data->children.size());
     for (size_t i = 0; i < other.m_data->children.size(); ++i) {
-      m_data->children[i].reset(other.m_data->children[i]->deepCopy());
+      m_data->children[i] = other.m_data->children[i]->deepCopy();
     }
   }
 
@@ -34,9 +34,9 @@ namespace icl::geom2 {
   GroupNode::GroupNode(GroupNode &&other) noexcept = default;
   GroupNode &GroupNode::operator=(GroupNode &&other) noexcept = default;
 
-  Node *GroupNode::deepCopy() const { return new GroupNode(*this); }
+  std::shared_ptr<Node> GroupNode::deepCopy() const { return std::make_shared<GroupNode>(*this); }
 
-  void GroupNode::addChild(std::shared_ptr<Node> child) {
+  void GroupNode::addChild(NodePtr child) {
     child->setParent(this);
     m_data->children.push_back(std::move(child));
   }
@@ -66,7 +66,7 @@ namespace icl::geom2 {
     return (i >= 0 && i < (int)m_data->children.size()) ? m_data->children[i].get() : nullptr;
   }
 
-  std::shared_ptr<Node> GroupNode::getChildPtr(int i) {
+  NodePtr GroupNode::getChildPtr(int i) {
     return (i >= 0 && i < (int)m_data->children.size()) ? m_data->children[i] : nullptr;
   }
 

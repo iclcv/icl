@@ -19,7 +19,7 @@ namespace icl::geom2 {
     CuboidNode &operator=(const CuboidNode &);
     CuboidNode(CuboidNode &&) noexcept;
     CuboidNode &operator=(CuboidNode &&) noexcept;
-    Node *deepCopy() const override;
+    std::shared_ptr<Node> deepCopy() const override;
 
     Vec getCenter() const;
     Vec getExtents() const;

@@ -21,6 +21,16 @@ namespace icl::geom2 {
 
   class GroupNode;
   class Driver;
+  class Node;
+
+  /// Canonical owning handle for a scene-graph node.
+  /** Ownership convention across geom2: **own a node through `NodePtr`**
+      (scenes, group children and drivers all hold these); **observe a node
+      through a raw `Node*`** (a non-owning view — `getParent`, `getChild`,
+      `Scene2::getNode`, `Hit2::node`). A raw `Node*` never implies ownership
+      and must not be deleted. */
+  using NodePtr = std::shared_ptr<Node>;
+  using ConstNodePtr = std::shared_ptr<const Node>;
 
   /// Abstract base for all scene graph nodes
   /** Provides transform, visibility, name, and locking.
@@ -28,7 +38,8 @@ namespace icl::geom2 {
   class ICLGeom2_API Node {
   public:
     virtual ~Node();
-    virtual Node *deepCopy() const = 0;
+    /// Independent deep copy of this node (and its subtree, for GroupNode).
+    virtual NodePtr deepCopy() const = 0;
 
     // --- Transform ---
     void setTransformation(const Mat &m);
@@ -45,6 +56,8 @@ namespace icl::geom2 {
     bool isVisible() const;
 
     // --- Parent (set by GroupNode::addChild) ---
+    /// Non-owning view of the parent (nullptr if unparented). Never delete it;
+    /// the parent owns this node, not the other way around (no ownership cycle).
     Node *getParent();
     const Node *getParent() const;
 

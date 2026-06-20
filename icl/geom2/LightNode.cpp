@@ -32,7 +32,7 @@ namespace icl::geom2 {
   LightNode::LightNode(LightNode &&o) noexcept = default;
   LightNode &LightNode::operator=(LightNode &&o) noexcept = default;
 
-  Node *LightNode::deepCopy() const { return new LightNode(*this); }
+  std::shared_ptr<Node> LightNode::deepCopy() const { return std::make_shared<LightNode>(*this); }
 
   LightNode::Type LightNode::getLightType() const { return m_data->type; }
   void LightNode::setLightType(Type t) { m_data->type = t; }

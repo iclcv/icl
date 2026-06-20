@@ -20,7 +20,7 @@ namespace icl::geom2 {
   public:
     CoordinateFrameNode(float axisLength = 100, float axisThickness = 5,
                         bool complex = false);
-    Node *deepCopy() const override;
+    std::shared_ptr<Node> deepCopy() const override;
 
     void setParams(float axisLength, float axisThickness);
     float getAxisLength() const { return m_length; }

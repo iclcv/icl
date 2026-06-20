@@ -19,7 +19,7 @@ namespace icl::geom2 {
     CylinderNode &operator=(const CylinderNode &);
     CylinderNode(CylinderNode &&) noexcept;
     CylinderNode &operator=(CylinderNode &&) noexcept;
-    Node *deepCopy() const override;
+    std::shared_ptr<Node> deepCopy() const override;
 
     Vec getCenter() const;
     float getHeight() const;

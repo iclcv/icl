@@ -43,7 +43,7 @@ namespace icl::geom2 {
     PointCloudNode(PointCloudNode &&other) noexcept;
     PointCloudNode &operator=(PointCloudNode &&other) noexcept;
 
-    Node *deepCopy() const override;
+    std::shared_ptr<Node> deepCopy() const override;
 
     /// Set/swap the underlying point cloud (shallow, atomic pointer swap)
     void setPointCloud(std::shared_ptr<PointCloud> cloud);

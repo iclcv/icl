@@ -18,15 +18,19 @@ namespace icl::geom2 {
     GroupNode &operator=(const GroupNode &other);
     GroupNode(GroupNode &&other) noexcept;
     GroupNode &operator=(GroupNode &&other) noexcept;
-    Node *deepCopy() const override;
+    NodePtr deepCopy() const override;
 
-    void addChild(std::shared_ptr<Node> child);
+    /// Add (co-own) a child. The group keeps the child alive.
+    void addChild(NodePtr child);
+    /// Remove a child, identified by a non-owning pointer (not deleted here).
     void removeChild(Node *child);
     void removeAllChildren();
     int getChildCount() const;
+    /// Non-owning view of the child at \a index (use getChildPtr to co-own).
     Node *getChild(int index);
     const Node *getChild(int index) const;
-    std::shared_ptr<Node> getChildPtr(int index);
+    /// Owning handle to the child at \a index.
+    NodePtr getChildPtr(int index);
 
   private:
     struct Data;

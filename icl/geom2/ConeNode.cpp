@@ -41,7 +41,7 @@ namespace icl::geom2 {
     return *this;
   }
 
-  Node *ConeNode::deepCopy() const { return new ConeNode(*this); }
+  std::shared_ptr<Node> ConeNode::deepCopy() const { return std::make_shared<ConeNode>(*this); }
 
   Vec ConeNode::getCenter() const { return Vec(m_cx, m_cy, m_cz, 1); }
   float ConeNode::getHeight() const { return m_h; }

@@ -38,8 +38,8 @@ namespace icl::geom2 {
     rebuild();
   }
 
-  Node *CoordinateFrameNode::deepCopy() const {
-    return new CoordinateFrameNode(m_length, m_thickness, m_complex);
+  std::shared_ptr<Node> CoordinateFrameNode::deepCopy() const {
+    return std::make_shared<CoordinateFrameNode>(m_length, m_thickness, m_complex);
   }
 
   void CoordinateFrameNode::setParams(float axisLength, float axisThickness) {

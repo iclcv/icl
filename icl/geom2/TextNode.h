@@ -46,7 +46,7 @@ namespace icl::geom2 {
     TextNode(TextNode &&other) noexcept;
     TextNode &operator=(TextNode &&other) noexcept;
 
-    Node *deepCopy() const override;
+    std::shared_ptr<Node> deepCopy() const override;
 
     /// Update the displayed text
     void setText(const std::string &text);

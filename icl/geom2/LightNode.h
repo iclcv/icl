@@ -24,7 +24,7 @@ namespace icl::geom2 {
     LightNode &operator=(const LightNode &);
     LightNode(LightNode &&) noexcept;
     LightNode &operator=(LightNode &&) noexcept;
-    Node *deepCopy() const override;
+    std::shared_ptr<Node> deepCopy() const override;
 
     Type getLightType() const;
     void setLightType(Type type);

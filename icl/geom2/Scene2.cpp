@@ -107,7 +107,7 @@ namespace icl::geom2 {
   }
   Scene2::~Scene2() = default;
 
-  void Scene2::addNode(std::shared_ptr<Node> node) {
+  void Scene2::addNode(NodePtr node) {
     m_data->objects.push_back(std::move(node));
   }
 
@@ -117,6 +117,10 @@ namespace icl::geom2 {
 
   const Node *Scene2::getNode(int i) const {
     return (i >= 0 && i < (int)m_data->objects.size()) ? m_data->objects[i].get() : nullptr;
+  }
+
+  NodePtr Scene2::getNodePtr(int i) {
+    return (i >= 0 && i < (int)m_data->objects.size()) ? m_data->objects[i] : nullptr;
   }
 
   int Scene2::getNodeCount() const { return (int)m_data->objects.size(); }

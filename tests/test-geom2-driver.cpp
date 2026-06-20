@@ -116,6 +116,6 @@ ICL_REGISTER_TEST("geom2.driver.not_copied", "deep-copied node starts driverless
 {
   auto cube = CuboidNode::createCube(0, 0, 0, 10);
   cube->addDriver<CountingDriver>();
-  std::unique_ptr<Node> copy(cube->deepCopy());
+  std::shared_ptr<Node> copy = cube->deepCopy();
   ICL_TEST_EQ((int)copy->getDrivers().size(), 0);
 }
