@@ -16,7 +16,7 @@ namespace icl::geom2 {
   MeshNode::MeshNode(MeshNode &&other) noexcept = default;
   MeshNode &MeshNode::operator=(MeshNode &&other) noexcept = default;
 
-  std::shared_ptr<Node> MeshNode::deepCopy() const { return std::make_shared<MeshNode>(*this); }
+  NodePtr MeshNode::deepCopy() const { return std::make_shared<MeshNode>(*this); }
 
   // Mutable access (delegates to protected GeometryNode accessors)
   std::vector<Vec> &MeshNode::getVertices() { return vertices(); }

@@ -52,7 +52,7 @@ namespace icl::geom2 {
     return *this;
   }
 
-  std::shared_ptr<Node> SphereNode::deepCopy() const { return std::make_shared<SphereNode>(*this); }
+  NodePtr SphereNode::deepCopy() const { return std::make_shared<SphereNode>(*this); }
 
   Vec SphereNode::getCenter() const { return Vec(m_cx, m_cy, m_cz, 1); }
   Vec SphereNode::getRadii() const { return Vec(m_rx, m_ry, m_rz, 1); }

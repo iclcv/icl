@@ -166,6 +166,10 @@ namespace icl::geom2 {
     return (i >= 0 && i < (int)m_data->lights.size()) ? m_data->lights[i].get() : nullptr;
   }
 
+  std::shared_ptr<LightNode> Scene2::getLightPtr(int i) {
+    return (i >= 0 && i < (int)m_data->lights.size()) ? m_data->lights[i] : nullptr;
+  }
+
   int Scene2::getLightCount() const { return (int)m_data->lights.size(); }
 
   // Cameras

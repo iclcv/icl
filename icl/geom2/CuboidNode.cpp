@@ -42,7 +42,7 @@ namespace icl::geom2 {
     return *this;
   }
 
-  std::shared_ptr<Node> CuboidNode::deepCopy() const { return std::make_shared<CuboidNode>(*this); }
+  NodePtr CuboidNode::deepCopy() const { return std::make_shared<CuboidNode>(*this); }
 
   Vec CuboidNode::getCenter() const { return Vec(m_cx, m_cy, m_cz, 1); }
   Vec CuboidNode::getExtents() const { return Vec(m_dx, m_dy, m_dz, 1); }

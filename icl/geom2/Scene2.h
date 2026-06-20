@@ -83,8 +83,11 @@ namespace icl::geom2 {
 
     // --- Lights (also added to scene graph for traversal) ---
     void addLight(std::shared_ptr<LightNode> light);
+    /// Non-owning view of the light at \a index (use getLightPtr to co-own).
     LightNode *getLight(int index);
     const LightNode *getLight(int index) const;
+    /// Owning handle to the light at \a index.
+    std::shared_ptr<LightNode> getLightPtr(int index);
     int getLightCount() const;
 
     // --- Cameras ---

@@ -34,7 +34,7 @@ namespace icl::geom2 {
   GroupNode::GroupNode(GroupNode &&other) noexcept = default;
   GroupNode &GroupNode::operator=(GroupNode &&other) noexcept = default;
 
-  std::shared_ptr<Node> GroupNode::deepCopy() const { return std::make_shared<GroupNode>(*this); }
+  NodePtr GroupNode::deepCopy() const { return std::make_shared<GroupNode>(*this); }
 
   void GroupNode::addChild(NodePtr child) {
     child->setParent(this);

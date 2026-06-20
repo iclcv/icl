@@ -24,11 +24,24 @@ namespace icl::geom2 {
   class Node;
 
   /// Canonical owning handle for a scene-graph node.
-  /** Ownership convention across geom2: **own a node through `NodePtr`**
-      (scenes, group children and drivers all hold these); **observe a node
-      through a raw `Node*`** (a non-owning view — `getParent`, `getChild`,
-      `Scene2::getNode`, `Hit2::node`). A raw `Node*` never implies ownership
-      and must not be deleted. */
+  /** geom2 references follow a three-tier **edge** model — pick the pointer by
+      the relationship, not by habit:
+
+      - **Ownership (down-edge)** — `NodePtr` / `shared_ptr` / `unique_ptr`.
+        The parent keeps the child alive: scenes own nodes, groups own children,
+        a node owns its drivers.
+      - **Observe-your-owner (up-edge)** — a raw, non-owning `Node*`.
+        `getParent()`, `Driver::node()`. The owner outlives you by construction,
+        so a raw view is correct here (a `shared_ptr` back up would be a cycle).
+        Never delete it.
+      - **Cross-edge** — `weak_ptr<T>`. A long-lived reference to a *peer* you
+        neither own nor are owned by (e.g. a physics constraint or a driver that
+        tracks another node's body). Lock on use; an expired handle means the
+        peer is gone. Use `getDriverPtr<T>()` to obtain the strong handle to
+        downgrade.
+
+      A raw `Node*`/`Driver*` is also fine as a *transient* observer (a getter
+      result, a removal key) — it just must never be stored as a cross-edge. */
   using NodePtr = std::shared_ptr<Node>;
   using ConstNodePtr = std::shared_ptr<const Node>;
 
@@ -75,11 +88,25 @@ namespace icl::geom2 {
       return d;
     }
 
-    /// First attached driver of type T (nullptr if none)
+    /// First attached driver of type T as a non-owning view (nullptr if none).
+    /** Transient observer — fine to use and drop. To keep a *cross-edge* to a
+        driver (store a reference to a peer's driver), use getDriverPtr<T>() and
+        downgrade it to a weak_ptr. */
     template<class T>
     T *getDriver() const {
       for (const auto &d : getDrivers()) {
         if (auto *t = dynamic_cast<T*>(d.get())) return t;
+      }
+      return nullptr;
+    }
+
+    /// First attached driver of type T as an owning handle (nullptr if none).
+    /** The strong handle a cross-edge downgrades from: `weak_ptr<T> w =
+        node->getDriverPtr<T>();`. Mirrors getChildPtr / getNodePtr. */
+    template<class T>
+    std::shared_ptr<T> getDriverPtr() const {
+      for (const auto &d : getDrivers()) {
+        if (auto t = std::dynamic_pointer_cast<T>(d)) return t;
       }
       return nullptr;
     }

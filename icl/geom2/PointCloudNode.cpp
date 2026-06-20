@@ -41,7 +41,7 @@ namespace icl::geom2 {
   PointCloudNode::PointCloudNode(PointCloudNode &&other) noexcept = default;
   PointCloudNode &PointCloudNode::operator=(PointCloudNode &&other) noexcept = default;
 
-  std::shared_ptr<Node> PointCloudNode::deepCopy() const {
+  NodePtr PointCloudNode::deepCopy() const {
     return std::make_shared<PointCloudNode>(*this);
   }
 

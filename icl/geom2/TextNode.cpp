@@ -53,7 +53,7 @@ namespace icl::geom2 {
   TextNode::TextNode(TextNode &&other) noexcept = default;
   TextNode &TextNode::operator=(TextNode &&other) noexcept = default;
 
-  std::shared_ptr<Node> TextNode::deepCopy() const { return std::make_shared<TextNode>(*this); }
+  NodePtr TextNode::deepCopy() const { return std::make_shared<TextNode>(*this); }
 
   void TextNode::setText(const std::string &text) {
     if (m_data->text != text) {

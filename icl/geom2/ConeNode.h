@@ -20,7 +20,7 @@ namespace icl::geom2 {
     ConeNode &operator=(const ConeNode &);
     ConeNode(ConeNode &&) noexcept;
     ConeNode &operator=(ConeNode &&) noexcept;
-    std::shared_ptr<Node> deepCopy() const override;
+    NodePtr deepCopy() const override;
 
     Vec getCenter() const;
     float getHeight() const;
