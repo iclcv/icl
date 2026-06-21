@@ -11,6 +11,7 @@
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/Constraint.h>
+#include <icl/physics2/VehicleDriver.h>
 #include <icl/physics2/Units.h>
 #include <icl/physics2/SoftBodyDriver.h>
 #include <icl/physics2/SensorDriver.h>
@@ -854,4 +855,92 @@ ICL_REGISTER_TEST("physics2.stale_handle_inert", "a constraint handle goes inert
   ICL_TEST_TRUE(!h->isActive());
   h->setAngularLimits(Vec(-1,0,0,1), Vec(1,0,0,1));            // inert: no-op, must not crash
   ICL_TEST_TRUE(true);
+}
+
+// ---------------------------------------------------------------------------
+// M1 — VehicleDriver (btRaycastVehicle). All in the default Deformable world,
+// which deliberately settles the open risk: the raycast vehicle (a
+// btActionInterface) drives correctly in the unified world. Forward = +Y.
+// ---------------------------------------------------------------------------
+
+static float yOf(const Mat &m) { return m(1, 3); }   // translation y
+
+ICL_REGISTER_TEST("physics2.vehicle_rests_on_wheels", "a dropped vehicle settles on its wheels (suspension holds it up)")
+{
+  PhysicsScene scene;   // default Deformable (unified) world
+  auto ground = CuboidNode::create(0,0,0, 6000,6000,20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+
+  auto body = CuboidNode::create(0,0,0, 600,1200,300);
+  body->translate(0, 0, 400);
+  auto *v = scene.addVehicle(std::static_pointer_cast<Node>(body));
+  ICL_TEST_EQ((int)v->getWheelNodes().size(), 4);
+
+  for (int i = 0; i < 480; i++) scene.stepOnce(1.f/120.f);   // 4 s settle
+
+  float z = zOf(v->getChassisPose());
+  ICL_TEST_TRUE(z > 100.0f && z < 380.0f);          // held up on wheels (no tunnel, no launch)
+  ICL_TEST_TRUE(std::fabs(v->getSpeedKmh()) < 3.0f); // at rest
+}
+
+ICL_REGISTER_TEST("physics2.vehicle_drives_forward", "engine force drives the car forward (+Y)")
+{
+  PhysicsScene scene;
+  auto ground = CuboidNode::create(0,0,0, 100000,100000,20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+  auto body = CuboidNode::create(0,0,0, 600,1200,300);
+  body->translate(0, 0, 400);
+  auto *v = scene.addVehicle(std::static_pointer_cast<Node>(body));
+
+  for (int i = 0; i < 120; i++) scene.stepOnce(1.f/120.f);   // settle
+  float y0 = yOf(v->getChassisPose());
+
+  v->setEngineForce(15000.f);
+  for (int i = 0; i < 480; i++) scene.stepOnce(1.f/120.f);   // 4 s of throttle
+  float y1 = yOf(v->getChassisPose());
+
+  ICL_TEST_TRUE(y1 - y0 > 300.0f);          // drove forward in +Y
+  ICL_TEST_TRUE(v->getSpeedKmh() > 1.0f);   // and is moving
+}
+
+ICL_REGISTER_TEST("physics2.vehicle_steers", "steering curves the car off the straight line")
+{
+  PhysicsScene scene;
+  auto ground = CuboidNode::create(0,0,0, 100000,100000,20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+  auto body = CuboidNode::create(0,0,0, 600,1200,300);
+  body->translate(0, 0, 400);
+  auto *v = scene.addVehicle(std::static_pointer_cast<Node>(body));
+
+  for (int i = 0; i < 120; i++) scene.stepOnce(1.f/120.f);   // settle
+  float x0 = xOf(v->getChassisPose());
+
+  v->setEngineForce(15000.f);
+  v->setSteering(0.3f);                                       // steer left
+  for (int i = 0; i < 480; i++) scene.stepOnce(1.f/120.f);
+  float x1 = xOf(v->getChassisPose());
+
+  ICL_TEST_TRUE(std::fabs(x1 - x0) > 150.0f);   // curved sideways (didn't go straight)
+}
+
+ICL_REGISTER_TEST("physics2.vehicle_brakes", "braking slows a moving car")
+{
+  PhysicsScene scene;
+  auto ground = CuboidNode::create(0,0,0, 100000,100000,20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+  auto body = CuboidNode::create(0,0,0, 600,1200,300);
+  body->translate(0, 0, 400);
+  auto *v = scene.addVehicle(std::static_pointer_cast<Node>(body));
+
+  for (int i = 0; i < 120; i++) scene.stepOnce(1.f/120.f);   // settle
+  v->setEngineForce(15000.f);
+  for (int i = 0; i < 300; i++) scene.stepOnce(1.f/120.f);   // get up to speed
+  float vFast = std::fabs(v->getSpeedKmh());
+  ICL_TEST_TRUE(vFast > 2.0f);
+
+  v->setEngineForce(0.f);
+  v->setBrake(2000.f);
+  for (int i = 0; i < 300; i++) scene.stepOnce(1.f/120.f);
+  float vSlow = std::fabs(v->getSpeedKmh());
+  ICL_TEST_TRUE(vSlow < vFast * 0.5f);          // braking bled off most of the speed
 }

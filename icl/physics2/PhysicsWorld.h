@@ -22,6 +22,7 @@ class btRigidBody;
 class btSoftBody;
 class btCollisionObject;
 class btDynamicsWorld;
+class btActionInterface;
 struct btSoftBodyWorldInfo;
 
 namespace icl::geom2 { class Driver; }
@@ -110,6 +111,10 @@ namespace icl::physics2 {
     // --- collision objects (ghost sensors etc., no dynamics) ---
     void addCollisionObject(btCollisionObject *obj, int group, int mask);
     void removeCollisionObject(btCollisionObject *obj);
+
+    // --- actions (btActionInterface ticked each step, e.g. a raycast vehicle) ---
+    void addAction(btActionInterface *action);
+    void removeAction(btActionInterface *action);
 
     /// Register/unregister a post-step capture hook (soft bodies snapshot their
     /// node positions into a render buffer here, on the sim thread). `token`

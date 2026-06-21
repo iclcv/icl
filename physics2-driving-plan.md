@@ -115,14 +115,28 @@ so it's a helper over `geom::Camera`, not a `Driver`.)
 
 ## 3. Milestones (multi-session)
 
-### M1 — `VehicleDriver` + it drives ✅ unit-testable headless
+### M1 — `VehicleDriver` + it drives. ✅ LANDED (Session 77).
 - `PhysicsWorld::addAction/removeAction`; `VehicleDriver` (chassis + raycaster +
-  4 wheels + capture-hook sync); `addVehicle` factory + `PhysicsScene::addVehicle`.
-- **Headless `stepOnce` tests:** engine force → chassis moves +forward (local);
-  steering → heading changes (yaw); brake → decelerates to rest; drives up a static
-  ramp without flipping; wheels stay grounded on flat (suspension rest length).
-- Minimal demo (temporary slider control, fixed camera, flat ground) to confirm it
-  rolls. Build + suite green.
+  4 raycast wheels + capture-hook sync of chassis + wheel transforms); `Config`
+  (`VehicleConfig`); `PhysicsScene::addVehicle` (adds chassis + wheel nodes).
+- **4 headless `stepOnce` tests** (all in the default Deformable world — settles
+  the open risk): `vehicle_rests_on_wheels`, `vehicle_drives_forward` (+Y),
+  `vehicle_steers`, `vehicle_brakes`. Full suite **934/934**. Minimal demo
+  `physics2-driving` (sliders, fixed cam) builds + inits.
+- **Two non-obvious findings (now fixed + documented):**
+  1. **The soft/deformable worlds skip Bullet's `updateActions()`** (they override
+     the step internals), so `world->addAction` never ticks the vehicle. Fix:
+     `PhysicsWorld` ticks registered actions *manually* in `stepOnce` (after
+     draining controls, before integration). So the vehicle works in ANY world —
+     **the open risk is settled: it drives in the unified Deformable world.**
+  2. **Suspension must be scale-aware.** physics2 scales lengths by `iclToBullet`
+     but not time/mass, so Bullet-side gravity is ~10× SI; the standard stiffness
+     20 / maxForce 6000 are ~10× too soft and the car bottoms out on its chassis
+     box. `VehicleDriver` scales stiffness/damping by the gravity ratio and sets
+     `maxSuspensionForce` to the chassis weight. (The plan's "vehicle unit scale"
+     risk, realized + handled.)
+- Open polish (M2): wheel-mesh orientation (`wheelAlign` is identity — visual only,
+  needs a real display); CCD on the chassis for fast driving / jumps (M3).
 
 ### M2 — controls + chase camera
 - `KeyboardHandler` in ICLQt (+ a tiny headless-ish test of the held-set logic).

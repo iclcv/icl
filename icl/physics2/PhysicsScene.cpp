@@ -51,6 +51,14 @@ namespace icl::physics2 {
     return m_world.addDriver<SensorDriver>(std::move(node));
   }
 
+  VehicleDriver *PhysicsScene::addVehicle(std::shared_ptr<geom2::Node> chassis,
+                                          const VehicleDriver::Config &cfg) {
+    m_scene.addNode(chassis);
+    auto *v = m_world.addDriver<VehicleDriver>(std::move(chassis), cfg);
+    for (const auto &wheel : v->getWheelNodes()) m_scene.addNode(wheel);  // render the wheels
+    return v;
+  }
+
   std::shared_ptr<Constraint> PhysicsScene::addHinge(geom2::NodePtr a, geom2::NodePtr b,
                                                      const Vec &pivA, const Vec &pivB, int axis) {
     return m_world.addHinge(std::move(a), std::move(b), pivA, pivB, axis);

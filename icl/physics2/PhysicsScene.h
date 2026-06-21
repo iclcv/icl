@@ -6,6 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/physics2/PhysicsWorld.h>
+#include <icl/physics2/VehicleDriver.h>
 #include <icl/physics2/SoftBodyDriver.h>
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/SensorDriver.h>
@@ -70,6 +71,11 @@ namespace icl::physics2 {
     /// Add a node as a trigger zone (ghost). Detects overlapping bodies without
     /// any collision response. Set the node invisible for an invisible trigger.
     SensorDriver *addSensor(std::shared_ptr<geom2::Node> node);
+
+    /// Turn \a chassis into a raycast vehicle and add it (chassis + its four
+    /// wheel nodes) to the scene. Returns the driver for control + the chase cam.
+    VehicleDriver *addVehicle(std::shared_ptr<geom2::Node> chassis,
+                              const VehicleDriver::Config &cfg = {});
 
     // --- constraints (joints), forwarded to the world (both nodes must already
     //     have rigid bodies, e.g. via add()) ---

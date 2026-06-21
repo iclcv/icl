@@ -93,6 +93,11 @@ namespace icl::physics2 {
 
     // world co-owns constraints; each removed before its bodies (Bullet rule)
     std::vector<std::shared_ptr<Constraint>> constraints;
+
+    // btActionInterfaces (e.g. a raycast vehicle) ticked manually each step —
+    // the soft/deformable worlds override the step internals and skip Bullet's
+    // own updateActions(), so addAction() to the world would never fire.
+    std::vector<btActionInterface *> actions;
   };
 
   PhysicsWorld::PhysicsWorld(SoftBodyMode mode) : m_data(std::make_unique<Data>()) {
@@ -272,6 +277,19 @@ namespace icl::physics2 {
     m_data->world->removeCollisionObject(obj);
   }
 
+  void PhysicsWorld::addAction(btActionInterface *action) {
+    if (!action) return;
+    std::scoped_lock lock(m_data->mutex);
+    m_data->actions.push_back(action);   // ticked manually in stepOnce (see Data)
+  }
+
+  void PhysicsWorld::removeAction(btActionInterface *action) {
+    if (!action) return;
+    std::scoped_lock lock(m_data->mutex);
+    auto &a = m_data->actions;
+    a.erase(std::remove(a.begin(), a.end(), action), a.end());
+  }
+
   void PhysicsWorld::setBodyFilter(btRigidBody *body, int group, int mask) {
     if (!body) return;
     std::scoped_lock lock(m_data->mutex);
@@ -401,6 +419,10 @@ namespace icl::physics2 {
     std::vector<std::function<void()>> cmds;
     { std::scoped_lock cl(m_data->cmdMutex); cmds.swap(m_data->commands); }
     for (auto &c : cmds) c();
+
+    // tick registered actions (raycast vehicle, ...) AFTER controls are applied
+    // and BEFORE integration — they apply suspension/engine forces this step.
+    for (auto *a : m_data->actions) a->updateAction(m_data->world, dt);
 
     // pre-step: apply force fields to each dynamic rigid body at its position
     if (!m_data->forceFields.empty()) {
