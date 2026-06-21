@@ -74,3 +74,28 @@ ICL_REGISTER_TEST("qt.GUI.labelled_container_wraps_in_border",
   ICL_TEST_TRUE(xml.find("<button") != std::string::npos);
   ICL_TEST_TRUE(xml.find("<slider") != std::string::npos);
 }
+
+// --- KeyboardHandler (the app-level keyboard input added for the driving game).
+//     The held-key set + chain dispatch is pure logic — no QApplication needed.
+#include <icl/qt/KeyboardHandler.h>
+
+ICL_REGISTER_TEST("qt.keyboard.held_set", "KeyboardHandler tracks held keys across press/release")
+{
+  KeyboardHandler k;
+  ICL_TEST_TRUE(!k.held(42));
+
+  // press -> held; the base process() is observe-only (Forward)
+  ICL_TEST_TRUE(k.process({42, true, 0}) == KeyResult::Forward);
+  ICL_TEST_TRUE(k.held(42));
+  ICL_TEST_TRUE(!k.held(43));
+
+  k.process({43, true, 0});
+  ICL_TEST_TRUE(k.held(42) && k.held(43));
+
+  // release -> not held
+  k.process({42, false, 0});
+  ICL_TEST_TRUE(!k.held(42) && k.held(43));
+
+  k.clearHeld();
+  ICL_TEST_TRUE(!k.held(43));
+}

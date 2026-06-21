@@ -23,6 +23,7 @@
 
 namespace icl::qt {
   class MouseHandler;
+  class KeyboardHandler;
 
   /// Heterogeneous keyed store for GUI handles (and anything else a
   /// caller wants to keep per string key).
@@ -159,6 +160,10 @@ namespace icl::qt {
       /// `DefineQuadrangleMouseHandler`) are handled by the
       /// ordinary derived-to-base conversion at the call site.
       ICLQt_API void install(MouseHandler *data);
+
+      /// Forward a KeyboardHandler pointer to the stored handle's
+      /// `install` path (Image / Draw / Draw3D widgets).
+      ICLQt_API void install(KeyboardHandler *data);
 
       /// Convenience — install a plain lambda / std::function.  The
       /// body wraps it in an internal MouseHandler subclass.

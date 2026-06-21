@@ -538,6 +538,7 @@ namespace icl::qt {
     int nextButtonX;
     std::vector<MouseHandler*> callbacks;        // owned CallbackHandlers (registerCallback)
     std::vector<MouseHandler*> mouseHandlers;    // installed handlers, dispatched in order
+    std::vector<KeyboardHandler*> keyboardHandlers; // installed key handlers, dispatched in order
     int lastMouseReleaseButton;
     float gridColor[4];
     float backgroundColor[3];
@@ -1551,6 +1552,7 @@ namespace icl::qt {
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
 
     setMouseTracking(true);
+    setFocusPolicy(Qt::StrongFocus);   // receive keyboard events (for KeyboardHandlers)
     setWindowIcon(IconFactory::create_icl_window_icon_as_qicon());
 
     static const int y = GL_BUTTON_Y, w = GL_BUTTON_W, h = GL_BUTTON_H;
@@ -2461,6 +2463,19 @@ namespace icl::qt {
       if(isFullScreen()) m_data->undoFullScreen();
       else m_data->enterFullScreen();
     }
+    if(event->isAutoRepeat()) return;   // held-key state: one press, one release
+    KeyEvent e{event->key(), true, (int)event->modifiers()};
+    for(KeyboardHandler *h : m_data->keyboardHandlers){
+      if(h && h->process(e) == KeyResult::Processed) break;
+    }
+  }
+
+  void ICLWidget::keyReleaseEvent(QKeyEvent *event){
+    if(event->isAutoRepeat()) return;
+    KeyEvent e{event->key(), false, (int)event->modifiers()};
+    for(KeyboardHandler *h : m_data->keyboardHandlers){
+      if(h && h->process(e) == KeyResult::Processed) break;
+    }
   }
 
   void ICLWidget::setFullScreenMode(bool on, int screen){
@@ -2865,6 +2880,16 @@ namespace icl::qt {
 
   void ICLWidget::uninstall(MouseHandler *h){
     auto &v = m_data->mouseHandlers;
+    v.erase(std::remove(v.begin(),v.end(),h),v.end());
+  }
+
+  void ICLWidget::install(KeyboardHandler *h){
+    if(!h) return;
+    m_data->keyboardHandlers.push_back(h);   // first installed = highest priority
+  }
+
+  void ICLWidget::uninstall(KeyboardHandler *h){
+    auto &v = m_data->keyboardHandlers;
     v.erase(std::remove(v.begin(),v.end(),h),v.end());
   }
 

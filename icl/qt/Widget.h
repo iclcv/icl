@@ -10,6 +10,7 @@
 #include <icl/core/Types.h>
 #include <icl/qt/ImageStatistics.h>
 #include <icl/qt/MouseHandler.h>
+#include <icl/qt/KeyboardHandler.h>
 #include <icl/qt/WidgetCaptureMode.h>
 #include <icl/qt/GUI.h>
 #include <icl/core/cc/Color.h>
@@ -125,6 +126,11 @@ namespace icl::qt {
     /// deletes mouse handler connection
     /** Ownership was not passed -> h is not deleted  */
     void uninstall(MouseHandler *h);
+
+    /// adds a keyboard handler (dispatched in registration order). No ownership.
+    void install(KeyboardHandler *h);
+    /// removes a keyboard handler. Ownership was not passed -> h is not deleted.
+    void uninstall(KeyboardHandler *h);
 
     /// registers a simple callback
     /** @param cb callback functor to use
@@ -280,8 +286,10 @@ namespace icl::qt {
     virtual void resizeEvent(QResizeEvent *e);
     virtual void wheelEvent(QWheelEvent *e);
     virtual void hideEvent(QHideEvent *e);
-    /// listens for F11 which enables the fullscreen mode
+    /// listens for F11 (fullscreen) and dispatches to installed KeyboardHandlers
     virtual void keyPressEvent(QKeyEvent *event);
+    /// dispatches key-release to installed KeyboardHandlers
+    virtual void keyReleaseEvent(QKeyEvent *event);
 
     public Q_SLOTS:
     void showHideMenu();

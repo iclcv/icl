@@ -17,6 +17,7 @@
 #include <icl/qt/DataStore.h>
 
 #include <icl/qt/MouseHandler.h>
+#include <icl/qt/KeyboardHandler.h>
 
 #include <icl/qt/BorderHandle.h>
 #include <icl/qt/BoxHandle.h>
@@ -110,6 +111,9 @@ namespace icl::qt {
     template<class H> concept HasInstallMouse = requires(H h, MouseHandler *m) {
       (*h)->install(m);
     };
+    template<class H> concept HasInstallKeyboard = requires(H h, KeyboardHandler *k) {
+      (*h)->install(k);
+    };
     template<class H> concept HasLink = requires(H h, GLCallback *cb) {
       (*h)->link(cb);
     };
@@ -161,6 +165,10 @@ namespace icl::qt {
 
   void DataStore::Slot::install(MouseHandler *data) {
     ICL_SLOT_VERB(HasInstallMouse, (*h)->install(data));
+  }
+
+  void DataStore::Slot::install(KeyboardHandler *data) {
+    ICL_SLOT_VERB(HasInstallKeyboard, (*h)->install(data));
   }
 
   void DataStore::Slot::install(std::function<void(const MouseEvent &)> f) {

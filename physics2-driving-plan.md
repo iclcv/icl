@@ -138,11 +138,20 @@ so it's a helper over `geom::Camera`, not a `Driver`.)
 - Open polish (M2): wheel-mesh orientation (`wheelAlign` is identity — visual only,
   needs a real display); CCD on the chassis for fast driving / jumps (M3).
 
-### M2 — controls + chase camera
-- `KeyboardHandler` in ICLQt (+ a tiny headless-ish test of the held-set logic).
-- Wire WASD/arrows → engine/brake/steer; `ChaseCamera` follow.
-- **Feel tuning** (real display): accel curve, max steer + steer-return, suspension,
-  camera distance/height/smoothing. Drive freely on flat ground.
+### M2 — controls + chase camera. ✅ LANDED (Session 77).
+- **`qt::KeyboardHandler`** — the app-level keyboard input ICL lacked (mirrors
+  `MouseHandler`): `KeyEvent` + `KeyResult`, base tracks a held-key set, install
+  via `widget->install(&handler)` / `gui["draw"].install(&handler)`. Wired into
+  `ICLWidget` (`keyPressEvent`/`keyReleaseEvent`, auto-repeat filtered,
+  `setFocusPolicy(StrongFocus)`) and the `DataStore::Slot` handle-dispatch
+  (`HasInstallKeyboard` concept). Headless test `qt.keyboard.held_set` (935/935).
+- Demo `physics2-driving` now drives with **W/S/A/D + Space** (held-key polling)
+  and a **`ChaseCamera`** (demo-local: smoothed follow behind+above, Z-up, looks
+  slightly ahead). Inits clean headless.
+- **Deferred to a real display (sandbox has no GL):** feel tuning — accel curve,
+  steer rate/return, camera distance/height/smoothing, wheel-mesh orientation
+  (`wheelAlign`). The mechanics are pinned by M1's `stepOnce` tests; the *feel*
+  needs eyes on it.
 
 ### M3 — the playground course (static)
 - Ground arena + boundary, a few **ramps**, a **jump**, a **banked turn**, scattered
