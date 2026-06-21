@@ -430,11 +430,16 @@ thread-safety gaps in the paper mouse handling during Phase 5 (picking).
   `RigidBodyDriver::setDamping`. 7 headless tests (hinge/slider/ballsocket/sixdof/
   spring/auto-remove/inert-handle); full suite **930/930**. Demo
   `physics2-constraints` (4 joint stations + grab + debug overlay).
-  **Two Bullet gotchas documented in `Constraint.h`:** (1) joints need a
-  `SoftRigid` world — the deformable multibody solver mishandles 6DOF joints;
-  (2) `btGeneric6DofConstraint` gimbal-limits the middle angular axis (Y) — hinge
-  about X or Z, not Y. Restores the legacy `phyisics-constraints` demo and
-  unblocks one of the four Phase-6 legacy-retirement demos.
+  **One real Bullet gotcha (documented in `Constraint.h`):**
+  `btGeneric6DofConstraint` gimbal-limits the middle angular axis (Y) — hinge
+  about X or Z, not Y. (A second, *retracted* gotcha: an early claim that joints
+  need a `SoftRigid` world was a **misdiagnosis** — confounded by an anchor-overlap
+  bug + the Y gimbal. Re-tested clean, **all joint types work in the default
+  `Deformable` world**, which is the unified rigid+joints+cloth world. Tests now
+  run joints in both modes; see `physics2-driving-plan.md` §1 for the
+  single-unified-world call that drops the planned multi-world split.)
+  Restores the legacy `phyisics-constraints` demo and unblocks one of the four
+  Phase-6 legacy-retirement demos.
 
   **Original scope (for reference).** **Key finding:** the legacy five-class tree
   (SixDOF/Slider/Hinge/BallSocket) is really *one* Bullet primitive —

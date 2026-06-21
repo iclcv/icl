@@ -8,8 +8,10 @@
 // Shift+drag grabs a body (PhysicsMouseHandler); plain drag orbits the camera.
 // Toggle the collision-shape overlay to see physics vs render agree.
 //
-// NB: joints use a SoftRigid world — the rigid constraint solver handles 6DOF
-// joints reliably (the deformable world's multibody solver does not).
+// Runs in the default unified (Deformable) world — it hosts rigid bodies + 6DOF
+// joints (+ deformable cloth) in one solver. NB the only joint-axis caveat:
+// btGeneric6DofConstraint gimbal-limits the middle (Y) angular axis, so hinges
+// here are about X or Z.
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
@@ -31,7 +33,7 @@ using namespace icl::physics2;
 
 GUI gui;
 FPSLimiter fps(60);
-PhysicsScene scene(SoftBodyMode::SoftRigid);   // rigid joints want the discrete solver
+PhysicsScene scene;   // default unified (Deformable) world: rigid + joints + cloth
 Time lastTick;
 
 // A visible static anchor post (a slim grey box), returned as a NodePtr.

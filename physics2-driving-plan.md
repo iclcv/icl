@@ -13,34 +13,41 @@ Decisions baked in (user, Session 77):
 - **Add a reusable `KeyboardHandler` to ICLQt** (not a demo-local Qt hack) —
   ICL has no app-level keyboard input today; a framework facility benefits every
   future app and fits ICL's self-containment.
-- **Full arc through multi-world** — M1–M5; the multi-world upgrade for stable
-  cloth lands the deferred multi-world experiment as a bonus.
+- **Full arc** — M1–M5; rigid core first, then soft-body stations and polish, all
+  in one world (multi-world dropped — see §1). Rigid-body focus first (user,
+  Session 77): land the vehicle + course + rigid stations before wiring soft bodies.
 
 This supersedes the old one-line "Phase 4b raycast vehicle" item: the
 `VehicleDriver` IS Phase 4b, and the driving game is the showcase built on it.
 
 ---
 
-## 1. The crux: world architecture (single-world now → multi-world later)
+## 1. World architecture: ONE unified world (the call, Session 77)
 
-We learned in Phase 4c that **constraints (and the raycast vehicle) need a
-`SoftRigid` (discrete) world** — the `Deformable` multibody solver injects energy
-into 6DOF joints. But **stable cloth wants the `Deformable` world** (the SoftRigid
-cloth path is band-aided and can explode at rest). A course with both swinging
-gates *and* a cloth banner can't have both ideal in one world.
+The Phase 4c claim that "constraints need a `SoftRigid` world" was a
+**misdiagnosis** — that failing run was confounded by an anchor-overlap bug *and*
+the Y-axis gimbal limit. Re-tested with correct geometry, **all five joint types
+pass in the default `Deformable` world**, which is a `btDeformableMultiBodyDynamics
+World` — a discrete world at heart that hosts **rigid bodies + 6DOF joints +
+stable deformable cloth in one solver**. It already *is* the "DeformableRigid"
+everything-world.
 
-Resolution — phase it:
-- **M1–M4: single `SoftRigid` world.** Vehicle + rigid + constraints + springs all
-  correct; cloth runs band-aided (works, occasionally janky). Gets the whole game
-  playable.
-- **M5: multi-world.** Vehicle/rigid/constraints stay on a `SoftRigid` world; the
-  cloth banner moves to a `Deformable` world; both publish into one `Scene2`. This
-  is exactly the deferred "paper SoftRigid + cloth Deformable in one scene"
-  experiment from `physics-geom2-redesign-plan.md` §6 — now with a concrete
-  consumer driving it. Needs `PhysicsScene` to own a *list* of worlds (the one
-  missing piece called out there).
+**Decision: build the whole driving game on the single default `Deformable`
+world.** No `SoftRigid`, no multi-world split. This drops the entire "list of
+worlds" machinery the earlier plan (and `physics-geom2-redesign-plan.md` §6)
+called for — keep multi-world only as a far-future option if some scene ever needs
+paper's *cluster* self-collision (SoftRigid-only) alongside deformable cloth, which
+the driving game does not.
 
-So the driving game is the forcing function that finally motivates multi-world.
+`SoftRigid` survives solely for the fold-aware paper (`PaperDriver`), which needs
+cluster self-collision. Everything else — including this game — uses `Deformable`.
+
+**One open risk** (the only thing that could reopen the question): the **raycast
+vehicle** (`btActionInterface`) in the `Deformable` world is untested. Rigid
+dynamics there is proven (`box_falls` runs in it), but the vehicle is the demo's
+core, so **M1 must confirm the vehicle drives in the `Deformable` world.** If it
+does, the unified-world call is locked; only if the vehicle genuinely misbehaves
+there do we localize it to a rigid world and revisit.
 
 ---
 
@@ -136,13 +143,11 @@ so it's a helper over `geom::Camera`, not a `Driver`.)
 - **Soft:** a **cloth banner/curtain** you burst through (SoftRigid, band-aided).
 - Each station drive-tested; this is where the whole stack gets exercised at once.
 
-### M5 — multi-world + polish
-- `PhysicsScene` owns a *list* of worlds; cloth banner → a `Deformable` world while
-  vehicle/rigid/constraints stay `SoftRigid`; both sync into the one `Scene2`.
-  (Lands the deferred multi-world experiment.) Picking resolves a hit node → its
-  owning driver regardless of world.
+### M5 — polish
 - **HUD** (speedometer via `getSpeedKmh`), **reset** key (respawn the car), look
   polish (materials, maybe skid marks if cheap).
+- (Multi-world dropped — the single `Deformable` world already carries rigid +
+  joints + cloth. See §1.)
 
 ---
 

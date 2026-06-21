@@ -31,15 +31,16 @@ namespace icl::physics2 {
   /// One collision-shape wireframe segment in ICL units (for debug draw).
   struct DebugLine { Vec a, b; };
 
-  /// Which Bullet soft-body pipeline the world runs.
-  /** `Deformable` (default) builds a `btDeformableMultiBodyDynamicsWorld`: soft
-      bodies are driven by the deformable solver whose contact *projection*
-      (split-impulse + ERP) is stable at rest. `SoftRigid` builds the legacy
-      `btSoftRigidDynamicsWorld` whose impulse contact solver pumps energy at rest
-      (cloth explodes — band-aided, not fixed). The same mass-spring cloth is
-      stable in the deformable world and unstable in the legacy one, so
-      `Deformable` is the default. Chosen at construction (it picks the world
-      type). */
+  /// Which Bullet world the simulation runs in.
+  /** `Deformable` (default) is the **unified world** — a
+      `btDeformableMultiBodyDynamicsWorld` that hosts rigid bodies, 6DOF joints
+      (`Constraint`) *and* deformable cloth in one solver, with contact
+      *projection* (split-impulse + ERP) that is stable at rest. This is the
+      everything-world; prefer it. `SoftRigid` builds the legacy
+      `btSoftRigidDynamicsWorld` whose impulse contact solver pumps energy into
+      mass-spring cloth at rest (band-aided, not fixed) — kept only for the
+      cluster self-collision the fold-aware paper (`PaperDriver`) needs. Chosen
+      at construction (it picks the world type). */
   enum class SoftBodyMode { Deformable, SoftRigid };
 
   /// A Bullet dynamics world that simulates on its own thread, decoupled from

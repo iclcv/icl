@@ -31,9 +31,10 @@ namespace icl::physics2 {
       **inert** — `isActive()` returns false and every setter no-ops, so a stale
       handle can never dangle. Construct only via the world factories.
 
-      World choice: joints are solved by the rigid constraint solver, reliable in
-      a `SoftRigid` (discrete) world. The `Deformable` world's multibody solver
-      does not handle 6DOF joints well — use `SoftRigid` for joint-based scenes.
+      World choice: joints work in **both** world modes, including the default
+      `Deformable` (unified) world — it hosts rigid bodies + 6DOF joints + cloth
+      in one solver. (No `SoftRigid` requirement; that earlier claim was a
+      misdiagnosis of the axis caveat below.)
 
       Axis caveat (`addHinge`/`addSlider`): `btGeneric6DofConstraint` limits its
       *middle* angular axis (Y, index 1) to +/-90deg via Euler angles, so a joint

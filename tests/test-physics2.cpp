@@ -696,7 +696,7 @@ ICL_REGISTER_TEST("physics2.cloth_resolution_rebuild", "changing node density re
 
 ICL_REGISTER_TEST("physics2.hinge_swings", "a hinged door swings down about its axis, pivot held")
 {
-  PhysicsScene scene(SoftBodyMode::SoftRigid);   // rigid joints want the discrete solver
+  PhysicsScene scene;   // default unified (Deformable) world handles joints fine
   // Hinge about X (axis 0). NB: btGeneric6DofConstraint limits the *middle*
   // angular axis (Y, index 1) to +/-90deg (Euler gimbal), so a free Y hinge
   // misbehaves — use X or Z. Door extends +Y from the pivot and swings down in
@@ -745,7 +745,7 @@ ICL_REGISTER_TEST("physics2.slider_translates", "a slider frees one translation 
 
 ICL_REGISTER_TEST("physics2.ballsocket_swings", "a ball-socket joint swings to hang below the pivot")
 {
-  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  PhysicsScene scene;
   auto anchor = CuboidNode::create(0,0,0, 40,40,40);
   anchor->translate(0, 500, 500);                                  // out of the swing plane
   scene.add(std::static_pointer_cast<Node>(anchor), 0.0f);
@@ -768,7 +768,7 @@ ICL_REGISTER_TEST("physics2.ballsocket_swings", "a ball-socket joint swings to h
 
 ICL_REGISTER_TEST("physics2.sixdof_locks_body", "a fully-locked 6DOF welds the body to the anchor")
 {
-  PhysicsScene scene;
+  PhysicsScene scene(SoftBodyMode::SoftRigid);   // also exercises a joint in the legacy world
   auto anchor = CuboidNode::create(0,0,0, 40,40,40);
   anchor->translate(0, 0, 500);
   scene.add(std::static_pointer_cast<Node>(anchor), 0.0f);
@@ -788,7 +788,7 @@ ICL_REGISTER_TEST("physics2.sixdof_locks_body", "a fully-locked 6DOF welds the b
 
 ICL_REGISTER_TEST("physics2.spring_pulls_to_point", "a spring constraint pulls a body toward a world point")
 {
-  PhysicsScene scene(SoftBodyMode::SoftRigid);
+  PhysicsScene scene;
   scene.world().setGravityEnabled(false);                        // isolate the spring
 
   auto body = CuboidNode::create(0,0,0, 60,60,60);
