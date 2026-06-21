@@ -2886,6 +2886,9 @@ namespace icl::qt {
   void ICLWidget::install(KeyboardHandler *h){
     if(!h) return;
     m_data->keyboardHandlers.push_back(h);   // first installed = highest priority
+    // installing a keyboard handler means the app wants key events here, so take
+    // focus (StrongFocus is set in the ctor). Clicking the view also refocuses it.
+    setFocus(Qt::OtherFocusReason);
   }
 
   void ICLWidget::uninstall(KeyboardHandler *h){

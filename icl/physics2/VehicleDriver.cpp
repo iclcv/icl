@@ -8,6 +8,8 @@
 #include <icl/physics2/CollisionShapeFactory.h>
 #include <icl/geom2/Node.h>
 #include <icl/geom2/CylinderNode.h>
+#include <icl/geom/Material.h>
+#include <icl/geom/GeomDefs.h>
 #include <icl/utils/Macros.h>
 
 #include <btBulletDynamicsCommon.h>
@@ -129,11 +131,19 @@ namespace icl::physics2 {
       w.m_rollInfluence = cfg.rollInfluence;
     }
 
-    // --- visual wheel nodes (the scene renders these; orientation tuned later) ---
+    // --- visual wheel nodes (the scene renders these) ---
+    // CylinderNode's axis is local Z; the wheel spins about its axle (local X in
+    // the wheel transform), so rotate Z->X (about Y by 90deg) or the disc renders
+    // edge-on (invisible). Applied per-frame as worldTransform * wheelAlign.
+    m_data->wheelAlign = Mat::id();
+    m_data->wheelAlign(0,0) = 0; m_data->wheelAlign(0,2) = 1;
+    m_data->wheelAlign(2,0) = -1; m_data->wheelAlign(2,2) = 0;
+    auto tyre = geom::Material::fromColor(geom::GeomColor(30,30,30,255));
     m_data->wheelNodes.clear();
     for (int i = 0; i < NUM_WHEELS; i++) {
-      auto wheel = geom2::CylinderNode::create(0, 0, 0, cfg.wheelRadius, cfg.wheelRadius,
+      auto wheel = geom2::CylinderNode::create(0, 0, 0, cfg.wheelRadius*2, cfg.wheelRadius*2,
                                                cfg.wheelWidth, 20);
+      wheel->setMaterial(tyre);
       m_data->wheelNodes.push_back(std::static_pointer_cast<geom2::Node>(wheel));
     }
 

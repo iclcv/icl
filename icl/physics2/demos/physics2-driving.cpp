@@ -45,7 +45,7 @@ struct ChaseCamera {
   void update(Camera &cam, const Mat &carPose, double dt) {
     Vec p(carPose(0,3), carPose(1,3), carPose(2,3), 1);          // car position
     Vec fwd = cnorm(Vec(carPose(0,1), carPose(1,1), carPose(2,1), 1)); // car local +Y
-    const float behind = 1800, up = 900, ahead = 400, targetUp = 250;
+    const float behind = 1500, up = 550, ahead = 500, targetUp = 120;
     Vec desired(p[0] - fwd[0]*behind, p[1] - fwd[1]*behind, p[2] - fwd[2]*behind + up, 1);
     if (!seeded) { pos = desired; seeded = true; }
     float a = 1.f - std::exp(-4.0f * (float)dt);                 // exponential smoothing
@@ -53,17 +53,22 @@ struct ChaseCamera {
               pos[2] + (desired[2]-pos[2])*a, 1);
     Vec target(p[0] + fwd[0]*ahead, p[1] + fwd[1]*ahead, p[2] + targetUp, 1);
     cam.setPosition(pos);
-    cam.setNorm(cnorm(Vec(target[0]-pos[0], target[1]-pos[1], target[2]-pos[2], 1)), true);
-    cam.setUp(Vec(0,0,1,1), true);   // Z-up, no roll
+    cam.setNorm(cnorm(Vec(target[0]-pos[0], target[1]-pos[1], target[2]-pos[2], 1)), false);
+    // ICL's m_up points toward +image-Y (the image BOTTOM), so the visual up
+    // (+Z) must be negated — same convention Camera::lookAt applies internally.
+    cam.setUp(Vec(0,0,-1,1), true);
   }
 } chase;
 
 void init() {
-  scene.setupDefault(DefaultScene::SceneType::Studio, 6000.f);
+  const float EXT = 4000.f;
+  scene.setupDefault(DefaultScene::SceneType::Studio, EXT);
 
   auto body = CuboidNode::create(0, 0, 0, 600, 1200, 300);
   body->setMaterial(Material::fromColor(GeomColor(200, 60, 60, 255)));
-  body->translate(0, 0, -300);     // settles onto its wheels
+  // DefaultScene's ground sits ~-0.52*extent below the origin; start the car just
+  // above it (groundTop ~ -EXT*0.52) so it settles onto its wheels, not free-falls.
+  body->translate(0, 0, -EXT * 0.52f + 320);
   car = scene.addVehicle(std::static_pointer_cast<Node>(body));
 
   scene.start(120);
