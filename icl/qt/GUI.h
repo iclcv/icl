@@ -154,14 +154,21 @@ namespace icl::qt {
     /// creates a hierarchical xml-description of the GUI Layout
     std::string createXMLDescription() const;
 
-    protected:
-    /// structured payload of this node (the single source of truth)
+    /// structured payload of this node (read-only; the single source of truth)
     /** create() builds the widget straight from this GUIComponent — there is
         no string serialisation / re-parse, so free-text payloads carrying the
         grammar metacharacters survive intact.  ContainerGUIComponent overrides
         this to expose its accumulating component. */
     virtual const GUIComponent *getComponent() const { return m_component.get(); }
 
+    /// number of child GUI nodes (read-only tree introspection)
+    int getChildCount() const { return (int)m_children.size(); }
+    /// child GUI node at \a index, or nullptr if out of range (read-only)
+    const GUI *getChild(int index) const {
+      return (index >= 0 && index < (int)m_children.size()) ? m_children[index] : nullptr;
+    }
+
+    protected:
     /// mutable view of getComponent() for in-place option accumulation
     /** Used by ContainerGUIComponent's chained setters. */
     GUIComponent *mutableComponent() const { return m_component.get(); }

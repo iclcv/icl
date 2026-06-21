@@ -99,3 +99,29 @@ ICL_REGISTER_TEST("qt.keyboard.held_set", "KeyboardHandler tracks held keys acro
   k.clearHeld();
   ICL_TEST_TRUE(!k.held(43));
 }
+
+// Regression: a *labeled* typed component must keep its dynamic type through the
+// border-wrap in GUI::operator<<. A `GUIComponent inner = component` slice there
+// dropped the createWidget() override -> "component type 'color' has no widget
+// factory" at create time (only on a real GL display, which is why it slipped
+// past the headless smoke tests). Here we assert the stored component is still
+// the concrete ColorSelect, no QApplication needed.
+ICL_REGISTER_TEST("qt.gui.labeled_component_not_sliced", "a labeled component keeps its dynamic type (no slice)")
+{
+  GUI g;
+  g << ColorSelect(10, 20, 30, {.label = "bg"});
+
+  // labeled -> wrapped in a border GUI whose single child carries the component
+  ICL_TEST_EQ(g.getChildCount(), 1);
+  const GUI *border = g.getChild(0);
+  ICL_TEST_TRUE(border != nullptr);
+  ICL_TEST_EQ(border->getChildCount(), 1);
+  const GUIComponent *inner = border->getChild(0)->getComponent();
+  ICL_TEST_TRUE(dynamic_cast<const ColorSelect*>(inner) != nullptr);   // NOT sliced to base
+
+  // and an unlabeled one is stored directly, still typed
+  GUI g2;
+  g2 << ColorSelect(1, 2, 3, {.handle = "c"});
+  ICL_TEST_EQ(g2.getChildCount(), 1);
+  ICL_TEST_TRUE(dynamic_cast<const ColorSelect*>(g2.getChild(0)->getComponent()) != nullptr);
+}

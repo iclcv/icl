@@ -2040,10 +2040,13 @@ namespace icl{
       if(type == "!create"){ create(); return *this; }
 
       if(o.label.length()){
-        GUIComponent inner = component;
-        inner.m_options.label.clear();
+        // Clone polymorphically — a plain `GUIComponent inner = component` would
+        // SLICE a typed component (ColorSelect, Slider, ...) down to the base,
+        // dropping its createWidget() override -> "no widget factory" at create.
+        std::shared_ptr<GUIComponent> inner = component.clone();
+        inner->m_options.label.clear();
         GUI *borderNode = new GUI(makeBorderComponent(o.label, o));
-        (*borderNode) << inner;
+        (*borderNode) << *inner;
         m_children.push_back(borderNode);
         return *this;
       }
