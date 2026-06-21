@@ -406,7 +406,10 @@ thread-safety gaps in the paper mouse handling during Phase 5 (picking).
   `sensor_detects_passthrough` (zone detects a body, doesn't deflect it),
   `anchor_holds_corner` (anchored corner stays up, rest sags). 15 physics2 tests /
   full suite 899/899. **Still TODO:** raycast vehicle (#4, `btRaycastVehicle` →
-  fix `physics-car`) — larger + GUI-bound, best on a real display.
+  fix `physics-car`) — larger + GUI-bound, best on a real display. **Now scoped as
+  the `VehicleDriver` (M1) of the driving-game project — see
+  `physics2-driving-plan.md`** (a live end-to-end physics integration test; also
+  the concrete consumer that motivates the multi-world experiment in §6).
   **Bug found + fixed (was misattributed to Bullet):** the intermittent
   soft-vs-rigid "crash" was a **use-after-free in `~PhysicsWorld`** — `ghostCb`
   (the ghost-pair callback added in 4b) was deleted *before* the world/broadphase,
