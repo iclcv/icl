@@ -2,34 +2,40 @@
 
 ## Next Step
 
-**⏸️ BREAK POINT (end of Session 77).** A **geom2 pointer-ownership cleanup** + **physics2
-Phase 4c (constraints)** are DONE and committed (3 commits on
-`further-restructuring-and-cleanup`, build + **930/930** green):
-- **geom2 ownership made coherent** — `deepCopy()` returns `NodePtr` (no more raw *owning*
-  pointers); a single rule documented on `NodePtr`: **own with `shared_ptr`/`NodePtr`,
-  observe with raw `Node*`**. New **weak cross-edge tier** (`getDriverPtr<T>()`,
-  `getNodePtr`/`getLightPtr`) for long-lived references to peers you don't own. See memory
-  `feedback_polymorphic_over_registry` and the Session-77 recap below.
-- **physics2 constraints** — `Constraint` + `SpringConstraint` (the legacy 5-class joint tree
-  is one `btGeneric6DofConstraint`); world factories `addHinge/addSlider/addBallSocket/
-  addSixDOF/addSpring`. This **unblocks one of the four Phase-6 legacy demos**
-  (`physics-constraints`).
+**⏸️ BREAK POINT (end of Session 77).** Big session. On
+`further-restructuring-and-cleanup`, build + **937/937** green throughout. Three arcs landed:
 
-**When work resumes, pick the next thread.** The remaining **legacy-physics retirement**
-blockers are three self-contained demos: **Phase 4b VehicleDriver** (`btRaycastVehicle` →
-`physics-car`, the natural next one), the **full maze** (compound bodies + ghost-hole
-sensors), and **water-rocket** (a port — force-fields + soft anchors already exist). Then
-Phase 6 deletes the `geom::Scene` physics path + the `PhysicsObject`/`PhysicsScene`
-inheritance (KEEPING `btSoftRigidDynamicsWorld` behind the flag). Other open geom2-physics
-fronts: **DefaultScene step 2** (Landscape/Room + retire `DemoScene2`), **defaults policy →
-material database**, the **multi-world** experiment. Paper M3 polish + fold/crease bending
-regen stay **deferred** (box below). Full plan: `physics-geom2-redesign-plan.md`.
+1. **geom2 pointer-ownership cleanup** — `deepCopy()` returns `NodePtr` (no raw *owning*
+   pointers); one rule on `NodePtr`: **own with `shared_ptr`/`NodePtr`, observe with raw
+   `Node*`**; new **weak cross-edge tier** (`getDriverPtr<T>`, `getNodePtr`/`getLightPtr`).
+   The value-handle/Image-pattern rewrite was weighed and **declined** (not worth a
+   module-wide rewrite of a typed hierarchy). See memory `feedback_polymorphic_over_registry`.
+2. **physics2 Phase 4c — constraints** (`Constraint` + `SpringConstraint`; world factories
+   `addHinge/addSlider/addBallSocket/addSixDOF/addSpring`). **Then a key correction:** the
+   "constraints need a SoftRigid world" claim was a *misdiagnosis* — joints work in the
+   default **Deformable** world, which is the unified **rigid + joints + cloth** world. So
+   the planned **multi-world split is DROPPED** (one world does it all); `SoftRigid` survives
+   only for the fold-aware paper. (`physics2-driving-plan.md` §1.)
+3. **The driving game M1–M3** — a third-person car you can actually drive around a course.
+   `VehicleDriver` (`btRaycastVehicle`), `qt::KeyboardHandler` (new ICLQt facility), chase
+   camera, and a static playground course (ramps/jump/banked turn + chassis CCD).
 
-**Deferred geom2 follow-up (non-blocking):** the value-handle/Image-pattern rewrite (nodes
-as shallow-copyable value handles over `shared_ptr<Impl>`) was weighed and *declined* in
-favour of the targeted consistency pass — the uniformity win didn't justify a module-wide
-rewrite of a typed polymorphic hierarchy. Revisit only if the by-value ergonomics become a
-real pain point.
+**Also fixed a latent GUI bug:** `GUI::operator<<` **sliced** any *labeled* component to the
+base type → "component type 'X' has no widget factory" at create — broke **every** labeled
+component on a real display (only reachable with a GL context, so CI/sandbox missed it).
+Fixed by cloning polymorphically; regression test added.
+
+**When work resumes — driving game M4 (interactive stations):** the car drives into one of
+every subsystem — rigid smash-stacks/barrels, constraint gate / see-saw / wrecking ball /
+spring bollards, and a cloth banner — all in the one Deformable world. This is the
+end-to-end integration test. Then M5 polish (HUD/reset). Plan: `physics2-driving-plan.md`
+(M1–M3 marked LANDED).
+
+**Other open fronts** (unchanged): legacy-physics retirement still needs `physics-constraints`
+(unblocked ✓), the **full maze** (compound bodies + ghost sensors), **water-rocket** (port),
+then Phase 6 (delete the `geom::Scene` physics path + `PhysicsObject`/`PhysicsScene`
+inheritance, KEEP `btSoftRigidDynamicsWorld` behind the flag). Also **DefaultScene step 2**,
+**defaults policy → material database**. Full plan: `physics-geom2-redesign-plan.md`.
 
 ### ⏸️ DEFERRED — paper M3 polish + fold/crease bending regeneration
 
@@ -49,7 +55,7 @@ if we decide to keep evolving the SoftRigid paper.
   account, using **flat paper-space rest lengths** not deformed 3D distances. See memory
   `project_paper_fold_bending`.
 
-All physics/composition is headless-tested (930/930).
+All physics/composition is headless-tested (937/937).
 
 After Phase 7 + (if pursued) paper: **DefaultScene step 2** (Landscape/Room + retire
 `DemoScene2`), the **defaults policy → material database** (now that node-mass stiffness
@@ -63,7 +69,49 @@ it as a mode. Phase 6 = retire the dead `geom::Scene` physics path + the old
 `PhysicsScene`/`PhysicsObject` inheritance, while KEEPING the legacy solver behind the
 flag.
 
-## Session 77 recap (geom2 pointer-ownership cleanup + physics2 constraints) — committed
+## Session 77 recap, part 2 (unified-world call + driving game M1–M3 + GUI slice fix) — committed
+
+Continues part 1 below. Commits on `further-restructuring-and-cleanup`; suite grew 930 → 937.
+
+- **The unified-world call (`30ca0375`).** Phase 4c had claimed constraints need a `SoftRigid`
+  world — a **misdiagnosis** (confounded by an anchor-overlap bug + the Y-axis gimbal limit).
+  Re-tested clean, **all joint types work in the default `Deformable` world**
+  (`btDeformableMultiBodyDynamicsWorld`), which already hosts **rigid + 6DOF joints + stable
+  cloth** in one solver. Decision: build everything on the single Deformable world; **drop
+  the planned multi-world split**; `SoftRigid` kept only for paper (cluster self-collision).
+  Tests now run joints in both modes; `Constraint.h` doc corrected (only real caveat: the
+  6DOF middle/Y angular axis gimbal-limits — hinge about X or Z).
+- **Driving game (`physics2-driving-plan.md`, M1–M3 LANDED):**
+  - **M1 `VehicleDriver`** (`ddeae4c5`) — `btRaycastVehicle` as a geom2 Driver (chassis +
+    4 raycast wheels, capture-hook sync, command-queue controls), `PhysicsScene::addVehicle`.
+    Two non-obvious fixes: (1) the soft/deformable worlds override the step internals and
+    **skip Bullet's `updateActions()`**, so `PhysicsWorld` ticks registered actions
+    *manually* in `stepOnce` (→ vehicle works in any world); (2) **scale-aware suspension**
+    (physics2 scales length not time/mass → Bullet gravity ~10×; stiffness/maxForce scaled
+    by the gravity ratio, else the car bottoms out). 4 headless `stepOnce` tests.
+  - **M2 controls + chase cam** (`c99a9fcb` + `3f5d20ef`) — **`qt::KeyboardHandler`** (the
+    app-level keyboard input ICL lacked; mirrors `MouseHandler`, held-key set, installed via
+    `widget`/`gui["draw"].install`; `ICLWidget` dispatches press/release + `setFocus()`s on
+    install). WASD **and arrow keys**; a demo-local `ChaseCamera`. Real-display fixes: chase
+    up-vector (ICL `m_up` points to image *bottom* → negate, like `Camera::lookAt`), keyboard
+    focus, wheel orientation (CylinderNode axis is Z → rotate to the axle).
+  - **M3 course + CCD** (`b2e645fe` + `980b1c6f`) — `VehicleDriver::setCcd`; a 16×16 m
+    playground (boundary, climb ramp→platform, jump kicker, banked turn, blocks). Ramps
+    **bury their low end** in the ground so the drive surface emerges at ground level (no
+    floating edge). Headless `vehicle_climbs_ramp` test. Camera pulled well back.
+- **Latent GUI bug fixed (`6900bbb1`).** `GUI::operator<<` **sliced** a *labeled* component to
+  the base `GUIComponent` (`GUIComponent inner = component;`), dropping its `createWidget`
+  override → "component type 'X' has no widget factory" at create. Hit **every** labeled
+  component (e.g. a Scene2 Prop panel's `background color` → `ColorSelect`) but only on a real
+  GL display (lazy widget creation never reached headless). Fixed by cloning polymorphically;
+  `GUI::getComponent`/`getChild(Count)` made public; regression test
+  `qt.gui.labeled_component_not_sliced`.
+
+**Resume at driving-game M4** (interactive stations — the end-to-end integration test).
+
+---
+
+## Session 77 recap, part 1 (geom2 pointer-ownership cleanup + physics2 constraints) — committed
 
 Branch `further-restructuring-and-cleanup`, 3 commits, build + **930/930** green at each step.
 The session started as "scope the constraint drivers" and the constraint API kept tripping
