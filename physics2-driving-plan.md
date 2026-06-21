@@ -153,10 +153,16 @@ so it's a helper over `geom::Camera`, not a `Driver`.)
   (`wheelAlign`). The mechanics are pinned by M1's `stepOnce` tests; the *feel*
   needs eyes on it.
 
-### M3 — the playground course (static)
-- Ground arena + boundary, a few **ramps**, a **jump**, a **banked turn**, scattered
-  static blocks. Verify suspension + CCD on jumps (no tunneling), recovery from
-  landings.
+### M3 — the playground course (static). ✅ LANDED (Session 77).
+- `VehicleDriver::setCcd(motionThreshold, sweptSphereRadius)` — chassis CCD so a
+  fast car doesn't tunnel thin ramps/walls; enabled in the demo.
+- Demo course (all static `addStatic` boxes on the `DefaultScene` ground): 6×6 m
+  boundary walls, a **climb ramp → raised platform**, a **jump kicker**, a
+  **banked turn** (rolled about Y), and blocks to weave through.
+- Headless test `physics2.vehicle_climbs_ramp` (drives onto a tilted ramp and
+  gains height). Full suite **937/937**.
+- **Real-display check pending:** ramp/jump/bank feel + CCD on landings (the
+  geometry placement is eyeballed; the climb is the only headless-verifiable part).
 
 ### M4 — interactive stations (the integration test)
 - **Rigid:** box pyramids to smash, barrels (cylinders) to scatter.

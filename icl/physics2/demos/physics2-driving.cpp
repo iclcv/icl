@@ -60,16 +60,50 @@ struct ChaseCamera {
   }
 } chase;
 
+// rotations for tilted course pieces (pitch about X, roll about Y)
+static Mat rotX(float t){ Mat m=Mat::id(); m(1,1)=cosf(t);m(1,2)=-sinf(t);m(2,1)=sinf(t);m(2,2)=cosf(t); return m; }
+static Mat rotY(float t){ Mat m=Mat::id(); m(0,0)=cosf(t);m(0,2)=sinf(t);m(2,0)=-sinf(t);m(2,2)=cosf(t); return m; }
+
 void init() {
   const float EXT = 4000.f;
   scene.setupDefault(DefaultScene::SceneType::Studio, EXT);
+  const float G = -EXT * 0.52f;   // ground top (where things rest)
+
+  // --- the playground course: static geometry the car drives over ---
+  auto addStatic = [&](float cx, float cy, float cz, float sx, float sy, float sz,
+                       GeomColor col, const Mat &rot = Mat::id()) {
+    auto n = CuboidNode::create(0, 0, 0, sx, sy, sz);
+    n->setMaterial(Material::fromColor(col));
+    Mat m = rot; m(0,3) = cx; m(1,3) = cy; m(2,3) = cz;   // world = R with translation
+    n->setTransformation(m);
+    scene.add(std::static_pointer_cast<Node>(n), 0.0f);   // static
+  };
+  const GeomColor gray(150,150,150,255), orange(230,140,40,255),
+                  blue(70,110,200,255), red(210,70,70,255), green(80,170,90,255);
+
+  // boundary walls (6000 x 6000 arena)
+  addStatic(0, 3000, G+300, 6000, 200, 600, gray);
+  addStatic(0,-3000, G+300, 6000, 200, 600, gray);
+  addStatic( 3000, 0, G+300, 200, 6000, 600, gray);
+  addStatic(-3000, 0, G+300, 200, 6000, 600, gray);
+
+  // climb ramp ahead (+Y) -> a raised platform at the top
+  addStatic(0, 1400, G+250, 1600, 2000, 120, orange, rotX(0.20f));
+  addStatic(0, 2900, G+560, 1600,  800, 120, orange);
+  // jump kicker behind (-Y): driving into it launches the car
+  addStatic(0,-1700, G+200, 1600, 1200, 120, red,    rotX(-0.32f));
+  // banked turn on the +X side (rolled about Y, runs along Y)
+  addStatic(2400, 0, G+360, 1000, 3000, 140, blue,   rotY(0.45f));
+  // a few blocks to weave through
+  addStatic(-1400, 1200, G+200, 400,400,400, green);
+  addStatic(-1900,-1000, G+200, 400,400,400, green);
+  addStatic( 1300,-1400, G+200, 400,400,400, green);
 
   auto body = CuboidNode::create(0, 0, 0, 600, 1200, 300);
   body->setMaterial(Material::fromColor(GeomColor(200, 60, 60, 255)));
-  // DefaultScene's ground sits ~-0.52*extent below the origin; start the car just
-  // above it (groundTop ~ -EXT*0.52) so it settles onto its wheels, not free-falls.
-  body->translate(0, 0, -EXT * 0.52f + 320);
+  body->translate(0, 0, G + 320);   // just above the ground -> settles on its wheels
   car = scene.addVehicle(std::static_pointer_cast<Node>(body));
+  car->setCcd(300.f, 60.f);         // don't tunnel through ramps/walls at speed
 
   scene.start(120);
 

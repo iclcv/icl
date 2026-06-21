@@ -75,6 +75,11 @@ namespace icl::physics2 {
     /// Front-wheel steering angle in radians (+ = left).
     void setSteering(float radians);
 
+    /// Continuous collision detection on the chassis — stops a fast car from
+    /// tunnelling through thin ramps/walls/ground in one step. Both args in ICL
+    /// units (motionThreshold ~ chassis size, sweptRadius ~ a fraction of it).
+    void setCcd(float motionThreshold, float sweptSphereRadius);
+
     /// Current forward speed in km/h (unit-scale corrected; sign = direction).
     float getSpeedKmh() const;
     /// Chassis world pose in ICL units (for a chase camera). Samples the slot.

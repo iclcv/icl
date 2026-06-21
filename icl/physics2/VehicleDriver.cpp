@@ -208,6 +208,13 @@ namespace icl::physics2 {
     });
   }
 
+  void VehicleDriver::setCcd(float motionThreshold, float sweptSphereRadius) {
+    if (!m_data->chassis) return;
+    std::scoped_lock lock(m_data->world);
+    m_data->chassis->setCcdMotionThreshold(m_data->units.toBullet(motionThreshold));
+    m_data->chassis->setCcdSweptSphereRadius(m_data->units.toBullet(sweptSphereRadius));
+  }
+
   float VehicleDriver::getSpeedKmh() const {
     if (!m_data->vehicle) return 0.f;
     // getCurrentSpeedKmHour treats Bullet units as metres; correct for our scale.

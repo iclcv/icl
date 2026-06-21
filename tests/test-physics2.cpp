@@ -944,3 +944,37 @@ ICL_REGISTER_TEST("physics2.vehicle_brakes", "braking slows a moving car")
   float vSlow = std::fabs(v->getSpeedKmh());
   ICL_TEST_TRUE(vSlow < vFast * 0.5f);          // braking bled off most of the speed
 }
+
+ICL_REGISTER_TEST("physics2.vehicle_climbs_ramp", "the car drives up a static ramp (gains height)")
+{
+  PhysicsScene scene;
+  auto ground = CuboidNode::create(0,0,0, 60000,60000,20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+
+  // a ramp tilted ~14deg about X, low edge near the ground at y~1000, rising +Y
+  auto ramp = CuboidNode::create(0,0,0, 3000,4000,100);
+  Mat m = Mat::id();
+  m(1,1)=std::cos(0.25f); m(1,2)=-std::sin(0.25f);
+  m(2,1)=std::sin(0.25f); m(2,2)= std::cos(0.25f);
+  m(1,3)=3000; m(2,3)=10 + 2000*std::sin(0.25f);   // centre
+  ramp->setTransformation(m);
+  scene.add(std::static_pointer_cast<Node>(ramp), 0.0f);
+
+  auto body = CuboidNode::create(0,0,0, 600,1200,300);
+  body->translate(0, 0, 400);
+  auto *v = scene.addVehicle(std::static_pointer_cast<Node>(body));
+  v->setCcd(300.f, 60.f);
+
+  for (int i = 0; i < 120; i++) scene.stepOnce(1.f/120.f);   // settle on the flat
+  float zFlat = zOf(v->getChassisPose());
+
+  v->setEngineForce(18000.f);
+  float maxZ = zFlat;
+  for (int i = 0; i < 600; i++) {
+    scene.stepOnce(1.f/120.f);
+    maxZ = std::max(maxZ, zOf(v->getChassisPose()));
+  }
+
+  ICL_TEST_TRUE(yOf(v->getChassisPose()) > 800.f);   // reached the ramp
+  ICL_TEST_TRUE(maxZ > zFlat + 250.f);               // and climbed it (gained height)
+}
