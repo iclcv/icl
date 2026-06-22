@@ -2,6 +2,14 @@
 // ICL physics2 demo: water-air-pressure bottle rocket — the physics2 port of the
 // legacy physics-water-rocket.
 //
+// ⚠️ STATUS: MOSTLY BROKEN (real display, Session 78). The flight *mechanics* are
+//    validated headless (test physics2.rocket_compound_thrust_to_apogee: the
+//    compound bottle launches, sheds mass, reaches apogee), but the live demo does
+//    not behave acceptably yet — needs real-display work on the thrust/mass unit
+//    scale, the follow camera, the contact-only tip separation, and the (here only
+//    faked) parachute. UNDECIDED whether to keep this demo at all; do not rely on
+//    it. See next.md.
+//
 //   A 1 L PET bottle (a COMPOUND body: body + shoulder + neck + crossed fins) is
 //   launched straight up by thrust. During the powered phase the loose nose tip
 //   is held on the head purely by CONTACT (the accelerating bottle presses into

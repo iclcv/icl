@@ -10,9 +10,15 @@
    recap below. The cloth station is OUT (a threaded soft-body instability, deferred — memory
    `project_threaded_deformable_cloth_instability`), replaced with a static gateway arch.
 2. **Ported the last two legacy physics demos to physics2:** `physics2-maze` (kinematic
-   **compound** board + ghost **sensors** that follow the tilt) and `physics2-water-rocket`
-   (compound bottle + thrust + draining mass + apogee + contact tip-separation). With these,
-   **every** legacy demo had a physics2 equivalent.
+   **compound** board + ghost **sensors** that follow the tilt; top-down camera) and
+   `physics2-water-rocket` (compound bottle + thrust + draining mass + apogee + contact
+   tip-separation). With these, **every** legacy demo had a physics2 equivalent.
+   - **⚠️ `physics2-water-rocket` is MOSTLY BROKEN on a real display** — flight mechanics pass
+     headless (`rocket_compound_thrust_to_apogee`) but the live demo misbehaves (thrust/mass
+     unit scale, follow camera, tip separation, the faked parachute). **Undecided whether to
+     keep it.** Header comment flags it. Don't rely on it.
+   - `physics2-maze`: camera was a side 3/4 view → now **top-down** (a labyrinth is played from
+     above); distance/focal framing is an unverified real-display estimate.
 3. **Phase 6 deletion:** removed `icl/physics` entirely (81 files — module + `PhysicsScene` /
    `PhysicsScene2` bridge + the 5 legacy demos) and its meson wiring. **Zero external
    dependents**, so it was clean; `btSoftRigidDynamicsWorld` stays (it's in physics2). 124→119

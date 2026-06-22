@@ -15,6 +15,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 #include <icl/geom/Material.h>
+#include <icl/geom/Camera.h>
 #include <icl/geom2/CuboidNode.h>
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/CylinderNode.h>
@@ -72,6 +73,12 @@ Mat ballSpawn = Mat::id();
 
 void init() {
   scene.setupDefault(DefaultScene::SceneType::Studio, 1000.f);
+
+  // look straight down at the board (a labyrinth is played top-down). The board
+  // is ~660 wide and sits near z=0; sit the camera well above it looking -Z, with
+  // world +Y at the top of the image. (Real-display tweak: distance/focal framing.)
+  scene.scene().getCamera(0) =
+      Camera::lookAt(Vec(0,0,950,1), Vec(0,0,-30,1), Vec(0,1,0,1), Size::VGA, 50.f);
 
   auto wallMat = Material::fromColor(GeomColor(150,150,160,255));
   auto floorMat = Material::fromColor(GeomColor(225,225,225,255));
