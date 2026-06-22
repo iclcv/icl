@@ -32,6 +32,11 @@ if _build_demos and qt_found
     dependencies: [icl_geom2_dep],
     install: false,
   )
+  executable('simplex-3D-demo',
+    files('../demos/simplex-3D.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
   if cycles_found
     executable('geom2-cycles-renderer-test-demo',
       files('../demos/cycles-renderer-test.cpp'),

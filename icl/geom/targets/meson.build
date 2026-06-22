@@ -17,7 +17,6 @@ if _build_demos and qt_found
     'scene-graph': [],
     'scene-shadows': [],
     'simplex-2D': [],
-    'simplex-3D': [],
     'superquadric': [],
     'texture-cube': [],
   }
