@@ -144,6 +144,20 @@ gui << Display().handle("img") << CamCfg() << Show();
 
 GUI components: `Display` (image view), `Canvas` (2D drawing), `Canvas3D` (3D drawing), `Slider`, `Button`, `Combo`, `CheckBox`, `Label`, etc.
 
+**Layout convention — a view + a few controls uses a size-limited `Split`.** When a
+demo/app is one main view (a `Canvas3D`/`Display`) plus a handful of controls, lay it out as
+an `HSplit` (or `VSplit`) with the view on one side and a control panel on the other, and
+**cap the control panel** with `.maxSize(w, 99)` (and usually `.minSize`) so the divider can't
+let the controls balloon. Don't stack a view and a control `HBox`/`VBox` directly in the
+top-level `GUI`. Example:
+```cpp
+gui << (HSplit()
+        << Canvas3D({.handle="draw"})
+        << (VBox().maxSize(12, 99).minSize(10, 1)   // size-limited control panel
+            << FSlider(...) << Button(...)))
+    << Show();
+```
+
 ### Visualization Stack (ICLQt + ICLGeom)
 
 Three-layer OpenGL-based stack: `ICLWidget` (hardware-accelerated image display) → `ICLDrawWidget` (2D annotation in image coordinates) → `ICLDrawWidget3D` (3D overlays). The `Scene` class (geom module) provides a scene graph with object trees and camera management that links directly into `ICLDrawWidget3D`'s rendering loop.

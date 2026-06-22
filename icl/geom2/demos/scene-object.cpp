@@ -94,10 +94,11 @@ static void buildObjects() {
 }
 
 void init() {
-  gui << Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}})
-      << (HBox()
-          << FSlider(0.5, 20, 3, {.handle="f", .label="focal length", .maxSize={100, 3}})
-          << Button("reload", {.handle="reload", .hide=!pa("-o")}))
+  gui << (HSplit()
+          << Canvas3D({.handle="draw", .label="scene view", .minSize={16, 12}})
+          << (VBox().maxSize(12, 99).minSize(10, 1)   // size-limited control panel
+              << FSlider(0.5, 20, 3, {.handle="f", .label="focal length"})
+              << Button("reload", {.handle="reload", .hide=!pa("-o")})))
       << Show();
 
   scene.addCamera(Camera(Vec(0,0,-10), Vec(0,0,1), Vec(1,0,0)));
