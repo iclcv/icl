@@ -47,7 +47,7 @@ namespace icl::physics2 {
   RigidBodyDriver::~RigidBodyDriver() {
     // onDetach() normally cleaned up already; guard against leaks if not.
     delete m_data->body;
-    delete m_data->shape;
+    deleteShape(m_data->shape);
     delete m_data->motion;
   }
 
@@ -83,7 +83,7 @@ namespace icl::physics2 {
       m_data->added = false;
     }
     delete m_data->body;   m_data->body = nullptr;
-    delete m_data->shape;  m_data->shape = nullptr;
+    deleteShape(m_data->shape);  m_data->shape = nullptr;
     delete m_data->motion; m_data->motion = nullptr;
   }
 
@@ -162,6 +162,10 @@ namespace icl::physics2 {
       m_data->body->setAngularVelocity(btVector3(v[0], v[1], v[2]));  // unscaled (rad/s)
       m_data->body->activate();
     }
+  }
+  Vec RigidBodyDriver::getLinearVelocity() const {
+    if (!m_data->body) return Vec(0, 0, 0, 1);
+    return m_data->units.toIclVec(m_data->body->getLinearVelocity());   // ICL units/s
   }
   void RigidBodyDriver::applyCentralForce(const Vec &f) {
     if (m_data->body) {

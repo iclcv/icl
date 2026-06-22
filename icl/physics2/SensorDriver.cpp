@@ -29,7 +29,7 @@ namespace icl::physics2 {
 
   SensorDriver::~SensorDriver() {
     delete m_data->ghost;
-    delete m_data->shape;
+    deleteShape(m_data->shape);
   }
 
   void SensorDriver::onAttach() {
@@ -58,7 +58,7 @@ namespace icl::physics2 {
       m_data->added = false;
     }
     delete m_data->ghost;  m_data->ghost = nullptr;
-    delete m_data->shape;  m_data->shape = nullptr;
+    deleteShape(m_data->shape);  m_data->shape = nullptr;
   }
 
   void SensorDriver::sync(double, double) {

@@ -21,6 +21,7 @@
 #include <icl/geom2/CuboidNode.h>
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/MeshNode.h>
+#include <icl/geom2/GroupNode.h>
 #include <icl/geom2/DefaultScene.h>
 #include <icl/physics2/SoftBodyDriver.h>
 #include <icl/physics2/PaperDriver.h>
@@ -1039,4 +1040,48 @@ ICL_REGISTER_TEST("physics2.vehicle_reset_respawns", "reset() teleports the car 
   for (int i = 0; i < 30; i++) scene.stepOnce(1.f/120.f);    // let it apply + settle
   ICL_TEST_NEAR(yOf(v->getChassisPose()), yOf(spawn), 200.f);// back at spawn y
   ICL_TEST_TRUE(std::fabs(v->getSpeedKmh()) < 3.f);          // and stopped
+}
+
+// Compound bodies (btCompoundShape from a GroupNode) — the maze board and the
+// rocket bottle are built this way: many primitives moving as ONE body.
+ICL_REGISTER_TEST("physics2.compound_body_rests_on_its_children", "a GroupNode becomes one compound rigid body resting on both its boxes")
+{
+  PhysicsScene scene;
+  auto ground = CuboidNode::create(0,0,0, 60000,60000,20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+
+  // a "barbell": two 200-cubes at x=+/-500 with an empty gap between them, one body
+  auto grp = std::make_shared<GroupNode>();
+  auto bl = CuboidNode::create(0,0,0, 200,200,200); bl->translate(-500,0,0); grp->addChild(bl);
+  auto br = CuboidNode::create(0,0,0, 200,200,200); br->translate( 500,0,0); grp->addChild(br);
+  grp->translate(0, 0, 500);                              // drop from z=500
+  auto d = scene.add(std::static_pointer_cast<Node>(grp), 3.0f);
+  d->setDamping(0.1f, 0.1f);
+
+  for (int i = 0; i < 600; i++) scene.stepOnce(1.f/120.f); // 5 s to settle
+
+  // If the compound shape weren't built, the GroupNode would carry no collider and
+  // fall through. Resting at the child half-height (~100) proves the offset child
+  // boxes are the contact surface; staying ~level proves both children contact.
+  Mat m = d->getPose();
+  ICL_TEST_NEAR(zOf(m), 100.0f, 20.0f);
+  ICL_TEST_TRUE(std::fabs(m(0,3)) < 60.0f && std::fabs(m(1,3)) < 60.0f);  // didn't slide/tip away
+  ICL_TEST_TRUE(std::fabs(m(2,0)) < 0.1f && std::fabs(m(2,1)) < 0.1f);    // stayed level
+}
+
+ICL_REGISTER_TEST("physics2.get_linear_velocity", "getLinearVelocity reads a falling body's velocity, ~0 at rest")
+{
+  PhysicsScene scene;
+  auto ground = CuboidNode::create(0,0,0, 60000,60000,20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+  auto b = CuboidNode::create(0,0,0, 200,200,200);
+  b->translate(0,0,3000);
+  auto d = scene.add(std::static_pointer_cast<Node>(b), 1.0f);
+
+  for (int i = 0; i < 30; i++) scene.stepOnce(1.f/120.f);  // 0.25 s of free fall
+  ICL_TEST_TRUE(d->getLinearVelocity()[2] < -500.f);       // falling fast (-z)
+
+  for (int i = 0; i < 700; i++) scene.stepOnce(1.f/120.f); // land + settle
+  Vec v = d->getLinearVelocity();
+  ICL_TEST_TRUE(std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) < 30.f);  // at rest
 }

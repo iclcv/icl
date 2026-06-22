@@ -70,6 +70,8 @@ namespace icl::physics2 {
     void setDamping(float linear, float angular);
     void setLinearVelocity(const Vec &v);
     void setAngularVelocity(const Vec &v);
+    /// Current linear velocity in ICL units/s (e.g. to detect a rocket's apogee).
+    Vec getLinearVelocity() const;
     void applyCentralForce(const Vec &f);
 
     /// Continuous collision detection: catch fast/small bodies that would

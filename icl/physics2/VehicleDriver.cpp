@@ -51,7 +51,7 @@ namespace icl::physics2 {
     delete m_data->vehicle;
     delete m_data->raycaster;
     delete m_data->chassis;
-    delete m_data->shape;
+    deleteShape(m_data->shape);
   }
 
   void VehicleDriver::onAttach() {
@@ -170,7 +170,7 @@ namespace icl::physics2 {
     delete m_data->vehicle;   m_data->vehicle = nullptr;
     delete m_data->raycaster; m_data->raycaster = nullptr;
     delete m_data->chassis;   m_data->chassis = nullptr;
-    delete m_data->shape;     m_data->shape = nullptr;
+    deleteShape(m_data->shape);     m_data->shape = nullptr;
   }
 
   void VehicleDriver::sync(double /*dt*/, double alpha) {

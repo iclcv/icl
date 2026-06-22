@@ -22,6 +22,7 @@ namespace icl::physics2 {
       local origin and its pose lives in the node transform — so the derived
       shape is centred at the body origin and matches the rendered geometry.
 
+      - GroupNode   -> btCompoundShape (each child at its local transform)
       - CuboidNode  -> btBoxShape (from extents)
       - SphereNode  -> btSphereShape (from radius)
       - any other GeometryNode -> btConvexHullShape (from its vertices)
@@ -30,5 +31,9 @@ namespace icl::physics2 {
       to Bullet units via `units`. */
   ICLPhysics2_API btCollisionShape *shapeFromNode(const geom2::Node *node,
                                                   const Units &units);
+
+  /// Free a shape from shapeFromNode. Recurses into btCompoundShape children
+  /// (Bullet does not own them), so it is the correct counterpart for all shapes.
+  ICLPhysics2_API void deleteShape(btCollisionShape *shape);
 
 } // namespace icl::physics2

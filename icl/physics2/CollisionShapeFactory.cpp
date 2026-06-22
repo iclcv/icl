@@ -4,6 +4,7 @@
 
 #include <icl/physics2/CollisionShapeFactory.h>
 #include <icl/geom2/Node.h>
+#include <icl/geom2/GroupNode.h>
 #include <icl/geom2/GeometryNode.h>
 #include <icl/geom2/CuboidNode.h>
 #include <icl/geom2/SphereNode.h>
@@ -11,11 +12,27 @@
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
 #include <BulletCollision/CollisionShapes/btConvexHullShape.h>
+#include <BulletCollision/CollisionShapes/btCompoundShape.h>
 
 namespace icl::physics2 {
 
   btCollisionShape *shapeFromNode(const geom2::Node *node, const Units &u) {
     if (!node) return nullptr;
+
+    // A GroupNode becomes ONE compound body: each child contributes its shape at
+    // the child's local transform (relative to the group origin). Recurses, so a
+    // group of groups works too. The maze board and the rocket bottle are built
+    // this way — many primitives moving as a single rigid (or kinematic) body.
+    if (auto *grp = dynamic_cast<const geom2::GroupNode*>(node)) {
+      auto *compound = new btCompoundShape();
+      for (int i = 0; i < grp->getChildCount(); i++) {
+        const geom2::Node *child = grp->getChild(i);
+        if (btCollisionShape *cs = shapeFromNode(child, u))
+          compound->addChildShape(u.toBullet(child->getTransformation(false)), cs);
+      }
+      if (compound->getNumChildShapes() == 0) { delete compound; return nullptr; }
+      return compound;
+    }
 
     // Exact primitives for the parametric shapes ICL physics uses most.
     if (auto *cub = dynamic_cast<const geom2::CuboidNode*>(node)) {
@@ -43,6 +60,16 @@ namespace icl::physics2 {
     }
 
     return nullptr;
+  }
+
+  void deleteShape(btCollisionShape *shape) {
+    if (!shape) return;
+    // btCompoundShape doesn't own its children — free them first, recursively.
+    if (auto *compound = dynamic_cast<btCompoundShape*>(shape)) {
+      for (int i = 0; i < compound->getNumChildShapes(); i++)
+        deleteShape(compound->getChildShape(i));
+    }
+    delete shape;
   }
 
 } // namespace icl::physics2
