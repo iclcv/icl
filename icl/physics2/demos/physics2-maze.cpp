@@ -9,8 +9,9 @@
 // a kinematic body driven each frame, rolling rigid dynamics, and ghost sensors
 // that move with a kinematic body (SensorDriver::setTransform).
 //
+//   left-drag    : tilt the board about X / Y (synced to the sliders, and back)
 //   tilt sliders : tilt the board about X / Y
-//   reset        : drop the ball back at the start
+//   reset        : drop the ball back at the start + level the board
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
@@ -25,6 +26,7 @@
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/SensorDriver.h>
 #include <vector>
+#include <algorithm>
 #include <cmath>
 
 using namespace icl::geom2;
@@ -70,6 +72,27 @@ static Mat transAt(float x,float y,float z){ Mat m=Mat::id(); m(0,3)=x;m(1,3)=y;
 struct Hole { SensorDriver *sensor; std::shared_ptr<CylinderNode> disc; Mat base; bool lit=false; };
 std::vector<Hole> holes;
 Mat ballSpawn = Mat::id();
+
+// --- drag-to-tilt interactor -----------------------------------------------
+// Left-drag the board to tilt it (up to MAX_TILT away from the camera, about X
+// and Y). The handler WRITES the tilt sliders, and run() reads the tilt back
+// from them — so the mouse and the sliders stay in sync (and the sliders work
+// on their own too).
+static const float MAX_TILT = 0.35f;   // ~20 deg
+static const float DRAG_GAIN = 1.4f;   // full board drag -> full tilt
+Point32f pressPos; float pressTX = 0, pressTY = 0; bool dragging = false;
+
+void onMouse(const MouseEvent &e) {
+  if (e.isPressEvent() && e.isLeft()) {
+    pressPos = e.getRelPos(); pressTX = gui["tx"]; pressTY = gui["ty"]; dragging = true;
+  } else if (e.isReleaseEvent()) {
+    dragging = false;
+  } else if (e.isDragEvent() && dragging) {
+    Point32f d = e.getRelPos() - pressPos;                  // normalized drag delta
+    gui["ty"] = std::clamp(pressTY + d.x * DRAG_GAIN, -MAX_TILT, MAX_TILT);
+    gui["tx"] = std::clamp(pressTX - d.y * DRAG_GAIN, -MAX_TILT, MAX_TILT);
+  }
+}
 
 void init() {
   scene.setupDefault(DefaultScene::SceneType::Studio, 1000.f);
@@ -127,13 +150,15 @@ void init() {
 
   gui << (HBox()
           << (VBox().maxSize(14,99).minSize(14,1)
-              << FSlider(-0.40f, 0.40f, 0.0f, {.handle="tx", .label="tilt about X"})
-              << FSlider(-0.40f, 0.40f, 0.0f, {.handle="ty", .label="tilt about Y"})
+              << Label("drag the board to tilt", {.handle="hint"})
+              << FSlider(-MAX_TILT, MAX_TILT, 0.0f, {.handle="tx", .label="tilt about X"})
+              << FSlider(-MAX_TILT, MAX_TILT, 0.0f, {.handle="ty", .label="tilt about Y"})
               << Button("reset ball", {.handle="reset"})
               << CheckBox("collision debug", {.handle="dbg"}))
           << Canvas3D(Size(900,650), {.handle="draw"}))
       << Show();
   gui["draw"].link(scene.getGLCallback(0).get());
+  gui["draw"].install(&onMouse);            // left-drag tilts the board
   lastTick = Time::now();
 }
 
@@ -152,7 +177,10 @@ void run() {
   }
 
   static ButtonHandle reset = gui["reset"];
-  if (reset.wasTriggered()) ball->setTransform(ballSpawn);   // respawn at the start
+  if (reset.wasTriggered()) {                                // respawn + level the board
+    ball->setTransform(ballSpawn);
+    gui["tx"] = 0.f; gui["ty"] = 0.f;
+  }
 
   // light a hole green->yellow while the ball is over it
   auto *ballDrv = static_cast<Driver*>(ball);
