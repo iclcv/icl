@@ -506,9 +506,13 @@ thread-safety gaps in the paper mouse handling during Phase 5 (picking).
   pixel `findObject` → correct `RigidBodyDriver`); 9 physics2 tests / full suite
   893/893; grab-demo smoke clean. (Soft-body / paper-space picking arrives with
   Phase 3b.)
-- **Phase 6 — retire legacy.** Delete `physics` (incl. `PhysicsScene`/
-  `PhysicsScene2`) and the dead `geom::Scene` physics path once all demos are on
-  physics2.
+- **Phase 6 — retire legacy. ✅ LANDED (Session 78).** Deleted `icl/physics`
+  entirely (81 files — module + `PhysicsScene`/`PhysicsScene2` bridge + the 5
+  legacy demos) once all of them had physics2 equivalents (the maze + water-rocket
+  ports were the last two). Zero external dependents → a clean removal;
+  `btSoftRigidDynamicsWorld` stays (it lives in physics2, behind the world flag).
+  124→119 binaries, suite 943/943. (The legacy `geom::Scene` *rendering* layer is a
+  separate retirement — `geom2-migration-plan.md` Phase 3→4.)
 
 ## Cross-cutting TODO — a physics defaults policy (parameter standards)
 

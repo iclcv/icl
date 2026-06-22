@@ -304,9 +304,6 @@ subdir('icl/markers')
 if bullet_found and qt_found
   subdir('icl/physics2')
 endif
-if bullet_found and qt_found
-  subdir('icl/physics')
-endif
 
 # ---- Demos, apps, examples (after all libraries are defined) ----
 if _build_demos or _build_apps or _build_examples
@@ -326,9 +323,6 @@ if _build_demos or _build_apps or _build_examples
   subdir('icl/markers/targets')
   if bullet_found and qt_found
     subdir('icl/physics2/targets')
-  endif
-  if bullet_found and qt_found
-    subdir('icl/physics/targets')
   endif
 endif
 

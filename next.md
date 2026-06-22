@@ -3,27 +3,36 @@
 ## Next Step
 
 **⏸️ BREAK POINT (end of Session 78).** On `further-restructuring-and-cleanup`, build +
-**939/939** green. **Driving-game M4 landed** — the live, end-to-end physics integration
-test (it shows nicely how well the physics2 integration already works). Six interactive
-stations the car drives into, all in the one Deformable world: a **box pyramid** (smash),
-**barrels** (scatter), a **swing gate** (hinge), a **see-saw** (hinge + angular limits), a
-**wrecking ball** (ball-socket pendulum), and **spring bollards** (spring). Plus the four
-tuning asks: a **reset button** (new `VehicleDriver::reset(pose)`), the wrecking ball
-**lowered to bumper height**, **heavier rigid stacks** (boxes mass 25, barrels 15 — they now
-slow the car), the **course tripled** (`S=3` on EXT + positions), and a **camera-distance
-slider**. 2 new headless tests (`vehicle_smashes_stack`, `vehicle_reset_respawns`).
+**943/943** green. **🎉 The legacy `icl/physics` module is DELETED** — the physics-side of
+"get rid of old geom" (redesign-plan **Phase 6**) is done. Big session, three arcs:
 
-**⚠️ The 7th station (soft-body cloth banner) is OUT** — replaced with a static **gateway
-arch**. The deformable cloth goes NaN / explodes **only in this complex *threaded* scene**
-(rendered as "a giant thing flying in from the left"); it is rock-stable headless (6000
-`stepOnce` steps, exact threaded params) and in the simple `physics2-cloth` demo. A
-threaded-only soft-body instability, **not yet root-caused** — see memory
-`project_threaded_deformable_cloth_instability` + the station-7 comment in
-`physics2-driving.cpp`. **Resume here:** root-cause that (race between sim-thread soft-body
-capture and UI-thread `sync`? deformable solver under many contacts at real-time cadence?),
-then restore the cloth station + **M5 polish** (HUD/speedometer, reset-on-flip).
+1. **Driving-game M4** (the live integration test) + four tuning fixes — see the Session-78
+   recap below. The cloth station is OUT (a threaded soft-body instability, deferred — memory
+   `project_threaded_deformable_cloth_instability`), replaced with a static gateway arch.
+2. **Ported the last two legacy physics demos to physics2:** `physics2-maze` (kinematic
+   **compound** board + ghost **sensors** that follow the tilt) and `physics2-water-rocket`
+   (compound bottle + thrust + draining mass + apogee + contact tip-separation). With these,
+   **every** legacy demo had a physics2 equivalent.
+3. **Phase 6 deletion:** removed `icl/physics` entirely (81 files — module + `PhysicsScene` /
+   `PhysicsScene2` bridge + the 5 legacy demos) and its meson wiring. **Zero external
+   dependents**, so it was clean; `btSoftRigidDynamicsWorld` stays (it's in physics2). 124→119
+   binaries, 943/943.
 
-**Resume at: the threaded deformable-cloth instability**, then driving-game M5.
+New reusable framework this needed (all tested): **compound bodies** (`shapeFromNode` turns a
+`GroupNode` into a `btCompoundShape`; `deleteShape` frees them recursively),
+`RigidBodyDriver::getLinearVelocity` / `setTransform` (teleport), `SensorDriver::setTransform`
+(a moving ghost zone).
+
+**Resume options (pick one):**
+- **Front B — retire the legacy `geom::Scene` rendering layer** (the *other* half of "get rid
+  of old geom"): **8 geom + 4 markers** demos/apps still render through `geom::Scene`; port
+  each to geom2, then delete `Scene`/`SceneObject`/`GLRenderer`/`Primitive`/… (keep the geom
+  CV/math core). Plan: `geom2-migration-plan.md` (Phase 3→4).
+- **The threaded deformable-cloth instability** (blocks the driving-game cloth station + a real
+  soft parachute for the water-rocket) — root-cause it (sim-thread soft capture vs UI `sync`
+  race? deformable solver under many contacts at real-time cadence?). Memory
+  `project_threaded_deformable_cloth_instability`.
+- **Driving-game M5 polish** (HUD/speedometer, reset-on-flip) — small.
 
 ---
 
