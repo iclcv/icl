@@ -1,5 +1,7 @@
 # ICL — Continuation Guide
 
+📋 **Open-todo index: [`backlog.md`](backlog.md)** — terse running list so nothing is forgotten.
+
 ## Next Step
 
 **⏸️ BREAK POINT (end of Session 78).** On `further-restructuring-and-cleanup`, build +
