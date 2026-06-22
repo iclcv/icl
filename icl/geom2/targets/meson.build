@@ -55,3 +55,13 @@ if _build_demos and qt_found
     )
   endif
 endif
+
+# ---- Apps (dev/debug tools) ----
+if _build_apps and qt_found
+  # ports from legacy geom/apps (geom→geom2 retirement)
+  executable('icl-scene-viewer',
+    files('../apps/scene-viewer.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
+endif

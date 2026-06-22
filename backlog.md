@@ -10,7 +10,7 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 - [ ] Prune already-moved demos
 - [ ] Delete `ray-cast-octree` (geom2 has it)
 - [ ] **ONE** point-cloud-viewer app (fuse simple+pipe+viewer)
-- [ ] show-scene → scene-viewer app (fuse w/ cycles-scene-viewer later)
+- [x] show-scene → scene-viewer app (geom2/apps; fuse w/ cycles later)
 - [ ] Fuse kinect segmenters
 - [ ] marker-detection: review separately
 - [ ] 1-view ↔ n-view/source generalization
@@ -18,7 +18,7 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 - [ ] animated-grid: shader hook or simplify
 - [ ] plot-widget-3D: geom2 reimpl or delete
 - [ ] camera-calibration 2D overlay
-- [ ] geom2 needs an `apps/` dir + wiring
+- [x] geom2 `apps/` dir + wiring
 - [ ] markers dep: add geom2
 - [ ] **Delete geom** (final)
 - [ ] **Rename geom2 → geom** (final)

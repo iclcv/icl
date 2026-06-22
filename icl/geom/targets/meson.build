@@ -52,7 +52,6 @@ if _build_apps
       'point-cloud-viewer': [],
       'rotate-image-3D': [],
       'show-extrinsic-calibration-grid': [],
-      'show-scene': [],
       'simple-point-cloud-viewer': [],
       'surf-based-object-tracking': [],
     }
