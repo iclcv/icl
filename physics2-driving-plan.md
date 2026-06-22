@@ -164,13 +164,24 @@ so it's a helper over `geom::Camera`, not a `Driver`.)
 - **Real-display check pending:** ramp/jump/bank feel + CCD on landings (the
   geometry placement is eyeballed; the climb is the only headless-verifiable part).
 
-### M4 — interactive stations (the integration test)
-- **Rigid:** box pyramids to smash, barrels (cylinders) to scatter.
-- **Constraints:** a **swing gate** (hinge), a **see-saw/teeter** (hinge + angular
-  limits), a **wrecking ball** (ballsocket pendulum), **spring bollards** (spring
-  constraint — bounce back when nudged).
-- **Soft:** a **cloth banner/curtain** you burst through (SoftRigid, band-aided).
-- Each station drive-tested; this is where the whole stack gets exercised at once.
+### M4 — interactive stations (the integration test). ✅ LANDED (Session 78), minus cloth.
+- **Rigid:** box pyramid to smash (heavy, mass 25 — slows the car), barrels to scatter.
+- **Constraints:** a **swing gate** (hinge about Z), a **see-saw** (hinge about X +
+  angular limits), a **wrecking ball** (ball-socket pendulum, lowered to bumper height),
+  **spring bollards** (spring — bounce back when nudged). All built on the M1–M3
+  factories; node-factory lambdas (`mkBox/mkCyl/mkSph`) keep it terse.
+- **Course tripled** (`S=3` on `EXT` + every position; station sizes stay car-tuned →
+  more space). **Reset button** via new **`VehicleDriver::reset(pose)`** (teleport + zero
+  velocities + clear wheel forces, command-queue routed). **Camera-distance slider**.
+- **2 headless tests:** `vehicle_smashes_stack` (vehicle ⊗ dynamic rigid bodies — the
+  genuinely new M4 coverage; joints each already have a test), `vehicle_reset_respawns`.
+  Suite **939/939**.
+- **⚠️ Soft cloth banner DEFERRED → static gateway arch.** The deformable cloth goes NaN /
+  explodes **only in this complex *threaded* scene** (the "giant flying in from the left"),
+  yet is rock-stable headless (6000 `stepOnce`, exact threaded params) and in the simple
+  `physics2-cloth` demo. Threaded-only soft-body instability, not root-caused. Memory
+  `project_threaded_deformable_cloth_instability`; station-7 comment in the demo.
+- **Resume:** root-cause the threaded cloth instability, restore the soft station, then M5.
 
 ### M5 — polish
 - **HUD** (speedometer via `getSpeedKmh`), **reset** key (respawn the car), look

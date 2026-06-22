@@ -978,3 +978,65 @@ ICL_REGISTER_TEST("physics2.vehicle_climbs_ramp", "the car drives up a static ra
   ICL_TEST_TRUE(yOf(v->getChassisPose()) > 800.f);   // reached the ramp
   ICL_TEST_TRUE(maxZ > zFlat + 250.f);               // and climbed it (gained height)
 }
+
+// M4 — the integration test: the vehicle interacting with a station. Each joint
+// type already has a dedicated test above; what M4 newly exercises is the car
+// *driving into* a rigid stack (vehicle + dynamic rigid bodies in one world).
+ICL_REGISTER_TEST("physics2.vehicle_smashes_stack", "the car drives into a box stack and knocks it over")
+{
+  PhysicsScene scene;
+  auto ground = CuboidNode::create(0,0,0, 60000,60000,20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+
+  // a 3-high vertical stack of boxes straight ahead (+Y) of the car
+  std::vector<RigidBodyDriver*> stack;
+  for (int i = 0; i < 3; i++) {
+    auto b = CuboidNode::create(0,0,0, 400,400,400);
+    b->translate(0, 2500, 200 + i*400);
+    auto d = scene.add(std::static_pointer_cast<Node>(b), 2.0f);
+    d->setDamping(0.05f, 0.05f);
+    stack.push_back(d);
+  }
+
+  auto body = CuboidNode::create(0,0,0, 600,1200,300);
+  body->translate(0, 0, 400);
+  auto *v = scene.addVehicle(std::static_pointer_cast<Node>(body));
+  v->setCcd(300.f, 60.f);
+
+  for (int i = 0; i < 120; i++) scene.stepOnce(1.f/120.f);   // settle on its wheels
+  float topZ0 = zOf(stack[2]->getPose());
+
+  v->setEngineForce(20000.f);
+  for (int i = 0; i < 600; i++) scene.stepOnce(1.f/120.f);   // floor it into the stack
+
+  // the top box was knocked off its perch — it fell, or got shoved well past
+  // the stack's original y, or both. (A box that just sat there fails all three.)
+  float topZ1 = zOf(stack[2]->getPose());
+  float topY1 = yOf(stack[2]->getPose());
+  ICL_TEST_TRUE(topZ1 < topZ0 - 150.f || topY1 > 2800.f);
+}
+
+ICL_REGISTER_TEST("physics2.vehicle_reset_respawns", "reset() teleports the car back and stops it")
+{
+  PhysicsScene scene;
+  auto ground = CuboidNode::create(0,0,0, 60000,60000,20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+
+  auto body = CuboidNode::create(0,0,0, 600,1200,300);
+  body->translate(0, 0, 400);
+  auto *v = scene.addVehicle(std::static_pointer_cast<Node>(body));
+
+  for (int i = 0; i < 120; i++) scene.stepOnce(1.f/120.f);   // settle
+  Mat spawn = v->getChassisPose();
+
+  v->setEngineForce(15000.f);
+  for (int i = 0; i < 240; i++) scene.stepOnce(1.f/120.f);   // drive away
+  ICL_TEST_TRUE(yOf(v->getChassisPose()) > 300.f);           // it moved off spawn
+  ICL_TEST_TRUE(std::fabs(v->getSpeedKmh()) > 1.f);          // and is rolling
+
+  v->setEngineForce(0.f);
+  v->reset(spawn);                                           // respawn
+  for (int i = 0; i < 30; i++) scene.stepOnce(1.f/120.f);    // let it apply + settle
+  ICL_TEST_NEAR(yOf(v->getChassisPose()), yOf(spawn), 200.f);// back at spawn y
+  ICL_TEST_TRUE(std::fabs(v->getSpeedKmh()) < 3.f);          // and stopped
+}

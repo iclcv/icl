@@ -2,7 +2,32 @@
 
 ## Next Step
 
-**⏸️ BREAK POINT (end of Session 77).** Big session. On
+**⏸️ BREAK POINT (end of Session 78).** On `further-restructuring-and-cleanup`, build +
+**939/939** green. **Driving-game M4 landed** — the live, end-to-end physics integration
+test (it shows nicely how well the physics2 integration already works). Six interactive
+stations the car drives into, all in the one Deformable world: a **box pyramid** (smash),
+**barrels** (scatter), a **swing gate** (hinge), a **see-saw** (hinge + angular limits), a
+**wrecking ball** (ball-socket pendulum), and **spring bollards** (spring). Plus the four
+tuning asks: a **reset button** (new `VehicleDriver::reset(pose)`), the wrecking ball
+**lowered to bumper height**, **heavier rigid stacks** (boxes mass 25, barrels 15 — they now
+slow the car), the **course tripled** (`S=3` on EXT + positions), and a **camera-distance
+slider**. 2 new headless tests (`vehicle_smashes_stack`, `vehicle_reset_respawns`).
+
+**⚠️ The 7th station (soft-body cloth banner) is OUT** — replaced with a static **gateway
+arch**. The deformable cloth goes NaN / explodes **only in this complex *threaded* scene**
+(rendered as "a giant thing flying in from the left"); it is rock-stable headless (6000
+`stepOnce` steps, exact threaded params) and in the simple `physics2-cloth` demo. A
+threaded-only soft-body instability, **not yet root-caused** — see memory
+`project_threaded_deformable_cloth_instability` + the station-7 comment in
+`physics2-driving.cpp`. **Resume here:** root-cause that (race between sim-thread soft-body
+capture and UI-thread `sync`? deformable solver under many contacts at real-time cadence?),
+then restore the cloth station + **M5 polish** (HUD/speedometer, reset-on-flip).
+
+**Resume at: the threaded deformable-cloth instability**, then driving-game M5.
+
+---
+
+## Session 77 recap (was the break point) — Big session. On
 `further-restructuring-and-cleanup`, build + **937/937** green throughout. Three arcs landed:
 
 1. **geom2 pointer-ownership cleanup** — `deepCopy()` returns `NodePtr` (no raw *owning*
@@ -25,11 +50,8 @@ base type → "component type 'X' has no widget factory" at create — broke **e
 component on a real display (only reachable with a GL context, so CI/sandbox missed it).
 Fixed by cloning polymorphically; regression test added.
 
-**When work resumes — driving game M4 (interactive stations):** the car drives into one of
-every subsystem — rigid smash-stacks/barrels, constraint gate / see-saw / wrecking ball /
-spring bollards, and a cloth banner — all in the one Deformable world. This is the
-end-to-end integration test. Then M5 polish (HUD/reset). Plan: `physics2-driving-plan.md`
-(M1–M3 marked LANDED).
+*(M4 — interactive stations — was the next step at the end of S77; it landed in Session 78,
+see the break-point block above. Plan: `physics2-driving-plan.md`.)*
 
 **Other open fronts** (unchanged): legacy-physics retirement still needs `physics-constraints`
 (unblocked ✓), the **full maze** (compound bodies + ghost sensors), **water-rocket** (port),

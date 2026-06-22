@@ -75,6 +75,11 @@ namespace icl::physics2 {
     /// Front-wheel steering angle in radians (+ = left).
     void setSteering(float radians);
 
+    /// Respawn the chassis at `pose` (ICL units): teleport there, zero linear +
+    /// angular velocity and clear all wheel engine force / brake / steering.
+    /// Routed through the command queue (sim-thread safe).
+    void reset(const Mat &pose);
+
     /// Continuous collision detection on the chassis — stops a fast car from
     /// tunnelling through thin ramps/walls/ground in one step. Both args in ICL
     /// units (motionThreshold ~ chassis size, sweptRadius ~ a fraction of it).

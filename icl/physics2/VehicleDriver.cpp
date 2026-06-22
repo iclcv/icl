@@ -208,6 +208,25 @@ namespace icl::physics2 {
     });
   }
 
+  void VehicleDriver::reset(const Mat &pose) {
+    const btTransform T = m_data->units.toBullet(pose);
+    m_data->world.enqueue([this, T]() {
+      if (!m_data->chassis || !m_data->vehicle) return;
+      m_data->chassis->setWorldTransform(T);
+      m_data->chassis->setLinearVelocity(btVector3(0, 0, 0));
+      m_data->chassis->setAngularVelocity(btVector3(0, 0, 0));
+      m_data->chassis->clearForces();
+      for (int i = 0; i < NUM_WHEELS; i++) {
+        m_data->vehicle->applyEngineForce(0.f, i);
+        m_data->vehicle->setBrake(0.f, i);
+        m_data->vehicle->setSteeringValue(0.f, i);
+        m_data->vehicle->updateWheelTransform(i, true);
+      }
+      m_data->chassis->activate(true);
+      m_data->chassisSlot.publish(T);   // seed the render side immediately
+    });
+  }
+
   void VehicleDriver::setCcd(float motionThreshold, float sweptSphereRadius) {
     if (!m_data->chassis) return;
     std::scoped_lock lock(m_data->world);
