@@ -36,4 +36,9 @@ if _build_demos and bullet_found and qt_found
     dependencies: [icl_physics2_dep],
     install: false,
   )
+  executable('physics2-water-rocket-demo',
+    files('../demos/physics2-water-rocket.cpp'),
+    dependencies: [icl_physics2_dep],
+    install: false,
+  )
 endif

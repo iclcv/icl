@@ -1136,3 +1136,45 @@ ICL_REGISTER_TEST("physics2.maze_compound_tilt_and_following_sensor", "kinematic
   }
   ICL_TEST_TRUE(overlapNow);
 }
+
+// The water-rocket flight: a COMPOUND rocket launches under a decaying thrust with
+// draining (decaying) mass, then coasts to apogee (vz crosses 0). Mirrors the
+// physics2-water-rocket state machine deterministically (physics2-water-rocket).
+ICL_REGISTER_TEST("physics2.rocket_compound_thrust_to_apogee", "a compound rocket thrusts up, sheds mass, and reaches apogee")
+{
+  PhysicsScene scene;
+  auto ground = CuboidNode::create(0,0,0, 6000,6000,40); ground->translate(0,0,-20);
+  scene.add(std::static_pointer_cast<Node>(ground), 0.0f);
+
+  // rocket = body + nose as ONE compound body
+  auto rk = std::make_shared<GroupNode>();
+  auto body = CylinderNode::create(0,0,90, 45,45,180, 16); rk->addChild(std::static_pointer_cast<Node>(body));
+  auto nose = CylinderNode::create(0,0,210, 30,30, 60, 16); rk->addChild(std::static_pointer_cast<Node>(nose));
+  auto *rocket = scene.add(std::static_pointer_cast<Node>(rk), 0.06f);
+  rocket->setDamping(0.f, 0.8f);
+
+  for (int i = 0; i < 60; i++) scene.stepOnce(1.f/120.f);   // settle on the pad
+  float z0 = rocket->getPose()(2,3);
+
+  // THRUST: water + thrust both decay over the ~0.5 s burn
+  const float EMPTY = 0.06f, water = 0.15f, thrust = 12000.f;
+  const int burn = 60;
+  for (int i = 0; i < burn; i++) {
+    float frac = 1.f - (float)i / burn;
+    rocket->setMass(EMPTY + water * frac);
+    rocket->applyCentralForce(Vec(0, 0, thrust * frac, 1));
+    scene.stepOnce(1.f/120.f);
+  }
+  rocket->setMass(EMPTY);
+  rocket->setDamping(0.25f, 0.8f);
+
+  // COAST until apogee (climbed clearly, then vz crosses 0)
+  float maxZ = z0; bool apogee = false;
+  for (int i = 0; i < 800 && !apogee; i++) {
+    scene.stepOnce(1.f/120.f);
+    float z = rocket->getPose()(2,3); maxZ = std::max(maxZ, z);
+    if (z > z0 + 300.f && rocket->getLinearVelocity()[2] <= 0) apogee = true;
+  }
+  ICL_TEST_TRUE(maxZ > z0 + 800.f);   // it really launched
+  ICL_TEST_TRUE(apogee);              // climbed, then reached apogee
+}
