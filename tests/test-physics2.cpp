@@ -22,6 +22,7 @@
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/GroupNode.h>
+#include <icl/geom2/CylinderNode.h>
 #include <icl/geom2/DefaultScene.h>
 #include <icl/physics2/SoftBodyDriver.h>
 #include <icl/physics2/PaperDriver.h>
@@ -1084,4 +1085,54 @@ ICL_REGISTER_TEST("physics2.get_linear_velocity", "getLinearVelocity reads a fal
   for (int i = 0; i < 700; i++) scene.stepOnce(1.f/120.f); // land + settle
   Vec v = d->getLinearVelocity();
   ICL_TEST_TRUE(std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]) < 30.f);  // at rest
+}
+
+// The maze integration: a kinematic COMPOUND board tilts -> the ball rolls, and a
+// SENSOR moved with setTransform follows and detects the ball (physics2-maze).
+ICL_REGISTER_TEST("physics2.maze_compound_tilt_and_following_sensor", "kinematic compound board rolls a ball; a moved sensor detects it")
+{
+  PhysicsScene scene;
+
+  // board = floor + a rim wall, built as ONE kinematic compound body
+  auto board = std::make_shared<GroupNode>();
+  auto fl = CuboidNode::create(0,0,0, 4000,4000,40); fl->translate(0,0,-20);
+  board->addChild(std::static_pointer_cast<Node>(fl));
+  auto wall = CuboidNode::create(0,0,0, 4000,80,300); wall->translate(0,2000,150);
+  board->addChild(std::static_pointer_cast<Node>(wall));
+  auto *maze = scene.add(std::static_pointer_cast<Node>(board), 0.0f);
+  maze->setKinematic(true);
+  maze->setKinematicTransform(Mat::id());
+
+  auto bn = SphereNode::create(0,0,0, 50,16,16); bn->translate(0,0,80);
+  auto *ball = scene.add(std::static_pointer_cast<Node>(bn), 1.0f);
+  ball->setRollingFriction(0.0f);
+  auto *ballDrv = static_cast<Driver*>(ball);
+
+  // a sensor parked far away — must NOT overlap the ball at rest
+  auto disc = CylinderNode::create(0,0,0, 200,200,200, 16); disc->translate(3000,3000,0);
+  auto *sensor = scene.addSensor(std::static_pointer_cast<Node>(disc));
+
+  for (int i = 0; i < 90; i++) scene.stepOnce(1.f/120.f);   // settle on the compound floor
+  float x0 = xOf(ball->getPose());
+  ICL_TEST_TRUE(zOf(ball->getPose()) > 0.f);                // resting on the floor (top ~0)
+  bool overlapFar = false;
+  for (auto *d : sensor->getOverlappingDrivers()) if (d == ballDrv) overlapFar = true;
+  ICL_TEST_TRUE(!overlapFar);
+
+  // tilt the board -> the ball rolls across it (compound + kinematic together)
+  maze->setKinematicTransform(rotY(0.3f));
+  for (int i = 0; i < 240; i++) scene.stepOnce(1.f/120.f);
+  float x1 = xOf(ball->getPose());
+  ICL_TEST_TRUE(std::fabs(x1 - x0) > 200.f);
+
+  // move the sensor onto the ball -> detection follows the moved zone
+  Mat bp = ball->getPose();
+  Mat at = Mat::id(); at(0,3)=bp(0,3); at(1,3)=bp(1,3); at(2,3)=bp(2,3);
+  sensor->setTransform(at);
+  bool overlapNow = false;
+  for (int i = 0; i < 40 && !overlapNow; i++) {
+    scene.stepOnce(1.f/120.f);
+    for (auto *d : sensor->getOverlappingDrivers()) if (d == ballDrv) overlapNow = true;
+  }
+  ICL_TEST_TRUE(overlapNow);
 }

@@ -66,6 +66,12 @@ namespace icl::physics2 {
     // (A moving sensor would update the ghost transform here from the node.)
   }
 
+  void SensorDriver::setTransform(const Mat &worldPose) {
+    const btTransform T = m_data->units.toBullet(worldPose);
+    btPairCachingGhostObject *ghost = m_data->ghost;
+    m_data->world.enqueue([ghost, T]() { if (ghost) ghost->setWorldTransform(T); });
+  }
+
   std::vector<geom2::Driver *> SensorDriver::getOverlappingDrivers() const {
     std::vector<geom2::Driver *> out;
     if (!m_data->ghost) return out;

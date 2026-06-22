@@ -128,6 +128,23 @@ namespace icl::physics2 {
     });
   }
 
+  void RigidBodyDriver::setTransform(const Mat &m) {
+    btTransform T = m_data->units.toBullet(m);
+    btRigidBody *body = m_data->body;
+    StateSlot *slot = &m_data->slot;
+    // Teleport a (dynamic) body: reposition + drop all motion. Routed through the
+    // command queue so it lands between steps; publish the slot for the render side.
+    m_data->world.enqueue([body, slot, T]() {
+      if (!body) return;
+      body->setWorldTransform(T);
+      body->setLinearVelocity(btVector3(0, 0, 0));
+      body->setAngularVelocity(btVector3(0, 0, 0));
+      body->clearForces();
+      body->activate(true);
+      slot->publish(T);
+    });
+  }
+
   // --- tunables ---
 
   void RigidBodyDriver::setMass(float mass) {

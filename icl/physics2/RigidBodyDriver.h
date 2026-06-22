@@ -55,6 +55,10 @@ namespace icl::physics2 {
     /// the user each frame, collisions push dynamic bodies correctly.
     void setKinematic(bool on);
 
+    /// Teleport a (dynamic) body to a world pose and drop all motion — a reset /
+    /// respawn. Routed through the command queue (sim-thread safe).
+    void setTransform(const Mat &worldPose);
+
     /// Set the kinematic pose (ICL units). Routed through the world command
     /// queue so the sim thread updates the MotionState (what Bullet reads) +
     /// the render slot together — collision and render stay consistent.

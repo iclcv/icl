@@ -31,4 +31,9 @@ if _build_demos and bullet_found and qt_found
     dependencies: [icl_physics2_dep],
     install: false,
   )
+  executable('physics2-maze-demo',
+    files('../demos/physics2-maze.cpp'),
+    dependencies: [icl_physics2_dep],
+    install: false,
+  )
 endif

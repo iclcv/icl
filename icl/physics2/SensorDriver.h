@@ -35,6 +35,11 @@ namespace icl::physics2 {
     void onDetach() override;
     void sync(double dt, double alpha) override;
 
+    /// Move the zone to a new world pose (ICL units), e.g. to make it follow a
+    /// kinematic body. Routed through the command queue (sim-thread safe). The
+    /// host node's visual is the caller's responsibility (set it to match).
+    void setTransform(const Mat &worldPose);
+
     /// Drivers whose bodies currently overlap the zone.
     std::vector<geom2::Driver *> getOverlappingDrivers() const;
 
