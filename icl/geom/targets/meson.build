@@ -15,7 +15,6 @@ if _build_demos and qt_found
     # 'ray-cast-octree': [],  # replaced by geom2/raycast-octree-demo
     'rgbd-mapping': [],
     'scene-graph': [],
-    'scene-object': [],
     'scene-shadows': [],
     'simplex-2D': [],
     'simplex-3D': [],

@@ -164,11 +164,19 @@ Every module follows the same layout (under `icl/<module>/`):
 icl/<module>/
   meson.build         ← module + targets wiring
   *.h, *.cpp          ← headers and source files
-  apps/               ← end-user tools (built when -Dapps=true)
-  demos/              ← demo applications (built when -Ddemos=true)
+  apps/               ← end-user / dev tools (built when -Dapps=true)
+  demos/              ← feature demos (built when -Ddemos=true)
   examples/           ← example programs (built when -Dexamples=true)
   detail/             ← non-installed implementation files (strict invariant)
 ```
+
+**`demos/` vs `apps/` — keep the split.** A **demo** shows off *one feature* of the
+framework (e.g. a scene-graph renderer capability: shapes, shadows, textures, a node type)
+and should stay **small and focused**. An **app** is a *tool that helps development /
+debugging / real use* — a viewer for a camera / RGBD / point-cloud stream, a scene viewer, a
+calibration tool, etc. Rule of thumb: "*demonstrates how X works*" → `demos/`; "*a tool I'd
+actually run to get something done*" → `apps/`. When porting (e.g. geom→geom2), preserve a
+file's demo-vs-app character — don't dump tools into `demos/`.
 
 ## Test Structure
 
