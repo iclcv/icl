@@ -2452,7 +2452,13 @@ namespace icl::qt {
       m_data->imageInfoIndicator->hide();
     }
 
-    m_data->downMask[0] = m_data->downMask[1] = m_data->downMask[2] = false;
+    // Don't end an in-progress drag just because the pointer left the widget: the
+    // button is still held (Qt keeps an implicit grab and delivers move/release to
+    // us even outside our bounds, and createMouseEvent does NOT clamp the relative
+    // position), so keep the down-mask and let the eventual release finish the
+    // drag. Clearing it here made camera drags die at the window edge.
+    if(m_data->downMask[0] || m_data->downMask[1] || m_data->downMask[2]) return;
+
     dispatchMouseEvent(MouseLeaveEvent);
     update();
   }
