@@ -4,11 +4,13 @@ Terse running TODO index (1–5 words each) so nothing gets forgotten. Detail li
 linked plans; this is just the index. Check off / prune as done.
 
 ## geom → geom2 retirement (active arc)
-Plan + per-app detail: `geom-retirement-worklist.md`
-- [ ] Port all keepers geom→geom2
+Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLAUDE.md).
+- [x] Port scene-object (demo), simplex-3D (demo)
+- [ ] Port remaining keepers geom→geom2
 - [ ] Prune already-moved demos
 - [ ] Delete `ray-cast-octree` (geom2 has it)
-- [ ] Fuse point-cloud viewers
+- [ ] **ONE** point-cloud-viewer app (fuse simple+pipe+viewer)
+- [ ] show-scene → scene-viewer app (fuse w/ cycles-scene-viewer later)
 - [ ] Fuse kinect segmenters
 - [ ] marker-detection: review separately
 - [ ] 1-view ↔ n-view/source generalization
@@ -16,6 +18,8 @@ Plan + per-app detail: `geom-retirement-worklist.md`
 - [ ] animated-grid: shader hook or simplify
 - [ ] plot-widget-3D: geom2 reimpl or delete
 - [ ] camera-calibration 2D overlay
+- [ ] geom2 needs an `apps/` dir + wiring
+- [ ] markers dep: add geom2
 - [ ] **Delete geom** (final)
 - [ ] **Rename geom2 → geom** (final)
 
