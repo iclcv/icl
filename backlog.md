@@ -8,7 +8,7 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 - [x] Port scene-object (demo), simplex-3D (demo)
 - [ ] Port remaining keepers geom→geom2
 - [ ] Prune already-moved demos
-- [ ] Delete `ray-cast-octree` (geom2 has it)
+- [x] Delete `ray-cast-octree` (geom2 has it)
 - [ ] **ONE** point-cloud-viewer app (fuse simple+pipe+viewer)
 - [x] show-scene → scene-viewer app (geom2/apps; fuse w/ cycles later)
 - [ ] Fuse kinect segmenters
