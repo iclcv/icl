@@ -178,7 +178,7 @@ namespace icl::geom2 {
 
   void Scene2MouseHandler::setSensitivities(float translation, float rotation,
                                             float mouse, float wheel, float mod) {
-    if (translation <= 0) translation = 1000.0f;
+    if (translation <= 0) translation = 10.0f;   // multiplier; scene size comes from getBounds()
     if (mod == 0) mod = 10.0f;
     m_data->sens[Low]    = {translation, rotation, mouse / mod, wheel / mod};
     m_data->sens[Normal] = {translation, rotation, mouse, wheel};

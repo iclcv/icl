@@ -86,7 +86,9 @@ namespace icl::geom2 {
     std::vector<std::shared_ptr<SceneGLCallback>> callbacks;
     std::vector<std::unique_ptr<Scene2MouseHandler>> mouseHandlers;
     Vec cursor{0, 0, 0, 1};
-    float bounds = 1000.0f;
+    float explicitBounds = -1.0f;          // >0: user override (setBounds); else auto
+    mutable float autoBounds = 1000.0f;    // cached scene-derived size
+    mutable bool autoBoundsDirty = true;   // recompute lazily on structure change only
     std::recursive_mutex mutex;
   };
 
@@ -109,6 +111,7 @@ namespace icl::geom2 {
 
   void Scene2::addNode(NodePtr node) {
     m_data->objects.push_back(std::move(node));
+    m_data->autoBoundsDirty = true;
   }
 
   Node *Scene2::getNode(int i) {
@@ -136,6 +139,7 @@ namespace icl::geom2 {
     if (i >= 0 && i < (int)m_data->objects.size()) {
       eraseLight(m_data->lights, m_data->objects[i].get());
       m_data->objects.erase(m_data->objects.begin() + i);
+      m_data->autoBoundsDirty = true;
     }
   }
 
@@ -144,12 +148,14 @@ namespace icl::geom2 {
     auto &o = m_data->objects;
     o.erase(std::remove_if(o.begin(), o.end(),
             [node](const auto &p) { return p.get() == node; }), o.end());
+    m_data->autoBoundsDirty = true;
   }
 
   void Scene2::clear() {
     m_data->objects.clear();
     m_data->lights.clear();
     m_data->renderer.invalidateCache();
+    m_data->autoBoundsDirty = true;
   }
 
   // Lights
@@ -280,7 +286,7 @@ namespace icl::geom2 {
     while ((int)m_data->mouseHandlers.size() <= cameraIndex) {
       int idx = (int)m_data->mouseHandlers.size();
       auto h = std::make_unique<Scene2MouseHandler>(idx, this);
-      h->setSensitivities(m_data->bounds);
+      h->setSensitivities(10.0f);  // translation multiplier; scene size comes from getBounds()
       m_data->mouseHandlers.push_back(std::move(h));
     }
     return m_data->mouseHandlers[cameraIndex].get();
@@ -367,14 +373,43 @@ namespace icl::geom2 {
 
   // --- Bounds ---
 
-  void Scene2::setBounds(float maxDim) {
-    m_data->bounds = maxDim;
-    // Update sensitivities on existing handlers
-    for (auto &h : m_data->mouseHandlers) {
-      if (h) h->setSensitivities(maxDim);
+  // Accumulate the world-space AABB of all visible geometry under `node`.
+  static void accumulateBounds(Node *node, Vec &lo, Vec &hi, bool &any) {
+    if (!node || !node->isVisible()) return;
+    if (auto *group = dynamic_cast<GroupNode*>(node))
+      for (int i = 0; i < group->getChildCount(); i++)
+        accumulateBounds(group->getChild(i), lo, hi, any);
+    if (auto *geom = dynamic_cast<GeometryNode*>(node)) {
+      const auto &verts = geom->getVertices();
+      if (verts.empty()) return;
+      const Mat xform = node->getTransformation(true);
+      for (const auto &v : verts) {
+        const Vec w = xform * v;
+        for (int k = 0; k < 3; k++) { lo[k] = std::min(lo[k], w[k]); hi[k] = std::max(hi[k], w[k]); }
+      }
+      any = true;
     }
   }
-  float Scene2::getBounds() const { return m_data->bounds; }
+
+  // Explicit override if setBounds(>0) was called; otherwise the scene's own
+  // size, computed from geometry and cached (recomputed only when the node set
+  // changes — NOT every frame, so a dynamic scene's moving vertices don't churn
+  // the camera sensitivity).
+  void Scene2::setBounds(float maxDim) { m_data->explicitBounds = maxDim; }
+
+  float Scene2::getBounds() const {
+    if (m_data->explicitBounds > 0) return m_data->explicitBounds;
+    if (m_data->autoBoundsDirty) {
+      std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
+      Vec lo(1e30f,1e30f,1e30f,1), hi(-1e30f,-1e30f,-1e30f,1);
+      bool any = false;
+      for (auto &n : m_data->objects) accumulateBounds(n.get(), lo, hi, any);
+      float maxDim = any ? std::max({hi[0]-lo[0], hi[1]-lo[1], hi[2]-lo[2]}) : 0.0f;
+      m_data->autoBounds = maxDim > 1e-3f ? maxDim : 1000.0f;   // sane fallback for empty scenes
+      m_data->autoBoundsDirty = false;
+    }
+    return m_data->autoBounds;
+  }
 
   // --- Batch raycast ---
 
