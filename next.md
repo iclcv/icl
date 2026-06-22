@@ -5,8 +5,46 @@
 ## Next Step
 
 **⏸️ BREAK POINT (end of Session 78).** On `further-restructuring-and-cleanup`, build +
-**943/943** green. **🎉 The legacy `icl/physics` module is DELETED** — the physics-side of
-"get rid of old geom" (redesign-plan **Phase 6**) is done. Big session, three arcs:
+**943/943** green throughout. Two big arcs this session: (A) **legacy `icl/physics` deleted**
+(physics-side of "get rid of old geom"), then (B) **started the geom→geom2 rendering-layer
+retirement**.
+
+### Resume at: geom→geom2 retirement (active)
+**Endgame:** port every keeper geom→geom2, then **delete `geom`**, then **rename geom2 →
+geom**. Plan/worklist: `geom-retirement-worklist.md`; todo index: `backlog.md`.
+
+**Done so far:** pruned 6 dead/superseded demos (camera, swiss-ranger, gl-renderer-test, 3
+Cycles); ported **scene-object** + **simplex-3D** (demos) and **show-scene → scene-viewer**
+(app — established `icl/geom2/apps/`); deleted ray-cast-octree. Conventions pinned in
+**CLAUDE.md**: *demos vs apps* (demos = one feature, small; apps = dev/debug tools), and
+*view + few controls → size-limited `HSplit`/`VSplit`*.
+
+**Two framework fixes landed (both "more common" issues):**
+- **Scene2 camera sensitivity** — was quadratic-in-bounds + bounds defaulted to 1000 → dolly
+  ~100× too fast in every geom2 scene. Now `getBounds()` auto-computes from geometry (cached,
+  invalidated only on structure change — not per-frame), `translation` is a plain multiplier
+  (default 10). `0.04` factor is real-display-tunable.
+- **ICLWidget drag-leave** — a mouse drag died at the window edge (leaveEvent cleared the
+  button mask); now the drag survives leaving the widget and ends on release.
+
+**Next concrete steps (pick up here):**
+- **Decisions still open** (see backlog): build the **scene-depth→RGBD/point-cloud sim
+  source** (needs offscreen GL-framebuffer; unblocks + makes testable the point-cloud apps,
+  since there's no device) vs. port the apps against real grabbers now.
+- **point-cloud cluster:** fuse simple+pipe+viewer into **ONE** `point-cloud-viewer` app;
+  creator/define-world-frame/primitive-filter stay separate (need `Primitive3D→node`).
+- **kinect** demos (fuse the 2 segmenters), **surf-based-object-tracking** (clean app port),
+  **marker-detection** (separate; 1-view↔n-view/source generalization), **superquadric**
+  (new `SuperquadricNode`), **animated-grid**/**plot-widget-3D** (shader / widget rework),
+  **markers** dep needs geom2 added.
+- Each port: keep the demo/app character + the HSplit layout convention; build + headless-init
+  only (no GL/hardware here → real-display verification deferred).
+
+---
+
+**Earlier this session — Phase 6 (physics deletion).** **🎉 The legacy `icl/physics` module is
+DELETED** — the physics-side of "get rid of old geom" (redesign-plan **Phase 6**) is done.
+Three arcs:
 
 1. **Driving-game M4** (the live integration test) + four tuning fixes — see the Session-78
    recap below. The cloth station is OUT (a threaded soft-body instability, deferred — memory
