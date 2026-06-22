@@ -90,7 +90,7 @@ void onMouse(const MouseEvent &e) {
   } else if (e.isDragEvent() && dragging) {
     Point32f d = e.getRelPos() - pressPos;                  // normalized drag delta
     gui["ty"] = std::clamp(pressTY + d.x * DRAG_GAIN, -MAX_TILT, MAX_TILT);
-    gui["tx"] = std::clamp(pressTX - d.y * DRAG_GAIN, -MAX_TILT, MAX_TILT);
+    gui["tx"] = std::clamp(pressTX + d.y * DRAG_GAIN, -MAX_TILT, MAX_TILT);
   }
 }
 
