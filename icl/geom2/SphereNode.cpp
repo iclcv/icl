@@ -93,6 +93,7 @@ namespace icl::geom2 {
 
     auto &V = vertices();
     auto &N = normals();
+    auto &T = texCoords();   // spherical UVs (per vertex), so the sphere is texturable
 
     for (int j = 0; j < nb; ++j) {
       for (int i = 0; i < na; ++i) {
@@ -110,16 +111,19 @@ namespace icl::geom2 {
         if (len > 1e-8f) { nx /= len; ny /= len; nz /= len; }
         N.push_back(Vec(nx, ny, nz, 0));
 
+        T.push_back(utils::Point32f(float(i) / na, float(j) / (nb - 1)));
+
         if (j > 0) {
           int a = i + na * j;
           int b = (i ? (i - 1) : (na - 1)) + na * j;
           int c = (i ? (i - 1) : (na - 1)) + na * (j - 1);
           int d = i + na * (j - 1);
 
+          // texcoord indices track the vertex indices (UVs are per-vertex)
           if (j == nb - 1) {
-            quads().push_back({{a, d, c, b}, {a, d, c, b}});
+            quads().push_back({{a, d, c, b}, {a, d, c, b}, {a, d, c, b}});
           } else {
-            quads().push_back({{d, c, b, a}, {d, c, b, a}});
+            quads().push_back({{d, c, b, a}, {d, c, b, a}, {d, c, b, a}});
           }
 
           // Edge lines

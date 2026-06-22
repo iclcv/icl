@@ -15,6 +15,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
+#include <icl/core/Img.h>
 #include <icl/geom/Material.h>
 #include <icl/geom/Camera.h>
 #include <icl/geom2/CuboidNode.h>
@@ -63,6 +64,19 @@ static const int L[26][2] = {
 static const float HOLE[9][2] = {         // centred (x,y); z = -11 (board plane)
   {-74,-42},{-52,-21},{-27,-38},{-18,38},{2,-63},{13,29},{53,-21},{75,-42},{75,65}
 };
+
+// A 4-colour patchwork texture so the ball's rotation is easy to read.
+static core::Image makePatchTexture() {
+  const int S = 256, tiles = 6, ppt = S / tiles;
+  static const int pal[4][3] = {{220,60,60},{245,245,245},{60,100,210},{250,205,40}};
+  core::Img8u tex(Size(S,S), 4);
+  core::Channel8u r=tex[0], g=tex[1], b=tex[2], a=tex[3];
+  for (int y=0;y<S;y++) for (int x=0;x<S;x++) {
+    const int *c = pal[((x/ppt)&1) + 2*((y/ppt)&1)];
+    r(x,y)=c[0]; g(x,y)=c[1]; b(x,y)=c[2]; a(x,y)=255;
+  }
+  return core::Image(tex);
+}
 
 static Mat rotX(float t){ Mat m=Mat::id(); m(1,1)=cosf(t);m(1,2)=-sinf(t);m(2,1)=sinf(t);m(2,2)=cosf(t); return m; }
 static Mat rotY(float t){ Mat m=Mat::id(); m(0,0)=cosf(t);m(0,2)=sinf(t);m(2,0)=-sinf(t);m(2,2)=cosf(t); return m; }
@@ -128,9 +142,14 @@ void init() {
   maze = scene.add(std::static_pointer_cast<Node>(board), 0.0f);
   maze->setKinematic(true);
 
-  // --- the ball -------------------------------------------------------------
-  auto bn = SphereNode::create(0,0,0, 7*SC, 28, 28);
-  bn->setMaterial(Material::fromColor(GeomColor(210,70,70,255)));
+  // --- the ball (patch-textured so its rolling reads clearly) ---------------
+  auto bn = SphereNode::create(0,0,0, 7*SC, 32, 32);
+  auto ballMat = std::make_shared<Material>();
+  ballMat->baseColor = GeomColor(1,1,1,1);     // white * texture = texture
+  ballMat->roughness = 0.5f;
+  ballMat->textures = std::make_shared<Material::TextureMaps>();
+  ballMat->textures->baseColorMap = makePatchTexture();
+  bn->setMaterial(ballMat);
   bn->translate(15*SC, 0, -3*SC);
   ballSpawn = bn->getTransformation(true);
   ball = scene.add(std::static_pointer_cast<Node>(bn), 1.0f);
