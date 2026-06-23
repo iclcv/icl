@@ -90,6 +90,13 @@ namespace icl::geom2 {
     mutable float autoBounds = 1000.0f;    // cached scene-derived size
     mutable bool autoBoundsDirty = true;   // recompute lazily on structure change only
     std::recursive_mutex mutex;
+#ifdef ICL_HAVE_OPENGL
+    // Offscreen capture FBO (renderToImage), lazily (re)allocated per size.
+    // GL handles are leaked at process exit if no context is current at dtor —
+    // acceptable for a process-lifetime resource (legacy geom::Scene did the same).
+    unsigned int captureFBO = 0, captureColorRBO = 0, captureDepthRBO = 0;
+    utils::Size captureSize{0, 0};
+#endif
   };
 
   // ---- Scene2 implementation ----
@@ -268,6 +275,128 @@ namespace icl::geom2 {
     // Restore state
     if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glViewport(widgetVP[0], widgetVP[1], widgetVP[2], widgetVP[3]);
+  }
+
+  BVH::ImageResult Scene2::renderToImage(int cameraIndex, BVH::DepthMode mode) {
+    BVH::ImageResult result;
+#ifdef ICL_HAVE_OPENGL
+    std::scoped_lock guard(m_data->mutex);
+    if (cameraIndex < 0 || cameraIndex >= (int)m_data->cameras.size()) return result;
+
+    const geom::Camera &cam = m_data->cameras[cameraIndex];
+    const utils::Size s = cam.getResolution();
+    const int w = s.width, h = s.height;
+    if (w <= 0 || h <= 0) return result;
+
+    // Save the caller's framebuffer + viewport so this is composable inside an
+    // on-screen draw callback (a QOpenGLWidget's default FBO is NOT 0 — forcing
+    // 0 would blank the widget). Restored before returning.
+    GLint prevFBO = 0, prevVP[4] = {0, 0, 0, 0};
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFBO);
+    glGetIntegerv(GL_VIEWPORT, prevVP);
+
+    // (re)allocate the capture FBO when the size changes (color + depth RBOs)
+    if (!m_data->captureFBO || m_data->captureSize != s) {
+      if (m_data->captureFBO) {
+        glDeleteFramebuffers(1, &m_data->captureFBO);
+        glDeleteRenderbuffers(1, &m_data->captureColorRBO);
+        glDeleteRenderbuffers(1, &m_data->captureDepthRBO);
+      }
+      glGenFramebuffers(1, &m_data->captureFBO);
+      glGenRenderbuffers(1, &m_data->captureColorRBO);
+      glGenRenderbuffers(1, &m_data->captureDepthRBO);
+      glBindFramebuffer(GL_FRAMEBUFFER, m_data->captureFBO);
+      glBindRenderbuffer(GL_RENDERBUFFER, m_data->captureColorRBO);
+      glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, w, h);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                GL_RENDERBUFFER, m_data->captureColorRBO);
+      glBindRenderbuffer(GL_RENDERBUFFER, m_data->captureDepthRBO);
+      glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, w, h);
+      glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                GL_RENDERBUFFER, m_data->captureDepthRBO);
+      m_data->captureSize = s;
+    } else {
+      glBindFramebuffer(GL_FRAMEBUFFER, m_data->captureFBO);
+    }
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+      glBindFramebuffer(GL_FRAMEBUFFER, prevFBO);
+      return result;
+    }
+
+    // Force SSR off so the geometry pass writes depth straight into our FBO.
+    // (With SSR on, geometry depth lands in an internal ping-pong FBO and only
+    //  color is blitted back — our depth attachment would read back cleared.)
+    const bool prevSSR = m_data->renderer.isSSREnabled();
+    m_data->renderer.setSSREnabled(false);
+    m_data->renderer.setDebugMode(0);   // shaded — ignore the live "debug" prop
+    m_data->renderer.setLightingEnabled((bool)prop("enable lighting").value);
+
+    glViewport(0, 0, w, h);
+    core::Color bg = prop("background color").value;
+    glClearColor(bg[0]/255.f, bg[1]/255.f, bg[2]/255.f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    m_data->renderer.render(m_data->objects,
+                            cam.getCSTransformationMatrixGL(),
+                            cam.getProjectionMatrixGL());
+
+    // ---- color readback (RGBA8, GL bottom-up) → planar RGB Img8u (top-down) ----
+    std::vector<icl8u> rgba((size_t)w * h * 4);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+    result.image = core::Img8u(s, core::formatRGB);
+    icl8u *R = result.image.getData(0), *G = result.image.getData(1), *B = result.image.getData(2);
+    for (int y = 0; y < h; ++y) {
+      const icl8u *row = &rgba[(size_t)(h - 1 - y) * w * 4];   // vertical flip
+      const size_t o = (size_t)y * w;
+      for (int x = 0; x < w; ++x) { R[o+x] = row[4*x]; G[o+x] = row[4*x+1]; B[o+x] = row[4*x+2]; }
+    }
+
+    // ---- depth readback → linearized metric mm (mirrors legacy geom::Scene) ----
+    if (mode != BVH::NoDepth) {
+      std::vector<float> z((size_t)w * h);
+      glReadPixels(0, 0, w, h, GL_DEPTH_COMPONENT, GL_FLOAT, z.data());
+
+      const float zNear = cam.getRenderParams().clipZNear;
+      const float zFar  = cam.getRenderParams().clipZFar;
+      const float Q = zFar / (zFar - zNear);
+      const float A = (zFar - zNear) / zFar;
+      const float b = zNear;
+
+      // optional per-pixel 1/cos(angle-to-center-ray) → DistToCamCenter
+      std::vector<float> corr;
+      if (mode == BVH::DistToCamCenter) {
+        corr.resize((size_t)w * h);
+        utils::Array2D<geom::ViewRay> vr = cam.getAllViewRays();
+        const Vec c = vr(w/2 - 1, h/2 - 1).direction;
+        const float cn = std::sqrt(c[0]*c[0] + c[1]*c[1] + c[2]*c[2]);
+        for (int i = 0; i < w*h; ++i) {
+          const Vec &dr = vr[i].direction;
+          const float dn = std::sqrt(dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2]);
+          const float cosA = (dr[0]*c[0] + dr[1]*c[1] + dr[2]*c[2]) / (dn * cn);
+          corr[i] = 1.0f / cosA;
+        }
+      }
+
+      result.depth = core::Img32f(s, 1);
+      float *d = result.depth.getData(0);
+      for (int y = 0; y < h; ++y) {
+        const float *zr = &z[(size_t)(h - 1 - y) * w];   // vertical flip
+        const size_t o = (size_t)y * w;
+        for (int x = 0; x < w; ++x) {
+          const float plane = A / (Q - zr[x]) + b - 1;
+          d[o+x] = (mode == BVH::DistToCamCenter) ? corr[o+x] * (plane + 1) - 1 : plane;
+        }
+      }
+    }
+
+    m_data->renderer.setSSREnabled(prevSSR);
+    glBindFramebuffer(GL_FRAMEBUFFER, prevFBO);
+    glViewport(prevVP[0], prevVP[1], prevVP[2], prevVP[3]);
+#else
+    (void)cameraIndex; (void)mode;
+#endif
+    return result;
   }
 
   // GL callback for ICLQt integration

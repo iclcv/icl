@@ -109,6 +109,22 @@ namespace icl::geom2 {
     void render(int cameraIndex);
     Renderer &getRenderer();
 
+    /// Offscreen GL render through \a cameraIndex → RGB color + metric depth.
+    /** GPU counterpart to BVH::raycastToImage (same BVH::ImageResult /
+        BVH::DepthMode vocabulary), so a SceneCapture can swap CPU↔GL backends
+        transparently. Full PBR shading; depth is returned in millimetres in the
+        requested format (DistToCamPlane = Z-depth, DistToCamCenter = Euclidean).
+
+        REQUIRES a current GL context whose Renderer is this scene's — e.g.
+        called on the GUI thread with the on-screen widget's context current, or
+        inside a dedicated offscreen context owned by a headless capture. SSR is
+        forced off for the duration: with SSR on, the geometry pass writes depth
+        into an internal FBO and only color is blitted back, so the capture FBO's
+        depth attachment would stay empty. Returns an empty result if there is no
+        GL context / OpenGL support, or the camera index is invalid. */
+    BVH::ImageResult renderToImage(int cameraIndex,
+                                   BVH::DepthMode mode = BVH::DistToCamPlane);
+
     // --- GL callback for ICLQt integration ---
     /// Returns a callback suitable for `canvas->link()` /
     /// `gui["canvas"].link(...)`.

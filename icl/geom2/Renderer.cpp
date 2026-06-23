@@ -987,6 +987,7 @@ void main() { }
   void Renderer::setAmbient(float a) { m_data->ambient = a; }
   void Renderer::setOverlayAlpha(float a) { m_data->overlayAlpha = a; }
   void Renderer::setSSREnabled(bool e) { m_data->ssrEnabled = e; }
+  bool Renderer::isSSREnabled() const { return m_data->ssrEnabled; }
   void Renderer::setShadowsEnabled(bool e) { m_data->shadowsEnabled = e; }
   void Renderer::setLightingEnabled(bool e) { m_data->lightingEnabled = e; }
   void Renderer::setSkyEnabled(bool e) { m_data->skyEnabled = e; }

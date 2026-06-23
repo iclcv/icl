@@ -302,9 +302,10 @@ namespace icl::geom2 {
         BVHHit hit = intersect(ray);
 
         if (hit) {
-          rData[idx] = static_cast<icl8u>(std::clamp(hit.color[0], 0.f, 255.f));
-          gData[idx] = static_cast<icl8u>(std::clamp(hit.color[1], 0.f, 255.f));
-          bData[idx] = static_cast<icl8u>(std::clamp(hit.color[2], 0.f, 255.f));
+          // hit.color is the material baseColor in [0,1]; scale to 8-bit [0,255]
+          rData[idx] = static_cast<icl8u>(std::clamp(hit.color[0] * 255.f, 0.f, 255.f));
+          gData[idx] = static_cast<icl8u>(std::clamp(hit.color[1] * 255.f, 0.f, 255.f));
+          bData[idx] = static_cast<icl8u>(std::clamp(hit.color[2] * 255.f, 0.f, 255.f));
 
           if (dData) {
             if (mode == DistToCamCenter) {

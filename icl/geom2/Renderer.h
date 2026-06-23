@@ -39,6 +39,11 @@ namespace icl::geom2 {
     /// Enable/disable screen-space reflections (default: true)
     void setSSREnabled(bool enabled);
 
+    /// Whether screen-space reflections are currently enabled
+    /** Used by Scene2::renderToImage to force SSR off during an offscreen
+        capture and restore the prior state afterwards. */
+    bool isSSREnabled() const;
+
     /// Enable/disable shadow mapping (default: true)
     void setShadowsEnabled(bool enabled);
 
