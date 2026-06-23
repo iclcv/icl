@@ -50,6 +50,20 @@ namespace icl::geom {
     return m;
   }
 
+  void Material::setBaseColorMap(const core::Image &img) {
+    if (!textures) textures = std::make_shared<TextureMaps>();
+    textures->baseColorMap = img;
+    ++textures->version;
+  }
+
+  std::shared_ptr<Material> Material::fromTexture(const core::Image &albedo) {
+    auto m = std::make_shared<Material>();
+    m->roughness = 1.0f;
+    m->metallic = 0.0f;
+    m->setBaseColorMap(albedo);
+    return m;
+  }
+
   std::shared_ptr<Material> Material::fromColors(const GeomColor &faceColor,
                                                    const GeomColor &wireColor,
                                                    float shininess) {

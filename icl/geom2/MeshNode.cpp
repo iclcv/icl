@@ -4,10 +4,27 @@
 
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/Loader.h>
+#include <icl/geom/Material.h>
 
 namespace icl::geom2 {
 
   static const float COLOR_SCALE = 1.0f / 255.0f;
+
+  std::shared_ptr<MeshNode> MeshNode::createTexturedQuad(float w, float h,
+                                                         const core::Image &texture) {
+    auto m = std::make_shared<MeshNode>();
+    const float hw = w * 0.5f, hh = h * 0.5f;
+    m->addVertex(Vec(-hw,  hh, 0, 1));   // 0 top-left
+    m->addVertex(Vec( hw,  hh, 0, 1));   // 1 top-right
+    m->addVertex(Vec( hw, -hh, 0, 1));   // 2 bottom-right
+    m->addVertex(Vec(-hw, -hh, 0, 1));   // 3 bottom-left
+    m->addTexCoord(0, 0); m->addTexCoord(1, 0);
+    m->addTexCoord(1, 1); m->addTexCoord(0, 1);
+    m->addNormal(Vec(0, 0, 1, 0));
+    m->addQuad(0, 1, 2, 3, /*normals*/ 0, 0, 0, 0, /*texcoords*/ 0, 1, 2, 3);
+    m->setMaterial(geom::Material::fromTexture(texture));
+    return m;
+  }
 
   MeshNode::MeshNode() = default;
   MeshNode::~MeshNode() = default;

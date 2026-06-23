@@ -770,6 +770,11 @@ void main() { }
     float softShadowRadius = 0.0f;
   };
 
+  // A cached GL texture + its current size (so live updates can pick
+  // glTexSubImage2D over a full reallocation). File-scope so the free
+  // uploadOrUpdate() helper can name it.
+  namespace { struct TexHandle { GLuint id = 0; int w = 0, h = 0; }; }
+
   struct Renderer::Data {
     GLuint pbrProgram = 0;
     GLuint unlitProgram = 0;
@@ -853,10 +858,11 @@ void main() { }
     // Fullscreen quad VAO for blit
     GLuint quadVAO = 0, quadVBO = 0;
 
-    // Per-material texture cache
+    // Per-material texture cache. Each handle remembers its size so a live
+    // update can use glTexSubImage2D when the dimensions are unchanged.
     struct MatTextures {
-      GLuint baseColor = 0, normalMap = 0, metallicRoughness = 0;
-      GLuint emissive = 0, occlusion = 0, reflectivity = 0;
+      TexHandle baseColor, normalMap, metallicRoughness, emissive, occlusion, reflectivity;
+      unsigned int version = 0xffffffffu;   // last-uploaded Material::TextureMaps version
     };
     std::unordered_map<const geom::Material*, MatTextures> texCache;
 
@@ -1004,7 +1010,8 @@ void main() { }
     m_data->cache.clear();
     m_data->pcCache.clear();
     for (auto &[_, mt] : m_data->texCache) {
-      GLuint texs[] = {mt.baseColor, mt.normalMap, mt.metallicRoughness, mt.emissive, mt.occlusion, mt.reflectivity};
+      GLuint texs[] = {mt.baseColor.id, mt.normalMap.id, mt.metallicRoughness.id,
+                       mt.emissive.id, mt.occlusion.id, mt.reflectivity.id};
       for (auto t : texs) if (t) glDeleteTextures(1, &t);
     }
     m_data->texCache.clear();
@@ -1182,13 +1189,18 @@ void main() { }
     }
   }
 
-  // Upload an ICL Image to a GL texture (matches geom GLRenderer)
-  static GLuint uploadTexture(const core::Image &img) {
-    if (img.isNull()) return 0;
+  // Upload (or refresh) an ICL Image into a GL texture handle. Reuses the
+  // existing GL texture when the size is unchanged (glTexSubImage2D — cheap
+  // enough for a per-frame live/video texture); (re)allocates otherwise.
+  static void uploadOrUpdate(TexHandle &t, const core::Image &img) {
+    if (img.isNull()) {
+      if (t.id) { glDeleteTextures(1, &t.id); t = {}; }
+      return;
+    }
     const auto &img8u = img.as<icl8u>();
-    int w = img8u.getWidth(), h = img8u.getHeight(), ch = img8u.getChannels();
+    const int w = img8u.getWidth(), h = img8u.getHeight(), ch = img8u.getChannels();
 
-    std::vector<icl8u> rgba(w * h * 4);
+    std::vector<icl8u> rgba((size_t)w * h * 4);
     for (int i = 0; i < w * h; i++) {
       rgba[i*4+0] = (ch > 0) ? img8u.getData(0)[i] : 0;
       rgba[i*4+1] = (ch > 1) ? img8u.getData(1)[i] : 0;
@@ -1196,17 +1208,20 @@ void main() { }
       rgba[i*4+3] = (ch > 3) ? img8u.getData(3)[i] : 255;
     }
 
-    GLuint tex;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, rgba.data());
+    if (t.id && t.w == w && t.h == h) {
+      glBindTexture(GL_TEXTURE_2D, t.id);
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+    } else {
+      if (!t.id) glGenTextures(1, &t.id);
+      glBindTexture(GL_TEXTURE_2D, t.id);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
+      t.w = w; t.h = h;
+    }
     glBindTexture(GL_TEXTURE_2D, 0);
-    return tex;
   }
 
   static void setUniformMat4(GLint loc, const Mat &m) {
@@ -1634,21 +1649,17 @@ void main() { }
         glUniform4f(m_data->locEmissive, mat->emissive[0], mat->emissive[1],
                     mat->emissive[2], 0);
 
-        // Upload all textures for this material (cached)
+        // (Re)upload this material's textures only when their version changed —
+        // first sight (cache sentinel) or a live setBaseColorMap()/etc. update.
         auto &mt = m_data->texCache[mat.get()];
-        if (mat->textures) {
-          if (!mt.baseColor && !mat->textures->baseColorMap.isNull())
-            mt.baseColor = uploadTexture(mat->textures->baseColorMap);
-          if (!mt.normalMap && !mat->textures->normalMap.isNull())
-            mt.normalMap = uploadTexture(mat->textures->normalMap);
-          if (!mt.metallicRoughness && !mat->textures->metallicRoughnessMap.isNull())
-            mt.metallicRoughness = uploadTexture(mat->textures->metallicRoughnessMap);
-          if (!mt.emissive && !mat->textures->emissiveMap.isNull())
-            mt.emissive = uploadTexture(mat->textures->emissiveMap);
-          if (!mt.occlusion && !mat->textures->occlusionMap.isNull())
-            mt.occlusion = uploadTexture(mat->textures->occlusionMap);
-          if (!mt.reflectivity && !mat->textures->reflectivityMap.isNull())
-            mt.reflectivity = uploadTexture(mat->textures->reflectivityMap);
+        if (mat->textures && mt.version != mat->textures->version) {
+          uploadOrUpdate(mt.baseColor, mat->textures->baseColorMap);
+          uploadOrUpdate(mt.normalMap, mat->textures->normalMap);
+          uploadOrUpdate(mt.metallicRoughness, mat->textures->metallicRoughnessMap);
+          uploadOrUpdate(mt.emissive, mat->textures->emissiveMap);
+          uploadOrUpdate(mt.occlusion, mat->textures->occlusionMap);
+          uploadOrUpdate(mt.reflectivity, mat->textures->reflectivityMap);
+          mt.version = mat->textures->version;
         }
 
         // Bind textures to texture units
@@ -1660,12 +1671,12 @@ void main() { }
             glUniform1i(locSampler, unit);
           }
         };
-        bindTex(m_data->locHasBaseColorMap, m_data->locBaseColorMap, 0, mt.baseColor);
-        bindTex(m_data->locHasNormalMap, m_data->locNormalMap, 1, mt.normalMap);
-        bindTex(m_data->locHasMetallicRoughnessMap, m_data->locMetallicRoughnessMap, 2, mt.metallicRoughness);
-        bindTex(m_data->locHasEmissiveMap, m_data->locEmissiveMap, 3, mt.emissive);
-        bindTex(m_data->locHasOcclusionMap, m_data->locOcclusionMap, 4, mt.occlusion);
-        bindTex(m_data->locHasReflectivityMap, m_data->locReflectivityMap, 11, mt.reflectivity);
+        bindTex(m_data->locHasBaseColorMap, m_data->locBaseColorMap, 0, mt.baseColor.id);
+        bindTex(m_data->locHasNormalMap, m_data->locNormalMap, 1, mt.normalMap.id);
+        bindTex(m_data->locHasMetallicRoughnessMap, m_data->locMetallicRoughnessMap, 2, mt.metallicRoughness.id);
+        bindTex(m_data->locHasEmissiveMap, m_data->locEmissiveMap, 3, mt.emissive.id);
+        bindTex(m_data->locHasOcclusionMap, m_data->locOcclusionMap, 4, mt.occlusion.id);
+        bindTex(m_data->locHasReflectivityMap, m_data->locReflectivityMap, 11, mt.reflectivity.id);
 
         // Billboard text: render unlit so text color comes through directly
         if (auto *text = dynamic_cast<TextNode*>(geom); text && text->isBillboard())

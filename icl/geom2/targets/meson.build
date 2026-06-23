@@ -26,6 +26,11 @@ if _build_demos and qt_found
     dependencies: [icl_geom2_dep],
     install: false,
   )
+  executable('scene-monitors-demo',
+    files('../demos/scene-monitors.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
   executable('raycast-octree-demo',
     files('../demos/raycast-octree.cpp'),
     dependencies: [icl_geom2_dep],

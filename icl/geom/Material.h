@@ -73,6 +73,9 @@ namespace icl::geom {
       core::Image emissiveMap;           ///< emission texture (RGB)
       core::Image occlusionMap;          ///< ambient occlusion (R channel, 1=fully lit)
       core::Image reflectivityMap;       ///< per-texel reflectivity (R channel), scales `reflectivity`
+      /// Bumped whenever a map changes; the renderer re-uploads this material's
+      /// GL textures only when its cached version differs (see setBaseColorMap).
+      unsigned int version = 0;
     };
     std::shared_ptr<TextureMaps> textures;
 
@@ -94,6 +97,14 @@ namespace icl::geom {
     std::string name;
 
     // -- Helpers --
+
+    /// Set/replace the albedo (base color) texture from an image.
+    /** Allocates the texture maps on first use and bumps the texture version so
+        the renderer re-uploads. **Safe to call every frame for a live/video
+        texture** — the geom2 renderer then refreshes only this material's GL
+        textures (via glTexSubImage2D when the size is unchanged), without
+        touching geometry or other materials' caches. */
+    void setBaseColorMap(const core::Image &img);
 
     /// Returns true if this material has glass/transmission behavior
     bool isTransmissive() const { return transmission && transmission->transmission > 0.001f; }
@@ -118,6 +129,11 @@ namespace icl::geom {
     static std::shared_ptr<Material> fromPhong(const GeomColor &diffuse,
                                                 const GeomColor &specular,
                                                 float shininess);
+
+    /// Create a matte material whose albedo is the given image texture.
+    /** Convenience for image-on-a-surface use (e.g. a "screen"). Update it live
+        with setBaseColorMap(). */
+    static std::shared_ptr<Material> fromTexture(const core::Image &albedo);
   };
 
 } // namespace icl::geom

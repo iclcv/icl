@@ -7,6 +7,8 @@
 #include <icl/geom2/GeometryNode.h>
 #include <optional>
 
+namespace icl::core { class Image; }
+
 namespace icl::geom2 {
 
   /// Bulk geometry data for MeshNode::ingest()
@@ -77,6 +79,13 @@ namespace icl::geom2 {
 
     /// Load mesh(es) from file (.obj, .glb, .gltf)
     static std::vector<std::shared_ptr<MeshNode>> load(const std::string &filename);
+
+    /// Build a flat w×h "screen": a rectangle in the local XY plane (centred at
+    /// the origin, facing +Z) textured with \a texture.
+    /** Convenience for showing an image on a surface. Update the image live via
+        getMaterial()->setBaseColorMap(img) — see Material::setBaseColorMap. */
+    static std::shared_ptr<MeshNode> createTexturedQuad(float w, float h,
+                                                        const core::Image &texture);
   };
 
 } // namespace icl::geom2
