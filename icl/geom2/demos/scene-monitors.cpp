@@ -135,6 +135,7 @@ void changeActiveCam() {
 
 void init() {
   buildScene();
+  scene.prop("show cameras").value = true;   // overlay the camera gizmos
 
   gui << (HSplit()
       << Canvas3D(Size(820, 620), {.handle="view", .label="scene + live monitors", .minSize={40, 30}})

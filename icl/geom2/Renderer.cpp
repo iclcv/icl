@@ -444,6 +444,55 @@ out vec4 FragColor;
 void main() { FragColor = vColor; }
 )";
 
+  // ---- Thick-line shader: a geometry shader expands each GL_LINES segment
+  // into a screen-space quad of uLineWidth pixels. Used only when line width
+  // > 1, since glLineWidth is capped at 1px on macOS core profile.
+  static const char *LINE_VERT = R"(
+#version 410 core
+layout(location=0) in vec3 aPosition;
+layout(location=1) in vec4 aColor;
+uniform mat4 uMVP;
+out vec4 vColorG;
+void main() {
+    gl_Position = uMVP * vec4(aPosition, 1.0);
+    vColorG = aColor;
+}
+)";
+
+  static const char *LINE_GEOM = R"(
+#version 410 core
+layout(lines) in;
+layout(triangle_strip, max_vertices=4) out;
+in vec4 vColorG[];
+out vec4 vColor;
+uniform vec2 uViewport;     // pixels
+uniform float uLineWidth;   // pixels
+void main() {
+    vec4 p0 = gl_in[0].gl_Position;
+    vec4 p1 = gl_in[1].gl_Position;
+    if (p0.w <= 0.0 || p1.w <= 0.0) return;   // skip segments behind the camera
+    vec2 ndc0 = p0.xy / p0.w;
+    vec2 ndc1 = p1.xy / p1.w;
+    vec2 dirPx = (ndc1 - ndc0) * uViewport;
+    float len = length(dirPx);
+    if (len < 1e-6) return;
+    vec2 nrm = vec2(-dirPx.y, dirPx.x) / len;          // unit normal, screen space
+    vec2 off = nrm * (uLineWidth * 0.5) * 2.0 / uViewport;  // px half-width -> NDC
+    gl_Position = vec4((ndc0 + off) * p0.w, p0.z, p0.w); vColor = vColorG[0]; EmitVertex();
+    gl_Position = vec4((ndc0 - off) * p0.w, p0.z, p0.w); vColor = vColorG[0]; EmitVertex();
+    gl_Position = vec4((ndc1 + off) * p1.w, p1.z, p1.w); vColor = vColorG[1]; EmitVertex();
+    gl_Position = vec4((ndc1 - off) * p1.w, p1.z, p1.w); vColor = vColorG[1]; EmitVertex();
+    EndPrimitive();
+}
+)";
+
+  static const char *LINE_FRAG = R"(
+#version 410 core
+in vec4 vColor;
+out vec4 FragColor;
+void main() { FragColor = vColor; }
+)";
+
   // ---- Blit shader (fullscreen quad for SSR composite) ----
 
   static const char *BLIT_VERT = R"(
@@ -835,6 +884,10 @@ void main() { }
     // Unlit uniform locations
     GLint locUnlitMVP = -1, locUnlitPointSize = -1;
 
+    // Thick-line shader (geometry shader expands GL_LINES to screen-space quads)
+    GLuint lineProgram = 0;
+    GLint locLineMVP = -1, locLineViewport = -1, locLineWidth = -1;
+
     // Blit shader
     GLuint blitProgram = 0;
     GLint blitLocTex = -1, blitLocAlpha = -1;
@@ -943,10 +996,9 @@ void main() { }
     return s;
   }
 
-  static GLuint linkProgram(GLuint vs, GLuint fs) {
+  static GLuint linkProgram(std::initializer_list<GLuint> shaders) {
     GLuint p = glCreateProgram();
-    glAttachShader(p, vs);
-    glAttachShader(p, fs);
+    for (GLuint s : shaders) glAttachShader(p, s);
     glLinkProgram(p);
     GLint ok = 0;
     glGetProgramiv(p, GL_LINK_STATUS, &ok);
@@ -959,6 +1011,7 @@ void main() { }
     }
     return p;
   }
+  static GLuint linkProgram(GLuint vs, GLuint fs) { return linkProgram({vs, fs}); }
 
   // ---- Renderer implementation ----
 
@@ -967,6 +1020,7 @@ void main() { }
   Renderer::~Renderer() {
     if (m_data->pbrProgram) glDeleteProgram(m_data->pbrProgram);
     if (m_data->unlitProgram) glDeleteProgram(m_data->unlitProgram);
+    if (m_data->lineProgram) glDeleteProgram(m_data->lineProgram);
     if (m_data->blitProgram) glDeleteProgram(m_data->blitProgram);
     if (m_data->skyProgram) glDeleteProgram(m_data->skyProgram);
     if (m_data->shadowProgram) glDeleteProgram(m_data->shadowProgram);
@@ -984,6 +1038,7 @@ void main() { }
     // Prevent unique_ptr from double-deleting GL resources
     m_data->pbrProgram = 0;
     m_data->unlitProgram = 0;
+    m_data->lineProgram = 0;
     m_data->blitProgram = 0;
     m_data->skyProgram = 0;
     m_data->shadowProgram = 0;
@@ -1083,6 +1138,22 @@ void main() { }
     }
     if (vs) glDeleteShader(vs);
     if (fs) glDeleteShader(fs);
+
+    // Thick-line shader (vertex + geometry + fragment)
+    {
+      GLuint lvs = compileShader(GL_VERTEX_SHADER, LINE_VERT);
+      GLuint lgs = compileShader(GL_GEOMETRY_SHADER, LINE_GEOM);
+      GLuint lfs = compileShader(GL_FRAGMENT_SHADER, LINE_FRAG);
+      if (lvs && lgs && lfs) {
+        m_data->lineProgram = linkProgram({lvs, lgs, lfs});
+        m_data->locLineMVP      = glGetUniformLocation(m_data->lineProgram, "uMVP");
+        m_data->locLineViewport = glGetUniformLocation(m_data->lineProgram, "uViewport");
+        m_data->locLineWidth    = glGetUniformLocation(m_data->lineProgram, "uLineWidth");
+      }
+      if (lvs) glDeleteShader(lvs);
+      if (lgs) glDeleteShader(lgs);
+      if (lfs) glDeleteShader(lfs);
+    }
 
     // Blit shader (SSR composite)
     vs = compileShader(GL_VERTEX_SHADER, BLIT_VERT);
@@ -1711,24 +1782,37 @@ void main() { }
       glActiveTexture(GL_TEXTURE0);
 
       // Draw lines + points (unlit)
-      if ((cache->numLineVerts > 0 || cache->numPointVerts > 0) && m_data->unlitProgram) {
-        glUseProgram(m_data->unlitProgram);
-
-        Mat mvp = m_data->currentProjection * viewMatrix * modelMatrix;
-        setUniformMat4(m_data->locUnlitMVP, mvp);
+      if ((cache->numLineVerts > 0 || cache->numPointVerts > 0) &&
+          (m_data->unlitProgram || m_data->lineProgram)) {
+        const Mat mvp = m_data->currentProjection * viewMatrix * modelMatrix;
 
         if (cache->numLineVerts > 0) {
           const bool onTop = geom->getRenderOnTop();
           if (onTop) glDisable(GL_DEPTH_TEST);
-          float lw = geom->getLineWidth();
-          glLineWidth(lw);
+          const float lw = geom->getLineWidth();
+          // 1px lines: built-in GL_LINES (cheap). Thicker: geometry-shader quads
+          // (glLineWidth > 1 is a no-op on macOS core profile).
+          if (lw > 1.01f && m_data->lineProgram) {
+            glUseProgram(m_data->lineProgram);
+            setUniformMat4(m_data->locLineMVP, mvp);
+            GLint vp[4];
+            glGetIntegerv(GL_VIEWPORT, vp);
+            glUniform2f(m_data->locLineViewport, (float)vp[2], (float)vp[3]);
+            glUniform1f(m_data->locLineWidth, lw);
+          } else {
+            glUseProgram(m_data->unlitProgram);
+            setUniformMat4(m_data->locUnlitMVP, mvp);
+            glLineWidth(lw);
+          }
           glBindVertexArray(cache->lineVao);
           glDrawArrays(GL_LINES, 0, cache->numLineVerts);
           glBindVertexArray(0);
           if (onTop) glEnable(GL_DEPTH_TEST);
         }
 
-        if (cache->numPointVerts > 0) {
+        if (cache->numPointVerts > 0 && m_data->unlitProgram) {
+          glUseProgram(m_data->unlitProgram);
+          setUniformMat4(m_data->locUnlitMVP, mvp);
           float ps = mat ? mat->pointSize : 3.0f;
           glUniform1f(m_data->locUnlitPointSize, ps);
           glEnable(GL_PROGRAM_POINT_SIZE);

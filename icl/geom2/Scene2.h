@@ -160,6 +160,11 @@ namespace icl::geom2 {
     float getBounds() const;
 
   private:
+    /// Nodes to draw this pass: the scene objects, plus a lightweight gizmo per
+    /// camera when the "show cameras" property is on (the active camera's own
+    /// gizmo is omitted). Returns a reference valid until the next call.
+    const std::vector<std::shared_ptr<Node>> &nodesToRender(int activeCam);
+
     struct Data;
     std::unique_ptr<Data> m_data;
   };

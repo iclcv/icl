@@ -8,6 +8,8 @@
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/GroupNode.h>
 #include <icl/geom2/GeometryNode.h>
+#include <icl/geom2/MeshNode.h>
+#include <icl/geom2/TextNode.h>
 #include <icl/geom2/Driver.h>
 #include <icl/geom2/PointCloud.h>
 #include <icl/geom2/BVH.h>
@@ -85,6 +87,11 @@ namespace icl::geom2 {
     Renderer renderer;
     std::vector<std::shared_ptr<SceneGLCallback>> callbacks;
     std::vector<std::unique_ptr<Scene2MouseHandler>> mouseHandlers;
+    // "show cameras" overlay: one lightweight gizmo per camera (3 axis lines +
+    // a billboard label, lazy) + a scratch list that appends them to the
+    // objects for a render pass.
+    std::vector<std::shared_ptr<GroupNode>> cameraFrames;
+    std::vector<std::shared_ptr<Node>> renderScratch;
     Vec cursor{0, 0, 0, 1};
     float explicitBounds = -1.0f;          // >0: user override (setBounds); else auto
     mutable float autoBounds = 1000.0f;    // cached scene-derived size
@@ -107,6 +114,7 @@ namespace icl::geom2 {
   Scene2::Scene2() : m_data(std::make_unique<Data>()) {
     addProperty("background color", core::prop::Color{}, core::Color(0,0,0));
     addProperty("wireframe",utils::prop::Flag{}, false);
+    addProperty("show cameras",utils::prop::Flag{}, false);
     addProperty("enable lighting",utils::prop::Flag{}, true);
     addProperty("debug", utils::prop::Menu{"shaded", "normals", "albedo", "UVs",
                 "lighting", "NdotL", "SSR confidence", "depth", "SSR only"}, "shaded");
@@ -217,6 +225,77 @@ namespace icl::geom2 {
   // Rendering
   Renderer &Scene2::getRenderer() { return m_data->renderer; }
 
+  // A lightweight camera gizmo (built in the camera's local frame, so the group
+  // transform = camera pose places it): 3 axis lines (RGB = XYZ), a stylized,
+  // short view frustum, and a billboard label. Frustum corners come from the
+  // camera's corner view rays mapped into local space — convention-independent.
+  static std::shared_ptr<GroupNode> makeCameraGizmo(int index, float len,
+                                                    const geom::Camera &cam) {
+    auto g = std::make_shared<GroupNode>();
+    auto m = std::make_shared<MeshNode>();
+
+    // axes (apex = vertex 0)
+    m->addVertex(Vec(0, 0, 0, 1));
+    m->addVertex(Vec(len, 0, 0, 1));
+    m->addVertex(Vec(0, len, 0, 1));
+    m->addVertex(Vec(0, 0, len, 1));
+    m->addLine(0, 1, geom::GeomColor(255, 0, 0, 255));   // X red  (colors are 0..255)
+    m->addLine(0, 2, geom::GeomColor(0, 255, 0, 255));   // Y green
+    m->addLine(0, 3, geom::GeomColor(0, 0, 255, 255));   // Z blue
+
+    // stylized frustum: corner rays at a fixed short depth (not the far clip)
+    const float fd = len * 2.0f;
+    const geom::GeomColor fc(255, 210, 80, 255);         // soft yellow
+    const Mat cs = cam.getCSTransformationMatrix();      // world -> cam (rotation)
+    const utils::Size s = cam.getResolution();
+    auto cornerLocal = [&](float px, float py) -> Vec {
+      Vec wd = cam.getViewRay(utils::Point32f(px, py)).direction; wd[3] = 0;
+      Vec ld = cs * wd;                                  // local-space direction
+      float n = std::sqrt(ld[0]*ld[0] + ld[1]*ld[1] + ld[2]*ld[2]);
+      if (n < 1e-6f) n = 1.0f;
+      return Vec(ld[0]*fd/n, ld[1]*fd/n, ld[2]*fd/n, 1); // distance fd along the ray
+    };
+    const int b = 4;
+    m->addVertex(cornerLocal(0, 0));                 // 4 top-left
+    m->addVertex(cornerLocal(s.width, 0));           // 5 top-right
+    m->addVertex(cornerLocal(s.width, s.height));    // 6 bottom-right
+    m->addVertex(cornerLocal(0, s.height));          // 7 bottom-left
+    for (int k = 0; k < 4; ++k) m->addLine(0, b + k, fc);            // apex → corners
+    m->addLine(b+0, b+1, fc); m->addLine(b+1, b+2, fc);             // image rectangle
+    m->addLine(b+2, b+3, fc); m->addLine(b+3, b+0, fc);
+
+    m->setLineWidth(3.0f);          // thick lines via the geometry-shader path
+    m->setRenderOnTop(true);        // gizmo overlays geometry — never occluded
+    g->addChild(m);
+
+    auto label = TextNode::create("cam " + utils::str(index), len * 0.6f);
+    label->setBillboard(true);
+    label->translate(0, 0, len * 0.15f);
+    g->addChild(label);
+    return g;
+  }
+
+  const std::vector<std::shared_ptr<Node>> &Scene2::nodesToRender(int activeCam) {
+    if (!(bool)prop("show cameras").value) return m_data->objects;
+
+    // Lazily create one gizmo per camera, sized to the scene.
+    const float len = std::max(25.0f, getBounds() * 0.10f);
+    while (m_data->cameraFrames.size() < m_data->cameras.size()) {
+      const int i = (int)m_data->cameraFrames.size();
+      m_data->cameraFrames.push_back(makeCameraGizmo(i, len, m_data->cameras[i]));
+    }
+
+    auto &out = m_data->renderScratch;
+    out.assign(m_data->objects.begin(), m_data->objects.end());
+    for (int i = 0; i < (int)m_data->cameras.size(); ++i) {
+      if (i == activeCam) continue;   // don't draw the frame we're looking through
+      auto &f = m_data->cameraFrames[i];
+      f->setTransformation(m_data->cameras[i].getInvCSTransformationMatrix());
+      out.push_back(std::static_pointer_cast<Node>(f));
+    }
+    return out;
+  }
+
   void Scene2::render(int cameraIndex) {
     std::scoped_lock guard(m_data->mutex);
     if (cameraIndex < 0 || cameraIndex >= (int)m_data->cameras.size()) return;
@@ -270,7 +349,7 @@ namespace icl::geom2 {
     Mat viewGL = cam.getCSTransformationMatrixGL();
     Mat projGL = cam.getProjectionMatrixGL();
 
-    m_data->renderer.render(m_data->objects, viewGL, projGL);
+    m_data->renderer.render(nodesToRender(cameraIndex), viewGL, projGL);
 
     // Restore state
     if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -336,7 +415,7 @@ namespace icl::geom2 {
     glClearColor(bg[0]/255.f, bg[1]/255.f, bg[2]/255.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_data->renderer.render(m_data->objects,
+    m_data->renderer.render(nodesToRender(cameraIndex),
                             cam.getCSTransformationMatrixGL(),
                             cam.getProjectionMatrixGL());
 

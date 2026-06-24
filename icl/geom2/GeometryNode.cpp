@@ -92,8 +92,12 @@ namespace icl::geom2 {
 
   // Visibility
   void GeometryNode::setPrimitiveVisible(int mask, bool visible) {
+    const int before = m_data->visibleMask;
     if (visible) m_data->visibleMask |= mask;
     else m_data->visibleMask &= ~mask;
+    // The renderer only builds caches for visible primitive types, so a
+    // visibility change must invalidate the cache or it won't take effect.
+    if (m_data->visibleMask != before) ++m_data->geometryVersion;
   }
   bool GeometryNode::isPrimitiveVisible(int type) const { return (m_data->visibleMask & type) != 0; }
 
