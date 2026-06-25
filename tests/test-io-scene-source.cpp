@@ -12,6 +12,7 @@
 #include <icl/geom/Camera.h>
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/geom/PointCloudObject.h>
+#include <icl/geom2/PointCloud.h>
 #include <icl/core/Image.h>
 #include <sstream>
 #include <cmath>
@@ -97,6 +98,30 @@ ICL_REGISTER_TEST("io.scenesource.reconstruct_cloud", "depth + metadata camera -
     if (!std::isfinite(p[0])) continue;
     const float dist = std::sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
     if (dist < 550.f) ++realHits;
+  }
+  ICL_TEST_EQ(realHits > 1000, true);
+}
+
+// The geom2-native consumer path: PointCloud::unprojectDepth (what
+// icl-point-cloud-viewer uses) reconstructs a cloud from depth + camera.
+ICL_REGISTER_TEST("io.scenesource.geom2_unproject", "geom2 PointCloud::unprojectDepth reconstructs the scene")
+{
+  ImageSource src("scene", "@animate=off");
+  Image depth = src.grab();
+  std::istringstream is(depth.ptr()->getMetaData());
+  Camera cam; is >> cam;
+
+  geom2::PointCloud cloud;
+  cloud.unprojectDepth(depth.as<icl32f>(), cam, /*distToCamPlane=*/true);
+  ICL_TEST_EQ(cloud.getDim(), 640 * 480);
+  ICL_TEST_EQ(cloud.supports(geom2::PointCloud::XYZ), true);
+
+  auto xyz = cloud.selectXYZ();
+  int realHits = 0;
+  for (int i = 0; i < cloud.getDim(); ++i) {
+    auto &p = xyz[i];
+    const float d = std::sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+    if (std::isfinite(d) && d > 1.f && d < 550.f) ++realHits;
   }
   ICL_TEST_EQ(realHits > 1000, true);
 }

@@ -17,6 +17,9 @@
 #define ICLGeom2_API
 #endif
 
+namespace icl::core { template<class T> class Img; }
+namespace icl::geom { class Camera; }
+
 namespace icl::geom2 {
 
   using Vec = math::FixedColVector<float, 4>;
@@ -101,6 +104,18 @@ namespace icl::geom2 {
     void lock() const;
     void unlock() const;
     std::recursive_mutex &getMutex() const;
+
+    // --- Reconstruction ---
+    /// Fill this (organized) cloud by unprojecting a metric depth image (mm)
+    /// through a camera — the consumer side of an RGBD stream.
+    /** The cloud is resized to the depth image and given XYZ (+ RGBA32f when
+        \a color is supplied). Pixels with depth <= 0 become the origin with
+        zero alpha. \a distToCamPlane: true = depth is Z-distance to the image
+        plane, false = Euclidean distance to the camera centre. Thread-safe
+        (locks the cloud). */
+    void unprojectDepth(const core::Img<icl32f> &depth, const geom::Camera &cam,
+                        bool distToCamPlane = true,
+                        const core::Img<icl8u> *color = nullptr);
 
     // --- Copy ---
     PointCloud deepCopy() const;

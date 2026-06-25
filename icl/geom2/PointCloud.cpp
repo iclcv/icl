@@ -4,9 +4,67 @@
 
 #include <icl/geom2/PointCloud.h>
 #include <icl/utils/Exception.h>
+#include <icl/core/Img.h>
+#include <icl/geom/Camera.h>
+#include <icl/geom/ViewRay.h>
+#include <icl/utils/Array2D.h>
 #include <vector>
+#include <cmath>
 
 namespace icl::geom2 {
+
+  void PointCloud::unprojectDepth(const core::Img<icl32f> &depth,
+                                  const geom::Camera &cam, bool distToCamPlane,
+                                  const core::Img<icl8u> *color) {
+    const utils::Size s = depth.getSize();
+    const int W = s.width, H = s.height, dim = W * H;
+    if (!dim) return;
+    if (getDim() != dim) setSize(s);
+    if (!supports(XYZ)) addFeature(XYZ);
+    if (color && !supports(RGBA32f)) addFeature(RGBA32f);
+
+    // camera forward (unit), for Z-depth -> ray-length correction
+    Vec f = cam.getNorm();
+    const float fn = std::sqrt(f[0]*f[0] + f[1]*f[1] + f[2]*f[2]);
+    f[0] /= fn; f[1] /= fn; f[2] /= fn;
+
+    // one batched view-ray computation (not per-pixel getViewRay)
+    utils::Array2D<geom::ViewRay> rays = cam.getAllViewRays();
+    if (rays.getDim() != dim) return;
+
+    const bool haveColor = color && color->getDim() == dim && color->getChannels() >= 3;
+    const icl8u *R = haveColor ? color->getData(0) : nullptr;
+    const icl8u *G = haveColor ? color->getData(1) : nullptr;
+    const icl8u *B = haveColor ? color->getData(2) : nullptr;
+    const float *d = depth.getData(0);
+
+    lock();
+    core::DataSegment<float,3> xyz = selectXYZ();
+    core::DataSegment<float,4> rgba = supports(RGBA32f) ? selectRGBA32f()
+                                                        : core::DataSegment<float,4>();
+    for (int i = 0; i < dim; ++i) {
+      auto &p = xyz[i];
+      if (d[i] > 0.f) {
+        const Vec &o = rays[i].offset, &dir = rays[i].direction;
+        const float dn = std::sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]);
+        const float ux = dir[0]/dn, uy = dir[1]/dn, uz = dir[2]/dn;
+        float t = d[i];
+        if (distToCamPlane) {
+          const float cosA = ux*f[0] + uy*f[1] + uz*f[2];
+          t = d[i] / cosA;                          // Z-depth -> ray length
+        }
+        p[0] = o[0] + t*ux; p[1] = o[1] + t*uy; p[2] = o[2] + t*uz;
+        if (rgba.getDim())
+          rgba[i] = haveColor ? GeomColor(R[i], G[i], B[i], 255)
+                              : GeomColor(200, 200, 200, 255);
+      } else {
+        p[0] = p[1] = p[2] = 0;
+        if (rgba.getDim()) rgba[i] = GeomColor(0, 0, 0, 0);
+      }
+    }
+    unlock();
+  }
+
 
   struct PointCloud::Data {
     std::vector<Vec> positions;      // XYZH (4 floats, H=1)

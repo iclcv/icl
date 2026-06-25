@@ -49,10 +49,11 @@ if _build_apps
       'point-cloud-creator': [],
       'point-cloud-define-world-frame': [],
       'point-cloud-pipe': [],
-      'point-cloud-viewer': [],
+      # point-cloud-viewer + simple-point-cloud-viewer superseded by the geom2
+      # icl-point-cloud-viewer (icl/geom2/apps/point-cloud-viewer.cpp); sources
+      # kept for reference during the geom -> geom2 retirement.
       'rotate-image-3D': [],
       'show-extrinsic-calibration-grid': [],
-      'simple-point-cloud-viewer': [],
       'surf-based-object-tracking': [],
     }
     foreach name, extra_deps : _geom_qt_apps

@@ -74,4 +74,9 @@ if _build_apps and qt_found
     dependencies: [icl_geom2_dep],
     install: true,
   )
+  executable('icl-point-cloud-viewer',
+    files('../apps/point-cloud-viewer.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
 endif
