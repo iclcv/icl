@@ -79,4 +79,9 @@ if _build_apps and qt_found
     dependencies: [icl_geom2_dep],
     install: true,
   )
+  executable('icl-point-cloud-pipe',
+    files('../apps/point-cloud-pipe.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
 endif

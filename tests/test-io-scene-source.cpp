@@ -13,6 +13,7 @@
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/geom/PointCloudObject.h>
 #include <icl/geom2/PointCloud.h>
+#include <icl/geom2/PointCloudSource.h>
 #include <icl/core/Image.h>
 #include <sstream>
 #include <cmath>
@@ -98,6 +99,29 @@ ICL_REGISTER_TEST("io.scenesource.reconstruct_cloud", "depth + metadata camera -
     if (!std::isfinite(p[0])) continue;
     const float dist = std::sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
     if (dist < 550.f) ++realHits;
+  }
+  ICL_TEST_EQ(realHits > 1000, true);
+}
+
+// The shared helper used by icl-point-cloud-{viewer,pipe}: PointCloudSource
+// wraps the ImageSource, resolves the camera from metadata, and reconstructs.
+ICL_REGISTER_TEST("io.scenesource.pointcloudsource", "PointCloudSource grabs scene -> coloured cloud")
+{
+  geom2::PointCloudSource src;
+  src.init("scene", "@animate=off@format=rgbd");
+  geom2::PointCloud cloud;
+  const bool ok = src.grab(cloud);
+  ICL_TEST_EQ(ok, true);
+  ICL_TEST_EQ(src.hasCamera(), true);
+  ICL_TEST_EQ(cloud.getDim(), 640 * 480);
+  ICL_TEST_EQ(cloud.supports(geom2::PointCloud::RGBA32f), true);   // rgbd -> colour
+
+  auto xyz = cloud.selectXYZ();
+  int realHits = 0;
+  for (int i = 0; i < cloud.getDim(); ++i) {
+    auto &p = xyz[i];
+    const float d = std::sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+    if (std::isfinite(d) && d > 1.f && d < 550.f) ++realHits;
   }
   ICL_TEST_EQ(realHits > 1000, true);
 }

@@ -13,39 +13,29 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/io/source/ImageSource.h>
 #include <icl/geom2/Scene2.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/PointCloud.h>
 #include <icl/geom2/PointCloudNode.h>
+#include <icl/geom2/PointCloudSource.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom/Camera.h>
-#include <icl/core/Img.h>
-#include <sstream>
-#include <algorithm>
 
 using namespace icl::geom2;
 using namespace icl::geom;
 using namespace icl::utils;
 using namespace icl::qt;
-using icl::io::ImageSource;
-using icl::core::Img8u;
-using icl::core::Img32f;
 
 GUI gui;
 Scene2 scene;
-ImageSource grabber;
+PointCloudSource src;
 std::shared_ptr<PointCloud> cloud;
 std::shared_ptr<PointCloudNode> cloudNode;
-
-Camera depthCam;
-bool fixedCam = false;   // camera came from -c (does not change)
-bool haveCam  = false;
 bool viewInit = false;
 
 void init() {
-  grabber.init(pa("-i"));
-  if (pa("-c")) { depthCam = Camera(*pa("-c")); fixedCam = haveCam = true; }
+  src.init(pa("-i"));
+  if (pa("-c")) src.setCamera(Camera(*pa("-c")));
 
   // interactive view camera (starts at the sensor pose once the first frame's
   // camera is known); the depth camera is used only for unprojection.
@@ -75,48 +65,17 @@ void init() {
 }
 
 void run() {
-  Image img = grabber.grab();
-
-  // resolve the depth camera (fixed from -c, else from per-frame metadata)
-  if (!fixedCam && img.ptr()->hasMetaData()) {
-    std::istringstream is(img.ptr()->getMetaData());
-    is >> depthCam;
-    haveCam = true;
-  }
-  if (!haveCam) {
+  src.setDistToCamPlane(ComboHandle(gui["mode"]).getSelectedIndex() == 0);
+  if (!src.grab(*cloud)) {
     static bool warned = false;
-    if (!warned) { warned = true;
+    if (!warned && !src.hasCamera()) { warned = true;
       ERROR_LOG("no depth camera: use -c <camera.xml> or a source that puts a camera in image metadata"); }
-    Thread::msleep(100);
+    Thread::msleep(50);
     return;
   }
-
-  // pull a float depth image (+ optional colour) out of the frame
-  static Img32f depthBuf;
-  static Img8u  colorBuf;
-  const Img8u *colorPtr = nullptr;
-  if (img.getDepth() != depth32f) { Thread::msleep(50); return; }
-  const Img32f &src = img.as<icl::icl32f>();
-
-  if (img.getChannels() == 1) {
-    depthBuf = src;                                   // depth-only stream
-  } else if (img.getChannels() >= 4) {                // packed R,G,B,depth
-    const int dim = src.getDim();
-    depthBuf.setSize(src.getSize()); depthBuf.setChannels(1);
-    std::copy(src.getData(3), src.getData(3) + dim, depthBuf.getData(0));
-    colorBuf = Img8u(src.getSize(), formatRGB);
-    for (int c = 0; c < 3; ++c) {
-      const float *s = src.getData(c); icl8u *d = colorBuf.getData(c);
-      for (int i = 0; i < dim; ++i) d[i] = (icl8u)std::clamp(s[i], 0.f, 255.f);
-    }
-    colorPtr = &colorBuf;
-  } else { Thread::msleep(50); return; }
-
-  const bool plane = ComboHandle(gui["mode"]).getSelectedIndex() == 0;
-  cloud->unprojectDepth(depthBuf, depthCam, plane, colorPtr);
   cloudNode->setPointSize(gui["ps"]);
 
-  if (!viewInit) { scene.getCamera(0) = depthCam; viewInit = true; }  // start at sensor view
+  if (!viewInit) { scene.getCamera(0) = src.getCamera(); viewInit = true; }  // start at sensor view
 
   gui["draw"].render();
   gui["fps"].render();

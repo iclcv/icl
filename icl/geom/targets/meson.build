@@ -48,10 +48,10 @@ if _build_apps
       'kinect-recorder': [],
       'point-cloud-creator': [],
       'point-cloud-define-world-frame': [],
-      'point-cloud-pipe': [],
-      # point-cloud-viewer + simple-point-cloud-viewer superseded by the geom2
-      # icl-point-cloud-viewer (icl/geom2/apps/point-cloud-viewer.cpp); sources
-      # kept for reference during the geom -> geom2 retirement.
+      # point-cloud-pipe + point-cloud-viewer + simple-point-cloud-viewer
+      # superseded by the geom2 icl-point-cloud-{pipe,viewer}
+      # (icl/geom2/apps/); sources kept for reference during the geom -> geom2
+      # retirement.
       'rotate-image-3D': [],
       'show-extrinsic-calibration-grid': [],
       'surf-based-object-tracking': [],
