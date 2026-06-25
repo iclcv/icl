@@ -114,4 +114,14 @@ if _build_apps and qt_found
     dependencies: [icl_geom2_dep],
     install: true,
   )
+  executable('icl-rotate-image-3D',
+    files('../apps/rotate-image-3D.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
+  executable('icl-depth-camera-simulator',
+    files('../apps/depth-camera-simulator.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
 endif

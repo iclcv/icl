@@ -2,30 +2,43 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
+// geom2 port of the legacy geom/depth-camera-simulator app: render a synthetic
+// scene through a depth camera and stream out color + metric depth images
+// (optionally also through a rigidly-coupled color camera). Uses geom2's
+// offscreen Scene2::renderToImage (CPU/GL color + depth).
+
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom/Geom.h>
+#include <icl/geom2/Scene2.h>
+#include <icl/geom2/GroupNode.h>
+#include <icl/geom2/MeshNode.h>
+#include <icl/geom2/CuboidNode.h>
+#include <icl/geom2/LightNode.h>
+#include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom/Material.h>
+#include <icl/geom/Camera.h>
 #include <icl/io/sink/ImageSink.h>
-Scene scene;
+
+using namespace icl::geom2;
+using namespace icl::geom;
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::qt;
+
+Scene2 scene;
 HSplit gui;
 GUI prevGUI = HBox();
 
 ImageSink colorOut, depthOut;
-SceneObject *obj = 0;
+NodePtr obj;
 
 std::shared_ptr<Mat> relTM;
 Camera initDepthCam;
 
 void init(){
   bool cOut = pa("-c"), dOut = pa("-d");
-
-  if(cOut){
-    colorOut.init(pa("-c"));
-  }
-  if(dOut){
-    depthOut.init(pa("-d"));
-  }
+  if(cOut) colorOut.init(pa("-c"));
+  if(dOut) depthOut.init(pa("-d"));
 
   if(cOut || dOut){
     prevGUI << Display({.handle="color"}).hideIf(!cOut)
@@ -34,20 +47,17 @@ void init(){
   }
 
   gui << Canvas3D({.handle="draw"})
-      << ( VBox({.minSize={10, 2}})
+      << ( VBox({.minSize={10, 2}, .maxSize={14, 99}})
            << FSlider(-10, 10, 0, {.handle="x", .label="translate x"})
            << FSlider(-10, 10, 0, {.handle="y", .label="translate y"})
            << FSlider(1.5, 10, 0, {.handle="z", .label="translate z"})
-
            << FSlider(-4, 4, 0, {.handle="rx", .label="rotate x"})
            << FSlider(-4, 4, 0, {.handle="ry", .label="rotate y"})
            << FSlider(-4, 4, 0, {.handle="rz", .label="rotate z"})
-
            << Button("show",{.toggledText="hide",.label="preview",.handle="preview"}).hideIf(!(cOut||dOut))
            << Button("reset view", {.handle="resetView"})
          )
       << Show();
-
 
   if(cOut || dOut){
     gui["preview"].registerCallback([]{ prevGUI.switchVisibility(); });
@@ -67,77 +77,80 @@ void init(){
     scene.addCamera(*pa("-ccam"));
     Mat D=scene.getCamera(0).getCSTransformationMatrix();
     Mat C=scene.getCamera(1).getCSTransformationMatrix();
-
     relTM.reset(new Mat( C * D.inv() ));
   }
 
-  SceneObject* ground = SceneObject::cuboid(0,0,0,200,200,3);
+  auto ground = CuboidNode::create(0,0,0,200,200,3);
   ground->setMaterial(Material::fromColor(GeomColor(100,100,100,255)));
+  scene.addNode(ground);
 
-  scene.addObject(ground);
   if(pa("-object")){
-    scene.addObject( (obj = new SceneObject(*pa("-object"))) );
+    auto g = std::make_shared<GroupNode>();
+    for(auto &m : MeshNode::load(*pa("-object"))){
+      m->setMaterial(Material::fromColor(GeomColor(0,100,255,255)));
+      m->setPrimitiveVisible(PrimLine | PrimVertex, false);
+      g->addChild(m);
+    }
+    obj = g;
   }else{
-    scene.addObject( (obj = SceneObject::cube(0,0,3, 3) ) );
+    auto cube = CuboidNode::createCube(0,0,3, 3);
+    cube->setMaterial(Material::fromColor(GeomColor(0,100,255,255)));
+    cube->setPrimitiveVisible(PrimLine | PrimVertex, false);
+    obj = cube;
   }
-  obj->setMaterial(Material::fromColor(GeomColor(0,100,255,255)));
-  obj->setVisible(Primitive::line | Primitive::vertex, false);
+  scene.addNode(obj);
 
-  gui["draw"].link(scene.getGLCallback(0));
+  auto light = std::make_shared<LightNode>(LightNode::Point);
+  light->setIntensity(1.2f);
+  light->translate(50, -50, 120);
+  scene.addLight(light);
+  scene.setBounds(200);
+
+  gui["draw"].link(scene.getGLCallback(0).get());
   gui["draw"].install(scene.getMouseHandler(0));
 
-  scene.setDrawCamerasEnabled(false);
-
+  // a second camera for the interactive view
   scene.addCamera(scene.getCamera(0));
-
 }
 
 void run() {
   static FPSLimiter *fpslimit = pa("-m") ? new FPSLimiter(pa("-m").as<float>()) : 0;
   static ButtonHandle resetView = gui["resetView"];
-  if(resetView.wasTriggered()){
-    scene.getCamera(0) = initDepthCam;
-  }
+  if(resetView.wasTriggered()) scene.getCamera(0) = initDepthCam;
+
   bool cOut = pa("-c"), dOut = pa("-d");
 
   obj->removeTransformation();
   obj->rotate(gui["rx"],gui["ry"],gui["rz"]);
-  obj->translate(Vec(gui["x"],gui["y"],gui["z"],1));
+  obj->translate(gui["x"],gui["y"],gui["z"]);
 
-  static Img32f depthImage;
   if(cOut || dOut){
-    static Scene::DepthBufferMode dbm = ( pa("-depth-map-dist-to-cam-center") ?
-                                          Scene::DistToCamCenter :
-                                          Scene::DistToCamPlane );
-    const Img8u colorImage = scene.render(0,0,dOut ? &depthImage : 0, dbm);
+    static BVH::DepthMode dbm = ( pa("-depth-map-dist-to-cam-center") ?
+                                  BVH::DistToCamCenter : BVH::DistToCamPlane );
+    BVH::ImageResult r = scene.renderToImage(0, dbm);
 
     if(relTM){
       Camera &d = scene.getCamera(0);
       Camera &c = scene.getCamera(1);
-
       c.setTransformation( *relTM * d.getCSTransformationMatrix() );
-
-      const Img8u colorImage2 = scene.render(1);
-      if(cOut) colorOut.send(colorImage2);
+      Img8u colorImage2 = scene.renderToImage(1, BVH::NoDepth).image;
+      if(cOut) colorOut.send(Image(colorImage2));
       if(prevGUI.isVisible()){
-        if(cOut) prevGUI["color"] = colorImage2;
-        if(dOut) prevGUI["depth"] = depthImage;
+        if(cOut) prevGUI["color"] = Image(colorImage2);
+        if(dOut) prevGUI["depth"] = Image(r.depth);
       }
     }else{
-      if(cOut) colorOut.send(colorImage);
+      if(cOut) colorOut.send(Image(r.image));
       if(prevGUI.isVisible()){
-        if(cOut) prevGUI["color"] = colorImage;
-        if(dOut) prevGUI["depth"] = depthImage;
+        if(cOut) prevGUI["color"] = Image(r.image);
+        if(dOut) prevGUI["depth"] = Image(r.depth);
       }
     }
-    if(dOut) depthOut.send(depthImage);
-
+    if(dOut) depthOut.send(Image(r.depth));
   }
   gui["draw"].render();
-
   if(fpslimit) fpslimit->wait();
 }
-
 
 int main(int n, char **v){
   pa_explain
@@ -148,10 +161,8 @@ int main(int n, char **v){
    "rendering color images if no color camera was given explicitly using -ccam)")
   ("-ccam","optionally given color camera (when the depth camera\n"
    "is moved using mouse input, the color camera will\n"
-   "be move in order to make the relative transformations\n"
-   "stay the same")
-  ("-depth-map-dist-to-cam-center","this can be set in order to change the\n"
-   "interpretation of the depth image values");
+   "be moved in order to make the relative transformations stay the same")
+  ("-depth-map-dist-to-cam-center","change the interpretation of the depth image values");
 
   return ICLApp(n,v,"-depth-out|-d(2) -color-out|-c(2) "
 		"-object|-o(obj-filename) -camera|-cam(camerafile) "

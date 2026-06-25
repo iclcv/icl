@@ -38,7 +38,6 @@ if _build_apps
   if qt_found
     _geom_qt_apps = {
       'compute-relative-camera-transform': [],
-      'depth-camera-simulator': [],
       'fix-kinect-calibration': [],
       'kinect-recorder': [],
       'point-cloud-creator': [],
@@ -47,7 +46,6 @@ if _build_apps
       # superseded by the geom2 icl-point-cloud-{pipe,viewer}
       # (icl/geom2/apps/); sources kept for reference during the geom -> geom2
       # retirement.
-      'rotate-image-3D': [],
       'show-extrinsic-calibration-grid': [],
     }
     foreach name, extra_deps : _geom_qt_apps
