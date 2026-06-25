@@ -3,7 +3,6 @@
 # ---- Demos (all need Qt) ----
 if _build_demos and qt_found
   _geom_demos = {
-    'animated-grid': [],
     'kinect-depth-image-segmentation': [],
     'kinect-euclidean-blob-segmentation': [],
     'kinect-normals': [],
@@ -39,7 +38,6 @@ if _build_apps
       'compute-relative-camera-transform': [],
       'fix-kinect-calibration': [],
       'kinect-recorder': [],
-      'point-cloud-creator': [],
       'point-cloud-define-world-frame': [],
       # point-cloud-pipe + point-cloud-viewer + simple-point-cloud-viewer
       # superseded by the geom2 icl-point-cloud-{pipe,viewer}

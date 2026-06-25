@@ -134,4 +134,9 @@ if _build_apps and qt_found
     dependencies: [icl_geom2_dep],
     install: true,
   )
+  executable('icl-point-cloud-creator',
+    files('../apps/point-cloud-creator.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
 endif
