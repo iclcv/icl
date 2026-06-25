@@ -41,33 +41,41 @@ std::shared_ptr<PointCloud> cloud;
 std::shared_ptr<PointCloudNode> cloudNode;
 bool hasOutput = false, viewInit = false;
 
-// Opt-in depth-range filter: drop points (and zero the output depth) outside
-// [near, far]. The cloud is organized, so pixel index == point index.
-void applyDepthFilter(float dmin, float dmax, Image *out) {
+// Image-space depth-range filter: invalidate cloud points whose sensor depth
+// is outside [near, far]. (Box/sphere filters live on PointCloud directly.)
+void filterCloudByDepthRange(float dmin, float dmax) {
   const Image &f = src.getLastFrame();
   const Img32f &fi = f.as<icl::icl32f>();
   const int dim = fi.getDim();
   const float *d = (f.getChannels() == 1) ? fi.getData(0) : fi.getData(3);
-
-  float *od = nullptr;
-  if (out) {
-    *out = Image(f.ptr()->deepCopy());
-    Img32f &of = out->as<icl::icl32f>();
-    od = (out->getChannels() == 1) ? of.getData(0) : of.getData(3);
-  }
-
   cloud->lock();
   auto xyz = cloud->selectXYZ();
   auto rgba = cloud->supports(PointCloud::RGBA32f) ? cloud->selectRGBA32f()
                                                    : icl::core::DataSegment<float,4>();
   for (int i = 0; i < dim; ++i) {
-    if (d[i] < dmin || d[i] > dmax) {
+    if (d[i] > 0.f && (d[i] < dmin || d[i] > dmax)) {
       auto &p = xyz[i]; p[0] = p[1] = p[2] = 0;
       if (rgba.getDim()) rgba[i] = GeomColor(0, 0, 0, 0);
-      if (od) od[i] = 0;
     }
   }
   cloud->unlock();
+}
+
+// Build the output frame: a deep copy of the last frame with the depth zeroed
+// at every pixel whose (organized) cloud point was invalidated by a filter.
+Image filteredFrame() {
+  Image out(src.getLastFrame().ptr()->deepCopy());
+  Img32f &of = out.as<icl::icl32f>();
+  float *od = (out.getChannels() == 1) ? of.getData(0) : of.getData(3);
+  cloud->lock();
+  auto xyz = cloud->selectXYZ();
+  const int dim = cloud->getDim();
+  for (int i = 0; i < dim; ++i) {
+    auto &p = xyz[i];
+    if (p[0] == 0 && p[1] == 0 && p[2] == 0) od[i] = 0;
+  }
+  cloud->unlock();
+  return out;
 }
 
 void init() {
@@ -90,9 +98,14 @@ void init() {
       << Canvas3D(Size(800, 600), {.handle="draw", .minSize={32, 24}})
       << (VBox({.minSize={12, 1}, .maxSize={12, 100}})
           << FSlider(0.5, 6, 2, {.handle="ps", .label="point size"})
-          << CheckBox("depth filter", {.checked=false, .handle="filter"})
+          << Combo("off,depth range,box,sphere", {.handle="filter", .label="filter"})
+          << CheckBox("keep inside", {.checked=true, .handle="keep"})
           << FSlider(0, 5000, 200,  {.handle="dmin", .label="near (mm)"})
           << FSlider(0, 5000, 2000, {.handle="dmax", .label="far (mm)"})
+          << FSlider(-2000, 2000, 0,  {.handle="cx", .label="center x"})
+          << FSlider(-2000, 2000, 0,  {.handle="cy", .label="center y"})
+          << FSlider(-2000, 2000, 0,  {.handle="cz", .label="center z"})
+          << FSlider(20, 3000, 500, {.handle="size", .label="size / radius (mm)"})
           << Fps({.handle="fps", .label="fps"})))
       << Show();
 
@@ -103,11 +116,16 @@ void init() {
 void run() {
   if (!src.grab(*cloud)) { Thread::msleep(50); return; }
 
-  Image outFrame = src.getLastFrame();   // shallow; replaced by a filtered copy below
-  if ((bool)gui["filter"])
-    applyDepthFilter(gui["dmin"], gui["dmax"], hasOutput ? &outFrame : nullptr);
+  const int mode = ComboHandle(gui["filter"]).getSelectedIndex();
+  const bool keep = gui["keep"];
+  const Vec center(gui["cx"], gui["cy"], gui["cz"], 1);
+  const float size = gui["size"];
+  if      (mode == 1) filterCloudByDepthRange(gui["dmin"], gui["dmax"]);
+  else if (mode == 2) cloud->filterBox(center, Vec(size, size, size, 0), keep);
+  else if (mode == 3) cloud->filterSphere(center, size, keep);
 
-  if (hasOutput) output.send(outFrame);
+  if (hasOutput)
+    output.send(mode == 0 ? src.getLastFrame() : filteredFrame());
 
   cloudNode->setPointSize(gui["ps"]);
   if (!viewInit && src.hasCamera()) { scene.getCamera(0) = src.getCamera(); viewInit = true; }

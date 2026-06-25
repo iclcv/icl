@@ -65,6 +65,43 @@ namespace icl::geom2 {
     unlock();
   }
 
+  // --- internal: invalidate points for which the predicate marks "remove" ---
+  template<class Pred>
+  static void filterCloud(PointCloud &pc, bool keepInside, Pred inside) {
+    if (!pc.supports(PointCloud::XYZ)) return;
+    const int dim = pc.getDim();
+    pc.lock();
+    core::DataSegment<float,3> xyz = pc.selectXYZ();
+    core::DataSegment<float,4> rgba = pc.supports(PointCloud::RGBA32f)
+        ? pc.selectRGBA32f() : core::DataSegment<float,4>();
+    for (int i = 0; i < dim; ++i) {
+      float *p = &xyz[i][0];
+      if (p[0] == 0 && p[1] == 0 && p[2] == 0) continue;   // already invalid
+      const bool remove = keepInside ? !inside(p) : inside(p);
+      if (remove) {
+        p[0] = p[1] = p[2] = 0;
+        if (rgba.getDim()) rgba[i] = GeomColor(0, 0, 0, 0);
+      }
+    }
+    pc.unlock();
+  }
+
+  void PointCloud::filterBox(const Vec &c, const Vec &h, bool keepInside) {
+    filterCloud(*this, keepInside, [&](const float *p) {
+      return std::fabs(p[0]-c[0]) <= h[0] &&
+             std::fabs(p[1]-c[1]) <= h[1] &&
+             std::fabs(p[2]-c[2]) <= h[2];
+    });
+  }
+
+  void PointCloud::filterSphere(const Vec &c, float radius, bool keepInside) {
+    const float r2 = radius * radius;
+    filterCloud(*this, keepInside, [&](const float *p) {
+      const float dx = p[0]-c[0], dy = p[1]-c[1], dz = p[2]-c[2];
+      return dx*dx + dy*dy + dz*dz <= r2;
+    });
+  }
+
 
   struct PointCloud::Data {
     std::vector<Vec> positions;      // XYZH (4 floats, H=1)

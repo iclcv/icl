@@ -117,6 +117,16 @@ namespace icl::geom2 {
                         bool distToCamPlane = true,
                         const core::Img<icl8u> *color = nullptr);
 
+    // --- Geometric filtering (keep / remove by a primitive) ---
+    /// Remove points using an axis-aligned box centred at \a center with the
+    /// given half-extents. keepInside=true drops points OUTSIDE the box;
+    /// keepInside=false drops points INSIDE it. Removed points become the
+    /// origin with zero alpha; already-invalid (origin) points are left alone.
+    void filterBox(const Vec &center, const Vec &halfSize, bool keepInside = true);
+
+    /// Remove points using a sphere (keepInside as in filterBox).
+    void filterSphere(const Vec &center, float radius, bool keepInside = true);
+
     // --- Copy ---
     PointCloud deepCopy() const;
 

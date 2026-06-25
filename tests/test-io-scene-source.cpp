@@ -126,6 +126,39 @@ ICL_REGISTER_TEST("io.scenesource.pointcloudsource", "PointCloudSource grabs sce
   ICL_TEST_EQ(realHits > 1000, true);
 }
 
+// Geometric keep/remove filters on the reconstructed cloud.
+ICL_REGISTER_TEST("io.scenesource.geom2_filters", "PointCloud::filterSphere/filterBox keep/remove points")
+{
+  geom2::PointCloudSource src;
+  src.init("scene", "@animate=off");
+
+  auto countValid = [](geom2::PointCloud &c) {
+    auto xyz = c.selectXYZ();
+    int n = 0;
+    for (int i = 0; i < c.getDim(); ++i) {
+      auto &p = xyz[i];
+      if (p[0] != 0 || p[1] != 0 || p[2] != 0) ++n;
+    }
+    return n;
+  };
+
+  // keep only a sphere around the content -> fewer (but some) valid points
+  geom2::PointCloud a;
+  src.grab(a);
+  const int before = countValid(a);
+  a.filterSphere(geom2::Vec(0, 0, 50, 1), 200.f, /*keepInside=*/true);
+  const int afterSphere = countValid(a);
+  ICL_TEST_EQ(before > 0, true);
+  ICL_TEST_EQ(afterSphere > 0 && afterSphere < before, true);
+
+  // remove the inside of a box -> also fewer valid points
+  geom2::PointCloud b;
+  src.grab(b);
+  b.filterBox(geom2::Vec(0, 0, 50, 1), geom2::Vec(120, 120, 120, 0), /*keepInside=*/false);
+  const int afterBox = countValid(b);
+  ICL_TEST_EQ(afterBox > 0 && afterBox < before, true);
+}
+
 // The geom2-native consumer path: PointCloud::unprojectDepth (what
 // icl-point-cloud-viewer uses) reconstructs a cloud from depth + camera.
 ICL_REGISTER_TEST("io.scenesource.geom2_unproject", "geom2 PointCloud::unprojectDepth reconstructs the scene")
