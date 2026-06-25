@@ -9,7 +9,6 @@ if _build_demos and qt_found
     'kinect-normals': [],
     'kinect-pointcloud': [],
     'kinect-segmentation': [],
-    'offscreen-rendering': [],
     'plot-widget-3D': [],
     # 'ray-cast-octree': [],  # replaced by geom2/raycast-octree-demo
     'rgbd-mapping': [],
