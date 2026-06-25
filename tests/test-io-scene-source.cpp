@@ -14,6 +14,7 @@
 #include <icl/geom/PointCloudObject.h>
 #include <icl/geom2/PointCloud.h>
 #include <icl/geom2/PointCloudSource.h>
+#include <icl/io/compress/ImageCompressor.h>
 #include <icl/core/Image.h>
 #include <sstream>
 #include <cmath>
@@ -115,6 +116,43 @@ ICL_REGISTER_TEST("io.scenesource.pointcloudsource", "PointCloudSource grabs sce
   ICL_TEST_EQ(src.hasCamera(), true);
   ICL_TEST_EQ(cloud.getDim(), 640 * 480);
   ICL_TEST_EQ(cloud.supports(geom2::PointCloud::RGBA32f), true);   // rgbd -> colour
+
+  auto xyz = cloud.selectXYZ();
+  int realHits = 0;
+  for (int i = 0; i < cloud.getDim(); ++i) {
+    auto &p = xyz[i];
+    const float d = std::sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+    if (std::isfinite(d) && d > 1.f && d < 550.f) ++realHits;
+  }
+  ICL_TEST_EQ(realHits > 1000, true);
+}
+
+// The depth + camera survive the exact wire format the WS transport uses, so
+// `pipe -o ws ... | viewer -i ws ...` reconstructs correctly on the far side.
+ICL_REGISTER_TEST("io.scenesource.transport_roundtrip", "depth + camera survive the compressor wire format")
+{
+  ImageSource src("scene", "@animate=off");
+  Image frame = src.grab();
+  const std::string camMeta = frame.ptr()->getMetaData();
+  ICL_TEST_EQ(camMeta.empty(), false);
+
+  // The default codec is "raw" (lossless, any depth/channels); skipMetaData=false
+  // packs the camera into the envelope — exactly what WSSink/WSSource do.
+  io::ImageCompressor comp;
+  auto packed = comp.compress(frame, /*skipMetaData=*/false);
+  Image back = comp.uncompress(packed.bytes, packed.len);
+
+  ICL_TEST_EQ(back.getSize() == frame.getSize(), true);
+  ICL_TEST_EQ(back.getChannels(), frame.getChannels());
+  ICL_TEST_EQ((int)back.getDepth(), (int)frame.getDepth());
+  ICL_TEST_EQ(back.ptr()->getMetaData() == camMeta, true);   // camera survived
+
+  // the recovered camera unprojects the recovered depth into a cloud
+  std::istringstream is(back.ptr()->getMetaData());
+  Camera cam; is >> cam;
+  geom2::PointCloud cloud;
+  cloud.unprojectDepth(back.as<icl32f>(), cam, true);
+  ICL_TEST_EQ(cloud.getDim(), 640 * 480);
 
   auto xyz = cloud.selectXYZ();
   int realHits = 0;
