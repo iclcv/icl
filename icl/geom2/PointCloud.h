@@ -117,6 +117,19 @@ namespace icl::geom2 {
                         bool distToCamPlane = true,
                         const core::Img<icl8u> *color = nullptr);
 
+    /// Colour an already-reconstructed XYZ cloud from a *different* camera.
+    /** The cross-camera registration step (the geom2 replacement for the legacy
+        PointCloudCreator::mapImage): for each valid world point, project it into
+        \a colorCam and sample \a color at that pixel. Points behind the colour
+        camera or projecting outside its image are marked invalid (zero alpha).
+
+        Use after unprojectDepth(depth, depthCam) when colour comes from a camera
+        at a different pose than the depth camera (e.g. a stereo RGB-D rig) — i.e.
+        whenever the colour is NOT already aligned to the depth pixels. Adds the
+        RGBA32f feature if absent. Thread-safe (locks the cloud). */
+    void mapColorFromCamera(const core::Img<icl8u> &color,
+                            const geom::Camera &colorCam);
+
     // --- Geometric filtering (keep / remove by a primitive) ---
     /// Remove points using an axis-aligned box centred at \a center with the
     /// given half-extents. keepInside=true drops points OUTSIDE the box;

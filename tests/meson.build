@@ -28,6 +28,7 @@ if qt_dep.found()
     'test-geom2-driver.cpp',
     'test-geom2-default-scene.cpp',
     'test-geom2-scene-capture.cpp',
+    'test-geom2-pointcloud-mapcolor.cpp',
     'test-io-scene-source.cpp',
     'test-gui-definition.cpp',
   )

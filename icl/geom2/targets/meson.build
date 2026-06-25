@@ -129,4 +129,9 @@ if _build_apps and qt_found
     dependencies: [icl_geom2_dep],
     install: true,
   )
+  executable('icl-stereo-rgbd-simulator',
+    files('../apps/stereo-rgbd-simulator.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
 endif

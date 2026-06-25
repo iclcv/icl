@@ -65,6 +65,41 @@ namespace icl::geom2 {
     unlock();
   }
 
+  void PointCloud::mapColorFromCamera(const core::Img<icl8u> &color,
+                                      const geom::Camera &colorCam) {
+    const int dim = getDim();
+    if (!dim || !supports(XYZ) || color.getChannels() < 3) return;
+    if (!supports(RGBA32f)) addFeature(RGBA32f);
+
+    const int CW = color.getWidth(), CH = color.getHeight();
+    const icl8u *R = color.getData(0), *G = color.getData(1), *B = color.getData(2);
+    const Vec c = colorCam.getPosition();
+    const Vec n = colorCam.getNorm();   // view direction (sign suffices)
+
+    lock();
+    core::DataSegment<float,3> xyz = selectXYZ();
+    core::DataSegment<float,4> rgba = selectRGBA32f();
+    for (int i = 0; i < dim; ++i) {
+      const auto &p = xyz[i];
+      const bool valid = !(p[0] == 0.f && p[1] == 0.f && p[2] == 0.f);
+      if (valid) {
+        // only points in front of the colour camera can be seen by it
+        const float fz = (p[0]-c[0])*n[0] + (p[1]-c[1])*n[1] + (p[2]-c[2])*n[2];
+        if (fz > 0) {
+          const utils::Point32f q = colorCam.project(Vec(p[0], p[1], p[2], 1));
+          const int u = (int)std::lround(q.x), v = (int)std::lround(q.y);
+          if (u >= 0 && u < CW && v >= 0 && v < CH) {
+            const int idx = u + v * CW;
+            rgba[i] = GeomColor(R[idx], G[idx], B[idx], 255);
+            continue;
+          }
+        }
+      }
+      rgba[i] = GeomColor(0, 0, 0, 0);   // unmapped → invisible
+    }
+    unlock();
+  }
+
   // --- internal: invalidate points for which the predicate marks "remove" ---
   template<class Pred>
   static void filterCloud(PointCloud &pc, bool keepInside, Pred inside) {
