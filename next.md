@@ -4,11 +4,44 @@
 
 ## Next Step
 
-**⏸️ BREAK POINT (end of Session 79).** On `further-restructuring-and-cleanup`, build +
-**956/956** green throughout. This session built the **scene→RGBD→point-cloud pipeline**
-(the "scene-depth sim source" that was the open decision at the start of S79) end to end,
-plus the geom2 rendering pieces under it. User confirmed the apps/demos look great on a real
-display; the data path is headless-tested.
+**⏸️ BREAK POINT (end of Session 80).** On `further-restructuring-and-cleanup`, build +
+**956/956** green throughout. This session pushed the **geom→geom2 retirement** hard: ported
+all the low/medium-risk keepers and resolved the open dispositions. Build- + headless-checked
+only (no GL here — real-display pass still owed).
+
+**Landed this session (14 commits):**
+- **Demos →geom2:** generic-texture-coords, texture-cube, scene-shadows, scene-graph,
+  superquadric, offscreen-rendering. **Apps →geom2:** surf-based-object-tracking,
+  rotate-image-3D, depth-camera-simulator. **Markers →geom2:** marker-detection,
+  multi-cam-marker-demo (geom2 dep added per-target, not lib-wide).
+- **New node:** `SuperquadricNode` (signed-power surface; rotation via node transform).
+- **Patterns proven:** native textured `MeshNode` (per-face UVs + live `setBaseColorMap`);
+  `LightNode` shadows; lights anchored as children of a moving node (renderer light
+  traversal finds them); orbit/spin **Drivers**; shift-click picking → `TextNode` indicator;
+  offscreen `Scene2::renderToImage` for color+depth (rotate-image-3D / depth-camera-simulator
+  / offscreen-rendering).
+- **Decisions:** animated-grid **DELETED** (custom GLSL, no geom2 hook); plot-widget-3D →
+  **reimplement** geom2 `PlotWidget3D` (deferred, big); depth batch → assess per-app (deferred).
+
+**Three large items remain before `geom` can be deleted** (all in `backlog.md`):
+1. **camera-calibration + planar** (markers) — SEPARATE multi-session rework. NOT a mechanical
+   `fromSceneObject` swap: converter skips `addTextTexture` labels, `CameraCalibrationUtils`
+   mutates SceneObjects at runtime via `geom::Scene&`, planar's grid handler edits live.
+2. **plot-widget-3D** — reimplement geom2 `PlotWidget3D` (~500-1000 LOC; Plot3D/PlotHandle3D
+   are Qt widgets on `geom::Scene`).
+3. **depth batch** — point-cloud-creator, point-cloud-define-world-frame, kinect ×5,
+   rgbd-mapping. Hardware-untestable AND gated on geom2-native capabilities: decouple
+   `PointCloudCreator`/`DepthCameraPointCloudGrabber` from the deleted `PointCloudObjectBase`
+   so they fill `geom2::PointCloud`; geom2 `RayCastOctree` fill-from-`PointCloud`; cross-camera
+   color-mapping. (`PointCloudSource`/`unprojectDepth` already cover depth→cloud.)
+   Also prune dead unbuilt legacy sources in geom/apps (pipe/viewer/simple/tests).
+   **Hardware-free test bed (user's plan):** a **stereo virtual-camera RGBD simulator** —
+   render one geom2 scene through two cameras with a small horizontal **baseline offset**
+   (depth from cam0, color from cam1), so a real color→depth mapping is needed. Extends the
+   just-ported `icl-depth-camera-simulator` (already has `-cam`/`-ccam` + `relTM` + dual
+   `renderToImage`); this is what makes the whole depth/color-mapping path testable here.
+
+(Earlier S80-era pipeline work — scene→RGBD→point-cloud — is below; unchanged.)
 
 ### Resume at: geom→geom2 retirement (active)
 **Endgame:** port every keeper geom→geom2, then **delete `geom`**, then **rename geom2 →
