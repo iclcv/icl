@@ -57,6 +57,16 @@ if _build_demos and qt_found
     dependencies: [icl_geom2_dep],
     install: false,
   )
+  executable('scene-shadows-demo',
+    files('../demos/scene-shadows.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
+  executable('scene-graph-demo',
+    files('../demos/scene-graph.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
   if cycles_found
     executable('geom2-cycles-renderer-test-demo',
       files('../demos/cycles-renderer-test.cpp'),

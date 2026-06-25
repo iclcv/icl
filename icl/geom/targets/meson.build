@@ -13,8 +13,6 @@ if _build_demos and qt_found
     'plot-widget-3D': [],
     # 'ray-cast-octree': [],  # replaced by geom2/raycast-octree-demo
     'rgbd-mapping': [],
-    'scene-graph': [],
-    'scene-shadows': [],
     'simplex-2D': [],
     'superquadric': [],
   }
