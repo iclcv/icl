@@ -31,8 +31,11 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
     cameras with a horizontal baseline (depth cam0 + offset color cam1), headless `BVHSceneCapture`,
     reconstructs the coloured cloud via `unprojectDepth` + `mapColorFromCamera`. Headless tests
     (test-geom2-pointcloud-mapcolor): zero-baseline == aligned; baseline leaves points unmapped.
-  - [ ] **still gated:** kinect/creator apps need `PointCloudCreator`/`DepthCameraPointCloudGrabber`
-    decoupled from `PointCloudObjectBase` (or reframed on `PointCloudSource` + `mapColorFromCamera`);
+  - [x] **point-cloud-creator** ported onto `unprojectDepth` + `mapColorFromCamera` (geom2/apps;
+    optional RGBD-out with camera metadata for the viewer/pipe). Legacy geom app retired.
+  - [ ] **still gated:** kinect ×5 + rgbd-mapping need `DepthCameraPointCloudGrabber` reframed on
+    `PointCloudSource` + `mapColorFromCamera` (off `PointCloudObjectBase`); segmenters keep their
+    CV core (`Segmentation3D`/`ConfigurableDepthImageSegmenter`), only viz → geom2.
     `point-cloud-define-world-frame` also needs geom2 `RayCastOctree` fill-from-`PointCloud`.
 - [ ] **DECISION**: animated-grid (custom GLSL shader hook vs simplify vs delete)
 - [ ] **DECISION**: plot-widget-3D (geom2 PlotWidget3D reimpl ~500-1000 LOC vs delete)
