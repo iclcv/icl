@@ -14,7 +14,6 @@ if _build_demos and qt_found
     # 'ray-cast-octree': [],  # replaced by geom2/raycast-octree-demo
     'rgbd-mapping': [],
     'simplex-2D': [],
-    'superquadric': [],
   }
   foreach name, extra_deps : _geom_demos
     executable(name + '-demo',
