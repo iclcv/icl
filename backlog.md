@@ -5,21 +5,22 @@ linked plans; this is just the index. Check off / prune as done.
 
 ## geom → geom2 retirement (active arc)
 Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLAUDE.md).
-- [x] Port scene-object (demo), simplex-3D (demo)
-- [ ] Port remaining keepers geom→geom2
-- [ ] Prune already-moved demos
-- [x] Delete `ray-cast-octree` (geom2 has it)
-- [x] point-cloud viewer + pipe (geom2; share `PointCloudSource`; legacy viewer/simple/pipe retired)
-- [x] show-scene → scene-viewer app (geom2/apps; fuse w/ cycles later)
-- [ ] Fuse kinect segmenters
-- [ ] marker-detection: review separately
-- [ ] 1-view ↔ n-view/source generalization
-- [ ] `SuperquadricNode` (new node type)
-- [ ] animated-grid: shader hook or simplify
-- [ ] plot-widget-3D: geom2 reimpl or delete
-- [ ] camera-calibration 2D overlay
-- [x] geom2 `apps/` dir + wiring
-- [ ] markers dep: add geom2
+- [x] Port scene-object, simplex-3D, generic-texture-coords, texture-cube,
+      scene-shadows, scene-graph, superquadric (+`SuperquadricNode`),
+      offscreen-rendering (demos)
+- [x] Port surf-based-object-tracking, rotate-image-3D, depth-camera-simulator (apps)
+- [x] `ray-cast-octree`, point-cloud viewer+pipe, show-scene→scene-viewer (earlier)
+- [x] marker-detection + multi-cam-marker-demo (markers; geom2 dep added per-target)
+- [ ] camera-calibration + camera-calibration-planar (markers) — heavy pure port
+      (GridIndicatorObject ~90 LOC → GroupNode; custom mouse handlers; 2D overlay)
+- [ ] **DECISION**: depth/point-cloud batch (point-cloud-creator,
+      point-cloud-define-world-frame, kinect ×5, rgbd-mapping) — all gated on
+      decoupling `PointCloudCreator`/`DepthCameraPointCloudGrabber` from the
+      deleted `PointCloudObjectBase` render layer (fill `geom2::PointCloud`).
+- [ ] **DECISION**: animated-grid (custom GLSL shader hook vs simplify vs delete)
+- [ ] **DECISION**: plot-widget-3D (geom2 PlotWidget3D reimpl ~500-1000 LOC vs delete)
+- [ ] point-cloud-primitive-filter — deferred (needs Primitive3D→node, P3)
+- [ ] Prune dead legacy point-cloud sources (geom/apps: pipe/viewer/simple/tests unbuilt)
 - [ ] **Delete geom** (final)
 - [ ] **Rename geom2 → geom** (final)
 
