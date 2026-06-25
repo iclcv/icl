@@ -51,6 +51,7 @@ geom2_sources = files(
   'Scene2MouseHandler.cpp',
   'BVH.cpp',
   'SceneCapture.cpp',
+  'detail/SceneSource.cpp',
   'RayCastOctree.cpp',
   'TextNode.cpp',
   'DemoScene2.cpp',
@@ -87,7 +88,7 @@ endif
 icl_geom2_lib = shared_library('icl-geom2',
   geom2_sources,
   include_directories: _geom2_inc,
-  dependencies: [icl_qt_dep, icl_geom_dep] + geom2_cycles_deps,
+  dependencies: [icl_qt_dep, icl_geom_dep, icl_io_dep] + geom2_cycles_deps,
   cpp_args: geom2_cycles_args,
   version: so_version,
   implicit_include_directories: false,
@@ -98,7 +99,7 @@ icl_geom2_lib = shared_library('icl-geom2',
 icl_geom2_dep = declare_dependency(
   link_with: icl_geom2_lib,
   include_directories: [root_inc, gen_inc],
-  dependencies: [icl_qt_dep, icl_geom_dep],
+  dependencies: [icl_qt_dep, icl_geom_dep, icl_io_dep],
 )
 
 install_headers(geom2_headers,
