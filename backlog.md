@@ -9,7 +9,7 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 - [ ] Port remaining keepers geom→geom2
 - [ ] Prune already-moved demos
 - [x] Delete `ray-cast-octree` (geom2 has it)
-- [ ] **ONE** point-cloud-viewer app (fuse simple+pipe+viewer)
+- [x] point-cloud viewer + pipe (geom2; share `PointCloudSource`; legacy viewer/simple/pipe retired)
 - [x] show-scene → scene-viewer app (geom2/apps; fuse w/ cycles later)
 - [ ] Fuse kinect segmenters
 - [ ] marker-detection: review separately
@@ -24,9 +24,9 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 - [ ] **Rename geom2 → geom** (final)
 
 ## geom2 capabilities to add
-- [ ] Offscreen GL-framebuffer render→Img
-- [ ] Depth+color buffer → RGBD source sim
-- [ ] Scene depth → point-cloud source sim
+- [x] Offscreen GL-framebuffer render→Img (`Scene2::renderToImage` + `SceneCapture`)
+- [x] Depth+color buffer → RGBD source sim (`-i scene`, `@format=rgbd`)
+- [x] Scene depth → point-cloud source sim (`-i scene` → `PointCloudSource`/`unprojectDepth`)
 
 ## physics2 follow-ups
 - [ ] Root-cause threaded cloth NaN

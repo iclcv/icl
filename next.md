@@ -4,41 +4,65 @@
 
 ## Next Step
 
-**⏸️ BREAK POINT (end of Session 78).** On `further-restructuring-and-cleanup`, build +
-**943/943** green throughout. Two big arcs this session: (A) **legacy `icl/physics` deleted**
-(physics-side of "get rid of old geom"), then (B) **started the geom→geom2 rendering-layer
-retirement**.
+**⏸️ BREAK POINT (end of Session 79).** On `further-restructuring-and-cleanup`, build +
+**956/956** green throughout. This session built the **scene→RGBD→point-cloud pipeline**
+(the "scene-depth sim source" that was the open decision at the start of S79) end to end,
+plus the geom2 rendering pieces under it. User confirmed the apps/demos look great on a real
+display; the data path is headless-tested.
 
 ### Resume at: geom→geom2 retirement (active)
 **Endgame:** port every keeper geom→geom2, then **delete `geom`**, then **rename geom2 →
 geom**. Plan/worklist: `geom-retirement-worklist.md`; todo index: `backlog.md`.
 
-**Done so far:** pruned 6 dead/superseded demos (camera, swiss-ranger, gl-renderer-test, 3
-Cycles); ported **scene-object** + **simplex-3D** (demos) and **show-scene → scene-viewer**
-(app — established `icl/geom2/apps/`); deleted ray-cast-octree. Conventions pinned in
-**CLAUDE.md**: *demos vs apps* (demos = one feature, small; apps = dev/debug tools), and
-*view + few controls → size-limited `HSplit`/`VSplit`*.
+**The full pipeline now exists (all on the RGBD-as-Image rails, no point-cloud-specific
+transport):**
+`-i scene` → `icl-point-cloud-pipe` *[box / sphere / near-far filter]* → `-o ws/file` →
+`icl-point-cloud-viewer`. The depth **camera travels in image metadata** (operator<</>>);
+the WS compressor preserves it (locked by a round-trip test). Filters are reusable
+`PointCloud` methods, not app-local.
 
-**Two framework fixes landed (both "more common" issues):**
-- **Scene2 camera sensitivity** — was quadratic-in-bounds + bounds defaulted to 1000 → dolly
-  ~100× too fast in every geom2 scene. Now `getBounds()` auto-computes from geometry (cached,
-  invalidated only on structure change — not per-frame), `translation` is a plain multiplier
-  (default 10). `0.04` factor is real-display-tunable.
-- **ICLWidget drag-leave** — a mouse drag died at the window edge (leaveEvent cleared the
-  button mask); now the drag survives leaving the widget and ends on release.
+**Landed this session (10 commits, `82d2792b3`..`1fb04d569`):**
+- **`SceneCapture`** — render a Scene2 through a camera → RGB+depth, two interchangeable
+  backends: `BVHSceneCapture` (CPU raytrace, **headless** — the engine the sim source uses)
+  and `GLSceneCapture` (GL offscreen `Scene2::renderToImage`). Shared `BVH::ImageResult`/
+  `DepthMode` vocab. Demo: `scene-rgbd-capture`.
+- **`-i scene`** source (`icl/geom2/detail/SceneSource.cpp`) — synthetic depth/RGBD/color
+  camera over a built-in scene; registered into io (geom2 now links `icl_io_dep`).
+- **`PointCloud::unprojectDepth`** (consumer side) + **`PointCloudSource`** helper (the
+  ImageSource→cloud unit, shared by viewer+pipe) + **`filterBox`/`filterSphere`/
+  `filterDepthRange`** (camera-based near/far needs the camera — cloud has no depth).
+- **`icl-point-cloud-viewer`** + **`icl-point-cloud-pipe`** (geom2 apps). Retired the legacy
+  geom targets `point-cloud-viewer`, `simple-point-cloud-viewer`, `point-cloud-pipe` (sources
+  kept; geom2 apps claim the names).
+- **Rendering:** `Material::setBaseColorMap` (version-bumped **real-time textures**; renderer
+  re-uploads only changed materials, `glTexSubImage2D` fast path) + `scene-monitors` demo
+  (4 cams + 4 in-scene monitors). `Scene2` **"show cameras"** flag → per-camera gizmo (RGB
+  axes + stylized frustum + billboard label). **Thick lines** via a geometry shader (1px keeps
+  built-in `GL_LINES`; >1px expands to screen-space quads — works on macOS where `glLineWidth`
+  is capped at 1).
+- **Bug fixes:** `BVH::raycastToImage` wrote baseColor [0,1] into an 8-bit image (everything
+  black) → ×255; `GeometryNode::setPrimitiveVisible` didn't bump `geometryVersion` (visibility
+  toggle silently ignored); the camera gizmo used [0,1] line colours but **MeshNode colours are
+  0..255** (×1/255 → invisible) — this was the "lines never visible" mystery.
 
 **Next concrete steps (pick up here):**
-- **Decisions still open** (see backlog): build the **scene-depth→RGBD/point-cloud sim
-  source** (needs offscreen GL-framebuffer; unblocks + makes testable the point-cloud apps,
-  since there's no device) vs. port the apps against real grabbers now.
-- **point-cloud cluster:** fuse simple+pipe+viewer into **ONE** `point-cloud-viewer` app;
-  creator/define-world-frame/primitive-filter stay separate (need `Primitive3D→node`).
+- **cylinder filter** — *declined by user* (box/sphere/near-far is enough; the cube/sphere/
+  cylinder *primitive-filter* port with RSB/protobuf primitives stays deferred — "need
+  `Primitive3D→node`").
+- **point-cloud cluster leftovers:** `point-cloud-creator`, `point-cloud-define-world-frame`
+  still legacy-geom; primitive-filter deferred.
 - **kinect** demos (fuse the 2 segmenters), **surf-based-object-tracking** (clean app port),
   **marker-detection** (separate; 1-view↔n-view/source generalization), **superquadric**
   (new `SuperquadricNode`), **animated-grid**/**plot-widget-3D** (shader / widget rework),
   **markers** dep needs geom2 added.
 - Each port: keep the demo/app character + the HSplit layout convention; build + headless-init
   only (no GL/hardware here → real-display verification deferred).
+
+**Real-display testing (no hardware needed — run in a normal terminal, not the sandbox):**
+`icl-point-cloud-viewer -i scene default` · `... -i scene default@format=rgbd` ·
+`icl-point-cloud-pipe -i scene default@format=rgbd` (flip the filter combo) ·
+`scene-rgbd-capture-demo` · `scene-monitors-demo`. Chain: `pipe -o ws 9000` →
+`viewer -i ws 9000` (use `@compression.mode=raw` if a float stream complains).
 
 ---
 
