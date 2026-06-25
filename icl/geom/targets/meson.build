@@ -4,7 +4,6 @@
 if _build_demos and qt_found
   _geom_demos = {
     'animated-grid': [],
-    'generic-texture-coords': [],
     'kinect-depth-image-segmentation': [],
     'kinect-euclidean-blob-segmentation': [],
     'kinect-normals': [],
@@ -18,7 +17,6 @@ if _build_demos and qt_found
     'scene-shadows': [],
     'simplex-2D': [],
     'superquadric': [],
-    'texture-cube': [],
   }
   foreach name, extra_deps : _geom_demos
     executable(name + '-demo',

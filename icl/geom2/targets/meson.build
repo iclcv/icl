@@ -47,6 +47,16 @@ if _build_demos and qt_found
     dependencies: [icl_geom2_dep],
     install: false,
   )
+  executable('generic-texture-coords-demo',
+    files('../demos/generic-texture-coords.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
+  executable('texture-cube-demo',
+    files('../demos/texture-cube.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
   if cycles_found
     executable('geom2-cycles-renderer-test-demo',
       files('../demos/cycles-renderer-test.cpp'),
