@@ -25,14 +25,15 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
       `DepthCameraPointCloudGrabber` from the deleted `PointCloudObjectBase` (fill
       `geom2::PointCloud`), geom2 `RayCastOctree` fill-from-`PointCloud`, + cross-cam
       color mapping.
-  - **Test bed (user, no hardware): stereo virtual-camera RGBD simulator.** Render ONE
-    geom2 scene through **two virtual cameras with a small horizontal baseline offset** —
-    one is the depth cam, the other the color cam. Because they sit at different poses, a
-    real **color→depth registration/mapping** is required to colour the cloud, so this
-    exercises the cross-camera color-mapping path end-to-end in simulation. Extends the
-    just-ported `icl-depth-camera-simulator` (already has `-cam`/`-ccam` + `relTM` rigid
-    offset and dual `renderToImage`); add a baseline knob + emit depth(cam0)+color(cam1) so
-    the consumer must map. This is what makes point-cloud-creator/rgbd-mapping testable here.
+  - [x] **color→depth mapping capability + test bed (LANDED).** `PointCloud::mapColorFromCamera`
+    (projects each world point into a *different* color camera + samples — the geom2 replacement
+    for `PointCloudCreator::mapImage`). New `icl-stereo-rgbd-simulator` app: one scene through two
+    cameras with a horizontal baseline (depth cam0 + offset color cam1), headless `BVHSceneCapture`,
+    reconstructs the coloured cloud via `unprojectDepth` + `mapColorFromCamera`. Headless tests
+    (test-geom2-pointcloud-mapcolor): zero-baseline == aligned; baseline leaves points unmapped.
+  - [ ] **still gated:** kinect/creator apps need `PointCloudCreator`/`DepthCameraPointCloudGrabber`
+    decoupled from `PointCloudObjectBase` (or reframed on `PointCloudSource` + `mapColorFromCamera`);
+    `point-cloud-define-world-frame` also needs geom2 `RayCastOctree` fill-from-`PointCloud`.
 - [ ] **DECISION**: animated-grid (custom GLSL shader hook vs simplify vs delete)
 - [ ] **DECISION**: plot-widget-3D (geom2 PlotWidget3D reimpl ~500-1000 LOC vs delete)
 - [ ] point-cloud-primitive-filter — deferred (needs Primitive3D→node, P3)

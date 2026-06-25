@@ -35,11 +35,14 @@ only (no GL here — real-display pass still owed).
    so they fill `geom2::PointCloud`; geom2 `RayCastOctree` fill-from-`PointCloud`; cross-camera
    color-mapping. (`PointCloudSource`/`unprojectDepth` already cover depth→cloud.)
    Also prune dead unbuilt legacy sources in geom/apps (pipe/viewer/simple/tests).
-   **Hardware-free test bed (user's plan):** a **stereo virtual-camera RGBD simulator** —
-   render one geom2 scene through two cameras with a small horizontal **baseline offset**
-   (depth from cam0, color from cam1), so a real color→depth mapping is needed. Extends the
-   just-ported `icl-depth-camera-simulator` (already has `-cam`/`-ccam` + `relTM` + dual
-   `renderToImage`); this is what makes the whole depth/color-mapping path testable here.
+   - **LANDED (this session):** `PointCloud::mapColorFromCamera` (cross-camera color→depth
+     registration, replaces `PointCloudCreator::mapImage`) + `icl-stereo-rgbd-simulator`
+     (two cameras, horizontal baseline, headless `BVHSceneCapture`, colours the cloud via
+     `unprojectDepth`+`mapColorFromCamera`) + headless tests (958/958). This is the
+     hardware-free test bed for the color-mapping path.
+   - **Still gated:** kinect/creator apps need `PointCloudCreator`/`DepthCameraPointCloudGrabber`
+     reframed onto `PointCloudSource` + `mapColorFromCamera` (off `PointCloudObjectBase`);
+     define-world-frame also needs geom2 `RayCastOctree` fill-from-`PointCloud`.
 
 (Earlier S80-era pipeline work — scene→RGBD→point-cloud — is below; unchanged.)
 
