@@ -49,7 +49,6 @@ if _build_apps
       # retirement.
       'rotate-image-3D': [],
       'show-extrinsic-calibration-grid': [],
-      'surf-based-object-tracking': [],
     }
     foreach name, extra_deps : _geom_qt_apps
       executable('icl-' + name,

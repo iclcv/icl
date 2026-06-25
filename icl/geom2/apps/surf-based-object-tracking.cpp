@@ -2,13 +2,28 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
+// geom2 port of the legacy geom/surf-based-object-tracking app. The SURF
+// matching + RANSAC pose estimation are untouched (they live in the CV core);
+// only the visualisation moves to geom2 — the tracked box is a CuboidNode whose
+// transform is set from the estimated pose each frame.
+
 #include <icl/cv/SurfFeatureDetector.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom/Geom.h>
+#include <icl/geom2/Scene2.h>
+#include <icl/geom2/CuboidNode.h>
+#include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom/Material.h>
+#include <icl/geom/GeomDefs.h>
 #include <icl/geom/RansacBasedPoseEstimator.h>
+
+using namespace icl::geom2;
+using namespace icl::geom;
+using namespace icl::cv;
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::qt;
 
 ImageSource grabber;
 std::shared_ptr<SurfFeatureDetector> surf;
@@ -17,8 +32,8 @@ RansacBasedPoseEstimator *pe = 0;
 Size32f ts; // template pixel -> mm
 VBox gui;
 GUI ransacOptions;
-Scene scene;
-SceneObject *obj = 0;
+Scene2 scene;
+std::shared_ptr<CuboidNode> obj;
 
 void init(){
   grabber.init(pa("-i"));
@@ -28,10 +43,11 @@ void init(){
   scene.addCamera(*pa("-cam"));
   pe = new RansacBasedPoseEstimator(scene.getCamera(0));
 
-  obj = SceneObject::cuboid(t.width/2,t.height/2,d/2,t.width,t.height,d);
+  obj = CuboidNode::create(t.width/2,t.height/2,d/2,t.width,t.height,d);
   obj->setMaterial(Material::fromColors(GeomColor(0,100,255,50), geom_red()));
+  obj->setPrimitiveVisible(PrimLine, true);
   obj->setLineWidth(3);
-  scene.addObject(obj);
+  scene.addNode(obj);
 
   surf.reset(new SurfFeatureDetector(5,4,2,0.00005,"opensurf"));
   Img8u templ = icl::io::load(pa("-t")).as8u();
@@ -53,7 +69,6 @@ void init(){
   pe->adaptProperty("min points", "range", "[4,10]:1", "");
   pe->adaptProperty("min points for good model", "range", "[4,100]:1", "");
 
-
   pe->prop("iterations").value = 200;
   pe->prop("max error").value = 30;
   pe->prop("min points").value = 4;
@@ -64,11 +79,9 @@ void init(){
 
   gui["ransac options"].registerCallback([]{ ransacOptions.switchVisibility(); });
 
-  gui["draw"].link(scene.getGLCallback(0));
+  gui["draw"].link(scene.getGLCallback(0).get());
   gui["draw"].install(scene.getMouseHandler(0));
 }
-
-
 
 void run(){
   DrawHandle3D draw = gui["draw"];
@@ -89,16 +102,12 @@ void run(){
     }
     RansacBasedPoseEstimator::Result result = pe->fit(templ,curr);
 
-
     Mat T = result.T;
     obj->setTransformation(T);
 
     if(gui["vise"]){
-
       draw->linewidth(2);
-
       std::vector<Point32f> lastSet = pe->getLastConsensusSet();
-
       for(size_t i=0;i<ms.size();++i){
         Vec a = T * Vec(templ[i].x, templ[i].y,0,1);
         Point32f pa = scene.getCamera(0).project(a);
@@ -114,7 +123,6 @@ void run(){
 
   draw.render();
 }
-
 
 int main(int n, char **args){
   pa_explain("-p","select surf-feature detection plugin (opensurf, clsurf or best)");

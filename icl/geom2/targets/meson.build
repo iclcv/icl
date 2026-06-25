@@ -109,4 +109,9 @@ if _build_apps and qt_found
     dependencies: [icl_geom2_dep],
     install: true,
   )
+  executable('icl-surf-based-object-tracking',
+    files('../apps/surf-based-object-tracking.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
 endif
