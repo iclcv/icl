@@ -2,29 +2,43 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
+// Fiducial detection demo. Detection is pure CV (FiducialDetector); the
+// optional 3D pose overlay now uses geom2 — a GroupNode holding a complex
+// CoordinateFrameNode + a CuboidNode, driven by each marker's 6D pose.
+
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom/Scene.h>
-#include <icl/geom/ComplexCoordinateFrameSceneObject.h>
+#include <icl/geom2/Scene2.h>
+#include <icl/geom2/GroupNode.h>
+#include <icl/geom2/CuboidNode.h>
+#include <icl/geom2/CoordinateFrameNode.h>
+#include <icl/geom2/Scene2MouseHandler.h>
 
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPluginForQuads.h>
+
+using namespace icl::geom2;
+using namespace icl::geom;
+using namespace icl::markers;
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::qt;
 
 HSplit gui;
 
 ImageSource grabber;
 FiducialDetector *fid = 0;
-Scene scene;
+Scene2 scene;
 bool canShowRegionCorners = false;
 
-struct Obj : public SceneObject{
+// a coordinate frame + a box, set to a marker's pose
+struct Obj : public GroupNode {
   Obj(){
-    addChild(new ComplexCoordinateFrameSceneObject);
-    Size s  = parse<Size>(pa("-m",2));
-    addCuboid(0,0,10,s.width,s.height,20);
+    addChild(CoordinateFrameNode::create(100, 5, true));
+    Size s = parse<Size>(pa("-m",2));
+    addChild(CuboidNode::create(0,0,10, s.width,s.height,20));
   }
 } *obj = 0;
-
 
 void init(){
   fid = new FiducialDetector(pa("-m").as<std::string>(),
@@ -72,7 +86,6 @@ void init(){
          )
       << Show();
 
-  //fid->loadMarkers("[0,10]",ParamMap("size",Size(96,96)));
   try{
     fid->prop("quads.minimum region size").value = 400;
     fid->prop("thresh.global threshold").value = -11;
@@ -82,8 +95,6 @@ void init(){
     WARNING_LOG("exception caught while setting initial parameters: " << e.what());
   }
 
-
-
   if(pa("-c")){
     scene.addCamera(Camera(*pa("-c")));
   }else{
@@ -92,13 +103,13 @@ void init(){
   }
 
   if(pa("-3D").as<bool>() || pa("-c").as<bool>()){
-    obj = new Obj;
-    scene.addObject(obj);
+    auto o = std::make_shared<Obj>();
+    obj = o.get();
+    scene.addNode(o);
     fid->setCamera(scene.getCamera(0));
     gui["draw"].install(scene.getMouseHandler(0));
-    gui["draw"].link(scene.getGLCallback(0));
+    gui["draw"].link(scene.getGLCallback(0).get());
   }
-
 }
 
 inline float round2(float f){
@@ -133,8 +144,6 @@ void run(){
 
     if((enable3D && fids[i].getID() == 0)
        || (enable3D && use3Dfor1stVisibleMarker && !i)){
-      fids[i].getPose3D();
-      fids[i].getPose3D();
       obj->setTransformation(fids[i].getPose3D());
     }
 

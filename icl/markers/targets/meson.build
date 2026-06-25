@@ -3,7 +3,7 @@
 # ---- Demos (need Qt) ----
 if _build_demos and qt_found
   _markers_demos = {
-    'multi-cam-marker-demo': [],
+    'multi-cam-marker-demo': [icl_geom2_dep],
     'simple-marker-demo': [],
   }
   foreach name, extra_deps : _markers_demos
@@ -42,7 +42,7 @@ if _build_apps and qt_found
   _markers_apps = {
     'create-marker-grid-svg': [],
     'create-marker': [],
-    'marker-detection': [],
+    'marker-detection': [icl_geom2_dep],
   }
   foreach name, extra_deps : _markers_apps
     executable('icl-' + name,

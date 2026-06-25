@@ -2,49 +2,66 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
+// Multi-camera fiducial detection. Detection/triangulation is pure CV
+// (MultiCamFiducialDetector); each detected marker is shown as a geom2
+// GroupNode (wireframe box + complex coordinate frame), and the active camera's
+// GL callback is linked into the 3D view.
+
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 #include <icl/markers/MultiCamFiducialDetector.h>
-#include <icl/geom/Geom.h>
-#include <icl/geom/ComplexCoordinateFrameSceneObject.h>
+#include <icl/geom2/Scene2.h>
+#include <icl/geom2/GroupNode.h>
+#include <icl/geom2/CuboidNode.h>
+#include <icl/geom2/CoordinateFrameNode.h>
 #include <mutex>
+
+using namespace icl::geom2;
+using namespace icl::geom;
+using namespace icl::markers;
+using namespace icl::core;
+using namespace icl::utils;
+using namespace icl::qt;
 
 HSplit gui;
 ImageSource grabber;
 MultiCamFiducialDetector fd;
 std::vector<std::shared_ptr<ImageSource> > grabbers;
-Scene scene;
+Scene2 scene;
 
-std::map<int,SceneObject*> cubes;
+std::map<int,GroupNode*> cubes;
 void updateCube(int id, const Mat &T){
-  std::map<int,SceneObject*>::iterator it = cubes.find(id);
-  SceneObject *&cube = (it == cubes.end() ? cubes[id] : it->second);
+  auto it = cubes.find(id);
   if(it == cubes.end()){
     static Size ms = pa("-m",2);
-    static const float p[] = { (float)0,(float)0,(float)ms.width/2,(float)ms.width,
-                               (float)ms.height,(float)ms.width };
-    cube = new SceneObject("cuboid",p);
-    cube->setVisible(Primitive::quad,false);
-    cube->addChild(new ComplexCoordinateFrameSceneObject);
-    std::scoped_lock lock(scene.getMutex());
-    scene.addObject(cube);
+    auto g = std::make_shared<GroupNode>();
+    auto cube = CuboidNode::create(0,0,ms.width/2.f, ms.width,ms.height,ms.width);
+    cube->setPrimitiveVisible(PrimQuad, false);
+    cube->setPrimitiveVisible(PrimLine, true);
+    g->addChild(cube);
+    g->addChild(CoordinateFrameNode::create(100, 5, true));
+    std::scoped_lock lock(scene);
+    scene.addNode(g);
+    it = cubes.emplace(id, g.get()).first;
   }
-  cube->setTransformation(T);
+  it->second->setTransformation(T);
 }
 
 void init(){
   int n = pa("-i").n()/2;
   if(pa("-c").n() != n) throw ICLException("camera count and grabber count must be equal");
   grabbers.resize(n);
+  std::vector<Camera*> cams;
   for(int i=0;i<n;++i){
     grabbers[i].reset(new ImageSource());
     grabbers[i] -> init(*pa("-i",2*i), *pa("-i",2*i) + "=" + *pa("-i",2*i+1));
     grabbers[i] -> useDesired(formatGray);
     scene.addCamera(Camera(*pa("-c",i)));
   }
+  for(int i=0;i<n;++i) cams.push_back(&scene.getCamera(i));
 
   fd.init(pa("-m",0), *pa("-m",1), ParamMap{{"size",*pa("-m",2)}},
-          scene.getAllCameras(), !pa("-nosync").as<bool>());
+          cams, !pa("-nosync").as<bool>());
   fd.setConfigurableID("fd");
 
   if(!pa("-nosync").as<bool>()){
@@ -86,7 +103,7 @@ void run(){
     }
   }
   const int camID = fd.getCameraIDFromIntermediteImageName(gui["vis"]);
-  draw->link(scene.getGLCallback(camID));
+  draw->link(scene.getGLCallback(camID).get());
 
   gui["draw"].render();
 }
