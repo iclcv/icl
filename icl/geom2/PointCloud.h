@@ -127,6 +127,14 @@ namespace icl::geom2 {
     /// Remove points using a sphere (keepInside as in filterBox).
     void filterSphere(const Vec &center, float radius, bool keepInside = true);
 
+    /// Keep only points whose depth from \a cam lies within [minDepth, maxDepth].
+    /** Needs the camera: the cloud stores world positions, not depth, so each
+        point's depth is recovered as its distance along the camera view axis
+        (distToCamPlane=true — Z-depth, like a depth sensor) or its Euclidean
+        distance to the camera centre (false). Distances are in millimetres. */
+    void filterDepthRange(const geom::Camera &cam, float minDepth, float maxDepth,
+                          bool distToCamPlane = true);
+
     // --- Copy ---
     PointCloud deepCopy() const;
 

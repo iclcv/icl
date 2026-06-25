@@ -102,6 +102,20 @@ namespace icl::geom2 {
     });
   }
 
+  void PointCloud::filterDepthRange(const geom::Camera &cam, float minDepth,
+                                    float maxDepth, bool distToCamPlane) {
+    const Vec o = cam.getPosition();
+    Vec f = cam.getNorm();                                   // camera forward (world)
+    const float fn = std::sqrt(f[0]*f[0] + f[1]*f[1] + f[2]*f[2]);
+    f[0] /= fn; f[1] /= fn; f[2] /= fn;
+    filterCloud(*this, /*keepInside=*/true, [&](const float *p) {
+      const float dx = p[0]-o[0], dy = p[1]-o[1], dz = p[2]-o[2];
+      const float depth = distToCamPlane ? (dx*f[0] + dy*f[1] + dz*f[2])
+                                         : std::sqrt(dx*dx + dy*dy + dz*dz);
+      return depth >= minDepth && depth <= maxDepth;         // "inside" = in range
+    });
+  }
+
 
   struct PointCloud::Data {
     std::vector<Vec> positions;      // XYZH (4 floats, H=1)

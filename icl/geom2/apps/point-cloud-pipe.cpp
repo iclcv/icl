@@ -41,26 +41,6 @@ std::shared_ptr<PointCloud> cloud;
 std::shared_ptr<PointCloudNode> cloudNode;
 bool hasOutput = false, viewInit = false;
 
-// Image-space depth-range filter: invalidate cloud points whose sensor depth
-// is outside [near, far]. (Box/sphere filters live on PointCloud directly.)
-void filterCloudByDepthRange(float dmin, float dmax) {
-  const Image &f = src.getLastFrame();
-  const Img32f &fi = f.as<icl::icl32f>();
-  const int dim = fi.getDim();
-  const float *d = (f.getChannels() == 1) ? fi.getData(0) : fi.getData(3);
-  cloud->lock();
-  auto xyz = cloud->selectXYZ();
-  auto rgba = cloud->supports(PointCloud::RGBA32f) ? cloud->selectRGBA32f()
-                                                   : icl::core::DataSegment<float,4>();
-  for (int i = 0; i < dim; ++i) {
-    if (d[i] > 0.f && (d[i] < dmin || d[i] > dmax)) {
-      auto &p = xyz[i]; p[0] = p[1] = p[2] = 0;
-      if (rgba.getDim()) rgba[i] = GeomColor(0, 0, 0, 0);
-    }
-  }
-  cloud->unlock();
-}
-
 // Build the output frame: a deep copy of the last frame with the depth zeroed
 // at every pixel whose (organized) cloud point was invalidated by a filter.
 Image filteredFrame() {
@@ -120,7 +100,7 @@ void run() {
   const bool keep = gui["keep"];
   const Vec center(gui["cx"], gui["cy"], gui["cz"], 1);
   const float size = gui["size"];
-  if      (mode == 1) filterCloudByDepthRange(gui["dmin"], gui["dmax"]);
+  if      (mode == 1) cloud->filterDepthRange(src.getCamera(), gui["dmin"], gui["dmax"]);
   else if (mode == 2) cloud->filterBox(center, Vec(size, size, size, 0), keep);
   else if (mode == 3) cloud->filterSphere(center, size, keep);
 

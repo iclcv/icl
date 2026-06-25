@@ -159,6 +159,43 @@ ICL_REGISTER_TEST("io.scenesource.geom2_filters", "PointCloud::filterSphere/filt
   ICL_TEST_EQ(afterBox > 0 && afterBox < before, true);
 }
 
+// Camera-based near/far filter: keeps only points whose depth from the camera
+// is within range (the cloud has no depth, so this needs the camera).
+ICL_REGISTER_TEST("io.scenesource.geom2_depthrange", "PointCloud::filterDepthRange keeps in-range points")
+{
+  geom2::PointCloudSource src;
+  src.init("scene", "@animate=off");
+  geom2::PointCloud c;
+  src.grab(c);
+  const Camera cam = src.getCamera();
+
+  auto xyz = c.selectXYZ();
+  int before = 0;
+  for (int i = 0; i < c.getDim(); ++i) {
+    auto &p = xyz[i];
+    if (p[0] != 0 || p[1] != 0 || p[2] != 0) ++before;
+  }
+
+  const float maxD = 650.f;
+  c.filterDepthRange(cam, 0.f, maxD);
+
+  // camera forward for the verification
+  auto o = cam.getPosition();
+  auto f = cam.getNorm();
+  const float fn = std::sqrt(f[0]*f[0] + f[1]*f[1] + f[2]*f[2]);
+
+  int after = 0; bool allInRange = true;
+  for (int i = 0; i < c.getDim(); ++i) {
+    auto &p = xyz[i];
+    if (p[0] == 0 && p[1] == 0 && p[2] == 0) continue;
+    ++after;
+    const float depth = ((p[0]-o[0])*f[0] + (p[1]-o[1])*f[1] + (p[2]-o[2])*f[2]) / fn;
+    if (depth > maxD + 1.f) allInRange = false;
+  }
+  ICL_TEST_EQ(after > 0 && after < before, true);
+  ICL_TEST_EQ(allInRange, true);
+}
+
 // The geom2-native consumer path: PointCloud::unprojectDepth (what
 // icl-point-cloud-viewer uses) reconstructs a cloud from depth + camera.
 ICL_REGISTER_TEST("io.scenesource.geom2_unproject", "geom2 PointCloud::unprojectDepth reconstructs the scene")
