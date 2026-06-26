@@ -23,12 +23,12 @@ only (no GL here — real-display pass still owed).
 - **Decisions:** animated-grid **DELETED** (custom GLSL, no geom2 hook); plot-widget-3D →
   **reimplement** geom2 `PlotWidget3D` (deferred, big); depth batch → assess per-app (deferred).
 
-**Almost everything is ported — only TWO deferred items block deleting `geom`** (see `backlog.md`):
+**ONE item now blocks deleting `geom`** (verified by scan — see `backlog.md`):
 1. **camera-calibration + planar** (markers) — SEPARATE multi-session rework. NOT a mechanical
    `fromSceneObject` swap: converter skips `addTextTexture` labels, `CameraCalibrationUtils`
    mutates SceneObjects at runtime via `geom::Scene&`, planar's grid handler edits live.
-2. **point-cloud-primitive-filter** — deferred (needs `Primitive3D`→node, P3; RSB/protobuf
-   primitives). Box/sphere/near-far filters already exist as `PointCloud` methods.
+   (`point-cloud-primitive-filter` is now DONE — `nodeFromPrimitive3D` converter + `filterBox`/
+   `filterSphere`, RSB/`Primitive3DFilter` dropped.)
 
 Everything else now lives in geom2. **Big landings this session (~22 commits):**
 - **Demos→geom2:** generic-texture-coords, texture-cube, scene-shadows, scene-graph,

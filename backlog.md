@@ -49,7 +49,9 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
       Scene2 (scaled root GroupNode + coordinate box + tics/labels; scatter/surf/linestrip/
       label API). Demo ported. Build-checked; real-display pass owed (box framing, label
       distortion, scatter colour-range). Legacy geom PlotWidget3D stays until geom deletion.
-- [ ] point-cloud-primitive-filter — deferred (needs Primitive3D→node, P3)
+- [x] **point-cloud-primitive-filter** ported — `nodeFromPrimitive3D` converter (Primitive3D→node,
+      +tests) shows the primitive; filtering via existing `filterBox`/`filterSphere`. Dropped RSB +
+      monolithic `Primitive3DFilter` (cylinder/oriented filtering stays out per earlier decision).
 - [ ] Prune dead legacy point-cloud sources (geom/apps: pipe/viewer/simple/tests unbuilt)
 - [ ] **Delete geom** (final)
 - [ ] **Rename geom2 → geom** (final)
