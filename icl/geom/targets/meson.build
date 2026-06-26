@@ -3,10 +3,7 @@
 # ---- Demos (all need Qt) ----
 if _build_demos and qt_found
   _geom_demos = {
-    'kinect-depth-image-segmentation': [],
-    'kinect-euclidean-blob-segmentation': [],
     'kinect-normals': [],
-    'kinect-segmentation': [],
     # 'ray-cast-octree': [],  # replaced by geom2/raycast-octree-demo
     'simplex-2D': [],
   }

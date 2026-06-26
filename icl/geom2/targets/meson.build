@@ -82,6 +82,11 @@ if _build_demos and qt_found
     dependencies: [icl_geom2_dep],
     install: false,
   )
+  executable('kinect-segmentation-demo',
+    files('../demos/kinect-segmentation.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
   if cycles_found
     executable('geom2-cycles-renderer-test-demo',
       files('../demos/cycles-renderer-test.cpp'),
