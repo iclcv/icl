@@ -149,4 +149,9 @@ if _build_apps and qt_found
     dependencies: [icl_geom2_dep],
     install: true,
   )
+  executable('icl-point-cloud-define-world-frame',
+    files('../apps/point-cloud-define-world-frame.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
 endif

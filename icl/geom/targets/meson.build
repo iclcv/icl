@@ -32,7 +32,6 @@ if _build_apps
       'compute-relative-camera-transform': [],
       'fix-kinect-calibration': [],
       'kinect-recorder': [],
-      'point-cloud-define-world-frame': [],
       # point-cloud-pipe + point-cloud-viewer + simple-point-cloud-viewer
       # superseded by the geom2 icl-point-cloud-{pipe,viewer}
       # (icl/geom2/apps/); sources kept for reference during the geom -> geom2
