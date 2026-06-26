@@ -32,6 +32,7 @@ geom2_headers = files(
   'DefaultScene.h',
   'SceneObjectConverter.h',
   'PlotWidget3D.h',
+  'Primitive3DConverter.h',
   'PlotHandle3D.h',
   'Plot3D.h',
 )
@@ -65,6 +66,7 @@ geom2_sources = files(
   'DefaultScene.cpp',
   'SceneObjectConverter.cpp',
   'PlotWidget3D.cpp',
+  'Primitive3DConverter.cpp',
 )
 
 # Cycles renderer (reuses include/link config computed in icl/geom/meson.build)

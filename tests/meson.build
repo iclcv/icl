@@ -30,6 +30,7 @@ if qt_dep.found()
     'test-geom2-scene-capture.cpp',
     'test-geom2-pointcloud-mapcolor.cpp',
     'test-geom2-raycast-octree.cpp',
+    'test-geom2-primitive3d-converter.cpp',
     'test-io-scene-source.cpp',
     'test-gui-definition.cpp',
   )
