@@ -32,11 +32,17 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
     reconstructs the coloured cloud via `unprojectDepth` + `mapColorFromCamera`. Headless tests
     (test-geom2-pointcloud-mapcolor): zero-baseline == aligned; baseline leaves points unmapped.
   - [x] **point-cloud-creator** ported onto `unprojectDepth` + `mapColorFromCamera` (geom2/apps;
-    optional RGBD-out with camera metadata for the viewer/pipe). Legacy geom app retired.
-  - [ ] **still gated:** kinect ×5 + rgbd-mapping need `DepthCameraPointCloudGrabber` reframed on
-    `PointCloudSource` + `mapColorFromCamera` (off `PointCloudObjectBase`); segmenters keep their
-    CV core (`Segmentation3D`/`ConfigurableDepthImageSegmenter`), only viz → geom2.
-    `point-cloud-define-world-frame` also needs geom2 `RayCastOctree` fill-from-`PointCloud`.
+    optional RGBD-out with camera metadata for the viewer/pipe); kinect 11-bit raw→mm folded in.
+  - [x] **kinect-pointcloud + rgbd-mapping RETIRED** — both were `(kinect input)+RGB-D mapping`,
+    now covered by point-cloud-creator (`-i kinectd`). Lossless (raw decode preserved).
+  - kinect-normals, kinect-recorder, fix-kinect-calibration: **STAY** — CV core only (no Scene
+    layer), don't block geom deletion.
+  - [ ] **3 segmenters** (kinect-segmentation, kinect-euclidean-blob-segmentation,
+    kinect-depth-image-segmentation) — the only kinect items left. **Fuse → one geom2 segmentation
+    demo.** CV cores (`Segmentation3D`/`EuclideanBlobSegmenter`/`ConfigurableDepthImageSegmenter`)
+    stay, but they currently write labels/colors into a `PointCloudObjectBase` — needs a data-level
+    output path into a `geom2::PointCloud` (decouple from the deleted render layer), then geom2 viz.
+  - [ ] **point-cloud-define-world-frame** — needs geom2 `RayCastOctree` fill-from-`PointCloud`.
 - [ ] **DECISION**: animated-grid (custom GLSL shader hook vs simplify vs delete)
 - [ ] **DECISION**: plot-widget-3D (geom2 PlotWidget3D reimpl ~500-1000 LOC vs delete)
 - [ ] point-cloud-primitive-filter — deferred (needs Primitive3D→node, P3)
