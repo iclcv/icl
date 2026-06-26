@@ -37,12 +37,13 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
     now covered by point-cloud-creator (`-i kinectd`). Lossless (raw decode preserved).
   - kinect-normals, kinect-recorder, fix-kinect-calibration: **STAY** — CV core only (no Scene
     layer), don't block geom deletion.
-  - [ ] **3 segmenters** (kinect-segmentation, kinect-euclidean-blob-segmentation,
-    kinect-depth-image-segmentation) — the only kinect items left. **Fuse → one geom2 segmentation
-    demo.** CV cores (`Segmentation3D`/`EuclideanBlobSegmenter`/`ConfigurableDepthImageSegmenter`)
-    stay, but they currently write labels/colors into a `PointCloudObjectBase` — needs a data-level
-    output path into a `geom2::PointCloud` (decouple from the deleted render layer), then geom2 viz.
-  - [ ] **point-cloud-define-world-frame** — needs geom2 `RayCastOctree` fill-from-`PointCloud`.
+  - [x] **3 segmenters FUSED** → one geom2 `kinect-segmentation` demo (mode: Segmentation3D
+    surfaces/blobs, EuclideanBlobSegmenter). CV cores stay; they bind to `geom2::PointCloud` via
+    `selectXYZH`/`selectRGBA32f` (already returned a colour image — no decoupling needed). All 3
+    legacy demos retired; `ConfigurableDepthImageSegmenter` the class stays in geom CV.
+  - [x] **point-cloud-define-world-frame** ported (geom2) — `RayCastOctree::fill(PointCloud)` added
+    (+ test), PointCloudSource + CoordinateFrameNode; CV/PCA unchanged.
+  - [x] dead unbuilt legacy point-cloud sources pruned (pipe/viewer/simple/tests).
 - [ ] **DECISION**: animated-grid (custom GLSL shader hook vs simplify vs delete)
 - [x] **plot-widget-3D** — geom2 `PlotWidget3D` + `Plot3D`/`PlotHandle3D` reimplemented on
       Scene2 (scaled root GroupNode + coordinate box + tics/labels; scatter/surf/linestrip/

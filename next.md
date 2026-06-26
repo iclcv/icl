@@ -23,26 +23,33 @@ only (no GL here — real-display pass still owed).
 - **Decisions:** animated-grid **DELETED** (custom GLSL, no geom2 hook); plot-widget-3D →
   **reimplement** geom2 `PlotWidget3D` (deferred, big); depth batch → assess per-app (deferred).
 
-**Three large items remain before `geom` can be deleted** (all in `backlog.md`):
+**Almost everything is ported — only TWO deferred items block deleting `geom`** (see `backlog.md`):
 1. **camera-calibration + planar** (markers) — SEPARATE multi-session rework. NOT a mechanical
    `fromSceneObject` swap: converter skips `addTextTexture` labels, `CameraCalibrationUtils`
    mutates SceneObjects at runtime via `geom::Scene&`, planar's grid handler edits live.
-2. **plot-widget-3D** — reimplement geom2 `PlotWidget3D` (~500-1000 LOC; Plot3D/PlotHandle3D
-   are Qt widgets on `geom::Scene`).
-3. **depth batch** — point-cloud-creator, point-cloud-define-world-frame, kinect ×5,
-   rgbd-mapping. Hardware-untestable AND gated on geom2-native capabilities: decouple
-   `PointCloudCreator`/`DepthCameraPointCloudGrabber` from the deleted `PointCloudObjectBase`
-   so they fill `geom2::PointCloud`; geom2 `RayCastOctree` fill-from-`PointCloud`; cross-camera
-   color-mapping. (`PointCloudSource`/`unprojectDepth` already cover depth→cloud.)
-   Also prune dead unbuilt legacy sources in geom/apps (pipe/viewer/simple/tests).
-   - **LANDED (this session):** `PointCloud::mapColorFromCamera` (cross-camera color→depth
-     registration, replaces `PointCloudCreator::mapImage`) + `icl-stereo-rgbd-simulator`
-     (two cameras, horizontal baseline, headless `BVHSceneCapture`, colours the cloud via
-     `unprojectDepth`+`mapColorFromCamera`) + headless tests (958/958). This is the
-     hardware-free test bed for the color-mapping path.
-   - **Still gated:** kinect/creator apps need `PointCloudCreator`/`DepthCameraPointCloudGrabber`
-     reframed onto `PointCloudSource` + `mapColorFromCamera` (off `PointCloudObjectBase`);
-     define-world-frame also needs geom2 `RayCastOctree` fill-from-`PointCloud`.
+2. **point-cloud-primitive-filter** — deferred (needs `Primitive3D`→node, P3; RSB/protobuf
+   primitives). Box/sphere/near-far filters already exist as `PointCloud` methods.
+
+Everything else now lives in geom2. **Big landings this session (~22 commits):**
+- **Demos→geom2:** generic-texture-coords, texture-cube, scene-shadows, scene-graph,
+  superquadric (+`SuperquadricNode`), offscreen-rendering, **plot-widget-3D** (full geom2
+  `PlotWidget3D`+`Plot3D`+`PlotHandle3D` reimpl), **kinect-segmentation** (fused 3 segmenters).
+- **Apps→geom2:** surf-based-object-tracking, rotate-image-3D, depth-camera-simulator,
+  point-cloud-creator, point-cloud-define-world-frame, **stereo-rgbd-simulator** (new).
+- **Markers→geom2:** marker-detection, multi-cam-marker-demo.
+- **New reusable geom2 capabilities (all tested headless, 959/959):**
+  `PointCloud::mapColorFromCamera` (cross-camera color→depth registration, replaces
+  `PointCloudCreator::mapImage`); `RayCastOctree::fill(PointCloud)`; kinect 11-bit raw→mm in
+  point-cloud-creator.
+- **Retired/deleted:** animated-grid (GLSL, no hook), kinect-pointcloud + rgbd-mapping
+  (subsumed by point-cloud-creator), 3 legacy segmentation demos, dead point-cloud sources.
+- **Stays (CV-only, no Scene layer):** kinect-normals, kinect-recorder, fix-kinect-calibration,
+  show-extrinsic-calibration-grid, simplex-2D, compute-relative-camera-transform, icp3d-test.
+- **Verification debt:** all geom2 ports are build- + headless-checked only — NO GL here. A
+  real-display pass is owed (esp. plot-widget-3D box/labels, the texture/shadow demos).
+- **Depth test bed:** `icl-stereo-rgbd-simulator -d ws 8000 -c ws 8001` →
+  `icl-point-cloud-creator -id ws 8000 -idc d.xml -ic ws 8001 -icc c.xml` is a hardware-free
+  RGB-D registration pipeline.
 
 (Earlier S80-era pipeline work — scene→RGBD→point-cloud — is below; unchanged.)
 
