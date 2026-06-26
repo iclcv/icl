@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom2/RayCastOctree.h>
+#include <icl/geom2/PointCloud.h>
 #include <icl/geom/ViewRay.h>
 #include <icl/utils/Exception.h>
 #include <algorithm>
@@ -10,6 +11,17 @@
 using namespace icl::utils;
 
 namespace icl::geom2 {
+
+  void RayCastOctree::fill(const PointCloud &cloud) {
+    clear();
+    const int dim = cloud.getDim();
+    core::DataSegment<float,3> xyz = cloud.selectXYZ();
+    for (int i = 0; i < dim; ++i) {
+      const auto &p = xyz[i];
+      if (p[0] == 0.f && p[1] == 0.f && p[2] == 0.f) continue;  // skip invalid
+      insert(Pt(p[0], p[1], p[2], (float)i));
+    }
+  }
 
   // Squared distance from point to ray (no sqrt needed)
   static inline float sqrRayPointDist(const geom::ViewRay &ray,

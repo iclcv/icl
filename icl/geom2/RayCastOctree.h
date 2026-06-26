@@ -19,6 +19,8 @@ namespace icl::geom {
 
 namespace icl::geom2 {
 
+  class PointCloud;
+
   /// Octree with accelerated ray-cast queries
   /** Wraps math::Octree<float> and adds rayCast methods that exploit the
       octree's bounding-sphere hierarchy for fast ray-to-point proximity
@@ -31,6 +33,11 @@ namespace icl::geom2 {
   public:
     using Super::Super;  // inherit constructors
     using Pt = math::FixedColVector<float, 4>;
+
+    /// Clear, then insert every valid (non-origin) XYZ point of \a cloud.
+    /** Each inserted point carries its cloud index in the w-component, so a
+        rayCast hit can be related back to the source pixel/point. */
+    void fill(const PointCloud &cloud);
 
     /// Find all points closer than maxDist to the ray
     std::vector<Pt> rayCast(const geom::ViewRay &ray, float maxDist = 1) const;
