@@ -11,15 +11,17 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 - [x] Port surf-based-object-tracking, rotate-image-3D, depth-camera-simulator (apps)
 - [x] `ray-cast-octree`, point-cloud viewer+pipe, show-scene→scene-viewer (earlier)
 - [x] marker-detection + multi-cam-marker-demo (markers; geom2 dep added per-target)
-- [ ] **SEPARATE MULTI-SESSION REWORK**: camera-calibration + camera-calibration-planar
-      (markers, ~2500 LOC incl. shared `CameraCalibrationUtils`). NOT a mechanical
-      `fromSceneObject` swap — blocked on three things: (a) `GridIndicatorObject`
-      uses `addTextTexture` (marker-ID labels) which `fromSceneObject` skips;
-      (b) `CameraCalibrationUtils::calibrate/change_plane` take `geom::Scene&` and
-      mutate SceneObject transforms/plane at runtime (a static converted snapshot
-      would freeze); (c) planar's `AdjustGridMouseHandler` edits grid geometry live.
-      Needs a real geom2 rework (node-handle tracking + a geom2 text-on-grid path).
-      Keeps geom alive until done (alongside the depth batch). See worklist.
+- [ ] **camera-calibration REDESIGN** (multi-session, ACTIVE) — plan + findings:
+      `camera-calibration-redesign.md`. Not a transliteration: rethinking the drift-prone
+      3D joint-DLT pipeline. Decisions: planar primary / 3D kept for multi-cam one-click;
+      registerable `CalibrationTarget` backend (detect+generate; checkerboard NEW + marker-grid);
+      ICL-native intrinsics vs OpenCV comparison; harness-first.
+  - [x] **Phase A.1** projection harness (`test-geom2-calibration-harness`) — reproduces the
+        depth drift quantitatively (near 700mm: 2mm; far 3000mm: 351±265mm).
+  - [ ] Phase A.2 rendering harness (geom2 offscreen + synthetic light/noise → detect → calibrate).
+  - [ ] **investigate** `Camera::calibrate_extrinsic` divergence the harness surfaced (~1.8m err).
+  - [ ] Phase B planar intrinsic+extrinsic (checkerboard backend, native-vs-opencv intrinsics).
+  - [ ] Phase C multi-cam one-click extrinsic (3D, fixed intrinsics). Then geom can be deleted.
 - [ ] **depth/point-cloud batch** (point-cloud-creator, point-cloud-define-world-frame,
       kinect ×5, rgbd-mapping) — gated on decoupling `PointCloudCreator`/
       `DepthCameraPointCloudGrabber` from the deleted `PointCloudObjectBase` (fill
