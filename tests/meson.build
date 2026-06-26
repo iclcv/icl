@@ -31,6 +31,7 @@ if qt_dep.found()
     'test-geom2-pointcloud-mapcolor.cpp',
     'test-geom2-raycast-octree.cpp',
     'test-geom2-primitive3d-converter.cpp',
+    'test-geom2-calibration-harness.cpp',
     'test-io-scene-source.cpp',
     'test-gui-definition.cpp',
   )
