@@ -7,7 +7,6 @@ if _build_demos and qt_found
     'kinect-euclidean-blob-segmentation': [],
     'kinect-normals': [],
     'kinect-segmentation': [],
-    'plot-widget-3D': [],
     # 'ray-cast-octree': [],  # replaced by geom2/raycast-octree-demo
     'simplex-2D': [],
   }
