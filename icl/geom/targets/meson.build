@@ -6,11 +6,9 @@ if _build_demos and qt_found
     'kinect-depth-image-segmentation': [],
     'kinect-euclidean-blob-segmentation': [],
     'kinect-normals': [],
-    'kinect-pointcloud': [],
     'kinect-segmentation': [],
     'plot-widget-3D': [],
     # 'ray-cast-octree': [],  # replaced by geom2/raycast-octree-demo
-    'rgbd-mapping': [],
     'simplex-2D': [],
   }
   foreach name, extra_deps : _geom_demos

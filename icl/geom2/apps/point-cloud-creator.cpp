@@ -35,7 +35,13 @@ GUI gui;
 Scene2 scene;
 
 Camera c_cam, d_cam;
-bool haveColor = false, distToCamPlane = true;
+bool haveColor = false, distToCamPlane = true, rawDepth = false;
+
+// Kinect 11-bit disparity → millimetres (same formula as the legacy
+// PointCloudCreator::KinectRAW11Bit path). 2047 = "no measurement" → 0.
+static inline float raw_to_mm(float d) {
+  return 1.046f * (d == 2047.f ? 0.f : 1000.f / (d * -0.0030711016f + 3.3309495161f));
+}
 
 ImageSource grabber_c, grabber_d;
 ImageSink cloud_out;
@@ -58,9 +64,7 @@ void init() {
   if (pa("-o")) cloud_out.init(pa("-o"));
 
   const std::string unit = *pa("-du");
-  if (unit == "raw")
-    WARNING_LOG("depth unit 'raw' (kinect 11-bit) is not supported by the geom2 "
-                "unprojection; treating depth as distToCamPlane mm");
+  rawDepth = (unit == "raw");                       // kinect 11-bit → mm, then Z-depth
   distToCamPlane = (unit != "distToCamCenter");
 
   const Size res = d_cam.getResolution();
@@ -94,6 +98,11 @@ void init() {
 
 void run() {
   Img32f depth = grabber_d.grab().as32f();
+  if (rawDepth) {                                        // kinect 11-bit disparity → mm
+    float *d = depth.getData(0);
+    const int dim = depth.getDim();
+    for (int i = 0; i < dim; ++i) d[i] = raw_to_mm(d[i]);
+  }
   cloud->unprojectDepth(depth, d_cam, distToCamPlane);   // depth → world XYZ
 
   Img8u color;
@@ -129,8 +138,8 @@ void run() {
 
 int main(int argc, char **argv) {
   pa_explain
-  ("-du", "expected unit of the input depth images: raw, distToCamCenter or "
-          "distToCamPlane (kinect default; mm). 'raw' kinect 11-bit is unsupported here.")
+  ("-du", "expected unit of the input depth images: raw (kinect 11-bit disparity, "
+          "decoded to mm here), distToCamCenter, or distToCamPlane (default; mm).")
   ("-o",  "optional RGBD image output (registered colour + depth, depth camera in metadata)");
   return ICLApplication(argc, argv,
                         "[m]-depth-input|-id(type=kinectd,device=0) "
