@@ -44,7 +44,10 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
     output path into a `geom2::PointCloud` (decouple from the deleted render layer), then geom2 viz.
   - [ ] **point-cloud-define-world-frame** — needs geom2 `RayCastOctree` fill-from-`PointCloud`.
 - [ ] **DECISION**: animated-grid (custom GLSL shader hook vs simplify vs delete)
-- [ ] **DECISION**: plot-widget-3D (geom2 PlotWidget3D reimpl ~500-1000 LOC vs delete)
+- [x] **plot-widget-3D** — geom2 `PlotWidget3D` + `Plot3D`/`PlotHandle3D` reimplemented on
+      Scene2 (scaled root GroupNode + coordinate box + tics/labels; scatter/surf/linestrip/
+      label API). Demo ported. Build-checked; real-display pass owed (box framing, label
+      distortion, scatter colour-range). Legacy geom PlotWidget3D stays until geom deletion.
 - [ ] point-cloud-primitive-filter — deferred (needs Primitive3D→node, P3)
 - [ ] Prune dead legacy point-cloud sources (geom/apps: pipe/viewer/simple/tests unbuilt)
 - [ ] **Delete geom** (final)
