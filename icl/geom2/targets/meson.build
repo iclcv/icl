@@ -154,4 +154,9 @@ if _build_apps and qt_found
     dependencies: [icl_geom2_dep],
     install: true,
   )
+  executable('icl-point-cloud-primitive-filter',
+    files('../apps/point-cloud-primitive-filter.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: true,
+  )
 endif
