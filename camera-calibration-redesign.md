@@ -47,12 +47,26 @@ chronically drift-prone). This is a multi-session arc.
   `calibrate_extrinsic`): preserve the 6-cam single-click, drift-free. GridIndicatorObject →
   geom2 nodes.
 
-## Open findings to resolve
-- **`Camera::calibrate_extrinsic` diverges in the synthetic harness** (~1.8m depth error at a
-  1.6m distance, with default or truth RenderParams, LMA on/off). Must understand before the
-  decoupled pipeline relies on it. Possible causes: LMA initialisation (no extrinsic seed),
-  RenderParams/resolution handling, or a genuine bug. The conditioning result already proves
-  WHY decoupling is needed; Phase B must prove the working fix.
+## Resolved finding — the `calibrate_extrinsic` "divergence" (RCA + fix)
+Dug in (probes + `test-geom2-calibration-harness`):
+- **Root cause:** `Camera::calibrate_extrinsic`'s internal **linear SVD seed** is non-robust.
+  For the 3D two-plane object it returns a **cheirality-flipped, mis-scaled** camera
+  (z=−2100 vs the true +700 — wrong sign AND ~3× scale). The LMA then starts in that bad
+  basin and can't escape → the ~1.8m "divergence". `calibrate_pinv` is unaffected (it gets +700).
+- **The LMA is correct.** `optimize_camera_calibration_lma` IS the fixed-intrinsics /
+  extrinsic-only solver (`Q = P·m(p)·T`, P=intrinsics held; only the 6 extrinsic params vary).
+  Seeded near truth it gives **1.5mm** depth error vs the joint DLT's **191mm** under the same
+  noise, and it has a **WIDE basin**: seed pose off by ±300mm→~5mm, ±600mm→~15mm (at 3m).
+- **pinv's pose is too unreliable a seed** in the ill-conditioned far case (its orientation, not
+  just depth, is far off → outside the basin → 700mm). So the seed must come from elsewhere.
+- **Fix (Phase B):** seed the extrinsic LMA from a reliable pose — a **homography/PnP init**
+  (`CoplanarPointPoseEstimator` for planar) — not the broken linear solve. This is exactly the
+  planar-first path, and it makes the decoupled calibration robust. Optionally also fix the
+  framework `calibrate_extrinsic` linear seed (cheirality + SVD-orthonormal rotation + scale)
+  so it stops handing the LMA a poisoned seed — benefits all callers, but touches a shared
+  function used by the legacy apps, so do it with the harness as the regression guard.
+- **Locked regression:** `decoupled_seeded_beats_drift` (homography-quality ±200mm seed) →
+  4.4mm vs joint 249mm (~56×).
 
 ## The historical "marker-edge bias" drift
 Corner-detection bias toward/away from quad centres shrinks/grows the apparent object →
