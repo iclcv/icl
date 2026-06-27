@@ -127,6 +127,11 @@ namespace icl::geom2 {
   void Scene2::addNode(NodePtr node) {
     m_data->objects.push_back(std::move(node));
     m_data->autoBoundsDirty = true;
+    // The Renderer caches geometry/textures keyed by raw Node*/Material*. A new
+    // node may reuse a just-freed address (and a fresh material starts at the
+    // same version), so a stale cache entry would otherwise suppress the upload
+    // — the new geometry/texture would never show. Invalidate on any node change.
+    m_data->renderer.invalidateCache();
   }
 
   Node *Scene2::getNode(int i) {
@@ -155,6 +160,7 @@ namespace icl::geom2 {
       eraseLight(m_data->lights, m_data->objects[i].get());
       m_data->objects.erase(m_data->objects.begin() + i);
       m_data->autoBoundsDirty = true;
+      m_data->renderer.invalidateCache();   // drop stale geom/texture cache (see addNode)
     }
   }
 
@@ -164,6 +170,7 @@ namespace icl::geom2 {
     o.erase(std::remove_if(o.begin(), o.end(),
             [node](const auto &p) { return p.get() == node; }), o.end());
     m_data->autoBoundsDirty = true;
+    m_data->renderer.invalidateCache();      // drop stale geom/texture cache (see addNode)
   }
 
   void Scene2::clear() {

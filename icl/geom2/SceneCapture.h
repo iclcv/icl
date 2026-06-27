@@ -26,7 +26,12 @@ namespace icl::geom2 {
 
       Depth is in millimetres; DistToCamPlane = Z-depth, DistToCamCenter =
       Euclidean distance to the camera centre (matches the two ICL depth-image
-      conventions consumed by PointCloudCreator). */
+      conventions consumed by PointCloudCreator).
+
+      For a *photoreal* (path-traced) colour render of a scene — full GI, soft
+      shadows, PBR materials, but no depth — see geom2::CyclesRenderer (a
+      Raytracer, GL-free). SceneCapture is the geometry/depth-oriented capturer;
+      CyclesRenderer is the beauty-render path. */
   class ICLGeom2_API SceneCapture {
   public:
     virtual ~SceneCapture() = default;

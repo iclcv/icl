@@ -73,7 +73,12 @@ namespace icl::geom2 {
       if (m_img.isNull()) return false;
       meta.width = m_img.getWidth();
       meta.height = m_img.getHeight();
-      meta.channels = std::min(m_img.getChannels(), 4);
+      // We ALWAYS hand Cycles a 4-channel (RGBA) BYTE4 buffer — load_pixels()
+      // pads <4-channel sources with opaque alpha. Reporting the source channel
+      // count here (e.g. 3 for formatRGB) mismatches the BYTE4 type, so
+      // conform_pixels() repacks at the wrong stride → garbage (the classic
+      // rainbow-striped texture). Keep metadata consistent with the buffer.
+      meta.channels = 4;
       meta.type = IMAGE_DATA_TYPE_BYTE4;
       meta.colorspace_file_hint = "sRGB";
       meta.finalize();
@@ -91,11 +96,14 @@ namespace icl::geom2 {
       if (ch == 4) {
         core::planarToInterleaved(&img8u, dst);
       } else {
-        std::memset(dst, 255, w * h * 4);
-        for (int c = 0; c < ch; c++) {
-          const icl8u *src = img8u.getData(c);
-          for (int i = 0; i < w * h; i++)
-            dst[i * 4 + c] = src[i];
+        // Pad to opaque RGBA. 1ch → broadcast luma to RGB (else G/B would stay
+        // at the memset value and grey textures came out tinted); 3ch → RGB.
+        const icl8u *R = img8u.getData(0);
+        const icl8u *G = ch > 1 ? img8u.getData(1) : R;
+        const icl8u *B = ch > 2 ? img8u.getData(2) : R;
+        for (int i = 0; i < w * h; i++) {
+          dst[i*4+0] = R[i]; dst[i*4+1] = G[i];
+          dst[i*4+2] = B[i]; dst[i*4+3] = 255;
         }
       }
       meta.conform_pixels(pixels);

@@ -98,6 +98,11 @@ if _build_demos and qt_found
       dependencies: [icl_geom2_dep, icl_io_dep],
       install: false,
     )
+    executable('geom2-headless-cycles-capture-demo',
+      files('../demos/headless-cycles-capture.cpp'),
+      dependencies: [icl_geom2_dep, icl_io_dep],
+      install: false,
+    )
     executable('geom2-cycles-scene-viewer-demo',
       files('../demos/cycles-scene-viewer.cpp'),
       dependencies: [icl_geom2_dep],
