@@ -4,49 +4,58 @@
 
 ## Next Step
 
-### Session 82 — sandbox now does headless GL + Cycles (verify on restart)
-Full writeup: `sandbox-harness-notes.md`. The mscc sandbox profile/source is at `~/margin.mscc`
-(`default-profile.darwin` = Seatbelt SBPL; `backends/seatbelt.py` appends file rules;
-mach-lookup grants live ONLY in `default-profile.darwin`). Both headless blockers are solved:
-- **Blocker 1 (Metal/OpenCL kernel-cache write) — RESOLVED** by the current profile (`/var/folders`
-  writable since mscc commit `a1e74ae`). Verified *inside* the sandbox: `geom2-cycles-renderer-
-  test-demo` renders repeatably (was "first run only"). ICL's own OpenCL (`utils::CLProgram`)
-  uses the same `…/C/com.apple.metalfe/` cache → covered.
-- **Blocker 2 (headless GL) — SOLVED, needs a 1-line-block profile edit.** Proven on the HOST via
-  `scripts/sandbox-gl-smoke.sh` (raw-CGL + Qt-`QOffscreenSurface` probes; `log show`/nested
-  `sandbox-exec` are denied in-sandbox so it can't be tested from inside). Headless offscreen GL
-  (= `GLSceneCapture(ownContext=true)`) renders with **only** `com.apple.windowserver.active` +
-  `com.apple.cvmsServ` (got `GL 4.1 Metal — Apple M3 Max`, correct FBO pixel). The on-screen
-  `QOpenGLWidget` path is intentionally NOT pursued (drags in the whole window/view-bridge mach
-  surface). **`./patch.sh`** applies the grants to `~/margin.mscc/default-profile.darwin`.
+### Session 83 — geom2 offscreen-render tooling + checkerboard-lab overhaul
+On `further-restructuring-and-cleanup`, full build green throughout. Headless GL **and** Cycles
+both verified in-sandbox (Session 82 work). This session built the reusable "interactive GL scene
++ switchable offscreen renderer" stack and rebuilt the checkerboard-detection lab on it.
 
-### ✅ Session 82 follow-up — headless GL VERIFIED in-sandbox + a real renderer bug fixed
-The on-restart verification is **done**. New entry point `geom2-headless-gl-capture-demo`
-(`icl/geom2/demos/headless-gl-capture.cpp`): plain `QGuiApplication` (cocoa) +
-`GLSceneCapture(ownContext=true)`, no window → renders a Scene2 → saves PNG. Verified in this
-patched sandbox: `GL 4.1 Metal`, 640×480, 2711 unique colors (lit ground, shaded sphere/cube,
-shadows). Run with `QT_QPA_PLATFORM=cocoa builddir/bin/geom2-headless-gl-capture-demo out.png`.
-A bare Qt `QOffscreenSurface`+`QOpenGLContext` probe (`scripts/sandbox-gl-probe-qt.cpp`) also
-renders in-sandbox — so the `windowserver.active` + `cvmsServ` grants are confirmed sufficient.
+**Commits (oldest→newest):** `8548851d3` headless GL verified + 2 renderer bug fixes ·
+`d0ec8e28a` Cycles fixes + docs + `OffscreenView` born · `71e31d8e5` `CheckerboardNode` + NN
+texture filter · `544f21f6e` warp-map (un)distortion + `LightNode` factories · `876ee2f4c` lab
+3-pane layout + `OffscreenView` poll()/image() consolidation.
 
-**Two framework fixes this required (both in geom2, real bugs not sandbox-specific):**
-1. `GLSceneCapture::OffscreenContext::makeCurrent()` (`SceneCapture.cpp`) now calls `glewInit()`
-   once (with `glewExperimental`) — ICL's `Renderer` reaches FBO/VAO/shader entry points through
-   GLEW, which the on-screen path inits in `ICLWidget::paintGL` but the owned offscreen context
-   never did → first `glGenFramebuffers` was a null-pointer segfault.
-2. `Renderer::ensureShaderCompiled()` (`Renderer.cpp`) used to leave **FBO 0 bound** after the
-   lazy shadow-FBO creation. Since it runs inside the *first* `render()`, it clobbered the
-   caller's bound FBO, so `renderToImage`'s whole frame targeted the (incomplete) offscreen
-   default framebuffer (GL_INVALID_FRAMEBUFFER_OPERATION, geometry lost). On-screen this was
-   invisible (only the 1st frame, widget FBO non-zero); a one-shot `renderToImage` hit it every
-   time. Now saves/restores the bound FBO. `Scene2::renderToImage` also rebinds `captureFBO`
-   defensively before readback.
+**New reusable pieces (geom2 unless noted):**
+- **`OffscreenView` (`OffscreenView.{h,cpp}`)** — THE pattern for a real on-screen Scene2 view +
+  a switchable GL/Cycles offscreen capture, threading baked in (GL renders on the GUI thread in
+  the widget context — a worker-thread owned context stalls macOS; Cycles is GL-free, polled on
+  the worker). A `utils::Configurable`: `Prop(&view)` surfaces `backend`, `cycles.*`, and the
+  capture scene as a `scene.*` child. API: `poll()` (drives Cycles + auto-requests a GL capture on
+  camera/backend change), `image()` (cached latest frame), `invalidate()` (scene edit → refresh
+  both), `requestCapture()`, `setBackend()`/`cycles()`.
+- **`CheckerboardNode`** — calibration board as a node: one quad, **1-texel-per-cell
+  nearest-neighbour** texture (crisp at any scale; renderer AA smooths edges), `innerCorners()` =
+  the (cols-1)×(rows-1) ground-truth saddle corners. Reuses its material across `setCells()`.
+- **`Material::TexFilter` (Linear/Nearest)** — honoured by GL (`GL_NEAREST`) + Cycles
+  (`INTERPOLATION_CLOSEST`).
+- **`filter::ImageUndistortion::createInverseWarpMap()`** — the DISTORTION (forward) map
+  (`createWarpMap` rectifies). Lab applies both via `filter::WarpOp` (precomputed, rebuilt on
+  k1/k2 change). Both share one `fillWarpMap()` helper.
+- **`LightNode::point()/directional()`** factories (point() = warm-white shadow-caster).
+- Cycles backend **documented** (`CyclesRenderer.h`/`Raytracer.h`: drive models + non-black
+  recipe). Fixed: 3-channel RGB texture corruption (`SceneSynchronizer`); `Scene2::add/removeNode`
+  now invalidate the renderer cache (the x/y-cells stale-texture lag).
 
-With this green, the geom2 GL apps (checkerboard-lab offscreen render below, `Scene2::
-renderToImage`) can finally be **verified here**, not just build-checked.
+**Verify these HERE (headless):** `geom2-headless-gl-capture-demo`,
+`geom2-headless-cycles-capture-demo` (both render crisp images in-sandbox).
 
-Smoke-test tooling kept in repo: `scripts/sandbox-gl-smoke.sh` (`--qt`/default/`--window`),
-`scripts/sandbox-gl-probe.c`, `scripts/sandbox-gl-probe-qt.cpp`. `patch.sh` is throw-away.
+### NEXT — pick up here
+1. **Real-display pass on `icl-checkerboard-detection-lab`** (owed — built + headless-checked, never
+   run on a real display). 3 panes: 3D view | options | result. Check: drag camera (smooth FPS),
+   toggle GL↔Cycles in the `Prop(&view)` panel (live Cycles refinement), "apply undistortion"
+   toggle, x/y cells (crisp board, no stale texture), k1/k2 distortion, `scene.enable lighting` +
+   shadows. Also eyeball the other geom2 GL apps (still build-checked only).
+2. **Node→Scene2 back-pointer** — planned, memory `project_node_scene_backpointer`: self-locking
+   high-level mutators + auto-invalidation (Cycles `SceneSynchronizer` version-aware) → drop the
+   manual `scene.lock()`/`view.invalidate()` in `setBoardCells` and simplify to a per-frame
+   `board->setCells(gui["xc"], gui["yc"])` (already idempotent).
+3. **Shadow-casting disturber objects** in the lab → realistic shaded test images for the detector.
+4. **camera-calibration redesign** (last geom→geom2 retirement item) — plan
+   `camera-calibration-redesign.md` + backlog. `CheckerboardNode` + the lab now provide the
+   target/visualization half; resume at distortion-tolerant grid recovery → `CheckerboardTarget`
+   backend → multi-frame intrinsics. Then the endgame: **delete `geom`, rename `geom2`→`geom`**.
+
+Headless GL/Cycles smoke tooling kept: `scripts/sandbox-gl-smoke.sh`, `scripts/sandbox-gl-probe*.c*`
+(`patch.sh` throw-away). sandbox writeup: `sandbox-harness-notes.md`.
 
 ---
 
