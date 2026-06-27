@@ -84,8 +84,7 @@ static void rebuildBoard(int xc, int yc) {
   board->addTexCoord(1,1); board->addTexCoord(0,1);
   board->addQuad(0,1,2,3, 0,1,2,3, 0,1,2,3);
   auto mat = Material::fromColor(GeomColor(255,255,255,255));
-  mat->emissive = GeomColor(1,1,1,1);       // unlit → raw pattern, distortion-clean
-  mat->setBaseColorMap(Image(tex));
+  mat->setBaseColorMap(Image(tex));         // shown flat (scene lighting disabled, see init)
   board->setMaterial(mat);
   board->setPrimitiveVisible(PrimLine | PrimVertex, false);
   scene.addNode(board);
@@ -173,8 +172,7 @@ static void drawResult(DrawHandle &draw, const Img8u &img, const std::vector<Cor
 void init() {
   scene.addCamera(Camera::lookAt(Vec(0,0,600,1), Vec(0,0,0,1), Vec(0,1,0,1), CAMRES, 35.f));
   scene.setBounds(400);
-  auto light = std::make_shared<LightNode>(LightNode::Point);
-  light->translate(0,0,600); scene.addLight(light);
+  scene.setPropertyValue("enable lighting", false);   // board shown FLAT (raw texture)
   rebuildBoard(7, 5);
 
   gui << (HSplit()
