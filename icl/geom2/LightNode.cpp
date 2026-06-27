@@ -19,6 +19,26 @@ namespace icl::geom2 {
   LightNode::LightNode(Type type) : m_data(std::make_unique<Data>()) { m_data->type = type; }
   LightNode::~LightNode() = default;
 
+  std::shared_ptr<LightNode> LightNode::point(float x, float y, float z,
+                                              const GeomColor &color, float intensity,
+                                              bool shadows) {
+    auto l = std::make_shared<LightNode>(Point);
+    l->setColor(color);
+    l->setIntensity(intensity);
+    l->translate(x, y, z);
+    l->setShadowEnabled(shadows);
+    return l;
+  }
+
+  std::shared_ptr<LightNode> LightNode::directional(float dx, float dy, float dz,
+                                                    const GeomColor &color, float intensity) {
+    auto l = std::make_shared<LightNode>(Directional);
+    l->setColor(color);
+    l->setIntensity(intensity);
+    l->translate(dx, dy, dz);   // for directional lights the translation is the direction
+    return l;
+  }
+
   LightNode::LightNode(const LightNode &o) : Node(o), m_data(std::make_unique<Data>(*o.m_data)) {}
 
   LightNode &LightNode::operator=(const LightNode &o) {

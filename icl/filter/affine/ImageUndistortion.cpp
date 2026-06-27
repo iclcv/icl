@@ -6,6 +6,7 @@
 #include <icl/utils/Point.h>
 #include <icl/utils/config/ConfigFile.h>
 #include <fstream>
+#include <functional>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -15,9 +16,11 @@ namespace icl::filter {
   struct ImageUndistortion::Impl{
     virtual ~Impl(){}
     Img32f warpMap;
+    Img32f inverseWarpMap;
     std::string model;
     std::vector<double> params;
     std::vector<double> warpMapParams;
+    std::vector<double> inverseWarpMapParams;
 
     Size imageSize;
     virtual Point32f undistort(const Point32f &point) const{
@@ -240,24 +243,46 @@ namespace icl::filter {
     return s << f;
   }
 
-  const Img32f &ImageUndistortion::createWarpMap() const{
-    if(!impl->warpMap.getChannels()){
-      impl->warpMap.setChannels(2);
-      impl->warpMap.setSize(getImageSize());
-    }
-    if(impl->params != impl->warpMapParams){
-      impl->warpMapParams = impl->params;
-
-      Channel32f cs[2] = { impl->warpMap[0], impl->warpMap[1] };
-      const Size size = getImageSize();
+  // Fill a 2-channel warp map from a per-pixel mapping (out-pixel -> source pos),
+  // (re)building only when the parameters changed. Shared by both warp maps —
+  // the only difference is the mapping function. (A core::Image visitor doesn't
+  // fit here: the fill is coordinate-indexed, and the visitors surface channel
+  // data, not pixel coordinates.)
+  static const Img32f &fillWarpMap(Img32f &map, std::vector<double> &cachedParams,
+                                   const std::vector<double> &params, const Size &size,
+                                   const std::function<Point32f(const Point32f &)> &fn){
+    if(!map.getChannels()){ map.setChannels(2); map.setSize(size); }
+    if(params != cachedParams){
+      cachedParams = params;
+      Channel32f cs[2] = { map[0], map[1] };
       for(int xi=0;xi<size.width;++xi){
         for(int yi=0;yi<size.height; ++yi){
-          Point32f p = impl->undistort(Point32f(xi,yi));
+          const Point32f p = fn(Point32f(xi,yi));
           cs[0](xi,yi) = p.x;
           cs[1](xi,yi) = p.y;
         }
       }
     }
-    return impl->warpMap;
+    return map;
+  }
+
+  const Img32f &ImageUndistortion::createWarpMap() const{
+    return fillWarpMap(impl->warpMap, impl->warpMapParams, impl->params, getImageSize(),
+                       [this](const Point32f &p){ return impl->undistort(p); });
+  }
+
+  const Img32f &ImageUndistortion::createInverseWarpMap() const{
+    return fillWarpMap(impl->inverseWarpMap, impl->inverseWarpMapParams, impl->params, getImageSize(),
+                       [this](const Point32f &target){
+                         // find q with model(q) == target by fixed-point iteration
+                         // (the model is near-identity for small distortion).
+                         Point32f q = target;
+                         for(int it=0; it<8; ++it){
+                           const Point32f d = impl->undistort(q);
+                           q.x += target.x - d.x;
+                           q.y += target.y - d.y;
+                         }
+                         return q;
+                       });
   }
   } // namespace icl::filter

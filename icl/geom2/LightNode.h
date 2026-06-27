@@ -20,6 +20,20 @@ namespace icl::geom2 {
 
     LightNode(Type type = Point);
     ~LightNode() override;
+
+    /// Convenience factory: a Point light at (x,y,z). NB the colour is 0..255
+    /// (LightNode / Cycles convention), NOT 0..1. Collapses the usual
+    /// make_shared + setColor + setIntensity + translate + setShadowEnabled dance.
+    static std::shared_ptr<LightNode> point(float x, float y, float z,
+                                            const GeomColor &color = GeomColor(255, 247, 235, 255),
+                                            float intensity = 1.0f,
+                                            bool shadows = true);
+
+    /// Convenience factory: a Directional light shining along (dx,dy,dz).
+    static std::shared_ptr<LightNode> directional(float dx, float dy, float dz,
+                                                  const GeomColor &color = GeomColor(255, 247, 235, 255),
+                                                  float intensity = 1.0f);
+
     LightNode(const LightNode &);
     LightNode &operator=(const LightNode &);
     LightNode(LightNode &&) noexcept;

@@ -44,7 +44,17 @@ namespace icl::filter {
     const std::string &getModel() const;
     const utils::Point32f operator()(const utils::Point32f &distortedPos) const;
     void setParams(const std::vector<double> &params);
+
+    /// Warp map that RECTIFIES (undistorts) a distorted image when used with a
+    /// filter::WarpOp: dst(p) = src(model(p)). Cached; rebuilt on a parameter
+    /// change.
     const core::Img32f &createWarpMap() const;
+
+    /// Inverse of createWarpMap(): warp map that DISTORTS an ideal image into a
+    /// lens-distorted one (dst(p) = src(model^{-1}(p))) — the "distortion part".
+    /// Built by fixed-point inversion of the model (assumes a near-identity /
+    /// small-distortion mapping). Cached separately; rebuilt on a parameter change.
+    const core::Img32f &createInverseWarpMap() const;
 
     inline bool isNull() const { return !impl; }
   };

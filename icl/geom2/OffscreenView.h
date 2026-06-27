@@ -56,12 +56,15 @@ namespace icl::geom2 {
   ///   - poll(), requestCapture() and setBackend() are called from your worker
   ///     run() loop. poll() also drives the Cycles progressive render, so call it
   ///     EVERY frame; it returns true only when a genuinely new frame is ready.
-  /// Also a utils::Configurable: it exposes the backend choice and the Cycles
-  /// tuning knobs as properties, so an app can pull them straight into its GUI
-  /// with `gui << Prop(&view)` instead of wiring its own controls. Properties:
+  /// Also a utils::Configurable: it exposes the backend choice + Cycles tuning,
+  /// and adds the captured scene as a child Configurable, so an app pulls the
+  /// whole control set into its GUI with `gui << Prop(&view)` (no separate
+  /// scene-props button needed). Properties:
   ///   "backend"                  GL (fast) / Cycles (photoreal)
   ///   "cycles.denoising"         OIDN on/off (off by default — it's slow)
   ///   "cycles.samples per step"  progressive granularity (1..16)
+  ///   "scene.*"                  the capture scene's own props (enable lighting,
+  ///                              background color, debug, …)
   class ICLGeom2_API OffscreenView : public utils::Configurable {
   public:
     enum class Backend { GL, Cycles };

@@ -30,6 +30,8 @@
 #include <icl/geom2/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
 #include <icl/geom/Camera.h>
 #include <icl/cv/CheckerboardSaddleDetector.h>
+#include <icl/filter/affine/ImageUndistortion.h>   // radial distortion model + warp maps
+#include <icl/filter/affine/WarpOp.h>               // efficient warp-map application
 #include <cstdlib>   // std::_Exit
 #include <iostream>
 
@@ -58,58 +60,23 @@ static void setBoardCells(int xc, int yc) {
   view.invalidate();
 }
 
-static inline void sampleRGB(const Img8u &src, float x, float y, icl8u out[3]) {
-  const int W = src.getWidth(), H = src.getHeight();
-  if (x < 0 || y < 0 || x > W-1 || y > H-1) { out[0]=out[1]=out[2]=70; return; } // bg gray
-  const int x0=(int)x, y0=(int)y; const float ax=x-x0, ay=y-y0;
-  for (int c=0;c<3;++c){
-    const icl8u *d = src.begin(c);
-    const float a=d[y0*W+x0], b=d[y0*W+std::min(x0+1,W-1)],
-                cc=d[std::min(y0+1,H-1)*W+x0], e=d[std::min(y0+1,H-1)*W+std::min(x0+1,W-1)];
-    out[c] = (icl8u)((a*(1-ax)+b*ax)*(1-ay) + (cc*(1-ax)+e*ax)*ay + 0.5f);
-  }
-}
+// Lens distortion via filter::ImageUndistortion (MatlabModel5Params, radial
+// k1/k2) + filter::WarpOp. The model + its two warp maps are precomputed and
+// only rebuilt when k1/k2 change — applying them with WarpOp is far cheaper than
+// the old per-pixel loops. createInverseWarpMap() DISTORTS the clean render into
+// a "camera view"; createWarpMap() rectifies it back (the calibration knows the
+// truth here; in reality you'd estimate k1/k2 from many board views).
+static WarpOp g_distort, g_undistort;   // (warp maps set on demand)
 
-// apply a radial lens-distortion model to a (real-rendered) camera image:
-// for output pixel p, sample the source at q = c + (p-c)*(1+k1 r^2 + k2 r^4).
-static Img8u distortImage(const Img8u &src, float k1, float k2) {
-  const int W = src.getWidth(), H = src.getHeight();
-  if (!W || !H) return Img8u(CAMRES, formatRGB);   // empty render (e.g. no GL)
-  Img8u out(Size(W,H), formatRGB);
-  const float cx=W/2.f, cy=H/2.f, f=std::max(cx,cy);
-  for (int y=0;y<H;++y) for (int x=0;x<W;++x){
-    float qx=x, qy=y;
-    if (k1!=0.f || k2!=0.f){                 // lens distortion (inverse map)
-      const float nx=(x-cx)/f, ny=(y-cy)/f, r2=nx*nx+ny*ny, s=1+k1*r2+k2*r2*r2;
-      qx = cx+(x-cx)*s; qy = cy+(y-cy)*s;
-    }
-    icl8u rgb[3]; sampleRGB(src, qx, qy, rgb);
-    for (int c=0;c<3;++c) out.begin(c)[y*W+x]=rgb[c];
-  }
-  return out;
-}
-
-// Undistort a distorted view using the (here known) radial parameters: for each
-// output pixel p, find the distorted source x with distort(x)=p (fixed point,
-// since the map is near-identity) and sample there. With correct k1,k2 the
-// checkerboard lines straighten out. NOTE: in a real calibration the parameters
-// are NOT known from one frame — you move the board around the scene to collect
-// many views and estimate them jointly; here the simulator hands us the truth.
-static Img8u undistort(const Img8u &D, float k1, float k2) {
-  const int W = D.getWidth(), H = D.getHeight();
-  Img8u out(Size(W,H), formatRGB);
-  const float cx=W/2.f, cy=H/2.f, f=std::max(cx,cy);
-  for (int y=0;y<H;++y) for (int x=0;x<W;++x){
-    float dx=x, dy=y;
-    if (k1!=0.f || k2!=0.f)
-      for (int it=0; it<6; ++it){          // solve distort(dx,dy) = (x,y)
-        const float nx=(dx-cx)/f, ny=(dy-cy)/f, r2=nx*nx+ny*ny, s=1+k1*r2+k2*r2*r2;
-        dx += x-(cx+(dx-cx)*s); dy += y-(cy+(dy-cy)*s);
-      }
-    icl8u rgb[3]; sampleRGB(D, dx, dy, rgb);
-    for (int c=0;c<3;++c) out.begin(c)[y*W+x]=rgb[c];
-  }
-  return out;
+static void updateDistortion(float k1, float k2, const Size &sz) {
+  static float lk1 = 1e9f, lk2 = 1e9f; static Size lsz;
+  if (k1 == lk1 && k2 == lk2 && sz == lsz) return;
+  lk1 = k1; lk2 = k2; lsz = sz;
+  const double f = std::max(sz.width, sz.height) / 2.0, cx = sz.width/2.0, cy = sz.height/2.0;
+  filter::ImageUndistortion ud("MatlabModel5Params",
+                               {f, f, cx, cy, 0, (double)k1, (double)k2, 0, 0, 0}, sz);
+  g_distort.setWarpMap(ud.createInverseWarpMap());   // ideal → lens-distorted
+  g_undistort.setWarpMap(ud.createWarpMap());        // distorted → rectified
 }
 
 // draw a result image + the detected corners (+ their two board axes)
@@ -137,14 +104,11 @@ void init() {
   // and Cycles always lights it physically.
   scene.addCamera(Camera::lookAt(Vec(0,0,600,1), Vec(0,0,0,1), Vec(0,1,0,1), CAMRES, 35.f));
   scene.setBounds(400);
-  scene.setPropertyValue("enable lighting", false);
 
-  auto light = std::make_shared<LightNode>(LightNode::Point);
-  light->setColor(GeomColor(255, 247, 235, 255));   // 0..255 (Cycles sync divides by 255)
-  light->setIntensity(1.0f);
-  light->translate(180, 220, 500);
-  light->setShadowEnabled(false);                   // flat board needs no shadow map
-  scene.addLight(light);
+  // A key light (shadows on — for realistic shaded test images; add shadow-
+  // throwing disturber objects later). Lighting on/off is now scene.* in the
+  // Prop(&view) panel.
+  scene.addLight(LightNode::point(180, 220, 500));
 
   board = CheckerboardNode::create(7, 5, 280.f);
   scene.addNode(board);
@@ -165,9 +129,7 @@ void init() {
                   << (HBox()
                       << FSlider(3, 9, 5, {.handle="radius", .label="ring radius"})
                       << FSlider(0.1, 0.8, 0.35, {.handle="minScore", .label="min score"}))
-                  << (HBox()
-                      << Prop(&view, {.label="offscreen renderer"})   // backend + Cycles knobs
-                      << CheckBox("lighting", {.checked=false, .handle="lighting"}))
+                  << Prop(&view, {.label="offscreen renderer + scene"})   // backend, Cycles, scene.*
                   << (HBox()
                       << CheckBox("corners", {.checked=true, .handle="showCorners"})
                       << CheckBox("orientation", {.checked=true, .handle="showOri"})
@@ -185,9 +147,9 @@ void run() {
   const int xc = gui["xc"], yc = gui["yc"];
   if (xc != curX || yc != curY) setBoardCells(xc, yc);
 
-  // Read the live controls. The backend (GL/Cycles) + Cycles knobs live in the
-  // OffscreenView's own Configurable (the Prop panel), so we just read its state.
-  const bool  lighting = gui["lighting"];
+  // Read the live controls. The backend (GL/Cycles), Cycles knobs and the scene
+  // props (lighting, background, …) live in the OffscreenView Configurable (the
+  // Prop panel); we just read its backend state for the dirty gate.
   const float k1 = gui["k1"], k2 = gui["k2"], minScore = gui["minScore"];
   const int   radius   = gui["radius"];
   const int   backend  = (int)view.getBackend();
@@ -196,23 +158,19 @@ void run() {
     return a[0]==b[0] && a[1]==b[1] && a[2]==b[2] && a[3]==b[3]; };
 
   // A capture is only needed when the rendered image would change (camera moved,
-  // board resized, lighting/backend changed); re-detection is needed when a new
-  // capture arrives OR a distortion/detector slider moved (no re-render then).
+  // board resized, backend changed); re-detection is needed when a new capture
+  // arrives OR a distortion/detector slider moved (no re-render then).
   static bool  have = false;
   static Vec   lPos, lNorm, lUp;
-  static int   lXc=-1, lYc=-1, lBackend=-1, lLight=-1, lRadius=-1;
+  static int   lXc=-1, lYc=-1, lBackend=-1, lRadius=-1;
   static float lK1=1e9f, lK2=1e9f, lMs=1e9f;
   const bool camMoved = !have || !sameVec(cam.getPosition(), lPos)
       || !sameVec(cam.getNorm(), lNorm) || !sameVec(cam.getUp(), lUp);
-  const bool captureDirty = camMoved || xc!=lXc || yc!=lYc || backend!=lBackend || (int)lighting!=lLight;
+  const bool captureDirty = camMoved || xc!=lXc || yc!=lYc || backend!=lBackend;
   const bool detectParamsChanged = radius!=lRadius || k1!=lK1 || k2!=lK2 || minScore!=lMs;
-  // Lighting toggle is a GL-only Scene2 property (Cycles always lights). Set it
-  // only on change — mutating a scene property every frame is harmless here but
-  // sloppy.
-  if ((int)lighting != lLight) scene.setPropertyValue("enable lighting", lighting);
   have = true;
   lPos = cam.getPosition(); lNorm = cam.getNorm(); lUp = cam.getUp();
-  lXc=xc; lYc=yc; lBackend=backend; lLight=(int)lighting; lRadius=radius;
+  lXc=xc; lYc=yc; lBackend=backend; lRadius=radius;
   lK1=k1; lK2=k2; lMs=minScore;
 
   // GL needs a capture requested on change (it renders on the GUI thread); Cycles
@@ -229,14 +187,16 @@ void run() {
   const bool newFrame = view.poll(frame);
   if (newFrame) lastFrame = frame;
   if ((newFrame || detectParamsChanged) && lastFrame.getDim()) {
-    const Img8u distorted = distortImage(lastFrame, k1, k2);
-    const Img8u undistorted = undistort(distorted, k1, k2);   // rectified w/ known params
+    updateDistortion(k1, k2, lastFrame.getSize());     // (re)builds warp maps on k1/k2 change
+    const Image distorted   = g_distort.apply(Image(lastFrame));     // ideal → camera view
+    const Image undistorted = g_undistort.apply(distorted);          // → rectified
     CheckerboardSaddleDetector::Params p;
     p.radius = radius; p.minScore = minScore;
     CheckerboardSaddleDetector det(p);
+    const Img8u &di = distorted.as<icl8u>(), &ud = undistorted.as<icl8u>();
     DrawHandle d1 = gui["distorted"], d2 = gui["undistorted"];
-    drawResult(d1, distorted,   det.detect(distorted));
-    drawResult(d2, undistorted, det.detect(undistorted));
+    drawResult(d1, di, det.detect(di));
+    drawResult(d2, ud, det.detect(ud));
   }
   gui["fps"].render();
   fps.wait();

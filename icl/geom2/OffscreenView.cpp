@@ -97,11 +97,18 @@ namespace icl::geom2 {
     addProperty("backend", utils::prop::Menu{"GL (fast)", "Cycles (photoreal)"}, "GL (fast)");
     addProperty("cycles.denoising", utils::prop::Flag{}, false);
     addProperty("cycles.samples per step", utils::prop::Range{.min=1, .max=16}, 1);
+    // Expose the captured scene's own properties (enable lighting, background,
+    // debug, …) under "scene." — the lighting toggle "comes from the scene".
+    addChildConfigurable(m_impl->capScene, "scene");
   }
 
   OffscreenView::~OffscreenView() = default;
 
   void OffscreenView::setCaptureSource(Scene2 &capScene, int capCam) {
+    if (m_impl->capScene != &capScene) {
+      removeChildConfigurable(m_impl->capScene);   // re-point the "scene." child
+      addChildConfigurable(&capScene, "scene");
+    }
     m_impl->capScene = &capScene;
     m_impl->capCam   = capCam;
   }
