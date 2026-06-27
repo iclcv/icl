@@ -339,16 +339,43 @@ namespace icl::geom {
     DMat3 R = RT.part<0,0,3,3>();
     DVec3 t = RT.part<3,0,1,3>();
 
-    DMat3 r,q;
-    R.decompose_RQ(r,q);
-    DMat3 Ri = q.transp();
+    // Robustly turn the SVD null-space solution (R = alpha * Rotation, t = alpha * t_metric,
+    // with alpha of unknown sign+magnitude) into a valid camera. The previous RQ-decompose +
+    // trace-normalisation was non-robust: for some configurations it produced a
+    // cheirality-flipped, mis-scaled seed (camera behind the object, wrong distance), from
+    // which the LMA could not recover. Instead:
+    //  (1) recover |alpha| from the average column norm (a rotation has unit columns),
+    //  (2) fix the sign by cheirality (the object must lie IN FRONT of the camera, cam-z>0),
+    //  (3) orthonormalise via SVD (closest proper rotation), guaranteeing det=+1.
+    const double cn0 = std::sqrt(R(0,0)*R(0,0)+R(1,0)*R(1,0)+R(2,0)*R(2,0));
+    const double cn1 = std::sqrt(R(0,1)*R(0,1)+R(1,1)*R(1,1)+R(2,1)*R(2,1));
+    const double cn2 = std::sqrt(R(0,2)*R(0,2)+R(1,2)*R(1,2)+R(2,2)*R(2,2));
+    double amag = (cn0 + cn1 + cn2) / 3.0;
+    if(amag < 1e-12) amag = 1e-12;
+    // raw (scaled) camera-space z of the object points: R_row2 . Xw + t2; its mean sign
+    // equals sign(alpha) since the true points are in front (mean true cam-z > 0).
+    double meanRawZ = 0;
+    for(int i=0;i<n;++i){
+      meanRawZ += R(2,0)*Xws[i].x + R(2,1)*Xws[i].y + R(2,2)*Xws[i].z + t[2];
+    }
+    const double alpha = (meanRawZ >= 0 ? amag : -amag);
 
-    double norm = 3./(r(0, 0) + r(1, 1) + r(2, 2));
-    t = -Ri * ( t * norm );
+    DMat3 Rs = R * (1.0/alpha);          // ~orthonormal rotation (det ~ +1)
+    DVec3 ts = t * (1.0/alpha);          // metric world->camera translation
 
-    Camera cam(Vec(t[0],    t[1],    t[2],    1),
-               Vec(Ri(0, 2), Ri(1, 2), Ri(2, 2), 1),
-               Vec(Ri(0, 1), Ri(1, 1), Ri(2, 1), 1),
+    DMat3 Us, Vs; math::FixedMatrix<double,1,3> ss;
+    Rs.svd(Us, ss, Vs);
+    DMat3 Rot = Us * Vs.transp();        // closest orthonormal matrix
+    if(Rot.det() < 0){                   // force a proper rotation (det = +1)
+      for(int row=0;row<3;++row) Us(row,2) = -Us(row,2);
+      Rot = Us * Vs.transp();
+    }
+    DMat3 Ri = Rot.transp();
+    DVec3 pos = -(Ri * ts);              // camera position in world = -Rot^T t
+
+    Camera cam(Vec(pos[0],   pos[1],   pos[2],   1),
+               Vec(Ri(0, 2), Ri(1, 2), Ri(2, 2), 1),   // norm = world z-axis (col 2)
+               Vec(Ri(0, 1), Ri(1, 1), Ri(2, 1), 1),   // up   = world y-axis (col 1)
                1, Point32f(px,py), fx, fy, s, renderParams);
     if(performLMAbasedOptimiziation){
       return optimize_camera_calibration_lma(Xws, xis, cam);
