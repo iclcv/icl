@@ -59,14 +59,19 @@ Dug in (probes + `test-geom2-calibration-harness`):
   noise, and it has a **WIDE basin**: seed pose off by ±300mm→~5mm, ±600mm→~15mm (at 3m).
 - **pinv's pose is too unreliable a seed** in the ill-conditioned far case (its orientation, not
   just depth, is far off → outside the basin → 700mm). So the seed must come from elsewhere.
-- **Fix (Phase B):** seed the extrinsic LMA from a reliable pose — a **homography/PnP init**
-  (`CoplanarPointPoseEstimator` for planar) — not the broken linear solve. This is exactly the
-  planar-first path, and it makes the decoupled calibration robust. Optionally also fix the
-  framework `calibrate_extrinsic` linear seed (cheirality + SVD-orthonormal rotation + scale)
-  so it stops handing the LMA a poisoned seed — benefits all callers, but touches a shared
-  function used by the legacy apps, so do it with the harness as the regression guard.
-- **Locked regression:** `decoupled_seeded_beats_drift` (homography-quality ±200mm seed) →
-  4.4mm vs joint 249mm (~56×).
+- **FIX LANDED (framework):** `Camera::calibrate_extrinsic`'s linear seed is now robust —
+  scale from average column norm, sign by cheirality (object in front), SVD orthonormalisation
+  to the closest proper rotation (det=+1). The camera construction (pos=−RᵀT, axes from Rᵀ) is
+  unchanged. The function now works directly via the public API: on the far/isometric object
+  that used to diverge it gives **5.8mm** depth error vs the joint DLT's **245mm** (~42×), and
+  its linear seed alone (LMA off) recovers the camera from perfect data. Full suite 966, no
+  regressions in legacy calibration-dependent paths.
+- **Implication for Phase B:** the decoupled path (planar intrinsics → fixed-intrinsics
+  extrinsics) can now use `calibrate_extrinsic` directly, OR seed it from a homography
+  (`CoplanarPointPoseEstimator`) for extra robustness — but the linear seed is no longer the
+  blocker.
+- **Locked regressions:** `fixed_intrinsics_beats_drift` (5.8mm vs 245mm),
+  `extrinsic_linear_seed_is_valid` (LMA-off perfect recovery).
 
 ## The historical "marker-edge bias" drift
 Corner-detection bias toward/away from quad centres shrinks/grows the apparent object →
