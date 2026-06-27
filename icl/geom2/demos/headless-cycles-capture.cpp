@@ -27,40 +27,21 @@
 
 #include <icl/geom2/Scene2.h>
 #include <icl/geom2/CyclesRenderer.h>
-#include <icl/geom2/MeshNode.h>
+#include <icl/geom2/CheckerboardNode.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom/Camera.h>
-#include <icl/geom/Material.h>
 #include <icl/core/Img.h>
 #include <icl/io/SaveLoad.h>
 
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
-#include <algorithm>
 
 using namespace icl;
 using namespace icl::geom2;
 using namespace icl::geom;
 using namespace icl::core;
 using namespace icl::utils;
-
-// An RGB checkerboard on a white-bordered "paper" (mirrors the calibration lab).
-static Img8u makeCheckerboard(int xc, int yc) {
-  const int cell = 30, border = cell;
-  const int W = xc*cell + 2*border, H = yc*cell + 2*border;
-  Img8u img(Size(W, H), formatRGB);
-  for (int c = 0; c < 3; ++c) std::fill(img.begin(c), img.end(c), (icl8u)255);
-  for (int j = 0; j < yc; ++j)
-    for (int i = 0; i < xc; ++i)
-      if ((i+j) & 1)
-        for (int y = 0; y < cell; ++y)
-          for (int x = 0; x < cell; ++x) {
-            const int px = border+i*cell+x, py = border+j*cell+y, idx = py*W+px;
-            for (int c = 0; c < 3; ++c) img.begin(c)[idx] = 0;
-          }
-  return img;
-}
 
 int main(int argc, char **argv) {
   const std::string output = argc > 1 ? argv[1] : "headless-cycles-capture.png";
@@ -71,22 +52,10 @@ int main(int argc, char **argv) {
                                  Vec(0, 1, 0, 1), Size(480, 360), 45.0f));
   scene.setBounds(400);
 
-  // Textured board in the z=0 plane (normal +z, facing the camera).
-  const float BW = 280, BH = 200;
-  Img8u tex = makeCheckerboard(7, 5);
-  auto board = std::make_shared<MeshNode>();
-  board->addVertex(Vec(-BW/2,  BH/2, 0, 1)); board->addVertex(Vec( BW/2,  BH/2, 0, 1));
-  board->addVertex(Vec( BW/2, -BH/2, 0, 1)); board->addVertex(Vec(-BW/2, -BH/2, 0, 1));
-  for (int i = 0; i < 4; ++i) board->addNormal(Vec(0, 0, 1, 1));
-  board->addTexCoord(0,0); board->addTexCoord(1,0);
-  board->addTexCoord(1,1); board->addTexCoord(0,1);
-  board->addQuad(0,1,2,3, 0,1,2,3, 0,1,2,3);
-  auto mat = Material::fromColor(GeomColor(255,255,255,255));
-  mat->setBaseColorMap(Image(tex));          // the checkerboard becomes the albedo
-  mat->roughness = 1.0f;                      // matte paper — no specular hot-spot
-  mat->metallic  = 0.0f;
-  board->setMaterial(mat);
-  scene.addNode(board);
+  // The calibration board: a CheckerboardNode (1 texel/cell, nearest-neighbour).
+  // This exercises Cycles' INTERPOLATION_CLOSEST path — the crisp squares come
+  // from the matte material's TexFilter::Nearest, not from a hi-res texture.
+  scene.addNode(CheckerboardNode::create(7, 5, 280.f));
 
   // Point light. NB: LightNode colour is 0..255 (Cycles divides by 255). Passing
   // 0..1 here yields a ~1/255 ≈ black light and a fully black render.

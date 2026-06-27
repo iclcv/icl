@@ -5,6 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
+#include <icl/utils/config/Configurable.h>
 #include <icl/core/Img.h>
 #include <memory>
 
@@ -55,7 +56,13 @@ namespace icl::geom2 {
   ///   - poll(), requestCapture() and setBackend() are called from your worker
   ///     run() loop. poll() also drives the Cycles progressive render, so call it
   ///     EVERY frame; it returns true only when a genuinely new frame is ready.
-  class ICLGeom2_API OffscreenView {
+  /// Also a utils::Configurable: it exposes the backend choice and the Cycles
+  /// tuning knobs as properties, so an app can pull them straight into its GUI
+  /// with `gui << Prop(&view)` instead of wiring its own controls. Properties:
+  ///   "backend"                  GL (fast) / Cycles (photoreal)
+  ///   "cycles.denoising"         OIDN on/off (off by default — it's slow)
+  ///   "cycles.samples per step"  progressive granularity (1..16)
+  class ICLGeom2_API OffscreenView : public utils::Configurable {
   public:
     enum class Backend { GL, Cycles };
 

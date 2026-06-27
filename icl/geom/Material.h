@@ -66,6 +66,12 @@ namespace icl::geom {
 
     // -- Lazy: texture maps (null for untextured objects) --
 
+    /// Texture sampling filter. Linear (default) = smooth, for photo textures.
+    /// Nearest = crisp texels with no blur — e.g. a 1-texel-per-cell checkerboard
+    /// where each texel must render as a hard-edged square. Honoured by both the
+    /// GL renderer (GL_NEAREST) and Cycles (INTERPOLATION_CLOSEST).
+    enum class TexFilter { Linear, Nearest };
+
     struct TextureMaps {
       core::Image baseColorMap;          ///< albedo texture (RGB/RGBA)
       core::Image normalMap;             ///< tangent-space normal map (RGB)
@@ -73,6 +79,7 @@ namespace icl::geom {
       core::Image emissiveMap;           ///< emission texture (RGB)
       core::Image occlusionMap;          ///< ambient occlusion (R channel, 1=fully lit)
       core::Image reflectivityMap;       ///< per-texel reflectivity (R channel), scales `reflectivity`
+      TexFilter filter = TexFilter::Linear;  ///< sampling for all maps of this material
       /// Bumped whenever a map changes; the renderer re-uploads this material's
       /// GL textures only when its cached version differs (see setBaseColorMap).
       unsigned int version = 0;

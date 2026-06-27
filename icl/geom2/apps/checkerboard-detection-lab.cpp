@@ -24,11 +24,10 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 #include <icl/geom2/Scene2.h>
-#include <icl/geom2/MeshNode.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/Scene2MouseHandler.h>
-#include <icl/geom2/OffscreenView.h>   // interactive view + switchable GL/Cycles capture
-#include <icl/geom/Material.h>
+#include <icl/geom2/CheckerboardNode.h>  // the board target (handles its own visualization)
+#include <icl/geom2/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
 #include <icl/geom/Camera.h>
 #include <icl/cv/CheckerboardSaddleDetector.h>
 #include <cstdlib>   // std::_Exit
@@ -43,82 +42,20 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 GUI gui;
-Scene2 scene;                               // on-screen interactive scene (left pane)
-Scene2 capScene;                            // capture scene (right pane source, own lighting)
+Scene2 scene;                               // the ONE scene (shown on screen + captured)
 OffscreenView view(scene, 0);               // interactive view + GL/Cycles offscreen capture
-std::shared_ptr<MeshNode> board;            // textured quad shown in the 3D scene
-std::shared_ptr<MeshNode> capBoard;         // its mirror in the capture scene
-Img8u tex;                                  // current checkerboard texture (RGB)
-int curX = 0, curY = 0;                     // cells the texture was built for
+std::shared_ptr<CheckerboardNode> board;    // the calibration board (handles its own viz)
+int curX = 0, curY = 0;                     // cells the board was built for
 const Size CAMRES(480, 360);
 
-// board world geometry (z=0 plane), centred; corners TL,TR,BR,BL
-static const float BW = 280.f;              // board width [mm]
-float BH = 200.f;                           // board height (set from texture aspect)
-
-// --- build a checkerboard-on-paper texture (RGB, white border) ---
-static Img8u makeCheckerboard(int xc, int yc) {
-  const int cell = 30, border = cell;
-  const int W = xc*cell + 2*border, H = yc*cell + 2*border;
-  Img8u img(Size(W, H), formatRGB);
-  for (int c = 0; c < 3; ++c) std::fill(img.begin(c), img.end(c), (icl8u)255);
-  for (int j = 0; j < yc; ++j)
-    for (int i = 0; i < xc; ++i)
-      if ((i+j) & 1)
-        for (int y = 0; y < cell; ++y)
-          for (int x = 0; x < cell; ++x) {
-            const int px = border+i*cell+x, py = border+j*cell+y, idx = py*W+px;
-            for (int c = 0; c < 3; ++c) img.begin(c)[idx] = 0;
-          }
-  return img;
-}
-
-// the 4 board corners in world (TL,TR,BR,BL) and matching texture corners
-static std::vector<Vec> worldCorners() {
-  return { Vec(-BW/2,  BH/2, 0, 1), Vec( BW/2,  BH/2, 0, 1),
-           Vec( BW/2, -BH/2, 0, 1), Vec(-BW/2, -BH/2, 0, 1) };
-}
-// build a fresh textured board MeshNode for the current `tex` (z=0 plane)
-static std::shared_ptr<MeshNode> makeBoardNode() {
-  auto node = std::make_shared<MeshNode>();
-  const auto wc = worldCorners();
-  for (auto &v : wc) node->addVertex(v);
-  for (int i = 0; i < 4; ++i) node->addNormal(Vec(0,0,1,1));
-  node->addTexCoord(0,0); node->addTexCoord(1,0);
-  node->addTexCoord(1,1); node->addTexCoord(0,1);
-  node->addQuad(0,1,2,3, 0,1,2,3, 0,1,2,3);
-  auto mat = Material::fromColor(GeomColor(255,255,255,255));
-  mat->setBaseColorMap(Image(tex));
-  // Calibration paper is matte: fully rough + non-metallic so the (Cycles) sun
-  // doesn't blow a specular hot-spot across the board and wash out the corners.
-  mat->roughness = 1.0f;
-  mat->metallic  = 0.0f;
-  node->setMaterial(mat);
-  node->setPrimitiveVisible(PrimLine | PrimVertex, false);
-  return node;
-}
-
-static void rebuildBoard(int xc, int yc) {
-  tex = makeCheckerboard(xc, yc);
-  BH = BW * tex.getHeight() / (float)tex.getWidth();
+// Resize the board (worker thread); lock around the mutation since the GUI thread
+// renders the scene (and Cycles reads it). invalidate() resyncs the Cycles backend.
+static void setBoardCells(int xc, int yc) {
   curX = xc; curY = yc;
-
-  // rebuild in both scenes: the on-screen interactive one and the capture mirror.
-  // run() is the worker thread; the GUI thread renders both scenes — lock around
-  // the node swaps so a render can't observe a half-rebuilt scene.
   scene.lock();
-  if (board) scene.removeNode(board.get());
-  board = makeBoardNode();
-  scene.addNode(board);
+  board->setCells(xc, yc);
   scene.unlock();
-
-  capScene.lock();
-  if (capBoard) capScene.removeNode(capBoard.get());
-  capBoard = makeBoardNode();
-  capScene.addNode(capBoard);
-  capScene.unlock();
-
-  view.invalidate();   // capture-scene geometry changed → resync the (Cycles) backend
+  view.invalidate();
 }
 
 static inline void sampleRGB(const Img8u &src, float x, float y, icl8u out[3]) {
@@ -195,34 +132,30 @@ static void drawResult(DrawHandle &draw, const Img8u &img, const std::vector<Cor
 }
 
 void init() {
-  // on-screen interactive scene (left pane): board shown flat (raw texture).
+  // ONE scene: rendered on screen (left) and captured offscreen (right). Flat by
+  // default (clear pattern for navigating); the lighting checkbox lights it (GL),
+  // and Cycles always lights it physically.
   scene.addCamera(Camera::lookAt(Vec(0,0,600,1), Vec(0,0,0,1), Vec(0,1,0,1), CAMRES, 35.f));
   scene.setBounds(400);
   scene.setPropertyValue("enable lighting", false);
 
-  // dedicated offscreen capture scene (right pane): same camera params (synced
-  // each frame from the interactive one) + a key light so lighting/shading can
-  // be toggled on. Its "enable lighting" is driven live from the checkbox.
-  capScene.addCamera(scene.getCamera(0));
-  capScene.setBounds(400);
   auto light = std::make_shared<LightNode>(LightNode::Point);
   light->setColor(GeomColor(255, 247, 235, 255));   // 0..255 (Cycles sync divides by 255)
   light->setIntensity(1.0f);
   light->translate(180, 220, 500);
-  // No shadows on the capture: the board is a flat plane, so a shadow map adds
-  // nothing — and it's the dominant per-frame GL cost (a 2048² depth pass every
-  // offscreen capture). Keeping it off is a big framerate win.
-  light->setShadowEnabled(false);
-  capScene.addLight(light);
+  light->setShadowEnabled(false);                   // flat board needs no shadow map
+  scene.addLight(light);
 
-  rebuildBoard(7, 5);
+  board = CheckerboardNode::create(7, 5, 280.f);
+  scene.addNode(board);
+  curX = 7; curY = 5;
 
   gui << (HSplit()
           << Canvas3D({.handle="scene", .label="board (drag to view from any angle)", .minSize={22,18}})
           << (VBox()
               << Canvas({.handle="distorted", .label="rendered camera view (+distortion) + detection", .minSize={20,14}})
               << Canvas({.handle="undistorted", .label="undistorted (known k1,k2) + detection", .minSize={20,14}})
-              << (VBox({.maxSize={100,12}})
+              << (VBox({.maxSize={100,16}})
                   << (HBox()
                       << Slider(3, 15, 7, {.handle="xc", .label="x cells"})
                       << Slider(3, 15, 5, {.handle="yc", .label="y cells"}))
@@ -233,9 +166,7 @@ void init() {
                       << FSlider(3, 9, 5, {.handle="radius", .label="ring radius"})
                       << FSlider(0.1, 0.8, 0.35, {.handle="minScore", .label="min score"}))
                   << (HBox()
-#ifdef ICL_HAVE_CYCLES
-                      << Combo("GL (fast),Cycles (photoreal)", {.handle="renderer", .label="offscreen"})
-#endif
+                      << Prop(&view, {.label="offscreen renderer"})   // backend + Cycles knobs
                       << CheckBox("lighting", {.checked=false, .handle="lighting"}))
                   << (HBox()
                       << CheckBox("corners", {.checked=true, .handle="showCorners"})
@@ -243,7 +174,7 @@ void init() {
                       << Fps({.handle="fps"})))))
       << Show();
 
-  view.setCaptureSource(capScene, 0);          // render capScene/cam0 offscreen
+  // No setCaptureSource → OffscreenView captures the view scene/camera itself.
   gui["scene"].link(view.callback());          // GUI-thread view + GL capture
   gui["scene"].install(scene.getMouseHandler(0));
 }
@@ -252,16 +183,14 @@ void run() {
   static FPSLimiter fps(60);   // cap the worker loop (don't spin at 100% CPU)
 
   const int xc = gui["xc"], yc = gui["yc"];
-  if (xc != curX || yc != curY) rebuildBoard(xc, yc);
+  if (xc != curX || yc != curY) setBoardCells(xc, yc);
 
-  // Read the live controls.
-  int rmode = 0;
-#ifdef ICL_HAVE_CYCLES
-  rmode = gui["renderer"].as<ComboHandle>().getSelectedIndex();   // 0=GL, 1=Cycles
-#endif
+  // Read the live controls. The backend (GL/Cycles) + Cycles knobs live in the
+  // OffscreenView's own Configurable (the Prop panel), so we just read its state.
   const bool  lighting = gui["lighting"];
   const float k1 = gui["k1"], k2 = gui["k2"], minScore = gui["minScore"];
   const int   radius   = gui["radius"];
+  const int   backend  = (int)view.getBackend();
   const Camera &cam = scene.getCamera(0);
   auto sameVec = [](const Vec &a, const Vec &b){
     return a[0]==b[0] && a[1]==b[1] && a[2]==b[2] && a[3]==b[3]; };
@@ -271,25 +200,23 @@ void run() {
   // capture arrives OR a distortion/detector slider moved (no re-render then).
   static bool  have = false;
   static Vec   lPos, lNorm, lUp;
-  static int   lXc=-1, lYc=-1, lMode=-1, lLight=-1, lRadius=-1;
+  static int   lXc=-1, lYc=-1, lBackend=-1, lLight=-1, lRadius=-1;
   static float lK1=1e9f, lK2=1e9f, lMs=1e9f;
   const bool camMoved = !have || !sameVec(cam.getPosition(), lPos)
       || !sameVec(cam.getNorm(), lNorm) || !sameVec(cam.getUp(), lUp);
-  const bool captureDirty = camMoved || xc!=lXc || yc!=lYc || rmode!=lMode || (int)lighting!=lLight;
+  const bool captureDirty = camMoved || xc!=lXc || yc!=lYc || backend!=lBackend || (int)lighting!=lLight;
   const bool detectParamsChanged = radius!=lRadius || k1!=lK1 || k2!=lK2 || minScore!=lMs;
+  // Lighting toggle is a GL-only Scene2 property (Cycles always lights). Set it
+  // only on change — mutating a scene property every frame is harmless here but
+  // sloppy.
+  if ((int)lighting != lLight) scene.setPropertyValue("enable lighting", lighting);
   have = true;
   lPos = cam.getPosition(); lNorm = cam.getNorm(); lUp = cam.getUp();
-  lXc=xc; lYc=yc; lMode=rmode; lLight=(int)lighting; lRadius=radius;
+  lXc=xc; lYc=yc; lBackend=backend; lLight=(int)lighting; lRadius=radius;
   lK1=k1; lK2=k2; lMs=minScore;
 
-  // Drive the offscreen view. The OffscreenView hides the GL-on-GUI-thread /
-  // Cycles-on-worker split — we just pick the backend, ask for a GL capture when
-  // something changed, and poll for a new frame.
-  view.setBackend(rmode == 1 ? OffscreenView::Backend::Cycles
-                             : OffscreenView::Backend::GL);
-  if (rmode == 0)                                  // GL lighting toggle (Cycles always lights;
-    capScene.setPropertyValue("enable lighting", lighting);   // mutating it per-frame would
-                                                   // keep Cycles perpetually dirty)
+  // GL needs a capture requested on change (it renders on the GUI thread); Cycles
+  // self-drives inside poll(). requestCapture() is a no-op for Cycles.
   if (captureDirty) view.requestCapture();
 
   gui["scene"].render();   // GUI thread: interactive view + (when pending) the GL capture
@@ -317,11 +244,11 @@ void run() {
 
 int main(int n, char **ppc) {
   const int rc = ICLApp(n, ppc, "", init, run).exec();
-  // Skip static-destruction teardown of the GL/Cycles globals (`cyc`'s Cycles
-  // session, the two Scene2 Renderers' GL resources): by the time the
-  // window has closed their GL context / threads are already gone, so their
-  // dtors fault. _Exit hands everything back to the OS cleanly. (ICL itself uses
-  // _Exit for its own diagnostic exit path, for the same reason.)
+  // Skip static-destruction teardown of the GL/Cycles globals (the OffscreenView's
+  // Cycles session, the Scene2 Renderer's GL resources): by the time the window
+  // has closed their GL context / threads are already gone, so their dtors fault.
+  // _Exit hands everything back to the OS cleanly. (ICL itself uses _Exit for its
+  // own diagnostic exit path, for the same reason.)
   std::cout.flush();
   std::cerr.flush();
   std::_Exit(rc);

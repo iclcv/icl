@@ -123,16 +123,17 @@ namespace icl::geom2 {
   static ImageTextureNode *createImageTexNode(ShaderGraph *graph, ccl::Scene *scene,
                                                const core::Image &img,
                                                const std::string &name,
-                                               bool isLinear = false) {
+                                               bool isLinear = false,
+                                               InterpolationType interp = INTERPOLATION_LINEAR) {
     auto *tex = graph->create_node<ImageTextureNode>();
     tex->set_filename(ustring("icl_inline_" + name));
-    tex->set_interpolation(INTERPOLATION_LINEAR);
+    tex->set_interpolation(interp);
     tex->set_extension(EXTENSION_REPEAT);
     tex->set_colorspace(ustring(isLinear ? "scene_linear" : "sRGB"));
     tex->set_alpha_type(IMAGE_ALPHA_AUTO);
 
     ImageParams params;
-    params.interpolation = INTERPOLATION_LINEAR;
+    params.interpolation = interp;
     params.extension = EXTENSION_REPEAT;
     params.colorspace = ustring(isLinear ? "scene_linear" : "sRGB");
 
@@ -175,8 +176,11 @@ namespace icl::geom2 {
 
     // Base color texture
     if (mat->textures && !mat->textures->baseColorMap.isNull()) {
+      const InterpolationType interp =
+          (mat->textures->filter == geom::Material::TexFilter::Nearest)
+          ? INTERPOLATION_CLOSEST : INTERPOLATION_LINEAR;
       auto *tex = createImageTexNode(graph, scene, mat->textures->baseColorMap,
-                                      mat->name + "_baseColor");
+                                      mat->name + "_baseColor", false, interp);
       graph->connect(getUV(), tex->input("Vector"));
       graph->connect(tex->output("Color"), bsdf->input("Base Color"));
       auto alphaMode = mat->transmission ? mat->transmission->alphaMode : geom::Material::Opaque;

@@ -8,6 +8,7 @@
 #include <icl/geom/Camera.h>
 #include <icl/qt/GLCallback.h>
 #include <icl/qt/DrawWidget3D.h>
+#include <icl/utils/prop/Constraints.h>
 
 #ifdef ICL_HAVE_CYCLES
 #include <icl/geom2/CyclesRenderer.h>
@@ -44,7 +45,9 @@ namespace icl::geom2 {
 
 #ifdef ICL_HAVE_CYCLES
     std::unique_ptr<CyclesRenderer> cyc;
-    int lastCycUpdate = -1;
+    int  lastCycUpdate = -1;
+    bool lastDenoise = false;   // mirrors the Cycles defaults set on creation
+    int  lastSPS = 1;
 #endif
 
     Impl(Scene2 &vs, int vc)
@@ -90,7 +93,11 @@ namespace icl::geom2 {
   };
 
   OffscreenView::OffscreenView(Scene2 &viewScene, int viewCam)
-    : m_impl(std::make_unique<Impl>(viewScene, viewCam)) {}
+    : m_impl(std::make_unique<Impl>(viewScene, viewCam)) {
+    addProperty("backend", utils::prop::Menu{"GL (fast)", "Cycles (photoreal)"}, "GL (fast)");
+    addProperty("cycles.denoising", utils::prop::Flag{}, false);
+    addProperty("cycles.samples per step", utils::prop::Range{.min=1, .max=16}, 1);
+  }
 
   OffscreenView::~OffscreenView() = default;
 
@@ -104,6 +111,7 @@ namespace icl::geom2 {
   void OffscreenView::setBackend(Backend b) {
     if (b == Backend::Cycles && !kCyclesAvailable) b = Backend::GL;
     m_impl->backend.store(b);
+    setPropertyValue("backend", b == Backend::Cycles ? "Cycles (photoreal)" : "GL (fast)");
   }
 
   OffscreenView::Backend OffscreenView::getBackend() const {
@@ -125,14 +133,29 @@ namespace icl::geom2 {
 
   bool OffscreenView::poll(core::Img8u &out) {
     auto &d = *m_impl;
+
+    // The Configurable properties are the UI-facing source of truth — sync them.
+    {
+      const std::string b = prop("backend").value;
+      Backend nb = (!b.empty() && b[0] == 'C') ? Backend::Cycles : Backend::GL;
+      if (!kCyclesAvailable) nb = Backend::GL;
+      d.backend.store(nb);
+    }
 #ifdef ICL_HAVE_CYCLES
     if (d.backend.load() == Backend::Cycles) {
       if (!d.cyc) {
         d.cyc = std::make_unique<CyclesRenderer>(*d.capScene, RenderQuality::Interactive);
         d.cyc->setSceneScale(1.0f);   // geom2 is in mm — see CyclesRenderer.h
         d.cyc->setSamplesPerStep(1);  // finest progressive step
-        d.cyc->setDenoising(false);   // OIDN ~500ms/frame; opt in via cycles() if wanted
+        d.cyc->setDenoising(false);   // OIDN ~500ms/frame; toggle via the property
       }
+      // Apply Cycles tuning only on change (mutating every frame can stop it
+      // converging).
+      const bool den = prop("cycles.denoising").value;
+      const int  sps = prop("cycles.samples per step").value;
+      if (den != d.lastDenoise) { d.cyc->setDenoising(den); d.lastDenoise = den; }
+      if (sps != d.lastSPS)     { d.cyc->setSamplesPerStep(sps); d.lastSPS = sps; }
+
       d.syncCaptureCamera();
       d.cyc->render(d.capCam);        // progressive — call every frame (see header)
       const int uc = d.cyc->getUpdateCount();

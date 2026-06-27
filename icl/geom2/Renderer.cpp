@@ -1270,7 +1270,7 @@ void main() { }
   // Upload (or refresh) an ICL Image into a GL texture handle. Reuses the
   // existing GL texture when the size is unchanged (glTexSubImage2D — cheap
   // enough for a per-frame live/video texture); (re)allocates otherwise.
-  static void uploadOrUpdate(TexHandle &t, const core::Image &img) {
+  static void uploadOrUpdate(TexHandle &t, const core::Image &img, GLint filter = GL_LINEAR) {
     if (img.isNull()) {
       if (t.id) { glDeleteTextures(1, &t.id); t = {}; }
       return;
@@ -1294,11 +1294,13 @@ void main() { }
       glBindTexture(GL_TEXTURE_2D, t.id);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
       t.w = w; t.h = h;
     }
+    // Filter set every call so a material's filter change takes effect on the
+    // next (re)upload (Nearest = crisp 1-texel-per-cell textures, e.g. a board).
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
@@ -1731,12 +1733,14 @@ void main() { }
         // first sight (cache sentinel) or a live setBaseColorMap()/etc. update.
         auto &mt = m_data->texCache[mat.get()];
         if (mat->textures && mt.version != mat->textures->version) {
-          uploadOrUpdate(mt.baseColor, mat->textures->baseColorMap);
-          uploadOrUpdate(mt.normalMap, mat->textures->normalMap);
-          uploadOrUpdate(mt.metallicRoughness, mat->textures->metallicRoughnessMap);
-          uploadOrUpdate(mt.emissive, mat->textures->emissiveMap);
-          uploadOrUpdate(mt.occlusion, mat->textures->occlusionMap);
-          uploadOrUpdate(mt.reflectivity, mat->textures->reflectivityMap);
+          const GLint f = (mat->textures->filter == geom::Material::TexFilter::Nearest)
+                          ? GL_NEAREST : GL_LINEAR;
+          uploadOrUpdate(mt.baseColor, mat->textures->baseColorMap, f);
+          uploadOrUpdate(mt.normalMap, mat->textures->normalMap, f);
+          uploadOrUpdate(mt.metallicRoughness, mat->textures->metallicRoughnessMap, f);
+          uploadOrUpdate(mt.emissive, mat->textures->emissiveMap, f);
+          uploadOrUpdate(mt.occlusion, mat->textures->occlusionMap, f);
+          uploadOrUpdate(mt.reflectivity, mat->textures->reflectivityMap, f);
           mt.version = mat->textures->version;
         }
 
