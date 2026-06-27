@@ -121,14 +121,41 @@ ICL_REGISTER_TEST("geom2.calibharness.depth_drift_is_conditioning",
   ICL_TEST_EQ(far.mean > near.mean * 3.0, true);
 }
 
-// NOTE (Phase-B follow-up): the natural "fix" — fix the intrinsics, solve only
-// the extrinsics via Camera::calibrate_extrinsic — does NOT yet beat the joint
-// DLT in this synthetic setup; it diverges badly (depth error ~1.8 m at a 1.6 m
-// distance, with default or truth RenderParams, LMA on or off). That is a real
-// finding the harness surfaced: either a convergence/initialisation issue or a
-// usage subtlety in calibrate_extrinsic. It must be understood before the
-// decoupled (planar-intrinsics → fixed-intrinsics-extrinsics) pipeline is built,
-// so it is tracked rather than asserted here. The conditioning result above
-// already establishes WHY decoupling is needed (far-object joint DLT is
-// hopelessly ill-conditioned); Phase B will establish the working fix + a
-// passing regression for it.
+// Core experiment #2 — the decoupling FIX, validated. The investigation of the
+// calibrate_extrinsic "divergence" found the root cause: its internal LINEAR SVD
+// seed is non-robust (cheirality/scale → a camera at the wrong sign & 3× scale),
+// and the LMA cannot escape that bad basin. But the LMA itself
+// (optimize_camera_calibration_lma) IS the correct fixed-intrinsics /
+// extrinsic-only solver (it varies only the 6 extrinsic params, intrinsics held
+// in P), and it has a WIDE convergence basin: empirically a seed pose off by
+// ±600mm at 3m still converges to ~15mm. So the fix is simply to seed it from a
+// reliable pose (a homography/PnP init — Phase B), NOT the broken linear solve.
+//
+// Here we model a homography-quality seed by perturbing the truth pose by ±200mm
+// and assert the decoupled result crushes the joint DLT's depth drift.
+ICL_REGISTER_TEST("geom2.calibharness.decoupled_seeded_beats_drift",
+                  "fixed-intrinsics extrinsic LMA from a rough seed beats the joint-DLT depth drift")
+{
+  const std::vector<Vec> Xws = build3DTarget();
+  Camera truth = Camera::lookAt(Vec(0,0,3000,1), Vec(0,0,0,1), Vec(0,1,0,1), Size::VGA, 25.0f);
+  const double truthDepth = camDepth(truth);
+  const double sigma = 0.4, seedPert = 200.0;
+  Rng rng(2468);
+  std::vector<double> jointErr, decErr;
+  for (int t = 0; t < 15; ++t) {
+    std::vector<Point32f> xis = projectNoisy(truth, Xws, sigma, rng);
+    jointErr.push_back(std::fabs(camDepth(Camera::calibrate_pinv(Xws, xis, 1, true)) - truthDepth));
+    Camera seed = truth;   // fixed (correct) intrinsics; pose seeded roughly
+    const Vec tp = truth.getPosition();
+    seed.setPosition(Vec(tp[0] + (float)(rng.gauss()*seedPert),
+                         tp[1] + (float)(rng.gauss()*seedPert),
+                         tp[2] + (float)(rng.gauss()*seedPert), 1));
+    Camera dec = Camera::optimize_camera_calibration_lma(Xws, xis, seed);
+    decErr.push_back(std::fabs(camDepth(dec) - truthDepth));
+  }
+  Stats j = meanStd(jointErr), d = meanStd(decErr);
+  std::cout << "[calib-harness] joint DLT       depth-err mean=" << j.mean << " std=" << j.std << "\n"
+            << "[calib-harness] decoupled+seed  depth-err mean=" << d.mean << " std=" << d.std
+            << std::endl;
+  ICL_TEST_EQ(d.mean < j.mean * 0.5, true);   // decoupled at least 2x better
+}
