@@ -39,10 +39,26 @@ chronically drift-prone). This is a multi-session arc.
         through known cameras (offscreen `BVHSceneCapture`), with synthetic
         lighting/reflection/noise, → detect → calibrate → measure. Closes the full image loop.
 - **Phase B — planar intrinsic+extrinsic** (the primary path):
-  - checkerboard `CalibrationTarget` backend (detect + generate) — ICL-native, harness-tuned.
+  - [x] `markers::CalibrationTarget` pluggable backend interface scaffolded
+        (detect→correspondences, generate→printable). Checkerboard / marker-grid / ChArUco
+        backends to come.
+  - [x] **native ChESS-style checkerboard saddle detector** (`cv::CheckerboardSaddleDetector`,
+        OpenCV-free): ring 2nd-harmonic response (corner = 4 quadrants = strong 2-cycle signal;
+        edge = 1-cycle) + NMS + parabolic sub-pixel; 2nd-harmonic phase gives per-corner
+        orientation. LOCAL operator → distortion-robust by construction. Tests (clean +
+        barrel-distorted): clean 64/64 @ 0px, 64 seeds; distorted 64/64 @ 0.49px. Emits
+        `cv::CornerSeed{pos,score,orientation}`.
+  - [ ] **grid recovery** (distortion-tolerant, growth-based) → object↔image correspondences;
+        then the `CheckerboardTarget` backend (detect via seeds+recovery, generate the board).
+  - **Detector architecture (decided):** a HYBRID — region-quads (LocalThreshold→RegionDetector→
+    QuadDetector, reusing the fiducial pipeline) own *structure / topology / `(row,col)` ordering /
+    origin-disambiguation* and give approximate seeds; **ChESS owns precision** (sub-pixel refine
+    at each junction); ChESS peaks also *split* the 8-connected quad merges at corners — the two
+    methods fix each other's blind spots. Generalised later into a **seed-fusion/refinement
+    framework** (pluggable `CornerSeed` providers + refiners) once the 2nd provider exists.
+    **Distortion is a first-class test axis** (boards must survive bent edges).
   - ICL-native intrinsics (marker-grid optimizer) vs OpenCV comparison.
-  - **resolve the `calibrate_extrinsic` divergence finding** (below) → working decoupled fix
-    + passing regression.
+  - [x] **`calibrate_extrinsic` divergence resolved** — robust linear seed landed (see above).
 - **Phase C — multi-camera one-click extrinsic** (3D object, fixed intrinsics,
   `calibrate_extrinsic`): preserve the 6-cam single-click, drift-free. GridIndicatorObject →
   geom2 nodes.
