@@ -114,12 +114,12 @@ void init() {
   scene.addNode(board);
   curX = 7; curY = 5;
 
+  // Three panes: interactive 3D view | options | result view. The result shows
+  // the rendered camera view (+distortion), or — with "apply undistortion" — the
+  // rectified image; the detector runs on whichever is shown.
   gui << (HSplit()
-          << Canvas3D({.handle="scene", .label="board (drag to view from any angle)", .minSize={22,18}})
-          << (VBox()
-              << Canvas({.handle="distorted", .label="rendered camera view (+distortion) + detection", .minSize={20,14}})
-              << Canvas({.handle="undistorted", .label="undistorted (known k1,k2) + detection", .minSize={20,14}})
-              << (VBox({.maxSize={100,16}})
+          << Canvas3D({.handle="scene", .label="3D view (drag to view from any angle)", .minSize={22,18}})
+          << (VBox({.minSize={13,1}, .maxSize={15,100}})
                   << (HBox()
                       << Slider(3, 15, 7, {.handle="xc", .label="x cells"})
                       << Slider(3, 15, 5, {.handle="yc", .label="y cells"}))
@@ -129,11 +129,13 @@ void init() {
                   << (HBox()
                       << FSlider(3, 9, 5, {.handle="radius", .label="ring radius"})
                       << FSlider(0.1, 0.8, 0.35, {.handle="minScore", .label="min score"}))
+                  << CheckBox("apply undistortion", {.checked=false, .handle="undistort"})
                   << Prop(&view, {.label="offscreen renderer + scene"})   // backend, Cycles, scene.*
                   << (HBox()
                       << CheckBox("corners", {.checked=true, .handle="showCorners"})
-                      << CheckBox("orientation", {.checked=true, .handle="showOri"})
-                      << Fps({.handle="fps"})))))
+                      << CheckBox("orientation", {.checked=true, .handle="showOri"}))
+                  << Fps({.handle="fps"}))
+          << Canvas({.handle="result", .label="result view (camera image + detection)", .minSize={22,18}}))
       << Show();
 
   // No setCaptureSource → OffscreenView captures the view scene/camera itself.
@@ -147,56 +149,33 @@ void run() {
   const int xc = gui["xc"], yc = gui["yc"];
   if (xc != curX || yc != curY) setBoardCells(xc, yc);
 
-  // Read the live controls. The backend (GL/Cycles), Cycles knobs and the scene
-  // props (lighting, background, …) live in the OffscreenView Configurable (the
-  // Prop panel); we just read its backend state for the dirty gate.
+  // The board/camera/backend → capture logic now lives in OffscreenView (poll()
+  // auto-requests on camera/backend change; setBoardCells→invalidate() on a board
+  // change). We only own the downstream (distortion + detector) controls.
   const float k1 = gui["k1"], k2 = gui["k2"], minScore = gui["minScore"];
   const int   radius   = gui["radius"];
-  const int   backend  = (int)view.getBackend();
-  const Camera &cam = scene.getCamera(0);
-  auto sameVec = [](const Vec &a, const Vec &b){
-    return a[0]==b[0] && a[1]==b[1] && a[2]==b[2] && a[3]==b[3]; };
+  const bool  applyUndistort = gui["undistort"];   // result = rectified vs distorted
 
-  // A capture is only needed when the rendered image would change (camera moved,
-  // board resized, backend changed); re-detection is needed when a new capture
-  // arrives OR a distortion/detector slider moved (no re-render then).
-  static bool  have = false;
-  static Vec   lPos, lNorm, lUp;
-  static int   lXc=-1, lYc=-1, lBackend=-1, lRadius=-1;
-  static float lK1=1e9f, lK2=1e9f, lMs=1e9f;
-  const bool camMoved = !have || !sameVec(cam.getPosition(), lPos)
-      || !sameVec(cam.getNorm(), lNorm) || !sameVec(cam.getUp(), lUp);
-  const bool captureDirty = camMoved || xc!=lXc || yc!=lYc || backend!=lBackend;
-  const bool detectParamsChanged = radius!=lRadius || k1!=lK1 || k2!=lK2 || minScore!=lMs;
-  have = true;
-  lPos = cam.getPosition(); lNorm = cam.getNorm(); lUp = cam.getUp();
-  lXc=xc; lYc=yc; lBackend=backend; lRadius=radius;
-  lK1=k1; lK2=k2; lMs=minScore;
+  // Re-detect when a new captured frame arrives OR a distortion/detector/undistort
+  // control moved (re-process the cached frame; no new capture needed).
+  static int lRadius=-1, lUndist=-1; static float lK1=1e9f, lK2=1e9f, lMs=1e9f;
+  const bool detectDirty = radius!=lRadius || k1!=lK1 || k2!=lK2 || minScore!=lMs
+      || (int)applyUndistort!=lUndist;
+  lRadius=radius; lK1=k1; lK2=k2; lMs=minScore; lUndist=(int)applyUndistort;
 
-  // GL needs a capture requested on change (it renders on the GUI thread); Cycles
-  // self-drives inside poll(). requestCapture() is a no-op for Cycles.
-  if (captureDirty) view.requestCapture();
-
-  gui["scene"].render();   // GUI thread: interactive view + (when pending) the GL capture
-
-  // Consume + detect. poll() returns a new frame (GL: after a requested capture;
-  // Cycles: on each progressive refinement). Re-detect on a new frame OR when a
-  // detector slider moved (reusing the last frame).
-  static Img8u lastFrame;
-  Img8u frame;
-  const bool newFrame = view.poll(frame);
-  if (newFrame) lastFrame = frame;
-  if ((newFrame || detectParamsChanged) && lastFrame.getDim()) {
-    updateDistortion(k1, k2, lastFrame.getSize());     // (re)builds warp maps on k1/k2 change
-    const Image distorted   = g_distort.apply(Image(lastFrame));     // ideal → camera view
-    const Image undistorted = g_undistort.apply(distorted);          // → rectified
+  gui["scene"].render();          // GUI thread: interactive view + (auto) GL capture
+  const bool newFrame = view.poll();        // drives Cycles, auto-requests GL on camera change
+  const Img8u cam = view.image();           // latest captured frame (cached by the view)
+  if ((newFrame || detectDirty) && cam.getDim()) {
+    updateDistortion(k1, k2, cam.getSize());                  // warp maps rebuilt on k1/k2 change
+    Image result = g_distort.apply(Image(cam));               // ideal → lens-distorted camera view
+    if (applyUndistort) result = g_undistort.apply(result);   // → rectified (known k1,k2)
     CheckerboardSaddleDetector::Params p;
     p.radius = radius; p.minScore = minScore;
     CheckerboardSaddleDetector det(p);
-    const Img8u &di = distorted.as<icl8u>(), &ud = undistorted.as<icl8u>();
-    DrawHandle d1 = gui["distorted"], d2 = gui["undistorted"];
-    drawResult(d1, di, det.detect(di));
-    drawResult(d2, ud, det.detect(ud));
+    const Img8u &r = result.as<icl8u>();
+    DrawHandle d = gui["result"];
+    drawResult(d, r, det.detect(r));
   }
   gui["fps"].render();
   fps.wait();

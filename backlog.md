@@ -18,14 +18,33 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
       ICL-native intrinsics vs OpenCV comparison; harness-first.
   - [x] **Phase A.1** projection harness (`test-geom2-calibration-harness`) — reproduces the
         depth drift quantitatively (near 700mm: 2mm; far 3000mm: 351±265mm).
-  - [ ] **geom2 offscreen GL render from a worker thread** (BLOCKER for the lab/A.2). Port legacy
-        `geom::Scene::PBuffer` (QOpenGLContext+QOffscreenSurface, shared w/ globalShareContext,
-        makeCurrent + FBO + readback) → a geom2 `OffscreenRenderer`/`GLSceneCapture` mode usable
-        from any thread. `Scene2::renderToImage` currently needs the caller's GL context current
-        (callable only from a GL draw callback) — depth-camera-simulator etc. call it from run()
-        and are probably silently broken. See next.md "RESUME HERE".
+  - [x] **geom2 offscreen GL render from a worker thread** (PBuffer port LANDED). Legacy
+        `geom::Scene::PBuffer` ported as `GLSceneCapture(ownContext=true)` — owns a
+        `QOpenGLContext`+`QOffscreenSurface` (shares lists w/ globalShareContext), lazily
+        created in (and thread-bound to) the calling thread, makeCurrent → `renderToImage` →
+        doneCurrent. Renders a Scene2 to RGB+depth `Image` from any (worker) thread.
+        **CAVEAT:** a `Renderer` uses VAOs (NOT context-shareable), so owned-context mode is for
+        scenes rendered ONLY offscreen — you cannot capture the same on-screen `Scene2` through
+        both the widget context and the offscreen one. Wiring the lab/depth-sim therefore needs a
+        dedicated capture scene (or drop on-screen `Canvas3D`, show captured images) — a design
+        step beyond the raw port.
   - [x] **ChESS checkerboard detector** (`cv::CheckerboardSaddleDetector`) + `CalibrationTarget`
-        scaffold + `icl-checkerboard-detection-lab` (homography→switch to offscreen render).
+        scaffold + `icl-checkerboard-detection-lab`. **Lab now on REAL offscreen render** (option
+        (a)): a dedicated `capScene` mirrors the board + tracks the interactive camera, rendered
+        from `run()` via `GLSceneCapture(ownContext=true)` → `captureRGB` → CPU `k1,k2` distortion
+        → detect → overlay; 2nd canvas undistorts. Homography hack removed; lighting toggle added.
+        Build-checked only (no GL in sandbox) — real-display pass owed.
+  - [x] **lab: Cycles-rendered targets (LANDED).** The checkerboard-detection-lab has an
+        `offscreen` renderer Combo (`GL (fast)` / `Cycles (photoreal)`), guarded by
+        `#ifdef ICL_HAVE_CYCLES` (no meson change — `CyclesRenderer` is in the geom2 lib). Cycles
+        is GL-free → renders `capScene` from `run()` (lazy, Preview/32 spp).
+        **GOTCHA (crashed first cut):** `CyclesRenderer` has TWO mutually-exclusive drive models —
+        `start()`+autonomous management thread, OR poll-driven `render()`. Calling BOTH (as
+        cycles-scene-viewer does) races on a non-atomic `initialized` flag and on the shared ICL
+        scene → use-after-free. Use `render()` ONLY (single driver thread); never `start()` when
+        the app also mutates the scene from `run()`, and never `renderBlocking()` (its
+        `session->wait()` freezes the loop through first-time kernel compile). Real-display
+        verification still owed.
   - [ ] Phase A.2 rendering harness (geom2 offscreen + synthetic light/noise → detect → calibrate).
   - [x] **investigated** calibrate_extrinsic divergence: broken linear SVD seed (cheirality/scale); LMA itself is correct + wide basin; fix = homography/PnP seed (Phase B). Regression locked (4.4mm vs 249mm).
   - [ ] Phase B planar intrinsic+extrinsic (checkerboard backend, native-vs-opencv intrinsics).
@@ -67,6 +86,9 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 - [ ] **Rename geom2 → geom** (final)
 
 ## geom2 capabilities to add
+- [ ] **Node→Scene2 back-pointer** (planned, next session) — self-locking high-level
+      mutators + auto-invalidation; plan: memory `project_node_scene_backpointer`
+- [ ] checkerboard-lab: shadow-casting disturber objects (realistic test images)
 - [x] Offscreen GL-framebuffer render→Img (`Scene2::renderToImage` + `SceneCapture`)
 - [x] Depth+color buffer → RGBD source sim (`-i scene`, `@format=rgbd`)
 - [x] Scene depth → point-cloud source sim (`-i scene` → `PointCloudSource`/`unprojectDepth`)

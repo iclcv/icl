@@ -42,20 +42,19 @@ namespace icl::geom2 {
   ///   gui["view"].link(view.callback());       // wire the GUI-thread side
   ///   gui["view"].install(scene.getMouseHandler(0));
   ///   // ... in the worker run() loop:
-  ///   view.setBackend(useCycles ? OffscreenView::Backend::Cycles
-  ///                             : OffscreenView::Backend::GL);
-  ///   if (inputsChanged) view.requestCapture(); // GL: capture next paint
-  ///   core::Img8u img;
-  ///   if (view.poll(img)) { /* a NEW frame arrived → process it */ }
+  ///   if (view.poll()) { /* a NEW frame arrived */ }
+  ///   const core::Img8u &cam = view.image();   // latest frame (cached)
   /// \endcode
   ///
   /// THREADING CONTRACT:
   ///   - callback() must be link()ed to the on-screen Canvas3D. Its draw() runs
   ///     on the GUI thread (widget context current) and performs the GL capture
   ///     there.
-  ///   - poll(), requestCapture() and setBackend() are called from your worker
-  ///     run() loop. poll() also drives the Cycles progressive render, so call it
-  ///     EVERY frame; it returns true only when a genuinely new frame is ready.
+  ///   - poll() and setBackend() are called from your worker run() loop. poll()
+  ///     drives the Cycles progressive render AND auto-requests a GL capture when
+  ///     the view camera or backend changed, so call it EVERY frame; it returns
+  ///     true only when a genuinely new frame is ready. image() is the cached
+  ///     latest frame (so callers don't track their own "last frame").
   /// Also a utils::Configurable: it exposes the backend choice + Cycles tuning,
   /// and adds the captured scene as a child Configurable, so an app pulls the
   /// whole control set into its GUI with `gui << Prop(&view)` (no separate
@@ -93,18 +92,23 @@ namespace icl::geom2 {
     /// Link target for gui["view"].link(...). Renders the view + GL capture.
     qt::GLCallback *callback();
 
-    /// (GL backend) request a capture on the next paint. No-op for Cycles, which
-    /// self-detects scene/camera changes — harmless to call unconditionally.
+    /// Explicitly request a GL capture on the next paint. Usually unnecessary —
+    /// poll() auto-requests on camera/backend change and invalidate() on a scene
+    /// edit — but available for app-specific triggers. No-op for Cycles.
     void requestCapture();
 
-    /// Tell the backend the capture scene's geometry/materials changed (e.g. a
-    /// node was swapped). Forces a full Cycles resync; no-op for GL (which always
-    /// re-renders) and when no Cycles renderer exists yet.
+    /// Tell the view the capture scene's geometry/materials changed (e.g. a node
+    /// was swapped): resyncs Cycles and requests a fresh GL capture.
     void invalidate();
 
-    /// Latest captured frame. Returns true and fills \a out when a NEW frame has
-    /// arrived since the previous poll(); false otherwise. Call every frame.
-    bool poll(core::Img8u &out);
+    /// Call every frame (worker loop). Drives the Cycles progressive render and
+    /// auto-requests a GL capture when the view camera or backend changed.
+    /// Returns true when a NEW frame became available since the previous poll();
+    /// read the pixels with image().
+    bool poll();
+
+    /// The latest captured frame (shallow copy; empty until the first capture).
+    core::Img8u image() const;
 
     /// The Cycles backend's renderer (lazily created on first Cycles use), for
     /// tuning quality / scene scale / denoising. Returns nullptr if ICL was

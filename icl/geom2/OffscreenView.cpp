@@ -36,6 +36,11 @@ namespace icl::geom2 {
     std::atomic<bool>    mirror{true};
     std::atomic<bool>    glPending{false};
 
+    // Change detection for auto-requesting GL captures (poll()).
+    bool   haveCamSnap = false;
+    geom::Vec snapPos, snapNorm, snapUp;
+    int    reqBackend = -1;
+
     // Latest captured frame — written by whichever thread captured (GUI for GL,
     // worker for Cycles), read by poll() on the worker.
     std::mutex            mtx;
@@ -133,20 +138,45 @@ namespace icl::geom2 {
   }
 
   void OffscreenView::invalidate() {
+    m_impl->glPending.store(true);   // GL: recapture the (changed) scene
 #ifdef ICL_HAVE_CYCLES
     if (m_impl->cyc) m_impl->cyc->invalidateAll();
 #endif
   }
 
-  bool OffscreenView::poll(core::Img8u &out) {
+  core::Img8u OffscreenView::image() const {
+    std::scoped_lock l(m_impl->mtx);
+    return m_impl->latest;   // shallow copy under the lock
+  }
+
+  bool OffscreenView::poll() {
     auto &d = *m_impl;
 
     // The Configurable properties are the UI-facing source of truth — sync them.
+    Backend nb;
     {
       const std::string b = prop("backend").value;
-      Backend nb = (!b.empty() && b[0] == 'C') ? Backend::Cycles : Backend::GL;
+      nb = (!b.empty() && b[0] == 'C') ? Backend::Cycles : Backend::GL;
       if (!kCyclesAvailable) nb = Backend::GL;
       d.backend.store(nb);
+    }
+
+    // Auto-request a GL capture when the rendered scene's appearance would change:
+    // the view camera moved or the backend switched (e.g. Cycles→GL). (Geometry/
+    // material edits come through invalidate().) So callers don't track camMoved /
+    // call requestCapture themselves.
+    const bool backendChanged = ((int)nb != d.reqBackend);
+    d.reqBackend = (int)nb;
+    if (nb == Backend::GL) {
+      const geom::Camera &cam = d.viewScene->getCamera(d.viewCam);
+      auto same = [](const geom::Vec &a, const geom::Vec &b){
+        return a[0]==b[0] && a[1]==b[1] && a[2]==b[2] && a[3]==b[3]; };
+      const bool camChanged = !d.haveCamSnap
+          || !same(cam.getPosition(), d.snapPos) || !same(cam.getNorm(), d.snapNorm)
+          || !same(cam.getUp(), d.snapUp);
+      if (camChanged || backendChanged) d.glPending.store(true);
+      d.haveCamSnap = true;
+      d.snapPos = cam.getPosition(); d.snapNorm = cam.getNorm(); d.snapUp = cam.getUp();
     }
 #ifdef ICL_HAVE_CYCLES
     if (d.backend.load() == Backend::Cycles) {
@@ -172,9 +202,7 @@ namespace icl::geom2 {
     const uint32_t s = d.seq.load(std::memory_order_relaxed);
     if (s == d.lastPolled) return false;
     d.lastPolled = s;
-    std::scoped_lock l(d.mtx);
-    out = d.latest;
-    return out.getDim() > 0;
+    return true;
   }
 
   CyclesRenderer *OffscreenView::cycles() {
