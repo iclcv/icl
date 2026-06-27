@@ -1033,6 +1033,30 @@ namespace icl::math {
     return m;
   }
 
+  /// Returns the closest proper rotation matrix to \a M (orthonormal, det = +1).
+  /** The rotation factor of the polar decomposition, computed via SVD: for
+      M = U·diag(s)·Vᵀ the closest orthonormal matrix (in the Frobenius sense) is
+      U·Vᵀ; the sign of the least-significant axis is flipped if needed so that
+      det = +1 (a proper rotation, no reflection).
+
+      Unlike the order-dependent Gram–Schmidt of decompose_QR/decompose_RQ this
+      is the optimal nearest rotation, which makes it the right tool to
+      re-orthonormalise a drifted rotation, recover the rotation from a scaled or
+      noisy rotation (camera calibration), or align point sets (Kabsch /
+      orthogonal-Procrustes, ICP). Defined for any square D≥2. */
+  template<class T, unsigned int D>
+  inline FixedMatrix<T,D,D> closest_rotation(const FixedMatrix<T,D,D> &M){
+    FixedMatrix<T,D,D> U, V;
+    FixedMatrix<T,1,D> s;
+    M.svd(U, s, V);
+    FixedMatrix<T,D,D> R = U * V.transp();
+    if(R.det() < T(0)){                 // reflection → flip the smallest axis
+      for(unsigned int r=0; r<D; ++r) U(r, D-1) = -U(r, D-1);
+      R = U * V.transp();
+    }
+    return R;
+  }
+
   /// compute euler angles for rotation matrix assuming specified axes order
   template<class T> ICLMath_IMP
   FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,3,3> &m,

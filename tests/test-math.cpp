@@ -1213,3 +1213,28 @@ ICL_REGISTER_TEST("math.homography.roundtrip_rotated_quad",
     ICL_TEST_NEAR(p.y, ps[i].y, 1.0f);
   }
 }
+
+ICL_REGISTER_TEST("math.fixed.closest_rotation",
+                  "closest_rotation recovers a proper rotation from a scaled/noisy/reflected matrix")
+{
+  const FixedMatrix<float,3,3> R = create_rot_3D<float>(0.3f, 0.5f, -0.7f);
+
+  // idempotent on a clean rotation
+  const FixedMatrix<float,3,3> R2 = closest_rotation(R);
+  for(int i=0;i<9;++i) ICL_TEST_NEAR(R2.begin()[i], R.begin()[i], 1e-4f);
+
+  // recover the rotation from a scaled + slightly perturbed copy
+  FixedMatrix<float,3,3> M = R * 2.5f;
+  M(0,1) += 0.02f; M(2,0) -= 0.015f;
+  const FixedMatrix<float,3,3> Rr = closest_rotation(M);
+  ICL_TEST_NEAR(Rr.det(), 1.0f, 1e-3f);                      // proper rotation
+  const FixedMatrix<float,3,3> I = Rr * Rr.transp();         // orthonormal
+  ICL_TEST_NEAR(I(0,0),1.f,1e-3f); ICL_TEST_NEAR(I(1,1),1.f,1e-3f); ICL_TEST_NEAR(I(2,2),1.f,1e-3f);
+  ICL_TEST_NEAR(I(0,1),0.f,1e-3f); ICL_TEST_NEAR(I(1,2),0.f,1e-3f);
+  for(int i=0;i<9;++i) ICL_TEST_NEAR(Rr.begin()[i], R.begin()[i], 2e-2f);
+
+  // a reflection (det<0) input must still yield a PROPER rotation (det +1)
+  FixedMatrix<float,3,3> Ref = R;
+  for(int r=0;r<3;++r) Ref(r,0) = -Ref(r,0);                 // negate a column → det<0
+  ICL_TEST_EQ(closest_rotation(Ref).det() > 0.99f, true);
+}

@@ -363,13 +363,7 @@ namespace icl::geom {
     DMat3 Rs = R * (1.0/alpha);          // ~orthonormal rotation (det ~ +1)
     DVec3 ts = t * (1.0/alpha);          // metric world->camera translation
 
-    DMat3 Us, Vs; math::FixedMatrix<double,1,3> ss;
-    Rs.svd(Us, ss, Vs);
-    DMat3 Rot = Us * Vs.transp();        // closest orthonormal matrix
-    if(Rot.det() < 0){                   // force a proper rotation (det = +1)
-      for(int row=0;row<3;++row) Us(row,2) = -Us(row,2);
-      Rot = Us * Vs.transp();
-    }
+    DMat3 Rot = math::closest_rotation(Rs);   // optimal nearest proper rotation
     DMat3 Ri = Rot.transp();
     DVec3 pos = -(Ri * ts);              // camera position in world = -Rot^T t
 
