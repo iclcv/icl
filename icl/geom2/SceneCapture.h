@@ -5,6 +5,7 @@
 #pragma once
 
 #include <icl/geom2/BVH.h>
+#include <memory>
 
 namespace icl::geom2 {
 
@@ -34,6 +35,13 @@ namespace icl::geom2 {
     /** Returns an empty result on invalid camera index or missing capability. */
     virtual BVH::ImageResult capture(Scene2 &scene, int cameraIndex,
                                      BVH::DepthMode mode = BVH::DistToCamPlane) = 0;
+
+    /// Convenience: capture just the RGB color image (depth skipped).
+    /** Thin wrapper over capture(..., NoDepth) returning only the color Image —
+        the common case when you don't need the depth buffer. Empty on failure. */
+    core::Img8u captureRGB(Scene2 &scene, int cameraIndex) {
+      return capture(scene, cameraIndex, BVH::NoDepth).image;
+    }
   };
 
   /// Headless CPU backend: builds a BVH and raytraces it. No GL context needed.
@@ -67,11 +75,40 @@ namespace icl::geom2 {
   };
 
   /// GL backend: offscreen render via Scene2::renderToImage (full shading).
-  /** Must be invoked with a current GL context whose Renderer is the scene's. */
+  /** Two modes, chosen at construction:
+
+        - Borrowed context (default, ownContext=false) — capture() runs
+          Scene2::renderToImage straight on the caller's current GL context.
+          Use this when you already are on the GL thread with a live widget
+          context current (e.g. composed inside an on-screen draw callback).
+          There is NO GL context of its own; calling capture() without one
+          current yields an empty result.
+
+        - Owned offscreen context (ownContext=true) — the capturer owns a
+          self-contained QOpenGLContext + QOffscreenSurface (shared lists with
+          Qt's global share context for textures), makeCurrent()s it for the
+          duration of the render, and doneCurrent()s after. This makes a scene
+          renderable to an image FROM ANY THREAD — in particular a worker
+          `run()` — without coupling to the on-screen paint loop. Ported from
+          legacy geom::Scene::PBuffer.
+
+      Qt thread-affinity caveat (owned mode): a QOpenGLContext is bound to the
+      thread that first makeCurrent()s it. The context is lazily created on the
+      first capture() call, so always issue the first (and every) capture() from
+      the SAME thread — typically the dedicated worker thread that owns this
+      capturer. Requires a running QApplication (for the global share context).*/
   class ICLGeom2_API GLSceneCapture : public SceneCapture {
   public:
+    /// \a ownContext selects owned-offscreen mode (see class doc).
+    explicit GLSceneCapture(bool ownContext = false);
+    ~GLSceneCapture() override;
+
     BVH::ImageResult capture(Scene2 &scene, int cameraIndex,
                              BVH::DepthMode mode = BVH::DistToCamPlane) override;
+
+  private:
+    struct OffscreenContext;
+    std::unique_ptr<OffscreenContext> m_ctx;   ///< null unless ownContext
   };
 
 } // namespace icl::geom2

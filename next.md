@@ -4,41 +4,86 @@
 
 ## Next Step
 
+### Session 82 — sandbox now does headless GL + Cycles (verify on restart)
+Full writeup: `sandbox-harness-notes.md`. The mscc sandbox profile/source is at `~/margin.mscc`
+(`default-profile.darwin` = Seatbelt SBPL; `backends/seatbelt.py` appends file rules;
+mach-lookup grants live ONLY in `default-profile.darwin`). Both headless blockers are solved:
+- **Blocker 1 (Metal/OpenCL kernel-cache write) — RESOLVED** by the current profile (`/var/folders`
+  writable since mscc commit `a1e74ae`). Verified *inside* the sandbox: `geom2-cycles-renderer-
+  test-demo` renders repeatably (was "first run only"). ICL's own OpenCL (`utils::CLProgram`)
+  uses the same `…/C/com.apple.metalfe/` cache → covered.
+- **Blocker 2 (headless GL) — SOLVED, needs a 1-line-block profile edit.** Proven on the HOST via
+  `scripts/sandbox-gl-smoke.sh` (raw-CGL + Qt-`QOffscreenSurface` probes; `log show`/nested
+  `sandbox-exec` are denied in-sandbox so it can't be tested from inside). Headless offscreen GL
+  (= `GLSceneCapture(ownContext=true)`) renders with **only** `com.apple.windowserver.active` +
+  `com.apple.cvmsServ` (got `GL 4.1 Metal — Apple M3 Max`, correct FBO pixel). The on-screen
+  `QOpenGLWidget` path is intentionally NOT pursued (drags in the whole window/view-bridge mach
+  surface). **`./patch.sh`** applies the grants to `~/margin.mscc/default-profile.darwin`.
+
+### ✅ Session 82 follow-up — headless GL VERIFIED in-sandbox + a real renderer bug fixed
+The on-restart verification is **done**. New entry point `geom2-headless-gl-capture-demo`
+(`icl/geom2/demos/headless-gl-capture.cpp`): plain `QGuiApplication` (cocoa) +
+`GLSceneCapture(ownContext=true)`, no window → renders a Scene2 → saves PNG. Verified in this
+patched sandbox: `GL 4.1 Metal`, 640×480, 2711 unique colors (lit ground, shaded sphere/cube,
+shadows). Run with `QT_QPA_PLATFORM=cocoa builddir/bin/geom2-headless-gl-capture-demo out.png`.
+A bare Qt `QOffscreenSurface`+`QOpenGLContext` probe (`scripts/sandbox-gl-probe-qt.cpp`) also
+renders in-sandbox — so the `windowserver.active` + `cvmsServ` grants are confirmed sufficient.
+
+**Two framework fixes this required (both in geom2, real bugs not sandbox-specific):**
+1. `GLSceneCapture::OffscreenContext::makeCurrent()` (`SceneCapture.cpp`) now calls `glewInit()`
+   once (with `glewExperimental`) — ICL's `Renderer` reaches FBO/VAO/shader entry points through
+   GLEW, which the on-screen path inits in `ICLWidget::paintGL` but the owned offscreen context
+   never did → first `glGenFramebuffers` was a null-pointer segfault.
+2. `Renderer::ensureShaderCompiled()` (`Renderer.cpp`) used to leave **FBO 0 bound** after the
+   lazy shadow-FBO creation. Since it runs inside the *first* `render()`, it clobbered the
+   caller's bound FBO, so `renderToImage`'s whole frame targeted the (incomplete) offscreen
+   default framebuffer (GL_INVALID_FRAMEBUFFER_OPERATION, geometry lost). On-screen this was
+   invisible (only the 1st frame, widget FBO non-zero); a one-shot `renderToImage` hit it every
+   time. Now saves/restores the bound FBO. `Scene2::renderToImage` also rebinds `captureFBO`
+   defensively before readback.
+
+With this green, the geom2 GL apps (checkerboard-lab offscreen render below, `Scene2::
+renderToImage`) can finally be **verified here**, not just build-checked.
+
+Smoke-test tooling kept in repo: `scripts/sandbox-gl-smoke.sh` (`--qt`/default/`--window`),
+`scripts/sandbox-gl-probe.c`, `scripts/sandbox-gl-probe-qt.cpp`. `patch.sh` is throw-away.
+
+---
+
 **⏸️ BREAK POINT (end of Session 81).** On `further-restructuring-and-cleanup`, build +
 **969/969** green throughout. The **geom→geom2 retirement is essentially complete** (only
 camera-calibration remains, as a deliberate redesign); this session was mostly the
 **camera-calibration redesign** (Phase A + start of Phase B). Build- + headless-checked only —
 NO GL in this sandbox; real-display pass still owed on all geom2 apps.
 
-### RESUME HERE → geom2 offscreen GL render from a worker thread (the immediate blocker)
-Building `icl-checkerboard-detection-lab` (the interactive detection tuning tool) surfaced a
-real geom2 gap. The lab's RIGHT pane should be **the real camera render of the 3D scene**
-(so lights/shadows/3D objects show — a homography of the planar texture can't), produced from
-the worker-thread `run()`. But:
-- `Scene2::renderToImage` / `GLSceneCapture` need the **scene's GL context current**, and are
-  written to be "composable inside an on-screen draw callback" — i.e. callable only from a GL
-  render callback (the GL thread), NOT from the worker `run()`.
-- The proven-but-awkward workaround (`scene-rgbd-capture` demo): a custom `qt::GLCallback`
-  whose `draw()` (context current) calls `scene.render()` then `renderToImage()` and hands the
-  image to the worker via atomics. Couples capture to the on-screen paint + GL thread.
-- **What the user wants (and remembers from legacy):** a self-owned **offscreen GL context** so
-  a scene can be rendered to an image **from any thread**. Legacy `geom::Scene` HAS this —
-  `Scene::PBuffer` (`icl/geom/Scene.cpp` ~1625): `QOpenGLContext` + `QOffscreenSurface`,
-  `setShareContext(QOpenGLContext::globalShareContext())`, `create()`, `makeCurrent(&surface)`
-  + an FBO → render + readback; plus `Scene::enableSharedOffscreenRendering()` to disable a
-  same-scene on/offscreen optimisation. **geom2 has NO equivalent.**
-- **TASK:** port the PBuffer pattern to geom2 — e.g. a `geom2::OffscreenRenderer` (or a
-  `GLSceneCapture` mode) owning a shared offscreen `QOpenGLContext`+`QOffscreenSurface`, that
-  `makeCurrent`s in the calling thread, renders the scene's `Renderer` to its FBO, reads back
-  `BVH::ImageResult`. Then the lab (and depth-camera-simulator etc., which currently call
-  `renderToImage` from `run()` and are probably silently broken) get a clean any-thread capture.
-  Note Qt caveat: a QOpenGLContext is bound to the thread that `makeCurrent`s it; keep the
-  capturer's context used from one (worker) thread, share lists with the global context for
-  textures.
+### PBuffer port — LANDED (offscreen GL render from any thread)
+The legacy `geom::Scene::PBuffer` pattern is ported as a **mode of `GLSceneCapture`**:
+`GLSceneCapture(ownContext=true)` (`icl/geom2/SceneCapture.{h,cpp}`). It owns a
+`QOpenGLContext` + `QOffscreenSurface` (shares lists with `globalShareContext()` for
+textures), **lazily created inside the first `capture()`** so the context's thread affinity is
+the *calling* (worker) thread, then `makeCurrent → Scene2::renderToImage → doneCurrent`.
+Returns RGB+depth as `BVH::ImageResult` (just the shared `{Img8u image; Img32f depth;}` struct
+— the GL path does NOT go through the raytracer; BVHSceneCapture is only the no-GL fallback).
+`renderToImage` already saves/restores the caller's FBO+viewport, so borrowed-context mode
+(default `ownContext=false`) still composes inside an on-screen draw callback. Build-checked
+only (no GL in sandbox).
+
+**⚠️ Context-sharing caveat that blocks the naive lab switch:** a `Renderer` uses **VAOs**,
+which are **NOT shareable across GL contexts** (even with `AA_ShareOpenGLContexts`, which ICL
+doesn't set anyway). So owned-context mode renders a scene whose `Renderer` lives ONLY in the
+offscreen context. You CANNOT capture the *same* on-screen `Scene2` (whose VAOs were created in
+the widget's context) through a second offscreen context. To finish the lab you must either:
+(a) build a **dedicated capture Scene2** (mirror the board geometry + the interactive camera)
+rendered solely through the owned-context capturer, or (b) drop the on-screen `Canvas3D` and
+render BOTH the interactive view and the camera-0 view offscreen, displaying them as plain
+`Canvas` images (then the mouse handler must drive the capture camera directly). (a) preserves
+the interactive GL left pane; (b) is simpler but loses native GL navigation.
 
 Then finish the lab switch: RIGHT pane = real offscreen render of camera 0 → apply the radial
 lens-distortion (CPU) → detect → overlay; 2nd canvas = undistort with the (known) `k1,k2`.
 Homography hack is to be removed. Add a lighting toggle so shading/shadows can be exercised.
+**Eventual stretch:** also offer a **Cycles**-rendered camera view (`geom2::CyclesRenderer`)
+for photoreal test images (real shadows/GI/material + lens effects) to stress the detector.
 
 ### Camera-calibration redesign — status (plan: `camera-calibration-redesign.md`)
 Rethinking the drift-prone 3D joint-DLT pipeline instead of transliterating it. Decisions:

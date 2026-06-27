@@ -419,6 +419,10 @@ namespace icl::geom2 {
                             cam.getCSTransformationMatrixGL(),
                             cam.getProjectionMatrixGL());
 
+    // The renderer restores the FBO binding it found (captureFBO), but rebind
+    // defensively so the readback can never read a stray framebuffer.
+    glBindFramebuffer(GL_FRAMEBUFFER, m_data->captureFBO);
+
     // ---- color readback (RGBA8, GL bottom-up) → planar RGB Img8u (top-down) ----
     std::vector<icl8u> rgba((size_t)w * h * 4);
     glReadBuffer(GL_COLOR_ATTACHMENT0);

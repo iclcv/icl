@@ -26,6 +26,11 @@ if _build_demos and qt_found
     dependencies: [icl_geom2_dep],
     install: false,
   )
+  executable('geom2-headless-gl-capture-demo',
+    files('../demos/headless-gl-capture.cpp'),
+    dependencies: [icl_geom2_dep, icl_io_dep],
+    install: false,
+  )
   executable('scene-monitors-demo',
     files('../demos/scene-monitors.cpp'),
     dependencies: [icl_geom2_dep],

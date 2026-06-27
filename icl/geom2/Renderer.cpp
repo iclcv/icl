@@ -1195,6 +1195,12 @@ void main() { }
     if (m_data->shadowProgram) {
       int sz = m_data->shadowMapSize;
       float borderColor[] = {1, 1, 1, 1};
+      // ensureShaderCompiled() runs lazily inside the first render(), so it must
+      // not leak GL state: save the caller's bound FBO and restore it at the end.
+      // Hard-binding 0 here used to clobber an offscreen capture FBO (renderToImage)
+      // — the whole frame then targeted the (incomplete) default framebuffer.
+      GLint prevBoundFBO = 0;
+      glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBoundFBO);
       for (int i = 0; i < Data::MAX_SHADOWS; i++) {
         glGenTextures(1, &m_data->shadowTex[i]);
         glBindTexture(GL_TEXTURE_2D, m_data->shadowTex[i]);
@@ -1220,6 +1226,7 @@ void main() { }
           fprintf(stderr, "[geom2::Renderer] Shadow FBO %d incomplete: 0x%x\n", i, fbStatus);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
       }
+      glBindFramebuffer(GL_FRAMEBUFFER, prevBoundFBO);   // restore caller's FBO
       fprintf(stderr, "[geom2::Renderer] %d shadow maps (%dx%d) ready\n", Data::MAX_SHADOWS, sz, sz);
     }
 
