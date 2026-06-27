@@ -2,6 +2,7 @@
 
 markers_headers = files(
   'AdvancedMarkerGridDetector.h',
+  'CalibrationTarget.h',
   'BCHCode.h',
   'Fiducial.h',
   'FiducialDetector.h',

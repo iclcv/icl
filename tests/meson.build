@@ -11,9 +11,10 @@ test_sources = files(
   'test-math.cpp',
   'test-core.cpp',
   'test-filter.cpp',
+  'test-cv-checkerboard-saddle.cpp',
 )
 
-test_deps = [icl_utils_dep, icl_math_dep, icl_core_dep, icl_filter_dep]
+test_deps = [icl_utils_dep, icl_math_dep, icl_core_dep, icl_filter_dep, icl_cv_dep]
 
 # Quick2 tests require the Qt module
 if qt_dep.found()
