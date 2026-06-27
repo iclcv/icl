@@ -4,54 +4,79 @@
 
 ## Next Step
 
-**⏸️ BREAK POINT (end of Session 80).** On `further-restructuring-and-cleanup`, build +
-**956/956** green throughout. This session pushed the **geom→geom2 retirement** hard: ported
-all the low/medium-risk keepers and resolved the open dispositions. Build- + headless-checked
-only (no GL here — real-display pass still owed).
+**⏸️ BREAK POINT (end of Session 81).** On `further-restructuring-and-cleanup`, build +
+**969/969** green throughout. The **geom→geom2 retirement is essentially complete** (only
+camera-calibration remains, as a deliberate redesign); this session was mostly the
+**camera-calibration redesign** (Phase A + start of Phase B). Build- + headless-checked only —
+NO GL in this sandbox; real-display pass still owed on all geom2 apps.
 
-**Landed this session (14 commits):**
-- **Demos →geom2:** generic-texture-coords, texture-cube, scene-shadows, scene-graph,
-  superquadric, offscreen-rendering. **Apps →geom2:** surf-based-object-tracking,
-  rotate-image-3D, depth-camera-simulator. **Markers →geom2:** marker-detection,
-  multi-cam-marker-demo (geom2 dep added per-target, not lib-wide).
-- **New node:** `SuperquadricNode` (signed-power surface; rotation via node transform).
-- **Patterns proven:** native textured `MeshNode` (per-face UVs + live `setBaseColorMap`);
-  `LightNode` shadows; lights anchored as children of a moving node (renderer light
-  traversal finds them); orbit/spin **Drivers**; shift-click picking → `TextNode` indicator;
-  offscreen `Scene2::renderToImage` for color+depth (rotate-image-3D / depth-camera-simulator
-  / offscreen-rendering).
-- **Decisions:** animated-grid **DELETED** (custom GLSL, no geom2 hook); plot-widget-3D →
-  **reimplement** geom2 `PlotWidget3D` (deferred, big); depth batch → assess per-app (deferred).
+### RESUME HERE → geom2 offscreen GL render from a worker thread (the immediate blocker)
+Building `icl-checkerboard-detection-lab` (the interactive detection tuning tool) surfaced a
+real geom2 gap. The lab's RIGHT pane should be **the real camera render of the 3D scene**
+(so lights/shadows/3D objects show — a homography of the planar texture can't), produced from
+the worker-thread `run()`. But:
+- `Scene2::renderToImage` / `GLSceneCapture` need the **scene's GL context current**, and are
+  written to be "composable inside an on-screen draw callback" — i.e. callable only from a GL
+  render callback (the GL thread), NOT from the worker `run()`.
+- The proven-but-awkward workaround (`scene-rgbd-capture` demo): a custom `qt::GLCallback`
+  whose `draw()` (context current) calls `scene.render()` then `renderToImage()` and hands the
+  image to the worker via atomics. Couples capture to the on-screen paint + GL thread.
+- **What the user wants (and remembers from legacy):** a self-owned **offscreen GL context** so
+  a scene can be rendered to an image **from any thread**. Legacy `geom::Scene` HAS this —
+  `Scene::PBuffer` (`icl/geom/Scene.cpp` ~1625): `QOpenGLContext` + `QOffscreenSurface`,
+  `setShareContext(QOpenGLContext::globalShareContext())`, `create()`, `makeCurrent(&surface)`
+  + an FBO → render + readback; plus `Scene::enableSharedOffscreenRendering()` to disable a
+  same-scene on/offscreen optimisation. **geom2 has NO equivalent.**
+- **TASK:** port the PBuffer pattern to geom2 — e.g. a `geom2::OffscreenRenderer` (or a
+  `GLSceneCapture` mode) owning a shared offscreen `QOpenGLContext`+`QOffscreenSurface`, that
+  `makeCurrent`s in the calling thread, renders the scene's `Renderer` to its FBO, reads back
+  `BVH::ImageResult`. Then the lab (and depth-camera-simulator etc., which currently call
+  `renderToImage` from `run()` and are probably silently broken) get a clean any-thread capture.
+  Note Qt caveat: a QOpenGLContext is bound to the thread that `makeCurrent`s it; keep the
+  capturer's context used from one (worker) thread, share lists with the global context for
+  textures.
 
-**ONE item now blocks deleting `geom`** (verified by scan — see `backlog.md`):
-1. **camera-calibration + planar** (markers) — SEPARATE multi-session rework. NOT a mechanical
-   `fromSceneObject` swap: converter skips `addTextTexture` labels, `CameraCalibrationUtils`
-   mutates SceneObjects at runtime via `geom::Scene&`, planar's grid handler edits live.
-   (`point-cloud-primitive-filter` is now DONE — `nodeFromPrimitive3D` converter + `filterBox`/
-   `filterSphere`, RSB/`Primitive3DFilter` dropped.)
+Then finish the lab switch: RIGHT pane = real offscreen render of camera 0 → apply the radial
+lens-distortion (CPU) → detect → overlay; 2nd canvas = undistort with the (known) `k1,k2`.
+Homography hack is to be removed. Add a lighting toggle so shading/shadows can be exercised.
 
-Everything else now lives in geom2. **Big landings this session (~22 commits):**
-- **Demos→geom2:** generic-texture-coords, texture-cube, scene-shadows, scene-graph,
-  superquadric (+`SuperquadricNode`), offscreen-rendering, **plot-widget-3D** (full geom2
-  `PlotWidget3D`+`Plot3D`+`PlotHandle3D` reimpl), **kinect-segmentation** (fused 3 segmenters).
-- **Apps→geom2:** surf-based-object-tracking, rotate-image-3D, depth-camera-simulator,
-  point-cloud-creator, point-cloud-define-world-frame, **stereo-rgbd-simulator** (new).
-- **Markers→geom2:** marker-detection, multi-cam-marker-demo.
-- **New reusable geom2 capabilities (all tested headless, 959/959):**
-  `PointCloud::mapColorFromCamera` (cross-camera color→depth registration, replaces
-  `PointCloudCreator::mapImage`); `RayCastOctree::fill(PointCloud)`; kinect 11-bit raw→mm in
-  point-cloud-creator.
-- **Retired/deleted:** animated-grid (GLSL, no hook), kinect-pointcloud + rgbd-mapping
-  (subsumed by point-cloud-creator), 3 legacy segmentation demos, dead point-cloud sources.
-- **Stays (CV-only, no Scene layer):** kinect-normals, kinect-recorder, fix-kinect-calibration,
-  show-extrinsic-calibration-grid, simplex-2D, compute-relative-camera-transform, icp3d-test.
-- **Verification debt:** all geom2 ports are build- + headless-checked only — NO GL here. A
-  real-display pass is owed (esp. plot-widget-3D box/labels, the texture/shadow demos).
-- **Depth test bed:** `icl-stereo-rgbd-simulator -d ws 8000 -c ws 8001` →
-  `icl-point-cloud-creator -id ws 8000 -idc d.xml -ic ws 8001 -icc c.xml` is a hardware-free
-  RGB-D registration pipeline.
+### Camera-calibration redesign — status (plan: `camera-calibration-redesign.md`)
+Rethinking the drift-prone 3D joint-DLT pipeline instead of transliterating it. Decisions:
+planar primary / 3D kept for the multi-cam one-click; registerable `CalibrationTarget` backend
+(checkerboard NEW + marker-grid + ChArUco later); ICL-native intrinsics vs OpenCV compared;
+harness-first. **Landed this session:**
+- **`calibrate_extrinsic` bug fixed at the source.** Root cause: its linear SVD seed was
+  non-robust (cheirality-flipped + ~3× mis-scaled → poisoned the LMA → the "divergence").
+  Replaced with column-norm scale + cheirality + SVD-orthonormalisation. Now 5.8mm vs joint
+  DLT 245mm at 3m. The reusable nearest-rotation piece was promoted to **`math::closest_rotation`**.
+- **Phase-A harness** (`test-geom2-calibration-harness`): projection-based; reproduces the
+  depth drift quantitatively (near 700mm: 2mm; far 3000mm: 351±265mm) + the decoupling fix.
+- **Native ChESS checkerboard detector** (`cv::CheckerboardSaddleDetector`, OpenCV-free): ring
+  2nd-harmonic saddle response + NMS + sub-pixel; per-corner orientation free; LOCAL → distortion
+  robust. Tests (clean + barrel-distorted): clean 64/64 @ 0px, distorted 64/64 @ 0.49px. Emits
+  `cv::CornerSeed{pos,score,orientation}`.
+- **`markers::CalibrationTarget`** pluggable-backend interface scaffolded (detect→correspondences,
+  generate→printable).
+- **`icl-checkerboard-detection-lab`** app (geom2/apps): left interactive board, right
+  distorted+detection / undistorted canvases. Currently homography-based (to be switched to the
+  offscreen render above). Fixed a white-board bug (use scene `enable lighting`=false for a flat
+  board, NOT emissive=white which the renderer ADDS → saturates).
 
-(Earlier S80-era pipeline work — scene→RGBD→point-cloud — is below; unchanged.)
+**Detector architecture (decided):** HYBRID — region-quads (LocalThreshold→RegionDetector→
+QuadDetector) own topology/`(row,col)`/origin-disambiguation + seed; ChESS owns precision +
+splits the touching-quad merges. Generalise to a **seed-fusion/refinement framework** (pluggable
+`CornerSeed` providers + refiners) once the 2nd provider exists. **Phase B next after the
+offscreen render:** distortion-tolerant **grid recovery** (growth-on-seeds vs region-quad) →
+`CheckerboardTarget` backend; then multi-frame intrinsic estimation (move board around scene).
+
+### geom→geom2 retirement — DONE except one item (see `backlog.md`)
+Only **camera-calibration + camera-calibration-planar** (markers) still touch the geom Scene
+layer — that's the redesign above. Everything else is ported. CV-only tools (kinect-normals,
+kinect-recorder, fix-kinect-calibration, show-extrinsic-calibration-grid, simplex-2D,
+compute-relative-camera-transform, icp3d-test) stay in geom and don't block deletion. Endgame
+after calibration: **delete `geom` → rename `geom2`→`geom`**.
+
+(Earlier S79/S80 pipeline-era notes — scene→RGBD→point-cloud — kept below; unchanged.)
 
 ### Resume at: geom→geom2 retirement (active)
 **Endgame:** port every keeper geom→geom2, then **delete `geom`**, then **rename geom2 →

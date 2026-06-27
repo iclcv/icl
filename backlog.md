@@ -18,6 +18,14 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
       ICL-native intrinsics vs OpenCV comparison; harness-first.
   - [x] **Phase A.1** projection harness (`test-geom2-calibration-harness`) — reproduces the
         depth drift quantitatively (near 700mm: 2mm; far 3000mm: 351±265mm).
+  - [ ] **geom2 offscreen GL render from a worker thread** (BLOCKER for the lab/A.2). Port legacy
+        `geom::Scene::PBuffer` (QOpenGLContext+QOffscreenSurface, shared w/ globalShareContext,
+        makeCurrent + FBO + readback) → a geom2 `OffscreenRenderer`/`GLSceneCapture` mode usable
+        from any thread. `Scene2::renderToImage` currently needs the caller's GL context current
+        (callable only from a GL draw callback) — depth-camera-simulator etc. call it from run()
+        and are probably silently broken. See next.md "RESUME HERE".
+  - [x] **ChESS checkerboard detector** (`cv::CheckerboardSaddleDetector`) + `CalibrationTarget`
+        scaffold + `icl-checkerboard-detection-lab` (homography→switch to offscreen render).
   - [ ] Phase A.2 rendering harness (geom2 offscreen + synthetic light/noise → detect → calibrate).
   - [x] **investigated** calibrate_extrinsic divergence: broken linear SVD seed (cheirality/scale); LMA itself is correct + wide basin; fix = homography/PnP seed (Phase B). Regression locked (4.4mm vs 249mm).
   - [ ] Phase B planar intrinsic+extrinsic (checkerboard backend, native-vs-opencv intrinsics).
