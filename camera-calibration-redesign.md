@@ -48,8 +48,22 @@ chronically drift-prone). This is a multi-session arc.
         orientation. LOCAL operator → distortion-robust by construction. Tests (clean +
         barrel-distorted): clean 64/64 @ 0px, 64 seeds; distorted 64/64 @ 0.49px. Emits
         `cv::CornerSeed{pos,score,orientation}`.
-  - [ ] **grid recovery** (distortion-tolerant, growth-based) → object↔image correspondences;
-        then the `CheckerboardTarget` backend (detect via seeds+recovery, generate the board).
+  - [x] **grid recovery v1** (distortion-tolerant, growth-based) — `cv::CheckerboardGrid` +
+        `recoverCheckerboardGrid(seeds)`: turns the unordered ChESS seeds into an ordered integer
+        `(col,row)` lattice. Seed-only: dedup near-duplicates → bootstrap local axes from the start
+        seed's NEAREST NEIGHBOUR (not its orientation — the 2nd-harmonic phase points along the
+        board *diagonals*, which would grow only the same-colour half-lattice) → BFS the lattice,
+        refining the per-link step vectors so it tracks perspective + distortion → keep-best on a
+        cell collision. Origin/axis order NOT canonicalised (fine for per-view calibration). This
+        is the swappable layer behind a STABLE `CheckerboardGrid` boundary — the decided hybrid
+        (below) can replace it without touching consumers. Tests
+        `cv.checkergrid.{clean,square,distorted,perspective}` (full lattice incl. the square
+        diagonal-trap). Visualised live in `icl-checkerboard-detection-lab`.
+  - [x] **`CheckerboardTarget` backend** — the FIRST concrete `CalibrationTarget`
+        (`markers::CheckerboardTarget`): detector + grid recovery → labels the lattice against the
+        known board geometry (either axis order) → object↔image correspondences for
+        `Camera::calibrate_*`; also `modelPoints()` + a detectable `generate()`. Test
+        `markers.checkertarget.generate_detect_roundtrip` (complete, correctly-labelled). 981/981.
   - **Detector architecture (decided):** a HYBRID — region-quads (LocalThreshold→RegionDetector→
     QuadDetector, reusing the fiducial pipeline) own *structure / topology / `(row,col)` ordering /
     origin-disambiguation* and give approximate seeds; **ChESS owns precision** (sub-pixel refine

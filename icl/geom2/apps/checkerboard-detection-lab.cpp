@@ -30,6 +30,7 @@
 #include <icl/geom2/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
 #include <icl/geom/Camera.h>
 #include <icl/cv/CheckerboardSaddleDetector.h>
+#include <icl/cv/CheckerboardGrid.h>           // growth-based grid recovery
 #include <icl/filter/affine/ImageUndistortion.h>   // radial distortion model + warp maps
 #include <icl/filter/affine/WarpOp.h>               // efficient warp-map application
 #include <cstdlib>   // std::_Exit
@@ -73,9 +74,34 @@ static void updateUndistort(float k1, float k2, const Size &sz) {
   g_undistort.setWarpMap(ud.createInverseWarpMap());   // distorted → rectified
 }
 
-// draw a result image + the detected corners (+ their two board axes)
-static void drawResult(DrawHandle &draw, const Img8u &img, const std::vector<CornerSeed> &seeds) {
+// draw a result image + the detected corners (+ their board axes) + the
+// recovered grid lattice (topology edges, origin and the +col/+row axes).
+static void drawResult(DrawHandle &draw, const Img8u &img,
+                       const std::vector<CornerSeed> &seeds,
+                       const CheckerboardGrid &grid) {
   draw = img;
+
+  // recovered grid: lattice edges show the (col,row) topology; the magenta ring
+  // marks the (arbitrary) origin, red = +col axis, green = +row axis.
+  if (gui["showGrid"].as<bool>() && !grid.empty()) {
+    draw->linewidth(1.f);
+    draw->color(0,180,255,200);                       // lattice edges: cyan
+    for (int r=0; r<grid.rows; ++r)
+      for (int c=0; c<grid.cols; ++c) {
+        if (!grid.has(c,r)) continue;
+        const Point32f p = grid.at(c,r);
+        if (grid.has(c+1,r)) draw->line(p, grid.at(c+1,r));
+        if (grid.has(c,r+1)) draw->line(p, grid.at(c,r+1));
+      }
+    if (grid.has(0,0)) {
+      const Point32f o = grid.at(0,0);
+      draw->linewidth(2.f);
+      if (grid.has(1,0)) { draw->color(255,80,80,255); draw->line(o, grid.at(1,0)); }
+      if (grid.has(0,1)) { draw->color(80,255,80,255); draw->line(o, grid.at(0,1)); }
+      draw->color(255,0,255,255); draw->sym(o, 'o');
+    }
+  }
+
   draw->linewidth(1.5);
   if (gui["showCorners"].as<bool>())
     for (const auto &s : seeds) {
@@ -88,7 +114,8 @@ static void drawResult(DrawHandle &draw, const Img8u &img, const std::vector<Cor
       }
     }
   draw->color(255,255,255,255);
-  draw->text("corners: " + str(seeds.size()), 5, 5, 9);
+  draw->text("corners: " + str(seeds.size()) + "   grid: " +
+             str(grid.cols) + "x" + str(grid.rows) + " (" + str(grid.count) + ")", 5, 5, 9);
   draw.render();
 }
 
@@ -124,7 +151,8 @@ void init() {
                   << Prop(&view, {.label="offscreen renderer + scene"})   // backend, Cycles, scene.*
                   << (HBox()
                       << CheckBox("corners", {.checked=true, .handle="showCorners"})
-                      << CheckBox("orientation", {.checked=true, .handle="showOri"}))
+                      << CheckBox("orientation", {.checked=true, .handle="showOri"})
+                      << CheckBox("grid", {.checked=true, .handle="showGrid"}))
                   << Fps({.handle="fps"}))
           << Canvas({.handle="result", .label="result view (camera image + detection)", .minSize={22,18}}))
       << Show();
@@ -179,7 +207,9 @@ void run() {
       CheckerboardSaddleDetector::Params p;
       p.radius = radius; p.minScore = minScore;
       CheckerboardSaddleDetector det(p);
-      drawResult(d, cam, det.detect(cam));
+      const auto seeds = det.detect(cam);
+      const CheckerboardGrid grid = recoverCheckerboardGrid(seeds);   // ordered lattice
+      drawResult(d, cam, seeds, grid);
     }
   }
   gui["fps"].render();
