@@ -53,8 +53,17 @@ namespace icl::cv {
       The (col,row) origin and axis assignment are NOT canonicalised to any
       physical board frame — the labelling is internally consistent but otherwise
       arbitrary (good enough for intrinsic calibration; a target backend resolves
-      the board frame). */
-  ICLCV_API CheckerboardGrid recoverCheckerboardGrid(const std::vector<CornerSeed> &seeds);
+      the board frame).
+
+      @param image optional source image enabling GUIDED growth: the two grid
+        axes and every grown link are chosen by image edge evidence (gradient
+        across the connection — high on a real black/white border, low on a
+        diagonal crossing a uniform square) instead of pure geometry. This is
+        REQUIRED to disambiguate strongly-foreshortened views, where the board
+        diagonal can be shorter than the long axis and pure geometry grows a
+        diagonal lattice. When null, falls back to the geometric heuristic. */
+  ICLCV_API CheckerboardGrid recoverCheckerboardGrid(const std::vector<CornerSeed> &seeds,
+                                                     const core::Img8u *image = nullptr);
 
   /// Validation pass: score every lattice edge of \a grid by the mean image
   /// gradient PERPENDICULAR to the edge, sampled along it on a lightly-blurred

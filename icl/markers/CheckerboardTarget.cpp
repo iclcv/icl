@@ -31,7 +31,7 @@ namespace icl::markers {
     if (IC < 1 || IR < 1) return out;
 
     const auto seeds = cv::CheckerboardSaddleDetector().detect(image);
-    const cv::CheckerboardGrid g = cv::recoverCheckerboardGrid(seeds);
+    const cv::CheckerboardGrid g = cv::recoverCheckerboardGrid(seeds, &image);   // guided
 
     // v1: require the full lattice, matching the board in either axis order. The
     // recovered (col,row) origin/orientation is arbitrary; we map it onto the

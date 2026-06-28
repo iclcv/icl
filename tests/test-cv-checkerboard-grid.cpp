@@ -215,3 +215,39 @@ ICL_REGISTER_TEST("cv.checkergrid.tilted_nonorthogonal",
   ICL_TEST_EQ(g.count, (COLS-1)*(ROWS-1));
   ICL_TEST_TRUE(latticeConsistent(g));
 }
+
+// Guided growth (image edge evidence) must recover the lattice at least as well
+// as geometry on a clean tilted view — and its grown edges all land on real
+// black/white borders (high confidence). Guided is what disambiguates the harder
+// strongly-foreshortened / false-positive cases (validated live in the lab; a
+// clean synthetic for the extreme diagonal-trap is deferred with the
+// false-positive-suppression work).
+ICL_REGISTER_TEST("cv.checkergrid.guided_tilted",
+                  "guided growth recovers the tilted lattice with high-confidence edges")
+{
+  const int COLS=9, ROWS=7; const int W=520, H=440;
+  const float cx=W/2.f, cy=H/2.f, ang=0.45f, ca=std::cos(ang), sa=std::sin(ang);
+  auto warp = [&](float qx,float qy){
+    const float rx = ca*(qx-cx) - sa*(qy-cy) + cx;
+    const float ry = sa*(qx-cx) + ca*(qy-cy) + cy;
+    const float v = (ry-cy)/cy, persp = 1.f + 0.4f*v;
+    return Point32f(cx + (rx-cx)*persp, ry);
+  };
+  Img8u img = renderBoard(W, H, COLS, ROWS, 38, warp);
+  const auto seeds = CheckerboardSaddleDetector().detect(img);
+
+  CheckerboardGrid g = recoverCheckerboardGrid(seeds, &img);   // guided
+  ICL_TEST_TRUE(dimsMatch(g, COLS, ROWS));
+  ICL_TEST_EQ(g.count, (COLS-1)*(ROWS-1));
+
+  // every grown edge sits on a real border → high mean confidence
+  scoreCheckerboardGridEdges(g, img);
+  double sum=0; int cnt=0;
+  for (int r=0;r<g.rows;++r) for (int c=0;c<g.cols;++c) {
+    if (g.has(c+1,r)) { sum+=g.rightScore(c,r); ++cnt; }
+    if (g.has(c,r+1)) { sum+=g.downScore(c,r);  ++cnt; }
+  }
+  std::cout << "[checkergrid] guided_tilted: " << g.cols << "x" << g.rows
+            << " meanEdge=" << (sum/cnt) << std::endl;
+  ICL_TEST_TRUE(sum/cnt > 0.6);
+}

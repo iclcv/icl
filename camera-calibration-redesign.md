@@ -68,9 +68,21 @@ chronically drift-prone). This is a multi-session arc.
         on a black/white square border (high), a wrong/diagonal edge crosses a uniform square
         (low). Fills `CheckerboardGrid.edgeRight/edgeDown`. Lab colours edges red→green by this
         confidence. Test `cv.checkergrid.edge_scoring` (real edges ~1.0; a corrupted through-square
-        edge drops clearly). **NEXT: feed this confidence back into growth (guided growth)** —
-        prefer/required high-evidence links to disambiguate hard cases (glare, partial board,
-        strong distortion). This is the lightweight step toward the decided hybrid.
+        edge drops clearly).
+  - [x] **guided growth** — `recoverCheckerboardGrid(seeds, image)` now uses edge evidence: the
+        two grid AXES are bootstrapped by edge score (a true axis neighbour's link runs along a
+        B/W border = high; a diagonal crosses a uniform square = low), which fixes the diagonal
+        lattice that pure geometry grows under STRONG foreshortening (where the board diagonal is
+        shorter than the long axis, so "nearest non-collinear" wrongly picks a diagonal). Per-link
+        selection stays geometric (nearest); the score only REJECTS a near-zero (through-square)
+        link. Edge confidence now probes ±0.4× the PERPENDICULAR cell spacing (not a fraction of
+        the edge length) so foreshortened "back" edges score correctly. Lab + `CheckerboardTarget`
+        pass the image (guided); seeds-only stays a geometric fallback. Test
+        `cv.checkergrid.guided_tilted`.
+  - [ ] **false-positive suppression** (deferred, noted): extreme views still yield a few spurious
+        border detections that inflate the lattice dims; needs a heuristic (e.g. reject seeds whose
+        best edges are weak, or require a complete rectangular sub-block). The edge confidence is
+        the signal to build it on.
   - [x] **`CheckerboardTarget` backend** — the FIRST concrete `CalibrationTarget`
         (`markers::CheckerboardTarget`): detector + grid recovery → labels the lattice against the
         known board geometry (either axis order) → object↔image correspondences for

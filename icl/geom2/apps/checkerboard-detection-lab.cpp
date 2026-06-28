@@ -208,7 +208,7 @@ void run() {
       p.radius = radius; p.minScore = minScore;
       CheckerboardSaddleDetector det(p);
       const auto seeds = det.detect(cam);
-      CheckerboardGrid grid = recoverCheckerboardGrid(seeds);         // ordered lattice
+      CheckerboardGrid grid = recoverCheckerboardGrid(seeds, &cam);   // guided ordered lattice
       scoreCheckerboardGridEdges(grid, cam);                          // per-edge confidence
       drawResult(d, cam, seeds, grid);
     }
