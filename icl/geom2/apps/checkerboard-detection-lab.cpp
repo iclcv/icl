@@ -108,8 +108,9 @@ void init() {
   scene.addNode(board);
 
   // Three panes: interactive 3D view | options | result view. The result shows
-  // the rendered camera view (+distortion), or — with "apply undistortion" — the
-  // rectified image; the detector runs on whichever is shown.
+  // the rendered camera view (+distortion) with the detection overlaid, or —
+  // with "apply undistortion" — a view-only rectified preview (no detection).
+  // The detector ALWAYS runs on the distorted camera image.
   gui << (HSplit()
           << Canvas3D({.handle="scene", .label="3D view (drag to view from any angle)", .minSize={22,18}})
           << (VBox({.minSize={13,1}, .maxSize={15,100}})
@@ -147,29 +148,39 @@ void run() {
   // distortion.k1/k2 change. We only own the downstream (undistort + detector).
   const float minScore = gui["minScore"];
   const int   radius   = gui["radius"];
-  const bool  applyUndistort = gui["undistort"];   // result = rectified vs distorted
+  const bool  showUndistorted = gui["undistort"];   // result = rectified preview vs distorted
 
-  // Re-detect when a new captured frame arrives (incl. a k1/k2 re-distort) OR a
-  // detector/undistort control moved (re-process the cached frame; no recapture).
+  // Re-render the result when a new captured frame arrives (incl. a k1/k2
+  // re-distort) OR a detector/undistort control moved (re-process the cached
+  // frame; no recapture).
   static int lRadius=-1, lUndist=-1; static float lMs=1e9f;
-  const bool detectDirty = radius!=lRadius || minScore!=lMs || (int)applyUndistort!=lUndist;
-  lRadius=radius; lMs=minScore; lUndist=(int)applyUndistort;
+  const bool resultDirty = radius!=lRadius || minScore!=lMs || (int)showUndistorted!=lUndist;
+  lRadius=radius; lMs=minScore; lUndist=(int)showUndistorted;
 
   gui["scene"].render();          // GUI thread: interactive view + (auto) GL capture
   const auto frame = view.next();           // drives Cycles + re-distort; .image always latest
   const Img8u &cam = frame.image;           // ALREADY lens-distorted by the view
-  if ((frame.isNew || detectDirty) && cam.getDim()) {
-    Image result(cam);                                        // the camera (distorted) view
-    if (applyUndistort) {                                     // → rectified (using the view's k1,k2)
-      updateUndistort(view.distortionK1(), view.distortionK2(), cam.getSize());
-      result = g_undistort.apply(result);
-    }
-    CheckerboardSaddleDetector::Params p;
-    p.radius = radius; p.minScore = minScore;
-    CheckerboardSaddleDetector det(p);
-    const Img8u &r = result.as<icl8u>();
+  if ((frame.isNew || resultDirty) && cam.getDim()) {
     DrawHandle d = gui["result"];
-    drawResult(d, r, det.detect(r));
+    if (showUndistorted) {
+      // View-only rectified preview (e.g. for inspecting an intrinsic-calibration
+      // result later). The detector NEVER runs on a rectified image: in a real
+      // pipeline you detect on the raw camera frame and undistort the corner
+      // COORDINATES, not the pixels — and the OOB→black border here would
+      // otherwise seed false corners.
+      updateUndistort(view.distortionK1(), view.distortionK2(), cam.getSize());
+      const Image rect = g_undistort.apply(Image(cam));
+      d = rect.as<icl8u>();
+      d->color(255,255,255,255);
+      d->text("undistorted preview (detection runs on the distorted image)", 5, 5, 8);
+      d.render();
+    } else {
+      // Detection always runs on the distorted camera image (the real-world case).
+      CheckerboardSaddleDetector::Params p;
+      p.radius = radius; p.minScore = minScore;
+      CheckerboardSaddleDetector det(p);
+      drawResult(d, cam, det.detect(cam));
+    }
   }
   gui["fps"].render();
   fps.wait();
