@@ -6,6 +6,10 @@
 #include <cmath>
 #include <vector>
 
+#ifdef ICL_HAVE_OPENMP
+#include <omp.h>
+#endif
+
 using namespace icl::utils;
 using namespace icl::core;
 
@@ -20,7 +24,7 @@ namespace icl::cv {
     // cc has no SIMD path (no IPP/Accelerate, SSE2 N/A on arm) so it falls back
     // to a slower per-pixel ImgIterator — and its RGB→Gray uses (R+G+B)/3, not
     // the 0.299/0.587/0.114 luminance weights, which would change the response.
-    std::vector<float> toGray(const Img8u &img, int &W, int &H) {
+    std::vector<float> toGray(const Img8u &img, int &W, int &H, bool mt) {
       W = img.getWidth(); H = img.getHeight();
       std::vector<float> g((size_t)W*H);
       const int N = (int)g.size();
@@ -28,14 +32,14 @@ namespace icl::cv {
       if (c >= 3) {
         const icl8u *r = img.begin(0), *gr = img.begin(1), *b = img.begin(2);
 #ifdef ICL_HAVE_OPENMP
-#       pragma omp parallel for schedule(static)
+#       pragma omp parallel for schedule(static) if(mt)
 #endif
         for (int i = 0; i < N; ++i)
           g[i] = 0.299f*r[i] + 0.587f*gr[i] + 0.114f*b[i];
       } else {
         const icl8u *d = img.begin(0);
 #ifdef ICL_HAVE_OPENMP
-#       pragma omp parallel for schedule(static)
+#       pragma omp parallel for schedule(static) if(mt)
 #endif
         for (int i = 0; i < N; ++i) g[i] = d[i];
       }
@@ -72,8 +76,8 @@ namespace icl::cv {
     };
 
     // ring harmonics at (x,y); returns normalised response + sets orientation.
-    // Reference (sub-pixel-capable) path: re-derives the bilinear footprint per
-    // sample. Used for the sub-pixel orientation refine and the reference impl.
+    // General (sub-pixel-capable) path: re-derives the bilinear footprint per
+    // sample. Used only for the sub-pixel orientation refine at non-integer (x,y).
     inline float responseAt(const float *g, int W, const Ring &R, int n,
                             float x, float y, float edgePenalty, float minAmp,
                             float *orientation = nullptr) {
@@ -112,28 +116,22 @@ namespace icl::cv {
       return resp > 0.f ? resp : 0.f;
     }
 
-    // Fill resp[] over the valid interior [m, W-m) x [m, H-m). Optimized path:
-    // precomputed bilinear weights + early gate + OpenMP. Reference path: the
-    // original responseAt(). Both write identical values.
+    // Fill resp[] over the valid interior [m, W-m) x [m, H-m): precomputed
+    // bilinear weights + early flat-area gate, optionally OpenMP-parallel (the
+    // writes are independent, so results are identical either way).
     void fillResponse(std::vector<float> &resp, const float *g, int W, int H,
                       const Ring &R, int n, int m, const CheckerboardSaddleDetector::Params &p) {
-      if (p.optimized) {
 #ifdef ICL_HAVE_OPENMP
-#       pragma omp parallel for schedule(static)
+#     pragma omp parallel for schedule(static) if(p.multithreaded)
 #endif
-        for (int y = m; y < H-m; ++y)
-          for (int x = m; x < W-m; ++x)
-            resp[(size_t)y*W + x] = responseAtInt(g, W, R, n, x, y, p.edgePenalty, p.minAmplitude);
-      } else {
-        for (int y = m; y < H-m; ++y)
-          for (int x = m; x < W-m; ++x)
-            resp[(size_t)y*W + x] = responseAt(g, W, R, n, (float)x, (float)y, p.edgePenalty, p.minAmplitude);
-      }
+      for (int y = m; y < H-m; ++y)
+        for (int x = m; x < W-m; ++x)
+          resp[(size_t)y*W + x] = responseAtInt(g, W, R, n, x, y, p.edgePenalty, p.minAmplitude);
     }
   }
 
   Img32f CheckerboardSaddleDetector::responseImage(const Img8u &image) const {
-    int W, H; const std::vector<float> g = toGray(image, W, H);
+    int W, H; const std::vector<float> g = toGray(image, W, H, m_p.multithreaded);
     Img32f out(Size(W, H), 1);
     float *o = out.begin(0);
     std::fill(o, o + (size_t)W*H, 0.f);
@@ -148,7 +146,7 @@ namespace icl::cv {
   }
 
   std::vector<CornerSeed> CheckerboardSaddleDetector::detect(const Img8u &image) const {
-    int W, H; const std::vector<float> g = toGray(image, W, H);
+    int W, H; const std::vector<float> g = toGray(image, W, H, m_p.multithreaded);
     std::vector<CornerSeed> seeds;
     const int n = m_p.nSamples;
     const Ring R(n, m_p.radius);
@@ -159,39 +157,63 @@ namespace icl::cv {
     std::vector<float> resp((size_t)W*H, 0.f);
     fillResponse(resp, g.data(), W, H, R, n, m, m_p);
 
-    // non-maximum suppression + sub-pixel (quadratic) refinement
+    // non-maximum suppression + sub-pixel (quadratic) refinement. Scan a row
+    // band [y0,y1) and append its seeds (in row-major order) to `out`. The full
+    // W*H scan dominates this stage, so it is parallelized over contiguous row
+    // bands below; per-band buckets concatenated in order keep the output
+    // identical to the serial scan.
     const int nms = m_p.nmsRadius;
-    for (int y = m; y < H-m; ++y) {
-      for (int x = m; x < W-m; ++x) {
-        const float v = resp[(size_t)y*W + x];
-        if (v < m_p.minScore) continue;
-        bool isMax = true;
-        for (int dy = -nms; dy <= nms && isMax; ++dy)
-          for (int dx = -nms; dx <= nms; ++dx)
-            if ((dx||dy) && resp[(size_t)(y+dy)*W + (x+dx)] > v) { isMax = false; break; }
-        if (!isMax) continue;
+    const float *rp = resp.data();
+    auto scanBand = [&](int y0, int y1, std::vector<CornerSeed> &out) {
+      for (int y = y0; y < y1; ++y) {
+        for (int x = m; x < W-m; ++x) {
+          const float v = rp[(size_t)y*W + x];
+          if (v < m_p.minScore) continue;
+          bool isMax = true;
+          for (int dy = -nms; dy <= nms && isMax; ++dy)
+            for (int dx = -nms; dx <= nms; ++dx)
+              if ((dx||dy) && rp[(size_t)(y+dy)*W + (x+dx)] > v) { isMax = false; break; }
+          if (!isMax) continue;
 
-        // parabolic sub-pixel peak from the 3x3 response neighbourhood
-        const float l = resp[(size_t)y*W + x-1], r = resp[(size_t)y*W + x+1];
-        const float u = resp[(size_t)(y-1)*W + x], d = resp[(size_t)(y+1)*W + x];
-        float sx = 0.f, sy = 0.f;
-        const float denx = (2*v - l - r), deny = (2*v - u - d);
-        if (std::fabs(denx) > 1e-6f) sx = 0.5f*(l - r)/denx;
-        if (std::fabs(deny) > 1e-6f) sy = 0.5f*(u - d)/deny;
-        if (sx >  1.f) sx =  1.f; if (sx < -1.f) sx = -1.f;
-        if (sy >  1.f) sy =  1.f; if (sy < -1.f) sy = -1.f;
+          // parabolic sub-pixel peak from the 3x3 response neighbourhood
+          const float l = rp[(size_t)y*W + x-1], r = rp[(size_t)y*W + x+1];
+          const float u = rp[(size_t)(y-1)*W + x], d = rp[(size_t)(y+1)*W + x];
+          float sx = 0.f, sy = 0.f;
+          const float denx = (2*v - l - r), deny = (2*v - u - d);
+          if (std::fabs(denx) > 1e-6f) sx = 0.5f*(l - r)/denx;
+          if (std::fabs(deny) > 1e-6f) sy = 0.5f*(u - d)/deny;
+          if (sx >  1.f) sx =  1.f; if (sx < -1.f) sx = -1.f;
+          if (sy >  1.f) sy =  1.f; if (sy < -1.f) sy = -1.f;
 
-        float ori = 0.f;
-        responseAt(g.data(), W, R, n, x+sx, y+sy, m_p.edgePenalty, m_p.minAmplitude, &ori);
-        // fold orientation into [0, pi/2) (board axes are 90°-symmetric)
-        const float HALF_PI = float(M_PI)/2;
-        while (ori < 0)        ori += HALF_PI;
-        while (ori >= HALF_PI) ori -= HALF_PI;
+          float ori = 0.f;
+          responseAt(g.data(), W, R, n, x+sx, y+sy, m_p.edgePenalty, m_p.minAmplitude, &ori);
+          // fold orientation into [0, pi/2) (board axes are 90°-symmetric)
+          const float HALF_PI = float(M_PI)/2;
+          while (ori < 0)        ori += HALF_PI;
+          while (ori >= HALF_PI) ori -= HALF_PI;
 
-        CornerSeed s; s.pos = Point32f(x+sx, y+sy); s.score = v; s.orientation = ori;
-        seeds.push_back(s);
+          out.push_back(CornerSeed{Point32f(x+sx, y+sy), v, ori});
+        }
       }
-    }
+    };
+
+#ifdef ICL_HAVE_OPENMP
+    if (m_p.multithreaded) {
+      const int nt = std::max(1, omp_get_max_threads());
+      std::vector<std::vector<CornerSeed>> buckets(nt);
+      const int y0 = m, span = H-m - y0;
+#     pragma omp parallel num_threads(nt)
+      {
+        const int t = omp_get_thread_num();
+        // contiguous, ordered row bands → concatenating buckets[0..nt) below
+        // reproduces the serial row-major seed order exactly.
+        scanBand(y0 + (long)span*t/nt, y0 + (long)span*(t+1)/nt, buckets[t]);
+      }
+      for (auto &b : buckets) seeds.insert(seeds.end(), b.begin(), b.end());
+    } else
+#endif
+      scanBand(m, H-m, seeds);
+
     return seeds;
   }
 

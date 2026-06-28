@@ -94,74 +94,79 @@ ICL_REGISTER_TEST("cv.checkersaddle.clean_subpixel",
   ICL_TEST_EQ(meanErr < 0.5, true);     // sub-pixel accuracy
 }
 
-// The optimized dense-response path must match the reference path: same corner
-// count, same sub-pixel positions. It is NOT bit-identical — and the optimized
-// path is in fact slightly MORE accurate: the reference computes the bilinear
-// fraction as (x+dx) - floor(x+dx), which loses ~14 mantissa bits at large x
-// (~6e-5 at x≈645); the optimized path uses dx - floor(dx) at full precision.
-// So we assert a tight tolerance, not exact equality.
-ICL_REGISTER_TEST("cv.checkersaddle.optimized_matches_reference",
-                  "optimized path matches the reference path (same corners, sub-pixel agreement)")
+// Multithreading (OpenMP) only parallelizes independent writes, so single- and
+// multi-threaded runs must produce BIT-IDENTICAL seeds.
+ICL_REGISTER_TEST("cv.checkersaddle.multithreaded_matches_singlethreaded",
+                  "single- and multi-threaded detect() produce identical seeds")
 {
   const Img8u img = benchBoard();
 
-  auto run = [&](bool opt){
-    CheckerboardSaddleDetector::Params p; p.optimized = opt;
+  auto run = [&](bool mt){
+    CheckerboardSaddleDetector::Params p; p.multithreaded = mt;
     return CheckerboardSaddleDetector(p).detect(img);
   };
-  const std::vector<CornerSeed> ref = run(false);
-  const std::vector<CornerSeed> fast = run(true);
+  const std::vector<CornerSeed> st = run(false);
+  const std::vector<CornerSeed> mt = run(true);
 
-  ICL_TEST_TRUE(!ref.empty());
-  ICL_TEST_EQ(fast.size(), ref.size());
-  double maxPos = 0, maxField = 0;
-  for (size_t i = 0; i < std::min(ref.size(), fast.size()); ++i) {
-    maxPos   = std::max(maxPos,   (double)std::fabs(fast[i].pos.x - ref[i].pos.x));
-    maxPos   = std::max(maxPos,   (double)std::fabs(fast[i].pos.y - ref[i].pos.y));
-    maxField = std::max({maxField, (double)std::fabs(fast[i].score - ref[i].score),
-                                   (double)std::fabs(fast[i].orientation - ref[i].orientation)});
-  }
-  std::cout << "[checkersaddle] opt-vs-ref: " << ref.size()
-            << " seeds, max pos diff=" << maxPos << "px, max score/ori diff=" << maxField << std::endl;
-  ICL_TEST_EQ(maxPos < 1e-3, true);     // sub-pixel positions agree to <0.001 px
-  ICL_TEST_EQ(maxField < 1e-3, true);   // scores/orientations agree to <0.001
+  ICL_TEST_TRUE(!st.empty());
+  ICL_TEST_EQ(mt.size(), st.size());
+  double maxDiff = 0;
+  for (size_t i = 0; i < std::min(st.size(), mt.size()); ++i)
+    maxDiff = std::max({maxDiff, (double)std::fabs(mt[i].pos.x - st[i].pos.x),
+                                 (double)std::fabs(mt[i].pos.y - st[i].pos.y),
+                                 (double)std::fabs(mt[i].score - st[i].score),
+                                 (double)std::fabs(mt[i].orientation - st[i].orientation)});
+  std::cout << "[checkersaddle] st-vs-mt: " << st.size() << " seeds, max diff=" << maxDiff << std::endl;
+  ICL_TEST_EQ(maxDiff, 0.0);   // bit-identical
 }
 
-// Benchmark: reference vs optimized detect() on a 640x480 board.
+// Benchmark: single-threaded vs OpenMP-parallel detect() on a 1000x1000 board.
 ICL_REGISTER_TEST("cv.checkersaddle.benchmark",
-                  "report reference vs optimized detect() timing")
+                  "report single-threaded vs multithreaded detect() timing")
 {
   const Img8u img = benchBoard();
   const int N = 30;
 
-  auto bench = [&](bool opt){
-    CheckerboardSaddleDetector::Params p; p.optimized = opt;
+  auto bench = [&](bool mt){
+    CheckerboardSaddleDetector::Params p; p.multithreaded = mt;
     CheckerboardSaddleDetector det(p);
     det.detect(img);                                   // warm up
     const utils::Time t0 = utils::Time::now();
     for (int i = 0; i < N; ++i) det.detect(img);
     return (utils::Time::now() - t0).toMicroSeconds() / 1000.0 / N;   // ms/call
   };
-  const double refMs  = bench(false);
-  const double fastMs = bench(true);
+  const double stMs = bench(false);
+  const double mtMs = bench(true);
   std::cout << "[checkersaddle] benchmark " << img.getWidth() << "x" << img.getHeight()
-            << "  reference=" << refMs << " ms  optimized=" << fastMs
-            << " ms  speedup=" << (refMs/fastMs) << "x" << std::endl;
+            << "  single-thread=" << stMs << " ms  multithread=" << mtMs
+            << " ms  speedup=" << (stMs/mtMs) << "x" << std::endl;
 
   // RGB input exercises the toGray() colour-conversion path (the gray fast-path
-  // above is a plain cast). Reports its extra cost over the gray detect.
+  // is a plain cast). Reports its extra cost over the gray detect.
   Img8u rgb(img.getSize(), 3);
   for (int ch = 0; ch < 3; ++ch)
     std::copy(img.begin(0), img.begin(0)+img.getDim(), rgb.begin(ch));
-  CheckerboardSaddleDetector detRGB;   // optimized default
+  CheckerboardSaddleDetector detRGB;
   detRGB.detect(rgb);
   const utils::Time t0 = utils::Time::now();
   for (int i = 0; i < N; ++i) detRGB.detect(rgb);
   const double rgbMs = (utils::Time::now() - t0).toMicroSeconds() / 1000.0 / N;
-  std::cout << "[checkersaddle] optimized RGB-input=" << rgbMs << " ms  (toGray ~"
-            << (rgbMs - fastMs) << " ms)" << std::endl;
+  std::cout << "[checkersaddle] RGB-input=" << rgbMs << " ms  (toGray ~"
+            << (rgbMs - mtMs) << " ms)" << std::endl;
 
-  ICL_TEST_TRUE(fastMs > 0.0);   // informational; timing printed above
+  // Isolate NMS+sub-pixel: responseImage() does toGray+fillResponse only, so
+  // (detect - responseImage) approximates the serial NMS + sub-pixel cost.
+  {
+    CheckerboardSaddleDetector det;   // multithreaded default
+    det.responseImage(img);
+    const utils::Time tr = utils::Time::now();
+    for (int i = 0; i < N; ++i) det.responseImage(img);
+    const double respMs = (utils::Time::now() - tr).toMicroSeconds() / 1000.0 / N;
+    std::cout << "[checkersaddle] response-only=" << respMs << " ms  (NMS+subpixel ~"
+              << (mtMs - respMs) << " ms of " << mtMs << " ms)" << std::endl;
+  }
+
+  ICL_TEST_TRUE(mtMs > 0.0);   // informational; timing printed above
 }
 
 // Barrel-distorted board (bent edges): the local saddle detector still finds the
