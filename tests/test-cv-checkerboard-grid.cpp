@@ -12,6 +12,7 @@
 #include <icl/cv/CheckerboardSaddleDetector.h>
 #include <icl/cv/CheckerboardGrid.h>
 #include <icl/core/Img.h>
+#include <algorithm>
 #include <cmath>
 #include <functional>
 
@@ -149,6 +150,42 @@ ICL_REGISTER_TEST("cv.checkergrid.perspective",
   ICL_TEST_TRUE(dimsMatch(g, COLS, ROWS));
   ICL_TEST_EQ(g.count, (COLS-1)*(ROWS-1));
   ICL_TEST_TRUE(latticeConsistent(g));
+}
+
+// Edge validation pass: real lattice edges (on a B/W square border) score high;
+// a corrupted (diagonal, through-a-square) edge scores markedly lower.
+ICL_REGISTER_TEST("cv.checkergrid.edge_scoring",
+                  "edge confidence is high on real edges, low on a through-square edge")
+{
+  const int COLS=9, ROWS=7;
+  Img8u img = renderBoard(480, 400, COLS, ROWS, 40, [](float x,float y){ return Point32f(x,y); });
+  const auto seeds = CheckerboardSaddleDetector().detect(img);
+  CheckerboardGrid g = recoverCheckerboardGrid(seeds);
+  scoreCheckerboardGridEdges(g, img);
+  ICL_TEST_TRUE(g.scored());
+
+  double mn = 1e9, sum = 0; int cnt = 0;
+  for (int r=0; r<g.rows; ++r) for (int c=0; c<g.cols; ++c) {
+    if (g.has(c+1,r)) { const float s=g.rightScore(c,r); mn=std::min(mn,(double)s); sum+=s; ++cnt; }
+    if (g.has(c,r+1)) { const float s=g.downScore(c,r);  mn=std::min(mn,(double)s); sum+=s; ++cnt; }
+  }
+  const double mean = sum/cnt;
+  std::cout << "[checkergrid] edge scores: mean=" << mean << " min=" << mn << std::endl;
+  ICL_TEST_TRUE(mean > 0.6);   // real edges sit on strong B/W borders
+  ICL_TEST_TRUE(mn   > 0.3);
+
+  // Corrupt one interior corner by ~half a cell so its edges cut across squares;
+  // the affected edge's confidence must drop clearly.
+  const float cell = std::hypot(g.at(1,0).x-g.at(0,0).x, g.at(1,0).y-g.at(0,0).y);
+  const int cc=3, rr=3;
+  const float good = g.rightScore(cc-1, rr);      // edge (cc-1,rr)-(cc,rr), real
+  CheckerboardGrid bad = g;
+  bad.points[(size_t)rr*bad.cols + cc].x += 0.5f*cell;
+  bad.points[(size_t)rr*bad.cols + cc].y += 0.5f*cell;
+  scoreCheckerboardGridEdges(bad, img);
+  std::cout << "[checkergrid] corrupt edge: good=" << good
+            << " bad=" << bad.rightScore(cc-1, rr) << std::endl;
+  ICL_TEST_TRUE(bad.rightScore(cc-1, rr) < good - 0.2f);
 }
 
 // Rotated + keystoned view: the two board axes are NON-ORTHOGONAL in the image

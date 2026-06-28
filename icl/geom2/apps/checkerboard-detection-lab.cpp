@@ -85,20 +85,21 @@ static void drawResult(DrawHandle &draw, const Img8u &img,
   // marks the (arbitrary) origin, red = +col axis, green = +row axis.
   if (gui["showGrid"].as<bool>() && !grid.empty()) {
     draw->linewidth(2.f);
-    draw->color(0,180,255,204);                       // lattice edges: cyan, 20% transp.
+    // colour each edge by its image-evidence confidence (validation pass): weak
+    // links go red, strong links green — so wrong/uncertain edges stand out.
+    auto edge = [&](const Point32f &a, const Point32f &b, float s){
+      s = std::max(0.f, std::min(1.f, s));
+      draw->color((int)((1-s)*255), (int)(s*255), 40, 204);
+      draw->line(a, b);
+    };
     for (int r=0; r<grid.rows; ++r)
       for (int c=0; c<grid.cols; ++c) {
         if (!grid.has(c,r)) continue;
         const Point32f p = grid.at(c,r);
-        if (grid.has(c+1,r)) draw->line(p, grid.at(c+1,r));
-        if (grid.has(c,r+1)) draw->line(p, grid.at(c,r+1));
+        if (grid.has(c+1,r)) edge(p, grid.at(c+1,r), grid.scored() ? grid.rightScore(c,r) : 1.f);
+        if (grid.has(c,r+1)) edge(p, grid.at(c,r+1), grid.scored() ? grid.downScore(c,r)  : 1.f);
       }
-    if (grid.has(0,0)) {
-      const Point32f o = grid.at(0,0);
-      if (grid.has(1,0)) { draw->color(255,80,80,204); draw->line(o, grid.at(1,0)); }
-      if (grid.has(0,1)) { draw->color(80,255,80,204); draw->line(o, grid.at(0,1)); }
-      draw->color(255,0,255,255); draw->sym(o, 'o');
-    }
+    if (grid.has(0,0)) { draw->color(255,0,255,255); draw->sym(grid.at(0,0), 'o'); }  // origin
   }
 
   draw->linewidth(1.5);
@@ -207,7 +208,8 @@ void run() {
       p.radius = radius; p.minScore = minScore;
       CheckerboardSaddleDetector det(p);
       const auto seeds = det.detect(cam);
-      const CheckerboardGrid grid = recoverCheckerboardGrid(seeds);   // ordered lattice
+      CheckerboardGrid grid = recoverCheckerboardGrid(seeds);         // ordered lattice
+      scoreCheckerboardGridEdges(grid, cam);                          // per-edge confidence
       drawResult(d, cam, seeds, grid);
     }
   }

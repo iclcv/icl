@@ -9,6 +9,7 @@
 #include <utility>
 
 using namespace icl::utils;
+using namespace icl::core;
 
 namespace icl::cv {
   namespace {
@@ -176,6 +177,57 @@ namespace icl::cv {
     grid.count = 0;
     for (char f : grid.filled) grid.count += f;   // unique filled cells
     return grid;
+  }
+
+  void scoreCheckerboardGridEdges(CheckerboardGrid &grid, const core::Img8u &image) {
+    const int N = grid.cols*grid.rows;
+    grid.edgeRight.assign((size_t)N, -1.f);
+    grid.edgeDown .assign((size_t)N, -1.f);
+    if (grid.empty()) return;
+
+    // gray float buffer (luminance; 1-channel images copied)
+    const int W = image.getWidth(), H = image.getHeight();
+    std::vector<float> g((size_t)W*H);
+    if (image.getChannels() >= 3) {
+      const icl8u *r = image.begin(0), *gr = image.begin(1), *b = image.begin(2);
+      for (size_t i = 0; i < g.size(); ++i)
+        g[i] = 0.299f*r[i] + 0.587f*gr[i] + 0.114f*b[i];
+    } else {
+      const icl8u *d = image.begin(0);
+      for (size_t i = 0; i < g.size(); ++i) g[i] = d[i];
+    }
+    auto px = [&](int x, int y) -> float {
+      x = std::min(std::max(x,0), W-1); y = std::min(std::max(y,0), H-1);
+      return g[(size_t)y*W + x];
+    };
+    // lightly-blurred sample (3x3 box) at sub-pixel position → robust to the
+    // 1-texel checker AA / sensor noise without a full-image blur pass
+    auto blur = [&](float fx, float fy) -> float {
+      const int x = (int)std::floor(fx), y = (int)std::floor(fy);
+      float s = 0; for (int dy=-1; dy<=1; ++dy) for (int dx=-1; dx<=1; ++dx) s += px(x+dx, y+dy);
+      return s / 9.f;
+    };
+    // mean |perpendicular gradient| sampled along the A-B segment, normalised
+    auto edgeScore = [&](const Point32f &A, const Point32f &B) -> float {
+      const float dx = B.x-A.x, dy = B.y-A.y, L = std::sqrt(dx*dx + dy*dy);
+      if (L < 3.f) return 0.f;
+      const float nx = -dy/L, ny = dx/L;        // unit perpendicular
+      const float d = 0.3f*L;                    // reach into the adjacent cells
+      const int M = 7; double acc = 0;
+      for (int i = 1; i < M; ++i) {              // skip the endpoints (the corners)
+        const float t = (float)i/M, cx = A.x+dx*t, cy = A.y+dy*t;
+        acc += std::fabs(blur(cx+nx*d, cy+ny*d) - blur(cx-nx*d, cy-ny*d));
+      }
+      return (float)(acc / (M-1) / 255.0);
+    };
+
+    for (int r = 0; r < grid.rows; ++r)
+      for (int c = 0; c < grid.cols; ++c) {
+        if (!grid.has(c,r)) continue;
+        const size_t idx = (size_t)r*grid.cols + c;
+        if (grid.has(c+1,r)) grid.edgeRight[idx] = edgeScore(grid.at(c,r), grid.at(c+1,r));
+        if (grid.has(c,r+1)) grid.edgeDown [idx] = edgeScore(grid.at(c,r), grid.at(c,r+1));
+      }
   }
 
 } // namespace icl::cv

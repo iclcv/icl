@@ -58,7 +58,19 @@ chronically drift-prone). This is a multi-session arc.
         is the swappable layer behind a STABLE `CheckerboardGrid` boundary — the decided hybrid
         (below) can replace it without touching consumers. Tests
         `cv.checkergrid.{clean,square,distorted,perspective}` (full lattice incl. the square
-        diagonal-trap). Visualised live in `icl-checkerboard-detection-lab`.
+        diagonal-trap, and `tilted_nonorthogonal` — a camera tilt makes the board axes
+        non-orthogonal in the image; recovery bootstraps the 2nd axis from the nearest
+        NON-COLLINEAR neighbour, not a 90° rotation, and grows by a fixed-point that re-derives
+        each cell's local steps from its own neighbours). Visualised live in
+        `icl-checkerboard-detection-lab`.
+  - [x] **edge validation pass** (`scoreCheckerboardGridEdges`) — scores each lattice edge by
+        the mean image gradient PERPENDICULAR to it (on a lightly-blurred gray): a real edge lies
+        on a black/white square border (high), a wrong/diagonal edge crosses a uniform square
+        (low). Fills `CheckerboardGrid.edgeRight/edgeDown`. Lab colours edges red→green by this
+        confidence. Test `cv.checkergrid.edge_scoring` (real edges ~1.0; a corrupted through-square
+        edge drops clearly). **NEXT: feed this confidence back into growth (guided growth)** —
+        prefer/required high-evidence links to disambiguate hard cases (glare, partial board,
+        strong distortion). This is the lightweight step toward the decided hybrid.
   - [x] **`CheckerboardTarget` backend** — the FIRST concrete `CalibrationTarget`
         (`markers::CheckerboardTarget`): detector + grid recovery → labels the lattice against the
         known board geometry (either axis order) → object↔image correspondences for
