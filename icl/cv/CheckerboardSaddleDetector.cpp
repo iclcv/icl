@@ -15,18 +15,29 @@ namespace icl::cv {
   CheckerboardSaddleDetector::CheckerboardSaddleDetector(const Params &p) : m_p(p) {}
 
   namespace {
-    // luminance buffer (float) for sub-pixel bilinear sampling
+    // luminance buffer (float) for sub-pixel bilinear sampling. We keep this
+    // explicit (raw pointers + luminance weights) rather than core::cc: on mac
+    // cc has no SIMD path (no IPP/Accelerate, SSE2 N/A on arm) so it falls back
+    // to a slower per-pixel ImgIterator — and its RGB→Gray uses (R+G+B)/3, not
+    // the 0.299/0.587/0.114 luminance weights, which would change the response.
     std::vector<float> toGray(const Img8u &img, int &W, int &H) {
       W = img.getWidth(); H = img.getHeight();
       std::vector<float> g((size_t)W*H);
+      const int N = (int)g.size();
       const int c = img.getChannels();
       if (c >= 3) {
         const icl8u *r = img.begin(0), *gr = img.begin(1), *b = img.begin(2);
-        for (size_t i = 0; i < g.size(); ++i)
+#ifdef ICL_HAVE_OPENMP
+#       pragma omp parallel for schedule(static)
+#endif
+        for (int i = 0; i < N; ++i)
           g[i] = 0.299f*r[i] + 0.587f*gr[i] + 0.114f*b[i];
       } else {
         const icl8u *d = img.begin(0);
-        for (size_t i = 0; i < g.size(); ++i) g[i] = d[i];
+#ifdef ICL_HAVE_OPENMP
+#       pragma omp parallel for schedule(static)
+#endif
+        for (int i = 0; i < N; ++i) g[i] = d[i];
       }
       return g;
     }
@@ -40,17 +51,29 @@ namespace icl::cv {
 
     struct Ring {
       std::vector<float> dx, dy, c1, s1, c2, s2;
-      explicit Ring(int n, float r) : dx(n), dy(n), c1(n), s1(n), c2(n), s2(n) {
+      // Precomputed bilinear sampling for the dense (integer-grid) response: at an
+      // integer pixel (x,y) the sample (x+dx[k], y+dy[k]) has a fractional part
+      // that depends only on k, so floor()/weights are constant across pixels.
+      std::vector<int>   ox, oy;               // integer offsets floor(dx),floor(dy)
+      std::vector<float> bx0, bx1, by0, by1;   // bilinear weights ax,1-ax,ay,1-ay
+      explicit Ring(int n, float r) : dx(n), dy(n), c1(n), s1(n), c2(n), s2(n),
+                                      ox(n), oy(n), bx0(n), bx1(n), by0(n), by1(n) {
         for (int k = 0; k < n; ++k) {
           const float th = 2.f*float(M_PI)*k/n;
           dx[k] = r*std::cos(th); dy[k] = r*std::sin(th);
           c1[k] = std::cos(th);      s1[k] = std::sin(th);
           c2[k] = std::cos(2*th);    s2[k] = std::sin(2*th);
+          const int fx = (int)std::floor(dx[k]), fy = (int)std::floor(dy[k]);
+          ox[k] = fx; oy[k] = fy;
+          const float ax = dx[k]-fx, ay = dy[k]-fy;
+          bx0[k] = ax; bx1[k] = 1.f-ax; by0[k] = ay; by1[k] = 1.f-ay;
         }
       }
     };
 
-    // ring harmonics at (x,y); returns normalised response + sets orientation
+    // ring harmonics at (x,y); returns normalised response + sets orientation.
+    // Reference (sub-pixel-capable) path: re-derives the bilinear footprint per
+    // sample. Used for the sub-pixel orientation refine and the reference impl.
     inline float responseAt(const float *g, int W, const Ring &R, int n,
                             float x, float y, float edgePenalty, float minAmp,
                             float *orientation = nullptr) {
@@ -67,6 +90,46 @@ namespace icl::cv {
       const float resp = (A2 - edgePenalty*A1) / (A1 + A2 + 1e-3f);
       return resp > 0.f ? resp : 0.f;
     }
+
+    // Fast dense path at an INTEGER pixel (x,y): precomputed offsets + weights,
+    // and an early flat-area gate (A2 first → skip A1's sqrt + the divide on the
+    // flat majority). Bit-identical to responseAt() at integer coordinates.
+    inline float responseAtInt(const float *g, int W, const Ring &R, int n,
+                               int x, int y, float edgePenalty, float minAmp) {
+      float a1c=0, a1s=0, a2c=0, a2s=0;
+      const float *base = g + (size_t)y*W + x;
+      for (int k = 0; k < n; ++k) {
+        const float *p = base + (size_t)R.oy[k]*W + R.ox[k];
+        const float v = (p[0]*R.bx1[k] + p[1]*R.bx0[k])*R.by1[k]
+                      + (p[W]*R.bx1[k] + p[W+1]*R.bx0[k])*R.by0[k];
+        a1c += v*R.c1[k]; a1s += v*R.s1[k];
+        a2c += v*R.c2[k]; a2s += v*R.s2[k];
+      }
+      const float A2 = 2.f*std::sqrt(a2c*a2c + a2s*a2s)/n;
+      if (A2 < minAmp) return 0.f;
+      const float A1 = 2.f*std::sqrt(a1c*a1c + a1s*a1s)/n;
+      const float resp = (A2 - edgePenalty*A1) / (A1 + A2 + 1e-3f);
+      return resp > 0.f ? resp : 0.f;
+    }
+
+    // Fill resp[] over the valid interior [m, W-m) x [m, H-m). Optimized path:
+    // precomputed bilinear weights + early gate + OpenMP. Reference path: the
+    // original responseAt(). Both write identical values.
+    void fillResponse(std::vector<float> &resp, const float *g, int W, int H,
+                      const Ring &R, int n, int m, const CheckerboardSaddleDetector::Params &p) {
+      if (p.optimized) {
+#ifdef ICL_HAVE_OPENMP
+#       pragma omp parallel for schedule(static)
+#endif
+        for (int y = m; y < H-m; ++y)
+          for (int x = m; x < W-m; ++x)
+            resp[(size_t)y*W + x] = responseAtInt(g, W, R, n, x, y, p.edgePenalty, p.minAmplitude);
+      } else {
+        for (int y = m; y < H-m; ++y)
+          for (int x = m; x < W-m; ++x)
+            resp[(size_t)y*W + x] = responseAt(g, W, R, n, (float)x, (float)y, p.edgePenalty, p.minAmplitude);
+      }
+    }
   }
 
   Img32f CheckerboardSaddleDetector::responseImage(const Img8u &image) const {
@@ -78,10 +141,9 @@ namespace icl::cv {
     const Ring R(n, m_p.radius);
     const int m = (int)std::ceil(m_p.radius) + 1;
     if (W <= 2*m || H <= 2*m) return out;
-    for (int y = m; y < H-m; ++y)
-      for (int x = m; x < W-m; ++x)
-        o[(size_t)y*W + x] = responseAt(g.data(), W, R, n, (float)x, (float)y,
-                                        m_p.edgePenalty, m_p.minAmplitude);
+    std::vector<float> resp((size_t)W*H, 0.f);
+    fillResponse(resp, g.data(), W, H, R, n, m, m_p);
+    std::copy(resp.begin(), resp.end(), o);
     return out;
   }
 
@@ -95,10 +157,7 @@ namespace icl::cv {
 
     // response image over the valid interior
     std::vector<float> resp((size_t)W*H, 0.f);
-    for (int y = m; y < H-m; ++y)
-      for (int x = m; x < W-m; ++x)
-        resp[(size_t)y*W + x] = responseAt(g.data(), W, R, n, (float)x, (float)y,
-                                           m_p.edgePenalty, m_p.minAmplitude);
+    fillResponse(resp, g.data(), W, H, R, n, m, m_p);
 
     // non-maximum suppression + sub-pixel (quadratic) refinement
     const int nms = m_p.nmsRadius;

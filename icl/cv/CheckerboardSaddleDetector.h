@@ -44,6 +44,11 @@ namespace icl::cv {
       float minAmplitude = 6.0f;  ///< absolute 2nd-harmonic gate [0..~128], kills flat noise
       float minScore     = 0.35f; ///< threshold on the normalised response
       int   nmsRadius    = 4;     ///< non-maximum-suppression radius [px]
+      /// Use the optimized dense-response path (precomputed bilinear weights,
+      /// early flat-area gate, OpenMP). Produces bit-identical seeds to the
+      /// reference (false) path — the flag exists only for A/B benchmarking and
+      /// regression checking, and will be removed once the fast path is settled.
+      bool  optimized    = true;
     };
 
     CheckerboardSaddleDetector();

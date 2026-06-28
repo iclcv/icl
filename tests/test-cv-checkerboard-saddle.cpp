@@ -11,6 +11,7 @@
 #include "harness/Test.h"
 #include <icl/cv/CheckerboardSaddleDetector.h>
 #include <icl/core/Img.h>
+#include <icl/utils/time/Time.h>
 #include <cmath>
 #include <functional>
 
@@ -44,6 +45,17 @@ namespace {
       d[y*W+x] = (icl8u)(acc/(SS*SS) + 0.5f);
     }
     return img;
+  }
+
+  // a representative board (warp = identity unless given) for A/B + benchmark
+  Img8u benchBoard(int W=1000, int H=1000, float sq=40) {
+    return [&]{
+      const float cx=W/2.f, cy=H/2.f, k=0.08f;
+      return renderBoard(W, H, sq, [&](float qx,float qy){
+        const float nx=(qx-cx)/cx, ny=(qy-cy)/cy, r2=nx*nx+ny*ny, f=1+k*r2;
+        return Point32f(cx+(qx-cx)*f, cy+(qy-cy)*f);
+      });
+    }();
   }
 
   // nearest detected seed to p; returns distance (or 1e9 if none)
@@ -80,6 +92,76 @@ ICL_REGISTER_TEST("cv.checkersaddle.clean_subpixel",
             << seeds.size() << " seeds)" << std::endl;
   ICL_TEST_EQ(found, total);            // every internal corner found
   ICL_TEST_EQ(meanErr < 0.5, true);     // sub-pixel accuracy
+}
+
+// The optimized dense-response path must match the reference path: same corner
+// count, same sub-pixel positions. It is NOT bit-identical — and the optimized
+// path is in fact slightly MORE accurate: the reference computes the bilinear
+// fraction as (x+dx) - floor(x+dx), which loses ~14 mantissa bits at large x
+// (~6e-5 at x≈645); the optimized path uses dx - floor(dx) at full precision.
+// So we assert a tight tolerance, not exact equality.
+ICL_REGISTER_TEST("cv.checkersaddle.optimized_matches_reference",
+                  "optimized path matches the reference path (same corners, sub-pixel agreement)")
+{
+  const Img8u img = benchBoard();
+
+  auto run = [&](bool opt){
+    CheckerboardSaddleDetector::Params p; p.optimized = opt;
+    return CheckerboardSaddleDetector(p).detect(img);
+  };
+  const std::vector<CornerSeed> ref = run(false);
+  const std::vector<CornerSeed> fast = run(true);
+
+  ICL_TEST_TRUE(!ref.empty());
+  ICL_TEST_EQ(fast.size(), ref.size());
+  double maxPos = 0, maxField = 0;
+  for (size_t i = 0; i < std::min(ref.size(), fast.size()); ++i) {
+    maxPos   = std::max(maxPos,   (double)std::fabs(fast[i].pos.x - ref[i].pos.x));
+    maxPos   = std::max(maxPos,   (double)std::fabs(fast[i].pos.y - ref[i].pos.y));
+    maxField = std::max({maxField, (double)std::fabs(fast[i].score - ref[i].score),
+                                   (double)std::fabs(fast[i].orientation - ref[i].orientation)});
+  }
+  std::cout << "[checkersaddle] opt-vs-ref: " << ref.size()
+            << " seeds, max pos diff=" << maxPos << "px, max score/ori diff=" << maxField << std::endl;
+  ICL_TEST_EQ(maxPos < 1e-3, true);     // sub-pixel positions agree to <0.001 px
+  ICL_TEST_EQ(maxField < 1e-3, true);   // scores/orientations agree to <0.001
+}
+
+// Benchmark: reference vs optimized detect() on a 640x480 board.
+ICL_REGISTER_TEST("cv.checkersaddle.benchmark",
+                  "report reference vs optimized detect() timing")
+{
+  const Img8u img = benchBoard();
+  const int N = 30;
+
+  auto bench = [&](bool opt){
+    CheckerboardSaddleDetector::Params p; p.optimized = opt;
+    CheckerboardSaddleDetector det(p);
+    det.detect(img);                                   // warm up
+    const utils::Time t0 = utils::Time::now();
+    for (int i = 0; i < N; ++i) det.detect(img);
+    return (utils::Time::now() - t0).toMicroSeconds() / 1000.0 / N;   // ms/call
+  };
+  const double refMs  = bench(false);
+  const double fastMs = bench(true);
+  std::cout << "[checkersaddle] benchmark " << img.getWidth() << "x" << img.getHeight()
+            << "  reference=" << refMs << " ms  optimized=" << fastMs
+            << " ms  speedup=" << (refMs/fastMs) << "x" << std::endl;
+
+  // RGB input exercises the toGray() colour-conversion path (the gray fast-path
+  // above is a plain cast). Reports its extra cost over the gray detect.
+  Img8u rgb(img.getSize(), 3);
+  for (int ch = 0; ch < 3; ++ch)
+    std::copy(img.begin(0), img.begin(0)+img.getDim(), rgb.begin(ch));
+  CheckerboardSaddleDetector detRGB;   // optimized default
+  detRGB.detect(rgb);
+  const utils::Time t0 = utils::Time::now();
+  for (int i = 0; i < N; ++i) detRGB.detect(rgb);
+  const double rgbMs = (utils::Time::now() - t0).toMicroSeconds() / 1000.0 / N;
+  std::cout << "[checkersaddle] optimized RGB-input=" << rgbMs << " ms  (toGray ~"
+            << (rgbMs - fastMs) << " ms)" << std::endl;
+
+  ICL_TEST_TRUE(fastMs > 0.0);   // informational; timing printed above
 }
 
 // Barrel-distorted board (bent edges): the local saddle detector still finds the
