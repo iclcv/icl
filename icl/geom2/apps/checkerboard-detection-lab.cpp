@@ -84,8 +84,8 @@ static void drawResult(DrawHandle &draw, const Img8u &img,
   // recovered grid: lattice edges show the (col,row) topology; the magenta ring
   // marks the (arbitrary) origin, red = +col axis, green = +row axis.
   if (gui["showGrid"].as<bool>() && !grid.empty()) {
-    draw->linewidth(1.f);
-    draw->color(0,180,255,200);                       // lattice edges: cyan
+    draw->linewidth(2.f);
+    draw->color(0,180,255,204);                       // lattice edges: cyan, 20% transp.
     for (int r=0; r<grid.rows; ++r)
       for (int c=0; c<grid.cols; ++c) {
         if (!grid.has(c,r)) continue;
@@ -95,9 +95,8 @@ static void drawResult(DrawHandle &draw, const Img8u &img,
       }
     if (grid.has(0,0)) {
       const Point32f o = grid.at(0,0);
-      draw->linewidth(2.f);
-      if (grid.has(1,0)) { draw->color(255,80,80,255); draw->line(o, grid.at(1,0)); }
-      if (grid.has(0,1)) { draw->color(80,255,80,255); draw->line(o, grid.at(0,1)); }
+      if (grid.has(1,0)) { draw->color(255,80,80,204); draw->line(o, grid.at(1,0)); }
+      if (grid.has(0,1)) { draw->color(80,255,80,204); draw->line(o, grid.at(0,1)); }
       draw->color(255,0,255,255); draw->sym(o, 'o');
     }
   }

@@ -150,3 +150,31 @@ ICL_REGISTER_TEST("cv.checkergrid.perspective",
   ICL_TEST_EQ(g.count, (COLS-1)*(ROWS-1));
   ICL_TEST_TRUE(latticeConsistent(g));
 }
+
+// Rotated + keystoned view: the two board axes are NON-ORTHOGONAL in the image
+// (as under a real camera tilt). This is the case where a perpendicular-guess
+// second axis would wrongly link DIAGONAL neighbours; recovery must use the true
+// second axis. (latticeConsistent alone wouldn't catch a diagonal lattice — the
+// exact dims + full count do.)
+ICL_REGISTER_TEST("cv.checkergrid.tilted_nonorthogonal",
+                  "non-orthogonal (tilted) axes recover the full axis-aligned lattice")
+{
+  const int COLS=9, ROWS=7; const int W=520, H=440;
+  const float cx=W/2.f, cy=H/2.f, ang=0.45f, ca=std::cos(ang), sa=std::sin(ang);
+  auto warp = [&](float qx,float qy){            // output px -> model coord
+    const float rx = ca*(qx-cx) - sa*(qy-cy) + cx;   // in-plane rotation
+    const float ry = sa*(qx-cx) + ca*(qy-cy) + cy;
+    const float v = (ry-cy)/cy, persp = 1.f + 0.4f*v;  // + vertical keystone
+    return Point32f(cx + (rx-cx)*persp, ry);
+  };
+  Img8u img = renderBoard(W, H, COLS, ROWS, 38, warp);
+
+  const auto seeds = CheckerboardSaddleDetector().detect(img);
+  const CheckerboardGrid g = recoverCheckerboardGrid(seeds);
+
+  std::cout << "[checkergrid] tilted: " << g.cols << "x" << g.rows
+            << " count=" << g.count << " (seeds=" << seeds.size() << ")" << std::endl;
+  ICL_TEST_TRUE(dimsMatch(g, COLS, ROWS));
+  ICL_TEST_EQ(g.count, (COLS-1)*(ROWS-1));
+  ICL_TEST_TRUE(latticeConsistent(g));
+}

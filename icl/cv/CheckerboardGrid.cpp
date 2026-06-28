@@ -5,7 +5,8 @@
 #include <icl/cv/CheckerboardGrid.h>
 #include <algorithm>
 #include <cmath>
-#include <queue>
+#include <map>
+#include <utility>
 
 using namespace icl::utils;
 
@@ -61,25 +62,37 @@ namespace icl::cv {
     std::vector<int>  coordX(n, 0), coordY(n, 0);
     std::vector<char> assigned(n, 0);
 
-    // initial axes from the start seed's NEAREST neighbour: on a checkerboard the
-    // nearest corner is an axis neighbour (the diagonal one is ~1.4x further), so
-    // this direction IS a grid axis. (The ChESS `orientation` is NOT used here:
-    // its 2nd-harmonic phase points along the board *diagonals*, 45deg off the
-    // axes, which would grow only the same-colour diagonal sub-lattice.) The
-    // perpendicular seeds e2; both are refined from measured links during growth.
-    int nb = start; float nbd2 = 1e30f;
+    // Bootstrap the two local axes from the start seed's neighbours. e1 = nearest
+    // neighbour (an axis neighbour: the diagonal one is ~1.4x further). e2 = the
+    // nearest neighbour whose direction is MOST PERPENDICULAR to e1 — NOT a 90deg
+    // rotation of e1: under camera tilt the two board axes are non-orthogonal in
+    // the image, and a perpendicular guess would point at a diagonal neighbour
+    // and grow the wrong (diagonal) lattice. (The ChESS orientation isn't used at
+    // all here — its phase points along the board diagonals.) Both axes are
+    // refined from the measured links during growth.
+    const Point32f p0 = seeds[start].pos;
+    int nb = -1; float nbd2 = 1e30f;
     for (int j = 0; j < n; ++j) if (j != start) {
-      const float d2 = dist2(seeds[start].pos, seeds[j].pos);
+      const float d2 = dist2(p0, seeds[j].pos);
       if (d2 < nbd2) { nbd2 = d2; nb = j; }
     }
-    const Point32f e1_0(seeds[nb].pos.x - seeds[start].pos.x,
-                        seeds[nb].pos.y - seeds[start].pos.y);
-    const Point32f e2_0(-e1_0.y, e1_0.x);   // perpendicular, same length
-
-    struct Node { int idx, gx, gy; Point32f e1, e2; };
-    std::queue<Node> q;
-    assigned[start] = 1;
-    q.push({start, 0, 0, e1_0, e2_0});
+    const Point32f e1_0(seeds[nb].pos.x - p0.x, seeds[nb].pos.y - p0.y);
+    const float len1 = std::sqrt(nbd2);
+    // e2 = the NEAREST neighbour that is not collinear with e1. The other axis
+    // neighbour sits at ~len1; a diagonal is ~1.4x further — so "nearest among the
+    // non-collinear" is the second axis, whatever angle it makes with e1 (handles
+    // non-orthogonal tilted axes). We only exclude the two ±e1 neighbours.
+    int nb2 = -1; float nb2d2 = 1e30f;
+    for (int j = 0; j < n; ++j) if (j != start && j != nb) {
+      const Point32f v(seeds[j].pos.x - p0.x, seeds[j].pos.y - p0.y);
+      const float lv2 = v.x*v.x + v.y*v.y, lv = std::sqrt(lv2);
+      if (lv > 1.8f*len1) continue;                                  // near only
+      if (std::fabs((v.x*e1_0.x + v.y*e1_0.y)/(lv*len1)) > 0.85f) continue; // skip ±e1
+      if (lv2 < nb2d2) { nb2d2 = lv2; nb2 = j; }
+    }
+    const Point32f e2_0 = (nb2 >= 0)
+      ? Point32f(seeds[nb2].pos.x - p0.x, seeds[nb2].pos.y - p0.y)
+      : Point32f(-e1_0.y, e1_0.x);   // fallback: perpendicular
 
     auto findNear = [&](const Point32f &target, float maxr) -> int {
       int best = -1; float bestd2 = maxr*maxr;
@@ -90,30 +103,50 @@ namespace icl::cv {
       return best;
     };
 
+    // Fixed-point growth. cell[(gx,gy)] = seed index. Each pass, every assigned
+    // cell estimates its LOCAL step vectors from its own assigned neighbours
+    // (falling back to the bootstrap axes) and tries to claim its 4 empty grid
+    // neighbours. Re-estimating per cell keeps steps accurate under perspective /
+    // distortion (no stale carry), and iterating until nothing new is claimed
+    // fills cells a single BFS pass would miss at the tilted far edge.
+    std::map<std::pair<int,int>, int> cell;
+    assigned[start] = 1; coordX[start] = 0; coordY[start] = 0;
+    cell[{0,0}] = start;
+
     static const int GD[4][2] = {{1,0},{-1,0},{0,1},{0,-1}};
-    while (!q.empty()) {
-      const Node cur = q.front(); q.pop();
-      const Point32f p = seeds[cur.idx].pos;
-      for (const auto &gd : GD) {
-        const int dx = gd[0], dy = gd[1];
-        const Point32f step(dx*cur.e1.x + dy*cur.e2.x, dx*cur.e1.y + dy*cur.e2.y);
-        const float steplen = std::sqrt(step.x*step.x + step.y*step.y);
-        if (!(steplen > 0)) continue;
-        // accept a free seed within 0.6 step of the predicted neighbour position
-        // (excludes diagonal/2-step seeds, which sit ~1 step away)
-        const int j = findNear(Point32f(p.x+step.x, p.y+step.y), 0.6f*steplen);
-        if (j < 0) continue;
-        assigned[j] = 1;
-        coordX[j] = cur.gx + dx; coordY[j] = cur.gy + dy;
-        // refine: the measured edge replaces the axis we came in on; the
-        // perpendicular axis is carried from the parent (refined when used).
-        Point32f e1 = cur.e1, e2 = cur.e2;
-        const Point32f meas(seeds[j].pos.x - p.x, seeds[j].pos.y - p.y);
-        if      (dx ==  1) e1 = meas;
-        else if (dx == -1) e1 = Point32f(-meas.x, -meas.y);
-        else if (dy ==  1) e2 = meas;
-        else if (dy == -1) e2 = Point32f(-meas.x, -meas.y);
-        q.push({j, coordX[j], coordY[j], e1, e2});
+    bool changed = true;
+    while (changed) {
+      changed = false;
+      std::vector<int> cur;
+      cur.reserve(cell.size());
+      for (const auto &kv : cell) cur.push_back(kv.second);
+      for (const int s : cur) {
+        const int gx = coordX[s], gy = coordY[s];
+        const Point32f p = seeds[s].pos;
+        // local axes from assigned neighbours, else the bootstrap axes
+        Point32f e1 = e1_0, e2 = e2_0;
+        if (auto it = cell.find({gx+1,gy}); it != cell.end())
+          e1 = Point32f(seeds[it->second].pos.x-p.x, seeds[it->second].pos.y-p.y);
+        else if (auto it2 = cell.find({gx-1,gy}); it2 != cell.end())
+          e1 = Point32f(p.x-seeds[it2->second].pos.x, p.y-seeds[it2->second].pos.y);
+        if (auto it = cell.find({gx,gy+1}); it != cell.end())
+          e2 = Point32f(seeds[it->second].pos.x-p.x, seeds[it->second].pos.y-p.y);
+        else if (auto it2 = cell.find({gx,gy-1}); it2 != cell.end())
+          e2 = Point32f(p.x-seeds[it2->second].pos.x, p.y-seeds[it2->second].pos.y);
+
+        for (const auto &gd : GD) {
+          const int dx = gd[0], dy = gd[1], ngx = gx+dx, ngy = gy+dy;
+          if (cell.count({ngx,ngy})) continue;                 // already filled
+          const Point32f step(dx*e1.x + dy*e2.x, dx*e1.y + dy*e2.y);
+          const float steplen = std::sqrt(step.x*step.x + step.y*step.y);
+          if (!(steplen > 0)) continue;
+          // claim a free seed within 0.6 step of the prediction (a diagonal /
+          // 2-step seed sits ~1 step away, so it is not mistaken for a neighbour)
+          const int j = findNear(Point32f(p.x+step.x, p.y+step.y), 0.6f*steplen);
+          if (j < 0) continue;
+          assigned[j] = 1; coordX[j] = ngx; coordY[j] = ngy;
+          cell[{ngx,ngy}] = j; changed = true;
+        }
       }
     }
 
