@@ -59,16 +59,16 @@ namespace icl::geom2 {
     // Forward (lens) distortion — simulates a real camera. Params come from the
     // "distortion.k1/k2" Configurable props (mirrored into atomics by poll()).
     // The warp op + its cache key are touched only under mtx (in refreshOutput()).
-    // Clamp border: the lens warp pushes content past the frame at the edges;
-    // replicate edge pixels rather than leaving a hard black ring (which the
-    // checkerboard detector would otherwise read as false corners).
+    // Zero (black) border: pixels whose lens back-mapping lands outside the
+    // rendered frame are set to black — the only sensible border. (Clamp would
+    // smear the source edge — e.g. Cycles' sky — across the whole OOB region.)
     std::atomic<float>    k1{0.f}, k2{0.f};
     // auto-scale ("fill frame"): zoom the lens warp so the distorted frame stays
-    // fully covered by source pixels — no black/clamped border the checkerboard
-    // detector could read as false corners (false until the user opts in).
+    // fully covered by source pixels — no black border at all (false until the
+    // user opts in).
     std::atomic<bool>     autoScale{false};
     filter::WarpOp        distort{core::Img32f(), core::interpolateLIN, true,
-                                  filter::WarpOp::BorderMode::Clamp};
+                                  filter::WarpOp::BorderMode::Zero};
     float                 lk1 = 1e9f, lk2 = 1e9f;   // last-built warp-map key
     bool                  lautoScale = false;
     utils::Size           lsz{0, 0};

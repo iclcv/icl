@@ -26,16 +26,17 @@ Full suite was **971/971 green** before the OpenCL sandbox cache broke (see ⚠�
    `WarpOp::m_warpMapVersion` (bumped in setWarpMap), threaded through `WarpSig` (Cpp/Ipp ignore
    it), `CLWarpState` re-uploads on version-or-size change. Backend is per-WarpOp (addStateful =
    per-clone), so no cross-op collision. Test `Filter.WarpOp.reuse_setWarpMap`.
-5. **WarpOp `BorderMode` (Zero/Clamp)** — Zero (default) = black OOB; Clamp = replicate edge
-   (no hard black ring for a corner detector). OffscreenView distort + lab undistort use Clamp.
-   Test `Filter.WarpOp.border_clamp`.
+5. **WarpOp `BorderMode` (Zero/Clamp)** — Zero (default) = black OOB; Clamp = replicate edge.
+   **(Session 85)** OOB→black is now the chosen default everywhere: the OpenCL kernel makes the
+   call explicitly (`fX/fY` out of `[0,w-1]×[0,h-1]` → black) instead of relying on the input
+   sampler — Apple's CL→Metal `CLK_ADDRESS_CLAMP` behaves as clamp-to-edge and was smearing the
+   source edge (Cycles' sky) across the whole OOB region (the "sky ring"). OffscreenView distort
+   + lab undistort switched Clamp→Zero. Kernel also dropped the unused filter-mode arg (integer
+   images can only be NEAREST-sampled). Tests `Filter.WarpOp.border_clamp`, `.border_zero_is_black`.
 
 **IN PROGRESS / NOT DONE:**
-- **WarpOp bug #2 — OpenCL kernel skips the 1-px outer frame** (`if(x && y && x<w-1 && y<h-1)`)
-  → leaves a black 1-px border; invisible on GL's black bg, but a false-corner source on Cycles'
-  light sky. **FIX IS WRITTEN** (removed the guard in `WarpOp_OpenCL.cpp` kernel string) but
-  **UNVERIFIED in-sandbox** — see ⚠️. Test `Filter.WarpOp.border_pixels_written` (currently
-  expects the fix; FAILS on old kernel).
+- **WarpOp bug #2 — OpenCL kernel skipped the 1-px outer frame** — DONE/verified (sandbox
+  OpenCL now compiles). Kernel writes every pixel. Test `Filter.WarpOp.border_pixels_written`.
 - **User's requested auto-scale distortion** — DONE. `ImageUndistortion::createWarpMap(bool
   autoScale)` / `createInverseWarpMap(bool autoScale)` take an opt-in flag: when set,
   `fillWarpMap` first scans all mapped source coords and picks the largest uniform scale (≤1)

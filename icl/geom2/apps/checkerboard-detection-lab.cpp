@@ -56,9 +56,9 @@ const Size CAMRES(480, 360);
 // view used (view.distortionK1/K2) so the rectification matches the lens — the
 // calibration knows the truth here; in reality you'd estimate k1/k2 from many
 // board views. Rebuilt only when k1/k2 (or size) change.
-// Clamp border (replicate edge) so rectification doesn't add a black ring that
-// the detector would read as false corners — matching the view's distortion.
-static WarpOp g_undistort{Img32f(), interpolateLIN, true, WarpOp::BorderMode::Clamp};
+// Zero (black) border: rectified pixels whose back-mapping lands outside the
+// camera image are set to black (matching the view's distortion border).
+static WarpOp g_undistort{Img32f(), interpolateLIN, true, WarpOp::BorderMode::Zero};
 
 static void updateUndistort(float k1, float k2, const Size &sz) {
   static float lk1 = 1e9f, lk2 = 1e9f; static Size lsz;

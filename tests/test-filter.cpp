@@ -3277,6 +3277,32 @@ ICL_REGISTER_TEST("Filter.WarpOp.border_pixels_written",
   ICL_TEST_EQ((int)c(sz.width/2, sz.height-1), 255);  // bottom edge
 }
 
+// Zero (default) border: every output pixel whose source back-mapping lands
+// outside the input must be BLACK — never an edge replica. This guards the
+// OpenCL backend specifically (Apple's CL→Metal CLK_ADDRESS_CLAMP behaves as
+// clamp-to-edge, which smeared the source edge — e.g. a sky background — across
+// the whole out-of-bounds region instead of producing black).
+ICL_REGISTER_TEST("Filter.WarpOp.border_zero_is_black",
+                  "Zero border maps every out-of-bounds pixel to black, not an edge replica") {
+  const Size sz(200, 200);
+  Img8u src(sz, formatGray);
+  src.clear(-1, (icl8u)255);   // all white — an edge replica would show as white
+  const double f = 100, cx = 100, cy = 100;
+  ImageUndistortion ud("MatlabModel5Params", {f,f,cx,cy,0, 0.4, 0,0,0,0}, sz);
+
+  WarpOp wz(ud.createWarpMap(), interpolateLIN, true, WarpOp::BorderMode::Zero);
+  Image z; wz.apply(Image(src), z);
+  Channel8u cz = z.as8u()[0];
+
+  // the four corners back-map far outside the (all-white) source → must be black
+  ICL_TEST_EQ((int)cz(0,0), 0);
+  ICL_TEST_EQ((int)cz(sz.width-1, 0), 0);
+  ICL_TEST_EQ((int)cz(0, sz.height-1), 0);
+  ICL_TEST_EQ((int)cz(sz.width-1, sz.height-1), 0);
+  ICL_TEST_EQ((int)cz(2,2), 0);                 // strongly-warped interior pixel
+  ICL_TEST_EQ((int)cz(cx, cy), 255);            // centre stays inside → white
+}
+
 // Auto-scale ("fill frame"): the warp map's sampled source coordinates are
 // zoomed about the distortion centre so the WHOLE output frame stays within
 // source bounds — no out-of-bounds samples (no black border) while filling the

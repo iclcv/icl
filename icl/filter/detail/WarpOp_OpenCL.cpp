@@ -15,27 +15,33 @@ using namespace icl::core;
 namespace {
 
   static const char* warpKernelSrc =
-    "__kernel void warp(const unsigned int mode,                                \n"
-    "                   __read_only image2d_t warpX,                            \n"
+    "__kernel void warp(__read_only image2d_t warpX,                            \n"
     "                   __read_only image2d_t warpY,                            \n"
     "                   __read_only image2d_t in,                               \n"
     "                   __write_only image2d_t out) {                           \n"
     "    const int x = get_global_id(0);                                        \n"
     "    const int y = get_global_id(1);                                        \n"
-    "    const sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE |                \n"
-    "                              CLK_ADDRESS_CLAMP |                          \n"
-    "                              CLK_FILTER_LINEAR;                           \n"
-    "    const sampler_t samplerN = CLK_NORMALIZED_COORDS_FALSE |               \n"
-    "                               CLK_ADDRESS_CLAMP |                         \n"
-    "                               CLK_FILTER_NEAREST;                         \n"
-    // Warp EVERY pixel — including the 1-px outer frame. Skipping it left an
-    // unwritten black border, which against a non-black background reads as a
-    // false edge to a corner detector. The warp-map read uses integer coords
-    // (no LINEAR border read) and the in-sampler CLAMPs, so the frame is safe.
-    "    float4 fX = read_imagef(warpX, sampler, (int2)(x,y));                  \n"
-    "    float4 fY = read_imagef(warpY, sampler, (int2)(x,y));                  \n"
-    "    uint4 inPixel = read_imageui(in, samplerN, (float2)(fX.s0, fY.s0));    \n"
-    "    write_imageui(out, (int2)(x,y), inPixel.s0);                           \n"
+    // Warp-map fetch: integer coords + NEAREST (the map is a per-output lookup,
+    // not a resampled signal). The input is an integer image, so it can only be
+    // read NEAREST (read_imageui forbids LINEAR filtering).
+    "    const sampler_t mapS = CLK_NORMALIZED_COORDS_FALSE |                   \n"
+    "                           CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST; \n"
+    "    const sampler_t inS  = CLK_NORMALIZED_COORDS_FALSE |                   \n"
+    "                           CLK_ADDRESS_CLAMP_TO_EDGE | CLK_FILTER_NEAREST; \n"
+    // Warp EVERY pixel — including the 1-px outer frame (skipping it left an
+    // unwritten black border that reads as a false edge to a corner detector).
+    "    const float fX = read_imagef(warpX, mapS, (int2)(x,y)).s0;             \n"
+    "    const float fY = read_imagef(warpY, mapS, (int2)(x,y)).s0;             \n"
+    // Out-of-bounds back-mapping → BLACK. This is the only sensible border:
+    // letting the input sampler clamp instead smears the source EDGE pixel
+    // (e.g. Cycles' sky) into the whole OOB region. Zero (default) border mode
+    // tags OOB outputs with a negative sentinel in the warp map; we also guard
+    // the upper bound so the rule holds regardless of the baked map.
+    "    const int w = get_image_width(in), h = get_image_height(in);          \n"
+    "    uint4 px = (uint4)(0,0,0,0);                                           \n"
+    "    if (fX >= 0.0f && fY >= 0.0f && fX <= (float)(w-1) && fY <= (float)(h-1)) \n"
+    "        px = read_imageui(in, inS, (float2)(fX, fY));                      \n"
+    "    write_imageui(out, (int2)(x,y), px.s0);                                \n"
     "}                                                                          \n";
 
   struct CLWarpState {
@@ -70,12 +76,10 @@ namespace {
       int w = src.getWidth();
       int h = src.getHeight();
 
-      cl_filter_mode filterMode;
-      if(mode == interpolateNN)
-        filterMode = CL_FILTER_NEAREST;
-      else if(mode == interpolateLIN)
-        filterMode = CL_FILTER_LINEAR;
-      else {
+      // The input is an integer image (read_imageui), which only supports
+      // NEAREST sampling — so NN and LIN both resolve to NEAREST source
+      // fetches here. We just reject the region-average mode.
+      if(mode != interpolateNN && mode != interpolateLIN) {
         ERROR_LOG("region average interpolation mode does not work with OpenCL");
         return;
       }
@@ -89,7 +93,7 @@ namespace {
       ImgBase* dstPtr = dst.ptr();
       for(int i = 0; i < srcPtr->getChannels(); ++i) {
         input.write(srcPtr->getDataPtr(i));
-        kernel.setArgs(filterMode, warpX, warpY, input, output);
+        kernel.setArgs(warpX, warpY, input, output);
         kernel.apply(w, h, 0);
         output.read(dstPtr->getDataPtr(i));
       }
