@@ -109,8 +109,13 @@ namespace icl::cv {
         a1c += v*R.c1[k]; a1s += v*R.s1[k];
         a2c += v*R.c2[k]; a2s += v*R.s2[k];
       }
-      const float A2 = 2.f*std::sqrt(a2c*a2c + a2s*a2s)/n;
-      if (A2 < minAmp) return 0.f;
+      // Gate on the SQUARED 2nd-harmonic magnitude (A2 = 2*sqrt(m2)/n, so
+      // A2 < minAmp <=> m2 < (minAmp*n/2)^2) — avoids the sqrt on the flat
+      // majority while staying numerically identical for the pixels that pass.
+      const float m2 = a2c*a2c + a2s*a2s;
+      const float gate = 0.5f*minAmp*n;
+      if (m2 < gate*gate) return 0.f;
+      const float A2 = 2.f*std::sqrt(m2)/n;
       const float A1 = 2.f*std::sqrt(a1c*a1c + a1s*a1s)/n;
       const float resp = (A2 - edgePenalty*A1) / (A1 + A2 + 1e-3f);
       return resp > 0.f ? resp : 0.f;
