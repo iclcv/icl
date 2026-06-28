@@ -36,14 +36,20 @@ namespace icl::geom2 {
     return n;
   }
 
+  // setCells/setWidth are safe to call from any thread on a node that's already
+  // in a scene: ScopedEdit locks the scene around the rebuild and marks it
+  // changed on exit (renderer + Cycles re-sync). Idempotent — a no-op when the
+  // geometry is unchanged — so callers can drive it straight from a UI value.
   void CheckerboardNode::setCells(int cols, int rows) {
     if (cols == m_cols && rows == m_rows) return;
+    ScopedEdit edit(this);
     m_cols = cols; m_rows = rows;
     rebuild();
   }
 
   void CheckerboardNode::setWidth(float widthMM) {
     if (widthMM == m_width) return;
+    ScopedEdit edit(this);
     m_width = widthMM;
     rebuild();
   }

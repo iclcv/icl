@@ -41,25 +41,27 @@ namespace icl::geom2 {
   ///   gui << Canvas3D({.handle="view"}) << ... << Show();
   ///   gui["view"].link(view.callback());       // wire the GUI-thread side
   ///   gui["view"].install(scene.getMouseHandler(0));
-  ///   // ... in the worker run() loop:
-  ///   if (view.poll()) { /* a NEW frame arrived */ }
-  ///   const core::Img8u &cam = view.image();   // latest frame (cached)
+  ///   // ... in the worker run() loop (call EVERY frame — it drives Cycles):
+  ///   auto f = view.next();        // f.image is always the latest capture
+  ///   if (f.isNew) { /* a freshly arrived frame — process f.image */ }
   /// \endcode
   ///
   /// THREADING CONTRACT:
   ///   - callback() must be link()ed to the on-screen Canvas3D. Its draw() runs
   ///     on the GUI thread (widget context current) and performs the GL capture
   ///     there.
-  ///   - poll() and setBackend() are called from your worker run() loop. poll()
+  ///   - next() and setBackend() are called from your worker run() loop. next()
   ///     drives the Cycles progressive render AND auto-requests a GL capture when
-  ///     the view camera or backend changed, so call it EVERY frame; it returns
-  ///     true only when a genuinely new frame is ready. image() is the cached
-  ///     latest frame (so callers don't track their own "last frame").
+  ///     the view camera or backend changed, so call it EVERY frame; it always
+  ///     returns the latest image, with isNew set only when one just arrived.
   /// Also a utils::Configurable: it exposes the backend choice + Cycles tuning,
   /// and adds the captured scene as a child Configurable, so an app pulls the
   /// whole control set into its GUI with `gui << Prop(&view)` (no separate
   /// scene-props button needed). Properties:
   ///   "backend"                  GL (fast) / Cycles (photoreal)
+  ///   "distortion.k1" / ".k2"    forward radial lens distortion baked into the
+  ///                              captured image (0,0 = ideal pinhole)
+  ///   "distortion.reset"         button → zero k1,k2
   ///   "cycles.denoising"         OIDN on/off (off by default — it's slow)
   ///   "cycles.samples per step"  progressive granularity (1..16)
   ///   "scene.*"                  the capture scene's own props (enable lighting,
@@ -89,6 +91,13 @@ namespace icl::geom2 {
     void setBackend(Backend b);
     Backend getBackend() const;
 
+    /// The forward radial-distortion coefficients the captured image is warped
+    /// with (the "distortion.k1/k2" properties). 0,0 = an ideal pinhole. A
+    /// consumer that wants to *rectify* the frame (undistort) reads these to
+    /// build the inverse map — the view applies only the forward (lens) warp.
+    float distortionK1() const;
+    float distortionK2() const;
+
     /// Link target for gui["view"].link(...). Renders the view + GL capture.
     qt::GLCallback *callback();
 
@@ -101,14 +110,22 @@ namespace icl::geom2 {
     /// was swapped): resyncs Cycles and requests a fresh GL capture.
     void invalidate();
 
-    /// Call every frame (worker loop). Drives the Cycles progressive render and
-    /// auto-requests a GL capture when the view camera or backend changed.
-    /// Returns true when a NEW frame became available since the previous poll();
-    /// read the pixels with image().
-    bool poll();
+    /// A pulled frame: the latest captured image plus whether it's freshly arrived.
+    struct Frame {
+      core::Img8u image;   ///< latest frame, WITH forward lens distortion applied
+                           ///< (== the clean render when k1==k2==0); shallow copy,
+                           ///< always valid after the first capture, even when stale.
+      bool isNew;          ///< true iff `image` differs from the previous next() call
+    };
 
-    /// The latest captured frame (shallow copy; empty until the first capture).
-    core::Img8u image() const;
+    /// Pull the current frame — call every frame from the worker loop.
+    /** Drives the Cycles progressive render and auto-requests a GL capture when
+        the view camera, backend, scene, or distortion changed, so it MUST be
+        called every frame. The returned Frame ALWAYS carries the latest captured
+        image (so a consumer that re-processes on a control change can use it
+        directly — no need to cache the last frame); `isNew` flags whether that
+        image just changed since the previous call. */
+    Frame next();
 
     /// The Cycles backend's renderer (lazily created on first Cycles use), for
     /// tuning quality / scene scale / denoising. Returns nullptr if ICL was

@@ -22,6 +22,7 @@ namespace icl::geom2 {
   class GroupNode;
   class Driver;
   class Node;
+  class Scene2;
 
   /// Canonical owning handle for a scene-graph node.
   /** geom2 references follow a three-tier **edge** model — pick the pointer by
@@ -73,6 +74,13 @@ namespace icl::geom2 {
     /// the parent owns this node, not the other way around (no ownership cycle).
     Node *getParent();
     const Node *getParent() const;
+
+    // --- Owning scene (set by Scene2::addNode, propagated by GroupNode) ---
+    /// Non-owning view of the Scene2 this node lives in (nullptr if unparented).
+    /** An up-edge: the scene co-owns the node, so a raw view back up is correct
+        (never delete it). High-level mutators use it to self-lock and
+        auto-invalidate the scene — see ScopedEdit. */
+    Scene2 *getScene() const;
 
     // --- Drivers (attachable per-node behaviours; see Driver.h) ---
     /// Attach an already-constructed driver (sets its node, calls onAttach())
@@ -135,12 +143,31 @@ namespace icl::geom2 {
     Node(Node &&other) noexcept;
     Node &operator=(Node &&other) noexcept;
 
+    /// RAII guard for a node's high-level mutators: locks the owning scene (if
+    /// the node is in one) for the edit's duration, and on exit marks the scene
+    /// changed (Scene2::touch() → invalidate renderer/Cycles caches + bump
+    /// version). Re-entrant: the scene mutex is recursive, so it composes with
+    /// an outer render/sync lock. A detached node (no scene) makes it a no-op.
+    /** Usage in a mutator:  ScopedEdit edit(this); ... rebuild geometry ... */
+    class ScopedEdit {
+      Scene2 *m_scene;
+    public:
+      explicit ScopedEdit(Node *node);
+      ~ScopedEdit();
+      ScopedEdit(const ScopedEdit &) = delete;
+      ScopedEdit &operator=(const ScopedEdit &) = delete;
+    };
+
   private:
     void setParent(Node *parent);
+    /// Set/clear the owning scene back-pointer. Virtual so GroupNode propagates
+    /// it to its subtree. Called by Scene2::addNode/removeNode and GroupNode.
+    virtual void setScene(Scene2 *scene);
 
     struct Data;
     std::unique_ptr<Data> m_data;
-    friend class GroupNode;  // GroupNode sets parent via setParent()
+    friend class GroupNode;  // sets parent via setParent(), propagates setScene()
+    friend class Scene2;     // sets the owning-scene back-pointer via setScene()
   };
 
 } // namespace icl::geom2

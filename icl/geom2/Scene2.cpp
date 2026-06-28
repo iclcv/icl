@@ -33,6 +33,7 @@
 #endif
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 
 namespace icl::geom2 {
@@ -96,6 +97,7 @@ namespace icl::geom2 {
     float explicitBounds = -1.0f;          // >0: user override (setBounds); else auto
     mutable float autoBounds = 1000.0f;    // cached scene-derived size
     mutable bool autoBoundsDirty = true;   // recompute lazily on structure change only
+    std::atomic<unsigned> version{0};      // bumped by touch(); polled by renderers
     std::recursive_mutex mutex;
 #ifdef ICL_HAVE_OPENGL
     // Offscreen capture FBO (renderToImage), lazily (re)allocated per size.
@@ -125,13 +127,14 @@ namespace icl::geom2 {
   Scene2::~Scene2() = default;
 
   void Scene2::addNode(NodePtr node) {
+    node->setScene(this);                 // back-pointer (subtree, for a GroupNode)
     m_data->objects.push_back(std::move(node));
-    m_data->autoBoundsDirty = true;
-    // The Renderer caches geometry/textures keyed by raw Node*/Material*. A new
-    // node may reuse a just-freed address (and a fresh material starts at the
-    // same version), so a stale cache entry would otherwise suppress the upload
-    // — the new geometry/texture would never show. Invalidate on any node change.
-    m_data->renderer.invalidateCache();
+    // touch() bumps the version + drops the renderer cache. The latter matters
+    // because the Renderer caches geometry/textures keyed by raw Node*/Material*:
+    // a new node may reuse a just-freed address (and a fresh material starts at
+    // the same version), so a stale cache entry would otherwise suppress the
+    // upload and the new geometry/texture would never show.
+    touch();
   }
 
   Node *Scene2::getNode(int i) {
@@ -157,27 +160,38 @@ namespace icl::geom2 {
 
   void Scene2::removeNode(int i) {
     if (i >= 0 && i < (int)m_data->objects.size()) {
-      eraseLight(m_data->lights, m_data->objects[i].get());
+      Node *n = m_data->objects[i].get();
+      eraseLight(m_data->lights, n);
+      n->setScene(nullptr);                 // clear back-pointer before erase
       m_data->objects.erase(m_data->objects.begin() + i);
-      m_data->autoBoundsDirty = true;
-      m_data->renderer.invalidateCache();   // drop stale geom/texture cache (see addNode)
+      touch();                              // bump version + drop stale cache (see addNode)
     }
   }
 
   void Scene2::removeNode(Node *node) {
+    if (node) node->setScene(nullptr);
     eraseLight(m_data->lights, node);
     auto &o = m_data->objects;
     o.erase(std::remove_if(o.begin(), o.end(),
             [node](const auto &p) { return p.get() == node; }), o.end());
-    m_data->autoBoundsDirty = true;
-    m_data->renderer.invalidateCache();      // drop stale geom/texture cache (see addNode)
+    touch();                                // bump version + drop stale cache (see addNode)
   }
 
   void Scene2::clear() {
+    for (auto &n : m_data->objects) n->setScene(nullptr);
     m_data->objects.clear();
     m_data->lights.clear();
-    m_data->renderer.invalidateCache();
+    touch();
+  }
+
+  void Scene2::touch() {
+    m_data->version.fetch_add(1, std::memory_order_relaxed);
     m_data->autoBoundsDirty = true;
+    m_data->renderer.invalidateCache();
+  }
+
+  unsigned Scene2::sceneVersion() const {
+    return m_data->version.load(std::memory_order_relaxed);
   }
 
   // Lights

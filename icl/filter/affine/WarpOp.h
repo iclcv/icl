@@ -71,9 +71,18 @@ namespace icl::filter {
     /// Backend selector keys. Values must match addSelector() order.
     enum class Op : int { warp };
 
-    /// Dispatch signature: (src, dst, warpMapChannels[2], warpOffset, scalemode)
+    /// How to treat output pixels whose source coordinate falls outside the
+    /// input image. Zero = black (the default); Clamp = replicate the nearest
+    /// edge pixel (no hard black boundary — avoids spurious edges/corners at the
+    /// warp border, e.g. for simulated lens distortion fed to a corner detector).
+    enum class BorderMode { Zero, Clamp };
+
+    /// Dispatch signature: (src, dst, warpMapChannels[2], warpOffset, scalemode,
+    /// warpMapVersion). The version is bumped on every setWarpMap(); a stateful
+    /// backend (OpenCL) re-uploads its cached GPU map only when it changes.
     using WarpSig = void(const core::Image&, core::Image&,
-                         const core::Channel32f*, utils::Point, core::scalemode);
+                         const core::Channel32f*, utils::Point, core::scalemode,
+                         unsigned);
 
     /// Class-level prototype — owns selectors, populated during static init
     static core::ImageBackendDispatching& prototype();
@@ -90,7 +99,8 @@ namespace icl::filter {
     **/
     explicit WarpOp(const core::Img32f &warpMap=core::Img32f(),
                     core::scalemode mode=core::interpolateLIN,
-                    bool allowWarpMapScaling=true);
+                    bool allowWarpMapScaling=true,
+                    BorderMode border=BorderMode::Zero);
 
     /// Destructor
     ~WarpOp();
@@ -111,6 +121,10 @@ namespace icl::filter {
     /// returns the current warp map
     const core::Img32f &getWarpMap() const { return m_warpMap; }
 
+    /// Out-of-bounds border handling (applied by the next setWarpMap()).
+    void setBorderMode(BorderMode m);
+    BorderMode getBorderMode() const { return m_borderMode; }
+
     /// returns whether warp map scaling is allowed
     bool getAllowWarpMapScaling() const { return m_allowWarpMapScaling; }
 
@@ -125,6 +139,9 @@ namespace icl::filter {
     core::Img32f m_warpMap;
     core::Img32f m_scaledWarpMap;
     core::scalemode m_scaleMode;
+    BorderMode m_borderMode = BorderMode::Zero;
+    unsigned m_warpMapVersion = 1;   // bumped on setWarpMap; a stateful backend
+                                     // re-uploads only when this changes
   };
 
 

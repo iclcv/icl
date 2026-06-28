@@ -38,6 +38,7 @@ namespace icl::geom2 {
 
   void GroupNode::addChild(NodePtr child) {
     child->setParent(this);
+    child->setScene(getScene());   // inherit our scene (nullptr if detached)
     m_data->children.push_back(std::move(child));
   }
 
@@ -47,13 +48,19 @@ namespace icl::geom2 {
                            [child](const auto &p) { return p.get() == child; });
     if (it != c.end()) {
       (*it)->setParent(nullptr);
+      (*it)->setScene(nullptr);
       c.erase(it);
     }
   }
 
   void GroupNode::removeAllChildren() {
-    for (auto &c : m_data->children) c->setParent(nullptr);
+    for (auto &c : m_data->children) { c->setParent(nullptr); c->setScene(nullptr); }
     m_data->children.clear();
+  }
+
+  void GroupNode::setScene(Scene2 *scene) {
+    Node::setScene(scene);
+    for (auto &c : m_data->children) c->setScene(scene);
   }
 
   int GroupNode::getChildCount() const { return (int)m_data->children.size(); }

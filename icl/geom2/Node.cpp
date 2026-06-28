@@ -4,6 +4,7 @@
 
 #include <icl/geom2/Node.h>
 #include <icl/geom2/Driver.h>
+#include <icl/geom2/Scene2.h>
 #include <icl/math/la/FixedMatrix.h>
 #include <algorithm>
 #include <mutex>
@@ -15,6 +16,7 @@ namespace icl::geom2 {
     Mat transformation = Mat::id();
     bool hasTransformation = false;
     Node *parent = nullptr;
+    Scene2 *scene = nullptr;       // owning scene (non-owning back-pointer)
     bool isVisible = true;
     mutable std::recursive_mutex mutex;
     std::string name;
@@ -115,6 +117,20 @@ namespace icl::geom2 {
 
   Node *Node::getParent() { return m_data->parent; }
   const Node *Node::getParent() const { return m_data->parent; }
+
+  Scene2 *Node::getScene() const { return m_data->scene; }
+  void Node::setScene(Scene2 *scene) { m_data->scene = scene; }
+
+  // RAII: lock the owning scene around an edit, mark it changed on exit. The
+  // scene pointer is captured up-front so a re-parenting edit still releases the
+  // lock it took. touch() runs under the lock (the renderer reads its cache
+  // under the same mutex), then we unlock.
+  Node::ScopedEdit::ScopedEdit(Node *node) : m_scene(node->m_data->scene) {
+    if (m_scene) m_scene->lock();
+  }
+  Node::ScopedEdit::~ScopedEdit() {
+    if (m_scene) { m_scene->touch(); m_scene->unlock(); }
+  }
 
   void Node::lock() const { m_data->mutex.lock(); }
   void Node::unlock() const { m_data->mutex.unlock(); }

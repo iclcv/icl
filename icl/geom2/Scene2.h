@@ -81,6 +81,18 @@ namespace icl::geom2 {
     void removeNode(Node *node);
     void clear();
 
+    // --- Change notification ---
+    /// Signal that scene content changed (geometry / materials / structure).
+    /** Bumps sceneVersion(), drops the renderer's geometry/texture cache, and
+        flags the cached bounds for recompute. Renderers and offscreen views
+        poll sceneVersion() to re-sync (the GL Renderer cache, the Cycles
+        SceneSynchronizer). Called automatically by addNode/removeNode/clear and
+        by node high-level mutators (via Node::ScopedEdit); call it yourself only
+        after a manual low-level node edit that bypasses those paths. */
+    void touch();
+    /// Monotonic counter bumped by touch(); poll it to detect scene edits cheaply.
+    unsigned sceneVersion() const;
+
     // --- Lights (also added to scene graph for traversal) ---
     void addLight(std::shared_ptr<LightNode> light);
     /// Non-owning view of the light at \a index (use getLightPtr to co-own).

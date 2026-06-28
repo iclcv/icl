@@ -10,7 +10,7 @@ using namespace icl::core;
 namespace {
 
   void ipp_warp(const Image& src, Image& dst, const Channel32f* warpMap,
-                Point warpOffset, scalemode mode) {
+                Point warpOffset, scalemode mode, unsigned /*mapVersion*/) {
     const int wmW = warpMap[0].getWidth();
     const Rect dstROI = dst.getROI();
     const Size roiSize = dst.getROISize();

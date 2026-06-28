@@ -66,7 +66,7 @@ namespace {
   };
 
   void cpp_warp(const Image& src, Image& dst, const Channel32f* cwm,
-                Point warpOffset, scalemode mode) {
+                Point warpOffset, scalemode mode, unsigned /*mapVersion*/) {
     src.visitWith(dst, [&](const auto &s, auto &d) {
       using T = typename std::remove_reference_t<decltype(s)>::type;
       WarpImpl<T>::apply(s, d, cwm, warpOffset, mode);

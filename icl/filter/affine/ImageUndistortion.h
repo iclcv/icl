@@ -48,13 +48,18 @@ namespace icl::filter {
     /// Warp map that RECTIFIES (undistorts) a distorted image when used with a
     /// filter::WarpOp: dst(p) = src(model(p)). Cached; rebuilt on a parameter
     /// change.
-    const core::Img32f &createWarpMap() const;
+    /// @param autoScale when true, the sampled source coordinates are uniformly
+    ///   scaled about the distortion centre by the largest factor that keeps the
+    ///   WHOLE output frame within source bounds — i.e. no out-of-bounds samples
+    ///   (no black border) while filling the frame maximally (alpha=0 cropping).
+    const core::Img32f &createWarpMap(bool autoScale = false) const;
 
     /// Inverse of createWarpMap(): warp map that DISTORTS an ideal image into a
     /// lens-distorted one (dst(p) = src(model^{-1}(p))) — the "distortion part".
     /// Built by fixed-point inversion of the model (assumes a near-identity /
     /// small-distortion mapping). Cached separately; rebuilt on a parameter change.
-    const core::Img32f &createInverseWarpMap() const;
+    /// @param autoScale see createWarpMap().
+    const core::Img32f &createInverseWarpMap(bool autoScale = false) const;
 
     inline bool isNull() const { return !impl; }
   };

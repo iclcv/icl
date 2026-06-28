@@ -15,8 +15,8 @@
 // the distortion model + detector. The render is switchable between GL (fast)
 // and Cycles (photoreal). All the tricky threading — GL captured on the GUI
 // thread (widget context), Cycles polled on the worker thread — is handled by
-// geom2::OffscreenView; we just requestCapture()/poll() it from run(). (See
-// OffscreenView.h for why that split is necessary on macOS.)
+// geom2::OffscreenView; we just pull frames with next() from run(). (See
+// OffscreenView.h for why that thread split is necessary on macOS.)
 //
 // This is the interactive sibling of the synthetic calibration harness: it lets
 // us watch and tune the native detector under arbitrary viewpoint + distortion.
@@ -47,36 +47,30 @@ GUI gui;
 Scene2 scene;                               // the ONE scene (shown on screen + captured)
 OffscreenView view(scene, 0);               // interactive view + GL/Cycles offscreen capture
 std::shared_ptr<CheckerboardNode> board;    // the calibration board (handles its own viz)
-int curX = 0, curY = 0;                     // cells the board was built for
 const Size CAMRES(480, 360);
 
-// Resize the board (worker thread); lock around the mutation since the GUI thread
-// renders the scene (and Cycles reads it). invalidate() resyncs the Cycles backend.
-static void setBoardCells(int xc, int yc) {
-  curX = xc; curY = yc;
-  scene.lock();
-  board->setCells(xc, yc);
-  scene.unlock();
-  view.invalidate();
-}
+// The FORWARD lens distortion is now applied by the OffscreenView itself (its
+// "distortion.k1/k2" props) — view.next().image already returns the distorted camera
+// view. Here we only build the RECTIFYING (inverse) map, for the optional
+// "apply undistortion" pass that feeds the detector. We read the same k1/k2 the
+// view used (view.distortionK1/K2) so the rectification matches the lens — the
+// calibration knows the truth here; in reality you'd estimate k1/k2 from many
+// board views. Rebuilt only when k1/k2 (or size) change.
+// Clamp border (replicate edge) so rectification doesn't add a black ring that
+// the detector would read as false corners — matching the view's distortion.
+static WarpOp g_undistort{Img32f(), interpolateLIN, true, WarpOp::BorderMode::Clamp};
 
-// Lens distortion via filter::ImageUndistortion (MatlabModel5Params, radial
-// k1/k2) + filter::WarpOp. The model + its two warp maps are precomputed and
-// only rebuilt when k1/k2 change — applying them with WarpOp is far cheaper than
-// the old per-pixel loops. createInverseWarpMap() DISTORTS the clean render into
-// a "camera view"; createWarpMap() rectifies it back (the calibration knows the
-// truth here; in reality you'd estimate k1/k2 from many board views).
-static WarpOp g_distort, g_undistort;   // (warp maps set on demand)
-
-static void updateDistortion(float k1, float k2, const Size &sz) {
+static void updateUndistort(float k1, float k2, const Size &sz) {
   static float lk1 = 1e9f, lk2 = 1e9f; static Size lsz;
   if (k1 == lk1 && k2 == lk2 && sz == lsz) return;
   lk1 = k1; lk2 = k2; lsz = sz;
   const double f = std::max(sz.width, sz.height) / 2.0, cx = sz.width/2.0, cy = sz.height/2.0;
   filter::ImageUndistortion ud("MatlabModel5Params",
                                {f, f, cx, cy, 0, (double)k1, (double)k2, 0, 0, 0}, sz);
-  g_distort.setWarpMap(ud.createInverseWarpMap());   // ideal → lens-distorted
-  g_undistort.setWarpMap(ud.createWarpMap());        // distorted → rectified
+  // The view distorts with the forward map (createWarpMap); rectify with its
+  // inverse. createInverseWarpMap is accurate for realistic k (≲0.2) and only
+  // degrades at the extreme-slider end where exact rectification is moot anyway.
+  g_undistort.setWarpMap(ud.createInverseWarpMap());   // distorted → rectified
 }
 
 // draw a result image + the detected corners (+ their two board axes)
@@ -112,7 +106,6 @@ void init() {
 
   board = CheckerboardNode::create(7, 5, 280.f);
   scene.addNode(board);
-  curX = 7; curY = 5;
 
   // Three panes: interactive 3D view | options | result view. The result shows
   // the rendered camera view (+distortion), or — with "apply undistortion" — the
@@ -123,9 +116,6 @@ void init() {
                   << (HBox()
                       << Slider(3, 15, 7, {.handle="xc", .label="x cells"})
                       << Slider(3, 15, 5, {.handle="yc", .label="y cells"}))
-                  << (HBox()
-                      << FSlider(-0.4, 0.4, 0, {.handle="k1", .label="distortion k1"})
-                      << FSlider(-0.3, 0.3, 0, {.handle="k2", .label="distortion k2"}))
                   << (HBox()
                       << FSlider(3, 9, 5, {.handle="radius", .label="ring radius"})
                       << FSlider(0.1, 0.8, 0.35, {.handle="minScore", .label="min score"}))
@@ -146,30 +136,34 @@ void init() {
 void run() {
   static FPSLimiter fps(60);   // cap the worker loop (don't spin at 100% CPU)
 
-  const int xc = gui["xc"], yc = gui["yc"];
-  if (xc != curX || yc != curY) setBoardCells(xc, yc);
+  // Idempotent + self-locking: setCells no-ops when unchanged, else locks the
+  // scene around the rebuild and marks it changed (Node::ScopedEdit → poll()
+  // resyncs GL + Cycles). No manual lock / invalidate needed here anymore.
+  board->setCells(gui["xc"], gui["yc"]);
 
-  // The board/camera/backend → capture logic now lives in OffscreenView (poll()
-  // auto-requests on camera/backend change; setBoardCells→invalidate() on a board
-  // change). We only own the downstream (distortion + detector) controls.
-  const float k1 = gui["k1"], k2 = gui["k2"], minScore = gui["minScore"];
+  // The board/camera/backend → capture logic (incl. the forward lens distortion)
+  // now lives in OffscreenView: nextImage() re-captures on camera/backend change,
+  // resyncs on the scene-version bump a board edit produces, and re-distorts on a
+  // distortion.k1/k2 change. We only own the downstream (undistort + detector).
+  const float minScore = gui["minScore"];
   const int   radius   = gui["radius"];
   const bool  applyUndistort = gui["undistort"];   // result = rectified vs distorted
 
-  // Re-detect when a new captured frame arrives OR a distortion/detector/undistort
-  // control moved (re-process the cached frame; no new capture needed).
-  static int lRadius=-1, lUndist=-1; static float lK1=1e9f, lK2=1e9f, lMs=1e9f;
-  const bool detectDirty = radius!=lRadius || k1!=lK1 || k2!=lK2 || minScore!=lMs
-      || (int)applyUndistort!=lUndist;
-  lRadius=radius; lK1=k1; lK2=k2; lMs=minScore; lUndist=(int)applyUndistort;
+  // Re-detect when a new captured frame arrives (incl. a k1/k2 re-distort) OR a
+  // detector/undistort control moved (re-process the cached frame; no recapture).
+  static int lRadius=-1, lUndist=-1; static float lMs=1e9f;
+  const bool detectDirty = radius!=lRadius || minScore!=lMs || (int)applyUndistort!=lUndist;
+  lRadius=radius; lMs=minScore; lUndist=(int)applyUndistort;
 
   gui["scene"].render();          // GUI thread: interactive view + (auto) GL capture
-  const bool newFrame = view.poll();        // drives Cycles, auto-requests GL on camera change
-  const Img8u cam = view.image();           // latest captured frame (cached by the view)
-  if ((newFrame || detectDirty) && cam.getDim()) {
-    updateDistortion(k1, k2, cam.getSize());                  // warp maps rebuilt on k1/k2 change
-    Image result = g_distort.apply(Image(cam));               // ideal → lens-distorted camera view
-    if (applyUndistort) result = g_undistort.apply(result);   // → rectified (known k1,k2)
+  const auto frame = view.next();           // drives Cycles + re-distort; .image always latest
+  const Img8u &cam = frame.image;           // ALREADY lens-distorted by the view
+  if ((frame.isNew || detectDirty) && cam.getDim()) {
+    Image result(cam);                                        // the camera (distorted) view
+    if (applyUndistort) {                                     // → rectified (using the view's k1,k2)
+      updateUndistort(view.distortionK1(), view.distortionK2(), cam.getSize());
+      result = g_undistort.apply(result);
+    }
     CheckerboardSaddleDetector::Params p;
     p.radius = radius; p.minScore = minScore;
     CheckerboardSaddleDetector det(p);

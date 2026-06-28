@@ -21,8 +21,12 @@ namespace icl::filter {
     std::vector<double> params;
     std::vector<double> warpMapParams;
     std::vector<double> inverseWarpMapParams;
+    bool warpMapAutoScale = false;
+    bool inverseWarpMapAutoScale = false;
 
     Size imageSize;
+    /// distortion centre (principal point) — the point auto-scale scales about
+    virtual Point32f center() const{ return Point32f(params[0], params[1]); }
     virtual Point32f undistort(const Point32f &point) const{
       const double &x0 = params[0];
       const double &y0 = params[1];
@@ -62,6 +66,7 @@ namespace icl::filter {
       Kinv = Kinv.pinv();
     }
     virtual size_t getNumParams() const { return 10; }
+    virtual Point32f center() const{ return Point32f(params[2], params[3]); }
     virtual Point32f undistort(const Point32f &point) const{
       FixedMatrix<icl64f,1,3> p; p[0] = point.x; p[1] = point.y; p[2] = 1.0;
       FixedMatrix<icl64f,1,3> rays = Kinv*p;
@@ -249,15 +254,44 @@ namespace icl::filter {
   // fit here: the fill is coordinate-indexed, and the visitors surface channel
   // data, not pixel coordinates.)
   static const Img32f &fillWarpMap(Img32f &map, std::vector<double> &cachedParams,
-                                   const std::vector<double> &params, const Size &size,
+                                   bool &cachedAutoScale, const std::vector<double> &params,
+                                   const Size &size, bool autoScale, const Point32f &center,
                                    const std::function<Point32f(const Point32f &)> &fn){
     if(!map.getChannels()){ map.setChannels(2); map.setSize(size); }
-    if(params != cachedParams){
+    if(params != cachedParams || autoScale != cachedAutoScale){
       cachedParams = params;
+      cachedAutoScale = autoScale;
+
+      // auto-scale: pick the largest uniform scale s (<=1) about `center` such
+      // that every mapped source coordinate stays within [0,w-1]x[0,h-1] — i.e.
+      // the whole output frame samples valid source (no OOB / black border),
+      // filling the frame maximally. The binding constraint is found over all
+      // pixels (robust to tangential/skew terms, not just radial corners).
+      double s = 1.0;
+      if(autoScale){
+        const double cx = center.x, cy = center.y;
+        const double xmax = size.width - 1, ymax = size.height - 1;
+        for(int xi=0;xi<size.width;++xi){
+          for(int yi=0;yi<size.height; ++yi){
+            const Point32f p = fn(Point32f(xi,yi));
+            const double dx = p.x - cx, dy = p.y - cy;
+            if(dx > 0)      s = std::min(s, (xmax - cx) / dx);
+            else if(dx < 0) s = std::min(s, (0.0  - cx) / dx);
+            if(dy > 0)      s = std::min(s, (ymax - cy) / dy);
+            else if(dy < 0) s = std::min(s, (0.0  - cy) / dy);
+          }
+        }
+        if(!(s > 0.0)) s = 1.0;   // guard a degenerate / NaN map
+      }
+
       Channel32f cs[2] = { map[0], map[1] };
       for(int xi=0;xi<size.width;++xi){
         for(int yi=0;yi<size.height; ++yi){
-          const Point32f p = fn(Point32f(xi,yi));
+          Point32f p = fn(Point32f(xi,yi));
+          if(s != 1.0){
+            p.x = center.x + s*(p.x - center.x);
+            p.y = center.y + s*(p.y - center.y);
+          }
           cs[0](xi,yi) = p.x;
           cs[1](xi,yi) = p.y;
         }
@@ -266,13 +300,16 @@ namespace icl::filter {
     return map;
   }
 
-  const Img32f &ImageUndistortion::createWarpMap() const{
-    return fillWarpMap(impl->warpMap, impl->warpMapParams, impl->params, getImageSize(),
+  const Img32f &ImageUndistortion::createWarpMap(bool autoScale) const{
+    return fillWarpMap(impl->warpMap, impl->warpMapParams, impl->warpMapAutoScale,
+                       impl->params, getImageSize(), autoScale, impl->center(),
                        [this](const Point32f &p){ return impl->undistort(p); });
   }
 
-  const Img32f &ImageUndistortion::createInverseWarpMap() const{
-    return fillWarpMap(impl->inverseWarpMap, impl->inverseWarpMapParams, impl->params, getImageSize(),
+  const Img32f &ImageUndistortion::createInverseWarpMap(bool autoScale) const{
+    return fillWarpMap(impl->inverseWarpMap, impl->inverseWarpMapParams,
+                       impl->inverseWarpMapAutoScale, impl->params, getImageSize(),
+                       autoScale, impl->center(),
                        [this](const Point32f &target){
                          // find q with model(q) == target by fixed-point iteration
                          // (the model is near-identity for small distortion).

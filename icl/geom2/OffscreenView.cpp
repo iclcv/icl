@@ -9,6 +9,8 @@
 #include <icl/qt/GLCallback.h>
 #include <icl/qt/DrawWidget3D.h>
 #include <icl/utils/prop/Constraints.h>
+#include <icl/filter/affine/ImageUndistortion.h>   // radial lens model + warp maps
+#include <icl/filter/affine/WarpOp.h>               // efficient warp-map application
 
 #ifdef ICL_HAVE_CYCLES
 #include <icl/geom2/CyclesRenderer.h>
@@ -17,6 +19,8 @@
 #include <mutex>
 #include <atomic>
 #include <cstdint>
+#include <algorithm>
+#include <cmath>
 
 namespace icl::geom2 {
 
@@ -40,13 +44,34 @@ namespace icl::geom2 {
     bool   haveCamSnap = false;
     geom::Vec snapPos, snapNorm, snapUp;
     int    reqBackend = -1;
+    unsigned lastSceneVersion = 0;    // capScene->sceneVersion() last seen by poll()
 
-    // Latest captured frame — written by whichever thread captured (GUI for GL,
-    // worker for Cycles), read by poll() on the worker.
+    // Latest frames — written by whichever thread captured (GUI for GL, worker
+    // for Cycles), read by poll()/image() on the worker. `rawLatest` is the clean
+    // render; `latest` is rawLatest after the forward lens distortion. Keeping the
+    // raw frame lets a k1/k2 change re-distort without a fresh capture.
     std::mutex            mtx;
-    core::Img8u           latest;
+    core::Img8u           rawLatest;       // clean render (pre-distortion)
+    core::Img8u           latest;          // = distort(rawLatest)
     std::atomic<uint32_t> seq{0};
     uint32_t              lastPolled = 0;
+
+    // Forward (lens) distortion — simulates a real camera. Params come from the
+    // "distortion.k1/k2" Configurable props (mirrored into atomics by poll()).
+    // The warp op + its cache key are touched only under mtx (in refreshOutput()).
+    // Clamp border: the lens warp pushes content past the frame at the edges;
+    // replicate edge pixels rather than leaving a hard black ring (which the
+    // checkerboard detector would otherwise read as false corners).
+    std::atomic<float>    k1{0.f}, k2{0.f};
+    // auto-scale ("fill frame"): zoom the lens warp so the distorted frame stays
+    // fully covered by source pixels — no black/clamped border the checkerboard
+    // detector could read as false corners (false until the user opts in).
+    std::atomic<bool>     autoScale{false};
+    filter::WarpOp        distort{core::Img32f(), core::interpolateLIN, true,
+                                  filter::WarpOp::BorderMode::Clamp};
+    float                 lk1 = 1e9f, lk2 = 1e9f;   // last-built warp-map key
+    bool                  lautoScale = false;
+    utils::Size           lsz{0, 0};
 
 #ifdef ICL_HAVE_CYCLES
     std::unique_ptr<CyclesRenderer> cyc;
@@ -58,11 +83,53 @@ namespace icl::geom2 {
     Impl(Scene2 &vs, int vc)
       : viewScene(&vs), viewCam(vc), capScene(&vs), capCam(vc) {}
 
+    // A fresh capture arrived: cache it raw, then (re)derive the distorted output.
     void publish(const core::Img8u &img) {
       if (!img.getDim()) return;
       std::scoped_lock l(mtx);
-      latest = img;
+      rawLatest = img;
+      refreshOutput();
+    }
+
+    // (Re)build `latest` = distort(rawLatest) and bump seq. Call under mtx after
+    // a new capture (publish) OR a distortion-param change (poll). Passthrough
+    // when k1==k2==0 (the "no lens" case — no warp cost).
+    void refreshOutput() {
+      const float a = k1.load(std::memory_order_relaxed);
+      const float b = k2.load(std::memory_order_relaxed);
+      if (a == 0.f && b == 0.f) {
+        latest = rawLatest;
+      } else {
+        const utils::Size sz = rawLatest.getSize();
+        const bool as = autoScale.load(std::memory_order_relaxed);
+        if (a != lk1 || b != lk2 || as != lautoScale || sz != lsz) {   // rebuild on change
+          const double f = std::max(sz.width, sz.height) / 2.0;
+          const double cx = sz.width / 2.0, cy = sz.height / 2.0;
+          filter::ImageUndistortion ud("MatlabModel5Params",
+              {f, f, cx, cy, 0, (double)a, (double)b, 0, 0, 0}, sz);
+          // Use the EXACT forward map (createWarpMap), NOT createInverseWarpMap:
+          // the latter inverts the model by additive fixed-point iteration, which
+          // DIVERGES for strong distortion (k1≳0.2) and collapses to a near-zero
+          // warp — so extreme sliders would barely distort. The forward map is
+          // closed-form and grows monotonically with k1/k2. The lab's optional
+          // rectify pass applies the inverse to undo this (accurate at realistic k).
+          // autoScale zooms the map to keep the frame border-free (alpha=0 crop).
+          distort.setWarpMap(ud.createWarpMap(as));
+          lk1 = a; lk2 = b; lautoScale = as; lsz = sz;
+        }
+        latest = distort.apply(core::Image(rawLatest)).as<icl8u>();
+      }
       seq.fetch_add(1, std::memory_order_relaxed);
+    }
+
+    // Mirror the distortion props into the atomics; re-distort the cached frame on
+    // change (no recapture needed). Returns true if a param changed.
+    bool syncDistortion(float a, float b, bool as) {
+      if (a == k1.load() && b == k2.load() && as == autoScale.load()) return false;
+      k1.store(a); k2.store(b); autoScale.store(as);
+      std::scoped_lock l(mtx);
+      if (rawLatest.getDim()) refreshOutput();
+      return true;
     }
 
     void syncCaptureCamera() {
@@ -100,11 +167,26 @@ namespace icl::geom2 {
   OffscreenView::OffscreenView(Scene2 &viewScene, int viewCam)
     : m_impl(std::make_unique<Impl>(viewScene, viewCam)) {
     addProperty("backend", utils::prop::Menu{"GL (fast)", "Cycles (photoreal)"}, "GL (fast)");
+    // Forward radial lens distortion baked into the captured image (simulate a
+    // real camera). k1==k2==0 → an ideal pinhole (no warp). reset → zero both.
+    addProperty("distortion.k1", utils::prop::Range{.min=-0.4f, .max=0.4f}, 0.f);
+    addProperty("distortion.k2", utils::prop::Range{.min=-0.3f, .max=0.3f}, 0.f);
+    // "fill frame": auto-zoom the lens warp so the distorted frame has no
+    // out-of-bounds (black/clamped) border — fully covered by source pixels.
+    addProperty("distortion.fill frame", utils::prop::Flag{}, false);
+    addProperty("distortion.reset", utils::prop::Command{});
     addProperty("cycles.denoising", utils::prop::Flag{}, false);
     addProperty("cycles.samples per step", utils::prop::Range{.min=1, .max=16}, 1);
     // Expose the captured scene's own properties (enable lighting, background,
     // debug, …) under "scene." — the lighting toggle "comes from the scene".
     addChildConfigurable(m_impl->capScene, "scene");
+
+    registerCallback([this](const utils::Configurable::Property &p){
+      if (p.name == "distortion.reset") {
+        setPropertyValue("distortion.k1", 0.f);
+        setPropertyValue("distortion.k2", 0.f);
+      }
+    });
   }
 
   OffscreenView::~OffscreenView() = default;
@@ -116,6 +198,7 @@ namespace icl::geom2 {
     }
     m_impl->capScene = &capScene;
     m_impl->capCam   = capCam;
+    m_impl->lastSceneVersion = 0;   // force a resync of the new capture scene
   }
 
   void OffscreenView::setMirrorViewCamera(bool on) { m_impl->mirror.store(on); }
@@ -129,6 +212,9 @@ namespace icl::geom2 {
   OffscreenView::Backend OffscreenView::getBackend() const {
     return m_impl->backend.load();
   }
+
+  float OffscreenView::distortionK1() const { return m_impl->k1.load(); }
+  float OffscreenView::distortionK2() const { return m_impl->k2.load(); }
 
   qt::GLCallback *OffscreenView::callback() { return &m_impl->cb; }
 
@@ -144,12 +230,7 @@ namespace icl::geom2 {
 #endif
   }
 
-  core::Img8u OffscreenView::image() const {
-    std::scoped_lock l(m_impl->mtx);
-    return m_impl->latest;   // shallow copy under the lock
-  }
-
-  bool OffscreenView::poll() {
+  OffscreenView::Frame OffscreenView::next() {
     auto &d = *m_impl;
 
     // The Configurable properties are the UI-facing source of truth — sync them.
@@ -161,10 +242,27 @@ namespace icl::geom2 {
       d.backend.store(nb);
     }
 
+    // Lens distortion params (camera lens): on change, re-distort the cached raw
+    // frame in place — no recapture needed (it's a pure image post-process).
+    d.syncDistortion(prop("distortion.k1").value, prop("distortion.k2").value,
+                     prop("distortion.fill frame").value);
+
+    // Auto-pick up scene edits: a node mutator (via Node::ScopedEdit) or
+    // add/removeNode bumps the capture scene's version. On a change, drop Cycles'
+    // cache and re-request a GL capture — this replaces the manual invalidate()
+    // the app used to call after a board edit.
+    const unsigned sv = d.capScene->sceneVersion();
+    if (sv != d.lastSceneVersion) {
+      d.lastSceneVersion = sv;
+      d.glPending.store(true);
+#ifdef ICL_HAVE_CYCLES
+      if (d.cyc) d.cyc->invalidateAll();
+#endif
+    }
+
     // Auto-request a GL capture when the rendered scene's appearance would change:
-    // the view camera moved or the backend switched (e.g. Cycles→GL). (Geometry/
-    // material edits come through invalidate().) So callers don't track camMoved /
-    // call requestCapture themselves.
+    // the view camera moved or the backend switched (e.g. Cycles→GL). So callers
+    // don't track camMoved / call requestCapture themselves.
     const bool backendChanged = ((int)nb != d.reqBackend);
     d.reqBackend = (int)nb;
     if (nb == Backend::GL) {
@@ -200,9 +298,10 @@ namespace icl::geom2 {
     }
 #endif
     const uint32_t s = d.seq.load(std::memory_order_relaxed);
-    if (s == d.lastPolled) return false;
+    const bool isNew = (s != d.lastPolled);
     d.lastPolled = s;
-    return true;
+    std::scoped_lock l(d.mtx);
+    return Frame{ d.latest, isNew };   // latest is a shallow copy under the lock
   }
 
   CyclesRenderer *OffscreenView::cycles() {

@@ -4,6 +4,70 @@
 
 ## Next Step
 
+### Session 84 — Node→Scene2 backpointer, OffscreenView lens distortion, WarpOp bugs, sandbox OpenCL fix
+On `further-restructuring-and-cleanup`. **All work below is UNCOMMITTED** in the working tree
+(git status: WarpOp.{h,cpp} + WarpOp_{Cpp,Ipp,OpenCL}.cpp, geom2 Node/GroupNode/Scene2/
+OffscreenView/CheckerboardNode + the lab, tests/test-filter.cpp, new scripts/sandbox-cl-*).
+Full suite was **971/971 green** before the OpenCL sandbox cache broke (see ⚠️ below).
+
+**LANDED (built + tested, except where noted):**
+1. **Node→Scene2 back-pointer** (`project_node_scene_backpointer`). `Node` has a non-owning
+   `Scene2*` (set by `Scene2::addNode`, propagated by `GroupNode`); `Node::ScopedEdit` RAII
+   self-locks the owning scene + marks it changed; `Scene2::touch()`/`sceneVersion()`;
+   `OffscreenView::next()` auto-resyncs on a version bump. Lab `setBoardCells` is gone — just
+   `board->setCells(gui["xc"], gui["yc"])` per frame.
+2. **OffscreenView forward lens distortion** — `distortion.k1/k2` (`Range<float>`) +
+   `distortion.reset` (`Command`) props; applies a `filter::WarpOp` (createWarpMap — the EXACT
+   forward map; createInverseWarpMap diverges for k1≳0.2) to the captured frame. Lab keeps only
+   the optional rectify (createInverseWarpMap). See `reference_inverse_warpmap_divergence`.
+3. **API rework**: `poll()`+`image()` → single `next() → Frame{core::Img8u image; bool isNew}`.
+4. **WarpOp bug #1 (the "distortion frozen" one)**: OpenCL backend cached the GPU warp map by
+   SIZE only → a same-size `setWarpMap` was ignored. Fixed with a **version/dirty flag**:
+   `WarpOp::m_warpMapVersion` (bumped in setWarpMap), threaded through `WarpSig` (Cpp/Ipp ignore
+   it), `CLWarpState` re-uploads on version-or-size change. Backend is per-WarpOp (addStateful =
+   per-clone), so no cross-op collision. Test `Filter.WarpOp.reuse_setWarpMap`.
+5. **WarpOp `BorderMode` (Zero/Clamp)** — Zero (default) = black OOB; Clamp = replicate edge
+   (no hard black ring for a corner detector). OffscreenView distort + lab undistort use Clamp.
+   Test `Filter.WarpOp.border_clamp`.
+
+**IN PROGRESS / NOT DONE:**
+- **WarpOp bug #2 — OpenCL kernel skips the 1-px outer frame** (`if(x && y && x<w-1 && y<h-1)`)
+  → leaves a black 1-px border; invisible on GL's black bg, but a false-corner source on Cycles'
+  light sky. **FIX IS WRITTEN** (removed the guard in `WarpOp_OpenCL.cpp` kernel string) but
+  **UNVERIFIED in-sandbox** — see ⚠️. Test `Filter.WarpOp.border_pixels_written` (currently
+  expects the fix; FAILS on old kernel).
+- **User's requested auto-scale distortion** — DONE. `ImageUndistortion::createWarpMap(bool
+  autoScale)` / `createInverseWarpMap(bool autoScale)` take an opt-in flag: when set,
+  `fillWarpMap` first scans all mapped source coords and picks the largest uniform scale (≤1)
+  about the distortion centre (principal point) that keeps the WHOLE frame in source bounds
+  (alpha=0 crop — no OOB/black border, fills the frame). Cache key now includes the flag.
+  `OffscreenView` exposes it as the `distortion.fill frame` Flag prop (atomic `autoScale`,
+  threaded through `syncDistortion`/`refreshOutput`'s warp-map rebuild key); the lab gets the
+  toggle for free via `Prop(&view)`. Test `Filter.WarpOp.auto_scale_fills_frame` (map-coord
+  only, no OpenCL). Full suite 973/973.
+
+**⚠️ SANDBOX OpenCL FIX (apply on host, then relaunch mscc):** changing the WarpOp kernel source
+invalidated the `opencl_c.pcm` Metal module cache, and rebuilding it inside mscc fails:
+`cl2Metal failed / opencl_c-*.pcm: Operation not permitted`. Root cause: the Metal compile runs
+in the `com.apple.MTLCompilerService` XPC daemon, which writes the cache only via a **sandbox
+extension** the sandboxed client must ISSUE — and mscc denied `file-issue-extension`
+(`deny(1) file-issue-extension target:.../com.apple.metalfe extension-class:
+com.apple.app-sandbox.read-write`). **Fix scripted:** run `scripts/sandbox-cl-patch.sh` on the
+host (adds `(allow file-issue-extension (require-all (extension-class
+"com.apple.app-sandbox.read-write") (subpath "/private/var/folders")))` to
+`~/margin.mscc/default-profile.darwin`), then relaunch mscc. Confirm with
+`scripts/sandbox-cl-smoke.sh` (host; its "+candidate" run should print `OK: kernel built`).
+
+**RESUME AFTER RESTART (fresh mscc):**
+1. `ninja -C builddir -j 16` then `builddir/bin/icl-tests -j 1 -f 'Filter.WarpOp*'` — with the
+   sandbox patch live, OpenCL should compile; confirm `reuse_setWarpMap`, `border_clamp`,
+   `border_pixels_written` all PASS (the last verifies the 1-px kernel fix).
+2. Implement the **auto-scale distortion** (user's idea) on `filter::ImageUndistortion`
+   createWarpMap/createInverseWarpMap; wire into OffscreenView's distort. Validate via map coords.
+3. Real-display pass on `icl-checkerboard-detection-lab` (still owed): drag camera, GL↔Cycles,
+   k1/k2 sliders (now live), reset, undistort toggle — confirm no edge false-positives.
+4. Commit the lot (was 971/971 green pre-sandbox-break).
+
 ### Session 83 — geom2 offscreen-render tooling + checkerboard-lab overhaul
 On `further-restructuring-and-cleanup`, full build green throughout. Headless GL **and** Cycles
 both verified in-sandbox (Session 82 work). This session built the reusable "interactive GL scene

@@ -5,6 +5,7 @@
 #include <icl/filter/affine/WarpOp.h>
 #include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
+#include <algorithm>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -26,17 +27,25 @@ namespace icl::filter {
     return proto;
   }
 
-  void prepare_warp_table_inplace(Img32f &warpMap){
+  void prepare_warp_table_inplace(Img32f &warpMap, WarpOp::BorderMode border){
     const Rect r = warpMap.getImageRect();
 
     Channel32f cs[2];
     warpMap.extractChannels(cs);
     const Size size = warpMap.getSize();
+    const float maxX = float(size.width - 1), maxY = float(size.height - 1);
 
     for(int x=0;x<size.width;++x){
       for(int y=0;y<size.height;++y){
         if(!r.contains(round(cs[0](x,y)),round(cs[1](x,y)))){
-          cs[0](x,y) = cs[1](x,y) = -1;
+          if(border == WarpOp::BorderMode::Clamp){
+            // Replicate the nearest edge pixel instead of producing a hard black
+            // border (which a corner/saddle detector would read as false edges).
+            cs[0](x,y) = std::clamp(cs[0](x,y), 0.f, maxX);
+            cs[1](x,y) = std::clamp(cs[1](x,y), 0.f, maxY);
+          } else {
+            cs[0](x,y) = cs[1](x,y) = -1;
+          }
         }
       }
     }
@@ -50,11 +59,12 @@ namespace icl::filter {
     return s == "NN" ? interpolateNN : interpolateLIN;
   }
 
-  WarpOp::WarpOp(const Img32f &warpMap, scalemode mode, bool allowWarpMapScaling):
+  WarpOp::WarpOp(const Img32f &warpMap, scalemode mode, bool allowWarpMapScaling,
+                 BorderMode border):
     ImageBackendDispatching(prototype()),
-    m_allowWarpMapScaling(allowWarpMapScaling), m_scaleMode(mode) {
+    m_allowWarpMapScaling(allowWarpMapScaling), m_scaleMode(mode), m_borderMode(border) {
     warpMap.deepCopy(&m_warpMap);
-    prepare_warp_table_inplace(m_warpMap);
+    prepare_warp_table_inplace(m_warpMap, m_borderMode);
     addProperty("interpolation",utils::prop::menuFromCsv(WARP_INTERP_MENU), warpInterpName(mode));
     addProperty("allow warp map scaling",utils::prop::Flag{}, allowWarpMapScaling);
     registerCallback([this](const Property &p){
@@ -75,9 +85,12 @@ namespace icl::filter {
 
   void WarpOp::setWarpMap(const Img32f &warpMap){
     warpMap.deepCopy(&m_warpMap);
-    prepare_warp_table_inplace(m_warpMap);
+    prepare_warp_table_inplace(m_warpMap, m_borderMode);
     m_scaledWarpMap = Img32f();
+    ++m_warpMapVersion;   // invalidate any backend's cached (e.g. GPU-uploaded) map
   }
+
+  void WarpOp::setBorderMode(BorderMode m){ m_borderMode = m; }
 
   void WarpOp::setAllowWarpMapScaling(bool allow){
     prop("allow warp map scaling").value = allow;
@@ -104,7 +117,7 @@ namespace icl::filter {
         if(m_scaledWarpMap.getSize() != src.getSize()) {
           m_scaledWarpMap.setSize(src.getSize());
           m_warpMap.scaledCopy(&m_scaledWarpMap);
-          prepare_warp_table_inplace(m_scaledWarpMap);
+          prepare_warp_table_inplace(m_scaledWarpMap, m_borderMode);
         }
         m_scaledWarpMap.extractChannels(cwm);
       } else {
@@ -127,7 +140,7 @@ namespace icl::filter {
       ERROR_LOG("no applicable backend for WarpOp");
       return;
     }
-    impl->apply(src, dst, cwm, warpOffset, m_scaleMode);
+    impl->apply(src, dst, cwm, warpOffset, m_scaleMode, m_warpMapVersion);
   }
 
   } // namespace icl::filter

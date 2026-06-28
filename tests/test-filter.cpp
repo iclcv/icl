@@ -26,6 +26,7 @@
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/filter/threshold/LocalThresholdOp.h>
 #include <icl/filter/affine/WarpOp.h>
+#include <icl/filter/affine/ImageUndistortion.h>
 #include <icl/filter/advanced/BilateralFilterOp.h>
 #include <icl/filter/fft/FFTOp.h>
 #include <icl/filter/fft/IFFTOp.h>
@@ -3192,4 +3193,122 @@ ICL_REGISTER_TEST("Filter.WienerOp.32f_float_path",
       ICL_TEST_TRUE(std::abs(c(x,y) - 0.5f) < 1e-4f);
     }
   }
+}
+
+// Reproduces the OffscreenView lens-distortion bug: a single WarpOp instance is
+// reused, only setWarpMap() changes, applied to the SAME input frame. The output
+// MUST reflect the new map. (Symptom in the app: distortion frozen while the
+// k1 slider moves a static frame.)
+ICL_REGISTER_TEST("Filter.WarpOp.reuse_setWarpMap",
+                  "reused WarpOp must honor a new warp map on identical input") {
+  const Size sz(480, 360);
+  Img8u src(sz, formatGray);
+  Channel8u c = src[0];
+  for (int y = 0; y < sz.height; ++y)
+    for (int x = 0; x < sz.width; ++x)
+      c(x, y) = (((x/40) + (y/40)) & 1) ? 255 : 0;
+
+  const double f = 240, cx = 240, cy = 180;
+  ImageUndistortion ud01("MatlabModel5Params", {f,f,cx,cy,0, 0.1, 0,0,0,0}, sz);
+  ImageUndistortion ud04("MatlabModel5Params", {f,f,cx,cy,0, 0.4, 0,0,0,0}, sz);
+
+  auto mad = [&](const Image &A, const Image &B){
+    Channel8u a = const_cast<Image&>(A).as8u()[0], b = const_cast<Image&>(B).as8u()[0];
+    double s = 0; const int n = sz.width*sz.height;
+    for (int i = 0; i < n; ++i) s += std::abs((int)a[i] - (int)b[i]);
+    return s / n;
+  };
+
+  // REUSE one WarpOp: change only the warp map (same size) between applies.
+  WarpOp w;
+  Image reuseA, reuseB;
+  w.setWarpMap(ud01.createWarpMap());  w.apply(Image(src), reuseA);
+  w.setWarpMap(ud04.createWarpMap());  w.apply(Image(src), reuseB);
+
+  // FRESH WarpOp per map (the ground-truth)
+  WarpOp w1(ud01.createWarpMap()); Image freshA; w1.apply(Image(src), freshA);
+  WarpOp w4(ud04.createWarpMap()); Image freshB; w4.apply(Image(src), freshB);
+
+  ICL_TEST_TRUE(mad(freshA, freshB) > 5.0);   // k1=0.1 vs 0.4 clearly differ (sanity)
+  ICL_TEST_TRUE(mad(reuseA, reuseB) > 5.0);   // a reused op must honor the new map too
+}
+
+// Clamp border mode must replicate the nearest edge pixel for out-of-bounds
+// source coordinates, instead of producing a hard black border (Zero mode).
+ICL_REGISTER_TEST("Filter.WarpOp.border_clamp",
+                  "Clamp border replicates the edge instead of black") {
+  const Size sz(200, 200);
+  Img8u src(sz, formatGray);
+  src.clear(-1, (icl8u)255);   // all white
+  const double f = 100, cx = 100, cy = 100;
+  ImageUndistortion ud("MatlabModel5Params", {f,f,cx,cy,0, 0.4, 0,0,0,0}, sz);
+
+  WarpOp wz(ud.createWarpMap(), interpolateLIN, true, WarpOp::BorderMode::Zero);
+  WarpOp wc(ud.createWarpMap(), interpolateLIN, true, WarpOp::BorderMode::Clamp);
+  Image z; wz.apply(Image(src), z);
+  Image c; wc.apply(Image(src), c);
+  Channel8u cz = z.as8u()[0], cc = c.as8u()[0];
+
+  // (2,2) is an interior pixel (the GL kernel skips the 1px outer frame) whose
+  // source coordinate lands far out of bounds under the strong outward warp:
+  ICL_TEST_EQ((int)cz(2,2), 0);     // Zero  -> black
+  ICL_TEST_EQ((int)cc(2,2), 255);   // Clamp -> replicated white edge
+}
+
+// The warp must write EVERY output pixel, including the 1-px outer frame. The
+// OpenCL kernel historically skipped it, leaving a black border that — against a
+// non-black scene background — reads as false edges to a corner detector.
+ICL_REGISTER_TEST("Filter.WarpOp.border_pixels_written",
+                  "warp writes the outer-frame pixels (no black 1-px border)") {
+  const Size sz(64, 64);
+  Img8u src(sz, formatGray);
+  src.clear(-1, (icl8u)255);                 // all white
+  Img32f idmap(sz, 2);                        // identity warp map
+  Channel32f mx = idmap[0], my = idmap[1];
+  for(int y=0;y<sz.height;++y) for(int x=0;x<sz.width;++x){ mx(x,y)=x; my(x,y)=y; }
+
+  WarpOp w(idmap);
+  Image o; w.apply(Image(src), o);
+  Channel8u c = o.as8u()[0];
+
+  ICL_TEST_EQ((int)c(0, sz.height/2), 255);          // left edge
+  ICL_TEST_EQ((int)c(sz.width-1, sz.height/2), 255);  // right edge
+  ICL_TEST_EQ((int)c(sz.width/2, 0), 255);           // top edge
+  ICL_TEST_EQ((int)c(sz.width/2, sz.height-1), 255);  // bottom edge
+}
+
+// Auto-scale ("fill frame"): the warp map's sampled source coordinates are
+// zoomed about the distortion centre so the WHOLE output frame stays within
+// source bounds — no out-of-bounds samples (no black border) while filling the
+// frame maximally. Verified on the map coordinates directly (no OpenCL apply).
+ICL_REGISTER_TEST("Filter.WarpOp.auto_scale_fills_frame",
+                  "auto-scaled warp map keeps every source coord in bounds and fills the frame") {
+  const Size sz(320, 240);
+  const double f = 160, cx = 160, cy = 120;  // principal point = image centre
+  ImageUndistortion ud("MatlabModel5Params", {f,f,cx,cy,0, 0.4, 0,0,0,0}, sz);
+
+  auto extent = [&](const Img32f &m){
+    Channel32f mx = const_cast<Img32f&>(m)[0], my = const_cast<Img32f&>(m)[1];
+    float x0=1e9f,y0=1e9f,x1=-1e9f,y1=-1e9f;
+    for(int i=0;i<sz.width*sz.height;++i){
+      x0=std::min(x0,mx[i]); x1=std::max(x1,mx[i]);
+      y0=std::min(y0,my[i]); y1=std::max(y1,my[i]);
+    }
+    return std::array<float,4>{x0,y0,x1,y1};
+  };
+
+  // forward map WITHOUT auto-scale: the strong outward warp pushes corners well
+  // out of bounds (this is the source of the black/clamped border).
+  const std::array<float,4> raw = extent(ud.createWarpMap(false));
+  ICL_TEST_TRUE(raw[0] < -1.f || raw[1] < -1.f ||
+                raw[2] > sz.width || raw[3] > sz.height);
+
+  // WITH auto-scale: every sampled coordinate is inside [0,w-1]x[0,h-1] ...
+  const std::array<float,4> sc = extent(ud.createWarpMap(true));
+  ICL_TEST_TRUE(sc[0] >= -0.5f && sc[1] >= -0.5f);
+  ICL_TEST_TRUE(sc[2] <= sz.width-0.5f && sc[3] <= sz.height-0.5f);
+  // ... and it actually fills the frame (extent reaches the borders, not a tiny
+  // over-zoom): with pp at the centre, the scaled corner touches every edge.
+  ICL_TEST_TRUE(sc[0] <= 2.f && sc[1] <= 2.f);
+  ICL_TEST_TRUE(sc[2] >= sz.width-3.f && sc[3] >= sz.height-3.f);
 }

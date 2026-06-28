@@ -9,3 +9,7 @@ outputs
 sandbox.conf
 .cache/
 git-push-redate-to-now.sh
+
+# sandbox smoke-test generated profiles
+scripts/sandbox-gl-last-profile.sb
+scripts/sandbox-cl-last-profile.sb
