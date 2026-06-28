@@ -5,6 +5,7 @@ cv_headers = files(
   'CLSurfLibKernels.h',
   'CV.h',
   'CheckerboardDetector.h',
+  'CheckerboardGrid.h',
   'CheckerboardSaddleDetector.h',
   'ContourDetector.h',
   'CornerDetectorCSS.h',
@@ -42,6 +43,7 @@ cv_headers = files(
 cv_sources = files(
   'CV.cpp',
   'CheckerboardDetector.cpp',
+  'CheckerboardGrid.cpp',
   'CheckerboardSaddleDetector.cpp',
   'ContourDetector.cpp',
   'CornerDetectorCSS.cpp',

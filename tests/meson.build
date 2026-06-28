@@ -12,6 +12,7 @@ test_sources = files(
   'test-core.cpp',
   'test-filter.cpp',
   'test-cv-checkerboard-saddle.cpp',
+  'test-cv-checkerboard-grid.cpp',
 )
 
 test_deps = [icl_utils_dep, icl_math_dep, icl_core_dep, icl_filter_dep, icl_cv_dep]
@@ -33,10 +34,11 @@ if qt_dep.found()
     'test-geom2-raycast-octree.cpp',
     'test-geom2-primitive3d-converter.cpp',
     'test-geom2-calibration-harness.cpp',
+    'test-markers-checkerboard-target.cpp',
     'test-io-scene-source.cpp',
     'test-gui-definition.cpp',
   )
-  test_deps += [icl_io_dep, icl_qt_dep, icl_geom2_dep]
+  test_deps += [icl_io_dep, icl_qt_dep, icl_geom2_dep, icl_markers_dep]
   if bullet_found
     test_sources += files('test-physics2.cpp')
     test_deps += [icl_physics2_dep]

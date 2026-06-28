@@ -3,6 +3,7 @@
 markers_headers = files(
   'AdvancedMarkerGridDetector.h',
   'CalibrationTarget.h',
+  'CheckerboardTarget.h',
   'BCHCode.h',
   'Fiducial.h',
   'FiducialDetector.h',
@@ -33,6 +34,7 @@ markers_headers = files(
 
 markers_sources = files(
   'AdvancedMarkerGridDetector.cpp',
+  'CheckerboardTarget.cpp',
   'BCHCode.cpp',
   'Fiducial.cpp',
   'FiducialDetector.cpp',
@@ -58,7 +60,7 @@ markers_sources = files(
   'TwoLevelRegionStructure.cpp',
 )
 
-markers_deps = [icl_geom_dep]
+markers_deps = [icl_geom_dep, icl_cv_dep]
 
 icl_markers_lib = shared_library('icl-markers',
   markers_sources,
