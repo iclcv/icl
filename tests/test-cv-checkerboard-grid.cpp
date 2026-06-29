@@ -21,6 +21,7 @@ using namespace icl::cv;
 using icl::core::Img8u;
 using icl::utils::Size;
 using icl::utils::Point32f;
+using icl::cv::CornerSeed;
 
 namespace {
   // A board of cols x rows squares (size sq), CENTRED in the WxH image on a white
@@ -150,6 +151,71 @@ ICL_REGISTER_TEST("cv.checkergrid.perspective",
   ICL_TEST_TRUE(dimsMatch(g, COLS, ROWS));
   ICL_TEST_EQ(g.count, (COLS-1)*(ROWS-1));
   ICL_TEST_TRUE(latticeConsistent(g));
+}
+
+// Cleanup pass (refineCheckerboardGrid): a phantom partial border column —
+// the documented "spurious border detections inflate the lattice dims" failure
+// — is suppressed by the homography + Hungarian re-association + boundary trim,
+// while a clean grid is left untouched.
+ICL_REGISTER_TEST("cv.checkergrid.refine_suppresses_phantom",
+                  "homography+Hungarian cleanup trims a phantom border column")
+{
+  const int COLS=9, ROWS=7;                               // -> 8x6 inner corners
+  Img8u img = renderBoard(480, 400, COLS, ROWS, 40, [](float x,float y){ return Point32f(x,y); });
+  const auto seeds = CheckerboardSaddleDetector().detect(img);
+  const CheckerboardGrid g0 = recoverCheckerboardGrid(seeds);   // clean 8x6
+  ICL_TEST_TRUE(dimsMatch(g0, COLS, ROWS));
+  ICL_TEST_TRUE(g0.complete());
+
+  // Build an INFLATED grid: append a phantom column (g0.cols) that is on the
+  // extended lattice geometrically, but only partially detected (2 of g0.rows
+  // cells) — exactly what a few spurious border seeds produce.
+  const int C = g0.cols, R = g0.rows, NC = C+1;
+  CheckerboardGrid bad;
+  bad.cols = NC; bad.rows = R;
+  bad.points.assign((size_t)NC*R, Point32f(0,0));
+  bad.filled.assign((size_t)NC*R, 0);
+  std::vector<CornerSeed> pool;
+  for (int r=0;r<R;++r) for (int c=0;c<C;++c) {            // real corners
+    const Point32f p = g0.at(c,r);
+    bad.points[(size_t)r*NC+c] = p; bad.filled[(size_t)r*NC+c] = 1;
+    pool.push_back({p, 1.f, 0.f});
+  }
+  for (int r=2;r<=3;++r) {                                  // 2 phantom corners
+    const Point32f e = Point32f(g0.at(C-1,r).x-g0.at(C-2,r).x, g0.at(C-1,r).y-g0.at(C-2,r).y);
+    const Point32f ph(g0.at(C-1,r).x+e.x, g0.at(C-1,r).y+e.y);
+    bad.points[(size_t)r*NC+C] = ph; bad.filled[(size_t)r*NC+C] = 1;
+    pool.push_back({ph, 1.f, 0.f});
+  }
+  bad.count = 0; for (char f : bad.filled) bad.count += f;
+  ICL_TEST_EQ(bad.cols, COLS);                             // inflated to 9 columns
+  ICL_TEST_EQ(bad.count, (COLS-1)*(ROWS-1) + 2);
+
+  const CheckerboardGrid fixed = refineCheckerboardGrid(bad, pool, &img);
+  std::cout << "[checkergrid] refine: " << bad.cols << "x" << bad.rows
+            << " (count " << bad.count << ") -> " << fixed.cols << "x" << fixed.rows
+            << " (count " << fixed.count << ")" << std::endl;
+  ICL_TEST_TRUE(dimsMatch(fixed, COLS, ROWS));             // phantom column trimmed
+  ICL_TEST_EQ(fixed.count, (COLS-1)*(ROWS-1));
+  ICL_TEST_TRUE(fixed.complete());
+  ICL_TEST_TRUE(latticeConsistent(fixed));
+}
+
+// Cleanup must be a no-op on an already-clean grid (dims + count preserved, the
+// same corner positions snap back through the assignment).
+ICL_REGISTER_TEST("cv.checkergrid.refine_clean_noop",
+                  "cleanup leaves a clean lattice unchanged")
+{
+  const int COLS=9, ROWS=7;
+  Img8u img = renderBoard(480, 400, COLS, ROWS, 40, [](float x,float y){ return Point32f(x,y); });
+  const auto seeds = CheckerboardSaddleDetector().detect(img);
+  const CheckerboardGrid g0 = recoverCheckerboardGrid(seeds);
+  const CheckerboardGrid g1 = refineCheckerboardGrid(g0, seeds, &img);
+  std::cout << "[checkergrid] refine_clean: " << g1.cols << "x" << g1.rows
+            << " count=" << g1.count << std::endl;
+  ICL_TEST_TRUE(dimsMatch(g1, COLS, ROWS));
+  ICL_TEST_EQ(g1.count, (COLS-1)*(ROWS-1));
+  ICL_TEST_TRUE(g1.complete());
 }
 
 // Edge validation pass: real lattice edges (on a B/W square border) score high;

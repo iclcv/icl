@@ -65,6 +65,30 @@ namespace icl::cv {
   ICLCV_API CheckerboardGrid recoverCheckerboardGrid(const std::vector<CornerSeed> &seeds,
                                                      const core::Img8u *image = nullptr);
 
+  /// Global cleanup pass: suppress spurious border detections and fix growth
+  /// mis-assignments via a model-based re-association.
+  /** The greedy grid growth can, under strong foreshortening, grow a phantom
+      border row/column out of a few spurious seeds (inflating the recovered
+      dimensions), or mis-claim a seed into the wrong cell. This pass replaces
+      that local reasoning with a global model:
+
+      1. fit a homography (col,row)→image robustly to the recovered lattice
+         (iteratively dropping high-residual cells so phantoms don't bias it);
+      2. predict every node position and re-assign the seed pool to the nodes
+         with the **Hungarian algorithm** (globally-optimal one-to-one, gated by
+         a fraction of the local cell spacing) — phantom seeds fall onto no node,
+         real corners snap to their cell;
+      3. trim outermost rows/columns that end up weakly supported (few cells
+         filled) or, when \a image is given, whose border edges lack black/white
+         contrast (mean perpendicular-gradient edge score too low).
+
+      Returns the cleaned grid (labels stay internally consistent; edge scores
+      are cleared — call scoreCheckerboardGridEdges() again if needed). A grid
+      too small to constrain a homography (cols<2 or rows<2) is returned as-is. */
+  ICLCV_API CheckerboardGrid refineCheckerboardGrid(const CheckerboardGrid &grid,
+                                                    const std::vector<CornerSeed> &seeds,
+                                                    const core::Img8u *image = nullptr);
+
   /// Validation pass: score every lattice edge of \a grid by the mean image
   /// gradient PERPENDICULAR to the edge, sampled along it on a lightly-blurred
   /// gray of \a image, normalised to ~[0,1]. A true checkerboard edge lies on a

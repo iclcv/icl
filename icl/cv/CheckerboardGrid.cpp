@@ -3,6 +3,9 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/cv/CheckerboardGrid.h>
+#include <icl/cv/HungarianAlgorithm.h>
+#include <icl/math/transform/Homography2D.h>
+#include <icl/utils/Array2D.h>
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -243,6 +246,157 @@ namespace icl::cv {
     grid.count = 0;
     for (char f : grid.filled) grid.count += f;
     return grid;
+  }
+
+  CheckerboardGrid refineCheckerboardGrid(const CheckerboardGrid &in,
+                                          const std::vector<CornerSeed> &seeds,
+                                          const core::Img8u *image) {
+    // need a 2D lattice to constrain a homography
+    if (in.count < 4 || in.cols < 2 || in.rows < 2) return in;
+
+    // (col,row) -> image correspondences from the filled cells
+    std::vector<Point32f> latt, img;
+    latt.reserve(in.count); img.reserve(in.count);
+    for (int r = 0; r < in.rows; ++r)
+      for (int c = 0; c < in.cols; ++c)
+        if (in.has(c, r)) { latt.push_back(Point32f((float)c,(float)r)); img.push_back(in.at(c,r)); }
+    if ((int)latt.size() < 4) return in;
+
+    using math::Homography2D;
+    // Homography2D(x,y) maps y->x (apply(y)~x); we want apply(src)~dst, so the
+    // (col,row) lattice is `src` and the image positions are `dst`.
+    auto fit = [](const std::vector<Point32f> &src, const std::vector<Point32f> &dst) {
+      return Homography2D(dst.data(), src.data(), (int)src.size());
+    };
+
+    // global cell spacing (median of filled right/down neighbour steps)
+    float spacing = 0.f;
+    { std::vector<float> sp;
+      auto len = [](const Point32f &a, const Point32f &b){
+        return std::sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y)); };
+      for (int r=0;r<in.rows;++r) for (int c=0;c<in.cols;++c) if (in.has(c,r)) {
+        if (in.has(c+1,r)) sp.push_back(len(in.at(c,r), in.at(c+1,r)));
+        if (in.has(c,r+1)) sp.push_back(len(in.at(c,r), in.at(c,r+1)));
+      }
+      if (sp.empty()) return in;
+      std::nth_element(sp.begin(), sp.begin()+sp.size()/2, sp.end());
+      spacing = sp[sp.size()/2];
+    }
+    if (!(spacing > 1.f)) return in;
+
+    // robust homography: refit a couple of times, dropping high-residual cells
+    Homography2D H = fit(latt, img);
+    for (int iter = 0; iter < 2; ++iter) {
+      std::vector<float> res(latt.size());
+      std::vector<float> srt;
+      for (size_t i=0;i<latt.size();++i) {
+        const Point32f p = H.apply(latt[i]);
+        res[i] = std::sqrt((p.x-img[i].x)*(p.x-img[i].x)+(p.y-img[i].y)*(p.y-img[i].y));
+        srt.push_back(res[i]);
+      }
+      std::nth_element(srt.begin(), srt.begin()+srt.size()/2, srt.end());
+      const float thr = std::max(0.25f*spacing, 3.f*srt[srt.size()/2]);
+      std::vector<Point32f> a, b;
+      for (size_t i=0;i<latt.size();++i) if (res[i] <= thr) { a.push_back(latt[i]); b.push_back(img[i]); }
+      if ((int)a.size() < 4 || a.size() == latt.size()) break;
+      H = fit(a, b);
+    }
+
+    // predicted node positions for the whole current extent
+    const int C = in.cols, R = in.rows, J = C*R;
+    std::vector<Point32f> node(J);
+    for (int r=0;r<R;++r) for (int c=0;c<C;++c)
+      node[(size_t)r*C+c] = H.apply(Point32f((float)c,(float)r));
+
+    // prune seeds to those near some node (keeps the assignment matrix small)
+    const float keepR2 = std::pow(0.7f*spacing, 2.f);
+    std::vector<Point32f> sp;
+    for (const auto &s : seeds) {
+      float best = 1e30f;
+      for (const auto &nd : node) { const float dx=s.pos.x-nd.x, dy=s.pos.y-nd.y;
+        best = std::min(best, dx*dx+dy*dy); }
+      if (best < keepR2) sp.push_back(s.pos);
+    }
+    const int I = (int)sp.size();
+    // too few seeds, or a matrix too large to be reasonable → leave grid as-is
+    if (I < 4 || I + J > 600) return in;
+
+    // Hungarian assignment with rejection. Square cost matrix of size D=I+J:
+    //   x-axis (width):  [0,I) seeds, then [I,I+J) per-node "unmatched" dummies
+    //   y-axis (height): [0,J) nodes, then [J,J+I) per-seed "unmatched" dummies
+    // A real seed->node cost is its distance if within the gate, else LARGE; a
+    // dummy lets a seed (or node) stay unmatched at cost DROP. Hungarian then
+    // snaps each node to its nearest in-gate seed and drops the rest.
+    using utils::Array2D;
+    const int D = I + J;
+    const double gate = 0.4*spacing, DROP = 0.5*spacing, LARGE = 1e6*(spacing+1.0);
+    Array2D<icl64f> cost(D, D);
+    for (int x=0;x<D;++x) for (int y=0;y<D;++y) cost(x,y) = LARGE;
+    for (int i=0;i<I;++i)
+      for (int j=0;j<J;++j) {
+        const double dx=sp[i].x-node[j].x, dy=sp[i].y-node[j].y, d=std::sqrt(dx*dx+dy*dy);
+        cost(i,j) = (d <= gate) ? d : LARGE;
+      }
+    for (int i=0;i<I;++i) cost(i, J+i) = DROP;          // seed i unmatched
+    for (int j=0;j<J;++j) cost(I+j, j) = DROP;          // node j unmatched
+    for (int x=I;x<D;++x) for (int y=J;y<D;++y) cost(x,y) = 0.0;  // dummy-dummy
+
+    const std::vector<int> asg = cv::HungarianAlgorithm<icl64f>::apply(cost, true);
+
+    // rebuild lattice points from the assignment (seed x -> node y if y<J)
+    std::vector<Point32f> pts((size_t)J, Point32f(0,0));
+    std::vector<char>     fil((size_t)J, 0);
+    for (int i=0;i<I && i<(int)asg.size();++i) {
+      const int y = asg[i];
+      if (y >= 0 && y < J && cost(i,y) < LARGE) { pts[y] = sp[i]; fil[y] = 1; }
+    }
+
+    // trim weakly-supported / contrast-free outer rows & columns
+    std::unique_ptr<GrayProbe> probe;
+    if (image) probe = std::make_unique<GrayProbe>(*image);
+    int cols = C, rows = R;
+    auto idx = [&](int c, int r){ return (size_t)r*cols + c; };
+    constexpr float SUPPORT_MIN = 0.5f, EDGE_MIN = 0.12f;
+    auto rankBad = [&](bool isCol, int k) -> bool {
+      const int len = isCol ? rows : cols;
+      int nfill = 0; for (int t=0;t<len;++t) if (fil[isCol?idx(k,t):idx(t,k)]) ++nfill;
+      if ((float)nfill / len < SUPPORT_MIN) return true;
+      if (!probe) return false;
+      // mean perpendicular-gradient score of edges joining this rank to its
+      // inward neighbour; a phantom border crosses uniform squares → low score
+      const int kin = isCol ? (k==0 ? 1 : cols-2) : (k==0 ? 1 : rows-2);
+      double acc=0; int m=0;
+      for (int t=0;t<len;++t) {
+        const size_t a = isCol?idx(k,t):idx(t,k), b = isCol?idx(kin,t):idx(t,kin);
+        if (fil[a] && fil[b]) { acc += probe->edgeScore(pts[a], pts[b], spacing); ++m; }
+      }
+      return m && (acc/m) < EDGE_MIN;
+    };
+    auto dropCol = [&](int k){
+      std::vector<Point32f> np((size_t)(cols-1)*rows); std::vector<char> nf((size_t)(cols-1)*rows,0);
+      for (int r=0;r<rows;++r) for (int c=0,nc=0;c<cols;++c) if (c!=k) {
+        np[(size_t)r*(cols-1)+nc]=pts[idx(c,r)]; nf[(size_t)r*(cols-1)+nc]=fil[idx(c,r)]; ++nc; }
+      pts.swap(np); fil.swap(nf); --cols;
+    };
+    auto dropRow = [&](int k){
+      std::vector<Point32f> np((size_t)cols*(rows-1)); std::vector<char> nf((size_t)cols*(rows-1),0);
+      for (int r=0,nr=0;r<rows;++r) if (r!=k) { for (int c=0;c<cols;++c) {
+        np[(size_t)nr*cols+c]=pts[idx(c,r)]; nf[(size_t)nr*cols+c]=fil[idx(c,r)]; } ++nr; }
+      pts.swap(np); fil.swap(nf); --rows;
+    };
+    while (cols > 2 && rows > 2) {
+      if      (rankBad(true,  0))       dropCol(0);
+      else if (rankBad(true,  cols-1))  dropCol(cols-1);
+      else if (rankBad(false, 0))       dropRow(0);
+      else if (rankBad(false, rows-1))  dropRow(rows-1);
+      else break;
+    }
+
+    CheckerboardGrid out;
+    out.cols = cols; out.rows = rows;
+    out.points = std::move(pts); out.filled = std::move(fil);
+    out.count = 0; for (char f : out.filled) out.count += f;
+    return out.count >= 4 ? out : in;
   }
 
   void scoreCheckerboardGridEdges(CheckerboardGrid &grid, const core::Img8u &image) {

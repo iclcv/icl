@@ -15,6 +15,8 @@ namespace icl{
         CheckerboardSaddleDetector(m_saddle).detect(image);
       Result res;
       CheckerboardGrid g = recoverCheckerboardGrid(seeds, &image);   // guided
+      if(m_cleanup && !g.empty())
+        g = refineCheckerboardGrid(g, seeds, &image);   // homography + Hungarian
       if(!g.empty()) res.boards.push_back(std::move(g));
       return res;
     }
