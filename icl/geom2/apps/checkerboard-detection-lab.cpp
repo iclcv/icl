@@ -6,9 +6,13 @@
 // checkerboard on a bordered "paper" in a geom2 Scene2 — rotate/pan/zoom it with
 // the mouse to view from any angle. RIGHT: the *real* render of camera 0 of that
 // scene (full GL shading / lighting), passed through a live lens-distortion
-// model, then through cv::CheckerboardSaddleDetector — the detected corners +
+// model, then through the selected detector backend — the detected corners +
 // orientations are drawn on top. Cells, distortion, lighting and detector
-// parameters are all live sliders.
+// parameters are all live sliders. A "detector backend" combo switches between
+// the native ChESS-saddle + growth path and the OpenCV findChessboardCorners
+// backend (cv::CheckerboardDetector interface), and a "cleanup (LAP)" checkbox
+// toggles the native homography + Hungarian false-positive suppression pass
+// (refineCheckerboardGrid).
 //
 // The right pane is the offscreen render of camera 0 of a dedicated capture
 // scene (capScene, own lighting, tracks the interactive camera), passed through
@@ -30,7 +34,8 @@
 #include <icl/geom2/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
 #include <icl/geom/Camera.h>
 #include <icl/cv/CheckerboardSaddleDetector.h>
-#include <icl/cv/CheckerboardGrid.h>           // growth-based grid recovery
+#include <icl/cv/CheckerboardGrid.h>           // growth-based grid recovery + LAP cleanup
+#include <icl/cv/OpenCVCheckerboardDetector.h> // the opencv detector backend (+ CheckerboardDetector iface)
 #include <icl/filter/affine/ImageUndistortion.h>   // radial distortion model + warp maps
 #include <icl/filter/affine/WarpOp.h>               // efficient warp-map application
 #include <cstdlib>   // std::_Exit
@@ -147,6 +152,9 @@ void init() {
                   << (HBox()
                       << FSlider(3, 9, 5, {.handle="radius", .label="ring radius"})
                       << FSlider(0.1, 0.8, 0.35, {.handle="minScore", .label="min score"}))
+                  << (HBox()
+                      << Combo("native-growth,opencv", {.handle="backend", .label="detector backend"})
+                      << CheckBox("cleanup (LAP)", {.checked=false, .handle="cleanup"}))
                   << CheckBox("apply undistortion", {.checked=false, .handle="undistort"})
                   << Prop(&view, {.label="offscreen renderer + scene"})   // backend, Cycles, scene.*
                   << (HBox()
@@ -177,13 +185,16 @@ void run() {
   const float minScore = gui["minScore"];
   const int   radius   = gui["radius"];
   const bool  showUndistorted = gui["undistort"];   // result = rectified preview vs distorted
+  const int   backend  = ComboHandle(gui["backend"]).getSelectedIndex();  // 0=native-growth, 1=opencv
+  const bool  cleanup  = gui["cleanup"];             // native LAP cleanup pass (refineCheckerboardGrid)
 
   // Re-render the result when a new captured frame arrives (incl. a k1/k2
   // re-distort) OR a detector/undistort control moved (re-process the cached
   // frame; no recapture).
-  static int lRadius=-1, lUndist=-1; static float lMs=1e9f;
-  const bool resultDirty = radius!=lRadius || minScore!=lMs || (int)showUndistorted!=lUndist;
-  lRadius=radius; lMs=minScore; lUndist=(int)showUndistorted;
+  static int lRadius=-1, lUndist=-1, lBackend=-1, lCleanup=-1; static float lMs=1e9f;
+  const bool resultDirty = radius!=lRadius || minScore!=lMs || (int)showUndistorted!=lUndist
+                        || backend!=lBackend || (int)cleanup!=lCleanup;
+  lRadius=radius; lMs=minScore; lUndist=(int)showUndistorted; lBackend=backend; lCleanup=(int)cleanup;
 
   gui["scene"].render();          // GUI thread: interactive view + (auto) GL capture
   const auto frame = view.next();           // drives Cycles + re-distort; .image always latest
@@ -204,11 +215,21 @@ void run() {
       d.render();
     } else {
       // Detection always runs on the distorted camera image (the real-world case).
-      CheckerboardSaddleDetector::Params p;
-      p.radius = radius; p.minScore = minScore;
-      CheckerboardSaddleDetector det(p);
-      const auto seeds = det.detect(cam);
-      CheckerboardGrid grid = recoverCheckerboardGrid(seeds, &cam);   // guided ordered lattice
+      std::vector<CornerSeed> seeds;   // saddle seeds (native only; empty for opencv)
+      CheckerboardGrid grid;
+      if (backend == 1) {              // opencv backend (needs the board's inner-corner dims)
+        OpenCVCheckerboardDetector ocv;
+        CheckerboardDetector::Hints h;
+        h.boardCells = Size(gui["xc"].as<int>()-1, gui["yc"].as<int>()-1);
+        const auto res = ocv.detect(cam, h);
+        if (!res.boards.empty()) grid = res.boards.front();
+      } else {                         // native ChESS-saddle + growth (+ optional LAP cleanup)
+        CheckerboardSaddleDetector::Params p;
+        p.radius = radius; p.minScore = minScore;
+        seeds = CheckerboardSaddleDetector(p).detect(cam);
+        grid = recoverCheckerboardGrid(seeds, &cam);                  // guided ordered lattice
+        if (cleanup) grid = refineCheckerboardGrid(grid, seeds, &cam); // homography + Hungarian
+      }
       scoreCheckerboardGridEdges(grid, cam);                          // per-edge confidence
       drawResult(d, cam, seeds, grid);
     }
