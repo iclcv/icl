@@ -4,6 +4,41 @@
 
 ## Next Step
 
+### Session 87 — MarkerGridTarget (2nd CalibrationTarget)
+On `further-restructuring-and-cleanup`. **COMMITTED** (`964ebf830`), full suite **987/987 green**.
+Continues the calibration arc (`camera-calibration-redesign.md`, Phase B).
+
+**Landed:** `markers::MarkerGridTarget` — the 2nd concrete `CalibrationTarget`, wrapping
+`markers::AdvancedMarkerGridDetector`. Both calibration backends (checkerboard + marker-grid) now
+feed the identical `detect()`/`modelPoints()`/`generate()` contract = the comparison-harness
+substrate.
+- **`detect()`** runs the detector, emits each *found* marker's **4 corner correspondences**
+  (grid-space mm ↔ sub-pixel image px), mirroring `MarkerGridPoseEstimator`'s `appendCornersTo`.
+  Unlike the checkerboard: markers self-identify → a **partial/occluded grid still calibrates** and
+  the frame is **absolute** (no arbitrary origin / no transpose ambiguity).
+- **`modelPoints()`** — all markers' grid-space corners from a reference grid.
+- **`generate()`** — renders each marker (`FiducialDetector::createMarker`, BCH default) into its
+  grid-space rect at a uniform mm→px scale with margin.
+- **PIMPL** `Data{def, detector, model grid}` cleanly hides the *non-const* `detect()` of the
+  wrapped detector inside the `const CalibrationTarget::detect()`.
+- Test `markers.markergridtarget.generate_detect_roundtrip`: a 4×3 BCH grid generates + detects
+  **all 12 markers (48 corrs)**, object frame spans the known grid bounds, sub-pixel affine-labelling
+  residual (0.32 / 0.31 px).
+
+**NEXT (pick up here):**
+- **Comparison harness** — drive each `CalibrationTarget` / `CheckerboardDetector` backend through
+  `Camera::calibrate_*` across a sweep (distance/noise/distortion/viewpoint) → error-vs-truth tables.
+  Targets AND detector backends are now all in place behind their interfaces — this is the next big
+  payoff (the 2D-checkerboard-vs-3D-marker, native-vs-opencv numbers).
+- **Iterative undistortion bootstrap** (`CalibrationSession` above `IntrinsicCalibrator`) — see the
+  Session 86 design notes (detect/calibrate in RAW coords; predict-and-refine rather than full-frame
+  inverse warp since `createInverseWarpMap` diverges for k1≳0.2; accept a param update only if
+  held-out reprojection error improves; coverage map + re-process stored frames). This is what makes
+  the opt-in `setCleanup()` safe-by-default.
+- **RESEARCH — survey better checkerboard detectors** (findChessboardCornersSB/ROCHADE,
+  libcbdetect/Geiger growth, DL corner detectors) vs our ChESS+growth; wrap the best as another
+  `CheckerboardDetector` backend if it beats native.
+
 ### Session 86 — CheckerboardDetector technique interface + homography/Hungarian false-positive suppression
 On `further-restructuring-and-cleanup`. **Both items below COMMITTED**, full suite **986/986
 green**. Continues the calibration arc (`camera-calibration-redesign.md`, Phase B). This session
