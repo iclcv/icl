@@ -4,6 +4,7 @@ markers_headers = files(
   'AdvancedMarkerGridDetector.h',
   'CalibrationTarget.h',
   'CheckerboardTarget.h',
+  'MarkerGridTarget.h',
   'BCHCode.h',
   'Fiducial.h',
   'FiducialDetector.h',
@@ -35,6 +36,7 @@ markers_headers = files(
 markers_sources = files(
   'AdvancedMarkerGridDetector.cpp',
   'CheckerboardTarget.cpp',
+  'MarkerGridTarget.cpp',
   'BCHCode.cpp',
   'Fiducial.cpp',
   'FiducialDetector.cpp',
