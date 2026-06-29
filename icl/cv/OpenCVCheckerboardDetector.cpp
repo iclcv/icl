@@ -24,7 +24,7 @@ namespace icl{
       Img8u grayBuf;
       Img8u buf8u;
       ImgBase *buf;
-      Data():buf(0){}
+      Data():mat(0),buf(0){}
       ~Data(){
         ICL_DELETE(buf);
       }
@@ -94,7 +94,11 @@ namespace icl{
         useImage = &m_data->grayBuf;
       }
 
-      img_to_mat(useImage, m_data->mat);
+      // img_to_mat allocates a fresh Mat when the dst pointer is null and RETURNS
+      // it — the result must be stored back, else m_data->mat stays null and the
+      // findChessboardCorners below dereferences null. (m_data->mat starts null,
+      // set in init(); reused in place on subsequent calls.)
+      m_data->mat = img_to_mat(useImage, m_data->mat);
       std::vector<::cv::Point2f> corners;
 
       ::cv::Size s = {m_data->cb.size.width, m_data->cb.size.height };

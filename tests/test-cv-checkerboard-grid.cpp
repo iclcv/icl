@@ -11,6 +11,7 @@
 #include "harness/Test.h"
 #include <icl/cv/CheckerboardSaddleDetector.h>
 #include <icl/cv/CheckerboardGrid.h>
+#include <icl/cv/OpenCVCheckerboardDetector.h>
 #include <icl/core/Img.h>
 #include <algorithm>
 #include <cmath>
@@ -216,6 +217,28 @@ ICL_REGISTER_TEST("cv.checkergrid.refine_clean_noop",
   ICL_TEST_TRUE(dimsMatch(g1, COLS, ROWS));
   ICL_TEST_EQ(g1.count, (COLS-1)*(ROWS-1));
   ICL_TEST_TRUE(g1.complete());
+}
+
+// OpenCV backend (OpenCVCheckerboardDetector) detects a clean board into a
+// complete grid via the CheckerboardDetector interface. (Also guards the
+// inherited img_to_mat null-Mat bug that the lab surfaced.)
+ICL_REGISTER_TEST("cv.opencvcheckerboard.detect",
+                  "OpenCV findChessboardCorners backend yields a complete grid")
+{
+  const int COLS=9, ROWS=7;                              // -> 8x6 inner corners
+  Img8u img = renderBoard(480, 400, COLS, ROWS, 40, [](float x,float y){ return Point32f(x,y); });
+
+  OpenCVCheckerboardDetector det;
+  CheckerboardDetector::Hints h;
+  h.boardCells = Size(COLS-1, ROWS-1);                   // OpenCV needs the inner-corner dims
+  const auto res = det.detect(img, h);
+
+  std::cout << "[opencvcheckerboard] boards=" << res.boards.size()
+            << (res.boards.empty() ? "" : (" " + std::to_string(res.boards.front().cols) + "x"
+                                              + std::to_string(res.boards.front().rows))) << std::endl;
+  ICL_TEST_EQ((int)res.boards.size(), 1);
+  ICL_TEST_TRUE(dimsMatch(res.boards.front(), COLS, ROWS));
+  ICL_TEST_TRUE(res.boards.front().complete());
 }
 
 // Edge validation pass: real lattice edges (on a B/W square border) score high;
