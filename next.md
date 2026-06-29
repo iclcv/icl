@@ -4,6 +4,63 @@
 
 ## Next Step
 
+### Session 86 — CheckerboardDetector technique interface + homography/Hungarian false-positive suppression
+On `further-restructuring-and-cleanup`. **Both items below COMMITTED**, full suite **986/986
+green**. Continues the calibration arc (`camera-calibration-redesign.md`, Phase B). This session
+acted on the user's idea: reframe checkerboard point↔grid association as a linear-assignment
+problem (Hungarian) + a global homography model, and give detection techniques a real polymorphic
+interface so the native path and OpenCV can be compared like-for-like.
+
+**Landed (commit order):**
+1. **`cv::CheckerboardDetector` technique interface** (`4a97d7a93`). Abstract seam under
+   `markers::CheckerboardTarget`: `detect(Img8u, Hints) → Result{vector<CheckerboardGrid>}` +
+   `name()`. `Hints` carry `boardCells` (known inner-corner dims; OpenCV requires them) and a
+   non-owning `filter::ImageUndistortion*` — **the feedback channel for the future iterative
+   undistortion bootstrap**. Backends:
+   - `NativeCheckerboardDetector` — the existing ChESS-saddle + growth pipeline ("native-growth").
+   - `OpenCVCheckerboardDetector` — the **former `cv::CheckerboardDetector`** (OpenCV
+     findChessboardCorners wrapper) renamed and made a backend (its row-major output maps straight
+     onto a complete `CheckerboardGrid`; legacy concrete API preserved for `camera-calibration-planar`).
+   `CheckerboardTarget` holds a `shared_ptr<CheckerboardDetector>` (defaults native) +
+   `setDetector()`/`getDetector()`. Both techniques now feed one interface = the comparison-harness
+   substrate (NEXT below). *Gotcha:* nested `Hints` with DMIs can't be `= {}`-defaulted inside the
+   enclosing class → gave it a user-provided default ctor; OpenCV override drops the default arg to
+   avoid colliding with its legacy 1-arg `detect` overloads.
+2. **`refineCheckerboardGrid()` — homography + Hungarian cleanup** (`d14d95509`). Global,
+   model-based re-association that suppresses spurious border detections (the flagged
+   "phantom rows/cols inflate the dims" failure): robust homography fit (col,row)→image (iterative
+   high-residual rejection so phantoms don't bias it) → predict nodes → **Hungarian** seed↔node
+   one-to-one assignment (square cost matrix, per-seed/per-node reject dummies, gate 0.4× local
+   spacing) → trim boundary ranks that end up <50% filled or (with image) contrastless. Opt-in
+   `NativeCheckerboardDetector::setCleanup()` (name → "native-growth+lap"). **OFF by default**: a
+   plain homography mispredicts strongly lens-distorted borders, so it stays opt-in until a
+   distortion estimate is fed back via `Hints`. Tests `cv.checkergrid.refine_suppresses_phantom`
+   (9×6/50 → 8×6/48) + `refine_clean_noop`. *Gotcha:* `Homography2D(x,y)` maps **y→x** — the
+   lattice is the 2nd arg.
+
+**Design notes for later:** (a) the cleanup kills *irregular/partial* phantoms (support trim) and
+*geometrically-inconsistent* ones (homography gate), but a phantom rank sitting on the **extended
+regular lattice** survives both — that's the edge-score trim's job, but the current edge score is
+weakly discriminative (a through-square edge scores ~0.69), so `EDGE_MIN` is conservative; revisit
+with the distortion-aware model. (b) The bootstrap loop (see below) belongs in a NEW multi-frame
+`CalibrationSession` ABOVE `IntrinsicCalibrator`, NOT inside a detector — detect on the RAW frame
+and calibrate in raw coords (rectify only to *reach* border boards; `createInverseWarpMap` diverges
+for k1≳0.2, so predict-and-refine rather than full-frame rectify); accept a param update only if
+held-out reprojection error improves (EM with a validation gate); keep a coverage map + re-process
+stored frames.
+
+**NEXT (pick up here):**
+- **`MarkerGridTarget`** — wrap `AdvancedMarkerGridDetector` as the 2nd `CalibrationTarget`, so both
+  backends feed the identical interface.
+- **Comparison harness** — drive each `CalibrationTarget` / `CheckerboardDetector` backend through
+  `Camera::calibrate_*` across a sweep (distance/noise/distortion/viewpoint) → error-vs-truth tables.
+  THE 2D-checkerboard-vs-3D-marker (and native-vs-opencv) numbers.
+- **Iterative undistortion bootstrap** (`CalibrationSession`) — see design notes above; this is what
+  makes the opt-in cleanup safe-by-default (distortion-aware prediction reaches the border boards).
+- **RESEARCH — survey better checkerboard detectors** (findChessboardCornersSB/ROCHADE,
+  libcbdetect/Geiger growth, DL corner detectors) vs our ChESS+growth; wrap the best as another
+  `CheckerboardDetector` backend / `CornerSeed` provider if it beats native.
+
 ### Session 85 — checkerboard calibration: detector ~13× faster, grid recovery + first CalibrationTarget, edge validation + guided growth
 On `further-restructuring-and-cleanup`. **Everything below is COMMITTED**, full suite **984/984
 green**. The detailed calibration arc lives in [`camera-calibration-redesign.md`](camera-calibration-redesign.md)
