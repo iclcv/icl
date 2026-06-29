@@ -4,6 +4,54 @@
 
 ## Next Step
 
+### Session 88 — lab backend/cleanup toggles, OpenCV crash fix, + diagonal-trap investigation (→ deep research next)
+On `further-restructuring-and-cleanup`, suite 988/988. Wired the new detection paths into the
+lab, fixed a real crash, and investigated the association bug the user spotted live. **Conclusion:
+the grid-association robustness needs a rethink — starting a DEEP RESEARCH pass next** (the current
+ChESS-saddle → greedy-growth → optional-LAP-cleanup stack is fragile under steep oblique views).
+
+**Committed this session:**
+1. **Lab backend switch + LAP cleanup toggle** (`eec894fa9`) — `icl-checkerboard-detection-lab`
+   options panel got a `detector backend` combo (`native-growth` | `opencv`, via the
+   `CheckerboardDetector` interface) and a `cleanup (LAP)` checkbox (`NativeCheckerboardDetector::
+   setCleanup` → `refineCheckerboardGrid`). Both feed `resultDirty` (re-process cached frame).
+2. **OpenCV null-Mat crash fix** (`d4e6405b7`) — the lab's opencv backend crashed in
+   `findChessboardCorners` (EXC_BAD_ACCESS). Pre-existing bug inherited from the legacy detector:
+   `img_to_mat(useImage, m_data->mat)` allocates+returns a fresh Mat when the ptr is null but the
+   result was discarded → `*m_data->mat` deref'd null. Fixed (store the result back; init
+   `Data::mat`). Regression test `cv.opencvcheckerboard.detect`.
+3. **Lab `save frame` button** (`5bb6269d5`) — dumps the exact distorted detector-input image to
+   `checkerboard-frame.png` so a failing pose can be replayed offline against real render data.
+
+**Investigation findings (the association bug):**
+- The user's screenshots showed a **diagonal-lattice trap**: all seeds detected, but growth
+  bootstrapped its axes along the board DIAGONALS → sparse diagonal sub-lattice.
+- **Orientation-gate attempt (REVERTED, unvalidated).** Idea: the saddle `orientation` (2nd-harmonic
+  phase) gives each corner's local axes, a foreshortening-robust cue to reject diagonal links.
+  Rigorously confirmed the convention: the phase points along the square DIAGONAL (bright-quadrant
+  bisector), so the row/col axis = `orientation + 45°`. Built a bootstrap gate on it. Result: **zero
+  regression** across all synthetics, but **completely inert** — no synthetic reproduces the trap
+  (clean synthetic squares never mislead the edge-evidence bootstrap), and under the EXTREME shear
+  that causes the trap the orientation cue itself degrades (local axes stop being 90° apart). Refused
+  to ship unvalidated, inert association logic → reverted.
+- **Real saved frame analyzed** (a MILDER pose than the screenshots): 31 seeds, growth → `6×5/25`
+  **axis-aligned but slightly incomplete** (only 2 unconnected seeds, both score ≈0.353 = right at
+  the 0.35 threshold), `refineCheckerboardGrid` → `6×4/24` complete+correct. So on this frame the
+  association is FINE — the lab just shows growth-only (cleanup defaults off). The dramatic diagonal
+  trap is a steeper pose not captured; couldn't reproduce it synthetically (needs the real render's
+  lighting to mislead edge-evidence). `checkerboard-frame.png` kept as a future fixture.
+
+**NEXT — DEEP RESEARCH (user's call): robust checkerboard grid association.** The greedy growth +
+edge-evidence bootstrap is fragile; the user's intuition is "this should be easy." Survey the SOTA
+and pick a principled, foreshortening-robust association: e.g. libcbdetect/Geiger energy-based
+growth, OpenCV `findChessboardCornersSB` (ROCHADE refinement), graph/Delaunay topology + the
+orientation cue, or the homography-ICP/Hungarian framing done globally rather than as a cleanup.
+Goal: replace the bootstrap-then-grow heuristic with something that doesn't fall into the diagonal
+trap under steep oblique views, validated against real lab frames (use the save-frame tool).
+
+**Then resume the Phase-B arc:** comparison harness (both `CalibrationTarget`s + both detector
+backends through `Camera::calibrate_*`), then the `CalibrationSession` undistortion bootstrap.
+
 ### Session 87 — MarkerGridTarget (2nd CalibrationTarget)
 On `further-restructuring-and-cleanup`. **COMMITTED** (`964ebf830`), full suite **987/987 green**.
 Continues the calibration arc (`camera-calibration-redesign.md`, Phase B).
