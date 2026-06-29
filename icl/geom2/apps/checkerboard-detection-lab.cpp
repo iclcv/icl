@@ -38,6 +38,7 @@
 #include <icl/cv/OpenCVCheckerboardDetector.h> // the opencv detector backend (+ CheckerboardDetector iface)
 #include <icl/filter/affine/ImageUndistortion.h>   // radial distortion model + warp maps
 #include <icl/filter/affine/WarpOp.h>               // efficient warp-map application
+#include <icl/io/SaveLoad.h>                         // io::save (dump the detector input frame)
 #include <cstdlib>   // std::_Exit
 #include <iostream>
 
@@ -155,6 +156,7 @@ void init() {
                   << (HBox()
                       << Combo("native-growth,opencv", {.handle="backend", .label="detector backend"})
                       << CheckBox("cleanup (LAP)", {.checked=false, .handle="cleanup"}))
+                  << Button("save frame", {.handle="saveFrame"})   // dump detector input for offline debugging
                   << CheckBox("apply undistortion", {.checked=false, .handle="undistort"})
                   << Prop(&view, {.label="offscreen renderer + scene"})   // backend, Cycles, scene.*
                   << (HBox()
@@ -199,6 +201,16 @@ void run() {
   gui["scene"].render();          // GUI thread: interactive view + (auto) GL capture
   const auto frame = view.next();           // drives Cycles + re-distort; .image always latest
   const Img8u &cam = frame.image;           // ALREADY lens-distorted by the view
+
+  // Dump the exact detector-input frame (the distorted camera image) so a failing
+  // pose can be reproduced offline in a unit test against real render data.
+  static ButtonHandle saveBtn = gui["saveFrame"];
+  if (saveBtn.wasTriggered() && cam.getDim()) {
+    const std::string fn = "checkerboard-frame.png";
+    io::save(Image(cam), fn);
+    std::cout << "[lab] saved detector input frame -> " << fn << std::endl;
+  }
+
   if ((frame.isNew || resultDirty) && cam.getDim()) {
     DrawHandle d = gui["result"];
     if (showUndistorted) {
