@@ -4,77 +4,61 @@
 
 #pragma once
 
+#include <icl/cv/CheckerboardGrid.h>
 #include <icl/core/Img.h>
-#include <icl/utils/VisualizationDescription.h>
-#include <icl/utils/config/Configurable.h>
-#include <icl/core/Image.h>
+#include <icl/utils/Size.h>
+#include <string>
+#include <vector>
 
-namespace icl{
-  namespace core{ class Image; }
+namespace icl {
+  namespace filter { class ImageUndistortion; }
 
-  namespace cv{
+  namespace cv {
 
-    /// Utility class wrapping OpenCV's cvFindChessboardCorners
-    /** The CheckerboardDetector wrappes OpenCV's cvFindChessboardCorners and provides
-        a flag to optionally optimize the detected corners using
-        cvFindCornerSubPix */
-    class ICLCV_API CheckerboardDetector : public utils::Configurable{
-      struct Data;   //!< internal data data
-      Data *m_data;  //!< internal data pointer
+    /// Abstract interface for checkerboard detection techniques.
+    /** A detector turns a raw image into one or more ordered checkerboard
+        lattices (cv::CheckerboardGrid). This is the swappable seam under
+        markers::CheckerboardTarget: the native ChESS-saddle + growth pipeline
+        (NativeCheckerboardDetector) and the OpenCV findChessboardCorners wrapper
+        (OpenCVCheckerboardDetector) are two backends behind one detect() call,
+        which is what the calibration comparison harness drives.
 
-      ///intializes configurable properties internally
-      void init_properties();
-
+        Hints carry optional side information a technique may exploit: the known
+        board dimensions (some backends, e.g. OpenCV, REQUIRE them) and the
+        current lens-distortion estimate (the feedback channel for an iterative
+        undistortion bootstrap — straighten the lattice to reach border boards).
+        A backend is free to ignore any hint it does not use. */
+    class CheckerboardDetector {
       public:
-      CheckerboardDetector(const CheckerboardDetector&) = delete;
-      CheckerboardDetector& operator=(const CheckerboardDetector&) = delete;
-
-
-      /// Default constructor (creates a null instance)
-      CheckerboardDetector();
-
-      /// Constructor with given checkerboard size
-      /** Please note: the checkerboard size given relates to the inner checkerboard
-          corners that are expected. So if the checkerboard has 5 by 5 fields, i.e.
-          the first row is like BWBWB (Black/White), then you have to pass a size
-          of 4x4 */
-      CheckerboardDetector(const utils::Size &size);
-
-      /// Destructor
-      ~CheckerboardDetector();
-
-      /// for deferred initialization
-      /** Please note: the checkerboard size given relates to the inner checkerboard
-          corners that are expected. So if the checkerboard has 5 by 5 fields, i.e.
-          the first row is like BWBWB (Black/White), then you have to pass a size
-          of 4x4 */
-      void init(const utils::Size &size);
-
-      /// Internally used and returned result structure
-      struct Checkerboard{
-        bool found;        //!< was it found (i.e. all of the corners)
-        utils::Size size;  //!< used size (see init)
-        std::vector<utils::Point32f> corners; //!< found corners
-        ICLCV_API utils::VisualizationDescription visualize() const;
+      /// Optional side information for a detection pass.
+      struct Hints {
+        /// Known INNER-corner lattice dimensions (cols, rows). (0,0) means
+        /// "discover" — only some backends can do that (the native growth one);
+        /// fixed-template backends (OpenCV) require a non-empty size.
+        utils::Size boardCells;
+        /// Current lens-distortion estimate, or null. A distortion-aware backend
+        /// may use it to predict/straighten the lattice and so reach boards near
+        /// the image border (where distortion is strongest). Non-owning.
+        const filter::ImageUndistortion *undistortion;
+        // user-provided default ctor (not DMIs) so `Hints{}` works as a default
+        // argument inside this enclosing class definition
+        Hints() : boardCells(0, 0), undistortion(nullptr) {}
       };
 
-      /// returns whether this instance has been initilialized yet
-      bool isNull() const;
+      /// Detection result: zero or more recovered lattices.
+      struct Result {
+        std::vector<CheckerboardGrid> boards;
+        bool empty() const { return boards.empty(); }
+      };
 
-      /// detects the defined checkerboard in the given image
-      /** The image can have any format, but internally is is always converted
-          to gray (if it is not of formatGray). If optSubPix was set in
-          either the constructor or in init, the returned corners are
-          automatically optimized using cvFindCornerSubPix */
-      const Checkerboard &detect(const core::Img8u &image);
+      virtual ~CheckerboardDetector() = default;
 
-      /// convenience method that automatically scales the source images range to 0,255 if it is not already of type Img8u
-      const Checkerboard &detect(const core::ImgBase *image);
+      /// Detect checkerboard lattice(s) in \a image, optionally guided by \a hints.
+      /** Non-const on purpose: backends may reuse internal buffers across calls. */
+      virtual Result detect(const core::Img8u &image, const Hints &hints = {}) = 0;
 
-      /// Image-based overload
-      inline const Checkerboard &detect(const core::Image &image) {
-        return detect(image.ptr());
-      }
+      /// Short technique identifier (e.g. "native-growth", "opencv").
+      virtual std::string name() const = 0;
     };
 
   } // namespace cv

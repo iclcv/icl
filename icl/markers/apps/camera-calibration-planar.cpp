@@ -8,7 +8,7 @@
 #include <icl/geom/PoseEstimator.h>
 #include <icl/geom/CoplanarPointPoseEstimator.h>
 #include <icl/markers/MarkerGridPoseEstimator.h>
-#include <icl/cv/CheckerboardDetector.h>
+#include <icl/cv/OpenCVCheckerboardDetector.h>
 #include <icl/markers/AdvancedMarkerGridDetector.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
 #include "camera-calibration-planar-GridIndicatorObject.h"
@@ -83,7 +83,7 @@ GridIndicatorObject *gridIndicator;
 struct View{
   ImageSource grabber;
   Detector detector;
-  CheckerboardDetector cbDetector;
+  OpenCVCheckerboardDetector cbDetector;
   MarkerGridPoseEstimator poseEst;
   CoplanarPointPoseEstimator cbPoseEst;
   Camera camera;
@@ -348,7 +348,7 @@ void run(){
     Camera cam = v.camera;
     Mat T;
     const MarkerGrid *grid = 0;
-    const CheckerboardDetector::Checkerboard *cb = 0;
+    const OpenCVCheckerboardDetector::Checkerboard *cb = 0;
     if(cbDef.used){
       cb = &v.cbDetector.detect(image);
       T = v.cbPoseEst.getPose(cbDef.pts.size(),

@@ -3,7 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/markers/CheckerboardTarget.h>
-#include <icl/cv/CheckerboardSaddleDetector.h>
+#include <icl/cv/CheckerboardDetector.h>
+#include <icl/cv/NativeCheckerboardDetector.h>
 #include <icl/cv/CheckerboardGrid.h>
 
 using namespace icl::utils;
@@ -13,7 +14,12 @@ using namespace icl::geom;
 namespace icl::markers {
 
   CheckerboardTarget::CheckerboardTarget(int cols, int rows, float squareSizeMM)
-    : m_cols(cols), m_rows(rows), m_squareMM(squareSizeMM) {}
+    : m_cols(cols), m_rows(rows), m_squareMM(squareSizeMM),
+      m_detector(std::make_shared<cv::NativeCheckerboardDetector>()) {}
+
+  void CheckerboardTarget::setDetector(std::shared_ptr<cv::CheckerboardDetector> detector) {
+    m_detector = std::move(detector);
+  }
 
   std::vector<Vec> CheckerboardTarget::modelPoints() const {
     std::vector<Vec> pts;
@@ -30,8 +36,11 @@ namespace icl::markers {
     const int IC = m_cols-1, IR = m_rows-1;   // inner-corner lattice dimensions
     if (IC < 1 || IR < 1) return out;
 
-    const auto seeds = cv::CheckerboardSaddleDetector().detect(image);
-    const cv::CheckerboardGrid g = cv::recoverCheckerboardGrid(seeds, &image);   // guided
+    cv::CheckerboardDetector::Hints hints;
+    hints.boardCells = Size(IC, IR);   // some backends (opencv) require it; native ignores it
+    const cv::CheckerboardDetector::Result res = m_detector->detect(image, hints);
+    if (res.empty()) return out;
+    const cv::CheckerboardGrid &g = res.boards.front();
 
     // v1: require the full lattice, matching the board in either axis order. The
     // recovered (col,row) origin/orientation is arbitrary; we map it onto the

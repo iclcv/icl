@@ -2,7 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/cv/CheckerboardDetector.h>
+#include <icl/cv/OpenCVCheckerboardDetector.h>
+#include <icl/cv/CheckerboardGrid.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/compat/OpenCV.h>
 #include <icl/core/cc/CCFunctions.h>
@@ -17,8 +18,8 @@ namespace icl{
 
   namespace cv{
 
-    struct CheckerboardDetector::Data{
-      CheckerboardDetector::Checkerboard cb;
+    struct OpenCVCheckerboardDetector::Data{
+      OpenCVCheckerboardDetector::Checkerboard cb;
       ::cv::Mat *mat;
       Img8u grayBuf;
       Img8u buf8u;
@@ -29,17 +30,17 @@ namespace icl{
       }
     };
 
-    CheckerboardDetector::CheckerboardDetector():m_data(0){
+    OpenCVCheckerboardDetector::OpenCVCheckerboardDetector():m_data(0){
       init_properties();
     }
 
-    CheckerboardDetector::CheckerboardDetector(const Size &size):
+    OpenCVCheckerboardDetector::OpenCVCheckerboardDetector(const Size &size):
       m_data(0){
       init_properties();
       init(size);
     }
 
-    void CheckerboardDetector::init_properties(){
+    void OpenCVCheckerboardDetector::init_properties(){
       addProperty("subpixel opt.enabled",utils::prop::Flag{}, true);
       addProperty("subpixel opt.radius",utils::prop::Range{.min=1, .max=15, .step=1}, 3);
       addProperty("subpixel opt.inner radius",utils::prop::Range{.min=-1, .max=15, .step=1}, -1);
@@ -47,11 +48,11 @@ namespace icl{
       addProperty("subpixel opt.min error",utils::prop::Range{.min=0.0001f, .max=1.f}, 0.1);
     }
 
-    CheckerboardDetector::~CheckerboardDetector(){
+    OpenCVCheckerboardDetector::~OpenCVCheckerboardDetector(){
       if(m_data) delete m_data;
     }
 
-    void CheckerboardDetector::init(const Size &size){
+    void OpenCVCheckerboardDetector::init(const Size &size){
       if(!m_data){
         m_data = new Data;
         m_data->mat = 0;
@@ -59,13 +60,13 @@ namespace icl{
       m_data->cb.size = size;
     }
 
-    bool CheckerboardDetector::isNull() const{
+    bool OpenCVCheckerboardDetector::isNull() const{
       return !m_data;
     }
 
-    const CheckerboardDetector::Checkerboard &
-    CheckerboardDetector::detect(const core::ImgBase *image){
-      if(!image) throw ICLException("CheckerboardDetector::detect(const core::ImgBase *image): image is null");
+    const OpenCVCheckerboardDetector::Checkerboard &
+    OpenCVCheckerboardDetector::detect(const core::ImgBase *image){
+      if(!image) throw ICLException("OpenCVCheckerboardDetector::detect(const core::ImgBase *image): image is null");
       if(image->getDepth() == depth8u){
         return detect(*image->as8u());
       }
@@ -81,8 +82,8 @@ namespace icl{
       return detect(m_data->buf8u);
     }
 
-    const CheckerboardDetector::Checkerboard &
-    CheckerboardDetector::detect(const Img8u &image){
+    const OpenCVCheckerboardDetector::Checkerboard &
+    OpenCVCheckerboardDetector::detect(const Img8u &image){
       const Img8u *useImage = &image;
       if(image.getFormat() != formatGray && image.getChannels() != 1){
         m_data->grayBuf.setFormat(formatGray);
@@ -126,7 +127,26 @@ namespace icl{
       return m_data->cb;
     }
 
-    VisualizationDescription CheckerboardDetector::Checkerboard::visualize() const{
+    CheckerboardDetector::Result
+    OpenCVCheckerboardDetector::detect(const Img8u &image, const Hints &hints){
+      if(hints.boardCells.width > 0 && hints.boardCells.height > 0)
+        init(hints.boardCells);
+      Result res;
+      if(isNull()) return res;   // board size unknown → nothing to detect
+      const Checkerboard &cb = detect(image);
+      if(cb.found){
+        CheckerboardGrid g;
+        g.cols = cb.size.width;
+        g.rows = cb.size.height;
+        g.points = cb.corners;   // findChessboardCorners is row-major ordered
+        g.filled.assign((size_t)g.cols*g.rows, 1);
+        g.count = g.cols*g.rows;
+        res.boards.push_back(std::move(g));
+      }
+      return res;
+    }
+
+    VisualizationDescription OpenCVCheckerboardDetector::Checkerboard::visualize() const{
       VisualizationDescription vis;
       static const Color cs[5] = {
         Color(255,0,0),

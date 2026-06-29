@@ -5,6 +5,9 @@
 #pragma once
 
 #include <icl/markers/CalibrationTarget.h>
+#include <memory>
+
+namespace icl::cv { class CheckerboardDetector; }
 
 namespace icl::markers {
 
@@ -23,10 +26,17 @@ namespace icl::markers {
     int   m_cols;        ///< checker squares along x
     int   m_rows;        ///< checker squares along y
     float m_squareMM;    ///< square edge length [mm]
+    std::shared_ptr<cv::CheckerboardDetector> m_detector;  ///< pixels→lattice technique
 
   public:
-    /// \a cols × \a rows checker squares, each \a squareSizeMM wide.
+    /// \a cols × \a rows checker squares, each \a squareSizeMM wide. Uses the
+    /// native ChESS-saddle + growth detector unless overridden via setDetector().
     CheckerboardTarget(int cols = 8, int rows = 6, float squareSizeMM = 25.f);
+
+    /// Swap the underlying detection technique (e.g. native-growth vs opencv).
+    void setDetector(std::shared_ptr<cv::CheckerboardDetector> detector);
+    /// The active detection technique.
+    std::shared_ptr<cv::CheckerboardDetector> getDetector() const { return m_detector; }
 
     std::vector<CalibrationCorrespondence> detect(const core::Img8u &image) const override;
     std::vector<geom::Vec> modelPoints() const override;

@@ -7,6 +7,8 @@ cv_headers = files(
   'CheckerboardDetector.h',
   'CheckerboardGrid.h',
   'CheckerboardSaddleDetector.h',
+  'NativeCheckerboardDetector.h',
+  'OpenCVCheckerboardDetector.h',
   'ContourDetector.h',
   'CornerDetectorCSS.h',
   'CurvatureExtractor.h',
@@ -42,9 +44,10 @@ cv_headers = files(
 
 cv_sources = files(
   'CV.cpp',
-  'CheckerboardDetector.cpp',
   'CheckerboardGrid.cpp',
   'CheckerboardSaddleDetector.cpp',
+  'NativeCheckerboardDetector.cpp',
+  'OpenCVCheckerboardDetector.cpp',
   'ContourDetector.cpp',
   'CornerDetectorCSS.cpp',
   'CurvatureExtractor.cpp',
