@@ -4,7 +4,64 @@
 
 ## Next Step
 
+### Session 85 — checkerboard calibration: detector ~13× faster, grid recovery + first CalibrationTarget, edge validation + guided growth
+On `further-restructuring-and-cleanup`. **Everything below is COMMITTED**, full suite **984/984
+green**. The detailed calibration arc lives in [`camera-calibration-redesign.md`](camera-calibration-redesign.md)
+(Phase B is now well advanced). Sandbox OpenCL/Metal cache fix from S84 is live.
+
+**Landed this session (commit order):**
+1. **WarpOp OOB → black is the default** + OpenCL edge-smear fix. The kernel now decides
+   out-of-bounds explicitly (coord outside `[0,w-1]×[0,h-1]` → black) instead of relying on
+   Apple's `CLK_ADDRESS_CLAMP` (which clamp-to-EDGEs, smearing Cycles' sky into the border).
+   OffscreenView distort + lab undistort switched Clamp→Zero. Tests `Filter.WarpOp.border_*`.
+2. **Lab: detect on the DISTORTED image**; "apply undistortion" is now a view-only rectified
+   preview (no detection) — real pipelines detect on the raw frame and undistort the corner
+   *coordinates*.
+3. **`cv::CheckerboardSaddleDetector` ~13× faster** (1000×1000: 38.9 → 3.0 ms): precomputed
+   ring bilinear weights (no per-pixel floor), squared-magnitude flat gate (skip sqrt on flat
+   areas), OpenMP on the dense response + the NMS scan (ordered row-bands → bit-identical),
+   `toGray` parallel. `Params::multithreaded` is the only knob (disable to avoid oversubscription
+   in an already-parallel context). Tried an OpenCL backend — SLOWER (upload/readback dwarfs the
+   compute), removed. `core::cc` not used (no SIMD on mac + wrong (R+G+B)/3 weighting). Tests
+   `cv.checkersaddle.*` (incl. `benchmark`, `multithreaded_matches_singlethreaded`).
+4. **Grid recovery v1** (`cv::CheckerboardGrid` + `recoverCheckerboardGrid`) — unordered seeds →
+   ordered integer `(col,row)` lattice. Dedup near-duplicates → bootstrap axes → fixed-point
+   growth (each cell re-derives local step vectors from its own neighbours; iterate till nothing
+   new). **GUIDED** when given the image: axes bootstrapped by EDGE EVIDENCE (true axis link = a
+   B/W border = high; diagonal = crosses a uniform square = low) — fixes the diagonal lattice
+   pure geometry grows under strong foreshortening. Tests `cv.checkergrid.*`.
+5. **Edge validation pass** (`scoreCheckerboardGridEdges`) — per-edge confidence = mean image
+   gradient PERPENDICULAR to the edge, probed at ±0.4× the **perpendicular cell spacing** (so
+   foreshortened "back" edges score correctly). Lab colours edges red→green by it.
+6. **`markers::CheckerboardTarget`** — the FIRST concrete `CalibrationTarget` (interface was
+   scaffolded, no impls). detector + guided recovery → object↔image correspondences for
+   `Camera::calibrate_*`; `modelPoints()` + a detectable `generate()`. Test
+   `markers.checkertarget.generate_detect_roundtrip`.
+
+**Pipeline now:** detector (seeds) → grid recovery (ordered lattice) → CheckerboardTarget
+(correspondences) → `Camera::calibrate_*`. `CheckerboardGrid` is the stable seam the decided
+region-quad/ChESS hybrid can replace later without touching consumers.
+
+**NEXT (pick up here):**
+- **False-positive suppression** (deferred, the user flagged it): extreme views yield a few
+  spurious *border* detections that inflate the lattice dims. Build a heuristic on the edge
+  confidence — reject seeds whose best edges are weak, or require a complete rectangular
+  sub-block. (See the unchecked box in the plan doc.)
+- **`MarkerGridTarget`** — wrap `AdvancedMarkerGridDetector` as the 2nd `CalibrationTarget`, so
+  both backends feed the identical interface.
+- **Comparison harness** — drive each `CalibrationTarget` through `Camera::calibrate_*`
+  (decoupled intrinsics → fixed-intrinsics extrinsics) across a sweep (distance/noise/distortion/
+  viewpoint) → error-vs-truth tables. THE 2D-checkerboard-vs-3D-marker numbers (the whole point).
+- **RESEARCH — survey better checkerboard detectors.** Detection quality bounds calibration
+  accuracy, and our native ChESS-saddle + growth still struggles on hard cases (strong
+  foreshortening false positives, glare/blur, partial boards). Survey the state of the art
+  (e.g. OpenCV `findChessboardCornersSB`/ROCHADE-style refinement, libcbdetect / Geiger's
+  growth method, deflectometric / deep-learning corner detectors) and benchmark robustness vs our
+  native path — keep ICL-native if competitive, else wrap the best as another `CornerSeed`
+  provider in the planned seed-fusion framework.
+
 ### Session 84 — Node→Scene2 backpointer, OffscreenView lens distortion, WarpOp bugs, sandbox OpenCL fix
+**(LANDED — committed in Session 85; the "UNCOMMITTED" notes below are historical.)**
 On `further-restructuring-and-cleanup`. **All work below is UNCOMMITTED** in the working tree
 (git status: WarpOp.{h,cpp} + WarpOp_{Cpp,Ipp,OpenCL}.cpp, geom2 Node/GroupNode/Scene2/
 OffscreenView/CheckerboardNode + the lab, tests/test-filter.cpp, new scripts/sandbox-cl-*).

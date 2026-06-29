@@ -47,7 +47,12 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
         verification still owed.
   - [ ] Phase A.2 rendering harness (geom2 offscreen + synthetic light/noise → detect → calibrate).
   - [x] **investigated** calibrate_extrinsic divergence: broken linear SVD seed (cheirality/scale); LMA itself is correct + wide basin; fix = homography/PnP seed (Phase B). Regression locked (4.4mm vs 249mm).
-  - [ ] Phase B planar intrinsic+extrinsic (checkerboard backend, native-vs-opencv intrinsics).
+  - [x] **detector ~13× faster** (`CheckerboardSaddleDetector`: precomputed weights, squared gate, OpenMP; OpenCL tried + dropped as slower).
+  - [x] **grid recovery v1** (`cv::CheckerboardGrid` + growth) + **guided growth** (edge-evidence axes; fixes the strong-foreshortening diagonal trap) + **edge validation pass** (`scoreCheckerboardGridEdges`, perpendicular-spacing probe; lab colours edges by it).
+  - [x] **`markers::CheckerboardTarget`** — first concrete `CalibrationTarget` (detector+recovery → correspondences).
+  - [ ] **false-positive suppression** (extreme views add spurious border seeds → inflate dims; build a heuristic on the edge confidence).
+  - [ ] **RESEARCH: better checkerboard detectors** — detection bounds calibration accuracy; survey SOTA (findChessboardCornersSB/ROCHADE, libcbdetect/Geiger growth, DL corner detectors) vs our ChESS+growth; wrap the best as a `CornerSeed` provider if it beats native.
+  - [ ] Phase B planar intrinsic+extrinsic (native-vs-opencv intrinsics) — `MarkerGridTarget` + comparison harness next.
   - [ ] Phase C multi-cam one-click extrinsic (3D, fixed intrinsics). Then geom can be deleted.
 - [ ] **depth/point-cloud batch** (point-cloud-creator, point-cloud-define-world-frame,
       kinect ×5, rgbd-mapping) — gated on decoupling `PointCloudCreator`/
