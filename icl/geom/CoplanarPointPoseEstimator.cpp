@@ -791,85 +791,110 @@ namespace icl::geom {
   CoplanarPointPoseEstimator::getPoses(int n, const Point32f *modelPoints,
                                        const Point32f *imagePoints, const Camera &cam){
     typedef FixedMatrix<float,1,3> V3;
-    const Mat P = cam.getProjectionMatrix();
+    typedef FixedMatrix<float,3,3> M3;
+    std::vector<PoseCandidate> out;
+    if (n < 4) return out;
 
-    // first (best) solution via the configured estimator
-    const Mat pose1 = getPose(n, modelPoints, imagePoints, cam);
-    // bring it to CAMERA frame (internally everything reprojects as P * T_cam * model)
-    const Mat csT = cam.getCSTransformationMatrix();
+    const Mat csT = cam.getCSTransformationMatrix(), csTinv = csT.inv();
     const bool world = (data->referenceFrame == worldFrame);
-    const Mat T1 = world ? csT * pose1 : pose1;
-
-    const Mat csTinv = csT.inv();
     auto dot3 = [](const V3 &a, const V3 &b){ return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]; };
     auto nrm3 = [&](const V3 &a){ const float l=std::sqrt(dot3(a,a)); return l>1e-9f ? V3(a[0]/l,a[1]/l,a[2]/l) : a; };
 
-    // reprojection error of a CAMERA-frame pose via the full camera model (robust
-    // for any camera; the internal compute_error_opt uses a simplified projection)
-    auto reproErr = [&](const Mat &Tcam){
+    // CLOSED-FORM planar (IPPE) pose, both solutions — no iterative search.
+    // 1) normalised image points (K^-1) + homography model(z=0) -> normalised image
+    const float ifx = 1.f/(cam.getFocalLength()*cam.getSamplingResolutionX());
+    const float ify = 1.f/(cam.getFocalLength()*cam.getSamplingResolutionY());
+    const float icx = -ifx*cam.getPrincipalPointOffset().x, icy = -ify*cam.getPrincipalPointOffset().y;
+    std::vector<Point32f> norm(n);
+    for (int i = 0; i < n; ++i) norm[i] = Point32f(ifx*imagePoints[i].x+icx, ify*imagePoints[i].y+icy);
+    GenericHomography2D<float> H(norm.data(), modelPoints, n);   // apply(model) = normalised image
+
+    // 2) rotate into the canonical frame where the object centre projects to the
+    //    optical axis (Rv: viewing ray (p,q,1) -> +z); then the homography's third
+    //    column is (0,0,*) and the metric pose reduces to a 2x2 problem.
+    const float p = H(0,2)/H(2,2), q = H(1,2)/H(2,2);
+    M3 Rv = M3::id();
+    const float pp = p*p + q*q;
+    if (pp > 1e-12f) {
+      const float tn = std::sqrt(pp), kx = q/tn, ky = -p/tn;
+      const float c = 1.f/std::sqrt(pp+1.f), s = tn/std::sqrt(pp+1.f), vc = 1-c;
+      Rv(0,0)=c+kx*kx*vc; Rv(0,1)=kx*ky*vc;   Rv(0,2)=ky*s;
+      Rv(1,0)=kx*ky*vc;   Rv(1,1)=c+ky*ky*vc; Rv(1,2)=-kx*s;
+      Rv(2,0)=-ky*s;      Rv(2,1)=kx*s;       Rv(2,2)=c;
+    }
+    const M3 Hc = Rv * (const M3&)H;
+    // scale so the rotation columns are unit, sign so the object is in front (z>0)
+    const float c0 = std::sqrt(Hc(0,0)*Hc(0,0)+Hc(1,0)*Hc(1,0)+Hc(2,0)*Hc(2,0));
+    const float c1 = std::sqrt(Hc(0,1)*Hc(0,1)+Hc(1,1)*Hc(1,1)+Hc(2,1)*Hc(2,1));
+    float sc = 0.5f*(c0+c1);
+    if (!(sc > 1e-12f)) return out;
+    if (Hc(2,2) < 0) sc = -sc;
+    const float B00=Hc(0,0)/sc, B01=Hc(0,1)/sc, B10=Hc(1,0)/sc, B11=Hc(1,1)/sc;
+    const float a2 = std::max(0.f, 1.f-B00*B00-B10*B10);
+    const float b2 = std::max(0.f, 1.f-B01*B01-B11*B11);
+    const float ga = B00*B01 + B10*B11;
+    const float aMag = std::sqrt(a2);
+
+    // 3) given R (camera frame), solve translation by linear least squares from the
+    //    normalised correspondences (2 eqns/pt, 3 unknowns) — closed-form 3x3 solve
+    auto solveT = [&](const M3 &R) -> V3 {
+      M3 ata(0.f); V3 atb(0.f,0.f,0.f);
+      for (int i = 0; i < n; ++i) {
+        const float Mx = modelPoints[i].x, My = modelPoints[i].y;
+        const float Px = R(0,0)*Mx + R(0,1)*My, Py = R(1,0)*Mx + R(1,1)*My, Pz = R(2,0)*Mx + R(2,1)*My;
+        const float u = norm[i].x, v = norm[i].y;
+        // row [1,0,-u] = u*Pz-Px ; row [0,1,-v] = v*Pz-Py
+        ata(0,0)+=1;            ata(0,2)+=-u;
+        ata(1,1)+=1;            ata(1,2)+=-v;
+        ata(2,0)+=-u; ata(2,1)+=-v; ata(2,2)+=u*u+v*v;
+        const float b1=u*Pz-Px, b2v=v*Pz-Py;
+        atb[0]+=b1; atb[1]+=b2v; atb[2]+=-u*b1 - v*b2v;
+      }
+      try { const V3 t = ata.inv()*atb; return t; } catch (...) { return V3(0,0,1); }
+    };
+
+    // 4) complete the canonical-frame rotation's third row/column. The third
+    //    components a,b of the first two columns satisfy a^2=1-B00^2-B10^2,
+    //    b^2=1-B01^2-B11^2 and a*b=-(B00*B01+B10*B11); the sign freedom is the
+    //    planar flip. Rather than the numerically-unstable b=-ga/a, enumerate the
+    //    sign combinations and let the true reprojection error arbitrate (invalid
+    //    (non-orthogonal) combinations reproject badly and are dropped).
+    const float bMag = std::sqrt(b2);
+    std::vector<PoseCandidate> cand;
+    for (int sa = -1; sa <= 1; sa += 2) for (int sb = -1; sb <= 1; sb += 2) {
+      const float a = sa*aMag, b = sb*bMag;
+      if (std::fabs(a*b + ga) > 0.20f) continue;        // enforce a*b = -ga (orthogonality)
+      const V3 cc0(B00,B10,a), cc1(B01,B11,b), cc2 = cross3(cc0,cc1);
+      M3 Rc;
+      Rc(0,0)=cc0[0]; Rc(1,0)=cc0[1]; Rc(2,0)=cc0[2];
+      Rc(0,1)=cc1[0]; Rc(1,1)=cc1[1]; Rc(2,1)=cc1[2];
+      Rc(0,2)=cc2[0]; Rc(1,2)=cc2[1]; Rc(2,2)=cc2[2];
+      const M3 R = Rv.transp() * Rc;             // back to the camera frame
+      const V3 t = solveT(R);
+      Mat Tcam = Mat::id();
+      for (int r=0;r<3;++r) for (int cc=0;cc<3;++cc) Tcam(r,cc)=R(r,cc);
+      Tcam(0,3)=t[0]; Tcam(1,3)=t[1]; Tcam(2,3)=t[2];
       const Mat Tw = csTinv * Tcam;
       float e = 0;
-      for (int i = 0; i < n; ++i) {
-        const Vec X = Tw * Vec(modelPoints[i].x, modelPoints[i].y, 0, 1);
-        e += cam.project(X).distanceTo(imagePoints[i]);
-      }
-      return e / n;
-    };
-    // the planar-ambiguity mirror of a camera-frame pose: reflect its normal about
-    // the viewing ray to its centre, keep the in-plane orientation + depth.
-    auto flipPose = [&](const Mat &T) -> Mat {
-      const V3 t  = T.part<3,0,1,3>();
-      const V3 v  = nrm3(t);
-      const V3 z  = T.part<2,0,1,3>();
-      const float d = dot3(z, v);
-      const V3 z2 = nrm3(V3(2*d*v[0]-z[0], 2*d*v[1]-z[1], 2*d*v[2]-z[2]));
-      const V3 x  = T.part<0,0,1,3>();
-      const float dx = dot3(x, z2);
-      const V3 x2 = nrm3(V3(x[0]-dx*z2[0], x[1]-dx*z2[1], x[2]-dx*z2[2]));
-      const V3 y2 = cross3(z2, x2);                 // z x x = y (right-handed [x y z])
-      Mat F = Mat::id();
-      F.part<0,0,1,3>()=x2; F.part<1,0,1,3>()=y2; F.part<2,0,1,3>()=z2; F.part<3,0,1,3>()=t;
-      return F;
-    };
-    // local Simplex refine of a seed, but kept only if it improves the TRUE error
-    // (the simplex minimises the simplified projection, which can drift a good seed)
-    SimplexErrorFunction errf(P, modelPoints, imagePoints, n);
-    std::function<float(const Pose6D &)> ferr = [&errf](const Pose6D &p){ return errf.f(p); };
-    auto refine = [&](const Mat &seed) -> PoseCandidate {
-      SimplexOptimizer<float,Pose6D> opt(ferr, 6, 400, 0.5);
-      const auto res = opt.optimize(create_initial_simplex(extract_euler_angles(seed), V3(seed.part<3,0,1,3>())));
-      const Pose6D &x = res.x;
-      const Mat o = create_hom_4x4<float>(x[0],x[1],x[2],x[3],x[4],x[5]);
-      const float es = reproErr(seed), eo = reproErr(o);
-      return eo < es ? PoseCandidate{o, eo} : PoseCandidate{seed, es};
-    };
+      for (int i = 0; i < n; ++i)
+        e += cam.project(Tw * Vec(modelPoints[i].x, modelPoints[i].y, 0, 1)).distanceTo(imagePoints[i]);
+      cand.push_back({world ? Tw : Tcam, e/n});
+    }
+    if (cand.empty()) return out;
 
-    // collect candidates from the primary AND its flip (the primary is not reliable
-    // at weak perspective — it may return the wrong branch), then add the mirror of
-    // whichever is best so the genuine second solution is always bracketed.
-    std::vector<PoseCandidate> cand;
-    cand.push_back(refine(T1));
-    cand.push_back(refine(flipPose(T1)));
-    const PoseCandidate &b0 = cand[0].error < cand[1].error ? cand[0] : cand[1];
-    cand.push_back(refine(flipPose(b0.pose)));
-
-    // dedup by marker normal (≈ same pose), keep the lowest-error representative
+    // best first; keep up to two solutions with distinct marker normals (the flip)
     std::sort(cand.begin(), cand.end(),
               [](const PoseCandidate &a, const PoseCandidate &b){ return a.error < b.error; });
-    std::vector<PoseCandidate> uniq;
     for (const auto &c : cand) {
       const V3 nc = nrm3(V3(c.pose.part<2,0,1,3>()));
       bool dup = false;
-      for (const auto &u : uniq) {
+      for (const auto &u : out) {
         const V3 nu = nrm3(V3(u.pose.part<2,0,1,3>()));
-        if (std::acos(std::max(-1.f,std::min(1.f,dot3(nc,nu)))) < 0.05f) { dup = true; break; }
+        if (std::acos(std::max(-1.f,std::min(1.f,std::fabs(dot3(nc,nu))))) < 0.02f) { dup = true; break; }
       }
-      if (!dup) uniq.push_back(c);
-      if (uniq.size() == 2) break;
+      if (!dup) out.push_back(c);
+      if (out.size() == 2) break;
     }
-    auto toFrame = [&](const Mat &Tc){ return world ? Mat(csTinv*Tc) : Tc; };
-    std::vector<PoseCandidate> out;
-    for (const auto &u : uniq) out.push_back({toFrame(u.pose), u.error});
     return out;
   }
 

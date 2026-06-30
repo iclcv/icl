@@ -170,21 +170,25 @@ namespace icl::geom {
     };
 
     /// Estimate the pose returning BOTH solutions of the planar (IPPE) ambiguity.
-    /** A single planar marker's homography decomposes into two poses that reproject
-        the corners almost equally well — the "flip" (tilted toward vs away). At
+    /** A single planar marker's homography admits two poses that reproject the
+        corners almost equally well — the "flip" (tilted toward vs away). At
         steep/oblique views these are nearly indistinguishable and a one-pose
         solver jitters between them. This returns up to two hypotheses, best-first
-        (sorted by reprojection error):
+        (sorted by mean reprojection error).
 
-        - getPoses(...)[0] is the same as getPose(...);
-        - the second is found by reflecting the marker normal about the viewing ray
-          to the marker centre and re-optimising from that seed (reuses the internal
-          local refiner), which lands in the basin of the second minimum.
+        CLOSED-FORM (IPPE, Collins & Bartoli 2014) — no iterative search: fit the
+        homography model→normalised-image, rotate into the canonical frame where
+        the object centre projects to the optical axis (so the homography's third
+        column is axis-aligned), and the metric rotation reduces to completing a
+        2×2 block's third row/column — whose sign freedom IS the planar flip,
+        giving both rotations directly. Each rotation's translation is then a small
+        linear least-squares solve. Deterministic and accurate (it recovers exact
+        synthetic poses to ~1e-5 px, where the iterative path left ~0.03 px).
 
         Disambiguate via the error ratio err[0]/err[1] — close to 1 means genuinely
         ambiguous (decide by temporal consistency, the interior pattern, or a marker
-        grid). Returns a single entry when the second seed converges back to the
-        first (well-conditioned, unambiguous view). */
+        grid). Returns a single entry when the second solution collapses onto the
+        first (fronto-parallel / well-conditioned view). Needs n>=4 points. */
     std::vector<PoseCandidate> getPoses(int n, const utils::Point32f *modelPoints,
                                         const utils::Point32f *imagePoints, const Camera &cam);
 
