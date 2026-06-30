@@ -43,10 +43,18 @@ namespace icl::markers {
     core::Img8u generate(const utils::Size &pixelSize) const override;
     std::string name() const override { return "marker-grid"; }
 
-    /// Enable/disable sub-pixel refinement of the marker corners in detect()
-    /// (cv::SubPixelCornerRefiner — border edge-line fit). On by default: the
-    /// raw region-quad corners are only ~1px accurate, the dominant calibration
-    /// error. Disable to compare against the raw detector corners.
+    /// How detect() refines the raw region-quad corners (only ~1px accurate, the
+    /// dominant calibration error).
+    enum class RefineMode {
+      None,     ///< raw detector corners
+      Edge,     ///< cv::SubPixelCornerRefiner — fit the 4 outer black/white border edges
+      Pattern,  ///< MarkerPatternRefiner — align the decoded pattern's INTERIOR edges
+                ///< (both polarities) → exposure-bias-robust, lower variance
+    };
+    void setRefineMode(RefineMode m);
+    RefineMode getRefineMode() const;
+
+    /// Back-compat shortcut: true → Edge, false → None. (getter: true unless None.)
     void setSubPixelRefine(bool on);
     bool getSubPixelRefine() const;
   };

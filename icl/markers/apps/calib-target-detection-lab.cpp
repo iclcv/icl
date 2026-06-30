@@ -203,7 +203,7 @@ void init() {
                   << (HBox()
                       << Combo("native-growth,native-ransac,native-graph,opencv", {.handle="backend", .label="detector backend"})
                       << CheckBox("cleanup (LAP)", {.checked=false, .handle="cleanup"}))
-                  << CheckBox("marker sub-pixel refine", {.checked=true, .handle="subpix"})  // marker-only
+                  << Combo("pattern,edge,none", {.handle="refineMode", .label="marker corner refine"})  // marker-only
                   << Button("save frame", {.handle="saveFrame"})
                   << CheckBox("apply undistortion", {.checked=false, .handle="undistort"})
                   << Prop(&view, {.label="offscreen renderer + scene"})
@@ -228,7 +228,7 @@ void run() {
   const bool  showUndistorted = gui["undistort"];
   const int   backend  = ComboHandle(gui["backend"]).getSelectedIndex();  // 0=growth,1=ransac,2=graph,3=opencv
   const bool  cleanup  = gui["cleanup"];
-  const bool  subpix   = gui["subpix"];
+  const int   rmode    = ComboHandle(gui["refineMode"]).getSelectedIndex();  // 0=pattern,1=edge,2=none
 
   // swap the visible board on a target change. setVisible() alone doesn't bump the
   // scene version, so scene.touch() forces the offscreen capture to re-render.
@@ -241,18 +241,19 @@ void run() {
     const bool cb = (target == 0);   // checkerboard active
     for (const char *h : {"xc","yc","radius","minScore","backend","cleanup","showOri"})
       if (cb) gui[h].enable(); else gui[h].disable();
-    if (cb) gui["subpix"].disable(); else gui["subpix"].enable();
+    if (cb) gui["refineMode"].disable(); else gui["refineMode"].enable();
   }
   if (target == 0) board->setCells(gui["xc"], gui["yc"]);   // idempotent
-  mtarget->setSubPixelRefine(subpix);
+  using RM = MarkerGridTarget::RefineMode;
+  mtarget->setRefineMode(rmode==0 ? RM::Pattern : rmode==1 ? RM::Edge : RM::None);
 
   // re-render the result on a new captured frame OR a control change
-  static int lRadius=-1, lUndist=-1, lBackend=-1, lCleanup=-1, lSubpix=-1; static float lMs=1e9f;
+  static int lRadius=-1, lUndist=-1, lBackend=-1, lCleanup=-1, lRmode=-1; static float lMs=1e9f;
   const bool resultDirty = radius!=lRadius || minScore!=lMs || (int)showUndistorted!=lUndist
                         || backend!=lBackend || (int)cleanup!=lCleanup || target!=lTarget
-                        || (int)subpix!=lSubpix;
+                        || rmode!=lRmode;
   lRadius=radius; lMs=minScore; lUndist=(int)showUndistorted; lBackend=backend;
-  lCleanup=(int)cleanup; lTarget=target; lSubpix=(int)subpix;
+  lCleanup=(int)cleanup; lTarget=target; lRmode=rmode;
 
   gui["scene"].render();
   const auto frame = view.next();

@@ -5,9 +5,11 @@
 #include <icl/markers/MarkerGridTarget.h>
 #include <icl/markers/AdvancedMarkerGridDetector.h>
 #include <icl/markers/FiducialDetector.h>
+#include <icl/markers/MarkerPatternRefiner.h>
 #include <icl/cv/SubPixelCornerRefiner.h>
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <memory>
 
 using namespace icl::utils;
@@ -22,7 +24,20 @@ namespace icl::markers {
     AMGD::AdvancedGridDefinition def;
     AMGD detector;        // detect() mutates its internal grid (PIMPL hides the non-const)
     AMGD::MarkerGrid model;   // reference grid (grid-space corner points) for modelPoints/generate
-    bool subPixel = true;     // sub-pixel-refine the marker corners in detect()
+    RefineMode mode = RefineMode::Edge;   // how detect() refines the marker corners
+
+    // lazily-built ideal templates (Pattern mode) + the renderer producing them
+    std::unique_ptr<FiducialDetector> fd;
+    std::map<int, Img8u> tmplCache;
+    static const int TPL = 80;            // ideal-template render size [px]
+
+    const Img8u &templateFor(int id) {
+      auto it = tmplCache.find(id);
+      if (it != tmplCache.end()) return it->second;
+      if (!fd) fd.reset(new FiducialDetector(def.getMarkerType(), ParamMap{{"size", "1x1"}}));
+      Img8u t = fd->createMarker(id, Size(TPL, TPL), ParamMap{{"border width", 2}});
+      return tmplCache.emplace(id, t).first->second;
+    }
   };
 
   MarkerGridTarget::MarkerGridTarget(const Size &numCells, const Size32f &markerBoundsMM,
@@ -41,25 +56,42 @@ namespace icl::markers {
 
   MarkerGridTarget::~MarkerGridTarget() { delete m_data; }
 
-  void MarkerGridTarget::setSubPixelRefine(bool on) { m_data->subPixel = on; }
-  bool MarkerGridTarget::getSubPixelRefine() const { return m_data->subPixel; }
+  void MarkerGridTarget::setRefineMode(RefineMode m) { m_data->mode = m; }
+  MarkerGridTarget::RefineMode MarkerGridTarget::getRefineMode() const { return m_data->mode; }
+
+  void MarkerGridTarget::setSubPixelRefine(bool on) {
+    m_data->mode = on ? RefineMode::Edge : RefineMode::None;
+  }
+  bool MarkerGridTarget::getSubPixelRefine() const { return m_data->mode != RefineMode::None; }
 
   std::vector<CalibrationCorrespondence>
   MarkerGridTarget::detect(const core::Img8u &image) const {
     std::vector<CalibrationCorrespondence> out;
     const AMGD::MarkerGrid &g = m_data->detector.detect(&image);
-    // The marker corners come from a thresholded binary region (~1px accurate).
-    // Refine each marker's 4 corners to sub-pixel against the grayscale image
-    // (border edge-line fit + intersection) — the dominant calibration error.
-    std::unique_ptr<cv::SubPixelCornerRefiner> refiner;
-    if (m_data->subPixel) refiner.reset(new cv::SubPixelCornerRefiner(image));
+    // The marker corners come from a thresholded binary region (~1px accurate);
+    // refine them sub-pixel against the grayscale image. Edge: fit the 4 outer
+    // border edges. Pattern: align the decoded pattern's interior edges (both
+    // polarities) → exposure-bias-robust. Build the chosen refiner once (each
+    // wraps a one-time grayscale conversion of the image).
+    const RefineMode mode = m_data->mode;
+    std::unique_ptr<cv::SubPixelCornerRefiner> edgeRef;
+    std::unique_ptr<MarkerPatternRefiner> patRef;
+    if (mode == RefineMode::Edge)    edgeRef.reset(new cv::SubPixelCornerRefiner(image));
+    if (mode == RefineMode::Pattern) patRef.reset(new MarkerPatternRefiner(image));
+    const float T = (float)Data::TPL;
+    // template corners matching the appendCornersTo order (ur, lr, ll, ul)
+    const Point32f tplCorners[4] = { {T,0}, {T,T}, {0,T}, {0,0} };
+
     for (auto it = g.begin(); it != g.end(); ++it) {
       const AMGD::Marker &m = *it;
       if (!m.wasFound()) continue;
       std::vector<Point32f> mp, ip;
       m.getGridPoints().appendCornersTo(mp);   // grid-space mm
-      m.getImagePoints().appendCornersTo(ip);  // detected image px (cyclic order)
-      if (refiner && ip.size() == 4) refiner->refineQuad(ip.data());
+      m.getImagePoints().appendCornersTo(ip);  // detected image px (cyclic ur,lr,ll,ul)
+      if (ip.size() == 4) {
+        if (edgeRef) edgeRef->refineQuad(ip.data());
+        else if (patRef) patRef->refine(m_data->templateFor(m.getId()), tplCorners, ip.data());
+      }
       for (size_t k = 0; k < mp.size() && k < ip.size(); ++k)
         out.push_back({Vec(mp[k].x, mp[k].y, 0.f, 1.f), ip[k]});
     }

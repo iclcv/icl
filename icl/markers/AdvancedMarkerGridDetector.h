@@ -106,6 +106,11 @@ namespace icl::markers {
           return found;
         }
 
+        /// returns the marker id
+        int getId() const {
+          return id;
+        }
+
         /// returns current image points
         const KeyPoints &getImagePoints() const{
           return imagePts;
