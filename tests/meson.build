@@ -34,6 +34,7 @@ if qt_dep.found()
     'test-geom2-raycast-octree.cpp',
     'test-geom2-primitive3d-converter.cpp',
     'test-geom2-calibration-harness.cpp',
+    'test-geom-coplanar-pose.cpp',
     'test-markers-checkerboard-target.cpp',
     'test-markers-marker-grid-target.cpp',
     'test-io-scene-source.cpp',

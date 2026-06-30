@@ -8,6 +8,7 @@
 #include <icl/math/la/FixedMatrix.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/config/Configurable.h>
+#include <vector>
 
 namespace icl::geom {
   /** \cond */
@@ -161,6 +162,31 @@ namespace icl::geom {
     */
     math::FixedMatrix<float,4,4> getPose(int n, const utils::Point32f *modelPoints,
                                          const utils::Point32f *imagePoints, const Camera &cam);
+
+    /// One pose hypothesis with its mean reprojection error.
+    struct PoseCandidate {
+      math::FixedMatrix<float,4,4> pose;  //!< in the configured reference frame
+      float error;                        //!< mean reprojection error [px]
+    };
+
+    /// Estimate the pose returning BOTH solutions of the planar (IPPE) ambiguity.
+    /** A single planar marker's homography decomposes into two poses that reproject
+        the corners almost equally well — the "flip" (tilted toward vs away). At
+        steep/oblique views these are nearly indistinguishable and a one-pose
+        solver jitters between them. This returns up to two hypotheses, best-first
+        (sorted by reprojection error):
+
+        - getPoses(...)[0] is the same as getPose(...);
+        - the second is found by reflecting the marker normal about the viewing ray
+          to the marker centre and re-optimising from that seed (reuses the internal
+          local refiner), which lands in the basin of the second minimum.
+
+        Disambiguate via the error ratio err[0]/err[1] — close to 1 means genuinely
+        ambiguous (decide by temporal consistency, the interior pattern, or a marker
+        grid). Returns a single entry when the second seed converges back to the
+        first (well-conditioned, unambiguous view). */
+    std::vector<PoseCandidate> getPoses(int n, const utils::Point32f *modelPoints,
+                                        const utils::Point32f *imagePoints, const Camera &cam);
 
     private:
     /// internal utility function

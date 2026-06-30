@@ -787,6 +787,92 @@ namespace icl::geom {
     }
   }
 
+  std::vector<CoplanarPointPoseEstimator::PoseCandidate>
+  CoplanarPointPoseEstimator::getPoses(int n, const Point32f *modelPoints,
+                                       const Point32f *imagePoints, const Camera &cam){
+    typedef FixedMatrix<float,1,3> V3;
+    const Mat P = cam.getProjectionMatrix();
+
+    // first (best) solution via the configured estimator
+    const Mat pose1 = getPose(n, modelPoints, imagePoints, cam);
+    // bring it to CAMERA frame (internally everything reprojects as P * T_cam * model)
+    const Mat csT = cam.getCSTransformationMatrix();
+    const bool world = (data->referenceFrame == worldFrame);
+    const Mat T1 = world ? csT * pose1 : pose1;
+
+    const Mat csTinv = csT.inv();
+    auto dot3 = [](const V3 &a, const V3 &b){ return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]; };
+    auto nrm3 = [&](const V3 &a){ const float l=std::sqrt(dot3(a,a)); return l>1e-9f ? V3(a[0]/l,a[1]/l,a[2]/l) : a; };
+
+    // reprojection error of a CAMERA-frame pose via the full camera model (robust
+    // for any camera; the internal compute_error_opt uses a simplified projection)
+    auto reproErr = [&](const Mat &Tcam){
+      const Mat Tw = csTinv * Tcam;
+      float e = 0;
+      for (int i = 0; i < n; ++i) {
+        const Vec X = Tw * Vec(modelPoints[i].x, modelPoints[i].y, 0, 1);
+        e += cam.project(X).distanceTo(imagePoints[i]);
+      }
+      return e / n;
+    };
+    // the planar-ambiguity mirror of a camera-frame pose: reflect its normal about
+    // the viewing ray to its centre, keep the in-plane orientation + depth.
+    auto flipPose = [&](const Mat &T) -> Mat {
+      const V3 t  = T.part<3,0,1,3>();
+      const V3 v  = nrm3(t);
+      const V3 z  = T.part<2,0,1,3>();
+      const float d = dot3(z, v);
+      const V3 z2 = nrm3(V3(2*d*v[0]-z[0], 2*d*v[1]-z[1], 2*d*v[2]-z[2]));
+      const V3 x  = T.part<0,0,1,3>();
+      const float dx = dot3(x, z2);
+      const V3 x2 = nrm3(V3(x[0]-dx*z2[0], x[1]-dx*z2[1], x[2]-dx*z2[2]));
+      const V3 y2 = cross3(z2, x2);                 // z x x = y (right-handed [x y z])
+      Mat F = Mat::id();
+      F.part<0,0,1,3>()=x2; F.part<1,0,1,3>()=y2; F.part<2,0,1,3>()=z2; F.part<3,0,1,3>()=t;
+      return F;
+    };
+    // local Simplex refine of a seed, but kept only if it improves the TRUE error
+    // (the simplex minimises the simplified projection, which can drift a good seed)
+    SimplexErrorFunction errf(P, modelPoints, imagePoints, n);
+    std::function<float(const Pose6D &)> ferr = [&errf](const Pose6D &p){ return errf.f(p); };
+    auto refine = [&](const Mat &seed) -> PoseCandidate {
+      SimplexOptimizer<float,Pose6D> opt(ferr, 6, 400, 0.5);
+      const auto res = opt.optimize(create_initial_simplex(extract_euler_angles(seed), V3(seed.part<3,0,1,3>())));
+      const Pose6D &x = res.x;
+      const Mat o = create_hom_4x4<float>(x[0],x[1],x[2],x[3],x[4],x[5]);
+      const float es = reproErr(seed), eo = reproErr(o);
+      return eo < es ? PoseCandidate{o, eo} : PoseCandidate{seed, es};
+    };
+
+    // collect candidates from the primary AND its flip (the primary is not reliable
+    // at weak perspective — it may return the wrong branch), then add the mirror of
+    // whichever is best so the genuine second solution is always bracketed.
+    std::vector<PoseCandidate> cand;
+    cand.push_back(refine(T1));
+    cand.push_back(refine(flipPose(T1)));
+    const PoseCandidate &b0 = cand[0].error < cand[1].error ? cand[0] : cand[1];
+    cand.push_back(refine(flipPose(b0.pose)));
+
+    // dedup by marker normal (≈ same pose), keep the lowest-error representative
+    std::sort(cand.begin(), cand.end(),
+              [](const PoseCandidate &a, const PoseCandidate &b){ return a.error < b.error; });
+    std::vector<PoseCandidate> uniq;
+    for (const auto &c : cand) {
+      const V3 nc = nrm3(V3(c.pose.part<2,0,1,3>()));
+      bool dup = false;
+      for (const auto &u : uniq) {
+        const V3 nu = nrm3(V3(u.pose.part<2,0,1,3>()));
+        if (std::acos(std::max(-1.f,std::min(1.f,dot3(nc,nu)))) < 0.05f) { dup = true; break; }
+      }
+      if (!dup) uniq.push_back(c);
+      if (uniq.size() == 2) break;
+    }
+    auto toFrame = [&](const Mat &Tc){ return world ? Mat(csTinv*Tc) : Tc; };
+    std::vector<PoseCandidate> out;
+    for (const auto &u : uniq) out.push_back({toFrame(u.pose), u.error});
+    return out;
+  }
+
   Mat CoplanarPointPoseEstimator::getPoseInternal(PoseEstimationAlgorithm a, int n,
                                                   const utils::Point32f *modelPoints,
                                                   const utils::Point32f *imagePoints,
