@@ -42,6 +42,13 @@ namespace icl::markers {
     std::vector<geom::Vec> modelPoints() const override;
     core::Img8u generate(const utils::Size &pixelSize) const override;
     std::string name() const override { return "marker-grid"; }
+
+    /// Enable/disable sub-pixel refinement of the marker corners in detect()
+    /// (cv::SubPixelCornerRefiner — border edge-line fit). On by default: the
+    /// raw region-quad corners are only ~1px accurate, the dominant calibration
+    /// error. Disable to compare against the raw detector corners.
+    void setSubPixelRefine(bool on);
+    bool getSubPixelRefine() const;
   };
 
 } // namespace icl::markers

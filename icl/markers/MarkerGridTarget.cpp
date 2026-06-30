@@ -5,8 +5,10 @@
 #include <icl/markers/MarkerGridTarget.h>
 #include <icl/markers/AdvancedMarkerGridDetector.h>
 #include <icl/markers/FiducialDetector.h>
+#include <icl/cv/SubPixelCornerRefiner.h>
 #include <algorithm>
 #include <cmath>
+#include <memory>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -20,6 +22,7 @@ namespace icl::markers {
     AMGD::AdvancedGridDefinition def;
     AMGD detector;        // detect() mutates its internal grid (PIMPL hides the non-const)
     AMGD::MarkerGrid model;   // reference grid (grid-space corner points) for modelPoints/generate
+    bool subPixel = true;     // sub-pixel-refine the marker corners in detect()
   };
 
   MarkerGridTarget::MarkerGridTarget(const Size &numCells, const Size32f &markerBoundsMM,
@@ -38,16 +41,25 @@ namespace icl::markers {
 
   MarkerGridTarget::~MarkerGridTarget() { delete m_data; }
 
+  void MarkerGridTarget::setSubPixelRefine(bool on) { m_data->subPixel = on; }
+  bool MarkerGridTarget::getSubPixelRefine() const { return m_data->subPixel; }
+
   std::vector<CalibrationCorrespondence>
   MarkerGridTarget::detect(const core::Img8u &image) const {
     std::vector<CalibrationCorrespondence> out;
     const AMGD::MarkerGrid &g = m_data->detector.detect(&image);
+    // The marker corners come from a thresholded binary region (~1px accurate).
+    // Refine each marker's 4 corners to sub-pixel against the grayscale image
+    // (border edge-line fit + intersection) — the dominant calibration error.
+    std::unique_ptr<cv::SubPixelCornerRefiner> refiner;
+    if (m_data->subPixel) refiner.reset(new cv::SubPixelCornerRefiner(image));
     for (auto it = g.begin(); it != g.end(); ++it) {
       const AMGD::Marker &m = *it;
       if (!m.wasFound()) continue;
       std::vector<Point32f> mp, ip;
       m.getGridPoints().appendCornersTo(mp);   // grid-space mm
-      m.getImagePoints().appendCornersTo(ip);  // detected image px
+      m.getImagePoints().appendCornersTo(ip);  // detected image px (cyclic order)
+      if (refiner && ip.size() == 4) refiner->refineQuad(ip.data());
       for (size_t k = 0; k < mp.size() && k < ip.size(); ++k)
         out.push_back({Vec(mp[k].x, mp[k].y, 0.f, 1.f), ip[k]});
     }

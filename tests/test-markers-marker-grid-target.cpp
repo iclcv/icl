@@ -71,3 +71,48 @@ ICL_REGISTER_TEST("markers.markergridtarget.generate_detect_roundtrip",
   ICL_TEST_TRUE(rx < 2.0);
   ICL_TEST_TRUE(ry < 2.0);
 }
+
+// Sub-pixel corner refinement (cv::SubPixelCornerRefiner, on by default in
+// detect()): the raw region-quad corners are only ~1px accurate; refining them
+// against the grayscale border edges must lower the affine-fit residual (the
+// corner-noise floor) on a clean synthetic render — and never raise it.
+ICL_REGISTER_TEST("markers.markergridtarget.subpixel_refine_improves_residual",
+                  "sub-pixel refinement lowers the marker-corner affine residual")
+{
+  const Size CELLS(4, 3);
+  const Size32f MB(20, 20), GB(4*20 + 3*10, 3*20 + 2*10);
+  MarkerGridTarget t(CELLS, MB, GB);
+  const Img8u grid = t.generate(Size(640, 480));
+
+  // 1-D affine residual of an obj->img axis (the render is an isotropic scaling)
+  auto residual = [](const std::vector<CalibrationCorrespondence> &c, bool useY){
+    double sx=0,sy=0,sxx=0,sxy=0; const int n=(int)c.size();
+    for (const auto &k : c) {
+      const double o = useY ? k.objectPos[1] : k.objectPos[0];
+      const double i = useY ? k.imagePos.y   : k.imagePos.x;
+      sx+=o; sy+=i; sxx+=o*o; sxy+=o*i;
+    }
+    const double det = n*sxx - sx*sx, s = (n*sxy - sx*sy)/det, b = (sy - s*sx)/n;
+    double e=0; for (const auto &k : c) {
+      const double o = useY ? k.objectPos[1] : k.objectPos[0];
+      const double i = useY ? k.imagePos.y   : k.imagePos.x;
+      e += (i-(s*o+b))*(i-(s*o+b));
+    }
+    return std::sqrt(e/n);
+  };
+
+  ICL_TEST_TRUE(t.getSubPixelRefine());            // on by default
+  t.setSubPixelRefine(false);
+  const auto coarse = t.detect(grid);
+  t.setSubPixelRefine(true);
+  const auto refined = t.detect(grid);
+  ICL_TEST_EQ(coarse.size(), refined.size());      // same correspondences, refined positions
+
+  const double cx = residual(coarse,false),  cy = residual(coarse,true);
+  const double rx = residual(refined,false), ry = residual(refined,true);
+  std::cout << "[markergridtarget] residual coarse x=" << cx << " y=" << cy
+            << " | refined x=" << rx << " y=" << ry << std::endl;
+  ICL_TEST_TRUE(rx < cx);                          // strictly better on both axes
+  ICL_TEST_TRUE(ry < cy);
+  ICL_TEST_TRUE(rx < 0.25 && ry < 0.25);           // ~2x improvement (coarse ~0.32)
+}
