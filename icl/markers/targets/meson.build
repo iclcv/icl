@@ -43,6 +43,7 @@ if _build_apps and qt_found
     'create-marker-grid-svg': [],
     'create-marker': [],
     'marker-detection': [icl_geom2_dep],
+    'calib-target-detection-lab': [icl_geom2_dep],
   }
   foreach name, extra_deps : _markers_apps
     executable('icl-' + name,
