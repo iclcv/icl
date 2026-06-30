@@ -5,6 +5,7 @@ if _build_demos and qt_found
   _markers_demos = {
     'multi-cam-marker-demo': [icl_geom2_dep],
     'simple-marker-demo': [],
+    'single-marker-pose': [icl_geom2_dep],
   }
   foreach name, extra_deps : _markers_demos
     executable(name + '-demo',
