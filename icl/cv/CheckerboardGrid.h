@@ -65,6 +65,32 @@ namespace icl::cv {
   ICLCV_API CheckerboardGrid recoverCheckerboardGrid(const std::vector<CornerSeed> &seeds,
                                                      const core::Img8u *image = nullptr);
 
+  /// Recover a checkerboard lattice from saddle corner seeds (global RANSAC, v2).
+  /** A foreshortening-robust alternative to recoverCheckerboardGrid that does NOT
+      bootstrap a single local axis pair (the step that falls into the "diagonal
+      trap" under steep oblique views, where the cell diagonal is shorter than the
+      board axes so nearest-neighbour growth links along diagonals). Instead it is
+      purely geometric and global:
+
+      1. RANSAC over every (centre, axis-pair) affine hypothesis from the seeds,
+         scored by how many seeds snap to DISTINCT integer lattice cells — a
+         diagonal basis only snaps half of them (the rest hit half-integers), so
+         the true axes win on inlier count;
+      2. homography ICP (model-anchored, Hoffmann-style): fit a homography
+         image→lattice and re-snap all seeds, iterated, folding perspective into
+         the model so the lattice stays rectangular on tilted boards;
+      3. compactness de-shear: the inlier count is invariant under unimodular
+         basis changes, so the winner may be a sheared labelling of the true axes;
+         relabel onto the unimodular basis that packs the corners into the most
+         filled bounding box.
+
+      Needs no image (no edge evidence) — robust by construction. Pair with
+      refineCheckerboardGrid() for the same global homography + Hungarian cleanup /
+      border trim as the growth path. Returns an empty grid for <4 seeds or when no
+      hypothesis explains ≥6 cells. Labels are internally consistent but not
+      canonicalised to a board frame (a target backend resolves that). */
+  ICLCV_API CheckerboardGrid recoverCheckerboardGridRansac(const std::vector<CornerSeed> &seeds);
+
   /// Global cleanup pass: suppress spurious border detections and fix growth
   /// mis-assignments via a model-based re-association.
   /** The greedy grid growth can, under strong foreshortening, grow a phantom

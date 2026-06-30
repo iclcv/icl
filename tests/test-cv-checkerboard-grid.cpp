@@ -12,6 +12,8 @@
 #include <icl/cv/CheckerboardSaddleDetector.h>
 #include <icl/cv/CheckerboardGrid.h>
 #include <icl/cv/OpenCVCheckerboardDetector.h>
+#include <icl/cv/RansacCheckerboardDetector.h>
+#include <icl/math/transform/Homography2D.h>
 #include <icl/core/Img.h>
 #include <algorithm>
 #include <cmath>
@@ -339,4 +341,94 @@ ICL_REGISTER_TEST("cv.checkergrid.guided_tilted",
   std::cout << "[checkergrid] guided_tilted: " << g.cols << "x" << g.rows
             << " meanEdge=" << (sum/cnt) << std::endl;
   ICL_TEST_TRUE(sum/cnt > 0.6);
+}
+
+// --- Global RANSAC association (recoverCheckerboardGridRansac / RansacCheckerboardDetector) ---
+
+// count/dims match for a DIRECT cols x rows inner-corner lattice (either order)
+static bool fullGrid(const CheckerboardGrid &g, int cols, int rows) {
+  return g.count == cols*rows &&
+         ((g.cols==cols && g.rows==rows) || (g.cols==rows && g.rows==cols));
+}
+
+// The RANSAC backend recovers the full inner-corner lattice on a clean board.
+ICL_REGISTER_TEST("cv.checkergrid.ransac_clean",
+                  "RANSAC backend recovers the full lattice on a clean board")
+{
+  const int COLS=9, ROWS=7;                              // -> 8x6 inner corners
+  Img8u img = renderBoard(480, 400, COLS, ROWS, 40, [](float x,float y){ return Point32f(x,y); });
+
+  RansacCheckerboardDetector det;
+  ICL_TEST_EQ(det.name(), std::string("native-ransac"));
+  const auto res = det.detect(img);
+  ICL_TEST_TRUE(!res.empty());
+  const CheckerboardGrid &g = res.boards[0];
+  std::cout << "[checkergrid] ransac_clean: " << g.cols << "x" << g.rows
+            << " count=" << g.count << std::endl;
+  ICL_TEST_TRUE(fullGrid(g, COLS-1, ROWS-1));
+  ICL_TEST_TRUE(latticeConsistent(g));
+}
+
+// The diagonal trap: a sheared board whose cell DIAGONAL is shorter than its
+// axes (steep oblique). Nearest-neighbour growth bootstraps onto the diagonal and
+// collapses to a sub-lattice; the global RANSAC associator recovers the full grid.
+// Image-free (seeds built directly from a sheared affine) -> deterministic.
+ICL_REGISTER_TEST("cv.checkergrid.ransac_diagonal_trap",
+                  "RANSAC recovers the full lattice where growth falls into the diagonal trap")
+{
+  const int C=9, R=6; const float L=40.f;
+  auto makeSeeds = [&](float phiDeg){
+    const float phi = phiDeg*(float)M_PI/180.f;
+    const Point32f a(L,0.f), b(L*std::cos(phi), L*std::sin(phi));   // equal-length axes at angle phi
+    std::vector<CornerSeed> s;
+    for (int r=0;r<R;++r) for (int c=0;c<C;++c) {
+      CornerSeed cs;
+      cs.pos = Point32f(240 + c*a.x + r*b.x, 160 + c*a.y + r*b.y);
+      // boost an INTERIOR seed so growth starts there (where the short diagonal
+      // neighbour exists and the trap triggers) — not at a grid corner (where the
+      // short-direction diagonal is off-grid, so growth would pick true axes).
+      cs.score = (c==C/2 && r==R/2) ? 1.0f : 0.5f;
+      s.push_back(cs);
+    }
+    return s;
+  };
+
+  // trap region: phi < 60 deg => |a-b| = 2L*sin(phi/2) < L = axis length
+  for (float phi : {55.f, 45.f, 35.f}) {
+    const auto seeds = makeSeeds(phi);
+    const CheckerboardGrid gr = recoverCheckerboardGridRansac(seeds);
+    std::cout << "[checkergrid] ransac_trap phi=" << phi << ": "
+              << gr.cols << "x" << gr.rows << " count=" << gr.count << std::endl;
+    ICL_TEST_TRUE(fullGrid(gr, C, R));
+  }
+
+  // lock the contrast: pure-geometry growth IS trapped at phi=45 (does not
+  // recover the full 9x6 grid) — this is the failure the RANSAC backend fixes.
+  const CheckerboardGrid gg = recoverCheckerboardGrid(makeSeeds(45.f));
+  ICL_TEST_TRUE(!fullGrid(gg, C, R));
+}
+
+// Perspective robustness: a strong keystone (top edge squeezed) is exactly a
+// homography. The RANSAC seed feeds the per-cell local-step growth, which tracks
+// perspective, so the full grid is recovered. Image-free (seeds via a homography
+// quad) -> deterministic. Guards the perspective gap the global-homography ICP
+// prototype had (it failed at this keystone strength).
+ICL_REGISTER_TEST("cv.checkergrid.ransac_keystone",
+                  "RANSAC recovers the full lattice under strong keystone perspective")
+{
+  const int C=9, R=6;
+  const float k=0.30f, W=400, Hh=300, cx=240, cy=160;
+  const float topHalf=0.5f*W*(1.f-k), botHalf=0.5f*W;
+  Point32f srcQ[4]={{0,0},{(float)(C-1),0},{(float)(C-1),(float)(R-1)},{0,(float)(R-1)}};
+  Point32f dstQ[4]={{cx-topHalf,cy-0.5f*Hh},{cx+topHalf,cy-0.5f*Hh},
+                    {cx+botHalf,cy+0.5f*Hh},{cx-botHalf,cy+0.5f*Hh}};
+  icl::math::Homography2D H(dstQ, srcQ, 4);                  // apply(model-quad)=image-quad
+  std::vector<CornerSeed> seeds;
+  for (int r=0;r<R;++r) for (int c=0;c<C;++c) {
+    CornerSeed cs; cs.pos = H.apply(Point32f((float)c,(float)r)); cs.score = 0.5f; seeds.push_back(cs);
+  }
+  const CheckerboardGrid g = recoverCheckerboardGridRansac(seeds);
+  std::cout << "[checkergrid] ransac_keystone k=" << k << ": "
+            << g.cols << "x" << g.rows << " count=" << g.count << std::endl;
+  ICL_TEST_TRUE(fullGrid(g, C, R));
 }

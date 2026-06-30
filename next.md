@@ -4,6 +4,44 @@
 
 ## Next Step
 
+### Session 89 — deep research on robust association + RANSAC backend landed (trap + perspective fixed)
+On `further-restructuring-and-cleanup`, suite **991/991**. Ran the deep-research pass handed off
+from S88, then prototyped + productionized the top recommendation, incl. closing the perspective gap.
+
+**Research** (`checkerboard-association-research.md`, cited + license-tagged): SOTA association
+methods surveyed. Families: greedy growth (Geiger/libcbdetect [GPL!], OpenCV SB, CNNs — all share
+our trap), model-anchored growth (Hoffmann VISAPP 2017 — structural trap fix), graph-topology
+(ROCHADE; Deltille [LGPL-2.1]), coded targets (PuzzleBoard [CC0]). ICL already has every primitive
+(Hungarian, GenericHomography2D, KDTree, LevenbergMarquardt, ImageUndistortion). Only Delaunay is
+missing (needed only for a future ROCHADE backend). Ranked #1: global homography-RANSAC seed →
+model-anchored re-fit (reuses `refineCheckerboardGrid`).
+
+**LANDED — `cv::RansacCheckerboardDetector` (`"native-ransac"`), a 3rd CheckerboardDetector backend.**
+`recoverCheckerboardGridRansac(seeds)` in `CheckerboardGrid.cpp` (image-free, parameter-free):
+(1) **RANSAC** over (centre, axis-pair) affine hypotheses, scored by distinct integer-cell inlier
+count — a diagonal basis snaps only half the corners (half-integers) → loses → defeats the trap;
+(2) affine-snap a central **core** + **de-shear it to the TRUE axes** (compactness = max fill,
+unimodular relabel); (3) grow ONCE from a central cell with those true axes via the shared
+`growFixedPoint` local-step engine (so it inherits growth's perspective + lens-distortion tracking);
+(4) final de-shear. Shared helpers `growFixedPoint`/`buildGridFromCells`/`deshearCells`/`dedupSeeds`/
+`medianSpacing` extracted (greedy `recoverCheckerboardGrid` now also uses them). Wired into the lab
+`backend` combo (`native-growth,native-ransac,opencv`). Tests `ransac_clean`, `ransac_diagonal_trap`
+(φ=55/45/35°: recovers full 9×6/54 where growth-from-interior-seed traps), `ransac_keystone`.
+Real saved frame: complete 4×6/24 @ 0.65px.
+
+**PERSPECTIVE GAP CLOSED.** First prototype used homography ICP for step 2 → brittle under strong
+keystone. Replaced with RANSAC-seed → de-shear-to-true-axes → local-step growth (above). Now a clean
+**Pareto win over greedy growth**: recovers the full grid everywhere growth does, PLUS the diagonal-
+trap region (oblique shear φ≈40–55°) where growth collapses. Only φ≲30° + keystone k≳0.5 (extreme,
+growth fails there too) remain. KEY INSIGHT: growth needs the TRUE axes, not RANSAC's arbitrary
+unimodular basis — a sheared basis makes growth reach cells only via a 4-connected staircase and
+stall, so the core must be de-sheared BEFORE growth.
+
+**NEXT:** (a) resume the Phase-B comparison harness — now THREE detector backends
+(growth / ransac / opencv) × both CalibrationTargets through `Camera::calibrate_*`; (b) optional
+ROCHADE graph backend (needs a Delaunay util in ICLMath); (c) consider migrating backend selection
+onto ICL's generic backend-dispatching framework once a 4th backend appears.
+
 ### Session 88 — lab backend/cleanup toggles, OpenCV crash fix, + diagonal-trap investigation (→ deep research next)
 On `further-restructuring-and-cleanup`, suite 988/988. Wired the new detection paths into the
 lab, fixed a real crash, and investigated the association bug the user spotted live. **Conclusion:
