@@ -4,6 +4,7 @@
 
 #include <icl/cv/CheckerboardGrid.h>
 #include <icl/cv/HungarianAlgorithm.h>
+#include <icl/math/transform/DelaunayTriangulation.h>
 #include <icl/math/transform/Homography2D.h>
 #include <icl/utils/Array2D.h>
 #include <algorithm>
@@ -245,6 +246,86 @@ namespace icl::cv {
       }
       cell.swap(rc);
     }
+
+    inline float vlen(const Point32f &v) { return std::sqrt(v.x*v.x + v.y*v.y); }
+
+    // Minimum image-edge evidence (GrayProbe::edgeScore) for a Delaunay edge to be
+    // kept as a candidate GRID edge in the graph associator. A true black/white
+    // square border scores well above this; a cell diagonal crosses a uniform
+    // square and scores low — but its endpoints lie on real corners, so a diagonal
+    // still picks up some gradient there (empirically ~0.08-0.13). This sits just
+    // above that band so the diagonals that defeat pure-geometry methods are
+    // pruned, while real (even foreshortened) borders survive.
+    constexpr float GRAPH_EDGE_MIN = 0.15f;
+
+    // ROCHADE-style topological coordinate assignment over a pre-pruned grid graph
+    // (\a adj holds, per node, only the strong/grid neighbours — cell diagonals
+    // already removed by image edge evidence). BFS from \a start with bootstrap
+    // axes e1_0,e2_0: each node re-estimates its LOCAL axis vectors from its
+    // assigned grid neighbours (tracking perspective + distortion, like
+    // growFixedPoint) and classifies every strong neighbour as the +/-e1 or +/-e2
+    // step whose direction it best matches (cosine gate). Returns the
+    // (col,row)->seed-index map of start's connected component. Because the graph
+    // carries no diagonals, there is no length-based axis bootstrap and so no
+    // "diagonal trap"; any remaining shear in the chosen basis is fixed by
+    // deshearCells() afterwards.
+    std::map<std::pair<int,int>, int>
+    growGraph(const std::vector<CornerSeed> &seeds,
+              const std::vector<std::vector<int>> &adj, int start,
+              Point32f e1_0, Point32f e2_0) {
+      const int n = (int)seeds.size();
+      std::vector<int>  cx(n, 0), cy(n, 0);
+      std::vector<char> asg(n, 0);
+      std::map<std::pair<int,int>, int> cell;
+      asg[start] = 1; cell[{0,0}] = start;
+      std::vector<int> q{start};
+      for (size_t qi = 0; qi < q.size(); ++qi) {
+        const int u = q[qi];
+        const int gx = cx[u], gy = cy[u];
+        const Point32f p = seeds[u].pos;
+        // re-estimate the local grid axes from already-assigned neighbours
+        Point32f e1 = e1_0, e2 = e2_0;
+        if (auto it = cell.find({gx+1,gy}); it != cell.end())      e1 = seeds[it->second].pos - p;
+        else if (auto it2 = cell.find({gx-1,gy}); it2 != cell.end()) e1 = p - seeds[it2->second].pos;
+        if (auto it = cell.find({gx,gy+1}); it != cell.end())      e2 = seeds[it->second].pos - p;
+        else if (auto it2 = cell.find({gx,gy-1}); it2 != cell.end()) e2 = p - seeds[it2->second].pos;
+        const float l1 = vlen(e1), l2 = vlen(e2);
+        const Point32f axis[4] = { e1, e1*-1.0, e2, e2*-1.0 };
+        const float    alen[4] = { l1, l1, l2, l2 };
+        static const int AD[4][2] = {{1,0},{-1,0},{0,1},{0,-1}};
+        // Assign each neighbour to the axis direction it is MOST aligned with (its
+        // argmax over the 4 signed axes), and per direction keep only the single
+        // best such neighbour. Crucially a neighbour contends only for its OWN best
+        // axis — never a merely-acceptable one. With strongly sheared axes (e.g.
+        // 45deg apart) an e2-neighbour sits ~46deg off e1 (cos .70, inside a loose
+        // gate); letting it fill an empty +e1 slot at a row border is exactly what
+        // re-creates a diagonal staircase. Argmax-per-neighbour forbids that: the
+        // e2-neighbour's best axis is e2, so it can never masquerade as +e1.
+        int bestW[4] = {-1,-1,-1,-1};
+        float bestC[4] = {0.5f,0.5f,0.5f,0.5f};   // >~60deg alignment gate
+        for (const int w : adj[u]) {
+          if (asg[w]) continue;
+          const Point32f d = seeds[w].pos - p;
+          const float ld = vlen(d);
+          if (!(ld > 0)) continue;
+          int kstar = -1; float cstar = 0.5f;     // this neighbour's single best axis
+          for (int k = 0; k < 4; ++k) {
+            if (!(alen[k] > 0)) continue;
+            const float c = (d.x*axis[k].x + d.y*axis[k].y) / (ld*alen[k]);
+            if (c > cstar) { cstar = c; kstar = k; }
+          }
+          if (kstar >= 0 && cstar > bestC[kstar]) { bestC[kstar] = cstar; bestW[kstar] = w; }
+        }
+        for (int k = 0; k < 4; ++k) {
+          const int w = bestW[k];
+          if (w < 0 || asg[w]) continue;
+          const int ngx = gx + AD[k][0], ngy = gy + AD[k][1];
+          if (cell.count({ngx,ngy})) continue;    // that cell already taken
+          asg[w] = 1; cx[w] = ngx; cy[w] = ngy; cell[{ngx,ngy}] = w; q.push_back(w);
+        }
+      }
+      return cell;
+    }
   }
 
   CheckerboardGrid recoverCheckerboardGrid(const std::vector<CornerSeed> &rawSeeds,
@@ -416,6 +497,63 @@ namespace icl::cv {
     auto cell = growFixedPoint(s, startK, E1, E2, nullptr);
     if ((int)cell.size() < 4) return grid;
     deshearCells(cell);                                           // safety (should be a no-op)
+    return buildGridFromCells(s, cell);
+  }
+
+  CheckerboardGrid recoverCheckerboardGridGraph(const std::vector<CornerSeed> &rawSeeds,
+                                                const core::Img8u &image) {
+    CheckerboardGrid grid;
+    const std::vector<CornerSeed> s = dedupSeeds(rawSeeds);
+    const int n = (int)s.size();
+    if (n < 4) return grid;
+
+    std::vector<Point32f> P(n);
+    for (int i = 0; i < n; ++i) P[i] = s[i].pos;
+    const float spacing = medianSpacing(s);
+    const GrayProbe probe(image);
+
+    // Candidate adjacency from Delaunay, pruned to GRID edges: drop links longer
+    // than ~2.2 cells (cross-gap chords) and links without black/white border
+    // evidence (the cell diagonals). What remains is the (≤4-regular) grid graph.
+    const auto tris  = math::delaunayTriangulation(P);
+    const auto edges = math::delaunayEdges(tris);
+    std::vector<std::vector<int>> adj(n);
+    const float maxLen = 2.2f * spacing;
+    for (const auto &e : edges) {
+      const int u = e.first, v = e.second;
+      if (vlen(P[u]-P[v]) > maxLen) continue;
+      if (probe.edgeScore(P[u], P[v], spacing) < GRAPH_EDGE_MIN) continue;
+      adj[u].push_back(v); adj[v].push_back(u);
+    }
+
+    // Start at the best-connected, highest-scoring node.
+    int start = -1, bestDeg = -1; float bestScore = -1.f;
+    for (int i = 0; i < n; ++i) {
+      const int d = (int)adj[i].size();
+      if (d > bestDeg || (d == bestDeg && s[i].score > bestScore)) {
+        bestDeg = d; bestScore = s[i].score; start = i;
+      }
+    }
+    if (start < 0 || adj[start].size() < 2) return grid;
+
+    // Bootstrap axes: first strong neighbour = e1; the strong neighbour most
+    // perpendicular to it = e2. Both are true grid directions (diagonals were
+    // pruned), so no diagonal trap; deshearCells() canonicalises the basis after.
+    const Point32f ps = s[start].pos;
+    const Point32f e1_0 = s[adj[start][0]].pos - ps;
+    const float l1 = vlen(e1_0);
+    Point32f e2_0(0,0); float bestPerp = 2.f;
+    for (const int w : adj[start]) {
+      const Point32f d = s[w].pos - ps; const float ld = vlen(d);
+      if (!(ld > 0) || !(l1 > 0)) continue;
+      const float c = std::fabs(d.x*e1_0.x + d.y*e1_0.y) / (ld*l1);
+      if (c < bestPerp) { bestPerp = c; e2_0 = d; }
+    }
+    if (!(vlen(e2_0) > 0)) return grid;
+
+    auto cell = growGraph(s, adj, start, e1_0, e2_0);
+    if ((int)cell.size() < 4) return grid;
+    deshearCells(cell);
     return buildGridFromCells(s, cell);
   }
 

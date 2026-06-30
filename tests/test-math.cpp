@@ -1238,3 +1238,64 @@ ICL_REGISTER_TEST("math.fixed.closest_rotation",
   for(int r=0;r<3;++r) Ref(r,0) = -Ref(r,0);                 // negate a column → det<0
   ICL_TEST_EQ(closest_rotation(Ref).det() > 0.99f, true);
 }
+
+// =====================================================================
+// Delaunay triangulation
+// =====================================================================
+
+#include <icl/math/transform/DelaunayTriangulation.h>
+#include <set>
+
+namespace {
+  // does the triangulation contain an edge between point indices i and j?
+  bool hasEdge(const std::vector<std::pair<int,int>> &e, int i, int j) {
+    return std::find(e.begin(), e.end(),
+                     std::make_pair(std::min(i,j), std::max(i,j))) != e.end();
+  }
+}
+
+ICL_REGISTER_TEST("math.delaunay.degenerate", "fewer than 3 points yields no triangles")
+{
+  ICL_TEST_EQ(delaunayTriangulation({}).size(), 0u);
+  ICL_TEST_EQ(delaunayTriangulation({Point32f(0,0)}).size(), 0u);
+  ICL_TEST_EQ(delaunayTriangulation({Point32f(0,0), Point32f(1,1)}).size(), 0u);
+}
+
+ICL_REGISTER_TEST("math.delaunay.unit_square", "a unit square triangulates into 2 triangles / 5 edges")
+{
+  // 0:(0,0) 1:(1,0) 2:(1,1) 3:(0,1)
+  const std::vector<Point32f> p = {Point32f(0,0), Point32f(1,0), Point32f(1,1), Point32f(0,1)};
+  const auto tris = delaunayTriangulation(p);
+  ICL_TEST_EQ(tris.size(), 2u);                 // a quad = 2 triangles
+  const auto e = delaunayEdges(tris);
+  ICL_TEST_EQ(e.size(), 5u);                    // 4 perimeter + 1 diagonal
+  // all four perimeter edges must be present
+  ICL_TEST_TRUE(hasEdge(e, 0, 1));
+  ICL_TEST_TRUE(hasEdge(e, 1, 2));
+  ICL_TEST_TRUE(hasEdge(e, 2, 3));
+  ICL_TEST_TRUE(hasEdge(e, 3, 0));
+  // exactly one of the two diagonals
+  ICL_TEST_TRUE(hasEdge(e, 0, 2) != hasEdge(e, 1, 3));
+}
+
+ICL_REGISTER_TEST("math.delaunay.grid_contains_axis_edges",
+                  "a regular grid's Delaunay graph contains every unit axis edge")
+{
+  // 5x4 regular grid, spacing 10; this is the property the checkerboard graph
+  // associator relies on: adjacent grid corners are always Delaunay-adjacent.
+  const int W = 5, H = 4;
+  std::vector<Point32f> p;
+  for (int r = 0; r < H; ++r)
+    for (int c = 0; c < W; ++c)
+      p.push_back(Point32f(c * 10.f + 0.3f * r, r * 10.f));   // slight shear (generic position)
+  const auto e = delaunayEdges(delaunayTriangulation(p));
+  auto idx = [&](int c, int r){ return r * W + c; };
+  for (int r = 0; r < H; ++r)
+    for (int c = 0; c < W; ++c) {
+      if (c + 1 < W) ICL_TEST_TRUE(hasEdge(e, idx(c,r), idx(c+1,r)));   // horizontal
+      if (r + 1 < H) ICL_TEST_TRUE(hasEdge(e, idx(c,r), idx(c,r+1)));   // vertical
+    }
+  // Euler: a triangulation of N points with h hull points has 2N-2-h triangles.
+  // Hull of this grid = perimeter = 2*(W+H)-4 = 14 points → 2*20-2-14 = 24 triangles.
+  ICL_TEST_EQ(delaunayTriangulation(p).size(), 24u);
+}

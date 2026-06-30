@@ -91,6 +91,31 @@ namespace icl::cv {
       canonicalised to a board frame (a target backend resolves that). */
   ICLCV_API CheckerboardGrid recoverCheckerboardGridRansac(const std::vector<CornerSeed> &seeds);
 
+  /// Recover a checkerboard lattice by graph topology (ROCHADE-style, v3).
+  /** A third associator that recovers the grid as a GRAPH, not by growth or by a
+      global model fit. Topology comes from the corner adjacency, so there is no
+      length-based axis bootstrap (the step both growth and the geometric RANSAC
+      seed can get wrong) and hence no "diagonal trap":
+
+      1. Delaunay-triangulate the corner seeds → candidate adjacency;
+      2. prune it to the true GRID edges: drop over-long chords and, crucially,
+         every link lacking black/white border evidence in \a image (a cell
+         diagonal crosses a uniform square → ~0 perpendicular gradient). This is
+         the ROCHADE idea (topology from the image's edge structure) realised on
+         ChESS corners + the existing edge probe instead of a centreline front-end;
+      3. assign integer (col,row) by BFS over the pruned ≤4-regular graph, each
+         node re-estimating its local axes from assigned neighbours (perspective /
+         distortion tracking) and classifying each neighbour as a +/- axis step;
+      4. compactness de-shear to canonicalise the basis.
+
+      Unlike the growth and RANSAC paths this REQUIRES the image (the edge evidence
+      is what removes the diagonals). Best worst-case robustness under steep oblique
+      views; pair with refineCheckerboardGrid() for the same border trim. Returns an
+      empty grid for <4 seeds or when the start node has <2 grid neighbours. Labels
+      are internally consistent but not canonicalised to a board frame. */
+  ICLCV_API CheckerboardGrid recoverCheckerboardGridGraph(const std::vector<CornerSeed> &seeds,
+                                                          const core::Img8u &image);
+
   /// Global cleanup pass: suppress spurious border detections and fix growth
   /// mis-assignments via a model-based re-association.
   /** The greedy grid growth can, under strong foreshortening, grow a phantom

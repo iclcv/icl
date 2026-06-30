@@ -155,7 +155,7 @@ void init() {
                       << FSlider(3, 9, 5, {.handle="radius", .label="ring radius"})
                       << FSlider(0.1, 0.8, 0.35, {.handle="minScore", .label="min score"}))
                   << (HBox()
-                      << Combo("native-growth,native-ransac,opencv", {.handle="backend", .label="detector backend"})
+                      << Combo("native-growth,native-ransac,native-graph,opencv", {.handle="backend", .label="detector backend"})
                       << CheckBox("cleanup (LAP)", {.checked=false, .handle="cleanup"}))
                   << Button("save frame", {.handle="saveFrame"})   // dump detector input for offline debugging
                   << CheckBox("apply undistortion", {.checked=false, .handle="undistort"})
@@ -188,7 +188,7 @@ void run() {
   const float minScore = gui["minScore"];
   const int   radius   = gui["radius"];
   const bool  showUndistorted = gui["undistort"];   // result = rectified preview vs distorted
-  const int   backend  = ComboHandle(gui["backend"]).getSelectedIndex();  // 0=growth, 1=ransac, 2=opencv
+  const int   backend  = ComboHandle(gui["backend"]).getSelectedIndex();  // 0=growth, 1=ransac, 2=graph, 3=opencv
   const bool  cleanup  = gui["cleanup"];             // native LAP cleanup pass (refineCheckerboardGrid)
 
   // Re-render the result when a new captured frame arrives (incl. a k1/k2
@@ -230,18 +230,19 @@ void run() {
       // Detection always runs on the distorted camera image (the real-world case).
       std::vector<CornerSeed> seeds;   // saddle seeds (native only; empty for opencv)
       CheckerboardGrid grid;
-      if (backend == 2) {              // opencv backend (needs the board's inner-corner dims)
+      if (backend == 3) {              // opencv backend (needs the board's inner-corner dims)
         OpenCVCheckerboardDetector ocv;
         CheckerboardDetector::Hints h;
         h.boardCells = Size(gui["xc"].as<int>()-1, gui["yc"].as<int>()-1);
         const auto res = ocv.detect(cam, h);
         if (!res.boards.empty()) grid = res.boards.front();
-      } else {                         // native ChESS-saddle + growth OR global RANSAC (+ optional LAP)
+      } else {                         // native ChESS-saddle + growth / global RANSAC / graph (+ optional LAP)
         CheckerboardSaddleDetector::Params p;
         p.radius = radius; p.minScore = minScore;
         seeds = CheckerboardSaddleDetector(p).detect(cam);
-        grid = (backend == 1) ? recoverCheckerboardGridRansac(seeds)  // global, foreshortening-robust
-                              : recoverCheckerboardGrid(seeds, &cam); // guided greedy growth
+        grid = (backend == 1) ? recoverCheckerboardGridRansac(seeds)       // global geometric model
+             : (backend == 2) ? recoverCheckerboardGridGraph(seeds, cam)   // ROCHADE-style graph topology
+                              : recoverCheckerboardGrid(seeds, &cam);      // guided greedy growth
         if (cleanup) grid = refineCheckerboardGrid(grid, seeds, &cam); // homography + Hungarian
       }
       scoreCheckerboardGridEdges(grid, cam);                          // per-edge confidence

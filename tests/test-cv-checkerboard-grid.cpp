@@ -13,6 +13,7 @@
 #include <icl/cv/CheckerboardGrid.h>
 #include <icl/cv/OpenCVCheckerboardDetector.h>
 #include <icl/cv/RansacCheckerboardDetector.h>
+#include <icl/cv/GraphCheckerboardDetector.h>
 #include <icl/math/transform/Homography2D.h>
 #include <icl/core/Img.h>
 #include <algorithm>
@@ -431,4 +432,79 @@ ICL_REGISTER_TEST("cv.checkergrid.ransac_keystone",
   std::cout << "[checkergrid] ransac_keystone k=" << k << ": "
             << g.cols << "x" << g.rows << " count=" << g.count << std::endl;
   ICL_TEST_TRUE(fullGrid(g, C, R));
+}
+
+// --- Graph-topology association (recoverCheckerboardGridGraph / GraphCheckerboardDetector) ---
+// ROCHADE-style: Delaunay adjacency pruned to grid edges by image edge evidence,
+// then BFS coordinate assignment. Unlike the RANSAC tests these MUST run on a
+// rendered image (the edge evidence is what removes the cell diagonals).
+
+// Clean board: the graph backend recovers the full inner-corner lattice.
+ICL_REGISTER_TEST("cv.checkergrid.graph_clean",
+                  "graph backend recovers the full lattice on a clean board")
+{
+  const int COLS=9, ROWS=7;                              // -> 8x6 inner corners
+  Img8u img = renderBoard(480, 400, COLS, ROWS, 40, [](float x,float y){ return Point32f(x,y); });
+
+  GraphCheckerboardDetector det;
+  ICL_TEST_EQ(det.name(), std::string("native-graph"));
+  const auto res = det.detect(img);
+  ICL_TEST_TRUE(!res.empty());
+  const CheckerboardGrid &g = res.boards[0];
+  std::cout << "[checkergrid] graph_clean: " << g.cols << "x" << g.rows
+            << " count=" << g.count << std::endl;
+  ICL_TEST_TRUE(fullGrid(g, COLS-1, ROWS-1));
+  ICL_TEST_TRUE(latticeConsistent(g));
+}
+
+// Perspective (oblique keystone): the per-node local-axis re-estimation tracks
+// the varying spacing, so the full lattice is recovered.
+ICL_REGISTER_TEST("cv.checkergrid.graph_perspective",
+                  "graph backend recovers the full lattice under perspective")
+{
+  const int COLS=9, ROWS=7; const int W=480, H=400;
+  const float cx=W/2.f, cy=H/2.f;
+  auto warp = [&](float qx,float qy){
+    const float v = (qy-cy)/cy, persp = 1.f + 0.35f*v;
+    return Point32f(cx + (qx-cx)*persp, qy);
+  };
+  Img8u img = renderBoard(W, H, COLS, ROWS, 40, warp);
+
+  const CheckerboardGrid g = recoverCheckerboardGridGraph(
+    CheckerboardSaddleDetector().detect(img), img);
+  std::cout << "[checkergrid] graph_perspective: " << g.cols << "x" << g.rows
+            << " count=" << g.count << std::endl;
+  ICL_TEST_TRUE(fullGrid(g, COLS-1, ROWS-1));
+  ICL_TEST_TRUE(latticeConsistent(g));
+}
+
+// Strong oblique shear on a RENDERED board: equal-length grid axes only 45 deg
+// apart, so the cell diagonal is shorter than the axes (the diagonal-trap regime).
+// The graph backend prunes the cell diagonals by image edge evidence and assigns
+// coordinates by argmax-per-neighbour, so it recovers the full grid where a loose
+// angle/length heuristic would walk a diagonal staircase off the row ends.
+ICL_REGISTER_TEST("cv.checkergrid.graph_diagonal_trap",
+                  "graph recovers the full lattice under strong 45deg oblique shear")
+{
+  const int COLS=9, ROWS=7; const int W=560, H=480; const float sq=40.f;
+  const float Mcx=W/2.f, Mcy=H/2.f, Icx=W/2.f, Icy=H/2.f;
+  const float phi=45.f*(float)M_PI/180.f;
+  // image cell axis vectors (equal length L, angle phi between them) and inverse
+  const float L=40.f;
+  const float ax=L, ay=0.f, bx=L*std::cos(phi), by=L*std::sin(phi);
+  const float det = ax*by - ay*bx;                       // |[a b]|
+  auto warp = [&](float qx,float qy)->Point32f{          // image px -> model coord
+    const float ex=qx-Icx, ey=qy-Icy;
+    const float u = ( by*ex - bx*ey)/det;                // M^{-1} (image-center)
+    const float v = (-ay*ex + ax*ey)/det;
+    return Point32f(Mcx + sq*u, Mcy + sq*v);
+  };
+  Img8u img = renderBoard(W, H, COLS, ROWS, sq, warp);
+  const auto seeds = CheckerboardSaddleDetector().detect(img);
+
+  const CheckerboardGrid gg = recoverCheckerboardGridGraph(seeds, img);
+  std::cout << "[checkergrid] graph_trap: " << gg.cols << "x" << gg.rows
+            << " count=" << gg.count << " (seeds=" << seeds.size() << ")" << std::endl;
+  ICL_TEST_TRUE(fullGrid(gg, COLS-1, ROWS-1));
+  ICL_TEST_TRUE(latticeConsistent(gg));
 }

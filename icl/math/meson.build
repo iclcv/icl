@@ -36,6 +36,7 @@ math_tree_headers = files(
 
 math_transform_headers = files(
   'transform/ConvexHull.h',
+  'transform/DelaunayTriangulation.h',
   'transform/HomogeneousMath.h',
   'transform/Homography2D.h',
   'transform/LinearTransform1D.h',
@@ -73,6 +74,7 @@ math_sources = files(
   'transform/HomogeneousMath.cpp',
   'transform/Homography2D.cpp',
   'transform/ConvexHull.cpp',
+  'transform/DelaunayTriangulation.cpp',
   'tree/KDTree.cpp',
   'ml/LLM.cpp',
   'fit/LevenbergMarquardtFitter.cpp',
