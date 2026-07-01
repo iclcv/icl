@@ -289,3 +289,51 @@ ICL_REGISTER_TEST("cv.intrinsic.native_vs_opencv",
   ICL_TEST_NEAR(n.getPrincipalY(),   K.cy, 4.0);   ICL_TEST_NEAR(o.cy, K.cy, 4.0);
   ICL_TEST_NEAR(n.getK1(), K.k1, 0.02);            ICL_TEST_NEAR(o.k1, K.k1, 0.02);
 }
+
+// PARTIAL boards + masked calibrate(): a large board overruns the frame, so each
+// view sees a different subset whose corners reach the image edges/corners where
+// the r^4 (k2) term lives. The masked bundle adjustment recovers k2 — the payoff
+// a complete-board detector can't get (a fully-visible board never reaches there).
+ICL_REGISTER_TEST("cv.intrinsic.partial_board_recovers_k2",
+                  "masked calibrate on partial boards reaches the frame corners -> k2 observable")
+{
+  const Intr K{600, 600, 320, 240, 0,  -0.20, 0.08, 0, 0, 0};   // notable barrel k1+k2
+  const int W=640, H=480, COLS=21, ROWS=15; const double SQ=26; // big board (546x364mm)
+  // closer, offset tilts so the big board overruns the 640x480 frame (partial views)
+  const std::vector<Pose> poses = {
+    {d2r(-24),d2r(-16),d2r( 5), 0,0, 430}, {d2r( 22),d2r(-18),d2r(-7), 0,0, 450},
+    {d2r(-20),d2r( 22),d2r( 9), 0,0, 420}, {d2r( 24),d2r( 18),d2r(-5), 0,0, 460},
+    {d2r(-26),d2r(  4),d2r( 0), 0,0, 410}, {d2r(  6),d2r(-26),d2r( 0), 0,0, 440},
+    {d2r( 12),d2r( 26),d2r(11), 0,0, 455}, {d2r(-16),d2r(-24),d2r(-9), 0,0, 425},
+    {d2r( 27),d2r( -8),d2r( 6), 0,0, 465}, {d2r(-10),d2r( 28),d2r(-8), 0,0, 435},
+  };
+  const auto views = makeViews(K, COLS, ROWS, SQ, poses, 0.0, 7);
+  const int bSize = COLS*ROWS, nv = (int)views.size();
+  DynMatrix<icl64f> impoints = DynMatrix<icl64f>::create(2*nv, bSize),
+                    world    = DynMatrix<icl64f>::create(3, bSize),
+                    mask     = DynMatrix<icl64f>::create(nv, bSize);
+  for (int p=0;p<bSize;++p) { world(0,p)=views[0].obj[p].x; world(1,p)=views[0].obj[p].y; world(2,p)=0; }
+  int totVis=0, minVis=bSize;
+  for (int v=0;v<nv;++v) {
+    int vis=0;
+    for (int p=0;p<bSize;++p) {
+      const double u=views[v].img[p].x, vv=views[v].img[p].y;
+      const bool inside = (u>=0 && u<W && vv>=0 && vv<H);
+      impoints(2*v,p)=u; impoints(2*v+1,p)=vv;
+      mask(v,p) = inside ? 1.0 : 0.0;
+      vis += inside;
+    }
+    totVis += vis; minVis = std::min(minVis, vis);
+  }
+  const auto r = IntrinsicCalibrator(COLS, ROWS, nv, W, H).calibrate(impoints, world, mask);
+  std::printf("[intrinsic] partial: views=%d visMin=%d visAvg=%.0f/%d  fx=%.3f fy=%.3f cx=%.3f cy=%.3f k1=%.4f k2=%.4f\n",
+              nv, minVis, (double)totVis/nv, bSize,
+              r.getFocalLengthX(), r.getFocalLengthY(), r.getPrincipalX(), r.getPrincipalY(), r.getK1(), r.getK2());
+  ICL_TEST_TRUE(totVis < nv*bSize);              // the board really is partial (some corners off-frame)
+  ICL_TEST_NEAR(r.getFocalLengthX(), K.fx, 2.0);
+  ICL_TEST_NEAR(r.getFocalLengthY(), K.fy, 2.0);
+  ICL_TEST_NEAR(r.getPrincipalX(),   K.cx, 3.0);
+  ICL_TEST_NEAR(r.getPrincipalY(),   K.cy, 3.0);
+  ICL_TEST_NEAR(r.getK1(), K.k1, 0.02);
+  ICL_TEST_NEAR(r.getK2(), K.k2, 0.03);          // the payoff: k2 recovered from partial boards
+}

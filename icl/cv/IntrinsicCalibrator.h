@@ -271,6 +271,17 @@ namespace icl::cv {
         */
     Result calibrate(const math::DynMatrix<icl64f> &impoints, const math::DynMatrix<icl64f> &worldpoints);
 
+    ///calibrates from PARTIAL boards (each view observes a subset of the points)
+    /** For coded/ChArUco-style targets where views see different point subsets.
+        Same layout as calibrate() but with a per-view validity mask; masked
+        points are dropped from the init and the bundle adjustment so the board may
+        overrun the frame (corners reaching the image edges → k2 observability).
+        @param impoints    image coords (2*nViews, bSize); entries of unobserved points are ignored
+        @param worldpoints shared board coords (3, bSize), planar Z=0
+        @param validMask   (nViews, bSize), !=0 where a view observed that board point */
+    Result calibrate(const math::DynMatrix<icl64f> &impoints, const math::DynMatrix<icl64f> &worldpoints,
+                     const math::DynMatrix<icl64f> &validMask);
+
     ///saves computed/current intrinsics to xml-file
     /**
         * @param filename name of xml-file for saving

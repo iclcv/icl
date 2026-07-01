@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
 #include <icl/cv/IntrinsicCalibrator.h>
+#include <icl/math/transform/Homography2D.h>
 #include <fstream>
 
 using namespace icl::utils;
@@ -21,6 +22,14 @@ namespace icl::cv {
 
     DynMatrix<icl64f>* intrinsic_matrix;
     DynMatrix<icl64f>* distortion_coeffs;
+
+    // Optional per-view point mask for PARTIAL boards (variable points per view).
+    // useMask=false → classic full-grid behaviour (mask ignored). When set,
+    // mask[kk*bSize + i] != 0 means view kk observed board point i; masked points
+    // are dropped from the homography/extrinsic init and the LMA normal equations.
+    bool useMask = false;
+    std::vector<char> mask;
+    bool valid(int kk, int i) const { return !useMask || mask[(size_t)kk*bSize + i]; }
 
     Data(unsigned int boardWidth, unsigned int boardHeight, unsigned int boardCount,unsigned int imageWidth ,unsigned int imageHeight):
       bWidth(boardWidth),bHeight(boardHeight), successes(boardCount),
@@ -52,6 +61,20 @@ namespace icl::cv {
     DynMatrix<icl64f> HH = DynMatrix<icl64f>::create(m_data->successes, 9);
     DynMatrix<icl64f> x1 = DynMatrix<icl64f>::create(2, m_data->bSize);
     for(int kk = 0;kk<m_data->successes;++kk){
+      if(m_data->useMask){
+        // partial board: fit the board→image homography from this view's valid
+        // points only (ICL's GenericHomography2D, which is point-count agnostic)
+        std::vector<utils::Point32f> img, world;
+        for(int i=0;i<m_data->bSize;++i){
+          if(!m_data->valid(kk,i)) continue;
+          img.push_back(utils::Point32f((float)x(2*kk,i), (float)x(2*kk+1,i)));
+          world.push_back(utils::Point32f((float)X(0,i), (float)X(1,i)));
+        }
+        // ctor maps its 2nd arg → 1st, so (img, world) yields world → image
+        const math::Homography2D Hm(img.data(), world.data(), (int)world.size());
+        for(int i=0;i<9;++i) HH(kk, i) = Hm[i];
+        continue;
+      }
       for(int i=0;i<m_data->bSize;++i){
         x1(0, i) = x(2*kk, i);
         x1(1, i) = x(2*kk+1, i);
@@ -1160,6 +1183,66 @@ namespace icl::cv {
     return m_calres;
   }
 
+  IntrinsicCalibrator::Result
+  IntrinsicCalibrator::calibrate(const DynMatrix<icl64f> &impoints, const DynMatrix<icl64f> &worldpoints,
+                                 const DynMatrix<icl64f> &validMask){
+    // PARTIAL-board calibration: each view observes a subset of the shared board
+    // point set (validMask is successes x bSize, !=0 => observed). Masked points
+    // drop out of the homography/extrinsic init and the LMA normal equations.
+    m_data->mask.assign((size_t)m_data->successes*m_data->bSize, 0);
+    for(int kk=0;kk<m_data->successes;++kk)
+      for(int i=0;i<m_data->bSize;++i)
+        m_data->mask[(size_t)kk*m_data->bSize+i] = (validMask(kk,i)!=0.0) ? 1 : 0;
+    m_data->useMask = true;
+
+    DynMatrix<icl64f> fc = DynMatrix<icl64f>::create(2,1), cc = DynMatrix<icl64f>::create(2,1), kc = DynMatrix<icl64f>::create(1,5);
+    double alpha_c = 0;
+    init_intrinsic_param(impoints,worldpoints,fc,cc,kc,alpha_c);   // masked per-view homographies
+
+    const int offset = 10;
+    double *params = new double[offset+m_data->successes*6];
+    params[0]=fc[0]; params[1]=fc[1]; params[2]=cc[0]; params[3]=cc[1]; params[4]=alpha_c;
+    params[5]=params[6]=params[7]=params[8]=params[9]=0.0;
+
+    // seed each view's extrinsics by decomposing K^{-1}·H (H fit on valid points)
+    const double fx=fc[0], fy=fc[1], u0=cc[0], v0=cc[1];
+    DynMatrix<icl64f> dummy = DynMatrix<icl64f>::create(9,3);
+    for(int kk=0;kk<m_data->successes;++kk){
+      std::vector<utils::Point32f> img, world;
+      for(int i=0;i<m_data->bSize;++i){
+        if(!m_data->valid(kk,i)) continue;
+        img.push_back(utils::Point32f((float)impoints(2*kk,i),(float)impoints(2*kk+1,i)));
+        world.push_back(utils::Point32f((float)worldpoints(0,i),(float)worldpoints(1,i)));
+      }
+      const math::Homography2D H(img.data(), world.data(), (int)world.size());   // board→image
+      // columns of H, premultiplied by K^{-1} (skew 0): Kinv=[[1/fx,0,-u0/fx],[0,1/fy,-v0/fy],[0,0,1]]
+      auto kinv=[&](double a,double b,double c,double o[3]){ o[0]=(a-u0*c)/fx; o[1]=(b-v0*c)/fy; o[2]=c; };
+      double r1[3],r2[3],t[3];
+      kinv(H[0],H[3],H[6], r1); kinv(H[1],H[4],H[7], r2); kinv(H[2],H[5],H[8], t);
+      const double n1=std::sqrt(r1[0]*r1[0]+r1[1]*r1[1]+r1[2]*r1[2]);
+      const double lambda = n1>1e-12 ? 1.0/n1 : 1.0;
+      for(int i=0;i<3;++i){ r1[i]*=lambda; r2[i]*=lambda; t[i]*=lambda; }
+      if(t[2]<0){ for(int i=0;i<3;++i){ r1[i]=-r1[i]; r2[i]=-r2[i]; t[i]=-t[i]; } }
+      // Gram-Schmidt → proper orthonormal rotation columns, then Rodrigues to om
+      const double d=r1[0]*r2[0]+r1[1]*r2[1]+r1[2]*r2[2];
+      for(int i=0;i<3;++i) r2[i]-=d*r1[i];
+      const double n2=std::sqrt(r2[0]*r2[0]+r2[1]*r2[1]+r2[2]*r2[2]);
+      for(int i=0;i<3;++i) r2[i]/=(n2>1e-12?n2:1.0);
+      const double r3[3]={ r1[1]*r2[2]-r1[2]*r2[1], r1[2]*r2[0]-r1[0]*r2[2], r1[0]*r2[1]-r1[1]*r2[0] };
+      DynMatrix<icl64f> R = DynMatrix<icl64f>::create(3,3);
+      R[0]=r1[0]; R[1]=r2[0]; R[2]=r3[0];
+      R[3]=r1[1]; R[4]=r2[1]; R[5]=r3[1];
+      R[6]=r1[2]; R[7]=r2[2]; R[8]=r3[2];
+      DynMatrix<icl64f> om = DynMatrix<icl64f>::create(3,1);
+      rodrigues(R, om, dummy);
+      for(int j=0;j<3;++j){ params[offset+kk*6+j]=om[j]; params[offset+kk*6+3+j]=t[j]; }
+    }
+
+    optimize(impoints,worldpoints,params);
+    m_data->useMask = false;      // reset: a later full-grid calibrate() is unaffected
+    return m_calres;
+  }
+
   void IntrinsicCalibrator::optimize(const DynMatrix<icl64f> &impoints, const DynMatrix<icl64f> &X_kk,double *pp){
 
     int offset = 5+(*m_data->distortion_coeffs).cols();
@@ -1251,6 +1334,17 @@ namespace icl::cv {
           B(3, i) = dxdT(i, 0);
           B(4, i) = dxdT(i, 1);
           B(5, i) = dxdT(i, 2);
+        }
+
+        // partial board: null out the points this view did not observe so they
+        // contribute nothing to the residual (ex3) or the normal matrix (JJ3)
+        if(m_data->useMask){
+          for(int i=0;i<m_data->bSize;++i){
+            if(m_data->valid(kk,i)) continue;
+            exkk(0,i)=0; exkk(1,i)=0;
+            for(int r=0;r<10;++r){ A(r,2*i)=0; A(r,2*i+1)=0; }
+            for(int r=0;r<6;++r){ B(r,2*i)=0; B(r,2*i+1)=0; }
+          }
         }
 
         DynMatrix<icl64f> AAT = A*A.transp();
@@ -1351,7 +1445,7 @@ namespace icl::cv {
       //Second step: (optional) - It makes convergence faster, and the region of convergence LARGER!!!
       //Recompute the extrinsic parameters only using compute_extrinsic.m (this may be useful sometimes)
       //The complete gradient descent method is useful to precisely update the intrinsic parameters.
-      if (recompute_extrinsic){
+      if (recompute_extrinsic && !m_data->useMask){   // masked path relies on the joint LMA update (helpers are full-grid)
         int MaxIter2 = 20;
         for (int kk=0;kk<m_data->successes;++kk){
 
