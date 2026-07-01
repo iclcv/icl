@@ -45,15 +45,30 @@ namespace {
     double gauss(){ double u1=std::max(1e-12,uniform()),u2=uniform(); return std::sqrt(-2*std::log(u1))*std::cos(2*M_PI*u2); }
   };
 
-  // perspective view of a frontal target image: warp gen by the homography taking
-  // gen's corners to a (keystone) quad in the view, + optional gaussian noise.
-  Img8u renderView(const Img8u &gen, Size view, float keystone, float noise, Rng &rng) {
+  // The two quads defining a keystone view: the frontal gen-image corners and the
+  // (foreshortened) quad they map to in the view. Shared by renderView (which warps
+  // by their homography) and the ground-truth mapping (its inverse), so the pixels
+  // and the analytic corner positions can never drift apart.
+  void viewQuad(const Img8u &gen, Size view, float keystone, Point32f genC[4], Point32f dst[4]) {
     const float W = gen.getWidth(), H = gen.getHeight();
     const float cx = view.width/2.f, cy = view.height/2.f;
     const float hw = view.width*0.40f, hh = view.height*0.40f;
     const float ts = 1.f - keystone;                       // top edge shrink
-    const Point32f genC[4] = {{0,0},{W,0},{W,H},{0,H}};    // TL,TR,BR,BL
-    const Point32f dst[4]  = {{cx-hw*ts,cy-hh},{cx+hw*ts,cy-hh},{cx+hw,cy+hh},{cx-hw,cy+hh}};
+    genC[0]={0,0}; genC[1]={W,0}; genC[2]={W,H}; genC[3]={0,H};   // TL,TR,BR,BL
+    dst[0]={cx-hw*ts,cy-hh}; dst[1]={cx+hw*ts,cy-hh}; dst[2]={cx+hw,cy+hh}; dst[3]={cx-hw,cy+hh};
+  }
+
+  // gen-image -> view homography (the INVERSE of the warp renderView applies): maps
+  // an analytically-known gen corner to its exact position in the rendered view.
+  Homography2D genToView(const Img8u &gen, Size view, float keystone) {
+    Point32f genC[4], dst[4]; viewQuad(gen, view, keystone, genC, dst);
+    return Homography2D(dst, genC, 4);                     // apply(genPt) -> viewPt
+  }
+
+  // perspective view of a frontal target image: warp gen by the homography taking
+  // gen's corners to a (keystone) quad in the view, + optional gaussian noise.
+  Img8u renderView(const Img8u &gen, Size view, float keystone, float noise, Rng &rng) {
+    Point32f genC[4], dst[4]; viewQuad(gen, view, keystone, genC, dst);
     const Homography2D Hv2g(genC, dst, 4);                 // apply(viewPt) -> genPt
     Img8u out(view, 1); out.fill(255);
     Channel8u o = out[0]; const Channel8u g = gen[0];
@@ -86,6 +101,40 @@ namespace {
     const auto c = t.detect(view);
     return { (int)c.size(), (int)t.modelPoints().size(), homographyResidual(c) };
   }
+
+  // The analytically-true view positions of ALL inner corners: each gen-image
+  // corner (CheckerboardTarget::generate()'s EXACT layout — px/square =
+  // min(W/(cols+2), H/(rows+2)), board centred, inner corner (mc,mr) on grid line
+  // (mc+1, mr+1)) mapped through the exact gen->view homography.
+  std::vector<Point32f> checkerTrueCorners(const Img8u &gen, Size view, float keystone,
+                                           int cols, int rows) {
+    const Homography2D Hg2v = genToView(gen, view, keystone);
+    const float W = gen.getWidth(), H = gen.getHeight();
+    const float px = std::min(W/float(cols+2), H/float(rows+2));
+    const float ox = (W - px*cols)/2.f, oy = (H - px*rows)/2.f;
+    std::vector<Point32f> truth;
+    for (int mr = 0; mr < rows-1; ++mr)
+      for (int mc = 0; mc < cols-1; ++mc)
+        truth.push_back(Hg2v.apply(Point32f(ox + (mc+1)*px, oy + (mr+1)*px)));
+    return truth;
+  }
+
+  // RMS of the ABSOLUTE ground-truth corner error: distance from each detected
+  // corner to its NEAREST true corner. Unlike the homography residual (self-
+  // consistency) this measures real localisation accuracy; nearest-match makes it
+  // invariant to the arbitrary recovered board frame (native does not canonicalise
+  // the (col,row) origin/orientation, so a per-label comparison would be meaningless).
+  double checkerGroundTruthRMS(const std::vector<CalibrationCorrespondence> &c,
+                               const std::vector<Point32f> &truth) {
+    if (c.empty()) return 1e9;
+    double e = 0;
+    for (const auto &cc : c) {
+      float best = 1e30f;
+      for (const auto &t : truth) best = std::min(best, (float)cc.imagePos.distanceTo(t));
+      e += (double)best*best;
+    }
+    return std::sqrt(e/c.size());
+  }
 }
 
 ICL_REGISTER_TEST("markers.calibration.comparison_harness",
@@ -97,8 +146,10 @@ ICL_REGISTER_TEST("markers.calibration.comparison_harness",
   const Cond conds[] = { {"frontal",0.0f,0.0f}, {"keystone",0.30f,0.0f}, {"noisy",0.15f,1.5f} };
 
   std::printf("\n[phaseB] === checkerboard (7x5 -> 6x4=24 inner corners) ===\n");
-  std::printf("[phaseB] %-14s | %-18s | %-18s | %-18s\n", "backend", conds[0].name, conds[1].name, conds[2].name);
-  CheckerboardTarget cb(7, 5, 25.f);
+  std::printf("[phaseB] r = homography residual (self-consistency), g = ground-truth corner RMS [px]\n");
+  std::printf("[phaseB] %-14s | %-22s | %-22s | %-22s\n", "backend", conds[0].name, conds[1].name, conds[2].name);
+  const int CB_C=7, CB_R=5; const float CB_SQ=25.f;   // must match `cb` below
+  CheckerboardTarget cb(CB_C, CB_R, CB_SQ);
   const Img8u cbGen = cb.generate(Size(560, 420));
   struct CbBackend { const char *name; std::shared_ptr<cv::CheckerboardDetector> det; };
   std::vector<CbBackend> cbBackends = {
@@ -108,15 +159,22 @@ ICL_REGISTER_TEST("markers.calibration.comparison_harness",
     {"opencv",        std::make_shared<cv::OpenCVCheckerboardDetector>()},
   };
   Score cbFrontalNative{0,1,1e9};
+  double cbGtNativeFrontal=1e9, cbGtOpencvFrontal=1e9;
   for (auto &b : cbBackends) {
     cb.setDetector(b.det);
     std::printf("[phaseB] %-14s |", b.name);
     for (int ci = 0; ci < 3; ++ci) {
       const Img8u v = renderView(cbGen, VIEW, conds[ci].keystone, conds[ci].noise, rng);
-      const Score s = score(cb, v);
-      if (s.found < 4 || s.residual > 100) std::printf(" %2d/%2d  (fail)      |", s.found, s.expected);
-      else                                 std::printf(" %2d/%2d r=%6.3f    |", s.found, s.expected, s.residual);
-      if (ci == 0 && std::string(b.name) == "native-growth") cbFrontalNative = s;
+      const auto c = cb.detect(v);
+      const int found=(int)c.size(), expected=(int)cb.modelPoints().size();
+      const double resid = homographyResidual(c);
+      const double gt = checkerGroundTruthRMS(c, checkerTrueCorners(cbGen, VIEW, conds[ci].keystone, CB_C, CB_R));
+      if (found < 4 || resid > 100) std::printf(" %2d/%2d (fail)           |", found, expected);
+      else                          std::printf(" %2d/%2d r=%.3f g=%.3f |", found, expected, resid, gt);
+      if (ci == 0) {
+        if (std::string(b.name)=="native-growth") { cbFrontalNative={found,expected,resid}; cbGtNativeFrontal=gt; }
+        if (std::string(b.name)=="opencv") cbGtOpencvFrontal=gt;
+      }
     }
     std::printf("\n");
   }
@@ -147,4 +205,14 @@ ICL_REGISTER_TEST("markers.calibration.comparison_harness",
   ICL_TEST_TRUE(cbFrontalNative.residual < 1.0);
   ICL_TEST_EQ(mgFrontalEdge.found, mgFrontalEdge.expected);
   ICL_TEST_TRUE(mgFrontalEdge.residual < 1.0);
+
+  // GROUND TRUTH: the native sub-pixel polish lands corners sub-0.1px against the
+  // analytically-known positions, on par with (here slightly better than) OpenCV's
+  // cornerSubPix — substantiating that the accuracy gap is genuinely closed, not
+  // just self-consistent. (Generous margin vs opencv: the ~0.01px lead is within
+  // render/tuning noise; the real claim is "not worse".)
+  std::printf("[phaseB] ground-truth frontal RMS: native=%.4f opencv=%.4f px\n",
+              cbGtNativeFrontal, cbGtOpencvFrontal);
+  ICL_TEST_TRUE(cbGtNativeFrontal < 0.1);
+  ICL_TEST_TRUE(cbGtNativeFrontal < 1.5*cbGtOpencvFrontal);
 }

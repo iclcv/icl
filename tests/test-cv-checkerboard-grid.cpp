@@ -508,3 +508,49 @@ ICL_REGISTER_TEST("cv.checkergrid.graph_diagonal_trap",
   ICL_TEST_TRUE(fullGrid(gg, COLS-1, ROWS-1));
   ICL_TEST_TRUE(latticeConsistent(gg));
 }
+
+// Sub-pixel corner polish: the ChESS parabolic peak lands ~0.3-0.6px off the true
+// inner-corner grid under perspective; refineCheckerboardCornersSubPix() pulls it
+// to <0.05px. Under a planar perspective view the (col,row) lattice maps to the
+// image by an exact homography, so the RMS residual of the best-fit homography IS
+// the corner-localisation error — measured before vs after the polish.
+ICL_REGISTER_TEST("cv.checkergrid.subpixel_refine_improves_corners",
+                  "gradient sub-pixel polish drives corners onto the true homography")
+{
+  const int COLS=9, ROWS=7; const int W=480, H=400;
+  // genuine projective (keystone) warp: output pixel -> source coord. Under a true
+  // homography the lattice (col,row) -> image map is itself an exact homography, so
+  // its residual isolates corner-localisation error (a non-projective warp would
+  // leave a large model-mismatch floor that swamps the sub-pixel gain).
+  const Point32f srcC[4]={{0,0},{(float)W,0},{(float)W,(float)H},{0,(float)H}};
+  const float ks=0.22f;                                  // top-edge keystone
+  const Point32f dstC[4]={{ks*W,0},{(1-ks)*W,0},{(float)W,(float)H},{0,(float)H}};
+  const math::Homography2D Hv2s(srcC, dstC, 4);          // apply(outputPx) -> sourcePx
+  auto warp = [&](float qx,float qy){ return Hv2s.apply(Point32f(qx,qy)); };
+  Img8u img = renderBoard(W, H, COLS, ROWS, 40, warp);
+
+  const auto seeds = CheckerboardSaddleDetector().detect(img);
+  CheckerboardGrid g = recoverCheckerboardGrid(seeds, &img);
+  ICL_TEST_TRUE(dimsMatch(g, COLS, ROWS));
+  ICL_TEST_TRUE(g.complete());
+
+  // RMS residual of the homography (col,row) -> image over all filled cells
+  auto homographyResidual = [&](const CheckerboardGrid &gr){
+    std::vector<Point32f> latt, im;
+    for (int r=0;r<gr.rows;++r) for (int c=0;c<gr.cols;++c)
+      if (gr.has(c,r)) { latt.push_back(Point32f((float)c,(float)r)); im.push_back(gr.at(c,r)); }
+    const math::Homography2D Hom(im.data(), latt.data(), (int)latt.size());   // apply(latt) -> image
+    double e=0; for (size_t i=0;i<latt.size();++i) e += std::pow(Hom.apply(latt[i]).distanceTo(im[i]), 2.0);
+    return std::sqrt(e/latt.size());
+  };
+
+  const double before = homographyResidual(g);
+  refineCheckerboardCornersSubPix(g, img);
+  const double after = homographyResidual(g);
+
+  std::cout << "[checkergrid] subpixel: homography residual " << before
+            << " -> " << after << " px" << std::endl;
+  ICL_TEST_TRUE(after < before*0.4);  // a large (here ~7x) improvement
+  ICL_TEST_TRUE(after < 0.15);        // sub-0.15px (the 4x-supersampled render is the
+                                      // floor here; the Phase-B harness reaches ~0.01)
+}

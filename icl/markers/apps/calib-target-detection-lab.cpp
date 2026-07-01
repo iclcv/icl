@@ -202,7 +202,8 @@ void init() {
                       << FSlider(0.1, 0.8, 0.35, {.handle="minScore", .label="min score"}))
                   << (HBox()
                       << Combo("native-growth,native-ransac,native-graph,opencv", {.handle="backend", .label="detector backend"})
-                      << CheckBox("cleanup (LAP)", {.checked=false, .handle="cleanup"}))
+                      << CheckBox("cleanup (LAP)", {.checked=false, .handle="cleanup"})
+                      << CheckBox("subpixel", {.checked=true, .handle="subpixel"}))
                   << Combo("pattern,edge,none", {.handle="refineMode", .label="marker corner refine"})  // marker-only
                   << Button("save frame", {.handle="saveFrame"})
                   << CheckBox("apply undistortion", {.checked=false, .handle="undistort"})
@@ -228,6 +229,7 @@ void run() {
   const bool  showUndistorted = gui["undistort"];
   const int   backend  = ComboHandle(gui["backend"]).getSelectedIndex();  // 0=growth,1=ransac,2=graph,3=opencv
   const bool  cleanup  = gui["cleanup"];
+  const bool  subpixel = gui["subpixel"];
   const int   rmode    = ComboHandle(gui["refineMode"]).getSelectedIndex();  // 0=pattern,1=edge,2=none
 
   // swap the visible board on a target change. setVisible() alone doesn't bump the
@@ -239,7 +241,7 @@ void run() {
     scene.touch();
     // context-sensitive controls: grey out the inactive target's options
     const bool cb = (target == 0);   // checkerboard active
-    for (const char *h : {"xc","yc","radius","minScore","backend","cleanup","showOri"})
+    for (const char *h : {"xc","yc","radius","minScore","backend","cleanup","subpixel","showOri"})
       if (cb) gui[h].enable(); else gui[h].disable();
     if (cb) gui["refineMode"].disable(); else gui["refineMode"].enable();
   }
@@ -248,12 +250,12 @@ void run() {
   mtarget->setRefineMode(rmode==0 ? RM::Pattern : rmode==1 ? RM::Edge : RM::None);
 
   // re-render the result on a new captured frame OR a control change
-  static int lRadius=-1, lUndist=-1, lBackend=-1, lCleanup=-1, lRmode=-1; static float lMs=1e9f;
+  static int lRadius=-1, lUndist=-1, lBackend=-1, lCleanup=-1, lSubpix=-1, lRmode=-1; static float lMs=1e9f;
   const bool resultDirty = radius!=lRadius || minScore!=lMs || (int)showUndistorted!=lUndist
                         || backend!=lBackend || (int)cleanup!=lCleanup || target!=lTarget
-                        || rmode!=lRmode;
+                        || (int)subpixel!=lSubpix || rmode!=lRmode;
   lRadius=radius; lMs=minScore; lUndist=(int)showUndistorted; lBackend=backend;
-  lCleanup=(int)cleanup; lTarget=target; lRmode=rmode;
+  lCleanup=(int)cleanup; lSubpix=(int)subpixel; lTarget=target; lRmode=rmode;
 
   gui["scene"].render();
   const auto frame = view.next();
@@ -296,6 +298,7 @@ void run() {
              : (backend == 2) ? recoverCheckerboardGridGraph(seeds, cam)
                               : recoverCheckerboardGrid(seeds, &cam);
         if (cleanup) grid = refineCheckerboardGrid(grid, seeds, &cam);
+        if (subpixel) refineCheckerboardCornersSubPix(grid, cam);   // final gradient polish
       }
       scoreCheckerboardGridEdges(grid, cam);
       drawCheckerboard(d, cam, seeds, grid);

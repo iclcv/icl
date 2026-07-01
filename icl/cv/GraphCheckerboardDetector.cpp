@@ -17,6 +17,8 @@ namespace icl{
       CheckerboardGrid g = recoverCheckerboardGridGraph(seeds, image);   // image-based topology
       if(m_cleanup && !g.empty())
         g = refineCheckerboardGrid(g, seeds, &image);   // homography + Hungarian
+      if(m_subpixel && !g.empty())
+        refineCheckerboardCornersSubPix(g, image);      // final gradient polish
       if(!g.empty()) res.boards.push_back(std::move(g));
       return res;
     }

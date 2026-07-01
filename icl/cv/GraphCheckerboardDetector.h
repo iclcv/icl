@@ -33,6 +33,7 @@ namespace icl{
     class ICLCV_API GraphCheckerboardDetector : public CheckerboardDetector{
       CheckerboardSaddleDetector::Params m_saddle;
       bool m_cleanup = false;   ///< run the homography + Hungarian cleanup pass
+      bool m_subpixel = true;   ///< run the final gradient sub-pixel corner polish
 
       public:
       GraphCheckerboardDetector() = default;
@@ -46,6 +47,11 @@ namespace icl{
       /// homography + Hungarian re-association + boundary trim.
       void setCleanup(bool on) { m_cleanup = on; }
       bool getCleanup() const { return m_cleanup; }
+
+      /// Enable the final sub-pixel corner polish (refineCheckerboardCornersSubPix):
+      /// gradient-based saddle refinement on the grayscale image. On by default.
+      void setSubPixel(bool on) { m_subpixel = on; }
+      bool getSubPixel() const { return m_subpixel; }
 
       Result detect(const core::Img8u &image, const Hints &hints = {}) override;
       std::string name() const override { return m_cleanup ? "native-graph+lap" : "native-graph"; }

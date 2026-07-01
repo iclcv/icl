@@ -149,4 +149,41 @@ namespace icl::cv {
   /// step will feed this confidence back into growth (guided growth).
   ICLCV_API void scoreCheckerboardGridEdges(CheckerboardGrid &grid, const core::Img8u &image);
 
+  /// Parameters for refineCheckerboardCornersSubPix().
+  struct SubPixelParams {
+    /// Half-size [px] of the square gradient window around each corner. Per grid it
+    /// is additionally capped to a fraction of the median cell spacing so the window
+    /// can never reach a neighbouring corner.
+    int   winRadius = 5;
+    /// Maximum refinement iterations per corner.
+    int   maxIters  = 20;
+    /// Convergence: stop when an iteration moves the corner by less than this [px].
+    float eps       = 0.02f;
+    // user-provided default ctor (not just DMIs) so `SubPixelParams{}` works as a
+    // default argument inside this enclosing namespace
+    SubPixelParams() {}
+  };
+
+  /// Sub-pixel corner polish for a recovered lattice (OpenCV cornerSubPix-style).
+  /** The corners in \a grid come from the ChESS saddle detector, whose position is
+      only refined by a parabolic fit on the coarse (integer-grid) response — good
+      to ~0.5px but the accuracy floor for calibration. This pass polishes every
+      filled corner directly on the grayscale image with the classic gradient
+      orthogonality criterion:
+
+      a true X-junction sits where the two crossing black/white edges meet. For any
+      pixel p near the corner q, the image gradient g(p) is either ~0 (inside a
+      uniform square) or perpendicular to the edge p lies on — and the vector q-p
+      then runs ALONG that edge, so g(p)·(q-p)=0. Minimising the weighted sum of
+      those dot products over a Gaussian window gives the 2x2 normal system
+      (Σ w gg^T) q = Σ w gg^T p, solved and iterated to convergence.
+
+      Because it averages many sub-pixel edge samples and intersects whole edges it
+      reaches ~0.01-0.05px, and stays valid under perspective (a projected square's
+      sides are still straight). Operates in place on grid.points; edge scores are
+      left untouched. A no-op on an empty grid. */
+  ICLCV_API void refineCheckerboardCornersSubPix(CheckerboardGrid &grid,
+                                                 const core::Img8u &image,
+                                                 const SubPixelParams &p = {});
+
 } // namespace icl::cv

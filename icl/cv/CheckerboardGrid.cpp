@@ -746,4 +746,98 @@ namespace icl::cv {
       }
   }
 
+  namespace {
+    // Full-resolution (unblurred) float gray with clamped bilinear sampling, for
+    // the sub-pixel gradient refinement. Kept separate from GrayProbe (which box-
+    // blurs) — the saddle refinement wants the sharpest possible edges.
+    struct GrayField {
+      std::vector<float> g; int W = 0, H = 0;
+      explicit GrayField(const Img8u &image) {
+        W = image.getWidth(); H = image.getHeight(); g.resize((size_t)W*H);
+        if (image.getChannels() >= 3) {
+          const icl8u *r = image.begin(0), *gr = image.begin(1), *b = image.begin(2);
+          for (size_t i = 0; i < g.size(); ++i) g[i] = 0.299f*r[i] + 0.587f*gr[i] + 0.114f*b[i];
+        } else {
+          const icl8u *d = image.begin(0);
+          for (size_t i = 0; i < g.size(); ++i) g[i] = d[i];
+        }
+      }
+      inline float at(float fx, float fy) const {
+        // clamp so a window overhanging the border still samples valid pixels
+        if (fx < 0) fx = 0; if (fx > W-1.001f) fx = W-1.001f;
+        if (fy < 0) fy = 0; if (fy > H-1.001f) fy = H-1.001f;
+        const int x0 = (int)fx, y0 = (int)fy;
+        const float ax = fx-x0, ay = fy-y0;
+        const float *p = g.data() + (size_t)y0*W + x0;
+        return (p[0]*(1-ax) + p[1]*ax)*(1-ay) + (p[W]*(1-ax) + p[W+1]*ax)*ay;
+      }
+    };
+
+    // Median cell spacing over a grid's filled 4-neighbour links (for capping the
+    // window so it can never reach a neighbouring corner).
+    float gridMedianSpacing(const CheckerboardGrid &grid) {
+      std::vector<float> d;
+      for (int r = 0; r < grid.rows; ++r)
+        for (int c = 0; c < grid.cols; ++c) {
+          if (!grid.has(c,r)) continue;
+          if (grid.has(c+1,r)) d.push_back(std::sqrt(dist2(grid.at(c,r), grid.at(c+1,r))));
+          if (grid.has(c,r+1)) d.push_back(std::sqrt(dist2(grid.at(c,r), grid.at(c,r+1))));
+        }
+      if (d.empty()) return 0.f;
+      std::nth_element(d.begin(), d.begin()+d.size()/2, d.end());
+      return d[d.size()/2];
+    }
+  }
+
+  void refineCheckerboardCornersSubPix(CheckerboardGrid &grid, const Img8u &image,
+                                       const SubPixelParams &p) {
+    if (grid.empty()) return;
+    const GrayField f(image);
+
+    // window half-size: capped to ~0.4 of the cell spacing so it never reaches a
+    // neighbour corner (which would pull the fit off the true X-junction)
+    int win = std::max(2, p.winRadius);
+    const float sp = gridMedianSpacing(grid);
+    if (sp > 0.f) win = std::min(win, std::max(2, (int)(0.4f*sp)));
+
+    // Gaussian window weights (favour the corner core, down-weight the edges)
+    const float sig2 = 2.f * (win*0.5f) * (win*0.5f) + 1e-3f;
+    std::vector<float> wgt((size_t)(2*win+1)*(2*win+1));
+    for (int dy = -win, i = 0; dy <= win; ++dy)
+      for (int dx = -win; dx <= win; ++dx, ++i)
+        wgt[i] = std::exp(-(dx*dx + dy*dy)/sig2);
+
+    for (int r = 0; r < grid.rows; ++r)
+      for (int c = 0; c < grid.cols; ++c) {
+        if (!grid.has(c,r)) continue;
+        Point32f q = grid.points[(size_t)r*grid.cols + c];
+        const Point32f q0 = q;
+        for (int it = 0; it < p.maxIters; ++it) {
+          double gxx = 0, gxy = 0, gyy = 0, bx = 0, by = 0;
+          for (int dy = -win, i = 0; dy <= win; ++dy)
+            for (int dx = -win; dx <= win; ++dx, ++i) {
+              const float px = q.x + dx, py = q.y + dy;
+              // central-difference gradient (bilinear-sampled → sub-pixel)
+              const float gx = 0.5f*(f.at(px+1,py) - f.at(px-1,py));
+              const float gy = 0.5f*(f.at(px,py+1) - f.at(px,py-1));
+              const float w = wgt[i];
+              const float wxx = w*gx*gx, wxy = w*gx*gy, wyy = w*gy*gy;
+              gxx += wxx; gxy += wxy; gyy += wyy;
+              bx  += (double)wxx*px + (double)wxy*py;
+              by  += (double)wxy*px + (double)wyy*py;
+            }
+          const double det = gxx*gyy - gxy*gxy;
+          if (std::fabs(det) < 1e-9) break;   // degenerate (flat window)
+          const Point32f qn((float)((gyy*bx - gxy*by)/det),
+                            (float)((gxx*by - gxy*bx)/det));
+          // divergence guard: reject a step that leaves the search window
+          if (std::sqrt(dist2(qn, q0)) > 2.f*win) break;
+          const float step = std::sqrt(dist2(qn, q));
+          q = qn;
+          if (step < p.eps) break;
+        }
+        grid.points[(size_t)r*grid.cols + c] = q;
+      }
+  }
+
 } // namespace icl::cv

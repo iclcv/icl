@@ -4,6 +4,38 @@
 
 ## Next Step
 
+### Session 91 — native-checkerboard sub-pixel corner polish (Phase-B gap closed)
+On `further-restructuring-and-cleanup`, suite **1003/1003**. Landed the S90 NEXT: a final gradient
+sub-pixel corner polish on the native checkerboard path, closing the accuracy gap to OpenCV.
+
+**Landed:**
+- **`cv::refineCheckerboardCornersSubPix(grid, image, params)`** (`CheckerboardGrid.{h,cpp}`) — the
+  classic OpenCV `cornerSubPix` gradient-orthogonality criterion: a true X-junction sits where the
+  image gradient g(p) is ⟂ q−p for every window pixel, so minimise Σ w·(g·(q−p))² → the 2×2 normal
+  system `(Σ w gg^T) q = Σ w gg^T p`, solved + iterated. Central-difference gradients bilinear-sampled
+  on a full-res (unblurred) gray field; Gaussian window weights; window half-size capped to 0.4× the
+  median cell spacing so it can never reach a neighbour corner; divergence guard (reject a step
+  leaving the search window). `SubPixelParams{winRadius=5, maxIters=20, eps=0.02}`.
+- **Wired default-ON into all three native backends** (Native/Ransac/Graph `CheckerboardDetector`)
+  via `m_subpixel`/`setSubPixel`, applied AFTER the optional LAP cleanup. Lab got a `subpixel`
+  checkbox (default on).
+- **Phase-B re-run** — checkerboard native now **0.002 / 0.014 / 0.012 px** (frontal/keystone/noisy),
+  vs OpenCV 0.005 / 0.017 / 0.015 → native now MATCHES/BEATS OpenCV (was ~0.6 / 0.43 / 0.8).
+- **Ground-truth metric added to Phase-B** (`checkerTrueCorners`/`checkerGroundTruthRMS`): the
+  self-consistency homography residual doesn't measure ABSOLUTE accuracy, so the harness now also maps
+  the analytically-known gen-image corners through the exact gen→view homography and measures each
+  detected corner's distance to its NEAREST true corner (nearest-match because native doesn't
+  canonicalise the (col,row) board frame — a per-label compare is meaningless). Result confirms it
+  independently: native **g=0.007/0.015/0.016** vs opencv g=0.009/0.020/0.018. So native is genuinely
+  on par / a hair better, not just self-consistent. Asserts native GT sub-0.1px and < 1.5× opencv.
+- **Test** `cv.checkergrid.subpixel_refine_improves_corners`: on a keystone-warped synthetic the
+  homography residual drops 0.56→0.08px (the test's 4×-supersampled render is the floor here).
+
+**NEXT options** (from S90 follow-ups + backlog): (a) reuse `getPoses` in the marker/Fiducial pose
+getters + temporal disambiguation; (b) grid-based multi-marker pose (baseline removes the IPPE
+ambiguity); (c) coded corners (BCH/PuzzleBoard) to make grid association ABSOLUTE (backlog:64);
+(d) native-graph partial-grid robustness OR retire as experimental.
+
 ### Session 90 — marker sub-pixel refiners, closed-form IPPE pose, calib-target lab + demo, Phase-B harness
 On `further-restructuring-and-cleanup`, suite **1002/1002**. Long session, 8 commits, continuing the
 calibration arc. **NEXT (start here): wire a sub-pixel corner refinement into the NATIVE CHECKERBOARD
