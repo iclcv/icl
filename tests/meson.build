@@ -39,6 +39,7 @@ if qt_dep.found()
     'test-markers-checkerboard-target.cpp',
     'test-markers-marker-grid-target.cpp',
     'test-markers-calibration-comparison.cpp',
+    'test-markers-intrinsic-endtoend.cpp',
     'test-io-scene-source.cpp',
     'test-gui-definition.cpp',
   )

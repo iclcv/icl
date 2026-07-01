@@ -40,11 +40,20 @@ observability limit, not a calibrator difference). Both recover the well-conditi
   bug (built `DynMatrix(1,5)` but wrote `at(0,i)` col-indexed → threw "col index too large" — a direct
   casualty of the cols-first ctor vs (row,col) accessor asymmetry; see below).
 
-**NEXT (Phase B continuation):** (a) end-to-end render+detect→calibrate (wire the CheckerboardTarget
-detector output, not just projected points); (b) then Phase C multi-cam extrinsics. NOTE (matrix
-convention): `DynMatrix`/`FixedMatrix` accessors are standard `(row,col)` but the CONSTRUCTOR/template
-dim order is still column-first (`DynMatrix(cols,rows)`, `FixedMatrix<T,COLS,ROWS>`) — a half-done
-standardization worth completing (it caused the getDistortion bug).
+**End-to-end render→detect→calibrate — LANDED** (`markers.intrinsic.endtoend_checkerboard`). Renders
+GT-camera views of a tilted board (homography H=K[r1 r2 t], auto-centred on the optical axis,
+inverse-warp + 3× supersample + pixel noise), detects with the real `CheckerboardTarget` (ChESS
+saddle + sub-pixel), orders detected corners canonically by objectPos, and calibrates with
+`IntrinsicCalibrator`. 10/10 boards detected; recovers fx=600.3/fy=600.2 (GT 600), cx=320.0, cy=239.7
+— sub-pixel accuracy THROUGH genuine detection noise (a small spurious k1≈0.05 absorbs a little). No
+lens distortion in the render yet (needs an inverse-distortion warp) — deferred.
+
+**NEXT (Phase B/C):** (a) add lens-distortion rendering to the end-to-end path (inverse-distortion
+warp) so k1/k2 recovery is exercised through detection; (b) Phase C multi-cam one-click extrinsics
+(3D, fixed intrinsics) — then old `geom` can be deleted. NOTE (matrix convention, ⚠️ URGENT backlog):
+`DynMatrix`/`FixedMatrix` accessors are standard `(row,col)` but the CONSTRUCTOR/template dim order is
+still column-first — half-done migration; recipe recorded (temp `CONSTRUCTOR(rows,cols)` factory →
+private ctor → script-rewrite sites → restore ctor with new order).
 
 ### Session 91 — native-checkerboard sub-pixel corner polish (Phase-B gap closed)
 On `further-restructuring-and-cleanup`, suite **1003/1003**. Landed the S90 NEXT: a final gradient
