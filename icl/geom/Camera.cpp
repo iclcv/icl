@@ -90,11 +90,11 @@ namespace icl::geom {
     return createTransformationMatrix(-m_norm, m_up, m_pos);
   }
 
-  FixedMatrix<icl32f,4,3> Camera::getQMatrix() const {
+  FixedMatrix<icl32f,3,4> Camera::getQMatrix() const {
     Mat K = getProjectionMatrix();
     Mat CS = getCSTransformationMatrix();
 
-    FixedMatrix<icl32f,4,3> cs(CS.begin());
+    FixedMatrix<icl32f,3,4> cs(CS.begin());
     FixedMatrix<icl32f,3,3> k( K(0, 0), K(0, 1), K(0, 2),
                                K(1, 0), K(1, 1), K(1, 2),
                                K(3, 0), K(3, 1), K(3, 2) );
@@ -102,12 +102,12 @@ namespace icl::geom {
   }
 
 
-  FixedMatrix<icl32f,3,4> Camera::getInvQMatrix() const{
+  FixedMatrix<icl32f,4,3> Camera::getInvQMatrix() const{
     // (P*T).inv = T.inv * P.inv
     Mat Tinv = getInvCSTransformationMatrix();
     Mat P = getProjectionMatrix();
     Mat II = Tinv * P.pinv(std::numeric_limits<icl32f>::epsilon());
-    return FixedMatrix<icl32f,3,4> (II(0, 0),II(0, 1),II(0, 3),
+    return FixedMatrix<icl32f,4,3> (II(0, 0),II(0, 1),II(0, 3),
                                     II(1, 0),II(1, 1),II(1, 3),
                                     II(2, 0),II(2, 1),II(2, 3),
                                     II(3, 0),II(3, 1),II(3, 3));
@@ -264,7 +264,7 @@ namespace icl::geom {
   }
 
 
-  Camera Camera::createFromProjectionMatrix(const FixedMatrix<icl32f,4,3> &Q,
+  Camera Camera::createFromProjectionMatrix(const FixedMatrix<icl32f,3,4> &Q,
                                                 float focalLength) {
     FixedMatrix<float,3,3> M = Q.part<0,0,3,3>();
     FixedColVector<float,3> c4 = Q.col(3);
@@ -301,7 +301,7 @@ namespace icl::geom {
   }
 
   template<class T, unsigned int N, unsigned int M>
-  inline T norm3_local(const FixedMatrix<T, N, M> &m){
+  inline T norm3_local(const FixedMatrix<T,M,N> &m){
     return ::sqrt(sqr(m[0]) + sqr(m[1]) + sqr(m[2]) );
   }
 
@@ -486,7 +486,7 @@ namespace icl::geom {
     }
 
     DynMatrix<double> Cv = B.pinv() * U;
-    FixedMatrix<float,4,3> Q(Cv[0],Cv[1],Cv[2],Cv[3],
+    FixedMatrix<float,3,4> Q(Cv[0],Cv[1],Cv[2],Cv[3],
                              Cv[4],Cv[5],Cv[6],Cv[7],
                              Cv[8],Cv[9],Cv[10],1);
     Camera cam = Camera::createFromProjectionMatrix(Q, focalLength);
@@ -524,7 +524,7 @@ namespace icl::geom {
     DynMatrix<icl32f> U,s,V;
     svd_dyn(A,U,s,V);
 
-    FixedMatrix<float,4,3> Q;
+    FixedMatrix<float,3,4> Q;
     for (int i=0; i<4; i++) for (int j=0; j<3; j++) {
       Q(j, i) = V(j*4+i, 11);
     }
@@ -666,7 +666,7 @@ namespace icl::geom {
   }
 
   /// utility function called from all getViewRay methods
-  inline ViewRay create_view_ray(const FixedMatrix<icl32f,3,4> &Qi, float x, float y, const Vec &p){
+  inline ViewRay create_view_ray(const FixedMatrix<icl32f,4,3> &Qi, float x, float y, const Vec &p){
     Vec dir = Qi*FixedColVector<icl32f,3>(x, y, 1);
     return ViewRay(p, dir, true);
   }
@@ -678,7 +678,7 @@ namespace icl::geom {
 
   std::vector<ViewRay> Camera::getViewRays(const std::vector<Point32f> &pixels) const{
     std::vector<ViewRay> vs(pixels.size());
-    FixedMatrix<icl32f,3,4> Qi = getInvQMatrix();
+    FixedMatrix<icl32f,4,3> Qi = getInvQMatrix();
 
     for(unsigned int i=0;i<pixels.size();++i){
       vs[i] = create_view_ray(Qi,pixels[i].x,pixels[i].y,m_pos);
@@ -688,7 +688,7 @@ namespace icl::geom {
 
   Array2D<ViewRay> Camera::getAllViewRays() const{
     Array2D<ViewRay> m(getRenderParams().chipSize);
-    FixedMatrix<icl32f,3,4> Qi = getInvQMatrix();
+    FixedMatrix<icl32f,4,3> Qi = getInvQMatrix();
 
     for(int y=0;y<m.getHeight();++y){
       for(int x=0;x<m.getWidth();++x){
@@ -734,7 +734,7 @@ namespace icl::geom {
     for(int i=0;i<K;++i){
       const float &u = ps[i].x;
       const float &v = ps[i].y;
-      FixedMatrix<float,4,3> Q = cams[i]->getQMatrix();
+      FixedMatrix<float,3,4> Q = cams[i]->getQMatrix();
       FixedRowVector<float,3> x = Q.part<0,0,3,1>();
       FixedRowVector<float,3> y = Q.part<0,1,3,1>();
       FixedRowVector<float,3> z = Q.part<0,2,3,1>();
@@ -821,7 +821,7 @@ namespace icl::geom {
     ICLASSERT_THROW(static_cast<int>(UVs.size()) == static_cast<int>(cams.size()),
                     ICLException("estimate_3D_svd got more or less cameras than points"));
 
-    std::vector<FixedMatrix<icl32f,4,3> > P(K);
+    std::vector<FixedMatrix<icl32f,3,4> > P(K);
     std::vector<FixedColVector<icl32f,2> > u(K);
 
     for(int i=0;i<K;++i) {
@@ -842,7 +842,7 @@ namespace icl::geom {
 
     DynMatrix<float> A = DynMatrix<float>::create(K*3, 4);
     for(int k=0;k<K;++k){
-      FixedMatrix<icl32f,4,3> m = contr_eps(FixedColVector<icl32f,3>(u[k][0],u[k][1],1))*P[k];
+      FixedMatrix<icl32f,3,4> m = contr_eps(FixedColVector<icl32f,3>(u[k][0],u[k][1],1))*P[k];
       for(unsigned int y=0;y<3;++y){
         for(unsigned int x=0;x<4;++x){
           A(k*3+y, x) = m(y, x);

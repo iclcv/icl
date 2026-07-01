@@ -112,8 +112,8 @@ namespace icl::math {
     }
 
     template<class T, unsigned int COLS, unsigned int ROWS>
-    inline FixedMatrix<T,COLS,ROWS> gramSchmidtOrtho(FixedMatrix<T,COLS,ROWS> const &mat) {
-        FixedMatrix<T,COLS,ROWS> r(T(0.f));
+    inline FixedMatrix<T,ROWS,COLS> gramSchmidtOrtho(FixedMatrix<T,ROWS,COLS> const &mat) {
+        FixedMatrix<T,ROWS,COLS> r(T(0.f));
 
         FixedColVector<T,ROWS> w = mat.col(0);
         r.col(0) = w.normalized();

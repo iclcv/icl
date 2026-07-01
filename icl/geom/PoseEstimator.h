@@ -49,16 +49,16 @@ namespace icl::geom {
     /// Convenienc template that uses FixedMatrix inputs (available for T=icl32f and T=icl64f)
     /** The inputs's data points are passes to the main map-function using a shallow DynMatrix<T> wrappter*/
     template<class T, unsigned int NUM_POINTS>
-    static math::FixedMatrix<T,4,4> map(const math::FixedMatrix<T,NUM_POINTS,3> &Xs,
-                                        const math::FixedMatrix<T,NUM_POINTS,3> &Ys, MapMode mode=RigidBody){
+    static math::FixedMatrix<T,4,4> map(const math::FixedMatrix<T,3,NUM_POINTS> &Xs,
+                                        const math::FixedMatrix<T,3,NUM_POINTS> &Ys, MapMode mode=RigidBody){
       return map(Xs.dyn(),Ys.dyn(), mode);
     }
 
     /// Convenienc template that uses FixedMatrix inputs (available for T=icl32f and T=icl64f)
     /** The inputs's data points are passes to the main map-function using a shallow DynMatrix<T> wrappter*/
     template<class T, unsigned int NUM_POINTS>
-    static math::FixedMatrix<T,4,4> map(const math::FixedMatrix<T,NUM_POINTS,4> &Xs,
-                                  const math::FixedMatrix<T,NUM_POINTS,4> &Ys, MapMode mode=RigidBody){
+    static math::FixedMatrix<T,4,4> map(const math::FixedMatrix<T,4,NUM_POINTS> &Xs,
+                                  const math::FixedMatrix<T,4,NUM_POINTS> &Ys, MapMode mode=RigidBody){
       return map(Xs.dyn(),Ys.dyn(), mode);
     }
 

@@ -47,7 +47,7 @@ ICL_REGISTER_TEST("math.fixed.null", "null() is zero matrix")
 
 ICL_REGISTER_TEST("math.fixed.access_colrow", "operator()(col,row) indexing")
 {
-  FixedMatrix<float,3,2> m(0.0f);
+  FixedMatrix<float,2,3> m(0.0f);
   // row-major: data[col + cols*row]
   m(0, 0) = 1; m(0, 1) = 2; m(0, 2) = 3;
   m(1, 0) = 4; m(1, 1) = 5; m(1, 2) = 6;
@@ -190,8 +190,8 @@ ICL_REGISTER_TEST("math.fixed.mult_2x2f", "2x2f multiply vs naive")
 
 ICL_REGISTER_TEST("math.fixed.mult_rect", "non-square multiply 2x3 * 3x2 = 2x2")
 {
-  FixedMatrix<float,3,2> A(0.0f); // 3 cols, 2 rows
-  FixedMatrix<float,2,3> B(0.0f); // 2 cols, 3 rows
+  FixedMatrix<float,2,3> A(0.0f); // 2 rows, 3 cols
+  FixedMatrix<float,3,2> B(0.0f); // 3 rows, 2 cols
   // A = [1 2 3; 4 5 6]
   A(0, 0)=1; A(0, 1)=2; A(0, 2)=3;
   A(1, 0)=4; A(1, 1)=5; A(1, 2)=6;
@@ -228,7 +228,7 @@ ICL_REGISTER_TEST("math.fixed.mult_4x4_vec", "4x4 * 4x1 vector transform")
 {
   FixedMatrix<float,4,4> M = FixedMatrix<float,4,4>::id();
   M(0, 3) = 10; M(1, 3) = 20; M(2, 3) = 30; // translation in last column
-  FixedMatrix<float,1,4> v(0.0f);
+  FixedMatrix<float,4,1> v(0.0f);
   v[0] = 1; v[1] = 2; v[2] = 3; v[3] = 1; // homogeneous point
   auto r = M * v;
   ICL_TEST_NEAR(r[0], 11.0f, 1e-5f);
@@ -240,7 +240,7 @@ ICL_REGISTER_TEST("math.fixed.mult_4x4_vec", "4x4 * 4x1 vector transform")
 ICL_REGISTER_TEST("math.fixed.mult_4x4_vec_general", "4x4 * 4x1 general vs naive")
 {
   FixedMatrix<float,4,4> M;
-  FixedMatrix<float,1,4> v(0.0f);
+  FixedMatrix<float,4,1> v(0.0f);
   for(int i = 0; i < 16; ++i) M[i] = static_cast<float>(i+1);
   v[0] = 2; v[1] = 3; v[2] = 5; v[3] = 7;
   auto r = M * v;
@@ -269,10 +269,10 @@ ICL_REGISTER_TEST("math.fixed.transp_3x3", "3x3 transpose")
 
 ICL_REGISTER_TEST("math.fixed.transp_rect", "2x3 transpose = 3x2")
 {
-  FixedMatrix<float,3,2> m(0.0f);
+  FixedMatrix<float,2,3> m(0.0f);
   m(0, 0)=1; m(0, 1)=2; m(0, 2)=3;
   m(1, 0)=4; m(1, 1)=5; m(1, 2)=6;
-  auto t = m.transp();  // FixedMatrix<float,2,3>
+  auto t = m.transp();  // FixedMatrix<float,3,2>
   ICL_TEST_EQ(t(0, 0), 1.0f); ICL_TEST_EQ(t(0, 1), 4.0f);
   ICL_TEST_EQ(t(1, 0), 2.0f); ICL_TEST_EQ(t(1, 1), 5.0f);
   ICL_TEST_EQ(t(2, 0), 3.0f); ICL_TEST_EQ(t(2, 1), 6.0f);
@@ -380,21 +380,21 @@ ICL_REGISTER_TEST("math.fixed.inv_singular_throws", "singular matrix inv throws"
 
 ICL_REGISTER_TEST("math.fixed.length_l2", "L2 norm of [3,4,0] = 5")
 {
-  FixedMatrix<float,3,1> v(0.0f);
+  FixedMatrix<float,1,3> v(0.0f);
   v[0] = 3; v[1] = 4;
   ICL_TEST_NEAR(v.length(), 5.0, 1e-10);
 }
 
 ICL_REGISTER_TEST("math.fixed.length_l1", "L1 norm of [-3,4,-1] = 8")
 {
-  FixedMatrix<float,3,1> v(0.0f);
+  FixedMatrix<float,1,3> v(0.0f);
   v[0] = -3; v[1] = 4; v[2] = -1;
   ICL_TEST_NEAR(v.length(1), 8.0, 1e-10);
 }
 
 ICL_REGISTER_TEST("math.fixed.length_general", "L3 norm")
 {
-  FixedMatrix<float,2,1> v(0.0f);
+  FixedMatrix<float,1,2> v(0.0f);
   v[0] = 2; v[1] = 3;
   double expected = std::pow(std::pow(2.0,3) + std::pow(3.0,3), 1.0/3.0);
   ICL_TEST_NEAR(v.length(3), expected, 1e-6);
@@ -402,7 +402,7 @@ ICL_REGISTER_TEST("math.fixed.length_general", "L3 norm")
 
 ICL_REGISTER_TEST("math.fixed.normalize", "normalized vector has length 1")
 {
-  FixedMatrix<float,4,1> v(0.0f);
+  FixedMatrix<float,1,4> v(0.0f);
   v[0]=1; v[1]=2; v[2]=3; v[3]=4;
   auto n = v.normalized();
   ICL_TEST_NEAR(n.length(), 1.0, 1e-5);
@@ -428,7 +428,7 @@ ICL_REGISTER_TEST("math.fixed.equality", "operator== and !=")
 
 ICL_REGISTER_TEST("math.fixed.element_wise_inner", "element_wise_inner_product")
 {
-  FixedMatrix<float,3,1> a(0.0f), b(0.0f);
+  FixedMatrix<float,1,3> a(0.0f), b(0.0f);
   a[0]=1; a[1]=2; a[2]=3;
   b[0]=4; b[1]=5; b[2]=6;
   ICL_TEST_NEAR(a.element_wise_inner_product(b), 32.0f, 1e-5f);
@@ -440,10 +440,10 @@ ICL_REGISTER_TEST("math.fixed.element_wise_inner", "element_wise_inner_product")
 
 // Generic C++ reference multiply (no SIMD, no cblas — always correct)
 template<class T, unsigned int COLS, unsigned int ROWS, unsigned int MCOLS>
-static FixedMatrix<T,MCOLS,ROWS> ref_mult(
-    const FixedMatrix<T,COLS,ROWS> &a,
-    const FixedMatrix<T,MCOLS,COLS> &b) {
-  FixedMatrix<T,MCOLS,ROWS> dst;
+static FixedMatrix<T,ROWS,MCOLS> ref_mult(
+    const FixedMatrix<T,ROWS,COLS> &a,
+    const FixedMatrix<T,COLS,MCOLS> &b) {
+  FixedMatrix<T,ROWS,MCOLS> dst;
   for(unsigned int c=0;c<MCOLS;++c)
     for(unsigned int r=0;r<ROWS;++r) {
       T sum = T(0);
@@ -514,9 +514,9 @@ ICL_REGISTER_TEST("math.fixed.simd_cross_matvec_4f", "4x4 float * vec: SIMD matc
 {
   FixedMatrix<float,4,4> m;
   for(int i=0; i<16; ++i) m[i] = float(i+1);
-  FixedMatrix<float,1,4> v;
+  FixedMatrix<float,4,1> v;
   v[0]=1; v[1]=2; v[2]=3; v[3]=4;
-  FixedMatrix<float,1,4> got, ref;
+  FixedMatrix<float,4,1> got, ref;
   m.mult(v, got);
   // manual reference
   for(int r=0; r<4; ++r) {
@@ -531,9 +531,9 @@ ICL_REGISTER_TEST("math.fixed.simd_cross_matvec_4d", "4x4 double * vec: SIMD mat
 {
   FixedMatrix<double,4,4> m;
   for(int i=0; i<16; ++i) m[i] = double(i+1);
-  FixedMatrix<double,1,4> v;
+  FixedMatrix<double,4,1> v;
   v[0]=1; v[1]=2; v[2]=3; v[3]=4;
-  FixedMatrix<double,1,4> got, ref;
+  FixedMatrix<double,4,1> got, ref;
   m.mult(v, got);
   for(int r=0; r<4; ++r) {
     double s = 0;

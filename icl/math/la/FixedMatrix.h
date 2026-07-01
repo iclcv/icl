@@ -45,7 +45,7 @@ namespace icl::math {
 
   /** \cond */
   /// Forward Declaration fo FixedMatrixPart struct
-  template<class T, unsigned int COLS, unsigned int ROWS> class FixedMatrix;
+  template<class T, unsigned int ROWS, unsigned int COLS> class FixedMatrix;
   /** \endcond */
 
 
@@ -96,12 +96,12 @@ namespace icl::math {
     /// Assignment with a compatible FixedMatrix instance (FixedMatrix DIM must be euqal to Part-size)
     /** DIM equality is forced by Argument template parameters <...,COLS,N/COLS> */
     template<unsigned int COLS>
-    FixedMatrixPart& operator=(const FixedMatrix<T,COLS,N/COLS> &m);
+    FixedMatrixPart& operator=(const FixedMatrix<T,N/COLS,COLS> &m);
 
     /// Assignment with a FixedMatrix instance (FixedMatrix DIM must be euqal to Part-size)
     /** DIM equality is forced by Argument template parameters <...,COLS,N/COLS> */
     template<class T2, unsigned int COLS>
-    FixedMatrixPart& operator=(const FixedMatrix<T2,COLS,N/COLS> &m);
+    FixedMatrixPart& operator=(const FixedMatrix<T2,N/COLS,COLS> &m);
 
   };
 
@@ -139,7 +139,7 @@ namespace icl::math {
         - 1000 x multiply 4x4 matrices 79 ns [IPP if available]
         - 1000 x multiply 5x5 matrices 238 ns [generic C++ implementation for A*B]
   */
-  template<class T,unsigned int COLS,unsigned int ROWS>
+  template<class T,unsigned int ROWS,unsigned int COLS>
   class FixedMatrix : public utils::FixedArray<T, COLS*ROWS>, public FixedMatrixBase{
     public:
 
@@ -228,7 +228,7 @@ namespace icl::math {
 
     // Explicit Copy template based constructor (deep copy)
     template<class otherT>
-    FixedMatrix(const FixedMatrix<otherT,COLS,ROWS> &other){
+    FixedMatrix(const FixedMatrix<otherT,ROWS,COLS> &other){
       std::transform(other.begin(),other.end(),begin(),utils::clipped_cast<otherT,T>);
     }
 
@@ -255,7 +255,7 @@ namespace icl::math {
     /// Assignment operator (with compatible data type) (deep copy)
     /** Internally using std::transform with icl::clipped_cast<otherT,T> */
     template<class otherT>
-    FixedMatrix &operator=(const FixedMatrix<otherT,COLS,ROWS> &other){
+    FixedMatrix &operator=(const FixedMatrix<otherT,ROWS,COLS> &other){
       if(this == &other) return *this;
       std::transform(other.begin(),other.end(),begin(),utils::clipped_cast<otherT,T>);
       return *this;
@@ -653,7 +653,7 @@ namespace icl::math {
 
         @param m right matrix multiplication operand
         @param dst destination of matrix multiplication
-        @see operator*(const FixedMatrix<T,MCOLS,COLS>&)
+        @see operator*(const FixedMatrix<T,COLS,MCOLS>&)
     */
     /// Generic matrix multiply (C++ fallback).
     /** For 4x4/2x2 float/double, explicit SIMD specializations below override
@@ -662,7 +662,7 @@ namespace icl::math {
         this loop at -O3, producing SSE/NEON code comparable to hand-written
         intrinsics for most sizes. */
     template<unsigned int MCOLS>
-    void mult(const FixedMatrix<T,MCOLS,COLS> &m,  FixedMatrix<T,MCOLS,ROWS> &dst) const{
+    void mult(const FixedMatrix<T,COLS,MCOLS> &m,  FixedMatrix<T,ROWS,MCOLS> &dst) const{
       for(unsigned int c=0;c<MCOLS;++c){
         for(unsigned int r=0;r<ROWS;++r){
           dst(r, c) = std::inner_product(m.col_begin(c),m.col_end(c),row_begin(r),T(0));
@@ -694,8 +694,8 @@ namespace icl::math {
         </pre>
     */
     template<unsigned int MCOLS>
-    FixedMatrix<T,MCOLS,ROWS> operator*(const FixedMatrix<T,MCOLS,COLS> &m) const{
-      FixedMatrix<T,MCOLS,ROWS> d;
+    FixedMatrix<T,ROWS,MCOLS> operator*(const FixedMatrix<T,COLS,MCOLS> &m) const{
+      FixedMatrix<T,ROWS,MCOLS> d;
       mult(m,d);
       return d;
     }
@@ -722,10 +722,10 @@ namespace icl::math {
     }
 
     /// returns matrix's transposed
-    FixedMatrix<T,ROWS,COLS> transp() const{
-      FixedMatrix<T,ROWS,COLS> d;
+    FixedMatrix<T,COLS,ROWS> transp() const{
+      FixedMatrix<T,COLS,ROWS> d;
       for(unsigned int i=0;i<cols();++i){
-        FixedMatrixBase::optimized_copy<const_col_iterator, typename FixedMatrix<T,ROWS,COLS>::row_iterator,DIM>(col_begin(i),col_end(i),d.row_begin(i));
+        FixedMatrixBase::optimized_copy<const_col_iterator, typename FixedMatrix<T,COLS,ROWS>::row_iterator,DIM>(col_begin(i),col_end(i),d.row_begin(i));
         //        std::copy(col_begin(i),col_end(i),d.row_begin(i));
       }
       return d;
@@ -734,7 +734,7 @@ namespace icl::math {
     /// inner product of data pointers (not matrix-mulitiplication)
     /** computes the inner-product of internal data vectors */
     template<unsigned int OTHER_COLS>
-    T element_wise_inner_product(const FixedMatrix<T,OTHER_COLS,DIM/OTHER_COLS> &other) const {
+    T element_wise_inner_product(const FixedMatrix<T,DIM/OTHER_COLS,OTHER_COLS> &other) const {
       return std::inner_product(begin(),end(),other.begin(),T(0));
     }
 
@@ -744,7 +744,7 @@ namespace icl::math {
         TODO: optimize implementation (current implementation _is_ A.transp() * B)
     */
     template<unsigned int OTHER_COLS>
-    FixedMatrix<T,OTHER_COLS,COLS> dot(const FixedMatrix<T,OTHER_COLS,ROWS> &M) const{
+    FixedMatrix<T,COLS,OTHER_COLS> dot(const FixedMatrix<T,ROWS,OTHER_COLS> &M) const{
       return this->transp() * M;
     }
 
@@ -795,7 +795,7 @@ namespace icl::math {
     /// extracts a rectangular matrix sub region (const)
     template<unsigned int X,unsigned int Y,unsigned int WIDTH,unsigned int HEIGHT>
     const FixedMatrixPart<T,WIDTH*HEIGHT,MatrixSubRectIterator<T> > part() const{
-      return const_cast<FixedMatrix<T,COLS,ROWS>*>(this)->part<X,Y,WIDTH,HEIGHT>();
+      return const_cast<FixedMatrix<T,ROWS,COLS>*>(this)->part<X,Y,WIDTH,HEIGHT>();
     }
 
     /// extends/shrinks matrix dimensions while preserving content on remaining elements (without scaling)
@@ -805,8 +805,8 @@ namespace icl::math {
         given init value.
     */
     template<unsigned int NEW_WIDTH,unsigned int NEW_HEIGHT>
-    inline FixedMatrix<T,NEW_WIDTH,NEW_HEIGHT> resize(const T &init=T(0)) const {
-      FixedMatrix<T,NEW_WIDTH,NEW_HEIGHT> M(init);
+    inline FixedMatrix<T,NEW_HEIGHT,NEW_WIDTH> resize(const T &init=T(0)) const {
+      FixedMatrix<T,NEW_HEIGHT,NEW_WIDTH> M(init);
       for(unsigned int x=0;x<COLS && x < NEW_WIDTH; ++x){
         for(unsigned int y=0;y<ROWS && y < NEW_HEIGHT; ++y){
           M(y, x) = (*this)(y, x);
@@ -820,8 +820,8 @@ namespace icl::math {
         is initialized with the fitting identity matrix and other
         elements are initialized with 0
     */
-    static FixedMatrix<T,ROWS,COLS> id(){
-      FixedMatrix<T,ROWS,COLS> m(T(0));
+    static FixedMatrix<T,COLS,ROWS> id(){
+      FixedMatrix<T,COLS,ROWS> m(T(0));
       for(unsigned int i=0;i<ROWS && i<COLS;++i){
         m(i, i) = 1;
       }
@@ -854,14 +854,14 @@ namespace icl::math {
     }
 
     /// create a normalized version of this matrix
-    inline FixedMatrix<T,COLS,ROWS> normalized(T norm=2) const{
+    inline FixedMatrix<T,ROWS,COLS> normalized(T norm=2) const{
       T l = static_cast<T>(length(norm));
       return l ?  (*this)/l : *this;
     }
 
     /// Element-wise comparison with other matrix
     template<class otherT>
-    bool operator==(const FixedMatrix<otherT,COLS,ROWS> &m) const{
+    bool operator==(const FixedMatrix<otherT,ROWS,COLS> &m) const{
       for(unsigned int i=0;i<DIM;++i){
         if(begin()[i] != m[i]) return false;
       }
@@ -869,15 +869,15 @@ namespace icl::math {
     }
     /// Element-wise comparison with other matrix
     template<class otherT>
-    bool operator!=(const FixedMatrix<otherT,COLS,ROWS> &m) const{
+    bool operator!=(const FixedMatrix<otherT,ROWS,COLS> &m) const{
       return !this->operator==(m);
     }
 
 
     /// returns a vector of the diagonal elements (only for squared matrices)
-    FixedMatrix<T,1,ROWS> diag() const{
+    FixedMatrix<T,ROWS,1> diag() const{
       if(ROWS != COLS) throw InvalidMatrixDimensionException("trace is only possible for sqaure matrices");
-      FixedMatrix<T,1,ROWS> t;
+      FixedMatrix<T,ROWS,1> t;
       for(unsigned int i=0;i<ROWS;++i){
         t[i] = (*this)(i,i);
       }
@@ -886,7 +886,7 @@ namespace icl::math {
 
     /// computes the QR decomposition of a matrix
     /** implements the stabilized Gram-Schmidt orthonormalization.  (Internally using DynMatrix wrappers */
-    void decompose_QR(FixedMatrix<T,COLS,ROWS> &Q, FixedMatrix<T,COLS,COLS> &R) const{
+    void decompose_QR(FixedMatrix<T,ROWS,COLS> &Q, FixedMatrix<T,COLS,COLS> &R) const{
       DynMatrix<T> Qd = Q.dyn(), Rd = R.dyn();
       dyn().decompose_QR(Qd,Rd);
     }
@@ -900,15 +900,15 @@ namespace icl::math {
 
     /// computes Singular Value Decomposition of this Matrix A = U diag(s) V'
     /** internally a DynMatrix wrapper is used */
-    void svd(FixedMatrix<T,COLS,ROWS> &U, FixedMatrix<T,1,COLS> &s, FixedMatrix<T,COLS,COLS> &V) const{
+    void svd(FixedMatrix<T,ROWS,COLS> &U, FixedMatrix<T,COLS,1> &s, FixedMatrix<T,COLS,COLS> &V) const{
       DynMatrix<T> Ud = U.dyn(), sd = s.dyn(), Vd = V.dyn();
       return dyn().svd(Ud,sd,Vd);
     }
 
     /// Computes the Matrix's pseudo-inverse
     /** internally a DynMatrix wrapper is used */
-    FixedMatrix<T,ROWS,COLS> pinv(float zeroThreshold=0.00000000000000001) const {
-      return FixedMatrix<T,ROWS,COLS>(dyn().pinv(zeroThreshold).begin());
+    FixedMatrix<T,COLS,ROWS> pinv(float zeroThreshold=0.00000000000000001) const {
+      return FixedMatrix<T,COLS,ROWS>(dyn().pinv(zeroThreshold).begin());
     }
 
     /// Extracts the matrix's eigenvalues and eigenvectors
@@ -925,7 +925,7 @@ namespace icl::math {
         @param eigenvalues becomes a N-dimensional column vector which ith element is the eigenvalue that corresponds
                            to the ith column of eigenvectors
     */
-    void eigen(FixedMatrix &eigenvectors, FixedMatrix<T,1,COLS> &eigenvalues) const{
+    void eigen(FixedMatrix &eigenvectors, FixedMatrix<T,COLS,1> &eigenvalues) const{
       if(ROWS != COLS) throw InvalidMatrixDimensionException("eigenvalue decomposition is only possible for sqaure matrices (use svd instead!)");
       DynMatrix<T> evecs = eigenvectors.dyn(), evals = eigenvalues.dyn();
       return dyn().eigen(evecs,evals);
@@ -937,9 +937,9 @@ namespace icl::math {
   /// Vertical Matrix concatenation  \ingroup LINALG
   /** like ICLQuick image concatenation, dont forget the brackets sometimes */
   template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int HEIGHT2>
-  inline FixedMatrix<T, WIDTH, HEIGHT + HEIGHT2> operator%(const FixedMatrix<T, WIDTH, HEIGHT> &a,
-                                                       const FixedMatrix<T,WIDTH,HEIGHT2> &b){
-    FixedMatrix<T,WIDTH,HEIGHT+HEIGHT2> M;
+  inline FixedMatrix<T,HEIGHT + HEIGHT2,WIDTH> operator%(const FixedMatrix<T,HEIGHT,WIDTH> &a,
+                                                       const FixedMatrix<T,HEIGHT2,WIDTH> &b){
+    FixedMatrix<T,HEIGHT+HEIGHT2,WIDTH> M;
     for(unsigned int i=0;i<HEIGHT;++i) M.row(i) = a.row(i);
     for(unsigned int i=0;i<HEIGHT2;++i) M.row(i+HEIGHT) = b.row(i);
     return M;
@@ -948,9 +948,9 @@ namespace icl::math {
   /// Horizontal Matrix concatenation  \ingroup LINALG
   /** like ICLQuick image concatenation, dont forget the brackets sometimes */
   template<class T,unsigned  int WIDTH,unsigned  int HEIGHT, unsigned int WIDTH2>
-  inline FixedMatrix<T, WIDTH + WIDTH2, HEIGHT> operator,(const FixedMatrix<T, WIDTH, HEIGHT> &a,
-                                                       const FixedMatrix<T,WIDTH2,HEIGHT> &b){
-    FixedMatrix<T,WIDTH+WIDTH2,HEIGHT> M;
+  inline FixedMatrix<T,HEIGHT,WIDTH + WIDTH2> operator,(const FixedMatrix<T,HEIGHT,WIDTH> &a,
+                                                       const FixedMatrix<T,HEIGHT,WIDTH2> &b){
+    FixedMatrix<T,HEIGHT,WIDTH+WIDTH2> M;
     for(unsigned int i=0;i<WIDTH;++i) M.col(i) = a.col(i);
     for(unsigned int i=0;i<WIDTH2;++i) M.col(i+WIDTH) = b.col(i);
     return M;
@@ -963,7 +963,7 @@ namespace icl::math {
   /** inplace matrix multiplication does only work for squared source and
       destination matrices of identical size */
   template<class T, unsigned int M_ROWS_AND_COLS,unsigned int V_COLS>
-  inline FixedMatrix<T,V_COLS,M_ROWS_AND_COLS> &operator*=(FixedMatrix<T,V_COLS,M_ROWS_AND_COLS> &v,
+  inline FixedMatrix<T,M_ROWS_AND_COLS,V_COLS> &operator*=(FixedMatrix<T,M_ROWS_AND_COLS,V_COLS> &v,
                                                            const FixedMatrix<T,M_ROWS_AND_COLS,M_ROWS_AND_COLS> &m){
     return v = (v*m);
   }
@@ -971,14 +971,14 @@ namespace icl::math {
   /// put the matrix into a std::ostream (human readable)
   /** Internally, this function wraps a DynMatrix<T> shallowly around m*/
   template<class T, unsigned int COLS, unsigned int ROWS>
-  inline std::ostream &operator<<(std::ostream &s,const FixedMatrix<T,COLS,ROWS> &m){
+  inline std::ostream &operator<<(std::ostream &s,const FixedMatrix<T,ROWS,COLS> &m){
     return s << m.dyn();
   }
 
   /// read matrix from std::istream (human readable)
   /** Internally, this function wraps a DynMatrix<T> shallowly around m*/
   template<class T, unsigned int COLS, unsigned int ROWS>
-  inline std::istream &operator>>(std::istream &s,FixedMatrix<T,COLS,ROWS> &m){
+  inline std::istream &operator>>(std::istream &s,FixedMatrix<T,ROWS,COLS> &m){
     DynMatrix<T> dyn = m.dyn();
     return s >> dyn;
   }
@@ -986,15 +986,15 @@ namespace icl::math {
 
   /// creates a 2D rotation matrix (defined for float and double)
   template<class T> ICLMath_IMP
-  FixedMatrix<T, 2, 2> create_rot_2D(T angle);
+  FixedMatrix<T,2,2> create_rot_2D(T angle);
 
   /// creates a 2D homogen matrix (defined for float and double)
   template<class T> ICLMath_IMP
-  FixedMatrix<T, 3, 3> create_hom_3x3(T angle, T dx = 0, T dy = 0, T v0 = 0, T v1 = 0);
+  FixedMatrix<T,3,3> create_hom_3x3(T angle, T dx = 0, T dy = 0, T v0 = 0, T v1 = 0);
 
   /// creates a 2D homogen matrix with translation part only (defined for float and double)
   template<class T>
-  inline FixedMatrix<T, 3, 3> create_hom_3x3_trans(T dx, T dy){
+  inline FixedMatrix<T,3,3> create_hom_3x3_trans(T dx, T dy){
     FixedMatrix<T,3,3> m = FixedMatrix<T,3,3>::id();
     m(2,0)=dx;
     m(2,1)=dy;
@@ -1011,7 +1011,7 @@ namespace icl::math {
 
   /// create 3D rotation matrix from rotation axis and angle (defined for float and double only)
   template<class T> ICLMath_IMP
-  FixedMatrix<T, 3, 3> create_rot_3D(T axisX, T axisY, T axisZ, T angle);
+  FixedMatrix<T,3,3> create_rot_3D(T axisX, T axisY, T axisZ, T angle);
 
   /// create 3D rotation matrix from euler angles in specified axes order (defined for float and double only)
   template<class T> ICLMath_IMP
@@ -1025,12 +1025,12 @@ namespace icl::math {
 
   /// create 4D homogeneous matrix that rotates about given axis by given angle (defined for float and double only)
   template<class T> ICLMath_IMP
-  FixedMatrix<T, 4, 4> create_rot_4x4(T axisX, T axisY, T axisZ, T angle);
+  FixedMatrix<T,4,4> create_rot_4x4(T axisX, T axisY, T axisZ, T angle);
 
 
   /// creates 4D homogeneous matrix with translation part only (defined for float and double)
   template<class T>
-  inline FixedMatrix<T, 4, 4> create_hom_4x4_trans(T dx, T dy, T dz){
+  inline FixedMatrix<T,4,4> create_hom_4x4_trans(T dx, T dy, T dz){
     FixedMatrix<T,4,4> m = FixedMatrix<T,4,4>::id();
     m(0, 3)=dx;
     m(1, 3)=dy;
@@ -1052,7 +1052,7 @@ namespace icl::math {
   template<class T, unsigned int D>
   inline FixedMatrix<T,D,D> closest_rotation(const FixedMatrix<T,D,D> &M){
     FixedMatrix<T,D,D> U, V;
-    FixedMatrix<T,1,D> s;
+    FixedMatrix<T,D,1> s;
     M.svd(U, s, V);
     FixedMatrix<T,D,D> R = U * V.transp();
     if(R.det() < T(0)){                 // reflection → flip the smallest axis
@@ -1064,22 +1064,22 @@ namespace icl::math {
 
   /// compute euler angles for rotation matrix assuming specified axes order
   template<class T> ICLMath_IMP
-  FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,3,3> &m,
+  FixedMatrix<T,3,1> extract_euler_angles(const FixedMatrix<T,3,3> &m,
                                           AXES axes=AXES_DEFAULT);
   template<class T> ICLMath_IMP
-  FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,4,4> &m,
+  FixedMatrix<T,3,1> extract_euler_angles(const FixedMatrix<T,4,4> &m,
                                           AXES axes=AXES_DEFAULT);
 
 
   /** \cond  declared and documented above */
   template<class T,unsigned int N, class Iterator> template<unsigned int COLS>
-  inline FixedMatrixPart<T,N,Iterator>& FixedMatrixPart<T,N,Iterator>::operator=(const FixedMatrix<T,COLS,N/COLS> &m){
+  inline FixedMatrixPart<T,N,Iterator>& FixedMatrixPart<T,N,Iterator>::operator=(const FixedMatrix<T,N/COLS,COLS> &m){
     FixedMatrixBase::optimized_copy<const T*,Iterator,N>(m.begin(),m.end(),begin);
     //std::copy(m.begin(),m.end(),begin);
     return *this;
   }
   template<class T,unsigned int N, class Iterator> template<class T2, unsigned int COLS>
-  inline FixedMatrixPart<T,N,Iterator>& FixedMatrixPart<T,N,Iterator>::operator=(const FixedMatrix<T2,COLS,N/COLS> &m){
+  inline FixedMatrixPart<T,N,Iterator>& FixedMatrixPart<T,N,Iterator>::operator=(const FixedMatrix<T2,N/COLS,COLS> &m){
     std::transform(m.begin(),m.end(),begin,utils::clipped_cast<T2,T>);
     return *this;
   }
@@ -1170,8 +1170,8 @@ inline void FixedMatrix<double,2,2>::mult(
 // --- Apple SIMD: 4x4 float * 4x1 vector ---
 template<> template<>
 inline void FixedMatrix<float,4,4>::mult(
-    const FixedMatrix<float,1,4> &v,
-    FixedMatrix<float,1,4> &dst) const {
+    const FixedMatrix<float,4,1> &v,
+    FixedMatrix<float,4,1> &dst) const {
   using namespace simd_compat;
   auto a = load_4x4(data());
   auto vv = load_vec4(v.data());
@@ -1181,8 +1181,8 @@ inline void FixedMatrix<float,4,4>::mult(
 // --- Apple SIMD: 4x4 double * 4x1 vector ---
 template<> template<>
 inline void FixedMatrix<double,4,4>::mult(
-    const FixedMatrix<double,1,4> &v,
-    FixedMatrix<double,1,4> &dst) const {
+    const FixedMatrix<double,4,1> &v,
+    FixedMatrix<double,4,1> &dst) const {
   using namespace simd_compat;
   auto a = load_4x4(data());
   auto vv = load_vec4(v.data());
@@ -1229,8 +1229,8 @@ inline void FixedMatrix<float,4,4>::mult(
 // --- SSE2/sse2neon: 4x4 float * 4x1 vector ---
 template<> template<>
 inline void FixedMatrix<float,4,4>::mult(
-    const FixedMatrix<float,1,4> &v,
-    FixedMatrix<float,1,4> &dst) const
+    const FixedMatrix<float,4,1> &v,
+    FixedMatrix<float,4,1> &dst) const
 {
   const float *a = data();
   __m128 vv = _mm_loadu_ps(v.data());
@@ -1342,8 +1342,8 @@ ICL_SIMD_DET_SPEC(double, 2, simd_compat::load_2x2)
   // this is temporary fix!
   // because Homography2D is exported and therefore the base class is exported too
   // we need to import this in executables/libraries
-  template class ICLMath_API FixedMatrix<float, 3, 3>;
-  template class ICLMath_API FixedMatrix<double, 3, 3>;
+  template class ICLMath_API FixedMatrix<float,3,3>;
+  template class ICLMath_API FixedMatrix<double,3,3>;
 #endif
 
   } // namespace icl::math

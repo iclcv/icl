@@ -326,8 +326,8 @@ namespace icl::geom {
 
 
 #if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
-    FixedMatrix<icl32f, 3, 3> getRzyx(icl32f a, icl32f b, icl32f c) {
-      FixedMatrix<icl32f, 3, 3> R;
+    FixedMatrix<icl32f,3,3> getRzyx(icl32f a, icl32f b, icl32f c) {
+      FixedMatrix<icl32f,3,3> R;
 
       icl32f sinA = sin(a);
       icl32f cosA = cos(a);
@@ -354,7 +354,7 @@ namespace icl::geom {
       return R;
     }
 
-    void RzyxToAngles(FixedMatrix<icl32f, 3, 3> &R, FixedColVector<icl32f,3> &res0, FixedColVector<icl32f,3> &res1) {
+    void RzyxToAngles(FixedMatrix<icl32f,3,3> &R, FixedColVector<icl32f,3> &res0, FixedColVector<icl32f,3> &res1) {
       if (R(2, 0) > -0.999999 && R(2, 0) < 0.999999) {
         res0(1, 0) = -asin(R(2, 0));
         res1(1, 0) = M_PI - res0(1, 0);
@@ -380,15 +380,15 @@ namespace icl::geom {
       }
     }
 
-    inline void splitMat(FixedMatrix<icl32f, 4, 4> &m, FixedMatrix<icl32f, 3, 3> &R, FixedColVector<icl32f,3> &t) {
+    inline void splitMat(FixedMatrix<icl32f,4,4> &m, FixedMatrix<icl32f,3,3> &R, FixedColVector<icl32f,3> &t) {
       R = m.part<0,0,3,3>();
       t(0, 0) = m(0, 3);
       t(1, 0) = m(1, 3);
       t(2, 0) = m(2, 3);
     }
 
-    inline FixedMatrix<icl32f, 4, 4> fuseMat(FixedMatrix<icl32f, 3, 3> &R, FixedColVector<icl32f,3> &t) {
-      FixedMatrix<icl32f, 4, 4> m = FixedMatrix<icl32f, 4, 4>::id();
+    inline FixedMatrix<icl32f,4,4> fuseMat(FixedMatrix<icl32f,3,3> &R, FixedColVector<icl32f,3> &t) {
+      FixedMatrix<icl32f,4,4> m = FixedMatrix<icl32f,4,4>::id();
 
       m(0, 0) = R(0, 0);
       m(0, 1) = R(0, 1);
@@ -406,7 +406,7 @@ namespace icl::geom {
       return m;
     }
 
-    void calcRt(const int n, std::vector<FixedColVector<icl32f,3> > &v, FixedMatrix<icl32f, 3, 3> &Rt) {
+    void calcRt(const int n, std::vector<FixedColVector<icl32f,3> > &v, FixedMatrix<icl32f,3,3> &Rt) {
       // 1. norm all columns
       // 2. transpose
       // 3. mean rows
@@ -440,13 +440,13 @@ namespace icl::geom {
 
     void calculateError(const int n, std::vector< FixedColVector<icl32f,3> > &P,
                         std::vector< FixedColVector<icl32f,3> > &V,
-                        FixedMatrix<icl32f, 3, 3> &R, FixedColVector<icl32f,3> &t,
+                        FixedMatrix<icl32f,3,3> &R, FixedColVector<icl32f,3> &t,
                         float &error) {
       error = 0.0f;
 
-      FixedMatrix<icl32f, 3, 3> I =  FixedMatrix<icl32f, 3, 3>::id();
+      FixedMatrix<icl32f,3,3> I =  FixedMatrix<icl32f,3,3>::id();
 
-      FixedMatrix<icl32f, 3, 3> *VV = new FixedMatrix<icl32f, 3, 3>[n];
+      FixedMatrix<icl32f,3,3> *VV = new FixedMatrix<icl32f,3,3>[n];
       for (int i = 0; i < n; ++i) {
         VV[i] = (V[i] * V[i].transp()) / (V[i].transp() * V[i])(0, 0);
       }
@@ -463,19 +463,19 @@ namespace icl::geom {
     struct MinSol {
       std::vector<double> betas;
       std::vector< FixedColVector<icl32f,3> > ts;
-      std::vector< FixedMatrix<icl32f, 3, 3> > Rs;
+      std::vector< FixedMatrix<icl32f,3,3> > Rs;
       std::vector<icl32f> errors;
     };
 
     void calculateMinima(const int n, std::vector< FixedColVector<icl32f,3> > &P,
                          std::vector< FixedColVector<icl32f,3> > &V,
-                         FixedMatrix<icl32f, 3, 3> &Rz, FixedColVector<icl32f,3> &t,
+                         FixedMatrix<icl32f,3,3> &Rz, FixedColVector<icl32f,3> &t,
                          MinSol &sol) {
-      FixedMatrix<icl32f, 3, 3> *VV = new FixedMatrix<icl32f, 3, 3>[n];
-      FixedMatrix<icl32f, 3, 3> G, Rp;
-      FixedMatrix<icl32f, 3, 3> Vsum(0.0f), E(0.0f);
-      FixedMatrix<icl32f, 3, 3> I = FixedMatrix<icl32f, 3, 3>::id();
-      FixedMatrix<icl32f, 3, 3> t_opt(0.0f);
+      FixedMatrix<icl32f,3,3> *VV = new FixedMatrix<icl32f,3,3>[n];
+      FixedMatrix<icl32f,3,3> G, Rp;
+      FixedMatrix<icl32f,3,3> Vsum(0.0f), E(0.0f);
+      FixedMatrix<icl32f,3,3> I = FixedMatrix<icl32f,3,3>::id();
+      FixedMatrix<icl32f,3,3> t_opt(0.0f);
       icl32f e[5] = {0};
       double coef[5];
 
@@ -487,14 +487,14 @@ namespace icl::geom {
       G = (I - (Vsum * (1.0f/n))).inv() * (1.0f/n);
 
       for (int i = 0; i < n; ++i) {
-        FixedMatrix<icl32f, 3, 3> Rp(-P[i](0, 0), P[i](2, 0)*2.0f, P[i](0, 0), P[i](1, 0), 0.0f, P[i](1, 0), -P[i](2, 0), P[i](0, 0)*-2.0f, P[i](2, 0));
+        FixedMatrix<icl32f,3,3> Rp(-P[i](0, 0), P[i](2, 0)*2.0f, P[i](0, 0), P[i](1, 0), 0.0f, P[i](1, 0), -P[i](2, 0), P[i](0, 0)*-2.0f, P[i](2, 0));
         t_opt += (VV[i] - I) * Rz * Rp;
       }
 
       t_opt = G * t_opt;
 
       for (int i = 0; i < n; ++i) {
-        Rp = FixedMatrix<icl32f, 3, 3>(-P[i](0, 0), P[i](2, 0)*2.0f, P[i](0, 0), P[i](1, 0), 0.0f, P[i](1, 0), -P[i](2, 0), P[i](0, 0)*-2.0f, P[i](2, 0));
+        Rp = FixedMatrix<icl32f,3,3>(-P[i](0, 0), P[i](2, 0)*2.0f, P[i](0, 0), P[i](1, 0), 0.0f, P[i](1, 0), -P[i](2, 0), P[i](0, 0)*-2.0f, P[i](2, 0));
 
         E = (I - VV[i]) * (Rz * Rp + t_opt);
 
@@ -578,15 +578,15 @@ namespace icl::geom {
       P[i] = FixedColVector<icl32f,3>(modelPoints[i].x, modelPoints[i].y, 0.0f);
     }
 
-    FixedMatrix<icl32f, 3, 3> R;
+    FixedMatrix<icl32f,3,3> R;
     FixedColVector<icl32f,3> t;
 
     splitMat(data->T, R, t);
 
-    FixedMatrix<icl32f, 3, 3> Rt;
+    FixedMatrix<icl32f,3,3> Rt;
     std::vector< FixedColVector<icl32f,3> > V_(n);
-    FixedMatrix<icl32f, 3, 3> R_, R__, R2;
-    FixedMatrix<icl32f, 3, 3> Rdz, Ry, Rz, Rdzz;
+    FixedMatrix<icl32f,3,3> R_, R__, R2;
+    FixedMatrix<icl32f,3,3> Rdz, Ry, Rz, Rdzz;
     FixedColVector<icl32f,3> t_;
     FixedColVector<icl32f,3> angles0, angles1;
     float error;
@@ -630,7 +630,7 @@ namespace icl::geom {
     // calculate the errors of all solutions and
     // take the solution with the lowest error
 
-    FixedMatrix<icl32f, 3, 3> Rt_inv = Rt.transp();
+    FixedMatrix<icl32f,3,3> Rt_inv = Rt.transp();
     sol.errors = std::vector<icl32f>(sol.ts.size());
 
     for (unsigned int i = 0; i < sol.ts.size(); ++i) {
@@ -938,7 +938,7 @@ namespace icl::geom {
 
 #else
 
-    FixedMatrix<float,4,3> T;
+    FixedMatrix<float,3,4> T;
 
     FixedColVector<float,3> c0 = H.col(0);
     FixedColVector<float,3> c1 = H.col(1);

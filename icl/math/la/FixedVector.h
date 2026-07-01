@@ -8,12 +8,12 @@
 #include <icl/math/la/FixedMatrix.h>
 
 namespace icl::math {
-  /// A column vector is just a single-column FixedMatrix (1 col, DIM rows)
+  /// A column vector is just a single-column FixedMatrix (DIM rows, 1 col)
   template<class T, int DIM>
-  using FixedColVector = FixedMatrix<T, 1, DIM>;
+  using FixedColVector = FixedMatrix<T, DIM, 1>;
 
-  /// A row vector is just a single-row FixedMatrix (DIM cols, 1 row)
+  /// A row vector is just a single-row FixedMatrix (1 row, DIM cols)
   template<class T, int DIM>
-  using FixedRowVector = FixedMatrix<T, DIM, 1>;
+  using FixedRowVector = FixedMatrix<T, 1, DIM>;
 
   } // namespace icl::math

@@ -96,8 +96,8 @@ namespace icl::math {
   }
 
   template<class T,unsigned int COLS, unsigned int ROWS>
-  FixedMatrix<T,1,3>
-  extract_euler_angles (const FixedMatrix<T,COLS,ROWS> &m,
+  FixedMatrix<T,3,1>
+  extract_euler_angles (const FixedMatrix<T,ROWS,COLS> &m,
                         AXES axes) {
     static const T EPS = 4.0 * std::numeric_limits<T>::epsilon();
     T ai, aj, ak;
@@ -140,14 +140,14 @@ namespace icl::math {
     if (parity) {ai*=-1; aj*=-1, ak*=-1;}
     if (frame)  std::swap (ai, ak);
 
-    return FixedMatrix<T,1,3>(ai, aj, ak);
+    return FixedMatrix<T,3,1>(ai, aj, ak);
   }
   template<class T>
-  FixedMatrix<T,1,3> extract_euler_angles (const FixedMatrix<T,3,3> &m, AXES axes) {
+  FixedMatrix<T,3,1> extract_euler_angles (const FixedMatrix<T,3,3> &m, AXES axes) {
     return extract_euler_angles<T,3,3>(m, axes);
   }
   template<class T>
-  FixedMatrix<T,1,3> extract_euler_angles (const FixedMatrix<T,4,4> &m, AXES axes) {
+  FixedMatrix<T,3,1> extract_euler_angles (const FixedMatrix<T,4,4> &m, AXES axes) {
     return extract_euler_angles<T,4,4>(m, axes);
   }
 
@@ -202,8 +202,8 @@ namespace icl::math {
   template ICLMath_API FixedMatrix<T,3,3> create_hom_3x3(T,T,T,T,T);        \
   template ICLMath_API FixedMatrix<T,3,3> create_rot_3D(T,T,T,AXES);        \
   template ICLMath_API FixedMatrix<T,4,4> create_hom_4x4(T,T,T,T,T,T,T,T,T,AXES); \
-  template ICLMath_API FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,3,3>&, AXES);\
-  template ICLMath_API FixedMatrix<T,1,3> extract_euler_angles(const FixedMatrix<T,4,4>&, AXES);
+  template ICLMath_API FixedMatrix<T,3,1> extract_euler_angles(const FixedMatrix<T,3,3>&, AXES);\
+  template ICLMath_API FixedMatrix<T,3,1> extract_euler_angles(const FixedMatrix<T,4,4>&, AXES);
   INSTANTIATE(float);
   INSTANTIATE(double);
 #undef INSTANTIATE
@@ -313,7 +313,7 @@ INSTANTIATE_INV_AND_DET_OPT_FUNCS(double,4);
 
 #endif
 template<class T>
-float scalar(FixedMatrix<T,1,3> &v1,FixedMatrix<T,1,3> &v2) { return v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2]; }
+float scalar(FixedMatrix<T,3,1> &v1,FixedMatrix<T,3,1> &v2) { return v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2]; }
 
   template<class T>
   FixedMatrix<T,3,3> create_rot_3D(T axisX, T axisY, T axisZ, T angle){
@@ -328,7 +328,7 @@ float scalar(FixedMatrix<T,1,3> &v1,FixedMatrix<T,1,3> &v2) { return v1[0]*v2[0]
     T ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
 
     // Gram–Schmidt process for orthogonalization
-    typedef FixedMatrix<T,1,3> ColVec;
+    typedef FixedMatrix<T,3,1> ColVec;
 
     ColVec v1 = ColVec(a2+b2-c2-d2, 2*ad+2*bd, 2*bd-2*ac).normalized();
     ColVec v2(2*bc-2*ad, a2-b2+c2-d2, 2*ab+2*cd);
@@ -373,7 +373,7 @@ float scalar(FixedMatrix<T,1,3> &v1,FixedMatrix<T,1,3> &v2) { return v1[0]*v2[0]
     T ab=a*b, ac=a*c, ad=a*d, bc=b*c, bd=b*d, cd=c*d;
 
     // Gram–Schmidt process for orthogonalization
-    typedef FixedMatrix<T,1,3> ColVec;
+    typedef FixedMatrix<T,3,1> ColVec;
 
     ColVec v1 = ColVec(a2+b2-c2-d2, 2*ad+2*bd, 2*bd-2*ac).normalized();
     ColVec v2(2*bc-2*ad, a2-b2+c2-d2, 2*ab+2*cd);
@@ -393,11 +393,11 @@ float scalar(FixedMatrix<T,1,3> &v1,FixedMatrix<T,1,3> &v2) { return v1[0]*v2[0]
   }
 
 
-  template ICLMath_API FixedMatrix<float, 4, 4> create_rot_4x4(float, float, float, float);
-  template ICLMath_API FixedMatrix<double, 4, 4> create_rot_4x4(double, double, double, double);
+  template ICLMath_API FixedMatrix<float,4,4> create_rot_4x4(float, float, float, float);
+  template ICLMath_API FixedMatrix<double,4,4> create_rot_4x4(double, double, double, double);
 
-  template ICLMath_API FixedMatrix<float, 3, 3> create_rot_3D(float, float, float, float);
-  template ICLMath_API FixedMatrix<double, 3, 3> create_rot_3D(double, double, double, double);
+  template ICLMath_API FixedMatrix<float,3,3> create_rot_3D(float, float, float, float);
+  template ICLMath_API FixedMatrix<double,3,3> create_rot_3D(double, double, double, double);
 
 
 

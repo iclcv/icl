@@ -207,7 +207,7 @@ namespace icl::geom {
 
     /** @} @{ @name static creation functions */
     /// Compute all camera parameters from the 4x3 projection matrix.
-    static Camera createFromProjectionMatrix(const math::FixedMatrix<icl32f,4,3> &Q, float focalLength=1);
+    static Camera createFromProjectionMatrix(const math::FixedMatrix<icl32f,3,4> &Q, float focalLength=1);
 
     /// Uses the passed world point -- image point references to estimate the projection parameters.
     /** At least 6 data points references are needed. It is not possible to estimate the
@@ -440,10 +440,10 @@ namespace icl::geom {
     Mat getViewportMatrixGL() const;
 
     /// returns the common 4x3 camera matrix
-    math::FixedMatrix<icl32f,4,3> getQMatrix() const;
+    math::FixedMatrix<icl32f,3,4> getQMatrix() const;
 
     /// returns the inverse QMatrix
-    math::FixedMatrix<icl32f,3,4> getInvQMatrix() const;
+    math::FixedMatrix<icl32f,4,3> getInvQMatrix() const;
 
     /// translates the current position vector
     inline void translate(const Vec &d) { m_pos += d; }
