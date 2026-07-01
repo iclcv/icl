@@ -13,6 +13,7 @@ test_sources = files(
   'test-filter.cpp',
   'test-cv-checkerboard-saddle.cpp',
   'test-cv-checkerboard-grid.cpp',
+  'test-cv-intrinsic-calibration.cpp',
 )
 
 test_deps = [icl_utils_dep, icl_math_dep, icl_core_dep, icl_filter_dep, icl_cv_dep]

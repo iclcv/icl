@@ -4,6 +4,31 @@
 
 ## Next Step
 
+### Session 92 — Phase B kickoff: native intrinsic calibration verified + tilt requirement locked
+On `further-restructuring-and-cleanup`, suite **1006/1006**. Moved up a layer from detection to the
+actual calibration math. Key finding: **the native `cv::IntrinsicCalibrator` works** (it was
+completely unexercised — no caller anywhere — so a real risk it had bitrotted; it hadn't).
+
+**Landed — `test-cv-intrinsic-calibration`** (3 tests, cv-only, no Qt):
+- Synthetic Phase-B intrinsic harness: a centred planar point grid projected through a KNOWN GT
+  pinhole camera in N poses → feed correspondences to `IntrinsicCalibrator::calibrate` → check
+  recovered intrinsics. Isolates the calibration MATH from detection (perfect points in).
+- **`tilted_recovers_gt`**: diverse out-of-plane tilted views → recovers fx/fy/cx/cy **exactly**
+  (650.000/620.000/330.000/250.000), k1/k2≈0, on clean data.
+- **`tilted_noise_robust`**: 0.3px correspondence noise → still within ~4px.
+- **`frontoparallel_is_degenerate`**: fronto-parallel-only views (no tilt) can't constrain the focal
+  length — fx error diverges (~4e18) vs 0.0 for tilted. Proves tilt out-of-plane is a REQUIREMENT
+  for planar (Zhang) calibration, not a nicety (foreshortening is the missing signal).
+- **Input contract reverse-engineered** (the calibrator is a 1476-line Bouguet/Matlab transliteration
+  with no example usage): `DynMatrix(cols,rows)` ctor + `operator()(row,col)`; `impoints` is
+  `(bSize, 2*views)` indexed `(2v[+1], pt)`, `worldpoints` is `(bSize,3)` indexed `(coord, pt)`,
+  planar Z=0. Native path uses `math::DynMatrix`+LAPACK, zero OpenCV.
+
+**NEXT (Phase B continuation):** (a) add GT lens distortion (k1,k2≠0) and verify recovery; (b)
+side-by-side **native vs OpenCV** (`cv::OpenCVCamCalib` = `cv::calibrateCamera`) on identical
+correspondences — the redesign's core thesis; (c) end-to-end render+detect→calibrate (wire the
+CheckerboardTarget detector output, not just projected points); (d) then Phase C multi-cam extrinsics.
+
 ### Session 91 — native-checkerboard sub-pixel corner polish (Phase-B gap closed)
 On `further-restructuring-and-cleanup`, suite **1003/1003**. Landed the S90 NEXT: a final gradient
 sub-pixel corner polish on the native checkerboard path, closing the accuracy gap to OpenCV.
