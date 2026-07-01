@@ -110,7 +110,7 @@ namespace {
                                        const std::vector<Pose> &poses, double noise, uint64_t seed) {
     const auto views = makeViews(K, cols, rows, sq, poses, noise, seed);
     const int bSize = (int)views[0].obj.size(), nv = (int)views.size();
-    DynMatrix<icl64f> impoints(bSize, 2*nv), world(bSize, 3);
+    DynMatrix<icl64f> impoints = DynMatrix<icl64f>::create(2*nv, bSize), world = DynMatrix<icl64f>::create(3, bSize);
     for (int p=0;p<bSize;++p) { world(0,p)=views[0].obj[p].x; world(1,p)=views[0].obj[p].y; world(2,p)=0; }
     for (int v=0;v<nv;++v)
       for (int p=0;p<bSize;++p) { impoints(2*v, p)=views[v].img[p].x; impoints(2*v+1, p)=views[v].img[p].y; }

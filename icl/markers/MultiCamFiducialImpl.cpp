@@ -52,7 +52,7 @@ namespace icl::markers {
       int n = fids[0].getKeyPoints2D().size();
       // assumtion keypoints are ordered and identical ...
 
-      DynMatrix<float> W(n,3),O(n,3);
+      DynMatrix<float> W = DynMatrix<float>::create(3, n), O = DynMatrix<float>::create(3, n);
       for(int i=0;i<n;++i){
         std::vector<Point32f> pI(numFound);
         for(int j=0;j<numFound; ++j){

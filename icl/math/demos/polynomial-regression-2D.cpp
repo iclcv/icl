@@ -116,7 +116,7 @@ void refitSurface() {
   const Reg::Result &result = reg.apply(sampleXs, sampleYs);
 
   // Evaluate on grid
-  Matrix gxs(2, GRID_DIM*GRID_DIM);
+  Matrix gxs = Matrix::create(GRID_DIM*GRID_DIM, 2);
   for(int iy = 0; iy < GRID_DIM; ++iy)
     for(int ix = 0; ix < GRID_DIM; ++ix){
       int idx = ix + GRID_DIM * iy;

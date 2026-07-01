@@ -45,7 +45,7 @@ ObjectEdgeDetectorData::m_kernel ObjectEdgeDetectorData::getKernel(int size){
 
 	//set default values
     returnKernel.norm = 1;
-    returnKernel.kernel = DynMatrix<float>(1, 1, 0.0);
+    returnKernel.kernel = DynMatrix<float>::create(1, 1, 0.0);
     returnKernel.l = 0;
     returnKernel.kSize = 1;
     returnKernel.rowSize = 1;
@@ -57,7 +57,7 @@ ObjectEdgeDetectorData::m_kernel ObjectEdgeDetectorData::getKernel(int size){
 	    returnKernel.l = 1;
 	    returnKernel.kSize = 3 * 3;
 	    returnKernel.rowSize = 3;
-	    DynMatrix<float> k1 = DynMatrix<float>(1, 3, 0.0);
+	    DynMatrix<float> k1 = DynMatrix<float>::create(3, 1, 0.0);
 	    k1(0, 0) = 1.;
 	    k1(1, 0) = 2.;
 	    k1(2, 0) = 1.;
@@ -67,7 +67,7 @@ ObjectEdgeDetectorData::m_kernel ObjectEdgeDetectorData::getKernel(int size){
 	    returnKernel.l = 2;
 	    returnKernel.kSize = 5 * 5;
 	    returnKernel.rowSize = 5;
-	    DynMatrix<float> k1 = DynMatrix<float>(1, 5, 0.0);
+	    DynMatrix<float> k1 = DynMatrix<float>::create(5, 1, 0.0);
 	    k1(0, 0) = 1.;
 	    k1(1, 0) = 4.;
 	    k1(2, 0) = 6.;
@@ -79,7 +79,7 @@ ObjectEdgeDetectorData::m_kernel ObjectEdgeDetectorData::getKernel(int size){
 	    returnKernel.l = 3;
 	    returnKernel.kSize = 7 * 7;
 	    returnKernel.rowSize = 7;
-	    DynMatrix<float> k1 = DynMatrix<float>(1, 7, 0.0);
+	    DynMatrix<float> k1 = DynMatrix<float>::create(7, 1, 0.0);
 	    k1(0, 0) = 1.;
 	    k1(1, 0) = 6.;
 	    k1(2, 0) = 15.;

@@ -141,21 +141,21 @@ namespace icl::geom {
     int numMatches(math::DynMatrix<icl64f> &assignMat);
 
     void softPosit(math::DynMatrix<icl64f> imagePts, math::DynMatrix<icl64f> worldPts, double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot,
-                   math::DynMatrix<icl64f> initTrans, double focalLength, math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>(2,0), bool draw = true);
+                   math::DynMatrix<icl64f> initTrans, double focalLength, math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>::create(0, 2), bool draw = true);
 #ifdef ICL_HAVE_QT
     void softPosit(math::DynMatrix<icl64f> imagePts, math::DynMatrix<icl64f> imageAdj, math::DynMatrix<icl64f> worldPts,
                    math::DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot,
                    math::DynMatrix<icl64f> initTrans, double focalLength, qt::ICLDrawWidget &w,
-                   math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>(2,0), bool draw = true);
+                   math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>::create(0, 2), bool draw = true);
 #endif
     void softPosit(std::vector<utils::Point32f> imagePts, std::vector<math::FixedColVector<double,3> > worldPts,
                    double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot, math::DynMatrix<icl64f> initTrans,
-                   double focalLength, math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>(2,0));
+                   double focalLength, math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>::create(0, 2));
 #ifdef ICL_HAVE_QT
     void softPosit(std::vector<utils::Point32f> imagePts, math::DynMatrix<icl64f> imageAdj, std::vector<math::FixedColVector<double,3> > worldPts,
                    math::DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot,
                    math::DynMatrix<icl64f> initTrans, double focalLength, qt::ICLDrawWidget &w,
-                   math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>(2,0), bool draw=true);
+                   math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>::create(0, 2), bool draw=true);
 #endif
     void proj3dto2d(math::DynMatrix<icl64f> pts3d, math::DynMatrix<icl64f> &rot, math::DynMatrix<icl64f> &trans,
                     double flength, int objdim, math::DynMatrix<icl64f> &center, math::DynMatrix<icl64f> &pts2d);

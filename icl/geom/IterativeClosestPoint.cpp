@@ -292,7 +292,7 @@
 //       T* pointsReps = (T*)malloc(sizeReps*sizeof(T));
 //       char centerA[sizeof(T)];
 //       char centerB[sizeof(T)];
-//       DynMatrix<float> rotation(4,4);
+//       DynMatrix<float> rotation = DynMatrix<float>::create(4, 4);
 
       //copy initial rotation
 //      for(int i = 0; i < MATRIX_SIZE; i++) {
@@ -335,7 +335,7 @@
 //          }
 //        }
 //        if(((prevError - error) < errorDeltaThreshold) || (error < errorThreshold))break;
-//        DynMatrix<float> h(MATRIX_WIDTH,MATRIX_WIDTH), u(MATRIX_WIDTH,MATRIX_WIDTH),s(MATRIX_WIDTH,MATRIX_WIDTH),v(MATRIX_WIDTH,MATRIX_WIDTH),r(MATRIX_WIDTH,MATRIX_WIDTH);
+//        DynMatrix<float> h = DynMatrix<float>::create(MATRIX_WIDTH, MATRIX_WIDTH), u(MATRIX_WIDTH,MATRIX_WIDTH),s(MATRIX_WIDTH,MATRIX_WIDTH),v(MATRIX_WIDTH,MATRIX_WIDTH),r(MATRIX_WIDTH,MATRIX_WIDTH);
 //        m_data->getCovarianceSum(m_data->pointsBRotatedBuf,m_data->centeredABuf,m_data->closestPointsBuf,h.data(),sizeof(T),sizeB);
 //        h.svd(u,s,v);
 //        r = u*v.transp();
@@ -480,7 +480,7 @@
 // //    int* closestPoints = (int*)malloc(sizeB*sizeof(int));
 // //    char centerA[typeSize];
 // //    char centerB[typeSize];
-// //    DynMatrix<float> rotation(4,4);
+// //    DynMatrix<float> rotation = DynMatrix<float>::create(4, 4);
 
 // //    //copy initial rotation
 // //    for(int i = 0; i < MATRIX_SIZE; i++) {
@@ -535,7 +535,7 @@
 // //        }
 // //      }
 // //      if(((prevError - error) < errorDeltaThreshold) || (error < errorThreshold))break;
-// //      DynMatrix<float> h(MATRIX_WIDTH,MATRIX_WIDTH), u(MATRIX_WIDTH,MATRIX_WIDTH),s(MATRIX_WIDTH,MATRIX_WIDTH),v(MATRIX_WIDTH,MATRIX_WIDTH),r(MATRIX_WIDTH,MATRIX_WIDTH);
+// //      DynMatrix<float> h = DynMatrix<float>::create(MATRIX_WIDTH, MATRIX_WIDTH), u(MATRIX_WIDTH,MATRIX_WIDTH),s(MATRIX_WIDTH,MATRIX_WIDTH),v(MATRIX_WIDTH,MATRIX_WIDTH),r(MATRIX_WIDTH,MATRIX_WIDTH);
 // //      getCovarianceSum(pointsBRotated,centeredA,closestPoints,h.data(),covarianceFunc,typeSize,sizeB);
 // //      h.svd(u,s,v);
 // //      r = u*v.transp();

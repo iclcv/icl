@@ -36,7 +36,7 @@ namespace icl::qt {
             static math::Mat3 create_mapping_matrix(const Point32f &a, const Point32f &b,
             const Point32f &c, const Point32f &d){
             // see http://math.stackexchange.com/questions/296794/finding-the-transform-matrix-from-4-projected-points-with-javascript
-            math::DynMatrix<float> M(3,3), B(1,3);
+            math::DynMatrix<float> M = DynMatrix<float>::create(3, 3), B = math::DynMatrix<float>::create(3, 1);
             M(0,0) = a.x;
             M(1,0) = b.x;
             M(2,0) = c.x;

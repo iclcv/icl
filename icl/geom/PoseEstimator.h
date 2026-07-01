@@ -65,7 +65,7 @@ namespace icl::geom {
     /// Convenience function that passes std::vector<Vec> data as DynMatrix<T> to other map function
     static Mat map(const std::vector<Vec> &Xs, const std::vector<Vec> &Ys, MapMode mode=RigidBody){
       ICLASSERT_THROW(Xs.size() == Ys.size(), utils::ICLException("PoseEstimator::map: need same number of input- and output-points"));
-      math::DynMatrix<double> XsD(Xs.size(),3),YsD(Ys.size(),3);
+      math::DynMatrix<double> XsD = math::DynMatrix<double>::create(3,Xs.size()), YsD = math::DynMatrix<double>::create(3,Ys.size());
       for(unsigned int i=0;i<Xs.size();++i){
         std::copy(Xs[i].begin(),Xs[i].begin()+3, XsD.col_begin(i));
         std::copy(Ys[i].begin(),Ys[i].begin()+3, YsD.col_begin(i));

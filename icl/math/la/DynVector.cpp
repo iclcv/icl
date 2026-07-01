@@ -16,15 +16,15 @@ namespace icl::math {
 
   template<class T>
   DynColVector<T>::DynColVector(unsigned int dim, const T &initValue)
-    : DynMatrix<T>(1, dim, initValue){}
+    : DynMatrix<T>(DynMatrix<T>::create(dim, 1, initValue)){}
 
   template<class T>
   DynColVector<T>::DynColVector(unsigned int dim, T *data, bool deepCopy)
-    : DynMatrix<T>(1, dim, data, deepCopy){}
+    : DynMatrix<T>(DynMatrix<T>::fromData(dim, 1, data, deepCopy)){}
 
   template<class T>
   DynColVector<T>::DynColVector(unsigned int dim, const T *data)
-    : DynMatrix<T>(1, dim, data){}
+    : DynMatrix<T>(DynMatrix<T>::fromData(dim, 1, data)){}
 
   template<class T>
   DynColVector<T>::DynColVector(const DynMatrix<T> &other) : DynMatrix<T>(other){
@@ -57,15 +57,15 @@ namespace icl::math {
 
   template<class T>
   DynRowVector<T>::DynRowVector(unsigned int dim, const T &initValue)
-    : DynMatrix<T>(dim, 1, initValue){}
+    : DynMatrix<T>(DynMatrix<T>::create(1, dim, initValue)){}
 
   template<class T>
   DynRowVector<T>::DynRowVector(unsigned int dim, T *data, bool deepCopy)
-    : DynMatrix<T>(dim, 1, data, deepCopy){}
+    : DynMatrix<T>(DynMatrix<T>::fromData(1, dim, data, deepCopy)){}
 
   template<class T>
   DynRowVector<T>::DynRowVector(unsigned int dim, const T *data)
-    : DynMatrix<T>(dim, 1, data){}
+    : DynMatrix<T>(DynMatrix<T>::fromData(1, dim, data)){}
 
   template<class T>
   DynRowVector<T>::DynRowVector(const DynMatrix<T> &other) : DynMatrix<T>(other){

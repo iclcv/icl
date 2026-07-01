@@ -39,7 +39,7 @@ namespace icl::cv {
       ICLASSERT_RETURN((dim > 1 || dim >= m_curv_radius*m_steps));
 
       // create the distance matrix:
-      dist = DMatF(dim,dim,0.0f);
+      dist = DMatF::create(dim,dim,0.0f);
 
   //#pragma omp parallel for schedule(dynamic)
       for (uint32_t col = 0; col < dim; ++col) {
@@ -59,7 +59,7 @@ namespace icl::cv {
       }
 
       // compute curvature
-      curvature = DMatF(indices.size(),m_curv_radius);
+      curvature = DMatF::create(m_curv_radius,indices.size());
       hist.resize(indices.size());
 
   //#pragma omp parallel for schedule(dynamic)

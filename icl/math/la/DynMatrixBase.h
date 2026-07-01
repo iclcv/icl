@@ -53,7 +53,7 @@ namespace icl::math {
     inline DynMatrixBase():m_rows(0),m_cols(0),m_data(0),m_ownData(true){}
 
     /// Create a dyn matrix with given dimensions (and optional initialValue)
-    inline DynMatrixBase(unsigned int cols,unsigned int rows,const  T &initValue=0) :
+    inline DynMatrixBase(unsigned int rows,unsigned int cols,const  T &initValue=0) :
     m_rows(rows),m_cols(cols),m_ownData(true){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       m_data = new T[cols*rows];
@@ -63,7 +63,7 @@ namespace icl::math {
     /// Create a matrix with given data
     /** Data can be wrapped deeply or shallowly. If the latter is true, given data pointer
         will not be released in the destructor*/
-    inline DynMatrixBase(unsigned int cols,unsigned int rows, T *data, bool deepCopy=true) :
+    inline DynMatrixBase(unsigned int rows,unsigned int cols, T *data, bool deepCopy=true) :
       m_rows(rows),m_cols(cols),m_ownData(deepCopy){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       if(deepCopy){
@@ -75,7 +75,7 @@ namespace icl::math {
     }
 
     /// Create a matrix with given data (const version: deepCopy only)
-    inline DynMatrixBase(unsigned int cols,unsigned int rows,const T *data) :
+    inline DynMatrixBase(unsigned int rows,unsigned int cols,const T *data) :
       m_rows(rows),m_cols(cols),m_ownData(true){
       if(!dim()) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
       m_data = new T[dim()];
@@ -86,6 +86,15 @@ namespace icl::math {
     inline DynMatrixBase(const DynMatrixBase &other):
       m_rows(other.m_rows),m_cols(other.m_cols),m_data(dim() ? new T[dim()] : 0),m_ownData(true){
       std::copy(other.begin(),other.end(),begin());
+    }
+
+    /// Move constructor: transfers the data pointer (preserving shallow/deep
+    /// ownership) instead of copying. Essential so that constructing from a
+    /// factory temporary (e.g. DynMatrix::fromData(...,false)) keeps a SHALLOW
+    /// wrap shallow — a deep copy would silently break write-through views.
+    inline DynMatrixBase(DynMatrixBase &&other) noexcept :
+      m_rows(other.m_rows),m_cols(other.m_cols),m_data(other.m_data),m_ownData(other.m_ownData){
+      other.m_data = 0; other.m_rows = 0; other.m_cols = 0; other.m_ownData = false;
     }
 
     /// returns with this matrix has a valid data pointer

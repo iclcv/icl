@@ -145,10 +145,10 @@ namespace icl::math {
 
     /// creates a shallow copied DynMatrix instance wrapping this' data
     /** Note: dyn() must be used imediatedly without a copy! TODO: check!!!!*/
-    DynMatrix<T> dyn() { return DynMatrix<T>(COLS,ROWS,begin(),false); }
+    DynMatrix<T> dyn() { return DynMatrix<T>::fromData(ROWS, COLS, begin(), false); }
 
     /// creates a shallow copied DynMatrix instance wrapping this' data (const)
-    const DynMatrix<T> dyn() const { return DynMatrix<T>(COLS,ROWS,const_cast<T*>(begin()),false); }
+    const DynMatrix<T> dyn() const { return DynMatrix<T>::fromData(ROWS, COLS, const_cast<T*>(begin()), false); }
 
     /// returning a reference to a null matrix
     static const FixedMatrix &null(){

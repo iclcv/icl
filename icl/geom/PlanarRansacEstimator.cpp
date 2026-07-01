@@ -916,7 +916,7 @@ namespace icl::geom {
                    std::vector<std::vector<int> > &pointIDs, std::vector<std::vector<Vec> > &n0Pre, std::vector<std::vector<float> > &distPre,
                    float threshold, int passes, int tolerance, int optimization){
       Result init;
-      math::DynMatrix<Result> result(testMatrix.cols(),testMatrix.rows(), init);
+      math::DynMatrix<Result> result = math::DynMatrix<Result>::create(testMatrix.rows(), testMatrix.cols(), init);
 
       for(size_t i=0; i<testMatrix.rows(); i++){
         for(int j=start[i]; j<end[i]; j++){

@@ -19,7 +19,7 @@ namespace icl::math {
       #include <icl/utils/Random.h>
 
       int main(){
-         icl::math::DynMatrix<float> M(10,10);
+         icl::math::DynMatrix<float> M = DynMatrix<float>::create(10, 10);
 
          // initialize all entries with a uniform random number
          matrix_init(M,icl::utils::URand(0,1));

@@ -452,7 +452,7 @@ namespace icl::math {
     s.setBounds(1, sdim);
 
     // gesdd modifies A in-place — copy
-    DynMatrix<T> A_copy(cols, rows);
+    DynMatrix<T> A_copy = DynMatrix<T>::create(rows, cols);
     std::copy(M.begin(), M.end(), A_copy.begin());
 
     auto* impl = LapackOps<T>::instance()
@@ -460,7 +460,7 @@ namespace icl::math {
         .resolveOrThrow();
 
     // gesdd returns V-transpose; svd_dyn convention returns V
-    DynMatrix<T> Vt(cols, cols);
+    DynMatrix<T> Vt = DynMatrix<T>::create(cols, cols);
     int info = impl->apply('A', rows, cols, A_copy.data(), cols,
                             s.data(), U.data(), rows, Vt.data(), cols);
     if(info != 0) {

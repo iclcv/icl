@@ -77,7 +77,7 @@ namespace icl::math {
     const FixedMatrix<T,3,3> Tx = hartley_normalize<T>(x, n, xn);
     const FixedMatrix<T,3,3> Ty = hartley_normalize<T>(y, n, yn);
 
-    DynMatrix<T> M(8, 2*n), r(1, 2*n);
+    DynMatrix<T> M = DynMatrix<T>::create(2*n, 8), r = DynMatrix<T>::create(2*n, 1);
     for(int i = 0; i < n; ++i){
       const T xx = xn[i].x, xy = xn[i].y, yx = yn[i].x, yy = yn[i].y;
       T *m = &M(2*i, 0);

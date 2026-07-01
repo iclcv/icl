@@ -156,7 +156,7 @@ namespace {
     }
     const int nv=(int)views.size();
     if (nv < 3) return { IntrinsicCalibrator::Result(), nv, (int)poses.size() };
-    DynMatrix<icl64f> impoints(bSize, 2*nv), world(bSize, 3);
+    DynMatrix<icl64f> impoints = DynMatrix<icl64f>::create(2*nv, bSize), world = DynMatrix<icl64f>::create(3, bSize);
     for (int idx=0; idx<bSize; ++idx) { world(0,idx)=(idx%IC)*SQ; world(1,idx)=(idx/IC)*SQ; world(2,idx)=0; }
     for (int v=0; v<nv; ++v)
       for (int idx=0; idx<bSize; ++idx) { impoints(2*v,idx)=views[v][idx].x; impoints(2*v+1,idx)=views[v][idx].y; }

@@ -350,7 +350,7 @@ namespace icl::math {
 
 
 	  DynMatrix<float> GraphCutter::createSubMatrix(DynMatrix<float> &adjacencyMatrix, std::vector<int> &subgraph){
-      math::DynMatrix<float> subMatrix(subgraph.size(),subgraph.size());
+      math::DynMatrix<float> subMatrix = DynMatrix<float>::create(subgraph.size(), subgraph.size());
       for(unsigned int j=0; j<subMatrix.rows(); j++){
         for(unsigned int k=0; k<subMatrix.cols(); k++){
           subMatrix(k, j)=adjacencyMatrix(subgraph[k], subgraph[j]);
@@ -361,7 +361,7 @@ namespace icl::math {
 
 
     math::DynMatrix<float> GraphCutter::calculateProbabilityMatrix(math::DynMatrixBase<bool> &initialMatrix, bool symmetry){
-      math::DynMatrix<float> probabilities=math::DynMatrix<float>(initialMatrix.rows(),initialMatrix.cols(),0.0);
+      math::DynMatrix<float> probabilities=math::DynMatrix<float>::create(initialMatrix.cols(), initialMatrix.rows(), 0.0);
       for(unsigned int a=0; a<initialMatrix.cols(); a++){
         int count = 0;
         for(unsigned int b=0; b<initialMatrix.cols(); b++){//count number of edges for each node

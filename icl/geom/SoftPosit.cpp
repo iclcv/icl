@@ -72,7 +72,7 @@ namespace icl::geom {
 
     nbImagePts = imagePts.rows();
     nbWorldPts = worldPts.rows();
-    distMat=DynMatrix<icl64f>(nbWorldPts,nbImagePts);
+    distMat=DynMatrix<icl64f>::create(nbImagePts, nbWorldPts);
     //das ist dann gamma
     double max = iclMax(nbImagePts,nbWorldPts);
     double scale = 1.0/(max + 1);
@@ -82,8 +82,8 @@ namespace icl::geom {
       centeredImage(i, 0) =(imagePts(i, 0)-center(0, 0))/focalLength;
       centeredImage(i, 1) =(imagePts(i, 1)-center(0, 1))/focalLength;
     }
-    DynMatrix<icl64f> imageOnes(1,nbImagePts,1);
-    DynMatrix<icl64f> homogeneousWorldPts(4,nbWorldPts) ;
+    DynMatrix<icl64f> imageOnes = DynMatrix<icl64f>::create(nbImagePts, 1, 1);
+    DynMatrix<icl64f> homogeneousWorldPts = DynMatrix<icl64f>::create(nbWorldPts, 4) ;
     for(unsigned int i=0;i<nbWorldPts;++i){
       for(unsigned int j=0;j<3;++j){
         homogeneousWorldPts(i, j) = worldPts(i, j);
@@ -96,7 +96,7 @@ namespace icl::geom {
 
     //Initialize the depths of all world points based on initial pose.
 
-    DynMatrix<icl64f> temp(1,4,1);
+    DynMatrix<icl64f> temp = DynMatrix<icl64f>::create(4, 1, 1);
     for(unsigned int i=0;i<3;++i){
       temp(i, 0)=ROT(2, i)/T(2, 0);
     }
@@ -114,16 +114,16 @@ namespace icl::geom {
     //the scale factor is s = f/Tz = 1/Tz since f = 1.  These are column 4-vectors.
     double t1[] = {ROT(0, 0)/T(2, 0),ROT(0, 1)/T(2, 0),ROT(0, 2)/T(2, 0), T(0, 0)/T(2, 0)};
     double t2[] = {ROT(1, 0)/T(2, 0),ROT(1, 1)/T(2, 0),ROT(1, 2)/T(2, 0), T(1, 0)/T(2, 0)};
-    r1T = DynMatrix<icl64f>(1,4,t1);
-    r2T = DynMatrix<icl64f>(1,4,t2);
+    r1T = DynMatrix<icl64f>::fromData(4, 1, t1);
+    r2T = DynMatrix<icl64f>::fromData(4, 1, t2);
     r3T.setBounds(1,4);
     int betaCount = 0;
     int poseConverged = 0;
     int assignConverged = 0;
     //	int foundPose = 0;
     beta = beta0;
-    DynMatrix<icl64f> r1Tr2T(2,3);
-    assignMat = DynMatrix<icl64f>(nbWorldPts+1,nbImagePts+1,1+epsilon0);
+    DynMatrix<icl64f> r1Tr2T = DynMatrix<icl64f>::create(3, 2);
+    assignMat = DynMatrix<icl64f>::create(nbImagePts+1, nbWorldPts+1, 1+epsilon0);
 
     while ((beta < betaFinal) && !assignConverged){
       projectedU = homogeneousWorldPts * r1T;
@@ -168,7 +168,7 @@ namespace icl::geom {
         }
       }
       //summedByColAssign = sum(assignMat(1:nbImagePts, 1:nbWorldPts), 1);
-      summedByColAssign = DynMatrix<icl64f>(nbWorldPts,1);
+      summedByColAssign = DynMatrix<icl64f>::create(1, nbWorldPts);
       for(unsigned int i=0;i<nbWorldPts;++i){
         for(unsigned int j=0;j<nbImagePts;++j){
           summedByColAssign(0, i) += assignMat(j, i);
@@ -176,11 +176,11 @@ namespace icl::geom {
       }
 
       //TODO optimize
-      L = DynMatrix<icl64f>(4,4);
-      DynMatrix<icl64f> temp11(1,4);
-      DynMatrix<icl64f> temp22(4,1);
-      DynMatrix<icl64f> temp33(4,4);
-      DynMatrix<icl64f> temp44(4,4);
+      L = DynMatrix<icl64f>::create(4, 4);
+      DynMatrix<icl64f> temp11 = DynMatrix<icl64f>::create(4, 1);
+      DynMatrix<icl64f> temp22 = DynMatrix<icl64f>::create(1, 4);
+      DynMatrix<icl64f> temp33 = DynMatrix<icl64f>::create(4, 4);
+      DynMatrix<icl64f> temp44 = DynMatrix<icl64f>::create(4, 4);
       for (unsigned int k = 0;k<nbWorldPts;k++){
         for(int i=0;i<4;++i){
           temp11(i, 0) = homogeneousWorldPts(k, i);
@@ -199,11 +199,11 @@ namespace icl::geom {
 
       //poseConverged = 0;
       //TODO optimize
-      weightedUi = DynMatrix<icl64f>(1,4);
-      weightedVi = DynMatrix<icl64f>(1,4);
+      weightedUi = DynMatrix<icl64f>::create(4, 1);
+      weightedVi = DynMatrix<icl64f>::create(4, 1);
 
-      DynMatrix<icl64f>  temp55(1,4);
-      DynMatrix<icl64f>  temp66(1,4);
+      DynMatrix<icl64f> temp55 = DynMatrix<icl64f>::create(4, 1);
+      DynMatrix<icl64f> temp66 = DynMatrix<icl64f>::create(4, 1);
       for(unsigned int j = 0;j<nbImagePts;++j){
         for(unsigned int k = 0;k<nbWorldPts;++k){
           for(int i=0;i<4;++i){
@@ -266,7 +266,7 @@ namespace icl::geom {
       r2T(2, 0) = R2(2, 0)/Tz;
       r2T(3, 0) = Ty/Tz;
       //TODO
-      DynMatrix<icl64f> temp001(1,3);
+      DynMatrix<icl64f> temp001 = DynMatrix<icl64f>::create(3, 1);
       r3T.mult(1/Tz,temp001);
       wk = homogeneousWorldPts * temp001;
       //delta = sqrt(sum(sum(assignMat(1:nbImagePts,1:nbWorldPts) .* distMat))/nbWorldPts);
@@ -333,12 +333,12 @@ namespace icl::geom {
   void SoftPosit::softPosit(std::vector<Point32f> imagePts, std::vector<FixedColVector<double,3> > worldPts,
                             double beta0, int noiseStd,	DynMatrix<icl64f> initRot, DynMatrix<icl64f> initTrans,
                             double focalLength, DynMatrix<icl64f> center){
-    DynMatrix<icl64f> imagePt(2,imagePts.size());
+    DynMatrix<icl64f> imagePt = DynMatrix<icl64f>::create(imagePts.size(), 2);
     for(unsigned int i=0; i<imagePts.size();++i){
       imagePt(i, 0) = imagePts.at(i).x;
       imagePt(i, 1) = imagePts.at(i).y;
     }
-    DynMatrix<icl64f> worldPt(3,worldPts.size());
+    DynMatrix<icl64f> worldPt = DynMatrix<icl64f>::create(worldPts.size(), 3);
     for(unsigned int i=0; i<worldPts.size();++i){
       worldPt(i, 0) = worldPts.at(i)(0, 0);
       worldPt(i, 1) = worldPts.at(i)(1, 0);
@@ -352,12 +352,12 @@ namespace icl::geom {
                             DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
                             DynMatrix<icl64f> initTrans, double focalLength, ICLDrawWidget &w, DynMatrix<icl64f> center,bool draw){
 
-    DynMatrix<icl64f> imagePt(2,imagePts.size());
+    DynMatrix<icl64f> imagePt = DynMatrix<icl64f>::create(imagePts.size(), 2);
     for(unsigned int i=0; i<imagePts.size();++i){
       imagePt(i, 0) = imagePts.at(i).x;
       imagePt(i, 1) = imagePts.at(i).y;
     }
-    DynMatrix<icl64f> worldPt(3,worldPts.size());
+    DynMatrix<icl64f> worldPt = DynMatrix<icl64f>::create(worldPts.size(), 3);
     for(unsigned int i=0; i<worldPts.size();++i){
       worldPt(i, 0) = worldPts.at(i)(0, 0);
       worldPt(i, 1) = worldPts.at(i)(1, 0);
@@ -385,7 +385,7 @@ namespace icl::geom {
     }
     //number of 3D points.
     unsigned int numpts = pts3d.cols();
-    DynMatrix<icl64f> newtrans(numpts,3);
+    DynMatrix<icl64f> newtrans = DynMatrix<icl64f>::create(3, numpts);
     for(unsigned int i=0;i<numpts;++i){
       newtrans(0, i) = trans(0, 0);
       newtrans(1, i) = trans(1, 0);
@@ -402,7 +402,7 @@ namespace icl::geom {
       pts2d(0, i) = flength * campts(0, i)*(1/campts(2, i));
       pts2d(1, i) = flength * campts(1, i)*(1/campts(2, i));
     }
-    DynMatrix<icl64f> cent(numpts,2);
+    DynMatrix<icl64f> cent = DynMatrix<icl64f>::create(2, numpts);
     for(unsigned int i=0;i<numpts;++i){
       cent(0, i) = center(0, 0);
       cent(1, i) = center(0, 1);
@@ -463,12 +463,12 @@ namespace icl::geom {
     DynMatrix<icl64f> Mprev;
     DynMatrix<icl64f> McolSums;
     DynMatrix<icl64f> MrowSums;
-    DynMatrix<icl64f> ones(1,M.cols(),1.0);
+    DynMatrix<icl64f> ones = DynMatrix<icl64f>::create(M.cols(), 1, 1.0);
     DynMatrix<icl64f> MrowSumsRep;
     DynMatrix<icl64f> McolSumsRep;
     while(std::abs(fMdiffSum) > fEpsilon2 && iNumSinkIter < iMaxIterSinkhorn){
-      McolSums = DynMatrix<icl64f>(M.cols(),1);
-      MrowSums = DynMatrix<icl64f>(1,M.rows());
+      McolSums = DynMatrix<icl64f>::create(1, M.cols());
+      MrowSums = DynMatrix<icl64f>::create(M.rows(), 1);
       Mprev = M;
       for(unsigned int j=0;j<M.cols();++j)
         for(unsigned int i=0;i<M.rows();++i){

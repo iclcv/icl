@@ -15,24 +15,24 @@ namespace icl::math {
 
     template<class T>
     void cpp_fft_r2c(const T* src, int rows, int cols, std::complex<T>* dst) {
-      DynMatrix<T> srcMat(cols, rows, const_cast<T*>(src), false);
-      DynMatrix<std::complex<T>> dstMat(cols, rows, dst, false);
+      DynMatrix<T> srcMat = DynMatrix<T>::fromData(rows, cols, const_cast<T*>(src), false);
+      DynMatrix<std::complex<T>> dstMat = DynMatrix<std::complex<T>>::fromData(rows, cols, dst, false);
       DynMatrix<std::complex<T>> buf;
       fft::fft2D_cpp(srcMat, dstMat, buf);
     }
 
     template<class T>
     void cpp_fft_c2c(const std::complex<T>* src, int rows, int cols, std::complex<T>* dst) {
-      DynMatrix<std::complex<T>> srcMat(cols, rows, const_cast<std::complex<T>*>(src), false);
-      DynMatrix<std::complex<T>> dstMat(cols, rows, dst, false);
+      DynMatrix<std::complex<T>> srcMat = DynMatrix<std::complex<T>>::fromData(rows, cols, const_cast<std::complex<T>*>(src), false);
+      DynMatrix<std::complex<T>> dstMat = DynMatrix<std::complex<T>>::fromData(rows, cols, dst, false);
       DynMatrix<std::complex<T>> buf;
       fft::fft2D_cpp(srcMat, dstMat, buf);
     }
 
     template<class T>
     void cpp_ifft_c2c(const std::complex<T>* src, int rows, int cols, std::complex<T>* dst) {
-      DynMatrix<std::complex<T>> srcMat(cols, rows, const_cast<std::complex<T>*>(src), false);
-      DynMatrix<std::complex<T>> dstMat(cols, rows, dst, false);
+      DynMatrix<std::complex<T>> srcMat = DynMatrix<std::complex<T>>::fromData(rows, cols, const_cast<std::complex<T>*>(src), false);
+      DynMatrix<std::complex<T>> dstMat = DynMatrix<std::complex<T>>::fromData(rows, cols, dst, false);
       DynMatrix<std::complex<T>> buf;
       fft::ifft2D_cpp(srcMat, dstMat, buf);
     }

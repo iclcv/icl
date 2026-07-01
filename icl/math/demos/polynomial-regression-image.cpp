@@ -32,8 +32,8 @@ int lastPolyIdx = -1;
 
 Image approxCell(const Img32f &src, const Rect &r){
   const int w = r.width, h = r.height, N = w * h;
-  Matrix xs(2, N);
-  Matrix ys(3, N);
+  Matrix xs = Matrix::create(N, 2);
+  Matrix ys = Matrix::create(N, 3);
 
   for(int y = 0, idx = 0; y < h; ++y)
     for(int x = 0; x < w; ++x, ++idx){

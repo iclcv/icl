@@ -212,12 +212,12 @@ namespace icl::math {
       int mn = std::min(M, N);
 
       // Convert to double (svd_bidiag operates on icl64f)
-      DynMatrix<icl64f> Ad(N, M);
+      DynMatrix<icl64f> Ad = DynMatrix<icl64f>::create(M, N);
       for(int i = 0; i < M; ++i)
         for(int j = 0; j < N; ++j)
           Ad(i, j) = static_cast<icl64f>(A[i * lda + j]);
 
-      DynMatrix<icl64f> Ud(M, M), Vd(N, N);
+      DynMatrix<icl64f> Ud = DynMatrix<icl64f>::create(M, M), Vd = DynMatrix<icl64f>::create(N, N);
       std::vector<icl64f> sq(std::max(M, N));
 
       int r;

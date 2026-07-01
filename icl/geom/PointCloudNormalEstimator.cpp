@@ -710,7 +710,7 @@ void PointCloudNormalEstimator::applyTemporalNormalAveraging() {
 
 void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 	float norm = 1;
-	DynMatrix<float> kernel = DynMatrix<float>(1, 1, 0.0);
+	DynMatrix<float> kernel = DynMatrix<float>::create(1, 1, 0.0);
 	int l = 0;
 	[[maybe_unused]] int kSize = 1;
 	[[maybe_unused]] int rowSize = 1;
@@ -722,7 +722,7 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 		l = 1;
 		kSize = 3 * 3;
 		rowSize = 3;
-		DynMatrix<float> k1 = DynMatrix<float>(1, 3, 0.0);
+		DynMatrix<float> k1 = DynMatrix<float>::create(3, 1, 0.0);
 		k1(0, 0) = 1.;
 		k1(1, 0) = 2.;
 		k1(2, 0) = 1.;
@@ -732,7 +732,7 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 		l = 2;
 		kSize = 5 * 5;
 		rowSize = 5;
-		DynMatrix<float> k1 = DynMatrix<float>(1, 5, 0.0);
+		DynMatrix<float> k1 = DynMatrix<float>::create(5, 1, 0.0);
 		k1(0, 0) = 1.;
 		k1(1, 0) = 4.;
 		k1(2, 0) = 6.;
@@ -744,7 +744,7 @@ void PointCloudNormalEstimator::applyGaussianNormalSmoothing() {
 		l = 3;
 		kSize = 7 * 7;
 		rowSize = 7;
-		DynMatrix<float> k1 = DynMatrix<float>(1, 7, 0.0);
+		DynMatrix<float> k1 = DynMatrix<float>::create(7, 1, 0.0);
 		k1(0, 0) = 1.;
 		k1(1, 0) = 6.;
 		k1(2, 0) = 15.;

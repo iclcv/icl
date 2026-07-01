@@ -52,7 +52,7 @@ namespace icl::cv {
     }
 
     DynMatrix<icl64f> *OpenCVCamCalib::getIntrinsics(){
-      DynMatrix<icl64f> *intr = new DynMatrix<icl64f>(3, 3);
+      DynMatrix<icl64f> *intr = new DynMatrix<icl64f>(DynMatrix<icl64f>::create(3, 3));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           intr->at(i, j) = m_data->intrinsicMatrix.at<double>(static_cast<int>(j), static_cast<int>(i));
@@ -60,7 +60,7 @@ namespace icl::cv {
     }
 
     DynMatrix<icl64f> *OpenCVCamCalib::getDistortion(){
-      DynMatrix<icl64f> *dist = new DynMatrix<icl64f>(5, 1);   // 5-vector [k1,k2,p1,p2,k3]
+      DynMatrix<icl64f> *dist = new DynMatrix<icl64f>(DynMatrix<icl64f>::create(1, 5));   // 5-vector [k1,k2,p1,p2,k3]
       for (unsigned int i = 0; i < 5; ++i)
         dist->at(0, i) = m_data->distortionCoeffs.at<double>(static_cast<int>(i), 0);
       return dist;

@@ -25,9 +25,9 @@ namespace icl::cv {
     Data(unsigned int boardWidth, unsigned int boardHeight, unsigned int boardCount,unsigned int imageWidth ,unsigned int imageHeight):
       bWidth(boardWidth),bHeight(boardHeight), successes(boardCount),
       bSize(bWidth*bHeight),nx(imageWidth),ny(imageHeight){
-      intrinsic_matrix = new DynMatrix<icl64f>(3, 3);
+      intrinsic_matrix = new DynMatrix<icl64f>(DynMatrix<icl64f>::create(3, 3));
       (*intrinsic_matrix)[8] = 1.0;
-      distortion_coeffs = new DynMatrix<icl64f>(5, 1);
+      distortion_coeffs = new DynMatrix<icl64f>(DynMatrix<icl64f>::create(1, 5));
     }
 
     ~Data(){
@@ -48,9 +48,9 @@ namespace icl::cv {
                                                  DynMatrix<icl64f> &fc, DynMatrix<icl64f> &cc, DynMatrix<icl64f> &kc, double &alpha_c){
 
     // Initialize the homographies:
-    DynMatrix<icl64f> H(3,3);
-    DynMatrix<icl64f> HH(9,m_data->successes);
-    DynMatrix<icl64f> x1(m_data->bSize,2);
+    DynMatrix<icl64f> H = DynMatrix<icl64f>::create(3, 3);
+    DynMatrix<icl64f> HH = DynMatrix<icl64f>::create(m_data->successes, 9);
+    DynMatrix<icl64f> x1 = DynMatrix<icl64f>::create(2, m_data->bSize);
     for(int kk = 0;kk<m_data->successes;++kk){
       for(int i=0;i<m_data->bSize;++i){
         x1(0, i) = x(2*kk, i);
@@ -64,22 +64,22 @@ namespace icl::cv {
     // initial guess for principal point and distortion:
 
     // initialize at the center of the image
-    DynMatrix<icl64f> c_init(1,2);
+    DynMatrix<icl64f> c_init = DynMatrix<icl64f>::create(2, 1);
     c_init[0] = m_data->nx/2.0-0.5;
     c_init[1] = m_data->ny/2.0-0.5;
     //initialize to zero (no distortion)
-    DynMatrix<icl64f> k_init(1,5);
+    DynMatrix<icl64f> k_init = DynMatrix<icl64f>::create(5, 1);
 
     // Compute explicitely the focal length using all the (mutually orthogonal) vanishing points
     // The vanihing points are hidden in the planar collineations H_kk
 
     // matrix that subtract the principal point:
     double dat[9] = {1, 0, -c_init[0], 0, 1, -c_init[1], 0, 0, 1};
-    DynMatrix<icl64f> Sub_cc(3,3,dat);
-    DynMatrix<icl64f> Hkk(3,3), V_hori_pix(1,3), V_vert_pix(1,3), V_diag1_pix(1,3), V_diag2_pix(1,3);
-    DynMatrix<icl64f> Hkk2(3,3);
-    DynMatrix<icl64f> Hkkc1(1,3), Hkkc2(1,3);
-    DynMatrix<icl64f> A(2,2*(m_data->successes)), b(1,2*m_data->successes);
+    DynMatrix<icl64f> Sub_cc = DynMatrix<icl64f>::fromData(3, 3, dat);
+    DynMatrix<icl64f> Hkk = DynMatrix<icl64f>::create(3, 3), V_hori_pix = DynMatrix<icl64f>::create(3, 1), V_vert_pix = DynMatrix<icl64f>::create(3, 1), V_diag1_pix = DynMatrix<icl64f>::create(3, 1), V_diag2_pix = DynMatrix<icl64f>::create(3, 1);
+    DynMatrix<icl64f> Hkk2 = DynMatrix<icl64f>::create(3, 3);
+    DynMatrix<icl64f> Hkkc1 = DynMatrix<icl64f>::create(3, 1), Hkkc2 = DynMatrix<icl64f>::create(3, 1);
+    DynMatrix<icl64f> A = DynMatrix<icl64f>::create(2*(m_data->successes), 2), b = DynMatrix<icl64f>::create(2*m_data->successes, 1);
     for(int kk=0, mm=0;kk<m_data->successes;++kk,mm+=2){//:n_ima,
       for(int i=0;i<9;++i){
         Hkk[i] = HH(kk, i);
@@ -131,10 +131,10 @@ namespace icl::cv {
       double b4 = V_diag2_pix[1];
       double c4 = V_diag2_pix[2];
 
-      DynMatrix<icl64f> A_kk(2,2);
+      DynMatrix<icl64f> A_kk = DynMatrix<icl64f>::create(2, 2);
       A_kk[0] = a1*a2; A_kk[1] = b1*b2; A_kk[2] = a3*a4; A_kk[3] = b3*b4;
 
-      DynMatrix<icl64f> b_kk(1,2);
+      DynMatrix<icl64f> b_kk = DynMatrix<icl64f>::create(2, 1);
       b_kk[0] = -c1*c2; b_kk[1] = -c3*c4;
 
       A(mm, 0) = A_kk[0];
@@ -150,7 +150,7 @@ namespace icl::cv {
     bool two_focals_init = false;
     // Select the model for the focal. (solution to Gerd's problem)
     DynMatrix<icl64f> AT = A.transp();
-    DynMatrix<icl64f> ATS(AT.cols(),1);
+    DynMatrix<icl64f> ATS = DynMatrix<icl64f>::create(1, AT.cols());
     for(unsigned int i=0;i<AT.cols();++i){
       for(unsigned int j=0;j<AT.rows();++j)
         ATS[i] = ATS[i] + AT(j, i);
@@ -163,7 +163,7 @@ namespace icl::cv {
       two_focals_init = true;
     }
 
-    DynMatrix<icl64f> f_init(1,2);
+    DynMatrix<icl64f> f_init = DynMatrix<icl64f>::create(2, 1);
     if (two_focals_init){
       // Use a two focals estimate:
       f_init = (AT*A).inv()*AT*b;
@@ -186,7 +186,7 @@ namespace icl::cv {
                                            const DynMatrix<icl64f> &cc, const DynMatrix<icl64f> &kc, const double alpha_c, const double thresh_cond,
                                            DynMatrix<icl64f> &omckk, DynMatrix<icl64f> &Tckk, DynMatrix<icl64f> &Rckk){
 
-    DynMatrix<icl64f> omckk2(1,3),Tckk2(1,3),Rckk2(3,3),JJ_kk(6,2*m_data->bSize);
+    DynMatrix<icl64f> omckk2 = DynMatrix<icl64f>::create(3, 1), Tckk2 = DynMatrix<icl64f>::create(3, 1), Rckk2 = DynMatrix<icl64f>::create(3, 3), JJ_kk = DynMatrix<icl64f>::create(2*m_data->bSize, 6);
 
     compute_extrinsic_init(x_kk,X_kk,fc,cc,kc,alpha_c,
                            omckk2,Tckk2,Rckk2);
@@ -202,7 +202,7 @@ namespace icl::cv {
   void IntrinsicCalibrator::rigid_motion(const DynMatrix<icl64f> &X, const DynMatrix<icl64f> &om, const DynMatrix<icl64f> &T,
                                          DynMatrix<icl64f> &Y, DynMatrix<icl64f> &dYdom, DynMatrix<icl64f> &dYdT){
 
-    DynMatrix<icl64f> R(3,3), dRdom(3,9);
+    DynMatrix<icl64f> R = DynMatrix<icl64f>::create(3, 3), dRdom = DynMatrix<icl64f>::create(9, 3);
     rodrigues(om, R,dRdom);
 
     int n = X.cols();
@@ -214,7 +214,7 @@ namespace icl::cv {
       Y(1, i) = Y(1, i)+T[1];
       Y(2, i) = Y(2, i)+T[2];
     }
-    DynMatrix<icl64f> dYdR(9,3*n);
+    DynMatrix<icl64f> dYdR = DynMatrix<icl64f>::create(3*n, 9);
     int j=0;
     for(int i=0;i<n;++i){
       j=3*i;
@@ -232,23 +232,23 @@ namespace icl::cv {
                                             DynMatrix<icl64f> &dxpdc, DynMatrix<icl64f> &dxpdk, DynMatrix<icl64f> &dxpdalpha){
 
     int n = X.cols();
-    DynMatrix<icl64f> Y(n,3), dYdom(3,3*n), dYdT(3,3*n);
+    DynMatrix<icl64f> Y = DynMatrix<icl64f>::create(3, n), dYdom = DynMatrix<icl64f>::create(3*n, 3), dYdT = DynMatrix<icl64f>::create(3*n, 3);
     rigid_motion(X,om,T, Y,dYdom,dYdT);
-    DynMatrix<icl64f> inv_Z(n,1);
-    DynMatrix<icl64f> x(n,2);
+    DynMatrix<icl64f> inv_Z = DynMatrix<icl64f>::create(1, n);
+    DynMatrix<icl64f> x = DynMatrix<icl64f>::create(2, n);
     for(int i=0;i<n;++i){
       inv_Z[i] = 1.0/Y(2, i);
       x(0, i) = Y(0, i)*inv_Z[i];
       x(1, i) = Y(1, i)*inv_Z[i];
     }
-    DynMatrix<icl64f> cc(3,m_data->bSize);
-    DynMatrix<icl64f> bb(3,m_data->bSize);
+    DynMatrix<icl64f> cc = DynMatrix<icl64f>::create(m_data->bSize, 3);
+    DynMatrix<icl64f> bb = DynMatrix<icl64f>::create(m_data->bSize, 3);
     for(int i=0;i<n;++i){
       bb(i, 0) = -x(0, i)*inv_Z[i]; bb(i, 1) = bb(i, 0); bb(i, 2) = bb(i, 0);
       cc(i, 0) = -x(1, i)*inv_Z[i]; cc(i, 1) = cc(i, 0); cc(i, 2) = cc(i, 0);
     }
 
-    DynMatrix<icl64f> dxdom(3,2*n);
+    DynMatrix<icl64f> dxdom = DynMatrix<icl64f>::create(2*n, 3);
     for(int i=0;i<n;++i){
       dxdom(2*i, 0) = inv_Z[i]*dYdom(3*i, 0) + bb[3*i]*dYdom(3*i+2, 0);
       dxdom(2*i, 1) = inv_Z[i]*dYdom(3*i, 1) + bb[3*i+1]*dYdom(3*i+2, 1);
@@ -259,7 +259,7 @@ namespace icl::cv {
       dxdom(2*i+1, 2) = inv_Z[i]*dYdom(3*i+1, 2) + cc[3*i+2]*dYdom(3*i+2, 2);
     }
 
-    DynMatrix<icl64f> dxdT(3,2*n);
+    DynMatrix<icl64f> dxdT = DynMatrix<icl64f>::create(2*n, 3);
     for(int i=0;i<n;++i){
       dxdT(2*i, 0) = inv_Z[i]*dYdT(3*i, 0) + bb[3*i]*dYdT(3*i+2, 0);
       dxdT(2*i, 1) = inv_Z[i]*dYdT(3*i, 1) + bb[3*i+1]*dYdT(3*i+2, 1);
@@ -270,16 +270,16 @@ namespace icl::cv {
     }
 
     //Add distortion:
-    DynMatrix<icl64f> r2(m_data->bSize,1);
-    DynMatrix<icl64f> r4(m_data->bSize,1);
-    DynMatrix<icl64f> r6(m_data->bSize,1);
+    DynMatrix<icl64f> r2 = DynMatrix<icl64f>::create(1, m_data->bSize);
+    DynMatrix<icl64f> r4 = DynMatrix<icl64f>::create(1, m_data->bSize);
+    DynMatrix<icl64f> r6 = DynMatrix<icl64f>::create(1, m_data->bSize);
     for(int i=0;i<(m_data->bSize);++i){
       r2[i] = x(0, i)*x(0, i)+x(1, i)*x(1, i);
       r4[i] = r2[i]*r2[i];
       r6[i] = r2[i]*r2[i]*r2[i];
     }
 
-    DynMatrix<icl64f> dr2dom(3,m_data->bSize), dr2dT(3,m_data->bSize);
+    DynMatrix<icl64f> dr2dom = DynMatrix<icl64f>::create(m_data->bSize, 3), dr2dT = DynMatrix<icl64f>::create(m_data->bSize, 3);
     for(int i=0;i<n;++i){
       dr2dom(i, 0) = 2*x(0, i) * dxdom(2*i, 0) + 2*x(1, i)*dxdom(2*i+1, 0);
       dr2dom(i, 1) = 2*x(0, i) * dxdom(2*i, 1) + 2*x(1, i)*dxdom(2*i+1, 1);
@@ -290,7 +290,7 @@ namespace icl::cv {
       dr2dT(i, 2) = 2*x(0, i) * dxdT(2*i, 2) + 2*x(1, i)*dxdT(2*i+1, 2);
     }
 
-    DynMatrix<icl64f> dr4dom(3,m_data->bSize), dr4dT(3,m_data->bSize);
+    DynMatrix<icl64f> dr4dom = DynMatrix<icl64f>::create(m_data->bSize, 3), dr4dT = DynMatrix<icl64f>::create(m_data->bSize, 3);
     for(int i=0;i<n;++i){
       dr4dom(i, 0) = 2*r2[i]*dr2dom(i, 0);
       dr4dom(i, 1) = 2*r2[i]*dr2dom(i, 1);
@@ -300,7 +300,7 @@ namespace icl::cv {
       dr4dT(i, 2) = 2*r2[i]*dr2dT(i, 2);
     }
 
-    DynMatrix<icl64f> dr6dom(3,m_data->bSize), dr6dT(3,m_data->bSize);
+    DynMatrix<icl64f> dr6dom = DynMatrix<icl64f>::create(m_data->bSize, 3), dr6dT = DynMatrix<icl64f>::create(m_data->bSize, 3);
     for(int i=0;i<n;++i){
       dr6dom(i, 0) = 3*r2[i]*r2[i]*dr2dom(i, 0);
       dr6dom(i, 1) = 3*r2[i]*r2[i]*dr2dom(i, 1);
@@ -311,13 +311,13 @@ namespace icl::cv {
     }
 
     //Radial distortion:
-    DynMatrix<icl64f> cdist(n,1);
+    DynMatrix<icl64f> cdist = DynMatrix<icl64f>::create(1, n);
     for(unsigned int i=0;i<r2.dim();++i){
       cdist[i] = 1 +k[0]*r2[i]+k[1]*r4[i]+k[4]*r6[i];
     }
 
-    DynMatrix<icl64f> dcdistdom(3,m_data->bSize);
-    DynMatrix<icl64f> dcdistdT(3,m_data->bSize);
+    DynMatrix<icl64f> dcdistdom = DynMatrix<icl64f>::create(m_data->bSize, 3);
+    DynMatrix<icl64f> dcdistdT = DynMatrix<icl64f>::create(m_data->bSize, 3);
     for(int i=0;i<m_data->bSize;++i){
       dcdistdom(i, 0) = k[0]*dr2dom(i, 0); dcdistdom(i, 0) += k[1]*dr4dom(i, 0); dcdistdom(i, 0) += k[4]*dr6dom(i, 0);
       dcdistdom(i, 1) = k[0]*dr2dom(i, 1); dcdistdom(i, 1) += k[1]*dr4dom(i, 1); dcdistdom(i, 1) += k[4]*dr6dom(i, 1);
@@ -328,16 +328,16 @@ namespace icl::cv {
       dcdistdT(i, 2) = k[0]*dr2dT(i, 2); dcdistdT(i, 2) += k[1]*dr4dT(i, 2); dcdistdT(i, 2) += k[4]*dr6dT(i, 2);
     }
 
-    DynMatrix<icl64f> dcdistdk(5,m_data->bSize);
+    DynMatrix<icl64f> dcdistdk = DynMatrix<icl64f>::create(m_data->bSize, 5);
     for(unsigned int i=0;i<r2.cols();++i){
       dcdistdk(i, 0) = r2[i]; dcdistdk(i, 1) = r4[i]; dcdistdk(i, 4) = r6[i];
     }
 
-    DynMatrix<icl64f> xd1(m_data->bSize,2);
+    DynMatrix<icl64f> xd1 = DynMatrix<icl64f>::create(2, m_data->bSize);
     for(int i=0;i<m_data->bSize;++i){
       xd1(0, i) = x(0, i)*cdist[i]; xd1(1, i) = x(1, i)*cdist[i];
     }
-    DynMatrix<icl64f> dxd1dom(3,2*n);
+    DynMatrix<icl64f> dxd1dom = DynMatrix<icl64f>::create(2*n, 3);
     for(int i=0;i<n;++i){
       dxd1dom(2*i, 0) = x(0, i)*dcdistdom(i, 0);
       dxd1dom(2*i, 1) = x(0, i)*dcdistdom(i, 1);
@@ -348,7 +348,7 @@ namespace icl::cv {
       dxd1dom(2*i+1, 2) = x(1, i)*dcdistdom(i, 2);
     }
 
-    DynMatrix<icl64f> coeff(3,2*n);
+    DynMatrix<icl64f> coeff = DynMatrix<icl64f>::create(2*n, 3);
     for(int i=0;i<n;++i){
       coeff(2*i, 0) = cdist[i]; coeff(2*i, 1) = cdist[i]; coeff(2*i, 2) = cdist[i];
       coeff(2*i+1, 0) = cdist[i]; coeff(2*i+1, 1) = cdist[i]; coeff(2*i+1, 2) = cdist[i];
@@ -356,7 +356,7 @@ namespace icl::cv {
 
     dxd1dom = dxd1dom + coeff.elementwise_mult(dxdom);
 
-    DynMatrix<icl64f> dxd1dT(3,2*n);
+    DynMatrix<icl64f> dxd1dT = DynMatrix<icl64f>::create(2*n, 3);
     for(int i=0;i<m_data->bSize;++i){
       dxd1dT(2*i, 0) = x(0, i)*dcdistdT(i, 0);
       dxd1dT(2*i, 1) = x(0, i)*dcdistdT(i, 1);
@@ -369,7 +369,7 @@ namespace icl::cv {
 
     dxd1dT = dxd1dT + coeff.elementwise_mult(dxdT);
 
-    DynMatrix<icl64f> dxd1dk(5,2*n);
+    DynMatrix<icl64f> dxd1dk = DynMatrix<icl64f>::create(2*n, 5);
     for(int i=0;i<n;++i){
       dxd1dk(2*i, 0) = x(0, i)*dcdistdk(i, 0);
       dxd1dk(2*i, 1) = x(0, i)*dcdistdk(i, 1);
@@ -385,23 +385,23 @@ namespace icl::cv {
     }
 
     //tangential distortion:
-    DynMatrix<icl64f> a1(r2.cols(),1), a2(r2.cols(),1), a3(r2.cols(),1);
+    DynMatrix<icl64f> a1 = DynMatrix<icl64f>::create(1, r2.cols()), a2 = DynMatrix<icl64f>::create(1, r2.cols()), a3 = DynMatrix<icl64f>::create(1, r2.cols());
     for(unsigned int i=0;i<r2.cols();++i){
       a1[i] = 2*x(0, i)*x(1, i);
       a2[i] = r2[i] + 2*x(0, i)*x(0, i);
       a3[i] = r2[i] + 2*x(1, i)*x(1, i);
     }
-    DynMatrix<icl64f> delta_x(m_data->bSize,2);
+    DynMatrix<icl64f> delta_x = DynMatrix<icl64f>::create(2, m_data->bSize);
     for(int i=0;i<m_data->bSize;++i){
       delta_x(0, i) = k[2]*a1[i]+k[3]*a2[i];
       delta_x(1, i) = k[2]*a3[i]+k[3]*a1[i];
     }
 
-    DynMatrix<icl64f> ddelta_xdom(3,2*n);
-    DynMatrix<icl64f> ddelta_xdT(3,2*n);
-    DynMatrix<icl64f> ddelta_xdk(5,2*n);
+    DynMatrix<icl64f> ddelta_xdom = DynMatrix<icl64f>::create(2*n, 3);
+    DynMatrix<icl64f> ddelta_xdT = DynMatrix<icl64f>::create(2*n, 3);
+    DynMatrix<icl64f> ddelta_xdk = DynMatrix<icl64f>::create(2*n, 5);
     {
-      DynMatrix<icl64f> aa(3,m_data->bSize), bb(3,m_data->bSize), cc(3,m_data->bSize);
+      DynMatrix<icl64f> aa = DynMatrix<icl64f>::create(m_data->bSize, 3), bb = DynMatrix<icl64f>::create(m_data->bSize, 3), cc = DynMatrix<icl64f>::create(m_data->bSize, 3);
       for(int i=0;i<n;++i){
         aa(i, 0) = 2*k[2]*x(1, i) + 6*k[3]*x(0, i); aa(i, 1) = aa(i, 0); aa(i, 2) = aa(i, 0);
         bb(i, 0) = 2*k[2]*x(0, i) + 2*k[3]*x(1, i); bb(i, 1) = bb(i, 0); bb(i, 2) = bb(i, 0);
@@ -444,12 +444,12 @@ namespace icl::cv {
     DynMatrix<icl64f> dxd2dk = dxd1dk + ddelta_xdk ;
 
     //Add Skew:
-    DynMatrix<icl64f> xd3(m_data->bSize,2);
+    DynMatrix<icl64f> xd3 = DynMatrix<icl64f>::create(2, m_data->bSize);
     for(int i=0;i<m_data->bSize;++i){
       xd3(0, i) = xd2(0, i)+alpha*xd2(1, i); xd3(1, i)=xd2(1, i);
     }
     // Compute: dxd3dom, dxd3dT, dxd3dk, dxd3dalpha
-    DynMatrix<icl64f> dxd3dom(3,2*n);
+    DynMatrix<icl64f> dxd3dom = DynMatrix<icl64f>::create(2*n, 3);
     for(int i=0;i<n;++i){
       dxd3dom(2*i, 0) = dxd2dom(2*i, 0) +alpha*dxd2dom(2*i+1, 0);
       dxd3dom(2*i, 1) = dxd2dom(2*i, 1) +alpha*dxd2dom(2*i+1, 1);
@@ -459,7 +459,7 @@ namespace icl::cv {
       dxd3dom(2*i+1, 1) = dxd2dom(2*i+1, 1);;
       dxd3dom(2*i+1, 2) = dxd2dom(2*i+1, 2);;
     }
-    DynMatrix<icl64f> dxd3dT(3,2*n);
+    DynMatrix<icl64f> dxd3dT = DynMatrix<icl64f>::create(2*n, 3);
     for(int i=0;i<n;++i){
       dxd3dT(2*i, 0) = dxd2dT(2*i, 0) +alpha*dxd2dT(2*i+1, 0);
       dxd3dT(2*i, 1) = dxd2dT(2*i, 1) +alpha*dxd2dT(2*i+1, 1);
@@ -470,7 +470,7 @@ namespace icl::cv {
       dxd3dT(2*i+1, 2) = dxd2dT(2*i+1, 2);;
     }
 
-    DynMatrix<icl64f> dxd3dk(5,2*n);
+    DynMatrix<icl64f> dxd3dk = DynMatrix<icl64f>::create(2*n, 5);
     for(int i=0;i<n;++i){
       dxd3dk(2*i, 0) = dxd2dk(2*i, 0) +alpha*dxd2dk(2*i+1, 0);
       dxd3dk(2*i, 1) = dxd2dk(2*i, 1) +alpha*dxd2dk(2*i+1, 1);
@@ -484,22 +484,22 @@ namespace icl::cv {
       dxd3dk(2*i+1, 3) = dxd2dk(2*i+1, 3);
       dxd3dk(2*i+1, 4) = dxd2dk(2*i+1, 4);
     }
-    DynMatrix<icl64f> dxd3dalpha(1,2*n);
+    DynMatrix<icl64f> dxd3dalpha = DynMatrix<icl64f>::create(2*n, 1);
     for(int i=0;i<n;++i){
       dxd3dalpha(2*i, 0) = xd2(1, i);
     }
 
     //Pixel coordinates:
     if (f.dim()>1){
-      DynMatrix<icl64f> o(n,1,1);
+      DynMatrix<icl64f> o = DynMatrix<icl64f>::create(1, n, 1);
       xp = xd3.elementwise_mult(f*o)+c*o;
 
-      DynMatrix<icl64f> coeff(1,2*n);
+      DynMatrix<icl64f> coeff = DynMatrix<icl64f>::create(2*n, 1);
       for(int i=0;i<n;++i){
         coeff[2*i] = f[0];
         coeff[2*i+1] = f[1];
       }
-      DynMatrix<icl64f> o3(3,1,1),o5(5,1,1);
+      DynMatrix<icl64f> o3 = DynMatrix<icl64f>::create(1, 3, 1), o5 = DynMatrix<icl64f>::create(1, 5, 1);
       dxpdom = (coeff*o3).elementwise_mult(dxd3dom);
       dxpdT = (coeff*o3).elementwise_mult(dxd3dT);
       dxpdk = (coeff*o5).elementwise_mult(dxd3dk);
@@ -509,7 +509,7 @@ namespace icl::cv {
         dxpdf(2*i+1, 1) = xd3(1, i); dxpdf(2*i, 1) = 0.0;
       }
     } else {
-      DynMatrix<icl64f> o(n,1,1);
+      DynMatrix<icl64f> o = DynMatrix<icl64f>::create(1, n, 1);
       xp = f * xd3 + c*o;
 
       dxpdom = f  * dxd3dom;
@@ -537,21 +537,21 @@ namespace icl::cv {
     Tckk[0] = Tc_init[0]; Tckk[1] = Tc_init[1]; Tckk[2] = Tc_init[2];
 
     // Final optimization (minimize the reprojection error in pixel): through Gradient Descent:
-    DynMatrix<icl64f> param(1,6);
+    DynMatrix<icl64f> param = DynMatrix<icl64f>::create(6, 1);
     param[0] = omckk[0]; param[1] = omckk[1]; param[2] = omckk[2];
     param[3] = Tckk[0]; param[4] = Tckk[1]; param[5] = Tckk[2];
     double change = 1;
 
     int iter = 0;
-    DynMatrix<icl64f> x(m_data->bSize,2), dxdom(3,2*m_data->bSize), dxdT(3,2*m_data->bSize),
-    dxdf(2,2*m_data->bSize), dxdc(2,2*m_data->bSize), dxdk(5,2*m_data->bSize), dxdalpha(1,2*m_data->bSize);
-    DynMatrix<icl64f> ex(m_data->bSize,2);
+    DynMatrix<icl64f> x = DynMatrix<icl64f>::create(2, m_data->bSize), dxdom = DynMatrix<icl64f>::create(2*m_data->bSize,3), dxdT = DynMatrix<icl64f>::create(2*m_data->bSize,3),
+    dxdf = DynMatrix<icl64f>::create(2*m_data->bSize,2), dxdc = DynMatrix<icl64f>::create(2*m_data->bSize,2), dxdk = DynMatrix<icl64f>::create(2*m_data->bSize,5), dxdalpha = DynMatrix<icl64f>::create(2*m_data->bSize,1);
+    DynMatrix<icl64f> ex = DynMatrix<icl64f>::create(2, m_data->bSize);
     while ((change > 1e-10)&&(iter < MaxIter)){
       project_points2(X_kk,omckk,Tckk,fc,cc,kc,alpha_c, x,dxdom,dxdT,  dxdf,dxdc,dxdk,dxdalpha);
       for(int i=0;i<(2*m_data->bSize);++i)
         ex[i] = x_kk[i] - x[i];
 
-      DynMatrix<icl64f> JJ(6,2*m_data->bSize);
+      DynMatrix<icl64f> JJ = DynMatrix<icl64f>::create(2*m_data->bSize, 6);
       for(int i=0;i<(2*m_data->bSize);++i){
         JJ(i, 0) = dxdom(i, 0); JJ(i, 1) = dxdom(i, 1); JJ(i, 2) = dxdom(i, 2);
         JJ(i, 3) = dxdT(i, 0); JJ(i, 4) = dxdT(i, 1); JJ(i, 5) = dxdT(i, 2);
@@ -562,9 +562,9 @@ namespace icl::cv {
         DynMatrix<icl64f> JJT = JJ.transp();
         DynMatrix<icl64f> JJ2 = JJT*JJ;
 
-        DynMatrix<icl64f> param_innov(1,6), param_up;
+        DynMatrix<icl64f> param_innov = DynMatrix<icl64f>::create(6, 1), param_up;
         DynMatrix<icl64f> temp = JJ2.inv()*JJT;
-        DynMatrix<icl64f> ex2(1,2*ex.cols());
+        DynMatrix<icl64f> ex2 = DynMatrix<icl64f>::create(2*ex.cols(), 1);
         for(unsigned int i=0;i<ex.cols();++i){
           ex2[2*i] = ex[i];
           ex2[2*i+1] = ex[ex.cols()+i];
@@ -581,7 +581,7 @@ namespace icl::cv {
       }
     }
 
-    DynMatrix<icl64f> dummy(3,9);
+    DynMatrix<icl64f> dummy = DynMatrix<icl64f>::create(9, 3);
     rodrigues(omckk,Rckk,dummy);
   }
 
@@ -591,8 +591,8 @@ namespace icl::cv {
     int n=in.cols();
     double eps = 2.2204460492503e-16;
     double bigeps = 10e+20*eps;
-    DynMatrix<icl64f> R(3,3), dRdin(3,9);
-    DynMatrix<icl64f> eye3(3,3); eye3[0]=1;eye3[4]=1;eye3[8]=1;
+    DynMatrix<icl64f> R = DynMatrix<icl64f>::create(3, 3), dRdin = DynMatrix<icl64f>::create(9, 3);
+    DynMatrix<icl64f> eye3 = DynMatrix<icl64f>::create(3, 3); eye3[0]=1;eye3[4]=1;eye3[8]=1;
 
     if (((m==1) && (n==3)) || ((m==3) && (n==1))){ //it is a rotation vector
       double theta = in.norm();
@@ -605,27 +605,27 @@ namespace icl::cv {
         dRdin[15] = 1.0; dRdin[19] = 1.0; dRdin[21] = -1.0;
 
       } else {
-        DynMatrix<icl64f> dm3din(3,4);
+        DynMatrix<icl64f> dm3din = DynMatrix<icl64f>::create(4, 3);
         dm3din[0] = 1.0; dm3din[4] = 1.0; dm3din[8] = 1.0;
         dm3din[9] = in[0]/theta; dm3din[10] = in[1]/theta; dm3din[11] = in[2]/theta;
 
-        DynMatrix<icl64f> omega(1,3);
+        DynMatrix<icl64f> omega = DynMatrix<icl64f>::create(3, 1);
         omega[0]= in[0]/theta; omega[1]= in[1]/theta; omega[2]= in[2]/theta;
 
-        DynMatrix<icl64f> dm2dm3(4,4);
+        DynMatrix<icl64f> dm2dm3 = DynMatrix<icl64f>::create(4, 4);
         dm2dm3[0] = 1.0/theta; dm2dm3[5] = 1.0/theta; dm2dm3[10] = 1.0/theta; dm2dm3[15] = 1;
         dm2dm3[3] = -in[0]/(theta*theta); dm2dm3[7] = -in[1]/(theta*theta); dm2dm3[11] = -in[2]/(theta*theta);
 
         double alpha = cos(theta);
         double beta = sin(theta);
         double gamma = 1-alpha;
-        DynMatrix<icl64f> omegav(3,3);
+        DynMatrix<icl64f> omegav = DynMatrix<icl64f>::create(3, 3);
         omegav[0] = 0.0; omegav[1] = -omega[2]; omegav[2] = omega[1];
         omegav[3] = omega[2]; omegav[4] = 0.0; omegav[5] = -omega[0];
         omegav[6] = -omega[1]; omegav[7] = omega[0]; omegav[8] = 0.0;
         DynMatrix<icl64f> A = omega*omega.transp();
 
-        DynMatrix<icl64f> dm1dm2(4,21);
+        DynMatrix<icl64f> dm1dm2 = DynMatrix<icl64f>::create(21, 4);
         dm1dm2(0, 3) = -sin(theta);
         dm1dm2(1, 3) = cos(theta);
         dm1dm2(2, 3) = -dm1dm2(0, 3);
@@ -647,7 +647,7 @@ namespace icl::cv {
         DynMatrix<icl64f> temp3;
         A.mult(gamma,temp3);
         R=temp1+temp2+temp3;
-        DynMatrix<icl64f> dRdm1(21,9);
+        DynMatrix<icl64f> dRdm1 = DynMatrix<icl64f>::create(9, 21);
 
         dRdm1(0, 0) = 1; dRdm1(4, 0) = 1; dRdm1(8, 0) = 1;
         DynMatrix<icl64f> omegav_T = omegav.transp();
@@ -676,7 +676,7 @@ namespace icl::cv {
       R.svd(U,S,V);
       R = U*V.transp();
       double tr = (R.trace()-1)/2;
-      DynMatrix<icl64f> dtrdR(9,1);
+      DynMatrix<icl64f> dtrdR = DynMatrix<icl64f>::create(1, 9);
       dtrdR[0] = 0.5;dtrdR[4] = 0.5;dtrdR[8] = 0.5;
       double theta = std::acos(tr);
       if (sin(theta) >= 1e-4){
@@ -686,16 +686,16 @@ namespace icl::cv {
         dtrdR.mult(dthetadtr,dthetadR);
         double vth = 1/(2*sin(theta));
         double dvthdtheta = -vth*cos(theta)/sin(theta);
-        DynMatrix<icl64f> dvar1dtheta(1,2);
+        DynMatrix<icl64f> dvar1dtheta = DynMatrix<icl64f>::create(2, 1);
         dvar1dtheta[0] = dvthdtheta; dvar1dtheta[0] = 1;
         DynMatrix<icl64f> dvar1dR =  dvar1dtheta * dthetadR;
 
 
-        DynMatrix<icl64f> om1(1,3);
+        DynMatrix<icl64f> om1 = DynMatrix<icl64f>::create(3, 1);
         om1[0] = R(2, 1)-R(1, 2); om1[1] = R(0, 2)-R(2, 0); om1[2] = R(1, 0)-R(0, 1);
 
 
-        DynMatrix<icl64f> dvardR(9,5);
+        DynMatrix<icl64f> dvardR = DynMatrix<icl64f>::create(5, 9);
         dvardR[5] = 1; dvardR[7] = -1; dvardR[11] = -1; dvardR[15] = 1; dvardR[19] = 1; dvardR[21] = -1;
         for(int i=0;i<18;++i){
           dvardR[27+i] = dvar1dR[i];
@@ -703,11 +703,11 @@ namespace icl::cv {
 
         DynMatrix<icl64f> om;
         om1.mult(vth,om);
-        DynMatrix<icl64f> dvar2dvar(5,4);
+        DynMatrix<icl64f> dvar2dvar = DynMatrix<icl64f>::create(4, 5);
         dvar2dvar[0] = vth; dvar2dvar[6] = vth; dvar2dvar[11] = vth; dvar2dvar[19] = 1;
         dvar2dvar[3] = om1[0]; dvar2dvar[8] = om1[1]; dvar2dvar[13] = om1[2];
         out = om*theta;
-        DynMatrix<icl64f> domegadvar2(4,3);
+        DynMatrix<icl64f> domegadvar2 = DynMatrix<icl64f>::create(3, 4);
         domegadvar2[0] = 1; domegadvar2[5] = 1; domegadvar2[10] = 1;
         domegadvar2[3] = om[0]; domegadvar2[7] = om[1];domegadvar2[11] = om[2];
         dout = domegadvar2 * dvar2dvar * dvardR;
@@ -722,20 +722,20 @@ namespace icl::cv {
           //case norm(om)=pi;
 
           // Define hashvec and Smat
-          DynMatrix<icl64f> hashvec(1,11);// = [0; -1; -3; -9; 9; 3; 1; 13; 5; -7; -11];
+          DynMatrix<icl64f> hashvec = DynMatrix<icl64f>::create(11, 1);// = [0; -1; -3; -9; 9; 3; 1; 13; 5; -7; -11];
           hashvec[0] =0; hashvec[1] =-1; hashvec[2] =-3; hashvec[3] =-9; hashvec[4] =9;
           hashvec[5] =3; hashvec[6] =1; hashvec[7] =13; hashvec[8] =5; hashvec[9] =-7; hashvec[10] =-11;
           double dat[33] = {1,1,1, 1,0,-1, 0,1,-1, 1,-1,0, 1,1,0, 0,1,1, 1,0,1, 1,1,1, 1,1,-1,1,-1,-1, 1,-1,1};
-          DynMatrix<icl64f> Smat(3,11,dat);
+          DynMatrix<icl64f> Smat = DynMatrix<icl64f>::fromData(11, 3, dat);
 
           DynMatrix<icl64f> M = (R+eye3)/2.0;
           double uabs = sqrt(M(0, 0));
           double vabs = sqrt(M(1, 1));
           double wabs = sqrt(M(2, 2));
 
-          DynMatrix<icl64f> mvec(3,1);// = [M(1,2), M(2,3), M(1,3)];
+          DynMatrix<icl64f> mvec = DynMatrix<icl64f>::create(1, 3);// = [M(1,2), M(2,3), M(1,3)];
           mvec[0] = M(0, 1); mvec[1] = M(1, 2); mvec[2] = M(0, 2);
-          DynMatrix<icl64f> syn(3,1);//  = ((mvec > 1e-4) - (mvec < -1e-4)); //robust sign() function
+          DynMatrix<icl64f> syn = DynMatrix<icl64f>::create(1, 3);//  = ((mvec > 1e-4) - (mvec < -1e-4)); //robust sign() function
 
           for(int i=0;i<3;++i){
             if(mvec[i]>1e-4){
@@ -748,7 +748,7 @@ namespace icl::cv {
             }
           }
 
-          DynMatrix<icl64f> hmm(1,3); hmm[0] = 9; hmm[1] = 3; hmm[2] = 1;
+          DynMatrix<icl64f> hmm = DynMatrix<icl64f>::create(3, 1); hmm[0] = 9; hmm[1] = 3; hmm[2] = 1;
           DynMatrix<icl64f> hash = syn *hmm;
 
           unsigned int idx = 0.0;
@@ -757,7 +757,7 @@ namespace icl::cv {
               idx = i;
             }
           }
-          DynMatrix<icl64f> svec(1,3);
+          DynMatrix<icl64f> svec = DynMatrix<icl64f>::create(3, 1);
           for(unsigned int i=0;i<3;++i){
             svec[i] = hashvec(idx, i);
           }
@@ -780,16 +780,16 @@ namespace icl::cv {
     double p2 = k[3];
     //initial guess
     x = xd;
-    DynMatrix<icl64f> ones(1,2,1);
-    DynMatrix<icl64f> ones1(m_data->bSize,1,1);
-    DynMatrix<icl64f> k_radial(m_data->bSize,1);
+    DynMatrix<icl64f> ones = DynMatrix<icl64f>::create(2, 1, 1);
+    DynMatrix<icl64f> ones1 = DynMatrix<icl64f>::create(1, m_data->bSize, 1);
+    DynMatrix<icl64f> k_radial = DynMatrix<icl64f>::create(1, m_data->bSize);
     DynMatrix<icl64f> delta_x;
 
     for (int kk=0;kk<20;++kk){
-      DynMatrix<icl64f> r_2(m_data->bSize,1);
-      DynMatrix<icl64f> r_21(m_data->bSize,1);
-      DynMatrix<icl64f> r_22(m_data->bSize,1);
-      DynMatrix<icl64f> r_23(m_data->bSize,1);
+      DynMatrix<icl64f> r_2 = DynMatrix<icl64f>::create(1, m_data->bSize);
+      DynMatrix<icl64f> r_21 = DynMatrix<icl64f>::create(1, m_data->bSize);
+      DynMatrix<icl64f> r_22 = DynMatrix<icl64f>::create(1, m_data->bSize);
+      DynMatrix<icl64f> r_23 = DynMatrix<icl64f>::create(1, m_data->bSize);
       for(int i=0;i<m_data->bSize;++i){
         r_2(0, i) = x(0, i)*x(0, i)+x(1, i)*x(1, i);
         r_21(0, i) = r_2(0, i);
@@ -802,7 +802,7 @@ namespace icl::cv {
       r_23 *= k3;
       k_radial = ones1+r_21+r_22+r_23;
 
-      DynMatrix<icl64f> delta_x(m_data->bSize,2);
+      DynMatrix<icl64f> delta_x = DynMatrix<icl64f>::create(2, m_data->bSize);
 
       for(int i=0;i<m_data->bSize;++i){
         delta_x(0, i) = 2*p1*x(0, i)*x(1, i) + p2*(r_2[i] + 2*x(0, i)*x(0, i));
@@ -823,7 +823,7 @@ namespace icl::cv {
                                             const DynMatrix<icl64f> kc,const double alpha_c, DynMatrix<icl64f> &xn){
 
     //First: Subtract principal point, and divide by the focal length:
-    DynMatrix<icl64f> x_distort(m_data->bSize,2);
+    DynMatrix<icl64f> x_distort = DynMatrix<icl64f>::create(2, m_data->bSize);
     for(int i=0;i<m_data->bSize;++i){
       x_distort(0, i) = (x_kk(0, i)-cc[0])/fc[0];
       x_distort(1, i) = (x_kk(1, i)-cc[1])/fc[1];
@@ -864,7 +864,7 @@ namespace icl::cv {
   void IntrinsicCalibrator::compute_homography(const DynMatrix<icl64f> &m, const DynMatrix<icl64f> &M, DynMatrix<icl64f> &H){
 
     int Np = m_data->bSize;
-    DynMatrix<icl64f> mm(m_data->bSize,3);
+    DynMatrix<icl64f> mm = DynMatrix<icl64f>::create(3, m_data->bSize);
     if(m.rows()<3){
       for(int i=0;i<m_data->bSize;++i){
         mm(0, i) = m(0, i);
@@ -878,7 +878,7 @@ namespace icl::cv {
         mm(2, i) = m(2, i);
       }
     }
-    DynMatrix<icl64f> MM(m_data->bSize,3);
+    DynMatrix<icl64f> MM = DynMatrix<icl64f>::create(3, m_data->bSize);
     if(M.rows()<3){
       for(int i=0;i<m_data->bSize;++i){
         MM(0, i) = M(0, i);
@@ -905,15 +905,15 @@ namespace icl::cv {
     }
     // Prenormalization of point coordinates (very important):
     // (Affine normalization)
-    DynMatrix<icl64f> ax(m_data->bSize,1);
-    DynMatrix<icl64f> ay(m_data->bSize,1);
+    DynMatrix<icl64f> ax = DynMatrix<icl64f>::create(1, m_data->bSize);
+    DynMatrix<icl64f> ay = DynMatrix<icl64f>::create(1, m_data->bSize);
     for(int i=0;i<m_data->bSize;++i){
       ax[i] = mm(0, i);
       ay[i] = mm(1, i);
     }
-    DynMatrix<icl64f> mxx(1,1);
+    DynMatrix<icl64f> mxx = DynMatrix<icl64f>::create(1, 1);
     mean(ax,mxx);
-    DynMatrix<icl64f> myy(1,1);
+    DynMatrix<icl64f> myy = DynMatrix<icl64f>::create(1, 1);
     mean(ay,myy);
     for(int i=0;i<m_data->bSize;++i){
       ax[i] = ax[i] - mxx[0];
@@ -925,16 +925,16 @@ namespace icl::cv {
         ay[i] = -ay[i];
       }
     }
-    DynMatrix<icl64f> scxx(1,1);
+    DynMatrix<icl64f> scxx = DynMatrix<icl64f>::create(1, 1);
     mean(ax,scxx);
-    DynMatrix<icl64f> scyy(1,1);
+    DynMatrix<icl64f> scyy = DynMatrix<icl64f>::create(1, 1);
     mean(ay,scyy);
 
-    DynMatrix<icl64f> Hnorm(3,3);
+    DynMatrix<icl64f> Hnorm = DynMatrix<icl64f>::create(3, 3);
     Hnorm[0] = 1.0/scxx[0]; Hnorm[2] = -mxx[0]/scxx[0];
     Hnorm[4] = 1.0/scyy[0]; Hnorm[5] = -myy[0]/scyy[0];
     Hnorm[8] = 1.0;
-    DynMatrix<icl64f> inv_Hnorm(3,3);
+    DynMatrix<icl64f> inv_Hnorm = DynMatrix<icl64f>::create(3, 3);
     inv_Hnorm[0] = scxx[0]; inv_Hnorm[2] = mxx[0];
     inv_Hnorm[4] = scyy[0]; inv_Hnorm[5] = myy[0];
     inv_Hnorm[8] = 1.0;
@@ -942,8 +942,8 @@ namespace icl::cv {
     //Compute the homography between m and mn:
     //Build the matrix:
 
-    DynMatrix<icl64f> L(9,2*m_data->bSize);
-    DynMatrix<icl64f> ones(1,3,1);
+    DynMatrix<icl64f> L = DynMatrix<icl64f>::create(2*m_data->bSize, 9);
+    DynMatrix<icl64f> ones = DynMatrix<icl64f>::create(3, 1, 1);
     for(int i=0;i<Np;++i){
       L(2*i, 0) = MM(0, i);
       L(2*i, 1) = MM(1, i);
@@ -965,12 +965,12 @@ namespace icl::cv {
 
     DynMatrix<icl64f> U,S,V;
     L.svd(U,S,V);
-    DynMatrix<icl64f> hh(1,9);
+    DynMatrix<icl64f> hh = DynMatrix<icl64f>::create(9, 1);
 
     for(int i=0;i<9;++i){
       hh[i] = V(i, 8)/V(8, 8);
     }
-    DynMatrix<icl64f> hhh(3,3);
+    DynMatrix<icl64f> hhh = DynMatrix<icl64f>::create(3, 3);
     hhh[0] = hh[0]; hhh[1] = hh[1]; hhh[2] = hh[2];
     hhh[3] = hh[3]; hhh[4] = hh[4]; hhh[5] = hh[5];
     hhh[6] = hh[6]; hhh[7] = hh[7]; hhh[8] = hh[8];
@@ -982,15 +982,15 @@ namespace icl::cv {
     //Homography refinement if there are more than 4 points:
     if (Np > 4){
       //Final refinement:
-      DynMatrix<icl64f> hhv(1,8);
+      DynMatrix<icl64f> hhv = DynMatrix<icl64f>::create(8, 1);
       hhv[0] = H[0]; hhv[1] = H[1]; hhv[2] = H[2]; hhv[3] = H[3];
       hhv[4] = H[4]; hhv[5] = H[5]; hhv[6] = H[6]; hhv[7] = H[7];
-      DynMatrix<icl64f> mrep(m_data->bSize,3), MMM(m_data->bSize,3);
-      DynMatrix<icl64f> J(8,2*Np);
-      DynMatrix<icl64f> ones(1,3,1);
-      DynMatrix<icl64f> m_err(1,2*Np);
+      DynMatrix<icl64f> mrep = DynMatrix<icl64f>::create(3, m_data->bSize), MMM = DynMatrix<icl64f>::create(3, m_data->bSize);
+      DynMatrix<icl64f> J = DynMatrix<icl64f>::create(2*Np, 8);
+      DynMatrix<icl64f> ones = DynMatrix<icl64f>::create(3, 1, 1);
+      DynMatrix<icl64f> m_err = DynMatrix<icl64f>::create(2*Np, 1);
       for(int iter=0;iter<10;++iter){
-        MMM = DynMatrix<icl64f>(m_data->bSize,3);
+        MMM = DynMatrix<icl64f>::create(3, m_data->bSize);
         mrep = H * MM;
         for(int i=0;i<m_data->bSize;++i){
           MMM(0, i)=MM(0, i)/mrep(2, i);
@@ -1052,14 +1052,14 @@ namespace icl::cv {
                                                    DynMatrix<icl64f> &omckk, DynMatrix<icl64f> &Tckk, DynMatrix<icl64f> &Rckk){
 
     // Compute the normalized coordinates:
-    DynMatrix<icl64f> xn(m_data->bSize,2);
+    DynMatrix<icl64f> xn = DynMatrix<icl64f>::create(2, m_data->bSize);
     normalize_pixel(x_kk,fc,cc,kc,alpha_c, xn);
 
     // Check for planarity of the structure:
-    DynMatrix<icl64f> X_mean(1,3);
+    DynMatrix<icl64f> X_mean = DynMatrix<icl64f>::create(3, 1);
     mean(X_kk.transp(),X_mean);
-    DynMatrix<icl64f> ones(m_data->bSize,1,1);
-    DynMatrix<icl64f> Y(m_data->bSize,3);
+    DynMatrix<icl64f> ones = DynMatrix<icl64f>::create(1, m_data->bSize, 1);
+    DynMatrix<icl64f> Y = DynMatrix<icl64f>::create(3, m_data->bSize);
     DynMatrix<icl64f> temp = X_mean.transp()*ones;
     for(unsigned int i=0;i<Y.dim();++i){
       Y[i]= X_kk[i]-temp[i];
@@ -1074,7 +1074,7 @@ namespace icl::cv {
       // Transform the plane to bring it in the Z=0 plane:
       DynMatrix<icl64f> R_transform = V;
       if (std::sqrt(R_transform[2]*R_transform[2]+R_transform[5]*R_transform[5]) < 1e-6){
-        R_transform = DynMatrix<icl64f>(3,3);
+        R_transform = DynMatrix<icl64f>::create(3, 3);
         R_transform[0] = 1;
         R_transform[4] = 1;
         R_transform[8] = 1;
@@ -1088,7 +1088,7 @@ namespace icl::cv {
       DynMatrix<icl64f> X_new = R_transform*X_kk + T_transform*ones;
 
       // Compute the planar homography:
-      DynMatrix<icl64f> H(3,3), X_new2(X_new.cols(),2);
+      DynMatrix<icl64f> H = DynMatrix<icl64f>::create(3, 3), X_new2 = DynMatrix<icl64f>::create(2, X_new.cols());
       for(unsigned int i=0;i<X_new.cols();++i){
         X_new2(0, i) = X_new(0, i);
         X_new2(1, i) = X_new(1, i);
@@ -1101,11 +1101,11 @@ namespace icl::cv {
       H *= 1.0/sc;
 
       // Extra normalization for some reasons...
-      DynMatrix<icl64f> dummy(3,9);
-      DynMatrix<icl64f> u1(1,3);
+      DynMatrix<icl64f> dummy = DynMatrix<icl64f>::create(9, 3);
+      DynMatrix<icl64f> u1 = DynMatrix<icl64f>::create(3, 1);
       u1[0] = H[0]; u1[1] = H[3]; u1[2] = H[6];
       u1 *= (1.0/u1.norm());
-      DynMatrix<icl64f> u2(1,3);
+      DynMatrix<icl64f> u2 = DynMatrix<icl64f>::create(3, 1);
       u2[0] = H[1]; u2[1] = H[4]; u2[2] = H[7];
       double u22 = (u1.transp()*u2)[0];
       u2[0] = u2[0]-u22*u1[0];
@@ -1115,7 +1115,7 @@ namespace icl::cv {
       u2[0] = u2[0]*n2; u2[1] = u2[1]*n2; u2[2] = u2[2]*n2;
 
       DynMatrix<icl64f> u3 = DynMatrix<icl64f>::cross(u1,u2);
-      DynMatrix<icl64f> RRR(3,3);
+      DynMatrix<icl64f> RRR = DynMatrix<icl64f>::create(3, 3);
       RRR[0] = u1[0]; RRR[1] = u2[0]; RRR[2] = u3[0];
       RRR[3] = u1[1]; RRR[4] = u2[1]; RRR[5] = u3[1];
       RRR[6] = u1[2]; RRR[7] = u2[2]; RRR[8] = u3[2];
@@ -1132,12 +1132,12 @@ namespace icl::cv {
 
   IntrinsicCalibrator::Result IntrinsicCalibrator::calibrate(const DynMatrix<icl64f> &impoints, const DynMatrix<icl64f> &worldpoints){
 
-    DynMatrix<icl64f> fc(1,2),cc(1,2),kc(5,1);
+    DynMatrix<icl64f> fc = DynMatrix<icl64f>::create(2, 1), cc = DynMatrix<icl64f>::create(2, 1), kc = DynMatrix<icl64f>::create(1, 5);
     double alpha_c = 0;
     init_intrinsic_param(impoints,worldpoints,fc,cc,kc,alpha_c);
 
-    DynMatrix<icl64f> omckk(1,3),Tckk(1,3),Rckk(3,3);
-    DynMatrix<icl64f> x(m_data->bSize,2);
+    DynMatrix<icl64f> omckk = DynMatrix<icl64f>::create(3, 1), Tckk = DynMatrix<icl64f>::create(3, 1), Rckk = DynMatrix<icl64f>::create(3, 3);
+    DynMatrix<icl64f> x = DynMatrix<icl64f>::create(2, m_data->bSize);
     int offset = 10;
     double *params = new double[offset+m_data->successes*6];
     params[0] = fc[0]; params[1] = fc[1];
@@ -1174,12 +1174,12 @@ namespace icl::cv {
     int MaxIter = 130;
     int iter = 0;
     double change = 1.0;
-    DynMatrix<icl64f> param(1,paramcount,params);
-    DynMatrix<icl64f> param_up(1,paramcount);
-    DynMatrix<icl64f> f(1,2);
-    DynMatrix<icl64f> c(1,2);
-    DynMatrix<icl64f> k(1,5);
-    DynMatrix<icl64f> kc_current(1,5);
+    DynMatrix<icl64f> param = DynMatrix<icl64f>::fromData(paramcount, 1, params);
+    DynMatrix<icl64f> param_up = DynMatrix<icl64f>::create(paramcount, 1);
+    DynMatrix<icl64f> f = DynMatrix<icl64f>::create(2, 1);
+    DynMatrix<icl64f> c = DynMatrix<icl64f>::create(2, 1);
+    DynMatrix<icl64f> k = DynMatrix<icl64f>::create(5, 1);
+    DynMatrix<icl64f> kc_current = DynMatrix<icl64f>::create(5, 1);
     double alpha_current = 0.0;
     double alpha = 0.0;
     double alpha_smooth = 0.1;
@@ -1199,12 +1199,12 @@ namespace icl::cv {
       k[3] = param[8];
       k[4] = param[9];
 
-      DynMatrix<icl64f> JJ3(offset+6*m_data->successes,offset+6*m_data->successes);
+      DynMatrix<icl64f> JJ3 = DynMatrix<icl64f>::create(offset+6*m_data->successes, offset+6*m_data->successes);
 
-      DynMatrix<icl64f> ex3(1,offset+6*m_data->successes);
+      DynMatrix<icl64f> ex3 = DynMatrix<icl64f>::create(offset+6*m_data->successes, 1);
 
-      DynMatrix<icl64f> omckk(1,3);
-      DynMatrix<icl64f> Tckk(1,3);
+      DynMatrix<icl64f> omckk = DynMatrix<icl64f>::create(3, 1);
+      DynMatrix<icl64f> Tckk = DynMatrix<icl64f>::create(3, 1);
       DynMatrix<icl64f> exkk;
       for(int kk=0;kk<m_data->successes;++kk){
         omckk[0] = param[offset+6*kk];
@@ -1216,20 +1216,20 @@ namespace icl::cv {
         Tckk[2] = param[offset+6*kk+5];
 
         //image coords
-        DynMatrix<icl64f> x_kk(m_data->bSize,2);
+        DynMatrix<icl64f> x_kk = DynMatrix<icl64f>::create(2, m_data->bSize);
         for(int i=0;i<m_data->bSize;++i){
           x_kk(0, i) = impoints(2*kk, i);
           x_kk(1, i) = impoints(2*kk+1, i);
         }
 
-        DynMatrix<icl64f> x(m_data->bSize,2), dxdom(3,2*m_data->bSize), dxdT(3,2*m_data->bSize),
-        dxdf(2,2*m_data->bSize), dxdc(2,2*m_data->bSize), dxdk(5,2*m_data->bSize), dxdalpha(1,2*m_data->bSize);
+        DynMatrix<icl64f> x = DynMatrix<icl64f>::create(2, m_data->bSize), dxdom = DynMatrix<icl64f>::create(2*m_data->bSize,3), dxdT = DynMatrix<icl64f>::create(2*m_data->bSize,3),
+        dxdf = DynMatrix<icl64f>::create(2*m_data->bSize,2), dxdc = DynMatrix<icl64f>::create(2*m_data->bSize,2), dxdk = DynMatrix<icl64f>::create(2*m_data->bSize,5), dxdalpha = DynMatrix<icl64f>::create(2*m_data->bSize,1);
 
         project_points2(X_kk,omckk,Tckk,f,c,k,alpha,   x,dxdom,dxdT,dxdf,dxdc,dxdk,dxdalpha);
 
         exkk = x_kk - x;
 
-        DynMatrix<icl64f> A(2*m_data->bSize,10);
+        DynMatrix<icl64f> A = DynMatrix<icl64f>::create(10, 2*m_data->bSize);
         for(int i=0;i<(2*m_data->bSize);++i){
           A(0, i) = dxdf(i, 0);
           A(1, i) = dxdf(i, 1);
@@ -1243,7 +1243,7 @@ namespace icl::cv {
           A(9, i) = dxdk(i, 4);
         }
 
-        DynMatrix<icl64f> B(2*m_data->bSize,6);
+        DynMatrix<icl64f> B = DynMatrix<icl64f>::create(6, 2*m_data->bSize);
         for(int i=0;i<(2*m_data->bSize);++i){
           B(0, i) = dxdom(i, 0);
           B(1, i) = dxdom(i, 1);
@@ -1281,7 +1281,7 @@ namespace icl::cv {
           }
         }
 
-        DynMatrix<icl64f> exkk2(1,2*exkk.cols());
+        DynMatrix<icl64f> exkk2 = DynMatrix<icl64f>::create(2*exkk.cols(), 1);
         for(unsigned int i=0;i<exkk.cols();++i){
           exkk2[2*i] = exkk(0, i);
           exkk2[2*i+1] = exkk(1, i);
@@ -1318,10 +1318,10 @@ namespace icl::cv {
         param[i] = param_up[i];
 
       //New intrinsic parameters:
-      DynMatrix<icl64f> fc_current(1,2);
+      DynMatrix<icl64f> fc_current = DynMatrix<icl64f>::create(2, 1);
       fc_current[0] = param[0];
       fc_current[1] = param[1];
-      DynMatrix<icl64f> cc_current(1,2);
+      DynMatrix<icl64f> cc_current = DynMatrix<icl64f>::create(2, 1);
       cc_current[0] = param[2];
       cc_current[1] = param[3];
 
@@ -1333,13 +1333,13 @@ namespace icl::cv {
       kc_current[4] = param[9];
 
       //Change on the intrinsic parameters:
-      DynMatrix<icl64f> mat(1,4);
+      DynMatrix<icl64f> mat = DynMatrix<icl64f>::create(4, 1);
       mat[0] = fc_current[0];
       mat[1] = fc_current[1];
       mat[2] = cc_current[0];
       mat[3] = cc_current[1];
 
-      DynMatrix<icl64f> mat2(1,4);
+      DynMatrix<icl64f> mat2 = DynMatrix<icl64f>::create(4, 1);
       mat2[0] = f[0];
       mat2[1] = f[1];
       mat2[2] = c[0];
@@ -1355,23 +1355,23 @@ namespace icl::cv {
         int MaxIter2 = 20;
         for (int kk=0;kk<m_data->successes;++kk){
 
-          DynMatrix<icl64f> omc_current(1,3);
+          DynMatrix<icl64f> omc_current = DynMatrix<icl64f>::create(3, 1);
           omc_current[0] = param[offset+6*kk];
           omc_current[1] = param[offset+6*kk+1];
           omc_current[2] = param[offset+6*kk+2];
 
-          DynMatrix<icl64f> Tc_current(1,3);
+          DynMatrix<icl64f> Tc_current = DynMatrix<icl64f>::create(3, 1);
           Tc_current[0] = param[offset+6*kk+3];
           Tc_current[1] = param[offset+6*kk+4];
           Tc_current[2] = param[offset+6*kk+5];
 
-          DynMatrix<icl64f> Rckk(3,3);
-          DynMatrix<icl64f> x_kk(m_data->bSize,2);
+          DynMatrix<icl64f> Rckk = DynMatrix<icl64f>::create(3, 3);
+          DynMatrix<icl64f> x_kk = DynMatrix<icl64f>::create(2, m_data->bSize);
           for(int i=0;i<m_data->bSize;++i){
             x_kk(0, i) = impoints(2*kk, i);
             x_kk(1, i) = impoints(2*kk+1, i);
           }
-          DynMatrix<icl64f> omckk(1,3),Tckk(1,3),JJ_kk(6,2*m_data->bSize);
+          DynMatrix<icl64f> omckk = DynMatrix<icl64f>::create(3, 1), Tckk = DynMatrix<icl64f>::create(3, 1), JJ_kk = DynMatrix<icl64f>::create(2*m_data->bSize, 6);
           compute_extrinsic_init(x_kk,X_kk,fc_current,cc_current,kc_current,alpha_current,
                                  omc_current,Tc_current,Rckk);
 
@@ -1437,9 +1437,9 @@ namespace icl::cv {
     m_data->bHeight = boardHeight;
     m_data->bSize = m_data->bWidth * m_data->bHeight;
     delete m_data->intrinsic_matrix;
-    m_data->intrinsic_matrix = new DynMatrix<icl64f>(3, 3);
+    m_data->intrinsic_matrix = new DynMatrix<icl64f>(DynMatrix<icl64f>::create(3, 3));
     delete m_data->distortion_coeffs;
-    m_data->distortion_coeffs = new DynMatrix<icl64f>(1, 5);
+    m_data->distortion_coeffs = new DynMatrix<icl64f>(DynMatrix<icl64f>::create(5, 1));
     m_data->successes = boardCount;
     m_data->nx = imageWidth;
     m_data->ny = imageHeight;
@@ -1452,7 +1452,7 @@ namespace icl::cv {
     int h = data.data[0].getHeight();
     int n = data.data.size();
     int d = data.data[0].getDim();
-    DynMatrix<icl64f> I(d,n*2), W(d,3);
+    DynMatrix<icl64f> I = DynMatrix<icl64f>::create(n*2, d), W = DynMatrix<icl64f>::create(3, d);
 
     IntrinsicCalibrator calib(w,h,n, data.imageSize.width, data.imageSize.height);
     //for all grids

@@ -781,7 +781,7 @@ void Segmentation3D::calculateCutfreeMatrix() {
 void Segmentation3D::greedyComposition() {
 	DynMatrixBase<bool> combinable = DynMatrixBase<bool>(cluster.size(), cluster.size(),
 			false);
-	probabilities = DynMatrix<float>(cluster.size(), cluster.size(), 0.0);
+	probabilities = DynMatrix<float>::create(cluster.size(), cluster.size(), 0.0);
 	for (unsigned int a = 0; a < cutfree.cols(); a++) {
 		for (unsigned int b = a; b < cutfree.cols(); b++) {
 			if (a == b) {

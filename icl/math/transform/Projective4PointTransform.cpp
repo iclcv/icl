@@ -11,7 +11,7 @@ namespace icl{
 
      static Mat3 create_mapping_matrix(const Point32f &a, const Point32f &b,
                                               const Point32f &c, const Point32f &d){
-        DynMatrix<float> M(3,3), B(1,3);
+        DynMatrix<float> M = DynMatrix<float>::create(3, 3), B = DynMatrix<float>::create(3, 1);
         M(0, 0) = a.x;
         M(0, 1) = b.x;
         M(0, 2) = c.x;

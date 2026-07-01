@@ -151,8 +151,8 @@ void run(){
     fDataSamples[i] = Point32f(x,fx);
   }
   /// try polynomial regression here!
-  DynMatrix<float> X(fDataSamples.size(), 5);
-  DynMatrix<float> Y(fDataSamples.size(), 1);
+  DynMatrix<float> X = DynMatrix<float>::create(5, fDataSamples.size());
+  DynMatrix<float> Y = DynMatrix<float>::create(1, fDataSamples.size());
 
   for(size_t i=0;i<fDataSamples.size();++i){
     const float x = fDataSamples[i].x, y = fDataSamples[i].y;

@@ -27,6 +27,13 @@ namespace icl::math {
   template<> inline FixedColVector<float,3> create_zero_vector(int dim){
     return FixedColVector<float,3>(0.0f);
   }
+  // DynMatrix has no (dim,value) ctor (the generic path); a zero "vector" is dim x 1.
+  template<> inline DynMatrix<float> create_zero_vector(int dim){
+    return DynMatrix<float>::create(dim, 1, 0.0f);
+  }
+  template<> inline DynMatrix<double> create_zero_vector(int dim){
+    return DynMatrix<double>::create(dim, 1, 0.0);
+  }
 
   template<class Vector>
   static inline unsigned int vdim(const Vector &v){ return v.dim(); }

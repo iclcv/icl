@@ -591,7 +591,7 @@ namespace icl::geom {
 
 
     std::vector<int> SegmenterUtils::calculateLabelReassignment(int countCur, int countLast, core::Channel32s &labelImageC, core::Channel32s &lastLabelImageC, utils::Size size){
-      math::DynMatrix<int> assignmentMatrix(countCur,countLast,0);
+      math::DynMatrix<int> assignmentMatrix = math::DynMatrix<int>::create(countLast, countCur, 0);
       std::vector<int> lastNum(countLast,0);
       std::vector<int> curNum(countCur,0);
       std::vector<int> curAss(countCur,0);
@@ -666,7 +666,7 @@ namespace icl::geom {
       #ifdef ICL_HAVE_OPENCL
         utils::Size s = labelImage.getSize();
         math::DynMatrixBase<bool> neighbours(numSurfaces,numSurfaces,false);
-        math::DynMatrix<unsigned char> neighboursC(numSurfaces,numSurfaces,static_cast<unsigned char>(0));
+        math::DynMatrix<unsigned char> neighboursC = math::DynMatrix<unsigned char>::create(numSurfaces, numSurfaces, static_cast<unsigned char>(0));
         if(s!=m_data->size || m_data->kernelPointAssignmentInitialized==false){//reinit
 	        m_data->size = s;
 	        int w = s.width;

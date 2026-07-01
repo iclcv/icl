@@ -312,7 +312,7 @@ namespace icl::geom {
 
     int n = static_cast<int>(Xws.size());
 
-    DynMatrix<double> M(12,2*n);
+    DynMatrix<double> M = DynMatrix<double>::create(2*n, 12);
     for(int i=0;i<n;++i){
       double x = Xws[i].x, y = Xws[i].y, z = Xws[i].z, u = xis[i].x, v = xis[i].y;
       double du = px-u, dv = py-v;
@@ -437,7 +437,7 @@ namespace icl::geom {
         //lma.setDebugCallback();
 
         int n = static_cast<int>(Xws.size());
-        mat xs(3,n), ys(2,n);
+        mat xs = mat::create(n,3), ys = mat::create(n,2);
         for(int i=0;i<n;++i){
           xs(i, 0) = Xws[i].x;
           xs(i, 1) = Xws[i].y;
@@ -469,13 +469,13 @@ namespace icl::geom {
 
     int N = static_cast<int>(Xws.size());
 
-    DynMatrix<double> U(1,2*N);
+    DynMatrix<double> U = DynMatrix<double>::create(2*N, 1);
     for(int i=0;i<N;++i){
       U[2*i] = xis[i].x;
       U[2*i+1] = xis[i].y;
     }
 
-    DynMatrix<double> B(11,2*N);
+    DynMatrix<double> B = DynMatrix<double>::create(2*N, 11);
     for(int i=0;i<N;++i){
       float x=Xws[i][0], y=Xws[i][1],z=Xws[i][2], u=-xis[i].x,v=-xis[i].y;
       float r1[11] = {x,y,z,1,0,0,0,0,u*x,u*y,u*z};
@@ -506,7 +506,7 @@ namespace icl::geom {
     checkAndFixPoints(Xws,xis);
 
     unsigned int n = Xws.size();
-    DynMatrix<icl32f> A(12,2*n);
+    DynMatrix<icl32f> A = DynMatrix<icl32f>::create(2*n, 12);
 
     for (unsigned int k=0; k<n; ++k) {
       int i = 2*k;
@@ -729,7 +729,7 @@ namespace icl::geom {
     int K = static_cast<int>(cams.size());
     ICLASSERT_THROW(K > 1,ICLException("Camera::estimate_3D_internal: 3D point estimation needs at least 2 views"));
 
-    DynMatrix<float> A(3,2*K), B(1,2*K);
+    DynMatrix<float> A = DynMatrix<float>::create(2*K, 3), B = DynMatrix<float>::create(2*K, 1);
 
     for(int i=0;i<K;++i){
       const float &u = ps[i].x;
@@ -840,7 +840,7 @@ namespace icl::geom {
     }
 #endif
 
-    DynMatrix<float> A(4,K*3);
+    DynMatrix<float> A = DynMatrix<float>::create(K*3, 4);
     for(int k=0;k<K;++k){
       FixedMatrix<icl32f,4,3> m = contr_eps(FixedMatrix<icl32f,1,3>(u[k][0],u[k][1],1))*P[k];
       for(unsigned int y=0;y<3;++y){
@@ -854,11 +854,11 @@ namespace icl::geom {
     svd_dyn(A,_U,_s,V);
 
     // search eigenvector to lowest eigenvalue
-    DynMatrix<float> X(1,V.rows());
+    DynMatrix<float> X = DynMatrix<float>::create(V.rows(), 1);
     X = V.col(V.cols()-1);
 
     // create matrix with all 3rd rows of the camera matrices
-    DynMatrix<float> M(4,K);
+    DynMatrix<float> M = DynMatrix<float>::create(K, 4);
     for(int k=0;k<K;++k){
       std::copy(P[k].row_begin(2),P[k].row_end(2),M.row_begin(k));
     }

@@ -64,8 +64,8 @@ void run(){
   URand rx(-3, 3);
   GRand noise(0, noiseLevel);
 
-  Matrix xs(1, N);
-  Matrix ys(1, N);
+  Matrix xs = Matrix::create(N, 1);
+  Matrix ys = Matrix::create(N, 1);
   std::vector<Point32f> dataPts(N);
   for(int i = 0; i < N; ++i){
     float x = rx;
@@ -78,7 +78,7 @@ void run(){
   const Reg::Result &result = reg.apply(xs, ys);
 
   constexpr int gridN = 200;
-  Matrix gxs(1, gridN);
+  Matrix gxs = Matrix::create(gridN, 1);
   for(int i = 0; i < gridN; ++i) gxs[i] = -3.0f + 6.0f * i / (gridN-1);
   const Matrix &gys = result(gxs);
 

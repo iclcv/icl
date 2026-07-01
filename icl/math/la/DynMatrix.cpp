@@ -41,7 +41,7 @@ namespace icl::math {
 
   template<class T>
   DynMatrix<T> DynMatrix<T>::operator*(T f) const{
-    DynMatrix dst(cols(),rows());
+    DynMatrix dst = DynMatrix::create(rows(), cols());
     return mult(f,dst);
   }
   template<class T>
@@ -62,13 +62,13 @@ namespace icl::math {
 
   template<class T>
   DynMatrix<T> DynMatrix<T>::operator+(const T &t) const{
-    DynMatrix d(cols(),rows());
+    DynMatrix d = DynMatrix::create(rows(), cols());
     BlasOps<T>::vsadd(begin(), t, d.begin(), dim());
     return d;
   }
   template<class T>
   DynMatrix<T> DynMatrix<T>::operator-(const T &t) const{
-    DynMatrix d(cols(),rows());
+    DynMatrix d = DynMatrix::create(rows(), cols());
     T neg = -t;
     BlasOps<T>::vsadd(begin(), neg, d.begin(), dim());
     return d;
@@ -91,7 +91,7 @@ namespace icl::math {
 
   template<class T>
   DynMatrix<T> DynMatrix<T>::operator*(const DynMatrix &m) const{
-    DynMatrix d(m.cols(),rows());
+    DynMatrix d = DynMatrix::create(rows(), m.cols());
     return mult(m,d);
   }
   template<class T>
@@ -110,14 +110,14 @@ namespace icl::math {
   template<class T>
   DynMatrix<T> DynMatrix<T>::operator+(const DynMatrix &m) const{
     if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A+B size(A) must be size(B)");
-    DynMatrix d(cols(),rows());
+    DynMatrix d = DynMatrix::create(rows(), cols());
     BlasOps<T>::vadd(begin(), m.begin(), d.begin(), dim());
     return d;
   }
   template<class T>
   DynMatrix<T> DynMatrix<T>::operator-(const DynMatrix &m) const{
     if(cols() != m.cols() || rows() != m.rows()) throw IncompatibleMatrixDimensionException("A-B size(A) must be size(B)");
-    DynMatrix d(cols(),rows());
+    DynMatrix d = DynMatrix::create(rows(), cols());
     BlasOps<T>::vsub(begin(), m.begin(), d.begin(), dim());
     return d;
   }
@@ -147,7 +147,7 @@ namespace icl::math {
   }
   template<class T>
   DynMatrix<T> DynMatrix<T>::elementwise_mult(const DynMatrix &m) const{
-    DynMatrix dst(cols(),rows());
+    DynMatrix dst = DynMatrix::create(rows(), cols());
     return elementwise_mult(m,dst);
   }
   template<class T>
@@ -159,7 +159,7 @@ namespace icl::math {
   }
   template<class T>
   DynMatrix<T> DynMatrix<T>::elementwise_div(const DynMatrix &m) const{
-    DynMatrix dst(cols(),rows());
+    DynMatrix dst = DynMatrix::create(rows(), cols());
     return elementwise_div(m,dst);
   }
 
@@ -188,7 +188,7 @@ namespace icl::math {
 
   template<class T>
   DynMatrix<T> DynMatrix<T>::transp() const{
-    DynMatrix d(rows(),cols());
+    DynMatrix d = DynMatrix::create(cols(), rows());
     for(unsigned int x=0;x<cols();++x)
       for(unsigned int y=0;y<rows();++y)
         d(x, y) = (*this)(y, x);
@@ -208,7 +208,7 @@ namespace icl::math {
   template<class T>
   DynMatrix<T> DynMatrix<T>::diag() const{
     ICLASSERT_RETURN_VAL(cols()==rows(),DynMatrix<T>());
-    DynMatrix<T> d(1,rows());
+    DynMatrix<T> d = DynMatrix<T>::create(rows(), 1);
     for(unsigned int i=0;i<rows();++i) d[i] = (*this)(i, i);
     return d;
   }
@@ -224,7 +224,7 @@ namespace icl::math {
   template<class T>
   DynMatrix<T> DynMatrix<T>::cross(const DynMatrix<T> &x, const DynMatrix<T> &y){
     if(x.cols()==1 && y.cols()==1 && x.rows()==3 && y.rows()==3){
-      DynMatrix<T> r(1,x.rows());
+      DynMatrix<T> r = DynMatrix<T>::create(x.rows(), 1);
       r(0, 0) = x(1, 0)*y(2, 0)-x(2, 0)*y(1, 0);
       r(1, 0) = x(2, 0)*y(0, 0)-x(0, 0)*y(2, 0);
       r(2, 0) = x(0, 0)*y(1, 0)-x(1, 0)*y(0, 0);
@@ -269,7 +269,7 @@ namespace icl::math {
         .template getSelector<typename LapackOps<T>::GetriSig>(LapackOp::getri)
         .resolveOrThrow();
 
-    DynMatrix<T> A(n, n);
+    DynMatrix<T> A = DynMatrix<T>::create(n, n);
     std::copy(begin(), end(), A.begin());
     std::vector<int> ipiv(n);
 
@@ -318,7 +318,7 @@ namespace icl::math {
             .template getSelector<typename LapackOps<T>::GetrfSig>(LapackOp::getrf)
             .resolveOrThrow();
 
-        DynMatrix<T> A(order, order);
+        DynMatrix<T> A = DynMatrix<T>::create(order, order);
         std::copy(begin(), end(), A.begin());
         std::vector<int> ipiv(order);
 
@@ -348,7 +348,7 @@ namespace icl::math {
         .resolveOrThrow();
 
     // Copy input to working buffer (row-major, lda = n)
-    DynMatrix<T> A(n, m);
+    DynMatrix<T> A = DynMatrix<T>::create(m, n);
     std::copy(begin(), end(), A.begin());
     std::vector<T> tau(mn);
 
@@ -373,7 +373,7 @@ namespace icl::math {
   template<class T>
   void DynMatrix<T>::decompose_RQ(DynMatrix<T> &R, DynMatrix<T> &Q) const {
    // first reverse the rows of A and transpose it
-    DynMatrix<T> A_(rows(),cols());
+    DynMatrix<T> A_ = DynMatrix<T>::create(cols(), rows());
     for (unsigned int i = 0; i<rows(); i++){
       for (unsigned int j = 0; j<rows(); j++){
         A_(j, i) = (*this)(rows()-i-1, j);
@@ -381,8 +381,8 @@ namespace icl::math {
     }
 
     // get the QR-decomposition
-    DynMatrix<T> R_(rows(),rows());
-    DynMatrix<T> Q_(rows(),rows());
+    DynMatrix<T> R_ = DynMatrix<T>::create(rows(), rows());
+    DynMatrix<T> Q_ = DynMatrix<T>::create(rows(), rows());
     A_.decompose_QR(Q_,R_);
 
 
@@ -437,7 +437,7 @@ namespace icl::math {
         .resolveOrThrow();
 
     // Copy input (getrf overwrites)
-    DynMatrix<T> A(n, m);
+    DynMatrix<T> A = DynMatrix<T>::create(m, n);
     std::copy(begin(), end(), A.begin());
     std::vector<int> ipiv(mn);
 
@@ -470,12 +470,12 @@ namespace icl::math {
         .resolveOrThrow();
 
     // Copy A (gelsd overwrites)
-    DynMatrix<T> A(n, m);
+    DynMatrix<T> A = DynMatrix<T>::create(m, n);
     std::copy(begin(), end(), A.begin());
 
     // B must be max(M,N)×NRHS; copy b into it
     int mx = std::max(m, n);
-    DynMatrix<T> B(nrhs, mx, T(0));
+    DynMatrix<T> B = DynMatrix<T>::create(mx, nrhs, T(0));
     for(int i = 0; i < m; i++)
       for(int j = 0; j < nrhs; j++)
         B(i, j) = b(i, j);
@@ -489,7 +489,7 @@ namespace icl::math {
     ICLASSERT_THROW(info == 0, ICLException("solve failed (gelsd info=" + str(info) + ")"));
 
     // Solution is in first N rows of B
-    DynMatrix<T> x(nrhs, n);
+    DynMatrix<T> x = DynMatrix<T>::create(n, nrhs);
     for(int i = 0; i < n; i++)
       for(int j = 0; j < nrhs; j++)
         x(i, j) = B(i, j);
@@ -516,24 +516,24 @@ namespace icl::math {
 
     DynMatrix<T> matrixCopy(*this);
     std::vector<T> S(mn);
-    DynMatrix<T> U(mn, r);
-    DynMatrix<T> Vt(c, mn);
+    DynMatrix<T> U = DynMatrix<T>::create(r, mn);
+    DynMatrix<T> Vt = DynMatrix<T>::create(mn, c);
 
     int info = svdImpl->apply('S', r, c, matrixCopy.begin(), c,
                                S.data(), U.begin(), mn, Vt.begin(), c);
     ICLASSERT_THROW(info == 0, ICLException("SVD failed in pinv (info=" + str(info) + ")"));
 
-    DynMatrix<T> Sinv(mn, mn, T(0));
+    DynMatrix<T> Sinv = DynMatrix<T>::create(mn, mn, T(0));
     for(int i = 0; i < mn; ++i)
       Sinv(i, i) = (std::fabs(S[i]) > zeroThreshold) ? T(1) / S[i] : T(0);
 
     // pseudoInverse = Vt^T * Sinv * U^T
-    DynMatrix<T> temp(mn, c);
+    DynMatrix<T> temp = DynMatrix<T>::create(c, mn);
     gemmImpl->apply(true, false, c, mn, mn, T(1),
                      Vt.begin(), c, Sinv.begin(), mn,
                      T(0), temp.begin(), mn);
 
-    DynMatrix<T> pseudoInverse(r, c);
+    DynMatrix<T> pseudoInverse = DynMatrix<T>::create(c, r);
     gemmImpl->apply(false, true, c, r, mn, T(1),
                      temp.begin(), mn, U.begin(), mn,
                      T(0), pseudoInverse.begin(), r);
@@ -557,7 +557,7 @@ namespace icl::math {
         .resolveOrThrow();
 
     // syev overwrites A with eigenvectors — copy input
-    DynMatrix<T> A(n, n);
+    DynMatrix<T> A = DynMatrix<T>::create(n, n);
     std::copy(begin(), end(), A.begin());
     int info = impl->apply('V', n, A.data(), n, eigenvalues.begin());
     if(info != 0) {
@@ -579,7 +579,7 @@ namespace icl::math {
 
   template<class T>
   DynMatrix<T> DynMatrix<T>::id(unsigned int dim) {
-    DynMatrix M(dim, dim, T(0));
+    DynMatrix M = DynMatrix::create(dim, dim, T(0));
     for(unsigned int i = 0; i < dim; ++i) M(i, i) = 1;
     return M;
   }
@@ -590,7 +590,7 @@ namespace icl::math {
 
   template<class T>
   DynMatrix<T>::DynMatrix(const typename DynMatrix<T>::DynMatrixColumn &column) :
-  DynMatrixBase<T>(1, column.dim()){
+  DynMatrixBase<T>(column.dim(), 1){
     std::copy(column.begin(), column.end(), this->begin());
   }
 
@@ -669,7 +669,7 @@ namespace icl::math {
   DynMatrix<T> operator,(const DynMatrix<T> &left, const DynMatrix<T> &right){
     int w = left.cols() + right.cols();
     int h = iclMax(left.rows(),right.rows());
-    DynMatrix<T> result(w,h,T(0));
+    DynMatrix<T> result = DynMatrix<T>::create(h, w, T(0));
     for(unsigned int y=0;y<left.rows();++y)
       std::copy(left.row_begin(y), left.row_end(y), result.row_begin(y));
     for(unsigned int y=0;y<right.rows();++y)
@@ -681,7 +681,7 @@ namespace icl::math {
   DynMatrix<T> operator%(const DynMatrix<T> &top, const DynMatrix<T> &bottom){
     int w = iclMax(top.cols(),bottom.cols());
     int h = top.rows() + bottom.rows();
-    DynMatrix<T> result(w,h,T(0));
+    DynMatrix<T> result = DynMatrix<T>::create(h, w, T(0));
     for(unsigned int y=0;y<top.rows();++y)
       std::copy(top.row_begin(y), top.row_end(y), result.row_begin(y));
     for(unsigned int y=0;y<bottom.rows();++y)
@@ -772,7 +772,7 @@ namespace icl::math {
       std::copy(v.begin(),v.end(),std::back_inserter(data));
     }
     if(!lineLen) throw ICLException("DynMatrix::loadCSV: no data found in file ' " + filename + '\'');
-    DynMatrix<T> M(lineLen,data.size()/lineLen, data.data());
+    DynMatrix<T> M = DynMatrix<T>::fromData(data.size()/lineLen, lineLen, data.data());
     return M;
   }
 

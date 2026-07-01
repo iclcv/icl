@@ -18,9 +18,28 @@ namespace icl::math {
   template<class T>
   struct DynMatrix : public DynMatrixBase<T>{
 
-    // Inherit all base constructors
-    using DynMatrixBase<T>::DynMatrixBase;
+    // Dimension order is (rows, cols) — matching the (row,col) element accessors.
+    DynMatrix() = default;
+    DynMatrix(const DynMatrix &other) = default;
+    DynMatrix(DynMatrix &&other) = default;   // moves the buffer (preserves shallow wraps)
+    // copy-assign restored (declaring a move ctor deletes the implicit one). NOTE: no
+    // move-assign — `view = rvalue` must go through the base's deep-into-existing
+    // operator= so write-through shallow views keep working.
+    DynMatrix &operator=(const DynMatrix &other) = default;
     using DynMatrixBase<T>::operator=;
+
+    /// allocate a rows x cols matrix (optionally filled with \a init)
+    DynMatrix(unsigned int rows, unsigned int cols, const T &init=T(0)) : DynMatrixBase<T>(rows,cols,init){}
+    /// wrap (deepCopy=false → shallow view) or copy existing data into a rows x cols matrix
+    DynMatrix(unsigned int rows, unsigned int cols, T *data, bool deepCopy=true) : DynMatrixBase<T>(rows,cols,data,deepCopy){}
+    /// copy existing const data into a rows x cols matrix
+    DynMatrix(unsigned int rows, unsigned int cols, const T *data) : DynMatrixBase<T>(rows,cols,data){}
+
+    /// self-documenting alias for the (rows,cols[,init]) constructor
+    static DynMatrix create(unsigned int rows, unsigned int cols, const T &init=T(0)){ return DynMatrix(rows,cols,init); }
+    /// self-documenting alias for the (rows,cols,data) constructors
+    static DynMatrix fromData(unsigned int rows, unsigned int cols, T *data, bool deepCopy=true){ return DynMatrix(rows,cols,data,deepCopy); }
+    static DynMatrix fromData(unsigned int rows, unsigned int cols, const T *data){ return DynMatrix(rows,cols,data); }
 
     // Make base members accessible without this-> in templates
     using DynMatrixBase<T>::m_rows;
@@ -187,11 +206,11 @@ namespace icl::math {
     /// Extracts a shallow copied matrix row
     inline DynMatrix row(int row){
       row_check(row);
-      return DynMatrix(m_cols,1,row_begin(row),false);
+      return DynMatrix<T>::fromData(1,m_cols,row_begin(row),false);
     }
     inline const DynMatrix row(int row) const{
       row_check(row);
-      return DynMatrix(m_cols,1,const_cast<T*>(row_begin(row)),false);
+      return DynMatrix<T>::fromData(1,m_cols,const_cast<T*>(row_begin(row)),false);
     }
 
     /// Extracts a shallow copied matrix column
@@ -204,10 +223,10 @@ namespace icl::math {
 
     /// returns a shallow transposed copy (dimensions swapped, data not re-arranged)
     inline const DynMatrix<T> shallowTransposed() const{
-      return DynMatrix<T>(m_rows,m_cols,const_cast<T*>(m_data),false);
+      return DynMatrix<T>::fromData(m_cols,m_rows,const_cast<T*>(m_data),false);
     }
     inline DynMatrix<T> shallowTransposed() {
-      return DynMatrix<T>(m_rows,m_cols,const_cast<T*>(m_data),false);
+      return DynMatrix<T>::fromData(m_cols,m_rows,const_cast<T*>(m_data),false);
     }
 
     /// creates a dim-D identity Matrix

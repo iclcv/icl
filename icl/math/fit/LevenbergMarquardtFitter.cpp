@@ -480,9 +480,9 @@ namespace icl::math {
         Vector p = params;
         for(unsigned int i=0;i<params.dim();++i){
           p[i] = params[i] + delta/2;
-          Matrix f1(x.cols(), 1, f(p,x).row_begin(o));
+          Matrix f1 = Matrix::fromData(1, x.cols(), f(p,x).row_begin(o));
           p[i] = params[i] - delta/2;
-          Matrix f2(x.cols(), 1, f(p,x).row_begin(o));
+          Matrix f2 = Matrix::fromData(1, x.cols(), f(p,x).row_begin(o));
           p[i] = params[i];
           target.row(i) = (( f1 - f2 ) / delta);
         }
@@ -533,7 +533,7 @@ namespace icl::math {
   typename LevenbergMarquardtFitter<Scalar>::Data
   LevenbergMarquardtFitter<Scalar>::create_data(const Params &p, Function f, int xDim, int yDim, int num, Scalar minX, Scalar maxX){
     URand r(minX,maxX);
-    Data data = { Matrix(xDim,num), Matrix(yDim, num) };
+    Data data = { Matrix::create(num,xDim), Matrix::create(num,yDim) };
     for(int i=0;i<num;++i){
       std::fill(data.x.row_begin(i), data.x.row_end(i), r);
       Vector yi(yDim, data.y.row_begin(i), false);

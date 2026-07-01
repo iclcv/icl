@@ -28,7 +28,7 @@ namespace icl{
       const float e1 = p[0];
       const float e2 = p[1];
 
-      LM::Matrix My(Mx.cols(), 1);
+      LM::Matrix My = LM::Matrix::create(1, Mx.cols());
 
       const float *it0 = Mx.row_begin(0);
       const float *it1 = Mx.row_begin(1);
@@ -52,8 +52,8 @@ namespace icl{
       const float e1 = shape[0];
       const float e2 = shape[1];
 
-      LM::Matrix My(Mx.cols(), 1);
-      LM::Matrix A(Mx.cols(), 4, 1.0);
+      LM::Matrix My = LM::Matrix::create(1, Mx.cols());
+      LM::Matrix A = LM::Matrix::create(4, Mx.cols(), 1.0);
       std::copy(Mx.begin(), Mx.end(), A.begin());
 
       A = create_hom_4x4<float>(p[0], p[1], p[2],
@@ -102,7 +102,7 @@ namespace icl{
       }
 
       // matrix of central moments
-      LM::Matrix M(3,3,0.0f);
+      LM::Matrix M = LM::Matrix::create(3, 3, 0.0f);
 
       for (int i = 0; i < cols; ++i) {
         M(0, 0) += Mx(0, i)*Mx(0, i);
@@ -205,7 +205,7 @@ namespace icl{
 
 
       // the following calculation are always the same for the error function
-      LM::Matrix A(xyzM.cols(), 4, 1.0);
+      LM::Matrix A = LM::Matrix::create(4, xyzM.cols(), 1.0);
       std::copy(xyzM.begin(), xyzM.end(), A.begin());
 
       A = create_hom_4x4<float>(euler[0], euler[1], euler[2],
@@ -219,7 +219,7 @@ namespace icl{
       for (float *it = A.row_begin(2); it != A.row_end(2); ++it) *it = fabs(*it)*a2;
 
       // try to improve the shape paremeter using Levenberg-Marquardt
-      LM::Result result = shapeLM.fit(A, LM::Matrix(1,xyzM.cols(),0.0f), p);
+      LM::Result result = shapeLM.fit(A, LM::Matrix::create(xyzM.cols(),1,0.0f), p);
 
       return result;
     }
@@ -282,7 +282,7 @@ namespace icl{
       // calculate position and euler parameters
       ePError.size  = bestParams.size;
       ePError.shape = bestParams.shape;
-      LM::Result result = eulerPosLM.fit(Mx, LM::Matrix(1,Mx.cols(),0.0f), p);
+      LM::Result result = eulerPosLM.fit(Mx, LM::Matrix::create(Mx.cols(),1,0.0f), p);
 
 
       scale = 1.0f/scale;
@@ -332,7 +332,7 @@ namespace icl{
       }
 
       size_t N = pcObj.getDim();
-      LM::Matrix Mx(iclMin(N,maxN),3);
+      LM::Matrix Mx = LM::Matrix::create(3, iclMin(N,maxN));
       core::DataSegment<float,3> xyz = pcObj.selectXYZ();
 
       // get points from the point cloud

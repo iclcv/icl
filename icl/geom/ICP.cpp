@@ -8,7 +8,7 @@ using namespace icl::utils;
 using namespace icl::math;
 
 namespace icl::geom {
-  ICP::Result::Result():rotation(3,3),translation(1,3),error(0.1){}
+  ICP::Result::Result():rotation(DynMatrix<icl64f>::create(3,3)),translation(DynMatrix<icl64f>::create(3,1)),error(0.1){}
 
   ICP::ICP(std::vector<DynMatrix<icl64f> > &model) {
     kdt.buildTree(model);
@@ -24,19 +24,19 @@ namespace icl::geom {
 
   const ICP::Result &ICP::apply(const std::vector<DynMatrix<icl64f>* > &pointlist){
     FixedMatrix<icl32f,4,4> mat;
-    DynMatrix<icl64f> mat3(4,4);
-    DynMatrix<icl32f> XsD(pointlist.size(),3),YsD(pointlist.size(),3);
+    DynMatrix<icl64f> mat3 = DynMatrix<icl64f>::create(4, 4);
+    DynMatrix<icl32f> XsD = DynMatrix<icl32f>::create(3, pointlist.size()), YsD = DynMatrix<icl32f>::create(3, pointlist.size());
     double eye[] = {1.0, 0.0, 0.0, 0.0,
                     0.0, 1.0, 0.0, 0.0,
                     0.0, 0.0, 1.0, 0.0,
                     0.0, 0.0, 0.0, 1.0};
-    DynMatrix<icl64f> mat2(4,4,eye);
-    DynMatrix<icl64f> temp(4,4);
+    DynMatrix<icl64f> mat2 = DynMatrix<icl64f>::fromData(4, 4, eye);
+    DynMatrix<icl64f> temp = DynMatrix<icl64f>::create(4, 4);
     double cerror = 0.0;
     std::vector<DynMatrix<icl64f>* > np;
     std::vector<DynMatrix<icl64f>* > lpointlist;
     for(unsigned int i=0;i<pointlist.size();++i){
-      lpointlist.push_back(new DynMatrix<icl64f>(pointlist.at(0)->cols(),pointlist.at(0)->rows(),pointlist.at(i)->data(),true));
+      lpointlist.push_back(new DynMatrix<icl64f>(DynMatrix<icl64f>::fromData(pointlist.at(0)->rows(),pointlist.at(0)->cols(),pointlist.at(i)->data(),true)));
     }
     do{
       np.clear();
@@ -65,7 +65,7 @@ namespace icl::geom {
       //SHOW(*(lpointlist[0]));
       // Transform each point: p' = R*p + t (in-place, no heap allocations)
       {
-        DynMatrix<icl64f> tmp(1,3);
+        DynMatrix<icl64f> tmp = DynMatrix<icl64f>::create(3, 1);
         for(unsigned int i=0;i<lpointlist.size();++i){
           m_result.rotation.mult(*lpointlist[i], tmp);
           tmp += m_result.translation;
@@ -95,8 +95,8 @@ namespace icl::geom {
 
   //TODO another way to compute rotation and translation
   DynMatrix<icl64f> *ICP::compute(const std::vector<DynMatrix<icl64f>* > &data,const std::vector<DynMatrix<icl64f>* > &model){
-    DynMatrix<icl64f> mean_data(1,3);
-    DynMatrix<icl64f> mean_model(1,3);
+    DynMatrix<icl64f> mean_data = DynMatrix<icl64f>::create(3, 1);
+    DynMatrix<icl64f> mean_model = DynMatrix<icl64f>::create(3, 1);
     for(unsigned int i=0;i<model.size();++i){
       mean_data += (*(data[i]));
       mean_model += (*(model[i]));

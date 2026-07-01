@@ -30,7 +30,7 @@ Scene scene;
 
 Mat compute_relative_transform_n(const std::vector<Camera> &s, const std::vector<Camera> &d){
   int n = (int)iclMin(s.size(), d.size());
-  DynMatrix<float> Rs(3,3*n), Rd(3,3*n);
+  DynMatrix<float> Rs = DynMatrix<float>::create(3*n, 3), Rd = DynMatrix<float>::create(3*n, 3);
   Vec3 dT(0,0,0);
   for(int i=0;i<n;++i){
     Mat ms = s[i].getInvCSTransformationMatrix();

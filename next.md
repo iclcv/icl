@@ -4,6 +4,29 @@
 
 ## Next Step
 
+### Session 93 — DynMatrix (row,col) constructor migration (compiler-forced, scripted)
+On `further-restructuring-and-cleanup`, suite **1010/1010**. Completed the DynMatrix half of the
+matrix-convention migration (FixedMatrix still pending — see ⚠️ URGENT in backlog).
+
+**What landed:** flipped `DynMatrixBase` dim ctors from `(cols,rows)` to `(rows,cols)` (matching the
+already-standard `(row,col)` accessors). Migrated all ~186 construction sites via the user's
+forcing recipe: made the raw dim-ctor private + added `create()/fromData()` factories → the compiler
+pinpointed every site → Python scripts (`flip_dynmatrix.py` token-level, `flip_decls.py`
+declaration-level, in the scratchpad) did the bulk arg-swap; hand-fixed the ~5% the scripts can't do
+(typedef aliases `Matrix`/`DMat`/`DMatF`/`mat`, multi-declarators, `new`-heap sites, C-array data
+ctors, base-initializer lists, a comment the token regex spanned). Finally restored a public
+`(rows,cols)` ctor (create/fromData kept as self-documenting aliases).
+
+**The bug the process caught** (why compiler-forcing + full-suite invariance matters): constructing a
+`DynMatrix` base from a `fromData(...,false)` **shallow** temporary via the copy ctor silently
+deep-copied → broke write-through views → the LMA's `y_est` rows went stale → `calibrate_extrinsic`
+regressed 5.8→70px (seed byte-identical, only the LMA output wrong). Fix: added a **move ctor** to
+`DynMatrixBase`/`DynMatrix` that transfers the buffer (preserving shallow wraps); restored copy-assign
+but deliberately NO move-assign (so `view = rvalue` still deep-copies into the view's memory).
+
+**NEXT:** either (a) the k2/ChArUco hybrid (fix distortion observability — the original S92 plan), or
+(b) the FixedMatrix template-param flip (higher risk, no compiler forcing). Then the extrinsic-calib app.
+
 ### Session 92 — Phase B kickoff: native intrinsic calibration verified + tilt requirement locked
 On `further-restructuring-and-cleanup`, suite **1006/1006**. Moved up a layer from detection to the
 actual calibration math. Key finding: **the native `cv::IntrinsicCalibrator` works** (it was
