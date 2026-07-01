@@ -4,65 +4,52 @@
 
 ## Next Step
 
-### PLAN (fresh session) — FixedMatrix `<T,COLS,ROWS>` → `<T,ROWS,COLS>` flip
-Finish the matrix (row,col) migration: the DynMatrix half is DONE (Session 93, commit `06c6c0cff`);
-this is the FixedMatrix half. Goal: make the FixedMatrix TEMPLATE PARAM order (rows,cols) match the
-already-standard `(row,col)` accessors. **Harder than DynMatrix: dims are template params, so the
-private-ctor forcing trick does NOT apply** (`FixedMatrix<float,4,3>` compiles transposed silently).
-Two things replace it: (1) FixedMatrix ops are COMPILE-TIME dim-checked (most transposes fail to
-build); (2) a one-shot `static_assert(ROWS==COLS)` worklist pass + the 1010-test suite as the net.
+### NEXT — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
+The matrix (row,col) migration is DONE (S94, below), so the calibration arc resumes. Build the
+**extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with FIXED
+intrinsics (intrinsics path already verified end-to-end, S92). Reuse `getPoses` (closed-form IPPE,
+S90) + the native checkerboard/marker-grid detectors (S88–S91). Once Phase C lands, the old monolithic
+`geom` module can be retired in favour of `geom2`. Alternative if distortion observability bites first:
+the k2/ChArUco hybrid (the original S92 plan-B). Backlog has the calibration-redesign tree.
 
-**MEASURED SURFACE (far smaller than the raw ~581):**
-- **215 square literal** instantiations (`3×3`,`4×4`,…) + ~20 square-symbolic (`<T,D,D>`) → **NO change**
-  (the flip is transparent for square).
-- **116 non-square literal** need a dim swap. Of these **~94 are `1×N` / `N×1` vectors** and **~17 are
-  genuine matrices** (`4×3`/`3×4` camera/projection blocks). Distinct shapes + counts were:
-  `1,3`(≈69), `1,4`(14), `1,2`(11), `4,3`+`3,4`(17), `2,1`(2), `1,5`,`1,6`,…
-- ~40 symbolic non-square, MOST inside `FixedMatrix.h`/`FixedMatrixUtils`/`FixedVector.h` internals
-  (`<T,COLS,ROWS>`, `<T,ROWS,COLS>`, `<T,MCOLS,ROWS>`, `<T,NUM_POINTS,3>`…).
+### Session 94 — FixedMatrix `<T,COLS,ROWS>` → `<T,ROWS,COLS>` flip DONE (migration complete)
+On `further-restructuring-and-cleanup`, suite **1010/1010**. Finished the matrix (row,col) migration:
+FixedMatrix template/ctor dim order is now `(rows,cols)`, matching the standard `(row,col)` accessors
+(DynMatrix half was S93). Four commits.
 
-**KEY FACTS:**
-- Template decl: `template<class T, unsigned int COLS, unsigned int ROWS> class FixedMatrix` (`FixedMatrix.h:48`).
-  Internals use COLS/ROWS BY NAME (`m_data[col+COLS*row]`, `FixedArray<T,COLS*ROWS>`), so just
-  REORDERING the param declaration `<T,COLS,ROWS>`→`<T,ROWS,COLS>` on the class + every
-  `template<...>` method def leaves bodies correct. Only internal instantiations that SPECIFY order
-  (`transposed()` returns `FixedMatrix<T,ROWS,COLS>`, `part<>`, shape-changing operators) need their
-  two dim args swapped.
-- `FixedColVector<T,DIM> : public FixedMatrix<T,1,DIM>` and `FixedRowVector` are **SUBCLASSES** (not
-  aliases) — `FixedVector.h:12`. So (a) their base-class spec must flip: ColVector (DIM rows,1 col) →
-  `: public FixedMatrix<T,DIM,1>`, RowVector → `: public FixedMatrix<T,1,DIM>`; (b) converting a raw
-  `FixedMatrix<T,1,N>` site to `FixedColVector<T,N>` is a real (layout-compatible) type change, so
-  watch overload resolution / explicit-type contexts.
-- `Vec = FixedColVector<icl32f,4>`, `Mat = FixedMatrix<icl32f,4,4>` in `geom/GeomDefs.h` (Mat square →
-  fine; Vec via ColVector).
-- Explicit template instantiations exist (e.g. `SimplexOptimizer.cpp` instantiates both
-  `FixedMatrix<float,1,D>` and `FixedMatrix<float,D,1>`) — they force compilation of non-square
-  variants (good for the static_assert worklist).
+**Design decision first (user prompted): make `FixedColVector`/`FixedRowVector` ALIAS templates, not
+subclasses.** They added ZERO members over FixedMatrix — only ctors (the base already has variadic +
+initializer_list + range). The subclass identity bought nothing (no overloads distinguished the two)
+but created friction (FixedMatrix arithmetic returns FixedMatrix, needing the converting-ctor
+round-trip) AND made the flip riskier. As aliases, the ~94 vector sites absorb the flip via the 2
+alias lines. Commit `197509e99`.
+- Fallout the alias collapse surfaced: (1) `SimplexOptimizer.cpp` instantiated both the vector alias
+  and the raw matrix form (now the same type) → dropped the dup. (2) FixedMatrix's templated range
+  ctor `(begin,end)` had no call sites but, once vectors were plain FixedMatrix, hijacked two-value
+  element calls like `Pos(0,0)`/`Pt(rx,ry)` as exact `(int,int)`/`(URand,URand)` matches → converted
+  it to a named factory `FixedMatrix::fromRange(begin,end)`.
 
-**EXECUTION (hybrid — decided): I do the delicate edits + scripts; a WORKTREE SUBAGENT runs the
-mechanical build-fix-verify loop and reports the diff.**
-1. **Phase A — shrink the surface first (order-agnostic, safe, commit separately).** Convert raw
-   `FixedMatrix<TYPE,1,N>`→`FixedColVector<TYPE,N>` (1 col,N rows = column) and
-   `FixedMatrix<TYPE,N,1>`→`FixedRowVector<TYPE,N>` (N cols,1 row = row) across the codebase (script:
-   two regexes; skip inside FixedMatrix.h/FixedVector.h internals). These are the SAME type today
-   (identity rename) AND order-agnostic → they drop out of the flip. Build + full suite + commit.
-   (User CHOSE this over flip-in-place: cleaner + shrinks flip to ~17 genuine matrices.)
-2. **Phase B — the flip.** Reorder `<T,COLS,ROWS>`→`<T,ROWS,COLS>` on the class decl + all method-def
-   `template<...>` lines in `FixedMatrix.h`, `FixedMatrixUtils.*`, `FixedVector.h`; swap the internal
-   instantiations that specify order; flip FixedColVector/FixedRowVector base-specs. Swap the ~17
-   genuine non-square literal sites (`4,3`↔`3,4` etc.) + symbolic non-square user sites
-   (`<T,NUM_POINTS,3>` etc.).
-3. **Completeness pass.** Temporarily add `static_assert(ROWS==COLS, "review (row,col) flip");` in the
-   FixedMatrix body → ONE build lists EVERY non-square instantiation actually used → cross-check all
-   were correctly swapped → remove the assert.
-4. **Net:** full build (compile-time dim checks catch most transposes) + `icl-tests -j 1` (1010; the
-   geom/calibration tests hammer the non-square camera blocks). Watch the `.dyn()` FixedMatrix↔DynMatrix
-   bridge (DynMatrix already flipped — `dyn()` currently does `fromData(ROWS,COLS,…)`).
-- Reference: the DynMatrix pass (commit `06c6c0cff`) + scripts `flip_dynmatrix.py`/`flip_decls.py`
-  (were in the session scratchpad, now gone — recreate similar; for FixedMatrix they swap TEMPLATE
-  args not ctor args). GOTCHA that bit DynMatrix: shallow-view semantics (the move-ctor fix) — less
-  relevant for FixedMatrix (fixed storage), but verify write-through helpers still work.
-- Backlog: ⚠️ URGENT item + memory `project_matrix_rowcol_migration.md` track this.
+**Phase A** (commit `96de14b0a`): spelled ~77 raw `FixedMatrix<T,1,N>`/`<T,N,1>` call sites as
+`FixedColVector`/`FixedRowVector` (identity rename while still same-type) so they absorb the flip.
+
+**Phase B — the flip** (commit `52eb09c19`). The elegant mechanism:
+- Reorder ONLY the primary class template-param decl `<T,COLS,ROWS>`→`<T,ROWS,COLS>`. This single edit
+  flips the EXTERNAL meaning of `FixedMatrix<T,A,B>` (cols,rows→rows,cols); method bodies use COLS/ROWS
+  BY NAME so stay correct untouched.
+- Swap arg2↔arg3 of EVERY explicit `FixedMatrix<...>` spelling (internal + external) via a
+  `perl` regex — behaviour-preserving re-spelling under the reordered convention. Free-function param
+  decls need NO reorder (deduction binds the swapped-spelling names correctly). Squares are no-ops.
+- Flip the aliases (a column vector is now `FixedMatrix<T,DIM,1>`); swap the genuine non-square
+  external sites: Camera 3×4/4×3 blocks, PoseEstimator `NUM_POINTS×3/4` point matrices, and
+  `gramSchmidtOrtho` (deduced COLS/ROWS would bind backwards → iterate the wrong axis for non-square).
+- Completeness by tree-wide grep of every non-square/symbolic `FixedMatrix<...>` spelling, each
+  reviewed (the planned `static_assert(ROWS==COLS)` pass was unnecessary — grep covered it). Left the
+  shape-agnostic helpers: `PixelRef::operator=` (linear DIM copy) + `DrawWidget` color/fill
+  (`<T,COLS,3/COLS>` orientation-agnostic, accepts both column & row vectors either spelling).
+- `.dyn()` bridge verified consistent: member uses correctly-bound ROWS,COLS + `DynMatrix::fromData`
+  is `(rows,cols)` since S93.
+
+Backlog ⚠️ URGENT item closed; memory `project_matrix_rowcol_migration.md` marked DONE.
 
 ### Session 93 — DynMatrix (row,col) constructor migration (compiler-forced, scripted)
 On `further-restructuring-and-cleanup`, suite **1010/1010**. Completed the DynMatrix half of the
