@@ -42,6 +42,7 @@
 #include <icl/cv/OpenCVCheckerboardDetector.h> // the opencv detector backend (+ CheckerboardDetector iface)
 #include <icl/cv/RansacCheckerboardDetector.h> // the native global-RANSAC association backend
 #include <icl/markers/MarkerGridTarget.h>      // the marker-grid CalibrationTarget
+#include <icl/markers/CodedCheckerboardTarget.h>  // the BCH-coded checkerboard (partial-board) target
 #include <icl/filter/affine/ImageUndistortion.h>   // radial distortion model + warp maps
 #include <icl/filter/affine/WarpOp.h>               // efficient warp-map application
 #include <icl/io/SaveLoad.h>                         // io::save (dump the detector input frame)
@@ -65,12 +66,18 @@ OffscreenView view(scene, 0);               // interactive view + GL/Cycles offs
 std::shared_ptr<CheckerboardNode> board;    // checkerboard target (self-visualizing)
 std::shared_ptr<MeshNode> markerBoard;      // marker-grid target board (textured quad)
 std::unique_ptr<MarkerGridTarget> mtarget;  // the marker-grid detector/generator
+std::shared_ptr<MeshNode> codedBoard;       // coded-checkerboard target board (textured quad)
+std::unique_ptr<CodedCheckerboardTarget> ctarget;  // the coded-checkerboard detector/generator
 const Size CAMRES(480, 360);
 
 // marker-grid geometry (fixed): a 4x3 BCH grid, 20mm markers, 10mm gaps
 static const Size    MK_CELLS(4, 3);
 static const Size32f MK_MARKER(20, 20);
 static const Size32f MK_BOUNDS(4*20 + 3*10, 3*20 + 2*10);
+
+// coded-checkerboard geometry (fixed): 9x7 squares, 25mm each
+static const int   CC_COLS = 9, CC_ROWS = 7;
+static const float CC_SQ   = 25.f;
 
 // --- forward lens distortion is applied by the OffscreenView (its distortion.k1/k2
 // props); here we only build the RECTIFYING (inverse) map for the optional "apply
@@ -116,6 +123,49 @@ static void buildMarkerBoard(float widthMM = 280.f) {
   }
   mat->setBaseColorMap(Image(rgb));
   markerBoard->setPrimitiveVisible(PrimLine | PrimVertex, false);
+}
+
+// Build/refresh the coded-checkerboard board: a flat textured quad showing the
+// board pattern (checker + embedded BCH markers) rendered by generate().
+static void buildCodedBoard(float widthMM = 300.f) {
+  const float aspect = float(CC_ROWS + 2) / float(CC_COLS + 2);
+  const Size tex(700, (int)std::lround(700 * aspect));
+  const Img8u gray = ctarget->generate(tex);
+  Img8u rgb(gray.getSize(), formatRGB);
+  for (int c = 0; c < 3; ++c) std::copy(gray.begin(0), gray.end(0), rgb.begin(c));
+
+  const float W = widthMM, H = widthMM * aspect;
+  codedBoard->clearGeometry();
+  codedBoard->addVertex(Vec(-W/2,  H/2, 0, 1));
+  codedBoard->addVertex(Vec( W/2,  H/2, 0, 1));
+  codedBoard->addVertex(Vec( W/2, -H/2, 0, 1));
+  codedBoard->addVertex(Vec(-W/2, -H/2, 0, 1));
+  for (int i = 0; i < 4; ++i) codedBoard->addNormal(Vec(0, 0, 1, 1));
+  codedBoard->addTexCoord(0, 0); codedBoard->addTexCoord(1, 0);
+  codedBoard->addTexCoord(1, 1); codedBoard->addTexCoord(0, 1);
+  codedBoard->addQuad(0, 1, 2, 3,  0, 1, 2, 3,  0, 1, 2, 3);
+
+  auto mat = codedBoard->getMaterial();
+  if (!mat) {
+    mat = Material::fromColor(GeomColor(255, 255, 255, 255));
+    mat->roughness = 1.0f; mat->metallic = 0.0f;
+    codedBoard->setMaterial(mat);
+  }
+  mat->setBaseColorMap(Image(rgb));
+  codedBoard->setPrimitiveVisible(PrimLine | PrimVertex, false);
+}
+
+// CODED-CHECKERBOARD overlay: result image + each absolutely-labelled checker
+// corner (marker-anchored, so partial boards still yield labelled corners).
+static void drawCorners(DrawHandle &draw, const Img8u &img,
+                        const std::vector<CalibrationCorrespondence> &corr) {
+  draw = img;
+  draw->linewidth(1.5);
+  if (gui["showCorners"].as<bool>())
+    for (const auto &c : corr) { draw->color(0,255,0,255); draw->sym(c.imagePos, 'x'); }
+  draw->color(255,255,255,255);
+  draw->text("coded corners: " + str(corr.size()) + " / " + str((CC_COLS-1)*(CC_ROWS-1)), 5, 5, 9);
+  draw.render();
 }
 
 // CHECKERBOARD overlay: result image + saddle seeds (+ board axes) + recovered
@@ -189,11 +239,16 @@ void init() {
   scene.addNode(markerBoard);
   buildMarkerBoard();
   markerBoard->setVisible(false);                  // checkerboard is the default target
+  ctarget.reset(new CodedCheckerboardTarget(CC_COLS, CC_ROWS, CC_SQ));
+  codedBoard = std::make_shared<MeshNode>();
+  scene.addNode(codedBoard);
+  buildCodedBoard();
+  codedBoard->setVisible(false);
 
   gui << (HSplit()
           << Canvas3D({.handle="scene", .label="3D view (drag to view from any angle)", .minSize={22,18}})
           << (VBox({.minSize={13,1}, .maxSize={15,100}})
-                  << Combo("checkerboard,marker-grid", {.handle="target", .label="calibration target"})
+                  << Combo("checkerboard,marker-grid,coded-checkerboard", {.handle="target", .label="calibration target"})
                   << (HBox()                          // -- checkerboard-only controls --
                       << Slider(3, 15, 7, {.handle="xc", .label="x cells"})
                       << Slider(3, 15, 5, {.handle="yc", .label="y cells"}))
@@ -238,12 +293,13 @@ void run() {
   if (target != lTarget) {
     board->setVisible(target == 0);
     markerBoard->setVisible(target == 1);
+    codedBoard->setVisible(target == 2);
     scene.touch();
-    // context-sensitive controls: grey out the inactive target's options
-    const bool cb = (target == 0);   // checkerboard active
+    // context-sensitive controls: grey out the inactive targets' options
+    const bool cb = (target == 0);   // checkerboard active (saddle/backend controls)
     for (const char *h : {"xc","yc","radius","minScore","backend","cleanup","subpixel","showOri"})
       if (cb) gui[h].enable(); else gui[h].disable();
-    if (cb) gui["refineMode"].disable(); else gui["refineMode"].enable();
+    if (target == 1) gui["refineMode"].enable(); else gui["refineMode"].disable();  // marker-grid only
   }
   if (target == 0) board->setCells(gui["xc"], gui["yc"]);   // idempotent
   using RM = MarkerGridTarget::RefineMode;
@@ -280,6 +336,10 @@ void run() {
     } else if (target == 1) {
       // marker-grid: one CalibrationTarget::detect() → 4 corners per found marker
       drawMarkers(d, cam, mtarget->detect(cam));
+    } else if (target == 2) {
+      // coded checkerboard: marker-anchored, absolutely-labelled checker corners
+      // (works on partial boards) — draw every recovered corner
+      drawCorners(d, cam, ctarget->detect(cam));
     } else {
       // checkerboard: ChESS-saddle + growth / RANSAC / graph (+ optional LAP), or opencv
       std::vector<CornerSeed> seeds;
