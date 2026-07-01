@@ -36,9 +36,9 @@ namespace icl::geom {
     p[5] = f; p[6] = g; p[7] = h; p[8] = i;
   }
 
-  static inline FixedMatrix<float,1,3> cross3(const FixedMatrix<float,1,3> &v1,
-                                              const FixedMatrix<float,1,3> &v2){
-    return FixedMatrix<float,1,3>(v1[1]*v2[2]-v1[2]*v2[1],
+  static inline FixedColVector<float,3> cross3(const FixedColVector<float,3> &v1,
+                                              const FixedColVector<float,3> &v2){
+    return FixedColVector<float,3>(v1[1]*v2[2]-v1[2]*v2[1],
                                   v1[2]*v2[0]-v1[0]*v2[2],
                                   v1[0]*v2[1]-v1[1]*v2[0]);
   }
@@ -47,7 +47,7 @@ namespace icl::geom {
     DMat A,U,s,V;
 
     FixedMatrix<float,3,3> H,R;
-    FixedMatrix<float,1,3> C;
+    FixedColVector<float,3> C;
     FixedMatrix<float,4,4> T;
 
     CoplanarPointPoseEstimator::ReferenceFrame referenceFrame;
@@ -201,7 +201,7 @@ namespace icl::geom {
     return error2;
   }
 
-  static float compute_error(const Mat &P, const FixedMatrix<float,1,6> &p, const Point32f *M, const Point32f *I, int n){
+  static float compute_error(const Mat &P, const FixedColVector<float,6> &p, const Point32f *M, const Point32f *I, int n){
     const Mat T = create_hom_4x4<float>(p[0],p[1],p[2],p[3],p[4],p[5]);
     float error = 0;
     for(int i=0;i<n;++i){
@@ -213,8 +213,8 @@ namespace icl::geom {
 #endif
 
   static float compute_error_opt(const Mat &P,
-                                 const FixedMatrix<float,1,3> &r,
-                                 const FixedMatrix<float,1,3> &t,
+                                 const FixedColVector<float,3> &r,
+                                 const FixedColVector<float,3> &t,
                                  const Point32f *_M,
                                  const Point32f *_I,
                                  int n){
@@ -270,15 +270,15 @@ namespace icl::geom {
                             float interval, const float posFactor, const int steps, const int substeps,
                             const float decreaseFactor, bool timeMonitoring){
 
-    FixedMatrix<float,1,3> r = extract_euler_angles(T_initial);
-    FixedMatrix<float,1,3> t = T_initial.part<3,0,1,3>();
+    FixedColVector<float,3> r = extract_euler_angles(T_initial);
+    FixedColVector<float,3> t = T_initial.part<3,0,1,3>();
     const float E_initial = compute_error_opt(P,r,t,M,I,n);
-    FixedMatrix<float,1,3> rBest = r, tBest = t, tInit = t, rInit = r;;
+    FixedColVector<float,3> rBest = r, tBest = t, tInit = t, rInit = r;;
     float E_best = E_initial;
 
     Time ttt = timeMonitoring ? Time::now() : Time();
 
-    FixedMatrix<float,1,3> rCurr=r, tCurr=t;
+    FixedColVector<float,3> rCurr=r, tCurr=t;
     for(int s=0;s<steps;++s){
       for(int rx=-substeps;rx<=substeps;++rx){
         rCurr[0] = r[0]+rx*interval;
@@ -354,7 +354,7 @@ namespace icl::geom {
       return R;
     }
 
-    void RzyxToAngles(FixedMatrix<icl32f, 3, 3> &R, FixedMatrix<icl32f, 1, 3> &res0, FixedMatrix<icl32f, 1, 3> &res1) {
+    void RzyxToAngles(FixedMatrix<icl32f, 3, 3> &R, FixedColVector<icl32f,3> &res0, FixedColVector<icl32f,3> &res1) {
       if (R(2, 0) > -0.999999 && R(2, 0) < 0.999999) {
         res0(1, 0) = -asin(R(2, 0));
         res1(1, 0) = M_PI - res0(1, 0);
@@ -380,14 +380,14 @@ namespace icl::geom {
       }
     }
 
-    inline void splitMat(FixedMatrix<icl32f, 4, 4> &m, FixedMatrix<icl32f, 3, 3> &R, FixedMatrix<icl32f, 1, 3> &t) {
+    inline void splitMat(FixedMatrix<icl32f, 4, 4> &m, FixedMatrix<icl32f, 3, 3> &R, FixedColVector<icl32f,3> &t) {
       R = m.part<0,0,3,3>();
       t(0, 0) = m(0, 3);
       t(1, 0) = m(1, 3);
       t(2, 0) = m(2, 3);
     }
 
-    inline FixedMatrix<icl32f, 4, 4> fuseMat(FixedMatrix<icl32f, 3, 3> &R, FixedMatrix<icl32f, 1, 3> &t) {
+    inline FixedMatrix<icl32f, 4, 4> fuseMat(FixedMatrix<icl32f, 3, 3> &R, FixedColVector<icl32f,3> &t) {
       FixedMatrix<icl32f, 4, 4> m = FixedMatrix<icl32f, 4, 4>::id();
 
       m(0, 0) = R(0, 0);
@@ -406,13 +406,13 @@ namespace icl::geom {
       return m;
     }
 
-    void calcRt(const int n, std::vector<FixedMatrix<icl32f, 1, 3> > &v, FixedMatrix<icl32f, 3, 3> &Rt) {
+    void calcRt(const int n, std::vector<FixedColVector<icl32f,3> > &v, FixedMatrix<icl32f, 3, 3> &Rt) {
       // 1. norm all columns
       // 2. transpose
       // 3. mean rows
       // 4. transpose
       // 5. normalize
-      FixedMatrix<icl32f, 1, 3> center;
+      FixedColVector<icl32f,3> center;
       double x = 0.0, y = 0.0, z = 0.0;
 
       for (int i = 0; i < n; ++i) {
@@ -428,8 +428,8 @@ namespace icl::geom {
       center.normalize();
 
       // 6. rotation from (0,0,1) to previous solution
-      FixedMatrix<icl32f, 1, 3> v_z(0.0f, 0.0f, 1.0f);
-      FixedMatrix<icl32f, 1, 3> axis;
+      FixedColVector<icl32f,3> v_z(0.0f, 0.0f, 1.0f);
+      FixedColVector<icl32f,3> axis;
       axis(0, 0) = center(1, 0);
       axis(1, 0) = -center(0, 0);
       axis(2, 0) = 0;
@@ -438,9 +438,9 @@ namespace icl::geom {
       Rt = create_rot_3D(axis(0, 0), axis(1, 0), axis(2, 0), static_cast<float>(acos((v_z.dot(center))(0, 0))));
     }
 
-    void calculateError(const int n, std::vector< FixedMatrix<icl32f, 1, 3> > &P,
-                        std::vector< FixedMatrix<icl32f, 1, 3> > &V,
-                        FixedMatrix<icl32f, 3, 3> &R, FixedMatrix<icl32f, 1, 3> &t,
+    void calculateError(const int n, std::vector< FixedColVector<icl32f,3> > &P,
+                        std::vector< FixedColVector<icl32f,3> > &V,
+                        FixedMatrix<icl32f, 3, 3> &R, FixedColVector<icl32f,3> &t,
                         float &error) {
       error = 0.0f;
 
@@ -453,7 +453,7 @@ namespace icl::geom {
 
       // calculate the error
       for (int i = 0; i < n; ++i) {
-          FixedMatrix<icl32f, 1, 3> tmp = (I - VV[i])*(R*P[i] + t);
+          FixedColVector<icl32f,3> tmp = (I - VV[i])*(R*P[i] + t);
           error += pow(tmp(0, 0), 2) + pow(tmp(1, 0), 2) + pow(tmp(2, 0), 2);
       }
 
@@ -462,14 +462,14 @@ namespace icl::geom {
 
     struct MinSol {
       std::vector<double> betas;
-      std::vector< FixedMatrix<icl32f, 1, 3> > ts;
+      std::vector< FixedColVector<icl32f,3> > ts;
       std::vector< FixedMatrix<icl32f, 3, 3> > Rs;
       std::vector<icl32f> errors;
     };
 
-    void calculateMinima(const int n, std::vector< FixedMatrix<icl32f, 1, 3> > &P,
-                         std::vector< FixedMatrix<icl32f, 1, 3> > &V,
-                         FixedMatrix<icl32f, 3, 3> &Rz, FixedMatrix<icl32f, 1, 3> &t,
+    void calculateMinima(const int n, std::vector< FixedColVector<icl32f,3> > &P,
+                         std::vector< FixedColVector<icl32f,3> > &V,
+                         FixedMatrix<icl32f, 3, 3> &Rz, FixedColVector<icl32f,3> &t,
                          MinSol &sol) {
       FixedMatrix<icl32f, 3, 3> *VV = new FixedMatrix<icl32f, 3, 3>[n];
       FixedMatrix<icl32f, 3, 3> G, Rp;
@@ -498,9 +498,9 @@ namespace icl::geom {
 
         E = (I - VV[i]) * (Rz * Rp + t_opt);
 
-        FixedMatrix<icl32f, 1, 3> col0(E.col(0));
-        FixedMatrix<icl32f, 1, 3> col1(E.col(1));
-        FixedMatrix<icl32f, 1, 3> col2(E.col(2));
+        FixedColVector<icl32f,3> col0(E.col(0));
+        FixedColVector<icl32f,3> col1(E.col(1));
+        FixedColVector<icl32f,3> col2(E.col(2));
         e[0] += (col2.transp() * col2)(0, 0);
         e[1] += (col2.transp() * col1)(0, 0) * 2.0f;
         e[2] += (col0.transp() * col2)(0, 0) * 2.0f + (col1.transp() * col1)(0, 0);
@@ -556,7 +556,7 @@ namespace icl::geom {
 
       for(unsigned int i = 0; i < sol.betas.size(); ++i) {
         Rp = Rz * getRzyx(0.0f, sol.betas[i], 0.0f);
-        FixedMatrix<icl32f, 1, 3> t_new = FixedMatrix<icl32f, 1, 3>(0.0f);
+        FixedColVector<icl32f,3> t_new = FixedColVector<icl32f,3>(0.0f);
 
         for (int j = 0; j < n; ++j) {
           t_new = t_new + (VV[j]-I) * Rp * P[j];
@@ -571,24 +571,24 @@ namespace icl::geom {
 
   void CoplanarPointPoseEstimator::robustPoseCorrection(int n, const Point32f *modelPoints,
                                                         const utils::Point32f *normalizedImagePoints) {
-    std::vector< FixedMatrix<icl32f, 1, 3> > V(n), P(n), P_(n);
+    std::vector< FixedColVector<icl32f,3> > V(n), P(n), P_(n);
 
     for (int i = 0; i < n ; ++i) {
-      V[i] = FixedMatrix<icl32f, 1, 3>(normalizedImagePoints[i].x, normalizedImagePoints[i].y, 1.0f);
-      P[i] = FixedMatrix<icl32f, 1, 3>(modelPoints[i].x, modelPoints[i].y, 0.0f);
+      V[i] = FixedColVector<icl32f,3>(normalizedImagePoints[i].x, normalizedImagePoints[i].y, 1.0f);
+      P[i] = FixedColVector<icl32f,3>(modelPoints[i].x, modelPoints[i].y, 0.0f);
     }
 
     FixedMatrix<icl32f, 3, 3> R;
-    FixedMatrix<icl32f, 1, 3> t;
+    FixedColVector<icl32f,3> t;
 
     splitMat(data->T, R, t);
 
     FixedMatrix<icl32f, 3, 3> Rt;
-    std::vector< FixedMatrix<icl32f, 1, 3> > V_(n);
+    std::vector< FixedColVector<icl32f,3> > V_(n);
     FixedMatrix<icl32f, 3, 3> R_, R__, R2;
     FixedMatrix<icl32f, 3, 3> Rdz, Ry, Rz, Rdzz;
-    FixedMatrix<icl32f, 1, 3> t_;
-    FixedMatrix<icl32f, 1, 3> angles0, angles1;
+    FixedColVector<icl32f,3> t_;
+    FixedColVector<icl32f,3> angles0, angles1;
     float error;
     MinSol sol;
 
@@ -666,7 +666,7 @@ namespace icl::geom {
   //  }
   //}
 
-  std::vector<Pose6D> create_initial_simplex(const FixedMatrix<float,1,3> &r, const FixedMatrix<float,1,3> &t){
+  std::vector<Pose6D> create_initial_simplex(const FixedColVector<float,3> &r, const FixedColVector<float,3> &t){
     Pose6D start = r%t;
     std::vector<Pose6D> simplex(7,start);
     for(int i=0;i<6;++i){
@@ -790,7 +790,7 @@ namespace icl::geom {
   std::vector<CoplanarPointPoseEstimator::PoseCandidate>
   CoplanarPointPoseEstimator::getPoses(int n, const Point32f *modelPoints,
                                        const Point32f *imagePoints, const Camera &cam){
-    typedef FixedMatrix<float,1,3> V3;
+    typedef FixedColVector<float,3> V3;
     typedef FixedMatrix<float,3,3> M3;
     std::vector<PoseCandidate> out;
     if (n < 4) return out;
@@ -992,8 +992,8 @@ namespace icl::geom {
           SimplexErrorFunction err(cam.getProjectionMatrix(),modelPoints,imagePoints,n);
           std::function<float(const Pose6D &)> ferr = [&err](const Pose6D &p){ return err.f(p); };
           SimplexOptimizer<float,Pose6D> opt(ferr,6,400,0.5);
-          FixedMatrix<float,1,3> r = extract_euler_angles(data->T);
-          FixedMatrix<float,1,3> t = data->T.part<3,0,1,3>();
+          FixedColVector<float,3> r = extract_euler_angles(data->T);
+          FixedColVector<float,3> t = data->T.part<3,0,1,3>();
           SimplexOptimizer<float,Pose6D>::Result res = opt.optimize(create_initial_simplex(r,t));
           const Pose6D &x = res.x;
           data->T = create_hom_4x4(x[0],x[1],x[2],x[3],x[4],x[5]);

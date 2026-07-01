@@ -125,11 +125,11 @@ namespace icl::cv {
 
     FixedMatrix<float,2,2> M(-sa, sb,
                              ca, -cb);
-    FixedMatrix<float,1,2> B(-r*ca + s*cb,
+    FixedColVector<float,2> B(-r*ca + s*cb,
                              -r*sa + s*sb);
 
     try{ // Maybe M cannot be inverted if lines are colinear
-      FixedMatrix<float,1,2> x = M.inv()*B;
+      FixedColVector<float,2> x = M.inv()*B;
       // insert x[0] = lamda1 into line-equation a
       return a.m_offset + (a.m_direction*x[0]);
     }catch(SingularMatrixException&){}

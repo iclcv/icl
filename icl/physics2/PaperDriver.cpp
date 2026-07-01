@@ -501,7 +501,7 @@ namespace icl::physics2 {
       const Vec c = d.units.toIclVec(f.m_n[2]->m_x);
       const Point32f &ta = d.texCoords[ia], &tb = d.texCoords[ib], &tc = d.texCoords[ic];
       math::FixedMatrix<float, 2, 2> M(tc.x - ta.x, tb.x - ta.x, tc.y - ta.y, tb.y - ta.y);
-      math::FixedMatrix<float, 1, 2> ff = M.inv() * math::FixedMatrix<float, 1, 2>(p.x - ta.x, p.y - ta.y);
+      math::FixedColVector<float,2> ff = M.inv() * math::FixedColVector<float,2>(p.x - ta.x, p.y - ta.y);
       Vec res = a + (c - a) * ff[0] + (b - a) * ff[1];
       res[3] = 1;
       return res;

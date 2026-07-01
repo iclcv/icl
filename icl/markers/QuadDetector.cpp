@@ -296,8 +296,8 @@ namespace icl::markers {
       static const Point32f obj[4] = {Point32f(-40,-40), Point32f(40,-40), Point32f(40,40), Point32f(-40,40) };
       Mat T = pe.getPose(4,obj,corners.data(),cameraForQuadRating);
 
-      FixedMatrix<float,1,3> r = extract_euler_angles(T);
-      FixedMatrix<float,1,3> t = T.part<3,0,1,3>();
+      FixedColVector<float,3> r = extract_euler_angles(T);
+      FixedColVector<float,3> t = T.part<3,0,1,3>();
       Mat P = cameraForQuadRatingProjectionMatrix;
       const Point32f *_M = obj, *_I = corners.data();
 

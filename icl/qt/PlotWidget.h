@@ -243,18 +243,18 @@ namespace icl::qt {
 
     /// adds a scatter plot from given set of of fixed vectors
     template<class T>
-    inline void scatter(const math::FixedMatrix<T,1,2> *ps, int num, bool connect=false){
+    inline void scatter(const math::FixedColVector<T,2> *ps, int num, bool connect=false){
       scatter(&ps[0][0],&ps[0][1], num, 2, 2, connect);
     }
 
     template<class T>
-    inline void scatter(const math::FixedMatrix<T,2,1> *ps, int num, bool connect=false){
+    inline void scatter(const math::FixedRowVector<T,2> *ps, int num, bool connect=false){
       scatter(&ps[0][0],&ps[0][1], num, 2, 2, connect);
     }
 
     /// adds a scatter plot from given vector of fixed vectors
     inline void scatter(const std::vector<math::FixedColVector<float,2> >&ps, bool connect=false){
-      scatter((const math::FixedMatrix<float,2,1>*)ps.data(),ps.size(),connect);
+      scatter((const math::FixedRowVector<float,2>*)ps.data(),ps.size(),connect);
     }
 
     /// adds series data

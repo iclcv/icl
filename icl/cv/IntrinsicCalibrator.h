@@ -11,6 +11,7 @@
 #include <icl/utils/Array2D.h>
 #include <icl/math/la/DynMatrix.h>
 #include <icl/math/la/DynMatrixUtils.h>
+#include <icl/math/la/FixedVector.h>
 #include <icl/core/Img.h>
 #include <icl/filter/affine/ImageUndistortion.h>
 
@@ -299,7 +300,7 @@ namespace icl::cv {
     }
 
     //2d coordinates in picture
-    using Pos2D = math::FixedMatrix<double,1,2>;
+    using Pos2D = math::FixedColVector<double,2>;
     //grid of 2d coords in picture
     using DetectedGrid = utils::Array2D<Pos2D>;
 

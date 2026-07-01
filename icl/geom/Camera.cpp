@@ -267,11 +267,11 @@ namespace icl::geom {
   Camera Camera::createFromProjectionMatrix(const FixedMatrix<icl32f,4,3> &Q,
                                                 float focalLength) {
     FixedMatrix<float,3,3> M = Q.part<0,0,3,3>();
-    FixedMatrix<float,1,3> c4 = Q.col(3);
+    FixedColVector<float,3> c4 = Q.col(3);
 
     FixedMatrix<float,3,3> K; // intrinsic parameters
     FixedMatrix<float,3,3> R; // extrinsic (rotation matrix)
-    FixedMatrix<float,1,3> T; // extrinsic (tranlation vector)
+    FixedColVector<float,3> T; // extrinsic (tranlation vector)
 
     M.decompose_RQ(K,R);
     K = K/K(2, 2); // normalize K
@@ -331,7 +331,7 @@ namespace icl::geom {
 
     typedef math::FixedMatrix<double,4,4> DMat;
     typedef math::FixedMatrix<double,3,3> DMat3;
-    typedef math::FixedMatrix<double,1,3> DVec3;
+    typedef math::FixedColVector<double,3> DVec3;
 
     DMat RT = Mat::id();
     std::copy(V.col_begin(11), V.col_end(11), RT.begin());
@@ -792,7 +792,7 @@ namespace icl::geom {
 
 
   /// returns the tensor obtained by contraction of v with epsilon tensor.
-  static inline FixedMatrix<icl32f,3,3> contr_eps(const FixedMatrix<icl32f,1,3> &v){
+  static inline FixedMatrix<icl32f,3,3> contr_eps(const FixedColVector<icl32f,3> &v){
     return FixedMatrix<icl32f,3,3>(0, v[2], -v[1],
                                    -v[2], 0, v[0],
                                    v[1], -v[0], 0);
@@ -822,11 +822,11 @@ namespace icl::geom {
                     ICLException("estimate_3D_svd got more or less cameras than points"));
 
     std::vector<FixedMatrix<icl32f,4,3> > P(K);
-    std::vector<FixedMatrix<icl32f,1,2> > u(K);
+    std::vector<FixedColVector<icl32f,2> > u(K);
 
     for(int i=0;i<K;++i) {
       P[i] = cams[i]->getQMatrix();
-      u[i] = FixedMatrix<icl32f,1,2>(UVs[i].x,UVs[i].y);
+      u[i] = FixedColVector<icl32f,2>(UVs[i].x,UVs[i].y);
     }
 
 #if 0
@@ -842,7 +842,7 @@ namespace icl::geom {
 
     DynMatrix<float> A = DynMatrix<float>::create(K*3, 4);
     for(int k=0;k<K;++k){
-      FixedMatrix<icl32f,4,3> m = contr_eps(FixedMatrix<icl32f,1,3>(u[k][0],u[k][1],1))*P[k];
+      FixedMatrix<icl32f,4,3> m = contr_eps(FixedColVector<icl32f,3>(u[k][0],u[k][1],1))*P[k];
       for(unsigned int y=0;y<3;++y){
         for(unsigned int x=0;x<4;++x){
           A(k*3+y, x) = m(y, x);

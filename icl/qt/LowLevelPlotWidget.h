@@ -207,9 +207,9 @@ namespace icl::qt {
                            "some shape", 0, 100, 255, 2, true, 2, 2, true, false, false);
 
       /// further more we add some annotations
-      pw.addAnnotations('r',FixedMatrix<float,1,4>(-.2,-.2,.4,.4).data() ,1,QColor(255,0,0), QColor(255,0,0,100));
-      pw.addAnnotations('l',FixedMatrix<float,1,4>(0,0,3,3).data(),1,QColor(255,0,0));
-      pw.addAnnotations('t',FixedMatrix<float,1,2>(3.f,3.f).data(),1,QColor(255,0,0),Qt::NoBrush,"the center");
+      pw.addAnnotations('r',FixedColVector<float,4>(-.2,-.2,.4,.4).data() ,1,QColor(255,0,0), QColor(255,0,0,100));
+      pw.addAnnotations('l',FixedColVector<float,4>(0,0,3,3).data(),1,QColor(255,0,0));
+      pw.addAnnotations('t',FixedColVector<float,2>(3.f,3.f).data(),1,QColor(255,0,0),Qt::NoBrush,"the center");
 
       \endcode
       \image html plot_widget_g.png

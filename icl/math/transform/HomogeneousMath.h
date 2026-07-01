@@ -66,14 +66,14 @@ namespace icl::math {
 
     /// normalize a vector to length 1
     template<class T>
-    inline math::FixedColVector<T,4> normalize(const math::FixedMatrix<T,1,4> &v) {
+    inline math::FixedColVector<T,4> normalize(const math::FixedColVector<T,4> &v) {
       double l = v.length();
       ICLASSERT_RETURN_VAL(l,v);
       return v/l;
     }
     /// normalize a vector to length 1
     template<class T>
-    inline math::FixedColVector<T,4> normalize3(const math::FixedMatrix<T,1,4> &v,const double& h=1) {
+    inline math::FixedColVector<T,4> normalize3(const math::FixedColVector<T,4> &v,const double& h=1) {
       double l = ::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
       ICLASSERT_RETURN_VAL(l,v);
       Vec4 n = v/l;
@@ -155,13 +155,13 @@ namespace icl::math {
 
     /// homogenize a vector by normalizing 4th component to 1
     template<class T>
-    inline math::FixedColVector<T,4> homogenize(const math::FixedMatrix<T,1,4> &v){
+    inline math::FixedColVector<T,4> homogenize(const math::FixedColVector<T,4> &v){
       ICLASSERT_RETURN_VAL(v[3],v); return v/v[3];
     }
 
     /// perform perspective projection
     template<class T>
-    inline math::FixedColVector<T,4> project(math::FixedMatrix<T,1,4> v, T z){
+    inline math::FixedColVector<T,4> project(math::FixedColVector<T,4> v, T z){
       T zz = z*v[2];
       v[0]/=zz;
       v[1]/=zz;
@@ -172,7 +172,7 @@ namespace icl::math {
 
     /// homogeneous 3D cross-product
     template<class T>
-    inline math::FixedColVector<T,4> cross(const math::FixedMatrix<T,1,4> &v1, const math::FixedMatrix<T,1,4> &v2){
+    inline math::FixedColVector<T,4> cross(const math::FixedColVector<T,4> &v1, const math::FixedColVector<T,4> &v2){
       return math::FixedColVector<T,4>(v1[1]*v2[2]-v1[2]*v2[1],
                                  v1[2]*v2[0]-v1[0]*v2[2],
                                  v1[0]*v2[1]-v1[1]*v2[0],
@@ -180,7 +180,7 @@ namespace icl::math {
     }
 
 		template<class T>
-		inline math::FixedColVector<T,3> cross(const math::FixedMatrix<T,1,3> &v1, const math::FixedMatrix<T,1,3> &v2){
+		inline math::FixedColVector<T,3> cross(const math::FixedColVector<T,3> &v1, const math::FixedColVector<T,3> &v2){
 			return math::FixedColVector<T,3>(v1[1]*v2[2]-v1[2]*v2[1],
 																 v1[2]*v2[0]-v1[0]*v2[2],
 																 v1[0]*v2[1]-v1[1]*v2[0]);

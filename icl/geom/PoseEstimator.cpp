@@ -72,7 +72,7 @@ namespace icl::geom {
   }
 
   template<class T>
-  static inline FixedColVector<T,3> cross_prod(const FixedMatrix<T,1,3> &v1, const FixedMatrix<T,1,3> &v2){
+  static inline FixedColVector<T,3> cross_prod(const FixedColVector<T,3> &v1, const FixedColVector<T,3> &v2){
     return FixedColVector<T,3>(v1[1]*v2[2]-v1[2]*v2[1],
                                v1[2]*v2[0]-v1[0]*v2[2],
                                v1[0]*v2[1]-v1[1]*v2[0]);

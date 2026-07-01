@@ -68,17 +68,17 @@ namespace icl::filter {
     virtual size_t getNumParams() const { return 10; }
     virtual Point32f center() const{ return Point32f(params[2], params[3]); }
     virtual Point32f undistort(const Point32f &point) const{
-      FixedMatrix<icl64f,1,3> p; p[0] = point.x; p[1] = point.y; p[2] = 1.0;
-      FixedMatrix<icl64f,1,3> rays = Kinv*p;
+      FixedColVector<icl64f,3> p; p[0] = point.x; p[1] = point.y; p[2] = 1.0;
+      FixedColVector<icl64f,3> rays = Kinv*p;
 
-      FixedMatrix<icl64f,1,2> x;
+      FixedColVector<icl64f,2> x;
       x[0] = rays[0]/rays[2];
       x[1] = rays[1]/rays[2];
 
-      FixedMatrix<icl64f,1,5> k;
+      FixedColVector<icl64f,5> k;
       k[0] = params[5]; k[1] = params[6]; k[2] = params[7]; k[3] = params[8]; k[4] = params[9];
       // Add distortion:
-      FixedMatrix<icl64f,1,2> pd;
+      FixedColVector<icl64f,2> pd;
 
       double r2 = x[0]*x[0]+x[1]*x[1];
       double r4 = r2*r2;
@@ -95,7 +95,7 @@ namespace icl::filter {
       double a2 = r2 + 2*x[0]*x[0];
       double a3 = r2 + 2*x[1]*x[1];
 
-      FixedMatrix<icl64f,1,2> delta_x;
+      FixedColVector<icl64f,2> delta_x;
       delta_x[0]= k[2]*a1 + k[3]*a2 ;
       delta_x[1]= k[2] * a3 + k[3]*a1;
 
