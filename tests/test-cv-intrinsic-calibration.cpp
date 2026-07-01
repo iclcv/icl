@@ -14,14 +14,21 @@
 
 #include "harness/Test.h"
 #include <icl/cv/IntrinsicCalibrator.h>
+#include <icl/cv/OpenCVCamCalib.h>
 #include <icl/math/la/DynMatrix.h>
+#include <icl/utils/Point.h>
+#include <icl/utils/Size.h>
 #include <cmath>
 #include <vector>
 #include <cstdio>
+#include <memory>
 
 using namespace icl;
 using icl::math::DynMatrix;
 using icl::cv::IntrinsicCalibrator;
+using icl::cv::OpenCVCamCalib;
+using icl::utils::Point32f;
+using icl::utils::Size;
 
 namespace {
   struct Rng {
@@ -74,26 +81,57 @@ namespace {
     return p;
   }
 
-  // project every board point in every pose (+ optional noise) and run the
-  // native intrinsic calibration; returns its Result.
-  IntrinsicCalibrator::Result runCalib(const Intr &K, int W, int H, int cols, int rows, double sq,
-                                       const std::vector<Pose> &poses, double noise, uint64_t seed) {
+  // one view's correspondences: matching object (planar, mm, z=0) + image (px)
+  struct ViewPts { std::vector<Point32f> obj, img; };
+
+  // project every board point in every pose (+ optional noise) into per-view
+  // correspondences. THE shared front-end so native and OpenCV see identical points.
+  std::vector<ViewPts> makeViews(const Intr &K, int cols, int rows, double sq,
+                                 const std::vector<Pose> &poses, double noise, uint64_t seed) {
     Rng rng(seed);
     const auto bp = boardPoints(cols, rows, sq);
-    const int bSize = (int)bp.size(), nv = (int)poses.size();
-    DynMatrix<icl64f> impoints(bSize, 2*nv), world(bSize, 3);
-    for (int p=0;p<bSize;++p) { world(0,p)=bp[p].first; world(1,p)=bp[p].second; world(2,p)=0; }
-    for (int v=0;v<nv;++v) {
-      double R[9], t[3]={poses[v].tx,poses[v].ty,poses[v].tz};
-      rot(poses[v].ax, poses[v].ay, poses[v].az, R);
-      for (int p=0;p<bSize;++p) {
-        double u,vv; project(K,R,t,bp[p].first,bp[p].second,u,vv);
-        if (noise>0) { u += noise*rng.gauss(); vv += noise*rng.gauss(); }
-        impoints(2*v, p)=u; impoints(2*v+1, p)=vv;
+    std::vector<ViewPts> views;
+    for (const auto &P : poses) {
+      double R[9], t[3]={P.tx,P.ty,P.tz}; rot(P.ax,P.ay,P.az,R);
+      ViewPts vp;
+      for (const auto &pt : bp) {
+        double u,v; project(K,R,t,pt.first,pt.second,u,v);
+        if (noise>0){ u += noise*rng.gauss(); v += noise*rng.gauss(); }
+        vp.obj.emplace_back((float)pt.first, (float)pt.second);
+        vp.img.emplace_back((float)u, (float)v);
       }
+      views.push_back(std::move(vp));
     }
+    return views;
+  }
+
+  // native calibration (icl::cv::IntrinsicCalibrator) on the shared views
+  IntrinsicCalibrator::Result runCalib(const Intr &K, int W, int H, int cols, int rows, double sq,
+                                       const std::vector<Pose> &poses, double noise, uint64_t seed) {
+    const auto views = makeViews(K, cols, rows, sq, poses, noise, seed);
+    const int bSize = (int)views[0].obj.size(), nv = (int)views.size();
+    DynMatrix<icl64f> impoints(bSize, 2*nv), world(bSize, 3);
+    for (int p=0;p<bSize;++p) { world(0,p)=views[0].obj[p].x; world(1,p)=views[0].obj[p].y; world(2,p)=0; }
+    for (int v=0;v<nv;++v)
+      for (int p=0;p<bSize;++p) { impoints(2*v, p)=views[v].img[p].x; impoints(2*v+1, p)=views[v].img[p].y; }
     IntrinsicCalibrator cal(cols, rows, nv, W, H);
     return cal.calibrate(impoints, world);
+  }
+
+  // recovered intrinsics + distortion (uniform for native/opencv comparison)
+  struct Recov { double fx, fy, cx, cy, k1, k2, p1, p2; };
+
+  // OpenCV calibration (icl::cv::OpenCVCamCalib → cv::calibrateCamera) on the SAME views
+  Recov runOpenCV(const Intr &K, int W, int H, int cols, int rows, double sq,
+                  const std::vector<Pose> &poses, double noise, uint64_t seed) {
+    const auto views = makeViews(K, cols, rows, sq, poses, noise, seed);
+    OpenCVCamCalib cal(cols, rows, (unsigned)views.size());
+    cal.setImageSize(Size(W, H));
+    for (const auto &v : views) cal.addPoints(v.obj, v.img);
+    cal.calibrateCam();
+    std::unique_ptr<DynMatrix<icl64f>> Km(cal.getIntrinsics()), Dm(cal.getDistortion());
+    return { Km->at(0,0), Km->at(1,1), Km->at(2,0), Km->at(2,1),
+             (*Dm)[0], (*Dm)[1], (*Dm)[2], (*Dm)[3] };
   }
 
   // a diverse set of OUT-OF-PLANE tilted poses (tilt about both axes, ±in-plane,
@@ -112,6 +150,27 @@ namespace {
       {d2r(-10),d2r( 33),d2r(-9), -15,-20, 710},
     };
   }
+
+  // closer + offset tilted poses of a LARGE board → corners reach the frame edges,
+  // so the distortion radius is actually excited (a prerequisite for k1/k2 recovery)
+  std::vector<Pose> distortionPoses() {
+    return {
+      {d2r(-28),d2r(-18),d2r( 5), -55,-35, 560},
+      {d2r( 26),d2r(-20),d2r(-8),  50,-30, 590},
+      {d2r(-24),d2r( 24),d2r(10), -45, 40, 540},
+      {d2r( 27),d2r( 20),d2r(-6),  55, 45, 610},
+      {d2r(-30),d2r(  4),d2r( 0),   0,-45, 520},
+      {d2r(  6),d2r(-30),d2r( 0), -50,  5, 570},
+      {d2r( 14),d2r( 28),d2r(14),  40,-40, 600},
+      {d2r(-18),d2r(-26),d2r(-10),-55, 25, 545},
+      {d2r( 30),d2r( -8),d2r( 6),  30, 50, 585},
+      {d2r(-10),d2r( 30),d2r(-9), -35,-45, 555},
+      {d2r(  0),d2r(  0),d2r(20),   0,  0, 500},
+      {d2r( 20),d2r( 20),d2r( 0),   0,  0, 620},
+    };
+  }
+  // board matching distortionPoses()
+  constexpr int DC=11, DR=8; constexpr double DSQ=26;
 }
 
 // Perfect correspondences from diverse tilted views → GT intrinsics recovered.
@@ -177,22 +236,8 @@ ICL_REGISTER_TEST("cv.intrinsic.recovers_distortion",
                   "native IntrinsicCalibrator recovers GT radial+tangential distortion")
 {
   const Intr K{650, 620, 330, 250, 0,  -0.18, 0.05, 0.001, -0.001, 0.0};
-  const int W=640, H=480, C=11, R=8; const double SQ=26;   // big board → wide radius coverage
-  std::vector<Pose> poses = {                              // closer + offset → corners reach the edges
-    {d2r(-28),d2r(-18),d2r( 5), -55,-35, 560},
-    {d2r( 26),d2r(-20),d2r(-8),  50,-30, 590},
-    {d2r(-24),d2r( 24),d2r(10), -45, 40, 540},
-    {d2r( 27),d2r( 20),d2r(-6),  55, 45, 610},
-    {d2r(-30),d2r(  4),d2r( 0),   0,-45, 520},
-    {d2r(  6),d2r(-30),d2r( 0), -50,  5, 570},
-    {d2r( 14),d2r( 28),d2r(14),  40,-40, 600},
-    {d2r(-18),d2r(-26),d2r(-10),-55, 25, 545},
-    {d2r( 30),d2r( -8),d2r( 6),  30, 50, 585},
-    {d2r(-10),d2r( 30),d2r(-9), -35,-45, 555},
-    {d2r(  0),d2r(  0),d2r(20),   0,  0, 500},           // one near-frontal, well-centred + close
-    {d2r( 20),d2r( 20),d2r( 0),   0,  0, 620},
-  };
-  const auto r = runCalib(K, W,H, C,R, SQ, poses, 0.0, 3);
+  const int W=640, H=480;
+  const auto r = runCalib(K, W,H, DC,DR, DSQ, distortionPoses(), 0.0, 3);
   std::printf("[intrinsic] distort: fx=%.3f fy=%.3f cx=%.3f cy=%.3f k1=%.5f k2=%.5f p1=%.5f p2=%.5f\n",
               r.getFocalLengthX(), r.getFocalLengthY(), r.getPrincipalX(), r.getPrincipalY(),
               r.getK1(), r.getK2(), r.getP1(), r.getP2());
@@ -202,4 +247,45 @@ ICL_REGISTER_TEST("cv.intrinsic.recovers_distortion",
   ICL_TEST_NEAR(r.getK2(), K.k2, 0.02);
   ICL_TEST_NEAR(r.getP1(), K.p1, 0.002);
   ICL_TEST_NEAR(r.getP2(), K.p2, 0.002);
+}
+
+// The redesign's core thesis: the ICL-native intrinsic calibrator is on par with
+// OpenCV. Feed IDENTICAL correspondences (same projected views of the same GT
+// camera, incl. distortion + noise) to both cv::IntrinsicCalibrator (native,
+// Bouguet reimpl) and cv::calibrateCamera (via OpenCVCamCalib), and check both
+// recover the ground truth to comparable accuracy.
+ICL_REGISTER_TEST("cv.intrinsic.native_vs_opencv",
+                  "native IntrinsicCalibrator matches OpenCV on identical correspondences")
+{
+  const Intr K{650, 620, 330, 250, 0,  -0.18, 0.05, 0.001, -0.001, 0.0};
+  const int W=640, H=480;
+  const double NOISE=0.2; const uint64_t SEED=11;
+  const auto n = runCalib (K, W,H, DC,DR, DSQ, distortionPoses(), NOISE, SEED);   // native
+  const auto o = runOpenCV(K, W,H, DC,DR, DSQ, distortionPoses(), NOISE, SEED);   // opencv, SAME points
+
+  std::printf("[intrinsic] native vs opencv (GT fx=%.1f fy=%.1f cx=%.1f cy=%.1f k1=%.3f k2=%.3f):\n",
+              K.fx,K.fy,K.cx,K.cy,K.k1,K.k2);
+  std::printf("[intrinsic]   native: fx=%.3f fy=%.3f cx=%.3f cy=%.3f k1=%.4f k2=%.4f\n",
+              n.getFocalLengthX(), n.getFocalLengthY(), n.getPrincipalX(), n.getPrincipalY(), n.getK1(), n.getK2());
+  std::printf("[intrinsic]   opencv: fx=%.3f fy=%.3f cx=%.3f cy=%.3f k1=%.4f k2=%.4f\n",
+              o.fx, o.fy, o.cx, o.cy, o.k1, o.k2);
+
+  // PRIMARY CLAIM — parity: native tracks OpenCV tightly on every parameter (they
+  // even agree where both struggle, e.g. k2 under noise → a strong parity statement).
+  ICL_TEST_NEAR(n.getFocalLengthX(), o.fx, 0.3);
+  ICL_TEST_NEAR(n.getFocalLengthY(), o.fy, 0.3);
+  ICL_TEST_NEAR(n.getPrincipalX(),   o.cx, 0.5);
+  ICL_TEST_NEAR(n.getPrincipalY(),   o.cy, 0.5);
+  ICL_TEST_NEAR(n.getK1(),           o.k1, 0.01);
+  ICL_TEST_NEAR(n.getK2(),           o.k2, 0.02);
+
+  // and both recover the well-conditioned GT parameters (fx/fy/cx/cy/k1). k2 is
+  // deliberately NOT asserted vs GT: its r^4 term is weakly excited by this radius
+  // coverage, so under 0.2px noise BOTH calibrators mis-estimate it identically —
+  // a shared observability limit, not a native-vs-OpenCV difference.
+  ICL_TEST_NEAR(n.getFocalLengthX(), K.fx, 1.5);   ICL_TEST_NEAR(o.fx, K.fx, 1.5);
+  ICL_TEST_NEAR(n.getFocalLengthY(), K.fy, 1.5);   ICL_TEST_NEAR(o.fy, K.fy, 1.5);
+  ICL_TEST_NEAR(n.getPrincipalX(),   K.cx, 4.0);   ICL_TEST_NEAR(o.cx, K.cx, 4.0);
+  ICL_TEST_NEAR(n.getPrincipalY(),   K.cy, 4.0);   ICL_TEST_NEAR(o.cy, K.cy, 4.0);
+  ICL_TEST_NEAR(n.getK1(), K.k1, 0.02);            ICL_TEST_NEAR(o.k1, K.k1, 0.02);
 }

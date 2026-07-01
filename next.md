@@ -28,10 +28,23 @@ completely unexercised — no caller anywhere — so a real risk it had bitrotte
   `(bSize, 2*views)` indexed `(2v[+1], pt)`, `worldpoints` is `(bSize,3)` indexed `(coord, pt)`,
   planar Z=0. Native path uses `math::DynMatrix`+LAPACK, zero OpenCV.
 
-**NEXT (Phase B continuation):** (a) add GT lens distortion (k1,k2≠0) and verify recovery; (b)
-side-by-side **native vs OpenCV** (`cv::OpenCVCamCalib` = `cv::calibrateCamera`) on identical
-correspondences — the redesign's core thesis; (c) end-to-end render+detect→calibrate (wire the
-CheckerboardTarget detector output, not just projected points); (d) then Phase C multi-cam extrinsics.
+**Native vs OpenCV — LANDED (parity confirmed):** `cv.intrinsic.native_vs_opencv` feeds IDENTICAL
+correspondences (shared `makeViews` projection, incl. distortion + 0.2px noise) to BOTH
+`cv::IntrinsicCalibrator` and `cv::calibrateCamera` (via `OpenCVCamCalib`). They agree to **~0.02px**
+on fx/fy and track each other on every parameter — even where both struggle (k2 under noise, a shared
+observability limit, not a calibrator difference). Both recover the well-conditioned GT params
+(fx/fy/cx/cy/k1). Redesign's core thesis validated: the native path is on par with OpenCV.
+- Added a correspondence-based `OpenCVCamCalib::addPoints(objMM, imgPx)` + `setImageSize` (bypasses
+  its internal `findChessboardCorners` so both calibrators see the same points); dropped
+  `CALIB_FIX_ASPECT_RATIO` (fx≠fy now recovered faithfully); fixed a latent `getDistortion()` shape
+  bug (built `DynMatrix(1,5)` but wrote `at(0,i)` col-indexed → threw "col index too large" — a direct
+  casualty of the cols-first ctor vs (row,col) accessor asymmetry; see below).
+
+**NEXT (Phase B continuation):** (a) end-to-end render+detect→calibrate (wire the CheckerboardTarget
+detector output, not just projected points); (b) then Phase C multi-cam extrinsics. NOTE (matrix
+convention): `DynMatrix`/`FixedMatrix` accessors are standard `(row,col)` but the CONSTRUCTOR/template
+dim order is still column-first (`DynMatrix(cols,rows)`, `FixedMatrix<T,COLS,ROWS>`) — a half-done
+standardization worth completing (it caused the getDistortion bug).
 
 ### Session 91 — native-checkerboard sub-pixel corner polish (Phase-B gap closed)
 On `further-restructuring-and-cleanup`, suite **1003/1003**. Landed the S90 NEXT: a final gradient

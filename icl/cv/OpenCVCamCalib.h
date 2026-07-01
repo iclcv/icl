@@ -5,8 +5,11 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
+#include <icl/utils/Point.h>
+#include <icl/utils/Size.h>
 #include <icl/core/ImgBase.h>
 #include <icl/math/la/DynMatrix.h>
+#include <vector>
 
 namespace icl::cv {
     /// Cameracalibration using OpenCV functions.
@@ -36,6 +39,21 @@ namespace icl::cv {
           @return overall current number of found chessboard for calibration
           */
       int addPoints(const core::ImgBase *img);
+
+      /// Add one view's correspondences directly, bypassing findChessboardCorners.
+      /** For feeding correspondences from an external detector (e.g. ICL's own
+          CalibrationTarget) or a synthetic harness, so the OpenCV calibration can
+          be compared to the native one on IDENTICAL points. \a objectMM are the
+          planar object points [mm] (z=0 assumed); \a imagePx the matching image
+          points [px]; the two must be the same length. Remember to setImageSize()
+          before calibrateCam() (the image-based addPoints sets it automatically).
+          @return overall current number of accumulated views */
+      int addPoints(const std::vector<utils::Point32f> &objectMM,
+                    const std::vector<utils::Point32f> &imagePx);
+
+      /// Set the calibration image size [px] (required by calibrateCam() when the
+      /// correspondence-based addPoints overload is used).
+      void setImageSize(const utils::Size &size);
 
       ///Tries to calibrates the camera, if minimal number of found and valid chessboards  is greater zero
       void calibrateCam();

@@ -60,7 +60,7 @@ namespace icl::cv {
     }
 
     DynMatrix<icl64f> *OpenCVCamCalib::getDistortion(){
-      DynMatrix<icl64f> *dist = new DynMatrix<icl64f>(1, 5);
+      DynMatrix<icl64f> *dist = new DynMatrix<icl64f>(5, 1);   // 5-vector [k1,k2,p1,p2,k3]
       for (unsigned int i = 0; i < 5; ++i)
         dist->at(0, i) = m_data->distortionCoeffs.at<double>(static_cast<int>(i), 0);
       return dist;
@@ -106,16 +106,34 @@ namespace icl::cv {
       return static_cast<int>(m_data->imagePoints.size());
     }
 
+    int OpenCVCamCalib::addPoints(const std::vector<utils::Point32f> &objectMM,
+                                  const std::vector<utils::Point32f> &imagePx){
+      if (objectMM.size() != imagePx.size() || objectMM.empty())
+        return static_cast<int>(m_data->imagePoints.size());
+      std::vector<::cv::Point3f> objPts; objPts.reserve(objectMM.size());
+      std::vector<::cv::Point2f> imgPts; imgPts.reserve(imagePx.size());
+      for (size_t i = 0; i < objectMM.size(); ++i) {
+        objPts.emplace_back(objectMM[i].x, objectMM[i].y, 0.f);   // planar target, z=0
+        imgPts.emplace_back(imagePx[i].x, imagePx[i].y);
+      }
+      m_data->objectPoints.push_back(std::move(objPts));
+      m_data->imagePoints.push_back(std::move(imgPts));
+      return static_cast<int>(m_data->imagePoints.size());
+    }
+
+    void OpenCVCamCalib::setImageSize(const utils::Size &size){
+      m_data->imgSize = ::cv::Size(size.width, size.height);
+    }
+
     void OpenCVCamCalib::calibrateCam(){
       if (m_data->imagePoints.empty()) return;
 
-      m_data->intrinsicMatrix.at<double>(0, 0) = 1.0;
-      m_data->intrinsicMatrix.at<double>(1, 1) = 1.0;
-
+      // full estimation (no CALIB_FIX_ASPECT_RATIO — fx and fy are free, so a
+      // camera with fx != fy is recovered faithfully).
       std::vector<::cv::Mat> rvecs, tvecs;
       ::cv::calibrateCamera(m_data->objectPoints, m_data->imagePoints, m_data->imgSize,
                           m_data->intrinsicMatrix, m_data->distortionCoeffs,
-                          rvecs, tvecs, ::cv::CALIB_FIX_ASPECT_RATIO);
+                          rvecs, tvecs, 0);
     }
 
     ImgBase *OpenCVCamCalib::undisort(const ImgBase *img){
