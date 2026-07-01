@@ -16,6 +16,10 @@ completely unexercised — no caller anywhere — so a real risk it had bitrotte
 - **`tilted_recovers_gt`**: diverse out-of-plane tilted views → recovers fx/fy/cx/cy **exactly**
   (650.000/620.000/330.000/250.000), k1/k2≈0, on clean data.
 - **`tilted_noise_robust`**: 0.3px correspondence noise → still within ~4px.
+- **`recovers_distortion`**: GT radial+tangential (k1=-0.18, k2=0.05, p1/p2) recovered **exactly** on
+  clean data (large frame-spanning board so the distortion radius is actually excited). The forward
+  model — `cdist=1+k1r²+k2r⁴+k3r⁶` + Brown tangential + normalized-alpha skew, `kc=[k1,k2,p1,p2,k3]` —
+  was reverse-engineered from `project_points2` to match the estimator exactly.
 - **`frontoparallel_is_degenerate`**: fronto-parallel-only views (no tilt) can't constrain the focal
   length — fx error diverges (~4e18) vs 0.0 for tilted. Proves tilt out-of-plane is a REQUIREMENT
   for planar (Zhang) calibration, not a nicety (foreshortening is the missing signal).

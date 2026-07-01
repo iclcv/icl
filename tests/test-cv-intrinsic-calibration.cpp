@@ -31,7 +31,10 @@ namespace {
     double gauss(){ double u1=std::max(1e-12,uniform()),u2=uniform(); return std::sqrt(-2*std::log(u1))*std::cos(2*M_PI*u2); }
   };
 
-  struct Intr { double fx, fy, cx, cy, skew; };           // ground-truth pinhole
+  // ground-truth intrinsics: pinhole + Bouguet/Brown distortion kc=[k1,k2,p1,p2,k3]
+  // (skew is the normalized alpha: u = fx*(xd_x + skew*xd_y) + cx). Distortion
+  // members default to 0 under aggregate init, so `Intr{fx,fy,cx,cy,skew}` = no distortion.
+  struct Intr { double fx, fy, cx, cy, skew; double k1, k2, p1, p2, k3; };
   struct Pose { double ax, ay, az, tx, ty, tz; };         // euler [rad] + t (camera = R*Xw + t)
 
   inline double d2r(double d){ return d*M_PI/180.0; }
@@ -47,14 +50,20 @@ namespace {
     for(int i=0;i<3;++i)for(int j=0;j<3;++j){ double s=0; for(int k=0;k<3;++k)s+=Rz[i*3+k]*RyRx[k*3+j]; R[i*3+j]=s; }
   }
 
-  // project planar world point (X,Y,0) through pose + intrinsics (Z=0 → drop col 2)
+  // project planar world point (X,Y,0) through pose + intrinsics (Z=0 → drop col 2),
+  // applying the SAME forward distortion model IntrinsicCalibrator estimates
+  // (radial cdist + Brown tangential + normalized skew) so clean data recovers exactly.
   void project(const Intr &K, const double R[9], const double t[3], double X, double Y, double &u, double &v) {
     const double Xc = R[0]*X + R[1]*Y + t[0];
     const double Yc = R[3]*X + R[4]*Y + t[1];
     const double Zc = R[6]*X + R[7]*Y + t[2];
-    const double x = Xc/Zc, y = Yc/Zc;
-    u = K.fx*x + K.skew*y + K.cx;
-    v = K.fy*y + K.cy;
+    const double x = Xc/Zc, y = Yc/Zc, r2 = x*x + y*y;
+    const double cdist = 1 + K.k1*r2 + K.k2*r2*r2 + K.k3*r2*r2*r2;
+    const double dx = K.p1*(2*x*y) + K.p2*(r2 + 2*x*x);      // tangential
+    const double dy = K.p1*(r2 + 2*y*y) + K.p2*(2*x*y);
+    const double xdx = x*cdist + dx, xdy = y*cdist + dy;
+    u = K.fx*(xdx + K.skew*xdy) + K.cx;
+    v = K.fy*xdy + K.cy;
   }
 
   // centred (cols x rows) planar point grid, spacing sq [mm]
@@ -157,4 +166,40 @@ ICL_REGISTER_TEST("cv.intrinsic.frontoparallel_is_degenerate",
   std::printf("[intrinsic] fx error: tilted=%.4f  fronto-parallel=%.4f  (px)\n", tiltedErr, flatErr);
   ICL_TEST_TRUE(tiltedErr < 0.5);   // tilted recovers fx tightly
   ICL_TEST_TRUE(flatErr > 5.0);     // fronto-parallel-only is far worse (in practice it diverges)
+}
+
+// Lens distortion recovery: a GT camera WITH radial+tangential distortion, seen
+// through tilted views of a large board that spreads corners across the frame (so
+// the distortion radius is actually excited — under-covered views leave k1/k2
+// ill-constrained, the same "reach the border" argument as spatial coverage). The
+// native calibrator must recover both intrinsics AND the distortion coefficients.
+ICL_REGISTER_TEST("cv.intrinsic.recovers_distortion",
+                  "native IntrinsicCalibrator recovers GT radial+tangential distortion")
+{
+  const Intr K{650, 620, 330, 250, 0,  -0.18, 0.05, 0.001, -0.001, 0.0};
+  const int W=640, H=480, C=11, R=8; const double SQ=26;   // big board → wide radius coverage
+  std::vector<Pose> poses = {                              // closer + offset → corners reach the edges
+    {d2r(-28),d2r(-18),d2r( 5), -55,-35, 560},
+    {d2r( 26),d2r(-20),d2r(-8),  50,-30, 590},
+    {d2r(-24),d2r( 24),d2r(10), -45, 40, 540},
+    {d2r( 27),d2r( 20),d2r(-6),  55, 45, 610},
+    {d2r(-30),d2r(  4),d2r( 0),   0,-45, 520},
+    {d2r(  6),d2r(-30),d2r( 0), -50,  5, 570},
+    {d2r( 14),d2r( 28),d2r(14),  40,-40, 600},
+    {d2r(-18),d2r(-26),d2r(-10),-55, 25, 545},
+    {d2r( 30),d2r( -8),d2r( 6),  30, 50, 585},
+    {d2r(-10),d2r( 30),d2r(-9), -35,-45, 555},
+    {d2r(  0),d2r(  0),d2r(20),   0,  0, 500},           // one near-frontal, well-centred + close
+    {d2r( 20),d2r( 20),d2r( 0),   0,  0, 620},
+  };
+  const auto r = runCalib(K, W,H, C,R, SQ, poses, 0.0, 3);
+  std::printf("[intrinsic] distort: fx=%.3f fy=%.3f cx=%.3f cy=%.3f k1=%.5f k2=%.5f p1=%.5f p2=%.5f\n",
+              r.getFocalLengthX(), r.getFocalLengthY(), r.getPrincipalX(), r.getPrincipalY(),
+              r.getK1(), r.getK2(), r.getP1(), r.getP2());
+  ICL_TEST_NEAR(r.getFocalLengthX(), K.fx, 1.0);
+  ICL_TEST_NEAR(r.getFocalLengthY(), K.fy, 1.0);
+  ICL_TEST_NEAR(r.getK1(), K.k1, 0.005);
+  ICL_TEST_NEAR(r.getK2(), K.k2, 0.02);
+  ICL_TEST_NEAR(r.getP1(), K.p1, 0.002);
+  ICL_TEST_NEAR(r.getP2(), K.p2, 0.002);
 }
