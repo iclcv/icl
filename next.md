@@ -5,12 +5,31 @@
 ## Next Step
 
 ### NEXT — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
-The matrix (row,col) migration is DONE (S94, below), so the calibration arc resumes. Build the
-**extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with FIXED
-intrinsics (intrinsics path already verified end-to-end, S92). Reuse `getPoses` (closed-form IPPE,
-S90) + the native checkerboard/marker-grid detectors (S88–S91). Once Phase C lands, the old monolithic
-`geom` module can be retired in favour of `geom2`. Alternative if distortion observability bites first:
-the k2/ChArUco hybrid (the original S92 plan-B). Backlog has the calibration-redesign tree.
+Build the **extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with
+FIXED intrinsics (intrinsics path now fully done — native + coded/ChArUco, see S94 below). Reuse
+`getPoses` (closed-form IPPE, S90) + the native checkerboard / marker-grid / coded-checkerboard
+detectors. Once Phase C lands, the old monolithic `geom` module can be retired in favour of `geom2`.
+Backlog has the calibration-redesign tree.
+
+### Session 94b — coded-checkerboard (ICL's ChArUco) + partial-board k2 intrinsics DONE
+On `further-restructuring-and-cleanup`, suite **1014/1014**. Built the "marker+checkerboard stuff for
+intrinsics": ICL's ChArUco analogue with BCH markers + a partial-board intrinsic calibrator. 4 commits.
+See memory `project_coded_checkerboard.md`.
+- **`markers::CodedCheckerboardTarget`** — a checkerboard whose interior white cells carry shrunk BCH
+  markers (fill≈0.62, corners survive). detect(): markers → per-marker homography → predict the 4
+  surrounding checker corners at `markerPos/fill` → snap to nearest ChESS saddle → absolute (col,row)
+  label → partial `CheckerboardGrid` → same sub-pixel polish as CheckerboardTarget. Round-trip 0.16px;
+  cropped board still labels corners. Enables the board to OVERRUN the frame (corners reach image edges).
+- **`cv::IntrinsicCalibrator::calibrate(impoints, worldpoints, validMask)`** — PARTIAL-board overload
+  (variable points per view). Opt-in mask; full-grid path byte-for-byte unchanged. Per-view homography
+  init via `GenericHomography2D` on valid points; extrinsic seed by K⁻¹·H decomposition; LMA zeros
+  masked residual+Jacobian columns.
+- **k2 OBSERVABILITY LESSON (important):** k2 (r⁴) only observable when frame corners are at large
+  normalized radius. Narrow FOV (f=600 @640×480, r_max≈0.67) → k2 drifts to garbage even on
+  zero-distortion GT. The E2E test uses WIDE FOV (f=640 @1024×768, r_max≈1.0) + board overrunning the
+  frame → recovers k1=-0.15, k2=0.05 through real detection. Tests: `cv.intrinsic.partial_board_recovers_k2`
+  (pure-math, exact), `markers.intrinsic.endtoend_coded_partial_k2` (full render→detect→calibrate),
+  `markers.codedcheckerboard.*` (detection). Wired into `calib-target-detection-lab` (3rd target).
 
 ### Session 94 — FixedMatrix `<T,COLS,ROWS>` → `<T,ROWS,COLS>` flip DONE (migration complete)
 On `further-restructuring-and-cleanup`, suite **1010/1010**. Finished the matrix (row,col) migration:
