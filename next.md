@@ -4,6 +4,54 @@
 
 ## Next Step
 
+### Session 90 — marker sub-pixel refiners, closed-form IPPE pose, calib-target lab + demo, Phase-B harness
+On `further-restructuring-and-cleanup`, suite **1002/1002**. Long session, 8 commits, continuing the
+calibration arc. **NEXT (start here): wire a sub-pixel corner refinement into the NATIVE CHECKERBOARD
+path** — the Phase-B harness (below) showed the native ChESS-saddle corners sit at ~0.6px residual
+while OpenCV's refined corners hit ~0.01px. The native checkerboard path has no final corner-polish
+step; add one (reuse `cv::SubPixelCornerRefiner`, or a saddle-specific parabolic/gradient polish on
+the ChESS response) and re-run the Phase-B harness to confirm the gap closes.
+
+**Landed this session (commit order):**
+1. **ROCHADE graph checkerboard backend + Delaunay primitive** (`160406868`). New
+   `math::delaunayTriangulation`/`delaunayEdges` (Bowyer-Watson) in ICLMath; `cv::Graph
+   CheckerboardDetector` ("native-graph") = Delaunay adjacency pruned to grid edges by image
+   border evidence → BFS topological (col,row). Wired into the lab. EVALUATION: best on COMPLETE
+   lattices (survives 45° oblique shear), but degrades on real PARTIAL frames (hole breaks the
+   4-connectivity) — experimental, not default. Phase-B later confirmed it also fails under noise.
+2. **Sub-pixel marker-corner refiner (edge)** (`7c07ba879`). `cv::SubPixelCornerRefiner` (border
+   edge-line fit + intersection) → 2× on the marker-grid affine residual (0.32→0.16px). Default-on
+   in `MarkerGridTarget` via `setSubPixelRefine`.
+3. **Generalized `calib-target-detection-lab`** (`276f315a6`). Renamed/moved the checkerboard lab
+   into `markers/apps` (spans cv+geom2+markers), driven by a `target` combo over `CalibrationTarget`
+   (checkerboard + marker-grid), context-sensitive controls.
+4. **BCH-pattern exposure-robust refiner** (`6012cb3b0`). Confirmed (blur+gain+clip experiment) an
+   exposure-driven radial corner drift (~2% at heavy overexposure) that the outer-edge refiner can't
+   fix. `markers::MarkerPatternRefiner` aligns the KNOWN decoded pattern's INTERIOR edges (both
+   polarities → bias cancels) + a few outer edges to pin corners. `RefineMode{None,Edge,Pattern}`.
+   Matches edge accuracy (0.19px) at <½ the exposure drift (0.78% vs 1.8%).
+5. **Two-solution planar pose `getPoses`** (`36cb48bad`, then refactored) — the IPPE flip ambiguity.
+6. **`single-marker-pose` demo** (`def684109`). Visualises BOTH pose frames + live ambiguity ratio;
+   marker-type combo rebuilds the detector + its `Prop` panel on the fly (filter-playground pattern);
+   raw/edge/pattern corner-refine combo.
+7. **Closed-form IPPE refactor** (`b2e93a008`). `getPoses` is now analytic (Collins-Bartoli):
+   homography → canonical frame (Rv: centre→optical axis) → complete a 2×2 block's third row/col,
+   whose SIGN freedom IS the flip → both rotations; translation per solution by linear LS.
+   Deterministic, no iteration, exact (~1e-5px vs the old simplex's ~0.03). Sign completion
+   enumerates (a,b) combos, reprojection arbitrates (b=-ga/a unstable for small a).
+8. **Phase-B comparison harness** (`efb986e03`). `test-markers-calibration-comparison`: render a
+   perspective view (warp generate() + noise) → detect() → completeness + homography residual, for
+   BOTH targets × every backend × {frontal,keystone,noisy}. Table + sanity asserts.
+
+**Phase-B first numbers** (640×480; frontal/keystone/noisy):
+- checkerboard native-growth/ransac 24/24 r≈0.6/0.43/0.8px; **opencv 24/24 r≈0.005-0.017px**;
+  native-graph ok clean, **fails under noise**.
+- marker-grid none/edge/pattern 48/48 r≈0.52/0.39/0.56px (pattern's win is exposure, not clean px).
+
+**Follow-ups noted:** (a) NEXT = native-checkerboard sub-pixel polish (above); (b) reuse getPoses in
+the marker/Fiducial pose getters + temporal disambiguation; (c) grid-based pose (multi-marker baseline
+removes ambiguity); (d) ROCHADE graph needs a Delaunay-based ROCHADE proper OR retire as experimental.
+
 ### Session 89 — deep research on robust association + RANSAC backend landed (trap + perspective fixed)
 On `further-restructuring-and-cleanup`, suite **991/991**. Ran the deep-research pass handed off
 from S88, then prototyped + productionized the top recommendation, incl. closing the perspective gap.
