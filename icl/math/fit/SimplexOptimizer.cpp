@@ -390,15 +390,14 @@ namespace icl::math {
   template class ICLMath_API SimplexOptimizer<double, std::vector<double> >;
 
 
+// FixedColVector<T,D> / FixedRowVector<T,D> are aliases for FixedMatrix<T,1,D> /
+// FixedMatrix<T,D,1>, so instantiating both would be a duplicate — the named
+// vector forms below cover the matrix forms too.
 #define INST(D)                                                       \
-  template class ICLMath_API SimplexOptimizer<float,FixedColVector<float,D> >;    \
-  template class ICLMath_API SimplexOptimizer<float, FixedRowVector<float, D> >;    \
-  template class ICLMath_API SimplexOptimizer<float, FixedMatrix<float, 1, D> >;     \
-  template class ICLMath_API SimplexOptimizer<float, FixedMatrix<float, D, 1> >;     \
-  template class ICLMath_API SimplexOptimizer<double, FixedColVector<double, D> >;  \
-  template class ICLMath_API SimplexOptimizer<double, FixedRowVector<double, D> >;  \
-  template class ICLMath_API SimplexOptimizer<double, FixedMatrix<double, 1, D> >;   \
-  template class ICLMath_API SimplexOptimizer<double, FixedMatrix<double, D, 1> >
+  template class ICLMath_API SimplexOptimizer<float, FixedColVector<float,D> >;    \
+  template class ICLMath_API SimplexOptimizer<float, FixedRowVector<float, D> >;   \
+  template class ICLMath_API SimplexOptimizer<double, FixedColVector<double, D> >; \
+  template class ICLMath_API SimplexOptimizer<double, FixedRowVector<double, D> >
 
   INST(2);
   INST(3);

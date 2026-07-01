@@ -207,12 +207,17 @@ namespace icl::math {
         utils::FixedArray<T,COLS*ROWS>::m_data[i] = T(0);
     }
 
-    /// Range based constructor for STL compatiblitiy
-    /** Range size must be compatible to the new matrix's dimension */
+    /// Creates a matrix from an iterator range (for STL compatibility)
+    /** Range size must be compatible to the new matrix's dimension. This is a
+        named factory rather than a constructor on purpose: a two-argument
+        (begin, end) constructor would compete with the variadic element
+        constructor and hijack two-value calls like FixedMatrix(0, 0) or
+        FixedMatrix(rx, ry). */
     template<class OtherIterator>
-    FixedMatrix(OtherIterator begin, OtherIterator end){
-      FixedMatrixBase::optimized_copy<OtherIterator,T*,DIM>(begin,end,this->begin());
-      //      std::copy(begin,end,begin());
+    static FixedMatrix fromRange(OtherIterator begin, OtherIterator end){
+      FixedMatrix m;
+      FixedMatrixBase::optimized_copy<OtherIterator,T*,DIM>(begin,end,m.begin());
+      return m;
     }
 
     // Explicit Copy template based constructor (deep copy)
