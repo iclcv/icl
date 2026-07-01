@@ -3,6 +3,9 @@
 Terse running TODO index (1–5 words each) so nothing gets forgotten. Detail lives in the
 linked plans; this is just the index. Check off / prune as done.
 
+## ⚠️ URGENT — finish the matrix (row,col) migration
+- [ ] **`DynMatrix`/`FixedMatrix` dim-order flip was half-done.** The `operator()`/`at()` accessors were switched to standard math `(row,col)` (see `DynMatrixBase.h:173`, `FixedMatrix.h:382` — "standard math indexing"), but the DIMENSION ORDER was forgotten: `DynMatrix(cols,rows)` ctor (`DynMatrixBase.h:56`) and `FixedMatrix<T,COLS,ROWS>` template (`FixedMatrix.h:48`) are still **column-first**. This asymmetry already caused a real bug (`OpenCVCamCalib::getDistortion` built `DynMatrix(1,5)` but wrote `at(0,i)` → threw). Complete it: flip to `DynMatrix(rows,cols)` + `FixedMatrix<T,ROWS,COLS>`. SCOPE: ~186 DynMatrix ctor sites + ~581 FixedMatrix/FixedColVector/FixedRowVector instantiations; many NON-square (`1×3`, `3×4`, `4×3` camera/homography blocks, Jacobians) where the flip changes meaning; ripples through `FixedColVector`/`FixedRowVector` typedefs + `Vec`/`Mat` in `GeomDefs.h` → all of geom. HIGH RISK (a silent transpose in a Jacobian is nasty) → dedicated session, per-site review, the 1008-test suite as the safety net. Square matrices (3×3, 4×4) are dimension-invariant; only non-square sites need number-swaps.
+
 ## geom → geom2 retirement (active arc)
 Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLAUDE.md).
 - [x] Port scene-object, simplex-3D, generic-texture-coords, texture-cube,
