@@ -38,9 +38,25 @@ namespace {
     double gauss(){ double u1=std::max(1e-12,uniform()),u2=uniform(); return std::sqrt(-2*std::log(u1))*std::cos(2*M_PI*u2); }
   };
 
-  struct Intr { double fx, fy, cx, cy; };
+  // GT pinhole + Brown/Bouguet distortion kc=[k1,k2,p1,p2,k3]; distortion members
+  // default to 0 under aggregate init, so `Intr{fx,fy,cx,cy}` = no distortion.
+  struct Intr { double fx, fy, cx, cy; double k1, k2, p1, p2, k3; };
   struct Pose { double ax, ay, az, depth; };   // euler [rad], camera-to-board-centre distance [mm]
   inline double d2r(double d){ return d*M_PI/180.0; }
+
+  // invert the forward distortion: given distorted normalized (xd,yd), recover the
+  // pinhole normalized (x,y) by the standard OpenCV fixed-point iteration. Needed to
+  // RENDER a distorted view (pixel -> undistort -> board). Identity when kc=0.
+  void undistortNorm(double xd, double yd, const Intr &K, double &x, double &y) {
+    x=xd; y=yd;
+    for (int it=0; it<12; ++it) {
+      const double r2=x*x+y*y;
+      const double rad=1.0/(1 + K.k1*r2 + K.k2*r2*r2 + K.k3*r2*r2*r2);
+      const double dx=2*K.p1*x*y + K.p2*(r2+2*x*x);
+      const double dy=K.p1*(r2+2*y*y) + 2*K.p2*x*y;
+      x=(xd-dx)*rad; y=(yd-dy)*rad;
+    }
+  }
 
   // row-major 3x3 rotation R = Rz(az)*Ry(ay)*Rx(ax)
   void rot(double ax, double ay, double az, double R[9]) {
@@ -79,10 +95,7 @@ namespace {
     const double ccx=R[0]*xm+R[1]*ym, ccy=R[3]*xm+R[4]*ym, ccz=R[6]*xm+R[7]*ym;
     const double t[3]={-ccx, -ccy, P.depth-ccz};                  // centre -> (0,0,depth)
     const double M[9]={ R[0],R[1],t[0],  R[3],R[4],t[1],  R[6],R[7],t[2] };   // [r1 r2 t]
-    const double Kk[9]={ K.fx,0,K.cx, 0,K.fy,K.cy, 0,0,1 };
-    double Hm[9];
-    for(int i=0;i<3;++i)for(int j=0;j<3;++j){ double s=0; for(int k=0;k<3;++k)s+=Kk[i*3+k]*M[k*3+j]; Hm[i*3+j]=s; }
-    double Hi[9]; inv3x3(Hm, Hi);                                 // image -> board
+    double Minv[9]; inv3x3(M, Minv);                             // pinhole-normalized -> board
 
     Img8u out(Size(W,H), 1); out.fill(255);
     Channel8u o = out[0];
@@ -92,8 +105,10 @@ namespace {
         double acc=0;
         for (int sy=0; sy<SS; ++sy) for (int sx=0; sx<SS; ++sx) {
           const double u=x+(sx+0.5)/SS-0.5, v=y+(sy+0.5)/SS-0.5;
-          const double w = Hi[6]*u+Hi[7]*v+Hi[8];
-          const double bx=(Hi[0]*u+Hi[1]*v+Hi[2])/w, by=(Hi[3]*u+Hi[4]*v+Hi[5])/w;
+          // pixel -> distorted normalized -> undistort -> pinhole normalized -> board
+          double px, py; undistortNorm((u-K.cx)/K.fx, (v-K.cy)/K.fy, K, px, py);
+          const double w = Minv[6]*px+Minv[7]*py+Minv[8];
+          const double bx=(Minv[0]*px+Minv[1]*py+Minv[2])/w, by=(Minv[3]*px+Minv[4]*py+Minv[5])/w;
           acc += checkerMM(bx, by, cols, rows, sq);
         }
         double val = acc/(SS*SS);
@@ -102,64 +117,93 @@ namespace {
       }
     return out;
   }
+
+  // diverse tilted poses (both axes, ±in-plane, varied depth) at ~500-580mm
+  std::vector<Pose> e2ePoses() {
+    return {
+      {d2r(-25),d2r(-18),d2r( 6), 520}, {d2r( 24),d2r(-16),d2r(-7), 560},
+      {d2r(-22),d2r( 22),d2r( 9), 500}, {d2r( 25),d2r( 18),d2r(-5), 580},
+      {d2r(-28),d2r(  4),d2r( 0), 480}, {d2r(  5),d2r(-27),d2r( 0), 540},
+      {d2r( 12),d2r( 26),d2r(12), 560}, {d2r(-16),d2r(-24),d2r(-9), 500},
+      {d2r( 27),d2r( -8),d2r( 6), 570}, {d2r(-10),d2r( 28),d2r(-8), 520},
+    };
+  }
+
+  struct E2E { IntrinsicCalibrator::Result result; int detected, total; };
+
+  // render each pose -> detect (real CheckerboardTarget) -> canonical-order the
+  // corners by objectPos -> calibrate. Returns the recovered intrinsics + how many
+  // full boards were detected.
+  E2E runEndToEnd(const Intr &K, int W, int H, int COLS, int ROWS, double SQ,
+                  const std::vector<Pose> &poses, double noise, uint64_t seed) {
+    const int IC=COLS-1, IR=ROWS-1, bSize=IC*IR;
+    CheckerboardTarget cb(COLS, ROWS, (float)SQ);
+    Rng rng(seed);
+    std::vector<std::vector<Point32f>> views;
+    for (const auto &P : poses) {
+      const Img8u img = render(K, W, H, P, COLS, ROWS, SQ, noise, rng);
+      const auto corr = cb.detect(img);
+      if ((int)corr.size() != bSize) continue;                  // require the full grid
+      std::vector<Point32f> slot(bSize); std::vector<char> got(bSize, 0);
+      bool ok = true;
+      for (const auto &c : corr) {
+        const int mc=(int)std::lround(c.objectPos[0]/SQ), mr=(int)std::lround(c.objectPos[1]/SQ);
+        if (mc<0||mc>=IC||mr<0||mr>=IR) { ok=false; break; }
+        const int idx=mr*IC+mc; slot[idx]=c.imagePos; got[idx]=1;
+      }
+      for (int i=0;i<bSize;++i) ok = ok && got[i];
+      if (ok) views.push_back(std::move(slot));
+    }
+    const int nv=(int)views.size();
+    if (nv < 3) return { IntrinsicCalibrator::Result(), nv, (int)poses.size() };
+    DynMatrix<icl64f> impoints(bSize, 2*nv), world(bSize, 3);
+    for (int idx=0; idx<bSize; ++idx) { world(0,idx)=(idx%IC)*SQ; world(1,idx)=(idx/IC)*SQ; world(2,idx)=0; }
+    for (int v=0; v<nv; ++v)
+      for (int idx=0; idx<bSize; ++idx) { impoints(2*v,idx)=views[v][idx].x; impoints(2*v+1,idx)=views[v][idx].y; }
+    IntrinsicCalibrator cal(IC, IR, nv, W, H);
+    return { cal.calibrate(impoints, world), nv, (int)poses.size() };
+  }
 }
 
-// End-to-end: render tilted GT-camera views -> detect -> calibrate -> compare to GT.
+// End-to-end, NO distortion: render tilted GT-camera views -> detect -> calibrate.
 ICL_REGISTER_TEST("markers.intrinsic.endtoend_checkerboard",
                   "render+detect+calibrate recovers GT intrinsics from real detected corners")
 {
   const Intr K{600, 600, 320, 240};
-  const int W=640, H=480, COLS=9, ROWS=6; const double SQ=25;   // 8x5 = 40 inner corners
-  const int IC=COLS-1, IR=ROWS-1, bSize=IC*IR;
-  const std::vector<Pose> poses = {
-    {d2r(-25),d2r(-18),d2r( 6), 520},
-    {d2r( 24),d2r(-16),d2r(-7), 560},
-    {d2r(-22),d2r( 22),d2r( 9), 500},
-    {d2r( 25),d2r( 18),d2r(-5), 580},
-    {d2r(-28),d2r(  4),d2r( 0), 480},
-    {d2r(  5),d2r(-27),d2r( 0), 540},
-    {d2r( 12),d2r( 26),d2r(12), 560},
-    {d2r(-16),d2r(-24),d2r(-9), 500},
-    {d2r( 27),d2r( -8),d2r( 6), 570},
-    {d2r(-10),d2r( 28),d2r(-8), 520},
-  };
-
-  CheckerboardTarget cb(COLS, ROWS, (float)SQ);
-  Rng rng(4);
-  std::vector<std::vector<Point32f>> views;                     // per accepted view, bSize image points (canonical order)
-  for (const auto &P : poses) {
-    const Img8u img = render(K, W, H, P, COLS, ROWS, SQ, 0.7, rng);
-    const auto corr = cb.detect(img);
-    if ((int)corr.size() != bSize) continue;                    // require the full grid
-    std::vector<Point32f> slot(bSize); std::vector<char> got(bSize, 0);
-    bool ok = true;
-    for (const auto &c : corr) {
-      const int mc=(int)std::lround(c.objectPos[0]/SQ), mr=(int)std::lround(c.objectPos[1]/SQ);
-      if (mc<0||mc>=IC||mr<0||mr>=IR) { ok=false; break; }
-      const int idx=mr*IC+mc; slot[idx]=c.imagePos; got[idx]=1;
-    }
-    for (int i=0;i<bSize;++i) ok = ok && got[i];
-    if (ok) views.push_back(std::move(slot));
-  }
-  std::printf("[endtoend] detected %d/%d full boards\n", (int)views.size(), (int)poses.size());
-  ICL_TEST_TRUE((int)views.size() >= 6);                        // enough diverse views to calibrate
-
-  const int nv=(int)views.size();
-  DynMatrix<icl64f> impoints(bSize, 2*nv), world(bSize, 3);
-  for (int idx=0; idx<bSize; ++idx) { world(0,idx)=(idx%IC)*SQ; world(1,idx)=(idx/IC)*SQ; world(2,idx)=0; }
-  for (int v=0; v<nv; ++v)
-    for (int idx=0; idx<bSize; ++idx) { impoints(2*v,idx)=views[v][idx].x; impoints(2*v+1,idx)=views[v][idx].y; }
-
-  IntrinsicCalibrator cal(IC, IR, nv, W, H);
-  const auto r = cal.calibrate(impoints, world);
-  std::printf("[endtoend] GT fx=%.1f fy=%.1f cx=%.1f cy=%.1f\n", K.fx,K.fy,K.cx,K.cy);
-  std::printf("[endtoend] recovered fx=%.3f fy=%.3f cx=%.3f cy=%.3f k1=%.5f\n",
+  const auto e = runEndToEnd(K, 640, 480, 9, 6, 25, e2ePoses(), 0.7, 4);
+  const auto &r = e.result;
+  std::printf("[endtoend] clean:  detected %d/%d, GT fx=%.0f cx=%.0f cy=%.0f -> fx=%.3f fy=%.3f cx=%.3f cy=%.3f k1=%.4f\n",
+              e.detected, e.total, K.fx,K.cx,K.cy,
               r.getFocalLengthX(), r.getFocalLengthY(), r.getPrincipalX(), r.getPrincipalY(), r.getK1());
-
-  // detection noise is real (saddle + sub-pixel), so tolerances are looser than the
-  // perfect-points test but still tight — a few px of focal length / principal point.
+  ICL_TEST_TRUE(e.detected >= 6);
   ICL_TEST_NEAR(r.getFocalLengthX(), K.fx, 3.0);
   ICL_TEST_NEAR(r.getFocalLengthY(), K.fy, 3.0);
   ICL_TEST_NEAR(r.getPrincipalX(),   K.cx, 4.0);
   ICL_TEST_NEAR(r.getPrincipalY(),   K.cy, 4.0);
+}
+
+// End-to-end WITH lens distortion: the render applies an inverse-distortion warp
+// (undistortNorm), so the detector sees genuinely curved boards and the calibrator
+// must recover the radial coefficients THROUGH detection, not from perfect points.
+ICL_REGISTER_TEST("markers.intrinsic.endtoend_distortion",
+                  "render+detect+calibrate recovers GT lens distortion end-to-end")
+{
+  const Intr K{600, 600, 320, 240,  -0.15, 0.03, 0.0, 0.0, 0.0};   // barrel
+  // bigger board (13x9 squares) → corners reach larger image radius, where the
+  // radial terms are actually observable (a small centred board leaves k1/k2 unconstrained)
+  const auto e = runEndToEnd(K, 640, 480, 13, 9, 25, e2ePoses(), 0.7, 4);
+  const auto &r = e.result;
+  std::printf("[endtoend] distort: detected %d/%d, GT k1=%.3f k2=%.3f -> fx=%.3f fy=%.3f cx=%.3f cy=%.3f k1=%.4f k2=%.4f\n",
+              e.detected, e.total, K.k1, K.k2,
+              r.getFocalLengthX(), r.getFocalLengthY(), r.getPrincipalX(), r.getPrincipalY(), r.getK1(), r.getK2());
+  ICL_TEST_TRUE(e.detected >= 6);
+  ICL_TEST_NEAR(r.getFocalLengthX(), K.fx, 4.0);
+  ICL_TEST_NEAR(r.getFocalLengthY(), K.fy, 4.0);
+  ICL_TEST_NEAR(r.getPrincipalX(),   K.cx, 4.0);
+  ICL_TEST_NEAR(r.getPrincipalY(),   K.cy, 4.0);
+  ICL_TEST_NEAR(r.getK1(), K.k1, 0.03);          // k1 recovered through detection
+  // k2 (r^4) stays weakly observable even here — a complete-board detector can't
+  // reach the extreme image corners where the r^4 term dominates — so it is not
+  // asserted vs GT (it no longer blows up, but isn't accurate). Not a render/detect
+  // bug: the same limitation appears in the perfect-points parity test.
 }

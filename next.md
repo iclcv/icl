@@ -48,9 +48,16 @@ saddle + sub-pixel), orders detected corners canonically by objectPos, and calib
 — sub-pixel accuracy THROUGH genuine detection noise (a small spurious k1≈0.05 absorbs a little). No
 lens distortion in the render yet (needs an inverse-distortion warp) — deferred.
 
-**NEXT (Phase B/C):** (a) add lens-distortion rendering to the end-to-end path (inverse-distortion
-warp) so k1/k2 recovery is exercised through detection; (b) Phase C multi-cam one-click extrinsics
-(3D, fixed intrinsics) — then old `geom` can be deleted. NOTE (matrix convention, ⚠️ URGENT backlog):
+**Distortion-render gap CLOSED** (`markers.intrinsic.endtoend_distortion`). The render now applies an
+inverse-distortion warp (`undistortNorm` fixed-point: pixel→distorted-norm→undistort→pinhole-norm→
+board; identity when kc=0 so the clean test is unchanged). GT barrel k1=-0.15/k2=0.03 → detection
+survives the curved boards (10/10), recovers fx=599.9/cx=320.5/cy=239.7 and **k1=-0.155 (within
+0.005)** with a big enough board (13×9 — corners reach larger image radius). k2 (r⁴) stays weakly
+observable (a complete-board detector can't reach the extreme corners where r⁴ dominates) → not
+asserted; same limit seen in the perfect-points parity test, not a render/detect bug.
+
+**NEXT:** Phase C multi-cam one-click extrinsics (3D, fixed intrinsics) — then old `geom` can be
+deleted. NOTE (matrix convention, ⚠️ URGENT backlog):
 `DynMatrix`/`FixedMatrix` accessors are standard `(row,col)` but the CONSTRUCTOR/template dim order is
 still column-first — half-done migration; recipe recorded (temp `CONSTRUCTOR(rows,cols)` factory →
 private ctor → script-rewrite sites → restore ctor with new order).
