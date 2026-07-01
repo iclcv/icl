@@ -8,11 +8,15 @@
 // (markers::CheckerboardTarget → ChESS saddle + sub-pixel), and calibrates from
 // the DETECTED corners with cv::IntrinsicCalibrator. So genuine detection noise
 // flows into the calibration, and we check the recovered intrinsics still land
-// near ground truth. (No lens distortion here — rendering with distortion needs an
-// inverse-distortion warp; that's a later increment. This isolates render+detect.)
+// near ground truth. Views are rendered with an inverse-distortion warp, so the
+// detector sees genuinely curved boards and the radial coefficients are recovered
+// THROUGH detection. The final test uses the CODED checkerboard on a wide-FOV
+// camera with a board that OVERRUNS the frame (partial views), so its corners
+// reach the image edges and k2 (r^4) becomes observable — the partial-board win.
 
 #include "harness/Test.h"
 #include <icl/markers/CheckerboardTarget.h>
+#include <icl/markers/CodedCheckerboardTarget.h>
 #include <icl/cv/IntrinsicCalibrator.h>
 #include <icl/math/la/DynMatrix.h>
 #include <icl/core/Img.h>
@@ -129,6 +133,50 @@ namespace {
     };
   }
 
+  // sample a coded-board texture (CodedCheckerboardTarget::generate output) at
+  // board-mm (X,Y); bilinear; white outside. Mirrors generate()'s board→texel map.
+  float sampleTex(const Channel8u &t, int tw, int th, double X, double Y, int cols, int rows, double sq) {
+    const double pxt = std::min(tw/double(cols+2), th/double(rows+2));
+    const double oxt=(tw-pxt*cols)/2.0, oyt=(th-pxt*rows)/2.0;
+    const double fx=oxt+pxt + X*pxt/sq, fy=oyt+pxt + Y*pxt/sq;
+    const int x0=(int)std::floor(fx), y0=(int)std::floor(fy);
+    if (x0<0||y0<0||x0+1>=tw||y0+1>=th) return 255.f;
+    const double ax=fx-x0, ay=fy-y0;
+    return (float)((1-ax)*(1-ay)*t(x0,y0)+ax*(1-ay)*t(x0+1,y0)+(1-ax)*ay*t(x0,y0+1)+ax*ay*t(x0+1,y0+1));
+  }
+
+  // like render(), but warps a coded-board TEXTURE (so the markers come along) and
+  // does NOT clip to the board — the board may overrun the frame (partial view).
+  Img8u renderTex(const Intr &K, int W, int H, const Pose &P, int cols, int rows, double sq,
+                  const Img8u &tex, double noise, Rng &rng) {
+    double R[9]; rot(P.ax, P.ay, P.az, R);
+    const double xm=(cols-2)*sq/2.0, ym=(rows-2)*sq/2.0;
+    const double ccx=R[0]*xm+R[1]*ym, ccy=R[3]*xm+R[4]*ym, ccz=R[6]*xm+R[7]*ym;
+    const double t[3]={-ccx, -ccy, P.depth-ccz};
+    const double M[9]={ R[0],R[1],t[0],  R[3],R[4],t[1],  R[6],R[7],t[2] };
+    double Minv[9]; inv3x3(M, Minv);
+    const Channel8u tc = tex[0];
+    const int tw=tex.getWidth(), th=tex.getHeight();
+    Img8u out(Size(W,H), 1); out.fill(255);
+    Channel8u o = out[0];
+    const int SS=3;
+    for (int y=0; y<H; ++y)
+      for (int x=0; x<W; ++x) {
+        double acc=0;
+        for (int sy=0; sy<SS; ++sy) for (int sx=0; sx<SS; ++sx) {
+          const double u=x+(sx+0.5)/SS-0.5, v=y+(sy+0.5)/SS-0.5;
+          double px, py; undistortNorm((u-K.cx)/K.fx, (v-K.cy)/K.fy, K, px, py);
+          const double w = Minv[6]*px+Minv[7]*py+Minv[8];
+          const double bx=(Minv[0]*px+Minv[1]*py+Minv[2])/w, by=(Minv[3]*px+Minv[4]*py+Minv[5])/w;
+          acc += sampleTex(tc, tw, th, bx, by, cols, rows, sq);
+        }
+        double val = acc/(SS*SS);
+        if (noise>0) val += noise*rng.gauss();
+        o(x,y) = (icl8u)std::min(255.0, std::max(0.0, val));
+      }
+    return out;
+  }
+
   struct E2E { IntrinsicCalibrator::Result result; int detected, total; };
 
   // render each pose -> detect (real CheckerboardTarget) -> canonical-order the
@@ -206,4 +254,70 @@ ICL_REGISTER_TEST("markers.intrinsic.endtoend_distortion",
   // reach the extreme image corners where the r^4 term dominates — so it is not
   // asserted vs GT (it no longer blows up, but isn't accurate). Not a render/detect
   // bug: the same limitation appears in the perfect-points parity test.
+}
+
+// FULL end-to-end with the CODED checkerboard: a large board overruns the frame,
+// so each rendered view is PARTIAL; the BCH markers absolutely label the visible
+// checker corners; the masked IntrinsicCalibrator bundles the variable per-view
+// point sets. Because the visible corners reach the image edges/corners, this
+// recovers k2 (r^4) — which the complete-board checkerboard path cannot.
+ICL_REGISTER_TEST("markers.intrinsic.endtoend_coded_partial_k2",
+                  "render partial coded boards -> detect -> masked calibrate recovers k1 AND k2")
+{
+  using icl::markers::CodedCheckerboardTarget;
+  const Intr K{640, 640, 512, 384,  -0.15, 0.05, 0.0, 0.0, 0.0};   // WIDE FOV: frame-corner r~1.0 -> k2 observable
+  const int W=1024, H=768, C=25, R=19; const double SQ=25;         // big board (inner 24x18), overruns the frame
+  const int IC=C-1, IR=R-1, bSize=IC*IR;
+  CodedCheckerboardTarget cb(C, R, (float)SQ);
+  const Img8u tex = cb.generate(Size(4000, 3000));                 // high-res coded texture
+
+  // closer, offset tilts so the board overruns the frame in every view (partial)
+  const std::vector<Pose> poses = {
+    {d2r(-22),d2r(-15),d2r( 5), 380}, {d2r( 20),d2r(-17),d2r(-7), 400},
+    {d2r(-18),d2r( 21),d2r( 9), 370}, {d2r( 22),d2r( 17),d2r(-5), 410},
+    {d2r(-24),d2r(  4),d2r( 0), 360}, {d2r(  6),d2r(-24),d2r( 0), 390},
+    {d2r( 11),d2r( 24),d2r(10), 405}, {d2r(-15),d2r(-22),d2r(-9), 380},
+    {d2r( 25),d2r( -8),d2r( 6), 415}, {d2r(-10),d2r( 26),d2r(-8), 385},
+  };
+  Rng rng(9);
+  std::vector<std::vector<Point32f>> slots;    // per accepted view: bSize slots
+  std::vector<std::vector<char>> masks;
+  int minVis=bSize, maxVis=0;
+  for (const auto &P : poses) {
+    const Img8u img = renderTex(K, W, H, P, C, R, SQ, tex, 0.5, rng);
+    const auto corr = cb.detect(img);
+    if ((int)corr.size() < 24) continue;                            // need a usable partial harvest
+    std::vector<Point32f> slot(bSize); std::vector<char> got(bSize, 0);
+    for (const auto &c : corr) {
+      const int ic=(int)std::lround(c.objectPos[0]/SQ), ir=(int)std::lround(c.objectPos[1]/SQ);
+      if (ic<0||ic>=IC||ir<0||ir>=IR) continue;
+      slot[ir*IC+ic]=c.imagePos; got[ir*IC+ic]=1;
+    }
+    int vis=0; for (char g:got) vis+=g;
+    minVis=std::min(minVis,vis); maxVis=std::max(maxVis,vis);
+    slots.push_back(std::move(slot)); masks.push_back(std::move(got));
+  }
+  const int nv=(int)slots.size();
+  ICL_TEST_TRUE(nv >= 6);
+  ICL_TEST_TRUE(minVis < bSize);                                    // genuinely partial
+
+  DynMatrix<icl64f> impoints=DynMatrix<icl64f>::create(2*nv,bSize),
+                    world   =DynMatrix<icl64f>::create(3,bSize),
+                    mask    =DynMatrix<icl64f>::create(nv,bSize);
+  for (int idx=0; idx<bSize; ++idx) { world(0,idx)=(idx%IC)*SQ; world(1,idx)=(idx/IC)*SQ; world(2,idx)=0; }
+  for (int v=0; v<nv; ++v)
+    for (int idx=0; idx<bSize; ++idx) {
+      impoints(2*v,idx)=slots[v][idx].x; impoints(2*v+1,idx)=slots[v][idx].y;
+      mask(v,idx)=masks[v][idx];
+    }
+  const auto r = IntrinsicCalibrator(IC, IR, nv, W, H).calibrate(impoints, world, mask);
+  std::printf("[endtoend] coded-partial: views=%d vis=%d..%d/%d  fx=%.2f fy=%.2f cx=%.2f cy=%.2f k1=%.4f k2=%.4f\n",
+              nv, minVis, maxVis, bSize, r.getFocalLengthX(), r.getFocalLengthY(),
+              r.getPrincipalX(), r.getPrincipalY(), r.getK1(), r.getK2());
+  ICL_TEST_NEAR(r.getFocalLengthX(), K.fx, 4.0);
+  ICL_TEST_NEAR(r.getFocalLengthY(), K.fy, 4.0);
+  ICL_TEST_NEAR(r.getPrincipalX(),   K.cx, 5.0);
+  ICL_TEST_NEAR(r.getPrincipalY(),   K.cy, 5.0);
+  ICL_TEST_NEAR(r.getK1(), K.k1, 0.03);
+  ICL_TEST_NEAR(r.getK2(), K.k2, 0.04);       // the payoff: k2 through real detection
 }
