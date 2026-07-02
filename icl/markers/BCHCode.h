@@ -235,6 +235,17 @@ namespace icl::markers {
     /// marker set — allocate ids 0..N-1.
     int rotationSafeIdCount() const;
 
+    /// True if decode2D recovers BOTH the id AND the correct rotation from every
+    /// 90-degree orientation of this id's marker — i.e. the marker's orientation
+    /// is unambiguous (its pattern has no rotational near-symmetry). Stronger than
+    /// rotation-safety, which only requires the id. Needed when a consumer trusts
+    /// the per-marker rotation (e.g. anchoring checker corners off a marker).
+    bool isOrientationSafe(int id) const;
+
+    /// Ids (scanning up from 0) whose orientation is unambiguous, up to
+    /// \a maxCount (0 = all). An orientation-robust square-marker set.
+    std::vector<int> orientationSafeIds(int maxCount = 0) const;
+
     /// Minimum Hamming distance between the marker patterns of any two DISTINCT
     /// ids in \a ids, over ALL relative rotations (each pattern vs the 4
     /// rotations of the other). This is the separation the decoder actually has

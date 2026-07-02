@@ -90,6 +90,8 @@ namespace icl::markers {
       data->plugin.reset(new FiducialDetectorPluginSquareBCH(4, 2));
     }else if(plugin == "bch5x5"){
       data->plugin.reset(new FiducialDetectorPluginSquareBCH(5, 4));
+    }else if(plugin == "bch6x6"){
+      data->plugin.reset(new FiducialDetectorPluginSquareBCH(6, 4));
     }else if(plugin == "art"){
       data->plugin.reset(new FiducialDetectorPluginART);
     }else if(plugin == "amoeba"){

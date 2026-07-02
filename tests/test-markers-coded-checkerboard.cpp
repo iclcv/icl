@@ -63,6 +63,31 @@ ICL_REGISTER_TEST("markers.codedcheckerboard.generate_detect_roundtrip",
   ICL_TEST_TRUE(maxErr < 1.0f);               // sub-pixel + correctly labelled
 }
 
+ICL_REGISTER_TEST("markers.codedcheckerboard.preset_5x5_roundtrip",
+                  "the 5x5 (BCH_5x5_t4_RS) marker code also round-trips to labelled corners")
+{
+  const int C = 9, R = 7;
+  const float SQ = 25.f;
+  CodedCheckerboardTarget t(C, R, SQ, 0.62f, SquareBCHPreset::BCH_5x5_t4_RS);
+  ICL_TEST_TRUE(t.numMarkers() > 8);
+
+  const Size sz(1200, 950);
+  const Img8u img = t.generate(sz);
+  const Layout L(C, R, sz);
+
+  const auto corr = t.detect(img);
+  ICL_TEST_TRUE((int)corr.size() >= 36);
+
+  float maxErr = 0.f;
+  for (const auto &c : corr) {
+    const int ic = (int)std::lround(c.objectPos[0]/SQ);
+    const int ir = (int)std::lround(c.objectPos[1]/SQ);
+    const Point32f exp = L.corner(ic, ir);
+    maxErr = std::max(maxErr, std::hypot(c.imagePos.x-exp.x, c.imagePos.y-exp.y));
+  }
+  ICL_TEST_TRUE(maxErr < 1.0f);
+}
+
 ICL_REGISTER_TEST("markers.codedcheckerboard.partial_board_labels",
                   "a partially-visible (cropped) coded board still labels corners correctly")
 {

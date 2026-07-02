@@ -5,6 +5,7 @@
 #include <icl/markers/CodedCheckerboardTarget.h>
 #include <icl/markers/BCHCode.h>
 #include <icl/markers/FiducialDetector.h>
+#include <icl/markers/FiducialDetectorPlugin.h>
 #include <icl/markers/Fiducial.h>
 #include <icl/cv/CheckerboardSaddleDetector.h>
 #include <icl/cv/CheckerboardGrid.h>
@@ -20,11 +21,32 @@ using namespace icl::geom;
 
 namespace icl::markers {
 
+  namespace {
+    // FiducialDetector plugin type string for a preset (only presets with a
+    // registered n×n plugin can back a coded checkerboard)
+    std::string detectorTypeFor(SquareBCHPreset p) {
+      switch (p) {
+        case SquareBCHPreset::BCH_4x4_t2_RS: return "bch4x4";
+        case SquareBCHPreset::BCH_5x5_t4_RS: return "bch5x5";
+        case SquareBCHPreset::BCH_6x6_t4_RS: return "bch6x6";
+        case SquareBCHPreset::BCH_3x3_t1:    return "bch3x3";
+        default:
+          throw ICLException("CodedCheckerboardTarget: preset has no n×n detector "
+                             "plugin (use BCH_4x4_t2_RS, BCH_5x5_t4_RS, BCH_6x6_t4_RS, "
+                             "or BCH_3x3_t1)");
+      }
+    }
+    // marker border in code cells; must match the plugin's "border width" default
+    constexpr int MARKER_BORDER = 2;
+  }
+
   struct CodedCheckerboardTarget::Data {
     int cols, rows;
     float squareMM;
     float fill;
-    std::string markerType;
+    SquareBCHPreset preset;
+    SquareBCHCode code;          ///< renders the marker patterns for generate()
+    std::string detType;         ///< FiducialDetector plugin type
 
     /// a marker-bearing interior white cell (checker-cell coords)
     struct Coded { int id, cx, cy; };
@@ -35,24 +57,34 @@ namespace icl::markers {
     std::unique_ptr<FiducialDetector> fd;
     cv::CheckerboardSaddleDetector saddle;
 
-    Data(int c, int r, float sq, float f, std::string mt)
-      : cols(c), rows(r), squareMM(sq), fill(f), markerType(std::move(mt)) {
-      // interior cells (those with 4 surrounding inner corners): cx∈[1,cols-2],
-      // cy∈[1,rows-2]. White cells (matching generate()'s checker) get a marker.
-      int id = 0;
+    Data(int c, int r, float sq, float f, SquareBCHPreset p)
+      : cols(c), rows(r), squareMM(sq), fill(f), preset(p),
+        code(SquareBCHCode::presetInfo(p).gridSize, SquareBCHCode::presetInfo(p).correctable),
+        detType(detectorTypeFor(p)) {
+      // count the interior white cells (those with 4 surrounding inner corners):
+      // cx∈[1,cols-2], cy∈[1,rows-2], white where (cx+cy) is even.
+      std::vector<std::pair<int,int>> cells;
       for (int cy = 1; cy <= rows-2; ++cy)
         for (int cx = 1; cx <= cols-2; ++cx)
-          if (((cx + cy) & 1) == 0) {              // white cell
-            coded.push_back({id, cx, cy});
-            id2cell[id] = {cx, cy};
-            ++id;
-          }
+          if (((cx + cy) & 1) == 0) cells.push_back({cx, cy});
+
+      // assign each cell one ORIENTATION-safe id, so every marker's pose (and thus
+      // its surrounding corner labels) is unambiguous under rotation.
+      const std::vector<int> ids = code.orientationSafeIds((int)cells.size());
+      if (ids.size() < cells.size())
+        throw ICLException("CodedCheckerboardTarget: board needs " + str(cells.size()) +
+                           " markers but preset " + SquareBCHCode::presetInfo(p).name +
+                           " offers only " + str(ids.size()) + " orientation-safe ids");
+      for (size_t k = 0; k < cells.size(); ++k) {
+        coded.push_back({ids[k], cells[k].first, cells[k].second});
+        id2cell[ids[k]] = cells[k];
+      }
     }
   };
 
   CodedCheckerboardTarget::CodedCheckerboardTarget(int cols, int rows, float squareSizeMM,
-                                                   float markerFill, const std::string &markerType)
-    : m_data(new Data(cols, rows, squareSizeMM, markerFill, markerType)) {}
+                                                   float markerFill, SquareBCHPreset preset)
+    : m_data(new Data(cols, rows, squareSizeMM, markerFill, preset)) {}
 
   CodedCheckerboardTarget::~CodedCheckerboardTarget() { delete m_data; }
 
@@ -103,7 +135,7 @@ namespace icl::markers {
     // the cell so it stays clear of the cell edges (the checker corners survive).
     const int mpx = std::max(1, (int)std::lround(m_data->fill * px));
     for (const auto &cc : m_data->coded) {
-      const Img8u marker = BCHCoder::createMarkerImage(cc.id, 2, Size(mpx, mpx));
+      const Img8u marker = m_data->code.markerImage(cc.id, MARKER_BORDER, Size(mpx, mpx));
       const Channel8u md = marker[0];
       const int mw = marker.getWidth(), mh = marker.getHeight();
       const float ccx = ox + (cc.cx + 0.5f)*px, ccy = oy + (cc.cy + 0.5f)*px;
@@ -128,7 +160,12 @@ namespace icl::markers {
     if (!D.fd) {
       std::vector<int> ids; ids.reserve(D.coded.size());
       for (const auto &c : D.coded) ids.push_back(c.id);
-      D.fd.reset(new FiducialDetector(D.markerType, ids, ParamMap{{"size", Size(100,100)}}));
+      D.fd.reset(new FiducialDetector(D.detType, ids, ParamMap{{"size", Size(100,100)}}));
+      // The checkerboard's own solid black squares get detected as quads; with
+      // error correction the small n×n codes would spuriously decode such near-
+      // uniform patches to a valid id. Require an EXACT decode (0 corrected
+      // errors) so only genuine, cleanly-rendered markers are accepted.
+      D.fd->getPlugin()->setPropertyValue("max bch errors", 0);
     }
 
     const std::vector<Fiducial> &fids = D.fd->detect(&image);
@@ -136,35 +173,42 @@ namespace icl::markers {
     const std::vector<cv::CornerSeed> seeds = D.saddle.detect(image);
     if (seeds.empty()) return {};
 
-    // For each found marker: fit a marker-local→image homography from its 4 corner
-    // key points, predict the 4 surrounding checker corners (marker-local position
-    // markerPos/fill — the marker fills `fill` of the cell, so the cell edges sit
-    // at 1/fill of the marker half-extent), and snap each prediction to the nearest
-    // sub-pixel saddle. A corner is shared by up to 4 markers → averaged.
-    std::map<std::pair<int,int>, std::pair<Point32f,int>> acc;  // (ic,ir) → (Σpos, n)
-
+    // Corner labeling is split into POSITION and LABEL to be robust:
+    //  * POSITION: a per-marker marker-local→image homography (from the marker's 4
+    //    key points) predicts its 4 surrounding checker corners and snaps each to
+    //    the nearest sub-pixel saddle. Local ⇒ accurate even under lens distortion.
+    //  * LABEL: the marker id reliably gives its CELL, so a single global
+    //    image→board homography (fit from all marker centres) turns a snapped
+    //    saddle into its absolute (col,row) index by rounding. Global geometry ⇒
+    //    independent of the per-marker orientation convention (which differs by
+    //    code), needing only half-cell accuracy for the rounding.
+    // A corner is shared by up to 4 markers → averaged.
+    std::vector<Point32f> boardC, imgC;
+    std::vector<const Fiducial*> markers;
     for (const Fiducial &f : fids) {
       auto itc = D.id2cell.find(f.getID());
       if (itc == D.id2cell.end()) continue;
-      const int cx = itc->second.first, cy = itc->second.second;
-
       const std::vector<Fiducial::KeyPoint> &kps = f.getKeyPoints2D();
       if (kps.size() != 4) continue;
+      Point32f c(0,0);
+      for (int k = 0; k < 4; ++k) { c.x += kps[k].imagePos.x; c.y += kps[k].imagePos.y; }
+      boardC.push_back(Point32f((itc->second.first - 0.5f)*sq, (itc->second.second - 0.5f)*sq));
+      imgC.push_back(Point32f(c.x*0.25f, c.y*0.25f));
+      markers.push_back(&f);
+    }
+    if (boardC.size() < 4) return {};                 // need enough for a homography
+    const math::Homography2D Hib(boardC.data(), imgC.data(), (int)boardC.size());  // image → board
+
+    std::map<std::pair<int,int>, std::pair<Point32f,int>> acc;  // (ic,ir) → (Σpos, n)
+    for (const Fiducial *fp : markers) {
+      const std::vector<Fiducial::KeyPoint> &kps = fp->getKeyPoints2D();
       Point32f mp[4], ip[4];
       for (int k = 0; k < 4; ++k) { mp[k] = kps[k].markerPos; ip[k] = kps[k].imagePos; }
       // ctor maps its 2nd arg → 1st, so (ip, mp) yields H.apply(markerPos) → image
       const math::Homography2D H(ip, mp, 4);          // marker-local mm → image px
 
       Point32f pred[4];
-      std::pair<int,int> idx[4];
-      for (int k = 0; k < 4; ++k) {
-        pred[k] = H.apply(Point32f(mp[k].x/fill, mp[k].y/fill));
-        // marker is rendered axis-aligned with the board: +x→right, +y→down, so a
-        // corner's board inner-index follows the sign of its marker-local position
-        const int ic = mp[k].x > 0 ? cx : cx-1;
-        const int ir = mp[k].y > 0 ? cy : cy-1;
-        idx[k] = {ic, ir};
-      }
+      for (int k = 0; k < 4; ++k) pred[k] = H.apply(Point32f(mp[k].x/fill, mp[k].y/fill));
       // snap tolerance: half the smallest gap between predicted corners (adapts to
       // the marker's apparent size/perspective, can't reach a neighbouring corner)
       float tol = 1e18f;
@@ -179,10 +223,11 @@ namespace icl::markers {
           const float d = std::hypot(pred[k].x-seeds[s].pos.x, pred[k].y-seeds[s].pos.y);
           if (d < best) { best = d; bi = (int)s; }
         }
-        if (bi >= 0) {
-          auto &e = acc[idx[k]];
-          e.first.x += seeds[bi].pos.x; e.first.y += seeds[bi].pos.y; ++e.second;
-        }
+        if (bi < 0) continue;
+        const Point32f b = Hib.apply(seeds[bi].pos);  // snapped saddle → board mm
+        const std::pair<int,int> id{(int)std::lround(b.x/sq), (int)std::lround(b.y/sq)};
+        auto &e = acc[id];
+        e.first.x += seeds[bi].pos.x; e.first.y += seeds[bi].pos.y; ++e.second;
       }
     }
 

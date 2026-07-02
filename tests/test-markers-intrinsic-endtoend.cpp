@@ -268,7 +268,9 @@ ICL_REGISTER_TEST("markers.intrinsic.endtoend_coded_partial_k2",
   const Intr K{640, 640, 512, 384,  -0.15, 0.05, 0.0, 0.0, 0.0};   // WIDE FOV: frame-corner r~1.0 -> k2 observable
   const int W=1024, H=768, C=25, R=19; const double SQ=25;         // big board (inner 24x18), overruns the frame
   const int IC=C-1, IR=R-1, bSize=IC*IR;
-  CodedCheckerboardTarget cb(C, R, (float)SQ);
+  // big board needs ~196 markers -> use the 6x6 code (4095 ids); 4x4/5x5 are for
+  // small boards
+  CodedCheckerboardTarget cb(C, R, (float)SQ, 0.62f, icl::markers::SquareBCHPreset::BCH_6x6_t4_RS);
   const Img8u tex = cb.generate(Size(4000, 3000));                 // high-res coded texture
 
   // closer, offset tilts so the board overruns the frame in every view (partial)

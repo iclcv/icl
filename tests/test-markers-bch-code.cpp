@@ -342,6 +342,29 @@ ICL_REGISTER_TEST("markers.squarebch.preset_table",
   std::cout << std::flush;
 }
 
+ICL_REGISTER_TEST("markers.squarebch.orientation_safe_ids",
+                  "orientation-safe ids decode2D to the correct id AND rotation from "
+                  "every orientation; they are a subset that excludes near-symmetric codes")
+{
+  for (auto p : {SquareBCHPreset::BCH_4x4_t2_RS, SquareBCHPreset::BCH_5x5_t4_RS}) {
+    SquareBCHCode c(p);
+    const std::vector<int> os = c.orientationSafeIds();
+    ICL_TEST_TRUE(os.size() >= 16);                 // plenty for a coded board
+    ICL_TEST_TRUE((int)os.size() <= c.numIds());
+    for (int id : os) {
+      ICL_TEST_TRUE(c.isOrientationSafe(id));
+      // verify directly: every rotation yields the right id and rotation index
+      uint64_t bits = c.encode(id);
+      for (int r = 0; r < 4; ++r) {
+        const auto d = c.decode2D(bits);
+        ICL_TEST_EQ(d.id, id);
+        ICL_TEST_EQ(d.rotation, (4 - r) % 4);
+        bits = c.rotate90(bits);
+      }
+    }
+  }
+}
+
 ICL_REGISTER_TEST("markers.squarebch.marker_image_geometry",
                   "markerImage size = (n+2*border)^2, border black, interior = code bits")
 {

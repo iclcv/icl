@@ -507,6 +507,24 @@ namespace icl::markers {
     return safe;
   }
 
+  bool SquareBCHCode::isOrientationSafe(int id) const {
+    uint64_t bits = encode(id);
+    for (int r = 0; r < 4; ++r) {
+      const Decoded d = decode2D(bits);
+      if (d.id != id || d.rotation != (4 - r) % 4) return false;
+      bits = rotate90(bits);
+    }
+    return true;
+  }
+
+  std::vector<int> SquareBCHCode::orientationSafeIds(int maxCount) const {
+    std::vector<int> out;
+    const int total = numIds();
+    for (int id = 0; id < total && (maxCount <= 0 || (int)out.size() < maxCount); ++id)
+      if (isOrientationSafe(id)) out.push_back(id);
+    return out;
+  }
+
   SquareBCHCode::Decoded SquareBCHCode::decode2D(uint64_t bits) const {
     Decoded best;
     uint64_t cur = bits;
