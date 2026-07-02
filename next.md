@@ -4,12 +4,66 @@
 
 ## Next Step
 
-### NEXT — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
+### NEXT — generalize `icl-marker-detection` for the new n×n BCH marker types
+`icl-marker-detection` (`icl/markers/apps/marker-detection.cpp`) selects its marker type via `-m`
+(`bch`, `art`, `amoeba`, `icl1`). Session 95 added a whole family of **square-BCH** marker types to
+the `FiducialDetector` factory — `bch3x3`, `bch4x4`, `bch5x5`, `bch6x6` (see `SquareBCHCode` /
+`FiducialDetectorPluginSquareBCH`). Generalize the app so it can detect these too:
+- accept the new `-m bchNxN` types (they already work through `FiducialDetector`; just make sure the
+  app's marker-id range / marker-creation / overlay code isn't hard-wired to the 6×6 `bch` space of
+  4096 ids — the small codes have far fewer usable ids, see `SquareBCHCode::presetTable()` /
+  `orientationSafeIds()`);
+- `icl-create-marker` likewise (it calls `FiducialDetector::createMarker`, which the new plugin
+  supports via `SquareBCHCode::markerImage`).
+Good little end-to-end shakedown of the S95 detector plugin outside the coded-checkerboard path.
+
+### THEN — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
 Build the **extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with
 FIXED intrinsics (intrinsics path now fully done — native + coded/ChArUco, see S94 below). Reuse
 `getPoses` (closed-form IPPE, S90) + the native checkerboard / marker-grid / coded-checkerboard
 detectors. Once Phase C lands, the old monolithic `geom` module can be retired in favour of `geom2`.
 Backlog has the calibration-redesign tree.
+
+### Session 95 — BCH codes reimplemented + generalized to n×n; coded checkerboard on SquareBCHCode
+On `further-restructuring-and-cleanup`, suite **1034/1034**. Turned the copied-as-is 36-bit BCH marker
+code into a clean, parameterized family and rebuilt the coded checkerboard on top of it. 8 commits.
+Memory: none yet — key facts below.
+
+- **`markers::BCHCoder` reimplemented** (`BCHCode.cpp` 608→384 lines). Retired the 4096-entry string
+  table + the undocumented magic XOR `0x8f80b8750`: proved `table[id] == reverse36(systematic_encode(id)
+  ^ WHITENING)`, so a real systematic LFSR encoder + a named whitening mask replace both. The whitening
+  is a distance-preserving anti-degeneracy mask (keeps id 0 off the all-black marker; ARToolKitPlus-
+  compatible), not part of the coding math. Berlekamp/Chien split into named phases. Characterization
+  tests locked the contract first (round-trip all 4096, marker geometry, rotation, 1–4-bit correction,
+  **true min distance = 9**, and low ids have larger distance: 11 for ids 0–15, 10 for 0–63).
+- **`markers::SquareBCHCode`** — n×n generalization (3×3/4×4/5×5/6×6). `BCHEngine(length,t)` derives the
+  GF(2^m), builds the generator, computes k. Presets (`SquareBCHPreset` + `presetTable()`): the fully
+  rotation-safe ones carry an `_RS` suffix — **BCH_4x4_t2_RS** (64 ids, d5), **BCH_5x5_t4_RS** (32, d9),
+  **BCH_6x6_t4_RS** (4096, d9). Rotation metrics: `rotationSafeIdCount()`, `rotatedMinDistance()`,
+  `selectRotationRobustIds()`, and **`isOrientationSafe()`/`orientationSafeIds()`** (decode2D recovers
+  id AND rotation — stronger than id-only rotation-safety; needed when a consumer trusts per-marker pose).
+- **`FiducialDetectorPluginSquareBCH`** — n×n analogue of the BCH plugin (reuses the quad pipeline).
+  Wired into the `FiducialDetector` factory as `bch3x3`(3,1) / `bch4x4`(4,2) / `bch5x5`(5,4) /
+  `bch6x6`(6,4). End-to-end detection test renders `SquareBCHCode` markers and recovers ids.
+- **`CodedCheckerboardTarget` now runs on `SquareBCHCode` presets** (default BCH_4x4_t2_RS; also 5×5/6×6
+  for big boards — the k2 board needs ~196 markers → 6×6). Three problems solved: (1) require unique-id
+  markers — the board's solid black squares all decode to one fixed id, so false positives are
+  *duplicates*; (2) allocate only `orientationSafeIds` to cells; (3) **bootstrap detection**: run the
+  decoder at FULL t (noise tolerance), keep unique-id markers, fit a global image→board homography from
+  their centres (geometric outlier rejection replaces `max bch errors=0`), recover the discrete
+  marker→board rotation R by voting, then label each marker's corners LOCALLY from cell + R (distortion-
+  robust at the image corners — a global homography can't model radial distortion). Position from the
+  per-marker homography + saddle snap. Noise-tolerance test (±55) added.
+- **Lab (`calib-target-detection-lab`)**: coded marker-code combo (4×4/5×5/6×6), a "markers on black
+  cells" toggle, and a **live-tunable `Prop` of the coded target's FiducialDetector** (persistent
+  `DetectorHost` swaps the detector as a child Configurable on the GUI thread via
+  `ICLApplication::executeInGUIThread`; Prop live-refreshes).
+- **`MarkerCells::Black` — RENDERS but is UNDETECTABLE by design.** "The black cells ARE the markers"
+  (full-cell marker = quad border + inner BCH code, no inversion). Renders fine, but the markers touch
+  at every diagonal corner → one connected black lattice the quad detector can't segment (every quad
+  decodes to the all-black id). Confirmed via a headless threshold/region sweep + the live lab: no
+  detector setting fixes connectivity. This is exactly why ChArUco uses white cells. White-cell markers
+  are the usable variant; leave black-cell as a documented experiment.
 
 ### Session 94b — coded-checkerboard (ICL's ChArUco) + partial-board k2 intrinsics DONE
 On `further-restructuring-and-cleanup`, suite **1014/1014**. Built the "marker+checkerboard stuff for
