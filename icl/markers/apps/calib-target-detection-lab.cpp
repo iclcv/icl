@@ -43,6 +43,7 @@
 #include <icl/cv/RansacCheckerboardDetector.h> // the native global-RANSAC association backend
 #include <icl/markers/MarkerGridTarget.h>      // the marker-grid CalibrationTarget
 #include <icl/markers/CodedCheckerboardTarget.h>  // the BCH-coded checkerboard (partial-board) target
+#include <icl/markers/FiducialDetector.h>          // the coded target's marker detector (a Configurable)
 #include <icl/filter/affine/ImageUndistortion.h>   // radial distortion model + warp maps
 #include <icl/filter/affine/WarpOp.h>               // efficient warp-map application
 #include <icl/io/SaveLoad.h>                         // io::save (dump the detector input frame)
@@ -69,6 +70,21 @@ std::unique_ptr<MarkerGridTarget> mtarget;  // the marker-grid detector/generato
 std::shared_ptr<MeshNode> codedBoard;       // coded-checkerboard target board (textured quad)
 std::unique_ptr<CodedCheckerboardTarget> ctarget;  // the coded-checkerboard detector/generator
 const Size CAMRES(480, 360);
+
+// Persistent host so the coded target's marker FiducialDetector can be shown and
+// tuned via a single Prop widget even though the target (and its detector) is
+// rebuilt whenever the code / cell polarity changes. bind() swaps the detector in
+// as a child Configurable; the Prop live-refreshes (queued to the GUI thread).
+struct DetectorHost : public icl::utils::Configurable {
+  FiducialDetector *cur = nullptr;
+  DetectorHost() { setConfigurableID("coded-marker-detector"); }
+  void bind(FiducialDetector *d) {          // pass nullptr to just detach the old one
+    if (cur) removeChildConfigurable(cur);
+    cur = d;
+    if (cur) addChildConfigurable(cur);
+  }
+};
+DetectorHost detHost;
 
 // marker-grid geometry (fixed): a 4x3 BCH grid, 20mm markers, 10mm gaps
 static const Size    MK_CELLS(4, 3);
@@ -165,8 +181,14 @@ static const SquareBCHPreset CC_PRESETS[] = {
 // its board texture.
 static void rebuildCoded(int codeIdx, bool blackCells) {
   codeIdx = std::max(0, std::min(2, codeIdx));
+  // The detector swap changes the Prop's child set → rebuilds Qt widgets, so it
+  // must run on the GUI thread. Detach the old detector while it's still alive,
+  // free the old target, then attach the new one (each hop blocking).
+  std::function<void(FiducialDetector*)> bind = [](FiducialDetector *d){ detHost.bind(d); };
+  ICLApplication::instance()->executeInGUIThread(bind, (FiducialDetector*)nullptr, true);
   ctarget.reset(new CodedCheckerboardTarget(CC_COLS, CC_ROWS, CC_SQ, 0.62f, CC_PRESETS[codeIdx],
                                             blackCells ? MarkerCells::Black : MarkerCells::White));
+  ICLApplication::instance()->executeInGUIThread(bind, ctarget->markerDetector(), true);
   buildCodedBoard();
 }
 
@@ -255,6 +277,7 @@ void init() {
   buildMarkerBoard();
   markerBoard->setVisible(false);                  // checkerboard is the default target
   ctarget.reset(new CodedCheckerboardTarget(CC_COLS, CC_ROWS, CC_SQ));
+  detHost.bind(ctarget->markerDetector());         // show the detector's params via Prop
   codedBoard = std::make_shared<MeshNode>();
   scene.addNode(codedBoard);
   buildCodedBoard();
@@ -281,6 +304,7 @@ void init() {
                   << Button("save frame", {.handle="saveFrame"})
                   << CheckBox("apply undistortion", {.checked=false, .handle="undistort"})
                   << Prop(&view, {.label="offscreen renderer + scene"})
+                  << Prop(&detHost, {.label="coded marker detector"})   // tune the FiducialDetector live
                   << (HBox()
                       << CheckBox("corners", {.checked=true, .handle="showCorners"})
                       << CheckBox("orientation", {.checked=true, .handle="showOri"})
