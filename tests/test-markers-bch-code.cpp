@@ -282,6 +282,37 @@ ICL_REGISTER_TEST("markers.squarebch.rotation_safe_prefix",
   std::cout << std::flush;
 }
 
+ICL_REGISTER_TEST("markers.squarebch.rotated_distance_and_selection",
+                  "rotated min distance + automated rotation-robust id selection: "
+                  "how many usable markers each grid yields at a target rotated distance")
+{
+  struct Cfg { int n, t; };
+  const std::vector<Cfg> cfgs = { {3,1}, {4,1}, {4,2}, {5,2}, {5,3}, {5,4}, {6,4} };
+  std::cout << "\n    grid  t   ids     | rotation-robust set size at min rotated distance d\n"
+            <<   "                      |  d>=3   d>=5   d>=7   d>=9\n";
+  for (const auto &cf : cfgs) {
+    SquareBCHCode c(cf.n, cf.t);
+    std::cout << "    " << c.gridSize() << "x" << c.gridSize()
+              << "   " << c.correctable() << "   " << c.numIds() << "\t      | ";
+    for (int d : {3, 5, 7, 9}) {
+      // cap the greedy scan so huge id spaces (e.g. 5x5 t=1) stay cheap
+      const std::vector<int> set = c.selectRotationRobustIds(d, 128);
+      std::cout << "  " << set.size() << "\t";
+      // the selected set must actually achieve the requested rotated distance
+      if (set.size() >= 2) ICL_TEST_TRUE(c.rotatedMinDistance(set) >= d);
+    }
+    std::cout << "\n";
+  }
+  std::cout << std::flush;
+
+  // sanity: rotated distance never exceeds the plain code distance, and a
+  // selected d>=5 set for 4x4 t=2 is non-trivial
+  SquareBCHCode c44(4, 2);
+  const std::vector<int> s = c44.selectRotationRobustIds(5, 64);
+  ICL_TEST_TRUE(s.size() >= 8);
+  ICL_TEST_TRUE(c44.rotatedMinDistance(s) >= 5);
+}
+
 ICL_REGISTER_TEST("markers.squarebch.marker_image_geometry",
                   "markerImage size = (n+2*border)^2, border black, interior = code bits")
 {

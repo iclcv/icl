@@ -5,6 +5,7 @@
 #include <array>
 #include <cstdint>
 #include <utility>
+#include <vector>
 
 #include <icl/utils/Exception.h>
 #include <icl/markers/BCHCode.h>
@@ -477,6 +478,43 @@ namespace icl::markers {
       cur = rotate90(cur);
     }
     return best;
+  }
+
+  int SquareBCHCode::rotatedMinDistance(const std::vector<int> &ids) const {
+    if (ids.size() < 2) return numBits();
+    std::vector<uint64_t> pat(ids.size());
+    for (size_t k = 0; k < ids.size(); ++k) pat[k] = encode(ids[k]);
+    int md = numBits();
+    for (size_t i = 0; i < ids.size(); ++i)
+      for (size_t j = i + 1; j < ids.size(); ++j) {
+        uint64_t rj = pat[j];
+        for (int r = 0; r < 4; ++r) {
+          md = std::min(md, __builtin_popcountll(pat[i] ^ rj));
+          rj = rotate90(rj);
+        }
+      }
+    return md;
+  }
+
+  std::vector<int> SquareBCHCode::selectRotationRobustIds(int minRotatedDistance,
+                                                          int maxCount) const {
+    std::vector<int> chosen;
+    std::vector<uint64_t> pats;
+    const int total = numIds();
+    for (int id = 0; id < total; ++id) {
+      if (maxCount > 0 && (int)chosen.size() >= maxCount) break;
+      const uint64_t p = encode(id);
+      bool ok = true;
+      for (size_t k = 0; k < pats.size() && ok; ++k) {
+        uint64_t rj = pats[k];
+        for (int r = 0; r < 4; ++r) {
+          if (__builtin_popcountll(p ^ rj) < minRotatedDistance) { ok = false; break; }
+          rj = rotate90(rj);
+        }
+      }
+      if (ok) { chosen.push_back(id); pats.push_back(p); }
+    }
+    return chosen;
   }
 
   Img8u SquareBCHCode::markerImage(int id, int border, const Size &size) const {

@@ -190,6 +190,24 @@ namespace icl::markers {
     /// decode trying all 4 orientations, returning the first exact / best match
     Decoded decode2D(uint64_t bits) const;
 
+    /// Minimum Hamming distance between the marker patterns of any two DISTINCT
+    /// ids in \a ids, over ALL relative rotations (each pattern vs the 4
+    /// rotations of the other). This is the separation the decoder actually has
+    /// when markers may appear at any orientation — robust decoding of e errors
+    /// needs it >= 2e+1. The plain (unrotated) code distance is always an upper
+    /// bound; rotation only shrinks it. (Self-rotation/orientation ambiguity is
+    /// not included.) Returns numBits() for sets of fewer than two ids.
+    int rotatedMinDistance(const std::vector<int> &ids) const;
+
+    /// Greedily assemble a rotation-robust marker set: scan ids 0,1,2,... and
+    /// keep each whose pattern stays at rotated Hamming distance >=
+    /// \a minRotatedDistance from every already-chosen marker (all relative
+    /// orientations), up to \a maxCount ids (0 = no cap). Returns the chosen ids
+    /// — an automated way to pick a marker set that survives rotation. The
+    /// returned set satisfies rotatedMinDistance(set) >= minRotatedDistance.
+    std::vector<int> selectRotationRobustIds(int minRotatedDistance,
+                                             int maxCount = 0) const;
+
     /// render \a id as a marker image (n*n cells + \a border cells), optionally
     /// upscaled to \a size with nearest-neighbour interpolation
     core::Img8u markerImage(int id, int border = 1,
