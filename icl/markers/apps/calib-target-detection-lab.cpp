@@ -155,6 +155,19 @@ static void buildCodedBoard(float widthMM = 300.f) {
   codedBoard->setPrimitiveVisible(PrimLine | PrimVertex, false);
 }
 
+// the coded-checkerboard marker codes offered by the "coded marker code" combo
+static const SquareBCHPreset CC_PRESETS[] = {
+  SquareBCHPreset::BCH_4x4_t2_RS, SquareBCHPreset::BCH_5x5_t4_RS,
+  SquareBCHPreset::BCH_6x6_t4_RS };
+
+// (re)build the coded target for a marker-code index (0=4x4, 1=5x5, 2=6x6) and
+// refresh its board texture.
+static void rebuildCoded(int codeIdx) {
+  codeIdx = std::max(0, std::min(2, codeIdx));
+  ctarget.reset(new CodedCheckerboardTarget(CC_COLS, CC_ROWS, CC_SQ, 0.62f, CC_PRESETS[codeIdx]));
+  buildCodedBoard();
+}
+
 // CODED-CHECKERBOARD overlay: result image + each absolutely-labelled checker
 // corner (marker-anchored, so partial boards still yield labelled corners).
 static void drawCorners(DrawHandle &draw, const Img8u &img,
@@ -260,6 +273,7 @@ void init() {
                       << CheckBox("cleanup (LAP)", {.checked=false, .handle="cleanup"})
                       << CheckBox("subpixel", {.checked=true, .handle="subpixel"}))
                   << Combo("pattern,edge,none", {.handle="refineMode", .label="marker corner refine"})  // marker-only
+                  << Combo("4x4,5x5,6x6", {.handle="codedCode", .label="coded marker code"})           // coded-only
                   << Button("save frame", {.handle="saveFrame"})
                   << CheckBox("apply undistortion", {.checked=false, .handle="undistort"})
                   << Prop(&view, {.label="offscreen renderer + scene"})
@@ -300,16 +314,23 @@ void run() {
     for (const char *h : {"xc","yc","radius","minScore","backend","cleanup","subpixel","showOri"})
       if (cb) gui[h].enable(); else gui[h].disable();
     if (target == 1) gui["refineMode"].enable(); else gui["refineMode"].disable();  // marker-grid only
+    if (target == 2) gui["codedCode"].enable(); else gui["codedCode"].disable();    // coded only
   }
   if (target == 0) board->setCells(gui["xc"], gui["yc"]);   // idempotent
   using RM = MarkerGridTarget::RefineMode;
   mtarget->setRefineMode(rmode==0 ? RM::Pattern : rmode==1 ? RM::Edge : RM::None);
 
+  // rebuild the coded target when its marker code changes (0=4x4, 1=5x5, 2=6x6)
+  const int codeIdx = ComboHandle(gui["codedCode"]).getSelectedIndex();
+  static int lCode = 0;
+  const bool codedChanged = (codeIdx != lCode);
+  if (codedChanged) { lCode = codeIdx; rebuildCoded(codeIdx); scene.touch(); }
+
   // re-render the result on a new captured frame OR a control change
   static int lRadius=-1, lUndist=-1, lBackend=-1, lCleanup=-1, lSubpix=-1, lRmode=-1; static float lMs=1e9f;
   const bool resultDirty = radius!=lRadius || minScore!=lMs || (int)showUndistorted!=lUndist
                         || backend!=lBackend || (int)cleanup!=lCleanup || target!=lTarget
-                        || (int)subpixel!=lSubpix || rmode!=lRmode;
+                        || (int)subpixel!=lSubpix || rmode!=lRmode || codedChanged;
   lRadius=radius; lMs=minScore; lUndist=(int)showUndistorted; lBackend=backend;
   lCleanup=(int)cleanup; lSubpix=(int)subpixel; lTarget=target; lRmode=rmode;
 
