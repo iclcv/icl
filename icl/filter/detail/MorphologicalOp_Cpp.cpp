@@ -134,13 +134,37 @@ namespace {
       }
       case MOp::openBorder:
       case MOp::closeBorder:{
-        MOp sub_op(ot==MOp::openBorder ? MOp::erode : MOp::dilate,
-                   op.getMaskSize(),op.getMask());
-        sub_op.setClipToROI(op.getClipToROI());
-        sub_op.setCheckOnly(op.getCheckOnly());
-        sub_op.apply(srcImg, op.openingBuffer());
-        sub_op.setOptype(ot==MOp::openBorder ? MOp::dilate : MOp::erode);
-        sub_op.apply(op.openingBuffer(), dstImg);
+        // open = dilate(erode(src)); close = erode(dilate(src)).
+        //
+        // The intermediate buffer is the subtle part: NeighborhoodOp in non-clip
+        // mode gives it a full-size buffer but only WRITES its shrunk ROI, leaving
+        // the border ring uninitialised. Pass 2's neighbourhood reads into that
+        // ring (morph_cpp samples src at roiOffset ± anchor), so with the old code
+        // it read stale heap memory — harmless on a freshly-zeroed buffer, but under
+        // real allocation churn it surfaced fragments of other images (the
+        // intermittent black/white frames) and, at worst, out-of-bounds (the
+        // historic SIGSEGV). Fix: pass 1 ALWAYS runs non-clip and we replicate the
+        // ROI edge into the border, so pass 2 only ever reads defined pixels.
+        // Two passes through a FRESH local intermediate — NOT the op's reused
+        // member buffer, which carried ROI/offset state across calls so pass 2
+        // sampled a misaligned/stale region and emitted non-binary, drifting values
+        // (the flicker) even from clean binary input. Pass 1 always allocates
+        // (checkOnly=false) and runs non-clip; we replicate the ROI edge into the
+        // border so pass 2 never reads uninitialised pixels. Propagating the
+        // caller's checkOnly to pass 1 was the historic SIGSEGV (intermediate stayed
+        // unsized under Quick2's checkOnly=true) — only pass 2 honours it.
+        const bool open = (ot == MOp::openBorder);
+        Image tmp;
+        MOp p1(open ? MOp::erode : MOp::dilate, op.getMaskSize(), op.getMask());
+        p1.setCheckOnly(false);
+        p1.setClipToROI(false);
+        p1.apply(srcImg, tmp);
+        tmp.as<T>().fillBorder(false);
+        MOp p2(open ? MOp::dilate : MOp::erode, op.getMaskSize(), op.getMask());
+        p2.setCheckOnly(op.getCheckOnly());
+        p2.setClipToROI(op.getClipToROI());
+        p2.apply(tmp, dstImg);
+        if(!op.getClipToROI()) dstImg.as<T>().fillBorder(false);
         break;
       }
       default:

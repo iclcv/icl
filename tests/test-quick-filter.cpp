@@ -198,12 +198,19 @@ ICL_REGISTER_TEST("Quick2.Filter.filter.erosion", "erosion produces output") {
   ICL_TEST_TRUE(!dst.isNull());
 }
 
-// NOTE: opening and closing tests disabled — the MorphologicalOp implementation
-// currently crashes (SIGSEGV) when used via Quick2 filter(). This is a pre-existing
-// bug in the morphological filter, not a Quick2 issue.
-// TODO: re-enable once MorphologicalOp is fixed
-// ICL_REGISTER_TEST("Quick2.Filter.filter.opening", ...) { ... }
-// ICL_REGISTER_TEST("Quick2.Filter.filter.closing", ...) { ... }
+// opening/closing are composite morph ops (erode+dilate / dilate+erode chained
+// through an intermediate buffer). They used to crash / emit garbage because the
+// second pass read the intermediate's uninitialised border ring — now fixed in
+// both the C++ and Accelerate backends (border is replicated between passes).
+ICL_REGISTER_TEST("Quick2.Filter.filter.opening", "opening produces output") {
+  Image dst = filter(testImage(), "opening");
+  ICL_TEST_TRUE(!dst.isNull());
+}
+
+ICL_REGISTER_TEST("Quick2.Filter.filter.closing", "closing produces output") {
+  Image dst = filter(testImage(), "closing");
+  ICL_TEST_TRUE(!dst.isNull());
+}
 
 // ---- filter chain ----
 

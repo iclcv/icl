@@ -139,13 +139,27 @@ namespace {
 
       case MOp::openBorder:
       case MOp::closeBorder: {
-        MOp sub_op(ot==MOp::openBorder ? MOp::erode : MOp::dilate,
-                   op.getMaskSize(), op.getMask());
-        sub_op.setClipToROI(op.getClipToROI());
-        sub_op.setCheckOnly(op.getCheckOnly());
-        sub_op.apply(src, op.openingBuffer());
-        sub_op.setOptype(ot==MOp::openBorder ? MOp::dilate : MOp::erode);
-        sub_op.apply(op.openingBuffer(), dst);
+        // open = dilate(erode(src)); close = erode(dilate(src)), done as two passes
+        // through a FRESH intermediate. Two things are essential:
+        //  (1) the intermediate is a local buffer, not the op's reused member — the
+        //      member carried ROI/offset state across calls, so pass 2 sampled a
+        //      misaligned/stale region and emitted non-binary, drifting values (the
+        //      flicker) even from a clean binary input;
+        //  (2) pass 1 always allocates (checkOnly=false) and runs non-clip, and we
+        //      replicate the ROI edge into the border so pass 2's edge-extended
+        //      vImage read never touches uninitialised pixels.
+        const bool open = (ot == MOp::openBorder);
+        Image tmp;
+        MOp p1(open ? MOp::erode : MOp::dilate, op.getMaskSize(), op.getMask());
+        p1.setCheckOnly(false);
+        p1.setClipToROI(false);
+        p1.apply(src, tmp);
+        tmp.ptr()->fillBorder(false);
+        MOp p2(open ? MOp::dilate : MOp::erode, op.getMaskSize(), op.getMask());
+        p2.setCheckOnly(op.getCheckOnly());
+        p2.setClipToROI(op.getClipToROI());
+        p2.apply(tmp, dst);
+        if(!op.getClipToROI()) dst.ptr()->fillBorder(false);
         break;
       }
       case MOp::tophatBorder:

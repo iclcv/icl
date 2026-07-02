@@ -3338,3 +3338,49 @@ ICL_REGISTER_TEST("Filter.WarpOp.auto_scale_fills_frame",
   ICL_TEST_TRUE(sc[0] <= 2.f && sc[1] <= 2.f);
   ICL_TEST_TRUE(sc[2] >= sz.width-3.f && sc[3] >= sz.height-3.f);
 }
+
+// Regression for the opening/closing FLICKER. These are composite ops
+// (erode→dilate / dilate→erode). They used to route both passes through the op's
+// REUSED member buffer, which carried ROI/offset state across calls — so a SECOND
+// apply on the same op sampled a misaligned/stale region and emitted non-binary,
+// per-call-DRIFTING values (0 → 159 → 170 → 183 …) from a clean binary input.
+// The fix runs the two passes through a fresh local intermediate. Guard both
+// invariants that the flicker broke: (a) binary input ⇒ binary output, and
+// (b) repeated applies on the same op are byte-identical.
+namespace {
+  Img8u checkerBinary() {
+    Img8u src(Size(160, 120), 1);
+    Channel8u c = src[0];
+    for(int y = 0; y < 120; ++y)
+      for(int x = 0; x < 160; ++x) c(x, y) = ((x/16 + y/16) & 1) ? 255 : 0;
+    return src;
+  }
+  bool isBinary(const Img8u &im) {
+    const icl8u *p = im.begin(0);
+    for(int i = 0, n = im.getDim(); i < n; ++i) if(p[i] != 0 && p[i] != 255) return false;
+    return true;
+  }
+  void check_composite_stable(MorphologicalOp::optype ot) {
+    Img8u src = checkerBinary();
+    MorphologicalOp op(ot, Size(3, 3));
+    op.setClipToROI(false);
+    ImgBase *ref = 0; op.apply(&src, &ref);
+    ICL_TEST_TRUE(isBinary(*ref->asImg<icl8u>()));   // binary in ⇒ binary out
+    // reapply on the SAME op — must not drift (this is what flickered on screen)
+    for(int k = 0; k < 8; ++k) {
+      ImgBase *out = 0; op.apply(&src, &out);
+      ICL_TEST_TRUE(isBinary(*out->asImg<icl8u>()));
+      ICL_TEST_TRUE(*ref->asImg<icl8u>() == *out->asImg<icl8u>());
+    }
+  }
+}
+
+ICL_REGISTER_TEST("filter.morph.opening_binary_and_stable",
+                  "openBorder keeps binary input binary and is stable across repeated applies") {
+  check_composite_stable(MorphologicalOp::openBorder);
+}
+
+ICL_REGISTER_TEST("filter.morph.closing_binary_and_stable",
+                  "closeBorder keeps binary input binary and is stable across repeated applies") {
+  check_composite_stable(MorphologicalOp::closeBorder);
+}

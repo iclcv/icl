@@ -130,6 +130,18 @@ namespace icl::qt {
     size_t needed = size_t(params.getDim()) * params.getChannels() * getSizeOf(d);
     auto &buffers = m_data->buffers;
 
+    // TODO(buffer-reuse): the "is this buffer free?" test below is
+    // isExclusivelyOwned() — which only checks the ImgBase HANDLE
+    // (shared_ptr<ImgBase> use_count == 1), NOT the per-channel pixel data.
+    // A consumer that does `Image v = pooled.shallowCopy();` (or selectChannel)
+    // keeps the channel SmartPtrs alive on a *new* ImgBase, so the pool's copy
+    // drops back to use_count 1 and looks reclaimable while its pixels are still
+    // referenced — recycling it then aliases two live images (observed as
+    // black/white / torn frames). The correct liveness test is per-channel data
+    // ownership (Image::isIndependent() / channel SmartPtr use_counts == 1), or
+    // better: rebuild this on a raw-byte pool keyed on channel buffers. See
+    // project_memorypool.md + backlog "buffer-reuse based on image channels".
+
     auto track = [&](const char *event, std::ptrdiff_t delta, const Image *buf){
       track_event(m_data->currentUsage, m_data->memoryCap, m_data->tracing,
                   event, delta, buf);

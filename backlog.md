@@ -127,3 +127,13 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 
 ## verification debt
 - [ ] Real-display visual pass (no GL here)
+
+## infrastructure / correctness follow-ups
+- [ ] **Quick2 buffer-reuse based on image channels** — `QuickContext::getBuffer`
+  decides a pooled buffer is free via `Image::isExclusivelyOwned()`, which only
+  checks the ImgBase HANDLE (`use_count==1`), NOT the per-channel pixel data. A
+  consumer that `shallowCopy()`s a pooled buffer and drops the handle can get it
+  recycled while its pixels are still referenced → aliasing (black/white/torn
+  frames). Re-base reuse on channel-data ownership (`isIndependent()` / per-channel
+  SmartPtr use_counts) or the raw-byte pool in `project_memorypool.md`. TODO marker
+  at the reuse check in `QuickContext.cpp`.
