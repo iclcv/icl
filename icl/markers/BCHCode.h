@@ -131,26 +131,33 @@ namespace icl::markers {
 
 
   /// Well-known predefined square-BCH marker configurations (grid size + error
-  /// correction t). Names read BCH_<n>x<n>_t<t>. See SquareBCHCode::presetTable().
+  /// correction t). Square markers appear at arbitrary orientation, so the
+  /// figure that matters is `rotationSafeIds` — the number of low ids that are
+  /// still uniquely decodable from every 90-degree rotation (see
+  /// SquareBCHPresetInfo / SquareBCHCode::presetTable()). Names carry a "_RS"
+  /// suffix when the WHOLE id space is rotation-safe (rotationSafeIds == maxIds),
+  /// which is what you normally want for a fiducial marker.
   enum class SquareBCHPreset {
-    BCH_3x3_t1,   ///< 3x3, t=1:   32 ids, d=3   (few, rotation-poor)
-    BCH_4x4_t1,   ///< 4x4, t=1: 2048 ids, d=3
-    BCH_4x4_t2,   ///< 4x4, t=2:   64 ids, d=5   (fully rotation-safe)
-    BCH_5x5_t2,   ///< 5x5, t=2: 32768 ids, d=5
-    BCH_5x5_t3,   ///< 5x5, t=3: 1024 ids, d=7
-    BCH_5x5_t4,   ///< 5x5, t=4:   32 ids, d=9   (fully rotation-safe)
-    BCH_6x6_t4,   ///< 6x6, t=4: 4096 ids, d=9   (same id space as legacy BCHCoder)
+    BCH_4x4_t2_RS,   ///< 4x4, t=2:   64 ids, d=5  — all 64 rotation-safe
+    BCH_5x5_t4_RS,   ///< 5x5, t=4:   32 ids, d=9  — all 32 rotation-safe
+    BCH_6x6_t4_RS,   ///< 6x6, t=4: 4096 ids, d=9  — all rotation-safe (legacy space)
+    BCH_5x5_t3,      ///< 5x5, t=3: 1024 ids, d=7  — 49 rotation-safe
+    BCH_5x5_t2,      ///< 5x5, t=2: 32768 ids, d=5 — 631 rotation-safe
+    BCH_4x4_t1,      ///< 4x4, t=1: 2048 ids, d=3  — 19 rotation-safe
+    BCH_3x3_t1,      ///< 3x3, t=1:   32 ids, d=3  — 10 rotation-safe (rotation-poor)
   };
 
   /// Static features of a SquareBCHPreset (see SquareBCHCode::presetTable()).
   struct SquareBCHPresetInfo {
     SquareBCHPreset preset;
-    const char *name;    ///< e.g. "BCH_4x4_t2"
-    int gridSize;        ///< n
-    int correctable;     ///< t
-    int numBits;         ///< n*n
-    int maxIds;          ///< raw code space (1<<k)
-    int minDistance;     ///< design minimum distance (2t+1)
+    const char *name;        ///< e.g. "BCH_4x4_t2_RS"
+    int gridSize;            ///< n
+    int correctable;         ///< t
+    int numBits;             ///< n*n
+    int maxIds;              ///< raw code space (1<<k)
+    int minDistance;         ///< design minimum distance (2t+1)
+    int rotationSafeIds;     ///< # of low ids uniquely decodable from any rotation
+    bool fullyRotationSafe;  ///< rotationSafeIds == maxIds
   };
 
 
@@ -221,6 +228,12 @@ namespace icl::markers {
     Decoded decode(uint64_t bits) const;
     /// decode trying all 4 orientations, returning the first exact / best match
     Decoded decode2D(uint64_t bits) const;
+
+    /// Number of low ids [0,N) that decode2D uniquely recovers from ALL 4
+    /// orientations (scans from 0 until the first id that a rotation makes
+    /// ambiguous). This is the usable id count for a rotation-invariant square
+    /// marker set — allocate ids 0..N-1.
+    int rotationSafeIdCount() const;
 
     /// Minimum Hamming distance between the marker patterns of any two DISTINCT
     /// ids in \a ids, over ALL relative rotations (each pattern vs the 4

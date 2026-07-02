@@ -440,17 +440,17 @@ namespace icl::markers {
 
   SquareBCHPresetInfo SquareBCHCode::presetInfo(SquareBCHPreset p) {
     using P = SquareBCHPreset;
-    // {preset, name, n, t, bits, maxIds(1<<k), minDistance(2t+1)} — the maxIds /
-    // distance columns are verified against a freshly built code by
-    // tests/test-markers-bch-code.cpp (markers.squarebch.preset_table).
+    // {preset, name, n, t, bits, maxIds(1<<k), d(2t+1), rotationSafeIds, fullyRS}
+    // The maxIds/distance/rotationSafeIds columns are verified against a freshly
+    // built code by tests/test-markers-bch-code.cpp (markers.squarebch.preset_table).
     switch (p) {
-      case P::BCH_3x3_t1: return {p, "BCH_3x3_t1", 3, 1,  9,    32, 3};
-      case P::BCH_4x4_t1: return {p, "BCH_4x4_t1", 4, 1, 16,  2048, 3};
-      case P::BCH_4x4_t2: return {p, "BCH_4x4_t2", 4, 2, 16,    64, 5};
-      case P::BCH_5x5_t2: return {p, "BCH_5x5_t2", 5, 2, 25, 32768, 5};
-      case P::BCH_5x5_t3: return {p, "BCH_5x5_t3", 5, 3, 25,  1024, 7};
-      case P::BCH_5x5_t4: return {p, "BCH_5x5_t4", 5, 4, 25,    32, 9};
-      case P::BCH_6x6_t4: return {p, "BCH_6x6_t4", 6, 4, 36,  4096, 9};
+      case P::BCH_4x4_t2_RS: return {p, "BCH_4x4_t2_RS", 4, 2, 16,    64, 5,   64, true};
+      case P::BCH_5x5_t4_RS: return {p, "BCH_5x5_t4_RS", 5, 4, 25,    32, 9,   32, true};
+      case P::BCH_6x6_t4_RS: return {p, "BCH_6x6_t4_RS", 6, 4, 36,  4096, 9, 4096, true};
+      case P::BCH_5x5_t3:    return {p, "BCH_5x5_t3",    5, 3, 25,  1024, 7,   49, false};
+      case P::BCH_5x5_t2:    return {p, "BCH_5x5_t2",    5, 2, 25, 32768, 5,  631, false};
+      case P::BCH_4x4_t1:    return {p, "BCH_4x4_t1",    4, 1, 16,  2048, 3,   19, false};
+      case P::BCH_3x3_t1:    return {p, "BCH_3x3_t1",    3, 1,  9,    32, 3,   10, false};
     }
     throw ICLException("SquareBCHCode::presetInfo: unknown preset");
   }
@@ -458,8 +458,8 @@ namespace icl::markers {
   std::vector<SquareBCHPresetInfo> SquareBCHCode::presetTable() {
     using P = SquareBCHPreset;
     std::vector<SquareBCHPresetInfo> t;
-    for (P p : {P::BCH_3x3_t1, P::BCH_4x4_t1, P::BCH_4x4_t2, P::BCH_5x5_t2,
-                P::BCH_5x5_t3, P::BCH_5x5_t4, P::BCH_6x6_t4})
+    for (P p : {P::BCH_4x4_t2_RS, P::BCH_5x5_t4_RS, P::BCH_6x6_t4_RS,
+                P::BCH_5x5_t3, P::BCH_5x5_t2, P::BCH_4x4_t1, P::BCH_3x3_t1})
       t.push_back(presetInfo(p));
     return t;
   }
@@ -492,6 +492,19 @@ namespace icl::markers {
     d.id     = (int)((corrected >> m_data->parity) & m_data->idMask);
     d.errors = nerr;
     return d;
+  }
+
+  int SquareBCHCode::rotationSafeIdCount() const {
+    const int total = numIds();
+    int safe = 0;
+    for (int id = 0; id < total; ++id) {
+      uint64_t bits = encode(id);
+      bool ok = true;
+      for (int r = 0; r < 4 && ok; ++r) { ok = (decode2D(bits).id == id); bits = rotate90(bits); }
+      if (!ok) break;
+      ++safe;
+    }
+    return safe;
   }
 
   SquareBCHCode::Decoded SquareBCHCode::decode2D(uint64_t bits) const {

@@ -317,9 +317,9 @@ ICL_REGISTER_TEST("markers.squarebch.rotated_distance_and_selection",
 
 ICL_REGISTER_TEST("markers.squarebch.preset_table",
                   "predefined presets: print the feature table and verify each "
-                  "preset's tabulated id-count / distance matches a built code")
+                  "preset's tabulated id-count / distance / rotation-safe count")
 {
-  std::cout << "\n    preset        grid  t  bits  maxIds   d\n";
+  std::cout << "\n    preset          grid  t  bits  maxIds   d   rotSafeIds  fullyRS\n";
   for (const auto &pi : SquareBCHCode::presetTable()) {
     SquareBCHCode c(pi.preset);                       // build from the preset
     std::cout << "    " << pi.name
@@ -327,13 +327,17 @@ ICL_REGISTER_TEST("markers.squarebch.preset_table",
               << "   " << pi.correctable
               << "   " << pi.numBits
               << "   " << pi.maxIds
-              << "\t  " << pi.minDistance << "\n";
+              << "\t  " << pi.minDistance
+              << "\t   " << pi.rotationSafeIds
+              << "\t   " << (pi.fullyRotationSafe ? "yes" : "no") << "\n";
     // the constructed code must agree with the tabulated features
-    ICL_TEST_EQ(c.gridSize(),    pi.gridSize);
-    ICL_TEST_EQ(c.correctable(), pi.correctable);
-    ICL_TEST_EQ(c.numBits(),     pi.numBits);
-    ICL_TEST_EQ(c.numIds(),      pi.maxIds);
-    ICL_TEST_EQ(c.minDistance(), pi.minDistance);
+    ICL_TEST_EQ(c.gridSize(),          pi.gridSize);
+    ICL_TEST_EQ(c.correctable(),       pi.correctable);
+    ICL_TEST_EQ(c.numBits(),           pi.numBits);
+    ICL_TEST_EQ(c.numIds(),            pi.maxIds);
+    ICL_TEST_EQ(c.minDistance(),       pi.minDistance);
+    ICL_TEST_EQ(c.rotationSafeIdCount(), pi.rotationSafeIds);
+    ICL_TEST_EQ(pi.fullyRotationSafe, pi.rotationSafeIds == pi.maxIds);
   }
   std::cout << std::flush;
 }
