@@ -10,6 +10,17 @@
 
 namespace icl::markers {
 
+  class FiducialDetector;
+
+  /// Which checker cells carry the markers on a CodedCheckerboardTarget.
+  /** White (default): a shrunk marker sits inside each white square (classic
+      ChArUco look), framed by the white cell. Black: the BLACK squares ARE the
+      markers — each black cell is replaced by a full-cell ordinary black marker,
+      whose white neighbour squares provide the contrast. No inversion; detection
+      is identical. Because a black-cell marker fills the whole square it is
+      larger (more pixels per code cell) than a shrunk white-cell marker. */
+  enum class MarkerCells { White, Black };
+
   /// Checkerboard calibration target with BCH markers coding the corners.
   /** A normal \a cols × \a rows checkerboard whose interior white cells each carry
       a shrunk square BCH marker (centred, filling \a markerFill of the cell so it
@@ -44,7 +55,8 @@ namespace icl::markers {
     /// the preset offers orientation-safe ids.
     CodedCheckerboardTarget(int cols = 9, int rows = 7, float squareSizeMM = 25.f,
                             float markerFill = 0.62f,
-                            SquareBCHPreset preset = SquareBCHPreset::BCH_4x4_t2_RS);
+                            SquareBCHPreset preset = SquareBCHPreset::BCH_4x4_t2_RS,
+                            MarkerCells markerCells = MarkerCells::White);
     ~CodedCheckerboardTarget();
 
     CodedCheckerboardTarget(const CodedCheckerboardTarget &) = delete;
@@ -60,6 +72,11 @@ namespace icl::markers {
     float getSquareSize() const;
     /// Number of coded (marker-bearing) interior white cells.
     int   numMarkers()    const;
+
+    /// The underlying marker FiducialDetector (a utils::Configurable), built on
+    /// first use — exposed so its preprocessing / decoding parameters can be
+    /// inspected and tuned (e.g. by icl-calib-target-detection-lab).
+    FiducialDetector *markerDetector() const;
   };
 
 } // namespace icl::markers

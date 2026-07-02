@@ -45,6 +45,7 @@ namespace icl::markers {
     float squareMM;
     float fill;
     SquareBCHPreset preset;
+    MarkerCells markerCells;     ///< which checker cells host the markers
     SquareBCHCode code;          ///< renders the marker patterns for generate()
     std::string detType;         ///< FiducialDetector plugin type
 
@@ -57,16 +58,17 @@ namespace icl::markers {
     std::unique_ptr<FiducialDetector> fd;
     cv::CheckerboardSaddleDetector saddle;
 
-    Data(int c, int r, float sq, float f, SquareBCHPreset p)
-      : cols(c), rows(r), squareMM(sq), fill(f), preset(p),
+    Data(int c, int r, float sq, float f, SquareBCHPreset p, MarkerCells mc)
+      : cols(c), rows(r), squareMM(sq), fill(f), preset(p), markerCells(mc),
         code(SquareBCHCode::presetInfo(p).gridSize, SquareBCHCode::presetInfo(p).correctable),
         detType(detectorTypeFor(p)) {
-      // count the interior white cells (those with 4 surrounding inner corners):
-      // cx∈[1,cols-2], cy∈[1,rows-2], white where (cx+cy) is even.
+      // interior cells (those with 4 surrounding inner corners): cx∈[1,cols-2],
+      // cy∈[1,rows-2]; white cells have (cx+cy) even, black cells odd.
+      const int parity = (markerCells == MarkerCells::White) ? 0 : 1;
       std::vector<std::pair<int,int>> cells;
       for (int cy = 1; cy <= rows-2; ++cy)
         for (int cx = 1; cx <= cols-2; ++cx)
-          if (((cx + cy) & 1) == 0) cells.push_back({cx, cy});
+          if (((cx + cy) & 1) == parity) cells.push_back({cx, cy});
 
       // assign each cell one ORIENTATION-safe id, so every marker's pose (and thus
       // its surrounding corner labels) is unambiguous under rotation.
@@ -80,13 +82,28 @@ namespace icl::markers {
         id2cell[ids[k]] = cells[k];
       }
     }
+
+    /// build the marker FiducialDetector on first use (over exactly this board's
+    /// ids, at the code's full error-correction).
+    FiducialDetector *ensureDetector() {
+      if (!fd) {
+        std::vector<int> ids; ids.reserve(coded.size());
+        for (const auto &c : coded) ids.push_back(c.id);
+        fd.reset(new FiducialDetector(detType, ids, ParamMap{{"size", Size(100,100)}}));
+        fd->getPlugin()->setPropertyValue("max bch errors", code.correctable());
+      }
+      return fd.get();
+    }
   };
 
   CodedCheckerboardTarget::CodedCheckerboardTarget(int cols, int rows, float squareSizeMM,
-                                                   float markerFill, SquareBCHPreset preset)
-    : m_data(new Data(cols, rows, squareSizeMM, markerFill, preset)) {}
+                                                   float markerFill, SquareBCHPreset preset,
+                                                   MarkerCells markerCells)
+    : m_data(new Data(cols, rows, squareSizeMM, markerFill, preset, markerCells)) {}
 
   CodedCheckerboardTarget::~CodedCheckerboardTarget() { delete m_data; }
+
+  FiducialDetector *CodedCheckerboardTarget::markerDetector() const { return m_data->ensureDetector(); }
 
   int   CodedCheckerboardTarget::getCols()       const { return m_data->cols; }
   int   CodedCheckerboardTarget::getRows()       const { return m_data->rows; }
@@ -131,9 +148,14 @@ namespace icl::markers {
         d(x, y) = (icl8u)(acc/(SS*SS) + 0.5f);
       }
 
-    // stamp a BCH marker into each coded white cell, centred and filling `fill` of
-    // the cell so it stays clear of the cell edges (the checker corners survive).
-    const int mpx = std::max(1, (int)std::lround(m_data->fill * px));
+    // stamp a BCH marker into each coded cell. WHITE marker cells host a shrunk
+    // marker (fill<1) so the white square frames the black-bordered marker and
+    // separates it from the black neighbours. BLACK marker cells are REPLACED by a
+    // full-cell marker: it's just an ordinary black marker whose white neighbour
+    // squares provide the contrast — no inversion, detection is unchanged.
+    const bool black = (m_data->markerCells == MarkerCells::Black);
+    const int mpx = black ? std::max(1, (int)std::lround(px))
+                          : std::max(1, (int)std::lround(m_data->fill * px));
     for (const auto &cc : m_data->coded) {
       const Img8u marker = m_data->code.markerImage(cc.id, MARKER_BORDER, Size(mpx, mpx));
       const Channel8u md = marker[0];
@@ -154,21 +176,15 @@ namespace icl::markers {
   std::vector<CalibrationCorrespondence>
   CodedCheckerboardTarget::detect(const core::Img8u &image) const {
     Data &D = *m_data;
-    const float sq = D.squareMM, fill = D.fill;
+    const float sq = D.squareMM;
+    // fraction of the cell the marker fills: black-cell markers replace the whole
+    // cell (their quad corners ARE the checker corners), white-cell markers are
+    // shrunk. Corner prediction extrapolates by 1/fill, so it must match generate().
+    const float fill = (D.markerCells == MarkerCells::Black) ? 1.f : D.fill;
 
-    // lazily build the BCH detector over exactly this board's marker ids
-    if (!D.fd) {
-      std::vector<int> ids; ids.reserve(D.coded.size());
-      for (const auto &c : D.coded) ids.push_back(c.id);
-      D.fd.reset(new FiducialDetector(D.detType, ids, ParamMap{{"size", Size(100,100)}}));
-      // Use the code's FULL error-correction (t): a marker may be sampled noisily,
-      // so we do NOT want to demand a perfect decode. False positives (the board's
-      // own solid black squares detected as quads) are rejected geometrically
-      // below, not by decoder strictness.
-      D.fd->getPlugin()->setPropertyValue("max bch errors", D.code.correctable());
-    }
-
-    const std::vector<Fiducial> &fids = D.fd->detect(&image);
+    // Build the detector lazily (full error-correction — false positives are
+    // rejected geometrically below, not by decoder strictness).
+    const std::vector<Fiducial> &fids = D.ensureDetector()->detect(&image);
     if (fids.empty()) return {};
     const std::vector<cv::CornerSeed> seeds = D.saddle.detect(image);
     if (seeds.empty()) return {};

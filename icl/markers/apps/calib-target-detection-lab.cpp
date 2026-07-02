@@ -161,10 +161,12 @@ static const SquareBCHPreset CC_PRESETS[] = {
   SquareBCHPreset::BCH_6x6_t4_RS };
 
 // (re)build the coded target for a marker-code index (0=4x4, 1=5x5, 2=6x6) and
-// refresh its board texture.
-static void rebuildCoded(int codeIdx) {
+// marker-cell polarity (markers on the white or the BLACK squares), then refresh
+// its board texture.
+static void rebuildCoded(int codeIdx, bool blackCells) {
   codeIdx = std::max(0, std::min(2, codeIdx));
-  ctarget.reset(new CodedCheckerboardTarget(CC_COLS, CC_ROWS, CC_SQ, 0.62f, CC_PRESETS[codeIdx]));
+  ctarget.reset(new CodedCheckerboardTarget(CC_COLS, CC_ROWS, CC_SQ, 0.62f, CC_PRESETS[codeIdx],
+                                            blackCells ? MarkerCells::Black : MarkerCells::White));
   buildCodedBoard();
 }
 
@@ -273,7 +275,9 @@ void init() {
                       << CheckBox("cleanup (LAP)", {.checked=false, .handle="cleanup"})
                       << CheckBox("subpixel", {.checked=true, .handle="subpixel"}))
                   << Combo("pattern,edge,none", {.handle="refineMode", .label="marker corner refine"})  // marker-only
-                  << Combo("4x4,5x5,6x6", {.handle="codedCode", .label="coded marker code"})           // coded-only
+                  << (HBox()                                                                          // coded-only
+                      << Combo("4x4,5x5,6x6", {.handle="codedCode", .label="coded marker code"})
+                      << CheckBox("markers on black cells", {.checked=false, .handle="codedBlack"}))
                   << Button("save frame", {.handle="saveFrame"})
                   << CheckBox("apply undistortion", {.checked=false, .handle="undistort"})
                   << Prop(&view, {.label="offscreen renderer + scene"})
@@ -314,17 +318,20 @@ void run() {
     for (const char *h : {"xc","yc","radius","minScore","backend","cleanup","subpixel","showOri"})
       if (cb) gui[h].enable(); else gui[h].disable();
     if (target == 1) gui["refineMode"].enable(); else gui["refineMode"].disable();  // marker-grid only
-    if (target == 2) gui["codedCode"].enable(); else gui["codedCode"].disable();    // coded only
+    for (const char *h : {"codedCode","codedBlack"})
+      if (target == 2) gui[h].enable(); else gui[h].disable();                        // coded only
   }
   if (target == 0) board->setCells(gui["xc"], gui["yc"]);   // idempotent
   using RM = MarkerGridTarget::RefineMode;
   mtarget->setRefineMode(rmode==0 ? RM::Pattern : rmode==1 ? RM::Edge : RM::None);
 
-  // rebuild the coded target when its marker code changes (0=4x4, 1=5x5, 2=6x6)
-  const int codeIdx = ComboHandle(gui["codedCode"]).getSelectedIndex();
-  static int lCode = 0;
-  const bool codedChanged = (codeIdx != lCode);
-  if (codedChanged) { lCode = codeIdx; rebuildCoded(codeIdx); scene.touch(); }
+  // rebuild the coded target when its marker code (0=4x4,1=5x5,2=6x6) or cell
+  // polarity (markers on white vs black squares) changes
+  const int  codeIdx    = ComboHandle(gui["codedCode"]).getSelectedIndex();
+  const bool codedBlack = gui["codedBlack"];
+  static int lCode = 0; static int lBlack = 0;
+  const bool codedChanged = (codeIdx != lCode) || ((int)codedBlack != lBlack);
+  if (codedChanged) { lCode = codeIdx; lBlack = (int)codedBlack; rebuildCoded(codeIdx, codedBlack); scene.touch(); }
 
   // re-render the result on a new captured frame OR a control change
   static int lRadius=-1, lUndist=-1, lBackend=-1, lCleanup=-1, lSubpix=-1, lRmode=-1; static float lMs=1e9f;

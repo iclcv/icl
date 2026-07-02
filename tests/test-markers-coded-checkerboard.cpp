@@ -11,6 +11,7 @@
 
 #include "harness/Test.h"
 #include <icl/markers/CodedCheckerboardTarget.h>
+#include <cstdio>
 #include <cmath>
 
 using namespace icl;
