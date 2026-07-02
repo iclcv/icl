@@ -8,6 +8,7 @@
 #include <icl/utils/BasicTypes.h>
 #include <icl/core/Img.h>
 #include <bitset>
+#include <cstdint>
 
 namespace icl::markers {
   /// used 36Bit BCH Code -> 12Bit data max-Error: 4bit
@@ -126,4 +127,73 @@ namespace icl::markers {
     DecodedBCHCode2D decode2D(const core::Img8u &image, int maxID=4095, bool useROI=true);
 
   };
+
+
+  /// Square (n x n) binary BCH marker code — generalizes the 6x6 BCHCoder.
+  /** BCHCoder is hard-wired to the 6x6 / GF(2^6) / 12-bit-id marker used by ICL's
+      FiducialDetector. SquareBCHCode is the same BCH machinery (systematic
+      encoder + Berlekamp/Chien decoder) parameterized over the grid size, so it
+      can produce the smaller markers wanted for dense coded targets:
+
+      | grid | bits | field  | t=1 ids | t=2 ids | t=3 ids | t=4 ids |
+      |------|------|--------|---------|---------|---------|---------|
+      | 3x3  |  9   | GF(2^4)|   32    |    2    |   -     |   -     |
+      | 4x4  | 16   | GF(2^5)|  2048   |   64    |    2    |   -     |
+      | 5x5  | 25   | GF(2^5)| 1M+     |  ~32k   |  1024   |   32    |
+      | 6x6  | 36   | GF(2^6)| 16M+    |   ~16k  |  ~1k    |   4096  |
+
+      (exact counts come from numIds(); the table is indicative). As with the 6x6
+      code the lowest ids carry the largest inter-marker distance, so a target
+      should always allocate ids from 0 upward.
+
+      Bit layout: bit index = col + n*row. The rendered pattern is the systematic
+      codeword XORed with a fixed checkerboard whitening mask (a Hamming isometry,
+      so it does not affect error-correction) that keeps id 0 from being a
+      degenerate all-black square. There is no ARToolKitPlus bit-reversal here —
+      this is a fresh code, not the legacy 6x6 one. */
+  class ICLMarkers_API SquareBCHCode {
+    struct Data;
+    Data *m_data;
+
+  public:
+    /// \a gridSize (n, 3..6) square marker correcting up to \a correctable errors.
+    /** Throws if the resulting code has no information bits (t too large for n). */
+    SquareBCHCode(int gridSize, int correctable);
+    ~SquareBCHCode();
+
+    SquareBCHCode(const SquareBCHCode &) = delete;
+    SquareBCHCode &operator=(const SquareBCHCode &) = delete;
+
+    int gridSize()    const;   ///< n
+    int numBits()     const;   ///< n*n codeword length
+    int correctable() const;   ///< t (design min distance is 2t+1)
+    int numIds()      const;   ///< number of usable ids (1<<k)
+    int minDistance() const;   ///< design minimum distance (2t+1)
+
+    /// rendered n*n bit pattern for \a id (bit index = col + n*row); throws if out of range
+    uint64_t encode(int id) const;
+    /// rotate an n*n bit pattern 90 degrees clockwise
+    uint64_t rotate90(uint64_t bits) const;
+
+    /// decode result: id (<0 on failure), corrected error count, and — for
+    /// decode2D — the number of clockwise quarter-turns applied to reach the
+    /// canonical orientation.
+    struct Decoded {
+      int id       = -1;
+      int errors   = 0;
+      int rotation = 0;
+      explicit operator bool() const { return id >= 0; }
+    };
+
+    /// decode a correctly-oriented n*n pattern
+    Decoded decode(uint64_t bits) const;
+    /// decode trying all 4 orientations, returning the first exact / best match
+    Decoded decode2D(uint64_t bits) const;
+
+    /// render \a id as a marker image (n*n cells + \a border cells), optionally
+    /// upscaled to \a size with nearest-neighbour interpolation
+    core::Img8u markerImage(int id, int border = 1,
+                            const utils::Size &size = utils::Size::null) const;
+  };
+
   } // namespace icl::markers
