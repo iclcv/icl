@@ -161,11 +161,11 @@ namespace icl::markers {
       std::vector<int> ids; ids.reserve(D.coded.size());
       for (const auto &c : D.coded) ids.push_back(c.id);
       D.fd.reset(new FiducialDetector(D.detType, ids, ParamMap{{"size", Size(100,100)}}));
-      // The checkerboard's own solid black squares get detected as quads; with
-      // error correction the small n×n codes would spuriously decode such near-
-      // uniform patches to a valid id. Require an EXACT decode (0 corrected
-      // errors) so only genuine, cleanly-rendered markers are accepted.
-      D.fd->getPlugin()->setPropertyValue("max bch errors", 0);
+      // Use the code's FULL error-correction (t): a marker may be sampled noisily,
+      // so we do NOT want to demand a perfect decode. False positives (the board's
+      // own solid black squares detected as quads) are rejected geometrically
+      // below, not by decoder strictness.
+      D.fd->getPlugin()->setPropertyValue("max bch errors", D.code.correctable());
     }
 
     const std::vector<Fiducial> &fids = D.fd->detect(&image);
@@ -173,42 +173,85 @@ namespace icl::markers {
     const std::vector<cv::CornerSeed> seeds = D.saddle.detect(image);
     if (seeds.empty()) return {};
 
-    // Corner labeling is split into POSITION and LABEL to be robust:
-    //  * POSITION: a per-marker marker-local→image homography (from the marker's 4
-    //    key points) predicts its 4 surrounding checker corners and snaps each to
-    //    the nearest sub-pixel saddle. Local ⇒ accurate even under lens distortion.
-    //  * LABEL: the marker id reliably gives its CELL, so a single global
-    //    image→board homography (fit from all marker centres) turns a snapped
-    //    saddle into its absolute (col,row) index by rounding. Global geometry ⇒
-    //    independent of the per-marker orientation convention (which differs by
-    //    code), needing only half-cell accuracy for the rounding.
-    // A corner is shared by up to 4 markers → averaged.
-    std::vector<Point32f> boardC, imgC;
-    std::vector<const Fiducial*> markers;
+    // (1) WELL-IDENTIFIED MARKERS. Every solid black checker square decodes to the
+    // SAME fixed id (all-black → decode(whitening)), so false positives are
+    // DUPLICATE ids; genuine markers have unique ids. Keep only unique-id markers.
+    std::map<int,int> idCount;
+    for (const Fiducial &f : fids)
+      if (D.id2cell.count(f.getID())) ++idCount[f.getID()];
+
+    struct Marker { const Fiducial *f; int cx, cy; Point32f center; };
+    std::vector<Marker> ms;
     for (const Fiducial &f : fids) {
       auto itc = D.id2cell.find(f.getID());
-      if (itc == D.id2cell.end()) continue;
+      if (itc == D.id2cell.end() || idCount[f.getID()] != 1) continue;
       const std::vector<Fiducial::KeyPoint> &kps = f.getKeyPoints2D();
       if (kps.size() != 4) continue;
       Point32f c(0,0);
       for (int k = 0; k < 4; ++k) { c.x += kps[k].imagePos.x; c.y += kps[k].imagePos.y; }
-      boardC.push_back(Point32f((itc->second.first - 0.5f)*sq, (itc->second.second - 0.5f)*sq));
-      imgC.push_back(Point32f(c.x*0.25f, c.y*0.25f));
-      markers.push_back(&f);
+      ms.push_back({&f, itc->second.first, itc->second.second, Point32f(c.x*0.25f, c.y*0.25f)});
     }
-    if (boardC.size() < 4) return {};                 // need enough for a homography
-    const math::Homography2D Hib(boardC.data(), imgC.data(), (int)boardC.size());  // image → board
+    if (ms.size() < 4) return {};
 
-    std::map<std::pair<int,int>, std::pair<Point32f,int>> acc;  // (ic,ir) → (Σpos, n)
-    for (const Fiducial *fp : markers) {
-      const std::vector<Fiducial::KeyPoint> &kps = fp->getKeyPoints2D();
-      Point32f mp[4], ip[4];
+    // (2) BOOTSTRAP THE BOARD POSE from those anchors (a global image→board
+    // homography), then geometrically TRIM any marker whose centre disagrees with
+    // the consensus pose (a rare noise-induced mis-decode). This is what lets the
+    // decoder run permissively without false positives leaking through.
+    auto fitHib = [&](const std::vector<Marker> &v) {
+      std::vector<Point32f> B, I;
+      for (const auto &m : v) { B.push_back(Point32f((m.cx-0.5f)*sq, (m.cy-0.5f)*sq)); I.push_back(m.center); }
+      return math::Homography2D(B.data(), I.data(), (int)B.size());   // image → board
+    };
+    math::Homography2D Hib = fitHib(ms);
+    {
+      std::vector<Marker> keep;
+      for (const auto &m : ms) {
+        const Point32f b = Hib.apply(m.center);
+        if (std::hypot(b.x-(m.cx-0.5f)*sq, b.y-(m.cy-0.5f)*sq) < 0.35f*sq) keep.push_back(m);
+      }
+      if (keep.size() >= 4) { const bool refit = keep.size() < ms.size(); ms.swap(keep); if (refit) Hib = fitHib(ms); }
+    }
+
+    // (3) DISCRETE ORIENTATION R. A square-BCH marker's decoded frame is rotated
+    // from the board axes by a fixed 90° multiple that DIFFERS BY CODE. Recover it
+    // once by voting (per marker-local quadrant, which board inner-corner offset
+    // Hib rounds to). R is a discrete, distortion-independent property, so it can
+    // then be applied LOCALLY to every marker — including ones at the strongly
+    // distorted image corners, where the global homography would mis-round a label.
+    std::map<int, std::map<std::pair<int,int>,int>> vote;   // quadrant → offset → count
+    auto localH = [](const Fiducial *f, Point32f mp[4]) {
+      const std::vector<Fiducial::KeyPoint> &kps = f->getKeyPoints2D();
+      Point32f ip[4];
       for (int k = 0; k < 4; ++k) { mp[k] = kps[k].markerPos; ip[k] = kps[k].imagePos; }
-      // ctor maps its 2nd arg → 1st, so (ip, mp) yields H.apply(markerPos) → image
-      const math::Homography2D H(ip, mp, 4);          // marker-local mm → image px
+      return math::Homography2D(ip, mp, 4);               // marker-local mm → image px
+    };
+    for (const auto &m : ms) {
+      Point32f mp[4]; const math::Homography2D H = localH(m.f, mp);
+      for (int k = 0; k < 4; ++k) {
+        const Point32f b = Hib.apply(H.apply(Point32f(mp[k].x/fill, mp[k].y/fill)));
+        const int dcol = (int)std::lround(b.x/sq) - m.cx, drow = (int)std::lround(b.y/sq) - m.cy;
+        if (dcol < -1 || dcol > 0 || drow < -1 || drow > 0) continue;     // implausible
+        const int q = (mp[k].x > 0 ? 2 : 0) | (mp[k].y > 0 ? 1 : 0);
+        ++vote[q][{dcol, drow}];
+      }
+    }
+    std::pair<int,int> R[4] = {{0,0},{0,0},{0,0},{0,0}};
+    for (int q = 0; q < 4; ++q) {
+      int bestc = -1;
+      for (const auto &kv : vote[q]) if (kv.second > bestc) { bestc = kv.second; R[q] = kv.first; }
+    }
 
-      Point32f pred[4];
-      for (int k = 0; k < 4; ++k) pred[k] = H.apply(Point32f(mp[k].x/fill, mp[k].y/fill));
+    // (4) LABEL (local: cell + R, distortion-robust) + POSITION (local homography
+    // + sub-pixel saddle snap). A corner is shared by up to 4 markers → averaged.
+    std::map<std::pair<int,int>, std::pair<Point32f,int>> acc;  // (ic,ir) → (Σpos, n)
+    for (const auto &m : ms) {
+      Point32f mp[4]; const math::Homography2D H = localH(m.f, mp);
+      Point32f pred[4]; std::pair<int,int> idx[4];
+      for (int k = 0; k < 4; ++k) {
+        pred[k] = H.apply(Point32f(mp[k].x/fill, mp[k].y/fill));
+        const int q = (mp[k].x > 0 ? 2 : 0) | (mp[k].y > 0 ? 1 : 0);
+        idx[k] = { m.cx + R[q].first, m.cy + R[q].second };
+      }
       // snap tolerance: half the smallest gap between predicted corners (adapts to
       // the marker's apparent size/perspective, can't reach a neighbouring corner)
       float tol = 1e18f;
@@ -224,9 +267,7 @@ namespace icl::markers {
           if (d < best) { best = d; bi = (int)s; }
         }
         if (bi < 0) continue;
-        const Point32f b = Hib.apply(seeds[bi].pos);  // snapped saddle → board mm
-        const std::pair<int,int> id{(int)std::lround(b.x/sq), (int)std::lround(b.y/sq)};
-        auto &e = acc[id];
+        auto &e = acc[idx[k]];
         e.first.x += seeds[bi].pos.x; e.first.y += seeds[bi].pos.y; ++e.second;
       }
     }
