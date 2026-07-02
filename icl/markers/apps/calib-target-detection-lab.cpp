@@ -382,11 +382,9 @@ void run() {
 
   if ((frame.isNew || resultDirty) && cam.getDim()) {
     DrawHandle d = gui["result"];
-    Image shown = Image(cam);              // base image displayed on the right (sent to -o)
     if (showUndistorted) {
       updateUndistort(view.distortionK1(), view.distortionK2(), cam.getSize());
       const Image rect = g_undistort.apply(Image(cam));
-      shown = rect;
       d = rect.as<icl8u>();
       d->color(255,255,255,255);
       d->text("undistorted preview (detection runs on the distorted image)", 5, 5, 8);
@@ -421,7 +419,18 @@ void run() {
       scoreCheckerboardGridEdges(grid, cam);
       drawCheckerboard(d, cam, seeds, grid);
     }
-    if (!output.isNull()) output.send(shown);   // mirror the right-pane image to -o
+  }
+
+  // With -o active, mirror the right-pane base image to the sink on EVERY
+  // iteration (a continuous live stream), not only when the overlay changes —
+  // so a consumer keeps receiving frames even while the scene is static.
+  if (!output.isNull() && cam.getDim()) {
+    if (showUndistorted) {
+      updateUndistort(view.distortionK1(), view.distortionK2(), cam.getSize());
+      output.send(g_undistort.apply(Image(cam)));   // undistorted preview
+    } else {
+      output.send(Image(cam));                       // camera frame (detector input)
+    }
   }
   gui["fps"].render();
   fps.wait();
