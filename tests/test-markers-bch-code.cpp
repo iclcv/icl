@@ -12,6 +12,8 @@
 
 #include "harness/Test.h"
 #include <icl/markers/BCHCode.h>
+#include <icl/markers/FiducialDetector.h>
+#include <icl/markers/Fiducial.h>
 #include <icl/core/Img.h>
 #include <cstdint>
 #include <vector>
@@ -313,6 +315,29 @@ ICL_REGISTER_TEST("markers.squarebch.rotated_distance_and_selection",
   ICL_TEST_TRUE(c44.rotatedMinDistance(s) >= 5);
 }
 
+ICL_REGISTER_TEST("markers.squarebch.preset_table",
+                  "predefined presets: print the feature table and verify each "
+                  "preset's tabulated id-count / distance matches a built code")
+{
+  std::cout << "\n    preset        grid  t  bits  maxIds   d\n";
+  for (const auto &pi : SquareBCHCode::presetTable()) {
+    SquareBCHCode c(pi.preset);                       // build from the preset
+    std::cout << "    " << pi.name
+              << "\t " << pi.gridSize << "x" << pi.gridSize
+              << "   " << pi.correctable
+              << "   " << pi.numBits
+              << "   " << pi.maxIds
+              << "\t  " << pi.minDistance << "\n";
+    // the constructed code must agree with the tabulated features
+    ICL_TEST_EQ(c.gridSize(),    pi.gridSize);
+    ICL_TEST_EQ(c.correctable(), pi.correctable);
+    ICL_TEST_EQ(c.numBits(),     pi.numBits);
+    ICL_TEST_EQ(c.numIds(),      pi.maxIds);
+    ICL_TEST_EQ(c.minDistance(), pi.minDistance);
+  }
+  std::cout << std::flush;
+}
+
 ICL_REGISTER_TEST("markers.squarebch.marker_image_geometry",
                   "markerImage size = (n+2*border)^2, border black, interior = code bits")
 {
@@ -339,4 +364,36 @@ ICL_REGISTER_TEST("markers.squarebch.invalid_config_throws",
                   "a t too large for the grid (no data bits) is rejected")
 {
   ICL_TEST_THROW(SquareBCHCode(3, 5), icl::utils::ICLException);   // 9 bits can't carry t=5
+}
+
+namespace {
+  // composite a marker image centered on a larger white canvas (quiet zone so
+  // the quad detector sees the black marker border against white)
+  Img8u sceneWithMarker(const Img8u &marker, const Size &canvas) {
+    Img8u bg(canvas, 1); bg.fill(255);
+    const int ox = (canvas.width  - marker.getWidth())  / 2;
+    const int oy = (canvas.height - marker.getHeight()) / 2;
+    Channel8u b = bg[0]; const Channel8u m = marker[0];
+    for (int y = 0; y < marker.getHeight(); ++y)
+      for (int x = 0; x < marker.getWidth(); ++x) b(ox+x, oy+y) = m(x, y);
+    return bg;
+  }
+}
+
+ICL_REGISTER_TEST("markers.squarebch.detection_endtoend",
+                  "FiducialDetector('bch4x4') detects rendered SquareBCHCode markers by id")
+{
+  using namespace icl::markers;
+  FiducialDetector fid("bch4x4", "[0-63]", icl::utils::ParamMap{{"size", Size(40, 40)}});
+  SquareBCHCode code(4, 2);
+
+  for (int id : {0, 1, 7, 23, 42, 63}) {
+    const Img8u marker = code.markerImage(id, /*border*/ 2, Size(160, 160));
+    const Img8u scene  = sceneWithMarker(marker, Size(360, 360));
+    const std::vector<Fiducial> &fids = fid.detect(&scene);
+
+    bool found = false;
+    for (const auto &f : fids) if (f.getID() == id) found = true;
+    ICL_TEST_TRUE(found);
+  }
 }

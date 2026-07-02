@@ -433,7 +433,36 @@ namespace icl::markers {
   SquareBCHCode::SquareBCHCode(int gridSize, int correctable)
     : m_data(new Data(gridSize, correctable)) {}
 
+  SquareBCHCode::SquareBCHCode(SquareBCHPreset preset)
+    : SquareBCHCode(presetInfo(preset).gridSize, presetInfo(preset).correctable) {}
+
   SquareBCHCode::~SquareBCHCode() { delete m_data; }
+
+  SquareBCHPresetInfo SquareBCHCode::presetInfo(SquareBCHPreset p) {
+    using P = SquareBCHPreset;
+    // {preset, name, n, t, bits, maxIds(1<<k), minDistance(2t+1)} — the maxIds /
+    // distance columns are verified against a freshly built code by
+    // tests/test-markers-bch-code.cpp (markers.squarebch.preset_table).
+    switch (p) {
+      case P::BCH_3x3_t1: return {p, "BCH_3x3_t1", 3, 1,  9,    32, 3};
+      case P::BCH_4x4_t1: return {p, "BCH_4x4_t1", 4, 1, 16,  2048, 3};
+      case P::BCH_4x4_t2: return {p, "BCH_4x4_t2", 4, 2, 16,    64, 5};
+      case P::BCH_5x5_t2: return {p, "BCH_5x5_t2", 5, 2, 25, 32768, 5};
+      case P::BCH_5x5_t3: return {p, "BCH_5x5_t3", 5, 3, 25,  1024, 7};
+      case P::BCH_5x5_t4: return {p, "BCH_5x5_t4", 5, 4, 25,    32, 9};
+      case P::BCH_6x6_t4: return {p, "BCH_6x6_t4", 6, 4, 36,  4096, 9};
+    }
+    throw ICLException("SquareBCHCode::presetInfo: unknown preset");
+  }
+
+  std::vector<SquareBCHPresetInfo> SquareBCHCode::presetTable() {
+    using P = SquareBCHPreset;
+    std::vector<SquareBCHPresetInfo> t;
+    for (P p : {P::BCH_3x3_t1, P::BCH_4x4_t1, P::BCH_4x4_t2, P::BCH_5x5_t2,
+                P::BCH_5x5_t3, P::BCH_5x5_t4, P::BCH_6x6_t4})
+      t.push_back(presetInfo(p));
+    return t;
+  }
 
   int SquareBCHCode::gridSize()    const { return m_data->n; }
   int SquareBCHCode::numBits()     const { return m_data->n * m_data->n; }

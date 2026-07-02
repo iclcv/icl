@@ -9,6 +9,7 @@
 #include <icl/core/Img.h>
 #include <bitset>
 #include <cstdint>
+#include <vector>
 
 namespace icl::markers {
   /// used 36Bit BCH Code -> 12Bit data max-Error: 4bit
@@ -129,6 +130,30 @@ namespace icl::markers {
   };
 
 
+  /// Well-known predefined square-BCH marker configurations (grid size + error
+  /// correction t). Names read BCH_<n>x<n>_t<t>. See SquareBCHCode::presetTable().
+  enum class SquareBCHPreset {
+    BCH_3x3_t1,   ///< 3x3, t=1:   32 ids, d=3   (few, rotation-poor)
+    BCH_4x4_t1,   ///< 4x4, t=1: 2048 ids, d=3
+    BCH_4x4_t2,   ///< 4x4, t=2:   64 ids, d=5   (fully rotation-safe)
+    BCH_5x5_t2,   ///< 5x5, t=2: 32768 ids, d=5
+    BCH_5x5_t3,   ///< 5x5, t=3: 1024 ids, d=7
+    BCH_5x5_t4,   ///< 5x5, t=4:   32 ids, d=9   (fully rotation-safe)
+    BCH_6x6_t4,   ///< 6x6, t=4: 4096 ids, d=9   (same id space as legacy BCHCoder)
+  };
+
+  /// Static features of a SquareBCHPreset (see SquareBCHCode::presetTable()).
+  struct SquareBCHPresetInfo {
+    SquareBCHPreset preset;
+    const char *name;    ///< e.g. "BCH_4x4_t2"
+    int gridSize;        ///< n
+    int correctable;     ///< t
+    int numBits;         ///< n*n
+    int maxIds;          ///< raw code space (1<<k)
+    int minDistance;     ///< design minimum distance (2t+1)
+  };
+
+
   /// Square (n x n) binary BCH marker code — generalizes the 6x6 BCHCoder.
   /** BCHCoder is hard-wired to the 6x6 / GF(2^6) / 12-bit-id marker used by ICL's
       FiducialDetector. SquareBCHCode is the same BCH machinery (systematic
@@ -159,7 +184,14 @@ namespace icl::markers {
     /// \a gridSize (n, 3..6) square marker correcting up to \a correctable errors.
     /** Throws if the resulting code has no information bits (t too large for n). */
     SquareBCHCode(int gridSize, int correctable);
+    /// construct one of the predefined well-known configurations
+    explicit SquareBCHCode(SquareBCHPreset preset);
     ~SquareBCHCode();
+
+    /// features of a preset (grid, t, id count, distance)
+    static SquareBCHPresetInfo presetInfo(SquareBCHPreset preset);
+    /// the full feature table over all presets
+    static std::vector<SquareBCHPresetInfo> presetTable();
 
     SquareBCHCode(const SquareBCHCode &) = delete;
     SquareBCHCode &operator=(const SquareBCHCode &) = delete;

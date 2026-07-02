@@ -11,6 +11,7 @@
 #include <icl/markers/FiducialImpl.h>
 #include <icl/markers/Fiducial.h>
 #include <icl/markers/FiducialDetectorPluginBCH.h>
+#include <icl/markers/FiducialDetectorPluginSquareBCH.h>
 #include <icl/markers/FiducialDetectorPluginART.h>
 #include <icl/markers/FiducialDetectorPluginAmoeba.h>
 #include <icl/markers/FiducialDetectorPluginICL1.h>
@@ -83,6 +84,12 @@ namespace icl::markers {
     data->plugintype = plugin;
     if(plugin == "bch"){
       data->plugin.reset(new FiducialDetectorPluginBCH);
+    }else if(plugin == "bch3x3"){
+      data->plugin.reset(new FiducialDetectorPluginSquareBCH(3, 1));
+    }else if(plugin == "bch4x4"){
+      data->plugin.reset(new FiducialDetectorPluginSquareBCH(4, 2));
+    }else if(plugin == "bch5x5"){
+      data->plugin.reset(new FiducialDetectorPluginSquareBCH(5, 4));
     }else if(plugin == "art"){
       data->plugin.reset(new FiducialDetectorPluginART);
     }else if(plugin == "amoeba"){
