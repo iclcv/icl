@@ -36,6 +36,7 @@ if qt_dep.found()
     'test-geom2-primitive3d-converter.cpp',
     'test-geom2-calibration-harness.cpp',
     'test-geom-coplanar-pose.cpp',
+    'test-markers-bch-code.cpp',
     'test-markers-checkerboard-target.cpp',
     'test-markers-coded-checkerboard.cpp',
     'test-markers-marker-grid-target.cpp',
