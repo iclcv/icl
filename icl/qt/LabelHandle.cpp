@@ -51,7 +51,9 @@ namespace {
   static void icl_register_label_handle_assignments() {
     // Label accepts strings + arithmetic (for display); only string
     // is readable (the displayed text).
-    AssignRegistry::enroll_receiver<LabelHandle, int, float, double, std::string>();
+    AssignRegistry::enroll_receiver<LabelHandle, int, float, double, std::string,
+                                    long, long long, unsigned, unsigned long,
+                                    unsigned long long>();
     AssignRegistry::enroll_identity<LabelHandle>();
     AssignRegistry::enroll<std::string, LabelHandle>();
   }

@@ -8,10 +8,11 @@
 
 int main(int n, char **ppc){
   pa_explain
-  ("-i","the first sub-argument defines the marker type (one of bch, icl1 and art). The 2nd sub-argument "
-   "defines which marker to create (this is the marker ID in case of type bch and icl1 and "
+  ("-i","the first sub-argument defines the marker type (one of bch, bch3x3, bch4x4, bch5x5, bch6x6, "
+   "icl1 and art). The 2nd sub-argument "
+   "defines which marker to create (this is the marker ID in case of the bch* and icl1 types and "
    "in case of makrer type art, an image filename is expected")
-  ("-b","border width, which is only relevant for bch markers (the detectors default value is 2)")
+  ("-b","border width, which is only relevant for the bch* marker types (the detectors default value is 2)")
   ("-r","border ratio, which is only relevant for art markers (the detectors default is value is 0.4)")
   ("-o","optionally given output filename. If this is not given, the marker image is shown instead")
   ("-s","output size of the marker image");
@@ -39,11 +40,12 @@ int main(int n, char **ppc){
   }
 
 
-  FiducialDetector d(*pa("-i"));
+  const std::string type = *pa("-i");
+  FiducialDetector d(type);
   ParamMap params;
-  if(*pa("-i") == "art"){
+  if(type == "art"){
     params = {{"border ratio",*pa("-r")}};
-  }else if(*pa("-i") == "bch"){
+  }else if(type.substr(0,3) == "bch"){  // bch, bch3x3, bch4x4, bch5x5, bch6x6
     params = {{"border width",*pa("-b")}};
   }
   Img8u image = d.createMarker(*pa("-i",1), pa("-s"), params);

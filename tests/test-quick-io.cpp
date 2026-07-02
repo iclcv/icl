@@ -429,6 +429,26 @@ ICL_REGISTER_TEST("WS.loopback.roundtrip",
   ICL_TEST_TRUE(imagesEqual(got, Image(src)));
 }
 
+ICL_REGISTER_TEST("WS.late_join.replays_last_frame",
+                  "A client connecting AFTER the last send() still receives that frame") {
+  WSSink out(0, "127.0.0.1");
+  const int port = out.actualPort();
+  ICL_TEST_TRUE(port > 0);
+
+  // Publish BEFORE any client is connected. Historically this frame was lost
+  // and a late-joining consumer got a null image until the next send(); the
+  // sink now retains it and replays it to newcomers on connect.
+  Img8u src = makeKnownImage(8, 8);
+  out.send(Image(src));
+
+  WSSource grab("ws://127.0.0.1:" + str(port));
+  ICL_TEST_TRUE(waitFor([&]{ return out.connectedClients() >= 1; }));
+
+  Image got = grab.grab();
+  ICL_TEST_TRUE(!got.isNull());
+  ICL_TEST_TRUE(imagesEqual(got, Image(src)));
+}
+
 ICL_REGISTER_TEST("WS.multi_client.broadcast",
                   "Two grabbers attached to one output both see every frame") {
   WSSink out(0, "127.0.0.1");

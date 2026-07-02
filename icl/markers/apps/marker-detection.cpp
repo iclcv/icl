@@ -16,6 +16,7 @@
 
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPluginForQuads.h>
+#include <icl/markers/BCHCode.h>
 
 using namespace icl::geom2;
 using namespace icl::geom;
@@ -40,12 +41,33 @@ struct Obj : public GroupNode {
   }
 } *obj = 0;
 
+// (n,t) for the square-BCH marker types (bch3x3/4x4/5x5/6x6); false otherwise
+static bool squareBCHParams(const std::string &type, int &n, int &t){
+  if(type=="bch3x3"){ n=3; t=1; return true; }
+  if(type=="bch4x4"){ n=4; t=2; return true; }
+  if(type=="bch5x5"){ n=5; t=4; return true; }
+  if(type=="bch6x6"){ n=6; t=4; return true; }
+  return false;
+}
+
 void init(){
-  fid = new FiducialDetector(pa("-m").as<std::string>(),
-                             pa("-m",1).as<std::string>(),
-                             ParamMap{{"size",*pa("-m",2)}});
+  const std::string type = pa("-m").as<std::string>();
+  std::string idSpec = pa("-m",1).as<std::string>();
+
+  // The default id range "[0-4095]" is the legacy 6x6 bch space. The smaller
+  // square-BCH codes have far fewer usable ids, so when the user left the
+  // default in place, restrict it to that code's orientation-safe ids (the
+  // ones decode2D recovers unambiguously, id AND rotation).
+  int n=0, t=0;
+  const bool square = squareBCHParams(type, n, t);
+  if(square && idSpec == "[0-4095]"){
+    std::vector<int> ids = SquareBCHCode(n,t).orientationSafeIds();
+    idSpec = "{" + cat(ids, ",") + "}";
+  }
+
+  fid = new FiducialDetector(type, idSpec, ParamMap{{"size",*pa("-m",2)}});
   fid->setConfigurableID("fid");
-  canShowRegionCorners = (*pa("-m") == "bch" || *pa("-m") == "art");
+  canShowRegionCorners = (type == "bch" || type == "art" || square);
 
   grabber.init(pa("-input"));
   if(pa("-size")) grabber.useDesired(utils::Size(pa("-size")));
@@ -121,6 +143,10 @@ void run(){
   static bool enable3D = pa("-3D").as<bool>() || pa("-c").as<bool>();
   while(gui["pause"]) Thread::msleep(100);
   Image image = grabber.grab();
+
+  // some sources (e.g. -i ws) hand back nothing until the first frame arrives
+  // or while reconnecting; detect() would throw on a null image, so wait it out.
+  if(image.isNull() || !image.getDim()){ Thread::msleep(20); return; }
 
   Time t = Time::now();
   const std::vector<Fiducial> &fids = fid->detect(image.ptr());

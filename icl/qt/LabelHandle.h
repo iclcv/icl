@@ -42,6 +42,21 @@ namespace icl::qt {
     ///  assign a double (makes the underlying label show that double)
     void operator=(double num);
 
+    ///  assign any other integral value (long, unsigned, size_t, ...) as a number
+    /** `int` has its dedicated overload above; this catches the wider and
+        unsigned integer types — notably the `size_t` returned by
+        `container.size()` — which would otherwise be an ambiguous
+        int-vs-double conversion (and hence not assignable at all). */
+    template<typename T>
+      requires (std::is_integral_v<T> && !std::is_same_v<T, int>
+                                      && !std::is_same_v<T, bool>)
+    void operator=(T num){
+      if constexpr (std::is_signed_v<T>)
+        (*this) = QString::number(static_cast<qlonglong>(num));
+      else
+        (*this) = QString::number(static_cast<qulonglong>(num));
+    }
+
     /// appends text to the current text
     void operator+=(const std::string &text);
 

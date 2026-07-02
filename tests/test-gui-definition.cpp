@@ -11,10 +11,30 @@
 #include "harness/Test.h"
 #include <icl/qt/GUI.h>
 #include <icl/qt/ui.h>
+#include <icl/qt/LabelHandle.h>
+#include <icl/utils/dispatch/AssignRegistry.h>
+#include <typeindex>
 
 using namespace icl;
 using namespace icl::qt;
 using namespace icl::utils;
+
+// Regression: `gui["label"] = container.size()` used to abort with an
+// UnassignableTypesException — size_t (unsigned long / unsigned long long)
+// wasn't an enrolled LabelHandle receiver, and the int-vs-double conversion
+// was ambiguous anyway. LabelHandle now takes a wide-integer operator= and
+// enrolls the wider integer types.
+ICL_REGISTER_TEST("qt.LabelHandle.accepts_wide_integers",
+                  "LabelHandle = size_t / long / unsigned long long is registered") {
+  const std::type_index lab(typeid(LabelHandle));
+  ICL_TEST_TRUE(AssignRegistry::has(lab, typeid(int)));                 // pre-existing
+  ICL_TEST_TRUE(AssignRegistry::has(lab, typeid(long)));
+  ICL_TEST_TRUE(AssignRegistry::has(lab, typeid(unsigned)));
+  ICL_TEST_TRUE(AssignRegistry::has(lab, typeid(unsigned long)));       // == size_t (LP64)
+  ICL_TEST_TRUE(AssignRegistry::has(lab, typeid(long long)));
+  ICL_TEST_TRUE(AssignRegistry::has(lab, typeid(unsigned long long)));
+  ICL_TEST_TRUE(AssignRegistry::has(lab, typeid(std::size_t)));         // the .size() type
+}
 
 // A component's free-text payload is a typed field: every grammar metacharacter
 // — including the comma that used to split params — survives verbatim. This is

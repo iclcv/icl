@@ -54,6 +54,12 @@ namespace icl::io {
     QList<QWebSocket*> clients;
     qint64 maxMessageSizeBytes = 256LL * 1024 * 1024;
 
+    // Most recently broadcast frame, kept so a late-joining client gets the
+    // current image immediately instead of a null image until the next send()
+    // (publishers that only emit on change — e.g. a static 3D scene — would
+    // otherwise leave a fresh consumer stuck). Touched only on the WS thread.
+    QByteArray lastFrame;
+
     // counters (atomics so getters can read without locking)
     std::atomic<qint64> bytesSent{0};
     std::atomic<qint64> framesSent{0};
@@ -75,6 +81,12 @@ namespace icl::io {
             c->deleteLater();
           });
           clients.append(c);
+          // hand the newcomer the latest frame so it doesn't wait for the
+          // next send() (publishers that emit only on change would stall it)
+          if (!lastFrame.isEmpty() && c->state() == QAbstractSocket::ConnectedState) {
+            const qint64 written = c->sendBinaryMessage(lastFrame);
+            if (written == lastFrame.size()) bytesSent += written;
+          }
         }
       });
       if (!server->listen(addr, port)) {
@@ -95,6 +107,7 @@ namespace icl::io {
     // Broadcast: called on the WS thread (via QueuedConnection from send()).
     void broadcast(QByteArray bytes) {
       const qint64 n = bytes.size();
+      lastFrame = bytes;   // retain for late-joining clients (see newConnection)
       // Iterate a snapshot — disconnect signals can mutate `clients` reentrantly.
       const auto snapshot = clients;
       int delivered = 0;

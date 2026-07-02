@@ -47,6 +47,7 @@
 #include <icl/filter/affine/ImageUndistortion.h>   // radial distortion model + warp maps
 #include <icl/filter/affine/WarpOp.h>               // efficient warp-map application
 #include <icl/io/SaveLoad.h>                         // io::save (dump the detector input frame)
+#include <icl/io/sink/ImageSink.h>                   // optional -o: stream the result image out
 #include <algorithm>
 #include <cstdlib>   // std::_Exit
 #include <iostream>
@@ -69,6 +70,7 @@ std::shared_ptr<MeshNode> markerBoard;      // marker-grid target board (texture
 std::unique_ptr<MarkerGridTarget> mtarget;  // the marker-grid detector/generator
 std::shared_ptr<MeshNode> codedBoard;       // coded-checkerboard target board (textured quad)
 std::unique_ptr<CodedCheckerboardTarget> ctarget;  // the coded-checkerboard detector/generator
+icl::io::ImageSink output;                          // optional -o sink (mirrors the right pane)
 const Size CAMRES(480, 360);
 
 // Persistent host so the coded target's marker FiducialDetector can be shown and
@@ -315,6 +317,8 @@ void init() {
 
   gui["scene"].link(view.callback());          // GUI-thread view + GL capture
   gui["scene"].install(scene.getMouseHandler(0));
+
+  if (pa("-o")) output.init(pa("-o"));         // stream the right-pane image out
 }
 
 void run() {
@@ -378,9 +382,11 @@ void run() {
 
   if ((frame.isNew || resultDirty) && cam.getDim()) {
     DrawHandle d = gui["result"];
+    Image shown = Image(cam);              // base image displayed on the right (sent to -o)
     if (showUndistorted) {
       updateUndistort(view.distortionK1(), view.distortionK2(), cam.getSize());
       const Image rect = g_undistort.apply(Image(cam));
+      shown = rect;
       d = rect.as<icl8u>();
       d->color(255,255,255,255);
       d->text("undistorted preview (detection runs on the distorted image)", 5, 5, 8);
@@ -415,13 +421,18 @@ void run() {
       scoreCheckerboardGridEdges(grid, cam);
       drawCheckerboard(d, cam, seeds, grid);
     }
+    if (!output.isNull()) output.send(shown);   // mirror the right-pane image to -o
   }
   gui["fps"].render();
   fps.wait();
 }
 
 int main(int n, char **ppc) {
-  const int rc = ICLApp(n, ppc, "", init, run).exec();
+  pa_explain
+  ("-o", "optional generic image output specification: streams the right-pane "
+         "image (the camera frame / undistorted preview) to any ImageSink "
+         "backend, e.g. -o ws 8000 or -o file result_###.png");
+  const int rc = ICLApp(n, ppc, "-o(2)", init, run).exec();
   // Skip static-destruction teardown of the GL/Cycles globals (see the checkerboard
   // lab's history): by the time the window closed their GL context / threads are
   // gone, so their dtors fault. _Exit hands everything back to the OS cleanly.
