@@ -140,3 +140,35 @@ worse ⇒ black calibrates worse".
   it's mislabels (expected: 1–2 views with large residual).
 - k2 is only weakly observable at this FOV/radius (even plain lands k2=0.009 vs GT
   0.03); f, cx/cy, k1 are the trustworthy numbers here.
+
+---
+
+# Tier B confirmation — multi-seed + homography outlier reject
+
+6 noise seeds × 14 views, 13×9. Each view's correspondences are additionally run
+through a per-view **board→image homography reject** (iterative, 12px threshold:
+above radial distortion ~8px, below a 1-cell mislabel ~26–35px). Mean |error| over
+seeds, RAW vs REJECT:
+
+| target | RAW f%err | RAW k1err | RAW cxErr | REJECT f%err | REJECT k1err | REJECT cxErr | dropped |
+|---|---|---|---|---|---|---|---|
+| plain-checker | 0.02% | 0.0017 | 0.2 | 0.02% | 0.0017 | 0.2 | **0 / 8064** |
+| coded-black   | 0.11% | 0.0007 | 3.0 | 0.11% | 0.0007 | 3.0 | **0 / 7597** |
+| coded-white   | 3.87% | 0.827  | 12.7 | 0.41% | 0.021 | 1.5 | **200 / 6326 (3.2%)** |
+
+**Two things are now proven, not conjectured:**
+
+1. **The coded-white poisoning is robust** (not a lucky/unlucky seed): 3.87 % mean
+   f-error over 6 independent seeds vs 0.02 %/0.11 % for plain/black.
+2. **It is exactly the gross mislabels**, and they are cleanly removable. The
+   homography reject drops **0** correspondences for plain and coded-black (they
+   have no mislabels — confirming their clean saddles/labels) and **only ~3.2 %**
+   for coded-white — and that alone pulls coded-white from **3.87 % → 0.41 %**
+   f-error (10×) and k1 error from 0.83 → 0.02. The saddle noise that remains
+   averages out; the mislabels were the whole story.
+
+**Actionable conclusion:** always run a per-view homography (or RANSAC) outlier
+reject on the correspondences before the intrinsic bundle. It is free for clean
+targets (drops nothing) and rescues the coded-white failure mode. With it in place,
+all three targets calibrate well; without it, coded-white silently mis-calibrates
+whenever its 0.62×cell markers dip into the marginal size range.

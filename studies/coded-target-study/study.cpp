@@ -17,6 +17,7 @@
 #include <icl/filter/conv/ConvolutionOp.h>
 #include <icl/cv/IntrinsicCalibrator.h>
 #include <icl/math/la/DynMatrix.h>
+#include <icl/math/transform/Homography2D.h>
 #include <cmath>
 #include <cstdio>
 #include <array>
@@ -139,12 +140,48 @@ static ViewResult evalView(CalibrationTarget &tgt, FiducialDetector *fd, const s
 // intrinsics to ground truth. Tests whether the target's corner noise (esp. the
 // black-cell saddle penalty) actually moves the estimate.
 // ======================================================================
-static int tierB(){
+// one detected corner in a view: board index + measured image pixel
+struct Obs { int idx; Point32f img; };
+
+// Per-view homography outlier reject: fit a board->image homography and iteratively
+// drop correspondences whose reprojection residual exceeds `thr` px. A gross
+// MISLABEL is off by >=1 cell (>=cellpx, here ~26-35px) while radial distortion
+// deviates <=~8px, so thr~12 cleanly separates them. Returns the kept subset.
+static std::vector<Obs> rejectOutliers(const std::vector<Obs> &obs, double sq, int NC, double thr){
+  std::vector<Obs> keep = obs;
+  for(int iter=0; iter<4 && keep.size()>=5; ++iter){
+    std::vector<Point32f> B,I;
+    for(auto &o: keep){ B.push_back(Point32f((o.idx%NC)*sq,(o.idx/NC)*sq)); I.push_back(o.img); }
+    // Homography2D(A,B) yields H with apply(B)=A; we want apply(board)=image → (image,board)
+    icl::math::Homography2D H(I.data(), B.data(), (int)B.size());
+    std::vector<Obs> nk;
+    for(auto &o: keep){ Point32f pr=H.apply(Point32f((o.idx%NC)*sq,(o.idx/NC)*sq));
+      if(std::hypot(pr.x-o.img.x, pr.y-o.img.y) < thr) nk.push_back(o); }
+    if(nk.size()==keep.size()){ keep=nk; break; }
+    keep=nk;
+  }
+  return keep;
+}
+
+struct CalRes { double fx,fy,cx,cy,k1,k2; int used; bool ok; };
+static CalRes runCalib(const std::vector<std::vector<Obs>> &views, int NC,int NR,double sq,int W,int H){
   using icl::math::DynMatrix; using icl::cv::IntrinsicCalibrator;
+  const int NV=(int)views.size(), bSize=NC*NR;
+  DynMatrix<icl64f> world=DynMatrix<icl64f>::create(3,bSize), impoints=DynMatrix<icl64f>::create(2*NV,bSize), mask=DynMatrix<icl64f>::create(NV,bSize);
+  for(int r=0;r<NR;++r)for(int c=0;c<NC;++c){int idx=r*NC+c; world(0,idx)=c*sq; world(1,idx)=r*sq; world(2,idx)=0;}
+  for(int i=0;i<2*NV*bSize;++i) impoints[i]=0; for(int i=0;i<NV*bSize;++i) mask[i]=0;
+  int used=0;
+  for(int v=0;v<NV;++v){ for(auto&o:views[v]){ impoints(2*v,o.idx)=o.img.x; impoints(2*v+1,o.idx)=o.img.y; mask(v,o.idx)=1; }
+    if(views[v].size()>=6) used++; }
+  try{ IntrinsicCalibrator cal(NC,NR,NV,W,H); auto r=cal.calibrate(impoints,world,mask);
+    return { r.getFocalLengthX(),r.getFocalLengthY(),r.getPrincipalX(),r.getPrincipalY(),r.getK1(),r.getK2(),used,true }; }
+  catch(std::exception&){ return {0,0,0,0,0,0,used,false}; }
+}
+
+static int tierB(){
   Cam cam; cam.W=640; cam.H=480; cam.cx=320; cam.cy=240;
   cam.f=650; cam.k1=-0.15; cam.k2=0.03;                 // ground-truth intrinsics
   const double sq=25.0, texPxPerCell=60;
-  // diverse poses: tilts (rad) about x/y/z + board-centre offset (mm) + distance (mm).
   struct P{ double ax,ay,az,ox,oy,D; };
   P poses[] = {
     {-.5,-.32,.09,-60,-40,520},{ .46,-.35,-.14, 55,-32,560},{-.44,.44,.17,-20, 26,500},
@@ -153,14 +190,16 @@ static int tierB(){
     {-.18,.58,-.16,-30,-40,500},{ .32,.32,0, 44,-44,620},{-.3,-.3,.12,-44, 44,540},
     { .2,-.2,-.2, 0,  0,470},{-.2,.2,.2, 10,-10,470},
   };
-  const int NV = sizeof(poses)/sizeof(poses[0]);
-
+  const int NV=sizeof(poses)/sizeof(poses[0]);
+  const int NSEED=6;
   struct Cfg{ Type type; int C,R; double fill; };
   Cfg cfgs[] = { {PLAIN,13,9,0}, {CODED_WHITE,13,9,0.62}, {CODED_BLACK,13,9,1.0} };
 
-  printf("Tier B — recover intrinsics (GT f=%.0f cx=320 cy=240 k1=%.3f k2=%.3f), %d views, 13x9\n",
-         cam.f, cam.k1, cam.k2, NV);
-  printf("%-13s  usedViews  fx      fy      cx      cy      k1       k2      | f%%err  k1err   k2err\n","type");
+  printf("Tier B — %d seeds x %d views, 13x9. GT f=%.0f cx=320 cy=240 k1=%.3f k2=%.3f\n",
+         NSEED,NV,cam.f,cam.k1,cam.k2);
+  printf("Per target: mean|f%%err|, mean|k1err|, mean|cx err|px over seeds — RAW vs OUTLIER-REJECT (thr=12px)\n\n");
+  printf("%-13s | %-28s | %-28s | dropped\n","target","RAW (no reject)","REJECT (homography, thr12)");
+  printf("%-13s | %8s %8s %8s | %8s %8s %8s |\n","","f%err","k1err","cxErr","f%err","k1err","cxErr");
   for(auto &cf : cfgs){
     std::unique_ptr<CalibrationTarget> tgt; FiducialDetector *fd=nullptr; std::string pp;
     if(cf.type==PLAIN) tgt.reset(new CheckerboardTarget(cf.C,cf.R,(float)sq));
@@ -171,34 +210,28 @@ static int tierB(){
     Img8u tex=tgt->generate(Size((int)((cf.C+2)*texPxPerCell),(int)((cf.R+2)*texPxPerCell)));
     const double px=std::min(tex.getWidth()/double(cf.C+2),tex.getHeight()/double(cf.R+2));
     const double ox=(tex.getWidth()-px*cf.C)/2.0, oy=(tex.getHeight()-px*cf.R)/2.0;
-    const int NC=cf.C-1, NR=cf.R-1, bSize=NC*NR;
+    const int NC=cf.C-1, NR=cf.R-1;
 
-    DynMatrix<icl64f> world = DynMatrix<icl64f>::create(3,bSize);
-    for(int r=0;r<NR;++r)for(int c=0;c<NC;++c){ int idx=r*NC+c; world(0,idx)=c*sq; world(1,idx)=r*sq; world(2,idx)=0; }
-    DynMatrix<icl64f> impoints = DynMatrix<icl64f>::create(2*NV,bSize);
-    DynMatrix<icl64f> mask = DynMatrix<icl64f>::create(NV,bSize);
-    for(int i=0;i<2*NV*bSize;++i) impoints[i]=0; for(int i=0;i<NV*bSize;++i) mask[i]=0;
-    RNG rng{7u}; int usedViews=0;
-    for(int v=0; v<NV; ++v){
-      Pose p; p.R=mul(mul(rotZ(poses[v].az),rotY(poses[v].ay)),rotX(poses[v].ax));
-      V3 Cb=mul(p.R,V3{cf.C*sq/2,cf.R*sq/2,0});
-      p.t={ poses[v].ox-Cb.x, poses[v].oy-Cb.y, poses[v].D-Cb.z };
-      Img8u img=renderView(tex,cf.C,cf.R,sq,px,ox,oy,p,cam,205); degrade(img,4,rng);
-      auto corr=tgt->detect(img); int got=0;
-      for(auto&cc:corr){ int c=(int)std::lround(cc.objectPos[0]/sq), r=(int)std::lround(cc.objectPos[1]/sq);
-        if(c<0||c>=NC||r<0||r>=NR) continue; int idx=r*NC+c;
-        impoints(2*v,idx)=cc.imagePos.x; impoints(2*v+1,idx)=cc.imagePos.y; mask(v,idx)=1; ++got; }
-      if(got>=6) usedViews++;
+    double sF[2]={0,0}, sK[2]={0,0}, sCx[2]={0,0}; int nOk[2]={0,0}, totalDropped=0, totalCorr=0;
+    for(int seed=0; seed<NSEED; ++seed){
+      RNG rng{ (unsigned)(seed*2654435761u+11u) };
+      std::vector<std::vector<Obs>> raw(NV), clean(NV);
+      for(int v=0; v<NV; ++v){
+        Pose p; p.R=mul(mul(rotZ(poses[v].az),rotY(poses[v].ay)),rotX(poses[v].ax));
+        V3 Cb=mul(p.R,V3{cf.C*sq/2,cf.R*sq/2,0}); p.t={ poses[v].ox-Cb.x, poses[v].oy-Cb.y, poses[v].D-Cb.z };
+        Img8u img=renderView(tex,cf.C,cf.R,sq,px,ox,oy,p,cam,205); degrade(img,4,rng);
+        for(auto&cc:tgt->detect(img)){ int c=(int)std::lround(cc.objectPos[0]/sq), r=(int)std::lround(cc.objectPos[1]/sq);
+          if(c<0||c>=NC||r<0||r>=NR) continue; raw[v].push_back({r*NC+c, cc.imagePos}); }
+        clean[v]=rejectOutliers(raw[v],sq,NC,12.0);
+        totalCorr+=(int)raw[v].size(); totalDropped+=(int)(raw[v].size()-clean[v].size());
+      }
+      CalRes rr=runCalib(raw,NC,NR,sq,cam.W,cam.H), cr=runCalib(clean,NC,NR,sq,cam.W,cam.H);
+      if(rr.ok){ sF[0]+=std::fabs(100*(rr.fx-cam.f)/cam.f); sK[0]+=std::fabs(rr.k1-cam.k1); sCx[0]+=std::fabs(rr.cx-cam.cx); nOk[0]++; }
+      if(cr.ok){ sF[1]+=std::fabs(100*(cr.fx-cam.f)/cam.f); sK[1]+=std::fabs(cr.k1-cam.k1); sCx[1]+=std::fabs(cr.cx-cam.cx); nOk[1]++; }
     }
-    try{
-      IntrinsicCalibrator cal(NC,NR,NV,cam.W,cam.H);
-      auto res=cal.calibrate(impoints,world,mask);
-      double fx=res.getFocalLengthX(), fy=res.getFocalLengthY();
-      printf("%-13s  %6d    %6.1f  %6.1f  %6.1f  %6.1f  %7.4f %7.4f | %5.1f%% %7.4f %7.4f\n",
-             typeName(cf.type),usedViews,fx,fy,res.getPrincipalX(),res.getPrincipalY(),
-             res.getK1(),res.getK2(),
-             100.0*(fx-cam.f)/cam.f, res.getK1()-cam.k1, res.getK2()-cam.k2);
-    }catch(std::exception&e){ printf("%-13s  calibrate FAILED: %s\n",typeName(cf.type),e.what()); }
+    auto A=[&](int m,double*s){ return nOk[m]? s[m]/nOk[m] : -1.0; };
+    printf("%-13s | %7.2f%% %8.4f %7.1f | %7.2f%% %8.4f %7.1f | %d/%d\n",
+           typeName(cf.type), A(0,sF),A(0,sK),A(0,sCx), A(1,sF),A(1,sK),A(1,sCx), totalDropped,totalCorr);
   }
   return 0;
 }
