@@ -4,7 +4,7 @@
 
 #include "harness/Benchmark.h"
 #include <icl/core/Img.h>
-#include <icl/io/grabber/TestImages.h>
+#include <icl/io/source/TestImages.h>
 #include <icl/filter/threshold/ThresholdOp.h>
 #include <icl/cv/RunLengthEncoder.h>
 
@@ -64,12 +64,12 @@ namespace {
       static std::string lastKey;
       std::string key = name + ":" + std::to_string(w) + "x" + std::to_string(h) + "@" + std::to_string(thresh);
       if(key != lastKey){
-        std::shared_ptr<ImgBase> img(icl::io::TestImages::create(name, Size(w,h), formatGray, depth8u));
+        icl::core::Image img = icl::io::TestImages::create(name, Size(w,h), formatGray, depth8u);
         binarized = Img8u(Size(w,h), 1);
         ImgBase *dst = &binarized;
         icl::filter::ThresholdOp op(icl::filter::ThresholdOp::lt,
                                     static_cast<float>(thresh), static_cast<float>(thresh), 0.0f);
-        op.apply(img.get(), &dst);
+        op.apply(img.ptr(), &dst);
         lastKey = key;
       }
       static RunLengthEncoder rle;

@@ -3,6 +3,7 @@ bench_sources = files(
   'bench-core.cpp',
   'bench-cv.cpp',
   'bench-filter.cpp',
+  'bench-homography.cpp',
   # bench-fixedmatrix.cpp is a standalone file with its own main()
   # (compiled ad-hoc per the comment at its top); excluded here so it
   # doesn't collide with icl-benchmarks.cpp's main.
