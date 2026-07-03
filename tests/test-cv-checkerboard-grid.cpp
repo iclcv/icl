@@ -423,7 +423,7 @@ ICL_REGISTER_TEST("cv.checkergrid.ransac_keystone",
   Point32f srcQ[4]={{0,0},{(float)(C-1),0},{(float)(C-1),(float)(R-1)},{0,(float)(R-1)}};
   Point32f dstQ[4]={{cx-topHalf,cy-0.5f*Hh},{cx+topHalf,cy-0.5f*Hh},
                     {cx+botHalf,cy+0.5f*Hh},{cx-botHalf,cy+0.5f*Hh}};
-  icl::math::Homography2D H(dstQ, srcQ, 4);                  // apply(model-quad)=image-quad
+  icl::math::Homography2D H = icl::math::Homography2D::fit(srcQ, dstQ, 4);                  // apply(model-quad)=image-quad
   std::vector<CornerSeed> seeds;
   for (int r=0;r<R;++r) for (int c=0;c<C;++c) {
     CornerSeed cs; cs.pos = H.apply(Point32f((float)c,(float)r)); cs.score = 0.5f; seeds.push_back(cs);
@@ -525,7 +525,7 @@ ICL_REGISTER_TEST("cv.checkergrid.subpixel_refine_improves_corners",
   const Point32f srcC[4]={{0,0},{(float)W,0},{(float)W,(float)H},{0,(float)H}};
   const float ks=0.22f;                                  // top-edge keystone
   const Point32f dstC[4]={{ks*W,0},{(1-ks)*W,0},{(float)W,(float)H},{0,(float)H}};
-  const math::Homography2D Hv2s(srcC, dstC, 4);          // apply(outputPx) -> sourcePx
+  const math::Homography2D Hv2s = math::Homography2D::fit(dstC, srcC, 4);          // apply(outputPx) -> sourcePx
   auto warp = [&](float qx,float qy){ return Hv2s.apply(Point32f(qx,qy)); };
   Img8u img = renderBoard(W, H, COLS, ROWS, 40, warp);
 
@@ -539,7 +539,7 @@ ICL_REGISTER_TEST("cv.checkergrid.subpixel_refine_improves_corners",
     std::vector<Point32f> latt, im;
     for (int r=0;r<gr.rows;++r) for (int c=0;c<gr.cols;++c)
       if (gr.has(c,r)) { latt.push_back(Point32f((float)c,(float)r)); im.push_back(gr.at(c,r)); }
-    const math::Homography2D Hom(im.data(), latt.data(), (int)latt.size());   // apply(latt) -> image
+    const math::Homography2D Hom = math::Homography2D::fit(latt.data(), im.data(), (int)latt.size());   // apply(latt) -> image
     double e=0; for (size_t i=0;i<latt.size();++i) e += std::pow(Hom.apply(latt[i]).distanceTo(im[i]), 2.0);
     return std::sqrt(e/latt.size());
   };

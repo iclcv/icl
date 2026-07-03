@@ -62,14 +62,14 @@ namespace {
   // an analytically-known gen corner to its exact position in the rendered view.
   Homography2D genToView(const Img8u &gen, Size view, float keystone) {
     Point32f genC[4], dst[4]; viewQuad(gen, view, keystone, genC, dst);
-    return Homography2D(dst, genC, 4);                     // apply(genPt) -> viewPt
+    return Homography2D::fit(genC, dst, 4);                     // apply(genPt) -> viewPt
   }
 
   // perspective view of a frontal target image: warp gen by the homography taking
   // gen's corners to a (keystone) quad in the view, + optional gaussian noise.
   Img8u renderView(const Img8u &gen, Size view, float keystone, float noise, Rng &rng) {
     Point32f genC[4], dst[4]; viewQuad(gen, view, keystone, genC, dst);
-    const Homography2D Hv2g(genC, dst, 4);                 // apply(viewPt) -> genPt
+    const Homography2D Hv2g = Homography2D::fit(dst, genC, 4);                 // apply(viewPt) -> genPt
     Img8u out(view, 1); out.fill(255);
     Channel8u o = out[0]; const Channel8u g = gen[0];
     const int gw = gen.getWidth(), gh = gen.getHeight();
@@ -91,7 +91,7 @@ namespace {
     if (c.size() < 4) return 1e9;
     std::vector<Point32f> obj(c.size()), img(c.size());
     for (size_t i = 0; i < c.size(); ++i) { obj[i] = Point32f(c[i].objectPos[0], c[i].objectPos[1]); img[i] = c[i].imagePos; }
-    const Homography2D H(img.data(), obj.data(), (int)obj.size());     // apply(obj) -> img
+    const Homography2D H = Homography2D::fit(obj.data(), img.data(), (int)obj.size());     // apply(obj) -> img
     double e = 0; for (size_t i = 0; i < obj.size(); ++i) e += std::pow(H.apply(obj[i]).distanceTo(img[i]), 2.0);
     return std::sqrt(e/obj.size());
   }

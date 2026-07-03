@@ -216,7 +216,7 @@ namespace icl::markers {
     auto fitHib = [&](const std::vector<Marker> &v) {
       std::vector<Point32f> B, I;
       for (const auto &m : v) { B.push_back(Point32f((m.cx-0.5f)*sq, (m.cy-0.5f)*sq)); I.push_back(m.center); }
-      return math::Homography2D(B.data(), I.data(), (int)B.size());   // image → board
+      return math::Homography2D::fit(I.data(), B.data(), (int)B.size());   // apply(image)=board
     };
     math::Homography2D Hib = fitHib(ms);
     {
@@ -239,7 +239,7 @@ namespace icl::markers {
       const std::vector<Fiducial::KeyPoint> &kps = f->getKeyPoints2D();
       Point32f ip[4];
       for (int k = 0; k < 4; ++k) { mp[k] = kps[k].markerPos; ip[k] = kps[k].imagePos; }
-      return math::Homography2D(ip, mp, 4);               // marker-local mm → image px
+      return math::Homography2D::fit(mp, ip, 4);          // apply(marker-mm)=image-px
     };
     for (const auto &m : ms) {
       Point32f mp[4]; const math::Homography2D H = localH(m.f, mp);

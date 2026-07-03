@@ -572,10 +572,9 @@ namespace icl::cv {
     if ((int)latt.size() < 4) return in;
 
     using math::Homography2D;
-    // Homography2D(x,y) maps y->x (apply(y)~x); we want apply(src)~dst, so the
-    // (col,row) lattice is `src` and the image positions are `dst`.
+    // apply(src)~dst: the (col,row) lattice is `src`, the image positions are `dst`.
     auto fit = [](const std::vector<Point32f> &src, const std::vector<Point32f> &dst) {
-      return Homography2D(dst.data(), src.data(), (int)src.size());
+      return Homography2D::fit(src.data(), dst.data(), (int)src.size());
     };
 
     // global cell spacing (median of filled right/down neighbour steps)

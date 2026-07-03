@@ -68,10 +68,24 @@ namespace icl::math {
     /// Empty constructor
     GenericHomography2D(){}
 
-    /// Constructor from two corresponding point sets of size n>=4.
-    /** The resulting homography maps \c pBs onto \c pAs: `apply(pBs[i]) == pAs[i]`
-        (i.e. \c pAs is the destination / \c pBs is the source). */
+    /// DEPRECATED — use fit(src,dst,n). NOTE the arg order differs: this maps
+    /// pBs → pAs (`apply(pBs[i])==pAs[i]`), whereas fit maps src → dst.
+    [[deprecated("use Homography2D::fit(src,dst,n) — fit maps src->dst, the OPPOSITE "
+                 "arg order of this constructor")]]
     GenericHomography2D(const utils::Point32f *pAs, const utils::Point32f *pBs, int n=4);
+
+    /// Fit the homography that maps \a src onto \a dst: `apply(src[i]) == dst[i]`.
+    /** Normalized (Hartley) DLT — the linear least-squares estimate; \a n >= 4.
+        This is the plain, fast default. See refined() for a geometric-error LM
+        refinement. */
+    static GenericHomography2D fit(const utils::Point32f *src, const utils::Point32f *dst, int n=4);
+
+    /// Like fit(), then Levenberg-Marquardt refinement of the geometric error.
+    /** Seeds with the fit() DLT estimate and minimizes the true reprojection
+        error \f$\sum_i \|\texttt{apply}(src_i) - dst_i\|^2\f$. More accurate than
+        fit() on noisy correspondences (DLT only minimizes an algebraic proxy), at
+        a few× the cost. Same src→dst convention as fit(). */
+    static GenericHomography2D refined(const utils::Point32f *src, const utils::Point32f *dst, int n=4);
 
 
     /// applies a given homography matrix

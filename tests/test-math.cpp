@@ -1189,7 +1189,7 @@ ICL_REGISTER_TEST("math.homography.roundtrip_axis_aligned",
   // 1920x1080 source, 512x512 destination, centred axis-aligned quad
   const Point32f ps[4] = { {20,20}, {1899,20}, {1899,1059}, {20,1059} };
   const Point32f ys[4] = { {0,0}, {511,0}, {511,511}, {0,511} };
-  const Homography2D HOM(ps, ys, 4);
+  const Homography2D HOM = Homography2D::fit(ys, ps, 4);   // apply(ys)=ps
   for(int i = 0; i < 4; ++i){
     const Point32f p = HOM.apply(ys[i]);
     ICL_TEST_NEAR(p.x, ps[i].x, 1e-2f);
@@ -1206,12 +1206,86 @@ ICL_REGISTER_TEST("math.homography.roundtrip_rotated_quad",
   // ~128 px in y for this case. Post-fix must round-trip to <1 px.
   const Point32f ps[4] = { {620,270}, {1200,250}, {1818,1014}, {460,920} };
   const Point32f ys[4] = { {0,0}, {511,0}, {511,511}, {0,511} };
-  const Homography2D HOM(ps, ys, 4);
+  const Homography2D HOM = Homography2D::fit(ys, ps, 4);   // apply(ys)=ps
   for(int i = 0; i < 4; ++i){
     const Point32f p = HOM.apply(ys[i]);
     ICL_TEST_NEAR(p.x, ps[i].x, 1.0f);
     ICL_TEST_NEAR(p.y, ps[i].y, 1.0f);
   }
+}
+
+// fit(src,dst) maps src -> dst: apply(src[i]) == dst[i] (the opposite arg order
+// of the deprecated constructor).
+ICL_REGISTER_TEST("math.homography.fit_maps_src_to_dst",
+                  "Homography2D::fit(src,dst) yields apply(src)=dst")
+{
+  const Point32f src[4] = { {0,0}, {100,0}, {100,80}, {0,80} };
+  const Point32f dst[4] = { {12,7}, {520,30}, {498,470}, {40,441} };
+  const Homography2D H = Homography2D::fit(src, dst, 4);
+  for(int i=0;i<4;++i){
+    const Point32f p = H.apply(src[i]);
+    ICL_TEST_NEAR(p.x, dst[i].x, 1e-2f);
+    ICL_TEST_NEAR(p.y, dst[i].y, 1e-2f);
+  }
+}
+
+// The deprecated ctor(pAs,pBs) must equal fit(pBs,pAs) (same 3x3, opposite args).
+ICL_REGISTER_TEST("math.homography.deprecated_ctor_equals_fit",
+                  "legacy ctor(a,b) == fit(b,a)")
+{
+  const Point32f a[4] = { {0,0}, {511,0}, {511,511}, {0,511} };
+  const Point32f b[4] = { {620,270}, {1200,250}, {1818,1014}, {460,920} };
+  const Homography2D Hfit = Homography2D::fit(b, a, 4);   // apply(b)=a
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  const Homography2D Hctor(a, b, 4);                       // legacy: apply(b)=a
+#pragma GCC diagnostic pop
+  for(int i=0;i<9;++i) ICL_TEST_NEAR(Hfit[i], Hctor[i], 1e-4f);
+}
+
+// refined() must reproduce clean data exactly (LM converges to the DLT optimum)
+// and be NO WORSE than fit() under correspondence noise (it minimizes the true
+// geometric error, of which the DLT is only an algebraic proxy).
+ICL_REGISTER_TEST("math.homography.refined_exact_and_no_worse_than_fit",
+                  "refined() is exact on clean data and <= fit() error under noise")
+{
+  // ground-truth homography (mild projective) + a grid of source points
+  const float Hgt[9] = { 1.2f, 0.15f, 30.f,  -0.1f, 1.05f, 12.f,  3e-4f, -2e-4f, 1.f };
+  auto applyH = [&](float x, float y, float &u, float &v){
+    const float w = Hgt[6]*x+Hgt[7]*y+Hgt[8];
+    u = (Hgt[0]*x+Hgt[1]*y+Hgt[2])/w; v = (Hgt[3]*x+Hgt[4]*y+Hgt[5])/w;
+  };
+  std::vector<Point32f> src, dst, dstClean;
+  for(int r=0;r<6;++r) for(int c=0;c<6;++c){
+    float x=c*20.f, y=r*20.f, u,v; applyH(x,y,u,v);
+    src.push_back({x,y}); dstClean.push_back({u,v});
+  }
+  const int n=(int)src.size();
+
+  // clean: both fit and refined must round-trip to sub-pixel
+  {
+    const Homography2D Hf = Homography2D::fit(src.data(), dstClean.data(), n);
+    const Homography2D Hr = Homography2D::refined(src.data(), dstClean.data(), n);
+    double ef=0, er=0;
+    for(int i=0;i<n;++i){ Point32f pf=Hf.apply(src[i]), pr=Hr.apply(src[i]);
+      ef=std::max(ef,(double)std::hypot(pf.x-dstClean[i].x, pf.y-dstClean[i].y));
+      er=std::max(er,(double)std::hypot(pr.x-dstClean[i].x, pr.y-dstClean[i].y)); }
+    ICL_TEST_TRUE(ef < 1e-2); ICL_TEST_TRUE(er < 1e-2);
+  }
+
+  // noisy dst: refined's RMS to the CLEAN targets must be <= fit's (within eps)
+  dst = dstClean;
+  unsigned s=12345; auto rnd=[&](){ s=s*1103515245u+12345u; return ((int)((s>>13)&0x3ff)-512)/512.0f; };
+  for(auto &p : dst){ p.x += 1.2f*rnd(); p.y += 1.2f*rnd(); }
+  const Homography2D Hf = Homography2D::fit(src.data(), dst.data(), n);
+  const Homography2D Hr = Homography2D::refined(src.data(), dst.data(), n);
+  double sf=0, sr=0;
+  for(int i=0;i<n;++i){ Point32f pf=Hf.apply(src[i]), pr=Hr.apply(src[i]);
+    sf += std::pow(std::hypot(pf.x-dstClean[i].x, pf.y-dstClean[i].y),2);
+    sr += std::pow(std::hypot(pr.x-dstClean[i].x, pr.y-dstClean[i].y),2); }
+  const double rmsF=std::sqrt(sf/n), rmsR=std::sqrt(sr/n);
+  ICL_TEST_TRUE(rmsR <= rmsF + 1e-3);          // refined no worse than fit
+  ICL_TEST_TRUE(rmsR < 1.0);                    // and still sub-pixel to GT
 }
 
 ICL_REGISTER_TEST("math.fixed.closest_rotation",
