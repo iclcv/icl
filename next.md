@@ -21,9 +21,9 @@ Optional follow-ups this session opened up (all deferred, none blocking Phase C)
   buffer-reuse fix (latent aliasing, `isExclusivelyOwned` only checks the ImgBase handle).
 
 ### Session 97 — math/fit review → full model-fitting framework + geev + robustness
-On `further-restructuring-and-cleanup`, suite **1044→1062**. A deep dive into `icl/math/fit`
+On `further-restructuring-and-cleanup`, suite **1044→1063**. A deep dive into `icl/math/fit`
 (triggered by a review request); Phase C untouched and remains NEXT. Memory:
-[`project_fit_framework`], [`project_eigen_ordering`]. Big session, ~9 commits.
+[`project_fit_framework`], [`project_eigen_ordering`]. Big session, ~16 commits.
 
 - **🔴 Fixed a live, silent correctness regression: `DynMatrix::eigen()` ordering was
   backend-dependent.** The Jacobi→LAPACK migration flipped eigenvalue order (LAPACK `syev`
@@ -45,11 +45,15 @@ On `further-restructuring-and-cleanup`, suite **1044→1062**. A deep dive into 
 - **`PlotWidget` gained a `lock aspect ratio` property** (isotropic scaling — circles render circular).
 - **`superquadric-fitting-demo`** (`geom2/demos/`): CMA-ES fits a superquadric's size+squareness to
   noisy surface points (Solina inside-outside error), 3D `Plot3D` scatter+fitted `surf`. Fit runs
-  DETACHED on the worker `run()` (slider callbacks just flag dirty) → responsive sliders. `icl-model-
-  fitting-playground` stays 2D-only in `math/apps` (fusing 2D+3D into one tabbed app got clumsy —
-  split back). Headless regression `cmaes_superquadric_shape`.
-- **`geom2::PlotWidget3D` axis-label bug fixed** (`makeAxis` placed inverted-axis labels off their
-  ticks) — visual confirm on a display still pending.
+  DETACHED on the worker `run()` (slider callbacks just snapshot inputs + flag an atomic dirty) →
+  responsive sliders. Verified on a display: near-perfect recovery (size 2.98/1.99/1.40, e 0.70/0.79
+  vs truth 3/2/1.4, 0.70/0.80). `icl-model-fitting-playground` stays 2D-only in `math/apps` (fusing
+  2D+3D into one tabbed app got clumsy — split back). Headless regression `cmaes_superquadric_shape`.
+  NOTE: the SQ fit is outlier-sensitive (exponents collapse under many outliers) — a robust/trimmed
+  SQ cost is a future nicety.
+- **`geom2::PlotWidget3D` fixes (verified on display):** axis labels were detaching from their ticks
+  (`makeAxis` placed inverted-axis labels at `-r`); and `Plot3D::setViewPort` must be called on the
+  GUI thread at init (calling it from a worker after the first paint left Y/Z showing `inf`/`nan`).
 
 ### Session 96 — morphology flicker fix, calibration-target study, Homography2D toolkit
 On `further-restructuring-and-cleanup`, suite **1044/1044**. Big session, ~14 commits. Three arcs:
