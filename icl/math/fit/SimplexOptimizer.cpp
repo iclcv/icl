@@ -368,10 +368,10 @@ namespace icl::math {
     if(best.fx <= m_data->minError) return m_data->storeResult(best);
     for(int i=1;i<nInitCycles;++i){
       SimplexOptimizationResult<T,Vector> r = optimize(gen());
-      if(r.fx <= m_data->minError) return m_data->storeResult(best);
       if(r.fx < best.fx){
         best = r;
       }
+      if(r.fx <= m_data->minError) return m_data->storeResult(best);
     }
     return m_data->storeResult(best);
   }

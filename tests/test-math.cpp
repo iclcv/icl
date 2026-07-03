@@ -6,6 +6,7 @@
 #include <icl/math/la/FixedMatrix.h>
 #include <icl/math/la/DynMatrix.h>
 #include <icl/math/transform/Homography2D.h>
+#include <icl/math/fit/LeastSquareModelFitting2D.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -1406,4 +1407,49 @@ ICL_REGISTER_TEST("math.delaunay.grid_contains_axis_edges",
   // Euler: a triangulation of N points with h hull points has 2N-2-h triangles.
   // Hull of this grid = perimeter = 2*(W+H)-4 = 14 points → 2*20-2-14 = 24 triangles.
   ICL_TEST_EQ(delaunayTriangulation(p).size(), 24u);
+}
+
+// eigen() must return eigenvalues (and their eigenvector columns) in DESCENDING
+// order, independent of the active LAPACK backend. LAPACK syev returns ascending
+// and the C++ Jacobi fallback descending; the wrapper reconciles them. Regression
+// for the Jacobi->LAPACK migration that silently flipped the order and broke every
+// "column 0 = largest eigenvalue" caller (LeastSquareModelFitting, PoseEstimator, ...).
+ICL_REGISTER_TEST("math.dyn.eigen_descending_order",
+                  "eigen() returns eigenvalues largest-first with matching eigenvectors")
+{
+  // symmetric matrix with known eigenvalues {1,2,3} on the (rotated) diagonal
+  DynMatrix<double> A = DynMatrix<double>::create(3,3,0.0);
+  A(0,0) = 2; A(1,1) = 3; A(2,2) = 1;   // deliberately unsorted on the diagonal
+  DynMatrix<double> evec, eval;
+  A.eigen(evec, eval);
+  ICL_TEST_NEAR(eval[0], 3.0, 1e-9);    // largest first
+  ICL_TEST_NEAR(eval[1], 2.0, 1e-9);
+  ICL_TEST_NEAR(eval[2], 1.0, 1e-9);
+  // each column must be an eigenvector of its eigenvalue: A*v = lambda*v
+  for(int k=0;k<3;++k){
+    DynMatrix<double> v(3,1);   // (rows,cols) => column vector
+    for(int i=0;i<3;++i) v[i] = evec(i,k);
+    DynMatrix<double> Av = A*v;
+    for(int i=0;i<3;++i) ICL_TEST_NEAR(Av[i], eval[k]*v[i], 1e-9);
+  }
+}
+
+// LeastSquareModelFitting depends on eigen()'s descending contract: it takes
+// column 0 as the model. Fit a circle to exact samples and recover its centre/radius.
+ICL_REGISTER_TEST("math.fit.least_square_circle",
+                  "direct least-square circle fit recovers centre and radius")
+{
+  LeastSquareModelFitting2D fit(4, LeastSquareModelFitting2D::circle_gen);
+  std::vector<Point32f> pts;
+  for(int i=0;i<24;++i){
+    const double t = i*2*M_PI/24;
+    pts.push_back(Point32f(10 + 5*std::cos(t), -3 + 5*std::sin(t)));
+  }
+  const std::vector<double> m = fit.fit(pts);
+  const double cx = -m[1]/(2*m[0]);
+  const double cy = -m[2]/(2*m[0]);
+  const double r  = std::sqrt((m[1]*m[1]+m[2]*m[2])/(4*m[0]*m[0]) - m[3]/m[0]);
+  ICL_TEST_NEAR(cx, 10.0, 1e-3);
+  ICL_TEST_NEAR(cy, -3.0, 1e-3);
+  ICL_TEST_NEAR(r,   5.0, 1e-3);
 }

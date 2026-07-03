@@ -327,6 +327,9 @@ namespace icl::math {
     /// matrix inverse
     DynMatrix inv() const;
     /// eigenvalue decomposition (symmetric matrices only)
+    /** Eigenvalues (and their eigenvector columns) are returned in DESCENDING
+        order — column 0 holds the eigenvector of the largest eigenvalue. This
+        ordering is guaranteed independently of the active LAPACK backend. */
     void eigen(DynMatrix &eigenvectors, DynMatrix &eigenvalues) const;
     /// singular value decomposition
     void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const;

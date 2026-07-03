@@ -57,7 +57,7 @@ namespace icl::math {
         std::vector<int> idxs;
         GenMixedAttrib(const std::vector<int> &idxs):idxs(idxs){}
         virtual T compute(const T *row) const{
-          float product = 1;
+          T product = 1;
           for(size_t i=0;i<idxs.size();++i){
             product *= row[idxs[i]];
           }
@@ -92,7 +92,7 @@ namespace icl::math {
           if(N == 4) return row[idxs[0]] * row[idxs[1]] * row[idxs[2]] * row[idxs[3]];
           if(N == 5) return row[idxs[0]] * row[idxs[1]] * row[idxs[2]] * row[idxs[3]] * row[idxs[4]];
 
-          float product = 1;
+          T product = 1;
           for(size_t i=0;i<N;++i){
             product *= row[idxs[i]];
           }

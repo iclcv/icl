@@ -564,11 +564,22 @@ namespace icl::math {
       throw ICLException("eigenvalue decomposition failed (info=" + str(info) + ")");
     }
 
-    // Copy eigenvectors from A to output
-    // (C++ backend stores them as pv[i][j] → A[i*lda+j], matching DynMatrix layout)
-    for(int i = 0; i < n; ++i)
-      for(int j = 0; j < n; ++j)
-        eigenvectors(i, j) = A(j, i);
+    // A now holds the eigenvectors as its rows (row j pairs with eigenvalues[j]);
+    // eigenvalues[] is in whatever order the active backend produced (LAPACK syev:
+    // ascending; C++ Jacobi: descending). Enforce a backend-INDEPENDENT DESCENDING
+    // order (largest eigenvalue first) — the long-standing contract every caller
+    // relies on. Reorder columns of `eigenvectors` to match.
+    std::vector<int> perm(n);
+    for(int i = 0; i < n; ++i) perm[i] = i;
+    std::sort(perm.begin(), perm.end(),
+              [&](int a, int b){ return eigenvalues[a] > eigenvalues[b]; });
+
+    const DynMatrix<T> evalsIn = eigenvalues;   // snapshot before we overwrite in place
+    for(int k = 0; k < n; ++k){
+      eigenvalues[k] = evalsIn[perm[k]];
+      // column k of `eigenvectors` <- eigenvector perm[k] (== row perm[k] of A)
+      for(int i = 0; i < n; ++i) eigenvectors(i, k) = A(perm[k], i);
+    }
   }
 
   template<class T>
