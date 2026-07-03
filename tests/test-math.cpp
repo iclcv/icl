@@ -8,6 +8,9 @@
 #include <icl/math/transform/Homography2D.h>
 #include <icl/math/fit/LeastSquareModelFitting2D.h>
 #include <icl/math/fit/RansacFitter.h>
+#include <icl/math/fit/PrimitiveFitters2D.h>
+#include <icl/math/fit/RobustFitter.h>
+#include <icl/math/fit/NelderMeadOptimizer.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -1512,4 +1515,79 @@ ICL_REGISTER_TEST("math.fit.ransac_line_with_outliers",
   ICL_TEST_NEAR(r.model[1], 1.0f, 0.05f);    // intercept
   ICL_TEST_TRUE(r.consensusSet.size() >= 100u);
   ICL_TEST_TRUE(r.iterationCount < 2000);    // adaptive termination fired
+}
+
+// RobustFitter (Tier-C decorator) wrapping a CircleFitter2D: recover a circle from
+// data that is ~1/3 gross outliers. Proves the ModelFitter framework end-to-end —
+// a plain algebraic fitter made outlier-tolerant purely by composition.
+ICL_REGISTER_TEST("math.fit.robust_circle_msac",
+                  "RobustFitter(CircleFitter2D) recovers a circle under outliers (MSAC+LO)")
+{
+  using Pt = Point32f;
+  const double CX = 40, CY = -15, R = 12;
+  std::vector<Pt> data;
+  for(int i=0;i<60;++i){ double t=i*2*M_PI/60; data.push_back(Pt(CX+R*std::cos(t), CY+R*std::sin(t))); }
+  for(int i=0;i<30;++i){ data.push_back(Pt(CX-30+i, CY+25)); }         // outlier line
+
+  CircleFitter2D circle;
+  // threshold is on the ALGEBRAIC residual (not geometric px); 0.1 cleanly
+  // separates the exact circle points (~0) from the far outliers (~0.8).
+  RobustFitter<Pt, std::vector<double> > robust(&circle, 0.1, /*conf*/0.99, /*maxIt*/2000);
+  const std::vector<double> m = robust.fit(data);
+  ICL_TEST_TRUE(m.size() == 4u);
+  const double cx = -m[1]/(2*m[0]), cy = -m[2]/(2*m[0]);
+  const double r  = std::sqrt((m[1]*m[1]+m[2]*m[2])/(4*m[0]*m[0]) - m[3]/m[0]);
+  ICL_TEST_NEAR(cx, CX, 0.5);
+  ICL_TEST_NEAR(cy, CY, 0.5);
+  ICL_TEST_NEAR(r,  R,  0.5);
+  ICL_TEST_TRUE(robust.inliers().size() >= 60u);      // all circle points recovered
+}
+
+// A plain (non-robust) RANSAC-mode RobustFitter also works — exercises the "ransac"
+// scoring branch and confirms the base fitter is swappable (line here).
+ICL_REGISTER_TEST("math.fit.robust_line_ransac_mode",
+                  "RobustFitter(LineFitter2D) in RANSAC scoring mode recovers a line")
+{
+  using Pt = Point32f;
+  std::vector<Pt> data;
+  for(int i=0;i<50;++i) data.push_back(Pt(i, 0.5f*i + 3.f));           // inliers: y=0.5x+3
+  for(int i=0;i<15;++i) data.push_back(Pt(i, 0.5f*i + 3.f + 20.f));    // outliers
+  LineFitter2D line;
+  RobustFitter<Pt, std::vector<double> > robust(&line, 0.3, 0.99, 3000, /*msac*/false);
+  const std::vector<double> m = robust.fit(data);      // [a,b,c] : a x + b y + c = 0
+  ICL_TEST_TRUE(m.size() == 3u);
+  // slope of a x + b y + c = 0 is -a/b; expect 0.5
+  ICL_TEST_NEAR(-m[0]/m[1], 0.5, 1e-2);
+  ICL_TEST_TRUE(robust.inliers().size() >= 50u);
+}
+
+// NelderMeadOptimizer behind the Optimizer<V> interface minimises a quadratic bowl.
+ICL_REGISTER_TEST("math.fit.nelder_mead_quadratic",
+                  "NelderMeadOptimizer minimises (x-3)²+(y+2)² to the true minimum")
+{
+  using V = std::vector<double>;
+  NelderMeadOptimizer<V> opt(5000, 1e-12, 1e-12);
+  auto f = [](const V &p)->double{ return (p[0]-3)*(p[0]-3) + (p[1]+2)*(p[1]+2); };
+  // non-zero init: SimplexOptimizer's default simplex (x[i]*=1.05) is degenerate at 0
+  const auto r = opt.minimize(f, V{5.0, 5.0});
+  ICL_TEST_NEAR(r.params[0],  3.0, 1e-3);
+  ICL_TEST_NEAR(r.params[1], -2.0, 1e-3);
+  ICL_TEST_TRUE(r.error < 1e-6);
+}
+
+// Returning eigen()/svd() overloads with structured bindings (ergonomic sugar over
+// the out-parameter forms; same DESCENDING eigen contract).
+ICL_REGISTER_TEST("math.dyn.eigen_svd_returning_overloads",
+                  "auto [evec,eval]=m.eigen() and auto [U,S,V]=m.svd() work and agree")
+{
+  DynMatrix<double> A = DynMatrix<double>::create(3,3,0.0);
+  A(0,0)=2; A(1,1)=3; A(2,2)=1;
+  auto [evec, eval] = A.eigen();
+  ICL_TEST_NEAR(eval[0], 3.0, 1e-9);            // descending
+  ICL_TEST_NEAR(eval[2], 1.0, 1e-9);
+  // agree with the out-parameter form
+  DynMatrix<double> ev2, ea2; A.eigen(ev2, ea2);
+  ICL_TEST_NEAR(eval[1], ea2[1], 1e-12);
+  auto [U, S, V] = A.eigen().vectors.svd();     // also reachable via named fields
+  ICL_TEST_TRUE(S.rows() == 3u);
 }

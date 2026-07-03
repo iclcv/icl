@@ -583,8 +583,22 @@ namespace icl::math {
   }
 
   template<class T>
+  typename DynMatrix<T>::EigenResult DynMatrix<T>::eigen() const{
+    EigenResult r;
+    eigen(r.vectors, r.values);
+    return r;
+  }
+
+  template<class T>
   void DynMatrix<T>::svd(DynMatrix &V, DynMatrix &s, DynMatrix &U) const{
     svd_dyn<T>(*this,V,s,U);
+  }
+
+  template<class T>
+  typename DynMatrix<T>::SVDResult DynMatrix<T>::svd() const{
+    SVDResult r;
+    svd(r.U, r.S, r.V);
+    return r;
   }
 
 

@@ -45,14 +45,21 @@ math_transform_headers = files(
 )
 
 math_fit_headers = files(
+  'fit/FitUtils.h',
   'fit/LeastSquareModelFitting.h',
   'fit/LeastSquareModelFitting2D.h',
   'fit/LevenbergMarquardtFitter.h',
+  'fit/ModelFitter.h',
+  'fit/NelderMeadOptimizer.h',
+  'fit/Optimizer.h',
   'fit/PolynomialRegression.h',
   'fit/PolynomialSolver.h',
+  'fit/PrimitiveFitters2D.h',
   'fit/RansacFitter.h',
+  'fit/RobustFitter.h',
   'fit/SimplexOptimizer.h',
   'fit/StochasticOptimizer.h',
+  'fit/VectorTraits.h',
 )
 
 math_ml_headers = files(

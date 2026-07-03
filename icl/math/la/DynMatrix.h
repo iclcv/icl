@@ -331,8 +331,18 @@ namespace icl::math {
         order — column 0 holds the eigenvector of the largest eigenvalue. This
         ordering is guaranteed independently of the active LAPACK backend. */
     void eigen(DynMatrix &eigenvectors, DynMatrix &eigenvalues) const;
+    /// bundled result of the returning eigen() overload
+    struct EigenResult { DynMatrix vectors; DynMatrix values; };
+    /// eigenvalue decomposition returning its result (structured-binding friendly)
+    /** Convenience over the out-parameter form: `auto [evec, eval] = m.eigen();`
+        (or `.vectors` / `.values`). Same DESCENDING contract. */
+    EigenResult eigen() const;
     /// singular value decomposition
     void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const;
+    /// bundled result of the returning svd() overload
+    struct SVDResult { DynMatrix U; DynMatrix S; DynMatrix V; };
+    /// singular value decomposition returning its result: `auto [U,S,V] = m.svd();`
+    SVDResult svd() const;
     /// Moore-Penrose pseudo-inverse
     DynMatrix pinv(T zeroThreshold = T(1E-16)) const;
     /// matrix determinant

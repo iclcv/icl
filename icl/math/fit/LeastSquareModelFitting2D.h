@@ -65,7 +65,7 @@ namespace icl::math {
     inline std::vector<double> fit(const std::vector<utils::Point32f> &points){
       return Super::fit(points);
     }
-    inline icl64f getError(const std::vector<double> &model, const utils::Point32f &p) {
+    inline icl64f getError(const std::vector<double> &model, const utils::Point32f &p) const {
       return Super::getError(model,p);
     }
   };

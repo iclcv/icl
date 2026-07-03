@@ -6,6 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/la/DynMatrix.h>
+#include <icl/math/fit/FitUtils.h>
 #include <memory>
 #include <functional>
 
@@ -144,7 +145,7 @@ namespace icl::math {
 
     /// computes the error for a given data point
     /** if model is 0, the last fitted model is used */
-    icl64f getError(const Model &model,const DataPoint &p){
+    icl64f getError(const Model &model,const DataPoint &p) const{
       std::vector<T> d(m_modelDim);
       m_gen(p,d.data());
       icl64f e = 0;
@@ -189,10 +190,10 @@ namespace icl::math {
         Si.eigen(m_Evecs, m_Evals);
         std::copy(m_Evecs.col_begin(0), m_Evecs.col_end(0), m_model.begin());
       }else{
-        // identity constraint: null-space of D = eigenvector of the smallest
-        // eigenvalue of S. eigen() is descending, so that is the last column.
-        m_S.eigen(m_Evecs, m_Evals);
-        std::copy(m_Evecs.col_begin(M-1), m_Evecs.col_end(M-1), m_model.begin());
+        // identity constraint: model is the homogeneous null-space of D, i.e. the
+        // eigenvector of the smallest eigenvalue of S (no S⁻¹ inversion).
+        const DynColVector<T> ns = homogeneousNullSpace(m_S);
+        std::copy(ns.begin(), ns.end(), m_model.begin());
       }
 
       return m_model;

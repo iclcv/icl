@@ -4,6 +4,7 @@
 
 #include <icl/math/transform/Homography2D.h>
 #include <icl/math/la/DynMatrix.h>
+#include <icl/math/fit/FitUtils.h>
 
 #include <icl/math/la/FixedVector.h>
 
@@ -89,11 +90,11 @@ namespace icl::math {
     }
     DynMatrix<T> S = DynMatrix<T>::create(9,9);
     for(int p=0;p<9;++p) for(int q=0;q<9;++q) S(p,q) = AtA[p][q];
-    DynMatrix<T> evec, eval;
-    S.eigen(evec, eval);                             // symmetric PSD: real eigenpairs
-    int mi = 0; for(int i=1;i<9;++i) if(eval[i] < eval[mi]) mi = i;   // smallest eigenvalue
+    // H is the homogeneous null-space of the correspondence matrix (smallest
+    // eigenvector of the 9x9 scatter S = AᵀA) — shared with the algebraic fitters.
+    const DynColVector<T> h = homogeneousNullSpace(S);
     FixedMatrix<T,3,3> Hn;
-    std::copy(evec.col_begin(mi), evec.col_end(mi), Hn.begin());
+    std::copy(h.begin(), h.end(), Hn.begin());
 
     // Un-normalize: Hn maps an -> bn (an = Ta*a, bn = Tb*b), so H = Tb^-1 * Hn * Ta
     // maps a -> b in the original coordinate system.

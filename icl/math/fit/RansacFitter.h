@@ -8,8 +8,8 @@
 #include <icl/utils/Random.h>
 #include <icl/math/la/DynVector.h>
 #include <icl/math/la/FixedVector.h>
+#include <icl/math/fit/FitUtils.h>
 #include <functional>
-#include <cmath>
 
 namespace icl::math {
   /// Generic RANSAC (RAndom SAmpling Consensus) Implementation
@@ -174,15 +174,8 @@ namespace icl::math {
 
           // update the adaptive iteration budget from this model's inlier ratio
           const double w = double(consensusSet.size()) / allPoints.size();
-          if(w >= 1.0){
-            nRequired = i + 1;   // all inliers — no point sampling further
-          }else if(w > 0.0){
-            const double denom = std::log(1.0 - std::pow(w, S));
-            if(denom < 0.0){
-              const int est = static_cast<int>(std::log(1.0 - P_CONF) / denom) + 1;
-              if(est < nRequired) nRequired = est;
-            }
-          }
+          const int est = adaptiveRansacIters(w, S, P_CONF);
+          if(est < nRequired) nRequired = est;
         }
       }
       m_result.iterationCount = i;
