@@ -9,6 +9,7 @@
 #include <icl/math/la/DynVector.h>
 #include <icl/math/la/FixedVector.h>
 #include <functional>
+#include <cmath>
 
 namespace icl::math {
   /// Generic RANSAC (RAndom SAmpling Consensus) Implementation
@@ -98,16 +99,6 @@ namespace icl::math {
                                    std::vector<int> &usedIndices){
       utils::get_random_subset(allPoints, static_cast<int>(currConsensusSet.size()),
                                currConsensusSet, usedIndices);
-      /*const std::vector<T> &s, int subsetSize,
-                        std::vector<T> &subset, std::vector<int> &indices)
-
-      const int n = currConsensusSet.size();
-      utils::URandI r(allPoints.size()-1);
-
-      for(int i=0;i<n;++i){
-        do { usedIndices[i] = r; } while ( find_in(usedIndices, usedIndices[i], i-1) );
-        currConsensusSet[i] = allPoints[ usedIndices[i] ];
-          }*/
     }
 
     public:
@@ -141,17 +132,19 @@ namespace icl::math {
       std::vector<DataPoint> consensusSet(m_minPointsForModel);
       std::vector<int> usedIndices(m_minPointsForModel);
 
+      // Adaptive termination: once a model with inlier ratio w is found, the
+      // number of samples needed to hit the desired confidence P is
+      // N = log(1-P) / log(1 - w^s). We shrink the iteration budget towards N
+      // as better models appear, never running more than the requested cap.
+      const double P_CONF = 0.99;
+      const int S = m_minPointsForModel;
+      int nRequired = m_iterations;
+
       int i = 0;
-      for(i=0;i<m_iterations;++i){
+      for(i=0;i<m_iterations && i<nRequired;++i){
         consensusSet.resize(m_minPointsForModel);
         find_random_consensus_set(consensusSet, allPoints, usedIndices);
 
-        /*          std::cout << "   selected indices: [ "
-                  << usedIndices[0] << ", "
-                  << usedIndices[1] << ", "
-                  << usedIndices[2] << ", "
-                  << usedIndices[3] << "]" << std::endl;
-            */
         Model model = m_fitting(consensusSet);
         for(int j=0;j<static_cast<int>(allPoints.size());++j){
           if(find_in(usedIndices, j, usedIndices.size())) continue;
@@ -176,6 +169,18 @@ namespace icl::math {
             if(m_result.error < m_minErrorExit){
               m_result.iterationCount = i;
               return m_result;
+            }
+          }
+
+          // update the adaptive iteration budget from this model's inlier ratio
+          const double w = double(consensusSet.size()) / allPoints.size();
+          if(w >= 1.0){
+            nRequired = i + 1;   // all inliers — no point sampling further
+          }else if(w > 0.0){
+            const double denom = std::log(1.0 - std::pow(w, S));
+            if(denom < 0.0){
+              const int est = static_cast<int>(std::log(1.0 - P_CONF) / denom) + 1;
+              if(est < nRequired) nRequired = est;
             }
           }
         }

@@ -121,7 +121,7 @@ namespace icl::math {
     DesignMatrixGen m_gen;
 
     /// utility valiables
-    DynMatrix<T> m_D, m_S, m_Evecs, m_Evals, m_svdU, m_svdS, m_svdVt;
+    DynMatrix<T> m_D, m_S, m_Evecs, m_Evals;
 
     /// constraint matrix
     std::shared_ptr<DynMatrix<T> >m_C;
@@ -153,9 +153,16 @@ namespace icl::math {
     }
 
     /// fits the model to the given data points and returns optimal parameter set
-    /** Internally we use a workaround when the matrix inversion fails due to stability
-        problems. If the standard matrix inversion fails, a SVD-based inversion is
-        used */
+    /** For the default (identity) constraint the model is the homogeneous
+        null-space direction of the design matrix D: the eigenvector of the
+        SMALLEST eigenvalue of the scatter matrix S = DᵀD, which minimises
+        |Da|² subject to |a|=1. We solve this directly via the symmetric
+        eigendecomposition of S (as in Homography2D's DLT) — no S⁻¹ inversion,
+        which would needlessly square the condition number.
+
+        For a non-identity constraint matrix C the general problem
+        S a = λ C a is solved through the eigenvectors of S⁻¹C (smallest λ,
+        i.e. the largest eigenvalue of S⁻¹C = column 0). */
     Model fit(const std::vector<DataPoint> &points){
       const int M = m_modelDim;
       const int N = static_cast<int>(points.size());
@@ -167,23 +174,26 @@ namespace icl::math {
         m_gen(points[i],m_D.row_begin(i));
       }
 
-      /// create the scatter matrix S
+      /// create the scatter matrix S = DᵀD (symmetric, M x M)
       m_D.transp().mult(m_D,m_S);
 
-
-
-      DynMatrix<T> Si;
-      try{
-        Si = m_C ? m_S.inv()* (*m_C) : m_S.inv();
-      }catch(SingularMatrixException &){
-        Si = m_C ? m_S.pinv()* (*m_C) : m_S.pinv();
+      if(m_C){
+        // generalized problem S a = λ C a: eigenvectors of S⁻¹C, smallest λ.
+        // eigen() returns eigenvalues descending, so that is column 0.
+        DynMatrix<T> Si;
+        try{
+          Si = m_S.inv() * (*m_C);
+        }catch(SingularMatrixException &){
+          Si = m_S.pinv() * (*m_C);
+        }
+        Si.eigen(m_Evecs, m_Evals);
+        std::copy(m_Evecs.col_begin(0), m_Evecs.col_end(0), m_model.begin());
+      }else{
+        // identity constraint: null-space of D = eigenvector of the smallest
+        // eigenvalue of S. eigen() is descending, so that is the last column.
+        m_S.eigen(m_Evecs, m_Evals);
+        std::copy(m_Evecs.col_begin(M-1), m_Evecs.col_end(M-1), m_model.begin());
       }
-
-
-      // might cause an exception
-      Si.eigen(m_Evecs, m_Evals);
-      /// use eigen vector for the largest eigen value
-      std::copy(m_Evecs.col_begin(0), m_Evecs.col_end(0), m_model.begin());
 
       return m_model;
     }

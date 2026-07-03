@@ -7,6 +7,7 @@
 #include <icl/math/la/DynMatrix.h>
 #include <icl/math/transform/Homography2D.h>
 #include <icl/math/fit/LeastSquareModelFitting2D.h>
+#include <icl/math/fit/RansacFitter.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -1452,4 +1453,63 @@ ICL_REGISTER_TEST("math.fit.least_square_circle",
   ICL_TEST_NEAR(cx, 10.0, 1e-3);
   ICL_TEST_NEAR(cy, -3.0, 1e-3);
   ICL_TEST_NEAR(r,   5.0, 1e-3);
+}
+
+// Exercises the SVD null-space path at a larger model dim (6-param general
+// ellipse). Fit exact samples of an axis-aligned ellipse and check the recovered
+// implicit conic matches a1 x^2 + a3 y^2 + a6 = const (no rotation / linear terms).
+ICL_REGISTER_TEST("math.fit.least_square_ellipse",
+                  "direct least-square general-ellipse fit recovers an axis-aligned conic")
+{
+  LeastSquareModelFitting2D fit(6, LeastSquareModelFitting2D::ellipse_gen);
+  const double A = 8, B = 3;                 // semi-axes, centred at origin
+  std::vector<Point32f> pts;
+  for(int i=0;i<40;++i){
+    const double t = i*2*M_PI/40;
+    pts.push_back(Point32f(A*std::cos(t), B*std::sin(t)));
+  }
+  const std::vector<double> m = fit.fit(pts);   // [x^2, xy, y^2, x, y, 1]
+  // normalise by the x^2 coefficient so the model is comparable to ground truth
+  ICL_TEST_TRUE(std::abs(m[0]) > 1e-9);
+  const double xy = m[1]/m[0], yy = m[2]/m[0], x = m[3]/m[0], y = m[4]/m[0];
+  // rotation and linear terms must vanish for an origin-centred axis-aligned ellipse
+  ICL_TEST_NEAR(xy, 0.0, 1e-4);
+  ICL_TEST_NEAR(x,  0.0, 1e-4);
+  ICL_TEST_NEAR(y,  0.0, 1e-4);
+  // y^2 coefficient must equal A^2/B^2 (from x^2/A^2 + y^2/B^2 = 1)
+  ICL_TEST_NEAR(yy, (A*A)/(B*B), 1e-3);
+}
+
+// Generic RansacFitter with adaptive termination: recover a line y = 2x + 1 from
+// data that is ~1/4 gross outliers. Also asserts the adaptive budget kicks in
+// (a clean high-inlier problem must finish well before the iteration cap).
+ICL_REGISTER_TEST("math.fit.ransac_line_with_outliers",
+                  "RansacFitter recovers a line under outliers and terminates early")
+{
+  using Pt = Point32f;
+  using Line = std::vector<float>;           // {m, b} for y = m*x + b
+  std::vector<Pt> data;
+  for(int i=0;i<120;++i) data.push_back(Pt(i*0.1f, 2.0f*(i*0.1f) + 1.0f));   // inliers
+  for(int i=0;i<40;++i)  data.push_back(Pt(i*0.1f, 2.0f*(i*0.1f) + 1.0f + (i%2?6.f:-6.f))); // outliers
+
+  auto fitLine = [](const std::vector<Pt> &s)->Line{
+    // least-squares slope/intercept over the given subset
+    double sx=0,sy=0,sxx=0,sxy=0; const int n=(int)s.size();
+    for(const Pt &p:s){ sx+=p.x; sy+=p.y; sxx+=p.x*p.x; sxy+=p.x*p.y; }
+    const double d = n*sxx - sx*sx;
+    if(std::abs(d) < 1e-12) return Line{0,0};
+    const double m = (n*sxy - sx*sy)/d;
+    return Line{ (float)m, (float)((sy - m*sx)/n) };
+  };
+  auto err = [](const Line &m, const Pt &p)->double{
+    return std::abs(p.y - (m[0]*p.x + m[1]));
+  };
+
+  RansacFitter<Pt,Line> ransac(2, 2000, fitLine, err, 0.5, 100);
+  const auto &r = ransac.fit(data);
+  ICL_TEST_TRUE(r.found());
+  ICL_TEST_NEAR(r.model[0], 2.0f, 0.05f);    // slope
+  ICL_TEST_NEAR(r.model[1], 1.0f, 0.05f);    // intercept
+  ICL_TEST_TRUE(r.consensusSet.size() >= 100u);
+  ICL_TEST_TRUE(r.iterationCount < 2000);    // adaptive termination fired
 }

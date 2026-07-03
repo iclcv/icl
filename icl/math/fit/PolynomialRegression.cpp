@@ -217,31 +217,23 @@ namespace icl::math {
     template<class T>
     std::string PolynomialRegression<T>::Result::toString(const std::vector<std::string> &rowLabels) const {
       std::ostringstream stream;
-      std::cout << "Polyonomial Regression Result:" << std::endl;
-      for(unsigned int y=0;y<getParams().cols();++y){
+      const Matrix &p = getParams();                   // (attrib, output) layout
+      const std::vector<const PolynomialRegressionAttrib<T>*> atts = getAttribs();
+      for(unsigned int y=0;y<p.cols();++y){            // y = output index
         if(rowLabels.size() > y){
           stream << rowLabels[y] << " = ";
         }else{
           stream << "y[" << y << "] = ";
         }
-        std::vector<const PolynomialRegressionAttrib<T>*> atts = getAttribs();
-        for(size_t x=0;x<atts.size();++x){
-          if(atts[x]->toString() == "1"){
-            stream << (x ? fabs(getParams()(x, y)) : getParams()(y, x) )<< " ";
-          }else{
-            stream << (x ? fabs(getParams()(x, y)) : getParams()(y, x) )<< " * " << atts[x]->toString();
-          }
-          if(x < atts.size()-1){
-            if(getParams()(y, x) < 0){
-              stream << " - ";
-            }else{
-              stream << " - ";
-            }
-          }
+        for(size_t x=0;x<atts.size();++x){            // x = attribute index
+          const T c = p(x, y);
+          // first term keeps its own sign; later terms carry a +/- separator
+          if(x) stream << (c < 0 ? " - " : " + ") << fabs(c);
+          else  stream << c;
+          if(atts[x]->toString() != "1") stream << " * " << atts[x]->toString();
         }
         stream << std::endl;
       }
-      stream << std::endl;
       return stream.str();
     }
 
