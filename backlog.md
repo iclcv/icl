@@ -9,6 +9,11 @@ linked plans; this is just the index. Check off / prune as done.
 
 ## geom → geom2 retirement (active arc)
 Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLAUDE.md).
+- [ ] **`geom2::PlotWidget3D` coord-box tics/labels off** (S97) — `makeAxis()` in
+  `geom2/PlotWidget3D.cpp`: inverted (Y) axis places labels at `-r` while the tic mesh
+  stays at `+r` → labels mirrored off their ticks; tics also draw as L-brackets (two
+  segments). Needs a real display to verify label↔tick alignment across all 3 rotated
+  axes. Surfaced by `icl-model-fitting-playground`'s superquadric tab.
 - [x] Port scene-object, simplex-3D, generic-texture-coords, texture-cube,
       scene-shadows, scene-graph, superquadric (+`SuperquadricNode`),
       offscreen-rendering (demos)
