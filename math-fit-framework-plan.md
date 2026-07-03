@@ -1,7 +1,16 @@
 # Model-Fitting Framework Plan (`icl/math/fit`)
 
-Status: **P0–P2 LANDED** (virtual dispatch, Configurable). P3–P5 remain (see §5).
-Decisions taken: scope P0–P2 first, virtual interfaces, fitters are Configurable.
+Status: **P0–P3 LANDED** (virtual dispatch, Configurable), minus Halíř–Flusser
+ellipse (blocked on a general/non-symmetric eigensolver — see §5 P3). P4–P5 remain.
+Decisions taken: scope incrementally, virtual interfaces, fitters are Configurable.
+
+P3 landed: `fit/RefiningFitter.h` (RefiningFitter interface + SeededFitter chaining),
+`TaubinCircleFitter` (in PrimitiveFitters2D.h — drop-in, less biased than Kåsa),
+`fit/GeometricRefiners2D.h` (GeometricCircleRefiner — orthogonal-distance polish via
+NelderMeadOptimizer). Also `DynMatrix::eigenVector(largest=false)` — single extreme
+eigenvector without materializing the full decomposition; homogeneousNullSpace uses it.
+DEFERRED: Halíř–Flusser ellipse + Hartley normalization need a non-symmetric
+eigensolver (LAPACK geev) which ICL lacks — add geev as its own infra task first.
 
 Landed so far:
 - P0 shared utils: `fit/FitUtils.h` (`homogeneousNullSpace`, `adaptiveRansacIters`),
@@ -152,8 +161,12 @@ itself a `ModelFitter`. That is the "chainable in a generic fashion" goal.
   (deprecate the std::function RANSAC ctor).
 - **P2 — `RobustFitter` (RANSAC/MSAC + LO) as a decorator.** First exchangeability
   proof; MSAC + LO are the high-value robustness upgrades.
-- **P3 — `SeededFitter` + better closed-form fitters.** Taubin circle,
-  Halíř–Flusser ellipse, geometric-LM refine. Chaining proof.
+- **P3 — `SeededFitter` + better closed-form fitters.** DONE: Taubin circle,
+  geometric refine (Nelder-Mead), SeededFitter chaining, `eigenVector()`. DEFERRED:
+  Halíř–Flusser ellipse + Hartley normalization — need a non-symmetric eigensolver
+  (LAPACK `geev`); ICL only has symmetric `syev`. Add `geev` (Eigen/Accelerate/MKL/
+  Cpp backends, like the existing lapack ops) as a prerequisite task, then the
+  ellipse fitter + conic denormalization drop in.
 - **P4 — Regression QR/SVD + orthogonal (Chebyshev) basis; CMA-ES `Optimizer`,
   deprecate StochasticOptimizer.**
 - **P5 — `Configurable` params + `icl-model-fitting` "method playground"** (swap

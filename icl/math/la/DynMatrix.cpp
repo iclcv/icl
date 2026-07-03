@@ -590,6 +590,30 @@ namespace icl::math {
   }
 
   template<class T>
+  DynMatrix<T> DynMatrix<T>::eigenVector(bool largest) const{
+    ICLASSERT_THROW(cols() == rows(), InvalidMatrixDimensionException("eigenVector: input matrix is not square"));
+    const int n = cols();
+
+    auto* impl = LapackOps<T>::instance()
+        .template getSelector<typename LapackOps<T>::SyevSig>(LapackOp::syev)
+        .resolveOrThrow();
+
+    // syev overwrites A with the eigenvectors (row k pairs with eigenvalue w[k])
+    DynMatrix<T> A = DynMatrix<T>::create(n, n);
+    std::copy(begin(), end(), A.begin());
+    std::vector<T> w(n);
+    int info = impl->apply('V', n, A.data(), n, w.data());
+    if(info != 0) throw ICLException("eigenvalue decomposition failed (info=" + str(info) + ")");
+
+    int idx = 0;
+    for(int i = 1; i < n; ++i) if(largest ? (w[i] > w[idx]) : (w[i] < w[idx])) idx = i;
+
+    DynMatrix<T> v(n, 1);                 // column vector (rows=n, cols=1)
+    for(int i = 0; i < n; ++i) v[i] = A(idx, i);
+    return v;
+  }
+
+  template<class T>
   void DynMatrix<T>::svd(DynMatrix &V, DynMatrix &s, DynMatrix &U) const{
     svd_dyn<T>(*this,V,s,U);
   }

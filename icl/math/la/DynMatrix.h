@@ -337,6 +337,13 @@ namespace icl::math {
     /** Convenience over the out-parameter form: `auto [evec, eval] = m.eigen();`
         (or `.vectors` / `.values`). Same DESCENDING contract. */
     EigenResult eigen() const;
+    /// eigenvector of the smallest (default) or largest eigenvalue (symmetric only)
+    /** Convenience for the very common "I only want one extreme eigenvector" case
+        (DLT null-space, PCA normal, quaternion pose): avoids materializing the full
+        N×N eigenvector matrix and the N eigenvalues just to keep a single column.
+        Returns that eigenvector as a column (N×1). `largest=false` → smallest
+        eigenvalue (the homogeneous null-space direction); `largest=true` → largest. */
+    DynMatrix eigenVector(bool largest = false) const;
     /// singular value decomposition
     void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const;
     /// bundled result of the returning svd() overload

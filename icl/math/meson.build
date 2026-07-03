@@ -46,6 +46,7 @@ math_transform_headers = files(
 
 math_fit_headers = files(
   'fit/FitUtils.h',
+  'fit/GeometricRefiners2D.h',
   'fit/LeastSquareModelFitting.h',
   'fit/LeastSquareModelFitting2D.h',
   'fit/LevenbergMarquardtFitter.h',
@@ -56,6 +57,7 @@ math_fit_headers = files(
   'fit/PolynomialSolver.h',
   'fit/PrimitiveFitters2D.h',
   'fit/RansacFitter.h',
+  'fit/RefiningFitter.h',
   'fit/RobustFitter.h',
   'fit/SimplexOptimizer.h',
   'fit/StochasticOptimizer.h',

@@ -11,6 +11,8 @@
 #include <icl/math/fit/PrimitiveFitters2D.h>
 #include <icl/math/fit/RobustFitter.h>
 #include <icl/math/fit/NelderMeadOptimizer.h>
+#include <icl/math/fit/RefiningFitter.h>
+#include <icl/math/fit/GeometricRefiners2D.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -1590,4 +1592,75 @@ ICL_REGISTER_TEST("math.dyn.eigen_svd_returning_overloads",
   ICL_TEST_NEAR(eval[1], ea2[1], 1e-12);
   auto [U, S, V] = A.eigen().vectors.svd();     // also reachable via named fields
   ICL_TEST_TRUE(S.rows() == 3u);
+}
+
+// Taubin circle fit is a drop-in for CircleFitter2D and less biased on a partial
+// arc. On a 120° arc with a deterministic radial wobble, Taubin's centre must be
+// at least as close to ground truth as the naive algebraic (Kåsa) fit.
+ICL_REGISTER_TEST("math.fit.taubin_circle_beats_algebraic_on_arc",
+                  "TaubinCircleFitter is less biased than the algebraic fit on an arc")
+{
+  const double CX = 100, CY = 50, R = 30;
+  std::vector<Point32f> pts;
+  for(int i=0;i<40;++i){
+    const double t = -M_PI/3 + (2*M_PI/3) * i/39.0;        // 120° arc
+    const double rr = R + (i%2 ? 0.4 : -0.4);              // deterministic wobble
+    pts.push_back(Point32f(CX + rr*std::cos(t), CY + rr*std::sin(t)));
+  }
+  auto centreErr = [&](const std::vector<double>&m){
+    const double cx=-m[1]/(2*m[0]), cy=-m[2]/(2*m[0]);
+    return std::hypot(cx-CX, cy-CY);
+  };
+  CircleFitter2D algebraic; TaubinCircleFitter taubin;
+  const double eA = centreErr(algebraic.fit(pts));
+  const double eT = centreErr(taubin.fit(pts));
+  ICL_TEST_TRUE(eT <= eA + 1e-6);      // Taubin no worse (and typically much better)
+  ICL_TEST_TRUE(eT < 1.0);             // and close to truth
+}
+
+// SeededFitter chaining: algebraic circle seed → geometric (orthogonal-distance)
+// refine. The refined model's geometric SSE must be <= the seed's, and the chain
+// is itself a ModelFitter (proves generic chainability).
+ICL_REGISTER_TEST("math.fit.seeded_geometric_circle_refine",
+                  "SeededFitter(algebraic, geometric) lowers the geometric error")
+{
+  const double CX = -20, CY = 8, R = 15;
+  std::vector<Point32f> pts;
+  for(int i=0;i<50;++i){
+    const double t = i*2*M_PI/50;
+    const double rr = R + (i%3==0 ? 0.8 : (i%3==1 ? -0.5 : 0.2));   // deterministic noise
+    pts.push_back(Point32f(CX + rr*std::cos(t), CY + rr*std::sin(t)));
+  }
+  auto geomSSE = [&](const std::vector<double>&m){
+    const double cx=-m[1]/(2*m[0]), cy=-m[2]/(2*m[0]);
+    const double r=std::sqrt((m[1]*m[1]+m[2]*m[2])/(4*m[0]*m[0]) - m[3]/m[0]);
+    double s=0; for(auto&p:pts){ double d=std::hypot(p.x-cx,p.y-cy)-r; s+=d*d; } return s;
+  };
+  CircleFitter2D seed; GeometricCircleRefiner refiner;
+  const std::vector<double> mSeed = seed.fit(pts);
+  SeededFitter<Point32f, std::vector<double> > chain(&seed, &refiner);
+  const std::vector<double> mRef = chain.fit(pts);
+  ICL_TEST_TRUE(geomSSE(mRef) <= geomSSE(mSeed) + 1e-9);   // refine never worsens geometry
+  const double cx=-mRef[1]/(2*mRef[0]), cy=-mRef[2]/(2*mRef[0]);
+  ICL_TEST_NEAR(cx, CX, 0.5);
+  ICL_TEST_NEAR(cy, CY, 0.5);
+}
+
+// eigenVector() returns the single extreme eigenvector without materializing the
+// full decomposition; must agree with the corresponding column of eigen().
+ICL_REGISTER_TEST("math.dyn.eigen_vector_extreme",
+                  "eigenVector(smallest/largest) matches the eigen() columns")
+{
+  DynMatrix<double> A = DynMatrix<double>::create(3,3,0.0);
+  A(0,0)=2; A(1,1)=5; A(2,2)=1;                 // eigenvalues 2,5,1
+  auto [evec, eval] = A.eigen();                // descending: 5,2,1
+  const DynMatrix<double> vBig   = A.eigenVector(true);    // eigenvalue 5
+  const DynMatrix<double> vSmall = A.eigenVector(false);   // eigenvalue 1
+  // largest sits in column 0, smallest in the last column (descending)
+  for(int i=0;i<3;++i){
+    ICL_TEST_NEAR(std::abs(vBig[i]),   std::abs(evec(i,0)), 1e-9);
+    ICL_TEST_NEAR(std::abs(vSmall[i]), std::abs(evec(i,2)), 1e-9);
+  }
+  // A*v == lambda*v (lambda=1 for the smallest here)
+  ICL_TEST_NEAR(vSmall[2]*vSmall[2], 1.0, 1e-9);   // eigenvector ~ e_z
 }

@@ -24,12 +24,8 @@ namespace icl::math {
       backend eigenvalue ordering. */
   template<class S>
   DynColVector<S> homogeneousNullSpace(const DynMatrix<S> &scatter){
-    auto [evec, eval] = scatter.eigen();       // symmetric ⇒ real eigenpairs
-    int mi = 0;
-    for(unsigned int i = 1; i < eval.rows(); ++i) if(eval[i] < eval[mi]) mi = int(i);
-    DynColVector<S> x(scatter.cols());
-    std::copy(evec.col_begin(mi), evec.col_end(mi), x.begin());
-    return x;
+    // eigenvector of the smallest eigenvalue — no full-decomposition copies
+    return DynColVector<S>(scatter.eigenVector(/*largest=*/false));
   }
 
   /// RANSAC adaptive iteration count.

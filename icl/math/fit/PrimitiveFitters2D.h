@@ -7,6 +7,9 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/fit/ModelFitter.h>
 #include <icl/math/fit/LeastSquareModelFitting2D.h>
+#include <icl/math/fit/FitUtils.h>
+#include <algorithm>
+#include <cmath>
 
 namespace icl::math {
 
@@ -47,6 +50,51 @@ namespace icl::math {
   /// algebraic general-ellipse fit  (model: [a..f] for a·x²+b·xy+c·y²+d·x+e·y+f=0)
   struct EllipseFitter2D : public PrimitiveFitter2D {
     EllipseFitter2D() : PrimitiveFitter2D(6, LeastSquareModelFitting2D::ellipse_gen){}
+  };
+
+  /// Taubin algebraic circle fit — a strictly better circle fitter.
+  /** Near-geometric accuracy at algebraic cost and far less biased than the naive
+      (Kåsa-style) LeastSquareModelFitting circle fit for partial arcs / noisy data
+      (Taubin 1991; Chernov). Internally centers + scales the data and solves the
+      normalized null-space (via homogeneousNullSpace). The Model is the same
+      [a,b,c,d] coefficient vector as CircleFitter2D (a≡1), so it is a drop-in
+      replacement anywhere — including as a RobustFitter base or SeededFitter seed. */
+  class TaubinCircleFitter : public ModelFitter<utils::Point32f, std::vector<double> > {
+    public:
+    using Model = std::vector<double>;
+
+    Model fit(const std::vector<utils::Point32f> &pts) override {
+      const int N = int(pts.size());
+      double mx = 0, my = 0;
+      for(const auto &p : pts){ mx += p.x; my += p.y; }
+      mx /= N; my /= N;
+
+      std::vector<double> X(N), Y(N), Z(N);
+      double Zmean = 0;
+      for(int i = 0; i < N; ++i){
+        X[i] = pts[i].x - mx; Y[i] = pts[i].y - my;
+        Z[i] = X[i]*X[i] + Y[i]*Y[i]; Zmean += Z[i];
+      }
+      Zmean /= N;
+      const double sZ = std::sqrt(Zmean);
+
+      // 3x3 scatter of the normalized design rows [ (Z-Zmean)/(2√Zmean), X, Y ]
+      DynMatrix<double> M = DynMatrix<double>::create(3, 3, 0.0);
+      for(int i = 0; i < N; ++i){
+        const double row[3] = { (Z[i]-Zmean)/(2*sZ), X[i], Y[i] };
+        for(int p = 0; p < 3; ++p) for(int q = 0; q < 3; ++q) M(p,q) += row[p]*row[q];
+      }
+      const DynColVector<double> A = homogeneousNullSpace(M);
+      const double a = A[0]/(2*sZ), A1 = A[1], A2 = A[2], dc = -Zmean*a;
+      const double Xc = -A1/(2*a), Yc = -A2/(2*a);
+      const double r  = std::sqrt(std::max(0.0, A1*A1 + A2*A2 - 4*a*dc)) / (2*std::abs(a));
+      const double cx = Xc + mx, cy = Yc + my;
+      return { 1.0, -2*cx, -2*cy, cx*cx + cy*cy - r*r };
+    }
+    double residual(const Model &m, const utils::Point32f &p) const override {
+      return std::abs(m[0]*(p.x*p.x + p.y*p.y) + m[1]*p.x + m[2]*p.y + m[3]);
+    }
+    int minSamples() const override { return 3; }
   };
 
 } // namespace icl::math
