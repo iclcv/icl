@@ -4,25 +4,66 @@
 
 ## Next Step
 
-### NEXT — generalize `icl-marker-detection` for the new n×n BCH marker types
-`icl-marker-detection` (`icl/markers/apps/marker-detection.cpp`) selects its marker type via `-m`
-(`bch`, `art`, `amoeba`, `icl1`). Session 95 added a whole family of **square-BCH** marker types to
-the `FiducialDetector` factory — `bch3x3`, `bch4x4`, `bch5x5`, `bch6x6` (see `SquareBCHCode` /
-`FiducialDetectorPluginSquareBCH`). Generalize the app so it can detect these too:
-- accept the new `-m bchNxN` types (they already work through `FiducialDetector`; just make sure the
-  app's marker-id range / marker-creation / overlay code isn't hard-wired to the 6×6 `bch` space of
-  4096 ids — the small codes have far fewer usable ids, see `SquareBCHCode::presetTable()` /
-  `orientationSafeIds()`);
-- `icl-create-marker` likewise (it calls `FiducialDetector::createMarker`, which the new plugin
-  supports via `SquareBCHCode::markerImage`).
-Good little end-to-end shakedown of the S95 detector plugin outside the coded-checkerboard path.
-
-### THEN — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
+### NEXT — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
 Build the **extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with
 FIXED intrinsics (intrinsics path now fully done — native + coded/ChArUco, see S94 below). Reuse
 `getPoses` (closed-form IPPE, S90) + the native checkerboard / marker-grid / coded-checkerboard
 detectors. Once Phase C lands, the old monolithic `geom` module can be retired in favour of `geom2`.
 Backlog has the calibration-redesign tree.
+
+Optional follow-ups this session opened up (all deferred, none blocking Phase C):
+- **`Homography2D::robust()`** now exists (RANSAC) — reuse it anywhere a homography is fit on
+  possibly-outlier correspondences (Phase C's per-view/marker fits are candidates).
+- **Calibration-target study** (`studies/coded-target-study/`) has deferred tiers: image-size sweep
+  (1280×960), marker-fill sweep, Cycles realism re-render, quad-assisted plain-checkerboard recon.
+- Default `pp.filter=dilatation` for `MarkerCells::Black` coded targets (black-cell board IS
+  detectable with dilatation — see S96); and the `project_memorypool` channel-based QuickContext
+  buffer-reuse fix (latent aliasing, `isExclusivelyOwned` only checks the ImgBase handle).
+
+### Session 96 — morphology flicker fix, calibration-target study, Homography2D toolkit
+On `further-restructuring-and-cleanup`, suite **1044/1044**. Big session, ~14 commits. Three arcs:
+apps/robustness cleanup, a calibration-target detectability study, and a `Homography2D` redesign.
+
+- **n×n BCH apps generalized (the old NEXT — DONE).** `icl-marker-detection` + `icl-create-marker`
+  accept `-m bchNxN`; square types default their id set to the code's `orientationSafeIds()` (not the
+  6×6 4096 space); region-corner overlay for any bch\*. `icl-create-marker` applies border-width to
+  any bch\* type. End-to-end verified (render→detect recovers ids for 3×3/4×4/5×5/6×6).
+- **`icl-marker-detection` null-image crash fixed** — `-i ws` hands back nothing before the first
+  frame / during reconnect; `detect()` threw uncaught → abort. Guard skips the iteration.
+- **`WSSink` last-frame replay** — retains the last broadcast frame and replays it to newly-connected
+  clients, so a late-joining consumer isn't stuck on null until the next `send()`.
+- **`LabelHandle` accepts wide/unsigned integers** (`long/unsigned/size_t/…`) via a constrained
+  `operator=` + `AssignRegistry` enrollment — `gui["label"] = container.size()` used to abort with
+  `UnassignableTypesException`.
+- **`calib-target-detection-lab`** gains `-o` (ImageSink) and streams the right-pane image on every
+  loop iteration (not only on change).
+- **MorphologicalOp opening/closing FLICKER + SIGSEGV fixed** (both C++ and Accelerate/vImage
+  backends). The composite ops routed BOTH passes through the op's REUSED member buffer, which carried
+  ROI/offset state across calls → the 2nd apply sampled a misaligned/stale region → non-binary,
+  per-call-drifting output (the on-screen "flicker", diagnosed from captured frames). Fix: fresh local
+  intermediate per call; pass 1 always allocates (checkOnly propagation was the historic SIGSEGV);
+  border replicated between passes. Re-enabled the disabled Quick2 opening/closing tests + added
+  binary-in⇒binary-out & repeat-stability regressions.
+- **Black-cell coded checkerboard IS detectable** — but with `pp.filter=dilatation` (grow white →
+  break the diagonally-touching black cells), NOT closing/opening (size-preserving, can't separate) or
+  erosion (merges). 17/17 markers, 42–44/48 corners under tilt+blur+noise. Updates the S95
+  "undetectable by design" note.
+- **Calibration-target study** (`studies/coded-target-study/`, standalone, `run.sh`): analytic
+  projective renderer with EXACT ground-truth corners (verified 0.056px) driving the real
+  detect→calibrate pipeline. Tier A (detectability/corner RMS vs marker size/distortion) + Tier B
+  (end-to-end intrinsics, multi-seed, outlier reject). **Key finding:** saddle noise averages out in
+  the bundle; **gross MISLABELS** are what poison calibration — and white-cell's smaller (0.62×cell)
+  markers hit the mislabel regime before black-cell's full-cell markers. A robust-homography outlier
+  reject removes them (coded-white 3.87%→0.11% f-error). See `findings.md`.
+- **`Homography2D` redesign.** Factory API `fit(src,dst,n)` (normalized DLT, intuitive src→dst
+  direction), `refined()` (DLT seed + Levenberg-Marquardt on geometric error), `robust()` (RANSAC →
+  `HomographyFit{H,inliers,rms,ok}`). Constructor `[[deprecated]]` (delegates; it maps pBs→pAs, which
+  is why fit flips the arg order); all in-tree callers migrated. **dlt_fit now solves the HOMOGENEOUS
+  null space** via the 9×9 `AᵀA` + smallest-eigenvalue eigenvector (NOT a full 2n×2n SVD) — general
+  (correct as H(2,2)→0) AND ~6× faster than the old inhomogeneous solve (fit n=1000: 90µs→15µs). Fixed
+  the backwards header doc. Tests (`test-math.cpp`) + benchmarks (`bench-homography.cpp`; also
+  un-rotted `bench-cv.cpp`). Migrated `CodedCheckerboardTarget`'s board-pose outlier reject + the
+  study's `rejectOutliers()` to `robust()`.
 
 ### Session 95 — BCH codes reimplemented + generalized to n×n; coded checkerboard on SquareBCHCode
 On `further-restructuring-and-cleanup`, suite **1034/1034**. Turned the copied-as-is 36-bit BCH marker
