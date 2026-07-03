@@ -10,13 +10,24 @@
 
 namespace icl::math {
   /// Utility structure that represents a 2D homography (implemented for float and double)
-  /** Given two sets of at least 4 corresponding 2D points \f$\{a_i\}\f$ and
-      \f$\{b_i\}\f$ (\f$i \in [0,n[\f$), this class computes the 3x3
-      homography matrix \f$H\f$ such that \f$H\,a_i = b_i\f$ (in homogeneous
-      coordinates).
+  /** Given two sets of at least 4 corresponding 2D points passed to the
+      constructor as \c pAs (call them \f$\{a_i\}\f$) and \c pBs
+      (\f$\{b_i\}\f$), this class computes the 3x3 homography that maps the
+      SECOND set onto the FIRST:
+
+      \f[ H\,b_i \;=\; a_i \qquad\Longleftrightarrow\qquad \texttt{apply}(b_i) = a_i \f]
+
+      \warning The direction is `pBs → pAs`, i.e. `apply(pBs[i]) == pAs[i]` — the
+      OPPOSITE of what the \f$a,b\f$ naming in the algorithm section below might
+      suggest. The constructor swaps the two point sets once and runs the DLT
+      derivation (which is written for \f$H\,a = b\f$) on the swapped inputs, so
+      the externally observable mapping is \f$b \to a\f$. (Example callers:
+      `Homography2D(image, board).apply(boardPt) → imagePt`.)
 
       @section ALG Algorithm
 
+      (Written in terms of the INTERNAL, post-swap variables — here \f$a,b\f$ are
+      the swapped point sets, so the derivation solves \f$H\,a=b\f$ internally.)
       The homography has 8 degrees of freedom (a 3x3 matrix defined up to
       scale). For each point pair \f$(a, b)\f$ we get two linear equations
       in the 8 unknowns \f$h = (X^T Y^T L_x L_y)^T\f$, where \f$H\f$'s rows
@@ -57,7 +68,9 @@ namespace icl::math {
     /// Empty constructor
     GenericHomography2D(){}
 
-    /// Constructor from given two point sets of size n>=4
+    /// Constructor from two corresponding point sets of size n>=4.
+    /** The resulting homography maps \c pBs onto \c pAs: `apply(pBs[i]) == pAs[i]`
+        (i.e. \c pAs is the destination / \c pBs is the source). */
     GenericHomography2D(const utils::Point32f *pAs, const utils::Point32f *pBs, int n=4);
 
 
