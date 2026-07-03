@@ -331,6 +331,7 @@ namespace icl::qt {
 
     addProperty("antialiasing",prop::Flag{}, false, "Enables Antialiased Rendering (slow)");
     addProperty("dynamic-tic-scaling", prop::Flag{}, true, "Automatic adaption of tic-distance when zooming in.");
+    addProperty("lock aspect ratio", prop::Flag{}, false, "Enforce equal x/y scale (1 data unit = 1 data unit in pixels) so circles/squares are not distorted. The shorter axis' range is widened to fit.");
     addProperty("style preset",prop::Menu{"default", "black", "white"}, "default", "Preset forground and background Styles");
 
     addProperty("tics.length",prop::Range{.min=0, .max=100, .ui=prop::UI::Spinbox}, 6, "Length of tics in pixels.");
@@ -460,6 +461,19 @@ namespace icl::qt {
     // --------------------------------------------------
     Rect32f v = getDynamicDataViewPort();
     Rect32f vd = getDataViewPort();
+
+    // Optional isotropic scaling: widen the shorter axis' data range so one data
+    // unit maps to the same pixel length in x and y (circles stay circular). Done
+    // here, before the ranges/transform/tics/mouse-mapping are derived from v, so
+    // every downstream consumer sees the corrected viewport.
+    if(prop("lock aspect ratio").as<bool>()){
+      const Rect32f &win = data->lastWindowRect;
+      if(v.width > 0 && v.height > 0 && win.width > 0 && win.height > 0){
+        const float s = iclMin(win.width / v.width, win.height / v.height); // px per data unit
+        const float nw = win.width / s, nh = win.height / s;
+        v = Rect32f(v.x + (v.width - nw)/2, v.y + (v.height - nh)/2, nw, nh);
+      }
+    }
 
 
     p.fillRect(QRect(0,0,w,h),data->bgBrush);

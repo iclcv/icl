@@ -20,6 +20,30 @@ Optional follow-ups this session opened up (all deferred, none blocking Phase C)
   detectable with dilatation — see S96); and the `project_memorypool` channel-based QuickContext
   buffer-reuse fix (latent aliasing, `isExclusivelyOwned` only checks the ImgBase handle).
 
+### Session 97 — math/fit review → full model-fitting framework + geev + robustness
+On `further-restructuring-and-cleanup`, suite **1044→1062**. A deep dive into `icl/math/fit`
+(triggered by a review request); Phase C untouched and remains NEXT. Memory:
+[`project_fit_framework`], [`project_eigen_ordering`]. Big session, ~9 commits.
+
+- **🔴 Fixed a live, silent correctness regression: `DynMatrix::eigen()` ordering was
+  backend-dependent.** The Jacobi→LAPACK migration flipped eigenvalue order (LAPACK `syev`
+  ascending vs the C++ Jacobi descending) and the wrapper didn't reconcile — on Accelerate/Eigen
+  this made `LeastSquareModelFitting` return garbage (circle centre (10,0)→(-1.3,0.5), proven) and
+  broke PoseEstimator/PCA-normal callers. Fix: `eigen()` now sorts **descending** unconditionally +
+  documented contract + regressions. There were ZERO eigen tests before. See [`project_eigen_ordering`].
+- **Fit-tool bugs fixed:** SimplexOptimizer multi-restart returned the wrong result; PolynomialRegression
+  mixed-term `float` accumulation for `T=double`; toString sign/indexing.
+- **Model-fitting FRAMEWORK (P0–P5, `math-fit-framework-plan.md`):** virtual `ModelFitter<Data,Model>`
+  + `Optimizer<V>` interfaces (Configurable); `RobustFitter` (RANSAC/MSAC + LO **+ trimmed/LTS
+  threshold-free** decorator); `SeededFitter` chaining; `TaubinCircleFitter`, `GeometricCircleRefiner`,
+  Halíř–Flusser ellipse; `CMAESOptimizer` (StochasticOptimizer `[[deprecated]]`); shared
+  `FitUtils`/`VectorTraits`. `icl-model-fitting-playground` app. LeastSquareModelFitting modernised to
+  SVD null-space.
+- **`geev` general (non-symmetric) eigensolver** added across the whole LapackOps backend split
+  (Accelerate `dgeev`, Eigen `EigenSolver`, C++ Faddeev–LeVerrier fallback) → `DynMatrix::eigenGeneral()`;
+  unblocked the ellipse fitter. Also `DynMatrix` returning `eigen()/svd()` overloads + `eigenVector()`.
+- **`PlotWidget` gained a `lock aspect ratio` property** (isotropic scaling — circles render circular).
+
 ### Session 96 — morphology flicker fix, calibration-target study, Homography2D toolkit
 On `further-restructuring-and-cleanup`, suite **1044/1044**. Big session, ~14 commits. Three arcs:
 apps/robustness cleanup, a calibration-target detectability study, and a `Homography2D` redesign.

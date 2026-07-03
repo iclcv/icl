@@ -225,6 +225,7 @@ void init(){
 
   PlotHandle plot = gui["plot"];
   plot->prop("borders.left").value = 40;
+  plot->prop("lock aspect ratio").value = true;   // draw circles as circles
 
   rebuildProps(METHOD_NAMES[0]);
   compute();
