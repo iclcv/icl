@@ -69,9 +69,11 @@ floor (each missed corner is a bigger fraction). Not a primary driver.
   / occlusion tolerance.)
 - **Partial-board / robust labeling needed → coded-white** at `markerPx ≥ ~19`
   (cellpx≥30). Saddle quality ≈ plain, plus absolute corner IDs.
-- **coded-black** buys nothing on accuracy (worse saddles) and needs bigger absolute
-  markers; its only edge is packing a marker into every black cell. Prefer white-cell
-  unless a specific reason forces black.
+- **coded-black** has noisier saddles and needs bigger absolute markers.
+  **NOTE — Tier B overturns the naive conclusion here:** on end-to-end calibration
+  coded-black actually BEATS coded-white, because its full-cell markers avoid the
+  gross-mislabel regime (the saddle noise averages out; mislabels don't). See the
+  Tier B section — do not read this Tier-A saddle-noise number as "prefer white".
 
 ## Next (deferred)
 
