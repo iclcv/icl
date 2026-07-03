@@ -72,25 +72,28 @@ namespace icl::math {
     const FixedMatrix<T,3,3> Ta = hartley_normalize<T>(a, n, an);
     const FixedMatrix<T,3,3> Tb = hartley_normalize<T>(b, n, bn);
 
-    DynMatrix<T> M = DynMatrix<T>::create(2*n, 8), r = DynMatrix<T>::create(2*n, 1);
+    // Homogeneous DLT: h is the null space of the 2n x 9 constraint matrix A
+    // (rows from b_i x (H a_i) = 0). This is the general form — unlike fixing
+    // h9=1 it stays correct when the true H(2,2) -> 0. We solve it via the 9x9
+    // normal matrix S = A^T A (accumulated per point, so A is never materialized)
+    // and take the eigenvector of its SMALLEST eigenvalue — same solution as the
+    // SVD's smallest right-singular vector, but O(n) + a 9x9 eigensolve instead of
+    // an expensive 2n x 2n SVD. (Hartley normalization keeps S well-conditioned
+    // despite the normal-equations squaring.)
+    T AtA[9][9] = {{0}};
     for(int i = 0; i < n; ++i){
       const T ax = an[i].x, ay = an[i].y, bx = bn[i].x, by = bn[i].y;
-      T *m = &M(2*i, 0);
-      m[0] = ax;  m[1] = ay;  m[2] = 1;
-      m[3] = 0;   m[4] = 0;   m[5] = 0;
-      m[6] = -ax*bx;  m[7] = -ay*bx;
-      m += 8;
-      m[0] = 0;   m[1] = 0;   m[2] = 0;
-      m[3] = ax;  m[4] = ay;  m[5] = 1;
-      m[6] = -ax*by;  m[7] = -ay*by;
-      r[2*i    ] = bx;
-      r[2*i + 1] = by;
+      const T r0[9] = { 0, 0, 0, -ax, -ay, -1, by*ax, by*ay, by };
+      const T r1[9] = { ax, ay, 1, 0, 0, 0, -bx*ax, -bx*ay, -bx };
+      for(int p=0;p<9;++p) for(int q=0;q<9;++q) AtA[p][q] += r0[p]*r0[q] + r1[p]*r1[q];
     }
-
-    const DynMatrix<T> h = M.solve(r);
+    DynMatrix<T> S = DynMatrix<T>::create(9,9);
+    for(int p=0;p<9;++p) for(int q=0;q<9;++q) S(p,q) = AtA[p][q];
+    DynMatrix<T> evec, eval;
+    S.eigen(evec, eval);                             // symmetric PSD: real eigenpairs
+    int mi = 0; for(int i=1;i<9;++i) if(eval[i] < eval[mi]) mi = i;   // smallest eigenvalue
     FixedMatrix<T,3,3> Hn;
-    std::copy(h.begin(), h.end(), Hn.begin());
-    Hn[8] = 1;
+    std::copy(evec.col_begin(mi), evec.col_end(mi), Hn.begin());
 
     // Un-normalize: Hn maps an -> bn (an = Ta*a, bn = Tb*b), so H = Tb^-1 * Hn * Ta
     // maps a -> b in the original coordinate system.
@@ -165,6 +168,52 @@ namespace icl::math {
     const T k = H(2,2); if(std::abs(k) > T(1e-12)) for(int i=0;i<9;++i) H[i]/=k;
     GenericHomography2D<T> out; std::copy(H.begin(), H.end(), out.begin());
     return out;
+  }
+
+  template<class T>
+  HomographyFit<T> GenericHomography2D<T>::robust(const Point32f *src, const Point32f *dst, int n,
+                                                  T thr, int maxIters){
+    HomographyFit<T> best;
+    if(n < 4) return best;
+    auto resid = [&](const GenericHomography2D<T> &H, int i)->T{
+      const Point32f p = H.apply(src[i]);
+      return std::sqrt((p.x-dst[i].x)*(p.x-dst[i].x) + (p.y-dst[i].y)*(p.y-dst[i].y));
+    };
+    // deterministic LCG so results are reproducible run-to-run
+    unsigned rng = 0x9e3779b9u;
+    auto pick = [&](int mod){ rng = rng*1664525u + 1013904223u; return (int)((rng>>8) % (unsigned)mod); };
+
+    std::vector<int> bestIn;
+    int iters = maxIters;
+    for(int it=0; it<iters; ++it){
+      int idx[4];
+      for(int k=0;k<4;++k){ bool dup; do{ idx[k]=pick(n); dup=false;
+        for(int j=0;j<k;++j) if(idx[j]==idx[k]) dup=true; }while(dup); }
+      Point32f s4[4], d4[4]; for(int k=0;k<4;++k){ s4[k]=src[idx[k]]; d4[k]=dst[idx[k]]; }
+      const GenericHomography2D<T> H = dlt_fit<T>(s4, d4, 4);
+      bool okH=true; for(int e=0;e<9;++e) if(!std::isfinite((double)H[e])) okH=false;
+      if(!okH) continue;
+      std::vector<int> in;
+      for(int i=0;i<n;++i) if(resid(H,i) < thr) in.push_back(i);
+      if(in.size() > bestIn.size()){
+        bestIn.swap(in);
+        // adaptive termination: iterations for 99% confidence at this inlier ratio
+        const double w = (double)bestIn.size()/n, p4 = w*w*w*w;
+        if(p4 > 0 && p4 < 1){
+          const int need = (int)std::ceil(std::log(1.0-0.99)/std::log(1.0-p4));
+          iters = std::min(maxIters, std::max(it+1, need));
+        }
+      }
+    }
+    if((int)bestIn.size() < 4) return best;
+    std::vector<Point32f> si, di;
+    for(int i : bestIn){ si.push_back(src[i]); di.push_back(dst[i]); }
+    best.H = dlt_fit<T>(si.data(), di.data(), (int)si.size());   // refit on inliers
+    best.inliers = bestIn;
+    T s=0; for(int i : bestIn){ const T r=resid(best.H,i); s+=r*r; }
+    best.rms = std::sqrt(s/bestIn.size());
+    best.ok = true;
+    return best;
   }
 
   template<class T>

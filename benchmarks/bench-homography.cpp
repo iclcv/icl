@@ -56,4 +56,17 @@ namespace {
     }
   });
 
+  static BenchmarkRegistrar bench_robust({"math.homography.robust",
+    "Homography2D::robust — RANSAC (adaptive) over correspondences with ~20% outliers",
+    {BenchParamDef::Int("points", 100, 8, 4000)},
+    [](const BenchParams &p){
+      const int n = p.getInt("points");
+      static int cn=-1; static std::vector<Point32f> src, dst;
+      if(n!=cn){ makePts(n, src, dst);                         // inject ~20% gross outliers
+        for(int i=0;i<n;i+=5){ dst[i].x += 80.f; dst[i].y -= 60.f; } cn=n; }
+      const auto f = Homography2D::robust(src.data(), dst.data(), n, 3.0f);
+      g_sink += f.H[0] + f.inliers.size();
+    }
+  });
+
 }

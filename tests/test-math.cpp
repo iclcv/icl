@@ -1288,6 +1288,40 @@ ICL_REGISTER_TEST("math.homography.refined_exact_and_no_worse_than_fit",
   ICL_TEST_TRUE(rmsR < 1.0);                    // and still sub-pixel to GT
 }
 
+// robust() must ignore gross-outlier correspondences that would wreck the plain
+// least-squares fit(), recovering the true model from the inliers.
+ICL_REGISTER_TEST("math.homography.robust_rejects_outliers",
+                  "robust() recovers the model from ~1/3 gross-outlier correspondences")
+{
+  const float Hgt[9] = { 1.2f, 0.15f, 30.f, -0.1f, 1.05f, 12.f, 3e-4f, -2e-4f, 1.f };
+  auto ap=[&](float x,float y,float&u,float&v){ const float w=Hgt[6]*x+Hgt[7]*y+Hgt[8];
+    u=(Hgt[0]*x+Hgt[1]*y+Hgt[2])/w; v=(Hgt[3]*x+Hgt[4]*y+Hgt[5])/w; };
+  std::vector<Point32f> src, dst, dstClean; std::vector<int> outliers;
+  unsigned s=7; auto rnd=[&](){ s=s*1103515245u+12345u; return ((int)((s>>13)&0x3ff)-512)/512.0f; };
+  int gi=0;
+  for(int r=0;r<8;++r) for(int c=0;c<8;++c){
+    float x=c*20.f, y=r*20.f, u,v; ap(x,y,u,v);
+    src.push_back({x,y}); dstClean.push_back({u,v});
+    if(gi%3==0){ dst.push_back({u+60.f*rnd(), v+60.f*rnd()}); outliers.push_back(gi); }  // ~1/3 gross
+    else         dst.push_back({u+0.3f*rnd(), v+0.3f*rnd()});                             // clean + tiny noise
+    ++gi;
+  }
+  const int n=(int)src.size();
+  const auto fit = Homography2D::robust(src.data(), dst.data(), n, 3.0f);
+  ICL_TEST_TRUE(fit.ok);
+  int falseInliers=0;
+  for(int o : outliers) if(std::find(fit.inliers.begin(), fit.inliers.end(), o) != fit.inliers.end()) falseInliers++;
+  ICL_TEST_EQ(falseInliers, 0);                                       // no outlier accepted
+  ICL_TEST_TRUE((int)fit.inliers.size() >= n - (int)outliers.size() - 2);  // kept ~all inliers
+  ICL_TEST_TRUE(fit.rms < 1.0f);
+  double eR=0, eP=0;
+  for(int i=0;i<n;++i){ Point32f p=fit.H.apply(src[i]); eR=std::max(eR,(double)std::hypot(p.x-dstClean[i].x, p.y-dstClean[i].y)); }
+  const Homography2D Hplain = Homography2D::fit(src.data(), dst.data(), n);
+  for(int i=0;i<n;++i){ Point32f p=Hplain.apply(src[i]); eP=std::max(eP,(double)std::hypot(p.x-dstClean[i].x, p.y-dstClean[i].y)); }
+  ICL_TEST_TRUE(eR < 2.0);                    // robust recovers GT on clean points
+  ICL_TEST_TRUE(eP > eR);                     // and beats the outlier-poisoned plain fit
+}
+
 ICL_REGISTER_TEST("math.fixed.closest_rotation",
                   "closest_rotation recovers a proper rotation from a scaled/noisy/reflected matrix")
 {

@@ -7,8 +7,21 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/la/FixedMatrix.h>
 #include <icl/utils/Point.h>
+#include <vector>
 
 namespace icl::math {
+
+  template<class T> struct GenericHomography2D;   // fwd (result type below references it)
+
+  /// Result of a robust (RANSAC) homography fit: the model + its inlier support.
+  template<class T>
+  struct HomographyFit {
+    GenericHomography2D<T> H;      ///< best homography (refit on all inliers)
+    std::vector<int> inliers;     ///< indices of the inlier correspondences
+    T rms = T(0);                 ///< inlier reprojection RMS [px]
+    bool ok = false;              ///< true iff a model with >=4 inliers was found
+  };
+
   /// Utility structure that represents a 2D homography (implemented for float and double)
   /** Given two sets of at least 4 corresponding 2D points passed to the
       constructor as \c pAs (call them \f$\{a_i\}\f$) and \c pBs
@@ -86,6 +99,16 @@ namespace icl::math {
         fit() on noisy correspondences (DLT only minimizes an algebraic proxy), at
         a few× the cost. Same src→dst convention as fit(). */
     static GenericHomography2D refined(const utils::Point32f *src, const utils::Point32f *dst, int n=4);
+
+    /// RANSAC robust fit of src → dst, tolerant to outlier correspondences.
+    /** Repeatedly fits a 4-point minimal homography and keeps the one with the
+        largest inlier set (points whose reprojection residual is
+        < \a inlierThreshPx), then refits fit() on all inliers. Deterministic
+        (fixed internal RNG) with adaptive early-out. Returns the model plus the
+        inlier index set and RMS; \c ok is false if \a n<4 or no >=4-inlier model
+        was found. Same src→dst convention as fit(). */
+    static HomographyFit<T> robust(const utils::Point32f *src, const utils::Point32f *dst, int n,
+                                   T inlierThreshPx, int maxIters=200);
 
 
     /// applies a given homography matrix
