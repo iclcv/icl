@@ -68,12 +68,17 @@ void init(){
                   << FSlider(0.5f,4.f,1.4f,{.handle="sc", .label="c (z-size)"})
                   << FSlider(0.1f,2.f,0.7f,{.handle="se1", .label="e1 (squareness)"})
                   << FSlider(0.1f,2.f,0.8f,{.handle="se2", .label="e2 (squareness)"}))
-              << (VBox({.handle="props", .label="CMA-ES"}))
+              << (VBox({.handle="props"}))
               << Slider(60,600,240,{.handle="num", .label="points"})
               << FSlider(0.f,0.3f,0.03f,{.handle="noise", .label="noise"})
-              << Slider(0,60,10,{.handle="outliers", .label="outlier %"})
+              << Slider(0,60,0,{.handle="outliers", .label="outlier %"})
               << Label("",{.handle="stats"})))
       << Show();
+
+  // fix the coord-box viewport once, on the GUI thread, before the worker fits —
+  // otherwise the first render shows the dynamic (inf/nan) frame.
+  { PlotHandle3D plot = gui["plot"];
+    plot->setViewPort(Range32f(-4,4), Range32f(-4,4), Range32f(-4,4)); }
 
   static GUI propGUI(VBox().handle("propbox"));
   propGUI << Prop(&sq_opt, {.label="CMA-ES"});
@@ -116,7 +121,6 @@ void run(){                                        // worker thread — the heav
 
   PlotHandle3D plot = gui["plot"];
   plot->lock(); plot->clear();
-  plot->setViewPort(Range32f(-4,4),Range32f(-4,4),Range32f(-4,4));
   plot->color(230,60,60,255); plot->nofill(); plot->pointsize(4); plot->scatter(pts);
   plot->nocolor(); plot->fill(40,120,255,90); plot->smoothfill(true);
   plot->surf(sqSurface(fa,fb,fc,fe1,fe2, 40,40), 40, 40);
