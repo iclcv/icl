@@ -1831,3 +1831,43 @@ ICL_REGISTER_TEST("math.fit.robust_trimmed_circle",
   ICL_TEST_NEAR(r,  R,  0.5);
   ICL_TEST_TRUE(robust.inliers().size() >= 65u);   // ~70 true inliers recovered
 }
+
+// Superquadric shape fitting via CMA-ES — dogfoods the Optimizer<V> framework on a
+// genuinely non-convex 5-DOF problem. Sample exact points on an axis-aligned,
+// origin-centred superquadric (size a,b,c + squareness e1,e2) and recover the
+// parameters by minimising the Solina inside-outside error Σ(√(abc)·(F^(e1/2)−1))².
+ICL_REGISTER_TEST("math.fit.cmaes_superquadric_shape",
+                  "CMAESOptimizer recovers superquadric size + squareness from surface points")
+{
+  using V = std::vector<double>;
+  randomSeed(2026);
+  const double A=3.0, B=2.0, C=1.4, E1=0.7, E2=0.8;    // ground truth (rounded box-ish)
+  auto sgnpow = [](double base, double e){ return (base<0?-1.0:1.0)*std::pow(std::abs(base), e); };
+
+  std::vector<std::array<double,3>> pts;
+  for(int i=1;i<12;++i) for(int j=0;j<24;++j){          // parametric SQ surface
+    const double eta = -M_PI/2 + M_PI*i/12.0, om = -M_PI + 2*M_PI*j/24.0;
+    pts.push_back({ A*sgnpow(std::cos(eta),E1)*sgnpow(std::cos(om),E2),
+                    B*sgnpow(std::cos(eta),E1)*sgnpow(std::sin(om),E2),
+                    C*sgnpow(std::sin(eta),E1) });
+  }
+  auto cost = [&](const V &p)->double{
+    const double a=std::abs(p[0])+1e-3, b=std::abs(p[1])+1e-3, c=std::abs(p[2])+1e-3;
+    const double e1=std::min(2.0,std::max(0.1,p[3])), e2=std::min(2.0,std::max(0.1,p[4]));
+    double s=0;
+    for(const auto &q : pts){
+      const double f = std::pow(std::pow(std::abs(q[0]/a),2/e2) + std::pow(std::abs(q[1]/b),2/e2), e2/e1)
+                     + std::pow(std::abs(q[2]/c),2/e1);
+      const double r = std::sqrt(a*b*c)*(std::pow(f,e1/2)-1);
+      s += r*r;
+    }
+    return s;
+  };
+  CMAESOptimizer<V> opt(4000, 0.4, 1e-12);
+  const auto r = opt.minimize(cost, V{2.5, 2.5, 2.5, 1.0, 1.0});   // init from a rough sphere
+  ICL_TEST_NEAR(std::abs(r.params[0]), A, 0.1);
+  ICL_TEST_NEAR(std::abs(r.params[1]), B, 0.1);
+  ICL_TEST_NEAR(std::abs(r.params[2]), C, 0.1);
+  ICL_TEST_NEAR(r.params[3], E1, 0.15);
+  ICL_TEST_NEAR(r.params[4], E2, 0.15);
+}

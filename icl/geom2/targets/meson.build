@@ -118,6 +118,11 @@ endif
 
 # ---- Apps (dev/debug tools) ----
 if _build_apps and qt_found
+  executable('icl-model-fitting-playground',
+    files('../apps/model-fitting-playground.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
   # ports from legacy geom/apps (geom→geom2 retirement)
   executable('icl-scene-viewer',
     files('../apps/scene-viewer.cpp'),

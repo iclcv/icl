@@ -43,6 +43,9 @@ On `further-restructuring-and-cleanup`, suite **1044→1062**. A deep dive into 
   (Accelerate `dgeev`, Eigen `EigenSolver`, C++ Faddeev–LeVerrier fallback) → `DynMatrix::eigenGeneral()`;
   unblocked the ellipse fitter. Also `DynMatrix` returning `eigen()/svd()` overloads + `eigenVector()`.
 - **`PlotWidget` gained a `lock aspect ratio` property** (isotropic scaling — circles render circular).
+- **`icl-model-fitting-playground` gained a 2nd tab: superquadric fitting** (CMA-ES on the Solina
+  inside-outside error; 3D `Plot3D` scatter + fitted `surf`). App moved `math/apps`→`geom2/apps` (needs
+  geom2 for Plot3D). Headless regression `cmaes_superquadric_shape`.
 
 ### Session 96 — morphology flicker fix, calibration-target study, Homography2D toolkit
 On `further-restructuring-and-cleanup`, suite **1044/1044**. Big session, ~14 commits. Three arcs:

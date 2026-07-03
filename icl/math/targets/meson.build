@@ -20,15 +20,6 @@ if _build_demos and qt_found
   endforeach
 endif
 
-# ---- Apps (need Qt) ----
-if _build_apps and qt_found
-  executable('icl-model-fitting-playground',
-    files('../apps/model-fitting-playground.cpp'),
-    dependencies: [icl_qt_dep, icl_math_dep],
-    install: false,
-  )
-endif
-
 # ---- Examples ----
 if _build_examples
   executable('levenberg-marquardt-example',
