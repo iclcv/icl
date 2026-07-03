@@ -172,3 +172,25 @@ reject on the correspondences before the intrinsic bundle. It is free for clean
 targets (drops nothing) and rescues the coded-white failure mode. With it in place,
 all three targets calibrate well; without it, coded-white silently mis-calibrates
 whenever its 0.62×cell markers dip into the marginal size range.
+
+---
+
+# Update — robust() at the source largely fixes coded-white
+
+After migrating BOTH the study's `rejectOutliers()` AND
+`CodedCheckerboardTarget::detect()` itself to `math::Homography2D::robust()`
+(RANSAC), the Tier-B multi-seed numbers change dramatically:
+
+| target | RAW f%err (before) | RAW f%err (now) | +reject |
+|---|---|---|---|
+| plain-checker | 0.02% | 0.02% | 0.02% |
+| coded-white   | **3.87%** | **0.18%** | 0.11% |
+| coded-black   | 0.11% | 0.11% | 0.11% |
+
+The big win is on the **RAW** column: the coded target now rejects its own
+mislabels *inside* detect() (its board-pose bootstrap is a robust homography), so
+they never reach the calibrator — coded-white's untouched-correspondences error
+fell ~20× (3.87% → 0.18%). The external homography reject still helps a little
+(→0.11%, dropping ~29/6765 stragglers) but is no longer load-bearing. Conclusion
+stands and is now built-in: gross mislabels were the whole story, and a robust
+homography is the fix — best applied at detection time.

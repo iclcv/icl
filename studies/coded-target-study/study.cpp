@@ -148,18 +148,15 @@ struct Obs { int idx; Point32f img; };
 // MISLABEL is off by >=1 cell (>=cellpx, here ~26-35px) while radial distortion
 // deviates <=~8px, so thr~12 cleanly separates them. Returns the kept subset.
 static std::vector<Obs> rejectOutliers(const std::vector<Obs> &obs, double sq, int NC, double thr){
-  std::vector<Obs> keep = obs;
-  for(int iter=0; iter<4 && keep.size()>=5; ++iter){
-    std::vector<Point32f> B,I;
-    for(auto &o: keep){ B.push_back(Point32f((o.idx%NC)*sq,(o.idx/NC)*sq)); I.push_back(o.img); }
-    // Homography2D(A,B) yields H with apply(B)=A; we want apply(board)=image → (image,board)
-    icl::math::Homography2D H(I.data(), B.data(), (int)B.size());
-    std::vector<Obs> nk;
-    for(auto &o: keep){ Point32f pr=H.apply(Point32f((o.idx%NC)*sq,(o.idx/NC)*sq));
-      if(std::hypot(pr.x-o.img.x, pr.y-o.img.y) < thr) nk.push_back(o); }
-    if(nk.size()==keep.size()){ keep=nk; break; }
-    keep=nk;
-  }
+  if(obs.size() < 5) return obs;
+  // RANSAC board->image homography; keep the inliers (mislabels are >=1 cell off,
+  // radial distortion <~8px, thr~12px separates them). robust() maps src->dst.
+  std::vector<Point32f> B, I;
+  for(auto &o: obs){ B.push_back(Point32f((o.idx%NC)*sq,(o.idx/NC)*sq)); I.push_back(o.img); }
+  const auto rf = icl::math::Homography2D::robust(B.data(), I.data(), (int)B.size(), (float)thr);
+  if(!rf.ok) return obs;                       // no consensus → don't over-reject
+  std::vector<Obs> keep; keep.reserve(rf.inliers.size());
+  for(int i : rf.inliers) keep.push_back(obs[i]);
   return keep;
 }
 
