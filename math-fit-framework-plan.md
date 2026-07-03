@@ -1,8 +1,16 @@
 # Model-Fitting Framework Plan (`icl/math/fit`)
 
-Status: **P0–P4 LANDED** (virtual dispatch, Configurable), minus Halíř–Flusser
-ellipse (blocked on a general/non-symmetric eigensolver — see §5 P3). P5 remains.
-Decisions taken: scope incrementally, virtual interfaces, fitters are Configurable.
+Status: **P0–P5 LANDED** (virtual dispatch, Configurable) — framework complete
+except Halíř–Flusser ellipse (blocked on a general/non-symmetric eigensolver, see
+§5 P3). Decisions taken: scope incrementally, virtual interfaces, Configurable.
+
+P5 landed: `icl/math/apps/model-fitting-playground.cpp` → `icl-model-fitting-playground`.
+Pick a method from the combo (algebraic / Taubin / RANSAC-MSAC / Taubin+RANSAC /
+algebraic+geometric-refine circle; algebraic / RANSAC line), tune its Configurable
+params live via the auto-generated `Prop` panel (rebuilt on method-swap, filter-
+playground pattern), watch the fit + inliers + RMS/timing update on a `Plot`. All
+methods share the [a,b,c,d] Model, proving interchangeability end-to-end. (GL Plot
+can't render under sandbox offscreen Qt, but init/fit paths run clean.)
 
 P4 landed: `fit/CMAESOptimizer.h` (CMA-ES behind Optimizer<V> — adaptive step +
 covariance; solves Rosenbrock / 1e6-anisotropic quadratic). StochasticOptimizer
@@ -181,8 +189,9 @@ itself a `ModelFitter`. That is the "chainable in a generic fashion" goal.
   `[[deprecated]]`, PolynomialRegression → `solve()` (gelsd). DEFERRED: orthogonal
   (Chebyshev) basis + centering — `pinv()` was already SVD, so this is the only
   real remaining conditioning win (intrusive to the string-driven attribute system).
-- **P5 — `Configurable` params + `icl-model-fitting` "method playground"** (swap
-  fitters/optimizers live), analogous to `icl-filter-playground`.
+- **P5 — DONE:** `icl-model-fitting-playground` (`icl/math/apps/`) — combo-select a
+  fitting method, live-tune its Configurable params via auto-generated `Prop`, watch
+  fit + inliers + RMS/timing on a `Plot`. Analogous to `icl-filter-playground`.
 
 ## 6. Better methods this framework unlocks (from the earlier survey)
 
