@@ -66,8 +66,11 @@ namespace icl {
         ticks->addVertex(Vec(r, 0, len, 1), white);
         ticks->addLine(base, base+1, white);
         ticks->addLine(base, base+2, white);
-        auto t = TextNode::create(create_label(mn + l*step), 0.08f, white);
-        t->translate(invertLabels ? -r : r, -d, 0);
+        // Label sits ON its tick (local x = r); for an inverted axis reverse the
+        // VALUE (mx→mn) rather than the position, so numbers still line up with
+        // their ticks but count the other way.
+        auto t = TextNode::create(create_label(mn + (invertLabels ? (N - l) : l)*step), 0.08f, white);
+        t->translate(r, -d, 0);
         g->addChild(t);
       }
       ticks->setPrimitiveVisible(PrimVertex, false);
