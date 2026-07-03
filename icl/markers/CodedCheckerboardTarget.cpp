@@ -209,24 +209,18 @@ namespace icl::markers {
     }
     if (ms.size() < 4) return {};
 
-    // (2) BOOTSTRAP THE BOARD POSE from those anchors (a global image→board
-    // homography), then geometrically TRIM any marker whose centre disagrees with
-    // the consensus pose (a rare noise-induced mis-decode). This is what lets the
+    // (2) BOOTSTRAP THE BOARD POSE from those anchors via a ROBUST (RANSAC)
+    // image→board homography over the marker centres: it fits the consensus pose
+    // AND drops any marker whose centre disagrees (a rare noise-induced mis-decode)
+    // in one step, without the outliers pulling the fit. This is what lets the
     // decoder run permissively without false positives leaking through.
-    auto fitHib = [&](const std::vector<Marker> &v) {
-      std::vector<Point32f> B, I;
-      for (const auto &m : v) { B.push_back(Point32f((m.cx-0.5f)*sq, (m.cy-0.5f)*sq)); I.push_back(m.center); }
-      return math::Homography2D::fit(I.data(), B.data(), (int)B.size());   // apply(image)=board
-    };
-    math::Homography2D Hib = fitHib(ms);
-    {
-      std::vector<Marker> keep;
-      for (const auto &m : ms) {
-        const Point32f b = Hib.apply(m.center);
-        if (std::hypot(b.x-(m.cx-0.5f)*sq, b.y-(m.cy-0.5f)*sq) < 0.35f*sq) keep.push_back(m);
-      }
-      if (keep.size() >= 4) { const bool refit = keep.size() < ms.size(); ms.swap(keep); if (refit) Hib = fitHib(ms); }
-    }
+    std::vector<Point32f> I, B;
+    for (const auto &m : ms) { I.push_back(m.center); B.push_back(Point32f((m.cx-0.5f)*sq, (m.cy-0.5f)*sq)); }
+    const auto rf = math::Homography2D::robust(I.data(), B.data(), (int)I.size(), 0.35f*sq);
+    if (!rf.ok) return {};                              // no >=4-marker consensus pose
+    { std::vector<Marker> keep; keep.reserve(rf.inliers.size());
+      for (int i : rf.inliers) keep.push_back(ms[i]); ms.swap(keep); }
+    math::Homography2D Hib = rf.H;                      // already refit on the inliers
 
     // (3) DISCRETE ORIENTATION R. A square-BCH marker's decoded frame is rotated
     // from the board axes by a fixed 90° multiple that DIFFERS BY CODE. Recover it
