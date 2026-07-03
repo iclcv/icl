@@ -5,8 +5,14 @@
 #include <icl/geom/Material.h>
 #include <cmath>
 #include <algorithm>
+#include <atomic>
 
 namespace icl::geom {
+
+  unsigned int nextTextureMapsVersion() {
+    static std::atomic<unsigned int> gen{1};
+    return gen.fetch_add(1, std::memory_order_relaxed);
+  }
 
   std::shared_ptr<Material> Material::deepCopy() const {
     auto m = std::make_shared<Material>();
@@ -53,7 +59,7 @@ namespace icl::geom {
   void Material::setBaseColorMap(const core::Image &img) {
     if (!textures) textures = std::make_shared<TextureMaps>();
     textures->baseColorMap = img;
-    ++textures->version;
+    textures->version = nextTextureMapsVersion();
   }
 
   std::shared_ptr<Material> Material::fromTexture(const core::Image &albedo) {

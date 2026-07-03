@@ -130,16 +130,16 @@ namespace icl::geom2 {
       }
     }
 
-    // Set as material texture
+    // Set as material texture. Go through setBaseColorMap so the texture version
+    // is refreshed (globally unique) — a live setText() must invalidate the
+    // renderer's per-material GL texture cache, and a freshly-built label must
+    // not inherit a stale version that a reused Material address might alias.
     auto mat = getMaterial();
     if (!mat) {
       mat = geom::Material::fromColor(GeomColor(255, 255, 255, 255));
       setMaterial(mat);
     }
-    if (!mat->textures) {
-      mat->textures = std::make_shared<geom::Material::TextureMaps>();
-    }
-    mat->textures->baseColorMap = core::Image(img);
+    mat->setBaseColorMap(core::Image(img));
 #endif
   }
 

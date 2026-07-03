@@ -31,6 +31,11 @@ if _build_demos and qt_found
     dependencies: [icl_geom2_dep, icl_io_dep],
     install: false,
   )
+  executable('geom2-plot-frame-capture-demo',
+    files('../demos/plot-frame-capture.cpp'),
+    dependencies: [icl_geom2_dep, icl_io_dep],
+    install: false,
+  )
   executable('scene-monitors-demo',
     files('../demos/scene-monitors.cpp'),
     dependencies: [icl_geom2_dep],
@@ -123,6 +128,12 @@ endif
 
 # ---- Apps (dev/debug tools) ----
 if _build_apps and qt_found
+  # dev tuning tool: dial in PlotWidget3D's default view interactively
+  executable('plot-orient-tuner',
+    files('../apps/plot-orient-tuner.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
   # ports from legacy geom/apps (geom→geom2 retirement)
   executable('icl-scene-viewer',
     files('../apps/scene-viewer.cpp'),

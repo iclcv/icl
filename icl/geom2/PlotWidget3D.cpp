@@ -10,13 +10,16 @@
 #include <icl/geom2/GeometryNode.h>
 #include <icl/geom2/TextNode.h>
 #include <icl/geom2/LightNode.h>
+#include <icl/geom2/detail/PlotFrame.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom/Material.h>
 #include <icl/geom/Camera.h>
 #include <icl/qt/GUIWidget.h>
+#include <icl/qt/GLCallback.h>
 #include <icl/math/transform/LinearTransform1D.h>
 #include <icl/utils/dispatch/AssignRegistry.h>
 #include <algorithm>
+#include <functional>
 
 namespace icl {
   using namespace utils;
@@ -31,57 +34,6 @@ namespace icl {
 
     static const GeomColor white(255, 255, 255, 255);
 
-    static Range32f round_range(Range32f r) {
-      if (r.minVal > r.maxVal) std::swap(r.minVal, r.maxVal);
-      float m = std::fabs(r.maxVal - r.minVal), f = 1;
-      if (m > 1) { while (m / f > 100) f *= 10; }
-      else       { while (m / f < 10)  f *= 0.1f; }
-      r.minVal = std::floor(r.minVal / f) * f;
-      r.maxVal = std::ceil(r.maxVal / f) * f;
-      return r;
-    }
-
-    static std::string create_label(float r) {
-      return str(std::fabs(r) < 0.0000001f ? 0 : r);
-    }
-
-    // one axis (tic marks + numeric labels + axis name) in the local [-1,1] X
-    // range; the caller rotates/translates it into place on the box.
-    static std::shared_ptr<GroupNode> makeAxis(const Range32f &range, bool invertLabels,
-                                               const std::string &name) {
-      auto g = std::make_shared<GroupNode>();
-      const Range32f rr = round_range(range);
-      const float mn = rr.minVal, mx = rr.maxVal;
-      const int N = 10;
-      const float step = (mx - mn) / N;
-      const float lenBase = 0.1f, d = 0.1f;
-
-      auto ticks = std::make_shared<MeshNode>();
-      for (int i = -N/2, l = 0; i <= N/2; ++i, ++l) {
-        const float r = float(i) / (N/2);
-        const float len = i ? lenBase : 2*lenBase;
-        const int base = (int)ticks->getVertices().size();
-        ticks->addVertex(Vec(r, 0, 0, 1), white);
-        ticks->addVertex(Vec(r, len, 0, 1), white);
-        ticks->addVertex(Vec(r, 0, len, 1), white);
-        ticks->addLine(base, base+1, white);
-        ticks->addLine(base, base+2, white);
-        // Label sits ON its tick (local x = r); for an inverted axis reverse the
-        // VALUE (mx→mn) rather than the position, so numbers still line up with
-        // their ticks but count the other way.
-        auto t = TextNode::create(create_label(mn + (invertLabels ? (N - l) : l)*step), 0.08f, white);
-        t->translate(r, -d, 0);
-        g->addChild(t);
-      }
-      ticks->setPrimitiveVisible(PrimVertex, false);
-      g->addChild(ticks);
-
-      auto nameT = TextNode::create(name, 0.12f, white);
-      nameT->translate((invertLabels ? -1 : 1) * (1 + 2*d), 0, 0);
-      g->addChild(nameT);
-      return g;
-    }
-
     struct PlotWidget3D::Data {
       Scene2 scene;
       Range32f givenViewport[3];
@@ -92,6 +44,8 @@ namespace icl {
       std::shared_ptr<MeshNode>  box;
       std::shared_ptr<GroupNode> axes[3];
       Range32f frameRanges[3];
+      int cornerSign[3] = { -1, -1, -1 };  // box corner the tick-edges meet at
+      std::shared_ptr<qt::GLCallback> glCallback;  // camera-tracking render hook
 
       float pointsize = 1, linewidth = 1;
       bool smoothfill = true;
@@ -130,6 +84,15 @@ namespace icl {
           case 7: update_bounds<true,true,true>(computedViewport, rootObject.get()); break;
           default: break;
         }
+        // A dynamic axis with no (or degenerate) geometry keeps its inv_limits
+        // seed (minVal > maxVal) — that would render as inf/huge ticks and blow
+        // up the data→[-1,1] scale. Fall back to a sane finite range: a flat
+        // axis (min==max) expands around its value, an empty one uses [-1,1].
+        for (int i = 0; i < 3; ++i) {
+          Range32f &r = computedViewport[i];
+          if (r.minVal > r.maxVal)        r = Range32f(-1, 1);
+          else if (r.minVal == r.maxVal)  r = Range32f(r.minVal - 1, r.maxVal + 1);
+        }
       }
 
       void updateTics() {
@@ -140,12 +103,28 @@ namespace icl {
         static const std::string names[3] = { "X", "Y", "Z" };
         for (int i = 0; i < 3; ++i) {
           if (axes[i]) coordinateFrame->removeChild(axes[i].get());
-          axes[i] = makeAxis(computedViewport[i], i == 1, names[i]);
+          // labels are billboards pinned to their world tick position, so the
+          // numeric value always reads correctly with no inversion (the old
+          // invert=Y compensated for the pre-multiply axis mirroring that the
+          // placePlotAxes transform-order fix removed).
+          axes[i] = detail::makePlotAxis(computedViewport[i], false, names[i]);
           coordinateFrame->addChild(axes[i]);
         }
-        axes[0]->translate(0, -1, -1);
-        axes[1]->rotate(0, 0, M_PI/2); axes[1]->translate(-1, 0, -1);
-        axes[2]->rotate(-M_PI/2, 0, 0); axes[2]->rotate(0, M_PI/2, 0); axes[2]->translate(-1, -1, 0);
+        detail::placePlotAxes(axes, cornerSign[0], cornerSign[1], cornerSign[2]);
+      }
+
+      // Re-place the tick-edges onto the corner FURTHEST from the current camera
+      // (called every frame from the GL callback). Only re-runs when the corner
+      // actually flips — a rare, discrete event as the view orbits — and then
+      // just resets+reapplies the axis transforms (no label textures rebuilt).
+      void updateCornerForCamera() {
+        const Vec cp = scene.getCamera(0).getPosition();
+        const int s[3] = { cp[0] > 0 ? -1 : 1, cp[1] > 0 ? -1 : 1, cp[2] > 0 ? -1 : 1 };
+        if (s[0] == cornerSign[0] && s[1] == cornerSign[1] && s[2] == cornerSign[2]) return;
+        std::scoped_lock lock(scene);
+        std::copy(s, s+3, cornerSign);
+        for (auto &a : axes) if (a) a->removeTransformation();
+        detail::placePlotAxes(axes, cornerSign[0], cornerSign[1], cornerSign[2]);
       }
 
       // recompute root transform (data viewport -> [-1,1]^3) + retic
@@ -187,30 +166,42 @@ namespace icl {
       }
     };
 
+    namespace {
+      // Wraps the scene's GL callback so a per-frame hook runs (on the GUI
+      // thread, before the render) — used to keep the tick corner on the edge
+      // furthest from the live camera as the view orbits.
+      struct HookedGLCallback : qt::GLCallback {
+        std::function<void()> onFrame;
+        std::shared_ptr<qt::GLCallback> inner;
+        void draw(qt::ICLDrawWidget3D *w) override {
+          if (onFrame) onFrame();
+          if (inner) inner->draw(w);
+        }
+      };
+    }
+
     PlotWidget3D::PlotWidget3D(QWidget *parent) : ICLDrawWidget3D(parent), m_data(new Data) {
       std::fill(m_data->givenViewport, m_data->givenViewport+3, Range32f(0, 0));
       std::fill(m_data->frameRanges, m_data->frameRanges+3, Range32f(1, 1));  // force first retic
       m_data->scene.setBounds(5);
 
-      m_data->scene.addCamera(Camera::lookAt(Vec(8, 1.5, 1.5, 1), Vec(0, 0, 0, 1),
-                                             Vec(0, 0, -1, 1), Size(640, 480), 30.0f));
+      // default view: +X to the right, +Y up, +Z toward the viewer, slight tilt
+      // for 3D — the textbook axis triad (see plot-orient-tuner to re-dial these).
+      m_data->scene.addCamera(Camera::lookAt(Vec(2.5, 2.5, 7, 1), Vec(0, 0, 0, 1),
+                                             Vec(0, 1, 0, 1), Size(640, 480), 30.0f));
       install(m_data->scene.getMouseHandler(0));
-      link(m_data->scene.getGLCallback(0).get());
+      { auto hooked = std::make_shared<HookedGLCallback>();
+        hooked->inner = m_data->scene.getGLCallback(0);
+        Data *d = m_data;
+        hooked->onFrame = [d] { d->updateCornerForCamera(); };
+        m_data->glCallback = hooked;
+        link(hooked.get()); }
 
       m_data->rootObject = std::make_shared<GroupNode>();
       m_data->coordinateFrame = std::make_shared<GroupNode>();
 
       // box wireframe (8 corners of the [-1,1]^3 cube)
-      m_data->box = std::make_shared<MeshNode>();
-      const float c[8][3] = {{ 1,-1, 1},{ 1, 1, 1},{-1, 1, 1},{-1,-1, 1},
-                             { 1,-1,-1},{ 1, 1,-1},{-1, 1,-1},{-1,-1,-1}};
-      for (auto &p : c) m_data->box->addVertex(Vec(p[0], p[1], p[2], 1), white);
-      for (int i = 0; i < 4; ++i) {
-        m_data->box->addLine(i, (i+1)%4, white);
-        m_data->box->addLine(4+i, 4+(i+1)%4, white);
-        m_data->box->addLine(i, i+4, white);
-      }
-      m_data->box->setPrimitiveVisible(PrimVertex, false);
+      m_data->box = detail::makePlotBox();
       m_data->coordinateFrame->addChild(m_data->box);
 
       m_data->scene.addNode(m_data->coordinateFrame);  // first: drives retic

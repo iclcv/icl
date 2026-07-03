@@ -64,6 +64,7 @@ geom2_sources = files(
   'CheckerboardNode.cpp',
   'PointCloudSource.cpp',
   'detail/SceneSource.cpp',
+  'detail/PlotFrame.cpp',
   'RayCastOctree.cpp',
   'TextNode.cpp',
   'DemoScene2.cpp',

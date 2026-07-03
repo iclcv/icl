@@ -12,6 +12,14 @@
 
 namespace icl::geom {
 
+  /// Next value from the PROCESS-WIDE texture-version counter. Used so every
+  /// Material::TextureMaps (and each of its updates) carries a globally unique
+  /// stamp: the geom2 renderer caches GL textures in a map keyed by the raw
+  /// Material pointer, and a per-object counter would restart when a freed
+  /// Material's address is reused (e.g. the plot's per-retic tick labels),
+  /// aliasing the stale cache entry. A global counter never repeats.
+  ICLGeom_API unsigned int nextTextureMapsVersion();
+
   /// PBR metallic-roughness material (glTF/USD-compatible)
   /** Materials can be shared across SceneObjects and primitives via shared_ptr.
       The PBR parameters map directly to glTF's metallic-roughness model.
@@ -80,9 +88,11 @@ namespace icl::geom {
       core::Image occlusionMap;          ///< ambient occlusion (R channel, 1=fully lit)
       core::Image reflectivityMap;       ///< per-texel reflectivity (R channel), scales `reflectivity`
       TexFilter filter = TexFilter::Linear;  ///< sampling for all maps of this material
-      /// Bumped whenever a map changes; the renderer re-uploads this material's
-      /// GL textures only when its cached version differs (see setBaseColorMap).
-      unsigned int version = 0;
+      /// Globally-unique stamp, refreshed whenever a map changes; the renderer
+      /// re-uploads this material's GL textures only when its cached version
+      /// differs (see setBaseColorMap). Global (not per-object) so a reused
+      /// Material address can't alias a stale renderer cache entry.
+      unsigned int version = nextTextureMapsVersion();
     };
     std::shared_ptr<TextureMaps> textures;
 

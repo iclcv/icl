@@ -1729,20 +1729,32 @@ void main() { }
         glUniform4f(m_data->locEmissive, mat->emissive[0], mat->emissive[1],
                     mat->emissive[2], 0);
 
-        // (Re)upload this material's textures only when their version changed —
-        // first sight (cache sentinel) or a live setBaseColorMap()/etc. update.
-        auto &mt = m_data->texCache[mat.get()];
-        if (mat->textures && mt.version != mat->textures->version) {
-          const GLint f = (mat->textures->filter == geom::Material::TexFilter::Nearest)
-                          ? GL_NEAREST : GL_LINEAR;
-          uploadOrUpdate(mt.baseColor, mat->textures->baseColorMap, f);
-          uploadOrUpdate(mt.normalMap, mat->textures->normalMap, f);
-          uploadOrUpdate(mt.metallicRoughness, mat->textures->metallicRoughnessMap, f);
-          uploadOrUpdate(mt.emissive, mat->textures->emissiveMap, f);
-          uploadOrUpdate(mt.occlusion, mat->textures->occlusionMap, f);
-          uploadOrUpdate(mt.reflectivity, mat->textures->reflectivityMap, f);
-          mt.version = mat->textures->version;
+        // Resolve this material's cached GL textures. CRUCIAL: only consult the
+        // pointer-keyed texCache when the material actually HAS textures. The map
+        // outlives the Materials that seeded it, so a plain colored Material whose
+        // address was reused from a freed textured one (e.g. a sphere reusing a
+        // dead tick-label's Material slot) would otherwise pick up the stale entry
+        // and render the old glyph as its texture. No textures -> bind nothing.
+        static const Data::MatTextures noTex{};
+        const Data::MatTextures *mtp = &noTex;
+        if (mat->textures) {
+          auto &mt = m_data->texCache[mat.get()];
+          // (Re)upload only when the version changed — first sight (cache
+          // sentinel) or a live setBaseColorMap()/etc. update.
+          if (mt.version != mat->textures->version) {
+            const GLint f = (mat->textures->filter == geom::Material::TexFilter::Nearest)
+                            ? GL_NEAREST : GL_LINEAR;
+            uploadOrUpdate(mt.baseColor, mat->textures->baseColorMap, f);
+            uploadOrUpdate(mt.normalMap, mat->textures->normalMap, f);
+            uploadOrUpdate(mt.metallicRoughness, mat->textures->metallicRoughnessMap, f);
+            uploadOrUpdate(mt.emissive, mat->textures->emissiveMap, f);
+            uploadOrUpdate(mt.occlusion, mat->textures->occlusionMap, f);
+            uploadOrUpdate(mt.reflectivity, mat->textures->reflectivityMap, f);
+            mt.version = mat->textures->version;
+          }
+          mtp = &mt;
         }
+        const Data::MatTextures &mt = *mtp;
 
         // Bind textures to texture units
         auto bindTex = [](GLint locHas, GLint locSampler, int unit, GLuint tex) {
