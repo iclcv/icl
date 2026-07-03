@@ -1558,7 +1558,7 @@ ICL_REGISTER_TEST("math.fit.robust_line_ransac_mode",
   for(int i=0;i<50;++i) data.push_back(Pt(i, 0.5f*i + 3.f));           // inliers: y=0.5x+3
   for(int i=0;i<15;++i) data.push_back(Pt(i, 0.5f*i + 3.f + 20.f));    // outliers
   LineFitter2D line;
-  RobustFitter<Pt, std::vector<double> > robust(&line, 0.3, 0.99, 3000, /*msac*/false);
+  RobustFitter<Pt, std::vector<double> > robust(&line, 0.3, 0.99, 3000, "ransac");
   const std::vector<double> m = robust.fit(data);      // [a,b,c] : a x + b y + c = 0
   ICL_TEST_TRUE(m.size() == 3u);
   // slope of a x + b y + c = 0 is -a/b; expect 0.5
@@ -1808,4 +1808,26 @@ ICL_REGISTER_TEST("math.fit.halir_flusser_ellipse",
   ICL_TEST_NEAR(x,  0.0, 1e-4);
   ICL_TEST_NEAR(y,  0.0, 1e-4);
   ICL_TEST_NEAR(yy, (A*A)/(B*B), 1e-3);
+}
+
+// RobustFitter "trimmed" (LTS) mode: threshold-free — recover a circle under
+// outliers by specifying only the inlier fraction (no residual threshold to tune).
+ICL_REGISTER_TEST("math.fit.robust_trimmed_circle",
+                  "RobustFitter trimmed/LTS mode recovers a circle via inlier fraction")
+{
+  using Pt = Point32f;
+  const double CX = 40, CY = -15, R = 12;
+  std::vector<Pt> data;
+  for(int i=0;i<70;++i){ double t=i*2*M_PI/70; data.push_back(Pt(CX+R*std::cos(t), CY+R*std::sin(t))); }
+  for(int i=0;i<30;++i){ data.push_back(Pt(CX-40+i*2.0, CY+28)); }        // 30% outliers
+  CircleFitter2D circle;
+  // scoring="trimmed", inlierFraction=0.7 (≈ the 70% true inliers); NO threshold used
+  RobustFitter<Pt, std::vector<double> > robust(&circle, /*thresh*/0.0, 0.99, 2000, "trimmed", true, 0.7);
+  const std::vector<double> m = robust.fit(data);
+  const double cx=-m[1]/(2*m[0]), cy=-m[2]/(2*m[0]);
+  const double r =std::sqrt((m[1]*m[1]+m[2]*m[2])/(4*m[0]*m[0]) - m[3]/m[0]);
+  ICL_TEST_NEAR(cx, CX, 0.5);
+  ICL_TEST_NEAR(cy, CY, 0.5);
+  ICL_TEST_NEAR(r,  R,  0.5);
+  ICL_TEST_TRUE(robust.inliers().size() >= 65u);   // ~70 true inliers recovered
 }

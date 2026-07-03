@@ -62,10 +62,10 @@ static Method makeMethod(const std::string &name){
     m.shape = CIRCLE; m.top.reset(new TaubinCircleFitter);
   }else if(name == "circle: RANSAC/MSAC"){
     m.shape = CIRCLE; m.sub.reset(new CircleFitter2D);
-    RF *r = new RF(m.sub.get(), 0.05); m.robust = r; m.top.reset(r);
+    RF *r = new RF(m.sub.get(), 0.05, 0.99, 1000, "trimmed", true, 0.7); m.robust = r; m.top.reset(r);
   }else if(name == "circle: Taubin + RANSAC"){
     m.shape = CIRCLE; m.sub.reset(new TaubinCircleFitter);
-    RF *r = new RF(m.sub.get(), 0.05); m.robust = r; m.top.reset(r);
+    RF *r = new RF(m.sub.get(), 0.05, 0.99, 1000, "trimmed", true, 0.7); m.robust = r; m.top.reset(r);
   }else if(name == "circle: algebraic + geometric refine"){
     m.shape = CIRCLE; m.sub.reset(new CircleFitter2D);
     m.refiner.reset(new GeometricCircleRefiner);
@@ -74,7 +74,7 @@ static Method makeMethod(const std::string &name){
     m.shape = LINE; m.top.reset(new LineFitter2D);
   }else if(name == "line: RANSAC/MSAC"){
     m.shape = LINE; m.sub.reset(new LineFitter2D);
-    RF *r = new RF(m.sub.get(), 0.3); m.robust = r; m.top.reset(r);
+    RF *r = new RF(m.sub.get(), 0.3, 0.99, 3000, "trimmed", true, 0.7); m.robust = r; m.top.reset(r);
   }
   return m;
 }
