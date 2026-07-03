@@ -77,6 +77,11 @@ if _build_demos and qt_found
     dependencies: [icl_geom2_dep],
     install: false,
   )
+  executable('superquadric-fitting-demo',
+    files('../demos/superquadric-fitting.cpp'),
+    dependencies: [icl_geom2_dep],
+    install: false,
+  )
   executable('offscreen-rendering-demo',
     files('../demos/offscreen-rendering.cpp'),
     dependencies: [icl_geom2_dep],
@@ -118,11 +123,6 @@ endif
 
 # ---- Apps (dev/debug tools) ----
 if _build_apps and qt_found
-  executable('icl-model-fitting-playground',
-    files('../apps/model-fitting-playground.cpp'),
-    dependencies: [icl_geom2_dep],
-    install: false,
-  )
   # ports from legacy geom/apps (geom→geom2 retirement)
   executable('icl-scene-viewer',
     files('../apps/scene-viewer.cpp'),

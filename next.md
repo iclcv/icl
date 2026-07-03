@@ -43,9 +43,13 @@ On `further-restructuring-and-cleanup`, suite **1044→1062**. A deep dive into 
   (Accelerate `dgeev`, Eigen `EigenSolver`, C++ Faddeev–LeVerrier fallback) → `DynMatrix::eigenGeneral()`;
   unblocked the ellipse fitter. Also `DynMatrix` returning `eigen()/svd()` overloads + `eigenVector()`.
 - **`PlotWidget` gained a `lock aspect ratio` property** (isotropic scaling — circles render circular).
-- **`icl-model-fitting-playground` gained a 2nd tab: superquadric fitting** (CMA-ES on the Solina
-  inside-outside error; 3D `Plot3D` scatter + fitted `surf`). App moved `math/apps`→`geom2/apps` (needs
-  geom2 for Plot3D). Headless regression `cmaes_superquadric_shape`.
+- **`superquadric-fitting-demo`** (`geom2/demos/`): CMA-ES fits a superquadric's size+squareness to
+  noisy surface points (Solina inside-outside error), 3D `Plot3D` scatter+fitted `surf`. Fit runs
+  DETACHED on the worker `run()` (slider callbacks just flag dirty) → responsive sliders. `icl-model-
+  fitting-playground` stays 2D-only in `math/apps` (fusing 2D+3D into one tabbed app got clumsy —
+  split back). Headless regression `cmaes_superquadric_shape`.
+- **`geom2::PlotWidget3D` axis-label bug fixed** (`makeAxis` placed inverted-axis labels off their
+  ticks) — visual confirm on a display still pending.
 
 ### Session 96 — morphology flicker fix, calibration-target study, Homography2D toolkit
 On `further-restructuring-and-cleanup`, suite **1044/1044**. Big session, ~14 commits. Three arcs:
