@@ -1663,4 +1663,10 @@ ICL_REGISTER_TEST("math.dyn.eigen_vector_extreme",
   }
   // A*v == lambda*v (lambda=1 for the smallest here)
   ICL_TEST_NEAR(vSmall[2]*vSmall[2], 1.0, 1e-9);   // eigenvector ~ e_z
+  // optional eigenvalue out-param returns the matching eigenvalue
+  double lambdaBig = 0, lambdaSmall = 0;
+  A.eigenVector(true,  &lambdaBig);
+  A.eigenVector(false, &lambdaSmall);
+  ICL_TEST_NEAR(lambdaBig,   5.0, 1e-9);
+  ICL_TEST_NEAR(lambdaSmall, 1.0, 1e-9);
 }

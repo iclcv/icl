@@ -342,8 +342,10 @@ namespace icl::math {
         (DLT null-space, PCA normal, quaternion pose): avoids materializing the full
         N×N eigenvector matrix and the N eigenvalues just to keep a single column.
         Returns that eigenvector as a column (N×1). `largest=false` → smallest
-        eigenvalue (the homogeneous null-space direction); `largest=true` → largest. */
-    DynMatrix eigenVector(bool largest = false) const;
+        eigenvalue (the homogeneous null-space direction); `largest=true` → largest.
+        If `eigenValueDst` is non-null the corresponding eigenvalue is written there
+        — it is the natural quality signal (PCA cross-variance / DLT residual²). */
+    DynMatrix eigenVector(bool largest = false, T *eigenValueDst = nullptr) const;
     /// singular value decomposition
     void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const;
     /// bundled result of the returning svd() overload

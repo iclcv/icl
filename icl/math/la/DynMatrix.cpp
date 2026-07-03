@@ -590,7 +590,7 @@ namespace icl::math {
   }
 
   template<class T>
-  DynMatrix<T> DynMatrix<T>::eigenVector(bool largest) const{
+  DynMatrix<T> DynMatrix<T>::eigenVector(bool largest, T *eigenValueDst) const{
     ICLASSERT_THROW(cols() == rows(), InvalidMatrixDimensionException("eigenVector: input matrix is not square"));
     const int n = cols();
 
@@ -607,6 +607,7 @@ namespace icl::math {
 
     int idx = 0;
     for(int i = 1; i < n; ++i) if(largest ? (w[i] > w[idx]) : (w[i] < w[idx])) idx = i;
+    if(eigenValueDst) *eigenValueDst = w[idx];
 
     DynMatrix<T> v(n, 1);                 // column vector (rows=n, cols=1)
     for(int i = 0; i < n; ++i) v[i] = A(idx, i);
