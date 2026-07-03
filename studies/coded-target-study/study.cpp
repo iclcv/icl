@@ -15,6 +15,8 @@
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/BCHCode.h>
 #include <icl/filter/conv/ConvolutionOp.h>
+#include <icl/cv/IntrinsicCalibrator.h>
+#include <icl/math/la/DynMatrix.h>
 #include <cmath>
 #include <cstdio>
 #include <array>
@@ -28,6 +30,7 @@ using namespace icl::markers;
 using namespace icl::utils;
 using namespace icl::filter;
 using icl::icl8u;
+using icl::icl64f;
 
 // ------------------------------------------------------------- small 3x3 math
 struct M3 { double m[9]; double &operator()(int r,int c){return m[r*3+c];} double operator()(int r,int c)const{return m[r*3+c];} };
@@ -129,7 +132,79 @@ static ViewResult evalView(CalibrationTarget &tgt, FiducialDetector *fd, const s
   return { n, (C-1)*(R-1), n? std::sqrt(se/n):-1.0, markers };
 }
 
-int main(){
+// ======================================================================
+// Tier B — end-to-end intrinsic calibration from rendered+detected views.
+// Fixed camera (f,cx,cy,k1,k2); many diverse poses; feed detected corners into
+// cv::IntrinsicCalibrator (partial-board masked overload) and compare recovered
+// intrinsics to ground truth. Tests whether the target's corner noise (esp. the
+// black-cell saddle penalty) actually moves the estimate.
+// ======================================================================
+static int tierB(){
+  using icl::math::DynMatrix; using icl::cv::IntrinsicCalibrator;
+  Cam cam; cam.W=640; cam.H=480; cam.cx=320; cam.cy=240;
+  cam.f=650; cam.k1=-0.15; cam.k2=0.03;                 // ground-truth intrinsics
+  const double sq=25.0, texPxPerCell=60;
+  // diverse poses: tilts (rad) about x/y/z + board-centre offset (mm) + distance (mm).
+  struct P{ double ax,ay,az,ox,oy,D; };
+  P poses[] = {
+    {-.5,-.32,.09,-60,-40,520},{ .46,-.35,-.14, 55,-32,560},{-.44,.44,.17,-20, 26,500},
+    { .49,.38,-.09, 50, 40,600},{-.6,.09,0,  0,-45,480},{ .09,-.6,0,-40,  5,540},
+    { .26,.52,.26, 30,-28,580},{-.35,-.52,-.2,-52, 22,520},{ .58,-.18,.1, 22, 46,560},
+    {-.18,.58,-.16,-30,-40,500},{ .32,.32,0, 44,-44,620},{-.3,-.3,.12,-44, 44,540},
+    { .2,-.2,-.2, 0,  0,470},{-.2,.2,.2, 10,-10,470},
+  };
+  const int NV = sizeof(poses)/sizeof(poses[0]);
+
+  struct Cfg{ Type type; int C,R; double fill; };
+  Cfg cfgs[] = { {PLAIN,13,9,0}, {CODED_WHITE,13,9,0.62}, {CODED_BLACK,13,9,1.0} };
+
+  printf("Tier B — recover intrinsics (GT f=%.0f cx=320 cy=240 k1=%.3f k2=%.3f), %d views, 13x9\n",
+         cam.f, cam.k1, cam.k2, NV);
+  printf("%-13s  usedViews  fx      fy      cx      cy      k1       k2      | f%%err  k1err   k2err\n","type");
+  for(auto &cf : cfgs){
+    std::unique_ptr<CalibrationTarget> tgt; FiducialDetector *fd=nullptr; std::string pp;
+    if(cf.type==PLAIN) tgt.reset(new CheckerboardTarget(cf.C,cf.R,(float)sq));
+    else { auto*ct=new CodedCheckerboardTarget(cf.C,cf.R,(float)sq,(float)cf.fill,
+             SquareBCHPreset::BCH_4x4_t2_RS, cf.type==CODED_BLACK?MarkerCells::Black:MarkerCells::White);
+           tgt.reset(ct); fd=ct->markerDetector(); pp=cf.type==CODED_BLACK?"dilatation":"none"; }
+    if(fd && !pp.empty()){ fd->setPropertyValue("pp.filter",pp); fd->setPropertyValue("quads.minimum region size",25); }
+    Img8u tex=tgt->generate(Size((int)((cf.C+2)*texPxPerCell),(int)((cf.R+2)*texPxPerCell)));
+    const double px=std::min(tex.getWidth()/double(cf.C+2),tex.getHeight()/double(cf.R+2));
+    const double ox=(tex.getWidth()-px*cf.C)/2.0, oy=(tex.getHeight()-px*cf.R)/2.0;
+    const int NC=cf.C-1, NR=cf.R-1, bSize=NC*NR;
+
+    DynMatrix<icl64f> world = DynMatrix<icl64f>::create(3,bSize);
+    for(int r=0;r<NR;++r)for(int c=0;c<NC;++c){ int idx=r*NC+c; world(0,idx)=c*sq; world(1,idx)=r*sq; world(2,idx)=0; }
+    DynMatrix<icl64f> impoints = DynMatrix<icl64f>::create(2*NV,bSize);
+    DynMatrix<icl64f> mask = DynMatrix<icl64f>::create(NV,bSize);
+    for(int i=0;i<2*NV*bSize;++i) impoints[i]=0; for(int i=0;i<NV*bSize;++i) mask[i]=0;
+    RNG rng{7u}; int usedViews=0;
+    for(int v=0; v<NV; ++v){
+      Pose p; p.R=mul(mul(rotZ(poses[v].az),rotY(poses[v].ay)),rotX(poses[v].ax));
+      V3 Cb=mul(p.R,V3{cf.C*sq/2,cf.R*sq/2,0});
+      p.t={ poses[v].ox-Cb.x, poses[v].oy-Cb.y, poses[v].D-Cb.z };
+      Img8u img=renderView(tex,cf.C,cf.R,sq,px,ox,oy,p,cam,205); degrade(img,4,rng);
+      auto corr=tgt->detect(img); int got=0;
+      for(auto&cc:corr){ int c=(int)std::lround(cc.objectPos[0]/sq), r=(int)std::lround(cc.objectPos[1]/sq);
+        if(c<0||c>=NC||r<0||r>=NR) continue; int idx=r*NC+c;
+        impoints(2*v,idx)=cc.imagePos.x; impoints(2*v+1,idx)=cc.imagePos.y; mask(v,idx)=1; ++got; }
+      if(got>=6) usedViews++;
+    }
+    try{
+      IntrinsicCalibrator cal(NC,NR,NV,cam.W,cam.H);
+      auto res=cal.calibrate(impoints,world,mask);
+      double fx=res.getFocalLengthX(), fy=res.getFocalLengthY();
+      printf("%-13s  %6d    %6.1f  %6.1f  %6.1f  %6.1f  %7.4f %7.4f | %5.1f%% %7.4f %7.4f\n",
+             typeName(cf.type),usedViews,fx,fy,res.getPrincipalX(),res.getPrincipalY(),
+             res.getK1(),res.getK2(),
+             100.0*(fx-cam.f)/cam.f, res.getK1()-cam.k1, res.getK2()-cam.k2);
+    }catch(std::exception&e){ printf("%-13s  calibrate FAILED: %s\n",typeName(cf.type),e.what()); }
+  }
+  return 0;
+}
+
+int main(int argc, char **argv){
+  if(argc>1 && std::string(argv[1])=="calib") return tierB();
   Cam cam0; cam0.W=640; cam0.H=480; cam0.cx=320; cam0.cy=240;
   const double D=1000, texPxPerCell=60;
   // a fixed pose set: fronto-parallel + tilts (radians)

@@ -80,3 +80,61 @@ floor (each missed corner is a bigger fraction). Not a primary driver.
   saddle penalty actually move the intrinsics, and by how much?).
 - Image-size sweep (1280×960); Cycles realism re-render of the winners; marker-fill
   sweep for coded-white; quad-assisted plain-checkerboard reconstruction.
+
+---
+
+# Findings — Tier B (end-to-end intrinsic calibration)
+
+Fixed GT camera f=650, cx=320, cy=240, k1=−0.15, k2=0.03; 13×9 board; 14 diverse
+tilted+offset poses (board sweeps the FOV, corners reach edges); render→detect→
+`cv::IntrinsicCalibrator` (partial-board masked). Recovered vs GT:
+
+| target | fx | cx | k1 | k2 | f%err | k1 err |
+|---|---|---|---|---|---|---|
+| **plain-checker** | 650.1 | 320.2 | −0.1486 | 0.009 | 0.0% | 0.0014 |
+| **coded-black**   | 650.7 | 323.2 | −0.1493 | 0.057 | 0.1% | 0.0007 |
+| **coded-white**   | 639.5 | 352.1 | −0.011  | −1.07 | −1.6% | 0.14 |
+
+## The key insight — mislabels, not saddle noise, dominate calibration
+
+Tier A said black-cell saddles are ~3–8× noisier than white/plain. Yet **black
+calibrates almost perfectly and white is badly poisoned**. Why:
+
+- **Saddle noise averages out.** With hundreds of corners over 14 views, a
+  zero-mean ~0.25 px saddle jitter is absorbed by the bundle adjustment — hence
+  coded-black recovers k1 to 0.0007 and f to 0.1 %.
+- **Gross corner MISLABELS bias the fit** and do NOT average out. At this board
+  scale the poses put coded-white's markers at markerPx ≈ 16–22 — right in the
+  marginal zone Tier A flagged, where the coded pipeline occasionally assigns a
+  corner the WRONG (col,row) label. A handful of such outliers drag cx by 32 px and
+  make k1/k2 meaningless. Coded-black's markers fill the whole cell (markerPx =
+  cellpx ≈ 26–35 here) → above the mislabel threshold → clean labels → clean
+  calibration.
+
+So the failure mode that actually matters for calibration is **gross mislabels**,
+and **white-cell markers hit that regime at larger cell sizes than black-cell**
+(their marker is only 0.62× the cell). This inverts the naive "black saddles are
+worse ⇒ black calibrates worse".
+
+## Practical guidance (updated)
+
+- **Plain checkerboard** — best when the whole board is guaranteed in view: exact
+  intrinsics, no labels to mislabel.
+- **coded-black** — the better CODED choice for calibration at a given board/camera:
+  full-cell markers stay out of the mislabel regime, and the saddle-noise penalty
+  is harmless to the bundle. Needs `pp.filter=dilatation`.
+- **coded-white** — only safe when its 0.62×cell markers are kept well above the
+  marginal size (bigger physical cells / closer / higher-res, markerPx ≳ 22). Below
+  that it silently poisons the calibration via mislabels — the most dangerous mode
+  because detection still "succeeds" with plausible-looking corners.
+- **Regardless of target: run a homography/RANSAC outlier reject on the
+  correspondences before the bundle** — it would have caught the coded-white
+  mislabels.
+
+## Caveats / to confirm
+
+- Single pose-seed; should be repeated over seeds. The coded-white poisoning is
+  driven by a few outlier views — worth logging per-view reprojection to confirm
+  it's mislabels (expected: 1–2 views with large residual).
+- k2 is only weakly observable at this FOV/radius (even plain lands k2=0.009 vs GT
+  0.03); f, cx/cy, k1 are the trustworthy numbers here.
