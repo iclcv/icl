@@ -50,7 +50,12 @@ namespace icl::math {
     return Result(data,error,startError,maxSteps);
   }
 
+  // this class is itself deprecated (see header) — silence the self-referential
+  // deprecation warning on its own explicit instantiations
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template class ICLMath_API StochasticOptimizer<float>;
   template class ICLMath_API StochasticOptimizer<double>;
+#pragma GCC diagnostic pop
 
   } // namespace icl::math

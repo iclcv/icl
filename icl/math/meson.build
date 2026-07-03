@@ -45,6 +45,7 @@ math_transform_headers = files(
 )
 
 math_fit_headers = files(
+  'fit/CMAESOptimizer.h',
   'fit/FitUtils.h',
   'fit/GeometricRefiners2D.h',
   'fit/LeastSquareModelFitting.h',

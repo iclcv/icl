@@ -183,8 +183,9 @@ namespace icl::math {
         apply_params(m_result.m_attribs, xs.row_begin(i), m_buf.row_begin(i));
       }
 
-      m_buf.pinv().mult(ys, m_result.m_params);
-      //m_result.m_params.reshape(m_result.m_params.rows(), m_result.m_params.cols());
+      // SVD least-squares (gelsd) directly, instead of materialising the K×N
+      // pseudo-inverse and multiplying — same result, one dedicated solver.
+      m_result.m_params = m_buf.solve(ys);
 
       return m_result;
     }

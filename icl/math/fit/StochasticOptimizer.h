@@ -30,9 +30,15 @@ namespace icl::math {
       a given minimal error is reached.
 
       **NEW** now this class is a template (defined for float and double)
+
+      \deprecated This is a naive greedy (1+1) hill-climber with a fixed,
+      user-supplied noise schedule. It is superseded by CMAESOptimizer, which
+      adapts both the step size and the full step covariance and implements the
+      generic Optimizer<V> interface. Prefer CMAESOptimizer for new code.
   */
   template<class T=float>
-  class ICLMath_IMP StochasticOptimizer {
+  class [[deprecated("superseded by CMAESOptimizer (adaptive step + covariance)")]]
+  ICLMath_IMP StochasticOptimizer {
     public:
     /// Result structure
     using Result = StochasticOptimizerResult<T>;

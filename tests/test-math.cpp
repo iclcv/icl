@@ -13,6 +13,8 @@
 #include <icl/math/fit/NelderMeadOptimizer.h>
 #include <icl/math/fit/RefiningFitter.h>
 #include <icl/math/fit/GeometricRefiners2D.h>
+#include <icl/math/fit/CMAESOptimizer.h>
+#include <icl/math/fit/PolynomialRegression.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -1669,4 +1671,58 @@ ICL_REGISTER_TEST("math.dyn.eigen_vector_extreme",
   A.eigenVector(false, &lambdaSmall);
   ICL_TEST_NEAR(lambdaBig,   5.0, 1e-9);
   ICL_TEST_NEAR(lambdaSmall, 1.0, 1e-9);
+}
+
+// CMA-ES on the 2D Rosenbrock banana — an ill-conditioned, curved valley where a
+// naive step optimizer stalls. Seed the RNG for determinism.
+ICL_REGISTER_TEST("math.fit.cmaes_rosenbrock",
+                  "CMAESOptimizer solves the 2D Rosenbrock function")
+{
+  using V = std::vector<double>;
+  randomSeed(12345);
+  auto rosen = [](const V &p)->double{
+    const double a = 1 - p[0], b = p[1] - p[0]*p[0];
+    return a*a + 100.0*b*b;
+  };
+  CMAESOptimizer<V> opt(/*maxIt*/3000, /*sigma0*/0.5, /*minError*/1e-12);
+  const auto r = opt.minimize(rosen, V{-1.2, 1.0});
+  ICL_TEST_NEAR(r.params[0], 1.0, 1e-3);
+  ICL_TEST_NEAR(r.params[1], 1.0, 1e-3);
+  ICL_TEST_TRUE(r.error < 1e-8);
+}
+
+// CMA-ES on an ill-conditioned quadratic (axis scales differ by 1e6): covariance
+// adaptation handles the anisotropy that an isotropic-step method struggles with.
+ICL_REGISTER_TEST("math.fit.cmaes_ill_conditioned",
+                  "CMAESOptimizer minimises a 1e6-anisotropic quadratic")
+{
+  using V = std::vector<double>;
+  randomSeed(777);
+  auto f = [](const V &p)->double{
+    const double dx = p[0]-2.0, dy = p[1]+1.0;
+    return dx*dx + 1e6*dy*dy;            // very stretched valley
+  };
+  CMAESOptimizer<V> opt(4000, 1.0, 1e-14);
+  const auto r = opt.minimize(f, V{0.0, 0.0});
+  ICL_TEST_NEAR(r.params[0],  2.0, 1e-2);
+  ICL_TEST_NEAR(r.params[1], -1.0, 1e-4);
+}
+
+// PolynomialRegression via the SVD least-squares solve recovers a known quadratic.
+ICL_REGISTER_TEST("math.fit.polynomial_regression_quadratic",
+                  "PolynomialRegression recovers y = 2x0^2 - 3x0 + 1")
+{
+  PolynomialRegression<double> pr("x0^2 + x0 + 1");     // features [x0², x0, 1]
+  const int N = 12;
+  DynMatrix<double> xs(N,1), ys(N,1);   // (rows,cols): N rows, 1 col
+  for(int i=0;i<N;++i){
+    const double x = -3 + 0.5*i;
+    xs(i,0) = x;                        // operator()(row,col)
+    ys(i,0) = 2*x*x - 3*x + 1;
+  }
+  const auto &res = pr.apply(xs, ys);
+  const auto &c = res.getParams();       // one column: coefficients for [x0², x0, 1]
+  ICL_TEST_NEAR(c[0],  2.0, 1e-6);
+  ICL_TEST_NEAR(c[1], -3.0, 1e-6);
+  ICL_TEST_NEAR(c[2],  1.0, 1e-6);
 }

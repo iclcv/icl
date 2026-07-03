@@ -1,8 +1,18 @@
 # Model-Fitting Framework Plan (`icl/math/fit`)
 
-Status: **P0–P3 LANDED** (virtual dispatch, Configurable), minus Halíř–Flusser
-ellipse (blocked on a general/non-symmetric eigensolver — see §5 P3). P4–P5 remain.
+Status: **P0–P4 LANDED** (virtual dispatch, Configurable), minus Halíř–Flusser
+ellipse (blocked on a general/non-symmetric eigensolver — see §5 P3). P5 remains.
 Decisions taken: scope incrementally, virtual interfaces, fitters are Configurable.
+
+P4 landed: `fit/CMAESOptimizer.h` (CMA-ES behind Optimizer<V> — adaptive step +
+covariance; solves Rosenbrock / 1e6-anisotropic quadratic). StochasticOptimizer
+marked `[[deprecated]]` (→ CMAESOptimizer). PolynomialRegression now solves via the
+dedicated SVD least-squares `DynMatrix::solve()` (gelsd) instead of materialising
+the pseudo-inverse. NOTE: `pinv()` was ALREADY SVD-based (reduced SVD + gemm), so
+the earlier "normal-equations" criticism of PolynomialRegression was wrong — the
+solve() swap is a minor cleanup, not a correctness fix. DEFERRED: orthogonal
+(Chebyshev) basis + input centering for PolynomialRegression (intrusive to the
+string-driven attribute system) — the remaining real conditioning win there.
 
 P3 landed: `fit/RefiningFitter.h` (RefiningFitter interface + SeededFitter chaining),
 `TaubinCircleFitter` (in PrimitiveFitters2D.h — drop-in, less biased than Kåsa),
@@ -167,8 +177,10 @@ itself a `ModelFitter`. That is the "chainable in a generic fashion" goal.
   (LAPACK `geev`); ICL only has symmetric `syev`. Add `geev` (Eigen/Accelerate/MKL/
   Cpp backends, like the existing lapack ops) as a prerequisite task, then the
   ellipse fitter + conic denormalization drop in.
-- **P4 — Regression QR/SVD + orthogonal (Chebyshev) basis; CMA-ES `Optimizer`,
-  deprecate StochasticOptimizer.**
+- **P4 — DONE:** CMA-ES `Optimizer` (`fit/CMAESOptimizer.h`), StochasticOptimizer
+  `[[deprecated]]`, PolynomialRegression → `solve()` (gelsd). DEFERRED: orthogonal
+  (Chebyshev) basis + centering — `pinv()` was already SVD, so this is the only
+  real remaining conditioning win (intrusive to the string-driven attribute system).
 - **P5 — `Configurable` params + `icl-model-fitting` "method playground"** (swap
   fitters/optimizers live), analogous to `icl-filter-playground`.
 
