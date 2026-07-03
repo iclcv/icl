@@ -96,6 +96,60 @@ namespace icl::math {
       return info;
     }
 
+    // ---- GEEV (general eigendecomposition) ----
+    // Unpack LAPACK's packed real right-eigenvector storage (column-major VRcol,
+    // stride N) into row-major real/imag matrices (stride ldvr).
+    template<class T>
+    void geev_unpack(int N, const T* WI, const T* VRcol, T* VRre, T* VRim, int ldvr) {
+      for(int j = 0; j < N; ) {
+        if(WI[j] == T(0)) {
+          for(int i = 0; i < N; ++i){ VRre[i*ldvr+j] = VRcol[i+j*N]; VRim[i*ldvr+j] = T(0); }
+          ++j;
+        } else {                                   // complex conjugate pair j, j+1
+          for(int i = 0; i < N; ++i){
+            const T re = VRcol[i+j*N], im = VRcol[i+(j+1)*N];
+            VRre[i*ldvr+j]     = re;  VRim[i*ldvr+j]     =  im;
+            VRre[i*ldvr+(j+1)] = re;  VRim[i*ldvr+(j+1)] = -im;
+          }
+          j += 2;
+        }
+      }
+    }
+
+    int acc_geev_f(int N, float* A, int lda, float* WR, float* WI,
+                   float* VRre, float* VRim, int ldvr) {
+      __LAPACK_int info, n = N;
+      char jobvl = 'N', jobvr = 'V';
+      std::vector<float> Acol = lapack_row_to_col(A, N, N, lda), VRcol(N*N);
+      float work_query; __LAPACK_int lwork = -1;
+      sgeev_(&jobvl, &jobvr, &n, Acol.data(), &n, WR, WI, nullptr, &n,
+             VRcol.data(), &n, &work_query, &lwork, &info);
+      if(info != 0) return info;
+      lwork = static_cast<__LAPACK_int>(work_query);
+      std::vector<float> work(lwork);
+      sgeev_(&jobvl, &jobvr, &n, Acol.data(), &n, WR, WI, nullptr, &n,
+             VRcol.data(), &n, work.data(), &lwork, &info);
+      if(info == 0) geev_unpack(N, WI, VRcol.data(), VRre, VRim, ldvr);
+      return info;
+    }
+
+    int acc_geev_d(int N, double* A, int lda, double* WR, double* WI,
+                   double* VRre, double* VRim, int ldvr) {
+      __LAPACK_int info, n = N;
+      char jobvl = 'N', jobvr = 'V';
+      std::vector<double> Acol = lapack_row_to_col(A, N, N, lda), VRcol(N*N);
+      double work_query; __LAPACK_int lwork = -1;
+      dgeev_(&jobvl, &jobvr, &n, Acol.data(), &n, WR, WI, nullptr, &n,
+             VRcol.data(), &n, &work_query, &lwork, &info);
+      if(info != 0) return info;
+      lwork = static_cast<__LAPACK_int>(work_query);
+      std::vector<double> work(lwork);
+      dgeev_(&jobvl, &jobvr, &n, Acol.data(), &n, WR, WI, nullptr, &n,
+             VRcol.data(), &n, work.data(), &lwork, &info);
+      if(info == 0) geev_unpack(N, WI, VRcol.data(), VRre, VRim, ldvr);
+      return info;
+    }
+
     // ================================================================
     // Row-major ↔ column-major:
     // LAPACK expects column-major; our raw pointer interface is row-major.
@@ -297,6 +351,7 @@ namespace icl::math {
     acc_f.add<LapackOps<float>::GeqrfSig>(LapackOp::geqrf, acc_geqrf_f, "Accelerate sgeqrf");
     acc_f.add<LapackOps<float>::OrgqrSig>(LapackOp::orgqr, acc_orgqr_f, "Accelerate sorgqr");
     acc_f.add<LapackOps<float>::GelsdSig>(LapackOp::gelsd, acc_gelsd_f, "Accelerate sgelsd");
+    acc_f.add<LapackOps<float>::GeevSig>(LapackOp::geev, acc_geev_f, "Accelerate sgeev");
 
     auto acc_d = LapackOps<double>::instance().backends(Backend::Accelerate);
     acc_d.add<LapackOps<double>::GesddSig>(LapackOp::gesdd, acc_gesdd_d, "Accelerate dgesdd");
@@ -306,6 +361,7 @@ namespace icl::math {
     acc_d.add<LapackOps<double>::GeqrfSig>(LapackOp::geqrf, acc_geqrf_d, "Accelerate dgeqrf");
     acc_d.add<LapackOps<double>::OrgqrSig>(LapackOp::orgqr, acc_orgqr_d, "Accelerate dorgqr");
     acc_d.add<LapackOps<double>::GelsdSig>(LapackOp::gelsd, acc_gelsd_d, "Accelerate dgelsd");
+    acc_d.add<LapackOps<double>::GeevSig>(LapackOp::geev, acc_geev_d, "Accelerate dgeev");
 
     return 0;
   }();

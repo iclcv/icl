@@ -346,6 +346,20 @@ namespace icl::math {
         If `eigenValueDst` is non-null the corresponding eigenvalue is written there
         — it is the natural quality signal (PCA cross-variance / DLT residual²). */
     DynMatrix eigenVector(bool largest = false, T *eigenValueDst = nullptr) const;
+    /// bundled result of the general (non-symmetric) eigendecomposition
+    /** valuesReal/valuesImag are N×1; vectorsReal/vectorsImag are N×N with
+        column j the (possibly complex) right eigenvector of eigenvalue
+        valuesReal[j] + i·valuesImag[j]. */
+    struct GeneralEigenResult {
+      DynMatrix valuesReal, valuesImag, vectorsReal, vectorsImag;
+    };
+    /// general eigendecomposition for non-symmetric matrices (LAPACK geev)
+    /** Unlike eigen() (symmetric only), handles arbitrary square matrices and
+        returns complex eigenpairs split into real/imaginary parts. The pure-C++
+        fallback computes eigenvalues for any matrix but eigenvectors only for the
+        REAL eigenvalues (complex-eigenvalue vectors are left zero); the LAPACK /
+        Eigen backends return everything. */
+    GeneralEigenResult eigenGeneral() const;
     /// singular value decomposition
     void svd(DynMatrix &U, DynMatrix &S, DynMatrix &V) const;
     /// bundled result of the returning svd() overload

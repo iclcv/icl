@@ -1,8 +1,18 @@
 # Model-Fitting Framework Plan (`icl/math/fit`)
 
-Status: **P0–P5 LANDED** (virtual dispatch, Configurable) — framework complete
-except Halíř–Flusser ellipse (blocked on a general/non-symmetric eigensolver, see
-§5 P3). Decisions taken: scope incrementally, virtual interfaces, Configurable.
+Status: **COMPLETE** — P0–P5 landed (virtual dispatch, Configurable) AND the
+previously-blocked Halíř–Flusser ellipse now done: a general non-symmetric
+eigensolver (`DynMatrix::eigenGeneral` / LAPACK `geev`) was added across all
+backends (Accelerate `dgeev`, Eigen `EigenSolver`, C++ Faddeev–LeVerrier fallback),
+unblocking it. Decisions taken: scope incrementally, virtual interfaces, Configurable.
+
+geev + ellipse landed: `LapackOp::geev` + `GeevSig` in the LapackOps backend split;
+`acc_geev_*` (sgeev/dgeev), `eigen_geev` (Eigen::EigenSolver), `cpp_geev`
+(Faddeev–LeVerrier char-poly + Durand–Kerner roots + null-space eigenvectors for the
+real eigenvalues). `DynMatrix::eigenGeneral()` returns split real/imag values+vectors.
+`HalirFlusserEllipseFitter` (PrimitiveFitters2D.h) — stable Fitzgibbon, guarantees an
+ellipse (4ac−b²>0), drop-in for EllipseFitter2D. Tested across all three backends via
+forced backend-select. Only remaining nice-to-have: orthogonal-basis PolynomialRegression.
 
 P5 landed: `icl/math/apps/model-fitting-playground.cpp` → `icl-model-fitting-playground`.
 Pick a method from the combo (algebraic / Taubin / RANSAC-MSAC / Taubin+RANSAC /

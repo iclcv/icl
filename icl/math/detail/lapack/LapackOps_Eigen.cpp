@@ -79,6 +79,26 @@ namespace icl::math {
       return 0;
     }
 
+    // ---- GEEV (general eigenvalue via Eigen EigenSolver) ----
+
+    template<class T>
+    int eigen_geev(int N, T* A, int lda, T* WR, T* WI, T* VRre, T* VRim, int ldvr) {
+      using RM = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+      Eigen::Map<RM> mA(A, N, N);
+      Eigen::EigenSolver<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> > solver(mA);
+      if(solver.info() != Eigen::Success) return -1;
+      auto evals = solver.eigenvalues();
+      auto evecs = solver.eigenvectors();
+      for(int j = 0; j < N; ++j){
+        WR[j] = evals(j).real(); WI[j] = evals(j).imag();
+        for(int i = 0; i < N; ++i){
+          VRre[i*ldvr+j] = evecs(i,j).real();
+          VRim[i*ldvr+j] = evecs(i,j).imag();
+        }
+      }
+      return 0;
+    }
+
     // ---- GETRF (LU factorization via Eigen PartialPivLU) ----
 
     template<class T>
@@ -258,6 +278,7 @@ namespace icl::math {
     eig_f.add<LapackOps<float>::GeqrfSig>(LapackOp::geqrf, eigen_geqrf<float>, "Eigen HouseholderQR");
     eig_f.add<LapackOps<float>::OrgqrSig>(LapackOp::orgqr, eigen_orgqr<float>, "Eigen form Q");
     eig_f.add<LapackOps<float>::GelsdSig>(LapackOp::gelsd, eigen_gelsd<float>, "Eigen BDCSVD solve");
+    eig_f.add<LapackOps<float>::GeevSig>(LapackOp::geev, eigen_geev<float>, "Eigen EigenSolver");
 
     auto eig_d = LapackOps<double>::instance().backends(Backend::Eigen);
     eig_d.add<LapackOps<double>::GesddSig>(LapackOp::gesdd, eigen_gesdd<double>, "Eigen JacobiSVD");
@@ -267,6 +288,7 @@ namespace icl::math {
     eig_d.add<LapackOps<double>::GeqrfSig>(LapackOp::geqrf, eigen_geqrf<double>, "Eigen HouseholderQR");
     eig_d.add<LapackOps<double>::OrgqrSig>(LapackOp::orgqr, eigen_orgqr<double>, "Eigen form Q");
     eig_d.add<LapackOps<double>::GelsdSig>(LapackOp::gelsd, eigen_gelsd<double>, "Eigen BDCSVD solve");
+    eig_d.add<LapackOps<double>::GeevSig>(LapackOp::geev, eigen_geev<double>, "Eigen EigenSolver");
 
     return 0;
   }();

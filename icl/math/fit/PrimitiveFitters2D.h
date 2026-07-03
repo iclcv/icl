@@ -97,4 +97,52 @@ namespace icl::math {
     int minSamples() const override { return 3; }
   };
 
+  /// Halíř–Flusser direct ellipse fit — numerically stable, guarantees an ellipse.
+  /** The stable form (Halíř & Flusser 1998) of Fitzgibbon's constrained fit: it
+      splits the scatter matrix to avoid inverting a singular block and imposes the
+      4ac−b² = 1 constraint, so the result is ALWAYS an ellipse — unlike
+      EllipseFitter2D's identity-constraint fit, which can return a hyperbola on
+      noisy / partial data. Needs a non-symmetric eigensolver (DynMatrix::eigenGeneral
+      / LAPACK geev). Model is the same [A,B,C,D,E,F] coefficient vector as
+      EllipseFitter2D (A·x²+B·xy+C·y²+D·x+E·y+F=0), so it drops in anywhere. */
+  class HalirFlusserEllipseFitter : public ModelFitter<utils::Point32f, std::vector<double> > {
+    public:
+    using Model = std::vector<double>;
+
+    Model fit(const std::vector<utils::Point32f> &pts) override {
+      const int N = int(pts.size());
+      DynMatrix<double> D1(N,3), D2(N,3);            // (rows,cols)
+      for(int i=0;i<N;++i){
+        const double x=pts[i].x, y=pts[i].y;
+        D1(i,0)=x*x; D1(i,1)=x*y; D1(i,2)=y*y;
+        D2(i,0)=x;   D2(i,1)=y;   D2(i,2)=1.0;
+      }
+      const DynMatrix<double> S1 = D1.transp()*D1;   // 3×3 quadratic scatter
+      const DynMatrix<double> S2 = D1.transp()*D2;   // 3×3
+      const DynMatrix<double> S3 = D2.transp()*D2;   // 3×3
+      const DynMatrix<double> T  = (S3.inv()*S2.transp()) * -1.0;   // T = -S3⁻¹ S2ᵀ
+      const DynMatrix<double> M  = S1 + S2*T;
+      // reduced system C1⁻¹·M with the ellipse constraint C1 = [[0,0,2],[0,-1,0],[2,0,0]]
+      DynMatrix<double> C1inv = DynMatrix<double>::create(3,3,0.0);
+      C1inv(0,2)=0.5; C1inv(1,1)=-1.0; C1inv(2,0)=0.5;
+      const DynMatrix<double> M2 = C1inv*M;
+
+      const auto e = M2.eigenGeneral();
+      Model a1(3, 0.0);                               // pick the eigenvector with 4ac−b²>0
+      for(int j=0;j<3;++j){
+        if(std::abs(e.valuesImag[j]) > 1e-9) continue;
+        const double v0=e.vectorsReal(0,j), v1=e.vectorsReal(1,j), v2=e.vectorsReal(2,j);
+        if(4.0*v0*v2 - v1*v1 > 0){ a1 = {v0,v1,v2}; break; }
+      }
+      DynMatrix<double> a1v(3,1); for(int i=0;i<3;++i) a1v[i]=a1[i];
+      const DynMatrix<double> a2 = T*a1v;             // [D,E,F] = T·[A,B,C]
+      return { a1[0], a1[1], a1[2], a2[0], a2[1], a2[2] };
+    }
+    double residual(const Model &m, const utils::Point32f &p) const override {
+      const double x=p.x, y=p.y;
+      return std::abs(m[0]*x*x + m[1]*x*y + m[2]*y*y + m[3]*x + m[4]*y + m[5]);
+    }
+    int minSamples() const override { return 5; }
+  };
+
 } // namespace icl::math

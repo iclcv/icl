@@ -10,7 +10,7 @@
 
 namespace icl::math {
   /// Selector keys for LAPACK backend dispatch.
-  enum class LapackOp : int { gesdd, syev, getrf, getri, geqrf, orgqr, gelsd };
+  enum class LapackOp : int { gesdd, syev, getrf, getri, geqrf, orgqr, gelsd, geev };
 
   ICLMath_API const char* toString(LapackOp op);
 
@@ -65,6 +65,14 @@ namespace icl::math {
     /// Returns info (0 = success).
     using GelsdSig = int(int M, int N, int NRHS, T* A, int lda,
                           T* B, int ldb, T* S, T rcond, int* rank);
+
+    /// General (non-symmetric) eigendecomposition: A * v = lambda * v.
+    /// A is N×N row-major (stride lda), destroyed. WR/WI (length N) receive the
+    /// real/imaginary parts of the eigenvalues. VR_re/VR_im are N×N row-major
+    /// (stride ldvr): column j holds the real / imaginary parts of the j-th right
+    /// eigenvector (paired with eigenvalue WR[j]+i·WI[j]). Returns info (0 = ok).
+    using GeevSig = int(int N, T* A, int lda, T* WR, T* WI,
+                        T* VR_re, T* VR_im, int ldvr);
 
     LapackOps();
     static LapackOps& instance();

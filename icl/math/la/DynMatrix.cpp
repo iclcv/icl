@@ -615,6 +615,28 @@ namespace icl::math {
   }
 
   template<class T>
+  typename DynMatrix<T>::GeneralEigenResult DynMatrix<T>::eigenGeneral() const{
+    ICLASSERT_THROW(cols() == rows(), InvalidMatrixDimensionException("eigenGeneral: input matrix is not square"));
+    const int n = cols();
+
+    auto* impl = LapackOps<T>::instance()
+        .template getSelector<typename LapackOps<T>::GeevSig>(LapackOp::geev)
+        .resolveOrThrow();
+
+    GeneralEigenResult r;
+    r.valuesReal.setBounds(1, n);  r.valuesImag.setBounds(1, n);
+    r.vectorsReal.setBounds(n, n); r.vectorsImag.setBounds(n, n);
+
+    DynMatrix<T> A = DynMatrix<T>::create(n, n);
+    std::copy(begin(), end(), A.begin());          // geev destroys its input
+    int info = impl->apply(n, A.data(), n,
+                           r.valuesReal.begin(), r.valuesImag.begin(),
+                           r.vectorsReal.begin(), r.vectorsImag.begin(), n);
+    if(info != 0) throw ICLException("general eigendecomposition failed (info=" + str(info) + ")");
+    return r;
+  }
+
+  template<class T>
   void DynMatrix<T>::svd(DynMatrix &V, DynMatrix &s, DynMatrix &U) const{
     svd_dyn<T>(*this,V,s,U);
   }

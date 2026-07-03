@@ -15,6 +15,7 @@
 #include <icl/math/fit/GeometricRefiners2D.h>
 #include <icl/math/fit/CMAESOptimizer.h>
 #include <icl/math/fit/PolynomialRegression.h>
+#include <icl/math/detail/lapack/LapackOps.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -1725,4 +1726,86 @@ ICL_REGISTER_TEST("math.fit.polynomial_regression_quadratic",
   ICL_TEST_NEAR(c[0],  2.0, 1e-6);
   ICL_TEST_NEAR(c[1], -3.0, 1e-6);
   ICL_TEST_NEAR(c[2],  1.0, 1e-6);
+}
+
+// General (non-symmetric) eigendecomposition via geev — real + complex spectra.
+ICL_REGISTER_TEST("math.dyn.eigen_general_geev",
+                  "eigenGeneral handles non-symmetric real and complex eigenvalues")
+{
+  // upper-triangular: real eigenvalues {2,3}, right eigenvectors [1,0] and [1,1]
+  DynMatrix<double> A = DynMatrix<double>::create(2,2,0.0);
+  A(0,0)=2; A(0,1)=1; A(1,1)=3;                 // operator()(row,col)
+  auto e = A.eigenGeneral();
+  std::vector<double> ev = { e.valuesReal[0], e.valuesReal[1] };
+  std::sort(ev.begin(), ev.end());
+  ICL_TEST_NEAR(ev[0], 2.0, 1e-9);
+  ICL_TEST_NEAR(ev[1], 3.0, 1e-9);
+  ICL_TEST_NEAR(e.valuesImag[0], 0.0, 1e-9);
+  // A*v == lambda*v for each (real) eigenpair
+  for(int j=0;j<2;++j){
+    const double l = e.valuesReal[j];
+    double v0=e.vectorsReal(0,j), v1=e.vectorsReal(1,j);
+    ICL_TEST_NEAR(A(0,0)*v0+A(0,1)*v1, l*v0, 1e-9);
+    ICL_TEST_NEAR(A(1,0)*v0+A(1,1)*v1, l*v1, 1e-9);
+  }
+  // rotation: eigenvalues ±i
+  DynMatrix<double> R = DynMatrix<double>::create(2,2,0.0);
+  R(0,1)=-1; R(1,0)=1;
+  auto er = R.eigenGeneral();
+  ICL_TEST_NEAR(er.valuesReal[0], 0.0, 1e-9);
+  ICL_TEST_NEAR(std::abs(er.valuesImag[0]), 1.0, 1e-9);
+}
+
+// geev across all registered backends (Accelerate/Eigen/C++ fallback) must agree
+// on a non-symmetric matrix with known eigenvalues {1,2,3}. Exercises the C++
+// Faddeev-LeVerrier fallback + null-space eigenvectors via forced backend select.
+ICL_REGISTER_TEST("math.dyn.eigen_general_backends",
+                  "eigenGeneral agrees across Accelerate / Eigen / C++ backends")
+{
+  DynMatrix<double> A = DynMatrix<double>::create(3,3,0.0);
+  A(0,0)=1; A(0,1)=4; A(0,2)=5;      // upper-triangular → eigenvalues 1,2,3
+  A(1,1)=2; A(1,2)=6;
+  A(2,2)=3;
+  auto &sel = LapackOps<double>::instance()
+                .getSelector<LapackOps<double>::GeevSig>(LapackOp::geev);
+  for(Backend b : { Backend::Cpp, Backend::Eigen, Backend::Accelerate }){
+    if(!sel.get(b)) continue;                    // backend not built on this platform
+    sel.force(b);
+    auto e = A.eigenGeneral();
+    std::vector<double> ev = { e.valuesReal[0], e.valuesReal[1], e.valuesReal[2] };
+    std::sort(ev.begin(), ev.end());
+    ICL_TEST_NEAR(ev[0], 1.0, 1e-6);
+    ICL_TEST_NEAR(ev[1], 2.0, 1e-6);
+    ICL_TEST_NEAR(ev[2], 3.0, 1e-6);
+    // real eigenvector for eigenvalue 1 must satisfy A v = v (first std basis vec)
+    int j1 = 0; for(int k=1;k<3;++k) if(std::abs(e.valuesReal[k]-1.0) < std::abs(e.valuesReal[j1]-1.0)) j1=k;
+    const double v0=e.vectorsReal(0,j1), v1=e.vectorsReal(1,j1), v2=e.vectorsReal(2,j1);
+    ICL_TEST_NEAR(A(0,0)*v0+A(0,1)*v1+A(0,2)*v2, 1.0*v0, 1e-6);
+    ICL_TEST_NEAR(A(1,0)*v0+A(1,1)*v1+A(1,2)*v2, 1.0*v1, 1e-6);
+    sel.unforce();
+  }
+}
+
+// Halíř–Flusser ellipse fit: recovers an axis-aligned ellipse AND guarantees the
+// result is an ellipse (4ac−b² > 0), which the identity-constraint fit does not.
+ICL_REGISTER_TEST("math.fit.halir_flusser_ellipse",
+                  "HalirFlusserEllipseFitter recovers an ellipse and stays elliptic")
+{
+  HalirFlusserEllipseFitter fit;
+  const double A = 8, B = 3;                    // semi-axes, centred at origin
+  std::vector<Point32f> pts;
+  for(int i=0;i<50;++i){
+    const double t = i*2*M_PI/50;
+    pts.push_back(Point32f(A*std::cos(t), B*std::sin(t)));
+  }
+  const std::vector<double> m = fit.fit(pts);   // [A,B,C,D,E,F]
+  ICL_TEST_TRUE(m.size() == 6u);
+  ICL_TEST_TRUE(4*m[0]*m[2] - m[1]*m[1] > 0);   // it IS an ellipse
+  ICL_TEST_TRUE(std::abs(m[0]) > 1e-12);
+  // normalise by the x² coeff; rotation + linear terms vanish, y²/x² = A²/B²
+  const double xy=m[1]/m[0], yy=m[2]/m[0], x=m[3]/m[0], y=m[4]/m[0];
+  ICL_TEST_NEAR(xy, 0.0, 1e-4);
+  ICL_TEST_NEAR(x,  0.0, 1e-4);
+  ICL_TEST_NEAR(y,  0.0, 1e-4);
+  ICL_TEST_NEAR(yy, (A*A)/(B*B), 1e-3);
 }

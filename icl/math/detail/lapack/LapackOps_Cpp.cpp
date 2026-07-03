@@ -12,6 +12,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <complex>
 
 using namespace icl::utils;
 
@@ -363,6 +364,81 @@ namespace icl::math {
     }
 
     // ================================================================
+    // GEEV: general (non-symmetric) eigendecomposition, C++ fallback.
+    // Eigenvalues via Faddeev–LeVerrier characteristic polynomial + Durand–Kerner
+    // (Weierstrass) simultaneous root finding. Eigenvectors are computed only for
+    // the REAL eigenvalues, as the homogeneous null-space of (A - λI) (smallest
+    // eigenvector of (A-λI)ᵀ(A-λI) via cpp_syev); complex-eigenvalue vectors are
+    // left zero. Adequate for the small matrices this fallback ever sees; the
+    // LAPACK / Eigen backends provide the full complex spectrum.
+    // ================================================================
+
+    // roots of a monic polynomial c[0]xⁿ + c[1]xⁿ⁻¹ + … + c[n] (c[0]==1)
+    static std::vector<std::complex<double>> durand_kerner(const std::vector<double>& c, int n) {
+      using cd = std::complex<double>;
+      auto peval = [&](cd x){ cd r = 0; for(int i = 0; i <= n; ++i) r = r*x + c[i]; return r; };
+      std::vector<cd> z(n);
+      cd seed(0.4, 0.9), p(1, 0);
+      for(int k = 0; k < n; ++k){ p *= seed; z[k] = p; }
+      for(int it = 0; it < 500; ++it){
+        double maxd = 0;
+        for(int k = 0; k < n; ++k){
+          cd denom(1, 0);
+          for(int j = 0; j < n; ++j) if(j != k) denom *= (z[k] - z[j]);
+          if(std::abs(denom) < 1e-300) continue;
+          const cd delta = peval(z[k]) / denom;
+          z[k] -= delta;
+          maxd = std::max(maxd, std::abs(delta));
+        }
+        if(maxd < 1e-14) break;
+      }
+      return z;
+    }
+
+    template<class T>
+    int cpp_geev(int N, T* A, int lda, T* WR, T* WI, T* VRre, T* VRim, int ldvr) {
+      std::vector<double> a(N*N);
+      for(int i = 0; i < N; ++i) for(int j = 0; j < N; ++j) a[i*N+j] = double(A[i*lda+j]);
+
+      // Faddeev–LeVerrier: monic characteristic polynomial coefficients c[0..N]
+      std::vector<double> M(N*N, 0.0), AM(N*N), c(N+1, 0.0);
+      for(int i = 0; i < N; ++i) M[i*N+i] = 1.0;
+      c[0] = 1.0;
+      for(int k = 1; k <= N; ++k){
+        for(int i = 0; i < N; ++i) for(int j = 0; j < N; ++j){
+          double s = 0; for(int r = 0; r < N; ++r) s += a[i*N+r]*M[r*N+j];
+          AM[i*N+j] = s;
+        }
+        double tr = 0; for(int i = 0; i < N; ++i) tr += AM[i*N+i];
+        c[k] = -tr/k;
+        M = AM; for(int i = 0; i < N; ++i) M[i*N+i] += c[k];
+      }
+
+      const std::vector<std::complex<double>> roots = durand_kerner(c, N);
+      for(int j = 0; j < N; ++j){
+        const double re = roots[j].real(), im = roots[j].imag();
+        WR[j] = T(re); WI[j] = T(im);
+        for(int i = 0; i < N; ++i){ VRre[i*ldvr+j] = T(0); VRim[i*ldvr+j] = T(0); }
+        if(std::abs(im) < 1e-9*(1.0+std::abs(re))){
+          // real eigenvector = null-space of (A - λI) : smallest eigenvector of BᵀB
+          std::vector<double> S(N*N), W(N);
+          for(int p = 0; p < N; ++p) for(int q = 0; q < N; ++q){
+            double s = 0;
+            for(int r = 0; r < N; ++r){
+              const double brp = a[r*N+p] - (r==p ? re : 0.0);
+              const double brq = a[r*N+q] - (r==q ? re : 0.0);
+              s += brp*brq;
+            }
+            S[p*N+q] = s;
+          }
+          cpp_syev<double>('V', N, S.data(), N, W.data());   // descending: smallest at N-1
+          for(int i = 0; i < N; ++i) VRre[i*ldvr+j] = T(S[i*N + (N-1)]);
+        }
+      }
+      return 0;
+    }
+
+    // ================================================================
     // GETRF: LU factorization with partial pivoting
     // A = P * L * U. A is overwritten with L (unit lower) and U (upper).
     // ipiv uses 1-based indexing (LAPACK convention).
@@ -634,6 +710,7 @@ namespace icl::math {
     cpp_f.add<LapackOps<float>::GeqrfSig>(LapackOp::geqrf, cpp_geqrf<float>, "C++ Householder QR");
     cpp_f.add<LapackOps<float>::OrgqrSig>(LapackOp::orgqr, cpp_orgqr<float>, "C++ form Q");
     cpp_f.add<LapackOps<float>::GelsdSig>(LapackOp::gelsd, cpp_gelsd<float>, "C++ SVD least-squares");
+    cpp_f.add<LapackOps<float>::GeevSig>(LapackOp::geev, cpp_geev<float>, "C++ Faddeev-LeVerrier eigen");
 
     auto cpp_d = LapackOps<double>::instance().backends(Backend::Cpp);
     cpp_d.add<LapackOps<double>::GesddSig>(LapackOp::gesdd, cpp_gesdd<double>, "C++ Golub-Kahan SVD");
@@ -643,6 +720,7 @@ namespace icl::math {
     cpp_d.add<LapackOps<double>::GeqrfSig>(LapackOp::geqrf, cpp_geqrf<double>, "C++ Householder QR");
     cpp_d.add<LapackOps<double>::OrgqrSig>(LapackOp::orgqr, cpp_orgqr<double>, "C++ form Q");
     cpp_d.add<LapackOps<double>::GelsdSig>(LapackOp::gelsd, cpp_gelsd<double>, "C++ SVD least-squares");
+    cpp_d.add<LapackOps<double>::GeevSig>(LapackOp::geev, cpp_geev<double>, "C++ Faddeev-LeVerrier eigen");
 
     return 0;
   }();

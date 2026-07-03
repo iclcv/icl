@@ -46,6 +46,7 @@ namespace icl::math {
       case LapackOp::geqrf: return "geqrf";
       case LapackOp::orgqr: return "orgqr";
       case LapackOp::gelsd: return "gelsd";
+      case LapackOp::geev:  return "geev";
     }
     return "?";
   }
@@ -59,6 +60,7 @@ namespace icl::math {
     addSelector<GeqrfSig>(LapackOp::geqrf);
     addSelector<OrgqrSig>(LapackOp::orgqr);
     addSelector<GelsdSig>(LapackOp::gelsd);
+    addSelector<GeevSig>(LapackOp::geev);
   }
 
   template<class T>
