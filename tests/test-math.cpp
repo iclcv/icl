@@ -1871,3 +1871,47 @@ ICL_REGISTER_TEST("math.fit.cmaes_superquadric_shape",
   ICL_TEST_NEAR(r.params[3], E1, 0.15);
   ICL_TEST_NEAR(r.params[4], E2, 0.15);
 }
+
+ICL_REGISTER_TEST("math.fit.cmaes_superquadric_trimmed",
+                  "trimmed (LTS) Solina cost recovers a superquadric despite 40% gross outliers")
+{
+  using V = std::vector<double>;
+  const double A=3.0, B=2.0, C=1.4, E1=0.7, E2=0.8;
+  auto sgnpow = [](double base, double e){ return (base<0?-1.0:1.0)*std::pow(std::abs(base), e); };
+
+  std::vector<std::array<double,3>> pts;
+  for(int i=1;i<12;++i) for(int j=0;j<24;++j){          // 264 inliers on the SQ surface
+    const double eta = -M_PI/2 + M_PI*i/12.0, om = -M_PI + 2*M_PI*j/24.0;
+    pts.push_back({ A*sgnpow(std::cos(eta),E1)*sgnpow(std::cos(om),E2),
+                    B*sgnpow(std::cos(eta),E1)*sgnpow(std::sin(om),E2),
+                    C*sgnpow(std::sin(eta),E1) });
+  }
+  const int nIn = (int)pts.size();
+  uint32_t seed = 12345u;                                // deterministic LCG for outliers
+  auto rnd = [&]{ seed = seed*1664525u + 1013904223u; return (double)seed / 4294967296.0; };
+  const int nOut = 176;                                  // → 40% of 440 total
+  for(int i=0;i<nOut;++i) pts.push_back({ -5+10*rnd(), -5+10*rnd(), -5+10*rnd() });
+
+  const int keep = nIn;                                  // trim to the inlier count
+  std::vector<double> r2; r2.reserve(pts.size());
+  auto cost = [&](const V &p)->double{
+    const double a=std::abs(p[0])+1e-3, b=std::abs(p[1])+1e-3, c=std::abs(p[2])+1e-3;
+    const double e1=std::min(2.0,std::max(0.1,p[3])), e2=std::min(2.0,std::max(0.1,p[4]));
+    r2.clear();
+    for(const auto &q : pts){
+      const double f = std::pow(std::pow(std::abs(q[0]/a),2/e2) + std::pow(std::abs(q[1]/b),2/e2), e2/e1)
+                     + std::pow(std::abs(q[2]/c),2/e1);
+      const double r = std::sqrt(a*b*c)*(std::pow(f,e1/2)-1);
+      r2.push_back(r*r);
+    }
+    std::nth_element(r2.begin(), r2.begin()+keep, r2.end());
+    double s=0; for(int i=0;i<keep;++i) s+=r2[i]; return s;
+  };
+  CMAESOptimizer<V> opt(4000, 0.4, 1e-12);
+  const auto r = opt.minimize(cost, V{2.5, 2.5, 2.5, 1.0, 1.0});
+  ICL_TEST_NEAR(std::abs(r.params[0]), A, 0.2);
+  ICL_TEST_NEAR(std::abs(r.params[1]), B, 0.2);
+  ICL_TEST_NEAR(std::abs(r.params[2]), C, 0.2);
+  ICL_TEST_NEAR(r.params[3], E1, 0.2);
+  ICL_TEST_NEAR(r.params[4], E2, 0.2);
+}

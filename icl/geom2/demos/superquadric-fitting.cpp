@@ -21,6 +21,8 @@
 #include <iomanip>
 #include <sstream>
 #include <cmath>
+#include <algorithm>
+#include <vector>
 
 using namespace icl::math;
 using namespace icl::geom2;
@@ -45,7 +47,7 @@ static std::vector<Vec> sqSurface(double a,double b,double c,double e1,double e2
 }
 
 // ---- shared input snapshot (GUI thread writes, worker reads) ----
-struct Inputs { double a,b,c,e1,e2; int num,outPct; float noise; };
+struct Inputs { double a,b,c,e1,e2; int num,outPct; float noise; int keepPct; };
 static std::mutex        in_mtx;
 static Inputs            g_in;
 static std::atomic<bool> g_dirty{true};
@@ -54,7 +56,8 @@ static CMAESOptimizer<std::vector<double>> sq_opt(1500, 0.4, 1e-12);
 static void onInputsChanged(){                     // GUI thread — cheap, non-blocking
   std::scoped_lock lock(in_mtx);
   g_in = { gui["sa"], gui["sb"], gui["sc"], gui["se1"], gui["se2"],
-           gui["num"].as<int>(), gui["outliers"].as<int>(), gui["noise"].as<float>() };
+           gui["num"].as<int>(), gui["outliers"].as<int>(), gui["noise"].as<float>(),
+           gui["keep"].as<int>() };
   g_dirty = true;
 }
 
@@ -72,6 +75,7 @@ void init(){
               << Slider(60,600,240,{.handle="num", .label="points"})
               << FSlider(0.f,0.3f,0.03f,{.handle="noise", .label="noise"})
               << Slider(0,60,0,{.handle="outliers", .label="outlier %"})
+              << Slider(40,100,70,{.handle="keep", .label="trim keep %"})
               << Label("",{.handle="stats"})))
       << Show();
 
@@ -85,7 +89,7 @@ void init(){
   propGUI.create();
   gui.get<BoxHandle>("props").add(propGUI.getRootWidget());
 
-  for(const char *h : {"sa","sb","sc","se1","se2","num","noise","outliers"})
+  for(const char *h : {"sa","sb","sc","se1","se2","num","noise","outliers","keep"})
     gui[h].registerCallback([]{ onInputsChanged(); });
   onInputsChanged();
 }
@@ -104,14 +108,35 @@ void run(){                                        // worker thread — the heav
                       in.c*sgnpow(std::sin(e),in.e1)+(float)gn, 1)); }
   for(int i=good;i<in.num;++i) pts.push_back(Vec(obox,obox,obox,1));
 
-  // CMA-ES fit of (a,b,c,e1,e2), centred axis-aligned, Solina inside-outside error
-  double ex=1e-3,ey=1e-3,ez=1e-3; for(const auto&p:pts){ ex=std::max(ex,(double)std::abs(p[0]));
-    ey=std::max(ey,(double)std::abs(p[1])); ez=std::max(ez,(double)std::abs(p[2])); }
+  // Number of residuals to keep (LTS trim level). keep==num (100%) is plain
+  // least-squares; lowering it below the inlier fraction rejects outliers.
+  const int keep = std::max(1, std::min((int)pts.size(),
+                                        (int)std::llround(pts.size() * in.keepPct / 100.0)));
+
+  // CMA-ES fit of (a,b,c,e1,e2), centred axis-aligned, Solina inside-outside error.
+  // Robust initial extents: the keep-th smallest |coord| per axis, so outliers
+  // don't inflate the starting size (a plain max would seed a,b,c from an outlier).
+  auto robExtent=[&](int ax)->double{
+    std::vector<double> v; v.reserve(pts.size());
+    for(const auto&q:pts) v.push_back((double)std::abs(q[ax]));
+    const int idx=std::max(0,std::min((int)v.size()-1,keep-1));
+    std::nth_element(v.begin(), v.begin()+idx, v.end());
+    return std::max(1e-3, v[idx]);
+  };
+  const double ex=robExtent(0), ey=robExtent(1), ez=robExtent(2);
+
+  // Trimmed (LTS-style) cost: keep only the `keep` smallest squared residuals so
+  // gross outliers never enter the objective.
+  std::vector<double> r2; r2.reserve(pts.size());  // reused across evals (fit is sequential)
   auto cost=[&](const std::vector<double>&p)->double{
     const double a=std::abs(p[0])+1e-3,b=std::abs(p[1])+1e-3,c=std::abs(p[2])+1e-3;
     const double e1=std::min(2.0,std::max(0.1,p[3])), e2=std::min(2.0,std::max(0.1,p[4]));
-    double s=0; for(const auto&q:pts){ const double f=sqInsideOut(q[0],q[1],q[2],a,b,c,e1,e2);
-      const double r=std::sqrt(a*b*c)*(std::pow(f,e1/2)-1); s+=r*r; } return s;
+    r2.clear();
+    for(const auto&q:pts){ const double f=sqInsideOut(q[0],q[1],q[2],a,b,c,e1,e2);
+      const double r=std::sqrt(a*b*c)*(std::pow(f,e1/2)-1); r2.push_back(r*r); }
+    if(keep < (int)r2.size())
+      std::nth_element(r2.begin(), r2.begin()+keep, r2.end());
+    double s=0; for(int i=0;i<keep;++i) s+=r2[i]; return s;
   };
   const Time t0=Time::now();
   const auto res = sq_opt.minimize(cost, std::vector<double>{ex,ey,ez,1.0,1.0});
@@ -128,8 +153,8 @@ void run(){                                        // worker thread — the heav
 
   std::ostringstream st; st<<std::fixed<<std::setprecision(2)
     <<"fit  size ("<<fa<<", "<<fb<<", "<<fc<<")  e ("<<fe1<<", "<<fe2<<")\n"
-    <<"true size ("<<in.a<<", "<<in.b<<", "<<in.c<<")  e ("<<in.e1<<", "<<in.e2<<")   "
-    <<std::setprecision(0)<<ms<<" ms";
+    <<"true size ("<<in.a<<", "<<in.b<<", "<<in.c<<")  e ("<<in.e1<<", "<<in.e2<<")\n"
+    <<std::setprecision(0)<<"kept "<<keep<<"/"<<in.num<<" pts   "<<ms<<" ms";
   gui["stats"] = st.str();
 }
 
