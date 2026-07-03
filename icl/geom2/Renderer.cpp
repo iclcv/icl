@@ -1587,10 +1587,16 @@ void main() { }
     }
     glActiveTexture(GL_TEXTURE0);
 
-    // Render scene
-    for (auto &node : nodes) {
-      renderNode(node.get(), viewMatrix);
-    }
+    // Render scene in two passes for correct transparency: opaque objects first
+    // (write depth), then translucent objects with depth writes OFF so they blend
+    // over whatever is behind them instead of occluding it. (No back-to-front
+    // sort between translucent objects yet — fine for the plot's few overlays.)
+    for (auto &node : nodes)
+      renderNode(node.get(), viewMatrix, /*pass=*/0);
+    glDepthMask(GL_FALSE);
+    for (auto &node : nodes)
+      renderNode(node.get(), viewMatrix, /*pass=*/1);
+    glDepthMask(GL_TRUE);
 
     // Unbind shadow maps
     for (int s = 0; s < numShadows; s++) {
@@ -1647,7 +1653,7 @@ void main() { }
     }
   }
 
-  void Renderer::renderNode(Node *node, const Mat &viewMatrix) {
+  void Renderer::renderNode(Node *node, const Mat &viewMatrix, int pass) {
     if (!node || !node->isVisible()) return;
 
     Mat modelMatrix = node->getTransformation(true);
@@ -1657,10 +1663,11 @@ void main() { }
 
     if (auto *group = dynamic_cast<GroupNode*>(node)) {
       for (int i = 0; i < group->getChildCount(); i++) {
-        renderNode(group->getChild(i), viewMatrix);
+        renderNode(group->getChild(i), viewMatrix, pass);
       }
     }
     else if (auto *pcn = dynamic_cast<PointCloudNode*>(node)) {
+      if (pass != 0) return;  // point clouds render in the opaque pass
       auto cloud = pcn->getPointCloud();
       if (cloud && cloud->getDim() > 0 && m_data->unlitProgram) {
         auto &pc = m_data->pcCache[pcn];
@@ -1692,6 +1699,14 @@ void main() { }
       }
     }
     else if (auto *geom = dynamic_cast<GeometryNode*>(node)) {
+      // Classify by fill (material base-colour) alpha: translucent fills draw in
+      // pass 1, everything else in pass 0. Text billboards keep alpha 1 on the
+      // base colour (their transparency lives in the glyph texture) so they stay
+      // in the opaque pass; only real see-through fills (hover plane, surf) move.
+      auto matCls = geom->getMaterial();
+      const bool translucent = matCls && matCls->baseColor[3] < 0.999f;
+      if (translucent != (pass == 1)) return;
+
       auto &cache = m_data->cache[geom];
       if (!cache) cache = std::make_unique<GeomCache>();
       cache->ensureBuilt(geom);

@@ -79,7 +79,7 @@ namespace icl::geom2 {
     std::unique_ptr<Data> m_data;
 
     void ensureShaderCompiled();
-    void renderNode(Node *node, const Mat &viewMatrix);
+    void renderNode(Node *node, const Mat &viewMatrix, int pass = 0);
     void renderNodeShadow(Node *node);
   };
 

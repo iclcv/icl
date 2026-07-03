@@ -16,6 +16,8 @@
 #include <icl/geom/Camera.h>
 #include <icl/qt/GUIWidget.h>
 #include <icl/qt/GLCallback.h>
+#include <icl/qt/MouseHandler.h>
+#include <icl/qt/MouseEvent.h>
 #include <icl/math/transform/LinearTransform1D.h>
 #include <icl/utils/dispatch/AssignRegistry.h>
 #include <algorithm>
@@ -46,6 +48,13 @@ namespace icl {
       Range32f frameRanges[3];
       int cornerSign[3] = { -1, -1, -1 };  // box corner the tick-edges meet at
       std::shared_ptr<qt::GLCallback> glCallback;  // camera-tracking render hook
+
+      // --- hover: perpendicular section plane under the cursor ---
+      std::shared_ptr<MeshNode> hoverPlane;
+      std::shared_ptr<qt::MouseHandler> hoverHandler;
+      int  hoverAxis = -1;
+      float hoverC = 0;
+      bool hoverVisible = false;
 
       float pointsize = 1, linewidth = 1;
       bool smoothfill = true;
@@ -127,6 +136,81 @@ namespace icl {
         detail::placePlotAxes(axes, cornerSign[0], cornerSign[1], cornerSign[2]);
       }
 
+      // --- hover section plane ---
+
+      // Screen-space pick: is the cursor (normalized 0..1) near one of the three
+      // tick edges? If so, return the axis and the box coord [-1,1] under it.
+      bool pickHover(float rx, float ry, int &axOut, float &cOut) {
+        const Camera &cam = scene.getCamera(0);
+        const float W = cam.getResolution().width;
+        const float H = cam.getResolution().height;
+        const Point32f cur(rx * W, ry * H);
+        int best = -1; float bestSD = 1e9f, bestT = 0;
+        for (int ax = 0; ax < 3; ++ax) {
+          Vec P0(0,0,0,1), P1(0,0,0,1);
+          for (int m = 0; m < 3; ++m) {
+            P0[m] = (m == ax) ? -1.f : (float)cornerSign[m];
+            P1[m] = (m == ax) ?  1.f : (float)cornerSign[m];
+          }
+          const Point32f a = cam.project(P0), b = cam.project(P1);
+          const float abx = b.x - a.x, aby = b.y - a.y;
+          const float L2 = abx*abx + aby*aby;
+          if (L2 < 1e-6f) continue;
+          float t = ((cur.x - a.x)*abx + (cur.y - a.y)*aby) / L2;
+          t = std::max(0.f, std::min(1.f, t));
+          const float dx = cur.x - (a.x + t*abx), dy = cur.y - (a.y + t*aby);
+          const float sd = std::sqrt(dx*dx + dy*dy);
+          if (sd < bestSD) { bestSD = sd; best = ax; bestT = t; }
+        }
+        if (best >= 0 && bestSD < 14.f) { axOut = best; cOut = -1.f + 2.f*bestT; return true; }
+        return false;
+      }
+
+      // (Re)build the translucent section plane perpendicular to axis \a ax at
+      // box coord \a c: a filled quad (20% alpha) + a tick-aligned grid (50%).
+      void buildHoverPlane(int ax, float c) {
+        const int j = (ax+1)%3, k = (ax+2)%3;
+        auto P = [&](float vj, float vk) { Vec p(0,0,0,1); p[ax]=c; p[j]=vj; p[k]=vk; return p; };
+        static const GeomColor line(0, 120, 255, 128);
+        hoverPlane->clearGeometry();
+        hoverPlane->addVertex(P(-1,-1), line); hoverPlane->addVertex(P(1,-1), line);
+        hoverPlane->addVertex(P(1,1), line);   hoverPlane->addVertex(P(-1,1), line);
+        hoverPlane->addQuad(0, 1, 2, 3);
+        int base = 4;
+        for (int t = 0; t <= 10; ++t) {
+          const float p = -1.f + 0.2f*t;
+          hoverPlane->addVertex(P(-1, p), line); hoverPlane->addVertex(P(1, p), line);
+          hoverPlane->addLine(base, base+1, line); base += 2;
+          hoverPlane->addVertex(P(p, -1), line); hoverPlane->addVertex(P(p, 1), line);
+          hoverPlane->addLine(base, base+1, line); base += 2;
+        }
+        hoverPlane->createAutoNormals(false);
+        hoverPlane->setPrimitiveVisible(PrimVertex, false);
+        hoverPlane->setVisible(true);
+      }
+
+      // Returns true if the visible state changed (→ caller repaints).
+      bool updateHover(float rx, float ry) {
+        std::scoped_lock lock(scene);
+        int ax; float c;
+        if (pickHover(rx, ry, ax, c)) {
+          if (hoverVisible && ax == hoverAxis && std::abs(c - hoverC) < 1e-3f) return false;
+          buildHoverPlane(ax, c);
+          hoverAxis = ax; hoverC = c; hoverVisible = true;
+          return true;
+        }
+        if (!hoverVisible) return false;
+        hoverPlane->setVisible(false); hoverVisible = false;
+        return true;
+      }
+
+      bool hideHover() {
+        std::scoped_lock lock(scene);
+        if (!hoverVisible) return false;
+        hoverPlane->setVisible(false); hoverVisible = false;
+        return true;
+      }
+
       // recompute root transform (data viewport -> [-1,1]^3) + retic
       void recompute() {
         updateBounds();
@@ -178,6 +262,15 @@ namespace icl {
           if (inner) inner->draw(w);
         }
       };
+      // Passive mouse handler: forwards every event to fn and never consumes it
+      // (installed BEFORE the camera handler so hover is seen even during drags).
+      struct FnMouseHandler : qt::MouseHandler {
+        std::function<void(const qt::MouseEvent &)> fn;
+        qt::MouseResult process(const qt::MouseEvent &e) override {
+          if (fn) fn(e);
+          return qt::MouseResult::Forward;
+        }
+      };
     }
 
     PlotWidget3D::PlotWidget3D(QWidget *parent) : ICLDrawWidget3D(parent), m_data(new Data) {
@@ -189,6 +282,17 @@ namespace icl {
       // for 3D — the textbook axis triad (see plot-orient-tuner to re-dial these).
       m_data->scene.addCamera(Camera::lookAt(Vec(2.5, 2.5, 7, 1), Vec(0, 0, 0, 1),
                                              Vec(0, 1, 0, 1), Size(640, 480), 30.0f));
+      // hover handler first so it sees every event (incl. drags) and Forwards it
+      { auto mh = std::make_shared<FnMouseHandler>();
+        Data *d = m_data; PlotWidget3D *self = this;
+        mh->fn = [d, self](const qt::MouseEvent &e) {
+          const bool changed = (e.getType() == qt::MouseMoveEvent)
+              ? d->updateHover(e.getRelPos().x, e.getRelPos().y)
+              : d->hideHover();
+          if (changed) self->render();
+        };
+        m_data->hoverHandler = mh;
+        install(mh.get()); }
       install(m_data->scene.getMouseHandler(0));
       { auto hooked = std::make_shared<HookedGLCallback>();
         hooked->inner = m_data->scene.getGLCallback(0);
@@ -203,6 +307,13 @@ namespace icl {
       // box wireframe (8 corners of the [-1,1]^3 cube)
       m_data->box = detail::makePlotBox();
       m_data->coordinateFrame->addChild(m_data->box);
+
+      // hover section plane (hidden until the cursor points at an axis)
+      m_data->hoverPlane = std::make_shared<MeshNode>();
+      m_data->hoverPlane->setMaterial(
+        Material::fromColors(GeomColor(0, 120, 255, 51), GeomColor(0, 120, 255, 128)));
+      m_data->hoverPlane->setVisible(false);
+      m_data->coordinateFrame->addChild(m_data->hoverPlane);
 
       m_data->scene.addNode(m_data->coordinateFrame);  // first: drives retic
       m_data->scene.addNode(m_data->rootObject);
