@@ -7,6 +7,8 @@
 #include <icl/markers/CheckerboardTarget.h>
 #include <icl/markers/CodedCheckerboardTarget.h>
 #include <icl/markers/MarkerGridTarget.h>
+#include <icl/markers/FiducialDetector.h>         // black-cell coded: pp.filter=dilatation
+#include <icl/markers/FiducialDetectorPlugin.h>   // getPlugin()->setPropertyValue
 #include <icl/geom2/CheckerboardNode.h>
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom/Material.h>
@@ -39,72 +41,107 @@ namespace icl::calibintr {
     return "target";
   }
 
+  // marker-grid overall bounds (outer marker edge to outer marker edge) [mm]
+  static Size32f markerGridBounds(const TargetSpec &s) {
+    return Size32f(s.gridCells.width  * s.markerMM.width  + (s.gridCells.width  - 1) * s.markerGapMM,
+                   s.gridCells.height * s.markerMM.height + (s.gridCells.height - 1) * s.markerGapMM);
+  }
+
+  // Pick a coded-marker preset big enough for the board's coded cells (we code the
+  // full board incl. the outer ring → ≈ cols·rows/2 cells).
+  static markers::SquareBCHPreset codedPreset(const TargetSpec &s) {
+    const int cells = std::max(0, (s.cols * s.rows) / 2);           // upper bound on coded cells
+    return cells > 60 ? markers::SquareBCHPreset::BCH_6x6_t4_RS      // 4096 ids
+                      : markers::SquareBCHPreset::BCH_4x4_t2_RS;     // 64 ids (compact)
+  }
+
   std::unique_ptr<markers::CalibrationTarget> makeTarget(const TargetSpec &s) {
     switch (s.type) {
       case TargetType::Checkerboard:
         return std::make_unique<markers::CheckerboardTarget>(s.cols, s.rows, s.squareMM);
-      case TargetType::Coded:
-        return std::make_unique<markers::CodedCheckerboardTarget>(s.cols, s.rows, s.squareMM);
-      case TargetType::MarkerGrid: {
-        const Size32f bounds(s.gridCells.width  * s.markerMM.width  + (s.gridCells.width  - 1) * s.markerGapMM,
-                             s.gridCells.height * s.markerMM.height + (s.gridCells.height - 1) * s.markerGapMM);
-        return std::make_unique<markers::MarkerGridTarget>(s.gridCells, s.markerMM, bounds);
+      case TargetType::Coded: {
+        auto t = std::make_unique<markers::CodedCheckerboardTarget>(
+                   s.cols, s.rows, s.squareMM, 0.62f, codedPreset(s),
+                   s.codedBlackCells ? markers::MarkerCells::Black : markers::MarkerCells::White,
+                   /*includeBorderMarkers=*/true);   // code the outer ring too (edge/partial coverage)
+        if (s.codedBlackCells) {
+          // black-cell markers touch diagonally → one connected black lattice the
+          // quad detector can't segment. A dilatation pre-filter grows white and
+          // breaks the diagonal joins so they become detectable (see S96).
+          if (markers::FiducialDetector *fd = t->markerDetector())
+            if (auto *pl = fd->getPlugin()) pl->setPropertyValue("pp.filter", "dilatation");
+        }
+        return t;
       }
+      case TargetType::MarkerGrid:
+        return std::make_unique<markers::MarkerGridTarget>(s.gridCells, s.markerMM, markerGridBounds(s));
     }
     return nullptr;
   }
 
-  // A flat textured quad (matte paper) of the given physical size, textured with a
-  // grey pattern. Origin-centred in the local z=0 plane, normal +Z.
-  static geom2::NodePtr buildTexturedQuad(const Img8u &gray, float widthMM, float heightMM) {
-    auto node = std::make_shared<geom2::MeshNode>();
+  // Grey board texture + its physical size for a coded / marker-grid spec. Returns
+  // false for a checkerboard (that uses a CheckerboardNode, not a textured quad).
+  static bool boardTexture(const TargetSpec &s, Img8u &gray, float &W, float &H) {
+    std::unique_ptr<markers::CalibrationTarget> t;
+    try { t = makeTarget(s); } catch (...) { return false; }
+    if (!t) return false;
+    if (s.type == TargetType::Coded) {
+      const float aspect = float(s.rows + 2) / float(s.cols + 2);
+      gray = t->generate(Size(700, (int)std::lround(700 * aspect)));
+      W = (s.cols + 2) * s.squareMM; H = (s.rows + 2) * s.squareMM;   // 1-cell border
+      return true;
+    }
+    if (s.type == TargetType::MarkerGrid) {
+      const Size32f b = markerGridBounds(s);
+      const float aspect = b.height / b.width;
+      gray = t->generate(Size(512, (int)std::lround(512 * aspect)));
+      W = b.width; H = b.height;   // NB generate() may add a margin → approximate scale
+      return true;
+    }
+    return false;
+  }
+
+  // (Re)populate a MeshNode as a flat matte quad of the given physical size textured
+  // with \a gray. Reuses the existing material across rebuilds (stable pointer → no
+  // freed-then-reused-Material* stale-cache hazard).
+  static void populateQuad(geom2::MeshNode &node, const Img8u &gray, float W, float H) {
     Img8u rgb(gray.getSize(), formatRGB);
     for (int c = 0; c < 3; ++c) std::copy(gray.begin(0), gray.end(0), rgb.begin(c));
 
-    const float W = widthMM, H = heightMM;
-    node->addVertex(Vec(-W/2,  H/2, 0, 1));   // TL (UV 0,0)
-    node->addVertex(Vec( W/2,  H/2, 0, 1));   // TR (UV 1,0)
-    node->addVertex(Vec( W/2, -H/2, 0, 1));   // BR (UV 1,1)
-    node->addVertex(Vec(-W/2, -H/2, 0, 1));   // BL (UV 0,1)
-    for (int i = 0; i < 4; ++i) node->addNormal(Vec(0, 0, 1, 1));
-    node->addTexCoord(0, 0); node->addTexCoord(1, 0);
-    node->addTexCoord(1, 1); node->addTexCoord(0, 1);
-    node->addQuad(0, 1, 2, 3,  0, 1, 2, 3,  0, 1, 2, 3);
+    node.clearGeometry();
+    node.addVertex(Vec(-W/2,  H/2, 0, 1));   // TL (UV 0,0)
+    node.addVertex(Vec( W/2,  H/2, 0, 1));   // TR (UV 1,0)
+    node.addVertex(Vec( W/2, -H/2, 0, 1));   // BR (UV 1,1)
+    node.addVertex(Vec(-W/2, -H/2, 0, 1));   // BL (UV 0,1)
+    for (int i = 0; i < 4; ++i) node.addNormal(Vec(0, 0, 1, 1));
+    node.addTexCoord(0, 0); node.addTexCoord(1, 0);
+    node.addTexCoord(1, 1); node.addTexCoord(0, 1);
+    node.addQuad(0, 1, 2, 3,  0, 1, 2, 3,  0, 1, 2, 3);
 
-    auto mat = geom::Material::fromColor(geom::GeomColor(255, 255, 255, 255));
-    mat->roughness = 1.0f; mat->metallic = 0.0f;   // matte paper
+    auto mat = node.getMaterial();
+    if (!mat) { mat = geom::Material::fromColor(geom::GeomColor(255,255,255,255));
+                mat->roughness = 1.0f; mat->metallic = 0.0f; node.setMaterial(mat); }
     mat->setBaseColorMap(Image(rgb));
-    node->setMaterial(mat);
-    node->setPrimitiveVisible(geom2::PrimLine | geom2::PrimVertex, false);
-    return node;
+    node.setPrimitiveVisible(geom2::PrimLine | geom2::PrimVertex, false);
   }
 
   geom2::NodePtr makeSceneNode(const TargetSpec &s) {
-    switch (s.type) {
-      case TargetType::Checkerboard:
-        // CheckerboardNode cell width = widthMM/(cols+2); size it so cell == squareMM.
-        return geom2::CheckerboardNode::create(s.cols, s.rows, s.squareMM * (s.cols + 2));
-      case TargetType::Coded: {
-        auto t = makeTarget(s);
-        const float aspect = float(s.rows + 2) / float(s.cols + 2);
-        const int   texW   = 700;
-        const Img8u gray   = t->generate(Size(texW, (int)std::lround(texW * aspect)));
-        // texture spans (cols+2)×(rows+2) cells at squareMM each (1-cell border).
-        return buildTexturedQuad(gray, (s.cols + 2) * s.squareMM, (s.rows + 2) * s.squareMM);
-      }
-      case TargetType::MarkerGrid: {
-        auto t = makeTarget(s);
-        const Size32f bounds(s.gridCells.width  * s.markerMM.width  + (s.gridCells.width  - 1) * s.markerGapMM,
-                             s.gridCells.height * s.markerMM.height + (s.gridCells.height - 1) * s.markerGapMM);
-        const float aspect = bounds.height / bounds.width;
-        const int   texW   = 512;
-        const Img8u gray   = t->generate(Size(texW, (int)std::lround(texW * aspect)));
-        // NOTE: generate() may add a quiet-zone margin → the quad's metric scale is
-        // approximate for marker-grid. Refine when marker-grid sim is exercised.
-        return buildTexturedQuad(gray, bounds.width, bounds.height);
-      }
-    }
-    return nullptr;
+    if (s.type == TargetType::Checkerboard)
+      // CheckerboardNode cell width = widthMM/(cols+2); size it so cell == squareMM.
+      return geom2::CheckerboardNode::create(s.cols, s.rows, s.squareMM * (s.cols + 2));
+    Img8u gray; float W = 0, H = 0;
+    if (!boardTexture(s, gray, W, H)) return nullptr;
+    auto node = std::make_shared<geom2::MeshNode>();
+    populateQuad(*node, gray, W, H);
+    return node;
+  }
+
+  void rebuildBoardNode(geom2::MeshNode &node, const TargetSpec &s) {
+    Img8u gray; float W = 0, H = 0;
+    if (!boardTexture(s, gray, W, H)) return;   // checkerboard / failed build: no-op
+    // Rebuild geometry/texture in place (same pattern the checkerboard lab uses from
+    // its worker loop); the caller touches the scene so the capture re-renders.
+    populateQuad(node, gray, W, H);
   }
 
   // -------------------------------------------------------------------- Intrinsics
@@ -305,7 +342,8 @@ namespace icl::calibintr {
 
   // ------------------------------------------------------------------ CoverageMap
   CoverageMap::CoverageMap(const utils::Size &imgSize, int gridW, int gridH)
-    : m_img(imgSize), m_gw(gridW), m_gh(gridH), m_occ((size_t)gridW*gridH, 0) {}
+    : m_img(imgSize), m_gw(gridW), m_gh(gridH), m_occ((size_t)gridW*gridH, 0),
+      m_orient((size_t)m_ggw*m_ggh) {}
 
   int CoverageMap::cellIndex(const Point32f &p) const {
     int cx = (int)(p.x * m_gw / m_img.width);
@@ -357,8 +395,21 @@ namespace icl::calibintr {
     const double s1=std::sqrt(std::max(0.0,l1)), s2=std::sqrt(std::max(0.0,l2));
     d.scale   = (float)std::sqrt(std::max(0.0, s1*s2));           // geo-mean px/mm
     d.tiltMag = s1 > 1e-9 ? (float)(1.0 - s2/s1) : 0.f;           // 0 fronto … →1 edge-on
-    // tilt axis = major eigenvector direction of AᵀA
-    d.tiltDir = (float)(0.5*std::atan2(2*m01, m00-m11));
+
+    // DIRECTED lean azimuth. The affine above is undirected (an axis — it can't tell
+    // which way the board recedes), which made the gauge segment land mirrored. Fit
+    // the board→image homography; its perspective row (h6,h7) points, in board
+    // coords, toward INCREASING projective depth = the FAR side. Map that board
+    // direction through the homography's linear part into the image → the azimuth
+    // the board leans toward. (Flip the atan2 sign here if the cursor reads reversed.)
+    std::vector<Point32f> bpts(corr.size()), ipts(corr.size());
+    for (size_t i=0;i<corr.size();++i){
+      bpts[i]=Point32f((float)(corr[i].objectPos[0]-ox), (float)(corr[i].objectPos[1]-oy));
+      ipts[i]=corr[i].imagePos; }
+    const Homography2D H = Homography2D::fit(bpts.data(), ipts.data(), (int)corr.size());
+    const double hx=H(2,0), hy=H(2,1);
+    const double ix=H(0,0)*hx+H(0,1)*hy, iy=H(1,0)*hx+H(1,1)*hy;   // far-dir → image
+    d.tiltDir = (float)std::atan2(iy, ix);
 
     // --- discrete bins ---
     d.region = std::min(2,(int)(d.centroid.x*3/m_img.width))
@@ -377,22 +428,58 @@ namespace icl::calibintr {
     return d;
   }
 
-  int CoverageMap::binKey(const ViewDescriptor &d) const {
-    return (d.region*3 + d.scaleBand)*9 + d.tiltOct;     // 9 regions × 3 bands × 9 tilt states
-  }
-
   bool CoverageMap::isUnderRepresented(const ViewDescriptor &d) const {
     if (!d.valid) return false;
-    if (m_bins.find(binKey(d)) == m_bins.end()) return true;   // new pose bin
-    for (int c : d.cells) if (m_occ[c] < m_cellThresh) return true;   // fills an empty image cell
-    return false;
+    // The capture decision IS the gauge bin: a view is worth keeping exactly when the
+    // gauge cell it lands in (image region × tilt ring × tilt segment) hasn't been
+    // filled yet. So the on-screen gauge is a faithful map of what will/won't be kept
+    // — an empty highlighted cell ⇒ this frame gets captured; a filled one ⇒ skipped.
+    const GaugeHit h = gaugeLocate(d);
+    return !m_orient[h.gy*m_ggw + h.gx].count(gaugeCode(h.ring, h.seg, m_gsegs));
+  }
+
+  // gauge cell from centroid, ring from tilt magnitude, segment from the tilt-toward
+  // direction (perpendicular to the no-compression axis).
+  CoverageMap::GaugeHit CoverageMap::gaugeLocate(const ViewDescriptor &d) const {
+    GaugeHit h;
+    if (!d.valid) return h;
+    h.gx = std::max(0, std::min(m_ggw-1, (int)(d.centroid.x * m_ggw / m_img.width)));
+    h.gy = std::max(0, std::min(m_ggh-1, (int)(d.centroid.y * m_ggh / m_img.height)));
+    if (d.tiltMag < m_gt0) { h.ring = 0; h.seg = 0; }             // centre = fronto-parallel
+    else {
+      h.ring = (d.tiltMag < m_gt1) ? 1 : 2;                       // (m_grings == 2)
+      // segment that CONTAINS the lean azimuth (floor, not round — round snaps to the
+      // nearest boundary, landing the highlight on the wrong side of the needle)
+      int seg = (int)std::floor(d.tiltDir / (2*M_PI/m_gsegs));
+      h.seg = ((seg % m_gsegs) + m_gsegs) % m_gsegs;
+    }
+    h.valid = true;
+    return h;
+  }
+
+  // Continuous radius fraction (of the gauge outer radius) for a tilt magnitude,
+  // piecewise-aligned with the ring boundaries (centre f0, ring1 f1, ring2 rim 1) so
+  // the live needle's tip lands inside the ring the cell-highlight marks. The 0.34 /
+  // 0.67 fractions match the app's gaugeGeom ring radii.
+  float CoverageMap::gaugeRadiusFrac(float t) const {
+    const float f0=0.34f, f1=0.67f;
+    if (t <= m_gt0)  return m_gt0 > 0 ? f0 * (t/m_gt0) : 0.f;
+    if (t <= m_gt1)  return f0 + (f1-f0)*(t-m_gt0)/(m_gt1-m_gt0);
+    const float maxT = m_gt1*2.f;                                 // ring2 rim ≈ 2×gt1 (~52°)
+    return std::min(1.f, f1 + (1.f-f1)*(t-m_gt1)/(maxT-m_gt1));
   }
 
   void CoverageMap::add(const ViewDescriptor &d) {
     if (!d.valid) return;
-    for (int c : d.cells) ++m_occ[c];
-    m_bins.insert(binKey(d));
+    for (int c : d.cells) ++m_occ[c];        // image occupancy → heatmap + coverage%
     ++m_views;
+    const GaugeHit h = gaugeLocate(d);        // the pose bin (== the capture criterion)
+    if (h.valid) m_orient[h.gy*m_ggw + h.gx].insert(gaugeCode(h.ring, h.seg, m_gsegs));
+  }
+
+  int CoverageMap::binsSeen() const {
+    int n = 0; for (const auto &s : m_orient) n += (int)s.size();
+    return n;
   }
 
   float CoverageMap::coveragePercent() const {

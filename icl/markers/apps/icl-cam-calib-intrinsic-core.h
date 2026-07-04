@@ -25,6 +25,8 @@
 #include <utility>
 #include <vector>
 
+namespace icl::geom2 { class MeshNode; }
+
 namespace icl::calibintr {
 
   /// Which kind of calibration target is in use.
@@ -42,6 +44,8 @@ namespace icl::calibintr {
     int   cols     = 9;
     int   rows     = 7;
     float squareMM = 25.f;
+    bool  codedBlackCells = false;   ///< coded: markers on the BLACK squares (needs
+                                     ///< pp.filter=dilatation; White is the default)
 
     // marker-grid only
     utils::Size    gridCells  = utils::Size(4, 3);
@@ -58,6 +62,13 @@ namespace icl::calibintr {
   /// sim render matches the target's modelPoints(). Checkerboard → CheckerboardNode;
   /// coded / marker-grid → a flat textured quad from the target's generate().
   geom2::NodePtr makeSceneNode(const TargetSpec &s);
+
+  /// Re-populate an existing coded / marker-grid board MeshNode for \a s (texture +
+  /// metric-sized quad), locked via ScopedEdit so it is safe to call from a worker
+  /// loop on a node already in the scene. Lets the GUI change board geometry in
+  /// place (node add/remove from a worker thread is a data race). Checkerboards use
+  /// CheckerboardNode::setCells / setWidth instead.
+  void rebuildBoardNode(geom2::MeshNode &node, const TargetSpec &s);
 
   /// The pinhole + distortion intrinsics of a camera.
   struct Intrinsics {
@@ -161,24 +172,56 @@ namespace icl::calibintr {
     void add(const ViewDescriptor &d);
 
     float coveragePercent() const;   ///< % of image cells with occupancy ≥ 1
-    int   binsSeen()   const { return (int)m_bins.size(); }
+    int   binsSeen()   const;         ///< total captured gauge/pose bins
     int   viewsAdded() const { return m_views; }
 
     /// Pseudo-color occupancy heatmap for display (blue = empty … red = dense).
     core::Img8u heatmap() const;
 
+    // --- orientation gauge (an alternative coverage viz) ------------------------
+    // Per coarse image region, a radial "compass": a centre disc (fronto-parallel)
+    // + \a gaugeRings() concentric rings, each split into \a gaugeSegs() angular
+    // segments. A kept view fills the segment for its tilt magnitude (→ ring; the
+    // centre for near-fronto) and tilt direction (→ segment). The app renders it
+    // over the frame so the user sees which viewing angles are still missing at
+    // each image location. Bin code: 0 = centre; ring r∈[1..rings], seg s∈[0..segs)
+    // → 1 + (r-1)*segs + s.
+    int gaugeCols()  const { return m_ggw; }
+    int gaugeRows()  const { return m_ggh; }
+    int gaugeRings() const { return m_grings; }
+    int gaugeSegs()  const { return m_gsegs; }
+    static int gaugeCode(int ring, int seg, int segs) { return ring == 0 ? 0 : 1 + (ring-1)*segs + seg; }
+    /// captured orientation bins for gauge cell (gx,gy).
+    const std::set<int> &gaugeBins(int gx, int gy) const { return m_orient[gy*m_ggw + gx]; }
+
+    /// Where a view lands on the gauge grid: cell (gx,gy) + tilt ring (0 = centre)
+    /// + segment. add() records this; the UI highlights it as the live "you are
+    /// here" cursor. `valid` is false for an undescribable detection.
+    struct GaugeHit { int gx = -1, gy = -1, ring = 0, seg = 0; bool valid = false; };
+    GaugeHit gaugeLocate(const ViewDescriptor &d) const;
+
+    /// Continuous radius fraction [0,1] of the gauge outer radius for a tilt
+    /// magnitude, aligned with the ring boundaries — for the live needle length.
+    float gaugeRadiusFrac(float tiltMag) const;
+
     const utils::Size &imageSize() const { return m_img; }
 
     private:
     int cellIndex(const utils::Point32f &p) const;
-    int binKey(const ViewDescriptor &d) const;
 
     utils::Size      m_img;
     int              m_gw, m_gh;
     std::vector<int> m_occ;          ///< per-cell occupancy count (m_gw*m_gh)
-    std::set<int>    m_bins;         ///< seen pose-bin keys
     int              m_views = 0;
     int              m_cellThresh = 1;   ///< a cell counts as covered at ≥ this
+
+    // orientation gauge state
+    int   m_ggw = 4, m_ggh = 3;      ///< coarse gauge grid (legible glyphs)
+    int   m_grings = 2, m_gsegs = 8; ///< tilt-magnitude rings + angular segments
+    // tiltMag ≈ 1-cos(θ): 0.03≈14°, 0.13≈30°. centre = ~fronto, ring1 = a bit
+    // tilted, ring2 = tilted more (the user's three zones).
+    float m_gt0 = 0.03f, m_gt1 = 0.13f;   ///< tiltMag thresholds: centre|ring1|ring2
+    std::vector<std::set<int>> m_orient;  ///< captured orientation bins per gauge cell
   };
 
   /// Decides when to auto-capture: fires once per dwell when the board is held

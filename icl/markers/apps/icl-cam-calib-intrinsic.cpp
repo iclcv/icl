@@ -32,6 +32,7 @@
 // --- shared sim scene + interactive GUI ---
 #include <icl/qt/Common2.h>            // ICLApp, GUI, Canvas/Canvas3D, handles
 #include <icl/qt/ui.h>
+#include <icl/qt/QuickDraw.h>          // headless image-space draw (coverage gauges)
 #include <icl/geom2/Scene2.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/CheckerboardNode.h>
@@ -56,6 +57,8 @@ using namespace icl::qt;        // GUI components + handles (interactive path)
 
 // -------------------------------------------------------------- selftest helpers
 namespace {
+
+  Img8u gaugeOverlay(const Img8u &base, const CoverageMap &cov, const ViewDescriptor *cur = nullptr);
 
   // one board pose (Euler rxyz [rad] + translation [mm]) relative to the board's
   // home at the origin facing the camera
@@ -89,6 +92,7 @@ namespace {
     bool  verbose = false, synthetic = false, kSet = false, autoMode = false;
     std::string dumpFirst;                   // optional PNG of the first frame
     std::string heatOut;                     // optional PNG of the coverage heatmap
+    std::string gaugeDump;                   // optional PNG of the orientation gauges
 
     for (int i = 1; i < argc; ++i) {
       const std::string a = argv[i];
@@ -103,11 +107,13 @@ namespace {
                                          : TargetType::Checkerboard;
       }
       else if (a == "--cells")     { const std::string c = next("9x7"); Size cs(c); spec.cols = cs.width; spec.rows = cs.height; }
+      else if (a == "--black")     spec.codedBlackCells = true;   // coded: markers on black cells
       else if (a == "--square-mm") spec.squareMM = parse<float>(next("25"));
       else if (a == "--sim-k1")    { k1 = parse<float>(next("-0.15")); kSet = true; }
       else if (a == "--sim-k2")    { k2 = parse<float>(next("0")); kSet = true; }
       else if (a == "--dump")      dumpFirst = next("sim-frame.png");
       else if (a == "--heatmap")   heatOut = next("coverage-heatmap.png");
+      else if (a == "--gauge-dump") gaugeDump = next("coverage-gauges.png");
       else if (a == "--auto")      autoMode = true;    // exercise auto-capture + coverage
       else if (a == "--synthetic") synthetic = true;   // analytic projection, no render
       else if (a == "-v")          verbose = true;
@@ -209,6 +215,8 @@ namespace {
       auto node = makeSceneNode(spec);
       scene.addNode(node);
       geom2::GLSceneCapture cap(/*ownContext=*/true);
+      for (int w = 0; w < 2; ++w) { scene.touch(); cap.capture(scene, 0); }   // warm up GL (cold
+                                             // first frames can be garbage → a poisoned view)
 
       const auto poses = scriptPoses();
       attempted = poses.size();
@@ -219,6 +227,7 @@ namespace {
       // --auto every detected pose is captured directly (the plain pipeline test).
       CoverageMap coverage(size);
       AutoCaptureController autoCap(coverage);
+      Img8u lastFrame;
 
       for (size_t pi = 0; pi < poses.size(); ++pi) {
         const Pose &p = poses[pi];
@@ -227,6 +236,7 @@ namespace {
         const Img8u clean = cap.capture(scene, 0).image;
         if (!clean.getDim()) { std::fprintf(stderr, "[selftest] empty capture — no GL context?\n"); return 2; }
         const Img8u frame = forwardDistort(clean, k1, k2);
+        lastFrame = frame;
         if (pi == 0 && dumpFirst.size()) icl::io::save(Image(frame), dumpFirst);
 
         const auto corr = target->detect(frame);
@@ -252,6 +262,11 @@ namespace {
                   coverage.coveragePercent(), coverage.binsSeen());
       if (heatOut.size()) { icl::io::save(Image(coverage.heatmap()), heatOut);
                             std::printf("[selftest] wrote coverage heatmap -> %s\n", heatOut.c_str()); }
+      if (gaugeDump.size() && lastFrame.getDim()) {
+        const ViewDescriptor ld = coverage.describe(target->detect(lastFrame));   // "current" pose
+        icl::io::save(Image(gaugeOverlay(lastFrame, coverage, ld.valid ? &ld : nullptr)), gaugeDump);
+        std::printf("[selftest] wrote orientation-gauge overlay -> %s\n", gaugeDump.c_str());
+      }
     }
 
     std::printf("[selftest] kept %d / %zu views (%d board points%s)\n",
@@ -303,7 +318,7 @@ namespace {
   geom2::Scene2        g_scene;
   geom2::OffscreenView g_view(g_scene, 0);
   std::shared_ptr<geom2::CheckerboardNode> g_cbBoard;
-  geom2::NodePtr       g_codedBoard, g_markerBoard;
+  std::shared_ptr<geom2::MeshNode>         g_codedBoard, g_markerBoard;
   std::unique_ptr<markers::CalibrationTarget> g_target;
   std::unique_ptr<IntrinsicSession>           g_session;
   std::unique_ptr<CoverageMap>                g_coverage;
@@ -313,12 +328,130 @@ namespace {
 
   std::string f2(double v){ char b[40]; std::snprintf(b, sizeof b, "%.2f", v); return b; }
 
-  // fresh detector + session + coverage for the current g_spec (Reset / target swap)
-  void rebuildTarget() {
-    g_target   = makeTarget(g_spec);
+  // Orientation-coverage gauges (alternative to the heatmap): one radial "compass"
+  // per coarse image region, composited onto a COPY of the frame. A centre disc =
+  // fronto-parallel; concentric rings = increasing out-of-plane tilt; angular
+  // segments = tilt direction. Empty cells are hollow (blue outline); captured ones
+  // are filled translucent blue — so gaps show which viewing angles are still
+  // missing WHERE. Drawn with the headless QuickDraw image API (same output on the
+  // widget and in --gauge-dump), so it is directly verifiable in-sandbox.
+  Img8u gaugeOverlay(const Img8u &base, const CoverageMap &cov, const ViewDescriptor *cur) {
+    // ensure RGB so the blue ink shows on a greyscale frame too
+    Img8u rgb = base;
+    if (base.getChannels() < 3) { rgb = Img8u(base.getSize(), formatRGB);
+      for (int c=0;c<3;++c) std::copy(base.begin(0), base.end(0), rgb.begin(c)); }
+
+    Image outI  = Image(rgb).deepCopy();
+    Image fillI = Image(rgb).deepCopy();   // captured segments drawn OPAQUE here, then
+                                           // blended once (per-triangle translucency in
+                                           // QuickDraw's fan-fill would stack into spokes)
+    const Size sz = cov.imageSize();
+    const int GW = cov.gaugeCols(), GH = cov.gaugeRows(), NS = cov.gaugeSegs();
+    const float cellW = sz.width/(float)GW, cellH = sz.height/(float)GH;
+    const float da = 2.f*(float)M_PI/NS;
+    auto P = [](float x, float y){ return Point((int)std::lround(x), (int)std::lround(y)); };
+    auto gaugeGeom = [&](int gx,int gy,float &cx,float &cy,float &r0,float &r1,float &r2){
+      cx=(gx+0.5f)*cellW; cy=(gy+0.5f)*cellH;
+      const float R=0.42f*std::min(cellW,cellH); r0=R*0.34f; r1=R*0.67f; r2=R;
+    };
+    // an annular sector filled as small CONVEX quads (a single annular polygon isn't
+    // star-convex from vertex 0, so the fan-fill splays)
+    auto sector = [&](float cx,float cy,float ri,float ro,int s){
+      const int steps=5;
+      for (int i=0;i<steps;++i){ const float a0=s*da+da*i/steps, a1=s*da+da*(i+1)/steps;
+        qt::polygon(fillI, { P(cx+std::cos(a0)*ri,cy+std::sin(a0)*ri), P(cx+std::cos(a1)*ri,cy+std::sin(a1)*ri),
+                             P(cx+std::cos(a1)*ro,cy+std::sin(a1)*ro), P(cx+std::cos(a0)*ro,cy+std::sin(a0)*ro) }); }
+    };
+
+    // 1) captured fills — OPAQUE, on fillI
+    qt::color(0,0,0,0); qt::fill(120,175,255,255);
+    for (int gy=0; gy<GH; ++gy) for (int gx=0; gx<GW; ++gx) {
+      float cx,cy,r0,r1,r2; gaugeGeom(gx,gy,cx,cy,r0,r1,r2);
+      const auto &bins = cov.gaugeBins(gx,gy);
+      if (bins.count(CoverageMap::gaugeCode(0,0,NS))) qt::circle(fillI,(int)cx,(int)cy,(int)r0);
+      for (int s=0;s<NS;++s){ if (bins.count(CoverageMap::gaugeCode(1,s,NS))) sector(cx,cy,r0,r1,s);
+                              if (bins.count(CoverageMap::gaugeCode(2,s,NS))) sector(cx,cy,r1,r2,s); }
+    }
+    // 2) blend the fills into outI at high transparency (only fill pixels differ)
+    const float a = 0.40f;
+    Img8u &O = outI.as<icl8u>(); const Img8u &F = fillI.as<icl8u>();
+    for (int c=0;c<3;++c){ icl8u *o=O.begin(c); const icl8u *f=F.begin(c), *b=rgb.begin(c);
+      for (int i=0,n=O.getDim(); i<n; ++i) o[i]=(icl8u)std::lround(b[i]+a*(f[i]-b[i])); }
+    // 3) structure — thin translucent lines directly on outI (no fan-fill → no spokes)
+    qt::fill(0,0,0,0); qt::color(70,150,255,230);
+    for (int gy=0; gy<GH; ++gy) for (int gx=0; gx<GW; ++gx) {
+      float cx,cy,r0,r1,r2; gaugeGeom(gx,gy,cx,cy,r0,r1,r2);
+      qt::circle(outI,(int)cx,(int)cy,(int)r0); qt::circle(outI,(int)cx,(int)cy,(int)r1);
+      qt::circle(outI,(int)cx,(int)cy,(int)r2);
+      for (int s=0;s<NS;++s){ const float ang=s*da;
+        qt::line(outI, P(cx+std::cos(ang)*r0,cy+std::sin(ang)*r0), P(cx+std::cos(ang)*r2,cy+std::sin(ang)*r2)); }
+    }
+    // 4) live "you are here" (MAGENTA — reads clearly on the checker + blue): outline
+    // the gauge cell the CURRENT pose lands in, plus a needle from the gauge centre to
+    // the EXACT (azimuth, tilt) — interpolated inside the cell — tipped with a dot.
+    if (cur && cur->valid) {
+      const CoverageMap::GaugeHit h = cov.gaugeLocate(*cur);
+      float cx,cy,r0,r1,r2; gaugeGeom(h.gx,h.gy,cx,cy,r0,r1,r2);
+      qt::fill(0,0,0,0); qt::color(255,0,255,255);
+      if (h.ring == 0) qt::circle(outI,(int)cx,(int)cy,(int)r0);
+      else {
+        const float ri = (h.ring==1)?r0:r1, ro = (h.ring==1)?r1:r2;
+        const float a0 = h.seg*da, a1 = (h.seg+1)*da; const int steps=6;
+        std::vector<Point> loop;
+        for (int i=0;i<=steps;++i){ float a=a0+(a1-a0)*i/steps; loop.push_back(P(cx+std::cos(a)*ri,cy+std::sin(a)*ri)); }
+        for (int i=steps;i>=0;--i){ float a=a0+(a1-a0)*i/steps; loop.push_back(P(cx+std::cos(a)*ro,cy+std::sin(a)*ro)); }
+        qt::linestrip(outI, loop, true);
+      }
+      // exact needle: length ∝ tilt magnitude (ring-aligned), angle = directed lean
+      const float rr = r2 * cov.gaugeRadiusFrac(cur->tiltMag);
+      const Point tip = P(cx+std::cos(cur->tiltDir)*rr, cy+std::sin(cur->tiltDir)*rr);
+      qt::color(255,0,255,255); qt::line(outI, P(cx,cy), tip);
+      qt::fill(255,0,255,255); qt::circle(outI, tip.x, tip.y, 3);   // dot at the tip
+    }
+    return outI.as<icl8u>();
+  }
+
+  // Overlay the CURRENT detection's recovered grid (the board→image homography made
+  // visible) as connecting lines, so it's obvious whether this frame is a usable
+  // view — even when auto-capture skips it because that pose is already covered.
+  // GREEN + thick = usable AND a new viewpoint; dim/thin = usable but redundant.
+  // Checkerboard/coded: connect board-adjacent inner corners (one square apart);
+  // marker-grid: draw each marker's 4-corner quad.
+  void drawDetectionGrid(DrawHandle &dh, const std::vector<markers::CalibrationCorrespondence> &corr,
+                         const TargetSpec &spec, bool novel) {
+    if (corr.size() < 4) return;
+    dh->linewidth(novel ? 2.5f : 1.5f);
+    if (novel) dh->color(0,255,60,255); else dh->color(120,210,120,150);
+    if (spec.type == TargetType::MarkerGrid) {
+      for (size_t k=0; k+3<corr.size(); k+=4)
+        for (int j=0;j<4;++j) dh->line(corr[k+j].imagePos, corr[k+(j+1)%4].imagePos);
+    } else {
+      const float step = spec.squareMM, tol = step*0.25f;
+      const int n = (int)corr.size();
+      for (int i=0;i<n;++i) for (int j=i+1;j<n;++j) {
+        const float dx=std::abs(corr[i].objectPos[0]-corr[j].objectPos[0]);
+        const float dy=std::abs(corr[i].objectPos[1]-corr[j].objectPos[1]);
+        if ((std::abs(dx-step)<tol && dy<tol) || (std::abs(dy-step)<tol && dx<tol))
+          dh->line(corr[i].imagePos, corr[j].imagePos);
+      }
+    }
+  }
+
+  // Build the detector for \a ns and, on success, adopt it as the active spec with a
+  // FRESH session + coverage (a target/geometry change invalidates the old views).
+  // Returns false (leaving the current target untouched) if the spec can't be built
+  // — e.g. a coded board needing more markers than the id set offers.
+  bool rebuildTarget(const TargetSpec &ns) {
+    std::unique_ptr<markers::CalibrationTarget> t;
+    try { t = makeTarget(ns); }
+    catch (const std::exception &e) { std::cerr << "[calib] " << e.what() << std::endl; return false; }
+    if (!t) return false;
+    g_spec     = ns;
+    g_target   = std::move(t);
     g_session  = std::make_unique<IntrinsicSession>(g_spec, g_camRes);
     g_coverage = std::make_unique<CoverageMap>(g_camRes);
     g_autoCap  = std::make_unique<AutoCaptureController>(*g_coverage);
+    return true;
   }
 
   void guiInit() {
@@ -332,16 +465,18 @@ namespace {
     g_scene.addLight(geom2::LightNode::point(150, 200, 550));
 
     // three pre-built boards; visibility follows the target combo (swapping nodes at
-    // runtime is avoided — see the lab). Checkerboard geometry is slider-driven.
+    // runtime is a data race — Scene2::add/removeNode don't lock — so geometry is
+    // rebuilt IN PLACE instead: CheckerboardNode::setCells / rebuildBoardNode()).
     g_cbBoard = geom2::CheckerboardNode::create(9, 7, 25.f * (9 + 2));
     g_scene.addNode(g_cbBoard);
-    { TargetSpec cs; cs.type = TargetType::Coded;      g_codedBoard  = makeSceneNode(cs); }
-    { TargetSpec ms; ms.type = TargetType::MarkerGrid; g_markerBoard = makeSceneNode(ms); }
+    g_codedBoard  = std::make_shared<geom2::MeshNode>();
+    g_markerBoard = std::make_shared<geom2::MeshNode>();
+    { TargetSpec cs; cs.type = TargetType::Coded;      rebuildBoardNode(*g_codedBoard,  cs); }
+    { TargetSpec ms; ms.type = TargetType::MarkerGrid; rebuildBoardNode(*g_markerBoard, ms); }
     g_scene.addNode(g_codedBoard);  g_codedBoard->setVisible(false);
     g_scene.addNode(g_markerBoard); g_markerBoard->setVisible(false);
 
-    g_spec = TargetSpec{};            // checkerboard 9x7 @ 25mm
-    rebuildTarget();
+    rebuildTarget(TargetSpec{});      // checkerboard 9x7 @ 25mm
 
     // Seed the simulated lens with realistic barrel distortion so there is actually
     // something to calibrate out of the box (the OffscreenView forward model is
@@ -361,16 +496,17 @@ namespace {
               << Prop(&g_view, {.label="simulated camera: renderer + lens distortion"})))
       << Canvas({.handle="view", .label="camera + detection + coverage", .minSize={18,16}})
       << (VBox({.minSize={15,1}, .maxSize={18,100}})
-          << Combo("checkerboard,coded,marker-grid", {.handle="target", .label="calibration target"})
+          << Combo("checkerboard,coded (white cells),coded (black cells),marker-grid",
+                   {.handle="target", .label="calibration target"})
           << (HBox() << Slider(3,20,9,{.handle="xc", .label="x cells"})
                      << Slider(3,20,7,{.handle="yc", .label="y cells"}))
-          << FSlider(8,60,25,{.handle="sq", .label="square mm"})
+          << FSlider(8,60,25,{.handle="sq", .label="cell / marker mm"})
           << CheckBox("auto-capture", {.checked=true, .handle="auto"})
           << (HBox() << Button("capture now",   {.handle="capture"})
                      << Button("reset session", {.handle="reset"}))
           << (HBox() << Button("calibrate", {.handle="calibrate"})
                      << Button("save",      {.handle="save"}))
-          << CheckBox("show coverage heatmap", {.checked=false, .handle="heat"})
+          << Combo("none,heatmap,orientation gauges", {.handle="overlay", .label="coverage overlay"})
           << Label("waiting…", {.handle="stat1"})
           << Label(" ",        {.handle="stat2"})
           << Fps({.handle="fps"})))
@@ -383,22 +519,37 @@ namespace {
   void guiRun() {
     static FPSLimiter fps(50);
 
-    const int   t  = ComboHandle(g_gui["target"]).getSelectedIndex();   // 0=cb,1=coded,2=marker
+    // Target combo (top-level modes): 0=checkerboard, 1=coded white cells, 2=coded
+    // BLACK cells, 3=marker-grid. The cell/size sliders drive EVERY target's geometry
+    // (checker/coded squares or marker-grid cells). ANY change rebuilds the board in
+    // place AND resets the session (accumulated views belong to the old target); the
+    // board node is rebuilt only after the detector build succeeds, so the shown
+    // board always matches the active detector.
+    const int   t  = ComboHandle(g_gui["target"]).getSelectedIndex();
     const int   xc = g_gui["xc"], yc = g_gui["yc"];
     const float sq = g_gui["sq"];
+    const bool  coded = (t == 1 || t == 2);
     static int lt=-1, lxc=-1, lyc=-1; static float lsq=-1;
-    if (t != lt || (t == 0 && (xc != lxc || yc != lyc || sq != lsq))) {
-      g_cbBoard->setVisible(t == 0);
-      g_codedBoard->setVisible(t == 1);
-      g_markerBoard->setVisible(t == 2);
-      g_spec = TargetSpec{};
-      if (t == 0) { g_cbBoard->setCells(xc, yc); g_cbBoard->setWidth(sq*(xc+2));
-                    g_spec.cols = xc; g_spec.rows = yc; g_spec.squareMM = sq; }
-      else if (t == 1) g_spec.type = TargetType::Coded;
-      else             g_spec.type = TargetType::MarkerGrid;
-      rebuildTarget();
-      g_scene.touch();
-      for (const char *h : {"xc","yc","sq"}) { if (t==0) g_gui[h].enable(); else g_gui[h].disable(); }
+    if (t != lt || xc != lxc || yc != lyc || sq != lsq) {
+      TargetSpec ns;                                   // candidate spec from the controls
+      if (t == 0)     { ns.type = TargetType::Checkerboard; ns.cols = xc; ns.rows = yc; ns.squareMM = sq; }
+      else if (coded) { ns.type = TargetType::Coded; ns.cols = xc; ns.rows = yc; ns.squareMM = sq;
+                        ns.codedBlackCells = (t == 2); }
+      else            { ns.type = TargetType::MarkerGrid; ns.gridCells = Size(xc, yc);
+                        ns.markerMM = Size32f(sq, sq); ns.markerGapMM = sq * 0.4f; }
+
+      if (rebuildTarget(ns)) {                          // resets session on success
+        g_cbBoard->setVisible(t == 0);
+        g_codedBoard->setVisible(coded);
+        g_markerBoard->setVisible(t == 3);
+        if (t == 0)     { g_cbBoard->setCells(xc, yc); g_cbBoard->setWidth(sq*(xc+2)); }
+        else if (coded) rebuildBoardNode(*g_codedBoard,  g_spec);   // white/black texture
+        else            rebuildBoardNode(*g_markerBoard, g_spec);
+        g_scene.touch();
+      } else {
+        std::cerr << "[calib] target rebuild failed (board too big for the coded id set?) — "
+                     "keeping previous target\n";
+      }
       lt=t; lxc=xc; lyc=yc; lsq=sq;
     }
 
@@ -408,7 +559,7 @@ namespace {
 
     static ButtonHandle bCap=g_gui["capture"], bCal=g_gui["calibrate"],
                         bSave=g_gui["save"], bReset=g_gui["reset"];
-    if (bReset.wasTriggered()) rebuildTarget();
+    if (bReset.wasTriggered()) rebuildTarget(g_spec);   // fresh session, same target
     if (bCal.wasTriggered())   g_session->calibrate();
     if (bSave.wasTriggered()) {
       const std::string fn = pa("-o") ? *pa("-o") : std::string("intrinsics.xml");
@@ -417,8 +568,14 @@ namespace {
     }
 
     std::vector<markers::CalibrationCorrespondence> corr;
+    bool usable = false, novel = false;
     if (cam.getDim()) {
       corr = g_target->detect(cam);
+      // usability of THIS frame's detection, independent of whether it gets captured
+      const ViewDescriptor cur = g_coverage->describe(corr);
+      usable = cur.valid;
+      novel  = usable && g_coverage->isUnderRepresented(cur);
+
       if (g_gui["auto"].as<bool>()) {
         ViewDescriptor d;
         if (g_autoCap->update(corr, d) == AutoCaptureController::Decision::Capture) {
@@ -429,8 +586,12 @@ namespace {
         const ViewDescriptor d = g_coverage->describe(corr);
         g_session->addView(corr); g_coverage->add(d);
       }
+      const int ov = ComboHandle(g_gui["overlay"]).getSelectedIndex();   // 0=none,1=heatmap,2=gauges
       DrawHandle dh = g_gui["view"];
-      dh = g_gui["heat"].as<bool>() ? g_coverage->heatmap() : cam;
+      dh = (ov == 1) ? g_coverage->heatmap()
+         : (ov == 2) ? gaugeOverlay(cam, *g_coverage, usable ? &cur : nullptr)
+                     : cam;
+      if (usable) drawDetectionGrid(dh, corr, g_spec, novel);   // grid = the homography made visible
       dh->linewidth(1.5f); dh->color(0,255,0,255);
       for (const auto &c : corr) dh->sym(c.imagePos, 'x');
       dh.render();
@@ -447,7 +608,11 @@ namespace {
                      + "/" + str((int)std::lround(gt.fx)) + "    k1 " + f2(rec.k1) + "/" + f2(gt.k1)
                      + "    k2 " + f2(rec.k2) + "/" + f2(gt.k2) + "   (recovered/truth)";
     } else {
-      g_gui["stat2"] = "detected " + str(corr.size()) + " corners — collect ≥4 views, then Calibrate";
+      const std::string use = !usable ? "not a usable view yet"
+                            : novel    ? "USABLE — a new viewpoint"
+                                       : "usable, but this pose is already covered";
+      g_gui["stat2"] = "detected " + str(corr.size()) + " corners — " + use
+                     + "  (collect ≥4 views, then Calibrate)";
     }
     g_gui["fps"].render();
     fps.wait();
