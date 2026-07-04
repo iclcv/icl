@@ -107,8 +107,10 @@ static void updateUndistort(float k1, float k2, const Size &sz) {
   if (k1 == lk1 && k2 == lk2 && sz == lsz) return;
   lk1 = k1; lk2 = k2; lsz = sz;
   const double f = std::max(sz.width, sz.height) / 2.0, cx = sz.width/2.0, cy = sz.height/2.0;
+  // coefficients NEGATED to match OffscreenView's baked distortion (see its comment):
+  // it warps with createWarpMap(-k1,-k2), so the rectify pass inverts the SAME model
   filter::ImageUndistortion ud("MatlabModel5Params",
-                               {f, f, cx, cy, 0, (double)k1, (double)k2, 0, 0, 0}, sz);
+                               {f, f, cx, cy, 0, -(double)k1, -(double)k2, 0, 0, 0}, sz);
   g_undistort.setWarpMap(ud.createInverseWarpMap());   // distorted → rectified
 }
 

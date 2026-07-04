@@ -105,15 +105,19 @@ namespace icl::geom2 {
         if (a != lk1 || b != lk2 || as != lautoScale || sz != lsz) {   // rebuild on change
           const double f = std::max(sz.width, sz.height) / 2.0;
           const double cx = sz.width / 2.0, cy = sz.height / 2.0;
+          // Coefficients are NEGATED so distortion.k1/k2 follow the Matlab/calibration
+          // convention (k1<0 ⇒ barrel): createWarpMap resamples output→input, so baking
+          // it with +k warps the image by the INVERSE of a +k lens — a rendered board
+          // would then calibrate to −k. Feeding −k makes the baked distortion the one a
+          // calibrator recovers as k1 (verified against cv::IntrinsicCalibrator).
           filter::ImageUndistortion ud("MatlabModel5Params",
-              {f, f, cx, cy, 0, (double)a, (double)b, 0, 0, 0}, sz);
-          // Use the EXACT forward map (createWarpMap), NOT createInverseWarpMap:
-          // the latter inverts the model by additive fixed-point iteration, which
-          // DIVERGES for strong distortion (k1≳0.2) and collapses to a near-zero
-          // warp — so extreme sliders would barely distort. The forward map is
-          // closed-form and grows monotonically with k1/k2. The lab's optional
-          // rectify pass applies the inverse to undo this (accurate at realistic k).
-          // autoScale zooms the map to keep the frame border-free (alpha=0 crop).
+              {f, f, cx, cy, 0, -(double)a, -(double)b, 0, 0, 0}, sz);
+          // Use the EXACT forward map (createWarpMap), NOT createInverseWarpMap: the
+          // latter inverts the model by additive fixed-point iteration, which DIVERGES
+          // for strong distortion (|k1|≳0.2) and collapses to a near-zero warp — so
+          // extreme sliders would barely distort. The forward map is closed-form and
+          // grows monotonically. The lab's optional rectify pass inverts the SAME
+          // (negated) model. autoScale zooms the map to keep the frame border-free.
           distort.setWarpMap(ud.createWarpMap(as));
           lk1 = a; lk2 = b; lautoScale = as; lsz = sz;
         }
