@@ -253,11 +253,8 @@ namespace icl::calibintr {
     utils::Point32f m_lastCentroid;
     float           m_lastScale = 0;
     int             m_stableFrames = 0;
-    bool            m_armed = true;   ///< false right after a capture until board moves away
-    utils::Point32f m_armCentroid;    ///< centroid at last capture (for re-arm distance)
     int             m_stableNeeded = 4;
     float           m_moveTol = 3.f;      ///< max centroid move [px] to count as "still"
-    float           m_rearmDist = 40.f;   ///< centroid must move this far to re-arm
   };
 
 } // namespace icl::calibintr

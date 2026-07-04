@@ -397,19 +397,24 @@ namespace icl::calibintr {
     d.tiltMag = s1 > 1e-9 ? (float)(1.0 - s2/s1) : 0.f;           // 0 fronto … →1 edge-on
 
     // DIRECTED lean azimuth. The affine above is undirected (an axis — it can't tell
-    // which way the board recedes), which made the gauge segment land mirrored. Fit
-    // the board→image homography; its perspective row (h6,h7) points, in board
-    // coords, toward INCREASING projective depth = the FAR side. Map that board
-    // direction through the homography's linear part into the image → the azimuth
-    // the board leans toward. (Flip the atan2 sign here if the cursor reads reversed.)
+    // which way the board recedes). Fit the board→image homography; its projective
+    // depth w = h6·X + h7·Y + h8 is larger where the board is FARTHER (cells compress).
+    // The lean azimuth is the IMAGE direction along which w increases, measured as
+    // the correlation of w against image position over the real points — robust, and
+    // (unlike mapping (h6,h7) through the numerator) it accounts for the w-division.
+    // (Flip the sign — atan2(-dy,-dx) — if the cursor should point to the NEAR side.)
     std::vector<Point32f> bpts(corr.size()), ipts(corr.size());
     for (size_t i=0;i<corr.size();++i){
       bpts[i]=Point32f((float)(corr[i].objectPos[0]-ox), (float)(corr[i].objectPos[1]-oy));
       ipts[i]=corr[i].imagePos; }
     const Homography2D H = Homography2D::fit(bpts.data(), ipts.data(), (int)corr.size());
-    const double hx=H(2,0), hy=H(2,1);
-    const double ix=H(0,0)*hx+H(0,1)*hy, iy=H(1,0)*hx+H(1,1)*hy;   // far-dir → image
-    d.tiltDir = (float)std::atan2(iy, ix);
+    const double h6=H(2,0), h7=H(2,1), h8=H(2,2);
+    double sw=0; for (const auto &b : bpts) sw += h6*b.x + h7*b.y + h8;
+    const double mw = sw / bpts.size();
+    double dx=0, dy=0;
+    for (size_t i=0;i<bpts.size();++i){ const double wi = h6*bpts[i].x + h7*bpts[i].y + h8;
+      dx += (wi-mw)*(ipts[i].x-d.centroid.x); dy += (wi-mw)*(ipts[i].y-d.centroid.y); }
+    d.tiltDir = (float)std::atan2(dy, dx);
 
     // --- discrete bins ---
     d.region = std::min(2,(int)(d.centroid.x*3/m_img.width))
@@ -527,14 +532,13 @@ namespace icl::calibintr {
     }
     m_lastCentroid = outDesc.centroid; m_lastScale = outDesc.scale; m_have = true;
 
-    // re-arm once the board has moved away from the last capture spot (debounce so
-    // a single dwell yields a single capture)
-    if (!m_armed &&
-        std::hypot(outDesc.centroid.x-m_armCentroid.x, outDesc.centroid.y-m_armCentroid.y) > m_rearmDist)
-      m_armed = true;
-
-    if (m_armed && stable() && m_cov.isUnderRepresented(outDesc)) {
-      m_armed = false; m_armCentroid = outDesc.centroid; m_stableFrames = 0;
+    // Capture when the board is held STILL over a pose bin that hasn't been filled.
+    // No separate debounce is needed: CoverageMap::add() fills the bin on capture, so
+    // isUnderRepresented() is immediately false for it and it won't re-fire — while a
+    // NEW bin reached by tilting IN PLACE (same centroid) still captures (a centroid-
+    // move debounce used to wrongly block exactly that).
+    if (stable() && m_cov.isUnderRepresented(outDesc)) {
+      m_stableFrames = 0;
       return Decision::Capture;
     }
     return Decision::Skip;

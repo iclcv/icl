@@ -119,6 +119,32 @@ namespace {
       else if (a == "-v")          verbose = true;
     }
 
+    // --tilt-probe: analytic sanity check of the gauge's directed lean azimuth. Rotate
+    // a board purely about Y (ay>0 → LEFT edge recedes) and purely about X (ax>0 →
+    // BOTTOM edge recedes); the needle must point at the far edge (≈ -180°/left and
+    // +90°/down) and the two must be perpendicular (no rotation error).
+    for (int i = 1; i < argc; ++i) if (!std::strcmp(argv[i], "--tilt-probe")) {
+      CoverageMap cov(size);
+      const double f = std::max(size.width,size.height)/2.0, cx=size.width/2.0, cy=size.height/2.0;
+      auto probe = [&](double ax, double ay)->float {
+        const double c=std::cos(ay), s=std::sin(ay), cxx=std::cos(ax), sxx=std::sin(ax);
+        std::vector<markers::CalibrationCorrespondence> corr;
+        for (int r=-4;r<=4;++r) for (int cc=-4;cc<=4;++cc) {
+          double X=cc*25.0, Y=r*25.0, Z=0;
+          double x1=c*X + s*Z,        z1=-s*X + c*Z;         // Ry
+          double y2=cxx*Y - sxx*z1,   z2=sxx*Y + cxx*z1;     // Rx
+          double Xc=x1, Yc=y2, Zc=z2 + 600;                  // push in front
+          corr.push_back({ geom::Vec((float)X,(float)Y,0,1),
+                           Point32f((float)(f*Xc/Zc+cx), (float)(f*Yc/Zc+cy)) });
+        }
+        return (float)(cov.describe(corr).tiltDir * 180.0/M_PI);
+      };
+      std::printf("[tilt-probe] Y-tilt (left edge far): %+.0f deg   X-tilt (bottom edge far): %+.0f deg\n",
+                  probe(0, 0.5), probe(0.5, 0));
+      std::printf("             (0=right, 90=down, ±180=left, -90=up in image coords → both point far)\n");
+      return 0;
+    }
+
     // Both paths need a board big enough to be well-conditioned. The synthetic
     // solver test additionally needs the corners to reach large image radius (else
     // radial distortion is unobservable) → the proven test geometry. The render
