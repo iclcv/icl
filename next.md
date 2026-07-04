@@ -4,7 +4,19 @@
 
 ## Next Step
 
-### NEXT — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
+### NEXT — `icl-cam-calib-intrinsic` app (easy intrinsic calibration) — PLANNED
+Full plan in [`intrinsic-calib-app-plan.md`](intrinsic-calib-app-plan.md) (written S99, ready to
+implement). Easy-to-use intrinsic calib: pick target type+size → wave it → **auto-capture** where
+coverage is poor with a live **image-space corner heatmap** → calibrate → error report. Locked
+decisions: pose+region bins for auto-capture (+ stability gate), image heatmap viz, sim renders the
+*selected* target, **V1 = sim-first vertical slice** (`--sim-input W H`, verifiable headlessly via
+`--sim-selftest` / OffscreenView). Solver = `cv::IntrinsicCalibrator` (metric worldpoints + partial
+-board validity mask). Reuses `geom2::OffscreenView`, `CheckerboardNode.innerCorners()`,
+`markers::CalibrationTarget`. This is Phase B of `camera-calibration-redesign.md` and comes BEFORE
+Phase C below (user's call: "before we continue with external calib"). Sibling app later:
+`icl-cam-calib-extrinsic` (= Phase C).
+
+### THEN — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
 Build the **extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with
 FIXED intrinsics (intrinsics path now fully done — native + coded/ChArUco, see S94 below). Reuse
 `getPoses` (closed-form IPPE, S90) + the native checkerboard / marker-grid / coded-checkerboard
