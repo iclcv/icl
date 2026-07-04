@@ -343,9 +343,23 @@ namespace {
     g_spec = TargetSpec{};            // checkerboard 9x7 @ 25mm
     rebuildTarget();
 
+    // Seed the simulated lens with realistic barrel distortion so there is actually
+    // something to calibrate out of the box (the OffscreenView forward model is
+    // radial k1,k2 — p1/p2/k3 are 0). Set BEFORE the Prop is built so its sliders
+    // show these values. The user can zero them via "distortion.reset".
+    g_view.setPropertyValue("distortion.k1", -0.22f);
+    g_view.setPropertyValue("distortion.k2",  0.06f);
+
+    // LEFT column = the simulated input and everything that configures it (scene +
+    // renderer/lens-distortion Prop), stacked so it reads as one unit and can be
+    // hidden wholesale once real -i input lands. CENTER = the (sim-or-real) camera
+    // frame + detection/coverage. RIGHT = the input-agnostic calibration workflow.
     g_gui << (HSplit()
-      << Canvas3D({.handle="scene", .label="wave the target (drag = orbit, wheel = zoom)", .minSize={20,16}})
-      << Canvas({.handle="view", .label="camera + detection + coverage", .minSize={20,16}})
+      << (VSplit()
+          << Canvas3D({.handle="scene", .label="simulated input — wave the target (drag = orbit, wheel = zoom)", .minSize={20,14}})
+          << (VBox({.minSize={20,4}, .maxSize={100,13}})
+              << Prop(&g_view, {.label="simulated camera: renderer + lens distortion"})))
+      << Canvas({.handle="view", .label="camera + detection + coverage", .minSize={18,16}})
       << (VBox({.minSize={15,1}, .maxSize={18,100}})
           << Combo("checkerboard,coded,marker-grid", {.handle="target", .label="calibration target"})
           << (HBox() << Slider(3,20,9,{.handle="xc", .label="x cells"})
@@ -357,7 +371,6 @@ namespace {
           << (HBox() << Button("calibrate", {.handle="calibrate"})
                      << Button("save",      {.handle="save"}))
           << CheckBox("show coverage heatmap", {.checked=false, .handle="heat"})
-          << Prop(&g_view, {.label="renderer + lens distortion"})
           << Label("waiting…", {.handle="stat1"})
           << Label(" ",        {.handle="stat2"})
           << Fps({.handle="fps"})))
@@ -429,9 +442,10 @@ namespace {
     if (g_session->reprojRMS() >= 0) {
       const Intrinsics rec = g_session->recovered();
       const Intrinsics gt  = groundTruthIntrinsics(g_camRes, g_view.distortionK1(), g_view.distortionK2());
-      g_gui["stat2"] = "rms " + f2(g_session->reprojRMS()) + "px   fx " + str((int)std::lround(rec.fx))
-                     + " (gt " + str((int)std::lround(gt.fx)) + ")   fx err "
-                     + f2(std::abs(rec.fx - gt.fx)) + "px";
+      // recovered vs (sim) ground truth: focal + the radial distortion coefficients
+      g_gui["stat2"] = "rms " + f2(g_session->reprojRMS()) + "px    fx " + str((int)std::lround(rec.fx))
+                     + "/" + str((int)std::lround(gt.fx)) + "    k1 " + f2(rec.k1) + "/" + f2(gt.k1)
+                     + "    k2 " + f2(rec.k2) + "/" + f2(gt.k2) + "   (recovered/truth)";
     } else {
       g_gui["stat2"] = "detected " + str(corr.size()) + " corners — collect ≥4 views, then Calibrate";
     }

@@ -226,24 +226,45 @@ namespace icl::calibintr {
   }
 
   // Reproject every observed point through the recovered model and RMS the residual.
-  // Per-view pose is recovered from the final K by decomposing K^{-1}·H (H = board→
-  // image homography on the view's points) — the same seed the masked calibrate uses.
+  // Per-view pose is recovered from the final K by decomposing K^{-1}·H — but H must
+  // be fit on the UNDISTORTED image points (board→undistorted pixel is a pure
+  // pinhole homography), otherwise strong lens distortion biases the pose and the
+  // residual balloons even for perfectly-recovered intrinsics. We undistort the
+  // observations, solve the pose, then reproject WITH the full distortion model and
+  // compare against the ORIGINAL observed pixels.
   double IntrinsicSession::computeReprojRMS() const {
     const std::vector<double> P = m_result.getParams();
     if (P.size() < 10) return -1;
     const double fx=P[0], fy=P[1], u0=P[2], v0=P[3], alpha=P[4],
                  k1=P[5], k2=P[6], p1=P[7], p2=P[8], k3=P[9];
 
+    // (u,v) → undistorted normalized (xn,yn): invert the Brown model by fixed-point.
+    auto undistortNorm = [&](double u, double v, double &xn, double &yn){
+      const double yd = (v - v0)/fy;
+      const double xd = (u - u0)/fx - alpha*yd;
+      double x = xd, y = yd;
+      for (int it = 0; it < 8; ++it) {
+        const double r2 = x*x + y*y;
+        const double rad = 1 + k1*r2 + k2*r2*r2 + k3*r2*r2*r2;
+        const double dx = 2*p1*x*y + p2*(r2 + 2*x*x);
+        const double dy = p1*(r2 + 2*y*y) + 2*p2*x*y;
+        x = (xd - dx)/rad; y = (yd - dy)/rad;
+      }
+      xn = x; yn = y;
+    };
+
     double sumSq = 0; long n = 0;
     for (const auto &view : m_views) {
       const int m = (int)view.pts.size();
       if (m < 4) continue;
-      std::vector<Point32f> board(m), img(m);
+      std::vector<Point32f> board(m), img(m), undist(m);
       for (int i = 0; i < m; ++i) {
         board[i] = Point32f(m_model[view.pts[i].first][0], m_model[view.pts[i].first][1]);
         img[i]   = view.pts[i].second;
+        double xn, yn; undistortNorm(img[i].x, img[i].y, xn, yn);
+        undist[i] = Point32f((float)(fx*xn + u0), (float)(fy*yn + v0));   // ideal pinhole px
       }
-      const Homography2D H = Homography2D::fit(board.data(), img.data(), m);   // board→image
+      const Homography2D H = Homography2D::fit(board.data(), undist.data(), m);  // board→undistorted
 
       // K^{-1}·H columns → r1, r2, t (skew ignored in the seed)
       auto kinv = [&](double a, double b, double c, double o[3]){
