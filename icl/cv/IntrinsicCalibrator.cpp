@@ -1532,8 +1532,12 @@ namespace icl::cv {
     m_data->bSize = m_data->bWidth * m_data->bHeight;
     delete m_data->intrinsic_matrix;
     m_data->intrinsic_matrix = new DynMatrix<icl64f>(DynMatrix<icl64f>::create(3, 3));
+    (*m_data->intrinsic_matrix)[8] = 1.0;
     delete m_data->distortion_coeffs;
-    m_data->distortion_coeffs = new DynMatrix<icl64f>(DynMatrix<icl64f>::create(5, 1));
+    // MUST match the ctor's shape: optimize() derives offset = 5 + cols(), so this
+    // has to be 1x5 (cols=5 → offset=10). A 5x1 here makes offset=6 and the
+    // extrinsic params overwrite the distortion params (k1 never moves).
+    m_data->distortion_coeffs = new DynMatrix<icl64f>(DynMatrix<icl64f>::create(1, 5));
     m_data->successes = boardCount;
     m_data->nx = imageWidth;
     m_data->ny = imageHeight;

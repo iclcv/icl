@@ -148,7 +148,10 @@ namespace icl::math {
           for(int q=0;q<8;++q) JtJ[p][q]+=Ju[p]*Ju[q]+Jv[p]*Jv[q]; }
       }
       // LM damped step: (JtJ + lambda*diag(JtJ)) d = -Jtr
-      DynMatrix<T> A=DynMatrix<T>::create(8,8), rhs=DynMatrix<T>::create(1,8);
+      // rhs is an 8x1 COLUMN vector — solve() requires rhs.rows()==A.rows()==8.
+      // (Was create(1,8): a 1x8 row → solve() threw every iter, swallowed by the
+      // catch below, so refined() silently returned the un-refined DLT seed.)
+      DynMatrix<T> A=DynMatrix<T>::create(8,8), rhs=DynMatrix<T>::create(8,1);
       for(int p=0;p<8;++p){ for(int q=0;q<8;++q) A(p,q)=JtJ[p][q];
         A(p,p)+=lambda*JtJ[p][p]; rhs[p]=-Jtr[p]; }
       DynMatrix<T> d;

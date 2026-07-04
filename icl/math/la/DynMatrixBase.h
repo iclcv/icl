@@ -132,7 +132,10 @@ namespace icl::math {
     inline void setBounds(unsigned int cols, unsigned int rows, bool holdContent=false, const T &initializer=0){
       if(static_cast<int>(cols) == m_cols && static_cast<int>(rows)==m_rows) return;
       if(cols*rows == 0) throw InvalidMatrixDimensionException("matrix dimensions must be > 0");
-      DynMatrixBase M(cols,rows,initializer);
+      // NB: the dim ctor is (rows,cols) — M must have the SAME shape this ends up
+      // with (m_cols=cols, m_rows=rows) or the holdContent copy below indexes M with
+      // the wrong stride on a non-square resize (a missed spot in the (rows,cols) flip).
+      DynMatrixBase M(rows,cols,initializer);
       if(holdContent){
         unsigned int min_cols = iclMin(cols,static_cast<unsigned int>(m_cols));
         unsigned int min_rows = iclMin(rows,static_cast<unsigned int>(m_rows));

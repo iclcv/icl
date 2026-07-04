@@ -4,17 +4,56 @@
 
 ## Next Step
 
-### NEXT — `icl-cam-calib-intrinsic` app (easy intrinsic calibration) — PLANNED
-Full plan in [`intrinsic-calib-app-plan.md`](intrinsic-calib-app-plan.md) (written S99, ready to
-implement). Easy-to-use intrinsic calib: pick target type+size → wave it → **auto-capture** where
-coverage is poor with a live **image-space corner heatmap** → calibrate → error report. Locked
-decisions: pose+region bins for auto-capture (+ stability gate), image heatmap viz, sim renders the
-*selected* target, **V1 = sim-first vertical slice** (`--sim-input W H`, verifiable headlessly via
-`--sim-selftest` / OffscreenView). Solver = `cv::IntrinsicCalibrator` (metric worldpoints + partial
--board validity mask). Reuses `geom2::OffscreenView`, `CheckerboardNode.innerCorners()`,
-`markers::CalibrationTarget`. This is Phase B of `camera-calibration-redesign.md` and comes BEFORE
-Phase C below (user's call: "before we continue with external calib"). Sibling app later:
-`icl-cam-calib-extrinsic` (= Phase C).
+### NEXT — `icl-cam-calib-intrinsic` app (easy intrinsic calibration) — IN PROGRESS
+Full plan in [`intrinsic-calib-app-plan.md`](intrinsic-calib-app-plan.md). Easy intrinsic calib:
+pick target type+size → wave it → **auto-capture** where coverage is poor with a live **image-space
+corner heatmap** → calibrate → error report. Phase B of `camera-calibration-redesign.md`, BEFORE
+Phase C. Sibling app later: `icl-cam-calib-extrinsic` (= Phase C).
+
+**LANDED so far (headless core + verified selftest — plan steps 1–4):**
+- `icl/markers/apps/icl-cam-calib-intrinsic-core.{h,cpp}` — typed headless core: `TargetSpec` +
+  `makeTarget`/`makeSceneNode` (metric-accurate scene geometry), `IntrinsicSession`
+  (`addView`/`calibrate` over `cv::IntrinsicCalibrator` with metric worldpoints + partial-board mask +
+  `objectPointIndex` labelling + per-view reprojection RMS), `CoverageMap` (image occupancy heatmap +
+  pose bins region×scale×tilt from an affine-fit descriptor), `AutoCaptureController` (stability gate
+  + under-representation + debounce), sim GT helpers (`groundTruthIntrinsics`, `forwardDistort`
+  mirroring OffscreenView's MatlabModel5Params warp).
+- `icl-cam-calib-intrinsic.cpp` — `--sim-selftest` headless path (QGuiApplication + `GLSceneCapture`,
+  `QT_QPA_PLATFORM=cocoa`). Modes: `--synthetic` (analytic-projection solver check → recovers
+  fx/fy/cx/cy/k1/k2 EXACTLY); render (recovers fx/cx/cy tight + RMS 0.46px); `--auto` (drives
+  CoverageMap+AutoCaptureController → coverage climbs 36→88%, captures fire selectively, still
+  calibrates). All **PASS**. Flags `--sim-input <size=VGA>`, `-t`, `--cells`, `--square-mm`,
+  `--sim-k1/k2`, `--auto`, `--heatmap`, `-v`, `--dump`.
+- 🔴 **Fixed THREE latent framework bugs found via this app — all missed sites from the DynMatrix
+  (rows,cols) migration** (a background audit of ~272 sites confirmed these are the only ones):
+  (1) `IntrinsicCalibrator::resetData` allocated `distortion_coeffs` as `create(5,1)` vs the ctor's
+  `create(1,5)` → `offset=5+cols()` became 6 not 10 → extrinsic params overwrote distortion → **k1
+  never moved** (this cost most of the debug time); (2) `DynMatrixBase::setBounds` internal
+  `M(cols,rows)`→`M(rows,cols)` (latent holdContent+non-square transpose); (3) `Homography2D.cpp:151`
+  `create(1,8)`→`create(8,1)` — `A.solve(rhs)` threw every iter (swallowed by `catch(...){break}`)
+  so **`Homography2D::refined()`'s LM refinement was silently DEAD**, always returning the DLT seed.
+  Suite still 1064/1064. See [`project_matrix_rowcol_migration`]. NB `setBounds` params are still
+  `(cols,rows)` — the one API whose order is opposite the now-`(rows,cols)` ctor/create.
+  (Audit also flagged pre-existing NON-migration defects in dead branches — `IntrinsicCalibrator`
+  :542 `for(int i=0; m_data->bSize; ++i)` infinite loop, :785 `hashvec(idx,i)` OOB, :713
+  `dvar1dtheta[1]` unset; SoftPosit sinkhorn square-only — left untouched, not this task.)
+
+- **Sim GUI shell landed (plan step 5, compile-verified only).** `guiInit`/`guiRun` in the app:
+  `HSplit(Canvas3D scene | Canvas view | control VBox)` — orbit/zoom the target ("waving"),
+  target combo + checkerboard cell/square sliders (3 pre-built boards, visibility-toggled),
+  auto-capture checkbox, capture-now / reset / calibrate / save buttons, coverage-heatmap toggle,
+  `Prop(&OffscreenView)` for backend+lens distortion, live status labels (views / coverage% / bins /
+  reproj RMS + sim fx-vs-GT error). Camera FOV = simHFovDeg so render focal == distortion focal
+  (self-consistent GT). Runs via `ICLApp(-sim-input(size=VGA) -o(1) ...)`. Can't run interactively
+  in-sandbox (Cocoa `QOpenGLWidget` crashes) — verified it compiles + inits up to GL-context;
+  **needs a real display to exercise**.
+
+**TODO (next):** exercise the GUI on a real display + tune; then real `ImageSource` input (`-i`,
+step 6, currently sim-only); then promote `CoverageMap`/`IntrinsicSession` → `markers` as installed
+classes with a gtest (fold in the `--sim-selftest` asserts). Nice-to-haves: undistortion preview,
+per-bin coverage gauges, save-path via `-o`. Distortion-through-render needs the CODED partial-board
+target (full checkerboard can't reach frame corners → k2 unobservable; already proven by
+`markers.intrinsic.endtoend_coded_partial_k2`).
 
 ### THEN — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
 Build the **extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with

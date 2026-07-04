@@ -39,6 +39,16 @@ if _build_apps and qt_found
     install: true,
   )
 
+  # cam-calib-intrinsic is multi-file (headless core + app/selftest); needs geom2 (sim)
+  executable('icl-cam-calib-intrinsic',
+    files(
+      '../apps/icl-cam-calib-intrinsic.cpp',
+      '../apps/icl-cam-calib-intrinsic-core.cpp',
+    ),
+    dependencies: [icl_markers_dep, icl_geom2_dep],
+    install: true,
+  )
+
   # Single-file apps
   _markers_apps = {
     'create-marker-grid-svg': [],
