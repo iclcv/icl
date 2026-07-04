@@ -124,6 +124,44 @@ ICL_REGISTER_TEST("markers.codedcheckerboard.noise_tolerance",
   ICL_TEST_TRUE(maxErr < 2.0f);                     // correctly labelled (positions noisier)
 }
 
+ICL_REGISTER_TEST("markers.codedcheckerboard.border_markers_label_edge",
+                  "coding the outer ring recovers board-edge corners a cropped interior loses")
+{
+  const int C = 9, R = 7;
+  const float SQ = 25.f;
+  CodedCheckerboardTarget interior(C, R, SQ);                       // interior-only (default)
+  CodedCheckerboardTarget border  (C, R, SQ, 0.62f, SquareBCHPreset::BCH_4x4_t2_RS,
+                                    MarkerCells::White, /*includeBorderMarkers=*/true);
+  ICL_TEST_TRUE(border.numMarkers() > interior.numMarkers());      // the outer ring got coded
+
+  const Size sz(1200, 950);
+  const Layout L(C, R, sz);
+  const Img8u imgI = interior.generate(sz), imgB = border.generate(sz);
+
+  // full board: the border version still labels correctly (no regression)
+  const auto full = border.detect(imgB);
+  ICL_TEST_TRUE((int)full.size() >= 44);
+  float me = 0;
+  for (const auto &c : full) { const int ic=(int)std::lround(c.objectPos[0]/SQ), ir=(int)std::lround(c.objectPos[1]/SQ);
+    me = std::max(me, std::hypot(c.imagePos.x-L.corner(ic,ir).x, c.imagePos.y-L.corner(ic,ir).y)); }
+  ICL_TEST_TRUE(me < 1.0f);
+
+  // Crop a thin TOP strip: the top-edge inner corners (ir=0, at y=oy+px) keep their
+  // saddle, but the row-1 interior markers that would anchor them are cut off. Only
+  // the outer row-0 border markers survive → only the border board labels that edge.
+  const int h = (int)std::lround(L.oy + 1.45f * L.px);
+  auto topEdgeCount = [&](CodedCheckerboardTarget &t, const Img8u &img)->int {
+    Img8u s = img; s.setROI(icl::utils::Rect(0, 0, sz.width, h));
+    Img8u part(s.getROISize(), 1); s.deepCopyROI(&part);
+    int n = 0;
+    for (const auto &c : t.detect(part)) if ((int)std::lround(c.objectPos[1]/SQ) == 0) ++n;
+    return n;
+  };
+  const int e0i = topEdgeCount(interior, imgI), e0b = topEdgeCount(border, imgB);
+  std::printf("[coded-border] cropped top-edge (ir=0) corners: interior=%d border=%d\n", e0i, e0b);
+  ICL_TEST_TRUE(e0b > e0i);        // border markers uniquely recover the top-edge corners
+}
+
 ICL_REGISTER_TEST("markers.codedcheckerboard.partial_board_labels",
                   "a partially-visible (cropped) coded board still labels corners correctly")
 {

@@ -53,10 +53,18 @@ namespace icl::markers {
     /// the cell. \a preset must be one with an n×n detector plugin (BCH_4x4_t2_RS,
     /// BCH_5x5_t4_RS, or BCH_3x3_t1). Throws if the board needs more markers than
     /// the preset offers orientation-safe ids.
+    ///
+    /// \a includeBorderMarkers also codes the OUTER ring of cells. A border cell
+    /// only surrounds 1–2 inner corners (the others fall on the board edge), and
+    /// detect() clips those out — but it lets edge corners stay absolutely labelled
+    /// when the board OVERRUNS the frame and the interior is off-screen (better
+    /// partial-board / k2 coverage). Costs more marker ids (≈ cols·rows/2 vs the
+    /// interior (cols-2)·(rows-2)/2), so it may need a larger \a preset.
     CodedCheckerboardTarget(int cols = 9, int rows = 7, float squareSizeMM = 25.f,
                             float markerFill = 0.62f,
                             SquareBCHPreset preset = SquareBCHPreset::BCH_4x4_t2_RS,
-                            MarkerCells markerCells = MarkerCells::White);
+                            MarkerCells markerCells = MarkerCells::White,
+                            bool includeBorderMarkers = false);
     ~CodedCheckerboardTarget();
 
     CodedCheckerboardTarget(const CodedCheckerboardTarget &) = delete;

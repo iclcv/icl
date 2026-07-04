@@ -58,16 +58,21 @@ namespace icl::markers {
     std::unique_ptr<FiducialDetector> fd;
     cv::CheckerboardSaddleDetector saddle;
 
-    Data(int c, int r, float sq, float f, SquareBCHPreset p, MarkerCells mc)
+    Data(int c, int r, float sq, float f, SquareBCHPreset p, MarkerCells mc, bool border)
       : cols(c), rows(r), squareMM(sq), fill(f), preset(p), markerCells(mc),
         code(SquareBCHCode::presetInfo(p).gridSize, SquareBCHCode::presetInfo(p).correctable),
         detType(detectorTypeFor(p)) {
-      // interior cells (those with 4 surrounding inner corners): cx∈[1,cols-2],
-      // cy∈[1,rows-2]; white cells have (cx+cy) even, black cells odd.
+      // Interior cells (cx∈[1,cols-2], cy∈[1,rows-2]) have 4 surrounding inner
+      // corners; \a border also codes the OUTER ring (cx∈[0,cols-1], cy∈[0,rows-1]),
+      // whose cells surround only 1–2 inner corners — detect() clips the rest, and
+      // the edge corners stay labelled when the board overruns the frame.
+      // White cells have (cx+cy) even, black cells odd.
       const int parity = (markerCells == MarkerCells::White) ? 0 : 1;
+      const int x0 = border ? 0 : 1, x1 = border ? cols-1 : cols-2;
+      const int y0 = border ? 0 : 1, y1 = border ? rows-1 : rows-2;
       std::vector<std::pair<int,int>> cells;
-      for (int cy = 1; cy <= rows-2; ++cy)
-        for (int cx = 1; cx <= cols-2; ++cx)
+      for (int cy = y0; cy <= y1; ++cy)
+        for (int cx = x0; cx <= x1; ++cx)
           if (((cx + cy) & 1) == parity) cells.push_back({cx, cy});
 
       // assign each cell one ORIENTATION-safe id, so every marker's pose (and thus
@@ -98,8 +103,8 @@ namespace icl::markers {
 
   CodedCheckerboardTarget::CodedCheckerboardTarget(int cols, int rows, float squareSizeMM,
                                                    float markerFill, SquareBCHPreset preset,
-                                                   MarkerCells markerCells)
-    : m_data(new Data(cols, rows, squareSizeMM, markerFill, preset, markerCells)) {}
+                                                   MarkerCells markerCells, bool includeBorderMarkers)
+    : m_data(new Data(cols, rows, squareSizeMM, markerFill, preset, markerCells, includeBorderMarkers)) {}
 
   CodedCheckerboardTarget::~CodedCheckerboardTarget() { delete m_data; }
 
