@@ -153,9 +153,17 @@ namespace {
       if (synthetic) { spec.cols = 12; spec.rows = 9;  spec.squareMM = 26; }  // 11x8 inner pts
       else           { spec.cols = 13; spec.rows = 10; spec.squareMM = 30; }  // fills a 56° frame
     }
-    // the synthetic path validates the solver incl. distortion → inject some unless
-    // the user asked for a specific value
-    if (synthetic && !kSet) { k1 = -0.15f; k2 = 0.03f; }
+    // CODED render: make the board large so it OVERRUNS the wide (~90°) frame — the
+    // corners then reach the periphery (r>1) where the radial distortion lives, while
+    // the coded markers keep the off-frame-interior views' edge corners labelled
+    // (partial detection). This is the regime where k1/k2 ARE recoverable, unlike a
+    // full checkerboard that must stay wholly in view.
+    if (!synthetic && spec.type == TargetType::Coded && spec.cols == 9 && spec.rows == 7) {
+      spec.cols = 15; spec.rows = 11; spec.squareMM = 55;  // ~935mm board, 14x10 inner → overruns
+    }
+    // inject realistic distortion where we can actually recover it (synthetic solver,
+    // or the coded-overrun render) unless the user set a specific value
+    if (!kSet && (synthetic || spec.type == TargetType::Coded)) { k1 = -0.15f; k2 = 0.05f; }
 
     std::printf("[selftest] %s  size=%dx%d  injected k1=%.3f k2=%.3f%s\n",
                 spec.describe().c_str(), size.width, size.height, k1, k2,
@@ -310,12 +318,14 @@ namespace {
     std::printf("[selftest] reproj RMS   : %.4f px\n", session.reprojRMS());
 
     // tolerances: focal/principal recover tightly. k2 (r⁴) is only observable when
-    // the board corners reach large image radius — impossible for a FULL
-    // checkerboard that must stay entirely in view — so on the render path it's
-    // only bounded loosely (the S94 k2-observability lesson: the CODED partial
-    // board is the path to real k2). The synthetic solver test excites it fully.
-    const double fTol = 0.02 * gt.fx, cTol = 6.0, k1Tol = 0.03;
-    const double k2Tol = synthetic ? 0.02 : 0.10;
+    // the board corners reach large image radius — impossible for a FULL checkerboard
+    // that must stay entirely in view (bounded loosely there), but the CODED overrun
+    // board reaches r>1 so k IS recoverable and is checked tightly. Synthetic excites
+    // it fully. (The S94 k2-observability lesson made real.)
+    const bool codedRender = (!synthetic && spec.type == TargetType::Coded);
+    const double fTol = (codedRender ? 0.03 : 0.02) * gt.fx, cTol = codedRender ? 8.0 : 6.0;
+    const double k1Tol = (synthetic || codedRender) ? 0.05 : 0.03;
+    const double k2Tol = synthetic ? 0.02 : codedRender ? 0.08 : 0.10;
     bool ok = true;
     auto check = [&](const char *n, double got, double exp, double tol) {
       const double e = std::abs(got - exp);
@@ -630,9 +640,13 @@ namespace {
       const Intrinsics rec = g_session->recovered();
       const Intrinsics gt  = groundTruthIntrinsics(g_camRes, g_view.distortionK1(), g_view.distortionK2());
       // recovered vs (sim) ground truth: focal + the radial distortion coefficients
+      const float er = g_session->edgeReach();
+      const std::string warn = er < 0.85f
+        ? "   ⚠ corners peaked at r=" + f2(er) + " (<0.85) — k1/k2 weakly observed; use coded + overrun frame"
+        : "";
       g_gui["stat2"] = "rms " + f2(g_session->reprojRMS()) + "px    fx " + str((int)std::lround(rec.fx))
                      + "/" + str((int)std::lround(gt.fx)) + "    k1 " + f2(rec.k1) + "/" + f2(gt.k1)
-                     + "    k2 " + f2(rec.k2) + "/" + f2(gt.k2) + "   (recovered/truth)";
+                     + "    k2 " + f2(rec.k2) + "/" + f2(gt.k2) + "   (recovered/truth)" + warn;
     } else {
       const std::string use = !usable ? "not a usable view yet"
                             : novel    ? "USABLE — a new viewpoint"

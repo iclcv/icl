@@ -87,7 +87,10 @@ namespace icl::calibintr {
     if (!t) return false;
     if (s.type == TargetType::Coded) {
       const float aspect = float(s.rows + 2) / float(s.cols + 2);
-      gray = t->generate(Size(700, (int)std::lround(700 * aspect)));
+      // high-res so the coded markers stay crisp even when the board fills/overruns
+      // the frame (blurry markers → noisy corners → poor distortion recovery)
+      const int texW = 2000;
+      gray = t->generate(Size(texW, (int)std::lround(texW * aspect)));
       W = (s.cols + 2) * s.squareMM; H = (s.rows + 2) * s.squareMM;   // 1-cell border
       return true;
     }
@@ -168,10 +171,15 @@ namespace icl::calibintr {
     const Size sz = img.getSize();
     const double f = std::max(sz.width, sz.height) / 2.0;
     const double cx = sz.width / 2.0, cy = sz.height / 2.0;
+    // NB the coefficients are NEGATED: createWarpMap resamples output→input, so
+    // baking it with +k warps the image by the INVERSE (a board shot through a k<0
+    // barrel lens then calibrates to +k). Feeding -k makes the baked distortion match
+    // the Matlab convention the calibrator estimates (k1<0 ⇒ barrel ⇒ recovers k1).
+    // Same negation is applied in geom2::OffscreenView (its distortion.k1/k2 props).
     filter::ImageUndistortion ud("MatlabModel5Params",
-                                 {f, f, cx, cy, 0, (double)k1, (double)k2, 0, 0, 0}, sz);
+                                 {f, f, cx, cy, 0, -(double)k1, -(double)k2, 0, 0, 0}, sz);
     filter::WarpOp warp(Img32f(), interpolateLIN, true, filter::WarpOp::BorderMode::Zero);
-    warp.setWarpMap(ud.createWarpMap(false));   // exact forward map, matches OffscreenView
+    warp.setWarpMap(ud.createWarpMap(false));
     return warp.apply(Image(img)).as<icl8u>();
   }
 
@@ -254,6 +262,15 @@ namespace icl::calibintr {
     if (!o) return false;
     o << m_result;                             // ImageUndistortion serialization
     return (bool)o;
+  }
+
+  float IntrinsicSession::edgeReach() const {
+    const double cx = m_size.width/2.0, cy = m_size.height/2.0;
+    const double halfDiag = 0.5 * std::hypot((double)m_size.width, (double)m_size.height);
+    double maxR = 0;
+    for (const auto &v : m_views)
+      for (const auto &p : v.pts) maxR = std::max(maxR, std::hypot(p.second.x-cx, p.second.y-cy));
+    return halfDiag > 0 ? (float)(maxR/halfDiag) : 0.f;
   }
 
   Intrinsics IntrinsicSession::recovered() const {

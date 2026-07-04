@@ -115,6 +115,12 @@ namespace icl::calibintr {
     Intrinsics recovered() const;             ///< result() as a plain Intrinsics
     double reprojRMS() const { return m_rms; } ///< overall reprojection RMS [px], -1 if none
 
+    /// How close the observed corners got to the frame periphery: max corner radius
+    /// over ALL views / the image half-diagonal (1.0 = a corner reached the image
+    /// corner). Radial distortion (esp. k2) is only well-observed when this is high
+    /// (≳0.85) — a full checkerboard that stays in view can't reach it.
+    float edgeReach() const;
+
     /// Write the recovered intrinsics (ImageUndistortion XML) to \a file. False if
     /// not calibrated yet or the file can't be opened.
     bool save(const std::string &file) const;
