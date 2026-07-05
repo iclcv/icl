@@ -4,9 +4,9 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/CoordinateFrameNode.h>
-#include <icl/geom2/Scene2MouseHandler.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/CoordinateFrameNode.h>
+#include <icl/viz3d/Scene2MouseHandler.h>
 #include <icl/geom/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/PoseEstimator.h>
@@ -29,7 +29,7 @@ typedef Detector::Marker Marker;
 typedef Detector::MarkerGrid MarkerGrid;
 
 
-geom2::Scene2 scene;
+viz3d::Scene2 scene;
 
 
 Mat compute_relative_transform_n(const std::vector<Camera> &s, const std::vector<Camera> &d){
@@ -81,7 +81,7 @@ Mat compute_relative_transform(const Camera &s, const Camera &d){
 
 
 
-std::shared_ptr<geom2::CoordinateFrameNode> cs;
+std::shared_ptr<viz3d::CoordinateFrameNode> cs;
 std::shared_ptr<GridIndicatorObject> gridIndicator;
 
 struct View{
@@ -93,7 +93,7 @@ struct View{
   Camera camera;
   Camera calibratedCamera;
   Image lastImage;
-  std::shared_ptr<geom2::CoordinateFrameNode> cs;
+  std::shared_ptr<viz3d::CoordinateFrameNode> cs;
   std::vector<Camera> capturedFrames;
   View():cbPoseEst(CoplanarPointPoseEstimator::worldFrame,
                    CoplanarPointPoseEstimator::SimplexSampling){}
@@ -191,7 +191,7 @@ void init(){
       fd->setConfigurableID("fd-cam"+str(id));
       v.poseEst.setConfigurableID("poseEst-cam"+str(id));
     }
-    v.cs = geom2::CoordinateFrameNode::create(10,1);
+    v.cs = viz3d::CoordinateFrameNode::create(10,1);
     scene.addNode(v.cs);
   }
   inputIDs = inputIDs.substr(0,inputIDs.length()-1);
@@ -302,7 +302,7 @@ void init(){
   gui["poseEst"].registerCallback([]{ poseEstGUI.switchVisibility(); });
   gui["fid"].registerCallback([]{ fidGUI.switchVisibility(); });
 
-  cs = geom2::CoordinateFrameNode::create();
+  cs = viz3d::CoordinateFrameNode::create();
   cs->setVisible(false);
   scene.addNode(cs);
 

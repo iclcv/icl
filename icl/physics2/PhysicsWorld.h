@@ -8,7 +8,7 @@
 #include <icl/physics2/Units.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/Constraint.h>
-#include <icl/geom2/Node.h>
+#include <icl/viz3d/Node.h>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -25,7 +25,7 @@ class btDynamicsWorld;
 class btActionInterface;
 struct btSoftBodyWorldInfo;
 
-namespace icl::geom2 { class Driver; }
+namespace icl::viz3d { class Driver; }
 
 namespace icl::physics2 {
 
@@ -49,7 +49,7 @@ namespace icl::physics2 {
   /** physics2's world is deliberately thin: it owns the Bullet world + the
       unit/scale policy, runs a fixed-timestep loop (so physical accuracy is
       independent of render framerate), and serves as the factory for drivers.
-      It never touches a geom2 node — bodies publish their pose into per-driver
+      It never touches a viz3d node — bodies publish their pose into per-driver
       `StateSlot`s, which the render thread samples via `Scene2::sync`.
 
       Threading: `start(hz)` spawns a fixed-step loop; `stepOnce()` advances one
@@ -80,7 +80,7 @@ namespace icl::physics2 {
     /// Contact event: invoked per contacting pair each step (sim thread). The
     /// driver pointers are the bodies' owners (cast to RigidBodyDriver* etc.).
     using ContactCallback =
-        std::function<void(geom2::Driver *a, geom2::Driver *b, const Vec &worldPoint)>;
+        std::function<void(viz3d::Driver *a, viz3d::Driver *b, const Vec &worldPoint)>;
     /// Per-body force in ICL units as a function of the body's world position.
     using ForceField = std::function<Vec(const Vec &posIcl)>;
 
@@ -145,12 +145,12 @@ namespace icl::physics2 {
     // --- driver factory (the world injects itself; nothing to pass) ---
     /// Generic: world.addDriver<MyDriver>(node, args...) for custom drivers.
     template<class D, class... A>
-    D *addDriver(std::shared_ptr<geom2::Node> node, A &&... args) {
+    D *addDriver(std::shared_ptr<viz3d::Node> node, A &&... args) {
       auto d = node->addDriver<D>(*this, std::forward<A>(args)...);
       return d.get();
     }
     /// Convenience: rigid body with a collision shape derived from the node.
-    RigidBodyDriver *addRigidBody(std::shared_ptr<geom2::Node> node, float mass) {
+    RigidBodyDriver *addRigidBody(std::shared_ptr<viz3d::Node> node, float mass) {
       return addDriver<RigidBodyDriver>(std::move(node), mass);
     }
 
@@ -159,19 +159,19 @@ namespace icl::physics2 {
     //     leaves the world. \a pivA / \a pivB are the joint pivot in each body's
     //     local space (ICL units); \a axis is 0/1/2 (x/y/z). ---
     /// Rotation free about \a axis only; all translation locked (e.g. a door).
-    std::shared_ptr<Constraint> addHinge(geom2::NodePtr a, geom2::NodePtr b,
+    std::shared_ptr<Constraint> addHinge(viz3d::NodePtr a, viz3d::NodePtr b,
                                          const Vec &pivA, const Vec &pivB, int axis);
     /// Translation free along \a axis only; all rotation locked.
-    std::shared_ptr<Constraint> addSlider(geom2::NodePtr a, geom2::NodePtr b,
+    std::shared_ptr<Constraint> addSlider(viz3d::NodePtr a, viz3d::NodePtr b,
                                           const Vec &pivA, const Vec &pivB, int axis);
     /// All rotation free; all translation locked (a ball-and-socket joint).
-    std::shared_ptr<Constraint> addBallSocket(geom2::NodePtr a, geom2::NodePtr b,
+    std::shared_ptr<Constraint> addBallSocket(viz3d::NodePtr a, viz3d::NodePtr b,
                                               const Vec &pivA, const Vec &pivB);
     /// Fully configurable: all 6 axes locked by default, open with the setters.
-    std::shared_ptr<Constraint> addSixDOF(geom2::NodePtr a, geom2::NodePtr b,
+    std::shared_ptr<Constraint> addSixDOF(viz3d::NodePtr a, viz3d::NodePtr b,
                                           const Vec &pivA, const Vec &pivB);
     /// Spring-bind \a obj's \a localOffset point to a world-space \a worldPoint.
-    std::shared_ptr<SpringConstraint> addSpring(geom2::NodePtr obj, const Vec &localOffset,
+    std::shared_ptr<SpringConstraint> addSpring(viz3d::NodePtr obj, const Vec &localOffset,
                                                 const Vec &worldPoint, float stiffness, float damping);
     /// Detach + delete a constraint (the handle goes inert).
     void removeConstraint(const std::shared_ptr<Constraint> &c);
@@ -189,7 +189,7 @@ namespace icl::physics2 {
 
     /// Shared builder for the four 6DOF presets (axis used by Hinge/Slider only).
     enum class Joint { SixDOF, Hinge, Slider, BallSocket };
-    std::shared_ptr<Constraint> makeDof(geom2::NodePtr a, geom2::NodePtr b,
+    std::shared_ptr<Constraint> makeDof(viz3d::NodePtr a, viz3d::NodePtr b,
                                         const Vec &pivA, const Vec &pivB,
                                         Joint kind, int axis);
 

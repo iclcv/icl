@@ -12,7 +12,7 @@
 #define ICLPhysics2_API
 #endif
 
-namespace icl::geom2 { class Scene2; }
+namespace icl::viz3d { class Scene2; }
 
 namespace icl::physics2 {
 
@@ -28,7 +28,7 @@ namespace icl::physics2 {
       drives navigation. */
   class ICLPhysics2_API PhysicsMouseHandler : public qt::MouseHandler {
   public:
-    PhysicsMouseHandler(int cameraIndex, geom2::Scene2 *scene, PhysicsWorld *world);
+    PhysicsMouseHandler(int cameraIndex, viz3d::Scene2 *scene, PhysicsWorld *world);
     ~PhysicsMouseHandler() override;
 
     qt::MouseResult process(const qt::MouseEvent &e) override;

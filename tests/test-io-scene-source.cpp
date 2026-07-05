@@ -2,16 +2,16 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// The "scene" image-source backend (icl/geom2/detail/SceneSource): a synthetic
-// depth/RGBD/color camera over a built-in geom2 scene. GL-free (CPU raytrace),
+// The "scene" image-source backend (icl/viz3d/detail/SceneSource): a synthetic
+// depth/RGBD/color camera over a built-in viz3d scene. GL-free (CPU raytrace),
 // so it runs headless. Tests cover the output formats, the camera-in-metadata
 // round-trip, and the full depth -> camera -> point-cloud reconstruction.
 
 #include "harness/Test.h"
 #include <icl/io/source/ImageSource.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom2/PointCloud.h>
-#include <icl/geom2/PointCloudSource.h>
+#include <icl/viz3d/PointCloud.h>
+#include <icl/viz3d/PointCloudSource.h>
 #include <icl/io/compress/ImageCompressor.h>
 #include <icl/core/Image.h>
 #include <sstream>
@@ -84,7 +84,7 @@ ICL_REGISTER_TEST("io.scenesource.reconstruct_cloud", "depth + metadata camera -
   std::istringstream is(depth.ptr()->getMetaData());
   Camera cam; is >> cam;
 
-  geom2::PointCloud cloud(640, 480, geom2::PointCloud::XYZ);
+  viz3d::PointCloud cloud(640, 480, viz3d::PointCloud::XYZ);
   cloud.unprojectDepth(depth.as<icl32f>(), cam, /*distToCamPlane=*/true);
   ICL_TEST_EQ(cloud.getDim(), 640 * 480);
 
@@ -105,14 +105,14 @@ ICL_REGISTER_TEST("io.scenesource.reconstruct_cloud", "depth + metadata camera -
 // wraps the ImageSource, resolves the camera from metadata, and reconstructs.
 ICL_REGISTER_TEST("io.scenesource.pointcloudsource", "PointCloudSource grabs scene -> coloured cloud")
 {
-  geom2::PointCloudSource src;
+  viz3d::PointCloudSource src;
   src.init("scene", "@animate=off@format=rgbd");
-  geom2::PointCloud cloud;
+  viz3d::PointCloud cloud;
   const bool ok = src.grab(cloud);
   ICL_TEST_EQ(ok, true);
   ICL_TEST_EQ(src.hasCamera(), true);
   ICL_TEST_EQ(cloud.getDim(), 640 * 480);
-  ICL_TEST_EQ(cloud.supports(geom2::PointCloud::RGBA32f), true);   // rgbd -> colour
+  ICL_TEST_EQ(cloud.supports(viz3d::PointCloud::RGBA32f), true);   // rgbd -> colour
 
   auto xyz = cloud.selectXYZ();
   int realHits = 0;
@@ -147,7 +147,7 @@ ICL_REGISTER_TEST("io.scenesource.transport_roundtrip", "depth + camera survive 
   // the recovered camera unprojects the recovered depth into a cloud
   std::istringstream is(back.ptr()->getMetaData());
   Camera cam; is >> cam;
-  geom2::PointCloud cloud;
+  viz3d::PointCloud cloud;
   cloud.unprojectDepth(back.as<icl32f>(), cam, true);
   ICL_TEST_EQ(cloud.getDim(), 640 * 480);
 
@@ -164,10 +164,10 @@ ICL_REGISTER_TEST("io.scenesource.transport_roundtrip", "depth + camera survive 
 // Geometric keep/remove filters on the reconstructed cloud.
 ICL_REGISTER_TEST("io.scenesource.geom2_filters", "PointCloud::filterSphere/filterBox keep/remove points")
 {
-  geom2::PointCloudSource src;
+  viz3d::PointCloudSource src;
   src.init("scene", "@animate=off");
 
-  auto countValid = [](geom2::PointCloud &c) {
+  auto countValid = [](viz3d::PointCloud &c) {
     auto xyz = c.selectXYZ();
     int n = 0;
     for (int i = 0; i < c.getDim(); ++i) {
@@ -178,18 +178,18 @@ ICL_REGISTER_TEST("io.scenesource.geom2_filters", "PointCloud::filterSphere/filt
   };
 
   // keep only a sphere around the content -> fewer (but some) valid points
-  geom2::PointCloud a;
+  viz3d::PointCloud a;
   src.grab(a);
   const int before = countValid(a);
-  a.filterSphere(geom2::Vec(0, 0, 50, 1), 200.f, /*keepInside=*/true);
+  a.filterSphere(viz3d::Vec(0, 0, 50, 1), 200.f, /*keepInside=*/true);
   const int afterSphere = countValid(a);
   ICL_TEST_EQ(before > 0, true);
   ICL_TEST_EQ(afterSphere > 0 && afterSphere < before, true);
 
   // remove the inside of a box -> also fewer valid points
-  geom2::PointCloud b;
+  viz3d::PointCloud b;
   src.grab(b);
-  b.filterBox(geom2::Vec(0, 0, 50, 1), geom2::Vec(120, 120, 120, 0), /*keepInside=*/false);
+  b.filterBox(viz3d::Vec(0, 0, 50, 1), viz3d::Vec(120, 120, 120, 0), /*keepInside=*/false);
   const int afterBox = countValid(b);
   ICL_TEST_EQ(afterBox > 0 && afterBox < before, true);
 }
@@ -198,9 +198,9 @@ ICL_REGISTER_TEST("io.scenesource.geom2_filters", "PointCloud::filterSphere/filt
 // is within range (the cloud has no depth, so this needs the camera).
 ICL_REGISTER_TEST("io.scenesource.geom2_depthrange", "PointCloud::filterDepthRange keeps in-range points")
 {
-  geom2::PointCloudSource src;
+  viz3d::PointCloudSource src;
   src.init("scene", "@animate=off");
-  geom2::PointCloud c;
+  viz3d::PointCloud c;
   src.grab(c);
   const Camera cam = src.getCamera();
 
@@ -231,19 +231,19 @@ ICL_REGISTER_TEST("io.scenesource.geom2_depthrange", "PointCloud::filterDepthRan
   ICL_TEST_EQ(allInRange, true);
 }
 
-// The geom2-native consumer path: PointCloud::unprojectDepth (what
+// The viz3d-native consumer path: PointCloud::unprojectDepth (what
 // icl-point-cloud-viewer uses) reconstructs a cloud from depth + camera.
-ICL_REGISTER_TEST("io.scenesource.geom2_unproject", "geom2 PointCloud::unprojectDepth reconstructs the scene")
+ICL_REGISTER_TEST("io.scenesource.geom2_unproject", "viz3d PointCloud::unprojectDepth reconstructs the scene")
 {
   ImageSource src("scene", "@animate=off");
   Image depth = src.grab();
   std::istringstream is(depth.ptr()->getMetaData());
   Camera cam; is >> cam;
 
-  geom2::PointCloud cloud;
+  viz3d::PointCloud cloud;
   cloud.unprojectDepth(depth.as<icl32f>(), cam, /*distToCamPlane=*/true);
   ICL_TEST_EQ(cloud.getDim(), 640 * 480);
-  ICL_TEST_EQ(cloud.supports(geom2::PointCloud::XYZ), true);
+  ICL_TEST_EQ(cloud.supports(viz3d::PointCloud::XYZ), true);
 
   auto xyz = cloud.selectXYZ();
   int realHits = 0;

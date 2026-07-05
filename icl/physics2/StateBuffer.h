@@ -18,9 +18,9 @@ namespace icl::physics2 {
 
   /// One body's published pose — the physics<->render membrane, per body.
   /** The sim thread publishes a body's world transform each step; the render
-      thread samples it (optionally interpolated) to drive a geom2 node. This
+      thread samples it (optionally interpolated) to drive a viz3d node. This
       is the *only* shared mutable state crossing the thread boundary, so the
-      golden rule holds: the sim thread never touches a geom2 node, the render
+      golden rule holds: the sim thread never touches a viz3d node, the render
       thread never touches Bullet.
 
       Double-buffered (prev + curr) so the render side can interpolate between

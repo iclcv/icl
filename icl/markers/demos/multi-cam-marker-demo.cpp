@@ -3,20 +3,20 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // Multi-camera fiducial detection. Detection/triangulation is pure CV
-// (MultiCamFiducialDetector); each detected marker is shown as a geom2
+// (MultiCamFiducialDetector); each detected marker is shown as a viz3d
 // GroupNode (wireframe box + complex coordinate frame), and the active camera's
 // GL callback is linked into the 3D view.
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 #include <icl/markers/MultiCamFiducialDetector.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/GroupNode.h>
-#include <icl/geom2/CuboidNode.h>
-#include <icl/geom2/CoordinateFrameNode.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/GroupNode.h>
+#include <icl/viz3d/CuboidNode.h>
+#include <icl/viz3d/CoordinateFrameNode.h>
 #include <mutex>
 
-using namespace icl::geom2;
+using namespace icl::viz3d;
 using namespace icl::geom;
 using namespace icl::markers;
 using namespace icl::core;

@@ -5,7 +5,7 @@
 #include <icl/physics2/Constraint.h>
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/RigidBodyDriver.h>
-#include <icl/geom2/Node.h>
+#include <icl/viz3d/Node.h>
 #include <icl/utils/Exception.h>
 
 #include <btBulletDynamicsCommon.h>
@@ -162,7 +162,7 @@ namespace icl::physics2 {
     // free = lower>upper, locked = lower==upper(0)
     void freeAxis(btVector3 &lo, btVector3 &hi, int axis) { lo[axis] = 1; hi[axis] = -1; }
 
-    RigidBodyDriver *resolve(const geom2::NodePtr &n,
+    RigidBodyDriver *resolve(const viz3d::NodePtr &n,
                              std::shared_ptr<RigidBodyDriver> &keep) {
       if (!n) throw utils::ICLException("PhysicsWorld constraint: null node");
       keep = n->getDriverPtr<RigidBodyDriver>();
@@ -176,7 +176,7 @@ namespace icl::physics2 {
   // Build a 6DOF constraint between two bodies, apply the preset, wire the
   // cross-edges, register it with the world.
   std::shared_ptr<Constraint>
-  PhysicsWorld::makeDof(geom2::NodePtr na, geom2::NodePtr nb,
+  PhysicsWorld::makeDof(viz3d::NodePtr na, viz3d::NodePtr nb,
                         const Vec &pivA, const Vec &pivB, Joint kind, int axis) {
     std::shared_ptr<RigidBodyDriver> ka, kb;
     RigidBodyDriver *da = resolve(na, ka), *db = resolve(nb, kb);
@@ -220,27 +220,27 @@ namespace icl::physics2 {
   }
 
   std::shared_ptr<Constraint>
-  PhysicsWorld::addSixDOF(geom2::NodePtr a, geom2::NodePtr b, const Vec &pivA, const Vec &pivB) {
+  PhysicsWorld::addSixDOF(viz3d::NodePtr a, viz3d::NodePtr b, const Vec &pivA, const Vec &pivB) {
     return makeDof(a, b, pivA, pivB, Joint::SixDOF, 0);
   }
 
   std::shared_ptr<Constraint>
-  PhysicsWorld::addHinge(geom2::NodePtr a, geom2::NodePtr b, const Vec &pivA, const Vec &pivB, int axis) {
+  PhysicsWorld::addHinge(viz3d::NodePtr a, viz3d::NodePtr b, const Vec &pivA, const Vec &pivB, int axis) {
     return makeDof(a, b, pivA, pivB, Joint::Hinge, axis);
   }
 
   std::shared_ptr<Constraint>
-  PhysicsWorld::addSlider(geom2::NodePtr a, geom2::NodePtr b, const Vec &pivA, const Vec &pivB, int axis) {
+  PhysicsWorld::addSlider(viz3d::NodePtr a, viz3d::NodePtr b, const Vec &pivA, const Vec &pivB, int axis) {
     return makeDof(a, b, pivA, pivB, Joint::Slider, axis);
   }
 
   std::shared_ptr<Constraint>
-  PhysicsWorld::addBallSocket(geom2::NodePtr a, geom2::NodePtr b, const Vec &pivA, const Vec &pivB) {
+  PhysicsWorld::addBallSocket(viz3d::NodePtr a, viz3d::NodePtr b, const Vec &pivA, const Vec &pivB) {
     return makeDof(a, b, pivA, pivB, Joint::BallSocket, 0);
   }
 
   std::shared_ptr<SpringConstraint>
-  PhysicsWorld::addSpring(geom2::NodePtr obj, const Vec &localOffset,
+  PhysicsWorld::addSpring(viz3d::NodePtr obj, const Vec &localOffset,
                           const Vec &worldPoint, float stiffness, float damping) {
     std::shared_ptr<RigidBodyDriver> keep;
     RigidBodyDriver *drv = resolve(obj, keep);

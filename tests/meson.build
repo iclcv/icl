@@ -28,14 +28,14 @@ if qt_dep.found()
     'test-quick-compose.cpp',
     'test-quick-draw.cpp',
     'test-quick-io.cpp',
-    'test-geom2-driver.cpp',
-    'test-geom2-default-scene.cpp',
-    'test-geom2-scene-capture.cpp',
-    'test-geom2-pointcloud-mapcolor.cpp',
-    'test-geom2-raycast-octree.cpp',
-    'test-geom2-primitive3d-converter.cpp',
-    'test-geom2-grid-node.cpp',
-    'test-geom2-calibration-harness.cpp',
+    'test-viz3d-driver.cpp',
+    'test-viz3d-default-scene.cpp',
+    'test-viz3d-scene-capture.cpp',
+    'test-viz3d-pointcloud-mapcolor.cpp',
+    'test-viz3d-raycast-octree.cpp',
+    'test-viz3d-primitive3d-converter.cpp',
+    'test-viz3d-grid-node.cpp',
+    'test-viz3d-calibration-harness.cpp',
     'test-geom-coplanar-pose.cpp',
     'test-markers-bch-code.cpp',
     'test-markers-checkerboard-target.cpp',
@@ -47,7 +47,7 @@ if qt_dep.found()
     'test-io-scene-source.cpp',
     'test-gui-definition.cpp',
   )
-  test_deps += [icl_io_dep, icl_qt_dep, icl_geom2_dep, icl_markers_dep]
+  test_deps += [icl_io_dep, icl_qt_dep, icl_viz3d_dep, icl_markers_dep]
   if bullet_found
     test_sources += files('test-physics2.cpp')
     test_deps += [icl_physics2_dep]

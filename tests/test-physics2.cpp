@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// Phase 1 of the physics2 plan: driver-based Bullet physics on geom2. These
+// Phase 1 of the physics2 plan: driver-based Bullet physics on viz3d. These
 // tests use the deterministic single-threaded stepOnce() path (no render
 // thread, no GL), so they are fully verifiable headless.
 
@@ -15,15 +15,15 @@
 #include <icl/physics2/Units.h>
 #include <icl/physics2/SoftBodyDriver.h>
 #include <icl/physics2/SensorDriver.h>
-#include <icl/geom2/Node.h>
-#include <icl/geom2/Driver.h>
+#include <icl/viz3d/Node.h>
+#include <icl/viz3d/Driver.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom2/CuboidNode.h>
-#include <icl/geom2/SphereNode.h>
-#include <icl/geom2/MeshNode.h>
-#include <icl/geom2/GroupNode.h>
-#include <icl/geom2/CylinderNode.h>
-#include <icl/geom2/DefaultScene.h>
+#include <icl/viz3d/CuboidNode.h>
+#include <icl/viz3d/SphereNode.h>
+#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/GroupNode.h>
+#include <icl/viz3d/CylinderNode.h>
+#include <icl/viz3d/DefaultScene.h>
 #include <icl/physics2/SoftBodyDriver.h>
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/FoldDriver.h>
@@ -37,7 +37,7 @@
 #include <cmath>
 
 using namespace icl::physics2;
-using namespace icl::geom2;
+using namespace icl::viz3d;
 
 static float xOf(const Mat &m) { return m(0, 3); }   // translation x (row 0, col 3)
 static float zOf(const Mat &m) { return m(2, 3); }   // translation z (row 2, col 3)

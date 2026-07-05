@@ -5,8 +5,8 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/geom2/Driver.h>
-#include <icl/geom2/Node.h>
+#include <icl/viz3d/Driver.h>
+#include <icl/viz3d/Node.h>
 #include <icl/physics2/Units.h>
 #include <memory>
 #include <vector>
@@ -37,7 +37,7 @@ namespace icl::physics2 {
     float baseFrac = 0.85f;           ///< wheel y-spread as a fraction of chassis half-length
   };
 
-  /// A geom2 Driver that turns its host node into a `btRaycastVehicle` — a car
+  /// A viz3d Driver that turns its host node into a `btRaycastVehicle` — a car
   /// with a rigid chassis and four *raycast* wheels (no separate wheel bodies).
   /** Replaces the legacy hinge-wheel car. The host node supplies the chassis
       collision shape (a `CuboidNode` works well); the driver creates four wheel
@@ -56,7 +56,7 @@ namespace icl::physics2 {
       Bullet internally; suspension stiffness/damping/friction are dimensionless
       Bullet tunables. Runs in any world (the default unified `Deformable` world
       included). */
-  class ICLPhysics2_API VehicleDriver : public geom2::Driver {
+  class ICLPhysics2_API VehicleDriver : public viz3d::Driver {
   public:
     using Config = VehicleConfig;   ///< back-compat alias
 
@@ -92,7 +92,7 @@ namespace icl::physics2 {
 
     /// The four wheel nodes (FL, FR, RL, RR) the scene must render. Valid after
     /// onAttach(); `PhysicsScene::addVehicle` adds them for you.
-    const std::vector<geom2::NodePtr> &getWheelNodes() const;
+    const std::vector<viz3d::NodePtr> &getWheelNodes() const;
 
   private:
     struct Data;

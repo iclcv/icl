@@ -27,17 +27,17 @@
 #include <icl/qt/ui.h>
 #include <icl/geom/Material.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom2/GroupNode.h>
-#include <icl/geom2/CuboidNode.h>
-#include <icl/geom2/CylinderNode.h>
-#include <icl/geom2/ConeNode.h>
-#include <icl/geom2/Scene2MouseHandler.h>
-#include <icl/geom2/DefaultScene.h>
+#include <icl/viz3d/GroupNode.h>
+#include <icl/viz3d/CuboidNode.h>
+#include <icl/viz3d/CylinderNode.h>
+#include <icl/viz3d/ConeNode.h>
+#include <icl/viz3d/Scene2MouseHandler.h>
+#include <icl/viz3d/DefaultScene.h>
 #include <icl/physics2/PhysicsScene.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <cmath>
 
-using namespace icl::geom2;
+using namespace icl::viz3d;
 using namespace icl::geom;
 using namespace icl::utils;
 using namespace icl::qt;

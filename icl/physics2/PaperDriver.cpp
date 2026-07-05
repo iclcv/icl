@@ -5,9 +5,9 @@
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/StateBuffer.h>
-#include <icl/geom2/Node.h>
-#include <icl/geom2/MeshNode.h>
-#include <icl/geom2/Primitive.h>
+#include <icl/viz3d/Node.h>
+#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/Primitive.h>
 #include <icl/cv3d/ViewRay.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/math/transform/HomogeneousMath.h>
@@ -596,7 +596,7 @@ namespace icl::physics2 {
     registerCallback([this](const Configurable::Property &p) {
       if (p.name == "smooth normals") {
         m_data->smoothNormals = (bool)prop(p.name).value;   // render-side only
-        if (auto *mesh = dynamic_cast<geom2::MeshNode *>(node()))
+        if (auto *mesh = dynamic_cast<viz3d::MeshNode *>(node()))
           mesh->setSmoothShading(m_data->smoothNormals);
       } else {
         // fold softness / bend range / self collision: re-derive the bending graph
@@ -629,8 +629,8 @@ namespace icl::physics2 {
   void PaperDriver::onAttach() { buildBody(); }
 
   void PaperDriver::buildBody() {
-    auto *mesh = dynamic_cast<geom2::MeshNode *>(node());
-    if (!mesh) { ERROR_LOG("PaperDriver must be attached to a geom2::MeshNode"); return; }
+    auto *mesh = dynamic_cast<viz3d::MeshNode *>(node());
+    if (!mesh) { ERROR_LOG("PaperDriver must be attached to a viz3d::MeshNode"); return; }
     if (m_data->world.isDeformable()) {
       ERROR_LOG("PaperDriver needs a SoftRigid world (cluster self-collision + per-link "
                 "constants); construct the scene with SoftBodyMode::SoftRigid");
@@ -707,7 +707,7 @@ namespace icl::physics2 {
     });
 
     // initial mesh topology (vertices from nodes, triangles from faces)
-    const geom2::GeomColor col(0.92f, 0.90f, 0.86f, 1.0f);
+    const viz3d::GeomColor col(0.92f, 0.90f, 0.86f, 1.0f);
     mesh->clearGeometry();
     for (int i = 0; i < s->m_nodes.size(); ++i) mesh->addVertex(u.toIclVec(s->m_nodes[i].m_x), col);
     for (int f = 0; f < s->m_faces.size(); ++f) {
@@ -737,7 +737,7 @@ namespace icl::physics2 {
   }
 
   void PaperDriver::sync(double /*dt*/, double /*alpha*/) {
-    auto *mesh = dynamic_cast<geom2::MeshNode *>(node());
+    auto *mesh = dynamic_cast<viz3d::MeshNode *>(node());
     if (!mesh) return;
     std::vector<Vec> pos;
     int ver = 0;
@@ -747,7 +747,7 @@ namespace icl::physics2 {
       std::vector<int> faces; int tver = -1;
       m_data->buffer.sampleTopology(faces, tver);
       if (tver != ver) return;   // topology not yet caught up; wait one frame
-      const geom2::GeomColor col(0.92f, 0.90f, 0.86f, 1.0f);
+      const viz3d::GeomColor col(0.92f, 0.90f, 0.86f, 1.0f);
       mesh->clearGeometry();
       for (const auto &p : pos) mesh->addVertex(p, col);
       for (size_t f = 0; f + 2 < faces.size(); f += 3)

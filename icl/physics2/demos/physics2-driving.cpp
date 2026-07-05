@@ -21,17 +21,17 @@
 #include <icl/qt/KeyboardHandler.h>
 #include <icl/geom/Material.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom2/CuboidNode.h>
-#include <icl/geom2/CylinderNode.h>
-#include <icl/geom2/SphereNode.h>
-#include <icl/geom2/DefaultScene.h>
+#include <icl/viz3d/CuboidNode.h>
+#include <icl/viz3d/CylinderNode.h>
+#include <icl/viz3d/SphereNode.h>
+#include <icl/viz3d/DefaultScene.h>
 #include <icl/physics2/PhysicsScene.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/Constraint.h>
 #include <icl/physics2/VehicleDriver.h>
 #include <cmath>
 
-using namespace icl::geom2;
+using namespace icl::viz3d;
 using namespace icl::geom;
 using namespace icl::utils;
 using namespace icl::qt;
@@ -45,7 +45,7 @@ KeyboardHandler keys;            // WASD + space, polled each frame
 Time lastTick;
 Mat carSpawn = Mat::id();        // where the reset button respawns the car
 
-// --- a simple third-person chase camera (demo-local; promote to geom2 if reused) ---
+// --- a simple third-person chase camera (demo-local; promote to viz3d if reused) ---
 static Vec cnorm(const Vec &v) {
   float l = std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
   l = l > 1e-6f ? l : 1.f;

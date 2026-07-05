@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/Configurable.h>
 #include <icl/utils/Point.h>
-#include <icl/geom2/Driver.h>
+#include <icl/viz3d/Driver.h>
 #include <icl/physics2/Units.h>
 
 #ifndef ICLPhysics2_API
@@ -25,7 +25,7 @@ namespace icl::physics2 {
       strength + radius are its own Configurable tunables, kept separate from the
       substrate and the fold behaviour — so a node can carry a substrate plus
       several behaviours, each with its own UI, dispatched by input. */
-  class ICLPhysics2_API PaperMoverDriver : public geom2::Driver,
+  class ICLPhysics2_API PaperMoverDriver : public viz3d::Driver,
                                            public utils::Configurable {
   public:
     PaperMoverDriver();

@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/Configurable.h>
-#include <icl/geom2/Driver.h>
+#include <icl/viz3d/Driver.h>
 #include <icl/physics2/Units.h>
 #include <memory>
 
@@ -21,7 +21,7 @@ namespace icl::physics2 {
   class PhysicsWorld;
   class RigidBodyDriver;
 
-  /// A geom2 Driver that binds a Bullet soft body (cloth/patch) to a MeshNode.
+  /// A viz3d Driver that binds a Bullet soft body (cloth/patch) to a MeshNode.
   /** Soft bodies have no rigid pose — their geometry IS the state. The driver
       builds a btSoftBody patch, registers a post-step capture hook (the sim
       thread snapshots node positions into a SoftStateBuffer), and on the UI
@@ -29,14 +29,14 @@ namespace icl::physics2 {
       normals). The node's transform stays identity; vertices carry world
       positions in ICL units.
 
-      Host node MUST be a geom2::MeshNode. Born from
+      Host node MUST be a viz3d::MeshNode. Born from
       PhysicsScene::addCloth(...) / world.addDriver<SoftBodyDriver>(meshNode,...). */
   /** Tunable cloth parameters are exposed as live `utils::Configurable`
       properties (stiffness / friction / damping / contact hardness / position
       iterations / collision margin / self collision); changing one applies to
       the running soft body via the world's sim-thread command queue. Drop a
       `Prop(clothDriver)` into a GUI to dial them in interactively. */
-  class ICLPhysics2_API SoftBodyDriver : public geom2::Driver,
+  class ICLPhysics2_API SoftBodyDriver : public viz3d::Driver,
                                          public utils::Configurable {
   public:
     /// Rectangular cloth patch spanned by four corners (ICL units), with

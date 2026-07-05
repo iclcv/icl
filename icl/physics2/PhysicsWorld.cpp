@@ -452,8 +452,8 @@ namespace icl::physics2 {
       for (int i = 0; i < n; i++) {
         btPersistentManifold *m = m_data->dispatcher->getManifoldByIndexInternal(i);
         if (m->getNumContacts() == 0) continue;
-        auto *a = static_cast<geom2::Driver *>(m->getBody0()->getUserPointer());
-        auto *b = static_cast<geom2::Driver *>(m->getBody1()->getUserPointer());
+        auto *a = static_cast<viz3d::Driver *>(m->getBody0()->getUserPointer());
+        auto *b = static_cast<viz3d::Driver *>(m->getBody1()->getUserPointer());
         Vec p = m_data->units.toIclVec(m->getContactPoint(0).getPositionWorldOnA());
         m_data->contactCb(a, b, p);
       }

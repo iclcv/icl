@@ -10,8 +10,8 @@
 #include <icl/markers/MarkerGridTarget.h>
 #include <icl/markers/FiducialDetector.h>         // black-cell coded: pp.filter=dilatation
 #include <icl/markers/FiducialDetectorPlugin.h>   // getPlugin()->setPropertyValue
-#include <icl/geom2/CheckerboardNode.h>
-#include <icl/geom2/MeshNode.h>
+#include <icl/viz3d/CheckerboardNode.h>
+#include <icl/viz3d/MeshNode.h>
 #include <icl/geom/Material.h>
 #include <icl/filter/affine/ImageUndistortion.h>
 #include <icl/filter/affine/WarpOp.h>
@@ -114,7 +114,7 @@ namespace icl::calibintr {
   // (Re)populate a MeshNode as a flat matte quad of the given physical size textured
   // with \a gray. Reuses the existing material across rebuilds (stable pointer → no
   // freed-then-reused-Material* stale-cache hazard).
-  static void populateQuad(geom2::MeshNode &node, const Img8u &gray, float W, float H) {
+  static void populateQuad(viz3d::MeshNode &node, const Img8u &gray, float W, float H) {
     Img8u rgb(gray.getSize(), formatRGB);
     for (int c = 0; c < 3; ++c) std::copy(gray.begin(0), gray.end(0), rgb.begin(c));
 
@@ -132,21 +132,21 @@ namespace icl::calibintr {
     if (!mat) { mat = geom::Material::fromColor(geom::GeomColor(255,255,255,255));
                 mat->roughness = 1.0f; mat->metallic = 0.0f; node.setMaterial(mat); }
     mat->setBaseColorMap(Image(rgb));
-    node.setPrimitiveVisible(geom2::PrimLine | geom2::PrimVertex, false);
+    node.setPrimitiveVisible(viz3d::PrimLine | viz3d::PrimVertex, false);
   }
 
-  geom2::NodePtr makeSceneNode(const TargetSpec &s) {
+  viz3d::NodePtr makeSceneNode(const TargetSpec &s) {
     if (s.type == TargetType::Checkerboard)
       // CheckerboardNode cell width = widthMM/(cols+2); size it so cell == squareMM.
-      return geom2::CheckerboardNode::create(s.cols, s.rows, s.squareMM * (s.cols + 2));
+      return viz3d::CheckerboardNode::create(s.cols, s.rows, s.squareMM * (s.cols + 2));
     Img8u gray; float W = 0, H = 0;
     if (!boardTexture(s, gray, W, H)) return nullptr;
-    auto node = std::make_shared<geom2::MeshNode>();
+    auto node = std::make_shared<viz3d::MeshNode>();
     populateQuad(*node, gray, W, H);
     return node;
   }
 
-  void rebuildBoardNode(geom2::MeshNode &node, const TargetSpec &s) {
+  void rebuildBoardNode(viz3d::MeshNode &node, const TargetSpec &s) {
     Img8u gray; float W = 0, H = 0;
     if (!boardTexture(s, gray, W, H)) return;   // checkerboard / failed build: no-op
     // Rebuild geometry/texture in place (same pattern the checkerboard lab uses from
@@ -182,7 +182,7 @@ namespace icl::calibintr {
     // baking it with +k warps the image by the INVERSE (a board shot through a k<0
     // barrel lens then calibrates to +k). Feeding -k makes the baked distortion match
     // the Matlab convention the calibrator estimates (k1<0 ⇒ barrel ⇒ recovers k1).
-    // Same negation is applied in geom2::OffscreenView (its distortion.k1/k2 props).
+    // Same negation is applied in viz3d::OffscreenView (its distortion.k1/k2 props).
     filter::ImageUndistortion ud("MatlabModel5Params",
                                  {f, f, cx, cy, 0, -(double)k1, -(double)k2, 0, 0, 0}, sz);
     filter::WarpOp warp(Img32f(), interpolateLIN, true, filter::WarpOp::BorderMode::Zero);

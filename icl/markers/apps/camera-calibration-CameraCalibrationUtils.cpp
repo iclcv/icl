@@ -4,9 +4,9 @@
 
 #include "camera-calibration-CameraCalibrationUtils.h"
 #include <icl/core/CoreFunctions.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/GroupNode.h>
-#include <icl/geom2/MeshNode.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/GroupNode.h>
+#include <icl/viz3d/MeshNode.h>
 #include <icl/geom/Material.h>
 
 #include <icl/utils/ProgArg.h>
@@ -18,7 +18,7 @@
 
 #include <QtWidgets/QMessageBox>
 #include <icl/markers/FiducialDetectorPlugin.h>
-#include <icl/geom2/GridNode.h>
+#include <icl/viz3d/GridNode.h>
 #include <mutex>
 
 
@@ -277,9 +277,9 @@ namespace icl::markers {
           obj << s << std::endl;
         }
 
-        auto group = std::make_shared<geom2::GroupNode>();
+        auto group = std::make_shared<viz3d::GroupNode>();
         auto mat = Material::fromColors(GeomColor(0,100,255,100), GeomColor(255,0,0,255));
-        for(auto &m : geom2::MeshNode::load(tmpFilename)){
+        for(auto &m : viz3d::MeshNode::load(tmpFilename)){
           m->setMaterial(mat);
           group->addChild(m);
         }
@@ -396,7 +396,7 @@ namespace icl::markers {
       return cf;
     }
 
-    void CameraCalibrationUtils::change_plane(const std::string &handle, GUI &planeOptionGUI, geom2::Scene2 &scene,
+    void CameraCalibrationUtils::change_plane(const std::string &handle, GUI &planeOptionGUI, viz3d::Scene2 &scene,
                                               CameraCalibrationUtils::CalibFileData &calibFileData){
       if(handle == "planeDim"){
         if(planeOptionGUI["planeDim"].as<std::string>() == "none"){
@@ -449,7 +449,7 @@ namespace icl::markers {
       }
       int n2 = n/2;
 
-      calibFileData.planeObj = std::make_shared<geom2::GridNode>(n,n,o -dx*(n2) - dy*(n2) ,dx,dy,true,false);
+      calibFileData.planeObj = std::make_shared<viz3d::GridNode>(n,n,o -dx*(n2) - dy*(n2) ,dx,dy,true,false);
       calibFileData.planeObj->setMaterial(Material::fromColor(GeomColor(c[0],c[1],c[2],c[3])));
 
       calibFileData.planeObj->addVertex(set_3_to_1(o-dx*n2));
@@ -542,7 +542,7 @@ namespace icl::markers {
                                                  const std::string &planeDim,
                                                  float planeOffset,
                                                  const utils::Point32f &currentMousePos,
-                                                 geom2::Scene2 &scene){
+                                                 viz3d::Scene2 &scene){
       draw->linewidth(1);
       const Point32f p = currentMousePos;
       const std::string t = planeDim;
@@ -694,7 +694,7 @@ namespace icl::markers {
                                                 const geom::Mat &Trel, const utils::Size &imageSize,
                                                 bool &deactivatedCenters, bool useCorners,
                                                 bool normalizeError, BestOfNSaver *saver,
-                                                bool &haveAnyCalibration, geom2::Scene2 &scene,
+                                                bool &haveAnyCalibration, viz3d::Scene2 &scene,
                                                 const geom::Camera *givenIntrinsicParams,
                                                 bool performLMAbasedOptimiziation){
       CalibrationResult res;

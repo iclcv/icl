@@ -3,22 +3,22 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // Fiducial detection demo. Detection is pure CV (FiducialDetector); the
-// optional 3D pose overlay now uses geom2 — a GroupNode holding a complex
+// optional 3D pose overlay now uses viz3d — a GroupNode holding a complex
 // CoordinateFrameNode + a CuboidNode, driven by each marker's 6D pose.
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/GroupNode.h>
-#include <icl/geom2/CuboidNode.h>
-#include <icl/geom2/CoordinateFrameNode.h>
-#include <icl/geom2/Scene2MouseHandler.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/GroupNode.h>
+#include <icl/viz3d/CuboidNode.h>
+#include <icl/viz3d/CoordinateFrameNode.h>
+#include <icl/viz3d/Scene2MouseHandler.h>
 
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPluginForQuads.h>
 #include <icl/markers/BCHCode.h>
 
-using namespace icl::geom2;
+using namespace icl::viz3d;
 using namespace icl::geom;
 using namespace icl::markers;
 using namespace icl::core;

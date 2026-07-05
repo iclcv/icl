@@ -6,8 +6,8 @@
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/StateBuffer.h>
 #include <icl/physics2/CollisionShapeFactory.h>
-#include <icl/geom2/Node.h>
-#include <icl/geom2/CylinderNode.h>
+#include <icl/viz3d/Node.h>
+#include <icl/viz3d/CylinderNode.h>
 #include <icl/geom/Material.h>
 #include <icl/cv3d/GeomDefs.h>
 #include <icl/utils/Macros.h>
@@ -37,7 +37,7 @@ namespace icl::physics2 {
 
     StateSlot chassisSlot;
     std::array<StateSlot, NUM_WHEELS> wheelSlots;
-    std::vector<geom2::NodePtr> wheelNodes;
+    std::vector<viz3d::NodePtr> wheelNodes;
     Mat wheelAlign = Mat::id();   // local mesh orientation (cylinder axis -> axle)
 
     Data(PhysicsWorld &w, const Config &c) : world(w), cfg(c) {}
@@ -73,7 +73,7 @@ namespace icl::physics2 {
     btRigidBody::btRigidBodyConstructionInfo ci(cfg.chassisMass, nullptr, m_data->shape, inertia);
     ci.m_startWorldTransform = T;
     m_data->chassis = new btRigidBody(ci);
-    m_data->chassis->setUserPointer(static_cast<geom2::Driver *>(this));
+    m_data->chassis->setUserPointer(static_cast<viz3d::Driver *>(this));
     m_data->chassis->setActivationState(DISABLE_DEACTIVATION);  // a parked car must still respond
     m_data->chassis->setWorldTransform(T);
     m_data->world.addBody(m_data->chassis);
@@ -141,10 +141,10 @@ namespace icl::physics2 {
     auto tyre = geom::Material::fromColor(geom::GeomColor(30,30,30,255));
     m_data->wheelNodes.clear();
     for (int i = 0; i < NUM_WHEELS; i++) {
-      auto wheel = geom2::CylinderNode::create(0, 0, 0, cfg.wheelRadius*2, cfg.wheelRadius*2,
+      auto wheel = viz3d::CylinderNode::create(0, 0, 0, cfg.wheelRadius*2, cfg.wheelRadius*2,
                                                cfg.wheelWidth, 20);
       wheel->setMaterial(tyre);
-      m_data->wheelNodes.push_back(std::static_pointer_cast<geom2::Node>(wheel));
+      m_data->wheelNodes.push_back(std::static_pointer_cast<viz3d::Node>(wheel));
     }
 
     // --- post-step capture: snapshot chassis + wheel transforms (sim thread) ---
@@ -245,7 +245,7 @@ namespace icl::physics2 {
     return m_data->units.toIcl(m_data->chassisSlot.sample(1.0f));
   }
 
-  const std::vector<geom2::NodePtr> &VehicleDriver::getWheelNodes() const {
+  const std::vector<viz3d::NodePtr> &VehicleDriver::getWheelNodes() const {
     return m_data->wheelNodes;
   }
 

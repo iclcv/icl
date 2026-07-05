@@ -299,7 +299,7 @@ if qt_found
 endif
 subdir('icl/geom')
 if qt_found
-  subdir('icl/geom2')
+  subdir('icl/viz3d')
 endif
 subdir('icl/markers')
 if bullet_found and qt_found
@@ -320,7 +320,7 @@ if _build_demos or _build_apps or _build_examples
   endif
   subdir('icl/geom/targets')
   if qt_found
-    subdir('icl/geom2/targets')
+    subdir('icl/viz3d/targets')
   endif
   subdir('icl/markers/targets')
   if bullet_found and qt_found

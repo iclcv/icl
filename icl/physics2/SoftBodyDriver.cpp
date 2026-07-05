@@ -6,9 +6,9 @@
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/StateBuffer.h>
-#include <icl/geom2/Node.h>
-#include <icl/geom2/MeshNode.h>
-#include <icl/geom2/Primitive.h>
+#include <icl/viz3d/Node.h>
+#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/Primitive.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/prop/Constraints.h>
 #include <algorithm>
@@ -166,7 +166,7 @@ namespace icl::physics2 {
         rebuildAtResolution(n, n);
       } else if (p.name == "smooth normals") {
         m_data->smoothNormals = (bool)prop(p.name).value;   // render-side only
-        if (auto *mesh = dynamic_cast<geom2::MeshNode *>(node()))
+        if (auto *mesh = dynamic_cast<viz3d::MeshNode *>(node()))
           mesh->setSmoothShading(m_data->smoothNormals);    // flat vs faceted
       } else {
         pushConfig(true);
@@ -207,8 +207,8 @@ namespace icl::physics2 {
   }
 
   void SoftBodyDriver::buildBody() {
-    auto *mesh = dynamic_cast<geom2::MeshNode *>(node());
-    if (!mesh) { ERROR_LOG("SoftBodyDriver must be attached to a geom2::MeshNode"); return; }
+    auto *mesh = dynamic_cast<viz3d::MeshNode *>(node());
+    if (!mesh) { ERROR_LOG("SoftBodyDriver must be attached to a viz3d::MeshNode"); return; }
     m_data->units = m_data->world.getUnits();
 
     auto *info = m_data->world.getSoftBodyWorldInfo();
@@ -284,7 +284,7 @@ namespace icl::physics2 {
     });
 
     // build the MeshNode topology once (vertices from nodes, triangles from faces)
-    const geom2::GeomColor col(0.85f, 0.85f, 0.9f, 1.0f);
+    const viz3d::GeomColor col(0.85f, 0.85f, 0.9f, 1.0f);
     mesh->clearGeometry();
     for (int i = 0; i < sb->m_nodes.size(); i++) {
       mesh->addVertex(u.toIclVec(sb->m_nodes[i].m_x), col);
@@ -390,7 +390,7 @@ namespace icl::physics2 {
   }
 
   void SoftBodyDriver::sync(double /*dt*/, double /*alpha*/) {
-    auto *mesh = dynamic_cast<geom2::MeshNode *>(node());
+    auto *mesh = dynamic_cast<viz3d::MeshNode *>(node());
     if (!mesh) return;
     std::vector<Vec> pos;
     if (!m_data->buffer.sample(pos)) return;

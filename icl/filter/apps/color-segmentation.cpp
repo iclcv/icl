@@ -11,18 +11,18 @@
 #include <icl/core/cc/Color.h>
 #include <icl/cv/RegionDetector.h>
 
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/GroupNode.h>
-#include <icl/geom2/CuboidNode.h>
-#include <icl/geom2/MeshNode.h>
-#include <icl/geom2/TextNode.h>
-#include <icl/geom2/Scene2MouseHandler.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/GroupNode.h>
+#include <icl/viz3d/CuboidNode.h>
+#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/TextNode.h>
+#include <icl/viz3d/Scene2MouseHandler.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/GeomDefs.h>
 #include <icl/geom/Material.h>
 #include <mutex>
 
-using namespace icl::geom2;
+using namespace icl::viz3d;
 
 VSplit gui;
 

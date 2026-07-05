@@ -12,7 +12,7 @@
 #define ICLPhysics2_API
 #endif
 
-namespace icl::geom2 { class Scene2; }
+namespace icl::viz3d { class Scene2; }
 
 namespace icl::physics2 {
 
@@ -34,7 +34,7 @@ namespace icl::physics2 {
       resolved via getDriver<T>(). */
   class ICLPhysics2_API PaperMouseHandler : public qt::MouseHandler {
   public:
-    PaperMouseHandler(int cameraIndex, geom2::Scene2 *scene, PaperDriver *paper);
+    PaperMouseHandler(int cameraIndex, viz3d::Scene2 *scene, PaperDriver *paper);
     ~PaperMouseHandler() override;
 
     qt::MouseResult process(const qt::MouseEvent &e) override;

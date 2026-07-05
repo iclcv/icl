@@ -7,10 +7,10 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 #include <icl/math/fit/PolynomialRegression.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/Scene2MouseHandler.h>
-#include <icl/geom2/MeshNode.h>
-#include <icl/geom2/LightNode.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/Scene2MouseHandler.h>
+#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/LightNode.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/geom/Material.h>
 #include <icl/utils/Random.h>
@@ -19,7 +19,7 @@ using Scalar = float;
 using Matrix = DynMatrix<Scalar>;
 using Reg = PolynomialRegression<Scalar>;
 
-using namespace icl::geom2;
+using namespace icl::viz3d;
 using namespace icl::geom;
 
 HSplit gui;

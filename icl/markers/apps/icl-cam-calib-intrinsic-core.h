@@ -10,13 +10,13 @@
 // path (and a future gtest) with no widgets: pick a calibration target, feed
 // detected object↔image correspondences per view into an IntrinsicSession, and
 // solve for the pinhole + radial/tangential intrinsics via cv::IntrinsicCalibrator.
-// The sim helpers mirror geom2::OffscreenView's forward lens distortion so a
+// The sim helpers mirror viz3d::OffscreenView's forward lens distortion so a
 // rendered board carries a known ground-truth camera the recovered intrinsics can
 // be checked against. See intrinsic-calib-app-plan.md.
 
 #include <icl/markers/CalibrationTarget.h>
 #include <icl/cv/IntrinsicCalibrator.h>
-#include <icl/geom2/Node.h>
+#include <icl/viz3d/Node.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Size.h>   // Size + Size32f (SizeT<float>)
 #include <memory>
@@ -25,7 +25,7 @@
 #include <utility>
 #include <vector>
 
-namespace icl::geom2 { class MeshNode; }
+namespace icl::viz3d { class MeshNode; }
 
 namespace icl::calibintr {
 
@@ -61,14 +61,14 @@ namespace icl::calibintr {
   /// Build the scene geometry for a spec at the correct metric scale (mm), so the
   /// sim render matches the target's modelPoints(). Checkerboard → CheckerboardNode;
   /// coded / marker-grid → a flat textured quad from the target's generate().
-  geom2::NodePtr makeSceneNode(const TargetSpec &s);
+  viz3d::NodePtr makeSceneNode(const TargetSpec &s);
 
   /// Re-populate an existing coded / marker-grid board MeshNode for \a s (texture +
   /// metric-sized quad), locked via ScopedEdit so it is safe to call from a worker
   /// loop on a node already in the scene. Lets the GUI change board geometry in
   /// place (node add/remove from a worker thread is a data race). Checkerboards use
   /// CheckerboardNode::setCells / setWidth instead.
-  void rebuildBoardNode(geom2::MeshNode &node, const TargetSpec &s);
+  void rebuildBoardNode(viz3d::MeshNode &node, const TargetSpec &s);
 
   /// The pinhole + distortion intrinsics of a camera.
   struct Intrinsics {
@@ -88,7 +88,7 @@ namespace icl::calibintr {
   /// Ground-truth intrinsics of the sim camera with injected distortion k1,k2.
   Intrinsics groundTruthIntrinsics(const utils::Size &imgSize, float k1, float k2);
 
-  /// Apply the SAME forward radial lens distortion geom2::OffscreenView bakes into
+  /// Apply the SAME forward radial lens distortion viz3d::OffscreenView bakes into
   /// its captured frames (MatlabModel5Params, focal max(w,h)/2, principal center).
   /// k1==k2==0 → the input is returned unchanged.
   core::Img8u forwardDistort(const core::Img8u &img, float k1, float k2);

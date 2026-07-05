@@ -5,7 +5,7 @@
 #include <icl/physics2/SensorDriver.h>
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/CollisionShapeFactory.h>
-#include <icl/geom2/Node.h>
+#include <icl/viz3d/Node.h>
 #include <icl/utils/Macros.h>
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
@@ -44,7 +44,7 @@ namespace icl::physics2 {
     ghost->setWorldTransform(m_data->units.toBullet(n->getTransformation(true)));
     ghost->setCollisionFlags(ghost->getCollisionFlags() |
                              btCollisionObject::CF_NO_CONTACT_RESPONSE);
-    ghost->setUserPointer(static_cast<geom2::Driver *>(this));
+    ghost->setUserPointer(static_cast<viz3d::Driver *>(this));
     m_data->ghost = ghost;
 
     // group 1, mask all -> overlaps every default body without responding
@@ -72,14 +72,14 @@ namespace icl::physics2 {
     m_data->world.enqueue([ghost, T]() { if (ghost) ghost->setWorldTransform(T); });
   }
 
-  std::vector<geom2::Driver *> SensorDriver::getOverlappingDrivers() const {
-    std::vector<geom2::Driver *> out;
+  std::vector<viz3d::Driver *> SensorDriver::getOverlappingDrivers() const {
+    std::vector<viz3d::Driver *> out;
     if (!m_data->ghost) return out;
     const int n = m_data->ghost->getNumOverlappingObjects();
     for (int i = 0; i < n; i++) {
       btCollisionObject *o = m_data->ghost->getOverlappingObject(i);
       if (!o) continue;
-      if (auto *d = static_cast<geom2::Driver *>(o->getUserPointer())) out.push_back(d);
+      if (auto *d = static_cast<viz3d::Driver *>(o->getUserPointer())) out.push_back(d);
     }
     return out;
   }

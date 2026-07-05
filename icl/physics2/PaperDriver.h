@@ -9,7 +9,7 @@
 #include <icl/utils/Point.h>
 #include <icl/utils/Size.h>
 #include <icl/core/Img.h>
-#include <icl/geom2/Driver.h>
+#include <icl/viz3d/Driver.h>
 #include <icl/physics2/Units.h>
 #include <functional>
 #include <memory>
@@ -29,12 +29,12 @@ namespace icl::physics2 {
   class PhysicsWorld;
 
   /// The fold-aware *paper* substrate driver — the crown-jewel transplant of the
-  /// legacy `PhysicsPaper3` onto geom2 + the driver model.
+  /// legacy `PhysicsPaper3` onto viz3d + the driver model.
   /** PaperDriver owns a manually-built `btSoftBody` whose dual mesh (corner grid +
       per-cell centre vertices) carries first-order structural links and a
       second-order bending graph; folding *splits* triangles along a crease line,
       inserting weak fold links recorded as Crease primitives so the paper bends there.
-      The driver binds that soft body to a `geom2::MeshNode`: it builds the mesh
+      The driver binds that soft body to a `viz3d::MeshNode`: it builds the mesh
       topology, registers a post-step capture hook (the sim thread snapshots node
       positions + — when a fold changed the topology — the new triangle list into a
       `PaperStateBuffer`), and on the UI thread copies positions into the mesh each
@@ -49,8 +49,8 @@ namespace icl::physics2 {
 
       Runs only in a `SoftBodyMode::SoftRigid` world: paper needs the legacy
       cluster self-collision + per-link solver constants the deformable pipeline
-      has no equivalent for. Host node MUST be a geom2::MeshNode. */
-  class ICLPhysics2_API PaperDriver : public geom2::Driver,
+      has no equivalent for. Host node MUST be a viz3d::MeshNode. */
+  class ICLPhysics2_API PaperDriver : public viz3d::Driver,
                                       public utils::Configurable {
   public:
     using Point32f = utils::Point32f;

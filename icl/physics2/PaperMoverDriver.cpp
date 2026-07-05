@@ -4,7 +4,7 @@
 
 #include <icl/physics2/PaperMoverDriver.h>
 #include <icl/physics2/PaperDriver.h>
-#include <icl/geom2/Node.h>
+#include <icl/viz3d/Node.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/prop/Constraints.h>
 

@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/Configurable.h>
 #include <icl/utils/Point.h>
-#include <icl/geom2/Driver.h>
+#include <icl/viz3d/Driver.h>
 #include <icl/physics2/Units.h>
 
 #ifndef ICLPhysics2_API
@@ -19,13 +19,13 @@ namespace icl::physics2 {
   class PaperDriver;
 
   /// A *behaviour* driver that folds the paper it shares a node with.
-  /** FoldDriver owns no physics state — it attaches to the SAME geom2::MeshNode as
+  /** FoldDriver owns no physics state — it attaches to the SAME viz3d::MeshNode as
       a PaperDriver, resolves that substrate via `node()->getDriver<PaperDriver>()`
       in `onAttach`, and turns fold *requests* (from a mouse handler) into
       `PaperDriver::foldAlongLine` calls. Its own tunables (auto-extend) live here,
       separate from the substrate's. This is the composition the driver model
       enables: one node, a substrate + stacked behaviours, dispatched by input. */
-  class ICLPhysics2_API FoldDriver : public geom2::Driver,
+  class ICLPhysics2_API FoldDriver : public viz3d::Driver,
                                      public utils::Configurable {
   public:
     FoldDriver();

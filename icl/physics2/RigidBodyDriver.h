@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/geom2/Driver.h>
+#include <icl/viz3d/Driver.h>
 #include <icl/physics2/Units.h>
 #include <memory>
 
@@ -19,7 +19,7 @@ namespace icl::physics2 {
 
   class PhysicsWorld;
 
-  /// A geom2 Driver that binds a Bullet rigid body to its host node.
+  /// A viz3d Driver that binds a Bullet rigid body to its host node.
   /** This is the physics2 replacement for `RigidObject` + `geom::SceneObject`
       inheritance. The node owns the driver; the driver owns the Bullet body,
       a collision shape (derived from the node geometry by default), and a
@@ -34,7 +34,7 @@ namespace icl::physics2 {
 
       The body is registered with the world on onAttach() and removed on
       onDetach() (called from removeDriver() or the node's destructor). */
-  class ICLPhysics2_API RigidBodyDriver : public geom2::Driver {
+  class ICLPhysics2_API RigidBodyDriver : public viz3d::Driver {
   public:
     /// Born from PhysicsWorld::addRigidBody(node, mass) — collision shape is
     /// derived from the node geometry. mass 0 = static body.

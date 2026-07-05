@@ -13,11 +13,11 @@
 
 class btCollisionShape;
 
-namespace icl::geom2 { class Node; }
+namespace icl::viz3d { class Node; }
 
 namespace icl::physics2 {
 
-  /// Derive a Bullet collision shape from a geom2 node's geometry.
+  /// Derive a Bullet collision shape from a viz3d node's geometry.
   /** Convention (single source of truth): the node's geometry is centred at its
       local origin and its pose lives in the node transform — so the derived
       shape is centred at the body origin and matches the rendered geometry.
@@ -29,7 +29,7 @@ namespace icl::physics2 {
 
       Returns nullptr if the node carries no usable geometry. Lengths are scaled
       to Bullet units via `units`. */
-  ICLPhysics2_API btCollisionShape *shapeFromNode(const geom2::Node *node,
+  ICLPhysics2_API btCollisionShape *shapeFromNode(const viz3d::Node *node,
                                                   const Units &units);
 
   /// Free a shape from shapeFromNode. Recurses into btCompoundShape children

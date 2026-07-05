@@ -6,7 +6,7 @@
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/StateBuffer.h>
 #include <icl/physics2/CollisionShapeFactory.h>
-#include <icl/geom2/Node.h>
+#include <icl/viz3d/Node.h>
 #include <icl/utils/Macros.h>
 
 #include <BulletDynamics/Dynamics/btRigidBody.h>
@@ -70,7 +70,7 @@ namespace icl::physics2 {
     btRigidBody::btRigidBodyConstructionInfo ci(m_data->mass, m_data->motion,
                                                 m_data->shape, inertia);
     m_data->body = new btRigidBody(ci);
-    m_data->body->setUserPointer(static_cast<geom2::Driver *>(this));
+    m_data->body->setUserPointer(static_cast<viz3d::Driver *>(this));
 
     m_data->slot.publish(T);            // seed so the render side has a pose
     m_data->world.addBody(m_data->body);

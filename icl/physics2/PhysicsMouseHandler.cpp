@@ -6,8 +6,8 @@
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/Units.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/Node.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/Node.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
 #include <icl/cv3d/PlaneEquation.h>
@@ -20,7 +20,7 @@
 namespace icl::physics2 {
 
   struct PhysicsMouseHandler::Data {
-    geom2::Scene2 *scene;
+    viz3d::Scene2 *scene;
     PhysicsWorld *world;
     int camIndex;
     Units units;
@@ -30,7 +30,7 @@ namespace icl::physics2 {
     geom::Vec hitPoint{0, 0, 0, 1};   // ICL units, for the drag plane
   };
 
-  PhysicsMouseHandler::PhysicsMouseHandler(int cameraIndex, geom2::Scene2 *scene,
+  PhysicsMouseHandler::PhysicsMouseHandler(int cameraIndex, viz3d::Scene2 *scene,
                                            PhysicsWorld *world)
     : qt::MouseHandler(),
       m_data(std::make_unique<Data>()) {
@@ -75,7 +75,7 @@ namespace icl::physics2 {
 
     if (e.isPressEvent()) {
       geom::ViewRay ray = cam.getViewRay(camPix);
-      geom2::Hit2 hit = m_data->scene->findObject(ray);
+      viz3d::Hit2 hit = m_data->scene->findObject(ray);
       if (hit.node) {
         RigidBodyDriver *d = hit.node->getDriver<RigidBodyDriver>();
         btRigidBody *body = d ? d->body() : nullptr;

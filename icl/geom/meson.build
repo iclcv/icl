@@ -1,6 +1,6 @@
-# ICL Geom module — RUMP after the geom→cv3d/geom2 split (see geom-dedup-scoping.md).
-# The scene graph + point-cloud pipeline moved to geom2 / cv3d or were deleted.
-# What remains: Material (shared rendering type, used by geom2) and SoftPosit
+# ICL Geom module — RUMP after the geom→cv3d/viz3d split (see geom-dedup-scoping.md).
+# The scene graph + point-cloud pipeline moved to viz3d / cv3d or were deleted.
+# What remains: Material (shared rendering type, used by viz3d) and SoftPosit
 # (Qt-coupled CV algorithm, still to be relocated to cv3d once its viz is decoupled).
 # Both survivors are slated to move in the final rename phase, after which this
 # module disappears.

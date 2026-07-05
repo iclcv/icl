@@ -14,19 +14,19 @@
 #include <icl/qt/ui.h>
 #include <icl/geom/Material.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom2/CuboidNode.h>
-#include <icl/geom2/MeshNode.h>
-#include <icl/geom2/Node.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/DefaultScene.h>
+#include <icl/viz3d/CuboidNode.h>
+#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/Node.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/DefaultScene.h>
 #include <icl/physics2/PhysicsScene.h>
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/FoldDriver.h>
 #include <icl/physics2/PaperMoverDriver.h>
 #include <icl/physics2/PaperMouseHandler.h>
-#include <icl/geom2/Scene2MouseHandler.h>
+#include <icl/viz3d/Scene2MouseHandler.h>
 
-using namespace icl::geom2;
+using namespace icl::viz3d;
 using namespace icl::geom;
 using namespace icl::utils;
 using namespace icl::qt;

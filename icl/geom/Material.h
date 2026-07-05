@@ -14,7 +14,7 @@ namespace icl::geom {
 
   /// Next value from the PROCESS-WIDE texture-version counter. Used so every
   /// Material::TextureMaps (and each of its updates) carries a globally unique
-  /// stamp: the geom2 renderer caches GL textures in a map keyed by the raw
+  /// stamp: the viz3d renderer caches GL textures in a map keyed by the raw
   /// Material pointer, and a per-object counter would restart when a freed
   /// Material's address is reused (e.g. the plot's per-retic tick labels),
   /// aliasing the stale cache entry. A global counter never repeats.
@@ -118,7 +118,7 @@ namespace icl::geom {
     /// Set/replace the albedo (base color) texture from an image.
     /** Allocates the texture maps on first use and bumps the texture version so
         the renderer re-uploads. **Safe to call every frame for a live/video
-        texture** — the geom2 renderer then refreshes only this material's GL
+        texture** — the viz3d renderer then refreshes only this material's GL
         textures (via glTexSubImage2D when the size is unchanged), without
         touching geometry or other materials' caches. */
     void setBaseColorMap(const core::Image &img);

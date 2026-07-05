@@ -14,7 +14,7 @@ namespace icl::geom {
   /// Geometric primitive descriptor (cube / sphere / cylinder with a 6D pose).
   /** Extracted out of the old Primitive3DFilter so it no longer drags in the
       scene graph / point-cloud object model. Converters turn it into a renderable
-      node (see geom2::Primitive3DConverter::nodeFromPrimitive3D). */
+      node (see viz3d::Primitive3DConverter::nodeFromPrimitive3D). */
   struct Primitive3D {
 
     /// the primitive type

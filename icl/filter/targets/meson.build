@@ -23,7 +23,7 @@ endif
 # ---- Apps (all need Qt) ----
 if _build_apps and qt_found
   _filter_apps = {
-    'color-segmentation': [icl_geom2_dep],
+    'color-segmentation': [icl_viz3d_dep],
     'filter-playground': [],
     'local-thresh': [],
     'rectify-image': [],

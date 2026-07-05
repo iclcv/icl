@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "camera-calibration-planar-GridIndicatorObject.h"
-#include <icl/geom2/MeshNode.h>
-#include <icl/geom2/TextNode.h>
+#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/TextNode.h>
 #include <icl/geom/Material.h>
 
 namespace icl{
@@ -15,14 +15,14 @@ namespace icl{
   namespace markers{
 
     /// one grid cell: an extruded box (MeshNode) + a billboard id label (TextNode)
-    struct GridIndicatorObject::MarkerObj : public geom2::GroupNode{
+    struct GridIndicatorObject::MarkerObj : public viz3d::GroupNode{
       int x, y;
       MarkerObj(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def,
                 int x, int y) : x(x), y(y){
         Rect32f b = def.getBounds(x,y);
         static const float H = 2;
 
-        auto box = std::make_shared<geom2::MeshNode>();
+        auto box = std::make_shared<viz3d::MeshNode>();
         for(float h = 0; h <= H; h+=H){
           box->addVertex(Vec(b.x, b.y, -h, 1));
           box->addVertex(Vec(b.right(), b.y, -h, 1));
@@ -37,7 +37,7 @@ namespace icl{
         for(int i=0;i<4;++i){
           box->addLine(i, i+4, geom_blue(255));
         }
-        // geom2 addQuad carries no per-face colour — the translucent blue comes
+        // viz3d addQuad carries no per-face colour — the translucent blue comes
         // from the node Material instead.
         box->addQuad(0,1,5,4);
         box->addQuad(1,2,6,5);
@@ -50,7 +50,7 @@ namespace icl{
         int id = ids[x + y * def.getSize().width];
 
         // marker id label (was addTextTexture on the front face; now a TextNode)
-        auto label = geom2::TextNode::create(str(id), b.height*0.5f, geom_blue(255));
+        auto label = viz3d::TextNode::create(str(id), b.height*0.5f, geom_blue(255));
         label->translate(b.x + b.width*0.5f, b.y + b.height*0.5f, -H);
         addChild(label);
       }
@@ -68,7 +68,7 @@ namespace icl{
       float dx = bounds.width/cells.width;
       float dy = bounds.height/cells.height;
 
-      auto grid = std::make_shared<geom2::MeshNode>();
+      auto grid = std::make_shared<viz3d::MeshNode>();
       for(int y=0;y<cells.height;++y){
         for(int x=0;x<cells.width;++x){
           grid->addVertex(Vec(x*dx, y*dy, 0, 1));

@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // Interactive 2D-calibration-target detection lab (Phase B tuning tool). LEFT: a
-// virtual calibration target on a flat board in a geom2 Scene2 — rotate/pan/zoom
+// virtual calibration target on a flat board in a viz3d Scene2 — rotate/pan/zoom
 // it with the mouse to view from any angle. RIGHT: the *real* render of camera 0
 // of that scene (full GL shading / lighting), passed through a live lens-
 // distortion model, then through the selected target's detector — the detected
@@ -23,18 +23,18 @@
 // The right pane is the offscreen render of camera 0 of the scene, passed through
 // the distortion model + detector. The render is switchable between GL (fast) and
 // Cycles (photoreal); the GUI-thread / worker-thread split is handled by
-// geom2::OffscreenView (see OffscreenView.h). This lab lives in the markers module
-// because it spans cv (checkerboard) + geom2 (scene/render) + markers (marker grid)
+// viz3d::OffscreenView (see OffscreenView.h). This lab lives in the markers module
+// because it spans cv (checkerboard) + viz3d (scene/render) + markers (marker grid)
 // — markers is the apex of that dependency chain.
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/LightNode.h>
-#include <icl/geom2/Scene2MouseHandler.h>
-#include <icl/geom2/CheckerboardNode.h>  // the checkerboard target node (self-visualizing)
-#include <icl/geom2/MeshNode.h>          // the marker-grid board (textured quad)
-#include <icl/geom2/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/LightNode.h>
+#include <icl/viz3d/Scene2MouseHandler.h>
+#include <icl/viz3d/CheckerboardNode.h>  // the checkerboard target node (self-visualizing)
+#include <icl/viz3d/MeshNode.h>          // the marker-grid board (textured quad)
+#include <icl/viz3d/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
 #include <icl/cv3d/Camera.h>
 #include <icl/geom/Material.h>
 #include <icl/cv/CheckerboardSaddleDetector.h>
@@ -53,7 +53,7 @@
 #include <iostream>
 #include <memory>
 
-using namespace icl::geom2;
+using namespace icl::viz3d;
 using namespace icl::geom;
 using namespace icl::cv;
 using namespace icl::markers;

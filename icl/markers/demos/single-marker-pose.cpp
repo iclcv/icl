@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // Single-marker 6D pose demo — visualises the planar (IPPE) pose ambiguity.
-// LEFT: a single fiducial marker on a flat board in a geom2 Scene2 — orbit it
+// LEFT: a single fiducial marker on a flat board in a viz3d Scene2 — orbit it
 // with the mouse. RIGHT: the rendered camera-0 view; the marker is detected
 // (FiducialDetector) and its pose estimated with the TWO-solution planar pose
 // (geom::CoplanarPointPoseEstimator::getPoses). BOTH candidate pose frames are
@@ -19,11 +19,11 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/LightNode.h>
-#include <icl/geom2/Scene2MouseHandler.h>
-#include <icl/geom2/MeshNode.h>
-#include <icl/geom2/OffscreenView.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/LightNode.h>
+#include <icl/viz3d/Scene2MouseHandler.h>
+#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/OffscreenView.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/geom/Material.h>
 #include <icl/cv3d/CoplanarPointPoseEstimator.h>
@@ -35,7 +35,7 @@
 #include <iostream>
 #include <memory>
 
-using namespace icl::geom2;
+using namespace icl::viz3d;
 using namespace icl::geom;
 using namespace icl::markers;
 using namespace icl::core;

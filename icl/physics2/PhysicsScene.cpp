@@ -3,12 +3,12 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/physics2/PhysicsScene.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/Node.h>
-#include <icl/geom2/LightNode.h>
-#include <icl/geom2/MeshNode.h>
-#include <icl/geom2/CuboidNode.h>
-#include <icl/geom2/Primitive.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/Node.h>
+#include <icl/viz3d/LightNode.h>
+#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/CuboidNode.h>
+#include <icl/viz3d/Primitive.h>
 
 namespace icl::physics2 {
 
@@ -20,7 +20,7 @@ namespace icl::physics2 {
     m_world.stop();
   }
 
-  RigidBodyDriver *PhysicsScene::add(std::shared_ptr<geom2::Node> node, float mass) {
+  RigidBodyDriver *PhysicsScene::add(std::shared_ptr<viz3d::Node> node, float mass) {
     m_scene.addNode(node);
     return m_world.addRigidBody(std::move(node), mass);
   }
@@ -29,9 +29,9 @@ namespace icl::physics2 {
                                          const Vec &c01, const Vec &c11,
                                          int resX, int resY, int fixedCornerMask,
                                          float totalMass) {
-    auto mesh = std::make_shared<geom2::MeshNode>();
-    m_scene.addNode(std::static_pointer_cast<geom2::Node>(mesh));
-    return m_world.addDriver<SoftBodyDriver>(std::static_pointer_cast<geom2::Node>(mesh),
+    auto mesh = std::make_shared<viz3d::MeshNode>();
+    m_scene.addNode(std::static_pointer_cast<viz3d::Node>(mesh));
+    return m_world.addDriver<SoftBodyDriver>(std::static_pointer_cast<viz3d::Node>(mesh),
                                              c00, c10, c01, c11, resX, resY,
                                              fixedCornerMask, totalMass);
   }
@@ -39,19 +39,19 @@ namespace icl::physics2 {
   PaperDriver *PhysicsScene::addPaper(const utils::Size &cells, const Vec *corners,
                                       bool enableSelfCollision, float initialStiffness,
                                       float maxLinkDist) {
-    auto mesh = std::make_shared<geom2::MeshNode>();
-    m_scene.addNode(std::static_pointer_cast<geom2::Node>(mesh));
-    return m_world.addDriver<PaperDriver>(std::static_pointer_cast<geom2::Node>(mesh),
+    auto mesh = std::make_shared<viz3d::MeshNode>();
+    m_scene.addNode(std::static_pointer_cast<viz3d::Node>(mesh));
+    return m_world.addDriver<PaperDriver>(std::static_pointer_cast<viz3d::Node>(mesh),
                                           cells, corners, enableSelfCollision,
                                           initialStiffness, maxLinkDist);
   }
 
-  SensorDriver *PhysicsScene::addSensor(std::shared_ptr<geom2::Node> node) {
+  SensorDriver *PhysicsScene::addSensor(std::shared_ptr<viz3d::Node> node) {
     m_scene.addNode(node);
     return m_world.addDriver<SensorDriver>(std::move(node));
   }
 
-  VehicleDriver *PhysicsScene::addVehicle(std::shared_ptr<geom2::Node> chassis,
+  VehicleDriver *PhysicsScene::addVehicle(std::shared_ptr<viz3d::Node> chassis,
                                           const VehicleDriver::Config &cfg) {
     m_scene.addNode(chassis);
     auto *v = m_world.addDriver<VehicleDriver>(std::move(chassis), cfg);
@@ -59,28 +59,28 @@ namespace icl::physics2 {
     return v;
   }
 
-  std::shared_ptr<Constraint> PhysicsScene::addHinge(geom2::NodePtr a, geom2::NodePtr b,
+  std::shared_ptr<Constraint> PhysicsScene::addHinge(viz3d::NodePtr a, viz3d::NodePtr b,
                                                      const Vec &pivA, const Vec &pivB, int axis) {
     return m_world.addHinge(std::move(a), std::move(b), pivA, pivB, axis);
   }
-  std::shared_ptr<Constraint> PhysicsScene::addSlider(geom2::NodePtr a, geom2::NodePtr b,
+  std::shared_ptr<Constraint> PhysicsScene::addSlider(viz3d::NodePtr a, viz3d::NodePtr b,
                                                       const Vec &pivA, const Vec &pivB, int axis) {
     return m_world.addSlider(std::move(a), std::move(b), pivA, pivB, axis);
   }
-  std::shared_ptr<Constraint> PhysicsScene::addBallSocket(geom2::NodePtr a, geom2::NodePtr b,
+  std::shared_ptr<Constraint> PhysicsScene::addBallSocket(viz3d::NodePtr a, viz3d::NodePtr b,
                                                           const Vec &pivA, const Vec &pivB) {
     return m_world.addBallSocket(std::move(a), std::move(b), pivA, pivB);
   }
-  std::shared_ptr<Constraint> PhysicsScene::addSixDOF(geom2::NodePtr a, geom2::NodePtr b,
+  std::shared_ptr<Constraint> PhysicsScene::addSixDOF(viz3d::NodePtr a, viz3d::NodePtr b,
                                                       const Vec &pivA, const Vec &pivB) {
     return m_world.addSixDOF(std::move(a), std::move(b), pivA, pivB);
   }
-  std::shared_ptr<SpringConstraint> PhysicsScene::addSpring(geom2::NodePtr obj, const Vec &localOffset,
+  std::shared_ptr<SpringConstraint> PhysicsScene::addSpring(viz3d::NodePtr obj, const Vec &localOffset,
                                                            const Vec &worldPoint, float stiffness, float damping) {
     return m_world.addSpring(std::move(obj), localOffset, worldPoint, stiffness, damping);
   }
 
-  void PhysicsScene::setupDefault(geom2::DefaultScene::SceneType type, float extent) {
+  void PhysicsScene::setupDefault(viz3d::DefaultScene::SceneType type, float extent) {
     // Z-up to match the default gravity (0,0,-9810); preset furnishes camera,
     // lamp rig and the checkerboard ground (scaled to extent).
     m_scene.setUpAxis('Z');
@@ -95,17 +95,17 @@ namespace icl::physics2 {
     const float groundLevel = -half - extent * 0.02f;
     const float gs = extent * 6.0f;       // match the visual ground half-size
     const float thick = extent * 0.5f;
-    auto collider = geom2::CuboidNode::create(0, 0, 0, 2 * gs, 2 * gs, thick);
+    auto collider = viz3d::CuboidNode::create(0, 0, 0, 2 * gs, 2 * gs, thick);
     collider->translate(0, 0, groundLevel - thick * 0.5f);
     collider->setVisible(false);
-    add(std::static_pointer_cast<geom2::Node>(collider), 0.0f);  // static; scene keeps it alive
+    add(std::static_pointer_cast<viz3d::Node>(collider), 0.0f);  // static; scene keeps it alive
   }
 
-  void PhysicsScene::addNode(std::shared_ptr<geom2::Node> node) {
+  void PhysicsScene::addNode(std::shared_ptr<viz3d::Node> node) {
     m_scene.addNode(std::move(node));
   }
 
-  void PhysicsScene::addLight(std::shared_ptr<geom2::LightNode> light) {
+  void PhysicsScene::addLight(std::shared_ptr<viz3d::LightNode> light) {
     m_scene.addLight(std::move(light));
   }
 
@@ -124,9 +124,9 @@ namespace icl::physics2 {
       auto lines = m_world.getDebugLines();   // (locks the world internally)
       // Mutate the scene node under the SCENE lock — Scene2::render() holds it on
       // the GL thread, so an unguarded mutation here would race it (crash).
-      std::scoped_lock<geom2::Scene2> lk(m_scene);
+      std::scoped_lock<viz3d::Scene2> lk(m_scene);
       m_debugNode->clearGeometry();
-      const geom2::GeomColor green(0, 255, 0, 255);   // MeshNode colors are 0..255
+      const viz3d::GeomColor green(0, 255, 0, 255);   // MeshNode colors are 0..255
       int i = 0;
       for (const auto &l : lines) {
         m_debugNode->addVertex(l.a, green);
@@ -140,11 +140,11 @@ namespace icl::physics2 {
   void PhysicsScene::setDebugDrawEnabled(bool on) {
     m_debugEnabled = on;
     if (on && !m_debugNode) {
-      m_debugNode = std::make_shared<geom2::MeshNode>();
+      m_debugNode = std::make_shared<viz3d::MeshNode>();
       m_debugNode->setName("physics2-debug-overlay");
       m_debugNode->setRenderOnTop(true);   // draw over the solids it traces
       m_debugNode->setLineWidth(2.0f);
-      m_scene.addNode(std::static_pointer_cast<geom2::Node>(m_debugNode));
+      m_scene.addNode(std::static_pointer_cast<viz3d::Node>(m_debugNode));
     }
     if (m_debugNode) m_debugNode->setVisible(on);
   }
@@ -154,11 +154,11 @@ namespace icl::physics2 {
   std::shared_ptr<qt::GLCallback> PhysicsScene::getGLCallback(int cameraIndex) {
     return m_scene.getGLCallback(cameraIndex);
   }
-  geom2::Scene2MouseHandler *PhysicsScene::getMouseHandler(int cameraIndex) {
+  viz3d::Scene2MouseHandler *PhysicsScene::getMouseHandler(int cameraIndex) {
     return m_scene.getMouseHandler(cameraIndex);
   }
 
-  geom2::Scene2 &PhysicsScene::scene() { return m_scene; }
+  viz3d::Scene2 &PhysicsScene::scene() { return m_scene; }
   PhysicsWorld &PhysicsScene::world() { return m_world; }
 
 } // namespace icl::physics2

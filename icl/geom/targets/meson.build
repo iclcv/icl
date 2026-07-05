@@ -4,7 +4,7 @@
 if _build_demos and qt_found
   _geom_demos = {
     'kinect-normals': [],
-    # 'ray-cast-octree': [],  # replaced by geom2/raycast-octree-demo
+    # 'ray-cast-octree': [],  # replaced by viz3d/raycast-octree-demo
     'simplex-2D': [],
   }
   foreach name, extra_deps : _geom_demos
@@ -14,7 +14,7 @@ if _build_demos and qt_found
       install: false,
     )
   endforeach
-  # Cycles demos retired here — superseded by geom2's (geom2-cycles-*-demo).
+  # Cycles demos retired here — superseded by viz3d's (viz3d-cycles-*-demo).
 endif
 
 # ---- Apps ----

@@ -13,7 +13,7 @@
 // V1 = the sim-first vertical slice. This file wires:
 //   * --sim-selftest : the HEADLESS verification path (no GUI). It renders the
 //     selected board through a known camera at scripted poses, detects, calibrates,
-//     and asserts recovered ≈ truth. Runs in-sandbox via geom2::GLSceneCapture
+//     and asserts recovered ≈ truth. Runs in-sandbox via viz3d::GLSceneCapture
 //     (QT_QPA_PLATFORM=cocoa; see reference_headless_gl_capture). This is the seed
 //     of a future gtest.
 //   * the interactive GUI (sim + real ImageSource) — TODO next: coverage heatmap,
@@ -27,17 +27,17 @@
 // --- headless selftest path (QGuiApplication + GLSceneCapture) ---
 #include <QGuiApplication>
 #include <QSurfaceFormat>
-#include <icl/geom2/SceneCapture.h>
+#include <icl/viz3d/SceneCapture.h>
 
 // --- shared sim scene + interactive GUI ---
 #include <icl/qt/Common2.h>            // ICLApp, GUI, Canvas/Canvas3D, handles
 #include <icl/qt/ui.h>
 #include <icl/qt/QuickDraw.h>          // headless image-space draw (coverage gauges)
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/LightNode.h>
-#include <icl/geom2/CheckerboardNode.h>
-#include <icl/geom2/Scene2MouseHandler.h>
-#include <icl/geom2/OffscreenView.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/LightNode.h>
+#include <icl/viz3d/CheckerboardNode.h>
+#include <icl/viz3d/Scene2MouseHandler.h>
+#include <icl/viz3d/OffscreenView.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/math/la/FixedMatrix.h>   // create_hom_4x4
 #include <icl/io/SaveLoad.h>
@@ -243,14 +243,14 @@ namespace {
       gt = { F, F, size.width/2.0, size.height/2.0, (double)k1, (double)k2 };
 
       // --- build the sim scene: known camera + light + the selected board ---
-      geom2::Scene2 scene;
+      viz3d::Scene2 scene;
       scene.addCamera(geom::Camera::lookAt(geom::Vec(0,0,600,1), geom::Vec(0,0,0,1),
                                            geom::Vec(0,1,0,1), size, hfov));
       scene.setBounds(600);
-      scene.addLight(geom2::LightNode::point(150, 200, 550));
+      scene.addLight(viz3d::LightNode::point(150, 200, 550));
       auto node = makeSceneNode(spec);
       scene.addNode(node);
-      geom2::GLSceneCapture cap(/*ownContext=*/true);
+      viz3d::GLSceneCapture cap(/*ownContext=*/true);
       for (int w = 0; w < 2; ++w) { scene.touch(); cap.capture(scene, 0); }   // warm up GL (cold
                                              // first frames can be garbage → a poisoned view)
 
@@ -347,17 +347,17 @@ namespace {
 
   // ============================ interactive sim GUI ============================
   // V1 is sim-only (the plan's sim-first slice): an embedded rotatable scene renders
-  // the selected target through a KNOWN camera (via geom2::OffscreenView). Orbit/zoom
+  // the selected target through a KNOWN camera (via viz3d::OffscreenView). Orbit/zoom
   // = "waving the board"; the CoverageMap heatmap + AutoCaptureController collect
   // views, then Calibrate solves and (in sim) the true-intrinsic error is shown.
   // Real ImageSource input (-i) is a follow-up. Verified by compile + --sim-selftest;
   // the on-screen widgets need a real display (the sandbox Cocoa GL widget crashes).
 
   GUI                  g_gui;
-  geom2::Scene2        g_scene;
-  geom2::OffscreenView g_view(g_scene, 0);
-  std::shared_ptr<geom2::CheckerboardNode> g_cbBoard;
-  std::shared_ptr<geom2::MeshNode>         g_codedBoard, g_coded2Board, g_markerBoard;
+  viz3d::Scene2        g_scene;
+  viz3d::OffscreenView g_view(g_scene, 0);
+  std::shared_ptr<viz3d::CheckerboardNode> g_cbBoard;
+  std::shared_ptr<viz3d::MeshNode>         g_codedBoard, g_coded2Board, g_markerBoard;
   std::unique_ptr<markers::CalibrationTarget> g_target;
   std::unique_ptr<IntrinsicSession>           g_session;
   std::unique_ptr<CoverageMap>                g_coverage;
@@ -510,16 +510,16 @@ namespace {
     g_scene.addCamera(geom::Camera::lookAt(geom::Vec(0,0,600,1), geom::Vec(0,0,0,1),
                                            geom::Vec(0,1,0,1), g_camRes, simHFovDeg(g_camRes)));
     g_scene.setBounds(600);
-    g_scene.addLight(geom2::LightNode::point(150, 200, 550));
+    g_scene.addLight(viz3d::LightNode::point(150, 200, 550));
 
     // three pre-built boards; visibility follows the target combo (swapping nodes at
     // runtime is a data race — Scene2::add/removeNode don't lock — so geometry is
     // rebuilt IN PLACE instead: CheckerboardNode::setCells / rebuildBoardNode()).
-    g_cbBoard = geom2::CheckerboardNode::create(9, 7, 25.f * (9 + 2));
+    g_cbBoard = viz3d::CheckerboardNode::create(9, 7, 25.f * (9 + 2));
     g_scene.addNode(g_cbBoard);
-    g_codedBoard  = std::make_shared<geom2::MeshNode>();
-    g_coded2Board = std::make_shared<geom2::MeshNode>();
-    g_markerBoard = std::make_shared<geom2::MeshNode>();
+    g_codedBoard  = std::make_shared<viz3d::MeshNode>();
+    g_coded2Board = std::make_shared<viz3d::MeshNode>();
+    g_markerBoard = std::make_shared<viz3d::MeshNode>();
     { TargetSpec cs; cs.type = TargetType::Coded;      rebuildBoardNode(*g_codedBoard,  cs); }
     { TargetSpec cs; cs.type = TargetType::Coded2;     rebuildBoardNode(*g_coded2Board, cs); }
     { TargetSpec ms; ms.type = TargetType::MarkerGrid; rebuildBoardNode(*g_markerBoard, ms); }

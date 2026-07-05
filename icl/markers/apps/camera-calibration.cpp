@@ -5,10 +5,10 @@
 #include "camera-calibration-CameraCalibrationUtils.h"
 
 #include <icl/qt/Common2.h>
-#include <icl/geom2/Scene2.h>
-#include <icl/geom2/GroupNode.h>
-#include <icl/geom2/GeometryNode.h>
-#include <icl/geom2/CoordinateFrameNode.h>
+#include <icl/viz3d/Scene2.h>
+#include <icl/viz3d/GroupNode.h>
+#include <icl/viz3d/GeometryNode.h>
+#include <icl/viz3d/CoordinateFrameNode.h>
 #include <icl/geom/Material.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
@@ -30,16 +30,16 @@ GUI relTransGUI;
 GUI markerDetectionOptionGUI;
 GUI planeOptionGUI;
 
-geom2::Scene2 scene;
-std::shared_ptr<geom2::CoordinateFrameNode> worldCS;  // replaces Scene::setDrawCoordinateFrameEnabled
+viz3d::Scene2 scene;
+std::shared_ptr<viz3d::CoordinateFrameNode> worldCS;  // replaces Scene::setDrawCoordinateFrameEnabled
 ImageSource grabber;
 
 // Apply a material to every GeometryNode under a (possibly grouped) calibration object.
-static void setCalibObjMaterial(const geom2::NodePtr &n, std::shared_ptr<geom::Material> mat){
-  if(auto *g = dynamic_cast<geom2::GroupNode*>(n.get())){
+static void setCalibObjMaterial(const viz3d::NodePtr &n, std::shared_ptr<geom::Material> mat){
+  if(auto *g = dynamic_cast<viz3d::GroupNode*>(n.get())){
     for(int i=0;i<g->getChildCount();++i)
-      if(auto *gn = dynamic_cast<geom2::GeometryNode*>(g->getChild(i))) gn->setMaterial(mat);
-  }else if(auto *gn = dynamic_cast<geom2::GeometryNode*>(n.get())){
+      if(auto *gn = dynamic_cast<viz3d::GeometryNode*>(g->getChild(i))) gn->setMaterial(mat);
+  }else if(auto *gn = dynamic_cast<viz3d::GeometryNode*>(n.get())){
     gn->setMaterial(mat);
   }
 }
@@ -290,7 +290,7 @@ void init(){
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab().getSize());
 
-  worldCS = geom2::CoordinateFrameNode::create();  // world coordinate frame (toggled by "show CS")
+  worldCS = viz3d::CoordinateFrameNode::create();  // world coordinate frame (toggled by "show CS")
   worldCS->setVisible(false);
   scene.addNode(worldCS);
 
@@ -335,12 +335,12 @@ void run(){
     Ts[i] = calibFileData.loadedFiles[i].transforms[tidx].transform;
     enabled[i] = gui["enable-obj-"+str(i)].as<bool>();
 
-    geom2::NodePtr calibObj = calibFileData.loadedFiles[i].obj;
+    viz3d::NodePtr calibObj = calibFileData.loadedFiles[i].obj;
     if(!calibObj) continue;
     calibObj->setTransformation(Trel * Ts[i]);
     const int a = gui["objAlpha"];
     {
-      // per-primitive-type visibility is gone in geom2 — the face material alpha
+      // per-primitive-type visibility is gone in viz3d — the face material alpha
       // (0 when the object is disabled) already yields the wireframe-only look.
       GeomColor lineColor = enabled[i] ? GeomColor(255,0,0,a) : GeomColor(200,200,200,a);
       if(a){

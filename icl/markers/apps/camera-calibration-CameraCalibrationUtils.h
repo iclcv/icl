@@ -7,9 +7,9 @@
 #include <string>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/qt/DrawHandle3D.h>
-#include <icl/geom2/Node.h>
-#include <icl/geom2/GridNode.h>
-namespace icl::geom2 { class Scene2; }
+#include <icl/viz3d/Node.h>
+#include <icl/viz3d/GridNode.h>
+namespace icl::viz3d { class Scene2; }
 #include <icl/utils/thread/Lockable.h>
 #include <icl/core/line/Line.h>
 #include <QtCore/QObject>
@@ -94,7 +94,7 @@ namespace icl::markers {
       struct CalibFile{
         std::string filename;
         std::vector<NamedTransform> transforms;
-        geom2::NodePtr obj;
+        viz3d::NodePtr obj;
         std::vector<MarkerGrid> grids;
       };
 
@@ -134,7 +134,7 @@ namespace icl::markers {
         std::vector<std::string> configurables;
         std::string iin; // comma-sep. string list
         markers::FiducialDetector *lastFD; // used for visualization
-        std::shared_ptr<geom2::GridNode> planeObj;
+        std::shared_ptr<viz3d::GridNode> planeObj;
         std::vector<CalibFile> loadedFiles;
 
       CalibFileData():lastFD(0),planeObj(nullptr){
@@ -182,7 +182,7 @@ namespace icl::markers {
                                                    const geom::Mat &Trel, const utils::Size &imageSize,
                                                    bool &deactivatedCenters, bool useCorners,
                                                    bool normalizeError, BestOfNSaver *saver,
-                                                   bool &haveAnyCalibration, geom2::Scene2 &scene,
+                                                   bool &haveAnyCalibration, viz3d::Scene2 &scene,
                                                    const geom::Camera *givenIntrinsicParams=0,
                                                    bool performLMAbasedOptimiziation=false);
 
@@ -190,7 +190,7 @@ namespace icl::markers {
       static CalibFile parse_calib_file(const std::string &filename, int calibrationFileIndex, CalibFileData &data);
 
       /// adapts the camera calibration help-indicator plane
-      static void change_plane(const std::string &handle, qt::GUI &planeOptionGUI, geom2::Scene2 &scene,
+      static void change_plane(const std::string &handle, qt::GUI &planeOptionGUI, viz3d::Scene2 &scene,
                                CalibFileData &calibFileData);
 
       /// creates a simple template for a calibration object description file
@@ -232,7 +232,7 @@ namespace icl::markers {
                                   const std::string &planeDim,
                                   float planeOffset,
                                   const utils::Point32f &currentMousePos,
-                                  geom2::Scene2 &scene);
+                                  viz3d::Scene2 &scene);
 
       /// performs the image preprocessing (based on program args)
       static const core::ImgBase *preprocess(const core::ImgBase *image);

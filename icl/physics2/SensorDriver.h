@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/geom2/Driver.h>
+#include <icl/viz3d/Driver.h>
 #include <icl/physics2/Units.h>
 #include <memory>
 #include <vector>
@@ -26,7 +26,7 @@ namespace icl::physics2 {
 
       Threading: query `getOverlappingDrivers()` between steps (the ghost's
       overlap cache is updated on the sim thread during a step). */
-  class ICLPhysics2_API SensorDriver : public geom2::Driver {
+  class ICLPhysics2_API SensorDriver : public viz3d::Driver {
   public:
     explicit SensorDriver(PhysicsWorld &world);
     ~SensorDriver() override;
@@ -41,7 +41,7 @@ namespace icl::physics2 {
     void setTransform(const Mat &worldPose);
 
     /// Drivers whose bodies currently overlap the zone.
-    std::vector<geom2::Driver *> getOverlappingDrivers() const;
+    std::vector<viz3d::Driver *> getOverlappingDrivers() const;
 
   private:
     struct Data;
