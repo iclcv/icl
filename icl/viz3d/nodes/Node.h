@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/la/FixedMatrix.h>
+#include <icl/math/Types.h>
 #include <string>
 #include <memory>
 #include <vector>
@@ -13,7 +13,7 @@
 
 namespace icl::viz3d {
 
-  using Mat = math::FixedMatrix<float, 4, 4>;
+  using Mat = math::Mat4;
 
   class GroupNode;
   class Driver;

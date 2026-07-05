@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/la/FixedVector.h>
+#include <icl/math/Types.h>
 #include <icl/core/Img.h>
 #include <icl/viz3d/render/Primitive.h>  // GeomColor
 #include <memory>
@@ -24,7 +24,7 @@ namespace icl::viz3d {
 
   class Node;
   class PointCloud;
-  using Vec = math::FixedColVector<float, 4>;
+  using Vec = math::Vec4;
 
   /// Result of a BVH ray query
   struct BVHHit {

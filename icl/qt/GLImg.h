@@ -8,7 +8,7 @@
 #include <icl/utils/Range.h>
 #include <icl/utils/Point.h>
 #include <functional>
-#include <icl/math/la/FixedVector.h>
+#include <icl/math/Types.h>
 #include <icl/core/ImgBase.h>
 #include <icl/qt/ImageStatistics.h>
 
@@ -158,7 +158,7 @@ namespace icl::qt {
                     const int stride = 1, bool invertNormals=false);
 
     /// 3D vector type
-    using Vec3 = math::FixedColVector<float,3>;
+    using Vec3 = math::Vec3;
 
     /// a grid function returns a 3D pos from given 2D grid position
     using grid_function = std::function<Vec3(int,int)>;

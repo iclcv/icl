@@ -44,23 +44,18 @@ namespace icl::cv3d {
   /// inline utililty function to create an invisible color instance (alpha is 0.0f)
   inline GeomColor geom_invisible() { return GeomColor(0,0,0,0); }
 
-  /// Matrix Typedef of float matrices
-  using Mat4D32f = math::FixedMatrix<icl32f,4,4>;
-
-  /// Matrix Typedef of double matrices
-  using Mat4D64f = math::FixedMatrix<icl64f,4,4>;
-
-  /// Vector typedef of float vectors
-  using Vec4D32f = math::FixedColVector<icl32f,4>;
-
-  /// Vector typedef of double vectors
-  using Vec4D64f = math::FixedColVector<icl64f,4>;
+  // Homogeneous vector/matrix types — single-sourced from icl::math (see
+  // icl/math/Types.h). These names are kept for backward compatibility.
+  using Mat4D32f = math::Mat4;   //!< 4x4 float matrix
+  using Mat4D64f = math::Mat4d;  //!< 4x4 double matrix
+  using Vec4D32f = math::Vec4;   //!< 4D float vector
+  using Vec4D64f = math::Vec4d;  //!< 4D double vector
 
   /// Short typedef for 4D float vectors
-  using Vec = Vec4D32f;
+  using Vec = math::Vec4;
 
   /// Short typedef for 4D float matrices
-  using Mat = Mat4D32f;
+  using Mat = math::Mat4;
 
   /// typedef for vector of Vec instances
   using VecArray = std::vector<Vec>;

@@ -6,7 +6,7 @@
 
 #include <icl/viz3d/nodes/Node.h>
 #include <icl/viz3d/render/Primitive.h>
-#include <icl/math/la/FixedVector.h>
+#include <icl/math/Types.h>
 #include <icl/utils/Point.h>
 #include <vector>
 #include <memory>
@@ -16,7 +16,7 @@ namespace icl::viz3d { class Material; }
 
 namespace icl::viz3d {
 
-  using Vec = math::FixedColVector<float, 4>;
+  using Vec = math::Vec4;
 
   /// Abstract geometry node — read-only geometry access for renderers
   /** GeometryNode owns vertices, normals, primitives, and material.

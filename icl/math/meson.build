@@ -9,6 +9,7 @@ math_headers = files(
   'Math.h',
   'MathFunctions.h',
   'SimdCompat.h',
+  'Types.h',
 )
 
 math_la_headers = files(

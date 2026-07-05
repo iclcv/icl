@@ -6,20 +6,9 @@
 
 #include <icl/math/la/FixedMatrix.h>
 #include <icl/math/la/FixedVector.h>
+#include <icl/math/Types.h>   // canonical Vec3/Vec4/Mat3/Mat4 aliases
 
 namespace icl::math {
-    /// another shortcut for 3D vectors
-    using Vec3 = FixedColVector<icl32f,3>;
-
-    /// another shortcut for 3D vectors
-    using Vec4 = FixedColVector<icl32f,4>;
-
-    /// typedef for 3x3 fixed matrices
-    using Mat3 = FixedMatrix<icl32f, 3,3>;
-
-    /// typedef for 4x4 fixed matrices
-    using Mat4 = FixedMatrix<icl32f, 4,4>;
-
     /// linearly interpolates between a, b (x must be in range [0,1])
     /** if x is 0, a is returned and if x is 1, b is returned */
     template<class T>

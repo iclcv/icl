@@ -125,7 +125,7 @@ namespace icl::cv3d {
     };
 
     /// internal typedef
-    using Mat3x3 = math::FixedMatrix<icl32f,3,3>;
+    using Mat3x3 = math::Mat3;
 
     /** @{ @name constructors */
 

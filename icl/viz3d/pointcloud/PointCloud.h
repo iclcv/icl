@@ -8,7 +8,7 @@
 #include <icl/utils/Size.h>
 #include <icl/core/DataSegment.h>
 #include <icl/core/Types.h>
-#include <icl/math/la/FixedVector.h>
+#include <icl/math/Types.h>
 #include <icl/viz3d/render/Primitive.h>  // for GeomColor
 #include <memory>
 #include <mutex>
@@ -22,7 +22,7 @@ namespace icl::cv3d { class Camera; }
 
 namespace icl::viz3d {
 
-  using Vec = math::FixedColVector<float, 4>;
+  using Vec = math::Vec4;
 
   /// Point cloud data container — independent of the scene graph
   /** Stores point positions, normals, colors, labels, depth, and intensity

@@ -30,7 +30,7 @@ namespace icl::cv3d {
   class ICLCv3d_API ICP {
   public:
     /// homogeneous 3D point type used throughout ICP (= cv3d::Vec)
-    using Vec = math::FixedColVector<icl32f, 4>;
+    using Vec = math::Vec4;
 
     /// Nearest-neighbour correspondence backend — the ICP hot path.
     /** A backend is built once over the fixed target cloud, then queried each

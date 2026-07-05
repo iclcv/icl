@@ -5,8 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/la/FixedMatrix.h>
-#include <icl/math/la/FixedVector.h>
+#include <icl/math/Types.h>
 #include <LinearMath/btTransform.h>
 
 #ifndef ICLPhysics2_API
@@ -15,8 +14,8 @@
 
 namespace icl::physics2 {
 
-  using Mat = math::FixedMatrix<float, 4, 4>;
-  using Vec = math::FixedColVector<float, 4>;
+  using Mat = math::Mat4;
+  using Vec = math::Vec4;
 
   /// Per-world unit/scale policy: ICL (millimetres) <-> Bullet units.
   /** Replaces the legacy global `ICL_UNIT_TO_METER` / `METER_TO_BULLET_UNIT`

@@ -8,7 +8,7 @@
 #include <icl/viz3d/render/Renderer.h>
 #include <icl/viz3d/nodes/LightNode.h>
 #include <icl/viz3d/render/BVH.h>
-#include <icl/math/la/FixedVector.h>
+#include <icl/math/Types.h>
 #include <icl/qt/GLCallback.h>
 #include <icl/utils/config/Configurable.h>
 #include <memory>
@@ -28,7 +28,7 @@ namespace icl::viz3d {
   class PointCloud;
   class SceneMouseHandler;
 
-  using Vec = math::FixedColVector<float, 4>;
+  using Vec = math::Vec4;
 
   /// Hit result from ray-node intersection
   struct Hit2 {
