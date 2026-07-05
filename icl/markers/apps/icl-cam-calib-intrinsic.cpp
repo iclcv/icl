@@ -400,7 +400,7 @@ namespace {
     };
 
     // 1) captured fills — OPAQUE, on fillI
-    qt::color(0,0,0,0); qt::fill(120,175,255,255);
+    qt::color(0,0,0,0); qt::fill(255,0,120,255);
     for (int gy=0; gy<GH; ++gy) for (int gx=0; gx<GW; ++gx) {
       float cx,cy,r0,r1,r2; gaugeGeom(gx,gy,cx,cy,r0,r1,r2);
       const auto &bins = cov.gaugeBins(gx,gy);
@@ -414,7 +414,7 @@ namespace {
     for (int c=0;c<3;++c){ icl8u *o=O.begin(c); const icl8u *f=F.begin(c), *b=rgb.begin(c);
       for (int i=0,n=O.getDim(); i<n; ++i) o[i]=(icl8u)std::lround(b[i]+a*(f[i]-b[i])); }
     // 3) structure — thin translucent lines directly on outI (no fan-fill → no spokes)
-    qt::fill(0,0,0,0); qt::color(70,150,255,230);
+    qt::fill(0,0,0,0); qt::color(255,0,120,230);
     for (int gy=0; gy<GH; ++gy) for (int gx=0; gx<GW; ++gx) {
       float cx,cy,r0,r1,r2; gaugeGeom(gx,gy,cx,cy,r0,r1,r2);
       qt::circle(outI,(int)cx,(int)cy,(int)r0); qt::circle(outI,(int)cx,(int)cy,(int)r1);
@@ -428,7 +428,7 @@ namespace {
     if (cur && cur->valid) {
       const CoverageMap::GaugeHit h = cov.gaugeLocate(*cur);
       float cx,cy,r0,r1,r2; gaugeGeom(h.gx,h.gy,cx,cy,r0,r1,r2);
-      qt::fill(0,0,0,0); qt::color(255,0,255,255);
+      qt::fill(0,0,0,0); qt::color(255,255,0,255);
       if (h.ring == 0) qt::circle(outI,(int)cx,(int)cy,(int)r0);
       else {
         const float ri = (h.ring==1)?r0:r1, ro = (h.ring==1)?r1:r2;
@@ -441,8 +441,8 @@ namespace {
       // exact needle: length ∝ tilt magnitude (ring-aligned), angle = directed lean
       const float rr = r2 * cov.gaugeRadiusFrac(cur->tiltMag);
       const Point tip = P(cx+std::cos(cur->tiltDir)*rr, cy+std::sin(cur->tiltDir)*rr);
-      qt::color(255,0,255,255); qt::line(outI, P(cx,cy), tip);
-      qt::fill(255,0,255,255); qt::circle(outI, tip.x, tip.y, 3);   // dot at the tip
+      qt::color(255,255,0,255); qt::line(outI, P(cx,cy), tip);
+      qt::fill(255,255,0,255); qt::circle(outI, tip.x, tip.y, 3);   // dot at the tip
     }
     return outI.as<icl8u>();
   }
