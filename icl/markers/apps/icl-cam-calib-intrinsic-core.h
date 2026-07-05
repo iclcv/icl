@@ -30,7 +30,7 @@ namespace icl::geom2 { class MeshNode; }
 namespace icl::calibintr {
 
   /// Which kind of calibration target is in use.
-  enum class TargetType { Checkerboard, Coded, MarkerGrid };
+  enum class TargetType { Checkerboard, Coded, Coded2, MarkerGrid };
 
   /// Typed description of a calibration target + its metric geometry.
   /** The single source of truth for both the detector (makeTarget) and the sim

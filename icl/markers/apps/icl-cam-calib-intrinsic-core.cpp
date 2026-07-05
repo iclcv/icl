@@ -6,6 +6,7 @@
 
 #include <icl/markers/CheckerboardTarget.h>
 #include <icl/markers/CodedCheckerboardTarget.h>
+#include <icl/markers/CodedCheckerboardTarget2.h>
 #include <icl/markers/MarkerGridTarget.h>
 #include <icl/markers/FiducialDetector.h>         // black-cell coded: pp.filter=dilatation
 #include <icl/markers/FiducialDetectorPlugin.h>   // getPlugin()->setPropertyValue
@@ -35,6 +36,8 @@ namespace icl::calibintr {
         return "checkerboard " + str(cols) + "x" + str(rows) + " @ " + str(squareMM) + "mm";
       case TargetType::Coded:
         return "coded-checkerboard " + str(cols) + "x" + str(rows) + " @ " + str(squareMM) + "mm";
+      case TargetType::Coded2:
+        return "coded-checkerboard2 (dual-pol) " + str(cols) + "x" + str(rows) + " @ " + str(squareMM) + "mm";
       case TargetType::MarkerGrid:
         return "marker-grid " + str(gridCells.width) + "x" + str(gridCells.height);
     }
@@ -73,6 +76,10 @@ namespace icl::calibintr {
         }
         return t;
       }
+      case TargetType::Coded2:
+        // dual-polarity: markers in EVERY cell (shrunk, inverted in black cells) + edge-ring
+        // stubs → extended (cols+1)×(rows+1) lattice. Needs ~cols·rows ids → BCH_6x6.
+        return std::make_unique<markers::CodedCheckerboardTarget2>(s.cols, s.rows, s.squareMM);
       case TargetType::MarkerGrid:
         return std::make_unique<markers::MarkerGridTarget>(s.gridCells, s.markerMM, markerGridBounds(s));
     }
@@ -85,7 +92,7 @@ namespace icl::calibintr {
     std::unique_ptr<markers::CalibrationTarget> t;
     try { t = makeTarget(s); } catch (...) { return false; }
     if (!t) return false;
-    if (s.type == TargetType::Coded) {
+    if (s.type == TargetType::Coded || s.type == TargetType::Coded2) {
       const float aspect = float(s.rows + 2) / float(s.cols + 2);
       // high-res so the coded markers stay crisp even when the board fills/overruns
       // the frame (blurry markers → noisy corners → poor distortion recovery)

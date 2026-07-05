@@ -103,6 +103,7 @@ namespace {
       else if (a == "-t" || a == "--target") {
         const std::string t = next("checkerboard");
         spec.type = (t == "coded")       ? TargetType::Coded
+                  : (t == "coded2")      ? TargetType::Coded2
                   : (t == "marker-grid") ? TargetType::MarkerGrid
                                          : TargetType::Checkerboard;
       }
@@ -158,12 +159,13 @@ namespace {
     // the coded markers keep the off-frame-interior views' edge corners labelled
     // (partial detection). This is the regime where k1/k2 ARE recoverable, unlike a
     // full checkerboard that must stay wholly in view.
-    if (!synthetic && spec.type == TargetType::Coded && spec.cols == 9 && spec.rows == 7) {
+    const bool anyCoded = (spec.type == TargetType::Coded || spec.type == TargetType::Coded2);
+    if (!synthetic && anyCoded && spec.cols == 9 && spec.rows == 7) {
       spec.cols = 15; spec.rows = 11; spec.squareMM = 55;  // ~935mm board, 14x10 inner → overruns
     }
     // inject realistic distortion where we can actually recover it (synthetic solver,
     // or the coded-overrun render) unless the user set a specific value
-    if (!kSet && (synthetic || spec.type == TargetType::Coded)) { k1 = -0.15f; k2 = 0.05f; }
+    if (!kSet && (synthetic || anyCoded)) { k1 = -0.15f; k2 = 0.05f; }
 
     std::printf("[selftest] %s  size=%dx%d  injected k1=%.3f k2=%.3f%s\n",
                 spec.describe().c_str(), size.width, size.height, k1, k2,
@@ -322,7 +324,8 @@ namespace {
     // that must stay entirely in view (bounded loosely there), but the CODED overrun
     // board reaches r>1 so k IS recoverable and is checked tightly. Synthetic excites
     // it fully. (The S94 k2-observability lesson made real.)
-    const bool codedRender = (!synthetic && spec.type == TargetType::Coded);
+    const bool codedRender = (!synthetic && (spec.type == TargetType::Coded ||
+                                             spec.type == TargetType::Coded2));
     const double fTol = (codedRender ? 0.03 : 0.02) * gt.fx, cTol = codedRender ? 8.0 : 6.0;
     const double k1Tol = (synthetic || codedRender) ? 0.05 : 0.03;
     const double k2Tol = synthetic ? 0.02 : codedRender ? 0.08 : 0.10;
@@ -354,7 +357,7 @@ namespace {
   geom2::Scene2        g_scene;
   geom2::OffscreenView g_view(g_scene, 0);
   std::shared_ptr<geom2::CheckerboardNode> g_cbBoard;
-  std::shared_ptr<geom2::MeshNode>         g_codedBoard, g_markerBoard;
+  std::shared_ptr<geom2::MeshNode>         g_codedBoard, g_coded2Board, g_markerBoard;
   std::unique_ptr<markers::CalibrationTarget> g_target;
   std::unique_ptr<IntrinsicSession>           g_session;
   std::unique_ptr<CoverageMap>                g_coverage;
@@ -373,9 +376,18 @@ namespace {
   // widget and in --gauge-dump), so it is directly verifiable in-sandbox.
   Img8u gaugeOverlay(const Img8u &base, const CoverageMap &cov, const ViewDescriptor *cur) {
     // ensure RGB so the blue ink shows on a greyscale frame too
-    Img8u rgb = base;
-    if (base.getChannels() < 3) { rgb = Img8u(base.getSize(), formatRGB);
-      for (int c=0;c<3;++c) std::copy(base.begin(0), base.end(0), rgb.begin(c)); }
+    // independent RGB display copy (never mutate the caller's frame — detection runs on it)
+    Img8u rgb(base.getSize(), formatRGB);
+    for (int c=0;c<3;++c) std::copy(base.begin(base.getChannels()<3?0:c),
+                                    base.end  (base.getChannels()<3?0:c), rgb.begin(c));
+
+    // DISPLAY-ONLY: pull the camera frame strongly toward mid-grey so the checkerboard's
+    // black/white contrast stops fighting the coverage gauges. Detection still runs on the
+    // untouched frame; this only affects what the gauges are composited onto.
+    { const float k = 0.28f; const float mid = 128.f;   // low retained contrast, toward mid-grey
+      for (int c=0;c<rgb.getChannels();++c){ icl8u *p=rgb.begin(c);
+        for (int i=0,n=rgb.getDim(); i<n; ++i)
+          p[i]=(icl8u)std::lround(mid + k*(p[i]-mid)); } }
 
     Image outI  = Image(rgb).deepCopy();
     Image fillI = Image(rgb).deepCopy();   // captured segments drawn OPAQUE here, then
@@ -506,10 +518,13 @@ namespace {
     g_cbBoard = geom2::CheckerboardNode::create(9, 7, 25.f * (9 + 2));
     g_scene.addNode(g_cbBoard);
     g_codedBoard  = std::make_shared<geom2::MeshNode>();
+    g_coded2Board = std::make_shared<geom2::MeshNode>();
     g_markerBoard = std::make_shared<geom2::MeshNode>();
     { TargetSpec cs; cs.type = TargetType::Coded;      rebuildBoardNode(*g_codedBoard,  cs); }
+    { TargetSpec cs; cs.type = TargetType::Coded2;     rebuildBoardNode(*g_coded2Board, cs); }
     { TargetSpec ms; ms.type = TargetType::MarkerGrid; rebuildBoardNode(*g_markerBoard, ms); }
     g_scene.addNode(g_codedBoard);  g_codedBoard->setVisible(false);
+    g_scene.addNode(g_coded2Board); g_coded2Board->setVisible(false);
     g_scene.addNode(g_markerBoard); g_markerBoard->setVisible(false);
 
     rebuildTarget(TargetSpec{});      // checkerboard 9x7 @ 25mm
@@ -525,24 +540,28 @@ namespace {
     // renderer/lens-distortion Prop), stacked so it reads as one unit and can be
     // hidden wholesale once real -i input lands. CENTER = the (sim-or-real) camera
     // frame + detection/coverage. RIGHT = the input-agnostic calibration workflow.
-    g_gui << (HSplit()
-      << (VSplit()
-          << Canvas3D({.handle="scene", .label="simulated input — wave the target (drag = orbit, wheel = zoom)", .minSize={20,14}})
-          << (VBox({.minSize={20,4}, .maxSize={100,13}})
-              << Prop(&g_view, {.label="simulated camera: renderer + lens distortion"})))
-      << Canvas({.handle="view", .label="camera + detection + coverage", .minSize={18,16}})
-      << (VBox({.minSize={15,1}, .maxSize={18,100}})
-          << Combo("checkerboard,coded (white cells),coded (black cells),marker-grid",
-                   {.handle="target", .label="calibration target"})
-          << (HBox() << Slider(3,20,9,{.handle="xc", .label="x cells"})
-                     << Slider(3,20,7,{.handle="yc", .label="y cells"}))
-          << FSlider(8,60,25,{.handle="sq", .label="cell / marker mm"})
-          << CheckBox("auto-capture", {.checked=true, .handle="auto"})
-          << (HBox() << Button("capture now",   {.handle="capture"})
-                     << Button("reset session", {.handle="reset"}))
-          << (HBox() << Button("calibrate", {.handle="calibrate"})
-                     << Button("save",      {.handle="save"}))
-          << Combo("none,heatmap,orientation gauges", {.handle="overlay", .label="coverage overlay"})
+    g_gui << (VBox()
+      << (HSplit()
+          << (VSplit()
+              << Canvas3D({.handle="scene", .label="simulated input — wave the target (drag = orbit, wheel = zoom)", .minSize={20,14}})
+              << (VBox({.minSize={20,4}, .maxSize={100,13}})
+                  << Prop(&g_view, {.label="simulated camera: renderer + lens distortion"})))
+          << Canvas({.handle="view", .label="camera + detection + coverage", .minSize={18,16}})
+          << (VBox({.minSize={15,1}, .maxSize={18,100}})
+              << Combo("checkerboard,coded (white cells),coded (black cells),coded2 (dual-pol),marker-grid",
+                       {.handle="target", .label="calibration target"})
+              << (HBox() << Slider(3,20,9,{.handle="xc", .label="x cells"})
+                         << Slider(3,20,7,{.handle="yc", .label="y cells"}))
+              << FSlider(8,60,25,{.handle="sq", .label="cell / marker mm"})
+              << CheckBox("auto-capture", {.checked=true, .handle="auto"})
+              << (HBox() << Button("capture now",   {.handle="capture"})
+                         << Button("reset session", {.handle="reset"}))
+              << (HBox() << Button("calibrate", {.handle="calibrate"})
+                         << Button("save",      {.handle="save"}))
+              << Combo("none,heatmap,orientation gauges", {.handle="overlay", .label="coverage overlay"})))
+      // full-width results strip — the calibration report is long, so give it the whole
+      // window width instead of clipping it in the narrow control column
+      << (VBox({.label="calibration result", .minSize={40,3}, .maxSize={9999,4}})
           << Label("waiting…", {.handle="stat1"})
           << Label(" ",        {.handle="stat2"})
           << Fps({.handle="fps"})))
@@ -556,23 +575,25 @@ namespace {
     static FPSLimiter fps(50);
 
     // Target combo (top-level modes): 0=checkerboard, 1=coded white cells, 2=coded
-    // BLACK cells, 3=marker-grid. The cell/size sliders drive EVERY target's geometry
-    // (checker/coded squares or marker-grid cells). ANY change rebuilds the board in
-    // place AND resets the session (accumulated views belong to the old target); the
-    // board node is rebuilt only after the detector build succeeds, so the shown
-    // board always matches the active detector.
+    // BLACK cells, 3=coded2 (dual-polarity), 4=marker-grid. The cell/size sliders drive
+    // EVERY target's geometry (checker/coded squares or marker-grid cells). ANY change
+    // rebuilds the board in place AND resets the session (accumulated views belong to the
+    // old target); the board node is rebuilt only after the detector build succeeds, so
+    // the shown board always matches the active detector.
     const int   t  = ComboHandle(g_gui["target"]).getSelectedIndex();
     const int   xc = g_gui["xc"], yc = g_gui["yc"];
     const float sq = g_gui["sq"];
-    const bool  coded = (t == 1 || t == 2);
+    const bool  coded  = (t == 1 || t == 2);
+    const bool  coded2 = (t == 3);
     static int lt=-1, lxc=-1, lyc=-1; static float lsq=-1;
     if (t != lt || xc != lxc || yc != lyc || sq != lsq) {
       TargetSpec ns;                                   // candidate spec from the controls
-      if (t == 0)     { ns.type = TargetType::Checkerboard; ns.cols = xc; ns.rows = yc; ns.squareMM = sq; }
-      else if (coded) { ns.type = TargetType::Coded; ns.cols = xc; ns.rows = yc; ns.squareMM = sq;
-                        ns.codedBlackCells = (t == 2); }
-      else            { ns.type = TargetType::MarkerGrid; ns.gridCells = Size(xc, yc);
-                        ns.markerMM = Size32f(sq, sq); ns.markerGapMM = sq * 0.4f; }
+      if (t == 0)      { ns.type = TargetType::Checkerboard; ns.cols = xc; ns.rows = yc; ns.squareMM = sq; }
+      else if (coded)  { ns.type = TargetType::Coded; ns.cols = xc; ns.rows = yc; ns.squareMM = sq;
+                         ns.codedBlackCells = (t == 2); }
+      else if (coded2) { ns.type = TargetType::Coded2; ns.cols = xc; ns.rows = yc; ns.squareMM = sq; }
+      else             { ns.type = TargetType::MarkerGrid; ns.gridCells = Size(xc, yc);
+                         ns.markerMM = Size32f(sq, sq); ns.markerGapMM = sq * 0.4f; }
 
       if (rebuildTarget(ns)) {                          // resets session on success (worker-owned)
         // The board NODES are read by the GUI render thread, so mutate them THERE —
@@ -582,10 +603,12 @@ namespace {
         ICLApplication::instance()->executeInGUIThread(std::function<void(int)>([&](int){
           g_cbBoard->setVisible(t == 0);
           g_codedBoard->setVisible(coded);
-          g_markerBoard->setVisible(t == 3);
-          if (t == 0)     { g_cbBoard->setCells(xc, yc); g_cbBoard->setWidth(sq*(xc+2)); }
-          else if (coded) rebuildBoardNode(*g_codedBoard,  g_spec);   // white/black texture
-          else            rebuildBoardNode(*g_markerBoard, g_spec);
+          g_coded2Board->setVisible(coded2);
+          g_markerBoard->setVisible(t == 4);
+          if (t == 0)      { g_cbBoard->setCells(xc, yc); g_cbBoard->setWidth(sq*(xc+2)); }
+          else if (coded)  rebuildBoardNode(*g_codedBoard,  g_spec);   // white/black texture
+          else if (coded2) rebuildBoardNode(*g_coded2Board, g_spec);   // dual-polarity texture
+          else             rebuildBoardNode(*g_markerBoard, g_spec);
           g_scene.touch();
         }), 0, /*blocking=*/true);
       } else {
