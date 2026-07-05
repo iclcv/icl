@@ -18,7 +18,6 @@ geom_headers = files(
   'GridSceneObject.h',
   'Hit.h',
   'Material.h',
-  'OctreeObject.h',
   'PCDFileGrabber.h',
   'PCLIncludes.h',
   'PCLPointCloudObject.h',
@@ -36,7 +35,6 @@ geom_headers = files(
   'Primitive.h',
   'Primitive3DFilter.h',
   'PrimitiveType.h',
-  'RayCastOctreeObject.h',
   'Raytracer.h',
   'SQFitter.h',
   'Scene.h',
@@ -64,7 +62,6 @@ geom_sources = files(
   'PointCloudOutputRegistry.cpp',
   'GridSceneObject.cpp',
   'Material.cpp',
-  'OctreeObject.cpp',
   'PCDFileGrabber.cpp',
   'PointCloudCreator.cpp',
   'PointCloudObject.cpp',
@@ -72,7 +69,6 @@ geom_sources = files(
   'PointCloudSegment.cpp',
   'PointCloudSerializer.cpp',
   'Primitive3DFilter.cpp',
-  'RayCastOctreeObject.cpp',
   'SQFitter.cpp',
 )
 

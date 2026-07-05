@@ -30,8 +30,14 @@ borrowers, delete the dead rest with the scene graph (Phase 6)".
   grabbers, outputs, serializer, `SQFitter`, `FeatureGraph`/`ConfigurableDepthImage` segmenters) in
   Phase 6 with the scene graph; drop PCL.
 
-**NEXT after Phase 2:** Phase 3 (octree/remaining scene-entangled bits) or jump to the scene-graph
-consumer ports (Phase 5, folds into Phase C extrinsic calib). See scoping doc.
+**Phase 3 — ✅ DONE (S98):** the SceneObject-derived `OctreeObject`/`RayCastOctreeObject` were a
+self-contained dead island (geom2's `RayCastOctree` covers the live query role) → deleted (4 files).
+`Primitive3DFilter` already handled in Phase 2. No renderable-octree node built (no consumer).
+
+**NEXT:** Phase 4 (native parity backfill in geom2 for kept scene features — GridNode, light gizmo,
+labelled coord-frame, Sky/HDRI — only what a kept app/demo needs; drop the unused) OR Phase 5
+(scene-graph consumer ports — the 5 `markers/apps/camera-calibration*` + `test-io-scene-source`,
+folds into Phase C extrinsic calib). Phase 6 = delete old geom + dead pipeline. See scoping doc.
 
 **End-state (evolving — SPLIT into two modules):** old `geom` conflates 3D **CV algorithms** and a
 3D **scene graph + renderer**. Split them: **`cv3d`** (`icl::cv3d`, **Qt-FREE** — verified no CV file

@@ -184,10 +184,15 @@ Investigation (S98) changed the picture:
 `ICLGeom_API` export macro (a no-op on macOS/Linux; `__declspec` only on Windows). Both are fixed in
 one dedicated pass — add `ICLCv3d_API` + rename `geom::`→`cv3d::` — after the moves settle.
 
-**Phase 3 — Port the remaining scene-entangled algorithm bits.** `OctreeObject`/
-`RayCastOctreeObject` → native drawable node in the scene module over `BVH` (or drop, keeping
-only the query role geom2 has). `Primitive3DFilter` filter logic → `cv3d`; its `toSceneObject()`
-helper → native node construction in the scene module (retire `Primitive3DConverter`).
+**Phase 3 — remaining scene-entangled algorithm bits. ✅ DONE (S98).**
+- `OctreeObject`/`RayCastOctreeObject` (SceneObject-derived renderable octree) were a **self-contained
+  dead island** (zero consumers anywhere; geom2's `RayCastOctree` already covers the live query role
+  and there is no consumer for a renderable octree node) → **deleted** (4 files). No native node built
+  — nothing needs one.
+- `Primitive3DFilter` was handled in Phase 2 (descriptor extracted; dead `toSceneObject()` dropped;
+  the `PointCloudObjectBase`-coupled `apply()` machinery is dead → dies in Phase 6). Nothing to port.
+The rest of the scene-entangled files are the dead point-cloud pipeline → deleted with the scene
+graph in Phase 6.
 
 **Phase 4 — Native parity backfill in the scene module for kept features** (§gaps): `GridNode`,
 labelled coord-frame, light gizmo + `setDrawLightsEnabled`, Sky/HDRI (or drop), polygon/texture/

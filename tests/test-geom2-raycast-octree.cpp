@@ -3,8 +3,8 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // RayCastOctree::fill(PointCloud) — populate the ray-cast octree directly from
-// a geom2 PointCloud's XYZ (the geom2 replacement for the legacy
-// OctreeObject::fill(PointCloudObjectBase)). Headless.
+// a geom2 PointCloud's XYZ (the geom2 replacement for the now-removed legacy
+// SceneObject-derived OctreeObject). Headless.
 
 #include "harness/Test.h"
 #include <icl/geom2/RayCastOctree.h>
