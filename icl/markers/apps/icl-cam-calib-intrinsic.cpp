@@ -574,14 +574,20 @@ namespace {
       else            { ns.type = TargetType::MarkerGrid; ns.gridCells = Size(xc, yc);
                         ns.markerMM = Size32f(sq, sq); ns.markerGapMM = sq * 0.4f; }
 
-      if (rebuildTarget(ns)) {                          // resets session on success
-        g_cbBoard->setVisible(t == 0);
-        g_codedBoard->setVisible(coded);
-        g_markerBoard->setVisible(t == 3);
-        if (t == 0)     { g_cbBoard->setCells(xc, yc); g_cbBoard->setWidth(sq*(xc+2)); }
-        else if (coded) rebuildBoardNode(*g_codedBoard,  g_spec);   // white/black texture
-        else            rebuildBoardNode(*g_markerBoard, g_spec);
-        g_scene.touch();
+      if (rebuildTarget(ns)) {                          // resets session on success (worker-owned)
+        // The board NODES are read by the GUI render thread, so mutate them THERE —
+        // rebuilding geometry/texture on the worker races the renderer (getData on a
+        // just-freed texture → crash). Blocking so the shown board matches before we
+        // detect on the next frame.
+        ICLApplication::instance()->executeInGUIThread(std::function<void(int)>([&](int){
+          g_cbBoard->setVisible(t == 0);
+          g_codedBoard->setVisible(coded);
+          g_markerBoard->setVisible(t == 3);
+          if (t == 0)     { g_cbBoard->setCells(xc, yc); g_cbBoard->setWidth(sq*(xc+2)); }
+          else if (coded) rebuildBoardNode(*g_codedBoard,  g_spec);   // white/black texture
+          else            rebuildBoardNode(*g_markerBoard, g_spec);
+          g_scene.touch();
+        }), 0, /*blocking=*/true);
       } else {
         std::cerr << "[calib] target rebuild failed (board too big for the coded id set?) — "
                      "keeping previous target\n";
