@@ -34,10 +34,16 @@ borrowers, delete the dead rest with the scene graph (Phase 6)".
 self-contained dead island (geom2's `RayCastOctree` covers the live query role) → deleted (4 files).
 `Primitive3DFilter` already handled in Phase 2. No renderable-octree node built (no consumer).
 
-**NEXT:** Phase 4 (native parity backfill in geom2 for kept scene features — GridNode, light gizmo,
-labelled coord-frame, Sky/HDRI — only what a kept app/demo needs; drop the unused) OR Phase 5
-(scene-graph consumer ports — the 5 `markers/apps/camera-calibration*` + `test-io-scene-source`,
-folds into Phase C extrinsic calib). Phase 6 = delete old geom + dead pipeline. See scoping doc.
+**Phase 4 — ✅ DONE (S98):** narrowed to "build only what a kept consumer needs, drop the unused".
+Labelled coord-frame already covered by geom2 `CoordinateFrameNode` (complex mode). Built **`GridNode`**
+(`icl/geom2/GridNode.{h,cpp}` — MeshNode subclass, faithful port of `GridSceneObject`; the one gap with
+a kept consumer, the calib app) + test (suite 1074/1074). DROPPED (no consumer): light gizmo, Sky/HDRI,
+material presets, texture/text converter fidelity, PCL. Scene2 API gaps added on demand in Phase 5/C.
+
+**NEXT:** Phase 5 — port the scene-graph consumers (5 `markers/apps/camera-calibration*` +
+`tests/test-io-scene-source`) onto geom2, folding into the **Phase C** extrinsic-calib rewrite. Then
+Phase 6 (delete old geom + dead pipeline), Phase 7 (rename geom2→viz3d). Post-split: functional
+sub-folders in cv3d/viz3d (see scoping doc). See scoping doc for the full remaining tree.
 
 **End-state (evolving — SPLIT into two modules):** old `geom` conflates 3D **CV algorithms** and a
 3D **scene graph + renderer**. Split them: **`cv3d`** (`icl::cv3d`, **Qt-FREE** — verified no CV file

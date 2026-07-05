@@ -34,6 +34,7 @@ if qt_dep.found()
     'test-geom2-pointcloud-mapcolor.cpp',
     'test-geom2-raycast-octree.cpp',
     'test-geom2-primitive3d-converter.cpp',
+    'test-geom2-grid-node.cpp',
     'test-geom2-calibration-harness.cpp',
     'test-geom-coplanar-pose.cpp',
     'test-markers-bch-code.cpp',

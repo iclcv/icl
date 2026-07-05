@@ -180,6 +180,11 @@ Investigation (S98) changed the picture:
   `ConfigurableDepthImageSegmenter`, `PointCloudSegment`) → **delete with the scene graph in Phase 6**.
   Drop `PCLPointCloudObject` (see decisions).
 
+**Post-split TODO — functional sub-folders.** Once cv3d/viz3d file sets settle, group them into
+functional sub-directories like the rest of ICL (`io/detail`, `math/tree|la|transform`, `utils/cl`,
+`utils/detail/pugi`): e.g. cv3d → `pose/`, `icp/`, `segmentation/`, `features/`, `edge/`, `pointcloud/`;
+viz3d → `nodes/`, `render/`, `plot/`, `detail/`. Do this after the moves + rename, not during.
+
 **Transitional debt (whole cv3d):** files still declare `namespace icl::geom` and use the
 `ICLGeom_API` export macro (a no-op on macOS/Linux; `__declspec` only on Windows). Both are fixed in
 one dedicated pass — add `ICLCv3d_API` + rename `geom::`→`cv3d::` — after the moves settle.
@@ -194,10 +199,21 @@ one dedicated pass — add `ICLCv3d_API` + rename `geom::`→`cv3d::` — after 
 The rest of the scene-entangled files are the dead point-cloud pipeline → deleted with the scene
 graph in Phase 6.
 
-**Phase 4 — Native parity backfill in the scene module for kept features** (§gaps): `GridNode`,
-labelled coord-frame, light gizmo + `setDrawLightsEnabled`, Sky/HDRI (or drop), polygon/texture/
-text primitive fidelity, Scene2 API completeness. Scope = how much of geom's showcase we keep;
-this is what lets `SceneObjectConverter` be deleted.
+**Phase 4 — Native parity backfill. ✅ DONE (S98).** Investigation narrowed it sharply — "build only
+what a kept consumer needs, drop the unused":
+- **Labelled coordinate frame: already done** — geom2 `CoordinateFrameNode` has a complex mode
+  (cylinder bars + cone arrowheads + X/Y/Z `TextNode` labels). The scoping gap for
+  `ComplexCoordinateFrameSceneObject` was stale.
+- **`GridNode` BUILT** — `icl/geom2/GridNode.{h,cpp}`: a `MeshNode` subclass = nx*ny lattice drawn as
+  grid lines / quad cells with mutable `getNode(x,y)` (faithful port of `geom::GridSceneObject`, the
+  one gap with a kept consumer — the calib app). Renders via the generic `GeometryNode` path (no
+  registration). Test `tests/test-geom2-grid-node.cpp` (4 cases). Suite 1074/1074.
+- **DROP (no consumer → build nothing, dies in Phase 6):** `SceneLightObject` light gizmo +
+  `setDrawLightsEnabled`, full `Sky`/HDRI env model, material presets, polygon/texture/text converter
+  fidelity, `PCLPointCloudObject`/PCL interop. None has a live consumer; recording the drop shrinks
+  Phase 6. (Renderable octree already dropped in Phase 3.)
+- Scene2 API completeness (`removeCamera`/`removeLight`, `getObject(recursiveIndices)`, bg-color
+  getter/setter) → add on demand when Phase 5/C actually needs them, not speculatively.
 
 **Phase 5 — Port the last external scene-graph consumers.** Rewrite the 5
 `markers/apps/camera-calibration*` files + `tests/test-io-scene-source.cpp` onto the native scene
