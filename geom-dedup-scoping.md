@@ -263,12 +263,18 @@ Phase 6, so the apps can be ported incrementally against geom2 while old geom st
 unblocked**: delete old geom's scene graph (39 files) + the dead point-cloud pipeline + the geom2
 converters.
 
-**Phase 6 — Delete old `geom` entirely** (all 136 files) + the geom2 converters + build/demo
-wiring. Suite green throughout.
+**Phase 6 — Delete old geom's scene graph + dead pipeline. ✅ DONE (S98, commit `f09c3c298`).**
+78 files / ~22k lines deleted, no external consumer left. geom dropped 80 → **4-file rump**
+(`Material` + `SoftPosit`). Also deleted geom2's `SceneObjectConverter` (last geom2→geom-scene-graph
+link; `Primitive3DConverter` kept). Relocated the Cycles build config from geom's meson into geom2's.
+Full build (incl. Cycles targets) + suite 1074/1074; residual sweep clean.
 
-**Phase 7 — Rename the scene module** (today's geom2 → `viz3d`): dir
-`icl/geom2`→`icl/<name>`, namespace `icl::geom2`→`icl::<name>` (68 files), includes + meson
-targets repo-wide. End state: **`cv3d`** (Qt-free 3D CV) + **`viz3d`** (3D scene/render).
+**Phase 7 — Rename the scene module** (today's geom2 → `viz3d`) + dissolve the geom rump: relocate
+`Material` → viz3d and `SoftPosit` → cv3d (strip/keep its Qt viz), delete the geom dir; then dir
+`icl/geom2`→`icl/viz3d`, namespace `icl::geom2`→`icl::viz3d` (68 files) + the transitional
+`icl::geom`→`icl::cv3d` rename for the cv3d files, includes + meson targets repo-wide, `ICLGeom_API`→
+`ICLCv3d_API`/`ICLViz3d_API`. End state: **`cv3d`** (Qt-free 3D CV) + **`viz3d`** (3D scene/render), no
+geom. Then functional sub-folders (post-split TODO).
 
 ## Open decisions (need the user)
 

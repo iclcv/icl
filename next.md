@@ -48,13 +48,18 @@ GroupNode, GridSceneObject→GridNode, ComplexCoordFrame→CoordinateFrameNode, 
 ported `test-io-scene-source`; fixed a latent cv3d→geom umbrella include in `IterativeClosestPoint.h`
 (`dca676a7d`). **Audit: NO external consumer of old geom's scene graph remains.** Suite 1074/1074.
 
-**NEXT = Phase 6:** delete old geom's scene graph (39 files: Scene/SceneObject/SceneLight/GLRenderer/
-Primitive/GridSceneObject/…/DemoScene/PlotWidget3D/GltfLoader/Sky/Hit) + the dead point-cloud pipeline
-(`PointCloudObjectBase` & derived, PointCloudCreator(CL), grabbers, outputs, serializer, SQFitter,
-FeatureGraph/ConfigurableDepthImage segmenters, PCLPointCloudObject/PCL) + the geom2 converters
-(`SceneObjectConverter`/`Primitive3DConverter`) + prune `Geom.h`. Watch: geom2's converters + anything
-still pulling the dead pipeline. Then Phase 7 (rename geom2→viz3d), then functional sub-folders in
-cv3d/viz3d. See `geom-dedup-scoping.md`.
+**Phase 6 — ✅ DONE (S98, commit `f09c3c298`):** deleted old geom's scene graph + dead point-cloud
+pipeline — **78 files / ~22k lines**, no external consumer left. geom dropped 80 → **4-file rump**
+(`Material` + `SoftPosit`). Also deleted geom2's `SceneObjectConverter` (last geom2→geom-scene-graph
+link; `Primitive3DConverter` kept — uses `cv3d::Primitive3D`). Relocated the Cycles build config from
+geom's meson into geom2's (sole consumer now). Full build (incl. Cycles) + suite 1074/1074; residual
+sweep clean.
+
+**NEXT = Phase 7 (rename + dissolve rump):** relocate `Material`→viz3d, `SoftPosit`→cv3d, delete the
+geom dir; rename geom2→`viz3d` (dir + `icl::geom2`→`icl::viz3d`, 68 files) and finish the transitional
+`icl::geom`→`icl::cv3d` rename for cv3d files (+ `ICLGeom_API`→`ICLCv3d_API`/`ICLViz3d_API`), repo-wide
+include/meson updates. Mechanical but broad. Then functional sub-folders in cv3d/viz3d. End state:
+cv3d + viz3d, no geom. See `geom-dedup-scoping.md`.
 
 **End-state (evolving — SPLIT into two modules):** old `geom` conflates 3D **CV algorithms** and a
 3D **scene graph + renderer**. Split them: **`cv3d`** (`icl::cv3d`, **Qt-FREE** — verified no CV file
