@@ -54,6 +54,10 @@ classes with a gtest (fold in the `--sim-selftest` asserts). Nice-to-haves: undi
 per-bin coverage gauges, save-path via `-o`. Distortion-through-render needs the CODED partial-board
 target (full checkerboard can't reach frame corners → k2 unobservable; already proven by
 `markers.intrinsic.endtoend_coded_partial_k2`).
+- **UI polish TODO:** the black/white checkerboard background fights the coverage-gauge/heatmap
+  overlay — **reduce the camera-frame contrast strongly, DISPLAY-ONLY** (dim/desaturate a copy of
+  `cam` toward mid-grey before compositing the gauges in `gaugeOverlay`; detection still runs on the
+  untouched frame). Just a viz change in `guiRun`/`gaugeOverlay`, no calibration impact.
 
 ### THEN — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
 Build the **extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with
