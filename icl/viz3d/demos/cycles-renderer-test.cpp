@@ -1,4 +1,4 @@
-/* Test the viz3d CyclesRenderer API: create a Scene2 with nodes,
+/* Test the viz3d CyclesRenderer API: create a Scene with nodes,
  * render through Cycles, and save the result to PNG.
  *
  * Usage:
@@ -6,7 +6,7 @@
  */
 
 #include <icl/viz3d/render/CyclesRenderer.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
@@ -31,7 +31,7 @@ int main(int argc, const char **argv) {
       samples = std::atoi(argv[++i]);
   }
 
-  Scene2 scene;
+  Scene scene;
 
   // Camera: front-above, looking at the sphere row
   scene.addCamera(Camera::lookAt(

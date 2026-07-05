@@ -6,7 +6,7 @@
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/TextNode.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/utils/StringUtils.h>
 #include <algorithm>
 #include <cmath>

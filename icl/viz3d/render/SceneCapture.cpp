@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/viz3d/render/SceneCapture.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/utils/Macros.h>
 #include <algorithm>
 
@@ -31,7 +31,7 @@ namespace icl::viz3d {
 
   void BVHSceneCapture::invalidate() { m_dirty = true; }
 
-  BVH::ImageResult BVHSceneCapture::capture(Scene2 &scene, int cameraIndex,
+  BVH::ImageResult BVHSceneCapture::capture(Scene &scene, int cameraIndex,
                                             BVH::DepthMode mode) {
     if (cameraIndex < 0 || cameraIndex >= scene.getCameraCount()) return {};
     if (m_caching) {
@@ -103,7 +103,7 @@ namespace icl::viz3d {
 
   GLSceneCapture::~GLSceneCapture() = default;
 
-  BVH::ImageResult GLSceneCapture::capture(Scene2 &scene, int cameraIndex,
+  BVH::ImageResult GLSceneCapture::capture(Scene &scene, int cameraIndex,
                                            BVH::DepthMode mode) {
 #ifdef ICL_HAVE_QT
     if (m_ctx) {

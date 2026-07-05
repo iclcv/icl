@@ -6,7 +6,7 @@
 
 #include <icl/core/Img.h>
 #include <icl/utils/Point.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <string>
 #include <vector>
 

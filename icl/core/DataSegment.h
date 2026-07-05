@@ -51,7 +51,7 @@ namespace icl::core {
 
       \code
 #include <icl/qt/Common.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/core/DataSegment.h>
 
 
@@ -81,7 +81,7 @@ int main(){
 
     \code
 #include <icl/qt/Common.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/core/DataSegment.h>
 
 // utility structure used for demonstration

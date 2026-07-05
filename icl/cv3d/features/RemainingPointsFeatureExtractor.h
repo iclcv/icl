@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/math/la/DynMatrix.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/core/DataSegment.h>
 
 namespace icl::cv3d {

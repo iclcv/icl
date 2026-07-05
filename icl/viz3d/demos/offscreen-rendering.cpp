@@ -3,16 +3,16 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // viz3d port of the legacy geom/offscreen-rendering demo: a video-feedback
-// loop — the scene is rendered offscreen (Scene2::renderToImage), the result is
+// loop — the scene is rendered offscreen (Scene::renderToImage), the result is
 // fed back as the cube's own texture (with a drifting random border), so the
 // cube shows ever-deeper reflections of itself.
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/utils/Random.h>
@@ -24,7 +24,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 HBox gui;
-Scene2 scene;
+Scene scene;
 Img8u texImage;
 std::shared_ptr<MeshNode> cube;
 

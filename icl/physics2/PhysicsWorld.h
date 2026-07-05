@@ -50,7 +50,7 @@ namespace icl::physics2 {
       unit/scale policy, runs a fixed-timestep loop (so physical accuracy is
       independent of render framerate), and serves as the factory for drivers.
       It never touches a viz3d node — bodies publish their pose into per-driver
-      `StateSlot`s, which the render thread samples via `Scene2::sync`.
+      `StateSlot`s, which the render thread samples via `Scene::sync`.
 
       Threading: `start(hz)` spawns a fixed-step loop; `stepOnce()` advances one
       step synchronously (deterministic — used by tests / headless). Structural

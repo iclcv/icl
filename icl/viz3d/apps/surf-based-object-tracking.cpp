@@ -11,11 +11,11 @@
 #include <icl/utils/prop/Constraints.h>
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/cv3d/pose/RansacBasedPoseEstimator.h>
 
 using namespace icl::viz3d;
@@ -32,7 +32,7 @@ RansacBasedPoseEstimator *pe = 0;
 Size32f ts; // template pixel -> mm
 VBox gui;
 GUI ransacOptions;
-Scene2 scene;
+Scene scene;
 std::shared_ptr<CuboidNode> obj;
 
 void init(){

@@ -6,7 +6,7 @@
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/FoldDriver.h>
 #include <icl/physics2/PaperMoverDriver.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/Node.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
@@ -20,7 +20,7 @@ namespace icl::physics2 {
   namespace { enum Mode { None, FoldMode, GrabMode }; }
 
   struct PaperMouseHandler::Data {
-    viz3d::Scene2 *scene;
+    viz3d::Scene *scene;
     int camIndex;
     PaperDriver *paper;
     FoldDriver *fold = nullptr;
@@ -30,7 +30,7 @@ namespace icl::physics2 {
     cv3d::PlaneEquation dragPlane;
   };
 
-  PaperMouseHandler::PaperMouseHandler(int cameraIndex, viz3d::Scene2 *scene, PaperDriver *paper)
+  PaperMouseHandler::PaperMouseHandler(int cameraIndex, viz3d::Scene *scene, PaperDriver *paper)
     : qt::MouseHandler(), m_data(std::make_unique<Data>()) {
     m_data->scene = scene;
     m_data->camIndex = cameraIndex;

@@ -5,7 +5,7 @@
 #include <icl/viz3d/render/CyclesRenderer.h>
 #include <icl/viz3d/render/SceneSynchronizer.h>
 
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/cv3d/Camera.h>
 
 // Qt defines 'emit' as a macro; ICL defines LOG_LEVEL as a macro.
@@ -170,13 +170,13 @@ private:
 // ---- CyclesRenderer::Impl ----
 
 struct CyclesRenderer::Impl {
-  viz3d::Scene2 &iclScene;
+  viz3d::Scene &iclScene;
   RenderQuality quality;
   float sceneScale = 0.001f;  // mm → meters
 
   // Cycles objects
   unique_ptr<Session> session;
-  Scene *scene = nullptr;  // owned by session
+  ccl::Scene *scene = nullptr;  // owned by session
   RaytracingOutputBuffer *outputDriver = nullptr;  // raw ptr, owned by session via unique_ptr
 
   // Scene synchronizer
@@ -224,7 +224,7 @@ struct CyclesRenderer::Impl {
   float lastResScale = -1;
   RenderQuality lastQuality = RenderQuality::Preview;
 
-  Impl(viz3d::Scene2 &scene, RenderQuality q)
+  Impl(viz3d::Scene &scene, RenderQuality q)
       : iclScene(scene), quality(q) {}
 
   void ensureInitialized() {
@@ -436,7 +436,7 @@ struct CyclesRenderer::Impl {
 
 // ---- CyclesRenderer public API ----
 
-CyclesRenderer::CyclesRenderer(viz3d::Scene2 &scene, RenderQuality quality)
+CyclesRenderer::CyclesRenderer(viz3d::Scene &scene, RenderQuality quality)
     : m_impl(std::make_unique<Impl>(scene, quality)) {}
 
 CyclesRenderer::~CyclesRenderer() {

@@ -24,7 +24,7 @@ namespace icl::viz3d {
       Lifecycle (all on the UI / render thread):
         - onAttach()  : called once, right after the driver is added to a node;
                         node() is valid.
-        - sync(dt,a)  : called every render frame by Scene2::sync(), in pre-order
+        - sync(dt,a)  : called every render frame by Scene::sync(), in pre-order
                         (parent before children). `dt` is the wall-clock delta in
                         seconds; `alpha` is the interpolation fraction in [0,1]
                         used by sources that publish discrete states (physics);

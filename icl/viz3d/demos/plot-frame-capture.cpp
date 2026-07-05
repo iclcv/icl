@@ -4,7 +4,7 @@
 
 // Headless verification harness for PlotWidget3D's coordinate frame. Builds the
 // EXACT shipping frame (icl::viz3d::detail::makePlotBox/makePlotAxis/placePlotAxes) plus a
-// bit of sample geometry into a bare Scene2, renders it offscreen with
+// bit of sample geometry into a bare Scene, renders it offscreen with
 // GLSceneCapture (no QWidget — the on-screen widget crashes in the sandbox) and
 // saves a PNG. Lets plot axis/label/orientation fixes be checked in-sandbox.
 // See memory reference_headless_gl_capture.
@@ -17,7 +17,7 @@
 #include <QGuiApplication>
 #include <QSurfaceFormat>
 
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/render/SceneCapture.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
   GLSceneCapture cap(/*ownContext=*/true);
 
-  Scene2 scene;
+  Scene scene;
   scene.setBounds(5);
   scene.addCamera(Camera::lookAt(pos, Vec(0, 0, 0, 1), up, Size(1280, 960), 30.0f));
 

@@ -34,7 +34,7 @@ namespace icl::viz3d {
 
   private:
     /// Propagate the owning-scene back-pointer to the whole subtree.
-    void setScene(Scene2 *scene) override;
+    void setScene(Scene *scene) override;
 
     struct Data;
     std::unique_ptr<Data> m_data;

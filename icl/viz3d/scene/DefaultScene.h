@@ -4,19 +4,19 @@
 
 #pragma once
 
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <memory>
 #include <vector>
 
 namespace icl::viz3d {
 
-  /// A Scene2 that furnishes itself with a nice-looking default environment
+  /// A Scene that furnishes itself with a nice-looking default environment
   /** Drops a coherent presentation environment (ground, walls, lights, camera,
       sky) into the scene, chosen by a high-level \ref SceneType preset. All the
       "cool" rendering features (soft shadows, screen-space reflections, sky
       background) are on by default.
 
-      It is a regular Scene2, so user content is added the usual way
+      It is a regular Scene, so user content is added the usual way
       (addNode / addLight); the furniture it owns is tracked separately and can
       be rebuilt live without disturbing that content.
 
@@ -24,8 +24,8 @@ namespace icl::viz3d {
       take effect immediately —
       `scene type`, `up axis`, `ground`, `sky background`, `shadows`, `SSR`.
       Up-axis aware: `Y` for the classic viewer look, `Z` for the physics
-      convention (gravity along world Z). Eventually replaces DemoScene2. */
-  class ICLViz3d_API DefaultScene : public Scene2 {
+      convention (gravity along world Z). Eventually replaces DemoScene. */
+  class ICLViz3d_API DefaultScene : public Scene {
   public:
 
     /// High-level "what kind of world" presets

@@ -8,11 +8,11 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/nodes/CoordinateFrameNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPluginForQuads.h>
@@ -29,7 +29,7 @@ HSplit gui;
 
 ImageSource grabber;
 FiducialDetector *fid = 0;
-Scene2 scene;
+Scene scene;
 bool canShowRegionCorners = false;
 
 // a coordinate frame + a box, set to a marker's pose

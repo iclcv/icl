@@ -25,7 +25,7 @@ namespace icl::viz3d {
   class SphereNode;
   class LightNode;
   class GroupNode;
-  class Scene2;
+  class Scene;
 
   /// Synchronizes a viz3d scene graph to a Cycles Scene.
   ///
@@ -38,7 +38,7 @@ namespace icl::viz3d {
 
     enum class SyncResult { NoChange, TransformOnly, GeometryChanged };
 
-    SyncResult synchronize(const Scene2 &scene, int camIndex,
+    SyncResult synchronize(const Scene &scene, int camIndex,
                             ccl::Scene *cclScene, float sceneScale = 0.001f);
 
     void invalidateAll();
@@ -69,7 +69,7 @@ namespace icl::viz3d {
     void syncMaterial(ObjectEntry &entry, ccl::Scene *cclScene);
     void syncTransform(ObjectEntry &entry, ccl::Scene *cclScene, float sceneScale);
     void syncCamera(const cv3d::Camera &cam, ccl::Scene *cclScene, float sceneScale);
-    void syncLights(const Scene2 &scene, ccl::Scene *cclScene, float sceneScale);
+    void syncLights(const Scene &scene, ccl::Scene *cclScene, float sceneScale);
     void removeStaleNodes(ccl::Scene *cclScene, bool &anyChanged);
 
     std::unordered_map<const GeometryNode *, ObjectEntry> m_entries;

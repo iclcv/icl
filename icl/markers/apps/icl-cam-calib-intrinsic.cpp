@@ -33,10 +33,10 @@
 #include <icl/qt/Common2.h>            // ICLApp, GUI, Canvas/Canvas3D, handles
 #include <icl/qt/ui.h>
 #include <icl/qt/QuickDraw.h>          // headless image-space draw (coverage gauges)
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/LightNode.h>
 #include <icl/viz3d/nodes/CheckerboardNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/OffscreenView.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/math/la/FixedMatrix.h>   // create_hom_4x4
@@ -243,7 +243,7 @@ namespace {
       gt = { F, F, size.width/2.0, size.height/2.0, (double)k1, (double)k2 };
 
       // --- build the sim scene: known camera + light + the selected board ---
-      viz3d::Scene2 scene;
+      viz3d::Scene scene;
       scene.addCamera(cv3d::Camera::lookAt(cv3d::Vec(0,0,600,1), cv3d::Vec(0,0,0,1),
                                            cv3d::Vec(0,1,0,1), size, hfov));
       scene.setBounds(600);
@@ -354,7 +354,7 @@ namespace {
   // the on-screen widgets need a real display (the sandbox Cocoa GL widget crashes).
 
   GUI                  g_gui;
-  viz3d::Scene2        g_scene;
+  viz3d::Scene        g_scene;
   viz3d::OffscreenView g_view(g_scene, 0);
   std::shared_ptr<viz3d::CheckerboardNode> g_cbBoard;
   std::shared_ptr<viz3d::MeshNode>         g_codedBoard, g_coded2Board, g_markerBoard;
@@ -513,7 +513,7 @@ namespace {
     g_scene.addLight(viz3d::LightNode::point(150, 200, 550));
 
     // three pre-built boards; visibility follows the target combo (swapping nodes at
-    // runtime is a data race — Scene2::add/removeNode don't lock — so geometry is
+    // runtime is a data race — Scene::add/removeNode don't lock — so geometry is
     // rebuilt IN PLACE instead: CheckerboardNode::setCells / rebuildBoardNode()).
     g_cbBoard = viz3d::CheckerboardNode::create(9, 7, 25.f * (9 + 2));
     g_scene.addNode(g_cbBoard);

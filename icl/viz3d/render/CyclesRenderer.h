@@ -10,15 +10,15 @@
 
 namespace icl::viz3d {
 
-  class Scene2;
+  class Scene;
 
   /// Sample-count / denoise preset (see CyclesRenderer). Preview = fast/noisy,
   /// Interactive = balanced (live viewers), Final = high sample count (stills).
   enum class RenderQuality { Preview, Interactive, Final };
 
-  /// Photoreal renderer for a viz3d Scene2, backed by Blender Cycles (path
+  /// Photoreal renderer for a viz3d Scene, backed by Blender Cycles (path
   /// tracer). GL-free, so it renders **headlessly anywhere** — no QApplication,
-  /// no GL context, no window (unlike GLSceneCapture / Scene2::renderToImage).
+  /// no GL context, no window (unlike GLSceneCapture / Scene::renderToImage).
   ///
   /// ── Quick start (one-shot, e.g. a headless capture) ───────────────────────
   /// \code
@@ -48,7 +48,7 @@ namespace icl::viz3d {
   ///     FOOTGUN: do not mutate any scene/Configurable property *every* frame
   ///     (e.g. setPropertyValue(...) unconditionally) — it keeps the dirty flag
   ///     set forever, so it restarts every frame and never converges. Only touch
-  ///     the scene on real changes. (Note: "enable lighting" is a GL-only Scene2
+  ///     the scene on real changes. (Note: "enable lighting" is a GL-only Scene
   ///     property; Cycles ignores it and always lights physically.)
   ///
   ///   • start(cam)/stop() + setOnImageReady(cb) — ASYNCHRONOUS. start() spawns
@@ -57,7 +57,7 @@ namespace icl::viz3d {
   ///     getImage() if you prefer. stop() (also the dtor) joins it.
   ///
   ///   ⚠ NEVER combine start() with render()/renderBlocking(): two drivers then
-  ///   race the same Cycles session and the shared Scene2 (non-atomic init flag,
+  ///   race the same Cycles session and the shared Scene (non-atomic init flag,
   ///   double Session construction) → use-after-free crash. If your app drives
   ///   Cycles from a worker loop and/or mutates the scene there, use render()
   ///   (or renderBlocking()) ONLY — not start().
@@ -78,7 +78,7 @@ namespace icl::viz3d {
   /// a plain render()/renderBlocking() after edits also resyncs.
   class CyclesRenderer : public Raytracer {
   public:
-    explicit CyclesRenderer(Scene2 &scene,
+    explicit CyclesRenderer(Scene &scene,
                             RenderQuality quality = RenderQuality::Interactive);
     ~CyclesRenderer();
 

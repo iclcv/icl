@@ -5,14 +5,14 @@
 // viz3d port of the legacy geom/rotate-image-3D app: show a (live) image on a
 // textured quad in a 3D scene, optionally re-rendering it through a calibrated
 // camera and streaming the result out. Uses viz3d's textured MeshNode +
-// offscreen Scene2::renderToImage.
+// offscreen Scene::renderToImage.
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/io/sink/ImageSink.h>
@@ -24,7 +24,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 GUI gui;
-Scene2 scene;
+Scene scene;
 ImageSink output;
 ImageSource grabber;
 Img8u image;

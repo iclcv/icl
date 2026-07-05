@@ -4,9 +4,9 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/CoordinateFrameNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/pose/PoseEstimator.h>
@@ -29,7 +29,7 @@ typedef Detector::Marker Marker;
 typedef Detector::MarkerGrid MarkerGrid;
 
 
-viz3d::Scene2 scene;
+viz3d::Scene scene;
 
 
 Mat compute_relative_transform_n(const std::vector<Camera> &s, const std::vector<Camera> &d){

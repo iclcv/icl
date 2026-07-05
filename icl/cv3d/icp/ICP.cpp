@@ -1,128 +1,127 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 // ICL - Image Component Library (https://github.com/iclcv/icl)
-// Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
+// Copyright (C) 2006-2026 Tobias Roehlig, Christof Elbrechter
 
 #include <icl/cv3d/icp/ICP.h>
+#include <icl/cv3d/pose/PoseEstimator.h>
 
-using namespace icl::utils;
-using namespace icl::math;
+#include <limits>
+#include <cmath>
 
 namespace icl::cv3d {
-  ICP::Result::Result():rotation(DynMatrix<icl64f>::create(3,3)),translation(DynMatrix<icl64f>::create(3,1)),error(0.1){}
 
-  ICP::ICP(std::vector<DynMatrix<icl64f> > &model) {
-    kdt.buildTree(model);
+  ICP::Backend::~Backend() {}
+
+  ICP::Result::Result()
+    : transformation(math::Mat4::id()), error(0.0), iterations(0) {}
+
+  struct ICP::Data {
+    uint32_t maxIterations;
+    icl32f maxDist;
+    icl64f errorDeltaTh;
+    std::shared_ptr<Backend> backend;
+    std::vector<Vec> target;
+  };
+
+  ICP::ICP(uint32_t maxIterations, icl32f maxDistance, icl64f errorDeltaThresh)
+    : m_data(new Data{maxIterations, maxDistance, errorDeltaThresh,
+                      std::make_shared<OctreeNN>(), {}}) {}
+
+  ICP::~ICP() {}
+
+  void ICP::setBackend(std::shared_ptr<Backend> backend) {
+    m_data->backend = backend;
+  }
+  ICP::Backend *ICP::getBackend() const { return m_data->backend.get(); }
+
+  void ICP::build(const std::vector<Vec> &target) {
+    m_data->target = target;
+    m_data->backend->build(target);
   }
 
-  ICP::ICP(std::vector<DynMatrix<icl64f>* > &model) {
-    kdt.buildTree(model);
+  void ICP::setMaxDistance(icl32f d) { m_data->maxDist = d; }
+  icl32f ICP::getMaxDistance() const { return m_data->maxDist; }
+  void ICP::setErrorDeltaThreshold(icl64f th) { m_data->errorDeltaTh = th; }
+  icl64f ICP::getErrorDeltaThreshold() const { return m_data->errorDeltaTh; }
+  void ICP::setMaximumIterations(uint32_t n) { m_data->maxIterations = n; }
+  uint32_t ICP::getMaximumIterations() const { return m_data->maxIterations; }
+  const std::vector<ICP::Vec> &ICP::getTarget() const { return m_data->target; }
+
+  ICP::Result ICP::apply(const std::vector<Vec> &target,
+                         const std::vector<Vec> &source, std::vector<Vec> &out) {
+    build(target);
+    return apply(source, out);
   }
 
-  ICP::ICP(){}
-
-  ICP::~ICP(){}
-
-  const ICP::Result &ICP::apply(const std::vector<DynMatrix<icl64f>* > &pointlist){
-    FixedMatrix<icl32f,4,4> mat;
-    DynMatrix<icl64f> mat3 = DynMatrix<icl64f>::create(4, 4);
-    DynMatrix<icl32f> XsD = DynMatrix<icl32f>::create(3, pointlist.size()), YsD = DynMatrix<icl32f>::create(3, pointlist.size());
-    double eye[] = {1.0, 0.0, 0.0, 0.0,
-                    0.0, 1.0, 0.0, 0.0,
-                    0.0, 0.0, 1.0, 0.0,
-                    0.0, 0.0, 0.0, 1.0};
-    DynMatrix<icl64f> mat2 = DynMatrix<icl64f>::fromData(4, 4, eye);
-    DynMatrix<icl64f> temp = DynMatrix<icl64f>::create(4, 4);
-    double cerror = 0.0;
-    std::vector<DynMatrix<icl64f>* > np;
-    std::vector<DynMatrix<icl64f>* > lpointlist;
-    for(unsigned int i=0;i<pointlist.size();++i){
-      lpointlist.push_back(new DynMatrix<icl64f>(DynMatrix<icl64f>::fromData(pointlist.at(0)->rows(),pointlist.at(0)->cols(),pointlist.at(i)->data(),true)));
+  ICP::Result ICP::apply(const std::vector<Vec> &source, std::vector<Vec> &out) {
+    if (source.empty() || m_data->target.empty() || !m_data->backend) {
+      return Result();
     }
-    do{
-      np.clear();
-      m_result.error=cerror;
-      for(unsigned int i=0;i<lpointlist.size();++i){
-        DynMatrix<icl64f> *p = kdt.nearestNeighbour(lpointlist.at(i));
-        np.push_back(p);
-      }
-      for(unsigned int i=0;i<lpointlist.size();++i){
-        std::copy((np[i])->begin(),(np[i])->begin()+3, YsD.col_begin(i));
-        std::copy((lpointlist[i])->begin(),(lpointlist[i])->begin()+3, XsD.col_begin(i));
-      }
-      mat = PoseEstimator::map(XsD,YsD);
-      for(unsigned int i=0;i<16;++i){
-        mat3[i] = mat[i];
-      }
-      for(unsigned int i=0;i<3;++i){
-        m_result.translation[i] = mat3(i, 3);
-        for(unsigned int j=0;j<3;++j){
-          m_result.rotation(j, i) = mat3(j, i);
+
+    const icl32f maxDist = m_data->maxDist;
+    icl64f e_sum = std::numeric_limits<icl64f>::max() - 1;
+    math::Mat4 complete_transform = math::Mat4::id();
+
+    // initialise output with the untransformed source
+    out.assign(source.begin(), source.end());
+
+    int iterations = m_data->maxIterations;
+    std::vector<Vec> matches;               // nearest target of every out[i]
+    std::vector<Vec> in_matches, model_matches;
+
+    try {
+      while (true) {
+        // --- correspondence (the swappable hot path) ---
+        m_data->backend->nearest(out, matches);
+
+        icl64f cur_err = 0;
+        in_matches.clear();
+        model_matches.clear();
+        for (size_t i = 0; i < out.size(); ++i) {
+          const icl64f d = icl::math::dist3(matches[i], out[i]);
+          if (maxDist >= d) {                // outlier rejection
+            in_matches.push_back(out[i]);
+            model_matches.push_back(matches[i]);
+            cur_err += d * d;
+          }
         }
-      }
-      //SHOW(rotation);
-      //SHOW(translation);
-      //SHOW(*(np[0]));
-      //SHOW(*(lpointlist[0]));
-      // Transform each point: p' = R*p + t (in-place, no heap allocations)
-      {
-        DynMatrix<icl64f> tmp = DynMatrix<icl64f>::create(3, 1);
-        for(unsigned int i=0;i<lpointlist.size();++i){
-          m_result.rotation.mult(*lpointlist[i], tmp);
-          tmp += m_result.translation;
-          std::copy(tmp.begin(), tmp.end(), lpointlist[i]->begin());
+        cur_err = std::sqrt(cur_err / out.size());
+
+        // --- convergence ---
+        const icl64f e_delta = e_sum - cur_err;
+        if (e_delta <= 0.0) break;           // no improvement (or diverged)
+        e_sum = cur_err;
+        if (std::fabs(e_delta) <= m_data->errorDeltaTh) break;
+
+        // --- rigid-body transform from the correspondences ---
+        math::Mat4 transform =
+          PoseEstimator::map(in_matches, model_matches, PoseEstimator::RigidBody);
+
+        math::Mat3 rot = transform.part<0, 0, 3, 3>();
+        if (std::fabs(rot.det() - 1.0f) > 0.01f) {
+          transform.part<0, 0, 3, 3>() = math::gramSchmidtOrtho(rot);
+          INFO_LOG("ICP::apply(): re-orthogonalised rotation matrix");
         }
-      }
-      //SHOW(*(lpointlist[0]));
-      mat3.mult(mat2,temp);
-      mat2 = temp;
-      cerror = error(lpointlist,np);
-      std::cout << cerror << "   " << m_result.error << std::endl;
-      /*if(std::abs(cerror-m_error)<0.01)
-          break;*/
 
-    }while(cerror != m_result.error);
-    for(unsigned int i=0;i<3;++i){
-      m_result.translation[i] = mat2(i, 3);
-      for(unsigned int j=0;j<3;++j){
-        m_result.rotation(j, i) = mat2(j, i);
+        complete_transform = transform * complete_transform;
+        for (size_t i = 0; i < out.size(); ++i) out[i] = transform * out[i];
+
+        if (--iterations <= 0) { iterations = 0; break; }
       }
+    } catch (const icl::utils::ICLException &e) {
+      WARNING_LOG(e.what());
+      Result r;
+      r.transformation = math::Mat4::id();
+      r.error = std::numeric_limits<icl64f>::max();
+      r.iterations = m_data->maxIterations;
+      return r;
     }
-    for(unsigned int i=0;i<lpointlist.size();++i){
-      delete lpointlist[i];
-    }
-    return m_result;
+
+    Result r;
+    r.transformation = complete_transform;
+    r.error = e_sum;
+    r.iterations = m_data->maxIterations - iterations;
+    return r;
   }
 
-  //TODO another way to compute rotation and translation
-  DynMatrix<icl64f> *ICP::compute(const std::vector<DynMatrix<icl64f>* > &data,const std::vector<DynMatrix<icl64f>* > &model){
-    DynMatrix<icl64f> mean_data = DynMatrix<icl64f>::create(3, 1);
-    DynMatrix<icl64f> mean_model = DynMatrix<icl64f>::create(3, 1);
-    for(unsigned int i=0;i<model.size();++i){
-      mean_data += (*(data[i]));
-      mean_model += (*(model[i]));
-    }
-    for(unsigned int i=0;i<3;++i){
-      mean_data[i] = mean_data[i]/data.size();
-      mean_model[i] = mean_model[i]/model.size();
-    }
-    for(unsigned int i=0;i<data.size();++i){
-
-    }
-    return 0;
-  }
-
-  double ICP::error(const std::vector<DynMatrix<icl64f>* > &dat, const std::vector<DynMatrix<icl64f>* > &mod){
-    if(dat.empty() || mod.empty() || dat.size() != mod.size()) return -1.0;
-    double error = 0.0;
-    for(unsigned int j=0;j<dat.size();++j){
-      double sumsq = 0.0;
-      const auto &a = *dat[j], &b = *mod[j];
-      for(unsigned k=0;k<a.rows();++k){
-        double dk = a[k] - b[k];
-        sumsq += dk*dk;
-      }
-      error += std::sqrt(sumsq);
-    }
-    return error / dat.size();
-  }
-  } // namespace icl::cv3d
+} // namespace icl::cv3d

@@ -3,7 +3,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
@@ -13,7 +13,7 @@
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
 #include <icl/viz3d/nodes/TextNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 
@@ -23,7 +23,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 GUI gui;
-Scene2 scene;
+Scene scene;
 
 void init() {
   // Camera

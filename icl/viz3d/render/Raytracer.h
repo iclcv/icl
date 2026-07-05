@@ -17,7 +17,7 @@ namespace icl::viz3d {
 
   /// Abstract raytracer (photoreal renderer) interface for viz3d.
   ///
-  /// A raytracer turns a Scene2 (through a camera) into an Img8u, off the GL
+  /// A raytracer turns a Scene (through a camera) into an Img8u, off the GL
   /// path. The sole implementation is CyclesRenderer — see its header for the
   /// concrete usage recipe and gotchas; this interface only fixes the vocabulary.
   ///

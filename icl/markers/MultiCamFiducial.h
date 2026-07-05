@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/markers/FiducialDetector.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 
 namespace icl::markers {
   /** \cond */

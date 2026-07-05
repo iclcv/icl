@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 
 namespace icl::cv3d {
   /// Utility class for 6D PoseEstimation
@@ -43,7 +43,7 @@ namespace icl::cv3d {
         - same row-count
         - row-cout 3 or 4 (if it is 4, the last row is not used at all)
         - at least one column (however you'll need 3 columns for 6D mapping */
-    template<class T> ICLGeom_API
+    template<class T> ICLCv3d_API
     static math::FixedMatrix<T,4,4> map(const math::DynMatrix<T> &Xs, const math::DynMatrix<T> &Ys, MapMode mode=RigidBody);
 
     /// Convenienc template that uses FixedMatrix inputs (available for T=icl32f and T=icl64f)
@@ -74,7 +74,7 @@ namespace icl::cv3d {
     }
 
     /// utility function (instantiated for depth32f and depth64f)
-    template<class T> ICLGeom_API
+    template<class T> ICLCv3d_API
     static math::FixedMatrix<T,3,3> quaternion_to_rotation_matrix(T w, T x, T y, T z);
   };
 

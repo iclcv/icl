@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/core/Img.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/core/DataSegment.h>
@@ -20,7 +20,7 @@ namespace icl::cv3d {
      and binarization). The performance of this method is optimized with minimal read/write for the underlying OpenCL
      implementation. The interim results can be accessed with getNormals() and getAngleDisplay() afterwards. It is also possible
      to use subparts of the pipeline using the setter methods to set the interim data. */
-    class ICLGeom_API ObjectEdgeDetector{
+    class ICLCv3d_API ObjectEdgeDetector{
 
      struct Data;  //!< internal data type
      Data *m_data; //!< internal data pointer

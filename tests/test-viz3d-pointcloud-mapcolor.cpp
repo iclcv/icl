@@ -7,7 +7,7 @@
 // stereo RGB-D simulator). GL-free (BVH capture), so verifiable headless.
 
 #include "harness/Test.h"
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/render/SceneCapture.h>
 #include <icl/viz3d/nodes/SphereNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
@@ -26,7 +26,7 @@ using icl::utils::Size;
 namespace {
   // Two distinctly-coloured shapes straddling the optical axis + a depth camera
   // (cam0) and a second camera (cam1) seeded equal to it (overwritten per test).
-  void makeScene(Scene2 &scene, const Size &res) {
+  void makeScene(Scene &scene, const Size &res) {
     Camera cam = Camera::lookAt(viz3d::Vec(0, -600, 350, 1), viz3d::Vec(0, 0, 40, 1),
                                 viz3d::Vec(0, 0, 1, 1), res, 42.0f);
     scene.addCamera(cam);   // 0 = depth
@@ -50,7 +50,7 @@ ICL_REGISTER_TEST("viz3d.mapcolor.zero_baseline_matches_aligned",
                   "mapColorFromCamera with zero baseline reproduces aligned colours")
 {
   const Size res(80, 60);
-  Scene2 scene; makeScene(scene, res);
+  Scene scene; makeScene(scene, res);
   Camera &cam0 = scene.getCamera(0);
 
   BVHSceneCapture cap;
@@ -97,7 +97,7 @@ ICL_REGISTER_TEST("viz3d.mapcolor.baseline_drops_unseen",
                   "a stereo baseline leaves some depth points uncoloured")
 {
   const Size res(80, 60);
-  Scene2 scene; makeScene(scene, res);
+  Scene scene; makeScene(scene, res);
   Camera &cam0 = scene.getCamera(0);
 
   BVHSceneCapture cap;

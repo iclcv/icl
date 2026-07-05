@@ -5,11 +5,11 @@
 // Headless offscreen GL capture: drives GLSceneCapture(ownContext=true) with NO
 // GUI window. Uses a plain QGuiApplication on the cocoa platform (NOT
 // QT_QPA_PLATFORM=offscreen, which has no GL backend at all) so the capturer's
-// owned QOffscreenSurface + QOpenGLContext renders Scene2::renderToImage
+// owned QOffscreenSurface + QOpenGLContext renders Scene::renderToImage
 // entirely off screen, then saves the result to PNG.
 //
 // This exercises ICL's real GL render path with no on-screen QOpenGLWidget — the
-// only way to verify Scene2::renderToImage / the GLSceneCapture PBuffer-style
+// only way to verify Scene::renderToImage / the GLSceneCapture PBuffer-style
 // owned context end-to-end in a headless environment. Run as:
 //
 //   QT_QPA_PLATFORM=cocoa builddir/bin/viz3d-headless-gl-capture-demo [out.png]
@@ -17,7 +17,7 @@
 #include <QGuiApplication>
 #include <QSurfaceFormat>
 
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/render/SceneCapture.h>
 #include <icl/viz3d/nodes/SphereNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
   // QGuiApplication (no widgets) avoids the on-screen QOpenGLWidget entirely.
   QGuiApplication app(argc, argv);
 
-  Scene2 scene;
+  Scene scene;
   scene.addCamera(Camera::lookAt(Vec(0, -520, 200, 1), Vec(0, 0, 40, 1),
                                  Vec(0, 0, 1, 1), Size(640, 480), 50.0f));
   scene.setBounds(500);

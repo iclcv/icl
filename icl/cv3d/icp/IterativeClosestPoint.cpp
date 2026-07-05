@@ -379,8 +379,8 @@
 //       return IterativeClosestPoint<Vec8>(IterativeClosestPointTypeCodeVec8,12,12,128,subVec8,toVectorVec8);
 //     }
 
-//     template class ICLGeom_API IterativeClosestPoint<Vec4>;
-//     template class ICLGeom_API IterativeClosestPoint<Vec8>;
+//     template class ICLCv3d_API IterativeClosestPoint<Vec4>;
+//     template class ICLCv3d_API IterativeClosestPoint<Vec8>;
 
 // //  template<typename T>
 // //  void IterativeClosestPoint<T>::sub(const char * a, const char *b, char *c) {

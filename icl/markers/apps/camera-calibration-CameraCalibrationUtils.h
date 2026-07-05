@@ -2,14 +2,14 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <functional>
 #include <string>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/qt/DrawHandle3D.h>
 #include <icl/viz3d/nodes/Node.h>
 #include <icl/viz3d/nodes/GridNode.h>
-namespace icl::viz3d { class Scene2; }
+namespace icl::viz3d { class Scene; }
 #include <icl/utils/thread/Lockable.h>
 #include <icl/core/line/Line.h>
 #include <QtCore/QObject>
@@ -182,7 +182,7 @@ namespace icl::markers {
                                                    const cv3d::Mat &Trel, const utils::Size &imageSize,
                                                    bool &deactivatedCenters, bool useCorners,
                                                    bool normalizeError, BestOfNSaver *saver,
-                                                   bool &haveAnyCalibration, viz3d::Scene2 &scene,
+                                                   bool &haveAnyCalibration, viz3d::Scene &scene,
                                                    const cv3d::Camera *givenIntrinsicParams=0,
                                                    bool performLMAbasedOptimiziation=false);
 
@@ -190,7 +190,7 @@ namespace icl::markers {
       static CalibFile parse_calib_file(const std::string &filename, int calibrationFileIndex, CalibFileData &data);
 
       /// adapts the camera calibration help-indicator plane
-      static void change_plane(const std::string &handle, qt::GUI &planeOptionGUI, viz3d::Scene2 &scene,
+      static void change_plane(const std::string &handle, qt::GUI &planeOptionGUI, viz3d::Scene &scene,
                                CalibFileData &calibFileData);
 
       /// creates a simple template for a calibration object description file
@@ -232,7 +232,7 @@ namespace icl::markers {
                                   const std::string &planeDim,
                                   float planeOffset,
                                   const utils::Point32f &currentMousePos,
-                                  viz3d::Scene2 &scene);
+                                  viz3d::Scene &scene);
 
       /// performs the image preprocessing (based on program args)
       static const core::ImgBase *preprocess(const core::ImgBase *image);

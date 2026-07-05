@@ -5,16 +5,16 @@
 // viz3d port of the legacy geom/depth-camera-simulator app: render a synthetic
 // scene through a depth camera and stream out color + metric depth images
 // (optionally also through a rigidly-coupled color camera). Uses viz3d's
-// offscreen Scene2::renderToImage (CPU/GL color + depth).
+// offscreen Scene::renderToImage (CPU/GL color + depth).
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/io/sink/ImageSink.h>
@@ -25,7 +25,7 @@ using namespace icl::core;
 using namespace icl::utils;
 using namespace icl::qt;
 
-Scene2 scene;
+Scene scene;
 HSplit gui;
 GUI prevGUI = HBox();
 

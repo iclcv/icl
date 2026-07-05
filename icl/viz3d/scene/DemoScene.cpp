@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/viz3d/scene/DemoScene2.h>
+#include <icl/viz3d/scene/DemoScene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
@@ -48,7 +48,7 @@ namespace icl::viz3d {
     }
   }
 
-  void DemoScene2::setup(const std::vector<std::string> &files,
+  void DemoScene::setup(const std::vector<std::string> &files,
                           const Size &resolution,
                           const std::string &rotation,
                           bool noCheckerboard) {
@@ -308,7 +308,7 @@ namespace icl::viz3d {
     setBounds(targetSize);
   }
 
-  void DemoScene2::setupNatureScene(const Size &resolution) {
+  void DemoScene::setupNatureScene(const Size &resolution) {
     m_ownedNodes.clear();
 
     float ext = 400;      // scene extent

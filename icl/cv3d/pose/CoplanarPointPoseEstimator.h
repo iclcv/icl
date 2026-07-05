@@ -68,7 +68,7 @@ namespace icl::cv3d {
       As a new feature, the pose estimation step can be optimized using RANSAC internally.
       @TODO perhaps, we need some more text here !
   */
-  class ICLGeom_API CoplanarPointPoseEstimator : public utils::Configurable{
+  class ICLCv3d_API CoplanarPointPoseEstimator : public utils::Configurable{
 
     /// Internal data structure
     struct Data;

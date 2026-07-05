@@ -3,12 +3,12 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // SceneCapture (CPU / BVH backend) tests — GL-free, so verifiable headless in
-// the sandbox. The GL backend (GLSceneCapture / Scene2::renderToImage) shares
+// the sandbox. The GL backend (GLSceneCapture / Scene::renderToImage) shares
 // this exact ImageResult/DepthMode contract but needs a real GL context, so it
 // is exercised only on a real display.
 
 #include "harness/Test.h"
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/render/SceneCapture.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/render/Material.h>
@@ -26,8 +26,8 @@ using icl::utils::Size;
 namespace {
   // A single 200mm cube centred at the origin, viewed head-on from +Z at 600mm.
   // The front face sits at z=+100 → plane-depth at the optical centre ≈ 500mm.
-  // (Scene2 is non-movable, so we populate a caller-owned instance.)
-  void makeCubeScene(Scene2 &scene, const Size &res) {
+  // (Scene is non-movable, so we populate a caller-owned instance.)
+  void makeCubeScene(Scene &scene, const Size &res) {
     scene.addCamera(Camera::lookAt(viz3d::Vec(0, 0, 600, 1),   // eye
                                    viz3d::Vec(0, 0, 0, 1),     // center
                                    viz3d::Vec(0, 1, 0, 1),     // up
@@ -44,7 +44,7 @@ namespace {
 ICL_REGISTER_TEST("viz3d.scenecapture.bvh_color_and_depth", "BVH capture yields sized color+depth, cube hit at ~500mm")
 {
   const Size res(64, 48);
-  Scene2 scene; makeCubeScene(scene, res);
+  Scene scene; makeCubeScene(scene, res);
 
   BVHSceneCapture cap;
   BVH::ImageResult r = cap.capture(scene, 0, BVH::DistToCamPlane);
@@ -71,7 +71,7 @@ ICL_REGISTER_TEST("viz3d.scenecapture.bvh_color_and_depth", "BVH capture yields 
 // Invalid camera index → empty result (no throw, no out-of-range read).
 ICL_REGISTER_TEST("viz3d.scenecapture.bvh_invalid_camera", "BVH capture returns empty on bad camera index")
 {
-  Scene2 scene; makeCubeScene(scene, Size(32, 24));
+  Scene scene; makeCubeScene(scene, Size(32, 24));
   BVHSceneCapture cap;
   BVH::ImageResult r = cap.capture(scene, 7, BVH::DistToCamPlane);
   ICL_TEST_EQ(r.image.getDim(), 0);
@@ -84,7 +84,7 @@ ICL_REGISTER_TEST("viz3d.scenecapture.bvh_invalid_camera", "BVH capture returns 
 ICL_REGISTER_TEST("viz3d.scenecapture.depth_modes", "DistToCamCenter >= DistToCamPlane, equal at centre")
 {
   const Size res(80, 60);
-  Scene2 scene; makeCubeScene(scene, res);
+  Scene scene; makeCubeScene(scene, res);
 
   BVHSceneCapture cap;
   BVH::ImageResult plane  = cap.capture(scene, 0, BVH::DistToCamPlane);
@@ -116,7 +116,7 @@ ICL_REGISTER_TEST("viz3d.scenecapture.depth_modes", "DistToCamCenter >= DistToCa
 ICL_REGISTER_TEST("viz3d.scenecapture.bvh_caching", "cached capture matches uncached; invalidate picks up changes")
 {
   const Size res(48, 36);
-  Scene2 scene; makeCubeScene(scene, res);
+  Scene scene; makeCubeScene(scene, res);
   const int ci = (res.height / 2) * res.width + res.width / 2;
 
   BVHSceneCapture cached;   cached.setCaching(true);

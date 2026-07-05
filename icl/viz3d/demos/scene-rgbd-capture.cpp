@@ -4,7 +4,7 @@
 //   [ Scene (interactive cam) ] [ controls ] [ captured color ] [ point cloud ]
 //                                            [ captured depth ]
 //
-// One Scene2 is viewed live on the left (mouse-driven camera). The capture runs
+// One Scene is viewed live on the left (mouse-driven camera). The capture runs
 // in run() (the worker thread), NOT in the view's paint callback — keeping the
 // GUI thread free so dragging stays smooth (the heavy raytrace/readback overlaps
 // the next GUI paint). The view uses the scene's plain GL callback.
@@ -22,9 +22,9 @@
 #include <icl/qt/ui.h>
 #include <icl/qt/GLCallback.h>
 #include <icl/qt/DrawWidget3D.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/render/SceneCapture.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/nodes/SphereNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/nodes/CylinderNode.h>
@@ -55,8 +55,8 @@ static const Size CAP_RES(320, 240);
 enum { CAP_FIXED = 0, VIEW_CAM = 1 };
 
 GUI gui;
-Scene2 scene;       // the world (viewed live + captured)
-Scene2 cloudScene;  // viewer for the reconstructed point cloud
+Scene scene;       // the world (viewed live + captured)
+Scene cloudScene;  // viewer for the reconstructed point cloud
 
 std::shared_ptr<PointCloud> cloud;
 BVHSceneCapture cpuCapture;

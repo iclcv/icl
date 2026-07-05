@@ -2,11 +2,11 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 
 #ifdef ICL_HAVE_QT
 
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
 #include <icl/math/transform/HomogeneousMath.h>
@@ -33,13 +33,13 @@ namespace icl::viz3d {
 
   // --- Action function signature ---
   using ActionFn = void(*)(const MouseEvent&, const Point32f&, const Point32f&,
-                           Camera&, Scene2&, void*);
+                           Camera&, Scene&, void*);
   struct Mapping { ActionFn fn; void *data; };
 
   // --- Camera action implementations ---
 
   static void freeView(const MouseEvent &e, const Point32f &pos,
-                       const Point32f &delta, Camera &cam, Scene2 &scene, void *data) {
+                       const Point32f &delta, Camera &cam, Scene &scene, void *data) {
     auto *s = static_cast<Sens*>(data);
     float rf = s->rotation;
     float df = e.isWheelEvent() ? s->wheel : s->mouse;
@@ -54,7 +54,7 @@ namespace icl::viz3d {
   }
 
   static void strafe(const MouseEvent &e, const Point32f &pos,
-                     const Point32f &delta, Camera &cam, Scene2 &scene, void *data) {
+                     const Point32f &delta, Camera &cam, Scene &scene, void *data) {
     auto *s = static_cast<Sens*>(data);
     // Translation must scale with scene size, else a fixed step is
     // imperceptible in large scenes and huge in tiny ones.
@@ -67,7 +67,7 @@ namespace icl::viz3d {
   }
 
   static void rotateAroundOrigin(const MouseEvent &e, const Point32f &pos,
-                                 const Point32f &delta, Camera &cam, Scene2 &scene, void *data) {
+                                 const Point32f &delta, Camera &cam, Scene &scene, void *data) {
     auto *s = static_cast<Sens*>(data);
     float rf = 2.0f * s->rotation;
     float df = e.isWheelEvent() ? s->wheel : -s->mouse;
@@ -90,7 +90,7 @@ namespace icl::viz3d {
   }
 
   static void rollAndDistance(const MouseEvent &e, const Point32f &pos,
-                              const Point32f &delta, Camera &cam, Scene2 &scene, void *data) {
+                              const Point32f &delta, Camera &cam, Scene &scene, void *data) {
     auto *s = static_cast<Sens*>(data);
     float rf = s->rotation;
     float tf = s->translation * TRANSLATE_FACTOR * scene.getBounds();  // dolly scales with scene
@@ -105,7 +105,7 @@ namespace icl::viz3d {
   }
 
   static void placeCursor(const MouseEvent &e, const Point32f &pos,
-                          const Point32f &delta, Camera &cam, Scene2 &scene, void *data) {
+                          const Point32f &delta, Camera &cam, Scene &scene, void *data) {
     float px = pos.x * cam.getResolution().width;
     float py = pos.y * cam.getResolution().height;
     auto hit = scene.findObject(cam.getViewRay(Point32f(px, py)));
@@ -116,8 +116,8 @@ namespace icl::viz3d {
 
   // --- Data ---
 
-  struct Scene2MouseHandler::Data {
-    Scene2 *scene;
+  struct SceneMouseHandler::Data {
+    Scene *scene;
     int camIndex;
     Sens sens[NUM_SENS];
     Camera camBackup;
@@ -165,7 +165,7 @@ namespace icl::viz3d {
 
   // --- Implementation ---
 
-  Scene2MouseHandler::Scene2MouseHandler(int cameraIndex, Scene2 *scene)
+  SceneMouseHandler::SceneMouseHandler(int cameraIndex, Scene *scene)
     : m_data(std::make_unique<Data>()) {
     m_data->scene = scene;
     m_data->camIndex = cameraIndex;
@@ -174,9 +174,9 @@ namespace icl::viz3d {
     m_data->setDefaultMappings();
   }
 
-  Scene2MouseHandler::~Scene2MouseHandler() = default;
+  SceneMouseHandler::~SceneMouseHandler() = default;
 
-  void Scene2MouseHandler::setSensitivities(float translation, float rotation,
+  void SceneMouseHandler::setSensitivities(float translation, float rotation,
                                             float mouse, float wheel, float mod) {
     if (translation <= 0) translation = 10.0f;   // multiplier; scene size comes from getBounds()
     if (mod == 0) mod = 10.0f;
@@ -185,7 +185,7 @@ namespace icl::viz3d {
     m_data->sens[High]   = {translation, rotation, mouse * mod, wheel * mod};
   }
 
-  qt::MouseResult Scene2MouseHandler::process(const MouseEvent &e) {
+  qt::MouseResult SceneMouseHandler::process(const MouseEvent &e) {
     Camera &cam = m_data->scene->getCamera(m_data->camIndex);
     int mods = e.getKeyboardModifiers();
 

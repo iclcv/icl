@@ -17,15 +17,15 @@ namespace icl::qt { class GLCallback; }
 
 namespace icl::viz3d {
 
-  class Scene2;
+  class Scene;
   class CyclesRenderer;
 
-  /// Interactive on-screen Scene2 view + a switchable GL/Cycles OFFSCREEN render
+  /// Interactive on-screen Scene view + a switchable GL/Cycles OFFSCREEN render
   /// of a (possibly different) scene+camera — with the macOS-correct threading
   /// baked in.
   ///
-  /// THE PROBLEM THIS SOLVES. An offscreen *GL* render of a Scene2
-  /// (Scene2::renderToImage) MUST run on the GUI thread, in the on-screen
+  /// THE PROBLEM THIS SOLVES. An offscreen *GL* render of a Scene
+  /// (Scene::renderToImage) MUST run on the GUI thread, in the on-screen
   /// widget's GL context. A second GL context driven from a worker thread
   /// serialises against the widget context on macOS and starves the GUI — the
   /// run() loop keeps ticking but the screen crawls. *Cycles* is GL-free and
@@ -71,7 +71,7 @@ namespace icl::viz3d {
     enum class Backend { GL, Cycles };
 
     /// \a viewScene is rendered on screen through camera \a viewCam.
-    explicit OffscreenView(Scene2 &viewScene, int viewCam = 0);
+    explicit OffscreenView(Scene &viewScene, int viewCam = 0);
     ~OffscreenView();
 
     OffscreenView(const OffscreenView &) = delete;
@@ -79,7 +79,7 @@ namespace icl::viz3d {
 
     /// Render a different scene/camera offscreen (default: the view scene+cam).
     /// Call before the first poll()/capture (the Cycles backend binds to it).
-    void setCaptureSource(Scene2 &capScene, int capCam = 0);
+    void setCaptureSource(Scene &capScene, int capCam = 0);
 
     /// When the capture scene differs from the view scene, copy the live view
     /// camera into the capture camera before each capture (default true — the

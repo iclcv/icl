@@ -7,18 +7,18 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/Configurable.h>
 #include <icl/utils/Exception.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/cv3d/Camera.h>
 
 namespace icl::cv3d {
     /// RANSAC-based pose estimation
-    class ICLGeom_API RansacBasedPoseEstimator : public utils::Configurable{
+    class ICLCv3d_API RansacBasedPoseEstimator : public utils::Configurable{
       struct Data;  //!< internal data handling
       Data *m_data; //!< internal data pointer
 
       public:
 
-      struct ICLGeom_API Result{
+      struct ICLCv3d_API Result{
         Mat T;
         bool found;
         float error;

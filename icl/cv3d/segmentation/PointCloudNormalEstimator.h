@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/core/Img.h>
 #include <icl/cv3d/Camera.h>
 
@@ -41,7 +41,7 @@ namespace icl::cv3d {
       -# ... ???
 
    */
-  class ICLGeom_API PointCloudNormalEstimator {
+  class ICLCv3d_API PointCloudNormalEstimator {
     struct Data;  //!< internal data type
     Data *m_data; //!< internal data pointer
 

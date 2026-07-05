@@ -6,7 +6,7 @@
 #include <icl/utils/prop/Constraints.h>
 
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/math/transform/Homography2D.h>
 #include <icl/utils/Random.h>
 #include <algorithm>

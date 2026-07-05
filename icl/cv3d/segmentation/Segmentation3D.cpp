@@ -32,7 +32,7 @@
 
 #include <icl/utils/cl/CLIncludes.h>
 
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 
 using namespace icl::core;
 using namespace icl::utils;

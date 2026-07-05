@@ -20,12 +20,12 @@
 //      scale (0.001) shrinks a 280 mm board to 0.28 units and it falls outside
 //      sensible light/camera ranges. Every working Cycles app overrides it to 1.
 //
-// Unlike GL capture (GLSceneCapture / Scene2::renderToImage) Cycles is GL-free,
+// Unlike GL capture (GLSceneCapture / Scene::renderToImage) Cycles is GL-free,
 // so this runs headlessly anywhere — no QApplication, no GL context, no window.
 //
 //   builddir/bin/viz3d-headless-cycles-capture-demo [out.png] [samples]
 
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/render/CyclesRenderer.h>
 #include <icl/viz3d/nodes/CheckerboardNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
   const std::string output = argc > 1 ? argv[1] : "headless-cycles-capture.png";
   const int samples = argc > 2 ? std::atoi(argv[2]) : 64;
 
-  Scene2 scene;
+  Scene scene;
   scene.addCamera(Camera::lookAt(Vec(0, 0, 700, 1), Vec(0, 0, 0, 1),
                                  Vec(0, 1, 0, 1), Size(480, 360), 45.0f));
   scene.setBounds(400);

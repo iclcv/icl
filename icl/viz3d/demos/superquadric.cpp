@@ -8,10 +8,10 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/SuperquadricNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/math/la/FixedMatrix.h>
 
@@ -22,7 +22,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 HSplit gui;
-Scene2 scene;
+Scene scene;
 std::shared_ptr<SuperquadricNode> sq;
 
 void init() {

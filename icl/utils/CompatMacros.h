@@ -86,10 +86,16 @@
 #define ICLQt_API   __declspec(dllimport)
 #endif
 
-#ifdef ICLGeom_EXPORTS
-#define ICLGeom_API   __declspec(dllexport)
+#ifdef ICLCv3d_EXPORTS
+#define ICLCv3d_API   __declspec(dllexport)
 #else
-#define ICLGeom_API   __declspec(dllimport)
+#define ICLCv3d_API   __declspec(dllimport)
+#endif
+
+#ifdef ICLViz3d_EXPORTS
+#define ICLViz3d_API   __declspec(dllexport)
+#else
+#define ICLViz3d_API   __declspec(dllimport)
 #endif
 
 #ifdef ICLMarkers_EXPORTS
@@ -113,7 +119,8 @@
 #define ICLIO_API
 #define ICLCV_API
 #define ICLQt_API
-#define ICLGeom_API
+#define ICLCv3d_API
+#define ICLViz3d_API
 #define ICLMarkers_API
 #define ICLPhysics_API
 #endif

@@ -8,10 +8,10 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/CoordinateFrameNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/cv3d/Camera.h>
 
 using namespace icl::viz3d;
@@ -20,7 +20,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 HSplit gui;
-Scene2 scene;
+Scene scene;
 ImageSource grabber;
 int nCams = 0;
 

@@ -9,7 +9,7 @@
 namespace icl::cv3d {
     /**
      This class is used in the ObjectEdgeDetector implementations */
-    class ICLGeom_API ObjectEdgeDetectorData{
+    class ICLCv3d_API ObjectEdgeDetectorData{
 
 
      public:

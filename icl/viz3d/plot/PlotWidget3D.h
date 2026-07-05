@@ -6,9 +6,9 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/qt/DrawWidget3D.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/Node.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/utils/Range.h>
 #include <functional>
 #include <vector>
@@ -16,7 +16,7 @@
 namespace icl::viz3d {
 
   /// 3D box-plot widget (viz3d reimplementation of cv3d::PlotWidget3D).
-  /** A self-contained ICLDrawWidget3D that owns a Scene2, a camera, a scaled
+  /** A self-contained ICLDrawWidget3D that owns a Scene, a camera, a scaled
       root GroupNode, and a coordinate-frame box with tics/labels. Data added via
       scatter/surf/linestrip/label is parented under the root node, whose
       transform maps the data view-port into the [-1,1]^3 cube so everything fits
@@ -36,8 +36,8 @@ namespace icl::viz3d {
                      const utils::Range32f &zrange);
     const utils::Range32f *getViewPort() const;
 
-    Scene2 &getScene();
-    const Scene2 &getScene() const;
+    Scene &getScene();
+    const Scene &getScene() const;
 
     Node *getRootObject();
     const Node *getRootObject() const;

@@ -6,7 +6,7 @@
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/Units.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/Node.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
@@ -20,7 +20,7 @@
 namespace icl::physics2 {
 
   struct PhysicsMouseHandler::Data {
-    viz3d::Scene2 *scene;
+    viz3d::Scene *scene;
     PhysicsWorld *world;
     int camIndex;
     Units units;
@@ -30,7 +30,7 @@ namespace icl::physics2 {
     cv3d::Vec hitPoint{0, 0, 0, 1};   // ICL units, for the drag plane
   };
 
-  PhysicsMouseHandler::PhysicsMouseHandler(int cameraIndex, viz3d::Scene2 *scene,
+  PhysicsMouseHandler::PhysicsMouseHandler(int cameraIndex, viz3d::Scene *scene,
                                            PhysicsWorld *world)
     : qt::MouseHandler(),
       m_data(std::make_unique<Data>()) {

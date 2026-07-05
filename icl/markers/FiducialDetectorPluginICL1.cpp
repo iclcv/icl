@@ -9,7 +9,7 @@
 #include <icl/utils/Point.h>
 #include <icl/core/Img.h>
 #include <icl/cv/ImageRegion.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 
 #ifdef ICL_HAVE_QT
 #include <icl/qt/Quick.h>

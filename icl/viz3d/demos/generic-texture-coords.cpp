@@ -9,10 +9,10 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 
@@ -23,7 +23,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 ImageSource grabber;
-Scene2 scene;
+Scene scene;
 GUI gui;
 Image image;
 std::shared_ptr<MeshNode> disc;

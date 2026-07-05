@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/physics2/PhysicsScene.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/Node.h>
 #include <icl/viz3d/nodes/LightNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
@@ -122,9 +122,9 @@ namespace icl::physics2 {
     m_scene.sync(dt, alpha);   // drivers pull body poses into their nodes
     if (m_debugEnabled && m_debugNode) {
       auto lines = m_world.getDebugLines();   // (locks the world internally)
-      // Mutate the scene node under the SCENE lock — Scene2::render() holds it on
+      // Mutate the scene node under the SCENE lock — Scene::render() holds it on
       // the GL thread, so an unguarded mutation here would race it (crash).
-      std::scoped_lock<viz3d::Scene2> lk(m_scene);
+      std::scoped_lock<viz3d::Scene> lk(m_scene);
       m_debugNode->clearGeometry();
       const viz3d::GeomColor green(0, 255, 0, 255);   // MeshNode colors are 0..255
       int i = 0;
@@ -154,11 +154,11 @@ namespace icl::physics2 {
   std::shared_ptr<qt::GLCallback> PhysicsScene::getGLCallback(int cameraIndex) {
     return m_scene.getGLCallback(cameraIndex);
   }
-  viz3d::Scene2MouseHandler *PhysicsScene::getMouseHandler(int cameraIndex) {
+  viz3d::SceneMouseHandler *PhysicsScene::getMouseHandler(int cameraIndex) {
     return m_scene.getMouseHandler(cameraIndex);
   }
 
-  viz3d::Scene2 &PhysicsScene::scene() { return m_scene; }
+  viz3d::Scene &PhysicsScene::scene() { return m_scene; }
   PhysicsWorld &PhysicsScene::world() { return m_world; }
 
 } // namespace icl::physics2

@@ -11,14 +11,14 @@
 #include <icl/core/cc/Color.h>
 #include <icl/cv/RegionDetector.h>
 
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/TextNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/viz3d/render/Material.h>
 #include <mutex>
 
@@ -49,7 +49,7 @@ void rgb_id(int r, int g, int b, int &r2, int &g2, int &b2){
   r2=r; g2=g; b2=b;
 }
 
-Scene2 scene;
+Scene scene;
 
 // 3D LUT visualization state
 struct LUT3D {

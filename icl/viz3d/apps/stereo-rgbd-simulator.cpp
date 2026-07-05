@@ -18,7 +18,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
@@ -28,7 +28,7 @@
 #include <icl/viz3d/pointcloud/PointCloud.h>
 #include <icl/viz3d/nodes/PointCloudNode.h>
 #include <icl/viz3d/render/SceneCapture.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/io/sink/ImageSink.h>
@@ -40,8 +40,8 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 HSplit gui;
-Scene2 srcScene;     // synthetic scene, rendered through the depth+color cameras
-Scene2 viewScene;    // interactive view of the reconstructed coloured cloud
+Scene srcScene;     // synthetic scene, rendered through the depth+color cameras
+Scene viewScene;    // interactive view of the reconstructed coloured cloud
 BVHSceneCapture cap;
 
 std::shared_ptr<PointCloud> cloud;

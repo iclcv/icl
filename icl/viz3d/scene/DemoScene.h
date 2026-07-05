@@ -4,18 +4,18 @@
 
 #pragma once
 
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/utils/Size.h>
 #include <string>
 #include <vector>
 
 namespace icl::viz3d {
 
-  /// Scene2 with demo/viewer conveniences: auto-scaling, ground, lighting, camera
+  /// Scene with demo/viewer conveniences: auto-scaling, ground, lighting, camera
   /** Loads model files, auto-scales to ~400mm extent centered at origin,
       adds ground plane, 3-point lighting, and a camera.
       Port of cv3d::DemoScene for the viz3d scene graph. */
-  class ICLViz3d_API DemoScene2 : public Scene2 {
+  class ICLViz3d_API DemoScene : public Scene {
   public:
 
     /// Set up demo scene from files with standard presentation environment

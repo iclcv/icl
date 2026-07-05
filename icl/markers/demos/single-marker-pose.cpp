@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // Single-marker 6D pose demo — visualises the planar (IPPE) pose ambiguity.
-// LEFT: a single fiducial marker on a flat board in a viz3d Scene2 — orbit it
+// LEFT: a single fiducial marker on a flat board in a viz3d Scene — orbit it
 // with the mouse. RIGHT: the rendered camera-0 view; the marker is detected
 // (FiducialDetector) and its pose estimated with the TWO-solution planar pose
 // (cv3d::CoplanarPointPoseEstimator::getPoses). BOTH candidate pose frames are
@@ -19,9 +19,9 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/LightNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/render/OffscreenView.h>
 #include <icl/cv3d/Camera.h>
@@ -44,7 +44,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 GUI gui;
-Scene2 scene;
+Scene scene;
 OffscreenView view(scene, 0);
 std::shared_ptr<MeshNode> board;
 std::unique_ptr<FiducialDetector> fd;

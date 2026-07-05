@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/viz3d/render/SceneSynchronizer.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/GeometryNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
@@ -391,7 +391,7 @@ namespace icl::viz3d {
   // ---- SceneSynchronizer implementation ----
 
   SceneSynchronizer::SyncResult
-  SceneSynchronizer::synchronize(const Scene2 &scene, int camIndex,
+  SceneSynchronizer::synchronize(const Scene &scene, int camIndex,
                                   ccl::Scene *cclScene, float sceneScale) {
     bool anyGeomChanged = false, anyTransformChanged = false;
 
@@ -660,7 +660,7 @@ namespace icl::viz3d {
     cclCam->need_flags_update = true;
   }
 
-  void SceneSynchronizer::syncLights(const Scene2 &scene, ccl::Scene *cclScene,
+  void SceneSynchronizer::syncLights(const Scene &scene, ccl::Scene *cclScene,
                                       float sceneScale) {
     if (m_lightsCreated) return;
     m_lightsCreated = true;

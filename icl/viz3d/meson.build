@@ -38,10 +38,10 @@ viz3d_render_headers = files(
 )
 
 viz3d_scene_headers = files(
-  'scene/Scene2.h',
-  'scene/Scene2MouseHandler.h',
+  'scene/Scene.h',
+  'scene/SceneMouseHandler.h',
   'scene/DefaultScene.h',
-  'scene/DemoScene2.h',
+  'scene/DemoScene.h',
   'scene/Driver.h',
 )
 
@@ -80,10 +80,10 @@ viz3d_sources = files(
   'render/Material.cpp',
   'render/BVH.cpp',
   'render/RayCastOctree.cpp',
-  'scene/Scene2.cpp',
-  'scene/Scene2MouseHandler.cpp',
+  'scene/Scene.cpp',
+  'scene/SceneMouseHandler.cpp',
   'scene/DefaultScene.cpp',
-  'scene/DemoScene2.cpp',
+  'scene/DemoScene.cpp',
   'scene/Driver.cpp',
   'plot/PlotWidget3D.cpp',
   'pointcloud/PointCloud.cpp',

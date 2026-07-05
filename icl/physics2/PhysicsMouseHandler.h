@@ -12,7 +12,7 @@
 #define ICLPhysics2_API
 #endif
 
-namespace icl::viz3d { class Scene2; }
+namespace icl::viz3d { class Scene; }
 
 namespace icl::physics2 {
 
@@ -20,7 +20,7 @@ namespace icl::physics2 {
 
   /// Shift+Left-drag object grabbing for physics2 scenes (one chain link).
   /** A plain qt::MouseHandler implementing the unified picking path: a
-      Shift+Left press raycasts via Scene2::findObject, resolves the hit node's
+      Shift+Left press raycasts via Scene::findObject, resolves the hit node's
       RigidBodyDriver, and grabs its dynamic body with a point-to-point spring;
       dragging moves the grab target; release lets go. All Bullet mutations go
       through the world command queue (sim-thread safe). Returns Processed while
@@ -28,7 +28,7 @@ namespace icl::physics2 {
       drives navigation. */
   class ICLPhysics2_API PhysicsMouseHandler : public qt::MouseHandler {
   public:
-    PhysicsMouseHandler(int cameraIndex, viz3d::Scene2 *scene, PhysicsWorld *world);
+    PhysicsMouseHandler(int cameraIndex, viz3d::Scene *scene, PhysicsWorld *world);
     ~PhysicsMouseHandler() override;
 
     qt::MouseResult process(const qt::MouseEvent &e) override;

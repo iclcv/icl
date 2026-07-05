@@ -13,7 +13,7 @@
 namespace icl::viz3d {
 
   /// GUI component for a viz3d 3D box plot (needs the icl-viz3d library).
-  /** Creates a viz3d::PlotHandle3D wrapping a PlotWidget3D (its own Scene2 +
+  /** Creates a viz3d::PlotHandle3D wrapping a PlotWidget3D (its own Scene +
       camera + mouse interaction). Usage:
       \code
       gui << Plot3D().handle("plot") << Show();

@@ -8,9 +8,9 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
-#include <icl/viz3d/scene/DemoScene2.h>
+#include <icl/viz3d/scene/Scene.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
+#include <icl/viz3d/scene/DemoScene.h>
 #include <icl/viz3d/render/BVH.h>
 #include <icl/viz3d/render/RayCastOctree.h>
 #include <icl/viz3d/pointcloud/PointCloud.h>
@@ -26,8 +26,8 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 GUI gui;
-DemoScene2 worldScene;
-Scene2 cloudScene;
+DemoScene worldScene;
+Scene cloudScene;
 
 // Full point cloud from BVH raycast
 std::shared_ptr<PointCloud> cloud;

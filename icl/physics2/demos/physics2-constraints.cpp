@@ -18,7 +18,7 @@
 #include <icl/viz3d/render/Material.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/scene/DefaultScene.h>
 #include <icl/physics2/PhysicsScene.h>
 #include <icl/physics2/RigidBodyDriver.h>

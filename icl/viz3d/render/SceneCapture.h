@@ -9,9 +9,9 @@
 
 namespace icl::viz3d {
 
-  class Scene2;
+  class Scene;
 
-  /// Renders a Scene2 through a camera into RGB color + metric depth.
+  /// Renders a Scene through a camera into RGB color + metric depth.
   /** Abstract backend: two interchangeable implementations share one
       vocabulary (BVH::ImageResult = {Img8u image; Img32f depth;} and
       BVH::DepthMode), so a consumer (e.g. a scene-backed RGBD / point-cloud
@@ -19,7 +19,7 @@ namespace icl::viz3d {
 
         - BVHSceneCapture — CPU raytrace, fully headless (no GL context).
           The portable default; works in servers / tests / this sandbox.
-        - GLSceneCapture  — GL offscreen render (Scene2::renderToImage), full
+        - GLSceneCapture  — GL offscreen render (Scene::renderToImage), full
           PBR shading and GPU-fast, but needs a current GL context whose
           Renderer is the scene's (a live widget context, or a dedicated
           offscreen context owned by the capturer).
@@ -38,13 +38,13 @@ namespace icl::viz3d {
 
     /// Render \a scene through camera \a cameraIndex; returns RGB + depth.
     /** Returns an empty result on invalid camera index or missing capability. */
-    virtual BVH::ImageResult capture(Scene2 &scene, int cameraIndex,
+    virtual BVH::ImageResult capture(Scene &scene, int cameraIndex,
                                      BVH::DepthMode mode = BVH::DistToCamPlane) = 0;
 
     /// Convenience: capture just the RGB color image (depth skipped).
     /** Thin wrapper over capture(..., NoDepth) returning only the color Image —
         the common case when you don't need the depth buffer. Empty on failure. */
-    core::Img8u captureRGB(Scene2 &scene, int cameraIndex) {
+    core::Img8u captureRGB(Scene &scene, int cameraIndex) {
       return capture(scene, cameraIndex, BVH::NoDepth).image;
     }
   };
@@ -55,7 +55,7 @@ namespace icl::viz3d {
     BVHSceneCapture();
     ~BVHSceneCapture() override;
 
-    BVH::ImageResult capture(Scene2 &scene, int cameraIndex,
+    BVH::ImageResult capture(Scene &scene, int cameraIndex,
                              BVH::DepthMode mode = BVH::DistToCamPlane) override;
 
     /// Pixel subsampling (>1 trades output resolution for speed). Default 1×1.
@@ -79,11 +79,11 @@ namespace icl::viz3d {
     BVH  m_bvh;
   };
 
-  /// GL backend: offscreen render via Scene2::renderToImage (full shading).
+  /// GL backend: offscreen render via Scene::renderToImage (full shading).
   /** Two modes, chosen at construction:
 
         - Borrowed context (default, ownContext=false) — capture() runs
-          Scene2::renderToImage straight on the caller's current GL context.
+          Scene::renderToImage straight on the caller's current GL context.
           Use this when you already are on the GL thread with a live widget
           context current (e.g. composed inside an on-screen draw callback).
           There is NO GL context of its own; calling capture() without one
@@ -108,7 +108,7 @@ namespace icl::viz3d {
     explicit GLSceneCapture(bool ownContext = false);
     ~GLSceneCapture() override;
 
-    BVH::ImageResult capture(Scene2 &scene, int cameraIndex,
+    BVH::ImageResult capture(Scene &scene, int cameraIndex,
                              BVH::DepthMode mode = BVH::DistToCamPlane) override;
 
   private:

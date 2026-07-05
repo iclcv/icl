@@ -5,7 +5,7 @@
 #pragma once
 
 #if !defined(ICL_HAVE_OPENGL) || !defined(ICL_HAVE_QT)
-#warning "Scene2MouseHandler requires ICL_HAVE_OPENGL and ICL_HAVE_QT"
+#warning "SceneMouseHandler requires ICL_HAVE_OPENGL and ICL_HAVE_QT"
 #else
 
 #include <icl/utils/CompatMacros.h>
@@ -19,19 +19,19 @@
 
 namespace icl::viz3d {
 
-  class Scene2;
+  class Scene;
 
-  /// Mouse handler for Scene2 camera navigation
+  /// Mouse handler for Scene camera navigation
   /** Provides the standard ICL mouse mappings:
       - Left drag: freeView (yaw/pitch)
       - Middle drag: strafe (pan)
       - Right drag: rotate around cursor
       - Wheel / Left+Right drag: roll & dolly
       - Shift+Ctrl+Click: place cursor (rotation center) via hit-testing */
-  class ICLViz3d_API Scene2MouseHandler : public qt::MouseHandler {
+  class ICLViz3d_API SceneMouseHandler : public qt::MouseHandler {
   public:
-    Scene2MouseHandler(int cameraIndex, Scene2 *scene);
-    ~Scene2MouseHandler();
+    SceneMouseHandler(int cameraIndex, Scene *scene);
+    ~SceneMouseHandler();
 
     void setSensitivities(float translation, float rotation = 1.0f,
                           float mouse = 1.0f, float wheel = 0.0004f,

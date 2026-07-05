@@ -10,10 +10,10 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/DemoScene2.h>
+#include <icl/viz3d/scene/DemoScene.h>
 #include <icl/viz3d/render/CyclesRenderer.h>
 #include <icl/viz3d/render/Renderer.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 
 using namespace icl::utils;
 using namespace icl::core;
@@ -21,7 +21,7 @@ using namespace icl::qt;
 using namespace icl::cv3d;
 using namespace icl::viz3d;
 
-static DemoScene2 scene;
+static DemoScene scene;
 static std::unique_ptr<CyclesRenderer> renderer;
 HSplit gui;
 
@@ -43,7 +43,7 @@ void init() {
       files.push_back(pa("-scene", i).as<std::string>());
   }
 
-  // DemoScene2 handles loading, auto-scaling, ground, lights, camera
+  // DemoScene handles loading, auto-scaling, ground, lights, camera
   scene.setup(files, viewSize,
               pa("-rotate") ? pa("-rotate").as<std::string>() : "",
               pa("-no-checkerboard"));

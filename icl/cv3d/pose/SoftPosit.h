@@ -18,7 +18,7 @@
 #endif
 
 namespace icl::cv3d {
-  class ICLGeom_API SoftPosit{
+  class ICLCv3d_API SoftPosit{
     private:
     //M
     unsigned int nbWorldPts;

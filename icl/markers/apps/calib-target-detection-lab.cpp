@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // Interactive 2D-calibration-target detection lab (Phase B tuning tool). LEFT: a
-// virtual calibration target on a flat board in a viz3d Scene2 — rotate/pan/zoom
+// virtual calibration target on a flat board in a viz3d Scene — rotate/pan/zoom
 // it with the mouse to view from any angle. RIGHT: the *real* render of camera 0
 // of that scene (full GL shading / lighting), passed through a live lens-
 // distortion model, then through the selected target's detector — the detected
@@ -29,9 +29,9 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/LightNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/nodes/CheckerboardNode.h>  // the checkerboard target node (self-visualizing)
 #include <icl/viz3d/nodes/MeshNode.h>          // the marker-grid board (textured quad)
 #include <icl/viz3d/render/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
@@ -63,7 +63,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 GUI gui;
-Scene2 scene;                               // the ONE scene (shown on screen + captured)
+Scene scene;                               // the ONE scene (shown on screen + captured)
 OffscreenView view(scene, 0);               // interactive view + GL/Cycles offscreen capture
 std::shared_ptr<CheckerboardNode> board;    // checkerboard target (self-visualizing)
 std::shared_ptr<MeshNode> markerBoard;      // marker-grid target board (textured quad)

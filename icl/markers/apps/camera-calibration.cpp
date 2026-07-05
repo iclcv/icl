@@ -5,7 +5,7 @@
 #include "camera-calibration-CameraCalibrationUtils.h"
 
 #include <icl/qt/Common2.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/GeometryNode.h>
 #include <icl/viz3d/nodes/CoordinateFrameNode.h>
@@ -30,7 +30,7 @@ GUI relTransGUI;
 GUI markerDetectionOptionGUI;
 GUI planeOptionGUI;
 
-viz3d::Scene2 scene;
+viz3d::Scene scene;
 std::shared_ptr<viz3d::CoordinateFrameNode> worldCS;  // replaces Scene::setDrawCoordinateFrameEnabled
 ImageSource grabber;
 

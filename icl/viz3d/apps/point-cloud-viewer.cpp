@@ -13,8 +13,8 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/Scene.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/pointcloud/PointCloud.h>
 #include <icl/viz3d/nodes/PointCloudNode.h>
 #include <icl/viz3d/pointcloud/PointCloudSource.h>
@@ -27,7 +27,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 GUI gui;
-Scene2 scene;
+Scene scene;
 PointCloudSource src;
 std::shared_ptr<PointCloud> cloud;
 std::shared_ptr<PointCloudNode> cloudNode;

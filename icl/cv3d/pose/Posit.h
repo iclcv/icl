@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Point.h>
 
@@ -33,7 +33,7 @@ namespace icl::cv3d {
       The algorithm is well described in the paper
       "Model-based object pose in 25 lines of code" written by Dementhon and Davis in 1995
   */
-  class ICLGeom_API Posit{
+  class ICLCv3d_API Posit{
     struct Data; //!< internal data storage class
     Data *data;  //!< internal data storage
 
@@ -72,7 +72,7 @@ namespace icl::cv3d {
     const std::vector<Vec> &getModel() const;
 
     /// result type (basically a 4x4 homogeneous transformation matrix)
-    struct ICLGeom_API Result : public Mat{
+    struct ICLCv3d_API Result : public Mat{
       friend struct Posit::Data;
       private:
       /// private Konstructor

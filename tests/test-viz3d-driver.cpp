@@ -3,11 +3,11 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 // Phase 0 of the physics2 plan: the viz3d Driver mechanism. These tests are
-// GL-free — they exercise attach/detach, typed lookup, and the Scene2::sync()
+// GL-free — they exercise attach/detach, typed lookup, and the Scene::sync()
 // pre-order traversal, all verifiable headless in the sandbox.
 
 #include "harness/Test.h"
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/scene/Driver.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
@@ -66,9 +66,9 @@ ICL_REGISTER_TEST("viz3d.driver.remove_detaches", "removeDriver clears node() + 
   ICL_TEST_EQ((int)cube->getDrivers().size(), 0);
 }
 
-ICL_REGISTER_TEST("viz3d.driver.scene_sync_forwards", "Scene2::sync forwards dt/alpha to drivers")
+ICL_REGISTER_TEST("viz3d.driver.scene_sync_forwards", "Scene::sync forwards dt/alpha to drivers")
 {
-  Scene2 scene;
+  Scene scene;
   auto cube = CuboidNode::createCube(0, 0, 0, 10);
   auto d = cube->addDriver<CountingDriver>();
   scene.addNode(std::static_pointer_cast<Node>(cube));
@@ -85,7 +85,7 @@ ICL_REGISTER_TEST("viz3d.driver.scene_sync_forwards", "Scene2::sync forwards dt/
 
 ICL_REGISTER_TEST("viz3d.driver.drives_transform", "a driver mutating the node transform takes effect")
 {
-  Scene2 scene;
+  Scene scene;
   auto cube = CuboidNode::createCube(0, 0, 0, 10);
   cube->addDriver<ShiftDriver>(100.0f);   // +100 units/sec along x
   scene.addNode(std::static_pointer_cast<Node>(cube));
@@ -101,7 +101,7 @@ ICL_REGISTER_TEST("viz3d.driver.drives_transform", "a driver mutating the node t
 
 ICL_REGISTER_TEST("viz3d.driver.preorder_children", "sync recurses into GroupNode children")
 {
-  Scene2 scene;
+  Scene scene;
   auto group = std::make_shared<GroupNode>();
   auto child = CuboidNode::createCube(0, 0, 0, 10);
   auto d = child->addDriver<CountingDriver>();

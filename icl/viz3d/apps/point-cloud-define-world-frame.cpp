@@ -14,8 +14,8 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/Scene.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/pointcloud/PointCloud.h>
 #include <icl/viz3d/nodes/PointCloudNode.h>
 #include <icl/viz3d/pointcloud/PointCloudSource.h>
@@ -44,7 +44,7 @@ using Vec3 = FixedColVector<float, 3>;
 using Mat3 = FixedMatrix<float, 3, 3>;
 
 HSplit gui;
-Scene2 scene;
+Scene scene;
 Camera dcam;                                  // depth camera (unproject + rays)
 
 PointCloudSource src;

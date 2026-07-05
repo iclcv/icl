@@ -18,13 +18,6 @@ endif
 
 # ---- Apps ----
 if _build_apps
-  # icp3d-test does not need Qt
-  executable('icl-icp3d-test',
-    files('../apps/icp3d-test.cpp'),
-    dependencies: [icl_cv3d_dep],
-    install: true,
-  )
-
   # Qt-dependent apps
   if qt_found
     _cv3d_qt_apps = {

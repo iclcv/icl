@@ -6,11 +6,11 @@
 // exercises the scene graph — nested GroupNodes with per-node spin/orbit
 // Drivers, lights anchored to a moving node (added as its children, so the
 // renderer's light traversal picks them up), shift+click picking that drives a
-// TextNode position indicator, and offscreen capture via Scene2::renderToImage.
+// TextNode position indicator, and offscreen capture via Scene::renderToImage.
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
@@ -18,7 +18,7 @@
 #include <icl/viz3d/nodes/TextNode.h>
 #include <icl/viz3d/nodes/CoordinateFrameNode.h>
 #include <icl/viz3d/scene/Driver.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 
@@ -29,7 +29,7 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 HBox gui;
-Scene2 scene;
+Scene scene;
 Time lastTick;
 
 // a flat ring of line segments at the given orbital radius
@@ -91,7 +91,7 @@ struct PositionIndicator : public GroupNode {
   }
 } *pos = nullptr;
 
-Scene2MouseHandler *sceneHandler = nullptr;
+SceneMouseHandler *sceneHandler = nullptr;
 struct Handler : public MouseHandler {
   MouseResult process(const MouseEvent &evt) override {
     if (evt.isModifierActive(ShiftModifier) || evt.isModifierActive(AltModifier) ||

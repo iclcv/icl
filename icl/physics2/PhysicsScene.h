@@ -20,12 +20,12 @@
 #endif
 
 namespace icl::cv3d { class Camera; }
-namespace icl::viz3d { class Node; class LightNode; class MeshNode; class Scene2MouseHandler; }
+namespace icl::viz3d { class Node; class LightNode; class MeshNode; class SceneMouseHandler; }
 namespace icl::qt { class GLCallback; }
 
 namespace icl::physics2 {
 
-  /// Convenience coordinator: owns a viz3d::Scene2 + a PhysicsWorld and joins
+  /// Convenience coordinator: owns a viz3d::Scene + a PhysicsWorld and joins
   /// them with a one-call add().
   /** Composition, NOT inheritance — the world (sim thread) and the scene (UI
       thread) stay separate concerns. The facade just sequences them. For the
@@ -127,15 +127,15 @@ namespace icl::physics2 {
 
     // --- Qt integration ---
     std::shared_ptr<qt::GLCallback> getGLCallback(int cameraIndex);
-    viz3d::Scene2MouseHandler *getMouseHandler(int cameraIndex);
+    viz3d::SceneMouseHandler *getMouseHandler(int cameraIndex);
 
     // --- escape hatches ---
-    viz3d::Scene2 &scene();
+    viz3d::Scene &scene();
     PhysicsWorld &world();
 
   private:
     PhysicsWorld m_world;        // declared first  -> destroyed last
-    viz3d::DefaultScene m_scene; // declared second -> destroyed first (is-a Scene2)
+    viz3d::DefaultScene m_scene; // declared second -> destroyed first (is-a Scene)
     std::shared_ptr<viz3d::MeshNode> m_debugNode;
     bool m_debugEnabled = false;
   };

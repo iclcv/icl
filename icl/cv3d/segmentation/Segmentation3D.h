@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/core/Img.h>
 #include <icl/core/DataSegment.h>
 #include <icl/cv/RegionDetector.h>
@@ -19,7 +19,7 @@
 namespace icl::cv3d {
   /**
      This class includes segmentation algorithms for depth images. It uses OpenCL for hardware parallelization if a compatible GPU is found. The input is a depth image, a binarized edge image from the PointNormalEstimation class and the xyz DataSegment from the PointCloudObject class. The output is a color image (e.g. as input for setColorsFromDisplay() method of the PointCloudObject class).*/
-  class ICLGeom_API Segmentation3D{
+  class ICLCv3d_API Segmentation3D{
 
    public:
     /// Constructor

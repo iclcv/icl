@@ -9,7 +9,7 @@
 #include <icl/viz3d/nodes/Node.h>
 #include <icl/viz3d/nodes/CylinderNode.h>
 #include <icl/viz3d/render/Material.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/utils/Macros.h>
 
 #include <btBulletDynamicsCommon.h>

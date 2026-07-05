@@ -7,7 +7,7 @@
 #include <icl/utils/Point.h>
 #include <icl/markers/AdvancedMarkerGridDetector.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 
 namespace icl::markers {
     cv3d::Camera extract_camera_from_udist_file(const std::string &filename);

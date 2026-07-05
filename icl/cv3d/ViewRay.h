@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <icl/utils/Exception.h>
 #include <icl/utils/Point.h>
 #include <iostream>
@@ -19,7 +19,7 @@ namespace icl::cv3d {
   /** A view-ray is described by the equation
       \f[ V: \mbox{offset} + \lambda \cdot \mbox{direction} \f]
   */
-  struct ICLGeom_API ViewRay{
+  struct ICLCv3d_API ViewRay{
     /// Constructor with given offset and direction vector
     explicit ViewRay(const Vec &offset=Vec(), const Vec &direction=Vec(), bool autoNormalizeDirection=false);
 
@@ -87,5 +87,5 @@ namespace icl::cv3d {
   };
 
   /// ostream operator
-  ICLGeom_API std::ostream &operator<<(std::ostream &s, const ViewRay &vr);
+  ICLCv3d_API std::ostream &operator<<(std::ostream &s, const ViewRay &vr);
   } // namespace icl::cv3d

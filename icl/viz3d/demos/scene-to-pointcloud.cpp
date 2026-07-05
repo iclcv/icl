@@ -7,8 +7,8 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/Scene.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
@@ -28,8 +28,8 @@ using namespace icl::utils;
 using namespace icl::qt;
 
 GUI gui;
-Scene2 sceneLeft;   // the "world" scene
-Scene2 sceneRight;  // the point cloud viewer
+Scene sceneLeft;   // the "world" scene
+Scene sceneRight;  // the point cloud viewer
 
 std::shared_ptr<PointCloud> cloud;
 std::shared_ptr<PointCloudNode> cloudNode;

@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/viz3d/render/OffscreenView.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/render/BVH.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/qt/GLCallback.h>
@@ -31,9 +31,9 @@ namespace icl::viz3d {
 #endif
 
   struct OffscreenView::Impl {
-    Scene2 *viewScene;
+    Scene *viewScene;
     int     viewCam;
-    Scene2 *capScene;                 // defaults to viewScene
+    Scene *capScene;                 // defaults to viewScene
     int     capCam;                   // defaults to viewCam
 
     std::atomic<Backend> backend{Backend::GL};
@@ -80,7 +80,7 @@ namespace icl::viz3d {
     int  lastSPS = 1;
 #endif
 
-    Impl(Scene2 &vs, int vc)
+    Impl(Scene &vs, int vc)
       : viewScene(&vs), viewCam(vc), capScene(&vs), capCam(vc) {}
 
     // A fresh capture arrived: cache it raw, then (re)derive the distorted output.
@@ -138,7 +138,7 @@ namespace icl::viz3d {
 
     void syncCaptureCamera() {
       if (capScene != viewScene && mirror.load()) {
-        std::scoped_lock<Scene2> l(*capScene);   // Scene2 is BasicLockable
+        std::scoped_lock<Scene> l(*capScene);   // Scene is BasicLockable
         capScene->getCamera(capCam) = viewScene->getCamera(viewCam);
       }
     }
@@ -151,7 +151,7 @@ namespace icl::viz3d {
       if (backend.load() == Backend::GL && glPending.exchange(false)) {
         BVH::ImageResult r;
         {
-          std::scoped_lock<Scene2> l(*capScene);
+          std::scoped_lock<Scene> l(*capScene);
           if (capScene != viewScene && mirror.load())
             capScene->getCamera(capCam) = viewScene->getCamera(viewCam);
           r = capScene->renderToImage(capCam, BVH::NoDepth);
@@ -168,7 +168,7 @@ namespace icl::viz3d {
     } cb{this};
   };
 
-  OffscreenView::OffscreenView(Scene2 &viewScene, int viewCam)
+  OffscreenView::OffscreenView(Scene &viewScene, int viewCam)
     : m_impl(std::make_unique<Impl>(viewScene, viewCam)) {
     addProperty("backend", utils::prop::Menu{"GL (fast)", "Cycles (photoreal)"}, "GL (fast)");
     // Forward radial lens distortion baked into the captured image (simulate a
@@ -195,7 +195,7 @@ namespace icl::viz3d {
 
   OffscreenView::~OffscreenView() = default;
 
-  void OffscreenView::setCaptureSource(Scene2 &capScene, int capCam) {
+  void OffscreenView::setCaptureSource(Scene &capScene, int capCam) {
     if (m_impl->capScene != &capScene) {
       removeChildConfigurable(m_impl->capScene);   // re-point the "scene." child
       addChildConfigurable(&capScene, "scene");

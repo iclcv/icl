@@ -20,7 +20,7 @@ namespace icl::cv3d {
 	    float x, y, z, w;
     };
 
-     class ICLGeom_API ObjectEdgeDetectorCPU : public ObjectEdgeDetectorPlugin{
+     class ICLCv3d_API ObjectEdgeDetectorCPU : public ObjectEdgeDetectorPlugin{
 
      struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer

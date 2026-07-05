@@ -11,10 +11,6 @@
 #include <vector>
 #include <type_traits>
 
-#ifndef ICLViz3d_API
-#define ICLViz3d_API
-#endif
-
 namespace icl::viz3d {
 
   using Mat = math::FixedMatrix<float, 4, 4>;
@@ -22,7 +18,7 @@ namespace icl::viz3d {
   class GroupNode;
   class Driver;
   class Node;
-  class Scene2;
+  class Scene;
 
   /// Canonical owning handle for a scene-graph node.
   /** viz3d references follow a three-tier **edge** model — pick the pointer by
@@ -75,12 +71,12 @@ namespace icl::viz3d {
     Node *getParent();
     const Node *getParent() const;
 
-    // --- Owning scene (set by Scene2::addNode, propagated by GroupNode) ---
-    /// Non-owning view of the Scene2 this node lives in (nullptr if unparented).
+    // --- Owning scene (set by Scene::addNode, propagated by GroupNode) ---
+    /// Non-owning view of the Scene this node lives in (nullptr if unparented).
     /** An up-edge: the scene co-owns the node, so a raw view back up is correct
         (never delete it). High-level mutators use it to self-lock and
         auto-invalidate the scene — see ScopedEdit. */
-    Scene2 *getScene() const;
+    Scene *getScene() const;
 
     // --- Drivers (attachable per-node behaviours; see Driver.h) ---
     /// Attach an already-constructed driver (sets its node, calls onAttach())
@@ -119,7 +115,7 @@ namespace icl::viz3d {
       return nullptr;
     }
 
-    /// All attached drivers (used by Scene2::sync() traversal)
+    /// All attached drivers (used by Scene::sync() traversal)
     const std::vector<std::shared_ptr<Driver>> &getDrivers() const;
 
     /// Detach + remove a driver (calls its onDetach())
@@ -145,12 +141,12 @@ namespace icl::viz3d {
 
     /// RAII guard for a node's high-level mutators: locks the owning scene (if
     /// the node is in one) for the edit's duration, and on exit marks the scene
-    /// changed (Scene2::touch() → invalidate renderer/Cycles caches + bump
+    /// changed (Scene::touch() → invalidate renderer/Cycles caches + bump
     /// version). Re-entrant: the scene mutex is recursive, so it composes with
     /// an outer render/sync lock. A detached node (no scene) makes it a no-op.
     /** Usage in a mutator:  ScopedEdit edit(this); ... rebuild geometry ... */
     class ScopedEdit {
-      Scene2 *m_scene;
+      Scene *m_scene;
     public:
       explicit ScopedEdit(Node *node);
       ~ScopedEdit();
@@ -161,13 +157,13 @@ namespace icl::viz3d {
   private:
     void setParent(Node *parent);
     /// Set/clear the owning scene back-pointer. Virtual so GroupNode propagates
-    /// it to its subtree. Called by Scene2::addNode/removeNode and GroupNode.
-    virtual void setScene(Scene2 *scene);
+    /// it to its subtree. Called by Scene::addNode/removeNode and GroupNode.
+    virtual void setScene(Scene *scene);
 
     struct Data;
     std::unique_ptr<Data> m_data;
     friend class GroupNode;  // sets parent via setParent(), propagates setScene()
-    friend class Scene2;     // sets the owning-scene back-pointer via setScene()
+    friend class Scene;     // sets the owning-scene back-pointer via setScene()
   };
 
 } // namespace icl::viz3d

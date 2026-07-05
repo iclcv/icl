@@ -2,10 +2,10 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/utils/prop/Constraints.h>
 #include <icl/core/prop/Constraints.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/GeometryNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
@@ -41,17 +41,17 @@ namespace icl::viz3d {
   // ---- GLCallback implementation ----
   //
   // Implementation-internal subclass of `qt::GLCallback`; not
-  // exposed in Scene2.h.  Scene2::getGLCallback() returns a
+  // exposed in Scene.h.  Scene::getGLCallback() returns a
   // `shared_ptr<qt::GLCallback>` (base) so callers never see this
   // type.
   namespace {
     struct SceneGLCallback : public qt::GLCallback {
-      Scene2 *scene;
+      Scene *scene;
       int camIndex;
       bool needLink = true;
       qt::GUI *gui = nullptr;
 
-      SceneGLCallback(Scene2 *s, int ci) : scene(s), camIndex(ci) {}
+      SceneGLCallback(Scene *s, int ci) : scene(s), camIndex(ci) {}
 
       void performLink(qt::ICLDrawWidget3D *widget) {
         std::string id = "scene2-" + utils::str(this);
@@ -81,13 +81,13 @@ namespace icl::viz3d {
 
   // ---- Data ----
 
-  struct Scene2::Data {
+  struct Scene::Data {
     std::vector<std::shared_ptr<Node>> objects;
     std::vector<std::shared_ptr<LightNode>> lights;  // also in objects, tracked for fast access
     std::vector<cv3d::Camera> cameras;
     Renderer renderer;
     std::vector<std::shared_ptr<SceneGLCallback>> callbacks;
-    std::vector<std::unique_ptr<Scene2MouseHandler>> mouseHandlers;
+    std::vector<std::unique_ptr<SceneMouseHandler>> mouseHandlers;
     // "show cameras" overlay: one lightweight gizmo per camera (3 axis lines +
     // a billboard label, lazy) + a scratch list that appends them to the
     // objects for a render pass.
@@ -108,12 +108,12 @@ namespace icl::viz3d {
 #endif
   };
 
-  // ---- Scene2 implementation ----
+  // ---- Scene implementation ----
 
-  void Scene2::lock() { m_data->mutex.lock(); }
-  void Scene2::unlock() { m_data->mutex.unlock(); }
+  void Scene::lock() { m_data->mutex.lock(); }
+  void Scene::unlock() { m_data->mutex.unlock(); }
 
-  Scene2::Scene2() : m_data(std::make_unique<Data>()) {
+  Scene::Scene() : m_data(std::make_unique<Data>()) {
     addProperty("background color", core::prop::Color{}, core::Color(0,0,0));
     addProperty("wireframe",utils::prop::Flag{}, false);
     addProperty("show cameras",utils::prop::Flag{}, false);
@@ -124,9 +124,9 @@ namespace icl::viz3d {
     addProperty("info.Nodes",utils::prop::Info{}, utils::str(0));
     addProperty("info.Lights",utils::prop::Info{}, utils::str(0));
   }
-  Scene2::~Scene2() = default;
+  Scene::~Scene() = default;
 
-  void Scene2::addNode(NodePtr node) {
+  void Scene::addNode(NodePtr node) {
     node->setScene(this);                 // back-pointer (subtree, for a GroupNode)
     m_data->objects.push_back(std::move(node));
     // touch() bumps the version + drops the renderer cache. The latter matters
@@ -137,19 +137,19 @@ namespace icl::viz3d {
     touch();
   }
 
-  Node *Scene2::getNode(int i) {
+  Node *Scene::getNode(int i) {
     return (i >= 0 && i < (int)m_data->objects.size()) ? m_data->objects[i].get() : nullptr;
   }
 
-  const Node *Scene2::getNode(int i) const {
+  const Node *Scene::getNode(int i) const {
     return (i >= 0 && i < (int)m_data->objects.size()) ? m_data->objects[i].get() : nullptr;
   }
 
-  NodePtr Scene2::getNodePtr(int i) {
+  NodePtr Scene::getNodePtr(int i) {
     return (i >= 0 && i < (int)m_data->objects.size()) ? m_data->objects[i] : nullptr;
   }
 
-  int Scene2::getNodeCount() const { return (int)m_data->objects.size(); }
+  int Scene::getNodeCount() const { return (int)m_data->objects.size(); }
 
   // A node may also be a light (lights live in both vectors); drop it from the
   // light list too so removal can't leave a dangling light still shining.
@@ -158,7 +158,7 @@ namespace icl::viz3d {
                  [node](const auto &p) { return p.get() == node; }), lights.end());
   }
 
-  void Scene2::removeNode(int i) {
+  void Scene::removeNode(int i) {
     if (i >= 0 && i < (int)m_data->objects.size()) {
       Node *n = m_data->objects[i].get();
       eraseLight(m_data->lights, n);
@@ -168,7 +168,7 @@ namespace icl::viz3d {
     }
   }
 
-  void Scene2::removeNode(Node *node) {
+  void Scene::removeNode(Node *node) {
     if (node) node->setScene(nullptr);
     eraseLight(m_data->lights, node);
     auto &o = m_data->objects;
@@ -177,51 +177,51 @@ namespace icl::viz3d {
     touch();                                // bump version + drop stale cache (see addNode)
   }
 
-  void Scene2::clear() {
+  void Scene::clear() {
     for (auto &n : m_data->objects) n->setScene(nullptr);
     m_data->objects.clear();
     m_data->lights.clear();
     touch();
   }
 
-  void Scene2::touch() {
+  void Scene::touch() {
     m_data->version.fetch_add(1, std::memory_order_relaxed);
     m_data->autoBoundsDirty = true;
     m_data->renderer.invalidateCache();
   }
 
-  unsigned Scene2::sceneVersion() const {
+  unsigned Scene::sceneVersion() const {
     return m_data->version.load(std::memory_order_relaxed);
   }
 
   // Lights
-  void Scene2::addLight(std::shared_ptr<LightNode> light) {
+  void Scene::addLight(std::shared_ptr<LightNode> light) {
     m_data->lights.push_back(light);
     addNode(std::static_pointer_cast<Node>(light));
   }
 
-  LightNode *Scene2::getLight(int i) {
+  LightNode *Scene::getLight(int i) {
     return (i >= 0 && i < (int)m_data->lights.size()) ? m_data->lights[i].get() : nullptr;
   }
 
-  const LightNode *Scene2::getLight(int i) const {
+  const LightNode *Scene::getLight(int i) const {
     return (i >= 0 && i < (int)m_data->lights.size()) ? m_data->lights[i].get() : nullptr;
   }
 
-  std::shared_ptr<LightNode> Scene2::getLightPtr(int i) {
+  std::shared_ptr<LightNode> Scene::getLightPtr(int i) {
     return (i >= 0 && i < (int)m_data->lights.size()) ? m_data->lights[i] : nullptr;
   }
 
-  int Scene2::getLightCount() const { return (int)m_data->lights.size(); }
+  int Scene::getLightCount() const { return (int)m_data->lights.size(); }
 
   // Cameras
-  void Scene2::addCamera(const cv3d::Camera &cam) {
+  void Scene::addCamera(const cv3d::Camera &cam) {
     m_data->cameras.push_back(cam);
   }
 
-  cv3d::Camera &Scene2::getCamera(int i) { return m_data->cameras.at(i); }
-  const cv3d::Camera &Scene2::getCamera(int i) const { return m_data->cameras.at(i); }
-  int Scene2::getCameraCount() const { return (int)m_data->cameras.size(); }
+  cv3d::Camera &Scene::getCamera(int i) { return m_data->cameras.at(i); }
+  const cv3d::Camera &Scene::getCamera(int i) const { return m_data->cameras.at(i); }
+  int Scene::getCameraCount() const { return (int)m_data->cameras.size(); }
 
   // --- Driver update ---
 
@@ -236,7 +236,7 @@ namespace icl::viz3d {
     }
   }
 
-  void Scene2::sync(double dt, double alpha) {
+  void Scene::sync(double dt, double alpha) {
     std::scoped_lock guard(m_data->mutex);
     for (auto &node : m_data->objects) {
       syncNode(node.get(), dt, alpha);
@@ -244,7 +244,7 @@ namespace icl::viz3d {
   }
 
   // Rendering
-  Renderer &Scene2::getRenderer() { return m_data->renderer; }
+  Renderer &Scene::getRenderer() { return m_data->renderer; }
 
   // A lightweight camera gizmo (built in the camera's local frame, so the group
   // transform = camera pose places it): 3 axis lines (RGB = XYZ), a stylized,
@@ -296,7 +296,7 @@ namespace icl::viz3d {
     return g;
   }
 
-  const std::vector<std::shared_ptr<Node>> &Scene2::nodesToRender(int activeCam) {
+  const std::vector<std::shared_ptr<Node>> &Scene::nodesToRender(int activeCam) {
     if (!(bool)prop("show cameras").value) return m_data->objects;
 
     // Lazily create one gizmo per camera, sized to the scene.
@@ -317,7 +317,7 @@ namespace icl::viz3d {
     return out;
   }
 
-  void Scene2::render(int cameraIndex) {
+  void Scene::render(int cameraIndex) {
     std::scoped_lock guard(m_data->mutex);
     if (cameraIndex < 0 || cameraIndex >= (int)m_data->cameras.size()) return;
 
@@ -377,7 +377,7 @@ namespace icl::viz3d {
     glViewport(widgetVP[0], widgetVP[1], widgetVP[2], widgetVP[3]);
   }
 
-  BVH::ImageResult Scene2::renderToImage(int cameraIndex, BVH::DepthMode mode) {
+  BVH::ImageResult Scene::renderToImage(int cameraIndex, BVH::DepthMode mode) {
     BVH::ImageResult result;
 #ifdef ICL_HAVE_OPENGL
     std::scoped_lock guard(m_data->mutex);
@@ -504,7 +504,7 @@ namespace icl::viz3d {
   }
 
   // GL callback for ICLQt integration
-  std::shared_ptr<qt::GLCallback> Scene2::getGLCallback(int cameraIndex) {
+  std::shared_ptr<qt::GLCallback> Scene::getGLCallback(int cameraIndex) {
     // Ensure enough callbacks exist
     while ((int)m_data->callbacks.size() <= cameraIndex) {
       m_data->callbacks.push_back(
@@ -515,10 +515,10 @@ namespace icl::viz3d {
 
   // --- Mouse handler ---
 
-  Scene2MouseHandler *Scene2::getMouseHandler(int cameraIndex) {
+  SceneMouseHandler *Scene::getMouseHandler(int cameraIndex) {
     while ((int)m_data->mouseHandlers.size() <= cameraIndex) {
       int idx = (int)m_data->mouseHandlers.size();
-      auto h = std::make_unique<Scene2MouseHandler>(idx, this);
+      auto h = std::make_unique<SceneMouseHandler>(idx, this);
       h->setSensitivities(10.0f);  // translation multiplier; scene size comes from getBounds()
       m_data->mouseHandlers.push_back(std::move(h));
     }
@@ -578,7 +578,7 @@ namespace icl::viz3d {
     }
   }
 
-  Hit2 Scene2::findObject(const cv3d::ViewRay &ray) const {
+  Hit2 Scene::findObject(const cv3d::ViewRay &ray) const {
     std::vector<Hit2> hits;
     for (auto &node : m_data->objects) {
       collectHits(node.get(), ray, hits);
@@ -586,7 +586,7 @@ namespace icl::viz3d {
     return hits.empty() ? Hit2() : *std::min_element(hits.begin(), hits.end());
   }
 
-  std::vector<Hit2> Scene2::findObjects(const cv3d::ViewRay &ray) const {
+  std::vector<Hit2> Scene::findObjects(const cv3d::ViewRay &ray) const {
     std::vector<Hit2> hits;
     for (auto &node : m_data->objects) {
       collectHits(node.get(), ray, hits);
@@ -595,14 +595,14 @@ namespace icl::viz3d {
     return hits;
   }
 
-  Hit2 Scene2::findObject(int cameraIndex, int x, int y) const {
+  Hit2 Scene::findObject(int cameraIndex, int x, int y) const {
     return findObject(getCamera(cameraIndex).getViewRay(utils::Point32f(x, y)));
   }
 
   // --- Cursor ---
 
-  void Scene2::setCursor(const Vec &pos) { m_data->cursor = pos; }
-  Vec Scene2::getCursor() const { return m_data->cursor; }
+  void Scene::setCursor(const Vec &pos) { m_data->cursor = pos; }
+  Vec Scene::getCursor() const { return m_data->cursor; }
 
   // --- Bounds ---
 
@@ -628,9 +628,9 @@ namespace icl::viz3d {
   // size, computed from geometry and cached (recomputed only when the node set
   // changes — NOT every frame, so a dynamic scene's moving vertices don't churn
   // the camera sensitivity).
-  void Scene2::setBounds(float maxDim) { m_data->explicitBounds = maxDim; }
+  void Scene::setBounds(float maxDim) { m_data->explicitBounds = maxDim; }
 
-  float Scene2::getBounds() const {
+  float Scene::getBounds() const {
     if (m_data->explicitBounds > 0) return m_data->explicitBounds;
     if (m_data->autoBoundsDirty) {
       std::lock_guard<std::recursive_mutex> lock(m_data->mutex);
@@ -753,7 +753,7 @@ namespace icl::viz3d {
     return bvh;
   }
 
-  BVH Scene2::buildBVH() const {
+  BVH Scene::buildBVH() const {
     std::vector<PreparedGeom> geoms;
     for (auto &node : m_data->objects) {
       collectPreparedGeom(node.get(), geoms);

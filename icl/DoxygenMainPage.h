@@ -40,9 +40,11 @@
     - <b>Cv</b> icl::cv::FloodFiller, icl::cv::GenericSurfDetector, icl::cv::HoughLineDetector
       icl::cv::RegionDetector, icl::cv::MeanShiftTracker, icl::cv::VectorTracker,
       icl::cv::RunLengthEncoder, icl::cv::SimpleBlobSearcher, icl::cv::TemplateTracker
-    - <b>Geom</b> icl::cv3d::Camera, icl::cv3d::Scene, icl::cv3d::SceneObject, icl::cv3d::ICP,
-      icl::cv3d::PlaneEquation, icl::cv3d::PlotWidget3D, icl::cv3d::PointCloudCreator,
-      icl::cv3d::PointNormalEstimation, icl::cv3d::PoseEstimator, icl::cv3d::Posit,
-      icl::cv3d::Segmentation3D
+    - <b>Cv3d</b> (Qt-free 3D vision) icl::cv3d::Camera, icl::cv3d::ICP,
+      icl::cv3d::PlaneEquation, icl::cv3d::PoseEstimator, icl::cv3d::Posit,
+      icl::cv3d::PointCloudNormalEstimator, icl::cv3d::Segmentation3D,
+      icl::cv3d::ObjectEdgeDetector
+    - <b>Viz3d</b> (3D scene/render) icl::viz3d::Scene, icl::viz3d::PlotWidget3D,
+      icl::viz3d::MeshNode, icl::viz3d::Loader
     - <b>Markers</b> icl::markers::FiducialDetector
     */

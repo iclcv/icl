@@ -26,7 +26,7 @@ namespace icl::viz3d {
 
   class LightNode;
   class PointCloud;
-  class Scene2MouseHandler;
+  class SceneMouseHandler;
 
   using Vec = math::FixedColVector<float, 4>;
 
@@ -46,14 +46,14 @@ namespace icl::viz3d {
   /// Scene manager for viz3d — owns nodes, cameras, and renderer
   /** Inherits Configurable to expose scene properties (background color,
       wireframe, lighting, etc.) via an OSD button when linked to a Canvas3D. */
-  class ICLViz3d_API Scene2 : public utils::Configurable {
+  class ICLViz3d_API Scene : public utils::Configurable {
   public:
-    Scene2();
-    ~Scene2();
+    Scene();
+    ~Scene();
 
     // --- Thread safety ---
     /// Lock the scene for multi-threaded access (run thread vs GL thread)
-    /** Use std::lock_guard<Scene2> or call lock()/unlock() manually.
+    /** Use std::lock_guard<Scene> or call lock()/unlock() manually.
         The GL callback locks automatically during render(). */
     void lock();
     void unlock();
@@ -146,7 +146,7 @@ namespace icl::viz3d {
     // --- Mouse interaction ---
     /// Returns mouse handler for camera navigation (lazy-created per camera)
     /** Usage: canvas->install(scene.getMouseHandler(0)); */
-    Scene2MouseHandler *getMouseHandler(int cameraIndex);
+    SceneMouseHandler *getMouseHandler(int cameraIndex);
 
     // --- Hit testing ---
     /// Find closest node hit by the given view ray

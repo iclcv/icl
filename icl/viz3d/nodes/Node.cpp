@@ -4,7 +4,7 @@
 
 #include <icl/viz3d/nodes/Node.h>
 #include <icl/viz3d/scene/Driver.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/math/la/FixedMatrix.h>
 #include <algorithm>
 #include <mutex>
@@ -16,7 +16,7 @@ namespace icl::viz3d {
     Mat transformation = Mat::id();
     bool hasTransformation = false;
     Node *parent = nullptr;
-    Scene2 *scene = nullptr;       // owning scene (non-owning back-pointer)
+    Scene *scene = nullptr;       // owning scene (non-owning back-pointer)
     bool isVisible = true;
     mutable std::recursive_mutex mutex;
     std::string name;
@@ -118,8 +118,8 @@ namespace icl::viz3d {
   Node *Node::getParent() { return m_data->parent; }
   const Node *Node::getParent() const { return m_data->parent; }
 
-  Scene2 *Node::getScene() const { return m_data->scene; }
-  void Node::setScene(Scene2 *scene) { m_data->scene = scene; }
+  Scene *Node::getScene() const { return m_data->scene; }
+  void Node::setScene(Scene *scene) { m_data->scene = scene; }
 
   // RAII: lock the owning scene around an edit, mark it changed on exit. The
   // scene pointer is captured up-front so a re-parenting edit still releases the

@@ -58,7 +58,7 @@ namespace icl::viz3d {
     m_data->children.clear();
   }
 
-  void GroupNode::setScene(Scene2 *scene) {
+  void GroupNode::setScene(Scene *scene) {
     Node::setScene(scene);
     for (auto &c : m_data->children) c->setScene(scene);
   }

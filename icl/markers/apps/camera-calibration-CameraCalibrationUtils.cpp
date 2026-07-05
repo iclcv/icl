@@ -4,7 +4,7 @@
 
 #include "camera-calibration-CameraCalibrationUtils.h"
 #include <icl/core/CoreFunctions.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/render/Material.h>
@@ -396,7 +396,7 @@ namespace icl::markers {
       return cf;
     }
 
-    void CameraCalibrationUtils::change_plane(const std::string &handle, GUI &planeOptionGUI, viz3d::Scene2 &scene,
+    void CameraCalibrationUtils::change_plane(const std::string &handle, GUI &planeOptionGUI, viz3d::Scene &scene,
                                               CameraCalibrationUtils::CalibFileData &calibFileData){
       if(handle == "planeDim"){
         if(planeOptionGUI["planeDim"].as<std::string>() == "none"){
@@ -542,7 +542,7 @@ namespace icl::markers {
                                                  const std::string &planeDim,
                                                  float planeOffset,
                                                  const utils::Point32f &currentMousePos,
-                                                 viz3d::Scene2 &scene){
+                                                 viz3d::Scene &scene){
       draw->linewidth(1);
       const Point32f p = currentMousePos;
       const std::string t = planeDim;
@@ -694,7 +694,7 @@ namespace icl::markers {
                                                 const cv3d::Mat &Trel, const utils::Size &imageSize,
                                                 bool &deactivatedCenters, bool useCorners,
                                                 bool normalizeError, BestOfNSaver *saver,
-                                                bool &haveAnyCalibration, viz3d::Scene2 &scene,
+                                                bool &haveAnyCalibration, viz3d::Scene &scene,
                                                 const cv3d::Camera *givenIntrinsicParams,
                                                 bool performLMAbasedOptimiziation){
       CalibrationResult res;

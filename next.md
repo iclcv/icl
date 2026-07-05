@@ -4,6 +4,39 @@
 
 ## Next Step
 
+### ✅ DONE (S99) — cv3d cosmetic renames + ICP consolidation (Phase 1)
+Branch `further-restructuring-and-cleanup`. Suite **1078/1078** (was 1074 + 4 new ICP tests).
+
+**Cosmetic renames (finished the module cleanup S98 started):**
+- `ICLGeom_API` → `ICLCv3d_API` (20 cv3d files) / `ICLViz3d_API` (viz3d; was self-defined in
+  `nodes/Node.h`, now central in `CompatMacros.h`, self-define removed). `core/DataSegmentBase.h`
+  was wrongly on the geom macro → `ICLCore_API`.
+- `Scene2`/`DemoScene2`/`Scene2MouseHandler` → `Scene`/`DemoScene`/`SceneMouseHandler` (6 files
+  `git mv`, ~350 refs, meson+tests). Disambiguated `ccl::Scene` in `CyclesRenderer.cpp` where the
+  unqualified name then collided with the new `viz3d::Scene`.
+- `icl/cv3d/GeomDefs.h` → `icl/cv3d/Types.h` (pure include rename; `Vec`/`Mat`/`GeomColor` aliases).
+
+**ICP consolidation — ONE great ICP with a backend seam (Phase 1 of 2):**
+Three parallel ICP impls existed in `cv3d/icp/`: classic `ICP` (DynMatrix, KDTree — rough: cout spam
+in the loop, stubbed `compute()`, zero users), `ICP3D` (octree, robust — the best, only used by its
+own test app), and `IterativeClosestPoint<T>` (OpenCL, **821 lines 100% commented out**, zero users).
+- New unified `cv3d::ICP` (`icp/ICP.{h,cpp}`) built on ICP3D's algorithm (octree NN, error-delta
+  convergence, Gram-Schmidt re-ortho, maxDist outlier rejection), PIMPL'd, params private, auto-fit
+  octree AABB (dropped the manual-bounds API).
+- **Polymorphic backend seam**: `ICP::Backend` (batch `build(target)` + `nearest(queries,out)`),
+  default `OctreeNN` (C++) in `icp/ICP_Cpp.cpp`. `setBackend()` swaps it — GPU backend slots in
+  without touching the loop. Real interface, not a std::function/tag registry.
+- Deleted `ICP3D.{h,cpp}` + classic `ICP` impl + `apps/icp3d-test.cpp`. New gtest
+  `tests/test-cv3d-icp.cpp` (4 tests: recovers known transform to err 4.7e-6 in 4 iters, noop on
+  aligned, empty-safe, backend swappable). Added `icl_cv3d_dep` to base test_deps.
+- Fixed stale `DoxygenMainPage.h` Geom block (→ Cv3d + Viz3d).
+
+**⏭ ICP Phase 2 (OpenCL backend):** `icp/IterativeClosestPoint.{h,cpp,CLCode.h,CLCode.cl}` are
+PRESERVED as the seed (excluded from meson, banner added to the .h). Implement a `CLNN : ICP::Backend`
+in `icp/ICP_OpenCL.cpp` (guarded by `ICL_HAVE_OPENCL`) mining those kernels (rep-DB approximate NN),
+ported to the current `icl::utils::cl` CLProgram API. Sandbox OpenCL needs the Metal-cache patch
+(see `reference_sandbox_opencl`); verify on Linux/Docker too.
+
 ### ✅ DONE (S98) — geom / geom2 DE-DUPLICATION + functional sub-folders
 The big multi-module restructuring is complete. **End state: two clean modules, no `geom`:**
 - **`cv3d`** (`icl::cv3d`, **Qt-free** 3D CV, below ICLQt → headless vision) — root = foundation

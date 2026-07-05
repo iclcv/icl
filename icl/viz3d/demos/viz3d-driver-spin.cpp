@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 // ICL viz3d demo: the Driver mechanism — world-free SpinDrivers animating
-// nodes via Scene2::sync(), fully decoupled from rendering.
+// nodes via Scene::sync(), fully decoupled from rendering.
 //
 // The motion is made *visible* on purpose:
 //   - a "turntable" GroupNode spins about Z; an arm + ball offset from the
@@ -10,7 +10,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/scene/Driver.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
@@ -18,7 +18,7 @@
 #include <icl/viz3d/nodes/ConeNode.h>
 #include <icl/viz3d/nodes/CoordinateFrameNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 
@@ -47,7 +47,7 @@ private:
 };
 
 GUI gui;
-Scene2 scene;
+Scene scene;
 Time lastTick;
 
 void init() {

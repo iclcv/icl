@@ -2,7 +2,7 @@
 // ICL viz3d demo: in-scene "monitors" showing offscreen renders of the scene
 //
 // The scene contains 4 cameras and 4 screen quads. Each frame every camera is
-// rendered offscreen (Scene2::renderToImage) and the result is pushed onto the
+// rendered offscreen (Scene::renderToImage) and the result is pushed onto the
 // matching screen as a live texture (Material::setBaseColorMap → the renderer
 // re-uploads only that material). Because the screens are part of the scene,
 // each monitor also shows the other monitors — a one-frame "security-room"
@@ -18,8 +18,8 @@
 #include <icl/qt/ui.h>
 #include <icl/qt/GLCallback.h>
 #include <icl/qt/DrawWidget3D.h>
-#include <icl/viz3d/scene/Scene2.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/Scene.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
@@ -41,7 +41,7 @@ static const Size CAP_RES(256, 192);
 static const float HALF_PI = 1.5707963f;
 
 GUI gui;
-Scene2 scene;
+Scene scene;
 std::shared_ptr<GroupNode> spinner;
 std::shared_ptr<MeshNode> screens[4];
 int activeCam = 0;

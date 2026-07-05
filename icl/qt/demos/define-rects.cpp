@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <QMenu>
 #include <QActionEvent>
 #include <icl/qt/DefineRectanglesMouseHandler.h>

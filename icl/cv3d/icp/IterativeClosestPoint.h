@@ -3,6 +3,14 @@
 // Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #pragma once
+
+// ⚠ PHASE-2 SEED — NOT BUILT. This abandoned OpenCL ICP (representative-DB
+// approximate NN + covariance/SVD transform) is preserved as the starting
+// point for a GPU ICP::Backend (see icp/ICP.h). It is intentionally excluded
+// from meson (IterativeClosestPoint.{h,cpp,CLCode.h,CLCode.cl}); the .cpp is
+// fully commented out and targets the old CLProgram API. When implementing the
+// OpenCL backend, mine the kernels here and wire them behind ICP::Backend.
+
 #include <icl/math/transform/HomogeneousMath.h>
 namespace icl::cv3d {
   struct Vec8{

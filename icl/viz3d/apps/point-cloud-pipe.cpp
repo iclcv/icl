@@ -14,8 +14,8 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/Scene2.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/Scene.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/pointcloud/PointCloud.h>
 #include <icl/viz3d/nodes/PointCloudNode.h>
 #include <icl/viz3d/pointcloud/PointCloudSource.h>
@@ -34,7 +34,7 @@ using icl::core::Image;
 using icl::core::Img32f;
 
 GUI gui;
-Scene2 scene;
+Scene scene;
 PointCloudSource src;
 ImageSink output;
 std::shared_ptr<PointCloud> cloud;

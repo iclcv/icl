@@ -125,7 +125,7 @@ scene.addObject(obj);
 gui["draw"].link(scene.getGLCallback(0));
 
 // New
-Scene2 scene;
+Scene scene;
 scene.addCamera(cam);
 scene.addNode(node);
 gui["canvas"].link(scene.getGLCallback(0).get());

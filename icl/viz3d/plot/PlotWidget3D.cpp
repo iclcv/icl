@@ -11,7 +11,7 @@
 #include <icl/viz3d/nodes/TextNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
 #include <icl/viz3d/detail/PlotFrame.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/qt/GUIWidget.h>
@@ -37,7 +37,7 @@ namespace icl {
     static const GeomColor white(255, 255, 255, 255);
 
     struct PlotWidget3D::Data {
-      Scene2 scene;
+      Scene scene;
       Range32f givenViewport[3];
       Range32f computedViewport[3];
 
@@ -328,8 +328,8 @@ namespace icl {
     PlotWidget3D::~PlotWidget3D() { delete m_data; }
 
     const Range32f *PlotWidget3D::getViewPort() const { return m_data->computedViewport; }
-    Scene2 &PlotWidget3D::getScene() { return m_data->scene; }
-    const Scene2 &PlotWidget3D::getScene() const { return m_data->scene; }
+    Scene &PlotWidget3D::getScene() { return m_data->scene; }
+    const Scene &PlotWidget3D::getScene() const { return m_data->scene; }
     Node *PlotWidget3D::getRootObject() { return m_data->rootObject.get(); }
     const Node *PlotWidget3D::getRootObject() const { return m_data->rootObject.get(); }
     const Camera &PlotWidget3D::getCamera() const { return m_data->scene.getCamera(0); }

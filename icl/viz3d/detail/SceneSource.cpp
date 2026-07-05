@@ -20,7 +20,7 @@
 #include <icl/io/detail/SourceBackend.h>
 #include <icl/io/source/SourceBackendRegistry.h>
 #include <icl/io/source/DeviceDescription.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/render/SceneCapture.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
@@ -130,7 +130,7 @@ namespace icl::viz3d {
       return rgbd;
     }
 
-    Scene2 m_scene;
+    Scene m_scene;
     BVHSceneCapture m_capture;
     std::shared_ptr<GroupNode> m_spinner;
   };

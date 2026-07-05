@@ -10,17 +10,17 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/scene/DemoScene2.h>
+#include <icl/viz3d/scene/DemoScene.h>
 #include <icl/viz3d/render/CyclesRenderer.h>
 #include <icl/viz3d/render/Renderer.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 
 using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::qt;
 using namespace icl::viz3d;
 
-static DemoScene2 scene;
+static DemoScene scene;
 static std::unique_ptr<CyclesRenderer> renderer;
 HSplit gui;
 

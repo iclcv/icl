@@ -10,7 +10,7 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 #include <icl/markers/MultiCamFiducialDetector.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/nodes/CoordinateFrameNode.h>
@@ -27,7 +27,7 @@ HSplit gui;
 ImageSource grabber;
 MultiCamFiducialDetector fd;
 std::vector<std::shared_ptr<ImageSource> > grabbers;
-Scene2 scene;
+Scene scene;
 
 std::map<int,GroupNode*> cubes;
 void updateCube(int id, const Mat &T){

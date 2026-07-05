@@ -288,6 +288,6 @@ namespace icl::cv3d {
 
   }
 
-  template ICLGeom_API FixedMatrix<icl32f, 4, 4> PoseEstimator::map(const DynMatrix<icl32f>&, const DynMatrix<icl32f>&, PoseEstimator::MapMode mode);
-  template ICLGeom_API FixedMatrix<icl64f, 4, 4> PoseEstimator::map(const DynMatrix<icl64f>&, const DynMatrix<icl64f>&, PoseEstimator::MapMode mode);
+  template ICLCv3d_API FixedMatrix<icl32f, 4, 4> PoseEstimator::map(const DynMatrix<icl32f>&, const DynMatrix<icl32f>&, PoseEstimator::MapMode mode);
+  template ICLCv3d_API FixedMatrix<icl64f, 4, 4> PoseEstimator::map(const DynMatrix<icl64f>&, const DynMatrix<icl64f>&, PoseEstimator::MapMode mode);
   } // namespace icl::cv3d

@@ -4,7 +4,7 @@
 
 cv3d_headers = files(
   'Camera.h',
-  'GeomDefs.h',
+  'Types.h',
   'PlaneEquation.h',
   'ViewRay.h',
   'RGBDMapping.h',
@@ -22,9 +22,6 @@ cv3d_pose_headers = files(
 
 cv3d_icp_headers = files(
   'icp/ICP.h',
-  'icp/ICP3D.h',
-  'icp/IterativeClosestPoint.h',
-  'icp/IterativeClosestPointCLCode.h',
 )
 
 cv3d_features_headers = files(
@@ -61,8 +58,7 @@ cv3d_sources = files(
   'pose/RansacBasedPoseEstimator.cpp',
   'pose/PlanarRansacEstimator.cpp',
   'icp/ICP.cpp',
-  'icp/ICP3D.cpp',
-  'icp/IterativeClosestPoint.cpp',
+  'icp/ICP_Cpp.cpp',
   'features/SurfaceFeatureExtractor.cpp',
   'features/CurvatureFeatureExtractor.cpp',
   'features/CoPlanarityFeatureExtractor.cpp',

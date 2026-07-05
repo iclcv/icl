@@ -5,12 +5,12 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/Types.h>
 #include <iostream>
 
 namespace icl::cv3d {
   /// Utility structure for calculation of view-ray / plane intersections
-  struct ICLGeom_API PlaneEquation{
+  struct ICLCv3d_API PlaneEquation{
 
     /// Constructor with given offset and direction vector
     explicit PlaneEquation(const Vec &offset=Vec(), const Vec &normal=Vec());
@@ -23,5 +23,5 @@ namespace icl::cv3d {
   };
 
   /// ostream operator
-  ICLGeom_API std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
+  ICLCv3d_API std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
   } // namespace icl::cv3d

@@ -6,7 +6,7 @@
 
 // Widget-free construction of PlotWidget3D's coordinate frame (the [-1,1]^3
 // wireframe box + the three tick/label axes). Extracted out of PlotWidget3D so
-// the exact shipping frame can be rendered into a bare Scene2 with no QWidget —
+// the exact shipping frame can be rendered into a bare Scene with no QWidget —
 // used both by PlotWidget3D and by the headless GL-capture verification tool.
 // NOT installed (detail/): only .cpp translation units may include this.
 

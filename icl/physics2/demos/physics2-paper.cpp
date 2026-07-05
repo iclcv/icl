@@ -17,14 +17,14 @@
 #include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/Node.h>
-#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/scene/DefaultScene.h>
 #include <icl/physics2/PhysicsScene.h>
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/FoldDriver.h>
 #include <icl/physics2/PaperMoverDriver.h>
 #include <icl/physics2/PaperMouseHandler.h>
-#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/SceneMouseHandler.h>
 
 using namespace icl::viz3d;
 using namespace icl::cv3d;
@@ -128,7 +128,7 @@ void run() {
 
   // rebuild the overlay from the toggled debug-geometry categories + the live
   // drag preview. Gather first (getDebugGeometry locks the physics world), then
-  // mutate the node under the SCENE lock — Scene2::render() holds it, so mutating
+  // mutate the node under the SCENE lock — Scene::render() holds it, so mutating
   // a scene node off the lock would race the GL thread (a SIGSEGV).
   const auto dbg = paper->getDebugGeometry();
   Vec pa, pb;
@@ -136,7 +136,7 @@ void run() {
   const bool vFaces = gui["vFaces"], vCreases = gui["vCreases"],
              v1st = gui["v1st"], v2nd = gui["v2nd"];
   {
-    std::scoped_lock<Scene2> lk(scene.scene());
+    std::scoped_lock<Scene> lk(scene.scene());
     overlay->clearGeometry();
     int li = 0;
     // MeshNode colors are 0..255 (addVertex/addLine scale by 1/255 internally).

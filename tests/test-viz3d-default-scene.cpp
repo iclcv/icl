@@ -37,7 +37,7 @@ ICL_REGISTER_TEST("viz3d.defaultscene.void_minimal", "Void has lights + frame + 
 }
 
 // Switching presets must fully replace furniture — and crucially must NOT leak
-// lights (the Scene2::removeNode light-purge fix). Round-tripping back to Studio
+// lights (the Scene::removeNode light-purge fix). Round-tripping back to Studio
 // has to land on exactly 4 lights again, not accumulate.
 ICL_REGISTER_TEST("viz3d.defaultscene.preset_switch_no_leak", "preset switch rebuilds without leaking lights/cameras")
 {
