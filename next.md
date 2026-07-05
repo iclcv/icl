@@ -15,10 +15,23 @@ below ICLQt. Moved foundation (`Camera`/`ViewRay`/`PlaneEquation`/`GeomDefs`) + 
 `otool -L libicl-cv3d` = **zero Qt**. Namespace still `icl::geom` transitionally (rename is a later
 pass). **SoftPosit deferred** (Qt-coupled `visualize()`/`dw` member — left in geom).
 
-**NEXT = Phase 2 (keystone):** port the point-cloud pipeline (~40 files: grabbers, IO/serialization,
-creation, segmentation, SQ-fit) off `PointCloudObjectBase : SceneObject` onto a scene-free
-`cv3d::PointCloud` (geom2 already has the Qt-free `PointCloud` data type to reuse). Drop
-`PCLPointCloudObject` (placeholder note for future compat). This is the hard one — the data-model swap.
+**Phase 2 — MOSTLY DONE (S98).** Investigation reframed it: the old point-cloud pipeline is almost
+entirely UNCONSUMED externally and `geom2::PointCloud` already natively covers the data model +
+creation (`unprojectDepth`) + filtering. So it's NOT "port 40 files" — it's "port the few live
+borrowers, delete the dead rest with the scene graph (Phase 6)".
+- ✅ **Part 1:** live segmenters `Segmentation3D` + `EuclideanBlobSegmenter` → cv3d (they take
+  `DataSegment`; dropped vestigial `PointCloudObjectBase`/`Quick2` includes). Commit `1265ab077`.
+- ✅ **Part 2:** extracted the live `Primitive3D` descriptor → `cv3d/Primitive3D.h` (nested
+  `PrimitiveType`/`Quaternion`; dropped dead `toSceneObject`); dead `Primitive3DFilter` stays in geom
+  to die in Phase 6; 3 consumers retargeted. Commit `a40cce1cd`.
+- **REMAINING:** (b) decide `geom2::PointCloud` relocation to cv3d (lean: defer to the rename — it's
+  used mainly by geom2 scene classes, not blocking); (c) port 2–3 tests off `PointCloudObject` →
+  `geom2::PointCloud`; (d) delete the dead pipeline (`PointCloudObjectBase` & derived, creators,
+  grabbers, outputs, serializer, `SQFitter`, `FeatureGraph`/`ConfigurableDepthImage` segmenters) in
+  Phase 6 with the scene graph; drop PCL.
+
+**NEXT after Phase 2:** Phase 3 (octree/remaining scene-entangled bits) or jump to the scene-graph
+consumer ports (Phase 5, folds into Phase C extrinsic calib). See scoping doc.
 
 **End-state (evolving — SPLIT into two modules):** old `geom` conflates 3D **CV algorithms** and a
 3D **scene graph + renderer**. Split them: **`cv3d`** (`icl::cv3d`, **Qt-FREE** — verified no CV file
