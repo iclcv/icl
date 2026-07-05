@@ -180,7 +180,7 @@ Investigation (S98) changed the picture:
   `ConfigurableDepthImageSegmenter`, `PointCloudSegment`) → **delete with the scene graph in Phase 6**.
   Drop `PCLPointCloudObject` (see decisions).
 
-**Post-split TODO — functional sub-folders.** Once cv3d/viz3d file sets settle, group them into
+**Functional sub-folders — ✅ DONE (S98).** cv3d: pose/ icp/ features/ edge/ segmentation/ (root=foundation). viz3d: nodes/ render/ scene/ plot/ pointcloud/ detail/ (root=Loader+Primitive3DConverter). Include paths + meson updated repo-wide; commits `061e214a7`, `7bebe0141`; suite 1074/1074.
 functional sub-directories like the rest of ICL (`io/detail`, `math/tree|la|transform`, `utils/cl`,
 `utils/detail/pugi`): e.g. cv3d → `pose/`, `icp/`, `segmentation/`, `features/`, `edge/`, `pointcloud/`;
 viz3d → `nodes/`, `render/`, `plot/`, `detail/`. Do this after the moves + rename, not during.
