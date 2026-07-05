@@ -165,11 +165,11 @@ namespace icl::geom {
               #ifdef ICL_HAVE_OPENCL
 
               int opencltype = 0;
-              if(it->type == CUBE)
+              if(it->type == Primitive3D::CUBE)
                   opencltype = 0;
-              else if(it->type == SPHERE)
+              else if(it->type == Primitive3D::SPHERE)
                   opencltype = 1;
-              else if(it->type == CYLINDER)
+              else if(it->type == Primitive3D::CYLINDER)
                   opencltype = 2;
               kernelCreateGroupMap.setArgs(pcbuffer, groupmapbuffer, a, b, c, math::Vec4(it->orientation.v[0], it->orientation.v[1], it->orientation.v[2], it->orientation.w),
                              it->position, opencltype, groupBit);
@@ -186,11 +186,11 @@ namespace icl::geom {
                   // rotation
                   relpoint = it->orientation.conj().rotateVector(relpoint);
                   // filtering
-                  if(it->type == CUBE)
+                  if(it->type == Primitive3D::CUBE)
                       groupMap[i] |= ( (relpoint[0] <= a) && (relpoint[0] >= -a) && (relpoint[1] <= b) && (relpoint[1] >= -b) &&(relpoint[2] <= c) && (relpoint[2] >= -c) ) << groupBit;
-                  else if(it->type == SPHERE)
+                  else if(it->type == Primitive3D::SPHERE)
                       groupMap[i] |= ( (relpoint[0]*relpoint[0])/(a*a) + (relpoint[1]*relpoint[1])/(b*b) + (relpoint[2]*relpoint[2])/(c*c) <= 1 ) << groupBit;
-                  else if(it->type == CYLINDER)
+                  else if(it->type == Primitive3D::CYLINDER)
                       groupMap[i] |= ( ((relpoint[0]*relpoint[0])/(a*a) + (relpoint[1]*relpoint[1])/(b*b) <= 1) && (relpoint[2] <= c) && (relpoint[2] >= -c) ) << groupBit;
               }
 
@@ -584,46 +584,7 @@ namespace icl::geom {
 
       }
 
-      void Primitive3DFilter::Primitive3D::toSceneObject(icl::geom::SceneObject *object, uint32_t slices,
-                                                         icl::geom::GeomColor const &color) {
-
-          math::Mat4 mat = orientation.getTransformationMatrix();
-          mat(0, 3) = position[0];
-          mat(1, 3) = position[1];
-          mat(2, 3) = position[2];
-          SceneObject *added_obj = 0;
-          if (object) {
-              switch (type) {
-              case(CUBE): {
-                  added_obj = object->addCuboid(0,0,0,
-                                                scale[0],scale[1],scale[2]);
-                  break;
-              }
-              case(SPHERE): {
-                  added_obj = object->addSpheroid(0,0,0,
-                                                  scale[0]/2.0,scale[1]/2.0,scale[2]/2.0,
-                                                  slices,slices);
-                  break;
-              }
-              case(CYLINDER): {
-                  added_obj = object->addCylinder(0,0,0,
-                                                  scale[0],scale[1],scale[2],
-                                                  slices);
-                  break;
-              }
-              default: {
-                  std::stringstream sstream;
-                  sstream << type;
-                  WARNING_LOG("No primitive type for id: "+sstream.str());
-                  return;//break;
-              }
-              }
-          }
-          if(added_obj){
-            added_obj->setMaterial(Material::fromColor(color));
-            added_obj->setTransformation(mat);
-          }
-
-      }
+      // Primitive3D::toSceneObject removed with the geom scene graph — replaced by
+      // geom2::Primitive3DConverter::nodeFromPrimitive3D (native geom2 node building).
 
     } // namespace icl::geom

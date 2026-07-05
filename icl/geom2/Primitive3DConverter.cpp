@@ -11,9 +11,9 @@
 
 namespace icl::geom2 {
 
-  NodePtr nodeFromPrimitive3D(const geom::Primitive3DFilter::Primitive3D &p,
+  NodePtr nodeFromPrimitive3D(const geom::Primitive3D &p,
                               uint32_t slices, const geom::GeomColor &color) {
-    using P = geom::Primitive3DFilter;
+    using P = geom::Primitive3D;
 
     // orientation → rotation matrix, with the primitive position in column 3
     // (getTransformationMatrix is non-const → work on a local copy)

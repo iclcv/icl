@@ -165,9 +165,15 @@ Investigation (S98) changed the picture:
   removed vestigial dead includes (`PointCloudObjectBase.h` in both, `qt/Quick2.h` in
   Segmentation3D — zero symbol uses), added an explicit `core/DataSegment.h`. Suite 1070/1070.
 
-  **REMAINING:** (a) `Primitive3DFilter` → cv3d (filter logic; drop `toSceneObject()` helper, which
-  `Primitive3DConverter` already replaces; check its `PointCloudObject` use → retarget to
-  `geom2::PointCloud` or `DataSegment`). (b) Decide `geom2::PointCloud`'s final relocation to cv3d
+  **DONE (S98):** `Primitive3D` descriptor extracted → `cv3d/Primitive3D.h` (the live part:
+  `Primitive3D` + nested `PrimitiveType`/`Quaternion`, kept nested to avoid colliding with the
+  existing scene-graph `geom::PrimitiveType`). Dropped the dead `toSceneObject()` helper
+  (`Primitive3DConverter` replaces it; nothing called it). The `PointCloudObjectBase`-coupled
+  `Primitive3DFilter` filter machinery stays in geom to die in Phase 6 (now `using Primitive3D =
+  cv3d's`). Retargeted the 3 consumers (`Primitive3DConverter`, the filter app, the converter test)
+  onto `cv3d/Primitive3D.h`. Suite 1070/1070.
+
+  **REMAINING:** (b) Decide `geom2::PointCloud`'s final relocation to cv3d
   (it's the data type cv3d "owns" but is used mainly by geom2 scene classes — not blocking; can move
   during the rename). (c) Port the 2–3 tests off `PointCloudObject`. (d) Everything else (data-model
   types, creators, grabbers, outputs, serializer, `SQFitter`, `FeatureGraphSegmenter`,

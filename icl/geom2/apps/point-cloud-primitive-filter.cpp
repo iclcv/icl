@@ -24,14 +24,14 @@
 #include <icl/geom2/PointCloudSource.h>
 #include <icl/geom2/Primitive3DConverter.h>
 #include <icl/geom2/LightNode.h>
-#include <icl/geom/Primitive3DFilter.h>
+#include <icl/cv3d/Primitive3D.h>
 #include <icl/cv3d/Camera.h>
 
 using namespace icl::geom2;
 using namespace icl::geom;
 using namespace icl::utils;
 using namespace icl::qt;
-using P = icl::geom::Primitive3DFilter;
+using P = icl::geom::Primitive3D;
 
 GUI gui;
 Scene2 scene;
@@ -92,7 +92,7 @@ void run() {
   // show the primitive via the geom2 converter (rebuild each frame — cheap)
   if (primNode) { scene.removeNode(primNode.get()); primNode = nullptr; }
   if (gui["show"]) {
-    P::Primitive3D prim(cube ? P::CUBE : P::SPHERE, pos,
+    P prim(cube ? P::CUBE : P::SPHERE, pos,
                         P::Quaternion(Vec3(0,0,0), 1.f), scale, 0, "gui");
     primNode = nodeFromPrimitive3D(prim, 24, GeomColor(255, 255, 255, 80));
     if (primNode) scene.addNode(primNode);

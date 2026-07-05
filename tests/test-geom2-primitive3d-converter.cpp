@@ -11,17 +11,17 @@
 #include <icl/geom2/CuboidNode.h>
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/CylinderNode.h>
-#include <icl/geom/Primitive3DFilter.h>
+#include <icl/cv3d/Primitive3D.h>
 #include <cmath>
 
 using namespace icl;
 using namespace icl::geom2;
-using P = icl::geom::Primitive3DFilter;
+using P = icl::geom::Primitive3D;
 using icl::geom::Vec;
 using Vec3 = math::FixedColVector<float,3>;
 
-static P::Primitive3D make(P::PrimitiveType t, const Vec &pos, const Vec &scale) {
-  return P::Primitive3D(t, pos, P::Quaternion(Vec3(0,0,0), 1.f), scale, 0, "test");
+static P make(P::PrimitiveType t, const Vec &pos, const Vec &scale) {
+  return P(t, pos, P::Quaternion(Vec3(0,0,0), 1.f), scale, 0, "test");
 }
 
 // CUBE → CuboidNode with matching extents; the node transform carries the pose.

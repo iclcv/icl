@@ -8,6 +8,7 @@ cv3d_headers = files(
   'PlaneEquation.h',
   'ViewRay.h',
   'RGBDMapping.h',
+  'Primitive3D.h',
   # pose estimation
   'PoseEstimator.h',
   'Posit.h',
