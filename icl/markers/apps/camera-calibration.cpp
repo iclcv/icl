@@ -5,7 +5,10 @@
 #include "camera-calibration-CameraCalibrationUtils.h"
 
 #include <icl/qt/Common2.h>
-#include <icl/geom/Scene.h>
+#include <icl/geom2/Scene2.h>
+#include <icl/geom2/GroupNode.h>
+#include <icl/geom2/GeometryNode.h>
+#include <icl/geom2/CoordinateFrameNode.h>
 #include <icl/geom/Material.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
@@ -27,8 +30,19 @@ GUI relTransGUI;
 GUI markerDetectionOptionGUI;
 GUI planeOptionGUI;
 
-Scene scene;
+geom2::Scene2 scene;
+std::shared_ptr<geom2::CoordinateFrameNode> worldCS;  // replaces Scene::setDrawCoordinateFrameEnabled
 ImageSource grabber;
+
+// Apply a material to every GeometryNode under a (possibly grouped) calibration object.
+static void setCalibObjMaterial(const geom2::NodePtr &n, std::shared_ptr<geom::Material> mat){
+  if(auto *g = dynamic_cast<geom2::GroupNode*>(n.get())){
+    for(int i=0;i<g->getChildCount();++i)
+      if(auto *gn = dynamic_cast<geom2::GeometryNode*>(g->getChild(i))) gn->setMaterial(mat);
+  }else if(auto *gn = dynamic_cast<geom2::GeometryNode*>(n.get())){
+    gn->setMaterial(mat);
+  }
+}
 Point32f currentMousePos;
 bool haveAnyCalibration = false;
 CCU::CalibFileData calibFileData;
@@ -145,7 +159,7 @@ void init(){
     try{
       CCU::CalibFile cf = CCU::parse_calib_file(*pa("-c",c),c,calibFileData);
       calibFileData.loadedFiles.push_back(cf);
-      scene.addObject(cf.obj);
+      scene.addNode(cf.obj);
     }catch(std::runtime_error &e){
       ERROR_LOG("Error parsing calibration object file " + *pa("-c",c) + ": '" + str(e.what()) + "'");
     }
@@ -276,13 +290,17 @@ void init(){
   scene.addCamera(Camera());
   scene.getCamera(0).setResolution(grabber.grab().getSize());
 
+  worldCS = geom2::CoordinateFrameNode::create();  // world coordinate frame (toggled by "show CS")
+  worldCS->setVisible(false);
+  scene.addNode(worldCS);
+
   planeOptionGUI["planeOffset"].disable();
   planeOptionGUI["planeRadius"].disable();
   planeOptionGUI["planeTicDist"].disable();
   planeOptionGUI["planeColor"].disable();
   planeOptionGUI.registerCallback(change_plane,"planeOffset,planeRadius,planeTicDist,planeDim,planeColor");
 
-  gui["draw"].link(scene.getGLCallback(0));
+  gui["draw"].link(scene.getGLCallback(0).get());
   gui["draw"].install(new MouseHandler(mouse));
 }
 
@@ -301,7 +319,7 @@ inline Vec3 normalize_vec(const Vec3 &v){
 
 void run(){
   scene.lock();
-  scene.setDrawCoordinateFrameEnabled(gui["showCS"]);
+  worldCS->setVisible(gui["showCS"]);
   scene.unlock();
 
   const Mat Trel = create_hom_4x4<float>(relTransGUI["rx"].as<float>()*M_PI/4,
@@ -317,23 +335,19 @@ void run(){
     Ts[i] = calibFileData.loadedFiles[i].transforms[tidx].transform;
     enabled[i] = gui["enable-obj-"+str(i)].as<bool>();
 
-    SceneObject *calibObj = calibFileData.loadedFiles[i].obj;
+    geom2::NodePtr calibObj = calibFileData.loadedFiles[i].obj;
     if(!calibObj) continue;
     calibObj->setTransformation(Trel * Ts[i]);
     const int a = gui["objAlpha"];
     {
+      // per-primitive-type visibility is gone in geom2 — the face material alpha
+      // (0 when the object is disabled) already yields the wireframe-only look.
       GeomColor lineColor = enabled[i] ? GeomColor(255,0,0,a) : GeomColor(200,200,200,a);
       if(a){
         const int r = enabled[i] ? 0 : 100, g = 100, b = enabled[i] ? 255 : 100;
-        calibObj->setVisible(Primitive::quad,true);
-        calibObj->setVisible(Primitive::triangle,true);
-        calibObj->setVisible(Primitive::polygon,true);
-        calibObj->setMaterial(Material::fromColors(GeomColor(r,g,b,a), lineColor));
+        setCalibObjMaterial(calibObj, Material::fromColors(GeomColor(r,g,b,a), lineColor));
       }else{
-        calibObj->setVisible(Primitive::quad,false);
-        calibObj->setVisible(Primitive::triangle,false);
-        calibObj->setVisible(Primitive::polygon,false);
-        calibObj->setMaterial(Material::fromColors(GeomColor(0,0,0,0), lineColor));
+        setCalibObjMaterial(calibObj, Material::fromColors(GeomColor(0,0,0,0), lineColor));
       }
     }
   }

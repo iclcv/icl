@@ -4,7 +4,9 @@
 
 #include "camera-calibration-CameraCalibrationUtils.h"
 #include <icl/core/CoreFunctions.h>
-#include <icl/geom/Scene.h>
+#include <icl/geom2/Scene2.h>
+#include <icl/geom2/GroupNode.h>
+#include <icl/geom2/MeshNode.h>
 #include <icl/geom/Material.h>
 
 #include <icl/utils/ProgArg.h>
@@ -16,7 +18,7 @@
 
 #include <QtWidgets/QMessageBox>
 #include <icl/markers/FiducialDetectorPlugin.h>
-#include <icl/geom/GridSceneObject.h>
+#include <icl/geom2/GridNode.h>
 #include <mutex>
 
 
@@ -275,13 +277,15 @@ namespace icl::markers {
           obj << s << std::endl;
         }
 
-        SceneObject *o = new SceneObject(tmpFilename.c_str());
-        o->setMaterial(Material::fromColors(GeomColor(0,100,255,100), GeomColor(255,0,0,255)));
-        o->setVisible(Primitive::line,true);
-        o->setLineWidth(2);
-        o->setTransformation(cf.transforms[0].transform);
-        o->setVisible(false);
-        cf.obj = o;
+        auto group = std::make_shared<geom2::GroupNode>();
+        auto mat = Material::fromColors(GeomColor(0,100,255,100), GeomColor(255,0,0,255));
+        for(auto &m : geom2::MeshNode::load(tmpFilename)){
+          m->setMaterial(mat);
+          group->addChild(m);
+        }
+        group->setTransformation(cf.transforms[0].transform);
+        group->setVisible(false);
+        cf.obj = group;
       }catch(ICLException &e){
         SHOW(e.what());
       }catch(int){}
@@ -392,7 +396,7 @@ namespace icl::markers {
       return cf;
     }
 
-    void CameraCalibrationUtils::change_plane(const std::string &handle, GUI &planeOptionGUI, Scene &scene,
+    void CameraCalibrationUtils::change_plane(const std::string &handle, GUI &planeOptionGUI, geom2::Scene2 &scene,
                                               CameraCalibrationUtils::CalibFileData &calibFileData){
       if(handle == "planeDim"){
         if(planeOptionGUI["planeDim"].as<std::string>() == "none"){
@@ -401,8 +405,8 @@ namespace icl::markers {
           planeOptionGUI["planeTicDist"].disable();
           planeOptionGUI["planeColor"].disable();
           planeOptionGUI["planeStatus"] = str("removed");
-          scene.removeObject(calibFileData.planeObj);
-          calibFileData.planeObj = 0;
+          if(calibFileData.planeObj) scene.removeNode(calibFileData.planeObj.get());
+          calibFileData.planeObj.reset();
           //      havePlane = false;
           return;
         }else{
@@ -414,8 +418,8 @@ namespace icl::markers {
         }
       }
       if(calibFileData.planeObj){
-        scene.removeObject(calibFileData.planeObj);
-        ICL_DELETE(calibFileData.planeObj);
+        scene.removeNode(calibFileData.planeObj.get());
+        calibFileData.planeObj.reset();
       }
 
       const std::string t = planeOptionGUI["planeDim"].as<std::string>();
@@ -445,9 +449,8 @@ namespace icl::markers {
       }
       int n2 = n/2;
 
-      calibFileData.planeObj = new GridSceneObject(n,n,o -dx*(n2) - dy*(n2) ,dx,dy,true,false);
+      calibFileData.planeObj = std::make_shared<geom2::GridNode>(n,n,o -dx*(n2) - dy*(n2) ,dx,dy,true,false);
       calibFileData.planeObj->setMaterial(Material::fromColor(GeomColor(c[0],c[1],c[2],c[3])));
-      calibFileData.planeObj->setVisible(Primitive::vertex,false);
 
       calibFileData.planeObj->addVertex(set_3_to_1(o-dx*n2));
       calibFileData.planeObj->addVertex(set_3_to_1(o+dx*n2));
@@ -459,7 +462,7 @@ namespace icl::markers {
       calibFileData.planeObj->addLine(n*n+2,n*n+3,GeomColor(0,255,0,255));
 
 
-      scene.addObject(calibFileData.planeObj);
+      scene.addNode(calibFileData.planeObj);
     }
     void CameraCalibrationUtils::visualize_found_markers(DrawHandle3D &draw,
                                                          const std::vector<FoundMarker> &markers,
@@ -539,7 +542,7 @@ namespace icl::markers {
                                                  const std::string &planeDim,
                                                  float planeOffset,
                                                  const utils::Point32f &currentMousePos,
-                                                 geom::Scene &scene){
+                                                 geom2::Scene2 &scene){
       draw->linewidth(1);
       const Point32f p = currentMousePos;
       const std::string t = planeDim;
@@ -691,7 +694,7 @@ namespace icl::markers {
                                                 const geom::Mat &Trel, const utils::Size &imageSize,
                                                 bool &deactivatedCenters, bool useCorners,
                                                 bool normalizeError, BestOfNSaver *saver,
-                                                bool &haveAnyCalibration, geom::Scene &scene,
+                                                bool &haveAnyCalibration, geom2::Scene2 &scene,
                                                 const geom::Camera *givenIntrinsicParams,
                                                 bool performLMAbasedOptimiziation){
       CalibrationResult res;
@@ -774,8 +777,8 @@ namespace icl::markers {
 
           if(error > 0 && !haveAnyCalibration){
             haveAnyCalibration = true;
-            for(int i=0;i<scene.getObjectCount();++i){
-              scene.getObject(i)->setVisible(true);
+            for(int i=0;i<scene.getNodeCount();++i){
+              scene.getNode(i)->setVisible(true);
             }
           }
           break;
