@@ -324,45 +324,78 @@ namespace icl::markers {
     }
     cv::refineCheckerboardCornersSubPix(grid, image);
 
-    // collect the filled lattice corners
-    std::vector<Point32f> obj, im;
-    obj.reserve(grid.count); im.reserve(grid.count);
+    // ---- false-positive corner rejection ----
+    // A plane under perspective is EXACTLY a homography, so the residual of a robust
+    // board→image homography removes perspective entirely and leaves only the SMOOTH lens-
+    // distortion field plus ISOLATED mislabel spikes. A centered second difference of that
+    // residual field then cancels the smooth distortion too, so a genuine corner's residual
+    // equals the midpoint of its opposite neighbours' residuals while a mislabel spikes —
+    // perspective- AND distortion-immune, so the threshold can be tight without ever
+    // dropping a genuine peripheral corner.
+    std::vector<char> kept(grid.filled.begin(), grid.filled.end());
+    auto at     = [&](int ic,int ir){ return grid.at(ic, ir); };
+    auto keptAt = [&](int ic,int ir){ return ic>=0 && ir>=0 && ic<GC && ir<GR && kept[(size_t)ir*GC+ic]; };
+    auto objAt  = [&](int ic,int ir){ return Point32f((ic-1)*sq, (ir-1)*sq); };
+
+    // apparent cell size (median adjacent filled-corner gap) — the rejection scale
+    std::vector<float> gaps;
     for (int ir = 0; ir < GR; ++ir)
       for (int ic = 0; ic < GC; ++ic)
-        if (grid.filled[(size_t)ir*GC + ic]) {
-          obj.push_back(Point32f((ic-1)*sq, (ir-1)*sq));
-          im.push_back(grid.at(ic, ir));
+        if (kept[(size_t)ir*GC + ic]) {
+          const Point32f p = at(ic, ir);
+          if (keptAt(ic+1,ir)) { const Point32f q = at(ic+1,ir); gaps.push_back(std::hypot(p.x-q.x, p.y-q.y)); }
+          if (keptAt(ic,ir+1)) { const Point32f q = at(ic,ir+1); gaps.push_back(std::hypot(p.x-q.x, p.y-q.y)); }
         }
+    float cellPx = 0.f;
+    if (!gaps.empty()) { std::nth_element(gaps.begin(), gaps.begin()+gaps.size()/2, gaps.end());
+                         cellPx = gaps[gaps.size()/2]; }
 
-    // FINAL false-positive guard: a mislabelled corner (wrong lattice index, or snapped
-    // to a spurious in-marker saddle) sits ~1 cell off the board's planar homography,
-    // whereas a genuine corner stays a small fraction of a cell off even under lens
-    // distortion. So fit a robust homography objectPos→image and keep only the inliers,
-    // thresholded RELATIVE to the apparent cell size (distortion-safe, scale-adaptive).
-    std::vector<char> keep(obj.size(), 1);
-    if (obj.size() >= 8) {
-      std::vector<float> gaps;
-      for (int ir = 0; ir < GR; ++ir)
-        for (int ic = 0; ic < GC; ++ic)
-          if (grid.filled[(size_t)ir*GC + ic]) {
-            const Point32f p = grid.at(ic, ir);
-            if (ic+1 < GC && grid.filled[(size_t)ir*GC + ic+1])
-              { const Point32f q = grid.at(ic+1, ir); gaps.push_back(std::hypot(p.x-q.x, p.y-q.y)); }
-            if (ir+1 < GR && grid.filled[(size_t)(ir+1)*GC + ic])
-              { const Point32f q = grid.at(ic, ir+1); gaps.push_back(std::hypot(p.x-q.x, p.y-q.y)); }
+    if (cellPx > 0) {
+      // robust global homography over the filled corners (fit the bulk; perspective is exact)
+      std::vector<Point32f> obj, im;
+      for (int ir=0; ir<GR; ++ir) for (int ic=0; ic<GC; ++ic)
+        if (kept[(size_t)ir*GC+ic]) { obj.push_back(objAt(ic,ir)); im.push_back(at(ic,ir)); }
+      if (obj.size() >= 8) {
+        const auto rf = math::Homography2D::robust(obj.data(), im.data(), (int)obj.size(), 0.5f*cellPx);
+        if (rf.ok) {
+          const math::Homography2D &H = rf.H;
+          // residual field r = image − H(object) (perspective removed → smooth + spikes)
+          std::vector<Point32f> res((size_t)GC*GR);
+          for (int ir=0; ir<GR; ++ir) for (int ic=0; ic<GC; ++ic)
+            if (kept[(size_t)ir*GC+ic]) { const Point32f p=at(ic,ir), h=H.apply(objAt(ic,ir));
+                                          res[(size_t)ir*GC+ic] = Point32f(p.x-h.x, p.y-h.y); }
+          static const int DIR[4][4] = {{-1,0,1,0},{0,-1,0,1},{-1,-1,1,1},{-1,1,1,-1}};
+          const float nthr = std::max(3.f, 0.08f*cellPx);  // isolated-spike: tight (distortion-immune)
+          const float athr = 0.35f*cellPx;                 // gross magnitude: catches CLUSTERED mislabels
+          std::vector<int> drop;                           //   (a shifted patch its neighbours share) —
+          for (int ir=0; ir<GR; ++ir) for (int ic=0; ic<GC; ++ic) {   // loose enough to spare distorted periphery
+            if (!kept[(size_t)ir*GC+ic]) continue;
+            const Point32f r = res[(size_t)ir*GC+ic];
+            bool bad = std::hypot(r.x, r.y) > athr;         // gross residual (perspective removed)
+            if (!bad) {
+              std::vector<float> mx, my;                    // opposite-neighbour residual midpoints
+              for (const auto &D : DIR)
+                if (keptAt(ic+D[0],ir+D[1]) && keptAt(ic+D[2],ir+D[3])) {
+                  const Point32f a = res[(size_t)(ir+D[1])*GC+(ic+D[0])], b = res[(size_t)(ir+D[3])*GC+(ic+D[2])];
+                  mx.push_back(0.5f*(a.x+b.x)); my.push_back(0.5f*(a.y+b.y));
+                }
+              if (mx.size() >= 2) {
+                std::nth_element(mx.begin(), mx.begin()+mx.size()/2, mx.end());
+                std::nth_element(my.begin(), my.begin()+my.size()/2, my.end());
+                bad = std::hypot(r.x-mx[mx.size()/2], r.y-my[my.size()/2]) > nthr;   // isolated sub-cell spike
+              }
+            }
+            if (bad) drop.push_back(ir*GC+ic);
           }
-      if (!gaps.empty()) {
-        std::nth_element(gaps.begin(), gaps.begin()+gaps.size()/2, gaps.end());
-        const float cellPx = gaps[gaps.size()/2];
-        const auto rf = math::Homography2D::robust(obj.data(), im.data(), (int)obj.size(), 0.30f*cellPx);
-        if (rf.ok) { std::fill(keep.begin(), keep.end(), 0); for (int i : rf.inliers) keep[i] = 1; }
+          for (int l : drop) kept[l] = 0;
+        }
       }
     }
 
     std::vector<CalibrationCorrespondence> out;
-    out.reserve(obj.size());
-    for (size_t i = 0; i < obj.size(); ++i)
-      if (keep[i]) out.push_back({Vec(obj[i].x, obj[i].y, 0.f, 1.f), im[i]});
+    out.reserve(grid.count);
+    for (int ir=0; ir<GR; ++ir) for (int ic=0; ic<GC; ++ic)
+      if (kept[(size_t)ir*GC+ic]) out.push_back({Vec((ic-1)*sq, (ir-1)*sq, 0.f, 1.f), at(ic,ir)});
     return out;
   }
 
