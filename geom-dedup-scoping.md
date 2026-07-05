@@ -269,12 +269,20 @@ converters.
 link; `Primitive3DConverter` kept). Relocated the Cycles build config from geom's meson into geom2's.
 Full build (incl. Cycles targets) + suite 1074/1074; residual sweep clean.
 
-**Phase 7 — Rename the scene module** (today's geom2 → `viz3d`) + dissolve the geom rump: relocate
-`Material` → viz3d and `SoftPosit` → cv3d (strip/keep its Qt viz), delete the geom dir; then dir
-`icl/geom2`→`icl/viz3d`, namespace `icl::geom2`→`icl::viz3d` (68 files) + the transitional
-`icl::geom`→`icl::cv3d` rename for the cv3d files, includes + meson targets repo-wide, `ICLGeom_API`→
-`ICLCv3d_API`/`ICLViz3d_API`. End state: **`cv3d`** (Qt-free 3D CV) + **`viz3d`** (3D scene/render), no
-geom. Then functional sub-folders (post-split TODO).
+**Phase 7 — Rename + dissolve. ✅ DONE (S98). END STATE REACHED: `cv3d` + `viz3d`, no `geom`.**
+- Stage A (`6efa10828`): geom2 → viz3d (dir + `icl::geom2`→`icl::viz3d` + `geom2::`→`viz3d::` +
+  `ICLGeom2_API`→`ICLViz3d_API` + includes + meson + test/demo file renames).
+- Stage B1 (`6be5266d0`): `Material` → viz3d (namespace + `geom::Material`→`viz3d::Material` + fixed
+  stale forward-decls).
+- Stage B (`837cb55c8`): `SoftPosit` → cv3d (stripped its dead `#ifdef ICL_HAVE_QT` viz → Qt-free);
+  geom apps/demos → cv3d, scenes → viz3d, doc → cv3d, proto deleted; **deleted icl/geom entirely**;
+  repointed markers/math/viz3d to `icl_cv3d_dep` (markers regained `icl_qt_dep`).
+- Stage B5 (`bf1d949fc`): `icl::geom`→`icl::cv3d` namespace rename (199 files).
+Full build + suite 1074/1074 throughout.
+
+**Remaining cosmetic follow-ups (non-blocking):** `ICLGeom_API`→`ICLCv3d_API`/`ICLViz3d_API` (retained
+as a globally-defined empty alias for now); `Scene2`/`DemoScene2` class names still carry the `2`;
+functional sub-folders in cv3d/viz3d (the post-split TODO above).
 
 ## Open decisions (need the user)
 

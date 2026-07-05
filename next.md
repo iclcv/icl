@@ -48,18 +48,9 @@ GroupNode, GridSceneObject→GridNode, ComplexCoordFrame→CoordinateFrameNode, 
 ported `test-io-scene-source`; fixed a latent cv3d→geom umbrella include in `IterativeClosestPoint.h`
 (`dca676a7d`). **Audit: NO external consumer of old geom's scene graph remains.** Suite 1074/1074.
 
-**Phase 6 — ✅ DONE (S98, commit `f09c3c298`):** deleted old geom's scene graph + dead point-cloud
-pipeline — **78 files / ~22k lines**, no external consumer left. geom dropped 80 → **4-file rump**
-(`Material` + `SoftPosit`). Also deleted geom2's `SceneObjectConverter` (last geom2→geom-scene-graph
-link; `Primitive3DConverter` kept — uses `cv3d::Primitive3D`). Relocated the Cycles build config from
-geom's meson into geom2's (sole consumer now). Full build (incl. Cycles) + suite 1074/1074; residual
-sweep clean.
+**geom/geom2 DE-DUP COMPLETE (S98).** END STATE: two modules — **cv3d** (Qt-free 3D CV: Camera, ViewRay, PlaneEquation, GeomDefs, pose/ICP/segmentation/features/edge-detect/normals, Primitive3D, SoftPosit) + **viz3d** (3D scene/render: Scene2, *Node types, Renderer/Cycles, Material, PointCloud, Plot3D) — no geom. Phases 0–7 landed, suite 1074/1074, ~16 commits `551476bda`..`bf1d949fc`.
 
-**NEXT = Phase 7 (rename + dissolve rump):** relocate `Material`→viz3d, `SoftPosit`→cv3d, delete the
-geom dir; rename geom2→`viz3d` (dir + `icl::geom2`→`icl::viz3d`, 68 files) and finish the transitional
-`icl::geom`→`icl::cv3d` rename for cv3d files (+ `ICLGeom_API`→`ICLCv3d_API`/`ICLViz3d_API`), repo-wide
-include/meson updates. Mechanical but broad. Then functional sub-folders in cv3d/viz3d. End state:
-cv3d + viz3d, no geom. See `geom-dedup-scoping.md`.
+**Cosmetic follow-ups (non-blocking):** `ICLGeom_API`→`ICLCv3d_API`/`ICLViz3d_API`; `Scene2`/`DemoScene2` still carry the `2`; **functional sub-folders in cv3d/viz3d** (pose/icp/segmentation/…, nodes/render/plot/…) — the user-requested post-split structuring. **Deferred:** camera-calibration ALGORITHM rethink (the 2 apps are on viz3d now but the drift-prone pipeline rework is a separate arc — see camera-calibration-redesign.md, [[project_intrinsic_calib_app]]).
 
 **End-state (evolving — SPLIT into two modules):** old `geom` conflates 3D **CV algorithms** and a
 3D **scene graph + renderer**. Split them: **`cv3d`** (`icl::cv3d`, **Qt-FREE** — verified no CV file
