@@ -60,6 +60,44 @@ target (full checkerboard can't reach frame corners → k2 unobservable; already
   reads clearly on the low-contrast frame. Detection still runs on the untouched frame; no
   calibration impact. Verified via `--sim-selftest --auto --gauge-dump`.
 
+- **LANDED — `CodedCheckerboardTarget2` (dual-polarity + edge-ring stubs).** New target
+  `icl/markers/CodedCheckerboardTarget2.{h,cpp}`, old targets untouched. See
+  [`project_coded_checkerboard2`]. Markers in EVERY cell (normal in white cells, INVERTED
+  white-on-black in black cells; `detect()` runs the fiducial detector on the frame AND its
+  inverse and merges) → ~2× identity anchors + exposure robustness. Edge-ring black "stubs" in
+  the quiet zone make the board-edge grid intersections saddles → extended `(cols+1)×(rows+1)`
+  lattice (peripheral corners for k1/k2). Wired into the app as `TargetType::Coded2` (combo
+  "coded2 (dual-pol)", `-t coded2`). Tests: `markers.codedcheckerboard2.*` (80/80 lattice, 32
+  edge-ring), `markers.intrinsic.endtoend_coded2_partial_k2` (recovers k1/k2), suite 1070/1070.
+  Commits `1b713b91d`, `37d767a9a`.
+
+- **LANDED — false-positive corner rejection + robust orientation cursor.** Commits `1594e6c24`,
+  `b2d7a482d`. (1) coded2 `detect()`: drop markers whose corners touch the frame edge
+  (`BORDER_MARGIN_PX`, clipped); then a two-criterion filter on the RESIDUAL of a robust
+  board→image homography — perspective is exactly a homography so its residual is smooth
+  lens-distortion + isolated mislabel spikes; a centered second-difference of the RESIDUAL field
+  (median of 4 opposite-neighbour midpoints) catches ISOLATED sub-cell mislabels distortion-
+  AND perspective-immune (tight 0.08·cell), plus a gross-magnitude test (0.35·cell) catches
+  CLUSTERED mislabels (a shifted 2×2 patch the neighbour test can't see). Steep-pose mislabels
+  ~2%→<1% with the peripheral ring fully preserved (endtoend edge 496→495, k2 0.0395). Guard
+  test `markers.intrinsic.coded2_steep_pose_no_mislabels`. (2) `CoverageMap::describe`: replaced
+  the jittery depth-gradient-correlation `tiltDir` with a RANSAC board→image homography
+  decomposed (guessed pinhole K) into the board normal → steady orientation cursor;
+  `tiltMag = 1-|nz|`. **Note the residual ~0.8% mislabels are clustered sub-cell — proven
+  harmless to k1/k2 by endtoend; a fully-clean fix would need region-level patch detection.**
+
+- **🔶 OPEN (continue here) — auto-capture has NO quality gate.** `AutoCaptureController::update`
+  captures on `valid(≥4 corners)` + stability + under-represented pose bin only — no minimum
+  corner count, no coverage-fraction, no corner-quality/outlier check. A marginal/heavily-partial
+  frame (or one carrying the residual <1% false-positive corners) is accepted like a rich one.
+  **Proposed (not yet done):** before accepting a view, require (a) a **min corner count**
+  (absolute ~16–20 or a fraction of the visible lattice, surfaced as a tunable like the stability
+  slider) and (b) a **homography inlier-RMS / inlier-ratio** gate (fit the robust board→image
+  homography over the view's corners; reject high inlier-RMS or low inlier-fraction). Purely
+  additive to `update()`. **Also verify:** in a steep partial view the top row of green corners
+  sitting in the dark region — are they genuine edge-ring points (good for k2) or off-board false
+  positives? Dump `detect()` output for such a pose to confirm.
+
 ### THEN — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
 Build the **extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with
 FIXED intrinsics (intrinsics path now fully done — native + coded/ChArUco, see S94 below). Reuse
