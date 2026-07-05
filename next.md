@@ -4,8 +4,24 @@
 
 ## Next Step
 
-### NEXT — `icl-cam-calib-intrinsic` app (easy intrinsic calibration) — IN PROGRESS
-Full plan in [`intrinsic-calib-app-plan.md`](intrinsic-calib-app-plan.md). Easy intrinsic calib:
+### NEXT — folder re-sorting overhaul: retire the geom / geom2 DOUBLE
+Back to the general ICL re-sorting overhaul. The immediate target is the **geom / geom2
+duplication**: `geom2` is the clean scene-graph rewrite (see memory `project_geom2`,
+`project_node_scene_backpointer`) but the old monolithic `geom` (`SceneObject`, `Scene`, …) still
+coexists. Goal: finish migrating remaining consumers off `geom` onto `geom2` and delete the
+duplicate, so there's a single scene-graph module. **Scope this next session** — audit what still
+depends on `geom`'s scene classes (apps/demos/physics), what geom2 still lacks, and stage the
+retirement. (Physics integration is a known blocker — see `project_physics_geom2_integration`.)
+
+### PAUSED — `icl-cam-calib-intrinsic` app (easy intrinsic calibration)
+**Full continuation doc: [`intrinsic-calib-next-steps.md`](intrinsic-calib-next-steps.md)** —
+current state, why it's harder than expected, and prioritized remaining work (auto-capture quality
+gate first). Works end-to-end in sim; robustness on hard partial/steep poses is the crux. Details
+of the original plan below and in [`intrinsic-calib-app-plan.md`](intrinsic-calib-app-plan.md).
+
+<details><summary>Original intrinsic-calib plan + landed detail (collapsed — see next-steps doc)</summary>
+
+Easy intrinsic calib:
 pick target type+size → wave it → **auto-capture** where coverage is poor with a live **image-space
 corner heatmap** → calibrate → error report. Phase B of `camera-calibration-redesign.md`, BEFORE
 Phase C. Sibling app later: `icl-cam-calib-extrinsic` (= Phase C).
@@ -97,6 +113,8 @@ target (full checkerboard can't reach frame corners → k2 unobservable; already
   additive to `update()`. **Also verify:** in a steep partial view the top row of green corners
   sitting in the dark region — are they genuine edge-ring points (good for k2) or off-board false
   positives? Dump `detect()` output for such a pose to confirm.
+
+</details>
 
 ### THEN — Phase C: multi-cam one-click extrinsics (then delete old `geom`)
 Build the **extrinsic-calibration app / Phase C**: multi-camera one-click extrinsics in 3D with
