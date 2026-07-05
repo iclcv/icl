@@ -246,13 +246,22 @@ GroupNode+CuboidNode+TextNode, GL-callback wiring) — keep the calibration ALGO
 quality rethink stays deferred to the redesign arc). Re-link once they build+run. Old geom stays until
 Phase 6, so the apps can be ported incrementally against geom2 while old geom still exists.
 
-- `test-io-scene-source` — ✅ ported (`reconstruct_cloud` → `geom2::PointCloud::unprojectDepth`). 1074/1074.
-- App migration — 🔶 IN PROGRESS. Port surface per the porting guide
-  (`icl/geom2/geom-to-geom2-porting-guide.md`) + the working `icl-cam-calib-intrinsic` template. Verify
-  = compiles + links + offscreen-init (Cocoa GUI can't run interactively in-sandbox).
+- `test-io-scene-source` — ✅ ported (`reconstruct_cloud` → `geom2::PointCloud::unprojectDepth`).
+- **App 1 `camera-calibration`** — ✅ ported (commit `2a63e9a1a`): Scene→Scene2, obj→NodePtr (MeshNode::load
+  in a GroupNode; material via a child-mesh helper), helper plane→GridNode, coord-frame toggle→a
+  CoordinateFrameNode, per-primitive visibility dropped (material alpha covers it). Offscreen `-is list`
+  path runs the geom2 scene setup end-to-end.
+- **App 2 `camera-calibration-planar`** — ✅ ported (commit `d678d477f`): Scene→Scene2,
+  ComplexCoordinateFrameSceneObject→CoordinateFrameNode, `GridIndicatorObject` rebuilt as a GroupNode
+  (per-cell MarkerObj = box MeshNode + TextNode label; checkerboard = line-grid MeshNode),
+  `prop("visualize cameras")`→`prop("show cameras")`, multi-view GLCallback unchanged.
+- **Also fixed** a latent Phase-1 leftover: `cv3d/IterativeClosestPoint.h` carried an unused
+  `#include <icl/geom/Geom.h>` (backwards cv3d→geom edge) — removed (commit `dca676a7d`).
 
-Once both apps are on geom2, **Phase 6** deletes old geom's scene graph (39 files) + the dead pipeline +
-the geom2 converters.
+**Phase 5 ✅ DONE — audit confirms NO external consumer of old geom's scene graph remains.** Suite
+1074/1074. Only geom-internal refs + the geom2 converters (scaffolding) are left → **Phase 6 fully
+unblocked**: delete old geom's scene graph (39 files) + the dead point-cloud pipeline + the geom2
+converters.
 
 **Phase 6 — Delete old `geom` entirely** (all 136 files) + the geom2 converters + build/demo
 wiring. Suite green throughout.

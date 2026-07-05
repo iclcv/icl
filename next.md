@@ -40,19 +40,21 @@ Labelled coord-frame already covered by geom2 `CoordinateFrameNode` (complex mod
 a kept consumer, the calib app) + test (suite 1074/1074). DROPPED (no consumer): light gizmo, Sky/HDRI,
 material presets, texture/text converter fidelity, PCL. Scene2 API gaps added on demand in Phase 5/C.
 
-**Phase 5 — ✅ RESOLVED (S98):** the 2 legacy calib apps (`camera-calibration`,
-`camera-calibration-planar`) are the last scene-graph consumers and are entangled with the deferred
-camera-calibration-redesign arc. Decision (user): **keep the sources for reference, UN-LINK from the
-build** (removed their targets from `icl/markers/targets/meson.build`) so old geom can be deleted
-without breaking compilation. Ported `test-io-scene-source` → `geom2::PointCloud::unprojectDepth`.
-Re-audit confirms **no live external scene-graph consumer remains** → Phase 6 unblocked. Suite 1074/1074.
+**Phase 5 — ✅ DONE (S98):** MECHANICALLY PORTED both legacy calib apps onto geom2 (user's call:
+migrate onto the new packages now, keep the calibration ALGORITHM rethink deferred). `camera-calibration`
+(3D, `2a63e9a1a`) + `camera-calibration-planar` (`d678d477f`): Scene→Scene2, SceneObject→MeshNode/
+GroupNode, GridSceneObject→GridNode, ComplexCoordFrame→CoordinateFrameNode, GridIndicatorObject→GroupNode
+(box MeshNode + TextNode labels), per-primitive-visibility→material-alpha, GL-callback wiring. Also
+ported `test-io-scene-source`; fixed a latent cv3d→geom umbrella include in `IterativeClosestPoint.h`
+(`dca676a7d`). **Audit: NO external consumer of old geom's scene graph remains.** Suite 1074/1074.
 
-**NEXT = Phase 6:** delete old geom's scene graph (39 files) + the dead point-cloud pipeline
-(`PointCloudObjectBase` & derived, creators, grabbers, outputs, serializer, SQFitter, FeatureGraph/
-ConfigurableDepthImage segmenters, PCL) + the geom2 converters (`SceneObjectConverter`/
-`Primitive3DConverter` scaffolding). Then Phase 7 (rename geom2→viz3d), then functional sub-folders in
-cv3d/viz3d. **Deferred:** camera-calibration rework (redesign arc) will rebuild the 2 un-linked apps on
-geom2 later. See `geom-dedup-scoping.md`.
+**NEXT = Phase 6:** delete old geom's scene graph (39 files: Scene/SceneObject/SceneLight/GLRenderer/
+Primitive/GridSceneObject/…/DemoScene/PlotWidget3D/GltfLoader/Sky/Hit) + the dead point-cloud pipeline
+(`PointCloudObjectBase` & derived, PointCloudCreator(CL), grabbers, outputs, serializer, SQFitter,
+FeatureGraph/ConfigurableDepthImage segmenters, PCLPointCloudObject/PCL) + the geom2 converters
+(`SceneObjectConverter`/`Primitive3DConverter`) + prune `Geom.h`. Watch: geom2's converters + anything
+still pulling the dead pipeline. Then Phase 7 (rename geom2→viz3d), then functional sub-folders in
+cv3d/viz3d. See `geom-dedup-scoping.md`.
 
 **End-state (evolving — SPLIT into two modules):** old `geom` conflates 3D **CV algorithms** and a
 3D **scene graph + renderer**. Split them: **`cv3d`** (`icl::cv3d`, **Qt-FREE** — verified no CV file
