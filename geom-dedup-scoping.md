@@ -142,11 +142,41 @@ dropped; anything kept must first exist natively in geom2.
 
 **Phase 1 — Move the CLEAN CV clusters into `cv3d`.** ✅ DONE (SoftPosit deferred — Qt-coupled).
 
-**Phase 2 — Port the point-cloud pipeline onto the `cv3d::PointCloud` data type.** The keystone:
-old CV point clouds are `PointCloudObjectBase : SceneObject`; the Qt-free data model is geom2's
-`PointCloud` (moved into `cv3d`). Retarget grabbers, IO/serialization, creation, segmentation,
-superquadric fitting (clusters C–F, I ≈ 40 files). Drop `PCLPointCloudObject` (see decisions).
-The scene *wrapper* `PointCloudNode` stays in the scene module.
+**Phase 2 — point-cloud pipeline. 🟡 IN PROGRESS — reality is far smaller than "port 40 files".**
+Investigation (S98) changed the picture:
+- **`geom2::PointCloud` already exists as the clean Qt-free scene-free data model** — same
+  `selectXYZ/Normal/RGBA32f/Label` `DataSegment` API as `PointCloudObjectBase`, PLUS it already
+  natively reimplements creation (`unprojectDepth` = PointCloudCreator), color mapping, and box/
+  sphere/depth filters. So geom2 already ported the *live* creation/filter parts.
+- **The OLD geom point-cloud pipeline is almost entirely unconsumed externally** (per-header
+  external-consumer counts): `PointCloudObjectBase`=0, `PointCloudObject`=1 (a test),
+  `PointCloudCreator`=1 (a test), grabbers/outputs/serializer/`SQFitter`/`PointCloudSegment`/
+  `FeatureGraphSegmenter`/`ConfigurableDepthImageSegmenter`/`PointCloudCreatorCL`=**0**. It's used
+  only by geom's own scene graph (internal) + a couple of tests. `SQFitter` is superseded by the
+  qt-playground CMA-ES fitter. So most of it is **dead → delete WITH the scene graph (Phase 6)**,
+  not port. The 2–3 tests (`test-io-scene-source`, PointCloudCreator test) get ported to
+  `geom2::PointCloud`.
+- **Live borrowers from old geom** (must move to cv3d): the segmenters `Segmentation3D` +
+  `EuclideanBlobSegmenter` (kinect-segmentation demo — they take `DataSegment<float,4>`, not
+  `PointCloudObjectBase`), and `Primitive3DFilter` (point-cloud-primitive-filter app + the geom2
+  `Primitive3DConverter`).
+
+  **DONE (S98):** `Segmentation3D` + `EuclideanBlobSegmenter` → cv3d. Both were DataSegment-based;
+  removed vestigial dead includes (`PointCloudObjectBase.h` in both, `qt/Quick2.h` in
+  Segmentation3D — zero symbol uses), added an explicit `core/DataSegment.h`. Suite 1070/1070.
+
+  **REMAINING:** (a) `Primitive3DFilter` → cv3d (filter logic; drop `toSceneObject()` helper, which
+  `Primitive3DConverter` already replaces; check its `PointCloudObject` use → retarget to
+  `geom2::PointCloud` or `DataSegment`). (b) Decide `geom2::PointCloud`'s final relocation to cv3d
+  (it's the data type cv3d "owns" but is used mainly by geom2 scene classes — not blocking; can move
+  during the rename). (c) Port the 2–3 tests off `PointCloudObject`. (d) Everything else (data-model
+  types, creators, grabbers, outputs, serializer, `SQFitter`, `FeatureGraphSegmenter`,
+  `ConfigurableDepthImageSegmenter`, `PointCloudSegment`) → **delete with the scene graph in Phase 6**.
+  Drop `PCLPointCloudObject` (see decisions).
+
+**Transitional debt (whole cv3d):** files still declare `namespace icl::geom` and use the
+`ICLGeom_API` export macro (a no-op on macOS/Linux; `__declspec` only on Windows). Both are fixed in
+one dedicated pass — add `ICLCv3d_API` + rename `geom::`→`cv3d::` — after the moves settle.
 
 **Phase 3 — Port the remaining scene-entangled algorithm bits.** `OctreeObject`/
 `RayCastOctreeObject` → native drawable node in the scene module over `BVH` (or drop, keeping

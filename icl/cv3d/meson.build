@@ -31,9 +31,11 @@ cv3d_headers = files(
   'ObjectEdgeDetectorGPU.h',
   'ObjectEdgeDetectorData.h',
   'ObjectEdgeDetectorPlugin.h',
-  # point-cloud normals + segmentation utils
+  # point-cloud normals + segmentation
   'PointCloudNormalEstimator.h',
   'SegmenterUtils.h',
+  'Segmentation3D.h',
+  'EuclideanBlobSegmenter.h',
 )
 
 cv3d_sources = files(
@@ -59,6 +61,8 @@ cv3d_sources = files(
   'ObjectEdgeDetectorData.cpp',
   'PointCloudNormalEstimator.cpp',
   'SegmenterUtils.cpp',
+  'Segmentation3D.cpp',
+  'EuclideanBlobSegmenter.cpp',
 )
 
 cv3d_extra_deps = []

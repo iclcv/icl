@@ -7,7 +7,6 @@ geom_headers = files(
   'CyclesRenderer.h',
   'DemoScene.h',
   'DepthCameraPointCloudGrabber.h',
-  'EuclideanBlobSegmenter.h',
   'FeatureGraphSegmenter.h',
   'GLRenderer.h',
   'GenericPointCloudGrabber.h',
@@ -47,7 +46,6 @@ geom_headers = files(
   'SceneObject.h',
   'SceneObjectBase.h',
   'SceneSynchronizer.h',
-  'Segmentation3D.h',
   'ShaderUtil.h',
   'Sky.h',
   'SoftPosit.h',
@@ -59,7 +57,6 @@ geom_sources = files(
   'ConfigurableDepthImageSegmenter.cpp',
   'DemoScene.cpp',
   'DepthCameraPointCloudGrabber.cpp',
-  'EuclideanBlobSegmenter.cpp',
   'FeatureGraphSegmenter.cpp',
   'GenericPointCloudGrabber.cpp',
   'GenericPointCloudOutput.cpp',
@@ -77,7 +74,6 @@ geom_sources = files(
   'Primitive3DFilter.cpp',
   'RayCastOctreeObject.cpp',
   'SQFitter.cpp',
-  'Segmentation3D.cpp',
 )
 
 geom_extra_deps = []

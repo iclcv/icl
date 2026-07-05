@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/cv3d/GeomDefs.h>
 #include <icl/core/Img.h>
-#include <icl/geom/PointCloudObjectBase.h>
+#include <icl/core/DataSegment.h>
 #include <icl/cv/RegionDetector.h>
 
 #ifdef ICL_HAVE_OPENCL

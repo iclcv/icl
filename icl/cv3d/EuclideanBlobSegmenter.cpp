@@ -30,8 +30,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/cv/RegionGrower.h>
-#include <icl/geom/EuclideanBlobSegmenter.h>
-#include <icl/geom/PointCloudObjectBase.h>
+#include <icl/cv3d/EuclideanBlobSegmenter.h>
 #include <icl/cv3d/PlanarRansacEstimator.h>
 #include <icl/cv3d/SegmenterUtils.h>
 
