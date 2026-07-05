@@ -13,7 +13,7 @@
 #include <icl/geom2/Plot3D.h>
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/CoordinateFrameNode.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom/Material.h>
 #include <iomanip>
 #include <sstream>

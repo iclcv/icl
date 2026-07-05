@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/qt/Common2.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <fstream>
 
 using namespace icl::math;

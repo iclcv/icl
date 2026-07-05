@@ -5,7 +5,7 @@
 #include <icl/geom2/PointCloudSource.h>
 #include <icl/geom2/PointCloud.h>
 #include <icl/io/source/ImageSource.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/core/Image.h>
 #include <icl/core/Img.h>
 #include <sstream>

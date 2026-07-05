@@ -38,7 +38,7 @@
 #include <icl/geom2/CheckerboardNode.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/OffscreenView.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/math/la/FixedMatrix.h>   // create_hom_4x4
 #include <icl/io/SaveLoad.h>
 

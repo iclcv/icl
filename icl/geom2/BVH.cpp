@@ -4,8 +4,8 @@
 
 #include <icl/geom2/BVH.h>
 #include <icl/geom2/PointCloud.h>
-#include <icl/geom/Camera.h>
-#include <icl/geom/ViewRay.h>
+#include <icl/cv3d/Camera.h>
+#include <icl/cv3d/ViewRay.h>
 #include <algorithm>
 #include <cmath>
 #include <numeric>

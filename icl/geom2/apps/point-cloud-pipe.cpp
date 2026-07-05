@@ -20,7 +20,7 @@
 #include <icl/geom2/PointCloudNode.h>
 #include <icl/geom2/PointCloudSource.h>
 #include <icl/geom2/LightNode.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/io/sink/ImageSink.h>
 #include <icl/core/Img.h>
 #include <icl/core/Image.h>

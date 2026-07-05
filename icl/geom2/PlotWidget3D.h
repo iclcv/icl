@@ -8,7 +8,7 @@
 #include <icl/qt/DrawWidget3D.h>
 #include <icl/geom2/Scene2.h>
 #include <icl/geom2/Node.h>
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 #include <icl/utils/Range.h>
 #include <functional>
 #include <vector>

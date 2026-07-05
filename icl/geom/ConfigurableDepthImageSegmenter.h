@@ -9,7 +9,7 @@
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/utils/config/Configurable.h>
 #include <icl/core/DataSegment.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 namespace icl::geom {
   /**

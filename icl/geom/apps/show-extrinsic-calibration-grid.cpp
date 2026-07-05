@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 GUI gui;
 std::vector<Point32f> grid;

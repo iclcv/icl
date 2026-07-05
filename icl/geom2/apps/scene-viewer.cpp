@@ -12,7 +12,7 @@
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/CoordinateFrameNode.h>
 #include <icl/geom2/Scene2MouseHandler.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 using namespace icl::geom2;
 using namespace icl::geom;

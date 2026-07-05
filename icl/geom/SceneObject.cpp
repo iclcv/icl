@@ -4,13 +4,13 @@
 
 #include <icl/geom/SceneObject.h>
 #include <icl/geom/Material.h>
-#include <icl/geom/ViewRay.h>
+#include <icl/cv3d/ViewRay.h>
 #include <icl/qt/GLFragmentShader.h>
 #include <fstream>
 #include <cmath>
 #include <icl/utils/File.h>
 #include <icl/utils/StringUtils.h>
-#include <icl/geom/PlaneEquation.h>
+#include <icl/cv3d/PlaneEquation.h>
 #include <icl/geom/Scene.h>
 
 

@@ -13,7 +13,7 @@
 #include <icl/geom2/CoordinateFrameNode.h>
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/Scene2MouseHandler.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom/Material.h>
 #include <icl/utils/Random.h>
 

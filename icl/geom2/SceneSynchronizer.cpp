@@ -9,7 +9,7 @@
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/Primitive.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/core/Img.h>
 #include <icl/geom/Material.h>
 

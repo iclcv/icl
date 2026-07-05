@@ -14,7 +14,7 @@
 
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/qt/MouseHandler.h>
 
 namespace icl{

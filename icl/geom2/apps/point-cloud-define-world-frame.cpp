@@ -22,9 +22,9 @@
 #include <icl/geom2/RayCastOctree.h>
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/CoordinateFrameNode.h>
-#include <icl/geom/ObjectEdgeDetector.h>
-#include <icl/geom/Camera.h>
-#include <icl/geom/ViewRay.h>
+#include <icl/cv3d/ObjectEdgeDetector.h>
+#include <icl/cv3d/Camera.h>
+#include <icl/cv3d/ViewRay.h>
 #include <icl/cv/RegionDetector.h>
 #include <icl/filter/morph/MorphologicalOp.h>
 #include <icl/math/la/FixedMatrix.h>

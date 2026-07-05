@@ -33,7 +33,7 @@
 #include <icl/utils/cl/CLIncludes.h>
 
 #include <icl/qt/Quick2.h>
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 
 using namespace icl::core;
 using namespace icl::utils;

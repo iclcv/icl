@@ -13,7 +13,7 @@
 #include <icl/geom2/detail/PlotFrame.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom/Material.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/qt/GUIWidget.h>
 #include <icl/qt/GLCallback.h>
 #include <icl/qt/MouseHandler.h>

@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 #include <iostream>
 
 namespace icl::geom {

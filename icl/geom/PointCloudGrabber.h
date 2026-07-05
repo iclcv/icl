@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/Configurable.h>
 #include <icl/geom/PointCloudObjectBase.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/math/la/FixedMatrix.h>
 
 #include <map>

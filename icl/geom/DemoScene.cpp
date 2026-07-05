@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/geom/DemoScene.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom/SceneLight.h>
 #include <icl/geom/Sky.h>
 #include <icl/geom/Primitive.h>

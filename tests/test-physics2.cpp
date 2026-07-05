@@ -17,7 +17,7 @@
 #include <icl/physics2/SensorDriver.h>
 #include <icl/geom2/Node.h>
 #include <icl/geom2/Driver.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom2/CuboidNode.h>
 #include <icl/geom2/SphereNode.h>
 #include <icl/geom2/MeshNode.h>
@@ -28,7 +28,7 @@
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/FoldDriver.h>
 #include <icl/physics2/PaperMoverDriver.h>
-#include <icl/geom/ViewRay.h>
+#include <icl/cv3d/ViewRay.h>
 #include <icl/utils/Point.h>
 #include <icl/utils/Size.h>
 #include <BulletSoftBody/btSoftBody.h>

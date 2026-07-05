@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/OctreeObject.h>
-#include <icl/geom/ViewRay.h>
+#include <icl/cv3d/ViewRay.h>
 #include <vector>
 
 namespace icl::geom {

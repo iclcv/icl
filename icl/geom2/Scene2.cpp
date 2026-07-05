@@ -13,8 +13,8 @@
 #include <icl/geom2/Driver.h>
 #include <icl/geom2/PointCloud.h>
 #include <icl/geom2/BVH.h>
-#include <icl/geom/Camera.h>
-#include <icl/geom/ViewRay.h>
+#include <icl/cv3d/Camera.h>
+#include <icl/cv3d/ViewRay.h>
 #include <icl/geom/Material.h>
 #include <icl/qt/DrawWidget3D.h>
 #include <icl/qt/Widget.h>

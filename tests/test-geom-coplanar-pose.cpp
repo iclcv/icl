@@ -10,8 +10,8 @@
 // truth, and a weak-perspective view genuinely surfaces the second solution.
 
 #include "harness/Test.h"
-#include <icl/geom/Camera.h>
-#include <icl/geom/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/Camera.h>
+#include <icl/cv3d/CoplanarPointPoseEstimator.h>
 #include <cmath>
 
 using namespace icl;

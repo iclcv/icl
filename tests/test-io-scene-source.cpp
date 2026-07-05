@@ -9,7 +9,7 @@
 
 #include "harness/Test.h"
 #include <icl/io/source/ImageSource.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/geom/PointCloudObject.h>
 #include <icl/geom2/PointCloud.h>

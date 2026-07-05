@@ -25,7 +25,7 @@
 #include <icl/geom2/Primitive3DConverter.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom/Primitive3DFilter.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 using namespace icl::geom2;
 using namespace icl::geom;

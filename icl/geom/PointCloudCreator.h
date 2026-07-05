@@ -6,8 +6,8 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/PointCloudObjectBase.h>
-#include <icl/geom/Camera.h>
-#include <icl/geom/RGBDMapping.h>
+#include <icl/cv3d/Camera.h>
+#include <icl/cv3d/RGBDMapping.h>
 
 namespace icl::geom {
   /// Utility class that allows to create 3D (optionally colored) point clouds from given 2D core::depth images

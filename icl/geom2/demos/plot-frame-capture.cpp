@@ -25,7 +25,7 @@
 #include <icl/geom2/CoordinateFrameNode.h>
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/detail/PlotFrame.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom/Material.h>
 #include <icl/io/SaveLoad.h>
 

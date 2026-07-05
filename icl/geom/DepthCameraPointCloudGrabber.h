@@ -6,8 +6,8 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/PointCloudGrabber.h>
-#include <icl/geom/RGBDMapping.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/RGBDMapping.h>
+#include <icl/cv3d/Camera.h>
 
 namespace icl::geom {
   /** \cond */

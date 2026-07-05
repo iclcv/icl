@@ -7,8 +7,8 @@
 #ifdef ICL_HAVE_QT
 
 #include <icl/geom2/Scene2.h>
-#include <icl/geom/Camera.h>
-#include <icl/geom/ViewRay.h>
+#include <icl/cv3d/Camera.h>
+#include <icl/cv3d/ViewRay.h>
 #include <icl/math/transform/HomogeneousMath.h>
 #include <icl/qt/MouseEvent.h>
 #include <cstring>

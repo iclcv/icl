@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <icl/utils/Random.h>
-#include <icl/geom/ICP3D.h>
+#include <icl/cv3d/ICP3D.h>
 
 using namespace icl::geom;
 

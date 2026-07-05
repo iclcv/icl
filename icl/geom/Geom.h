@@ -4,10 +4,10 @@
 
 #pragma once
 #include <icl/utils/CompatMacros.h>
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 #include <icl/geom/Scene.h>
 #include <icl/geom/SceneObject.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom/Plot3D.h>
 #include <icl/geom/PlotWidget3D.h>
 #include <icl/geom/PointCloudObject.h>

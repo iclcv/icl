@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/core/DataSegment.h>
-#include <icl/geom/SurfaceFeatureExtractor.h>
+#include <icl/cv3d/SurfaceFeatureExtractor.h>
 #include <icl/geom/PointCloudSegment.h>
 
 namespace icl::geom {

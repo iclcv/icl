@@ -8,7 +8,7 @@
 #include <icl/qt/Quick2.h>
 #include <icl/qt/Widget.h>
 
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 #include <icl/geom/Scene.h>
 
 using namespace icl::utils;

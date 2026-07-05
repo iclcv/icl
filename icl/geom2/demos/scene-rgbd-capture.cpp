@@ -33,8 +33,8 @@
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/PointCloud.h>
 #include <icl/geom2/PointCloudNode.h>
-#include <icl/geom/Camera.h>
-#include <icl/geom/ViewRay.h>
+#include <icl/cv3d/Camera.h>
+#include <icl/cv3d/ViewRay.h>
 #include <icl/geom/Material.h>
 #include <icl/utils/time/Time.h>
 #include <cmath>

@@ -12,7 +12,7 @@
 #include <icl/geom2/SceneCapture.h>
 #include <icl/geom2/CuboidNode.h>
 #include <icl/geom/Material.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <cmath>
 #include <memory>
 

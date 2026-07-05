@@ -20,7 +20,7 @@
 #include <icl/geom2/LightNode.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom/Material.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 using namespace icl::geom2;
 using namespace icl::geom;

@@ -29,7 +29,7 @@
 #include <icl/geom2/CyclesRenderer.h>
 #include <icl/geom2/CheckerboardNode.h>
 #include <icl/geom2/LightNode.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/core/Img.h>
 #include <icl/io/SaveLoad.h>
 

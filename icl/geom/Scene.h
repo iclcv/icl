@@ -14,7 +14,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/SceneObject.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom/SceneLight.h>
 #include <icl/geom/Primitive.h>
 #include <icl/geom/Sky.h>

@@ -7,7 +7,7 @@
 #include <icl/markers/AdvancedMarkerGridDetector.h>
 #include <icl/utils/config/Configurable.h>
 
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 namespace icl::markers {
     /// Utility class that can estimate the pose of a defined marker grid

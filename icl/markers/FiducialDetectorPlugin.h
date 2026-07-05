@@ -10,8 +10,8 @@
 
 #include <icl/core/Img.h>
 
-#include <icl/geom/Camera.h>
-#include <icl/geom/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/Camera.h>
+#include <icl/cv3d/CoplanarPointPoseEstimator.h>
 
 #include <icl/markers/FiducialImpl.h>
 

@@ -32,14 +32,14 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/geom/PointCloudObjectBase.h>
-#include <icl/geom/CutfreeAdjacencyFeatureExtractor.h>
-#include <icl/geom/CoPlanarityFeatureExtractor.h>
-#include <icl/geom/CurvatureFeatureExtractor.h>
-#include <icl/geom/RemainingPointsFeatureExtractor.h>
-#include <icl/geom/SegmenterUtils.h>
+#include <icl/cv3d/CutfreeAdjacencyFeatureExtractor.h>
+#include <icl/cv3d/CoPlanarityFeatureExtractor.h>
+#include <icl/cv3d/CurvatureFeatureExtractor.h>
+#include <icl/cv3d/RemainingPointsFeatureExtractor.h>
+#include <icl/cv3d/SegmenterUtils.h>
 #include <icl/math/ml/GraphCutter.h>
 #include <icl/cv/RegionDetector.h>
-#include <icl/geom/PlanarRansacEstimator.h>
+#include <icl/cv3d/PlanarRansacEstimator.h>
 
 namespace icl::geom {
   struct FeatureGraphSegmenter::Data {

@@ -1,14 +1,9 @@
 # ICL Geom module
 
 geom_headers = files(
-  'Camera.h',
-  'CoPlanarityFeatureExtractor.h',
   'ComplexCoordinateFrameSceneObject.h',
   'ConfigurableDepthImageSegmenter.h',
   'CoordinateFrameSceneObject.h',
-  'CoplanarPointPoseEstimator.h',
-  'CurvatureFeatureExtractor.h',
-  'CutfreeAdjacencyFeatureExtractor.h',
   'CyclesRenderer.h',
   'DemoScene.h',
   'DepthCameraPointCloudGrabber.h',
@@ -20,48 +15,30 @@ geom_headers = files(
   'PointCloudGrabberRegistry.h',
   'PointCloudOutputRegistry.h',
   'Geom.h',
-  'GeomDefs.h',
   'GltfLoader.h',
   'GridSceneObject.h',
   'Hit.h',
-  'ICP.h',
-  'ICP3D.h',
-  'IterativeClosestPoint.h',
-  'IterativeClosestPointCLCode.h',
   'Material.h',
-  'ObjectEdgeDetector.h',
-  'ObjectEdgeDetectorCPU.h',
-  'ObjectEdgeDetectorData.h',
-  'ObjectEdgeDetectorGPU.h',
-  'ObjectEdgeDetectorPlugin.h',
   'OctreeObject.h',
   'PCDFileGrabber.h',
   'PCLIncludes.h',
   'PCLPointCloudObject.h',
-  'PlanarRansacEstimator.h',
-  'PlaneEquation.h',
   'Plot3D.h',
   'PlotHandle3D.h',
   'PlotWidget3D.h',
   'PointCloudCreator.h',
   'PointCloudCreatorCL.h',
   'PointCloudGrabber.h',
-  'PointCloudNormalEstimator.h',
   'PointCloudObject.h',
   'PointCloudObjectBase.h',
   'PointCloudOutput.h',
   'PointCloudSegment.h',
   'PointCloudSerializer.h',
-  'PoseEstimator.h',
-  'Posit.h',
   'Primitive.h',
   'Primitive3DFilter.h',
   'PrimitiveType.h',
-  'RGBDMapping.h',
-  'RansacBasedPoseEstimator.h',
   'RayCastOctreeObject.h',
   'Raytracer.h',
-  'RemainingPointsFeatureExtractor.h',
   'SQFitter.h',
   'Scene.h',
   'SceneLight.h',
@@ -71,23 +48,15 @@ geom_headers = files(
   'SceneObjectBase.h',
   'SceneSynchronizer.h',
   'Segmentation3D.h',
-  'SegmenterUtils.h',
   'ShaderUtil.h',
   'Sky.h',
   'SoftPosit.h',
-  'SurfaceFeatureExtractor.h',
-  'ViewRay.h',
 )
 
 # Sources that do NOT require Qt/GL
 geom_sources = files(
-  'Camera.cpp',
-  'CoPlanarityFeatureExtractor.cpp',
   'ComplexCoordinateFrameSceneObject.cpp',
   'ConfigurableDepthImageSegmenter.cpp',
-  'CoplanarPointPoseEstimator.cpp',
-  'CurvatureFeatureExtractor.cpp',
-  'CutfreeAdjacencyFeatureExtractor.cpp',
   'DemoScene.cpp',
   'DepthCameraPointCloudGrabber.cpp',
   'EuclideanBlobSegmenter.cpp',
@@ -97,36 +66,18 @@ geom_sources = files(
   'PointCloudGrabberRegistry.cpp',
   'PointCloudOutputRegistry.cpp',
   'GridSceneObject.cpp',
-  'ICP.cpp',
-  'ICP3D.cpp',
-  'IterativeClosestPoint.cpp',
   'Material.cpp',
-  'ObjectEdgeDetector.cpp',
-  'ObjectEdgeDetectorCPU.cpp',
-  'ObjectEdgeDetectorData.cpp',
-  'ObjectEdgeDetectorGPU.cpp',
   'OctreeObject.cpp',
   'PCDFileGrabber.cpp',
-  'PlanarRansacEstimator.cpp',
-  'PlaneEquation.cpp',
   'PointCloudCreator.cpp',
-  'PointCloudNormalEstimator.cpp',
   'PointCloudObject.cpp',
   'PointCloudObjectBase.cpp',
   'PointCloudSegment.cpp',
   'PointCloudSerializer.cpp',
-  'PoseEstimator.cpp',
-  'Posit.cpp',
   'Primitive3DFilter.cpp',
-  'RansacBasedPoseEstimator.cpp',
   'RayCastOctreeObject.cpp',
-  'RemainingPointsFeatureExtractor.cpp',
   'SQFitter.cpp',
   'Segmentation3D.cpp',
-  'SegmenterUtils.cpp',
-  'SoftPosit.cpp',
-  'SurfaceFeatureExtractor.cpp',
-  'ViewRay.cpp',
 )
 
 geom_extra_deps = []
@@ -144,6 +95,7 @@ if qt_found
     'SceneObject.cpp',
     'ShaderUtil.cpp',
     'GltfLoader.cpp',
+    'SoftPosit.cpp',    # uses qt::ICLDrawWidget for its (currently Qt-coupled) visualize() helper
   )
   geom_extra_deps += [icl_qt_dep]
 endif
@@ -315,7 +267,7 @@ else
   geom_base_dep = icl_cv_dep
 endif
 
-geom_deps = [geom_base_dep, icl_io_dep] + geom_extra_deps
+geom_deps = [geom_base_dep, icl_io_dep, icl_cv3d_dep] + geom_extra_deps
 
 _geom_inc = [root_inc, gen_inc, sse2neon_inc] + pcl_inc
 if cycles_found
@@ -338,7 +290,7 @@ icl_geom_lib = shared_library('icl-geom',
 icl_geom_dep = declare_dependency(
   link_with: icl_geom_lib,
   include_directories: [root_inc, gen_inc, sse2neon_inc] + pcl_inc,
-  dependencies: [geom_base_dep],
+  dependencies: [geom_base_dep, icl_cv3d_dep],
 )
 
 install_headers(geom_headers,

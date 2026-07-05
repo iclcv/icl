@@ -24,9 +24,9 @@
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/OffscreenView.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom/Material.h>
-#include <icl/geom/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/CoplanarPointPoseEstimator.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/MarkerPatternRefiner.h>
 #include <icl/cv/SubPixelCornerRefiner.h>

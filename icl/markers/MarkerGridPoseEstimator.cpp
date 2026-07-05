@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/markers/MarkerGridPoseEstimator.h>
-#include <icl/geom/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/CoplanarPointPoseEstimator.h>
 namespace icl{
   using namespace utils;
   using namespace math;

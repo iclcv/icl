@@ -6,7 +6,7 @@
 #include <icl/geom2/GroupNode.h>
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/TextNode.h>
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 #include <icl/utils/StringUtils.h>
 #include <algorithm>
 #include <cmath>

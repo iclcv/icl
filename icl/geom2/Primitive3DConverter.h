@@ -6,7 +6,7 @@
 
 #include <icl/geom2/Node.h>
 #include <icl/geom/Primitive3DFilter.h>
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 #include <memory>
 
 namespace icl::geom2 {

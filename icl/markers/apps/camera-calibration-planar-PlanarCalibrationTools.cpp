@@ -4,7 +4,7 @@
 
 #include "camera-calibration-planar-PlanarCalibrationTools.h"
 
-#include <icl/geom/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/CoplanarPointPoseEstimator.h>
 #include <icl/markers/MarkerGridEvaluater.h>
 
 #include <icl/filter/affine/ImageUndistortion.h>

@@ -41,8 +41,8 @@
 
 #include <float.h>
 #include <icl/utils/time/StackTimer.h>
-#include <icl/geom/Camera.h>
-#include <icl/geom/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/Camera.h>
+#include <icl/cv3d/CoplanarPointPoseEstimator.h>
 
 using namespace icl::utils;
 using namespace icl::math;

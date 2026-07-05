@@ -8,8 +8,8 @@
 #include <icl/geom2/Node.h>
 #include <icl/geom2/MeshNode.h>
 #include <icl/geom2/Primitive.h>
-#include <icl/geom/ViewRay.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/ViewRay.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/math/transform/HomogeneousMath.h>
 #include <icl/math/transform/StraightLine2D.h>
 #include <icl/math/la/FixedMatrix.h>

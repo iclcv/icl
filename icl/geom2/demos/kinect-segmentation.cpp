@@ -19,10 +19,10 @@
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom2/PointCloud.h>
 #include <icl/geom2/PointCloudNode.h>
-#include <icl/geom/ObjectEdgeDetector.h>
+#include <icl/cv3d/ObjectEdgeDetector.h>
 #include <icl/geom/Segmentation3D.h>
 #include <icl/geom/EuclideanBlobSegmenter.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 using namespace icl::geom2;
 using namespace icl::geom;

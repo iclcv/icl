@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/markers/Fiducial.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 namespace icl::markers {
   /// Internal Implementation class for the MutiCamFiducial

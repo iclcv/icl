@@ -10,7 +10,7 @@
 #include <icl/geom/SceneLightObject.h>
 #include <icl/geom/CoordinateFrameSceneObject.h>
 #include <icl/geom/ComplexCoordinateFrameSceneObject.h>
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 #include <icl/geom/PointCloudCreator.h>
 #include <icl/utils/StringUtils.h>
 #include <icl/utils/time/Time.h>

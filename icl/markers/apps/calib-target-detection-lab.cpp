@@ -35,7 +35,7 @@
 #include <icl/geom2/CheckerboardNode.h>  // the checkerboard target node (self-visualizing)
 #include <icl/geom2/MeshNode.h>          // the marker-grid board (textured quad)
 #include <icl/geom2/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/geom/Material.h>
 #include <icl/cv/CheckerboardSaddleDetector.h>
 #include <icl/cv/CheckerboardGrid.h>           // growth-based grid recovery + LAP cleanup

@@ -7,7 +7,7 @@
 #include <icl/utils/Macros.h>
 #include <functional>
 #include <icl/math/MathFunctions.h>
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 #include <icl/math/la/FixedMatrix.h>
 
 typedef icl::math::LevenbergMarquardtFitter<float> LM;

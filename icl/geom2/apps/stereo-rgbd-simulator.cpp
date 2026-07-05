@@ -30,7 +30,7 @@
 #include <icl/geom2/SceneCapture.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom/Material.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/io/sink/ImageSink.h>
 
 using namespace icl::geom2;

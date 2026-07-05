@@ -32,7 +32,7 @@
 #include <icl/utils/prop/Constraints.h>
 #include <icl/geom/FeatureGraphSegmenter.h>
 #include <icl/geom/PointCloudCreator.h>
-#include <icl/geom/ObjectEdgeDetector.h>
+#include <icl/cv3d/ObjectEdgeDetector.h>
 #include <icl/filter/advanced/MotionSensitiveTemporalSmoothing.h>
 
 namespace icl::geom {

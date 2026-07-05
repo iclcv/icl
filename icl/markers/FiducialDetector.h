@@ -8,7 +8,7 @@
 #include <icl/utils/config/Configurable.h>
 #include <icl/utils/dispatch/ParamMap.h>
 
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 #include <icl/markers/Fiducial.h>
 #include <icl/core/Image.h>

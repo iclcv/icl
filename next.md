@@ -4,14 +4,59 @@
 
 ## Next Step
 
-### NEXT — folder re-sorting overhaul: retire the geom / geom2 DOUBLE
-Back to the general ICL re-sorting overhaul. The immediate target is the **geom / geom2
-duplication**: `geom2` is the clean scene-graph rewrite (see memory `project_geom2`,
-`project_node_scene_backpointer`) but the old monolithic `geom` (`SceneObject`, `Scene`, …) still
-coexists. Goal: finish migrating remaining consumers off `geom` onto `geom2` and delete the
-duplicate, so there's a single scene-graph module. **Scope this next session** — audit what still
-depends on `geom`'s scene classes (apps/demos/physics), what geom2 still lacks, and stage the
-retirement. (Physics integration is a known blocker — see `project_physics_geom2_integration`.)
+### NEXT — retire the geom / geom2 DOUBLE — **Phases 0+1 LANDED (S98); NEXT = Phase 2. [`geom-dedup-scoping.md`](geom-dedup-scoping.md)**
+Back to the general ICL re-sorting overhaul: retire the old `icl/geom/` scene graph in favour of the
+clean `icl/geom2/` rewrite (see `project_geom2`, `project_node_scene_backpointer`).
+
+**LANDED S98 (suite 1070/1070, uncommitted):** created **`icl/cv3d/`** module (Qt-free 3D CV), slotted
+below ICLQt. Moved foundation (`Camera`/`ViewRay`/`PlaneEquation`/`GeomDefs`) + CLEAN CV clusters
+(pose, ICP, feature extractors, object-edge-detect, normals, SegmenterUtils, RGBDMapping) → cv3d =
+48 files, geom = 88. `icl_cv3d_dep` propagated via `icl_geom_dep` (no geom2/markers/physics edits).
+`otool -L libicl-cv3d` = **zero Qt**. Namespace still `icl::geom` transitionally (rename is a later
+pass). **SoftPosit deferred** (Qt-coupled `visualize()`/`dw` member — left in geom).
+
+**NEXT = Phase 2 (keystone):** port the point-cloud pipeline (~40 files: grabbers, IO/serialization,
+creation, segmentation, SQ-fit) off `PointCloudObjectBase : SceneObject` onto a scene-free
+`cv3d::PointCloud` (geom2 already has the Qt-free `PointCloud` data type to reuse). Drop
+`PCLPointCloudObject` (placeholder note for future compat). This is the hard one — the data-model swap.
+
+**End-state (evolving — SPLIT into two modules):** old `geom` conflates 3D **CV algorithms** and a
+3D **scene graph + renderer**. Split them: **`cv3d`** (`icl::cv3d`, **Qt-FREE** — verified no CV file
+pulls Qt; slots below ICLQt → headless 3D vision) gets the 88 algorithm files + foundation
+(`Camera`/`ViewRay`/`PlaneEquation`/`GeomDefs`) + the `PointCloud` **data type**; the **scene/render
+module** (today's geom2, renamed **`viz3d`**/`icl::viz3d` — symmetric with `cv3d`) keeps the scene graph, `*Node` types,
+`PointCloudNode`, `Renderer`/Cycles, `Material`, `Primitive`, `Plot3D`. Everything ported **natively**
+(converters are scaffolding, deleted at the end); old geom deleted; geom2 renamed last.
+
+**Scoping audit done.** `geom` = 136 files: **88 CV algos** → cv3d (mostly CLEAN → near-verbatim;
+point-cloud clusters retarget the `cv3d::PointCloud` data type), **8 foundation** → cv3d, `Material` →
+scene, **39 scene graph** → delete once scene module has native parity.
+
+**Decided:** drop PCL (`PCLPointCloudObject` has no real consumer — leave a placeholder idea for a
+future lightweight `cv3d::PointCloud`⇄`pcl::PointCloud` compat layer). **Open:** confirm split +
+names (`cv3d` + `viz3d`?), Phase-4 showcase scope (drop-unused), rename last.
+
+Key findings (full detail + staged plan in the scoping doc):
+- **Scene graph is ~90% unconsumed.** Outside geom/geom2, only **6 consumers**: 5
+  `markers/apps/camera-calibration*` files (which ARE the legacy Phase C app → fold into the Phase C
+  rewrite) + `tests/test-io-scene-source.cpp`. `qt`, `cv`, `io`-lib, `markers`-lib = none. **physics2
+  is already fully on geom2** (only pulls shared `Camera`/`Material`) — *not* the blocker the old note
+  claimed.
+- **One load-bearing entanglement:** `PointCloudObjectBase : public SceneObject`. Only 3 algorithm
+  files include a scene header directly (`PointCloudObjectBase.h`, `OctreeObject.h`,
+  `Primitive3DFilter.h`'s `toSceneObject` helper); the rest decouple automatically once that base is
+  split off `SceneObject`.
+- **geom2 feature gaps mostly DON'T block** (no live consumers): PCL interop, Sky/HDRI, light gizmo,
+  renderable octree, labelled coord-frame. Required parity work is only what the ported calib apps +
+  io test need (a grid object; a `SceneObject`-free point-cloud type).
+
+**Plan (absorb→delete→rename):** (1) move CLEAN CV clusters into geom2 (verbatim-ish, ~35 files);
+(2) **keystone** — port the point-cloud pipeline (~40 files) onto geom2's `PointCloud` (old model is
+`PointCloudObjectBase : SceneObject`); (3) port octree/`Primitive3DFilter` natively, retire the
+converters; (4) native parity backfill for kept scene-graph features (GridNode, light gizmo, Sky/HDRI,
+labelled coord-frame, Scene2 API — or drop the unused); (5) port the 5 calib apps + io test (fold into
+Phase C); (6) delete old geom + converters; (7) rename geom2→geom. Open decisions: drop PCL
+(recommend yes), Phase-4 scope = how much showcase to keep (recommend drop-unused), rename last. See doc.
 
 ### PAUSED — `icl-cam-calib-intrinsic` app (easy intrinsic calibration)
 **Full continuation doc: [`intrinsic-calib-next-steps.md`](intrinsic-calib-next-steps.md)** —

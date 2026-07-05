@@ -11,7 +11,7 @@
 // intrinsics/extrinsics decoupling fix that ICL's own Camera docs recommend.
 
 #include "harness/Test.h"
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <vector>
 #include <cmath>
 

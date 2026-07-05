@@ -9,7 +9,7 @@
 #include "harness/Test.h"
 #include <icl/geom2/RayCastOctree.h>
 #include <icl/geom2/PointCloud.h>
-#include <icl/geom/ViewRay.h>
+#include <icl/cv3d/ViewRay.h>
 #include <cmath>
 
 using namespace icl;

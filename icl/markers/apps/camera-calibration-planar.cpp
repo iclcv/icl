@@ -5,8 +5,8 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 #include <icl/geom/Geom.h>
-#include <icl/geom/PoseEstimator.h>
-#include <icl/geom/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/PoseEstimator.h>
+#include <icl/cv3d/CoplanarPointPoseEstimator.h>
 #include <icl/markers/MarkerGridPoseEstimator.h>
 #include <icl/cv/OpenCVCheckerboardDetector.h>
 #include <icl/markers/AdvancedMarkerGridDetector.h>

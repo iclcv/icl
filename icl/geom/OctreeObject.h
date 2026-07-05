@@ -8,7 +8,7 @@
 #include <icl/math/tree/Octree.h>
 #include <icl/geom/SceneObject.h>
 #include <icl/geom/PointCloudObjectBase.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 
 
 #ifdef ICL_SYSTEM_APPLE

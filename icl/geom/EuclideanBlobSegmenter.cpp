@@ -32,8 +32,8 @@
 #include <icl/cv/RegionGrower.h>
 #include <icl/geom/EuclideanBlobSegmenter.h>
 #include <icl/geom/PointCloudObjectBase.h>
-#include <icl/geom/PlanarRansacEstimator.h>
-#include <icl/geom/SegmenterUtils.h>
+#include <icl/cv3d/PlanarRansacEstimator.h>
+#include <icl/cv3d/SegmenterUtils.h>
 
 
 namespace icl::geom {

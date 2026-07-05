@@ -15,8 +15,8 @@
 #include <icl/geom2/CuboidNode.h>
 #include <icl/geom2/Scene2MouseHandler.h>
 #include <icl/geom/Material.h>
-#include <icl/geom/GeomDefs.h>
-#include <icl/geom/RansacBasedPoseEstimator.h>
+#include <icl/cv3d/GeomDefs.h>
+#include <icl/cv3d/RansacBasedPoseEstimator.h>
 
 using namespace icl::geom2;
 using namespace icl::geom;

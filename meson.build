@@ -293,6 +293,7 @@ subdir('icl/core')
 subdir('icl/filter')
 subdir('icl/io')
 subdir('icl/cv')
+subdir('icl/cv3d')
 if qt_found
   subdir('icl/qt')
 endif
@@ -313,6 +314,7 @@ if _build_demos or _build_apps or _build_examples
   subdir('icl/filter/targets')
   subdir('icl/io/targets')
   subdir('icl/cv/targets')
+  subdir('icl/cv3d/targets')
   if qt_found
     subdir('icl/qt/targets')
   endif

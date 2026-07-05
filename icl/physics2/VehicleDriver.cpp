@@ -9,7 +9,7 @@
 #include <icl/geom2/Node.h>
 #include <icl/geom2/CylinderNode.h>
 #include <icl/geom/Material.h>
-#include <icl/geom/GeomDefs.h>
+#include <icl/cv3d/GeomDefs.h>
 #include <icl/utils/Macros.h>
 
 #include <btBulletDynamicsCommon.h>

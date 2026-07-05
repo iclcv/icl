@@ -5,7 +5,7 @@
 #include <icl/geom2/OffscreenView.h>
 #include <icl/geom2/Scene2.h>
 #include <icl/geom2/BVH.h>
-#include <icl/geom/Camera.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/qt/GLCallback.h>
 #include <icl/qt/DrawWidget3D.h>
 #include <icl/utils/prop/Constraints.h>
