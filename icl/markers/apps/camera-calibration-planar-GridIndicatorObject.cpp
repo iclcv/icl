@@ -3,62 +3,63 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "camera-calibration-planar-GridIndicatorObject.h"
+#include <icl/geom2/MeshNode.h>
+#include <icl/geom2/TextNode.h>
+#include <icl/geom/Material.h>
 
 namespace icl{
   using namespace utils;
   using namespace math;
-  using namespace geom;
+  using namespace geom;   // Vec, GeomColor, geom_blue/geom_red (foundation, not scene graph)
 
   namespace markers{
 
-    struct GridIndicatorObject::MarkerObj : public SceneObject{
+    /// one grid cell: an extruded box (MeshNode) + a billboard id label (TextNode)
+    struct GridIndicatorObject::MarkerObj : public geom2::GroupNode{
       int x, y;
       MarkerObj(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def,
                 int x, int y) : x(x), y(y){
         Rect32f b = def.getBounds(x,y);
         static const float H = 2;
+
+        auto box = std::make_shared<geom2::MeshNode>();
         for(float h = 0; h <= H; h+=H){
-          addVertex(Vec(b.x, b.y, -h, 1));
-          addVertex(Vec(b.right(), b.y, -h, 1));
-          addVertex(Vec(b.right(), b.bottom(), -h, 1));
-          addVertex(Vec(b.x, b.bottom(), -h, 1));
+          box->addVertex(Vec(b.x, b.y, -h, 1));
+          box->addVertex(Vec(b.right(), b.y, -h, 1));
+          box->addVertex(Vec(b.right(), b.bottom(), -h, 1));
+          box->addVertex(Vec(b.x, b.bottom(), -h, 1));
         }
         for(int h=0;h<2;++h){
           for(int i=0;i<4;++i){
-            addLine(4*h+i, 4*h +(i+1) % 4, h ? geom_blue(255) : geom_red(255));
+            box->addLine(4*h+i, 4*h +(i+1) % 4, h ? geom_blue(255) : geom_red(255));
           }
         }
         for(int i=0;i<4;++i){
-          addLine(i, i+4, geom_blue(255));
+          box->addLine(i, i+4, geom_blue(255));
         }
-        addQuad(0,1,5,4, geom_blue(100));
-        addQuad(1,2,6,5, geom_blue(100));
-        addQuad(2,3,7,6, geom_blue(100));
-        addQuad(3,0,4,7, geom_blue(100));
+        // geom2 addQuad carries no per-face colour — the translucent blue comes
+        // from the node Material instead.
+        box->addQuad(0,1,5,4);
+        box->addQuad(1,2,6,5);
+        box->addQuad(2,3,7,6);
+        box->addQuad(3,0,4,7);
+        box->setMaterial(Material::fromColor(geom_blue(100)));
+        addChild(box);
 
         const std::vector<int> &ids = def.getMarkerIDs();
         int id = ids[x + y * def.getSize().width];
 
-        { /// Center text thing!
-          float x = b.x, y = b.y, w = b.width, h = b.height;
-          static const float bo = 0.05f, ar = 2.0f;
-          float ix = x + w*bo, iw = w*(1.-2*bo);
-          float ih = (1./ar) * iw, iy = y + (h-ih)*0.5 + bo;
-          addVertex(Vec(ix, iy, -H ,1));
-          addVertex(Vec(ix+iw, iy, -H, 1));
-          addVertex(Vec(ix+iw, iy+ih, -H, 1));
-          addVertex(Vec(ix,iy+ih, -H, 1));
-        }
-        addTextTexture(8,9,10,11, (id < 10 ? "  " : id < 100 ? " " : "") +str(id),
-                       geom_blue(255));
+        // marker id label (was addTextTexture on the front face; now a TextNode)
+        auto label = geom2::TextNode::create(str(id), b.height*0.5f, geom_blue(255));
+        label->translate(b.x + b.width*0.5f, b.y + b.height*0.5f, -H);
+        addChild(label);
       }
     };
 
     GridIndicatorObject::GridIndicatorObject(const AdvancedMarkerGridDetector::AdvancedGridDefinition &def){
-      setLockingEnabled(true);
       for(int y=0;y<def.getSize().height;++y){
         for(int x=0;x<def.getSize().width;++x){
-          addChild(new MarkerObj(def,x,y),true);
+          addChild(std::make_shared<MarkerObj>(def,x,y));
         }
       }
     }
@@ -67,23 +68,24 @@ namespace icl{
       float dx = bounds.width/cells.width;
       float dy = bounds.height/cells.height;
 
+      auto grid = std::make_shared<geom2::MeshNode>();
       for(int y=0;y<cells.height;++y){
         for(int x=0;x<cells.width;++x){
-          addVertex(Vec(x*dx, y*dy, 0, 1));
+          grid->addVertex(Vec(x*dx, y*dy, 0, 1));
         }
       }
-
       for(int y=0;y<cells.height;++y){
         for(int x=0;x<cells.width;++x){
           int idx = x + cells.width * y;
           if(x){
-            addLine(idx, idx -1, geom_blue());
+            grid->addLine(idx, idx -1, geom_blue());
           }
           if(y){
-            addLine(idx, idx - cells.width, geom_blue());
+            grid->addLine(idx, idx - cells.width, geom_blue());
           }
         }
       }
+      addChild(grid);
     }
   }
 }

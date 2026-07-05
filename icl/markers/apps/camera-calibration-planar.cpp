@@ -4,7 +4,11 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom/Geom.h>
+#include <icl/geom2/Scene2.h>
+#include <icl/geom2/CoordinateFrameNode.h>
+#include <icl/geom2/Scene2MouseHandler.h>
+#include <icl/geom/Material.h>
+#include <icl/cv3d/Camera.h>
 #include <icl/cv3d/PoseEstimator.h>
 #include <icl/cv3d/CoplanarPointPoseEstimator.h>
 #include <icl/markers/MarkerGridPoseEstimator.h>
@@ -25,7 +29,7 @@ typedef Detector::Marker Marker;
 typedef Detector::MarkerGrid MarkerGrid;
 
 
-Scene scene;
+geom2::Scene2 scene;
 
 
 Mat compute_relative_transform_n(const std::vector<Camera> &s, const std::vector<Camera> &d){
@@ -77,8 +81,8 @@ Mat compute_relative_transform(const Camera &s, const Camera &d){
 
 
 
-ComplexCoordinateFrameSceneObject *cs = 0;
-GridIndicatorObject *gridIndicator;
+std::shared_ptr<geom2::CoordinateFrameNode> cs;
+std::shared_ptr<GridIndicatorObject> gridIndicator;
 
 struct View{
   ImageSource grabber;
@@ -89,7 +93,7 @@ struct View{
   Camera camera;
   Camera calibratedCamera;
   Image lastImage;
-  ComplexCoordinateFrameSceneObject *cs;
+  std::shared_ptr<geom2::CoordinateFrameNode> cs;
   std::vector<Camera> capturedFrames;
   View():cbPoseEst(CoplanarPointPoseEstimator::worldFrame,
                    CoplanarPointPoseEstimator::SimplexSampling){}
@@ -187,8 +191,8 @@ void init(){
       fd->setConfigurableID("fd-cam"+str(id));
       v.poseEst.setConfigurableID("poseEst-cam"+str(id));
     }
-    v.cs = new ComplexCoordinateFrameSceneObject(10,1);
-    scene.addObject(v.cs);
+    v.cs = geom2::CoordinateFrameNode::create(10,1);
+    scene.addNode(v.cs);
   }
   inputIDs = inputIDs.substr(0,inputIDs.length()-1);
   VBox controls;
@@ -240,16 +244,16 @@ void init(){
   scene.addCamera(scene.getCamera(0));
 
   if(!cbDef.used){
-    gridIndicator = new GridIndicatorObject(cbDef.cells, cbDef.bounds);
+    gridIndicator = std::make_shared<GridIndicatorObject>(cbDef.cells, cbDef.bounds);
   }else{
-    gridIndicator = new GridIndicatorObject(d);
+    gridIndicator = std::make_shared<GridIndicatorObject>(d);
   }
-  scene.addObject(gridIndicator);
+  scene.addNode(gridIndicator);
 
   //gui["draw"].install(scene.getMouseHandler(1));
   gui["draw"].link(new MultiViewGLCallback);//scene.getGLCallback(views.size()));
 
-  gui["3D"].link(scene.getGLCallback(views.size()));
+  gui["3D"].link(scene.getGLCallback(views.size()).get());
   gui["3D"].install(scene.getMouseHandler(views.size()));
 
   static PlotHandle plot = gui["variancePlot"];
@@ -298,9 +302,9 @@ void init(){
   gui["poseEst"].registerCallback([]{ poseEstGUI.switchVisibility(); });
   gui["fid"].registerCallback([]{ fidGUI.switchVisibility(); });
 
-  cs = new ComplexCoordinateFrameSceneObject;
+  cs = geom2::CoordinateFrameNode::create();
   cs->setVisible(false);
-  scene.addObject(cs,true);
+  scene.addNode(cs);
 
 
   captureFramesGUI << Button("capture current frame", {.handle="capture"})
@@ -516,7 +520,7 @@ void run(){
 
   }
 
-  scene.prop("visualize cameras").value = gui["vis cams"].as<bool>();
+  scene.prop("show cameras").value = gui["vis cams"].as<bool>();
 
   static ButtonHandle sync = gui["sync"];
   if(sync.wasTriggered()){

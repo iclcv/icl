@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <icl/geom/SceneObject.h>
+#include <icl/geom2/GroupNode.h>
 #include <icl/markers/AdvancedMarkerGridDetector.h>
 namespace icl::markers {
-    /// local utility class
-	  class GridIndicatorObject : public geom::SceneObject{
+    /// local utility class (geom2 port of the old SceneObject-based indicator)
+	  class GridIndicatorObject : public geom2::GroupNode{
       struct MarkerObj;
 
       public:
