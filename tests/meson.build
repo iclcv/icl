@@ -39,6 +39,7 @@ if qt_dep.found()
     'test-markers-bch-code.cpp',
     'test-markers-checkerboard-target.cpp',
     'test-markers-coded-checkerboard.cpp',
+    'test-markers-coded-checkerboard2.cpp',
     'test-markers-marker-grid-target.cpp',
     'test-markers-calibration-comparison.cpp',
     'test-markers-intrinsic-endtoend.cpp',

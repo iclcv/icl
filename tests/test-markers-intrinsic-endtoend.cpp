@@ -17,6 +17,7 @@
 #include "harness/Test.h"
 #include <icl/markers/CheckerboardTarget.h>
 #include <icl/markers/CodedCheckerboardTarget.h>
+#include <icl/markers/CodedCheckerboardTarget2.h>
 #include <icl/cv/IntrinsicCalibrator.h>
 #include <icl/math/la/DynMatrix.h>
 #include <icl/core/Img.h>
@@ -322,4 +323,72 @@ ICL_REGISTER_TEST("markers.intrinsic.endtoend_coded_partial_k2",
   ICL_TEST_NEAR(r.getPrincipalY(),   K.cy, 5.0);
   ICL_TEST_NEAR(r.getK1(), K.k1, 0.03);
   ICL_TEST_NEAR(r.getK2(), K.k2, 0.04);       // the payoff: k2 through real detection
+}
+
+// Same partial-board k2 recovery for the DUAL-POLARITY CodedCheckerboardTarget2: markers
+// in every cell (both polarities, detected on the frame AND its inverse) + edge-ring stubs
+// extend the usable lattice to (cols+1)x(rows+1), so the peripheral ring — which most
+// constrains k2 — is recovered too. Verifies the whole extended pipeline end-to-end.
+ICL_REGISTER_TEST("markers.intrinsic.endtoend_coded2_partial_k2",
+                  "dual-polarity coded2 board -> two-pass detect -> masked calibrate recovers k1 AND k2")
+{
+  using icl::markers::CodedCheckerboardTarget2;
+  const Intr K{640, 640, 512, 384,  -0.15, 0.05, 0.0, 0.0, 0.0};   // WIDE FOV: frame-corner r~1.0 -> k2 observable
+  const int W=1024, H=768, C=15, R=11; const double SQ=25;         // overruns the frame
+  const int IC=C+1, IR=R+1, bSize=IC*IR;                            // EXTENDED lattice (incl. edge ring)
+  CodedCheckerboardTarget2 cb(C, R, (float)SQ);                     // default BCH_6x6 (enough for cols*rows ids)
+  const Img8u tex = cb.generate(Size(3000, 2200));                 // high-res coded texture
+
+  const std::vector<Pose> poses = {
+    {d2r(-22),d2r(-15),d2r( 5), 380}, {d2r( 20),d2r(-17),d2r(-7), 400},
+    {d2r(-18),d2r( 21),d2r( 9), 370}, {d2r( 22),d2r( 17),d2r(-5), 410},
+    {d2r(-24),d2r(  4),d2r( 0), 360}, {d2r(  6),d2r(-24),d2r( 0), 390},
+    {d2r( 11),d2r( 24),d2r(10), 405}, {d2r(-15),d2r(-22),d2r(-9), 380},
+    {d2r( 25),d2r( -8),d2r( 6), 415}, {d2r(-10),d2r( 26),d2r(-8), 385},
+  };
+  Rng rng(9);
+  std::vector<std::vector<Point32f>> slots;
+  std::vector<std::vector<char>> masks;
+  int minVis=bSize, maxVis=0, edgeSeen=0;
+  for (const auto &P : poses) {
+    const Img8u img = renderTex(K, W, H, P, C, R, SQ, tex, 0.5, rng);
+    const auto corr = cb.detect(img);
+    if ((int)corr.size() < 24) continue;
+    std::vector<Point32f> slot(bSize); std::vector<char> got(bSize, 0);
+    for (const auto &c : corr) {
+      // objectPos = (bc)*SQ, bc in [-1, C-1]/[-1, R-1] -> +1 into the [0,IC)x[0,IR) grid
+      const int bcx=(int)std::lround(c.objectPos[0]/SQ)+1, bcy=(int)std::lround(c.objectPos[1]/SQ)+1;
+      if (bcx<0||bcx>=IC||bcy<0||bcy>=IR) continue;
+      if (bcx==0||bcx==IC-1||bcy==0||bcy==IR-1) ++edgeSeen;         // an edge-ring corner
+      slot[bcy*IC+bcx]=c.imagePos; got[bcy*IC+bcx]=1;
+    }
+    int vis=0; for (char g:got) vis+=g;
+    minVis=std::min(minVis,vis); maxVis=std::max(maxVis,vis);
+    slots.push_back(std::move(slot)); masks.push_back(std::move(got));
+  }
+  const int nv=(int)slots.size();
+  ICL_TEST_TRUE(nv >= 6);
+  ICL_TEST_TRUE(minVis < bSize);                                    // genuinely partial
+  ICL_TEST_TRUE(edgeSeen > 0);                                      // the stub-created edge ring is used
+
+  DynMatrix<icl64f> impoints=DynMatrix<icl64f>::create(2*nv,bSize),
+                    world   =DynMatrix<icl64f>::create(3,bSize),
+                    mask    =DynMatrix<icl64f>::create(nv,bSize);
+  // world coord of lattice index idx: ((idx%IC)-1)*SQ, ((idx/IC)-1)*SQ (the -1 edge-ring shift)
+  for (int idx=0; idx<bSize; ++idx) { world(0,idx)=((idx%IC)-1)*SQ; world(1,idx)=((idx/IC)-1)*SQ; world(2,idx)=0; }
+  for (int v=0; v<nv; ++v)
+    for (int idx=0; idx<bSize; ++idx) {
+      impoints(2*v,idx)=slots[v][idx].x; impoints(2*v+1,idx)=slots[v][idx].y;
+      mask(v,idx)=masks[v][idx];
+    }
+  const auto r = IntrinsicCalibrator(IC, IR, nv, W, H).calibrate(impoints, world, mask);
+  std::printf("[endtoend] coded2-partial: views=%d vis=%d..%d/%d edge=%d  fx=%.2f fy=%.2f cx=%.2f cy=%.2f k1=%.4f k2=%.4f\n",
+              nv, minVis, maxVis, bSize, edgeSeen, r.getFocalLengthX(), r.getFocalLengthY(),
+              r.getPrincipalX(), r.getPrincipalY(), r.getK1(), r.getK2());
+  ICL_TEST_NEAR(r.getFocalLengthX(), K.fx, 4.0);
+  ICL_TEST_NEAR(r.getFocalLengthY(), K.fy, 4.0);
+  ICL_TEST_NEAR(r.getPrincipalX(),   K.cx, 5.0);
+  ICL_TEST_NEAR(r.getPrincipalY(),   K.cy, 5.0);
+  ICL_TEST_NEAR(r.getK1(), K.k1, 0.03);
+  ICL_TEST_NEAR(r.getK2(), K.k2, 0.05);
 }
