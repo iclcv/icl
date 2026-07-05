@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Tobias Roehlig, Christof Elbrechter
 
-#include <icl/cv3d/ICP3D.h>
-#include <icl/cv3d/PoseEstimator.h>
+#include <icl/cv3d/icp/ICP3D.h>
+#include <icl/cv3d/pose/PoseEstimator.h>
 
 namespace icl::cv3d {
 		ICP3D::Result::Result()

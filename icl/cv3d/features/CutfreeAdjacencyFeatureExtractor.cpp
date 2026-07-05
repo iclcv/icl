@@ -28,8 +28,8 @@
  **                                                                   **
  **********************************************************************/
 
-#include <icl/cv3d/CutfreeAdjacencyFeatureExtractor.h>
-#include <icl/cv3d/PlanarRansacEstimator.h>
+#include <icl/cv3d/features/CutfreeAdjacencyFeatureExtractor.h>
+#include <icl/cv3d/pose/PlanarRansacEstimator.h>
 
 namespace icl::cv3d {
   struct CutfreeAdjacencyFeatureExtractor::Data {

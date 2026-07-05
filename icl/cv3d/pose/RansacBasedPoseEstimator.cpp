@@ -2,13 +2,13 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/cv3d/RansacBasedPoseEstimator.h>
+#include <icl/cv3d/pose/RansacBasedPoseEstimator.h>
 #include <icl/utils/prop/Constraints.h>
 
 #include <icl/utils/StringUtils.h>
 
 #include <icl/math/fit/RansacFitter.h>
-#include <icl/cv3d/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
 
 namespace icl::cv3d {
     using namespace math;

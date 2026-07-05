@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Sergius Gaulik
 
-#include <icl/cv3d/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
 #include <icl/utils/prop/Constraints.h>
 
 #include <icl/cv3d/Camera.h>

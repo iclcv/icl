@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/math/la/DynMatrix.h>
-#include <icl/cv3d/SurfaceFeatureExtractor.h>
+#include <icl/cv3d/features/SurfaceFeatureExtractor.h>
 
 namespace icl::cv3d {
   /// class for curvature feature (open and occluded objects).

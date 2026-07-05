@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
-#include <icl/cv3d/SoftPosit.h>
+#include <icl/cv3d/pose/SoftPosit.h>
 
 
 

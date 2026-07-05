@@ -8,7 +8,7 @@
 ** Copyright (c) 1993-2008 Ken Martin, Will Schroeder,             **
 ** Bill Lorensen   -- All  rights reserved.                        **
 *********************************************************************/
-#include <icl/cv3d/PoseEstimator.h>
+#include <icl/cv3d/pose/PoseEstimator.h>
 #include <icl/core/Types.h>
 
 #ifdef ICL_HAVE_EIGEN3

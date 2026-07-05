@@ -19,9 +19,9 @@
 #include <icl/viz3d/Scene2MouseHandler.h>
 #include <icl/viz3d/PointCloud.h>
 #include <icl/viz3d/PointCloudNode.h>
-#include <icl/cv3d/ObjectEdgeDetector.h>
-#include <icl/cv3d/Segmentation3D.h>
-#include <icl/cv3d/EuclideanBlobSegmenter.h>
+#include <icl/cv3d/edge/ObjectEdgeDetector.h>
+#include <icl/cv3d/segmentation/Segmentation3D.h>
+#include <icl/cv3d/segmentation/EuclideanBlobSegmenter.h>
 #include <icl/cv3d/Camera.h>
 
 using namespace icl::viz3d;

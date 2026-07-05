@@ -11,7 +11,7 @@
 
 #include "harness/Test.h"
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
 #include <cmath>
 
 using namespace icl;

@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
-#include <icl/cv3d/CoPlanarityFeatureExtractor.h>
-#include <icl/cv3d/SegmenterUtils.h>
+#include <icl/cv3d/features/CoPlanarityFeatureExtractor.h>
+#include <icl/cv3d/segmentation/SegmenterUtils.h>
 
 namespace icl::cv3d {
   math::DynMatrixBase<bool> CoPlanarityFeatureExtractor::apply(math::DynMatrixBase<bool> &initialMatrix, std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,

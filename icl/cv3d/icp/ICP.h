@@ -7,7 +7,7 @@
 #include <icl/utils/Macros.h>
 #include <icl/math/la/DynMatrix.h>
 #include <icl/math/tree/KDTree.h>
-#include <icl/cv3d/PoseEstimator.h>
+#include <icl/cv3d/pose/PoseEstimator.h>
 
 namespace icl::cv3d {
   /// Implementaiton of the Iterator Closest utils::Point (ICP) Algorithm

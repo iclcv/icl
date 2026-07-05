@@ -1,71 +1,81 @@
 # ICL cv3d module — 3D computer-vision algorithms + geometry foundation (Qt-free).
 # Split out of the old monolithic geom module (see geom-dedup-scoping.md).
+# Functional sub-folders: pose/ icp/ features/ edge/ segmentation/ (root = foundation).
 
 cv3d_headers = files(
-  # geometry foundation
   'Camera.h',
-  'SoftPosit.h',
   'GeomDefs.h',
   'PlaneEquation.h',
   'ViewRay.h',
   'RGBDMapping.h',
   'Primitive3D.h',
-  # pose estimation
-  'PoseEstimator.h',
-  'Posit.h',
-  'CoplanarPointPoseEstimator.h',
-  'RansacBasedPoseEstimator.h',
-  'PlanarRansacEstimator.h',
-  # ICP / registration
-  'ICP.h',
-  'ICP3D.h',
-  'IterativeClosestPoint.h',
-  'IterativeClosestPointCLCode.h',
-  # feature extraction
-  'SurfaceFeatureExtractor.h',
-  'CurvatureFeatureExtractor.h',
-  'CoPlanarityFeatureExtractor.h',
-  'CutfreeAdjacencyFeatureExtractor.h',
-  'RemainingPointsFeatureExtractor.h',
-  # object edge detection
-  'ObjectEdgeDetector.h',
-  'ObjectEdgeDetectorCPU.h',
-  'ObjectEdgeDetectorGPU.h',
-  'ObjectEdgeDetectorData.h',
-  'ObjectEdgeDetectorPlugin.h',
-  # point-cloud normals + segmentation
-  'PointCloudNormalEstimator.h',
-  'SegmenterUtils.h',
-  'Segmentation3D.h',
-  'EuclideanBlobSegmenter.h',
+)
+
+cv3d_pose_headers = files(
+  'pose/PoseEstimator.h',
+  'pose/Posit.h',
+  'pose/SoftPosit.h',
+  'pose/CoplanarPointPoseEstimator.h',
+  'pose/RansacBasedPoseEstimator.h',
+  'pose/PlanarRansacEstimator.h',
+)
+
+cv3d_icp_headers = files(
+  'icp/ICP.h',
+  'icp/ICP3D.h',
+  'icp/IterativeClosestPoint.h',
+  'icp/IterativeClosestPointCLCode.h',
+)
+
+cv3d_features_headers = files(
+  'features/SurfaceFeatureExtractor.h',
+  'features/CurvatureFeatureExtractor.h',
+  'features/CoPlanarityFeatureExtractor.h',
+  'features/CutfreeAdjacencyFeatureExtractor.h',
+  'features/RemainingPointsFeatureExtractor.h',
+)
+
+cv3d_edge_headers = files(
+  'edge/ObjectEdgeDetector.h',
+  'edge/ObjectEdgeDetectorCPU.h',
+  'edge/ObjectEdgeDetectorGPU.h',
+  'edge/ObjectEdgeDetectorData.h',
+  'edge/ObjectEdgeDetectorPlugin.h',
+)
+
+cv3d_segmentation_headers = files(
+  'segmentation/PointCloudNormalEstimator.h',
+  'segmentation/SegmenterUtils.h',
+  'segmentation/Segmentation3D.h',
+  'segmentation/EuclideanBlobSegmenter.h',
 )
 
 cv3d_sources = files(
   'Camera.cpp',
-  'SoftPosit.cpp',
   'PlaneEquation.cpp',
   'ViewRay.cpp',
-  'PoseEstimator.cpp',
-  'Posit.cpp',
-  'CoplanarPointPoseEstimator.cpp',
-  'RansacBasedPoseEstimator.cpp',
-  'PlanarRansacEstimator.cpp',
-  'ICP.cpp',
-  'ICP3D.cpp',
-  'IterativeClosestPoint.cpp',
-  'SurfaceFeatureExtractor.cpp',
-  'CurvatureFeatureExtractor.cpp',
-  'CoPlanarityFeatureExtractor.cpp',
-  'CutfreeAdjacencyFeatureExtractor.cpp',
-  'RemainingPointsFeatureExtractor.cpp',
-  'ObjectEdgeDetector.cpp',
-  'ObjectEdgeDetectorCPU.cpp',
-  'ObjectEdgeDetectorGPU.cpp',
-  'ObjectEdgeDetectorData.cpp',
-  'PointCloudNormalEstimator.cpp',
-  'SegmenterUtils.cpp',
-  'Segmentation3D.cpp',
-  'EuclideanBlobSegmenter.cpp',
+  'pose/PoseEstimator.cpp',
+  'pose/Posit.cpp',
+  'pose/SoftPosit.cpp',
+  'pose/CoplanarPointPoseEstimator.cpp',
+  'pose/RansacBasedPoseEstimator.cpp',
+  'pose/PlanarRansacEstimator.cpp',
+  'icp/ICP.cpp',
+  'icp/ICP3D.cpp',
+  'icp/IterativeClosestPoint.cpp',
+  'features/SurfaceFeatureExtractor.cpp',
+  'features/CurvatureFeatureExtractor.cpp',
+  'features/CoPlanarityFeatureExtractor.cpp',
+  'features/CutfreeAdjacencyFeatureExtractor.cpp',
+  'features/RemainingPointsFeatureExtractor.cpp',
+  'edge/ObjectEdgeDetector.cpp',
+  'edge/ObjectEdgeDetectorCPU.cpp',
+  'edge/ObjectEdgeDetectorGPU.cpp',
+  'edge/ObjectEdgeDetectorData.cpp',
+  'segmentation/PointCloudNormalEstimator.cpp',
+  'segmentation/SegmenterUtils.cpp',
+  'segmentation/Segmentation3D.cpp',
+  'segmentation/EuclideanBlobSegmenter.cpp',
 )
 
 cv3d_extra_deps = []
@@ -95,8 +105,17 @@ icl_cv3d_dep = declare_dependency(
 )
 
 install_headers(cv3d_headers,
-  install_dir: get_option('includedir') / install_prefix / 'icl' / 'cv3d',
-)
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'cv3d')
+install_headers(cv3d_pose_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'cv3d' / 'pose')
+install_headers(cv3d_icp_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'cv3d' / 'icp')
+install_headers(cv3d_features_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'cv3d' / 'features')
+install_headers(cv3d_edge_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'cv3d' / 'edge')
+install_headers(cv3d_segmentation_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'cv3d' / 'segmentation')
 
 pkg.generate(icl_cv3d_lib,
   name: 'icl-cv3d',

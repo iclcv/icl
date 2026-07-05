@@ -30,9 +30,9 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/cv/RegionGrower.h>
-#include <icl/cv3d/EuclideanBlobSegmenter.h>
-#include <icl/cv3d/PlanarRansacEstimator.h>
-#include <icl/cv3d/SegmenterUtils.h>
+#include <icl/cv3d/segmentation/EuclideanBlobSegmenter.h>
+#include <icl/cv3d/pose/PlanarRansacEstimator.h>
+#include <icl/cv3d/segmentation/SegmenterUtils.h>
 
 
 namespace icl::cv3d {

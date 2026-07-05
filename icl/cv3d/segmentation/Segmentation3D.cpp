@@ -28,7 +28,7 @@
  **                                                                 **
  ********************************************************************/
 
-#include <icl/cv3d/Segmentation3D.h>
+#include <icl/cv3d/segmentation/Segmentation3D.h>
 
 #include <icl/utils/cl/CLIncludes.h>
 

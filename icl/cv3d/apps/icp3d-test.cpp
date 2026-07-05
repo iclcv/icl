@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <icl/utils/Random.h>
-#include <icl/cv3d/ICP3D.h>
+#include <icl/cv3d/icp/ICP3D.h>
 
 using namespace icl::cv3d;
 

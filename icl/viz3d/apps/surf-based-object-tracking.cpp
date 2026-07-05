@@ -16,7 +16,7 @@
 #include <icl/viz3d/Scene2MouseHandler.h>
 #include <icl/viz3d/Material.h>
 #include <icl/cv3d/GeomDefs.h>
-#include <icl/cv3d/RansacBasedPoseEstimator.h>
+#include <icl/cv3d/pose/RansacBasedPoseEstimator.h>
 
 using namespace icl::viz3d;
 using namespace icl::cv3d;

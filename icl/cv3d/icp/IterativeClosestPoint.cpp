@@ -28,8 +28,8 @@
 // **                                                                 **
 // ********************************************************************/
 
-// #include <icl/cv3d/IterativeClosestPoint.h>
-// #include <icl/cv3d/IterativeClosestPointCLCode.h>
+// #include <icl/cv3d/icp/IterativeClosestPoint.h>
+// #include <icl/cv3d/icp/IterativeClosestPointCLCode.h>
 // #include <cfloat>
 // #include <icl/math/transform/HomogeneousMath.h>
 

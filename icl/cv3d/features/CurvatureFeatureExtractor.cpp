@@ -2,8 +2,8 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
-#include <icl/cv3d/CurvatureFeatureExtractor.h>
-#include <icl/cv3d/SegmenterUtils.h>
+#include <icl/cv3d/features/CurvatureFeatureExtractor.h>
+#include <icl/cv3d/segmentation/SegmenterUtils.h>
 
 namespace icl::cv3d {
   math::DynMatrixBase<bool> CurvatureFeatureExtractor::apply(const core::Img32f &depthImg, core::DataSegment<float,4> &xyz, math::DynMatrixBase<bool> &initialMatrix,

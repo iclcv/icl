@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
-#include <icl/cv3d/ICP.h>
+#include <icl/cv3d/icp/ICP.h>
 
 using namespace icl::utils;
 using namespace icl::math;

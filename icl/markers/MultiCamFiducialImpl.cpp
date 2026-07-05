@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/markers/MultiCamFiducialImpl.h>
-#include <icl/cv3d/PoseEstimator.h>
+#include <icl/cv3d/pose/PoseEstimator.h>
 
 using namespace icl::utils;
 using namespace icl::math;

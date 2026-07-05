@@ -42,7 +42,7 @@
 #include <float.h>
 #include <icl/utils/time/StackTimer.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
 
 using namespace icl::utils;
 using namespace icl::math;

@@ -6,7 +6,7 @@
 
 #include <icl/core/DataSegment.h>
 #include <icl/core/Img.h>
-#include <icl/cv3d/SurfaceFeatureExtractor.h>
+#include <icl/cv3d/features/SurfaceFeatureExtractor.h>
 
 namespace icl::cv3d {
   /**

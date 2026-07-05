@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
-#include <icl/cv3d/PlanarRansacEstimator.h>
+#include <icl/cv3d/pose/PlanarRansacEstimator.h>
 
 #include <icl/utils/cl/CLIncludes.h>
 

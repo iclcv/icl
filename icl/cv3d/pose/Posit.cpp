@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/cv3d/Posit.h>
+#include <icl/cv3d/pose/Posit.h>
 #include <icl/utils/time/StackTimer.h>
 #include <icl/cv3d/Camera.h>
 

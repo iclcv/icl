@@ -4,7 +4,7 @@
 
 #define __CL_ENABLE_EXCEPTIONS //enables openCL error catching
 
-#include <icl/cv3d/SegmenterUtils.h>
+#include <icl/cv3d/segmentation/SegmenterUtils.h>
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/core/Img.h>

@@ -28,14 +28,14 @@
  **                                                                 **
  ********************************************************************/
 
-#include <icl/cv3d/ObjectEdgeDetector.h>
+#include <icl/cv3d/edge/ObjectEdgeDetector.h>
 
 #ifdef ICL_HAVE_OPENCL
-#include <icl/cv3d/ObjectEdgeDetectorGPU.h>
+#include <icl/cv3d/edge/ObjectEdgeDetectorGPU.h>
 #endif
 
 
-#include <icl/cv3d/ObjectEdgeDetectorCPU.h>
+#include <icl/cv3d/edge/ObjectEdgeDetectorCPU.h>
 
 namespace icl {
 using namespace core;

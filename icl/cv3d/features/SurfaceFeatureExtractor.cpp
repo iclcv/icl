@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
-#include <icl/cv3d/SurfaceFeatureExtractor.h>
+#include <icl/cv3d/features/SurfaceFeatureExtractor.h>
 
 namespace icl::cv3d {
     SurfaceFeatureExtractor::SurfaceFeature SurfaceFeatureExtractor::apply(

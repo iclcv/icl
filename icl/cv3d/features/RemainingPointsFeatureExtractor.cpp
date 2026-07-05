@@ -2,11 +2,11 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
-#include <icl/cv3d/RemainingPointsFeatureExtractor.h>
+#include <icl/cv3d/features/RemainingPointsFeatureExtractor.h>
 #include <icl/core/Channel.h>
 #include <icl/core/Img.h>
 #include <icl/cv/RegionGrower.h>
-#include <icl/cv3d/PlanarRansacEstimator.h>
+#include <icl/cv3d/pose/PlanarRansacEstimator.h>
 
 namespace icl::cv3d {
   void RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, const core::Img32f &depthImage, core::Img32s &labelImage, core::Img8u &maskImage,

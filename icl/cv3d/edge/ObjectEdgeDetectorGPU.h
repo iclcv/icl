@@ -4,36 +4,27 @@
 
 /** \cond */
 //Please use the ObjectEdgeDetector Class.
-//This is the CPU implementation of the interface.
+//This is the GPU implementation of the interface.
 
 #pragma once
 
-#include <icl/cv3d/ObjectEdgeDetectorPlugin.h>
+#include <icl/cv3d/edge/ObjectEdgeDetectorPlugin.h>
 
 namespace icl::cv3d {
-    struct Vec4 {
-	    inline Vec4() {
-	    }
-	    inline Vec4(float x, float y, float z, float w) :
-			    x(x), y(y), z(z), w(w) {
-	    }
-	    float x, y, z, w;
-    };
-
-     class ICLGeom_API ObjectEdgeDetectorCPU : public ObjectEdgeDetectorPlugin{
+    class ICLGeom_API ObjectEdgeDetectorGPU : public ObjectEdgeDetectorPlugin{
 
      struct Data;  //!< internal data type
       Data *m_data; //!< internal data pointer
 
      public:
 
-      /// Create new ObjectEdgeDetectorCPU with given internal image size
+      /// Create new ObjectEdgeDetectorGPU with given internal image size
       /** Constructs an object of this class. All default parameters are set.
           Use setters for desired values. */
-      ObjectEdgeDetectorCPU();
+      ObjectEdgeDetectorGPU();
 
       ///Destructor
-      virtual ~ObjectEdgeDetectorCPU();
+      virtual ~ObjectEdgeDetectorGPU();
 
       /// One call function for calculation of the complete processingpipeline
       /** Order:  ((filter)->normals->(normalAvg)->angles->binarization)
@@ -170,16 +161,7 @@ namespace icl::cv3d {
           @return openCL context ready/unavailable */
       bool isCLReady();
 
-  	  void initialize(utils::Size size);
-
-
-  	 private:
-
-  	  float scalar(math::FixedColVector<float,4> &a, math::FixedColVector<float,4> &b);
-  	  float flipAngle(float angle);
-  	  float scalarAndFlip(math::FixedColVector<float,4> &a, math::FixedColVector<float,4> &b);
-  	  float maxAngle(float snr, float snl, float snt, float snb,
-                     float snbl, float snbr, float sntl, float sntr);
+      void initialize(utils::Size size);
 
     };
   }

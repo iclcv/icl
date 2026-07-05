@@ -35,7 +35,7 @@
 #include <icl/utils/cl/CLProgram.h>
 #endif
 
-#include <icl/cv3d/PointCloudNormalEstimator.h>
+#include <icl/cv3d/segmentation/PointCloudNormalEstimator.h>
 
 namespace icl {
 

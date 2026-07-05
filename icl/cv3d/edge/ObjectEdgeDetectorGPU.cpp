@@ -35,8 +35,8 @@
 #include <icl/utils/cl/CLProgram.h>
 
 #include <icl/core/Channel.h>
-#include <icl/cv3d/ObjectEdgeDetectorGPU.h>
-#include <icl/cv3d/ObjectEdgeDetectorData.h>
+#include <icl/cv3d/edge/ObjectEdgeDetectorGPU.h>
+#include <icl/cv3d/edge/ObjectEdgeDetectorData.h>
 
 namespace icl {
 

@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/cv3d/ObjectEdgeDetector.h>
+#include <icl/cv3d/edge/ObjectEdgeDetector.h>
 #include <icl/utils/time/Time.h>
 
 HSplit gui;

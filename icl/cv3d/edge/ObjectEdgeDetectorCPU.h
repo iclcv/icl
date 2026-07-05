@@ -2,41 +2,38 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
+/** \cond */
+//Please use the ObjectEdgeDetector Class.
+//This is the CPU implementation of the interface.
+
 #pragma once
 
-#include <icl/utils/CompatMacros.h>
-#include <icl/cv3d/GeomDefs.h>
-#include <icl/core/Img.h>
-#include <icl/cv3d/Camera.h>
-#include <icl/core/DataSegment.h>
-
-#include <icl/cv3d/ObjectEdgeDetectorPlugin.h>
+#include <icl/cv3d/edge/ObjectEdgeDetectorPlugin.h>
 
 namespace icl::cv3d {
-    /**
-     This class calculates an edge image based on angles between normals from an input depth image (e.g. Kinect).
-     The common way to use this class is the calculate() method, getting a depth image and returning an edge image.
-     This method computes the whole pipeline (image filtering, normal calculation and smoothing, angle image calculation
-     and binarization). The performance of this method is optimized with minimal read/write for the underlying OpenCL
-     implementation. The interim results can be accessed with getNormals() and getAngleDisplay() afterwards. It is also possible
-     to use subparts of the pipeline using the setter methods to set the interim data. */
-    class ICLGeom_API ObjectEdgeDetector{
+    struct Vec4 {
+	    inline Vec4() {
+	    }
+	    inline Vec4(float x, float y, float z, float w) :
+			    x(x), y(y), z(z), w(w) {
+	    }
+	    float x, y, z, w;
+    };
+
+     class ICLGeom_API ObjectEdgeDetectorCPU : public ObjectEdgeDetectorPlugin{
 
      struct Data;  //!< internal data type
-     Data *m_data; //!< internal data pointer
+      Data *m_data; //!< internal data pointer
 
      public:
 
-      enum Mode {BEST, GPU, CPU};
-
-      /// Create new ObjectEdgeDetector
+      /// Create new ObjectEdgeDetectorCPU with given internal image size
       /** Constructs an object of this class. All default parameters are set.
-          Use setters for desired values.
-          @param mode selects the implementation (GPU, CPU or BEST)*/
-      ObjectEdgeDetector(Mode mode=BEST);
+          Use setters for desired values. */
+      ObjectEdgeDetectorCPU();
 
       ///Destructor
-      virtual ~ObjectEdgeDetector();
+      virtual ~ObjectEdgeDetectorCPU();
 
       /// One call function for calculation of the complete processingpipeline
       /** Order:  ((filter)->normals->(normalAvg)->angles->binarization)
@@ -168,10 +165,23 @@ namespace icl::cv3d {
           @param use enable/disable gauss smoothing */
       void setUseGaussSmoothing(bool use);
 
-     private:
-      ObjectEdgeDetectorPlugin* objectEdgeDetector;
+      /// Returns the openCL status
+      /** (true=openCL context ready, false=no openCL context available)
+          @return openCL context ready/unavailable */
+      bool isCLReady();
 
-      void initialize(utils::Size size);
+  	  void initialize(utils::Size size);
+
+
+  	 private:
+
+  	  float scalar(math::FixedColVector<float,4> &a, math::FixedColVector<float,4> &b);
+  	  float flipAngle(float angle);
+  	  float scalarAndFlip(math::FixedColVector<float,4> &a, math::FixedColVector<float,4> &b);
+  	  float maxAngle(float snr, float snl, float snt, float snb,
+                     float snbl, float snbr, float sntl, float sntr);
 
     };
   }
+
+/** \endcond */

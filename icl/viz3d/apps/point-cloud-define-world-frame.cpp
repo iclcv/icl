@@ -22,7 +22,7 @@
 #include <icl/viz3d/RayCastOctree.h>
 #include <icl/viz3d/MeshNode.h>
 #include <icl/viz3d/CoordinateFrameNode.h>
-#include <icl/cv3d/ObjectEdgeDetector.h>
+#include <icl/cv3d/edge/ObjectEdgeDetector.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
 #include <icl/cv/RegionDetector.h>

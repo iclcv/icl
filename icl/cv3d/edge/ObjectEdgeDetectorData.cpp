@@ -28,7 +28,7 @@
  **                                                                 **
  ********************************************************************/
 
-#include <icl/cv3d/ObjectEdgeDetectorData.h>
+#include <icl/cv3d/edge/ObjectEdgeDetectorData.h>
 
 namespace icl {
 using namespace math;

@@ -9,8 +9,8 @@
 #include <icl/viz3d/Scene2MouseHandler.h>
 #include <icl/viz3d/Material.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/PoseEstimator.h>
-#include <icl/cv3d/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/PoseEstimator.h>
+#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
 #include <icl/markers/MarkerGridPoseEstimator.h>
 #include <icl/cv/OpenCVCheckerboardDetector.h>
 #include <icl/markers/AdvancedMarkerGridDetector.h>

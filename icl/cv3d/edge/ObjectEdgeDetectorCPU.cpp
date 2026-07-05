@@ -29,8 +29,8 @@
  ********************************************************************/
 
 #include <icl/core/Channel.h>
-#include <icl/cv3d/ObjectEdgeDetectorCPU.h>
-#include <icl/cv3d/ObjectEdgeDetectorData.h>
+#include <icl/cv3d/edge/ObjectEdgeDetectorCPU.h>
+#include <icl/cv3d/edge/ObjectEdgeDetectorData.h>
 
 #include <icl/filter/morph/MedianOp.h>
 

@@ -11,7 +11,7 @@
 #include <icl/core/Img.h>
 
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
 
 #include <icl/markers/FiducialImpl.h>
 
