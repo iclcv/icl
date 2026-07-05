@@ -10,8 +10,6 @@
 #include "harness/Test.h"
 #include <icl/io/source/ImageSource.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom/PointCloudCreator.h>
-#include <icl/geom/PointCloudObject.h>
 #include <icl/geom2/PointCloud.h>
 #include <icl/geom2/PointCloudSource.h>
 #include <icl/io/compress/ImageCompressor.h>
@@ -86,9 +84,8 @@ ICL_REGISTER_TEST("io.scenesource.reconstruct_cloud", "depth + metadata camera -
   std::istringstream is(depth.ptr()->getMetaData());
   Camera cam; is >> cam;
 
-  geom::PointCloudCreator pcc(cam, geom::PointCloudCreator::DistanceToCamPlane);
-  geom::PointCloudObject cloud(640, 480, true);
-  pcc.create(depth.as<icl32f>(), cloud);
+  geom2::PointCloud cloud(640, 480, geom2::PointCloud::XYZ);
+  cloud.unprojectDepth(depth.as<icl32f>(), cam, /*distToCamPlane=*/true);
   ICL_TEST_EQ(cloud.getDim(), 640 * 480);
 
   // Count reconstructed points lying within the scene (background pixels map to

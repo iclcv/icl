@@ -215,9 +215,44 @@ what a kept consumer needs, drop the unused":
 - Scene2 API completeness (`removeCamera`/`removeLight`, `getObject(recursiveIndices)`, bg-color
   getter/setter) → add on demand when Phase 5/C actually needs them, not speculatively.
 
-**Phase 5 — Port the last external scene-graph consumers.** Rewrite the 5
-`markers/apps/camera-calibration*` files + `tests/test-io-scene-source.cpp` onto the native scene
-module. Best folded into the **Phase C extrinsic-calibration app** (same problem, fresh code).
+**Phase 5 — Port the last external scene-graph consumers. 🔶 SCOPED (S98) — the real gate.**
+The 6 remaining consumers: `tests/test-io-scene-source.cpp` (trivial) + two apps (5 files):
+
+- **`test-io-scene-source`** — one case (`reconstruct_cloud`) uses `geom::PointCloudCreator` +
+  `geom::PointCloudObject`; the rest already use `geom2::PointCloud`. Swap to
+  `geom2::PointCloud::unprojectDepth(depth, cam, /*distToCamPlane=*/true)` (semantics match). **~10-line
+  change, independent, do anytime.**
+- **App 2 — `camera-calibration-planar` (~755 L, MEDIUM)** — genuinely multi-camera against a *planar*
+  target (marker-grid or checkerboard), intrinsics from udist files, **per-frame extrinsic pose only**
+  (`MarkerGridPoseEstimator` / `CoplanarPointPoseEstimator`) — i.e. it *already* uses the good decoupled
+  path. Scene use: `GridIndicatorObject` (custom SceneObject w/ child boxes + text labels),
+  `ComplexCoordinateFrameSceneObject` (per-view + world), camera-frustum viz, `SceneMouseHandler`,
+  multi-view GL-callback dispatch, a live variance `Plot`.
+- **App 1 — `camera-calibration` (~1780 L, HIGH)** — single camera vs 3D objects via the **drift-prone
+  joint DLT** (`calibrate_pinv`) — *exactly what the redesign's Phase C replaces*. Port cost is
+  dominated by NON-scene logic (manual-grid mouse editing, best-of-N threaded saver, config format w/
+  embedded `.obj`); scene-graph is only ~13-15%.
+
+**All geom2 building blocks now exist:** Scene→Scene2 ✅ (multi-cam, getGLCallback/getMouseHandler),
+SceneObject-mesh→`MeshNode::load` ✅, GridSceneObject→`GridNode` ✅ (P4), ComplexCoordFrame→
+`CoordinateFrameNode` complex mode ✅, GridIndicatorObject→`GroupNode`+`CuboidNode`+`TextNode` ✅,
+camera-frustum→Scene2 "show cameras" ✅, calibration solvers→`cv3d/Camera` ✅. And
+**`icl-cam-calib-intrinsic` is already a working geom2 calib app** (Scene2+Canvas3D+OffscreenView) — the
+port template.
+
+**DECISION (S98, user): MECHANICAL PORT NOW.** Migrate both apps' scene usage onto geom2/cv3d/viz3d
+(Scene→Scene2, GridSceneObject→GridNode, ComplexCoordFrame→CoordinateFrameNode, GridIndicatorObject→
+GroupNode+CuboidNode+TextNode, GL-callback wiring) — keep the calibration ALGORITHM logic unchanged (the
+quality rethink stays deferred to the redesign arc). Re-link once they build+run. Old geom stays until
+Phase 6, so the apps can be ported incrementally against geom2 while old geom still exists.
+
+- `test-io-scene-source` — ✅ ported (`reconstruct_cloud` → `geom2::PointCloud::unprojectDepth`). 1074/1074.
+- App migration — 🔶 IN PROGRESS. Port surface per the porting guide
+  (`icl/geom2/geom-to-geom2-porting-guide.md`) + the working `icl-cam-calib-intrinsic` template. Verify
+  = compiles + links + offscreen-init (Cocoa GUI can't run interactively in-sandbox).
+
+Once both apps are on geom2, **Phase 6** deletes old geom's scene graph (39 files) + the dead pipeline +
+the geom2 converters.
 
 **Phase 6 — Delete old `geom` entirely** (all 136 files) + the geom2 converters + build/demo
 wiring. Suite green throughout.

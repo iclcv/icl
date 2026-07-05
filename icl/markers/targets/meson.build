@@ -18,24 +18,24 @@ endif
 
 # ---- Apps (need Qt) ----
 if _build_apps and qt_found
-  # camera-calibration is multi-file
+  # camera-calibration is multi-file (mechanical geom→geom2 port in progress)
   executable('icl-camera-calibration',
     files(
       '../apps/camera-calibration.cpp',
       '../apps/camera-calibration-CameraCalibrationUtils.cpp',
     ),
-    dependencies: [icl_markers_dep],
+    dependencies: [icl_markers_dep, icl_geom2_dep],
     install: true,
   )
 
-  # camera-calibration-planar is multi-file
+  # camera-calibration-planar is multi-file (mechanical geom→geom2 port in progress)
   executable('icl-camera-calibration-planar',
     files(
       '../apps/camera-calibration-planar.cpp',
       '../apps/camera-calibration-planar-GridIndicatorObject.cpp',
       '../apps/camera-calibration-planar-PlanarCalibrationTools.cpp',
     ),
-    dependencies: [icl_markers_dep],
+    dependencies: [icl_markers_dep, icl_geom2_dep],
     install: true,
   )
 

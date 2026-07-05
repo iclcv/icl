@@ -40,10 +40,19 @@ Labelled coord-frame already covered by geom2 `CoordinateFrameNode` (complex mod
 a kept consumer, the calib app) + test (suite 1074/1074). DROPPED (no consumer): light gizmo, Sky/HDRI,
 material presets, texture/text converter fidelity, PCL. Scene2 API gaps added on demand in Phase 5/C.
 
-**NEXT:** Phase 5 — port the scene-graph consumers (5 `markers/apps/camera-calibration*` +
-`tests/test-io-scene-source`) onto geom2, folding into the **Phase C** extrinsic-calib rewrite. Then
-Phase 6 (delete old geom + dead pipeline), Phase 7 (rename geom2→viz3d). Post-split: functional
-sub-folders in cv3d/viz3d (see scoping doc). See scoping doc for the full remaining tree.
+**Phase 5 — ✅ RESOLVED (S98):** the 2 legacy calib apps (`camera-calibration`,
+`camera-calibration-planar`) are the last scene-graph consumers and are entangled with the deferred
+camera-calibration-redesign arc. Decision (user): **keep the sources for reference, UN-LINK from the
+build** (removed their targets from `icl/markers/targets/meson.build`) so old geom can be deleted
+without breaking compilation. Ported `test-io-scene-source` → `geom2::PointCloud::unprojectDepth`.
+Re-audit confirms **no live external scene-graph consumer remains** → Phase 6 unblocked. Suite 1074/1074.
+
+**NEXT = Phase 6:** delete old geom's scene graph (39 files) + the dead point-cloud pipeline
+(`PointCloudObjectBase` & derived, creators, grabbers, outputs, serializer, SQFitter, FeatureGraph/
+ConfigurableDepthImage segmenters, PCL) + the geom2 converters (`SceneObjectConverter`/
+`Primitive3DConverter` scaffolding). Then Phase 7 (rename geom2→viz3d), then functional sub-folders in
+cv3d/viz3d. **Deferred:** camera-calibration rework (redesign arc) will rebuild the 2 un-linked apps on
+geom2 later. See `geom-dedup-scoping.md`.
 
 **End-state (evolving — SPLIT into two modules):** old `geom` conflates 3D **CV algorithms** and a
 3D **scene graph + renderer**. Split them: **`cv3d`** (`icl::cv3d`, **Qt-FREE** — verified no CV file
