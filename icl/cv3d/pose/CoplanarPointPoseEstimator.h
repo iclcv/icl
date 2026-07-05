@@ -18,8 +18,7 @@ namespace icl::cv3d {
 
   /// Utility class that allows for 6D pose estimation from a set of at least 4 coplanar points
   /** \section GEN General
-      In contrast to the POSIT algorithms (see icl::Posit), this class is able to compute
-      the 6D-pose of an object from coplanar points.
+      This class computes the 6D-pose of an object from coplanar points.
 
       \section POSE Pose Detection Problem
       Given at least 4 model-points (which are 2D because of the fact, that they

@@ -13,8 +13,6 @@ cv3d_headers = files(
 
 cv3d_pose_headers = files(
   'pose/PoseEstimator.h',
-  'pose/Posit.h',
-  'pose/SoftPosit.h',
   'pose/CoplanarPointPoseEstimator.h',
   'pose/RansacBasedPoseEstimator.h',
   'pose/PlanarRansacEstimator.h',
@@ -52,8 +50,6 @@ cv3d_sources = files(
   'PlaneEquation.cpp',
   'ViewRay.cpp',
   'pose/PoseEstimator.cpp',
-  'pose/Posit.cpp',
-  'pose/SoftPosit.cpp',
   'pose/CoplanarPointPoseEstimator.cpp',
   'pose/RansacBasedPoseEstimator.cpp',
   'pose/PlanarRansacEstimator.cpp',
