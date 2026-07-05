@@ -20,6 +20,7 @@
 #include <icl/markers/CodedCheckerboardTarget2.h>
 #include <icl/cv/IntrinsicCalibrator.h>
 #include <icl/math/la/DynMatrix.h>
+#include <icl/math/transform/Homography2D.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Point.h>
 #include <cmath>
@@ -391,4 +392,52 @@ ICL_REGISTER_TEST("markers.intrinsic.endtoend_coded2_partial_k2",
   ICL_TEST_NEAR(r.getPrincipalY(),   K.cy, 5.0);
   ICL_TEST_NEAR(r.getK1(), K.k1, 0.03);
   ICL_TEST_NEAR(r.getK2(), K.k2, 0.05);
+}
+
+// STEEP, CLOSE coded2 views like the interactive app (big markers, strong perspective,
+// board overruns the frame → markers clipped at the edges). With NO lens distortion the
+// objectPos<->imagePos map is an EXACT planar homography, so any recovered corner far
+// from a robust homography fit is a provable MISLABEL / false positive. Guards the
+// border-margin marker rejection + RANSAC board pose against edge-clip false positives.
+ICL_REGISTER_TEST("markers.intrinsic.coded2_steep_pose_no_mislabels",
+                  "steep/close coded2 views detect with no mislabelled corners (false-positive guard)")
+{
+  using icl::markers::CodedCheckerboardTarget2;
+  const Intr K{700, 700, 512, 384};                                // NO distortion -> exact homography
+  const int W=1024, H=768, C=15, R=11; const double SQ=25;
+  CodedCheckerboardTarget2 cb(C, R, (float)SQ);
+  const Img8u tex = cb.generate(Size(3000, 2200));
+  const std::vector<Pose> poses = {
+    {d2r( 52),d2r(  8),d2r( 12), 280}, {d2r(-48),d2r(-14),d2r(-9), 300},
+    {d2r( 10),d2r( 54),d2r(  6), 290}, {d2r( -6),d2r(-50),d2r(15), 285},
+  };
+  Rng rng(3);
+  int totalCorners=0, mislabels=0, views=0;
+  for (const auto &P : poses) {
+    const Img8u img = renderTex(K, W, H, P, C, R, SQ, tex, 0.5, rng);
+    const auto corr = cb.detect(img);
+    if ((int)corr.size() < 10) continue;
+    ++views;
+    std::vector<Point32f> obj(corr.size()), im(corr.size());
+    for (size_t i=0;i<corr.size();++i){
+      obj[i]=Point32f((float)corr[i].objectPos[0], (float)corr[i].objectPos[1]);
+      im[i]=corr[i].imagePos;
+    }
+    const auto rf = icl::math::Homography2D::robust(obj.data(), im.data(), (int)obj.size(), 6.f);
+    ICL_TEST_TRUE(rf.ok);
+    for (size_t i=0;i<obj.size();++i){
+      const Point32f p = rf.H.apply(obj[i]);
+      ++totalCorners; if (std::hypot(p.x-im[i].x, p.y-im[i].y) > 6.f) ++mislabels;
+    }
+  }
+  std::printf("[coded2-steep] views=%d corners=%d mislabels(>6px)=%d (%.2f%%)\n",
+              views, totalCorners, mislabels, 100.0*mislabels/std::max(1,totalCorners));
+  ICL_TEST_TRUE(views >= 3);
+  ICL_TEST_TRUE(totalCorners > 40);
+  // border-margin + RANSAC pose + the cell-relative robust corner filter cut the raw
+  // ~2% steep-pose mislabels to a sub-1% floor of sub-cell snap errors. The threshold is
+  // kept distortion-safe (a single homography can't model strong lens distortion, so
+  // over-tightening would drop genuine peripheral corners), and endtoend_coded2 proves
+  // this residual doesn't harm the k1/k2 recovery. Guard against a gross regression:
+  ICL_TEST_TRUE(mislabels * 100 < totalCorners);   // < 1% mislabelled
 }

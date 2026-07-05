@@ -35,6 +35,9 @@ namespace icl::markers {
       }
     }
     constexpr int MARKER_BORDER = 2;   // must match the plugin's "border width" default
+    // markers with a corner within this many px of the image edge are clipped →
+    // their decode / corner localisation is unreliable → drop them (false-positive guard)
+    constexpr float BORDER_MARGIN_PX = 2.f;
   }
 
   struct CodedCheckerboardTarget2::Data {
@@ -204,6 +207,7 @@ namespace icl::markers {
     auto collectPass = [&](const Img8u &img) {
       const std::vector<Fiducial> &fids = D.ensureDetector()->detect(&img);
       if (fids.empty()) return;
+      const int IW = img.getWidth(), IH = img.getHeight();
       // solid/garbage decodes duplicate an id → keep only unique-id markers (per pass;
       // cross-pass survivors are dropped geometrically by the RANSAC pose below).
       std::map<int,int> idCount;
@@ -214,6 +218,15 @@ namespace icl::markers {
         if (itc == D.id2cell.end() || idCount[f.getID()] != 1) continue;
         const std::vector<Fiducial::KeyPoint> &kps = f.getKeyPoints2D();
         if (kps.size() != 4) continue;
+        // drop markers clipped by the frame edge — their decode & corner localisation
+        // are unreliable and are a common false-positive source at steep/close poses
+        bool clipped = false;
+        for (int k = 0; k < 4; ++k) {
+          const Point32f &ip = kps[k].imagePos;
+          if (ip.x < BORDER_MARGIN_PX || ip.y < BORDER_MARGIN_PX ||
+              ip.x > IW-1-BORDER_MARGIN_PX || ip.y > IH-1-BORDER_MARGIN_PX) { clipped = true; break; }
+        }
+        if (clipped) continue;
         Marker m; m.cx = itc->second.first; m.cy = itc->second.second;
         Point32f c(0,0);
         for (int k = 0; k < 4; ++k) {
@@ -311,12 +324,45 @@ namespace icl::markers {
     }
     cv::refineCheckerboardCornersSubPix(grid, image);
 
-    std::vector<CalibrationCorrespondence> out;
-    out.reserve(grid.count);
+    // collect the filled lattice corners
+    std::vector<Point32f> obj, im;
+    obj.reserve(grid.count); im.reserve(grid.count);
     for (int ir = 0; ir < GR; ++ir)
       for (int ic = 0; ic < GC; ++ic)
-        if (grid.filled[(size_t)ir*GC + ic])
-          out.push_back({Vec((ic-1)*sq, (ir-1)*sq, 0.f, 1.f), grid.at(ic, ir)});
+        if (grid.filled[(size_t)ir*GC + ic]) {
+          obj.push_back(Point32f((ic-1)*sq, (ir-1)*sq));
+          im.push_back(grid.at(ic, ir));
+        }
+
+    // FINAL false-positive guard: a mislabelled corner (wrong lattice index, or snapped
+    // to a spurious in-marker saddle) sits ~1 cell off the board's planar homography,
+    // whereas a genuine corner stays a small fraction of a cell off even under lens
+    // distortion. So fit a robust homography objectPos→image and keep only the inliers,
+    // thresholded RELATIVE to the apparent cell size (distortion-safe, scale-adaptive).
+    std::vector<char> keep(obj.size(), 1);
+    if (obj.size() >= 8) {
+      std::vector<float> gaps;
+      for (int ir = 0; ir < GR; ++ir)
+        for (int ic = 0; ic < GC; ++ic)
+          if (grid.filled[(size_t)ir*GC + ic]) {
+            const Point32f p = grid.at(ic, ir);
+            if (ic+1 < GC && grid.filled[(size_t)ir*GC + ic+1])
+              { const Point32f q = grid.at(ic+1, ir); gaps.push_back(std::hypot(p.x-q.x, p.y-q.y)); }
+            if (ir+1 < GR && grid.filled[(size_t)(ir+1)*GC + ic])
+              { const Point32f q = grid.at(ic, ir+1); gaps.push_back(std::hypot(p.x-q.x, p.y-q.y)); }
+          }
+      if (!gaps.empty()) {
+        std::nth_element(gaps.begin(), gaps.begin()+gaps.size()/2, gaps.end());
+        const float cellPx = gaps[gaps.size()/2];
+        const auto rf = math::Homography2D::robust(obj.data(), im.data(), (int)obj.size(), 0.30f*cellPx);
+        if (rf.ok) { std::fill(keep.begin(), keep.end(), 0); for (int i : rf.inliers) keep[i] = 1; }
+      }
+    }
+
+    std::vector<CalibrationCorrespondence> out;
+    out.reserve(obj.size());
+    for (size_t i = 0; i < obj.size(); ++i)
+      if (keep[i]) out.push_back({Vec(obj[i].x, obj[i].y, 0.f, 1.f), im[i]});
     return out;
   }
 

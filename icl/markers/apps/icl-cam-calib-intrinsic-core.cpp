@@ -420,25 +420,38 @@ namespace icl::calibintr {
     d.scale   = (float)std::sqrt(std::max(0.0, s1*s2));           // geo-mean px/mm
     d.tiltMag = s1 > 1e-9 ? (float)(1.0 - s2/s1) : 0.f;           // 0 fronto … →1 edge-on
 
-    // DIRECTED lean azimuth. The affine above is undirected (an axis — it can't tell
-    // which way the board recedes). Fit the board→image homography; its projective
-    // depth w = h6·X + h7·Y + h8 is larger where the board is FARTHER (cells compress).
-    // The lean azimuth is the IMAGE direction along which w increases, measured as
-    // the correlation of w against image position over the real points — robust, and
-    // (unlike mapping (h6,h7) through the numerator) it accounts for the w-division.
-    // (Flip the sign — atan2(-dy,-dx) — if the cursor should point to the NEAR side.)
+    // DIRECTED lean from a ROBUST planar pose over ALL corners. The old depth-gradient
+    // correlation was a noise-amplifying derivative → the cursor jittered even on a
+    // dense, fully-visible board. Instead fit a RANSAC board→image homography and
+    // decompose it (with a guessed pinhole K — the azimuth is insensitive to the exact
+    // focal) into the board normal: r1,r2 = normalize(K⁻¹·h1,2), n = r1×r2. tiltDir is
+    // that normal's image-plane azimuth; tiltMag = 1-|nz| = 1-cos(tilt), matching the
+    // gauge-ring thresholds. With many corners this is rock-steady. (Negate n[0],n[1] to
+    // flip the cursor to the opposite side if the convention should differ.)
     std::vector<Point32f> bpts(corr.size()), ipts(corr.size());
     for (size_t i=0;i<corr.size();++i){
       bpts[i]=Point32f((float)(corr[i].objectPos[0]-ox), (float)(corr[i].objectPos[1]-oy));
       ipts[i]=corr[i].imagePos; }
-    const Homography2D H = Homography2D::fit(bpts.data(), ipts.data(), (int)corr.size());
-    const double h6=H(2,0), h7=H(2,1), h8=H(2,2);
-    double sw=0; for (const auto &b : bpts) sw += h6*b.x + h7*b.y + h8;
-    const double mw = sw / bpts.size();
-    double dx=0, dy=0;
-    for (size_t i=0;i<bpts.size();++i){ const double wi = h6*bpts[i].x + h7*bpts[i].y + h8;
-      dx += (wi-mw)*(ipts[i].x-d.centroid.x); dy += (wi-mw)*(ipts[i].y-d.centroid.y); }
-    d.tiltDir = (float)std::atan2(dy, dx);
+    const float imgDiag = std::hypot((float)m_img.width, (float)m_img.height);
+    const auto rf = Homography2D::robust(bpts.data(), ipts.data(), (int)corr.size(),
+                                         std::max(2.f, 0.01f*imgDiag));
+    if (rf.ok && (int)rf.inliers.size() >= 8) {
+      const double fx = m_img.width, fy = m_img.width;          // guessed K (pre-calibration)
+      const double cx = m_img.width*0.5, cy = m_img.height*0.5;
+      const Homography2D &H = rf.H;
+      auto kinv = [&](double a,double b,double c,double v[3]){ v[0]=(a-cx*c)/fx; v[1]=(b-cy*c)/fy; v[2]=c; };
+      auto nrm  = [](double v[3]){ double n=std::sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]); if(n>1e-12){v[0]/=n;v[1]/=n;v[2]/=n;} };
+      double r1[3], r2[3];
+      kinv(H(0,0),H(1,0),H(2,0), r1); nrm(r1);
+      kinv(H(0,1),H(1,1),H(2,1), r2); nrm(r2);
+      double n3[3] = { r1[1]*r2[2]-r1[2]*r2[1], r1[2]*r2[0]-r1[0]*r2[2], r1[0]*r2[1]-r1[1]*r2[0] };
+      nrm(n3);
+      if (n3[2] > 0) { n3[0]=-n3[0]; n3[1]=-n3[1]; n3[2]=-n3[2]; }   // orient toward the camera
+      d.tiltDir = (float)std::atan2(n3[1], n3[0]);
+      d.tiltMag = (float)std::min(1.0, std::max(0.0, 1.0 - std::fabs(n3[2])));
+    } else {
+      d.tiltDir = 0.f;   // ill-conditioned (few / near-collinear corners) → direction unknown
+    }
 
     // --- discrete bins ---
     d.region = std::min(2,(int)(d.centroid.x*3/m_img.width))
