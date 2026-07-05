@@ -4,6 +4,7 @@
 cv3d_headers = files(
   # geometry foundation
   'Camera.h',
+  'SoftPosit.h',
   'GeomDefs.h',
   'PlaneEquation.h',
   'ViewRay.h',
@@ -41,6 +42,7 @@ cv3d_headers = files(
 
 cv3d_sources = files(
   'Camera.cpp',
+  'SoftPosit.cpp',
   'PlaneEquation.cpp',
   'ViewRay.cpp',
   'PoseEstimator.cpp',

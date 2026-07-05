@@ -2,34 +2,18 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christian Groszewski, Christof Elbrechter
 
-#include <icl/geom/SoftPosit.h>
+#include <icl/cv3d/SoftPosit.h>
 
 
 
 using namespace icl::utils;
 using namespace icl::math;
-#ifdef ICL_HAVE_QT
-using namespace icl::qt;
-#endif
 
 namespace icl::geom {
   const double SoftPosit::betaUpdate = 1.05;
 
   const double SoftPosit::betaZero = 0.0004;
 
-#ifdef ICL_HAVE_QT
-  SoftPosit::SoftPosit():dw(0){
-    ROT.setBounds(3,3);
-    T.setBounds(1,3);
-    R1.setBounds(1,3);
-    R2.setBounds(1,3);
-    R3.setBounds(1,3);
-    eye2_2.setBounds(2,2);
-    eye2_2(0, 0) = 1.0;
-    eye2_2(1, 1) = 1.0;
-    draw = false;
-  }
-#else
   SoftPosit::SoftPosit(){
     ROT.setBounds(3,3);
     T.setBounds(1,3);
@@ -41,7 +25,6 @@ namespace icl::geom {
     eye2_2(1, 1) = 1.0;
     draw = false;
   }
-#endif
   SoftPosit::~SoftPosit(){}
 
   void SoftPosit::init(){
@@ -102,14 +85,6 @@ namespace icl::geom {
     }
     DynMatrix<icl64f> wk = homogeneousWorldPts * temp;
 
-#ifdef ICL_HAVE_QT
-    //DynMatrix<icl64f> projWorldPts = proj3dto2d(worldPts, rot, trans, focalLength, 1, center);
-    if(draw){
-      proj3dto2d(worldPts, ROT, T, focalLength,1,center,pts2d);
-      //visualize(w,imagePts, imageAdj,	pts2d, worldAdj);
-      visualize(imagePts, pts2d);
-    }
-#endif
     //First two rows of the camera matrices (for both perspective and SOP).  Note:
     //the scale factor is s = f/Tz = 1/Tz since f = 1.  These are column 4-vectors.
     double t1[] = {ROT(0, 0)/T(2, 0),ROT(0, 1)/T(2, 0),ROT(0, 2)/T(2, 0), T(0, 0)/T(2, 0)};
@@ -308,28 +283,10 @@ namespace icl::geom {
       //	foundPose = 1;
       //else
       //	foundPose = 0;
-#ifdef ICL_HAVE_QT
-      if(draw){
-        proj3dto2d(worldPts, ROT, T, focalLength, 1, center,pts2d);
-        //visualize(w,imagePts, imageAdj,	pts2d, worldAdj);
-        visualize(imagePts,pts2d);
-      }
-#endif
     }
     //SHOW(ROT);
     //SHOW(T);
   }
-#ifdef ICL_HAVE_QT
-  void SoftPosit::softPosit(DynMatrix<icl64f> imagePts, DynMatrix<icl64f> imageAdj, DynMatrix<icl64f> worldPts,
-                            DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
-                            DynMatrix<icl64f> initTrans, double focalLength, ICLDrawWidget &w,
-                            DynMatrix<icl64f> center, bool draw){
-    dw = &w;
-    iAdj = imageAdj;
-    wAdj = worldAdj;
-    softPosit(imagePts, worldPts, beta0, noiseStd, initRot, initTrans, focalLength, center);
-  }
-#endif
   void SoftPosit::softPosit(std::vector<Point32f> imagePts, std::vector<FixedColVector<double,3> > worldPts,
                             double beta0, int noiseStd,	DynMatrix<icl64f> initRot, DynMatrix<icl64f> initTrans,
                             double focalLength, DynMatrix<icl64f> center){
@@ -347,26 +304,6 @@ namespace icl::geom {
 
     softPosit(imagePt, worldPt, beta0, noiseStd, initRot, initTrans, focalLength, center, draw);
   }
-#ifdef ICL_HAVE_QT
-  void SoftPosit::softPosit(std::vector<Point32f> imagePts, DynMatrix<icl64f> imageAdj, std::vector<FixedColVector<double,3> > worldPts,
-                            DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	DynMatrix<icl64f> initRot,
-                            DynMatrix<icl64f> initTrans, double focalLength, ICLDrawWidget &w, DynMatrix<icl64f> center,bool draw){
-
-    DynMatrix<icl64f> imagePt = DynMatrix<icl64f>::create(imagePts.size(), 2);
-    for(unsigned int i=0; i<imagePts.size();++i){
-      imagePt(i, 0) = imagePts.at(i).x;
-      imagePt(i, 1) = imagePts.at(i).y;
-    }
-    DynMatrix<icl64f> worldPt = DynMatrix<icl64f>::create(worldPts.size(), 3);
-    for(unsigned int i=0; i<worldPts.size();++i){
-      worldPt(i, 0) = worldPts.at(i)(0, 0);
-      worldPt(i, 1) = worldPts.at(i)(1, 0);
-      worldPt(i, 2) = worldPts.at(i)(2, 0);
-    }
-
-    softPosit(imagePt, imageAdj, worldPt, worldAdj, beta0, noiseStd, initRot, initTrans, focalLength, w, center, draw);
-  }
-#endif
 
   DynMatrix<icl64f>& SoftPosit::cross(DynMatrix<icl64f> &x, DynMatrix<icl64f> &y, DynMatrix<icl64f> &r){
     if(x.cols()==1 && y.cols()==1 && x.rows()==3 && y.rows()==3){
@@ -562,65 +499,4 @@ namespace icl::geom {
     return max;
   }
 
-#ifdef ICL_HAVE_QT
-
-  void SoftPosit::visualize(const DynMatrix<icl64f> & imagePts, const DynMatrix<icl64f> &projWorldPts, unsigned int delay){
-    dw->color(255,0,0,1);
-    dw->linewidth(2);
-    //	dw->lock();
-    //dw->reset();
-    float offsetx=dw->size().rwidth()/2.0;
-    float offsety=dw->size().rheight()/2.0;
-    for(unsigned int i=0;i<wAdj.cols();++i){
-      for(unsigned int j=0;j<wAdj.rows();++j){
-        if(wAdj(j, i)==1){
-          dw->line(projWorldPts(i, 0)+offsetx, projWorldPts(i, 1)+offsety,
-                   projWorldPts(j, 0)+offsetx, projWorldPts(j, 1)+offsety);
-        }
-      }
-    }
-    dw->color(0,0,255,255);
-    for(unsigned int i=0;i<iAdj.cols();++i){
-      for(unsigned int j=0;j<iAdj.rows();++j){
-        if(iAdj(j, i) == 1){
-          dw->line(imagePts(i, 0)+offsetx, imagePts(i, 1)+offsety,
-                   imagePts(j, 0)+offsetx, imagePts(j, 1)+offsety);
-        }
-      }
-    }
-    //dw->unlock();
-    dw->render();//update();
-    Thread::msleep(delay);
-  }
-
-  void SoftPosit::visualize(ICLDrawWidget &w,const DynMatrix<icl64f> & imagePts, const DynMatrix<icl64f> &imageAdj,
-                            const DynMatrix<icl64f> &projWorldPts, const DynMatrix<icl64f> &worldAdj, unsigned int delay){
-    w.color(255,0,0,1);
-    w.linewidth(2);
-    //	w.lock();
-    //w.reset();
-    float offsetx=w.size().rwidth()/2.0;
-    float offsety=w.size().rheight()/2.0;
-    for(unsigned int i=0;i<worldAdj.cols();++i){
-      for(unsigned int j=0;j<worldAdj.rows();++j){
-        if(worldAdj(j, i)==1){
-          w.line(projWorldPts(i, 0)+offsetx, projWorldPts(i, 1)+offsety,
-                 projWorldPts(j, 0)+offsetx, projWorldPts(j, 1)+offsety);
-        }
-      }
-    }
-    w.color(0,0,255,255);
-    for(unsigned int i=0;i<imageAdj.cols();++i){
-      for(unsigned int j=0;j<imageAdj.rows();++j){
-        if(imageAdj(j, i) == 1){
-          w.line(imagePts(i, 0)+offsetx, imagePts(i, 1)+offsety,
-                 imagePts(j, 0)+offsetx, imagePts(j, 1)+offsety);
-        }
-      }
-    }
-    //w.unlock();
-    w.render();
-    Thread::msleep(delay);
-  }
-#endif
   } // namespace icl::geom

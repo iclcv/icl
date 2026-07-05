@@ -239,7 +239,7 @@ endif
 icl_viz3d_lib = shared_library('icl-viz3d',
   viz3d_sources,
   include_directories: _viz3d_inc,
-  dependencies: [icl_qt_dep, icl_geom_dep, icl_io_dep] + viz3d_cycles_deps,
+  dependencies: [icl_qt_dep, icl_cv3d_dep, icl_io_dep] + viz3d_cycles_deps,
   cpp_args: viz3d_cycles_args,
   version: so_version,
   implicit_include_directories: false,
@@ -250,7 +250,7 @@ icl_viz3d_lib = shared_library('icl-viz3d',
 icl_viz3d_dep = declare_dependency(
   link_with: icl_viz3d_lib,
   include_directories: [root_inc, gen_inc],
-  dependencies: [icl_qt_dep, icl_geom_dep, icl_io_dep],
+  dependencies: [icl_qt_dep, icl_cv3d_dep, icl_io_dep],
 )
 
 install_headers(viz3d_headers,

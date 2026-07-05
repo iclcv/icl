@@ -7,7 +7,7 @@ if _build_demos and qt_found
     'llm-1D': [],
     'llm-2D': [],
     'polynomial-regression-1D': [],
-    'polynomial-regression-2D': [icl_viz3d_dep, icl_geom_dep],
+    'polynomial-regression-2D': [icl_viz3d_dep, icl_cv3d_dep],
     'polynomial-regression-image': [],
     'quad-tree': [],
   }

@@ -12,9 +12,6 @@
 #include <icl/utils/Point.h>
 #include <icl/utils/BasicTypes.h>
 
-#ifdef ICL_HAVE_QT
-#include <icl/qt/DrawWidget.h>
-#endif
 
 #ifdef WIN32
   #undef max
@@ -41,9 +38,6 @@ namespace icl::geom {
     static const double betaUpdate;// not allowed in clang = 1.05;
 
     static const double betaZero;;// not allowed in clang = 0.0004;
-#ifdef ICL_HAVE_QT
-    qt::ICLDrawWidget *dw;
-#endif
     math::DynMatrix<icl64f> iAdj;
     math::DynMatrix<icl64f> wAdj;
 
@@ -142,21 +136,9 @@ namespace icl::geom {
 
     void softPosit(math::DynMatrix<icl64f> imagePts, math::DynMatrix<icl64f> worldPts, double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot,
                    math::DynMatrix<icl64f> initTrans, double focalLength, math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>::create(0, 2), bool draw = true);
-#ifdef ICL_HAVE_QT
-    void softPosit(math::DynMatrix<icl64f> imagePts, math::DynMatrix<icl64f> imageAdj, math::DynMatrix<icl64f> worldPts,
-                   math::DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot,
-                   math::DynMatrix<icl64f> initTrans, double focalLength, qt::ICLDrawWidget &w,
-                   math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>::create(0, 2), bool draw = true);
-#endif
     void softPosit(std::vector<utils::Point32f> imagePts, std::vector<math::FixedColVector<double,3> > worldPts,
                    double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot, math::DynMatrix<icl64f> initTrans,
                    double focalLength, math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>::create(0, 2));
-#ifdef ICL_HAVE_QT
-    void softPosit(std::vector<utils::Point32f> imagePts, math::DynMatrix<icl64f> imageAdj, std::vector<math::FixedColVector<double,3> > worldPts,
-                   math::DynMatrix<icl64f> worldAdj, double beta0, int noiseStd,	math::DynMatrix<icl64f> initRot,
-                   math::DynMatrix<icl64f> initTrans, double focalLength, qt::ICLDrawWidget &w,
-                   math::DynMatrix<icl64f> center = math::DynMatrix<icl64f>::create(0, 2), bool draw=true);
-#endif
     void proj3dto2d(math::DynMatrix<icl64f> pts3d, math::DynMatrix<icl64f> &rot, math::DynMatrix<icl64f> &trans,
                     double flength, int objdim, math::DynMatrix<icl64f> &center, math::DynMatrix<icl64f> &pts2d);
 
@@ -173,11 +155,5 @@ namespace icl::geom {
       return isNull;
     }
 
-#ifdef ICL_HAVE_QT
-    void visualize(const math::DynMatrix<icl64f> & imagePts, const math::DynMatrix<icl64f> &projWorldPts, unsigned int delay=200);
-
-    void visualize(qt::ICLDrawWidget &w,const math::DynMatrix<icl64f> & imagePts, const math::DynMatrix<icl64f> &imageAdj,
-                   const math::DynMatrix<icl64f> &projWorldPts, const math::DynMatrix<icl64f> &worldAdj, unsigned int delay=200);
-#endif
   };
   } // namespace icl::geom

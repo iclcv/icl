@@ -297,7 +297,6 @@ subdir('icl/cv3d')
 if qt_found
   subdir('icl/qt')
 endif
-subdir('icl/geom')
 if qt_found
   subdir('icl/viz3d')
 endif
@@ -318,7 +317,6 @@ if _build_demos or _build_apps or _build_examples
   if qt_found
     subdir('icl/qt/targets')
   endif
-  subdir('icl/geom/targets')
   if qt_found
     subdir('icl/viz3d/targets')
   endif

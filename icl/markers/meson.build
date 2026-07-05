@@ -70,7 +70,7 @@ markers_sources = files(
   'TwoLevelRegionStructure.cpp',
 )
 
-markers_deps = [icl_geom_dep, icl_cv_dep]
+markers_deps = [icl_cv3d_dep, icl_qt_dep, icl_cv_dep]
 
 icl_markers_lib = shared_library('icl-markers',
   markers_sources,
