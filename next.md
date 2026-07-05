@@ -37,6 +37,18 @@ in `icp/ICP_OpenCL.cpp` (guarded by `ICL_HAVE_OPENCL`) mining those kernels (rep
 ported to the current `icl::utils::cl` CLProgram API. Sandbox OpenCL needs the Metal-cache patch
 (see `reference_sandbox_opencl`); verify on Linux/Docker too.
 
+**⏭ TODO — Vec8 (pos+color) ICP** (an older OpenCL `IterativeClosestPoint<Vec8>` had this). Color
+matters ONLY in the correspondence/NN metric, never in the rigid-body transform. Do it as a
+**color-aware backend** (the `ICP::Backend` seam already isolates this) with a **fully-configurable
+distance function** (weighted pos+color; hard/impossible to keep free on OpenCL — so the free-form
+metric is the C++ backend's selling point). Constraints from CE:
+- MUST NOT slow the position-only path → either template everything (`ICP<T>` + template point/metric)
+  OR keep two versions (pos-only `ICP` + a separate color-aware class/backend). Do NOT bolt an
+  always-present color branch onto the hot Vec4 loop.
+- C++ route is cheap: ICL's N-D `math::KDTree` on 6D `[x,y,z, w·r,w·g,w·b]` gives combined NN for
+  free; OpenCL route = the old Vec8 pluggable-distance path.
+Decide template-vs-two-versions when picked up; fold in with Phase 2.
+
 ### ✅ DONE (S98) — geom / geom2 DE-DUPLICATION + functional sub-folders
 The big multi-module restructuring is complete. **End state: two clean modules, no `geom`:**
 - **`cv3d`** (`icl::cv3d`, **Qt-free** 3D CV, below ICLQt → headless vision) — root = foundation
