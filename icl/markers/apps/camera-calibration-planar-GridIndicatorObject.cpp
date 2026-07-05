@@ -3,9 +3,9 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include "camera-calibration-planar-GridIndicatorObject.h"
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/TextNode.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/nodes/TextNode.h>
+#include <icl/viz3d/render/Material.h>
 
 namespace icl{
   using namespace utils;

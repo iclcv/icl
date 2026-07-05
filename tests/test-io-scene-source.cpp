@@ -10,8 +10,8 @@
 #include "harness/Test.h"
 #include <icl/io/source/ImageSource.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/viz3d/PointCloud.h>
-#include <icl/viz3d/PointCloudSource.h>
+#include <icl/viz3d/pointcloud/PointCloud.h>
+#include <icl/viz3d/pointcloud/PointCloudSource.h>
 #include <icl/io/compress/ImageCompressor.h>
 #include <icl/core/Image.h>
 #include <sstream>

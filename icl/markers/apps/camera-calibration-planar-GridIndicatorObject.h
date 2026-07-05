@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/viz3d/GroupNode.h>
+#include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/markers/AdvancedMarkerGridDetector.h>
 namespace icl::markers {
     /// local utility class (viz3d port of the old SceneObject-based indicator)

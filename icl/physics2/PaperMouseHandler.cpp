@@ -6,8 +6,8 @@
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/FoldDriver.h>
 #include <icl/physics2/PaperMoverDriver.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/Node.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/Node.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
 #include <icl/cv3d/PlaneEquation.h>

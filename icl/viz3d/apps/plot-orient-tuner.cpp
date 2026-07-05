@@ -10,11 +10,11 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Plot3D.h>
-#include <icl/viz3d/SphereNode.h>
-#include <icl/viz3d/CoordinateFrameNode.h>
+#include <icl/viz3d/plot/Plot3D.h>
+#include <icl/viz3d/nodes/SphereNode.h>
+#include <icl/viz3d/nodes/CoordinateFrameNode.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/render/Material.h>
 #include <iomanip>
 #include <sstream>
 

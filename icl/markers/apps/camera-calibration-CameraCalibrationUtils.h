@@ -7,8 +7,8 @@
 #include <string>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/qt/DrawHandle3D.h>
-#include <icl/viz3d/Node.h>
-#include <icl/viz3d/GridNode.h>
+#include <icl/viz3d/nodes/Node.h>
+#include <icl/viz3d/nodes/GridNode.h>
 namespace icl::viz3d { class Scene2; }
 #include <icl/utils/thread/Lockable.h>
 #include <icl/core/line/Line.h>

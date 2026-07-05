@@ -17,14 +17,14 @@
 #include <QGuiApplication>
 #include <QSurfaceFormat>
 
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/SceneCapture.h>
-#include <icl/viz3d/SphereNode.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/LightNode.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/render/SceneCapture.h>
+#include <icl/viz3d/nodes/SphereNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/nodes/LightNode.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/io/SaveLoad.h>
 
 #include <cstdio>

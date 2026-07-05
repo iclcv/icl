@@ -13,7 +13,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Plot3D.h>
+#include <icl/viz3d/plot/Plot3D.h>
 #include <icl/math/fit/CMAESOptimizer.h>
 #include <icl/utils/Random.h>
 #include <atomic>

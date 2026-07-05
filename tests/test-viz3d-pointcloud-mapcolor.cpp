@@ -7,12 +7,12 @@
 // stereo RGB-D simulator). GL-free (BVH capture), so verifiable headless.
 
 #include "harness/Test.h"
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/SceneCapture.h>
-#include <icl/viz3d/SphereNode.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/PointCloud.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/render/SceneCapture.h>
+#include <icl/viz3d/nodes/SphereNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/pointcloud/PointCloud.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <cmath>
 

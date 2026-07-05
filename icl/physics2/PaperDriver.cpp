@@ -5,9 +5,9 @@
 #include <icl/physics2/PaperDriver.h>
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/StateBuffer.h>
-#include <icl/viz3d/Node.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/Primitive.h>
+#include <icl/viz3d/nodes/Node.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/render/Primitive.h>
 #include <icl/cv3d/ViewRay.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/math/transform/HomogeneousMath.h>

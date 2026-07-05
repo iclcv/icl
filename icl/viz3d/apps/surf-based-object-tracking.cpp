@@ -11,10 +11,10 @@
 #include <icl/utils/prop/Constraints.h>
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/GeomDefs.h>
 #include <icl/cv3d/pose/RansacBasedPoseEstimator.h>
 

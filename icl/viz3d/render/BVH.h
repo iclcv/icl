@@ -1,0 +1,105 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#pragma once
+
+#include <icl/utils/CompatMacros.h>
+#include <icl/math/la/FixedVector.h>
+#include <icl/core/Img.h>
+#include <icl/viz3d/render/Primitive.h>  // GeomColor
+#include <memory>
+#include <vector>
+
+#ifndef ICLViz3d_API
+#define ICLViz3d_API
+#endif
+
+namespace icl::cv3d {
+  class Camera;
+  struct ViewRay;
+}
+
+namespace icl::viz3d {
+
+  class Node;
+  class PointCloud;
+  using Vec = math::FixedColVector<float, 4>;
+
+  /// Result of a BVH ray query
+  struct BVHHit {
+    Node *node = nullptr;
+    Vec pos{0,0,0,1};
+    GeomColor color{0,0,0,0};
+    float dist = -1;
+    operator bool() const { return node != nullptr; }
+  };
+
+  /// Bounding Volume Hierarchy for fast ray-triangle intersection
+  /** Build from a list of world-space triangles, then query with rays.
+      Uses median-split construction and stack-based traversal.
+      Thread-safe for concurrent queries after build(). */
+  class ICLViz3d_API BVH {
+  public:
+    /// A single triangle with metadata for hit reporting
+    struct Triangle {
+      Vec a, b, c;          ///< world-space vertices
+      Node *node;           ///< owning node (for hit result)
+      GeomColor color;      ///< material color (for hit result)
+    };
+
+    BVH();
+    ~BVH();
+
+    BVH(BVH &&) noexcept;
+    BVH &operator=(BVH &&) noexcept;
+
+    /// Build from a list of triangles (moves the data in)
+    void build(std::vector<Triangle> &&triangles);
+
+    /// Find the closest intersection along a ray
+    BVHHit intersect(const cv3d::ViewRay &ray) const;
+
+    /// Raycast an entire camera image into a point cloud (OpenMP-parallel)
+    /** @param cam    camera to cast from
+        @param cloud  target (must support XYZ; RGBA32f written if available)
+        @param stepX  pixel step in X (>1 for subsampling)
+        @param stepY  pixel step in Y (>1 for subsampling) */
+    void raycastImage(const cv3d::Camera &cam, PointCloud &cloud,
+                      int stepX = 1, int stepY = 1) const;
+
+    /// Result of raycastToImage
+    struct ImageResult {
+      core::Img8u image;     ///< RGB image (flat material colors, no shading)
+      core::Img32f depth;    ///< depth buffer (empty if mode == NoDepth)
+    };
+
+    /// Depth buffer modes
+    enum DepthMode {
+      NoDepth,          ///< don't compute depth buffer
+      DistToCamCenter,  ///< Euclidean distance from camera center to hit point
+      DistToCamPlane    ///< distance along camera's viewing direction (Z-depth)
+    };
+
+    /// Raycast an entire camera image, returning RGB + optional depth buffer
+    /** @param cam    camera to cast from
+        @param mode   depth buffer mode (NoDepth to skip)
+        @param stepX  pixel step in X (>1 for subsampling)
+        @param stepY  pixel step in Y (>1 for subsampling) */
+    ImageResult raycastToImage(const cv3d::Camera &cam,
+                               DepthMode mode = DistToCamCenter,
+                               int stepX = 1, int stepY = 1) const;
+
+    /// Number of triangles in the BVH
+    int getTriangleCount() const;
+
+    /// Number of internal nodes
+    int getNodeCount() const;
+
+  private:
+    struct BVHNode;
+    struct Data;
+    std::unique_ptr<Data> m_data;
+  };
+
+} // namespace icl::viz3d

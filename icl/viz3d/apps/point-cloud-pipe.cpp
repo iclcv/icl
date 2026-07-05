@@ -14,12 +14,12 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/PointCloud.h>
-#include <icl/viz3d/PointCloudNode.h>
-#include <icl/viz3d/PointCloudSource.h>
-#include <icl/viz3d/LightNode.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/pointcloud/PointCloud.h>
+#include <icl/viz3d/nodes/PointCloudNode.h>
+#include <icl/viz3d/pointcloud/PointCloudSource.h>
+#include <icl/viz3d/nodes/LightNode.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/io/sink/ImageSink.h>
 #include <icl/core/Img.h>

@@ -6,7 +6,7 @@
 // grid lines / quad cells, with mutable getNode(x,y) access. Headless data checks.
 
 #include "harness/Test.h"
-#include <icl/viz3d/GridNode.h>
+#include <icl/viz3d/nodes/GridNode.h>
 #include <cmath>
 
 using namespace icl;

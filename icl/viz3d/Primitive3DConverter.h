@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <icl/viz3d/Node.h>
+#include <icl/viz3d/nodes/Node.h>
 #include <icl/cv3d/Primitive3D.h>
 #include <icl/cv3d/GeomDefs.h>
 #include <memory>

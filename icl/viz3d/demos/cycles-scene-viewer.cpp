@@ -10,10 +10,10 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/DemoScene2.h>
-#include <icl/viz3d/CyclesRenderer.h>
-#include <icl/viz3d/Renderer.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/DemoScene2.h>
+#include <icl/viz3d/render/CyclesRenderer.h>
+#include <icl/viz3d/render/Renderer.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
 
 using namespace icl::utils;
 using namespace icl::core;

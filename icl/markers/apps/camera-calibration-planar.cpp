@@ -4,10 +4,10 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/CoordinateFrameNode.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/CoordinateFrameNode.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/pose/PoseEstimator.h>
 #include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>

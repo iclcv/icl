@@ -15,10 +15,10 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/PointCloud.h>
-#include <icl/viz3d/PointCloudNode.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/pointcloud/PointCloud.h>
+#include <icl/viz3d/nodes/PointCloudNode.h>
 #include <icl/cv3d/edge/ObjectEdgeDetector.h>
 #include <icl/cv3d/segmentation/Segmentation3D.h>
 #include <icl/cv3d/segmentation/EuclideanBlobSegmenter.h>

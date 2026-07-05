@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/viz3d/Driver.h>
+#include <icl/viz3d/scene/Driver.h>
 #include <icl/physics2/Units.h>
 #include <memory>
 #include <vector>

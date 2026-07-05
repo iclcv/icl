@@ -5,7 +5,7 @@
 #include <icl/physics2/Constraint.h>
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/RigidBodyDriver.h>
-#include <icl/viz3d/Node.h>
+#include <icl/viz3d/nodes/Node.h>
 #include <icl/utils/Exception.h>
 
 #include <btBulletDynamicsCommon.h>

@@ -11,15 +11,15 @@
 #include <icl/core/cc/Color.h>
 #include <icl/cv/RegionDetector.h>
 
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/TextNode.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/nodes/TextNode.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/GeomDefs.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/render/Material.h>
 #include <mutex>
 
 using namespace icl::viz3d;

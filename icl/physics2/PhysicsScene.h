@@ -12,7 +12,7 @@
 #include <icl/physics2/SensorDriver.h>
 #include <icl/utils/Size.h>
 #include <icl/physics2/Units.h>
-#include <icl/viz3d/DefaultScene.h>
+#include <icl/viz3d/scene/DefaultScene.h>
 #include <memory>
 
 #ifndef ICLPhysics2_API

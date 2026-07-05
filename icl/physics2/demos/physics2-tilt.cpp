@@ -7,13 +7,13 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/SphereNode.h>
-#include <icl/viz3d/LightNode.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/DefaultScene.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/SphereNode.h>
+#include <icl/viz3d/nodes/LightNode.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/DefaultScene.h>
 #include <icl/physics2/PhysicsScene.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/PhysicsMouseHandler.h>

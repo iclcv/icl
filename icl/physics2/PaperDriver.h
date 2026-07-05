@@ -9,7 +9,7 @@
 #include <icl/utils/Point.h>
 #include <icl/utils/Size.h>
 #include <icl/core/Img.h>
-#include <icl/viz3d/Driver.h>
+#include <icl/viz3d/scene/Driver.h>
 #include <icl/physics2/Units.h>
 #include <functional>
 #include <memory>

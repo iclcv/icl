@@ -8,7 +8,7 @@
 #include <icl/physics2/Units.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/Constraint.h>
-#include <icl/viz3d/Node.h>
+#include <icl/viz3d/nodes/Node.h>
 #include <functional>
 #include <memory>
 #include <utility>

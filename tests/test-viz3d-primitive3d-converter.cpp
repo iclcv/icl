@@ -8,9 +8,9 @@
 
 #include "harness/Test.h"
 #include <icl/viz3d/Primitive3DConverter.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/SphereNode.h>
-#include <icl/viz3d/CylinderNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/SphereNode.h>
+#include <icl/viz3d/nodes/CylinderNode.h>
 #include <icl/cv3d/Primitive3D.h>
 #include <cmath>
 

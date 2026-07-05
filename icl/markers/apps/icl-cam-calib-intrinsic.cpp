@@ -27,17 +27,17 @@
 // --- headless selftest path (QGuiApplication + GLSceneCapture) ---
 #include <QGuiApplication>
 #include <QSurfaceFormat>
-#include <icl/viz3d/SceneCapture.h>
+#include <icl/viz3d/render/SceneCapture.h>
 
 // --- shared sim scene + interactive GUI ---
 #include <icl/qt/Common2.h>            // ICLApp, GUI, Canvas/Canvas3D, handles
 #include <icl/qt/ui.h>
 #include <icl/qt/QuickDraw.h>          // headless image-space draw (coverage gauges)
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/LightNode.h>
-#include <icl/viz3d/CheckerboardNode.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/OffscreenView.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/LightNode.h>
+#include <icl/viz3d/nodes/CheckerboardNode.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/render/OffscreenView.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/math/la/FixedMatrix.h>   // create_hom_4x4
 #include <icl/io/SaveLoad.h>

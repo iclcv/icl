@@ -16,7 +16,7 @@
 
 #include <icl/markers/CalibrationTarget.h>
 #include <icl/cv/IntrinsicCalibrator.h>
-#include <icl/viz3d/Node.h>
+#include <icl/viz3d/nodes/Node.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Size.h>   // Size + Size32f (SizeT<float>)
 #include <memory>

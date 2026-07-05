@@ -8,14 +8,14 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/DemoScene2.h>
-#include <icl/viz3d/BVH.h>
-#include <icl/viz3d/RayCastOctree.h>
-#include <icl/viz3d/PointCloud.h>
-#include <icl/viz3d/PointCloudNode.h>
-#include <icl/viz3d/LightNode.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/DemoScene2.h>
+#include <icl/viz3d/render/BVH.h>
+#include <icl/viz3d/render/RayCastOctree.h>
+#include <icl/viz3d/pointcloud/PointCloud.h>
+#include <icl/viz3d/nodes/PointCloudNode.h>
+#include <icl/viz3d/nodes/LightNode.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/utils/time/Time.h>
 #include <mutex>

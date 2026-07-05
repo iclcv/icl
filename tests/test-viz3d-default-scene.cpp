@@ -8,9 +8,9 @@
 // (the sky pass, faded ground edges, lamp rig) needs a real display.
 
 #include "harness/Test.h"
-#include <icl/viz3d/DefaultScene.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/MeshNode.h>
+#include <icl/viz3d/scene/DefaultScene.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
 
 using namespace icl::viz3d;
 using SceneType = DefaultScene::SceneType;

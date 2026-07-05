@@ -10,9 +10,9 @@
 #include <icl/markers/MarkerGridTarget.h>
 #include <icl/markers/FiducialDetector.h>         // black-cell coded: pp.filter=dilatation
 #include <icl/markers/FiducialDetectorPlugin.h>   // getPlugin()->setPropertyValue
-#include <icl/viz3d/CheckerboardNode.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/nodes/CheckerboardNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/filter/affine/ImageUndistortion.h>
 #include <icl/filter/affine/WarpOp.h>
 #include <icl/math/transform/Homography2D.h>

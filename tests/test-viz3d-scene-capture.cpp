@@ -8,10 +8,10 @@
 // is exercised only on a real display.
 
 #include "harness/Test.h"
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/SceneCapture.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/render/SceneCapture.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <cmath>
 #include <memory>

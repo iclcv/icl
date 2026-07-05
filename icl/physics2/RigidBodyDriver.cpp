@@ -6,7 +6,7 @@
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/StateBuffer.h>
 #include <icl/physics2/CollisionShapeFactory.h>
-#include <icl/viz3d/Node.h>
+#include <icl/viz3d/nodes/Node.h>
 #include <icl/utils/Macros.h>
 
 #include <BulletDynamics/Dynamics/btRigidBody.h>

@@ -6,9 +6,9 @@
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/StateBuffer.h>
 #include <icl/physics2/CollisionShapeFactory.h>
-#include <icl/viz3d/Node.h>
-#include <icl/viz3d/CylinderNode.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/nodes/Node.h>
+#include <icl/viz3d/nodes/CylinderNode.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/GeomDefs.h>
 #include <icl/utils/Macros.h>
 

@@ -10,16 +10,16 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/Driver.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/SphereNode.h>
-#include <icl/viz3d/ConeNode.h>
-#include <icl/viz3d/CoordinateFrameNode.h>
-#include <icl/viz3d/LightNode.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Driver.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/SphereNode.h>
+#include <icl/viz3d/nodes/ConeNode.h>
+#include <icl/viz3d/nodes/CoordinateFrameNode.h>
+#include <icl/viz3d/nodes/LightNode.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 
 using namespace icl::viz3d;

@@ -3,11 +3,11 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/viz3d/Primitive3DConverter.h>
-#include <icl/viz3d/GeometryNode.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/SphereNode.h>
-#include <icl/viz3d/CylinderNode.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/nodes/GeometryNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/SphereNode.h>
+#include <icl/viz3d/nodes/CylinderNode.h>
+#include <icl/viz3d/render/Material.h>
 
 namespace icl::viz3d {
 

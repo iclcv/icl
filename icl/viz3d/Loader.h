@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/GroupNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/nodes/GroupNode.h>
 #include <string>
 #include <vector>
 #include <memory>

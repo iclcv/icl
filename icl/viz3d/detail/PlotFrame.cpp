@@ -3,9 +3,9 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/viz3d/detail/PlotFrame.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/TextNode.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/nodes/TextNode.h>
 #include <icl/cv3d/GeomDefs.h>
 #include <icl/utils/StringUtils.h>
 #include <algorithm>

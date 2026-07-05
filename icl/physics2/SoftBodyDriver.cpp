@@ -6,9 +6,9 @@
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/RigidBodyDriver.h>
 #include <icl/physics2/StateBuffer.h>
-#include <icl/viz3d/Node.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/Primitive.h>
+#include <icl/viz3d/nodes/Node.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/render/Primitive.h>
 #include <icl/utils/Macros.h>
 #include <icl/utils/prop/Constraints.h>
 #include <algorithm>

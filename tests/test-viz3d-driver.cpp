@@ -7,10 +7,10 @@
 // pre-order traversal, all verifiable headless in the sandbox.
 
 #include "harness/Test.h"
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/Driver.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/CuboidNode.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Driver.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
 
 using namespace icl::viz3d;
 

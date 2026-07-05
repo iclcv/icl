@@ -5,7 +5,7 @@
 #include <icl/physics2/SensorDriver.h>
 #include <icl/physics2/PhysicsWorld.h>
 #include <icl/physics2/CollisionShapeFactory.h>
-#include <icl/viz3d/Node.h>
+#include <icl/viz3d/nodes/Node.h>
 #include <icl/utils/Macros.h>
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>

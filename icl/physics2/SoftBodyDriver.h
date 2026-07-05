@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/utils/config/Configurable.h>
-#include <icl/viz3d/Driver.h>
+#include <icl/viz3d/scene/Driver.h>
 #include <icl/physics2/Units.h>
 #include <memory>
 

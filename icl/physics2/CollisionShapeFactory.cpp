@@ -3,11 +3,11 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/physics2/CollisionShapeFactory.h>
-#include <icl/viz3d/Node.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/GeometryNode.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/SphereNode.h>
+#include <icl/viz3d/nodes/Node.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/GeometryNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/SphereNode.h>
 
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 #include <BulletCollision/CollisionShapes/btSphereShape.h>

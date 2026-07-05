@@ -4,10 +4,10 @@
 
 #include "camera-calibration-CameraCalibrationUtils.h"
 #include <icl/core/CoreFunctions.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/render/Material.h>
 
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/config/ConfigFile.h>
@@ -18,7 +18,7 @@
 
 #include <QtWidgets/QMessageBox>
 #include <icl/markers/FiducialDetectorPlugin.h>
-#include <icl/viz3d/GridNode.h>
+#include <icl/viz3d/nodes/GridNode.h>
 #include <mutex>
 
 

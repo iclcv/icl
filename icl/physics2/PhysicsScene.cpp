@@ -3,12 +3,12 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/physics2/PhysicsScene.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/Node.h>
-#include <icl/viz3d/LightNode.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/Primitive.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/Node.h>
+#include <icl/viz3d/nodes/LightNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/render/Primitive.h>
 
 namespace icl::physics2 {
 

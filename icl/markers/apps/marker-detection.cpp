@@ -8,11 +8,11 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/CoordinateFrameNode.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/CoordinateFrameNode.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
 
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPluginForQuads.h>

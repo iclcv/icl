@@ -5,11 +5,11 @@
 #include "camera-calibration-CameraCalibrationUtils.h"
 
 #include <icl/qt/Common2.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/GeometryNode.h>
-#include <icl/viz3d/CoordinateFrameNode.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/GeometryNode.h>
+#include <icl/viz3d/nodes/CoordinateFrameNode.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
 #include <icl/qt/AdjustGridMouseHandler.h>

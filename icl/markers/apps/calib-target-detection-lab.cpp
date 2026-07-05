@@ -29,14 +29,14 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/LightNode.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/CheckerboardNode.h>  // the checkerboard target node (self-visualizing)
-#include <icl/viz3d/MeshNode.h>          // the marker-grid board (textured quad)
-#include <icl/viz3d/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/LightNode.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/nodes/CheckerboardNode.h>  // the checkerboard target node (self-visualizing)
+#include <icl/viz3d/nodes/MeshNode.h>          // the marker-grid board (textured quad)
+#include <icl/viz3d/render/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
 #include <icl/cv3d/Camera.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/cv/CheckerboardSaddleDetector.h>
 #include <icl/cv/CheckerboardGrid.h>           // growth-based grid recovery + LAP cleanup
 #include <icl/cv/OpenCVCheckerboardDetector.h> // the opencv detector backend (+ CheckerboardDetector iface)

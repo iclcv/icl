@@ -7,8 +7,8 @@
 // SceneObject-derived OctreeObject). Headless.
 
 #include "harness/Test.h"
-#include <icl/viz3d/RayCastOctree.h>
-#include <icl/viz3d/PointCloud.h>
+#include <icl/viz3d/render/RayCastOctree.h>
+#include <icl/viz3d/pointcloud/PointCloud.h>
 #include <icl/cv3d/ViewRay.h>
 #include <cmath>
 

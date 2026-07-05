@@ -8,10 +8,10 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/CoordinateFrameNode.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/nodes/CoordinateFrameNode.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
 #include <icl/cv3d/Camera.h>
 
 using namespace icl::viz3d;

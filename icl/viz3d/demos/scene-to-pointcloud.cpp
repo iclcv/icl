@@ -7,19 +7,19 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/viz3d/GroupNode.h>
-#include <icl/viz3d/SphereNode.h>
-#include <icl/viz3d/CuboidNode.h>
-#include <icl/viz3d/CylinderNode.h>
-#include <icl/viz3d/ConeNode.h>
-#include <icl/viz3d/MeshNode.h>
-#include <icl/viz3d/LightNode.h>
-#include <icl/viz3d/PointCloud.h>
-#include <icl/viz3d/PointCloudNode.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/scene/Scene2MouseHandler.h>
+#include <icl/viz3d/nodes/GroupNode.h>
+#include <icl/viz3d/nodes/SphereNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/CylinderNode.h>
+#include <icl/viz3d/nodes/ConeNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
+#include <icl/viz3d/nodes/LightNode.h>
+#include <icl/viz3d/pointcloud/PointCloud.h>
+#include <icl/viz3d/nodes/PointCloudNode.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/viz3d/Material.h>
+#include <icl/viz3d/render/Material.h>
 #include <icl/utils/time/Time.h>
 
 using namespace icl::viz3d;

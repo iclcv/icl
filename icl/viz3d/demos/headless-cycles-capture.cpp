@@ -25,10 +25,10 @@
 //
 //   builddir/bin/viz3d-headless-cycles-capture-demo [out.png] [samples]
 
-#include <icl/viz3d/Scene2.h>
-#include <icl/viz3d/CyclesRenderer.h>
-#include <icl/viz3d/CheckerboardNode.h>
-#include <icl/viz3d/LightNode.h>
+#include <icl/viz3d/scene/Scene2.h>
+#include <icl/viz3d/render/CyclesRenderer.h>
+#include <icl/viz3d/nodes/CheckerboardNode.h>
+#include <icl/viz3d/nodes/LightNode.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/core/Img.h>
 #include <icl/io/SaveLoad.h>

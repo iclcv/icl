@@ -1,79 +1,95 @@
 # ICL viz3d module — clean scene graph
 
+# Functional sub-folders: nodes/ render/ scene/ plot/ pointcloud/ (root = loader + converter).
 viz3d_headers = files(
-  'Node.h',
-  'Driver.h',
-  'GroupNode.h',
-  'GeometryNode.h',
-  'MeshNode.h',
-  'Material.h',
-  'GridNode.h',
-  'Primitive.h',
-  'SphereNode.h',
-  'CuboidNode.h',
-  'CylinderNode.h',
-  'ConeNode.h',
-  'SuperquadricNode.h',
-  'CoordinateFrameNode.h',
-  'Renderer.h',
-  'LightNode.h',
-  'Scene2.h',
   'Loader.h',
-  'Raytracer.h',
-  'CyclesRenderer.h',
-  'SceneSynchronizer.h',
-  'OffscreenView.h',
-  'CheckerboardNode.h',
-  'PointCloud.h',
-  'PointCloudNode.h',
-  'Scene2MouseHandler.h',
-  'BVH.h',
-  'SceneCapture.h',
-  'PointCloudSource.h',
-  'RayCastOctree.h',
-  'TextNode.h',
-  'DemoScene2.h',
-  'DefaultScene.h',
-  'PlotWidget3D.h',
   'Primitive3DConverter.h',
-  'PlotHandle3D.h',
-  'Plot3D.h',
+)
+
+viz3d_nodes_headers = files(
+  'nodes/Node.h',
+  'nodes/GroupNode.h',
+  'nodes/GeometryNode.h',
+  'nodes/MeshNode.h',
+  'nodes/GridNode.h',
+  'nodes/SphereNode.h',
+  'nodes/CuboidNode.h',
+  'nodes/CylinderNode.h',
+  'nodes/ConeNode.h',
+  'nodes/SuperquadricNode.h',
+  'nodes/CoordinateFrameNode.h',
+  'nodes/LightNode.h',
+  'nodes/PointCloudNode.h',
+  'nodes/TextNode.h',
+  'nodes/CheckerboardNode.h',
+)
+
+viz3d_render_headers = files(
+  'render/Renderer.h',
+  'render/CyclesRenderer.h',
+  'render/SceneSynchronizer.h',
+  'render/SceneCapture.h',
+  'render/OffscreenView.h',
+  'render/Material.h',
+  'render/Primitive.h',
+  'render/Raytracer.h',
+  'render/BVH.h',
+  'render/RayCastOctree.h',
+)
+
+viz3d_scene_headers = files(
+  'scene/Scene2.h',
+  'scene/Scene2MouseHandler.h',
+  'scene/DefaultScene.h',
+  'scene/DemoScene2.h',
+  'scene/Driver.h',
+)
+
+viz3d_plot_headers = files(
+  'plot/PlotWidget3D.h',
+  'plot/Plot3D.h',
+  'plot/PlotHandle3D.h',
+)
+
+viz3d_pointcloud_headers = files(
+  'pointcloud/PointCloud.h',
+  'pointcloud/PointCloudSource.h',
 )
 
 viz3d_sources = files(
-  'Node.cpp',
-  'Driver.cpp',
-  'GroupNode.cpp',
-  'GeometryNode.cpp',
-  'MeshNode.cpp',
-  'Material.cpp',
-  'GridNode.cpp',
-  'SphereNode.cpp',
-  'CuboidNode.cpp',
-  'CylinderNode.cpp',
-  'ConeNode.cpp',
-  'SuperquadricNode.cpp',
-  'CoordinateFrameNode.cpp',
-  'Renderer.cpp',
-  'LightNode.cpp',
-  'Scene2.cpp',
   'Loader.cpp',
-  'PointCloud.cpp',
-  'PointCloudNode.cpp',
-  'Scene2MouseHandler.cpp',
-  'BVH.cpp',
-  'SceneCapture.cpp',
-  'OffscreenView.cpp',
-  'CheckerboardNode.cpp',
-  'PointCloudSource.cpp',
+  'Primitive3DConverter.cpp',
+  'nodes/Node.cpp',
+  'nodes/GroupNode.cpp',
+  'nodes/GeometryNode.cpp',
+  'nodes/MeshNode.cpp',
+  'nodes/GridNode.cpp',
+  'nodes/SphereNode.cpp',
+  'nodes/CuboidNode.cpp',
+  'nodes/CylinderNode.cpp',
+  'nodes/ConeNode.cpp',
+  'nodes/SuperquadricNode.cpp',
+  'nodes/CoordinateFrameNode.cpp',
+  'nodes/LightNode.cpp',
+  'nodes/PointCloudNode.cpp',
+  'nodes/TextNode.cpp',
+  'nodes/CheckerboardNode.cpp',
+  'render/Renderer.cpp',
+  'render/SceneCapture.cpp',
+  'render/OffscreenView.cpp',
+  'render/Material.cpp',
+  'render/BVH.cpp',
+  'render/RayCastOctree.cpp',
+  'scene/Scene2.cpp',
+  'scene/Scene2MouseHandler.cpp',
+  'scene/DefaultScene.cpp',
+  'scene/DemoScene2.cpp',
+  'scene/Driver.cpp',
+  'plot/PlotWidget3D.cpp',
+  'pointcloud/PointCloud.cpp',
+  'pointcloud/PointCloudSource.cpp',
   'detail/SceneSource.cpp',
   'detail/PlotFrame.cpp',
-  'RayCastOctree.cpp',
-  'TextNode.cpp',
-  'DemoScene2.cpp',
-  'DefaultScene.cpp',
-  'PlotWidget3D.cpp',
-  'Primitive3DConverter.cpp',
 )
 
 # Cycles renderer (viz3d is now the sole Cycles consumer — config lives here).
@@ -82,8 +98,8 @@ viz3d_cycles_inc = []
 viz3d_cycles_deps = []
 if cycles_found
   viz3d_sources += files(
-    'CyclesRenderer.cpp',
-    'SceneSynchronizer.cpp',
+    'render/CyclesRenderer.cpp',
+    'render/SceneSynchronizer.cpp',
   )
 
   # Absolute paths for find_library, relative for include_directories
@@ -254,8 +270,17 @@ icl_viz3d_dep = declare_dependency(
 )
 
 install_headers(viz3d_headers,
-  install_dir: get_option('includedir') / install_prefix / 'icl' / 'viz3d',
-)
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'viz3d')
+install_headers(viz3d_nodes_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'viz3d' / 'nodes')
+install_headers(viz3d_render_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'viz3d' / 'render')
+install_headers(viz3d_scene_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'viz3d' / 'scene')
+install_headers(viz3d_plot_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'viz3d' / 'plot')
+install_headers(viz3d_pointcloud_headers,
+  install_dir: get_option('includedir') / install_prefix / 'icl' / 'viz3d' / 'pointcloud')
 
 pkg.generate(icl_viz3d_lib,
   name: 'icl-viz3d',
