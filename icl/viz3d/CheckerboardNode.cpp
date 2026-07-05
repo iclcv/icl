@@ -73,7 +73,7 @@ namespace icl::viz3d {
     // would risk on a setCells() rebuild.
     auto mat = getMaterial();
     if (!mat) {
-      mat = viz3d::Material::fromColor(geom::GeomColor(255, 255, 255, 255));
+      mat = viz3d::Material::fromColor(cv3d::GeomColor(255, 255, 255, 255));
       mat->roughness = 1.0f;   // matte paper — no specular hot-spot over the corners
       mat->metallic  = 0.0f;
       setMaterial(mat);

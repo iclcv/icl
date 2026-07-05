@@ -4,7 +4,7 @@
 
 #include <icl/cv3d/SurfaceFeatureExtractor.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     SurfaceFeatureExtractor::SurfaceFeature SurfaceFeatureExtractor::apply(
                                             std::vector<Vec> &points, std::vector<Vec> &normals, int mode){
       SurfaceFeatureExtractor::SurfaceFeature feature = getInitializedStruct();

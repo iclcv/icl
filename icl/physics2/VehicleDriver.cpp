@@ -138,7 +138,7 @@ namespace icl::physics2 {
     m_data->wheelAlign = Mat::id();
     m_data->wheelAlign(0,0) = 0; m_data->wheelAlign(0,2) = 1;
     m_data->wheelAlign(2,0) = -1; m_data->wheelAlign(2,2) = 0;
-    auto tyre = viz3d::Material::fromColor(geom::GeomColor(30,30,30,255));
+    auto tyre = viz3d::Material::fromColor(cv3d::GeomColor(30,30,30,255));
     m_data->wheelNodes.clear();
     for (int i = 0; i < NUM_WHEELS; i++) {
       auto wheel = viz3d::CylinderNode::create(0, 0, 0, cfg.wheelRadius*2, cfg.wheelRadius*2,

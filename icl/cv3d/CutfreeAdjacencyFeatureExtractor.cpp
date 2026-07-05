@@ -31,7 +31,7 @@
 #include <icl/cv3d/CutfreeAdjacencyFeatureExtractor.h>
 #include <icl/cv3d/PlanarRansacEstimator.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   struct CutfreeAdjacencyFeatureExtractor::Data {
 	    Data(Mode mode) {
       if(mode==BEST || mode==GPU){
@@ -116,4 +116,4 @@ namespace icl::geom {
     return cutfreeMatrix;
   }
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

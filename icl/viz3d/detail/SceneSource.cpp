@@ -36,7 +36,7 @@
 
 namespace icl::viz3d {
 
-  using namespace icl::geom;
+  using namespace icl::cv3d;
   using icl::utils::Size;
 
   class SceneSource : public io::SourceBackend {

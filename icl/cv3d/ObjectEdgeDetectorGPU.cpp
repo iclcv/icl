@@ -44,7 +44,7 @@ using namespace utils;
 using namespace math;
 using namespace core;
 
-namespace geom {
+namespace cv3d {
 
 //OpenCL kernel code
 static char normalEstimationKernel[] =
@@ -757,7 +757,7 @@ const Img8u &ObjectEdgeDetectorGPU::calculate(const Img32f &depthImage,
 	applyImageBinarization();
 	return getBinarizedAngleDisplay();
 }
-} // namespace geom
+} // namespace cv3d
 }
 
 #endif

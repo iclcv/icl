@@ -9,7 +9,7 @@ using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
 using namespace icl::cv;
-using namespace icl::geom;
+using namespace icl::cv3d;
 
 namespace icl::markers {
   int MultiCamFiducial::getCamsFound() const{

@@ -43,8 +43,8 @@ namespace icl::viz3d {
 
     /// Phong parameters for legacy OpenGL rendering
     struct PhongParams {
-      geom::GeomColor diffuse;
-      geom::GeomColor specular;
+      cv3d::GeomColor diffuse;
+      cv3d::GeomColor specular;
       float shininess;
     };
 
@@ -61,16 +61,16 @@ namespace icl::viz3d {
 
     // -- Core PBR metallic-roughness parameters (always inline) --
 
-    geom::GeomColor baseColor{0.78f, 0.78f, 0.78f, 1.0f};  ///< albedo in [0,1]
+    cv3d::GeomColor baseColor{0.78f, 0.78f, 0.78f, 1.0f};  ///< albedo in [0,1]
     float metallic = 0.0f;          ///< 0 = dielectric, 1 = metal
     float roughness = 0.5f;         ///< 0 = mirror, 1 = fully diffuse
     float reflectivity = 0.0f;      ///< explicit mirror reflections (raytracing)
-    geom::GeomColor emissive{0,0,0,1};    ///< self-illumination in [0,1]
+    cv3d::GeomColor emissive{0,0,0,1};    ///< self-illumination in [0,1]
 
     // -- Display hints (always inline) --
 
-    geom::GeomColor lineColor{0,0,0,0};   ///< wireframe color [0,1] (alpha=0 -> use baseColor)
-    geom::GeomColor pointColor{0,0,0,0};  ///< point color [0,1] (alpha=0 -> use baseColor)
+    cv3d::GeomColor lineColor{0,0,0,0};   ///< wireframe color [0,1] (alpha=0 -> use baseColor)
+    cv3d::GeomColor pointColor{0,0,0,0};  ///< point color [0,1] (alpha=0 -> use baseColor)
     float pointSize = 3.0f;
     float lineWidth = 1.0f;
     bool smoothShading = true;
@@ -105,7 +105,7 @@ namespace icl::viz3d {
     struct TransmissionParams {
       float transmission = 0.0f;            ///< 0 = opaque, 1 = fully transmissive
       float ior = 1.5f;                     ///< index of refraction (glTF default)
-      geom::GeomColor attenuationColor{1,1,1,1};  ///< volume absorption tint (white = none)
+      cv3d::GeomColor attenuationColor{1,1,1,1};  ///< volume absorption tint (white = none)
       float attenuationDistance = 0.0f;     ///< Beer-Lambert distance (0 = no attenuation)
       float thicknessFactor = 0.0f;         ///< thin-wall thickness for volume
       float alphaCutoff = 0.5f;             ///< discard fragments below this (Mask mode)
@@ -136,19 +136,19 @@ namespace icl::viz3d {
     // -- Factories --
 
     /// Create from legacy color (in [0,255] range) + shininess + reflectivity
-    static std::shared_ptr<Material> fromColor(const geom::GeomColor &color,
+    static std::shared_ptr<Material> fromColor(const cv3d::GeomColor &color,
                                                 float shininess = 128,
                                                 float reflectivity = 0);
 
     /// Create with separate face and wireframe colors (in [0,255] range)
-    static std::shared_ptr<Material> fromColors(const geom::GeomColor &faceColor,
-                                                 const geom::GeomColor &wireColor,
+    static std::shared_ptr<Material> fromColors(const cv3d::GeomColor &faceColor,
+                                                 const cv3d::GeomColor &wireColor,
                                                  float shininess = 128);
 
     /// Create from Phong parameters (auto-converts to PBR)
     /** roughness ~ sqrt(2 / (shininess + 2)), metallic from specular intensity */
-    static std::shared_ptr<Material> fromPhong(const geom::GeomColor &diffuse,
-                                                const geom::GeomColor &specular,
+    static std::shared_ptr<Material> fromPhong(const cv3d::GeomColor &diffuse,
+                                                const cv3d::GeomColor &specular,
                                                 float shininess);
 
     /// Create a matte material whose albedo is the given image texture.

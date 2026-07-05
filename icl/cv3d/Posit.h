@@ -9,7 +9,7 @@
 #include <icl/utils/Exception.h>
 #include <icl/utils/Point.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /** \cond */
   class Camera;
   /** \endcond */
@@ -118,4 +118,4 @@ namespace icl::geom {
                            float focalLengthX, float focalLengthY);
   };
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

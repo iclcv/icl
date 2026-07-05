@@ -8,7 +8,7 @@
 #include <icl/core/DataSegment.h>
 #include <icl/core/Img.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /// class for extraction of surface features.
   /** The SurfaceFeatureExtractor class computes normalHistograms, meanNormals, meanPosition, and curvatureFactor(planar, 1D curved, 2D curved) for sets of points. */
 
@@ -78,4 +78,4 @@ namespace icl::geom {
       static void finish(SurfaceFeature &feature, int mode);
   };
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

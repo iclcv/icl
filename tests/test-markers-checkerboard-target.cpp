@@ -16,7 +16,7 @@ using namespace icl;
 using namespace icl::markers;
 using icl::core::Img8u;
 using icl::utils::Size;
-using icl::geom::Vec;
+using icl::cv3d::Vec;
 
 ICL_REGISTER_TEST("markers.checkertarget.generate_detect_roundtrip",
                   "generated board detects to a complete, correctly-labelled correspondence set")

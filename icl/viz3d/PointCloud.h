@@ -18,7 +18,7 @@
 #endif
 
 namespace icl::core { template<class T> class Img; }
-namespace icl::geom { class Camera; }
+namespace icl::cv3d { class Camera; }
 
 namespace icl::viz3d {
 
@@ -113,7 +113,7 @@ namespace icl::viz3d {
         zero alpha. \a distToCamPlane: true = depth is Z-distance to the image
         plane, false = Euclidean distance to the camera centre. Thread-safe
         (locks the cloud). */
-    void unprojectDepth(const core::Img<icl32f> &depth, const geom::Camera &cam,
+    void unprojectDepth(const core::Img<icl32f> &depth, const cv3d::Camera &cam,
                         bool distToCamPlane = true,
                         const core::Img<icl8u> *color = nullptr);
 
@@ -128,7 +128,7 @@ namespace icl::viz3d {
         whenever the colour is NOT already aligned to the depth pixels. Adds the
         RGBA32f feature if absent. Thread-safe (locks the cloud). */
     void mapColorFromCamera(const core::Img<icl8u> &color,
-                            const geom::Camera &colorCam);
+                            const cv3d::Camera &colorCam);
 
     // --- Geometric filtering (keep / remove by a primitive) ---
     /// Remove points using an axis-aligned box centred at \a center with the
@@ -145,7 +145,7 @@ namespace icl::viz3d {
         point's depth is recovered as its distance along the camera view axis
         (distToCamPlane=true — Z-depth, like a depth sensor) or its Euclidean
         distance to the camera centre (false). Distances are in millimetres. */
-    void filterDepthRange(const geom::Camera &cam, float minDepth, float maxDepth,
+    void filterDepthRange(const cv3d::Camera &cam, float minDepth, float maxDepth,
                           bool distToCamPlane = true);
 
     // --- Copy ---

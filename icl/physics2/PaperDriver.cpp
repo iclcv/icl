@@ -507,17 +507,17 @@ namespace icl::physics2 {
       return res;
     }
 
-    Point32f hitI(PaperDriver::Data &d, const geom::ViewRay &ray) {
+    Point32f hitI(PaperDriver::Data &d, const cv3d::ViewRay &ray) {
       const btSoftBody *s = d.body;
       Point32f best(-1, -1);
       float bestDist = 1e30f;
       for (int i = 0; i < s->m_faces.size(); ++i) {
         const btSoftBody::Face &f = s->m_faces[i];
-        geom::Vec a = d.units.toIclVec(f.m_n[0]->m_x);
-        geom::Vec b = d.units.toIclVec(f.m_n[1]->m_x);
-        geom::Vec c = d.units.toIclVec(f.m_n[2]->m_x);
-        geom::Vec pW; Point32f coords;
-        if (ray.getIntersectionWithTriangle(a, b, c, &pW, &coords) == geom::ViewRay::foundIntersection) {
+        cv3d::Vec a = d.units.toIclVec(f.m_n[0]->m_x);
+        cv3d::Vec b = d.units.toIclVec(f.m_n[1]->m_x);
+        cv3d::Vec c = d.units.toIclVec(f.m_n[2]->m_x);
+        cv3d::Vec pW; Point32f coords;
+        if (ray.getIntersectionWithTriangle(a, b, c, &pW, &coords) == cv3d::ViewRay::foundIntersection) {
           const Point32f &ta = d.texCoords[node_index(s, f.m_n[0])];
           const Point32f &tb = d.texCoords[node_index(s, f.m_n[1])];
           const Point32f &tc = d.texCoords[node_index(s, f.m_n[2])];
@@ -807,7 +807,7 @@ namespace icl::physics2 {
   }
 
   std::shared_ptr<PaperDriver::LinkCoords>
-  PaperDriver::projectScreenLine(const geom::ViewRay &rayA, const geom::ViewRay &rayB) const {
+  PaperDriver::projectScreenLine(const cv3d::ViewRay &rayA, const cv3d::ViewRay &rayB) const {
     std::scoped_lock<PhysicsWorld> lock(m_data->world);
     btSoftBody *s = m_data->body;
     if (!s) return {};
@@ -972,7 +972,7 @@ namespace icl::physics2 {
     });
   }
 
-  PaperDriver::Point32f PaperDriver::hit(const geom::ViewRay &ray) const {
+  PaperDriver::Point32f PaperDriver::hit(const cv3d::ViewRay &ray) const {
     std::scoped_lock<PhysicsWorld> lock(m_data->world);
     if (!m_data->body) return Point32f(-1, -1);
     return hitI(*m_data, ray);
@@ -985,10 +985,10 @@ namespace icl::physics2 {
   }
 
   std::shared_ptr<PaperDriver::LinkCoords>
-  PaperDriver::getLinkCoords(const Point32f &pix, const geom::Camera &cam) const {
+  PaperDriver::getLinkCoords(const Point32f &pix, const cv3d::Camera &cam) const {
     std::scoped_lock<PhysicsWorld> lock(m_data->world);
     if (!m_data->body) return {};
-    geom::ViewRay v = cam.getViewRay(pix);
+    cv3d::ViewRay v = cam.getViewRay(pix);
     Point32f p = hitI(*m_data, v);
     const btSoftBody *s = m_data->body;
     int bestIA = -1, bestIB = -1; float bestD = -1;

@@ -19,7 +19,7 @@
 #include <sstream>
 
 using namespace icl::viz3d;
-using namespace icl::geom;
+using namespace icl::cv3d;
 
 HSplit gui;
 

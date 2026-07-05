@@ -21,7 +21,7 @@
 #include <mutex>
 
 using namespace icl::viz3d;
-using namespace icl::geom;
+using namespace icl::cv3d;
 using namespace icl::utils;
 using namespace icl::qt;
 

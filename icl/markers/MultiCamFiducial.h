@@ -59,10 +59,10 @@ namespace icl::markers {
     /// returns the idx-th associated camera
     /** Note, the camera can also be accessed from the
         idx-th Fiducial*/
-    geom::Camera &getCamera(int idx);
+    cv3d::Camera &getCamera(int idx);
 
     /// returns the idx-th associated camera (const version)
-    const geom::Camera &getCamera(int idx) const;
+    const cv3d::Camera &getCamera(int idx) const;
 
     /// returns the associated marker ID
     int getID() const;
@@ -77,7 +77,7 @@ namespace icl::markers {
 
     /// returns the 6D-pose (in shape of a homogeneous transform) of the marker
     /** @see \ref __3D_EST__ */
-    const geom::Mat &getPose3D() const;
+    const cv3d::Mat &getPose3D() const;
   };
 
   } // namespace icl::markers

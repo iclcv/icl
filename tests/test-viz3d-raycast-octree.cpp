@@ -14,7 +14,7 @@
 
 using namespace icl;
 using namespace icl::viz3d;
-using icl::geom::ViewRay;
+using icl::cv3d::ViewRay;
 using Vec4 = math::FixedColVector<float,4>;
 
 // fill from a small cloud, then a ray aimed at one point returns exactly that

@@ -22,8 +22,8 @@ namespace icl::markers {
       /// A PossibleMarker is a marker prototype that <em>could</em> be detected
       struct PossibleMarker{
         PossibleMarker():loaded(false){}
-      PossibleMarker(int cfgFileIndex,const geom::Vec &v):loaded(true),center(v),hasCorners(false),cfgFileIndex(cfgFileIndex),gridIdx(-1){}
-      PossibleMarker(int cfgFileIndex,const geom::Vec &v, const geom::Vec &a, const geom::Vec &b, const geom::Vec &c, const geom::Vec &d):
+      PossibleMarker(int cfgFileIndex,const cv3d::Vec &v):loaded(true),center(v),hasCorners(false),cfgFileIndex(cfgFileIndex),gridIdx(-1){}
+      PossibleMarker(int cfgFileIndex,const cv3d::Vec &v, const cv3d::Vec &a, const cv3d::Vec &b, const cv3d::Vec &c, const cv3d::Vec &d):
         loaded(true),center(v),hasCorners(true),cfgFileIndex(cfgFileIndex),gridIdx(-1){
             corners[0] = a;
             corners[1] = b;
@@ -31,16 +31,16 @@ namespace icl::markers {
             corners[3] = d;
         }
         bool loaded;
-        geom::Vec center;
+        cv3d::Vec center;
         bool hasCorners;
-        geom::Vec corners[4];
+        cv3d::Vec corners[4];
         int cfgFileIndex;
         int gridIdx;
       };
 
       /// special utility class that implements saving the best of a number of calibration results
       struct BestOfNSaver : public QObject, public utils::Lockable{
-        std::vector<geom::Camera> cams;
+        std::vector<cv3d::Camera> cams;
         std::vector<float> errors;
         int n;
         int num_end;
@@ -56,7 +56,7 @@ namespace icl::markers {
         void init();
         void stop();
 
-        std::pair<int,float> next_hook(const geom::Camera &cam, float error);
+        std::pair<int,float> next_hook(const cv3d::Camera &cam, float error);
       };
 
       /// supported marker types (actually only BCH really makes sense)
@@ -69,10 +69,10 @@ namespace icl::markers {
       /** Named transforms are used to rotate and translate the calibration object origin frame */
       struct NamedTransform{
         NamedTransform(){}
-        NamedTransform(const std::string &name,const geom::Mat &t):
+        NamedTransform(const std::string &name,const cv3d::Mat &t):
         name(name),transform(t){}
         std::string name;
-        geom::Mat transform;
+        cv3d::Mat transform;
       };
 
       /// MarkerGrids are used to more simply define a 2D-aligned grid of markers attached to a calibration object
@@ -102,13 +102,13 @@ namespace icl::markers {
       struct FoundMarker{
         FoundMarker(){}
       FoundMarker(int markerID, const PossibleMarker *possible, MarkerType t, markers::Fiducial fid, const utils::Point32f &imagePos,
-                  const geom::Vec &worldPos, int cfgFileIndex):
+                  const cv3d::Vec &worldPos, int cfgFileIndex):
         id(markerID),possible(possible),type(t),fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(false),
           cfgFileIndex(cfgFileIndex){}
       FoundMarker(int markerID, const PossibleMarker *possible, MarkerType t,
-                  markers::Fiducial fid, const utils::Point32f &imagePos, const geom::Vec &worldPos,
+                  markers::Fiducial fid, const utils::Point32f &imagePos, const cv3d::Vec &worldPos,
                   const utils::Point32f imageCornerPositions[4],
-                  const geom::Vec worldCornerPositions[4],
+                  const cv3d::Vec worldCornerPositions[4],
                   int cfgFileIndex):
         id(markerID), possible(possible), type(t), fid(fid),imagePos(imagePos),worldPos(worldPos),hasCorners(true),cfgFileIndex(cfgFileIndex){
           std::copy(imageCornerPositions,imageCornerPositions+4,this->imageCornerPositions);
@@ -119,10 +119,10 @@ namespace icl::markers {
         MarkerType type;
         markers::Fiducial fid;
         utils::Point32f imagePos;
-        geom::Vec worldPos;
+        cv3d::Vec worldPos;
         bool hasCorners;
         utils::Point32f imageCornerPositions[4];
-        geom::Vec worldCornerPositions[4];
+        cv3d::Vec worldCornerPositions[4];
         int cfgFileIndex;
       };
 
@@ -151,9 +151,9 @@ namespace icl::markers {
         void setup(const MarkerGrid *realGrid);
         int numFound() const;
 
-        geom::Mat estimatePose(const geom::Camera &cam) const;
+        cv3d::Mat estimatePose(const cv3d::Camera &cam) const;
 
-        void getGridCornersAndTexture(const geom::Camera &cam,
+        void getGridCornersAndTexture(const cv3d::Camera &cam,
                                       std::vector<utils::Point> &points,
                                       std::vector<core::Line32f> &lines,
                                       utils::Size32f &size,
@@ -172,18 +172,18 @@ namespace icl::markers {
       };
 
       // this was move to the camera class
-      //      static geom::Camera optimize_extrinsic_lma(const geom::Camera &init, const std::vector<geom::Vec> &Xws,
+      //      static cv3d::Camera optimize_extrinsic_lma(const cv3d::Camera &init, const std::vector<cv3d::Vec> &Xws,
       //                                           const std::vector<utils::Point32f> &xis);
 
       /// actually performs the camera calibration
       static CalibrationResult perform_calibration(const std::vector<FoundMarker> &markers,
                                                    const std::vector<bool> &enabledCfgFiles,
-                                                   const std::vector<geom::Mat> &Ts,
-                                                   const geom::Mat &Trel, const utils::Size &imageSize,
+                                                   const std::vector<cv3d::Mat> &Ts,
+                                                   const cv3d::Mat &Trel, const utils::Size &imageSize,
                                                    bool &deactivatedCenters, bool useCorners,
                                                    bool normalizeError, BestOfNSaver *saver,
                                                    bool &haveAnyCalibration, viz3d::Scene2 &scene,
-                                                   const geom::Camera *givenIntrinsicParams=0,
+                                                   const cv3d::Camera *givenIntrinsicParams=0,
                                                    bool performLMAbasedOptimiziation=false);
 
       /// parses a camera calibration file
@@ -208,12 +208,12 @@ namespace icl::markers {
 
 
       /// saves the calibration result
-      static void save_cam_filename(geom::Camera cam,
+      static void save_cam_filename(cv3d::Camera cam,
                                     const std::string &outputSizeProgArg,
                                     const std::string &filename);
 
       /// saves the calibration result (using program argument for the definition of the output filename)
-      static void save_cam_pa(const geom::Camera &cam,
+      static void save_cam_pa(const cv3d::Camera &cam,
                            const std::string &outputSizeProgArg,
                            const std::string &outputFileNameProgArg);
 

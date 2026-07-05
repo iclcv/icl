@@ -4,7 +4,7 @@
 
 #include <icl/cv3d/PlaneEquation.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   PlaneEquation::PlaneEquation(const Vec &offset, const Vec &normal):
     offset(offset),normal(normal){
   }
@@ -13,4 +13,4 @@ namespace icl::geom {
     return s << "PlaneEquation( <X- " << p.offset.transp() << "," << p.normal.transp() << "> = 0)";
   }
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

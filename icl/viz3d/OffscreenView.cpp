@@ -42,7 +42,7 @@ namespace icl::viz3d {
 
     // Change detection for auto-requesting GL captures (poll()).
     bool   haveCamSnap = false;
-    geom::Vec snapPos, snapNorm, snapUp;
+    cv3d::Vec snapPos, snapNorm, snapUp;
     int    reqBackend = -1;
     unsigned lastSceneVersion = 0;    // capScene->sceneVersion() last seen by poll()
 
@@ -270,8 +270,8 @@ namespace icl::viz3d {
     const bool backendChanged = ((int)nb != d.reqBackend);
     d.reqBackend = (int)nb;
     if (nb == Backend::GL) {
-      const geom::Camera &cam = d.viewScene->getCamera(d.viewCam);
-      auto same = [](const geom::Vec &a, const geom::Vec &b){
+      const cv3d::Camera &cam = d.viewScene->getCamera(d.viewCam);
+      auto same = [](const cv3d::Vec &a, const cv3d::Vec &b){
         return a[0]==b[0] && a[1]==b[1] && a[2]==b[2] && a[3]==b[3]; };
       const bool camChanged = !d.haveCamSnap
           || !same(cam.getPosition(), d.snapPos) || !same(cam.getNorm(), d.snapNorm)

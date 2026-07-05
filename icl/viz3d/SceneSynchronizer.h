@@ -15,7 +15,7 @@ namespace ccl {
   class Shader;
 }
 
-namespace icl::geom { class Camera; }
+namespace icl::cv3d { class Camera; }
 namespace icl::viz3d { class Material; }
 
 namespace icl::viz3d {
@@ -68,7 +68,7 @@ namespace icl::viz3d {
     void syncGeometry(ObjectEntry &entry, ccl::Scene *cclScene, float sceneScale);
     void syncMaterial(ObjectEntry &entry, ccl::Scene *cclScene);
     void syncTransform(ObjectEntry &entry, ccl::Scene *cclScene, float sceneScale);
-    void syncCamera(const geom::Camera &cam, ccl::Scene *cclScene, float sceneScale);
+    void syncCamera(const cv3d::Camera &cam, ccl::Scene *cclScene, float sceneScale);
     void syncLights(const Scene2 &scene, ccl::Scene *cclScene, float sceneScale);
     void removeStaleNodes(ccl::Scene *cclScene, bool &anyChanged);
 

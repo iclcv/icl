@@ -7,7 +7,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl::geom {
+namespace icl::cv3d {
   ICP::Result::Result():rotation(DynMatrix<icl64f>::create(3,3)),translation(DynMatrix<icl64f>::create(3,1)),error(0.1){}
 
   ICP::ICP(std::vector<DynMatrix<icl64f> > &model) {
@@ -125,4 +125,4 @@ namespace icl::geom {
     }
     return error / dat.size();
   }
-  } // namespace icl::geom
+  } // namespace icl::cv3d

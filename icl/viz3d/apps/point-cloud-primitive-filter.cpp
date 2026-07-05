@@ -28,10 +28,10 @@
 #include <icl/cv3d/Camera.h>
 
 using namespace icl::viz3d;
-using namespace icl::geom;
+using namespace icl::cv3d;
 using namespace icl::utils;
 using namespace icl::qt;
-using P = icl::geom::Primitive3D;
+using P = icl::cv3d::Primitive3D;
 
 GUI gui;
 Scene2 scene;

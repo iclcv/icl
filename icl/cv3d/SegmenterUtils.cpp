@@ -16,7 +16,7 @@
 #include <icl/utils/cl/CLKernel.h>
 #endif
 
-namespace icl::geom {
+namespace icl::cv3d {
   #ifdef ICL_HAVE_OPENCL
   //OpenCL kernel code
   static char utilsKernel[] =

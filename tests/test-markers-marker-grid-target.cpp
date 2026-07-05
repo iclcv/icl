@@ -19,7 +19,7 @@ using namespace icl::markers;
 using icl::core::Img8u;
 using icl::utils::Size;
 using icl::utils::Size32f;
-using icl::geom::Vec;
+using icl::cv3d::Vec;
 
 ICL_REGISTER_TEST("markers.markergridtarget.generate_detect_roundtrip",
                   "generated marker grid detects to a complete, labelled correspondence set")

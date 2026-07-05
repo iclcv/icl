@@ -22,7 +22,7 @@
 
 class btSoftBody;
 
-namespace icl::geom { struct ViewRay; class Camera; }
+namespace icl::cv3d { struct ViewRay; class Camera; }
 
 namespace icl::physics2 {
 
@@ -112,19 +112,19 @@ namespace icl::physics2 {
 
     // --- picking / queries (UI thread; lock the world internally) ---
     /// Paper coordinates ([0,1]^2) hit by \a ray, or (-1,-1) on a miss.
-    Point32f hit(const geom::ViewRay &ray) const;
+    Point32f hit(const cv3d::ViewRay &ray) const;
     /// Crease line for a screen-space drag, computed by *cutting* the paper with
     /// the plane spanned by the camera centre and the two endpoint rays
     /// (\a rayA = press, \a rayB = release; both share the eye as offset). The
     /// intersection of that plane with the paper faces is the crease, so the
     /// drag may start or end off the sheet. Returns the two extreme crease points
     /// (paper coords), or null if the plane misses the paper. Locks the world.
-    std::shared_ptr<LinkCoords> projectScreenLine(const geom::ViewRay &rayA,
-                                                  const geom::ViewRay &rayB) const;
+    std::shared_ptr<LinkCoords> projectScreenLine(const cv3d::ViewRay &rayA,
+                                                  const cv3d::ViewRay &rayB) const;
     /// World position (ICL units) of a paper coordinate (barycentric).
     Vec interpolatePosition(const Point32f &paperCoords) const;
     /// The fold link nearest screen pixel \a pix (paper-coord endpoints), or null.
-    std::shared_ptr<LinkCoords> getLinkCoords(const Point32f &pix, const geom::Camera &cam) const;
+    std::shared_ptr<LinkCoords> getLinkCoords(const Point32f &pix, const cv3d::Camera &cam) const;
     /// Adapt the stiffness of the fold at \a coords (optionally memorize the
     /// current deformation as the new rest state).
     void adaptFoldStiffness(const LinkCoords &coords, float stiffness, bool memorize = false);

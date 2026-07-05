@@ -8,7 +8,7 @@
 #include <icl/core/Img.h>
 #include <icl/cv3d/SurfaceFeatureExtractor.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /**
      This class implements the cutfree adjacency feature for feature-graph based segmentation.*/
   class CutfreeAdjacencyFeatureExtractor{
@@ -60,4 +60,4 @@ namespace icl::geom {
     Data *m_data; //!< internal data pointer
 
   };
-  } // namespace icl::geom
+  } // namespace icl::cv3d

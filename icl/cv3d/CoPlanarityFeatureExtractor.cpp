@@ -5,7 +5,7 @@
 #include <icl/cv3d/CoPlanarityFeatureExtractor.h>
 #include <icl/cv3d/SegmenterUtils.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   math::DynMatrixBase<bool> CoPlanarityFeatureExtractor::apply(math::DynMatrixBase<bool> &initialMatrix, std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,
                         const core::Img32f &depthImage, std::vector<std::vector<int> > &surfaces, float maxAngle,
                         float distanceTolerance, float outlierTolerance, int triangles, int scanlines){
@@ -160,4 +160,4 @@ namespace icl::geom {
   }
 
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

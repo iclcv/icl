@@ -15,7 +15,7 @@
 #define ICLViz3d_API
 #endif
 
-namespace icl::geom {
+namespace icl::cv3d {
   class Camera;
   struct ViewRay;
 }
@@ -58,14 +58,14 @@ namespace icl::viz3d {
     void build(std::vector<Triangle> &&triangles);
 
     /// Find the closest intersection along a ray
-    BVHHit intersect(const geom::ViewRay &ray) const;
+    BVHHit intersect(const cv3d::ViewRay &ray) const;
 
     /// Raycast an entire camera image into a point cloud (OpenMP-parallel)
     /** @param cam    camera to cast from
         @param cloud  target (must support XYZ; RGBA32f written if available)
         @param stepX  pixel step in X (>1 for subsampling)
         @param stepY  pixel step in Y (>1 for subsampling) */
-    void raycastImage(const geom::Camera &cam, PointCloud &cloud,
+    void raycastImage(const cv3d::Camera &cam, PointCloud &cloud,
                       int stepX = 1, int stepY = 1) const;
 
     /// Result of raycastToImage
@@ -86,7 +86,7 @@ namespace icl::viz3d {
         @param mode   depth buffer mode (NoDepth to skip)
         @param stepX  pixel step in X (>1 for subsampling)
         @param stepY  pixel step in Y (>1 for subsampling) */
-    ImageResult raycastToImage(const geom::Camera &cam,
+    ImageResult raycastToImage(const cv3d::Camera &cam,
                                DepthMode mode = DistToCamCenter,
                                int stepX = 1, int stepY = 1) const;
 

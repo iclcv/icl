@@ -14,7 +14,7 @@ using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::math;
 
-namespace icl::geom {
+namespace icl::cv3d {
   static inline float sprod_3(const Vec &a, const Vec &b){
     return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
   }
@@ -961,4 +961,4 @@ namespace icl::geom {
     return cam;
   }
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

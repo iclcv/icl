@@ -20,7 +20,7 @@
 using namespace icl;
 using namespace icl::core;
 using icl::io::ImageSource;
-using icl::geom::Camera;
+using icl::cv3d::Camera;
 using icl::utils::Size;
 
 // Default format is a VGA float depth image (mm) with the depth camera attached

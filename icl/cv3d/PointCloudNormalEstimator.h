@@ -9,7 +9,7 @@
 #include <icl/core/Img.h>
 #include <icl/cv3d/Camera.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /** Utility class for point cloud normal and depth-edge estimation
       This class is a normal estimator and edge detector for depth images.
       It uses OpenCL for hardware parallelization if a compatible GPU is found.
@@ -205,4 +205,4 @@ namespace icl::geom {
         @return openCL enabled/disabled */
     bool isCLActive();
   };
-  } // namespace icl::geom
+  } // namespace icl::cv3d

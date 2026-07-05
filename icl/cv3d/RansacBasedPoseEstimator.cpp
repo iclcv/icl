@@ -10,7 +10,7 @@
 #include <icl/math/fit/RansacFitter.h>
 #include <icl/cv3d/CoplanarPointPoseEstimator.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     using namespace math;
     using namespace utils;
 
@@ -116,7 +116,7 @@ namespace icl::geom {
 
 
 
-    RansacBasedPoseEstimator::RansacBasedPoseEstimator(const geom::Camera &camera,
+    RansacBasedPoseEstimator::RansacBasedPoseEstimator(const cv3d::Camera &camera,
                                                          int iterations,
                                                          int minPoints,
                                                          float maxErr,

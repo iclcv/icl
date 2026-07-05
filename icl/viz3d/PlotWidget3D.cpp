@@ -28,9 +28,9 @@ namespace icl {
   using namespace math;
   using namespace core;
   using namespace qt;
-  using geom::Camera;
+  using cv3d::Camera;
   using viz3d::Material;
-  using geom::GeomColor;
+  using cv3d::GeomColor;
 
   namespace viz3d {
 
@@ -58,7 +58,7 @@ namespace icl {
 
       float pointsize = 1, linewidth = 1;
       bool smoothfill = true;
-      GeomColor color = geom::geom_red(255), fill = geom::geom_blue(255);
+      GeomColor color = cv3d::geom_red(255), fill = cv3d::geom_blue(255);
 
       // --- bounds (dynamic viewport) ---
       template<bool X, bool Y, bool Z>

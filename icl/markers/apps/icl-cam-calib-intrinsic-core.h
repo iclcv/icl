@@ -129,12 +129,12 @@ namespace icl::calibintr {
     const utils::Size &imageSize() const { return m_size; }
 
     private:
-    int objectPointIndex(const geom::Vec &objectPos) const;
+    int objectPointIndex(const cv3d::Vec &objectPos) const;
     double computeReprojRMS() const;
 
     TargetSpec  m_spec;
     utils::Size m_size;
-    std::vector<geom::Vec> m_model;   ///< full-board model points (mm), canonical order
+    std::vector<cv3d::Vec> m_model;   ///< full-board model points (mm), canonical order
     struct View { std::vector<std::pair<int, utils::Point32f>> pts; };  ///< (index, px)
     std::vector<View> m_views;
     cv::IntrinsicCalibrator::Result m_result;

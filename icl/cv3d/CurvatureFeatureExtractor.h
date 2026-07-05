@@ -7,7 +7,7 @@
 #include <icl/math/la/DynMatrix.h>
 #include <icl/cv3d/SurfaceFeatureExtractor.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /// class for curvature feature (open and occluded objects).
   /** This class implements the curvature feature for feature-graph based segmentation.*/
 
@@ -68,4 +68,4 @@ namespace icl::geom {
 
   };
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

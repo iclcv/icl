@@ -436,7 +436,7 @@ namespace icl::viz3d {
       flipY->set_value2(-1.0f);
       graph->connect(sepXYZ->output("Y"), flipY->input("Value1"));
 
-      // Sky colors (exact match: geom::Sky default gradient)
+      // Sky colors (exact match: cv3d::Sky default gradient)
       auto *zenithCol = graph->create_node<ColorNode>();
       zenithCol->set_value(make_float3(0.55f, 0.65f, 0.85f));
       auto *horizCol = graph->create_node<ColorNode>();
@@ -590,7 +590,7 @@ namespace icl::viz3d {
     entry.object->tag_update(cclScene);
   }
 
-  void SceneSynchronizer::syncCamera(const geom::Camera &cam, ccl::Scene *cclScene,
+  void SceneSynchronizer::syncCamera(const cv3d::Camera &cam, ccl::Scene *cclScene,
                                       float sceneScale) {
     ccl::Camera *cclCam = cclScene->camera;
 

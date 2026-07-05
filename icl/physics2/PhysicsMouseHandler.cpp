@@ -27,7 +27,7 @@ namespace icl::physics2 {
     RigidBodyDriver *selected = nullptr;
     btRigidBody *grabbed = nullptr;
     btPoint2PointConstraint *constraint = nullptr;
-    geom::Vec hitPoint{0, 0, 0, 1};   // ICL units, for the drag plane
+    cv3d::Vec hitPoint{0, 0, 0, 1};   // ICL units, for the drag plane
   };
 
   PhysicsMouseHandler::PhysicsMouseHandler(int cameraIndex, viz3d::Scene2 *scene,
@@ -60,7 +60,7 @@ namespace icl::physics2 {
 
   qt::MouseResult PhysicsMouseHandler::process(const qt::MouseEvent &e) {
     using qt::MouseResult;
-    const geom::Camera &cam = m_data->scene->getCamera(m_data->camIndex);
+    const cv3d::Camera &cam = m_data->scene->getCamera(m_data->camIndex);
 
     // CAMERA-resolution pixel (relative pos * resolution) — the space
     // getViewRay/estimate3DPosition expect, not raw widget pixels (e.getPos()).
@@ -74,7 +74,7 @@ namespace icl::physics2 {
     if (!grabGesture) return MouseResult::Forward;
 
     if (e.isPressEvent()) {
-      geom::ViewRay ray = cam.getViewRay(camPix);
+      cv3d::ViewRay ray = cam.getViewRay(camPix);
       viz3d::Hit2 hit = m_data->scene->findObject(ray);
       if (hit.node) {
         RigidBodyDriver *d = hit.node->getDriver<RigidBodyDriver>();
@@ -83,7 +83,7 @@ namespace icl::physics2 {
           releaseGrab();
           m_data->selected = d;
           m_data->grabbed = body;
-          m_data->hitPoint = geom::Vec(hit.pos[0], hit.pos[1], hit.pos[2], 1);
+          m_data->hitPoint = cv3d::Vec(hit.pos[0], hit.pos[1], hit.pos[2], 1);
 
           btVector3 hb = m_data->units.toBulletVec(
               Vec(hit.pos[0], hit.pos[1], hit.pos[2], 1));
@@ -104,8 +104,8 @@ namespace icl::physics2 {
       releaseGrab();
     } else if (m_data->constraint) {
       // drag the grab target along a plane through the hit point facing the cam
-      geom::Vec p = cam.estimate3DPosition(
-          camPix, geom::PlaneEquation(m_data->hitPoint, cam.getNorm()));
+      cv3d::Vec p = cam.estimate3DPosition(
+          camPix, cv3d::PlaneEquation(m_data->hitPoint, cam.getNorm()));
       btVector3 tb = m_data->units.toBulletVec(Vec(p[0], p[1], p[2], 1));
       auto *p2p = m_data->constraint;
       auto *body = m_data->grabbed;

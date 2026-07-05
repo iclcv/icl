@@ -10,7 +10,7 @@
 
 #include <icl/cv3d/ObjectEdgeDetectorPlugin.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     class ICLGeom_API ObjectEdgeDetectorGPU : public ObjectEdgeDetectorPlugin{
 
      struct Data;  //!< internal data type

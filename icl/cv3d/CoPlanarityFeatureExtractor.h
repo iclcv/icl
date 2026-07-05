@@ -7,7 +7,7 @@
 #include <icl/math/la/DynMatrix.h>
 #include <icl/cv3d/SurfaceFeatureExtractor.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /// class for coplanarity feature.
   /** This class implements the coplanarity feature for feature-graph based segmentation.*/
 
@@ -42,4 +42,4 @@ namespace icl::geom {
                             float distanceTolerance, float outlierTolerance, int scanlines);
   };
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

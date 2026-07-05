@@ -196,8 +196,8 @@ ICL_REGISTER_TEST("physics2.cloth_sags", "a corner-pinned soft cloth sags under 
 ICL_REGISTER_TEST("physics2.pick_resolves_driver", "raycast hit resolves to its RigidBodyDriver (unified picking)")
 {
   PhysicsScene scene;
-  scene.addCamera(icl::geom::Camera::lookAt(
-      icl::geom::Vec(0,0,1000,1), icl::geom::Vec(0,0,0,1), icl::geom::Vec(0,1,0,1),
+  scene.addCamera(icl::cv3d::Camera::lookAt(
+      icl::cv3d::Vec(0,0,1000,1), icl::cv3d::Vec(0,0,0,1), icl::cv3d::Vec(0,1,0,1),
       icl::utils::Size(640,480), 40));
   auto box = CuboidNode::create(0,0,0, 300,300,300);
   auto bd = scene.add(std::static_pointer_cast<Node>(box), 1.0f);
@@ -479,7 +479,7 @@ ICL_REGISTER_TEST("physics2.paper_hit_and_interpolate", "paper-space picking: a 
   ICL_TEST_NEAR(c[2], 40.0f, 1.0f);
 
   // a ray straight down through the centre hits paper coord ~ (0.5,0.5)
-  icl::geom::ViewRay ray(Vec(0, 0, 400, 1), Vec(0, 0, -1, 1));
+  icl::cv3d::ViewRay ray(Vec(0, 0, 400, 1), Vec(0, 0, -1, 1));
   icl::utils::Point32f p = paper->hit(ray);
   ICL_TEST_TRUE(p.x >= 0.f);          // a hit
   ICL_TEST_NEAR(p.x, 0.5f, 0.1f);

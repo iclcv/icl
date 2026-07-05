@@ -10,7 +10,7 @@
 namespace icl::viz3d {
 
   /// 2D lattice of nodes in 3D space, drawn as grid lines and/or quad cells.
-  /** viz3d port of the old geom::GridSceneObject. A MeshNode whose vertices form
+  /** viz3d port of the old cv3d::GridSceneObject. A MeshNode whose vertices form
       an nx*ny row-major lattice. getNode(x,y) gives mutable access, so the lattice
       can be deformed after construction (e.g. to visualise a calibration grid).
       Being a GeometryNode, it renders through the normal Renderer path. */

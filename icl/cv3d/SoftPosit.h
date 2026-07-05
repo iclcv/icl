@@ -17,7 +17,7 @@
   #undef max
 #endif
 
-namespace icl::geom {
+namespace icl::cv3d {
   class ICLGeom_API SoftPosit{
     private:
     //M
@@ -156,4 +156,4 @@ namespace icl::geom {
     }
 
   };
-  } // namespace icl::geom
+  } // namespace icl::cv3d

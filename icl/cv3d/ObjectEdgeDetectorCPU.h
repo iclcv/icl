@@ -10,7 +10,7 @@
 
 #include <icl/cv3d/ObjectEdgeDetectorPlugin.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     struct Vec4 {
 	    inline Vec4() {
 	    }

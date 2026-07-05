@@ -10,7 +10,7 @@
 #include <icl/cv3d/GeomDefs.h>
 #include <icl/cv3d/Camera.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     /// RANSAC-based pose estimation
     class ICLGeom_API RansacBasedPoseEstimator : public utils::Configurable{
       struct Data;  //!< internal data handling
@@ -25,7 +25,7 @@ namespace icl::geom {
       };
 
 
-      RansacBasedPoseEstimator(const geom::Camera &camera,
+      RansacBasedPoseEstimator(const cv3d::Camera &camera,
                                 int iterations=200,
                                 int minPoints=4,
                                 float maxErr=5,
@@ -51,7 +51,7 @@ namespace icl::geom {
                  const std::vector<utils::Point32f> &imagePoints);
 
       /// fit from non-planar target
-      Result fit(const std::vector<geom::Vec> &modelPoints,
+      Result fit(const std::vector<cv3d::Vec> &modelPoints,
                  const std::vector<utils::Point32f> &imagePoints);
 
 

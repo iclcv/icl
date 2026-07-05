@@ -27,7 +27,7 @@ namespace icl::calibintr {
   using namespace icl::utils;
   using namespace icl::core;
   using namespace icl::math;
-  using geom::Vec;
+  using cv3d::Vec;
 
   // ------------------------------------------------------------------- TargetSpec
   std::string TargetSpec::describe() const {
@@ -129,7 +129,7 @@ namespace icl::calibintr {
     node.addQuad(0, 1, 2, 3,  0, 1, 2, 3,  0, 1, 2, 3);
 
     auto mat = node.getMaterial();
-    if (!mat) { mat = viz3d::Material::fromColor(geom::GeomColor(255,255,255,255));
+    if (!mat) { mat = viz3d::Material::fromColor(cv3d::GeomColor(255,255,255,255));
                 mat->roughness = 1.0f; mat->metallic = 0.0f; node.setMaterial(mat); }
     mat->setBaseColorMap(Image(rgb));
     node.setPrimitiveVisible(viz3d::PrimLine | viz3d::PrimVertex, false);

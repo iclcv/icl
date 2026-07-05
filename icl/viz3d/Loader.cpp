@@ -22,7 +22,7 @@
 #include <unordered_map>
 #include <sstream>
 
-using namespace icl::geom;
+using namespace icl::cv3d;
 using namespace icl::core;
 
 namespace icl::viz3d {

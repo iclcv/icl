@@ -102,13 +102,13 @@ namespace icl::markers {
     const cv::ImageRegion getImageRegion() const;
 
     /// returns the markers
-    const geom::Vec &getCenter3D() const;
+    const cv3d::Vec &getCenter3D() const;
 
     /// returns the markers
-    const geom::Vec &getRotation3D() const;
+    const cv3d::Vec &getRotation3D() const;
 
     /// returns the markers
-    const geom::Mat &getPose3D() const;
+    const cv3d::Mat &getPose3D() const;
 
     /// returns whether is marker has been initialized
     inline operator bool() const { return impl; }

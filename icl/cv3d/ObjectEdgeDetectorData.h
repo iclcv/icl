@@ -6,7 +6,7 @@
 
 #include <icl/math/la/DynMatrix.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     /**
      This class is used in the ObjectEdgeDetector implementations */
     class ICLGeom_API ObjectEdgeDetectorData{

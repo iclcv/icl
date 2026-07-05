@@ -71,7 +71,7 @@ namespace icl::markers {
     CodedCheckerboardTarget &operator=(const CodedCheckerboardTarget &) = delete;
 
     std::vector<CalibrationCorrespondence> detect(const core::Img8u &image) const override;
-    std::vector<geom::Vec> modelPoints() const override;
+    std::vector<cv3d::Vec> modelPoints() const override;
     core::Img8u generate(const utils::Size &pixelSize) const override;
     std::string name() const override { return "coded-checkerboard"; }
 

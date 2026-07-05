@@ -42,11 +42,11 @@ namespace icl::viz3d {
     return m;
   }
 
-  std::shared_ptr<Material> Material::fromColor(const geom::GeomColor &color,
+  std::shared_ptr<Material> Material::fromColor(const cv3d::GeomColor &color,
                                                  float shininess,
                                                  float reflectivity) {
     auto m = std::make_shared<Material>();
-    geom::GeomColor c01 = color * (1.0f / 255.0f);
+    cv3d::GeomColor c01 = color * (1.0f / 255.0f);
     m->baseColor = c01;
     m->lineColor = c01;
     m->pointColor = c01;
@@ -70,8 +70,8 @@ namespace icl::viz3d {
     return m;
   }
 
-  std::shared_ptr<Material> Material::fromColors(const geom::GeomColor &faceColor,
-                                                   const geom::GeomColor &wireColor,
+  std::shared_ptr<Material> Material::fromColors(const cv3d::GeomColor &faceColor,
+                                                   const cv3d::GeomColor &wireColor,
                                                    float shininess) {
     auto m = std::make_shared<Material>();
     m->baseColor = faceColor * (1.0f / 255.0f);
@@ -82,11 +82,11 @@ namespace icl::viz3d {
     return m;
   }
 
-  std::shared_ptr<Material> Material::fromPhong(const geom::GeomColor &diffuse,
-                                                 const geom::GeomColor &specular,
+  std::shared_ptr<Material> Material::fromPhong(const cv3d::GeomColor &diffuse,
+                                                 const cv3d::GeomColor &specular,
                                                  float shininess) {
     auto m = std::make_shared<Material>();
-    geom::GeomColor c01 = diffuse * (1.0f / 255.0f);
+    cv3d::GeomColor c01 = diffuse * (1.0f / 255.0f);
     m->baseColor = c01;
     m->lineColor = c01;
     m->pointColor = c01;
@@ -106,7 +106,7 @@ namespace icl::viz3d {
     p.shininess = std::min(p.shininess, 255.0f);
     // specular: metals use baseColor, dielectrics use white scaled by (1-roughness)
     float inv = 1.0f - metallic;
-    p.specular = geom::GeomColor(
+    p.specular = cv3d::GeomColor(
       baseColor[0] * metallic + inv * (1.0f - roughness),
       baseColor[1] * metallic + inv * (1.0f - roughness),
       baseColor[2] * metallic + inv * (1.0f - roughness),

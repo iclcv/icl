@@ -25,8 +25,8 @@ namespace icl::markers {
 
       /// Computes the pose of the given deteced marker-grid
       /** All pose detection options are accessible to the Configurable interface */
-      geom::Mat computePose(const AdvancedMarkerGridDetector::MarkerGrid &grid,
-                            const geom::Camera &cam);
+      cv3d::Mat computePose(const AdvancedMarkerGridDetector::MarkerGrid &grid,
+                            const cv3d::Camera &cam);
     };
 
   }

@@ -10,8 +10,8 @@
 #include <icl/cv3d/GeomDefs.h>
 
 namespace icl::markers {
-    geom::Camera extract_camera_from_udist_file(const std::string &filename);
+    cv3d::Camera extract_camera_from_udist_file(const std::string &filename);
 
     /// returns the position variances of the last 10 frames var([x,y,z, rx, ry, rz])
-    std::vector<float> estimate_pose_variance(const geom::Mat &T);
+    std::vector<float> estimate_pose_variance(const cv3d::Mat &T);
   }

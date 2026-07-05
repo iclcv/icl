@@ -9,7 +9,7 @@
 #include <string>
 #include <cmath>
 
-namespace icl::geom {
+namespace icl::cv3d {
 
   /// Geometric primitive descriptor (cube / sphere / cylinder with a 6D pose).
   /** Extracted out of the old Primitive3DFilter so it no longer drags in the
@@ -129,4 +129,4 @@ namespace icl::geom {
 
   };
 
-} // namespace icl::geom
+} // namespace icl::cv3d

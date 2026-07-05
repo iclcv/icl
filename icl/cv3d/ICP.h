@@ -9,7 +9,7 @@
 #include <icl/math/tree/KDTree.h>
 #include <icl/cv3d/PoseEstimator.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /// Implementaiton of the Iterator Closest utils::Point (ICP) Algorithm
   /** TODO: Add Documentation
       What about a fixed 3D-Version that uses 3D-Fixed Matrix data?
@@ -81,4 +81,4 @@ namespace icl::geom {
     }
 #endif
   };
-  } // namespace icl::geom
+  } // namespace icl::cv3d

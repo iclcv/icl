@@ -73,7 +73,7 @@ namespace icl::viz3d {
   }
 
   void Node::rotate(float rx, float ry, float rz) {
-    // Use ICL's proven Euler angle rotation (rxyz convention, same as geom::SceneObject)
+    // Use ICL's proven Euler angle rotation (rxyz convention, same as cv3d::SceneObject)
     transform(math::create_hom_4x4<float>(rx, ry, rz));
   }
 

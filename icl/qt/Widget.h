@@ -246,7 +246,7 @@ namespace icl::qt {
 
     /// can be used to replace the default OSD-GUI based background color source
     /** The background color source can e.g. be adapted by higher level
-        visualization tool, such as the geom::Scene. In this case, the
+        visualization tool, such as the cv3d::Scene. In this case, the
         default background color source (background color can be adjusted
         by the widget's OSD-menu cannot be used any more */
     void setBackgroundColorSource(BGColorSource src);

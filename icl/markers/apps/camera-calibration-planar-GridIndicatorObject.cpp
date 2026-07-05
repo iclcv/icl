@@ -10,7 +10,7 @@
 namespace icl{
   using namespace utils;
   using namespace math;
-  using namespace geom;   // Vec, GeomColor, geom_blue/geom_red (foundation, not scene graph)
+  using namespace cv3d;   // Vec, GeomColor, geom_blue/geom_red (foundation, not scene graph)
 
   namespace markers{
 

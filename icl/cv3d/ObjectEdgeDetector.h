@@ -12,7 +12,7 @@
 
 #include <icl/cv3d/ObjectEdgeDetectorPlugin.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     /**
      This class calculates an edge image based on angles between normals from an input depth image (e.g. Kinect).
      The common way to use this class is the calculate() method, getting a depth image and returning an edge image.

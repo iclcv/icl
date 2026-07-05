@@ -8,7 +8,7 @@
 #include <icl/cv3d/Camera.h>
 #include <icl/utils/Array2D.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     /// Utility class for RGBDMapping
     /** For the mapping, two Camera instances are needed. The mapping computes
         the source color image positions for a given depth (x,y,d)-depth image pixel

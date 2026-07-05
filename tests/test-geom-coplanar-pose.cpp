@@ -15,7 +15,7 @@
 #include <cmath>
 
 using namespace icl;
-using namespace icl::geom;
+using namespace icl::cv3d;
 using icl::utils::Point32f;
 using icl::utils::Size;
 using icl::math::FixedMatrix;

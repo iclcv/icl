@@ -32,7 +32,7 @@
 
 namespace icl {
 using namespace math;
-namespace geom {
+namespace cv3d {
 
 ObjectEdgeDetectorData::ObjectEdgeDetectorData(){
 }
@@ -109,5 +109,5 @@ ObjectEdgeDetectorData::m_params ObjectEdgeDetectorData::getParameters(){
 }
 
 
-} // namespace geom
+} // namespace cv3d
 }

@@ -21,7 +21,7 @@
 #include <algorithm>
 
 using namespace icl::utils;
-using namespace icl::geom;
+using namespace icl::cv3d;
 
 namespace icl::viz3d {
 

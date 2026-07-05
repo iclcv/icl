@@ -21,10 +21,10 @@ namespace icl::markers {
     /// Camera structure for 3D feature estimation
     /** The actual camera instance is managed by the parent
         FiducialDetector instance */
-    geom::Camera *camera;
+    cv3d::Camera *camera;
 
     /// for 3D pose estimation
-    geom::CoplanarPointPoseEstimator poseEst;
+    cv3d::CoplanarPointPoseEstimator poseEst;
 
 
     /// initializes the plugin with a 0-camera
@@ -64,7 +64,7 @@ namespace icl::markers {
         Note: 3D information are usually only available if a camera was given to the parent
         FiducialDetector class
     */
-    virtual void getCenter3D(geom::Vec &dst, FiducialImpl &impl);
+    virtual void getCenter3D(cv3d::Vec &dst, FiducialImpl &impl);
 
     /// computes a markers 3D rotation euler angles
     /** The defalut implementation uses getKeyPoints2D for planar pose estimation.
@@ -73,7 +73,7 @@ namespace icl::markers {
         Note: 3D information are usually only available if a camera was given to the parent
         FiducialDetector class
     */
-    virtual void getRotation3D(geom::Vec &dst, FiducialImpl &impl);
+    virtual void getRotation3D(cv3d::Vec &dst, FiducialImpl &impl);
 
     /// computes a markers 3D position and rotation euler angles
     /** The defalut implementation uses getKeyPoints2D for planar pose estimation.
@@ -82,7 +82,7 @@ namespace icl::markers {
         Note: 3D information are usually only available if a camera was given to the parent
         FiducialDetector class
     */
-    virtual void getPose3D(geom::Mat &dst, FiducialImpl &impl);
+    virtual void getPose3D(cv3d::Mat &dst, FiducialImpl &impl);
 
     /// Enumeration for differnt source image types
     enum SourceImageType{

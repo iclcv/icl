@@ -40,7 +40,7 @@ using namespace utils;
 using namespace math;
 using namespace core;
 
-namespace geom {
+namespace cv3d {
 
 struct ObjectEdgeDetectorCPU::Data {
 	Data() {
@@ -480,5 +480,5 @@ float ObjectEdgeDetectorCPU::maxAngle(float snr, float snl, float snt, float snb
 	return max;
 }
 
-} // namespace geom
+} // namespace cv3d
 }

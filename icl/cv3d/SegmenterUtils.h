@@ -8,7 +8,7 @@
 #include <icl/core/DataSegment.h>
 #include <icl/core/Channel.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /// Support class for segmentation algorithms.
   /** This class provides supporting methods for segmentation algorithms.*/
 
@@ -146,4 +146,4 @@ namespace icl::geom {
 
   };
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

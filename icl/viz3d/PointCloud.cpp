@@ -14,7 +14,7 @@
 namespace icl::viz3d {
 
   void PointCloud::unprojectDepth(const core::Img<icl32f> &depth,
-                                  const geom::Camera &cam, bool distToCamPlane,
+                                  const cv3d::Camera &cam, bool distToCamPlane,
                                   const core::Img<icl8u> *color) {
     const utils::Size s = depth.getSize();
     const int W = s.width, H = s.height, dim = W * H;
@@ -29,7 +29,7 @@ namespace icl::viz3d {
     f[0] /= fn; f[1] /= fn; f[2] /= fn;
 
     // one batched view-ray computation (not per-pixel getViewRay)
-    utils::Array2D<geom::ViewRay> rays = cam.getAllViewRays();
+    utils::Array2D<cv3d::ViewRay> rays = cam.getAllViewRays();
     if (rays.getDim() != dim) return;
 
     const bool haveColor = color && color->getDim() == dim && color->getChannels() >= 3;
@@ -66,7 +66,7 @@ namespace icl::viz3d {
   }
 
   void PointCloud::mapColorFromCamera(const core::Img<icl8u> &color,
-                                      const geom::Camera &colorCam) {
+                                      const cv3d::Camera &colorCam) {
     const int dim = getDim();
     if (!dim || !supports(XYZ) || color.getChannels() < 3) return;
     if (!supports(RGBA32f)) addFeature(RGBA32f);
@@ -137,7 +137,7 @@ namespace icl::viz3d {
     });
   }
 
-  void PointCloud::filterDepthRange(const geom::Camera &cam, float minDepth,
+  void PointCloud::filterDepthRange(const cv3d::Camera &cam, float minDepth,
                                     float maxDepth, bool distToCamPlane) {
     const Vec o = cam.getPosition();
     Vec f = cam.getNorm();                                   // camera forward (world)

@@ -40,7 +40,7 @@
 namespace icl {
 using namespace core;
 using namespace utils;
-namespace geom {
+namespace cv3d {
 
 struct ObjectEdgeDetector::Data {
 	Data(Mode mode) {
@@ -209,5 +209,5 @@ const Img8u &ObjectEdgeDetector::calculate(const Img32f &depthImage,
     return objectEdgeDetector->calculate(depthImage, filter, average, gauss);
 }
 
-} // namespace geom
+} // namespace cv3d
 }

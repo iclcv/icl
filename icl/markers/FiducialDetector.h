@@ -27,7 +27,7 @@ namespace icl::markers {
 
     /// shared ctor body — instantiate plugin, load markers, set camera, set up PP
     void initPlugin(const std::string &plugin, const std::string &markerSpec,
-                    const utils::ParamMap &params, const geom::Camera *camera);
+                    const utils::ParamMap &params, const cv3d::Camera *camera);
 
     public:
     FiducialDetector(const FiducialDetector&) = delete;
@@ -77,17 +77,17 @@ namespace icl::markers {
     /// Construct with no markers yet loaded.
     FiducialDetector(const std::string &plugin="bch",
                      const utils::ParamMap &params=utils::ParamMap(),
-                     const geom::Camera *camera=0);
+                     const cv3d::Camera *camera=0);
 
     /// Construct and load a single integer-ID marker (BCH / ICL1).
     FiducialDetector(const std::string &plugin, int markerId,
                      const utils::ParamMap &params=utils::ParamMap(),
-                     const geom::Camera *camera=0);
+                     const cv3d::Camera *camera=0);
 
     /// Construct and load a typed list of integer-ID markers.
     FiducialDetector(const std::string &plugin, const std::vector<int> &markerIds,
                      const utils::ParamMap &params=utils::ParamMap(),
-                     const geom::Camera *camera=0);
+                     const cv3d::Camera *camera=0);
 
     /// Construct and load markers from a string spec — a range `"[a,b]"`,
     /// a list `"{a,b,c}"`, a single numeric ID, or a file path/glob
@@ -95,7 +95,7 @@ namespace icl::markers {
     /// interpretation.
     FiducialDetector(const std::string &plugin, const std::string &markerSpec,
                      const utils::ParamMap &params=utils::ParamMap(),
-                     const geom::Camera *camera=0);
+                     const cv3d::Camera *camera=0);
 
     /// Destructor
     virtual ~FiducialDetector();
@@ -108,10 +108,10 @@ namespace icl::markers {
         information. After setting a camera, some already existent
         Fiducials might become out of date. Therefore, detect
         must be called again when the camera was changed. */
-    void setCamera(const geom::Camera &camera);
+    void setCamera(const cv3d::Camera &camera);
 
     /// returns the current camera (or throws an exception if no camera is available)
-    const geom::Camera &getCamera() const;
+    const cv3d::Camera &getCamera() const;
 
     /// loads markers according to the current plugin type
     /** - "bch":\n

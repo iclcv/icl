@@ -14,7 +14,7 @@
 #include <icl/cv3d/Camera.h>
 #include <icl/core/DataSegment.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     class ObjectEdgeDetectorPlugin {
 
      public:

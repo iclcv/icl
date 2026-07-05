@@ -9,7 +9,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 
-namespace icl::geom {
+namespace icl::cv3d {
   const double SoftPosit::betaUpdate = 1.05;
 
   const double SoftPosit::betaZero = 0.0004;
@@ -499,4 +499,4 @@ namespace icl::geom {
     return max;
   }
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

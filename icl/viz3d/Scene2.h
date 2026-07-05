@@ -17,7 +17,7 @@
 #include <type_traits>
 #include <iostream>
 
-namespace icl::geom {
+namespace icl::cv3d {
   class Camera;
   struct ViewRay;
 }
@@ -103,9 +103,9 @@ namespace icl::viz3d {
     int getLightCount() const;
 
     // --- Cameras ---
-    void addCamera(const geom::Camera &cam);
-    geom::Camera &getCamera(int index);
-    const geom::Camera &getCamera(int index) const;
+    void addCamera(const cv3d::Camera &cam);
+    cv3d::Camera &getCamera(int index);
+    const cv3d::Camera &getCamera(int index) const;
     int getCameraCount() const;
 
     // --- Driver update (UI thread) ---
@@ -150,10 +150,10 @@ namespace icl::viz3d {
 
     // --- Hit testing ---
     /// Find closest node hit by the given view ray
-    Hit2 findObject(const geom::ViewRay &ray) const;
+    Hit2 findObject(const cv3d::ViewRay &ray) const;
 
     /// Find all nodes hit by the given view ray, sorted by distance
-    std::vector<Hit2> findObjects(const geom::ViewRay &ray) const;
+    std::vector<Hit2> findObjects(const cv3d::ViewRay &ray) const;
 
     /// Find closest hit at screen coordinates for given camera
     Hit2 findObject(int cameraIndex, int x, int y) const;

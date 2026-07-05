@@ -3,7 +3,7 @@
 #include <icl/utils/Random.h>
 #include <icl/cv3d/ICP3D.h>
 
-using namespace icl::geom;
+using namespace icl::cv3d;
 
 int main(int argc, char **argv) {
 

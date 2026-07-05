@@ -84,7 +84,7 @@ namespace icl::viz3d {
   struct Scene2::Data {
     std::vector<std::shared_ptr<Node>> objects;
     std::vector<std::shared_ptr<LightNode>> lights;  // also in objects, tracked for fast access
-    std::vector<geom::Camera> cameras;
+    std::vector<cv3d::Camera> cameras;
     Renderer renderer;
     std::vector<std::shared_ptr<SceneGLCallback>> callbacks;
     std::vector<std::unique_ptr<Scene2MouseHandler>> mouseHandlers;
@@ -102,7 +102,7 @@ namespace icl::viz3d {
 #ifdef ICL_HAVE_OPENGL
     // Offscreen capture FBO (renderToImage), lazily (re)allocated per size.
     // GL handles are leaked at process exit if no context is current at dtor —
-    // acceptable for a process-lifetime resource (legacy geom::Scene did the same).
+    // acceptable for a process-lifetime resource (legacy cv3d::Scene did the same).
     unsigned int captureFBO = 0, captureColorRBO = 0, captureDepthRBO = 0;
     utils::Size captureSize{0, 0};
 #endif
@@ -215,12 +215,12 @@ namespace icl::viz3d {
   int Scene2::getLightCount() const { return (int)m_data->lights.size(); }
 
   // Cameras
-  void Scene2::addCamera(const geom::Camera &cam) {
+  void Scene2::addCamera(const cv3d::Camera &cam) {
     m_data->cameras.push_back(cam);
   }
 
-  geom::Camera &Scene2::getCamera(int i) { return m_data->cameras.at(i); }
-  const geom::Camera &Scene2::getCamera(int i) const { return m_data->cameras.at(i); }
+  cv3d::Camera &Scene2::getCamera(int i) { return m_data->cameras.at(i); }
+  const cv3d::Camera &Scene2::getCamera(int i) const { return m_data->cameras.at(i); }
   int Scene2::getCameraCount() const { return (int)m_data->cameras.size(); }
 
   // --- Driver update ---
@@ -251,7 +251,7 @@ namespace icl::viz3d {
   // short view frustum, and a billboard label. Frustum corners come from the
   // camera's corner view rays mapped into local space — convention-independent.
   static std::shared_ptr<GroupNode> makeCameraGizmo(int index, float len,
-                                                    const geom::Camera &cam) {
+                                                    const cv3d::Camera &cam) {
     auto g = std::make_shared<GroupNode>();
     auto m = std::make_shared<MeshNode>();
 
@@ -260,13 +260,13 @@ namespace icl::viz3d {
     m->addVertex(Vec(len, 0, 0, 1));
     m->addVertex(Vec(0, len, 0, 1));
     m->addVertex(Vec(0, 0, len, 1));
-    m->addLine(0, 1, geom::GeomColor(255, 0, 0, 255));   // X red  (colors are 0..255)
-    m->addLine(0, 2, geom::GeomColor(0, 255, 0, 255));   // Y green
-    m->addLine(0, 3, geom::GeomColor(0, 0, 255, 255));   // Z blue
+    m->addLine(0, 1, cv3d::GeomColor(255, 0, 0, 255));   // X red  (colors are 0..255)
+    m->addLine(0, 2, cv3d::GeomColor(0, 255, 0, 255));   // Y green
+    m->addLine(0, 3, cv3d::GeomColor(0, 0, 255, 255));   // Z blue
 
     // stylized frustum: corner rays at a fixed short depth (not the far clip)
     const float fd = len * 2.0f;
-    const geom::GeomColor fc(255, 210, 80, 255);         // soft yellow
+    const cv3d::GeomColor fc(255, 210, 80, 255);         // soft yellow
     const Mat cs = cam.getCSTransformationMatrix();      // world -> cam (rotation)
     const utils::Size s = cam.getResolution();
     auto cornerLocal = [&](float px, float py) -> Vec {
@@ -383,7 +383,7 @@ namespace icl::viz3d {
     std::scoped_lock guard(m_data->mutex);
     if (cameraIndex < 0 || cameraIndex >= (int)m_data->cameras.size()) return result;
 
-    const geom::Camera &cam = m_data->cameras[cameraIndex];
+    const cv3d::Camera &cam = m_data->cameras[cameraIndex];
     const utils::Size s = cam.getResolution();
     const int w = s.width, h = s.height;
     if (w <= 0 || h <= 0) return result;
@@ -456,7 +456,7 @@ namespace icl::viz3d {
       for (int x = 0; x < w; ++x) { R[o+x] = row[4*x]; G[o+x] = row[4*x+1]; B[o+x] = row[4*x+2]; }
     }
 
-    // ---- depth readback → linearized metric mm (mirrors legacy geom::Scene) ----
+    // ---- depth readback → linearized metric mm (mirrors legacy cv3d::Scene) ----
     if (mode != BVH::NoDepth) {
       std::vector<float> z((size_t)w * h);
       glReadPixels(0, 0, w, h, GL_DEPTH_COMPONENT, GL_FLOAT, z.data());
@@ -471,7 +471,7 @@ namespace icl::viz3d {
       std::vector<float> corr;
       if (mode == BVH::DistToCamCenter) {
         corr.resize((size_t)w * h);
-        utils::Array2D<geom::ViewRay> vr = cam.getAllViewRays();
+        utils::Array2D<cv3d::ViewRay> vr = cam.getAllViewRays();
         const Vec c = vr(w/2 - 1, h/2 - 1).direction;
         const float cn = std::sqrt(c[0]*c[0] + c[1]*c[1] + c[2]*c[2]);
         for (int i = 0; i < w*h; ++i) {
@@ -528,7 +528,7 @@ namespace icl::viz3d {
   // --- Hit testing ---
 
   // Recursive hit collection against viz3d node graph
-  static void collectHits(Node *node, const geom::ViewRay &ray, std::vector<Hit2> &hits) {
+  static void collectHits(Node *node, const cv3d::ViewRay &ray, std::vector<Hit2> &hits) {
     if (!node || !node->isVisible()) return;
 
     // Recurse into groups
@@ -554,7 +554,7 @@ namespace icl::viz3d {
       for (const auto &tri : geom->getTriangles()) {
         Vec ip;
         auto result = ray.getIntersectionWithTriangle(ws[tri.v[0]], ws[tri.v[1]], ws[tri.v[2]], &ip);
-        if (result == geom::ViewRay::foundIntersection) {
+        if (result == cv3d::ViewRay::foundIntersection) {
           Vec d = ip - ray.offset;
           float dist = std::sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2]);
           hits.push_back({node, ip, dist});
@@ -567,7 +567,7 @@ namespace icl::viz3d {
           int i0 = q.v[0], i1 = q.v[t+1], i2 = q.v[t+2];
           Vec ip;
           auto result = ray.getIntersectionWithTriangle(ws[i0], ws[i1], ws[i2], &ip);
-          if (result == geom::ViewRay::foundIntersection) {
+          if (result == cv3d::ViewRay::foundIntersection) {
             Vec d = ip - ray.offset;
             float dist = std::sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2]);
             hits.push_back({node, ip, dist});
@@ -578,7 +578,7 @@ namespace icl::viz3d {
     }
   }
 
-  Hit2 Scene2::findObject(const geom::ViewRay &ray) const {
+  Hit2 Scene2::findObject(const cv3d::ViewRay &ray) const {
     std::vector<Hit2> hits;
     for (auto &node : m_data->objects) {
       collectHits(node.get(), ray, hits);
@@ -586,7 +586,7 @@ namespace icl::viz3d {
     return hits.empty() ? Hit2() : *std::min_element(hits.begin(), hits.end());
   }
 
-  std::vector<Hit2> Scene2::findObjects(const geom::ViewRay &ray) const {
+  std::vector<Hit2> Scene2::findObjects(const cv3d::ViewRay &ray) const {
     std::vector<Hit2> hits;
     for (auto &node : m_data->objects) {
       collectHits(node.get(), ray, hits);

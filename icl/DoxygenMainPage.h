@@ -40,9 +40,9 @@
     - <b>Cv</b> icl::cv::FloodFiller, icl::cv::GenericSurfDetector, icl::cv::HoughLineDetector
       icl::cv::RegionDetector, icl::cv::MeanShiftTracker, icl::cv::VectorTracker,
       icl::cv::RunLengthEncoder, icl::cv::SimpleBlobSearcher, icl::cv::TemplateTracker
-    - <b>Geom</b> icl::geom::Camera, icl::geom::Scene, icl::geom::SceneObject, icl::geom::ICP,
-      icl::geom::PlaneEquation, icl::geom::PlotWidget3D, icl::geom::PointCloudCreator,
-      icl::geom::PointNormalEstimation, icl::geom::PoseEstimator, icl::geom::Posit,
-      icl::geom::Segmentation3D
+    - <b>Geom</b> icl::cv3d::Camera, icl::cv3d::Scene, icl::cv3d::SceneObject, icl::cv3d::ICP,
+      icl::cv3d::PlaneEquation, icl::cv3d::PlotWidget3D, icl::cv3d::PointCloudCreator,
+      icl::cv3d::PointNormalEstimation, icl::cv3d::PoseEstimator, icl::cv3d::Posit,
+      icl::cv3d::Segmentation3D
     - <b>Markers</b> icl::markers::FiducialDetector
     */

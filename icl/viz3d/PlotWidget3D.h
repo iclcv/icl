@@ -15,7 +15,7 @@
 
 namespace icl::viz3d {
 
-  /// 3D box-plot widget (viz3d reimplementation of geom::PlotWidget3D).
+  /// 3D box-plot widget (viz3d reimplementation of cv3d::PlotWidget3D).
   /** A self-contained ICLDrawWidget3D that owns a Scene2, a camera, a scaled
       root GroupNode, and a coordinate-frame box with tics/labels. Data added via
       scatter/surf/linestrip/label is parented under the root node, whose
@@ -42,8 +42,8 @@ namespace icl::viz3d {
     Node *getRootObject();
     const Node *getRootObject() const;
 
-    const geom::Camera &getCamera() const;
-    void setCamera(const geom::Camera &cam);
+    const cv3d::Camera &getCamera() const;
+    void setCamera(const cv3d::Camera &cam);
 
     void add(std::shared_ptr<Node> obj);
     void remove(Handle h);
@@ -61,7 +61,7 @@ namespace icl::viz3d {
 
     Handle scatter(const std::vector<viz3d::Vec> &points);
     Handle scatter(const std::vector<viz3d::Vec> &points,
-                   const std::vector<geom::GeomColor> &colors,
+                   const std::vector<cv3d::GeomColor> &colors,
                    const utils::Range32f &colorRange = utils::Range32f(0, 255));
     Handle linestrip(const std::vector<viz3d::Vec> &points);
     Handle surf(const std::vector<viz3d::Vec> &points, int nx, int ny);

@@ -16,8 +16,8 @@
 
 using namespace icl;
 using namespace icl::viz3d;
-using P = icl::geom::Primitive3D;
-using icl::geom::Vec;
+using P = icl::cv3d::Primitive3D;
+using icl::cv3d::Vec;
 using Vec3 = math::FixedColVector<float,3>;
 
 static P make(P::PrimitiveType t, const Vec &pos, const Vec &scale) {

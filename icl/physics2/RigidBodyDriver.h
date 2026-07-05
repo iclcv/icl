@@ -20,7 +20,7 @@ namespace icl::physics2 {
   class PhysicsWorld;
 
   /// A viz3d Driver that binds a Bullet rigid body to its host node.
-  /** This is the physics2 replacement for `RigidObject` + `geom::SceneObject`
+  /** This is the physics2 replacement for `RigidObject` + `cv3d::SceneObject`
       inheritance. The node owns the driver; the driver owns the Bullet body,
       a collision shape (derived from the node geometry by default), and a
       MotionState that publishes the body's pose into a `StateSlot` each

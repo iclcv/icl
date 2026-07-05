@@ -8,7 +8,7 @@
 
 #include <icl/core/Img.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
     #ifdef ICL_HAVE_OPENCL
     //OpenCL kernel code
     static char RansacKernel[] =

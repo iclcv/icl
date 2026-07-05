@@ -117,7 +117,7 @@ namespace icl::markers {
 
     }
 
-    void CameraCalibrationUtils::save_cam_filename(geom::Camera cam,
+    void CameraCalibrationUtils::save_cam_filename(cv3d::Camera cam,
                                                    const std::string &outputSizeProgArg,
                                                    const std::string &filename){
 
@@ -139,7 +139,7 @@ namespace icl::markers {
       }
     }
 
-    void CameraCalibrationUtils::save_cam_pa(const geom::Camera &cam,
+    void CameraCalibrationUtils::save_cam_pa(const cv3d::Camera &cam,
                                              const std::string &outputSizeProgArg,
                                              const std::string &outputFileNameProgArg){
       std::string filename = get_save_filename(outputFileNameProgArg);
@@ -690,12 +690,12 @@ namespace icl::markers {
     CameraCalibrationUtils::CalibrationResult
     CameraCalibrationUtils::perform_calibration(const std::vector<FoundMarker> &markers,
                                                 const std::vector<bool> &enabledCfgFiles,
-                                                const std::vector<geom::Mat> &Ts,
-                                                const geom::Mat &Trel, const utils::Size &imageSize,
+                                                const std::vector<cv3d::Mat> &Ts,
+                                                const cv3d::Mat &Trel, const utils::Size &imageSize,
                                                 bool &deactivatedCenters, bool useCorners,
                                                 bool normalizeError, BestOfNSaver *saver,
                                                 bool &haveAnyCalibration, viz3d::Scene2 &scene,
-                                                const geom::Camera *givenIntrinsicParams,
+                                                const cv3d::Camera *givenIntrinsicParams,
                                                 bool performLMAbasedOptimiziation){
       CalibrationResult res;
       res.error = 0;

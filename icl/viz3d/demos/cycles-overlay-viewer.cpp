@@ -18,7 +18,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 using namespace icl::qt;
-using namespace icl::geom;
+using namespace icl::cv3d;
 using namespace icl::viz3d;
 
 static DemoScene2 scene;

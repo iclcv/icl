@@ -18,8 +18,8 @@ namespace icl::viz3d {
       orientation+position as the node transform and the given material colour.
       Returns nullptr for an unknown primitive type. */
   ICLViz3d_API NodePtr nodeFromPrimitive3D(
-      const geom::Primitive3D &p,
+      const cv3d::Primitive3D &p,
       uint32_t slices = 15,
-      const geom::GeomColor &color = geom::geom_white(100));
+      const cv3d::GeomColor &color = cv3d::geom_white(100));
 
 } // namespace icl::viz3d

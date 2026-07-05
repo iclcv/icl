@@ -10,7 +10,7 @@
 #include <icl/utils/Point.h>
 #include <iostream>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /** \cond */
   struct PlaneEquation;
   /** \endcond */
@@ -50,8 +50,8 @@ namespace icl::geom {
         "parametricCoords" parameter. "parametricCoords" is only written if it is not null and if
         the returned intersection result is "foundIntersection"
         */
-    TriangleIntersection getIntersectionWithTriangle(const geom::Vec &a, const geom::Vec &b, const geom::Vec &c,
-                                                     geom::Vec *intersectionPoint=0,
+    TriangleIntersection getIntersectionWithTriangle(const cv3d::Vec &a, const cv3d::Vec &b, const cv3d::Vec &c,
+                                                     cv3d::Vec *intersectionPoint=0,
                                                      utils::Point32f *parametricCoords=0) const;
 
     /// calculates the closest distance to the given 3D-Point
@@ -88,4 +88,4 @@ namespace icl::geom {
 
   /// ostream operator
   ICLGeom_API std::ostream &operator<<(std::ostream &s, const ViewRay &vr);
-  } // namespace icl::geom
+  } // namespace icl::cv3d

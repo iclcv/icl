@@ -12,7 +12,7 @@
 
 namespace icl{
   //forward declare PointCloudObjectBase to friend later
-  namespace geom {
+  namespace cv3d {
   class PointCloudObjectBase;
   }
   namespace core{
@@ -73,7 +73,7 @@ namespace icl{
     */
     struct ICLGeom_API DataSegmentBase{
       /// for easier integration with the pointcloud object base class
-      friend class geom::PointCloudObjectBase;
+      friend class cv3d::PointCloudObjectBase;
 
     protected:
       /// associcates a core::depth values and the (byte)-size of the corresponding type

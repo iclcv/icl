@@ -87,9 +87,9 @@ namespace icl::markers {
     /* this pointer and its members <b>can</b> be instantiated by
         parent FiduicalDetectorImpl instance */
     struct Info3D{
-      geom::Vec infoCenter;
-      geom::Vec infoRotation;
-      geom::Mat infoPose;
+      cv3d::Vec infoCenter;
+      cv3d::Vec infoRotation;
+      cv3d::Mat infoPose;
     } *info3D;
 
     /// base constructor initializing index with -1 and all other stuff with 0

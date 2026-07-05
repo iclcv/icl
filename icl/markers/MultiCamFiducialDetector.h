@@ -49,7 +49,7 @@ namespace icl::markers {
     MultiCamFiducialDetector(const std::string &pluginType,
                              const std::string &markersToLoad,
                              const utils::ParamMap &params,
-                             const std::vector<geom::Camera*> &cams,
+                             const std::vector<cv3d::Camera*> &cams,
                              bool syncProperties=true,
                              bool deepCopyCams=false);
 
@@ -70,7 +70,7 @@ namespace icl::markers {
     void init(const std::string &pluginType,
               const std::string &markersToLoad,
               const utils::ParamMap &params,
-              const std::vector<geom::Camera*> &cams,
+              const std::vector<cv3d::Camera*> &cams,
               bool syncProperties=true,
               bool deepCopyCams=false);
 

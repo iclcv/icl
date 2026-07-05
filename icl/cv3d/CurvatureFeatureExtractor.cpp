@@ -5,7 +5,7 @@
 #include <icl/cv3d/CurvatureFeatureExtractor.h>
 #include <icl/cv3d/SegmenterUtils.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   math::DynMatrixBase<bool> CurvatureFeatureExtractor::apply(const core::Img32f &depthImg, core::DataSegment<float,4> &xyz, math::DynMatrixBase<bool> &initialMatrix,
                         std::vector<SurfaceFeatureExtractor::SurfaceFeature> features,
                         std::vector<std::vector<int> > &surfaces, core::DataSegment<float,4> &normals, bool useOpenObjects, bool useOccludedObjects,
@@ -292,4 +292,4 @@ namespace icl::geom {
     return utils::Point(x,y);
   }
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

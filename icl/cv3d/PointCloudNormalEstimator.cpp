@@ -43,7 +43,7 @@ using namespace utils;
 using namespace math;
 using namespace core;
 
-namespace geom {
+namespace cv3d {
 
 //OpenCL kernel code
 [[maybe_unused]] static char normalEstimationKernel[] =
@@ -1236,5 +1236,5 @@ const Img8u &PointCloudNormalEstimator::calculate(const Img32f &depthImage,
 	applyImageBinarization();
 	return getBinarizedAngleDisplay();
 }
-} // namespace geom
+} // namespace cv3d
 }

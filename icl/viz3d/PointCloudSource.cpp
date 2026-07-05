@@ -15,7 +15,7 @@ namespace icl::viz3d {
 
   struct PointCloudSource::Data {
     io::ImageSource source;
-    geom::Camera cam;
+    cv3d::Camera cam;
     bool haveCam = false;
     bool fixedCam = false;          // camera was set explicitly (ignore metadata)
     bool distToCamPlane = true;
@@ -32,11 +32,11 @@ namespace icl::viz3d {
     m_data->source.init(device, spec);
   }
 
-  void PointCloudSource::setCamera(const geom::Camera &cam) {
+  void PointCloudSource::setCamera(const cv3d::Camera &cam) {
     m_data->cam = cam; m_data->haveCam = true; m_data->fixedCam = true;
   }
   bool PointCloudSource::hasCamera() const { return m_data->haveCam; }
-  const geom::Camera &PointCloudSource::getCamera() const { return m_data->cam; }
+  const cv3d::Camera &PointCloudSource::getCamera() const { return m_data->cam; }
   void PointCloudSource::setDistToCamPlane(bool enabled) { m_data->distToCamPlane = enabled; }
 
   const core::Image &PointCloudSource::getLastFrame() const { return m_data->lastFrame; }

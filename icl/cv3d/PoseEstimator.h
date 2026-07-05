@@ -7,7 +7,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/cv3d/GeomDefs.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /// Utility class for 6D PoseEstimation
   /** Given N points in one coordinate frame and corresponding points in another coordinate frame,
       the relative transformation between these two frames can be computed (the points must not be
@@ -78,4 +78,4 @@ namespace icl::geom {
     static math::FixedMatrix<T,3,3> quaternion_to_rotation_matrix(T w, T x, T y, T z);
   };
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

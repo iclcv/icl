@@ -14,8 +14,8 @@
 namespace icl::viz3d {
   using utils::Range32f;
   using utils::str;
-  using geom::Vec;
-  using geom::GeomColor;
+  using cv3d::Vec;
+  using cv3d::GeomColor;
 
   namespace detail {
 
@@ -104,7 +104,7 @@ namespace icl::viz3d {
       //   - the numeric labels (local -y -> -a) then fall just OUTSIDE the box.
       // viz3d::Node composes POST-multiply, so translate-to-edge first, then the
       // rotation (applied as rotate-then-translate to the local vertices).
-      using geom::Mat; using geom::Vec;
+      using cv3d::Mat; using cv3d::Vec;
       const int s[3] = { sx, sy, sz };
       auto e = [](int k, float val) { Vec r(0,0,0,0); r[k] = val; return r; };
       for (int i = 0; i < 3; ++i) {

@@ -9,7 +9,7 @@
 using namespace icl::utils;
 using namespace icl::core;
 
-namespace icl::geom {
+namespace icl::cv3d {
   ViewRay::ViewRay(const Vec &offset, const Vec &direction,bool autoNormalizeDirection):
     offset(offset),direction(direction){
     if(autoNormalizeDirection){
@@ -114,4 +114,4 @@ namespace icl::geom {
 
   }
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

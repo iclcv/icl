@@ -13,7 +13,7 @@
 #include <icl/core/cc/Color.h>
 #include <icl/utils/Point.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /// color for geometry primitives
   using GeomColor = core::Color4D32f;
 
@@ -65,4 +65,4 @@ namespace icl::geom {
   /// typedef for vector of Vec instances
   using VecArray = std::vector<Vec>;
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

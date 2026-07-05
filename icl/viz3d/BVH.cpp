@@ -173,7 +173,7 @@ namespace icl::viz3d {
     m_data->buildNode(0, n);
   }
 
-  BVHHit BVH::intersect(const geom::ViewRay &ray) const {
+  BVHHit BVH::intersect(const cv3d::ViewRay &ray) const {
     if (m_data->nodes.empty()) return {};
 
     Vec invDir(1.0f / (ray.direction[0] != 0 ? ray.direction[0] : 1e-20f),
@@ -203,7 +203,7 @@ namespace icl::viz3d {
           const auto &tri = m_data->triangles[m_data->triIndices[i]];
           Vec ip;
           auto r = ray.getIntersectionWithTriangle(tri.a, tri.b, tri.c, &ip);
-          if (r == geom::ViewRay::foundIntersection) {
+          if (r == cv3d::ViewRay::foundIntersection) {
             Vec d = ip - ray.offset;
             float distSq = d[0]*d[0] + d[1]*d[1] + d[2]*d[2];
             if (distSq < bestDistSq) {
@@ -225,7 +225,7 @@ namespace icl::viz3d {
     return result;
   }
 
-  void BVH::raycastImage(const geom::Camera &cam, PointCloud &cloud,
+  void BVH::raycastImage(const cv3d::Camera &cam, PointCloud &cloud,
                          int stepX, int stepY) const {
     int camW = cam.getResolution().width;
     int camH = cam.getResolution().height;
@@ -248,7 +248,7 @@ namespace icl::viz3d {
         float px = x * stepX + stepX * 0.5f;
         float py = y * stepY + stepY * 0.5f;
 
-        geom::ViewRay ray = cam.getViewRay(utils::Point32f(px, py));
+        cv3d::ViewRay ray = cam.getViewRay(utils::Point32f(px, py));
         BVHHit hit = intersect(ray);
 
         auto &xyz = xyzSeg[idx];
@@ -263,7 +263,7 @@ namespace icl::viz3d {
     }
   }
 
-  BVH::ImageResult BVH::raycastToImage(const geom::Camera &cam,
+  BVH::ImageResult BVH::raycastToImage(const cv3d::Camera &cam,
                                        DepthMode mode,
                                        int stepX, int stepY) const {
     int camW = cam.getResolution().width;
@@ -298,7 +298,7 @@ namespace icl::viz3d {
         float px = x * stepX + stepX * 0.5f;
         float py = y * stepY + stepY * 0.5f;
 
-        geom::ViewRay ray = cam.getViewRay(utils::Point32f(px, py));
+        cv3d::ViewRay ray = cam.getViewRay(utils::Point32f(px, py));
         BVHHit hit = intersect(ray);
 
         if (hit) {

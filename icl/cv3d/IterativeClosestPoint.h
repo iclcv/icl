@@ -4,7 +4,7 @@
 
 #pragma once
 #include <icl/math/transform/HomogeneousMath.h>
-namespace icl::geom {
+namespace icl::cv3d {
   struct Vec8{
     math::Vec4 pos;
     math::Vec4 col;
@@ -69,4 +69,4 @@ namespace icl::geom {
 
 //      void getClosestPointsInDB(const char* pointsA, const int* closestRep, const char* pointsB, const int* pointsDB, const int* counters, int* closestPoints, DistanceID* distanceAcc, float(*distanceFunc)(const char*, const char*), size_t typeSize, int sizeA, int widthDB, int localSizeX, int localSizeY);
   };
-  } // namespace icl::geom
+  } // namespace icl::cv3d

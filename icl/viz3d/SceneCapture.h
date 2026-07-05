@@ -95,7 +95,7 @@ namespace icl::viz3d {
           duration of the render, and doneCurrent()s after. This makes a scene
           renderable to an image FROM ANY THREAD — in particular a worker
           `run()` — without coupling to the on-screen paint loop. Ported from
-          legacy geom::Scene::PBuffer.
+          legacy cv3d::Scene::PBuffer.
 
       Qt thread-affinity caveat (owned mode): a QOpenGLContext is bound to the
       thread that first makeCurrent()s it. The context is lazily created on the

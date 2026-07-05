@@ -18,9 +18,9 @@
 
 using namespace icl;
 using namespace icl::viz3d;
-using icl::geom::Camera;
+using icl::cv3d::Camera;
 using icl::viz3d::Material;
-using icl::geom::GeomColor;
+using icl::cv3d::GeomColor;
 using icl::utils::Size;
 
 namespace {

@@ -10,7 +10,7 @@
 using namespace icl::utils;
 using namespace icl::math;
 using namespace icl::core;
-using namespace icl::geom;
+using namespace icl::cv3d;
 using namespace icl::cv;
 
 namespace icl::markers {

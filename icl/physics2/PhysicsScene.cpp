@@ -109,7 +109,7 @@ namespace icl::physics2 {
     m_scene.addLight(std::move(light));
   }
 
-  void PhysicsScene::addCamera(const geom::Camera &cam) { m_scene.addCamera(cam); }
+  void PhysicsScene::addCamera(const cv3d::Camera &cam) { m_scene.addCamera(cam); }
   void PhysicsScene::setBounds(float maxDim) { m_scene.setBounds(maxDim); }
 
   void PhysicsScene::start(float hz) { m_world.start(hz); }

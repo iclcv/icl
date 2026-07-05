@@ -35,7 +35,7 @@
 #include <icl/cv3d/SegmenterUtils.h>
 
 
-namespace icl::geom {
+namespace icl::cv3d {
   using namespace core;
   struct EuclideanBlobSegmenter::Data {
 	    Data(Mode mode) {
@@ -234,4 +234,4 @@ namespace icl::geom {
     m_data->blobs=rg.getRegions();
   }
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

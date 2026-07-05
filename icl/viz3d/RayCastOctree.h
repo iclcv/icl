@@ -13,7 +13,7 @@
 #define ICLViz3d_API
 #endif
 
-namespace icl::geom {
+namespace icl::cv3d {
   struct ViewRay;
 }
 
@@ -40,17 +40,17 @@ namespace icl::viz3d {
     void fill(const PointCloud &cloud);
 
     /// Find all points closer than maxDist to the ray
-    std::vector<Pt> rayCast(const geom::ViewRay &ray, float maxDist = 1) const;
+    std::vector<Pt> rayCast(const cv3d::ViewRay &ray, float maxDist = 1) const;
 
     /// Like rayCast, but results sorted by distance to ray origin
-    std::vector<Pt> rayCastSort(const geom::ViewRay &ray, float maxDist = 1) const;
+    std::vector<Pt> rayCastSort(const cv3d::ViewRay &ray, float maxDist = 1) const;
 
     /// Find the single point closest to the ray origin (within maxDist of ray)
     /** Throws ICLException if no point found. */
-    Pt rayCastClosest(const geom::ViewRay &ray, float maxDist = 1) const;
+    Pt rayCastClosest(const cv3d::ViewRay &ray, float maxDist = 1) const;
 
   private:
-    static void rayCastRec(const Node *n, const geom::ViewRay &ray,
+    static void rayCastRec(const Node *n, const cv3d::ViewRay &ray,
                            float maxSqrDist, float maxDist,
                            std::vector<Pt> &result);
   };

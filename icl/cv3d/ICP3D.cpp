@@ -5,7 +5,7 @@
 #include <icl/cv3d/ICP3D.h>
 #include <icl/cv3d/PoseEstimator.h>
 
-namespace icl::geom {
+namespace icl::cv3d {
 		ICP3D::Result::Result()
 			: transformation(math::Mat4::id()),
 			  error(0.0f), iterations(0) {}
@@ -97,8 +97,8 @@ namespace icl::geom {
 					}
 
 					math::Mat4 transform;
-					transform = icl::geom::PoseEstimator::map(in_matches,model_matches,
-																  icl::geom::PoseEstimator::RigidBody);
+					transform = icl::cv3d::PoseEstimator::map(in_matches,model_matches,
+																  icl::cv3d::PoseEstimator::RigidBody);
 
 					math::Mat3 rot = transform.part<0,0,3,3>();
 					icl::icl32f det = rot.det();
@@ -167,4 +167,4 @@ namespace icl::geom {
 			octree = 0;
 		}
 
-	} // namespace icl::geom
+	} // namespace icl::cv3d

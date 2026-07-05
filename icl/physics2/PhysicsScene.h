@@ -19,7 +19,7 @@
 #define ICLPhysics2_API
 #endif
 
-namespace icl::geom { class Camera; }
+namespace icl::cv3d { class Camera; }
 namespace icl::viz3d { class Node; class LightNode; class MeshNode; class Scene2MouseHandler; }
 namespace icl::qt { class GLCallback; }
 
@@ -109,7 +109,7 @@ namespace icl::physics2 {
     /// Add a non-physical node (decoration, coordinate frame, ...).
     void addNode(std::shared_ptr<viz3d::Node> node);
     void addLight(std::shared_ptr<viz3d::LightNode> light);
-    void addCamera(const geom::Camera &cam);
+    void addCamera(const cv3d::Camera &cam);
     void setBounds(float maxDim);
 
     // --- simulation control (forwarded to the world) ---

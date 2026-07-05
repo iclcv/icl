@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// GridNode — viz3d port of geom::GridSceneObject: an nx*ny lattice rendered as
+// GridNode — viz3d port of cv3d::GridSceneObject: an nx*ny lattice rendered as
 // grid lines / quad cells, with mutable getNode(x,y) access. Headless data checks.
 
 #include "harness/Test.h"

@@ -44,7 +44,7 @@ namespace icl::viz3d {
     return bvh.raycastToImage(scene.getCamera(cameraIndex), mode, m_stepX, m_stepY);
   }
 
-  // Owned offscreen GL context (ported from legacy geom::Scene::PBuffer).
+  // Owned offscreen GL context (ported from legacy cv3d::Scene::PBuffer).
   // Lazily created in (and thread-bound to) the thread of the first capture().
   struct GLSceneCapture::OffscreenContext {
 #ifdef ICL_HAVE_QT

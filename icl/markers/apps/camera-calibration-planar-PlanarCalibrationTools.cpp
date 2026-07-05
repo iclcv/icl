@@ -16,7 +16,7 @@ namespace icl{
   using namespace utils;
   using namespace math;
   using namespace core;
-  using namespace geom;
+  using namespace cv3d;
 
   namespace markers{
 
@@ -44,7 +44,7 @@ namespace icl{
       return var * 1./vs.size();
     }
 
-    std::vector<float> estimate_pose_variance(const geom::Mat &T){
+    std::vector<float> estimate_pose_variance(const cv3d::Mat &T){
       static std::deque<Vec> ts, rs;
       Vec t = T.part<3,0,1,4>();
       Vec r = extract_euler_angles(T).resize<1,4>(1);

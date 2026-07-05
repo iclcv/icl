@@ -11,9 +11,9 @@
 
 namespace icl::viz3d {
 
-  NodePtr nodeFromPrimitive3D(const geom::Primitive3D &p,
-                              uint32_t slices, const geom::GeomColor &color) {
-    using P = geom::Primitive3D;
+  NodePtr nodeFromPrimitive3D(const cv3d::Primitive3D &p,
+                              uint32_t slices, const cv3d::GeomColor &color) {
+    using P = cv3d::Primitive3D;
 
     // orientation → rotation matrix, with the primitive position in column 3
     // (getTransformationMatrix is non-const → work on a local copy)

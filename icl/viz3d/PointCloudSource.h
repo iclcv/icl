@@ -14,7 +14,7 @@
 
 namespace icl::utils { class ProgArg; }
 namespace icl::core { class Image; }
-namespace icl::geom { class Camera; }
+namespace icl::cv3d { class Camera; }
 namespace icl::io { class ImageSource; }
 
 namespace icl::viz3d {
@@ -40,9 +40,9 @@ namespace icl::viz3d {
     void init(const std::string &device, const std::string &spec);
 
     /// Pin the depth camera (overrides any camera carried in frame metadata).
-    void setCamera(const geom::Camera &cam);
+    void setCamera(const cv3d::Camera &cam);
     bool hasCamera() const;
-    const geom::Camera &getCamera() const;
+    const cv3d::Camera &getCamera() const;
 
     /// Depth interpretation: true = Z-depth (distance to image plane, default),
     /// false = Euclidean distance to the camera centre.

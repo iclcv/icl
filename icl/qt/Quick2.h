@@ -22,7 +22,7 @@ namespace icl::core{}
 namespace icl::filter{}
 namespace icl::io{}
 namespace icl::qt{}
-namespace icl::geom{}
+namespace icl::cv3d{}
 namespace icl::cv{}
 namespace icl::markers{}
 namespace icl::physics{}
@@ -35,7 +35,7 @@ using namespace icl::core;
 using namespace icl::filter;
 using namespace icl::io;
 using namespace icl::qt;
-using namespace icl::geom;
+using namespace icl::cv3d;
 using namespace icl::cv;
 using namespace icl::markers;
 using namespace icl::physics;

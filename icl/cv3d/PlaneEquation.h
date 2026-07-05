@@ -8,7 +8,7 @@
 #include <icl/cv3d/GeomDefs.h>
 #include <iostream>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /// Utility structure for calculation of view-ray / plane intersections
   struct ICLGeom_API PlaneEquation{
 
@@ -24,4 +24,4 @@ namespace icl::geom {
 
   /// ostream operator
   ICLGeom_API std::ostream &operator<<(std::ostream &s, const PlaneEquation &p);
-  } // namespace icl::geom
+  } // namespace icl::cv3d

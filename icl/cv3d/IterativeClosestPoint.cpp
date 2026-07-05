@@ -41,7 +41,7 @@
 
 
 // namespace icl{
-//   namespace geom{
+//   namespace cv3d{
 //     using namespace utils;
 //     using namespace math;
 // #define MATRIX_SIZE 16
@@ -817,5 +817,5 @@
 // //      }
 // //    }
 // //  }
-//   } // namespace geom
+//   } // namespace cv3d
 // }

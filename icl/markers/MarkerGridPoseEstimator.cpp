@@ -7,7 +7,7 @@
 namespace icl{
   using namespace utils;
   using namespace math;
-  using namespace geom;
+  using namespace cv3d;
 
   namespace markers{
 

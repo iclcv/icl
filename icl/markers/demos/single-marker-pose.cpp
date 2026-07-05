@@ -6,7 +6,7 @@
 // LEFT: a single fiducial marker on a flat board in a viz3d Scene2 — orbit it
 // with the mouse. RIGHT: the rendered camera-0 view; the marker is detected
 // (FiducialDetector) and its pose estimated with the TWO-solution planar pose
-// (geom::CoplanarPointPoseEstimator::getPoses). BOTH candidate pose frames are
+// (cv3d::CoplanarPointPoseEstimator::getPoses). BOTH candidate pose frames are
 // drawn over the marker: the best solution solid, the second (the "flip")
 // dashed. Orbit to a grazing angle and watch the two frames separate and the
 // ambiguity ratio err0/err1 climb toward 1 — the regime where a one-pose solver
@@ -36,7 +36,7 @@
 #include <memory>
 
 using namespace icl::viz3d;
-using namespace icl::geom;
+using namespace icl::cv3d;
 using namespace icl::markers;
 using namespace icl::core;
 using namespace icl::math;

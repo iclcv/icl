@@ -7,7 +7,7 @@
 #include <fstream>
 
 using namespace icl::math;
-using namespace icl::geom;
+using namespace icl::cv3d;
 using namespace icl::utils;
 
 Mat compute_relative_transform(const Camera &s, const Camera &d){

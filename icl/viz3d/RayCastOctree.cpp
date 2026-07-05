@@ -24,7 +24,7 @@ namespace icl::viz3d {
   }
 
   // Squared distance from point to ray (no sqrt needed)
-  static inline float sqrRayPointDist(const geom::ViewRay &ray,
+  static inline float sqrRayPointDist(const cv3d::ViewRay &ray,
                                        const RayCastOctree::Pt &p) {
     float dx = p[0] - ray.offset[0];
     float dy = p[1] - ray.offset[1];
@@ -33,7 +33,7 @@ namespace icl::viz3d {
     return (dx*dx + dy*dy + dz*dz) - dot*dot;
   }
 
-  void RayCastOctree::rayCastRec(const Node *n, const geom::ViewRay &ray,
+  void RayCastOctree::rayCastRec(const Node *n, const cv3d::ViewRay &ray,
                                   float maxSqrDist, float maxDist,
                                   std::vector<Pt> &result) {
     // Test points in this node
@@ -55,7 +55,7 @@ namespace icl::viz3d {
   }
 
   std::vector<RayCastOctree::Pt>
-  RayCastOctree::rayCast(const geom::ViewRay &ray, float maxDist) const {
+  RayCastOctree::rayCast(const cv3d::ViewRay &ray, float maxDist) const {
     std::vector<Pt> result;
     result.reserve(64);
     rayCastRec(root, ray, sqr(maxDist), maxDist, result);
@@ -63,7 +63,7 @@ namespace icl::viz3d {
   }
 
   std::vector<RayCastOctree::Pt>
-  RayCastOctree::rayCastSort(const geom::ViewRay &ray, float maxDist) const {
+  RayCastOctree::rayCastSort(const cv3d::ViewRay &ray, float maxDist) const {
     auto result = rayCast(ray, maxDist);
     const auto &o = ray.offset;
     std::sort(result.begin(), result.end(), [&](const Pt &a, const Pt &b) {
@@ -75,7 +75,7 @@ namespace icl::viz3d {
   }
 
   RayCastOctree::Pt
-  RayCastOctree::rayCastClosest(const geom::ViewRay &ray, float maxDist) const {
+  RayCastOctree::rayCastClosest(const cv3d::ViewRay &ray, float maxDist) const {
     auto hits = rayCast(ray, maxDist);
     if (hits.empty()) {
       throw ICLException("RayCastOctree::rayCastClosest: no point found");

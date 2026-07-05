@@ -14,7 +14,7 @@ namespace icl::markers {
 
   /// One detected object↔image correspondence of a calibration target.
   struct CalibrationCorrespondence {
-    geom::Vec objectPos;       ///< 3D model coordinate [mm] (planar targets: z=0)
+    cv3d::Vec objectPos;       ///< 3D model coordinate [mm] (planar targets: z=0)
     utils::Point32f imagePos;  ///< detected sub-pixel image coordinate [px]
   };
 
@@ -40,7 +40,7 @@ namespace icl::markers {
     virtual std::vector<CalibrationCorrespondence> detect(const core::Img8u &image) const = 0;
 
     /// All known model points of the full target (ground-truth geometry, mm).
-    virtual std::vector<geom::Vec> modelPoints() const = 0;
+    virtual std::vector<cv3d::Vec> modelPoints() const = 0;
 
     /// Render the target as a printable/displayable image of the given pixel size.
     virtual core::Img8u generate(const utils::Size &pixelSize) const = 0;

@@ -31,7 +31,7 @@
 #include <memory>
 
 using namespace icl::viz3d;
-using namespace icl::geom;
+using namespace icl::cv3d;
 using namespace icl::core;
 using namespace icl::utils;
 

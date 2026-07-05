@@ -18,7 +18,7 @@ using namespace icl;
 using namespace icl::markers;
 using icl::core::Img8u;
 using icl::utils::Size;
-using icl::geom::Vec;
+using icl::cv3d::Vec;
 using icl::utils::Point32f;
 
 namespace {

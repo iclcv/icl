@@ -26,8 +26,8 @@ namespace icl::physics2 {
     FoldDriver *fold = nullptr;
     PaperMoverDriver *mover = nullptr;
     Mode mode = None;
-    geom::ViewRay foldRay;        // press ray; with the release ray it spans the cut plane
-    geom::PlaneEquation dragPlane;
+    cv3d::ViewRay foldRay;        // press ray; with the release ray it spans the cut plane
+    cv3d::PlaneEquation dragPlane;
   };
 
   PaperMouseHandler::PaperMouseHandler(int cameraIndex, viz3d::Scene2 *scene, PaperDriver *paper)
@@ -47,12 +47,12 @@ namespace icl::physics2 {
   qt::MouseResult PaperMouseHandler::process(const qt::MouseEvent &e) {
     using qt::MouseResult;
     Data &d = *m_data;
-    const geom::Camera &cam = d.scene->getCamera(d.camIndex);
+    const cv3d::Camera &cam = d.scene->getCamera(d.camIndex);
     // CAMERA-resolution pixels (relative pos * resolution) — the space
     // getViewRay/estimate3DPosition expect, not raw widget pixels (e.getPos()).
     const utils::Point32f camPix(e.getRelPos().x * cam.getResolution().width,
                                  e.getRelPos().y * cam.getResolution().height);
-    geom::ViewRay ray = cam.getViewRay(camPix);
+    cv3d::ViewRay ray = cam.getViewRay(camPix);
 
     // The wheel and the right button are camera gestures: forward to the camera
     // handler installed after this one in the chain.
@@ -84,7 +84,7 @@ namespace icl::physics2 {
       }
       if (d.mover) {                       // Shift -> Grab, Shift+Ctrl -> Sheet
         d.mode = GrabMode;
-        d.dragPlane = geom::PlaneEquation(d.paper->interpolatePosition(p), cam.getNorm());
+        d.dragPlane = cv3d::PlaneEquation(d.paper->interpolatePosition(p), cam.getNorm());
         if (ctrl) d.mover->beginSheetGrab(p);   // Shift+Ctrl
         else      d.mover->beginGrab(p);         // Shift only
       }

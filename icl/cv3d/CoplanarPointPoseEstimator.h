@@ -10,7 +10,7 @@
 #include <icl/utils/config/Configurable.h>
 #include <vector>
 
-namespace icl::geom {
+namespace icl::cv3d {
   /** \cond */
   class Camera;
   /** \endcond */
@@ -200,4 +200,4 @@ namespace icl::geom {
                                                  const utils::Point32f *normalizedImagePoints,
                                                  const Camera &cam);
   };
-  } // namespace icl::geom
+  } // namespace icl::cv3d

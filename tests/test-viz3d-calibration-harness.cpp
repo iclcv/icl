@@ -16,8 +16,8 @@
 #include <cmath>
 
 using namespace icl;
-using icl::geom::Camera;
-using icl::geom::Vec;
+using icl::cv3d::Camera;
+using icl::cv3d::Vec;
 using icl::utils::Point32f;
 using icl::utils::Size;
 

@@ -16,7 +16,7 @@
 
 
 // the icl namespace
-namespace icl::geom {
+namespace icl::cv3d {
   /// Camera class
   /** This camera class implements a model of a central projection camera with
       finite focal length. It is very general and can be applied to most cameras,
@@ -654,4 +654,4 @@ namespace icl::geom {
   /// istream operator parses a camera from an XML-string
   ICLGeom_API std::istream &operator>>(std::istream &is, Camera &cam);
 
-  } // namespace icl::geom
+  } // namespace icl::cv3d

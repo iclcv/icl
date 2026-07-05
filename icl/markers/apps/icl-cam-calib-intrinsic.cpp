@@ -135,7 +135,7 @@ namespace {
           double x1=c*X + s*Z,        z1=-s*X + c*Z;         // Ry
           double y2=cxx*Y - sxx*z1,   z2=sxx*Y + cxx*z1;     // Rx
           double Xc=x1, Yc=y2, Zc=z2 + 600;                  // push in front
-          corr.push_back({ geom::Vec((float)X,(float)Y,0,1),
+          corr.push_back({ cv3d::Vec((float)X,(float)Y,0,1),
                            Point32f((float)(f*Xc/Zc+cx), (float)(f*Yc/Zc+cy)) });
         }
         return (float)(cov.describe(corr).tiltDir * 180.0/M_PI);
@@ -179,7 +179,7 @@ namespace {
     if (synthetic) {
       // Isolate the SOLVER from the renderer: project the target's model points
       // through a clean STANDARD pinhole (camera = R·(Xw−c) + t, u = fx·xd + cx —
-      // NOT geom::Camera, whose left-handed image convention the calibrator does
+      // NOT cv3d::Camera, whose left-handed image convention the calibrator does
       // not model) with the injected distortion baked in. Mirrors the proven
       // cv.intrinsic.recovers_distortion test geometry (focal 650, big board,
       // tilted views whose corners reach large image radius so k is observable).
@@ -188,7 +188,7 @@ namespace {
       const double SF = 650;
       const Intrinsics K{ SF, SF, size.width/2.0, size.height/2.0, k1, k2 };
       gt = K;                                                   // synthetic ground truth
-      const std::vector<geom::Vec> model = target->modelPoints();
+      const std::vector<cv3d::Vec> model = target->modelPoints();
       double cxm = 0, cym = 0;
       for (const auto &X : model) { cxm += X[0]; cym += X[1]; }
       cxm /= model.size(); cym /= model.size();
@@ -213,7 +213,7 @@ namespace {
       for (const SPose &P : sposes) {
         double R[9]; rot(P.ax, P.ay, P.az, R);
         std::vector<markers::CalibrationCorrespondence> corr;
-        for (const geom::Vec &X : model) {
+        for (const cv3d::Vec &X : model) {
           const double bx = X[0] - cxm, by = X[1] - cym;   // rotate about board centre
           const double Xc = R[0]*bx + R[1]*by + P.tx;
           const double Yc = R[3]*bx + R[4]*by + P.ty;
@@ -244,8 +244,8 @@ namespace {
 
       // --- build the sim scene: known camera + light + the selected board ---
       viz3d::Scene2 scene;
-      scene.addCamera(geom::Camera::lookAt(geom::Vec(0,0,600,1), geom::Vec(0,0,0,1),
-                                           geom::Vec(0,1,0,1), size, hfov));
+      scene.addCamera(cv3d::Camera::lookAt(cv3d::Vec(0,0,600,1), cv3d::Vec(0,0,0,1),
+                                           cv3d::Vec(0,1,0,1), size, hfov));
       scene.setBounds(600);
       scene.addLight(viz3d::LightNode::point(150, 200, 550));
       auto node = makeSceneNode(spec);
@@ -507,8 +507,8 @@ namespace {
 
     // FOV = simHFovDeg so the render focal matches the forward-distortion focal
     // (max(w,h)/2) → the sim is a self-consistent camera for the GT error report.
-    g_scene.addCamera(geom::Camera::lookAt(geom::Vec(0,0,600,1), geom::Vec(0,0,0,1),
-                                           geom::Vec(0,1,0,1), g_camRes, simHFovDeg(g_camRes)));
+    g_scene.addCamera(cv3d::Camera::lookAt(cv3d::Vec(0,0,600,1), cv3d::Vec(0,0,0,1),
+                                           cv3d::Vec(0,1,0,1), g_camRes, simHFovDeg(g_camRes)));
     g_scene.setBounds(600);
     g_scene.addLight(viz3d::LightNode::point(150, 200, 550));
 
