@@ -3,7 +3,6 @@
 // Copyright (C) 2006-2026 Matthias Esau, Christof Elbrechter
 
 #pragma once
-#include <icl/geom/Geom.h>
 #include <icl/math/transform/HomogeneousMath.h>
 namespace icl::geom {
   struct Vec8{
