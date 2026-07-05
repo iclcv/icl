@@ -6,7 +6,7 @@
 #include <icl/core/Channel.h>
 #include <icl/core/Img.h>
 #include <icl/cv/RegionGrower.h>
-#include <icl/cv3d/pose/PlanarRansacEstimator.h>
+#include <icl/cv3d/pose/RansacPlaneFitter.h>
 
 namespace icl::cv3d {
   void RemainingPointsFeatureExtractor::apply(core::DataSegment<float,4> &xyz, const core::Img32f &depthImage, core::Img32s &labelImage, core::Img8u &maskImage,
@@ -223,7 +223,7 @@ namespace icl::cv3d {
       std::vector<Vec> n00(10);
       std::vector<float> dist0(10);
 
-      PlanarRansacEstimator::calculateRandomModels(xyz, surfaces[nb[i]], n00, dist0, 10);
+      RansacPlaneFitter::calculateRandomModels(xyz, surfaces[nb[i]], n00, dist0, 10);
       n0.push_back(n00);
       dist.push_back(dist0);
     }

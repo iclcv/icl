@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// CoplanarPointPoseEstimator::getPoses — the two-solution (IPPE) planar pose.
+// PlanarPoseEstimator::getPoses — the two-solution (IPPE) planar pose.
 // A single planar marker's pose has a two-fold "flip" ambiguity (tilted toward
 // vs away) that reprojects almost identically under weak perspective. getPoses
 // returns both hypotheses best-first; the error ratio flags ambiguity. Verified
@@ -11,7 +11,7 @@
 
 #include "harness/Test.h"
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/PlanarPoseEstimator.h>
 #include <cmath>
 
 using namespace icl;
@@ -59,7 +59,7 @@ ICL_REGISTER_TEST("geom.coplanarpose.getposes_recovers_truth",
   Point32f model[4], img[4];
   projectMarker(cam, T, model, img);
 
-  CoplanarPointPoseEstimator est(CoplanarPointPoseEstimator::worldFrame);
+  PlanarPoseEstimator est(PlanarPoseEstimator::worldFrame);
   const auto ps = est.getPoses(4, model, img, cam);
   std::cout << "[coplanarpose] recover: n=" << ps.size() << " err0=" << ps[0].error
             << (ps.size()>1 ? std::string(" err1=")+std::to_string(ps[1].error) : "") << std::endl;
@@ -80,7 +80,7 @@ ICL_REGISTER_TEST("geom.coplanarpose.getposes_surfaces_flip",
   Point32f model[4], img[4];
   projectMarker(cam, T, model, img);
 
-  CoplanarPointPoseEstimator est(CoplanarPointPoseEstimator::worldFrame);
+  PlanarPoseEstimator est(PlanarPoseEstimator::worldFrame);
   const auto ps = est.getPoses(4, model, img, cam);
   std::cout << "[coplanarpose] flip: n=" << ps.size() << " err0=" << ps[0].error
             << (ps.size()>1 ? std::string(" err1=")+std::to_string(ps[1].error) : "")

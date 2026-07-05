@@ -12,10 +12,10 @@ cv3d_headers = files(
 )
 
 cv3d_pose_headers = files(
-  'pose/PoseEstimator.h',
-  'pose/CoplanarPointPoseEstimator.h',
-  'pose/RansacBasedPoseEstimator.h',
-  'pose/PlanarRansacEstimator.h',
+  'pose/RigidTransformEstimator.h',
+  'pose/PlanarPoseEstimator.h',
+  'pose/RobustPoseEstimator.h',
+  'pose/RansacPlaneFitter.h',
 )
 
 cv3d_icp_headers = files(
@@ -49,10 +49,10 @@ cv3d_sources = files(
   'Camera.cpp',
   'PlaneEquation.cpp',
   'ViewRay.cpp',
-  'pose/PoseEstimator.cpp',
-  'pose/CoplanarPointPoseEstimator.cpp',
-  'pose/RansacBasedPoseEstimator.cpp',
-  'pose/PlanarRansacEstimator.cpp',
+  'pose/RigidTransformEstimator.cpp',
+  'pose/PlanarPoseEstimator.cpp',
+  'pose/RobustPoseEstimator.cpp',
+  'pose/RansacPlaneFitter.cpp',
   'icp/ICP.cpp',
   'icp/ICP_Cpp.cpp',
   'features/SurfaceFeatureExtractor.cpp',

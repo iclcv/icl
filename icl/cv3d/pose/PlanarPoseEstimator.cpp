@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Sergius Gaulik
 
-#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/PlanarPoseEstimator.h>
 #include <icl/utils/prop/Constraints.h>
 
 #include <icl/cv3d/Camera.h>
@@ -43,15 +43,15 @@ namespace icl::cv3d {
                                   v1[0]*v2[1]-v1[1]*v2[0]);
   }
 
-  struct CoplanarPointPoseEstimator::Data{
+  struct PlanarPoseEstimator::Data{
     DMat A,U,s,V;
 
     FixedMatrix<float,3,3> H,R;
     FixedColVector<float,3> C;
     FixedMatrix<float,4,4> T;
 
-    CoplanarPointPoseEstimator::ReferenceFrame referenceFrame;
-    CoplanarPointPoseEstimator::PoseEstimationAlgorithm algorithm;
+    PlanarPoseEstimator::ReferenceFrame referenceFrame;
+    PlanarPoseEstimator::PoseEstimationAlgorithm algorithm;
 
     float samplingInterval;
     int samplingSteps;
@@ -61,7 +61,7 @@ namespace icl::cv3d {
     bool timeMonitoring;
     bool poseCorrection;
 
-    CoplanarPointPoseEstimator::RANSACSpec ransacSpec;
+    PlanarPoseEstimator::RANSACSpec ransacSpec;
   };
 
   static const std::string &get_all_algorithms(){
@@ -70,23 +70,23 @@ namespace icl::cv3d {
     return s;
   }
 
-  static std::string algorithm_to_string(CoplanarPointPoseEstimator::PoseEstimationAlgorithm a){
+  static std::string algorithm_to_string(PlanarPoseEstimator::PoseEstimationAlgorithm a){
     static std::vector<std::string> as = tok(get_all_algorithms(),",");
     if(static_cast<int>(a) < 0 || static_cast<int>(a)>=static_cast<int>(as.size())){
-      throw ICLException("CoplanarPointPoseEstimator: wrong PoseEstimationAlgorithm value");
+      throw ICLException("PlanarPoseEstimator: wrong PoseEstimationAlgorithm value");
     }
     return as[static_cast<int>(a)];
   }
 
-  CoplanarPointPoseEstimator::PoseEstimationAlgorithm string_to_algorithm(const std::string &value){
+  PlanarPoseEstimator::PoseEstimationAlgorithm string_to_algorithm(const std::string &value){
     static std::vector<std::string> as = tok(get_all_algorithms(),",");
     std::vector<std::string>::const_iterator it = std::find(as.begin(),as.end(),value);
-    if(it == as.end()) throw ICLException("CoplanarPointPoseEstimator: wrong string-value for PoseEstimationAlgorithm");
-    return static_cast<CoplanarPointPoseEstimator::PoseEstimationAlgorithm>(static_cast<int>(it - as.begin()));
+    if(it == as.end()) throw ICLException("PlanarPoseEstimator: wrong string-value for PoseEstimationAlgorithm");
+    return static_cast<PlanarPoseEstimator::PoseEstimationAlgorithm>(static_cast<int>(it - as.begin()));
   }
 
 
-  CoplanarPointPoseEstimator::CoplanarPointPoseEstimator(ReferenceFrame returnedPoseReferenceFrame,
+  PlanarPoseEstimator::PlanarPoseEstimator(ReferenceFrame returnedPoseReferenceFrame,
                                                          PoseEstimationAlgorithm a, const RANSACSpec &spec):
     data(new Data){
 
@@ -146,7 +146,7 @@ namespace icl::cv3d {
     registerCallback([this](const Property &p){ propertyChangedCallback(p); });
   }
 
-  void CoplanarPointPoseEstimator::propertyChangedCallback(const Property &p){
+  void PlanarPoseEstimator::propertyChangedCallback(const Property &p){
     if(p.name == "algorithm") data->algorithm = string_to_algorithm(p.as<std::string>());
     else if(p.name == "sampling interval") data->samplingInterval = p.as<float>();
     else if(p.name == "sampling steps") data->samplingSteps = p.as<int>();
@@ -166,28 +166,28 @@ namespace icl::cv3d {
   }
 
 
-  CoplanarPointPoseEstimator::~CoplanarPointPoseEstimator(){
+  PlanarPoseEstimator::~PlanarPoseEstimator(){
     delete data;
   }
 
-  CoplanarPointPoseEstimator::CoplanarPointPoseEstimator(const CoplanarPointPoseEstimator &other):
+  PlanarPoseEstimator::PlanarPoseEstimator(const PlanarPoseEstimator &other):
     data(new Data){
     *this = other;
   }
 
 
 
-  CoplanarPointPoseEstimator &CoplanarPointPoseEstimator::operator=(const CoplanarPointPoseEstimator &other){
+  PlanarPoseEstimator &PlanarPoseEstimator::operator=(const PlanarPoseEstimator &other){
     *data = *other.data;
     return *this;
   }
 
 
-  CoplanarPointPoseEstimator::ReferenceFrame CoplanarPointPoseEstimator::getReferenceFrame() const{
+  PlanarPoseEstimator::ReferenceFrame PlanarPoseEstimator::getReferenceFrame() const{
     return data->referenceFrame;;
   }
 
-  void CoplanarPointPoseEstimator::setReferenceFrame(CoplanarPointPoseEstimator::ReferenceFrame f){
+  void PlanarPoseEstimator::setReferenceFrame(PlanarPoseEstimator::ReferenceFrame f){
     data->referenceFrame = f;
   }
 
@@ -569,7 +569,7 @@ namespace icl::cv3d {
       delete[] VV;
     }
 
-  void CoplanarPointPoseEstimator::robustPoseCorrection(int n, const Point32f *modelPoints,
+  void PlanarPoseEstimator::robustPoseCorrection(int n, const Point32f *modelPoints,
                                                         const utils::Point32f *normalizedImagePoints) {
     std::vector< FixedColVector<icl32f,3> > V(n), P(n), P_(n);
 
@@ -698,7 +698,7 @@ namespace icl::cv3d {
     return r;
   }
 
-   Mat CoplanarPointPoseEstimator::getPose(int n,
+   Mat PlanarPoseEstimator::getPose(int n,
                                           const Point32f *modelPoints,
                                           const Point32f *imagePoints,
                                           const Camera &cam){
@@ -787,8 +787,8 @@ namespace icl::cv3d {
     }
   }
 
-  std::vector<CoplanarPointPoseEstimator::PoseCandidate>
-  CoplanarPointPoseEstimator::getPoses(int n, const Point32f *modelPoints,
+  std::vector<PlanarPoseEstimator::PoseCandidate>
+  PlanarPoseEstimator::getPoses(int n, const Point32f *modelPoints,
                                        const Point32f *imagePoints, const Camera &cam){
     typedef FixedColVector<float,3> V3;
     typedef FixedMatrix<float,3,3> M3;
@@ -898,7 +898,7 @@ namespace icl::cv3d {
     return out;
   }
 
-  Mat CoplanarPointPoseEstimator::getPoseInternal(PoseEstimationAlgorithm a, int n,
+  Mat PlanarPoseEstimator::getPoseInternal(PoseEstimationAlgorithm a, int n,
                                                   const utils::Point32f *modelPoints,
                                                   const utils::Point32f *imagePoints,
                                                   const utils::Point32f *normalizedImagePoints,
@@ -1053,5 +1053,5 @@ namespace icl::cv3d {
     }
   }
 
-  REGISTER_CONFIGURABLE_DEFAULT(CoplanarPointPoseEstimator);
+  REGISTER_CONFIGURABLE_DEFAULT(PlanarPoseEstimator);
   } // namespace icl::cv3d

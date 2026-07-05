@@ -8,7 +8,7 @@
 ** Copyright (c) 1993-2008 Ken Martin, Will Schroeder,             **
 ** Bill Lorensen   -- All  rights reserved.                        **
 *********************************************************************/
-#include <icl/cv3d/pose/PoseEstimator.h>
+#include <icl/cv3d/pose/RigidTransformEstimator.h>
 #include <icl/core/Types.h>
 
 #ifdef ICL_HAVE_EIGEN3
@@ -79,7 +79,7 @@ namespace icl::cv3d {
   }
 
   template<class T>
-  FixedMatrix<T,3,3> PoseEstimator::quaternion_to_rotation_matrix(T w, T x, T y, T z){
+  FixedMatrix<T,3,3> RigidTransformEstimator::quaternion_to_rotation_matrix(T w, T x, T y, T z){
     T ww = w*w;
     T wx = w*x;
     T wy = w*y;
@@ -111,12 +111,12 @@ namespace icl::cv3d {
 
 
   template<class T>
-  FixedMatrix<T,4,4> PoseEstimator::map(const DynMatrix<T> &Xs, const DynMatrix<T> &Ys, PoseEstimator::MapMode mode){
-    ICLASSERT_THROW(Xs.rows() == 3 || Xs.rows() == 4, IncompatibleMatrixDimensionException("PoseEstimator::map: Xs.rows must be 3 or 4 (for homogeneous coordinates)"));
-    ICLASSERT_THROW(Ys.rows() == 3 || Ys.rows() == 4, IncompatibleMatrixDimensionException("PoseEstimator::map: Ys.rows must be 3 or 4 (for homogeneous coordinates)"));
-    ICLASSERT_THROW(Xs.cols() == Ys.cols(), IncompatibleMatrixDimensionException("PoseEstimator::map: Point count in Xs and Ys must be equal"));
-    ICLASSERT_THROW(Xs.cols() > 0, IncompatibleMatrixDimensionException("PoseEstimator::map: At least 1 point is needed for relative pose estimation"));
-    ICLASSERT_THROW(Xs.cols() > 3 || mode !=Affine, IncompatibleMatrixDimensionException("PoseEstimator::map: for affine mapping, at least 4 points are needed!"));
+  FixedMatrix<T,4,4> RigidTransformEstimator::map(const DynMatrix<T> &Xs, const DynMatrix<T> &Ys, RigidTransformEstimator::MapMode mode){
+    ICLASSERT_THROW(Xs.rows() == 3 || Xs.rows() == 4, IncompatibleMatrixDimensionException("RigidTransformEstimator::map: Xs.rows must be 3 or 4 (for homogeneous coordinates)"));
+    ICLASSERT_THROW(Ys.rows() == 3 || Ys.rows() == 4, IncompatibleMatrixDimensionException("RigidTransformEstimator::map: Ys.rows must be 3 or 4 (for homogeneous coordinates)"));
+    ICLASSERT_THROW(Xs.cols() == Ys.cols(), IncompatibleMatrixDimensionException("RigidTransformEstimator::map: Point count in Xs and Ys must be equal"));
+    ICLASSERT_THROW(Xs.cols() > 0, IncompatibleMatrixDimensionException("RigidTransformEstimator::map: At least 1 point is needed for relative pose estimation"));
+    ICLASSERT_THROW(Xs.cols() > 3 || mode !=Affine, IncompatibleMatrixDimensionException("RigidTransformEstimator::map: for affine mapping, at least 4 points are needed!"));
 
 #ifdef ICL_HAVE_EIGEN3
     if(mode == RigidBody && Xs.rows() == 3){
@@ -288,6 +288,6 @@ namespace icl::cv3d {
 
   }
 
-  template ICLCv3d_API FixedMatrix<icl32f, 4, 4> PoseEstimator::map(const DynMatrix<icl32f>&, const DynMatrix<icl32f>&, PoseEstimator::MapMode mode);
-  template ICLCv3d_API FixedMatrix<icl64f, 4, 4> PoseEstimator::map(const DynMatrix<icl64f>&, const DynMatrix<icl64f>&, PoseEstimator::MapMode mode);
+  template ICLCv3d_API FixedMatrix<icl32f, 4, 4> RigidTransformEstimator::map(const DynMatrix<icl32f>&, const DynMatrix<icl32f>&, RigidTransformEstimator::MapMode mode);
+  template ICLCv3d_API FixedMatrix<icl64f, 4, 4> RigidTransformEstimator::map(const DynMatrix<icl64f>&, const DynMatrix<icl64f>&, RigidTransformEstimator::MapMode mode);
   } // namespace icl::cv3d

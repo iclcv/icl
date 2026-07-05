@@ -11,7 +11,7 @@
 #include <icl/core/Img.h>
 
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/PlanarPoseEstimator.h>
 
 #include <icl/markers/FiducialImpl.h>
 
@@ -24,7 +24,7 @@ namespace icl::markers {
     cv3d::Camera *camera;
 
     /// for 3D pose estimation
-    cv3d::CoplanarPointPoseEstimator poseEst;
+    cv3d::PlanarPoseEstimator poseEst;
 
 
     /// initializes the plugin with a 0-camera

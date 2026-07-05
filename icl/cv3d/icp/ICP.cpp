@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Tobias Roehlig, Christof Elbrechter
 
 #include <icl/cv3d/icp/ICP.h>
-#include <icl/cv3d/pose/PoseEstimator.h>
+#include <icl/cv3d/pose/RigidTransformEstimator.h>
 
 #include <limits>
 #include <cmath>
@@ -95,7 +95,7 @@ namespace icl::cv3d {
 
         // --- rigid-body transform from the correspondences ---
         math::Mat4 transform =
-          PoseEstimator::map(in_matches, model_matches, PoseEstimator::RigidBody);
+          RigidTransformEstimator::map(in_matches, model_matches, RigidTransformEstimator::RigidBody);
 
         math::Mat3 rot = transform.part<0, 0, 3, 3>();
         if (std::fabs(rot.det() - 1.0f) > 0.01f) {

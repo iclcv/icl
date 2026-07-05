@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/markers/MarkerGridPoseEstimator.h>
-#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/PlanarPoseEstimator.h>
 namespace icl{
   using namespace utils;
   using namespace math;
@@ -12,10 +12,10 @@ namespace icl{
   namespace markers{
 
     struct MarkerGridPoseEstimator::Data{
-      CoplanarPointPoseEstimator poseEst;
-      Data():poseEst(CoplanarPointPoseEstimator::worldFrame,
-                     CoplanarPointPoseEstimator::SimplexSampling,
-                     CoplanarPointPoseEstimator::RANSACSpec(true)){
+      PlanarPoseEstimator poseEst;
+      Data():poseEst(PlanarPoseEstimator::worldFrame,
+                     PlanarPoseEstimator::SimplexSampling,
+                     PlanarPoseEstimator::RANSACSpec(true)){
 
       }
     };

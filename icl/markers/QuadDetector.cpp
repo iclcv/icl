@@ -42,7 +42,7 @@
 #include <float.h>
 #include <icl/utils/time/StackTimer.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/PlanarPoseEstimator.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -292,7 +292,7 @@ namespace icl::markers {
       if (corners.size() != 4) return std::numeric_limits<float>::max();
       //#define USE_HOMOGRAPHY_BASED_ERROR
 #ifdef USE_HOMOGRAPHY_BASED_ERROR
-      CoplanarPointPoseEstimator pe(CoplanarPointPoseEstimator::cameraFrame, CoplanarPointPoseEstimator::HomographyBasedOnly);
+      PlanarPoseEstimator pe(PlanarPoseEstimator::cameraFrame, PlanarPoseEstimator::HomographyBasedOnly);
       static const Point32f obj[4] = {Point32f(-40,-40), Point32f(40,-40), Point32f(40,40), Point32f(-40,40) };
       Mat T = pe.getPose(4,obj,corners.data(),cameraForQuadRating);
 

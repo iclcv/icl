@@ -12,7 +12,7 @@
 
 namespace icl::cv3d {
     /// RANSAC-based pose estimation
-    class ICLCv3d_API RansacBasedPoseEstimator : public utils::Configurable{
+    class ICLCv3d_API RobustPoseEstimator : public utils::Configurable{
       struct Data;  //!< internal data handling
       Data *m_data; //!< internal data pointer
 
@@ -25,14 +25,14 @@ namespace icl::cv3d {
       };
 
 
-      RansacBasedPoseEstimator(const cv3d::Camera &camera,
+      RobustPoseEstimator(const cv3d::Camera &camera,
                                 int iterations=200,
                                 int minPoints=4,
                                 float maxErr=5,
                                int minPointsForGoodModel=12,
                                bool storeLastConsensusSet=false);
 
-      ~RansacBasedPoseEstimator();
+      ~RobustPoseEstimator();
 
       void setIterations(int iterations);
 

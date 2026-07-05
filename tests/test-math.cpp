@@ -1422,7 +1422,7 @@ ICL_REGISTER_TEST("math.delaunay.grid_contains_axis_edges",
 // order, independent of the active LAPACK backend. LAPACK syev returns ascending
 // and the C++ Jacobi fallback descending; the wrapper reconciles them. Regression
 // for the Jacobi->LAPACK migration that silently flipped the order and broke every
-// "column 0 = largest eigenvalue" caller (LeastSquareModelFitting, PoseEstimator, ...).
+// "column 0 = largest eigenvalue" caller (LeastSquareModelFitting, RigidTransformEstimator, ...).
 ICL_REGISTER_TEST("math.dyn.eigen_descending_order",
                   "eigen() returns eigenvalues largest-first with matching eigenvectors")
 {

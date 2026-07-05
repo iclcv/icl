@@ -29,22 +29,22 @@
  **********************************************************************/
 
 #include <icl/cv3d/features/CutfreeAdjacencyFeatureExtractor.h>
-#include <icl/cv3d/pose/PlanarRansacEstimator.h>
+#include <icl/cv3d/pose/RansacPlaneFitter.h>
 
 namespace icl::cv3d {
   struct CutfreeAdjacencyFeatureExtractor::Data {
 	    Data(Mode mode) {
       if(mode==BEST || mode==GPU){
-        ransac=new PlanarRansacEstimator(PlanarRansacEstimator::GPU);
+        ransac=new RansacPlaneFitter(RansacPlaneFitter::GPU);
       }else{
-        ransac=new PlanarRansacEstimator(PlanarRansacEstimator::CPU);
+        ransac=new RansacPlaneFitter(RansacPlaneFitter::CPU);
       }
 	    }
 
 	    ~Data() {
 	    }
 
-    PlanarRansacEstimator* ransac;
+    RansacPlaneFitter* ransac;
   };
 
 
@@ -65,9 +65,9 @@ namespace icl::cv3d {
     for(unsigned int x=0; x<cutfreeMatrix.rows(); x++){
       cutfreeMatrix(x, x)=false;
     }
-    math::DynMatrix<PlanarRansacEstimator::Result> result = m_data->ransac->apply(xyzh, surfaces,
+    math::DynMatrix<RansacPlaneFitter::Result> result = m_data->ransac->apply(xyzh, surfaces,
                   cutfreeMatrix, euclideanDistance, passes, tolerance,
-                  PlanarRansacEstimator::ON_ONE_SIDE, labelImage);
+                  RansacPlaneFitter::ON_ONE_SIDE, labelImage);
 
     for(unsigned int x=0; x<result.rows(); x++){
       for(unsigned int y=0; y<result.cols(); y++){
@@ -101,9 +101,9 @@ namespace icl::cv3d {
         }
       }
     }
-    math::DynMatrix<PlanarRansacEstimator::Result> result = m_data->ransac->apply(xyzh, surfaces,
+    math::DynMatrix<RansacPlaneFitter::Result> result = m_data->ransac->apply(xyzh, surfaces,
                   cutfreeMatrix, euclideanDistance, passes, tolerance,
-                  PlanarRansacEstimator::ON_ONE_SIDE, labelImage);
+                  RansacPlaneFitter::ON_ONE_SIDE, labelImage);
 
     for(unsigned int x=0; x<result.rows(); x++){
       for(unsigned int y=0; y<result.cols(); y++){

@@ -2,25 +2,25 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/cv3d/pose/RansacBasedPoseEstimator.h>
+#include <icl/cv3d/pose/RobustPoseEstimator.h>
 #include <icl/utils/prop/Constraints.h>
 
 #include <icl/utils/StringUtils.h>
 
 #include <icl/math/fit/RansacFitter.h>
-#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/PlanarPoseEstimator.h>
 
 namespace icl::cv3d {
     using namespace math;
     using namespace utils;
 
-    struct RansacBasedPoseEstimator::Data{
+    struct RobustPoseEstimator::Data{
       // int iterations;
       //int minPoints;
       //float maxError;
       //float minPointsForGoodModel;
       Camera camera;
-      CoplanarPointPoseEstimator pe;
+      PlanarPoseEstimator pe;
       std::vector<utils::Point32f> lastConsensusSet;
     };
 
@@ -49,7 +49,7 @@ namespace icl::cv3d {
     }
 #endif
 
-    icl64f RansacBasedPoseEstimator::err_coplanar(const std::vector<float> &m, const std::vector<float> &p){
+    icl64f RobustPoseEstimator::err_coplanar(const std::vector<float> &m, const std::vector<float> &p){
       Mat T = create_hom_4x4<float>(m[0],m[1],m[2],m[3],m[4],m[5]);
       Point32f q = m_data->camera.project(T * Vec(p[2], p[3], 0, 1));
 
@@ -77,7 +77,7 @@ namespace icl::cv3d {
     }
 #endif
 
-    std::vector<float> RansacBasedPoseEstimator::fit_coplanar(const std::vector<std::vector<float> > &pts){
+    std::vector<float> RobustPoseEstimator::fit_coplanar(const std::vector<std::vector<float> > &pts){
       //DEBUG_LOG("------------- fitting on " << pts.size() << " point");
       //std::cout << "Points:: [";
       std::vector<Point32f> curr(pts.size()),templ(pts.size());
@@ -109,14 +109,14 @@ namespace icl::cv3d {
                 << p[4] << ", "
                 << p[5] << "] " << std::endl;
       std::cout << "(Err: "
-                << mean_error(pts, p, function(this,&RansacBasedPoseEstimator::err_coplanar), m_data->camera) << ")"<< std::endl;
+                << mean_error(pts, p, function(this,&RobustPoseEstimator::err_coplanar), m_data->camera) << ")"<< std::endl;
           */
       return p;
     }
 
 
 
-    RansacBasedPoseEstimator::RansacBasedPoseEstimator(const cv3d::Camera &camera,
+    RobustPoseEstimator::RobustPoseEstimator(const cv3d::Camera &camera,
                                                          int iterations,
                                                          int minPoints,
                                                          float maxErr,
@@ -136,40 +136,40 @@ namespace icl::cv3d {
       m_data->camera = camera;
     }
 
-    void RansacBasedPoseEstimator::setStoreLastConsensusSet(bool on){
+    void RobustPoseEstimator::setStoreLastConsensusSet(bool on){
       prop("store last consensus set").value = on;
     }
 
-    std::vector<utils::Point32f>  RansacBasedPoseEstimator::getLastConsensusSet(){
+    std::vector<utils::Point32f>  RobustPoseEstimator::getLastConsensusSet(){
       bool hasSet = prop("store last consensus set").value;
-      if(!hasSet) throw utils::ICLException("RansacBasedPoseEstimator::getLastConsensusSet() even though "
+      if(!hasSet) throw utils::ICLException("RobustPoseEstimator::getLastConsensusSet() even though "
                                             "'store last consensus set' property was not set to 'true'");
       return m_data->lastConsensusSet;
     }
 
 
-    RansacBasedPoseEstimator::~RansacBasedPoseEstimator(){
+    RobustPoseEstimator::~RobustPoseEstimator(){
       delete m_data;
     }
 
-    void RansacBasedPoseEstimator::setIterations(int iterations){
+    void RobustPoseEstimator::setIterations(int iterations){
       prop("iterations").value = iterations;
     }
 
-    void RansacBasedPoseEstimator::setMinPoints(int minPoints){
+    void RobustPoseEstimator::setMinPoints(int minPoints){
       prop("min points").value = minPoints;
     }
 
-    void RansacBasedPoseEstimator::setMaxError(float maxError){
+    void RobustPoseEstimator::setMaxError(float maxError){
       prop("max error").value = maxError;
     }
 
-    void RansacBasedPoseEstimator::setMinPointsForGoodModel(int f){
+    void RobustPoseEstimator::setMinPointsForGoodModel(int f){
       prop("min points for good model").value = f;
     }
 
-    RansacBasedPoseEstimator::Result
-    RansacBasedPoseEstimator::fit(const std::vector<Point32f> &templ,
+    RobustPoseEstimator::Result
+    RobustPoseEstimator::fit(const std::vector<Point32f> &templ,
                                    const std::vector<Point32f> &curr){
 
       int iterations = prop("iterations").value;
@@ -235,10 +235,10 @@ namespace icl::cv3d {
       return r;
     }
 
-    RansacBasedPoseEstimator::Result
-    RansacBasedPoseEstimator::fit(const std::vector<Vec> &modelPoints,
+    RobustPoseEstimator::Result
+    RobustPoseEstimator::fit(const std::vector<Vec> &modelPoints,
                                              const std::vector<Point32f> &imagePoints){
-      throw ICLException("RansacBasedPoseEstimator::fit is not yet implemented for non-planar targets");
+      throw ICLException("RobustPoseEstimator::fit is not yet implemented for non-planar targets");
       Result r =  { Mat::id(), false, float(-1) };
       return r;
     }

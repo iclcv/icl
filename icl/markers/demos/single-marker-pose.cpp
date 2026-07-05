@@ -6,7 +6,7 @@
 // LEFT: a single fiducial marker on a flat board in a viz3d Scene — orbit it
 // with the mouse. RIGHT: the rendered camera-0 view; the marker is detected
 // (FiducialDetector) and its pose estimated with the TWO-solution planar pose
-// (cv3d::CoplanarPointPoseEstimator::getPoses). BOTH candidate pose frames are
+// (cv3d::PlanarPoseEstimator::getPoses). BOTH candidate pose frames are
 // drawn over the marker: the best solution solid, the second (the "flip")
 // dashed. Orbit to a grazing angle and watch the two frames separate and the
 // ambiguity ratio err0/err1 climb toward 1 — the regime where a one-pose solver
@@ -26,7 +26,7 @@
 #include <icl/viz3d/render/OffscreenView.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/viz3d/render/Material.h>
-#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/PlanarPoseEstimator.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/MarkerPatternRefiner.h>
 #include <icl/cv/SubPixelCornerRefiner.h>
@@ -48,7 +48,7 @@ Scene scene;
 OffscreenView view(scene, 0);
 std::shared_ptr<MeshNode> board;
 std::unique_ptr<FiducialDetector> fd;
-std::unique_ptr<CoplanarPointPoseEstimator> pose;
+std::unique_ptr<PlanarPoseEstimator> pose;
 GUI propGUI;                                  // dynamic detector-property panel
 const Size  CAMRES(480, 360);
 const float MARKER_MM = 120.f;                // physical marker size
@@ -122,7 +122,7 @@ void init() {
 
   board = std::make_shared<MeshNode>();
   scene.addNode(board);
-  pose.reset(new CoplanarPointPoseEstimator(CoplanarPointPoseEstimator::worldFrame));
+  pose.reset(new PlanarPoseEstimator(PlanarPoseEstimator::worldFrame));
 
   gui << (HSplit()
           << Canvas3D({.handle="scene", .label="orbit the marker (drag)", .minSize={20,16}})

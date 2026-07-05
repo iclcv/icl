@@ -16,7 +16,7 @@
 #include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Types.h>
-#include <icl/cv3d/pose/RansacBasedPoseEstimator.h>
+#include <icl/cv3d/pose/RobustPoseEstimator.h>
 
 using namespace icl::viz3d;
 using namespace icl::cv3d;
@@ -27,7 +27,7 @@ using namespace icl::qt;
 
 ImageSource grabber;
 std::shared_ptr<SurfFeatureDetector> surf;
-RansacBasedPoseEstimator *pe = 0;
+RobustPoseEstimator *pe = 0;
 
 Size32f ts; // template pixel -> mm
 VBox gui;
@@ -41,7 +41,7 @@ void init(){
   Size32f t(pa("-t",1).as<float>(), pa("-t",2).as<float>());
   float d = pa("-t",3);
   scene.addCamera(*pa("-cam"));
-  pe = new RansacBasedPoseEstimator(scene.getCamera(0));
+  pe = new RobustPoseEstimator(scene.getCamera(0));
 
   obj = CuboidNode::create(t.width/2,t.height/2,d/2,t.width,t.height,d);
   obj->setMaterial(Material::fromColors(GeomColor(0,100,255,50), geom_red()));
@@ -100,7 +100,7 @@ void run(){
       curr[i] = Point32f(ms[i].first.x,ms[i].first.y);
       templ[i] = Point32f(ms[i].second.x,ms[i].second.y).transform(ts.width,ts.height);
     }
-    RansacBasedPoseEstimator::Result result = pe->fit(templ,curr);
+    RobustPoseEstimator::Result result = pe->fit(templ,curr);
 
     Mat T = result.T;
     obj->setTransformation(T);

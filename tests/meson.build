@@ -37,7 +37,7 @@ if qt_dep.found()
     'test-viz3d-primitive3d-converter.cpp',
     'test-viz3d-grid-node.cpp',
     'test-viz3d-calibration-harness.cpp',
-    'test-geom-coplanar-pose.cpp',
+    'test-cv3d-planar-pose.cpp',
     'test-markers-bch-code.cpp',
     'test-markers-checkerboard-target.cpp',
     'test-markers-coded-checkerboard.cpp',

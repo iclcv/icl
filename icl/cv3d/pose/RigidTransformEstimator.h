@@ -11,7 +11,7 @@ namespace icl::cv3d {
   /// Utility class for 6D PoseEstimation
   /** Given N points in one coordinate frame and corresponding points in another coordinate frame,
       the relative transformation between these two frames can be computed (the points must not be
-      collinear). The PoseEstimator class provides functions to compute the relative mapping between
+      collinear). The RigidTransformEstimator class provides functions to compute the relative mapping between
       coordinate frames. Given a set of points in frame A (called Xs, each point is one column of the
       matrix Xs), and a set of the same size of points in frame B (called Ys, each point is one column
       of the matrix Ys, the map function will return the homogeneous 4x4-transform matrix that
@@ -23,10 +23,10 @@ namespace icl::cv3d {
       The internal implementation is based on an implementation found in VTK 5.6.0, that was also
       re-implemented with libeigen2 from Robert Haschke.
   */
-  class PoseEstimator{
+  class RigidTransformEstimator{
 
-    /// Private constructor -> no instances of PoseEstimator possible
-    PoseEstimator(){}
+    /// Private constructor -> no instances of RigidTransformEstimator possible
+    RigidTransformEstimator(){}
 
     public:
     /// The MapMode determines, how the point-to-point transformation is computed
@@ -64,7 +64,7 @@ namespace icl::cv3d {
 
     /// Convenience function that passes std::vector<Vec> data as DynMatrix<T> to other map function
     static Mat map(const std::vector<Vec> &Xs, const std::vector<Vec> &Ys, MapMode mode=RigidBody){
-      ICLASSERT_THROW(Xs.size() == Ys.size(), utils::ICLException("PoseEstimator::map: need same number of input- and output-points"));
+      ICLASSERT_THROW(Xs.size() == Ys.size(), utils::ICLException("RigidTransformEstimator::map: need same number of input- and output-points"));
       math::DynMatrix<double> XsD = math::DynMatrix<double>::create(3,Xs.size()), YsD = math::DynMatrix<double>::create(3,Ys.size());
       for(unsigned int i=0;i<Xs.size();++i){
         std::copy(Xs[i].begin(),Xs[i].begin()+3, XsD.col_begin(i));

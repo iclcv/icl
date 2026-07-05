@@ -41,7 +41,7 @@
       icl::cv::RegionDetector, icl::cv::MeanShiftTracker, icl::cv::VectorTracker,
       icl::cv::RunLengthEncoder, icl::cv::SimpleBlobSearcher, icl::cv::TemplateTracker
     - <b>Cv3d</b> (Qt-free 3D vision) icl::cv3d::Camera, icl::cv3d::ICP,
-      icl::cv3d::PlaneEquation, icl::cv3d::PoseEstimator, icl::cv3d::CoplanarPointPoseEstimator,
+      icl::cv3d::PlaneEquation, icl::cv3d::RigidTransformEstimator, icl::cv3d::PlanarPoseEstimator,
       icl::cv3d::PointCloudNormalEstimator, icl::cv3d::Segmentation3D,
       icl::cv3d::ObjectEdgeDetector
     - <b>Viz3d</b> (3D scene/render) icl::viz3d::Scene, icl::viz3d::PlotWidget3D,

@@ -31,7 +31,7 @@
 #include <icl/utils/CompatMacros.h>
 #include <icl/cv/RegionGrower.h>
 #include <icl/cv3d/segmentation/EuclideanBlobSegmenter.h>
-#include <icl/cv3d/pose/PlanarRansacEstimator.h>
+#include <icl/cv3d/pose/RansacPlaneFitter.h>
 #include <icl/cv3d/segmentation/SegmenterUtils.h>
 
 
@@ -40,10 +40,10 @@ namespace icl::cv3d {
   struct EuclideanBlobSegmenter::Data {
 	    Data(Mode mode) {
       if(mode==BEST || mode==GPU){
-        ransac=new PlanarRansacEstimator(PlanarRansacEstimator::GPU);
+        ransac=new RansacPlaneFitter(RansacPlaneFitter::GPU);
 	        segUtils=new SegmenterUtils(SegmenterUtils::GPU);
       }else{
-        ransac=new PlanarRansacEstimator(PlanarRansacEstimator::CPU);
+        ransac=new RansacPlaneFitter(RansacPlaneFitter::CPU);
 	        segUtils=new SegmenterUtils(SegmenterUtils::CPU);
       }
 
@@ -62,7 +62,7 @@ namespace icl::cv3d {
 	    ~Data() {
 	    }
 
-    PlanarRansacEstimator* ransac;
+    RansacPlaneFitter* ransac;
     SegmenterUtils* segUtils;
 
 	    float xMinROI, xMaxROI, yMinROI, yMaxROI, zMinROI, zMaxROI;
@@ -191,9 +191,9 @@ namespace icl::cv3d {
     //RANSAC with the plane (find model)
     if(maxID < 0) return;
 
-    PlanarRansacEstimator::Result result=m_data->ransac->apply(m_data->xyzData,
+    RansacPlaneFitter::Result result=m_data->ransac->apply(m_data->xyzData,
               m_data->surfaces.at(maxID), m_data->surfaces.at(maxID), m_data->RANSACeuclDistance/2, m_data->RANSACpasses,
-              m_data->RANSACsubset, m_data->RANSACtolerance, PlanarRansacEstimator::MAX_ON);
+              m_data->RANSACsubset, m_data->RANSACtolerance, RansacPlaneFitter::MAX_ON);
 
     //create mask
     if(useROI){

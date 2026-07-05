@@ -9,8 +9,8 @@
 #include <icl/viz3d/scene/SceneMouseHandler.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/cv3d/pose/PoseEstimator.h>
-#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/RigidTransformEstimator.h>
+#include <icl/cv3d/pose/PlanarPoseEstimator.h>
 #include <icl/markers/MarkerGridPoseEstimator.h>
 #include <icl/cv/OpenCVCheckerboardDetector.h>
 #include <icl/markers/AdvancedMarkerGridDetector.h>
@@ -89,14 +89,14 @@ struct View{
   Detector detector;
   OpenCVCheckerboardDetector cbDetector;
   MarkerGridPoseEstimator poseEst;
-  CoplanarPointPoseEstimator cbPoseEst;
+  PlanarPoseEstimator cbPoseEst;
   Camera camera;
   Camera calibratedCamera;
   Image lastImage;
   std::shared_ptr<viz3d::CoordinateFrameNode> cs;
   std::vector<Camera> capturedFrames;
-  View():cbPoseEst(CoplanarPointPoseEstimator::worldFrame,
-                   CoplanarPointPoseEstimator::SimplexSampling){}
+  View():cbPoseEst(PlanarPoseEstimator::worldFrame,
+                   PlanarPoseEstimator::SimplexSampling){}
 };
 typedef std::shared_ptr<View> ViewPtr;
 

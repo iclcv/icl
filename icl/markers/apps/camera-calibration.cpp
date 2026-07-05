@@ -14,7 +14,7 @@
 #include <icl/markers/FiducialDetectorPlugin.h>
 #include <icl/qt/AdjustGridMouseHandler.h>
 #include <icl/qt/ui.h>
-#include <icl/cv3d/pose/CoplanarPointPoseEstimator.h>
+#include <icl/cv3d/pose/PlanarPoseEstimator.h>
 
 #include <QMessageBox>
 #include <fstream>

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Andre Ueckermann, Christof Elbrechter
 
-#include <icl/cv3d/pose/PlanarRansacEstimator.h>
+#include <icl/cv3d/pose/RansacPlaneFitter.h>
 
 #include <icl/utils/cl/CLIncludes.h>
 
@@ -95,7 +95,7 @@ namespace icl::cv3d {
     #endif
 
 
-    struct PlanarRansacEstimator::Data {
+    struct RansacPlaneFitter::Data {
 	    Data(Mode mode) {
 		    clReady = false;
 
@@ -144,7 +144,7 @@ namespace icl::cv3d {
     };
 
 
-    PlanarRansacEstimator::PlanarRansacEstimator(Mode mode) :
+    RansacPlaneFitter::RansacPlaneFitter(Mode mode) :
 	    m_data(new Data(mode)) {
 
 	    if(m_data->useCL==true){
@@ -153,12 +153,12 @@ namespace icl::cv3d {
     }
 
 
-    PlanarRansacEstimator::~PlanarRansacEstimator() {
+    RansacPlaneFitter::~RansacPlaneFitter() {
 	    delete m_data;
     }
 
 
-    PlanarRansacEstimator::Result PlanarRansacEstimator::apply(core::DataSegment<float,4> &xyzh,
+    RansacPlaneFitter::Result RansacPlaneFitter::apply(core::DataSegment<float,4> &xyzh,
                 std::vector<int> &srcIDs, std::vector<int> &dstIDs, float threshold, int passes,
                 int subset, int tolerance, int optimization){
 
@@ -175,7 +175,7 @@ namespace icl::cv3d {
     }
 
 
-    PlanarRansacEstimator::Result PlanarRansacEstimator::apply(std::vector<Vec> &srcPoints,
+    RansacPlaneFitter::Result RansacPlaneFitter::apply(std::vector<Vec> &srcPoints,
                 std::vector<Vec> &dstPoints, float threshold, int passes, int subset, int tolerance, int optimization){
 
       int numPoints=dstPoints.size();
@@ -197,7 +197,7 @@ namespace icl::cv3d {
     }
 
 
-    math::DynMatrix<PlanarRansacEstimator::Result> PlanarRansacEstimator::apply(core::DataSegment<float,4> &xyzh,
+    math::DynMatrix<RansacPlaneFitter::Result> RansacPlaneFitter::apply(core::DataSegment<float,4> &xyzh,
                 std::vector<std::vector<int> > &pointIDs, math::DynMatrixBase<bool> &testMatrix, float threshold,
                 int passes, int tolerance, int optimization, core::Img32s labelImage){
 
@@ -251,7 +251,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::relabel(core::DataSegment<float,4> &xyzh, core::Img8u &newMask, core::Img32s &oldLabel,
+    void RansacPlaneFitter::relabel(core::DataSegment<float,4> &xyzh, core::Img8u &newMask, core::Img32s &oldLabel,
                                 core::Img32s &newLabel, int desiredID, int srcID, float threshold, Result &result){
 
       utils::Size size = newMask.getSize();
@@ -266,7 +266,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::calculateMultiCL(core::DataSegment<float,4> &xyzh, core::Img32s labelImage, math::DynMatrixBase<bool> &testMatrix, float threshold, int passes,
+    void RansacPlaneFitter::calculateMultiCL(core::DataSegment<float,4> &xyzh, core::Img32s labelImage, math::DynMatrixBase<bool> &testMatrix, float threshold, int passes,
                     std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn,
                     std::vector<int> &adjs, std::vector<int> &start, std::vector<int> &end){
       #ifdef ICL_HAVE_OPENCL
@@ -510,7 +510,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::calculateMultiCPU(core::DataSegment<float,4> &xyzh, std::vector<std::vector<int> > &pointIDs, math::DynMatrixBase<bool> &testMatrix,
+    void RansacPlaneFitter::calculateMultiCPU(core::DataSegment<float,4> &xyzh, std::vector<std::vector<int> > &pointIDs, math::DynMatrixBase<bool> &testMatrix,
                     float threshold, int passes, std::vector<std::vector<Vec> > &n0Pre, std::vector<std::vector<float> > &distPre, std::vector<int> &cAbove,
                     std::vector<int> &cBelow, std::vector<int> &cOn, std::vector<int> &adjs, std::vector<int> &start, std::vector<int> &end){
       for(size_t i=0; i<testMatrix.rows(); i++){
@@ -535,7 +535,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::calculateSingleCL(std::vector<Vec> &dstPoints, float threshold, int passes, int subset,
+    void RansacPlaneFitter::calculateSingleCL(std::vector<Vec> &dstPoints, float threshold, int passes, int subset,
                 std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn){
 
       #ifdef ICL_HAVE_OPENCL
@@ -687,7 +687,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::calculateSingleCPU(std::vector<Vec> &dstPoints, float threshold, int passes, int subset,
+    void RansacPlaneFitter::calculateSingleCPU(std::vector<Vec> &dstPoints, float threshold, int passes, int subset,
                 std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn){
       for(int p=0; p<passes; p++){
         for(unsigned int q=0; q<dstPoints.size(); q+=subset){
@@ -706,7 +706,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::initOpenCL(){
+    void RansacPlaneFitter::initOpenCL(){
       #ifdef ICL_HAVE_OPENCL
       //create openCL context
       cl_uint numPlatforms = 0;
@@ -837,7 +837,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::calculateRandomModels(std::vector<Vec> &srcPoints, std::vector<Vec> &n0, std::vector<float> &dist, int passes){
+    void RansacPlaneFitter::calculateRandomModels(std::vector<Vec> &srcPoints, std::vector<Vec> &n0, std::vector<float> &dist, int passes){
       for(int i=0; i<passes; i++){
         Vec p0i=srcPoints.at(rand()%srcPoints.size());
         Vec p1i=srcPoints.at(rand()%srcPoints.size());
@@ -851,7 +851,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::calculateRandomModels(core::DataSegment<float,4> &xyzh, std::vector<int> &srcPoints, std::vector<Vec> &n0, std::vector<float> &dist, int passes){
+    void RansacPlaneFitter::calculateRandomModels(core::DataSegment<float,4> &xyzh, std::vector<int> &srcPoints, std::vector<Vec> &n0, std::vector<float> &dist, int passes){
       for(int i=0; i<passes; i++){
         int p0i=srcPoints.at(rand()%srcPoints.size());
         int p1i=srcPoints.at(rand()%srcPoints.size());
@@ -865,7 +865,7 @@ namespace icl::cv3d {
     }
 
 
-    PlanarRansacEstimator::Result PlanarRansacEstimator::createResult(std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove,
+    RansacPlaneFitter::Result RansacPlaneFitter::createResult(std::vector<Vec> &n0, std::vector<float> &dist, std::vector<int> &cAbove,
                     std::vector<int> &cBelow, std::vector<int> &cOn, float threshold, int passes, int tolerance, int optimization, int numPoints){
       int maxMatch=0;
       int maxMatchID=0;
@@ -911,7 +911,7 @@ namespace icl::cv3d {
     }
 
 
-    math::DynMatrix<PlanarRansacEstimator::Result> PlanarRansacEstimator::createResultMatrix(math::DynMatrixBase<bool> &testMatrix, std::vector<int> &start,
+    math::DynMatrix<RansacPlaneFitter::Result> RansacPlaneFitter::createResultMatrix(math::DynMatrixBase<bool> &testMatrix, std::vector<int> &start,
                    std::vector<int> &end, std::vector<int> &adjs, std::vector<int> &cAbove, std::vector<int> &cBelow, std::vector<int> &cOn,
                    std::vector<std::vector<int> > &pointIDs, std::vector<std::vector<Vec> > &n0Pre, std::vector<std::vector<float> > &distPre,
                    float threshold, int passes, int tolerance, int optimization){
@@ -939,7 +939,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::calculateModel(Vec &fa, Vec &fb, Vec &rPoint, Vec &n0, float &dist){
+    void RansacPlaneFitter::calculateModel(Vec &fa, Vec &fb, Vec &rPoint, Vec &n0, float &dist){
       Vec n1;
       n1[0]=fa[1]*fb[2]-fa[2]*fb[1];
       n1[1]=fa[2]*fb[0]-fa[0]*fb[2];
@@ -951,7 +951,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::relabelCL(core::DataSegment<float,4> &xyzh, core::Img8u &newMask, core::Img32s &oldLabel, core::Img32s &newLabel,
+    void RansacPlaneFitter::relabelCL(core::DataSegment<float,4> &xyzh, core::Img8u &newMask, core::Img32s &oldLabel, core::Img32s &newLabel,
                      int desiredID, int srcID, float threshold, Result &result, int w, int h){
       #ifdef ICL_HAVE_OPENCL
         cl_int err = CL_SUCCESS;
@@ -1067,7 +1067,7 @@ namespace icl::cv3d {
     }
 
 
-    void PlanarRansacEstimator::relabelCPU(core::DataSegment<float,4> &xyzh, core::Img8u &newMask, core::Img32s &oldLabel, core::Img32s &newLabel,
+    void RansacPlaneFitter::relabelCPU(core::DataSegment<float,4> &xyzh, core::Img8u &newMask, core::Img32s &oldLabel, core::Img32s &newLabel,
                      int desiredID, int srcID, float threshold, Result &result, int w, int h){
       for(int y=0; y<h; y++){
         for(int x=0; x<w; x++){

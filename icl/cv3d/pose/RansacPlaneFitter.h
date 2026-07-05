@@ -10,10 +10,10 @@
 
 namespace icl::cv3d {
   /// class for planar RANSAC estimation on poincloud data (xyzh).
-  /** The PlanarRansacEstimator class does not minimize the error but simply counts the points with a distance smaller a given threshold.
+  /** The RansacPlaneFitter class does not minimize the error but simply counts the points with a distance smaller a given threshold.
       The smaller the threshold the preciser the model. Additionally, it is possible to assign all points on the plane to the initial surface.*/
 
-  class PlanarRansacEstimator{
+  class RansacPlaneFitter{
 
 	  public:
 	    enum Mode {BEST, GPU, CPU};
@@ -21,11 +21,11 @@ namespace icl::cv3d {
 	    /// Constructor
       /** Constructs an object of this class.
           @param mode the selected mode: CPU, GPU or BEST (uses GPU if available)*/
-      PlanarRansacEstimator(Mode mode=BEST);
+      RansacPlaneFitter(Mode mode=BEST);
 
 
       /// Destructor
-      ~PlanarRansacEstimator();
+      ~RansacPlaneFitter();
 
 
       struct Result{

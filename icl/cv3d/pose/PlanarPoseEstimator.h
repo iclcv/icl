@@ -29,7 +29,7 @@ namespace icl::cv3d {
       \section OBJCS The Object Coordinate Frame
       As all reference points of the object are coplanar, you can define the objects
       coordinate in that way that all reference points lie within the z=0 plane.
-      As the algorithm uses this as prior knowledge, the CoplanarPointPoseEstimator::getPose
+      As the algorithm uses this as prior knowledge, the PlanarPoseEstimator::getPose
       interface does allow to pass 2D object reference points only.
 
       \section ALG Algorithm
@@ -45,13 +45,13 @@ namespace icl::cv3d {
       x, but sometimes also -x, which obviously leads to the same error |Ax|.
 
       \section REF Reference Frames
-      CoplanarPointPoseEstimator instances can be set up to return the estimated pose
+      PlanarPoseEstimator instances can be set up to return the estimated pose
       w.r.t. the world frame or with respect to the camera frame. If you obtain the pose
       w.r.t. the camera frame, you have to multiply it with the inverted camera coordinate
       system transformation matrix.
 
       \section SCENE Integration with ICL's Scene class
-      In order to use the CoplanarPointPoseEstimator to estimate an objects pose matrix
+      In order to use the PlanarPoseEstimator to estimate an objects pose matrix
       for visualization using an instance of the icl::Scene class, you can simply define an
       objects base vertices in the object coordinate frame:\n
       e.g. (1,1,1,1), (1, 1,-1,1), ... for a unity cube.
@@ -67,7 +67,7 @@ namespace icl::cv3d {
       As a new feature, the pose estimation step can be optimized using RANSAC internally.
       @TODO perhaps, we need some more text here !
   */
-  class ICLCv3d_API CoplanarPointPoseEstimator : public utils::Configurable{
+  class ICLCv3d_API PlanarPoseEstimator : public utils::Configurable{
 
     /// Internal data structure
     struct Data;
@@ -112,7 +112,7 @@ namespace icl::cv3d {
 
       /// poseestimation algorithm that is used during the RANSAC sampling
       /** In the final step, where the model is finalized using all points of the consensus set,
-          the CoplanarPointPoseEstimator's PoseEstimationAlgorithm is used */
+          the PlanarPoseEstimator's PoseEstimationAlgorithm is used */
       PoseEstimationAlgorithm poseEstimationDuringSampling;
 
       /// Constructor with given parameters and defaults
@@ -130,21 +130,21 @@ namespace icl::cv3d {
         Using other modes does usually slowdown the pose estimation process <b>and</b> also decrease
         the result quality. Hovever the brute force search is still provided due to 'historic' reasons.
 
-        @param spec Optionally the CoplanarPointPoseEstimator can be set up to use RANSAC to
+        @param spec Optionally the PlanarPoseEstimator can be set up to use RANSAC to
                     automatically filter out invalid points by means for stochastic sampling.
         */
-    CoplanarPointPoseEstimator(ReferenceFrame returnedPosesReferenceFrame=worldFrame,
+    PlanarPoseEstimator(ReferenceFrame returnedPosesReferenceFrame=worldFrame,
                                PoseEstimationAlgorithm a = SimplexSampling,
                                const RANSACSpec &spec = RANSACSpec());
 
     /// Destructor
-    ~CoplanarPointPoseEstimator();
+    ~PlanarPoseEstimator();
 
     /// Copy constructor
-    CoplanarPointPoseEstimator(const CoplanarPointPoseEstimator &other);
+    PlanarPoseEstimator(const PlanarPoseEstimator &other);
 
     /// Assignment operator
-    CoplanarPointPoseEstimator &operator=(const CoplanarPointPoseEstimator &other);
+    PlanarPoseEstimator &operator=(const PlanarPoseEstimator &other);
 
     /// returns the current reference frame value
     ReferenceFrame getReferenceFrame() const;

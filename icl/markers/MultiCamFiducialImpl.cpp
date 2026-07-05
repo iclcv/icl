@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/markers/MultiCamFiducialImpl.h>
-#include <icl/cv3d/pose/PoseEstimator.h>
+#include <icl/cv3d/pose/RigidTransformEstimator.h>
 
 using namespace icl::utils;
 using namespace icl::math;
@@ -67,7 +67,7 @@ namespace icl::markers {
         O(2, i) = 0;
       }
       try{
-        pose = PoseEstimator::map(O,W);
+        pose = RigidTransformEstimator::map(O,W);
 
         /// invert y and z axis!
         for(int x=1;x<3;++x){

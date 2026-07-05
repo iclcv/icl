@@ -876,8 +876,8 @@ namespace icl::markers {
           }
         }
       }
-      CoplanarPointPoseEstimator cppe(CoplanarPointPoseEstimator::worldFrame,
-                                      CoplanarPointPoseEstimator::SamplingFine);
+      PlanarPoseEstimator cppe(PlanarPoseEstimator::worldFrame,
+                                      PlanarPoseEstimator::SamplingFine);
       Mat pose = cppe.getPose(modelCoords.size(), modelCoords.data(),
                               imageCoords.data(), cam);
 

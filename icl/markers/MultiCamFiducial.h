@@ -30,7 +30,7 @@ namespace icl::markers {
       \section __3D_EST__ 3D Pose estimation
       For the pose estimation, two different algorithms are combined.
       In case of Fiducials, that were just detected in a single
-      camera view, the CoplanarPointPoseEstimator is used. If more
+      camera view, the PlanarPoseEstimator is used. If more
       than one view is available, multicamera geometry is used to
       provide a much moch accurate estimation of the marker pose.
   */

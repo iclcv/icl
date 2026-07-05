@@ -16,7 +16,7 @@ namespace icl::cv3d {
   /// Iterative Closest Point registration for homogeneous 3D point clouds.
   /** Aligns a *source* cloud onto a fixed *target* cloud by iterating
       nearest-neighbour correspondence → rigid-body transform estimation
-      (Horn's method, via PoseEstimator) until the RMS correspondence error
+      (Horn's method, via RigidTransformEstimator) until the RMS correspondence error
       stops improving.
 
       The expensive step — finding the nearest target point for every source
