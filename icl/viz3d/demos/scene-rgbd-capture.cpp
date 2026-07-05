@@ -35,7 +35,7 @@
 #include <icl/viz3d/PointCloudNode.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/utils/time/Time.h>
 #include <cmath>
 #include <mutex>

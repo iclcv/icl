@@ -15,7 +15,8 @@ namespace ccl {
   class Shader;
 }
 
-namespace icl::geom { class Camera; class Material; }
+namespace icl::geom { class Camera; }
+namespace icl::viz3d { class Material; }
 
 namespace icl::viz3d {
 

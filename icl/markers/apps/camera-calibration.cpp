@@ -9,7 +9,7 @@
 #include <icl/viz3d/GroupNode.h>
 #include <icl/viz3d/GeometryNode.h>
 #include <icl/viz3d/CoordinateFrameNode.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/FiducialDetectorPlugin.h>
 #include <icl/qt/AdjustGridMouseHandler.h>
@@ -35,7 +35,7 @@ std::shared_ptr<viz3d::CoordinateFrameNode> worldCS;  // replaces Scene::setDraw
 ImageSource grabber;
 
 // Apply a material to every GeometryNode under a (possibly grouped) calibration object.
-static void setCalibObjMaterial(const viz3d::NodePtr &n, std::shared_ptr<geom::Material> mat){
+static void setCalibObjMaterial(const viz3d::NodePtr &n, std::shared_ptr<viz3d::Material> mat){
   if(auto *g = dynamic_cast<viz3d::GroupNode*>(n.get())){
     for(int i=0;i<g->getChildCount();++i)
       if(auto *gn = dynamic_cast<viz3d::GeometryNode*>(g->getChild(i))) gn->setMaterial(mat);
@@ -345,9 +345,9 @@ void run(){
       GeomColor lineColor = enabled[i] ? GeomColor(255,0,0,a) : GeomColor(200,200,200,a);
       if(a){
         const int r = enabled[i] ? 0 : 100, g = 100, b = enabled[i] ? 255 : 100;
-        setCalibObjMaterial(calibObj, Material::fromColors(GeomColor(r,g,b,a), lineColor));
+        setCalibObjMaterial(calibObj, viz3d::Material::fromColors(GeomColor(r,g,b,a), lineColor));
       }else{
-        setCalibObjMaterial(calibObj, Material::fromColors(GeomColor(0,0,0,0), lineColor));
+        setCalibObjMaterial(calibObj, viz3d::Material::fromColors(GeomColor(0,0,0,0), lineColor));
       }
     }
   }

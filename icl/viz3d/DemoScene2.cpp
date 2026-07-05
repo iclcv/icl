@@ -13,7 +13,7 @@
 #include <icl/viz3d/Loader.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/core/Img.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 #include <cstdio>
 #include <cstdlib>

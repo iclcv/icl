@@ -13,7 +13,7 @@
 #include <icl/viz3d/MeshNode.h>
 #include <icl/viz3d/CuboidNode.h>
 #include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/Camera.h>
 
 using namespace icl::viz3d;

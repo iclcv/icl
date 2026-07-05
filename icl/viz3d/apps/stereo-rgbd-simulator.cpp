@@ -29,7 +29,7 @@
 #include <icl/viz3d/PointCloudNode.h>
 #include <icl/viz3d/SceneCapture.h>
 #include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/io/sink/ImageSink.h>
 

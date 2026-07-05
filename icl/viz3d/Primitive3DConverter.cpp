@@ -7,7 +7,7 @@
 #include <icl/viz3d/CuboidNode.h>
 #include <icl/viz3d/SphereNode.h>
 #include <icl/viz3d/CylinderNode.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 namespace icl::viz3d {
 
@@ -38,7 +38,7 @@ namespace icl::viz3d {
       default:
         return nullptr;
     }
-    node->setMaterial(geom::Material::fromColor(color));
+    node->setMaterial(viz3d::Material::fromColor(color));
     node->setTransformation(mat);
     return node;
   }

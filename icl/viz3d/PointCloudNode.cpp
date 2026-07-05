@@ -5,14 +5,14 @@
 #include <icl/viz3d/PointCloudNode.h>
 #include <icl/viz3d/PointCloud.h>
 #include <icl/core/Img.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 namespace icl::viz3d {
 
   struct PointCloudNode::Data {
     std::shared_ptr<PointCloud> cloud;
     float pointSize = 3.0f;
-    std::shared_ptr<geom::Material> material;
+    std::shared_ptr<viz3d::Material> material;
   };
 
   PointCloudNode::PointCloudNode() : m_data(std::make_unique<Data>()) {}
@@ -56,10 +56,10 @@ namespace icl::viz3d {
   void PointCloudNode::setPointSize(float size) { m_data->pointSize = size; }
   float PointCloudNode::getPointSize() const { return m_data->pointSize; }
 
-  void PointCloudNode::setMaterial(std::shared_ptr<geom::Material> mat) {
+  void PointCloudNode::setMaterial(std::shared_ptr<viz3d::Material> mat) {
     m_data->material = std::move(mat);
   }
-  std::shared_ptr<geom::Material> PointCloudNode::getMaterial() const {
+  std::shared_ptr<viz3d::Material> PointCloudNode::getMaterial() const {
     return m_data->material;
   }
 

@@ -25,7 +25,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/viz3d/GroupNode.h>
 #include <icl/viz3d/CuboidNode.h>

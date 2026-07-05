@@ -27,7 +27,7 @@
 #include <icl/viz3d/ConeNode.h>
 #include <icl/viz3d/CoordinateFrameNode.h>
 #include <icl/viz3d/LightNode.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/utils/time/Time.h>
 

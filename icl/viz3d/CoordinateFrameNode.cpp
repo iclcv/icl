@@ -7,7 +7,7 @@
 #include <icl/viz3d/ConeNode.h>
 #include <icl/viz3d/TextNode.h>
 #include <icl/core/Img.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 namespace icl::viz3d {
 
@@ -23,12 +23,12 @@ namespace icl::viz3d {
       : m_length(axisLength), m_thickness(axisThickness), m_complex(complex) {
     for (int i = 0; i < 3; i++) {
       m_axis[i] = std::make_shared<CuboidNode>(0, 0, 0, 1, 1, 1);
-      m_axis[i]->setMaterial(geom::Material::fromColor(AXIS_COLORS[i]));
+      m_axis[i]->setMaterial(viz3d::Material::fromColor(AXIS_COLORS[i]));
       m_axis[i]->setPrimitiveVisible(PrimLine | PrimVertex, false);
       addChild(m_axis[i]);
 
       m_cone[i] = std::make_shared<ConeNode>(0, 0, 0, 1, 1, 1, 12);
-      m_cone[i]->setMaterial(geom::Material::fromColor(AXIS_COLORS[i]));
+      m_cone[i]->setMaterial(viz3d::Material::fromColor(AXIS_COLORS[i]));
       m_cone[i]->setPrimitiveVisible(PrimLine | PrimVertex, false);
       addChild(m_cone[i]);
 

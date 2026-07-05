@@ -29,7 +29,7 @@
 #include <icl/viz3d/ConeNode.h>
 #include <icl/viz3d/LightNode.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/core/Image.h>
 #include <icl/utils/prop/Constraints.h>
 #include <sstream>

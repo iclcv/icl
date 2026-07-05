@@ -4,7 +4,7 @@
 
 #include <icl/viz3d/MeshNode.h>
 #include <icl/viz3d/Loader.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 namespace icl::viz3d {
 
@@ -22,7 +22,7 @@ namespace icl::viz3d {
     m->addTexCoord(1, 1); m->addTexCoord(0, 1);
     m->addNormal(Vec(0, 0, 1, 0));
     m->addQuad(0, 1, 2, 3, /*normals*/ 0, 0, 0, 0, /*texcoords*/ 0, 1, 2, 3);
-    m->setMaterial(geom::Material::fromTexture(texture));
+    m->setMaterial(viz3d::Material::fromTexture(texture));
     return m;
   }
 

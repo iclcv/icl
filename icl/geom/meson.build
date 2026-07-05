@@ -6,14 +6,12 @@
 # module disappears.
 
 geom_headers = files(
-  'Material.h',
   'SoftPosit.h',
 )
 
 # Material has no Qt/GL dependency; SoftPosit uses qt::ICLDrawWidget for its
 # (currently Qt-coupled) visualize() helper, so it only builds when Qt is present.
 geom_sources = files(
-  'Material.cpp',
 )
 
 geom_extra_deps = []

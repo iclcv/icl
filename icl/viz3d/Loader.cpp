@@ -4,7 +4,7 @@
 
 #include <icl/viz3d/Loader.h>
 #include <icl/core/Img.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 // cgltf: single-header glTF parser from Cycles' bundled MaterialX
 #define CGLTF_IMPLEMENTATION

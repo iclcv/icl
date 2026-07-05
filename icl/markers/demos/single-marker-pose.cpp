@@ -25,7 +25,7 @@
 #include <icl/viz3d/MeshNode.h>
 #include <icl/viz3d/OffscreenView.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/CoplanarPointPoseEstimator.h>
 #include <icl/markers/FiducialDetector.h>
 #include <icl/markers/MarkerPatternRefiner.h>

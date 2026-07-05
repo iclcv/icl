@@ -14,7 +14,7 @@
 #include <icl/viz3d/Scene2.h>
 #include <icl/viz3d/CuboidNode.h>
 #include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/GeomDefs.h>
 #include <icl/cv3d/RansacBasedPoseEstimator.h>
 

@@ -11,7 +11,7 @@
 #include <icl/viz3d/Primitive.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/core/Img.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 // Qt/Cycles macro conflicts
 #undef emit
@@ -157,7 +157,7 @@ namespace icl::viz3d {
     return shader;
   }
 
-  static Shader *createPrincipledShader(ccl::Scene *scene, const geom::Material *mat) {
+  static Shader *createPrincipledShader(ccl::Scene *scene, const viz3d::Material *mat) {
     Shader *shader = scene->create_node<Shader>();
     ShaderGraph *graph = new ShaderGraph();
 
@@ -177,14 +177,14 @@ namespace icl::viz3d {
     // Base color texture
     if (mat->textures && !mat->textures->baseColorMap.isNull()) {
       const InterpolationType interp =
-          (mat->textures->filter == geom::Material::TexFilter::Nearest)
+          (mat->textures->filter == viz3d::Material::TexFilter::Nearest)
           ? INTERPOLATION_CLOSEST : INTERPOLATION_LINEAR;
       auto *tex = createImageTexNode(graph, scene, mat->textures->baseColorMap,
                                       mat->name + "_baseColor", false, interp);
       graph->connect(getUV(), tex->input("Vector"));
       graph->connect(tex->output("Color"), bsdf->input("Base Color"));
-      auto alphaMode = mat->transmission ? mat->transmission->alphaMode : geom::Material::Opaque;
-      if (alphaMode != geom::Material::Opaque)
+      auto alphaMode = mat->transmission ? mat->transmission->alphaMode : viz3d::Material::Opaque;
+      if (alphaMode != viz3d::Material::Opaque)
         graph->connect(tex->output("Alpha"), bsdf->input("Alpha"));
     }
 

@@ -12,14 +12,14 @@
 #include <icl/viz3d/SphereNode.h>
 #include <icl/viz3d/CuboidNode.h>
 #include <icl/viz3d/PointCloud.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <cmath>
 
 using namespace icl;
 using namespace icl::viz3d;
 using icl::geom::Camera;
-using icl::geom::Material;
+using icl::viz3d::Material;
 using icl::geom::GeomColor;
 using icl::utils::Size;
 

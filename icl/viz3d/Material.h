@@ -10,7 +10,11 @@
 #include <memory>
 #include <string>
 
-namespace icl::geom {
+#ifndef ICLViz3d_API
+#define ICLViz3d_API
+#endif
+
+namespace icl::viz3d {
 
   /// Next value from the PROCESS-WIDE texture-version counter. Used so every
   /// Material::TextureMaps (and each of its updates) carries a globally unique
@@ -18,7 +22,7 @@ namespace icl::geom {
   /// Material pointer, and a per-object counter would restart when a freed
   /// Material's address is reused (e.g. the plot's per-retic tick labels),
   /// aliasing the stale cache entry. A global counter never repeats.
-  ICLGeom_API unsigned int nextTextureMapsVersion();
+  ICLViz3d_API unsigned int nextTextureMapsVersion();
 
   /// PBR metallic-roughness material (glTF/USD-compatible)
   /** Materials can be shared across SceneObjects and primitives via shared_ptr.
@@ -31,7 +35,7 @@ namespace icl::geom {
       converts PBR parameters to approximate Blinn-Phong equivalents. The static
       factories fromColor() and fromPhong() create materials from legacy parameters.
   */
-  class ICLGeom_API Material {
+  class ICLViz3d_API Material {
   public:
 
     /// Alpha blending mode
@@ -39,8 +43,8 @@ namespace icl::geom {
 
     /// Phong parameters for legacy OpenGL rendering
     struct PhongParams {
-      GeomColor diffuse;
-      GeomColor specular;
+      geom::GeomColor diffuse;
+      geom::GeomColor specular;
       float shininess;
     };
 
@@ -57,16 +61,16 @@ namespace icl::geom {
 
     // -- Core PBR metallic-roughness parameters (always inline) --
 
-    GeomColor baseColor{0.78f, 0.78f, 0.78f, 1.0f};  ///< albedo in [0,1]
+    geom::GeomColor baseColor{0.78f, 0.78f, 0.78f, 1.0f};  ///< albedo in [0,1]
     float metallic = 0.0f;          ///< 0 = dielectric, 1 = metal
     float roughness = 0.5f;         ///< 0 = mirror, 1 = fully diffuse
     float reflectivity = 0.0f;      ///< explicit mirror reflections (raytracing)
-    GeomColor emissive{0,0,0,1};    ///< self-illumination in [0,1]
+    geom::GeomColor emissive{0,0,0,1};    ///< self-illumination in [0,1]
 
     // -- Display hints (always inline) --
 
-    GeomColor lineColor{0,0,0,0};   ///< wireframe color [0,1] (alpha=0 -> use baseColor)
-    GeomColor pointColor{0,0,0,0};  ///< point color [0,1] (alpha=0 -> use baseColor)
+    geom::GeomColor lineColor{0,0,0,0};   ///< wireframe color [0,1] (alpha=0 -> use baseColor)
+    geom::GeomColor pointColor{0,0,0,0};  ///< point color [0,1] (alpha=0 -> use baseColor)
     float pointSize = 3.0f;
     float lineWidth = 1.0f;
     bool smoothShading = true;
@@ -101,7 +105,7 @@ namespace icl::geom {
     struct TransmissionParams {
       float transmission = 0.0f;            ///< 0 = opaque, 1 = fully transmissive
       float ior = 1.5f;                     ///< index of refraction (glTF default)
-      GeomColor attenuationColor{1,1,1,1};  ///< volume absorption tint (white = none)
+      geom::GeomColor attenuationColor{1,1,1,1};  ///< volume absorption tint (white = none)
       float attenuationDistance = 0.0f;     ///< Beer-Lambert distance (0 = no attenuation)
       float thicknessFactor = 0.0f;         ///< thin-wall thickness for volume
       float alphaCutoff = 0.5f;             ///< discard fragments below this (Mask mode)
@@ -132,19 +136,19 @@ namespace icl::geom {
     // -- Factories --
 
     /// Create from legacy color (in [0,255] range) + shininess + reflectivity
-    static std::shared_ptr<Material> fromColor(const GeomColor &color,
+    static std::shared_ptr<Material> fromColor(const geom::GeomColor &color,
                                                 float shininess = 128,
                                                 float reflectivity = 0);
 
     /// Create with separate face and wireframe colors (in [0,255] range)
-    static std::shared_ptr<Material> fromColors(const GeomColor &faceColor,
-                                                 const GeomColor &wireColor,
+    static std::shared_ptr<Material> fromColors(const geom::GeomColor &faceColor,
+                                                 const geom::GeomColor &wireColor,
                                                  float shininess = 128);
 
     /// Create from Phong parameters (auto-converts to PBR)
     /** roughness ~ sqrt(2 / (shininess + 2)), metallic from specular intensity */
-    static std::shared_ptr<Material> fromPhong(const GeomColor &diffuse,
-                                                const GeomColor &specular,
+    static std::shared_ptr<Material> fromPhong(const geom::GeomColor &diffuse,
+                                                const geom::GeomColor &specular,
                                                 float shininess);
 
     /// Create a matte material whose albedo is the given image texture.
@@ -153,4 +157,4 @@ namespace icl::geom {
     static std::shared_ptr<Material> fromTexture(const core::Image &albedo);
   };
 
-} // namespace icl::geom
+} // namespace icl::viz3d

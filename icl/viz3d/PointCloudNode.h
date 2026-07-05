@@ -11,9 +11,7 @@
 #define ICLViz3d_API
 #endif
 
-namespace icl::geom {
-  class Material;
-}
+namespace icl::viz3d { class Material; }
 
 namespace icl::viz3d {
 
@@ -56,8 +54,8 @@ namespace icl::viz3d {
     float getPointSize() const;
 
     // --- Material (optional, for base color / rendering style) ---
-    void setMaterial(std::shared_ptr<geom::Material> mat);
-    std::shared_ptr<geom::Material> getMaterial() const;
+    void setMaterial(std::shared_ptr<viz3d::Material> mat);
+    std::shared_ptr<viz3d::Material> getMaterial() const;
 
     /// Factory
     static std::shared_ptr<PointCloudNode> create(std::shared_ptr<PointCloud> cloud);

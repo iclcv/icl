@@ -10,7 +10,7 @@
 #include <icl/viz3d/GroupNode.h>
 #include <icl/viz3d/CuboidNode.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/core/Img.h>
 
 #include <algorithm>

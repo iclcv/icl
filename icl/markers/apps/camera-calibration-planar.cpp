@@ -7,7 +7,7 @@
 #include <icl/viz3d/Scene2.h>
 #include <icl/viz3d/CoordinateFrameNode.h>
 #include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/PoseEstimator.h>
 #include <icl/cv3d/CoplanarPointPoseEstimator.h>

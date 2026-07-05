@@ -5,7 +5,7 @@
 #include "camera-calibration-planar-GridIndicatorObject.h"
 #include <icl/viz3d/MeshNode.h>
 #include <icl/viz3d/TextNode.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 namespace icl{
   using namespace utils;
@@ -43,7 +43,7 @@ namespace icl{
         box->addQuad(1,2,6,5);
         box->addQuad(2,3,7,6);
         box->addQuad(3,0,4,7);
-        box->setMaterial(Material::fromColor(geom_blue(100)));
+        box->setMaterial(viz3d::Material::fromColor(geom_blue(100)));
         addChild(box);
 
         const std::vector<int> &ids = def.getMarkerIDs();

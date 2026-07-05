@@ -36,7 +36,7 @@
 #include <icl/viz3d/MeshNode.h>          // the marker-grid board (textured quad)
 #include <icl/viz3d/OffscreenView.h>     // interactive view + switchable GL/Cycles capture
 #include <icl/cv3d/Camera.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv/CheckerboardSaddleDetector.h>
 #include <icl/cv/CheckerboardGrid.h>           // growth-based grid recovery + LAP cleanup
 #include <icl/cv/OpenCVCheckerboardDetector.h> // the opencv detector backend (+ CheckerboardDetector iface)

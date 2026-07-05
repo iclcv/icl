@@ -10,7 +10,7 @@
 #include <icl/viz3d/TextNode.h>
 #include <icl/viz3d/LightNode.h>
 #include <icl/core/Img.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 #ifdef ICL_HAVE_OPENGL
 #ifdef ICL_SYSTEM_APPLE
@@ -917,7 +917,7 @@ void main() { }
       TexHandle baseColor, normalMap, metallicRoughness, emissive, occlusion, reflectivity;
       unsigned int version = 0xffffffffu;   // last-uploaded Material::TextureMaps version
     };
-    std::unordered_map<const geom::Material*, MatTextures> texCache;
+    std::unordered_map<const viz3d::Material*, MatTextures> texCache;
 
     std::unordered_map<const GeometryNode*, std::unique_ptr<GeomCache>> cache;
     std::unordered_map<const PointCloudNode*, std::unique_ptr<PCCache>> pcCache;
@@ -1757,7 +1757,7 @@ void main() { }
           // (Re)upload only when the version changed — first sight (cache
           // sentinel) or a live setBaseColorMap()/etc. update.
           if (mt.version != mat->textures->version) {
-            const GLint f = (mat->textures->filter == geom::Material::TexFilter::Nearest)
+            const GLint f = (mat->textures->filter == viz3d::Material::TexFilter::Nearest)
                             ? GL_NEAREST : GL_LINEAR;
             uploadOrUpdate(mt.baseColor, mat->textures->baseColorMap, f);
             uploadOrUpdate(mt.normalMap, mat->textures->normalMap, f);

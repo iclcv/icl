@@ -8,7 +8,7 @@
 #include <icl/physics2/CollisionShapeFactory.h>
 #include <icl/viz3d/Node.h>
 #include <icl/viz3d/CylinderNode.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/GeomDefs.h>
 #include <icl/utils/Macros.h>
 
@@ -138,7 +138,7 @@ namespace icl::physics2 {
     m_data->wheelAlign = Mat::id();
     m_data->wheelAlign(0,0) = 0; m_data->wheelAlign(0,2) = 1;
     m_data->wheelAlign(2,0) = -1; m_data->wheelAlign(2,2) = 0;
-    auto tyre = geom::Material::fromColor(geom::GeomColor(30,30,30,255));
+    auto tyre = viz3d::Material::fromColor(geom::GeomColor(30,30,30,255));
     m_data->wheelNodes.clear();
     for (int i = 0; i < NUM_WHEELS; i++) {
       auto wheel = viz3d::CylinderNode::create(0, 0, 0, cfg.wheelRadius*2, cfg.wheelRadius*2,

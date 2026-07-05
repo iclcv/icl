@@ -19,7 +19,7 @@
 #include <icl/viz3d/Scene2MouseHandler.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/GeomDefs.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <mutex>
 
 using namespace icl::viz3d;

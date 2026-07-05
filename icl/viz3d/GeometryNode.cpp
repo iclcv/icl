@@ -4,7 +4,7 @@
 
 #include <icl/viz3d/GeometryNode.h>
 #include <icl/core/Img.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <cmath>
 #include <atomic>
 
@@ -33,7 +33,7 @@ namespace icl::viz3d {
     std::vector<TrianglePrimitive> triangles;
     std::vector<QuadPrimitive> quads;
 
-    std::shared_ptr<geom::Material> material;
+    std::shared_ptr<viz3d::Material> material;
 
     int visibleMask = PrimAll;
     float pointSize = 3.0f;
@@ -104,8 +104,8 @@ namespace icl::viz3d {
   }
 
   // Material
-  void GeometryNode::setMaterial(std::shared_ptr<geom::Material> mat) { m_data->material = std::move(mat); }
-  std::shared_ptr<geom::Material> GeometryNode::getMaterial() const { return m_data->material; }
+  void GeometryNode::setMaterial(std::shared_ptr<viz3d::Material> mat) { m_data->material = std::move(mat); }
+  std::shared_ptr<viz3d::Material> GeometryNode::getMaterial() const { return m_data->material; }
 
   // Visibility
   void GeometryNode::setPrimitiveVisible(int mask, bool visible) {

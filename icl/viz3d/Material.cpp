@@ -2,12 +2,12 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <cmath>
 #include <algorithm>
 #include <atomic>
 
-namespace icl::geom {
+namespace icl::viz3d {
 
   unsigned int nextTextureMapsVersion() {
     static std::atomic<unsigned int> gen{1};
@@ -42,11 +42,11 @@ namespace icl::geom {
     return m;
   }
 
-  std::shared_ptr<Material> Material::fromColor(const GeomColor &color,
+  std::shared_ptr<Material> Material::fromColor(const geom::GeomColor &color,
                                                  float shininess,
                                                  float reflectivity) {
     auto m = std::make_shared<Material>();
-    GeomColor c01 = color * (1.0f / 255.0f);
+    geom::GeomColor c01 = color * (1.0f / 255.0f);
     m->baseColor = c01;
     m->lineColor = c01;
     m->pointColor = c01;
@@ -70,8 +70,8 @@ namespace icl::geom {
     return m;
   }
 
-  std::shared_ptr<Material> Material::fromColors(const GeomColor &faceColor,
-                                                   const GeomColor &wireColor,
+  std::shared_ptr<Material> Material::fromColors(const geom::GeomColor &faceColor,
+                                                   const geom::GeomColor &wireColor,
                                                    float shininess) {
     auto m = std::make_shared<Material>();
     m->baseColor = faceColor * (1.0f / 255.0f);
@@ -82,11 +82,11 @@ namespace icl::geom {
     return m;
   }
 
-  std::shared_ptr<Material> Material::fromPhong(const GeomColor &diffuse,
-                                                 const GeomColor &specular,
+  std::shared_ptr<Material> Material::fromPhong(const geom::GeomColor &diffuse,
+                                                 const geom::GeomColor &specular,
                                                  float shininess) {
     auto m = std::make_shared<Material>();
-    GeomColor c01 = diffuse * (1.0f / 255.0f);
+    geom::GeomColor c01 = diffuse * (1.0f / 255.0f);
     m->baseColor = c01;
     m->lineColor = c01;
     m->pointColor = c01;
@@ -106,7 +106,7 @@ namespace icl::geom {
     p.shininess = std::min(p.shininess, 255.0f);
     // specular: metals use baseColor, dielectrics use white scaled by (1-roughness)
     float inv = 1.0f - metallic;
-    p.specular = GeomColor(
+    p.specular = geom::GeomColor(
       baseColor[0] * metallic + inv * (1.0f - roughness),
       baseColor[1] * metallic + inv * (1.0f - roughness),
       baseColor[2] * metallic + inv * (1.0f - roughness),
@@ -115,4 +115,4 @@ namespace icl::geom {
     return p;
   }
 
-} // namespace icl::geom
+} // namespace icl::viz3d

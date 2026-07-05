@@ -4,7 +4,7 @@
 
 #include <icl/viz3d/CheckerboardNode.h>
 #include <icl/viz3d/Primitive.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/core/Img.h>
 #include <algorithm>
 
@@ -73,13 +73,13 @@ namespace icl::viz3d {
     // would risk on a setCells() rebuild.
     auto mat = getMaterial();
     if (!mat) {
-      mat = geom::Material::fromColor(geom::GeomColor(255, 255, 255, 255));
+      mat = viz3d::Material::fromColor(geom::GeomColor(255, 255, 255, 255));
       mat->roughness = 1.0f;   // matte paper — no specular hot-spot over the corners
       mat->metallic  = 0.0f;
       setMaterial(mat);
     }
     mat->setBaseColorMap(Image(makeTexture(m_cols, m_rows)));
-    mat->textures->filter = geom::Material::TexFilter::Nearest;   // crisp 1-texel cells
+    mat->textures->filter = viz3d::Material::TexFilter::Nearest;   // crisp 1-texel cells
     setPrimitiveVisible(PrimLine | PrimVertex, false);
   }
 

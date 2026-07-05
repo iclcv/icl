@@ -12,7 +12,7 @@
 #include <icl/markers/FiducialDetectorPlugin.h>   // getPlugin()->setPropertyValue
 #include <icl/viz3d/CheckerboardNode.h>
 #include <icl/viz3d/MeshNode.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/filter/affine/ImageUndistortion.h>
 #include <icl/filter/affine/WarpOp.h>
 #include <icl/math/transform/Homography2D.h>
@@ -129,7 +129,7 @@ namespace icl::calibintr {
     node.addQuad(0, 1, 2, 3,  0, 1, 2, 3,  0, 1, 2, 3);
 
     auto mat = node.getMaterial();
-    if (!mat) { mat = geom::Material::fromColor(geom::GeomColor(255,255,255,255));
+    if (!mat) { mat = viz3d::Material::fromColor(geom::GeomColor(255,255,255,255));
                 mat->roughness = 1.0f; mat->metallic = 0.0f; node.setMaterial(mat); }
     mat->setBaseColorMap(Image(rgb));
     node.setPrimitiveVisible(viz3d::PrimLine | viz3d::PrimVertex, false);

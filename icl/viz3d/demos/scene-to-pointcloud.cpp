@@ -19,7 +19,7 @@
 #include <icl/viz3d/PointCloud.h>
 #include <icl/viz3d/PointCloudNode.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/utils/time/Time.h>
 
 using namespace icl::viz3d;

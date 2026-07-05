@@ -12,7 +12,7 @@
 #include <icl/viz3d/LightNode.h>
 #include <icl/viz3d/detail/PlotFrame.h>
 #include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/qt/GUIWidget.h>
 #include <icl/qt/GLCallback.h>
@@ -29,7 +29,7 @@ namespace icl {
   using namespace core;
   using namespace qt;
   using geom::Camera;
-  using geom::Material;
+  using viz3d::Material;
   using geom::GeomColor;
 
   namespace viz3d {

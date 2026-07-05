@@ -17,7 +17,7 @@
 #include <icl/viz3d/ConeNode.h>
 #include <icl/viz3d/LightNode.h>
 #include <icl/viz3d/Scene2MouseHandler.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/cv3d/Camera.h>
 
 using namespace icl::viz3d;

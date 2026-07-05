@@ -15,7 +15,7 @@
 #include <icl/viz3d/BVH.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/qt/DrawWidget3D.h>
 #include <icl/qt/Widget.h>
 #include <icl/qt/IconFactory.h>

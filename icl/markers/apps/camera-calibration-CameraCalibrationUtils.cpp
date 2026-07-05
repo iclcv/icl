@@ -7,7 +7,7 @@
 #include <icl/viz3d/Scene2.h>
 #include <icl/viz3d/GroupNode.h>
 #include <icl/viz3d/MeshNode.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/config/ConfigFile.h>
@@ -278,7 +278,7 @@ namespace icl::markers {
         }
 
         auto group = std::make_shared<viz3d::GroupNode>();
-        auto mat = Material::fromColors(GeomColor(0,100,255,100), GeomColor(255,0,0,255));
+        auto mat = viz3d::Material::fromColors(GeomColor(0,100,255,100), GeomColor(255,0,0,255));
         for(auto &m : viz3d::MeshNode::load(tmpFilename)){
           m->setMaterial(mat);
           group->addChild(m);
@@ -450,7 +450,7 @@ namespace icl::markers {
       int n2 = n/2;
 
       calibFileData.planeObj = std::make_shared<viz3d::GridNode>(n,n,o -dx*(n2) - dy*(n2) ,dx,dy,true,false);
-      calibFileData.planeObj->setMaterial(Material::fromColor(GeomColor(c[0],c[1],c[2],c[3])));
+      calibFileData.planeObj->setMaterial(viz3d::Material::fromColor(GeomColor(c[0],c[1],c[2],c[3])));
 
       calibFileData.planeObj->addVertex(set_3_to_1(o-dx*n2));
       calibFileData.planeObj->addVertex(set_3_to_1(o+dx*n2));

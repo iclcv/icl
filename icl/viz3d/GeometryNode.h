@@ -12,9 +12,7 @@
 #include <memory>
 #include <cstdint>
 
-namespace icl::geom {
-  class Material;
-}
+namespace icl::viz3d { class Material; }
 
 namespace icl::viz3d {
 
@@ -41,8 +39,8 @@ namespace icl::viz3d {
     const std::vector<QuadPrimitive> &getQuads() const;
 
     // --- Material ---
-    void setMaterial(std::shared_ptr<geom::Material> mat);
-    std::shared_ptr<geom::Material> getMaterial() const;
+    void setMaterial(std::shared_ptr<viz3d::Material> mat);
+    std::shared_ptr<viz3d::Material> getMaterial() const;
 
     // --- Primitive-type visibility ---
     void setPrimitiveVisible(int typeMask, bool visible);

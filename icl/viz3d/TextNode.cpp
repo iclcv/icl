@@ -4,7 +4,7 @@
 
 #include <icl/viz3d/TextNode.h>
 #include <icl/core/Img.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 
 #ifdef ICL_HAVE_QT
 #include <QImage>
@@ -136,7 +136,7 @@ namespace icl::viz3d {
     // not inherit a stale version that a reused Material address might alias.
     auto mat = getMaterial();
     if (!mat) {
-      mat = geom::Material::fromColor(GeomColor(255, 255, 255, 255));
+      mat = viz3d::Material::fromColor(GeomColor(255, 255, 255, 255));
       setMaterial(mat);
     }
     mat->setBaseColorMap(core::Image(img));

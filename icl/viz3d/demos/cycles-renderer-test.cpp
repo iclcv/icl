@@ -11,7 +11,7 @@
 #include <icl/viz3d/SphereNode.h>
 #include <icl/viz3d/LightNode.h>
 #include <icl/cv3d/Camera.h>
-#include <icl/geom/Material.h>
+#include <icl/viz3d/Material.h>
 #include <icl/io/SaveLoad.h>
 
 #include <cstdio>
