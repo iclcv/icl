@@ -123,14 +123,23 @@ it already consumes ICL's projection, so the mapping exists in-tree.
 - **P1 — DONE** (`ba356b794`). Abstract `render/RenderBackend.h` seam (ICL-only signatures);
   `Renderer` → `GLRenderBackend : RenderBackend`; `Scene` owns `unique_ptr<RenderBackend>`.
   Pure refactor, suite 1094/1094.
-- **Projection mapping RESOLVED (de-risking for P2).** Filament `setCustomProjection` *requires
-  the OpenGL NDC convention ([-1,1] on all 3 axes)* — which is **exactly** what ICL's
-  `cv3d::Camera::getProjectionMatrixGL()` already emits (it bakes in the GL y-flip via sign
-  switches on skew/py; see `Camera.cpp:124`). So the Filament projection matrix = that matrix,
-  transposed to Filament's column-major `math::mat4`. View: Filament camera `setModelMatrix` =
-  inverse of `getCSTransformationMatrixGL()` (camera→world). Remaining unknown = readPixels row
-  order (y-up GL vs y-down image) — resolve empirically in the P2 golden test. This collapses
-  the "convention deltas" risk the plan flagged as the linchpin.
+- **P2 projection-parity gate — DONE / GREEN** (`a6fdd78b2`). `icl-filament-parity` (headless,
+  in-sandbox): 3×3 grid + camera with a REAL off-centre principal point → all 9 points rasterize
+  to exactly `cam.project(p)`, **9/9 within 1px, maxErr 0.56px**. The linchpin the plan flagged.
+  **Resolved recipe (use this in FilamentRenderBackend):**
+  - Filament projection = `cv3d::Camera::getProjectionMatrixGL()` **as-is** (it already emits the
+    GL NDC [-1,1]³ convention Filament wants), transposed into column-major `math::mat4` via
+    `f[col][row] = M(row,col)`.
+  - Camera placement: `fcam->setModelMatrix(toFilament(cam.getCSTransformationMatrixGL().inv()))`
+    (camera→world). Filament composes `clip = projGL · viewGL · world`. (Baking view into the
+    projection with identity model also works, but positioning the camera is what the real
+    backend needs for lighting/culling.)
+  - `readPixels` row 0 = **TOP** → matches `cam.project` image-y directly, **no y-flip**.
+  - **Filament POINTS have undefined `gl_PointSize` on Metal** (some render as huge horizontal
+    streaks) → the rig draws tiny world-space triangle markers instead; that's the same quad/
+    billboard expansion the plan anticipated for the lines/points parity work (P3).
+  - matc→embeddable-header pipeline established: `materials/unlit_solid.mat` → `matc -f header`
+    meson `custom_target` → `#include`d as a `uint8_t[]`. Material has `culling : none`.
 
 ## Phased plan (each phase independently landable + suite green)
 
