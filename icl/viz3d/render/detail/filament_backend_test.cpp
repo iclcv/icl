@@ -12,6 +12,7 @@
 
 #include <icl/viz3d/render/detail/FilamentRenderBackend.h>
 #include <icl/viz3d/nodes/CuboidNode.h>
+#include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/core/Img.h>
@@ -41,6 +42,7 @@ int main() {
   cv3d::Camera cam;
   cam.setRenderParams(rp);
   cam.setPrincipalPointOffset(340.0f, 250.0f);
+  cam.setUp(math::Vec4(0, 1, 0, 1), true);   // conventional y-up (default is x-up)
 
   // A light-grey cube at the origin, edge 3, rotated so three faces show with
   // different normals → different shading (proves lit PBR + normals + lights).
@@ -50,7 +52,13 @@ int main() {
   mat->baseColor = {0.8f, 0.8f, 0.8f, 1.0f};
   mat->roughness = 0.5f;
   cube->setMaterial(mat);
-  std::vector<std::shared_ptr<viz3d::Node>> nodes{cube};
+
+  // A pure-green horizontal line above the cube (tests LINES + vertex colour).
+  auto mesh = std::make_shared<viz3d::MeshNode>();
+  mesh->addVertex(math::Vec4(-2, 2.5f, 0, 1));
+  mesh->addVertex(math::Vec4(2, 2.5f, 0, 1));
+  mesh->addLine(0, 1, viz3d::GeomColor(0, 255, 0, 255));   // addLine uses 0-255
+  std::vector<std::shared_ptr<viz3d::Node>> nodes{cube, mesh};
 
   backend.render(nodes, cam.getCSTransformationMatrixGL(), cam.getProjectionMatrixGL());
 
@@ -98,7 +106,34 @@ int main() {
     std::fprintf(stderr, "backend-test: FAIL — no shading gradient (range %d)\n", bMax - bMin);
     return 1;
   }
-  std::printf("backend-test: PASS — lit cube, faces shaded (range %d), centroid %.1fpx off\n",
-              bMax - bMin, err);
+
+  // The green line must render: pure-green pixels (g high, r/b low) that the
+  // grey lit cube can't produce.
+  // The green vertex-coloured line: detect "green-dominant" pixels (ACES bleeds
+  // pure green, so r/b aren't near-zero) and check they cluster at the line's
+  // projected midpoint.
+  long green = 0; double gsx = 0, gsy = 0;
+  for (int y = 0; y < H; ++y)
+    for (int x = 0; x < W; ++x)
+      if (g(x, y) > r(x, y) + 20 && g(x, y) > b(x, y) + 20 && g(x, y) > 40) {
+        ++green; gsx += x; gsy += y;
+      }
+  utils::Point32f lineMid = cam.project(math::Vec4(0, 2.5f, 0, 1));
+  float lerr = green ? std::sqrt((gsx / green - lineMid.x) * (gsx / green - lineMid.x) +
+                                 (gsy / green - lineMid.y) * (gsy / green - lineMid.y)) : 1e9f;
+  std::printf("backend-test: %ld green line px, centroid=(%.1f,%.1f) vs project=(%.1f,%.1f) err=%.1f\n",
+              green, green ? gsx / green : -1, green ? gsy / green : -1,
+              lineMid.x, lineMid.y, lerr);
+  if (green < 20) {
+    std::fprintf(stderr, "backend-test: FAIL — line did not render (%ld green px)\n", green);
+    return 1;
+  }
+  if (lerr > 6.0f) {
+    std::fprintf(stderr, "backend-test: FAIL — line mis-placed (%.1fpx off)\n", lerr);
+    return 1;
+  }
+
+  std::printf("backend-test: PASS — lit cube shaded (range %d, %.1fpx off) + line renders (%.1fpx off)\n",
+              bMax - bMin, err, lerr);
   return 0;
 }

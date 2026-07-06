@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <unordered_map>
 #include <vector>
@@ -76,14 +77,21 @@ namespace icl::viz3d {
       return l > 1e-8f ? flm::float3{v[0] / l, v[1] / l, v[2] / l} : flm::float3{0, 0, 1};
     }
 
-    // Per-node Filament geometry, keyed on the node's geometry version.
-    struct NodeCache {
+    // One Filament renderable (a single primitive topology of a node).
+    struct Prim {
       fl::VertexBuffer *vb = nullptr;
       fl::IndexBuffer *ib = nullptr;
       fl::MaterialInstance *mi = nullptr;
       ::utils::Entity entity;    // renderable; also carries a transform component
-      uint64_t builtVersion = ~0ull;
       bool inScene = false;
+    };
+
+    // Per-node Filament geometry (solid mesh + wireframe lines), keyed on the
+    // node's geometry version. Points/point-clouds are a later sub-step.
+    struct NodeCache {
+      Prim solid;                     // triangles + quads (lit PBR)
+      std::vector<Prim> lineGroups;   // one LINES renderable per distinct colour
+      uint64_t builtVersion = ~0ull;
     };
   }
 
@@ -122,24 +130,37 @@ namespace icl::viz3d {
                          (uint32_t)targetSize.height});
     }
 
-    void destroyCache(NodeCache &nc) {
-      if (nc.inScene) { fscene->remove(nc.entity); nc.inScene = false; }
-      if (nc.entity) {
+    void destroyPrim(Prim &p) {
+      if (p.inScene) { fscene->remove(p.entity); p.inScene = false; }
+      if (p.entity) {
         auto &rm = engine->getRenderableManager();
-        if (rm.hasComponent(nc.entity)) rm.destroy(nc.entity);
+        if (rm.hasComponent(p.entity)) rm.destroy(p.entity);
         auto &tm = engine->getTransformManager();
-        if (tm.hasComponent(nc.entity)) tm.destroy(nc.entity);
-        ::utils::EntityManager::get().destroy(nc.entity);
-        nc.entity = {};
+        if (tm.hasComponent(p.entity)) tm.destroy(p.entity);
+        ::utils::EntityManager::get().destroy(p.entity);
+        p.entity = {};
       }
-      if (nc.mi) { engine->destroy(nc.mi); nc.mi = nullptr; }
-      if (nc.vb) { engine->destroy(nc.vb); nc.vb = nullptr; }
-      if (nc.ib) { engine->destroy(nc.ib); nc.ib = nullptr; }
+      if (p.mi) { engine->destroy(p.mi); p.mi = nullptr; }
+      if (p.vb) { engine->destroy(p.vb); p.vb = nullptr; }
+      if (p.ib) { engine->destroy(p.ib); p.ib = nullptr; }
+    }
+
+    void destroyCache(NodeCache &nc) {
+      destroyPrim(nc.solid);
+      for (auto &p : nc.lineGroups) destroyPrim(p);
+      nc.lineGroups.clear();
     }
 
     void clearCache() {
       for (auto &kv : cache) destroyCache(kv.second);
       cache.clear();
+    }
+
+    // Set a renderable's world transform (Filament's model matrix for the node).
+    void setPrimTransform(Prim &p, const flm::mat4 &m) {
+      if (!p.entity) return;
+      auto &tm = engine->getTransformManager();
+      tm.setTransform(tm.getInstance(p.entity), m);
     }
 
     // --- Lighting: rebuilt each frame (lights are cheap; positions animate) ---
@@ -177,7 +198,7 @@ namespace icl::viz3d {
         // the origin) — sidesteps physical point-light falloff calibration in the
         // ambiguous viz3d unit scale. True point/spot lights are a P3 refinement.
         flm::float3 dir = normalized(flm::float3{-pos[0], -pos[1], -pos[2]});
-        addDirectional(dir, {c[0], c[1], c[2]}, 80000.0f * inten * exposure,
+        addDirectional(dir, {c[0], c[1], c[2]}, 3.0f * inten * exposure,
                        light->getShadowEnabled());
       }
       if (auto *g = dynamic_cast<GroupNode *>(node))
@@ -191,7 +212,7 @@ namespace icl::viz3d {
       for (const auto &n : nodes) collectLights(n.get());
       if (lightEntities.size() == before)   // no scene lights → default key light
         addDirectional({-0.4f, -1.0f, -0.6f}, {1.0f, 0.98f, 0.95f},
-                       90000.0f * exposure, false);
+                       3.5f * exposure, false);
     }
 
     // Expand triangles + quads into a non-indexed position+normal list, honouring
@@ -225,18 +246,31 @@ namespace icl::viz3d {
         }
     }
 
-    void syncGeometry(GeometryNode *geom) {
-      NodeCache &nc = cache[geom];
-      const uint64_t v = geom->getGeometryVersion();
-      if (nc.vb && nc.builtVersion == v) { updateMaterialAndTransform(geom, nc); return; }
+    // Instantiate a Prim renderable from finished buffers + material + topology.
+    void buildPrim(Prim &p, fl::VertexBuffer *vb, fl::IndexBuffer *ib, size_t count,
+                   fl::MaterialInstance *mi, fl::RenderableManager::PrimitiveType topo,
+                   const flm::float3 &lo, const flm::float3 &hi, bool shadows) {
+      p.vb = vb; p.ib = ib; p.mi = mi;
+      p.entity = ::utils::EntityManager::get().create();
+      fl::RenderableManager::Builder(1)
+          .boundingBox({{(lo[0] + hi[0]) * 0.5f, (lo[1] + hi[1]) * 0.5f, (lo[2] + hi[2]) * 0.5f},
+                        {(hi[0] - lo[0]) * 0.5f + 1, (hi[1] - lo[1]) * 0.5f + 1, (hi[2] - lo[2]) * 0.5f + 1}})
+          .material(0, mi)
+          .geometry(0, topo, vb, ib, 0, count)
+          .castShadows(shadows).receiveShadows(shadows)
+          .culling(false)
+          .build(*engine, p.entity);
+      engine->getTransformManager().create(p.entity);
+      fscene->addEntity(p.entity);
+      p.inScene = true;
+    }
 
-      destroyCache(nc);   // rebuild: tear down old buffers/renderable, keep map slot
-
+    // Solid mesh (triangles + quads) → lit PBR renderable.
+    void buildSolid(GeometryNode *geom, Prim &p) {
       std::vector<flm::float3> P, N;
       expand(geom, P, N);
-      nc.builtVersion = v;
       const size_t nv = P.size();
-      if (nv < 3) return;   // nothing solid to draw
+      if (nv < 3) return;
 
       // Tangent frames (quaternions) — Filament derives the shading normal from
       // these for lit materials. normals-only is fine without normal maps.
@@ -257,62 +291,118 @@ namespace icl::viz3d {
       auto *idxBuf = new uint32_t[nv];
       for (uint32_t i = 0; i < nv; ++i) idxBuf[i] = i;
 
-      auto freeF3 = [](void *p, size_t, void *) { delete[] static_cast<flm::float3 *>(p); };
-      auto freeQ = [](void *p, size_t, void *) { delete[] static_cast<flm::quatf *>(p); };
-      auto freeU32 = [](void *p, size_t, void *) { delete[] static_cast<uint32_t *>(p); };
+      auto freeF3 = [](void *q, size_t, void *) { delete[] static_cast<flm::float3 *>(q); };
+      auto freeQ = [](void *q, size_t, void *) { delete[] static_cast<flm::quatf *>(q); };
+      auto freeU32 = [](void *q, size_t, void *) { delete[] static_cast<uint32_t *>(q); };
 
-      nc.vb = fl::VertexBuffer::Builder()
+      auto *vb = fl::VertexBuffer::Builder()
           .vertexCount((uint32_t)nv).bufferCount(2)
           .attribute(fl::VertexAttribute::POSITION, 0,
                      fl::VertexBuffer::AttributeType::FLOAT3, 0, sizeof(flm::float3))
           .attribute(fl::VertexAttribute::TANGENTS, 1,
                      fl::VertexBuffer::AttributeType::FLOAT4, 0, sizeof(flm::quatf))
           .build(*engine);
-      nc.vb->setBufferAt(*engine, 0, fl::VertexBuffer::BufferDescriptor(
-          posBuf, nv * sizeof(flm::float3), freeF3));
-      nc.vb->setBufferAt(*engine, 1, fl::VertexBuffer::BufferDescriptor(
-          quatBuf, nv * sizeof(flm::quatf), freeQ));
-
-      nc.ib = fl::IndexBuffer::Builder()
-          .indexCount((uint32_t)nv)
+      vb->setBufferAt(*engine, 0, fl::VertexBuffer::BufferDescriptor(posBuf, nv * sizeof(flm::float3), freeF3));
+      vb->setBufferAt(*engine, 1, fl::VertexBuffer::BufferDescriptor(quatBuf, nv * sizeof(flm::quatf), freeQ));
+      auto *ib = fl::IndexBuffer::Builder().indexCount((uint32_t)nv)
           .bufferType(fl::IndexBuffer::IndexType::UINT).build(*engine);
-      nc.ib->setBuffer(*engine, fl::IndexBuffer::BufferDescriptor(
-          idxBuf, nv * sizeof(uint32_t), freeU32));
+      ib->setBuffer(*engine, fl::IndexBuffer::BufferDescriptor(idxBuf, nv * sizeof(uint32_t), freeU32));
 
-      nc.mi = lit->createInstance();
-
-      nc.entity = ::utils::EntityManager::get().create();
-      fl::RenderableManager::Builder(1)
-          .boundingBox({{(lo[0] + hi[0]) * 0.5f, (lo[1] + hi[1]) * 0.5f, (lo[2] + hi[2]) * 0.5f},
-                        {(hi[0] - lo[0]) * 0.5f + 1, (hi[1] - lo[1]) * 0.5f + 1, (hi[2] - lo[2]) * 0.5f + 1}})
-          .material(0, nc.mi)
-          .geometry(0, fl::RenderableManager::PrimitiveType::TRIANGLES, nc.vb, nc.ib, 0, nv)
-          .castShadows(true).receiveShadows(true)
-          .culling(false)
-          .build(*engine, nc.entity);
-      engine->getTransformManager().create(nc.entity);
-      fscene->addEntity(nc.entity);
-      nc.inScene = true;
-
-      updateMaterialAndTransform(geom, nc);
+      buildPrim(p, vb, ib, nv, lit->createInstance(),
+                fl::RenderableManager::PrimitiveType::TRIANGLES, lo, hi, true);
+      updateSolidMaterial(geom, p);
     }
 
-    void updateMaterialAndTransform(GeometryNode *geom, NodeCache &nc) {
-      if (!nc.entity) return;
+    // One LINES renderable for a set of same-colour segments (unlit, flat colour).
+    void buildLineGroup(GeometryNode *geom, const std::vector<int> &endpoints,
+                        const GeomColor &color, std::vector<Prim> &out) {
+      const auto &verts = geom->getVertices();
+      const size_t nv = endpoints.size();
+      auto *posBuf = new flm::float3[nv];
+      flm::float3 lo{1e30f, 1e30f, 1e30f}, hi{-1e30f, -1e30f, -1e30f};
+      for (size_t i = 0; i < nv; ++i) {
+        int vi = endpoints[i];
+        posBuf[i] = {verts[vi][0], verts[vi][1], verts[vi][2]};
+        for (int c = 0; c < 3; ++c) { lo[c] = std::min(lo[c], posBuf[i][c]); hi[c] = std::max(hi[c], posBuf[i][c]); }
+      }
+      auto *idxBuf = new uint32_t[nv];
+      for (uint32_t i = 0; i < nv; ++i) idxBuf[i] = i;
+      auto freeF3 = [](void *q, size_t, void *) { delete[] static_cast<flm::float3 *>(q); };
+      auto freeU32 = [](void *q, size_t, void *) { delete[] static_cast<uint32_t *>(q); };
+
+      auto *vb = fl::VertexBuffer::Builder().vertexCount((uint32_t)nv).bufferCount(1)
+          .attribute(fl::VertexAttribute::POSITION, 0, fl::VertexBuffer::AttributeType::FLOAT3,
+                     0, sizeof(flm::float3))
+          .build(*engine);
+      vb->setBufferAt(*engine, 0, fl::VertexBuffer::BufferDescriptor(posBuf, nv * sizeof(flm::float3), freeF3));
+      auto *ib = fl::IndexBuffer::Builder().indexCount((uint32_t)nv)
+          .bufferType(fl::IndexBuffer::IndexType::UINT).build(*engine);
+      ib->setBuffer(*engine, fl::IndexBuffer::BufferDescriptor(idxBuf, nv * sizeof(uint32_t), freeU32));
+
+      auto *mi = unlit->createInstance();
+      mi->setParameter("color", flm::float3{color[0], color[1], color[2]});
+      out.emplace_back();
+      buildPrim(out.back(), vb, ib, nv, mi,
+                fl::RenderableManager::PrimitiveType::LINES, lo, hi, false);
+    }
+
+    // Wireframe lines → unlit 1px LINES, one renderable per distinct colour.
+    // Grouping by colour keeps each line batch on a flat-colour unlit material
+    // (typical line sets have few colours — 3 for a coordinate frame); per-vertex
+    // colour is deferred to the point-cloud path, where it's unavoidable. Thick
+    // lines (setLineWidth) would need screen-space quad expansion — a follow-up.
+    void buildLines(GeometryNode *geom, std::vector<Prim> &out) {
+      if (!geom->isPrimitiveVisible(PrimLine)) return;
+      const auto &lines = geom->getLines();
+      if (lines.empty()) return;
+      auto mat = geom->getMaterial();
+      GeomColor defc(1, 1, 1, 1);
+      if (mat) defc = (mat->lineColor[3] > 0) ? mat->lineColor : mat->baseColor;
+
+      auto key = [](const GeomColor &c) {
+        auto q = [](float v) { return (uint32_t)std::clamp(int(v * 255.f + 0.5f), 0, 255); };
+        return q(c[0]) | (q(c[1]) << 8) | (q(c[2]) << 16) | (q(c[3]) << 24);
+      };
+      std::unordered_map<uint32_t, std::vector<int>> byColor;   // colourKey → endpoints
+      std::unordered_map<uint32_t, GeomColor> colorOf;
+      for (const auto &l : lines) {
+        GeomColor c = (l.color[3] > 0.001f) ? l.color : defc;
+        uint32_t k = key(c);
+        colorOf[k] = c;
+        auto &e = byColor[k];
+        e.push_back(l.a); e.push_back(l.b);
+      }
+      for (auto &kv : byColor) buildLineGroup(geom, kv.second, colorOf[kv.first], out);
+    }
+
+    void syncGeometry(GeometryNode *geom) {
+      NodeCache &nc = cache[geom];
+      const uint64_t v = geom->getGeometryVersion();
+      if (nc.builtVersion != v) {   // (re)build geometry
+        destroyCache(nc);
+        buildSolid(geom, nc.solid);
+        buildLines(geom, nc.lineGroups);
+        nc.builtVersion = v;
+      } else {
+        updateSolidMaterial(geom, nc.solid);   // colours may change without a rebuild
+      }
+      // Transform can change every frame independently of geometry version.
+      flm::mat4 m = toFilament(geom->getTransformation(true));
+      setPrimTransform(nc.solid, m);
+      for (auto &p : nc.lineGroups) setPrimTransform(p, m);
+    }
+
+    void updateSolidMaterial(GeometryNode *geom, Prim &p) {
+      if (!p.mi) return;
       auto mat = geom->getMaterial();
       cv3d::GeomColor bc = mat ? mat->baseColor : cv3d::GeomColor{0.78f, 0.78f, 0.78f, 1.0f};
       float metallic = mat ? mat->metallic : 0.0f;
       float roughness = mat ? mat->roughness : 0.6f;
       cv3d::GeomColor em = mat ? mat->emissive : cv3d::GeomColor{0, 0, 0, 1};
-      if (nc.mi) {
-        nc.mi->setParameter("baseColor", flm::float3{bc[0], bc[1], bc[2]});
-        nc.mi->setParameter("metallic", metallic);
-        nc.mi->setParameter("roughness", std::max(0.045f, roughness));
-        nc.mi->setParameter("emissive", flm::float3{em[0], em[1], em[2]});
-      }
-      auto &tm = engine->getTransformManager();
-      tm.setTransform(tm.getInstance(nc.entity),
-                      toFilament(geom->getTransformation(true)));
+      p.mi->setParameter("baseColor", flm::float3{bc[0], bc[1], bc[2]});
+      p.mi->setParameter("metallic", metallic);
+      p.mi->setParameter("roughness", std::max(0.045f, roughness));
+      p.mi->setParameter("emissive", flm::float3{em[0], em[1], em[2]});
     }
 
     void syncNode(Node *node) {
@@ -344,7 +434,7 @@ namespace icl::viz3d {
     // Constant ambient environment (SH L0 only) so surfaces facing away from the
     // key light aren't pure black — the Filament analogue of the GL ambient env.
     flm::float3 amb{1.0f, 1.0f, 1.0f};
-    m_data->ibl = fl::IndirectLight::Builder().irradiance(1, &amb).intensity(30000.0f)
+    m_data->ibl = fl::IndirectLight::Builder().irradiance(1, &amb).intensity(1.5f)
         .build(*m_data->engine);
     m_data->fscene->setIndirectLight(m_data->ibl);
   }
@@ -400,7 +490,10 @@ namespace icl::viz3d {
     // neutral physical exposure the light intensities are calibrated against.
     m_data->fcam->setCustomProjection(toFilament(projectionMatrix), 1.0, 100000.0);
     m_data->fcam->setModelMatrix(toFilament(viewMatrix.inv()));
-    m_data->fcam->setExposure(16.0f, 1.0f / 125.0f, 100.0f);   // sunny-16
+    // Neutral exposure (~unity photometric factor) so unlit line/point colours
+    // survive post-processing; light intensities are tuned to this, not to
+    // physical lux (the viz3d unit scale isn't physical anyway).
+    m_data->fcam->setExposure(1.0f);
 
     m_data->syncLights(nodes);
     for (const auto &n : nodes) m_data->syncNode(n.get());
