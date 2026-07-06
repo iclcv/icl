@@ -269,8 +269,8 @@ namespace icl::viz3d {
         }
       };
 
-      const size_t nTex = size_t(6) * N * N;
-      auto *buf = new float[nTex * 4];   // RGBA16F upload
+      // Level 0: the full-res sky + accumulate the diffuse radiance SH.
+      std::vector<float> cur(size_t(6) * N * N * 4);   // RGBA per texel, 6 faces
       double sh[9][3] = {{0}};
       for (int f = 0; f < 6; ++f)
         for (int y = 0; y < N; ++y)
@@ -278,7 +278,7 @@ namespace icl::viz3d {
             float u = 2.0f * (x + 0.5f) / N - 1.0f, v = 2.0f * (y + 0.5f) / N - 1.0f;
             flm::float3 d = normalized(faceDir(f, u, v));
             flm::float3 c = sky(d);
-            float *px = buf + ((size_t(f) * N + y) * N + x) * 4;
+            float *px = &cur[((size_t(f) * N + y) * N + x) * 4];
             px[0] = c[0]; px[1] = c[1]; px[2] = c[2]; px[3] = 1.0f;
             float dOmega = (2.0f / N) * (2.0f / N) / std::pow(u * u + v * v + 1.0f, 1.5f);
             const double Y[9] = {0.282095, 0.488603 * d[1], 0.488603 * d[2], 0.488603 * d[0],
@@ -289,15 +289,39 @@ namespace icl::viz3d {
               for (int k = 0; k < 3; ++k) sh[i][k] += double(c[k]) * Y[i] * dOmega;
           }
 
-      // Single-level cubemap (roughness prefiltering / mips is a follow-up — GPU
-      // generateMipmaps panics on cubemaps here). Reflections are sharp for now.
-      envCubemap = fl::Texture::Builder().width(N).height(N).levels(1)
+      // Full mip chain, box-downsampled on the CPU (GPU generateMipmaps panics on
+      // cubemaps here). reflections() samples a higher mip for rougher surfaces →
+      // rough = blurry. Not a GGX prefilter, but a good approximation for a smooth
+      // sky; upgrade to Filament's iblprefilter if a detailed HDR env is used.
+      int mips = 1; while ((N >> mips) > 0) ++mips;
+      envCubemap = fl::Texture::Builder().width(N).height(N).levels((uint8_t)mips)
           .sampler(fl::Texture::Sampler::SAMPLER_CUBEMAP)
           .format(fl::Texture::InternalFormat::RGBA16F).build(*engine);
       auto freeF = [](void *p, size_t, void *) { delete[] static_cast<float *>(p); };
-      envCubemap->setImage(*engine, 0, 0, 0, 0, (uint32_t)N, (uint32_t)N, 6,
-          fl::Texture::PixelBufferDescriptor(buf, nTex * 4 * sizeof(float),
-              fl::backend::PixelDataFormat::RGBA, fl::backend::PixelDataType::FLOAT, freeF));
+      auto upload = [&](int level, int sz, const std::vector<float> &data) {
+        auto *h = new float[data.size()];
+        std::copy(data.begin(), data.end(), h);
+        envCubemap->setImage(*engine, level, 0, 0, 0, (uint32_t)sz, (uint32_t)sz, 6,
+            fl::Texture::PixelBufferDescriptor(h, data.size() * sizeof(float),
+                fl::backend::PixelDataFormat::RGBA, fl::backend::PixelDataType::FLOAT, freeF));
+      };
+      upload(0, N, cur);
+      for (int level = 1, sz = N; level < mips; ++level) {
+        const int nsz = sz / 2;
+        std::vector<float> next(size_t(6) * nsz * nsz * 4);
+        for (int f = 0; f < 6; ++f)
+          for (int y = 0; y < nsz; ++y)
+            for (int x = 0; x < nsz; ++x)
+              for (int c = 0; c < 4; ++c) {
+                auto at = [&](int xx, int yy) { return cur[((size_t(f) * sz + yy) * sz + xx) * 4 + c]; };
+                next[((size_t(f) * nsz + y) * nsz + x) * 4 + c] =
+                    0.25f * (at(2 * x, 2 * y) + at(2 * x + 1, 2 * y) +
+                             at(2 * x, 2 * y + 1) + at(2 * x + 1, 2 * y + 1));
+              }
+        upload(level, nsz, next);
+        cur = std::move(next);
+        sz = nsz;
+      }
 
       flm::float3 shf[9];
       for (int i = 0; i < 9; ++i) shf[i] = {(float)sh[i][0], (float)sh[i][1], (float)sh[i][2]};
