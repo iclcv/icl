@@ -170,6 +170,41 @@ it already consumes ICL's projection, so the mapping exists in-tree.
 - **P5 — Converge to one.** Flip the default to Filament; soak demos/apps on the real display;
   **delete `GLRenderBackend`** (or keep it as a documented fallback if cheap). Update docs.
 
+## Per-node backend resources (design note — implement at P4/P5, with CE)
+
+Both backends currently keep a `map<Node*, Cache>` on the *backend*: a hash lookup per node
+per frame, and the address-reuse hazard ([[reference_geom2_renderer_cache_versions]]) — a freed
+node's address is reused and serves a stale entry, which is why `Scene::touch()` must nuke the
+whole cache on any structural edit. Invert this: put the resource slot on the **node**, keyed by
+the **resource-owning domain**, so it dies with the node (no reuse hazard, O(1) pointer-follow).
+
+CE's refinement (correct): one scene may render into **several domains at once**, so it's a
+*set/map keyed by domain*, not a single slot. Three cases that can't share GPU objects:
+1. different backend type (GL onscreen + Filament offscreen for one Scene);
+2. different context, same backend (two Qt GL widgets — GL VAOs aren't shared even across shared
+   contexts);
+3. Filament: resources belong to an **Engine**, not a View — one Engine driving N Views = ONE
+   set; two Engines = two sets. ⇒ the key is the Engine/context, not the view/swapchain.
+
+Shape:
+```cpp
+// Node.h (installed)
+class RenderResource { public: virtual ~RenderResource() = default; };
+std::unique_ptr<RenderResource> &renderData(const void *domainKey);  // backend/engine ptr as key
+void dropRenderData(const void *domainKey);
+```
+Two wrinkles that make this a real refactor (not a slot add):
+- **Deferred release.** A node dtor can't free GPU objects directly (GL delete needs the context
+  current; Filament destroy needs the Engine). Each `RenderResource` holds a back-ref to its
+  domain and enqueues itself for deferred release — the pattern `invalidateCache` already uses.
+- **Domain registry on Scene.** When a domain (backend/engine) is torn down it must broadcast
+  "drop key X" to every node ⇒ `Scene` needs to know its live attached domains. This is the
+  "register a set of resources" one level up.
+
+Do this **after Filament reaches parity** so GL + Filament convert off their maps in one pass
+(touches installed `Node.h` + both backends + the Scene domain registry; intersects
+[[project_node_scene_backpointer]] / ScopedEdit). Not a blocker for P3.
+
 ## Materials
 
 Our `viz3d/render/Material` (albedo/metallic/roughness/colors) → a **small fixed set of Filament
