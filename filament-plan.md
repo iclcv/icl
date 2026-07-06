@@ -205,6 +205,28 @@ Do this **after Filament reaches parity** so GL + Filament convert off their map
 (touches installed `Node.h` + both backends + the Scene domain registry; intersects
 [[project_node_scene_backpointer]] / ScopedEdit). Not a blocker for P3.
 
+## Onscreen transport (how Filament's 3D image reaches the widget) — decided S101
+
+The seam is target-agnostic (`producesImage()`/`setTargetSize()`/`readColor()`); Filament renders
+to its own Metal target and Scene composites the frame. **Key architectural relief:** compositing
+the 3D image into the GL widget FBO keeps the entire existing GL 2D-annotation pipeline
+(`ICLDrawWidget`) untouched — it still paints on top. The 2D pipeline would only need replacing in
+the *native-Metal-view* path (B), which we explicitly do NOT take.
+
+Three transports considered:
+- **A1 — readback blit (LANDED, `19a5ffd0e`):** Filament `readPixels` → GL texture → quad into the
+  widget FBO (`Scene::GLBlitter`). Simple, keeps 2D pipeline. Cost = per-frame GPU→CPU→GPU
+  roundtrip; `readPixels` forces a sync. **This is the current default onscreen path.**
+- **A2 — shared texture (FOLLOW-UP):** Filament renders into an IOSurface-backed texture GL samples
+  directly (zero-copy). The proper shipping transport; Metal↔GL interop, needs a real display to
+  build/verify.
+- **B — native Metal view:** fastest but forces porting the 2D pipeline off GL. **Rejected.**
+
+**Benchmark TODO (CE):** measure the A1 readback cost separately. It's likely near-free on M-series
+**unified memory** (CPU/GPU shared, huge bandwidth — the S101 dev machine is an M3 Max, so the
+roundtrip won't show here), but may be significant on discrete-GPU / weaker hardware. Decide A1→A2
+based on that. `ICL_VIZ3D_BACKEND=gl` is the legacy escape hatch throughout.
+
 ## Materials
 
 Our `viz3d/render/Material` (albedo/metallic/roughness/colors) → a **small fixed set of Filament
