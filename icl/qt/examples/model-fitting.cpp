@@ -4,14 +4,22 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/math/fit/RansacFitter.h>
+#include <icl/math/fit/RobustFitter.h>
 #include <icl/utils/Random.h>
 #include <icl/utils/Point.h>
 #include <icl/math/fit/LeastSquareModelFitting2D.h>
 #include <mutex>
 
 typedef LeastSquareModelFitting2D LS;
-typedef RansacFitter<Point32f,std::vector<double> > RANSAC;
+
+/// ModelFitter adapter over LeastSquareModelFitting2D so RobustFitter can wrap it.
+struct LSFitter : math::ModelFitter<Point32f, std::vector<double> > {
+  LS *ls; int ns;
+  LSFitter(LS *l, int n) : ls(l), ns(n) {}
+  std::vector<double> fit(const std::vector<Point32f> &p) override { return ls->fit(p); }
+  double residual(const std::vector<double> &m, const Point32f &p) const override { return ls->getError(m,p); }
+  int minSamples() const override { return ns; }
+};
 
 HSplit gui;
 
@@ -78,11 +86,10 @@ void compute(){
     LeastSquareModelFitting2D ls(3,LeastSquareModelFitting2D::line_gen);
 
     if(gui["ransac"]){
-      RANSAC::ModelFitting fit = [&ls](const std::vector<Point32f> &pts){ return ls.fit(pts); };
-      RANSAC::PointError err = [&ls](const std::vector<double> &model, const Point32f &p){ return ls.getError(model, p); };
-      RANSAC fitLine(5,100,fit,err,0.2,30);
-      RANSAC::Result r = fitLine.fit(ptsOrig);
-      const Point32f mps[2] = { get_line_point(r.model,-1), get_line_point(r.model,1) };
+      LSFitter base(&ls,3);
+      math::RobustFitter<Point32f,std::vector<double> > fitLine(&base, 0.2, 0.99, 100, "ransac");
+      std::vector<double> model = fitLine.fit(ptsOrig);
+      const Point32f mps[2] = { get_line_point(model,-1), get_line_point(model,1) };
       plot->addAnnotations('l',&mps[0].x,1,QColor(0,100,255));
     }else{
       std::vector<double> model = ls.fit(ptsOrig);
@@ -102,11 +109,9 @@ void compute(){
 
     std::vector<double> model;
     if(gui["ransac"]){
-      RANSAC::ModelFitting fit = [&ls](const std::vector<Point32f> &pts){ return ls.fit(pts); };
-      RANSAC::PointError err = [&ls](const std::vector<double> &model, const Point32f &p){ return ls.getError(model, p); };
-      RANSAC fitCircle(5,100,fit,err,0.005,40);
-      RANSAC::Result result = fitCircle.fit(ptsOrig);
-      model = result.model;
+      LSFitter base(&ls,4);
+      math::RobustFitter<Point32f,std::vector<double> > fitCircle(&base, 0.005, 0.99, 100, "ransac");
+      model = fitCircle.fit(ptsOrig);
     }else{
       model = ls.fit(ptsOrig);
     }

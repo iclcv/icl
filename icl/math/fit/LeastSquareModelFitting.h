@@ -95,7 +95,7 @@ namespace icl::math {
       Examples for usage are given in the interactive application
       icl-model-fitting-example located in the ICLQt package. Here, the
       icl::LeastSquareModelFitting is demonstrated and it is combined with the
-      icl::RansacFitter class in order to show the advantages of using
+      icl::math::RobustFitter class in order to show the advantages of using
       the RANSAC algorithm in presence of outliers and noise.
 
 

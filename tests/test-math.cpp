@@ -7,7 +7,6 @@
 #include <icl/math/la/DynMatrix.h>
 #include <icl/math/transform/Homography2D.h>
 #include <icl/math/fit/LeastSquareModelFitting2D.h>
-#include <icl/math/fit/RansacFitter.h>
 #include <icl/math/fit/PrimitiveFitters2D.h>
 #include <icl/math/fit/RobustFitter.h>
 #include <icl/math/fit/NelderMeadOptimizer.h>
@@ -1488,11 +1487,11 @@ ICL_REGISTER_TEST("math.fit.least_square_ellipse",
   ICL_TEST_NEAR(yy, (A*A)/(B*B), 1e-3);
 }
 
-// Generic RansacFitter with adaptive termination: recover a line y = 2x + 1 from
-// data that is ~1/4 gross outliers. Also asserts the adaptive budget kicks in
-// (a clean high-inlier problem must finish well before the iteration cap).
-ICL_REGISTER_TEST("math.fit.ransac_line_with_outliers",
-                  "RansacFitter recovers a line under outliers and terminates early")
+// RobustFitter wrapping a line ModelFitter: recover a line y = 2x + 1 from data
+// that is ~1/4 gross outliers. A plain least-squares fitter made outlier-tolerant
+// purely by composition (the unified robustifier replacing the old RansacFitter).
+ICL_REGISTER_TEST("math.fit.robust_line_with_outliers",
+                  "RobustFitter(line ModelFitter) recovers a line under outliers")
 {
   using Pt = Point32f;
   using Line = std::vector<float>;           // {m, b} for y = m*x + b
@@ -1500,26 +1499,27 @@ ICL_REGISTER_TEST("math.fit.ransac_line_with_outliers",
   for(int i=0;i<120;++i) data.push_back(Pt(i*0.1f, 2.0f*(i*0.1f) + 1.0f));   // inliers
   for(int i=0;i<40;++i)  data.push_back(Pt(i*0.1f, 2.0f*(i*0.1f) + 1.0f + (i%2?6.f:-6.f))); // outliers
 
-  auto fitLine = [](const std::vector<Pt> &s)->Line{
-    // least-squares slope/intercept over the given subset
-    double sx=0,sy=0,sxx=0,sxy=0; const int n=(int)s.size();
-    for(const Pt &p:s){ sx+=p.x; sy+=p.y; sxx+=p.x*p.x; sxy+=p.x*p.y; }
-    const double d = n*sxx - sx*sx;
-    if(std::abs(d) < 1e-12) return Line{0,0};
-    const double m = (n*sxy - sx*sy)/d;
-    return Line{ (float)m, (float)((sy - m*sx)/n) };
-  };
-  auto err = [](const Line &m, const Pt &p)->double{
-    return std::abs(p.y - (m[0]*p.x + m[1]));
-  };
+  struct LineFitter : ModelFitter<Pt,Line> {
+    Line fit(const std::vector<Pt> &s) override {
+      double sx=0,sy=0,sxx=0,sxy=0; const int n=(int)s.size();
+      for(const Pt &p:s){ sx+=p.x; sy+=p.y; sxx+=p.x*p.x; sxy+=p.x*p.y; }
+      const double d = n*sxx - sx*sx;
+      if(std::abs(d) < 1e-12) return Line{0,0};
+      const double m = (n*sxy - sx*sy)/d;
+      return Line{ (float)m, (float)((sy - m*sx)/n) };
+    }
+    double residual(const Line &m, const Pt &p) const override {
+      return std::abs(p.y - (m[0]*p.x + m[1]));
+    }
+    int minSamples() const override { return 2; }
+  } base;
 
-  RansacFitter<Pt,Line> ransac(2, 2000, fitLine, err, 0.5, 100);
-  const auto &r = ransac.fit(data);
-  ICL_TEST_TRUE(r.found());
-  ICL_TEST_NEAR(r.model[0], 2.0f, 0.05f);    // slope
-  ICL_TEST_NEAR(r.model[1], 1.0f, 0.05f);    // intercept
-  ICL_TEST_TRUE(r.consensusSet.size() >= 100u);
-  ICL_TEST_TRUE(r.iterationCount < 2000);    // adaptive termination fired
+  RobustFitter<Pt,Line> robust(&base, 0.5, 0.99, 2000, "ransac");
+  const Line m = robust.fit(data);
+  ICL_TEST_TRUE(!m.empty());
+  ICL_TEST_NEAR(m[0], 2.0f, 0.05f);          // slope
+  ICL_TEST_NEAR(m[1], 1.0f, 0.05f);          // intercept
+  ICL_TEST_TRUE(robust.inliers().size() >= 100u);
 }
 
 // RobustFitter (Tier-C decorator) wrapping a CircleFitter2D: recover a circle from

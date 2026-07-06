@@ -29,7 +29,7 @@
       icl::utils::ProgArg, std::shared_ptr, icl::utils::Thread
     - <b>Math</b> icl::math::DynMatrix, icl::math::FixedMatrix, icl::math::Octree,
       icl::math::QuadTree, icl::math::LLM, icl::math::PolynomialRegression,
-      icl::math::RansacFitter, icl::math::LevenbergMarquardtFitter,
+      icl::math::RobustFitter, icl::math::LevenbergMarquardtFitter,
       icl::math::SimplexOptimizer, icl::math::SOM
     - <b>Core</b> icl::core::ImgBase, icl::core::ImgBase, icl::core::Converter, icl::core::Line,
       icl::core::Line32f, icl::core::LineSampler, icl::core::cc

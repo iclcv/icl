@@ -58,7 +58,6 @@ math_fit_headers = files(
   'fit/PolynomialRegression.h',
   'fit/PolynomialSolver.h',
   'fit/PrimitiveFitters2D.h',
-  'fit/RansacFitter.h',
   'fit/RefiningFitter.h',
   'fit/RobustFitter.h',
   'fit/SimplexOptimizer.h',
