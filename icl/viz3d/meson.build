@@ -339,6 +339,14 @@ if filament_found
     implicit_include_directories: false,
     install: false,
   )
+
+  # Colour/material tuning harness: DefaultScene → Filament → PNG (headless).
+  executable('icl-filament-gallery',
+    files('render/detail/filament_gallery.cpp'),
+    dependencies: [icl_viz3d_dep],
+    implicit_include_directories: false,
+    install: false,
+  )
 endif
 
 install_headers(viz3d_headers,

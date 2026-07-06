@@ -11,6 +11,7 @@
 #include <icl/viz3d/render/Material.h>
 
 #include <filament/Camera.h>
+#include <filament/ColorGrading.h>
 #include <filament/Engine.h>
 #include <filament/IndexBuffer.h>
 #include <filament/IndirectLight.h>
@@ -21,6 +22,7 @@
 #include <filament/Renderer.h>
 #include <filament/Scene.h>
 #include <filament/SwapChain.h>
+#include <filament/ToneMapper.h>
 #include <filament/TransformManager.h>
 #include <filament/VertexBuffer.h>
 #include <filament/View.h>
@@ -107,6 +109,7 @@ namespace icl::viz3d {
     fl::Material *lit = nullptr;
     fl::Material *unlit = nullptr;
     fl::IndirectLight *ibl = nullptr;
+    fl::ColorGrading *colorGrading = nullptr;
 
     utils::Size targetSize{640, 480};
     utils::Size swapSize{0, 0};
@@ -199,7 +202,7 @@ namespace icl::viz3d {
         // the origin) — sidesteps physical point-light falloff calibration in the
         // ambiguous viz3d unit scale. True point/spot lights are a P3 refinement.
         flm::float3 dir = normalized(flm::float3{-pos[0], -pos[1], -pos[2]});
-        addDirectional(dir, {c[0], c[1], c[2]}, 3.0f * inten * exposure,
+        addDirectional(dir, {c[0], c[1], c[2]}, 1.6f * inten * exposure,
                        light->getShadowEnabled());
       }
       if (auto *g = dynamic_cast<GroupNode *>(node))
@@ -213,7 +216,7 @@ namespace icl::viz3d {
       for (const auto &n : nodes) collectLights(n.get());
       if (lightEntities.size() == before)   // no scene lights → default key light
         addDirectional({-0.4f, -1.0f, -0.6f}, {1.0f, 0.98f, 0.95f},
-                       3.5f * exposure, false);
+                       2.0f * exposure, false);
     }
 
     // Expand triangles + quads into a non-indexed position+normal list, honouring
@@ -431,6 +434,14 @@ namespace icl::viz3d {
     m_data->fcam = m_data->engine->createCamera(m_data->camEntity);
     m_data->view->setScene(m_data->fscene);
     m_data->view->setCamera(m_data->fcam);
+    // Linear tone mapping (no ACES) — ICL's GL renderer uses a near-linear tonemap,
+    // and ACES desaturates/washes the vivid flat colours ICL scenes use. Keeps
+    // saturation close to the GL look.
+    {
+      fl::LinearToneMapper tm;
+      m_data->colorGrading = fl::ColorGrading::Builder().toneMapper(&tm).build(*m_data->engine);
+    }
+    m_data->view->setColorGrading(m_data->colorGrading);
     m_data->lit = fl::Material::Builder()
         .package(LIT_PBR_FILAMAT, sizeof(LIT_PBR_FILAMAT)).build(*m_data->engine);
     m_data->unlit = fl::Material::Builder()
@@ -439,7 +450,7 @@ namespace icl::viz3d {
     // Constant ambient environment (SH L0 only) so surfaces facing away from the
     // key light aren't pure black — the Filament analogue of the GL ambient env.
     flm::float3 amb{1.0f, 1.0f, 1.0f};
-    m_data->ibl = fl::IndirectLight::Builder().irradiance(1, &amb).intensity(1.5f)
+    m_data->ibl = fl::IndirectLight::Builder().irradiance(1, &amb).intensity(0.55f)
         .build(*m_data->engine);
     m_data->fscene->setIndirectLight(m_data->ibl);
   }
@@ -449,6 +460,7 @@ namespace icl::viz3d {
     m_data->clearCache();
     m_data->clearLights();
     fl::Engine *e = m_data->engine;
+    if (m_data->colorGrading) e->destroy(m_data->colorGrading);
     if (m_data->ibl) e->destroy(m_data->ibl);
     if (m_data->lit) e->destroy(m_data->lit);
     if (m_data->unlit) e->destroy(m_data->unlit);
