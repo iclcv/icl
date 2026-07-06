@@ -80,6 +80,16 @@ namespace icl::viz3d {
       return l > 1e-8f ? flm::float3{v[0] / l, v[1] / l, v[2] / l} : flm::float3{0, 0, 1};
     }
 
+    // ICL colours are sRGB (display) values; Filament material/light colours are
+    // LINEAR. Without this, mixed channels wash out (Filament re-encodes sRGB on
+    // output) — e.g. (220,60,60) → milky pink; pure primaries (0/1) are unaffected.
+    float srgbToLinear(float s) {
+      return s <= 0.04045f ? s / 12.92f : std::pow((s + 0.055f) / 1.055f, 2.4f);
+    }
+    flm::float3 toLinear(const cv3d::GeomColor &c) {
+      return {srgbToLinear(c[0]), srgbToLinear(c[1]), srgbToLinear(c[2])};
+    }
+
     // One Filament renderable (a single primitive topology of a node).
     struct Prim {
       fl::VertexBuffer *vb = nullptr;
@@ -202,7 +212,7 @@ namespace icl::viz3d {
         // the origin) — sidesteps physical point-light falloff calibration in the
         // ambiguous viz3d unit scale. True point/spot lights are a P3 refinement.
         flm::float3 dir = normalized(flm::float3{-pos[0], -pos[1], -pos[2]});
-        addDirectional(dir, {c[0], c[1], c[2]}, 1.6f * inten * exposure,
+        addDirectional(dir, toLinear(c), 1.6f * inten * exposure,
                        light->getShadowEnabled());
       }
       if (auto *g = dynamic_cast<GroupNode *>(node))
@@ -344,7 +354,7 @@ namespace icl::viz3d {
       ib->setBuffer(*engine, fl::IndexBuffer::BufferDescriptor(idxBuf, nv * sizeof(uint32_t), freeU32));
 
       auto *mi = unlit->createInstance();
-      mi->setParameter("color", flm::float3{color[0], color[1], color[2]});
+      mi->setParameter("color", toLinear(color));
       out.emplace_back();
       buildPrim(out.back(), vb, ib, nv, mi,
                 fl::RenderableManager::PrimitiveType::LINES, lo, hi, false);
@@ -403,10 +413,10 @@ namespace icl::viz3d {
       float metallic = mat ? mat->metallic : 0.0f;
       float roughness = mat ? mat->roughness : 0.6f;
       cv3d::GeomColor em = mat ? mat->emissive : cv3d::GeomColor{0, 0, 0, 1};
-      p.mi->setParameter("baseColor", flm::float3{bc[0], bc[1], bc[2]});
+      p.mi->setParameter("baseColor", toLinear(bc));
       p.mi->setParameter("metallic", metallic);
       p.mi->setParameter("roughness", std::max(0.045f, roughness));
-      p.mi->setParameter("emissive", flm::float3{em[0], em[1], em[2]});
+      p.mi->setParameter("emissive", toLinear(em));
       // "enable lighting" off → flat unlit base colour (ICL contract).
       p.mi->setParameter("unlit", lighting ? 0.0f : 1.0f);
     }
