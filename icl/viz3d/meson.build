@@ -25,7 +25,8 @@ viz3d_nodes_headers = files(
 )
 
 viz3d_render_headers = files(
-  'render/Renderer.h',
+  'render/RenderBackend.h',
+  'render/GLRenderBackend.h',
   'render/CyclesRenderer.h',
   'render/SceneSynchronizer.h',
   'render/SceneCapture.h',
@@ -74,7 +75,7 @@ viz3d_sources = files(
   'nodes/PointCloudNode.cpp',
   'nodes/TextNode.cpp',
   'nodes/CheckerboardNode.cpp',
-  'render/Renderer.cpp',
+  'render/GLRenderBackend.cpp',
   'render/SceneCapture.cpp',
   'render/OffscreenView.cpp',
   'render/Material.cpp',

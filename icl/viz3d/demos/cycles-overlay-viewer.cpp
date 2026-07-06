@@ -12,7 +12,7 @@
 #include <icl/qt/ui.h>
 #include <icl/viz3d/scene/DemoScene.h>
 #include <icl/viz3d/render/CyclesRenderer.h>
-#include <icl/viz3d/render/Renderer.h>
+#include <icl/viz3d/render/GLRenderBackend.h>
 #include <icl/viz3d/scene/SceneMouseHandler.h>
 
 using namespace icl::utils;

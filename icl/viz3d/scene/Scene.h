@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/viz3d/nodes/Node.h>
-#include <icl/viz3d/render/Renderer.h>
+#include <icl/viz3d/render/RenderBackend.h>
 #include <icl/viz3d/nodes/LightNode.h>
 #include <icl/viz3d/render/BVH.h>
 #include <icl/math/Types.h>
@@ -119,7 +119,7 @@ namespace icl::viz3d {
 
     // --- Rendering ---
     void render(int cameraIndex);
-    Renderer &getRenderer();
+    RenderBackend &getRenderer();
 
     /// Offscreen GL render through \a cameraIndex → RGB color + metric depth.
     /** GPU counterpart to BVH::raycastToImage (same BVH::ImageResult /

@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/viz3d/render/Renderer.h>
+#include <icl/viz3d/render/GLRenderBackend.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/GeometryNode.h>
 #include <icl/viz3d/nodes/PointCloudNode.h>
@@ -824,7 +824,7 @@ void main() { }
   // uploadOrUpdate() helper can name it.
   namespace { struct TexHandle { GLuint id = 0; int w = 0, h = 0; }; }
 
-  struct Renderer::Data {
+  struct GLRenderBackend::Data {
     GLuint pbrProgram = 0;
     GLuint unlitProgram = 0;
     bool shaderReady = false;
@@ -1015,9 +1015,9 @@ void main() { }
 
   // ---- Renderer implementation ----
 
-  Renderer::Renderer() : m_data(std::make_unique<Data>()) {}
+  GLRenderBackend::GLRenderBackend() : m_data(std::make_unique<Data>()) {}
 
-  Renderer::~Renderer() {
+  GLRenderBackend::~GLRenderBackend() {
     if (m_data->pbrProgram) glDeleteProgram(m_data->pbrProgram);
     if (m_data->unlitProgram) glDeleteProgram(m_data->unlitProgram);
     if (m_data->lineProgram) glDeleteProgram(m_data->lineProgram);
@@ -1044,23 +1044,23 @@ void main() { }
     m_data->shadowProgram = 0;
   }
 
-  void Renderer::setExposure(float e) { m_data->exposure = e; }
-  void Renderer::setAmbient(float a) { m_data->ambient = a; }
-  void Renderer::setOverlayAlpha(float a) { m_data->overlayAlpha = a; }
-  void Renderer::setSSREnabled(bool e) { m_data->ssrEnabled = e; }
-  bool Renderer::isSSREnabled() const { return m_data->ssrEnabled; }
-  void Renderer::setShadowsEnabled(bool e) { m_data->shadowsEnabled = e; }
-  void Renderer::setLightingEnabled(bool e) { m_data->lightingEnabled = e; }
-  void Renderer::setSkyEnabled(bool e) { m_data->skyEnabled = e; }
-  void Renderer::setSkyUp(float x, float y, float z) {
+  void GLRenderBackend::setExposure(float e) { m_data->exposure = e; }
+  void GLRenderBackend::setAmbient(float a) { m_data->ambient = a; }
+  void GLRenderBackend::setOverlayAlpha(float a) { m_data->overlayAlpha = a; }
+  void GLRenderBackend::setSSREnabled(bool e) { m_data->ssrEnabled = e; }
+  bool GLRenderBackend::isSSREnabled() const { return m_data->ssrEnabled; }
+  void GLRenderBackend::setShadowsEnabled(bool e) { m_data->shadowsEnabled = e; }
+  void GLRenderBackend::setLightingEnabled(bool e) { m_data->lightingEnabled = e; }
+  void GLRenderBackend::setSkyEnabled(bool e) { m_data->skyEnabled = e; }
+  void GLRenderBackend::setSkyUp(float x, float y, float z) {
     m_data->skyUp[0] = x; m_data->skyUp[1] = y; m_data->skyUp[2] = z;
   }
-  void Renderer::setDebugMode(int mode) { m_data->debugMode = mode; }
-  void Renderer::invalidateCache() {
+  void GLRenderBackend::setDebugMode(int mode) { m_data->debugMode = mode; }
+  void GLRenderBackend::invalidateCache() {
     m_data->cacheInvalid = true;
   }
 
-  void Renderer::flushInvalidatedCache() {
+  void GLRenderBackend::flushInvalidatedCache() {
     if (!m_data->cacheInvalid.exchange(false)) return;
     m_data->cache.clear();
     m_data->pcCache.clear();
@@ -1072,7 +1072,7 @@ void main() { }
     m_data->texCache.clear();
   }
 
-  void Renderer::ensureShaderCompiled() {
+  void GLRenderBackend::ensureShaderCompiled() {
     if (m_data->shaderReady) return;
     m_data->shaderReady = true;
 
@@ -1385,7 +1385,7 @@ void main() { }
     return proj * view;
   }
 
-  void Renderer::renderNodeShadow(Node *node) {
+  void GLRenderBackend::renderNodeShadow(Node *node) {
     if (!node || !node->isVisible()) return;
     if (dynamic_cast<LightNode*>(node)) return;
     if (dynamic_cast<TextNode*>(node)) return;  // text labels don't cast shadows
@@ -1408,7 +1408,7 @@ void main() { }
     }
   }
 
-  void Renderer::render(const std::vector<std::shared_ptr<Node>> &nodes,
+  void GLRenderBackend::render(const std::vector<std::shared_ptr<Node>> &nodes,
                          const Mat &viewMatrix,
                          const Mat &projectionMatrix) {
     flushInvalidatedCache();
@@ -1653,7 +1653,7 @@ void main() { }
     }
   }
 
-  void Renderer::renderNode(Node *node, const Mat &viewMatrix, int pass) {
+  void GLRenderBackend::renderNode(Node *node, const Mat &viewMatrix, int pass) {
     if (!node || !node->isVisible()) return;
 
     Mat modelMatrix = node->getTransformation(true);

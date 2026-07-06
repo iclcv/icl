@@ -13,6 +13,7 @@
 #include <icl/viz3d/scene/Driver.h>
 #include <icl/viz3d/pointcloud/PointCloud.h>
 #include <icl/viz3d/render/BVH.h>
+#include <icl/viz3d/render/GLRenderBackend.h>
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
 #include <icl/viz3d/render/Material.h>
@@ -85,7 +86,7 @@ namespace icl::viz3d {
     std::vector<std::shared_ptr<Node>> objects;
     std::vector<std::shared_ptr<LightNode>> lights;  // also in objects, tracked for fast access
     std::vector<cv3d::Camera> cameras;
-    Renderer renderer;
+    std::unique_ptr<RenderBackend> renderer = std::make_unique<GLRenderBackend>();
     std::vector<std::shared_ptr<SceneGLCallback>> callbacks;
     std::vector<std::unique_ptr<SceneMouseHandler>> mouseHandlers;
     // "show cameras" overlay: one lightweight gizmo per camera (3 axis lines +
@@ -187,7 +188,7 @@ namespace icl::viz3d {
   void Scene::touch() {
     m_data->version.fetch_add(1, std::memory_order_relaxed);
     m_data->autoBoundsDirty = true;
-    m_data->renderer.invalidateCache();
+    m_data->renderer->invalidateCache();
   }
 
   unsigned Scene::sceneVersion() const {
@@ -244,7 +245,7 @@ namespace icl::viz3d {
   }
 
   // Rendering
-  Renderer &Scene::getRenderer() { return m_data->renderer; }
+  RenderBackend &Scene::getRenderer() { return *m_data->renderer; }
 
   // A lightweight camera gizmo (built in the camera's local frame, so the group
   // transform = camera pose places it): 3 axis lines (RGB = XYZ), a stylized,
@@ -333,7 +334,7 @@ namespace icl::viz3d {
     bool wireframe = prop("wireframe").value;
     if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    m_data->renderer.setLightingEnabled((bool)prop("enable lighting").value);
+    m_data->renderer->setLightingEnabled((bool)prop("enable lighting").value);
 
     // Debug visualization mode (menu order matches Renderer::setDebugMode codes)
     static const char *kDebugModes[] = {"shaded", "normals", "albedo", "UVs",
@@ -341,7 +342,7 @@ namespace icl::viz3d {
     std::string dbg = prop("debug").value;
     int dbgMode = 0;
     for (int i = 0; i < 9; i++) if (dbg == kDebugModes[i]) { dbgMode = i; break; }
-    m_data->renderer.setDebugMode(dbgMode);
+    m_data->renderer->setDebugMode(dbgMode);
 
     // Update info properties (Info stores std::string — explicit str()
     // keeps the adapter's toString happy; direct int write would put an
@@ -370,7 +371,7 @@ namespace icl::viz3d {
     Mat viewGL = cam.getCSTransformationMatrixGL();
     Mat projGL = cam.getProjectionMatrixGL();
 
-    m_data->renderer.render(nodesToRender(cameraIndex), viewGL, projGL);
+    m_data->renderer->render(nodesToRender(cameraIndex), viewGL, projGL);
 
     // Restore state
     if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -426,17 +427,17 @@ namespace icl::viz3d {
     // Force SSR off so the geometry pass writes depth straight into our FBO.
     // (With SSR on, geometry depth lands in an internal ping-pong FBO and only
     //  color is blitted back — our depth attachment would read back cleared.)
-    const bool prevSSR = m_data->renderer.isSSREnabled();
-    m_data->renderer.setSSREnabled(false);
-    m_data->renderer.setDebugMode(0);   // shaded — ignore the live "debug" prop
-    m_data->renderer.setLightingEnabled((bool)prop("enable lighting").value);
+    const bool prevSSR = m_data->renderer->isSSREnabled();
+    m_data->renderer->setSSREnabled(false);
+    m_data->renderer->setDebugMode(0);   // shaded — ignore the live "debug" prop
+    m_data->renderer->setLightingEnabled((bool)prop("enable lighting").value);
 
     glViewport(0, 0, w, h);
     core::Color bg = prop("background color").value;
     glClearColor(bg[0]/255.f, bg[1]/255.f, bg[2]/255.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_data->renderer.render(nodesToRender(cameraIndex),
+    m_data->renderer->render(nodesToRender(cameraIndex),
                             cam.getCSTransformationMatrixGL(),
                             cam.getProjectionMatrixGL());
 
@@ -494,7 +495,7 @@ namespace icl::viz3d {
       }
     }
 
-    m_data->renderer.setSSREnabled(prevSSR);
+    m_data->renderer->setSSREnabled(prevSSR);
     glBindFramebuffer(GL_FRAMEBUFFER, prevFBO);
     glViewport(prevVP[0], prevVP[1], prevVP[2], prevVP[3]);
 #else

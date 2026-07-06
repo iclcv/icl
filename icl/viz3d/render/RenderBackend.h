@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// ICL - Image Component Library (https://github.com/iclcv/icl)
+// Copyright (C) 2006-2026 Christof Elbrechter
+
+#pragma once
+
+#include <icl/viz3d/nodes/Node.h>
+#include <memory>
+#include <vector>
+
+namespace icl::viz3d {
+
+  /// Abstract real-time rendering backend for viz3d scene graphs.
+  /** The seam between the ICL scene graph (Node/Camera/Material — pure ICL types)
+      and the concrete rasterizer. Introduced as migration scaffolding so the
+      hand-written GL 4.1 backend (GLRenderBackend) and the Filament backend can
+      coexist during the transition (see filament-plan.md). Every method takes and
+      returns ICL types only — no backend (GL / filament::) type ever crosses this
+      interface, keeping the Filament dependency fully wrapped in detail/.
+
+      A Scene owns exactly one RenderBackend and drives it via render() + the
+      setters below. The end state is a single real-time backend; the seam then
+      either collapses or keeps GLRenderBackend as a documented fallback. */
+  class ICLViz3d_API RenderBackend {
+  public:
+    virtual ~RenderBackend() = default;
+
+    /// Render a list of top-level nodes with given view and projection matrices
+    virtual void render(const std::vector<std::shared_ptr<Node>> &nodes,
+                        const Mat &viewMatrix,
+                        const Mat &projectionMatrix) = 0;
+
+    /// Set exposure for tone mapping
+    virtual void setExposure(float exposure) = 0;
+
+    /// Set ambient light level
+    virtual void setAmbient(float ambient) = 0;
+
+    /// Set overlay alpha (0..1). When < 1, geometry is semi-transparent
+    /// so a background image (e.g. Cycles render) shows through.
+    virtual void setOverlayAlpha(float alpha) = 0;
+
+    /// Enable/disable screen-space reflections (default: true)
+    virtual void setSSREnabled(bool enabled) = 0;
+
+    /// Whether screen-space reflections are currently enabled
+    /** Used by Scene::renderToImage to force SSR off during an offscreen
+        capture and restore the prior state afterwards. */
+    virtual bool isSSREnabled() const = 0;
+
+    /// Enable/disable shadow mapping (default: true)
+    virtual void setShadowsEnabled(bool enabled) = 0;
+
+    /// Enable/disable lighting (default: true). When off, geometry renders as
+    /// flat unlit base color (the "enable lighting" scene property).
+    virtual void setLightingEnabled(bool enabled) = 0;
+
+    /// Enable/disable the procedural sky background (default: false)
+    /** When enabled, a full-screen gradient (matching the sky model used for
+        environment reflections) is drawn behind the scene, so the backdrop and
+        reflections agree. Disabled → the flat clear color shows through. */
+    virtual void setSkyEnabled(bool enabled) = 0;
+
+    /// Set the world "up" direction the sky gradient is oriented along
+    /** Default (0,1,0). Physics scenes are Z-up → pass (0,0,1). */
+    virtual void setSkyUp(float x, float y, float z) = 0;
+
+    /// Set debug visualization mode
+    /** 0=shaded (default), 1=normals, 2=albedo, 3=UVs, 4=lighting only,
+        5=NdotL, 6=SSR confidence, 7=depth buffer, 8=SSR only */
+    virtual void setDebugMode(int mode) = 0;
+
+    /// Invalidate all geometry caches (call when scene structure changes)
+    /** Safe to call from any thread — actual backend cleanup is deferred to
+        the next render() call on the render thread. */
+    virtual void invalidateCache() = 0;
+
+    /// Flush invalidated caches (called automatically by render on render thread)
+    virtual void flushInvalidatedCache() = 0;
+  };
+
+} // namespace icl::viz3d
