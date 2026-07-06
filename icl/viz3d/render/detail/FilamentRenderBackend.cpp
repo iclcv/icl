@@ -141,7 +141,7 @@ namespace icl::viz3d {
     bool ssr = true, shadows = true, lighting = true, sky = false;
     int debugMode = 0;
     float lightScale = 3.0f, envIntensity = 0.15f, ssrThickness = 1.0f, ssrMaxDist = 200.0f;
-    int toneMap = 0;   // 0 linear, 1 filmic, 2 aces, 3 pbr-neutral
+    int toneMap = 1;   // 0 linear, 1 filmic, 2 aces, 3 pbr-neutral
     std::atomic<bool> envDirty{false}, gradingDirty{false};
 
     void rebuildColorGrading() {
@@ -537,7 +537,12 @@ namespace icl::viz3d {
     m_data->fcam = m_data->engine->createCamera(m_data->camEntity);
     m_data->view->setScene(m_data->fscene);
     m_data->view->setCamera(m_data->fcam);
-    m_data->rebuildColorGrading();   // tone mapping (default linear — matches GL)
+    // Dithering defaults to TEMPORAL, which only resolves under TAA (we have none)
+    // → it shows as a static diagonal cross-hatch on every surface. Turn it off and
+    // use cheap FXAA to smooth edges instead.
+    m_data->view->setDithering(fl::View::Dithering::NONE);
+    m_data->view->setAntiAliasing(fl::View::AntiAliasing::FXAA);
+    m_data->rebuildColorGrading();   // tone mapping (default filmic)
     m_data->lit = fl::Material::Builder()
         .package(LIT_PBR_FILAMAT, sizeof(LIT_PBR_FILAMAT)).build(*m_data->engine);
     m_data->unlit = fl::Material::Builder()
@@ -555,7 +560,7 @@ namespace icl::viz3d {
     addProperty("exposure", utils::prop::Range{.min = 0.1f, .max = 3.0f, .step = 0.05f}, 1.0f);
     addProperty("light intensity", utils::prop::Range{.min = 0.0f, .max = 8.0f, .step = 0.1f}, 3.0f);
     addProperty("env intensity", utils::prop::Range{.min = 0.0f, .max = 1.5f, .step = 0.02f}, 0.15f);
-    addProperty("tone mapping", utils::prop::Menu{"linear", "filmic", "aces", "pbr-neutral"}, "linear");
+    addProperty("tone mapping", utils::prop::Menu{"linear", "filmic", "aces", "pbr-neutral"}, "filmic");
     addProperty("ssr thickness", utils::prop::Range{.min = 0.01f, .max = 10.0f, .step = 0.1f}, 1.0f);
     addProperty("ssr max distance", utils::prop::Range{.min = 1.0f, .max = 2000.0f, .step = 10.0f}, 200.0f);
     registerCallback([this](const utils::Configurable::Property &p) {
