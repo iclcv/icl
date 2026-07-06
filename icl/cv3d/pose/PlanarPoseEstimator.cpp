@@ -53,20 +53,13 @@ namespace icl::cv3d {
     PlanarPoseEstimator::ReferenceFrame referenceFrame;
     PlanarPoseEstimator::PoseEstimationAlgorithm algorithm;
 
-    float samplingInterval;
-    int samplingSteps;
-    int samplingSubSteps;
-    float decreaseFactor;
-    float positionMultiplier;
-    bool timeMonitoring;
     bool poseCorrection;
 
     PlanarPoseEstimator::RANSACSpec ransacSpec;
   };
 
   static const std::string &get_all_algorithms(){
-    static const std::string s = ("HomographyBasedOnly,SimplexSampling,SamplingCoarse,SamplingMedium,SamplingFine,"
-                                  "SamplingCustom");
+    static const std::string s = "HomographyBasedOnly,Refined";
     return s;
   }
 
@@ -91,12 +84,6 @@ namespace icl::cv3d {
     data(new Data){
 
     data->algorithm = a;
-    data->samplingInterval = 0.6;
-    data->samplingSteps = 10;
-    data->samplingSubSteps = 1;
-    data->decreaseFactor = 0.6;
-    data->positionMultiplier = 50;
-    data->timeMonitoring = false;
     data->poseCorrection = false;
     data->referenceFrame = returnedPoseReferenceFrame;
     data->ransacSpec = spec;
@@ -105,32 +92,11 @@ namespace icl::cv3d {
       std::string pfx = i ? "RANSAC." : "";
       PoseEstimationAlgorithm ua = i ? spec.poseEstimationDuringSampling : a;
       addProperty(pfx+"algorithm", prop::menuFromCsv(get_all_algorithms()), algorithm_to_string(ua), "Specifies the used algorithm:\n"
-                  "HomographyBasedOnly: straight forward least-square based\n"
-                  "SamplingCoarse:  Use exhaustive sampling around the result\n"
-                  "                 of the linear result (using parameters for\n"
-                  "                 coarse sampling)\n"
-                  "SamplingMedium:  As above, but finer sampling (more\n"
-                  "                 accurate, but slower\n"
-                  "SamplingFine:    As abouve, but even finer (again more\n"
-                  "                 accurate and slower\n"
-                  "SamplingCustom:  Exhaustive sampling with custom parameters\n"
-                  "SimplexSampling: Use the Simplex-Search algorithm for\n"
-                  "                 optimization (usually, this provides the best\n"
-                  "                 result and is still much faster than exhaustive\n"
-                  "                 sampling");
+                  "HomographyBasedOnly: closed-form homography decomposition\n"
+                  "Refined:             HomographyBasedOnly seed, then refine over a\n"
+                  "                     local se(3) tangent (minimise reprojection\n"
+                  "                     error) via the framework NelderMead optimizer");
     }
-    addProperty("sampling interval",prop::Range{.min=-3.14f, .max=3.14f}, data->samplingInterval, "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
-                "Defines the angle search range for exhaustive search");
-    addProperty("sampling steps",utils::prop::Range{.min=1, .max=100000, .step=1, .ui=utils::prop::UI::Spinbox}, data->samplingSteps, "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
-                "Defines the number of coarse steps for exhaustive sampling.");
-    addProperty("sampling substeps",prop::Range{.min=1, .max=100, .ui=prop::UI::Spinbox}, data->samplingSubSteps, "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
-                "Defines the number of fine steps for exhaustive sampling.");
-    addProperty("decrease factor",prop::Range{.min=0.f, .max=1.f}, data->decreaseFactor, "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
-                "Defines the factor, which is used to reduce the step-width after\n"
-                "every coarse step");
-    addProperty("position multiplier",prop::Range{.min=1.f, .max=5000.f}, data->positionMultiplier, "(only used if the 'algorithm' property is set to 'SamplingCustom'\n"
-                "Defines the ratio between angle and position values");
-    addProperty("time monitoring",prop::Flag{}, data->timeMonitoring, "If set to true, benchmarking is enabled");
 #if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
     addProperty("pose correction",prop::Flag{}, data->poseCorrection, "If set to true, the pose is corrected using robust pose estimation algorithm");
 #endif
@@ -148,12 +114,6 @@ namespace icl::cv3d {
 
   void PlanarPoseEstimator::propertyChangedCallback(const Property &p){
     if(p.name == "algorithm") data->algorithm = string_to_algorithm(p.as<std::string>());
-    else if(p.name == "sampling interval") data->samplingInterval = p.as<float>();
-    else if(p.name == "sampling steps") data->samplingSteps = p.as<int>();
-    else if(p.name == "sampling substeps") data->samplingSubSteps = p.as<int>();
-    else if(p.name == "decrease factor") data->decreaseFactor = p.as<float>();
-    else if(p.name == "position multiplier") data->positionMultiplier = p.as<float>();
-    else if(p.name == "time monitoring") data->timeMonitoring = p.as<bool>();
     else if(p.name == "pose correction") data->poseCorrection = p.as<bool>();
     else if(p.name == "RANSAC.algorithm") data->ransacSpec.poseEstimationDuringSampling = string_to_algorithm(p.as<std::string>());
     else if(p.name == "RANSAC.enable") data->ransacSpec.useRANSAC = p.as<bool>();
@@ -191,59 +151,6 @@ namespace icl::cv3d {
     data->referenceFrame = f;
   }
 
-#if 0
-  static float compute_error(const Mat &P, const Mat &T, const Point32f *M, const Point32f *I, int n){
-    float error2 = 0;
-    for(int i=0;i<n;++i){
-      Vec tmp = homogenize( P * T * Vec(M[i].x,M[i].y,0,1) );
-      error2 += Point32f(tmp[0],tmp[1]).distanceTo(I[i]);
-    }
-    return error2;
-  }
-
-  static float compute_error(const Mat &P, const FixedColVector<float,6> &p, const Point32f *M, const Point32f *I, int n){
-    const Mat T = create_hom_4x4<float>(p[0],p[1],p[2],p[3],p[4],p[5]);
-    float error = 0;
-    for(int i=0;i<n;++i){
-      Vec tmp = homogenize( P * T * Vec(M[i].x,M[i].y,0,1) );
-      error += Point32f(tmp[0],tmp[1]).distanceTo(I[i]);
-    }
-    return error;
-  }
-#endif
-
-  static float compute_error_opt(const Mat &P,
-                                 const FixedColVector<float,3> &r,
-                                 const FixedColVector<float,3> &t,
-                                 const Point32f *_M,
-                                 const Point32f *_I,
-                                 int n){
-    const float &A = P(0, 0), &B = P(0, 1), &C = P(0, 2), &D = P(1, 1), &E = P(1, 2);
-    const float &rx = r[0], &ry = r[1], &rz = r[2], &tx = t[0], &ty=t[1], &tz = t[2];
-    const float cx = cos(rx), cy = cos(ry), cz = cos(rz), sx = sin(rx), sy = sin(ry), sz = sin(rz);
-    const float Rx0 = cy*cz,  Rx1 = sx*sy*cz+cx*sz, Rx2 = sx*sz-cx*sy*cz;
-    const float Ry0 = -cy*sz, Ry1 = cz*cx-sx*sy*sz, Ry2 = cx*sy*sz+sx*cz;
-    const float F = Rx0*A + Rx1*B + Rx2*C;
-    const float G = Ry0*A + Ry1*B + Ry2*C;
-    const float J = Rx1*D + Rx2*E;
-    const float K = Ry1*D + Ry2*E;
-    const float &N = Rx2;
-    const float &O = Ry2;
-    const float I = tx*A + ty*B + tz*C;
-    const float M = ty*D + tz*E;
-    const float &Q = tz;
-
-    float error = 0;
-    for(int i=0;i<n;++i){
-      const float &Mix = _M[i].x, Miy = _M[i].y, Iix = _I[i].x, Iiy = _I[i].y;
-      const float R = F*Mix + G*Miy + I;
-      const float S = J*Mix + K*Miy + M;
-      const float T_inv = 1.0/(N*Mix + O*Miy + Q);
-      error += sqrt( sqr(R*T_inv - Iix) + sqr(S*T_inv - Iiy) );
-    }
-    return error;
-  }
-
   typedef FixedColVector<float,6> Pose6D;
 
   // --- se(3) local pose refinement -------------------------------------------
@@ -279,73 +186,6 @@ namespace icl::cv3d {
       return e;
     }
   };
-
-
-#if 0
-  COARSE data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
-                                  1.0, 50, 10, 1, 0.6, data->timeMonitoring);
-
-  MEDIUM data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
-                                  1.2, 60, 20, 1, 0.65, data->timeMonitoring);
-#endif
-
-  static Mat optimize_error(const Mat &P, const Mat &T_initial, const Point32f *M, const Point32f *I, int n,
-                            float interval, const float posFactor, const int steps, const int substeps,
-                            const float decreaseFactor, bool timeMonitoring){
-
-    FixedColVector<float,3> r = extract_euler_angles(T_initial);
-    FixedColVector<float,3> t = T_initial.part<3,0,1,3>();
-    const float E_initial = compute_error_opt(P,r,t,M,I,n);
-    FixedColVector<float,3> rBest = r, tBest = t, tInit = t, rInit = r;;
-    float E_best = E_initial;
-
-    Time ttt = timeMonitoring ? Time::now() : Time();
-
-    FixedColVector<float,3> rCurr=r, tCurr=t;
-    for(int s=0;s<steps;++s){
-      for(int rx=-substeps;rx<=substeps;++rx){
-        rCurr[0] = r[0]+rx*interval;
-        for(int ry=-substeps;ry<=substeps;++ry){
-          rCurr[1] = r[1]+ry*interval;
-          for(int rz=-substeps;rz<=substeps;++rz){
-            rCurr[2] = r[2]+rz*interval;
-            float E_curr = compute_error_opt(P,rCurr,t,M,I,n);
-            if(E_curr < E_best){
-              E_best = E_curr;
-              rBest = rCurr;
-            }
-          }
-        }
-      }
-
-      //for(int tx=-substeps;tx<=substeps;++tx){
-      //  tCurr[0] = t[0] + tx*interval*posFactor;
-      //  for(int ty=-substeps;ty<=substeps;++ty){
-      //    tCurr[1] = t[1] + ty*interval*posFactor;
-      for(int tz=-substeps;tz<=substeps;++tz){
-        tCurr[2] = t[2] + tz*interval*posFactor;
-        float E_curr = compute_error_opt(P,r,tCurr,M,I,n);
-        if(E_curr < E_best){
-          E_best = E_curr;
-          tBest = tCurr;
-        }
-      }
-
-      interval *= decreaseFactor;
-      r = rBest;
-      t = tBest;
-    }
-
-
-    if(timeMonitoring){
-        std::cout << "dt: "<<(Time::now()-ttt).toMilliSecondsDouble()
-                  << "  ##" <<E_initial << "## --> ####" << E_best << "####"
-                  << "  Dt:" << (tBest-tInit).transp()
-                  << "  Dr:"  << (rBest-rInit).transp() << std::endl;
-    }
-
-    return create_hom_4x4<float>(rBest[0],rBest[1],rBest[2],tBest[0],tBest[1],tBest[2]);
-  }
 
 
 #if !(defined ICL_MSC_VER && ICL_MSC_VER < 1800)
@@ -681,12 +521,6 @@ namespace icl::cv3d {
   }
 #endif
 
-  //  void simplex_iteration_callback(const SimplexEngine<float,Pose6D>::Result &r){
-  //    if(r.iterations == 1 || !(r.iterations%100)){
-  //    std::cout << "iteration:" << r.iterations << "  error:" << r.fx << std::endl;
-  //  }
-  //}
-
   static std::pair<int,float> find_inliers_and_get_error(const Mat &T, const Camera &cam,
                                                          int N, const Point32f *mpts,
                                                          const Point32f *ipts,
@@ -980,38 +814,14 @@ namespace icl::cv3d {
 #endif
 
 
-    if(a != HomographyBasedOnly){
-      switch(a){
-        case SamplingCustom:
-          data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
-                                   data->samplingInterval, data->positionMultiplier, data->samplingSteps, data->samplingSubSteps,
-                                   data->decreaseFactor,data->timeMonitoring);
-          break;
-        case SamplingCoarse:
-          data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
-                                   1.0, 50, 10, 1, 0.6, data->timeMonitoring);
-          break;
-        case SamplingMedium:
-          data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
-                                   0.5, 50, 50, 1, 0.6, data->timeMonitoring);
-          break;
-        case SamplingFine:
-          data->T = optimize_error(cam.getProjectionMatrix(), data->T, modelPoints, imagePoints, n,
-                                   0.3, 50, 100, 2, 0.6, data->timeMonitoring);
-          break;
-        case SimplexSampling:{
-          // Refine the closed-form seed by minimising the reprojection error over a
-          // LOCAL se(3) tangent δ=(ω,v) (start at 0), via the framework Optimizer<V>.
-          const Mat Tseed = data->T;
-          Se3ReprojError err{cam.getProjectionMatrix(), Tseed, modelPoints, imagePoints, n};
-          NelderMeadOptimizer<Pose6D> opt(400, 1e-8, 1e-8);
-          const auto res = opt.minimize([&err](const Pose6D &d){ return err.f(d); }, Pose6D(0.f));
-          data->T = deltaTransform(res.params) * Tseed;
-          break;
-        }
-        default:
-          throw ICLException("Error in " + str(__FUNCTION__) + ": invalind pose estimation algorithm");
-      }
+    if(a == Refined){
+      // Refine the closed-form seed by minimising the reprojection error over a
+      // LOCAL se(3) tangent δ=(ω,v) (start at 0), via the framework Optimizer<V>.
+      const Mat Tseed = data->T;
+      Se3ReprojError err{cam.getProjectionMatrix(), Tseed, modelPoints, imagePoints, n};
+      NelderMeadOptimizer<Pose6D> opt(400, 1e-8, 1e-8);
+      const auto res = opt.minimize([&err](const Pose6D &d){ return err.f(d); }, Pose6D(0.f));
+      data->T = deltaTransform(res.params) * Tseed;
     }
 
 

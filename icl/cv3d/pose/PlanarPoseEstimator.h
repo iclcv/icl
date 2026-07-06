@@ -93,14 +93,10 @@ namespace icl::cv3d {
     };
 
     /// Algorithm, that is used for pose-estimation
-    /** TODO: describe the algorithms*/
     enum PoseEstimationAlgorithm{
-      HomographyBasedOnly, //!< uses the above described algorithm (\ref ALG) only
-      SimplexSampling,     //!< performs simplex sampling for optimization (very fast and very accurate!
-      SamplingCoarse,      //!< use some predefined sampling parameters for brute force coase sampling (fast)
-      SamplingMedium,      //!< use some predefined sampling parameters for brute force medium sampling (average speed)
-      SamplingFine,        //!< use some predefined sampling parameters for brute force fine sampling (slow)
-      SamplingCustom,      //!< uses custom properties to define sampling parameters for brute force sampling
+      HomographyBasedOnly, //!< closed-form homography decomposition only (\ref ALG) — the default
+      Refined,             //!< HomographyBasedOnly seed, then refine over a local se(3) tangent
+                           //!< (minimise reprojection error) via the framework Optimizer<V> (NelderMead)
     };
 
     /// Parameter struct that is used to specify optional RANSAC parameters for the internal pose estimation
@@ -127,11 +123,11 @@ namespace icl::cv3d {
 
     /// Default constructor with given reference-frame for the returned poses
     /** The default algorithm is HomographyBasedOnly — a closed-form homography
-        decomposition that recovers exact synthetic poses to ~1e-4 px. The
-        SimplexSampling / brute-force refinement modes are opt-in and currently
-        DEGRADE the closed-form seed (10-34 px, see the SimplexEngine TODO), so
-        they are not the default. For the two-solution (flip) planar pose use
-        getPoses() (IPPE).
+        decomposition that recovers exact synthetic poses to ~1e-4 px. Refined
+        additionally minimises the reprojection error over a local se(3) tangent
+        of that seed (framework NelderMead); it improves noisy data and is exact
+        on clean data. For the two-solution (flip) planar pose use getPoses()
+        (IPPE).
 
         @param spec Optionally the PlanarPoseEstimator can be set up to use RANSAC to
                     automatically filter out invalid points by means for stochastic sampling.

@@ -14,7 +14,7 @@ namespace icl{
     struct MarkerGridPoseEstimator::Data{
       PlanarPoseEstimator poseEst;
       Data():poseEst(PlanarPoseEstimator::worldFrame,
-                     PlanarPoseEstimator::SimplexSampling,
+                     PlanarPoseEstimator::Refined,
                      PlanarPoseEstimator::RANSACSpec(true)){
 
       }

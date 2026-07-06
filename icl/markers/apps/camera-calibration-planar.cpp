@@ -96,7 +96,7 @@ struct View{
   std::shared_ptr<viz3d::CoordinateFrameNode> cs;
   std::vector<Camera> capturedFrames;
   View():cbPoseEst(PlanarPoseEstimator::worldFrame,
-                   PlanarPoseEstimator::SimplexSampling){}
+                   PlanarPoseEstimator::Refined){}
 };
 typedef std::shared_ptr<View> ViewPtr;
 
