@@ -64,7 +64,10 @@ cleanup (detail/registry, seed deletion). See [[project_icp_consolidation]].
 Branch `further-restructuring-and-cleanup`; **nothing pushed** (SSH blocked in-sandbox — CE pushes).
 Candidate directions:
 
-1. **Filament rendering backend** (big, offset) — rework viz3d/render onto Google Filament.
+1. **Filament rendering backend** (big) — **PLANNED + de-risked (S100); ready to implement in a
+   FRESH session.** Full plan in **`filament-plan.md`**. Prebuilt Filament (`3rdparty/filament/`,
+   v1.72.1 arm64) links clean + runs headless Metal in-sandbox (no self-build); offscreen
+   render+readback verified here (golden-test rig viable). Start at P0 (meson gate + spike).
    See [[project_filament_backend]].
 2. **Resume paused arcs** — `icl-cam-calib-intrinsic` (auto-capture quality gate; see
    `intrinsic-calib-next-steps.md`) or the camera-calibration redesign / Phase C.

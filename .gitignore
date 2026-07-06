@@ -22,6 +22,7 @@ continue.md
 
 # dependency clones (not submodules)
 3rdparty/SSR/
+3rdparty/filament/
 
 # app-generated config dumps
 defaults.json
