@@ -35,14 +35,15 @@ namespace icl::viz3d {
     /// render() is a no-op and readColor() returns false — callers fall back.
     bool isValid() const;
 
-    // --- Headless target control (Filament owns the surface) ---
+    // --- Target model (Filament owns the surface → produces an image) ---
+    bool producesImage() const override { return true; }
     /// Set the render-target size in pixels. Recreates the swap chain lazily.
-    void setTargetSize(const utils::Size &size);
+    void setTargetSize(const utils::Size &size) override;
     utils::Size getTargetSize() const;
 
     /// Copy the last rendered colour frame (3-channel RGB) into \a dst. Returns
     /// false if nothing has been rendered yet or the backend is invalid.
-    bool readColor(core::Img8u &dst) const;
+    bool readColor(core::Img8u &dst) const override;
 
     // --- RenderBackend interface ---
     void render(const std::vector<std::shared_ptr<Node>> &nodes,

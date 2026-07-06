@@ -5,6 +5,8 @@
 #pragma once
 
 #include <icl/viz3d/nodes/Node.h>
+#include <icl/core/Img.h>
+#include <icl/utils/Size.h>
 #include <memory>
 #include <vector>
 
@@ -29,6 +31,21 @@ namespace icl::viz3d {
     virtual void render(const std::vector<std::shared_ptr<Node>> &nodes,
                         const Mat &viewMatrix,
                         const Mat &projectionMatrix) = 0;
+
+    // --- Target model (the seam is target-agnostic) ---
+    /// Whether render() produces an offscreen colour image that the Scene must
+    /// composite, rather than drawing straight into the current framebuffer.
+    /** The GL backend draws in-place (returns false); Filament renders to its own
+        target and hands the frame back via readColor() (returns true). */
+    virtual bool producesImage() const { return false; }
+
+    /// For image-producing backends: set the render-target size in pixels.
+    /** No-op for in-place backends. */
+    virtual void setTargetSize(const utils::Size &) {}
+
+    /// For image-producing backends: copy the last rendered frame (3-ch RGB) into
+    /// \a dst. Returns false for in-place backends (nothing to read back).
+    virtual bool readColor(core::Img8u &) const { return false; }
 
     /// Set exposure for tone mapping
     virtual void setExposure(float exposure) = 0;

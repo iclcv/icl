@@ -14,6 +14,9 @@
 #include <icl/viz3d/pointcloud/PointCloud.h>
 #include <icl/viz3d/render/BVH.h>
 #include <icl/viz3d/render/GLRenderBackend.h>
+#ifdef ICL_HAVE_FILAMENT
+#include <icl/viz3d/render/detail/FilamentRenderBackend.h>
+#endif
 #include <icl/cv3d/Camera.h>
 #include <icl/cv3d/ViewRay.h>
 #include <icl/viz3d/render/Material.h>
@@ -36,6 +39,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <cstdlib>
 
 namespace icl::viz3d {
 
@@ -80,13 +84,102 @@ namespace icl::viz3d {
     };
   }  // namespace
 
+  // ---- Render-backend selection + onscreen compositing ----
+
+  namespace {
+    // Filament is the default real-time backend when built + the Metal engine
+    // initialises; the GL backend is the legacy fallback (also forced by
+    // ICL_VIZ3D_BACKEND=gl, or used when Filament is unavailable).
+    std::unique_ptr<RenderBackend> makeRenderBackend() {
+      const char *env = std::getenv("ICL_VIZ3D_BACKEND");
+      const bool forceGL = env && std::string(env) == "gl";
+#ifdef ICL_HAVE_FILAMENT
+      if (!forceGL) {
+        auto fb = std::make_unique<FilamentRenderBackend>();
+        if (fb->isValid()) return fb;   // upcasts to unique_ptr<RenderBackend>
+      }
+#endif
+      (void)forceGL;
+      return std::make_unique<GLRenderBackend>();
+    }
+
+#ifdef ICL_HAVE_OPENGL
+    // Composites an image-producing backend's frame (e.g. Filament's Metal
+    // render) into the current GL framebuffer over a viewport rect — a textured
+    // fullscreen quad, no depth. This is the interim "A1" transport (GPU→CPU→GPU
+    // readback + upload); the zero-copy shared-texture path is a later step.
+    // The 2D annotation layer (ICLDrawWidget) still paints on top afterwards, so
+    // the existing 2D pipeline is untouched.
+    struct GLBlitter {
+      unsigned int prog = 0, vao = 0, tex = 0;
+      std::vector<unsigned char> rgb;   // planar→interleaved upload scratch
+
+      void ensureGL() {
+        if (prog) return;
+        auto compile = [](GLenum t, const char *src) {
+          GLuint s = glCreateShader(t);
+          glShaderSource(s, 1, &src, nullptr); glCompileShader(s); return s;
+        };
+        const char *vs =
+            "#version 330 core\n"
+            "out vec2 uv;\n"
+            "void main(){ vec2 q = vec2((gl_VertexID & 1) * 2 - 1, (gl_VertexID >> 1) * 2 - 1);\n"
+            "  uv = vec2((q.x + 1.0) * 0.5, (1.0 - q.y) * 0.5);\n"   // row 0 = image top
+            "  gl_Position = vec4(q, 0.0, 1.0); }\n";
+        const char *fs =
+            "#version 330 core\n"
+            "in vec2 uv; out vec4 c; uniform sampler2D img;\n"
+            "void main(){ c = vec4(texture(img, uv).rgb, 1.0); }\n";
+        GLuint v = compile(GL_VERTEX_SHADER, vs), f = compile(GL_FRAGMENT_SHADER, fs);
+        prog = glCreateProgram();
+        glAttachShader(prog, v); glAttachShader(prog, f); glLinkProgram(prog);
+        glDeleteShader(v); glDeleteShader(f);
+        glGenVertexArrays(1, &vao);
+        glGenTextures(1, &tex);
+      }
+
+      void blit(const core::Img8u &img, int x, int y, int w, int h) {
+        const int iw = img.getWidth(), ih = img.getHeight();
+        if (iw <= 0 || ih <= 0) return;
+        ensureGL();
+        rgb.resize(size_t(iw) * ih * 3);
+        const icl8u *rp = img.begin(0), *gp = img.begin(1), *bp = img.begin(2);
+        for (size_t i = 0, n = size_t(iw) * ih; i < n; ++i) {
+          rgb[i * 3] = rp[i]; rgb[i * 3 + 1] = gp[i]; rgb[i * 3 + 2] = bp[i];
+        }
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, iw, ih, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb.data());
+
+        const GLboolean depthWas = glIsEnabled(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // never wireframe the blit quad
+        glViewport(x, y, w, h);
+        glUseProgram(prog);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glUniform1i(glGetUniformLocation(prog, "img"), 0);
+        glBindVertexArray(vao);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glBindVertexArray(0);
+        glUseProgram(0);
+        if (depthWas) glEnable(GL_DEPTH_TEST);
+      }
+    };
+#endif
+  }  // namespace
+
   // ---- Data ----
 
   struct Scene::Data {
     std::vector<std::shared_ptr<Node>> objects;
     std::vector<std::shared_ptr<LightNode>> lights;  // also in objects, tracked for fast access
     std::vector<cv3d::Camera> cameras;
-    std::unique_ptr<RenderBackend> renderer = std::make_unique<GLRenderBackend>();
+    std::unique_ptr<RenderBackend> renderer = makeRenderBackend();
     std::vector<std::shared_ptr<SceneGLCallback>> callbacks;
     std::vector<std::unique_ptr<SceneMouseHandler>> mouseHandlers;
     // "show cameras" overlay: one lightweight gizmo per camera (3 axis lines +
@@ -106,6 +199,8 @@ namespace icl::viz3d {
     // acceptable for a process-lifetime resource (legacy cv3d::Scene did the same).
     unsigned int captureFBO = 0, captureColorRBO = 0, captureDepthRBO = 0;
     utils::Size captureSize{0, 0};
+    // Composites an image-producing backend (Filament) into the widget FBO.
+    std::unique_ptr<GLBlitter> blitter;
 #endif
   };
 
@@ -331,8 +426,10 @@ namespace icl::viz3d {
     glClearColor(bg[0]/255.f, bg[1]/255.f, bg[2]/255.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Wireframe is a GL-only mode; only enable it for the in-place GL backend.
     bool wireframe = prop("wireframe").value;
-    if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    if (wireframe && !m_data->renderer->producesImage())
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     m_data->renderer->setLightingEnabled((bool)prop("enable lighting").value);
 
@@ -366,20 +463,54 @@ namespace icl::viz3d {
       vpH = (int)(ww / camAR);
       vpY += (wh - vpH) / 2;
     }
-    glViewport(vpX, vpY, vpW, vpH);
-
     Mat viewGL = cam.getCSTransformationMatrixGL();
     Mat projGL = cam.getProjectionMatrixGL();
 
-    m_data->renderer->render(nodesToRender(cameraIndex), viewGL, projGL);
+    if (m_data->renderer->producesImage()) {
+      // Filament (or any image-producing backend): render at the letterbox size,
+      // then composite the frame into the widget FBO. The 2D annotation layer
+      // (ICLDrawWidget) still paints on top afterwards. Interim A1 transport
+      // (readback + upload) — the zero-copy shared-texture path is a later step.
+      m_data->renderer->setTargetSize({vpW, vpH});
+      m_data->renderer->render(nodesToRender(cameraIndex), viewGL, projGL);
+      core::Img8u frame;
+      if (m_data->renderer->readColor(frame)) {
+        if (!m_data->blitter) m_data->blitter = std::make_unique<GLBlitter>();
+        m_data->blitter->blit(frame, vpX, vpY, vpW, vpH);
+      }
+    } else {
+      glViewport(vpX, vpY, vpW, vpH);
+      m_data->renderer->render(nodesToRender(cameraIndex), viewGL, projGL);
+    }
 
     // Restore state
-    if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (wireframe && !m_data->renderer->producesImage())
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glViewport(widgetVP[0], widgetVP[1], widgetVP[2], widgetVP[3]);
   }
 
   BVH::ImageResult Scene::renderToImage(int cameraIndex, BVH::DepthMode mode) {
     BVH::ImageResult result;
+
+    // Image-producing backend (Filament): render straight to an image — no GL
+    // context needed, so this works headless. Depth readback is a follow-up, so
+    // the returned depth stays empty for now (colour parity first).
+    if (m_data->renderer->producesImage()) {
+      std::scoped_lock guard(m_data->mutex);
+      if (cameraIndex < 0 || cameraIndex >= (int)m_data->cameras.size()) return result;
+      const cv3d::Camera &cam = m_data->cameras[cameraIndex];
+      const utils::Size s = cam.getResolution();
+      if (s.width <= 0 || s.height <= 0) return result;
+      m_data->renderer->setSSREnabled(false);
+      m_data->renderer->setLightingEnabled((bool)prop("enable lighting").value);
+      m_data->renderer->setTargetSize(s);
+      m_data->renderer->render(nodesToRender(cameraIndex),
+                              cam.getCSTransformationMatrixGL(),
+                              cam.getProjectionMatrixGL());
+      m_data->renderer->readColor(result.image);
+      return result;
+    }
+
 #ifdef ICL_HAVE_OPENGL
     std::scoped_lock guard(m_data->mutex);
     if (cameraIndex < 0 || cameraIndex >= (int)m_data->cameras.size()) return result;

@@ -331,6 +331,14 @@ if filament_found
     implicit_include_directories: false,
     install: false,
   )
+
+  # Scene-level wiring test: Scene defaults to Filament, renderToImage headless.
+  executable('icl-filament-scene-test',
+    files('render/detail/filament_scene_test.cpp'),
+    dependencies: [icl_viz3d_dep],
+    implicit_include_directories: false,
+    install: false,
+  )
 endif
 
 install_headers(viz3d_headers,
