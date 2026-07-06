@@ -667,10 +667,17 @@ namespace icl::cv3d {
   //}
 
   std::vector<Pose6D> create_initial_simplex(const FixedColVector<float,3> &r, const FixedColVector<float,3> &t){
-    Pose6D start = r%t;
-    std::vector<Pose6D> simplex(7,start);
+    Pose6D start = r%t;                       // [rx,ry,rz, tx,ty,tz]
+    std::vector<Pose6D> simplex(7,start);     // N+1 vertices for the 6D search
+    // ADDITIVE, dimension-appropriate perturbation. A multiplicative step
+    // collapses dimensions whose seed component is ~0 (e.g. no rotation) and
+    // mis-scales radians against millimetres, which made Nelder-Mead diverge
+    // from the (near-exact) homography seed. Rotation steps are in radians,
+    // translation steps in the model's length unit (mm).
+    const float rotStep = 0.05f;              // ~3 deg
+    const float transStep = 2.0f;             // mm
     for(int i=0;i<6;++i){
-      simplex[i][i] *= (i>3 ? 1.2 : 1.5);
+      simplex[i][i] += (i < 3 ? rotStep : transStep);
     }
     return simplex;
   }
