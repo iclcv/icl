@@ -270,13 +270,32 @@ icl_viz3d_dep = declare_dependency(
   dependencies: [icl_qt_dep, icl_cv3d_dep, icl_io_dep],
 )
 
-# Filament P0 link-proof + headless render/readback golden rig (gated).
-# Standalone target so the link recipe is exercised by the real build regardless
-# of -Dapps. Does not touch ICL types yet (that is the P2 FilamentRenderBackend).
+# Filament gated spikes/golden rigs (standalone targets so the link recipe is
+# exercised by the real build regardless of -Dapps). P0 does not touch ICL types;
+# the P2 parity rig links cv3d for the calibrated Camera. Both run headless.
 if filament_found
   executable('icl-filament-smoke',
     files('render/detail/filament_smoke.cpp'),
     dependencies: [filament_dep],
+    implicit_include_directories: false,
+    install: false,
+  )
+
+  # Compile the unlit material to an embeddable C header via matc (version-locked
+  # to the runtime lib — matc ships alongside the archives in 3rdparty/filament).
+  matc = find_program(meson.project_source_root() / '3rdparty/filament/bin/matc')
+  unlit_solid_filamat_h = custom_target('unlit_solid_filamat',
+    input: files('render/detail/materials/unlit_solid.mat'),
+    output: 'unlit_solid.filamat.h',
+    command: [matc, '-a', 'metal', '-p', 'desktop', '-f', 'header',
+              '-o', '@OUTPUT@', '@INPUT@'],
+  )
+
+  # P2 projection-parity gate — the linchpin (see filament-plan.md).
+  executable('icl-filament-parity',
+    files('render/detail/filament_projection_parity.cpp'), unlit_solid_filamat_h,
+    dependencies: [filament_dep, icl_cv3d_dep],
+    include_directories: include_directories('.'),  # for the generated .filamat.h
     implicit_include_directories: false,
     install: false,
   )

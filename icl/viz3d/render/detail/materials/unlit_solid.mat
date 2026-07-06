@@ -1,0 +1,16 @@
+// Minimal unlit solid-colour material for the Filament backend.
+// Used by lines/points and the projection-parity golden rig (P2).
+material {
+    name : unlitSolid,
+    shadingModel : unlit,
+    culling : none,
+    parameters : [
+        { type : float3, name : color }
+    ]
+}
+fragment {
+    void material(inout MaterialInputs material) {
+        prepareMaterial(material);
+        material.baseColor = vec4(materialParams.color, 1.0);
+    }
+}
