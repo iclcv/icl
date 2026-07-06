@@ -256,13 +256,19 @@ if filament_found
     command: [matc, '-a', 'metal', '-p', 'desktop', '-f', 'header',
               '-o', '@OUTPUT@', '@INPUT@'],
   )
-  # Listing the generated header as a source makes meson add its build dir
+  lit_pbr_filamat_h = custom_target('lit_pbr_filamat',
+    input: files('render/detail/materials/lit_pbr.mat'),
+    output: 'lit_pbr.filamat.h',
+    command: [matc, '-a', 'metal', '-p', 'desktop', '-f', 'header',
+              '-o', '@OUTPUT@', '@INPUT@'],
+  )
+  # Listing the generated headers as sources makes meson add their build dir
   # (builddir/icl/viz3d) to the include path — enough for FilamentRenderBackend.cpp
-  # to #include "unlit_solid.filamat.h". Do NOT add include_directories('.') here:
-  # that also injects the *source* dir (../icl/viz3d), and on the case-insensitive
-  # macOS FS Cycles' `#include "scene/scene.h"` would then resolve to
-  # icl/viz3d/scene/Scene.h and break the Cycles build.
-  viz3d_sources += unlit_solid_filamat_h
+  # to #include them. Do NOT add include_directories('.') here: that also injects
+  # the *source* dir (../icl/viz3d), and on the case-insensitive macOS FS Cycles'
+  # `#include "scene/scene.h"` would then resolve to icl/viz3d/scene/Scene.h and
+  # break the Cycles build.
+  viz3d_sources += [unlit_solid_filamat_h, lit_pbr_filamat_h]
 endif
 
 # Include dirs for 3rdparty single-header libs used by Loader.cpp

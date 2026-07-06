@@ -42,10 +42,13 @@ int main() {
   cam.setRenderParams(rp);
   cam.setPrincipalPointOffset(340.0f, 250.0f);
 
-  // A red cube at the origin, edge 3 (world units), camera at (0,0,10).
+  // A light-grey cube at the origin, edge 3, rotated so three faces show with
+  // different normals → different shading (proves lit PBR + normals + lights).
   auto cube = std::make_shared<viz3d::CuboidNode>(0.f, 0.f, 0.f, 3.f);
+  cube->rotate(0.5f, 0.7f, 0.0f);
   auto mat = std::make_shared<viz3d::Material>();
-  mat->baseColor = {1.0f, 0.0f, 0.0f, 1.0f};
+  mat->baseColor = {0.8f, 0.8f, 0.8f, 1.0f};
+  mat->roughness = 0.5f;
   cube->setMaterial(mat);
   std::vector<std::shared_ptr<viz3d::Node>> nodes{cube};
 
@@ -57,28 +60,45 @@ int main() {
     return 3;
   }
 
-  // Find red pixels (the cube), compute count + centroid.
+  // Lit pixels = non-background (background is black). Count + centroid + the
+  // per-pixel brightness distribution over the cube.
   core::Channel8u r = img[0], g = img[1], b = img[2];
-  long n = 0; double sx = 0, sy = 0;
+  long n = 0; double sx = 0, sy = 0, sB = 0, sB2 = 0;
+  int bMin = 255, bMax = 0;
   for (int y = 0; y < H; ++y)
-    for (int x = 0; x < W; ++x)
-      if (r(x, y) > 100 && g(x, y) < 80 && b(x, y) < 80) { ++n; sx += x; sy += y; }
+    for (int x = 0; x < W; ++x) {
+      int lum = (r(x, y) + g(x, y) + b(x, y)) / 3;
+      if (lum > 20) {   // above background
+        ++n; sx += x; sy += y; sB += lum; sB2 += double(lum) * lum;
+        bMin = std::min(bMin, lum); bMax = std::max(bMax, lum);
+      }
+    }
 
   utils::Point32f projCentre = cam.project(math::Vec4(0, 0, 0, 1));
-  std::printf("backend-test: %ld red px, centroid=(%.1f,%.1f), cam.project(centre)=(%.1f,%.1f)\n",
-              n, n ? sx / n : -1, n ? sy / n : -1, projCentre.x, projCentre.y);
+  double meanB = n ? sB / n : 0;
+  double stdB = n ? std::sqrt(std::max(0.0, sB2 / n - meanB * meanB)) : 0;
+  std::printf("backend-test: %ld lit px, centroid=(%.1f,%.1f) vs project=(%.1f,%.1f); "
+              "lum mean=%.0f std=%.0f range=[%d,%d]\n",
+              n, n ? sx / n : -1, n ? sy / n : -1, projCentre.x, projCentre.y,
+              meanB, stdB, bMin, bMax);
 
-  if (n < 500) {   // a 3-unit cube at depth 10 with f=600 → ~180px box → ~30k px
+  if (n < 5000) {
     std::fprintf(stderr, "backend-test: FAIL — too few cube pixels (%ld)\n", n);
     return 1;
   }
   float cx = sx / n, cy = sy / n;
   float err = std::sqrt((cx - projCentre.x) * (cx - projCentre.x) +
                         (cy - projCentre.y) * (cy - projCentre.y));
-  if (err > 3.0f) {   // centroid of a symmetric cube face ≈ projected centre
+  if (err > 8.0f) {   // rotated cube centroid is near (not exactly on) the centre
     std::fprintf(stderr, "backend-test: FAIL — centroid off by %.1fpx\n", err);
     return 1;
   }
-  std::printf("backend-test: PASS — cube renders, centroid within %.1fpx of projection\n", err);
+  // Faces at different angles must differ in brightness (lit shading, not flat fill).
+  if (bMax - bMin < 30) {
+    std::fprintf(stderr, "backend-test: FAIL — no shading gradient (range %d)\n", bMax - bMin);
+    return 1;
+  }
+  std::printf("backend-test: PASS — lit cube, faces shaded (range %d), centroid %.1fpx off\n",
+              bMax - bMin, err);
   return 0;
 }

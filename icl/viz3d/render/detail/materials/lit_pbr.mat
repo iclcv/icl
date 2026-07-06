@@ -1,0 +1,22 @@
+// Lit PBR material for the Filament backend (solid meshes).
+// Maps ICL viz3d::Material (baseColor / metallic / roughness / emissive).
+material {
+    name : litPBR,
+    shadingModel : lit,
+    requires : [ tangents ],
+    parameters : [
+        { type : float3, name : baseColor },
+        { type : float,  name : metallic },
+        { type : float,  name : roughness },
+        { type : float3, name : emissive }
+    ]
+}
+fragment {
+    void material(inout MaterialInputs material) {
+        prepareMaterial(material);
+        material.baseColor = vec4(materialParams.baseColor, 1.0);
+        material.metallic = materialParams.metallic;
+        material.roughness = materialParams.roughness;
+        material.emissive = vec4(materialParams.emissive, 0.0);
+    }
+}
