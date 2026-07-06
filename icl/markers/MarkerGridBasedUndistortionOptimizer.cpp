@@ -6,12 +6,12 @@
 #include <icl/markers/MarkerGridEvaluater.h>
 #include <memory>
 #include <icl/markers/InverseUndistortionProcessor.h>
-#include <icl/math/fit/SimplexOptimizer.h>
+#include <icl/math/fit/NelderMeadOptimizer.h>
 #include <icl/utils/Random.h>
 
 
 namespace icl{
-  typedef math::SimplexOptimizer<float,std::vector<float> > Simplex;
+  typedef math::NelderMeadOptimizer<std::vector<float> > NM;
 
   namespace markers{
     using namespace utils;
@@ -217,12 +217,6 @@ namespace icl{
               if(str(e) == "nan") return 1000;*/
           return e;
         }
-        static void iteration_callback(const Simplex::Result &r){
-          if(!(r.iterations%100)){
-            SHOW(r.fx);
-            SHOW(r.iterations);
-          }
-        }
         static std::vector<float> gen(){
           static utils::GRand r(0,0.1);
           std::vector<float> f(7);
@@ -237,10 +231,10 @@ namespace icl{
     std::vector<float> MarkerGridBasedUndistortionOptimizer::optimizeAutoSimplex(const utils::Size &imageSize){
       //      utils::randomSeed();
       SimplexErrorFunction e(this, imageSize.width*0.5, imageSize.height*0.5);
-      Simplex simplex([&e](const std::vector<float> &p){ return e.error(p); }, 7, 500);
-      simplex.setIterationCallback(&SimplexErrorFunction::iteration_callback);
-      const Simplex::Result &r =  simplex.optimize(&SimplexErrorFunction::gen, 20);
-      std::vector<float> rvec = r.x;
+      NM opt(500);
+      const NM::Result r = opt.minimizeRestarts([&e](const std::vector<float> &p){ return e.error(p); },
+                                                &SimplexErrorFunction::gen, 20);
+      std::vector<float> rvec = r.params;
       rvec[5] = 10*rvec[5] + imageSize.width;
       rvec[6] = 10*rvec[6] + imageSize.height;
       rvec.push_back(imageSize.width*0.5);

@@ -24,6 +24,7 @@ namespace icl::math {
     public:
     using Scalar    = typename VectorTraits<V>::Scalar;
     using Objective = std::function<Scalar(const V&)>;
+    using InitGen   = std::function<V()>;   //!< produces a (random) start point
 
     /// optimization outcome
     struct Result {
@@ -37,6 +38,18 @@ namespace icl::math {
 
     /// minimise f starting from init
     virtual Result minimize(const Objective &f, const V &init) = 0;
+
+    /// Multi-start minimisation: run minimize() from nStarts independent starts
+    /// (each drawn from initGen) and keep the best — the standard remedy for
+    /// local minima. Generic over any concrete Optimizer (built on minimize()).
+    Result minimizeRestarts(const Objective &f, const InitGen &initGen, int nStarts){
+      Result best{}; bool have = false;
+      for(int i=0;i<nStarts;++i){
+        const Result r = minimize(f, initGen());
+        if(!have || r.error < best.error){ best = r; have = true; }
+      }
+      return best;
+    }
   };
 
 } // namespace icl::math

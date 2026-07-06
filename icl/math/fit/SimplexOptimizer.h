@@ -20,8 +20,16 @@ namespace icl::math {
   };
 
 
-  /// Template based implementation for the Downhill Simplex Optimiztation method
-  /** \section __ALGO__ Downhill Simplex Optimiztation Algorithm
+  /// Downhill-simplex (Nelder-Mead) ENGINE. Prefer NelderMeadOptimizer.
+  /** \warning This is the low-level engine behind icl::math::NelderMeadOptimizer,
+      which is the public Optimizer<V> face — use that in application/library code
+      (it composes with the fit framework: multi-start via minimizeRestarts(),
+      Configurable tunables, interchangeable with CMAESOptimizer). Reach for this
+      engine directly only when you need its fine-grained controls (an explicit
+      initial simplex, per-iteration callbacks, or stepping the simplex for
+      visualisation — see the simplex-2D/3D demos).
+
+      \section __ALGO__ Downhill Simplex Optimiztation Algorithm
       Here, we give a very short pseudo code overview
       <pre>
       input: start position s (in R^D),

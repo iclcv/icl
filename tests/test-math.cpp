@@ -1586,6 +1586,27 @@ ICL_REGISTER_TEST("math.fit.nelder_mead_quadratic",
   ICL_TEST_TRUE(r0.error < 1e-6);
 }
 
+// Generic Optimizer::minimizeRestarts (multi-start, base-class helper): a bumpy
+// 1D objective with a deep global well and shallow local wells — a single start
+// can land in a local minimum; multi-start from random seeds finds the global.
+ICL_REGISTER_TEST("math.fit.optimizer_multistart",
+                  "Optimizer::minimizeRestarts escapes local minima to the global one")
+{
+  using V = std::vector<double>;
+  // unique global min at x=2 (value 0, from the (x-2)^2 factor); the sin ripple
+  // adds local minima elsewhere that a single start can get stuck in.
+  auto f = [](const V &p)->double{
+    const double x = p[0];
+    return (x-2)*(x-2) * (1.0 + 0.5*std::sin(5.0*x)*std::sin(5.0*x));
+  };
+  NelderMeadOptimizer<V> opt(2000, 1e-12, 1e-12);
+  int seed = 0;
+  auto gen = [&seed]()->V{ seed += 37; return V{ double((seed % 20) - 10) }; };  // deterministic spread [-10,10]
+  const auto r = opt.minimizeRestarts(f, gen, 30);
+  ICL_TEST_NEAR(r.params[0], 2.0, 1e-2);
+  ICL_TEST_TRUE(r.error < 1e-3);
+}
+
 // Returning eigen()/svd() overloads with structured bindings (ergonomic sugar over
 // the out-parameter forms; same DESCENDING eigen contract).
 ICL_REGISTER_TEST("math.dyn.eigen_svd_returning_overloads",
