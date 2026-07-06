@@ -4,6 +4,29 @@
 
 ## Next Step
 
+### ▶ NEXT SESSION — pick one (S99 recap below)
+S99 was a long cv3d/pose + math/fit cleanup arc (~25 commits, suite **1074→1084**, all green).
+Branch `further-restructuring-and-cleanup`; **nothing pushed** (SSH blocked in-sandbox — CE pushes).
+Candidate directions, smallest-first:
+
+1. **PlanarPoseEstimator enum collapse** (small, in-theme). The se(3) `SimplexSampling` refinement
+   is done; now collapse the `PoseEstimationAlgorithm` enum to `HomographyBasedOnly` vs
+   `Refined(Optimizer)` and fold/drop the bespoke brute-force `Sampling*` modes
+   (`optimize_error`/`compute_error_opt`). See [[project_pose_estimation_bugs]].
+2. **cv3d/pose framework steps 2 & 4** (the "do 1-4" arc; 1 & 3 done). Step 2: give
+   `RigidTransformEstimator` a `ModelFitter<PointPair,Mat4>` face (additive, quick). Step 4:
+   `RansacPlaneFitter` → `ModelFitter`/`RobustFitter` (biggest — has a tuned GPU path).
+   See [[project_icp_consolidation]] / camera-calibration-redesign.
+3. **ICP Phase 2** — OpenCL NN backend (mine the preserved `icp/IterativeClosestPoint.*`) +
+   Vec8 (pos+color) color-aware backend with a configurable distance (don't slow the Vec4 path).
+   See [[project_icp_consolidation]].
+4. **`RobustPoseEstimator` real-display check** — proven in sim (`cv3d.robustpose.*`); its one app
+   consumer `viz3d/apps/surf-based-object-tracking` needs exercising on a real display.
+5. **Filament rendering backend** (big, offset) — rework viz3d/render onto Google Filament.
+   See [[project_filament_backend]].
+6. **Resume paused arcs** — `icl-cam-calib-intrinsic` (auto-capture quality gate; see
+   `intrinsic-calib-next-steps.md`) or the camera-calibration redesign / Phase C.
+
 ### ✅ DONE (S99) — fit-framework adoption COMPLETE
 Every `math/fit` tool now sits behind the generic bases, or is a documented internal engine:
 - **`Optimizer<V>`** = `NelderMeadOptimizer`, `CMAESOptimizer` (+ generic `minimizeRestarts`);
