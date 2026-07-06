@@ -269,6 +269,18 @@ icl_viz3d_dep = declare_dependency(
   dependencies: [icl_qt_dep, icl_cv3d_dep, icl_io_dep],
 )
 
+# Filament P0 link-proof + headless render/readback golden rig (gated).
+# Standalone target so the link recipe is exercised by the real build regardless
+# of -Dapps. Does not touch ICL types yet (that is the P2 FilamentRenderBackend).
+if filament_found
+  executable('icl-filament-smoke',
+    files('render/detail/filament_smoke.cpp'),
+    dependencies: [filament_dep],
+    implicit_include_directories: false,
+    install: false,
+  )
+endif
+
 install_headers(viz3d_headers,
   install_dir: get_option('includedir') / install_prefix / 'icl' / 'viz3d')
 install_headers(viz3d_nodes_headers,

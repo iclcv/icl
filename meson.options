@@ -26,3 +26,4 @@ option('pylon',        type: 'feature', value: 'disabled', description: 'Basler 
 option('libfreenect',  type: 'feature', value: 'disabled', description: 'Kinect 1 support')
 option('libfreenect2', type: 'feature', value: 'disabled', description: 'Kinect 2 support')
 option('cycles',       type: 'feature', value: 'auto', description: 'Blender Cycles raytracing')
+option('filament',     type: 'feature', value: 'auto', description: 'Google Filament real-time renderer')

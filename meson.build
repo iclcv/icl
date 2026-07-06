@@ -235,6 +235,43 @@ if get_option('cycles').allowed() and fs.exists(_cycles_lib)
   add_project_arguments('-DICL_HAVE_CYCLES', language: 'cpp')
 endif
 
+# Filament (real-time PBR renderer — prebuilt, gated like Cycles; arm64-mac only for now)
+filament_found = false
+filament_dep = dependency('', required: false)
+_filament_root = meson.project_source_root() / '3rdparty/filament'
+if host_machine.system() == 'darwin' and host_cpu == 'aarch64'
+  _filament_libdir = _filament_root / 'lib/arm64'
+else
+  _filament_libdir = _filament_root / 'lib'
+endif
+_filament_lib = _filament_libdir / 'libfilament.a'
+if get_option('filament').allowed() and fs.exists(_filament_lib)
+  filament_found = true
+  add_project_arguments('-DICL_HAVE_FILAMENT', language: 'cpp')
+
+  _filament_inc = include_directories('3rdparty/filament/include', is_system: true)
+  # Link recipe captured in filament-plan.md (S100 smoke tests). Order matters for
+  # static archives; only the archives an actual render needs are listed.
+  _filament_static_libs = [
+    'filament', 'backend', 'filabridge', 'filaflat', 'utils', 'geometry',
+    'smol-v', 'ibl', 'bluegl', 'bluevk', 'zstd',
+  ]
+  _filament_deps = []
+  foreach lib_name : _filament_static_libs
+    _filament_deps += cc.find_library(lib_name, dirs: [_filament_libdir], required: true)
+  endforeach
+  if host_machine.system() == 'darwin'
+    foreach fw : ['Metal', 'Foundation', 'CoreVideo', 'QuartzCore', 'IOKit',
+                  'Cocoa', 'CoreGraphics', 'Carbon', 'AppKit']
+      _filament_deps += dependency('appleframeworks', modules: [fw])
+    endforeach
+  endif
+  filament_dep = declare_dependency(
+    include_directories: _filament_inc,
+    dependencies: _filament_deps,
+  )
+endif
+
 # ---- Config headers ----
 # ICL code uses #ifdef, so we must only #define when true (not #define FOO 0).
 conf_config = configuration_data()
