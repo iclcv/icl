@@ -14,6 +14,7 @@ material {
         { type : float,  name : metallic },
         { type : float,  name : roughness },
         { type : float3, name : emissive },
+        { type : float,  name : reflectance },
         { type : float,  name : unlit }
     ]
 }
@@ -27,6 +28,7 @@ fragment {
         material.baseColor = vec4(materialParams.baseColor * (1.0 - u), 1.0);
         material.metallic = materialParams.metallic * (1.0 - u);
         material.roughness = mix(materialParams.roughness, 1.0, u);
+        material.reflectance = materialParams.reflectance;   // dielectric F0 (ICL reflectivity)
         material.emissive = vec4(mix(materialParams.emissive, materialParams.baseColor, u), 0.0);
     }
 }

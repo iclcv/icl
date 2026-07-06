@@ -22,6 +22,7 @@
 #include <filament/Renderer.h>
 #include <filament/Scene.h>
 #include <filament/SwapChain.h>
+#include <filament/Texture.h>
 #include <filament/ToneMapper.h>
 #include <filament/TransformManager.h>
 #include <filament/VertexBuffer.h>
@@ -119,7 +120,9 @@ namespace icl::viz3d {
     fl::Material *lit = nullptr;
     fl::Material *unlit = nullptr;
     fl::IndirectLight *ibl = nullptr;
+    fl::Texture *envCubemap = nullptr;
     fl::ColorGrading *colorGrading = nullptr;
+    flm::float3 skyUp{0, 1, 0};
 
     utils::Size targetSize{640, 480};
     utils::Size swapSize{0, 0};
@@ -217,6 +220,69 @@ namespace icl::viz3d {
       }
       if (auto *g = dynamic_cast<GroupNode *>(node))
         for (int i = 0; i < g->getChildCount(); ++i) collectLights(g->getChild(i));
+    }
+
+    // Procedural sky-gradient environment: a small HDR cubemap for specular
+    // reflections (box-mipped as an approximate roughness prefilter) + its
+    // radiance SH for diffuse ambient. Replaces a flat grey ambient so
+    // reflective/metallic surfaces reflect a coloured, directional environment.
+    void buildEnvironment() {
+      if (ibl) { fscene->setIndirectLight(nullptr); engine->destroy(ibl); ibl = nullptr; }
+      if (envCubemap) { engine->destroy(envCubemap); envCubemap = nullptr; }
+
+      const int N = 64;
+      auto sky = [&](const flm::float3 &d) -> flm::float3 {
+        float t = d[0] * skyUp[0] + d[1] * skyUp[1] + d[2] * skyUp[2];   // -1..1
+        const flm::float3 zenith{0.62f, 0.70f, 0.85f}, horizon{0.85f, 0.85f, 0.86f},
+                          ground{0.26f, 0.26f, 0.28f};
+        float k = std::fabs(t);
+        const flm::float3 &to = t >= 0 ? zenith : ground;
+        return {horizon[0] * (1 - k) + to[0] * k, horizon[1] * (1 - k) + to[1] * k,
+                horizon[2] * (1 - k) + to[2] * k};
+      };
+      auto faceDir = [](int f, float u, float v) -> flm::float3 {
+        switch (f) {
+          case 0: return {1, -v, -u};  case 1: return {-1, -v, u};
+          case 2: return {u, 1, v};    case 3: return {u, -1, -v};
+          case 4: return {u, -v, 1};   default: return {-u, -v, -1};
+        }
+      };
+
+      const size_t nTex = size_t(6) * N * N;
+      auto *buf = new float[nTex * 4];   // RGBA16F upload
+      double sh[9][3] = {{0}};
+      for (int f = 0; f < 6; ++f)
+        for (int y = 0; y < N; ++y)
+          for (int x = 0; x < N; ++x) {
+            float u = 2.0f * (x + 0.5f) / N - 1.0f, v = 2.0f * (y + 0.5f) / N - 1.0f;
+            flm::float3 d = normalized(faceDir(f, u, v));
+            flm::float3 c = sky(d);
+            float *px = buf + ((size_t(f) * N + y) * N + x) * 4;
+            px[0] = c[0]; px[1] = c[1]; px[2] = c[2]; px[3] = 1.0f;
+            float dOmega = (2.0f / N) * (2.0f / N) / std::pow(u * u + v * v + 1.0f, 1.5f);
+            const double Y[9] = {0.282095, 0.488603 * d[1], 0.488603 * d[2], 0.488603 * d[0],
+                                 1.092548 * d[0] * d[1], 1.092548 * d[1] * d[2],
+                                 0.315392 * (3 * d[2] * d[2] - 1), 1.092548 * d[0] * d[2],
+                                 0.546274 * (d[0] * d[0] - d[1] * d[1])};
+            for (int i = 0; i < 9; ++i)
+              for (int k = 0; k < 3; ++k) sh[i][k] += double(c[k]) * Y[i] * dOmega;
+          }
+
+      // Single-level cubemap (roughness prefiltering / mips is a follow-up — GPU
+      // generateMipmaps panics on cubemaps here). Reflections are sharp for now.
+      envCubemap = fl::Texture::Builder().width(N).height(N).levels(1)
+          .sampler(fl::Texture::Sampler::SAMPLER_CUBEMAP)
+          .format(fl::Texture::InternalFormat::RGBA16F).build(*engine);
+      auto freeF = [](void *p, size_t, void *) { delete[] static_cast<float *>(p); };
+      envCubemap->setImage(*engine, 0, 0, 0, 0, (uint32_t)N, (uint32_t)N, 6,
+          fl::Texture::PixelBufferDescriptor(buf, nTex * 4 * sizeof(float),
+              fl::backend::PixelDataFormat::RGBA, fl::backend::PixelDataType::FLOAT, freeF));
+
+      flm::float3 shf[9];
+      for (int i = 0; i < 9; ++i) shf[i] = {(float)sh[i][0], (float)sh[i][1], (float)sh[i][2]};
+      ibl = fl::IndirectLight::Builder().reflections(envCubemap).radiance(3, shf)
+          .intensity(0.45f).build(*engine);
+      fscene->setIndirectLight(ibl);
     }
 
     void syncLights(const std::vector<std::shared_ptr<Node>> &nodes) {
@@ -412,10 +478,14 @@ namespace icl::viz3d {
       cv3d::GeomColor bc = mat ? mat->baseColor : cv3d::GeomColor{0.78f, 0.78f, 0.78f, 1.0f};
       float metallic = mat ? mat->metallic : 0.0f;
       float roughness = mat ? mat->roughness : 0.6f;
+      float reflectivity = mat ? mat->reflectivity : 0.0f;
       cv3d::GeomColor em = mat ? mat->emissive : cv3d::GeomColor{0, 0, 0, 1};
       p.mi->setParameter("baseColor", toLinear(bc));
       p.mi->setParameter("metallic", metallic);
       p.mi->setParameter("roughness", std::max(0.045f, roughness));
+      // ICL reflectivity (mirror strength, 0..1) → Filament dielectric reflectance.
+      // 0 → 0.5 (Filament default, 4% F0); 1 → 1.0 (max dielectric F0, 16%).
+      p.mi->setParameter("reflectance", 0.5f + 0.5f * std::clamp(reflectivity, 0.0f, 1.0f));
       p.mi->setParameter("emissive", toLinear(em));
       // "enable lighting" off → flat unlit base colour (ICL contract).
       p.mi->setParameter("unlit", lighting ? 0.0f : 1.0f);
@@ -459,12 +529,8 @@ namespace icl::viz3d {
     m_data->unlit = fl::Material::Builder()
         .package(UNLIT_SOLID_FILAMAT, sizeof(UNLIT_SOLID_FILAMAT)).build(*m_data->engine);
 
-    // Constant ambient environment (SH L0 only) so surfaces facing away from the
-    // key light aren't pure black — the Filament analogue of the GL ambient env.
-    flm::float3 amb{1.0f, 1.0f, 1.0f};
-    m_data->ibl = fl::IndirectLight::Builder().irradiance(1, &amb).intensity(0.55f)
-        .build(*m_data->engine);
-    m_data->fscene->setIndirectLight(m_data->ibl);
+    // Procedural sky environment (reflections cubemap + diffuse SH).
+    m_data->buildEnvironment();
   }
 
   FilamentRenderBackend::~FilamentRenderBackend() {
@@ -474,6 +540,7 @@ namespace icl::viz3d {
     fl::Engine *e = m_data->engine;
     if (m_data->colorGrading) e->destroy(m_data->colorGrading);
     if (m_data->ibl) e->destroy(m_data->ibl);
+    if (m_data->envCubemap) e->destroy(m_data->envCubemap);
     if (m_data->lit) e->destroy(m_data->lit);
     if (m_data->unlit) e->destroy(m_data->unlit);
     if (m_data->fcam) e->destroyCameraComponent(m_data->camEntity);
@@ -529,6 +596,15 @@ namespace icl::viz3d {
     // physical lux (the viz3d unit scale isn't physical anyway).
     m_data->fcam->setExposure(1.0f);
 
+    // Screen-space reflections (first-class scene feature via setSSREnabled).
+    // Distances are in world units — viz3d scenes are much larger than metres,
+    // so scale the ray thickness/reach up from the metric defaults.
+    fl::View::ScreenSpaceReflectionsOptions ssrOpt;
+    ssrOpt.enabled = m_data->ssr;
+    ssrOpt.thickness = 1.0f;
+    ssrOpt.maxDistance = 200.0f;
+    m_data->view->setScreenSpaceReflectionsOptions(ssrOpt);
+
     m_data->syncLights(nodes);
     for (const auto &n : nodes) m_data->syncNode(n.get());
 
@@ -552,7 +628,13 @@ namespace icl::viz3d {
   void FilamentRenderBackend::setShadowsEnabled(bool e) { m_data->shadows = e; }
   void FilamentRenderBackend::setLightingEnabled(bool e) { m_data->lighting = e; }
   void FilamentRenderBackend::setSkyEnabled(bool e) { m_data->sky = e; }
-  void FilamentRenderBackend::setSkyUp(float, float, float) {}
+  void FilamentRenderBackend::setSkyUp(float x, float y, float z) {
+    flm::float3 up = normalized({x, y, z});
+    if (up[0] == m_data->skyUp[0] && up[1] == m_data->skyUp[1] && up[2] == m_data->skyUp[2])
+      return;
+    m_data->skyUp = up;
+    if (m_data->engine) m_data->buildEnvironment();   // reorient the sky gradient
+  }
   void FilamentRenderBackend::setDebugMode(int m) { m_data->debugMode = m; }
   void FilamentRenderBackend::invalidateCache() { if (m_data->engine) m_data->clearCache(); }
   void FilamentRenderBackend::flushInvalidatedCache() {}

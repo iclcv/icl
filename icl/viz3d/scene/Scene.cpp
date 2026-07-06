@@ -238,6 +238,7 @@ namespace icl::viz3d {
     addProperty("wireframe",utils::prop::Flag{}, false);
     addProperty("show cameras",utils::prop::Flag{}, false);
     addProperty("enable lighting",utils::prop::Flag{}, true);
+    addProperty("screen space reflections",utils::prop::Flag{}, true);
     addProperty("debug", utils::prop::Menu{"shaded", "normals", "albedo", "UVs",
                 "lighting", "NdotL", "SSR confidence", "depth", "SSR only"}, "shaded");
     addProperty("point size",utils::prop::Range{.min=1, .max=20}, 3);
@@ -456,6 +457,7 @@ namespace icl::viz3d {
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     m_data->renderer->setLightingEnabled((bool)prop("enable lighting").value);
+    m_data->renderer->setSSREnabled((bool)prop("screen space reflections").value);
 
     // Debug visualization mode (menu order matches Renderer::setDebugMode codes)
     static const char *kDebugModes[] = {"shaded", "normals", "albedo", "UVs",

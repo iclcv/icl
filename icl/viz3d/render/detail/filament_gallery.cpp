@@ -30,14 +30,20 @@ int main(int argc, char **argv) {
 
   auto sphere = viz3d::SphereNode::create(120, g + 60, 0, 60, 40, 40);
   sphere->setMaterial(Material::fromColor(GeomColor(220, 60, 60, 255)));
+  sphere->getMaterial()->roughness = 0.15f;
+  sphere->getMaterial()->reflectivity = 0.6f;
   scene.addNode(sphere);
 
   auto cube = viz3d::CuboidNode::create(-120, g + 45, 0, 90, 90, 90);
   cube->setMaterial(Material::fromColor(GeomColor(60, 90, 220, 255)));
+  cube->getMaterial()->metallic = 0.8f;
+  cube->getMaterial()->roughness = 0.2f;
   scene.addNode(cube);
 
   auto cyl = viz3d::CylinderNode::create(0, g + 40, 0, 40, 40, 110, 30);
   cyl->setMaterial(Material::fromColor(GeomColor(60, 200, 90, 255)));
+  cyl->getMaterial()->roughness = 0.2f;
+  cyl->getMaterial()->reflectivity = 0.4f;
   scene.addNode(cyl);
 
   auto cone = viz3d::ConeNode::create(220, g, 0, 60, 120, 30);
