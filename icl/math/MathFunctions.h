@@ -10,6 +10,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <complex>
 namespace icl::math {
   /// Calculate the euclidian distance of two vectors v1 and v2 \ingroup MATH
   /** @param v1Begin first element of v1
@@ -125,5 +126,13 @@ namespace icl::math {
     return md;
   }
 
+  /// All complex roots of a real-coefficient polynomial (highest degree first).
+  /** Solves `coeffs[0]·xⁿ + coeffs[1]·xⁿ⁻¹ + … + coeffs[n] = 0` for its n complex
+      roots as the eigenvalues of the companion matrix (DynMatrix::eigenGeneral,
+      i.e. LAPACK geev with a C++ fallback). Leading (highest-degree) zeros are
+      trimmed; returns `degree` roots in no particular order. Same
+      highest-coefficient-first convention as numpy.roots / MATLAB roots. */
+  ICLMath_API std::vector<std::complex<double> >
+  polynomialRoots(const std::vector<double> &coeffs);
 
   } // namespace icl::math

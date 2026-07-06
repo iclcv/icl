@@ -13,7 +13,7 @@
 #include <random>
 #include <icl/utils/ProgArg.h>
 #include <icl/math/fit/NelderMeadOptimizer.h>
-#include <icl/math/fit/PolynomialSolver.h>
+#include <icl/math/MathFunctions.h>
 
 #include <algorithm>
 #include <iostream>
@@ -537,40 +537,38 @@ namespace icl::cv3d {
       coef[3] = -4.0f*e[0] + 2.0f*e[2];
       coef[4] = e[1];
 
-      int deg = 4;
-      double zeroes[5] = { 0 };
-      double real[5];
-      double imag[5];
+      const std::vector<std::complex<double> > roots =
+        math::polynomialRoots({coef[0], coef[1], coef[2], coef[3], coef[4]});
       std::vector<int> mins;
       std::vector<double> betas;
 
-      deg = math::solve_poly(deg, coef, zeroes, real, imag);
-
-      for (int i = 0; i < deg; ++i) {
-        double a_tmp = pow(real[i],2);
-        double b_tmp = pow(imag[i],2);
+      for (size_t i = 0; i < roots.size(); ++i) {
+        const double re = roots[i].real(), im = roots[i].imag();
+        double a_tmp = re*re;
+        double b_tmp = im*im;
         double ans = coef[0]*(a_tmp*a_tmp - 6.0*a_tmp*b_tmp + b_tmp*b_tmp)
-                   + coef[1]*real[i]*(a_tmp - 3.0*b_tmp)
+                   + coef[1]*re*(a_tmp - 3.0*b_tmp)
                    + coef[2]*(a_tmp - b_tmp)
-                   + coef[3]*real[i] + coef[4];
+                   + coef[3]*re + coef[4];
 
         if (abs(ans) < 0.01) {
-          double tmp = 1.0 + pow(real[i],2) - pow(imag[i],2);
+          double tmp = 1.0 + re*re - im*im;
 
           if (tmp > 0.01) {
-            mins.push_back(i);
-            betas.push_back(atan2(2.0*real[i]/tmp, (1.0-pow(real[i],2)+pow(imag[i],2))/tmp));
+            mins.push_back((int)i);
+            betas.push_back(atan2(2.0*re/tmp, (1.0-re*re+im*im)/tmp));
           }
         }
       }
 
       // take only minima
       for(unsigned int i = 0; i < mins.size(); ++i) {
-        double a_tmp = pow(real[mins[i]],2);
-        double b_tmp = pow(imag[mins[i]],2);
-        double ans = 4.0*coef[0]*real[mins[i]]*(a_tmp - 3.0*b_tmp)
+        const double re = roots[mins[i]].real(), im = roots[mins[i]].imag();
+        double a_tmp = re*re;
+        double b_tmp = im*im;
+        double ans = 4.0*coef[0]*re*(a_tmp - 3.0*b_tmp)
                    + 3.0*coef[1]*(a_tmp - b_tmp)
-                   + 2.0*coef[2]*real[mins[i]] + coef[3];
+                   + 2.0*coef[2]*re + coef[3];
 
         if (ans > 0.0) {
           sol.betas.push_back(betas[mins[i]]);

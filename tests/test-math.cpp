@@ -11,6 +11,7 @@
 #include <icl/math/fit/RobustFitter.h>
 #include <icl/math/fit/NelderMeadOptimizer.h>
 #include <icl/math/fit/LMFitter.h>
+#include <icl/math/MathFunctions.h>
 #include <icl/math/fit/RefiningFitter.h>
 #include <icl/math/fit/GeometricRefiners2D.h>
 #include <icl/math/fit/CMAESOptimizer.h>
@@ -1974,4 +1975,30 @@ ICL_REGISTER_TEST("math.fit.lm_robust_kernel",
   ICL_TEST_NEAR(pr[0], 2.0, 0.05);          // robust recovers slope
   ICL_TEST_NEAR(pr[1], 1.0, 0.05);          // and intercept
   ICL_TEST_TRUE(std::abs(pr[0]-2.0) < std::abs(pp[0]-2.0));   // robust strictly better than plain
+}
+
+// polynomialRoots: complex roots via the companion-matrix eigenvalues (replaced the
+// old 483-line cpoly PolynomialSolver). Real + complex roots, leading-zero trim.
+ICL_REGISTER_TEST("math.fit.polynomial_roots",
+                  "polynomialRoots recovers real and complex roots of known polynomials")
+{
+  using C = std::complex<double>;
+  auto has = [](const std::vector<C> &rs, C v, double eps=1e-6){
+    for(const C &r : rs) if(std::abs(r-v) < eps) return true;
+    return false;
+  };
+  // (x-1)(x-2)(x-3) = x^3 - 6x^2 + 11x - 6  -> roots 1,2,3
+  auto r1 = polynomialRoots({1, -6, 11, -6});
+  ICL_TEST_EQ((int)r1.size(), 3);
+  ICL_TEST_TRUE(has(r1, C(1,0)) && has(r1, C(2,0)) && has(r1, C(3,0)));
+
+  // x^2 + 1 -> roots +i, -i
+  auto r2 = polynomialRoots({1, 0, 1});
+  ICL_TEST_EQ((int)r2.size(), 2);
+  ICL_TEST_TRUE(has(r2, C(0,1)) && has(r2, C(0,-1)));
+
+  // leading zeros trimmed: 0*x^3 + x^2 - 4  -> degree 2, roots +2,-2
+  auto r3 = polynomialRoots({0, 1, 0, -4});
+  ICL_TEST_EQ((int)r3.size(), 2);
+  ICL_TEST_TRUE(has(r3, C(2,0)) && has(r3, C(-2,0)));
 }

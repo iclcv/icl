@@ -58,7 +58,6 @@ math_fit_headers = files(
   'fit/NelderMeadOptimizer.h',
   'fit/Optimizer.h',
   'fit/PolynomialRegression.h',
-  'fit/PolynomialSolver.h',
   'fit/PrimitiveFitters2D.h',
   'fit/RefiningFitter.h',
   'fit/RobustFitter.h',
@@ -76,6 +75,7 @@ math_ml_headers = files(
 
 # Always-compiled sources (root-level public API impls).
 math_sources = files(
+  'MathFunctions.cpp',
   'la/DynMatrix.cpp',
   'la/DynMatrixUtils.cpp',
   'la/DynVector.cpp',
