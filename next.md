@@ -4,13 +4,20 @@
 
 ## Next Step
 
-### 🔴 TODO — cv3d pose-estimation correctness pass (found S99)
-`cv3d::PlanarPoseEstimator::getPose` (singular) is BROKEN on clean synthetic data:
-`HomographyBasedOnly` ~40 px reproj error, `SimplexSampling` ~4386 px. The accurate path
-is `getPoses` (plural, IPPE — the one `test-cv3d-planar-pose` uses at <0.6 px), but it
-CRASHES (SIGTRAP) on some inputs (n≠4, certain quad orderings). Fix/replace the broken
-`getPoseInternal` algorithms + harden IPPE, then point `RobustPoseEstimator`'s base fitter at
-the accurate path and add a gtest. See memory `project_pose_estimation_bugs`.
+### ✅ DONE (S99) — pose-correctness pass: FALSE ALARM + one real milder bug
+The "getPose is broken" alarm was a **test bug**, not a code bug. `getPose` (HomographyBasedOnly)
+and `getPoses` (IPPE) both recover translated/off-axis planar targets to ~1e-4–2e-5 px. The bad
+~40px/EMPTY readings came from the diagnostic's `markerPose` writing translation into ROW 3
+(`T(3,0)`) while ICL applies `T*v` with translation in COLUMN 3 (`T(0,3)`) — leaks into homogeneous
+w, only bites when tw≠0, so the centred-only test never caught it. Fixed `test-cv3d-planar-pose`'s
+markerPose + added `geom.coplanarpose.translated_target_recovers`; `RobustPoseEstimator` validated
+(`cv3d.robustpose.*`, ~8e-5px). Suite 1080/1080. See memory `project_pose_estimation_bugs`.
+
+**🟡 Remaining real (milder) TODO — `SimplexSampling` degrades a perfect seed.** It is the DEFAULT
+`PlanarPoseEstimator` algorithm; it seeds from the homography pose (~1e-4px) then `SimplexOptimizer`
+diverges to 10–34px (euler round-trip is clean ~1e-7 → optimizer / SimplexErrorFunction fault,
+likely mixed rad/mm scaling with a coarse 0.5 step). RobustPoseEstimator unaffected (forces
+HomographyBasedOnly). Fix/replace the Simplex refinement or change the default.
 
 ### ✅ DONE (S99) — cv3d/pose renames + pose-estimator framework migration (steps 1–4, partial)
 Estimators renamed (memory: none; see commit `e62ee722e`):
