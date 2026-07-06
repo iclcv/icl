@@ -9,6 +9,7 @@
 #include <icl/cv3d/Types.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace icl::cv3d {
@@ -45,6 +46,26 @@ namespace icl::cv3d {
       /// Nearest target point for every query (out is parallel to queries).
       virtual void nearest(const std::vector<Vec> &queries,
                            std::vector<Vec> &out) const = 0;
+      /// Whether the backend initialised successfully (e.g. an OpenCL backend
+      /// with no usable device is invalid). Non-GPU backends are always valid.
+      virtual bool isValid() const;
+    };
+
+    /// A Backend whose correspondence metric also weighs per-point colour.
+    /** The public seam for the colour-aware backends ("nn.color", "nn.color.cl").
+        Colours are supplied out-of-band (they don't transform with the pose):
+        setTargetColors() before build(), setSourceColors() before the ICP loop,
+        each parallel to the target / source arrays. Create one by name with
+        ICP::createColorBackend(). */
+    class ICLCv3d_API ColorBackend : public Backend {
+    public:
+      /// relative weight of the colour term (0 => position-only NN)
+      virtual void setColorWeight(icl32f w) = 0;
+      virtual icl32f getColorWeight() const = 0;
+      /// target colours, parallel to the build() target cloud (rgb used)
+      virtual void setTargetColors(const std::vector<GeomColor> &colors) = 0;
+      /// source colours, parallel to the nearest() query cloud (rgb used)
+      virtual void setSourceColors(const std::vector<GeomColor> &colors) = 0;
     };
 
     /// Result of an ICP run.
@@ -68,10 +89,26 @@ namespace icl::cv3d {
     ICP(const ICP&) = delete;
     ICP& operator=(const ICP&) = delete;
 
-    /// Swap the nearest-neighbour backend (default: OctreeNN).
+    /// Swap the nearest-neighbour backend (default: "nn.octree").
     void setBackend(std::shared_ptr<Backend> backend);
+    /// Swap to a registered backend by name (see backendNames()).
+    /** The user's explicit switch: the default "nn.octree" (C++ octree) is the
+        fast choice for small/medium clouds; "nn.octree.cl" (OpenCL brute force)
+        only overtakes it on large clouds and depends on the GPU/CPU at hand, so
+        it is opt-in rather than auto-selected. */
+    void setBackend(const std::string &name);
     /// Non-owning view of the active backend.
     Backend *getBackend() const;
+
+    /// Construct a registered backend by name (throws if unknown / not built in).
+    /** Registered names: "nn.octree" (C++ octree, default), "nn.color" (C++
+        colour-aware); with OpenCL also "nn.octree.cl" and "nn.color.cl". */
+    static std::shared_ptr<Backend> createBackend(const std::string &name);
+    /// Construct a registered colour-aware backend by name (throws if the name
+    /// is not a ColorBackend). Default "nn.color"; "nn.color.cl" for the GPU one.
+    static std::shared_ptr<ColorBackend> createColorBackend(const std::string &name = "nn.color");
+    /// Names of all registered backends (priority-descending).
+    static std::vector<std::string> backendNames();
 
     /// Build the target search structure (call before apply()).
     void build(const std::vector<Vec> &target);
@@ -98,127 +135,5 @@ namespace icl::cv3d {
     struct Data;
     std::unique_ptr<Data> m_data;
   };
-
-  /// Default C++ ICP backend: a bounded octree that auto-fits the target AABB.
-  class ICLCv3d_API OctreeNN : public ICP::Backend {
-  public:
-    OctreeNN();
-    ~OctreeNN();
-    void build(const std::vector<ICP::Vec> &target) override;
-    void nearest(const std::vector<ICP::Vec> &queries,
-                 std::vector<ICP::Vec> &out) const override;
-
-  private:
-    struct Data;
-    std::unique_ptr<Data> m_data;
-  };
-
-  /// Color-aware C++ ICP backend: nearest neighbour under a weighted position+color metric.
-  /** Correspondences minimise `dist² = ||Δposition||² + colorWeight²·||Δrgb||²`,
-      i.e. an exact nearest neighbour in the 6D space `[x,y,z, w·r,w·g,w·b]`.
-      Color influences ONLY the correspondence choice; the rigid transform is still
-      estimated from positions, so colour merely disambiguates which target a
-      source point matches — invaluable where geometry alone is ambiguous (flat or
-      symmetric surfaces).
-
-      Colors are supplied out-of-band (they do not transform with the pose):
-      setTargetColors() before build(), setSourceColors() before the ICP loop —
-      each parallel (same order and length) to the target / source point arrays.
-      With no colors set it degrades to a plain position NN.
-
-      This is the C++ backend's edge over a GPU one: override distanceSq() for a
-      FULLY free-form position+color metric (per-channel weights, hue-only, robust
-      caps, …). The search is exact brute force (O(|source|·|target|) per
-      iteration); the OpenCL backend accelerates the same metric for large clouds.
-      Kept separate from OctreeNN so the position-only Vec4 hot path is never
-      burdened with a color branch. */
-  class ICLCv3d_API ColorNN : public ICP::Backend {
-  public:
-    ColorNN(icl32f colorWeight = 1.0f);
-    ~ColorNN();
-
-    void build(const std::vector<ICP::Vec> &target) override;
-    void nearest(const std::vector<ICP::Vec> &queries,
-                 std::vector<ICP::Vec> &out) const override;
-
-    /// relative weight of the color term in the metric (0 => position-only)
-    void setColorWeight(icl32f w);
-    icl32f getColorWeight() const;
-
-    /// target colors, parallel to the build() target cloud (rgb used)
-    void setTargetColors(const std::vector<GeomColor> &colors);
-    /// source colors, parallel to the nearest() query cloud (rgb used)
-    void setSourceColors(const std::vector<GeomColor> &colors);
-
-  protected:
-    /// squared metric between a query (transformed source) and a target point.
-    /** Default: `||Δpos||² + colorWeight²·||Δrgb||²`. Override for a free-form
-        position+color distance (the C++ backend's degree of freedom). */
-    virtual icl64f distanceSq(const ICP::Vec &qPos, const GeomColor &qCol,
-                              const ICP::Vec &tPos, const GeomColor &tCol) const;
-
-  private:
-    struct Data;
-    std::unique_ptr<Data> m_data;
-  };
-
-#ifdef ICL_HAVE_OPENCL
-  /// OpenCL ICP backend: brute-force nearest neighbour on the GPU.
-  /** Same exact position-only Euclidean metric as OctreeNN, one GPU work-item per
-      query scanning every target. Wins once the clouds are large enough that the
-      O(|source|·|target|) scan parallelises to a net speedup; for small clouds the
-      octree's log-time search is faster. Only present when ICL is built with
-      OpenCL. build() uploads the target once; each nearest() uploads the queries,
-      dispatches the kernel, and reads back the matched targets. If the OpenCL
-      program fails to initialise (no device / compile error), isValid() is false
-      and nearest() falls back to returning the queries unchanged. */
-  class ICLCv3d_API CLNN : public ICP::Backend {
-  public:
-    CLNN();
-    ~CLNN();
-    /// true if the OpenCL program/kernel initialised
-    bool isValid() const;
-    void build(const std::vector<ICP::Vec> &target) override;
-    void nearest(const std::vector<ICP::Vec> &queries,
-                 std::vector<ICP::Vec> &out) const override;
-
-  private:
-    struct Data;
-    std::unique_ptr<Data> m_data;
-  };
-
-  /// Color-aware OpenCL ICP backend: the GPU counterpart of ColorNN.
-  /** Same metric as ColorNN — `dist² = ||Δpos||² + colorWeight²·||Δrgb||²` — with
-      the per-query scan on the GPU (one work-item per query; colours uploaded as
-      float4 next to the positions). Colours are supplied out-of-band exactly as
-      for ColorNN (setTargetColors() before build(), setSourceColors() before the
-      loop); with none set it degrades to a plain position NN. Only present with
-      OpenCL; if the program fails to build, isValid() is false and nearest() falls
-      back to returning the queries. The free-form-metric override is the C++
-      ColorNN's alone — the GPU path is fixed to the weighted metric. */
-  class ICLCv3d_API CLColorNN : public ICP::Backend {
-  public:
-    CLColorNN(icl32f colorWeight = 1.0f);
-    ~CLColorNN();
-    /// true if the OpenCL program/kernel initialised
-    bool isValid() const;
-    void build(const std::vector<ICP::Vec> &target) override;
-    void nearest(const std::vector<ICP::Vec> &queries,
-                 std::vector<ICP::Vec> &out) const override;
-
-    /// relative weight of the color term in the metric (0 => position-only)
-    void setColorWeight(icl32f w);
-    icl32f getColorWeight() const;
-
-    /// target colors, parallel to the build() target cloud (rgb used)
-    void setTargetColors(const std::vector<GeomColor> &colors);
-    /// source colors, parallel to the nearest() query cloud (rgb used)
-    void setSourceColors(const std::vector<GeomColor> &colors);
-
-  private:
-    struct Data;
-    std::unique_ptr<Data> m_data;
-  };
-#endif
 
 } // namespace icl::cv3d

@@ -45,19 +45,21 @@ GPU-verified: correspondences == CPU `ColorNN` exactly (delta 0), color-aware IC
 **The ICP NN backend matrix is now complete:** OctreeNN/CLNN (position, C++/GPU) ×
 ColorNN/CLColorNN (color, C++/GPU), all behind the one `ICP::Backend` seam. Suite **1092→1094**.
 
+### ✅ DONE (S100) — deleted the preserved ICP OpenCL seed
+`icp/IterativeClosestPoint.{h,cpp,CLCode.h,CLCode.cl}` (821 lines commented, 0 users) removed
+(`253f20375`) — CLNN/CLColorNN supersede it; rep-DB approximate NN can be rebuilt fresh if ever needed.
+**The whole ICP consolidation arc (Phase 1 + Phase 2 + cleanup) is now closed.** See [[project_icp_consolidation]].
+
 ### ▶ NEXT SESSION — pick one (S99/S100 recap below)
 Branch `further-restructuring-and-cleanup`; **nothing pushed** (SSH blocked in-sandbox — CE pushes).
 Candidate directions:
 
-1. **Retire / mine the preserved ICP OpenCL seed** — `icp/IterativeClosestPoint.{h,cpp,CLCode.h,CLCode.cl}`
-   (821 lines commented, excluded from meson, 0 users). Now that CLNN + CLColorNN exist, the only thing
-   it still holds is the **rep-DB approximate-NN** (speeds huge clouds by not scanning all targets) +
-   on-GPU covariance/SVD. Decide: mine rep-DB into a `CLNN` fast path (premature without a large-cloud
-   workload) or just delete the seed. Small if deleting. See [[project_icp_consolidation]].
-2. **Filament rendering backend** (big, offset) — rework viz3d/render onto Google Filament.
+1. **Filament rendering backend** (big, offset) — rework viz3d/render onto Google Filament.
    See [[project_filament_backend]].
-3. **Resume paused arcs** — `icl-cam-calib-intrinsic` (auto-capture quality gate; see
+2. **Resume paused arcs** — `icl-cam-calib-intrinsic` (auto-capture quality gate; see
    `intrinsic-calib-next-steps.md`) or the camera-calibration redesign / Phase C.
+3. **New cleanup targets** — S99/S100 have been a long cv3d/pose/icp restructuring arc; a fresh
+   `further-restructuring-and-cleanup` sweep of another module may be due (survey needed).
 
 ### ✅ DONE (S99) — fit-framework adoption COMPLETE
 Every `math/fit` tool now sits behind the generic bases, or is a documented internal engine:

@@ -11,6 +11,8 @@
 #include <icl/cv3d/icp/ICP.h>
 #include <icl/math/transform/HomogeneousMath.h>
 #include <icl/utils/Random.h>
+#include <icl/utils/Exception.h>
+#include <algorithm>
 
 using namespace icl;
 using namespace icl::cv3d;
@@ -92,14 +94,26 @@ ICL_REGISTER_TEST("cv3d.icp.empty_inputs_are_safe",
 }
 
 ICL_REGISTER_TEST("cv3d.icp.default_backend_is_octree",
-                  "a fresh ICP owns an OctreeNN backend, and it is swappable")
+                  "a fresh ICP owns the default (valid) backend, swappable by name and instance")
 {
   ICP icp;
-  ICL_TEST_TRUE(dynamic_cast<OctreeNN*>(icp.getBackend()) != nullptr);
+  ICL_TEST_TRUE(icp.getBackend() != nullptr);
+  ICL_TEST_TRUE(icp.getBackend()->isValid());
 
-  auto custom = std::make_shared<OctreeNN>();
+  // the default position backend is registered under "nn.octree"
+  const std::vector<std::string> names = ICP::backendNames();
+  ICL_TEST_TRUE(std::find(names.begin(), names.end(), "nn.octree") != names.end());
+
+  // switch by name...
+  icp.setBackend("nn.octree");
+  ICL_TEST_TRUE(icp.getBackend() != nullptr);
+  // ...and by explicit instance (the polymorphic escape hatch)
+  auto custom = ICP::createBackend("nn.octree");
   icp.setBackend(custom);
   ICL_TEST_EQ(icp.getBackend(), custom.get());
+
+  // unknown names throw
+  ICL_TEST_THROW(ICP::createBackend("nn.nope"), icl::utils::ICLException);
 }
 
 // --- ColorNN (color-aware backend) --------------------------------------------
@@ -114,22 +128,23 @@ ICL_REGISTER_TEST("cv3d.icp.colornn_color_breaks_geometric_tie",
                                         GeomColor(0,255,0,255) };  // B green
   const std::vector<Vec> query = { Vec(5,0,0,1) };                 // 5 from each
 
-  ColorNN nn(1.0f);
-  nn.setTargetColors(tCol);
-  nn.build(target);
+  auto nn = ICP::createColorBackend("nn.color");
+  nn->setColorWeight(1.0f);
+  nn->setTargetColors(tCol);
+  nn->build(target);
   std::vector<Vec> out;
 
-  nn.setSourceColors({ GeomColor(0,255,0,255) });   // green -> should match B
-  nn.nearest(query, out);
+  nn->setSourceColors({ GeomColor(0,255,0,255) });   // green -> should match B
+  nn->nearest(query, out);
   ICL_TEST_NEAR(out[0][0], 10.0, 1e-5);
 
-  nn.setSourceColors({ GeomColor(255,0,0,255) });   // red -> should match A
-  nn.nearest(query, out);
+  nn->setSourceColors({ GeomColor(255,0,0,255) });   // red -> should match A
+  nn->nearest(query, out);
   ICL_TEST_NEAR(out[0][0], 0.0, 1e-5);
 
   // with colour disabled the tie falls back to (first-found) position NN
-  nn.setColorWeight(0.f);
-  nn.nearest(query, out);
+  nn->setColorWeight(0.f);
+  nn->nearest(query, out);
   ICL_TEST_NEAR(out[0][0], 0.0, 1e-5);              // A found first at equal dist
 }
 
@@ -143,8 +158,10 @@ ICL_REGISTER_TEST("cv3d.icp.colornn_zero_weight_recovers_transform",
   std::vector<Vec> source;
   for (const Vec &v : target) source.push_back(T * v);
 
+  auto b = ICP::createColorBackend("nn.color");
+  b->setColorWeight(0.0f);                            // no colours set
   ICP icp(50, 20.0f, 1e-4);
-  icp.setBackend(std::make_shared<ColorNN>(0.0f));   // no colours set
+  icp.setBackend(b);
   std::vector<Vec> aligned;
   ICP::Result r = icp.apply(target, source, aligned);
 
@@ -167,7 +184,8 @@ ICL_REGISTER_TEST("cv3d.icp.color_aware_icp_recovers_transform",
   for (const Vec &v : target) source.push_back(T * v);
   // source[i] is the transform of target[i], so they share colour i
 
-  auto cnn = std::make_shared<ColorNN>(0.5f);
+  auto cnn = ICP::createColorBackend("nn.color");
+  cnn->setColorWeight(0.5f);
   cnn->setTargetColors(colors);
   cnn->setSourceColors(colors);
 
@@ -196,9 +214,9 @@ ICL_REGISTER_TEST("cv3d.icp.clnn_matches_octree",
   std::vector<Vec> source;
   for (const Vec &v : target) source.push_back(T * v);
 
-  auto cl = std::make_shared<CLNN>();
+  auto cl = ICP::createBackend("nn.octree.cl");
   if (!cl->isValid()) {
-    std::cout << "[icp] CLNN: OpenCL unavailable here — checking graceful fallback\n";
+    std::cout << "[icp] nn.octree.cl: OpenCL unavailable here — checking graceful fallback\n";
     std::vector<Vec> out;
     cl->build(target);
     cl->nearest(source, out);                 // invalid backend returns queries as-is
@@ -207,10 +225,10 @@ ICL_REGISTER_TEST("cv3d.icp.clnn_matches_octree",
   }
 
   // GPU correspondences must match the octree's exactly (same metric)
-  OctreeNN oct;
-  oct.build(target);
+  auto oct = ICP::createBackend("nn.octree");
+  oct->build(target);
   std::vector<Vec> cpuNN, gpuNN;
-  oct.nearest(source, cpuNN);
+  oct->nearest(source, cpuNN);
   cl->build(target);
   cl->nearest(source, gpuNN);
   double maxd = 0;
@@ -241,27 +259,29 @@ ICL_REGISTER_TEST("cv3d.icp.clcolornn_matches_colornn",
   for (size_t i = 0; i < queries.size(); ++i)
     qCol.push_back(GeomColor(float((i*7)%256), float((i*29)%256), float((i*83)%256), 255));
 
-  ColorNN cpu(0.7f);
-  cpu.setTargetColors(tCol);
-  cpu.setSourceColors(qCol);
-  cpu.build(target);
+  auto cpu = ICP::createColorBackend("nn.color");
+  cpu->setColorWeight(0.7f);
+  cpu->setTargetColors(tCol);
+  cpu->setSourceColors(qCol);
+  cpu->build(target);
   std::vector<Vec> cpuOut;
-  cpu.nearest(queries, cpuOut);
+  cpu->nearest(queries, cpuOut);
 
-  CLColorNN gpu(0.7f);
-  if (!gpu.isValid()) {
-    std::cout << "[icp] CLColorNN: OpenCL unavailable — checking graceful fallback\n";
+  auto gpu = ICP::createColorBackend("nn.color.cl");
+  gpu->setColorWeight(0.7f);
+  if (!gpu->isValid()) {
+    std::cout << "[icp] nn.color.cl: OpenCL unavailable — checking graceful fallback\n";
     std::vector<Vec> out;
-    gpu.build(target);
-    gpu.nearest(queries, out);
+    gpu->build(target);
+    gpu->nearest(queries, out);
     ICL_TEST_EQ(out.size(), queries.size());
     return;
   }
-  gpu.setTargetColors(tCol);
-  gpu.setSourceColors(qCol);
-  gpu.build(target);
+  gpu->setTargetColors(tCol);
+  gpu->setSourceColors(qCol);
+  gpu->build(target);
   std::vector<Vec> gpuOut;
-  gpu.nearest(queries, gpuOut);
+  gpu->nearest(queries, gpuOut);
 
   double maxd = 0;
   for (size_t i = 0; i < queries.size(); ++i)
@@ -283,9 +303,10 @@ ICL_REGISTER_TEST("cv3d.icp.clcolornn_color_aware_icp",
   std::vector<Vec> source;
   for (const Vec &v : target) source.push_back(T * v);
 
-  auto cnn = std::make_shared<CLColorNN>(0.5f);
+  auto cnn = ICP::createColorBackend("nn.color.cl");
+  cnn->setColorWeight(0.5f);
   if (!cnn->isValid()) {
-    std::cout << "[icp] CLColorNN: OpenCL unavailable — skipping GPU color ICP\n";
+    std::cout << "[icp] nn.color.cl: OpenCL unavailable — skipping GPU color ICP\n";
     return;
   }
   cnn->setTargetColors(colors);

@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Tobias Roehlig, Christof Elbrechter
 
 #include <icl/cv3d/icp/ICP.h>
+#include <icl/cv3d/icp/detail/ICPBackendRegistry.h>
 #include <icl/cv3d/pose/RigidTransformEstimator.h>
 
 #include <limits>
@@ -11,6 +12,26 @@
 namespace icl::cv3d {
 
   ICP::Backend::~Backend() {}
+  bool ICP::Backend::isValid() const { return true; }
+
+  std::shared_ptr<ICP::Backend> ICP::createBackend(const std::string &name) {
+    const auto *e = icpBackendRegistry().get(name);
+    if (!e) throw utils::ICLException("ICP::createBackend: unknown backend '" + name +
+                                      "' (built with OpenCL? see ICP::backendNames())");
+    return e->payload();
+  }
+
+  std::shared_ptr<ICP::ColorBackend> ICP::createColorBackend(const std::string &name) {
+    auto b = createBackend(name);
+    auto cb = std::dynamic_pointer_cast<ColorBackend>(b);
+    if (!cb) throw utils::ICLException("ICP::createColorBackend: '" + name +
+                                       "' is not a colour-aware backend");
+    return cb;
+  }
+
+  std::vector<std::string> ICP::backendNames() {
+    return icpBackendRegistry().keys();
+  }
 
   ICP::Result::Result()
     : transformation(math::Mat4::id()), error(0.0), iterations(0) {}
@@ -25,12 +46,15 @@ namespace icl::cv3d {
 
   ICP::ICP(uint32_t maxIterations, icl32f maxDistance, icl64f errorDeltaThresh)
     : m_data(new Data{maxIterations, maxDistance, errorDeltaThresh,
-                      std::make_shared<OctreeNN>(), {}}) {}
+                      createBackend("nn.octree"), {}}) {}
 
   ICP::~ICP() {}
 
   void ICP::setBackend(std::shared_ptr<Backend> backend) {
     m_data->backend = backend;
+  }
+  void ICP::setBackend(const std::string &name) {
+    m_data->backend = createBackend(name);
   }
   ICP::Backend *ICP::getBackend() const { return m_data->backend.get(); }
 
