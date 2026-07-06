@@ -113,6 +113,25 @@ it already consumes ICL's projection, so the mapping exists in-tree.
 
 ---
 
+## Progress
+
+- **P0 — DONE** (`0d36a1157`). meson `filament` feature gate + `filament_dep` (S100 link
+  recipe); `icl-filament-smoke` target ports the headless render/readback smoke into the real
+  viz3d build. Verified in-sandbox: builds/links clean, runs on Apple M3 Max (headless Metal,
+  feature level 3), reads back the golden `(153,186,214,255)`. Onscreen Qt-embed spike still
+  pending on CE's Mac.
+- **P1 — DONE** (`ba356b794`). Abstract `render/RenderBackend.h` seam (ICL-only signatures);
+  `Renderer` → `GLRenderBackend : RenderBackend`; `Scene` owns `unique_ptr<RenderBackend>`.
+  Pure refactor, suite 1094/1094.
+- **Projection mapping RESOLVED (de-risking for P2).** Filament `setCustomProjection` *requires
+  the OpenGL NDC convention ([-1,1] on all 3 axes)* — which is **exactly** what ICL's
+  `cv3d::Camera::getProjectionMatrixGL()` already emits (it bakes in the GL y-flip via sign
+  switches on skew/py; see `Camera.cpp:124`). So the Filament projection matrix = that matrix,
+  transposed to Filament's column-major `math::mat4`. View: Filament camera `setModelMatrix` =
+  inverse of `getCSTransformationMatrixGL()` (camera→world). Remaining unknown = readPixels row
+  order (y-up GL vs y-down image) — resolve empirically in the P2 golden test. This collapses
+  the "convention deltas" risk the plan flagged as the linchpin.
+
 ## Phased plan (each phase independently landable + suite green)
 
 - **P0 — Spike + build wiring.**
