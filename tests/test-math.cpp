@@ -10,6 +10,7 @@
 #include <icl/math/fit/PrimitiveFitters2D.h>
 #include <icl/math/fit/RobustFitter.h>
 #include <icl/math/fit/NelderMeadOptimizer.h>
+#include <icl/math/fit/LMFitter.h>
 #include <icl/math/fit/RefiningFitter.h>
 #include <icl/math/fit/GeometricRefiners2D.h>
 #include <icl/math/fit/CMAESOptimizer.h>
@@ -1941,4 +1942,36 @@ ICL_REGISTER_TEST("math.fit.cmaes_superquadric_trimmed",
   ICL_TEST_NEAR(std::abs(r.params[2]), C, 0.2);
   ICL_TEST_NEAR(r.params[3], E1, 0.2);
   ICL_TEST_NEAR(r.params[4], E2, 0.2);
+}
+
+// LMFitter on the ModelFitter base: fit a line y = m*x + b by Levenberg-Marquardt.
+// With ~1/4 gross outliers, plain LM (kernel None) is dragged off; a Cauchy robust
+// kernel (IRLS) recovers the true line. Proves the robust-kernel folding.
+ICL_REGISTER_TEST("math.fit.lm_robust_kernel",
+                  "LMFitter with a robust kernel recovers a line under outliers")
+{
+  using Vec = DynColVector<double>;
+  using LMF = LMFitter<double>;
+  // model: y = p[0]*x + p[1]
+  LMF::Function f = [](const Vec &p, const Vec &x)->Vec{
+    Vec y(1); y[0] = p[0]*x[0] + p[1]; return y;
+  };
+  std::vector<LMF::Sample> data;
+  for(int i=0;i<80;++i){ Vec x(1); x[0]=i*0.1; Vec y(1); y[0]=2.0*x[0]+1.0; data.push_back({x,y}); } // inliers
+  for(int i=0;i<24;++i){ Vec x(1); x[0]=i*0.1; Vec y(1); y[0]=2.0*x[0]+1.0+(i%2?9.0:-9.0); data.push_back({x,y}); } // outliers
+
+  const Vec start = Vec(2, 0.0);
+
+  LMF plain(f, 1, 1, start);                                   // non-robust
+  const Vec pp = plain.fit(data);
+
+  LMF robust(f, 1, 1, start, RobustKernel{RobustKernel::Cauchy});
+  const Vec pr = robust.fit(data);
+
+  std::cout << "[lm_robust] plain m=" << pp[0] << " b=" << pp[1]
+            << "  robust m=" << pr[0] << " b=" << pr[1] << std::endl;
+
+  ICL_TEST_NEAR(pr[0], 2.0, 0.05);          // robust recovers slope
+  ICL_TEST_NEAR(pr[1], 1.0, 0.05);          // and intercept
+  ICL_TEST_TRUE(std::abs(pr[0]-2.0) < std::abs(pp[0]-2.0));   // robust strictly better than plain
 }
