@@ -1095,4 +1095,36 @@ namespace icl::cv3d {
       }
     }
 
+  PlaneModel PlaneFitter::fit(const std::vector<Vec> &pts){
+    const int n = (int)pts.size();
+    if(n < 3) return PlaneModel();
+
+    // centroid
+    double cx=0, cy=0, cz=0;
+    for(const Vec &p : pts){ cx+=p[0]; cy+=p[1]; cz+=p[2]; }
+    cx/=n; cy/=n; cz/=n;
+
+    // symmetric covariance of the centred points
+    double xx=0, xy=0, xz=0, yy=0, yz=0, zz=0;
+    for(const Vec &p : pts){
+      const double dx=p[0]-cx, dy=p[1]-cy, dz=p[2]-cz;
+      xx+=dx*dx; xy+=dx*dy; xz+=dx*dz; yy+=dy*dy; yz+=dy*dz; zz+=dz*dz;
+    }
+    math::FixedMatrix<float,3,3> C((float)xx,(float)xy,(float)xz,
+                                   (float)xy,(float)yy,(float)yz,
+                                   (float)xz,(float)yz,(float)zz);
+
+    // eigen() is DESCENDING (largest first) with eigenvectors in COLUMNS, so the
+    // plane normal is the eigenvector of the smallest eigenvalue — the last column.
+    math::FixedMatrix<float,3,3> evec;
+    math::FixedColVector<float,3> eval;
+    C.eigen(evec, eval);
+    Vec n0(evec(0,2), evec(1,2), evec(2,2), 0);
+    const float len = std::sqrt(n0[0]*n0[0]+n0[1]*n0[1]+n0[2]*n0[2]);
+    if(len > 1e-12f){ n0[0]/=len; n0[1]/=len; n0[2]/=len; }
+
+    const float dist = float(cx*n0[0] + cy*n0[1] + cz*n0[2]);
+    return PlaneModel(n0, dist);
+  }
+
   }

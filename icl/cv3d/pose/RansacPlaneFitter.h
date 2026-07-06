@@ -7,6 +7,8 @@
 #include <icl/cv3d/Types.h>
 #include <icl/core/DataSegment.h>
 #include <icl/math/la/DynMatrix.h>
+#include <icl/math/fit/ModelFitter.h>
+#include <cmath>
 
 namespace icl::cv3d {
   /// class for planar RANSAC estimation on poincloud data (xyzh).
@@ -162,6 +164,41 @@ namespace icl::cv3d {
       void relabelCPU(core::DataSegment<float,4> &xyzh, core::Img8u &newMask, core::Img32s &oldLabel, core::Img32s &newLabel,
                    int desiredID, int srcID, float threshold, Result &result, int w, int h);
 
+  };
+
+  /// A plane model: a point p satisfies p·n0 == dist on the plane.
+  /** Same (normal, offset) representation as RansacPlaneFitter::Result (n0, dist)
+      and its OpenCL kernels, so the generic PlaneFitter and the tuned
+      point-cloud pipeline speak the same model. */
+  struct PlaneModel {
+    Vec n0 = Vec(0,0,1,0);   //!< unit normal (homogeneous w unused)
+    float dist = 0.f;        //!< plane offset: on-plane points satisfy p·n0 == dist
+    PlaneModel() = default;
+    PlaneModel(const Vec &n0, float dist) : n0(n0), dist(dist) {}
+    /// signed point-plane distance (p·n0 - dist); sign is the side of the plane
+    float signedDistance(const Vec &p) const {
+      return p[0]*n0[0] + p[1]*n0[1] + p[2]*n0[2] - dist;
+    }
+  };
+
+  /// ModelFitter face: total-least-squares plane fit to a set of 3D points.
+  /** Fits the plane (n0, dist) that minimises the sum of squared point-plane
+      distances (PCA — the normal is the eigenvector of the smallest covariance
+      eigenvalue). Being a math::ModelFitter it composes with the generic
+      robustifiers: wrap it in math::RobustFitter<Vec,PlaneModel> for a robust
+      plane fit that rejects outliers. This is the generic, unstructured-point
+      counterpart to RansacPlaneFitter's tuned OpenCL multi-surface pipeline
+      (which stays the specialized engine for structured point-cloud data). */
+  class ICLCv3d_API PlaneFitter : public math::ModelFitter<Vec, PlaneModel> {
+    public:
+    /// least-squares plane through all given points (needs >= 3 non-collinear)
+    PlaneModel fit(const std::vector<Vec> &pts) override;
+    /// non-negative point-plane distance |p·n0 - dist|
+    double residual(const PlaneModel &m, const Vec &p) const override {
+      return std::fabs(m.signedDistance(p));
+    }
+    /// a plane needs 3 points
+    int minSamples() const override { return 3; }
   };
 
   } // namespace icl::cv3d

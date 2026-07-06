@@ -17,6 +17,7 @@ test_sources = files(
   'test-cv3d-icp.cpp',
   'test-cv3d-robust-pose.cpp',
   'test-cv3d-rigid-transform.cpp',
+  'test-cv3d-plane-fitter.cpp',
 )
 
 test_deps = [icl_utils_dep, icl_math_dep, icl_core_dep, icl_filter_dep, icl_cv_dep, icl_cv3d_dep]
