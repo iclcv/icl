@@ -227,4 +227,75 @@ ICL_REGISTER_TEST("cv3d.icp.clnn_matches_octree",
   ICL_TEST_LT(r.error, 0.5);
   ICL_TEST_LT(meanResidual(aligned, target), 0.5);
 }
+
+// The GPU color backend must reproduce the CPU ColorNN's correspondences exactly
+// (identical weighted position+color metric).
+ICL_REGISTER_TEST("cv3d.icp.clcolornn_matches_colornn",
+                  "CLColorNN GPU correspondences match the CPU ColorNN's")
+{
+  const std::vector<Vec> target  = randomCloud(150, 21);
+  const std::vector<Vec> queries = randomCloud(80, 55);
+  std::vector<GeomColor> tCol, qCol;
+  for (size_t i = 0; i < target.size(); ++i)
+    tCol.push_back(GeomColor(float(i%256), float((i*53)%256), float((i*17)%256), 255));
+  for (size_t i = 0; i < queries.size(); ++i)
+    qCol.push_back(GeomColor(float((i*7)%256), float((i*29)%256), float((i*83)%256), 255));
+
+  ColorNN cpu(0.7f);
+  cpu.setTargetColors(tCol);
+  cpu.setSourceColors(qCol);
+  cpu.build(target);
+  std::vector<Vec> cpuOut;
+  cpu.nearest(queries, cpuOut);
+
+  CLColorNN gpu(0.7f);
+  if (!gpu.isValid()) {
+    std::cout << "[icp] CLColorNN: OpenCL unavailable — checking graceful fallback\n";
+    std::vector<Vec> out;
+    gpu.build(target);
+    gpu.nearest(queries, out);
+    ICL_TEST_EQ(out.size(), queries.size());
+    return;
+  }
+  gpu.setTargetColors(tCol);
+  gpu.setSourceColors(qCol);
+  gpu.build(target);
+  std::vector<Vec> gpuOut;
+  gpu.nearest(queries, gpuOut);
+
+  double maxd = 0;
+  for (size_t i = 0; i < queries.size(); ++i)
+    maxd = std::max(maxd, (double)icl::math::dist3(cpuOut[i], gpuOut[i]));
+  std::cout << "[icp] CLColorNN vs ColorNN max correspondence delta=" << maxd << std::endl;
+  ICL_TEST_LT(maxd, 1e-3);
+}
+
+// End-to-end color-aware ICP on the GPU recovers a known transform.
+ICL_REGISTER_TEST("cv3d.icp.clcolornn_color_aware_icp",
+                  "GPU color-aware ICP recovers a known transform with consistent colours")
+{
+  const std::vector<Vec> target = randomCloud(200, 99);
+  std::vector<GeomColor> colors;
+  for (size_t i = 0; i < target.size(); ++i)
+    colors.push_back(GeomColor(float(i % 256), float((i*37) % 256), float((i*91) % 256), 255));
+
+  const Mat4 T = icl::math::create_hom_4x4<float>(-0.12f, 0.09f, -0.05f, -4, 6, 3);
+  std::vector<Vec> source;
+  for (const Vec &v : target) source.push_back(T * v);
+
+  auto cnn = std::make_shared<CLColorNN>(0.5f);
+  if (!cnn->isValid()) {
+    std::cout << "[icp] CLColorNN: OpenCL unavailable — skipping GPU color ICP\n";
+    return;
+  }
+  cnn->setTargetColors(colors);
+  cnn->setSourceColors(colors);
+
+  ICP icp(50, 20.0f, 1e-4);
+  icp.setBackend(cnn);
+  std::vector<Vec> aligned;
+  ICP::Result r = icp.apply(target, source, aligned);
+  ICL_TEST_LT(r.error, 0.5);
+  ICL_TEST_LT(meanResidual(aligned, target), 0.5);
+}
 #endif

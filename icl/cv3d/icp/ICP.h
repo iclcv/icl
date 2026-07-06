@@ -186,6 +186,39 @@ namespace icl::cv3d {
     struct Data;
     std::unique_ptr<Data> m_data;
   };
+
+  /// Color-aware OpenCL ICP backend: the GPU counterpart of ColorNN.
+  /** Same metric as ColorNN — `dist² = ||Δpos||² + colorWeight²·||Δrgb||²` — with
+      the per-query scan on the GPU (one work-item per query; colours uploaded as
+      float4 next to the positions). Colours are supplied out-of-band exactly as
+      for ColorNN (setTargetColors() before build(), setSourceColors() before the
+      loop); with none set it degrades to a plain position NN. Only present with
+      OpenCL; if the program fails to build, isValid() is false and nearest() falls
+      back to returning the queries. The free-form-metric override is the C++
+      ColorNN's alone — the GPU path is fixed to the weighted metric. */
+  class ICLCv3d_API CLColorNN : public ICP::Backend {
+  public:
+    CLColorNN(icl32f colorWeight = 1.0f);
+    ~CLColorNN();
+    /// true if the OpenCL program/kernel initialised
+    bool isValid() const;
+    void build(const std::vector<ICP::Vec> &target) override;
+    void nearest(const std::vector<ICP::Vec> &queries,
+                 std::vector<ICP::Vec> &out) const override;
+
+    /// relative weight of the color term in the metric (0 => position-only)
+    void setColorWeight(icl32f w);
+    icl32f getColorWeight() const;
+
+    /// target colors, parallel to the build() target cloud (rgb used)
+    void setTargetColors(const std::vector<GeomColor> &colors);
+    /// source colors, parallel to the nearest() query cloud (rgb used)
+    void setSourceColors(const std::vector<GeomColor> &colors);
+
+  private:
+    struct Data;
+    std::unique_ptr<Data> m_data;
+  };
 #endif
 
 } // namespace icl::cv3d

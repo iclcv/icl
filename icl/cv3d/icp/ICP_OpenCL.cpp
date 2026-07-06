@@ -2,12 +2,12 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-// OpenCL nearest-neighbour backend for ICP: brute-force NN on the GPU, one
-// work-item per query. Accelerates the same exact position-only metric as the
-// default OctreeNN for large clouds. A fresh, self-contained kernel (the
-// preserved rep-DB approximate-NN seed in IterativeClosestPoint* is a further
-// optimisation, not needed for a correct GPU backend). Empty when ICL is built
-// without OpenCL.
+// OpenCL nearest-neighbour backends for ICP: brute-force NN on the GPU, one
+// work-item per query. CLNN accelerates the exact position-only metric of the
+// default OctreeNN; CLColorNN adds the weighted colour term of ColorNN. Fresh,
+// self-contained kernels (the preserved rep-DB approximate-NN seed in
+// IterativeClosestPoint* is a further optimisation, not needed for a correct GPU
+// backend). Empty when ICL is built without OpenCL.
 
 #include <icl/cv3d/icp/ICP.h>
 
@@ -82,6 +82,108 @@ namespace icl::cv3d {
                                                  (const void *)queries.data());
     CLBuffer obuf = m_data->program.createBuffer("w", n * sizeof(ICP::Vec));
     m_data->kernel.setArgs(m_data->targetBuf, m_data->numTargets, qbuf, obuf);
+    m_data->kernel.apply(n);
+    obuf.read(out.data(), n * sizeof(ICP::Vec));
+  }
+
+  // ---- CLColorNN: GPU nearest neighbour with the weighted colour term ----------
+
+  // Colours travel as float4 (GeomColor = FixedColVector<float,4>) alongside the
+  // positions; w2 is colorWeight². Matches ColorNN's metric exactly.
+  static const char *ICP_NN_COLOR_KERNEL =
+    "__kernel void nnColor(__global const float4 *targets,                       \n"
+    "                      __global const float4 *targetCols, int numTargets,    \n"
+    "                      __global const float4 *queries,                       \n"
+    "                      __global const float4 *queryCols, float w2,           \n"
+    "                      __global float4 *out){                                \n"
+    "  int i = get_global_id(0);                                                 \n"
+    "  float4 q = queries[i];                                                    \n"
+    "  float4 qc = queryCols[i];                                                 \n"
+    "  float best = INFINITY;                                                    \n"
+    "  int bi = 0;                                                               \n"
+    "  for(int j=0;j<numTargets;++j){                                            \n"
+    "    float4 t = targets[j];                                                  \n"
+    "    float4 tc = targetCols[j];                                              \n"
+    "    float dx=q.x-t.x, dy=q.y-t.y, dz=q.z-t.z;                               \n"
+    "    float dr=qc.x-tc.x, dg=qc.y-tc.y, db=qc.z-tc.z;                         \n"
+    "    float d = dx*dx + dy*dy + dz*dz + w2*(dr*dr + dg*dg + db*db);           \n"
+    "    if(d<best){ best=d; bi=j; }                                             \n"
+    "  }                                                                         \n"
+    "  out[i] = targets[bi];                                                     \n"
+    "}                                                                           \n";
+
+  struct CLColorNN::Data {
+    CLProgram program;
+    CLKernel  kernel;
+    CLBuffer  targetBuf, targetColBuf;
+    int       numTargets = 0;
+    icl32f    colorWeight = 1.f;
+    bool      ok = false;
+    std::vector<GeomColor> targetCol;   // parallel to the target cloud (may be empty)
+    std::vector<GeomColor> sourceCol;   // parallel to the query cloud (may be empty)
+  };
+
+  CLColorNN::CLColorNN(icl32f colorWeight) : m_data(new Data) {
+    m_data->colorWeight = colorWeight;
+    try {
+      m_data->program = CLProgram("gpu", ICP_NN_COLOR_KERNEL);
+      m_data->kernel  = m_data->program.createKernel("nnColor");
+      m_data->ok = true;
+    } catch (const std::exception &e) {
+      WARNING_LOG("CLColorNN: OpenCL initialisation failed, backend unusable: " << e.what());
+      m_data->ok = false;
+    }
+  }
+
+  CLColorNN::~CLColorNN() {}
+
+  bool CLColorNN::isValid() const { return m_data->ok; }
+  void CLColorNN::setColorWeight(icl32f w) { m_data->colorWeight = w; }
+  icl32f CLColorNN::getColorWeight() const { return m_data->colorWeight; }
+  void CLColorNN::setTargetColors(const std::vector<GeomColor> &c) { m_data->targetCol = c; }
+  void CLColorNN::setSourceColors(const std::vector<GeomColor> &c) { m_data->sourceCol = c; }
+
+  void CLColorNN::build(const std::vector<ICP::Vec> &target) {
+    if (!m_data->ok) return;
+    m_data->numTargets = (int)target.size();
+    if (target.empty()) return;
+    if (!m_data->targetCol.empty() && m_data->targetCol.size() != target.size()) {
+      throw ICLException("CLColorNN::build: target color count != target point count");
+    }
+    // the kernel always reads a colour buffer; zero-fill when none were supplied
+    // (then Δcolor == 0 for every pair, so it is a plain position NN)
+    const std::vector<GeomColor> cols =
+      m_data->targetCol.empty() ? std::vector<GeomColor>(target.size(), GeomColor(0,0,0,0))
+                                : m_data->targetCol;
+    m_data->targetBuf = m_data->program.createBuffer(
+        "r", target.size() * sizeof(ICP::Vec), (const void *)target.data());
+    m_data->targetColBuf = m_data->program.createBuffer(
+        "r", cols.size() * sizeof(GeomColor), (const void *)cols.data());
+  }
+
+  void CLColorNN::nearest(const std::vector<ICP::Vec> &queries,
+                          std::vector<ICP::Vec> &out) const {
+    out.resize(queries.size());
+    if (!m_data->ok || m_data->numTargets == 0) {
+      out = queries;
+      return;
+    }
+    const int n = (int)queries.size();
+    if (!m_data->sourceCol.empty() && (int)m_data->sourceCol.size() != n) {
+      throw ICLException("CLColorNN::nearest: source color count != query count");
+    }
+    const std::vector<GeomColor> qcols =
+      m_data->sourceCol.empty() ? std::vector<GeomColor>(n, GeomColor(0,0,0,0))
+                                : m_data->sourceCol;
+
+    CLBuffer qbuf  = m_data->program.createBuffer("r", n * sizeof(ICP::Vec),
+                                                  (const void *)queries.data());
+    CLBuffer qcbuf = m_data->program.createBuffer("r", n * sizeof(GeomColor),
+                                                  (const void *)qcols.data());
+    CLBuffer obuf  = m_data->program.createBuffer("w", n * sizeof(ICP::Vec));
+    const float w2 = m_data->colorWeight * m_data->colorWeight;
+    m_data->kernel.setArgs(m_data->targetBuf, m_data->targetColBuf, m_data->numTargets,
+                           qbuf, qcbuf, w2, obuf);
     m_data->kernel.apply(n);
     obuf.read(out.data(), n * sizeof(ICP::Vec));
   }
