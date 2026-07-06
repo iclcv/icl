@@ -181,3 +181,50 @@ ICL_REGISTER_TEST("cv3d.icp.color_aware_icp_recovers_transform",
   ICL_TEST_LT(r.error, 0.5);
   ICL_TEST_LT(meanResidual(aligned, target), 0.5);
 }
+
+// --- CLNN (OpenCL backend) ----------------------------------------------------
+
+#ifdef ICL_HAVE_OPENCL
+// The GPU brute-force NN must produce the SAME correspondences as the octree, and
+// drive ICP to the same recovered transform. If OpenCL is unavailable in this
+// environment, verify the documented graceful fallback instead.
+ICL_REGISTER_TEST("cv3d.icp.clnn_matches_octree",
+                  "CLNN GPU nearest-neighbour matches OctreeNN and recovers the transform")
+{
+  const std::vector<Vec> target = randomCloud(200, 42);
+  const Mat4 T = icl::math::create_hom_4x4<float>(0.15f, -0.1f, 0.08f, 5, -5, 2);
+  std::vector<Vec> source;
+  for (const Vec &v : target) source.push_back(T * v);
+
+  auto cl = std::make_shared<CLNN>();
+  if (!cl->isValid()) {
+    std::cout << "[icp] CLNN: OpenCL unavailable here — checking graceful fallback\n";
+    std::vector<Vec> out;
+    cl->build(target);
+    cl->nearest(source, out);                 // invalid backend returns queries as-is
+    ICL_TEST_EQ(out.size(), source.size());
+    return;
+  }
+
+  // GPU correspondences must match the octree's exactly (same metric)
+  OctreeNN oct;
+  oct.build(target);
+  std::vector<Vec> cpuNN, gpuNN;
+  oct.nearest(source, cpuNN);
+  cl->build(target);
+  cl->nearest(source, gpuNN);
+  double maxd = 0;
+  for (size_t i = 0; i < source.size(); ++i)
+    maxd = std::max(maxd, (double)icl::math::dist3(cpuNN[i], gpuNN[i]));
+  std::cout << "[icp] CLNN vs octree max correspondence delta=" << maxd << std::endl;
+  ICL_TEST_LT(maxd, 1e-3);
+
+  // full ICP via the GPU backend recovers the known transform
+  ICP icp(50, 20.0f, 1e-4);
+  icp.setBackend(cl);
+  std::vector<Vec> aligned;
+  ICP::Result r = icp.apply(target, source, aligned);
+  ICL_TEST_LT(r.error, 0.5);
+  ICL_TEST_LT(meanResidual(aligned, target), 0.5);
+}
+#endif

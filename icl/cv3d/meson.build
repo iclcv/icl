@@ -56,6 +56,7 @@ cv3d_sources = files(
   'icp/ICP.cpp',
   'icp/ICP_Cpp.cpp',
   'icp/ICP_ColorNN.cpp',
+  'icp/ICP_OpenCL.cpp',
   'features/SurfaceFeatureExtractor.cpp',
   'features/CurvatureFeatureExtractor.cpp',
   'features/CoPlanarityFeatureExtractor.cpp',

@@ -162,4 +162,30 @@ namespace icl::cv3d {
     std::unique_ptr<Data> m_data;
   };
 
+#ifdef ICL_HAVE_OPENCL
+  /// OpenCL ICP backend: brute-force nearest neighbour on the GPU.
+  /** Same exact position-only Euclidean metric as OctreeNN, one GPU work-item per
+      query scanning every target. Wins once the clouds are large enough that the
+      O(|source|·|target|) scan parallelises to a net speedup; for small clouds the
+      octree's log-time search is faster. Only present when ICL is built with
+      OpenCL. build() uploads the target once; each nearest() uploads the queries,
+      dispatches the kernel, and reads back the matched targets. If the OpenCL
+      program fails to initialise (no device / compile error), isValid() is false
+      and nearest() falls back to returning the queries unchanged. */
+  class ICLCv3d_API CLNN : public ICP::Backend {
+  public:
+    CLNN();
+    ~CLNN();
+    /// true if the OpenCL program/kernel initialised
+    bool isValid() const;
+    void build(const std::vector<ICP::Vec> &target) override;
+    void nearest(const std::vector<ICP::Vec> &queries,
+                 std::vector<ICP::Vec> &out) const override;
+
+  private:
+    struct Data;
+    std::unique_ptr<Data> m_data;
+  };
+#endif
+
 } // namespace icl::cv3d
