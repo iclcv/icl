@@ -20,7 +20,7 @@ namespace icl::math {
   /** A rank-based, derivative-free optimizer (Hansen) that learns the covariance
       of successful steps — the modern default for noisy, ill-conditioned or
       multimodal black-box objectives, and far more robust than Nelder-Mead
-      restarts or the naive (1+1) StochasticOptimizer. Implements the Optimizer<V>
+      restarts. Implements the Optimizer<V>
       interface, so it is a drop-in for NelderMeadOptimizer.
 
       Stochastic: seed the global RNG (`utils::randomSeed(...)`) for reproducibility.

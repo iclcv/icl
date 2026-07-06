@@ -11,8 +11,15 @@
 #include <functional>
 
 namespace icl::math {
-  /// Direct Least Square Fitting Algorithm
-  /** The given algorithm is based on the paper <em><b>Direct Least Square Fitting
+  /// Direct Least Square Fitting Algorithm — the algebraic ENGINE behind PrimitiveFitters2D.
+  /** \note For 2D primitive fitting prefer the fit-framework faces in
+      PrimitiveFitters2D.h — LineFitter2D / CircleFitter2D / EllipseFitter2D
+      (and the strictly-better TaubinCircleFitter / HalirFlusserEllipseFitter).
+      Those derive from ModelFitter, so they compose with RobustFitter (RANSAC),
+      pipelines and Configurable UIs. This class is the low-level algebraic engine
+      they wrap; use it directly only for a custom design-matrix generator.
+
+      The given algorithm is based on the paper <em><b>Direct Least Square Fitting
       of Ellipses</b></em> written by<em>Andrew W. Fitzgibbon</em>, <em>Maurizio Milu</em>
       and <em>Robert B. Fischer</em>.
 

@@ -51,6 +51,17 @@ namespace icl::math {
         - xI*xJ*... , where I and J and other are integer input varialbe indices
         - xI^K, where K is a constant (can be float and int)
 
+        \section FRAMEWORK Relationship to the fit framework
+
+        PolynomialRegression is a self-contained *linear* least-squares regression
+        tool (SVD pseudo-inverse over a polynomial design matrix) with its own
+        multi-output Result (+ XML serialisation). It is intentionally NOT a
+        ModelFitter: its Model is a heavy Result, and it solves a linear system in
+        one shot rather than being a primitive to robustify. If you need
+        outlier-robust or otherwise composable polynomial fitting, use the fit
+        framework instead — an LMFitter with a polynomial model function and a
+        RobustKernel, or a RobustFitter wrapping a polynomial ModelFitter.
+
     */
     template<class T>
     class ICLMath_IMP PolynomialRegression{

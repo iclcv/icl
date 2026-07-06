@@ -5,21 +5,10 @@
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 #include <icl/math/fit/RobustFitter.h>
+#include <icl/math/fit/PrimitiveFitters2D.h>
 #include <icl/utils/Random.h>
 #include <icl/utils/Point.h>
-#include <icl/math/fit/LeastSquareModelFitting2D.h>
 #include <mutex>
-
-typedef LeastSquareModelFitting2D LS;
-
-/// ModelFitter adapter over LeastSquareModelFitting2D so RobustFitter can wrap it.
-struct LSFitter : math::ModelFitter<Point32f, std::vector<double> > {
-  LS *ls; int ns;
-  LSFitter(LS *l, int n) : ls(l), ns(n) {}
-  std::vector<double> fit(const std::vector<Point32f> &p) override { return ls->fit(p); }
-  double residual(const std::vector<double> &m, const Point32f &p) const override { return ls->getError(m,p); }
-  int minSamples() const override { return ns; }
-};
 
 HSplit gui;
 
@@ -83,19 +72,17 @@ void compute(){
 
     plot->addScatterData('x',&ptsOrig[0].x,&ptsOrig[0].y, ptsOrig.size(), "input points",255,0,0, 3,false, 2,2);
 
-    LeastSquareModelFitting2D ls(3,LeastSquareModelFitting2D::line_gen);
+    math::LineFitter2D line;                 // ModelFitter face (algebraic line fit)
 
+    std::vector<double> model;
     if(gui["ransac"]){
-      LSFitter base(&ls,3);
-      math::RobustFitter<Point32f,std::vector<double> > fitLine(&base, 0.2, 0.99, 100, "ransac");
-      std::vector<double> model = fitLine.fit(ptsOrig);
-      const Point32f mps[2] = { get_line_point(model,-1), get_line_point(model,1) };
-      plot->addAnnotations('l',&mps[0].x,1,QColor(0,100,255));
+      math::RobustFitter<Point32f,std::vector<double> > fitLine(&line, 0.2, 0.99, 100, "ransac");
+      model = fitLine.fit(ptsOrig);
     }else{
-      std::vector<double> model = ls.fit(ptsOrig);
-      const Point32f mps[2] = { get_line_point(model,-1), get_line_point(model,1) };
-      plot->addAnnotations('l',&mps[0].x,1,QColor(0,100,255));
+      model = line.fit(ptsOrig);
     }
+    const Point32f mps[2] = { get_line_point(model,-1), get_line_point(model,1) };
+    plot->addAnnotations('l',&mps[0].x,1,QColor(0,100,255));
   }else if(what == "circle"){
     plot->setDataViewPort(Range32f(0,9),Range32f(-3,6));
     plot->prop("tics.x-distance").value = 1;
@@ -105,15 +92,14 @@ void compute(){
     std::vector<Point32f> ptsOrig = gen_circle_points();
     plot->addScatterData('x',&ptsOrig[0].x,&ptsOrig[0].y, ptsOrig.size(), "input points",255,0,0, 3,false, 2,2);
 
-    LeastSquareModelFitting2D ls(4,LeastSquareModelFitting2D::circle_gen);
+    math::CircleFitter2D circle;             // ModelFitter face (algebraic circle fit)
 
     std::vector<double> model;
     if(gui["ransac"]){
-      LSFitter base(&ls,4);
-      math::RobustFitter<Point32f,std::vector<double> > fitCircle(&base, 0.005, 0.99, 100, "ransac");
+      math::RobustFitter<Point32f,std::vector<double> > fitCircle(&circle, 0.005, 0.99, 100, "ransac");
       model = fitCircle.fit(ptsOrig);
     }else{
-      model = ls.fit(ptsOrig);
+      model = circle.fit(ptsOrig);
     }
     if(model.size()){
       float a = model[0], b = model[1], c = model[2], d = model [3];

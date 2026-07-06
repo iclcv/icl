@@ -63,7 +63,6 @@ math_fit_headers = files(
   'fit/RefiningFitter.h',
   'fit/RobustFitter.h',
   'fit/SimplexOptimizer.h',
-  'fit/StochasticOptimizer.h',
   'fit/VectorTraits.h',
 )
 
@@ -94,7 +93,6 @@ math_sources = files(
   'transform/Projective4PointTransform.cpp',
   'ml/SOM.cpp',
   'fit/SimplexOptimizer.cpp',
-  'fit/StochasticOptimizer.cpp',
   'transform/StraightLine2D.cpp',
 )
 
