@@ -4,6 +4,38 @@
 
 ## Next Step
 
+### 🔵 IN PROGRESS (S99) — fit-framework adoption (Optimizer engine hardened)
+Audit of `math/fit`: ON the framework = `Optimizer<V>` (NelderMead, CMAES), `ModelFitter`
+(PrimitiveFitter2D + Line/Circle/Ellipse, Taubin, HalirFlusser, Robust/Seeded), `RefiningFitter`
+(GeometricCircleRefiner). OFF (stragglers): `SimplexOptimizer` (engine behind NelderMead),
+`StochasticOptimizer`, `LeastSquareModelFitting(2D)` (overlaps PrimitiveFitter2D!),
+`LevenbergMarquardtFitter`, `PolynomialRegression`.
+
+**`SimplexOptimizer` engine — two real bugs FIXED (the "fix divergence" task):**
+1. `cc63851ae` — **UB/non-determinism**: `create_zero_vector` only handled `FixedColVector<float,3>`;
+   all other fixed sizes fell to `Vector(dim,0.0)` → FixedMatrix 2-arg element ctor → uninitialised
+   tail → garbage in the optimizer's internal buffers. Pose6D results swung 1.2px↔86000px across runs
+   of the same binary. Added zero-fill specialisations N=2..6 float+double. NOW DETERMINISTIC.
+2. `36088e80d` — default simplex was multiplicative (`x[i]*=1.05`), degenerate at zero components;
+   now additive (scipy heuristic). NelderMead now works from a zero init.
+
+**Structural TODO (remaining):** make NelderMead the public `Optimizer<V>` face and stop the 9 raw
+`SimplexOptimizer` consumers using the engine directly. BLOCKERS surfaced: (a) a literal `detail/` move
+conflicts with the detail-rule since `NelderMeadOptimizer.h` is an *installed template* that must include
+the engine; (b) `MarkerGridBasedUndistortionOptimizer` uses engine-only APIs (multi-restart
+`optimize(gen,N)` + `setIterationCallback`) NelderMead doesn't expose. Options: enrich `Optimizer<V>` /
+`NelderMead`, or keep the engine public-but-documented-as-internal. Also put the other stragglers on the
+bases (StochasticOptimizer→Optimizer; LeastSquareModelFitting/LevMar/PolyRegression→ModelFitter; dedup
+LeastSquareModelFitting2D vs PrimitiveFitter2D). See [[project_fit_framework]].
+
+**⏭ PlanarPoseEstimator redesign (task 2, deferred):** its `PoseEstimationAlgorithm` enum + bespoke
+`SimplexErrorFunction`/`create_initial_simplex`/euler machinery should become "closed-form seed +
+pluggable `Optimizer<Pose6D>`". Its SimplexSampling still only reaches ~1.2px (not the seed's ~1e-4px):
+the euler parametrization is pathological (periodicity/gimbal → bad branches; more iters → worse) AND
+`compute_error_opt`'s rotation disagrees with `create_hom_4x4`. Needs a better parametrization (se(3) /
+rotation-preserving refine) — a real redesign, not a patch. Default is HomographyBasedOnly so this is
+opt-in only. See [[project_pose_estimation_bugs]].
+
 ### ✅ DONE (S99) — pose-correctness pass: FALSE ALARM + one real milder bug
 The "getPose is broken" alarm was a **test bug**, not a code bug. `getPose` (HomographyBasedOnly)
 and `getPoses` (IPPE) both recover translated/off-axis planar targets to ~1e-4–2e-5 px. The bad
