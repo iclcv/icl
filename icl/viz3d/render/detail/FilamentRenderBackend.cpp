@@ -407,6 +407,8 @@ namespace icl::viz3d {
       p.mi->setParameter("metallic", metallic);
       p.mi->setParameter("roughness", std::max(0.045f, roughness));
       p.mi->setParameter("emissive", flm::float3{em[0], em[1], em[2]});
+      // "enable lighting" off → flat unlit base colour (ICL contract).
+      p.mi->setParameter("unlit", lighting ? 0.0f : 1.0f);
     }
 
     void syncNode(Node *node) {

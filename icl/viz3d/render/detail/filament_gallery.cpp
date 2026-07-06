@@ -47,6 +47,10 @@ int main(int argc, char **argv) {
   if (scene.getCameraCount() == 0) { std::fprintf(stderr, "no camera\n"); return 2; }
   scene.getCamera(0).getRenderParams().chipSize = utils::Size(800, 600);
 
+  // Optional 2nd arg "unlit" → toggle the scene's "enable lighting" property off.
+  if (argc > 2 && std::string(argv[2]) == "unlit")
+    scene.setPropertyValue("enable lighting", false);
+
   viz3d::BVH::ImageResult res = scene.renderToImage(0, viz3d::BVH::NoDepth);
   if (res.image.getDim() == 0) { std::fprintf(stderr, "empty render\n"); return 1; }
 

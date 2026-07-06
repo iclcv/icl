@@ -13,15 +13,20 @@ material {
         { type : float3, name : baseColor },
         { type : float,  name : metallic },
         { type : float,  name : roughness },
-        { type : float3, name : emissive }
+        { type : float3, name : emissive },
+        { type : float,  name : unlit }
     ]
 }
 fragment {
     void material(inout MaterialInputs material) {
         prepareMaterial(material);
-        material.baseColor = vec4(materialParams.baseColor, 1.0);
-        material.metallic = materialParams.metallic;
-        material.roughness = materialParams.roughness;
-        material.emissive = vec4(materialParams.emissive, 0.0);
+        // unlit=1 → flat base colour (ICL's "disable lighting"): route the base
+        // colour through emissive and null out the lit response, so it shows at
+        // full brightness regardless of lights. unlit=0 → normal PBR.
+        float u = materialParams.unlit;
+        material.baseColor = vec4(materialParams.baseColor * (1.0 - u), 1.0);
+        material.metallic = materialParams.metallic * (1.0 - u);
+        material.roughness = mix(materialParams.roughness, 1.0, u);
+        material.emissive = vec4(mix(materialParams.emissive, materialParams.baseColor, u), 0.0);
     }
 }
