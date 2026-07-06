@@ -39,19 +39,25 @@ Suite **1088→1092**, all green.
    clean, 16/16 @2.0px under 8px noise. Also fixed the mirrored app's stale `"opensurf"` backend
    (retired) → `"best"`. **cv3d/pose framework migration steps 1–4 all done** (see S100 block above).
 
+### ✅ DONE (S100) — CLColorNN (Vec8 GPU color backend); ICP backend matrix complete
+`CLColorNN` (`2489795b8`) — GPU counterpart of `ColorNN`, same weighted metric, colours as float4.
+GPU-verified: correspondences == CPU `ColorNN` exactly (delta 0), color-aware ICP recovers transform.
+**The ICP NN backend matrix is now complete:** OctreeNN/CLNN (position, C++/GPU) ×
+ColorNN/CLColorNN (color, C++/GPU), all behind the one `ICP::Backend` seam. Suite **1092→1094**.
+
 ### ▶ NEXT SESSION — pick one (S99/S100 recap below)
 Branch `further-restructuring-and-cleanup`; **nothing pushed** (SSH blocked in-sandbox — CE pushes).
 Candidate directions:
 
-1. **ICP color-aware, further** — Vec8 GPU color backend (extend the CLNN kernel with the weighted
-   colour term + upload colour buffers), and/or the rep-DB approximate-NN acceleration from the
-   preserved `icp/IterativeClosestPoint.*` seed for large clouds. See [[project_icp_consolidation]].
+1. **Retire / mine the preserved ICP OpenCL seed** — `icp/IterativeClosestPoint.{h,cpp,CLCode.h,CLCode.cl}`
+   (821 lines commented, excluded from meson, 0 users). Now that CLNN + CLColorNN exist, the only thing
+   it still holds is the **rep-DB approximate-NN** (speeds huge clouds by not scanning all targets) +
+   on-GPU covariance/SVD. Decide: mine rep-DB into a `CLNN` fast path (premature without a large-cloud
+   workload) or just delete the seed. Small if deleting. See [[project_icp_consolidation]].
 2. **Filament rendering backend** (big, offset) — rework viz3d/render onto Google Filament.
    See [[project_filament_backend]].
 3. **Resume paused arcs** — `icl-cam-calib-intrinsic` (auto-capture quality gate; see
    `intrinsic-calib-next-steps.md`) or the camera-calibration redesign / Phase C.
-4. **Retire the preserved ICP OpenCL seed** — now that CLNN exists, decide the fate of the
-   821-line commented `icp/IterativeClosestPoint.*` (mine rep-DB NN then delete, or delete outright).
 
 ### ✅ DONE (S99) — fit-framework adoption COMPLETE
 Every `math/fit` tool now sits behind the generic bases, or is a documented internal engine:
