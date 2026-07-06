@@ -49,7 +49,7 @@ void init(){
   obj->setLineWidth(3);
   scene.addNode(obj);
 
-  surf.reset(new SurfFeatureDetector(5,4,2,0.00005,"opensurf"));
+  surf.reset(new SurfFeatureDetector(5,4,2,0.00005,"best"));   // opensurf retired; clsurf is the only backend
   Img8u templ = icl::io::load(pa("-t")).as8u();
   surf->setReferenceImage(&templ);
 
@@ -125,7 +125,7 @@ void run(){
 }
 
 int main(int n, char **args){
-  pa_explain("-p","select surf-feature detection plugin (opensurf, clsurf or best)");
+  pa_explain("-p","select surf-feature detection plugin (clsurf or best)");
   return ICLApp(n,args,"[m]-i(2) -t(filename,obj-width-mm,obj-height-mm,obj-thickness-mm) "
-                "-cam(file) -surf-plugin|-p(plugin=opensurf)",init,run).exec();
+                "-cam(file) -surf-plugin|-p(plugin=best)",init,run).exec();
 }

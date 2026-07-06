@@ -18,6 +18,18 @@ endif
 
 # ---- Apps ----
 if _build_apps
+  # Headless apps (no Qt) — console tools / simulators
+  _cv3d_apps = {
+    'robust-pose-sim': [],
+  }
+  foreach name, extra_deps : _cv3d_apps
+    executable('icl-' + name,
+      files('../apps' / name + '.cpp'),
+      dependencies: [icl_cv3d_dep] + extra_deps,
+      install: true,
+    )
+  endforeach
+
   # Qt-dependent apps
   if qt_found
     _cv3d_qt_apps = {
