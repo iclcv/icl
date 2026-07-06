@@ -101,3 +101,83 @@ ICL_REGISTER_TEST("cv3d.icp.default_backend_is_octree",
   icp.setBackend(custom);
   ICL_TEST_EQ(icp.getBackend(), custom.get());
 }
+
+// --- ColorNN (color-aware backend) --------------------------------------------
+
+// The metric breaks a geometric tie by colour: a query equidistant from two
+// targets picks the one whose colour matches the query's.
+ICL_REGISTER_TEST("cv3d.icp.colornn_color_breaks_geometric_tie",
+                  "ColorNN picks the colour-matching target when positions tie")
+{
+  const std::vector<Vec> target = { Vec(0,0,0,1), Vec(10,0,0,1) };
+  const std::vector<GeomColor> tCol = { GeomColor(255,0,0,255),   // A red
+                                        GeomColor(0,255,0,255) };  // B green
+  const std::vector<Vec> query = { Vec(5,0,0,1) };                 // 5 from each
+
+  ColorNN nn(1.0f);
+  nn.setTargetColors(tCol);
+  nn.build(target);
+  std::vector<Vec> out;
+
+  nn.setSourceColors({ GeomColor(0,255,0,255) });   // green -> should match B
+  nn.nearest(query, out);
+  ICL_TEST_NEAR(out[0][0], 10.0, 1e-5);
+
+  nn.setSourceColors({ GeomColor(255,0,0,255) });   // red -> should match A
+  nn.nearest(query, out);
+  ICL_TEST_NEAR(out[0][0], 0.0, 1e-5);
+
+  // with colour disabled the tie falls back to (first-found) position NN
+  nn.setColorWeight(0.f);
+  nn.nearest(query, out);
+  ICL_TEST_NEAR(out[0][0], 0.0, 1e-5);              // A found first at equal dist
+}
+
+// A ColorNN with zero colour weight is a plain (exact) position NN, so it
+// recovers the same known transform as the default octree backend.
+ICL_REGISTER_TEST("cv3d.icp.colornn_zero_weight_recovers_transform",
+                  "ColorNN(0) behaves as a position NN and recovers the transform")
+{
+  const std::vector<Vec> target = randomCloud(200, 42);
+  const Mat4 T = icl::math::create_hom_4x4<float>(0.15f, -0.1f, 0.08f, 5, -5, 2);
+  std::vector<Vec> source;
+  for (const Vec &v : target) source.push_back(T * v);
+
+  ICP icp(50, 20.0f, 1e-4);
+  icp.setBackend(std::make_shared<ColorNN>(0.0f));   // no colours set
+  std::vector<Vec> aligned;
+  ICP::Result r = icp.apply(target, source, aligned);
+
+  ICL_TEST_LT(r.error, 0.5);
+  ICL_TEST_LT(meanResidual(aligned, target), 0.5);
+}
+
+// End-to-end color-aware ICP: consistent per-point colours (source[i] carries
+// target[i]'s colour) aid correspondence and still recover the known transform.
+ICL_REGISTER_TEST("cv3d.icp.color_aware_icp_recovers_transform",
+                  "color-aware ICP recovers a known transform with consistent colours")
+{
+  const std::vector<Vec> target = randomCloud(200, 99);
+  std::vector<GeomColor> colors;
+  for (size_t i = 0; i < target.size(); ++i)                  // a deterministic colour per point
+    colors.push_back(GeomColor(float(i % 256), float((i*37) % 256), float((i*91) % 256), 255));
+
+  const Mat4 T = icl::math::create_hom_4x4<float>(-0.12f, 0.09f, -0.05f, -4, 6, 3);
+  std::vector<Vec> source;
+  for (const Vec &v : target) source.push_back(T * v);
+  // source[i] is the transform of target[i], so they share colour i
+
+  auto cnn = std::make_shared<ColorNN>(0.5f);
+  cnn->setTargetColors(colors);
+  cnn->setSourceColors(colors);
+
+  ICP icp(50, 20.0f, 1e-4);
+  icp.setBackend(cnn);
+  std::vector<Vec> aligned;
+  ICP::Result r = icp.apply(target, source, aligned);
+
+  std::cout << "[icp] color-aware iterations=" << r.iterations
+            << " error=" << r.error << std::endl;
+  ICL_TEST_LT(r.error, 0.5);
+  ICL_TEST_LT(meanResidual(aligned, target), 0.5);
+}

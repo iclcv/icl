@@ -113,4 +113,53 @@ namespace icl::cv3d {
     std::unique_ptr<Data> m_data;
   };
 
+  /// Color-aware C++ ICP backend: nearest neighbour under a weighted position+color metric.
+  /** Correspondences minimise `dist² = ||Δposition||² + colorWeight²·||Δrgb||²`,
+      i.e. an exact nearest neighbour in the 6D space `[x,y,z, w·r,w·g,w·b]`.
+      Color influences ONLY the correspondence choice; the rigid transform is still
+      estimated from positions, so colour merely disambiguates which target a
+      source point matches — invaluable where geometry alone is ambiguous (flat or
+      symmetric surfaces).
+
+      Colors are supplied out-of-band (they do not transform with the pose):
+      setTargetColors() before build(), setSourceColors() before the ICP loop —
+      each parallel (same order and length) to the target / source point arrays.
+      With no colors set it degrades to a plain position NN.
+
+      This is the C++ backend's edge over a GPU one: override distanceSq() for a
+      FULLY free-form position+color metric (per-channel weights, hue-only, robust
+      caps, …). The search is exact brute force (O(|source|·|target|) per
+      iteration); the OpenCL backend accelerates the same metric for large clouds.
+      Kept separate from OctreeNN so the position-only Vec4 hot path is never
+      burdened with a color branch. */
+  class ICLCv3d_API ColorNN : public ICP::Backend {
+  public:
+    ColorNN(icl32f colorWeight = 1.0f);
+    ~ColorNN();
+
+    void build(const std::vector<ICP::Vec> &target) override;
+    void nearest(const std::vector<ICP::Vec> &queries,
+                 std::vector<ICP::Vec> &out) const override;
+
+    /// relative weight of the color term in the metric (0 => position-only)
+    void setColorWeight(icl32f w);
+    icl32f getColorWeight() const;
+
+    /// target colors, parallel to the build() target cloud (rgb used)
+    void setTargetColors(const std::vector<GeomColor> &colors);
+    /// source colors, parallel to the nearest() query cloud (rgb used)
+    void setSourceColors(const std::vector<GeomColor> &colors);
+
+  protected:
+    /// squared metric between a query (transformed source) and a target point.
+    /** Default: `||Δpos||² + colorWeight²·||Δrgb||²`. Override for a free-form
+        position+color distance (the C++ backend's degree of freedom). */
+    virtual icl64f distanceSq(const ICP::Vec &qPos, const GeomColor &qCol,
+                              const ICP::Vec &tPos, const GeomColor &tCol) const;
+
+  private:
+    struct Data;
+    std::unique_ptr<Data> m_data;
+  };
+
 } // namespace icl::cv3d

@@ -55,6 +55,7 @@ cv3d_sources = files(
   'pose/RansacPlaneFitter.cpp',
   'icp/ICP.cpp',
   'icp/ICP_Cpp.cpp',
+  'icp/ICP_ColorNN.cpp',
   'features/SurfaceFeatureExtractor.cpp',
   'features/CurvatureFeatureExtractor.cpp',
   'features/CoPlanarityFeatureExtractor.cpp',
