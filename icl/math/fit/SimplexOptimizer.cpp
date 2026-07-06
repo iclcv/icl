@@ -191,7 +191,10 @@ namespace icl::math {
     std::vector<Vector> r(vdim(init)+1);
     for(unsigned int i=0;i<r.size()-1;++i){
       r[i] = init;
-      r[i][i] *= 1.05;
+      // 5% relative step, absolute step for zero components. A purely
+      // multiplicative step (*1.05) collapses any dimension whose component is 0
+      // into a degenerate simplex that Nelder-Mead can never explore.
+      r[i][i] = (r[i][i] != T(0)) ? r[i][i]*T(1.05) : T(0.00025);
     }
     r.back() = init;
     return r;
@@ -201,7 +204,7 @@ namespace icl::math {
   SimplexOptimizationResult<T,Vector> SimplexOptimizer<T,Vector>::optimize(const Vector &init){
     for(int i=0; i<m_data->dim; ++i){
       m_data->x[i] = init;
-      m_data->x[i][i] *= 1.05;
+      m_data->x[i][i] = (m_data->x[i][i] != T(0)) ? m_data->x[i][i]*T(1.05) : T(0.00025);
     }
     m_data->x.back() = init;
     m_data->centerOld = init * (m_data->num);

@@ -1573,11 +1573,17 @@ ICL_REGISTER_TEST("math.fit.nelder_mead_quadratic",
   using V = std::vector<double>;
   NelderMeadOptimizer<V> opt(5000, 1e-12, 1e-12);
   auto f = [](const V &p)->double{ return (p[0]-3)*(p[0]-3) + (p[1]+2)*(p[1]+2); };
-  // non-zero init: SimplexOptimizer's default simplex (x[i]*=1.05) is degenerate at 0
   const auto r = opt.minimize(f, V{5.0, 5.0});
   ICL_TEST_NEAR(r.params[0],  3.0, 1e-3);
   ICL_TEST_NEAR(r.params[1], -2.0, 1e-3);
   ICL_TEST_TRUE(r.error < 1e-6);
+
+  // ZERO init: the default simplex used to be degenerate here (x[i]*=1.05 leaves
+  // a zero component unperturbed) — now perturbed with an absolute step.
+  const auto r0 = opt.minimize(f, V{0.0, 0.0});
+  ICL_TEST_NEAR(r0.params[0],  3.0, 1e-3);
+  ICL_TEST_NEAR(r0.params[1], -2.0, 1e-3);
+  ICL_TEST_TRUE(r0.error < 1e-6);
 }
 
 // Returning eigen()/svd() overloads with structured bindings (ergonomic sugar over
