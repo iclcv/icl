@@ -239,6 +239,32 @@ if cycles_found
   endif
 endif
 
+# Filament renderer (real-time PBR backend; gated, arm64-mac only for now).
+viz3d_filament_deps = []
+viz3d_filament_inc = []
+unlit_solid_filamat_h = []
+if filament_found
+  viz3d_sources += files('render/detail/FilamentRenderBackend.cpp')
+  viz3d_filament_deps = [filament_dep]
+
+  # Compile the unlit material to an embeddable C header via matc (version-locked
+  # to the runtime lib — matc ships alongside the archives in 3rdparty/filament).
+  matc = find_program(meson.project_source_root() / '3rdparty/filament/bin/matc')
+  unlit_solid_filamat_h = custom_target('unlit_solid_filamat',
+    input: files('render/detail/materials/unlit_solid.mat'),
+    output: 'unlit_solid.filamat.h',
+    command: [matc, '-a', 'metal', '-p', 'desktop', '-f', 'header',
+              '-o', '@OUTPUT@', '@INPUT@'],
+  )
+  # Listing the generated header as a source makes meson add its build dir
+  # (builddir/icl/viz3d) to the include path — enough for FilamentRenderBackend.cpp
+  # to #include "unlit_solid.filamat.h". Do NOT add include_directories('.') here:
+  # that also injects the *source* dir (../icl/viz3d), and on the case-insensitive
+  # macOS FS Cycles' `#include "scene/scene.h"` would then resolve to
+  # icl/viz3d/scene/Scene.h and break the Cycles build.
+  viz3d_sources += unlit_solid_filamat_h
+endif
+
 # Include dirs for 3rdparty single-header libs used by Loader.cpp
 _stb_inc = include_directories('../../3rdparty')
 _cgltf_inc = []
@@ -248,7 +274,7 @@ if fs.is_dir(meson.project_source_root() / '3rdparty/cycles/lib/macos_arm64/mate
   _cgltf_inc = [include_directories(_cgltf_path)]
 endif
 
-_viz3d_inc = [root_inc, gen_inc, _stb_inc] + _cgltf_inc
+_viz3d_inc = [root_inc, gen_inc, _stb_inc] + _cgltf_inc + viz3d_filament_inc
 if cycles_found
   _viz3d_inc += [viz3d_cycles_inc, _cycles_sys_inc]
 endif
@@ -256,7 +282,7 @@ endif
 icl_viz3d_lib = shared_library('icl-viz3d',
   viz3d_sources,
   include_directories: _viz3d_inc,
-  dependencies: [icl_qt_dep, icl_cv3d_dep, icl_io_dep] + viz3d_cycles_deps,
+  dependencies: [icl_qt_dep, icl_cv3d_dep, icl_io_dep] + viz3d_cycles_deps + viz3d_filament_deps,
   cpp_args: viz3d_cycles_args,
   version: so_version,
   implicit_include_directories: false,
@@ -281,21 +307,21 @@ if filament_found
     install: false,
   )
 
-  # Compile the unlit material to an embeddable C header via matc (version-locked
-  # to the runtime lib — matc ships alongside the archives in 3rdparty/filament).
-  matc = find_program(meson.project_source_root() / '3rdparty/filament/bin/matc')
-  unlit_solid_filamat_h = custom_target('unlit_solid_filamat',
-    input: files('render/detail/materials/unlit_solid.mat'),
-    output: 'unlit_solid.filamat.h',
-    command: [matc, '-a', 'metal', '-p', 'desktop', '-f', 'header',
-              '-o', '@OUTPUT@', '@INPUT@'],
-  )
-
   # P2 projection-parity gate — the linchpin (see filament-plan.md).
+  # (unlit_solid_filamat_h material header is defined at library scope above.)
   executable('icl-filament-parity',
     files('render/detail/filament_projection_parity.cpp'), unlit_solid_filamat_h,
     dependencies: [filament_dep, icl_cv3d_dep],
     include_directories: include_directories('.'),  # for the generated .filamat.h
+    implicit_include_directories: false,
+    install: false,
+  )
+
+  # P2 FilamentRenderBackend headless driver test (drives the real class through
+  # the icl-viz3d lib; no raw Filament API, no generated header needed here).
+  executable('icl-filament-backend-test',
+    files('render/detail/filament_backend_test.cpp'),
+    dependencies: [icl_viz3d_dep, filament_dep],
     implicit_include_directories: false,
     install: false,
   )
