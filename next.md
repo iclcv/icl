@@ -4,6 +4,57 @@
 
 ## Next Step
 
+### ✅ DONE (S101) — Filament real-time renderer: built, default, tuned (21 commits)
+Branch `further-restructuring-and-cleanup`; suite **1094/1094** throughout. **Nothing pushed.**
+Full plan/status in **`filament-plan.md`**; memory **[[project_filament_backend]]**. Google Filament
+(prebuilt, gated like Cycles, `3rdparty/filament/`) is now the **default** viz3d real-time backend;
+GL is legacy (`ICL_VIZ3D_BACKEND=gl`). All self-verified headless in-sandbox (Metal) by rendering to
+PNG + inspecting; **onscreen fixes were CE-driven on their Mac** (Qt GL crashes in sandbox).
+
+**Arc (P0→polish):**
+- **P0/P1/P2** (`0d36a1157`,`ba356b794`,`a6fdd78b2`) — meson gate + smoke; abstract `RenderBackend`
+  seam (GL renamed `GLRenderBackend`); **projection-parity gate GREEN** (off-centre principal point,
+  9/9 pts ≤1px). Recipe: Filament proj = `cv3d::Camera::getProjectionMatrixGL()` as-is (GL NDC),
+  camera via `setModelMatrix(view.inv())`, readPixels row 0 = top.
+- **`FilamentRenderBackend` class** (`2adbe8c5d`, `viz3d/render/detail/`, PIMPL, zero `filament::` in
+  header) — Engine/View/Scene lifecycle, headless CONFIG_READABLE swapchain, GeometryNode→Renderable
+  keyed on getGeometryVersion, buffer descriptors need heap copies (async flush).
+- **P3** lit PBR + lighting (`6fdb4c866`; normals→tangent quats via `geometry::SurfaceOrientation`),
+  wireframe lines (`462db9319`; one LINES renderable per colour — vertex-colour didn't bind).
+- **Default Scene backend** (`19a5ffd0e`) — `makeRenderBackend()` picks Filament; seam gained
+  target model (`producesImage`/`setTargetSize`/`readColor`). `renderToImage` runs HEADLESS via
+  Filament; onscreen `Scene::render` composites via a **GL blitter** (interim **A1** readback+upload;
+  keeps the GL 2D `ICLDrawWidget` overlay untouched — A2 zero-copy IOSurface is the perf follow-up).
+- **Onscreen fixes** (CE-driven): two-sided meshes (Y-flip mirrors winding → cull wrong faces) +
+  skip TextNodes + blitter GL-state save/restore (`758495418`); **sRGB→linear on all colours**
+  (`ab6eb1d6a`, the "milky" wash — ICL colours are sRGB, Filament wants linear); "enable lighting"
+  off = flat unlit base colour (`d817aa703`).
+- **Materials/reflections** — reflectivity→reflectance + procedural sky **IBL** (cubemap + radiance
+  SH) + **SSR** (`ec658e1ae`); **SSR needs `reflections:screenspace` on the material** (`493896168`);
+  **roughness-prefiltered env mips** (`c59a675a8`, CPU box-mips → rough=blurry); dithering off +
+  FXAA + **filmic default** (`422d9ff56`).
+- **`RenderBackend : Configurable`** (`20f402670`) — live OSD knobs: `render.exposure`,
+  `render.light intensity`, `render.env intensity`, `render.tone mapping`, `render.ssr thickness`,
+  `render.ssr max distance`. First-class features (enable lighting / SSR on-off / debug) stay Scene
+  props via the typed seam; backend tunables ride the Configurable, surfaced `render.*` via
+  `addChildConfigurable`. **Gotcha:** only `Range<int>/<float>` adapters enrolled — `Range<double>`
+  throws `PluginRegistry::getOrThrow` at register (broke all Scenes incl. physics2); use float.
+
+**Gated dev tools** (built when `filament_found`): `icl-filament-{smoke,parity,backend-test,
+scene-test,gallery,ssr-test}`. `gallery` = DefaultScene→PNG tuning harness (args: `unlit`, `plain`,
+`KEY=VALUE` to set any scene/`render.*` prop). `ssr-test` = multi-frame SSR proof.
+
+**NEXT / open (offered, not started):**
+1. **A1 readback perf** — benchmark the GPU→CPU→GPU cost (≈free on M-series unified memory, may
+   bite on discrete GPU); if it bites, do **A2** zero-copy IOSurface Metal↔GL (keeps the 2D pipeline).
+2. **Per-node backend resources** — invert the `map<Node*,Cache>` to a per-node keyed-by-domain slot
+   (multi-domain: GL+Filament / two contexts / two Engines); needs deferred release + a Scene domain
+   registry. Design captured in filament-plan.md. Do at convergence.
+3. **Soft-shadow softness** (map `LightNode::softShadowRadius`→PCSS; quick), **points/point-clouds**
+   (billboard quads + per-vertex colour — solve the COLOR-attribute bind), **screen-space refraction**
+   (glass), Linux/Vulkan + Intel (prebuilt is arm64-mac only), then **P5 converge → delete GL**.
+4. **Small TODO:** prop save-dialog file filter says `*.xml` but we write YAML now (qt config UI).
+
 ### ✅ DONE (S100) — pose enum collapse + cv3d/pose framework steps 2 & 4
 Branch `further-restructuring-and-cleanup`; suite **1084→1088**, all green. **Nothing pushed.**
 1. **PlanarPoseEstimator enum collapse** (`990f765ef`) — `PoseEstimationAlgorithm` is now just

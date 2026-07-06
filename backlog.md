@@ -133,6 +133,16 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 ## verification debt
 - [ ] Real-display visual pass (no GL here)
 
+## Filament renderer follow-ups (S101 — see filament-plan.md / next.md)
+- [ ] **A1 readback perf** — benchmark GPU→CPU→GPU cost; if it bites (discrete GPU), do A2 zero-copy IOSurface Metal↔GL.
+- [ ] **Per-node backend resources** — invert map<Node*,Cache> → per-node keyed-by-domain slot (deferred release + Scene domain registry); do at GL/Filament convergence.
+- [ ] **Soft-shadow softness** — map `LightNode::softShadowRadius` → Filament PCSS.
+- [ ] **Points / point-clouds** — billboard quads + per-vertex colour (solve the Filament COLOR-attribute bind).
+- [ ] **Screen-space refraction** — transmissive/glass material variant.
+- [ ] **Linux/Vulkan + Intel** — prebuilt Filament is arm64-mac only.
+- [ ] **P5 converge → delete GLRenderBackend** (once parity soaked onscreen).
+- [ ] **Prop save-dialog filter says `*.xml`, we write YAML now** — qt config-UI file filter.
+
 ## infrastructure / correctness follow-ups
 - [ ] **Quick2 buffer-reuse based on image channels** — `QuickContext::getBuffer`
   decides a pooled buffer is free via `Image::isExclusivelyOwned()`, which only
