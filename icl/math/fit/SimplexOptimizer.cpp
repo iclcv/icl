@@ -24,9 +24,21 @@ namespace icl::math {
   static inline Vector create_zero_vector(int dim){
     return Vector(dim,0.0);
   }
-  template<> inline FixedColVector<float,3> create_zero_vector(int dim){
-    return FixedColVector<float,3>(0.0f);
-  }
+  // Fixed-size vectors must be ALL-zero: the generic Vector(dim,0.0) hits the
+  // FixedMatrix 2-arg element ctor, which sets only the first two elements and
+  // leaves the rest UNINITIALISED — garbage that seeds the optimizer's internal
+  // buffers (xg/xr/xe/xc/center) and makes it non-deterministic for any
+  // FixedColVector<T,N!=3> (e.g. Pose6D). Zero-fill via the single-scalar ctor.
+#define ICL_SIMPLEX_ZEROVEC_SPEC(T,N)                              \
+  template<> inline FixedColVector<T,N> create_zero_vector(int){   \
+    return FixedColVector<T,N>(T(0)); }
+  ICL_SIMPLEX_ZEROVEC_SPEC(float,2)  ICL_SIMPLEX_ZEROVEC_SPEC(float,3)
+  ICL_SIMPLEX_ZEROVEC_SPEC(float,4)  ICL_SIMPLEX_ZEROVEC_SPEC(float,5)
+  ICL_SIMPLEX_ZEROVEC_SPEC(float,6)
+  ICL_SIMPLEX_ZEROVEC_SPEC(double,2) ICL_SIMPLEX_ZEROVEC_SPEC(double,3)
+  ICL_SIMPLEX_ZEROVEC_SPEC(double,4) ICL_SIMPLEX_ZEROVEC_SPEC(double,5)
+  ICL_SIMPLEX_ZEROVEC_SPEC(double,6)
+#undef ICL_SIMPLEX_ZEROVEC_SPEC
   // DynMatrix has no (dim,value) ctor (the generic path); a zero "vector" is dim x 1.
   template<> inline DynMatrix<float> create_zero_vector(int dim){
     return DynMatrix<float>::create(dim, 1, 0.0f);
