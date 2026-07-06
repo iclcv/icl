@@ -123,8 +123,38 @@ ICL_REGISTER_TEST("geom.coplanarpose.translated_target_recovers",
   ICL_TEST_TRUE(reproj(Th) < 0.5f);                        // homography pose recovers it
   ICL_TEST_TRUE(ps.size() >= 1);
   ICL_TEST_TRUE(reproj(ps[0].pose) < 0.5f);                // IPPE recovers it too
-  // SimplexSampling is opt-in and its bespoke optimizer is being redesigned onto
-  // the fit framework (it currently only refines to ~1px and diverges if run
-  // longer). Guard only that it is no longer CATASTROPHIC (was 11px pre-fix).
-  ICL_TEST_TRUE(eSimplex < 2.0f);
+  // SimplexSampling now refines the seed over a LOCAL se(3) tangent via the
+  // framework NelderMeadOptimizer (no euler pathology) — it stays at seed quality
+  // instead of the old ~1px-and-diverging bespoke euler path.
+  ICL_TEST_TRUE(eSimplex < 0.01f);
+}
+
+// Under pixel noise the algebraic homography seed is no longer optimal; the
+// se(3) SimplexSampling refinement (minimising reprojection directly) must not be
+// WORSE than the raw homography, and typically improves it.
+ICL_REGISTER_TEST("geom.coplanarpose.se3_refines_under_noise",
+                  "SimplexSampling se(3) refinement is no worse than the homography seed under noise")
+{
+  Camera cam = Camera::lookAt(Vec(0,0,800,1), Vec(0,0,0,1), Vec(0,1,0,1), Size::VGA, 30.f);
+  const FixedMatrix<float,4,4> T = markerPose(0.4f, Vec(30,-20,0,1));
+  // 6x6 grid; add deterministic sub-pixel noise to the image points
+  std::vector<Point32f> model, img;
+  int k = 0;
+  for (int gy = 0; gy < 6; ++gy) for (int gx = 0; gx < 6; ++gx, ++k) {
+    const float mx = -100 + 40*gx, my = -100 + 40*gy;
+    model.push_back(Point32f(mx, my));
+    Point32f q = cam.project(T * Vec(mx, my, 0, 1));
+    q += Point32f(0.5f*std::sin(k*1.7f), 0.5f*std::cos(k*2.3f));   // ~0.5px noise
+    img.push_back(q);
+  }
+  auto reproj = [&](const FixedMatrix<float,4,4> &P){
+    float e=0; for(size_t i=0;i<model.size();++i) e += cam.project(P*Vec(model[i].x,model[i].y,0,1)).distanceTo(img[i]);
+    return e/model.size();
+  };
+  PlanarPoseEstimator homo(PlanarPoseEstimator::worldFrame, PlanarPoseEstimator::HomographyBasedOnly);
+  PlanarPoseEstimator simp(PlanarPoseEstimator::worldFrame, PlanarPoseEstimator::SimplexSampling);
+  const float eH = reproj(homo.getPose(model.size(), model.data(), img.data(), cam));
+  const float eS = reproj(simp.getPose(model.size(), model.data(), img.data(), cam));
+  std::cout << "[coplanarpose] noise: homography=" << eH << "px se3-refined=" << eS << "px" << std::endl;
+  ICL_TEST_TRUE(eS <= eH + 1e-4f);      // refinement never worse than the seed
 }

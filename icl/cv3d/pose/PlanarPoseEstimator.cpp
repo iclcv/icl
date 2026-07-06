@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <random>
 #include <icl/utils/ProgArg.h>
-#include <icl/math/fit/SimplexOptimizer.h>
+#include <icl/math/fit/NelderMeadOptimizer.h>
 #include <icl/math/fit/PolynomialSolver.h>
 
 #include <algorithm>
@@ -246,14 +246,37 @@ namespace icl::cv3d {
 
   typedef FixedColVector<float,6> Pose6D;
 
-  struct SimplexErrorFunction{
-    const Mat &P;
+  // --- se(3) local pose refinement -------------------------------------------
+  // Rodrigues exp map: an axis-angle 3-vector -> 3x3 rotation. Identity and
+  // singularity-free near 0, unlike euler angles (whose periodicity/gimbal give
+  // the objective spurious far-away minima the refiner used to wander into).
+  static inline FixedMatrix<float,3,3> rodrigues(const FixedColVector<float,3> &w){
+    const float th = std::sqrt(w[0]*w[0]+w[1]*w[1]+w[2]*w[2]);
+    if(th < 1e-9f) return FixedMatrix<float,3,3>::id();
+    return create_rot_3D(w[0]/th, w[1]/th, w[2]/th, th);
+  }
+  // Small rigid perturbation ΔT(δ) = [Rodrigues(ω) | v] from a tangent δ=(ω,v).
+  static inline Mat deltaTransform(const Pose6D &d){
+    Mat dT = Mat::id();
+    dT.part<0,0,3,3>() = rodrigues(FixedColVector<float,3>(d[0],d[1],d[2]));
+    dT(0,3)=d[3]; dT(1,3)=d[4]; dT(2,3)=d[5];
+    return dT;
+  }
+  // Reprojection error of ΔT(δ)·Tseed — a LOCAL se(3) perturbation of the
+  // closed-form seed, reprojected through the SAME construction + perspective
+  // divide as cam.project (so the objective matches the pose that is built).
+  struct Se3ReprojError{
+    const Mat &P, &Tseed;
     const Point32f *M,*I;
     int n;
-    inline SimplexErrorFunction(const Mat &P, const Point32f *M, const Point32f *I, int n):
-      P(P),M(M),I(I),n(n){}
-    float f(const Pose6D &rt) const {
-      return compute_error_opt(P,rt.part<0,0,1,3>(),rt.part<0,3,1,3>(),M,I,n);
+    float f(const Pose6D &d) const {
+      const Mat PT = P * deltaTransform(d) * Tseed;
+      float e = 0;
+      for(int i=0;i<n;++i){
+        const Vec p = PT * Vec(M[i].x, M[i].y, 0, 1);
+        if(p[3]) e += std::sqrt(sqr(p[0]/p[3]-I[i].x) + sqr(p[1]/p[3]-I[i].y));
+      }
+      return e;
     }
   };
 
@@ -666,23 +689,6 @@ namespace icl::cv3d {
   //  }
   //}
 
-  std::vector<Pose6D> create_initial_simplex(const FixedColVector<float,3> &r, const FixedColVector<float,3> &t){
-    Pose6D start = r%t;                       // [rx,ry,rz, tx,ty,tz]
-    std::vector<Pose6D> simplex(7,start);     // N+1 vertices for the 6D search
-    // ADDITIVE, dimension-appropriate perturbation. A multiplicative step
-    // collapses dimensions whose seed component is ~0 (e.g. no rotation) and
-    // mis-scales radians against millimetres, which made Nelder-Mead diverge
-    // from the (near-exact) homography seed. Rotation steps are in radians,
-    // translation steps in the model's length unit (mm).
-    const float rotStep = 0.05f;              // ~3 deg
-    const float transStep = 2.0f;             // mm
-    for(int i=0;i<6;++i){
-      simplex[i][i] += (i < 3 ? rotStep : transStep);
-    }
-    return simplex;
-  }
-
-
   static std::pair<int,float> find_inliers_and_get_error(const Mat &T, const Camera &cam,
                                                          int N, const Point32f *mpts,
                                                          const Point32f *ipts,
@@ -996,14 +1002,13 @@ namespace icl::cv3d {
                                    0.3, 50, 100, 2, 0.6, data->timeMonitoring);
           break;
         case SimplexSampling:{
-          SimplexErrorFunction err(cam.getProjectionMatrix(),modelPoints,imagePoints,n);
-          std::function<float(const Pose6D &)> ferr = [&err](const Pose6D &p){ return err.f(p); };
-          SimplexOptimizer<float,Pose6D> opt(ferr,6,400,0.5);
-          FixedColVector<float,3> r = extract_euler_angles(data->T);
-          FixedColVector<float,3> t = data->T.part<3,0,1,3>();
-          SimplexOptimizer<float,Pose6D>::Result res = opt.optimize(create_initial_simplex(r,t));
-          const Pose6D &x = res.x;
-          data->T = create_hom_4x4(x[0],x[1],x[2],x[3],x[4],x[5]);
+          // Refine the closed-form seed by minimising the reprojection error over a
+          // LOCAL se(3) tangent δ=(ω,v) (start at 0), via the framework Optimizer<V>.
+          const Mat Tseed = data->T;
+          Se3ReprojError err{cam.getProjectionMatrix(), Tseed, modelPoints, imagePoints, n};
+          NelderMeadOptimizer<Pose6D> opt(400, 1e-8, 1e-8);
+          const auto res = opt.minimize([&err](const Pose6D &d){ return err.f(d); }, Pose6D(0.f));
+          data->T = deltaTransform(res.params) * Tseed;
           break;
         }
         default:
