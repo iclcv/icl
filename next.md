@@ -4,27 +4,36 @@
 
 ## Next Step
 
-### ▶ NEXT SESSION — pick one (S99 recap below)
-S99 was a long cv3d/pose + math/fit cleanup arc (~25 commits, suite **1074→1084**, all green).
+### ✅ DONE (S100) — pose enum collapse + cv3d/pose framework steps 2 & 4
+Branch `further-restructuring-and-cleanup`; suite **1084→1088**, all green. **Nothing pushed.**
+1. **PlanarPoseEstimator enum collapse** (`990f765ef`) — `PoseEstimationAlgorithm` is now just
+   `HomographyBasedOnly` vs `Refined` (the former se(3)-NelderMead `SimplexSampling`, now the sole
+   refinement). Dropped the bespoke brute-force `optimize_error`/`compute_error_opt` and the five
+   sampling properties + dead `#if 0` helpers. Consumers (camera-calibration-planar, CameraCalibrationUtils,
+   MarkerGridPoseEstimator, test) retargeted to `Refined`.
+2. **Framework step 2** (`2cf43fd34`) — `RigidTransformFitter : ModelFitter<PointPair,Mat>` over
+   `RigidTransformEstimator::map` (new `PointPair` struct). Composes with `RobustFitter<PointPair,Mat>`
+   for robust point-cloud alignment / ICP correspondence solving. New test-cv3d-rigid-transform.
+3. **Framework step 4** (`6188badf7`) — `PlaneFitter : ModelFitter<Vec,PlaneModel>` (PCA least-squares
+   plane). Chose the *face* approach: `RansacPlaneFitter`'s RANSAC is fused with the tuned OpenCL
+   multi-surface pipeline (ON_ONE_SIDE/MAX_ON, adjacency, relabel) that RobustFitter can't express, so
+   left that engine intact and added the generic face for unstructured points. `PlaneModel` shares the
+   `(n0,dist)` representation with `RansacPlaneFitter::Result`. New test-cv3d-plane-fitter.
+**cv3d/pose framework migration steps 1–4 now ALL done** (1 RobustPoseEstimator→RobustFitter,
+2 RigidTransformFitter face, 3 PlanarPoseEstimator se(3)+enum collapse, 4 PlaneFitter face).
+
+### ▶ NEXT SESSION — pick one (S99/S100 recap below)
 Branch `further-restructuring-and-cleanup`; **nothing pushed** (SSH blocked in-sandbox — CE pushes).
 Candidate directions, smallest-first:
 
-1. **PlanarPoseEstimator enum collapse** (small, in-theme). The se(3) `SimplexSampling` refinement
-   is done; now collapse the `PoseEstimationAlgorithm` enum to `HomographyBasedOnly` vs
-   `Refined(Optimizer)` and fold/drop the bespoke brute-force `Sampling*` modes
-   (`optimize_error`/`compute_error_opt`). See [[project_pose_estimation_bugs]].
-2. **cv3d/pose framework steps 2 & 4** (the "do 1-4" arc; 1 & 3 done). Step 2: give
-   `RigidTransformEstimator` a `ModelFitter<PointPair,Mat4>` face (additive, quick). Step 4:
-   `RansacPlaneFitter` → `ModelFitter`/`RobustFitter` (biggest — has a tuned GPU path).
-   See [[project_icp_consolidation]] / camera-calibration-redesign.
-3. **ICP Phase 2** — OpenCL NN backend (mine the preserved `icp/IterativeClosestPoint.*`) +
+1. **ICP Phase 2** — OpenCL NN backend (mine the preserved `icp/IterativeClosestPoint.*`) +
    Vec8 (pos+color) color-aware backend with a configurable distance (don't slow the Vec4 path).
    See [[project_icp_consolidation]].
-4. **`RobustPoseEstimator` real-display check** — proven in sim (`cv3d.robustpose.*`); its one app
+2. **`RobustPoseEstimator` real-display check** — proven in sim (`cv3d.robustpose.*`); its one app
    consumer `viz3d/apps/surf-based-object-tracking` needs exercising on a real display.
-5. **Filament rendering backend** (big, offset) — rework viz3d/render onto Google Filament.
+3. **Filament rendering backend** (big, offset) — rework viz3d/render onto Google Filament.
    See [[project_filament_backend]].
-6. **Resume paused arcs** — `icl-cam-calib-intrinsic` (auto-capture quality gate; see
+4. **Resume paused arcs** — `icl-cam-calib-intrinsic` (auto-capture quality gate; see
    `intrinsic-calib-next-steps.md`) or the camera-calibration redesign / Phase C.
 
 ### ✅ DONE (S99) — fit-framework adoption COMPLETE
