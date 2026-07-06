@@ -45,10 +45,20 @@ GPU-verified: correspondences == CPU `ColorNN` exactly (delta 0), color-aware IC
 **The ICP NN backend matrix is now complete:** OctreeNN/CLNN (position, C++/GPU) ×
 ColorNN/CLColorNN (color, C++/GPU), all behind the one `ICP::Backend` seam. Suite **1092→1094**.
 
-### ✅ DONE (S100) — deleted the preserved ICP OpenCL seed
-`icp/IterativeClosestPoint.{h,cpp,CLCode.h,CLCode.cl}` (821 lines commented, 0 users) removed
-(`253f20375`) — CLNN/CLColorNN supersede it; rep-DB approximate NN can be rebuilt fresh if ever needed.
-**The whole ICP consolidation arc (Phase 1 + Phase 2 + cleanup) is now closed.** See [[project_icp_consolidation]].
+### ✅ DONE (S100) — ICP backends → detail/ + plugin registry; seed deleted
+- **Backend registry refactor** (`ac3cee664`) — concrete NN backends moved to `icp/detail/` as
+  self-registering anon-namespace classes on `utils::PluginRegistry` (`detail/ICPBackendRegistry.h`,
+  non-installed). `ICP.h` now exposes only `ICP::Backend`(+`isValid()`) and `ICP::ColorBackend`
+  (colour-config seam). Names: `nn.octree` (default), `nn.color`, `nn.octree.cl`, `nn.color.cl`
+  (opt-in, `ICL_HAVE_OPENCL`). Switch via `setBackend(name)`/`createBackend`/`createColorBackend`/
+  `backendNames()`. **Benchmarked (this machine): GPU brute-force only beats the octree above ~15-20k
+  points** (0.08× at N=500, 1.8× at N=100k) — so default stays `nn.octree`; GPU is a user-chosen
+  opt-in, never auto-selected (crossover is hardware-dependent).
+- **Preserved seed deleted** (`253f20375`) — `icp/IterativeClosestPoint.*` (821 lines commented, 0 users).
+  rep-DB approximate NN can be rebuilt fresh if a large-cloud workload ever needs it.
+
+**ICP consolidation arc closed:** Phase 1 (one ICP + Backend seam) + Phase 2 (Color/GPU backends) +
+cleanup (detail/registry, seed deletion). See [[project_icp_consolidation]].
 
 ### ▶ NEXT SESSION — pick one (S99/S100 recap below)
 Branch `further-restructuring-and-cleanup`; **nothing pushed** (SSH blocked in-sandbox — CE pushes).
