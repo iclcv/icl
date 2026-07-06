@@ -5,27 +5,27 @@
 #pragma once
 
 #include <icl/utils/CompatMacros.h>
-#include <icl/math/fit/LeastSquareModelFitting.h>
+#include <icl/math/fit/LeastSquaresEngine.h>
 #include <icl/utils/Point.h>
 
 namespace icl::math {
   /// Direct Least Square Fitting specialization for 2D input data
   /** Specialized least square model fitting for 2D data. Also
       some special desing matrix creation methods are provided */
-  class LeastSquareModelFitting2D : public LeastSquareModelFitting<double,utils::Point32f>{
+  class LeastSquaresEngine2D : public LeastSquaresEngine<double,utils::Point32f>{
     /// super type
-    using Super = LeastSquareModelFitting<double, utils::Point32f>;
+    using Super = LeastSquaresEngine<double, utils::Point32f>;
     public:
     /// Default constructor for creating dummy instances
-    LeastSquareModelFitting2D(){}
+    LeastSquaresEngine2D(){}
 
     /// Constructor with given parameters
-    LeastSquareModelFitting2D(int modelDim, DesignMatrixGen gen,
+    LeastSquaresEngine2D(int modelDim, DesignMatrixGen gen,
                          DynMatrix<double> *constraintMatrix = 0):
     Super(modelDim,gen,constraintMatrix){}
 
     /// DesignMatrixGenerator for the 3-parameter line model
-    /** @see LeastSquareModelFitting */
+    /** @see LeastSquaresEngine */
     static inline void line_gen(const utils::Point32f &p, double *d){
       d[0] = p.x;
       d[1] = p.y;
@@ -33,7 +33,7 @@ namespace icl::math {
     }
 
     /// DesignMatrixGenerator for the 4 parameter circle model
-    /** @see LeastSquareModelFitting */
+    /** @see LeastSquaresEngine */
     static inline void circle_gen(const utils::Point32f &p, double *d){
       d[0] = utils::sqr(p.x) + utils::sqr(p.y);
       d[1] = p.x;
@@ -42,7 +42,7 @@ namespace icl::math {
     }
 
     /// DesignMatrixGenerator for the 5 parameter restricted ellipse model
-    /** @see LeastSquareModelFitting */
+    /** @see LeastSquaresEngine */
     static inline void restr_ellipse_gen(const utils::Point32f &p, double *d){
       d[0] = utils::sqr(p.x);
       d[1] = utils::sqr(p.y);
@@ -52,7 +52,7 @@ namespace icl::math {
     }
 
     /// DesignMatrixGenerator for the 6 parameter general ellipse model
-    /** @see LeastSquareModelFitting */
+    /** @see LeastSquaresEngine */
     static inline void ellipse_gen(const utils::Point32f &p, double *d){
       d[0] = utils::sqr(p.x);
       d[1] = p.x * p.y;

@@ -3,7 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/utils/StringUtils.h>
-#include <icl/math/fit/SimplexOptimizer.h>
+#include <icl/math/fit/SimplexEngine.h>
 #include <vector>
 #include <limits>
 #include <algorithm>
@@ -54,7 +54,7 @@ namespace icl::math {
 
   template<class T, class Vector>
   inline void check_whether_check_dim_is_ok_throw() {
-    throw ICLException("SimplexOptimizer::setDim(..) cannnot be called for fixed matrix/vector types");
+    throw ICLException("SimplexEngine::setDim(..) cannnot be called for fixed matrix/vector types");
   }
 
   template<> void check_whether_check_dim_is_ok_throw<float,std::vector<float> >() {}
@@ -89,7 +89,7 @@ namespace icl::math {
   }
 
   template<class T, class Vector>
-  struct SimplexOptimizer<T,Vector>::Data{
+  struct SimplexEngine<T,Vector>::Data{
 
     struct DeeplyCopiedResult{
       Vector x;
@@ -102,10 +102,10 @@ namespace icl::math {
       //DeeplyCopiedResult(const DeeplyCopiedResult &r):
       //  x(r.x),fx(r.fx),iterations(r.iterations), vertices(r.vertices){}
 
-      DeeplyCopiedResult(const SimplexOptimizationResult<T,Vector> &r):
+      DeeplyCopiedResult(const SimplexEngineResult<T,Vector> &r):
         x(r.x),fx(r.fx),iterations(r.iterations), vertices(r.vertices){}
 
-      DeeplyCopiedResult &operator=(const SimplexOptimizationResult<T,Vector> &r){
+      DeeplyCopiedResult &operator=(const SimplexEngineResult<T,Vector> &r){
         x = r.x;
         fx = r.fx;
         iterations = r.iterations;
@@ -121,9 +121,9 @@ namespace icl::math {
       //}
     } deeplyCopiedResult;
 
-    SimplexOptimizationResult<T,Vector> storeResult(const DeeplyCopiedResult &dcr){
+    SimplexEngineResult<T,Vector> storeResult(const DeeplyCopiedResult &dcr){
       deeplyCopiedResult = dcr;
-      SimplexOptimizationResult<T,Vector> r = { deeplyCopiedResult.x,
+      SimplexEngineResult<T,Vector> r = { deeplyCopiedResult.x,
                                                 deeplyCopiedResult.fx,
                                                 deeplyCopiedResult.iterations,
                                                 deeplyCopiedResult.vertices };
@@ -167,7 +167,7 @@ namespace icl::math {
     Vector xc; // contraction vector
 
     /// optional iteration callback structure
-    typename SimplexOptimizer<T,Vector>::iteration_callback iteration_callback;
+    typename SimplexEngine<T,Vector>::iteration_callback iteration_callback;
   };
 
 
@@ -175,7 +175,7 @@ namespace icl::math {
 
 
   template<class T, class Vector>
-  SimplexOptimizer<T,Vector>::SimplexOptimizer(error_function f,
+  SimplexEngine<T,Vector>::SimplexEngine(error_function f,
                                                int dim,
                                                int iterations,
                                                T minError,
@@ -187,10 +187,10 @@ namespace icl::math {
   }
 
   template<class T, class Vector>
-  int SimplexOptimizer<T,Vector>::getDim() const { return m_data->dim; }
+  int SimplexEngine<T,Vector>::getDim() const { return m_data->dim; }
 
   template<class T, class Vector>
-  void SimplexOptimizer<T,Vector>::setDim(int dim){
+  void SimplexEngine<T,Vector>::setDim(int dim){
     check_whether_check_dim_is_ok_throw<T,Vector>();
     Data *old = m_data;
     m_data = new Data(old->f, dim, old->iterations, old->minError, old->minDelta,
@@ -199,7 +199,7 @@ namespace icl::math {
   }
 
   template<class T, class Vector>
-  std::vector<Vector>  SimplexOptimizer<T,Vector>::createDefaultSimplex(const Vector &init){
+  std::vector<Vector>  SimplexEngine<T,Vector>::createDefaultSimplex(const Vector &init){
     std::vector<Vector> r(vdim(init)+1);
     for(unsigned int i=0;i<r.size()-1;++i){
       r[i] = init;
@@ -213,7 +213,7 @@ namespace icl::math {
   }
 
   template<class T, class Vector>
-  SimplexOptimizationResult<T,Vector> SimplexOptimizer<T,Vector>::optimize(const Vector &init){
+  SimplexEngineResult<T,Vector> SimplexEngine<T,Vector>::optimize(const Vector &init){
     for(int i=0; i<m_data->dim; ++i){
       m_data->x[i] = init;
       m_data->x[i][i] = (m_data->x[i][i] != T(0)) ? m_data->x[i][i]*T(1.05) : T(0.00025);
@@ -224,7 +224,7 @@ namespace icl::math {
     return optimize(m_data->x);
   }
   template<class T, class Vector>
-  SimplexOptimizationResult<T,Vector> SimplexOptimizer<T,Vector>::optimize(const std::vector<Vector> &init){
+  SimplexEngineResult<T,Vector> SimplexEngine<T,Vector>::optimize(const std::vector<Vector> &init){
     if(&init != &m_data->x){
       ICLASSERT_THROW(static_cast<int>(init.size()) == m_data->num, ICLException(str(__FUNCTION__)+": invalid count of initial vertices"));
       std::copy(init.begin(),init.end(),m_data->x.begin());
@@ -318,71 +318,71 @@ namespace icl::math {
   }
 
 
-  template<class T, class Vector> void  SimplexOptimizer<T,Vector>::setA(T a){
+  template<class T, class Vector> void  SimplexEngine<T,Vector>::setA(T a){
     m_data->a = a;
   }
-  template<class T, class Vector> void  SimplexOptimizer<T,Vector>::setB(T b){
+  template<class T, class Vector> void  SimplexEngine<T,Vector>::setB(T b){
     m_data->b = b;
   }
-  template<class T, class Vector> void  SimplexOptimizer<T,Vector>::setG(T g){
+  template<class T, class Vector> void  SimplexEngine<T,Vector>::setG(T g){
     m_data->g = g;
   }
-  template<class T, class Vector> void  SimplexOptimizer<T,Vector>::setH(T h){
+  template<class T, class Vector> void  SimplexEngine<T,Vector>::setH(T h){
     m_data->h = h;
   }
-  template<class T, class Vector> void  SimplexOptimizer<T,Vector>::setIterations(int iterations){
+  template<class T, class Vector> void  SimplexEngine<T,Vector>::setIterations(int iterations){
     m_data->iterations = iterations;
   }
-  template<class T, class Vector> void  SimplexOptimizer<T,Vector>::setMinError(T minError){
+  template<class T, class Vector> void  SimplexEngine<T,Vector>::setMinError(T minError){
     m_data->minError = minError;
   }
-  template<class T, class Vector> void  SimplexOptimizer<T,Vector>::setMinDelta(T minDelta){
+  template<class T, class Vector> void  SimplexEngine<T,Vector>::setMinDelta(T minDelta){
     m_data->minDelta = minDelta;
   }
   template<class T, class Vector>
-  void  SimplexOptimizer<T,Vector>::setErrorFunction(typename SimplexOptimizer<T,Vector>::error_function f){
+  void  SimplexEngine<T,Vector>::setErrorFunction(typename SimplexEngine<T,Vector>::error_function f){
     m_data->f = f;
   }
 
-  template<class T, class Vector> T  SimplexOptimizer<T,Vector>::getA() const {
+  template<class T, class Vector> T  SimplexEngine<T,Vector>::getA() const {
     return m_data->a;
   }
-  template<class T, class Vector>T  SimplexOptimizer<T,Vector>::getB() const{
+  template<class T, class Vector>T  SimplexEngine<T,Vector>::getB() const{
     return m_data->b;
   }
-  template<class T, class Vector>T  SimplexOptimizer<T,Vector>::getG() const{
+  template<class T, class Vector>T  SimplexEngine<T,Vector>::getG() const{
     return m_data->g;
   }
-  template<class T, class Vector>T  SimplexOptimizer<T,Vector>::getH() const{
+  template<class T, class Vector>T  SimplexEngine<T,Vector>::getH() const{
     return m_data->h;
   }
-  template<class T, class Vector>int  SimplexOptimizer<T,Vector>::getIterations() const{
+  template<class T, class Vector>int  SimplexEngine<T,Vector>::getIterations() const{
     return m_data->iterations;
   }
-  template<class T, class Vector>T  SimplexOptimizer<T,Vector>::getMinError() const{
+  template<class T, class Vector>T  SimplexEngine<T,Vector>::getMinError() const{
     return m_data->minError;
   }
-  template<class T, class Vector>T  SimplexOptimizer<T,Vector>::getMinDelta() const{
+  template<class T, class Vector>T  SimplexEngine<T,Vector>::getMinDelta() const{
     return m_data->minDelta;
   }
 
   template<class T, class Vector>
-  std::function<T(const Vector&)> SimplexOptimizer<T,Vector>::getErrorFunction() const{
+  std::function<T(const Vector&)> SimplexEngine<T,Vector>::getErrorFunction() const{
     return m_data->f;
   }
 
   template<class T, class Vector>
-  void SimplexOptimizer<T,Vector>::setIterationCallback(const typename SimplexOptimizer<T,Vector>::iteration_callback &cb){
+  void SimplexEngine<T,Vector>::setIterationCallback(const typename SimplexEngine<T,Vector>::iteration_callback &cb){
     m_data->iteration_callback = cb;
   }
 
 
   template<class T, class Vector>
-  SimplexOptimizationResult<T,Vector> SimplexOptimizer<T,Vector>::optimize(init_gen gen, int nInitCycles){
+  SimplexEngineResult<T,Vector> SimplexEngine<T,Vector>::optimize(init_gen gen, int nInitCycles){
     typename Data::DeeplyCopiedResult best = optimize(gen());
     if(best.fx <= m_data->minError) return m_data->storeResult(best);
     for(int i=1;i<nInitCycles;++i){
-      SimplexOptimizationResult<T,Vector> r = optimize(gen());
+      SimplexEngineResult<T,Vector> r = optimize(gen());
       if(r.fx < best.fx){
         best = r;
       }
@@ -392,27 +392,27 @@ namespace icl::math {
   }
 
 
-  template class ICLMath_API SimplexOptimizer<float, DynColVector<float> >;
-  template class ICLMath_API SimplexOptimizer<double, DynColVector<double> >;
+  template class ICLMath_API SimplexEngine<float, DynColVector<float> >;
+  template class ICLMath_API SimplexEngine<double, DynColVector<double> >;
 
-  template class ICLMath_API SimplexOptimizer<float, DynRowVector<float> >;
-  template class ICLMath_API SimplexOptimizer<double, DynRowVector<double> >;
+  template class ICLMath_API SimplexEngine<float, DynRowVector<float> >;
+  template class ICLMath_API SimplexEngine<double, DynRowVector<double> >;
 
-  template class ICLMath_API SimplexOptimizer<float, DynMatrix<float> >;
-  template class ICLMath_API SimplexOptimizer<double, DynMatrix<double> >;
+  template class ICLMath_API SimplexEngine<float, DynMatrix<float> >;
+  template class ICLMath_API SimplexEngine<double, DynMatrix<double> >;
 
-  template class ICLMath_API SimplexOptimizer<float, std::vector<float> >;
-  template class ICLMath_API SimplexOptimizer<double, std::vector<double> >;
+  template class ICLMath_API SimplexEngine<float, std::vector<float> >;
+  template class ICLMath_API SimplexEngine<double, std::vector<double> >;
 
 
 // FixedColVector<T,D> / FixedRowVector<T,D> are aliases for FixedMatrix<T,1,D> /
 // FixedMatrix<T,D,1>, so instantiating both would be a duplicate — the named
 // vector forms below cover the matrix forms too.
 #define INST(D)                                                       \
-  template class ICLMath_API SimplexOptimizer<float, FixedColVector<float,D> >;    \
-  template class ICLMath_API SimplexOptimizer<float, FixedRowVector<float, D> >;   \
-  template class ICLMath_API SimplexOptimizer<double, FixedColVector<double, D> >; \
-  template class ICLMath_API SimplexOptimizer<double, FixedRowVector<double, D> >
+  template class ICLMath_API SimplexEngine<float, FixedColVector<float,D> >;    \
+  template class ICLMath_API SimplexEngine<float, FixedRowVector<float, D> >;   \
+  template class ICLMath_API SimplexEngine<double, FixedColVector<double, D> >; \
+  template class ICLMath_API SimplexEngine<double, FixedRowVector<double, D> >
 
   INST(2);
   INST(3);

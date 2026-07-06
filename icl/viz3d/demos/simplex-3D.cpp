@@ -8,7 +8,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/math/fit/SimplexOptimizer.h>
+#include <icl/math/fit/SimplexEngine.h>
 #include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/CoordinateFrameNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
@@ -55,7 +55,7 @@ static std::vector<Pos> createRandomSimplex(const Pos &p) {
 }
 
 void run() {
-  static SimplexOptimizer<float,Pos> opt(error_function, 3, 1);
+  static SimplexEngine<float,Pos> opt(error_function, 3, 1);
   static std::vector<Pos> curr = createRandomSimplex(initPos);
   static float err = 10000;
   if (err > 0) {

@@ -101,18 +101,18 @@ namespace icl::math {
       \section EX Examples
       Examples for usage are given in the interactive application
       icl-model-fitting-example located in the ICLQt package. Here, the
-      icl::LeastSquareModelFitting is demonstrated and it is combined with the
+      icl::LeastSquaresEngine is demonstrated and it is combined with the
       icl::math::RobustFitter class in order to show the advantages of using
       the RANSAC algorithm in presence of outliers and noise.
 
 
-      For the creation of a LeastSquareModelFitting instance, only the
+      For the creation of a LeastSquaresEngine instance, only the
       model dimension and the creation function for rows of the design
       matrix D. Optionally, a non-ID constraint matrix can be given.
   */
 
   template<class T, class DataPoint>
-  class LeastSquareModelFitting{
+  class LeastSquaresEngine{
     public:
     /// fills the give float* with data from the given data point
     /** creates the rows of the design matrix */
@@ -140,10 +140,10 @@ namespace icl::math {
     public:
 
     /// Empty constructor that creates a dummy instance
-    LeastSquareModelFitting(){}
+    LeastSquaresEngine(){}
 
     /// constructor with given parameters
-    LeastSquareModelFitting(int modelDim, DesignMatrixGen gen,
+    LeastSquaresEngine(int modelDim, DesignMatrixGen gen,
                             DynMatrix<T> *constraintMatrix=0):
     m_modelDim(modelDim),m_gen(gen),m_S(modelDim,modelDim),
     m_C(constraintMatrix),m_model(modelDim){

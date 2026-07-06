@@ -6,12 +6,12 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/fit/Optimizer.h>
-#include <icl/math/fit/SimplexOptimizer.h>
+#include <icl/math/fit/SimplexEngine.h>
 
 namespace icl::math {
 
   /// Nelder-Mead downhill-simplex optimizer behind the Optimizer<V> interface.
-  /** Thin Configurable wrapper over SimplexOptimizer; exposes the iteration cap
+  /** Thin Configurable wrapper over SimplexEngine; exposes the iteration cap
       and the two stopping thresholds as properties. Serves as the reference
       implementation of the Tier-B Optimizer interface (a CMA-ES sibling can drop
       in later without touching call sites). */
@@ -39,7 +39,7 @@ namespace icl::math {
       const double minError = this->getPropertyValue("min error");
       const double minDelta = this->getPropertyValue("min delta");
 
-      SimplexOptimizer<Scalar,V> opt(f, int(VectorTraits<V>::dim(init)),
+      SimplexEngine<Scalar,V> opt(f, int(VectorTraits<V>::dim(init)),
                                      maxIt, Scalar(minError), Scalar(minDelta));
       auto r = opt.optimize(init);
       return Result{ r.x, r.fx, r.iterations, double(r.fx) <= minError };

@@ -49,9 +49,9 @@ math_fit_headers = files(
   'fit/CMAESOptimizer.h',
   'fit/FitUtils.h',
   'fit/GeometricRefiners2D.h',
-  'fit/LeastSquareModelFitting.h',
-  'fit/LeastSquareModelFitting2D.h',
-  'fit/LevenbergMarquardtFitter.h',
+  'fit/LeastSquaresEngine.h',
+  'fit/LeastSquaresEngine2D.h',
+  'fit/LevenbergMarquardtEngine.h',
   'fit/LMFitter.h',
   'fit/ModelFitter.h',
   'fit/RobustKernel.h',
@@ -62,7 +62,7 @@ math_fit_headers = files(
   'fit/PrimitiveFitters2D.h',
   'fit/RefiningFitter.h',
   'fit/RobustFitter.h',
-  'fit/SimplexOptimizer.h',
+  'fit/SimplexEngine.h',
   'fit/VectorTraits.h',
 )
 
@@ -88,11 +88,11 @@ math_sources = files(
   'transform/DelaunayTriangulation.cpp',
   'tree/KDTree.cpp',
   'ml/LLM.cpp',
-  'fit/LevenbergMarquardtFitter.cpp',
+  'fit/LevenbergMarquardtEngine.cpp',
   'fit/PolynomialRegression.cpp',
   'transform/Projective4PointTransform.cpp',
   'ml/SOM.cpp',
-  'fit/SimplexOptimizer.cpp',
+  'fit/SimplexEngine.cpp',
   'transform/StraightLine2D.cpp',
 )
 

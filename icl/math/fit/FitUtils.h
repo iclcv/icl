@@ -17,7 +17,7 @@ namespace icl::math {
   /** Given a symmetric positive-semidefinite scatter matrix S = AᵀA, returns the
       eigenvector of its SMALLEST eigenvalue — the unit vector x minimising
       |A x|² subject to |x| = 1. This is the core step of Homography2D's DLT and
-      of LeastSquareModelFitting's identity-constraint fit. Forming S already
+      of LeastSquaresEngine's identity-constraint fit. Forming S already
       squares the condition number, so callers that can afford it should normalise
       their data first (see HartleyNormalization, deferred). The min-eigenvalue
       index is scanned explicitly so the result is correct regardless of the

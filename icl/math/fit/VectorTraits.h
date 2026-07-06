@@ -14,7 +14,7 @@ namespace icl::math {
 
   /// Uniform vector abstraction for the Tier-B optimizers.
   /** Formalises the ad-hoc free-function layer (vdim/create_zero_vector) that
-      SimplexOptimizer hand-rolled, so derivative-free optimizers can be written
+      SimplexEngine hand-rolled, so derivative-free optimizers can be written
       once against an abstract "vector of scalars" and instantiated for
       std::vector<S>, DynColVector<S> and FixedColVector<S,D>. Primary template is
       intentionally undefined — only the supported vector types specialise it. */

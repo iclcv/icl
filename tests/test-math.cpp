@@ -6,7 +6,7 @@
 #include <icl/math/la/FixedMatrix.h>
 #include <icl/math/la/DynMatrix.h>
 #include <icl/math/transform/Homography2D.h>
-#include <icl/math/fit/LeastSquareModelFitting2D.h>
+#include <icl/math/fit/LeastSquaresEngine2D.h>
 #include <icl/math/fit/PrimitiveFitters2D.h>
 #include <icl/math/fit/RobustFitter.h>
 #include <icl/math/fit/NelderMeadOptimizer.h>
@@ -1422,7 +1422,7 @@ ICL_REGISTER_TEST("math.delaunay.grid_contains_axis_edges",
 // order, independent of the active LAPACK backend. LAPACK syev returns ascending
 // and the C++ Jacobi fallback descending; the wrapper reconciles them. Regression
 // for the Jacobi->LAPACK migration that silently flipped the order and broke every
-// "column 0 = largest eigenvalue" caller (LeastSquareModelFitting, RigidTransformEstimator, ...).
+// "column 0 = largest eigenvalue" caller (LeastSquaresEngine, RigidTransformEstimator, ...).
 ICL_REGISTER_TEST("math.dyn.eigen_descending_order",
                   "eigen() returns eigenvalues largest-first with matching eigenvectors")
 {
@@ -1443,12 +1443,12 @@ ICL_REGISTER_TEST("math.dyn.eigen_descending_order",
   }
 }
 
-// LeastSquareModelFitting depends on eigen()'s descending contract: it takes
+// LeastSquaresEngine depends on eigen()'s descending contract: it takes
 // column 0 as the model. Fit a circle to exact samples and recover its centre/radius.
 ICL_REGISTER_TEST("math.fit.least_square_circle",
                   "direct least-square circle fit recovers centre and radius")
 {
-  LeastSquareModelFitting2D fit(4, LeastSquareModelFitting2D::circle_gen);
+  LeastSquaresEngine2D fit(4, LeastSquaresEngine2D::circle_gen);
   std::vector<Point32f> pts;
   for(int i=0;i<24;++i){
     const double t = i*2*M_PI/24;
@@ -1469,7 +1469,7 @@ ICL_REGISTER_TEST("math.fit.least_square_circle",
 ICL_REGISTER_TEST("math.fit.least_square_ellipse",
                   "direct least-square general-ellipse fit recovers an axis-aligned conic")
 {
-  LeastSquareModelFitting2D fit(6, LeastSquareModelFitting2D::ellipse_gen);
+  LeastSquaresEngine2D fit(6, LeastSquaresEngine2D::ellipse_gen);
   const double A = 8, B = 3;                 // semi-axes, centred at origin
   std::vector<Point32f> pts;
   for(int i=0;i<40;++i){

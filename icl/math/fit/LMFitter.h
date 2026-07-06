@@ -5,7 +5,7 @@
 #pragma once
 
 #include <icl/math/fit/ModelFitter.h>
-#include <icl/math/fit/LevenbergMarquardtFitter.h>
+#include <icl/math/fit/LevenbergMarquardtEngine.h>
 #include <icl/math/fit/RobustKernel.h>
 #include <utility>
 
@@ -13,7 +13,7 @@ namespace icl::math {
 
   /// ModelFitter that fits a non-linear model y = f(β, x) by Levenberg-Marquardt,
   /// with an optional robust M-estimator kernel (IRLS).
-  /** Folds the standalone LevenbergMarquardtFitter onto the fit-framework
+  /** Folds the standalone LevenbergMarquardtEngine onto the fit-framework
       ModelFitter<Data,Model> contract so it composes with the rest of the
       framework (Configurable tunables, RobustFitter, pipelines):
       - Data  = (x, y) sample: std::pair<Vector,Vector>
@@ -33,7 +33,7 @@ namespace icl::math {
     using Mat      = DynMatrix<Scalar>;
     using Sample   = std::pair<Vector,Vector>;   //!< (x, y)
     using Model    = Vector;                      //!< parameter vector β
-    using Function = typename LevenbergMarquardtFitter<Scalar>::Function;
+    using Function = typename LevenbergMarquardtEngine<Scalar>::Function;
 
     /// @param f          model function  y = f(β, x)
     /// @param inputDim   dimension of x
@@ -82,7 +82,7 @@ namespace icl::math {
           for(unsigned k=0;k<y.dim();++k) y[k]*=sw;
           return y;
         };
-        LevenbergMarquardtFitter<Scalar> lm(fw, m_outDim);
+        LevenbergMarquardtEngine<Scalar> lm(fw, m_outDim);
         beta = lm.fit(xs, ys, beta).params;
 
         if(m_kernel.type == RobustKernel::None) break;

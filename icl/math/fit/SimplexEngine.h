@@ -10,9 +10,9 @@
 #include <functional>
 
 namespace icl::math {
-  /// Utility structure, that is used as accumulator for results of the SimplexOptimizer class
+  /// Utility structure, that is used as accumulator for results of the SimplexEngine class
   template<class T, class Vector=DynColVector<T> >
-  struct SimplexOptimizationResult{
+  struct SimplexEngineResult{
     const Vector &x;                      //!< result vector
     const T fx;                           //!< error function value at result vector position
     const int iterations;                 //!< actual count of iterations that were used for optimization
@@ -121,17 +121,17 @@ namespace icl::math {
       to 2D/3D rendering
   */
   template<class T, class Vector=DynColVector<T> >
-  class ICLMath_IMP SimplexOptimizer {
+  class ICLMath_IMP SimplexEngine {
     struct Data; //!< internal data structure
     Data *m_data;  //!< internal data pointer
 
     public:
-    SimplexOptimizer(const SimplexOptimizer&) = delete;
-    SimplexOptimizer& operator=(const SimplexOptimizer&) = delete;
+    SimplexEngine(const SimplexEngine&) = delete;
+    SimplexEngine& operator=(const SimplexEngine&) = delete;
 
     /// error function type that is used
     using error_function = std::function<T(const Vector&)>;
-    using Result = SimplexOptimizationResult<T,Vector>;
+    using Result = SimplexEngineResult<T,Vector>;
     using iteration_callback = std::function<void(const Result&)>;
     using init_gen = std::function<Vector()>;
 
@@ -147,7 +147,7 @@ namespace icl::math {
         @param g contration factor (default 0.5)
         @param h multiple contraction factor (default 0.5)
     */
-    SimplexOptimizer(error_function f, int dim,
+    SimplexEngine(error_function f, int dim,
                      int iterations=1E5, T minError=1.0E-10,
                      T minDelta=1.0E-10,
                      T a=1.0, T b=1.0, T g=0.5, T h=0.5);

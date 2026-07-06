@@ -129,7 +129,7 @@ namespace icl::cv3d {
     /** The default algorithm is HomographyBasedOnly — a closed-form homography
         decomposition that recovers exact synthetic poses to ~1e-4 px. The
         SimplexSampling / brute-force refinement modes are opt-in and currently
-        DEGRADE the closed-form seed (10-34 px, see the SimplexOptimizer TODO), so
+        DEGRADE the closed-form seed (10-34 px, see the SimplexEngine TODO), so
         they are not the default. For the two-solution (flip) planar pose use
         getPoses() (IPPE).
 

@@ -9,8 +9,14 @@
 #include <functional>
 
 namespace icl::math {
-  /// Utility class implementing the multidimensional Levenberg Marquardt Algorithm for non-linear Optimization
-  /** The well known Levenberg Marquardt algorithms (LMA) is used for non-linear parameter optimization.
+  /// Levenberg-Marquardt non-linear least-squares ENGINE. Prefer LMFitter.
+  /** \note For fit-framework use prefer icl::math::LMFitter, the ModelFitter face
+      that wraps this engine and adds an optional robust M-estimator kernel (IRLS);
+      it composes with RobustFitter, pipelines and Configurable UIs. Use this engine
+      directly for standalone non-linear least squares with a custom function +
+      Jacobian (e.g. camera bundle-adjustment in cv3d::Camera).
+
+      The well known Levenberg Marquardt algorithms (LMA) is used for non-linear parameter optimization.
       Given a function \f$ f : R^N \rightarrow R^O \f$, an intial set of parameters \f$ \beta_0 \f$ and
       a set of training data \f$ \{(x_i,y_i)\}\f$, where \f$ f \f$  depends on model parameters
       \f$ \beta \f$, LMA will find a local minumum of function parameters that minimizes
@@ -25,7 +31,7 @@ namespace icl::math {
 
       \section _F_ What type of Function can be optimized
 
-      The implemented Function type, is of type icl::LevenbergMarquardtFitter::Function. It gets
+      The implemented Function type, is of type icl::LevenbergMarquardtEngine::Function. It gets
       the parameters and input value and returns a vector output. Basically all functions that match
       this signature can be minimized. But actually it is quite important, that dependent on the function
       complexity, LMA will be slower of faster, or it will perhaps even get stuck in a local minimum.
@@ -38,9 +44,9 @@ namespace icl::math {
 
       \section _J_ What is the Jacobian
 
-      Due to the fact, that the LevenbergMarquardtFitter can optimized
+      Due to the fact, that the LevenbergMarquardtEngine can optimized
       functions, with vector output, a set of jacobians <b>js</b> is used
-      (of type std::vector<LevenbergMarquardtFitter::Jacobian>).
+      (of type std::vector<LevenbergMarquardtEngine::Jacobian>).
       <b>js[o]<b> defines the Jacobian for the o-th output dimension of f.
       Each Jacobian of \f$ f \f$ is defined by a vector (here, a
       row-vector) of partial derivations where the ith component is
@@ -53,8 +59,8 @@ namespace icl::math {
       point \f$ x_i \f$ \\
 
       In the code, the Jacobian is of type
-      icl::LevenbergMarquardtFitter::Jacobian. It defines how to
-      compute the lines of J_o. The LevenbergMarquardtFitter class
+      icl::LevenbergMarquardtEngine::Jacobian. It defines how to
+      compute the lines of J_o. The LevenbergMarquardtEngine class
       supports analytic and numeric Jacobians. In case of being not
       able to derive an analytic Jacobian, a numerical Jacobian can
       automatically be generated. This will estimate the real partial
@@ -65,7 +71,7 @@ namespace icl::math {
 
       \section _EX_ Examples
       Here, a short example is given, that shows how to use the
-      LevenbergMarquardtFitter class.
+      LevenbergMarquardtEngine class.
 
       \subsection _EX_1_ Example 1
       The input data space and the outputspace are 1D, and our
@@ -81,12 +87,12 @@ namespace icl::math {
       \f[ ( 1, x, x^2, x^3 ) \f]
 
       \code
-      #include <icl/math/fit/LevenbergMarquardtFitter.h>
+      #include <icl/math/fit/LevenbergMarquardtEngine.h>
 
       using namespace icl::utils;
       using namespace icl::math;
       typedef float real;
-      typedef icl::math::LevenbergMarquardtFitter<real> LM;
+      typedef icl::math::LevenbergMarquardtEngine<real> LM;
 
       LM::Vector f(const LM::Params &p, const LM::Vector &vx){
         const real x = vx[0];
@@ -143,12 +149,12 @@ namespace icl::math {
 
     \code
 
-      #include <icl/math/fit/LevenbergMarquardtFitter.h>
+      #include <icl/math/fit/LevenbergMarquardtEngine.h>
 
       using namespace icl::utils;
       using namespace icl::math;
       typedef float real;
-      typedef icl::math::LevenbergMarquardtFitter<real> LM;
+      typedef icl::math::LevenbergMarquardtEngine<real> LM;
 
       LM::Vector f3(const LM::Params &p, const LM::Vector &vx){
         real x = vx[0], y=vx[1], z=vx[2];
@@ -180,7 +186,7 @@ namespace icl::math {
 
       \subsection _EX_3_ Multidimensional Output
 
-      The LevenbergMarquardtFitter class can also optimize functions with
+      The LevenbergMarquardtEngine class can also optimize functions with
       multi-dinensional output. In this case the internal optimization is
       performed for each output dimension seperately in each step. A common
       multidimensional optimization problem is 6D pose optimization. Please note,
@@ -192,14 +198,14 @@ namespace icl::math {
       jacobian so we use the numerical default jacobian here
 
       \code
-      #include <icl/math/fit/LevenbergMarquardtFitter.h>
+      #include <icl/math/fit/LevenbergMarquardtEngine.h>
       #include <icl/math/la/FixedVector.h>
 
       using namespace icl::utils;
       using namespace icl::math;
 
       typedef float real;
-      typedef icl::math::LevenbergMarquardtFitter<real> LM;
+      typedef icl::math::LevenbergMarquardtEngine<real> LM;
 
       LM::Vector f4(const LM::Params &p, const LM::Vector &vx){
         FixedColVector<real,4> x(vx[0],vx[1], vx[2], 1);
@@ -220,7 +226,7 @@ namespace icl::math {
       \endcode
   */
   template<class Scalar>
-  class ICLMath_API LevenbergMarquardtFitter{
+  class ICLMath_API LevenbergMarquardtEngine{
     public:
 
     using Vector = DynColVector<Scalar>; //!< vector type
@@ -297,21 +303,21 @@ namespace icl::math {
     public:
 
     /// creates a dummy (null instance)
-    LevenbergMarquardtFitter();
+    LevenbergMarquardtEngine();
 
     /// create an instance with given parameters
     /** @param f function to be optimized
         @param j optionally given Jacobian of f. If j is null (e.g. an empty Jacobian() is passed),
         a numerical jacobian is created automatically. This will use a numerical delta of
         1e-5, which is the default parameter for the static
-        LevenbergMarquardtFitter::create_numerical_jacobian method. If a numerical Jacobian
+        LevenbergMarquardtEngine::create_numerical_jacobian method. If a numerical Jacobian
         with another delta shall be used, create_numerical_jacobian can
         be called manually to obtain another automatically created numerical
         jacobian.
 
         @param tau used for the initial damping parameter (small values (eg 1e-6) are a good choice
                if the first parameters are believed to be a good approximation. Otherwise 1e-3 or 1 should be used)
-        @param maxIterations maximum number of iterations (usually, LevenbergMarquardtFitter will converge fast, or not at all.
+        @param maxIterations maximum number of iterations (usually, LevenbergMarquardtEngine will converge fast, or not at all.
                Therefore, the default argument of 200 iterations somehow assumes, that the minError
                criterion is met much earlier.
         @param minError if the current error gets less than this threshold, the optimization is finished
@@ -321,13 +327,13 @@ namespace icl::math {
         @param linSolver linear solver that is used to estimate a local step internally possible values
                are documented in icl::DynMatrix::solve (we recommend the most-stable method svd)
         */
-    LevenbergMarquardtFitter(Function f, int outputDim,
+    LevenbergMarquardtEngine(Function f, int outputDim,
         const std::vector<Jacobian> &js=std::vector<Jacobian>(),
         Scalar tau=1.e-3, int maxIterations=200,
         Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
         Scalar eps1 = 1.49012e-08, Scalar eps2 = 1.49012e-08,
         const std::string &linSolver="svd");
-    LevenbergMarquardtFitter(FunctionMat f, int outputDim,
+    LevenbergMarquardtEngine(FunctionMat f, int outputDim,
         const std::vector<JacobianMat> &js=std::vector<JacobianMat>(),
         Scalar tau=1.e-3, int maxIterations=200,
         Scalar minError = 1.e-6, Scalar lambdaMultiplier=10,
@@ -341,7 +347,7 @@ namespace icl::math {
     void setUseMultiThreading(bool enable);
 
     /// (re)-initialization method
-    /** \copydoc LevenbergMarquardtFitter::LevenbergMarquardtFitter(Function,Jacobian,Scalar,int,Scalar,Scalar,const std::string &)*/
+    /** \copydoc LevenbergMarquardtEngine::LevenbergMarquardtEngine(Function,Jacobian,Scalar,int,Scalar,Scalar,const std::string &)*/
     void init(Function f, int outputDim,
               const std::vector<Jacobian> &js=std::vector<Jacobian>(),
               Scalar tau=1.e-8, int maxIterations=1000,

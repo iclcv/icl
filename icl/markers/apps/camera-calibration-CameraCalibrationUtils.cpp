@@ -11,7 +11,7 @@
 
 #include <icl/utils/ProgArg.h>
 #include <icl/utils/config/ConfigFile.h>
-#include <icl/math/fit/LevenbergMarquardtFitter.h>
+#include <icl/math/fit/LevenbergMarquardtEngine.h>
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
 #include <fstream>
@@ -609,7 +609,7 @@ namespace icl::markers {
     /* move to Camera.cpp
     namespace{
       struct LMAOptUtil{
-        typedef math::LevenbergMarquardtFitter<double> LMA;
+        typedef math::LevenbergMarquardtEngine<double> LMA;
         typedef LMA::Vector vec;
         typedef LMA::Params params;
         typedef LMA::Matrix mat;

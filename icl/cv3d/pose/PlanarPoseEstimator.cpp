@@ -683,7 +683,7 @@ namespace icl::cv3d {
   }
 #endif
 
-  //  void simplex_iteration_callback(const SimplexOptimizer<float,Pose6D>::Result &r){
+  //  void simplex_iteration_callback(const SimplexEngine<float,Pose6D>::Result &r){
   //    if(r.iterations == 1 || !(r.iterations%100)){
   //    std::cout << "iteration:" << r.iterations << "  error:" << r.fx << std::endl;
   //  }

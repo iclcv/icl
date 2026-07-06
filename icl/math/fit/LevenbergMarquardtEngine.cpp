@@ -2,7 +2,7 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter, Sergius Gaulik
 
-#include <icl/math/fit/LevenbergMarquardtFitter.h>
+#include <icl/math/fit/LevenbergMarquardtEngine.h>
 #include <icl/math/la/DynMatrixUtils.h>
 #include <icl/utils/Random.h>
 
@@ -11,12 +11,12 @@ using namespace icl::utils;
 
 namespace icl::math {
   template<class Scalar>
-  LevenbergMarquardtFitter<Scalar>::LevenbergMarquardtFitter(){
+  LevenbergMarquardtEngine<Scalar>::LevenbergMarquardtEngine(){
 
   }
 
   template<class Scalar>
-  LevenbergMarquardtFitter<Scalar>::LevenbergMarquardtFitter(Function f, int outputDim,
+  LevenbergMarquardtEngine<Scalar>::LevenbergMarquardtEngine(Function f, int outputDim,
                    const std::vector<Jacobian> &js,
                    Scalar tau, int maxIterations,
                    Scalar minError, Scalar lambdaMultiplier,
@@ -26,7 +26,7 @@ namespace icl::math {
   }
 
   template<class Scalar>
-  LevenbergMarquardtFitter<Scalar>::LevenbergMarquardtFitter(FunctionMat f, int outputDim,
+  LevenbergMarquardtEngine<Scalar>::LevenbergMarquardtEngine(FunctionMat f, int outputDim,
                    const std::vector<JacobianMat> &js,
                    Scalar tau, int maxIterations,
                    Scalar minError, Scalar lambdaMultiplier,
@@ -36,7 +36,7 @@ namespace icl::math {
   }
 
   template<class Scalar>
-  void LevenbergMarquardtFitter<Scalar>::init(Function f,
+  void LevenbergMarquardtEngine<Scalar>::init(Function f,
                          int outputDim,
                          const std::vector<Jacobian> &js,
                          Scalar tau, int maxIterations,
@@ -61,7 +61,7 @@ namespace icl::math {
   }
 
   template<class Scalar>
-  void LevenbergMarquardtFitter<Scalar>::init(FunctionMat f,
+  void LevenbergMarquardtEngine<Scalar>::init(FunctionMat f,
                          int outputDim,
                          const std::vector<JacobianMat> &js,
                          Scalar tau, int maxIterations,
@@ -91,20 +91,20 @@ namespace icl::math {
   }
 
   template<class Scalar>
-  Scalar LevenbergMarquardtFitter<Scalar>::error(const Matrix &ys, const Matrix &y_est) const {
+  Scalar LevenbergMarquardtEngine<Scalar>::error(const Matrix &ys, const Matrix &y_est) const {
     return ys.sqrDistanceTo(y_est)/2.0;
   }
 
   template<class Scalar>
-  void LevenbergMarquardtFitter<Scalar>::setUseMultiThreading(bool enable){
+  void LevenbergMarquardtEngine<Scalar>::setUseMultiThreading(bool enable){
     useMultiThreading = enable;
   }
 
   template<class Scalar>
-  typename LevenbergMarquardtFitter<Scalar>::Result
-  LevenbergMarquardtFitter<Scalar>::fitVec(const Matrix &xs, const Matrix &ys, Params params){
+  typename LevenbergMarquardtEngine<Scalar>::Result
+  LevenbergMarquardtEngine<Scalar>::fitVec(const Matrix &xs, const Matrix &ys, Params params){
     const int O = ys.cols(); // output dim
-    ICLASSERT_THROW(O == static_cast<int>(js.size()), ICLException("LevenbergMarquardtFitter::fit: ys.cols() and outputDim differ"));
+    ICLASSERT_THROW(O == static_cast<int>(js.size()), ICLException("LevenbergMarquardtEngine::fit: ys.cols() and outputDim differ"));
     const int I = xs.cols();
     const int D = xs.rows();
     const int P = params.dim();
@@ -277,10 +277,10 @@ namespace icl::math {
   }
 
   template<class Scalar>
-  typename LevenbergMarquardtFitter<Scalar>::Result
-  LevenbergMarquardtFitter<Scalar>::fitMat(const Matrix &xs, const Matrix &ys, Params params){
+  typename LevenbergMarquardtEngine<Scalar>::Result
+  LevenbergMarquardtEngine<Scalar>::fitMat(const Matrix &xs, const Matrix &ys, Params params){
     const int O = ys.cols(); // output dim
-    ICLASSERT_THROW(O == static_cast<int>(jsMat.size()), ICLException("LevenbergMarquardtFitter::fit: ys.cols() and outputDim differ"));
+    ICLASSERT_THROW(O == static_cast<int>(jsMat.size()), ICLException("LevenbergMarquardtEngine::fit: ys.cols() and outputDim differ"));
     const int D = xs.cols();
     const int P = params.dim();
     const int MAX_IT = maxIterations;
@@ -423,8 +423,8 @@ namespace icl::math {
   }
 
   template<class Scalar>
-  typename LevenbergMarquardtFitter<Scalar>::Result
-  LevenbergMarquardtFitter<Scalar>::fit(const Matrix &xs, const Matrix &ys, Params params){
+  typename LevenbergMarquardtEngine<Scalar>::Result
+  LevenbergMarquardtEngine<Scalar>::fit(const Matrix &xs, const Matrix &ys, Params params){
     if (useMat) return fitMat(xs, ys, params);
     else return fitVec(xs, ys, params);
   }
@@ -432,9 +432,9 @@ namespace icl::math {
   namespace{
     template<class Scalar>
     struct NumericJacobian {
-      using Function = typename LevenbergMarquardtFitter<Scalar>::Function;
-      using Params = typename LevenbergMarquardtFitter<Scalar>::Params;
-      using Vector = typename LevenbergMarquardtFitter<Scalar>::Vector;
+      using Function = typename LevenbergMarquardtEngine<Scalar>::Function;
+      using Params = typename LevenbergMarquardtEngine<Scalar>::Params;
+      using Vector = typename LevenbergMarquardtEngine<Scalar>::Vector;
 
       int o;
       Function f;
@@ -462,10 +462,10 @@ namespace icl::math {
   namespace{
     template<class Scalar>
     struct NumericJacobianMat {
-      using FunctionMat = typename LevenbergMarquardtFitter<Scalar>::FunctionMat;
-      using Params = typename LevenbergMarquardtFitter<Scalar>::Params;
-      using Vector = typename LevenbergMarquardtFitter<Scalar>::Vector;
-      using Matrix = typename LevenbergMarquardtFitter<Scalar>::Matrix;
+      using FunctionMat = typename LevenbergMarquardtEngine<Scalar>::FunctionMat;
+      using Params = typename LevenbergMarquardtEngine<Scalar>::Params;
+      using Vector = typename LevenbergMarquardtEngine<Scalar>::Vector;
+      using Matrix = typename LevenbergMarquardtEngine<Scalar>::Matrix;
 
       int o;
       FunctionMat f;
@@ -492,21 +492,21 @@ namespace icl::math {
 
 
   template<class Scalar>
-  typename LevenbergMarquardtFitter<Scalar>::Jacobian
-  LevenbergMarquardtFitter<Scalar>::create_numerical_jacobian(int o, Function f, float delta){
+  typename LevenbergMarquardtEngine<Scalar>::Jacobian
+  LevenbergMarquardtEngine<Scalar>::create_numerical_jacobian(int o, Function f, float delta){
     return NumericJacobian<Scalar>(o, f, delta);
   }
 
   template<class Scalar>
-  typename LevenbergMarquardtFitter<Scalar>::JacobianMat
-  LevenbergMarquardtFitter<Scalar>::create_numerical_jacobian(int o, FunctionMat f, float delta){
+  typename LevenbergMarquardtEngine<Scalar>::JacobianMat
+  LevenbergMarquardtEngine<Scalar>::create_numerical_jacobian(int o, FunctionMat f, float delta){
     return NumericJacobianMat<Scalar>(o, f, delta);
   }
 
   template<class Scalar>
-  std::vector<typename LevenbergMarquardtFitter<Scalar>::Jacobian>
-  LevenbergMarquardtFitter<Scalar>::create_numerical_jacobians(int n, Function f, float delta){
-    std::vector<typename LevenbergMarquardtFitter<Scalar>::Jacobian> js(n);
+  std::vector<typename LevenbergMarquardtEngine<Scalar>::Jacobian>
+  LevenbergMarquardtEngine<Scalar>::create_numerical_jacobians(int n, Function f, float delta){
+    std::vector<typename LevenbergMarquardtEngine<Scalar>::Jacobian> js(n);
     for(int i=0;i<n;++i){
       js[i] = create_numerical_jacobian(i,f);
     }
@@ -514,9 +514,9 @@ namespace icl::math {
   }
 
   template<class Scalar>
-  std::vector<typename LevenbergMarquardtFitter<Scalar>::JacobianMat>
-  LevenbergMarquardtFitter<Scalar>::create_numerical_jacobians(int n, FunctionMat f, float delta){
-    std::vector<typename LevenbergMarquardtFitter<Scalar>::JacobianMat> js(n);
+  std::vector<typename LevenbergMarquardtEngine<Scalar>::JacobianMat>
+  LevenbergMarquardtEngine<Scalar>::create_numerical_jacobians(int n, FunctionMat f, float delta){
+    std::vector<typename LevenbergMarquardtEngine<Scalar>::JacobianMat> js(n);
     for(int i=0;i<n;++i){
       js[i] = create_numerical_jacobian(i,f);
     }
@@ -525,13 +525,13 @@ namespace icl::math {
 
 
   template<class Scalar>
-  void LevenbergMarquardtFitter<Scalar>::setDebugCallback(DebugCallback dbg){
+  void LevenbergMarquardtEngine<Scalar>::setDebugCallback(DebugCallback dbg){
     this->dbg = dbg;
   }
 
   template<class Scalar>
-  typename LevenbergMarquardtFitter<Scalar>::Data
-  LevenbergMarquardtFitter<Scalar>::create_data(const Params &p, Function f, int xDim, int yDim, int num, Scalar minX, Scalar maxX){
+  typename LevenbergMarquardtEngine<Scalar>::Data
+  LevenbergMarquardtEngine<Scalar>::create_data(const Params &p, Function f, int xDim, int yDim, int num, Scalar minX, Scalar maxX){
     URand r(minX,maxX);
     Data data = { Matrix::create(num,xDim), Matrix::create(num,yDim) };
     for(int i=0;i<num;++i){
@@ -543,11 +543,11 @@ namespace icl::math {
   }
 
   template<class Scalar>
-  void LevenbergMarquardtFitter<Scalar>::default_debug_callback(const Result &r){
+  void LevenbergMarquardtEngine<Scalar>::default_debug_callback(const Result &r){
     std::cout << r << std::endl;
   }
 
 
-  template class ICLMath_API LevenbergMarquardtFitter<icl32f>;
-  template class ICLMath_API LevenbergMarquardtFitter<icl64f>;
+  template class ICLMath_API LevenbergMarquardtEngine<icl32f>;
+  template class ICLMath_API LevenbergMarquardtEngine<icl64f>;
   } // namespace icl::math

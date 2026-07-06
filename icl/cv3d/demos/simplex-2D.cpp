@@ -4,7 +4,7 @@
 
 #include <icl/qt/Common2.h>
 #include <icl/qt/ui.h>
-#include <icl/math/fit/SimplexOptimizer.h>
+#include <icl/math/fit/SimplexEngine.h>
 
 
 GUI gui;
@@ -32,8 +32,8 @@ void init(){
 }
 
 void run(){
-  static SimplexOptimizer<float,Pos> opt(error_function,2,1);
-  static std::vector<Pos> curr = SimplexOptimizer<float,Pos>::createDefaultSimplex(Pos(950,840));
+  static SimplexEngine<float,Pos> opt(error_function,2,1);
+  static std::vector<Pos> curr = SimplexEngine<float,Pos>::createDefaultSimplex(Pos(950,840));
   static float err = 10000;
 
   DrawHandle draw = gui["draw"];
@@ -52,7 +52,7 @@ void run(){
   draw->text("error: " + str(err), 30,30,10);
   draw.render();
 
-  SimplexOptimizer<float,Pos>::Result r = opt.optimize(curr);
+  SimplexEngine<float,Pos>::Result r = opt.optimize(curr);
 
   curr = r.vertices;
   err = r.fx;

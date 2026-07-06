@@ -2,14 +2,14 @@
 // ICL - Image Component Library (https://github.com/iclcv/icl)
 // Copyright (C) 2006-2026 Christof Elbrechter
 
-#include <icl/math/fit/LevenbergMarquardtFitter.h>
+#include <icl/math/fit/LevenbergMarquardtEngine.h>
 #include <icl/utils/ProgArg.h>
 #include <icl/math/la/FixedVector.h>
 
 using namespace icl::utils;
 using namespace icl::math;
 typedef float real;
-typedef icl::math::LevenbergMarquardtFitter<real> LM;
+typedef icl::math::LevenbergMarquardtEngine<real> LM;
 
 LM::Vector f(const LM::Params &p, const LM::Vector &vx){
   const real x = vx[0];

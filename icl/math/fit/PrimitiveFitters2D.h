@@ -6,7 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/math/fit/ModelFitter.h>
-#include <icl/math/fit/LeastSquareModelFitting2D.h>
+#include <icl/math/fit/LeastSquaresEngine2D.h>
 #include <icl/math/fit/FitUtils.h>
 #include <algorithm>
 #include <cmath>
@@ -15,16 +15,16 @@ namespace icl::math {
 
   /// ModelFitter face over the algebraic 2D primitive fits (line/circle/ellipse).
   /** The Model is the implicit-equation coefficient vector produced by
-      LeastSquareModelFitting2D (e.g. circle: a(x²+y²)+bx+cy+d=0); residual() is the
+      LeastSquaresEngine2D (e.g. circle: a(x²+y²)+bx+cy+d=0); residual() is the
       algebraic distance. These are the concrete Tier-A fitters that RobustFitter
       wraps to get outlier-tolerant primitive fitting. */
   class PrimitiveFitter2D : public ModelFitter<utils::Point32f, std::vector<double> > {
     protected:
-    LeastSquareModelFitting2D m_ls;
+    LeastSquaresEngine2D m_ls;
     int m_modelDim;
     public:
     using Model = std::vector<double>;
-    PrimitiveFitter2D(int modelDim, LeastSquareModelFitting2D::DesignMatrixGen gen)
+    PrimitiveFitter2D(int modelDim, LeastSquaresEngine2D::DesignMatrixGen gen)
       : m_ls(modelDim, gen), m_modelDim(modelDim){}
 
     Model fit(const std::vector<utils::Point32f> &pts) override {
@@ -39,22 +39,22 @@ namespace icl::math {
 
   /// algebraic straight-line fit  (model: [a,b,c] for a·x + b·y + c = 0)
   struct LineFitter2D : public PrimitiveFitter2D {
-    LineFitter2D() : PrimitiveFitter2D(3, LeastSquareModelFitting2D::line_gen){}
+    LineFitter2D() : PrimitiveFitter2D(3, LeastSquaresEngine2D::line_gen){}
   };
 
   /// algebraic circle fit  (model: [a,b,c,d] for a(x²+y²) + b·x + c·y + d = 0)
   struct CircleFitter2D : public PrimitiveFitter2D {
-    CircleFitter2D() : PrimitiveFitter2D(4, LeastSquareModelFitting2D::circle_gen){}
+    CircleFitter2D() : PrimitiveFitter2D(4, LeastSquaresEngine2D::circle_gen){}
   };
 
   /// algebraic general-ellipse fit  (model: [a..f] for a·x²+b·xy+c·y²+d·x+e·y+f=0)
   struct EllipseFitter2D : public PrimitiveFitter2D {
-    EllipseFitter2D() : PrimitiveFitter2D(6, LeastSquareModelFitting2D::ellipse_gen){}
+    EllipseFitter2D() : PrimitiveFitter2D(6, LeastSquaresEngine2D::ellipse_gen){}
   };
 
   /// Taubin algebraic circle fit — a strictly better circle fitter.
   /** Near-geometric accuracy at algebraic cost and far less biased than the naive
-      (Kåsa-style) LeastSquareModelFitting circle fit for partial arcs / noisy data
+      (Kåsa-style) LeastSquaresEngine circle fit for partial arcs / noisy data
       (Taubin 1991; Chernov). Internally centers + scales the data and solves the
       normalized null-space (via homogeneousNullSpace). The Model is the same
       [a,b,c,d] coefficient vector as CircleFitter2D (a≡1), so it is a drop-in

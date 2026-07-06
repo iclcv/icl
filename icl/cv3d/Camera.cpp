@@ -4,7 +4,7 @@
 
 #include <icl/utils/config/ConfigFile.h>
 #include <icl/math/la/DynMatrixUtils.h>
-#include <icl/math/fit/LevenbergMarquardtFitter.h>
+#include <icl/math/fit/LevenbergMarquardtEngine.h>
 #include <icl/filter/affine/ImageUndistortion.h>
 #include <icl/utils/File.h>
 #include <icl/cv3d/Camera.h>
@@ -381,7 +381,7 @@ namespace icl::cv3d {
 
   namespace{
     struct LMAOptUtil{
-      typedef math::LevenbergMarquardtFitter<double> LMA;
+      typedef math::LevenbergMarquardtEngine<double> LMA;
       typedef LMA::Vector vec;
       typedef LMA::Params params;
       typedef LMA::Matrix mat;
