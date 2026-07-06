@@ -7,6 +7,7 @@
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/GeometryNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
+#include <icl/viz3d/nodes/TextNode.h>
 #include <icl/viz3d/render/Material.h>
 
 #include <filament/Camera.h>
@@ -408,6 +409,10 @@ namespace icl::viz3d {
     void syncNode(Node *node) {
       if (!node || !node->isVisible()) return;
       if (dynamic_cast<LightNode *>(node)) return;   // lights handled in syncLights
+      // Text is a textured billboard; the plan renders world labels in the 2D
+      // overlay layer (not a Filament job). Until that lands, skip TextNodes so
+      // they don't show as blank untextured quads. TODO: 2D label projection.
+      if (dynamic_cast<TextNode *>(node)) return;
       if (auto *g = dynamic_cast<GroupNode *>(node)) {
         for (int i = 0; i < g->getChildCount(); ++i) syncNode(g->getChild(i));
         return;
@@ -486,9 +491,14 @@ namespace icl::viz3d {
     const int W = m_data->targetSize.width, H = m_data->targetSize.height;
     if (W <= 0 || H <= 0) return;
 
-    // Inject ICL's calibrated projection + camera placement (the P2 recipe), and a
-    // neutral physical exposure the light intensities are calibrated against.
-    m_data->fcam->setCustomProjection(toFilament(projectionMatrix), 1.0, 100000.0);
+    // Inject ICL's calibrated projection + camera placement (the P2 recipe). The
+    // near/far handed to Filament MUST match the ones baked into the matrix (they
+    // drive Filament's depth-buffer range) — recover them from getProjectionMatrixGL's
+    // A,B terms: near = B/(A-1), far = B/(A+1). A mismatch wrecks depth precision.
+    const double A = projectionMatrix(2, 2), B = projectionMatrix(2, 3);
+    double zn = B / (A - 1.0), zf = B / (A + 1.0);
+    if (!(zn > 0.0) || !(zf > zn)) { zn = 1.0; zf = 100000.0; }   // guard degenerate
+    m_data->fcam->setCustomProjection(toFilament(projectionMatrix), zn, zf);
     m_data->fcam->setModelMatrix(toFilament(viewMatrix.inv()));
     // Neutral exposure (~unity photometric factor) so unlit line/point colours
     // survive post-processing; light intensities are tuned to this, not to

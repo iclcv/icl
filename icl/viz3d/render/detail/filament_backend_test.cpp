@@ -58,7 +58,17 @@ int main() {
   mesh->addVertex(math::Vec4(-2, 2.5f, 0, 1));
   mesh->addVertex(math::Vec4(2, 2.5f, 0, 1));
   mesh->addLine(0, 1, viz3d::GeomColor(0, 255, 0, 255));   // addLine uses 0-255
-  std::vector<std::shared_ptr<viz3d::Node>> nodes{cube, mesh};
+
+  // A bright-blue cube BEHIND the grey one (camera at z=10 → z=-4 is farther),
+  // small enough to sit fully inside the grey cube's silhouette. If depth test +
+  // face culling are correct it is fully occluded → no blue shows. This guards
+  // against the "inside-out / hollow" bug (wrong faces culled, or no depth).
+  auto back = std::make_shared<viz3d::CuboidNode>(0.f, 0.f, -4.f, 1.2f);
+  auto bmat = std::make_shared<viz3d::Material>();
+  bmat->baseColor = {0.0f, 0.0f, 1.0f, 1.0f};
+  back->setMaterial(bmat);
+
+  std::vector<std::shared_ptr<viz3d::Node>> nodes{cube, mesh, back};
 
   backend.render(nodes, cam.getCSTransformationMatrixGL(), cam.getProjectionMatrixGL());
 
@@ -133,7 +143,19 @@ int main() {
     return 1;
   }
 
-  std::printf("backend-test: PASS — lit cube shaded (range %d, %.1fpx off) + line renders (%.1fpx off)\n",
+  // Occlusion: the blue back-cube must be hidden behind the grey one.
+  long blue = 0;
+  for (int y = 0; y < H; ++y)
+    for (int x = 0; x < W; ++x)
+      if (b(x, y) > r(x, y) + 40 && b(x, y) > g(x, y) + 40) ++blue;
+  std::printf("backend-test: %ld blue (should-be-occluded) px\n", blue);
+  if (blue > 100) {
+    std::fprintf(stderr, "backend-test: FAIL — back cube shows through (%ld blue px): "
+                         "depth test or face culling is broken\n", blue);
+    return 1;
+  }
+
+  std::printf("backend-test: PASS — lit cube shaded (range %d, %.1fpx off) + line (%.1fpx) + occlusion OK\n",
               bMax - bMin, err, lerr);
   return 0;
 }

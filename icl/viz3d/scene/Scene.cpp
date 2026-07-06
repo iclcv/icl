@@ -147,6 +147,24 @@ namespace icl::viz3d {
         for (size_t i = 0, n = size_t(iw) * ih; i < n; ++i) {
           rgb[i * 3] = rp[i]; rgb[i * 3 + 1] = gp[i]; rgb[i * 3 + 2] = bp[i];
         }
+
+        // Save EVERY GL state this touches — the ICLDrawWidget 2D layer paints
+        // afterwards in the same context and must find the state pristine. A left
+        // GL_UNPACK_ALIGNMENT=1, a bound texture, an active program, etc. corrupts
+        // the 2D glyph uploads (garbled overlay text).
+        GLint pProg = 0, pVAO = 0, pTex = 0, pActive = 0, pAlign = 4, pVP[4] = {0, 0, 0, 0};
+        GLint pArrBuf = 0;
+        GLboolean depthWas = glIsEnabled(GL_DEPTH_TEST);
+        GLboolean blendWas = glIsEnabled(GL_BLEND);
+        glGetIntegerv(GL_CURRENT_PROGRAM, &pProg);
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &pVAO);
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &pArrBuf);
+        glGetIntegerv(GL_ACTIVE_TEXTURE, &pActive);
+        glGetIntegerv(GL_UNPACK_ALIGNMENT, &pAlign);
+        glGetIntegerv(GL_VIEWPORT, pVP);
+        glActiveTexture(GL_TEXTURE0);
+        glGetIntegerv(GL_TEXTURE_BINDING_2D, &pTex);
+
         glBindTexture(GL_TEXTURE_2D, tex);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -155,19 +173,25 @@ namespace icl::viz3d {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, iw, ih, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb.data());
 
-        const GLboolean depthWas = glIsEnabled(GL_DEPTH_TEST);
         glDisable(GL_DEPTH_TEST);
+        glDisable(GL_BLEND);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);   // never wireframe the blit quad
         glViewport(x, y, w, h);
         glUseProgram(prog);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, tex);
         glUniform1i(glGetUniformLocation(prog, "img"), 0);
         glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glBindVertexArray(0);
-        glUseProgram(0);
-        if (depthWas) glEnable(GL_DEPTH_TEST);
+
+        // Restore all captured state.
+        glBindVertexArray(pVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, pArrBuf);
+        glBindTexture(GL_TEXTURE_2D, (GLuint)pTex);
+        glActiveTexture((GLenum)pActive);
+        glUseProgram((GLuint)pProg);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, pAlign);
+        glViewport(pVP[0], pVP[1], pVP[2], pVP[3]);
+        if (depthWas) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
+        if (blendWas) glEnable(GL_BLEND); else glDisable(GL_BLEND);
       }
     };
 #endif

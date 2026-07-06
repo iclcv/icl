@@ -3,6 +3,11 @@
 material {
     name : litPBR,
     shadingModel : lit,
+    // Two-sided: ICL's getProjectionMatrixGL() bakes in a Y-flip (image
+    // convention), which mirrors triangle winding — so Filament would cull the
+    // wrong (front) faces. The GL renderer doesn't cull either; depth test sorts.
+    doubleSided : true,
+    culling : none,
     requires : [ tangents ],
     parameters : [
         { type : float3, name : baseColor },
