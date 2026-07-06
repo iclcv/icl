@@ -4,6 +4,33 @@
 
 ## Next Step
 
+### 🔴 TODO — cv3d pose-estimation correctness pass (found S99)
+`cv3d::PlanarPoseEstimator::getPose` (singular) is BROKEN on clean synthetic data:
+`HomographyBasedOnly` ~40 px reproj error, `SimplexSampling` ~4386 px. The accurate path
+is `getPoses` (plural, IPPE — the one `test-cv3d-planar-pose` uses at <0.6 px), but it
+CRASHES (SIGTRAP) on some inputs (n≠4, certain quad orderings). Fix/replace the broken
+`getPoseInternal` algorithms + harden IPPE, then point `RobustPoseEstimator`'s base fitter at
+the accurate path and add a gtest. See memory `project_pose_estimation_bugs`.
+
+### ✅ DONE (S99) — cv3d/pose renames + pose-estimator framework migration (steps 1–4, partial)
+Estimators renamed (memory: none; see commit `e62ee722e`):
+`PoseEstimator`→`RigidTransformEstimator`, `CoplanarPointPoseEstimator`→`PlanarPoseEstimator`,
+`PlanarRansacEstimator`→`RansacPlaneFitter` (was misnamed — fits a PLANE, not a pose),
+`RansacBasedPoseEstimator`→`RobustPoseEstimator`. Deleted dead `Posit`+`SoftPosit`.
+
+**RANSAC de-duplication DONE:** retired the legacy `std::function`-based `math::fit::RansacFitter`;
+`math::RobustFitter` (ModelFitter-based, MSAC/RANSAC/trimmed + LO) is now the sole RANSAC.
+- `RobustPoseEstimator` migrated onto RobustFitter (commit `82f52a16a`) — also **fixed a latent
+  euler-round-trip bug** in its old scoring that made it find NOTHING even on clean data.
+- qt `model-fitting` example + `test-math` line test migrated; `RansacFitter.h` deleted (`97ca02d52`).
+
+**Framework migration steps 1–4 status:** step 1 (RobustPoseEstimator→RobustFitter) ✅;
+step 2 (RigidTransformEstimator ModelFitter face) ⏭ not done; step 3 (PlanarPoseEstimator internal
+`SimplexOptimizer`→framework `Optimizer<V>`/NelderMead + ModelFitter face) ⏭ deferred — blocked on
+the pose-correctness pass above; step 4 (RansacPlaneFitter→ModelFitter/RobustFitter, has GPU path)
+⏭ deferred. Old `SimplexOptimizer` still has consumers (PlanarPoseEstimator) so it stays for now.
+Suite 1078/1078 throughout.
+
 ### ✅ DONE (S99) — cv3d cosmetic renames + ICP consolidation (Phase 1)
 Branch `further-restructuring-and-cleanup`. Suite **1078/1078** (was 1074 + 4 new ICP tests).
 
