@@ -53,14 +53,5 @@ namespace icl::cv3d {
       /// fit from non-planar target
       Result fit(const std::vector<cv3d::Vec> &modelPoints,
                  const std::vector<utils::Point32f> &imagePoints);
-
-
-      /// internal utility method
-      std::vector<float> fit_coplanar(const std::vector<std::vector<float> > &pts);
-
-      /// internal utility method
-      icl64f err_coplanar(const std::vector<float> &m, const std::vector<float> &p);
-
-
     };
   }
