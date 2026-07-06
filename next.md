@@ -4,7 +4,19 @@
 
 ## Next Step
 
-### 🔵 IN PROGRESS (S99) — fit-framework adoption (Optimizer engine hardened)
+### ✅ DONE (S99) — fit-framework adoption COMPLETE
+Every `math/fit` tool now sits behind the generic bases, or is a documented internal engine:
+- **`Optimizer<V>`** = `NelderMeadOptimizer`, `CMAESOptimizer` (+ generic `minimizeRestarts`);
+  `SimplexOptimizer` is the internal engine (two bugs fixed — UB + degenerate simplex).
+- **`ModelFitter<Data,Model>`** = `PrimitiveFitter2D` family (Line/Circle/Ellipse), `TaubinCircleFitter`,
+  `HalirFlusserEllipseFitter`, `RobustFitter`/`SeededFitter`, and new **`LMFitter`** (LevMar + robust
+  `RobustKernel`); `LeastSquareModelFitting(2D)` is the internal algebraic engine.
+- **Stragglers finished (`204388c69`):** deleted deprecated `StochasticOptimizer` (superseded by CMAES);
+  documented `LeastSquareModelFitting` as the engine + migrated the qt example onto the ModelFitter
+  faces; documented `PolynomialRegression` as a standalone tool (robust poly-fit = LMFitter).
+The old `RansacFitter` is gone (`RobustFitter` is the sole RANSAC). Full P3–P5 essentially landed.
+
+<details><summary>fit-framework hardening detail (collapsed)</summary>
 Audit of `math/fit`: ON the framework = `Optimizer<V>` (NelderMead, CMAES), `ModelFitter`
 (PrimitiveFitter2D + Line/Circle/Ellipse, Taubin, HalirFlusser, Robust/Seeded), `RefiningFitter`
 (GeometricCircleRefiner). OFF (stragglers): `SimplexOptimizer` (engine behind NelderMead),
@@ -33,9 +45,10 @@ so it's **internal-by-contract**. Remaining direct engine users are legit: the s
 (plain m=2.019 → Cauchy m=2.00002). LevMar is still SOTA for dense small-medium NLS; the modern win is
 this robust-loss option, complementary to the RANSAC `RobustFitter`.
 
-**Structural TODO (remaining):** put the last stragglers on the bases —
-StochasticOptimizer→Optimizer<V>; LeastSquareModelFitting(2D)→ModelFitter (dedup vs PrimitiveFitter2D);
-PolynomialRegression→ModelFitter. See [[project_fit_framework]].
+**Stragglers finished (`204388c69`):** StochasticOptimizer deleted (superseded by CMAES);
+LeastSquareModelFitting documented as PrimitiveFitter2D's engine + qt example migrated onto the faces;
+PolynomialRegression documented (robust poly-fit = LMFitter). See [[project_fit_framework]].
+</details>
 
 **✅ PlanarPoseEstimator se(3) refinement DONE (`c6ad14966`).** `SimplexSampling` now refines the
 closed-form seed over a LOCAL se(3) tangent δ=(ω,v) — `minimise reproj( ΔT(δ)·T_seed )`,
