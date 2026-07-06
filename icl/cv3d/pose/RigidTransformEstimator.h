@@ -6,6 +6,7 @@
 
 #include <icl/utils/CompatMacros.h>
 #include <icl/cv3d/Types.h>
+#include <icl/math/fit/ModelFitter.h>
 
 namespace icl::cv3d {
   /// Utility class for 6D PoseEstimation
@@ -76,6 +77,40 @@ namespace icl::cv3d {
     /// utility function (instantiated for depth32f and depth64f)
     template<class T> ICLCv3d_API
     static math::FixedMatrix<T,3,3> quaternion_to_rotation_matrix(T w, T x, T y, T z);
+  };
+
+  /// One 3D-3D correspondence: a point in frame A and its match in frame B.
+  /** \a from is expressed w.r.t. frame A, \a to w.r.t. frame B (homogeneous, w=1).
+      A RigidTransformFitter recovers the T with T*from ≈ to. */
+  struct PointPair {
+    Vec from;  //!< point in the source frame (A)
+    Vec to;    //!< corresponding point in the target frame (B)
+    PointPair() = default;
+    PointPair(const Vec &from, const Vec &to) : from(from), to(to) {}
+  };
+
+  /// ModelFitter face over RigidTransformEstimator::map (Tier C of the fit framework).
+  /** Fits a homogeneous 4x4 transform T (T*from ≈ to) to a set of 3D-3D
+      correspondences, so rigid/affine alignment composes with the generic
+      robustifiers: wrap this in a math::RobustFitter<PointPair,Mat> to get
+      RANSAC/MSAC-robust point-cloud alignment, feed it as an ICP correspondence
+      solver, etc. The MapMode selects the underlying estimator (RigidBody by
+      default); minSamples() reflects it. */
+  class ICLCv3d_API RigidTransformFitter : public math::ModelFitter<PointPair, Mat> {
+    RigidTransformEstimator::MapMode m_mode;
+    public:
+    /// creates a fitter using the given MapMode (default: RigidBody)
+    RigidTransformFitter(RigidTransformEstimator::MapMode mode = RigidTransformEstimator::RigidBody)
+      : m_mode(mode) {}
+
+    /// estimates T from all given correspondences via RigidTransformEstimator::map
+    Mat fit(const std::vector<PointPair> &data) override;
+
+    /// 3D Euclidean distance between T*from and to
+    double residual(const Mat &T, const PointPair &p) const override;
+
+    /// minimal correspondences for the current MapMode (Translation:1, Affine:4, else 3)
+    int minSamples() const override;
   };
 
   } // namespace icl::cv3d

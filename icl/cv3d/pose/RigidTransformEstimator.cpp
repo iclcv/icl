@@ -290,4 +290,24 @@ namespace icl::cv3d {
 
   template ICLCv3d_API FixedMatrix<icl32f, 4, 4> RigidTransformEstimator::map(const DynMatrix<icl32f>&, const DynMatrix<icl32f>&, RigidTransformEstimator::MapMode mode);
   template ICLCv3d_API FixedMatrix<icl64f, 4, 4> RigidTransformEstimator::map(const DynMatrix<icl64f>&, const DynMatrix<icl64f>&, RigidTransformEstimator::MapMode mode);
+
+  Mat RigidTransformFitter::fit(const std::vector<PointPair> &data){
+    std::vector<Vec> Xs(data.size()), Ys(data.size());
+    for(size_t i=0;i<data.size();++i){ Xs[i] = data[i].from; Ys[i] = data[i].to; }
+    return RigidTransformEstimator::map(Xs, Ys, m_mode);
+  }
+
+  double RigidTransformFitter::residual(const Mat &T, const PointPair &p) const{
+    const Vec q = T * p.from;
+    const float dx = q[0]-p.to[0], dy = q[1]-p.to[1], dz = q[2]-p.to[2];
+    return std::sqrt(dx*dx + dy*dy + dz*dz);
+  }
+
+  int RigidTransformFitter::minSamples() const{
+    switch(m_mode){
+      case RigidTransformEstimator::Translation: return 1;
+      case RigidTransformEstimator::Affine:      return 4;
+      default:                                   return 3;  // RigidBody / Similarity
+    }
+  }
   } // namespace icl::cv3d
