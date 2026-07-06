@@ -215,7 +215,7 @@ namespace icl::viz3d {
         // the origin) — sidesteps physical point-light falloff calibration in the
         // ambiguous viz3d unit scale. True point/spot lights are a P3 refinement.
         flm::float3 dir = normalized(flm::float3{-pos[0], -pos[1], -pos[2]});
-        addDirectional(dir, toLinear(c), 1.6f * inten * exposure,
+        addDirectional(dir, toLinear(c), 3.0f * inten * exposure,
                        light->getShadowEnabled());
       }
       if (auto *g = dynamic_cast<GroupNode *>(node))
@@ -281,7 +281,7 @@ namespace icl::viz3d {
       flm::float3 shf[9];
       for (int i = 0; i < 9; ++i) shf[i] = {(float)sh[i][0], (float)sh[i][1], (float)sh[i][2]};
       ibl = fl::IndirectLight::Builder().reflections(envCubemap).radiance(3, shf)
-          .intensity(0.45f).build(*engine);
+          .intensity(0.15f).build(*engine);
       fscene->setIndirectLight(ibl);
     }
 
@@ -292,7 +292,7 @@ namespace icl::viz3d {
       for (const auto &n : nodes) collectLights(n.get());
       if (lightEntities.size() == before)   // no scene lights → default key light
         addDirectional({-0.4f, -1.0f, -0.6f}, {1.0f, 0.98f, 0.95f},
-                       2.0f * exposure, false);
+                       3.5f * exposure, false);
     }
 
     // Expand triangles + quads into a non-indexed position+normal list, honouring
