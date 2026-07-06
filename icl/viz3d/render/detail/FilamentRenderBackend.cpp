@@ -9,6 +9,7 @@
 #include <icl/viz3d/nodes/LightNode.h>
 #include <icl/viz3d/nodes/TextNode.h>
 #include <icl/viz3d/render/Material.h>
+#include <icl/utils/prop/Constraints.h>
 
 #include <filament/Camera.h>
 #include <filament/ColorGrading.h>
@@ -39,6 +40,7 @@
 #include <utils/EntityManager.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -132,10 +134,29 @@ namespace icl::viz3d {
     std::unordered_map<Node *, NodeCache> cache;
     std::vector<::utils::Entity> lightEntities;   // rebuilt every frame
 
-    // Settings (stored; honoured incrementally through P3).
+    // Settings. First-class contract flags (set via the typed seam methods) +
+    // Configurable knob values (set from the render.* properties, applied on the
+    // render thread via the dirty flags so Filament calls stay single-threaded).
     float ambient = 0.2f, exposure = 1.0f, overlayAlpha = 1.0f;
     bool ssr = true, shadows = true, lighting = true, sky = false;
     int debugMode = 0;
+    float lightScale = 3.0f, envIntensity = 0.15f, ssrThickness = 1.0f, ssrMaxDist = 200.0f;
+    int toneMap = 0;   // 0 linear, 1 filmic, 2 aces, 3 pbr-neutral
+    std::atomic<bool> envDirty{false}, gradingDirty{false};
+
+    void rebuildColorGrading() {
+      if (colorGrading) { view->setColorGrading(nullptr); engine->destroy(colorGrading); colorGrading = nullptr; }
+      auto build = [&](const fl::ToneMapper &tm) {
+        return fl::ColorGrading::Builder().toneMapper(&tm).build(*engine);
+      };
+      switch (toneMap) {
+        case 1: { fl::FilmicToneMapper tm;      colorGrading = build(tm); break; }
+        case 2: { fl::ACESToneMapper tm;        colorGrading = build(tm); break; }
+        case 3: { fl::PBRNeutralToneMapper tm;  colorGrading = build(tm); break; }
+        default: { fl::LinearToneMapper tm;     colorGrading = build(tm); break; }
+      }
+      view->setColorGrading(colorGrading);
+    }
 
     void ensureSwapChain() {
       if (swapChain && swapSize == targetSize) return;
@@ -215,7 +236,7 @@ namespace icl::viz3d {
         // the origin) — sidesteps physical point-light falloff calibration in the
         // ambiguous viz3d unit scale. True point/spot lights are a P3 refinement.
         flm::float3 dir = normalized(flm::float3{-pos[0], -pos[1], -pos[2]});
-        addDirectional(dir, toLinear(c), 3.0f * inten * exposure,
+        addDirectional(dir, toLinear(c), lightScale * inten * exposure,
                        light->getShadowEnabled());
       }
       if (auto *g = dynamic_cast<GroupNode *>(node))
@@ -281,7 +302,7 @@ namespace icl::viz3d {
       flm::float3 shf[9];
       for (int i = 0; i < 9; ++i) shf[i] = {(float)sh[i][0], (float)sh[i][1], (float)sh[i][2]};
       ibl = fl::IndirectLight::Builder().reflections(envCubemap).radiance(3, shf)
-          .intensity(0.15f).build(*engine);
+          .intensity(envIntensity).build(*engine);
       fscene->setIndirectLight(ibl);
     }
 
@@ -292,7 +313,7 @@ namespace icl::viz3d {
       for (const auto &n : nodes) collectLights(n.get());
       if (lightEntities.size() == before)   // no scene lights → default key light
         addDirectional({-0.4f, -1.0f, -0.6f}, {1.0f, 0.98f, 0.95f},
-                       3.5f * exposure, false);
+                       lightScale * exposure, false);
     }
 
     // Expand triangles + quads into a non-indexed position+normal list, honouring
@@ -516,14 +537,7 @@ namespace icl::viz3d {
     m_data->fcam = m_data->engine->createCamera(m_data->camEntity);
     m_data->view->setScene(m_data->fscene);
     m_data->view->setCamera(m_data->fcam);
-    // Linear tone mapping (no ACES) — ICL's GL renderer uses a near-linear tonemap,
-    // and ACES desaturates/washes the vivid flat colours ICL scenes use. Keeps
-    // saturation close to the GL look.
-    {
-      fl::LinearToneMapper tm;
-      m_data->colorGrading = fl::ColorGrading::Builder().toneMapper(&tm).build(*m_data->engine);
-    }
-    m_data->view->setColorGrading(m_data->colorGrading);
+    m_data->rebuildColorGrading();   // tone mapping (default linear — matches GL)
     m_data->lit = fl::Material::Builder()
         .package(LIT_PBR_FILAMAT, sizeof(LIT_PBR_FILAMAT)).build(*m_data->engine);
     m_data->unlit = fl::Material::Builder()
@@ -531,6 +545,33 @@ namespace icl::viz3d {
 
     // Procedural sky environment (reflections cubemap + diffuse SH).
     m_data->buildEnvironment();
+
+    // --- Configurable knobs (surface in the OSD as render.* via Scene) ---
+    // First-class features (lighting/SSR-on/off/debug) stay Scene properties routed
+    // through the typed seam; these are Filament's own tunables. Changes are applied
+    // on the render thread (dirty flags) so Filament calls stay single-threaded.
+    // Range must be float (only Range<int>/Range<float> constraint adapters are
+    // enrolled) — double literals would deduce Range<double> and throw at register.
+    addProperty("exposure", utils::prop::Range{.min = 0.1f, .max = 3.0f, .step = 0.05f}, 1.0f);
+    addProperty("light intensity", utils::prop::Range{.min = 0.0f, .max = 8.0f, .step = 0.1f}, 3.0f);
+    addProperty("env intensity", utils::prop::Range{.min = 0.0f, .max = 1.5f, .step = 0.02f}, 0.15f);
+    addProperty("tone mapping", utils::prop::Menu{"linear", "filmic", "aces", "pbr-neutral"}, "linear");
+    addProperty("ssr thickness", utils::prop::Range{.min = 0.01f, .max = 10.0f, .step = 0.1f}, 1.0f);
+    addProperty("ssr max distance", utils::prop::Range{.min = 1.0f, .max = 2000.0f, .step = 10.0f}, 200.0f);
+    registerCallback([this](const utils::Configurable::Property &p) {
+      Data &d = *m_data;
+      auto num = [&] { try { return std::stof(p.as<std::string>()); } catch (...) { return 0.0f; } };
+      if (p.name == "exposure") d.exposure = num();
+      else if (p.name == "light intensity") d.lightScale = num();
+      else if (p.name == "env intensity") { d.envIntensity = num(); d.envDirty = true; }
+      else if (p.name == "ssr thickness") d.ssrThickness = num();
+      else if (p.name == "ssr max distance") d.ssrMaxDist = num();
+      else if (p.name == "tone mapping") {
+        std::string t = p.as<std::string>();
+        d.toneMap = t == "filmic" ? 1 : t == "aces" ? 2 : t == "pbr-neutral" ? 3 : 0;
+        d.gradingDirty = true;
+      }
+    });
   }
 
   FilamentRenderBackend::~FilamentRenderBackend() {
@@ -582,6 +623,10 @@ namespace icl::viz3d {
     const int W = m_data->targetSize.width, H = m_data->targetSize.height;
     if (W <= 0 || H <= 0) return;
 
+    // Apply Configurable changes on the render thread (Filament isn't thread-safe).
+    if (m_data->gradingDirty.exchange(false)) m_data->rebuildColorGrading();
+    if (m_data->envDirty.exchange(false)) m_data->buildEnvironment();
+
     // Inject ICL's calibrated projection + camera placement (the P2 recipe). The
     // near/far handed to Filament MUST match the ones baked into the matrix (they
     // drive Filament's depth-buffer range) — recover them from getProjectionMatrixGL's
@@ -601,8 +646,8 @@ namespace icl::viz3d {
     // so scale the ray thickness/reach up from the metric defaults.
     fl::View::ScreenSpaceReflectionsOptions ssrOpt;
     ssrOpt.enabled = m_data->ssr;
-    ssrOpt.thickness = 1.0f;
-    ssrOpt.maxDistance = 200.0f;
+    ssrOpt.thickness = m_data->ssrThickness;
+    ssrOpt.maxDistance = m_data->ssrMaxDist;
     m_data->view->setScreenSpaceReflectionsOptions(ssrOpt);
 
     m_data->syncLights(nodes);

@@ -7,6 +7,7 @@
 #include <icl/viz3d/nodes/Node.h>
 #include <icl/core/Img.h>
 #include <icl/utils/Size.h>
+#include <icl/utils/config/Configurable.h>
 #include <memory>
 #include <vector>
 
@@ -22,10 +23,18 @@ namespace icl::viz3d {
 
       A Scene owns exactly one RenderBackend and drives it via render() + the
       setters below. The end state is a single real-time backend; the seam then
-      either collapses or keeps GLRenderBackend as a documented fallback. */
-  class ICLViz3d_API RenderBackend {
+      either collapses or keeps GLRenderBackend as a documented fallback.
+
+      RenderBackend is a utils::Configurable: cross-backend "first-class" features
+      stay the typed contract below (setLightingEnabled/setSSREnabled/setDebugMode,
+      driven by Scene properties), while each backend's *own* tunables (Filament:
+      exposure, env intensity, tone mapping, SSR params) are exposed as Configurable
+      properties. Scene adds the backend as a "render."-prefixed child so those
+      surface in the OSD without Scene knowing them — the ImageSource/ImageCompressor
+      forwarding idiom. */
+  class ICLViz3d_API RenderBackend : public utils::Configurable {
   public:
-    virtual ~RenderBackend() = default;
+    ~RenderBackend() override = default;
 
     /// Render a list of top-level nodes with given view and projection matrices
     virtual void render(const std::vector<std::shared_ptr<Node>> &nodes,

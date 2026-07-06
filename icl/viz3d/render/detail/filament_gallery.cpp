@@ -58,6 +58,15 @@ int main(int argc, char **argv) {
   // Optional 2nd arg "unlit" → toggle the scene's "enable lighting" property off.
   if (argc > 2 && std::string(argv[2]) == "unlit")
     scene.setPropertyValue("enable lighting", false);
+  // Any KEY=VALUE arg sets a scene property (incl. render.* backend knobs).
+  for (int i = 2; i < argc; ++i) {
+    std::string a = argv[i];
+    auto eq = a.find('=');
+    if (eq != std::string::npos) {
+      scene.setPropertyValue(a.substr(0, eq), a.substr(eq + 1));
+      std::printf("set %s = %s\n", a.substr(0, eq).c_str(), a.substr(eq + 1).c_str());
+    }
+  }
 
   viz3d::BVH::ImageResult res = scene.renderToImage(0, viz3d::BVH::NoDepth);
   if (res.image.getDim() == 0) { std::fprintf(stderr, "empty render\n"); return 1; }

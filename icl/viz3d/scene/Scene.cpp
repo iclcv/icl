@@ -244,6 +244,10 @@ namespace icl::viz3d {
     addProperty("point size",utils::prop::Range{.min=1, .max=20}, 3);
     addProperty("info.Nodes",utils::prop::Info{}, utils::str(0));
     addProperty("info.Lights",utils::prop::Info{}, utils::str(0));
+    // Surface the backend's own tunables (Filament: exposure, env intensity, tone
+    // mapping, SSR params) as render.* — the ImageSource/ImageCompressor idiom. The
+    // first-class features above stay Scene properties routed via the typed seam.
+    addChildConfigurable(m_data->renderer.get(), "render");
   }
   Scene::~Scene() = default;
 
