@@ -19,14 +19,17 @@ Audit of `math/fit`: ON the framework = `Optimizer<V>` (NelderMead, CMAES), `Mod
 2. `36088e80d` — default simplex was multiplicative (`x[i]*=1.05`), degenerate at zero components;
    now additive (scipy heuristic). NelderMead now works from a zero init.
 
-**Structural TODO (remaining):** make NelderMead the public `Optimizer<V>` face and stop the 9 raw
-`SimplexOptimizer` consumers using the engine directly. BLOCKERS surfaced: (a) a literal `detail/` move
-conflicts with the detail-rule since `NelderMeadOptimizer.h` is an *installed template* that must include
-the engine; (b) `MarkerGridBasedUndistortionOptimizer` uses engine-only APIs (multi-restart
-`optimize(gen,N)` + `setIterationCallback`) NelderMead doesn't expose. Options: enrich `Optimizer<V>` /
-`NelderMead`, or keep the engine public-but-documented-as-internal. Also put the other stragglers on the
-bases (StochasticOptimizer→Optimizer; LeastSquareModelFitting/LevMar/PolyRegression→ModelFitter; dedup
-LeastSquareModelFitting2D vs PrimitiveFitter2D). See [[project_fit_framework]].
+**Engine-internalisation DONE (`8bb6d9391`):** enriched `Optimizer<V>` with a generic multi-start
+helper `minimizeRestarts(f, initGen, nStarts)` (the last engine-only capability a real consumer needed);
+migrated `MarkerGridBasedUndistortionOptimizer` off raw `SimplexOptimizer` → `NelderMeadOptimizer` +
+`minimizeRestarts`. `SimplexOptimizer` is now documented as the internal engine behind NelderMead. A
+literal `detail/` move stays blocked (NelderMead is an installed template that must include the engine),
+so it's **internal-by-contract**. Remaining direct engine users are legit: the simplex-2D/3D demos
+(visualise the simplex mechanics) and PlanarPoseEstimator (deferred to its redesign).
+
+**Structural TODO (remaining):** put the other stragglers on the bases —
+StochasticOptimizer→Optimizer<V>; LeastSquareModelFitting/LevMar/PolyRegression→ModelFitter; dedup
+LeastSquareModelFitting2D vs PrimitiveFitter2D. See [[project_fit_framework]].
 
 **⏭ PlanarPoseEstimator redesign (task 2, deferred):** its `PoseEstimationAlgorithm` enum + bespoke
 `SimplexErrorFunction`/`create_initial_simplex`/euler machinery should become "closed-form seed +
