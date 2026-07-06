@@ -5,9 +5,9 @@
 // OpenCL nearest-neighbour backends for ICP: brute-force NN on the GPU, one
 // work-item per query. CLNN accelerates the exact position-only metric of the
 // default OctreeNN; CLColorNN adds the weighted colour term of ColorNN. Fresh,
-// self-contained kernels (the preserved rep-DB approximate-NN seed in
-// IterativeClosestPoint* is a further optimisation, not needed for a correct GPU
-// backend). Empty when ICL is built without OpenCL.
+// self-contained kernels. A rep-DB approximate-NN pass (skip scanning every
+// target) would speed very large clouds further, but is unnecessary for
+// correctness. Empty when ICL is built without OpenCL.
 
 #include <icl/cv3d/icp/ICP.h>
 
