@@ -22,19 +22,36 @@ Branch `further-restructuring-and-cleanup`; suite **1084→1088**, all green. **
 **cv3d/pose framework migration steps 1–4 now ALL done** (1 RobustPoseEstimator→RobustFitter,
 2 RigidTransformFitter face, 3 PlanarPoseEstimator se(3)+enum collapse, 4 PlaneFitter face).
 
+### ✅ DONE (S100) — ICP Phase 2 (both halves, GPU-verified) + RobustPoseEstimator sim
+Suite **1088→1092**, all green.
+1. **ICP color-aware C++ backend** (`61f2a4e2e`) — `ColorNN : ICP::Backend`, exact brute-force NN under
+   `dist² = ||Δpos||² + colorWeight²·||Δrgb||²`. Colours out-of-band (setTarget/SourceColors, don't
+   transform with pose); protected virtual `distanceSq()` = free-form-metric seam (the C++ edge). Own
+   `ICP_ColorNN.cpp` — Vec4 hot path untouched (CE constraint). NB `math::KDTree` NOT used: its
+   nearestNeighbour is a no-backtrack descent (approximate), wrong for ICP.
+2. **ICP OpenCL backend** (`54b642210`) — `CLNN : ICP::Backend` (`ICP_OpenCL.cpp`, `ICL_HAVE_OPENCL`),
+   brute-force NN kernel, one work-item/query. **GPU-verified in-sandbox**: correspondences match
+   OctreeNN exactly (delta=0), ICP recovers transform. Fresh kernel (the rep-DB approx-NN seed is a
+   further optimisation). Graceful `isValid()` fallback. See [[project_icp_consolidation]].
+3. **RobustPoseEstimator sim** (`693431a4e`) — did the "real-display check" as a headless sim.
+   New `icl-robust-pose-sim` (no Qt): warps a textured template (mandril) to known poses, runs the
+   REAL clsurf-SURF → `RobustPoseEstimator::fit` → corner-reprojection scoring. 12/12 frames @1.7px
+   clean, 16/16 @2.0px under 8px noise. Also fixed the mirrored app's stale `"opensurf"` backend
+   (retired) → `"best"`. **cv3d/pose framework migration steps 1–4 all done** (see S100 block above).
+
 ### ▶ NEXT SESSION — pick one (S99/S100 recap below)
 Branch `further-restructuring-and-cleanup`; **nothing pushed** (SSH blocked in-sandbox — CE pushes).
-Candidate directions, smallest-first:
+Candidate directions:
 
-1. **ICP Phase 2** — OpenCL NN backend (mine the preserved `icp/IterativeClosestPoint.*`) +
-   Vec8 (pos+color) color-aware backend with a configurable distance (don't slow the Vec4 path).
-   See [[project_icp_consolidation]].
-2. **`RobustPoseEstimator` real-display check** — proven in sim (`cv3d.robustpose.*`); its one app
-   consumer `viz3d/apps/surf-based-object-tracking` needs exercising on a real display.
-3. **Filament rendering backend** (big, offset) — rework viz3d/render onto Google Filament.
+1. **ICP color-aware, further** — Vec8 GPU color backend (extend the CLNN kernel with the weighted
+   colour term + upload colour buffers), and/or the rep-DB approximate-NN acceleration from the
+   preserved `icp/IterativeClosestPoint.*` seed for large clouds. See [[project_icp_consolidation]].
+2. **Filament rendering backend** (big, offset) — rework viz3d/render onto Google Filament.
    See [[project_filament_backend]].
-4. **Resume paused arcs** — `icl-cam-calib-intrinsic` (auto-capture quality gate; see
+3. **Resume paused arcs** — `icl-cam-calib-intrinsic` (auto-capture quality gate; see
    `intrinsic-calib-next-steps.md`) or the camera-calibration redesign / Phase C.
+4. **Retire the preserved ICP OpenCL seed** — now that CLNN exists, decide the fate of the
+   821-line commented `icp/IterativeClosestPoint.*` (mine rep-DB NN then delete, or delete outright).
 
 ### ✅ DONE (S99) — fit-framework adoption COMPLETE
 Every `math/fit` tool now sits behind the generic bases, or is a documented internal engine:
