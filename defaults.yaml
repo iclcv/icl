@@ -1,0 +1,12 @@
+config:
+  collision margin/mm: 4.0678
+  collision mode: SDF
+  contact hardness: 0.6
+  damping: 0.12
+  friction: 0.5
+  node density: 52
+  position iterations: 10
+  self collision: false
+  size: 1.4192
+  stiffness: 0.850256
+  title: 'Configuration file for Configurable ID: '

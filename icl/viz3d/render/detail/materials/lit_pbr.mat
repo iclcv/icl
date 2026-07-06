@@ -3,6 +3,10 @@
 material {
     name : litPBR,
     shadingModel : lit,
+    // Opt into screen-space reflections (falls back to the IBL where SSR misses).
+    // Without this a material samples reflections from the IBL only, so the View's
+    // ScreenSpaceReflectionsOptions have no effect.
+    reflections : screenspace,
     // Two-sided: ICL's getProjectionMatrixGL() bakes in a Y-flip (image
     // convention), which mirrors triangle winding — so Filament would cull the
     // wrong (front) faces. The GL renderer doesn't cull either; depth test sorts.

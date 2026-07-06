@@ -347,6 +347,14 @@ if filament_found
     implicit_include_directories: false,
     install: false,
   )
+
+  # SSR check: multi-frame direct-backend render of a glossy floor + bright cube.
+  executable('icl-filament-ssr-test',
+    files('render/detail/filament_ssr_test.cpp'),
+    dependencies: [icl_viz3d_dep, filament_dep],
+    implicit_include_directories: false,
+    install: false,
+  )
 endif
 
 install_headers(viz3d_headers,
