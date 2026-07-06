@@ -27,9 +27,15 @@ literal `detail/` move stays blocked (NelderMead is an installed template that m
 so it's **internal-by-contract**. Remaining direct engine users are legit: the simplex-2D/3D demos
 (visualise the simplex mechanics) and PlanarPoseEstimator (deferred to its redesign).
 
-**Structural TODO (remaining):** put the other stragglers on the bases —
-StochasticOptimizer→Optimizer<V>; LeastSquareModelFitting/LevMar/PolyRegression→ModelFitter; dedup
-LeastSquareModelFitting2D vs PrimitiveFitter2D. See [[project_fit_framework]].
+**LevMar folded (`a9d2c7146`):** new `LMFitter<Scalar> : ModelFitter<(x,y),β>` wraps
+`LevenbergMarquardtFitter` + a `RobustKernel` (Huber/Cauchy/Tukey M-estimators, MAD scale) doing IRLS
+(weights fold √w into y and f — no LM-core change). Robust recovers a line under ¼ outliers
+(plain m=2.019 → Cauchy m=2.00002). LevMar is still SOTA for dense small-medium NLS; the modern win is
+this robust-loss option, complementary to the RANSAC `RobustFitter`.
+
+**Structural TODO (remaining):** put the last stragglers on the bases —
+StochasticOptimizer→Optimizer<V>; LeastSquareModelFitting(2D)→ModelFitter (dedup vs PrimitiveFitter2D);
+PolynomialRegression→ModelFitter. See [[project_fit_framework]].
 
 **✅ PlanarPoseEstimator se(3) refinement DONE (`c6ad14966`).** `SimplexSampling` now refines the
 closed-form seed over a LOCAL se(3) tangent δ=(ω,v) — `minimise reproj( ΔT(δ)·T_seed )`,
