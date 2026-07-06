@@ -7,9 +7,21 @@ outputs
 .DS_Store
 
 sandbox.conf
+sandbox.local
 .cache/
 git-push-redate-to-now.sh
 
 # sandbox smoke-test generated profiles
 scripts/sandbox-gl-last-profile.sb
 scripts/sandbox-cl-last-profile.sb
+
+# tooling / editor / personal
+.claude/
+.vscode/
+continue.md
+
+# dependency clones (not submodules)
+3rdparty/SSR/
+
+# app-generated config dumps
+defaults.json
