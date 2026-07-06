@@ -31,13 +31,19 @@ so it's **internal-by-contract**. Remaining direct engine users are legit: the s
 StochasticOptimizer→Optimizer<V>; LeastSquareModelFitting/LevMar/PolyRegression→ModelFitter; dedup
 LeastSquareModelFitting2D vs PrimitiveFitter2D. See [[project_fit_framework]].
 
-**⏭ PlanarPoseEstimator redesign (task 2, deferred):** its `PoseEstimationAlgorithm` enum + bespoke
-`SimplexErrorFunction`/`create_initial_simplex`/euler machinery should become "closed-form seed +
-pluggable `Optimizer<Pose6D>`". Its SimplexSampling still only reaches ~1.2px (not the seed's ~1e-4px):
-the euler parametrization is pathological (periodicity/gimbal → bad branches; more iters → worse) AND
-`compute_error_opt`'s rotation disagrees with `create_hom_4x4`. Needs a better parametrization (se(3) /
-rotation-preserving refine) — a real redesign, not a patch. Default is HomographyBasedOnly so this is
-opt-in only. See [[project_pose_estimation_bugs]].
+**✅ PlanarPoseEstimator se(3) refinement DONE (`c6ad14966`).** `SimplexSampling` now refines the
+closed-form seed over a LOCAL se(3) tangent δ=(ω,v) — `minimise reproj( ΔT(δ)·T_seed )`,
+`ΔT=[Rodrigues(ω)|v]` — through the framework `NelderMeadOptimizer<Pose6D>`. Rodrigues is
+singularity-free near 0 so the euler pathology is gone: exact data 1.23px(+divergent) → 9.4e-5px
+(deterministic, seed quality); under noise it improves on the seed (0.4713→0.4701px). This is the
+"closed-form seed + pluggable Optimizer" shape. **Remaining:** the brute-force `Sampling*` enum modes
+still use bespoke `optimize_error`/`compute_error_opt` (could fold into the framework or drop); the
+`PoseEstimationAlgorithm` enum could collapse to HomographyBasedOnly vs Refined(Optimizer).
+See [[project_pose_estimation_bugs]].
+
+**⏭ TODO (offset, S99) — Filament rendering backend.** Consider reworking the whole viz3d/render
+backend onto **Google Filament** as a renderer backend at some point. Big architectural item, not
+scoped yet. See [[project_filament_backend]].
 
 ### ✅ DONE (S99) — pose-correctness pass: FALSE ALARM + one real milder bug
 The "getPose is broken" alarm was a **test bug**, not a code bug. `getPose` (HomographyBasedOnly)
