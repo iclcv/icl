@@ -123,6 +123,20 @@ if _build_demos and qt_found
       dependencies: [icl_viz3d_dep],
       install: false,
     )
+    if filament_found
+      # A/B tuning harness: same scene → Filament + Cycles side-by-side PNG.
+      executable('viz3d-render-compare',
+        files('../demos/render-compare.cpp'),
+        dependencies: [icl_viz3d_dep, icl_io_dep],
+        install: false,
+      )
+      # Systematic calibration harness: minimal single-variable scenes.
+      executable('viz3d-render-calibrate',
+        files('../demos/render-calibrate.cpp'),
+        dependencies: [icl_viz3d_dep, icl_io_dep],
+        install: false,
+      )
+    endif
   endif
 endif
 
@@ -134,6 +148,15 @@ if _build_apps and qt_found
     dependencies: [icl_viz3d_dep],
     install: false,
   )
+  # live Filament-vs-Cycles tuning app: same scene both backends, side by side,
+  # with the render.* knobs live. Needs both renderers.
+  if cycles_found and filament_found
+    executable('viz3d-render-tuner',
+      files('../apps/render-tuner.cpp'),
+      dependencies: [icl_viz3d_dep],
+      install: false,
+    )
+  endif
   # ports from legacy geom/apps (geom→viz3d retirement)
   executable('icl-scene-viewer',
     files('../apps/scene-viewer.cpp'),

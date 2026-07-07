@@ -121,6 +121,12 @@ namespace icl::viz3d {
     void render(int cameraIndex);
     RenderBackend &getRenderer();
 
+    /// The flat list of nodes rendered for \a cameraIndex (the scene objects,
+    /// plus camera gizmos when "show cameras" is on). Lets a caller drive a
+    /// RenderBackend directly (e.g. a headless capture that wants SSR/TAA, which
+    /// renderToImage suppresses). Valid until the scene graph changes.
+    const std::vector<std::shared_ptr<Node>> &getRenderNodes(int cameraIndex = 0);
+
     /// Offscreen GL render through \a cameraIndex → RGB color + metric depth.
     /** GPU counterpart to BVH::raycastToImage (same BVH::ImageResult /
         BVH::DepthMode vocabulary), so a SceneCapture can swap CPU↔GL backends

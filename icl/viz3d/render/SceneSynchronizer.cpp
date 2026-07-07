@@ -3,6 +3,7 @@
 // Copyright (C) 2006-2026 Christof Elbrechter
 
 #include <icl/viz3d/render/SceneSynchronizer.h>
+#include <icl/viz3d/render/Sky.h>
 #include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/GeometryNode.h>
@@ -142,6 +143,19 @@ namespace icl::viz3d {
     return tex;
   }
 
+  // ICL material/light colours are sRGB (display) values; Cycles' shading is
+  // linear. With OCIO disabled here, Cycles does NOT auto-convert scalar node
+  // colours, so we must linearise them ourselves to match Filament's toLinear()
+  // — otherwise every material/light renders too bright (e.g. an emissive 0.5
+  // came out at sRGB(0.5)=186 vs Filament's correct sRGB(0.214)=128). (Sky
+  // colours are already LINEAR by contract — see Sky.h — so they are NOT touched.)
+  static float srgb2lin(float s) {
+    return s <= 0.04045f ? s / 12.92f : std::pow((s + 0.055f) / 1.055f, 2.4f);
+  }
+  static ccl::float3 toLinear3(float r, float g, float b) {
+    return make_float3(srgb2lin(r), srgb2lin(g), srgb2lin(b));
+  }
+
   static Shader *createDefaultShader(ccl::Scene *scene) {
     Shader *shader = scene->create_node<Shader>();
     ShaderGraph *graph = new ShaderGraph();
@@ -162,7 +176,7 @@ namespace icl::viz3d {
     ShaderGraph *graph = new ShaderGraph();
 
     PrincipledBsdfNode *bsdf = graph->create_node<PrincipledBsdfNode>();
-    bsdf->set_base_color(make_float3(mat->baseColor[0], mat->baseColor[1], mat->baseColor[2]));
+    bsdf->set_base_color(toLinear3(mat->baseColor[0], mat->baseColor[1], mat->baseColor[2]));
     bsdf->set_metallic(mat->metallic);
     bsdf->set_roughness(mat->roughness);
 
@@ -218,7 +232,7 @@ namespace icl::viz3d {
     bool hasEmissiveMap = mat->textures && !mat->textures->emissiveMap.isNull();
     float emStrength = (mat->emissive[0] + mat->emissive[1] + mat->emissive[2]) / 3.0f;
     if (emStrength > 0.001f || hasEmissiveMap) {
-      bsdf->set_emission_color(make_float3(mat->emissive[0], mat->emissive[1], mat->emissive[2]));
+      bsdf->set_emission_color(toLinear3(mat->emissive[0], mat->emissive[1], mat->emissive[2]));
       bsdf->set_emission_strength(1.0f);
       if (hasEmissiveMap) {
         auto *tex = createImageTexNode(graph, scene, mat->textures->emissiveMap,
@@ -228,32 +242,16 @@ namespace icl::viz3d {
       }
     }
 
-    // Reflectivity: mix in a glossy mirror layer
-    if (mat->reflectivity > 0.001f) {
-      auto *glossy = graph->create_node<GlossyBsdfNode>();
-      glossy->set_roughness(mat->roughness * 0.1f);  // near-mirror
-      glossy->set_color(make_float3(1, 1, 1));
-      // Share normal map with glossy node
-      if (mat->textures && !mat->textures->normalMap.isNull()) {
-        auto *nInput = bsdf->input("Normal");
-        if (nInput && nInput->link)
-          graph->connect(nInput->link, glossy->input("Normal"));
-      }
-
-      auto *mixRefl = graph->create_node<MixClosureNode>();
-      mixRefl->set_fac(mat->reflectivity);
-      graph->connect(surfaceNode->output(surfaceOutput), mixRefl->input("Closure1"));
-      graph->connect(glossy->output("BSDF"), mixRefl->input("Closure2"));
-      surfaceNode = mixRefl;
-      surfaceOutput = "Closure";
-    }
+    // (Reflections are the Principled BSDF's own metallic/roughness response —
+    //  a mirror is metallic=1, roughness≈0. No separate reflectivity layer; the
+    //  material maps 1:1 to Filament's metallic-roughness.)
 
     // Transmission (glass)
     if (mat->isTransmissive()) {
       auto *glass = graph->create_node<GlassBsdfNode>();
       glass->set_roughness(0.0f);
       glass->set_IOR(mat->transmission ? mat->transmission->ior : 1.5f);
-      glass->set_color(make_float3(mat->baseColor[0], mat->baseColor[1], mat->baseColor[2]));
+      glass->set_color(toLinear3(mat->baseColor[0], mat->baseColor[1], mat->baseColor[2]));
       if (mat->textures && !mat->textures->baseColorMap.isNull()) {
         auto *bcInput = bsdf->input("Base Color");
         if (bcInput && bcInput->link)
@@ -436,13 +434,16 @@ namespace icl::viz3d {
       flipY->set_value2(-1.0f);
       graph->connect(sepXYZ->output("Y"), flipY->input("Value1"));
 
-      // Sky colors (exact match: cv3d::Sky default gradient)
+      // Sky colours from the shared viz3d::Sky model (single source of truth,
+      // also drives the Filament IBL + skybox — see Sky.h). The node graph below
+      // reproduces Sky::colorForElevation, so both renderers show the same sky.
+      const viz3d::Sky sky;
       auto *zenithCol = graph->create_node<ColorNode>();
-      zenithCol->set_value(make_float3(0.55f, 0.65f, 0.85f));
+      zenithCol->set_value(make_float3(sky.zenith[0], sky.zenith[1], sky.zenith[2]));
       auto *horizCol = graph->create_node<ColorNode>();
-      horizCol->set_value(make_float3(0.95f, 0.93f, 0.90f));
+      horizCol->set_value(make_float3(sky.horizon[0], sky.horizon[1], sky.horizon[2]));
       auto *groundCol = graph->create_node<ColorNode>();
-      groundCol->set_value(make_float3(0.30f, 0.27f, 0.25f));
+      groundCol->set_value(make_float3(sky.ground[0], sky.ground[1], sky.ground[2]));
 
       // Upper hemisphere: tUp = pow(max(Y, 0), 0.4)
       auto *clampY = graph->create_node<MathNode>();
@@ -452,7 +453,7 @@ namespace icl::viz3d {
 
       auto *powNode = graph->create_node<MathNode>();
       powNode->set_math_type(NODE_MATH_POWER);
-      powNode->set_value2(0.4f);  // horizonSharpness
+      powNode->set_value2(sky.horizonSharpness);
       graph->connect(clampY->output("Value"), powNode->input("Value1"));
 
       // skyAbove = mix(horizon, zenith, tUp)
@@ -470,7 +471,7 @@ namespace icl::viz3d {
 
       auto *mulThree = graph->create_node<MathNode>();
       mulThree->set_math_type(NODE_MATH_MULTIPLY);
-      mulThree->set_value2(3.0f);
+      mulThree->set_value2(sky.groundSharpness);
       mulThree->set_use_clamp(true);
       graph->connect(negY->output("Value"), mulThree->input("Value1"));
 
@@ -639,6 +640,10 @@ namespace icl::viz3d {
     cclCam->set_camera_type(CAMERA_PERSPECTIVE);
 
     // Vertical FOV: fov = 2 * atan(h / (2 * f * my))
+    // NB: this does NOT match ICL's GL projection framing (the compare harness
+    // shows Cycles zoomed vs Filament). Cycles' fov/viewplane/sensor-fit model
+    // needs a proper reconciliation with cv3d::Camera::getProjectionMatrixGL()
+    // (the parity-verified path) — TODO, tune with viz3d-render-compare.
     float f = cam.getFocalLength();
     float my = cam.getSamplingResolutionY();
     if (f > 0 && my > 0 && h > 0) {
@@ -686,10 +691,10 @@ namespace icl::viz3d {
       float physIntensity = intensity * (300.0f / 255.0f) * typicalDist * typicalDist;
 
       PointLight *cclLight = cclScene->create_node<PointLight>();
-      cclLight->set_strength(make_float3(
-          c[0] / 255.0f * physIntensity,
-          c[1] / 255.0f * physIntensity,
-          c[2] / 255.0f * physIntensity));
+      const ccl::float3 lc = toLinear3(c[0] / 255.0f, c[1] / 255.0f, c[2] / 255.0f);
+      cclLight->set_strength(make_float3(lc.x * physIntensity,
+                                         lc.y * physIntensity,
+                                         lc.z * physIntensity));
       cclLight->set_radius(0.1f * sceneScale);
 
       // Emission shader for light

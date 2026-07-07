@@ -21,8 +21,7 @@ using namespace icl::cv3d;
 
 namespace icl::viz3d {
 
-  // Tile dimensions shared by the checker's color + reflectivity maps so they
-  // stay registered (both tile via GL_REPEAT at the same UV span).
+  // Checker board texture dimensions (tiles via GL_REPEAT across the ground UVs).
   static constexpr int kCheckerTexSize = 512;
   static constexpr int kCheckerTiles   = 8;
 
@@ -45,18 +44,6 @@ namespace icl::viz3d {
         a(tx, ty) = 255;
       }
     }
-    return core::Image(tex);
-  }
-
-  // Per-tile reflectivity (R channel): dark squares more mirror-like (0.5) than
-  // the light ones (0.25). The ground material's scalar reflectivity = 1, so the
-  // map values pass through directly.
-  static core::Image makeCheckerReflectivity() {
-    core::Img8u tex(Size(kCheckerTexSize, kCheckerTexSize), 1);
-    core::Channel8u r = tex[0];
-    for (int ty = 0; ty < kCheckerTexSize; ty++)
-      for (int tx = 0; tx < kCheckerTexSize; tx++)
-        r(tx, ty) = checkerLight(tx, ty) ? 64 : 128;   // 0.25 vs 0.50
     return core::Image(tex);
   }
 
@@ -156,14 +143,10 @@ namespace icl::viz3d {
 
       auto groundMat = std::make_shared<Material>();
       groundMat->baseColor = GeomColor(1, 1, 1, 1);
-      groundMat->roughness = 0.4f;
-      // Per-tile reflectivity comes from the reflectivity map (dark 0.5 / light
-      // 0.25); the scalar is 1 so the map passes through unscaled.
-      groundMat->reflectivity = 1.0f;
+      groundMat->roughness = 0.25f;   // glossy dielectric floor (reflects the sky/SSR)
       groundMat->smoothShading = true;
       groundMat->textures = std::make_shared<Material::TextureMaps>();
       groundMat->textures->baseColorMap = makeCheckerColor();
-      groundMat->textures->reflectivityMap = makeCheckerReflectivity();
 
       auto ground = std::make_shared<MeshNode>();
       ground->addVertex(P(-gs, -gs, gl));

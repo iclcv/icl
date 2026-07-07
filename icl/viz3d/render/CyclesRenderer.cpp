@@ -4,6 +4,7 @@
 
 #include <icl/viz3d/render/CyclesRenderer.h>
 #include <icl/viz3d/render/SceneSynchronizer.h>
+#include <icl/qt/Application.h>
 
 #include <icl/viz3d/scene/Scene.h>
 #include <icl/cv3d/Camera.h>
@@ -270,6 +271,20 @@ struct CyclesRenderer::Impl {
     initialized = true;
   }
 
+  // Destroy the Cycles Session (and its Scene) while the process — and the
+  // dylibs Cycles leans on (Metal/TBB/OIDN/OCIO) — are still fully alive.
+  // Idempotent; called from app-shutdown finalization AND the destructor. This
+  // is what keeps ~Session/~Scene off the atexit path (where those dylibs'
+  // finalizers have already run and ~Scene would terminate). See ctor.
+  void teardownSession() {
+    running = false;
+    cv.notify_all();
+    if (managementThread.joinable()) managementThread.join();
+    if (session) { session->cancel(); session.reset(); }
+    scene = nullptr;
+    initialized = false;
+  }
+
   void applyQualityToParams(SessionParams &params) {
     if (paramsOverridden) {
       params.samples = samples;
@@ -437,13 +452,23 @@ struct CyclesRenderer::Impl {
 // ---- CyclesRenderer public API ----
 
 CyclesRenderer::CyclesRenderer(viz3d::Scene &scene, RenderQuality quality)
-    : m_impl(std::make_unique<Impl>(scene, quality)) {}
+    : m_impl(std::make_shared<Impl>(scene, quality)) {
+  // Self-register for app-shutdown teardown so no app has to remember to do it.
+  // The Cycles Session must be destroyed while Metal/TBB/OIDN are still alive; if
+  // the owner keeps this renderer in a static (destroyed at atexit), ~Scene runs
+  // after those dylibs' finalizers and terminates. The finalization runs during
+  // ICLApplication teardown (worker threads already stopped, dylibs still up) and
+  // tears the session down there. A weak_ptr keeps it safe if this object was
+  // already destroyed normally (then teardownSession simply doesn't run twice).
+  if (auto *app = qt::ICLApplication::instance()) {
+    app->addFinalization([w = std::weak_ptr<Impl>(m_impl)] {
+      if (auto p = w.lock()) p->teardownSession();
+    });
+  }
+}
 
 CyclesRenderer::~CyclesRenderer() {
-  stop();
-  if (m_impl && m_impl->session) {
-    m_impl->session->cancel();
-  }
+  if (m_impl) m_impl->teardownSession();
 }
 
 CyclesRenderer::CyclesRenderer(CyclesRenderer &&) noexcept = default;
@@ -483,6 +508,13 @@ void CyclesRenderer::stop() {
 // each call either advances state or returns immediately.
 
 void CyclesRenderer::render(int camIndex) {
+  // Poll-driven render() and autonomous start()/managementLoop() are mutually
+  // exclusive driving modes: while the management thread is running it owns the
+  // session/scene exclusively. A stray render() call here would enter
+  // ensureInitialized()/synchronize() concurrently with the management thread
+  // and race on the shared session (observed: use-after-free in Mesh::set_verts
+  // while the other thread reconstructs the Session). Ignore it in that mode.
+  if (m_impl->running) return;
   std::scoped_lock lock(m_impl->renderMutex);
   m_impl->ensureInitialized();
 

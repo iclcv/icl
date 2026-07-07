@@ -27,6 +27,10 @@ int main(int argc, char **argv) {
   if (!backend.isValid()) { std::fprintf(stderr, "no engine\n"); return 2; }
   const bool ssrOff = argc > 2 && std::string(argv[2]) == "off";
   backend.setSSREnabled(!ssrOff);
+  // Mirror the live Scene path: enable TAA whenever SSR is on, to resolve SSR's
+  // per-pixel dither over the multi-frame loop below (arg "noaa" opts out).
+  const bool noaa = argc > 2 && std::string(argv[2]) == "noaa";
+  backend.setTemporalAAEnabled(!ssrOff && !noaa);
 
   const int W = 800, H = 600;
   backend.setTargetSize({W, H});

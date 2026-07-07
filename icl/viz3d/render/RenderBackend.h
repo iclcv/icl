@@ -74,6 +74,13 @@ namespace icl::viz3d {
         capture and restore the prior state afterwards. */
     virtual bool isSSREnabled() const = 0;
 
+    /// Enable/disable temporal antialiasing (default: false)
+    /** TAA resolves the per-pixel dither of screen-space effects (notably SSR)
+        by accumulating over frames; the live on-screen path enables it whenever
+        SSR is on. Single-shot / headless captures have no frame history, so they
+        leave it off (FXAA handles edges). Backends without TAA ignore this. */
+    virtual void setTemporalAAEnabled(bool /*enabled*/) {}
+
     /// Enable/disable shadow mapping (default: true)
     virtual void setShadowsEnabled(bool enabled) = 0;
 

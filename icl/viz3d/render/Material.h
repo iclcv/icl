@@ -64,8 +64,13 @@ namespace icl::viz3d {
     cv3d::GeomColor baseColor{0.78f, 0.78f, 0.78f, 1.0f};  ///< albedo in [0,1]
     float metallic = 0.0f;          ///< 0 = dielectric, 1 = metal
     float roughness = 0.5f;         ///< 0 = mirror, 1 = fully diffuse
-    float reflectivity = 0.0f;      ///< explicit mirror reflections (raytracing)
     cv3d::GeomColor emissive{0,0,0,1};    ///< self-illumination in [0,1]
+    // NB: mirrors/reflections are expressed the glTF way — a mirror is
+    // `metallic = 1, roughness ≈ 0` (its reflection is tinted by baseColor); a
+    // glossy dielectric is `metallic = 0` with low roughness. There is no separate
+    // "reflectivity" knob (it duplicated metallic-roughness and each backend had
+    // to interpret it ad-hoc). Every field here maps 1:1 to Filament and to
+    // Cycles' Principled BSDF.
 
     // -- Display hints (always inline) --
 
@@ -90,7 +95,6 @@ namespace icl::viz3d {
       core::Image metallicRoughnessMap;  ///< G=roughness, B=metallic (glTF convention)
       core::Image emissiveMap;           ///< emission texture (RGB)
       core::Image occlusionMap;          ///< ambient occlusion (R channel, 1=fully lit)
-      core::Image reflectivityMap;       ///< per-texel reflectivity (R channel), scales `reflectivity`
       TexFilter filter = TexFilter::Linear;  ///< sampling for all maps of this material
       /// Globally-unique stamp, refreshed whenever a map changes; the renderer
       /// re-uploads this material's GL textures only when its cached version
@@ -135,10 +139,9 @@ namespace icl::viz3d {
 
     // -- Factories --
 
-    /// Create from legacy color (in [0,255] range) + shininess + reflectivity
+    /// Create from legacy color (in [0,255] range) + shininess
     static std::shared_ptr<Material> fromColor(const cv3d::GeomColor &color,
-                                                float shininess = 128,
-                                                float reflectivity = 0);
+                                                float shininess = 128);
 
     /// Create with separate face and wireframe colors (in [0,255] range)
     static std::shared_ptr<Material> fromColors(const cv3d::GeomColor &faceColor,

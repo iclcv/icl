@@ -9,6 +9,7 @@
 #include <icl/viz3d/nodes/LightNode.h>
 #include <icl/viz3d/nodes/TextNode.h>
 #include <icl/viz3d/render/Material.h>
+#include <icl/viz3d/render/Sky.h>
 #include <icl/utils/prop/Constraints.h>
 
 #include <filament/Camera.h>
@@ -22,8 +23,10 @@
 #include <filament/RenderableManager.h>
 #include <filament/Renderer.h>
 #include <filament/Scene.h>
+#include <filament/Skybox.h>
 #include <filament/SwapChain.h>
 #include <filament/Texture.h>
+#include <filament/TextureSampler.h>
 #include <filament/ToneMapper.h>
 #include <filament/TransformManager.h>
 #include <filament/VertexBuffer.h>
@@ -36,6 +39,7 @@
 #include <backend/PixelBufferDescriptor.h>
 #include <math/mat4.h>
 #include <math/quat.h>
+#include <math/vec2.h>
 #include <math/vec3.h>
 #include <utils/EntityManager.h>
 
@@ -123,7 +127,14 @@ namespace icl::viz3d {
     fl::Material *unlit = nullptr;
     fl::IndirectLight *ibl = nullptr;
     fl::Texture *envCubemap = nullptr;
+    fl::Skybox *skybox = nullptr;
     fl::ColorGrading *colorGrading = nullptr;
+    Sky skyModel;   // shared gradient (also drives the Cycles world) — see Sky.h
+    // Material texture maps → GPU textures, cached by source-Image identity
+    // (ImgBase*) so a reused map uploads once and static meshes don't re-create
+    // a texture every sync. whiteTex is the 1x1 default bound to unused samplers.
+    std::unordered_map<const void *, fl::Texture *> textureCache;
+    fl::Texture *whiteTex = nullptr;
     flm::float3 skyUp{0, 1, 0};
 
     utils::Size targetSize{640, 480};
@@ -138,11 +149,44 @@ namespace icl::viz3d {
     // Configurable knob values (set from the render.* properties, applied on the
     // render thread via the dirty flags so Filament calls stay single-threaded).
     float ambient = 0.2f, exposure = 1.0f, overlayAlpha = 1.0f;
-    bool ssr = true, shadows = true, lighting = true, sky = false;
+    bool ssr = true, shadows = true, lighting = true, showSky = false;
+    bool taa = false;   // temporal AA — resolves SSR's per-pixel dither; off for
+                        // single-shot/headless (needs frame history) → FXAA instead.
     int debugMode = 0;
-    float lightScale = 3.0f, envIntensity = 0.15f, ssrThickness = 1.0f, ssrMaxDist = 200.0f;
-    int toneMap = 1;   // 0 linear, 1 filmic, 2 aces, 3 pbr-neutral
-    std::atomic<bool> envDirty{false}, gradingDirty{false};
+    float lightScale = 1.0f, envIntensity = 0.95f, envSpecular = 1.0f, ssrThickness = 1.0f, ssrMaxDist = 200.0f;
+    // Screen-space ambient occlusion — the soft contact darkening under/between
+    // objects (the sphere occluding the sky dome from the ground). This is the
+    // Filament analogue of the ambient-occlusion contact shadow Cycles gets for
+    // free by path-tracing the environment; a light shadow-map can't produce it.
+    // NB Filament's AO radius is in world units ("metres"); viz3d scenes are 100s
+    // of units, so the 0.3 default is invisible — we default to a scene-scale value.
+    // Defaults tuned on the render-calibrate "simple" scene (large flat ground +
+    // object): a big radius + a minHorizon cull rejects the flat-plane grazing
+    // self-occlusion (matches Cycles' OPEN ground) while keeping the object's
+    // contact darkening. NB screen-space AO can only approximate the path-traced
+    // contact AO Cycles gets — the contact stays lighter than Cycles on big planes.
+    bool ssao = true; float aoRadius = 100.0f, aoIntensity = 1.5f, aoBias = 0.0f;
+    int aoType = 0;   // 0 = SAO, 1 = GTAO (GTAO globally over-darkens grazing planes)
+    float aoMinHorizon = 0.2f;
+    int toneMap = 0;   // 0 linear, 1 filmic, 2 aces, 3 pbr-neutral
+    std::atomic<bool> envDirty{false}, gradingDirty{false}, aaDirty{true};
+
+    // Antialiasing mode. Filament's SSR is a per-pixel-dithered temporal effect
+    // that only resolves under TAA; without it the dither shows as a fixed
+    // diagonal cross-hatch on every reflective (i.e. every) surface. So: SSR-on
+    // paths enable TAA to denoise it; single-shot/headless (no frame history)
+    // keep it off and use cheap FXAA for edges. Called only on the render thread.
+    void applyAA() {
+      view->setAntiAliasing(taa ? fl::View::AntiAliasing::NONE
+                                : fl::View::AntiAliasing::FXAA);
+      fl::View::TemporalAntiAliasingOptions t;
+      t.enabled = taa;
+      // Dynamically damp the history feedback to kill the occasional bright
+      // temporal firefly/flash (a sharp SSR/specular reflection of the bright sky
+      // getting amplified across frames).
+      t.preventFlickering = true;
+      view->setTemporalAntiAliasingOptions(t);
+    }
 
     void rebuildColorGrading() {
       if (colorGrading) { view->setColorGrading(nullptr); engine->destroy(colorGrading); colorGrading = nullptr; }
@@ -194,6 +238,60 @@ namespace icl::viz3d {
       cache.clear();
     }
 
+    void clearTextures() {
+      for (auto &kv : textureCache) engine->destroy(kv.second);
+      textureCache.clear();
+      if (whiteTex) { engine->destroy(whiteTex); whiteTex = nullptr; }
+    }
+
+    // 1x1 opaque-white default, bound to any sampler whose map is absent so the
+    // shader's texture multiplies become no-ops.
+    fl::Texture *white() {
+      if (whiteTex) return whiteTex;
+      auto *data = new uint8_t[4]{255, 255, 255, 255};
+      whiteTex = fl::Texture::Builder().width(1).height(1).levels(1)
+          .sampler(fl::Texture::Sampler::SAMPLER_2D)
+          .format(fl::Texture::InternalFormat::RGBA8).build(*engine);
+      whiteTex->setImage(*engine, 0, fl::Texture::PixelBufferDescriptor(
+          data, 4, fl::backend::PixelDataFormat::RGBA,
+          fl::backend::PixelDataType::UBYTE,
+          [](void *p, size_t, void *) { delete[] static_cast<uint8_t *>(p); }));
+      return whiteTex;
+    }
+
+    // Upload an ICL Image as an RGBA8 texture (sRGB internal format for colour
+    // maps → Filament linearises on sample; plain RGBA8 for linear data maps).
+    // Cached by ImgBase identity. Returns white() for a null/non-8u image.
+    fl::Texture *texture(const core::Image &img, bool srgb) {
+      if (img.isNull()) return white();
+      const void *key = img.ptr();
+      auto it = textureCache.find(key);
+      if (it != textureCache.end()) return it->second;
+      if (img.getDepth() != core::depth8u) return white();   // 8u maps only (for now)
+
+      const int w = img.getWidth(), h = img.getHeight(), ch = img.getChannels();
+      const auto &s = img.as<icl8u>();
+      const icl8u *R = s.getData(0);
+      const icl8u *G = ch > 1 ? s.getData(1) : R;
+      const icl8u *B = ch > 2 ? s.getData(2) : R;
+      const icl8u *A = ch > 3 ? s.getData(3) : nullptr;
+      auto *data = new uint8_t[size_t(w) * h * 4];
+      for (int i = 0; i < w * h; ++i) {
+        data[i * 4 + 0] = R[i]; data[i * 4 + 1] = G[i];
+        data[i * 4 + 2] = B[i]; data[i * 4 + 3] = A ? A[i] : 255;
+      }
+      auto *tex = fl::Texture::Builder().width(w).height(h).levels(1)
+          .sampler(fl::Texture::Sampler::SAMPLER_2D)
+          .format(srgb ? fl::Texture::InternalFormat::SRGB8_A8
+                       : fl::Texture::InternalFormat::RGBA8).build(*engine);
+      tex->setImage(*engine, 0, fl::Texture::PixelBufferDescriptor(
+          data, size_t(w) * h * 4, fl::backend::PixelDataFormat::RGBA,
+          fl::backend::PixelDataType::UBYTE,
+          [](void *p, size_t, void *) { delete[] static_cast<uint8_t *>(p); }));
+      textureCache[key] = tex;
+      return tex;
+    }
+
     // Set a renderable's world transform (Filament's model matrix for the node).
     void setPrimTransform(Prim &p, const flm::mat4 &m) {
       if (!p.entity) return;
@@ -212,12 +310,42 @@ namespace icl::viz3d {
       lightEntities.clear();
     }
 
+    // Directional light: intensity is illuminance in lux (flat, no falloff).
+    // kDirLux carries the historical directional-key-light brightness so explicit
+    // directional lights and the no-lights fallback look unchanged after the switch
+    // to physical point lights; `lightScale` is the unitless user brightness knob.
+    static constexpr float kDirLux = 3.0f;
+
     void addDirectional(flm::float3 dir, flm::float3 color, float lux, bool shadow) {
       auto e = ::utils::EntityManager::get().create();
       fl::LightManager::Builder(fl::LightManager::Type::DIRECTIONAL)
           .color({color[0], color[1], color[2]})
           .intensity(lux)
           .direction(normalized(dir))
+          .castShadows(shadow && shadows)
+          .build(*engine, e);
+      fscene->addEntity(e);
+      lightEntities.push_back(e);
+    }
+
+    // Physical point light with inverse-square falloff, unit-matched to the Cycles
+    // PointLight (see SceneSynchronizer::syncLights): Cycles sets a radiant
+    // "strength" = inten·(300/255)·d0² (d0=500) and its irradiance falls off as
+    // strength/(4π r²). A Filament point light with luminous intensity `candela`
+    // produces illuminance candela/r², so the candela reproducing that same
+    // irradiance is kPointCalib·strength/(4π) — kPointCalib is the one photometric
+    // constant that ties Filament's lumens to Cycles' watts (calibrated on the
+    // diffuse rung of viz3d-render-calibrate). Because both sides now share the
+    // exact inverse-square model, this single constant holds at every distance.
+    static constexpr float kPointCalib = 1.35f;
+
+    void addPoint(flm::float3 pos, flm::float3 color, float candela, bool shadow) {
+      auto e = ::utils::EntityManager::get().create();
+      fl::LightManager::Builder(fl::LightManager::Type::POINT)
+          .color({color[0], color[1], color[2]})
+          .intensityCandela(candela)
+          .position(pos)
+          .falloff(5000.0f)   // sphere of influence — large vs the scene, ~pure inverse-square
           .castShadows(shadow && shadows)
           .build(*engine, e);
       fscene->addEntity(e);
@@ -232,12 +360,17 @@ namespace icl::viz3d {
         if (c[0] > 1.01f || c[1] > 1.01f || c[2] > 1.01f) c = c * (1.0f / 255.0f);
         const float inten = light->getIntensity();
         flm::float3 pos{t(0, 3), t(1, 3), t(2, 3)};
-        // Approximate every light as directional (shining from its position toward
-        // the origin) — sidesteps physical point-light falloff calibration in the
-        // ambiguous viz3d unit scale. True point/spot lights are a P3 refinement.
-        flm::float3 dir = normalized(flm::float3{-pos[0], -pos[1], -pos[2]});
-        addDirectional(dir, toLinear(c), lightScale * inten * exposure,
-                       light->getShadowEnabled());
+        if (light->getLightType() == LightNode::Directional) {
+          // Directional transform's translation encodes the direction.
+          addDirectional(pos, toLinear(c), kDirLux * lightScale * inten,
+                         light->getShadowEnabled());
+        } else {
+          // Point (and Spot, approximated as point for now): real inverse-square.
+          constexpr float d0 = 500.0f;
+          const float strength = inten * (300.0f / 255.0f) * d0 * d0;
+          const float candela = kPointCalib * lightScale * strength / (4.0f * float(M_PI));
+          addPoint(pos, toLinear(c), candela, light->getShadowEnabled());
+        }
       }
       if (auto *g = dynamic_cast<GroupNode *>(node))
         for (int i = 0; i < g->getChildCount(); ++i) collectLights(g->getChild(i));
@@ -248,18 +381,16 @@ namespace icl::viz3d {
     // radiance SH for diffuse ambient. Replaces a flat grey ambient so
     // reflective/metallic surfaces reflect a coloured, directional environment.
     void buildEnvironment() {
+      if (skybox) { fscene->setSkybox(nullptr); engine->destroy(skybox); skybox = nullptr; }
       if (ibl) { fscene->setIndirectLight(nullptr); engine->destroy(ibl); ibl = nullptr; }
       if (envCubemap) { engine->destroy(envCubemap); envCubemap = nullptr; }
 
       const int N = 64;
+      // Evaluate the shared Sky gradient (same model the Cycles world uses).
       auto sky = [&](const flm::float3 &d) -> flm::float3 {
         float t = d[0] * skyUp[0] + d[1] * skyUp[1] + d[2] * skyUp[2];   // -1..1
-        const flm::float3 zenith{0.62f, 0.70f, 0.85f}, horizon{0.85f, 0.85f, 0.86f},
-                          ground{0.26f, 0.26f, 0.28f};
-        float k = std::fabs(t);
-        const flm::float3 &to = t >= 0 ? zenith : ground;
-        return {horizon[0] * (1 - k) + to[0] * k, horizon[1] * (1 - k) + to[1] * k,
-                horizon[2] * (1 - k) + to[2] * k};
+        cv3d::GeomColor c = skyModel.colorForElevation(t);
+        return {c[0], c[1], c[2]};
       };
       auto faceDir = [](int f, float u, float v) -> flm::float3 {
         switch (f) {
@@ -323,11 +454,36 @@ namespace icl::viz3d {
         sz = nsz;
       }
 
+      // Decouple specular from diffuse: Filament's single IBL intensity scales
+      // BOTH the environment reflection AND the diffuse SH ambient. We control
+      // them independently — `envSpecular` scales the reflection (how strongly
+      // surfaces mirror the sky; too high washes matte/grazing surfaces toward the
+      // bright sky), `envIntensity` the diffuse ambient fill. The drawn skybox is
+      // a separate object and stays full-bright either way.
+      //   intensity = envSpecular  → reflections = envSpecular * cubemap
+      //   SH pre-scaled by envIntensity/envSpecular → diffuse = envIntensity * sh
+      const float spec = std::max(1e-3f, envSpecular);
       flm::float3 shf[9];
-      for (int i = 0; i < 9; ++i) shf[i] = {(float)sh[i][0], (float)sh[i][1], (float)sh[i][2]};
+      for (int i = 0; i < 9; ++i)
+        shf[i] = {(float)sh[i][0] * envIntensity / spec, (float)sh[i][1] * envIntensity / spec,
+                  (float)sh[i][2] * envIntensity / spec};
+      // Filament's SH irradiance is evaluated in a frame whose Y is mirrored vs
+      // ours (the same Y-handedness flip the geometry path compensates via the
+      // projection/winding — see P2). The cubemap sampling path (skybox +
+      // reflections) is NOT affected, so this correction is local to the SH: mirror
+      // the environment in Y by negating the y-odd bands (l=1 m=-1, l=2 m=-2/-1).
+      // Without it a matte sphere's diffuse gradient renders upside-down (zenith
+      // light on its underside). The DC term (average) is untouched.
+      shf[1] = -shf[1]; shf[4] = -shf[4]; shf[5] = -shf[5];
       ibl = fl::IndirectLight::Builder().reflections(envCubemap).radiance(3, shf)
-          .intensity(envIntensity).build(*engine);
+          .intensity(spec).build(*engine);
       fscene->setIndirectLight(ibl);
+
+      // Draw the same gradient as the background (skybox) so the realtime preview
+      // shows the sky like the Cycles world, not a flat clear colour. Shares the
+      // env cubemap (Skybox holds a reference; we free the texture once, last).
+      skybox = fl::Skybox::Builder().environment(envCubemap).showSun(false).build(*engine);
+      fscene->setSkybox(showSky ? skybox : nullptr);
     }
 
     void syncLights(const std::vector<std::shared_ptr<Node>> &nodes) {
@@ -337,17 +493,23 @@ namespace icl::viz3d {
       for (const auto &n : nodes) collectLights(n.get());
       if (lightEntities.size() == before)   // no scene lights → default key light
         addDirectional({-0.4f, -1.0f, -0.6f}, {1.0f, 0.98f, 0.95f},
-                       lightScale * exposure, false);
+                       kDirLux * lightScale, false);
     }
 
     // Expand triangles + quads into a non-indexed position+normal list, honouring
     // the node's smooth/flat shading (mirrors the GL backend's GeomCache).
     void expand(const GeometryNode *geom, std::vector<flm::float3> &P,
-                std::vector<flm::float3> &N) {
+                std::vector<flm::float3> &N, std::vector<flm::float2> &UV) {
       const auto &verts = geom->getVertices();
       const auto &norms = geom->getNormals();
+      const auto &texc = geom->getTexCoords();
       const bool smooth = geom->getSmoothShading();
-      auto emitTri = [&](int a, int b, int c, int na, int nb, int nc) {
+      auto uvOf = [&](int ti) {
+        if (ti >= 0 && ti < (int)texc.size()) return flm::float2{texc[ti].x, texc[ti].y};
+        return flm::float2{0.0f, 0.0f};
+      };
+      auto emitTri = [&](int a, int b, int c, int na, int nb, int nc,
+                         int ta, int tb, int tc) {
         flm::float3 pa{verts[a][0], verts[a][1], verts[a][2]};
         flm::float3 pb{verts[b][0], verts[b][1], verts[b][2]};
         flm::float3 pc{verts[c][0], verts[c][1], verts[c][2]};
@@ -357,17 +519,17 @@ namespace icl::viz3d {
             return flm::float3{norms[ni][0], norms[ni][1], norms[ni][2]};
           return fn;
         };
-        P.push_back(pa); N.push_back(nrm(na));
-        P.push_back(pb); N.push_back(nrm(nb));
-        P.push_back(pc); N.push_back(nrm(nc));
+        P.push_back(pa); N.push_back(nrm(na)); UV.push_back(uvOf(ta));
+        P.push_back(pb); N.push_back(nrm(nb)); UV.push_back(uvOf(tb));
+        P.push_back(pc); N.push_back(nrm(nc)); UV.push_back(uvOf(tc));
       };
       if (geom->isPrimitiveVisible(PrimTriangle))
         for (const auto &t : geom->getTriangles())
-          emitTri(t.v[0], t.v[1], t.v[2], t.n[0], t.n[1], t.n[2]);
+          emitTri(t.v[0], t.v[1], t.v[2], t.n[0], t.n[1], t.n[2], t.t[0], t.t[1], t.t[2]);
       if (geom->isPrimitiveVisible(PrimQuad))
         for (const auto &q : geom->getQuads()) {
-          emitTri(q.v[0], q.v[1], q.v[2], q.n[0], q.n[1], q.n[2]);
-          emitTri(q.v[0], q.v[2], q.v[3], q.n[0], q.n[2], q.n[3]);
+          emitTri(q.v[0], q.v[1], q.v[2], q.n[0], q.n[1], q.n[2], q.t[0], q.t[1], q.t[2]);
+          emitTri(q.v[0], q.v[2], q.v[3], q.n[0], q.n[2], q.n[3], q.t[0], q.t[2], q.t[3]);
         }
     }
 
@@ -393,7 +555,8 @@ namespace icl::viz3d {
     // Solid mesh (triangles + quads) → lit PBR renderable.
     void buildSolid(GeometryNode *geom, Prim &p) {
       std::vector<flm::float3> P, N;
-      expand(geom, P, N);
+      std::vector<flm::float2> UV;
+      expand(geom, P, N, UV);
       const size_t nv = P.size();
       if (nv < 3) return;
 
@@ -413,22 +576,28 @@ namespace icl::viz3d {
         posBuf[i] = P[i];
         for (int k = 0; k < 3; ++k) { lo[k] = std::min(lo[k], P[i][k]); hi[k] = std::max(hi[k], P[i][k]); }
       }
+      auto *uvBuf = new flm::float2[nv];
+      for (size_t i = 0; i < nv; ++i) uvBuf[i] = UV[i];
       auto *idxBuf = new uint32_t[nv];
       for (uint32_t i = 0; i < nv; ++i) idxBuf[i] = i;
 
       auto freeF3 = [](void *q, size_t, void *) { delete[] static_cast<flm::float3 *>(q); };
+      auto freeF2 = [](void *q, size_t, void *) { delete[] static_cast<flm::float2 *>(q); };
       auto freeQ = [](void *q, size_t, void *) { delete[] static_cast<flm::quatf *>(q); };
       auto freeU32 = [](void *q, size_t, void *) { delete[] static_cast<uint32_t *>(q); };
 
       auto *vb = fl::VertexBuffer::Builder()
-          .vertexCount((uint32_t)nv).bufferCount(2)
+          .vertexCount((uint32_t)nv).bufferCount(3)
           .attribute(fl::VertexAttribute::POSITION, 0,
                      fl::VertexBuffer::AttributeType::FLOAT3, 0, sizeof(flm::float3))
           .attribute(fl::VertexAttribute::TANGENTS, 1,
                      fl::VertexBuffer::AttributeType::FLOAT4, 0, sizeof(flm::quatf))
+          .attribute(fl::VertexAttribute::UV0, 2,
+                     fl::VertexBuffer::AttributeType::FLOAT2, 0, sizeof(flm::float2))
           .build(*engine);
       vb->setBufferAt(*engine, 0, fl::VertexBuffer::BufferDescriptor(posBuf, nv * sizeof(flm::float3), freeF3));
       vb->setBufferAt(*engine, 1, fl::VertexBuffer::BufferDescriptor(quatBuf, nv * sizeof(flm::quatf), freeQ));
+      vb->setBufferAt(*engine, 2, fl::VertexBuffer::BufferDescriptor(uvBuf, nv * sizeof(flm::float2), freeF2));
       auto *ib = fl::IndexBuffer::Builder().indexCount((uint32_t)nv)
           .bufferType(fl::IndexBuffer::IndexType::UINT).build(*engine);
       ib->setBuffer(*engine, fl::IndexBuffer::BufferDescriptor(idxBuf, nv * sizeof(uint32_t), freeU32));
@@ -523,17 +692,32 @@ namespace icl::viz3d {
       cv3d::GeomColor bc = mat ? mat->baseColor : cv3d::GeomColor{0.78f, 0.78f, 0.78f, 1.0f};
       float metallic = mat ? mat->metallic : 0.0f;
       float roughness = mat ? mat->roughness : 0.6f;
-      float reflectivity = mat ? mat->reflectivity : 0.0f;
       cv3d::GeomColor em = mat ? mat->emissive : cv3d::GeomColor{0, 0, 0, 1};
+
+      // Straight 1:1 glTF metallic-roughness → Filament. A mirror is metallic=1,
+      // roughness≈0 (authored in the material); no special "reflectivity" remap.
       p.mi->setParameter("baseColor", toLinear(bc));
       p.mi->setParameter("metallic", metallic);
       p.mi->setParameter("roughness", std::max(0.045f, roughness));
-      // ICL reflectivity (mirror strength, 0..1) → Filament dielectric reflectance.
-      // 0 → 0.5 (Filament default, 4% F0); 1 → 1.0 (max dielectric F0, 16%).
-      p.mi->setParameter("reflectance", 0.5f + 0.5f * std::clamp(reflectivity, 0.0f, 1.0f));
+      p.mi->setParameter("reflectance", 0.5f);   // base dielectric F0 (4%)
       p.mi->setParameter("emissive", toLinear(em));
       // "enable lighting" off → flat unlit base colour (ICL contract).
       p.mi->setParameter("unlit", lighting ? 0.0f : 1.0f);
+
+      // Texture maps (glTF metallic-roughness). Absent maps fall back to the 1x1
+      // white default so the shader multiplies are no-ops. Colour maps are sRGB;
+      // the metallic-roughness map is linear data.
+      const Material::TextureMaps *tx = mat && mat->textures ? mat->textures.get() : nullptr;
+      const bool nn = tx && tx->filter == Material::TexFilter::Nearest;
+      fl::TextureSampler smp(
+          nn ? fl::TextureSampler::MagFilter::NEAREST : fl::TextureSampler::MagFilter::LINEAR,
+          fl::TextureSampler::WrapMode::REPEAT);
+      p.mi->setParameter("baseColorMap",
+          tx ? texture(tx->baseColorMap, true) : white(), smp);
+      p.mi->setParameter("metallicRoughnessMap",
+          tx ? texture(tx->metallicRoughnessMap, false) : white(), smp);
+      p.mi->setParameter("emissiveMap",
+          tx ? texture(tx->emissiveMap, true) : white(), smp);
     }
 
     void syncNode(Node *node) {
@@ -565,7 +749,7 @@ namespace icl::viz3d {
     // → it shows as a static diagonal cross-hatch on every surface. Turn it off and
     // use cheap FXAA to smooth edges instead.
     m_data->view->setDithering(fl::View::Dithering::NONE);
-    m_data->view->setAntiAliasing(fl::View::AntiAliasing::FXAA);
+    m_data->applyAA();   // FXAA by default (taa=false); TAA when enabled
     m_data->rebuildColorGrading();   // tone mapping (default filmic)
     m_data->lit = fl::Material::Builder()
         .package(LIT_PBR_FILAMAT, sizeof(LIT_PBR_FILAMAT)).build(*m_data->engine);
@@ -582,19 +766,31 @@ namespace icl::viz3d {
     // Range must be float (only Range<int>/Range<float> constraint adapters are
     // enrolled) — double literals would deduce Range<double> and throw at register.
     addProperty("exposure", utils::prop::Range{.min = 0.1f, .max = 3.0f, .step = 0.05f}, 1.0f);
-    addProperty("light intensity", utils::prop::Range{.min = 0.0f, .max = 8.0f, .step = 0.1f}, 3.0f);
-    addProperty("env intensity", utils::prop::Range{.min = 0.0f, .max = 1.5f, .step = 0.02f}, 0.15f);
-    addProperty("tone mapping", utils::prop::Menu{"linear", "filmic", "aces", "pbr-neutral"}, "filmic");
+    addProperty("light intensity", utils::prop::Range{.min = 0.0f, .max = 8.0f, .step = 0.1f}, 1.0f);
+    addProperty("env intensity", utils::prop::Range{.min = 0.0f, .max = 1.5f, .step = 0.02f}, 0.95f);
+    addProperty("env specular", utils::prop::Range{.min = 0.0f, .max = 1.0f, .step = 0.02f}, 1.0f);
+    addProperty("tone mapping", utils::prop::Menu{"linear", "filmic", "aces", "pbr-neutral"}, "linear");
     addProperty("ssr thickness", utils::prop::Range{.min = 0.01f, .max = 10.0f, .step = 0.1f}, 1.0f);
     addProperty("ssr max distance", utils::prop::Range{.min = 1.0f, .max = 2000.0f, .step = 10.0f}, 200.0f);
+    addProperty("ao radius", utils::prop::Range{.min = 0.0f, .max = 300.0f, .step = 5.0f}, 100.0f);
+    addProperty("ao intensity", utils::prop::Range{.min = 0.0f, .max = 4.0f, .step = 0.1f}, 1.5f);
+    addProperty("ao bias", utils::prop::Range{.min = 0.0f, .max = 2.0f, .step = 0.01f}, 0.0f);
+    addProperty("ao type", utils::prop::Range{.min = 0.0f, .max = 1.0f, .step = 1.0f}, 0.0f);
+    addProperty("ao minhorizon", utils::prop::Range{.min = 0.0f, .max = 0.7f, .step = 0.01f}, 0.2f);
     registerCallback([this](const utils::Configurable::Property &p) {
       Data &d = *m_data;
       auto num = [&] { try { return std::stof(p.as<std::string>()); } catch (...) { return 0.0f; } };
       if (p.name == "exposure") d.exposure = num();
       else if (p.name == "light intensity") d.lightScale = num();
       else if (p.name == "env intensity") { d.envIntensity = num(); d.envDirty = true; }
+      else if (p.name == "env specular") { d.envSpecular = num(); d.envDirty = true; }
       else if (p.name == "ssr thickness") d.ssrThickness = num();
       else if (p.name == "ssr max distance") d.ssrMaxDist = num();
+      else if (p.name == "ao radius") d.aoRadius = num();
+      else if (p.name == "ao intensity") d.aoIntensity = num();
+      else if (p.name == "ao bias") d.aoBias = num();
+      else if (p.name == "ao type") d.aoType = (int)num();
+      else if (p.name == "ao minhorizon") d.aoMinHorizon = num();
       else if (p.name == "tone mapping") {
         std::string t = p.as<std::string>();
         d.toneMap = t == "filmic" ? 1 : t == "aces" ? 2 : t == "pbr-neutral" ? 3 : 0;
@@ -606,9 +802,11 @@ namespace icl::viz3d {
   FilamentRenderBackend::~FilamentRenderBackend() {
     if (!m_data->engine) return;
     m_data->clearCache();
+    m_data->clearTextures();
     m_data->clearLights();
     fl::Engine *e = m_data->engine;
     if (m_data->colorGrading) e->destroy(m_data->colorGrading);
+    if (m_data->skybox) e->destroy(m_data->skybox);
     if (m_data->ibl) e->destroy(m_data->ibl);
     if (m_data->envCubemap) e->destroy(m_data->envCubemap);
     if (m_data->lit) e->destroy(m_data->lit);
@@ -655,6 +853,7 @@ namespace icl::viz3d {
     // Apply Configurable changes on the render thread (Filament isn't thread-safe).
     if (m_data->gradingDirty.exchange(false)) m_data->rebuildColorGrading();
     if (m_data->envDirty.exchange(false)) m_data->buildEnvironment();
+    if (m_data->aaDirty.exchange(false)) m_data->applyAA();
 
     // Inject ICL's calibrated projection + camera placement (the P2 recipe). The
     // near/far handed to Filament MUST match the ones baked into the matrix (they
@@ -665,10 +864,17 @@ namespace icl::viz3d {
     if (!(zn > 0.0) || !(zf > zn)) { zn = 1.0; zf = 100000.0; }   // guard degenerate
     m_data->fcam->setCustomProjection(toFilament(projectionMatrix), zn, zf);
     m_data->fcam->setModelMatrix(toFilament(viewMatrix.inv()));
-    // Neutral exposure (~unity photometric factor) so unlit line/point colours
-    // survive post-processing; light intensities are tuned to this, not to
-    // physical lux (the viz3d unit scale isn't physical anyway).
-    m_data->fcam->setExposure(1.0f);
+    // Punctual (point/spot) lights are froxel-culled; the default cull range is
+    // zLightFar=100m. viz3d scenes are 100s–1000s of world units from the camera,
+    // so without this the froxelizer drops every point light. Spread the froxel
+    // grid across the real camera depth range (directional lights are unaffected).
+    m_data->view->setDynamicLightingOptions(std::max(0.01f, float(zn)), float(zf));
+    // `exposure` is the global brightness (scales lit surfaces, sky AND
+    // reflections uniformly) — lights are no longer scaled by it, so this is the
+    // single scene-brightness knob. NB Filament's setExposure(e) maps to
+    // ISO = 100/e, i.e. a LOWER e is BRIGHTER; we invert so the knob is intuitive
+    // (higher = brighter). Default 1.25 ≈ +25% vs unity.
+    m_data->fcam->setExposure(1.0f / std::max(1e-3f, m_data->exposure));
 
     // Screen-space reflections (first-class scene feature via setSSREnabled).
     // Distances are in world units — viz3d scenes are much larger than metres,
@@ -678,6 +884,31 @@ namespace icl::viz3d {
     ssrOpt.thickness = m_data->ssrThickness;
     ssrOpt.maxDistance = m_data->ssrMaxDist;
     m_data->view->setScreenSpaceReflectionsOptions(ssrOpt);
+
+    // Screen-space ambient occlusion (soft contact shadows from occluded ambient).
+    // SAO at FULL resolution (half-res + upsample speckles a flat plane), and — the
+    // real fix for the ground acne — a world-scale `bias`: SAO's self-occlusion bias
+    // is in world units, and the 0.5mm default self-occludes our 100s-of-units
+    // ground. GTAO instead globally darkens the whole grazing-angle plane, so SAO
+    // with a proper bias is the better fit for these large-flat-ground scenes.
+    fl::AmbientOcclusionOptions ao;
+    ao.enabled = m_data->ssao && m_data->aoRadius > 0.0f;
+    ao.aoType = m_data->aoType == 1 ? fl::AmbientOcclusionOptions::AmbientOcclusionType::GTAO
+                                    : fl::AmbientOcclusionOptions::AmbientOcclusionType::SAO;
+    ao.radius = m_data->aoRadius;
+    ao.intensity = m_data->aoIntensity;
+    ao.bias = m_data->aoBias;       // world units — high enough to kill flat-plane
+                                    // self-occlusion acne, low enough to keep contact
+    ao.minHorizonAngleRad = m_data->aoMinHorizon;   // reject near-tangent occluders
+                                    // (the flat ground self-occluding at grazing view)
+                                    // while keeping steep ones (an object on the ground)
+    ao.resolution = 1.0f;
+    ao.gtao.sampleSliceCount = 4;
+    ao.gtao.sampleStepsPerSlice = 3;
+    ao.quality = fl::QualityLevel::HIGH;
+    ao.lowPassFilter = fl::QualityLevel::HIGH;
+    ao.upsampling = fl::QualityLevel::HIGH;
+    m_data->view->setAmbientOcclusionOptions(ao);
 
     m_data->syncLights(nodes);
     for (const auto &n : nodes) m_data->syncNode(n.get());
@@ -699,9 +930,18 @@ namespace icl::viz3d {
   void FilamentRenderBackend::setOverlayAlpha(float a) { m_data->overlayAlpha = a; }
   void FilamentRenderBackend::setSSREnabled(bool e) { m_data->ssr = e; }
   bool FilamentRenderBackend::isSSREnabled() const { return m_data->ssr; }
+  void FilamentRenderBackend::setTemporalAAEnabled(bool e) {
+    if (m_data->taa == e) return;   // no-op keeps TAA frame history intact
+    m_data->taa = e;
+    m_data->aaDirty = true;         // applied on the render thread
+  }
   void FilamentRenderBackend::setShadowsEnabled(bool e) { m_data->shadows = e; }
   void FilamentRenderBackend::setLightingEnabled(bool e) { m_data->lighting = e; }
-  void FilamentRenderBackend::setSkyEnabled(bool e) { m_data->sky = e; }
+  void FilamentRenderBackend::setSkyEnabled(bool e) {
+    if (m_data->showSky == e) return;
+    m_data->showSky = e;
+    m_data->envDirty = true;   // reattach/detach the drawn skybox on the render thread
+  }
   void FilamentRenderBackend::setSkyUp(float x, float y, float z) {
     flm::float3 up = normalized({x, y, z});
     if (up[0] == m_data->skyUp[0] && up[1] == m_data->skyUp[1] && up[2] == m_data->skyUp[2])

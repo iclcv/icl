@@ -55,6 +55,7 @@ namespace icl::viz3d {
     void setOverlayAlpha(float alpha) override;
     void setSSREnabled(bool enabled) override;
     bool isSSREnabled() const override;
+    void setTemporalAAEnabled(bool enabled) override;
     void setShadowsEnabled(bool enabled) override;
     void setLightingEnabled(bool enabled) override;
     void setSkyEnabled(bool enabled) override;

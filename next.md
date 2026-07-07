@@ -4,6 +4,96 @@
 
 ## Next Step
 
+### ▶ IN PROGRESS (S102) — Filament↔Cycles look-matching + calibration ladder
+Branch `further-restructuring-and-cleanup`; suite **1094/1094** throughout. **Nothing pushed.**
+Reference/memory: **[[reference_render_compare_loop]]**. **Key methodology shift (CE):** stop tuning
+against the full DemoScene (5 lights + textures + metals + sky + tonemap all at once); calibrate
+**one variable at a time** with minimal scenes, matching numerically before adding the next. After
+each stage, drop A/B PNGs in **`builddir/calib/`** for CE to eyeball.
+
+**Landed this session:**
+- **Both renderers run headless in-sandbox** (Metal) → closed A/B loop. `viz3d-render-compare`
+  (full DemoScene) + `viz3d-render-calibrate <emissive|diffuse|sky|metal>` (minimal, prints mean
+  centre-patch RGB per side). Cycles via `renderBlocking`; Filament driven directly with SSR+TAA.
+- **Filament texture maps** (baseColor/metallicRoughness/emissive + UV0 plumbing + texture cache).
+- **Cycles exit-crash fixes**: (1) demo no longer mixes autonomous `start()` + poll `render()`;
+  (2) `render()` no-ops while autonomous running; (3) **renderer self-registers an ICLApplication
+  finalization (weak_ptr to Impl)** to tear the Cycles Session down before atexit — no per-app code.
+- **Shared `viz3d::Sky`** (render/Sky.h) — one gradient drives Filament IBL+skybox AND the Cycles
+  world (both had drifted hardcoded copies). "show sky" Scene prop (default OFF — a drawn sky
+  occludes overlay/compositing; the cycles-scene-viewer demo opts in). Sky reflected via IBL;
+  **`env specular`** knob decouples reflection strength from `env intensity` (diffuse ambient).
+- **`reflectivity` DEPRECATED/removed** everywhere (Material field + reflectivityMap + fromColor arg;
+  special-case code in all 3 backends; all scene setups migrated). Material is now pure glTF
+  metallic-roughness → true 1:1 to Filament AND Cycles Principled BSDF. Mirror = metallic 1/rough≈0.
+- **Output pipeline CALIBRATED (rung 0, emissive):** found+fixed a real bug — Cycles wasn't
+  linearizing material/light colours (OCIO off), rendering everything too bright. `SceneSynchronizer`
+  now sRGB→linears base/emission/glass/light (Sky stays linear). Filament defaults → **tone mapping
+  = linear** (matches Cycles Standard; Filmic was the persistent "too dark") + **exposure = 1.0**
+  (routed through camera; NB Filament setExposure is inverted → we pass 1/e so higher = brighter).
+  Result: emissive 0.5 → **128 (Filament) vs 126 (Cycles)** ✓.
+- Misc: TAA `preventFlickering=true` (kills the intermittent bright flash CE saw); `Scene::getRenderNodes()`.
+
+**NEXT — climb the ladder (each: match numerically, then A/B PNG to builddir/calib/):**
+1. ~~**Rung 1 lighting**~~ **CALIBRATED (S102):** was Filament 139 vs Cycles 44. Fix in
+   `FilamentRenderBackend`: replaced the "approximate every light as DIRECTIONAL" hack with **real
+   Filament POINT lights** (inverse-square, `intensityCandela`), unit-matched to Cycles' PointLight
+   (`candela = kPointCalib·strength/(4π)`, same `strength = inten·(300/255)·d0²`). **Two structural
+   fixes:** (a) Filament froxel culling defaults `zLightFar=100m` → every point light in our 300–1000-
+   unit scenes was culled; now `view->setDynamicLightingOptions(zn,zf)` spans the real camera depth.
+   (b) `lightScale`/"render.light intensity" is now a unitless user multiplier (default 1.0); physical
+   conversion in one const `kPointCalib=1.35`. **Filament 44.4 vs Cycles 44.3** ✓ (A/B: builddir/calib/
+   rung1-diffuse.png). Shared inverse-square model → the single const should hold at any light distance.
+2. ~~**Rung 2 sky/IBL ambient**~~ **CALIBRATED (S102), incl. the two look gaps CE caught:** was
+   Filament 49 vs Cycles 116. THREE fixes in `FilamentRenderBackend::buildEnvironment`: (a) `env
+   intensity` 0.15 → **0.95** (0.15 was a wash-out fudge; diffuse fill was just undershooting) →
+   sphere **115 vs 115** ✓. (b) **SH Y-flip** — the diffuse gradient rendered upside-down (zenith
+   light on the sphere's underside); Filament evaluates SH irradiance in a Y-mirrored frame vs ICL
+   (same Y-handedness the geometry path compensates via projection/winding; cubemap/skybox path
+   unaffected) → negate the y-odd SH bands (shf[1,4,5]); DC/mean untouched so the 115 held. (c)
+   **skybox brightness** `env specular` 0.5 → **1.0** — Filament ties the drawn skybox's brightness
+   to the IBL intensity when an IBL is present, so the sky was drawn at half; now matches Cycles
+   across top/horizon/bottom (220/241/171 vs 218/243/169). NB (c) couples reflection strength to
+   skybox brightness in Filament (can't decouple like Cycles) → reflections are now physical
+   (intensity 1.0); **rung 3 verifies that.** A/B: builddir/calib/rung2-sky.png.
+3. ~~**Rung 3 metal/specular**~~ **CALIBRATED (S102) — for free:** was Filament 134 vs Cycles 181.
+   The rung-2 `env specular` 0.5 → 1.0 fix (physical reflection intensity) landed it: **Filament 184
+   vs Cycles 181** ✓, reflection correctly oriented (blue zenith up, bright horizon band, dark ground
+   down — the cubemap/specular path never had the SH Y-flip). A/B: builddir/calib/rung3-metal.png.
+   **Ladder complete — rungs 0-3 all match numerically + visually, ALL CE-confirmed on-device.**
+4. **Build-up scenes (S102, in progress):** `render-calibrate simple` = ground + object + shadowed
+   point light + sky (first combined scene). Camera/geometry MATCH (bbox identical). Findings:
+   - **Point-light CAST shadow works** in Filament (ground 131→112 where the shadow falls).
+   - **SSAO added** for the ambient contact shadow (the sphere occluding the sky dome — CE's insight
+     that the soft Cycles contact is mostly AMBIENT occlusion, which a light shadow-map can't make).
+     `View::setAmbientOcclusionOptions`; radius is in WORLD units (0.3m default invisible at our scale).
+     SAO tuned (radius 100, minHorizon 0.2 to reject the flat-plane grazing self-occlusion, bias 0) —
+     GTAO globally over-darkened the receding plane. Knobs: `render.ao radius/intensity/bias/minhorizon/type`.
+   - **Honest limit (settled — don't re-litigate):** SSAO can't match Cycles' path-traced contact AO
+     on a big flat ground at a grazing angle. The ONLY setting that keeps the open floor clean
+     (minHorizon 0.2) also kills the contact (104 vs Cycles 82); small radius just globally darkens;
+     GTAO goes black. **Screen-space contact shadows (SSCS) don't help either** — Filament reads their
+     ray-march distance from the DIRECTIONAL light so they're inert in point-lit scenes (a zero-int
+     directional "carrier" didn't fix it), and SSCS is direct-light-only anyway (offset, not the
+     symmetric under-object ambient darkening). A fake blob/projected shadow would work but isn't
+     GENERIC (assumes round-ish object + flat ground + a "down"). **DECISION: keep generic SSAO on
+     (helps creases/concavities/less-grazing views), accept the preview's floor-contact is softer than
+     the path-traced ref — the preview is for interactivity, Cycles is the fidelity ref.** SSCS code
+     was added then removed (kept the diff clean).
+   - **NEW `viz3d-render-tuner` app** (apps/, gated cycles+filament): live side-by-side, Filament (top,
+     real-time, reacts to render.* knobs) vs Cycles (bottom, path-traced ref) + Prop panel. `-step
+     <name>`. Shared scene builder `demos/calibrate_scenes.h` (harness + tuner identical). **CE drives
+     tuning on-device** (Qt GL crashes in sandbox). This is the tool for step-by-step build-up now.
+   - **`simple-glossy` step added** (S102): same scene, ground roughness 0.12 → the sphere reflects in
+     the floor. **This is the Filament-SSR-vs-Cycles-ray-traced-reflection comparison.** First A/B
+     (builddir/calib/simple-glossy.png): Cycles shows a clear sharp sphere reflection; **Filament SSR's
+     sphere reflection is weak/partial** (SSR only reflects on-screen geometry + needs TAA history).
+     Tuner auto-enables SSR for this step (continuous live frames warm TAA). NEXT: CE tunes `render.ssr
+     thickness / max distance` live; if SSR can't reach it, that's the known SSR gap → the reflection-
+     probe idea (metal/floor reflecting a real cubemap of the scene, not just screen + sky).
+5. **THEN: re-tune the full DemoScene on the calibrated base** (`viz3d-render-compare`) — per-variable
+   constants trustworthy, full-scene diffs should be small. Revisit reflection-probe idea last.
+
 ### ✅ DONE (S101) — Filament real-time renderer: built, default, tuned (21 commits)
 Branch `further-restructuring-and-cleanup`; suite **1094/1094** throughout. **Nothing pushed.**
 Full plan/status in **`filament-plan.md`**; memory **[[project_filament_backend]]**. Google Filament

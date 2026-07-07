@@ -27,8 +27,8 @@ void init() {
 
   auto sphere = SphereNode::create(120, groundY + 60, 0, 60, 40, 40);
   sphere->setMaterial(Material::fromColor(GeomColor(220, 60, 60, 255)));
-  sphere->getMaterial()->roughness = 0.15f;
-  sphere->getMaterial()->reflectivity = 0.6f;
+  sphere->getMaterial()->metallic = 0.9f;
+  sphere->getMaterial()->roughness = 0.12f;
   scene.addNode(sphere);
 
   auto cube = CuboidNode::create(-120, groundY + 45, 0, 90, 90, 90);
@@ -38,13 +38,12 @@ void init() {
   scene.addNode(cube);
 
   // Z-aligned cylinder lies on its side → rests one radius (40) above ground.
-  // Give it reflectivity so the flat cap reflects too (a non-reflective dielectric
-  // shows ~0 reflection head-on — Fresnel only kicks in at grazing angles, which
-  // is why a bare-color cap reads as flat diffuse green).
+  // Semi-metallic + low roughness so it reflects (a matte dielectric would read
+  // as flat diffuse green head-on, since Fresnel only kicks in at grazing angles).
   auto cyl = CylinderNode::create(0, groundY + 40, 0, 40, 40, 110, 30);
   cyl->setMaterial(Material::fromColor(GeomColor(60, 200, 90, 255)));
-  cyl->getMaterial()->roughness = 0.2f;
-  cyl->getMaterial()->reflectivity = 0.4f;
+  cyl->getMaterial()->metallic = 0.6f;
+  cyl->getMaterial()->roughness = 0.15f;
   scene.addNode(cyl);
 
   gui << (HSplit()

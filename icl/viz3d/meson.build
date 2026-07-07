@@ -32,6 +32,7 @@ viz3d_render_headers = files(
   'render/SceneCapture.h',
   'render/OffscreenView.h',
   'render/Material.h',
+  'render/Sky.h',
   'render/Primitive.h',
   'render/Raytracer.h',
   'render/BVH.h',

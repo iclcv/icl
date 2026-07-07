@@ -19,7 +19,6 @@ namespace icl::viz3d {
     m->baseColor = baseColor;
     m->metallic = metallic;
     m->roughness = roughness;
-    m->reflectivity = reflectivity;
     m->emissive = emissive;
     m->lineColor = lineColor;
     m->pointColor = pointColor;
@@ -43,8 +42,7 @@ namespace icl::viz3d {
   }
 
   std::shared_ptr<Material> Material::fromColor(const cv3d::GeomColor &color,
-                                                 float shininess,
-                                                 float reflectivity) {
+                                                 float shininess) {
     auto m = std::make_shared<Material>();
     cv3d::GeomColor c01 = color * (1.0f / 255.0f);
     m->baseColor = c01;
@@ -52,7 +50,6 @@ namespace icl::viz3d {
     m->pointColor = c01;
     m->roughness = std::sqrt(2.0f / (shininess + 2.0f));
     m->metallic = 0.0f;
-    m->reflectivity = std::max(0.0f, std::min(1.0f, reflectivity));
     return m;
   }
 

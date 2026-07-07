@@ -121,7 +121,9 @@ namespace icl::viz3d {
 
   private:
     struct Impl;
-    std::unique_ptr<Impl> m_impl;
+    // shared (not unique) so the app-shutdown finalization can hold a weak_ptr
+    // and safely tear the Cycles session down whether or not this object survives.
+    std::shared_ptr<Impl> m_impl;
   };
 
 } // namespace icl::viz3d

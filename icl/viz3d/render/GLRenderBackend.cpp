@@ -55,7 +55,6 @@ void main() {
 uniform vec4 uBaseColor;
 uniform float uMetallic;
 uniform float uRoughness;
-uniform float uReflectivity;
 uniform vec4 uEmissive;
 uniform float uAmbient;
 uniform float uExposure;
@@ -71,8 +70,6 @@ uniform int uHasNormalMap;
 uniform sampler2D uNormalMap;
 uniform int uHasMetallicRoughnessMap;
 uniform sampler2D uMetallicRoughnessMap;
-uniform int uHasReflectivityMap;
-uniform sampler2D uReflectivityMap;
 uniform int uHasEmissiveMap;
 uniform sampler2D uEmissiveMap;
 uniform int uHasOcclusionMap;
@@ -287,12 +284,6 @@ void main() {
         roughness = mr.g * uRoughness;
     }
 
-    // Reflectivity: scalar by default, or per-texel from the reflectivity map
-    // (R channel) — lets a single surface vary how mirror-like it is.
-    float reflectivity = uReflectivity;
-    if (uHasReflectivityMap != 0)
-        reflectivity = texture(uReflectivityMap, vTexCoord).r * uReflectivity;
-
     float shininess = 2.0 / (roughness * roughness + 0.0001) - 2.0;
     shininess = clamp(shininess, 1.0, 512.0);
 
@@ -307,7 +298,7 @@ void main() {
     // SSR: blend with screen-space reflection where available
     // Skip SSR for non-reflective surfaces (saves 4 ray marches)
     vec4 ssrResult = vec4(0.0);
-    if (reflectivity > 0.01 || metallic > 0.5)
+    if (metallic > 0.5)
         ssrResult = traceSSR(vWorldPos, N, R, roughness);
     envReflection = mix(envReflection, ssrResult.rgb, ssrResult.a);
 
@@ -353,9 +344,8 @@ void main() {
     float fresnel = pow(1.0 - NdotV, 5.0);
     vec3 envFresnel = specColor + (max(vec3(1.0 - roughness), specColor) - specColor) * fresnel;
 
-    // Reflectivity: scales the specular reflection (Fresnel is the minimum)
-    // At reflectivity=0, only Fresnel contributes; at 1.0, full mirror.
-    vec3 reflFactor = max(envFresnel, vec3(reflectivity));
+    // Environment reflection driven by Fresnel (metallic path handles mirrors)
+    vec3 reflFactor = envFresnel;
 
     // Energy-conserving ambient
     vec3 kD = (vec3(1.0) - reflFactor) * (1.0 - metallic);
@@ -836,7 +826,7 @@ void main() { }
 
     // PBR uniform locations
     GLint locModel = -1, locView = -1, locProj = -1;
-    GLint locBaseColor = -1, locMetallic = -1, locRoughness = -1, locReflectivity = -1;
+    GLint locBaseColor = -1, locMetallic = -1, locRoughness = -1;
     GLint locEmissive = -1, locAmbient = -1, locExposure = -1, locOverlayAlpha = -1;
     GLint locCameraPos = -1;
     GLint locNumLights = -1;
@@ -847,7 +837,6 @@ void main() { }
     GLint locBaseColorMap = -1, locHasBaseColorMap = -1;
     GLint locNormalMap = -1, locHasNormalMap = -1;
     GLint locMetallicRoughnessMap = -1, locHasMetallicRoughnessMap = -1;
-    GLint locReflectivityMap = -1, locHasReflectivityMap = -1;
     GLint locEmissiveMap = -1, locHasEmissiveMap = -1;
     GLint locOcclusionMap = -1, locHasOcclusionMap = -1;
 
@@ -914,7 +903,7 @@ void main() { }
     // Per-material texture cache. Each handle remembers its size so a live
     // update can use glTexSubImage2D when the dimensions are unchanged.
     struct MatTextures {
-      TexHandle baseColor, normalMap, metallicRoughness, emissive, occlusion, reflectivity;
+      TexHandle baseColor, normalMap, metallicRoughness, emissive, occlusion;
       unsigned int version = 0xffffffffu;   // last-uploaded Material::TextureMaps version
     };
     std::unordered_map<const viz3d::Material*, MatTextures> texCache;
@@ -1066,7 +1055,7 @@ void main() { }
     m_data->pcCache.clear();
     for (auto &[_, mt] : m_data->texCache) {
       GLuint texs[] = {mt.baseColor.id, mt.normalMap.id, mt.metallicRoughness.id,
-                       mt.emissive.id, mt.occlusion.id, mt.reflectivity.id};
+                       mt.emissive.id, mt.occlusion.id};
       for (auto t : texs) if (t) glDeleteTextures(1, &t);
     }
     m_data->texCache.clear();
@@ -1087,7 +1076,6 @@ void main() { }
       m_data->locBaseColor = glGetUniformLocation(m_data->pbrProgram, "uBaseColor");
       m_data->locMetallic = glGetUniformLocation(m_data->pbrProgram, "uMetallic");
       m_data->locRoughness = glGetUniformLocation(m_data->pbrProgram, "uRoughness");
-      m_data->locReflectivity = glGetUniformLocation(m_data->pbrProgram, "uReflectivity");
       m_data->locEmissive = glGetUniformLocation(m_data->pbrProgram, "uEmissive");
       m_data->locAmbient = glGetUniformLocation(m_data->pbrProgram, "uAmbient");
       m_data->locExposure = glGetUniformLocation(m_data->pbrProgram, "uExposure");
@@ -1100,8 +1088,6 @@ void main() { }
       m_data->locHasNormalMap = glGetUniformLocation(m_data->pbrProgram, "uHasNormalMap");
       m_data->locMetallicRoughnessMap = glGetUniformLocation(m_data->pbrProgram, "uMetallicRoughnessMap");
       m_data->locHasMetallicRoughnessMap = glGetUniformLocation(m_data->pbrProgram, "uHasMetallicRoughnessMap");
-      m_data->locReflectivityMap = glGetUniformLocation(m_data->pbrProgram, "uReflectivityMap");
-      m_data->locHasReflectivityMap = glGetUniformLocation(m_data->pbrProgram, "uHasReflectivityMap");
       m_data->locEmissiveMap = glGetUniformLocation(m_data->pbrProgram, "uEmissiveMap");
       m_data->locHasEmissiveMap = glGetUniformLocation(m_data->pbrProgram, "uHasEmissiveMap");
       m_data->locOcclusionMap = glGetUniformLocation(m_data->pbrProgram, "uOcclusionMap");
@@ -1740,7 +1726,6 @@ void main() { }
                     mat->baseColor[2], mat->baseColor[3]);
         glUniform1f(m_data->locMetallic, mat->metallic);
         glUniform1f(m_data->locRoughness, mat->roughness);
-        glUniform1f(m_data->locReflectivity, mat->reflectivity);
         glUniform4f(m_data->locEmissive, mat->emissive[0], mat->emissive[1],
                     mat->emissive[2], 0);
 
@@ -1764,7 +1749,6 @@ void main() { }
             uploadOrUpdate(mt.metallicRoughness, mat->textures->metallicRoughnessMap, f);
             uploadOrUpdate(mt.emissive, mat->textures->emissiveMap, f);
             uploadOrUpdate(mt.occlusion, mat->textures->occlusionMap, f);
-            uploadOrUpdate(mt.reflectivity, mat->textures->reflectivityMap, f);
             mt.version = mat->textures->version;
           }
           mtp = &mt;
@@ -1785,7 +1769,6 @@ void main() { }
         bindTex(m_data->locHasMetallicRoughnessMap, m_data->locMetallicRoughnessMap, 2, mt.metallicRoughness.id);
         bindTex(m_data->locHasEmissiveMap, m_data->locEmissiveMap, 3, mt.emissive.id);
         bindTex(m_data->locHasOcclusionMap, m_data->locOcclusionMap, 4, mt.occlusion.id);
-        bindTex(m_data->locHasReflectivityMap, m_data->locReflectivityMap, 11, mt.reflectivity.id);
 
         // Billboard text: render unlit so text color comes through directly
         if (auto *text = dynamic_cast<TextNode*>(geom); text && text->isBillboard())
@@ -1794,14 +1777,12 @@ void main() { }
         glUniform4f(m_data->locBaseColor, 0.8f, 0.8f, 0.8f, 1.0f);
         glUniform1f(m_data->locMetallic, 0.0f);
         glUniform1f(m_data->locRoughness, 0.5f);
-        glUniform1f(m_data->locReflectivity, 0.0f);
         glUniform4f(m_data->locEmissive, 0, 0, 0, 0);
         glUniform1i(m_data->locHasBaseColorMap, 0);
         glUniform1i(m_data->locHasNormalMap, 0);
         glUniform1i(m_data->locHasMetallicRoughnessMap, 0);
         glUniform1i(m_data->locHasEmissiveMap, 0);
         glUniform1i(m_data->locHasOcclusionMap, 0);
-        glUniform1i(m_data->locHasReflectivityMap, 0);
       }
 
       // Draw triangles

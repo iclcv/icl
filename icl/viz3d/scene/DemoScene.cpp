@@ -75,24 +75,22 @@ namespace icl::viz3d {
     if (!hasContent) {
       fprintf(stderr, "No scene files specified, creating SSR test scene.\n");
 
-      // Reflective red sphere next to cube
+      // Mirror-finish red sphere (metallic → its reflection is baseColor-tinted).
       auto sphere = std::make_shared<SphereNode>(200, 100, 0, 100, 40, 40);
       sphere->setMaterial(Material::fromColor(GeomColor(220, 60, 60, 255)));
-      sphere->getMaterial()->roughness = 0.15f;
-      sphere->getMaterial()->reflectivity = 0.9f;
+      sphere->getMaterial()->metallic = 1.0f;
+      sphere->getMaterial()->roughness = 0.05f;
       root->addChild(sphere);
 
       // Gold metallic sphere
       auto goldSphere = std::make_shared<SphereNode>(-200, 80, 0, 80, 40, 40);
       goldSphere->setMaterial(Material::fromColor(GeomColor(255, 200, 80, 255)));
       goldSphere->getMaterial()->metallic = 0.9f;
-      goldSphere->getMaterial()->roughness = 0.35f;
-      goldSphere->getMaterial()->reflectivity = 0.3f;
+      goldSphere->getMaterial()->roughness = 0.3f;
       root->addChild(goldSphere);
 
       // RGB wireframe cube: 12 edges built from 10%-sized voxels
       // Corner colors = RGB cube: (x,y,z) → (R,G,B), linearly interpolated.
-      // Each voxel gets random reflectivity.
       float cubeSize = 200.0f;
       float voxelSize = cubeSize * 0.1f;
       // Center cube at origin, base at y=0
@@ -121,7 +119,6 @@ namespace icl::viz3d {
                 cx, cy, cz, voxelSize, voxelSize, voxelSize);
             auto vmat = Material::fromColor(GeomColor(r, g, b, 255));
             vmat->roughness = 0.3f;
-            vmat->reflectivity = 0.0f;
             vmat->smoothShading = false;
             voxel->setMaterial(vmat);
             root->addChild(voxel);
@@ -192,8 +189,7 @@ namespace icl::viz3d {
       float gs = targetSize * 3.0f;  // 2x bigger ground
 
       auto groundMat = std::make_shared<Material>();
-      groundMat->roughness = 0.5f;
-      groundMat->reflectivity = 0.5f;
+      groundMat->roughness = 0.25f;   // glossy dielectric floor (reflects, keeps colour)
       groundMat->smoothShading = true;
 
       if (noCheckerboard) {

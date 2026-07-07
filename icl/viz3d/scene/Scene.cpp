@@ -238,6 +238,10 @@ namespace icl::viz3d {
     addProperty("wireframe",utils::prop::Flag{}, false);
     addProperty("show cameras",utils::prop::Flag{}, false);
     addProperty("enable lighting",utils::prop::Flag{}, true);
+    // Off by default: a drawn sky occludes the background, which breaks the
+    // overlay/compositing use cases (3D over a camera image). Scene viewers that
+    // want the sky (e.g. to match the Cycles world) opt in via this property.
+    addProperty("show sky",utils::prop::Flag{}, false);
     addProperty("screen space reflections",utils::prop::Flag{}, true);
     addProperty("debug", utils::prop::Menu{"shaded", "normals", "albedo", "UVs",
                 "lighting", "NdotL", "SSR confidence", "depth", "SSR only"}, "shaded");
@@ -421,6 +425,11 @@ namespace icl::viz3d {
     return g;
   }
 
+  const std::vector<std::shared_ptr<Node>> &Scene::getRenderNodes(int cameraIndex) {
+    std::scoped_lock guard(m_data->mutex);
+    return nodesToRender(cameraIndex);
+  }
+
   const std::vector<std::shared_ptr<Node>> &Scene::nodesToRender(int activeCam) {
     if (!(bool)prop("show cameras").value) return m_data->objects;
 
@@ -461,7 +470,12 @@ namespace icl::viz3d {
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     m_data->renderer->setLightingEnabled((bool)prop("enable lighting").value);
-    m_data->renderer->setSSREnabled((bool)prop("screen space reflections").value);
+    m_data->renderer->setSkyEnabled((bool)prop("show sky").value);
+    const bool ssrOn = (bool)prop("screen space reflections").value;
+    m_data->renderer->setSSREnabled(ssrOn);
+    // SSR's per-pixel dither only resolves under TAA — enable it here (the live
+    // path has frame history) so flat surfaces don't show the diagonal cross-hatch.
+    m_data->renderer->setTemporalAAEnabled(ssrOn);
 
     // Debug visualization mode (menu order matches Renderer::setDebugMode codes)
     static const char *kDebugModes[] = {"shaded", "normals", "albedo", "UVs",
@@ -532,7 +546,9 @@ namespace icl::viz3d {
       const utils::Size s = cam.getResolution();
       if (s.width <= 0 || s.height <= 0) return result;
       m_data->renderer->setSSREnabled(false);
+      m_data->renderer->setTemporalAAEnabled(false);   // single shot: no history
       m_data->renderer->setLightingEnabled((bool)prop("enable lighting").value);
+      m_data->renderer->setSkyEnabled((bool)prop("show sky").value);
       m_data->renderer->setTargetSize(s);
       m_data->renderer->render(nodesToRender(cameraIndex),
                               cam.getCSTransformationMatrixGL(),

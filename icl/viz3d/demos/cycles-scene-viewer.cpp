@@ -41,6 +41,10 @@ void init() {
   }
 
   scene.setup(files, viewSize);
+  // Draw the shared gradient sky in the GL/Filament preview so its background +
+  // reflections match the Cycles world (both use viz3d::Sky). Off by default
+  // elsewhere because a drawn sky would occlude overlay/compositing use cases.
+  scene.setPropertyValue("show sky", true);
 
   // GUI: left = GL preview, right = Cycles raytrace, debug controls below
   gui << (VSplit()
@@ -60,7 +64,9 @@ void init() {
   renderer = std::make_unique<CyclesRenderer>(scene, RenderQuality::Interactive);
   renderer->setSamples(samples);
   renderer->setSceneScale(1.0f);
-  renderer->start(0);
+  // Poll-driven mode: run() calls render(0) once per frame (below). Do NOT also
+  // start() the autonomous management thread — the two modes are mutually
+  // exclusive and would race on the shared Cycles session (use-after-free).
 }
 
 void run() {

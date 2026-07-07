@@ -1,5 +1,6 @@
 // Lit PBR material for the Filament backend (solid meshes).
-// Maps ICL viz3d::Material (baseColor / metallic / roughness / emissive).
+// Maps ICL viz3d::Material (baseColor / metallic / roughness / emissive + the
+// glTF-style baseColor / metallic-roughness / emissive texture maps).
 material {
     name : litPBR,
     shadingModel : lit,
@@ -12,27 +13,39 @@ material {
     // wrong (front) faces. The GL renderer doesn't cull either; depth test sorts.
     doubleSided : true,
     culling : none,
-    requires : [ tangents ],
+    requires : [ uv0, tangents ],
     parameters : [
-        { type : float3, name : baseColor },
-        { type : float,  name : metallic },
-        { type : float,  name : roughness },
-        { type : float3, name : emissive },
-        { type : float,  name : reflectance },
-        { type : float,  name : unlit }
+        { type : float3,    name : baseColor },
+        { type : float,     name : metallic },
+        { type : float,     name : roughness },
+        { type : float3,    name : emissive },
+        { type : float,     name : reflectance },
+        { type : float,     name : unlit },
+        // Texture maps. The backend always binds these (a 1x1 white texture when
+        // the material carries no map), so the multiplies below are no-ops unless
+        // a real map is present. baseColor/emissive maps are sRGB (linearised on
+        // sample); the metallic-roughness map is linear data (glTF: G=roughness,
+        // B=metallic).
+        { type : sampler2d, name : baseColorMap },
+        { type : sampler2d, name : metallicRoughnessMap },
+        { type : sampler2d, name : emissiveMap }
     ]
 }
 fragment {
     void material(inout MaterialInputs material) {
         prepareMaterial(material);
+        vec2 uv = getUV0();
+        vec3 albedo = materialParams.baseColor * texture(materialParams_baseColorMap, uv).rgb;
+        vec4 mr     = texture(materialParams_metallicRoughnessMap, uv);
+        vec3 emis   = materialParams.emissive * texture(materialParams_emissiveMap, uv).rgb;
         // unlit=1 → flat base colour (ICL's "disable lighting"): route the base
         // colour through emissive and null out the lit response, so it shows at
         // full brightness regardless of lights. unlit=0 → normal PBR.
         float u = materialParams.unlit;
-        material.baseColor = vec4(materialParams.baseColor * (1.0 - u), 1.0);
-        material.metallic = materialParams.metallic * (1.0 - u);
-        material.roughness = mix(materialParams.roughness, 1.0, u);
-        material.reflectance = materialParams.reflectance;   // dielectric F0 (ICL reflectivity)
-        material.emissive = vec4(mix(materialParams.emissive, materialParams.baseColor, u), 0.0);
+        material.baseColor  = vec4(albedo * (1.0 - u), 1.0);
+        material.metallic   = materialParams.metallic * mr.b * (1.0 - u);
+        material.roughness  = mix(materialParams.roughness * mr.g, 1.0, u);
+        material.reflectance = materialParams.reflectance;   // base dielectric F0
+        material.emissive   = vec4(mix(emis, albedo, u), 0.0);
     }
 }
