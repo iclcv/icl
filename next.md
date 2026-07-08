@@ -4,8 +4,40 @@
 
 ## Next Step
 
-### ▶ IN PROGRESS (S102) — Filament↔Cycles look-matching + calibration ladder
-Branch `further-restructuring-and-cleanup`; suite **1094/1094** throughout. **Nothing pushed.**
+### ▶ NEXT SESSION (S103) — Filament FUNCTIONAL PARITY → retire GL
+Branch `further-restructuring-and-cleanup`. The Filament↔Cycles alignment arc (S102, below) is
+**settled**: the matchable look matches (calibration ladder rungs 0-3 + build-up scenes), and the one
+remaining fidelity gap — **environment-visibility occlusion** (floor+cube over-reflect the FULL sky;
+sphere reflection missing in the glossy floor) — is diagnosed and accepted as a fundamental real-time
+IBL limit. Live tuner (`viz3d-render-tuner`) + temporal-convergence knobs are in place.
+
+**DO NEXT — bucket 1: functional gaps that BLOCK retiring the legacy GL backend** (CE picked this over
+the fidelity lever):
+1. **Points / point-clouds in Filament** (HIGHEST value — core to ICL's CV use). The backend renders
+   meshes + lines but NOT points yet → billboard quads + solve the per-vertex COLOUR-attribute bind
+   (same bind that made wireframe lines need one renderable per colour). See [[project_filament_backend]].
+2. **Glass / screen-space refraction** — `Material::TransmissionParams` isn't handled in the Filament
+   backend yet.
+3. **Soft shadows (PCSS)** — map `LightNode::softShadowRadius` → Filament PCSS (quick polish).
+Then **P5: converge → delete the GL backend.**
+
+**Deferred fidelity lever (bucket 2, when we want it):** reflection **probe** / **planar** reflection —
+the general fix for the IBL-visibility gap (floor+cube over-reflection AND the missing sphere-in-floor
+reflection). Groundwork already designed as an extension comment on **Material.h**: per-material
+reflection-technique HINT (Auto/Environment/ScreenSpace/Planar/Probe; path-tracers ignore it). Start
+with Environment/ScreenSpace (also removes the global-SSR wart), then Planar (coplanar-faces reflector,
+backend derives the plane), then Probe. **Methodology (CE): align the RENDERERS; do NOT tune scene
+content to fake agreement — the DemoScene is a test fixture; Cycles ≈ ground truth.**
+
+**Unpushed commits (ahead of origin — CE pushes):** SSAO default-off + reflection-hint note; darkfloor
+isolation (floor-gap = IBL-visibility); Flag/Menu prop widgets; taa/ssr convergence knobs; tuner
+Filament-full-rate + Cycles-throttle. (The taa-feedback-0.3 / ssr-stride-1.0 *defaults* experiment was
+reverted — made it worse once the tuner ran Filament at full rate; the knobs remain as escape hatches.)
+Tools: `viz3d-render-tuner -step <name>`, `viz3d-render-calibrate <preset>`, shared builder
+`demos/calibrate_scenes.h` (steps: emissive/diffuse/sky/metal/simple/simple-glossy/darkfloor).
+
+### ✅ DONE (S102) — Filament↔Cycles look-matching + calibration ladder
+Branch `further-restructuring-and-cleanup`; suite **1094/1094** throughout. First batch pushed; rest ahead of origin.
 Reference/memory: **[[reference_render_compare_loop]]**. **Key methodology shift (CE):** stop tuning
 against the full DemoScene (5 lights + textures + metals + sky + tonemap all at once); calibrate
 **one variable at a time** with minimal scenes, matching numerically before adding the next. After
