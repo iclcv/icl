@@ -33,7 +33,8 @@ namespace icl::viz3d::calib {
 
   /// The step names this builder understands (for combos / help text).
   inline std::vector<std::string> stepNames() {
-    return {"emissive", "diffuse", "sky", "metal", "simple", "simple-glossy"};
+    return {"emissive", "diffuse", "sky", "metal",
+            "simple", "simple-glossy", "darkfloor"};
   }
 
   /// Build one step into `scene`: camera, geometry, lights, and the env props
@@ -50,12 +51,16 @@ namespace icl::viz3d::calib {
     };
     SceneOpts o;
 
-    if (preset == "simple" || preset == "simple-glossy") {
-      // Ground + one object + one shadowed point light + sky. The "-glossy" variant
-      // drops the ground roughness so the sphere reflects in the floor → the
-      // Filament-SSR-vs-Cycles-ray-traced-reflection comparison (SSR wants TAA, so
-      // the harness renders it over several frames to warm the history).
+    if (preset == "simple" || preset == "simple-glossy" || preset == "darkfloor") {
+      // Ground + one object + one shadowed point light + sky. Variants:
+      //  -glossy   : drops the ground roughness so the sphere reflects in the floor
+      //              → the Filament-SSR-vs-Cycles reflection comparison.
+      //  darkfloor : swaps the grey floor for the DemoScene's dark WARM-brown albedo
+      //              (solid, no texture) → isolate the full-scene floor gap (dark +
+      //              cool-shifted): does it reproduce from the albedo alone (dim/cool
+      //              sky reflection dominating a dark warm albedo)?
       const bool glossy = (preset == "simple-glossy");
+      const bool dark = (preset == "darkfloor");
       scene.addCamera(Camera::lookAt(Vec(0, 220, 560, 1), Vec(0, 70, 0, 1),
                                      Vec(0, 1, 0, 1), size, 40.0f));
       scene.setBounds(400);
@@ -67,21 +72,51 @@ namespace icl::viz3d::calib {
       for (int i = 0; i < 4; ++i) ground->addNormal(Vec(0, 1, 0, 1));
       ground->addTriangle(0, 2, 1, 0, 2, 1); ground->addTriangle(0, 3, 2, 0, 3, 2);
       // Glossy dielectric floor (metallic 0, low roughness) reflects via Fresnel.
-      ground->setMaterial(mkMat(GeomColor(0.6f, 0.6f, 0.6f, 1), 0.0f,
-                                glossy ? 0.12f : 0.6f));
+      const GeomColor floorCol = dark ? GeomColor(0.19f, 0.13f, 0.08f, 1)   // DemoScene checker mean
+                                      : GeomColor(0.6f, 0.6f, 0.6f, 1);
+      const float floorRough = glossy ? 0.12f : (dark ? 0.25f : 0.6f);
+      ground->setMaterial(mkMat(floorCol, 0.0f, floorRough));
       scene.addNode(ground);
       o.ground = ground;   // exposed so the tuner can sweep its roughness live
+
+      if (dark) {
+        // A bright back wall (like the DemoScene's) — the decisive env-occlusion
+        // test: Cycles ray-traces that the wall blocks the sky from the floor (and
+        // bounces its own colour in), so the floor reads warm/bright; Filament's
+        // global IBL has no visibility test → floor keeps sampling the full (cool)
+        // sky and reads cool/dark. If the floor gap appears ONLY once this wall is
+        // added, that pins it to environment-visibility, not the primitives.
+        auto wall = std::make_shared<MeshNode>();
+        wall->addVertex(Vec(-gs, 0, -gs, 1));    wall->addVertex(Vec(gs, 0, -gs, 1));
+        wall->addVertex(Vec(gs, 2*gs, -gs, 1));  wall->addVertex(Vec(-gs, 2*gs, -gs, 1));
+        for (int i = 0; i < 4; ++i) wall->addNormal(Vec(0, 0, 1, 1));
+        wall->addTriangle(0, 2, 1, 0, 2, 1); wall->addTriangle(0, 3, 2, 0, 3, 2);
+        wall->setMaterial(mkMat(GeomColor(0.8f, 0.8f, 0.8f, 1), 0.0f, 0.5f));
+        scene.addNode(wall);
+      }
 
       auto obj = std::make_shared<SphereNode>(0, 90, 0, 90, 48, 48);
       obj->setMaterial(mkMat(GeomColor(0.65f, 0.45f, 0.30f, 1), 0.0f, 0.5f));
       scene.addNode(obj);
 
-      auto light = std::make_shared<LightNode>(LightNode::Point);
-      light->setColor(GeomColor(255, 247, 235, 255));
-      light->setIntensity(1.0f);
-      light->translate(300, 550, 350);
-      light->setShadowEnabled(true);
-      scene.addLight(light);
+      auto addPt = [&](GeomColor c, float x, float y, float z, bool sh) {
+        auto l = std::make_shared<LightNode>(LightNode::Point);
+        l->setColor(c); l->setIntensity(1.0f);
+        l->translate(x, y, z); l->setShadowEnabled(sh);
+        scene.addLight(l);
+      };
+      if (dark) {
+        // The DemoScene's 4-light rig (r=280) — warm key + cool-blue fill + cool
+        // rim + neutral top — to see whether the full-scene floor gap comes from the
+        // MULTI-LIGHT setup (Filament darkens, Cycles warms/brightens the floor).
+        const float r = 280.0f;
+        addPt(GeomColor(255, 248, 235, 255),  r*0.8f, r*0.6f, -r*0.3f, true);  // key
+        addPt(GeomColor( 40,  50,  70, 255), -r*0.6f, r*0.2f, -r*0.5f, false); // fill
+        addPt(GeomColor(180, 190, 210, 255), -r*0.2f, r,       r*0.6f, false); // rim
+        addPt(GeomColor(220, 215, 210, 255),  0,      r*1.5f,  0,      true);  // top
+      } else {
+        addPt(GeomColor(255, 247, 235, 255), 300, 550, 350, true);
+      }
 
       o.useSky = true;
       o.useSSR = glossy;

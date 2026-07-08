@@ -91,8 +91,23 @@ each stage, drop A/B PNGs in **`builddir/calib/`** for CE to eyeball.
      Tuner auto-enables SSR for this step (continuous live frames warm TAA). NEXT: CE tunes `render.ssr
      thickness / max distance` live; if SSR can't reach it, that's the known SSR gap → the reflection-
      probe idea (metal/floor reflecting a real cubemap of the scene, not just screen + sky).
-5. **THEN: re-tune the full DemoScene on the calibrated base** (`viz3d-render-compare`) — per-variable
-   constants trustworthy, full-scene diffs should be small. Revisit reflection-probe idea last.
+5. **Full DemoScene re-tune (S102):** objects/materials/sky/lighting all read close (calibration held).
+   Two floor issues found + resolved/diagnosed:
+   - **Floor SSAO noise** ("almost hurts the eye") → **SSAO now DEFAULT OFF** (`46a125a1b`). Flat-floor
+     self-occlusion acne (floor hi-freq noise 3.47→0.49); a clean bias cancels the effect anyway; kept
+     as opt-in `ambient occlusion` knob (helps concave contact, not flat floors).
+   - **Floor too dark + cool-shifted** (Filament ~48 cool vs Cycles ~102 warm). ISOLATED via a
+     `darkfloor` step (`calibrate_scenes.h`): ruled out albedo (dark-warm floor + 1 light matches 82 vs
+     88), the 4-light rig (still 82 vs 88), and GI-bounce (Cycles bounces=0 still 93). **Root cause =
+     ENVIRONMENT-VISIBILITY OCCLUSION:** add a back wall → only the CYCLES floor moves (88→68), Filament
+     unchanged (82). Filament's IBL is a global cubemap with NO per-point visibility test, so the floor
+     always samples the full sky; Cycles ray-traces which sky directions the wall blocks. Same family as
+     the contact-AO gap (SSAO/specular-occlusion approximate it, at the noise cost we just removed).
+     **DECISION: accept** — fundamental real-time IBL limit; preview is for interactivity, Cycles is the
+     fidelity ref. `darkfloor` isolation ladder kept as the proof + base for any future env-occlusion work.
+   - **OPEN (deferred): the RGB wireframe cube isn't fully identical yet** — next small item.
+   - Reflection-probe idea (metal/floor reflecting a real cubemap) remains the last big fidelity lever;
+     per-material reflection-technique HINT designed as an extension comment on Material.h (not built).
 
 ### ✅ DONE (S101) — Filament real-time renderer: built, default, tuned (21 commits)
 Branch `further-restructuring-and-cleanup`; suite **1094/1094** throughout. **Nothing pushed.**
