@@ -773,11 +773,11 @@ namespace icl::viz3d {
     addProperty("tone mapping", utils::prop::Menu{"linear", "filmic", "aces", "pbr-neutral"}, "linear");
     addProperty("ssr thickness", utils::prop::Range{.min = 0.01f, .max = 10.0f, .step = 0.1f}, 1.0f);
     addProperty("ssr max distance", utils::prop::Range{.min = 1.0f, .max = 2000.0f, .step = 10.0f}, 200.0f);
-    addProperty("ambient occlusion", utils::prop::Range{.min = 0.0f, .max = 1.0f, .step = 1.0f}, 0.0f);
+    addProperty("ambient occlusion", utils::prop::Flag{}, false);
     addProperty("ao radius", utils::prop::Range{.min = 0.0f, .max = 300.0f, .step = 5.0f}, 100.0f);
     addProperty("ao intensity", utils::prop::Range{.min = 0.0f, .max = 4.0f, .step = 0.1f}, 1.5f);
     addProperty("ao bias", utils::prop::Range{.min = 0.0f, .max = 2.0f, .step = 0.01f}, 0.0f);
-    addProperty("ao type", utils::prop::Range{.min = 0.0f, .max = 1.0f, .step = 1.0f}, 0.0f);
+    addProperty("ao type", utils::prop::Menu{"SAO", "GTAO"}, "SAO");
     addProperty("ao minhorizon", utils::prop::Range{.min = 0.0f, .max = 0.7f, .step = 0.01f}, 0.2f);
     registerCallback([this](const utils::Configurable::Property &p) {
       Data &d = *m_data;
@@ -788,11 +788,11 @@ namespace icl::viz3d {
       else if (p.name == "env specular") { d.envSpecular = num(); d.envDirty = true; }
       else if (p.name == "ssr thickness") d.ssrThickness = num();
       else if (p.name == "ssr max distance") d.ssrMaxDist = num();
-      else if (p.name == "ambient occlusion") d.ssao = num() > 0.5f;
+      else if (p.name == "ambient occlusion") d.ssao = p.as<bool>();
       else if (p.name == "ao radius") d.aoRadius = num();
       else if (p.name == "ao intensity") d.aoIntensity = num();
       else if (p.name == "ao bias") d.aoBias = num();
-      else if (p.name == "ao type") d.aoType = (int)num();
+      else if (p.name == "ao type") d.aoType = p.as<std::string>() == "GTAO" ? 1 : 0;
       else if (p.name == "ao minhorizon") d.aoMinHorizon = num();
       else if (p.name == "tone mapping") {
         std::string t = p.as<std::string>();
