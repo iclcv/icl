@@ -105,9 +105,20 @@ each stage, drop A/B PNGs in **`builddir/calib/`** for CE to eyeball.
      the contact-AO gap (SSAO/specular-occlusion approximate it, at the noise cost we just removed).
      **DECISION: accept** — fundamental real-time IBL limit; preview is for interactivity, Cycles is the
      fidelity ref. `darkfloor` isolation ladder kept as the proof + base for any future env-occlusion work.
-   - **OPEN (deferred): the RGB wireframe cube isn't fully identical yet** — next small item.
-   - Reflection-probe idea (metal/floor reflecting a real cubemap) remains the last big fidelity lever;
-     per-material reflection-technique HINT designed as an extension comment on Material.h (not built).
+   - **RGB wireframe cube over-reflects** — DIAGNOSED as the SAME IBL-visibility gap: the cube's glossy
+     voxels (metallic 0, roughness 0.3) reflect the FULL sky in Filament while Cycles reflects only the
+     sky the offscreen backwall doesn't block (and the backwall isn't SSR-reachable / too far), so
+     Filament's edges wash out / desaturate (green edges Δ72 vs Cycles; drop to Δ28 if roughness→0.7).
+     NOT fixed by tuning the cube — that's content-masking, not renderer alignment (CE: the DemoScene is
+     a TEST FIXTURE to surface Filament limits, not something to tune until both agree). Left at 0.3.
+   - **⇒ The general renderer-level fix for BOTH the floor and the cube is environment-visibility /
+     SPECULAR occlusion** (or a reflection probe): the one lever that aligns Filament to Cycles for any
+     glossy surface without per-object roughness fudging. Per-material reflection-technique HINT +
+     Planar/Probe designed as an extension comment on Material.h (not built). This is the real next
+     alignment target whenever we choose to invest; content stays as authored.
+   METHODOLOGY NOTE (CE): goal = align the two RENDERERS as much as possible, using the DemoScene as
+   exemplary test situations; Cycles ≈ ground truth. When a Filament limitation surfaces, DISCUSS whether
+   a renderer-level tweak bypasses it — do NOT tune scene content to fake agreement.
 
 ### ✅ DONE (S101) — Filament real-time renderer: built, default, tuned (21 commits)
 Branch `further-restructuring-and-cleanup`; suite **1094/1094** throughout. **Nothing pushed.**
