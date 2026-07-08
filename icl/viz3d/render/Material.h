@@ -72,6 +72,42 @@ namespace icl::viz3d {
     // to interpret it ad-hoc). Every field here maps 1:1 to Filament and to
     // Cycles' Principled BSDF.
 
+    // ---- EXTENSION IDEA: per-material reflection technique (not yet built) ----
+    //
+    // metallic/roughness say HOW MUCH a surface reflects; they don't say HOW the
+    // real-time backend should GATHER what's reflected. Today that's fixed: the IBL
+    // (sky/env) + Filament SSR, and SSR is forced on for EVERY lit material via a
+    // compile-time flag in lit_pbr.mat (`reflections : screenspace`). A path tracer
+    // (Cycles) just ray-traces the true environment, so it needs none of this.
+    //
+    // The clean extension is a per-material HINT — declarative intent, each backend
+    // picking the best implementation it can; PATH TRACERS IGNORE IT:
+    //
+    //   enum class Reflection { Auto, Environment, ScreenSpace, Planar, Probe };
+    //
+    //   - Environment : IBL/cubemap only — cheap, stable, no screen-space artifacts.
+    //   - ScreenSpace : force SSR (+ IBL fallback) — reflects only ON-SCREEN geometry,
+    //                   so it cannot show an object's occluded side (e.g. a sphere's
+    //                   underside reflected in a floor — that needs Planar/Probe).
+    //   - Planar      : mirror the scene across the reflector's plane. Exact, but the
+    //                   faces carrying the material MUST be coplanar. The backend
+    //                   derives the plane FROM THOSE FACES (area-weighted normal +
+    //                   coplanarity check + node transform): the reflector is simply
+    //                   "whichever faces have this material" — NOT a special object
+    //                   and NOT a scene "ground" concept. A non-coplanar mesh (a whole
+    //                   cuboid, opposing normals cancel) → plane degenerates → the
+    //                   backend declines and falls back to Environment (no guessing
+    //                   "which face"). To make only a slab's top reflective, that top
+    //                   is its own flat node (material is per-node today, not per-face).
+    //   - Probe       : per-object cubemap capture — works on ANY geometry (curved,
+    //                   boxy) at the cost of parallax error + a cubemap render pass.
+    //
+    // Filament reality: SSR opt-in is that .mat COMPILE flag, so per-material on/off
+    // needs two compiled lit variants (screenspace / plain) chosen by the hint;
+    // Planar needs a mirrored render-to-texture pass. Grow it incrementally: land the
+    // enum + Environment/ScreenSpace first (also removes the global-SSR wart), then
+    // Planar (flat reflectors), then Probe (arbitrary shapes) behind the same seam.
+
     // -- Display hints (always inline) --
 
     cv3d::GeomColor lineColor{0,0,0,0};   ///< wireframe color [0,1] (alpha=0 -> use baseColor)

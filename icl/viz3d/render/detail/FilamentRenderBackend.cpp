@@ -160,12 +160,13 @@ namespace icl::viz3d {
     // free by path-tracing the environment; a light shadow-map can't produce it.
     // NB Filament's AO radius is in world units ("metres"); viz3d scenes are 100s
     // of units, so the 0.3 default is invisible — we default to a scene-scale value.
-    // Defaults tuned on the render-calibrate "simple" scene (large flat ground +
-    // object): a big radius + a minHorizon cull rejects the flat-plane grazing
-    // self-occlusion (matches Cycles' OPEN ground) while keeping the object's
-    // contact darkening. NB screen-space AO can only approximate the path-traced
-    // contact AO Cycles gets — the contact stays lighter than Cycles on big planes.
-    bool ssao = true; float aoRadius = 100.0f, aoIntensity = 1.5f, aoBias = 0.0f;
+    // DEFAULT OFF. Screen-space AO on a large grazing flat ground can't be both
+    // clean and effective: bias=0 gives eye-hurting self-occlusion acne on the
+    // floor, and a bias high enough to clean it also cancels the contact darkening —
+    // and it never matches Cycles' path-traced contact AO anyway. So it's an opt-in
+    // knob (still useful for concave object-to-object contact, not flat floors);
+    // raise `ambient occlusion` + `ao radius` to enable. Defaults below apply then.
+    bool ssao = false; float aoRadius = 100.0f, aoIntensity = 1.5f, aoBias = 0.0f;
     int aoType = 0;   // 0 = SAO, 1 = GTAO (GTAO globally over-darkens grazing planes)
     float aoMinHorizon = 0.2f;
     int toneMap = 0;   // 0 linear, 1 filmic, 2 aces, 3 pbr-neutral
@@ -772,6 +773,7 @@ namespace icl::viz3d {
     addProperty("tone mapping", utils::prop::Menu{"linear", "filmic", "aces", "pbr-neutral"}, "linear");
     addProperty("ssr thickness", utils::prop::Range{.min = 0.01f, .max = 10.0f, .step = 0.1f}, 1.0f);
     addProperty("ssr max distance", utils::prop::Range{.min = 1.0f, .max = 2000.0f, .step = 10.0f}, 200.0f);
+    addProperty("ambient occlusion", utils::prop::Range{.min = 0.0f, .max = 1.0f, .step = 1.0f}, 0.0f);
     addProperty("ao radius", utils::prop::Range{.min = 0.0f, .max = 300.0f, .step = 5.0f}, 100.0f);
     addProperty("ao intensity", utils::prop::Range{.min = 0.0f, .max = 4.0f, .step = 0.1f}, 1.5f);
     addProperty("ao bias", utils::prop::Range{.min = 0.0f, .max = 2.0f, .step = 0.01f}, 0.0f);
@@ -786,6 +788,7 @@ namespace icl::viz3d {
       else if (p.name == "env specular") { d.envSpecular = num(); d.envDirty = true; }
       else if (p.name == "ssr thickness") d.ssrThickness = num();
       else if (p.name == "ssr max distance") d.ssrMaxDist = num();
+      else if (p.name == "ambient occlusion") d.ssao = num() > 0.5f;
       else if (p.name == "ao radius") d.aoRadius = num();
       else if (p.name == "ao intensity") d.aoIntensity = num();
       else if (p.name == "ao bias") d.aoBias = num();
