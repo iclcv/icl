@@ -152,8 +152,15 @@ namespace icl::viz3d {
     bool ssr = true, shadows = true, lighting = true, showSky = false;
     bool taa = false;   // temporal AA — resolves SSR's per-pixel dither; off for
                         // single-shot/headless (needs frame history) → FXAA instead.
+    // TAA convergence: `feedback` is the current-frame weight (0 = all history /
+    // slowest+cleanest, 1 = no TAA); the transient after a camera move clears in
+    // ~1/feedback frames, so a higher value clears temporal SSR noise QUICKER at the
+    // cost of a slightly noisier steady state. `flickerGuard` (preventFlickering)
+    // damps history in high-variance areas to kill fireflies — but that's exactly
+    // the reflective regions, so it can make their noise LINGER; expose it to trade.
+    float taaFeedback = 0.12f; bool taaFlickerGuard = true;
     int debugMode = 0;
-    float lightScale = 1.0f, envIntensity = 0.95f, envSpecular = 1.0f, ssrThickness = 1.0f, ssrMaxDist = 200.0f;
+    float lightScale = 1.0f, envIntensity = 0.95f, envSpecular = 1.0f, ssrThickness = 1.0f, ssrMaxDist = 200.0f, ssrStride = 2.0f;
     // Screen-space ambient occlusion — the soft contact darkening under/between
     // objects (the sphere occluding the sky dome from the ground). This is the
     // Filament analogue of the ambient-occlusion contact shadow Cycles gets for
@@ -182,10 +189,8 @@ namespace icl::viz3d {
                                 : fl::View::AntiAliasing::FXAA);
       fl::View::TemporalAntiAliasingOptions t;
       t.enabled = taa;
-      // Dynamically damp the history feedback to kill the occasional bright
-      // temporal firefly/flash (a sharp SSR/specular reflection of the bright sky
-      // getting amplified across frames).
-      t.preventFlickering = true;
+      t.feedback = taaFeedback;          // higher → temporal noise clears in fewer frames
+      t.preventFlickering = taaFlickerGuard;   // firefly guard (can make reflections linger)
       view->setTemporalAntiAliasingOptions(t);
     }
 
@@ -773,12 +778,15 @@ namespace icl::viz3d {
     addProperty("tone mapping", utils::prop::Menu{"linear", "filmic", "aces", "pbr-neutral"}, "linear");
     addProperty("ssr thickness", utils::prop::Range{.min = 0.01f, .max = 10.0f, .step = 0.1f}, 1.0f);
     addProperty("ssr max distance", utils::prop::Range{.min = 1.0f, .max = 2000.0f, .step = 10.0f}, 200.0f);
+    addProperty("ssr stride", utils::prop::Range{.min = 1.0f, .max = 8.0f, .step = 0.5f}, 2.0f);
     addProperty("ambient occlusion", utils::prop::Flag{}, false);
     addProperty("ao radius", utils::prop::Range{.min = 0.0f, .max = 300.0f, .step = 5.0f}, 100.0f);
     addProperty("ao intensity", utils::prop::Range{.min = 0.0f, .max = 4.0f, .step = 0.1f}, 1.5f);
     addProperty("ao bias", utils::prop::Range{.min = 0.0f, .max = 2.0f, .step = 0.01f}, 0.0f);
     addProperty("ao type", utils::prop::Menu{"SAO", "GTAO"}, "SAO");
     addProperty("ao minhorizon", utils::prop::Range{.min = 0.0f, .max = 0.7f, .step = 0.01f}, 0.2f);
+    addProperty("taa feedback", utils::prop::Range{.min = 0.04f, .max = 0.6f, .step = 0.02f}, 0.12f);
+    addProperty("taa flicker guard", utils::prop::Flag{}, true);
     registerCallback([this](const utils::Configurable::Property &p) {
       Data &d = *m_data;
       auto num = [&] { try { return std::stof(p.as<std::string>()); } catch (...) { return 0.0f; } };
@@ -788,12 +796,15 @@ namespace icl::viz3d {
       else if (p.name == "env specular") { d.envSpecular = num(); d.envDirty = true; }
       else if (p.name == "ssr thickness") d.ssrThickness = num();
       else if (p.name == "ssr max distance") d.ssrMaxDist = num();
+      else if (p.name == "ssr stride") d.ssrStride = num();
       else if (p.name == "ambient occlusion") d.ssao = p.as<bool>();
       else if (p.name == "ao radius") d.aoRadius = num();
       else if (p.name == "ao intensity") d.aoIntensity = num();
       else if (p.name == "ao bias") d.aoBias = num();
       else if (p.name == "ao type") d.aoType = p.as<std::string>() == "GTAO" ? 1 : 0;
       else if (p.name == "ao minhorizon") d.aoMinHorizon = num();
+      else if (p.name == "taa feedback") { d.taaFeedback = num(); d.aaDirty = true; }
+      else if (p.name == "taa flicker guard") { d.taaFlickerGuard = p.as<bool>(); d.aaDirty = true; }
       else if (p.name == "tone mapping") {
         std::string t = p.as<std::string>();
         d.toneMap = t == "filmic" ? 1 : t == "aces" ? 2 : t == "pbr-neutral" ? 3 : 0;
@@ -886,6 +897,9 @@ namespace icl::viz3d {
     ssrOpt.enabled = m_data->ssr;
     ssrOpt.thickness = m_data->ssrThickness;
     ssrOpt.maxDistance = m_data->ssrMaxDist;
+    ssrOpt.stride = m_data->ssrStride;   // ray-march step (texels): smaller = finer
+                                         // trace, less dither → temporal noise both
+                                         // lower AND faster to resolve (costs perf)
     m_data->view->setScreenSpaceReflectionsOptions(ssrOpt);
 
     // Screen-space ambient occlusion (soft contact shadows from occluded ambient).
