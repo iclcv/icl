@@ -91,17 +91,24 @@ void run() {
     }
   }
 
-  gui["fil"].render();   // live Filament preview
+  gui["fil"].render();   // live Filament preview — EVERY frame, so its TAA
+                         // accumulates at full rate and temporal noise clears fast.
 
-  renderer->render(0);   // advance the Cycles path-trace
-  static int lastUpdate = 0;
-  int updates = renderer->getUpdateCount();
-  if (updates > lastUpdate) {
-    lastUpdate = updates;
-    gui["cyc"] = renderer->getImage();
+  // Advance Cycles only every Nth frame: a progressive path-trace step is far
+  // slower than a Filament frame, so stepping it every frame throttled the whole
+  // loop and starved the Filament preview of the frames its TAA needs to converge.
+  static int tick = 0;
+  if (++tick % 4 == 0) {
+    renderer->render(0);
+    static int lastUpdate = 0;
+    int updates = renderer->getUpdateCount();
+    if (updates > lastUpdate) {
+      lastUpdate = updates;
+      gui["cyc"] = renderer->getImage();
+    }
   }
 
-  static FPSLimiter fps(30);
+  static FPSLimiter fps(60);   // let Filament run up to 60fps for fast TAA convergence
   fps.wait();
 }
 
