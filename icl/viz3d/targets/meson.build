@@ -134,6 +134,7 @@ if _build_demos and qt_found
       executable('viz3d-render-calibrate',
         files('../demos/render-calibrate.cpp'),
         dependencies: [icl_viz3d_dep, icl_io_dep],
+        cpp_args: ['-DICL_VIZ3D_SCENES_DIR="' + meson.project_source_root() / 'icl/viz3d/scenes' + '"'],
         install: false,
       )
     endif
@@ -154,6 +155,7 @@ if _build_apps and qt_found
     executable('viz3d-render-tuner',
       files('../apps/render-tuner.cpp'),
       dependencies: [icl_viz3d_dep],
+      cpp_args: ['-DICL_VIZ3D_SCENES_DIR="' + meson.project_source_root() / 'icl/viz3d/scenes' + '"'],
       install: false,
     )
   endif

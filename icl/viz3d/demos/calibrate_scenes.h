@@ -12,10 +12,14 @@
 #include <icl/viz3d/scene/Scene.h>
 #include <icl/viz3d/nodes/GeometryNode.h>
 #include <icl/viz3d/nodes/SphereNode.h>
+#include <icl/viz3d/nodes/CuboidNode.h>
 #include <icl/viz3d/nodes/MeshNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/cv3d/Camera.h>
+
+#include <cmath>
+#include <cstdio>
 
 #include <memory>
 #include <string>
@@ -29,12 +33,13 @@ namespace icl::viz3d::calib {
     bool useSSR = false;    ///< screen-space reflections wanted (glossy-ground steps)
     bool ok = true;         ///< false → unknown preset name
     std::shared_ptr<GeometryNode> ground;  ///< the ground node (null if the step has none)
+    std::shared_ptr<GeometryNode> glass;   ///< the transmissive node (null if none) — tuner glass sliders
   };
 
   /// The step names this builder understands (for combos / help text).
   inline std::vector<std::string> stepNames() {
     return {"emissive", "diffuse", "sky", "metal",
-            "simple", "simple-glossy", "darkfloor"};
+            "simple", "simple-glossy", "darkfloor", "glass", "amber"};
   }
 
   /// Build one step into `scene`: camera, geometry, lights, and the env props
@@ -120,6 +125,99 @@ namespace icl::viz3d::calib {
 
       o.useSky = true;
       o.useSSR = glossy;
+    } else if (preset == "glass") {
+      // Glass showcase + the Filament-SSR-refraction vs Cycles-path-traced-glass
+      // A/B: a clear transmissive sphere over an opaque red cube + a glossy floor,
+      // under the sky. The cube (and floor/sky) refract through the sphere.
+      scene.addCamera(Camera::lookAt(Vec(0, 140, 480, 1), Vec(0, 70, 0, 1),
+                                     Vec(0, 1, 0, 1), size, 40.0f));
+      scene.setBounds(400);
+
+      auto ground = std::make_shared<MeshNode>();
+      const float gs = 700.0f;
+      ground->addVertex(Vec(-gs, 0, -gs, 1)); ground->addVertex(Vec(gs, 0, -gs, 1));
+      ground->addVertex(Vec(gs, 0, gs, 1));   ground->addVertex(Vec(-gs, 0, gs, 1));
+      for (int i = 0; i < 4; ++i) ground->addNormal(Vec(0, 1, 0, 1));
+      ground->addTriangle(0, 2, 1, 0, 2, 1); ground->addTriangle(0, 3, 2, 0, 3, 2);
+      ground->setMaterial(mkMat(GeomColor(0.55f, 0.55f, 0.55f, 1), 0.0f, 0.15f));
+      scene.addNode(ground);
+      o.ground = ground;   // tuner roughness slider drives the floor
+
+      // Opaque red landmark behind the sphere — the thing you watch refract.
+      auto cube = std::make_shared<CuboidNode>(0.f, 70.f, -90.f, 90.f);
+      cube->setMaterial(mkMat(GeomColor(0.85f, 0.12f, 0.12f, 1), 0.0f, 0.5f));
+      scene.addNode(cube);
+
+      // Clear glass sphere in front (metallic 0, near-zero roughness, full transmission).
+      auto glassSphere = std::make_shared<SphereNode>(0, 100, 60, 100, 64, 64);
+      auto gm = std::make_shared<Material>();
+      gm->baseColor = GeomColor(1, 1, 1, 1);
+      gm->metallic = 0.0f; gm->roughness = 0.03f;
+      gm->transmission = std::make_shared<Material::TransmissionParams>();
+      gm->transmission->transmission = 1.0f;
+      gm->transmission->ior = 1.5f;
+      // Solid volume thickness (~ sphere diameter) so Filament's screen-space
+      // refraction lenses the background, approaching Cycles' true glass-sphere
+      // lensing (thickness 0 → a thin soap-bubble look, no magnification).
+      gm->transmission->thicknessFactor = 200.0f;
+      glassSphere->setMaterial(gm);
+      scene.addNode(glassSphere);
+      o.glass = glassSphere;   // tuner glass sliders drive this
+
+      auto l = std::make_shared<LightNode>(LightNode::Point);
+      l->setColor(GeomColor(255, 247, 235, 255)); l->setIntensity(1.0f);
+      l->translate(300, 550, 350); l->setShadowEnabled(true);
+      scene.addLight(l);
+
+      o.useSky = true;
+      o.useSSR = true;
+    } else if (preset == "amber") {
+      // "Mosquito in amber" glTF showcase (KHR_materials_transmission/volume →
+      // the amber renders through the new glass path). The asset is in glTF metres
+      // (~0.16 units across) while viz3d scenes are 100s of units, so it would sit
+      // inside the near clip plane — scale it up (bake into each node transform)
+      // to a scene-sized target, then auto-frame from the scaled bbox.
+#ifdef ICL_VIZ3D_SCENES_DIR
+      auto meshes = MeshNode::load(std::string(ICL_VIZ3D_SCENES_DIR) + "/MosquitoInAmber.glb");
+      if (meshes.empty()) { o.ok = false; return o; }
+      float lo[3] = {1e30f, 1e30f, 1e30f}, hi[3] = {-1e30f, -1e30f, -1e30f};
+      for (auto &m : meshes) {
+        const math::Mat4 T = m->getTransformation(true);
+        for (const auto &v : m->getVertices()) {
+          math::Vec4 w = T * v;
+          for (int k = 0; k < 3; ++k) { lo[k] = std::min(lo[k], w[k]); hi[k] = std::max(hi[k], w[k]); }
+        }
+      }
+      float dx = hi[0] - lo[0], dy = hi[1] - lo[1], dz = hi[2] - lo[2];
+      const float rawDiag = std::max(1e-6f, std::sqrt(dx * dx + dy * dy + dz * dz));
+      const float s = 300.0f / rawDiag;   // scene-sized target
+      const math::Mat4 S(s, 0, 0, 0,  0, s, 0, 0,  0, 0, s, 0,  0, 0, 0, 1);
+      for (auto &m : meshes) {
+        m->setTransformation(S * m->getTransformation(true));
+        scene.addNode(m);
+        if (auto mm = m->getMaterial(); mm && mm->isTransmissive()) {
+          o.glass = m;   // amber → tuner sliders
+          // glTF thickness (0.9) is in the model's tiny local units; give it a
+          // scene-scale value so Beer-Lambert absorption (tuner "glass absorption")
+          // has a real path length to act over.
+          if (mm->transmission) mm->transmission->thicknessFactor = 180.0f;
+        }
+      }
+      const float cx = 0.5f * (lo[0] + hi[0]) * s, cy = 0.5f * (lo[1] + hi[1]) * s,
+                  cz = 0.5f * (lo[2] + hi[2]) * s;
+      const float diag = 300.0f;
+      scene.addCamera(Camera::lookAt(Vec(cx, cy + 0.15f * diag, cz + 1.6f * diag, 1),
+                                     Vec(cx, cy, cz, 1), Vec(0, 1, 0, 1), size, 40.0f));
+      scene.setBounds(diag);
+
+      auto l = std::make_shared<LightNode>(LightNode::Point);
+      l->setColor(GeomColor(255, 247, 235, 255)); l->setIntensity(1.0f);
+      l->translate(cx + 0.6f * diag, cy + diag, cz + 0.6f * diag); l->setShadowEnabled(true);
+      scene.addLight(l);
+      o.useSky = true;
+#else
+      o.ok = false; return o;   // needs the compile-time scenes dir
+#endif
     } else {
       // Isolated single-variable rungs: one sphere, camera on +Z.
       scene.addCamera(Camera::lookAt(Vec(0, 0, 400, 1), Vec(0, 0, 0, 1),
