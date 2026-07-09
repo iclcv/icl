@@ -137,8 +137,8 @@ Plan + per-app detail: `geom-retirement-worklist.md`. Keep demos/apps split (CLA
 - [ ] **A1 readback perf** — benchmark GPU→CPU→GPU cost; if it bites (discrete GPU), do A2 zero-copy IOSurface Metal↔GL.
 - [ ] **Per-node backend resources** — invert map<Node*,Cache> → per-node keyed-by-domain slot (deferred release + Scene domain registry); do at GL/Filament convergence.
 - [ ] **Soft-shadow softness** — map `LightNode::softShadowRadius` → Filament PCSS.
-- [ ] **Points / point-clouds** — billboard quads + per-vertex colour (solve the Filament COLOR-attribute bind).
-- [ ] **Screen-space refraction** — transmissive/glass material variant.
+- [x] **Points / point-clouds — DONE (S103).** `point_billboard.mat` (unlit billboard quads, per-vertex COLOR + CUSTOM0 corner, camera-facing constant-pixel size via the vertex shader). GeometryNode `PrimVertex` (versioned) + `PointCloudNode` (per-frame). Solved the COLOR-attribute bind. Verified `icl-filament-points-test` → `builddir/calib/points-{mesh,cloud}.png`, 1094/1094. Follow-ups: `renderOnTop` depth-disable for point/line overlays; reuse dynamic-cloud VB/IB/MI instead of per-frame recreate.
+- [x] **Screen-space refraction — DONE (S103).** `glass_pbr.mat` (lit + `refractionMode:screenspace`/`refractionType:solid`), separate material chosen at buildSolid from `Material::isTransmissive()`; syncGeometry force-rebuilds on glass-ness flip (setMaterial doesn't bump version). Beer-Lambert absorption from attenuationColor/distance. Verified `icl-filament-glass-test` → `builddir/calib/glass.png`, 1094/1094. Deferred: thin-wall (`refractionType:thin` + microThickness).
 - [ ] **Linux/Vulkan + Intel** — prebuilt Filament is arm64-mac only.
 - [ ] **P5 converge → delete GLRenderBackend** (once parity soaked onscreen).
 - [ ] **Prop save-dialog filter says `*.xml`, we write YAML now** — qt config-UI file filter.

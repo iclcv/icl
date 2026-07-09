@@ -13,11 +13,64 @@ IBL limit. Live tuner (`viz3d-render-tuner`) + temporal-convergence knobs are in
 
 **DO NEXT — bucket 1: functional gaps that BLOCK retiring the legacy GL backend** (CE picked this over
 the fidelity lever):
-1. **Points / point-clouds in Filament** (HIGHEST value — core to ICL's CV use). The backend renders
-   meshes + lines but NOT points yet → billboard quads + solve the per-vertex COLOUR-attribute bind
-   (same bind that made wireframe lines need one renderable per colour). See [[project_filament_backend]].
-2. **Glass / screen-space refraction** — `Material::TransmissionParams` isn't handled in the Filament
-   backend yet.
+1. ~~**Points / point-clouds in Filament**~~ **DONE (S103)** — camera-facing billboard-quad path with a
+   per-vertex COLOUR bind (the crux the wireframe-line path had to work around). New `point_billboard.mat`
+   (unlit, `vertexDomain:object`, `requires:[color,custom0]`): each point → 4 verts sharing the world
+   centre as POSITION, CUSTOM0 = corner (±1), COLOR = linear point colour; the vertex shader spreads the
+   corners along the camera axes to a **constant pixel footprint** (matches GL `gl_PointSize`,
+   projection-agnostic so ICL's injected custom projection just works). Both sources handled in
+   `FilamentRenderBackend`: **GeometryNode `PrimVertex`** (per-vertex colour from `getVertexColors()`,
+   cached by geometry version) and **`PointCloudNode`** (`selectXYZ`/`selectRGBA32f`, rebuilt every frame
+   like GL, mutex-locked). Colours pre-linearised + [0,255]→[0,1] normalised (both `addVertex` default and
+   cloud RGBA are 0-255). Verified headless in-sandbox: `icl-filament-points-test` (5×5 colour grid err
+   0.7px + 400-pt spiral) → `builddir/calib/points-{mesh,cloud}.png`, 1094/1094. On-device check for CE:
+   `apps/point-cloud-viewer`, `demos/scene-to-pointcloud`. **Follow-ups (deferred):** `renderOnTop`
+   depth-disable for point/line overlays (pre-existing gap — lines don't honour it either); per-frame
+   VB/IB/MI churn for dynamic clouds (GL reuses its VBO) — reuse buffers when the point count is stable.
+   NB Cycles doesn't sync points (no PrimVertex/PointCloudNode path), so there's no meaningful tuner A/B.
+2. ~~**Glass / screen-space refraction**~~ **DONE (S103)** — `Material::TransmissionParams` → new
+   `glass_pbr.mat` (lit + `refractionMode:screenspace`, `refractionType:solid`). It's a SEPARATE material
+   (a refractive material renders in Filament's own refraction pass, so it can't share `lit_pbr`); it
+   mirrors lit_pbr's full param set so the one `updateSolidMaterial` path drives both, plus transmission/
+   ior/absorption/thickness. Transmissive nodes build from `glass`, opaque from `lit` (chosen at buildSolid
+   from `isTransmissive()`); since `setMaterial`/in-place transmission edits don't bump the geometry
+   version, `syncGeometry` force-rebuilds when the solid's glass-ness flips. Volume tint = Beer-Lambert
+   `sigma = -ln(attenuationColor)/attenuationDistance` (0 when distance 0). Screen-space refraction is
+   on by default in the View (same framebuffer-read path as SSR → works headless). Verified:
+   `icl-filament-glass-test` (transmissive sphere over a red cube + green wall → background refracts
+   through) → `builddir/calib/glass.png`, 1094/1094. Deferred: thin-wall (`refractionType:thin` +
+   microThickness) — first cut is SOLID only; frosted-glass roughness works via the shared roughness param.
+   **Interactive A/B (S103):** added `glass` + `amber` steps to `demos/calibrate_scenes.h`, so
+   `viz3d-render-tuner -step glass|amber` shows Filament (top, realtime) vs Cycles (bottom, path-traced)
+   side-by-side (Cycles DOES render glass via GlassBsdfNode → meaningful A/B, unlike points). `glass` =
+   clear sphere (thickness 200 so Filament SSR lenses like Cycles' true glass-sphere lens) over a red cube
+   on a glossy floor; `amber` = `scenes/MosquitoInAmber.glb` (KHR transmission/volume → the amber renders
+   through the glass path; auto-scaled ×~1800 from glTF metres to scene units + auto-framed). Numeric A/B
+   PNGs: `viz3d-render-calibrate glass|amber` → `builddir/calib/ab-{glass,amber}.png`. Both targets get a
+   `-DICL_VIZ3D_SCENES_DIR` define to locate the glb. **Also fixed:** the glTF/OBJ **Loader** now disables
+   `PrimVertex|PrimLine` on loaded surface meshes (guarded on having faces) — otherwise the new points path
+   drew a white billboard at every loaded-mesh vertex (visible as speckles on the amber). Honest gap:
+   Filament SSR refraction shows black patches where refracted rays miss screen space on the concave amber
+   (Cycles path-traces it clean) — the expected realtime-vs-pathtraced glass limit.
+   **Amber black-patch root cause FOUND + FIXED (S103):** NOT a refraction miss — the amber's 4096²
+   `baseColorMap` has near-black texels (baked cracks/inclusions), and Filament's refractive model tints
+   the TRANSMITTED light by `material.baseColor`, so black albedo → black see-through (a glTF-ish
+   semantic; Cycles stays translucent because its glass node forces roughness 0 + mixes with a specular
+   surface). Diagnosed by a per-mesh material probe (3 meshes: transmissive amber + metallic "eclats"
+   shards + opaque mosquito) then A/B isolation (clean-glass / no-texture swaps proved it's the texture,
+   not geometry/metal/thickness). Fix in `glass_pbr.mat`: floor the transmission tint
+   `max(albedo, 0.12)` so near-black texels stay dark-but-translucent while the hue is preserved (lifting
+   toward white by transmission washed the amber to milky-white — rejected). Amber now reads brown, no
+   black voids (centre 108,84,80 vs Cycles 112,89,77); white-glass sphere unaffected (floor is a no-op).
+   **Remaining amber gap = fundamental SSR limit (S103):** Filament's screen-space refraction can only
+   sample the on-screen buffer, so where a refracted ray should pass THROUGH the amber body it can't see
+   the interior faces / mosquito / shards Cycles ray-traces — it falls back to the grey background → a
+   see-through/dark look, whereas Cycles fills it with coherent refracted interior (so "you can't tell
+   what the black is" — there is none). The asset under-specifies this: transmission 0.75 + attenuation
+   distance ∞ (no volume absorption). **Tuner glass sliders added** (`SceneOpts.glass` + render-tuner):
+   transmission / roughness / IOR / **absorption** (0..1 → Beer-Lambert distance + warm amber tint; the
+   lever that makes SSR glass read as a solid stone). Amber thickness set to 180 (scene-scale) so
+   absorption has a path to act over. CE dials these live in `viz3d-render-tuner -step amber|glass`.
 3. **Soft shadows (PCSS)** — map `LightNode::softShadowRadius` → Filament PCSS (quick polish).
 Then **P5: converge → delete the GL backend.**
 
