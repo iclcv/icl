@@ -186,6 +186,13 @@ namespace icl::viz3d {
     // and it never matches Cycles' path-traced contact AO anyway. So it's an opt-in
     // knob (still useful for concave object-to-object contact, not flat floors);
     // raise `ambient occlusion` + `ao radius` to enable. Defaults below apply then.
+    // Soft shadows (PCSS). `softShadowScale` converts LightNode::softShadowRadius
+    // (authored in shadow-map texels for GL PCF) to Filament's world-unit light-bulb
+    // radius. `wantSoftShadows` is recomputed each frame from the lights and flips
+    // the View to PCSS (contact-hardening) vs the crisper/cheaper PCF default.
+    float softShadowScale = 1.5f;
+    bool wantSoftShadows = false;
+    int lastShadowType = -1;   // -1 = unset; applied lazily on the render thread
     bool ssao = false; float aoRadius = 100.0f, aoIntensity = 1.5f, aoBias = 0.0f;
     int aoType = 0;   // 0 = SAO, 1 = GTAO (GTAO globally over-darkens grazing planes)
     float aoMinHorizon = 0.2f;
@@ -336,13 +343,18 @@ namespace icl::viz3d {
     // to physical point lights; `lightScale` is the unitless user brightness knob.
     static constexpr float kDirLux = 3.0f;
 
-    void addDirectional(flm::float3 dir, flm::float3 color, float lux, bool shadow) {
+    // bulbRadius (world units) drives PCSS penumbra width — 0 = hard/PCF-crisp.
+    void addDirectional(flm::float3 dir, flm::float3 color, float lux, bool shadow,
+                        float bulbRadius) {
       auto e = ::utils::EntityManager::get().create();
+      fl::LightManager::ShadowOptions so;
+      so.shadowBulbRadius = bulbRadius;
       fl::LightManager::Builder(fl::LightManager::Type::DIRECTIONAL)
           .color({color[0], color[1], color[2]})
           .intensity(lux)
           .direction(normalized(dir))
           .castShadows(shadow && shadows)
+          .shadowOptions(so)
           .build(*engine, e);
       fscene->addEntity(e);
       lightEntities.push_back(e);
@@ -359,14 +371,18 @@ namespace icl::viz3d {
     // exact inverse-square model, this single constant holds at every distance.
     static constexpr float kPointCalib = 1.35f;
 
-    void addPoint(flm::float3 pos, flm::float3 color, float candela, bool shadow) {
+    void addPoint(flm::float3 pos, flm::float3 color, float candela, bool shadow,
+                  float bulbRadius) {
       auto e = ::utils::EntityManager::get().create();
+      fl::LightManager::ShadowOptions so;
+      so.shadowBulbRadius = bulbRadius;
       fl::LightManager::Builder(fl::LightManager::Type::POINT)
           .color({color[0], color[1], color[2]})
           .intensityCandela(candela)
           .position(pos)
           .falloff(5000.0f)   // sphere of influence — large vs the scene, ~pure inverse-square
           .castShadows(shadow && shadows)
+          .shadowOptions(so)
           .build(*engine, e);
       fscene->addEntity(e);
       lightEntities.push_back(e);
@@ -380,16 +396,23 @@ namespace icl::viz3d {
         if (c[0] > 1.01f || c[1] > 1.01f || c[2] > 1.01f) c = c * (1.0f / 255.0f);
         const float inten = light->getIntensity();
         flm::float3 pos{t(0, 3), t(1, 3), t(2, 3)};
+        // LightNode::softShadowRadius is authored in shadow-map texels (GL PCF);
+        // Filament's PCSS penumbra is driven by a WORLD-unit light-bulb radius, so
+        // scale it to the scene (softShadowScale). Any soft-shadow light flips the
+        // whole View to PCSS (contact-hardening soft shadows) below.
+        const float bulb = light->getShadowEnabled()
+                               ? light->getSoftShadowRadius() * softShadowScale : 0.0f;
+        if (bulb > 0.0f) wantSoftShadows = true;
         if (light->getLightType() == LightNode::Directional) {
           // Directional transform's translation encodes the direction.
           addDirectional(pos, toLinear(c), kDirLux * lightScale * inten,
-                         light->getShadowEnabled());
+                         light->getShadowEnabled(), bulb);
         } else {
           // Point (and Spot, approximated as point for now): real inverse-square.
           constexpr float d0 = 500.0f;
           const float strength = inten * (300.0f / 255.0f) * d0 * d0;
           const float candela = kPointCalib * lightScale * strength / (4.0f * float(M_PI));
-          addPoint(pos, toLinear(c), candela, light->getShadowEnabled());
+          addPoint(pos, toLinear(c), candela, light->getShadowEnabled(), bulb);
         }
       }
       if (auto *g = dynamic_cast<GroupNode *>(node))
@@ -508,12 +531,13 @@ namespace icl::viz3d {
 
     void syncLights(const std::vector<std::shared_ptr<Node>> &nodes) {
       clearLights();
+      wantSoftShadows = false;
       if (!lighting) return;
       size_t before = lightEntities.size();
       for (const auto &n : nodes) collectLights(n.get());
       if (lightEntities.size() == before)   // no scene lights → default key light
         addDirectional({-0.4f, -1.0f, -0.6f}, {1.0f, 0.98f, 0.95f},
-                       kDirLux * lightScale, false);
+                       kDirLux * lightScale, false, 0.0f);
     }
 
     // Expand triangles + quads into a non-indexed position+normal list, honouring
@@ -962,6 +986,7 @@ namespace icl::viz3d {
     addProperty("ao minhorizon", utils::prop::Range{.min = 0.0f, .max = 0.7f, .step = 0.01f}, 0.2f);
     addProperty("taa feedback", utils::prop::Range{.min = 0.04f, .max = 0.6f, .step = 0.02f}, 0.12f);
     addProperty("taa flicker guard", utils::prop::Flag{}, true);
+    addProperty("soft shadow scale", utils::prop::Range{.min = 0.0f, .max = 20.0f, .step = 0.5f}, 1.5f);
     registerCallback([this](const utils::Configurable::Property &p) {
       Data &d = *m_data;
       auto num = [&] { try { return std::stof(p.as<std::string>()); } catch (...) { return 0.0f; } };
@@ -980,6 +1005,7 @@ namespace icl::viz3d {
       else if (p.name == "ao minhorizon") d.aoMinHorizon = num();
       else if (p.name == "taa feedback") { d.taaFeedback = num(); d.aaDirty = true; }
       else if (p.name == "taa flicker guard") { d.taaFlickerGuard = p.as<bool>(); d.aaDirty = true; }
+      else if (p.name == "soft shadow scale") d.softShadowScale = num();
       else if (p.name == "tone mapping") {
         std::string t = p.as<std::string>();
         d.toneMap = t == "filmic" ? 1 : t == "aces" ? 2 : t == "pbr-neutral" ? 3 : 0;
@@ -1105,6 +1131,15 @@ namespace icl::viz3d {
     m_data->view->setAmbientOcclusionOptions(ao);
 
     m_data->syncLights(nodes);
+    // Soft shadows: PCSS (contact-hardening) when any shadow light has a soft radius,
+    // else the crisper/cheaper PCF default. Switched only on change (rebuilds shadow
+    // resources). syncLights recomputed wantSoftShadows above.
+    const int shadowType = m_data->wantSoftShadows ? 1 : 0;
+    if (shadowType != m_data->lastShadowType) {
+      m_data->lastShadowType = shadowType;
+      m_data->view->setShadowType(shadowType ? fl::View::ShadowType::PCSS
+                                             : fl::View::ShadowType::PCF);
+    }
     for (const auto &n : nodes) m_data->syncNode(n.get());
 
     m_data->colorRGBA.assign(size_t(W) * H * 4, 0);

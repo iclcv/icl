@@ -385,6 +385,14 @@ if filament_found
     implicit_include_directories: false,
     install: false,
   )
+
+  # PCSS test: hard vs soft shadow penumbra width (LightNode::softShadowRadius).
+  executable('icl-filament-pcss-test',
+    files('render/detail/filament_pcss_test.cpp'),
+    dependencies: [icl_viz3d_dep],
+    implicit_include_directories: false,
+    install: false,
+  )
 endif
 
 install_headers(viz3d_headers,
