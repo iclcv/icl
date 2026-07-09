@@ -263,13 +263,26 @@ if filament_found
     command: [matc, '-a', 'metal', '-p', 'desktop', '-f', 'header',
               '-o', '@OUTPUT@', '@INPUT@'],
   )
+  point_billboard_filamat_h = custom_target('point_billboard_filamat',
+    input: files('render/detail/materials/point_billboard.mat'),
+    output: 'point_billboard.filamat.h',
+    command: [matc, '-a', 'metal', '-p', 'desktop', '-f', 'header',
+              '-o', '@OUTPUT@', '@INPUT@'],
+  )
+  glass_pbr_filamat_h = custom_target('glass_pbr_filamat',
+    input: files('render/detail/materials/glass_pbr.mat'),
+    output: 'glass_pbr.filamat.h',
+    command: [matc, '-a', 'metal', '-p', 'desktop', '-f', 'header',
+              '-o', '@OUTPUT@', '@INPUT@'],
+  )
   # Listing the generated headers as sources makes meson add their build dir
   # (builddir/icl/viz3d) to the include path — enough for FilamentRenderBackend.cpp
   # to #include them. Do NOT add include_directories('.') here: that also injects
   # the *source* dir (../icl/viz3d), and on the case-insensitive macOS FS Cycles'
   # `#include "scene/scene.h"` would then resolve to icl/viz3d/scene/Scene.h and
   # break the Cycles build.
-  viz3d_sources += [unlit_solid_filamat_h, lit_pbr_filamat_h]
+  viz3d_sources += [unlit_solid_filamat_h, lit_pbr_filamat_h, point_billboard_filamat_h,
+                    glass_pbr_filamat_h]
 endif
 
 # Include dirs for 3rdparty single-header libs used by Loader.cpp
@@ -353,6 +366,22 @@ if filament_found
   executable('icl-filament-ssr-test',
     files('render/detail/filament_ssr_test.cpp'),
     dependencies: [icl_viz3d_dep, filament_dep],
+    implicit_include_directories: false,
+    install: false,
+  )
+
+  # Points test: MeshNode vertices + a PointCloudNode → Filament → PNG (headless).
+  executable('icl-filament-points-test',
+    files('render/detail/filament_points_test.cpp'),
+    dependencies: [icl_viz3d_dep],
+    implicit_include_directories: false,
+    install: false,
+  )
+
+  # Glass test: transmissive sphere + backdrop → screen-space refraction (headless).
+  executable('icl-filament-glass-test',
+    files('render/detail/filament_glass_test.cpp'),
+    dependencies: [icl_viz3d_dep],
     implicit_include_directories: false,
     install: false,
   )

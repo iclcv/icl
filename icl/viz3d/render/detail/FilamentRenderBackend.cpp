@@ -7,7 +7,9 @@
 #include <icl/viz3d/nodes/GroupNode.h>
 #include <icl/viz3d/nodes/GeometryNode.h>
 #include <icl/viz3d/nodes/LightNode.h>
+#include <icl/viz3d/nodes/PointCloudNode.h>
 #include <icl/viz3d/nodes/TextNode.h>
+#include <icl/viz3d/pointcloud/PointCloud.h>
 #include <icl/viz3d/render/Material.h>
 #include <icl/viz3d/render/Sky.h>
 #include <icl/utils/prop/Constraints.h>
@@ -62,6 +64,12 @@ static const uint8_t LIT_PBR_FILAMAT[] = {
 static const uint8_t UNLIT_SOLID_FILAMAT[] = {
 #include "icl/viz3d/unlit_solid.filamat.h"
 };
+static const uint8_t POINT_BILLBOARD_FILAMAT[] = {
+#include "icl/viz3d/point_billboard.filamat.h"
+};
+static const uint8_t GLASS_PBR_FILAMAT[] = {
+#include "icl/viz3d/glass_pbr.filamat.h"
+};
 
 namespace icl::viz3d {
 
@@ -104,13 +112,16 @@ namespace icl::viz3d {
       fl::MaterialInstance *mi = nullptr;
       ::utils::Entity entity;    // renderable; also carries a transform component
       bool inScene = false;
+      bool glass = false;        // solid built from the refractive glass material
     };
 
-    // Per-node Filament geometry (solid mesh + wireframe lines), keyed on the
-    // node's geometry version. Points/point-clouds are a later sub-step.
+    // Per-node Filament geometry (solid mesh + wireframe lines + points), keyed
+    // on the node's geometry version (GeometryNode). PointCloudNode reuses only
+    // `points` and rebuilds it every frame (dynamic, no version).
     struct NodeCache {
       Prim solid;                     // triangles + quads (lit PBR)
       std::vector<Prim> lineGroups;   // one LINES renderable per distinct colour
+      Prim points;                    // camera-facing billboard quads (per-vertex colour)
       uint64_t builtVersion = ~0ull;
     };
   }
@@ -125,6 +136,8 @@ namespace icl::viz3d {
     ::utils::Entity camEntity;
     fl::Material *lit = nullptr;
     fl::Material *unlit = nullptr;
+    fl::Material *point = nullptr;   // camera-facing billboard (points/point-clouds)
+    fl::Material *glass = nullptr;   // lit PBR + screen-space refraction (transmissive)
     fl::IndirectLight *ibl = nullptr;
     fl::Texture *envCubemap = nullptr;
     fl::Skybox *skybox = nullptr;
@@ -237,6 +250,7 @@ namespace icl::viz3d {
       destroyPrim(nc.solid);
       for (auto &p : nc.lineGroups) destroyPrim(p);
       nc.lineGroups.clear();
+      destroyPrim(nc.points);
     }
 
     void clearCache() {
@@ -608,7 +622,11 @@ namespace icl::viz3d {
           .bufferType(fl::IndexBuffer::IndexType::UINT).build(*engine);
       ib->setBuffer(*engine, fl::IndexBuffer::BufferDescriptor(idxBuf, nv * sizeof(uint32_t), freeU32));
 
-      buildPrim(p, vb, ib, nv, lit->createInstance(),
+      // Transmissive materials build from the refractive glass material (which
+      // renders in Filament's separate refraction pass); opaque ones from lit PBR.
+      auto mat = geom->getMaterial();
+      p.glass = mat && mat->isTransmissive();
+      buildPrim(p, vb, ib, nv, (p.glass ? glass : lit)->createInstance(),
                 fl::RenderableManager::PrimitiveType::TRIANGLES, lo, hi, true);
       updateSolidMaterial(geom, p);
     }
@@ -675,21 +693,153 @@ namespace icl::viz3d {
       for (auto &kv : byColor) buildLineGroup(geom, kv.second, colorOf[kv.first], out);
     }
 
+    // Points → camera-facing billboard quads (one renderable, per-vertex colour).
+    // Each point becomes 4 vertices sharing its world-space centre as POSITION;
+    // CUSTOM0 carries the corner offset (±1) and COLOR the linear point colour.
+    // The vertex shader spreads the corners along the camera axes to a constant
+    // pixel footprint (see point_billboard.mat). Colours are pre-linearised so
+    // Filament's sRGB output encoding round-trips them (as the unlit line path).
+    void buildPoints(const std::vector<flm::float3> &centers,
+                     const std::vector<flm::float4> &colors,
+                     float pointSizePx, Prim &p) {
+      const size_t n = centers.size();
+      if (n == 0) return;
+      const size_t nv = n * 4;
+      auto *posBuf = new flm::float3[nv];
+      auto *colBuf = new flm::float4[nv];
+      auto *cornBuf = new flm::float4[nv];
+      auto *idxBuf = new uint32_t[n * 6];
+      static const float CX[4] = {-1, 1, 1, -1}, CY[4] = {-1, -1, 1, 1};
+      flm::float3 lo{1e30f, 1e30f, 1e30f}, hi{-1e30f, -1e30f, -1e30f};
+      for (size_t i = 0; i < n; ++i) {
+        const flm::float3 c = centers[i];
+        for (int k = 0; k < 3; ++k) { lo[k] = std::min(lo[k], c[k]); hi[k] = std::max(hi[k], c[k]); }
+        for (int j = 0; j < 4; ++j) {
+          size_t vi = i * 4 + j;
+          posBuf[vi] = c;
+          colBuf[vi] = colors[i];
+          cornBuf[vi] = {CX[j], CY[j], 0.0f, 0.0f};
+        }
+        uint32_t b = uint32_t(i * 4);
+        uint32_t *ix = &idxBuf[i * 6];
+        ix[0] = b; ix[1] = b + 1; ix[2] = b + 2;
+        ix[3] = b; ix[4] = b + 2; ix[5] = b + 3;
+      }
+
+      auto freeF3 = [](void *q, size_t, void *) { delete[] static_cast<flm::float3 *>(q); };
+      auto freeF4 = [](void *q, size_t, void *) { delete[] static_cast<flm::float4 *>(q); };
+      auto freeU32 = [](void *q, size_t, void *) { delete[] static_cast<uint32_t *>(q); };
+
+      auto *vb = fl::VertexBuffer::Builder().vertexCount((uint32_t)nv).bufferCount(3)
+          .attribute(fl::VertexAttribute::POSITION, 0, fl::VertexBuffer::AttributeType::FLOAT3,
+                     0, sizeof(flm::float3))
+          .attribute(fl::VertexAttribute::COLOR, 1, fl::VertexBuffer::AttributeType::FLOAT4,
+                     0, sizeof(flm::float4))
+          .attribute(fl::VertexAttribute::CUSTOM0, 2, fl::VertexBuffer::AttributeType::FLOAT4,
+                     0, sizeof(flm::float4))
+          .build(*engine);
+      vb->setBufferAt(*engine, 0, fl::VertexBuffer::BufferDescriptor(posBuf, nv * sizeof(flm::float3), freeF3));
+      vb->setBufferAt(*engine, 1, fl::VertexBuffer::BufferDescriptor(colBuf, nv * sizeof(flm::float4), freeF4));
+      vb->setBufferAt(*engine, 2, fl::VertexBuffer::BufferDescriptor(cornBuf, nv * sizeof(flm::float4), freeF4));
+      auto *ib = fl::IndexBuffer::Builder().indexCount((uint32_t)(n * 6))
+          .bufferType(fl::IndexBuffer::IndexType::UINT).build(*engine);
+      ib->setBuffer(*engine, fl::IndexBuffer::BufferDescriptor(idxBuf, n * 6 * sizeof(uint32_t), freeU32));
+
+      auto *mi = point->createInstance();
+      mi->setParameter("pointSizePx", pointSizePx);
+      mi->setParameter("viewport", flm::float2{(float)targetSize.width, (float)targetSize.height});
+      buildPrim(p, vb, ib, n * 6, mi,
+                fl::RenderableManager::PrimitiveType::TRIANGLES, lo, hi, false);
+    }
+
+    // GeometryNode vertices → points (when PrimVertex is visible). Per-vertex
+    // colour from getVertexColors(), else the material's point/base colour.
+    void buildGeometryPoints(GeometryNode *geom, Prim &p) {
+      if (!geom->isPrimitiveVisible(PrimVertex)) return;
+      const auto &verts = geom->getVertices();
+      if (verts.empty()) return;
+      const auto &vc = geom->getVertexColors();
+      auto mat = geom->getMaterial();
+      GeomColor defc(1, 1, 1, 1);
+      if (mat) defc = (mat->pointColor[3] > 0) ? mat->pointColor : mat->baseColor;
+      std::vector<flm::float3> centers(verts.size());
+      std::vector<flm::float4> colors(verts.size());
+      for (size_t i = 0; i < verts.size(); ++i) {
+        centers[i] = {verts[i][0], verts[i][1], verts[i][2]};
+        GeomColor c = (i < vc.size() && vc[i][3] > 0.001f) ? vc[i] : defc;
+        // Vertex colours may be authored in [0,255] (MeshNode::addVertex default)
+        // or [0,1]; normalise to [0,1] before linearising.
+        if (c[0] > 1.01f || c[1] > 1.01f || c[2] > 1.01f) c = c * (1.0f / 255.0f);
+        flm::float3 lin = toLinear(c);
+        colors[i] = {lin[0], lin[1], lin[2], 1.0f};
+      }
+      buildPoints(centers, colors, geom->getPointSize(), p);
+    }
+
+    // PointCloudNode → billboard points, rebuilt every frame (dynamic cloud).
+    void syncPointCloud(PointCloudNode *pcn) {
+      NodeCache &nc = cache[pcn];
+      destroyPrim(nc.points);   // dynamic: always rebuild
+      auto cloud = pcn->getPointCloud();
+      if (cloud) {
+        std::scoped_lock<std::recursive_mutex> lk(cloud->getMutex());
+        const int nn = cloud->getDim();
+        if (nn > 0) {
+          GeomColor fallback(1, 1, 1, 1);
+          if (auto mat = pcn->getMaterial()) fallback = mat->baseColor;
+          auto xyz = cloud->selectXYZ();
+          const bool hasColor = cloud->supports(PointCloud::RGBA32f);
+          core::DataSegment<float, 4> rgba =
+              hasColor ? cloud->selectRGBA32f() : core::DataSegment<float, 4>();
+          std::vector<flm::float3> centers(nn);
+          std::vector<flm::float4> colors(nn);
+          for (int i = 0; i < nn; ++i) {
+            auto &v = xyz[i];
+            centers[i] = {v[0], v[1], v[2]};
+            GeomColor c = fallback;
+            if (hasColor) {
+              auto &q = rgba[i];
+              c = (q[0] > 1.01f || q[1] > 1.01f || q[2] > 1.01f)
+                      ? GeomColor{q[0] / 255.f, q[1] / 255.f, q[2] / 255.f, q[3] / 255.f}
+                      : GeomColor{q[0], q[1], q[2], q[3]};
+            }
+            flm::float3 lin = toLinear(c);
+            colors[i] = {lin[0], lin[1], lin[2], 1.0f};
+          }
+          buildPoints(centers, colors, pcn->getPointSize(), nc.points);
+        }
+      }
+      setPrimTransform(nc.points, toFilament(pcn->getTransformation(true)));
+    }
+
     void syncGeometry(GeometryNode *geom) {
       NodeCache &nc = cache[geom];
       const uint64_t v = geom->getGeometryVersion();
+      // A material toggling transmissive doesn't bump the geometry version, but it
+      // needs a different Filament material (opaque vs refractive pass) → rebuild.
+      auto smat = geom->getMaterial();
+      const bool wantGlass = smat && smat->isTransmissive();
+      if (nc.builtVersion == v && nc.solid.entity && nc.solid.glass != wantGlass)
+        nc.builtVersion = ~0ull;   // force rebuild below
       if (nc.builtVersion != v) {   // (re)build geometry
         destroyCache(nc);
         buildSolid(geom, nc.solid);
         buildLines(geom, nc.lineGroups);
+        buildGeometryPoints(geom, nc.points);
         nc.builtVersion = v;
       } else {
         updateSolidMaterial(geom, nc.solid);   // colours may change without a rebuild
       }
+      // Point billboards depend on the render-target size (pixel-constant); keep
+      // the viewport param fresh so a resize doesn't need a geometry rebuild.
+      if (nc.points.mi)
+        nc.points.mi->setParameter("viewport",
+            flm::float2{(float)targetSize.width, (float)targetSize.height});
       // Transform can change every frame independently of geometry version.
       flm::mat4 m = toFilament(geom->getTransformation(true));
       setPrimTransform(nc.solid, m);
       for (auto &p : nc.lineGroups) setPrimTransform(p, m);
+      setPrimTransform(nc.points, m);
     }
 
     void updateSolidMaterial(GeometryNode *geom, Prim &p) {
@@ -724,11 +874,32 @@ namespace icl::viz3d {
           tx ? texture(tx->metallicRoughnessMap, false) : white(), smp);
       p.mi->setParameter("emissiveMap",
           tx ? texture(tx->emissiveMap, true) : white(), smp);
+
+      // Transmission / glass (glass material only — the lit material has no such
+      // parameters, so guard on the built material). Volume absorption comes from
+      // the attenuation colour + distance via Beer-Lambert: sigma = -ln(c)/d.
+      if (p.glass) {
+        const auto *tr = mat && mat->transmission ? mat->transmission.get() : nullptr;
+        const float trans = tr ? tr->transmission : 0.0f;
+        const float ior = tr ? tr->ior : 1.5f;
+        const float thick = tr ? tr->thicknessFactor : 0.0f;
+        flm::float3 absorption{0, 0, 0};
+        if (tr && tr->attenuationDistance > 1e-6f) {
+          const auto &a = tr->attenuationColor;
+          auto sigma = [&](float c) { return -std::log(std::max(1e-4f, c)) / tr->attenuationDistance; };
+          absorption = {sigma(a[0]), sigma(a[1]), sigma(a[2])};
+        }
+        p.mi->setParameter("transmission", trans);
+        p.mi->setParameter("ior", ior);
+        p.mi->setParameter("thickness", thick);
+        p.mi->setParameter("absorption", absorption);
+      }
     }
 
     void syncNode(Node *node) {
       if (!node || !node->isVisible()) return;
       if (dynamic_cast<LightNode *>(node)) return;   // lights handled in syncLights
+      if (auto *pcn = dynamic_cast<PointCloudNode *>(node)) { syncPointCloud(pcn); return; }
       // Text is a textured billboard; the plan renders world labels in the 2D
       // overlay layer (not a Filament job). Until that lands, skip TextNodes so
       // they don't show as blank untextured quads. TODO: 2D label projection.
@@ -761,6 +932,10 @@ namespace icl::viz3d {
         .package(LIT_PBR_FILAMAT, sizeof(LIT_PBR_FILAMAT)).build(*m_data->engine);
     m_data->unlit = fl::Material::Builder()
         .package(UNLIT_SOLID_FILAMAT, sizeof(UNLIT_SOLID_FILAMAT)).build(*m_data->engine);
+    m_data->point = fl::Material::Builder()
+        .package(POINT_BILLBOARD_FILAMAT, sizeof(POINT_BILLBOARD_FILAMAT)).build(*m_data->engine);
+    m_data->glass = fl::Material::Builder()
+        .package(GLASS_PBR_FILAMAT, sizeof(GLASS_PBR_FILAMAT)).build(*m_data->engine);
 
     // Procedural sky environment (reflections cubemap + diffuse SH).
     m_data->buildEnvironment();
@@ -825,6 +1000,8 @@ namespace icl::viz3d {
     if (m_data->envCubemap) e->destroy(m_data->envCubemap);
     if (m_data->lit) e->destroy(m_data->lit);
     if (m_data->unlit) e->destroy(m_data->unlit);
+    if (m_data->point) e->destroy(m_data->point);
+    if (m_data->glass) e->destroy(m_data->glass);
     if (m_data->fcam) e->destroyCameraComponent(m_data->camEntity);
     if (m_data->camEntity) ::utils::EntityManager::get().destroy(m_data->camEntity);
     if (m_data->view) e->destroy(m_data->view);

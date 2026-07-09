@@ -229,6 +229,11 @@ namespace icl::viz3d {
       mesh->setMaterial(Material::fromColor(viz3d::GeomColor(200, 200, 200, 255)));
     }
 
+    // Solid surface mesh — don't render its vertices/edges as points/lines
+    // (MeshNode defaults to PrimAll, which the point/line backends would otherwise
+    // draw a marker at every vertex for). glTF triangle prims always have faces.
+    if (!mesh->getTriangles().empty() || !mesh->getQuads().empty())
+      mesh->setPrimitiveVisible(PrimLine | PrimVertex, false);
     return mesh;
   }
 
@@ -353,6 +358,10 @@ namespace icl::viz3d {
     });
 
     mesh->setMaterial(Material::fromColor(viz3d::GeomColor(200, 200, 200, 255)));
+    // Solid surface, no vertex/edge markers — but keep points for a faceless OBJ
+    // (a pure point set would otherwise render nothing).
+    if (!mesh->getTriangles().empty() || !mesh->getQuads().empty())
+      mesh->setPrimitiveVisible(PrimLine | PrimVertex, false);
 
     return {mesh};
   }

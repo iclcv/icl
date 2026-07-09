@@ -1,0 +1,45 @@
+// Unlit camera-facing billboard material for points / point-clouds.
+// Each point is expanded (CPU-side) into a 4-vertex quad sharing the point's
+// world-space centre as POSITION; the CUSTOM0 attribute carries the corner
+// offset (±1, ±1) and COLOR the per-vertex point colour. The vertex shader
+// offsets each corner along the camera's right/up axes so the quad always
+// faces the camera, sized to a constant pixel footprint (matching the GL
+// backend's gl_PointSize) — projection-agnostic, so it works with ICL's
+// injected custom projection.
+material {
+    name : pointBillboard,
+    shadingModel : unlit,
+    culling : none,
+    vertexDomain : object,
+    // COLOR = per-vertex point colour (the bind the wireframe-line path had to
+    // work around with one-renderable-per-colour); CUSTOM0 = corner offset.
+    requires : [ color, custom0 ],
+    parameters : [
+        { type : float,  name : pointSizePx },   // point diameter in pixels
+        { type : float2, name : viewport }        // render-target size in pixels
+    ]
+}
+vertex {
+    void materialVertex(inout MaterialVertexInputs material) {
+        // Camera basis in world space: rows of the view (view-from-world) matrix.
+        mat4 V = getViewFromWorldMatrix();
+        vec3 right = vec3(V[0][0], V[1][0], V[2][0]);
+        vec3 up    = vec3(V[0][1], V[1][1], V[2][1]);
+        vec2 corner = getCustom0().xy;                        // ±1, ±1
+        // World distance that projects to one pixel at this depth: NDC spans 2
+        // over viewport.y, scaled by clip.w (perspective) and the projection's
+        // vertical term. abs() guards ICL's Y-flipped projection (P11 < 0); the
+        // corner set is symmetric so the sign is irrelevant to the quad shape.
+        vec4 clip = getClipFromWorldMatrix() * material.worldPosition;
+        float p11 = abs(getClipFromViewMatrix()[1][1]);
+        float worldPerPixel = (2.0 * clip.w) / max(p11 * materialParams.viewport.y, 1e-6);
+        float h = 0.5 * materialParams.pointSizePx * worldPerPixel;
+        material.worldPosition.xyz += (right * corner.x + up * corner.y) * h;
+    }
+}
+fragment {
+    void material(inout MaterialInputs material) {
+        prepareMaterial(material);
+        material.baseColor = getColor();
+    }
+}

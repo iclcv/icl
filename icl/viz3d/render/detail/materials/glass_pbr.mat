@@ -1,0 +1,59 @@
+// Lit PBR + screen-space refraction material for the Filament backend (glass /
+// transmissive solids). Mirrors lit_pbr.mat's parameter set (so the backend's
+// common material-update path drives both) and adds the glTF transmission /
+// volume inputs. Only nodes whose Material::isTransmissive() build with this
+// material; opaque nodes stay on lit_pbr (refractive materials render in
+// Filament's separate refraction pass, so they can't share one material).
+material {
+    name : glassPBR,
+    shadingModel : lit,
+    // Refracted rays sample screen space (fall back to the IBL where they miss);
+    // solid = refraction through a volume (a sphere), thickness drives Beer-Lambert.
+    refractionMode : screenspace,
+    refractionType : solid,
+    reflections : screenspace,
+    doubleSided : true,
+    culling : none,
+    requires : [ uv0, tangents ],
+    parameters : [
+        { type : float3,    name : baseColor },
+        { type : float,     name : metallic },
+        { type : float,     name : roughness },
+        { type : float3,    name : emissive },
+        { type : float,     name : reflectance },
+        { type : float,     name : unlit },
+        { type : sampler2d, name : baseColorMap },
+        { type : sampler2d, name : metallicRoughnessMap },
+        { type : sampler2d, name : emissiveMap },
+        // Transmission / volume (glTF KHR_materials_transmission + _volume).
+        { type : float,     name : transmission },   // 0 = opaque, 1 = fully transmissive
+        { type : float,     name : ior },             // index of refraction
+        { type : float3,    name : absorption },      // Beer-Lambert coeff (per world unit)
+        { type : float,     name : thickness }        // solid volume thickness (world units)
+    ]
+}
+fragment {
+    void material(inout MaterialInputs material) {
+        prepareMaterial(material);
+        vec2 uv = getUV0();
+        vec3 albedo = materialParams.baseColor * texture(materialParams_baseColorMap, uv).rgb;
+        vec4 mr     = texture(materialParams_metallicRoughnessMap, uv);
+        vec3 emis   = materialParams.emissive * texture(materialParams_emissiveMap, uv).rgb;
+        // In Filament's refractive model baseColor also tints the TRANSMITTED light,
+        // so a near-black albedo texel (baked cracks/inclusions) crushes the
+        // see-through to pure black. Real glass is never a black void — floor the
+        // tint so dark texels stay dark-but-translucent while the hue is preserved
+        // (brown amber stays brown, unlike lifting toward white which washes it out).
+        vec3 tint = max(albedo, vec3(0.12));
+        material.baseColor  = vec4(tint, 1.0);
+        material.metallic   = materialParams.metallic * mr.b;
+        material.roughness  = materialParams.roughness * mr.g;
+        material.reflectance = materialParams.reflectance;
+        material.emissive   = vec4(emis, 0.0);
+        // Refraction.
+        material.transmission = materialParams.transmission;
+        material.ior          = materialParams.ior;
+        material.absorption   = materialParams.absorption;
+        material.thickness    = materialParams.thickness;
+    }
+}
