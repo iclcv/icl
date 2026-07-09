@@ -71,7 +71,14 @@ the fidelity lever):
    transmission / roughness / IOR / **absorption** (0..1 → Beer-Lambert distance + warm amber tint; the
    lever that makes SSR glass read as a solid stone). Amber thickness set to 180 (scene-scale) so
    absorption has a path to act over. CE dials these live in `viz3d-render-tuner -step amber|glass`.
-3. **Soft shadows (PCSS)** — map `LightNode::softShadowRadius` → Filament PCSS (quick polish).
+3. ~~**Soft shadows (PCSS)**~~ **DONE (S103)** — `LightNode::softShadowRadius` → per-light Filament
+   `ShadowOptions::shadowBulbRadius` (world units) via `softShadowScale` (default 1.5; softShadowRadius is
+   authored in GL PCF texels, so it's scaled to the scene). Any shadow light with a soft radius flips the
+   whole View `PCF`→`PCSS` (contact-hardening), recomputed each frame in syncLights, switched only on
+   change. `render.soft shadow scale` knob added. Default unchanged (radius 0 → clean PCF hard shadows;
+   PCSS only when a light opts in). Verified `icl-filament-pcss-test` (soft umbra shrinks to ~28% of hard
+   while still casting a shadow). NB PCSS is stochastic → grainy in single-shot headless renderToImage
+   (needs TAA); resolves smooth in the live tuner (continuous render + TAA), same as SSR.
 Then **P5: converge → delete the GL backend.**
 
 **Deferred fidelity lever (bucket 2, when we want it):** reflection **probe** / **planar** reflection —
